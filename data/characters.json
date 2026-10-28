@@ -1016,5 +1016,258 @@
     }
    }
   }
+ },
+ "gd_tiger": {
+  "name": "THE GEM PEDDLER",
+  "trade": {
+   "sells": [
+    "p_keen"
+   ],
+   "line": "Bring me gems. I pay fair.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Stones from every corner of the park. And under it.",
+      "Bring me gems. I pay better than the golems. Mostly."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DO GEMS COME FROM?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The golems' cave, the deep halls, the Hudson's bed. And the crypt's chest, if you're polite.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_gemturtle": {
+  "name": "PEBBLESHELL",
+  "trade": {
+   "sells": [
+    "goggles",
+    "headlight"
+   ],
+   "line": "Rocks are just slow gems.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Rocks are just slow gems.",
+      "Seen anything sparkle? Tell me first."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lizkeeper": {
+  "name": "OLD GRISTLE",
+  "trade": {
+   "sells": [
+    "f_roast",
+    "f_fritter",
+    "f_soup",
+    "f_fishfry",
+    "f_chowder"
+   ],
+   "line": "Moss ale's fresh. Food's hot."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be? Moss ale's fresh.",
+      "Sit. Eat. Don't start anything."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS THIS PLACE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The Mossy Flagon. Every guard in the keep drinks here after the night watch.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_fisher": {
+  "name": "OLD WETWHISKER",
+  "trade": {
+   "sells": [
+    "bait",
+    "rod"
+   ],
+   "line": "Bait's a dollar. Patience is free.",
+   "buys": [
+    "fish"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "The lake gives. You just have to wait.",
+      "Bait's a dollar. Patience is free."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE ARE THE BIG ONES?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Out past the reeds, where the brook runs in. At dusk.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lion": {
+  "name": "MASTER OF ARMS",
+  "trade": {
+   "sells": [
+    "sword_steel"
+   ],
+   "line": "Feet first. Then the blade.",
+   "teaches": [
+    "sword",
+    "fight"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Feet first. Then the blade.",
+      "Again. Until you don't think."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DO THEY PRACTISE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Cuts on the pells, arrows at the butts. Real steel, real wood. Watch them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_spirit": {
+  "name": "THE LANTERN SPIRIT",
+  "trade": {
+   "sells": [
+    "p_heal",
+    "p_cure",
+    "p_gheal"
+   ],
+   "line": "Light for the lost."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "...the dead sleep easier when I pass.",
+      "Light for the lost. Even you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

@@ -1,47 +1,1523 @@
 {
  "bounties": [
-  {"id": "slimes", "t": "BURST 6 SLIMES BELOW", "kind": "slime", "n": 6, "pay": 30},
-  {"id": "spiders", "t": "KILL 3 RADIOACTIVE SPIDERS", "kind": "spider", "n": 3, "pay": 45},
-  {"id": "guards", "t": "PUT DOWN 2 SKELETON OR OGRE GUARDS", "kind": "guard", "n": 2, "pay": 70},
-  {"id": "deep", "t": "SLAY 4 CREATURES ON LEVEL 3 OR DEEPER", "kind": "any", "n": 4, "lvl": 3, "pay": 90},
-  {"id": "gold", "t": "FELL THE GOLDEN ONE", "kind": "gold", "n": 1, "pay": 150}
+  {
+   "id": "slimes",
+   "t": "BURST 6 SLIMES BELOW",
+   "kind": "slime",
+   "n": 6,
+   "pay": 30
+  },
+  {
+   "id": "spiders",
+   "t": "KILL 3 RADIOACTIVE SPIDERS",
+   "kind": "spider",
+   "n": 3,
+   "pay": 45
+  },
+  {
+   "id": "guards",
+   "t": "PUT DOWN 2 SKELETON OR OGRE GUARDS",
+   "kind": "guard",
+   "n": 2,
+   "pay": 70
+  },
+  {
+   "id": "deep",
+   "t": "SLAY 4 CREATURES ON LEVEL 3 OR DEEPER",
+   "kind": "any",
+   "n": 4,
+   "lvl": 3,
+   "pay": 90
+  },
+  {
+   "id": "gold",
+   "t": "FELL THE GOLDEN ONE",
+   "kind": "gold",
+   "n": 1,
+   "pay": 150
+  }
  ],
- "keep": ["We keep the stair. What crawls up, we put back down.", "One keep, one stair, and all of us on it.", "The park sleeps because we don't.", "Mind the dark down there. It minds you back."],
+ "keep": [
+  "We keep the stair. What crawls up, we put back down.",
+  "One keep, one stair, and all of us on it.",
+  "The park sleeps because we don't.",
+  "Mind the dark down there. It minds you back."
+ ],
  "list": [
-  {"k": "gd_rustmouse", "n": "SIR BRISTLE", "sp": "mouse", "m": 0.5, "f": "#9a9aa2", "f2": "#e8e4e0", "coat": "tunic", "cc": "#3a3c42", "hat": "helm", "hc": "#8a6e56", "w": "sword", "at": [10, -7, 6], "role": "patrol", "say": ["Halt! Oh. You're one of the big ones. Carry on.", "Rust on the helm, not on the blade."]},
-  {"k": "gd_lanternrat", "n": "THE LAMPLIGHTER", "sp": "rat", "m": 0.52, "f": "#4e4e54", "f2": "#7a7470", "coat": "tunic", "cc": "#3c4048", "c2": "#8a7a5a", "cape": "#3a3a3e", "w": "lantern", "wc": "#ffd060", "at": [12.5, -2.6, 12, 0], "role": "night", "say": ["Dark's coming. I go round with the light.", "Keep near the lamp and nothing finds you."]},
-  {"k": "gd_goggles", "n": "OLD MOSSWICK", "sp": "mouse", "m": 0.5, "f": "#eceae6", "f2": "#f4f0ea", "hair": "#f4f2ee", "eyes": "goggles", "coat": "robe", "cc": "#7a6650", "c2": "#5a4a3a", "w": "mushroom", "wc": "#e0b080", "at": [5, 5, 0, 0], "role": "post", "say": ["Lamps, tonics, plate. All you need for down below.", "Goggles on, wick trimmed. What'll it be?"]},
-  {"k": "gd_robemouse", "n": "THE STEWARD", "sp": "mouse", "m": 0.5, "f": "#a8a8ac", "f2": "#f0d8d8", "coat": "robe", "cc": "#3e3c3a", "c2": "#b89a5a", "at": [8, 10, 4], "role": "patrol", "say": ["Mind the floors, they were swept this morning.", "The keep runs on lists. I keep the lists."]},
-  {"k": "gd_whitemouse", "n": "SCAR", "sp": "mouse", "m": 0.5, "f": "#f0ece6", "f2": "#f4dcdc", "cape": "#8a7a5c", "w": "sword", "at": [26, 7, 6], "role": "patrol", "say": ["Got this one from a spider. Got the spider too.", "Wall's quiet. I like it quiet."]},
-  {"k": "gd_lynx", "n": "THE ELDER", "sp": "lynx", "m": 0.85, "f": "#9a9690", "f2": "#e0d6c8", "coat": "robe", "cc": "#6a2420", "hood": "#6a2420", "w": "staff", "wc": "#6a5038", "at": [19, -4.6, 0, 315], "role": "post", "pose": "sit", "say": ["Sit, if you like. The fire's for everyone.", "I have watched that stair longer than the park has had a wall."]},
-  {"k": "gd_hyena", "n": "GNASH", "sp": "hyena", "m": 0.9, "f": "#b0743a", "f2": "#2a2420", "coat": "armour", "cc": "#5a6a4a", "c2": "#6a3a2a", "w": "mace", "at": [14.2, 4.6, 0, 0], "role": "post", "bulk": 1.3, "say": ["Something comes up those steps, it meets me first.", "Heh. Go on down. I'll be here when you run back."]},
-  {"k": "gd_pangolin", "n": "THE GATEWARDEN", "sp": "pangolin", "m": 0.85, "f": "#8a8070", "f2": "#6a6258", "cape": "#2e3a30", "at": [14.3, -1.8, 0, 0], "role": "post", "bulk": 1.2, "say": ["State your business. ...Fine. Pass.", "Nothing gets through these scales."]},
-  {"k": "gd_raccoon", "n": "TALLOW", "sp": "raccoon", "m": 0.7, "f": "#8a8580", "f2": "#f0ece4", "coat": "tunic", "cc": "#5a4430", "cape": "#3a3a3c", "w": "spear", "at": [-4, 8, 6], "role": "patrol", "say": ["West wall, all clear.", "Seen a big rat? Not me. The other kind."]},
-  {"k": "gd_owlaxe", "n": "HOOT", "sp": "owl", "m": 0.6, "f": "#6a5238", "f2": "#8a7050", "sash": "#b02a20", "w": "axe", "at": [12, 21, 6], "role": "patrol", "say": ["Who goes there? You. Right.", "Back wall's mine. Keep off the moss."]},
-  {"k": "gd_purpleowl", "n": "THE CARTOGRAPHER", "sp": "barnowl", "m": 0.65, "f": "#e8e2d8", "f2": "#b08a50", "coat": "robe", "cc": "#4a2c5a", "hood": "#4a2c5a", "w": "orbstaff", "wc": "#c8a0ff", "hold": "map", "at": [16.6, -3.4, 0, 0], "role": "post", "say": ["Every level drawn. Every trap marked. Mostly.", "Lost? No. Just not yet found."]},
-  {"k": "gd_redpanda", "n": "RUMMAGE", "sp": "redpanda", "m": 0.6, "f": "#c45a28", "f2": "#f2ede6", "coat": "robe", "cc": "#22262e", "c2": "#7a4a2a", "w": "staff", "wc": "#6a4a30", "hold": "skull", "at": [3.5, 13, 0, 90], "role": "post", "say": ["Slime in a bottle? I'll take it. Don't ask what for.", "Everything from down there is worth something to someone."]},
-  {"k": "gd_hedgehog", "n": "PRICKLE", "sp": "hedgehog", "m": 0.48, "f": "#8a7a68", "f2": "#c8b8a0", "w": "sword", "shield": "#8a8a7a", "at": [15, 9.3, 0, 0], "role": "post", "say": ["Come close and find out.", "Small. Sharp. On duty."]},
-  {"k": "gd_rabbit", "n": "RUNE", "sp": "rabbit", "m": 0.6, "f": "#9a8070", "f2": "#c8b098", "coat": "tunic", "cc": "#3a4a6a", "c2": "#8a5a3a", "hat": "circlet", "hc": "#4a5058", "cape": "#4a4a48", "w": "glowsword", "wc": "#9ab8ff", "at": [17.6, 9.3, 0, 0], "role": "post", "say": ["The runes glow when something stirs below.", "Horns up, blade up."]},
-  {"k": "gd_blueowl", "n": "THE WARDEN OF WARDS", "sp": "barnowl", "m": 0.65, "f": "#f4f0e8", "f2": "#c8a040", "coat": "robe", "cc": "#2a4a8a", "c2": "#c8d0e0", "hood": "#2a4a8a", "w": "orbstaff", "wc": "#6a9aee", "at": [7.5, 5, 0, 0], "role": "post", "say": ["Tonics brewed under a full moon. Mostly.", "A ward for every worry."]},
-  {"k": "gd_toucan", "n": "THE HERBALIST", "sp": "toucan", "m": 0.7, "f": "#141418", "f2": "#f0ece4", "coat": "robe", "cc": "#ece8e0", "sash": "#e8481c", "hold": "herbs", "at": [10.5, 12, 0, 0], "role": "post", "say": ["Hurt? Come here. Hold still.", "Leaf and root. It mends what the dark breaks."]},
-  {"k": "gd_pandaarcher", "n": "FLETCH", "sp": "redpanda", "m": 0.6, "f": "#c87a40", "f2": "#f2ede6", "coat": "tunic", "cc": "#2e4a34", "c2": "#b0502a", "w": "bow", "at": [1.8, 1.8, 0, 0], "role": "post", "say": ["I can hit a moth at forty paces.", "Watching the gate. Always watching the gate."]},
-  {"k": "gd_beardpanda", "n": "OLD EMBER", "sp": "redpanda", "m": 0.62, "f": "#c45a28", "f2": "#f2ede6", "beard": true, "coat": "robe", "cc": "#b0502a", "c2": "#8a3a20", "sash": "#c8b080", "w": "staff", "wc": "#7a6040", "hold": "stones", "at": [21.4, -3.2, 0, 315], "role": "post", "say": ["The keep pays for what you put down below.", "Ash and ember. Sit a while."]},
-  {"k": "gd_shark", "n": "BROTHER FIN", "sp": "shark", "m": 0.65, "f": "#8a949c", "f2": "#ece8e2", "coat": "robe", "cc": "#2a2c30", "sash": "#b8a070", "at": [16, 13, 0, 270], "role": "post", "say": ["Breathe. Then strike.", "Even a shark must learn to walk."]},
-  {"k": "gd_captain", "n": "CAPTAIN VOSS", "sp": "batear", "m": 0.62, "f": "#c8c0b4", "f2": "#e8e2d8", "coat": "armour", "cc": "#b8bcc4", "c2": "#c8a040", "hat": "helm", "hc": "#a8acb4", "eyes": "goggles", "cape": "#1a1a1c", "w": "greatsword", "at": [10.7, -1.8, 0, 0], "role": "post", "say": ["The keep stands. As long as I do, it stands.", "Report anything that crawls. Anything."]},
-  {"k": "gd_frogmonk", "n": "STILL WATER", "sp": "frog", "m": 0.55, "f": "#8aa858", "f2": "#b8c890", "coat": "robe", "cc": "#d8907a", "hat": "straw", "hc": "#d07a3a", "at": [21, 14.6, 0, 270], "role": "post", "pose": "sit", "say": ["Sit. The water is still. So can you be.", "Rest here, and you mend faster."]},
-  {"k": "gd_greenmouse", "n": "VERDIGRIS", "sp": "mouse", "m": 0.5, "f": "#5ad04a", "f2": "#a8e890", "cape": "#4a6a3a", "w": "glowsword", "wc": "#7aff5a", "at": [13.4, 2.6, 0, 0], "role": "post", "say": ["Poison blade. Don't touch.", "Green means go. Down, I mean."]},
-  {"k": "gd_redmouse", "n": "EMBERTAIL", "sp": "mouse", "m": 0.5, "f": "#a83428", "f2": "#e06a5a", "coat": "armour", "cc": "#4a1a1a", "c2": "#a87040", "cape": "#2a2224", "w": "glowsword", "wc": "#ff6a3a", "at": [19.4, 2.6, 0, 0], "role": "post", "say": ["My blade's warm. Want to see?", "Fire takes care of spiders."]},
-  {"k": "gd_crimsonmouse", "n": "BRIAR", "sp": "mouse", "m": 0.5, "f": "#d03028", "f2": "#e85848", "coat": "armour", "cc": "#2a2a30", "c2": "#6a6a70", "cape": "#c8b070", "w": "sword", "wc": "#4a4a50", "at": [13.4, 7.4, 0, 0], "role": "post", "say": ["Red as a rose. Sharp as one too.", "The stair is mine tonight."]},
-  {"k": "gd_yellowmouse", "n": "SPARK", "sp": "mouse", "m": 0.5, "f": "#e8d050", "f2": "#f4e890", "cape": "#2a2c34", "w": "glowsword", "wc": "#ffe04a", "at": [19.4, 7.4, 0, 0], "role": "post", "say": ["Light blade. It sees in the dark so I don't have to.", "Bzzt. Just kidding."]},
-  {"k": "gd_caterpillar", "n": "THE BLUE ONE", "sp": "caterpillar", "m": 0.9, "f": "#3a5aa8", "f2": "#d84a50", "w": "pipe", "at": [4.5, -4.6, 0, 30], "role": "post", "pose": "perch", "say": ["Whoooo... are you?", "Ask me something. I may even answer."]},
-  {"k": "gd_shaman", "n": "THORNCROWN", "sp": "hedgehog", "m": 0.55, "f": "#a89a88", "f2": "#c8b8a0", "quill": "#c8a868", "coat": "robe", "cc": "#6a2a40", "c2": "#4a4a5a", "hat": "crown", "hc": "#c8a040", "w": "orbstaff", "wc": "#ff70a0", "at": [5.5, 9.5, 0, 90], "role": "post", "say": ["Steel remembers what you teach it.", "The orb hums. It likes you. Or it's hungry."]},
-  {"k": "gd_wizowl", "n": "WANDERING WICK", "sp": "owl", "m": 0.62, "f": "#b8b0a0", "f2": "#f0ece4", "coat": "robe", "cc": "#5a5280", "hat": "wizard", "hc": "#6a6088", "w": "staff", "wc": "#8a7a60", "at": [12, -30, 14], "role": "wander", "say": ["The paths go round. So do I.", "I have seen every corner of this park. Twice."]},
-  {"k": "gd_rhino", "n": "IRONHORN", "sp": "rhino", "m": 0.95, "f": "#7a8580", "f2": "#8a9590", "coat": "armour", "cc": "#3a3c40", "c2": "#b8bcc0", "w": "axe", "at": [18.8, 4.6, 0, 0], "role": "post", "bulk": 1.4, "say": ["Hrm.", "Go down. Come up. In that order."]},
-  {"k": "gd_frogdruid", "n": "MOSSFOOT", "sp": "frog", "m": 0.52, "f": "#6aa040", "f2": "#a8c870", "coat": "robe", "cc": "#8a8a70", "hood": "#8a8a70", "w": "mushstaff", "wc": "#5a4030", "at": [1, -4, 4], "role": "patrol", "say": ["The woods round the keep need tending too.", "Mushrooms grow where the old blood soaked in."]},
-  {"k": "gd_frogarcher", "n": "AMBERSHOT", "sp": "frog", "m": 0.6, "f": "#e08a2a", "f2": "#f0a848", "sash": "#4a3424", "w": "bow", "at": [19.6, 15.6, 0, 180], "role": "post", "say": ["Back wall's covered.", "One arrow, one problem."]},
-  {"k": "gd_starowl", "n": "STARGAZER", "sp": "owl", "m": 0.6, "f": "#2a3a6a", "f2": "#3a4a7a", "stars": true, "cape": "#1e2a5a", "w": "starwand", "wc": "#c8a060", "at": [11, 4, 10], "role": "night", "say": ["The stars say: stay out of the lava.", "Night watch. My favourite."]},
-  {"k": "gd_skullmouse", "n": "THE SCOUT", "sp": "mouse", "m": 0.5, "f": "#22222a", "f2": "#3a3a44", "coat": "tunic", "cc": "#18181c", "c2": "#e8e2d0", "cape": "#121214", "w": "sword", "at": [12.5, -12, 8], "role": "patrol", "say": ["Been down to the third. Wouldn't go further without a friend.", "The spiders are thicker deeper. So are the webs."]},
-  {"k": "gd_frogknight", "n": "OLD MOSS", "sp": "frog", "m": 0.62, "f": "#6a7a40", "f2": "#c8c098", "coat": "armour", "cc": "#8a5a3a", "c2": "#4a6a2a", "shield": "#a86a48", "w": "sword", "wc": "#8a6a50", "at": [10, 15.6, 0, 180], "role": "post", "bulk": 1.2, "say": ["Moss grows on stone that doesn't move. I don't move.", "Shield up. Always."]},
-  {"k": "gd_panda", "n": "LITTLE BAO", "sp": "panda", "m": 0.52, "f": "#e8d8b8", "f2": "#1a1a1c", "coat": "tunic", "cc": "#1a1c24", "cape": "#8a7050", "w": "sword", "at": [10, 8.6, 0, 90], "role": "post", "say": ["Spar with me! Please? Nobody spars with me.", "I'm going to be captain one day."]}
+  {
+   "k": "gd_rustmouse",
+   "n": "SIR BRISTLE",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#9a9aa2",
+   "f2": "#e8e4e0",
+   "coat": "tunic",
+   "cc": "#3a3c42",
+   "hat": "helm",
+   "hc": "#8a6e56",
+   "w": "sword",
+   "at": [
+    10,
+    -7,
+    6
+   ],
+   "role": "patrol",
+   "say": [
+    "Halt! Oh. You're one of the big ones. Carry on.",
+    "Rust on the helm, not on the blade."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_lanternrat",
+   "n": "THE LAMPLIGHTER",
+   "sp": "rat",
+   "m": 0.52,
+   "f": "#4e4e54",
+   "f2": "#7a7470",
+   "coat": "tunic",
+   "cc": "#3c4048",
+   "c2": "#8a7a5a",
+   "cape": "#3a3a3e",
+   "w": "lantern",
+   "wc": "#ffd060",
+   "at": [
+    12.5,
+    -2.6,
+    12,
+    0
+   ],
+   "role": "night",
+   "say": [
+    "Dark's coming. I go round with the light.",
+    "Keep near the lamp and nothing finds you."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_goggles",
+   "n": "OLD MOSSWICK",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#eceae6",
+   "f2": "#f4f0ea",
+   "hair": "#f4f2ee",
+   "eyes": "goggles",
+   "coat": "robe",
+   "cc": "#7a6650",
+   "c2": "#5a4a3a",
+   "w": "mushroom",
+   "wc": "#e0b080",
+   "at": [
+    5,
+    5,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Lamps, tonics, plate. All you need for down below.",
+    "Goggles on, wick trimmed. What'll it be?"
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_robemouse",
+   "n": "THE STEWARD",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#a8a8ac",
+   "f2": "#f0d8d8",
+   "coat": "robe",
+   "cc": "#3e3c3a",
+   "c2": "#b89a5a",
+   "at": [
+    8,
+    10,
+    4
+   ],
+   "role": "patrol",
+   "say": [
+    "Mind the floors, they were swept this morning.",
+    "The keep runs on lists. I keep the lists."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_whitemouse",
+   "n": "SCAR",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#f0ece6",
+   "f2": "#f4dcdc",
+   "cape": "#8a7a5c",
+   "w": "sword",
+   "at": [
+    26,
+    7,
+    6
+   ],
+   "role": "patrol",
+   "say": [
+    "Got this one from a spider. Got the spider too.",
+    "Wall's quiet. I like it quiet."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_lynx",
+   "n": "THE ELDER",
+   "sp": "lynx",
+   "m": 0.85,
+   "f": "#9a9690",
+   "f2": "#e0d6c8",
+   "coat": "robe",
+   "cc": "#6a2420",
+   "hood": "#6a2420",
+   "w": "staff",
+   "wc": "#6a5038",
+   "at": [
+    19,
+    -4.6,
+    0,
+    315
+   ],
+   "role": "post",
+   "pose": "sit",
+   "say": [
+    "Sit, if you like. The fire's for everyone.",
+    "I have watched that stair longer than the park has had a wall."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_hyena",
+   "n": "GNASH",
+   "sp": "hyena",
+   "m": 0.9,
+   "f": "#b0743a",
+   "f2": "#2a2420",
+   "coat": "armour",
+   "cc": "#5a6a4a",
+   "c2": "#6a3a2a",
+   "w": "mace",
+   "at": [
+    14.2,
+    4.6,
+    0,
+    0
+   ],
+   "role": "post",
+   "bulk": 1.3,
+   "say": [
+    "Something comes up those steps, it meets me first.",
+    "Heh. Go on down. I'll be here when you run back."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_pangolin",
+   "n": "THE GATEWARDEN",
+   "sp": "pangolin",
+   "m": 0.85,
+   "f": "#8a8070",
+   "f2": "#6a6258",
+   "cape": "#2e3a30",
+   "at": [
+    14.3,
+    -1.8,
+    0,
+    0
+   ],
+   "role": "post",
+   "bulk": 1.2,
+   "say": [
+    "State your business. ...Fine. Pass.",
+    "Nothing gets through these scales."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_raccoon",
+   "n": "TALLOW",
+   "sp": "raccoon",
+   "m": 0.7,
+   "f": "#8a8580",
+   "f2": "#f0ece4",
+   "coat": "tunic",
+   "cc": "#5a4430",
+   "cape": "#3a3a3c",
+   "w": "spear",
+   "at": [
+    -4,
+    8,
+    6
+   ],
+   "role": "patrol",
+   "say": [
+    "West wall, all clear.",
+    "Seen a big rat? Not me. The other kind."
+   ],
+   "home": "tree1"
+  },
+  {
+   "k": "gd_owlaxe",
+   "n": "HOOT",
+   "sp": "owl",
+   "m": 0.6,
+   "f": "#6a5238",
+   "f2": "#8a7050",
+   "sash": "#b02a20",
+   "w": "axe",
+   "at": [
+    12,
+    21,
+    6
+   ],
+   "role": "patrol",
+   "say": [
+    "Who goes there? You. Right.",
+    "Back wall's mine. Keep off the moss."
+   ],
+   "home": "tree2"
+  },
+  {
+   "k": "gd_purpleowl",
+   "n": "THE CARTOGRAPHER",
+   "sp": "barnowl",
+   "m": 0.65,
+   "f": "#e8e2d8",
+   "f2": "#b08a50",
+   "coat": "robe",
+   "cc": "#4a2c5a",
+   "hood": "#4a2c5a",
+   "w": "orbstaff",
+   "wc": "#c8a0ff",
+   "hold": "map",
+   "at": [
+    16.6,
+    -3.4,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Every level drawn. Every trap marked. Mostly.",
+    "Lost? No. Just not yet found."
+   ],
+   "home": "tree1"
+  },
+  {
+   "k": "gd_redpanda",
+   "n": "RUMMAGE",
+   "sp": "redpanda",
+   "m": 0.6,
+   "f": "#c45a28",
+   "f2": "#f2ede6",
+   "coat": "robe",
+   "cc": "#22262e",
+   "c2": "#7a4a2a",
+   "w": "staff",
+   "wc": "#6a4a30",
+   "hold": "skull",
+   "at": [
+    7,
+    13.5,
+    0,
+    90
+   ],
+   "role": "post",
+   "say": [
+    "Slime in a bottle? I'll take it. Don't ask what for.",
+    "Everything from down there is worth something to someone."
+   ],
+   "home": "hut3"
+  },
+  {
+   "k": "gd_hedgehog",
+   "n": "PRICKLE",
+   "sp": "hedgehog",
+   "m": 0.48,
+   "f": "#8a7a68",
+   "f2": "#c8b8a0",
+   "w": "sword",
+   "shield": "#8a8a7a",
+   "at": [
+    15,
+    9.3,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Come close and find out.",
+    "Small. Sharp. On duty."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_rabbit",
+   "n": "RUNE",
+   "sp": "rabbit",
+   "m": 0.6,
+   "f": "#9a8070",
+   "f2": "#c8b098",
+   "coat": "tunic",
+   "cc": "#3a4a6a",
+   "c2": "#8a5a3a",
+   "hat": "circlet",
+   "hc": "#4a5058",
+   "cape": "#4a4a48",
+   "w": "glowsword",
+   "wc": "#9ab8ff",
+   "at": [
+    17.6,
+    9.3,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "The runes glow when something stirs below.",
+    "Horns up, blade up."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_blueowl",
+   "n": "THE WARDEN OF WARDS",
+   "sp": "barnowl",
+   "m": 0.65,
+   "f": "#f4f0e8",
+   "f2": "#c8a040",
+   "coat": "robe",
+   "cc": "#2a4a8a",
+   "c2": "#c8d0e0",
+   "hood": "#2a4a8a",
+   "w": "orbstaff",
+   "wc": "#6a9aee",
+   "at": [
+    7.5,
+    5,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Tonics brewed under a full moon. Mostly.",
+    "A ward for every worry."
+   ],
+   "home": "tree2"
+  },
+  {
+   "k": "gd_toucan",
+   "n": "THE HERBALIST",
+   "sp": "toucan",
+   "m": 0.7,
+   "f": "#141418",
+   "f2": "#f0ece4",
+   "coat": "robe",
+   "cc": "#ece8e0",
+   "sash": "#e8481c",
+   "hold": "herbs",
+   "at": [
+    10.5,
+    12,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Hurt? Come here. Hold still.",
+    "Leaf and root. It mends what the dark breaks."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_pandaarcher",
+   "n": "FLETCH",
+   "sp": "redpanda",
+   "m": 0.6,
+   "f": "#c87a40",
+   "f2": "#f2ede6",
+   "coat": "tunic",
+   "cc": "#2e4a34",
+   "c2": "#b0502a",
+   "w": "bow",
+   "at": [
+    -2,
+    -1,
+    0,
+    90
+   ],
+   "role": "drill",
+   "say": [
+    "I can hit a moth at forty paces.",
+    "Watching the gate. Always watching the gate."
+   ],
+   "home": "castle",
+   "site": "yard"
+  },
+  {
+   "k": "gd_beardpanda",
+   "n": "OLD EMBER",
+   "sp": "redpanda",
+   "m": 0.62,
+   "f": "#c45a28",
+   "f2": "#f2ede6",
+   "beard": true,
+   "coat": "robe",
+   "cc": "#b0502a",
+   "c2": "#8a3a20",
+   "sash": "#c8b080",
+   "w": "staff",
+   "wc": "#7a6040",
+   "hold": "stones",
+   "at": [
+    21.4,
+    -3.2,
+    0,
+    315
+   ],
+   "role": "post",
+   "say": [
+    "The keep pays for what you put down below.",
+    "Ash and ember. Sit a while."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_shark",
+   "n": "BROTHER FIN",
+   "sp": "shark",
+   "m": 0.65,
+   "f": "#8a949c",
+   "f2": "#ece8e2",
+   "coat": "robe",
+   "cc": "#2a2c30",
+   "sash": "#b8a070",
+   "at": [
+    16,
+    13,
+    0,
+    270
+   ],
+   "role": "post",
+   "say": [
+    "Breathe. Then strike.",
+    "Even a shark must learn to walk."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_captain",
+   "n": "CAPTAIN VOSS",
+   "sp": "batear",
+   "m": 0.62,
+   "f": "#c8c0b4",
+   "f2": "#e8e2d8",
+   "coat": "armour",
+   "cc": "#b8bcc4",
+   "c2": "#c8a040",
+   "hat": "helm",
+   "hc": "#a8acb4",
+   "eyes": "goggles",
+   "cape": "#1a1a1c",
+   "w": "greatsword",
+   "at": [
+    10.7,
+    -1.8,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "The keep stands. As long as I do, it stands.",
+    "Report anything that crawls. Anything."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_frogmonk",
+   "n": "STILL WATER",
+   "sp": "frog",
+   "m": 0.55,
+   "f": "#8aa858",
+   "f2": "#b8c890",
+   "coat": "robe",
+   "cc": "#d8907a",
+   "hat": "straw",
+   "hc": "#d07a3a",
+   "at": [
+    -2.5,
+    2.5,
+    0,
+    270
+   ],
+   "role": "post",
+   "pose": "sit",
+   "say": [
+    "Sit. The water is still. So can you be.",
+    "Rest here, and you mend faster."
+   ],
+   "home": "hut2",
+   "site": "hut2"
+  },
+  {
+   "k": "gd_greenmouse",
+   "n": "VERDIGRIS",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#5ad04a",
+   "f2": "#a8e890",
+   "cape": "#4a6a3a",
+   "w": "glowsword",
+   "wc": "#7aff5a",
+   "at": [
+    13.4,
+    2.6,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Poison blade. Don't touch.",
+    "Green means go. Down, I mean."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_redmouse",
+   "n": "EMBERTAIL",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#a83428",
+   "f2": "#e06a5a",
+   "coat": "armour",
+   "cc": "#4a1a1a",
+   "c2": "#a87040",
+   "cape": "#2a2224",
+   "w": "glowsword",
+   "wc": "#ff6a3a",
+   "at": [
+    19.4,
+    2.6,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "My blade's warm. Want to see?",
+    "Fire takes care of spiders."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_crimsonmouse",
+   "n": "BRIAR",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#d03028",
+   "f2": "#e85848",
+   "coat": "armour",
+   "cc": "#2a2a30",
+   "c2": "#6a6a70",
+   "cape": "#c8b070",
+   "w": "sword",
+   "wc": "#4a4a50",
+   "at": [
+    13.4,
+    7.4,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Red as a rose. Sharp as one too.",
+    "The stair is mine tonight."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_yellowmouse",
+   "n": "SPARK",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#e8d050",
+   "f2": "#f4e890",
+   "cape": "#2a2c34",
+   "w": "glowsword",
+   "wc": "#ffe04a",
+   "at": [
+    19.4,
+    7.4,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "Light blade. It sees in the dark so I don't have to.",
+    "Bzzt. Just kidding."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_caterpillar",
+   "n": "THE BLUE ONE",
+   "sp": "caterpillar",
+   "m": 0.9,
+   "f": "#3a5aa8",
+   "f2": "#d84a50",
+   "w": "pipe",
+   "at": [
+    4.5,
+    -4.6,
+    0,
+    30
+   ],
+   "role": "post",
+   "pose": "perch",
+   "say": [
+    "Whoooo... are you?",
+    "Ask me something. I may even answer."
+   ],
+   "home": ""
+  },
+  {
+   "k": "gd_shaman",
+   "n": "THORNCROWN",
+   "sp": "hedgehog",
+   "m": 0.55,
+   "f": "#a89a88",
+   "f2": "#c8b8a0",
+   "quill": "#c8a868",
+   "coat": "robe",
+   "cc": "#6a2a40",
+   "c2": "#4a4a5a",
+   "hat": "crown",
+   "hc": "#c8a040",
+   "w": "orbstaff",
+   "wc": "#ff70a0",
+   "at": [
+    5.5,
+    9.5,
+    0,
+    90
+   ],
+   "role": "post",
+   "say": [
+    "Steel remembers what you teach it.",
+    "The orb hums. It likes you. Or it's hungry."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_wizowl",
+   "n": "WANDERING WICK",
+   "sp": "owl",
+   "m": 0.62,
+   "f": "#b8b0a0",
+   "f2": "#f0ece4",
+   "coat": "robe",
+   "cc": "#5a5280",
+   "hat": "wizard",
+   "hc": "#6a6088",
+   "w": "staff",
+   "wc": "#8a7a60",
+   "at": [
+    12,
+    -30,
+    14
+   ],
+   "role": "wander",
+   "say": [
+    "The paths go round. So do I.",
+    "I have seen every corner of this park. Twice."
+   ],
+   "home": "tree3"
+  },
+  {
+   "k": "gd_rhino",
+   "n": "IRONHORN",
+   "sp": "rhino",
+   "m": 0.95,
+   "f": "#7a8580",
+   "f2": "#8a9590",
+   "coat": "armour",
+   "cc": "#3a3c40",
+   "c2": "#b8bcc0",
+   "w": "axe",
+   "at": [
+    18.8,
+    4.6,
+    0,
+    0
+   ],
+   "role": "post",
+   "bulk": 1.4,
+   "say": [
+    "Hrm.",
+    "Go down. Come up. In that order."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_frogdruid",
+   "n": "MOSSFOOT",
+   "sp": "frog",
+   "m": 0.52,
+   "f": "#6aa040",
+   "f2": "#a8c870",
+   "coat": "robe",
+   "cc": "#8a8a70",
+   "hood": "#8a8a70",
+   "w": "mushstaff",
+   "wc": "#5a4030",
+   "at": [
+    3,
+    -2,
+    5
+   ],
+   "role": "patrol",
+   "say": [
+    "The woods round the keep need tending too.",
+    "Mushrooms grow where the old blood soaked in."
+   ],
+   "home": "hut1",
+   "site": "hut1"
+  },
+  {
+   "k": "gd_frogarcher",
+   "n": "AMBERSHOT",
+   "sp": "frog",
+   "m": 0.6,
+   "f": "#e08a2a",
+   "f2": "#f0a848",
+   "sash": "#4a3424",
+   "w": "bow",
+   "at": [
+    -2,
+    2,
+    0,
+    90
+   ],
+   "role": "drill",
+   "say": [
+    "Back wall's covered.",
+    "One arrow, one problem."
+   ],
+   "home": "castle",
+   "site": "yard"
+  },
+  {
+   "k": "gd_starowl",
+   "n": "STARGAZER",
+   "sp": "owl",
+   "m": 0.6,
+   "f": "#2a3a6a",
+   "f2": "#3a4a7a",
+   "stars": true,
+   "cape": "#1e2a5a",
+   "w": "starwand",
+   "wc": "#c8a060",
+   "at": [
+    11,
+    4,
+    10
+   ],
+   "role": "night",
+   "say": [
+    "The stars say: stay out of the lava.",
+    "Night watch. My favourite."
+   ],
+   "home": "tree3"
+  },
+  {
+   "k": "gd_skullmouse",
+   "n": "THE SCOUT",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#22222a",
+   "f2": "#3a3a44",
+   "coat": "tunic",
+   "cc": "#18181c",
+   "c2": "#e8e2d0",
+   "cape": "#121214",
+   "w": "sword",
+   "at": [
+    12.5,
+    -12,
+    8
+   ],
+   "role": "patrol",
+   "say": [
+    "Been down to the third. Wouldn't go further without a friend.",
+    "The spiders are thicker deeper. So are the webs."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_frogknight",
+   "n": "OLD MOSS",
+   "sp": "frog",
+   "m": 0.62,
+   "f": "#6a7a40",
+   "f2": "#c8c098",
+   "coat": "armour",
+   "cc": "#8a5a3a",
+   "c2": "#4a6a2a",
+   "shield": "#a86a48",
+   "w": "sword",
+   "wc": "#8a6a50",
+   "at": [
+    10,
+    15.6,
+    0,
+    180
+   ],
+   "role": "post",
+   "bulk": 1.2,
+   "say": [
+    "Moss grows on stone that doesn't move. I don't move.",
+    "Shield up. Always."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_panda",
+   "n": "LITTLE BAO",
+   "sp": "panda",
+   "m": 0.52,
+   "f": "#e8d8b8",
+   "f2": "#1a1a1c",
+   "coat": "tunic",
+   "cc": "#1a1c24",
+   "cape": "#8a7050",
+   "w": "sword",
+   "at": [
+    -1,
+    1,
+    0,
+    270
+   ],
+   "role": "drill",
+   "say": [
+    "Spar with me! Please? Nobody spars with me.",
+    "I'm going to be captain one day."
+   ],
+   "home": "castle",
+   "site": "yard"
+  },
+  {
+   "k": "gd_lizknight",
+   "n": "SIR SCALEWORTH",
+   "sp": "lizard",
+   "m": 0.62,
+   "f": "#8a7a48",
+   "f2": "#c8b880",
+   "coat": "armour",
+   "cc": "#6a6450",
+   "c2": "#8a7a50",
+   "w": "sword",
+   "at": [
+    5.8,
+    13.6,
+    0,
+    90
+   ],
+   "role": "post",
+   "bulk": 1.1,
+   "say": [
+    "The tower is mine to watch. Mine alone.",
+    "Scales and steel. A good pairing."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_catknight",
+   "n": "DAME WHISKERHELM",
+   "sp": "cat",
+   "m": 0.58,
+   "f": "#7a6a58",
+   "f2": "#a89a88",
+   "coat": "armour",
+   "cc": "#5a5650",
+   "c2": "#6a6258",
+   "hat": "helm",
+   "hc": "#6a665e",
+   "w": "greatsword",
+   "at": [
+    8.2,
+    1.6,
+    0,
+    0
+   ],
+   "role": "post",
+   "say": [
+    "The gate holds. It always holds.",
+    "Mind the blade. It's planted, not sleeping."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_whitecat",
+   "n": "SNOWPAW",
+   "sp": "cat",
+   "m": 0.55,
+   "f": "#ece8e2",
+   "f2": "#f4f0ea",
+   "coat": "tunic",
+   "cc": "#7a7058",
+   "c2": "#4a4030",
+   "shieldback": "#6a6a62",
+   "w": "spear",
+   "at": [
+    10,
+    -8,
+    8
+   ],
+   "role": "patrol",
+   "say": [
+    "The great gate's quiet. Too quiet.",
+    "Spear first. Questions after."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_kitten",
+   "n": "SCRAP",
+   "sp": "cat",
+   "m": 0.48,
+   "f": "#a8865a",
+   "f2": "#e8d8c0",
+   "coat": "armour",
+   "cc": "#4a4a50",
+   "c2": "#6a5a40",
+   "w": "sword",
+   "site": "yard",
+   "at": [
+    -1.2,
+    -1.2,
+    0,
+    270
+   ],
+   "role": "drill",
+   "say": [
+    "I'm practising! Don't look!",
+    "One day I'll guard the gate. One day."
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_pillarcoon",
+   "n": "WATCHER ON THE PILLAR",
+   "sp": "raccoon",
+   "m": 0.62,
+   "f": "#3a3a44",
+   "f2": "#e8e6e0",
+   "cape": "#141418",
+   "w": "sword",
+   "site": "ruins",
+   "at": [
+    0,
+    0,
+    0,
+    180
+   ],
+   "perch": "pillar",
+   "role": "post",
+   "home": "ruins",
+   "say": [
+    "I see the whole park from up here.",
+    "Climb up? No. This pillar's taken."
+   ]
+  },
+  {
+   "k": "gd_tiger",
+   "n": "THE GEM PEDDLER",
+   "sp": "tiger",
+   "m": 0.78,
+   "f": "#e07a28",
+   "f2": "#f4efe6",
+   "coat": "robe",
+   "cc": "#c8621e",
+   "c2": "#7a3a14",
+   "beads": 1,
+   "w": "crystalstaff",
+   "gem": "#9a6aff",
+   "pack": "gems",
+   "site": "pub",
+   "at": [
+    3,
+    5,
+    0,
+    180
+   ],
+   "role": "post",
+   "home": "pub",
+   "say": [
+    "Stones from every corner of the park. And under it.",
+    "Bring me gems. I pay better than the golems. Mostly."
+   ]
+  },
+  {
+   "k": "gd_spirit",
+   "n": "THE LANTERN SPIRIT",
+   "sp": "spirit",
+   "m": 0.72,
+   "f": "#f0eee8",
+   "f2": "#e8e4dc",
+   "glow": "#ffa040",
+   "coat": "robe",
+   "cc": "#e8e6e0",
+   "c2": "#c8c4bc",
+   "w": "heartstaff",
+   "pack": "potions",
+   "site": "tombs",
+   "at": [
+    0,
+    2,
+    8
+   ],
+   "role": "night",
+   "home": "tombs",
+   "say": [
+    "...the dead sleep easier when I pass.",
+    "Light for the lost. Even you."
+   ]
+  },
+  {
+   "k": "gd_skullfox",
+   "n": "BONEBRUSH",
+   "sp": "fox",
+   "m": 0.65,
+   "f": "#d0601e",
+   "f2": "#f0e8dc",
+   "eyes": "goggles",
+   "cape": "#7a4a26",
+   "coat": "armour",
+   "cc": "#3a3e44",
+   "c2": "#6a5a48",
+   "w": "sword",
+   "site": "ruins",
+   "at": [
+    -3,
+    -2,
+    7
+   ],
+   "role": "patrol",
+   "home": "ruins",
+   "say": [
+    "The skull? A friend. Was.",
+    "Ruins talk if you listen. Mostly about rats."
+   ]
+  },
+  {
+   "k": "gd_lizkeeper",
+   "n": "OLD GRISTLE",
+   "sp": "lizard",
+   "m": 0.82,
+   "f": "#3a3a32",
+   "f2": "#a85a3a",
+   "coat": "robe",
+   "cc": "#18181a",
+   "c2": "#2a2a2c",
+   "hood": "#121214",
+   "inside": "pub",
+   "at": [
+    -0.6,
+    -2.2,
+    0,
+    0
+   ],
+   "role": "post",
+   "home": "pub",
+   "say": [
+    "What'll it be? Moss ale's fresh.",
+    "Sit. Drink. Don't start anything."
+   ]
+  },
+  {
+   "k": "gd_badger",
+   "n": "BROTHER BRAMBLE",
+   "sp": "badger",
+   "m": 0.6,
+   "f": "#5a5a5e",
+   "f2": "#e8e6e0",
+   "coat": "robe",
+   "cc": "#5a4630",
+   "c2": "#4a3a24",
+   "hood": "#5a4630",
+   "w": "staff",
+   "wc": "#a88a5a",
+   "site": "hut1",
+   "at": [
+    0,
+    2.2,
+    0,
+    0
+   ],
+   "role": "post",
+   "home": "hut1",
+   "say": [
+    "Come in out of the mist, if you like.",
+    "The hollow keeps warm. The world doesn't."
+   ]
+  },
+  {
+   "k": "gd_wolfknight",
+   "n": "GREYMANTLE",
+   "sp": "wolf",
+   "m": 0.72,
+   "f": "#3a3c42",
+   "f2": "#6a6c72",
+   "coat": "armour",
+   "cc": "#2a2c30",
+   "c2": "#4a4c52",
+   "cape": "#1a1a1e",
+   "w": "greatsword",
+   "site": "bridge",
+   "at": [
+    0,
+    -4.5,
+    0,
+    0
+   ],
+   "perch": "deck",
+   "role": "post",
+   "home": "ruins",
+   "say": [
+    "The bridge is broken. I am not.",
+    "Cross where you can. I'll watch."
+   ]
+  },
+  {
+   "k": "gd_foxknight",
+   "n": "RUSTEAR",
+   "sp": "fox",
+   "m": 0.68,
+   "f": "#7a4a30",
+   "f2": "#c8a888",
+   "coat": "armour",
+   "cc": "#3a3a3e",
+   "c2": "#5a5048",
+   "w": "sword",
+   "site": "bridge",
+   "at": [
+    0,
+    4.5,
+    0,
+    180
+   ],
+   "perch": "deck",
+   "role": "post",
+   "home": "ruins",
+   "say": [
+    "The brook runs under. Things come up it sometimes.",
+    "Other side's yours. This side's mine."
+   ]
+  },
+  {
+   "k": "gd_turtlemonk",
+   "n": "SLOW RIVER",
+   "sp": "turtle",
+   "m": 0.55,
+   "f": "#5a7a5a",
+   "f2": "#8aa078",
+   "shell": "#4a6a48",
+   "coat": "robe",
+   "cc": "#8a7a58",
+   "c2": "#c8a030",
+   "sash": "#d8b040",
+   "w": "bamboo",
+   "site": "hut3",
+   "at": [
+    2.6,
+    -1,
+    0,
+    90
+   ],
+   "role": "post",
+   "home": "hut3",
+   "say": [
+    "Slow is a speed too.",
+    "Sit with me. Nothing is in a hurry here."
+   ]
+  },
+  {
+   "k": "gd_lion",
+   "n": "MASTER OF ARMS",
+   "sp": "lion",
+   "m": 0.92,
+   "f": "#8a5a30",
+   "f2": "#c8985a",
+   "mane": "#8a5a30",
+   "coat": "robe",
+   "cc": "#141416",
+   "c2": "#3a2a1a",
+   "sash": "#6a5030",
+   "pack": "bag",
+   "w": "greatsword",
+   "site": "yard",
+   "at": [
+    0,
+    -3,
+    0,
+    0
+   ],
+   "role": "post",
+   "home": "castle",
+   "bulk": 1.15,
+   "say": [
+    "Feet first. Then the blade.",
+    "Again. And again. Until you don't think."
+   ]
+  },
+  {
+   "k": "gd_gecko",
+   "n": "PALE REED",
+   "sp": "lizard",
+   "m": 0.58,
+   "f": "#e8e2d4",
+   "f2": "#f0ece2",
+   "hair": "#e8e4d8",
+   "coat": "robe",
+   "cc": "#d8d0c0",
+   "c2": "#b8b0a0",
+   "beads": 1,
+   "hold": "flute",
+   "site": "hut3",
+   "at": [
+    -2.4,
+    -1.4,
+    0,
+    90
+   ],
+   "pose": "sit",
+   "role": "post",
+   "home": "hut3",
+   "say": [
+    "Listen. The reeds are playing.",
+    "Close your eyes. Now you can hear the park."
+   ]
+  },
+  {
+   "k": "gd_bull",
+   "n": "THE HORNED WARDEN",
+   "sp": "bull",
+   "m": 1.0,
+   "f": "#3a3632",
+   "f2": "#6a5a50",
+   "mask": "metal",
+   "coat": "robe",
+   "cc": "#3a3a32",
+   "c2": "#2a2a24",
+   "site": "tombs",
+   "at": [
+    0,
+    -3.2,
+    0,
+    0
+   ],
+   "role": "post",
+   "home": "tombs",
+   "bulk": 1.35,
+   "say": [
+    "The crypt is open. To the respectful.",
+    "Disturb nothing. Take only what the chest gives."
+   ]
+  },
+  {
+   "k": "gd_bear",
+   "n": "SIR TEDDINGTON",
+   "sp": "bear",
+   "m": 0.56,
+   "f": "#a8602a",
+   "f2": "#c88a50",
+   "coat": "armour",
+   "cc": "#e8e6e0",
+   "c2": "#d8d4cc",
+   "cape": "#6a4a2a",
+   "w": "sword",
+   "at": [
+    2,
+    10,
+    7
+   ],
+   "role": "patrol",
+   "say": [
+    "White armour. Hard to keep clean.",
+    "For the keep!"
+   ],
+   "home": "castle"
+  },
+  {
+   "k": "gd_ram",
+   "n": "OLD HORNWOOD",
+   "sp": "goat",
+   "m": 0.72,
+   "f": "#8a8a88",
+   "f2": "#c8c4b8",
+   "coat": "robe",
+   "cc": "#4a3a28",
+   "c2": "#8a6a40",
+   "cape": "#2a2a2c",
+   "beads": 1,
+   "w": "spear",
+   "site": "tombs",
+   "at": [
+    4,
+    0,
+    8
+   ],
+   "role": "patrol",
+   "home": "tombs",
+   "say": [
+    "The bones remember. Ask them nicely.",
+    "Charms against the dark. Not for sale."
+   ]
+  },
+  {
+   "k": "gd_fisher",
+   "n": "OLD WETWHISKER",
+   "sp": "mouse",
+   "m": 0.52,
+   "f": "#a88a68",
+   "f2": "#d8c4a8",
+   "beard": 1,
+   "hat": "wizard",
+   "hc": "#5a5a52",
+   "coat": "robe",
+   "cc": "#5a5a50",
+   "c2": "#3a3a34",
+   "pack": "fish",
+   "w": "rod",
+   "site": "hut2",
+   "at": [
+    2.5,
+    1.5,
+    0,
+    90
+   ],
+   "role": "post",
+   "home": "hut2",
+   "say": [
+    "The lake gives. You just have to wait.",
+    "Bait's a dollar. Patience is free."
+   ]
+  },
+  {
+   "k": "gd_mushmouse",
+   "n": "CAPSKULL",
+   "sp": "mouse",
+   "m": 0.5,
+   "f": "#e8e6e2",
+   "f2": "#f0e8e0",
+   "hat": "straw",
+   "hc": "#c8281e",
+   "coat": "robe",
+   "cc": "#7a8088",
+   "c2": "#5a5a60",
+   "pack": "skulls",
+   "w": "crystalstaff",
+   "gem": "#e8f0ff",
+   "site": "tombs",
+   "at": [
+    -4,
+    1,
+    9
+   ],
+   "role": "wander",
+   "home": "tombs",
+   "say": [
+    "Every skull has a story. I collect stories.",
+    "Don't mind the bag. They don't mind either."
+   ]
+  },
+  {
+   "k": "gd_gemturtle",
+   "n": "PEBBLESHELL",
+   "sp": "turtle",
+   "m": 0.6,
+   "f": "#6a8a4a",
+   "f2": "#a8b878",
+   "shell": "#5a6a3a",
+   "eyes": "goggles",
+   "coat": "robe",
+   "cc": "#5a3a6a",
+   "c2": "#3a6a6a",
+   "pack": "rocks",
+   "w": "crystalstaff",
+   "gem": "#7ad0e8",
+   "site": "ruins",
+   "at": [
+    3,
+    3,
+    6
+   ],
+   "role": "wander",
+   "home": "ruins",
+   "say": [
+    "Rocks are just slow gems.",
+    "Seen anything sparkle in the ruins? Tell me first."
+   ]
+  },
+  {
+   "k": "gd_elephant",
+   "n": "ONE-EYE TUSKIN",
+   "sp": "elephant",
+   "m": 0.55,
+   "f": "#c8ccd4",
+   "f2": "#e8ecf0",
+   "beard": 1,
+   "patch": 1,
+   "coat": "robe",
+   "cc": "#3a4a5a",
+   "c2": "#5a4a3a",
+   "pack": "crystals",
+   "w": "crystalstaff",
+   "gem": "#8ab0e8",
+   "site": "pub",
+   "at": [
+    -5,
+    6,
+    22
+   ],
+   "role": "wander",
+   "home": "pub",
+   "say": [
+    "I lost the eye to a crystal. Worth it.",
+    "Crystals hum, you know. If you're quiet."
+   ]
+  },
+  {
+   "k": "gd_blackgoat",
+   "n": "THE STAR-EYED",
+   "sp": "goat",
+   "m": 0.62,
+   "f": "#18181c",
+   "f2": "#2a2a30",
+   "glow": "#5ac8ff",
+   "coat": "robe",
+   "cc": "#121216",
+   "c2": "#2a2a32",
+   "pack": "crystals",
+   "w": "crystalstaff",
+   "gem": "#dce8ff",
+   "hold": "orb",
+   "orb": "#7ae8ff",
+   "site": "ruins",
+   "at": [
+    5,
+    -1,
+    6
+   ],
+   "role": "night",
+   "home": "ruins",
+   "say": [
+    "The orb shows what's under the park.",
+    "Night is when the ruins wake."
+   ]
+  }
  ]
 }

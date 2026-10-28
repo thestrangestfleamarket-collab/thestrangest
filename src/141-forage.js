@@ -25,7 +25,8 @@ import {GEMS} from './101-gems.js';
     ['f_skewer','MUSHROOM SKEWER','cooking',[15,60],{chanterelle:2,button:1},'fills two fifths, mends you a minute'],['f_soup','BOLETE SOUP','cooking',[35,80],{bolete:1,button:2},'fills more than half, some health'],
     ['f_morel','MOREL FRY','cooking',[55,100],{morel:2},'fills two fifths, quicker on your feet 3 min']];
   const PCOL={p_refresh:0x6ad86a,p_heal:0xd8343a,p_str:0xe8862a,p_keen:0x4aa0e8,p_cure:0xeeeae0,p_gheal:0xf2c81e};
-  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||!!PCOL[id]||!!RC.find(r=>r[0]===id)||id==='bottle'||id==='mortar',make:id=>{ const P=INSPECT.part;
+  const OWNRC=new Set(RC.map(r=>r[0]));   // only these: other files add their recipes (books, bouquets, dishes) to the same list
+  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ const P=INSPECT.part;
     if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }});
     if(PCOL[id])return INSPECT.shape('bottle',PCOL[id]); if(id==='bottle')return INSPECT.shape('bottle',0xcfe6e0);
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }

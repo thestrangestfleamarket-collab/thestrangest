@@ -162,7 +162,7 @@ import {BVH} from './137-bvh.js';
     else if(it.k==='i'){ obj=new THREE.Group(); for(const [me,i] of it.inst){ const m=new THREE.InstancedMesh(me.geometry,me.material,1); me.getMatrixAt(i,M4); m.setMatrixAt(0,M4); if(me.instanceColor){ const c=new THREE.Color(); me.getColorAt(i,c); m.setColorAt(0,c); } m.userData.shared=true; obj.add(m); } }
     else if(it.dm){ obj=new THREE.Group(); for(const D of it.dm)obj.add(new THREE.Mesh(D.me.geometry.clone(),D.me.material)); }
     else { const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p.v0,p.v0+6]); obj=new THREE.Group(); for(const [me,rs] of by)obj.add(sub(me.geometry,rs,me.material)); }
-    return {obj,mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',(it.m||1)+' KG']}; };
+    return {obj,mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
   // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
   GPH.add=(obj,{name,m=1}={})=>{ obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
     const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };

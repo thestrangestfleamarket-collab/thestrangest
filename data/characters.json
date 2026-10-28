@@ -3,6 +3,7 @@
   "name": "THE SHARK",
   "trade": {
    "sells": [
+    "scuba",
     "goggles",
     "headlight",
     "scanner",
@@ -11,7 +12,7 @@
     "rod",
     "bait"
    ],
-   "line": "Going down? You'll want the kit."
+   "line": "Going down? Rent a tank, grab the kit."
   },
   "home": [
    117.5,
@@ -24,8 +25,16 @@
   "trade": {
    "sells": [
     "net",
-    "bnet"
-   ]
+    "bnet",
+    "jar_s",
+    "jar_m",
+    "jar_l",
+    "kite"
+   ],
+   "buys": [
+    "butterflies"
+   ],
+   "line": "Nets, jars, and I buy every butterfly you bring me."
   }
  },
  "mrblocks": {
@@ -69,6 +78,16 @@
  },
  "teddy": {
   "tint": "#b4b8c2"
+ },
+ "fox": {
+  "trade": {
+   "sells": [
+    "jar_s",
+    "jar_m",
+    "jar_l"
+   ],
+   "line": "Jars by the register. A dollar is a dollar."
+  }
  },
  "ticketfox": {
   "name": "THE TICKET FOX",

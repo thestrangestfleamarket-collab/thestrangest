@@ -42,6 +42,8 @@ const TREEGEN={};
     const bc=S.bc||[90,70,50], L=new THREE.CylinderGeometry(.7,1,1,5,1,true);
     for(const [ax,ay,az,bx,by,bz,r] of S.lb){ const d=new V(bx-ax,by-ay,bz-az), len=d.length(); if(len<1e-4)continue; const g=L.clone(); g.scale(r,len,r); g.translate(0,len/2,0); g.applyQuaternion(Q.setFromUnitVectors(UP,d.normalize())); g.translate(ax,ay,az);
       const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,bc,1); }
+    // a faceted core under the cards (the old trees' clumps, a little smaller and darker) so the crown has bulk
+    { const C=new THREE.IcosahedronGeometry(1,0); for(const [x,y,z,r,Rc,Gc,Bc] of S.cl){ const g=C.clone(); g.scale(r*.85,r*.72,r*.85); g.translate(x,y,z); const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,[Rc*.62,Gc*.62,Bc*.62],0); } C.dispose(); }
     L.dispose(); let cx=0, cy=0, cz=0, w=0; for(const q of S.cl){ const k=q[3]*q[3]; cx+=q[0]*k; cy+=q[1]*k; cz+=q[2]*k; w+=k; } const cc=new V(cx/w,cy/w,cz/w); let cr=1e-3; for(const q of S.cl)cr=Math.max(cr,cc.distanceTo(new V(q[0],q[1],q[2]))+q[3]);
     const RL=Math.max(...S.cl.map(q=>Math.hypot(q[0],q[2])+q[3])), D=lite?700:2240, SZ=(lite?.16:.107)*cr/.45, VQ=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];
     const quad=(q,sz,col)=>{ n.copy(o).sub(cc).normalize().lerp(UP,.15).normalize(); for(const [x,y] of VQ){ e.set(x*sz/2,y*sz/2,0).applyQuaternion(q).add(o); const h=Math.hypot(e.x,e.z); if(h>RL){ e.x*=RL/h; e.z*=RL/h; } A.P.push(e.x,e.y,e.z); A.N.push(n.x,n.y,n.z); A.C.push(...col); A.U.push((x+1)/2*.88,(y+1)/2); } A.K.push(0,0); };

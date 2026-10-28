@@ -45,6 +45,19 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   const L0=P[0], first=(LITE.slots||LITE.sel)[0]; let mv=LITE.at!==first||Math.abs(x-LITE.px)+Math.abs(y-LITE.py)+Math.abs(z-LITE.pz)>1e-4&&(x-L0.position.x)**2+(z-L0.position.z)**2<(L0.distance||8*TILE)**2; LITE.at=first; LITE.px=x; LITE.py=y; LITE.pz=z;
   if(L0.intensity>0&&typeof NPCS!=='undefined'){ const r=(L0.distance||8*TILE)**2; for(const N of NPCS){ if(!N.g||!N.g.visible||!N.st)continue; const p=N.g.position, dx=p.x-L0.position.x, dz=p.z-L0.position.z; if(dx*dx+dz*dz>r)continue; const k=p.x*7.13+p.z*3.31+p.y*1.7+N.st.h; if(N._lk!==k){ N._lk=k; mv=true; } } }
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
+// far lamps: every outdoor lamp past the few lit in full still shows the pool of light it throws on the ground (one cheap glow each), fading out as its real light takes over
+{ const F={me:null,n:-1,a:null,t:0}, M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), C=new THREE.Color();
+  const tex=()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), r=g.createRadialGradient(32,32,0,32,32,32); r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(.45,'rgba(255,255,255,.45)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=r; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const out=L=>!L.userData.fire&&!L.userData.in&&!L.userData.both&&(L.userData.i0||0)>=20&&L.distance>=8*TILE&&L.position.y>-1&&!ROOMS.boxes().some(b=>L.position.x>b.x0&&L.position.x<b.x1&&L.position.z>b.z0&&L.position.z<b.z1);
+  const build=()=>{ if(F.me){ F.me.removeFromParent(); F.me.geometry.dispose(); } F.L=LITE.recs.filter(out); F.n=LITE.recs.length; if(!F.L.length){ F.me=null; return; }
+    const g=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2), m=new THREE.MeshBasicMaterial({map:F.tx||(F.tx=tex()),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
+    F.me=new THREE.InstancedMesh(g,m,F.L.length); F.me.frustumCulled=false; F.me.raycast=()=>{}; F.me.renderOrder=2; F.a=new Float32Array(F.L.length);
+    F.L.forEach((L,i)=>{ const r=Math.min(L.distance*.38,4.6*TILE), gy=SHARED.groundY?SHARED.groundY(L.position.x,L.position.z):0; M.compose(V.set(L.position.x,(isFinite(gy)?gy:0)+.06,L.position.z),Q,S.set(2*r,1,2*r)); F.me.setMatrixAt(i,M); F.me.setColorAt(i,C.setRGB(0,0,0)); });
+    scene.add(F.me); };
+  LITE.farTick=dt=>{ if(LITE.recs.length!==F.n)build(); if(!F.me)return; const up=SHARED.LVL==='up'&&!(ROOMS.cur&&ROOMS.cur.off); F.me.visible=up; if(!up)return; const sel=new Set(LITE.sel.map(p=>p[1]||p));
+    F.L.forEach((L,i)=>{ const want=sel.has(L)?0:Math.min(1,(L.intensity||0)/(L.userData.i0||1)); F.a[i]+=(want-F.a[i])*Math.min(1,(dt||.016)*1.5); const k=.55*F.a[i]; F.me.setColorAt(i,C.copy(L.color).multiplyScalar(k)); });
+    F.me.instanceColor.needsUpdate=true; };
+  LITE.far=F; SYS.add('life',dt=>LITE.farTick(dt),'064-farglow'); }
 scene.background=new THREE.Color(0x050507);
 SHARED.floor='up';
 const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?(py<-1.6?'down':'up'):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);

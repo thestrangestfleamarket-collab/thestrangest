@@ -2,8 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {keys, LEVELS, LINES, pos, RAG, SFX, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -110,7 +109,7 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
 const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:58,TE:0,H:196,XS:12.4,TR:[2.2,19.6],MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
-  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42,47.5,53]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25,47.75];
+  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[6.65,17.65,28.65,39.65,50.65]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25,47.75];
   W.BENCH=[11.2,22.4,33.6,44.8]; W.BINS=[17.1,28.5,39.9]; W.STEPS=[[[56.4,57.6]],[[.6,1.8],[56.4,57.6]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
@@ -327,10 +326,7 @@ const SSUB=(()=>{ const W={};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
   M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));
   M.path=[{x:XC,z:(SM.y1-.3+77)*TILE},{x:XC,z:(SM.y0+.3+77)*TILE,lv:'down'}].concat([at(SL.XS,7.4),at(SL.XS-3.2,10.6),M.plat].map(p=>({...p,lv:'down'})));
-  { const FG=new THREE.Fog(0x1b2622,10,200), V3=new THREE.Vector3(); let was=false; M.haze={fog:FG,near:6,far:95,on:true,LV:[0,95,50],set:k=>{ k=[0,1,2].includes(+k)?+k:1; M.haze.k=k; M.haze.on=k>0; M.haze.far=M.haze.LV[k]||95; }}; { let k=1; try{ const v=SAVE.get('stationhaze'); if(v!=null&&v!=='')k=+v; }catch(e){} M.haze.set(k); }
-    SYS.add('places',()=>{ const here=M.haze.on&&SHARED.LVL==='down'&&M.inside(pos.x,pos.z)&&!(MODS.dungeon&&MODS.dungeon.inside&&MODS.dungeon.inside(pos.x,pos.z));
-      if(!here){ if(was){ was=false; if(scene.fog===FG)scene.fog=null; } return; } was=true;
-      const d=-V3.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z; FG.near=d+M.haze.near*TILE; FG.far=d+M.haze.far*TILE; scene.fog=FG; },'009-station');
+  {
     let ft=0, fon=1; const FL=FIXL[4]; M.flick=dt=>{ if(SHARED.LVL!=='down')return; ft-=dt; if(ft<=0){ fon=Math.random()<.82?1:Math.random()<.5?.25:0; ft=fon===1?.4+Math.random()*3.5:.04+Math.random()*.12; } FL.L.intensity=FL.L.userData.i0*fon; }; }
 // THE STATION'S END AND THE BODEGA'S START: closes grab('down') (the platform under the street) and sets up BOD, the bodega's bag of makers.
   M.exit=()=>{ const S=SM, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n, c3=new THREE.Color(), TR=[[],[]], WL=[[],[]];

@@ -4,7 +4,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
 const ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin)$/;
-const IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
+const FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > max; }
@@ -25,6 +25,13 @@ export default {
     if (request.method === "GET" && p === "/now") {
       let r = null; try { r = await fetch("https://jvcetttmqseoteidfggn.supabase.co/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik" } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
+    if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      const [, id, file] = FILM.exec(p), h = new Headers(), rg = request.headers.get("range"); if (rg) h.set("range", rg);
+      let r = null; try { r = await fetch("https://archive.org/download/" + id + "/" + file, { method: request.method, headers: h }); } catch (e) {}
+      if (!r || !(r.ok || r.status === 206)) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, { status: r.status }); for (const k of ["content-type", "content-length", "content-range", "accept-ranges"]) { const v = r.headers.get(k); if (v) out.headers.set(k, v); }
+      out.headers.set("cache-control", "private, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method === "GET" || request.method === "HEAD") { const m = YT.exec(p), ia = !m && IA.exec(p); if (m || ia) {
       let r = null; try { r = await fetch(m ? "https://i.ytimg.com/vi/" + m[1] + "/hqdefault.jpg" : "https://archive.org/services/img/" + ia[1]); } catch (e) {}
       const miss = !r || !r.ok, out = miss ? new Response(Uint8Array.from(atob(BLANK), c => c.charCodeAt(0)), { status: 200 }) : new Response(r.body, { status: r.status });

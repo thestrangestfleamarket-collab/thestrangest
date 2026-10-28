@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, LITE, pos, ROOMS, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
@@ -1859,7 +1859,7 @@ SHARED.BODB={};
     const cap=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(SB.x1)-X(SB.x0)),Math.abs(Z(BODOFF)-Z(SB.y0))),new THREE.MeshBasicMaterial({color:0x0b0c10})); cap.rotation.x=-Math.PI/2;
     cap.position.set((X(SB.x0)+X(SB.x1))/2,Y(SB.h-4)+.01,(Z(SB.y0)+Z(BODOFF))/2); SG.add(cap); SHARED.BODB.cap=cap;
     for(const k of ['objs','things','cuts','lights'])P[k].push(...P2[k]); P.objs.push(cap);
-    SG.traverse(o=>{ if(o.isMesh)o.receiveShadow=true; }); SHARED.BODB.tick(); return P; };
+    SG.traverse(o=>{ if(!o.isMesh)return; o.receiveShadow=true; const L=o.userData.objOf; if(L&&L.length&&L.every(q=>q&&/fluorescent tube/.test(q.name||''))&&!OVERHEAD.some(h=>h.o===o)){ o.geometry.computeBoundingBox(); o.updateMatrixWorld(); OVERHEAD.push({o,y:o.geometry.boundingBox.min.y+o.matrixWorld.elements[13]}); } }); SHARED.BODB.tick(); return P; };
   let stut=0, nextS=8, tubeN=0; SYS.add('life',dt=>{ const G=SHARED.BODB.glow; if(G&&G.length&&SHARED.BODB.SG&&SHARED.BODB.SG.parent){ const t=performance.now()/1e3; nextS-=dt||0; if(nextS<0){ stut=.5+Math.random()*.6; nextS=7+Math.random()*12; tubeN=Math.random()<.5?0:1; }
     if(stut>0)stut-=dt||0; let n=0; for(const L of G){ const d=L.userData; if(d.tube){ const on=stut>0&&n++===tubeN?(Math.sin(t*61)>.1?1:.12):1; L.intensity=d.i0*on*(.97+.03*Math.sin(t*377)); } else if(d.neon)L.intensity=d.i0*(.88+.08*Math.sin(t*7.3)+.04*Math.sin(t*97)); } }
     SHARED.BODB.tick(); const BG=SHARED.BODB.BG; if(!BG||!BG.parent)return; const b=inBack(); if(BG.visible!==b){ BG.visible=b; SHARED.BODB.cap.visible=!b; LITE.t=0; } },'039-bodega');

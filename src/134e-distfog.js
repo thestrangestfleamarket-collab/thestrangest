@@ -1,4 +1,4 @@
-// THE DISTANCE FOG: past a distance from you the world blurs and fades into the haze, whole at its end (nothing past it is drawn: CULL), in every view (measured from you across the ground, not from the camera); the sky and the skyline past the map's edge are left clear; ATMOSPHERE sets it.
+// THE DISTANCE FOG: the further past you a thing is (from the camera), the more it blurs and fades into the haze, smoothly, whole at its end (nothing past it is drawn: CULL); the skyline past the map's edge stays a faint silhouette, the sky clear; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
 import {ED, FAR3, MAPED, pos, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
@@ -12,14 +12,15 @@ const DFOG={};
       uS:{value:0},uE:{value:1},uB:{value:0},uH:{value:0},uF:{value:0},uR:{value:new THREE.Vector2(1,1)},uK:{value:new THREE.Vector4(-1e9,-1e9,1e9,1e9)}},
     vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:`uniform sampler2D tDiffuse,tDepth; uniform mat4 uPInv,uCamW; uniform vec3 uP,uC; uniform float uS,uE,uB,uH,uF; uniform vec2 uR; uniform vec4 uK; varying vec2 vUv;
-      void main(){ float d=texture2D(tDepth,vUv).x, f=0.; vec4 c=texture2D(tDiffuse,vUv);
-        if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz; f=smoothstep(uS,uE,distance(w.xz,uP.xz))*step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w); }
+      void main(){ float d=texture2D(tDepth,vUv).x, f=0., m=0.; vec4 c=texture2D(tDiffuse,vUv);
+        if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; float g=smoothstep(uS,uE,max(0.,distance(w,cp)-distance(uP,cp))), land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
+          f=g*land; m=land>.5?mix(g*uH,1.,uF*g*g*g):uH>0.?min(.85,g):0.; }
         if(f>.001&&uB>0.){ vec2 o=uB*f/uR; vec4 s=c*2.+texture2D(tDiffuse,vUv+vec2(o.x,0.))+texture2D(tDiffuse,vUv-vec2(o.x,0.))+texture2D(tDiffuse,vUv+vec2(0.,o.y))+texture2D(tDiffuse,vUv-vec2(0.,o.y))
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
-        float f4=f*f*f*f; c.rgb=mix(c.rgb,uC,mix(f*uH,1.,uF*f4*f4)); gl_FragColor=c; }`});
+        c.rgb=mix(c.rgb,uC,m); gl_FragColor=c; }`});
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85);
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
-    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp; u.uB.value=iso?0:C.blur; u.uH.value=iso?0:C.haze; u.uF.value=DFOG.cut()>0?1:0;
+    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'; u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land); draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };

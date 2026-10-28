@@ -4934,3 +4934,6 @@ Owner: "build the choice window for talking"; his picks: written scripts, every 
 ## 28 Oct 2026: branches through the crowns; no body in your head
 Owner (a picture of a trunk ending inside the leaves): "the trees need to have real branches that go through them, none of them should just cut off like this". Every leaf-card crown has a trunk running up to its middle and a bent, tapering limb out into each clump, with a twig past it.
 - Owner (a picture from inside the head): "1st pov shows niside of players head". The game never draws a body for your own moves sent from your other tab; that body stood where you stand.
+
+## 28 Oct 2026: the map shows every section, and zooms
+Owner (his picture of the MAP tab, only Section A drawn): "update map to show all sections, allow to zoom in and out of map to see 1 section or all". THE STREET shows all eight sections (their streets, buildings, water, park and station entrances, the street names and each section's letter); UNDERGROUND shows THE LOOP: both tracks and all eight stations (click one to go to its platform). ALL and A to H buttons, + and −, the mouse wheel to zoom, drag to move; a section's view darkens the rest. Place names show once zoomed in. Rule: the sections register what they lay out (`MODS.sections`) and the map paints from it.

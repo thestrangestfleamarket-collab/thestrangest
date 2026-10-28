@@ -364,5 +364,33 @@
  "ticket": {
   "stackable": true,
   "value": 5
+ },
+ "p_refresh": {
+  "stackable": true,
+  "value": 12
+ },
+ "p_heal": {
+  "stackable": true,
+  "value": 20
+ },
+ "p_str": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_keen": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_cure": {
+  "stackable": true,
+  "value": 40
+ },
+ "p_gheal": {
+  "stackable": true,
+  "value": 110
+ },
+ "bottle": {
+  "stackable": true,
+  "value": 2
  }
 }

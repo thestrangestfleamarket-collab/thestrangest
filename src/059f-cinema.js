@@ -1,6 +1,6 @@
 // THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee, poster and showtimes outside follow it.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, CLOCK, pos, SIGNS, UI} from './003b-systems.js';
+import {CINEMA, CLOCK, pos, PS2, SIGNS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -72,7 +72,6 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:3;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
     soundBtn.onclick=()=>CINEMA.sound(true,null); document.body.appendChild(soundBtn);
     fv=document.createElement('video'); fv.muted=true; fv.playsInline=true; fv.preload='auto'; fv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;background:#000;display:none'; wrap.insertBefore(fv,wrap.firstChild);
-    fv.addEventListener('loadedmetadata',()=>{ if(fv.videoWidth&&fv.videoHeight)aspect=fv.videoWidth/fv.videoHeight; });
     clip.appendChild(wrap); const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); };
   // the scheduled film: its file from the Internet Archive, kept at the showing's moment
   let fvSrc='', fvSync=0;
@@ -110,11 +109,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       let t=0, b=0, l=0, r=0; while(t<h/2&&dark(0,t,w,t+1))t++; while(b<h/2&&dark(0,h-1-b,w,h-b))b++; while(l<w/2&&dark(l,0,l+1,h))l++; while(r<w/2&&dark(w-1-r,0,w-r,h))r++;
       const cw=w-l-r, ch=h-t-b; if(aspId===id&&cw>w*.3&&ch>h*.3)aspect=Math.max(.45,Math.min(2.6,cw/ch)); }catch(e){} }; im.src='/yt/'+id+'.jpg'; };
   const vrect=()=>aspect>=W0/H0?{x:0,y:(H0-W0/aspect)/2,w:W0,h:W0/aspect}:{x:(W0-H0*aspect)/2,y:0,w:H0*aspect,h:H0};
-  const placeOver=(me,dim=1,ok=true)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=vrect();
+  const placeOver=(me,dim=1,ok=true)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect();
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
     wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
-    if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
+    if(PS2.keepAlpha)PS2.keepAlpha(ok); if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
     soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail?'none':'auto';
     if(vFail||ok&&!snd.on){ const b=ap(k,.5,1); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
@@ -156,11 +155,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
     const yt=ytOn(), id=yt?vid(cur().video_id):'', fl=yt?null:film(), now=performance.now();
     const tgt=up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null; if(holeM)holeM.visible=false;
-    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
+    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
     mkWrap(); mkCut(); let ok;
     if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=vOK&&!vFail; }
     CINEMA.on=ok; fitHole(); if(ok)tgt.visible=true;
-    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; }
+    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
     if(id)    sync(); };
   const sync=()=>{ const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
       try{ const want=offset(), is=player.getCurrentTime(); if(Math.abs(is-want)>1.6)player.seekTo(want,true); if(player.getPlayerState&&player.getPlayerState()!==1)player.playVideo(); }catch(e){} } };

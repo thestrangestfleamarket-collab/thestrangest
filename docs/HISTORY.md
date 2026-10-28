@@ -4916,3 +4916,6 @@ Owner: "fix the github actions so checks run again". GitHub stopped starting job
 
 ## 28 Oct 2026: the talk window
 Owner: "build the choice window for talking"; his picks: written scripts, every character, and replies that open the shop, give or take items and are remembered. Double-click a character: its line types out in a window with your replies (W/S or 1-4, Enter, Esc). Scripts are `talk` in characters.json, written in the character editor's TALK tab; a character without one chats from the line pools. What a character remembers is saved per player. Critters and monsters don't talk.
+
+## 28 Oct 2026: hair without black patches; the cinema screen shows its film
+Owner: "the movie is playing but i cant see it, also players hair is now glitched" ("happens everywhere"). Long hair no longer shows black patches. The cinema screen shows the film playing behind it, filling the whole screen.

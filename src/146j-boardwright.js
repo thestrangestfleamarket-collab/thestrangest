@@ -90,8 +90,8 @@ const BOARDS={designs:{}}; window.BOARDS=BOARDS;
   MERCH.add({key:'boardwright',label:'THE BOARDWRIGHT',height:1.86,model,size:10,hd:-Math.PI/2,inside:true,
     idle:t=>{ const b=Math.sin(t*.7)*3, tap=(t%9)<1.2; return MERCH.pose({nod:-6+Math.sin(t*.4)*3,L:{ua:[30+b,20],fa:[62,0]},R:{ua:[60-b,-34],fa:[96+(tap?Math.sin((t%9)*12)*10:0),-18]}}); },
     after:(B,N)=>{ const J=B.J; if(!J||!J.palmL)return; if(!DECK.m){ DECK.m=BOARDS.mesh('board_teal'); DECK.m.userData.anyRoom=true; scene.add(DECK.m); }
-      const m=DECK.m, t=performance.now()/1000, up=(t%9)<1.6?Math.sin(Math.min(1,(t%9)/1.6)*Math.PI)*.07*T:0; N.g.updateMatrixWorld(); V.set(J.palmL.x,J.palmL.y,J.palmL.z); N.g.localToWorld(V);
-      m.visible=N.g.visible; m.position.copy(V).add(V2.set(Math.sin(N.st.hd+Math.PI/2)*.1*T,up+.32*T,Math.cos(N.st.hd+Math.PI/2)*.1*T)); m.rotation.set(-Math.PI/2+.12,N.st.hd+Math.PI+.5,0,'YXZ'); }});
+      const m=DECK.m, t=performance.now()/1000, up=(t%9)<1.6?Math.sin(Math.min(1,(t%9)/1.6)*Math.PI)*.07*T:0; N.g.updateMatrixWorld(); MERCH.at(N,'handL',[0,-.06,0],V);
+      m.visible=N.g.visible; m.position.copy(V).add(V2.set(Math.sin(N.st.hd+Math.PI/2)*.05*T,up+.3*T,Math.cos(N.st.hd+Math.PI/2)*.05*T)); m.rotation.set(-Math.PI/2+.12,N.st.hd+Math.PI+.5,0,'YXZ'); }});
 
   /* ---------- his shop, inside: boards on the walls, the carving bench, the drying rack straining on its chains ---------- */
   MSHOP.kit.boards=A=>{ '@later'; const {R,X,Z,hs,sh}=A, Y=h=>A.Y(h*24), cx=A.cx, EX=Math.sign(X(R.x1)-X(R.x0)), IN=Math.sign(Z(R.y1)-Z(R.y0));

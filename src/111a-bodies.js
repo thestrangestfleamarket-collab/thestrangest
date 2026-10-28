@@ -38,9 +38,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(m<1.5){ float n=sN(p*22.); return vec2(n*.25,.97+.04*n); }
     if(m<3.5){ float n=sN(p*18.); return vec2(n*.3,.97+.04*n); }
     if(m<4.5){ float n=sN(p*30.); return vec2(n*.3,.96+.05*n); }
-    if(m<5.5){ float n=sN(p*vec3(200.,8.,200.)); return vec2(n*.15,.95+.08*n); }
+    if(m<5.5){ float n=sN(p*vec3(30.,4.,30.)); return vec2(0.,.96+.06*n); }
     if(m<6.5){ float n=sN(p*20.); return vec2(0.,.98+.03*n); }
-    if(m<7.5){ float n=sN(p*vec3(90.,20.,90.)); return vec2(n*.4,.92+.1*n); }
+    if(m<7.5){ float n=sN(p*14.); return vec2(n*.2,.96+.05*n); }
     if(m<8.5){ float g=sin(p.y*40.+sN(p*10.)*4.)*.5+.5; return vec2(g*.2,.94+.08*g); }
     return vec2(0.,1.); }`;
   // m: 0 plain, 1 knit, 2 cloth, 3 denim, 4 leather, 5 metal, 6 skin, 7 fur, 8 wood, 9 ivory, 10 glass
@@ -48,13 +48,15 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM;
       sh.vertexShader=MOVE+'\nattribute float mt; varying vec3 vRest; varying float vMt;\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz; vRest=position; vMt=mt;');
       sh.fragmentShader=SURF+'\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n vec2 SF=surf(vMt,vRest); diffuseColor.rgb*=SF.y;')
-        .replace('#include <metalnessmap_fragment>','#include <metalnessmap_fragment>\n metalnessFactor=vMt>4.5&&vMt<5.5?.85:vMt>9.5?.2:0.; roughnessFactor=vMt>4.5&&vMt<5.5?.38:vMt>9.5?.08:vMt>8.5?.42:vMt>5.5&&vMt<6.5?.55:vMt>3.5&&vMt<4.5?.5:.9;')
+        .replace('#include <metalnessmap_fragment>','#include <metalnessmap_fragment>\n metalnessFactor=vMt>4.5&&vMt<5.5?.85:vMt>9.5&&vMt<10.5?.2:0.; roughnessFactor=vMt>4.5&&vMt<5.5?.38:vMt>10.5?.95:vMt>9.5?.08:vMt>8.5?.42:vMt>5.5&&vMt<6.5?.55:vMt>3.5&&vMt<4.5?.5:.9;')
         .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n { float H=SF.x*(vMt>9.5?0.:vMt>5.5&&vMt<6.5?.15:1.); vec3 dpx=dFdx(-vViewPosition), dpy=dFdy(-vViewPosition); float hx=dFdx(H), hy=dFdy(H); vec3 r1=cross(dpy,normal), r2=cross(normal,dpx); float det=dot(dpx,r1); vec3 gr=sign(det)*(hx*r1+hy*r2); normal=normalize(abs(det)*normal-gr*.08); }')
-        .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*(vMt>9.5?.25:vMt>5.5&&vMt<6.5?.1:.06);'); };
+        .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*(vMt>9.5?.25:vMt>5.5&&vMt<6.5?.1:.06); if(vMt>9.5&&vMt<10.5){ float fr=pow(1.-abs(dot(normalize(vNormal),normalize(vViewPosition))),2.5); totalEmissiveRadiance+=vec3(.55,.8,.8)*fr*.7; diffuseColor.a=.28+.6*fr; } if(vMt>10.5)diffuseColor.a=.5;'); };
     mat.customProgramCacheKey=()=>'bodysm'+NB;
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
-    const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; return {me,PM}; }
+    const geo=body.GEO||(body.GEO=body.geo()), see=geo.groups.length>1?mat.clone():null;
+    if(see){ see.onBeforeCompile=mat.onBeforeCompile; see.customProgramCacheKey=()=>'bodysmg'+NB; see.transparent=true; see.opacity=1; see.depthWrite=false; }
+    const me=new THREE.Mesh(geo,see?[mat,see]:mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; return {me,PM}; }
 
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
@@ -97,7 +99,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
-    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
+    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
     NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }

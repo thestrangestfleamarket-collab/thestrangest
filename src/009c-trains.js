@@ -169,7 +169,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
         if(Math.abs(q.v)>=HW+R)continue; const w=wrl(c.p,q.a,Math.sign(q.v||1)*(HW+R)); pos.x=w.x; pos.z=w.z; } }
     for(const tn of TRAINS.list)edges(tn);
     const first=UI.view==='first', cam=SHARED.cam&&SHARED.cam.position;
-    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.ext.visible=!on; c.inner.visible=near; c.strips.visible=!on;
+    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=!on; c.inner.visible=near; c.strips.visible=!on;
       for(const s of [-1,1]){ let show=true; if(on&&cam){ const v=-(cam.x-c.p.x)*c.p.uz+(cam.z-c.p.z)*c.p.ux; show=v*s<0; } c.upper[String(s)].visible=show; } }
     const ms=performance.now(); if(ms<bt)return; bt=ms+500; if(!down)return;
     if(ride.tn)signText(ride.tn);

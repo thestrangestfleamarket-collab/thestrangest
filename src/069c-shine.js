@@ -29,12 +29,12 @@ const SHINE=window.SHINE={src:[],porch:[]};
   for(const P of PO){ if(P.corner)continue; const y0=P.y-5.45*M, a=P.ax==='x'?(P.d>0?0:Math.PI):-P.d*Math.PI/2, hx=P.x+Math.cos(a)*1.3*M, hz=P.z-Math.sin(a)*1.3*M;
     body.put(P.x,y0,P.z,a,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); hous.put(P.x,y0+5.86*M,P.z,a,1.3*M,1,{y:y0}); HI[P.h]={k:'street lamp',x:P.x,y:y0,z:P.z}; q.setFromAxisAngle(Y1,a); hd.setMatrixAt(P.h,m4.compose(V(hx,y0+5.82*M,hz),q,V(1,1,1)));
     if(P.L){ P.L.position.set(hx,y0+5.76*M,hz); const e=D.pools.find(e=>e[0]===P.L); if(e){ e[1]=hx; e[2]=hz; e[4].position.x=hx; e[4].position.z=hz; } }
-    halo(V(hx,y0+5.7*M,hz),.62*M,LAMP,P.L,{beam:[.22*M,2*M]}); }
+    }
   if(D.corner){ const {x,z,y}=D.corner, ay=8.05, P=PO.find(p=>p.corner), cor=CH(mrg([lat([[0,0],[.4,0],[.4,.07],[.34,.1],[.34,.17],[.28,.22],[.26,.6],[.3,.65],[.3,.72],[.21,.8],[.19,1.1],[.23,1.15],[.23,1.2],[0,1.25]],8),
       flu(lat([[.13,1.2],[.085,8.1]],16)),lat([[.11,3],[.16,3.06],[.16,3.14],[.11,3.2]],8),lat([[.08,8.1],[.13,8.14],[.13,8.26],[.06,8.3],[0,8.5]],8),
       ...[0,1].flatMap(k=>arm(2.7,ay).map(g=>g.rotateY(k?0:Math.PI/2)))]),0x2c3631,'street lamp');
     cor.put(x,y,z,0,0,1,{sol:P.sol,fix:P.fix,follow:[...pl(P.L),...pl(P.L2)]}); cor.done(); [[Math.PI/2,P.h,P.L],[0,P.h2,P.L2]].forEach(([a,h,L])=>{ const hx=x+Math.cos(a)*2.7*M, hz=z-Math.sin(a)*2.7*M; hous.put(x,y+ay*M,z,a,2.7*M,1,{y}); HI[h]={k:'street lamp',x,y,z};
-      hd.setMatrixAt(h,m4.compose(V(hx,y+(ay-.04)*M,hz),q.setFromAxisAngle(Y1,a),V(1,1,1))); if(L)L.position.set(hx,y+(ay-.1)*M,hz); halo(V(hx,y+(ay-.14)*M,hz),.85*M,LAMP,L,{beam:[.22*M,2.4*M]}); }); }
+      hd.setMatrixAt(h,m4.compose(V(hx,y+(ay-.04)*M,hz),q.setFromAxisAngle(Y1,a),V(1,1,1))); if(L)L.position.set(hx,y+(ay-.1)*M,hz); }); }
   body.done(); hous.done(); hd.instanceMatrix.needsUpdate=true;
   if(hd.count)WED.meshes.push({place:'street',me:hd,items:Array.from({length:hd.count},(_,i)=>{ if(HI[i])return HI[i]; hd.getMatrixAt(i,m4); const E=m4.elements; return {k:'lamp head',x:E[12],y:E[13],z:E[14]}; })});
   if(D.pole){ D.pole.visible=false; const pm=CH(mrg([lat([[0,0],[.2,0],[.2,.04],[.17,.07],[.17,.12],[.14,.15],[.12,.45],[.15,.5],[.15,.55],[.09,.62],[.09,.85],[.11,.88],[.11,.92],[0,.95]],8),

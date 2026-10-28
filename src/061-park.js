@@ -201,9 +201,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     arch(g0,g1,P.y0+.42,'x',-1,true); arch(WG[0],WG[1],wx+.42,'y',1,false);   // the west gate as the main one, turned to face West St
     const LB=[], LG=[], LC_=[], HL=[], LBP=[], LGP=[];
     for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+18), K=1.4, b=(h0,h,w,c=IR[0])=>LB.push([wx_,t+mv((h0+h/2)*K),wz_,w*M*K,mv(h*K),w*M*K,c]);
-      b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); for(const [dx,dz] of [[-1,-1],[1,-1],[-1,1],[1,1]])LB.push([wx_+dx*.16*M*K,t+mv(.62*K),wz_+dz*.16*M*K,.045*M*K,mv(.66*K),.045*M*K,IR[0]]);
-      b(.6,.03,.38,IR[2]); b(.95,.06,.5); b(1.01,.06,.4); b(1.07,.06,.3); b(1.13,.06,.2); b(1.19,.08,.1,IR[1]); b(1.27,.16,.04,IR[1]);
-      LG.push([wx_,t+mv(.62*K),wz_,.3*M*K,mv(.64*K),.3*M*K]); LC_.push([wx_,t+mv(.6*K),wz_,.1*M*K,mv(.16*K),.1*M*K]); HL.push([wx_,t+mv(.62*K),wz_]); const pv={k:'gate lantern',x:wx_,y:t,z:wz_}; while(LBP.length<LB.length)LBP.push(pv); LGP.push(Object.assign({},pv)); }
+      b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); b(.32,.62,.07);
+      b(.94,.04,.44,IR[2]); b(.95,.06,.5); b(1.01,.06,.4); b(1.07,.06,.3); b(1.13,.06,.2); b(1.19,.08,.1,IR[1]); b(1.27,.16,.04,IR[1]);
+      LG.push([wx_,t+mv(.935*K),wz_,.38*M*K,mv(.01*K),.38*M*K]); LC_.push([wx_,t+mv(.93*K),wz_,.12*M*K,mv(.005*K),.12*M*K]); HL.push([wx_,t+mv(.85*K),wz_]); const pv={k:'gate lantern',x:wx_,y:t,z:wz_}; while(LBP.length<LB.length)LBP.push(pv); LGP.push(Object.assign({},pv)); }
     { const me=put([],LB); if(me)WED.meshes.push({place:'park',me,items:LBP}); }
     if(LG.length){ const box=(L_,mat)=>{ const me=new THREE.InstancedMesh(unit,mat,L_.length); L_.forEach(([x,y,z,sx,sy,sz],i)=>me.setMatrixAt(i,m4.compose(new V(x,y,z),q.identity(),new V(sx,sy,sz)))); me.computeBoundingSphere(); scene.add(me); return me; };
       PARK.lanterns=box(LG,glass); WED.meshes.push({place:'park',me:PARK.lanterns,items:LGP},{place:'park',me:box(LC_,core),items:LGP.map(o=>({k:o.k,x:o.x,y:o.y,z:o.z}))});
@@ -211,7 +211,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), t=(Bm[(j%4)*4+i%4]+.5)/16, a=d<.14?1:d<.3+(t-.5)*.06?.42:d<.55+(t-.5)*.08?.2:d<.9+(t-.5)*.08?.08:0, o=(j*W+i)*4; im.data[o]=255; im.data[o+1]=d<.14?236:204; im.data[o+2]=d<.14?190:130; im.data[o+3]=a*255; }
         g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace; return tx; })();
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
-      for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; scene.add(s); SPR.push(s);
+      for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
       const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL)L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):0;

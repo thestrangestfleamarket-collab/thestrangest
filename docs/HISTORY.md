@@ -4940,6 +4940,8 @@ Owner (a picture of a trunk ending inside the leaves): "the trees need to have r
 - 28 Oct 2026, street lights in the new sections (owner: "add real street lights at night in the new sections"): the globe posts of Market St along both sidewalks of B to H (same spacing, staggered, none by a station entrance), lit at dusk with A's. Every globe post's light now reaches the pavement (the post no longer shades its own lamp).
 - 28 Oct 2026, the haze over every section (owner, his first-person shot of dark unhazed shapes past the park: "not everything is being hazed and blurred in distance"): the distance haze, and the cull past it, cover all eight sections, not only A.
 
+## 28 Oct 2026: the map shows every section, and zooms
+Owner (his picture of the MAP tab, only Section A drawn): "update map to show all sections, allow to zoom in and out of map to see 1 section or all". THE STREET shows all eight sections (their streets, buildings, water, park and station entrances, the street names and each section's letter); UNDERGROUND shows THE LOOP: both tracks and all eight stations (click one to go to its platform). ALL and A to H buttons, + and −, the mouse wheel to zoom, drag to move; a section's view darkens the rest. Place names show once zoomed in. Rule: the sections register what they lay out (`MODS.sections`) and the map paints from it.
 ## 28 Oct 2026: the hood style on every lamp
 Owner: "do the hood style on the other lamps too". The park gate lanterns, the pier lamps and the street lights show their light only from under a metal top: no glowing glass cage and no glare halo. Rule: every outdoor lamp hides its bulb under a metal top.
 ## 28 Oct 2026: faster checks

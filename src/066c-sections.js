@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {DRESS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, FIX, grab, LOTX, LOTY, MAPG, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
+import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
@@ -25,7 +25,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     road:{rep:4,t:pic(96,(i,j)=>sh([52,52,56],.84+.24*hash(i,j,11)))},
     grass:{rep:8,t:pic(192,(i,j)=>GC((i+.5)/24+300,(j+.5)/24+300))},
     line:{rep:1,c:0xd8b23a}, dash:{rep:1,c:0xe8e8e0}};
-  const gm={}, add=(k,r,lift)=>{ const L=gm[k]||(gm[k]={P:[],U:[],lift}); const R=KIND[k].rep, a=[XS(r.x0),ZS(r.y0)], b=[XS(r.x1),ZS(r.y1)], y=(lift+1)*.004;
+  const gm={}, MP=[], add=(k,r,lift)=>{ if(k!=='line'&&k!=='dash')MP.push({k,r,lift}); const L=gm[k]||(gm[k]={P:[],U:[],lift}); const R=KIND[k].rep, a=[XS(r.x0),ZS(r.y0)], b=[XS(r.x1),ZS(r.y1)], y=(lift+1)*.004;
     L.P.push(a[0],y,a[1],b[0],y,b[1],b[0],y,a[1],a[0],y,a[1],a[0],y,b[1],b[0],y,b[1]); L.U.push(r.x0/R,r.y0/R,r.x1/R,r.y1/R,r.x1/R,r.y0/R,r.x0/R,r.y0/R,r.x0/R,r.y1/R,r.x1/R,r.y1/R); };
   const mirrorY=r=>({x0:r.x0,x1:r.x1,y0:A.y0+A.y1-r.y1,y1:A.y0+A.y1-r.y0});
   const rows=[], kiosks=LOOP.STA.filter(s=>!s.old).map(s=>s.kiosk);
@@ -60,11 +60,12 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     for(const side of [fs,BACK[fs]])for(let lv=1;lv<n;lv++)for(let k=0;k<nb;k++)win(side,st+k*3.25,1.1,RZ+lv*STY+WIN[0],RZ+lv*STY+WIN[1]);
     const mid=st+Math.floor((nb-1)/2)*3.25; win(fs,mid,1.56,RZ,RZ+94,{door:true,lit:false});
     for(let k=0;k<nb;k++){ const a=st+k*3.25; if(Math.abs(a-mid)>1.4)win(fs,a,2.3,RZ+14,RZ+118,{lit:hash(sd,5,9)<.5}); }
-    const paint=BLOCKS.facade({feats,px:PXB,top:H,wall:stone?BLOCKS.stone():BLOCKS.brick(wall),trim:stone?[132,126,116]:sh(wall,.82),base:{z1:RZ,paint:BLOCKS.brick(sh(wall,.85))}});
+    R.col=wall; const paint=BLOCKS.facade({feats,px:PXB,top:H,wall:stone?BLOCKS.stone():BLOCKS.brick(wall),trim:stone?[132,126,116]:sh(wall,.82),base:{z1:RZ,paint:BLOCKS.brick(sh(wall,.85))}});
     Q.add(XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1),()=>BLOCKS.make({...box,z0:0,z1:H,kind:'S',px:PXB,paint,roof:()=>[74,72,70]}));
     const q=[XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1)]; SOL.up.push(q); FIX.up.push([q[0],q[1],0,q[2],q[3],H*ZU*BLDK]); }
   for(const b of secs)for(const r of [{x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water},mirrorY({x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water})]){ const q=clip(r,b); if(q){ const w=[XS(q.x0),ZS(q.y0),XS(q.x1),ZS(q.y1)]; SOL.up.push(w); FIX.up.push([w[0],w[1],0,w[2],w[3],.9]); } }
 
+  MODS.sections={pieces:MP,rows,road,inner};
   // trees in the park and lamps along it, one instanced mesh each
   const trees=[], posts=[];
   for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }

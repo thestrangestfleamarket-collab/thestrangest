@@ -75,7 +75,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
 
   // THE MAP: a raster of the ground (streets, sidewalks, grass, water, walls) and every thing on it as a shape (a rect or a circle, turned).
   const LAYERS=[['road','STREETS',1],['walk','SIDEWALKS',1],['alley','ALLEY',1],['grass','GRASS',1],['water','WATER',1],['wall','PARK WALL',1],['path','PARK PATHS',1],
-    ['shop','BUILDINGS',1],['filler','EMPTY FRONTS',1],['shell','WEST ST SHELLS',1],['park','PARK PLACES',1],['tree','TREES',1],['label','NAMES',1],['grid','GRID',0]];
+    ['shop','BUILDINGS',1],['filler','GARAGES AND LOTS',1],['park','PARK PLACES',1],['tree','TREES',1],['label','NAMES',1],['grid','GRID',0]];
   const GROUND=LAYERS.slice(0,7), LAYERS_CH=[...GROUND,['mapthings','MAP THINGS (FAINT)',1],['you','YOU',1],['people','PEOPLE',1],['toon','TOONS',1],['merchant','MERCHANTS',1],['animal','ANIMALS',1],['monster','MONSTERS',1],['label','NAMES',1],['grid','GRID',0]];
   const SHOW={}; for(const [k,,on] of [...LAYERS,...LAYERS_CH])SHOW[k]=!!on; try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('maped-show')||'{}')); }catch(e){}
   const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
@@ -110,7 +110,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     R('TO THE HUDSON (PASSAGE)','path',[BLOCK.hudson[0],BLOCK.row2[0]],[BLOCK.hudson[1],FRONT],0,'concrete pavement','hudson');
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }
     R('THE MOVIE THEATRE','shop',...lot('theatre'),176,'red brick, film front','theatre'); R('THE ARCADE','shop',...lot('arcade'),180,'neon front','arcade');
-    if(window.BLK){ let i=0; for(const q of BLK.blds){ if(q.e)R('EMPTY SHELL '+(++i),'shell',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)','shell'+i); else R(q.row===1?'EMPTY FRONT':'BACK ROW','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,q.kit?'MegaKit walls':'brick (block painter)'); } }
+    if(window.BLK){ for(const q of BLK.blds)R('CLOSED GARAGE','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)'); for(const q of BLK.lots)R(q.kind==='park'?'PARKING LOT':'FENCED LOT','filler',[q.x0,q.y0],[q.x1,q.y1],0,q.kind==='park'?'asphalt (block painter)':'dirt, chain-link (block painter)'); }
     { const c=CASTLE.b; R('THE CASTLE','park',[c[0],c[2]],[c[1],c[3]],200,'castle stone','castle'); }
     Cc('THE LAKE','park',P.lake[0]+ox,P.lake[1]+oy,P.lake[2],0,'pond water','lake'); L[L.length-1].color='#3a74aa';
     Cc('THE ROUND','path',P.round[0]+ox,P.round[1]+oy,P.round[2],0,'park slabs','round');
@@ -195,7 +195,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       for(const o of ITEMS){ if(!SHOW[o.ly]||o.ly==='filler'||o.ly==='tree'||(o.ly==='path'&&o!==sel)||(o.ly==='shell'&&V.k<3)||(chars&&(!onMap(o)||(V.k<4&&o!==sel))))continue; const t=o.n.replace(/ \(.*\)/,''); g.fillStyle='rgba(0,0,0,.6)'; const w=g.measureText(t).width; g.fillRect(sx(o.x)-w/2-2,sy(o.y)-7*dpr,w+4,14*dpr); g.fillStyle=o===sel?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); }
       g.fillStyle='rgba(236,229,211,.5)'; for(const [t,x,y] of [['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]])g.fillText(t,sx(x),sy(y)); } }
 
-  const f2=v=>(+v||0).toFixed(2), KINDS={shop:'BUILDING',filler:'EMPTY FRONT',shell:'WEST ST SHELL',park:'PARK PLACE',tree:'TREE',path:'PATH'};
+  const f2=v=>(+v||0).toFixed(2), KINDS={shop:'BUILDING',filler:'GARAGE OR LOT',park:'PARK PLACE',tree:'TREE',path:'PATH'};
   const fld=(lab,k,v,step=.25,type='number')=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">'+lab+(type==='number'?'<input data-f="'+k+'" type="number" step="'+step+'" value="'+f2(v)+'"':'<input data-f="'+k+'" type="'+type+'" value="'+String(v).replace(/"/g,'&quot;')+'"')+' style="width:'+(type==='color'?'60px':'110px')+';font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e;padding:2px 4px"></label>';
   const texSel=(k,v)=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">TEXTURE<select data-f="'+k+'" style="width:170px;font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e">'+[...new Set([v,...TEX])].map(t=>'<option'+(t===v?' selected':'')+'>'+t+'</option>').join('')+'</select></label>';
   const fields=(o,view)=>(view?fld('TURN (°)','rot',o.rot||0,1)+fld('Z (UP)','z',o.z||0):fld('X (EAST)','x',o.x)+fld('Y (NORTH)','y',o.y)+fld('Z (UP)','z',o.z||0)+fld('TURN (°)','rot',o.rot||0,1))

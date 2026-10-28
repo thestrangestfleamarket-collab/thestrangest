@@ -328,5 +328,13 @@
   "weight": 4,
   "value": 25,
   "common": 1
+ },
+ "scuba": {
+  "offworld": true,
+  "value": 40,
+  "slot": "back",
+  "grants": "breathe",
+  "tank": 300,
+  "rental": true
  }
 }

@@ -1,7 +1,7 @@
 // THE SHOPS: any character the character editor marks a shopkeeper (trade.sells in characters.json) sells those item types to the player, priced by each item's shared VALUE, and teaches the skills in trade.teaches. Walk up or double-click to buy; goods go into your pack and behave by their item properties (edible → eat, sellable → resell). The mushroom and tomato sellers keep their own hand-built shops.
 import {THREE} from './003-shx.js';
-import {CHARS, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, UI} from './003b-systems.js';
-import {TILE} from './006-map-pre.js';
+import {CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, UI} from './003b-systems.js';
+import {SYS, TILE} from './006-map-pre.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
   const name=id=>(window.FORAGE&&window.FORAGE.NM&&window.FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
@@ -21,11 +21,13 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
 
   const draw=()=>{ const N=SHOPS.cur; if(!N||sp.hidden)return; const tr=CHARS.trade&&CHARS.trade(N); if(!tr){ SHOPS.close(); return; }
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">${esc(N.name||'A MERCHANT')}</h3><div style="color:#9b9584;margin-bottom:8px">${esc(tr.line||'Take your pick.')}</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(cash())}</b></div><table style="border-collapse:collapse;width:100%">`;
-    for(const id of tr.sells){ const p=price(id); o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(name(id))}</td><td style="text-align:right;padding:4px 6px">$${p}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-buy="${esc(id)}">BUY</button><button ${B} data-buy="${esc(id)}" data-n="5">5 $${p*5}</button></td></tr>`; }
+    for(const id of tr.sells){ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(name(id))}</td><td style="text-align:right;padding:4px 6px">$${p}</td><td style="text-align:right;white-space:nowrap">${rent?`<button ${B} data-buy="${esc(id)}" data-rent="1">${window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</button>`:`<button ${B} data-buy="${esc(id)}">BUY</button><button ${B} data-buy="${esc(id)}" data-n="5">5 $${p*5}</button>`}</td></tr>`; }
     const F=window.FORAGE; if(tr.teaches&&tr.teaches.length&&F&&F.trainRows)o+=F.trainRows(tr.teaches);
     o+=`</table>`; const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX')||!SHOPS.cur)return; if(b.dataset.train){ window.FORAGE.train(b.dataset.train,+b.dataset.cap); draw(); return; } const id=b.dataset.buy; if(!id)return;
-    const n=+b.dataset.n||1, c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return; } INV.cash-=c; give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); });
+    const n=+b.dataset.n||1, c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return; } INV.cash-=c;
+    if(b.dataset.rent){ if(!(window.FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
+    if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); });
 
   SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
   SHOPS.close=()=>{ sp.hidden=true; SHOPS.cur=null; };

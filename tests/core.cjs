@@ -35,6 +35,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
+      o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
@@ -102,6 +103,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     });
     for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
+    ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
     ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
@@ -192,6 +194,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       c('form', 'F'); out.female = on('bustF') && !on('beardGoatee') && document.querySelector('#lbeard').hidden; out.code = LOOKS.code(); out.back = JSON.stringify(LOOKS.decode(out.code));
       c('form', 'M'); c('hair', 'hair'); c('beard', ''); out.reset = on('hair') && !on('bustF') && LOOKS.code() === 'M00'; return out; }).catch(e => ({ err: e.message }));
     ok(av.start && av.wavy && av.bald && av.beard && av.female && av.code === 'F60' && av.back === '{"form":"F","hair":"","beard":""}' && av.reset, 'YOU: a hairstyle, bald, a beard and FEMALE each show only their pieces, and the look\'s code for the other players reads back: ' + JSON.stringify(av)); }
+  { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
+      return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
+    ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

@@ -70,6 +70,12 @@
   "grants": "catch",
   "value": 8
  },
+ "kite": {
+  "slot": "hand",
+  "grants": "fly",
+  "value": 10,
+  "weight": 0.05
+ },
  "bnet": {
   "slot": "hand",
   "grants": "catch",
@@ -354,5 +360,9 @@
   "grants": "breathe",
   "tank": 300,
   "rental": true
+ },
+ "ticket": {
+  "stackable": true,
+  "value": 5
  }
 }

@@ -1,6 +1,6 @@
-// THE CINEMA: the movie theatre screen plays one shared YouTube reel at the same timecode for everyone, thrown from the projection booth (its projector holds the settings); its marquee and poster outside follow what plays.
+// THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee, poster and showtimes outside follow it.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, CLOCK, pos, ROOMS, SIGNS, UI} from './003b-systems.js';
+import {CINEMA, CLOCK, pos, SIGNS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -13,6 +13,22 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
 
+  // the schedule: free films one after another from a fixed start, each in a slot of its length and a short break rounded up to the quarter hour (so everyone sees the same showing)
+  const FILMS=[['his_girl_friday','his_girl_friday.mp4','HIS GIRL FRIDAY',1940,5505],['house_on_haunted_hill_ipod','house_on_haunted_hill.mp4','HOUSE ON HAUNTED HILL',1959,4483],
+    ['TheGeneral1926','The_General_1926_720p.mp4','THE GENERAL',1926,4732],['gullivers_travels1939','gullivers_travels1939.mp4',"GULLIVER'S TRAVELS",1939,4360],
+    ['dressed_to_kill','dressed_to_kill.mp4','DRESSED TO KILL',1946,4290],['Killers_from_space','Killers_from_space.mp4','KILLERS FROM SPACE',1954,4255],
+    ['lost_world','lost_world.mp4','THE LOST WORLD',1925,4085],['TheStranger_0','The_Stranger.mp4','THE STRANGER',1946,5473],
+    ['my_favorite_brunette','my_favorite_brunette.mp4','MY FAVORITE BRUNETTE',1947,5212],['suddenly','suddenly.mp4','SUDDENLY',1954,4533],
+    ['ThePhantomoftheOpera','Phantom_of_the_Opera_512kb.mp4','THE PHANTOM OF THE OPERA',1925,6389],['DasKabinettdesDoktorCaligariTheCabinetofDrCaligari','The_Cabinet_of_Dr._Caligari_512kb.mp4','THE CABINET OF DR. CALIGARI',1919,3061]]
+    .map(([id,file,title,year,len])=>({id,file,title,year,len,slot:Math.ceil((len+600)/900)*900}));
+  const EPOCH=Date.UTC(2026,9,28), CYCLE=FILMS.reduce((a,f)=>a+f.slot,0)*1000;
+  const showAt=t=>{ const k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<FILMS.length;i++){ const f=FILMS[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:FILMS[0],start:s0}; };
+  CINEMA.films=FILMS; CINEMA.showAt=showAt;
+  CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<n;k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
+  // a YouTube link an admin plays takes over for up to four hours, then the schedule comes back
+  const ytOn=()=>{ const c=cur(); return !!vid(c.video_id)&&!!c.started_at&&Date.now()-Date.parse(c.started_at)<4*3600e3; };
+  const film=()=>{ const s=showAt(Date.now()), off=(Date.now()-s.start)/1000; return off<s.f.len?{...s,off}:null; };
+  CINEMA.playing=()=>{ if(ytOn())return {yt:true,title:CINEMA.ytTitle||''}; const f=film(); return f?{title:f.f.title,year:f.f.year,id:f.f.id}:null; };
   let rec=null, adm=null, titleId='';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true,marquee:'',poster:''};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title=''; CINEMA._set=r=>{ rec=r; onRec(); };
@@ -33,7 +49,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   // sound is each viewer's own (browsers only let it on after a tap)
   let snd={on:false,vol:80}; try{ const s=JSON.parse(localStorage.getItem('cinema-snd')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
   const saveSnd=()=>{ try{ localStorage.setItem('cinema-snd',JSON.stringify(snd)); }catch(e){} };
-  let vf=1; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(snd.vol*vf)); } else player.mute(); } }catch(e){} };
+  let vf=1, fv=null; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(snd.vol*vf)); } else player.mute(); } }catch(e){} if(fv){ fv.muted=!snd.on; fv.volume=Math.min(1,snd.vol*vf/100); } };
   CINEMA.sound=(on,vol)=>{ if(on!=null)snd.on=!!on; if(vol!=null)snd.vol=Math.max(0,Math.min(100,+vol)); saveSnd(); applySnd(); };
 
   // the player is a 16:9 page behind the game's picture, seen only through the screen (the picture is see-through there); the clip keeps it inside the game's frame
@@ -55,7 +71,15 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
     soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:3;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
     soundBtn.onclick=()=>CINEMA.sound(true,null); document.body.appendChild(soundBtn);
+    fv=document.createElement('video'); fv.muted=true; fv.playsInline=true; fv.preload='auto'; fv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;background:#000;display:none'; wrap.insertBefore(fv,wrap.firstChild);
+    fv.addEventListener('loadedmetadata',()=>{ if(fv.videoWidth&&fv.videoHeight)aspect=fv.videoWidth/fv.videoHeight; });
     clip.appendChild(wrap); const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); };
+  // the scheduled film: its file from the Internet Archive, kept at the showing's moment
+  let fvSrc='', fvSync=0;
+  const playFilm=f=>{ const src='https://archive.org/download/'+f.f.id+'/'+f.f.file; holder.style.display='none'; fv.style.display='block'; try{ player&&player.pauseVideo(); }catch(e){}
+    if(fvSrc!==src){ fvSrc=src; fv.src=src; fv.currentTime=f.off; applySnd(); }
+    const now=performance.now(); if(now-fvSync>1500){ fvSync=now; if(fv.readyState>0&&Math.abs(fv.currentTime-f.off)>2)fv.currentTime=f.off; if(fv.paused)fv.play().catch(()=>{}); } return fv.readyState>=2; };
+  const stopFilm=()=>{ if(fv&&!fv.paused)fv.pause(); if(fv)fv.style.display='none'; if(holder)holder.style.display=''; };
   let vOK=false, vFail='', tries=0, t0=0; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
   const makePlayer=async id=>{ '@later'; mkWrap();
     if(player){ if(id!==haveVid){ haveVid=id; vOK=false; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById({videoId:id,startSeconds:offset()}); }catch(e){} }
@@ -68,10 +92,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
         onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
   const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
     holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
-  const onEnded=async()=>{ '@later'; const c=cur(), pl=c.playlist||[];
-    if(adm&&pl.length>1){ const last=(c.idx|0)+1>=pl.length; if(last&&c.loop===false)return; const ni=last?0:(c.idx|0)+1, nid=vid(pl[ni]&&(pl[ni].url||pl[ni].id||pl[ni]));
-      if(nid)await push({idx:ni,video_id:nid,started_at:new Date().toISOString()}); }
-    else if(c.loop!==false&&player){ try{ player.seekTo(0,true); player.playVideo(); }catch(e){} } };
+  const onEnded=async()=>{ '@later'; if(adm)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
 
   // the four corners of a plane on the page, and a homography that maps the video's own rectangle (no black bars) onto them
   const corners=me=>{ const g=me.geometry.parameters, r=renderer.domElement.getBoundingClientRect(); me.updateMatrixWorld(); const V=new THREE.Vector3();
@@ -108,61 +129,54 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     SHARED.composer.addPass(CUT); SHARED.fold('cut',CUT,{head:CUTH,code:CUTC,uniforms:{uOn:CUT.uniforms.uOn,uQ:CUT.uniforms.uQ}}); };
   const facing=me=>{ me.updateMatrixWorld(); const n=new THREE.Vector3(0,0,1).transformDirection(me.matrixWorld), p=new THREE.Vector3().setFromMatrixPosition(me.matrixWorld); return n.dot(new THREE.Vector3().subVectors(SHARED.cam.position,p))>0; };
 
-  // the projector at the back: a flickering beam to the screen, and the box it comes from
-  let rig=null;
-  const BEAM={on:true,power:1,warm:.5,flicker:.5,spill:1}; let beamLive=null;
-  const bcfg=()=>({...BEAM,...(cur().beam||{}),...(beamLive||{})});
+  // the screen's see-through face, the whole screen, and a double-click on it for the settings
   let holeM=null;
-  const buildRig=m=>{ if(rig||!m.port)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, P=new THREE.Vector3(...m.port);
-    const W_=(x,y,z=0)=>new THREE.Vector3(x,y,z).applyMatrix4(fm.matrixWorld), p=W_(0,0), N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
-    const Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([sx,sy])=>W_(sx*w,sy*h));
-    const g=new THREE.BufferGeometry(), ps=[], cs=[], A=[.5,.5,.5], B=[.14,.14,.14];
-    for(let i=0;i<4;i++){ const q0=Q[i], q1=Q[(i+1)%4]; ps.push(P.x,P.y,P.z,q0.x,q0.y,q0.z,q1.x,q1.y,q1.z); cs.push(...A,...B,...B); }
-    g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
-    const beam=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.05,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-    const lens=new THREE.Mesh(new THREE.SphereGeometry(.06,8,8),new THREE.MeshBasicMaterial({color:0xfff4d0})); lens.position.copy(P);
-    const gc=canv(256,144); { const g=gc.g, gr=g.createRadialGradient(128,72,20,128,72,128); gr.addColorStop(0,'rgba(220,226,240,.9)'); gr.addColorStop(.45,'rgba(200,210,230,.35)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,256,144); gc.tex.needsUpdate=true; }
-    const halo=new THREE.Mesh(new THREE.PlaneGeometry(w*2.6,h*2.4),new THREE.MeshBasicMaterial({map:gc.tex,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false})); halo.quaternion.copy(fm.quaternion); halo.position.copy(p).addScaledVector(N,.01);
-    const pool=new THREE.Mesh(new THREE.PlaneGeometry(w*2.2,w*1.1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:gc.tex,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false})); pool.rotation.y=fm.rotation.y; pool.position.copy(p).addScaledVector(N,w*.55); pool.position.y=.04;
-    rig=new THREE.Group(); rig.add(beam,lens,halo,pool); rig.visible=false; scene.add(rig);
-    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE); holeM.quaternion.copy(fm.quaternion); holeM.position.copy(p).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
-    const spill=new THREE.PointLight(0xc8d4ff,0,w*5,1.4); spill.position.copy(p).addScaledVector(N,w*.9); spill.position.y-=h*.2; scene.add(spill); rig.u={beam,halo,pool,spill,lv:.5}; };
-  const fitHole=()=>{ const u=holeM.u, sz=Math.max(.4,Math.min(1,cur().size??1)); let hw=u.w, hh=u.w/aspect; if(hh>u.h){ hh=u.h; hw=u.h*aspect; } holeM.scale.set(hw*sz,hh*sz,1); };
-  const bcol=c=>new THREE.Color().setRGB(.62+.16*c.warm,.64+.02*c.warm,.76-.32*c.warm);
-  const animRig=now=>{ if(!rig)return; const u=rig.u, c=bcfg(); if(!rig.visible){ u.spill.intensity=0; return; } const t=now/1000; u.lv+=(Math.random()-.5)*.06*c.flicker*2; u.lv=Math.max(.25,Math.min(1,u.lv+(.6-u.lv)*.01));
-    const f=1+(.06*Math.sin(t*23)+.04*Math.sin(t*5.1))*c.flicker*2, b=(cur().brightness??.8)*(.6+.4*u.lv)*f; u.beam.visible=!!c.on; u.beam.material.color.copy(bcol(c)); u.beam.material.opacity=(.008+.008*b)*c.power;
-    u.halo.material.opacity=(.03+.05*b)*c.spill; u.pool.material.opacity=(.02+.04*b)*c.spill; u.spill.intensity=3*b*c.spill; u.spill.color.copy(bcol(c)).lerp(new THREE.Color(0xc8d4ff),.6); };
+  const buildHole=m=>{ if(holeM)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
+    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE); holeM.quaternion.copy(fm.quaternion); holeM.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
+    const hb=new THREE.Mesh(new THREE.BoxGeometry(w*2,h*2,.3*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.quaternion.copy(fm.quaternion); hb.position.copy(holeM.position); scene.add(hb);
+    UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:40*TILE,near:40*TILE,tall:h*2,act:()=>openMenu()}); };
+  const fitHole=()=>{ const u=holeM.u; holeM.scale.set(u.w,u.h,1); };
 
   let lastSync=0, adminThings=false;
-  const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return;
-    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=canopy.pool.visible=up; const h=CLOCK.h??12; canopy.pool.material.opacity=h<6.5||h>18.5?1:.3; } if(post)post.front.visible=up;
+  let signT=0;
+  // the ticket fox stands at the box office window facing the street; the theatre's door takes a ticket
+  CINEMA.dbg=()=>({box:box_o&&[+box_o.x.toFixed(2),+box_o.z.toFixed(2),box_o.ox,box_o.oz],marquee:canopy&&canopy.box.position.toArray().map(v=>+v.toFixed(2)),times:!!times,fox:!!foxN});
+  let foxN=null; CINEMA.toon=(k,N)=>{ if(k==='ticketfox')foxN=N; };
+  const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.2*TILE, z=b.z-b.oz*.2*TILE;
+    N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
+  const F0=()=>window.FORAGE; let named=false;
+  const gate=()=>{ const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
+    if(n>0){ I.add('ticket',-1); if(F0()&&F0().draw)F0().draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
+    say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
+  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
+    if(!named&&F0()&&F0().add){ named=true; F0().add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
+    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=canopy.pool.visible=up; const h=CLOCK.h??12; canopy.pool.material.opacity=h<6.5||h>18.5?1:.3; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up; }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
-    const inB=ROOMS.offIn&&ROOMS.offIn()==='booth', id=vid(cur().video_id), nvf=inB?.35:1, now=performance.now(); if(nvf!==vf){ vf=nvf; applySnd(); }
-    if(inB)booth.anim(now);
-    const tgt=inB?booth.port:up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null;
-    if(holeM)holeM.visible=false; if(booth.port&&booth.glass)booth.port.material=booth.glass;
-    if(!tgt||!id||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} } if(rig){ rig.visible=!1; animRig(0); } return; }
-    mkWrap(); mkCut(); makePlayer(id); sniff(id); const ok=vOK&&!vFail; CINEMA.on=ok; if(tgt===holeM)fitHole(); if(ok){ if(tgt!==holeM)tgt.material=HOLE; tgt.visible=true; }
-    if(rig){ rig.visible=!inB; animRig(now); }
-    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,inB?.6:1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; }
-    sync(); };
+    const yt=ytOn(), id=yt?vid(cur().video_id):'', fl=yt?null:film(), now=performance.now();
+    const tgt=up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null; if(holeM)holeM.visible=false;
+    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
+    mkWrap(); mkCut(); let ok;
+    if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=vOK&&!vFail; }
+    CINEMA.on=ok; fitHole(); if(ok)tgt.visible=true;
+    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; }
+    if(id)    sync(); };
   const sync=()=>{ const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
       try{ const want=offset(), is=player.getCurrentTime(); if(Math.abs(is-want)>1.6)player.seekTo(want,true); if(player.getPlayerState&&player.getPlayerState()!==1)player.playVideo(); }catch(e){} } };
   CINEMA.tick=tick;
 
   const onRec=()=>{ const id=vid(cur().video_id);
     if(id!==titleId){ titleId=id; CINEMA.title='';
-      if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.title=j.title; sign(); } }).catch(()=>{}); }
+      if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.ytTitle=j.title; sign(); } }).catch(()=>{}); }
     sign(); };
 
   // the front: a lit marquee box over the doors (the video's title unless an admin wrote its lines) and a lit poster case on the wall
-  let canopy=null, post=null; const ovr={text:null,bri:null,col:null};
+  let canopy=null, post=null, times=null, box_o=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
   const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
-  const qz=v=>Math.min(255,Math.round(v/56)*56), title=()=>(CINEMA.title||'THE STRANGEST CINEMA').toUpperCase();
+  const qz=v=>Math.min(255,Math.round(v/56)*56), nextF=()=>{ const P=CINEMA.playing(); return P&&!P.yt?P:CINEMA.upcoming(1)[0]; }, title=()=>(ytOn()?CINEMA.ytTitle||'THE STRANGEST CINEMA':nextF().title).toUpperCase();
   const split2=t=>{ if(t.length<=34)return [t]; const m=t.length/2; let b=-1; for(let i=0;i<t.length;i++)if(t[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i; return b<0?[t]:[t.slice(0,b),t.slice(b+1)]; };
   const own=k=>String(cur()[k]||'').trim();
   const lines=()=>{ const o=ovr.text!=null?ovr.text:own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
@@ -172,7 +186,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-12)/n; litBg(g,W,H); rails(g,W,H,n); g.fillStyle='#111214'; g.textAlign='center'; g.textBaseline='middle'; if('letterSpacing' in g)g.letterSpacing='3px';
       L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.5:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
-  const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; const id=vid(cur().video_id); return id?'/yt/'+id+'.jpg':''; };
+  const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; return '/ia/'+nextF().id+'.jpg'; };
   const drawPoster=()=>{ const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster');   // the picture fills the whole case, black behind it
     g.fillStyle='#000'; g.fillRect(0,0,W,H); g.textAlign='center'; g.textBaseline='middle';
     g.fillStyle='#d8a845'; fit(g,'COMING SOON',W-40,40); g.fillText('COMING SOON',W/2,H*.42); g.fillStyle='#faf8f0'; fit(g,title(),W-30,22); g.fillText(title(),W/2,H*.56); tex.needsUpdate=true;
@@ -180,7 +194,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     img.onload=()=>{ if(posterSrc()!==src)return; try{ g.fillStyle='#000'; g.fillRect(0,0,W,H); const s=Math.max(W/img.width,H/img.height), dw=img.width*s, dh=img.height*s; g.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
       if(!mine){ const d=g.getImageData(0,0,W,H), a=d.data; for(let i=0;i<a.length;i+=4){ a[i]=qz(a[i]); a[i+1]=qz(a[i+1]); a[i+2]=qz(a[i+2]); } g.putImageData(d,0,0); } }catch(e){} tex.needsUpdate=true; };
     img.src=src; };
-  // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, a ticket window, backlit poster cases
+  // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, backlit poster cases
   const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post})=>{ const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
     const OUT=.11*tw, put=(me,s,out,y)=>{ me.position.copy(at(s,OUT+out,y)); me.rotation.y=ry; F.add(me); return me; }, flat=(w,h,m)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),m), blk=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));
     const glow=m=>new THREE.MeshBasicMaterial({map:m.tex,toneMapped:false}), L=s=>sg*s;
@@ -198,14 +212,9 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       put(blk(dw+br,br,.1*tw,BR),dS,.06*tw,Yb(80)); put(blk(dw+br,br,.1*tw,BR),dS,.06*tw,Yb(95)-br/2);
       const tc=canv(512,96); { const g2=tc.g; g2.fillStyle='#120d08'; g2.fillRect(0,0,512,96); g2.fillStyle='#ffd27a'; g2.textAlign='center'; g2.textBaseline='middle'; if('letterSpacing' in g2)g2.letterSpacing='10px'; fit(g2,'ENTRANCE',440,58); g2.fillText('ENTRANCE',256,50); tc.tex.needsUpdate=true; }
       put(flat(dw-br,Yb(95)-Yb(80)-br*1.5,glow(tc)),dS,.05*tw,(Yb(80)+Yb(95))/2); }
-    { const ts=dS+L(1.75*tw), w=1.05*tw, wc=canv(128,128), g=wc.g, gr=g.createLinearGradient(0,0,0,128);   // the ticket window
-      gr.addColorStop(0,'#2a1c12'); gr.addColorStop(1,'#c88a44'); g.fillStyle=gr; g.fillRect(0,0,128,128); g.fillStyle='rgba(20,14,10,.85)'; g.beginPath(); g.arc(64,92,22,Math.PI,0); g.fill(); g.fillRect(42,92,44,36); g.fillStyle='#1a120c'; g.fillRect(52,58,24,26); wc.tex.needsUpdate=true;
-      put(blk(w+.14*tw,Yb(68)-Yb(30)+.14*tw,.06*tw,0x6b4a28),ts,.04*tw,(Yb(30)+Yb(68))/2); put(flat(w,Yb(68)-Yb(30),glow(wc)),ts,.075*tw,(Yb(30)+Yb(68))/2);
-      put(blk(w+.2*tw,.06*tw,.3*tw,0xd9b45a),ts,.15*tw,Yb(30)); const sc=canv(256,64); { const g2=sc.g; g2.fillStyle='#0a0607'; g2.fillRect(0,0,256,64); g2.fillStyle='#ff4a3a'; g2.textAlign='center'; g2.textBaseline='middle'; if('letterSpacing' in g2)g2.letterSpacing='8px'; fit(g2,'TICKETS',220,44); g2.fillText('TICKETS',128,34); sc.tex.needsUpdate=true; }
-      put(flat(w+.1*tw,Yb(80)-Yb(71),glow(sc)),ts,.05*tw,(Yb(71)+Yb(80))/2); }
     const ph=Yb(78)-Yb(18), pw=ph*27/40, hc=canv(64,64); { const g=hc.g, gr=g.createRadialGradient(32,32,4,32,32,32); gr.addColorStop(0,'rgba(255,236,200,.5)'); gr.addColorStop(1,'rgba(255,236,200,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64); hc.tex.needsUpdate=true; }
     const halo=new THREE.MeshBasicMaterial({map:hc.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}), pm=new THREE.MeshBasicMaterial({map:post.tex,toneMapped:false}), rim=new THREE.MeshBasicMaterial({color:0xfff2d8,toneMapped:false}), cases=[];
-    for(const o of [3.35,5.15,-2.2]){ const s=dS+L(o*tw); if(s-pw/2-.25*tw<lo||s+pw/2+.25*tw>hi)continue; const yc=(Yb(18)+Yb(78))/2, G=new THREE.Group();   // a lightbox: the poster lit from behind, a bright edge where the light spills round it
+    for(const o of [1.95,6.9]){ const s=dS+L(o*tw); if(s-pw/2-.25*tw<lo||s+pw/2+.25*tw>hi)continue; const yc=(Yb(18)+Yb(78))/2, G=new THREE.Group();   // a lightbox: the poster lit from behind, a bright edge where the light spills round it
       const fr=blk(pw+.18*tw,ph+.18*tw,.12*tw,0x0c0b0d); fr.position.z=.06*tw; const r=flat(pw+.05*tw,ph+.05*tw,rim); r.position.z=.121*tw; const p=flat(pw,ph,pm); p.position.z=.123*tw; const h=flat(pw*2,ph*1.5,halo); h.position.z=.02*tw;
       G.add(h,fr,r,p); G.position.copy(at(s,OUT,yc)); G.rotation.y=ry; F.add(G); cases.push(G); }
     post.group=cases[0]||F; scene.add(F); return F; };
@@ -221,14 +230,40 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const pool=new THREE.Mesh(new THREE.PlaneGeometry(cw,cd*1.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:pl.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
     const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''};
     post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post});
+    const dS=alongX?bx:bz, ph=Yb(70)-Yb(14), pw=ph*27/40;
+    { const bS=dS-Math.sign(cS-dS||1)*2.6*tw, bw2=pw*1.7, bc=canv(612,400), fr=new THREE.Mesh(new THREE.BoxGeometry(bw2*1.06,ph*1.06,.06*tw),new THREE.MeshLambertMaterial({color:0x2a2d33}));
+      const pn=new THREE.Mesh(new THREE.PlaneGeometry(bw2,ph),new THREE.MeshBasicMaterial({map:bc.tex})); pn.position.z=.035*tw; const g2=new THREE.Group(); g2.add(fr,pn);
+      g2.position.copy(at(bS,.14*tw,(Yb(70)+Yb(14))/2)); g2.rotation.y=ry; scene.add(g2); times={...bc,group:g2,key:''}; }
+    // the box office on the pavement: a red booth with an open window over a counter, its sign on the roof, the showtimes on a screen inside behind the fox who sells the tickets
+    { const kS=dS+Math.sign(cS-dS||1)*4.4*tw, kc=at(kS,2.6*tw,0), W=2.4*tw, D=1.7*tw, H=Yb(104)-Yb(0), y0=SHARED.groundY(kc.x,kc.z), G=new THREE.Group(); G.position.set(kc.x,y0,kc.z); G.rotation.y=ry; scene.add(G);
+      const RED=new THREE.MeshLambertMaterial({color:0x7a1e26}), TRIM=new THREE.MeshLambertMaterial({color:0xc9a24a}), DARK=new THREE.MeshLambertMaterial({color:0x1c1416});
+      const bx=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
+      bx(W,H,.08*tw,RED,0,H/2,-D/2); for(const sx of [-1,1])bx(.08*tw,H,D,RED,sx*W/2,H/2,0);
+      bx(W,H*.42,.1*tw,RED,0,H*.21,D/2); bx(W*1.04,.06*tw,.42*tw,TRIM,0,H*.43,D/2+.1*tw); bx(W*1.12,.1*tw,D*1.2,DARK,0,H+.05*tw,.08*tw); bx(W*1.12,.03*tw,D*1.2,TRIM,0,H,.08*tw);
+      for(const sx of [-1,1])bx(.07*tw,H*.58,.07*tw,TRIM,sx*(W/2-.04*tw),H*.71,D/2);
+      const sg=canv(512,128); { const g=sg.g; g.fillStyle='#5a0f16'; g.fillRect(0,0,512,128); g.strokeStyle='#e8c060'; g.lineWidth=6; g.strokeRect(6,6,500,116); g.fillStyle='#ffd77a'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'BOX OFFICE',440,78); g.fillText('BOX OFFICE',256,66); sg.tex.needsUpdate=true; }
+      const sign_=new THREE.Mesh(new THREE.BoxGeometry(W*.9,W*.9/4,.1*tw),[DARK,DARK,DARK,DARK,new THREE.MeshBasicMaterial({map:sg.tex}),DARK]); sign_.position.set(0,H+.1*tw+W*.9/8,D/2-.1*tw); G.add(sign_);
+      const sc=canv(612,400), scr=new THREE.Mesh(new THREE.PlaneGeometry(W*.78,W*.78*400/612),new THREE.MeshBasicMaterial({map:sc.tex})); scr.position.set(0,H*.68,-D/2+.06*tw); G.add(scr);
+      bx(W*.82,W*.78*400/612+.08*tw,.04*tw,DARK,0,H*.68,-D/2+.03*tw);
+      box_o={G,sc,key:'',x:kc.x,z:kc.z,ox,oz};
+      const c4=[[-W/2,-D/2],[W/2,-D/2],[W/2,D/2+.2*tw],[-W/2,D/2+.2*tw]].map(([x,z])=>new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),ry).add(kc));
+      const r4=[Math.min(...c4.map(v=>v.x)),Math.min(...c4.map(v=>v.z)),Math.max(...c4.map(v=>v.x)),Math.max(...c4.map(v=>v.z))]; SOL.up.push(r4); }
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),
       set:o=>{ ovr.text=o&&o.text!=null?o.text:null; ovr.bri=o&&o.bri!=null?o.bri:null; ovr.col=o&&o.col!=null?o.col:null;
         const c=new THREE.Color(ovr.col||'#ffffff').multiplyScalar(ovr.bri==null?1:ovr.bri); for(const i of [0,1,4]){ const mm=box.material[i]; if(mm&&mm.color)mm.color.copy(c); } canopy.key=''; sign(); }});
     sign(); };
   const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
-    if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } } };
+    if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } }
+    if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } }
+    if(times){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==times.key){ times.key=k; CINEMA.drawTimes(times.g,times.cv.width,times.cv.height); times.tex.needsUpdate=true; } } };
+  // the showtimes, as the board by the door and the box office's screen draw them: the film on now and the next ones, in the viewer's own time
+  CINEMA.drawTimes=(g,W,H,n=6)=>{ const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
+    g.fillStyle='#0b0c10'; g.fillRect(0,0,W,H); g.fillStyle='#d8a845'; g.fillRect(0,0,W,H*.15); g.fillStyle='#0b0c10'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'SHOWTIMES',W*.8,H*.1); g.fillText('SHOWTIMES',W/2,H*.075);
+    const rh=(H*.83)/n; L.forEach((f,i)=>{ const y=H*.17+rh*(i+.5), now=i===0&&P&&!P.yt&&P.id===f.id; g.fillStyle=now?'#2a1e10':i%2?'#111318':'#0d0f13'; g.fillRect(0,y-rh/2,W,rh);
+      g.textAlign='left'; g.fillStyle=now?'#ffcf6a':'#e8e4da'; fit(g,now?'NOW':hm(f.start),W*.24,rh*.5); g.fillText(now?'NOW':hm(f.start),W*.04,y);
+      g.fillStyle=now?'#ffcf6a':'#c9c3b6'; fit(g,f.title+' ('+f.year+')',W*.66,rh*.44); g.fillText(f.title+' ('+f.year+')',W*.3,y); }); };
 
-  // double-click the projector in the booth: sound and the timeline for everyone, the rest for admins; admins also double-click the marquee and the poster
+  // double-click the screen: sound and the timeline for everyone, a YouTube link and the brightness for admins; admins also double-click the marquee and the poster
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const DLG='position:fixed;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:86vh;overflow:auto;background:#141018;color:#f3e7dd;border:2px solid #bc923a;border-radius:12px;padding:16px;font:14px/1.5 system-ui';
   const BTN='font:600 13px system-ui;border:0;border-radius:6px;cursor:pointer;', RED=BTN+'background:#b22133;color:#fff;', DIM=BTN+'background:transparent;color:#c3a7a0;border:1px solid #3a2130;';
@@ -236,49 +271,32 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const LBL='display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#c3a7a0';
   const box_=()=>{ const d=document.createElement('div'); d.style.cssText=DLG; document.body.appendChild(d); for(const ev of ['keydown','keyup'])d.addEventListener(ev,e=>e.stopPropagation()); return d; };
   let dlg=null, edlg=null, tlT=0;
-  const openMenu=async()=>{ '@later'; const a=await isAdmin(), c=cur(), B=bcfg(); if(!dlg)dlg=box_();
-    dlg.innerHTML=`<div style="font:600 18px system-ui;color:#d8a845;margin-bottom:10px">THE PROJECTOR${a?' · admin':''}</div>
+  const openMenu=async()=>{ '@later'; const a=await isAdmin(), c=cur(), yt=ytOn(), P=CINEMA.playing(); if(!dlg)dlg=box_();
+    dlg.innerHTML=`<div style="font:600 18px system-ui;color:#d8a845;margin-bottom:4px">THE SCREEN${a?' · admin':''}</div><div style="color:#c3a7a0;margin-bottom:10px">${P?'NOW: '+esc(P.title)+(P.year?' ('+P.year+')':''):'BETWEEN SHOWINGS'}</div>
       <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #3a2130"><label><input id="cmsnd" type="checkbox" ${snd.on?'checked':''}> sound</label>
         <label style="display:block;margin-top:6px">Volume <span id="cmvv" style="color:#d8a845">${snd.vol}%</span><br><input id="cmv" type="range" min="0" max="100" value="${snd.vol}" style="width:100%"></label>
         <label style="display:block;margin-top:8px">Timeline <span id="cmtv" style="color:#d8a845">0:00 / 0:00</span>${a?'':' <span style="color:#8f7470;font-size:12px">(admins move it, for everyone)</span>'}<br><input id="cmt" type="range" min="0" max="1000" value="0" style="width:100%" ${a?'':'disabled'}></label></div>`+(a?`
-      <label style="${LBL}">Play a YouTube link</label>
-      <div style="display:flex;gap:6px;margin:4px 0 12px"><input id="cmu" placeholder="youtube.com/watch?v=..." style="${FLD};flex:1;min-width:0"><button id="cmplay" style="${RED}padding:0 12px">PLAY</button></div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
-        <label style="flex:1;min-width:120px">Size <span id="cmsv" style="color:#d8a845">${Math.round((c.size??1)*100)}%</span><br><input id="cms" type="range" min="40" max="100" value="${Math.round((c.size??1)*100)}" style="width:100%"></label>
-        <label style="flex:1;min-width:120px">Brightness <span id="cmbv" style="color:#d8a845">${Math.round((c.brightness??.8)*100)}%</span><br><input id="cmb" type="range" min="20" max="120" value="${Math.round((c.brightness??.8)*100)}" style="width:100%"></label></div>
-      <label style="${LBL}">Projector light</label>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 10px">
-        <label style="flex:1 1 100%"><input id="cmbon" type="checkbox" ${B.on?'checked':''}> beam on</label>
-        <label style="flex:1;min-width:120px">Beam <span id="cmbpv" style="color:#d8a845">${Math.round(B.power*100)}%</span><br><input id="cmbp" type="range" min="0" max="200" value="${Math.round(B.power*100)}" style="width:100%"></label>
-        <label style="flex:1;min-width:120px">Warmth <span id="cmbwv" style="color:#d8a845">${Math.round(B.warm*100)}%</span><br><input id="cmbw" type="range" min="0" max="100" value="${Math.round(B.warm*100)}" style="width:100%"></label>
-        <label style="flex:1;min-width:120px">Flicker <span id="cmbfv" style="color:#d8a845">${Math.round(B.flicker*100)}%</span><br><input id="cmbf" type="range" min="0" max="100" value="${Math.round(B.flicker*100)}" style="width:100%"></label>
-        <label style="flex:1;min-width:120px">Glow on the room <span id="cmbsv" style="color:#d8a845">${Math.round(B.spill*100)}%</span><br><input id="cmbs" type="range" min="0" max="200" value="${Math.round(B.spill*100)}" style="width:100%"></label></div>
-      <div style="margin-bottom:10px"><label><input id="cmloop" type="checkbox" ${c.loop!==false?'checked':''}> loop</label> &nbsp; <label><input id="cmauto" type="checkbox" ${c.autoplay!==false?'checked':''}> autoplay on enter</label></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><button id="cmrestart" style="${DIM}padding:6px 10px">RESTART FOR EVERYONE</button><span style="color:#8f7470;font-size:12px">resets the shared time to now</span></div>
-      <label style="${LBL}">Playlist (one link per line)</label>
-      <textarea id="cmpl" rows="4" style="${FLD};font:13px monospace;margin:4px 0">${esc((c.playlist||[]).map(p=>p.url||p.id||p).join('\n'))}</textarea>
-      <div style="margin-top:8px"><button id="cmsave" style="${RED}padding:8px 14px">SAVE PLAYLIST</button></div>`:'')+`
+      <label style="${LBL}">Play a YouTube link instead (for up to 4 hours)</label>
+      <div style="display:flex;gap:6px;margin:4px 0 8px"><input id="cmu" placeholder="youtube.com/watch?v=..." style="${FLD};flex:1;min-width:0"><button id="cmplay" style="${RED}padding:0 12px">PLAY</button></div>
+      ${yt?`<div style="margin-bottom:12px"><button id="cmsched" style="${DIM}padding:6px 10px">BACK TO THE SCHEDULE</button></div>`:''}
+      <div style="margin-bottom:10px"><label style="flex:1;min-width:120px">Brightness <span id="cmbv" style="color:#d8a845">${Math.round((c.brightness??.8)*100)}%</span><br><input id="cmb" type="range" min="20" max="120" value="${Math.round((c.brightness??.8)*100)}" style="width:100%"></label></div>
+`:'')+`
       <div style="display:flex;justify-content:flex-end;margin-top:10px"><button id="cmclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
       <div id="cmsay" style="color:#8f7470;font-size:12px;margin-top:8px"></div>`;
     const $=s=>dlg.querySelector(s), say=t=>{ $('#cmsay').textContent=t; };
     $('#cmsnd').onchange=e=>CINEMA.sound(e.target.checked,null); $('#cmv').oninput=e=>{ $('#cmvv').textContent=e.target.value+'%'; CINEMA.sound(null,+e.target.value); };
     $('#cmclose').onclick=()=>{ dlg.style.display='none'; if(tlT){ clearInterval(tlT); tlT=0; } };
-    const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }, dur=()=>{ try{ return player&&player.getDuration?player.getDuration()||0:0; }catch(e){ return 0; } }; let drag=false;
-    if(tlT)clearInterval(tlT); tlT=setInterval(()=>{ if(dlg.style.display==='none'){ clearInterval(tlT); tlT=0; return; } const d=dur(); let t=0; try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
+    const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }, F_=()=>!ytOn()&&film(), dur=()=>{ const f=F_(); if(f)return f.f.len; try{ return player&&player.getDuration?player.getDuration()||0:0; }catch(e){ return 0; } }; let drag=false;
+    if(tlT)clearInterval(tlT); tlT=setInterval(()=>{ if(dlg.style.display==='none'){ clearInterval(tlT); tlT=0; return; } const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
       if(!drag&&d)$('#cmt').value=Math.round(t/d*1000); $('#cmtv').textContent=fmt(t)+' / '+fmt(d); },500);
     $('#cmt').oninput=e=>{ drag=true; const d=dur(); $('#cmtv').textContent=fmt(+e.target.value/1000*d)+' / '+fmt(d); };
-    $('#cmt').onchange=async e=>{ drag=false; if(!a)return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
-    if(a){ $('#cms').oninput=e=>$('#cmsv').textContent=e.target.value+'%'; $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%';
-      $('#cms').onchange=e=>push({size:+e.target.value/100}); $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
-      const bset=(k,v)=>{ beamLive={...bcfg(),[k]:v}; }, bsave=async()=>{ say('...'); const ok=await push({beam:bcfg()}); if(ok)beamLive=null; say(ok?'light saved for everyone':SQLHINT); };
-      $('#cmbon').onchange=e=>{ bset('on',e.target.checked); bsave(); };
-      for(const [id,k] of [['cmbp','power'],['cmbw','warm'],['cmbf','flicker'],['cmbs','spill']]){ $('#'+id).oninput=e=>{ $('#'+id+'v').textContent=e.target.value+'%'; bset(k,+e.target.value/100); }; $('#'+id).onchange=bsave; }
-      $('#cmloop').onchange=e=>push({loop:e.target.checked}); $('#cmauto').onchange=e=>push({autoplay:e.target.checked});
+    $('#cmt').onchange=async e=>{ drag=false; if(!a||F_())return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
+    if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
+      if($('#cmsched'))$('#cmsched').onclick=async()=>{ say('...'); say(await push({video_id:''})?'back to the schedule':'could not'); };
       $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date().toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
-      $('#cmrestart').onclick=async()=>{ say('...'); say(await push({started_at:new Date().toISOString()})?'restarted':'could not'); };
-      $('#cmsave').onclick=async()=>{ const list=$('#cmpl').value.split('\n').map(s=>s.trim()).filter(Boolean).map(u=>({url:u,id:vid(u)})).filter(p=>p.id); say('...'); say(await push({playlist:list,idx:0})?'saved '+list.length:'could not save'); }; }
+    }
     dlg.style.display='block'; };
-  CINEMA.openMenu=openMenu; CINEMA.openAdmin=openMenu;
+  CINEMA.openMenu=openMenu;
   const SQLHINT='could not save (has supabase/cinema.sql been run?)';
   const mini=(head,body,wire)=>{ if(!edlg)edlg=box_();
     edlg.innerHTML=`<div style="font:600 18px system-ui;color:#d8a845;margin-bottom:10px">${head} · admin</div>${body}
@@ -294,56 +312,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     ($,say)=>{ $('#ezsave').onclick=async()=>{ say('...'); say(await push({poster:$('#ezu').value.trim()})?'saved':SQLHINT); };
       $('#ezauto').onclick=async()=>{ $('#ezu').value=''; say('...'); say(await push({poster:''})?'showing the video picture':SQLHINT); }; }); };
 
-  // the projection booth (an inside off the map, in through the door in the hall): the old projector throws the picture through its port; double-click it for the settings
-  const booth={port:null,anim:()=>{}}; let BS=[];
-  booth.build=BB=>{ '@later'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y, tw=Math.abs(X(1)-X(0)), x0=X(BB.x0), x1=X(BB.x1), zN=Z(BB.y0), zS=Z(BB.y1), H=Y(170), G=new THREE.Group(); G.name='booth-in'; scene.add(G);
-    return ROOMS.part(G,()=>{ const L=(c,o={})=>new THREE.MeshLambertMaterial({color:c,...o}), add=(geo,mat,x,y,z,o={})=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); if(o.rx)m.rotation.x=o.rx; if(o.rz)m.rotation.z=o.rz; if(o.ry)m.rotation.y=o.ry; m.castShadow=!o.flat; m.receiveShadow=true; scene.add(m); return m; };
-      const tex=(w,h,f,rx=1,ry=1)=>{ const c=canv(w,h); f(c.g,w,h); c.tex.wrapS=c.tex.wrapT=THREE.RepeatWrapping; c.tex.repeat.set(rx,ry); c.tex.needsUpdate=true; return c.tex; };
-      const flo=tex(256,256,(g,w,h)=>{ g.fillStyle='#46464a'; g.fillRect(0,0,w,h); for(let i=0;i<2600;i++){ g.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'90,90,96')+','+(Math.random()*.25)+')'; g.fillRect(Math.random()*w,Math.random()*h,2,2); } for(let i=0;i<5;i++){ const gr=g.createRadialGradient(0,0,0,0,0,30+Math.random()*30); gr.addColorStop(0,'rgba(0,0,0,.35)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.save(); g.translate(Math.random()*w,Math.random()*h); g.fillStyle=gr; g.fillRect(-60,-60,120,120); g.restore(); } },(x1-x0)/(3*tw),(zS-zN)/(3*tw));
-      const blk=(rx,ry)=>tex(256,128,(g,w,h)=>{ g.fillStyle='#3a3e3c'; g.fillRect(0,0,w,h); for(let r=0;r<8;r++)for(let c=-1;c<5;c++){ const x=c*64+(r&1?32:0), v=84+Math.random()*14|0; g.fillStyle='rgb('+(v-4)+','+(v+4)+','+(v-2)+')'; g.fillRect(x+2,r*16+2,60,12); } },rx,ry);
-      add(new THREE.PlaneGeometry(x1-x0,zS-zN).rotateX(-Math.PI/2),L(0xffffff,{map:flo}),(x0+x1)/2,.01,(zN+zS)/2,{flat:1});
-      const wall=(w,h,x,z,ry,rx,ry2)=>{ const m=add(new THREE.BoxGeometry(w,h,.1*tw),L(0xffffff,{map:blk(rx,ry2)}),x,h/2,z,{ry,flat:1}); m.castShadow=false; return m; };
-      wall(x1-x0,H,(x0+x1)/2,zN-.05*tw,0,(x1-x0)/(2.6*tw),H/(1.3*tw)); wall(zS-zN,H,x0-.05*tw,(zN+zS)/2,Math.PI/2,(zS-zN)/(2.6*tw),H/(1.3*tw)); wall(zS-zN,H,x1+.05*tw,(zN+zS)/2,Math.PI/2,(zS-zN)/(2.6*tw),H/(1.3*tw)); wall(x1-x0,Y(22),(x0+x1)/2,zS+.05*tw,0,(x1-x0)/(2.6*tw),.15);
-      const px=X(BB.x0+3), vx=X(BB.x0+1.4), py=Y(66);
-      for(const [x,on] of [[px,1],[vx,0]]){ add(new THREE.BoxGeometry(.9*tw,Y(30),.06*tw),L(0x121214),x,py,zN+.03*tw,{flat:1}); const gl=add(new THREE.PlaneGeometry(.7*tw,Y(21)),new THREE.MeshBasicMaterial({color:on?0xfff1d0:0x0a0a10}),x,py,zN+.07*tw,{flat:1}); if(!on){ booth.port=gl; booth.glass=gl.material; } }
-      const DK=L(0x2a2d2f), GN=L(0x5f726a), CH=L(0xc8ced3), cxp=px, cz=Z(BB.y0+2.1);
-      add(new THREE.BoxGeometry(.95*tw,Y(4),1.2*tw),DK,cxp,Y(2),cz);
-      add(new THREE.CylinderGeometry(.18*tw,.24*tw,Y(28),12),GN,cxp,Y(18),cz);
-      add(new THREE.BoxGeometry(.5*tw,Y(20),.66*tw),GN,cxp,Y(42),cz-.05*tw);
-      add(new THREE.BoxGeometry(.6*tw,Y(32),.56*tw),DK,cxp,Y(46),cz+.58*tw);
-      add(new THREE.CylinderGeometry(.1*tw,.1*tw,H-Y(62),10),DK,cxp,(H+Y(62))/2,cz+.58*tw);
-      for(const s of [-1,1])for(let k=0;k<4;k++)add(new THREE.BoxGeometry(.02*tw,Y(2),.32*tw),new THREE.MeshBasicMaterial({color:0xff9a3c}),cxp+s*.305*tw,Y(40+k*4.5),cz+.58*tw,{flat:1});
-      add(new THREE.CylinderGeometry(.07*tw,.08*tw,.45*tw,14),CH,cxp,Y(44),cz-.58*tw,{rx:Math.PI/2}); add(new THREE.CircleGeometry(.065*tw,14),new THREE.MeshBasicMaterial({color:0xfff4d8}),cxp,Y(44),cz-.81*tw,{ry:Math.PI,flat:1});
-      const rt=tex(128,128,(g,w,h)=>{ g.fillStyle='#000'; g.fillRect(0,0,w,h); g.fillStyle='#c9ced2'; g.beginPath(); g.arc(64,64,62,0,7); g.fill(); g.fillStyle='#3a2a1e'; g.beginPath(); g.arc(64,64,48,0,7); g.fill(); g.fillStyle='#9aa1a6'; g.beginPath(); g.arc(64,64,30,0,7); g.fill();
-        g.fillStyle='#2a2d30'; for(let k=0;k<5;k++){ g.save(); g.translate(64,64); g.rotate(k*1.2566); g.beginPath(); g.ellipse(0,-17,6,10,0,0,7); g.fill(); g.restore(); } g.fillStyle='#6d7378'; g.beginPath(); g.arc(64,64,6,0,7); g.fill(); });
-      const RM=[CH,L(0xffffff,{map:rt}),L(0xffffff,{map:rt})]; reels.length=0;
-      for(const dz of [-.42,.36]){ const r=add(new THREE.CylinderGeometry(.4*tw,.4*tw,.08*tw,24),RM,cxp,Y(70),cz+dz*tw,{rz:Math.PI/2}); reels.push(r); add(new THREE.BoxGeometry(.04*tw,Y(18),.05*tw),DK,cxp-.06*tw,Y(57),cz+dz*.6*tw); }
-      for(const [a,b] of [[[-.7,62],[-.25,50]],[[.66,62],[.2,50]]]){ const A=new THREE.Vector3(cxp+.03*tw,Y(a[1]),cz+a[0]*tw), Bv=new THREE.Vector3(cxp+.03*tw,Y(b[1]),cz+b[0]*tw), m=add(new THREE.BoxGeometry(.012*tw,.012*tw,A.distanceTo(Bv)),L(0x2a1a10),(A.x+Bv.x)/2,(A.y+Bv.y)/2,(A.z+Bv.z)/2,{flat:1}); m.lookAt(Bv); }
-      const bc=new THREE.BufferGeometry(), gp=new THREE.Vector3(cxp,Y(44),cz-.82*tw), gw=.3*tw, gh=Y(9), Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([a,b])=>[px+a*gw,py+b*gh,zN+.08*tw]), ps=[];
-      for(let i=0;i<4;i++){ const a=Q[i], b=Q[(i+1)%4]; ps.push(gp.x,gp.y,gp.z,...a,...b); } bc.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));
-      const bm=new THREE.Mesh(bc,new THREE.MeshBasicMaterial({color:0xfff0d0,transparent:true,opacity:.07,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide})); scene.add(bm);
-      const bx0=X(BB.x1-.75), bz0=Z(BB.y0+.6), bz1=Z(BB.y0+3.6);
-      add(new THREE.BoxGeometry(.7*tw,Y(4),bz1-bz0),L(0x3b2c22),bx0,Y(38),(bz0+bz1)/2); for(const z of [bz0+.1*tw,bz1-.1*tw])add(new THREE.BoxGeometry(.6*tw,Y(36),.06*tw),DK,bx0,Y(18),z);
-      for(const z of [bz0+.6*tw,bz1-.7*tw])add(new THREE.CylinderGeometry(.25*tw,.25*tw,.05*tw,20),RM,bx0,Y(48),z,{rz:Math.PI/2});
-      for(let k=0;k<6;k++)add(new THREE.CylinderGeometry(.3*tw,.3*tw,Y(5),18),CH,X(BB.x1-.6)+(k%2)*.05*tw,Y(2.6+k*5.2),Z(BB.y1-.9));
-      add(new THREE.CylinderGeometry(.16*tw,.16*tw,Y(30),10),L(0x5a2a22),X(BB.x0+2),Y(15),Z(BB.y0+3));
-      add(new THREE.ConeGeometry(.16*tw,Y(10),12,1,true),L(0x2c3230,{side:THREE.DoubleSide}),bx0,Y(78),(bz0+bz1)/2); add(new THREE.SphereGeometry(.05*tw,8,6),new THREE.MeshBasicMaterial({color:0xffd9a0}),bx0,Y(74),(bz0+bz1)/2,{flat:1});
-      const lamp=new THREE.PointLight(0xffb870,9,6*TILE,1.5); const tube=new THREE.PointLight(0xdfe8ff,6,7*TILE,1.5); tube.position.set((x0+x1)/2,Y(150),(zN+zS)/2); scene.add(tube); lamp.position.set(bx0,Y(72),(bz0+bz1)/2); scene.add(lamp);
-      const glo=new THREE.PointLight(0xff9440,2.4,2.4*TILE,1.6); glo.position.set(cxp,Y(46),cz+.58*tw); scene.add(glo);
-      if(post){ add(new THREE.PlaneGeometry(.9*tw,.9*tw*40/27),new THREE.MeshBasicMaterial({map:post.tex}),x0+.02*tw,Y(72),Z(BB.y0+3.6),{ry:Math.PI/2,flat:1}); }
-      const hb=new THREE.Mesh(new THREE.BoxGeometry(1.1*tw,Y(90),2.2*tw),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(cxp,Y(45),cz); scene.add(hb);
-      UI.thing({name:'THE PROJECTOR',obj:hb,reach:1.8*TILE,near:3.2*TILE,tall:Y(90),act:()=>openMenu()});
-      const R4=(a,b,c,d)=>[Math.min(a,c),Math.min(b,d),Math.max(a,c),Math.max(b,d)]; BS=[R4(cxp-.48*tw,cz-.95*tw,cxp+.48*tw,cz+.95*tw),R4(bx0-.36*tw,bz0,bx0+.36*tw,bz1),R4(X(BB.x1-.95),Z(BB.y1-1.25),X(BB.x1-.25),Z(BB.y1-.55))]; SOL.up.push(...BS);
-      booth.anim=now=>{ const on=!!vid(cur().video_id); if(on)for(const r of reels)r.rotation.x-=.035*(r===reels[0]?1:1.3); const c=bcfg(); bm.visible=on&&!!c.on; bm.material.color.copy(bcol(c)); bm.material.opacity=(.05+(.02*Math.sin(now/1000*23)+.012*Math.sin(now/1000*7))*c.flicker*2)*c.power; glo.intensity=2.6+.3*Math.sin(now/1000*17); };
-    }); };
-  const reels=[];
-  booth.unbuild=()=>{ '@later'; for(const r of BS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } BS=[]; booth.port=null; booth.glass=null; booth.anim=()=>{}; reels.length=0; };
-  CINEMA.booth=booth;
-
   let attached=false;
   const attach=()=>{ if(attached)return; const m=STORE.main&&STORE.main.theatre; if(!m||!m.fm)return; attached=true;
     for(const [x,z] of m.exits||[]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.2*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,1.2*TILE,z); scene.add(hb); UI.thing({name:'EXIT',ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>STORE.exit('theatre')}); }
-    buildSigns(m); buildRig(m); };
+    buildSigns(m); buildHole(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');
   (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); })();   // after the start, so the later chunk is not pulled in early

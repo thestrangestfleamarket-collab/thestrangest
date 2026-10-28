@@ -3,6 +3,7 @@
   "name": "THE SHARK",
   "trade": {
    "sells": [
+    "scuba",
     "goggles",
     "headlight",
     "scanner",
@@ -11,7 +12,7 @@
     "rod",
     "bait"
    ],
-   "line": "Going down? You'll want the kit."
+   "line": "Going down? Rent a tank, grab the kit."
   },
   "home": [
    117.5,

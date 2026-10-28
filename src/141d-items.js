@@ -1,9 +1,9 @@
 // THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, ...); ITEMED edits them (shift+7).
 import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-{ const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD']];
-  const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0],['breath','BREATH s',0,180,5,0],['damage','DAMAGE',0,10,.5,0],['depth','DEPTH m',0,12,.5,0],['fight','FIGHT',0,10,.5,0],['common','COMMON',0,10,.1,0]];
-  const SEL=[['slot','WORN / HELD',['none','hand','body','head','eyes']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float','light','sight','fish','fly']],['water','LIVES IN',['none','river','lake']],['bites','BITES',['any','day','dusk','night']],['bait','BAIT',['none','worm','cut']]];
+{ const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD'],['rental','RENTAL']];
+  const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0],['breath','BREATH s',0,180,5,0],['tank','TANK s',0,900,30,0],['damage','DAMAGE',0,10,.5,0],['depth','DEPTH m',0,12,.5,0],['fight','FIGHT',0,10,.5,0],['common','COMMON',0,10,.1,0]];
+  const SEL=[['slot','WORN / HELD',['none','hand','body','head','eyes','back']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float','light','sight','fish','breathe','fly']],['water','LIVES IN',['none','river','lake']],['bites','BITES',['any','day','dusk','night']],['bait','BAIT',['none','worm','cut']]];
   const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; for(const [k,,opts] of SEL)d[k]=opts[0]; return d; };
   let BAKED={}; try{ BAKED=__DATA__("data/items.json")||{}; }catch(e){}
   try{ for(const id in BAKED)ITEMS.defs[id]=Object.assign(DEF(),BAKED[id]); }catch(e){}

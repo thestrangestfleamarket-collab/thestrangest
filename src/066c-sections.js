@@ -11,7 +11,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
   const P=G.park, O=G.outer, ROW=G.row, A=S.all;
   const road={x0:O.x0+W,y0:O.y0+W,x1:O.x1-W,y1:O.y1-W}, inner={x0:P.x0-W,y0:P.y0-W,x1:P.x1+W,y1:P.y1+W};
   const frame=(o,i)=>[{x0:o.x0,x1:o.x1,y0:o.y0,y1:i.y0},{x0:o.x0,x1:o.x1,y0:i.y1,y1:o.y1},{x0:o.x0,x1:i.x0,y0:i.y0,y1:i.y1},{x0:i.x1,x1:o.x1,y0:i.y0,y1:i.y1}];
-  const secs=S.list.filter(b=>b.id!==home);
+  const secs=S.list.filter(b=>b.id!==home&&S.loaded.includes(b));   // only loaded sections are built: today none but yours
 
   // the ground: flat pieces, each kind one repeated picture, laid in order (later ones a hair higher)
   const pic=(n,fn)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=n; const g=cv.getContext('2d'), im=g.createImageData(n,n); for(let j=0;j<n;j++)for(let i=0;i<n;i++){ const c=fn(i,j,n), k=(j*n+i)*4; im.data[k]=c[0]; im.data[k+1]=c[1]; im.data[k+2]=c[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
@@ -94,7 +94,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
     sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
       g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; g.fillText('SUBWAY · THE LOOP · TRAINS 1 ↻  2 ↺',h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
-  const edge=(x,y,al,from,to)=>{ const H=.9*T, X=XS(x), Z=ZS(y), e=.012, plate=id=>(g,w,h)=>{ g.fillStyle='#14361f'; g.fillRect(0,0,w,h); g.strokeStyle='#e8f2e8'; g.lineWidth=4; g.strokeRect(6,6,w-12,h-12); g.fillStyle='#e8f2e8'; g.textBaseline='middle'; g.textAlign='center';
+  const edge=(x,y,al,from,to)=>{ if(!S.loaded.some(b=>b.id===from)||!S.loaded.some(b=>b.id===to))return; const H=.9*T, X=XS(x), Z=ZS(y), e=.012, plate=id=>(g,w,h)=>{ g.fillStyle='#14361f'; g.fillRect(0,0,w,h); g.strokeStyle='#e8f2e8'; g.lineWidth=4; g.strokeRect(6,6,w-12,h-12); g.fillStyle='#e8f2e8'; g.textBaseline='middle'; g.textAlign='center';
       font(g,h*.22,700); g.fillText('ENTERING',w/2,h*.32); font(g,h*.36,900); g.fillText('SECTION '+id,w/2,h*.66); };
     bx(x-.06,y-.06,x+.06,y+.06,0,2.4,postM);
     if(!al){ sign(256,96,plate(to),[X-e,Z-H],[X-e,Z+H],1.7,2.35,true); sign(256,96,plate(from),[X+e,Z+H],[X+e,Z-H],1.7,2.35,true); }

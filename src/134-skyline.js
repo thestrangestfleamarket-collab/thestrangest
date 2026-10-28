@@ -16,7 +16,7 @@ import {VIS} from './129a-vis.js';
   FAR3.mist=mist;
   const FL0={corner:2,m0:MIST0,m1:MIST1,md:.5,hn:.2,hf:.82,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==2){ delete s.m0; delete s.m1; s.corner=2; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
   FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:0}; I.autoReset=true; res(r); }); }); });
-  const LR=MODS.landR, SA=SECTIONS.all; FAR3.land=[Math.min(LR.x0*TILE,(SA.x0-72)*TILE),Math.min(LR.z0*TILE,(SA.y0+77)*TILE),Math.max(LR.x1*TILE,(SA.x1-72)*TILE),Math.max(LR.z1*TILE,(SA.y1+77)*TILE)]; const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
+  const LR=MODS.landR, SA=SECTIONS.live; FAR3.land=[Math.min(LR.x0*TILE,(SA.x0-72)*TILE),Math.min(LR.z0*TILE,(SA.y0+77)*TILE),Math.max(LR.x1*TILE,(SA.x1-72)*TILE),Math.max(LR.z1*TILE,(SA.y1+77)*TILE)]; const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
   const row=(inset,hmin,hmax,wmin,wmax,tower,k)=>{ const x0=LR.x0+inset, x1=LR.x1-inset, z0=LR.z0+inset, z1=LR.z1-inset; let n=0;
     for(const [ax,fixed,lo,hi] of [['x',z0,x0,x1],['x',z1,x0,x1],['z',x0,z0,z1],['z',x1,z0,z1]]){ let p=lo+hs(n++,k)*6;
       while(p<hi){ const w=wmin+hs(n,k)*(wmax-wmin), d=wmin*.8+hs(n+1,k)*(wmax-wmin)*.6, t=hs(n+2,k)<tower, h=t?hmax*(1.2+hs(n+3,k)*.6):hmin+hs(n+3,k)*(hmax-hmin), g=hs(n+5,k);
@@ -110,14 +110,12 @@ import {VIS} from './129a-vis.js';
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
-    FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(!FAR3.on||inside||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }
+    FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(!FAR3.on||inside||!up||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z;
     if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); { const Wn=WX.now||{cloud:.2}, dk=Math.max(0,Math.min(1,(CLOCK.elev()-3)/10))*(1-Math.max(0,Math.min(1,(Wn.cloud-.4)/.5))); FOG.color.lerp(SKY.U.uH.value,Math.max(SKY.SC&&SKY.SC.sky?SKY.SC.sky*.45:0,dk*.6)); } if(SKY.SC&&SKY.SC.blood)FOG.color.lerp(SKY.MB,.4*SKY.SC.blood*(1-k)); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=FL.m0; MISTE.z=FL.m1; MISTF.x=FL.md; scene.fog=FOG; SKY.dome.visible=true; SKY.U.uMistK.value=1; SKY.U.uMistC.value.copy(FOG.color); scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }
     FOG.color.copy(SKY.U.uH.value).lerp(SKY.U.uA.value,.4); FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; },'134-skyline');
   const g=document.querySelector('#atmhaze'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };
-    b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze3',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw();
-    const H=SHARED.METRO&&SHARED.METRO.haze; if(H){ const s=document.createElement('button'); s.className='btn'; s.id='dshaze'; const dr=()=>{ s.textContent='STATION HAZE '+['OFF','LIGHT','THICK'][H.k]; s.setAttribute('aria-pressed',String(H.on)); };
-      s.onclick=()=>{ H.set((H.k+1)%3); try{ SAVE.set('stationhaze',String(H.k)); }catch(e){} dr(); }; g.appendChild(s); dr(); } }
+    b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze3',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw(); }
   { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true,type:THREE.HalfFloatType}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
     const BM=new THREE.ShaderMaterial({uniforms:{uT:{value:null},uD:{value:new THREE.Vector2()}},depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',

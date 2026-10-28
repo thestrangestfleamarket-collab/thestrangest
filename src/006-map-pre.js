@@ -74,7 +74,9 @@ const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(
 const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c][r],col:c,row:r,x0:G.x0+c*G.w,x1:G.x0+(c+1)*G.w,y0:G.y0+r*G.h,y1:G.y0+(r+1)*G.h});
   const list=[]; for(let c=0;c<G.cols;c++)for(let r=0;r<G.rows;r++)list.push(box(c,r));
-  return {...S,list,all:{x0:G.x0,x1:G.x0+G.cols*G.w,y0:G.y0,y1:G.y0+G.rows*G.h},of:id=>list.find(b=>b.id===id)||null,
+  // live: the area built and walkable, the sections loaded (yours); the rest is not loaded at all
+  const home=list.find(b=>b.id===SECTION.id)||list[0];
+  return {...S,list,all:{x0:G.x0,x1:G.x0+G.cols*G.w,y0:G.y0,y1:G.y0+G.rows*G.h},live:{x0:home.x0,x1:home.x1,y0:home.y0,y1:home.y1},loaded:[home],of:id=>list.find(b=>b.id===id)||null,
     at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }

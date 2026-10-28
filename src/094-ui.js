@@ -16,11 +16,11 @@ import {SOUND} from './091-sfx.js';
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly) · swim up'],[' ','jump · rise (free camera, fly) · swim down'],
-    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings)'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['f','fall'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, third person, behind, first person, isometric)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings)'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)'],['h','hide the help']];
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
-  const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m',chat:'enter',inspect:'5'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
+  const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m',chat:'enter',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null; UI.keyOf=keyOf;
   UI.key=e=>{ const raw=e.key.toLowerCase();
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;
@@ -42,9 +42,15 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
       let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('N','NOON / 7 PM')+row('SHIFT + 0','ALL THE EDITORS: PICK ONE')+row('SHIFT + E','EDIT THE WORLD')+row('I','YOUR PACK: WHAT YOU CARRY, HUNGER, SKILLS, CRAFTING')+row('ESC','THE MENU')+row('?','THIS LIST')+row('L','FEEL LAB: THE NEW CONTROLLER, ITS TUNING AND ITS TEST YARD')+row('O','FEEL LAB DEBUG')+row('T','IN THE YARD: BACK TO ITS SPAWN');
+      o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + N','NOON / 7 PM')+row('SHIFT + 0','ALL THE EDITORS: PICK ONE')+row('SHIFT + E','EDIT THE WORLD')+row('I','YOUR PACK: WHAT YOU CARRY, HUNGER, SKILLS, CRAFTING')+row('ESC','THE MENU')+row('?','THIS LIST')+row('L','FEEL LAB: THE NEW CONTROLLER, ITS TUNING AND ITS TEST YARD')+row('O','FEEL LAB DEBUG')+row('T','IN THE YARD: BACK TO ITS SPAWN')+row('F8','REPORT A BUG');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
+      o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('V','CHANGE THE VIEW');
+      o+=h('TALKING TO SOMEONE')+row('W S, ARROWS','PICK AN ANSWER')+row('E, SPACE, ENTER','SAY IT')+row('1 TO 9','SAY THAT ONE')+row('ESC','WALK AWAY');
+      o+=h('SITTING')+row('ANY MOVE KEY','STAND UP');
+      o+=h('YOUR APARTMENT: DECORATING ('+NAME(keyOf('t'))+')')+row('DRAG','MOVE A THING')+row('Q E','TURN IT (ALT: A LITTLE)')+row('[ ]','LOWER / RAISE IT')+row('X, DELETE','PUT IT AWAY')+row('G','GRID ON / OFF')+row('CTRL + Z','UNDO')+row('ESC','DONE');
+      o+=h('THE MOVIE SCREEN (DOUBLE CLICK IT)')+row('SOUND, VOLUME','YOUR OWN')+row('FULL SCREEN','THE FILM OVER THE WHOLE PAGE · ESC OR ✕ GOES BACK');
+      o+=h('THE MAP EDITOR')+row('CTRL + Z / Y','UNDO / REDO')+row('CTRL + D','COPY')+row('DELETE','REMOVE')+row('ESC','CLOSE');
       if(UI.padMoves)o+=UI.padMoves(row,h);
       o+=h('THE MOUSE')+row('DOUBLE CLICK','A THING: GO TO IT AND USE IT · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR NAME, HEALTH AND BODY · THE GUITARIST: WATCH HIS HANDS · A MUSHROOM: PICK IT · THE MUSHROOM SELLER: HIS SHOP')
         +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG, SHIFT + DRAG','TURN AND TILT THE VIEW')+row('WHEEL','ZOOM');
@@ -94,6 +100,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(v==='iso'){ UI.isoTo(); SHARED.pitchTo=Math.PI/6; SHARED.ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }
     if(v==='follow'){ UI.dist=4*TILE; SHARED.pitchTo=.2; }
     if(v==='first'){ SHARED.pitchTo=.05; UI._fpy=null; } if(v==='third')SHARED.pitchTo=.3; if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
+  UI.inIso=()=>{ UI.setView('iso'); requestAnimationFrame(()=>requestAnimationFrame(()=>UI.isoTo())); };   // going into an inside starts in the overhead view at the room's angle
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ UI.isoStep(-1); return; } SHARED.yawTo=Math.round((SHARED.yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{
     SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
@@ -260,35 +267,31 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const L=[]; for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,q.y1<SHARED.BOD.road.CORN[0].y?q.y0-2.5:q.y1+1.5]);
     L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+RING.ff.x1)/2-40,(SHARED.BOD.road.CORN[0]?SHARED.BOD.road.CORN[0].y:-60)]);
     const L2=[]; if(SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, my=(rd.y0+inn.y0)/2, ny=(rd.y1+inn.y1)/2, wx=(rd.x0+inn.x0)/2, ex=(rd.x1+inn.x1)/2;
-      for(const b of SECTIONS.list){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; if(b.row===0){ if(b.id!==HOME)L2.push([ST.south,cx,my]); } else L2.push([ST.north,cx,ny]); if(b.col===0)L2.push([ST.west,wx,cy]); if(b.col===SECTIONS.grid.cols-1)L2.push([ST.east,ex,cy]); } }
+      for(const b of SECTIONS.loaded){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; if(b.row===0){ if(b.id!==HOME)L2.push([ST.south,cx,my]); } else L2.push([ST.north,cx,ny]); if(b.col===0)L2.push([ST.west,wx,cy]); if(b.col===SECTIONS.grid.cols-1)L2.push([ST.east,ex,cy]); } }
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; cv.getContext('2d').putImageData(im,0,0);
     Object.assign(PLAN,{F,S,W,H,cv,L,L2,sx:x=>(x-F.x0)*S,sy:y=>(F.y1-y)*S,tile:(i,j)=>[F.x0+i/S,F.y1-j/S]}); return PLAN; };
-  const V={z:1,cx:null,cy:null,sec:null}, DW=1200, clv=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const V={z:1,cx:null,cy:null}, DW=1200, clv=(v,a,b)=>Math.max(a,Math.min(b,v));
   const view=()=>{ const Q=plan(); if(V.cx==null){ V.cx=Q.W/2; V.cy=Q.H/2; } const sw=Q.W/V.z, sh=Q.H/V.z; V.cx=clv(V.cx,sw/2,Q.W-sw/2); V.cy=clv(V.cy,sh/2,Q.H-sh/2); return {Q,sx:V.cx-sw/2,sy:V.cy-sh/2,sw,sh,k:DW/sw}; };
   const toMap=(e,v)=>{ const r=mcv.getBoundingClientRect(), px=v.sx+(e.clientX-r.left)/r.width*DW/v.k, py=v.sy+(e.clientY-r.top)/r.height*mcv.height/v.k; return v.Q.tile(px,py); };
   const zoomTo=(z,px,py,fx=.5,fy=.5)=>{ const Q=plan(); V.z=clv(z,1,8); const sw=Q.W/V.z, sh=Q.H/V.z; V.cx=px-fx*sw+sw/2; V.cy=py-fy*sh+sh/2; drawMap(); };
-  const goSec=id=>{ const Q=plan(); if(!id){ V.sec=null; return zoomTo(1,Q.W/2,Q.H/2); } const b=SECTIONS.of(id); V.sec=id; zoomTo(Q.H/((b.y1-b.y0)*Q.S)*.96,Q.sx((b.x0+b.x1)/2),Q.sy((b.y0+b.y1)/2)); };
   { const Z=$('#mapz'), B=(t,f,id)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=t; if(id)b.dataset.sec=id; b.onclick=f; Z.append(b); };
-    B('ALL',()=>goSec(null),'ALL'); for(let r=SECTIONS.grid.rows-1;r>=0;r--)for(let c=0;c<SECTIONS.grid.cols;c++){ const id=SECTIONS.ids[c][r]; B(id,()=>goSec(id),id); }
-    B('−',()=>{ V.sec=null; zoomTo(V.z/1.5,V.cx,V.cy); }); B('+',()=>{ V.sec=null; zoomTo(V.z*1.5,V.cx,V.cy); }); const sp=document.createElement('span'); sp.className='dim'; sp.textContent='wheel or +/- to zoom, drag to move'; Z.append(sp); }
+    B('−',()=>{ zoomTo(V.z/1.5,V.cx,V.cy); }); B('+',()=>{ zoomTo(V.z*1.5,V.cx,V.cy); }); const sp=document.createElement('span'); sp.className='dim'; sp.textContent='wheel or +/- to zoom, drag to move'; Z.append(sp); }
   const drawDown=(X_,Y_,W,H)=>{ mg.fillStyle='#07080b'; mg.fillRect(0,0,W,H); const D=LOOP.D; if(!D)return;
     const rr=(t,col,lw)=>{ const x0=X_(t.west), x1=X_(t.east), y0=Y_(t.north), y1=Y_(t.south), r=Math.min(Math.abs(X_(D.r)-X_(0)),(x1-x0)/2,(y1-y0)/2); mg.strokeStyle=col; mg.lineWidth=Math.max(lw,lw*V.z*.6); mg.beginPath(); mg.roundRect(x0,y0,x1-x0,y1-y0,r); mg.stroke(); };
     rr(D.tracks.outer,'#c88a3a',3); rr(D.tracks.inner,'#3a8ac8',3);
     for(const st of LOOP.STA){ const a=st.my(0), b=st.my(LOOP.XW), x0=X_(st.x0), x1=X_(st.x0+LOOP.LEN), y0=Y_(Math.max(a,b)), y1=Y_(Math.min(a,b)); mg.fillStyle='#1c2028'; mg.fillRect(x0,y0,x1-x0,y1-y0); mg.strokeStyle='#8a8f9c'; mg.lineWidth=1; mg.strokeRect(x0+.5,y0+.5,x1-x0,y1-y0);
       mg.fillStyle='#c8cdd8'; mg.fillRect(x0,Y_(st.my(LOOP.P0)),x1-x0,Y_(st.my(LOOP.P1))-Y_(st.my(LOOP.P0))); } };
   function drawMap(){ M.querySelectorAll('[data-lv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lv===mapLv)));
-    M.querySelectorAll('[data-sec]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sec===(V.sec||(V.z===1?'ALL':'')))));
     const v=view(), Q=v.Q, W=DW, H=Math.round(DW*Q.H/Q.W); if(mcv.width!==W)mcv.width=W; if(mcv.height!==H)mcv.height=H; mcv.style.width='100%';
     const X_=x=>(Q.sx(x)-v.sx)*v.k, Y_=y=>(Q.sy(y)-v.sy)*v.k; mg.imageSmoothingEnabled=false;
     if(mapLv==='up')mg.drawImage(Q.cv,v.sx,v.sy,v.sw,v.sh,0,0,W,H); else drawDown(X_,Y_,W,H);
     mg.textAlign='center'; mg.textBaseline='middle';
-    for(const b of SECTIONS.list){ const x0=X_(b.x0), x1=X_(b.x1), y0=Y_(b.y1), y1=Y_(b.y0); mg.strokeStyle='rgba(70,200,210,.55)'; mg.lineWidth=1; mg.setLineDash([6,5]); mg.strokeRect(x0+.5,y0+.5,x1-x0,y1-y0); mg.setLineDash([]);
+    for(const b of SECTIONS.loaded){ const x0=X_(b.x0), x1=X_(b.x1), y0=Y_(b.y1), y1=Y_(b.y0); mg.strokeStyle='rgba(70,200,210,.55)'; mg.lineWidth=1; mg.setLineDash([6,5]); mg.strokeRect(x0+.5,y0+.5,x1-x0,y1-y0); mg.setLineDash([]);
       mg.font=`bold ${Math.round(Math.min(90,(y1-y0)*.22))}px Silkscreen,monospace`; mg.fillStyle='rgba(236,229,211,.18)'; mg.fillText(b.id,(x0+x1)/2,(y0+y1)/2); }
     const U=[], lab=(n,x,y,sz,col)=>{ mg.font=`${sz}px Silkscreen,monospace`; const a=Math.round(X_(x)), w=mg.measureText(n).width/2+2; if(a<-w||a>W+w)return; let b=Math.round(Y_(y)); if(b<-10||b>H+10)return; while(U.some(u=>Math.abs(u[0]-a)<u[2]+w&&Math.abs(u[1]-b)<sz+1))b+=sz+1; U.push([a,b,w]); mg.fillStyle='#000'; mg.fillText(n,a+1,b+1); mg.fillStyle=col; mg.fillText(n,a,b); };
     if(mapLv==='up'){ for(const [n,x,y] of Q.L2)lab(n,x,y,12,'#f2d27a'); if(V.z>=1.6)for(const [n,x,y] of Q.L)lab(n,x,y,V.z>=3?12:10,'#ece5d3'); }
     else for(const st of LOOP.STA)lab(st.id+' · '+st.name,st.x,st.my(LOOP.XW/2)+(st.sg>0?26:-26),12,'#ece5d3');
     if(mapLv!=='up'){ mg.font='12px Silkscreen,monospace'; mg.textAlign='left'; for(const [i,t] of [[0,'TRAIN 1 CLOCKWISE'],[1,'TRAIN 2 COUNTERCLOCKWISE']]){ const y=H-30+i*16; mg.fillStyle=i?'#3a8ac8':'#c88a3a'; mg.fillRect(12,y-2,22,4); mg.fillStyle='#ece5d3'; mg.fillText(t,42,y); } mg.textAlign='center'; }
-    if(V.sec){ const b=SECTIONS.of(V.sec), x0=X_(b.x0), y0=Y_(b.y1); mg.fillStyle='rgba(0,0,0,.45)'; mg.beginPath(); mg.rect(0,0,W,H); mg.rect(x0,y0,X_(b.x1)-x0,Y_(b.y0)-y0); mg.fill('evenodd'); mg.strokeStyle='#46c8d2'; mg.lineWidth=2; mg.strokeRect(x0,y0,X_(b.x1)-x0,Y_(b.y0)-y0); }
     if(SHARED.LVL===mapLv){ const a=Math.round(X_(SHARED.BOD.OX+pos.x/TILE)), b=Math.round(Y_(SHARED.BOD.OY+pos.z/TILE)); mg.fillStyle='#000'; mg.fillRect(a-5,b-5,11,11); mg.fillStyle='#f2c14e'; mg.fillRect(a-4,b-4,9,9); } }
   STORE.goTo=(x,z,lv,hd,fl)=>goTo(x,z,lv,hd,fl);
   window.__UI=UI;
@@ -296,9 +299,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.goTo=goTo;
   const toPlace=(x,z,lv,hd)=>{ const id=(lv==null||lv==='up')&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]); else goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
   { let dr=null, moved=false; mcv.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy}; moved=false; mcv.setPointerCapture(e.pointerId); });
-    mcv.addEventListener('pointermove',e=>{ if(!dr)return; const r=mcv.getBoundingClientRect(), v=view(), dx=(e.clientX-dr.x)/r.width*DW/v.k, dy=(e.clientY-dr.y)/r.height*mcv.height/v.k; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved){ V.cx=dr.cx-dx; V.cy=dr.cy-dy; V.sec=null; drawMap(); } });
+    mcv.addEventListener('pointermove',e=>{ if(!dr)return; const r=mcv.getBoundingClientRect(), v=view(), dx=(e.clientX-dr.x)/r.width*DW/v.k, dy=(e.clientY-dr.y)/r.height*mcv.height/v.k; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved){ V.cx=dr.cx-dx; V.cy=dr.cy-dy; drawMap(); } });
     mcv.addEventListener('pointerup',()=>{ dr=null; }); mcv.addEventListener('pointercancel',()=>{ dr=null; });
-    mcv.addEventListener('wheel',e=>{ e.preventDefault(); const r=mcv.getBoundingClientRect(), v=view(), fx=(e.clientX-r.left)/r.width, fy=(e.clientY-r.top)/r.height; V.sec=null; zoomTo(V.z*(e.deltaY<0?1.25:.8),v.sx+fx*v.sw,v.sy+fy*v.sh,fx,fy); },{passive:false});
+    mcv.addEventListener('wheel',e=>{ e.preventDefault(); const r=mcv.getBoundingClientRect(), v=view(), fx=(e.clientX-r.left)/r.width, fy=(e.clientY-r.top)/r.height; zoomTo(V.z*(e.deltaY<0?1.25:.8),v.sx+fx*v.sw,v.sy+fy*v.sh,fx,fy); },{passive:false});
     mcv.addEventListener('click',e=>{ '@later'; if(moved){ moved=false; return; } const [x,y]=toMap(e,view());
       if(mapLv==='up')return goTo((x-SHARED.BOD.OX)*TILE,(y-SHARED.BOD.OY)*TILE,'up');
       const st=(LOOP.STA||[]).map(q=>[q,Math.hypot(q.x-x,q.my(LOOP.XW/2)-y)]).sort((a,b)=>a[1]-b[1])[0]; if(st&&st[1]<45){ if(st[0].old)return goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st[0].P(LOOP.LEN/2,LOOP.MID,0); goTo(p[0],p[2],'down'); } }); }

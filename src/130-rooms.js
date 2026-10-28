@@ -33,6 +33,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
     for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
+  // inside a room the third person's camera stays within its walls and under its ceiling, pulled in along the line to you
+  UI.camKeeps.push((c,t)=>{ const B=ROOMS.cur; if(!B||!(B.x1>B.x0)||!UI.persp)return; const e=.3*TILE; let k=1;
+    for(const [a,lo,hi] of [['x',B.x0+e,B.x1-e],['y',(B.y0??-1e9)+e,(B.y1??1e9)-e],['z',B.z0+e,B.z1-e]]){ const d=c[a]-t[a]; if(c[a]>hi&&d>1e-6)k=Math.min(k,Math.max(0,(hi-t[a])/d)); else if(c[a]<lo&&d<-1e-6)k=Math.min(k,Math.max(0,(lo-t[a])/d)); }
+    if(k<1)c.lerpVectors(t,c,k); });
   ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [MUS.g,PNM.g,SGM.g,DRM.g])if(o)skip.add(o);
@@ -49,8 +53,12 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
       m.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(m); UI.thing({name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); };
-  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]);
-    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); };
+  // an inside's ceiling faces down only: seen when you look up from inside, gone from above
+  const ceil=o=>{ if(o.ceilG||o.noCeil)return; o.ceilG=new THREE.Group(); o.ceilG.name='ceiling'; const M=new THREE.MeshLambertMaterial({color:0x2e2f35});
+    for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }
+    scene.add(o.ceilG); };
+  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
+    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
   ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
@@ -103,7 +111,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(SHARED.BOD.GDK&&SHARED.BOD.GDK.card)VIS.hide(SHARED.BOD.GDK.card,'room',!!(IV.b&&IV.b.lz==='bath')); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(SHARED.BOD.GD)SHARED.BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,SHARED.cam.position.y<h.y);
-    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map');
+    const cutOn=false;   // insides never cut their walls (owner, 28 Oct 2026): the see-through circle shows you behind them
     if(cutOn){ if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true;
       const cx=SHARED.cam.position.x-pos.x, cz=SHARED.cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l, BAND=1.1*TILE;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=SHARED.py+.45*ZU*24/.84;

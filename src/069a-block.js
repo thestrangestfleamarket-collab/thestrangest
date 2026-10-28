@@ -42,18 +42,37 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
     g.fillStyle='rgba(20,18,16,.35)'; g.fillRect(0,h-4,w,4);
     return {map:tex(c),em:tex(e)}; }
   const roofM=new THREE.MeshLambertMaterial({color:0x3a3840}), sideCache={};
-  const MKIT={M:__DATA__("data/megakit.json"),img:[__B64__("data/megakit.png"),__B64__("data/megakit-lit.png")]};   // the MegaKit's buildings, each side one picture (tools/megakit-bake.cjs)
-  { const tl=new THREE.TextureLoader(), at=MKIT.img.map(u=>{ const t=tl.load(u); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; }); at[0].colorSpace=THREE.SRGBColorSpace;
+  const MKIT={M:__DATA__("data/megakit.json"),img:__B64__("data/megakit.png"),wait:[],ac:[],pl:[],box:{concrete:[],stone:[],wood:[]}};   // the MegaKit's own wall textures and add-ons, no windows or doors (tools/megakit-walls.py)
+  { const A=new Image(); A.onload=()=>{ MKIT.A=A; for(const f of MKIT.wait.splice(0))f(); }; A.src=MKIT.img; const when=f=>{ if(MKIT.A)f(); else MKIT.wait.push(f); };
+    const tile=k=>{ const [x,y,w,h]=MKIT.M.t[k], c=cv(w,h); c.getContext('2d').drawImage(MKIT.A,x,y,w,h,0,0,w,h); return c; };
+    const tex=k=>{ const t=new THREE.CanvasTexture(cv(1,1)); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.flipY=false; when(()=>{ t.image=tile(k); t.needsUpdate=true; }); return t; };
+    const MAT={}, mat=k=>MAT[k]||(MAT[k]=new THREE.MeshLambertMaterial({map:tex(k)}));   // one shared material a texture, repeated by the walls' own size
+    const TL={brick:4,concrete:3,stone:[2,.9],wood:[2,.16]};   // metres one picture covers
     MKIT.pick=w=>{ const b=MKIT.M.b; if(w<6)return {id:'small',k:1,side:w/b.small.d}; let best=null; for(const id in b){ const k=w/b[id].w; if(!best||Math.abs(Math.log(k))<Math.abs(Math.log(best.k)))best={id,k}; } return best; };
-    MKIT.mats=({id,side})=>{ const b=MKIT.M.b[id], cut=(t,[x,y,w,h],f=1)=>{ const c=t.clone(); c.repeat.set(w*f/MKIT.M.aw,h/MKIT.M.ah); c.offset.set(x/MKIT.M.aw,1-(y+h)/MKIT.M.ah); return c; },
-        L=(r,f)=>new THREE.MeshLambertMaterial({map:cut(at[0],r,f),emissive:0xffffff,emissiveMap:cut(at[1],r,f)});
-      return side?[L(b.east),L(b.west),roofM,roofM,L(b.east,side),L(b.west,side)]:[L(b.east),L(b.west),roofM,roofM,L(b.front),L(b.back)]; }; }
+    const uvs=(P,N,tu,tv)=>{ const U=[]; for(let i=0;i<P.length;i+=3){ const ax=Math.abs(N[i]), az=Math.abs(N[i+2]), ay=Math.abs(N[i+1]); U.push((ay>.5?P[i]:ax>az?P[i+2]*Math.sign(N[i]):-P[i]*Math.sign(N[i+2]))/tu,(ay>.5?P[i+2]:-P[i+1])/tv); } return U; };
+    MKIT.mats=()=>{ const B=mat('brick'); return [B,B,roofM,roofM,B,B]; };
+    MKIT.addons=(o,m,W,D)=>{ const mt=o.kit.k*T, H=m.geometry.parameters.height, hm=H/mt, cx=m.position.x, cz=m.position.z, hw=W*T/2, hd=D*T/2, g=m.geometry;
+      g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs(g.attributes.position.array.map((v,i)=>v+(i%3===1?H/2:0)),g.attributes.normal.array,TL.brick*mt,TL.brick*mt),2));
+      const bx=(k,e,y0,y1)=>MKIT.box[k].push([cx-hw-e,cx+hw+e,y0,y1,cz-hd-e,cz+hd+e,mt]), gf=Math.min(H*.35,4.2*mt);   // the kit's ground floor, trim lines, cornice
+      bx('concrete',.03*mt,0,gf); bx('wood',.07*mt,gf,gf+.18*mt); bx('wood',.07*mt,H-1.05*mt,H-.9*mt); bx('stone',.12*mt,H-.9*mt,H);
+      for(const sd of [1,-1]){ const z=cz+sd*hd; if(hm>8)for(let i=0,n=Math.max(1,Math.round(W/7));i<n;i++)MKIT.ac.push([cx+(rnd()-.5)*(W*T-1.6*mt),(4.6+rnd()*(hm-7.5))*mt,z,sd>0?0:Math.PI,mt]);   // AC units up the walls, planters at the foot: the kit's own add-ons
+        if(W>=6)for(let i=0,n=Math.floor(W/9);i<n;i++)MKIT.pl.push([cx+((i+.5)/n-.5)*(W*T-3*mt),0,z+sd*.6*mt,0,mt*.55]); } };
+    const geo=parts=>{ const g=new THREE.BufferGeometry(), P=[], U=[], I=[]; let o=0; parts.forEach((q,gi)=>{ const s0=I.length; P.push(...q.p); U.push(...q.uv); for(const ix of q.i)I.push(ix+o); o+=q.p.length/3; g.addGroup(s0,I.length-s0,gi); });
+      g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); return g; };
+    const boxes=k=>{ const P=[], N=[], U=[], tl=[].concat(TL[k]); for(const [x0,x1,y0,y1,z0,z1,mt] of MKIT.box[k]){ const b=new THREE.BoxGeometry(x1-x0,y1-y0,z1-z0); b.translate((x0+x1)/2,(y0+y1)/2,(z0+z1)/2); b.deleteAttribute('uv'); const nb=b.toNonIndexed(), p=nb.attributes.position.array, n=nb.attributes.normal.array;
+        P.push(...p); N.push(...n); const u=uvs(Array.from(p,(v,i)=>i%3===1?v-y0:v),n,tl[0]*mt,(tl[1]||tl[0])*mt); for(let i=1;i<u.length;i+=2)u[i]=k==='brick'||k==='concrete'?u[i]:-u[i]; U.push(...u); }
+      if(!P.length)return; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));
+      const me=new THREE.Mesh(g,mat(k)); me.castShadow=false; me.receiveShadow=true; G.add(me); PEEK.whole(me); };
+    BLK.kitAddons=()=>({ac:MKIT.ac.length,pl:MKIT.pl.length,bands:Object.values(MKIT.box).reduce((a,b)=>a+b.length,0)}); MKIT.flush=()=>{ for(const k in MKIT.box)boxes(k); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V=new THREE.Vector3(), S3=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
+      const put=(L,g,mats)=>{ if(!L.length)return null; const IM=new THREE.InstancedMesh(g,mats,L.length); L.forEach(([x,y,z,r,sc],i)=>IM.setMatrixAt(i,m4.compose(V.set(x,y,z),q.setFromAxisAngle(UPV,r),S3.set(sc,sc,sc)))); IM.castShadow=IM.receiveShadow=true; G.add(IM); return IM; };
+      MKIT.acM=put(MKIT.ac,geo(MKIT.M.ac),mat('orn'));
+      MKIT.plM=put(MKIT.pl,geo(MKIT.M.planter),[mat('mconc'),mat('dirt')]); }; }
   function building(o){ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), s0=seed;
     const FW=o.e?D:W, SD=o.e?W:D;
     const fs=Q=>[()=>face(FW,o.h,{q:Q,k:o.k,tint:o.tint,lit:o.lit,shop:o.front,door:'r',doors:o.doors,blank:o.blankFace}),()=>face(FW,o.h,{q:Q,k:o.k+50,tint:o.tint,lit:o.lit,shop:o.back,door:'l',doors:o.doors,blank:o.blankFace}),()=>face(SD,o.h,{q:Q,k:o.k+90,tint:o.tint,lit:.1,blank:o.blankSide})];
     const mk=([fr,bk,sd])=>{ const L=(f)=>new THREE.MeshLambertMaterial({map:f.map,emissive:0xffffff,emissiveMap:f.em}), F=L(fr), Bk=L(bk), S=L(sd); return o.e?[F,Bk,roofM,roofM,S,S]:o.n?[S,S,roofM,roofM,F,Bk]:[S,S,roofM,roofM,Bk,F]; };
-    const mats=o.kit?MKIT.mats(o.kit):mk(fs(o.lazy?BLK.LO:1).map(f=>f()));
-    const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=o.cheap?false:true; m.receiveShadow=true; G.add(m);
+    const mats=o.kit?MKIT.mats():mk(fs(o.lazy?BLK.LO:1).map(f=>f()));
+    const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),mats); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=o.cheap?false:true; m.receiveShadow=true; G.add(m); if(o.kit)MKIT.addons(o,m,W,D);
     const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); cope.castShadow=!o.cheap; G.add(cope); PEEK.whole(m); PEEK.whole(cope);
     if(o.lazy)BLK.hi.push({m,lo:mats,hi:null,paint:async()=>{ const k=seed, r=[]; seed=s0; for(const f of fs(1)){ r.push(f()); await Y(); } seed=k; return mk(r); }});
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
@@ -63,7 +82,7 @@ Object.assign(BLK,{blds:[],signs:[],band:()=>null,built:0,in:false,hi:[],LO:.5})
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=12+r*8, e=b-x-w<6?b:x+w; mk(x,e,i++,r); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
   { const gaps=holes(MAINROW,B.x0,B.x1); let n=0;
-    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; const kit=MKIT.pick(x1-x0); building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:Math.round(MKIT.M.b[kit.id].h*kit.k*28),n:0,k:400+n*11,kit,cheap:true,row:1}); }); }
+    for(const [a,b] of gaps)fill(a,b,(x0,x1,i,r)=>{ n++; const kit=MKIT.pick(x1-x0); building({x0,x1,y0:B.back,y1:SHARED.BOD.OY,h:Math.round(MKIT.M.b[kit.id].h*kit.k*28),n:0,k:400+n*11,kit,cheap:true,row:1}); }); MKIT.flush(); }
   { const F=RING.wx0, gaps=holes([...LEVEL.places,...SHELLS].filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1); let n=0;
     for(const [a,b] of gaps)fill(a,b,(y0,y1,i,r)=>{ n++; building({x0:F-13,x1:F,y0,y1,h:120+Math.round(r*50),e:1,k:700+n*13,tint:TINTS[(n+3)%TINTS.length],front:'shut',back:'shut',lit:.12,garage:true,row:5,doors:Math.max(1,Math.round((y1-y0)/14)),blankSide:true,cheap:true}); }); }
   const BX=[], GL=[], zA=B.alley[1], zB=B.alley[0], mid=(zA+zB)/2;

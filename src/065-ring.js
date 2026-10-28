@@ -2,9 +2,9 @@
 import {SHARED} from './003-shx.js';
 import {PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, MISTB, MISTE, MODS, PFAR, RING, SOL, TILE} from './006-map-pre.js';
+import {FIX, MISTB, MISTE, MODS, PFAR, RING, SECTIONS, SOL, TILE} from './006-map-pre.js';
 const RINGX={};
-{ const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, F=R.ff, T=TILE, C=R.cf={x0:F.x0,x1:PARK.x1+(PARK.ox||0)-8,y0:F.y0,y1:PARK.y1+(PARK.oy||0)-8};
+{ const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, F=SECTIONS.all, T=TILE, C=R.cf={...F};
   const box=f=>({x0:XS(f.x0),x1:XS(f.x1),z0:Math.min(ZS(f.y0),ZS(f.y1)),z1:Math.max(ZS(f.y0),ZS(f.y1))}), W=box(F), {x0,x1,z0,z1}=box(C), H=26*T;
   RINGX.town={x:W.x0,y:W.z0,z:W.x1,w:W.z1};
   const S=MODS.station.BOUND; SHARED.BOUND.x0=Math.min(x0,S.x0); SHARED.BOUND.x1=Math.max(x1,S.x1); SHARED.BOUND.z0=Math.min(z0,S.z0); SHARED.BOUND.z1=Math.max(z1,S.z1); RINGX.bound={x0,x1,z0,z1}; RINGX.pocket=null; RINGX.inPocket=()=>false; Object.assign(MISTB,{x:x0,y:z0,z:x1,w:z1}); MISTE.w=T; Object.assign(PFAR,{x:XS(PARK.x0+(PARK.ox||0)),y:ZS(PARK.y0+(PARK.oy||0)),z:(MODS.landR.x1+18)*T,w:(MODS.landR.z1+18)*T});

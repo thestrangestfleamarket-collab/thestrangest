@@ -33,6 +33,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
   ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
+    if(ONLINE.me&&(m.id===ONLINE.me||(m.p&&m.p.id===ONLINE.me))&&m.t!=='tell')return;   // your own moves from your other tab: never a body of yours in your own head
     if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
     if(m.t==='hi'){ ONLINE.me=m.you||''; const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);

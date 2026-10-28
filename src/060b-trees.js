@@ -42,6 +42,14 @@ const TREEGEN={};
     const bc=S.bc||[90,70,50], L=new THREE.CylinderGeometry(.7,1,1,5,1,true);
     for(const [ax,ay,az,bx,by,bz,r] of S.lb){ const d=new V(bx-ax,by-ay,bz-az), len=d.length(); if(len<1e-4)continue; const g=L.clone(); g.scale(r,len,r); g.translate(0,len/2,0); g.applyQuaternion(Q.setFromUnitVectors(UP,d.normalize())); g.translate(ax,ay,az);
       const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,bc,1); }
+    // branches through the crown: the trunk carries on up to the crown's middle, and a tapering limb, bent once, reaches out into each clump
+    { const r0=Math.max(.012,(S.lb[0]&&S.lb[0][6])||.03), lo=Math.min(...S.cl.map(q=>q[1]-q[3])), cy0=S.cl.reduce((a,q)=>a+q[1],0)/S.cl.length, B=new THREE.CylinderGeometry(1,1,1,5,1,true);
+      const limb=(a,b,ra,rb)=>{ const d=new V().subVectors(b,a), len=d.length(); if(len<1e-4)return; const g=B.clone(), P=g.attributes.position; for(let i=0;i<P.count;i++){ const t=P.getY(i)+.5, r=ra+(rb-ra)*t; P.setXYZ(i,P.getX(i)*r,t*len,P.getZ(i)*r); }
+        g.computeVertexNormals(); g.applyQuaternion(Q.setFromUnitVectors(UP,d.normalize())); g.translate(a.x,a.y,a.z); const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,bc,2); };
+      const base=new V(0,lo*.6,0), top=new V(0,cy0,0); limb(base,top,r0*.85,r0*.4);
+      S.cl.forEach(([x,y,z,r],i)=>{ const f=Math.max(.15,Math.min(.9,(y-base.y)/Math.max(1e-3,top.y-base.y)*.7)), st=new V().lerpVectors(base,top,f), end=new V(x,y,z), out=new V(x,0,z); if(out.lengthSq()>1e-6)end.addScaledVector(out.normalize(),r*.45);
+        const mid=new V().lerpVectors(st,end,.5); mid.y+=r*.25+R()*r*.2; mid.x+=(R()-.5)*r*.3; mid.z+=(R()-.5)*r*.3; limb(st,mid,r0*.5,r0*.32); limb(mid,end,r0*.32,r0*.12);
+        const tw=new V(end.x+(R()-.5)*r*.8,end.y+r*.3,end.z+(R()-.5)*r*.8); limb(mid,tw,r0*.2,r0*.07); }); B.dispose(); }
     // a faceted core under the cards (the old trees' clumps, a little smaller and darker) so the crown has bulk
     { const C=new THREE.IcosahedronGeometry(1,0); for(const [x,y,z,r,Rc,Gc,Bc] of S.cl){ const g=C.clone(); g.scale(r*.85,r*.72,r*.85); g.translate(x,y,z); const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,[Rc*.62,Gc*.62,Bc*.62],0); } C.dispose(); }
     L.dispose(); let cx=0, cy=0, cz=0, w=0; for(const q of S.cl){ const k=q[3]*q[3]; cx+=q[0]*k; cy+=q[1]*k; cz+=q[2]*k; w+=k; } const cc=new V(cx/w,cy/w,cz/w); let cr=1e-3; for(const q of S.cl)cr=Math.max(cr,cc.distanceTo(new V(q[0],q[1],q[2]))+q[3]);

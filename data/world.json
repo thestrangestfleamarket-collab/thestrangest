@@ -17,6 +17,144 @@
    }
   }
  },
+ "sections": {
+  "note": "the eight sections round Central Park, 4 across and 2 up, each A's size; ids[col][row]; ring: the park inside the ring street, the street's outer edge, its sidewalks' width, the depth of the row of buildings on its outer side, then the water and its shore walk past the top and bottom rows",
+  "grid": {
+   "cols": 4,
+   "rows": 2,
+   "x0": -130,
+   "y0": -166.5,
+   "w": 392,
+   "h": 375.5
+  },
+  "ids": [
+   [
+    "A",
+    "B"
+   ],
+   [
+    "C",
+    "D"
+   ],
+   [
+    "E",
+    "F"
+   ],
+   [
+    "G",
+    "H"
+   ]
+  ],
+  "streets": {
+   "south": "MARKET ST",
+   "west": "WEST ST",
+   "north": "LANTERN ST",
+   "east": "CURIO AVE"
+  },
+  "ring": {
+   "park": {
+    "x0": -24,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 456
+   },
+   "outer": {
+    "x0": -52.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 495
+   },
+   "walk": 4.5,
+   "row": 15.4,
+   "water": 47.5,
+   "shore": 11.1
+  }
+ },
+ "loop": {
+  "note": "THE LOOP: the subway under the ring streets. tracks are the rails' lines (map tiles) round the ring, r the corners' radius; trains run the timetable from the clock, stopping dwell seconds at every station; speed tiles/s, accel tiles/s/s",
+  "tracks": {
+   "inner": {
+    "south": -48.8,
+    "west": -31.5,
+    "north": 466.8,
+    "east": 1339.5
+   },
+   "outer": {
+    "south": -66.2,
+    "west": -44.5,
+    "north": 484.2,
+    "east": 1352.5
+   }
+  },
+  "r": 40,
+  "dwell": 60,
+  "speed": 5,
+  "accel": 0.6,
+  "trains": [
+   {
+    "id": 1,
+    "track": "outer",
+    "dir": 1,
+    "way": "CLOCKWISE"
+   },
+   {
+    "id": 2,
+    "track": "inner",
+    "dir": -1,
+    "way": "COUNTERCLOCKWISE"
+   }
+  ],
+  "stations": [
+   {
+    "id": "A",
+    "name": "MARKET ST",
+    "side": "south",
+    "x": 116
+   },
+   {
+    "id": "C",
+    "name": "TINKER ST",
+    "side": "south",
+    "x": 508
+   },
+   {
+    "id": "E",
+    "name": "RAG ST",
+    "side": "south",
+    "x": 900
+   },
+   {
+    "id": "G",
+    "name": "BRASS ST",
+    "side": "south",
+    "x": 1240
+   },
+   {
+    "id": "B",
+    "name": "MOTH ST",
+    "side": "north",
+    "x": 116
+   },
+   {
+    "id": "D",
+    "name": "KETTLE ST",
+    "side": "north",
+    "x": 508
+   },
+   {
+    "id": "F",
+    "name": "BUTTON ST",
+    "side": "north",
+    "x": 900
+   },
+   {
+    "id": "H",
+    "name": "CLOCK ST",
+    "side": "north",
+    "x": 1240
+   }
+  ]
+ },
  "streets": {
   "market": {
    "x0": -130,

@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {NPCS, ONLINE, PARK, POND, pos, ROOMS, W3, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {BATCH} from './008-batch.js';
 
 WEEDS.movers=[...Array(8)].map(()=>new THREE.Vector4(0,0,0,0)); WEEDS.UMV={value:WEEDS.movers};
 WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); vec3 dw=vec3(0.); for(int i=0;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; vec2 d=w0.xz-m.xy; float l=length(d), f=1.-l/m.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dw.xz+=d/max(l,.001)*f*'+(.22*T).toFixed(4)+'; dw.y-=f*'+(.05*T).toFixed(4)+'; } transformed+=inverse(mat3(instanceMatrix))*dw*'+k+'; }';
@@ -56,12 +57,15 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
     return {I,G,F,SQ,x0,z0,N,CELL,MG}; };
   WEEDS.CS=CS;
-  const build=(cx,cz)=>{ const m=mask(cx,cz); if(!m.I.some(Boolean))return null; m.sq=m.SQ; m.top=(x,y,z)=>SHARED.groundY(x,z); return m; };
+  // each chunk's lawn is drawn from above once and kept (BAKED), not drawn again each time you come back; a lawn edit or a chunk still being painted clears it
+  const BAKED=new Map(); WEEDS.baked=BAKED;
+  const painting=(x0,z0)=>BATCH.queues.some(q=>q.jobs.some(j=>j.x1>x0-CS&&j.x0<x0+2*CS&&j.z1>z0-CS&&j.z0<z0+2*CS));
+  const build=(cx,cz)=>{ const k=cx+','+cz; if(BAKED.has(k))return BAKED.get(k); const m0=mask(cx,cz), m=m0.I.some(Boolean)?m0:null; if(m){ m.sq=m.SQ; m.top=(x,y,z)=>SHARED.groundY(x,z); } if(!painting(cx*CS,cz*CS)){ BAKED.set(k,m); if(BAKED.size>600)BAKED.delete(BAKED.keys().next().value); } return m; };
   const drop=k=>{ CH.delete(k); SYS.run('weedsDrop',k); };
   WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; const i=Math.floor((x-me.x0)/CELL), j=Math.floor((z-me.z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=(j+MG)*W+i+MG; return me.I[c]?SHARED.groundY(x,z):null; };
   WEEDS.fine=(x,z)=>{ const me=CH.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!me)return me===null?null:undefined; const u=(x-me.x0)/CELL, v=(z-me.z0)/CELL, i=Math.floor(u), j=Math.floor(v); if(i<0||j<0||i>=N||j>=N)return null;
     return me.F[(j+MG)*W+i+MG]>>(Math.floor((v-j)*SS)*SS+Math.floor((u-i)*SS))&1?SHARED.groundY(x,z):null; };
-  WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL)drop(k); } };
+  WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); const hit=k=>{ const [a,b]=k.split(',').map(Number); return r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL; }; for(const k of [...BAKED.keys()])if(hit(k))BAKED.delete(k); for(const k of [...CH.keys()])if(hit(k))drop(k); };
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }
     const add=(a,b,k)=>{ const gb=build(a,b); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); };

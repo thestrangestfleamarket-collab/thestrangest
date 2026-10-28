@@ -376,7 +376,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   for(const [x,y] of LP){ const h0=172; const o=BATCH.tag=OBJ('park','park lamp'); block(x-.11,y-.11,x+.11,y+.11,0,10,35,()=>[44,46,50],0,10,MET(40,42)); block(x-.055,y-.055,x+.055,y+.055,10,h0,31,()=>[40,42,46],0,h0-10,(i,j)=>[34+(i%5===0?14:0),36+(i%5===0?14:0),42+(i%5===0?14:0)]);
     for(const [w,z0,z1,c] of [[.07,h0-4,h0,52],[.3,h0,h0+2,62],[.25,h0+2,h0+4,74],[.17,h0+4,h0+6,86],[.07,h0+6,h0+9,70]])block(x-w,y-w,x+w,y+w,z0,z1,35,()=>[c+30,c+34,c+40],0,z1-z0,MET(c,c+4));
     { const w=.2, yb=Y(h0-.2), tx=SHARED.BOD.faceTex(6,6,(i,j)=>i<1||i>4||j<1||j>4?[90,88,84]:[255,236,190,1]); SHARED.BOD.bq([X(x-w),yb,Z(y-w)],[X(x+w),yb,Z(y-w)],[X(x+w),yb,Z(y+w)],[X(x-w),yb,Z(y+w)],tx,'G'); SHARED.BOD.bq([X(x-w),yb,Z(y+w)],[X(x+w),yb,Z(y+w)],[X(x+w),yb,Z(y-w)],[X(x-w),yb,Z(y-w)],tx,'G'); }
-    const L=new THREE.PointLight(new THREE.Color(1,.86,.62),70,12*TILE,1.6); L.position.set(X(x),Y(h0-6),Z(y)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L);
+    const L=new THREE.PointLight(new THREE.Color(1,.86,.62),70,12*TILE,1.6); L.position.set(X(x),Y(h0-6),Z(y)); L.userData.i0=L.intensity; L.userData.near=.3*TILE; scene.add(L); lamps.push(L);
     o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; });
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);

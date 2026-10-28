@@ -46,10 +46,10 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, V3=THREE.Vector3, RB=RIVER.box,
   for(const s of [-1,1])box(X+s*(hw+.05*WU),1.4*WU,Q+.05*T,.2*WU,2.8*WU,.2*WU,DK); box(X,2.65*WU,Q+.05*T,2*hw+.6*WU,.22*WU,.22*WU,DK); for(const s of [-1,1])SOL.up.push([X+s*(hw+.05*WU)-.15*T,Q,X+s*(hw+.05*WU)+.15*T,Q+.2*T]);
   // the ladder down off the head's end
   for(const o of [-.3,.3])box(X+o*WU,(LV-1.4*WU+.9*WU)/2,zE-.08*WU,.05*WU,.9*WU-(LV-1.4*WU),.05*WU,IRON); for(let y=LV-1.2*WU;y<0;y+=.3*WU)box(X,y,zE-.08*WU,.6*WU,.04*WU,.05*WU,IRON);
-  // lamps: iron posts with a crook and a lantern; bollards, cleats, rope, the gear of a working pier
+  // lamps: iron posts with a crook and a hooded light; bollards, cleats, rope, the gear of a working pier
   const LAMPS=[], lamp=(x,z,s)=>{ cyl(x,1.6*WU,z,.05*WU,3.2*WU,IRON); cyl(x,.12*WU,z,.12*WU,.24*WU,IRON); box(x+s*.28*WU,3.15*WU,z,.6*WU,.05*WU,.05*WU,IRON); box(x+s*.55*WU,2.98*WU,z,.04*WU,.3*WU,.04*WU,IRON);
-      box(x+s*.55*WU,2.72*WU,z,.24*WU,.06*WU,.24*WU,IRON); box(x+s*.55*WU,2.42*WU,z,.28*WU,.05*WU,.28*WU,IRON); GL.push([x+s*.55*WU,2.57*WU,z,.2*WU,.26*WU,.2*WU]);
-      SOL.up.push([x-.15*T,z-.15*T,x+.15*T,z+.15*T]); const L=new THREE.PointLight(0xffc27a,0,7*T,1.6); L.position.set(x+s*.55*WU,2.4*WU,z); L.userData.i0=14; G.add(L); LAMPS.push(L); };
+      cyl(x+s*.55*WU,2.8*WU,z,.2*WU,.07*WU,IRON); cyl(x+s*.55*WU,2.86*WU,z,.13*WU,.06*WU,IRON); cyl(x+s*.55*WU,2.91*WU,z,.05*WU,.05*WU,IRON); GL.push([x+s*.55*WU,2.76*WU,z,.26*WU,.01*WU,.26*WU]);
+      SOL.up.push([x-.15*T,z-.15*T,x+.15*T,z+.15*T]); const L=new THREE.PointLight(0xffc27a,0,7*T,1.6); L.position.set(x+s*.55*WU,2.66*WU,z); L.userData.i0=14; G.add(L); LAMPS.push(L); };
   lamp(X-hw+.1*WU,Q-6*T,1); lamp(X+hw-.1*WU,Q-15*T,-1); lamp(X-hw+.1*WU,Q-24*T,1); lamp(X-HW+.25*WU,zH-.5*T,1); lamp(X+HW-.25*WU,zE+.5*T,-1);
   const bollard=(x,z)=>{ cyl(x,.22*WU,z,.15*WU,.44*WU,IRON); cyl(x,.46*WU,z,.2*WU,.06*WU,IRON); SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); };
   bollard(X+1.6*T,zE+.6*T); bollard(X+HW-1.1*T,zE+.7*T); bollard(X-HW+1.4*T,zH-.6*T); bollard(X+hw-.5*T,zH+2*T);

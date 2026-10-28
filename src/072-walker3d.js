@@ -75,7 +75,12 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     R2.forEach((r,ri)=>{ const mi=MATS.indexOf(r.m); if(mi<0)return; const outz=.1+ri*.04, cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2;
       for(const sgn of [1,-1]){ const ex=H.x-sgn*cx, ey=H.y+cy, Nrm=grad(ex,ey,surf(ex,ey)), E=add(V(ex,ey,surf(ex,ey)),mul(Nrm,outz));
         let Uu=cross(Nrm,V(0,1,0)); if(dot(Uu,Uu)<1e-4)Uu=cross(Nrm,V(1,0,0)); Uu=nrm(Uu); const Wv=nrm(cross(Nrm,Uu));
-        if(r.o){ const rad=(r.x[1]-r.x[0])*.45, N=18; for(let i=0;i<N;i++){ const a0=i/N*2*Math.PI, a1=(i+1)/N*2*Math.PI,
+        if(r.o==='brow'){ const r0=2.3, w=.2, a0=1.02, a1=2.2, N=16, E2=add(add(E,mul(Nrm,.18)),mul(Wv,.85)), P_=(a,rr)=>add(E2,add(mul(Uu,-sgn*Math.cos(a)*rr),mul(Wv,-Math.sin(a)*rr)));   // a thin arched brow above the eye, finer at its ends
+          for(let i=0;i<N;i++){ const t0=a0+(a1-a0)*i/N, t1=a0+(a1-a0)*(i+1)/N, h0=w*Math.sin(Math.PI*i/N)**.6+.03, h1=w*Math.sin(Math.PI*(i+1)/N)**.6+.03;
+            const p0=P_(t0,r0), p1=P_(t1,r0), q0=P_(t0,r0+h0), q1=P_(t1,r0+h1); push(p0,Nrm,mi); push(q0,Nrm,mi); push(q1,Nrm,mi); push(p0,Nrm,mi); push(q1,Nrm,mi); push(p1,Nrm,mi); } }
+        else if(r.o==='cap'||r.o==='capd'){ const d=r.o==='capd', rad=(r.x[1]-r.x[0])*.45*(d?1.08:1.05), c=rad*(d?.34:.48), a0=Math.asin(c/rad), N=14, P_=a=>add(E,add(mul(Uu,Math.cos(a)*rad),mul(Wv,-Math.sin(a)*rad))), M=add(E,mul(Wv,-c));   // the upper lid: the top of the eye covered, a dark lash line along its edge
+          for(let i=0;i<N;i++){ const t0=a0+(Math.PI-2*a0)*i/N, t1=a0+(Math.PI-2*a0)*(i+1)/N; push(M,Nrm,mi); push(P_(t0),Nrm,mi); push(P_(t1),Nrm,mi); } }
+        else if(r.o){ const rad=(r.x[1]-r.x[0])*.45, N=18; for(let i=0;i<N;i++){ const a0=i/N*2*Math.PI, a1=(i+1)/N*2*Math.PI,
             p0=add(E,add(mul(Uu,Math.cos(a0)*rad),mul(Wv,Math.sin(a0)*rad))), p1=add(E,add(mul(Uu,Math.cos(a1)*rad),mul(Wv,Math.sin(a1)*rad)));
             push(E,Nrm,mi); push(p0,Nrm,mi); push(p1,Nrm,mi); } }
         else{ const hw=(r.x[1]-r.x[0])/2, hh=(r.y[1]-r.y[0])/2, q=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(d=>add(E,add(mul(Uu,d[0]),mul(Wv,d[1]))));
@@ -174,23 +179,23 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
         return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),5.4+.4*t),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.5,6.1)),Vv(0.75,1.35,1.0),0.4)); };
       head.form='M'; PCS.push(Object.assign({},head,{n:'headF',d:soft,form:'F',paint:()=>null}));
       let zf=H.z; while(soft(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
-      const lash=s=>p=>tube([Vv(s*2.1,1.35,zf-H.z-.1),Vv(s*3.0,1.5,zf-H.z-.3),Vv(s*3.6,1.95,zf-H.z-.7)],[.15,.14,.05],p);
+      const lash=s=>p=>Math.min(tube([Vv(s*2.95,1.05,zf-H.z-.25),Vv(s*3.45,1.4,zf-H.z-.5)],[.09,.03],p),tube([Vv(s*2.6,1.15,zf-H.z-.15),Vv(s*2.95,1.55,zf-H.z-.35)],[.08,.03],p));
       let zm=H.z; while(soft(Vv(H.x,H.y-5.3,zm))<0&&zm<H.z+12)zm+=.05;
       PCS.push({n:'lipsF',on:'head',m:'lips',d:p=>Math.min(ell(p,Vv(H.x,H.y-5.05,zm-.3),Vv(1.2,.3,.42)),ell(p,Vv(H.x,H.y-5.55,zm-.32),Vv(1.05,.34,.42))),bb:[H.x-3,H.x+3,H.y-8,H.y-4,zm-2,zm+2],step:.14,cell:.12,form:'F'});
-      PCS.push({n:'lashesF',on:'head',m:'eye',d:p=>Math.min(lash(1)(p),lash(-1)(p)),bb:[H.x-5,H.x+5,H.y-1,H.y+4,H.z+1,H.z+11],step:.14,cell:.12,form:'F'}); }
+      PCS.push({n:'lashesF',on:'head',m:'pupil',d:p=>Math.min(lash(1)(p),lash(-1)(p)),bb:[H.x-5,H.x+5,H.y-1,H.y+4,H.z+1,H.z+11],step:.14,cell:.12,form:'F'}); }
     { // brows (his heavier and straighter, hers thinner and arched), in the hair's colour, on each face's front
-      const HF=PCS.find(P=>P.n==='headF'), on=(hdx,x,y,r)=>{ let z=H.z+12; while(hdx(Vv(H.x+x,H.y+y,z))>r*.35&&z>H.z)z-=.05; return Vv(x,y,z-H.z); },
+      const RXb=(a,b)=>[(a-13)*.47,(b+1-13)*.47], RYb=(a,b)=>[.7-(b+1-14)*.47,.7-(a-14)*.47], HF=PCS.find(P=>P.n==='headF'), on=(hdx,x,y,r)=>{ let z=H.z+12; while(hdx(Vv(H.x+x,H.y+y,z))>r*.35&&z>H.z)z-=.05; return Vv(x,y,z-H.z); },
         brow=(hdx,r,ar,tilt)=>{ const pts=s=>[[1.2,2.3+tilt],[2.5,2.5+ar],[3.7,2.25+ar*.3-tilt*.3]].map(([x,y])=>{ const q=on(hdx,s*x,y,r); return q; });
           const L=pts(-1), Rr=pts(1); return p=>Math.min(tube(L,[r,r*.95,r*.55],p),tube(Rr,[r,r*.95,r*.55],p)); };
       PCS.push({n:'browsM',on:'head',m:'hair',d:brow(hd,.4,.1,.12),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.16,cell:.13,form:'M'},
-               {n:'browsF',on:'head',m:'hair',d:brow(HF.d,.17,.35,.15),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.14,cell:.12,form:'F'}); }
+               {n:'browsF',on:'head',m:'hair',d:brow(HF.d,.12,.3,.1),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.14,cell:.12,form:'F',flatEye:{R2:[{x:RXb(6,9),y:RYb(12,15),m:'hair',o:'brow'}],H,hd:HF.d}}); }
     { const BODY=['torso','neck','sleeveL','sleeveR','upperArmL','upperArmR'].map(n=>PCS.find(P=>P.n===n)).filter(Boolean), clear=p=>Math.min(...BODY.map(P=>P.d(p)));
       const strand=p=>{ const a=th(p), y=p.y-H.y, v=Math.sin(a*17+y*.3+1.7*Math.sin(a*5+y*.15))*Math.sin(a*7.3-y*.21+2.1); return v>.62&&y>-4?'hairHi':v<-.66?'hairLo':null; };
       for(const P of PCS)if(/^(hair|beard)/.test(P.n)&&!P.paint)P.paint=strand;
       for(const P of PCS)if(/^hair/.test(P.n)){ const d0=P.d; P.d=p=>Math.max(d0(p),.6-clear(p)); }
       for(const P of PCS)if(/^beard/.test(P.n))P.layer='beard'; }
     const EYES=[[[7,13,8,14,'eye','o']], [[6,13,8,14,'eyeW'],[7,13,8,14,'eye']], [[6,12,9,15,'eyeW'],[7,12,8,15,'eye'],[7,13,7,13,'pupil'],[8,12,8,12,'eyeW']],
-      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']], [[6,12,9,15,'eyeW','o'],[7,13,8,14,'eye','o'],[8,12,8,12,'eyeW','o']]];
+      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']], [[6,12,9,15,'eyeW','o'],[7,13,8,14,'eye','o'],[8,13,8,13,'eyeW','o'],[6,12,9,15,'pupil','capd'],[6,12,9,15,'lid','cap']]];
     const U=.47, RX=r=>[(r[0]-13)*U,(r[2]+1-13)*U], RY=r=>[.7-(r[3]+1-14)*U,.7-(r[1]-14)*U];
     EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };

@@ -37,7 +37,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
       const S=e.set(.19*s,-.27,.04), Lr=.3, Lf=.29, D=Dv.subVectors(hC,S), L=Math.min(D.length(),Lr+Lf-.005); D.normalize(); hC.copy(S).addScaledVector(D,L);
       const x=(Lr*Lr-Lf*Lf+L*L)/(2*L), h=Math.sqrt(Math.max(0,Lr*Lr-x*x)); pl.set(s,-.7,.25); pl.addScaledVector(D,-pl.dot(D)).normalize();   // the elbow out and down
       const El=hD.copy(S).addScaledVector(D,x).addScaledVector(pl,h);
-      place(A.up,S,El,.05); place(A.fo,El,hC,.042); A.hd.position.copy(hC).addScaledVector(D,.06); A.hd.quaternion.copy(A.fo.quaternion); A.hd.scale.set(.05,.085,.022); } },'146g-swim arms');
+      place(A.up,S,El,.042); place(A.fo,El,hC,.035); A.hd.position.copy(hC).addScaledVector(D,.06); A.hd.quaternion.copy(A.fo.quaternion); A.hd.scale.set(.042,.08,.02); } },'146g-swim arms');
 
   // under water: motes drifting in the murk round your eyes, and the edges of the view darker
   const NM=500, R=3*WM, mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), m0=new Float32Array(NM*3); for(let i=0;i<NM*3;i++)m0[i]=(Math.random()*2-1)*R;

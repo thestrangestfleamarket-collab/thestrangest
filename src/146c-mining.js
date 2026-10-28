@@ -13,7 +13,7 @@ const MINING={live:[]}; window.MINING=MINING;
     lake:[['jade','JADE',26,22,0,0x60c080],['amber','LAKE AMBER',18,26,0,0xffb040],['silver','SILVER ORE',38,14,20,0xd0d8e0],['goldnug','GOLD NUGGET',60,10,30,0xffd040],['garnet','GARNET',48,9,40,0xa02040],['platinum','PLATINUM ORE',140,3,65,0xe8f0f8]]};
   for(const k in FINDS)if(k!=='gemcave')for(const f of FINDS[k])GEMS.push([f[0],f[1],f[2],0]);   // the golems buy every find; weight 0 keeps them out of the old cave glints
   CAVERNS.hooks.push((C,G,m)=>{ '@later'; MINING.live=[]; const F=FINDS[C.id]; if(!F)return; const B=C.lot, d=day(), n=10+Math.floor(hs(d,1)*6), sk=FORAGE.sk?FORAGE.sk('prosp'):0, fy=C.api.ground(0,0), W=F.reduce((a,f)=>a+f[3],0);
-    for(let i=0;i<n;i++){ const gx=B.x0+1.5+hs(d,i,2)*(B.x1-B.x0-3), gy=B.y0+1.5+hs(d,i,3)*(B.y1-B.y0-3), deep=(gx-B.x0)/(B.x1-B.x0);   // further in, the rarer finds
+    for(let i=0;i<n;i++){ const gx=B.x0+1.5+hs(d,i,2)*(B.x1-B.x0-3), gy=B.y0+1.5+hs(d,i,3)*(B.y1-B.y0-3), deep=(gx-B.x0)/(B.x1-B.x0); if(C.api.solidAt&&C.api.solidAt(gx,gy))continue;   // further in, the rarer finds; none inside a wall
       let r=hs(d,i,4)*Math.pow(deep+.2,1.5)*W, f=F[0]; for(const q of F){ if((r-=q[3])<0){ f=q; break; } }
       const key=C.id+':'+d+':'+i; if(!INV.ready(key))continue; const seen=f[4]<=sk+15;   // what your prospecting can spot; the scanner shows the rest for a while
       const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.5,0),new THREE.MeshBasicMaterial({color:f[5]})); cr.position.set(X(gx),fy+Y(3),Z(gy)); cr.scale.set(.16*T,.34*T,.16*T); cr.rotation.set(.3,i,.2); cr.visible=seen; G.add(cr); m.objs.push(cr);

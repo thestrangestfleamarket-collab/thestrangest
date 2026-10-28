@@ -1,7 +1,7 @@
 // THE RIVER: RIVER builds the river, its banks and its moving water past the edge of town.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CLOCK, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
+import {CLOCK, EQUIP, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {BLOCK, FADE, FIX, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -11,6 +11,7 @@ const RIVERG=new THREE.Group(); RIVERG.name='river'; RIVERG.visible=false; scene
 RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
   const MPU=0.84/T, WU=1/MPU;
   const L=MODS.landR, lx0=L.x0*T, lx1=L.x1*T, rz0=Math.min(ZS(R.river.y0),ZS(R.river.y1)), rz1=Math.max(ZS(R.river.y0),ZS(R.river.y1));
+  RIVER.mouth={x:XS(117.5),z:(rz0+rz1)/2};
   const fx0=XS(R.ff.x0), fx1=XS(R.ff.x1);
   const LVm=-1.0, LV=LVm*WU;
   RIVER.box={x0:lx0,x1:lx1,z0:rz0,z1:rz1,lv:LV};
@@ -34,6 +35,8 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     if(Wt.bed===2)d-=Math.sin(xm*2.7+fbm(xm*0.55,zm*0.55)*6)*0.07;
     if(Wt.bed===1)d-=Math.max(0,fbm(xm*0.55+3,zm*0.55)-0.52)*6;
     if(Wt.bed===0)d-=(vn(xm*1.6,zm*1.6)-0.5)*0.25;
+    const u=e/((rz1-rz0)*MPU), mx=(x-RIVER.mouth.x)*MPU, mz=(z-RIVER.mouth.z)*MPU, near=Math.exp(-mx*mx/1600), m=(2+8*cl(vn(xm/70+.3,3.7)*1.5-.25,0,1))*(1-near)+3*near;   // two to ten times deeper out in the channel; the cavern's pit mid-river
+    d*=1+(m-1)*cl((u-.2)/.35,0,1)*cl((u-.2)/.35,0,1); d+=6*Math.exp(-(mx*mx+mz*mz)/49);
     return Math.max(1.2,d); };
   RIVER.depthAt=depthAt;
   const NW=8, WA=Array.from({length:NW},()=>new THREE.Vector4()), WB=Array.from({length:NW},()=>new THREE.Vector4()); let WV=[];
@@ -89,9 +92,9 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
       else if(uBedK<1.5){ float r=rf(q*.55+3.); if(r>.55){ float k=.75+.45*rn(q*4.); c=vec3(.40,.40,.38)*k; if(rn(q*7.)>.82)c=vec3(.22); if(h>.9)c=vec3(.5,.3,.32); } else c=vec3(.6,.56,.46)*(.82+.3*v); }
       else { float s=sin(q.x*5.5+rf(q*.7)*5.); c=vec3(.86,.8,.62)*(.86+.2*v)*(.93+.07*s); if(h>.96)c=vec3(.95,.9,.82); if(h<.01)c=vec3(.72,.5,.45); }
       vec3 n=normalize(vN); vec3 L=uAmb*.7+uSunC*max(dot(n,uSunD),0.)*.32; c*=L;
-      float d=uLvW-vRw.y; if(d>0.&&uCau>0.){ vec2 p=vRw.xz*${MPU.toFixed(4)}*.62+uSunD.xz*d*${MPU.toFixed(4)}*.5; float k=cau(mod(p,6.2831),uT*.5)+.6*cau(mod(p*1.7+1.3,6.2831),uT*.4); float kk=clamp(k*1.6,0.,1.4); c*=.72+uCau*.9*kk*exp(-d*${MPU.toFixed(4)}*.1); c+=vec3(.25,.55,.55)*uCau*kk*.35*exp(-d*${MPU.toFixed(4)}*.1); }
+      float d=uLvW-vRw.y; c*=max(.1,exp(-max(d,0.)*${MPU.toFixed(4)}*.07)); if(d>0.&&uCau>0.){ vec2 p=vRw.xz*${MPU.toFixed(4)}*.62+uSunD.xz*d*${MPU.toFixed(4)}*.5; float k=cau(mod(p,6.2831),uT*.5)+.6*cau(mod(p*1.7+1.3,6.2831),uT*.4); float kk=clamp(k*1.6,0.,1.4); c*=.72+uCau*.9*kk*exp(-d*${MPU.toFixed(4)}*.1); c+=vec3(.25,.55,.55)*uCau*kk*.35*exp(-d*${MPU.toFixed(4)}*.1); }
       gl_FragColor=vec4(c,1.); }`});
-  const bed=new THREE.Mesh(PG(ND,BN[0],Math.round(ND/(2*T)),(DZ-ND)/2),bedMat), bedF=new THREE.Mesh(PG(DZ-ND,BN[0],4,-ND/2),bedMat);
+  const bed=new THREE.Mesh(PG(ND,BN[0],Math.round(ND/(2*T)),(DZ-ND)/2),bedMat), bedF=new THREE.Mesh(PG(DZ-ND,BN[0],12,-ND/2),bedMat);
   bed.frustumCulled=bedF.frustumCulled=false; bed.add(bedF); scene.add(bed);
   const bedTex=new THREE.DataTexture(new Uint8Array((BN[0]+1)*(BN[1]+1)*4),BN[0]+1,BN[1]+1); bedTex.magFilter=bedTex.minFilter=THREE.LinearFilter;
   const buildBed=()=>{ const a=bedTex.image.data; for(const m of [bed,...bed.children]){ const g=m.geometry, p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i)+RIVER.cx, z=p.getZ(i)+(rz0+rz1)/2, d=depthAt(x,z); p.setY(i,LV-d*WU); } p.needsUpdate=true; g.computeVertexNormals(); }
@@ -287,7 +290,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     for(const B of BUOYS){ const h=hAt(B.x,B.z), [sx,sz]=slopeAt(B.x,B.z); B.m.position.set(B.x,LV+h-.12*T,B.z); B.m.rotation.set(-sz*.8,0,sx*.8); const a=B.ln.geometry.attributes.position; a.setXYZ(0,B.x,LV+h-.2*T,B.z); a.setXYZ(1,B.x+.8*T,LV-depthAt(B.x,B.z)*WU,B.z-.5*T); a.needsUpdate=true; }
     spray(Math.min(dt,1/30)); };
 
-  const UF=new THREE.Fog(0x000000,0,1), bg0=new THREE.Color(); let fog0=null, uw=false;
+  const UF=new THREE.Fog(0x000000,0,1), bg0=new THREE.Color(); let fog0=null, uw=false, dome=true;
   const RQ=[[-1,-1],[1,-1],[1,1],[-1,1]], V8=new THREE.Vector3(), SEE=()=>{ if(!SHARED.cam.isOrthographicCamera)return F.intersectsBox(bb); const Q=[]; for(let k=0;k<8;k++){ V8.set(k&1?bb.max.x:bb.min.x,k&2?bb.max.y:bb.min.y,k&4?bb.max.z:bb.min.z).applyMatrix4(M4); Q.push([V8.x,V8.y]); }
     for(let i=0;i<8;i++)for(let j=i+1;j<8;j++){ const nx=Q[j][1]-Q[i][1], ny=Q[i][0]-Q[j][0]; if(!nx&&!ny)continue; const d=p=>p[0]*nx+p[1]*ny, a=Q.map(d), lo=Math.min(...a), hi=Math.max(...a), r=RQ.map(d); if(r.every(x=>x<lo)||r.every(x=>x>hi))return false; }
     return !(Q.every(p=>p[0]>1)||Q.every(p=>p[0]<-1)||Q.every(p=>p[1]>1)||Q.every(p=>p[1]<-1)); };
@@ -308,9 +311,11 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
       if(cam.position.y<=LV+2*WU||SEE()){ const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
         surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; } }
     else cam.getWorldDirection(SU.uCamD.value);
-    const cp=cam.position; uw=up&&RIVER.over(cp.x,cp.z)&&cp.y<LV+hAt(cp.x,cp.z); if(uw){ const Wt=WATERS[RIVER.wi], k=SU.uScat.value, a=SU.uAmb.value, s=SU.uSunC.value;
-      UF.color.setRGB(k.x*(a.r+s.r*.7)*1.3,k.y*(a.g+s.g*.7)*1.3,k.z*(a.b+s.b*.7)*1.3); UF.near=0; UF.far=(2.2/Math.min(...Wt.sig.slice(1)))*WU; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); } };
-  RIVER.post=scene=>{ if(uw){ scene.fog=fog0; scene.background.copy(bg0); uw=false; } };
+    const cp=cam.position; uw=up&&RIVER.over(cp.x,cp.z)&&cp.y<LV+hAt(cp.x,cp.z); if(uw){ const Wt=WATERS[RIVER.wi], k=SU.uScat.value, a=SU.uAmb.value, s=SU.uSunC.value, dm=Math.max(0,(LV-cp.y)*MPU), dk=Math.max(.07,Math.exp(-dm*.07));   // darker the deeper you go
+      if(Wt.bed===0)UF.color.setRGB(.05,.11,.06).multiplyScalar(cl(a.g+s.g*.5,.25,1.4)*dk); else UF.color.setRGB(k.x*(a.r+s.r*.7)*1.3*dk,k.y*(a.g+s.g*.7)*1.3*dk,k.z*(a.b+s.b*.7)*1.3*dk);
+      UF.near=0; UF.far=(Wt.bed===0?4.5:2.2/Math.min(...Wt.sig.slice(1)))*(window.EQUIP&&EQUIP.sight?2.5:1)*(.6+.4*dk)*WU; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); UF.uw=true;   // the Hudson: dark green murk, thicker the further you look; goggles see further
+      if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } } };
+  RIVER.post=scene=>{ if(uw){ scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; } };
 
   const css=document.createElement('style'); css.textContent=`#rvhud{position:fixed;left:12px;bottom:64px;z-index:20;background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;font:12px Silkscreen,monospace;color:#9aa3b5;display:none}
     #rvhud b{color:#8fe3d6;font-weight:400}    #rvpan{position:fixed;left:12px;top:12px;z-index:30;width:300px;background:#0e1016;border:2px solid #3a3f4e;padding:10px 12px 12px;font:12px Silkscreen,monospace;color:#cfd6e4;max-height:calc(100vh - 24px);overflow:auto}

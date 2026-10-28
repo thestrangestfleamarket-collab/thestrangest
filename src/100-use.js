@@ -1,6 +1,6 @@
 // THE USE: USE lets the player sit on, switch, open and pick up the things around them.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, W3} from './003b-systems.js';
+import {LEVELS, LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, VIT, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -26,6 +26,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     return {y:sy/sw,S,fx,fz,b}; };
   const near=(S,m)=>{ const x0=Math.min(S.min.x+m,(S.min.x+S.max.x)/2), x1=Math.max(S.max.x-m,(S.min.x+S.max.x)/2), z0=Math.min(S.min.z+m,(S.min.z+S.max.z)/2), z1=Math.max(S.max.z-m,(S.min.z+S.max.z)/2);
     return [Math.max(x0,Math.min(x1,pos.x)),Math.max(z0,Math.min(z1,pos.z))]; };
+  VIT.mends.push(()=>USE.seat&&st.sit?1/150:0);   // resting on a seat or a bed mends you slowly
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
   const sitOn=(se,th)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     const sx=x-fx*.06*T, sz=z-fz*.06*T, g=SHARED.groundY(sx,sz);

@@ -1,5 +1,6 @@
 // THE SECTIONS: B to H round the park (grab('sections')), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
 import {SHARED, THREE} from './003-shx.js';
+import {DRESS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -68,16 +69,17 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
   // trees in the park and lamps along it, one instanced mesh each
   const trees=[], posts=[];
   for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
-  for(const b of secs)for(const r of frame(inner,P)){ const q=clip(r,b); if(!q)continue; const al=q.x1-q.x0>q.y1-q.y0, a0=al?q.x0:q.y0, a1=al?q.x1:q.y1, c=al?(q.y0+q.y1)/2:(q.x0+q.x1)/2;
-    for(let a=Math.ceil(a0/22)*22;a<a1;a+=22)posts.push(al?{x:a,y:c}:{x:c,y:a}); }
+  // the globe posts, as on Market St: both sidewalks, a post every 28 of A's lamp spacing (33 tiles), the sides staggered half that, none by a station entrance; DRESS builds and lights them
+  { const SP=28/.84, kiosks=LOOP.STA.filter(st=>!st.old).map(st=>st.kiosk), near=(x,y)=>kiosks.some(k=>x>k.x0-4&&x<k.x1+4&&y>k.y0-4&&y<k.y1+4);
+    for(const b of secs)for(const [o,i,off] of [[inner,P,0],[O,road,SP/2]])for(const r of frame(o,i)){ const q=clip(r,b); if(!q)continue; const al=q.x1-q.x0>q.y1-q.y0, a0=al?q.x0:q.y0, a1=al?q.x1:q.y1, c=al?(q.y0+q.y1)/2:(q.x0+q.x1)/2;
+      for(let a=Math.ceil((a0-off)/SP)*SP+off;a<a1-1;a+=SP){ const x=al?a:c, y=al?c:a; if(!near(x,y))posts.push({x,y}); } }
+    DRESS.extra=posts.map(p=>[XS(p.x),ZS(p.y)]); }
   { const trunk=new THREE.CylinderGeometry(.2*T,.28*T,3.4,6).translate(0,1.7,0), crown=new THREE.IcosahedronGeometry(2.6*T,0).translate(0,5.2,0), o=new THREE.Object3D();
     const tm=new THREE.InstancedMesh(trunk,new THREE.MeshLambertMaterial({color:0x5a4030}),trees.length), cm=new THREE.InstancedMesh(crown,new THREE.MeshLambertMaterial({color:0x3f6e34,flatShading:true}),trees.length);
     trees.forEach((t,i)=>{ o.position.set(XS(t.x),0,ZS(t.y)); o.rotation.set(0,t.k,0); o.scale.setScalar(t.s); o.updateMatrix(); tm.setMatrixAt(i,o.matrix); cm.setMatrixAt(i,o.matrix);
       const r=.2*T*t.s; SOL.up.push([XS(t.x)-r,ZS(t.y)-r,XS(t.x)+r,ZS(t.y)+r]); FIX.up.push([XS(t.x)-r,ZS(t.y)-r,0,XS(t.x)+r,ZS(t.y)+r,3.4*t.s]); });
     tm.castShadow=cm.castShadow=true; scene.add(tm,cm);
-    const pole=new THREE.CylinderGeometry(.05*T,.07*T,3.4,6).translate(0,1.7,0), head=new THREE.SphereGeometry(.2*T,8,6).translate(0,3.5,0);
-    const pm=new THREE.InstancedMesh(pole,new THREE.MeshLambertMaterial({color:0x2a2c30}),posts.length), hm=new THREE.InstancedMesh(head,new THREE.MeshBasicMaterial({color:0xffe6b0}),posts.length);
-    posts.forEach((p,i)=>{ o.position.set(XS(p.x),0,ZS(p.y)); o.rotation.set(0,0,0); o.scale.setScalar(1); o.updateMatrix(); pm.setMatrixAt(i,o.matrix); hm.setMatrixAt(i,o.matrix); }); scene.add(pm,hm); }
+  }
 
   // signs: each station's entrance (railings, two green globes, its name) and each section's edge
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };

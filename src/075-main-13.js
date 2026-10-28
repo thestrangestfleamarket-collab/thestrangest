@@ -93,7 +93,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8);
   if(SHARED.night!==nightTo){ SHARED.night+=(nightTo-SHARED.night)*Math.min(1,dt*2.5); if(Math.abs(nightTo-SHARED.night)<0.002)SHARED.night=nightTo; applyTime(SHARED.night); }
   if(UI.freeCam)disp.copy(UI.camT); else{ UI.follow&&UI.follow(); disp.set(pos.x,SHARED.py+(ED.on?0.85:0),pos.z); disp.add(UI.off); } F.set(Math.sin(a)*Math.cos(SHARED.pitch),Math.sin(SHARED.pitch),Math.cos(a)*Math.cos(SHARED.pitch));
-  UI.view3(a); SHARED.cam.quaternion.setFromEuler(UI.eul.set(-SHARED.pitch,a,0,'YXZ')); SHARED.cam.position.copy(disp).addScaledVector(F,300); { const n=.1; if(Math.abs(OCAM.near-n)>.01){ OCAM.near=n; OCAM.updateProjectionMatrix(); } } UI.view3b(a,dt); SHARED.cam.updateMatrixWorld();
+  UI.view3(a); SHARED.cam.quaternion.setFromEuler(UI.eul.set(-SHARED.pitch,a,0,'YXZ')); SHARED.cam.position.copy(disp).addScaledVector(F,300); { const n=.1; if(Math.abs(OCAM.near-n)>.01){ OCAM.near=n; OCAM.updateProjectionMatrix(); } } UI.view3b(a,dt); SYS.run('cam',dt); SHARED.cam.updateMatrixWorld();
   you.quaternion.copy(SHARED.cam.quaternion); you.position.copy(disp).addScaledVector(F,0.35);
   for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&SHARED.pitch<1.45&&(!w.when||w.when()))?w.foot:1e6;
   { const bi=SHARED.BODB.inside(); for(const r of SHARED.BODB.roof)SEEN(r,!bi); }

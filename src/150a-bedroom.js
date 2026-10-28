@@ -1,7 +1,7 @@
 // THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, GPH, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
-import {renderer, scene} from './004-main.js';
+import {AMB, CLOCK, GPH, pos, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
+import {M, renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (the bedroom 150b, the kitchen 150c) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api
 { const APTS=MODS.apts;
@@ -73,7 +73,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
     const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M;
       const px=z=>z/32.4, Lx=(A.x1-A.x0)*MPU, Ly=(A.y1-A.y0)*MPU, TH=.24, W=(u,h,v)=>new V3(X(A.x0)+u*M,fy+h*M,Z(A.y0)+v*M);
       const apt=new THREE.Group(); apt.position.set(X(A.x0),fy,Z(A.y0)); apt.scale.setScalar(M); scene.add(apt);
-      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},ceil:[],wallMats:[],floorMat:null,wall:'beige',floor:'warm',glowK:1,addN:0};
+      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',floor:'warm',glowK:1,addN:0};
       let CUR=null; const cur=()=>CUR?CUR.obj:apt;   // the unit being built (a piece you can move), or the room itself
       const part=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(u,h,v); me.rotation.y=ry; me.castShadow=cast; me.receiveShadow=true; par.add(me); return me; };
       const thing=(u,h,v,ry=0)=>{ const g=new THREE.Group(); g.position.copy(W(u,h,v)); g.rotation.y=ry; g.scale.setScalar(M); scene.add(g); return g; };
@@ -83,13 +83,13 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       const shelfNow=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
       const solid=(u0,v0,u1,v1,t)=>CUR?CUR.sol.push([u0,v0,u1,v1,t]):solidNow(u0,v0,u1,v1,t);   // inside a unit: kept with it, placed wherever it stands
       const shelf=(u0,v0,u1,v1,b,t)=>CUR?CUR.shf.push([u0,v0,u1,v1,b,t]):shelfNow(u0,v0,u1,v1,b,t);
-      const CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30], MINT=[156,214,200];
+      const FRAME=[24,24,26], CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30], MINT=[156,214,200];
 
       /* ---------- the shell: one open room; cream walls, the dark crown and skirting, the glow strips, the planks on a cream slab ---------- */
       R.floorMat=mat([255,255,255],{map:FLOORS.warm.gen(Lx,Ly),roughness:.55}); FLOORS.warm.t=R.floorMat.map; part(new THREE.PlaneGeometry(Lx,Ly).rotateX(-Math.PI/2),R.floorMat,Lx/2,0,Ly/2,0,apt,false);
       part(new THREE.BoxGeometry(Lx+2*TH,.3,Ly+2*TH),mat([176,182,182],{roughness:.9}),Lx/2,-.152,Ly/2,0,apt,false);   // the slab the room stands on, its edge seen against the dark
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
-      const WW=1.24*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=[1.05,2.35], FD=[du-.48,du+.48,0,2.3], BD=[du-.5,du+.5,0,2.2], SWS=[[.98,1.1,2.75,1.22,[214,218,220]],[4.2,1.05,2.75,1.22,[214,218,220]],[5.62,1.4,2.65,.72,[70,46,34]]];   // the side wall's windows: centre, sill, head, width, frame
+      const WW=2*WI.WHW*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=WI.WZ.map(z=>px(z-.15)), FD=[du-.48,du+.48,0,2.3], BD=[du-.5,du+.5,0,2.2], SWS=WI.SIDE.map(k=>[Ly*(1-k)-TH-.0054,wz[0],wz[1],WW,FRAME]);   // the side walls' windows where the house has them outside: centre, sill, head, width, frame
       const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
       // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
       const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
@@ -98,7 +98,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       R.plaster=wallTex;
       const wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); R.wallMats.push(wm); return part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
       wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[win(fw[0]),win(fw[1]),BD],0,Ly,0);
-      wallOf('Ww',Ly,SWS.map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,[],Lx,Ly,Math.PI/2);
+      wallOf('Ww',Ly,SWS.map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWS.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
       // a slim dark skirting at the foot of every wall (no crown: the picture's walls are plain to the top)
       // each wall's own frame: x along it from its start, z into the room
       const run=[['Wf',Lx,0,0,0],['Wb',Lx,Lx,Ly,Math.PI],['Ww',Ly,0,Ly,Math.PI/2],['We',Ly,Lx,0,-Math.PI/2]];
@@ -111,21 +111,32 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
           vertexShader:'#include <clipping_planes_pars_vertex>\nuniform vec3 uN,uA; uniform float uIso; varying vec3 vD; void main(){ vec4 w=modelMatrix*vec4(position,1.); vec3 e=normalize(w.xyz-cameraPosition), s=normalize(uN+vec3(0.,(uv.y-.3)*.9,0.)+uA*(uv.x-.5)*.7); vD=normalize(mix(e,s,uIso)); vec4 mvPosition=viewMatrix*w; gl_Position=projectionMatrix*mvPosition;\n#include <clipping_planes_vertex>\n}',
           fragmentShader:'#include <clipping_planes_pars_fragment>\n'+D.fragmentShader.replace(/void main\(\)\s*\{/,'void main(){\n#include <clipping_planes_fragment>\n')}); };
       // clear glass: you see out of it, onto the fire escape and the sky beyond (only a faint sheen of its own)
-      const glass=k=>mat([206,226,240],{roughness:.05,transparent:true,opacity:.1,depthWrite:false,...clip(k)});
+      const glass=k=>APTS.glassMat(clip(k));
       // the picture's window: a thick orange frame of four panes and its sill, a dark rod, the mint sheers tied back
-      const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[2,2],curtains=true,fc=WOODO)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
-        part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,g,false);
+      // a curtain as cloth: its points held by their neighbours, the top row on the rod, hanging, tied back to its shape, moved by a breeze and by you walking through it
+      const clothOf=me=>{ const P=me.geometry.attributes.position, n=P.count, nx=19, ny=n/nx, X0=Float32Array.from(P.array), C=[];
+        for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const a=j*nx+i; if(i<nx-1)C.push(a,a+1); if(j<ny-1)C.push(a,a+nx); }
+        const L=new Float32Array(C.length/2); for(let c=0;c<C.length;c+=2){ const a=C[c]*3, b=C[c+1]*3; L[c/2]=Math.hypot(X0[a]-X0[b],X0[a+1]-X0[b+1],X0[a+2]-X0[b+2]); }
+        return {me,P,n,nx,ny,X0,X:Float32Array.from(X0),Xp:Float32Array.from(X0),C,L,still:0}; };
+      const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[2,2],curtains=true,fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
+        const sash=new THREE.Group(); g.add(sash);   // the glass and its bars: slides up into the wall when the window is opened
+        part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,sash,false);
         for(const s of [-1,1])part(rbox(.09,z1-z0+.06,.16,.012),wm,s*(w/2-.025),(z0+z1)/2,-.06,0,g); part(rbox(w+.04,.09,.16,.012),wm,0,z1-.005,-.06,0,g);
         part(rbox(w+.16,.05,.2,.012),wm,0,z0-.01,-.04,0,g);
-        for(let i=1;i<panes[0];i++)part(rbox(.04,z1-z0,.05,.006),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,g);
-        for(let j=1;j<panes[1];j++)part(rbox(w,.04,.05,.006),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,g);
+        for(let i=1;i<panes[0];i++)part(rbox(.04,z1-z0,.05,.006),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,sash);
+        for(let j=1;j<panes[1];j++)part(rbox(w,.04,.05,.006),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,sash);
+        // double-click it: it opens (the sash up half way) and a calm breeze comes in; again, it shuts
+        const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,cloth:[]}; R.wins.push(W_);
+        const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
+        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
+        UI.thing(th); R.winTh.push(th); W_.th=th;
         if(!curtains)return g; const rod=mat([40,30,24],{roughness:.4,metalness:.5,...clip(k)}); part(new THREE.CylinderGeometry(.014,.014,w+.8,10).rotateZ(Math.PI/2),rod,0,z1+.18,.08,0,g);
         for(const s of [-1,1]){ part(new THREE.SphereGeometry(.025,10,8),rod,s*(w/2+.4),z1+.18,.08,0,g);
           const sheer=new THREE.MeshLambertMaterial({color:col(MINT),transparent:true,opacity:.62,side:THREE.DoubleSide,emissive:col([60,90,84]),emissiveIntensity:.25,...clip(k)});
           const top=z1+.17, bot=Math.max(.6,z0-.35), cg=new THREE.PlaneGeometry(1,1,18,26), p=cg.attributes.position, outer=s*(w/2+.38), inner=s*(w/2-.08);
           for(let i=0;i<p.count;i++){ const a=p.getX(i)+.5, b=.5-p.getY(i), h=top-(top-bot)*b, gather=.35+.65*Math.pow(1-b,1.4), u=outer+(inner-outer)*a*gather;
             p.setXYZ(i,u,h,.09+Math.sin(a*Math.PI*6+s)*.03*(.4+b)+.02*b); }
-          cg.computeVertexNormals(); part(cg,sheer,0,0,0,0,g); }
+          cg.computeVertexNormals(); W_.cloth.push(clothOf(part(cg,sheer,0,0,0,0,g))); }
         return g; };
       const doorAt=(k,uc,v,ry,out,o)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(WOODD,{roughness:.5,...clip(k)}), w=o[1]-o[0], h=o[3];
         for(const s of [-1,1])part(rbox(.08,h+.08,.03,.006),wm,s*(w/2+.04),h/2+.04,.015,0,g); part(rbox(w+.24,.08,.03,.006),wm,0,h+.04,.015,0,g);
@@ -138,7 +149,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         part(new THREE.SphereGeometry(.03,12,8),mat([200,160,90],{roughness:.3,metalness:.7,...clip(k)}),w/2-.1,1.0,.05,0,leaf); };
       windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW,[2,2],false);
       windowAt('Wb',fw[0],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW); windowAt('Wb',fw[1],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW);
-      for(const w of SWS)windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[2,1],false,w[4]).position.set(0,0,w[0]);
+      for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[2,2],true,w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[2,2],true,w[4]).position.set(Lx,0,w[0]); }
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,[0,1,-1,0],BD);
 
       /* ---------- the pieces: each one a unit you can move, turn, resize or put away (the room editor, 150d) ---------- */
@@ -183,8 +194,8 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
 
       /* ---------- the light: dim and warm all round, the lamps, the late sun through the panes ---------- */
       // no light overhead and no fill (owner, 25 Oct 2026): the room is lit only by the daylight through its windows and by its own lamps and fittings
-      R.winL=[]; const winLight=(u,h,v,du_,dv,sh)=>{ const L=new THREE.SpotLight(0xdfe8ff,0,14*M,.95,1,.9); if(sh){ L.castShadow=true; L.shadow.mapSize.set(512,512); L.shadow.bias=-.002; L.shadow.radius=4; } L.userData.pool=true; L.position.copy(W(u,h,v)); L.target.position.copy(W(u+du_*1.6,0,v+dv*1.6)); scene.add(L); scene.add(L.target); R.winL.push(L); };
-      for(const c of fw){ winLight(c,wz[1]-.1,.25,0,1); winLight(c,wz[1]-.1,Ly-.25,0,-1); } for(const w of SWS)winLight(.25,w[2]-.1,w[0],1,0,w[3]>1);   // the two big windows cast the shadows of what stands in them (two 512 maps, only while you're in)
+      // no lights of their own at the windows: the sun comes in only through the openings (059a's roof casts the rest), so the light falls in window shapes
+      R.winL=[];
       /* ---------- out of the windows and doors: the house's fire escapes (front and back, the landings above and below yours) and the sky beyond, seen only through the glass ---------- */
       R.tops=APTS.OUTP.tops; R.bot=APTS.OUTP.bot; R.bot.normal.set(0,1,0); R.edges={Wf:[W(0,0,0),W(Lx,0,0)],Wb:[W(0,0,Ly),W(Lx,0,Ly)],Ww:[W(0,0,0),W(0,0,Ly)]}; R.outs={Wf:[],Wb:[],Ww:[]}; R.backs=[];   // what is outside each windowed wall; the sky behind it (the isometric view only)
       { const AL=APTS.AL, lv=Math.min(APTS.my,APTS.floors-2), S0=APTS.S, RZ=APTS.RZ, cp=k=>[WPL[k],R.tops[k],R.bot,...APTS.OUTP.side[k]];
@@ -193,23 +204,12 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
           const LW=X(1)-X(0), YH=h=>Yr(h)-Yr(0); for(const sp of APTS.escPlants||[]){ if(!APTS.plant3D)break; const o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Yr(sp.z),Z(sp.y));
             o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.clippingPlanes=cp(k); } }); G.add(o); }   // the escape's real pots, seen through your glass
           G.scale.z=-1; G.position.set(X(A.x0)-X(AL.x0),fy-Yr(lv*S0+RZ),Z(face)+Z(F.yf)); };
-        // the house's brick outside your walls, above and below you, for the landings to hang on
-        const bt=WALLS.brick.t||(WALLS.brick.t=WALLS.brick.gen()), brick=k=>mat([255,255,255],{map:bt,roughness:.9,...{clippingPlanes:cp(k)}});
-        const face=(k,u,v,ry,len)=>R.outs[k].push(part(new THREE.PlaneGeometry(len,HW*3).translate(0,HW/2,0),brick(k),u,0,v,ry,apt));
-        face('Wb',Lx/2,Ly+TH+.003,0,Lx+2*TH); face('Ww',-TH-.003,Ly/2,-Math.PI/2,Ly+2*TH);
+        // the house's brick round your walls is the house's own (141c), open at your windows
         for(const me of [].concat(...Object.values(R.outs)))if(me.isMesh){ const g=me.geometry, uv=g.attributes.uv, w=g.parameters.width, h=g.parameters.height; for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w,uv.getY(i)*h); }
         // the sky just past the railings, seen through the glass from above (from inside you see the real sky)
         const back=(k,u,v,ry,nx,nz,len)=>{ const m=skyGlass(k,nx,nz,-nz,nx); m.clippingPlanes=cp(k); const me=part(new THREE.PlaneGeometry(len,HW+8),m,u,HW/2-4,v,ry,apt,false); me.renderOrder=-2; R.outs[k].push(me); R.backs.push(me); };
         back('Wf',Lx/2,-TH-2.0,0,0,-1,Lx+2*TH); back('Wb',Lx/2,Ly+TH+1.8,Math.PI,0,1,Lx+2*TH); back('Ww',-TH-1.8,Ly/2,Math.PI/2,-1,0,Ly+2*TH); }
-      // a sunbeam through each front window, seen in the air only where it is
-      R.beams=[]; for(const c of fw){ const a=W(c-WW/2,wz[1],0), b=W(c+WW/2,wz[1],0), cc=W(c+WW/2,wz[0],0), d=W(c-WW/2,wz[0],0), dir=W(c+1.0,0,3.4).sub(W(c-.9,3.2,-2.85)).normalize(), L=3.6*M, e=[a,b,cc,d].map(p=>p.clone().addScaledVector(dir,L));
-        const pos=[], uv=[]; const quad=(p,q,r,s,t0,t1)=>{ pos.push(...p.toArray(),...q.toArray(),...r.toArray(),...p.toArray(),...r.toArray(),...s.toArray()); uv.push(t0,0,t0,1,t1,1,t0,0,t1,1,t1,0); };
-        quad(a,e[0],e[1],b,0,0); quad(d,e[3],e[2],cc,0,0); quad(a,e[0],e[3],d,1,1); quad(b,e[1],e[2],cc,1,1);
-        const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); bg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
-        const bm=new THREE.ShaderMaterial({uniforms:{uOp:{value:0},uC:{value:new THREE.Color(1,.84,.6)}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
-          vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-          fragmentShader:'uniform float uOp; uniform vec3 uC; varying vec2 vU; void main(){ float a=uOp*(1.-vU.y)*smoothstep(0.,.2,vU.y); gl_FragColor=vec4(uC*a,a); }'});
-        const beam=new THREE.Mesh(bg,bm); beam.renderOrder=7; beam.frustumCulled=false; scene.add(beam); R.beams.push(bm); }
+      R.beams=[];   // no painted sunbeams: the light is the real sun's, through the glass
 
       const kind=(k,o)=>{ R.kinds[k]={kind:k,name:o.name,loose:false,m:0,wire:o.wire||null,sol:[],shf:[],tpl:o.tpl,mount:o.mount,cat:o.cat}; };   // a kind with no piece in the room yet (the light fittings), only to add
       const ctx={apt,R,M,W,part,thing,mat,rbox,col,tex,rnd,cl,V3,Lx,Ly,HW,fw,du,WW,wz,clip,glowTex,solid,shelf,cap,cur,hit,unitBox,kind,bake};
@@ -267,16 +267,24 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics, the ones you added leave the scene
-    const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
+    const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const t of Q.winTh||[]){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } AMB.breeze=0; for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
     APTS.furnish(APTS.my,()=>{ clear(R); R=null; ROOMK.api=null; build(); });
 
     /* ---------- each frame: the lamps glow (brighter as the day goes), the room's lights at their brightness, the pieces that move (fridge doors, flames), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
     let prevShadow=null; const TV3=new THREE.Vector3(), TV4=new THREE.Vector3();
-    const DARK={value:0}, LFB=THREE.ShaderChunk.lights_fragment_begin.replace('getDirectionalLightInfo( directionalLight, directLight );','getDirectionalLightInfo( directionalLight, directLight ); directLight.color*=1.-uIn;')
-      .replace('vec3 irradiance = getAmbientLightIrradiance( ambientLightColor );','vec3 irradiance = getAmbientLightIrradiance( ambientLightColor )*(1.-uIn);').replace('irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal );','irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal )*(1.-uIn);');
+    const clothStep=(c,h,br,t,pl)=>{ const {X,Xp,X0,n,nx,ny,C,L}=c, h2=h*h, g=-4*h2, ks=.006, dm=.97; let mv=0;
+      for(let i=nx;i<n;i++){ const a=i*3, fr=(i/nx|0)/(ny-1), gust=br*(1.6+1.2*Math.sin(t*.9+X0[a]*2.1)+.6*Math.sin(t*2.3+X0[a+1]*3+X0[a]))*(.3+.7*fr);
+        const vx=(X[a]-Xp[a])*dm, vy=(X[a+1]-Xp[a+1])*dm, vz=(X[a+2]-Xp[a+2])*dm; Xp[a]=X[a]; Xp[a+1]=X[a+1]; Xp[a+2]=X[a+2];
+        X[a]+=vx+(X0[a]-X[a])*ks+gust*.25*h2*Math.sin(t*.7+fr*2); X[a+1]+=vy+g+(X0[a+1]-X[a+1])*ks; X[a+2]+=vz+(X0[a+2]-X[a+2])*ks+gust*.45*h2;
+        if(pl){ const dx=X[a]-pl.x, dz=X[a+2]-pl.z, d=Math.hypot(dx,dz); if(d<.28&&X[a+1]>pl.y-1&&X[a+1]<pl.y+1){ const k=(.28-d)/(d||1); X[a]+=dx*k; X[a+2]+=dz*k; } }
+        mv=Math.max(mv,Math.abs(vx)+Math.abs(vy)+Math.abs(vz)); }
+      for(let it=0;it<3;it++)for(let q=0;q<C.length;q+=2){ const i=C[q], j=C[q+1], a=i*3, b=j*3, dx=X[b]-X[a], dy=X[b+1]-X[a+1], dz=X[b+2]-X[a+2], d=Math.hypot(dx,dy,dz)||1e-6, e=(d-L[q/2])/d;
+        const wa=i<nx?0:j<nx?1:.5, wb=1-wa; X[a]+=dx*e*wa; X[a+1]+=dy*e*wa; X[a+2]+=dz*e*wa; X[b]-=dx*e*wb; X[b+1]-=dy*e*wb; X[b+2]-=dz*e*wb; }
+      c.still=mv<2e-5?c.still+1:0; c.P.array.set(X); c.P.needsUpdate=true; c.me.geometry.computeVertexNormals(); c.me.geometry.computeBoundingSphere(); };
+    const DARK={value:0}, FILL={value:new THREE.Color(0,0,0)}, LFB=THREE.ShaderChunk.lights_fragment_begin.replace('vec3 irradiance = getAmbientLightIrradiance( ambientLightColor );','vec3 irradiance = getAmbientLightIrradiance( ambientLightColor )*(1.-uIn)+uFill;').replace('irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal );','irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal )*(1.-uIn);');
     const darken=o=>o&&o.traverse(q=>{ if(!q.isMesh)return; for(const m of [].concat(q.material)){ if(!m||m.userData.dk||m.isMeshBasicMaterial||m.isShaderMaterial)continue; m.userData.dk=1; const f=m.onBeforeCompile, ck=m.customProgramCacheKey;
-      m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.fragmentShader='uniform float uIn;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };
-      m.customProgramCacheKey=function(){ return (ck?ck.call(this):'')+'|dk'; }; m.needsUpdate=true; } });   // your rooms take no sky or sun (there is a ceiling, even when the view leaves it off)
+      m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.uniforms.uFill=FILL; sh.fragmentShader='uniform float uIn; uniform vec3 uFill;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };
+      m.customProgramCacheKey=function(){ return (ck?ck.call(this):'')+'|dk2'; }; m.needsUpdate=true; } });   // your rooms take no sky fill (there is a ceiling, even when the view leaves it off); the sun only where it falls through a window (the walls and 059a's roof cast the rest)
     SYS.add('places',dt=>{ const inn=!!APTS.inReal;
       if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFSoftShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFSoftShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
       else if(!inn&&prevShadow!=null){ renderer.shadowMap.type=prevShadow; prevShadow=null; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
@@ -285,13 +293,20 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       for(const L of R.lamps){ const t=L.on?L.i0*(L.L.userData.k??1)*(1.2-.4*day):0; L.L.intensity+=(t-L.L.intensity)*k; L.sm.emissiveIntensity=L.on?.55:.03; if(L.halo)L.halo.material.opacity=L.on?.32:0; }
       for(const q of R.api.lightsAll()){ const u=q.L.userData; if(!u.lamp)q.L.intensity=(u.on===false?0:1)*(u.i0??0)*(u.k??1); }
       for(const un of R.units)if(un.tick&&!un.gone)un.tick(dt||0);
+      // the windows: the sash eases up or down; an open one lets in a calm breeze; the curtains move only while something moves them
+      { const t=performance.now()/1000, h=Math.min(.033,dt||0); let any=0; TV4.set(pos.x,SHARED.py+.9*M,pos.z);
+        for(const w of R.wins){ w.o+=((w.open?w.H:0)-w.o)*Math.min(1,h*3); w.sash.position.y=w.o; w.br+=((w.open?1:0)-w.br)*Math.min(1,h*.6); any=Math.max(any,w.br);
+          if(!w.cloth.length||!inn||!h)continue; TV3.copy(TV4); w.g.worldToLocal(TV3); const near=Math.hypot(TV3.x,TV3.z)<1.6;
+          for(const c of w.cloth){ if(w.br<.01&&!near&&c.still>30)continue; clothStep(c,h,w.br,t,near?TV3:null); } }
+        AMB.breeze=inn?any:0; }
       // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
-      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const l of R.loose)darken(l[0]);
+      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const un of R.units)darken(un.obj);
         for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }
-      DARK.value=APTS.inReal?1:0;   // inside, no sky or sun: only the windows' light and the lamps you switch on
-      const nt=1-day; for(const L of R.winL)L.intensity=inn?18*day+6*nt:0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
+      DARK.value=APTS.inReal?1:0;   // inside, no sky or ceiling light: the daylight through the windows fills the room evenly (none at night), the sun falls in window shapes, and the lamps you switch on
+      { const d=APTS.inReal?cl((e+2)/14,0,1)*.32:0; FILL.value.setRGB(d*.92,d*.97,d); }
+      const nt=1-day; for(const L of R.winL)L.intensity=inn?(18*day+6*nt)*(L.userData.k??1):0; const sunK=cl((e-2)/10,0,1); for(const L of R.winL)L.color.setRGB(1-.28*nt,.86+.1*sunK-.12*nt,.72+.26*sunK+.2*nt*(1-sunK));   // the light at the glass: warm when the sun is low, a cool blue moonlight by night
       // outside: the house's brick and the back fire escape round your rooms; in the isometric view nothing above your landing's rails
       { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc;
         for(const k in R.tops){ const p=R.tops[k]; p.normal.set(0,-1,0); p.constant=isoV?R.fy+SHARED.BOD.Y(45)-SHARED.BOD.Y(0):1e6; } R.bot.constant=1e6; for(const k in R.edges)for(const p of APTS.OUTP.side[k])p.constant=1e6;

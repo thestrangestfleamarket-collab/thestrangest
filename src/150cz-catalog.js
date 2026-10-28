@@ -1,4 +1,4 @@
-// THE GAME'S ITEMS FOR YOUR APARTMENT (owner, 27 Oct 2026: "put all the game items in the catalog"): every kind in the game's catalog is a thing DECORATE sells, its mesh painted the first time it is shown or bought.
+// THE GAME'S ITEMS FOR YOUR APARTMENT: every kind in the game's catalog is a thing DECORATE sells, its mesh painted the first time it is shown or bought; the small ones loose (real physics), the big ones solid.
 import {SHARED, THREE} from './003-shx.js';
 import {MODS} from './006-map-pre.js';
 import {BATCH, PEEK} from './008-batch.js';
@@ -16,7 +16,9 @@ import {ROOMK} from './150a-bedroom.js';
       const cx=(bb.min.x+bb.max.x)/2, cz=(bb.min.z+bb.max.z)/2, y0=B.Y(0);
       for(const me of ms){ me.geometry.translate(-cx,-y0,-cz).scale(1/M,1/M,1/M); me.geometry.computeBoundingBox(); me.geometry.computeBoundingSphere(); me.castShadow=me.receiveShadow=true; g.add(me); }
       const lo=(bb.min.y-y0)/M, hi=(bb.max.y-y0)/M, w=(bb.max.x-bb.min.x)/M/2, d=(bb.max.z-bb.min.z)/M/2;
-      if(hi-lo>.25&&lo<.3&&!(p&&(p.walk||p.high)))D.sol=[[-w,-d,w,d,hi]]; }
+      // small enough to pick up: a loose thing with real physics (as the room's own mugs and books); the big ones stay put, solid
+      if(lo<.3&&hi-lo<.9&&Math.max(w,d)<.5&&!(p&&p.walk)){ D.loose=true; D.m=+Math.max(.2,Math.min(15,(hi-lo)*w*d*4*150)).toFixed(2); }
+      else if(hi-lo>.25&&lo<.3&&!(p&&(p.walk||p.high)))D.sol=[[-w,-d,w,d,hi]]; }
     else D.bad=true;   // nothing painted (or its maker failed): not for sale
     return g; };
   ROOMK.parts.push(ctx=>{ const {R,M}=ctx;

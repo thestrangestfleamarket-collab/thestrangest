@@ -1,6 +1,6 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DRESS, FORAGE, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, DRESS, FORAGE, INSPECT, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -37,6 +37,12 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.computeVertexNormals(); return g; };
   const mk=g=>{ const me=new THREE.InstancedMesh(g,mat,MAXI); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXI*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; scene.add(me); return me; };
   for(const [nm,parts,w] of PART){ if(w){ ME[nm+'R']=mk(geo(parts)); ME[nm+'L']=mk(geo(parts,1)); } else ME[nm]=mk(geo(parts)); }
+  BIRDS.make=k=>{ const P=K[k][7], g=new THREE.Group(), add=(nm,c,m)=>{ const o=new THREE.Mesh(ME[nm].geometry,INSPECT.mat(c,{flat:1})); o.userData.shared=true; if(m)o.applyMatrix4(m); g.add(o); };
+    for(const p of ['body','breast','head','cap','crest','mask','beak','eye','tail','leg']){ const c=p==='eye'?0x0a0a0a:P[p]; if(c!=null)add(p,c); }
+    for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar'])if(P[p]!=null)add(p+s,P[p],new THREE.Matrix4().makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(new THREE.Matrix4().makeRotationZ(sg*.25)));
+    g.rotation.y=-Math.PI/2; const w=new THREE.Group(); w.add(g); return w; };
+  INSPECT.kinds.push({is:id=>/^(bd|pet)_\d+$/.test(id)||id==='cage'||id==='bseed',make:id=>{ if(id==='cage')return INSPECT.shape('cage'); if(id==='bseed')return INSPECT.shape('sack',0xc8a868);
+    const b=BIRDS.make(+id.split('_')[1]); if(id.startsWith('pet_'))return b; const g=INSPECT.shape('cage'); b.scale.setScalar(.28); b.position.y=.03; g.add(b); return g; }});
   let TRIS=0; for(const k in ME)TRIS+=ME[k].geometry.attributes.position.count/3; BIRDS.tris=TRIS;
   const HB=new THREE.BoxGeometry(.55*T,.5*T,.55*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };

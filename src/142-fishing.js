@@ -1,6 +1,6 @@
 // THE FISHING: FISHING and BOAT let the player fish the river and the lakes with a rod (bait, cast, bite, fight, land) and row the river.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, BOOKS, CLOCK, FORAGE, INV, ITEMS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -25,6 +25,13 @@ const FISHING={reeling:false,auto:false,force:null}; Object.assign(BOAT,{on:fals
     use:()=>{ if(FISHING.click)FISHING.click(); } };
   (WIELD.pend=WIELD.pend||[]).push(['rod',rod]); if(WIELD.kind)WIELD.kind('rod',rod);
   addEventListener('pointerup',()=>{ FISHING.reeling=false; }); addEventListener('blur',()=>{ FISHING.reeling=false; }); }
+// what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
+INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ const P=INSPECT.part;
+    if(id==='x_boot'){ const g=new THREE.Group(); g.add(P('box',0x3a2e22,0,.06,0,.09,.12,.1),P('box',0x3a2e22,0,.02,.07,.09,.04,.16),P('box',0x1e1812,0,0,.04,.095,.012,.24)); return g; }
+    if(id==='x_can')return INSPECT.shape('jar',0x9aa0a4,0x8a9094); if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
+    if(id==='chest'){ const g=new THREE.Group(); g.add(P('box',0x5a3a1e,0,0,0,.36,.2,.24),P('cap',0x5a3a1e,0,.1,0,.18,.08,.12,0,Math.PI/2),P('box',0xb08a2a,0,0,.121,.05,.06,.01)); g.children[1].rotation.set(0,0,0); g.children[1].scale.set(.18,.08,.12); return g; }
+    if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
+    return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
 RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v, IP=(id,k)=>ITEMS.prop(id,k);
   const NAMES={x_sunfish:'SUNFISH',x_perch:'WHITE PERCH',x_tomcod:'ATLANTIC TOMCOD',x_crab:'BLUE CRAB',x_eel:'AMERICAN EEL',x_catfish:'CHANNEL CATFISH',x_flounder:'SUMMER FLOUNDER',x_shad:'AMERICAN SHAD',x_bluefish:'BLUEFISH',x_bass:'STRIPED BASS',x_sturgeon:'ATLANTIC STURGEON',
     x_bluegill:'BLUEGILL',x_yperch:'YELLOW PERCH',x_trout:'RAINBOW TROUT',x_carp:'CARP',x_lbass:'LARGEMOUTH BASS',x_pike:'NORTHERN PIKE'};
@@ -123,6 +130,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
   const LOOK={x_perch:[0x9aa4a0,1,1],x_tomcod:[0x8a7a5a,1,.9],x_eel:[0x5a5030,3.2,.45],x_catfish:[0x6a6a5e,1.1,1],x_shad:[0xa8b8c0,1,1.1],x_flounder:[0x8a7458,1,2.2,.35],x_bluefish:[0x6a90a8,1,1],x_bass:[0x9aa490,1,1,1,1],x_sturgeon:[0x6a645a,1.5,.6],x_crab:[0x5a7aa0,.5,2,.6],
     x_sunfish:[0xc8a050,.8,1.4],x_bluegill:[0x8a98a0,.8,1.4],x_yperch:[0xc8b050,1,1],x_trout:[0xa8a0a0,1.1,.9],x_carp:[0xa89060,1,1.2],x_lbass:[0x7a8a50,1,1.1],x_pike:[0x7a8a4a,1.6,.6]};   // tint, length, height, width
   const fishM=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}), hooked=new THREE.Mesh(fishGeo,fishM.clone()); hooked.visible=false; scene.add(hooked);
+  const FM=new Map(); FISHING.look=id=>{ if(!LOOK[id])return null; let m=FM.get(id); if(!m){ m=fishM.clone(); m.color.setHex(LOOK[id][0]); FM.set(id,m); } const o=new THREE.Mesh(fishGeo,m); o.userData.shared=true; shape(o,id,1); return o; };
   const lenOf=(id,kg)=>Y(.45*Math.cbrt(kg)*(LOOK[id]?LOOK[id][1]:1)), shape=(o,id,kg)=>{ const L=LOOK[id]||[0x888888,1,1,1], l=lenOf(id,kg); o.scale.set(l,l*(L[2]||1),l*(L[3]||1)); };
   // the fish you can see: a few of the river's own round the pier, near you only
   const NV=12, swim=new THREE.InstancedMesh(fishGeo,fishM,NV); swim.frustumCulled=false; swim.count=0; scene.add(swim); const VIS=[], m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), e4=new THREE.Euler(), s4=new THREE.Vector3(), p4=new THREE.Vector3(), c4=new THREE.Color();

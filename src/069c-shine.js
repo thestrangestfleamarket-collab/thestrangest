@@ -15,8 +15,8 @@ const SHINE=window.SHINE={src:[],porch:[]};
   const inst=(geo,n,col,basic)=>{ const me=new THREE.InstancedMesh(geo,basic||new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),Math.max(1,n)); me.count=0; me.col=new THREE.Color(col); me.castShadow=!basic; me.receiveShadow=!basic; scene.add(me); MS.push(me); return me; };
   const put=(me,x,y,z,a,o=0,k=1)=>{ q.setFromAxisAngle(Y1,a); me.setMatrixAt(me.count,m4.compose(V(x+Math.cos(a)*o,y,z-Math.sin(a)*o),q,V(k,k,k))); me.setColorAt(me.count,me.col); return me.count++; };
   // CH(geo,col,name): put(x,y,z,a,o,k,{the world editor's pivot, sol, fix, follow}) — each put one thing in the world editor
-  const CH=(geo,col,name)=>{ const L=[]; return {put:(...p)=>L.push(p),done(){ const by=new Map(); for(const p of L){ const k=Math.floor(p[0]/36)+','+Math.floor(p[2]/36); if(!by.has(k))by.set(k,[]); by.get(k).push(p); }
-    for(const ps of by.values()){ const me=inst(geo,ps.length,col); for(const p of ps)put(me,...p); me.computeBoundingSphere(); if(name)WED.meshes.push({place:'street',me,items:ps.map(p=>Object.assign({k:name,x:p[0],y:p[1],z:p[2]},p[6]))}); } }}; };
+  const CH=(geo,col,name)=>{ const L=[]; return {put:(...p)=>L.push(p),done(){ const by=new Map(), out=[]; for(const p of L){ const k=Math.floor(p[0]/36)+','+Math.floor(p[2]/36); if(!by.has(k))by.set(k,[]); by.get(k).push(p); }
+    for(const ps of by.values()){ const me=inst(geo,ps.length,col); for(const p of ps)put(me,...p); me.computeBoundingSphere(); out.push(me); if(name)WED.meshes.push({place:'street',me,items:ps.map(p=>Object.assign({k:name,x:p[0],y:p[1],z:p[2]},p[6]))}); } return out; }}; };
   const arm=(L,y)=>[tube([[.05,y-.76],[.1,y+.04],[L*.35,y+.26],[L-.3,y+.12]],.055),tube([[.08,y-1.26],[.12,y-.46],[L*.27,y-.11],[L*.58,y+.12]],.025)];
   const HOUS=mrg([lat([[0,.2],[.14,.18],[.25,.12],[.3,.04],[.31,0]],8),lat([[.31,0],[.335,-.03],[.335,-.055],[.25,-.055]],8),box(0,.2,0,.5,.04,.05),...[-.14,.14].map(d=>box(d/1.45,.16,0,.035,.06,.28))].map(g=>g.scale(1.45,1,1)));
   const LENS=lat([[0,-.17],[.14,-.15],[.22,-.08],[.25,-.02],[.25,0],[0,0]],8).scale(1.4,1,1);
@@ -40,7 +40,7 @@ const SHINE=window.SHINE={src:[],porch:[]};
   if(D.pole){ D.pole.visible=false; const pm=CH(mrg([lat([[0,0],[.2,0],[.2,.04],[.17,.07],[.17,.12],[.14,.15],[.12,.45],[.15,.5],[.15,.55],[.09,.62],[.09,.85],[.11,.88],[.11,.92],[0,.95]],8),
       flu(lat([[.07,.95],[.05,3.85]],16)),lat([[.05,3.85],[.09,3.88],[.09,3.95],[.06,3.98],[.12,4.02],[.12,4.06],[.05,4.1],[.15,4.2],[.16,4.24],[.13,4.24]],8),
       lat([[0,4.25],[.33,4.25],[.36,4.28],[.3,4.42],[.12,4.6],[0,4.62]],12),lat([[0,4.6],[.06,4.61],[.04,4.66],[.02,4.74],[0,4.78]],8)]),0x23292a,'lamp post'), LI=[];
-    for(const P of D.lampposts){ const y=P.y-4.2*M-.5*M; pm.put(P.x,y,P.z,.4,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); LI[P.i]={k:'lamp post',x:P.x,y,z:P.z}; } pm.done();
+    for(const P of D.lampposts){ const y=P.y-4.2*M-.5*M; pm.put(P.x,y,P.z,.4,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); LI[P.i]={k:'lamp post',x:P.x,y,z:P.z}; } for(const me of pm.done())me.castShadow=false;
     if(D.lant&&D.lant.count)WED.meshes.push({place:'street',me:D.lant,items:Array.from({length:D.lant.count},(_,i)=>{ if(LI[i])return LI[i]; D.lant.getMatrixAt(i,m4); const E=m4.elements; return {k:'lantern',x:E[12],y:E[13],z:E[14]}; })}); }
   const SC=mrg([new THREE.CylinderGeometry(.07*M,.08*M,.025*M,8).rotateX(Math.PI/2).translate(0,0,.012*M),box(0,0,.08,.03,.03,.14),lat([[0,.07],[.065,.07],[.08,.05],[.07,.03],[.06,.03]],8).translate(0,0,.17*M),
       ...[0,1,2,3].map(k=>box(.075*Math.cos(k*Math.PI/2+.785),-.06,.17+.075*Math.sin(k*Math.PI/2+.785),.012,.18,.012)),lat([[.078,-.155],[.078,-.14]],8).translate(0,0,.17*M),lat([[.078,-.07],[.078,-.06]],8).translate(0,0,.17*M),

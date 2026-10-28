@@ -16,7 +16,7 @@ const {chromium}=require('playwright');
   ok(Object.values(tun).every(v=>v.startsWith('0/')),'both tracks run unbroken round the loop, tunnels and stations ('+JSON.stringify(tun)+')');
   // a train comes into A, waits 60 s with its doors open, then leaves
   const atA=async(dt)=>pg.evaluate(dt=>{ const t=TRAINS.list[0], e=t.tbl.find(q=>q.st.old), now=TRAINS.now(); TRAINS.skew+=((e.arr+dt-((now-t.off)%t.lap))%t.lap+t.lap)%t.lap; },dt);
-  await pg.evaluate(()=>{ const p=METRO.plat; __dbg.UI.goTo(p.x,p.z,'down'); }); await idle(); await atA(5); await pg.waitForTimeout(1500);
+  await pg.evaluate(()=>{ const p=METRO.plat; __dbg.UI.goTo(p.x,p.z,'down'); }); await idle(); await atA(5); await pg.waitForFunction(()=>/NOW/.test(LOOP.STA.find(q=>q.old).board.last),null,{timeout:60000,polling:500}).catch(()=>{});
   const A=await pg.evaluate(()=>{ const t=TRAINS.list[0], s=TRAINS.state(t), c=t.cars[0].G.position, st=LOOP.STA.find(q=>q.old), m=LOOP.MX(c.x); return {doors:s.doors,at:s.at&&s.at.id,inSta:m>st.x0&&m<st.x0+LOOP.LEN,board:st.board.last}; });
   ok(A.doors&&A.at==='A'&&A.inSta,'train 1 stands in A with its doors open ('+JSON.stringify(A)+')');
   ok(/NOW/.test(A.board),'A\'s board says train 1 is in ('+A.board+')');

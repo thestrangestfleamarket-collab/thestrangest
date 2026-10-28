@@ -346,5 +346,13 @@
   "sellable": true,
   "value": 25,
   "holds": 100
+ },
+ "scuba": {
+  "offworld": true,
+  "value": 40,
+  "slot": "back",
+  "grants": "breathe",
+  "tank": 300,
+  "rental": true
  }
 }

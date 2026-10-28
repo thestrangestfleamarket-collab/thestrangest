@@ -23,8 +23,8 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   TG.setAttribute('position',new THREE.BufferAttribute(TP,3)); TG.setIndex(TI);
   const trail=new THREE.Mesh(TG,new THREE.MeshBasicMaterial({color:0xf4f0e4,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})); trail.frustumCulled=false; trail.visible=false; scene.add(LEVELS.own(trail,'*'));
   const pts=[], M=new THREE.Matrix4(), IM=new THREE.Matrix4(), UP=new V3(0,1,0), rc=new THREE.Raycaster(), pl=new THREE.Plane(new V3(0,1,0),0), hit=new V3(), ms={x:-1,y:-1};
-  const cur=new V3(0,-.3,1).normalize(), aim=new V3(), aim0=new V3(0,-.3,1).normalize(), sh=new V3(), head=new V3(), tip=new V3(), base=new V3(), ax=new V3(), bx2=new V3(), bz=new V3();
-  let sw=null, side=1, spd=0, turning=false, cutT=0, combo=0, lastSw=0;
+  const ph=new V3(), seg=new V3(), sd=new V3(), sq=new V3(), cur=new V3(0,-.3,1).normalize(), aim=new V3(), aim0=new V3(0,-.3,1).normalize(), sh=new V3(), head=new V3(), tip=new V3(), base=new V3(), ax=new V3(), bx2=new V3(), bz=new V3();
+  let phOk=false, sw=null, side=1, spd=0, turning=false, cutT=0, combo=0, lastSw=0;
   renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; scene.add(m); } WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE AIMS IT, A CLICK SWINGS.'),'#e8e2cc'); FORAGE.draw(); };
@@ -50,7 +50,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       if(turning&&!moving&&!st.move)SHARED.heading+=Math.max(-7*dt,Math.min(7*dt,d)); }
     const w0=st.aim?st.aim.w:0, w=w0+((on&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
-  WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; return; }
+  WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J, P=(p,o)=>o.set(p.x,p.y,p.z).applyMatrix4(G);
     P(J.shoulderR,sh); P(J.elbowR,ax); P(J.palmR,base); ax.subVectors(P(J.wristR,tip),ax).normalize();
     bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); bz.crossVectors(bx2,ax);
@@ -58,8 +58,10 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     const fast=(spd>7||sw)&&!KIND[WIELD.on], now=performance.now(); if(!WIELD.mv){ WIELD.mv=1; SYS.add('weedsMove',()=>{ if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); },'146a-wield'); } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.sword&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();
     trail.visible=pts.length>2; if(trail.visible){ for(let i=0;i<N;i++){ const q=pts[Math.min(i,pts.length-1)]; q[0].toArray(TP,i*6); q[1].toArray(TP,i*6+3); } TG.attributes.position.needsUpdate=true; }
-    if(!(spd>4||sw)||WIELD.sword||KIND[WIELD.on])return;
-    if(WIELD.on==='net'&&BFLY.out&&st.move&&st.move.def.air)for(const b of [...BF.list]){ if(!b.g.parent||!b.th||(b.nt||0)>now)continue; if(b.g.position.distanceTo(head)<m.r+.25*T){ b.nt=now+1500; BFLY.catch(b); } }
+    const was=phOk; ph.copy(seg); seg.copy(head); phOk=true; if(!(spd>4||sw)||WIELD.sword||KIND[WIELD.on])return;
+    // the hoop's sweep since last frame, so a fast swing cannot skip over a butterfly; on the ground or mid-jump
+    if(WIELD.on==='net'&&BFLY.out){ const a=was?ph:head, air=!!(st.move&&st.move.def.air); for(const b of [...BF.list]){ if(!b.g.parent||!b.th||(b.nt||0)>now)continue; const q=b.g.position, d=sd.subVectors(head,a), L=d.lengthSq(), u=L>1e-9?Math.max(0,Math.min(1,sq.copy(q).sub(a).dot(d)/L)):0;
+      if(sq.copy(a).addScaledVector(d,u).distanceTo(q)<m.r+.25*T){ b.nt=now+1500; BFLY.catch(b,{spd,air}); } } }
     if(WIELD.on==='bnet'&&BIRDS.net)for(const b of [...BIRDS.list]){ if(b.st==='pet'||b.st==='hid'||(b.nt||0)>now)continue; if(Math.hypot(b.x-head.x,b.y-head.y,b.z-head.z)<m.r+.3*T){ b.nt=now+1500; BIRDS.net(b); } } };
 
   /* ---------- what you hold, for everyone: your arm's aim (six times a second) and each swing; theirs drawn in their hands ---------- */
@@ -80,5 +82,5 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       F.g.updateMatrixWorld(true); const G=F.g.matrixWorld, J=o.B.J, P=(p,q)=>q.set(p.x,p.y,p.z).applyMatrix4(G), b=new V3(), e=new V3(), w=new V3(), x=new V3(), z=new V3();
       P(J.elbowR,e); P(J.palmR,b); w.subVectors(P(J.wristR,w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
       t.m.matrix.makeBasis(x,w,z).setPosition(b); t.m.matrixWorld.copy(t.m.matrix); } };
-  window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));
+  WIELD.head=head; window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));
   SYS.add('life',dt=>{ share(dt||0); if(theirs.size)draw(dt||0); },'146a-wield'); }

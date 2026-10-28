@@ -24,8 +24,15 @@
   "trade": {
    "sells": [
     "net",
-    "bnet"
-   ]
+    "bnet",
+    "jar_s",
+    "jar_m",
+    "jar_l"
+   ],
+   "buys": [
+    "butterflies"
+   ],
+   "line": "Nets, jars, and I buy every butterfly you bring me."
   }
  },
  "mrblocks": {
@@ -69,5 +76,15 @@
  },
  "teddy": {
   "tint": "#b4b8c2"
+ },
+ "fox": {
+  "trade": {
+   "sells": [
+    "jar_s",
+    "jar_m",
+    "jar_l"
+   ],
+   "line": "Jars by the register. A dollar is a dollar."
+  }
  }
 }

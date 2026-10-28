@@ -4875,3 +4875,8 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+
+## 28 Oct 2026: catching butterflies with the net; jars
+Owner: "a realistic way to use the butterfly net, jump and catch butterflys ... using mouse like the sword ... run jump and swing the net ... the more rare butterflies are harder to catch based on your skill and their level, speed ... sell the butterflies to a merchant ... to hold more than 5 butterflies at once they need a jar ... 20-100 (small, med, large jar) buy from same as butterfly merchant or at bodega"; his picks: jars add up, the Nature Merchant, keep $, "put the fox back". The net catches what its hoop sweeps through, standing or mid-jump; perched butterflies take off as you come near (sooner if you run, later the better your ENTOMOLOGY) and fly from you; rarer kinds fly faster and higher (a jump to reach), harder to catch on the wing; a fast swing and a mid-jump catch help. Hands hold 5 live butterflies; jars hold 20, 50, 100 (HOLDS, an item property, summed over your jars). The Nature Merchant sells nets and jars and buys butterflies (a shop's BUYS); the Fox at the bodega counter sells jars.
+## 28 Oct 2026: the bodega's back room locked
+Owner: "backroom in bodega should not be visible unless you are in there (door is locked, only fox has key)". Its door is shut and locked (double-click: only the Fox has the key); from the shop the room is a dark block; it is no longer in GO TO.

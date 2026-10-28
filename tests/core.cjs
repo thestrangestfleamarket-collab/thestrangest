@@ -12,6 +12,9 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+{ const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
+  ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
+  ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }
 ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x1), 'every place sits on Market St');
 { const S = fs.readFileSync(ROOT + '/src/001-rig.js', 'utf8'), src = S.slice(S.indexOf('const WDRAWN='), S.indexOf('\n})();') + 6);
   const R = new Function('location', 'localStorage', 'document', '__DATA__', src + '\nreturn RIG;')({ search: '' }, { getItem: () => null, setItem() {} }, { createElement: () => ({ getContext: () => ({}) }) }, p => JSON.parse(fs.readFileSync(ROOT + '/' + p, 'utf8')));

@@ -3,8 +3,9 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
+import {VIS} from './129a-vis.js';
 
 { const q=QS.get('far'); let on=q!=='0'; try{ if(q==null&&localStorage.getItem('market-haze3')==='0')on=false; }catch(e){}
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
@@ -40,6 +41,7 @@ import {RINGX} from './065-ring.js';
     for(const t of [.42,.46,.53,.55,.61,.66,.69])put(xs(t),zN+(hs(t*5,2)-.5)*24,10+hs(t*9,3)*8,9,80+hs(t*7,4)*40,ST,5);
     for(let k=0;k<60;k++){ const t=k/60+hs(k,21)*.01, x=xs(t), w=5+hs(k,22)*7, h=10+hs(k,23)*10, z=LR.z1-26-hs(k,24)*5; put(x,z,w,6,h,null,null); if(hs(k,25)<.45)put(x+(hs(k,26)-.5)*w*.5,z,1.6,1.6,h+3.2,[.34,.27,.22],1); } }
   for(let i=B.length-1;i>=0;i--){ const b=B[i]; if(RINGX.inPocket(b[0]*TILE,b[1]*TILE,(Math.max(b[2],b[3])/2+10)*TILE))B.splice(i,1); }
+  { const S=SECTIONS, H=S.of((SHARED.SECTION&&SHARED.SECTION.id)||'A'), inn=(b,r)=>{ const x=b[0]+72, y=b[1]-77, e=Math.max(b[2],b[3])/2; return x+e>r.x0&&x-e<r.x1&&y+e>r.y0&&y-e<r.y1; }; for(let i=B.length-1;i>=0;i--)if(inn(B[i],S.all)&&!inn(B[i],{x0:H.x0+40,x1:H.x1-40,y0:H.y0+40,y1:H.y1-40}))B.splice(i,1); }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
   for(let v=0;v<NV;v++)for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){ const k=((v*FH+y)*FW+x)*4, w=WALL[v], n=.9+hp(x+v*7,y)*.18; let c=[w[0]*n,w[1]*n,w[2]*n], a=0;
@@ -94,7 +96,8 @@ import {RINGX} from './065-ring.js';
     pm.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,PU,{uMC:FU.uMC,uMK:FU.uMK,uHN:FU.uHN,uHF:FU.uHF});
       sh.fragmentShader='uniform sampler2D uN; uniform float uNK,uMK,uHN,uHF; uniform vec3 uMC;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(uN,vMapUv).rgb,uNK);')
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));'); };
-    pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU; }
+    pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
+    { const home=(SHARED.SECTION&&SHARED.SECTION.id)||'A'; SYS.add('places',()=>VIS.hide(pan,'section',SHARED.LVL==='up'&&SECTIONS.at(pos.x/TILE+72,pos.z/TILE-77)!==home),'134-panels'); } }
   let TM=null; { const RB=RINGX.bound, T=TILE, P=[], out=(x,z)=>B.some(([bx,bz,sx,sz])=>Math.abs(x/T-bx)<sx/2+1.5&&Math.abs(z/T-bz)<sz/2+1.5);
     const TFAR=8*T, TSC=.2; for(const [k,[ax,fx,a0,a1]] of [['x',RB.z0-TFAR,RB.x0-6*T,RB.x1+6*T],['x',RB.z1+TFAR,RB.x0-6*T,RB.x1+6*T],['z',RB.x0-TFAR,RB.z0,RB.z1],['z',RB.x1+TFAR,RB.z0,RB.z1]].entries()){ const sg=k%2?1:-1;
       for(let a=a0;a<a1;a+=(2.6+hs(a,k+80)*1.6)*T){ const off=sg*(hs(a,k+81)*4)*T, x=ax==='x'?a:fx+off, z=ax==='x'?fx+off:a; if(out(x,z)||RINGX.inPocket(x,z,10*T))continue; P.push([x,z,(2.2+hs(a,k+82)*1.4)*T*TSC,(5+hs(a,k+83)*4)*T*TSC,hs(a,k+84)]); } }

@@ -23,7 +23,7 @@ const DFOG={};
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land); draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
-  Object.assign(DFOG,{get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
+  Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0}); window.DFOG=DFOG;
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;

@@ -4876,6 +4876,12 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
 
+## 27 Oct 2026: diving the Hudson — murk, arms, free swimming, the tunnel under the city, scuba for rent
+Owner: "create a more realistic swimming water view, murkier, see your arms swimming in 1st pov, make sure swimming its easy to swim down and up and all directions, view gets murkier the further away (dark green hudson water), make the hudson 2x-10x deeper along the way. add a cavern that goes under the city that you can swim through if you swim down to the buttom of hudson in middle and swim through. you either need the mushrooms that let you breath longer or scuba gear. you can rent scuba gear from shark. price things accordingly."
+- Under the Hudson: dark green murk, thicker with distance and darker with depth; motes in the water, the view's edges dark. In first person you see your arms swim (crawl on top, breaststroke under, treading when still).
+- Swimming: SPACE down, SHIFT up, let go and you hold your depth, drifting slowly up; in first person you swim where you look.
+- The Hudson is shallow at the quay and 2 to 10 times deeper out in the channel. Mid-river, at the Hudson entrance, a pit with a cave mouth (a diver-down float over it): swim into it to enter THE HUDSON CAVERN, now a flooded tunnel winding under the city to an air pocket and the old shaft back up.
+- The tunnel needs 45 s of air: AIRCAP MUSHROOMS ($8, +20 s, the mushroom seller) or THE SHARK's SCUBA SET, rented at $40 a fill (5 minutes of air under water; a dry tank goes back to him). Rule: rental and tank are item properties (item editor), slot BACK, grant BREATHE.
 ## 27 Oct 2026: sway level, first person only
 Owner: "add a sway level from 1-10. also it only affects 1st person view". DISPLAY's SWAY LEVEL (1-10, 2 is Security Booth's); the sway only in FIRST PERSON.
 

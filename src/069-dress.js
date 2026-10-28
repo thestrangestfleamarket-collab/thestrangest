@@ -38,11 +38,12 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     { const A=MODS.apts&&MODS.apts.A, dz=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=SHARED.BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
+    pts.push(...(DRESS.extra||[]));   // the other sections' posts (066c)
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
     pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.4,.06,2.4).setPosition(x,y,pz));
-      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H-.08*M,pz,50,12*TILE),sol,fix});
+      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.25*M,pz,50,12*TILE),sol,fix});
       SOL.up.push(sol); FIX.up.push(fix); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }

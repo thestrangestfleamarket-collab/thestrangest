@@ -4,9 +4,9 @@ import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
-PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)}},
+PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uA:{value:0}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-  fragmentShader:`uniform sampler2D tDiffuse; uniform float uT; uniform vec2 uL; varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float uT,uA; uniform vec2 uL; varying vec2 vUv;
     vec3 fb(vec2 cell){ vec3 c=texture2D(tDiffuse,(cell+.5)/uL).rgb; return floor(clamp(c*255.,0.,255.)/8.)*8./255.; }
     vec3 yiq(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)),dot(c,vec3(.596,-.274,-.322)),dot(c,vec3(.211,-.523,.312))); }
     vec3 rgb(vec3 y){ return vec3(y.x+.956*y.y+.621*y.z,y.x-.272*y.y-.647*y.z,y.x-1.106*y.y+1.703*y.z); }
@@ -20,8 +20,10 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
       IQ+=e*.18*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
       vec3 c=rgb(vec3(Y,IQ));
       c+=(h(cell+fract(uT))-.5)*.03;
-      gl_FragColor=vec4(clamp(c,0.,1.),1.); }`};
+      gl_FragColor=vec4(clamp(c,0.,1.),mix(1.,texture2D(tDiffuse,(cell+.5)/uL).a,uA)); }`};
 PS2.sp=new ShaderPass(PS2.shader); PS2.sp.material.toneMapped=false; SHARED.composer.addPass(PS2.sp);
+// a see-through part of the picture (the cinema's screen) stays see-through while asked
+PS2.keepAlpha=on=>{ PS2.sp.uniforms.uA.value=on?1:0; };
 PS2.img=(px,W,H,lines)=>{ const L=Math.max(8,Math.round(lines)), Lx=Math.max(8,Math.round(W*L/H)), N=Lx*L, Y=new Float32Array(N), I=new Float32Array(N), Q=new Float32Array(N), A=new Uint8Array(N), q=v=>Math.floor(v/8)*8/255;
   for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const k=(Math.floor((j+.5)*H/L)*W+Math.floor((i+.5)*W/Lx))*4, r=q(px[k]), g=q(px[k+1]), b=q(px[k+2]), n=j*Lx+i;
     A[n]=px[k+3]>=24?px[k+3]:0; Y[n]=.299*r+.587*g+.114*b; I[n]=.596*r-.274*g-.322*b; Q[n]=.211*r-.523*g+.312*b; }

@@ -4931,6 +4931,13 @@ Owner: "fix the github actions so checks run again". GitHub stopped starting job
 ## 28 Oct 2026: the talk window
 Owner: "build the choice window for talking"; his picks: written scripts, every character, and replies that open the shop, give or take items and are remembered. Double-click a character: its line types out in a window with your replies (W/S or 1-4, Enter, Esc). Scripts are `talk` in characters.json, written in the character editor's TALK tab; a character without one chats from the line pools. What a character remembers is saved per player. Critters and monsters don't talk.
 
+## 28 Oct 2026: hair without black patches; the cinema screen shows its film
+Owner: "the movie is playing but i cant see it, also players hair is now glitched" ("happens everywhere"). Long hair no longer shows black patches. The cinema screen shows the film playing behind it, filling the whole screen.
 ## 28 Oct 2026: branches through the crowns; no body in your head
 Owner (a picture of a trunk ending inside the leaves): "the trees need to have real branches that go through them, none of them should just cut off like this". Every leaf-card crown has a trunk running up to its middle and a bent, tapering limb out into each clump, with a twig past it.
 - Owner (a picture from inside the head): "1st pov shows niside of players head". The game never draws a body for your own moves sent from your other tab; that body stood where you stand.
+- 28 Oct 2026, street lights in the new sections (owner: "add real street lights at night in the new sections"): the globe posts of Market St along both sidewalks of B to H (same spacing, staggered, none by a station entrance), lit at dusk with A's. Every globe post's light now reaches the pavement (the post no longer shades its own lamp).
+- 28 Oct 2026, the haze over every section (owner, his first-person shot of dark unhazed shapes past the park: "not everything is being hazed and blurred in distance"): the distance haze, and the cull past it, cover all eight sections, not only A.
+
+## 28 Oct 2026: the hood style on every lamp
+Owner: "do the hood style on the other lamps too". The park gate lanterns, the pier lamps and the street lights show their light only from under a metal top: no glowing glass cage and no glare halo. Rule: every outdoor lamp hides its bulb under a metal top.

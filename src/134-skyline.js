@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
+import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
 import {VIS} from './129a-vis.js';
 
@@ -152,4 +152,6 @@ import {VIS} from './129a-vis.js';
       draw(); };
     if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dfarlook'; b.textContent='DISTANCE LOOK'; b.onclick=()=>FAR3.panel(); (document.getElementById('dhaze')||g).after(b); }
     if(QS.get('farlook')==='1')setTimeout(()=>FAR3.panel(),500); }
+  // inside a street shop the sections round the park stand between the camera and the room: not drawn
+  SYS.add('places',()=>{ if(MAPG.sections)VIS.hide(MAPG.sections,'inside',SHARED.LVL==='up'&&!!STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z))); },'134-sections');
   window.FAR3=FAR3; }

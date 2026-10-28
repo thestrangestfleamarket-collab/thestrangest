@@ -1,6 +1,6 @@
 // BFLY: wild butterflies spawn on the lawn and flowerbed chunks near you (catch with a net, mount or release); their models come from BF.add, which lives in the later chunk.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, MAIL, PARK, pos, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, FORAGE, INSPECT, MAIL, PARK, pos, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {FLORA} from './142a-flora.js';
@@ -42,6 +42,10 @@ const BFLY={}; window.BFLY=BFLY;
       const L=CH.get(b.chunk); if(L){ const i=L.indexOf(b); if(i>=0)L.splice(i,1); } drop(b); }
     else { say(net?'YOUR NET SWISHES THROUGH EMPTY AIR.':'IT SLIPS BETWEEN YOUR FINGERS.','#c8a090'); b.until=0; }
     FORAGE.draw(); };
+  const BM=new Map(), wings=k=>{ const t=BF.pic&&BF.pic(k,0); if(!t)return null; let m=BM.get(k); if(!m){ m=new THREE.MeshLambertMaterial({map:t.T,transparent:true,alphaTest:.5,side:THREE.DoubleSide}); BM.set(k,m); }
+    const o=new THREE.Mesh(new THREE.PlaneGeometry(t.w/16*.08,t.h/16*.08),m); return o; };
+  INSPECT.kinds.push({is:id=>/^(b|bu|s)_\d+$/.test(id)||id==='frame',make:id=>{ if(id==='frame')return INSPECT.shape('frame',0,0xf2ead6);
+    const w=wings(+id.split('_')[1]); if(!id.startsWith('s_'))return w; const g=INSPECT.shape('frame',0,0xf2ead6); if(w){ const s=Math.min(.26/w.geometry.parameters.width,.18/w.geometry.parameters.height); w.scale.setScalar(s); w.position.z=.02; g.add(w); } return g; }});
   FORAGE.ROWB.push(id=>id.startsWith('bu_')?[['IDENTIFY','bident']]:id.startsWith('b_')?[['MOUNT','bmount'],['RELEASE','bfree']]:[]);
   FORAGE.ACT.bident=id=>{ const k=+id.slice(3), d=DIFF(k); if(use('ento',d-30,d+20)){ const n=FORAGE.has(id); FORAGE.take(id,n); FORAGE.give('b_'+k,n); say(`IT IS A ${BF_KINDS[k][0].toUpperCase()} (${BF_KINDS[k][1]}).`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); };
   FORAGE.ACT.bmount=id=>{ '@later'; const k=+id.slice(2), d=DIFF(k); if(!FORAGE.has('frame'))return say('YOU NEED A SPECIMEN FRAME (THE MUSHROOM SELLER HAS THEM).','#c8a090');

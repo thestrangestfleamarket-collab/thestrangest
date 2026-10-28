@@ -1,6 +1,6 @@
 // THE TREES TO CLIMB: TREES lets you climb the park's trees (hold up at a trunk, or double-click it) and pick the blossoms and fruit in their crowns; the tomato buys them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INV, MAIL, PARK, pos, st, UI} from './003b-systems.js';
+import {CITY, FORAGE, INSPECT, INV, MAIL, PARK, pos, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MAPG, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {VEG} from './144-veggies.js';
@@ -8,6 +8,8 @@ const TREES={h:null,want:null}; window.TREES=TREES;
 { const T=TILE, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); }, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   const FR=[['fr_apple','APPLE',3,0xd83a2a],['fr_pear','PEAR',3,0xb8d048],['fr_plum','PLUM',4,0x6a2a7a],['fr_fig','FIG',5,0x5a3a4a]], BL=['fl_blossom','OAK BLOSSOM',2,0xfff0f8];
+  INSPECT.kinds.push({is:id=>!![...FR,BL].find(f=>f[0]===id),make:id=>{ const f=[...FR,BL].find(f=>f[0]===id), P=INSPECT.part, g=new THREE.Group(); if(f===BL){ for(let i=0;i<5;i++){ const a=i*1.257; g.add(P('ball',f[3],Math.cos(a)*.035,0,Math.sin(a)*.035,.03,.012,.03)); } g.add(P('ball',0xf2c81e,0,.008,0,.012,.01,.012)); return g; }
+    g.add(P('ball',f[3],0,0,0,.05,id==='fr_pear'?.065:.048,.05,0,0,0,{flat:1}),P('cyl',0x5a3a1e,0,.06,0,.004,.03,.004),P('ball',0x4a8a3a,.018,.07,0,.022,.004,.01,0,.5)); return g; }});
   FORAGE.add({names:Object.fromEntries([...FR,BL].map(f=>[f[0],f[1]])),prices:Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]]))}); VEG.add({},Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]])));
   // climbing: while you are on a trunk the ground is where you are on it, so the walk and the camera follow you up
   const C={it:null,h:0}; const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>TREES.h!=null?TREES.h:(sg0?sg0(x,z):null);

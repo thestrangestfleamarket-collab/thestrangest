@@ -69,5 +69,14 @@
  },
  "teddy": {
   "tint": "#b4b8c2"
+ },
+ "ticketfox": {
+  "name": "THE TICKET FOX",
+  "trade": {
+   "sells": [
+    "ticket"
+   ],
+   "line": "One for the next showing? The times are on the screen behind me."
+  }
  }
 }

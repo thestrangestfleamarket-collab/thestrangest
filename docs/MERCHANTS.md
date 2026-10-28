@@ -1,6 +1,6 @@
 # Merchants queue
 
-The owner's merchants, one per picture, queued until he says go (owner, 28 Oct 2026: "dont start building yet, just queue them").
+The owner's merchants, one per picture (25; the lace bat is the balloon witch's), queued until he says go (owner, 28 Oct 2026: "dont start building yet, just queue them").
 Standing picks for all of them (28 Oct 2026): Claude places each one where it fits best (a half-size bodega, food cart, food truck,
 a boat on the Hudson, a table by the Hudson, walking Central Park...); each gets its own body matching the picture, mockups first.
 Every one goes through the one path: `makeNPC` + a home, `characters.json` (`trade`, `talk`), items in `items.json`, an inside
@@ -228,3 +228,173 @@ brass bells under glass. Night: two candles in jars on the table.
 
 **Touches.** Items + a new `curse` property (what it does, how long), resolved once for players and characters (ONLINE sends it), the
 weather's rain (the cloud), the garden, your apartment's door, the park.
+
+## 7. THE APPRAISER: the eye in the bubble (queued 28 Oct 2026)
+**Who.** A giant eye that lives in a glass bubble of its own air (Bible: visitors who carry their own atmosphere), riding on a hired human
+porter whose head is inside the bubble's base. It's a cousin of the exchange machines' eyes: it sees what anything is worth.
+**Body.** A clear bubble 1.5 m across, its reflections sliding as he walks; inside, a white eyeball with a pale blue iris and a deep pupil,
+ringed by rust-red fleshy spines that drift like a sea anemone. Under it, a porter's legs in jeans and white sneakers. Total 13/10.
+**Where.** Walks Market St at midday through the crowd. **Wares:** `monocle` THE SECOND LOOK (55; worn on eyes: shows what hides:
+ghosts without their sheets, the ivy security, camouflaged frogs). **Buys anything** at its value (a walking exchange) and tells you the
+value of what you carry (APPRAISE). **Talk.** "I see it. I see what it's worth. I see you." **Touches.** the `reveal` grant, worn
+eyes, everything with a value, hidden things.
+
+## 8. THE BLOCK: colour, paint, doors (queued 28 Oct 2026)
+**Who.** A robot covered in coloured cube tiles that slowly change colour as he walks (Wiki: "Block Color Bot"). Sells nanobot spray paint.
+**Body.** A grey steel box head with two stubby studs on top, a round lens eye, a row of dot holes for a mouth, side boxes for ears; a black
+torso and segmented arms clad in scuffed coloured tiles (red, pink, yellow, blue, green, white, black), some cracked; a woven patterned
+waist. 11/10. Idle: one tile at a time changes colour.
+**Where.** A cart of spray cans under a striped awning on Market St. **Wares:** `spray` NANO SPRAY (12; recolour what you wear, or
+your apartment's walls), `spraydoor` DOOR IN A CAN (30; spray it on any wall: a door home, once, it fades). **Talk.** "Hold still. You'd
+look better in teal." **Touches.** looks (the designer's colours), the apartment's walls, a go-home way (one path: the apartment's ROOMS.enter).
+
+## 9. THE BALLOON WITCH: balloons and lace bats (queued 28 Oct 2026)
+**Who.** A tiny witch (Wiki: "Dark void witch black balloon"), 3/10, who never touches the ground: her black balloon carries her. Her
+familiars are the lace bats (the bat picture), bats of lace-thin skin from a dim world, light as paper.
+**Body.** All black, a wide pointed hat, a cloak to her feet, little gloved hands out like wings, small black boots dangling; her
+balloon glossy black on a white curling ribbon. The lace bat: a white, see-through web of veins for wings, pointed ears, two dark eyes,
+a fuzz of a body, glowing a little under street lights.
+**Where.** Drifts over Market St's crosswalks by day; at night the night market. **Wares:** `balloon` BLACK BALLOON (15; held: you
+fall slowly and jump higher, until it pops on a branch), `lacebat` LACE BAT (40; a pet that circles your head at night and snaps
+up moths). **Talk.** "Up is easy. Down is the trick." **Touches.** held gear (a `lift` grant), the jump and falling, pets, the night market.
+
+## 10. THE RADISH: off-world seeds (queued 28 Oct 2026)
+**Who.** A white radish spirit (Wiki: "Umbrella Radish Spirit Suitcase"), round and soft, with his leaf as an umbrella. He sells
+the vegetables of other worlds out of a red suitcase. The tomato sells Earth's; he sells only off-world ones (owner's rule: you trade
+merchants for off-world things).
+**Body.** 4/10, a white radish body with soft ridges and a few black specks, black dot eyes, a small open pink mouth, stubby arms
+and toes; a red leaf umbrella from the top of his head. A red hard suitcase open beside him, packed with veg and plastic packets; a blue
+crate of empty orange trays.
+**Where.** The Hudson railing by the quay. **Wares:** `seed_star` STAR CUCUMBER, `seed_sun` SUN PEPPER, `seed_hum` HUMMING BEAN
+(each 6, off-world seeds for your garden; they grow into veg the tomato won't buy but the radish will). **Talk.** "Fresh from far away!"
+**Touches.** the garden, items (`offworld`), the radish buys what they grow.
+
+## 11. THE TIGER: jackets and shades (queued 28 Oct 2026)
+**Who.** A tiger in denim and studs, cool as anything, by the lake. Fashion is one of Earth's best exports (Bible); he buys it in
+bulk and sells it back.
+**Body.** 11/10, orange fur with black stripes, a white muzzle and long white whiskers, a pink nose; green-lensed sunglasses on a
+studded black leather band; a shiny dark blue denim jacket, a studded leather strap across his chest.
+**Where.** Leaning on the lake's railing in Central Park. **Wares:** `jacket_denim` DENIM JACKET (35, worn body), `jacket_stud`
+STUDDED JACKET (60), `shades` SHADES (20, worn eyes: no glare at noon). **Buys** clothes. **Talk.** "Nice. No. Let me fix that."
+**Touches.** worn gear on the Walker, looks, the sun's glare.
+
+## 12. SONIEE: the escaping bottles (queued 28 Oct 2026)
+**Who.** A mint-green vending machine (Wiki: "Soniee 3 bottles, always trying to escape"). Its three bottles are alive: fuzzy drink
+creatures who plot their escape every time you buy one. The machine itself never speaks; the bottles never stop.
+**Body.** A mint machine speckled with paint, a round sticker 06, SONIEE in teal on a yellow splash, a chrome tap and coin plate; in its
+window, a pink fuzzy bottle (big grin), a white one (pink cheeks, lashes), a teal one (smirk, a bit of white in its teeth).
+**Where.** The subway platform. **Wares:** `soda_pink` (4; run faster for a minute), `soda_white` (4; stamina full), `soda_teal`
+(4; +20 s breath). Each one you buy may hop out and run: catch it before it gets away. **Touches.** edible items (`edible`, `breath`,
+speed and stamina), a small chase, the platform.
+
+## 13. THE ALL-SEEING CACTUS: plants that watch (queued 28 Oct 2026)
+**Who.** A cactus with one great green eye (Wiki: "All seeing"). It never sleeps and remembers everyone it sees.
+**Body.** 3/10 on a crate: blue-green spiky lobes with brown spines, a big wet eye with a green iris and pink lids, lashes of spines.
+**Where.** A plant stall on Market St's sidewalk, red planters and terracotta pots of cacti (shared with THE BONSAI). **Wares:**
+`cactus_eye` WATCH CACTUS (35; put it in your apartment: it tells you who came in while you were out), `cactus` CACTUS (5). **Talk.**
+"..." (it only stares; a card on the crate says THE CACTUS SEES). **Touches.** your apartment, ONLINE (visitors), placeable things.
+
+## 14. THE STUMP: stories and the root tunnels (queued 28 Oct 2026)
+**Who.** An old tree being (Wiki: "Story Tree Stump" and "Tree Tunnel Network Merchant"). The trees' roots join under the city into
+tunnels to the subway; he sells the way through them, and tells stories for free.
+**Body.** 6/10, his head the top of a cut trunk, bark ridged, a wrinkled grey-brown face, round black glassy eyes, a big nose, a
+pointed ear, grey tufts; a rust-red clay-pot body with metal leaf ornaments, a key and charms on a chain; grey knobbly hands; an iron
+lantern with a flame beside him on a stump table.
+**Where.** Central Park, a big stump at a crossing of paths. **Wares:** `rootpass` ROOT PASS (10; step into any tree marked with his
+lantern knot, come out at another: the park, Market St, the Hudson, the station). **Talk.** "Sit. Once, before the city..." (a story, a
+new one each day). **Touches.** a shortcut network (one mechanic, shared with THE OTTER's manholes), the trees, FADE.
+
+## 15. THE BLUE HOUR: buyer of bad feelings (queued 28 Oct 2026)
+**Who.** A skeleton-like being in a blue hood (Wiki: "Buys your soul, but only if you believe it"). His kind eat bad feelings. Nothing
+supernatural: an emotion-harvesting tech in his chest. He comes out only at night and buys your sour moods.
+**Body.** 10/10, a pale blue-white skull face with deep eye holes and a little eye in one, wrinkled at the brow; long neck tendons;
+open ribs; grey knotted hands clasped; a big soft cobalt hood and robe; a cigarette in his teeth. Idle: leans, blows smoke, looks
+in the window.
+**Where.** At night, leaning by a corner shop's window in the night market, under its flickering tube light. **Buys** `sour`
+SOUR FEELING (a thing you're left with when you die, lose a fight, get cursed or rained on; worth 2 to 10). **Talk.** "Bad day? I'll take
+it off your hands." **Touches.** death, the brawl, the curses, rain, the night market, an item made by events.
+
+## 16. THE BROADCAST: experiences on tape (queued 28 Oct 2026)
+**Who.** A woman with a TV set for a head and her face on the screen (Bible: experiences sold as objects, each someone else's
+memory). She records them and plays them back.
+**Body.** 10/10, a cream plastic TV box with her pale face filling the screen, studded with silver dots, green eyes, red brows and
+lips; five wire antennae with coloured balls, a black speaker disc on each side; a cord down her neck; a moss-green sleeveless dress
+with a ruffled collar.
+**Where.** Central Park, by the bandstand. **Wares:** `tape_pigeon` A PIGEON'S MORNING, `tape_dragon` A DRAGON OVER THE RIVER,
+`tape_taxi` A TAXI AT NIGHT (each 12): watch it and for 30 s you see through their eyes, flying or driving the real map. **Talk.** "Wanna
+be someone else for a minute?" **Touches.** the camera (a flight path), the map, FADE.
+
+## 17. THE OTTER: deliveries and manholes (queued 28 Oct 2026)
+**Who.** A masked otter courier in a beret. He knows every drain, and he runs the street's deliveries.
+**Body.** 7/10, pale brown fur, a slate-blue felt mask over big black eyes, a slate beret, a slate scarf high on his neck; a fuzzy brown
+coat with big buttons and badges, a canvas strap across him to a satchel.
+**Where.** By the subway stairs on Market St. **Gives work:** parcels to carry across the city for pay (the jobs). **Wares:** `manhole`
+MANHOLE KEY (8; drop down any drain, come up at another; the same shortcut mechanic as THE STUMP's roots). **Talk.** "Got a run if you've
+got legs." **Touches.** the jobs, the drains, the mail, shortcuts.
+
+## 18. THE REEL KID: movies not made yet (queued 28 Oct 2026)
+**Who.** A kid of some kind in a pink furry cat hood and pink sunglasses, sitting on stacks of film canisters (Wiki: "Selling movies not
+yet made yet": some films are constants across the galaxy).
+**Body.** 5/10, a smooth tan face with a sly smile, brown fringe, a fuzzy pink cat hood with ears, big pink glasses pushed up on it;
+a fuzzy brown-grey sweater, gloves, arms folded on the canisters.
+**Where.** The Hudson pier, among stacked, labelled film tins. **Wares:** `reel` A REEL (10; a film from the future: take it to the
+cinema and it plays, or watch it on your TV). **Talk.** "This one comes out in '94. Good ending." **Touches.** the cinema's screen,
+the apartment's TV, the pier.
+
+## 19. THE BAGGER: bags that walk (queued 28 Oct 2026)
+**Who.** A yellow fuzzy creature with a backpack (Bible: bags at the market are alive). He rents and sells living bags.
+**Body.** 5/10, round, shaggy yellow fur, small dark eyes, a little smile, stubby arms and feet; a mauve backpack with a yellow window
+on his front, straps over his shoulders.
+**Where.** Walks Market St. **Wares:** `bag_walk` WALKING BAG (50; it follows you and carries 10 more things), `bag_guard`
+GUARD BAG (80; guards your things: if you die you keep them). **Talk.** "Heavy? Let it walk." **Touches.** the pack, death, a follower.
+
+## 20. THE SECONDHAND GHOST: lingering things (queued 28 Oct 2026)
+**Who.** A ghost shopper (Bible: travellers out of phase, who can't carry goods but love to trade) in a bucket hat, round glasses and
+a tote. He trades in ghosts of things.
+**Body.** 5/10, a soft white sheet-body with little white feet and an arm, a grey felt bucket hat, round wire glasses, a tan paper tote.
+**Where.** Ghost Street. **Trades:** give him a thing and he gives back its ghost: a pet that lives in your apartment and follows
+you there (a donut's ghost, a sock's ghost); it leaves a note one day and goes. **Touches.** Ghost Street, the apartment, pets, the
+items' `ghost` setting (the owner decides which things can become ghosts).
+
+## 21. THE JELLYCAP: glowing mushrooms (queued 28 Oct 2026)
+**Who.** Someone whose head is a translucent jelly mushroom in a bubble (Wiki: "HoloMushroom Merchant", "Muffshrooms"). It glows
+amber at night.
+**Body.** 10/10, a clear wet dome full of drops, a glowing amber cap with its gills hanging inside, a ribbed rim; a beige knit neck
+gaiter for a neck; a tan trench coat, a strap.
+**Where.** Market St at night by the movie theatre, with a tray. **Wares:** `muffshroom` MUFFSHROOM (6; eat it and you glow for 5
+minutes: light to see by), `holocap` HOLO-CAP LAMP (25; a lamp for your apartment). **Touches.** edible items, the `light` grant (timed),
+the apartment's lights.
+
+## 22. THE BONSAI: trees that grow (queued 28 Oct 2026)
+**Who.** A bonsai creature with a mop of blonde curls and a little orange scarf, part of her own tree. Bonsai are one of Earth's most
+valued exports (Bible).
+**Body.** 3/10, mossy green skin, dark eyes, a sweet smile, her arms turning into branches with pale leaves; she grows from a twisted
+trunk in a red-brown glazed pot.
+**Where.** The plant stall on Market St, beside THE ALL-SEEING CACTUS. **Wares:** `bonsai` BONSAI (20): water it every day and it grows
+over real days; a bigger one is worth more (she buys them back). **Talk.** "Patience. And water." **Touches.** placeable things,
+saved growth (server side), value that changes.
+
+## 23. THE OPERATOR: calls to anywhere (queued 28 Oct 2026)
+**Who.** A pale blue horned demon on the phone (Wiki: "Blue demon with orb: see anywhere for 5 minutes, except your ex's house").
+You don't go anywhere; you see.
+**Body.** 11/10, pale blue cracked skin, four ridged ivory horns, pointed ears, black eye holes, bared teeth, beads and a flower crown
+on his brow; dusty white robes, bead necklaces, carved bone medallions; a light blue phone at his ear.
+**Where.** West St's third blank shell (`shell5`): a narrow phone shop. **Inside:** handsets on every wall, coiled cords hanging, a
+switchboard of jacks and blinking lamps, dust on the white robes hung by the door. **Wares:** `call` A CALL (15): pick a place on the
+map and see it live for 5 minutes. **Talk.** "Who are we calling? Not her. I won't." **Touches.** the camera, the map, `ROOMS.off`.
+
+## 24. THE WANDERING CAP: chunks of earth (queued 28 Oct 2026)
+**Who.** A mushroom gnome hiking the city (Wiki: "Mushroom merchant sells chunks of earth"). He collects soils from all over and sells
+them back to grow better mushrooms.
+**Body.** 4/10, a big red-orange mushroom cap with white flecks, a long white beard under it, no face seen; a tan jacket and cargo trousers,
+red-orange gloves and boots, a khaki backpack.
+**Where.** Walks Central Park's paths. **Wares:** `soil_moss` MOSS LOAM, `soil_ash` ASH EARTH, `soil_deep` DEEP CLAY (each 8): put
+it on a lawn and that patch grows a certain kind of mushroom. **Touches.** foraging and mycology (the grass decides the mushrooms), the lawns.
+
+## 25. THE WATCHMAKER: time (queued 28 Oct 2026)
+**Who.** A small grey gremlin in tweed with a pocket watch (Wiki: "sells time, can slow down time"; Bible: personal time-dilation tech).
+**Body.** 5/10, wrinkled grey skin, big amber eyes, big pointed ears, a crust of blue-green moss for hair; a brown checked tweed coat; a
+cigarette; a brass pocket watch in his hands.
+**Where.** Leaning on the bank's column on Market St. **Wares:** `watch` POCKET WATCH (70; wind it and for 10 s the world slows
+around you: butterflies, fish and fights; for others you just seem fast). **Talk.** "Time? I've got some. Not much." **Touches.**
+your speed (a timed grant), the butterflies, the fights, ONLINE.

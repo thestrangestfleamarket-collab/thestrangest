@@ -4948,3 +4948,4 @@ Owner (his picture of the MAP tab, only Section A drawn): "update map to show al
 Owner: "do the hood style on the other lamps too". The park gate lanterns, the pier lamps and the street lights show their light only from under a metal top: no glowing glass cage and no glare halo. Rule: every outdoor lamp hides its bulb under a metal top.
 ## 28 Oct 2026: faster checks
 Owner: "yes make them faster". The core check and the places tour draw in a small window; the Hudson pier checks moved from core into the fishing check, which runs when fishing or the river changes.
+- 28 Oct 2026, owner (his first-person picture from inside the head, again): "1st person still shows inside of head". With OUTLINE on, the outline pass (and the map's picture) showed your body again after first person hid it; now they leave it as it was.

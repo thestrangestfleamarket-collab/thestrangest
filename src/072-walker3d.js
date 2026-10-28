@@ -358,7 +358,7 @@ OUTL.render=(renderer,scene,cam)=>{ '@later'; { const C=OUTL.pass.uniforms.cols.
   const ac=renderer.autoClear; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
   const rc=OUTL.rect(cam,w,h); if(rc){ const sub=OUTL.sub||(OUTL.sub=cam.clone()); sub.copy(cam); sub.setViewOffset(w,h,rc[0],rc[1],rc[2],rc[3]); sub.updateMatrixWorld(); cam=sub;
     rt.viewport.set(rc[0],h-rc[1]-rc[3],rc[2],rc[3]); rt.scissor.copy(rt.viewport); rt.scissorTest=true; renderer.setRenderTarget(rt); }
-  const cut=(OUTL.hidden?OUTL.hidden():[]).filter(Boolean); for(const o of cut)o.visible=false; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=true; for(const o of cut)o.visible=true;
+  const cut=(OUTL.hidden?OUTL.hidden():[]).filter(Boolean); for(const o of cut)o.visible=false; const gv=W3.group.visible; W3.group.visible=false; scene.overrideMaterial=OUTL.occ; const bg=scene.background; scene.background=null; renderer.autoClear=false; renderer.render(scene,cam); scene.overrideMaterial=null; scene.background=bg; W3.group.visible=gv; for(const o of cut)o.visible=true;
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;
   renderer.autoClear=ac; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(null); };
 

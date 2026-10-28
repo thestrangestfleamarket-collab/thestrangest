@@ -1,14 +1,15 @@
 name: site
 on:
-  push:
-    branches: [main]
-    paths-ignore: ['docs/**', '**.md']
   pull_request:
     paths-ignore: ['docs/**', '**.md']
   workflow_dispatch:
     inputs:
       measure:
         description: 'Also run the measuring checks (budget, same picture, same pixels)'
+        type: boolean
+        default: false
+      full:
+        description: 'Run every check, not only those for the files changed'
         type: boolean
         default: false
 concurrency:
@@ -20,6 +21,24 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: f
+        name: Which checks the changed files call for (all with the full label or box)
+        env:
+          FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full') }}
+          BASE: ${{ github.base_ref || 'main' }}
+        run: |
+          C=$(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL)
+          R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
+          k lawn    'src/14[0-2]|lawn'
+          k online  'src/111d|worker/|online'
+          k brawl   'src/146h|src/146a|src/103|brawl'
+          k vr      'src/162[a-c]|vr\.cjs'
+          k bedroom 'src/150[a-c]|src/059a|bedroom'
+          k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
+          k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
+          echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -44,22 +63,29 @@ jobs:
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         run: node tests/core.cjs dist/market.html
       - name: The lawn (knee-high tufts, painted ground)
+        if: contains(steps.f.outputs.run, ' lawn')
         run: node tests/lawn.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
+        if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
+        if: contains(steps.f.outputs.run, ' brawl')
         run: node tests/brawl.cjs dist/market.html
       - name: The headset (VR on an emulated Quest 3)
+        if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
+        if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
       - name: The room editor (decorate your apartment, saved and back after a reload)
+        if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         run: node tests/places.cjs out
       - name: Every editor opens and its controls work
+        if: contains(steps.f.outputs.run, ' editors')
         run: node tests/editors.cjs dist/market.html
       - name: The page's errors, when it did not open
         if: failure()

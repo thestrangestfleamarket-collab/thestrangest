@@ -174,9 +174,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
              V('beardGoatee','head','hair',p=>Math.max(sm(ell(p,ad(H,Vv(0,-7.3,4.9)),Vv(1.7,2.0,1.4)),tube([Vv(-2.6,-5.0,5.6),Vv(0,-4.6,6.6),Vv(2.6,-5.0,5.6)],[.7,.8,.7],p),.6),MO(p),-hd(p)+.05)),
              V('beardMoustache','head','hair',p=>tube([Vv(-3.1,-5.9,5.0),Vv(-1.4,-4.7,6.2),Vv(0,-4.5,6.5),Vv(1.4,-4.7,6.2),Vv(3.1,-5.9,5.0)],[.35,.75,.8,.75,.35],p)));
     { // her face: the jaw drawn in softly toward a smaller, rounder chin, and lashes at the outer top of each eye (both only on the female build)
-      const ears=p=>Math.min(ell(p,ad(H,Vv(6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)),ell(p,ad(H,Vv(-6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)));
+      const ears=p=>Math.min(ell(p,ad(H,Vv(6.2,-1.8,-0.8)),Vv(0.75,1.35,0.9)),ell(p,ad(H,Vv(-6.2,-1.8,-0.8)),Vv(0.75,1.35,0.9))), nape=p=>1.5*cl((H.y-2.0-p.y)/4.5,0,1)*cl((H.z-0.5-p.z)/4.5,0,1);
       const soft=p=>{ const t=cl((H.y-1.0-p.y)/8,0,1), q=Vv(H.x+(p.x-H.x)*(1+.34*t*t+.05),p.y,H.z+(p.z-H.z)*(1+.06*t+.03));
-        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),4.8+.4*t),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42)); };
+        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),4.8+.4*t)+nape(p),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42)); };
       head.form='M'; PCS.push(Object.assign({},head,{n:'headF',d:soft,form:'F',paint:()=>null}));
       let zf=H.z; while(soft(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
       const lash=s=>p=>Math.min(tube([Vv(s*2.95,1.05,zf-H.z-.25),Vv(s*3.45,1.4,zf-H.z-.5)],[.09,.03],p),tube([Vv(s*2.6,1.15,zf-H.z-.15),Vv(s*2.95,1.55,zf-H.z-.35)],[.08,.03],p));

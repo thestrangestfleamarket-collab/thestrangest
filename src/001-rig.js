@@ -213,7 +213,8 @@ const mouthPaint=(p,H,M)=>{ if(!M||M.o<=0.05) return box(p,add(H,V(0,-5.95,5.2))
   const h=Math.max(M.o/2,0.35),cy=-5.95-M.o/2+0.35; if(box(p,add(H,V(0,cy,5.2)),V(M.w,h,3.2))<0) return M.o>0.5&&p.y-H.y>cy+h-0.5?'teeth':'mouth';
   return box(p,add(H,V(0,cy,5.2)),V(M.w+0.6,h+0.6,3.2))<0?'skin':null; };
 function headPieces(H,lift,mouth){ const P=[];
-  P.push({n:'head',m:'skin',d:p=>Math.min(rbox(p,H,V(6.0,7.8,6.3),4.6),rcone(p,add(H,V(0,-6,1.6)),add(H,V(0,-10.5,0.2)),2.4,2.2),ell(p,add(H,V(6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});
+  const nape=p=>1.7*Math.max(0,Math.min(1,(H.y-2.0-p.y)/4.5))*Math.max(0,Math.min(1,(H.z-0.5-p.z)/4.5));
+  P.push({n:'head',m:'skin',d:p=>Math.min(rbox(p,H,V(6.0,7.8,6.3),4.6)+nape(p),rcone(p,add(H,V(0,-6,1.6)),add(H,V(0,-10.5,0.2)),2.4,2.2),ell(p,add(H,V(6.3,-1.8,-0.8)),V(0.8,1.45,0.95)),ell(p,add(H,V(-6.3,-1.8,-0.8)),V(0.8,1.45,0.95)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});
   P.push({n:'hair',m:'hair',d:p=>Math.min(Math.max(rbox(p,add(H,V(0,0.3+lift/2,-1.0)),V(6.65,8.2+lift/2,7.6),5.0),-box(p,add(H,V(0,-2.8,5.5)),V(4.8,6.0,3.4)),-box(p,add(H,V(0,-3.8,6.2)),V(10,8,5)),H.y-3.0-p.y),
     Math.max(rbox(p,H,V(6.35,8.1,6.6),4.95),4.4-Math.abs(p.x-H.x),p.z-H.z-2.9,Math.abs(p.y-H.y-0.8)-3.4),
     Math.max(rbox(p,add(H,V(0,0.3+lift/2,-1.0)),V(6.65,8.2+lift/2,7.6),5.0),ell(p,add(H,V(0,-3.6,-4.4)),V(3.4,3.8,3.2))))});
@@ -233,7 +234,7 @@ function shoeBox(p,J,n,r){ const H=J['heel'+n],T=J['toe'+n],f=nrm(sub(T,H)),u=nr
   const q=[Math.abs(a-(a0+a1)/2)-((a1-a0)/2-r),Math.abs(b)-(hw-r),Math.abs(c-(c0+top)/2)-((top-c0)/2-r)];
   return Math.hypot(Math.max(q[0],0),Math.max(q[1],0),Math.max(q[2],0))+Math.min(Math.max(q[0],q[1],q[2]),0)-r; }
 function shell(J,lift,mouth,suit){ const fine=FINEHAND, P=headPieces(J.head,lift||0,mouth).concat(bodyPieces(J,suit));
-  P.push({n:'neck',m:'skin',d:p=>rcone(p,J.neck,J.headBase,2.9,2.2)});
+  P.push({n:'neck',m:'skin',d:p=>rcone(p,J.neck,J.headBase,2.7,2.0)});
   for(const n of 'LR'){ const S=J['shoulder'+n],E=J['elbow'+n],W=J['wrist'+n];
     P.push({n:'sleeve'+n,m:'shirt',d:p=>rcone(p,S,add(S,mul(sub(E,S),0.3)),BODY.slv[0],BODY.slv[1])});
     P.push({n:'upperArm'+n,m:suit?'shirt':'skin',d:p=>rcone(p,S,E,2.58,2.4)});

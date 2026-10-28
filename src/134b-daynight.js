@@ -47,5 +47,5 @@ Object.assign(DN,{lk:1,mode:'live',modes:['live','day','golden','soft','night'],
       if(t.id==='dnsave'){ SAVE.set('dn-'+DN.mode,JSON.stringify(DN.P())); dirty=false; msg().textContent='saved'; }
       if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
       if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.P()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
-  addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
+  addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&e.shiftKey&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
   CLOCK.run=(DN.mode==='live'&&!DN.test); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,run:CLOCK.run,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

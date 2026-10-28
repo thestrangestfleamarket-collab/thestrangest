@@ -1,6 +1,6 @@
 // THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee, poster and showtimes outside follow it.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, CLOCK, pos, PS2, SIGNS, UI} from './003b-systems.js';
+import {CINEMA, CLOCK, LITE, pos, PS2, SIGNS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
@@ -53,14 +53,14 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   CINEMA.sound=(on,vol)=>{ if(on!=null)snd.on=!!on; if(vol!=null)snd.vol=Math.max(0,Math.min(100,+vol)); saveSnd(); applySnd(); };
 
   // the player is a 16:9 page behind the game's picture, seen only through the screen (the picture is see-through there); the clip keeps it inside the game's frame
-  const W0=1280, H0=720;
+  const W0=1280, H0=720, HCSS='position:absolute;left:0;top:-10px;width:100%;height:calc(100% + 20px)';
   let clip=null, wrap=null, holder=null, player=null, soundBtn=null, haveVid='', ytP=null, making=false;
   const ensureYT=()=>ytP||(ytP=new Promise(res=>{ if(window.YT&&window.YT.Player)return res(); const prev=window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady=()=>{ try{ prev&&prev(); }catch(e){} res(); }; const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=1; document.head.appendChild(s); }));
   const mkWrap=()=>{ if(wrap)return; clip=document.createElement('div'); clip.id='cinema';
     clip.style.cssText='position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;display:none';
     wrap=document.createElement('div'); wrap.style.cssText='position:absolute;left:0;top:0;width:'+W0+'px;height:'+H0+'px;transform-origin:0 0;overflow:hidden;background:#000;will-change:transform';
-    holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.appendChild(holder);
+    holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.appendChild(holder);
     if(!document.getElementById('cinema-css')){ const st=document.createElement('style'); st.id='cinema-css'; st.textContent='@keyframes cmgrain{0%{background-position:0 0}20%{background-position:-61px 37px}40%{background-position:43px -83px}60%{background-position:-97px -21px}80%{background-position:71px 89px}100%{background-position:0 0}}@keyframes cmflick{0%,100%{opacity:.02}13%{opacity:.05}27%{opacity:.01}52%{opacity:.04}71%{opacity:.02}88%{opacity:.05}}'; document.head.appendChild(st); }
     const nz=document.createElement('canvas'); nz.width=nz.height=192; { const g=nz.getContext('2d'), d=g.createImageData(192,192); for(let i=0;i<d.data.length;i+=4){ const v=Math.random()*255|0; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } g.putImageData(d,0,0); }
     const lay=css=>{ const d=document.createElement('div'); d.style.cssText='position:absolute;inset:0;pointer-events:none;'+css; wrap.appendChild(d); return d; };
@@ -69,15 +69,16 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,0) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
     lay('background:#000;animation:cmflick 2.3s steps(1) infinite');
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
-    soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:3;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
+    soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:62;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
     soundBtn.onclick=()=>CINEMA.sound(true,null); document.body.appendChild(soundBtn);
     fv=document.createElement('video'); fv.muted=true; fv.playsInline=true; fv.preload='auto'; fv.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;background:#000;display:none'; wrap.insertBefore(fv,wrap.firstChild);
     clip.appendChild(wrap); const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); };
   // the scheduled film: its file from the Internet Archive, kept at the showing's moment
   let fvSrc='', fvSync=0;
-  const playFilm=f=>{ const src='https://archive.org/download/'+f.f.id+'/'+f.f.file; holder.style.display='none'; fv.style.display='block'; try{ player&&player.pauseVideo(); }catch(e){}
+  const playFilm=f=>{ const src=(location.protocol==='file:'?'https://archive.org/download/':'/film/')+f.f.id+'/'+f.f.file; holder.style.display='none'; fv.style.display='block'; try{ player&&player.pauseVideo(); }catch(e){}
     if(fvSrc!==src){ fvSrc=src; fv.src=src; fv.currentTime=f.off; applySnd(); }
-    const now=performance.now(); if(now-fvSync>1500){ fvSync=now; if(fv.readyState>0&&Math.abs(fv.currentTime-f.off)>2)fv.currentTime=f.off; if(fv.paused)fv.play().catch(()=>{}); } return fv.readyState>=2; };
+    const now=performance.now(); if(now-fvSync>1000){ fvSync=now; if(fv.paused)fv.play().catch(()=>{});
+      if(fv.readyState>0&&!fv.seeking){ const d=f.off-fv.currentTime; if(Math.abs(d)>5){ fv.playbackRate=1; fv.currentTime=f.off+(fv.readyState<3?3:1); } else fv.playbackRate=Math.abs(d)<.3?1:1+Math.max(-.1,Math.min(.1,d*.05)); } } return fv.readyState>=2; };
   const stopFilm=()=>{ if(fv&&!fv.paused)fv.pause(); if(fv)fv.style.display='none'; if(holder)holder.style.display=''; };
   let vOK=false, vFail='', tries=0, t0=0; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
   const makePlayer=async id=>{ '@later'; mkWrap();
@@ -90,32 +91,38 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
         onStateChange:e=>{ if(e.data===1){ vOK=true; vFail=''; } if(e.data===window.YT.PlayerState.ENDED)onEnded(); },
         onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
   const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
-    holder=document.createElement('div'); holder.style.cssText='position:absolute;inset:0;width:100%;height:100%'; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
+    holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
   const onEnded=async()=>{ '@later'; if(adm)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
 
   // the four corners of a plane on the page, and a homography that maps the video's own rectangle (no black bars) onto them
-  const corners=me=>{ const g=me.geometry.parameters, r=renderer.domElement.getBoundingClientRect(); me.updateMatrixWorld(); const V=new THREE.Vector3();
-    const P=(sx,sy)=>{ V.set(sx*g.width/2,sy*g.height/2,0).applyMatrix4(me.matrixWorld).project(SHARED.cam); return {x:(V.x+1)/2*r.width,y:(1-V.y)/2*r.height,u:(V.x+1)/2,v:(V.y+1)/2}; };
-    return {r,q:[P(-1,1),P(1,1),P(1,-1),P(-1,-1)]}; };
+  // an edge of the screen past the camera would fold the picture: only the part in front of the camera is mapped (s: that part of the screen, 0..1 across and down)
+  const corners=me=>{ const g=me.geometry.parameters, r=renderer.domElement.getBoundingClientRect(), C=SHARED.cam; me.updateMatrixWorld(); C.updateMatrixWorld(); const V=new THREE.Vector3();
+    const zc=(sx,sy)=>V.set(sx*g.width/2,sy*g.height/2,0).applyMatrix4(me.matrixWorld).applyMatrix4(C.matrixWorldInverse).z;
+    let a=-1, b=1, c=-1, d=1; if(!C.isOrthographicCamera){ const z0=zc(0,0), zx=zc(1,0)-z0, zy=zc(0,1)-z0, m=-(C.near*2+.02*TILE);
+      const cut=(k,o,lo,hi)=>{ const t=(m-z0-Math.abs(o))/k; return k>0?[lo,Math.min(hi,t)]:k<0?[Math.max(lo,t),hi]:z0+Math.abs(o)<m?[lo,hi]:[1,-1]; };
+      if(Math.abs(zx)>=Math.abs(zy))[a,b]=cut(zx,zy,-1,1); else [c,d]=cut(zy,zx,-1,1); if(!(b>a&&d>c))return null; }
+    const P=(sx,sy)=>{ V.set(sx*g.width/2,sy*g.height/2,0).applyMatrix4(me.matrixWorld).project(C); return {x:(V.x+1)/2*r.width,y:(1-V.y)/2*r.height,u:(V.x+1)/2,v:(V.y+1)/2}; };
+    return {r,q:[P(a,d),P(b,d),P(b,c),P(a,c)],s:[(a+1)/2,(b+1)/2,(1-d)/2,(1-c)/2]}; };
   const coef=(p0,p1,p2,p3)=>{ const dx1=p1.x-p2.x, dx2=p3.x-p2.x, dx3=p0.x-p1.x+p2.x-p3.x, dy1=p1.y-p2.y, dy2=p3.y-p2.y, dy3=p0.y-p1.y+p2.y-p3.y; let g=0, h=0;
     if(Math.abs(dx3)>1e-6||Math.abs(dy3)>1e-6){ const det=(dx1*dy2-dx2*dy1)||1e-9; g=(dx3*dy2-dx2*dy3)/det; h=(dx1*dy3-dx3*dy1)/det; }
     return [p1.x-p0.x+g*p1.x,p3.x-p0.x+h*p3.x,p0.x,p1.y-p0.y+g*p1.y,p3.y-p0.y+h*p3.y,p0.y,g,h]; };
   const ap=(k,u,v)=>{ const w=k[6]*u+k[7]*v+1; return {x:(k[0]*u+k[1]*v+k[2])/w,y:(k[3]*u+k[4]*v+k[5])/w}; };
   const m3d=k=>'matrix3d('+[k[0]/W0,k[3]/W0,0,k[6]/W0, k[1]/H0,k[4]/H0,0,k[7]/H0, 0,0,1,0, k[2],k[5],0,1].map(v=>+v.toFixed(6)).join(',')+')';
   let aspect=16/9, aspId='';
-  const sniff=id=>{ if(aspId===id)return; aspId=id; aspect=16/9; if(location.protocol==='file:')return; const im=new Image();
-    im.onload=()=>{ try{ const c=document.createElement('canvas'), w=c.width=im.width, h=c.height=im.height, g=c.getContext('2d'); g.drawImage(im,0,0); const d=g.getImageData(0,0,w,h).data;
+  const sniff=id=>{ if(aspId===id)return; aspId=id; aspect=16/9; ytCol=null; if(location.protocol==='file:')return; const im=new Image();
+    im.onload=()=>{ try{ const c=document.createElement('canvas'), w=c.width=im.width, h=c.height=im.height, g=c.getContext('2d'); g.drawImage(im,0,0); const d=g.getImageData(0,0,w,h).data; { let r=0,gg=0,b=0; for(let i=0;i<d.length;i+=16){ r+=d[i]; gg+=d[i+1]; b+=d[i+2]; } const n=d.length/16*255; if(aspId===id)ytCol=[r/n,gg/n,b/n]; }
       const dark=(x0,y0,x1,y1)=>{ let m=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ const i=(y*w+x)*4; m=Math.max(m,d[i],d[i+1],d[i+2]); } return m<26; };
       let t=0, b=0, l=0, r=0; while(t<h/2&&dark(0,t,w,t+1))t++; while(b<h/2&&dark(0,h-1-b,w,h-b))b++; while(l<w/2&&dark(l,0,l+1,h))l++; while(r<w/2&&dark(w-1-r,0,w-r,h))r++;
       const cw=w-l-r, ch=h-t-b; if(aspId===id&&cw>w*.3&&ch>h*.3)aspect=Math.max(.45,Math.min(2.6,cw/ch)); }catch(e){} }; im.src='/yt/'+id+'.jpg'; };
   const vrect=()=>aspect>=W0/H0?{x:0,y:(H0-W0/aspect)/2,w:W0,h:W0/aspect}:{x:(W0-H0*aspect)/2,y:0,w:H0*aspect,h:H0};
-  const placeOver=(me,dim=1,ok=true)=>{ const {r,q}=corners(me), cv=renderer.domElement, k=coef(q[0],q[1],q[2],q[3]), V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect();
+  const placeOver=(me,dim=1,ok=true)=>{ const cq=corners(me); if(!cq){ clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); return; }
+    const {r,q,s}=cq, cv=renderer.domElement, k0=coef(q[0],q[1],q[2],q[3]), V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), at=(u,v)=>ap(k0,(u-s[0])/(s[1]-s[0]),(v-s[2])/(s[3]-s[2]));
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
-    wrap.style.transform=m3d(coef(ap(k,u0,v0),ap(k,u1,v0),ap(k,u1,v1),ap(k,u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
+    wrap.style.transform=m3d(coef(at(u0,v0),at(u1,v0),at(u1,v1),at(u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
     if(PS2.keepAlpha)PS2.keepAlpha(ok); if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
     soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail?'none':'auto';
-    if(vFail||ok&&!snd.on){ const b=ap(k,.5,1); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
+    if(vFail||ok&&!snd.on){ const b=at(.5,Math.min(1,s[3])); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});
@@ -129,9 +136,31 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const facing=me=>{ me.updateMatrixWorld(); const n=new THREE.Vector3(0,0,1).transformDirection(me.matrixWorld), p=new THREE.Vector3().setFromMatrixPosition(me.matrixWorld); return n.dot(new THREE.Vector3().subVectors(SHARED.cam.position,p))>0; };
 
   // the screen's see-through face, the whole screen, and a double-click on it for the settings
-  let holeM=null;
+  let holeM=null, lgt=null;
+  // the room lit by the picture: its average colour, read a few times a second (a film from our own site; a YouTube picture can't be read, so its poster's colour)
+  const LC=new THREE.Color(0,0,0), LT=new THREE.Color(); let lsT=0, scv=null, ytCol=null;
+  const glow=(on,fl)=>{ if(!lgt)return; const now=performance.now();
+    if(!on)LT.setRGB(0,0,0); else if(now-lsT>100){ lsT=now; let c=null;
+      if(fl&&fv&&fv.readyState>=2)try{ scv=scv||Object.assign(document.createElement('canvas'),{width:8,height:5}); const g=scv.getContext('2d',{willReadFrequently:true}); g.drawImage(fv,0,0,8,5); const d=g.getImageData(0,0,8,5).data; let r=0,gg=0,b=0; for(let i=0;i<d.length;i+=4){ r+=d[i]; gg+=d[i+1]; b+=d[i+2]; } const n=d.length/4*255; c=[r/n,gg/n,b/n]; }catch(e){ c=null; }
+      c=c||ytCol||[.45,.47,.55]; LT.setRGB(c[0],c[1],c[2]).convertSRGBToLinear(); }
+    LC.lerp(LT,.12); const m=Math.max(LC.r,LC.g,LC.b); if(m<.004){ lgt.intensity=0; return; } lgt.color.setRGB(LC.r/m,LC.g/m,LC.b/m); lgt.intensity=9*Math.sqrt(m)*(cur().brightness??.8); };
+  // full screen: the picture over the whole page, the game behind it
+  let full=false, xBtn=null;
+  CINEMA.fullscreen=on=>{ full=!!on; mkWrap();
+    if(!xBtn){ xBtn=document.createElement('button'); xBtn.textContent='✕ LEAVE FULL SCREEN'; xBtn.style.cssText='position:fixed;right:16px;top:16px;z-index:62;display:none;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer'; xBtn.onclick=()=>CINEMA.fullscreen(false); document.body.appendChild(xBtn); }
+    clip.style.position=full?'fixed':'absolute'; clip.style.zIndex=full?'60':''; clip.style.background=full?'#000':''; xBtn.style.display=full?'block':'none';
+    if(full)document.body.appendChild(clip); else { const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); }
+    try{ if(full&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{}); else if(!full&&document.fullscreenElement)document.exitFullscreen().catch(()=>{}); }catch(e){} };
+  CINEMA.isFull=()=>full; CINEMA.light=()=>lgt;
+  document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&full)CINEMA.fullscreen(false); });
+  const fullPlace=()=>{ const W=innerWidth, H=innerHeight, V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), k=Math.min(W/V.w,H/V.h);
+    Object.assign(clip.style,{display:'block',left:'0px',top:'0px',width:W+'px',height:H+'px',borderRadius:'0'});
+    wrap.style.transform='translate('+((W-V.w*k)/2-V.x*k)+'px,'+((H-V.h*k)/2-V.y*k)+'px) scale('+k+')'; wrap.style.filter='none';
+    if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false);
+    if(vFail||!snd.on){ soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; Object.assign(soundBtn.style,{display:'block',left:W/2+'px',top:(H-16)+'px'}); } else soundBtn.style.display='none'; };
   const buildHole=m=>{ if(holeM)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
-    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE); holeM.quaternion.copy(fm.quaternion); holeM.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
+    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE);
+    lgt=new THREE.PointLight(0xffffff,0,w*7,1.2); lgt.userData.in=()=>CINEMA.on; lgt.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,w*.9); lgt.position.y-=h*.3; LITE.recs.push(lgt); holeM.quaternion.copy(fm.quaternion); holeM.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(w*2,h*2,.3*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.quaternion.copy(fm.quaternion); hb.position.copy(holeM.position); scene.add(hb);
     UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:40*TILE,near:40*TILE,tall:h*2,act:()=>openMenu()}); };
   const fitHole=()=>{ const u=holeM.u; holeM.scale.set(u.w,u.h,1); };
@@ -155,14 +184,19 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
     const yt=ytOn(), id=yt?vid(cur().video_id):'', fl=yt?null:film(), now=performance.now();
     const tgt=up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null; if(holeM)holeM.visible=false;
-    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); if(soundBtn)soundBtn.style.display='none'; if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
+    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); if(soundBtn)soundBtn.style.display='none'; if(full)CINEMA.fullscreen(false); glow(false); if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
     mkWrap(); mkCut(); let ok;
     if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=vOK&&!vFail; }
     CINEMA.on=ok; fitHole(); if(ok)tgt.visible=true;
-    if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
+    glow(ok,fl);
+    if(full)fullPlace(); else if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
     if(id)    sync(); };
   const sync=()=>{ const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
-      try{ const want=offset(), is=player.getCurrentTime(); if(Math.abs(is-want)>1.6)player.seekTo(want,true); if(player.getPlayerState&&player.getPlayerState()!==1)player.playVideo(); }catch(e){} } };
+      try{ const is=player.getCurrentTime(), st=player.getPlayerState?player.getPlayerState():1;
+        if(Date.now()<startMs()){ if(st===1)player.pauseVideo(); if(is>.5)player.seekTo(0,true); return; }
+        if(st===3)return; const d=offset()-is;
+        if(Math.abs(d)>6){ player.setPlaybackRate(1); player.seekTo(offset()+2,true); } else player.setPlaybackRate(Math.abs(d)<.6?1:d>0?1.25:.75);
+        if(st!==1)player.playVideo(); }catch(e){} } };
   CINEMA.tick=tick;
 
   const onRec=()=>{ const id=vid(cur().video_id);
@@ -186,11 +220,16 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.5:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
   const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; return '/ia/'+nextF().id+'.jpg'; };
+  // the picture without its dark bars or border (a letterboxed thumbnail, a poster scanned with a black edge)
+  const trim=img=>{ const w=img.width, h=img.height; try{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,w,h).data;
+      const dark=(x0,y0,x1,y1)=>{ let n=0, m=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ const i=(y*w+x)*4; m++; if(Math.max(d[i],d[i+1],d[i+2])>40)n++; } return n<m*.03; };
+      let t=0, b=0, l=0, r=0; while(t<h*.3&&dark(0,t,w,t+1))t++; while(b<h*.3&&dark(0,h-1-b,w,h-b))b++; while(l<w*.3&&dark(l,t,l+1,h-b))l++; while(r<w*.3&&dark(w-1-r,t,w-r,h-b))r++;
+      return [l,t,w-l-r,h-t-b]; }catch(e){ return [0,0,w,h]; } };
   const drawPoster=()=>{ const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster');   // the picture fills the whole case, black behind it
     g.fillStyle='#000'; g.fillRect(0,0,W,H); g.textAlign='center'; g.textBaseline='middle';
     g.fillStyle='#d8a845'; fit(g,'COMING SOON',W-40,40); g.fillText('COMING SOON',W/2,H*.42); g.fillStyle='#faf8f0'; fit(g,title(),W-30,22); g.fillText(title(),W/2,H*.56); tex.needsUpdate=true;
     if(!src)return; const img=new Image(); img.crossOrigin='anonymous';
-    img.onload=()=>{ if(posterSrc()!==src)return; try{ g.fillStyle='#000'; g.fillRect(0,0,W,H); const s=Math.max(W/img.width,H/img.height), dw=img.width*s, dh=img.height*s; g.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+    img.onload=()=>{ if(posterSrc()!==src)return; try{ g.fillStyle='#000'; g.fillRect(0,0,W,H); const c=trim(img), s=Math.max(W/c[2],H/c[3]), dw=c[2]*s, dh=c[3]*s; g.drawImage(img,c[0],c[1],c[2],c[3],(W-dw)/2,(H-dh)/2,dw,dh);
       if(!mine){ const d=g.getImageData(0,0,W,H), a=d.data; for(let i=0;i<a.length;i+=4){ a[i]=qz(a[i]); a[i+1]=qz(a[i+1]); a[i+2]=qz(a[i+2]); } g.putImageData(d,0,0); } }catch(e){} tex.needsUpdate=true; };
     img.src=src; };
   // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, backlit poster cases
@@ -280,10 +319,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       ${yt?`<div style="margin-bottom:12px"><button id="cmsched" style="${DIM}padding:6px 10px">BACK TO THE SCHEDULE</button></div>`:''}
       <div style="margin-bottom:10px"><label style="flex:1;min-width:120px">Brightness <span id="cmbv" style="color:#d8a845">${Math.round((c.brightness??.8)*100)}%</span><br><input id="cmb" type="range" min="20" max="120" value="${Math.round((c.brightness??.8)*100)}" style="width:100%"></label></div>
 `:'')+`
-      <div style="display:flex;justify-content:flex-end;margin-top:10px"><button id="cmclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px"><button id="cmfull" style="${RED}padding:8px 14px">FULL SCREEN</button><button id="cmclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
       <div id="cmsay" style="color:#8f7470;font-size:12px;margin-top:8px"></div>`;
     const $=s=>dlg.querySelector(s), say=t=>{ $('#cmsay').textContent=t; };
     $('#cmsnd').onchange=e=>CINEMA.sound(e.target.checked,null); $('#cmv').oninput=e=>{ $('#cmvv').textContent=e.target.value+'%'; CINEMA.sound(null,+e.target.value); };
+    $('#cmfull').onclick=()=>{ $('#cmclose').onclick(); CINEMA.fullscreen(true); };
     $('#cmclose').onclick=()=>{ dlg.style.display='none'; if(tlT){ clearInterval(tlT); tlT=0; } };
     const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }, F_=()=>!ytOn()&&film(), dur=()=>{ const f=F_(); if(f)return f.f.len; try{ return player&&player.getDuration?player.getDuration()||0:0; }catch(e){ return 0; } }; let drag=false;
     if(tlT)clearInterval(tlT); tlT=setInterval(()=>{ if(dlg.style.display==='none'){ clearInterval(tlT); tlT=0; return; } const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
@@ -292,7 +332,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     $('#cmt').onchange=async e=>{ drag=false; if(!a||F_())return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
     if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
       if($('#cmsched'))$('#cmsched').onclick=async()=>{ say('...'); say(await push({video_id:''})?'back to the schedule':'could not'); };
-      $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date().toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
+      $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date(Date.now()+8000).toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
     }
     dlg.style.display='block'; };
   CINEMA.openMenu=openMenu;

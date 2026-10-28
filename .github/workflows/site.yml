@@ -38,6 +38,7 @@ jobs:
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
+          k fishing 'src/142-|src/066|fishing'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -84,6 +85,9 @@ jobs:
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         run: node tests/places.cjs out
+      - name: Fishing on the Hudson's pier (the pier, the rod, a bite, the fight)
+        if: contains(steps.f.outputs.run, ' fishing')
+        run: node tests/fishing.cjs dist/market.html
       - name: Every editor opens and its controls work
         if: contains(steps.f.outputs.run, ' editors')
         run: node tests/editors.cjs dist/market.html

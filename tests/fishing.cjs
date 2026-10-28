@@ -9,16 +9,21 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=19&res=1', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started, null, { timeout: 300000 });
   const wait = (f, a, t = 180000) => pg.waitForFunction(f, a, { timeout: t, polling: 200 });
+  const before = await pg.evaluate(() => !!(window.PIER && PIER.G));
   for (let k = 0; k < 4; k++) { await wait(() => !FADE.busy).catch(() => {}); await pg.evaluate(() => { if (!RIVER.on) STORE.goTo(SHARED.BOD.XS(61), SHARED.BOD.ZS(-118), 'up'); });
     if (await wait(() => window.RIVER && RIVER.on && window.PIER && PIER.G && !FADE.busy && window.FISHING && FISHING.STAND, null, 90000).then(() => 1, () => 0)) break; }
+  const hp = await pg.evaluate(() => { const T = __dbg.cv().TILE, o = {}; o.built = PIER.G.parent && PIER.G.parent.name === 'river'; o.long = +((PIER.z0 - PIER.zE) / T).toFixed(1);
+    o.longest = RIVER.decks.every(d => d.pier || d.r.every(r => PIER.z0 - r[1] < PIER.z0 - PIER.zE)); o.deck = [RIVER.onPier(PIER.x, (PIER.z0 + PIER.zH) / 2), RIVER.onPier(PIER.x + PIER.HW - T, PIER.zE + T), !RIVER.onPier(PIER.x, PIER.zE - T)];
+    o.water = (FISHING.at(PIER.x, PIER.zE - 6 * T) || {}).kind; o.notDeck = !FISHING.at(PIER.x, PIER.zH + 2 * T); return o; });
+  ok(!before && hp.built && hp.long >= 30 && hp.longest && hp.deck.every(Boolean) && hp.water === 'river' && hp.notDeck, 'the fishing pier is built only with the Hudson, reaches further out than any other; its water is the river, its deck is not: ' + JSON.stringify({ before, ...hp }));
   const r1 = await pg.evaluate(() => { FISHING.speed = 20; INV.cash = 100; FISHING.STAND.open(); const q = s => document.querySelector('#fishp ' + s); q('[data-buy="rod"]').click(); q('[data-bait="bait"]').click(); q('[data-bait="bait_cut"]').click();
     document.getElementById('fishp').hidden = true; return { rod: FORAGE.has('rod'), worms: FORAGE.has('bait'), cut: FORAGE.has('bait_cut'), cash: INV.cash }; });
   ok(r1.rod === 1 && r1.worms === 12 && r1.cut === 6 && r1.cash === 78, 'BAIT & BOATS sells a rod, worms and cut bait: ' + JSON.stringify(r1));
   await pg.evaluate(() => { const T = __dbg.cv().TILE; STORE.goTo(PIER.x + 3.2 * T, PIER.zE + 1.6 * T, 'up'); });
   await pg.waitForTimeout(1500); await wait(() => !FADE.busy); await pg.evaluate(async () => { let p = __dbg.pos(), still = 0; while (still < 15) { await new Promise(r => setTimeout(r, 100)); const q = __dbg.pos(); still = Math.hypot(q[0] - p[0], q[2] - p[2]) < 1e-3 ? still + 1 : 0; p = q; } });
   const r2 = await pg.evaluate(async () => { SHARED.heading = Math.PI; WIELD.set('rod'); FORAGE.ACT.fhook('bait_cut'); for (let i = 0; i < 20; i++) await new Promise(r => requestAnimationFrame(r));
-    return { held: WIELD.on, hook: FISHDBG().hook, tip: WIELD.tip.y > SHARED.py + 1, cut: FORAGE.has('bait_cut'), swim: RIVER.swim }; });
-  ok(r2.held === 'rod' && r2.hook === 'bait_cut' && r2.tip && r2.cut === 5 && !r2.swim, 'he holds the rod (its tip above his head) on the pier and baits the hook: ' + JSON.stringify(r2));
+    const p = __dbg.pos(); return { held: WIELD.on, hook: FISHDBG().hook, tip: WIELD.tip.y > SHARED.py + 1, cut: FORAGE.has('bait_cut'), swim: RIVER.swim, deck: Math.abs(p[1]) < .2 && RIVER.onPier(p[0], p[2]) }; });
+  ok(r2.held === 'rod' && r2.hook === 'bait_cut' && r2.tip && r2.cut === 5 && !r2.swim && r2.deck, 'he stands on the deck (not in the water), holds the rod (its tip above his head) on the pier and baits the hook: ' + JSON.stringify(r2));
   const od = await pg.evaluate(() => { const T = __dbg.cv().TILE, x = PIER.x, z = PIER.zE - 6 * T, o = {}; for (const [b, h] of [['bait', 13], ['bait_cut', 13], ['bait_cut', 19], ['bait', 23]]) o[b + '@' + h] = FISHING.odds(x, z, b, h);
     o.bare = FISHING.odds(x, z, null, 13); o.shallow = FISHING.odds(x + 4 * T, PIER.z0 - 2 * T, 'bait', 13); return o; });
   console.log('odds', JSON.stringify(od));

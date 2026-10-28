@@ -4941,3 +4941,5 @@ Owner (a picture of a trunk ending inside the leaves): "the trees need to have r
 
 ## 28 Oct 2026: the hood style on every lamp
 Owner: "do the hood style on the other lamps too". The park gate lanterns, the pier lamps and the street lights show their light only from under a metal top: no glowing glass cage and no glare halo. Rule: every outdoor lamp hides its bulb under a metal top.
+## 28 Oct 2026: faster checks
+Owner: "yes make them faster". The core check and the places tour draw in a small window; the Hudson pier checks moved from core into the fishing check, which runs when fishing or the river changes.

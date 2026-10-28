@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
+import {CITY, CIVIC, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, UI, VIT, WE, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
@@ -177,5 +177,5 @@ import {GEMS} from './101-gems.js';
     if(d.sell){ const n=d.n==='all'?have(d.sell):1, v=val(d.sell)*n; take(d.sell,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${NAME(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     SHOP.draw(); PACK.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(MUSH.N)LINES.say(MUSH.N,'greet'); };
-  for(const th of UI.things)if(th.npc&&th.npc===MUSH.N){ th.act=()=>SHOP.open(); th.reach=2.2*T; th.near=3*T; }
+  TALK.shops.set(MUSH.N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===MUSH.N){ th.act=()=>TALK.open(MUSH.N); th.reach=2.2*T; th.near=3*T; }
   window.FORDBG=()=>({sk:{...S.sk},lock:{...S.lock},food:+S.food.toFixed(2),fx:{...S.fx},chunks:CH.size,shown:FORAGE.shown,items:{...INV.items},cash:INV.cash,fire:!!fire()}); }

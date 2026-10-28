@@ -30,7 +30,7 @@ const SHAFTS={on:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   const sd=new THREE.Vector3(), rt=new THREE.Vector3(), nm=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0), M=new THREE.Matrix4(), c=new THREE.Vector3(), X=new THREE.Vector3(), Y=new THREE.Vector3(); let t=0; SHAFTS.at=[];
   const put=(S,m,P,id)=>{ const has=!!(S&&S.map); if(has){ SU[m].value=S.map.texture; SU['uM'+id].value=S.matrix; if(P){ const c=S.camera, w=c.right-c.left; SU[P].value.set(T/(c.far-c.near),.15*T/w,4*T/w,0); } } return has?1:0; };   // one shadow map into the beams' uniforms
   SYS.add('sky',dt=>{ t+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open&&!(MODS.apts&&MODS.apts.inReal), cam=SHARED.cam;   // not in your apartment: its light is the real sun through the glass
-    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK*(1-(SKY.sunCover||0)):0;
+    const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK*(1-.4*(SKY.sunCover||0)):0;
     { const sh=CLOCK.sun&&CLOCK.sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type!==THREE.VSMShadowMap);   // VSM keeps moments, not depths: then the beams go unblocked
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0;
       if(occ){ put(sh,'uShN','uPN','N'); const f=CLOCK.sunF&&CLOCK.sunF.shadow, d=CLOCK.sunD&&CLOCK.sunD.shadow; SU.uHasF.value=put(f,'uShF','uPF','F'); SU.uHasD.value=put(d,'uShD',null,'D'); } }

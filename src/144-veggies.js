@@ -1,6 +1,6 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
-import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, UI, VIT} from './003b-systems.js';
+import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
@@ -24,7 +24,7 @@ const VEG={}; window.VEG=VEG;
   const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
     VEG.stand=STALL.build({X,Z,x0:g1+3,x1:g1+7.8,y:P.y0,veg:true,seed:11,gate:-1});
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet)STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
-    for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>SHOP.open(); th.reach=2.2*T; th.near=3*T; }
+    TALK.shops.set(N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>TALK.open(N); th.reach=2.2*T; th.near=3*T; }
   };
   { const wait=()=>{ if(typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }
   const SHOP={}; VEG.SHOP=SHOP; const say=FORAGE.say, B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';

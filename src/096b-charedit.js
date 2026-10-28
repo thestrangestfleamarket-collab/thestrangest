@@ -1,6 +1,6 @@
 // THE CHARACTER EDITOR: a list of every character in the game; pick one to edit its name, look, home and stats, with the 360 view. Writes characters.json; the game reads it (CHARS). shift+3 opens it; the behaviour editor (shift+8) opens it on the BEHAVIOUR tab.
 import {SHARED} from './003-shx.js';
-import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS} from './003b-systems.js';
+import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS, TALK} from './003b-systems.js';
 import {FADE, TILE} from './006-map-pre.js';
 Object.assign(CHARED,{on:false,built:false});
 { const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
@@ -10,7 +10,7 @@ Object.assign(CHARED,{on:false,built:false});
 
 CHARED.build=()=>{ '@editor';
   const skin=MAPED.skin, fld=MAPED.fld, download=MAPED.download, stamp=MAPED.stamp, VIEW=MAPED.VIEW;
-  const TABS=[['id','IDENTITY'],['look','APPEARANCE'],['beh','BEHAVIOUR'],['job','JOB']];
+  const TABS=[['id','IDENTITY'],['look','APPEARANCE'],['beh','BEHAVIOUR'],['job','JOB'],['talk','TALK']];
   const itemIds=()=>{ try{ return (window.ITEMS&&ITEMS.ids)?ITEMS.ids():[]; }catch(e){ return []; } };
   const itemVal=id=>{ try{ const v=(window.ITEMS&&ITEMS.prop)?ITEMS.prop(id,'value'):0; return +v>0?Math.round(+v):1; }catch(e){ return 1; } };
   const itemName=id=>{ try{ return (window.FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
@@ -82,6 +82,7 @@ CHARED.build=()=>{ '@editor';
       +'<div class="dim">A character keeps to its home range — a circle it is usually found in. Range 0 stays put.</div>'
       +'<div class="sec">STATS</div><div class="kv">BEHAVIOR <span>'+behOf(N)+'</span></div>'
       +fld('HEALTH','hp',cur(N,'hp'),.1)+fld('STAMINA','stamina',cur(N,'stamina'),.1)+fld('SPEED (TILES/S)','speed',cur(N,'speed'),.05)+fld('SIZE (RADIUS)','size',cur(N,'size'),.05); }
+    else if(tab==='talk')b=talkHTML(N);
     else { const sells=sellsOf(N), ids=itemIds(); b='<div class="sec">SHOPKEEPER</div>'
       +'<div class="dim">Pick the item types this character sells. Price is each item\'s VALUE (set in the item editor, shift+7). Buyers walk up and get them into their pack.</div>';
       if(!ids.length)b+='<div class="dim" style="color:#c8a060">No item types yet — add some in the item editor (shift+7), then they show here.</div>';
@@ -89,6 +90,29 @@ CHARED.build=()=>{ '@editor';
       { const bys=buysOf(N), G=Object.keys((window.FORAGE&&FORAGE.BUYK)||{}); if(G.length)b+='<div class="sec">BUYS</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+G.map(g=>'<button class="chip" data-buy="'+esc(g)+'" style="padding:4px 8px;border:2px solid '+(bys.includes(g)?'#f2c14e':'#3a3f4e')+';background:#0e1016;color:'+(bys.includes(g)?'#f2c14e':'#9b9584')+';cursor:pointer;font:inherit">'+esc(g.toUpperCase())+'</button>').join('')+'</div>'; }
       if(sells.length)b+='<div class="dim">Sells '+sells.length+' item'+(sells.length===1?'':'s')+'. Walk up to '+esc(N.name||'them')+' in game to buy.</div>'; }
     return '<div class="dhdr">'+esc(N.name||N.key)+'</div><div class="tabs">'+tabs+'</div><div class="fields">'+b+'</div>'; };
+  // TALK: the character's script (lines, and the replies under each); the draft starts from the committed one
+  const DOS=[['','LEADS ON'],['shop','OPENS THE SHOP'],['give','GIVES (ITEM N)'],['take','TAKES (ITEM N)'],['set','REMEMBERS (FLAG=V)']];
+  const talkOf=(N,make)=>{ const r=rec(N); if(!r.talk){ const c=CHARS.rec&&CHARS.rec(CHARS.id(N)); if(c&&c.talk)r.talk=JSON.parse(JSON.stringify(c.talk)); else if(make)r.talk={start:'hi',lines:{hi:{say:'Hello, {name}.',opts:[{t:'GOODBYE.',go:''}]}}}; } return r.talk; };
+  const inp=(k,v,w)=>'<input data-tk="'+k+'" value="'+esc(v)+'" style="font:inherit;background:#0e1016;color:#c9ccd6;border:2px solid #3a3f4e;padding:3px 5px;width:'+(w||'100%')+';box-sizing:border-box">';
+  const talkHTML=N=>{ const tk=(recR(N).talk)||(CHARS.rec&&(CHARS.rec(CHARS.id(N))||{}).talk);
+    if(!tk)return '<div class="dim">No script: this character chats from the line pools (hello, what this place is, its shop if it keeps one, goodbye).</div><button class="mb hot" id="tkNew">WRITE A SCRIPT</button>';
+    const ids=Object.keys(tk.lines||{});
+    const pickS=(opts,k,cur)=>'<select data-tk="'+k+'" style="font:inherit;background:#0e1016;color:#c9ccd6;border:2px solid #3a3f4e;max-width:150px">'+opts.map(([a,n])=>'<option value="'+esc(a)+'"'+(a===(cur||'')?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select>';
+    let o='<div class="dim">Each LINE is what they say (one per row: a row is picked at random; {name} is the player; @greet uses a line pool). Under it, your REPLIES: where each leads, what it does, and IF (words: flag, !flag, flag=v, has:item:n) to show it only then. What they REMEMBER is saved per player.</div>'
+      +'<div style="display:flex;gap:6px;align-items:center;margin:6px 0">START '+pickS(ids.map(i=>[i,i]),'start',tk.start)+'<button class="mb hot" id="tkTry">TRY IT</button><button class="mb" id="tkAdd">ADD A LINE</button><button class="mb" id="tkDel">NO SCRIPT</button></div>';
+    for(const id of ids){ const L=tk.lines[id], say=Array.isArray(L.say)?L.say.join('\n'):(L.say||'');
+      o+='<div style="border:2px solid #2a3040;padding:6px 8px;margin:8px 0"><div style="display:flex;gap:6px;align-items:center">LINE '+inp('id|'+id,id,'120px')+'<span style="margin-left:auto"></span><button class="mb" data-tdl="'+esc(id)+'">DELETE LINE</button></div>'
+        +'<textarea data-tk="say|'+esc(id)+'" rows="2" style="width:100%;box-sizing:border-box;margin:5px 0;font:inherit;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e;padding:4px">'+esc(say)+'</textarea>'
+        +'<div style="display:flex;gap:6px;align-items:center;color:#8a8f9c">ON SAYING IT, REMEMBERS '+inp('lset|'+id,L.set||'','160px')+'</div>';
+      (L.opts||[]).forEach((r,i)=>{ const k='|'+id+'|'+i; o+='<div style="display:grid;grid-template-columns:1fr auto;gap:4px;margin:5px 0 0 10px;padding-top:5px;border-top:1px solid #22252f">'+inp('t'+k,r.t||'')+'<button class="mb" data-tdo="'+esc(id)+'|'+i+'">X</button>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;grid-column:1/-1;color:#8a8f9c">TO '+pickS([['','(END)'],...ids.map(x=>[x,x])],'go'+k,r.go)+' '+pickS(DOS,'do'+k,r.do)+' '+inp('arg'+k,r.arg||'','110px')+' IF '+inp('if'+k,r.if||'','120px')+'</div></div>'; });
+      o+='<button class="mb" data-tao="'+esc(id)+'" style="margin:6px 0 0 10px">ADD A REPLY</button></div>'; }
+    return o; };
+  const talkSet=(N,k,v)=>{ const tk=talkOf(N,true), [f,id,i]=k.split('|'), L=tk.lines[id];
+    if(f==='start')tk.start=v; else if(f==='say')L.say=v.includes('\n')?v.split('\n').map(s=>s.trim()).filter(Boolean):v; else if(f==='lset'){ if(v.trim())L.set=v.trim(); else delete L.set; }
+    else if(f==='id'){ const nv=v.trim().replace(/\s+/g,'_'); if(!nv||tk.lines[nv])return; tk.lines[nv]=L; delete tk.lines[id]; if(tk.start===id)tk.start=nv; for(const x of Object.values(tk.lines))for(const r of x.opts||[])if(r.go===id)r.go=nv; }
+    else { const r=L.opts[+i]; if(v===''&&f!=='t')delete r[f]; else r[f]=v; }
+    CHARS.save(); dirty(); };
   const draw=()=>{ q('#chL').innerHTML=listHTML(); q('#chD').innerHTML=detailHTML(); skin(R); dirty(); };
 
   const applyHome=(N,ht)=>{ if(N.st)N.home={id:CHARS.id(N),x:CHARS.wx(+ht[0]||0),z:CHARS.wz(+ht[1]||0),r:(+ht[2]||0)*TILE}; };
@@ -117,7 +141,14 @@ CHARED.build=()=>{ '@editor';
     else if(b.id==='chHere'){ const ht=homeTiles(sel); setField(sel,'homex',CHARS.tx(pos.x)); setField(sel,'homey',CHARS.tz(pos.z)); if(!(ht[2]>0))setField(sel,'range',6); draw(); }
     else if(b.id==='chPut'){ setField(sel,'range',0); draw(); }
     else if(b.dataset.sell){ toggleSell(sel,b.dataset.sell); draw(); }
-    else if(b.dataset.buy){ toggleBuy(sel,b.dataset.buy); draw(); } });
+    else if(b.dataset.buy){ toggleBuy(sel,b.dataset.buy); draw(); }
+    else if(b.id==='tkNew'){ talkOf(sel,true); CHARS.save(); draw(); } else if(b.id==='tkDel'){ delete rec(sel).talk; CHARS.save(); draw(); }
+    else if(b.id==='tkTry'){ CHARED.toggle(); setTimeout(()=>{ if(window.TALK&&TALK.open)TALK.open(sel); },300); }
+    else if(b.id==='tkAdd'){ const tk=talkOf(sel,true); let n=1; while(tk.lines['line'+n])n++; tk.lines['line'+n]={say:'',opts:[{t:'BACK.',go:tk.start}]}; CHARS.save(); draw(); }
+    else if(b.dataset.tdl){ const tk=talkOf(sel,true); if(b.dataset.tdl===tk.start)return; delete tk.lines[b.dataset.tdl]; CHARS.save(); draw(); }
+    else if(b.dataset.tao){ const tk=talkOf(sel,true); (tk.lines[b.dataset.tao].opts||(tk.lines[b.dataset.tao].opts=[])).push({t:'',go:''}); CHARS.save(); draw(); }
+    else if(b.dataset.tdo){ const [id,i]=b.dataset.tdo.split('|'), tk=talkOf(sel,true); tk.lines[id].opts.splice(+i,1); CHARS.save(); draw(); } });
+  q('#chD').addEventListener('change',e=>{ const k=e.target.dataset.tk; if(k&&sel){ talkSet(sel,k,e.target.value); if(/^(id|start|do|go)/.test(k))draw(); } });
   q('#chD').addEventListener('change',e=>{ const f=e.target.dataset.f; if(f&&sel){ setField(sel,f,e.target.value); draw(); } });
   q('#chD').addEventListener('input',e=>{ const f=e.target.dataset.f; if(f&&sel&&e.target.type!=='color')setField(sel,f,e.target.value); });
 

@@ -364,5 +364,11 @@
  "ticket": {
   "stackable": true,
   "value": 5
+ },
+ "glowcap": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "darksight": 240
  }
 }

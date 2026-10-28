@@ -133,7 +133,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       curtain=(o)=>p=>{ const y=p.y-H.y, dn=Math.max(0,-y-2), w=o.w+o.fl*dn+(o.wave?o.wave*Math.sin(y*.9+th(p)*1.5):0), dz=p.z-H.z+.6;
         let d=Math.hypot((p.x-H.x)/(w+.6),dz/(w))*w-w-grain(p,o.N,o.g);
         d=Math.max(d,y-6.5,-(o.len+o.tip*sq(Math.sin(th(p)*o.tk))+.6*Math.sin(th(p)*3))-y);
-        const face=Math.max((sq((p.x-H.x)/6.3)+sq((y+1.4)/9.5))-1,H.z+.3-p.z); d=Math.max(d,-face*3,(p.z-H.z-2.4)*cl((1-y)/3,0,1)); return Math.max(d,(p.z-H.z+1.0)*cl((-y-7.5)/2,0,1)); },
+        const face=Math.max((sq((p.x-H.x)/6.3)+sq((y+1.4)/9.5))-1,H.z+.3-p.z); d=Math.max(d,-face*3,(p.z-H.z-2.4)-40*(1-cl((1-y)/.5,0,1))); return Math.max(d,(p.z-H.z+1.0)-40*(1-cl((-y-7.5)/.5,0,1))); },
       SPK=[], CRL=[];
     for(let i=0;i<17;i++){ const t=(i+.5)/17, ph=i*2.39996, yy=1-t*1.15, rr=Math.sqrt(Math.max(0,1-yy*yy)), x=Math.cos(ph)*rr, z=Math.sin(ph)*rr;
       if(yy<-.05||z>.8&&yy<.45)continue; const b=Vv(x*5.4,1.4+yy*6.3,-1+z*6.0), dir=R.nrm(Vv(x*.8,yy*.6+1.0,z*.5-.65)), l=3.0+(i%3)*.9;
@@ -338,10 +338,10 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
 }
 const OUTL={rt:new THREE.WebGLRenderTarget(4,4,{type:THREE.FloatType,format:THREE.RGBAFormat,minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter}),
   occ:new THREE.ShaderMaterial({vertexShader:`varying float vd; void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); vd=-mv.z; gl_Position=projectionMatrix*mv; }`,fragmentShader:`varying float vd; void main(){ gl_FragColor=vec4(-1.,0.,0.,vd); }`,side:THREE.DoubleSide})};
-OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value:new THREE.Vector2(1,1)},cols:{value:W3.ramp.map(r=>new THREE.Vector3(r[3].r,r[3].g,r[3].b)).concat(Array(Math.max(0,24-W3.ramp.length)).fill(new THREE.Vector3())).slice(0,24)},
+OUTL.pass={uniforms:{tDiffuse:{value:null},tId:{value:OUTL.rt.texture},px:{value:new THREE.Vector2(1,1)},cols:{value:Array.from({length:64},()=>new THREE.Vector3())},
     legs:{value:W3.legs.concat(Array(Math.max(0,64-W3.legs.length)).fill(0)).slice(0,64)},tint:{value:W3.tint},t1:{value:3.5/PPU},t2:{value:1.6/PPU},wid:{value:1},oc:{value:new THREE.Vector3()},ocK:{value:0}},
   vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-  fragmentShader:`uniform sampler2D tDiffuse,tId; uniform vec2 px; uniform vec3 cols[24]; uniform float legs[64]; uniform vec3 tint; uniform float t1,t2,wid,ocK; uniform vec3 oc; varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse,tId; uniform vec2 px; uniform vec3 cols[64]; uniform float legs[64]; uniform vec3 tint; uniform float t1,t2,wid,ocK; uniform vec3 oc; varying vec2 vUv;
   bool edgeTo(vec4 c,vec2 o){ vec4 q=texture2D(tId,vUv+o*px*wid); if(q.x<0.)return q.w>c.w+0.05; if(abs(q.x-c.x)<0.5)return false;
     if(q.w-c.w>(abs(q.y-c.y)<0.5?t1:t2))return true; float a=legs[int(c.x+0.5)], b=legs[int(q.x+0.5)]; return a>0.&&b>0.&&a!=b&&q.w>=c.w; }
   void main(){ vec4 c=texture2D(tId,vUv); vec4 base=texture2D(tDiffuse,vUv); if(c.x<0.){ gl_FragColor=base; return; }
@@ -354,7 +354,7 @@ OUTL.rect=(cam,w,h)=>{ '@later'; const me=W3.mesh; if(!cam.isOrthographicCamera|
     const px=(v.x+1)/2*w, py=(1-v.y)/2*h; x0=Math.min(x0,px-r*kx); x1=Math.max(x1,px+r*kx); y0=Math.min(y0,py-r*ky); y1=Math.max(y1,py+r*ky); }
   const m=OUTL.pass.uniforms.wid.value+3; x0=Math.max(0,Math.floor(x0-m)); y0=Math.max(0,Math.floor(y0-m)); x1=Math.min(w,Math.ceil(x1+m)); y1=Math.min(h,Math.ceil(y1+m));
   return x1>x0&&y1>y0?[x0,y0,x1-x0,y1-y0]:null; };
-OUTL.render=(renderer,scene,cam)=>{ '@later'; const w=renderer.domElement.width, h=renderer.domElement.height, rt=OUTL.rt; if(rt.width!==w||rt.height!==h)rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
+OUTL.render=(renderer,scene,cam)=>{ '@later'; { const C=OUTL.pass.uniforms.cols.value; for(let i=0;i<C.length&&i<W3.ramp.length;i++){ const r=W3.ramp[i][3]; C[i].set(r.r,r.g,r.b); } } const w=renderer.domElement.width, h=renderer.domElement.height, rt=OUTL.rt; if(rt.width!==w||rt.height!==h)rt.setSize(w,h); OUTL.pass.uniforms.px.value.set(1/w,1/h);
   const ac=renderer.autoClear; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(rt); renderer.state.buffers.color.setClear(-2,0,0,1e9); renderer.clear(true,true,false);
   const rc=OUTL.rect(cam,w,h); if(rc){ const sub=OUTL.sub||(OUTL.sub=cam.clone()); sub.copy(cam); sub.setViewOffset(w,h,rc[0],rc[1],rc[2],rc[3]); sub.updateMatrixWorld(); cam=sub;
     rt.viewport.set(rc[0],h-rc[1]-rc[3],rc[2],rc[3]); rt.scissor.copy(rt.viewport); rt.scissorTest=true; renderer.setRenderTarget(rt); }

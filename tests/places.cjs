@@ -32,7 +32,7 @@ const TOUR=[
   let up=false; for(let i=0;i<120&&!up;i++){ await wait(1000); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
   if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
-  const ctx=await b.newContext({viewport:{width:960,height:540}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
+  const ctx=await b.newContext({viewport:{width:640,height:360}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=performance.now(); }}); });
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000); const errs=[], late=[], req=[]; let phase='start';
   pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ const t=m.text(); if(/not loaded before use/.test(t))late.push(t); else if(m.type()==='error')errs.push(t.slice(0,300)); });

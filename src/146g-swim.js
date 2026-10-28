@@ -4,7 +4,7 @@ import {EQUIP, FORAGE, ITEMS, LEVELS, LOOKS, st, SWIM, UI, VIT} from './003b-sys
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, SYS, TILE, ZU} from './006-map-pre.js';
-Object.assign(SWIM,{d:null,tankS:0});
+Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
 { const T=TILE, WM=T/.84, MS=T/(.84*ZU), V=THREE.Vector3, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c||'#9fd8ff'); };   // WM: world units a metre; MS: the rig's units a metre
   let told=false;
   SYS.add('swim',(st,dt,keys,go)=>{ const W=st.water; if(!W||!W.in||W.level==null){ SWIM.d=null; if(W)W.dive=false; return; }

@@ -83,7 +83,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
         let r0=null; for(let s=a+.4;s<b-.3;s+=.7){ const bent=tr.pt(s).arc||tr.wide(s)>0; if(!bent){ if(r0==null)r0=s; continue; } if(r0!=null){ run(r0,s); r0=null; }
           for(const v of side(s)){ const [x,y]=at(s,v); solid([WX(x-.36),WZ(y-.36),WX(x+.36),WZ(y+.36)]); } } if(r0!=null)run(r0,b-.4); }
       for(let s=a+9;s<b-4;s+=18){ const o=tr.pt(s), v=tr.hout(s)-.06, x=o.x-o.hy*v, y=o.y+o.hx*v; lampAt.push({x:WX(x),z:WZ(y),r:Math.atan2(o.hx,o.hy)});
-        if(Math.round((s-a-9)/18)%2===0){ const L=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.9,10*T,LAMPD); L.position.set(WX(o.x),H(30),WZ(o.y)); L.userData.i0=L.intensity; TG.add(L); lamps.push(L); } } } }
+        if(Math.round((s-a-9)/18)%2===0){ const L=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.4,10*T,LAMPD); L.position.set(WX(o.x),H(30),WZ(o.y)); L.userData.i0=L.intensity; TG.add(L); lamps.push(L); } } } }
   { const IM=new THREE.InstancedMesh(LAMPG,LAMPM,lampAt.length), o=new THREE.Object3D(); lampAt.forEach((l,i)=>{ o.position.set(l.x,H(66),l.z); o.rotation.set(0,l.r,0); o.updateMatrix(); IM.setMatrixAt(i,o.matrix); }); TG.add(IM); }
 
   // the stations B to H, and every station's signs

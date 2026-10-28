@@ -153,8 +153,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(rg.ring && rg.n > 40 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
     const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
     ok(rf && rf.blockProps > 300 && rf.blockBoxes > 1000 && rf.tris < 160000, 'the across-street block (Market St + Hudson rows) wears a busy roof of units, dishes, ducts, planters and debris, within budget: ' + JSON.stringify(rf));
-    const mk = await pg.evaluate(() => { const r = BLK.blds.filter(q => q.row === 1); return { n: r.length, kit: r.filter(q => q.kit && q.mesh.material[4].map && q.mesh.material[4].map.image).length }; }).catch(e => ({ err: e.message }));
-    ok(mk.n > 5 && mk.kit === mk.n, "Market St's empty fronts are MegaKit buildings, each side its baked picture: " + JSON.stringify(mk));
+    const mk = await pg.evaluate(() => { const r = BLK.blds.filter(q => q.row === 1), m = r[0] && r[0].mesh.material[4]; return { n: r.length, kit: r.filter(q => q.kit).length, lit: !!(m && m.emissiveMap), ac: BLK.kitAddons ? BLK.kitAddons() : null }; }).catch(e => ({ err: e.message }));
+    ok(mk.n > 5 && mk.kit === mk.n && !mk.lit && mk.ac && mk.ac.ac > 5 && mk.ac.pl > 2, "Market St's empty fronts wear the MegaKit's wall textures (no windows) and its AC units and planters: " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }

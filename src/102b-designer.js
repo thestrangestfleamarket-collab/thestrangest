@@ -114,7 +114,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
     const close=()=>{ commit(); el.hidden=true; DESIGN.on=false; };
 
     // the view: an orthographic camera round his middle; the front is where his eyes look
-    const front=()=>{ const g=W3.group, hi=W3.idx('head'); if(hi<0||!W3.eyeAt)return 0; const e=W3.eyeAt(new THREE.Vector3()), h=new THREE.Vector3().setFromMatrixPosition(W3.PM.value[hi]).applyMatrix4(W3.mesh.matrixWorld); return Math.atan2(e.x-h.x,e.z-h.z); };
+    const front=()=>{ const g=W3.group, hi=W3.headIdx?W3.headIdx():W3.idx('head'); if(hi<0||!W3.eyeAt)return 0; const e=W3.eyeAt(new THREE.Vector3()), h=new THREE.Vector3().setFromMatrixPosition(W3.PM.value[hi]).applyMatrix4(W3.mesh.matrixWorld); return Math.atan2(e.x-h.x,e.z-h.z); };
     DESIGN.view=v=>{ const f=front(); az=f+({front:0,side:Math.PI/2,back:Math.PI,three:Math.PI/4}[v]||0); el.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===v))); };
     const frame=()=>{ const g=W3.group, gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3()), top=(head?head.y:gp.y+2.2)+.3, bot=gp.y-.06; h0=(top-bot)*1.1;
       const hh=h0/2/zoom, hw=hh*SW/SH, c=new THREE.Vector3(gp.x,(top+bot)/2+ty,gp.z), d=h0*3+8;

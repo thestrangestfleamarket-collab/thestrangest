@@ -4875,3 +4875,4 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+- Owner: "the body didnt change enough to be female, and the head didnt change at all, make more feminine"; "add eyelashes and a softer jaw"; "lets improve the graphics of the face and hair, more depth, copy this as template" (a pixel portrait); "hairstyle doesnt make sense" (long hair as a shawl). FEMALE has her own face (narrower jaw, small chin, rounder head, small nose, pink lips, lashes) and body (pinched waist, fuller bust, wider hips); everyone gets brows and round eyes with a catch-light; hair and beards have lighter and darker strands; long hair falls behind the shoulders.

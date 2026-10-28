@@ -21,10 +21,13 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     ['my_favorite_brunette','my_favorite_brunette.mp4','MY FAVORITE BRUNETTE',1947,5212],['suddenly','suddenly.mp4','SUDDENLY',1954,4533],
     ['ThePhantomoftheOpera','Phantom_of_the_Opera_512kb.mp4','THE PHANTOM OF THE OPERA',1925,6389],['DasKabinettdesDoktorCaligariTheCabinetofDrCaligari','The_Cabinet_of_Dr._Caligari_512kb.mp4','THE CABINET OF DR. CALIGARI',1919,3061]]
     .map(([id,file,title,year,len])=>({id,file,title,year,len,slot:Math.ceil((len+600)/900)*900}));
-  const EPOCH=Date.UTC(2026,9,28), CYCLE=FILMS.reduce((a,f)=>a+f.slot,0)*1000;
-  const showAt=t=>{ const k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<FILMS.length;i++){ const f=FILMS[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:FILMS[0],start:s0}; };
-  CINEMA.films=FILMS; CINEMA.showAt=showAt;
-  CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<n;k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
+  const EPOCH=Date.UTC(2026,9,28);
+  // the playlist: an admin's own list from the screen's menu (shared, on the screen's record), else the free films above
+  let plK='', PL=FILMS, CYCLE=0; const slotOf=len=>Math.ceil((len+600)/900)*900;
+  const list=()=>{ const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):FILMS; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
+  const showAt=t=>{ const L=list(), k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<L.length;i++){ const f=L[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:L[0],start:s0}; };
+  CINEMA.films=FILMS; CINEMA.list=()=>list(); CINEMA.showAt=showAt;
+  CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<Math.min(n,list().length*2);k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
   // a YouTube link an admin plays takes over for up to four hours, then the schedule comes back
   const ytOn=()=>{ const c=cur(); return !!vid(c.video_id)&&!!c.started_at&&Date.now()-Date.parse(c.started_at)<4*3600e3; };
   const film=()=>{ const s=showAt(Date.now()), off=(Date.now()-s.start)/1000; return off<s.f.len?{...s,off}:null; };
@@ -168,7 +171,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   let lastSync=0, adminThings=false;
   let signT=0;
   // the ticket fox stands at the box office window facing the street; the theatre's door takes a ticket
-  CINEMA.dbg=()=>({box:box_o&&[+box_o.x.toFixed(2),+box_o.z.toFixed(2),box_o.ox,box_o.oz],marquee:canopy&&canopy.box.position.toArray().map(v=>+v.toFixed(2)),times:!!times,fox:!!foxN});
+  CINEMA.boxG=()=>box_o&&box_o.G; CINEMA.dbg=()=>({box:box_o&&[+box_o.x.toFixed(2),+box_o.z.toFixed(2),box_o.ox,box_o.oz],marquee:canopy&&canopy.box.position.toArray().map(v=>+v.toFixed(2)),fox:!!foxN});
   let foxN=null; CINEMA.toon=(k,N)=>{ if(k==='ticketfox')foxN=N; };
   const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.2*TILE, z=b.z-b.oz*.2*TILE;
     N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
@@ -205,7 +208,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
 
   // the front: a lit marquee box over the doors (the video's title unless an admin wrote its lines) and a lit poster case on the wall
-  let canopy=null, post=null, times=null, box_o=null; const ovr={text:null,bri:null,col:null};
+  let canopy=null, post=null, box_o=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
   const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
@@ -269,22 +272,23 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''};
     post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post});
     const dS=alongX?bx:bz, ph=Yb(70)-Yb(14), pw=ph*27/40;
-    { const bS=dS-Math.sign(cS-dS||1)*2.6*tw, bw2=pw*1.7, bc=canv(612,400), fr=new THREE.Mesh(new THREE.BoxGeometry(bw2*1.06,ph*1.06,.06*tw),new THREE.MeshLambertMaterial({color:0x2a2d33}));
-      const pn=new THREE.Mesh(new THREE.PlaneGeometry(bw2,ph),new THREE.MeshBasicMaterial({map:bc.tex})); pn.position.z=.035*tw; const g2=new THREE.Group(); g2.add(fr,pn);
-      g2.position.copy(at(bS,.14*tw,(Yb(70)+Yb(14))/2)); g2.rotation.y=ry; scene.add(g2); times={...bc,group:g2,key:''}; }
-    // the box office on the pavement: a red booth with an open window over a counter, its sign on the roof, the showtimes on a screen inside behind the fox who sells the tickets
-    { const kS=dS+Math.sign(cS-dS||1)*4.4*tw, kc=at(kS,2.6*tw,0), W=2.4*tw, D=1.7*tw, H=Yb(104)-Yb(0), y0=SHARED.groundY(kc.x,kc.z), G=new THREE.Group(); G.position.set(kc.x,y0,kc.z); G.rotation.y=ry; scene.add(G);
-      const RED=new THREE.MeshLambertMaterial({color:0x7a1e26}), TRIM=new THREE.MeshLambertMaterial({color:0xc9a24a}), DARK=new THREE.MeshLambertMaterial({color:0x1c1416});
+    // the box office in the theatre's front: a glass window over a low counter, the ticket fox behind it, the showtimes small on the back wall
+    { const bS=dS-Math.sign(cS-dS||1)*2.7*tw, W=2.3*tw, D=1.5*tw, H=Yb(104)-Yb(0), kc=at(bS,.11*tw+D/2,0), y0=SHARED.groundY(kc.x,kc.z), G=new THREE.Group(); G.position.set(kc.x,y0,kc.z); G.rotation.y=ry; scene.add(G);
+      const STONE=new THREE.MeshLambertMaterial({color:0x1e1a1c}), TRIM=new THREE.MeshLambertMaterial({color:0xc9a24a}), IN=new THREE.MeshLambertMaterial({color:0x5a1a22}),
+        GL=new THREE.MeshPhongMaterial({color:0x9fc4d8,specular:0xffffff,shininess:90,transparent:true,opacity:.22,depthWrite:false});
       const bx=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
-      bx(W,H,.08*tw,RED,0,H/2,-D/2); for(const sx of [-1,1])bx(.08*tw,H,D,RED,sx*W/2,H/2,0);
-      bx(W,H*.42,.1*tw,RED,0,H*.21,D/2); bx(W*1.04,.06*tw,.42*tw,TRIM,0,H*.43,D/2+.1*tw); bx(W*1.12,.1*tw,D*1.2,DARK,0,H+.05*tw,.08*tw); bx(W*1.12,.03*tw,D*1.2,TRIM,0,H,.08*tw);
-      for(const sx of [-1,1])bx(.07*tw,H*.58,.07*tw,TRIM,sx*(W/2-.04*tw),H*.71,D/2);
-      const sg=canv(512,128); { const g=sg.g; g.fillStyle='#5a0f16'; g.fillRect(0,0,512,128); g.strokeStyle='#e8c060'; g.lineWidth=6; g.strokeRect(6,6,500,116); g.fillStyle='#ffd77a'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'BOX OFFICE',440,78); g.fillText('BOX OFFICE',256,66); sg.tex.needsUpdate=true; }
-      const sign_=new THREE.Mesh(new THREE.BoxGeometry(W*.9,W*.9/4,.1*tw),[DARK,DARK,DARK,DARK,new THREE.MeshBasicMaterial({map:sg.tex}),DARK]); sign_.position.set(0,H+.1*tw+W*.9/8,D/2-.1*tw); G.add(sign_);
-      const sc=canv(612,400), scr=new THREE.Mesh(new THREE.PlaneGeometry(W*.78,W*.78*400/612),new THREE.MeshBasicMaterial({map:sc.tex})); scr.position.set(0,H*.68,-D/2+.06*tw); G.add(scr);
-      bx(W*.82,W*.78*400/612+.08*tw,.04*tw,DARK,0,H*.68,-D/2+.03*tw);
+      const cy=Yb(36)-Yb(0), gy=Yb(92)-Yb(0);
+      bx(W,H,.08*tw,IN,0,H/2,-D/2); for(const sx of [-1,1])bx(.14*tw,H,D,STONE,sx*(W/2-.07*tw),H/2,0); bx(W,H-gy,.16*tw,STONE,0,(H+gy)/2,D/2-.08*tw); bx(W,.08*tw,D,STONE,0,H-.04*tw,0);
+      bx(W,cy,.16*tw,STONE,0,cy/2,D/2-.08*tw); bx(W*1.02,.05*tw,.5*tw,TRIM,0,cy,D/2); bx(W*1.02,.04*tw,.06*tw,TRIM,0,gy,D/2);
+      const gl=new THREE.Mesh(new THREE.PlaneGeometry(W-.28*tw,gy-cy-.06*tw),GL); gl.position.set(0,(cy+gy)/2,D/2-.06*tw); G.add(gl);
+      const hole=new THREE.Mesh(new THREE.PlaneGeometry(.5*tw,.12*tw),new THREE.MeshBasicMaterial({color:0x0b0b0d})); hole.position.set(0,cy+.07*tw,D/2-.055*tw); G.add(hole);
+      const sg=canv(512,96); { const g=sg.g; g.fillStyle='#14100f'; g.fillRect(0,0,512,96); g.strokeStyle='#e8c060'; g.lineWidth=5; g.strokeRect(5,5,502,86); g.fillStyle='#ffd77a'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'BOX OFFICE',440,60); g.fillText('BOX OFFICE',256,50); sg.tex.needsUpdate=true; }
+      const sign_=new THREE.Mesh(new THREE.PlaneGeometry(W*.8,W*.8*96/512),new THREE.MeshBasicMaterial({map:sg.tex})); sign_.position.set(0,(H+gy)/2,D/2+.005*tw); G.add(sign_);
+      const sc=canv(612,400), sw=W*.42, scr=new THREE.Mesh(new THREE.PlaneGeometry(sw,sw*400/612),new THREE.MeshBasicMaterial({map:sc.tex})); scr.position.set(W*.22,Yb(80)-Yb(0),-D/2+.06*tw); G.add(scr);
+      bx(sw+.06*tw,sw*400/612+.06*tw,.03*tw,STONE,W*.22,Yb(80)-Yb(0),-D/2+.04*tw);
+      G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffd9a0,4,3*tw,1.6); lamp.position.set(0,H*.85,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
       box_o={G,sc,key:'',x:kc.x,z:kc.z,ox,oz};
-      const c4=[[-W/2,-D/2],[W/2,-D/2],[W/2,D/2+.2*tw],[-W/2,D/2+.2*tw]].map(([x,z])=>new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),ry).add(kc));
+      const c4=[[-W/2,-D/2],[W/2,-D/2],[W/2,D/2+.25*tw],[-W/2,D/2+.25*tw]].map(([x,z])=>new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),ry).add(kc));
       const r4=[Math.min(...c4.map(v=>v.x)),Math.min(...c4.map(v=>v.z)),Math.max(...c4.map(v=>v.x)),Math.max(...c4.map(v=>v.z))]; SOL.up.push(r4); }
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),
       set:o=>{ ovr.text=o&&o.text!=null?o.text:null; ovr.bri=o&&o.bri!=null?o.bri:null; ovr.col=o&&o.col!=null?o.col:null;
@@ -292,9 +296,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
   const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } }
-    if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } }
-    if(times){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==times.key){ times.key=k; CINEMA.drawTimes(times.g,times.cv.width,times.cv.height); times.tex.needsUpdate=true; } } };
-  // the showtimes, as the board by the door and the box office's screen draw them: the film on now and the next ones, in the viewer's own time
+    if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } } };
+  // the showtimes, as the box office's screen draws them: the film on now and the next ones, in the viewer's own time
   CINEMA.drawTimes=(g,W,H,n=6)=>{ const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
     g.fillStyle='#0b0c10'; g.fillRect(0,0,W,H); g.fillStyle='#d8a845'; g.fillRect(0,0,W,H*.15); g.fillStyle='#0b0c10'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'SHOWTIMES',W*.8,H*.1); g.fillText('SHOWTIMES',W/2,H*.075);
     const rh=(H*.83)/n; L.forEach((f,i)=>{ const y=H*.17+rh*(i+.5), now=i===0&&P&&!P.yt&&P.id===f.id; g.fillStyle=now?'#2a1e10':i%2?'#111318':'#0d0f13'; g.fillRect(0,y-rh/2,W,rh);
@@ -318,6 +321,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       <div style="display:flex;gap:6px;margin:4px 0 8px"><input id="cmu" placeholder="youtube.com/watch?v=..." style="${FLD};flex:1;min-width:0"><button id="cmplay" style="${RED}padding:0 12px">PLAY</button></div>
       ${yt?`<div style="margin-bottom:12px"><button id="cmsched" style="${DIM}padding:6px 10px">BACK TO THE SCHEDULE</button></div>`:''}
       <div style="margin-bottom:10px"><label style="flex:1;min-width:120px">Brightness <span id="cmbv" style="color:#d8a845">${Math.round((c.brightness??.8)*100)}%</span><br><input id="cmb" type="range" min="20" max="120" value="${Math.round((c.brightness??.8)*100)}" style="width:100%"></label></div>
+      <label style="${LBL}">The playlist, in order, for everyone (the showtimes follow it)</label>
+      <div id="cmpl" style="max-height:170px;overflow:auto;margin:4px 0 6px;border:1px solid #3a2130"></div>
+      <select id="cmadd" style="${FLD};width:100%;margin-bottom:6px"><option value="">+ add a free film</option>${FILMS.map((f,i)=>`<option value="${i}">${esc(f.title)} (${f.year})</option>`).join('')}</select>
+      <div style="display:flex;gap:6px;margin-bottom:6px"><input id="cmia" placeholder="+ a film from archive.org/details/..." style="${FLD};flex:1;min-width:0"><button id="cmiadd" style="${DIM}padding:0 10px">ADD</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px"><button id="cmplsave" style="${RED}padding:6px 10px">SAVE THE PLAYLIST</button><button id="cmplfree" style="${DIM}padding:6px 10px">THE FREE FILMS</button></div>
 `:'')+`
       <div style="display:flex;justify-content:space-between;margin-top:10px"><button id="cmfull" style="${RED}padding:8px 14px">FULL SCREEN</button><button id="cmclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
       <div id="cmsay" style="color:#8f7470;font-size:12px;margin-top:8px"></div>`;
@@ -331,6 +339,19 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     $('#cmt').oninput=e=>{ drag=true; const d=dur(); $('#cmtv').textContent=fmt(+e.target.value/1000*d)+' / '+fmt(d); };
     $('#cmt').onchange=async e=>{ drag=false; if(!a||F_())return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
     if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
+      let pl=list().map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len}));
+      const hms=s=>Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0');
+      const drawPL=()=>{ $('#cmpl').innerHTML=pl.map((f,i)=>`<div style="display:flex;gap:6px;align-items:center;padding:3px 6px;${i%2?'background:#1a1016':''}"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i+1}. ${esc(f.title)}${f.year?' ('+f.year+')':''} <span style="color:#8f7470">${hms(f.len)}</span></span><button data-u="${i}" style="${DIM}padding:0 6px">▲</button><button data-d="${i}" style="${DIM}padding:0 6px">▼</button><button data-x="${i}" style="${DIM}padding:0 6px">✕</button></div>`).join('')||'<div style="padding:6px;color:#8f7470">empty: the free films play</div>';
+        $('#cmpl').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const u=b.dataset.u, d=b.dataset.d, x=b.dataset.x; if(u!=null&&+u>0)pl.splice(+u-1,0,pl.splice(+u,1)[0]); if(d!=null&&+d<pl.length-1)pl.splice(+d+1,0,pl.splice(+d,1)[0]); if(x!=null)pl.splice(+x,1); drawPL(); }); };
+      drawPL();
+      $('#cmadd').onchange=e=>{ const f=FILMS[+e.target.value]; if(f){ pl.push({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len}); drawPL(); } e.target.value=''; };
+      $('#cmiadd').onclick=async()=>{ const m=/archive\.org\/(?:details|download|embed)\/([A-Za-z0-9_.-]+)/.exec($('#cmia').value)||/^([A-Za-z0-9_.-]+)$/.exec($('#cmia').value.trim()); if(!m){ say('not an archive.org link'); return; } say('...');
+        try{ const j=await (await fetch('https://archive.org/metadata/'+m[1])).json(), F=(j.files||[]).filter(f=>/\.mp4$/i.test(f.name)), f=F.find(f=>/h\.264/i.test(f.format||''))||F[0];
+          const len=f&&(/:/.test(f.length||'')?String(f.length).split(':').reduce((a,v)=>a*60+ +v,0):+f.length);
+          if(!f||!(len>0)){ say('no film file found there'); return; } const md=j.metadata||{};
+          pl.push({id:m[1],file:f.name,title:String([].concat(md.title||m[1])[0]).toUpperCase().slice(0,60),year:(String(md.date||md.year||'').match(/\d{4}/)||[''])[0],len:Math.round(len)}); $('#cmia').value=''; drawPL(); say('added: save to play it'); }catch(x){ say('could not read that film'); } };
+      $('#cmplsave').onclick=async()=>{ say('...'); say(await push({playlist:pl})?'the playlist is on, for everyone':SQLHINT); };
+      $('#cmplfree').onclick=async()=>{ say('...'); if(await push({playlist:[]})){ pl=FILMS.map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len})); drawPL(); say('back to the free films'); } else say(SQLHINT); };
       if($('#cmsched'))$('#cmsched').onclick=async()=>{ say('...'); say(await push({video_id:''})?'back to the schedule':'could not'); };
       $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date(Date.now()+8000).toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
     }

@@ -149,7 +149,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
   const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
     if(!named&&F0()&&F0().add){ named=true; F0().add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
-    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=canopy.pool.visible=up; const h=CLOCK.h??12; canopy.pool.material.opacity=h<6.5||h>18.5?1:.3; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up; }
+    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=canopy.pool.visible=up; const h=CLOCK.h??12; canopy.pool.material.opacity=h<6.5||h>18.5?1:.3; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }

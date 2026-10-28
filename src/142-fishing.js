@@ -6,10 +6,10 @@ import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
-const FISHING={reeling:false,auto:false,force:null}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
+const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
 // the rod is held through WIELD (146a): its blank bends with the line's pull; the cast and the fight drive the arm
 { const T=TILE, Y=v=>v*T/.84, V3=THREE.Vector3, A=.95;
-  const rod={name:'FISHING ROD',hint:'CLICK THE WATER TO CAST. CLICK TO STRIKE A BITE, HOLD TO REEL.',
+  const rod={name:'FISHING ROD',hint:'CLICK THE WATER TO CAST, OR F BY THE WATER FOR FISHING MODE. CLICK TO STRIKE A BITE, HOLD TO REEL.',
     make:()=>{ const g=new THREE.Group(), L=Y(2.1), N=8, dir=new V3(0,Math.cos(A),Math.sin(A)), side=new V3(0,-Math.sin(A),Math.cos(A)), lam=c=>new THREE.MeshLambertMaterial({color:c});
       const cork=new THREE.Mesh(new THREE.CylinderGeometry(Y(.018),Y(.016),Y(.42),6),lam(0xb08a5a)); cork.position.copy(dir).multiplyScalar(Y(.02)); cork.quaternion.setFromUnitVectors(new V3(0,1,0),dir);
       const reel=new THREE.Mesh(new THREE.CylinderGeometry(Y(.035),Y(.035),Y(.03),8),lam(0x3a3c40)); reel.position.copy(dir).multiplyScalar(Y(.12)).addScaledVector(side,-Y(.045)); reel.rotation.x=Math.PI/2-A;
@@ -22,7 +22,7 @@ const FISHING={reeling:false,auto:false,force:null}; Object.assign(BOAT,{on:fals
         geo.attributes.position.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere(); };
       g.bend(); return g; },
     aim:(dt,aim,mouse)=>FISHING.aim?FISHING.aim(dt,aim,mouse):false,
-    use:()=>{ if(FISHING.click)FISHING.click(); } };
+    use:()=>{ if(FISHING.click&&!FISHING.mode)FISHING.click(); } };
   (WIELD.pend=WIELD.pend||[]).push(['rod',rod]); if(WIELD.kind)WIELD.kind('rod',rod);
   addEventListener('pointerup',()=>{ FISHING.reeling=false; }); addEventListener('blur',()=>{ FISHING.reeling=false; }); }
 // what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
@@ -153,7 +153,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
     else if(s.st==='bite')t='<b style="color:#f2c14e">BITE! CLICK TO STRIKE</b>';
     else if(s.st==='fight')t=`ON THE LINE · ${FISHING.reeling?'REELING':'HOLD THE MOUSE TO REEL'}<br>LINE ${bar(s.ten/1.1,s.ten>.85?'#d85a3a':'#8fe3d6')} FISH ${bar(s.f.s,'#b8f0a0')} ${(s.D/WU).toFixed(1)} M`;
     else if(s.st==='land')t=`<b style="color:#b8f0a0">${(NAMES[s.f.id]||FORAGE.NM[s.f.id]||'').toString()} · ${s.f.kg.toFixed(2)} KG</b><br>CLICK TO TAKE IT OFF THE HOOK`;
-    HUDF.innerHTML=t; };
+    if(FISHING.mode)t=t.replace(/CLICK TO /g,'SPACE TO ').replace('HOLD THE MOUSE TO REEL','HOLD SPACE TO REEL'); HUDF.innerHTML=t; };
   const tip=new THREE.Vector3(), from=()=>{ if(WIELD.on==='rod'&&WIELD.tip.lengthSq()>0&&Math.hypot(WIELD.tip.x-pos.x,WIELD.tip.z-pos.z)<4*T)return tip.copy(WIELD.tip); return tip.set(pos.x+Math.sin(SHARED.heading)*.6*T,SHARED.py+Y(1.9),pos.z+Math.cos(SHARED.heading)*.6*T); };
   const hookOn=id=>{ if(!FORAGE.has(id))return say('YOU HAVE NO '+FORAGE.NM[id]+'.','#c8a090'); S.hook=id; FORAGE.take(id,1); FORAGE.save(); say(`YOU PUT ${id==='bait'?'A WORM':'A STRIP OF BUNKER'} ON THE HOOK.`); SFX.play('click',{vol:.3}); FORAGE.draw(); };
   FISHING.hookOn=hookOn;
@@ -215,6 +215,50 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
   FORAGE.NOTE.push(id=>id==='rod'?'HOOK: '+(S.hook==='bait'?'WORM':S.hook==='bait_cut'?'CUT BAIT':'BARE'):S.fishkg[id]?`LAST ${S.fishkg[id][0]} KG · BEST ${S.fishkg[id][1]} KG`:'');
   FORAGE.ACT.fhook=id=>{ if(S.hook&&S.hook!==id)FORAGE.give(S.hook,1); if(S.hook!==id)hookOn(id); };
   FORAGE.ACT.fcast=()=>{ if(S_){ if(S_.st==='land')return unhook(); FISHING.reel(); return say('YOU REEL IN YOUR LINE.'); } const h=SHARED.heading; for(const d of [6,4,9,3]){ const x=pos.x+Math.sin(h)*d*T, z=pos.z+Math.cos(h)*d*T; if(FISHING.at(x,z))return FISHING.cast(x,z); } say('NO WATER AHEAD TO CAST INTO.','#c8a090'); };
+  /* ---------- FISHING MODE: you stand still, the mouse only turns and zooms the view, and the controls are on screen: cast (hold for power), strike, reel, take off, bait ---------- */
+  { const MIND=2*T, MAXD=14*T, FILL=1.1, BAITS=[['bait','WORM'],['bait_cut','CUT BAIT']];
+    const PB=document.createElement('div'); PB.id='fishmode'; PB.hidden=true; PB.style.cssText='position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:8;display:flex;gap:4px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:96vw;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:5px 8px;zoom:var(--uiz,1)'; document.body.appendChild(PB);
+    const GO=document.createElement('button'); GO.id='fishgo'; GO.textContent='FISH · F'; GO.hidden=true; GO.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:8;font:12px Silkscreen,monospace;color:#0b0d13;background:#8fe3d6;border:2px solid #3a3f4e;padding:6px 14px;cursor:pointer;zoom:var(--uiz,1)'; document.body.appendChild(GO);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.3*T,.42*T,24),new THREE.MeshBasicMaterial({color:0x8fe3d6,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide})); ring.rotation.x=-Math.PI/2; ring.visible=false; ring.renderOrder=5; ring.frustumCulled=false;
+    let prev=null, pw=.5, hold=null, sig='', chk=0, pbar=null;
+    const ahead=d=>{ const h=SHARED.heading; return [pos.x+Math.sin(h)*d,pos.z+Math.cos(h)*d]; };
+    const water=()=>[3,5,8,11].some(k=>FISHING.at(...ahead(k*T)));
+    const power=()=>hold?Math.max(.05,Math.min(1,hold.t/FILL)):pw;
+    FISHING.enter=()=>{ if(FISHING.mode)return; if(!FORAGE.has('rod'))return say('YOU NEED A ROD. BAIT & BOATS BY THE PIER SELLS THEM.','#c8a090'); if(WIELD.on!=='rod')WIELD.set('rod'); if(WIELD.on!=='rod')return;
+      FISHING.mode=SHARED.fishing=true; prev=UI.view; if(UI.view!=='first'&&UI.view!=='follow')UI.setView('follow'); SHARED.yawTo=SHARED.heading+Math.PI; SHARED.target=null; sig=''; GO.hidden=true;
+      say('FISHING. DRAG TO LOOK ROUND, THE WHEEL ZOOMS. HOLD CAST (SPACE) FOR POWER, LET GO TO THROW.','#8fe3d6'); };
+    FISHING.leave=()=>{ if(!FISHING.mode)return; if(S_){ if(S_.st==='land')unhook(); else FISHING.reel(); } FISHING.mode=SHARED.fishing=false; hold=null; FISHING.reeling=false; ring.visible=false; PB.hidden=true; if(prev&&prev!==UI.view)UI.setView(prev); prev=null; };
+    const throwIt=()=>{ const p=power(); hold=null; pw=p; const [x,z]=ahead(MIND+p*(MAXD-MIND)); if(!FISHING.at(x,z))return say('THAT WOULD LAND ON DRY GROUND. TURN TO THE WATER OR CHANGE THE POWER.','#c8a090'); FISHING.cast(x,z); };
+    const down=()=>{ const s=S_; if(!s){ hold={t:0}; return; } if(s.st==='fight'){ FISHING.reeling=true; return; } if(s.st==='bite')return strike(); if(s.st==='land')return unhook(); FISHING.reel(); say('YOU REEL IN YOUR LINE.'); };
+    const up=()=>{ if(hold)throwIt(); FISHING.reeling=false; };
+    const view=()=>UI.setView(UI.view==='first'?'follow':'first');
+    const baitNext=()=>{ if(S_)return; const own=BAITS.filter(b=>FORAGE.has(b[0])||S.hook===b[0]); if(!own.length)return say('YOU HAVE NO BAIT. BAIT & BOATS BY THE PIER SELLS IT.','#c8a090'); const i=own.findIndex(b=>b[0]===S.hook); FORAGE.ACT.fhook(own[(i+1)%own.length][0]); };
+    const B=(txt,key,fn,o={})=>{ const b=document.createElement('button'); b.innerHTML=txt+(key?` <span style="opacity:.6">${key}</span>`:''); b.style.cssText=`font:11px Silkscreen,monospace;padding:5px 9px;cursor:pointer;border:2px solid ${o.on?'#8fe3d6':'#3a3f4e'};color:${o.hot?'#0b0d13':'#e8e2cc'};background:${o.hot?'#f2c14e':'#151821'};opacity:${o.off?.4:1}`;
+      if(o.off)b.disabled=true; else if(o.hold){ b.onpointerdown=e=>{ e.preventDefault(); fn(); }; } else b.onclick=fn; PB.appendChild(b); return b; };
+    const draw=()=>{ const s=S_, st0=s?s.st:'', hk=S.hook||'', n=BAITS.map(b=>FORAGE.has(b[0])||0).join(','), k=[st0,hk,n,UI.view,!!hold].join('|'); if(k===sig)return; sig=k; PB.innerHTML=''; pbar=null;
+      if(!s){ B(hold?'LET GO TO CAST':'CAST (HOLD)','SPACE',()=>down(),{hold:1});
+        const P=document.createElement('span'); P.style.cssText='display:inline-block;width:90px;height:10px;border:1px solid #3a3f4e;background:#151821;vertical-align:middle;margin:0 4px'; pbar=document.createElement('span'); pbar.style.cssText='display:block;height:100%;background:#8fe3d6'; P.appendChild(pbar); PB.appendChild(P);
+        const L=document.createElement('span'); L.textContent='HOOK: '+(hk==='bait'?'WORM':hk==='bait_cut'?'CUT BAIT':'BARE'); L.style.margin='0 4px'; PB.appendChild(L);
+        for(const [id,nm] of BAITS){ const c=FORAGE.has(id)||0; B(`${nm} ×${c}`,'',()=>FORAGE.ACT.fhook(id),{on:hk===id,off:!c&&hk!==id}); } B('CHANGE BAIT','B',baitNext,{off:!BAITS.some(b=>FORAGE.has(b[0]))}); }
+      else if(st0==='bite')B('STRIKE!','SPACE',()=>down(),{hot:1});
+      else if(st0==='fight')B('REEL (HOLD)','SPACE',()=>down(),{hold:1,hot:1});
+      else if(st0==='land')B('TAKE OFF THE HOOK','SPACE',()=>down(),{hot:1});
+      else B('REEL IN','SPACE',()=>down());
+      B('VIEW: '+(UI.view==='first'?'FIRST PERSON':'BEHIND'),'V',view); B('LEAVE','ESC',()=>FISHING.leave()); };
+    GO.onclick=()=>FISHING.enter();
+    addEventListener('pointerup',()=>{ if(FISHING.mode)up(); });
+    const typing=e=>e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]');
+    const LOCK=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','1','j','k','n','r','u','i','2','3','4','p','f','v','b',' ','escape']);
+    addEventListener('keydown',e=>{ if(typing(e))return; const k=(e.key||'').toLowerCase();
+      if(!FISHING.mode){ if(k==='f'&&!GO.hidden&&!e.repeat){ FISHING.enter(); e.preventDefault(); e.stopImmediatePropagation(); } return; }
+      if(!LOCK.has(k))return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
+      if(k===' ')down(); else if(k==='escape'||k==='f')FISHING.leave(); else if(k==='v')view(); else if(k==='b')baitNext(); },true);
+    addEventListener('keyup',e=>{ if(!FISHING.mode||typing(e))return; const k=(e.key||'').toLowerCase(); if(k===' ')up(); if(LOCK.has(k)){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
+    SYS.add('life',dt=>{ if(!FISHING.mode){ if((chk-=dt)<=0){ chk=.25; GO.hidden=!(WIELD.on==='rod'&&FORAGE.has('rod')&&!VIT.dead&&SHARED.LVL==='up'&&water()); } return; }
+      if(WIELD.on!=='rod'||!FORAGE.has('rod')||VIT.dead)return FISHING.leave();
+      if(!ring.parent)scene.add(ring); if(!S_)SHARED.heading=SHARED.yaw+Math.PI; if(hold)hold.t+=dt;
+      if(!S_){ const [x,z]=ahead(MIND+power()*(MAXD-MIND)), w=FISHING.at(x,z); ring.visible=true; ring.position.set(x,(w?w.lv+(w.kind==='river'?RIVER.hAt(x,z):0):SHARED.groundY(x,z))+.03*T,z); ring.material.color.setHex(w?0x8fe3d6:0xd85a3a); ring.scale.setScalar(1+.08*Math.sin(performance.now()/180)); } else ring.visible=false;
+      PB.hidden=false; draw(); if(pbar)pbar.style.width=Math.round(power()*100)+'%'; },'142-fishing-mode'); }
   const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-RB.lv), hp=new THREE.Vector3(); if(FORAGE.has('rod')&&!RIVER.swim&&!S_&&ray.intersectPlane(pl,hp)&&FISHING.at(hp.x,hp.z)){ const d=Math.hypot(hp.x-p.x,hp.z-p.z); if(d<16*T&&d>1.5*T){ FISHING.cast(hp.x,hp.z); return true; } }
     return pick0(ray,p); };
   { SYS.add('life',(dt)=>{ FISHING.tick(dt); swimTick(dt); },'142-fishing'); }

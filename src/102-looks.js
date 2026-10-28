@@ -9,7 +9,7 @@ import {QS, SHL, TILE} from './006-map-pre.js';
   const COL={skin:'#e6c4b0',hair:'#6a5958',eye:'#5a3a26',shirt:'#a9a57e',pants:'#434e58',shoes:'#77614a'};
   const sz=(w,d=w)=>[w,1,d], LR=(n,v)=>({[n+'L']:v,[n+'R']:v}), arms=(u,f=u)=>({...LR('upperArm',sz(u)),...LR('sleeve',sz(u)),...LR('forearm',sz(f))}), legs=(t,sh=t)=>({...LR('thigh',sz(t)),...LR('shin',sz(sh))});
   const MALE={hips:[.81,1,.873],torso:sz(1.05,1.06),...arms(1.05,1.03),...legs(1.04,1)};
-  const FEMALE={hips:[.97,1,.97],torso:sz(.9,.94),neck:sz(.88),...arms(.88,.86),...legs(1.04,.95),...LR('hand',sz(.88,.9)),...LR('shoe',[.9,.94,.9])};
+  const FEMALE={hips:[1.08,1,1.02],torso:sz(.92,.94),neck:sz(.82),...arms(.84,.82),...legs(1.1,.94),...LR('hand',sz(.84,.88)),...LR('shoe',[.86,.92,.88])};
   // the hairstyles and beards you choose from (new ones at the end of their list: a look's code keeps its meaning); '' is bald, or no beard
   const HAIRS=[['hair','SHORT'],['hairBuzz','BUZZ'],['hairSlick','SLICKED BACK'],['hairSpiky','SPIKY'],['hairMohawk','MOHAWK'],['hairCurly','CURLY'],['','BALD'],
     ['hairPixie','PIXIE'],['hairBob','BOB'],['hairPony','PONYTAIL'],['hairPigtails','PIGTAILS'],['hairBraid','BRAID'],['hairBun','BUN'],['hairLong','LONG'],['hairWavy','WAVY LONG']];
@@ -25,26 +25,26 @@ import {QS, SHL, TILE} from './006-map-pre.js';
   const recolor=()=>{ const g=W3.mesh.geometry, A=g.attributes, mt=A.mat.array, n=mt.length;
     for(let i=0;i<n;i++){ const r=W3.ramp[mt[i]|0]; if(r)put(A,i,r); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
-  const RB={torso:[1.06,1,1.08],hips:[1.12,1,1.12],thighL:[1.14,1,1.14],thighR:[1.14,1,1.14],sleeveL:[1.12,1,1.12],sleeveR:[1.12,1,1.12],upperArmL:[1.08,1,1.08],upperArmR:[1.08,1,1.08]}, WHITE=tones('#f6f4ee'), BELT=tones('#c4ccd8'); let E0=null, EF=null;
+  const RB={torso:[1.06,1,1.08],torsoF:[1.06,1,1.08],bustF:[1.04,1,1.06],hips:[1.12,1,1.12],thighL:[1.14,1,1.14],thighR:[1.14,1,1.14],sleeveL:[1.12,1,1.12],sleeveR:[1.12,1,1.12],upperArmL:[1.08,1,1.08],upperArmR:[1.08,1,1.08]}, WHITE=tones('#f6f4ee'), BELT=tones('#c4ccd8'); let E0=null, EF=null;
   const shape=(on,form=L.form)=>W3.pcs.map((P,i)=>{ const e=(form==='F'?EF:E0)[i], k=on&&RB[P.n]; return k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; });
   LOOKS.shape=shape; LOOKS.robed=n=>!!RB[n];
   W3.recolor=()=>LOOKS.robe(L.robe); window.LOOKS=LOOKS;
   LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); recolor();
     shape(on).forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); if(!on)return feet();
-    const A=W3.mesh.geometry.attributes, n=A.mat.count, ti=W3.idx('torso'), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
+    const A=W3.mesh.geometry.attributes, n=A.mat.count, TN=L.form==='F'?'torsoF':'torso', ti=W3.idx(TN), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0], x=A.position.getX(i), y=A.position.getY(i), z=A.position.getZ(i); if(!P)continue;
       if(/^shin/.test(P.n)&&MATS[A.mat.getX(i)|0]==='pants')put(A,i,SK);
-      else if(P.n==='torso'&&z>1.2&&y>y1-10&&Math.abs(x)<(y-y1+10)*.32)put(A,i,SK);
-      else if(P.n==='torso'&&y<y0+5||P.n==='hips'&&y>h1-4)put(A,i,BELT);
+      else if(P.n===TN&&z>1.2&&y>y1-10&&Math.abs(x)<(y-y1+10)*.32)put(A,i,SK);
+      else if(P.n===TN&&y<y0+5||P.n==='hips'&&y>h1-4)put(A,i,BELT);
       else if(RB[P.n])put(A,i,WHITE); }
     for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; feet(); };
   const feet=()=>{ if(!L.bare)return; const A=W3.mesh.geometry.attributes, n=A.mat.count, SK=W3.ramp[MATS.indexOf('skin')]; if(!SK)return;
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0]; if(P&&/^shoe/.test(P.n))put(A,i,SK); } for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
     setTimeout(()=>{ LOOKS.robe(L.robe); draw(); },320); if(FORAGE.say)FORAGE.say(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
-  const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } recolor();
-    for(let k=0;k<6;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==0; } if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
+  const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } { const h=new THREE.Color(COL.hair); for(const [m,k] of [['hairHi',1.2],['hairLo',.78]]){ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones('#'+h.clone().multiplyScalar(k).getHexString()); } } recolor();
+    for(let k=0;k<7;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==6; } if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}
     #looks .row{display:flex;flex-wrap:wrap;gap:4px;align-items:center} #looks button{font:inherit;color:inherit;background:#1a1f2b;border:2px solid #2a3040;padding:3px 6px;cursor:pointer} #looks button[aria-pressed=true]{border-color:#ffd27a;color:#ffd27a}

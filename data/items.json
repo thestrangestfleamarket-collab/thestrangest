@@ -360,5 +360,9 @@
   "grants": "breathe",
   "tank": 300,
   "rental": true
+ },
+ "ticket": {
+  "stackable": true,
+  "value": 5
  }
 }

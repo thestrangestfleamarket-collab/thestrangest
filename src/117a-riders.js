@@ -10,7 +10,7 @@ import {castPose, POSES} from './112-main-14.js';
     skin:['#f1d2bc','#e0b296','#c98f6c','#a26a48','#7a4b30','#5a3622'],hair:['#1a1412','#3b2a1e','#6b4a2c','#a8783e','#d8c08a','#8a8a8a','#c9c9c6'],shoes:['#1c1c1e','#3a2a1e','#e8e6e0','#5a2e22']};
   const shade=(h,k)=>new THREE.Color(h).multiplyScalar(k), RAMP=h=>[1.12,1,.7,.42].map(k=>shade(h,k));
   const IDX={}; for(const k in hexes)IDX[k]=hexes[k].map((h,i)=>{ const n='rd_'+k+i; if(!MAT.includes(n)){ MAT.push(n); W3.ramp.push(RAMP(h)); } return MAT.indexOf(n); });
-  const FX=R.FOOTX, AN=R.ANKLE, LEG={L:{ik:[FX+.8,AN,9]},R:{ik:[-FX-.6,AN,9.4]}};
+  const FX=R.FOOTX, AN=R.ANKLE, LEG={L:{ik:[FX+.8,AN,10.6]},R:{ik:[-FX-.6,AN,11]}};
   Object.assign(POSES,{riderSit:{root:[0,14,0],bend:-3,...LEG,hands:{L:[3.8,17.5,7],R:[-3.8,17.5,7]}},
     riderRead:{root:[0,14,0],bend:2,nod:-12,...LEG,hands:{L:[5.2,25,9.5],R:[-5.2,25,9.5]}},
     riderSleep:{root:[0,13.4,-.6],bend:7,nod:-30,side:3,...LEG,hands:{L:[3.2,16.5,6.5],R:[-3.4,16.3,6.8]}},
@@ -26,7 +26,8 @@ import {castPose, POSES} from './112-main-14.js';
     const map={[MI('shirt')]:col.shirt,[MI('pants')]:col.pants,[MI('skin')]:col.skin,[MI('hair')]:col.hair,[MI('shoes')]:col.shoes}, bald=r()<.18;
     const PCS=body.PCS.filter(p=>!(bald&&p.n==='hair')).map(p=>({...p,recol:m=>map[m]}));
     for(const P of PCS)if(!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    const FM=figureMesh(PCS,'rider'), g=new THREE.Group(), kind=pick(KINDS), h=.92+r()*.16; g.add(FM.me); g.position.set(seat.x,seat.floor,seat.z); g.rotation.y=seat.hd; musScale(g,h); g.scale.x*=h; g.scale.z*=h;
+    const FM=figureMesh(PCS,'rider'), g=new THREE.Group(), kind=pick(KINDS), h=.92+r()*.16; g.add(FM.me); g.position.set(seat.x,seat.floor,seat.z+seat.s*.18*TRAINS.T);   // back against the seat, so the legs clear its front
+    seat.taken=true; g.rotation.y=seat.hd; musScale(g,h); g.scale.x*=h; g.scale.z*=h;
     if(kind==='riderRead'){ for(const s of [-1,1]){ const q=new THREE.Mesh(new THREE.PlaneGeometry(9,12),paper); q.position.set(s*4.6,26.5,10.4); q.rotation.set(-.18,-s*.35,0); g.add(q); } }
     if(kind==='riderPhone'){ const q=new THREE.Mesh(new THREE.BoxGeometry(2.2,3.6,.4),phoneM); q.position.set(0,22.5,9.2); q.rotation.x=-.7; g.add(q); }
     car.inner.add(g); const P0=castPose(kind), rd={g,FM,PCS,kind,P0,t:r()*10,seat};

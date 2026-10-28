@@ -44,7 +44,7 @@ function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N
 
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();
 let last=performance.now(), fpsT=0, fpsN=0, t=0;
-function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; } if(PARK.hold){ if(xf)VR.draw(true); return; } renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SHARED.METRO.tick(dt,pos); t+=dt; if(xf)SYS.run('xr',dt,xf);
+function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; } if(PARK.hold){ if(xf)VR.draw(true); return; } renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SHARED.METRO.tick(dt,pos); SYS.run('carry',dt); t+=dt; if(xf)SYS.run('xr',dt,xf);
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT,true):MAPLV(SHARED.py,pos))setPhys(SHARED.LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))SHARED.yawTo+=dt*1.8; if(keys.has('e'))SHARED.yawTo-=dt*1.8; if(keys.has('z'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo-dt*1.2); if(keys.has('x'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dt*1.2); }
   if(UI.hold&&!UI.persp){ const H=UI.hold; SHARED.yawTo=H.yaw; SHARED.pitchTo=H.pitch; SHARED.ppuTo=H.ppu; if(UI.off){ H.off?UI.off.copy(H.off):UI.off.set(0,0,0); if(H.look){ const c=SHARED.cam, lim=H.look*(c.top-c.bottom)/(c.zoom||1); H.dy=Math.max(-lim,Math.min(lim,H.dy||0)); UI.off.addScaledVector(UI.holdUp.setFromMatrixColumn(c.matrixWorld,1),H.dy); } } }
@@ -75,7 +75,8 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } if(window.EQUIP&&EQUIP.float)g+=.6*TILE; SHARED.py+=(g-SHARED.py)*Math.min(1,dt*20); } }
     P.x=pos.x/TL;
     P.y=-pos.z/TL; PH.hd=SHARED.heading;
-    { st.world=RAG.on?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:SHARED.groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } }
+    { const rf=SHARED.floorFrame, dx=rf?pos.x-rf.x:0, dz=rf?pos.z-rf.z:0;   // on a moving floor (a train) the feet stand in its frame, so they don't step as it moves
+      st.world=RAG.on?null:{x:rf?dx*rf.uz-dz*rf.ux:pos.x,z:rf?dx*rf.ux+dz*rf.uz:pos.z,y:SHARED.py,hd:rf?SHARED.heading-Math.atan2(rf.ux,rf.uz):SHARED.heading,kx:1/W3.group.scale.x,ky:1/W3.group.scale.y,gnd:SHARED.groundY,t:now/1000}; B=ED.anim?ED.animPose():RIG.pose(st); ragBlend(B); ragStrikes(B,J0,J0t?(now-J0t)/1000:0); J0=B.J; J0t=now; ASTEP.you.B=B; } }
   const hdA=(RAG.on?RAG.hd:SHARED.heading)-a;
   if(loose.length||FLOATS.bodies.some(b=>Math.hypot(b.x[0]*TL-pos.x,-b.x[1]*TL-pos.z)<2.5))RIG.draw(B,cloud,hdA,uimg,PW,PICH,AX,AY,1,false);
   W3.place(B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,hdA,ZU); if(window.WIELD)WIELD.post(B); if(window.EQUIP&&EQUIP.post)EQUIP.post(B); FEEL.ui(dt); PB.step(dt,B,pos.x,SHARED.py,pos.z,RAG.on?RAG.hd:SHARED.heading,SHARED.groundY(pos.x,pos.z),RAG.on); if(ED.on)ED.tick();

@@ -110,7 +110,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       if(L>1e-3&&typeof SHARED.solids!=='undefined'){ const x0=Math.min(ax,bx)-m, x1=Math.max(ax,bx)+m, z0=Math.min(az,bz)-m, z1=Math.max(az,bz)+m, near=SHARED.solids.filter(b=>b[2]>x0&&b[0]<x1&&b[3]>z0&&b[1]<z1);
         if(near.length){ const n=Math.ceil(L/(.05*TILE)), A=tv.set(pos.x,SHARED.py+HEAD*sk,pos.z).clone(); for(let i=1;i<=n;i++){ const u=i/n, x=ax+(bx-ax)*u, z=az+(bz-az)*u;
           if(near.some(b=>x>b[0]-m&&x<b[2]+m&&z>b[1]-m&&z<b[3]+m)){ const f=(i-1)/n; if(f*A.distanceTo(SHARED.cam.position)>=1.5*TILE*sk)SHARED.cam.position.lerpVectors(A,SHARED.cam.position,f); break; } } } } }
-    if(UI.camKeep)UI.camKeep(SHARED.cam.position,T);   // a place that keeps the camera out of its walls
+    for(const f of UI.camKeeps)f(SHARED.cam.position,T);   // places that keep the camera out of their walls
     if(FT)FEEL.cam(T,SHARED.cam.position); else { let g=SHARED.groundY(SHARED.cam.position.x,SHARED.cam.position.z)+LOW; const b=FOUNT.bedAt&&FOUNT.bedAt(SHARED.cam.position.x,SHARED.cam.position.z); if(b!=null&&dv>.01)g+=(b+LOW*.3-g)*dv; if(SHARED.cam.position.y<g)SHARED.cam.position.y=g; }
     SHARED.cam.lookAt(T); SHARED.cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');

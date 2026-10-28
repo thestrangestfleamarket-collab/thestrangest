@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 const ROOMS={lazy:{},off:{}},
   LEVELS={of:{},ways:[],own:(o,id)=>{ o.userData.level=id; return o; }},
-  UI={},
+  UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),

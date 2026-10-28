@@ -78,10 +78,10 @@ import {BATCH} from './008-batch.js';
   const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&APTS.inReal&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;
   const WMAX=12*T, cb=new THREE.Box3(), BLUE=new THREE.Color(0x6a9fe0); let skyOff=false;
-  UI.camKeep=(c,t)=>{ if(!F.built||!APTS.inReal)return; const m=.35*T;
+  UI.camKeeps.push((c,t)=>{ if(!F.built||!APTS.inReal)return; const m=.35*T;
     if(F.on){ const zl=Z(FY)-m; if(c.z<=zl)return; const ox=c.x-t.x, oz=zl-t.z, L=Math.hypot(ox,c.z-t.z); c.z=zl; if(L>Math.abs(oz))c.x=t.x+(ox<0?-1:1)*Math.sqrt(L*L-oz*oz); return; }   // on the landing: the camera swings along the wall, never into the house
     cb.min.set(Math.min(X(AR.x0),X(AR.x1))+m,-1e9,Math.min(Z(AR.y0),Z(AR.y1))+m); cb.max.set(Math.max(X(AR.x0),X(AR.x1))-m,Y(HZ+S)-m,Math.max(Z(AR.y0),Z(AR.y1))-m); if(cb.containsPoint(c))return;   // in your rooms: in front of the walls, under the ceiling
-    let k=1; const L=c.distanceTo(t); for(const a of ['x','y','z']){ const d=c[a]-t[a]; if(c[a]>cb.max[a]&&d>1e-6)k=Math.min(k,(cb.max[a]-t[a])/d); if(c[a]<cb.min[a]&&d<-1e-6)k=Math.min(k,(cb.min[a]-t[a])/d); } k=Math.max(k,Math.min(1,.9*T/(L||1))); c.set(t.x+(c.x-t.x)*k,t.y+(c.y-t.y)*k,t.z+(c.z-t.z)*k); };
+    let k=1; const L=c.distanceTo(t); for(const a of ['x','y','z']){ const d=c[a]-t[a]; if(c[a]>cb.max[a]&&d>1e-6)k=Math.min(k,(cb.max[a]-t[a])/d); if(c[a]<cb.min[a]&&d<-1e-6)k=Math.min(k,(cb.min[a]-t[a])/d); } k=Math.max(k,Math.min(1,.9*T/(L||1))); c.set(t.x+(c.x-t.x)*k,t.y+(c.y-t.y)*k,t.z+(c.z-t.z)*k); });
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
     if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours

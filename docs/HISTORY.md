@@ -4931,6 +4931,8 @@ Owner: "fix the github actions so checks run again". GitHub stopped starting job
 ## 28 Oct 2026: the talk window
 Owner: "build the choice window for talking"; his picks: written scripts, every character, and replies that open the shop, give or take items and are remembered. Double-click a character: its line types out in a window with your replies (W/S or 1-4, Enter, Esc). Scripts are `talk` in characters.json, written in the character editor's TALK tab; a character without one chats from the line pools. What a character remembers is saved per player. Critters and monsters don't talk.
 
+## 28 Oct 2026: hair without black patches; the cinema screen shows its film
+Owner: "the movie is playing but i cant see it, also players hair is now glitched" ("happens everywhere"). Long hair no longer shows black patches. The cinema screen shows the film playing behind it, filling the whole screen.
 ## 28 Oct 2026: branches through the crowns; no body in your head
 Owner (a picture of a trunk ending inside the leaves): "the trees need to have real branches that go through them, none of them should just cut off like this". Every leaf-card crown has a trunk running up to its middle and a bent, tapering limb out into each clump, with a twig past it.
 - Owner (a picture from inside the head): "1st pov shows niside of players head". The game never draws a body for your own moves sent from your other tab; that body stood where you stand.

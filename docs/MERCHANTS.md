@@ -6,6 +6,30 @@ a boat on the Hudson, a table by the Hudson, walking Central Park...); each gets
 Every one goes through the one path: `makeNPC` + a home, `characters.json` (`trade`, `talk`), items in `items.json`, an inside
 off the map in `ROOMS.off`.
 
+## The owner's picks (28 Oct 2026; these override the entries below)
+
+Building now (owner: "build those out for now"):
+1. BOARDWRIGHT: sells hoverboards, hung on the walls, in different designs, colours, sizes and speeds.
+2. GLASS HORN: plays outside for money; the owner double-clicks her to upload a new song; real playing (fingers, movement).
+3. FIXER: an electronics repair shop selling TVs, computers and modems. Never name 1985 outright: it is only the timeline's reference point.
+4. NEWSREEL: takes photos and sells them; real photos you can buy and frame.
+5. SCANNER: sells police scanners (they tell you where security is, for black-market work) and night-vision goggles that really work; a small bodega on Market St.
+6. SISTER PETTY: sells petty curses: rats follow someone, a cloud rains on them, they stink. Curse NPCs like the golems so they fight the rats while you sneak past into the cave.
+7. THE EYE: a visitor that flies around and never speaks.
+8. THE BLOCK: sells Rubik's cubes you can really solve (a minigame).
+9. BALLOON WITCH: black balloons that float you over things (fast travel, over dangerous spots).
+10. RADISH: seeds that grow fruit that heals you; they need dirt, a pot and water.
+
+Queued (owner, same day):
+11. TIGER: a small kiosk by the lake: sunglasses, jackets, jeans.
+12. SONIEE: subway platform; three drinks that sell their own juice, each a temporary boost (faster, stronger, more health), good for the dungeon.
+13. ALL-SEEING CACTUS: Market St plant stall; bought as decoration; it watches people, and you.
+14. THE STUMP: on a Central Park path; sells maps (in the real game the menu's map only shows once you own one).
+15. BLUE HOUR: sells cigars.
+16. BROADCAST, 17. OTTER, 18. REEL KID, 19. BAGGER, 20. SECONDHAND GHOST, 21. JELLYCAP, 24. WANDERING CAP, 25. WATCHMAKER: visitors (they walk the city; no shop).
+22. BONSAI: Market St plant stall; tiny bonsai for your home that grow.
+23. OPERATOR: sells phones for your home and bulky cell phones.
+
 ## 1. THE BOARDWRIGHT: hoverboards (queued 28 Oct 2026)
 
 From the Wiki: "Masked Hoverboard Wooden Merchant".

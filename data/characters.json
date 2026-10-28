@@ -352,5 +352,79 @@
    ],
    "line": "One for the next showing? The times are on the screen behind me."
   }
+ },
+ "boardwright": {
+  "name": "THE BOARDWRIGHT",
+  "trade": {
+   "sells": [
+    "board_pine",
+    "board_moss",
+    "board_ember",
+    "board_moth",
+    "board_bone",
+    "board_teal"
+   ],
+   "line": "Grown, not made. She wants to rise; you only have to stand on her."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "She wants to rise.",
+      "Back for another, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE IS THE WOOD FROM?",
+       "go": "wood"
+      },
+      {
+       "t": "WHY THE MASK?",
+       "go": "mask"
+      },
+      {
+       "t": "HOW DO I RIDE ONE?",
+       "go": "ride"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "wood": {
+     "say": "Somewhere light. It grew reaching up. It still is.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "mask": {
+     "say": "Shavings.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "ride": {
+     "say": "Hold her, click, step on. Lean where you want to go. Space to hop. Don't meet a wall fast.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

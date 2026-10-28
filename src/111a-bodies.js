@@ -19,6 +19,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- one mesh a body: every face flat (its normal from the screen), coloured, held by up to two bones ---------- */
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
     const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`, AT_=`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`;
+    if(body.smooth)return smooth(body,PM,MOVE,AT_);
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
       sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
@@ -27,6 +28,33 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false;
     return {me,PM}; }
+
+  /* ---------- a smooth body (the merchants): smooth normals, and each part's surface drawn from where it is on the part — knit, woven cloth, denim, leather, metal, skin, fur, wood, ivory, glass — with its own relief, roughness and shine ---------- */
+  const SURF=`varying vec3 vRest; varying float vMt;
+  float sH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
+  float sN(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(sH(i),sH(i+vec3(1,0,0)),f.x),mix(sH(i+vec3(0,1,0)),sH(i+vec3(1,1,0)),f.x),f.y),mix(mix(sH(i+vec3(0,0,1)),sH(i+vec3(1,0,1)),f.x),mix(sH(i+vec3(0,1,1)),sH(i+vec3(1,1,1)),f.x),f.y),f.z); }
+  // relief (0..1) and a colour scale for each surface, from the rest position on its part (metres)
+  vec2 surf(float m,vec3 p){ float w=p.x+p.z;
+    if(m<1.5){ float n=sN(p*22.); return vec2(n*.25,.97+.04*n); }
+    if(m<3.5){ float n=sN(p*18.); return vec2(n*.3,.97+.04*n); }
+    if(m<4.5){ float n=sN(p*30.); return vec2(n*.3,.96+.05*n); }
+    if(m<5.5){ float n=sN(p*vec3(200.,8.,200.)); return vec2(n*.15,.95+.08*n); }
+    if(m<6.5){ float n=sN(p*20.); return vec2(0.,.98+.03*n); }
+    if(m<7.5){ float n=sN(p*vec3(90.,20.,90.)); return vec2(n*.4,.92+.1*n); }
+    if(m<8.5){ float g=sin(p.y*40.+sN(p*10.)*4.)*.5+.5; return vec2(g*.2,.94+.08*g); }
+    return vec2(0.,1.); }`;
+  // m: 0 plain, 1 knit, 2 cloth, 3 denim, 4 leather, 5 metal, 6 skin, 7 fur, 8 wood, 9 ivory, 10 glass
+  function smooth(body,PM,MOVE,AT_){ const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,metalness:0,side:THREE.DoubleSide});
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM;
+      sh.vertexShader=MOVE+'\nattribute float mt; varying vec3 vRest; varying float vMt;\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz; vRest=position; vMt=mt;');
+      sh.fragmentShader=SURF+'\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n vec2 SF=surf(vMt,vRest); diffuseColor.rgb*=SF.y;')
+        .replace('#include <metalnessmap_fragment>','#include <metalnessmap_fragment>\n metalnessFactor=vMt>4.5&&vMt<5.5?.85:vMt>9.5?.2:0.; roughnessFactor=vMt>4.5&&vMt<5.5?.38:vMt>9.5?.08:vMt>8.5?.42:vMt>5.5&&vMt<6.5?.55:vMt>3.5&&vMt<4.5?.5:.9;')
+        .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n { float H=SF.x*(vMt>9.5?0.:vMt>5.5&&vMt<6.5?.15:1.); vec3 dpx=dFdx(-vViewPosition), dpy=dFdy(-vViewPosition); float hx=dFdx(H), hy=dFdy(H); vec3 r1=cross(dpy,normal), r2=cross(normal,dpx); float det=dot(dpx,r1); vec3 gr=sign(det)*(hx*r1+hy*r2); normal=normalize(abs(det)*normal-gr*.08); }')
+        .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*(vMt>9.5?.25:vMt>5.5&&vMt<6.5?.1:.06);'); };
+    mat.customProgramCacheKey=()=>'bodysm'+NB;
+    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
+    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
+    const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; return {me,PM}; }
 
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
@@ -64,12 +92,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; N.g.visible=false; } };
   // a borrowed body (the holodeck's knight) goes back where it was: its group, spot, home and roaming
   BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; N.g.visible=!!P.on; delete N.prev; };
-  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}, g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); MAPG.bodega.add(g); NPC.g=g;
+  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}, g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
     const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
-    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; if(CHARS.apply)CHARS.apply(NPC);
+    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
     NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
@@ -81,9 +109,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
         else{ const e=turn(Math.atan2(ex,ez)); st.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*3); SR.target=Math.abs(e)<.6?1:0; } }
       const d0=SR.dist; R.step(SR,dt); const go=(SR.dist-d0)*W3.SZ/PPU*.85;
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); } }
-      st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1);
+      st.y=MODS.bodega.ground(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); };
+      R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
     SYS.add('dress',dt=>NPC.tick(dt||0),'111a-bodies '+body.key); }
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */

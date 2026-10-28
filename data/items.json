@@ -364,5 +364,59 @@
  "ticket": {
   "stackable": true,
   "value": 5
+ },
+ "board_pine": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 40,
+  "speed": 4.5,
+  "len": 0.72,
+  "weight": 2.5
+ },
+ "board_moss": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 65,
+  "speed": 5.5,
+  "len": 0.62,
+  "weight": 2.5
+ },
+ "board_ember": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 95,
+  "speed": 6.5,
+  "len": 0.82,
+  "weight": 2.5
+ },
+ "board_moth": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 130,
+  "speed": 7.2,
+  "len": 0.86,
+  "weight": 2.5
+ },
+ "board_bone": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 170,
+  "speed": 8,
+  "len": 0.92,
+  "weight": 2.5
+ },
+ "board_teal": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 260,
+  "speed": 9.5,
+  "len": 1.05,
+  "weight": 2.5
  }
 }

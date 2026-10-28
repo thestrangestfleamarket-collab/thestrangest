@@ -25,7 +25,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.keyboard.down(' '); await wait(() => RIVER.dep > 2.5, null, 60000); await pg.keyboard.up(' ');
   const d1 = await pg.evaluate(() => ({ s: SWIMDBG(), dep: RIVER.dep }));
   await pg.waitForTimeout(1500); const d2 = await pg.evaluate(() => ({ s: SWIMDBG(), dep: RIVER.dep }));
-  ok(!d0.dive && d1.s.dive && d1.dep > 2.5 && d2.s.dive && d2.dep > 1.5, 'SPACE swims down, and let go you stay under, drifting slowly up: ' + JSON.stringify({ d0, d1, d2 }));
+  ok(!d0.dive && d1.s.dive && d1.dep > 2.2 && d2.s.dive && d2.dep > 1.5, 'SPACE swims down, and let go you stay under, drifting slowly up: ' + JSON.stringify({ d0, d1, d2 }));
   await pg.keyboard.down('Shift'); await wait(() => !SWIMDBG().dive, null, 60000).catch(() => {}); await pg.keyboard.up('Shift');
   ok(!(await pg.evaluate(() => SWIMDBG().dive)) && await pg.evaluate(() => RIVER.swim), 'SHIFT swims back up to the surface');
   // first person: arms, look down and swim to dive

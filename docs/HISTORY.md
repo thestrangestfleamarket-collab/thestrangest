@@ -4886,3 +4886,5 @@ Owner: "put the cabinets back on the side walls, double click on each one to pla
 
 ## 27 Oct 2026: the grass even, the trees past the wall small, bulkier crowns
 Owner: "i still see the circle around my character that is lighter"; "when you look at the grass from zoomed out low angle it looks like triangles spread out"; "the trees on the outside of map are way too big, need to be barely bigger than other trees, and need to be same new tree style"; "make the trees leaves less 2d? bulker like old teres and new tress, mixed". The far tufts are the same rounded tufts as the near ones (no lighter ring, no triangles). The rows past the park's north wall are barely bigger than the edge ring and, like the park seen from outside, are leaf-card trees. Every leaf-card crown has a darker faceted core under its cards.
+## 28 Oct 2026: the bodega's late-night light
+Owner: "realistic lighting, atmospheric"; his picks: the bodega inside, "Late-night NYC bodega". Brighter greenish fluorescent tubes that hum, one stuttering now and then; a warm lamp over the Fox's counter; the OPEN sign's red through the front window; the windows dark at night.

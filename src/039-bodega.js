@@ -1840,15 +1840,19 @@ SHARED.BODB={};
       m.onBeforeRender=(r,s,c)=>{ m.quaternion.copy(c.quaternion); c.getWorldDirection(f); m.position.copy(at).addScaledVector(f,-.3); m.updateMatrixWorld(); }; scene.add(m); N.halo=m; } }
   const SB=SHARED.BOD.SB, inB=l=>l.x>SB.x0&&l.x<SB.x1&&l.y>SB.y0&&l.y<SB.y1;
   const lampsOf=(inn,back)=>{ for(const l of SHARED.BOD.LAMPS){ const cm=Math.max(...l.c); if(!(cm>0)||inB(l)!==inn||inn&&(l.y<BODOFF)!==back)continue; const L=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),7*cm*Math.min(1.2,l.r/5),l.r*TILE*1.25,1.6);
-    L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; L.userData.both=!!l.neon; if(!inn)lamps.push(L); scene.add(L); } };
+    L.position.set(X(l.x),Y(l.z),Z(l.y)); L.userData.i0=L.intensity; L.userData.both=!!l.neon; if(!inn)lamps.push(L);
+    else if(/tube/.test(l.prop&&l.prop.key||'')){ L.color.setRGB(.84,1,.9); L.intensity*=1.8; L.distance*=1.35; L.userData.i0=L.intensity; L.userData.tube=1; SHARED.BODB.glow.push(L); } scene.add(L); } };
   lampsOf(false);
+  // late at night in the shop (owner, 28 Oct 2026): a warm lamp over the counter, the OPEN sign's red through the window; the tubes hum and one stutters now and then
+  const moodLights=()=>{ const B={...SB,y0:BODOFF}, add=(x,y,z,c,r,k)=>{ const L=new THREE.PointLight(new THREE.Color(...c),11*Math.min(1.2,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; L.userData[k]=1; SHARED.BODB.glow.push(L); scene.add(L); };
+    add(B.x1-1.05,B.y0+5.4,62,[1,.62,.32],3.5,'warm'); add(SB.x0+1.5,SB.y1-.35,64,[1,.22,.32],4,'neon'); };
   // the back room (owner, 28 Oct 2026): its door locked (only the Fox has the key), its floor, things and lamp drawn only while you are in it; from the shop a dark ceiling over it
   const backOf=p=>/^of-/.test(p.key||''), inBack=()=>SHARED.BOD.inside(pos.x,pos.z)&&pos.z<Z(BODOFF)===(Z(SB.y0)<Z(BODOFF));
   SHARED.BODB.build=()=>{ '@later'; const SG=new THREE.Group(); SG.name='bodega-in'; scene.add(SG); SHARED.BODB.SG=SG; const BG=new THREE.Group(); BG.name='bodega-back'; SG.add(BG); SHARED.BODB.BG=BG;
     const g=SHARED.BOD.grounds.find(q=>q.id==='shop'), O=Object.values(SHARED.BOD.O);
     const P=ROOMS.part(SG,()=>{ for(const w of SHARED.BOD.WALLS){ wallF(w,true); wallR(w); }
       if(g)flat(g.x0,BODOFF,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-      SHARED.BOD.paintProps(O.filter(p=>!backOf(p))); goods(); lampsOf(true,false);
+      SHARED.BODB.glow=[]; SHARED.BOD.paintProps(O.filter(p=>!backOf(p))); goods(); lampsOf(true,false); moodLights();
       const L=SHARED.BOD.WALLS.find(w=>w.id==='office'), dh=L.holes.find(h=>h.locked), hb=new THREE.Mesh(new THREE.BoxGeometry((dh.a1-dh.a0)*TILE,Y(dh.z1),.3*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X((dh.a0+dh.a1)/2),Y(dh.z1)/2,Z(BODOFF)); scene.add(hb); UI.thing({name:'A LOCKED DOOR',obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(dh.z1),act:()=>{ SFX.play('latch',{vol:.5}); if(window.FORAGE)FORAGE.say('IT IS LOCKED. ONLY THE FOX HAS THE KEY.','#c8a090'); }}); },MK);
     const P2=ROOMS.part(BG,()=>{ if(g)flat(g.x0,g.y0,g.x1,BODOFF,g.z,g.col,'G',!g.bld); SHARED.BOD.paintProps(O.filter(backOf)); lampsOf(true,true); },MK);
@@ -1856,7 +1860,9 @@ SHARED.BODB={};
     cap.position.set((X(SB.x0)+X(SB.x1))/2,Y(SB.h-4)+.01,(Z(SB.y0)+Z(BODOFF))/2); SG.add(cap); SHARED.BODB.cap=cap;
     for(const k of ['objs','things','cuts','lights'])P[k].push(...P2[k]); P.objs.push(cap);
     SG.traverse(o=>{ if(o.isMesh)o.receiveShadow=true; }); SHARED.BODB.tick(); return P; };
-  SYS.add('life',()=>{ const BG=SHARED.BODB.BG; if(!BG||!BG.parent)return; const b=inBack(); if(BG.visible!==b){ BG.visible=b; SHARED.BODB.cap.visible=!b; LITE.t=0; } },'039-bodega');
+  let stut=0, nextS=8, tubeN=0; SYS.add('life',dt=>{ const G=SHARED.BODB.glow; if(G&&G.length&&SHARED.BODB.SG&&SHARED.BODB.SG.parent){ const t=performance.now()/1e3; nextS-=dt||0; if(nextS<0){ stut=.5+Math.random()*.6; nextS=7+Math.random()*12; tubeN=Math.random()<.5?0:1; }
+    if(stut>0)stut-=dt||0; let n=0; for(const L of G){ const d=L.userData; if(d.tube){ const on=stut>0&&n++===tubeN?(Math.sin(t*61)>.1?1:.12):1; L.intensity=d.i0*on*(.97+.03*Math.sin(t*377)); } else if(d.neon)L.intensity=d.i0*(.88+.08*Math.sin(t*7.3)+.04*Math.sin(t*97)); } }
+    SHARED.BODB.tick(); const BG=SHARED.BODB.BG; if(!BG||!BG.parent)return; const b=inBack(); if(BG.visible!==b){ BG.visible=b; SHARED.BODB.cap.visible=!b; LITE.t=0; } },'039-bodega');
   SHARED.BODB.unbuild=()=>{ if(SHARED.BODB.SG)SHARED.BODB.SG.removeFromParent(); SHARED.BODB.SG=null; SHARED.BOD.goodsMesh=null; };
   { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
     ROOMS.off.bodega={name:'THE BODEGA',keep:true,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,

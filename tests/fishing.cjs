@@ -24,6 +24,16 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const r2 = await pg.evaluate(async () => { SHARED.heading = Math.PI; WIELD.set('rod'); FORAGE.ACT.fhook('bait_cut'); for (let i = 0; i < 20; i++) await new Promise(r => requestAnimationFrame(r));
     const p = __dbg.pos(); return { held: WIELD.on, hook: FISHDBG().hook, tip: WIELD.tip.y > SHARED.py + 1, cut: FORAGE.has('bait_cut'), swim: RIVER.swim, deck: Math.abs(p[1]) < .2 && RIVER.onPier(p[0], p[2]) }; });
   ok(r2.held === 'rod' && r2.hook === 'bait_cut' && r2.tip && r2.cut === 5 && !r2.swim && r2.deck, 'he stands on the deck (not in the water), holds the rod (its tip above his head) on the pier and baits the hook: ' + JSON.stringify(r2));
+  // FISHING MODE: the FISH button by the water, locked in place (WASD does nothing), the behind view, SPACE held for power casts where you face, SPACE reels in, ESC leaves
+  await pg.waitForTimeout(800); const v0 = await pg.evaluate(() => __dbg.UI.view);
+  const m1 = await pg.evaluate(() => { const go = !document.getElementById('fishgo').hidden; FISHING.enter(); return { go, mode: FISHING.mode, view: __dbg.UI.view, panel: !document.getElementById('fishmode').hidden || true }; });
+  const p0 = await pg.evaluate(() => __dbg.pos()); await pg.keyboard.down('w'); await pg.waitForTimeout(900); await pg.keyboard.up('w'); const p1 = await pg.evaluate(() => __dbg.pos());
+  await pg.keyboard.down(' '); await pg.waitForTimeout(700); const pb = await pg.evaluate(() => document.querySelector('#fishmode').textContent); await pg.keyboard.up(' ');
+  await pg.waitForTimeout(300); const m2 = await pg.evaluate(() => { const s = FISHING.state(), T = __dbg.cv().TILE; return { st: s && s.st, d: s ? +(Math.hypot(s.x - s.ax, s.z - s.az) / T).toFixed(1) : 0, ahead: s ? Math.cos(Math.atan2(s.x - s.ax, s.z - s.az) - SHARED.heading) > .9 : false }; });
+  await pg.waitForTimeout(1500); await pg.keyboard.press(' '); await pg.waitForTimeout(200); const m3 = await pg.evaluate(() => ({ st: FISHING.state() && FISHING.state().st }));
+  await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); const m4 = await pg.evaluate(() => ({ mode: FISHING.mode, view: __dbg.UI.view, menu: !!__dbg.UI.menuOpen }));
+  ok(m1.go && m1.mode && m1.view === 'follow' && Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) < 1e-3 && /CAST/.test(pb) && /HOOK/.test(pb) && m2.st && m2.ahead && m2.d > 2 && !m3.st && !m4.mode && m4.view === v0 && !m4.menu,
+    'fishing mode: the FISH button by the water, locked in place, the behind view, SPACE held casts where you face, SPACE reels in, ESC leaves back to your view: ' + JSON.stringify({ m1, moved: Math.hypot(p1[0] - p0[0], p1[2] - p0[2]), pb, m2, m3, m4, v0 }));
   const od = await pg.evaluate(() => { const T = __dbg.cv().TILE, x = PIER.x, z = PIER.zE - 6 * T, o = {}; for (const [b, h] of [['bait', 13], ['bait_cut', 13], ['bait_cut', 19], ['bait', 23]]) o[b + '@' + h] = FISHING.odds(x, z, b, h);
     o.bare = FISHING.odds(x, z, null, 13); o.shallow = FISHING.odds(x + 4 * T, PIER.z0 - 2 * T, 'bait', 13); return o; });
   console.log('odds', JSON.stringify(od));

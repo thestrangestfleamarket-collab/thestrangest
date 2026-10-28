@@ -4935,3 +4935,4 @@ Owner: "build the choice window for talking"; his picks: written scripts, every 
 Owner (a picture of a trunk ending inside the leaves): "the trees need to have real branches that go through them, none of them should just cut off like this". Every leaf-card crown has a trunk running up to its middle and a bent, tapering limb out into each clump, with a twig past it.
 - Owner (a picture from inside the head): "1st pov shows niside of players head". The game never draws a body for your own moves sent from your other tab; that body stood where you stand.
 - 28 Oct 2026, owner (his picture of the eyes): "needs eyelids". The round eyes have an upper lid over their top with a thin dark lash line.
+- 28 Oct 2026, owner (his picture): "female eyebrows dont make sense". Her brows are thin arched lines drawn on her face above each eye; her lashes small dark flicks at the lid's outer corner.

@@ -14,7 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => { const T = __dbg.cv().TILE, B = RIVER.box, m = RIVER.mouth; STORE.goTo(m.x + 6 * T, B.z1 - 8 * T, 'up'); });
   await wait(() => !FADE.busy); await wait(() => RIVER.swim && FLOW.on.value && FLOW.stats.steps > 40, null, 240000).catch(() => {});
   const r1 = await pg.evaluate(() => ({ names: FLOW.waters.map(w => w.name), on: FLOW.on.value, steps: FLOW.stats.steps, rip: RIVER.U.uRipOn.value, peek: FLOW.peek(__dbg.renderer), cur: FLOW.cur.ok }));
-  ok(['hudson', 'lake', 'brook'].every(n => r1.names.includes(n)) && r1.on && r1.rip, 'the Hudson, the big lake and the stream are one water, running round you: ' + JSON.stringify(r1));
+  ok(r1.names.includes('hudson') && r1.on && r1.rip, 'the Hudson runs in the one water round you: ' + JSON.stringify(r1));
   ok(r1.peek && r1.peek.wet > 1000 && r1.peek.speed < 1 && r1.peek.rise < .5, 'the water at rest stays still (no runaway flow or rise): ' + JSON.stringify(r1.peek));
   ok(r1.cur, 'a swimmer reads the water where they are (its rise and its flow)');
   const r2 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), a = FLOW.peek(__dbg.renderer); for (let i = 0; i < 6; i++) FLOW.drop(p[0] + 3 * T, p[2] - 3 * T, .8 * T, .3 * FLOW.WU);
@@ -34,9 +34,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L; STORE.goTo(M.BOD.XS(L.x - L.rx * .45 + (P.ox || 0)), M.BOD.ZS(L.y - L.ry * .15 + 6 + (P.oy || 0)), 'up'); });
   await wait(() => !FADE.busy).catch(() => {}); await wait(() => window.FOUNT && FOUNT.ready && FISHES.list.some(f => f.w.name !== 'hudson'), null, 300000).catch(() => {});
   const r5 = await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L, x = M.BOD.XS(L.x - L.rx * .45 + (P.ox || 0)), z = M.BOD.ZS(L.y - L.ry * .15 + (P.oy || 0)), T = __dbg.cv().TILE;
-    const b = FOUNT.bedAt(x, z); return { deep: b == null ? null : +((FOUNT.LV - b) * .84 / T).toFixed(1), lake: [...new Set(FISHES.list.filter(f => f.w.kind === 'lake').map(f => f.id))] }; });
+    const b = FOUNT.bedAt(x, z); const lake = [...new Set(FISHES.list.filter(f => f.w.kind === 'lake').map(f => f.id))]; return { deep: b == null ? null : +((FOUNT.LV - b) * .84 / T).toFixed(1), lake, own: lake.every(i => !i.startsWith('x_') || ITEMS.prop(i, 'water') === 'lake'), names: FLOW.waters.map(w => w.name), on: FLOW.on.value }; });
   ok(r5.deep > 15, 'the big lake has a very deep hole: ' + r5.deep + ' m');
-  ok(r5.lake.length >= 2 && r5.lake.every(i => !i.startsWith('x_') || ITEMS.prop(i, 'water') === 'lake'), 'the lake has its own fish (its catch, koi, goldfish): ' + JSON.stringify(r5.lake));
+  ok(['hudson', 'lake', 'brook'].every(n => r5.names.includes(n)) && r5.on, 'the big lake and the stream join the same one water: ' + JSON.stringify(r5.names));
+  ok(r5.lake.length >= 2 && r5.own, 'the lake has its own fish (its catch, koi, goldfish): ' + JSON.stringify(r5.lake));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all water checks passed'); process.exit(fails.length ? 1 : 0);
 })();

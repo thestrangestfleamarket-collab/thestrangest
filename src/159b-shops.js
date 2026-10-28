@@ -1,6 +1,6 @@
 // THE SHOPS: any character the character editor marks a shopkeeper (trade.sells in characters.json) sells those item types to the player, priced by each item's shared VALUE, and teaches the skills in trade.teaches. Walk up or double-click to buy; goods go into your pack and behave by their item properties (edible → eat, sellable → resell). The mushroom and tomato sellers keep their own hand-built shops.
 import {THREE} from './003-shx.js';
-import {CHARS, INV, ITEMS, LINES, NPCS, SFX, SHOPS, UI} from './003b-systems.js';
+import {CHARS, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, UI} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
@@ -32,10 +32,10 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   SHOPS.draw=draw;
 
   const bind=N=>{ const id=CHARS.id(N); if(!id||SHOPS.bound.has(id)||!(CHARS.trade&&CHARS.trade(N)))return; SHOPS.bound.add(id);
-    for(const th of UI.things)if(th.npc===N){ th.act=()=>SHOPS.open(N); th.reach=Math.max(th.reach||0,2.2*T); th.near=Math.max(th.near||0,3*T); return; }
+    for(const th of UI.things)if(th.npc===N){ th.act=()=>(TALK.open||SHOPS.open)(N); th.reach=Math.max(th.reach||0,2.2*T); th.near=Math.max(th.near||0,3*T); return; }
     if(!N.g||!UI.thing)return; const sc=N.g.scale.y||1, H=(N.H||1.8*T)/sc;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T/sc,H,1.4*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; N.g.add(hb);
-    UI.thing({name:N.name||'A MERCHANT',npc:N,obj:hb,reach:1.6*T,near:3*T,tall:(N.H||1.8*T)+.3*T,act:()=>SHOPS.open(N)}); };
+    UI.thing({name:N.name||'A MERCHANT',npc:N,obj:hb,reach:1.6*T,near:3*T,tall:(N.H||1.8*T)+.3*T,act:()=>(TALK.open||SHOPS.open)(N)}); };
   SHOPS.sync=()=>{ for(const N of NPCS.concat(NPCS.extra||[]))try{ bind(N); }catch(e){} };
   { const go=()=>{ if(!window.__started)return setTimeout(go,800); SHOPS.sync(); }; go(); }
   window.SHOPS=SHOPS;

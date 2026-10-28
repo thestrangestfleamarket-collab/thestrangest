@@ -17,7 +17,79 @@
    117.5,
    -113,
    3
-  ]
+  ],
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Going down? You'll want the kit.",
+      "Back from the deep, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS DOWN THERE?",
+       "go": "deep"
+      },
+      {
+       "t": "GOT ANY WORK?",
+       "go": "job",
+       "if": "!glass"
+      },
+      {
+       "t": "I BROUGHT YOUR SEA GLASS.",
+       "do": "take",
+       "arg": "seaglass 1",
+       "go": "paid",
+       "if": "asked !glass"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "deep": {
+     "say": "Caves under the river. Glints in the walls. Wear the goggles or you'll see nothing.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "job": {
+     "say": "Bring me one piece of sea glass from the river caves. I'll make it worth your while.",
+     "set": "asked",
+     "opts": [
+      {
+       "t": "I'LL LOOK.",
+       "go": ""
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "paid": {
+     "say": "Beautiful. Here, bait for your trouble.",
+     "opts": [
+      {
+       "t": "THANKS.",
+       "do": "give",
+       "arg": "bait 5",
+       "set": "glass",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  },
  "origamifox": {
   "name": "THE NATURE MERCHANT",
@@ -26,6 +98,48 @@
     "net",
     "bnet"
    ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Wings and feathers, that's my trade.",
+      "Ah, a fellow watcher of small things."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I CATCH A BIRD?",
+       "go": "birds"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "birds": {
+     "say": "Patience and seed. Scatter it, stand still, and they come to you. Take a handful, first one's free.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "do": "give",
+       "arg": "bseed 3",
+       "set": "seed",
+       "go": "",
+       "if": "!seed"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
   }
  },
  "mrblocks": {
@@ -41,6 +155,37 @@
     "sword"
    ],
    "line": "A blade for every purse. Hold P to block; catch the blow on the beat and they stagger."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "A blade for every purse.",
+     "opts": [
+      {
+       "t": "SHOW ME YOUR BLADES.",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I FIGHT?",
+       "go": "fight"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "fight": {
+     "say": "Hold P to block. Catch the blow on the beat and they stagger. Then strike.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
   }
  },
  "coatbear": {
@@ -56,7 +201,43 @@
    -66.75,
    49.2,
    0
-  ]
+  ],
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Cloud coats. Light as weather.",
+      "Still cold out there, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "IS IT REALLY MADE OF CLOUDS?",
+       "go": "cloud",
+       "if": "!cloud"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "cloud": {
+     "say": "Of course. Caught them myself, on the high roofs. Wear it and you'll float a little.",
+     "set": "cloud",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  },
  "knight": {
   "name": "THE ARMOURER",
@@ -65,9 +246,83 @@
     "armor"
    ],
    "line": "Plate for the road. Catch me in the holodeck if you want to train."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "Plate for the road.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WILL YOU TRAIN ME?",
+       "go": "train"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "train": {
+     "say": "Find me in the holodeck, at the back of the arcade. I do not go easy.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
   }
  },
  "teddy": {
-  "tint": "#b4b8c2"
+  "tint": "#b4b8c2",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "Oh! Hello there.",
+     "opts": [
+      {
+       "t": "WHO ARE YOU?",
+       "go": "who",
+       "if": "!met"
+      },
+      {
+       "t": "HELLO AGAIN, TEDDY.",
+       "go": "again",
+       "if": "met"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "who": {
+     "say": "Just Teddy. I sit here and watch the market go by. Nobody ever asks.",
+     "set": "met",
+     "opts": [
+      {
+       "t": "NICE TO MEET YOU.",
+       "go": ""
+      }
+     ]
+    },
+    "again": {
+     "say": "You remembered! Nobody remembers.",
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

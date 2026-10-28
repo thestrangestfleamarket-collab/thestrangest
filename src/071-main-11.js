@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, pos, st} from './003b-systems.js';
 import {PPU, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {QS} from './006-map-pre.js';
+import {QS, SECTIONS} from './006-map-pre.js';
 
 const cloud=RIG.bake(0.5,1); st.snap=true; st.smooth=true;
 const PW=112,PICH=100,AX=56,AY=86, uimg=new Uint32Array(PW*PICH), pcv=document.createElement('canvas'); pcv.width=PW; pcv.height=PICH;
@@ -13,5 +13,6 @@ const cardG=new THREE.PlaneGeometry(PW/PPU,PICH/PPU); cardG.translate(0,(AY-PICH
 const youMat=new THREE.MeshBasicMaterial({map:ptex,alphaTest:0.5,side:THREE.DoubleSide});
 const you=new THREE.Mesh(cardG,youMat); you.castShadow=true; scene.add(LEVELS.own(you,'*'));
  SHARED.heading=0.8; SHARED.py=0; window.POSOK=1; { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); SHARED.py=a[2]||0; SHARED.floor=SHARED.py<-1.6?'down':'up'; }
-  else if(!['at','place','sheet','npcat','fresh'].some(k=>QS.get(k)!=null)){ let w=null; try{ w=JSON.parse(SAVE.get('where')||'null'); }catch(e){} if(w&&[w.x,w.z,w.y,w.hd].every(Number.isFinite)&&(w.lv||(w.y<-1.6?'down':'up'))==='up'){ pos.set(w.x,0,w.z); SHARED.py=w.y; SHARED.heading=w.hd; } } }
+  else if(!['at','place','sheet','npcat','fresh'].some(k=>QS.get(k)!=null)){ let w=null; try{ w=JSON.parse(SAVE.get('where')||'null'); }catch(e){} if(w&&[w.x,w.z,w.y,w.hd].every(Number.isFinite)&&(w.lv||(w.y<-1.6?'down':'up'))==='up'){ pos.set(w.x,0,w.z); SHARED.py=w.y; SHARED.heading=w.hd; } }
+  if(QS.get('place')==null)SECTIONS.fit(pos); }
 export {AX, AY, cloud, PICH, PW, uimg, VS, you};

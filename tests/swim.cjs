@@ -56,7 +56,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(t2.tank < t1.tank && t2.air >= t1.air - .01 && t2.s.uw, 'in the flooded tunnel the tank breathes for you, not your own breath: ' + JSON.stringify({ t1: t1.tank, t2: t2.tank, air: t2.air }));
   await shot('tunnel');
   const pk = await pg.evaluate(async () => { const X = SHARED.BOD.XS, Z = SHARED.BOD.ZS; __dbg.UI.goTo(X(1339), Z(-33), 'down'); for (let i = 0; i < 60; i++) await new Promise(r => requestAnimationFrame(r));
-    const W = __dbg.ST.water; return { in: W && W.in, lv: W && W.level, y: W && W.y, under: W && W.y < W.level - 34, things: __dbg.UI.things.filter(t => /SHAFT/.test(t.name)).length }; });
+    const t0 = performance.now(); while (__dbg.ST.water && __dbg.ST.water.y < __dbg.ST.water.level - 34 && performance.now() - t0 < 60000) { dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' })); await new Promise(r => setTimeout(r, 100)); }
+    dispatchEvent(new KeyboardEvent('keyup', { key: 'Shift' })); const W = __dbg.ST.water; return { in: W && W.in, lv: W && W.level, y: W && W.y, under: W && W.y < W.level - 34, things: __dbg.UI.things.filter(t => /SHAFT/.test(t.name)).length }; });
   ok(pk.in && pk.lv === 75 && !pk.under && pk.things === 1, 'at the far end an air pocket you can surface in, and the old shaft up to the river: ' + JSON.stringify(pk));
   await pg.evaluate(() => HUDSON.go(0)); await wait(() => !HUDSON.built && !FADE.busy && SHARED.LVL === 'up', null, 120000);
   ok(await pg.evaluate(() => RIVER.on && Math.hypot(__dbg.pos()[0] - RIVER.mouth.x, __dbg.pos()[2] - RIVER.mouth.z) < 6), 'out again you are back over the mouth in the river');

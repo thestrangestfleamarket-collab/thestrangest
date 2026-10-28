@@ -1,6 +1,6 @@
-// THE BODIES YOU CAN BE: the Walker, or a body moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); YOU's BODY row; one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
-import {NPCS, pos, W3} from './003b-systems.js';
+import {CHARS, NPCS, pos, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
@@ -10,6 +10,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 { const R=RIG, QS=new URLSearchParams(location.search), V3=THREE.Vector3;
   const BONES=BODIES.BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
   const LIMB=/^(upperArm|forearm|hand|thigh|shin)/, NB=BONES.length, WALKER_H=52;
+  const PARENT=BODIES.PARENT={torso:'hips',head:'torso',upperArmL:'torso',upperArmR:'torso',forearmL:'upperArmL',forearmR:'upperArmR',handL:'forearmL',handR:'forearmR',thighL:'hips',thighR:'hips',shinL:'thighL',shinR:'thighR',shoeL:'shinL',shoeR:'shinR'};
+  // a fitted skeleton (each bone's origin and rest frame, rows of 9) as off (each bone from its parent, in the parent's frame) and binv
+  BODIES.skeleton=(origin,rest)=>{ const R=rest.map(r=>new THREE.Matrix4().makeBasis(new V3(r[0],r[1],r[2]),new V3(r[3],r[4],r[5]),new V3(r[6],r[7],r[8]))), O=origin.map(o=>new V3(...o)), off={};
+    BONES.forEach((n,i)=>{ if(!PARENT[n])return; const p=BONES.indexOf(PARENT[n]), d=O[i].clone().sub(O[p]), r=rest[p]; off[n]=[PARENT[n],r[0]*d.x+r[1]*d.y+r[2]*d.z,r[3]*d.x+r[4]*d.y+r[5]*d.z,r[6]*d.x+r[7]*d.y+r[8]*d.z]; });
+    return {off,binv:BONES.map((n,i)=>R[i].clone().setPosition(O[i]).invert())}; };
 
   /* ---------- one mesh a body: every face flat (its normal from the screen), coloured, held by up to two bones ---------- */
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
@@ -35,32 +40,36 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (YOU's BODY: WALKER or a body, kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (YOU's BODY: only a playable body, else the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
+  const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
+  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
   let ME=null, MEK=null, hid=false;
-  W3.body={place:B=>{ const body=BODIES.by[pick];
+  W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
     if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
-    if(MEK!==pick){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=pick; W3.group.add(ME.me); }
-    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe; pose(B,ME.PM,body); }};
-  BODIES.pick=()=>pick;
-  BODIES.set=key=>{ pick=BODIES.by[key]?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
+    if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
+    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
+  BODIES.pick=()=>curKey();
+  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
   const LP=document.getElementById('looks'); let ROW=null;
   if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row';
     LP.insertBefore(h,at); LP.insertBefore(ROW,at); addButton('walker','WALKER'); }
   function addButton(key,label){ if(!ROW)return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
   BODIES.credit=t=>{ if(!ROW)return; const c=document.createElement('div'); c.textContent=t; c.style.cssText='color:var(--dim,#8a8f9c);font-size:9px;margin-top:3px'; ROW.after(c); };
-  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+pick)); }
+  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
-  BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
+  BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
   BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; N.g.visible=false; } };
+  // a borrowed body (the holodeck's knight) goes back where it was: its group, spot, home and roaming
+  BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; N.g.visible=!!P.on; delete N.prev; };
   function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}, g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); MAPG.bodega.add(g); NPC.g=g;
     const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
-    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}});
+    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; if(CHARS.apply)CHARS.apply(NPC);
     NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
@@ -78,7 +87,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     SYS.add('dress',dt=>NPC.tick(dt||0),'111a-bodies '+body.key); }
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
-  BODIES.add=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; BODIES.list.push(body); BODIES.by[body.key]=body;
-    body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; addButton(body.key,body.label); walker(body); };
+  BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; return body; };   // (scaled so its height is the Walker's)
+  BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
+    if(body.playable)addButton(body.key,body.label); walker(body); };
 }
 export {BODIES};

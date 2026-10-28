@@ -1,8 +1,8 @@
-// THE GAME EDITOR (Shift+Escape only; its own file, fetched then): the MAP EDITOR and the CHARACTER EDITOR on a flat top-down mockup: layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; export and import as files, never the game.
+// THE MAP EDITOR (Shift+Escape, or the EDITORS menu; its own file, fetched then): the Market on a flat top-down mockup — layers, look around, pick, move, turn, size, copy, delete, undo, a 360 view in a black void; exports world.json. (Characters are edited in the list editor, 096b-charedit.js; it reuses this file's 360 VIEW.)
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, STORE, TILE, WROW} from './006-map-pre.js';
+import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, STORE, TILE, WP, WROW} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
 { const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
@@ -81,6 +81,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
   const LAYOF={water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall'};
   const LCOL={shop:[176,86,62],filler:[110,100,96],shell:[140,106,88],park:[154,148,136],tree:[36,80,42],path:[186,170,128]};
+  const FACEROT={n:0,e:-90,s:180,w:90}, faceOf=r=>['n','w','s','e'][((Math.round((r||0)/90)%4)+4)%4], bld=o=>!!(o&&o.gid&&WP[o.gid]&&WP[o.gid].kind==='front'), turns=o=>bld(o)&&WP[o.gid].y1!=null;
   const K=BLDK, bt=(x,y)=>[SHARED.BOD.OX+(x-SHARED.BOD.OX)*K,SHARED.BOD.OY+(y-SHARED.BOD.OY)*K], wt=(x,z)=>[SHARED.BOD.OX+x/T,SHARED.BOD.OY+z/T];
   const FRONT=-77, BACK=BLOCK.back;
   let TER=null, F=null; const S=2;
@@ -101,7 +102,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     { const A=MODS.apts&&MODS.apts.A; if(A)R('APARTMENTS','shop',bt(A.x0,A.y0),bt(A.x1,A.y1),3*SHARED.BOD.K.STORY,'red brick, painted ivy','apts'); }
     { const B=SHARED.BOD.B0; R('THE BODEGA','shop',bt(B.x0,B.y0),bt(B.x1,B.y1),B.h,'bodega painter','bodega'); }
     { const m=WROW.mus; R('MUSEUM OF EARTH','shop',bt(m.x0,m.y0),bt(m.x1,m.y1),m.h,'museum stone','museum'); }
-    const lot=k=>[[BLOCK.lots[k][0],BACK],[BLOCK.lots[k][1],FRONT]];
+    const lot=k=>WP[k]&&WP[k].y1!=null?[[WP[k].x0,WP[k].y0],[WP[k].x1,WP[k].y1]]:[[BLOCK.lots[k][0],BACK],[BLOCK.lots[k][1],FRONT]];
     R('THE PLAYHOUSE','shop',...lot('play'),150,'red brick, marquee','play');
     { const b=STORE.bank&&STORE.bank.B; if(b)R('THE BANK','shop',bt(b.x0,b.y0),bt(b.x1,b.y1),b.h,'museum stone','bank'); else R('THE BANK','shop',...lot('bank'),200,'museum stone','bank'); }
     { const w=WROW.bar; R('THE BAR','shop',bt(w.x0,w.y0),bt(w.x1,w.y1),130,'bar walls','bar'); }
@@ -109,7 +110,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     R('TO THE HUDSON (PASSAGE)','path',[BLOCK.hudson[0],BLOCK.row2[0]],[BLOCK.hudson[1],FRONT],0,'concrete pavement','hudson');
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)R('THE BATH HOUSE','shop',bt(g.x0,g.y0),bt(g.x1,g.y1),170,'wood','bath'); }
     R('THE MOVIE THEATRE','shop',...lot('theatre'),176,'red brick, film front','theatre'); R('THE ARCADE','shop',...lot('arcade'),180,'neon front','arcade');
-    if(window.BLK){ let i=0; for(const q of BLK.blds){ if(q.e)R('EMPTY SHELL '+(++i),'shell',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)','shell'+i); else R(q.row===1?'EMPTY FRONT':'BACK ROW','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)'); } }
+    if(window.BLK){ let i=0; for(const q of BLK.blds){ if(q.e)R('EMPTY SHELL '+(++i),'shell',[q.x0,q.y0],[q.x1,q.y1],q.h,'brick (block painter)','shell'+i); else R(q.row===1?'EMPTY FRONT':'BACK ROW','filler',[q.x0,q.y0],[q.x1,q.y1],q.h,q.kit?'MegaKit walls':'brick (block painter)'); } }
     { const c=CASTLE.b; R('THE CASTLE','park',[c[0],c[2]],[c[1],c[3]],200,'castle stone','castle'); }
     Cc('THE LAKE','park',P.lake[0]+ox,P.lake[1]+oy,P.lake[2],0,'pond water','lake'); L[L.length-1].color='#3a74aa';
     Cc('THE ROUND','path',P.round[0]+ox,P.round[1]+oy,P.round[2],0,'park slabs','round');
@@ -120,9 +121,10 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     R('THE PARK GATE','park',[P.gate[0]+ox,P.y0+oy-1],[P.gate[1]+ox,P.y0+oy+1],150,'iron','gate');
     if(P.segs)P.segs.forEach(([ax,ay,bx,by],i)=>{ const L2=Math.hypot(bx-ax,by-ay); if(L2<.5)return; L.push({id:nid(),gid:(LEVEL.paths[i]&&LEVEL.paths[i].id)||'path'+i,n:'PARK PATH '+(i+1),ly:'path',sh:'rect',x:(ax+bx)/2+ox,y:(ay+by)/2+oy,w:L2,d:7.2,rot:Math.atan2(by-ay,bx-ax)*180/Math.PI,z:0,h:0,scale:1,tex:'park slabs',color:hex(LCOL.path),tint:'#ffffff',opacity:1}); });
     if(PARK.oaks)PARK.oaks.forEach(([X,Z,m],i)=>{ const [x,y]=wt(X,Z); Cc('TREE','tree',x,y,Math.max(.8,m*.21),m*16,'tree bark and leaves','tree'+i); });
+    for(const o of L)if(bld(o)){ const f=WP[o.gid].face||'n'; o.rot=FACEROT[f]; if(f==='e'||f==='w'){ const w=o.w; o.w=o.d; o.d=w; } }
     return L; };
 
-  const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
+  const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>k==='you'?'you':MERCH.includes(k)?'merchant':MONST.test(k)?'monster':PEOPLE.test(k)?'people':ANIMALS.includes(k)?'animal':'toon';
   const KCOL={you:'#f2f2f2',people:'#e8c49a',toon:'#c88ae0',merchant:'#f2a040',animal:'#8ad07a',monster:'#e05a5a'};
   const BEH=['STAND','WANDER','ROAM','DAILY LIFE','WORK','GUARD','FOLLOW YOU','SLEEP','FIGHT'];
@@ -144,7 +146,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const reuid=()=>{ uid=1+Math.max(0,...ITEMS.map(o=>+String(o.id).slice(1)||0)); };
   const setMode=(m,first)=>{ if(!first)ST[MODE]={items:ITEMS,undo:UNDO,redo:REDO,ex:ST[MODE].ex}; MODE=m; const S2=ST[m];
     if(!S2.items){ let d=null; try{ d=JSON.parse(localStorage.getItem(DRAFT[m])||'null'); }catch(e){} S2.items=Array.isArray(d)&&d.length?d:(m==='map'?base():chStart()); }
-    ITEMS=S2.items; UNDO=S2.undo; REDO=S2.redo; sel=null; reuid(); lyHTML(); q('#meTM').dataset.hot=m==='map'?'1':''; q('#meTC').dataset.hot=m==='chars'?'1':''; skin(R); panel(); draw(); };
+    ITEMS=S2.items; UNDO=S2.undo; REDO=S2.redo; sel=null; reuid(); lyHTML(); skin(R); panel(); draw(); };
   const restore=s=>{ const id=sel&&sel.id; ITEMS=JSON.parse(s); sel=ITEMS.find(o=>o.id===id)||null; reuid(); save(); panel(); draw(); };
   const undo=()=>{ if(!UNDO.length)return; REDO.push(snap()); restore(UNDO.pop()); }, redo=()=>{ if(!REDO.length)return; UNDO.push(snap()); restore(REDO.pop()); };
 
@@ -156,14 +158,14 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
 
   const R=document.createElement('div'); R.id='maped'; css(R,{position:'fixed',inset:'0',zIndex:'60',display:'none',background:'#07090d',font:'10px Silkscreen,monospace',color:'#c9ccd6'});
   R.innerHTML='<canvas id="meC" style="position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;image-rendering:pixelated"></canvas>'
-    +'<div style="position:absolute;left:12px;top:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 360px)"><b style="font-size:12px;color:#ece5d3">GAME EDITOR</b><button class="mb" id="meTM">MAP EDITOR</button><button class="mb" id="meTC">CHARACTER EDITOR</button><span style="width:10px"></span><button class="mb" id="meFit">WHOLE MAP</button><button class="mb" id="meIn">ZOOM +</button><button class="mb" id="meOut">ZOOM −</button><button class="mb" id="meU">↶ UNDO</button><button class="mb" id="meRd">REDO ↷</button>'
+    +'<div style="position:absolute;left:12px;top:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 360px)"><b style="font-size:12px;color:#ece5d3">GAME EDITOR</b><span style="width:10px"></span><button class="mb" id="meFit">WHOLE MAP</button><button class="mb" id="meIn">ZOOM +</button><button class="mb" id="meOut">ZOOM −</button><button class="mb" id="meU">↶ UNDO</button><button class="mb" id="meRd">REDO ↷</button>'
     +'<span style="color:#8a8f9c;width:100%">DRAG: LOOK AROUND · WHEEL: ZOOM · DOUBLE CLICK: PICK · DRAG THE PICKED THING: MOVE · ITS ○ HANDLE: TURN (SHIFT: 15°) · ITS □ HANDLE: SIZE · R: TURN 15° · CTRL+Z / CTRL+Y · DEL · CTRL+D: COPY</span></div>'
     +'<div id="meSide" style="position:absolute;right:12px;top:12px;bottom:12px;width:320px;max-width:calc(100vw - 24px);overflow:auto;padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;box-sizing:border-box">'
     +'<b style="color:#ece5d3">SHOW</b><div id="meLy" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;margin:6px 0 10px"></div>'
     +'<b style="color:#ece5d3">PICKED</b><div id="meSel" style="margin-top:6px;line-height:1.7;color:#8a8f9c"></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px"><button class="mb" id="meRA">START OVER (THE GAME AS IT IS)</button><button class="mb" id="meE" data-hot="1">EXPORT</button><button class="mb" id="meI">IMPORT</button><input id="meF" type="file" accept=".json,application/json" style="display:none"></div>'
     +'<div id="meN" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
-    +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. THE CHARACTER EDITOR EXPORTS ITS OWN FILE. IMPORT LOADS EITHER BACK. THE DRAFTS STAY IN THIS BROWSER.</div></div>';
+    +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. IMPORT LOADS IT BACK. THE DRAFT STAYS IN THIS BROWSER.</div></div>';
   document.body.appendChild(R); const q=s=>R.querySelector(s), cv=q('#meC'), g=cv.getContext('2d'); skin(R);
   const lyHTML=()=>{ q('#meLy').innerHTML=(MODE==='map'?LAYERS:LAYERS_CH).map(([k,n])=>'<label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" data-ly="'+k+'"'+(SHOW[k]?' checked':'')+'>'+n+'</label>').join(''); };
   q('#meLy').addEventListener('change',e=>{ const k=e.target.dataset.ly; if(!k)return; SHOW[k]=e.target.checked; try{ localStorage.setItem('maped-show',JSON.stringify(SHOW)); }catch(_){} if(TER&&['road','walk','alley','grass','water','wall','path'].includes(k))paint(); draw(); });
@@ -185,6 +187,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     g.globalAlpha=1; if(chars)for(const o of ITEMS){ if(!SHOW[o.ly]||!onMap(o))continue; const on=o===sel, rr=Math.max(3*dpr,(o.r||.4)*(o.scale||1)*V.k), a=(o.rot||0)*Math.PI/180; g.globalAlpha=Math.max(.2,o.opacity==null?1:o.opacity);
       g.fillStyle=on?'#f2c14e':o.color||'#e0e0e0'; g.strokeStyle=on?'#fff6d0':'#000'; g.lineWidth=on?2:1; g.beginPath(); g.arc(sx(o.x),sy(o.y),rr,0,7); g.fill(); g.stroke();
       g.beginPath(); g.moveTo(sx(o.x),sy(o.y)); g.lineTo(sx(o.x)-Math.sin(a)*rr*1.6,sy(o.y)-Math.cos(a)*rr*1.6); g.stroke(); g.globalAlpha=1; }
+    if(!chars&&SHOW.shop)for(const o of ITEMS){ if(!bld(o)||!onMap(o))continue; const [hw,hd]=sz(o), a=wor(o,-hw*.9,hd), b=wor(o,hw*.9,hd), m=wor(o,0,hd), t=wor(o,0,hd+Math.min(3,hd*.6)), L2=wor(o,-Math.min(1.6,hw*.4),hd), R2=wor(o,Math.min(1.6,hw*.4),hd);
+      g.lineWidth=Math.max(3,4*dpr); g.strokeStyle='#ff5a3c'; g.beginPath(); g.moveTo(sx(a[0]),sy(a[1])); g.lineTo(sx(b[0]),sy(b[1])); g.stroke(); g.fillStyle='#ff5a3c'; g.beginPath(); g.moveTo(sx(L2[0]),sy(L2[1])); g.lineTo(sx(t[0]),sy(t[1])); g.lineTo(sx(R2[0]),sy(R2[1])); g.fill(); }
     if(sel&&SHOW[sel.ly]&&onMap(sel)){ const H=handles(sel), [ax,ay]=wor(sel,0,sz(sel)[1]); g.lineWidth=2; g.strokeStyle='#fff6d0'; g.fillStyle='#0b0d13'; g.beginPath(); g.moveTo(sx(ax),sy(ay)); g.lineTo(sx(H.rot[0]),sy(H.rot[1])); g.stroke();
       g.beginPath(); g.arc(sx(H.rot[0]),sy(H.rot[1]),6*dpr,0,7); g.fill(); g.stroke(); g.fillRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); g.strokeRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); }
     if(SHOW.label){ g.font=Math.round(9*dpr)+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
@@ -212,12 +216,12 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="mb" id="meV" data-hot="1">VIEW 360</button><button class="mb" id="meCp">COPY</button><button class="mb" id="meDl">DELETE</button></div>';
     skin(el); };
   const NUM=['x','y','z','rot','r','w','d','h','scale','opacity','speed','hp'];
-  const setF=(o,f,raw)=>{ if(NUM.includes(f)){ let v=+raw; if(!isFinite(v))return false; if(['r','w','d'].includes(f))v=Math.max(.25,v); if(f==='scale')v=Math.max(.05,v); if(f==='opacity')v=Math.max(0,Math.min(1,v)); if(f==='rot')v=((v%360)+540)%360-180; if(f==='speed'||f==='hp')v=Math.max(0,v); o[f]=v; }
+  const setF=(o,f,raw)=>{ if(NUM.includes(f)){ let v=+raw; if(!isFinite(v))return false; if(['r','w','d'].includes(f))v=Math.max(.25,v); if(f==='scale')v=Math.max(.05,v); if(f==='opacity')v=Math.max(0,Math.min(1,v)); if(f==='rot'){ if(bld(o)&&!turns(o))return false; if(bld(o))v=Math.round(v/90)*90; v=((v%360)+540)%360-180; } if(f==='speed'||f==='hp')v=Math.max(0,v); o[f]=v; }
     else if(f==='ly'){ o.ly=String(raw); if(MODE==='chars'&&KCOL[o.ly]&&o.color===KCOL[o.key===undefined?'toon':kindOf(o.key)])o.color=KCOL[o.ly]; }
     else o[f]=f==='n'?String(raw).slice(0,60).toUpperCase():String(raw).slice(0,80); return true; };
   q('#meSel').addEventListener('change',e=>{ const f=e.target.dataset.f; if(!f||!sel)return; push(); if(setF(sel,f,e.target.value)){ save(); panel(); draw(); } });
   const nudge=(dx,dy)=>{ if(!sel)return; push(); sel.x=Math.round((sel.x+dx)*4)/4; sel.y=Math.round((sel.y+dy)*4)/4; save(); panel(); draw(); };
-  const turn=a=>{ if(!sel)return; push(); sel.rot=((((sel.rot||0)+a)%360)+540)%360-180; save(); panel(); draw(); };
+  const turn=a=>{ if(!sel||bld(sel)&&!turns(sel))return; if(bld(sel))a=Math.sign(a)*90; push(); sel.rot=((((sel.rot||0)+a)%360)+540)%360-180; save(); panel(); draw(); };
   const copy=()=>{ if(!sel)return; push(); const c=JSON.parse(JSON.stringify(sel)); c.id=nid(); c.gid=null; c.x+=2; c.y-=2; ITEMS.push(c); sel=c; save(); panel(); draw(); };
   const del=()=>{ if(!sel)return; push(); ITEMS=ITEMS.filter(o=>o!==sel); sel=null; save(); panel(); draw(); };
   q('#meSel').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return; const st=e.shiftKey?1:.25;
@@ -246,7 +250,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   cv.addEventListener('pointermove',e=>{ if(!drag)return; const [px,py]=pt(e), x=mx(px), y=my(py);
     if(drag.t==='pan'){ V.x=drag.vx-(px-drag.px)/V.k; V.y=drag.vy+(py-drag.py)/V.k; draw(); return; }
     if(drag.t==='move'){ sel.x=Math.round((drag.ox+x-drag.x)*4)/4; sel.y=Math.round((drag.oy+y-drag.y)*4)/4; }
-    else if(drag.t==='rot'){ let a=Math.atan2(y-sel.y,x-sel.x)*180/Math.PI-90; a=e.shiftKey?Math.round(a/15)*15:Math.round(a); sel.rot=((a%360)+540)%360-180; }
+    else if(drag.t==='rot'){ if(bld(sel)&&!turns(sel))return; let a=Math.atan2(y-sel.y,x-sel.x)*180/Math.PI-90; a=bld(sel)?Math.round(a/90)*90:e.shiftKey?Math.round(a/15)*15:Math.round(a); sel.rot=((a%360)+540)%360-180; }
     else { const [lx,ly]=loc(sel,x,y), s=sel.scale||1; if(sel.sh==='circle')sel.r=Math.max(.25,Math.round(Math.hypot(lx,ly)/s*4)/4); else { sel.w=Math.max(.25,Math.round(2*Math.abs(lx)/s*4)/4); sel.d=Math.max(.25,Math.round(2*Math.abs(ly)/s*4)/4); } }
     panel(); draw(); });
   const end=()=>{ if(drag&&drag.t!=='pan')save(); drag=null; cv.style.cursor='grab'; };
@@ -259,12 +263,12 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const zoom=f=>{ V.k=Math.max(.5,Math.min(60,V.k*f)); draw(); };
   q('#meFit').onclick=()=>{ fit(); draw(); }; q('#meIn').onclick=()=>zoom(1.4); q('#meOut').onclick=()=>zoom(1/1.4); q('#meU').onclick=undo; q('#meRd').onclick=redo;
   q('#meRA').onclick=()=>{ push(); uid=1; ITEMS=MODE==='map'?base():chStart(); sel=null; save(); panel(); draw(); q('#meN').textContent='BACK TO THE GAME AS IT IS (UNDO TO GO BACK)'; };
-  q('#meTM').onclick=()=>{ if(MODE!=='map')setMode('map'); }; q('#meTC').onclick=()=>{ if(MODE!=='chars')setMode('chars'); };
   const stamp=()=>new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
   const download=(name,obj)=>{ const b=new Blob([JSON.stringify(obj,null,1)],{type:'application/json'}), a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
   Object.assign(MAPED,{download,stamp,skin,css,fld,texSel,TEX});
   const worldOf=()=>{ const W=JSON.parse(JSON.stringify(LEVEL)), by={}; for(const o of ITEMS)if(o.gid)by[o.gid]=o; const r2=v=>Math.round(v*100)/100, ext=o=>{ const [hw,hd]=sz(o); return {x0:r2(o.x-hw),x1:r2(o.x+hw),y0:r2(o.y-hd),y1:r2(o.y+hd)}; };
-    W.places=W.places.filter(p=>by[p.id]).map(p=>{ const e=ext(by[p.id]); return {...p,name:by[p.id].n,x0:e.x0,x1:e.x1}; });
+    const extB=o=>{ const f=faceOf(o.rot), [hw,hd]=sz(o), sw=f==='e'||f==='w'; return {x0:r2(o.x-(sw?hd:hw)),x1:r2(o.x+(sw?hd:hw)),y0:r2(o.y-(sw?hw:hd)),y1:r2(o.y+(sw?hw:hd)),f}; };
+    W.places=W.places.filter(p=>by[p.id]).map(p=>{ const o=by[p.id], e=bld(o)?extB(o):ext(o), q={...p,name:o.n,x0:e.x0,x1:e.x1}; if(p.y1!=null){ q.y0=e.y0; q.y1=e.y1; if(bld(o))q.face=e.f; } return q; });
     W.shells=W.shells.filter(q=>by[q.id]).map(q=>({...q,...ext(by[q.id])}));
     for(const k of ['round','lake','cave','tower'])if(by[k]){ const o=by[k]; W.parkPlaces[k]={...W.parkPlaces[k],x:r2(o.x),y:r2(o.y),...(W.parkPlaces[k].r!=null?{r:r2(o.r*(o.scale||1))}:{})}; }
     if(by.castle){ const e=ext(by.castle); W.parkPlaces.castle={x0:e.x0,y0:e.y0}; }
@@ -274,7 +278,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const fromWorld=j=>{ const L=base(), keep=new Set([...j.places.map(p=>p.id),...(j.shells||[]).map(q=>q.id),...(j.paths||[]).map(q=>q.id),'round','lake','cave','tower','castle']), known=new Set([...LEVEL.places.map(p=>p.id),...LEVEL.shells.map(q=>q.id),...LEVEL.paths.map(q=>q.id)]);
     const out=L.filter(o=>!o.gid||!known.has(o.gid)||keep.has(o.gid)), by={}; for(const o of out)if(o.gid)by[o.gid]=o;
     const box=(o,e)=>{ if(!o||!e)return; if(e.x0!=null&&e.x1!=null){ o.x=(e.x0+e.x1)/2; o.w=e.x1-e.x0; } if(e.y0!=null&&e.y1!=null){ o.y=(e.y0+e.y1)/2; o.d=e.y1-e.y0; } };
-    for(const p of j.places)box(by[p.id],{x0:p.x0,x1:p.x1}); for(const q of j.shells||[])box(by[q.id],q);
+    for(const p of j.places){ const o=by[p.id]; if(!o)continue; if(p.y1==null||!bld(o)){ box(o,{x0:p.x0,x1:p.x1}); continue; } const f=p.face||'n', sw=f==='e'||f==='w'; o.rot=FACEROT[f]; o.x=(p.x0+p.x1)/2; o.y=(p.y0+p.y1)/2; o.w=sw?p.y1-p.y0:p.x1-p.x0; o.d=sw?p.x1-p.x0:p.y1-p.y0; } for(const q of j.shells||[])box(by[q.id],q);
     for(const k of ['round','lake','cave','tower']){ const e=j.parkPlaces&&j.parkPlaces[k], o=by[k]; if(e&&o){ o.x=+e.x; o.y=+e.y; if(e.r!=null&&o.sh==='circle')o.r=+e.r; } }
     if(j.parkPlaces&&j.parkPlaces.castle&&by.castle){ const c=by.castle; c.x=j.parkPlaces.castle.x0+c.w/2; c.y=j.parkPlaces.castle.y0+c.d/2; }
     for(const q of j.paths||[]){ const o=by[q.id]; if(!o)continue; o.x=(q.a[0]+q.b[0])/2; o.y=(q.a[1]+q.b[1])/2; o.w=Math.hypot(q.b[0]-q.a[0],q.b[1]-q.a[1]); o.rot=Math.atan2(q.b[1]-q.a[1],q.b[0]-q.a[0])*180/Math.PI; }
@@ -298,6 +302,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   GAMEED.show=on=>{ MAPED.open=GAMEED.open=on; R.style.display=on?'block':'none'; if(!on){ if(VIEW.on)VIEW.close(); return; } if(keys.clear)keys.clear();
     size(); if(!TER)terrain(); if(!GAMEED.inited){ GAMEED.inited=true; setMode(MODE,true); } fit(); panel(); draw(); };
   window.MAPED=MAPED; };
+GAMEED.ensure=async()=>{ if(GAMEED.built)return; await LOAD('editor'); GAMEED.build(); GAMEED.built=true; };
 GAMEED.toggle=async()=>{ if(GAMEED.busy)return; if(GAMEED.built){ GAMEED.show(!GAMEED.open); return; } GAMEED.busy=true;
-  await FADE.run('LOADING GAME EDITOR',async()=>{ await LOAD('editor'); GAMEED.build(); GAMEED.built=true; },{cut:true}); if(GAMEED.built)GAMEED.show(true); GAMEED.busy=false; };
+  await FADE.run('LOADING GAME EDITOR',async()=>{ await GAMEED.ensure(); },{cut:true}); if(GAMEED.built)GAMEED.show(true); GAMEED.busy=false; };
 MAPED.toggle=()=>GAMEED.toggle(); window.GAMEED=GAMEED;

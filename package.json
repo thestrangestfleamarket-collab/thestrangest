@@ -5,9 +5,14 @@
     "@recast-navigation/core": "0.43.1",
     "@recast-navigation/generators": "0.43.1",
     "esbuild": "0.24.0",
+    "html-to-image": "1.11.13",
+    "iwer": "2.5.0",
     "playwright": "^1.56.1",
     "three": "0.160.0",
     "three-mesh-bvh": "0.8.3",
     "wrangler": "^4.42.0"
+  },
+  "dependencies": {
+    "partyserver": "0.5.10"
   }
 }

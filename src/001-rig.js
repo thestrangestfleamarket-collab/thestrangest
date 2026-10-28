@@ -22,11 +22,12 @@ const BODYS={A:{so:6.3,sq:.9,r1:5.6,r2:6.1},B:{so:7.4,sq:.9,r1:5.4,r2:5.6},C:{so
   S1:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},bar:1.9,col:[2.6,2.0],slv:[2.66,2.6]},
   S2:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
   S2F:{so:7.1,sq:.72,r1:4.9,r2:5.7,hx:3.4,pel:[4.8,4.4],hr:2.9,th:[3.35,2.7],sh:[2.62,2.66,2.05],shoe:{r:.5},sy:2.5,bar:1.8,col:[2.7,1.9],slv:[2.64,2.58]},
+  S4:{so:8.2,sq:.78,r1:5.2,r2:6.2,hx:3.7,pel:[5,4.6],hr:3.1,th:[3.8,3],sh:[2.9,2.9,2.2],shoe:{r:.5},sy:3,bar:2.7,col:[2.9,2],slv:[3,2.9]},
   S3:{so:7.0,sq:.72,r1:4.9,r2:5.7,hx:3.9,pel:[4.9,4.5],hr:3,th:[3.45,2.75],sh:[2.7,2.85,2.1],shoe:{r:.5},sy:2.2,bar:1.5,col:[2.9,1.8],slv:[2.6,2.55],r2:5.5},
 
   C2:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:3.7,pel:[4.8,4.3],hr:2.8,th:[3.2,2.5],sh:[2.45,2.6,1.9],shoe:{r:.3}},
   C3:{so:7.4,sq:.72,r1:4.9,r2:5.7,hx:4.0,pel:[5,4.6],hr:3.1,th:[3.7,2.85],sh:[2.75,3.1,2.15],shoe:{r:.4}}};
-const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S2F').toUpperCase()]||BODYS.S2F)};
+const BODY={...LEG0,...(BODYS[(typeof location!=='undefined'&&new URLSearchParams(location.search).get('body')||'S4').toUpperCase()]||BODYS.S4)};
 const RIGP0={bones:{thigh:6.9,shin:6.5,upper:7.4,fore:6.3,spine:[0,5,0],chest:[0,10,0],neck:[0,14,0],headBase:[0,16.5,0.1],head:[0,25.2,0.5],headTop:[0,34,0.3],
   clav:[1.5,3,0],shoulder:[BODY.so,BODY.sy,0],hip:[BODY.hx,-0.4,0],hand:[0,0,0],handSize:1},pieces:{}};
 let RIGP=JSON.parse(JSON.stringify(RIGP0)),RIGGEN=0,THIGH,SHIN,UPPER,FORE,HIPX,HIP;
@@ -110,7 +111,7 @@ function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.
   if(drop>1e-3) P.root=add(P.root,V(0,-Math.min(5,st.smooth?drop:Math.ceil(drop/PX)*PX),0));
   if(st.smooth&&st.world){ const t=st.world.t, y=P.root.y; if(st.rT!=null&&t>st.rT&&t-st.rT<.2){ st.rY+=(y-st.rY)*(1-Math.exp(-(t-st.rT)*(y<st.rY?30:14))); P.root=V(P.root.x,st.rY,P.root.z); } else st.rY=y; st.rT=t; }
   for(const s2 of [1,-1]){ const n=s2>0?'L':'R',[H]=hipAt(P,s2),d=sub(AK[n],H); if(len(d)>Lg+0.02){ const v=nrm(d),A=add(H,mul(v,Lg)); st.fslide=(st.fslide||0)+1;
-      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
+      if(F[n]&&F[n].on&&!stand&&LK[n]&&LK[n].on){ const p=toW(V(A.x,0,A.z)); st.fquick=(st.fquick||0)+1; F[n]={x:p.x,z:p.z,y:F[n].y,hd:F[n].hd,ly:A.y,fy:F[n].fy||0,on:0,quick:1,t:0}; } AK[n]=A; } }
   return true; }
 function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ const s2=g.stance-.1*r; g.stride*=s2/g.stance; g.stance=s2; } const w=st.w,ST=g.stance,h=g.stride*w/(st.anim||1),q=phases(st.ph),P=neutral(),sw=drive(q.L,w)-drive(q.R,w);
   const fa=(n,qq)=>lab('foot',qq,ST,rs)*w,kn=(qq)=>lab('knee',qq,ST,rs)*w;
@@ -649,6 +650,7 @@ function act(st,key){ const W=st.water;
   if(key==' '&&W&&W.edge&&!st.move&&W.level!=null){ begin(st,'cannonball',cannonMove(W.floor+STAND+9-(W.level+12))); return; }
   const name=KEYMOVE[key]; if(!name) return; const mv=st.move;
   if(ARMMOVES.has(name)&&!(st.climb||st.hang||st.ride)){ if(mv){ const d=mv.def,a=d.air; if(a&&d.airv&&d.airv[key]&&!mv.variant&&mv.t>a.t0&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; } }
+    if(mv&&!st.up&&mv.def.combo&&ARMMOVES.has(mv.def.combo[key])&&(!mv.def.window||mv.t>=mv.def.window[0]*RIGT.combo)){ beginUp(st,mv.def.combo[key]); return; }   // a body move's arm follow-up (crouch, then J: an uppercut)
     const u=st.up; if(!u||name=='block'){ beginUp(st,name); return; } const ud=u.def; if(ud.combo&&ARMMOVES.has(ud.combo[key])){ if(u.t>=ud.window[0]*RIGT.combo) beginUp(st,ud.combo[key]); else st.upNext=ud.combo[key]; } else st.upNext=name; return; }
   if(MOVES[name]&&MOVES[name].again&&(st.climb||st.hang||st.ride)) return;
   if(!mv){ begin(st,pick(st,name)); return; }
@@ -656,7 +658,7 @@ function act(st,key){ const W=st.water;
   // the one rule for body moves: a move runs to its end, and a key does nothing meanwhile except what the move itself allows (its in-air variant, its combo follow-up) or a fall
   if(a&&d.airv&&d.airv[key]&&!mv.variant&&airborne&&mv.t<a.t0+a.T*0.75){ mv.variant={name:d.airv[key],t:mv.t}; return; }
   if(name=='fall'){ begin(st,'fall'); return; }
-  if(d.combo&&d.combo[key]&&free(mv)&&!airborne) begin(st,d.combo[key]); }
+  if(d.combo&&d.combo[key]&&free(mv)&&!airborne&&(!d.window||mv.t>=d.window[0]*RIGT.combo)) begin(st,d.combo[key]); }
 function release(st,key){ if(key=='carry'){ if(st.up&&st.up.name=='carry') st.up.held=false; return; } if(st.move&&KEYMOVE[key]==st.move.name) st.move.held=false; if(st.up&&KEYMOVE[key]==st.up.name) st.up.held=false; }
 function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); const g=gaitOf(st.run);
   if(st.up){ const u=st.up,d=u.def; if(!(d.hold&&u.held&&u.t+h>=d.hold)) u.t+=h*RIGT.moves*(st.anim||1); else u.t=d.hold; if(st.upNext&&d.window&&u.t>=d.window[0]*RIGT.combo) beginUp(st,st.upNext); else if(u.t>=d.dur){ st.up=null; if(st.upNext) beginUp(st,st.upNext); } }
@@ -739,7 +741,7 @@ function cam(yawA){ if(VPITCH!=null){ const uy=Math.cos(PITCH)*Math.cos(VPITCH)/
   const n=Math.hypot(Math.cos(PITCH),TILT); return {r:yaw(V(ACROSS,0,0),-yawA),u:yaw(V(0,Math.cos(PITCH),-TILT),-yawA),f:yaw(V(0,-TILT/n,-Math.cos(PITCH)/n),-yawA)}; }
 function project(p,yawA){ const c=cam(yawA); return [dot(p,c.r)*K,-dot(p,c.u)*K,dot(p,c.f)]; }
 const LIGHT=nrm(V(-0.55,0.75,0.5)),hex=c=>0xff000000|parseInt(c.slice(5,7),16)<<16|parseInt(c.slice(3,5),16)<<8|parseInt(c.slice(1,3),16);
-RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; const MATS=Object.keys(RAMP),RAMP32=MATS.map(k=>RAMP[k].map(hex));
+RAMP.lips=['#d4948a','#c4827a','#a26660','#5e3a36']; RAMP.hairHi=['#8a7674','#7c6967','#625150','#463837']; RAMP.hairLo=['#4e403f','#443736','#352a29','#251c1b']; RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; RAMP.under=['#b9c3d0','#a8b2c0','#86909e','#525a66']; const MATS=Object.keys(RAMP),RAMP32=MATS.map(k=>RAMP[k].map(hex));
 const BUF={};
 function ramp32(look){ return MATS.map(m=>{ const t=look&&look[m], o=RAMP[m], c=h=>[1,3,5].map(j=>parseInt(h.slice(j,j+2),16)), b=c(o[1]);
   return (/^#[0-9a-f]{6}$/i.test(t||'')?o.map(h=>'#'+c(h).map((v,j)=>Math.min(255,Math.round(c(t)[j]*v/(b[j]||1))).toString(16).padStart(2,'0')).join('')):o).map(hex); }); }

@@ -1,1 +1,368 @@
-{}
+{
+ "airshroom": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "breath": 20
+ },
+ "goggles": {
+  "offworld": true,
+  "value": 30,
+  "slot": "eyes",
+  "grants": "sight"
+ },
+ "headlight": {
+  "offworld": true,
+  "value": 45,
+  "slot": "head",
+  "grants": "light"
+ },
+ "scanner": {
+  "offworld": true,
+  "value": 40
+ },
+ "cutter": {
+  "offworld": true,
+  "value": 60
+ },
+ "extractor": {
+  "offworld": true,
+  "value": 90
+ },
+ "rod": {
+  "value": 15,
+  "slot": "hand",
+  "grants": "fish"
+ },
+ "bait": {
+  "stackable": true,
+  "value": 1,
+  "bait": "worm"
+ },
+ "fr_apple": {
+  "edible": true,
+  "stackable": true,
+  "value": 3
+ },
+ "fr_pear": {
+  "edible": true,
+  "stackable": true,
+  "value": 3
+ },
+ "fr_plum": {
+  "edible": true,
+  "stackable": true,
+  "value": 4
+ },
+ "fr_fig": {
+  "edible": true,
+  "stackable": true,
+  "value": 5
+ },
+ "sword": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 15,
+  "damage": 2
+ },
+ "net": {
+  "slot": "hand",
+  "grants": "catch",
+  "value": 8
+ },
+ "kite": {
+  "slot": "hand",
+  "grants": "fly",
+  "value": 10,
+  "weight": 0.05
+ },
+ "bnet": {
+  "slot": "hand",
+  "grants": "catch",
+  "value": 12
+ },
+ "armor": {
+  "slot": "body",
+  "grants": "guard",
+  "value": 40
+ },
+ "cloudcoat": {
+  "slot": "body",
+  "grants": "float",
+  "value": 60
+ },
+ "sword_wood": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 8,
+  "damage": 1
+ },
+ "sword_steel": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 40,
+  "damage": 3
+ },
+ "sword_ench": {
+  "slot": "hand",
+  "grants": "fight",
+  "value": 120,
+  "damage": 5
+ },
+ "bait_cut": {
+  "stackable": true,
+  "value": 1,
+  "bait": "cut"
+ },
+ "x_perch": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 1,
+  "fight": 2,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 0.35,
+  "value": 5,
+  "common": 8
+ },
+ "x_tomcod": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 2,
+  "fight": 2,
+  "bites": "night",
+  "bait": "worm",
+  "weight": 0.25,
+  "value": 4,
+  "common": 5
+ },
+ "x_eel": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 2,
+  "fight": 4,
+  "bites": "night",
+  "bait": "worm",
+  "weight": 0.9,
+  "value": 9,
+  "common": 4
+ },
+ "x_crab": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 1,
+  "fight": 1,
+  "bites": "any",
+  "bait": "cut",
+  "weight": 0.25,
+  "value": 8,
+  "common": 3
+ },
+ "x_catfish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 3,
+  "fight": 5,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 2.5,
+  "value": 10,
+  "common": 4
+ },
+ "x_shad": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 3,
+  "fight": 5,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 1.6,
+  "value": 11,
+  "common": 3
+ },
+ "x_flounder": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 4,
+  "bites": "day",
+  "bait": "cut",
+  "weight": 1.8,
+  "value": 12,
+  "common": 3
+ },
+ "x_bluefish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 7,
+  "bites": "day",
+  "bait": "cut",
+  "weight": 3.5,
+  "value": 16,
+  "common": 2
+ },
+ "x_bass": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 8,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 6,
+  "value": 20,
+  "common": 2
+ },
+ "x_sturgeon": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 6,
+  "fight": 10,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 40,
+  "value": 75,
+  "common": 0.3
+ },
+ "x_sunfish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 2,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 0.2,
+  "value": 3,
+  "common": 6
+ },
+ "x_bluegill": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 2,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 0.25,
+  "value": 3,
+  "common": 7
+ },
+ "x_yperch": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 3,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 0.3,
+  "value": 5,
+  "common": 6
+ },
+ "x_trout": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 5,
+  "bites": "dusk",
+  "bait": "worm",
+  "weight": 1.2,
+  "value": 9,
+  "common": 3
+ },
+ "x_carp": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 6,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 4,
+  "value": 8,
+  "common": 3
+ },
+ "x_lbass": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 7,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 2.2,
+  "value": 15,
+  "common": 2
+ },
+ "x_pike": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 8,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 4,
+  "value": 25,
+  "common": 1
+ },
+ "jar_s": {
+  "stackable": true,
+  "sellable": true,
+  "value": 6,
+  "holds": 20
+ },
+ "jar_m": {
+  "stackable": true,
+  "sellable": true,
+  "value": 14,
+  "holds": 50
+ },
+ "jar_l": {
+  "stackable": true,
+  "sellable": true,
+  "value": 25,
+  "holds": 100
+ },
+ "scuba": {
+  "offworld": true,
+  "value": 40,
+  "slot": "back",
+  "grants": "breathe",
+  "tank": 300,
+  "rental": true
+ },
+ "ticket": {
+  "stackable": true,
+  "value": 5
+ }
+}

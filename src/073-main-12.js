@@ -125,8 +125,8 @@ Object.assign(RAG,{on:false,bodies:[],joints:[],t:0,hd:0,blend:null,acc:0,trip:f
 const RT=48/Math.SQRT2/(48/(33.9*Math.SQRT2)), RZ=24*RIG.PX/RT;
 const ragW=(p,hd=RAG.hd)=>{ const q=RIG.yaw(p,hd), du=(q.x+q.z)/(Math.SQRT2*RT), dv=(q.z-q.x)/(Math.SQRT2*RT), [dx,dy]=wvV(du,dv); return [P.x+dx,P.y+dy,q.y/RT]; },
   ragWv=p=>{ const q=RIG.yaw(p,RAG.hd), du=(q.x+q.z)/Math.SQRT2, dv=(q.z-q.x)/Math.SQRT2, [dx,dy]=wvV(du,dv), n=Math.hypot(dx,dy,q.y)||1; return [dx/n,dy/n,q.y/n]; },
-  ragR=w=>{ const [du,dv]=vwV(w[0]-P.x,w[1]-P.y); return RIG.yaw(RIG.V((du-dv)*RT/Math.SQRT2,w[2]*RT,(du+dv)*RT/Math.SQRT2),-RAG.hd); },
-  ragRv=w=>{ const [du,dv]=vwV(w[0],w[1]); return RIG.yaw(RIG.V((du-dv)/Math.SQRT2,w[2],(du+dv)/Math.SQRT2),-RAG.hd); };
+  ragR=(w,o=P,hd=RAG.hd)=>{ const [du,dv]=vwV(w[0]-o.x,w[1]-o.y); return RIG.yaw(RIG.V((du-dv)*RT/Math.SQRT2,w[2]*RT,(du+dv)*RT/Math.SQRT2),-hd); },
+  ragRv=(w,hd=RAG.hd)=>{ const [du,dv]=vwV(w[0],w[1]); return RIG.yaw(RIG.V((du-dv)/Math.SQRT2,w[2],(du+dv)/Math.SQRT2),-hd); };
 function ragQ(X,Y,Z){ '@later'; const m=[X[0],Y[0],Z[0],X[1],Y[1],Z[1],X[2],Y[2],Z[2]], t=m[0]+m[4]+m[8]; let q;
   if(t>0){ const s=Math.sqrt(t+1)*2; q=[s/4,(m[7]-m[5])/s,(m[2]-m[6])/s,(m[3]-m[1])/s]; }
   else if(m[0]>m[4]&&m[0]>m[8]){ const s=Math.sqrt(1+m[0]-m[4]-m[8])*2; q=[(m[7]-m[5])/s,s/4,(m[1]+m[3])/s,(m[2]+m[6])/s]; }
@@ -158,19 +158,21 @@ function ragStep(dt){ '@later'; const t0=performance.now(), R=PHYROOMS.find(r=>r
   const now=performance.now();
   if(RAG.toss){ const [x,y]=RAG.toss; RAG.toss=null; for(const b of RAG.bodies){ b.v=v3a(b.v,[x*5,y*5,2.6]); phyWake(b); } RAG.t=Math.min(RAG.t,.5); }
   if(RAG.held){ const H=RAG.held, o=ONLINE.others.get(H.by);
-    if(!o||now-H.at>10000)RAG.held=null;
-    else{ const [cx,cy]=onlineAt(o,now), f=ONL_V[o.d|0], n=Math.hypot(f[0],f[1]), T=[cx+f[0]/n*.55,cy+f[1]/n*.55,1.05], ch=RAG.bodies.find(b=>b.name==='chest');
-      if(ch){ const d=v3s(T,ch.x); ch.v=v3a(v3k(ch.v,.8),v3k(d,2.2)); } for(const b of RAG.bodies)phyWake(b); RAG.t=Math.min(RAG.t,.5); } }
+    const [cx,cy]=o?ONLINE.at(o,now):[0,0], f=o?ONLINE.V[o.d|0]:[0,1], n=Math.hypot(f[0],f[1]), T=[cx+f[0]/n*.55,cy+f[1]/n*.55,1.05], ch=RAG.bodies.find(b=>b.name==='chest'), d=ch?v3s(T,ch.x):[9,9,9], dl=Math.hypot(d[0],d[1],d[2]);
+    if(!o||o.why!=='near you'||now-H.at>10000||dl>6)RAG.held=null;
+    else{ if(ch)ch.v=v3a(v3k(ch.v,.8),v3k(d,2.2*Math.min(1,1.2/Math.max(dl,1e-3)))); for(const b of RAG.bodies)phyWake(b); RAG.t=Math.min(RAG.t,.5); } }
   RAG.acc+=Math.min(dt,.05); let n=0; while(RAG.acc>=PHH&&n<6){ RAG.acc-=PHH; n++; phyStep(RAG.bodies,st,PHH,null,RAG.joints); } if(n>=6)RAG.acc=0;
   if(RAG.t>1&&!RAG.held)for(const b of RAG.bodies){ b.v=v3k(b.v,Math.max(0,1-3*dt)); b.w=v3k(b.w,Math.max(0,1-3*dt)); }
   const pel=RAG.bodies[0], w=phyW(pel,pel.jl.pelvis); P.x=w[0]; P.y=w[1]; RAG.t+=dt;
   if(!RAG.held&&!(RAG.ko>now)&&(RAG.t>.6&&RAG.bodies.every(b=>!b.awake)||RAG.t>5))ragEnd();
   if(PERF)PERF.add('you: ragdoll',performance.now()-t0); }
-function ragPose(){ '@later'; const J={}, m={foot:{},hf:{},fist:{}}, V=RIG.V, M3=(x,y,z)=>({x:ragRv(x),y:ragRv(y),z:ragRv(z)}), ax=b=>[[b.m3[0],b.m3[3],b.m3[6]],[b.m3[1],b.m3[4],b.m3[7]],[b.m3[2],b.m3[5],b.m3[8]]];
-  for(const b of RAG.bodies)for(const k in b.jl)J[k]=ragR(phyW(b,b.jl[k]));
-  const by={}; for(const b of RAG.bodies)by[b.name]=b; const [px,py,pz]=ax(by.pelvis), [cx,cy,cz]=ax(by.chest), [hx,hy,hz]=ax(by.head);
+const ragPose=()=>ragPoseOf(RAG.bodies,P,RAG.hd);
+// any ragdoll's pose (yours, or another player's from its bodies' x, m3 and joint offsets), about origin o in physics space, facing hd
+function ragPoseOf(bodies,o,hd){ '@later'; const J={}, m={foot:{},hf:{},fist:{}}, V=RIG.V, M3=(x,y,z)=>({x:ragRv(x,hd),y:ragRv(y,hd),z:ragRv(z,hd)}), ax=b=>[[b.m3[0],b.m3[3],b.m3[6]],[b.m3[1],b.m3[4],b.m3[7]],[b.m3[2],b.m3[5],b.m3[8]]];
+  for(const b of bodies)for(const k in b.jl)J[k]=ragR(phyW(b,b.jl[k]),o,hd);
+  const by={}; for(const b of bodies)by[b.name]=b; const [px,py,pz]=ax(by.pelvis), [cx,cy,cz]=ax(by.chest), [hx,hy,hz]=ax(by.head);
   m.Rb=M3(px,py,pz); m.Rp=m.Rb; m.Ru=M3(cx,cy,cz); m.Rc=m.Ru; m.Rh=M3(hx,hy,hz);
-  for(const n of 'LR'){ const [sx,sy,sz]=ax(by['shin'+n]); m.foot[n]={x:m.Rb.x,y:ragRv(v3k(sz,-1)),z:ragRv(sy)};
+  for(const n of 'LR'){ const [sx,sy,sz]=ax(by['shin'+n]); m.foot[n]={x:m.Rb.x,y:ragRv(v3k(sz,-1),hd),z:ragRv(sy,hd)};
     const fa=RIG.nrm(RIG.sub(J['wrist'+n],J['elbow'+n])); m.hf[n]=RIG.hand(J,n,n==='L'?1:-1,fa,m.Ru,{fist:0}); m.fist[n]=0; }
   return {J,m,head:J.head,lift:0}; }
 function ragEnd(){ '@later'; const st=PH.st, by={}; for(const b of RAG.bodies)by[b.name]=b; const pel=phyW(by.pelvis,by.pelvis.jl.pelvis), che=phyW(by.chest,by.chest.jl.chest), dx=che[0]-pel[0], dy=che[1]-pel[1];
@@ -189,4 +191,4 @@ function setPhys(lv){ STATIC=FIX[lv].map(([x0,z0,y0,x1,z1,y1])=>[x0/TL,-z1/TL,y0
 const loose=[]; const CM=new THREE.Matrix3().set(1,0,0,0,0,1,0,-1,0), CMT=CM.clone().transpose(), m3t=new THREE.Matrix3(), m4t=new THREE.Matrix4();
 function looseDraw(){ for(const b of loose){ const m=b.m3; m3t.set(m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8]).premultiply(CM).multiply(CMT);
   m4t.setFromMatrix3(m3t).setPosition(b.x[0]*TL,b.x[2]*TL,-b.x[1]*TL); b.g.matrix.copy(m4t); b.g.matrixWorldNeedsUpdate=true; } }
-export {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, ragBlend, ragPose, ragStart, ragStep, ragStrikes, setPhys, STATIC, TL, view0};
+export {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, qMat, ragBlend, ragPose, ragPoseOf, ragStart, ragStep, ragStrikes, setPhys, STATIC, TL, view0};

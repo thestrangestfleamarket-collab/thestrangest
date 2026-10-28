@@ -1,6 +1,6 @@
 // THE FOUNTAIN LAKE: FOUNT shapes the lake and its fountain in the park: its shore, bed, water and swimming.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, CLOCK, PARK, ROOMS, SKY} from './003b-systems.js';
+import {BROOK, CLOCK, PARK, ROOMS, SKY, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
@@ -35,7 +35,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     return S; };
   FOUNT.wet=(x,z,R=0)=>{ const S=FOUNT.S; if(!S)return false; const P=PARK, px=x/TILE+SHARED.BOD.OX-(P.ox||0), py=z/TILE+SHARED.BOD.OY-(P.oy||0); if(px<S.x0-3||py<S.y0-3)return false; return lake(px,py)<R/TILE; };
   FOUNT.paint=({flat,X,Z,Y,hash,grain,speck})=>{ '@park'; const S=FOUNT.S, {C,R}=S, sol=(x,y,b,h)=>{ SOL.up.push([X(x)-b*TILE,Z(y)-b*TILE,X(x)+b*TILE,Z(y)+b*TILE]); FIX.up.push([X(x)-b*TILE,Z(y)-b*TILE,0,X(x)+b*TILE,Z(y)+b*TILE,Y(h)]); };
-    const RB=8.6, slab=(u,j,k,x,y)=>{ const n=Math.floor(u); let c=(146+22*grain(x,y,k,1.3))*(.92+.16*hash(n,k,713)); if(j||u-n<.04)c*=.62; return speck([c,c*.96,c*.88],x,y,k+2); };
+    const RB=8.6, solR=(r,x,y,b,h)=>{ sol(x,y,b,h); r.sol=SOL.up[SOL.up.length-1]; r.fix=FIX.up[FIX.up.length-1]; }, slab=(u,j,k,x,y)=>{ const n=Math.floor(u); let c=(146+22*grain(x,y,k,1.3))*(.92+.16*hash(n,k,713)); if(j||u-n<.04)c*=.62; return speck([c,c*.96,c*.88],x,y,k+2); };
     const pav=(x,y)=>{ const dx=x-C.x, dy=y-C.y, r=Math.hypot(dx,dy); if(r>R)return null; const a=Math.atan2(dy,dx)+Math.PI, wear=SHARED.BOD.g.cvNoise(x*1.3,y*1.3,707);
       if(r>R-.4)return slab(a*R/.9,r>R-.045||Math.abs(r-(R-.4))<.04,711,x,y);
       if(r<RB+.9)return slab(a*r/.9,Math.abs(r-(RB+.45))<.04||Math.abs(r-(RB+.9))<.04,741,x,y);
@@ -50,7 +50,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     { const n=Math.ceil(2*Math.PI*8.35/.55); for(let i=0;i<n;i++){ const a=i/n*Math.PI*2; sol(C.x+Math.cos(a)*8.35,C.y+Math.sin(a)*8.35,.32,20); } sol(C.x,C.y,5.9,20); }
     for(let a=8;a<=172;a+=.5/(R-.14)*180/Math.PI){ const t=a*Math.PI/180; sol(C.x+Math.cos(t)*(R-.14),C.y+Math.sin(t)*(R-.14),.28,30); }
     }
-    for(const [x,y,s] of S.rocks)if(s>.56)sol(x,y,s*.42,s*24);
+    for(const r of S.rocks)if(r[2]>.56)solR(r,r[0],r[1],r[2]*.42,r[2]*24);
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
   const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
@@ -60,7 +60,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,side:THREE.DoubleSide}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
       m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uT,uGl,uP,uO,uOw,uC,uDeep:uD,uShal:uS});
         sh.vertexShader='attribute float aD; varying float vD; varying vec3 vWq;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vD=aD;').replace('#include <project_vertex>','#include <project_vertex>\n vWq=(modelMatrix*vec4(transformed,1.)).xyz;');
-        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP,uO; uniform vec2 uOw; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\n'+sh.fragmentShader
+        sh.fragmentShader='uniform float uT,uGl; uniform vec4 uC,uP,uO; uniform vec2 uOw; uniform vec3 uDeep,uShal; varying float vD; varying vec3 vWq; float wg=0.;\nfloat wh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }\n'+sh.fragmentShader
           .replace('#include <color_fragment>',`#include <color_fragment>
  if(uOw.x>0.){ vec2 o=vWq.xz-uO.xy; float a=dot(o,uO.zw); if(a>0.&&a<uOw.y&&abs(o.x*uO.w-o.y*uO.z)<uOw.x)discard; }
  { vec2 p=vWq.xz/${T.toFixed(3)}; float h=sin(p.x*.9+p.y*.35+uT*.8)+sin(p.y*1.3-p.x*.5-uT*.6)+.6*sin((p.x+p.y)*2.1+uT*1.3);
@@ -84,7 +84,8 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
     { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();
       S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });
-      me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.rockN=N; }
+      me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.rockN=N;
+      WED.meshes.push({place:'park',me,items:S.rocks.map((r,i)=>{ me.getMatrixAt(i,m4); const E=m4.elements; return {k:'lake rock',x:E[12],y:E[13],z:E[14],sol:r.sol,fix:r.fix}; })}); }
     let drops=null, flow=()=>{}, discT=0; if(FOUNT.on){
     const box=new THREE.BoxGeometry(1,1,1), stoneI=[], put=(x,z,y0,y1,len,th,phi,g)=>stoneI.push([x,(y0+y1)/2,z,len,y1-y0,th,phi,g]);
     { const Rb=R-.14, A=[], NP=Math.round(Rb*164*Math.PI/180/2.6)+1; for(let i=0;i<NP;i++)A.push((8+164*i/(NP-1))*Math.PI/180); const at=a=>[X(C.x+Math.cos(a)*Rb),Z(C.y+Math.sin(a)*Rb)], ph=a=>Math.atan2(-Math.cos(a),-Math.sin(a));
@@ -145,7 +146,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     const UF=new THREE.Fog(0,0,1), bg0=new THREE.Color(); let fog0=null, uw=false, dome=true;
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;
       let k=1; try{ k=.3+.7*Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)); }catch(e){}
-      UF.color.setRGB(.16,.28,.22,THREE.SRGBColorSpace).multiplyScalar(k); UF.near=.4*T; UF.far=6*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
+      UF.color.setRGB(.16,.28,.22,THREE.SRGBColorSpace).multiplyScalar(k); UF.near=.4*T; UF.far=6*T; UF.uw=true; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
       if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
     FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
     if(window.BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);

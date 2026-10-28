@@ -1,9 +1,10 @@
-// THE CULL: CULL splits big meshes into cells and draws only the cells near and in view.
+// THE CULL: CULL splits big meshes into cells and draws only the cells near and in view; nothing wholly past the distance fog's end (DFOG.cut) is drawn.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, ROOMS} from './003b-systems.js';
+import {CULL, FAR3, pos, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
-Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'});
+import {DFOG} from './134e-distfog.js';
+Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:[],R:0,hz:QS.get('hazecull')!=='0',PAD:2*TILE});
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), B=new THREE.Box3(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); if(p.isInstancedMesh)p.dispose(); else p.geometry.dispose(); } R.px=[]; R.ix=[]; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?s.instanceColor.version:0)+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };
@@ -14,7 +15,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'});
     else { const P=g.attributes.position, I=g.index, nT=(I?I.count:P.count)/3; for(let t=0;t<nT;t++){ v.set(0,0,0); for(let k=0;k<3;k++){ const a=I?I.getX(t*3+k):t*3+k; v.x+=P.getX(a); v.y+=P.getY(a); v.z+=P.getZ(a); } v.multiplyScalar(1/3).applyMatrix4(s.matrixWorld); put(key(v.x,v.z),t); } }
     if(cells.size<2){ R.off=true; return; }
     for(const L of cells.values()){ let p;
-      if(s.isInstancedMesh){ p=new THREE.InstancedMesh(g,s.material,L.length); if(s.instanceColor)p.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(L.length*3),3); }
+      if(s.isInstancedMesh){ p=new THREE.InstancedMesh(g,s.material,L.length); if(s.userData.weOnly)p.raycast=()=>{}; if(s.instanceColor)p.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(L.length*3),3); }
       else { const G=new THREE.BufferGeometry(), P=g.attributes.position; B.makeEmpty();
         if(g.index){ for(const n in g.attributes)G.setAttribute(n,g.attributes[n]); const ix=[]; for(const t of L)for(let k=0;k<3;k++){ const a=g.index.getX(t*3+k); ix.push(a); B.expandByPoint(v.fromBufferAttribute(P,a)); } G.setIndex(ix); }
         else for(const n in g.attributes){ const A=g.attributes[n], z=A.itemSize, d=new A.array.constructor(L.length*3*z); L.forEach((t,k)=>d.set(A.array.subarray(t*3*z,(t+1)*3*z),k*3*z)); G.setAttribute(n,new THREE.BufferAttribute(d,z,A.normalized)); if(n==='position')B.setFromBufferAttribute(G.attributes.position); }
@@ -28,13 +29,18 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0'});
     if(!SHARED.cam.isOrthographicCamera){ SF.setFromProjectionMatrix(SM); return L.some(S=>!(skip&&skip(S))&&SF.intersectsSphere(SS.set(S.center,S.radius).translate(v.set(ox,oy,oz)))); }
     const rx=Math.hypot(e[0],e[4],e[8]), ry=Math.hypot(e[1],e[5],e[9]);
     return L.some(S=>{ if(skip&&skip(S))return false; const x=S.center.x+ox, y=S.center.y+oy, z=S.center.z+oz; return Math.abs(e[0]*x+e[4]*y+e[8]*z+e[12])<=1+S.radius*rx&&Math.abs(e[1]*x+e[5]*y+e[9]*z+e[13])<=1+S.radius*ry; }); };
+  CULL.past=(x,z,r)=>{ const L=FAR3.land; return CULL.R>0&&Math.hypot(x-pos.x,z-pos.z)-r>CULL.R&&(!L||x-r>L[0]&&x+r<L[2]&&z-r>L[1]&&z+r<L[3]); };
+  const ball=o=>{ if(o.boundingSphere!==undefined){ if(!o.boundingSphere)o.computeBoundingSphere(); return o.boundingSphere; } const g=o.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); return g.boundingSphere; };
+  const hazeHide=()=>{ CULL.R=CULL.hz?DFOG.cut():0; if(!(CULL.R>0))return; CULL.R+=CULL.PAD;
+    for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const S=ball(o), e=o.matrixWorld.elements, c=S.center, x=e[0]*c.x+e[4]*c.y+e[8]*c.z+e[12], z=e[2]*c.x+e[6]*c.y+e[10]*c.z+e[14];
+      if(CULL.past(x,z,S.radius*Math.sqrt(Math.max(e[0]*e[0]+e[1]*e[1]+e[2]*e[2],e[4]*e[4]+e[5]*e[5]+e[6]*e[6],e[8]*e[8]+e[9]*e[9]+e[10]*e[10])))){ o.visible=false; CULL.H.push(o); } } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],ix:[],ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
-  CULL.scan=()=>{ if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
+  CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o))FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
     if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
   CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&(s.count!==R.n||!!s.instanceColor!==!!(R.px[0]&&R.px[0].instanceColor))){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; R.n=s.count; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
-      R.vis=s.visible; tie(R); s.visible=false; } };
-  CULL.end=()=>{ for(const R of CULL.L){ if(R.off||!R.px.length)continue; R.s.visible=R.vis; for(const p of R.px)p.visible=false; } };
+      R.vis=s.visible; tie(R); s.visible=false; } hazeHide(); };
+  CULL.end=()=>{ for(const o of CULL.H)o.visible=true; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.px.length)continue; R.s.visible=R.vis; for(const p of R.px)p.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.px.length).length,proxies:CULL.L.reduce((a,R)=>a+R.px.length,0)}); }
+  window.CULLDBG=()=>({on:CULL.on,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.px.length).length,proxies:CULL.L.reduce((a,R)=>a+R.px.length,0)}); }

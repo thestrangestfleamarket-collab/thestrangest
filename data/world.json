@@ -1,5 +1,5 @@
 {
- "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it.",
+ "about": "THE MARKET's level: where every place is. Map tiles, x east, y north; the block runs from front y -77 back to -92.4. The builders read this file; the map editor exports it. A place's face (n, e, s or w; n if none) is the side its front looks out of, onto its street.",
  "section": {
   "id": "A",
   "grid": {
@@ -16,6 +16,144 @@
     "id": "C"
    }
   }
+ },
+ "sections": {
+  "note": "the eight sections round Central Park, 4 across and 2 up, each A's size; ids[col][row]; ring: the park inside the ring street, the street's outer edge, its sidewalks' width, the depth of the row of buildings on its outer side, then the water and its shore walk past the top and bottom rows",
+  "grid": {
+   "cols": 4,
+   "rows": 2,
+   "x0": -130,
+   "y0": -166.5,
+   "w": 392,
+   "h": 375.5
+  },
+  "ids": [
+   [
+    "A",
+    "B"
+   ],
+   [
+    "C",
+    "D"
+   ],
+   [
+    "E",
+    "F"
+   ],
+   [
+    "G",
+    "H"
+   ]
+  ],
+  "streets": {
+   "south": "MARKET ST",
+   "west": "WEST ST",
+   "north": "LANTERN ST",
+   "east": "CURIO AVE"
+  },
+  "ring": {
+   "park": {
+    "x0": -24,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 456
+   },
+   "outer": {
+    "x0": -52.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 495
+   },
+   "walk": 4.5,
+   "row": 15.4,
+   "water": 47.5,
+   "shore": 11.1
+  }
+ },
+ "loop": {
+  "note": "THE LOOP: the subway under the ring streets. tracks are the rails' lines (map tiles) round the ring, r the corners' radius; trains run the timetable from the clock, stopping dwell seconds at every station; speed tiles/s, accel tiles/s/s",
+  "tracks": {
+   "inner": {
+    "south": -48.8,
+    "west": -31.5,
+    "north": 466.8,
+    "east": 1339.5
+   },
+   "outer": {
+    "south": -66.2,
+    "west": -44.5,
+    "north": 484.2,
+    "east": 1352.5
+   }
+  },
+  "r": 40,
+  "dwell": 60,
+  "speed": 5,
+  "accel": 0.6,
+  "trains": [
+   {
+    "id": 1,
+    "track": "outer",
+    "dir": 1,
+    "way": "CLOCKWISE"
+   },
+   {
+    "id": 2,
+    "track": "inner",
+    "dir": -1,
+    "way": "COUNTERCLOCKWISE"
+   }
+  ],
+  "stations": [
+   {
+    "id": "A",
+    "name": "MARKET ST",
+    "side": "south",
+    "x": 116
+   },
+   {
+    "id": "C",
+    "name": "TINKER ST",
+    "side": "south",
+    "x": 508
+   },
+   {
+    "id": "E",
+    "name": "RAG ST",
+    "side": "south",
+    "x": 900
+   },
+   {
+    "id": "G",
+    "name": "BRASS ST",
+    "side": "south",
+    "x": 1240
+   },
+   {
+    "id": "B",
+    "name": "MOTH ST",
+    "side": "north",
+    "x": 116
+   },
+   {
+    "id": "D",
+    "name": "KETTLE ST",
+    "side": "north",
+    "x": 508
+   },
+   {
+    "id": "F",
+    "name": "BUTTON ST",
+    "side": "north",
+    "x": 900
+   },
+   {
+    "id": "H",
+    "name": "CLOCK ST",
+    "side": "north",
+    "x": 1240
+   }
+  ]
  },
  "streets": {
   "market": {
@@ -39,16 +177,16 @@
   "front": -77,
   "back": -92.4,
   "alley": [
-   -99.4,
+   -95.9,
    -92.4
   ],
   "backrow": [
-   -111.4,
-   -99.4
+   -107.9,
+   -95.9
   ],
   "walk": [
    -119,
-   -111.4
+   -107.9
   ],
   "river": -165
  },
@@ -57,10 +195,11 @@
    "id": "apts",
    "name": "APARTMENTS",
    "kind": "front",
-   "x0": -67.65,
-   "x1": -53.35,
-   "y0": -48.95,
-   "y1": -33.55
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": -37.5,
+   "y1": -23.2,
+   "face": "e"
   },
   {
    "id": "bodega",
@@ -73,20 +212,22 @@
    "id": "museum",
    "name": "MUSEUM OF EARTH",
    "kind": "front",
-   "x0": -85.05,
-   "x1": -56.45,
-   "y0": 118.95,
+   "x0": -75.6,
+   "x1": -52.5,
+   "y0": 116.2,
    "back": true,
-   "y1": 142.05
+   "y1": 144.8,
+   "face": "e"
   },
   {
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": -71.5,
-   "x1": -57.5,
-   "y0": 76.3,
-   "y1": 91.7
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 77.0,
+   "y1": 91.0,
+   "face": "e"
   },
   {
    "id": "bank",
@@ -99,10 +240,11 @@
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -65,
-   "x1": -54,
-   "y0": -33.125,
-   "y1": -19.375
+   "x0": -66.26,
+   "x1": -52.5,
+   "y0": -22.2,
+   "y1": -11.2,
+   "face": "e"
   },
   {
    "id": "subway",
@@ -130,37 +272,38 @@
    "name": "THE MOVIE THEATRE",
    "kind": "front",
    "x0": 229.75,
-   "x1": 243.75
+   "x1": 242.68
   },
   {
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": -71.25,
-   "x1": -57.25,
-   "y0": 31.8,
-   "y1": 47.2
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 32.5,
+   "y1": 46.5,
+   "face": "e"
   }
  ],
  "shells": [
   {
    "id": "shell1",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 8,
    "y1": 27
   },
   {
    "id": "shell3",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 52,
    "y1": 71
   },
   {
    "id": "shell5",
-   "x0": -69,
-   "x1": -56,
+   "x0": -65.5,
+   "x1": -52.5,
    "y0": 96,
    "y1": 115
   }
@@ -187,6 +330,14 @@
   "castle": {
    "x0": 24.5,
    "y0": 131.25
+  },
+  "tower2": {
+   "x": 112,
+   "y": 174
+  },
+  "tower3": {
+   "x": 255,
+   "y": 59.5
   }
  },
  "paths": [
@@ -221,17 +372,6 @@
    "b": [
     140.5,
     12.0
-   ]
-  },
-  {
-   "id": "path6",
-   "a": [
-    112.0,
-    -20.0
-   ],
-   "b": [
-    -5.0,
-    -28.0
    ]
   }
  ],
@@ -653,7 +793,7 @@
     "d": 15.400000000000006,
     "rot": 0,
     "z": 0,
-    "h": 176,
+    "h": 300,
     "scale": 1,
     "tex": "red brick, film front",
     "color": "#b0563e",

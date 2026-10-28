@@ -1,16 +1,16 @@
 // THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu and the shift+1-8 keys that open each editor.
-import {BEHAV, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
+import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
 { const ge=async mode=>{ hide(); if(!GAMEED.open)await GAMEED.toggle(); const b=document.getElementById(mode==='map'?'meTM':'meTC'); if(b&&b.dataset.hot!=='1')b.click(); };
   const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
     {key:2,n:'MAP',d:'the top-down layout',go:()=>ge('map')},
-    {key:3,n:'CHARACTER',d:'bodies and NPCs',go:()=>ge('chars')},
+    {key:3,n:'CHARACTER',d:'a list of every character to edit',go:()=>CHARED.toggle('id')},
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
     {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
     {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
-    {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>BEHAV.toggle()},
-    {key:9,n:'LANDSCAPE',d:'paint ground patches (grass, cobble, ...)',go:()=>LAND.toggle()}];
+    {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>CHARED.toggle('beh')},
+    {key:9,n:'LANDSCAPE',d:'paint ground, free-draw, place plants & rocks',go:()=>LAND.toggle()}];
   const css=document.createElement('style'); css.textContent=`
   #edmenu{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:#05070bcc;font:13px var(--pixel,monospace);color:var(--fg,#e9e6dd)}
   #edmenu.on{display:flex} #edmenu .box{background:var(--bg,#0c0e12);border:2px solid var(--line,#2a303a);min-width:300px;max-width:min(94vw,440px);padding:16px 18px}
@@ -26,12 +26,12 @@ import {BEHAV, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-syst
   #edsoon .btn{font:inherit;color:var(--fg,#e9e6dd);background:#0e1016;border:2px solid #3a3f4e;padding:6px 10px;cursor:pointer}`;
   document.head.appendChild(css);
   const menu=document.createElement('div'); menu.id='edmenu';
-  menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn${it.soon?' soon':''}" data-k="${it.key}"><span class="k">⇧${it.key}</span><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">SHIFT+0 OR ESC CLOSES</div></div>';
+  menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn${it.soon?' soon':''}" data-k="${it.key}"><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">PICK AN EDITOR · SHIFT+0 OR ESC CLOSES</div></div>';
   document.body.appendChild(menu);
   const soon=document.createElement('div'); soon.id='edsoon'; document.body.appendChild(soon);
   const show=()=>menu.classList.add('on'), hide=()=>menu.classList.remove('on');
   EDITORS.menu=()=>menu.classList.contains('on')?hide():show();
-  EDITORS.open=it=>{ if(!it)return; hide(); soon.classList.remove('on');
+  EDITORS.open=it=>{ '@later'; if(!it)return; hide(); soon.classList.remove('on');
     if(it.soon){ soon.innerHTML=`<h3>${it.n} EDITOR</h3><p>Not built yet — ${it.d}.</p><button class="btn" id="edsx">OK</button>`; soon.classList.add('on'); soon.querySelector('#edsx').onclick=()=>soon.classList.remove('on'); return; }
     if(it.go)it.go(); };
   EDITORS.key=d=>{ soon.classList.remove('on'); if(d===0){ EDITORS.menu(); return; } EDITORS.open(list.find(x=>x.key===d)); };

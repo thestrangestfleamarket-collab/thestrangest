@@ -1,0 +1,883 @@
+room,group,thing,floor,level,x,y,weight_kg
+Bodega,the bodega's goods,water,,0,68.77,-86.55,0.52
+Bodega,the bodega's goods,water,,0,68.77,-86.36,0.52
+Bodega,the bodega's goods,water,,0,68.77,-86.17,0.52
+Bodega,the bodega's goods,water,,0,68.77,-85.99,0.52
+Bodega,the bodega's goods,can,,0,68.76,-86.54,0.37
+Bodega,the bodega's goods,can,,0,68.76,-86.35,0.37
+Bodega,the bodega's goods,can,,0,68.76,-86.16,0.37
+Bodega,the bodega's goods,can,,0,68.76,-85.97,0.37
+Bodega,the bodega's goods,can,,0,68.76,-86.54,0.37
+Bodega,the bodega's goods,can,,0,68.76,-86.35,0.37
+Bodega,the bodega's goods,can,,0,68.76,-86.16,0.37
+Bodega,the bodega's goods,can,,0,68.76,-85.97,0.37
+Bodega,the bodega's goods,bottle,,0,68.76,-86.54,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-86.35,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-86.16,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.97,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.59,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.4,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.21,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.02,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.59,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.4,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.21,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.02,0.6
+Bodega,the bodega's goods,can,,0,68.76,-85.59,0.37
+Bodega,the bodega's goods,can,,0,68.76,-85.4,0.37
+Bodega,the bodega's goods,can,,0,68.76,-85.21,0.37
+Bodega,the bodega's goods,can,,0,68.76,-85.02,0.37
+Bodega,the bodega's goods,bottle,,0,68.76,-85.59,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.4,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.21,0.6
+Bodega,the bodega's goods,bottle,,0,68.76,-85.02,0.6
+Bodega,the bodega's goods,milk,,0,68.72,-84.6,1.9
+Bodega,the bodega's goods,milk,,0,68.72,-84.34,1.9
+Bodega,the bodega's goods,milk,,0,68.72,-84.07,1.9
+Bodega,the bodega's goods,eggs,,0,68.72,-84.53,0.4
+Bodega,the bodega's goods,butter,,0,68.77,-84.58,0.25
+Bodega,the bodega's goods,butter,,0,68.77,-84.26,0.25
+Bodega,the bodega's goods,yogurt,,0,68.76,-84.64,0.16
+Bodega,the bodega's goods,yogurt,,0,68.76,-84.45,0.16
+Bodega,the bodega's goods,yogurt,,0,68.76,-84.26,0.16
+Bodega,the bodega's goods,yogurt,,0,68.76,-84.07,0.16
+Bodega,the bodega's goods,bread,,0,68.41,-83.34,0.6
+Bodega,the bodega's goods,bread,,0,68.41,-82.58,0.6
+Bodega,the bodega's goods,cereal,,0,68.48,-83.47,0.5
+Bodega,the bodega's goods,cereal,,0,68.48,-82.95,0.5
+Bodega,the bodega's goods,cereal,,0,68.48,-82.44,0.5
+Bodega,the bodega's goods,coffee,,0,68.44,-83.59,0.9
+Bodega,the bodega's goods,coffee,,0,68.44,-83.33,0.9
+Bodega,the bodega's goods,coffee,,0,68.44,-83.06,0.9
+Bodega,the bodega's goods,bag,,0,68.46,-82.7,2
+Bodega,the bodega's goods,bag,,0,68.46,-82.31,2
+Bodega,the bodega's goods,jar,,0,68.47,-83.62,0.5
+Bodega,the bodega's goods,jar,,0,68.47,-83.41,0.5
+Bodega,the bodega's goods,jar,,0,68.47,-83.19,0.5
+Bodega,the bodega's goods,jar,,0,68.47,-82.97,0.5
+Bodega,the bodega's goods,jar,,0,68.47,-82.76,0.5
+Bodega,the bodega's goods,jar,,0,68.47,-82.54,0.5
+Bodega,the bodega's goods,bag,,0,68.48,-82.21,1
+Bodega,the bodega's goods,soup,,0,68.47,-81.52,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-81.31,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-81.1,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.89,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.68,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.47,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.26,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.05,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-81.52,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-81.31,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-81.1,0.42
+Bodega,the bodega's goods,soup,,0,68.47,-80.89,0.42
+Bodega,the bodega's goods,tuna,,0,68.46,-80.63,0.18
+Bodega,the bodega's goods,tuna,,0,68.46,-80.4,0.18
+Bodega,the bodega's goods,tuna,,0,68.46,-80.16,0.18
+Bodega,the bodega's goods,tuna,,0,68.46,-79.93,0.18
+Bodega,the bodega's goods,pasta,,0,68.51,-81.52,0.5
+Bodega,the bodega's goods,pasta,,0,68.51,-81.31,0.5
+Bodega,the bodega's goods,pasta,,0,68.51,-81.09,0.5
+Bodega,the bodega's goods,pasta,,0,68.51,-80.88,0.5
+Bodega,the bodega's goods,pasta,,0,68.51,-80.66,0.5
+Bodega,the bodega's goods,bag,,0,68.49,-80.34,1
+Bodega,the bodega's goods,bag,,0,68.49,-80,1
+Bodega,the bodega's goods,noodle,,0,68.45,-81.5,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-81.25,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-81,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-80.74,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-80.49,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-80.24,0.1
+Bodega,the bodega's goods,noodle,,0,68.45,-79.99,0.1
+Bodega,the bodega's goods,bag,,0,75.52,-85.69,0.2
+Bodega,the bodega's goods,bag,,0,75.52,-85.13,0.2
+Bodega,the bodega's goods,bag,,0,75.52,-84.56,0.2
+Bodega,the bodega's goods,bag,,0,75.52,-85.72,0.2
+Bodega,the bodega's goods,bag,,0,75.52,-85.2,0.2
+Bodega,the bodega's goods,bag,,0,75.52,-84.69,0.2
+Bodega,the bodega's goods,bag,,0,75.51,-85.72,0.3
+Bodega,the bodega's goods,bag,,0,75.51,-85.2,0.3
+Bodega,the bodega's goods,bag,,0,75.51,-84.69,0.3
+Bodega,the bodega's goods,bag,,0,75.49,-84.27,0.25
+Bodega,the bodega's goods,candy,,0,75.47,-85.81,0.05
+Bodega,the bodega's goods,candy,,0,75.47,-85.47,0.05
+Bodega,the bodega's goods,candy,,0,75.47,-85.13,0.05
+Bodega,the bodega's goods,candy,,0,75.47,-84.79,0.05
+Bodega,the bodega's goods,candy,,0,75.47,-84.45,0.05
+Bodega,the bodega's goods,catfood,,0,72.29,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.52,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.76,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.99,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,73.23,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,73.46,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,73.7,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.29,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.52,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.76,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,72.99,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,73.23,-86.79,0.17
+Bodega,the bodega's goods,catfood,,0,73.46,-86.79,0.17
+Bodega,the bodega's goods,jar,,0,73.73,-86.78,0.5
+Bodega,the bodega's goods,dogfood,,0,72.43,-86.78,2
+Bodega,the bodega's goods,dogfood,,0,72.94,-86.78,2
+Bodega,the bodega's goods,dogfood,,0,73.46,-86.78,2
+Bodega,the bodega's goods,fishfood,,0,72.26,-86.76,0.08
+Bodega,the bodega's goods,fishfood,,0,72.44,-86.76,0.08
+Bodega,the bodega's goods,fishfood,,0,72.62,-86.76,0.08
+Bodega,the bodega's goods,fishfood,,0,72.79,-86.76,0.08
+Bodega,the bodega's goods,fishfood,,0,72.97,-86.76,0.08
+Bodega,the bodega's goods,bag,,0,68.48,-79.39,0.2
+Bodega,the bodega's goods,bag,,0,68.48,-78.83,0.2
+Bodega,the bodega's goods,bag,,0,68.48,-78.27,0.2
+Bodega,the bodega's goods,bag,,0,68.48,-79.42,0.2
+Bodega,the bodega's goods,bag,,0,68.48,-78.91,0.2
+Bodega,the bodega's goods,bag,,0,68.48,-78.39,0.2
+Bodega,the bodega's goods,bag,,0,68.49,-79.42,0.3
+Bodega,the bodega's goods,bag,,0,68.49,-78.91,0.3
+Bodega,the bodega's goods,bag,,0,68.49,-78.39,0.3
+Bodega,the bodega's goods,bag,,0,68.51,-77.97,0.25
+Bodega,the bodega's goods,candy,,0,68.53,-79.51,0.05
+Bodega,the bodega's goods,candy,,0,68.53,-79.17,0.05
+Bodega,the bodega's goods,candy,,0,68.53,-78.83,0.05
+Bodega,the bodega's goods,candy,,0,68.53,-78.49,0.05
+Bodega,the bodega's goods,candy,,0,68.53,-78.15,0.05
+Bodega,the bodega's goods,tp,,0,68.44,-86.94,0.5
+Bodega,the bodega's goods,tp,,0,68.98,-86.94,0.5
+Bodega,the bodega's goods,tp,,0,69.52,-86.94,0.5
+Bodega,the bodega's goods,dish,,0,68.29,-86.73,0.5
+Bodega,the bodega's goods,dish,,0,68.51,-86.73,0.5
+Bodega,the bodega's goods,dish,,0,68.74,-86.73,0.5
+Bodega,the bodega's goods,jug,,0,69.15,-86.83,3
+Bodega,the bodega's goods,jug,,0,69.67,-86.83,3
+Bodega,the bodega's goods,tbags,,0,68.49,-86.83,0.5
+Bodega,the bodega's goods,tbags,,0,69.13,-86.83,0.5
+Bodega,the bodega's goods,bulbs,,0,69.58,-86.76,0.08
+Bodega,the bodega's goods,bulbs,,0,69.74,-86.76,0.08
+Bodega,the bodega's goods,bulbs,,0,69.91,-86.76,0.08
+Bodega,the bodega's goods,matches,,0,68.24,-86.72,0.02
+Bodega,the bodega's goods,matches,,0,68.38,-86.72,0.02
+Bodega,the bodega's goods,matches,,0,68.52,-86.72,0.02
+Bodega,the bodega's goods,matches,,0,68.66,-86.72,0.02
+Bodega,the bodega's goods,matches,,0,68.8,-86.72,0.02
+Bodega,the bodega's goods,matches,,0,68.94,-86.72,0.02
+Bodega,the bodega's goods,soap,,0,70.3,-86.76,0.12
+Bodega,the bodega's goods,soap,,0,70.55,-86.76,0.12
+Bodega,the bodega's goods,soap,,0,70.8,-86.76,0.12
+Bodega,the bodega's goods,soap,,0,71.06,-86.76,0.12
+Bodega,the bodega's goods,paste,,0,71.47,-86.73,0.15
+Bodega,the bodega's goods,shampoo,,0,70.27,-86.73,0.45
+Bodega,the bodega's goods,shampoo,,0,70.48,-86.73,0.45
+Bodega,the bodega's goods,shampoo,,0,70.68,-86.73,0.45
+Bodega,the bodega's goods,shampoo,,0,70.88,-86.73,0.45
+Bodega,the bodega's goods,shampoo,,0,71.08,-86.73,0.45
+Bodega,the bodega's goods,shampoo,,0,71.29,-86.73,0.45
+Bodega,the bodega's goods,deo,,0,71.49,-86.74,0.15
+Bodega,the bodega's goods,deo,,0,71.63,-86.74,0.15
+Bodega,the bodega's goods,deo,,0,71.76,-86.74,0.15
+Bodega,the bodega's goods,deo,,0,71.89,-86.74,0.15
+Bodega,the bodega's goods,brush,,0,70.22,-86.7,0.03
+Bodega,the bodega's goods,brush,,0,70.31,-86.7,0.03
+Bodega,the bodega's goods,brush,,0,70.4,-86.7,0.03
+Bodega,the bodega's goods,brush,,0,70.49,-86.7,0.03
+Bodega,the bodega's goods,brush,,0,70.58,-86.7,0.03
+Bodega,the bodega's goods,brush,,0,70.67,-86.7,0.03
+Bodega,the bodega's goods,pills,,0,70.88,-86.73,0.05
+Bodega,the bodega's goods,pills,,0,71.13,-86.73,0.05
+Bodega,the bodega's goods,pills,,0,71.38,-86.73,0.05
+Bodega,the bodega's goods,pills,,0,71.64,-86.73,0.05
+Bodega,the bodega's goods,cotton,,0,70.37,-86.77,0.1
+Bodega,the bodega's goods,cotton,,0,70.76,-86.77,0.1
+Bodega,the bodega's goods,cotton,,0,71.15,-86.77,0.1
+Bodega,the bodega's goods,cotton,,0,71.54,-86.77,0.1
+Bodega,the bodega's goods,fishfood,,0,74.87,-80.95,0.08
+Bodega,the bodega's goods,fishfood,,0,75.03,-80.95,0.08
+Bodega,the bodega's goods,fishfood,,0,75.03,-80.8,0.08
+Bodega,the bodega's goods,candy,,0,74.83,-82.44,0.05
+Bodega,the bodega's goods,candy,,0,74.85,-82.35,0.05
+Bodega,the bodega's goods,candy,,0,74.87,-82.26,0.05
+Bodega,the bodega's goods,candy,,0,74.83,-82.17,0.05
+Bodega,the bodega's goods,candy,,0,74.85,-82.08,0.05
+Bodega,the bodega's goods,candy,,0,74.87,-81.99,0.05
+Bodega,the bodega's goods,gum,,0,74.83,-81.9,0.03
+Bodega,the bodega's goods,gum,,0,74.85,-81.81,0.03
+Bodega,the bodega's goods,gum,,0,74.87,-81.72,0.03
+Bodega,the bodega's goods,gum,,0,74.83,-81.63,0.03
+Bodega,the bodega's goods,gum,,0,74.85,-81.54,0.03
+Bodega,the bodega's goods,gum,,0,74.87,-81.45,0.03
+Bodega,the bodega's goods,lighter,,0,74.83,-81.36,0.02
+Bodega,the bodega's goods,lighter,,0,74.85,-81.27,0.02
+Bodega,the bodega's goods,lighter,,0,74.87,-81.18,0.02
+Bodega,the bodega's goods,bananas,,0,74.83,-81.09,0.9
+Bodega (second),the second bodega's goods,water,,0,8.04,-49.05,0.52
+Bodega (second),the second bodega's goods,water,,0,8.04,-48.86,0.52
+Bodega (second),the second bodega's goods,water,,0,8.04,-48.67,0.52
+Bodega (second),the second bodega's goods,water,,0,8.04,-48.49,0.52
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.04,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.85,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.66,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.47,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.04,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.85,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.66,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-48.47,0.37
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.04,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-48.85,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-48.66,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-48.47,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.99,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.8,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.61,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.42,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.99,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.8,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.61,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.42,0.6
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.99,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.8,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.61,0.37
+Bodega (second),the second bodega's goods,can,,0,8.04,-49.42,0.37
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.99,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.8,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.61,0.6
+Bodega (second),the second bodega's goods,bottle,,0,8.04,-49.42,0.6
+Bodega (second),the second bodega's goods,milk,,0,8.07,-50.91,1.9
+Bodega (second),the second bodega's goods,milk,,0,8.07,-50.64,1.9
+Bodega (second),the second bodega's goods,milk,,0,8.07,-50.38,1.9
+Bodega (second),the second bodega's goods,eggs,,0,8.07,-50.83,0.4
+Bodega (second),the second bodega's goods,butter,,0,8.03,-50.88,0.25
+Bodega (second),the second bodega's goods,butter,,0,8.03,-50.57,0.25
+Bodega (second),the second bodega's goods,yogurt,,0,8.04,-50.94,0.16
+Bodega (second),the second bodega's goods,yogurt,,0,8.04,-50.75,0.16
+Bodega (second),the second bodega's goods,yogurt,,0,8.04,-50.56,0.16
+Bodega (second),the second bodega's goods,yogurt,,0,8.04,-50.37,0.16
+Bodega (second),the second bodega's goods,bread,,0,8.39,-52.75,0.6
+Bodega (second),the second bodega's goods,bread,,0,8.39,-51.98,0.6
+Bodega (second),the second bodega's goods,cereal,,0,8.32,-52.87,0.5
+Bodega (second),the second bodega's goods,cereal,,0,8.32,-52.36,0.5
+Bodega (second),the second bodega's goods,cereal,,0,8.32,-51.84,0.5
+Bodega (second),the second bodega's goods,coffee,,0,8.35,-53,0.9
+Bodega (second),the second bodega's goods,coffee,,0,8.35,-52.73,0.9
+Bodega (second),the second bodega's goods,coffee,,0,8.35,-52.47,0.9
+Bodega (second),the second bodega's goods,bag,,0,8.34,-52.1,2
+Bodega (second),the second bodega's goods,bag,,0,8.34,-51.71,2
+Bodega (second),the second bodega's goods,jar,,0,8.33,-53.02,0.5
+Bodega (second),the second bodega's goods,jar,,0,8.33,-52.8,0.5
+Bodega (second),the second bodega's goods,jar,,0,8.33,-52.59,0.5
+Bodega (second),the second bodega's goods,jar,,0,8.33,-52.37,0.5
+Bodega (second),the second bodega's goods,jar,,0,8.33,-52.16,0.5
+Bodega (second),the second bodega's goods,jar,,0,8.33,-51.94,0.5
+Bodega (second),the second bodega's goods,bag,,0,8.32,-51.61,1
+Bodega (second),the second bodega's goods,soup,,0,8.33,-55.12,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.91,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.7,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.49,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.28,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.07,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-53.86,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-53.65,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-55.12,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.91,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.7,0.42
+Bodega (second),the second bodega's goods,soup,,0,8.33,-54.49,0.42
+Bodega (second),the second bodega's goods,tuna,,0,8.34,-54.23,0.18
+Bodega (second),the second bodega's goods,tuna,,0,8.34,-53.99,0.18
+Bodega (second),the second bodega's goods,tuna,,0,8.34,-53.76,0.18
+Bodega (second),the second bodega's goods,tuna,,0,8.34,-53.52,0.18
+Bodega (second),the second bodega's goods,pasta,,0,8.29,-55.12,0.5
+Bodega (second),the second bodega's goods,pasta,,0,8.29,-54.9,0.5
+Bodega (second),the second bodega's goods,pasta,,0,8.29,-54.69,0.5
+Bodega (second),the second bodega's goods,pasta,,0,8.29,-54.47,0.5
+Bodega (second),the second bodega's goods,pasta,,0,8.29,-54.26,0.5
+Bodega (second),the second bodega's goods,bag,,0,8.3,-53.94,1
+Bodega (second),the second bodega's goods,bag,,0,8.3,-53.6,1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-55.1,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-54.85,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-54.6,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-54.34,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-54.09,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-53.84,0.1
+Bodega (second),the second bodega's goods,noodle,,0,8.35,-53.59,0.1
+Bodega (second),the second bodega's goods,bag,,0,1.28,-50.6,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.28,-50.03,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.28,-49.47,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.28,-50.62,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.28,-50.11,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.28,-49.59,0.2
+Bodega (second),the second bodega's goods,bag,,0,1.3,-50.62,0.3
+Bodega (second),the second bodega's goods,bag,,0,1.3,-50.11,0.3
+Bodega (second),the second bodega's goods,bag,,0,1.3,-49.59,0.3
+Bodega (second),the second bodega's goods,bag,,0,1.31,-49.18,0.25
+Bodega (second),the second bodega's goods,candy,,0,1.33,-50.71,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.33,-50.37,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.33,-50.03,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.33,-49.69,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.33,-49.35,0.05
+Bodega (second),the second bodega's goods,catfood,,0,2.89,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.13,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.36,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.59,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.83,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,4.06,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,4.3,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,2.89,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.13,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.36,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.59,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,3.83,-48.21,0.17
+Bodega (second),the second bodega's goods,catfood,,0,4.06,-48.21,0.17
+Bodega (second),the second bodega's goods,jar,,0,4.33,-48.22,0.5
+Bodega (second),the second bodega's goods,dogfood,,0,3.03,-48.22,2
+Bodega (second),the second bodega's goods,dogfood,,0,3.55,-48.22,2
+Bodega (second),the second bodega's goods,dogfood,,0,4.06,-48.22,2
+Bodega (second),the second bodega's goods,fishfood,,0,2.86,-48.24,0.08
+Bodega (second),the second bodega's goods,fishfood,,0,3.04,-48.24,0.08
+Bodega (second),the second bodega's goods,fishfood,,0,3.22,-48.24,0.08
+Bodega (second),the second bodega's goods,fishfood,,0,3.39,-48.24,0.08
+Bodega (second),the second bodega's goods,fishfood,,0,3.57,-48.24,0.08
+Bodega (second),the second bodega's goods,bag,,0,8.32,-56.9,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.32,-56.33,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.32,-55.77,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.32,-56.92,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.32,-56.41,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.32,-55.89,0.2
+Bodega (second),the second bodega's goods,bag,,0,8.3,-56.92,0.3
+Bodega (second),the second bodega's goods,bag,,0,8.3,-56.41,0.3
+Bodega (second),the second bodega's goods,bag,,0,8.3,-55.89,0.3
+Bodega (second),the second bodega's goods,bag,,0,8.29,-55.48,0.25
+Bodega (second),the second bodega's goods,candy,,0,8.27,-57.01,0.05
+Bodega (second),the second bodega's goods,candy,,0,8.27,-56.67,0.05
+Bodega (second),the second bodega's goods,candy,,0,8.27,-56.33,0.05
+Bodega (second),the second bodega's goods,candy,,0,8.27,-55.99,0.05
+Bodega (second),the second bodega's goods,candy,,0,8.27,-55.65,0.05
+Bodega (second),the second bodega's goods,tp,,0,7.04,-48.06,0.5
+Bodega (second),the second bodega's goods,tp,,0,7.58,-48.06,0.5
+Bodega (second),the second bodega's goods,tp,,0,8.12,-48.06,0.5
+Bodega (second),the second bodega's goods,dish,,0,6.89,-48.27,0.5
+Bodega (second),the second bodega's goods,dish,,0,7.11,-48.27,0.5
+Bodega (second),the second bodega's goods,dish,,0,7.34,-48.27,0.5
+Bodega (second),the second bodega's goods,jug,,0,7.75,-48.17,3
+Bodega (second),the second bodega's goods,jug,,0,8.27,-48.17,3
+Bodega (second),the second bodega's goods,tbags,,0,7.09,-48.17,0.5
+Bodega (second),the second bodega's goods,tbags,,0,7.73,-48.17,0.5
+Bodega (second),the second bodega's goods,bulbs,,0,8.17,-48.24,0.08
+Bodega (second),the second bodega's goods,bulbs,,0,8.34,-48.24,0.08
+Bodega (second),the second bodega's goods,bulbs,,0,8.5,-48.24,0.08
+Bodega (second),the second bodega's goods,matches,,0,6.84,-48.28,0.02
+Bodega (second),the second bodega's goods,matches,,0,6.98,-48.28,0.02
+Bodega (second),the second bodega's goods,matches,,0,7.12,-48.28,0.02
+Bodega (second),the second bodega's goods,matches,,0,7.26,-48.28,0.02
+Bodega (second),the second bodega's goods,matches,,0,7.4,-48.28,0.02
+Bodega (second),the second bodega's goods,matches,,0,7.54,-48.28,0.02
+Bodega (second),the second bodega's goods,soap,,0,4.9,-48.24,0.12
+Bodega (second),the second bodega's goods,soap,,0,5.15,-48.24,0.12
+Bodega (second),the second bodega's goods,soap,,0,5.4,-48.24,0.12
+Bodega (second),the second bodega's goods,soap,,0,5.66,-48.24,0.12
+Bodega (second),the second bodega's goods,paste,,0,6.07,-48.27,0.15
+Bodega (second),the second bodega's goods,shampoo,,0,4.87,-48.27,0.45
+Bodega (second),the second bodega's goods,shampoo,,0,5.08,-48.27,0.45
+Bodega (second),the second bodega's goods,shampoo,,0,5.28,-48.27,0.45
+Bodega (second),the second bodega's goods,shampoo,,0,5.48,-48.27,0.45
+Bodega (second),the second bodega's goods,shampoo,,0,5.68,-48.27,0.45
+Bodega (second),the second bodega's goods,shampoo,,0,5.89,-48.27,0.45
+Bodega (second),the second bodega's goods,deo,,0,6.09,-48.26,0.15
+Bodega (second),the second bodega's goods,deo,,0,6.23,-48.26,0.15
+Bodega (second),the second bodega's goods,deo,,0,6.36,-48.26,0.15
+Bodega (second),the second bodega's goods,deo,,0,6.49,-48.26,0.15
+Bodega (second),the second bodega's goods,brush,,0,4.82,-48.3,0.03
+Bodega (second),the second bodega's goods,brush,,0,4.91,-48.3,0.03
+Bodega (second),the second bodega's goods,brush,,0,5,-48.3,0.03
+Bodega (second),the second bodega's goods,brush,,0,5.09,-48.3,0.03
+Bodega (second),the second bodega's goods,brush,,0,5.18,-48.3,0.03
+Bodega (second),the second bodega's goods,brush,,0,5.27,-48.3,0.03
+Bodega (second),the second bodega's goods,pills,,0,5.48,-48.27,0.05
+Bodega (second),the second bodega's goods,pills,,0,5.73,-48.27,0.05
+Bodega (second),the second bodega's goods,pills,,0,5.98,-48.27,0.05
+Bodega (second),the second bodega's goods,pills,,0,6.24,-48.27,0.05
+Bodega (second),the second bodega's goods,cotton,,0,4.97,-48.23,0.1
+Bodega (second),the second bodega's goods,cotton,,0,5.36,-48.23,0.1
+Bodega (second),the second bodega's goods,cotton,,0,5.75,-48.23,0.1
+Bodega (second),the second bodega's goods,cotton,,0,6.14,-48.23,0.1
+Bodega (second),the second bodega's goods,candy,,0,1.73,-54.54,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.75,-54.45,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.77,-54.36,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.73,-54.27,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.75,-54.18,0.05
+Bodega (second),the second bodega's goods,candy,,0,1.77,-54.09,0.05
+Bodega (second),the second bodega's goods,gum,,0,1.73,-54,0.03
+Bodega (second),the second bodega's goods,gum,,0,1.75,-53.91,0.03
+Bodega (second),the second bodega's goods,gum,,0,1.77,-53.82,0.03
+Bodega (second),the second bodega's goods,gum,,0,1.73,-53.73,0.03
+Bodega (second),the second bodega's goods,gum,,0,1.75,-53.64,0.03
+Bodega (second),the second bodega's goods,gum,,0,1.77,-53.55,0.03
+Bodega (second),the second bodega's goods,lighter,,0,1.73,-53.46,0.02
+Bodega (second),the second bodega's goods,lighter,,0,1.75,-53.37,0.02
+Bodega (second),the second bodega's goods,lighter,,0,1.77,-53.28,0.02
+Bodega (second),the second bodega's goods,bananas,,0,1.73,-53.19,0.9
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.65,-83.72,0.596
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.79,-83.7,0.55
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.93,-83.73,0.572
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.05,-83.73,0.534
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.15,-83.72,0.564
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.27,-83.74,0.54
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.45,-83.73,0.582
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.77,-83.63,0.5
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.77,-83.63,0.5
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.77,-83.63,0.5
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.06,-83.74,0.52
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.17,-83.71,0.605
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.29,-83.71,0.535
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.42,-83.74,0.524
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.64,-83.72,0.578
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.76,-83.73,0.552
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.86,-83.73,0.528
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.99,-83.71,0.558
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.15,-83.7,0.593
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.27,-83.72,0.547
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.42,-83.74,0.51
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.64,-83.72,0.543
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.76,-83.74,0.616
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.88,-83.74,0.533
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,79.99,-83.74,0.609
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.09,-83.73,0.599
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.23,-83.7,0.605
+The Square - Apartments,apartment 2's books,(unnamed body),floor 1,1,80.49,-83.74,0.535
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.65,-83.73,0.502
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.8,-83.71,0.501
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.94,-83.73,0.517
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.1,-83.73,0.582
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.26,-83.74,0.596
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.46,-83.71,0.575
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.77,-83.63,0.5
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.77,-83.63,0.5
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.77,-83.63,0.5
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.05,-83.73,0.609
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.15,-83.74,0.586
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.34,-83.72,0.605
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.51,-83.71,0.581
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.66,-83.72,0.514
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.79,-83.73,0.532
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.9,-83.72,0.548
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.02,-83.71,0.587
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.14,-83.74,0.545
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.28,-83.73,0.533
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.42,-83.74,0.525
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.65,-83.71,0.567
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.79,-83.74,0.537
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,79.93,-83.71,0.505
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.08,-83.73,0.602
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.23,-83.73,0.544
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.36,-83.71,0.561
+The Square - Apartments,apartment 3's books,(unnamed body),floor 2,2,80.47,-83.72,0.57
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.71,-83.71,0.519
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.9,-83.71,0.572
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.01,-83.73,0.539
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.13,-83.73,0.615
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.27,-83.73,0.518
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.46,-83.74,0.528
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.77,-83.63,0.5
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.77,-83.63,0.5
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.77,-83.63,0.5
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.06,-83.71,0.599
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.2,-83.73,0.575
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.35,-83.74,0.547
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.46,-83.73,0.614
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.56,-83.72,0.599
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.65,-83.71,0.592
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.78,-83.74,0.591
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.91,-83.72,0.528
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.03,-83.72,0.578
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.14,-83.74,0.543
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.25,-83.74,0.544
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.35,-83.71,0.539
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.53,-83.71,0.616
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.65,-83.72,0.522
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.78,-83.73,0.561
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,79.9,-83.72,0.578
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80,-83.72,0.606
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.12,-83.72,0.59
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.26,-83.72,0.522
+The Square - Apartments,apartment 6's books,(unnamed body),floor 5,5,80.44,-83.71,0.566
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.64,-83.72,0.545
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.86,-83.71,0.615
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.98,-83.74,0.524
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.09,-83.73,0.503
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.22,-83.73,0.507
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.33,-83.73,0.619
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.49,-83.73,0.549
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.77,-83.63,0.5
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.77,-83.63,0.5
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.77,-83.63,0.5
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.05,-83.72,0.578
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.15,-83.7,0.601
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.26,-83.71,0.538
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.45,-83.71,0.589
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.63,-83.73,0.537
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.74,-83.72,0.604
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.88,-83.7,0.616
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.03,-83.71,0.515
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.19,-83.74,0.614
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.34,-83.7,0.503
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.47,-83.72,0.613
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.64,-83.71,0.517
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.75,-83.7,0.61
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,79.9,-83.72,0.596
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.03,-83.73,0.513
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.17,-83.72,0.588
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.33,-83.7,0.591
+The Square - Apartments,apartment 7's books,(unnamed body),floor 6,6,80.52,-83.74,0.511
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.64,-83.74,0.583
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.76,-83.72,0.54
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.86,-83.72,0.537
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.96,-83.71,0.561
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.09,-83.73,0.507
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.24,-83.73,0.576
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.37,-83.71,0.592
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.53,-83.72,0.549
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.77,-83.63,0.5
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.77,-83.63,0.5
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.77,-83.63,0.5
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.06,-83.7,0.535
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.2,-83.72,0.555
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.33,-83.73,0.542
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.52,-83.73,0.586
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.63,-83.73,0.528
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.74,-83.74,0.546
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.86,-83.73,0.6
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.99,-83.73,0.571
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.11,-83.73,0.502
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.22,-83.72,0.602
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.41,-83.74,0.615
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.52,-83.71,0.611
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.63,-83.71,0.591
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.75,-83.73,0.54
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,79.89,-83.74,0.555
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.01,-83.72,0.519
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.14,-83.7,0.576
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.26,-83.73,0.557
+The Square - Apartments,apartment 8's books,(unnamed body),floor 7,7,80.42,-83.71,0.521
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.64,-83.73,0.558
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.75,-83.71,0.563
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.86,-83.71,0.567
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.97,-83.73,0.604
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.07,-83.72,0.543
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.17,-83.71,0.58
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.3,-83.72,0.577
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.5,-83.73,0.587
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.77,-83.63,0.5
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.77,-83.63,0.5
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.77,-83.63,0.5
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.05,-83.74,0.619
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.17,-83.74,0.531
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.3,-83.72,0.593
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.42,-83.72,0.507
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.59,-83.72,0.561
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.71,-83.74,0.579
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.82,-83.71,0.601
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.94,-83.73,0.572
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.1,-83.74,0.564
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.25,-83.73,0.561
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.45,-83.72,0.61
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.66,-83.72,0.585
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.8,-83.73,0.532
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,79.92,-83.72,0.562
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.05,-83.72,0.593
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.26,-83.71,0.552
+The Square - Apartments,apartment 9's books,(unnamed body),floor 8,8,80.4,-83.74,0.609
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.79,-83.73,0.541
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.01,-83.72,0.547
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.14,-83.7,0.62
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.27,-83.71,0.576
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.46,-83.74,0.512
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.77,-83.63,0.5
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.77,-83.63,0.5
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.77,-83.63,0.5
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.06,-83.71,0.588
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.21,-83.71,0.503
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.33,-83.71,0.536
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.49,-83.74,0.521
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.65,-83.71,0.571
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.86,-83.72,0.536
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.98,-83.74,0.586
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.18,-83.72,0.545
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.33,-83.75,0.506
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.59,-83.71,0.588
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.65,-83.72,0.597
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.76,-83.71,0.53
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.86,-83.73,0.523
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,79.96,-83.73,0.524
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.06,-83.74,0.6
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.2,-83.73,0.513
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.35,-83.74,0.546
+The Square - Apartments,apartment 10's books,(unnamed body),floor 9,9,80.47,-83.72,0.574
+Bedroom,the bedroom's,(unnamed body),,0,70.48,-37.79,28
+Bedroom,the bedroom's,(unnamed body),,0,70.32,-37.82,5
+Bedroom,the bedroom's,(unnamed body),,0,70.35,-37.33,0.8
+Bedroom,the bedroom's,(unnamed body),,0,70.35,-38.28,1.2
+Bedroom,the bedroom's,(unnamed body),,0,70.56,-37.8,4
+Bedroom,the bedroom's,(unnamed body),,0,70.7,-37.2,0.6
+Bedroom,the bedroom's,(unnamed body),,0,70.46,-37.98,0.6
+Bedroom,the bedroom's,(unnamed body),,0,70.52,-37.38,1.5
+Bedroom,the bedroom's,(unnamed body),,0,70.52,-37.78,1.5
+Bedroom,the bedroom's,(unnamed body),,0,70.52,-37.35,1.5
+Bedroom,the bedroom's,(unnamed body),,0,70.52,-37.75,1.5
+Bedroom,the bedroom's,(unnamed body),,0,70.18,-37.18,0.2
+Bedroom,the bedroom's,(unnamed body),,0,70.24,-36.94,7
+Bedroom,the bedroom's,(unnamed body),,0,70.28,-38.7,7
+Bedroom,the bedroom's,(unnamed body),,0,71.46,-37.74,3.5
+Bedroom,the bedroom's,(unnamed body),,0,71.6,-38.38,5
+Bedroom,the bedroom's,(unnamed body),,0,71.6,-38.38,9
+Bedroom,the bedroom's,(unnamed body),,0,70.8,-39.37,8
+Bedroom,the bedroom's,(unnamed body),,0,70.82,-39.35,1.4
+Bedroom,the bedroom's,(unnamed body),,0,70.82,-39.35,1.4
+Bedroom,the bedroom's,(unnamed body),,0,70.82,-39.35,1.4
+Bedroom,the bedroom's,(unnamed body),,0,70.82,-39.35,1.4
+Bedroom,the bedroom's,(unnamed body),,0,70.82,-39.35,12
+Bedroom,the bedroom's,(unnamed body),,0,70.77,-39.37,0.8
+Bedroom,the bedroom's,(unnamed body),,0,70.88,-39.47,0.2
+Bedroom,the bedroom's,(unnamed body),,0,71.54,-39.65,22
+Bedroom,the bedroom's,(unnamed body),,0,71.42,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.48,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.54,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.59,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.65,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.41,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.46,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.52,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.57,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.41,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.47,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.53,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.42,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.47,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.54,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.42,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.49,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.55,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.61,-39.64,0.4
+Bedroom,the bedroom's,(unnamed body),,0,71.54,-39.64,1.2
+Bedroom,the bedroom's,(unnamed body),,0,71.64,-39.56,0.4
+Bedroom,the bedroom's,(unnamed body),,0,72.12,-39.6,12
+Bedroom,the bedroom's,(unnamed body),,0,71.83,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.88,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.93,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.98,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.02,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.07,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.23,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.36,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.83,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.88,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.94,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,71.99,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.05,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.1,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.15,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.21,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.26,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.32,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.37,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72.42,-39.58,0.25
+Bedroom,the bedroom's,(unnamed body),,0,72,-39.59,2
+Bedroom,the bedroom's,(unnamed body),,0,72.32,-39.61,1.5
+Bedroom,the bedroom's,(unnamed body),,0,72.02,-39.58,0.2
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.62,14
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.59,0.6
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.59,0.6
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.59,0.6
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.59,0.6
+Bedroom,the bedroom's,(unnamed body),,0,72.82,-39.58,0.15
+Bedroom,the bedroom's,(unnamed body),,0,72.78,-39.63,1.6
+Bedroom,the bedroom's,(unnamed body),,0,72.91,-39.66,0.5
+Bedroom,the bedroom's,(unnamed body),,0,73.12,-39.47,3.5
+Bedroom,the bedroom's,(unnamed body),,0,73.6,-39.5,6
+Bedroom,the bedroom's,(unnamed body),,0,73.6,-39.5,9
+Bedroom,the bedroom's,(unnamed body),,0,73.16,-39.66,0.9
+Bedroom,the bedroom's,(unnamed body),,0,73.44,-39.67,0.4
+Bedroom,the bedroom's,(unnamed body),,0,73.5,-39.67,0.4
+Bedroom,the bedroom's,(unnamed body),,0,73.55,-39.67,0.4
+Bedroom,the bedroom's,(unnamed body),,0,73.61,-39.67,0.4
+Bedroom,the bedroom's,(unnamed body),,0,73.39,-37.88,45
+Bedroom,the bedroom's,(unnamed body),,0,73.08,-37.28,0.6
+Bedroom,the bedroom's,(unnamed body),,0,73.68,-37.28,0.6
+Bedroom,the bedroom's,(unnamed body),,0,73.4,-38.35,0.3
+Bedroom,the bedroom's,(unnamed body),,0,0,0,
+Bedroom,the bedroom's,(unnamed body),,0,0,0,
+Bedroom,the bedroom's,(unnamed body),,0,72,-39.77,1
+Bedroom,the bedroom's,(unnamed body),,0,73.45,-39.65,1
+221B Baker Street,221B's,(unnamed body),,0,-155.5,-7,18
+221B Baker Street,221B's,(unnamed body),,0,-155.86,-7.05,1.1
+221B Baker Street,221B's,(unnamed body),,0,-155.82,-6.68,0.3
+221B Baker Street,221B's,(unnamed body),,0,-155.18,-7.3,0.3
+221B Baker Street,221B's,(unnamed body),,0,-155.82,-6.92,0.4
+221B Baker Street,221B's,(unnamed body),,0,-155.2,-7.05,0.4
+221B Baker Street,221B's,(unnamed body),,0,-155.5,-6.75,0.3
+221B Baker Street,221B's,(unnamed body),,0,-155.35,-7.2,0.2
+221B Baker Street,221B's,(unnamed body),,0,-156.37,-7,4
+221B Baker Street,221B's,(unnamed body),,0,-155.5,-6.11,4
+221B Baker Street,221B's,(unnamed body),,0,-154.63,-7,4
+221B Baker Street,221B's,(unnamed body),,0,-158.35,-8.79,26
+221B Baker Street,221B's,(unnamed body),,0,-158.35,-5.21,26
+221B Baker Street,221B's,(unnamed body),,0,-158.29,-8.64,0.5
+221B Baker Street,221B's,(unnamed body),,0,-151.5,-10.99,40
+221B Baker Street,221B's,(unnamed body),,0,-153.93,-4.92,5
+221B Baker Street,221B's,(unnamed body),,0,-158.86,-11.11,0.425
+221B Baker Street,221B's,(unnamed body),,0,-158.75,-11.12,0.464
+221B Baker Street,221B's,(unnamed body),,0,-158.64,-11.13,0.448
+221B Baker Street,221B's,(unnamed body),,0,-158.53,-11.12,0.455
+221B Baker Street,221B's,(unnamed body),,0,-158.43,-11.11,0.458
+221B Baker Street,221B's,(unnamed body),,0,-158.28,-11.14,0.475
+221B Baker Street,221B's,(unnamed body),,0,-158.21,-11.12,0.421
+221B Baker Street,221B's,(unnamed body),,0,-158.11,-11.12,0.466
+221B Baker Street,221B's,(unnamed body),,0,-158.03,-11.13,0.434
+221B Baker Street,221B's,(unnamed body),,0,-157.96,-11.13,0.448
+221B Baker Street,221B's,(unnamed body),,0,-158.86,-11.13,0.477
+221B Baker Street,221B's,(unnamed body),,0,-158.77,-11.12,0.462
+221B Baker Street,221B's,(unnamed body),,0,-158.7,-11.13,0.444
+221B Baker Street,221B's,(unnamed body),,0,-158.55,-11.13,0.75
+221B Baker Street,221B's,(unnamed body),,0,-158.44,-11.12,0.43
+221B Baker Street,221B's,(unnamed body),,0,-158.34,-11.13,0.428
+221B Baker Street,221B's,(unnamed body),,0,-158.25,-11.13,0.445
+221B Baker Street,221B's,(unnamed body),,0,-158.16,-11.11,0.468
+221B Baker Street,221B's,(unnamed body),,0,-158.05,-11.12,0.425
+221B Baker Street,221B's,(unnamed body),,0,-157.96,-11.14,0.476
+221B Baker Street,221B's,(unnamed body),,0,-158.86,-11.13,0.452
+221B Baker Street,221B's,(unnamed body),,0,-158.76,-11.13,0.443
+221B Baker Street,221B's,(unnamed body),,0,-158.66,-11.12,0.433
+221B Baker Street,221B's,(unnamed body),,0,-158.57,-11.12,0.443
+221B Baker Street,221B's,(unnamed body),,0,-158.48,-11.12,0.45
+221B Baker Street,221B's,(unnamed body),,0,-158.4,-11.13,0.45
+221B Baker Street,221B's,(unnamed body),,0,-158.31,-11.11,0.47
+221B Baker Street,221B's,(unnamed body),,0,-158.17,-11.13,0.434
+221B Baker Street,221B's,(unnamed body),,0,-158.08,-11.12,0.444
+221B Baker Street,221B's,(unnamed body),,0,-157.97,-11.12,0.443
+221B Baker Street,221B's,(unnamed body),,0,-159.65,-4.55,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.48,-4.15,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.48,-3.9,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.7,-3.7,0.2
+221B Baker Street,221B's,(unnamed body),,0,-159.4,-4.65,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.35,-4.4,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.65,-4,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.31,-7,0.8
+221B Baker Street,221B's,(unnamed body),,0,-159.31,-6.38,0.2
+221B Baker Street,221B's,(unnamed body),,0,-159.31,-7.64,0.4
+221B Baker Street,221B's,(unnamed body),,0,-159.33,-8.05,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.33,-5.95,0.3
+221B Baker Street,221B's,(unnamed body),,0,-159.15,-5.45,8
+221B Baker Street,221B's,(unnamed body),,0,-150.2,-7.38,0.3
+221B Baker Street,221B's,(unnamed body),,0,-150.07,-8,0.4
+221B Baker Street,221B's,(unnamed body),,0,-149.92,-7.7,0.6
+221B Baker Street,221B's,(unnamed body),,0,-150.22,-8.25,0.8
+221B Baker Street,221B's,(unnamed body),,0,-150.87,-7.7,4
+221B Baker Street,221B's,(unnamed body),,0,-149.72,-5.25,1.5
+221B Baker Street,221B's,(unnamed body),,0,-149.74,-4.55,1.2
+221B Baker Street,221B's,(unnamed body),,0,-159.74,-5.45,0.6
+221B Baker Street,221B's,(unnamed body),,0,-159.05,-9.9,1
+221B Baker Street,221B's,(unnamed body),,0,-158.4,-11.17,1
+221B Baker Street,221B's,(unnamed body),,0,-159.5,-4.2,1
+221B Baker Street,221B's,(unnamed body),,0,-159.3,-7,1
+221B Baker Street,221B's,(unnamed body),,0,-159.39,-7,1
+221B Baker Street,221B's,(unnamed body),,0,-158.95,-7,1
+221B Baker Street,221B's,(unnamed body),,0,-159.31,-8.48,1
+221B Baker Street,221B's,(unnamed body),,0,-155.52,-7,1
+221B Baker Street,221B's,(unnamed body),,0,-150.12,-7.7,1
+221B Baker Street,221B's,(unnamed body),,0,-149.72,-4.9,1
+221B Baker Street,221B's,(unnamed body),,0,-149.95,-10.8,1
+221B Baker Street,221B's,(unnamed body),,0,-158.46,-1.95,1
+221B Baker Street,221B's,(unnamed body),,0,-151.69,-0.33,1
+221B Baker Street,221B's,(unnamed body),,0,-151.2,-0.35,1
+Crystal Cavern,the cavern's,(unnamed body),,0,-172.1,-10.7,16.632
+Crystal Cavern,the cavern's,(unnamed body),,0,-171.9,-10.4,13.2
+Crystal Cavern,the cavern's,(unnamed body),,0,-172.3,-10.25,6.048
+Crystal Cavern,the cavern's,(unnamed body),,0,-171.55,-10.7,18.432
+Crystal Cavern,the cavern's,(unnamed body),,0,-172,-11.1,20.736
+Crystal Cavern,the cavern's,(unnamed body),,0,-171.7,-10.05,4.032
+Crystal Cavern,the cavern's,(unnamed body),,0,-171.35,-10.35,12.636
+Crystal Cavern,the cavern's,(unnamed body),,0,-176.9,-10.1,11.52
+Crystal Cavern,the cavern's,(unnamed body),,0,-177.2,-9.75,8.748
+Crystal Cavern,the cavern's,(unnamed body),,0,-173.3,-10.7,5.76
+Crystal Cavern,the cavern's,(unnamed body),,0,-175.5,-10.8,10.692
+Crystal Cavern,the cavern's,(unnamed body),,0,-171.8,-10.88,9.072
+The Cozy Den,a placed lava lamp,(unnamed body),,0,-14.42,-55.68,1.6
+Herb Cottage,the cottage's,(unnamed body),,0,107.1,-32.4,2.4
+Herb Cottage,the cottage's,(unnamed body),,0,107.8,-32.32,1.8
+Herb Cottage,the cottage's,(unnamed body),,0,107.45,-31.72,0.7
+Herb Cottage,the cottage's,(unnamed body),,0,107.45,-32.36,1.4
+Herb Cottage,the cottage's,(unnamed body),,0,107.48,-32.38,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,108.25,-31.6,0.7
+Herb Cottage,the cottage's,(unnamed body),,0,105.95,-33.68,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.97,-33.7,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.93,-33.72,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.95,-33.69,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.97,-33.68,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.93,-33.71,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.95,-33.71,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,105.97,-33.68,0.6
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-34.18,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-34,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-33.83,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-34.09,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-33.91,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-34,0.4
+Herb Cottage,the cottage's,(unnamed body),,0,106.2,-31.3,0.15
+Herb Cottage,the cottage's,(unnamed body),,0,108.55,-36.15,0.15
+Herb Cottage,the cottage's,(unnamed body),,0,106.4,-36.45,0.3
+Herb Cottage,the cottage's,(unnamed body),,0,106.8,-34.7,0.02
+Herb Cottage,the cottage's,(unnamed body),,0,108,-35.85,0.02
+Herb Cottage,the cottage's,(unnamed body),,0,107.05,-36.2,0.02
+Herb Cottage,the cottage's,(unnamed body),,0,107.75,-34.55,0.02
+Herb Cottage,the cottage's,(unnamed body),,0,107.8,-35.3,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,106.65,-34.71,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,107.41,-36.56,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,107.6,-34.9,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,106.43,-35.45,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,108.36,-35.98,0.004
+Herb Cottage,the cottage's,(unnamed body),,0,105.8,-35.3,
+Herb Cottage,the cottage's,(unnamed body),,0,108.75,-35.3,
+Herb Cottage,the cottage's,(unnamed body),,0,109.2,-35.3,
+Herb Cottage,the cottage's,(unnamed body),,0,109.7,-35.3,
+Herb Cottage,the cottage's,(unnamed body),,0,107.3,-35.3,1
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-96.49,3.2
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-95.89,3.2
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-95.24,3.6
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-94.59,3.6
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-96.29,8
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-94.89,8
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.89,-90.54,5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.89,-90.18,5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.89,-89.82,5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,83,-91.04,1.2
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,83.8,-91.34,1
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,86.9,-95.44,10
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,86.9,-95.44,10
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,86.9,-95.44,10
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,101.08,-92.34,10
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,101.08,-92,5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,1.5
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,85.5,-96.14,30
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.7,-88.44,0.96
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.72,-88.46,0.84
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.7,-88.44,0.72
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.1,-92.84,0.15
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.8,-92.84,0.15
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,82.5,-92.84,0.15
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,83.2,-92.84,0.15
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,83.9,-92.84,0.15
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.82,-91.54,
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.7,-89.14,
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,81.7,-88.54,
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.79,-95.49,1
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,100.91,-91.54,1
+Under the Square - Boxing Gym,the gym's,(unnamed body),,-1,86.9,-94.34,1
+Outdoors - The Block,the theatre's,(unnamed body),,0,58.71,-58.43,7
+Outdoors - The Block,the theatre's,(unnamed body),,0,52.61,-58.43,7
+Outdoors - The Block,the theatre's,(unnamed body),,0,46.41,-58.96,7
+Outdoors - The Block,the theatre's,(unnamed body),,0,58.1,-58.5,2.5
+Outdoors - The Block,the theatre's,(unnamed body),,0,53.2,-58.5,2.5
+Outdoors - The Block,the theatre's,(unnamed body),,0,48.1,-58.82,2.5

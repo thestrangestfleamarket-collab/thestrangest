@@ -15,14 +15,27 @@ GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')
   F.sort((p,q)=>p[0]-q[0]); const R=[]; for(const f of F){ const l=R[R.length-1]; if(l&&f[0]<=l[1]+.05)l[1]=Math.max(l[1],f[1]); else R.push([...f]); }
   const gaps=[]; for(let i=1;i<R.length;i++){ const a=R[i-1][1], b=R[i][0]; if(b-a>=.3&&b-a<=30&&!(BLOCK.hudson&&b>BLOCK.hudson[0]&&a<BLOCK.hudson[1]))gaps.push([a,b]); }
   const BX=[], CN=[], IRON=[0x1e2226,0x24282c,0x2a2622], RUST=0x5a3a2a, box=(x,y,z,sx,sy,sz,c)=>BX.push([x,y,z,sx,sy,sz,c]);
-  for(const [x0,x1] of gaps){ const st=x1>MAPSTAIR.x0&&x0<MAPSTAIR.x1, yy=st?yB:yF, z=ZS(yy), X0=XS(x0), X1=XS(x1), y=G((X0+X1)/2,z), Hg=2.05*M, W=X1-X0;
-    GATES.list.push({x0,x1,y:yy});
-    for(const px of [X0+.05*M,X1-.05*M]){ box(px,y+(Hg+.12*M)/2,z,.1*M,Hg+.12*M,.1*M,IRON[0]); CN.push([px,y+Hg+.12*M,z,.07*M,.12*M]); }
-    for(const h of [.12,.55,1.7,1.95])box((X0+X1)/2,y+h*M,z,W-.1*M,.045*M,.035*M,IRON[1]);
-    const n=Math.max(2,Math.round(W/(.13*M))); for(let i=1;i<n;i++){ const px=X0+W*i/n, k=hs(px,x0), ph=Hg*(k<.06?.9:1), c=k<.12?RUST:IRON[Math.floor(k*3)%3]; box(px,y+ph/2,z,.025*M,ph,.025*M,c); if(k>.04)CN.push([px,y+ph,z,.035*M,.09*M]); }
-    for(let i=0;i<n;i++){ const px=X0+W*(i+.5)/n; box(px,y+1.82*M,z,.05*M,.05*M,.03*M,IRON[2]); }
-    if(W>1.2*M){ const cx=(X0+X1)/2; box(cx,y+Hg/2,z,.06*M,Hg,.05*M,IRON[0]); box(cx+.05*M,y+1.05*M,z+.03*M,.05*M,.12*M,.03*M,0x8a7a4a); box(cx,y+1.02*M,z+.04*M,.16*M,.025*M,.025*M,0x6a6e70); }
-    const r=[Math.min(X0,X1),z-.08*M,Math.max(X0,X1),z+.08*M]; SOL.up.push(r); FIX.up.push([r[0],r[1],y,r[2],r[3],y+Hg]); }
+  const gate=(A0,A1,z,zx,seed)=>{ const P=(a,c)=>zx?[c,a]:[a,c], bx=(a,y,c,sa,sy,sc,col)=>{ const [px,pz]=P(a,c), [sx,sz]=zx?[sc,sa]:[sa,sc]; box(px,y,pz,sx,sy,sz,col); }, cn=(a,y,c,r,h)=>{ const [px,pz]=P(a,c); CN.push([px,y,pz,r,h]); };
+    const [gx,gz]=P((A0+A1)/2,z), y=G(gx,gz), Hg=2.05*M, W=A1-A0;
+    for(const pa of [A0+.05*M,A1-.05*M]){ bx(pa,y+(Hg+.12*M)/2,z,.1*M,Hg+.12*M,.1*M,IRON[0]); cn(pa,y+Hg+.12*M,z,.07*M,.12*M); }
+    for(const h of [.12,.55,1.7,1.95])bx((A0+A1)/2,y+h*M,z,W-.1*M,.045*M,.035*M,IRON[1]);
+    const n=Math.max(2,Math.round(W/(.13*M))); for(let i=1;i<n;i++){ const pa=A0+W*i/n, k=hs(pa,seed), ph=Hg*(k<.06?.9:1), c=k<.12?RUST:IRON[Math.floor(k*3)%3]; bx(pa,y+ph/2,z,.025*M,ph,.025*M,c); if(k>.04)cn(pa,y+ph,z,.035*M,.09*M); }
+    for(let i=0;i<n;i++){ const pa=A0+W*(i+.5)/n; bx(pa,y+1.82*M,z,.05*M,.05*M,.03*M,IRON[2]); }
+    if(W>1.2*M){ const ca=(A0+A1)/2; bx(ca,y+Hg/2,z,.06*M,Hg,.05*M,IRON[0]); bx(ca+.05*M,y+1.05*M,z+.03*M,.05*M,.12*M,.03*M,0x8a7a4a); bx(ca,y+1.02*M,z+.04*M,.16*M,.025*M,.025*M,0x6a6e70); }
+    const [p0x,p0z]=P(A0,z-.08*M), [p1x,p1z]=P(A1,z+.08*M), r=[Math.min(p0x,p1x),Math.min(p0z,p1z),Math.max(p0x,p1x),Math.max(p0z,p1z)]; SOL.up.push(r); FIX.up.push([r[0],r[1],y,r[2],r[3],y+Hg]); };
+  for(const [x0,x1] of gaps){ const st=x1>MAPSTAIR.x0&&x0<MAPSTAIR.x1, yy=st?yB:yF; GATES.list.push({x0,x1,y:yy}); gate(XS(x0),XS(x1),ZS(yy),false,x0); }
+  { const A=BLOCK.alley, RC=BLK.blds.map(b=>[b.x0,b.x1,Math.min(b.y0,b.y1),Math.max(b.y0,b.y1)]);
+    for(const k of ['house','bodega','ghost','bar','museum','theatre','arcade','playhouse']){ const b=MAPED.box&&MAPED.box(k); if(b){ const ya=b[1]/T+SHARED.BOD.OY, yb=b[3]/T+SHARED.BOD.OY; RC.push([T0(Math.min(b[0],b[2])),T0(Math.max(b[0],b[2])),Math.min(ya,yb),Math.max(ya,yb)]); } }
+    for(const x of [BLOCK.x0+.3,BLOCK.hudson[0]-.3,BLOCK.hudson[1]+.3,BLOCK.x1-.3]){ let lo=A[0], hi=A[1], fr=1e9, bk=-1e9;
+      for(const [a,b,y0,y1] of RC)if(a<x+.5&&b>x-.5){ if(y0>A[1]-1&&y0<A[1]+8)fr=Math.min(fr,y0); if(y1<A[0]+1&&y1>A[0]-8)bk=Math.max(bk,y1); }
+      if(fr<1e9)hi=Math.max(hi,fr+.1); if(bk>-1e9)lo=Math.min(lo,bk-.1);
+      GATES.list.push({x,alley:true,y0:lo,y1:hi}); gate(Math.min(ZS(lo),ZS(hi)),Math.max(ZS(lo),ZS(hi)),XS(x),true,x); } }
+  if(BLOCK.hudson){ const [h0,h1]=BLOCK.hudson, yR=BLOCK.row2[0], zR=ZS(yR), L=Math.min((h1-h0)/2,BLOCK.row2[1]-yR)-.2, zL=ZS(yR+L), y=G(XS((h0+h1)/2),zR), Hp=2.7*M;
+    for(const x of [h0+.2,h1-.2])gate(Math.min(zR,zL),Math.max(zR,zL),XS(x),true,x+7);
+    for(const x of [h0+.1,h1-.1]){ box(XS(x),y+Hp/2,zR,.18*M,Hp,.18*M,IRON[0]); CN.push([XS(x),y+Hp,zR,.1*M,.18*M]); }
+    for(const h of [Hp-.1*M,Hp-.4*M])box(XS((h0+h1)/2),y+h,zR,Math.abs(XS(h1)-XS(h0)),.07*M,.06*M,IRON[1]);
+    for(let x=h0+.5;x<h1-.3;x+=.5)box(XS(x),y+Hp-.25*M,zR,.03*M,.3*M,.03*M,IRON[2]);
+    GATES.list.push({hudson:true,y:yR}); }
   if(!BX.length)return; const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(), V=THREE.Vector3, mat=new THREE.MeshLambertMaterial();
   const BM=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),mat,BX.length); BX.forEach(([x,y,z,sx,sy,sz,col],i)=>{ BM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(sx,sy,sz))); BM.setColorAt(i,c.setHex(col)); });
   const CM=new THREE.InstancedMesh(new THREE.ConeGeometry(1,1,4).translate(0,.5,0),mat,Math.max(1,CN.length)); CN.forEach(([x,y,z,r,h],i)=>{ CM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(r,h,r))); CM.setColorAt(i,c.setHex(IRON[i%3])); }); CM.count=CN.length;

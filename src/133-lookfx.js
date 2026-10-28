@@ -1,6 +1,6 @@
 // THE LOOK EFFECTS: LFX's shading, ambient occlusion and wetness on the world, by weather and hour.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LEVELS, LOOK, PARK, pos, ROOMS, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, LOOK, PARK, pos, ROOMS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 { const F=LFX.on, cl=v=>Math.max(0,Math.min(1,v));
@@ -21,22 +21,19 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
       if(WS.wet==null){} else if(W.rain>.05)WS.wet=Math.min(1,WS.wet+dt/25*(.5+W.rain)); else WS.wet=Math.max(0,WS.wet-Math.max(dt/240,dh/2));
       if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(0,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
       E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS;
-      { const v=inside||WS.snow<.6; if(!v||WS.bv===false){ WS.bv=v; if(WEEDS.meshes)for(const m of WEEDS.meshes)m.visible=v; if(WEEDS.chunks)for(const m of WEEDS.chunks.values())if(m)m.visible=v; } }
+      
       E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;
       const sp=.004+W.wind*.02; E[row+4]=Math.round(((t*sp)%1)*255); E[row+5]=Math.round(((t*sp*.6)%1)*255);
       sky.copy(scene.background); E[row+8]=Math.round(sky.r*255); E[row+9]=Math.round(sky.g*255); E[row+10]=Math.round(sky.b*255);
       LFX.env.needsUpdate=true; }; }
   const tick1=LFX.tick||(()=>{}); LFX.tick=()=>{ tick1(); if(F.has('cool')&&typeof LOOK!=='undefined')LOOK.cool.value=LFX.cool??Math.max(.5*cl((CLOCK.elev()+3)/12),.7*cl(1-Math.abs(CLOCK.elev()-3)/10))*(SHARED.LVL==='down'||ROOMS.cur?0:1); };
-  if(F.has('life')){ const NB=9, NL=60, NM=80;
+  if(F.has('life')){ const NB=9, NL=60;
     const bg=new THREE.BufferGeometry(), bp=new Float32Array(NB*12); bg.setAttribute('position',new THREE.BufferAttribute(bp,3).setUsage(THREE.DynamicDrawUsage));
     const BIRDS=new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0x1d2026})); BIRDS.frustumCulled=false; scene.add(BIRDS);
     const lg=new THREE.BufferGeometry(), lp=new Float32Array(NL*3), lc=new Float32Array(NL*3), ls=[]; lg.setAttribute('position',new THREE.BufferAttribute(lp,3).setUsage(THREE.DynamicDrawUsage)); lg.setAttribute('color',new THREE.BufferAttribute(lc,3));
     const LEAVES=new THREE.Points(lg,new THREE.PointsMaterial({size:3,sizeAttenuation:false,vertexColors:true})); LEAVES.frustumCulled=false; scene.add(LEAVES);
-    const mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), ms=[]; mg.setAttribute('position',new THREE.BufferAttribute(mp,3).setUsage(THREE.DynamicDrawUsage));
-    const MOTES=new THREE.Points(mg,new THREE.PointsMaterial({size:1.5,sizeAttenuation:false,color:0xfff2c8,transparent:true,opacity:.7})); MOTES.frustumCulled=false; scene.add(LEVELS.own(MOTES,'*'));
     const LC=[[.42,.55,.18],[.62,.6,.2],[.78,.48,.16],[.6,.3,.12]]; for(let i=0;i<NL;i++){ ls.push({o:i%16,t:Math.random()*8,ph:Math.random()*6}); lc.set(LC[i%4],i*3); }
-    for(let i=0;i<NM;i++)ms.push([(Math.random()-.5)*14*TILE,Math.random()*3*TILE,(Math.random()-.5)*14*TILE,Math.random()*6]);
-    for(const o of [BIRDS,LEAVES,MOTES])OUT.add(o,'open');
+    for(const o of [BIRDS,LEAVES])OUT.add(o,'open');
     const tick2=LFX.tick; LFX.tick=()=>{ '@later'; tick2(); const t=performance.now()/1000, dt=1/60, up=SHARED.LVL!=='down', day=cl((CLOCK.elev()+3)/12), park=PARK.in&&PARK.oaks;
       const cx=SHARED.BOD.XS(96+PARK.ox), cz=SHARED.BOD.ZS(-40+PARK.oy); for(let i=0;i<NB;i++){ const a=t*.18+i*.35, r=(14+i*1.3)*TILE, x=cx+Math.cos(a)*r, z=cz+Math.sin(a)*r*.7, y=(9+Math.sin(i*2.1+t*.5))*TILE, w=.35*TILE, f=Math.sin(t*9+i)*.18*TILE, dx=-Math.sin(a), dz=Math.cos(a)*.7;
         bp.set([x-dz*w,y+f,z+dx*w, x,y,z, x,y,z, x+dz*w,y+f,z-dx*w],i*12); } bg.attributes.position.needsUpdate=true;

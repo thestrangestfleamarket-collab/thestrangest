@@ -1,4 +1,5 @@
-// The owner's eight .glb toons (donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee): fetched after the start, walking the street.
+// The owner's .glb toons (donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee, teddy bear): fetched after the start, walking the street.
+import {CINEMA} from './003b-systems.js';
 import {QS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {RIGNPC} from './083-npc-rig.js';
@@ -15,17 +16,20 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     emberknight:{metres:1.85,radius:.32,speed:.4,stride:6,at:78},
     number80:{metres:1.6,radius:.22,speed:.45,stride:7,at:80},
     rainfish:{metres:1.15,radius:.3,speed:.3,stride:8,at:86,o:{leg:.55,arm:.35,bob:.025,rock:.07}},
-    manatee:{metres:1.9,radius:.34,speed:.28,stride:5,at:88,o:{leg:.35,arm:.35,bob:.02,rock:.05}} };
+    manatee:{metres:1.9,radius:.34,speed:.28,stride:5,at:88,o:{leg:.35,arm:.35,bob:.02,rock:.05}},
+    teddy:{metres:1.4,radius:.3,speed:.34,stride:6,at:66,o:{leg:.4,arm:.3,bob:.025,rock:.05}},
+    ticketfox:{data:'origamifox',metres:1.15,radius:.24,speed:.42,stride:7,at:62} };
   const skirt=def=>{ const S=def.bones.filter(b=>/^[kc]\d+$/.test(b[0])).map(b=>b[0]); if(!S.length)return null;
     const ys=def.bones.filter(b=>S.includes(b[0])).map(b=>b[2][1]), top=Math.max(...ys), bot=Math.min(...ys), hip=def.bones.find(b=>b[0]==='hips')[2], r=Math.max(...def.bones.filter(b=>S.includes(b[0])).map(b=>Math.abs(b[2][0])))||1;
     const at=Object.fromEntries(def.bones.map(b=>[b[0],b[2]]));
-    return c=>{ const B=c.B, H=B.hips, lL=B.legL?B.legL.rotation.x:0, lR=B.legR?B.legR.rotation.x:0, dy=H.position.y-H.userData.rest.y, rz=H.rotation.z;
+    return c=>{ '@later'; const B=c.B, H=B.hips, lL=B.legL?B.legL.rotation.x:0, lR=B.legR?B.legR.rotation.x:0, dy=H.position.y-H.userData.rest.y, rz=H.rotation.z;
       for(const n of S){ const p=at[n], t=(top-p[1])/((top-bot)||1), wl=Math.max(0,Math.min(1,.5-p[0]/(2*r))), a=lL*wl+lR*(1-wl), d=hip[1]-p[1];
         const b=B[n]; b.position.y+=dy; b.position.z+=Math.sin(-a)*Math.max(0,d)*t*.9; b.position.x+=-rz*(p[1]-hip[1]); b.position.y+=(1-Math.cos(a))*Math.max(0,d)*t*.5; } }; };
   const make=(key,D)=>{ const K=KIND[key], g=RIGNPC.glb(D), sk=skirt(g);
     const def={bones:g.bones, mesh:g.mesh, glass:g.glass, springs:Object.fromEntries(Object.entries(SPR).filter(([b])=>g.bones.some(q=>q[0]===b))),
       pose:c=>{ RIGNPC.limbs(c,K.o); if(sk)sk(c); } };
     const N=RIGNPC.make(def,Object.assign({key,name:D.name,eye:-1,metres:K.metres,radius:K.radius,speed:K.speed,stride:K.stride},PARTSNPC.street(K.at,-70)));
-    GLBTOONS.list.push(N); GLBTOONS[key]=N; return N; };
-  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND)if(J.chars[k])make(k,J.chars[k]); return GLBTOONS.list; }));
+    GLBTOONS.list.push(N); GLBTOONS[key]=N; if(CINEMA.toon)CINEMA.toon(key,N); return N; };
+  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>window.__started||SH&&KIND[SH]?GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)):setTimeout(go,600); go(); }
+export {GLBTOONS};

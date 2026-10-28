@@ -1,6 +1,6 @@
-// THE GARDEN: GARDEN, the wild flowers and the garden plots the player can plant.
+// THE GARDEN: GARDEN, the wild flowers (none in the park) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
@@ -19,6 +19,11 @@ const GARDEN={}; window.GARDEN=GARDEN;
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
     ['g_garden','GARDEN BOUQUET','garden',[40,85],{fl_zinnia:2,fl_marigold:2,fl_sunflower:1},'sells for $48'],['g_rose','HALF DOZEN ROSES','garden',[60,105],{fl_rose:6},'sells for $110'],
     ['g_corsage','ORCHID CORSAGE','garden',[70,110],{fl_slipper:1,fl_violet:2},'sells for $120']];
+  INSPECT.kinds.push({is:id=>/^(fl|sd)_/.test(id)&&FL[id.slice(3)]||!!BQ.find(r=>r[0]===id),make:id=>{ const P=INSPECT.part;
+    if(id.startsWith('sd_'))return INSPECT.shape('packet',FL[id.slice(3)][3],0xf2ead6);
+    const bq=BQ.find(r=>r[0]===id); if(bq)return INSPECT.shape('bouquet',Object.keys(bq[4]).map(f=>FL[f.slice(3)][3]),0xe8dcc0);
+    const [, , ,hc,cc,[r,hh,st,cr]]=FL[id.slice(3)], R=r*1.6, H=Math.max(.06,st*1.25), g=new THREE.Group();
+    g.add(P('cyl',0x4a8a3a,0,H/2,0,.012,H,.012),P('ball',0x3e7a32,.03,H*.3,0,.07,.012,.03,0,.4),P('ball',hc,0,H,0,R,R*hh,R,0,0,0,{flat:1})); if(cr)g.add(P('ball',cc,0,H+R*hh*.55,0,R*cr,R*cr*.6,R*cr,0,0,0,{flat:1})); return g; }});
   const BP={g_posy:14,g_meadow:28,g_tulip:40,g_aster:36,g_garden:48,g_rose:110,g_corsage:120};
   const NM={}, PR={}; for(const k in FL){ NM['fl_'+k]=FL[k][0]; PR['fl_'+k]=FL[k][2]; } for(const k in SEED)NM['sd_'+k]=SEED[k][0]; for(const r of BQ)NM[r[0]]=r[1];
   FORAGE.add({names:NM,prices:Object.assign({},PR,BP),recipes:BQ});
@@ -31,7 +36,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
   const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD.flat; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], drift=vn(x/T/7,z/T/7,511)>.62;
-      if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;
+      if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005)||WEEDS.inPark(x,z))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;
       out.push({k,x:px,z:pz,y:grp.top(px,y,pz),id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.85+.4*hsh(x,z,529),a:hsh(z,x,531)*6.28}); } return out; };
   const NMX=400, mat=new THREE.MeshLambertMaterial({flatShading:true}), grpG=MAPG.bodega||scene;
   const mk=g=>{ const me=new THREE.InstancedMesh(g,mat,NMX); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NMX*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; grpG.add(me); return me; };

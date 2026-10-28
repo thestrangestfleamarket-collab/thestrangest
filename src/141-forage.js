@@ -50,7 +50,7 @@ import {GEMS} from './101-gems.js';
   FORAGE.say=say; FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
   FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
-  FORAGE.SELLP=[]; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.SELLP=[]; FORAGE.BUYK={}; FORAGE.SELLS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM'},prices:{airshroom:8}}); FORAGE.SELLS.push(['airshroom',8,()=>true]);   // off-world: the seller's one wares, lets you hold your breath longer underwater
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);

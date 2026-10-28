@@ -18,6 +18,9 @@ CHARED.build=()=>{ '@editor';
   const toggleSell=(N,id)=>{ const r=rec(N); r.trade=r.trade||{}; const a=Array.isArray(r.trade.sells)?r.trade.sells:(r.trade.sells=[]); const i=a.indexOf(id);
     if(i<0)a.push(id); else a.splice(i,1); if(!a.length){ delete r.trade.sells; if(!Object.keys(r.trade).length)delete r.trade; }
     CHARS.save(); if(window.SHOPS&&SHOPS.sync){ SHOPS.sync(); if(SHOPS.draw)SHOPS.draw(); } };
+  const buysOf=N=>{ const r=recR(N); return (r.trade&&Array.isArray(r.trade.buys))?r.trade.buys:[]; };
+  const toggleBuy=(N,g)=>{ const r=rec(N); r.trade=r.trade||{}; const a=Array.isArray(r.trade.buys)?r.trade.buys:(r.trade.buys=[]); const i=a.indexOf(g); if(i<0)a.push(g); else a.splice(i,1); if(!a.length)delete r.trade.buys;
+    CHARS.save(); if(window.SHOPS&&SHOPS.draw)SHOPS.draw(); };
   let sel=null, tab='id', exported='';
 
   const css=document.createElement('style'); css.textContent=`
@@ -84,6 +87,7 @@ CHARED.build=()=>{ '@editor';
       +'<div class="dim">Pick the item types this character sells. Price is each item\'s VALUE (set in the item editor, shift+7). Buyers walk up and get them into their pack.</div>';
       if(!ids.length)b+='<div class="dim" style="color:#c8a060">No item types yet — add some in the item editor (shift+7), then they show here.</div>';
       else b+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+ids.map(id=>'<button class="chip" data-sell="'+esc(id)+'" style="padding:4px 8px;border:2px solid '+(sells.includes(id)?'#f2c14e':'#3a3f4e')+';background:#0e1016;color:'+(sells.includes(id)?'#f2c14e':'#9b9584')+';cursor:pointer;font:inherit">'+esc(itemName(id))+' <span style="color:#6f7686">$'+itemVal(id)+'</span></button>').join('')+'</div>';
+      { const bys=buysOf(N), G=Object.keys((window.FORAGE&&FORAGE.BUYK)||{}); if(G.length)b+='<div class="sec">BUYS</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+G.map(g=>'<button class="chip" data-buy="'+esc(g)+'" style="padding:4px 8px;border:2px solid '+(bys.includes(g)?'#f2c14e':'#3a3f4e')+';background:#0e1016;color:'+(bys.includes(g)?'#f2c14e':'#9b9584')+';cursor:pointer;font:inherit">'+esc(g.toUpperCase())+'</button>').join('')+'</div>'; }
       if(sells.length)b+='<div class="dim">Sells '+sells.length+' item'+(sells.length===1?'':'s')+'. Walk up to '+esc(N.name||'them')+' in game to buy.</div>'; }
     return '<div class="dhdr">'+esc(N.name||N.key)+'</div><div class="tabs">'+tabs+'</div><div class="fields">'+b+'</div>'; };
   // TALK: the character's script (lines, and the replies under each); the draft starts from the committed one
@@ -137,6 +141,7 @@ CHARED.build=()=>{ '@editor';
     else if(b.id==='chHere'){ const ht=homeTiles(sel); setField(sel,'homex',CHARS.tx(pos.x)); setField(sel,'homey',CHARS.tz(pos.z)); if(!(ht[2]>0))setField(sel,'range',6); draw(); }
     else if(b.id==='chPut'){ setField(sel,'range',0); draw(); }
     else if(b.dataset.sell){ toggleSell(sel,b.dataset.sell); draw(); }
+    else if(b.dataset.buy){ toggleBuy(sel,b.dataset.buy); draw(); }
     else if(b.id==='tkNew'){ talkOf(sel,true); CHARS.save(); draw(); } else if(b.id==='tkDel'){ delete rec(sel).talk; CHARS.save(); draw(); }
     else if(b.id==='tkTry'){ CHARED.toggle(); setTimeout(()=>{ if(window.TALK&&TALK.open)TALK.open(sel); },300); }
     else if(b.id==='tkAdd'){ const tk=talkOf(sel,true); let n=1; while(tk.lines['line'+n])n++; tk.lines['line'+n]={say:'',opts:[{t:'BACK.',go:tk.start}]}; CHARS.save(); draw(); }

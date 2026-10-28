@@ -28,7 +28,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
 
   // the stations: A's is the old one in 009-down; B to H are made here the same size as A's (58 along, 21.8 across: track, platform, track)
   const LEN=M.SL.L, XW=21.8, P0=4.4, P1=17.4, MID=(P0+P1)/2, EX0=10.9, EX1=13.9, ED=3, COLX=[P0+1.5,P1-2.2], COLY=M.SL.COLY, STEPU=[[.6,1.8],[LEN-1.6,LEN-.4]];
-  const STA=D.stations.map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
+  const STA=D.stations.filter(d=>SECTIONS.loaded.some(b=>b.id===d.id)).map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
     st.s={}; for(const k in TRK)st.s[k]=TRK[k].near(d.x,D.tracks[k][d.side]).s;
     st.P=(u,a,h)=>[WX(st.x0+u),H(h),WZ(st.my(a))]; st.ua=(x,z)=>({u:MX(x)-st.x0,a:(MZ=>sg>0?MZ-(yi-2.2):(yi+2.2)-MZ)(MY(z))});
     const sec=SECTIONS.of(d.id); st.street=d.side==='south'?SECTIONS.streets.south:SECTIONS.streets.north; st.sec=sec;
@@ -66,7 +66,11 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   // the tunnels: one strip per stretch between stations on each track, its floor, two walls and a roof; lamps every 18 tiles, a real light every 36
   const TG=new THREE.Group(); TG.name='loop-tunnels'; scene.add(TG);
   const LAMPG=new THREE.BoxGeometry(.12*T,8*ZU,.6*T), LAMPM=new THREE.MeshBasicMaterial({color:0xffe2a0,clippingPlanes:[PT]}), lampAt=[];
-  const free=k=>{ const L=TRK[k].L, cut=STA.map(st=>[st.s[k]-LEN/2,st.s[k]+LEN/2]).sort((a,b)=>a[0]-b[0]), out=[]; for(let i=0;i<cut.length;i++){ const a=cut[i][1], b=i+1<cut.length?cut[i+1][0]:cut[0][0]+L; out.push([a,b]); } return out; };
+  // only the loaded sections' stretch of each track: a tunnel runs from a station to the section's edge and stops at a black end wall
+  const LV=SECTIONS.live, inLive=(tr,s)=>{ const o=tr.pt(s); return o.x>LV.x0&&o.x<LV.x1&&o.y>LV.y0&&o.y<LV.y1; }, ENDS={};
+  const free=k=>{ const tr=TRK[k], L=tr.L, cut=STA.map(st=>[st.s[k]-LEN/2,st.s[k]+LEN/2]).sort((a,b)=>a[0]-b[0]), out=[]; ENDS[k]=[];
+    for(let i=0;i<cut.length;i++){ const a=cut[i][1], b=i+1<cut.length?cut[i+1][0]:cut[0][0]+L; let p=a, q=b; while(p<b&&inLive(tr,p+.5))p+=.5; while(q>p&&inLive(tr,q-.5))q-=.5;
+      if(p>=q-.5){ out.push([a,b]); continue; } if(p>a){ out.push([a,p]); ENDS[k].push({s:p,dir:1}); } if(q<b){ out.push([q,b]); ENDS[k].push({s:q,dir:-1}); } } return out; };
   for(const k in TRK){ const tr=TRK[k];
     for(const [a,b] of free(k)){ for(let p=a;p<b-.01;p+=60){ const q=Math.min(b,p+60), n=Math.max(2,Math.ceil((q-p)/2)), S=[]; for(let i=0;i<=n;i++)S.push(p+(q-p)*i/n);
         const F=[],FU=[],WL=[],WLU=[],WR=[],WRU=[],C=[],CU=[];
@@ -86,6 +90,12 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
         if(Math.round((s-a-9)/18)%2===0){ const L=new THREE.PointLight(new THREE.Color(1,.86,.62),LAMPI*.4,10*T,LAMPD); L.position.set(WX(o.x),H(30),WZ(o.y)); L.userData.i0=L.intensity; TG.add(L); lamps.push(L); } } } }
   { const IM=new THREE.InstancedMesh(LAMPG,LAMPM,lampAt.length), o=new THREE.Object3D(); lampAt.forEach((l,i)=>{ o.position.set(l.x,H(66),l.z); o.rotation.set(0,l.r,0); o.updateMatrix(); IM.setMatrixAt(i,o.matrix); }); TG.add(IM); }
 
+  { const CAPM=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide,clippingPlanes:[PT]});
+    for(const k in ENDS)for(const e of ENDS[k]){ const tr=TRK[k], o=tr.pt(e.s), nx=-o.hy, ny=o.hx, a=-tr.hin(e.s)-.3, b=tr.hout(e.s)+.3, at=(v,h)=>[WX(o.x+nx*v),H(h),WZ(o.y+ny*v)];
+      const g=geo([...at(a,-32),...at(b,-32),...at(b,140),...at(a,-32),...at(b,140),...at(a,140)],[0,0,1,0,1,1,0,0,1,1,0,1]); TG.add(new THREE.Mesh(g,CAPM));
+      const p=at(a,0), q=at(b,0), d=[o.hx*e.dir*.4*T,o.hy*e.dir*.4*T]; solid([Math.min(p[0],q[0],p[0]+d[0],q[0]+d[0])-.1,Math.min(p[2],q[2],p[2]+d[1],q[2]+d[1])-.1,Math.max(p[0],q[0],p[0]+d[0],q[0]+d[0])+.1,Math.max(p[2],q[2],p[2]+d[1],q[2]+d[1])+.1]); } }
+  LOOP.ENDS=ENDS;
+
   // the stations B to H, and every station's signs
   const SIGN={y:[24,24,26],ink:[248,248,242],t1:'#f0a72a',t2:'#38b7a6',ex:'#0f6b34'};
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
@@ -96,12 +106,12 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const nameSign=(g,w,h,st)=>{ g.fillStyle='#ddd8c8'; g.fillRect(0,0,w,h); g.strokeStyle='#2f6b45'; g.lineWidth=h*.12; g.strokeRect(0,0,w,h); g.fillStyle='#111'; font(g,h*.52,900); g.textBaseline='middle';
     const tw=g.measureText(st.name).width; g.fillText(st.name,(w-tw-h*.7)/2,h*.54); g.lineWidth=h*.05; g.strokeStyle='#111'; const bx=(w+tw-h*.5)/2+h*.1; g.strokeRect(bx,h*.27,h*.46,h*.46); font(g,h*.34,900); g.fillText(st.id,bx+h*.1,h*.52); };
   const trackSign=(g,w,h,st,t)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); bullet(g,h*.55,h/2,h*.36,t.id); g.fillStyle='#f6f6f1'; font(g,h*.34); g.textBaseline='middle';
-    g.fillText((t.dir>0?'↻ ':'↺ ')+t.way,h*1.1,h*.36); const nx=next(st,t); font(g,h*.22,600); g.fillStyle='#c9c9c0'; g.fillText('NEXT  '+nx.name+' · '+nx.id+'   THEN  '+next(nx,t).name,h*1.1,h*.74); };
+    g.fillText((t.dir>0?'↻ ':'↺ ')+t.way,h*1.1,h*.36); const nx=next(st,t); font(g,h*.22,600); g.fillStyle='#c9c9c0'; g.fillText(STA.length>1?'NEXT  '+nx.name+' · '+nx.id+'   THEN  '+next(nx,t).name:'SHUTTLE  ·  SECTION '+st.id+' ONLY',h*1.1,h*.74); };
   const exitSign=(g,w,h,st)=>{ g.fillStyle=SIGN.ex; g.fillRect(0,0,w,h); g.strokeStyle='#bff2b0'; g.lineWidth=h*.06; g.strokeRect(h*.12,h*.2,h*1.7,h*.6); g.fillStyle='#bff2b0'; font(g,h*.36,900); g.textBaseline='middle';
     g.fillText('EXIT '+st.id+'1',h*.24,h*.52); g.fillStyle='#f4fff0'; font(g,h*.42); g.fillText('↑ '+st.street,h*2.1,h*.4); font(g,h*.24,600); g.fillText(st.name+' · SECTION '+st.id,h*2.1,h*.76); };
-  const mapSign=(g,w,h,st)=>{ g.fillStyle='#0b0d0c'; g.fillRect(0,0,w,h); g.fillStyle='#f6f6f1'; font(g,h*.07); g.fillText('THE LOOP',w*.05,h*.1); const A=SECTIONS.all, m=w*.08, sx=(w-2*m)/(A.x1-A.x0), sy=(h*.62)/(A.y1-A.y0), X=x=>m+(x-A.x0)*sx, Y=y=>h*.16+(A.y1-y)*sy;
-    g.fillStyle='#22382a'; g.fillRect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.strokeStyle='#3a3f3c'; g.lineWidth=1; for(const b of SECTIONS.list)g.strokeRect(X(b.x0),Y(b.y1),(b.x1-b.x0)*sx,(b.y1-b.y0)*sy);
-    for(const k of ['outer','inner']){ const t=D.tracks[k]; g.strokeStyle=k==='outer'?SIGN.t1:SIGN.t2; g.lineWidth=Math.max(2,h*.012); g.strokeRect(X(t.west),Y(t.north),(t.east-t.west)*sx,(t.north-t.south)*sy); }
+  const mapSign=(g,w,h,st)=>{ g.fillStyle='#0b0d0c'; g.fillRect(0,0,w,h); g.fillStyle='#f6f6f1'; font(g,h*.07); g.fillText('THE LOOP · SECTION '+st.id,w*.05,h*.1); const A=SECTIONS.live, m=w*.08, sx=(w-2*m)/(A.x1-A.x0), sy=(h*.62)/(A.y1-A.y0), X=x=>m+(x-A.x0)*sx, Y=y=>h*.16+(A.y1-y)*sy;
+    g.fillStyle='#22382a'; g.fillRect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.strokeStyle='#3a3f3c'; g.lineWidth=1; for(const b of SECTIONS.loaded)g.strokeRect(X(b.x0),Y(b.y1),(b.x1-b.x0)*sx,(b.y1-b.y0)*sy);
+    g.save(); g.beginPath(); g.rect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.clip(); for(const k of ['outer','inner']){ const t=D.tracks[k]; g.strokeStyle=k==='outer'?SIGN.t1:SIGN.t2; g.lineWidth=Math.max(2,h*.012); g.strokeRect(X(t.west),Y(t.north),(t.east-t.west)*sx,(t.north-t.south)*sy); } g.restore();
     for(const s of STA){ const x=X(s.x), y=Y(D.tracks.inner[s.side]+(s.side==='south'?-8.7:8.7)), r=h*.035; g.fillStyle=s===st?'#e7685a':'#050505'; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.strokeStyle='#f6f6f1'; g.lineWidth=2; g.stroke();
       g.fillStyle='#f6f6f1'; font(g,r*1.1,900); g.textAlign='center'; g.textBaseline='middle'; g.fillText(s.id,x,y+1); font(g,h*.032,600); g.fillText(s.name,x,y+(s.side==='south'?r*2.2:-r*2.2)); g.textAlign='left'; }
     font(g,h*.05,700); g.fillStyle='#e7685a'; g.fillText('● YOU ARE HERE',w*.05,h*.93); bullet(g,w*.5,h*.92,h*.035,1); g.fillStyle='#f6f6f1'; font(g,h*.04,600); g.fillText('↻ CLOCKWISE',w*.53,h*.92); bullet(g,w*.76,h*.92,h*.035,2); g.fillStyle='#f6f6f1'; g.fillText('↺ COUNTER',w*.79,h*.92); };

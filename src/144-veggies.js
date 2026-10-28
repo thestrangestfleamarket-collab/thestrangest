@@ -1,6 +1,6 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
-import {CIVIC, FORAGE, INV, LINES, PARK, SFX, UI, VIT} from './003b-systems.js';
+import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, UI, VIT} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
@@ -12,6 +12,8 @@ const VEG={}; window.VEG=VEG;
     ['v_potato','POTATO',2,1,.07,0xb08a5a,[.06,.05],1],['v_onion','ONION',2,1,.04,0xd8b88a,[.055,.055],1],['v_greens','LEAFY GREENS',3,2,.04,0x4a9a3a,[.09,.05],1],
     ['v_pumpkin','PUMPKIN',12,7,.14,0xe0782a,[.2,.16],1]];
   const NM=Object.fromEntries(V.map(v=>[v[0],v[1]])), SELL=Object.fromEntries(V.map(v=>[v[0],v[2]])), BUY=Object.fromEntries(V.map(v=>[v[0],v[3]])), XS=[], XB=[];
+  INSPECT.kinds.push({is:id=>!!NM[id]||/^f_(corn|vstew|stuffpep|psoup)$/.test(id),make:id=>{ const K=STALL.VEG[id.slice(2)]; if(K)return INSPECT.recipe(K);
+    return id==='f_corn'?INSPECT.recipe(STALL.VEG.corn):id==='f_stuffpep'?INSPECT.recipe(STALL.VEG.pepper):INSPECT.shape('bowl',id==='f_psoup'?0xe0882a:0x8a5a2a); }});
   VEG.add=(sells,buys)=>{ for(const id in sells){ SELL[id]=sells[id]; XS.push(id); } for(const id in buys){ BUY[id]=buys[id]; XB.push(id); } }; const NMV=id=>NM[id]||FORAGE.NM[id]||id;
   FORAGE.add({names:Object.assign({},NM,{f_corn:'ROAST CORN',f_vstew:'VEGETABLE STEW',f_stuffpep:'STUFFED PEPPER',f_psoup:'PUMPKIN SOUP'}),
     raw:Object.fromEntries(V.map(v=>[v[0],[v[4],0]])),

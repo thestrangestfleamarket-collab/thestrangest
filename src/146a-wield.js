@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod): swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, ITEMS, keys, LEVELS, ONLINE, pos, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {BFLY} from './143-bfly.js';
@@ -19,6 +19,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     p.position.y=.45; h.position.y=1+r; h.rotation.y=Math.PI/2; b.position.set(-r*.8,1+r,0); b.rotation.z=Math.PI/2; g.add(p,h,b); g.r=r; g.head=new V3(0,1+r,0); return g; };
   const sword=([bl,gd,gr])=>{ const g=new THREE.Group(), gold=lam(gd); g.add(bx(.035,.2,.035,lam(gr),-.02),bx(.22,.03,.05,gold,.09),bx(.075,.72,.014,lam(bl),.46),bx(.05,.05,.05,gold,-.14)); g.head=new V3(0,.8,0); return g; };
   const MK={net:()=>net(.2,0xc8c2b0,0xf4f0e4), bnet:()=>net(.3,0x5a4a3a,0xb8b4a8)}, MESH={}, mk=id=>KIND[id]?KIND[id].make():MK[id]?MK[id]():sword(SWC[id]||SWC.sword);
+  INSPECT.kinds.push({is:id=>!!(KIND[id]||MK[id]||SWC[id]),make:id=>{ const g=mk(id); g.traverse(c=>{ c.userData.ownMat=true; }); return g; }});
   const N=8, TP=new Float32Array(N*2*3), TG=new THREE.BufferGeometry(), TI=[]; for(let i=0;i<N-1;i++){ const a=i*2; TI.push(a,a+1,a+2,a+1,a+3,a+2); }
   TG.setAttribute('position',new THREE.BufferAttribute(TP,3)); TG.setIndex(TI);
   const trail=new THREE.Mesh(TG,new THREE.MeshBasicMaterial({color:0xf4f0e4,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})); trail.frustumCulled=false; trail.visible=false; scene.add(LEVELS.own(trail,'*'));

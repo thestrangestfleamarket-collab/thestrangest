@@ -1,6 +1,6 @@
 // THE GARDEN: GARDEN, the wild flowers (none in the park) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
@@ -19,6 +19,11 @@ const GARDEN={}; window.GARDEN=GARDEN;
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
     ['g_garden','GARDEN BOUQUET','garden',[40,85],{fl_zinnia:2,fl_marigold:2,fl_sunflower:1},'sells for $48'],['g_rose','HALF DOZEN ROSES','garden',[60,105],{fl_rose:6},'sells for $110'],
     ['g_corsage','ORCHID CORSAGE','garden',[70,110],{fl_slipper:1,fl_violet:2},'sells for $120']];
+  INSPECT.kinds.push({is:id=>/^(fl|sd)_/.test(id)&&FL[id.slice(3)]||!!BQ.find(r=>r[0]===id),make:id=>{ const P=INSPECT.part;
+    if(id.startsWith('sd_'))return INSPECT.shape('packet',FL[id.slice(3)][3],0xf2ead6);
+    const bq=BQ.find(r=>r[0]===id); if(bq)return INSPECT.shape('bouquet',Object.keys(bq[4]).map(f=>FL[f.slice(3)][3]),0xe8dcc0);
+    const [, , ,hc,cc,[r,hh,st,cr]]=FL[id.slice(3)], R=r*1.6, H=Math.max(.06,st*1.25), g=new THREE.Group();
+    g.add(P('cyl',0x4a8a3a,0,H/2,0,.012,H,.012),P('ball',0x3e7a32,.03,H*.3,0,.07,.012,.03,0,.4),P('ball',hc,0,H,0,R,R*hh,R,0,0,0,{flat:1})); if(cr)g.add(P('ball',cc,0,H+R*hh*.55,0,R*cr,R*cr*.6,R*cr,0,0,0,{flat:1})); return g; }});
   const BP={g_posy:14,g_meadow:28,g_tulip:40,g_aster:36,g_garden:48,g_rose:110,g_corsage:120};
   const NM={}, PR={}; for(const k in FL){ NM['fl_'+k]=FL[k][0]; PR['fl_'+k]=FL[k][2]; } for(const k in SEED)NM['sd_'+k]=SEED[k][0]; for(const r of BQ)NM[r[0]]=r[1];
   FORAGE.add({names:NM,prices:Object.assign({},PR,BP),recipes:BQ});

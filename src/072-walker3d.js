@@ -128,7 +128,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       curtain=(o)=>p=>{ const y=p.y-H.y, dn=Math.max(0,-y-2), w=o.w+o.fl*dn+(o.wave?o.wave*Math.sin(y*.9+th(p)*1.5):0), dz=p.z-H.z+.6;
         let d=Math.hypot((p.x-H.x)/(w+.6),dz/(w))*w-w-grain(p,o.N,o.g);
         d=Math.max(d,y-6.5,-(o.len+o.tip*sq(Math.sin(th(p)*o.tk))+.6*Math.sin(th(p)*3))-y);
-        const face=Math.max((sq((p.x-H.x)/6.3)+sq((y+1.4)/9.5))-1,H.z+.3-p.z); return Math.max(d,-face*3); },
+        const face=Math.max((sq((p.x-H.x)/6.3)+sq((y+1.4)/9.5))-1,H.z+.3-p.z); d=Math.max(d,-face*3,(p.z-H.z-2.4)*cl((1-y)/3,0,1)); return Math.max(d,(p.z-H.z+1.0)*cl((-y-7.5)/2,0,1)); },
       SPK=[], CRL=[];
     for(let i=0;i<17;i++){ const t=(i+.5)/17, ph=i*2.39996, yy=1-t*1.15, rr=Math.sqrt(Math.max(0,1-yy*yy)), x=Math.cos(ph)*rr, z=Math.sin(ph)*rr;
       if(yy<-.05||z>.8&&yy<.45)continue; const b=Vv(x*5.4,1.4+yy*6.3,-1+z*6.0), dir=R.nrm(Vv(x*.8,yy*.6+1.0,z*.5-.65)), l=3.0+(i%3)*.9;
@@ -140,8 +140,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     const braid=p=>{ const t=cl((H.y-1.0-p.y)/15.5,0,1), c=ad(H,Vv(.55*Math.sin(t*30),-1.0-t*15.5,-8.6-t*1.1)); return sm(Math.hypot((p.x-c.x)/(1.75-t*.75),(p.y-c.y)/1.25,(p.z-c.z)/(1.45-t*.55))-1,Math.hypot(p.x-H.x,p.y-H.y+17.0,p.z-H.z+9.7)-.95,.4); };
     const pig=s=>p=>tube([Vv(s*6.4,0,-3.4),Vv(s*7.9,-3.8,-3.6),Vv(s*8.3,-7.4,-3.0),Vv(s*7.6,-10.6,-2.4)],[1.9,1.8,1.3,.3],p)+twist(p,.2,2.8);
     const tie=(x,y,z,r)=>p=>Math.hypot(p.x-H.x-x,p.y-H.y-y,p.z-H.z-z)-r;
-    const LONG={w:7.3,fl:.07,len:14.2,tip:1.3,tk:6,N:30,g:.38}, WAVY={...LONG,w:7.5,fl:.11,wave:.75,len:14.6,tip:1.6,tk:5,g:.45},
-      top=cap({t:1.0,crown:.6,g:.3,N:30,fh:3.6,arch:.8,sc:.35,k:1.0,ears:1,ny:-14,na:0});
+    const LONG={w:7.2,fl:.035,len:14.2,tip:1.3,tk:6,N:26,g:.3}, WAVY={...LONG,w:7.3,fl:.05,wave:.7,len:14.6,tip:1.6,tk:5,g:.34},
+      top=cap({t:.75,crown:.5,g:.16,N:22,fh:3.6,arch:.8,sc:.35,k:1.0,ears:1,ny:-14,na:0});
     PCS.push(V('hairPony','hair','hair',p=>sm(tight(p),tie(0,1.4,-8.0,1.7)(p),.6)),
              Object.assign(V('hairPonyA','hair','hair',tail),{bb:[H.x-5,H.x+5,H.y-14,H.y+4,H.z-14,H.z-4],swing:{pivot:[0,1.4,-8.2],rest:[0,-1,-.05],len:9,max:.8,k:30,back:1}}),
              V('hairLong','hair','hair',p=>Math.max(sm(top(p),curtain(LONG)(p),1.2),CUT-.8-p.y)),
@@ -168,11 +168,29 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
              V('beardFull','head','hair',p=>Math.max(hd(p)-1.1-grain(p,34,.35)-1.6*cl(-(p.y-H.y+5.5)/4,0,1)*(1-cl(Math.abs(p.x-H.x)/7,0,1)),jaw(p),MO(p))),
              V('beardGoatee','head','hair',p=>Math.max(sm(ell(p,ad(H,Vv(0,-7.3,4.9)),Vv(1.7,2.0,1.4)),tube([Vv(-2.6,-5.0,5.6),Vv(0,-4.6,6.6),Vv(2.6,-5.0,5.6)],[.7,.8,.7],p),.6),MO(p),-hd(p)+.05)),
              V('beardMoustache','head','hair',p=>tube([Vv(-3.1,-5.9,5.0),Vv(-1.4,-4.7,6.2),Vv(0,-4.5,6.5),Vv(1.4,-4.7,6.2),Vv(3.1,-5.9,5.0)],[.35,.75,.8,.75,.35],p)));
+    { // her face: the jaw drawn in softly toward a smaller, rounder chin, and lashes at the outer top of each eye (both only on the female build)
+      const ears=p=>Math.min(ell(p,ad(H,Vv(6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)),ell(p,ad(H,Vv(-6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)));
+      const soft=p=>{ const t=cl((H.y-1.0-p.y)/8,0,1), q=Vv(H.x+(p.x-H.x)*(1+.34*t*t+.05),p.y,H.z+(p.z-H.z)*(1+.06*t+.03));
+        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),5.4+.4*t),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.5,6.1)),Vv(0.75,1.35,1.0),0.4)); };
+      head.form='M'; PCS.push(Object.assign({},head,{n:'headF',d:soft,form:'F',paint:()=>null}));
+      let zf=H.z; while(soft(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
+      const lash=s=>p=>tube([Vv(s*2.1,1.35,zf-H.z-.1),Vv(s*3.0,1.5,zf-H.z-.3),Vv(s*3.6,1.95,zf-H.z-.7)],[.15,.14,.05],p);
+      let zm=H.z; while(soft(Vv(H.x,H.y-5.3,zm))<0&&zm<H.z+12)zm+=.05;
+      PCS.push({n:'lipsF',on:'head',m:'lips',d:p=>Math.min(ell(p,Vv(H.x,H.y-5.05,zm-.3),Vv(1.2,.3,.42)),ell(p,Vv(H.x,H.y-5.55,zm-.32),Vv(1.05,.34,.42))),bb:[H.x-3,H.x+3,H.y-8,H.y-4,zm-2,zm+2],step:.14,cell:.12,form:'F'});
+      PCS.push({n:'lashesF',on:'head',m:'eye',d:p=>Math.min(lash(1)(p),lash(-1)(p)),bb:[H.x-5,H.x+5,H.y-1,H.y+4,H.z+1,H.z+11],step:.14,cell:.12,form:'F'}); }
+    { // brows (his heavier and straighter, hers thinner and arched), in the hair's colour, on each face's front
+      const HF=PCS.find(P=>P.n==='headF'), on=(hdx,x,y,r)=>{ let z=H.z+12; while(hdx(Vv(H.x+x,H.y+y,z))>r*.35&&z>H.z)z-=.05; return Vv(x,y,z-H.z); },
+        brow=(hdx,r,ar,tilt)=>{ const pts=s=>[[1.2,2.3+tilt],[2.5,2.5+ar],[3.7,2.25+ar*.3-tilt*.3]].map(([x,y])=>{ const q=on(hdx,s*x,y,r); return q; });
+          const L=pts(-1), Rr=pts(1); return p=>Math.min(tube(L,[r,r*.95,r*.55],p),tube(Rr,[r,r*.95,r*.55],p)); };
+      PCS.push({n:'browsM',on:'head',m:'hair',d:brow(hd,.4,.1,.12),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.16,cell:.13,form:'M'},
+               {n:'browsF',on:'head',m:'hair',d:brow(HF.d,.17,.35,.15),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.14,cell:.12,form:'F'}); }
     { const BODY=['torso','neck','sleeveL','sleeveR','upperArmL','upperArmR'].map(n=>PCS.find(P=>P.n===n)).filter(Boolean), clear=p=>Math.min(...BODY.map(P=>P.d(p)));
+      const strand=p=>{ const a=th(p), y=p.y-H.y, v=Math.sin(a*17+y*.3+1.7*Math.sin(a*5+y*.15))*Math.sin(a*7.3-y*.21+2.1); return v>.62&&y>-4?'hairHi':v<-.66?'hairLo':null; };
+      for(const P of PCS)if(/^(hair|beard)/.test(P.n)&&!P.paint)P.paint=strand;
       for(const P of PCS)if(/^hair/.test(P.n)){ const d0=P.d; P.d=p=>Math.max(d0(p),.6-clear(p)); }
       for(const P of PCS)if(/^beard/.test(P.n))P.layer='beard'; }
     const EYES=[[[7,13,8,14,'eye','o']], [[6,13,8,14,'eyeW'],[7,13,8,14,'eye']], [[6,12,9,15,'eyeW'],[7,12,8,15,'eye'],[7,13,7,13,'pupil'],[8,12,8,12,'eyeW']],
-      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']]];
+      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']], [[6,12,9,15,'eyeW','o'],[7,13,8,14,'eye','o'],[8,12,8,12,'eyeW','o']]];
     const U=.47, RX=r=>[(r[0]-13)*U,(r[2]+1-13)*U], RY=r=>[.7-(r[3]+1-14)*U,.7-(r[1]-14)*U];
     EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
@@ -188,10 +206,16 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     for(const n of 'LR'){ const up=(k,y)=>add(J[k+n],V(0,y,0));
       under('bodyThigh'+n,'thigh'+n,'skin',['pants']); under('bodyShin'+n,'shin'+n,'skin',['pants']);
       under('foot'+n,'shoe'+n,'skin',['shoes'],p=>Math.min(rcone(p,up('heel',1.3),up('toe',1),1.55,1.25),rcone(p,J['ankle'+n],up('heel',1.3),1.9,1.6))); }
-    { const TOR=get('torso'), C=J.chest, y=C.y-2.1; let zf=C.z; while(TOR.d(V(C.x+2.4,y,zf))<0&&zf<C.z+12)zf+=.1;   // her bust: on the chest's front, in the shirt (or skin when it's off)
-      const bust=t=>p=>Math.min(...[-1,1].map(k=>R.ell(p,V(C.x+k*2.5,y,zf-.5),V(2.6+t,2.4+t,2.3+t))));
-      PCS.push({n:'bustF',on:'torso',m:'shirt',d:bust(.35),bb:[C.x-6,C.x+6,y-4,y+4,zf-5,zf+4],step:TOR.step,cell:TOR.cell,layer:'shirt',form:'F'},
-               {n:'bodyBustF',on:'torso',m:'skin',d:bust(0),bb:[C.x-6,C.x+6,y-4,y+4,zf-5,zf+4],step:TOR.step,cell:TOR.cell,cover:['shirt'],form:'F'}); } }
+    { // her body: the torso drawn in at the waist and narrower under the arms, a fuller bust on it; in the shirt, or skin when it's off
+      const TOR=get('torso'), BT=get('bodyTorso'), C=J.chest, P0=J.pelvis, wy=P0.y+.38*(C.y-P0.y), cx=C.x, cz=C.z, sq=x=>x*x;
+      const pinch=d=>p=>{ const w=Math.exp(-sq((p.y-wy)/3.6)), t=Math.max(0,Math.min(1,(p.y-C.y+1.5)/4)); return d(V(cx+(p.x-cx)*(1+.24*w+.1*t),p.y,cz+(p.z-cz)*(1+.1*w))); };
+      TOR.form='M'; BT.form='M';
+      PCS.push(Object.assign({},TOR,{n:'torsoF',on:'torso',under:'torso',d:pinch(TOR.d),layer:'shirt',form:'F'}),Object.assign({},BT,{n:'bodyTorsoF',d:pinch(BT.d),form:'F'}));
+      const y=C.y-1.7, td=pinch(TOR.d); let zf=cz; while(td(V(cx+2.6,y,zf))<0&&zf<cz+12)zf+=.1;
+      const sm=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
+      const bust=t=>p=>sm(R.ell(p,V(cx+2.7,y,zf-.2),V(3.0+t,2.8+t,2.7+t)),R.ell(p,V(cx-2.7,y,zf-.2),V(3.0+t,2.8+t,2.7+t)),.8);
+      PCS.push({n:'bustF',on:'torso',m:'shirt',d:bust(.35),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,layer:'shirt',form:'F'},
+               {n:'bodyBustF',on:'torso',m:'skin',d:bust(0),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,cover:['shirt'],form:'F'}); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
@@ -215,7 +239,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.worn={shirt:true,pants:true,shoes:true,hair:true,beard:true}; W3.style={form:'M',hair:'hair',beard:''};
   // a piece shown for a look (its build, hair, beard) and what is worn; null: not the look's to say (the eyes)
   W3.shows=(P,st,worn)=>{ if(P.form&&P.form!==st.form)return false; const k=st[P.layer];
-    if(P.layer==='hair'||P.layer==='beard')return !!k&&!!worn[P.layer]&&(P.n===k||P.n===k+'A'); if(P.layer)return !!worn[P.layer]; if(P.cover)return !P.cover.some(l=>worn[l]); return null; };
+    if(P.layer==='hair'||P.layer==='beard')return !!k&&!!worn[P.layer]&&(P.n===k||P.n===k+'A'); if(P.layer)return !!worn[P.layer]; if(P.cover)return !P.cover.some(l=>worn[l]); return P.form?true:null; };
   // the other builds, hairstyles and beards are made the first time someone picks them, not at the start
   const later=P=>(!!P.form||P.layer==='hair'||P.layer==='beard')&&!W3.shows(P,W3.style,W3.worn);
   for(const P of PCS){ if(P.flatEye||later(P))continue; const fine=W3.fine(P); W3.warm(P,(P.step||(fine?STEP/2:STEP))*RES,fine,null); }
@@ -274,7 +298,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   scene.add(LEVELS.own(W3.group,'*'));
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
   W3.SZ=1.2; W3.rest=rest;
-  { const HI=PCS.findIndex(P=>P.n==='head'), EYEL=new THREE.Vector3(); W3.eyeAt=out=>{ if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
+  { const H0=PCS.findIndex(P=>P.n==='head'), HF=PCS.findIndex(P=>P.n==='headF'), EYEL=new THREE.Vector3(); W3.headIdx=()=>W3.HIDE[H0]&&HF>=0?HF:H0; W3.eyeAt=out=>{ const HI=W3.headIdx(); if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
   W3.body={place:()=>{}};
   W3.place=(B,x,y,z,hd,yawA,ZY)=>{ W3.lastB=B; if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);

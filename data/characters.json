@@ -343,5 +343,14 @@
    ],
    "line": "Jars by the register. A dollar is a dollar."
   }
+ },
+ "ticketfox": {
+  "name": "THE TICKET FOX",
+  "trade": {
+   "sells": [
+    "ticket"
+   ],
+   "line": "One for the next showing? The times are on the screen behind me."
+  }
  }
 }

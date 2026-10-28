@@ -24,7 +24,8 @@
   "trade": {
    "sells": [
     "net",
-    "bnet"
+    "bnet",
+    "kite"
    ]
   }
  },

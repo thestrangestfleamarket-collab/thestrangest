@@ -4875,3 +4875,6 @@ Owner: "In order to go into the holodeck you have to double click the entrance. 
 
 ## 27 Oct 2026: camera sway, a menu choice
 Owner: "lets add this as option in menu to toggle on or off" (the idle camera sway from Security Booth). DISPLAY's CAMERA SWAY: on, the view drifts a fifth of a degree, slowly; off by default.
+
+## 28 Oct 2026: a kite you can fly
+Owner: "add a real kite you can fly. use real physics of the kite and string, floating in sky realistically." THE NATURE MERCHANT sells a KITE ($10). Hold it, click to launch: it flies on the day's wind (stronger higher up, gusty low down), climbs and takes line when it pulls, comes down in still air; hold the mouse to wind it in. On a light day, run into the wind to get it up. Other players see it. Rule: anything that grants FLY is flown the same way.

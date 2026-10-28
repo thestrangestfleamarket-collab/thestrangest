@@ -2,11 +2,11 @@
 import {THREE} from './003-shx.js';
 import {EQUIP, FORAGE, ITEMS, VIT, W3} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-Object.assign(EQUIP,{by:{},float:false,light:false,sight:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
-{ const say=FORAGE.say, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','head','eyes'];
+Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
+{ const say=FORAGE.say, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','head','eyes','back'];
   FORAGE.add({names:{armor:'ARMOUR',cloudcoat:'CLOUD COAT'},prices:{armor:40,cloudcoat:60}});
   // one grant -> one effect, resolved the same way for every worn item (a property is schema-wide, not special-cased per item)
-  const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false} };
+  const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false}, breathe:{on:()=>EQUIP.breathe=true, off:()=>EQUIP.breathe=false} };
   const save=()=>{ try{ OWNED.set('equip',JSON.stringify(EQUIP.by)); }catch(e){} };
   EQUIP.ability=id=>prop(id,'grants');
   EQUIP.off=(slot='body')=>{ const id=EQUIP.by[slot]; if(!id)return; const a=ABIL[EQUIP.ability(id)]; if(a)a.off(); delete EQUIP.by[slot]; };
@@ -30,7 +30,13 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false}); window.EQUIP=E
     for(let i=0;i<9;i++){ const p=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),cloud); p.userData.sd=Math.random()*9; coat.add(p); puffs.push(p); }
     root.add(armour,coat); worn={root,armour,coat,plate,paul,collar,puffs}; return worn; };
 
-  EQUIP.post=B=>{ const g=W3.group, id=EQUIP.worn;
+  let tank=null;   // the scuba set on your back: a yellow tank and its valve
+  const back=B=>{ const g=W3.group, J=B&&B.J; if(!g||!J||!EQUIP.breathe||W3.group.visible===false){ if(tank)tank.visible=false; return; }
+    if(!tank){ tank=new THREE.Group(); tank.name='tank'; const c=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,10),new THREE.MeshLambertMaterial({color:0xd8a818})), v=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.35,6),new THREE.MeshLambertMaterial({color:0x26282c})); v.position.y=.66; tank.add(c,v); }
+    if(tank.parent!==g)g.add(tank); tank.visible=true; const sl=J.shoulderL, sr=J.shoulderR, ch=J.chest, nk=J.neck, pv=J.pelvis;
+    up.set(nk.x-pv.x,nk.y-pv.y,nk.z-pv.z).normalize(); right.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z); const w=right.length()||6; right.normalize(); fwd.crossVectors(right,up).normalize(); up.crossVectors(fwd,right).normalize(); M.makeBasis(right,up,fwd);
+    tank.position.set(ch.x,ch.y,ch.z).addScaledVector(fwd,-w*.42).addScaledVector(up,-w*.25); tank.quaternion.setFromRotationMatrix(M); tank.scale.set(w*.17,w*1.05,w*.17); };
+  EQUIP.post=B=>{ const g=W3.group, id=EQUIP.worn; back(B);
     if(!g||!B||!B.J||!id){ if(worn)worn.root.visible=false; return; }
     const grant=EQUIP.ability(id); if(grant!=='guard'&&grant!=='float'){ if(worn)worn.root.visible=false; return; }
     if(!worn)build(); if(worn.root.parent!==g)g.add(worn.root);

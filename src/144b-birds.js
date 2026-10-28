@@ -1,6 +1,6 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DRESS, FORAGE, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, DRESS, FORAGE, INSPECT, INV, MAIL, NPCS, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -24,7 +24,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     ['RED-TAILED HAWK','Buteo jamaicensis',.55,85,0,0,'walk',{body:0x6a4a30,breast:0xe8dcc8,head:0x5a4028,wing:0x5a3e28,bar:0xd8c8b0,tail:0xb8562a,beak:0x2a2622,leg:0xe8c040}]];
   const NK=K.length, HAWK=12, BOUNTY={10:40,11:60,12:80}, DIFF=k=>K[k][3], RARE=k=>k>=10;
   const NM={bseed:'BIRDSEED (A HANDFUL)',bnet:'BIRD NET',cage:'EMPTY BIRD CAGE'}, PR={}; for(let k=0;k<NK;k++){ NM['bd_'+k]=K[k][0]+' (IN A CAGE)'; NM['pet_'+k]='YOUR TAME '+K[k][0]; PR['bd_'+k]=K[k][4]; }
-  FORAGE.add({names:NM,prices:PR}); FORAGE.SELLP.push('bd_'); FORAGE.SELLS.push(['bseed',1,()=>true],['bnet',20,()=>!FORAGE.has('bnet')],['cage',5,()=>true]);
+  FORAGE.add({names:NM,prices:PR}); FORAGE.SELLP.push('bd_'); FORAGE.BUYK.birds=['bd_']; FORAGE.SELLS.push(['bseed',1,()=>true],['bnet',20,()=>!FORAGE.has('bnet')],['cage',5,()=>true]);
   FORAGE.HELP.push('BIRDING: double click a bird to watch it (your journal), tame it with birdseed, or catch it (a bird net and a cage).');
   const S={v:1,seen:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const PART=[['body',[shape(blob(.2,.19,.4,8,5),[1,1,1],[0,.36,-.02])]],['breast',[shape(blob(.17,.17,.24,6,4),[1,1,1],[0,.31,.12])]],['head',[shape(blob(.15,.15,.16,6,4),[1,1,1],[0,.55,.3])]],
@@ -37,6 +37,12 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.computeVertexNormals(); return g; };
   const mk=g=>{ const me=new THREE.InstancedMesh(g,mat,MAXI); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXI*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; scene.add(me); return me; };
   for(const [nm,parts,w] of PART){ if(w){ ME[nm+'R']=mk(geo(parts)); ME[nm+'L']=mk(geo(parts,1)); } else ME[nm]=mk(geo(parts)); }
+  BIRDS.make=k=>{ const P=K[k][7], g=new THREE.Group(), add=(nm,c,m)=>{ const o=new THREE.Mesh(ME[nm].geometry,INSPECT.mat(c,{flat:1})); o.userData.shared=true; if(m)o.applyMatrix4(m); g.add(o); };
+    for(const p of ['body','breast','head','cap','crest','mask','beak','eye','tail','leg']){ const c=p==='eye'?0x0a0a0a:P[p]; if(c!=null)add(p,c); }
+    for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar'])if(P[p]!=null)add(p+s,P[p],new THREE.Matrix4().makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(new THREE.Matrix4().makeRotationZ(sg*.25)));
+    g.rotation.y=-Math.PI/2; const w=new THREE.Group(); w.add(g); return w; };
+  INSPECT.kinds.push({is:id=>/^(bd|pet)_\d+$/.test(id)||id==='cage'||id==='bseed',make:id=>{ if(id==='cage')return INSPECT.shape('cage'); if(id==='bseed')return INSPECT.shape('sack',0xc8a868);
+    const b=BIRDS.make(+id.split('_')[1]); if(id.startsWith('pet_'))return b; const g=INSPECT.shape('cage'); b.scale.setScalar(.28); b.position.y=.03; g.add(b); return g; }});
   let TRIS=0; for(const k in ME)TRIS+=ME[k].geometry.attributes.position.count/3; BIRDS.tris=TRIS;
   const HB=new THREE.BoxGeometry(.55*T,.5*T,.55*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };

@@ -328,5 +328,31 @@
   "weight": 4,
   "value": 25,
   "common": 1
+ },
+ "jar_s": {
+  "stackable": true,
+  "sellable": true,
+  "value": 6,
+  "holds": 20
+ },
+ "jar_m": {
+  "stackable": true,
+  "sellable": true,
+  "value": 14,
+  "holds": 50
+ },
+ "jar_l": {
+  "stackable": true,
+  "sellable": true,
+  "value": 25,
+  "holds": 100
+ },
+ "scuba": {
+  "offworld": true,
+  "value": 40,
+  "slot": "back",
+  "grants": "breathe",
+  "tank": 300,
+  "rental": true
  }
 }

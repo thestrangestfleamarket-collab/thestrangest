@@ -4936,3 +4936,6 @@ Owner: "the movie is playing but i cant see it, also players hair is now glitche
 ## 28 Oct 2026: branches through the crowns; no body in your head
 Owner (a picture of a trunk ending inside the leaves): "the trees need to have real branches that go through them, none of them should just cut off like this". Every leaf-card crown has a trunk running up to its middle and a bent, tapering limb out into each clump, with a twig past it.
 - Owner (a picture from inside the head): "1st pov shows niside of players head". The game never draws a body for your own moves sent from your other tab; that body stood where you stand.
+
+## 28 Oct 2026: the hood style on every lamp
+Owner: "do the hood style on the other lamps too". The park gate lanterns, the pier lamps and the street lights show their light only from under a metal top: no glowing glass cage and no glare halo. Rule: every outdoor lamp hides its bulb under a metal top.

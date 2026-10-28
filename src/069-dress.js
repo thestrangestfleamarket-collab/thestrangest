@@ -42,7 +42,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
     pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.4,.06,2.4).setPosition(x,y,pz));
-      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.2*M,pz,28,12*TILE),sol,fix});
+      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H-.08*M,pz,50,12*TILE),sol,fix});
       SOL.up.push(sol); FIX.up.push(fix); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }

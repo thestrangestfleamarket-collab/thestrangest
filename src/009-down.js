@@ -4,7 +4,7 @@ import {keys, LEVELS, LINES, pos, RAG, SFX, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
-import {BATCH, OBJ, PEEK} from './008-batch.js';
+import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -109,9 +109,9 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const mod=(a,n)=>((a%n)+n)%n, mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
-const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:46,TE:0,H:196,XS:12.4,TR:[2.2,19.6],CARL:22.4,CARW:1.8,MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
-  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25];
-  W.BENCH=[11.2,22.4,32.8]; W.BINS=[17.1,28.5]; W.STEPS=[[[44.4,45.6]],[[.6,1.8],[44.4,45.6]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
+const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:58,TE:0,H:196,XS:12.4,TR:[2.2,19.6],MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
+  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.5,9,14.5,20,25.5,31,36.5,42,47.5,53]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25,47.75];
+  W.BENCH=[11.2,22.4,33.6,44.8]; W.BINS=[17.1,28.5,39.9]; W.STEPS=[[[56.4,57.6]],[[.6,1.8],[56.4,57.6]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
 const GRAF=(()=>{ const P={yel:[246,208,44],ora:[246,132,38],red:[224,48,52],grn:[64,204,84],lim:[168,232,64],blu:[48,122,236],sky:[84,196,244],pur:[152,72,212],pnk:[246,100,180],wht:[242,242,234],blk:[18,18,22],cyn:[44,212,200]};
@@ -260,43 +260,12 @@ const SSUB=(()=>{ const W={};
   const litter=[[8.1,26.1,'can'],[13.9,15.6,'cup'],[6.9,33.8,'canb'],[15.8,22.2,'can'],[9.2,9.6,'cup']].map(([x,y,k])=>{ PNAME='litter';
     if(k==='cup')return prop([{x0:x-.06,x1:x+.06,y0:y-.06,y1:y+.06,z0:0,z1:4,c:[200,40,36],top:()=>[60,20,20]}]);
     const c=k==='canb'?[44,96,200]:[206,40,36]; return prop([{x0:x-.11,x1:x+.11,y0:y-.05,y1:y+.05,z0:0,z1:3,c,fs:(nx,ny,X,Yy,zr)=>Math.abs(X-x)<.03?[230,230,226]:c,top:(X)=>Math.abs(X-x)<.03?[230,230,226]:c}]); });
-  const sideSeen=(nx,Yy,y0,y1)=>nx>0?(y1-Yy)*24:(Yy-y0)*24;
-  const carBoxes=(y0,seed,front)=>{ PNAME='train car'; const L=SL.CARL, Wd=SL.CARW, xc=LT, x0=xc-Wd, x1=xc+Wd, y1=y0+L, DR=[-5.9,0,5.8].map(m=>y0+L/2+m), DW=.62, Z0=45, Z1=117, CREST=144;
-    const ST=[146,150,150], SEAM=[100,104,106], RIV=[92,94,96], GLASS=[24,28,32], RIM=[60,62,66];
-    const GS=[0,1].map(s=>GRAF.mk(L*24,Z1-Z0,seed*2+s+300,(g,r,pick,w,h)=>{ let x=-6; while(x<w){ const sz=30+r()*26; x+=GRAF.bubble(g,r,pick,x,h*.6+r()*h*.3,sz,null,pick(GRAF.BRIGHT),pick(GRAF.BRIGHT),pick(GRAF.BRIGHT))*(.75+r()*.3)+r()*30; }
-      GRAF.wall(g,r,pick,w,h,26,8,h-4); }));
-    const GE=GRAF.mk(Wd*48,Z1-Z0,seed+377,(g,r,pick,w,h)=>{ GRAF.wall(g,r,pick,w,h,7,10,h-8); GRAF.tag(g,r,pick,30,h*.5,12,GRAF.P.blu,'THIS WAY'); GRAF.star(g,58,h*.42,8,GRAF.P.yel,2); GRAF.ghost(g,44,h*.3,6,GRAF.P.grn,1);
-      GRAF.tag(g,r,pick,12,12,8,GRAF.P.blk,'RIP'); GRAF.heart(g,10,h*.85,5,GRAF.P.pnk,1); GRAF.tag(g,r,pick,4,h*.72,9,GRAF.P.wht,'HOPELESS'); });
-    const win=(a,z)=>{ for(const m of DR){ const d=Math.abs(a-m); if(d<DW&&z>=Z0+3&&z<Z1-3){ const dd=(DW-d)*24; if(dd<.8||z>Z1-4)return 'frame'; return z>=74&&z<104&&dd>2.6&&Math.abs(d-DW/2)<DW/2-.1?'glass':'door'; } }
-      for(let k=0;k<=DR.length;k++){ const a0=(k?DR[k-1]+DW:y0)+.55, a1=(k<DR.length?DR[k]-DW:y1)-.55; if(a<a0||a>a1||z<74||z>=104)continue; const e2=Math.min(a-a0,a1-a)*24, ez=Math.min(z-74,103.9-z);
-        if(e2<3&&ez<3&&Math.hypot(3-e2,3-ez)>3)continue; return e2<1||ez<1?'rim':'glass'; } return null; };
-    const side=(nx,ny,X,Yy,zr,b)=>{ const z=zr+b.z0; if(ny)return end(ny,X,z,b);
-      if(z>=Z1-1)return [40,42,46]; const w=win(Yy,z), gr=GS[nx>0?0:1](sideSeen(nx,Yy,y0,y1),Z1-z);
-      if(w==='glass'){ const gl=(Yy*24+z)%17<2?[70,80,92]:GLASS; return gr?sh(gr,.5):gl; } if(w==='rim'||w==='frame')return RIM;
-      let c=ST; if(Math.abs(mod(Yy-y0,2.86))<.05)c=SEAM; for(const rz of [49,71,107])if(Math.abs(z-rz)<.6&&mod(Yy*24,6)<1.2)c=RIV;
-      c=sh(c,.84+.24*fbm(Yy*.4,z/30,181+nx)); return gr?mix(gr,c,.1+.2*vn(Yy*5,z/6,183)):c; };
-    const end=(ny,X,z,b)=>{ const cx=(ny>0?X-x0:x1-X)*24, p=Math.abs(cx-Wd*24), W2=Wd*24;
-      if(cx<1.2||cx>W2*2-1.2)return RIM; if(z<Z0+5)return mod(cx,3)<1?[30,30,32]:[56,56,60];
-      if(!(front&&ny>0))return p<10&&z<Z1-6?(z>74&&z<104&&p<7?GLASS:[40,42,46]):sh(ST,.8);
-      for(const [lx,lz,col] of [[W2-21,110,[255,44,32,1]],[W2+21,110,[255,44,32,1]],[8,62,[255,248,226,1]],[W2*2-8,62,[255,248,226,1]],[8,53,[255,56,40,1]],[W2*2-8,53,[255,56,40,1]]]){ const d=Math.hypot(cx-lx,(z-lz)*1.2); if(d<3.4)return d<2.6?col:[24,24,26]; }
-      if(p<11&&z>=106&&z<115)return p<10&&z>=107&&z<114?(hash(Math.floor(cx),Math.floor(z),5)<.06?[120,80,40]:[10,10,12]):RIM;
-      if(p<10&&z<104){ if(z>74&&z<100&&p<7)return GLASS; return p>9||z>102?RIM:sh(ST,.86); }
-      if(z>76&&z<100&&p>14&&p<W2-6){ const e=Math.min(p-14,W2-6-p,z-76,100-z); return e<1?RIM:GLASS; }
-      const gr=GE(cx,Z1-z); let c=sh(ST,.82+.26*fbm(cx/12,z/24,191)); if(Math.abs(z-49)<.6&&mod(cx,6)<1.2)c=RIV; return gr?mix(gr,c,.12):c; };
-    const out=[];
-    for(const m of [y0+L/2-7.8,y0+L/2+7.8])out.push({x0:xc-1.4,x1:xc+1.4,y0:m-1.6,y1:m+1.6,z0:0,z1:18,c:[28,28,32],fs:(nx,ny,X,Yy,zr)=>ny?[30,30,34]:[m-1.1,m+1.1].some(c=>Math.hypot((Yy-c)*24,zr-9)<7.5)?[54,52,52]:[26,26,30]});
-    out.push({x0:xc-1.45,x1:xc+1.45,y0:y0+.6,y1:y1-.6,z0:10,z1:Z0+2,c:[26,26,30],fs:(nx,ny,X,Yy,zr)=>hash(Math.floor(Yy*2),Math.floor(zr/9),161)<.3?[42,42,46]:[24,24,28]});
-    out.push({x0,x1,y0,y1,z0:Z0,z1:Z1,c:ST,fs:side,noTop:true});
-    for(let z=Z1;z<CREST;z+=4.5){ const t=(z+2.25-Z1)/(CREST-Z1), w=Wd*Math.sqrt(Math.max(.02,1-t*t)), r=.3+.35*t, zz=Math.min(CREST,z+4.5);
-      out.push({x0:xc-w,x1:xc+w,y0:y0+r,y1:y1-r,z0:z,z1:zz,c:[120,124,126],fs:(nx,ny,X,Yy,zr)=>ny?(front&&ny>0&&z<Z1+8?sh(ST,.8):[110,114,116]):sh([96,100,102],.85+.3*fbm(Yy*.5,z/9,193)),
-        top:(X,Yy)=>{ const e2=Math.min(Yy-y0,y1-Yy); return e2<1.2?[150,154,156]:sh(Math.floor((X-xc+Wd)*24/4.8)%2?[118,122,124]:[78,80,84],.8+.35*fbm(Yy*.3,X,195)); }}); }
-    return prop(out); };
   const PB=plane(), PF=plane();
   flat(P0,0,P1,LEN,0,floorPaint);
   for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,0,x1,LEN,-32,trackPaint,16);
   wallY(P0,0,LEN,-32,0,edgePaint); wallY(P1,0,LEN,-32,0,edgePaint);
   const portal=(u,z,c)=>{ const d=Math.abs(u-c)/2.05; return d<1&&z<110+30*Math.sqrt(1-d*d); };
-  const lw=hallWall(LEN,401,{plates:[LEN-31.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,28.5],t0:-24,t1:60,tags:.4});
+  const lw=hallWall(LEN,401,{plates:[LEN-45.5,LEN-29.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,28.5,46.5],t0:-24,t1:60,tags:.4});
   cutaway(wallY(0,0,LEN,-32,H2,(u,z)=>lw(LEN-u,z)),1,0,-24); cutaway(wallY(XW,0,LEN,-32,H2,(u,z)=>rw(u,z)),-1,0,-24);
   const exitHole=(u,z)=>u>SL.EX0&&u<SL.EX1&&z<72+14*Math.sqrt(Math.max(0,1-((u-SL.XS)/1.5)**2)), exSign=W.text('EXIT TO STREET',2,[255,250,236,1],[16,110,60,1],[200,230,210],4);
   const ew0=hallWall(XW,403,{tags:1.2,t0:4,t1:96,hole:(u,z)=>portal(u,z,LT)||portal(u,z,SL.TR[1])||exitHole(u,z)}), ew=(u,z)=>{ if(exitHole(u,z))return null; const c=exSign.at(Math.floor((u-(SL.XS-exSign.w/48))*24),Math.floor(118-z)); return c||ew0(u,z); };
@@ -353,9 +322,7 @@ const SSUB=(()=>{ const W={};
   const inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
   M.more=[]; M.inside=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return inSta(tx,ty)||M.more.some(m=>m.inside(x,z)); };
   M.ground=(x,z)=>{ for(const m of M.more){ const g=m.ground(x,z); if(g!=null)return g; } const tx=TX(x,z), ty=TY(x,z); return Y(SZ+(inSta(tx,ty)&&ty>=-SL.ED-.5&&ty<=LEN&&tx>=P0&&tx<=P1?0:inSta(tx,ty)&&ty>=0&&ty<=LEN?SL.fzAt(tx,ty):-32)); };
-  M.GRAF=GRAF; M.car=(seed,front)=>{ const keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag, G=new THREE.Group(), c=V(LT,SL.CARL/2,SZ-32); BATCH.meshes={}; put(carBoxes(0,seed,front),'train car',SZ-32);
-    BATCH.build((k,map)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide}));
-    const ms=Object.values(BATCH.meshes); for(const me of ms){ me.removeFromParent(); me.geometry.translate(-c[0],-c[1],-c[2]); me.castShadow=false; G.add(me); } PEEK.boxes=PEEK.boxes.filter(o=>!ms.includes(o.me)); BATCH.meshes=m0; BATCH.items=keep; BATCH.tag=tg; return G; };
+  M.GRAF=GRAF;
   M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
   M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));

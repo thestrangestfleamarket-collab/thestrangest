@@ -24,10 +24,10 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
         else { const dx=x-p.c[0], dy=y-p.c[1]; let th=Math.atan2(dy,dx), d=mod(p.t0-th,2*Math.PI); if(d>Math.PI*1.25)d-=2*Math.PI; const dc=Math.max(0,Math.min(A,d*R)); s=p.s0+dc; v=Math.hypot(dx,dy)-R; e=Math.abs(d*R-dc); }
         const sc=Math.hypot(v,e); if(!best||sc<best.sc)best={s,v,sc,arc:p.k==='a',e}; } return best; };
     const arcs=P.filter(p=>p.k==='a').map(p=>[p.s0,p.s0+p.len]), wide=s=>{ s=mod(s,L); let d=1e9; for(const [a,b] of arcs)d=Math.min(d,s<a?a-s:s>b?Math.min(s-b,L-s+a):0); d=Math.min(d,arcs[0][0]+L-s); return d<=0?1:d>=12?0:(t=>t*t*(3-2*t))(1-d/12); };
-    TRK[id]={id,L,P,pt,near,wide,hin:s=>2.2+2.2*wide(s),hout:s=>2.2+.4*wide(s),line:t}; }
+    TRK[id]={id,L,P,pt,near,wide,hin:s=>2.2+3*wide(s),hout:s=>2.2+.4*wide(s),line:t}; }
 
-  // the stations: A's is the old one in 009-down; B to H are made here the same size (46 along, 21.8 across: track, platform, track)
-  const LEN=46, XW=21.8, P0=4.4, P1=17.4, MID=(P0+P1)/2, EX0=10.9, EX1=13.9, ED=3, COLX=[P0+1.5,P1-2.2], COLY=[3.5,9,14.5,20,25.5,31,36.5,42], STEPU=[[.6,1.8],[44.4,45.6]];
+  // the stations: A's is the old one in 009-down; B to H are made here the same size as A's (58 along, 21.8 across: track, platform, track)
+  const LEN=M.SL.L, XW=21.8, P0=4.4, P1=17.4, MID=(P0+P1)/2, EX0=10.9, EX1=13.9, ED=3, COLX=[P0+1.5,P1-2.2], COLY=M.SL.COLY, STEPU=[[.6,1.8],[LEN-1.6,LEN-.4]];
   const STA=D.stations.map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
     st.s={}; for(const k in TRK)st.s[k]=TRK[k].near(d.x,D.tracks[k][d.side]).s;
     st.P=(u,a,h)=>[WX(st.x0+u),H(h),WZ(st.my(a))]; st.ua=(x,z)=>({u:MX(x)-st.x0,a:(MZ=>sg>0?MZ-(yi-2.2):(yi+2.2)-MZ)(MY(z))});
@@ -121,16 +121,16 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       const sb=(u0,a0,u1,a1,h)=>{ const p=P(u0,a0,0), q=P(u1,a1,0); solidW(p[0],p[2],q[0],q[2],h); };
       sb(0,-.4,LEN,0); sb(0,XW,LEN,XW+.4); sb(LEN,P0,LEN+.4,P1); sb(-.4,P0,0,EX0); sb(-.4,EX1,0,P1); sb(-ED,EX0-.4,0,EX0); sb(-ED,EX1,0,EX1+.4); sb(-ED-.4,EX0,-ED,EX1);
       const colM=lam(tileTex,{m:{color:0xd8dcd6}}); for(const cx of COLX)for(const cy of COLY){ const bx=new THREE.Mesh(new THREE.BoxGeometry(.7*T,196*ZU,.7*T),colM), c=P(cy+.35,cx+.35,98); bx.position.set(...c); scene.add(bx); sb(cy,cx,cy+.7,cx+.7); }
-      const woodM=new THREE.MeshLambertMaterial({color:0x9a6a3c}); for(const by of [11.2,22.4,32.8]){ const c=P(by+1.6,MID,8), seat=new THREE.Mesh(new THREE.BoxGeometry(3.2*T,16*ZU,1.4*T),woodM); seat.position.set(...c); scene.add(seat);
+      const woodM=new THREE.MeshLambertMaterial({color:0x9a6a3c}); for(const by of M.SL.BENCH){ const c=P(by+1.6,MID,8), seat=new THREE.Mesh(new THREE.BoxGeometry(3.2*T,16*ZU,1.4*T),woodM); seat.position.set(...c); scene.add(seat);
         const back=new THREE.Mesh(new THREE.BoxGeometry(3.2*T,36*ZU,.16*T),woodM); back.position.set(...P(by+1.6,MID,18)); scene.add(back); sb(by,MID-.7,by+3.2,MID+.7); }
-      const tube=new THREE.MeshBasicMaterial({color:0xeaffef,clippingPlanes:[PT]}); const FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25]; for(const fy of FIXY){ const b=new THREE.Mesh(new THREE.BoxGeometry(3*T,2*ZU,.3*T),tube); b.position.set(...P(fy,MID,150)); scene.add(b); }
+      const tube=new THREE.MeshBasicMaterial({color:0xeaffef,clippingPlanes:[PT]}); const FIXY=M.SL.FIXY; for(const fy of FIXY){ const b=new THREE.Mesh(new THREE.BoxGeometry(3*T,2*ZU,.3*T),tube); b.position.set(...P(fy,MID,150)); scene.add(b); }
       for(const fy of FIXY){ const L=new THREE.PointLight(new THREE.Color(.74,1,.8),LAMPI*1.9,17*T,LAMPD); L.position.set(...P(fy,MID,140)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
-      for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [6,18,30,42]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1]); }
+      for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [7,21,37,51]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1]); }
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0]);
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-4,30),P(LEN-.05,MID+4,30),P(LEN-.05,MID+4,100),P(LEN-.05,MID-4,100)],512,384,[pe1]); }
     else st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-3.2,36),P(LEN-.05,MID+3.2,36),P(LEN-.05,MID+3.2,92),P(LEN-.05,MID-3.2,92)],512,384);
-    for(const t of D.trains){ const a=(t.track==='inner')?P0+.6:P1-.6; for(const u0 of [8,31])st.signs['t'+t.id+'_'+u0]=hang(u0,u0+7,a,116,134,(g,W,Hh)=>trackSign(g,W,Hh,st,t),640,64); }
-    const bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(20,MID,124),P(26,MID,124),P(26,MID,148),P(20,MID,148)],512,112,[],true); st.board={t:bd.t,last:''};
+    for(const t of D.trains){ const a=(t.track==='inner')?P0+.6:P1-.6; for(const u0 of [10,LEN-17])st.signs['t'+t.id+'_'+u0]=hang(u0,u0+7,a,116,134,(g,W,Hh)=>trackSign(g,W,Hh,st,t),640,64); }
+    const bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN/2-3,MID,124),P(LEN/2+3,MID,124),P(LEN/2+3,MID,148),P(LEN/2-3,MID,148)],512,112,[],true); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};
       [['inner',P0,steps[0]],['outer',P1,steps[1]]].forEach(([k,e,stp])=>{ const L=st.edge[k]=[]; let u=0; const cut=(a,b)=>{ for(let p=a;p<b-1e-6;p+=1){ const q=Math.min(b,p+1), A=P(p,e-.05,0), B=P(q,e+.05,0), box=[Math.min(A[0],B[0]),Math.min(A[2],B[2]),Math.max(A[0],B[0]),Math.max(A[2],B[2])]; SOL.down.push(box); L.push({box,keep:box.slice(),u0:p,u1:q}); } };
         for(const [a,b] of stp){ if(a>u)cut(u,a); u=b; } if(u<LEN)cut(u,LEN); }); }

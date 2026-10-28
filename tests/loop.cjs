@@ -34,10 +34,13 @@ const {chromium}=require('playwright');
   ok(r1.ride&&!r1.doors&&r1.d<2*1.13&&r1.lvl==='down','the train leaves and carries you ('+JSON.stringify(r1)+')');
   const r2=await pg.evaluate(()=>{ const p=__dbg.pos(); return Math.hypot(p[0],p[2]); });
   ok(Math.abs(r2-Math.hypot(r0.p[0],r0.p[2]))>3,'you went with it');
+  const rd=await pg.evaluate(()=>({n:RIDERS.list.length,inCars:RIDERS.list.every(r=>TRAINS.list.some(t=>t.cars.some(c=>c.inner===r.g.parent))),kinds:new Set(RIDERS.list.map(r=>r.kind)).size,seats:RIDERS.list.every(r=>r.seat)}));
+  ok(rd.n>=6&&rd.inCars&&rd.seats&&rd.kinds>=2,'riders sit in the trains\' seats, doing different things ('+JSON.stringify(rd)+')');
   // ride on to the next stop (round the corner to B) and get off there
   await pg.evaluate(()=>{ const t=TRAINS.list[0], e=t.tbl[1], now=TRAINS.now(); TRAINS.skew+=((e.arr+5-((now-t.off)%t.lap))%t.lap+t.lap)%t.lap; }); await pg.waitForTimeout(3000);
   const nx=await pg.evaluate(()=>{ const S=TRAINS.state(TRAINS.list[0]); return {at:S.at&&S.at.id,doors:S.doors,ride:!!TRAINS.ride.c}; });
   ok(nx.ride&&nx.doors&&nx.at==='B','still aboard when it stops at B with its doors open ('+JSON.stringify(nx)+')');
+  await pg.evaluate(()=>{ const t=TRAINS.list[0], e=t.tbl[1], now=TRAINS.now(); TRAINS.skew+=((e.arr+1-((now-t.off)%t.lap))%t.lap+t.lap)%t.lap; });
   const offB=await step(1); ok(!offB.ride&&/STATION \u00b7 B/.test(offB.z)&&Math.abs(offB.y-offB.plat)<.05,'you get off at B ('+JSON.stringify(offB)+')');
   // every new station: down by its entrance, up by its exit
   for(const id of ['C','F']){

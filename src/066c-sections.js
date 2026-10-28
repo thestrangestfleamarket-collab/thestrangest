@@ -41,8 +41,8 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     // the row of buildings on the street's outer side, cut into lots
     const sides=[{k:'s',r:{x0:O.x0-ROW,x1:O.x1+ROW,y0:O.y0-ROW,y1:O.y0}},{k:'n',r:{x0:O.x0-ROW,x1:O.x1+ROW,y0:O.y1,y1:O.y1+ROW}},{k:'w',r:{x0:O.x0-ROW,x1:O.x0,y0:O.y0,y1:O.y1}},{k:'e',r:{x0:O.x1,x1:O.x1+ROW,y0:O.y0,y1:O.y1}}];
     for(const sd of sides){ const q=clip(sd.r,b); if(!q)continue; const al=sd.k==='s'||sd.k==='n', a0=al?q.x0:q.y0, a1=al?q.x1:q.y1; let a=a0, n=0;
-      while(a<a1-4){ const w=Math.min(a1-a,10+hash(b.col*7+b.row,n,31)*18); const lot=al?{x0:a,x1:a+w,y0:q.y0,y1:q.y1}:{x0:q.x0,x1:q.x1,y0:a,y1:a+w};
-        if(!kiosks.some(k=>clip(k,lot)))rows.push({b,lot,face:sd.k,h:110+hash(b.col*7+b.row,n,37)*240,seed:(b.col*7+b.row)*101+n}); a+=w; n++; } } }
+      while(a<a1-4){ const w=Math.min(a1-a,14+hash(b.col*7+b.row,n,31)*16); const lot=al?{x0:a,x1:a+w,y0:q.y0,y1:q.y1}:{x0:q.x0,x1:q.x1,y0:a,y1:a+w};
+        if(!kiosks.some(k=>clip(k,lot)))rows.push({b,lot,face:sd.k,seed:(b.col*7+b.row)*101+n}); a+=w; n++; } } }
   for(const k in gm){ const L=gm[k], g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(L.P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(L.U,2)); g.computeVertexNormals();
     const K=KIND[k], m=new THREE.MeshLambertMaterial({...(K.t?{map:K.t}:{color:K.c}),side:THREE.DoubleSide}), me=new THREE.Mesh(g,m); me.receiveShadow=true; scene.add(me); }
 
@@ -50,14 +50,17 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
   const THEME={B:[[146,66,50],[120,56,44]],C:[[122,82,62],[104,70,56]],D:[[176,168,150],[150,144,130]],E:[[128,128,124],[108,110,112]],F:[[196,184,156],[170,160,136]],G:[[96,58,46],[84,52,44]],H:[[104,116,132],[88,98,114]]};
   const MK=(k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.4}:{})});
   const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.sections||scene,R:24*TILE});
-  for(const R of rows){ const L=R.lot, pal=THEME[R.b.id]||THEME.E, wall=pal[R.seed%pal.length], H=Math.round(R.h/40)*40+8, stone=R.seed%3===0;
-    const paint=(side,u,z,f)=>{ const front=side==='f'||side==='b'||side==='w'||side==='e', bay=Math.floor(u/3), fr=u-bay*3, fl=Math.floor(z/40), zf=z-fl*40;
-      if(z>H-8)return sh([168,160,148],f*(z>H-3?1.1:.8));
-      if(z<40){ if(zf>4&&zf<30&&fr>.4&&fr<2.6)return sh(hash(bay,7,R.seed)<.3?[60,90,96]:[34,46,52],f); return sh(stone?[150,144,132]:wall,f*.78); }
-      if(front&&zf>12&&zf<32&&fr>.9&&fr<2.1){ const lit=hash(bay,fl,R.seed)<.22; return lit?[226,196,120]:sh([30,38,48],f*(.9+.2*hash(bay,fl,R.seed+1))); }
-      const c=stone?[150,144,132]:wall; return sh(c,f*(.9+.12*hash(Math.floor(u*4),Math.floor(z/6),R.seed))); };
-    const box={x0:LOTX(L.x0),x1:LOTX(L.x1),y0:LOTY(L.y0),y1:LOTY(L.y1)};
-    Q.add(XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1),()=>BLOCKS.make({...box,z0:0,z1:H,kind:'S',px:4,paint,roof:()=>[74,72,70]}));
+  // each block scaled like the apartment house (its storey, raised base, window and door): windows on its street and back faces, a door and shop windows at the street
+  const RZ=28, STY=162.5, WIN=[42,94], PXB=5, FACE={s:'f',n:'b',w:'e',e:'w'}, BACK={f:'b',b:'f',e:'w',w:'e'};
+  for(const R of rows){ const L=R.lot, pal=THEME[R.b.id]||THEME.E, wall=pal[R.seed%pal.length], n=3+Math.floor(hash(R.seed,3,7)*5), H=RZ+n*STY, stone=R.seed%3===0;
+    const box={x0:LOTX(L.x0),x1:LOTX(L.x1),y0:LOTY(L.y0),y1:LOTY(L.y1)}, fs=FACE[R.face], al=fs==='f'||fs==='b', a0=al?box.x0:box.y0, a1=al?box.x1:box.y1, feats=[]; let sd=R.seed*31;
+    const win=(side,a,w,z0,z1,o={})=>{ sd++; feats.push({side,a0:a-w/2,a1:a+w/2,z0,z1,lit:hash(sd,1,9)<.3,seed:sd%997,box:false,...o}); };
+    const nb=Math.max(1,Math.floor((a1-a0-1.2)/3.25)), st=a0+(a1-a0-(nb-1)*3.25)/2;
+    for(const side of [fs,BACK[fs]])for(let lv=1;lv<n;lv++)for(let k=0;k<nb;k++)win(side,st+k*3.25,1.1,RZ+lv*STY+WIN[0],RZ+lv*STY+WIN[1]);
+    const mid=st+Math.floor((nb-1)/2)*3.25; win(fs,mid,1.56,RZ,RZ+94,{door:true,lit:false});
+    for(let k=0;k<nb;k++){ const a=st+k*3.25; if(Math.abs(a-mid)>1.4)win(fs,a,2.3,RZ+14,RZ+118,{lit:hash(sd,5,9)<.5}); }
+    const paint=BLOCKS.facade({feats,px:PXB,top:H,wall:stone?BLOCKS.stone():BLOCKS.brick(wall),trim:stone?[132,126,116]:sh(wall,.82),base:{z1:RZ,paint:BLOCKS.brick(sh(wall,.85))}});
+    Q.add(XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1),()=>BLOCKS.make({...box,z0:0,z1:H,kind:'S',px:PXB,paint,roof:()=>[74,72,70]}));
     const q=[XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1)]; SOL.up.push(q); FIX.up.push([q[0],q[1],0,q[2],q[3],H*ZU*BLDK]); }
   for(const b of secs)for(const r of [{x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water},mirrorY({x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water})]){ const q=clip(r,b); if(q){ const w=[XS(q.x0),ZS(q.y0),XS(q.x1),ZS(q.y1)]; SOL.up.push(w); FIX.up.push([w[0],w[1],0,w[2],w[3],.9]); } }
 
@@ -66,10 +69,10 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
   for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
   for(const b of secs)for(const r of frame(inner,P)){ const q=clip(r,b); if(!q)continue; const al=q.x1-q.x0>q.y1-q.y0, a0=al?q.x0:q.y0, a1=al?q.x1:q.y1, c=al?(q.y0+q.y1)/2:(q.x0+q.x1)/2;
     for(let a=Math.ceil(a0/22)*22;a<a1;a+=22)posts.push(al?{x:a,y:c}:{x:c,y:a}); }
-  { const trunk=new THREE.CylinderGeometry(.12*T,.16*T,1.8,6).translate(0,.9,0), crown=new THREE.IcosahedronGeometry(1.5*T,0).translate(0,2.6,0), o=new THREE.Object3D();
+  { const trunk=new THREE.CylinderGeometry(.2*T,.28*T,3.4,6).translate(0,1.7,0), crown=new THREE.IcosahedronGeometry(2.6*T,0).translate(0,5.2,0), o=new THREE.Object3D();
     const tm=new THREE.InstancedMesh(trunk,new THREE.MeshLambertMaterial({color:0x5a4030}),trees.length), cm=new THREE.InstancedMesh(crown,new THREE.MeshLambertMaterial({color:0x3f6e34,flatShading:true}),trees.length);
     trees.forEach((t,i)=>{ o.position.set(XS(t.x),0,ZS(t.y)); o.rotation.set(0,t.k,0); o.scale.setScalar(t.s); o.updateMatrix(); tm.setMatrixAt(i,o.matrix); cm.setMatrixAt(i,o.matrix);
-      const r=.2*T*t.s; SOL.up.push([XS(t.x)-r,ZS(t.y)-r,XS(t.x)+r,ZS(t.y)+r]); FIX.up.push([XS(t.x)-r,ZS(t.y)-r,0,XS(t.x)+r,ZS(t.y)+r,1.8*t.s]); });
+      const r=.2*T*t.s; SOL.up.push([XS(t.x)-r,ZS(t.y)-r,XS(t.x)+r,ZS(t.y)+r]); FIX.up.push([XS(t.x)-r,ZS(t.y)-r,0,XS(t.x)+r,ZS(t.y)+r,3.4*t.s]); });
     tm.castShadow=cm.castShadow=true; scene.add(tm,cm);
     const pole=new THREE.CylinderGeometry(.05*T,.07*T,3.4,6).translate(0,1.7,0), head=new THREE.SphereGeometry(.2*T,8,6).translate(0,3.5,0);
     const pm=new THREE.InstancedMesh(pole,new THREE.MeshLambertMaterial({color:0x2a2c30}),posts.length), hm=new THREE.InstancedMesh(head,new THREE.MeshBasicMaterial({color:0xffe6b0}),posts.length);

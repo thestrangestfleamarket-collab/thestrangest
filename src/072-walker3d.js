@@ -176,7 +176,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     { // her face: the jaw drawn in softly toward a smaller, rounder chin, and lashes at the outer top of each eye (both only on the female build)
       const ears=p=>Math.min(ell(p,ad(H,Vv(6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)),ell(p,ad(H,Vv(-6.7,-1.8,-1.0)),Vv(1.3,1.9,1.3)));
       const soft=p=>{ const t=cl((H.y-1.0-p.y)/8,0,1), q=Vv(H.x+(p.x-H.x)*(1+.34*t*t+.05),p.y,H.z+(p.z-H.z)*(1+.06*t+.03));
-        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),5.4+.4*t),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.5,6.1)),Vv(0.75,1.35,1.0),0.4)); };
+        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),4.8+.4*t),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42)); };
       head.form='M'; PCS.push(Object.assign({},head,{n:'headF',d:soft,form:'F',paint:()=>null}));
       let zf=H.z; while(soft(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
       const lash=s=>p=>Math.min(tube([Vv(s*2.95,1.05,zf-H.z-.25),Vv(s*3.45,1.4,zf-H.z-.5)],[.09,.03],p),tube([Vv(s*2.6,1.15,zf-H.z-.15),Vv(s*2.95,1.55,zf-H.z-.35)],[.08,.03],p));

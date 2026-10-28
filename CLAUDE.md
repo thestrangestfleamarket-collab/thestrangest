@@ -78,12 +78,12 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every pull request (not again on `main`).
 **Multiplayer (23 Oct 2026)**: `src/111d-online.js` (`ONLINE`: the other players' bodies, name tags, the list, chat) talks to the `Block` Durable Object in `worker/door.js` (partyserver; one per section, `/parties/block/s-<id>`, the login cookie checked); `tests/online.cjs` checks it without a network. Fights between players: `src/146h-brawl.js` (hits judged by the attacker on the target's body parts, applied by the target through `VIT.hurt`; moves shared as `act`), `tests/brawl.cjs`.
 **VR (26 Oct 2026)**: `src/162c-vr.js` (`VR`: WebXR, a Quest 3 in its browser; the controllers become one gamepad driven by `PAD.step` from the headset's frames; the main loop's `xr` SYS phase and `VR.draw` replace the composer in the headset; open windows (`PAD.panels()`) are pictured with `html-to-image` onto a panel you point at with a controller or a tracked hand); `tests/vr.cjs` drives it on an emulated Quest 3 (IWER) with the website's ONLINE box up.
 **The owner's panel (23 Oct 2026)**: the TENANTS menu tab (`src/136c-tenants.js`, owners only) calls `/admin` in `worker/door.js` (players, invite codes, bans, messages; the worker checks `admins`, then uses the service key); letters live in the `Post` Durable Object and show at login (`/post`); email needs the `RESEND_API_KEY` secret on the worker. Never copy `market.html` anywhere by hand.
 **Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
-safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
+safe"): a pull request gets the build check only: build, core, site, places, plus the other checks whose files it changes (all of them with the `full` label or the full box when started by hand). The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
 run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
 then start the workflow by hand or push), or start the workflow by hand with `measure` ticked. Don't ask for them (owner, 21 Oct 2026: "forget about speed checks just check for major conflicts and go"): merge on the build
 check when the pull request has no conflicts. If GitHub drops a pull request's

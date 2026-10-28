@@ -213,12 +213,12 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       under('foot'+n,'shoe'+n,'skin',['shoes'],p=>Math.min(rcone(p,up('heel',1.3),up('toe',1),1.55,1.25),rcone(p,J['ankle'+n],up('heel',1.3),1.9,1.6))); }
     { // her body: the torso drawn in at the waist and narrower under the arms, a fuller bust on it; in the shirt, or skin when it's off
       const TOR=get('torso'), BT=get('bodyTorso'), C=J.chest, P0=J.pelvis, wy=P0.y+.38*(C.y-P0.y), cx=C.x, cz=C.z, sq=x=>x*x;
-      const pinch=d=>p=>{ const w=Math.exp(-sq((p.y-wy)/3.6)), t=Math.max(0,Math.min(1,(p.y-C.y+1.5)/4)); return d(V(cx+(p.x-cx)*(1+.24*w+.1*t),p.y,cz+(p.z-cz)*(1+.1*w))); };
+      const pinch=d=>p=>{ const w=Math.exp(-sq((p.y-wy)/3.6)), u=Math.max(0,Math.min(1,(p.y-wy)/(C.y-wy))); return d(V(cx+(p.x-cx)*(1+.24*w+.12*u),p.y,cz+(p.z-cz)*(1+.1*w+.06*u))); };
       TOR.form='M'; BT.form='M';
       PCS.push(Object.assign({},TOR,{n:'torsoF',on:'torso',under:'torso',d:pinch(TOR.d),layer:'shirt',form:'F'}),Object.assign({},BT,{n:'bodyTorsoF',d:pinch(BT.d),form:'F'}));
-      const y=C.y-1.7, td=pinch(TOR.d); let zf=cz; while(td(V(cx+2.6,y,zf))<0&&zf<cz+12)zf+=.1;
+      const y=C.y-.9, td=pinch(TOR.d); let zf=cz; while(td(V(cx+2.4,y,zf))<0&&zf<cz+12)zf+=.1;
       const sm=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
-      const bust=t=>p=>sm(R.ell(p,V(cx+2.7,y,zf-.2),V(3.0+t,2.8+t,2.7+t)),R.ell(p,V(cx-2.7,y,zf-.2),V(3.0+t,2.8+t,2.7+t)),.8);
+      const bust=t=>p=>sm(R.ell(p,V(cx+2.4,y,zf-.3),V(2.2+t,2.0+t,1.9+t)),R.ell(p,V(cx-2.4,y,zf-.3),V(2.2+t,2.0+t,1.9+t)),.7);
       PCS.push({n:'bustF',on:'torso',m:'shirt',d:bust(.35),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,layer:'shirt',form:'F'},
                {n:'bodyBustF',on:'torso',m:'skin',d:bust(0),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,cover:['shirt'],form:'F'}); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;

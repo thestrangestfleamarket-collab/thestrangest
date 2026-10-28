@@ -53,12 +53,13 @@ import {DESIGN} from './102b-designer.js';
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;
     el.innerHTML=`<div class="cp-wrap"><div class="cp-doll"><div class="cp-slots" id="cpslots"></div><div class="cp-pick" id="cppick" hidden></div>
-      <div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span>
+      <div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span><button class="cp-edit" id="cpedit" title="change your body, hair and shape">EDIT</button>
         <div class="cp-vit"><div>HP <span class="cp-bar"><i id="cphp" style="background:#c84a3a"></i></span></div><div>ST <span class="cp-bar"><i id="cpst" style="background:#d8b84a"></i></span></div></div></div></div>
       <div class="cp-right"><div class="cp-name" id="cpname">YOU</div><div class="cp-btns" id="cpbtns"></div></div></div>
       <div class="cp-tray" id="cptray"></div>`;
     cv=el.querySelector('#cpav'); g2=cv.getContext('2d');
     { let dx=null; cv.style.cursor='grab'; cv.addEventListener('pointerdown',e=>{ dx=e.clientX; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; spin+=(e.clientX-dx)*.025; dx=e.clientX; }); const up=()=>{ dx=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }   // drag to turn yourself; facing you again each time the menu opens
+    el.querySelector('#cpedit').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); LOOKS.open(); };
     el.addEventListener('mousedown',e=>{ if(e.target.closest('.cp-slot,.cp-chip'))e.stopPropagation(); },true);
     el.addEventListener('click',e=>{ const P=el.querySelector('#cppick'), sl=e.target.closest('.cp-slot');
       if(sl){ const s=sl.dataset.slot; if(wornIn(s))unwear(s); else if(!P.hidden&&P.dataset.slot===s)P.hidden=true; else pick(s,sl); return; }
@@ -83,6 +84,7 @@ import {DESIGN} from './102b-designer.js';
   #dhome .cp-slot.cp-over{border-color:var(--key);border-style:dashed}
   #dhome .cp-stage{position:relative;background:radial-gradient(120% 90% at 50% 6%,#22242c,#0b0c11);border:2px solid var(--line)}
   #dhome .cp-stage canvas{display:block;width:200px;height:300px}
+  #dhome .cp-edit{position:absolute;right:6px;top:6px;font:9px var(--pixel);color:var(--key);border:1px solid #3a3f4e;padding:2px 6px;background:rgba(5,6,10,.7);cursor:pointer}
   #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
   #dhome .cp-vit{position:absolute;left:6px;right:6px;bottom:6px;display:grid;gap:3px;font:9px var(--pixel);color:var(--dim)}
   #dhome .cp-bar{display:inline-block;width:86px;height:7px;background:#0b0d13;border:1px solid #2a3040;vertical-align:middle}

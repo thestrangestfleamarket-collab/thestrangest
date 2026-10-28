@@ -1,6 +1,6 @@
 // THE MINING: MINING seeds each cavern's finds by the calendar day, shows the ones your prospecting can spot, and lets you work them free with the cutter; the golems buy them all.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INV, MAIL, pos, SFX, UI} from './003b-systems.js';
+import {CITY, FORAGE, INSPECT, INV, MAIL, pos, SFX, UI} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 import {CAVERNS} from './066a-caverns.js';
 import {GEMS} from './101-gems.js';
@@ -11,6 +11,9 @@ const MINING={live:[]}; window.MINING=MINING;
   const FINDS={gemcave:GEMS.slice(0,10).map((g,i)=>[g[0],g[1],g[2],g[3],i*9,[0xb0c8ff,0xc080ff,0xd0b090,0xffb060,0xe0f0ff,0xff90d0,0x60ff90,0x6090ff,0xff5050,0xffffff][i]]),
     hudson:[['pearl','RIVER PEARL',12,30,0,0xf0ecff],['seaglass','SEA GLASS',6,34,0,0x8fe3d6],['coral','RED CORAL',22,18,15,0xff6a5a],['nacre','NACRE SHELL',30,12,30,0xe8d8ff],['aquamarine','AQUAMARINE',70,7,45,0x60d0ff],['blackpearl','BLACK PEARL',110,4,55,0x2a2a3a]],
     lake:[['jade','JADE',26,22,0,0x60c080],['amber','LAKE AMBER',18,26,0,0xffb040],['silver','SILVER ORE',38,14,20,0xd0d8e0],['goldnug','GOLD NUGGET',60,10,30,0xffd040],['garnet','GARNET',48,9,40,0xa02040],['platinum','PLATINUM ORE',140,3,65,0xe8f0f8]]};
+  INSPECT.kinds.push({is:id=>Object.values(FINDS).some(F=>F.some(f=>f[0]===id)),make:id=>{ let f=null; for(const F of Object.values(FINDS))f=f||F.find(q=>q[0]===id); const c=f[5];
+    if(/pearl|seaglass/.test(id))return INSPECT.shape('lump',c); if(/ore|nug|geode|meteor/.test(id))return INSPECT.shape('lump',c);
+    const g=new THREE.Group(); g.add(INSPECT.part('oct',c,0,0,0,.08,.14,.08,0,0,0,{flat:1})); return g; }});
   for(const k in FINDS)if(k!=='gemcave')for(const f of FINDS[k])GEMS.push([f[0],f[1],f[2],0]);   // the golems buy every find; weight 0 keeps them out of the old cave glints
   CAVERNS.hooks.push((C,G,m)=>{ '@later'; MINING.live=[]; const F=FINDS[C.id]; if(!F)return; const B=C.lot, d=day(), n=10+Math.floor(hs(d,1)*6), sk=FORAGE.sk?FORAGE.sk('prosp'):0, fy=C.api.ground(0,0), W=F.reduce((a,f)=>a+f[3],0);
     for(let i=0;i<n;i++){ const gx=B.x0+1.5+hs(d,i,2)*(B.x1-B.x0-3), gy=B.y0+1.5+hs(d,i,3)*(B.y1-B.y0-3), deep=(gx-B.x0)/(B.x1-B.x0); if(C.api.solidAt&&C.api.solidAt(gx,gy))continue;   // further in, the rarer finds; none inside a wall

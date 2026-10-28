@@ -33,7 +33,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
     const r = await pg.evaluate(() => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
-      o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway');
+      o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
+      o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
@@ -100,7 +101,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       return o;
     });
     for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
-    ok(r.sway, 'CAMERA SWAY is in the menu, a SYS cam entry, off by default');
+    ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
+    ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
     ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
     ok(r.zoneDown === 'station', 'down at 0,0 is the subway station (' + r.zoneDown + ')');
@@ -138,7 +140,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
-    const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.children.length) }; }).catch(e => ({ err: e.message }));
+    const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.geometry && P.standFar && P.standFar.geometry) }; }).catch(e => ({ err: e.message }));
     ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (20 to 60 tiles from you): ' + JSON.stringify(pk));
     await pg.evaluate(() => window.__dbg.UI.setView('follow')).catch(() => {}); await pg.waitForTimeout(800);
     const hz = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, [x, , z] = D.pos(), mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; };

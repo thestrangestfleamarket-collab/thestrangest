@@ -1,10 +1,11 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, ED, EQUIP, FORAGE, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
+import {CITY, CIVIC, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, UI, VIT, WE, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
+import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
  window.FORAGE=FORAGE;
@@ -23,6 +24,14 @@ import {GEMS} from './101-gems.js';
     ['f_roast','ROASTED MUSHROOMS','cooking',[0,40],{button:3},'fills a third'],['f_fritter','PUFFBALL FRITTERS','cooking',[10,55],{puffball:2,button:1},'fills a third, stamina back'],
     ['f_skewer','MUSHROOM SKEWER','cooking',[15,60],{chanterelle:2,button:1},'fills two fifths, mends you a minute'],['f_soup','BOLETE SOUP','cooking',[35,80],{bolete:1,button:2},'fills more than half, some health'],
     ['f_morel','MOREL FRY','cooking',[55,100],{morel:2},'fills two fifths, quicker on your feet 3 min']];
+  const PCOL={p_refresh:0x6ad86a,p_heal:0xd8343a,p_str:0xe8862a,p_keen:0x4aa0e8,p_cure:0xeeeae0,p_gheal:0xf2c81e};
+  const OWNRC=new Set(RC.map(r=>r[0]));   // only these: other files add their recipes (books, bouquets, dishes) to the same list
+  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ const P=INSPECT.part;
+    if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }});
+    if(PCOL[id])return INSPECT.shape('bottle',PCOL[id]); if(id==='bottle')return INSPECT.shape('bottle',0xcfe6e0);
+    if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
+    if(id==='f_skewer'){ const g=new THREE.Group(); g.add(P('cyl',0xc8a878,0,0,0,.006,.32,.006,0,Math.PI/2)); for(let i=0;i<4;i++)g.add(P('cap',i%2?0xe08a2a:0xe8dcc0,-.09+i*.06,0,0,.026,.022,.026,0,Math.PI/2)); return g; }
+    return INSPECT.shape('bowl',{f_roast:0x9a6a3a,f_fritter:0xd8b060,f_soup:0x7a4a2a,f_morel:0x8a6a4a}[id]||0x9a6a3a); }});
   const iid=m=>m.includes('_')?m:'m_'+m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
     p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); }};
   const PRICE=FORAGE.PRICE={p_refresh:12,p_heal:20,p_str:28,p_keen:28,p_cure:40,p_gheal:110,f_roast:8,f_fritter:10,f_skewer:16,f_soup:30,f_morel:56,bottle:2};

@@ -1,6 +1,6 @@
 // THE BOOKS: BOOKS, the old books the player finds, mends and sells.
 import {SHARED, THREE} from './003-shx.js';
-import {BOOKS, CITY, DRESS, FORAGE, INV, MAIL, SFX, UI} from './003b-systems.js';
+import {BOOKS, CITY, DRESS, FORAGE, INSPECT, INV, MAIL, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
@@ -13,6 +13,12 @@ import {TILE} from './006-map-pre.js';
   const SUP=[['bs_kit',"BINDER'S KIT",15],['bs_glue',"BOOKBINDER'S GLUE",1],['bs_thread','LINEN THREAD',1],['bs_cloth','BOOKCLOTH',2],['bs_leather','CALF LEATHER',6]];
   const NM={}, PR={}, RC=[]; for(const [id,w,r,,,rp,wp,ins,mm] of BK){ NM['bk_'+id]=w; NM['br_'+id]=r; PR['bk_'+id]=wp; PR['br_'+id]=rp; RC.push(['br_'+id,r,'bind',mm,Object.assign({['bk_'+id]:1},ins),'sells for $'+rp]); }
   for(const [id,n] of SUP)NM[id]=n; FORAGE.add({names:NM,prices:PR,recipes:RC});
+  const BC={atlas:0x2a5a8a,first:0x6a1a1a,herbal:0x3a6a2a,hymnal:0x2a2a2a,ledger:0x5a3a1a,novel:0x7a4a6a,paper:0xc8a040};
+  INSPECT.kinds.push({is:id=>/^(bk|br)_/.test(id)&&!!BC[id.slice(3)]||/^bs_/.test(id),make:id=>{ const P=INSPECT.part;
+    if(id==='bs_glue')return INSPECT.shape('jar',0xe8e0c0,0xb08a5a); if(id==='bs_kit')return INSPECT.shape('parcel',0x5a4030,0x2a2018);
+    if(id==='bs_thread'){ const g=new THREE.Group(); g.add(P('cyl',0xe8e0cc,0,0,0,.04,.07,.04),P('cyl',0x8a6a44,0,0,0,.05,.012,.05),P('cyl',0x8a6a44,0,.04,0,.05,.012,.05)); g.children[2].position.y=-.04; g.children[1].position.y=.04; return g; }
+    if(/^bs_/.test(id))return INSPECT.shape('book',id==='bs_leather'?0x8a5a32:0x6a7a9a,id==='bs_leather'?0x7a4a28:0x5a6a8a);
+    const c=new THREE.Color(BC[id.slice(3)]); if(id.startsWith('bk_'))c.lerp(new THREE.Color(0x8a8070),.45); return INSPECT.shape('book',c.getHex(),id.startsWith('bk_')?0xc8bc98:0xf2ead6); }});
   FORAGE.CK.bind={short:'BIND',need:()=>FORAGE.has('bs_kit')?null:"YOU NEED A BINDER'S KIT (THE ODDITIES STALL HAS ONE).",made:nm=>`YOU MEND IT, PAGE BY PAGE: ${nm}.`,fail:'THE GLUE SETS CROOKED. THE BOOK IS NO WORSE, BUT YOUR SUPPLIES ARE WASTED.',keep:id=>id.startsWith('bk_'),
     status:()=>FORAGE.has('bs_kit')?"BINDER'S KIT":"NO BINDER'S KIT"};
   FORAGE.HELP.push("BOOKBINDING restores worn books (a binder's kit, glue, thread, cloth, leather); find them in trash cans and the river, or buy them at the oddities stall, which buys them back mended.");

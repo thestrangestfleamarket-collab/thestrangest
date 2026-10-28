@@ -25,7 +25,7 @@ const ROOMS={lazy:{},off:{}},
   st=RIG.create(),
   WX={},
   FAR3={},
-  VIT={},
+  VIT={mends:[]},   // mends: what is healing you now (rest, the bath's steam): each a function giving health a second
   SWIM={tank:()=>0},
   PARK={},
   MAIL={},

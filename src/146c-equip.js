@@ -1,19 +1,21 @@
 // THE WORN LAYER: EQUIP wears gear by slot (body: armour, the cloud coat; head: the headlight; eyes: the goggles) and turns on its granted ability — guard softens blows, float lifts you, light lights the dark, sight sees through murk, night sees in the dark. It also draws body gear on the player: plate armour (the knight's faceted steel) or a coat of drifting clouds. Hand gear stays with WIELD; all read the shared item model (slot, grants).
 import {THREE} from './003-shx.js';
-import {EQUIP, FORAGE, ITEMS, VIT, W3} from './003b-systems.js';
+import {EQUIP, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
-{ const say=FORAGE.say, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','head','eyes','back'];
+{ const say=FORAGE.say, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
   FORAGE.add({names:{armor:'ARMOUR',cloudcoat:'CLOUD COAT'},prices:{armor:40,cloudcoat:60}});
   // one grant -> one effect, resolved the same way for every worn item (a property is schema-wide, not special-cased per item)
   const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false}, breathe:{on:()=>EQUIP.breathe=true, off:()=>EQUIP.breathe=false}, night:{on:()=>EQUIP.night=true, off:()=>EQUIP.night=false} };
   const save=()=>{ try{ OWNED.set('equip',JSON.stringify(EQUIP.by)); }catch(e){} };
   EQUIP.ability=id=>prop(id,'grants');
-  EQUIP.off=(slot='body')=>{ const id=EQUIP.by[slot]; if(!id)return; const a=ABIL[EQUIP.ability(id)]; if(a)a.off(); delete EQUIP.by[slot]; };
+  EQUIP.off=(slot='body')=>{ const id=EQUIP.by[slot]; if(!id)return; const a=ABIL[EQUIP.ability(id)]; if(a)a.off(); delete EQUIP.by[slot]; dye(); };
+  // a worn item with a colour dyes what it covers: body your shirt, legs your trousers
+  const dye=()=>{ if(!LOOKS.dye)return; const c=s=>{ const id=EQUIP.by[s], v=id&&prop(id,'color'); return v&&v!=='none'?v:null; }; const sh=c('body'), pa=c('legs'); if(LOOKS.over.shirt===(sh||undefined)&&LOOKS.over.pants===(pa||undefined))return; LOOKS.over.shirt=sh||undefined; LOOKS.over.pants=pa||undefined; LOOKS.dye(); };
   EQUIP.wear=(id,quiet)=>{ const slot=prop(id,'slot'); if(!SLOTS.includes(slot))return;
     if(EQUIP.by[slot]===id){ EQUIP.off(slot); save(); if(!quiet)say('YOU TAKE OFF THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); return; }
     if(!FORAGE.has(id)){ if(!quiet)say('YOU HAVE NO '+name(id)+'.','#c8a090'); return; }
-    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
+    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); dye(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
   FORAGE.ROWB.push(id=>SLOTS.includes(prop(id,'slot'))?[[EQUIP.by[prop(id,'slot')]===id?'TAKE OFF':'WEAR','equip']]:[]);
   FORAGE.ACT.equip=id=>EQUIP.wear(id);
   try{ const W=JSON.parse(OWNED.get('equip')||'{}')||{}; for(const s in W)if(W[s]&&FORAGE.has(W[s]))EQUIP.wear(W[s],true); }catch(e){}   // what you wore stays on between visits
@@ -36,7 +38,17 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
     if(tank.parent!==g)g.add(tank); tank.visible=true; const sl=J.shoulderL, sr=J.shoulderR, ch=J.chest, nk=J.neck, pv=J.pelvis;
     up.set(nk.x-pv.x,nk.y-pv.y,nk.z-pv.z).normalize(); right.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z); const w=right.length()||6; right.normalize(); fwd.crossVectors(right,up).normalize(); up.crossVectors(fwd,right).normalize(); M.makeBasis(right,up,fwd);
     tank.position.set(ch.x,ch.y,ch.z).addScaledVector(fwd,-w*.42).addScaledVector(up,-w*.25); tank.quaternion.setFromRotationMatrix(M); tank.scale.set(w*.17,w*1.05,w*.17); };
-  EQUIP.post=B=>{ const g=W3.group, id=EQUIP.worn; back(B);
+  // worn on the eyes with a colour: a pair of shades, its lenses that colour, on a dark band
+  let sh=null; const hu=new V(), hr=new V(), hf=new V(), HM=new THREE.Matrix4();
+  const shades=B=>{ const g=W3.group, J=B&&B.J, id=EQUIP.by.eyes, c=id&&prop(id,'color'); if(!g||!J||!c||c==='none'||g.visible===false){ if(sh)sh.visible=false; return; }
+    if(!sh){ sh=new THREE.Group(); sh.name='shades'; const lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
+      for(const s of [1,-1]){ const l=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.05,20),lens); l.rotation.x=Math.PI/2; l.position.set(.25*s,0,0); sh.add(l); const r=new THREE.Mesh(new THREE.TorusGeometry(.21,.03,8,20),band); r.position.set(.25*s,0,.01); sh.add(r);
+        const arm=new THREE.Mesh(new THREE.BoxGeometry(.04,.05,.62),band); arm.position.set(.62*s,.02,-.32); sh.add(arm); } const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.04,.04),band); br.position.set(0,.06,.01); sh.add(br); sh.userData.lens=lens; }
+    if(sh.parent!==g)g.add(sh); sh.visible=true; if(sh.userData.lens.color.getHexString()!==String(c).replace('#','').toLowerCase())sh.userData.lens.color.set(c);
+    const hb=J.head, ht=J.headTop, sl=J.shoulderL, sr=J.shoulderR; hu.set(ht.x-hb.x,ht.y-hb.y,ht.z-hb.z); const hh=hu.length()||6; hu.normalize(); hr.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z).normalize(); hf.crossVectors(hr,hu).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf);
+    sh.quaternion.setFromRotationMatrix(HM); sh.position.set(hb.x,hb.y,hb.z).addScaledVector(hu,hh*EQUIP.shY).addScaledVector(hf,hh*EQUIP.shZ); sh.scale.setScalar(hh*EQUIP.shS); };
+  EQUIP.shY=.36; EQUIP.shZ=.8; EQUIP.shS=1.25;
+  EQUIP.post=B=>{ const g=W3.group, id=EQUIP.worn; back(B); shades(B);
     if(!g||!B||!B.J||!id){ if(worn)worn.root.visible=false; return; }
     const grant=EQUIP.ability(id); if(grant!=='guard'&&grant!=='float'){ if(worn)worn.root.visible=false; return; }
     if(!worn)build(); if(worn.root.parent!==g)g.add(worn.root);

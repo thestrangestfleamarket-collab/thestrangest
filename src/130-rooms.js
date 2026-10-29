@@ -53,6 +53,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
       m.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(m); UI.thing({name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); }; ROOMS.offHide=offHide;
+  // run fn with the world as it is outside the inside you are in (nothing hidden for the room, no clipping): a window's picture of the street
+  ROOMS.peek=fn=>{ const H=IV.H.slice(), L=IV.L.slice(), S=IV.S.slice(), ix=S.map(([g])=>g.index), off=IV.b&&IV.b.off, clip=renderer.clippingPlanes;
+    for(const [o] of H)VIS.hide(o,'room',false); for(const [o] of L)VIS.hide(o,'room',false); for(const [g,i] of S)g.setIndex(i); if(off)offHide(false); renderer.clippingPlanes=[];
+    try{ fn(); } finally{ renderer.clippingPlanes=clip; if(off)offHide(true); S.forEach(([g],k)=>g.setIndex(ix[k])); for(const [o] of H)VIS.hide(o,'room'); for(const [o] of L)VIS.hide(o,'room',true,true); } };
   // an inside's ceiling faces down only: seen when you look up from inside, gone from above
   const ceil=o=>{ if(o.ceilG||o.noCeil)return; o.ceilG=new THREE.Group(); o.ceilG.name='ceiling'; const M=new THREE.MeshLambertMaterial({color:0x2e2f35});
     for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }

@@ -67,7 +67,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059g-arcade-games.js` | 44.0 | top level |  | 003b: FORAGE INV SFX keys; 005: OWNED; 006: STORE SYS |
 | `059h-bank.js` | 2.0 | top level, opens grab(bank) |  | 003: SHARED; 006: BLDK BLOCK STORE grab |
 | `060-cave.js` | 11.3 | top level | GCAVE (061 063 066a 094 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
-| `060a-fount.js` | 23.2 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 141e 142 142a 146g 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK FLOW PARK ROOMS SKY WED; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
+| `060a-fount.js` | 25.1 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 141e 142 142a 146g 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK FLOW PARK ROOMS SKY WED; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
 | `060b-trees.js` | 9.4 | top level | TREEGEN (061) | 003: THREE |
 | `061-park.js` | 63.9 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL SYS TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
 | `062-castle.js` | 6.5 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |

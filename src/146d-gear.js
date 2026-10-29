@@ -1,6 +1,6 @@
 // THE MINING TOOLS: the scanner and extractor as pack actions (they work underwater too), and the headlight that lights the caverns and deep water while you wear it.
 import {SHARED, THREE} from './003-shx.js';
-import {EQUIP, FLOW, FORAGE, INSPECT, LITE, pos} from './003b-systems.js';
+import {EQUIP, FORAGE, INSPECT, LITE, ONLINE, pos} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MINING} from './146c-mining.js';
 { const T=TILE, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
@@ -13,5 +13,10 @@ import {MINING} from './146c-mining.js';
   FORAGE.ACT.tool=id=>{ '@later'; if(id==='scanner'){ const n=MINING.scan(); say(n?'THE SCANNER LIGHTS '+n+' SEAM'+(n>1?'S':'')+' FOR A MINUTE.':'THE SCANNER FINDS NOTHING MORE HERE.','#9fd8ff'); }
     else if(id==='extractor'){ const n=MINING.extract(); say(n?'THE PULSE FREES '+n+' FIND'+(n>1?'S':'')+'.':'NOTHING LIT IS NEAR ENOUGH.','#9fd8ff'); } };
   const L=new THREE.PointLight(0xfff0d0,0,9*T,1.6); L.userData.both=true; L.userData.grp=null; L.userData.i0=14; LITE.recs.push(L);   // the headlight: lit while worn (EQUIP's light grant) and underground
-  SYS.add('life',()=>{ L.position.set(pos.x,SHARED.py+1.5*T,pos.z); L.intensity=EQUIP.light&&(SHARED.LVL==='down'||FLOW.under)?14:0; },'146d-gear');
-  window.GEARDBG=()=>({light:EQUIP.light,sight:EQUIP.sight,head:L.intensity}); }
+  // the other players' headlights: three more lights, given to the nearest players you can see who wear one
+  const THEIRS=[0,1,2].map(()=>{ const l=new THREE.PointLight(0xfff0d0,0,9*T,1.6); l.userData.both=true; l.userData.grp=null; l.userData.i0=14; LITE.recs.push(l); return l; });
+  const lit=o=>{ const id=EQUIP.decode?EQUIP.decode((o.look||'').split('.')[3]).head:null; return !!id&&EQUIP.ability(id)==='light'; };
+  SYS.add('life',()=>{ L.position.set(pos.x+Math.sin(SHARED.heading)*.8*T,SHARED.py+1.5*T,pos.z+Math.cos(SHARED.heading)*.8*T); const on=EQUIP.lampOn(); L.intensity=EQUIP.light&&on?14:0;
+    const C=on&&ONLINE.others&&ONLINE.others.size?[...ONLINE.others.values()].filter(o=>o.why==='near you'&&o.fig&&o.fig.g.visible&&lit(o)).sort((a,b)=>Math.hypot(a.p.x-pos.x,a.p.z-pos.z)-Math.hypot(b.p.x-pos.x,b.p.z-pos.z)):[];
+    THEIRS.forEach((l,i)=>{ const o=C[i]; if(!o){ l.intensity=0; return; } const p=o.fig.g.position, h=o.fig.g.rotation.y; l.position.set(p.x+Math.sin(h)*.8*T,p.y+1.5*T,p.z+Math.cos(h)*.8*T); l.intensity=14; }); },'146d-gear');
+  window.GEARDBG=()=>({light:EQUIP.light,sight:EQUIP.sight,head:L.intensity,theirs:THEIRS.map(l=>l.intensity)}); }

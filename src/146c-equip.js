@@ -42,13 +42,22 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
     if(tank.parent!==g)g.add(tank); tank.visible=true; const sl=J.shoulderL, sr=J.shoulderR, ch=J.chest, nk=J.neck, pv=J.pelvis;
     up.set(nk.x-pv.x,nk.y-pv.y,nk.z-pv.z).normalize(); right.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z); const w=right.length()||6; right.normalize(); fwd.crossVectors(right,up).normalize(); up.crossVectors(fwd,right).normalize(); M.makeBasis(right,up,fwd);
     tank.position.set(ch.x,ch.y,ch.z).addScaledVector(fwd,-w*.42).addScaledVector(up,-w*.25); tank.quaternion.setFromRotationMatrix(M); tank.scale.set(w*.17,w*1.05,w*.17); };
-  // worn on the eyes with a colour: a pair of shades, its lenses that colour, on a dark band
+  // worn on the eyes: night-vision goggles (two tubes on a head strap, their lenses glowing green), or, for anything with a colour, a pair of shades with lenses that colour
   const hu=new V(), hr=new V(), hf=new V(), HM=new THREE.Matrix4();
-  const shades=(g,B,id,H)=>{ const J=B&&B.J, c=id&&prop(id,'color'); let sh=H.sh; if(!g||!J||!c||c==='none'||g.visible===false){ if(sh)sh.visible=false; return; }
-    if(!sh){ sh=H.sh=new THREE.Group(); sh.name='shades'; const lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
-      for(const s of [1,-1]){ const l=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.05,20),lens); l.rotation.x=Math.PI/2; l.position.set(.25*s,0,0); sh.add(l); const r=new THREE.Mesh(new THREE.TorusGeometry(.21,.03,8,20),band); r.position.set(.25*s,0,.01); sh.add(r);
-        const arm=new THREE.Mesh(new THREE.BoxGeometry(.04,.05,.62),band); arm.position.set(.62*s,.02,-.32); sh.add(arm); } const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.04,.04),band); br.position.set(0,.06,.01); sh.add(br); sh.userData.lens=lens; }
-    if(sh.parent!==g)g.add(sh); sh.visible=true; if(sh.userData.lens.color.getHexString()!==String(c).replace('#','').toLowerCase())sh.userData.lens.color.set(c);
+  const EYES={
+    nv:()=>{ const G=new THREE.Group(), dark=new THREE.MeshStandardMaterial({color:0x1e2220,roughness:.5,metalness:.4}), strap=new THREE.MeshStandardMaterial({color:0x141416,roughness:.8}), glow=new THREE.MeshStandardMaterial({color:0x2a5a30,emissive:0x3aff6a,emissiveIntensity:.7,roughness:.1});
+      G.add(new THREE.Mesh(new THREE.BoxGeometry(.78,.26,.2),dark));
+      for(const s of [1,-1]){ const t=new THREE.Mesh(new THREE.CylinderGeometry(.15,.18,.38,18),dark); t.rotation.x=Math.PI/2; t.position.set(.2*s,.01,.22); G.add(t);
+        const r=new THREE.Mesh(new THREE.TorusGeometry(.15,.025,8,20),dark); r.position.set(.2*s,.01,.41); G.add(r); const l=new THREE.Mesh(new THREE.CircleGeometry(.13,20),glow); l.position.set(.2*s,.01,.415); G.add(l); }
+      const band=new THREE.Mesh(new THREE.TorusGeometry(.56,.045,8,32),strap); band.rotation.x=Math.PI/2; band.position.set(0,.02,-.6); band.scale.set(1.02,1.05,1); G.add(band);
+      const top=new THREE.Mesh(new THREE.TorusGeometry(.56,.04,8,24,Math.PI),strap); top.rotation.y=Math.PI/2; top.position.set(0,.06,-.6); G.add(top); return G; },
+    shades:c=>{ const G=new THREE.Group(), lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
+      for(const s of [1,-1]){ const l=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.05,20),lens); l.rotation.x=Math.PI/2; l.position.set(.25*s,0,0); G.add(l); const r=new THREE.Mesh(new THREE.TorusGeometry(.21,.03,8,20),band); r.position.set(.25*s,0,.01); G.add(r);
+        const arm=new THREE.Mesh(new THREE.BoxGeometry(.04,.05,.62),band); arm.position.set(.62*s,.02,-.32); G.add(arm); } const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.04,.04),band); br.position.set(0,.06,.01); G.add(br); G.userData.lens=lens; return G; }};
+  const eyeKind=id=>{ if(!id)return null; if(EQUIP.ability(id)==='night')return 'nv'; const c=prop(id,'color'); return c&&c!=='none'?'shades':null; };
+  const shades=(g,B,id,H)=>{ const J=B&&B.J, k=eyeKind(id), E=H.eye||(H.eye={}); for(const q in E)if(q!==k||!g||!J||g.visible===false)E[q].visible=false; if(!k||!g||!J||g.visible===false)return;
+    const c=prop(id,'color'); let sh=E[k]; if(!sh){ sh=E[k]=EYES[k](c); sh.name='eyes-'+k; }
+    if(sh.parent!==g)g.add(sh); sh.visible=true; if(sh.userData.lens&&c&&sh.userData.lens.color.getHexString()!==String(c).replace('#','').toLowerCase())sh.userData.lens.color.set(c);
     const hb=J.head, ht=J.headTop, sl=J.shoulderL, sr=J.shoulderR; hu.set(ht.x-hb.x,ht.y-hb.y,ht.z-hb.z); const hh=hu.length()||6; hu.normalize(); hr.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z).normalize(); hf.crossVectors(hr,hu).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf);
     sh.quaternion.setFromRotationMatrix(HM); sh.position.set(hb.x,hb.y,hb.z).addScaledVector(hu,hh*EQUIP.shY).addScaledVector(hf,hh*EQUIP.shZ); sh.scale.setScalar(hh*EQUIP.shS); };
   EQUIP.shY=.36; EQUIP.shZ=.8; EQUIP.shS=1.25;

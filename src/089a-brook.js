@@ -61,7 +61,8 @@ import {FOUNT} from './060a-fount.js';
     const FS=FLOW.GLSL+`uniform float uT,uDay; uniform vec3 uSky,uSun,uSunD; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
       float h1(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+vec2(1,1)),f.x),f.y); }
-      void main(){ if(vF.z<-.5)discard; float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
+      void main(){ if(vF.z<-.5)discard; if(!gl_FrontFacing){ vec3 u=uSky*(.35+.65*uDay)*.55+vec3(.02,.06,.05); gl_FragColor=vec4(floor(u*24.+.5)/24.*.8,.8); return; }   // seen from under the water: the bright surface overhead
+        float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
         vec4 fw=flowAt(vW.xz); vec2 sl=flowSlope(vW.xz), fv=fw.gb; float fs=length(fv);
         vec2 fp=mix(vec2(ta*.8,u*2.4),wp*.7+vec2(uT*.05,0.),pl); float n=vn(fp)*.65+vn(fp*2.3+7.)*.35, n2=vn(vec2(ta*2.2,u*5.)+3.);
         vec3 N=normalize(vec3(-sl.x*.6+(vn(fp*3.1+uT*.4)-.5)*.16*(.3+.7*(1.-pl)),1.,-sl.y*.6+(vn(fp*2.7-uT*.3+9.)-.5)*.16));
@@ -75,7 +76,7 @@ import {FOUNT} from './060a-fount.js';
           if(dl<r.z*(.98+.16*n))fo=1.; if(al2>0.&&al2<r.z*2.6&&abs(cr)<r.z*(.75-.6*al2/(r.z*2.6))&&vn(vec2(al2*4./r.z-uT*5.,cr*6./r.z))>.6)fo=1.; }
         if(fo>.5){ col=vec3(.74,.82,.86)*(.3+.65*uDay)+uSun*.12; al=1.; }
         col=floor(col*24.+.5)/24.; gl_FragColor=vec4(col,al); }`;
-    const wmat=rk=>{ const m=new THREE.ShaderMaterial({uniforms:{...U,...FLOW.U,uRk:{value:rk}},vertexShader:VS,fragmentShader:FS,fog:false,transparent:true,depthWrite:false,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor}); m.customProgramCacheKey=()=>'brookwater'; return m; };
+    const wmat=rk=>{ const m=new THREE.ShaderMaterial({uniforms:{...U,...FLOW.U,uRk:{value:rk}},vertexShader:VS,fragmentShader:FS,fog:false,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor}); m.customProgramCacheKey=()=>'brookwater'; return m; };
     for(const w of waters){ const s0=C[Math.max(0,w.k0)][2]-6, s1=C[Math.min(N,w.k1)][2]+6, mine=RK.filter(o=>{ const r=BK.q(o.x,o.y); return r&&r[1]>s0&&r[1]<s1&&o.top3>L(r[1])*WU+G0; }).slice(0,24);
       const arr=[]; for(let i=0;i<24;i++){ const o=mine[i]; if(!o){ arr.push(new THREE.Vector4()); continue; } const k=kAt(BK.q(o.x,o.y)[1]), [nx,ny]=BK.nrm(k); arr.push(new THREE.Vector4(o.wx,o.wz,o.wr*(o.kind==='s'?.95:.8),Math.atan2(nx,-ny))); }
       const me=new THREE.Mesh(w.g,wmat(arr)); me.renderOrder=1; grp.add(me); w.me=me; }

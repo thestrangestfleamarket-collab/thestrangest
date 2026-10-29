@@ -16,7 +16,8 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   const STYLE={x_flounder:1,x_eel:2,x_crab:3}, CAP=12;
   const M={}, mats={}; let loading=null, packIds=[];
   const swimMat=(map,vc)=>{ const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
-    m.onBeforeCompile=sh=>{ sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+    m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.3;');   // light of its own: under water the sun comes only from above
+      sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
       { float w=clamp(.5-position.x,0.,1.), ph=aSw.x, a=aSw.y; int k=int(aSw.z+.5);
         if(k==0)transformed.z+=a*(.04+w*w*.22)*sin(ph+position.x*7.);
         else if(k==1)transformed.y+=a*(.03+w*w*.12)*sin(ph+position.x*8.);

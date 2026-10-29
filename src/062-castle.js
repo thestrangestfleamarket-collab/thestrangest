@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {CASTLE, cutWalls, FIX, grab, lamps, MODS, SOL, STN, TILE} from './006-map-pre.js';
+import {CASTLE, cutWalls, FIX, grab, lamps, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
@@ -34,6 +34,24 @@ await grab('castle',async()=>{}); PARK.later(()=>{ '@park'; const K=SHARED.BOD.K
   { const M=BATCH.meshes||{}, m=.5*TILE, inB=()=>SHARED.LVL==='up'&&pos.x>X(bx0)+m&&pos.x<X(bx1)-m&&pos.z>Z(by0)+m&&pos.z<Z(by1)-m; MODS.castleIn=inB;
     for(const k in PL)for(const me of BATCH.all(M,k)){ const s=SIDE[k[1]]; cutWalls.push({pl:PL[k],nx:s[0],nz:s[1],foot:Y(6),me,when:inB}); } BATCH.meshes={}; }
   for(const p of made)castleSolid('up',p,0,CYS);
+  // the spires (owner's picture of the castle by the lake): a slate cone with a gallery under it on every drum, and a tall round tower in the bailey's back corner with the tallest spire
+  { const PP=[], CC=[], V=new THREE.Vector3(), h3=(a,b,c)=>{ const q=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return q-Math.floor(q); }, gy=(x,y)=>MODS.bodega.ground(X(x),Z(y));
+    const add=(g,col,at)=>{ g=g.index?g.toNonIndexed():g; g.translate(...at); const p=g.attributes.position; for(let i=0;i<p.count;i+=3){ const cy=(p.getY(i)+p.getY(i+1)+p.getY(i+2))/3, cx=(p.getX(i)+p.getX(i+1)+p.getX(i+2))/3, cz=(p.getZ(i)+p.getZ(i+1)+p.getZ(i+2))/3, c=col(cx,cy,cz,h3(Math.round(cx*40),Math.round(cy*40),Math.round(cz*40))); for(let k=0;k<3;k++){ PP.push(p.getX(i+k),p.getY(i+k),p.getZ(i+k)); CC.push(...c); } } };
+    const SL=[.34,.38,.44], SL2=[.26,.29,.34], ST=[.66,.63,.57], ST2=[.52,.5,.46];
+    const spire=(x,y,rt,h0,hs)=>{ const wx=X(x), wz=Z(y), R=rt*TILE, y0=gy(x,y)+Y(h0*CYS), H=Y(hs);
+      add(new THREE.CylinderGeometry(R*1.12,R*.98,Y(22),18,1),(px,py,pz,hh)=>(Math.floor(Math.atan2(px-wx,pz-wz)*9/Math.PI)%2?ST:ST2).map(v=>v*(.92+.16*hh)),[wx,y0+Y(11),wz]);
+      for(let i=0;i<18;i++){ const a=i/18*Math.PI*2; add(new THREE.BoxGeometry(R*.18,Y(16),R*.12),()=>ST2,[wx+Math.sin(a)*R*1.1,y0+Y(30),wz+Math.cos(a)*R*1.1]); }
+      add(new THREE.CylinderGeometry(R*1.14,R*1.14,Y(5),18,1),()=>ST,[wx,y0+Y(38),wz]);
+      const g=new THREE.ConeGeometry(R*1.2,H,18,10); g.translate(0,H/2,0); add(g,(px,py,pz,hh)=>{ const b=Math.floor((py-y0)/Y(9)), s=((Math.floor(Math.atan2(px-wx,pz-wz)*9/Math.PI)+b)%2)?SL:SL2; return s.map(v=>v*(.9+.2*hh)); },[wx,y0+Y(26),wz]);
+      add(new THREE.CylinderGeometry(R*.04,R*.04,Y(26),5),()=>[.2,.2,.22],[wx,y0+Y(26)+H+Y(13),wz]); add(new THREE.SphereGeometry(R*.1,8,6),()=>[.62,.5,.24],[wx,y0+Y(26)+H+Y(10),wz]); };
+    [[bx0,by0],[bx1,by0],[bx0,by1],[bx1,by1]].forEach(([x,y])=>spire(x,y,r,270,170)); spire(gx-2,wy-.25,1.1,290,140); spire(gx+2,wy-.25,1.1,290,140);
+    // the round tower: stone in courses with windows, its gallery and spire
+    { const tx=bx0+3, ty=by1-3, R=1.6*TILE, wx=X(tx), wz=Z(ty), y0=gy(tx,ty), H=Y(520*CYS);
+      add(new THREE.CylinderGeometry(R,R*1.06,H,20,14),(px,py,pz,hh)=>{ const a=Math.atan2(px-wx,pz-wz), row=Math.floor((py-y0)/Y(14)), col=Math.floor(a*10/Math.PI+(row%2)*.5); const win=Math.abs(((a+Math.PI*2)%(Math.PI/2))-Math.PI/4)<.12&&((py-y0)/H*6%1)>.45&&((py-y0)/H*6%1)<.8&&py-y0>Y(40);
+        return win?[.12,.1,.09]:((row+col)%3?ST:ST2).map(v=>v*(.9+.2*hh)); },[wx,y0+H/2,wz]);
+      spire(tx,ty,1.6,520,230); SOL.up.push([wx-R,wz-R,wx+R,wz+R]); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(PP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(CC,3)); g.computeVertexNormals();
+    const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.castShadow=me.receiveShadow=true; me.name='castle spires'; (MAPG.park||scene).add(me); }
   MODS.castle={BOUND:{x0:X(bx0-r),x1:X(bx1+r),z0:Z(by0-r),z1:Z(by1+r)}}; });
 await grab('castlestairs',async()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, S=CASTLE.stair, sd=STN.DY, n=S.steps, rise=S.depth/n, rn=(S.y1-S.y0)/n, P=[], Cc=[], c3=new THREE.Color();
   const quad=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };

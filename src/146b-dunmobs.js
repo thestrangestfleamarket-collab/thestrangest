@@ -70,10 +70,10 @@ import {GEMS} from './101-gems.js';
   const hitSlime=(S,dmg,from,s)=>{ if(S.dead)return; const t=TIER[S.k]; S.hp-=dmg; S.flash=.12; S.agg=true; sfx('step',{vol:.6,pitch:.55,vary:.2});
     const dx=S.x-from.x, dz=S.z-from.z, l=Math.hypot(dx,dz)||1, kb=.45*T*(s&&s.kb||1), p={x:S.x+dx/l*kb,z:S.z+dz/l*kb}; if(free(p.x,p.z,.18*T)){ S.kb={x:p.x,z:p.z}; }
     if(S.hp>0)return; S.dead=true; S.pop=0; S.air=0; sfx('drip',{vol:.8,pitch:.45}); sfx('boom',{vol:.15,pitch:2.4});
-    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); xp(t.sk[0],t.sk[1]); goo(S); loot(S.k,t.loot,S.x,S.z); };
+    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); xp(t.sk[0],t.sk[1]); goo(S); loot(S.k,t.loot,S.x,S.z); SYS.run('slain',{kind:'slime',lvl}); };
   const killRes=r=>{ const N=r.N; r.dead=true; r.t=0; N.alert=false; N.st.to=null; N.st.face=null; N.st.hold=true;
     if(r.kk)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); say(r.kk?'THE '+N.name+' FALLS.':r.spider?'THE SPIDER CURLS UP AND DIES.':r.ogre?'THE OGRE GOES DOWN.':'THE SKELETON CRUMBLES.','#e8e2cc');
-    xp(10+lvl*8,60+lvl*8); const k=r.key==='Gold'?'gold':r.spider?'spider':'bone'; loot(k,.6,N.st.x,N.st.z); if(r.key==='Gold')drop('gold',N.st.x,N.st.z); };
+    xp(10+lvl*8,60+lvl*8); const k=r.key==='Gold'?'gold':r.spider?'spider':'bone'; loot(k,.6,N.st.x,N.st.z); if(r.key==='Gold')drop('gold',N.st.x,N.st.z); SYS.run('slain',{kind:k==='bone'?'guard':k,lvl}); };
   const hitRes=(r,dmg,from,s)=>{ if(r.dead)return; const N=r.N, st=N.st; r.agg=true;
     if(r.kk&&!(s&&s.heavy)&&!N.an.once&&Math.random()<Math.min(.5,lvl*.1)){ N.an.play('Block'); sfx('clunk',{vol:.5,pitch:2.1}); say('THE '+N.name+' BLOCKS.','#c8c2b0'); return false; }   // a guard blocks a light blow; a heavy one gets through
     r.hp-=dmg; const dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1, kb=2.2*T*(s&&s.kb||1); st.sx=dx/l*kb; st.sz=dz/l*kb;

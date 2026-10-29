@@ -14,14 +14,15 @@ import {TILE} from './006-map-pre.js';
   const nm=id=>(FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
   const have=id=>(INV.items&&INV.items[id])||0, you=()=>(LOOKS.L&&LOOKS.L.name)||'friend';
   const item=a=>{ const [id,n]=String(a||'').trim().split(/\s+/); return {id,n:Math.max(1,+n||1)}; };
-  // a reply's conditions, each word one: flag  !flag  flag=value  has:id[:n]  !has:id
+  // a reply's conditions, each word one: flag  !flag  flag=value  has:id[:n]  !has:id  cash:n  name:arg (a test another system registers in TALK.tests)
   const test=(c,m)=>String(c||'').trim().split(/\s+/).filter(Boolean).every(w=>{ const neg=w[0]==='!', s=neg?w.slice(1):w; let ok;
-    if(s.startsWith('has:')){ const [id,n]=s.slice(4).split(':'); ok=have(id)>=(+n||1); } else if(s.includes('=')){ const [k,v]=s.split('='); ok=String(m[k]??'')===v; } else ok=!!m[s];
+    if(s.startsWith('has:')){ const [id,n]=s.slice(4).split(':'); ok=have(id)>=(+n||1); } else if(s.includes(':')&&TALK.tests[s.split(':')[0]]){ const i=s.indexOf(':'); ok=!!TALK.tests[s.slice(0,i)](s.slice(i+1)); } else if(s.includes('=')){ const [k,v]=s.split('='); ok=String(m[k]??'')===v; } else ok=!!m[s];
     return neg?!ok:ok; });
   // a character with no script: hello, what this place is, the shop if it keeps one, goodbye
   const chat=N=>{ const shop=TALK.shops.has(N)||CHARS.trade&&CHARS.trade(N), R=[{t:'WHAT IS THIS PLACE?',go:'about'}]; if(shop)R.unshift({t:'WHAT DO YOU SELL?',do:'shop'}); R.push({t:'GOODBYE.',go:'bye'});
     return {start:'hi',lines:{hi:{say:'@greet',opts:R},about:{say:'@about',opts:R.filter(r=>r.go!=='about')},bye:{say:'@bye',opts:[]}}}; };
-  TALK.script=N=>{ const t=recOf(N).talk; return t&&t.lines&&t.lines[t.start]?t:chat(N); };
+  TALK.tests.cash=a=>(INV.cash||0)>=(+a||0);
+  TALK.script=N=>{ const t=recOf(N).talk||N.talk; return t&&t.lines&&t.lines[t.start]?t:chat(N); };
 
   const P=document.createElement('div'); P.id='talkp'; P.hidden=true;
   P.style.cssText='position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(620px,94vw);z-index:22;padding:12px 16px 10px;font:12px Silkscreen,monospace;letter-spacing:.4px;line-height:1.6;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
@@ -30,7 +31,7 @@ import {TILE} from './006-map-pre.js';
   const tEl=P.querySelector('#talkt'), oEl=P.querySelector('#talko');
   let N=null, S=null, id='', L=null, text='', shown=0, acc=0, opts=[], at=0, raf=0, last=0, keep=null;
   const voice=()=>N.voice||(N.voice=SFX.voiceOf(N.key||N.name));
-  const sayOf=s=>{ const a=Array.isArray(s)?s[Math.floor(Math.random()*s.length)]:String(s||''); if(a[0]==='@')return LINES.pick(a.slice(1),{name:you()})||'...'; return a.replace(/\{name\}/g,you()); };
+  const sayOf=s=>{ const a=Array.isArray(s)?s[Math.floor(Math.random()*s.length)]:String(s||''); if(a[0]==='@')return LINES.pick(a.slice(1),{name:you()})||'...'; return a.replace(/\{(\w+)\}/g,(m,k)=>k==='name'?you():TALK.vars[k]?TALK.vars[k]():m); };
   const drawOpts=()=>{ oEl.innerHTML=opts.map((o,i)=>{ const lack=o.do==='take'&&have(item(o.arg).id)<item(o.arg).n;
       return `<div data-i="${i}" style="cursor:${lack?'default':'pointer'};padding:2px 6px;${i===at?'background:#1c2130;color:#f2c14e':''}${lack?';color:#6f7686':''}">${i+1}. ${esc(o.t)}${lack?` <span style="color:#8a6a5a">(YOU NEED ${item(o.arg).n} ${esc(nm(item(o.arg).id))})</span>`:''}</div>`; }).join('')||'<div data-i="-1" style="cursor:pointer;padding:2px 6px;background:#1c2130;color:#f2c14e">1. (LEAVE)</div>'; };
   const show=k=>{ if(!N)return; if(!k||!S.lines[k])return TALK.close(); id=k; L=S.lines[k]; text=sayOf(L.say); shown=0; acc=0; at=0;
@@ -40,6 +41,7 @@ import {TILE} from './006-map-pre.js';
     if(o.do==='take'){ const {id:t,n}=item(o.arg); if(have(t)<n)return; FORAGE.take(t,n); FORAGE.say&&FORAGE.say(`YOU HAND OVER ${n} ${nm(t)}.`,'#e8e2cc'); }
     else if(o.do==='give'){ const {id:t,n}=item(o.arg); FORAGE.give(t,n); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say(`YOU GET ${n} ${nm(t)}.`,'#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.4}); }
     else if(o.do==='set')set(o.arg);
+    else if(TALK.ops[o.do])TALK.ops[o.do](o.arg||'',N);
     if(o.set)set(o.set);
     if(o.do==='shop'){ const n0=N, f=TALK.shops.get(n0); TALK.close(); if(f)f(); else if(SHOPS.open)SHOPS.open(n0); return; }
     show(o.go); };

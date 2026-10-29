@@ -63,7 +63,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);
     // its merchant stands inside, behind the counter, unless the level file or the character editor put them elsewhere
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
-    if(who&&LEVEL.homes&&!LEVEL.homes[who])LEVEL.homes[who]=[+tx(X(cx+(p.at?p.at[0]:0))).toFixed(2),+tz(Z(R.y0+(p.at?p.at[1]:2.2))).toFixed(2),0,id]; };
+    const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
+    home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
   let n=0; for(const id in DEF)if(WP[id])make(id,DEF[id],n++);
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

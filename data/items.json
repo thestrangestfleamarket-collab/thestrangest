@@ -418,5 +418,25 @@
   "speed": 9.5,
   "len": 1.05,
   "weight": 2.5
+ },
+ "tv_console": {
+  "value": 140,
+  "weight": 30,
+  "sellable": true
+ },
+ "tv_small": {
+  "value": 70,
+  "weight": 6,
+  "sellable": true
+ },
+ "pc_home": {
+  "value": 180,
+  "weight": 12,
+  "sellable": true
+ },
+ "modem": {
+  "value": 60,
+  "weight": 1.5,
+  "sellable": true
  }
 }

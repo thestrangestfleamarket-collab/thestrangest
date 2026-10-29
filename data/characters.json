@@ -429,5 +429,67 @@
  },
  "glasshorn": {
   "name": "THE GLASS HORN"
+ },
+ "fixer": {
+  "name": "THE FIXER",
+  "trade": {
+   "sells": [
+    "tv_console",
+    "tv_small",
+    "pc_home",
+    "modem"
+   ],
+   "line": "(the little one) He fixed them. They work. Mostly."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "(the little one) He says hi. He doesn't, but he would.",
+      "(the little one) Careful, that one's live."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DOES THE MODEM DO?",
+       "go": "modem"
+      },
+      {
+       "t": "WHO'S IN THERE?",
+       "go": "who"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "modem": {
+     "say": "(the little one) Put it by a computer at home. It calls the market board. You can order things. Things come.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "who": {
+     "say": "(the little one) Rude.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "fixkid": {
+  "name": "THE LITTLE ONE"
  }
 }

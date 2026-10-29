@@ -33,8 +33,8 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     G.w=w; st.climb.grip={L:{h:G.L.hL.p,f:G.L.fL.p},R:{h:G.L.hR.p,f:G.L.fR.p}}; };
   MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
     if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
-    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1, h=cast(it,dx/l,dz/l,SHARED.py+.7*T), d=h?Math.hypot(h.x-it.x,h.z-it.z):rT(it);   // the body hangs out from the bark it meets, arms bent round the trunk
-    const gap=9/(st.world?st.world.kx:1/ZU); pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
+    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1, ky=st.world?st.world.ky:1/ZU, gap=6/(st.world?st.world.kx:1/ZU);   // the body hangs a forearm out from the widest bark between its feet and hands
+    let d=0; for(const ly of [AT.f[0],AT.f[1],AT.h[0],AT.h[1]]){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
     C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*16*ZU)); st.climb.ph=C.h/ZU; st.climb.per=PER; TREES.h=it.y+C.h;
     grip(it,dt,up?1:dn?-1:0);
     if(off||(dn&&C.h<=0)){ st.climb=null; C.g=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });

@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 import {scene} from './004-main.js';
 import {BODIES} from './111a-bodies.js';
-const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin:6,fur:7,wood:8,ivory:9,glass:10,tulle:11}};
+const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin:6,fur:7,wood:8,ivory:9,plastic:9,glass:10,tulle:11}};
 { const V3=THREE.Vector3, BONES=BODIES.BONES, PARENT=BODIES.PARENT;
   const hash3=(x,y,z)=>{ const h=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return h-Math.floor(h); };
   const jit=(g,a)=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),kx=Math.round(x*997),ky=Math.round(y*997),kz=Math.round(z*997);

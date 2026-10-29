@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {EQUIP, FORAGE, LEVELS, LITE, PARK, pos, st, SWIM, UI, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js';
+import {FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
 import {RIVER} from './066-river.js';
 await grab('gemcave',async()=>{}); await grab('hudson',async()=>{}); await grab('lake',async()=>{}); await grab('falls',async()=>{});
@@ -49,16 +49,16 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     SYS.add('places',()=>{ if(!window.__started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1,'load'); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
     const K=C.id.toUpperCase(); window[K]={go,get built(){ return !!M; }}; window[K+'DBG']=()=>({built:!!M,lv:SHARED.LVL,inside:inside(pos.x,pos.z),objs:M?M.objs.length:0,swim:!!(st.water&&st.water.in)});
     if(C.enter)C.enter(api); return api; };
-  CAVERNS.make({id:'gemcave',name:'THE GEM CAVE',leaving:'UP THE STONE LIFT',lot:{x0:1200,y0:-40,x1:1216,y1:-28},H:70,wall:[96,92,86],floor:[70,66,60],gem:0xb070ff,exitName:'THE STONE LIFT UP',
+  CAVERNS.make({id:'gemcave',name:'THE GEM CAVE',leaving:'UP THE STONE LIFT',lot:{x0:(1200+OFFDX),y0:-40,x1:(1216+OFFDX),y1:-28},H:70,wall:[96,92,86],floor:[70,66,60],gem:0xb070ff,exitName:'THE STONE LIFT UP',
     lights:[[.5,.5,55,0x9fb8ff,18,10],[.8,.2,30,0xffb070,10,7]],
     out:()=>{ const S=GCAVE.S, L=GCAVE.lift||(S?{x:X(S.c.x+(PARK.ox||0)),z:Z(S.c.y+(PARK.oy||0)-3.4)}:{x:0,z:0}); UI.goTo(L.x,L.z+1.3*T,'up'); SHARED.heading=0; }});
   { let MO=null, said=0; const mouthAt=()=>RIVER.mouth||{x:X(117.5),z:(RIVER.box.z0+RIVER.box.z1)/2}, NEED=45;   // seconds of air the tunnel asks for: a plain breath (16) is not enough
     const gate=()=>{ if(SWIM.tank()>NEED||VIT.air>=NEED)return null; return 'THE TUNNEL GOES ON UNDER THE CITY. YOU NEED MORE AIR: AIRCAP MUSHROOMS (THE MUSHROOM SELLER) OR SCUBA (RENT IT FROM THE SHARK).'; };
     const tryIn=api=>{ const m=gate(); if(m){ const now=performance.now(); if(now-said>5000){ said=now; if(window.FORAGE&&FORAGE.say)FORAGE.say(m,'#9fd8ff'); } return; } api.go(1); };
-    CAVERNS.make({id:'hudson',name:'THE HUDSON CAVERN',leaving:'UP TO THE RIVER',lot:{x0:1300,y0:-40,x1:1344,y1:-26},H:110,wet:true,murk:0x0c2414,see:5,wall:[52,62,50],floor:[38,48,36],gem:0x4ae0c8,exitName:'UP TO THE RIVER',
-      walls:[[1311,-40,1311.8,-30],[1322,-36,1322.8,-26],[1333,-40,1333.8,-30]],   // the tunnel winds under the city: three bends
-      pocket:{x0:1333.8,y0:-40,x1:1344,y1:-26,lv:75}, exits:[[1301.2,-33,'UP TO THE RIVER'],[1342.6,-30,'THE OLD SHAFT UP TO THE RIVER']],
-      pipes:[[1306,-33,14,0],[1317,-31,12,.3],[1328,-34,13,-.2],[1339,-36,10,.15]],
+    CAVERNS.make({id:'hudson',name:'THE HUDSON CAVERN',leaving:'UP TO THE RIVER',lot:{x0:(1300+OFFDX),y0:-40,x1:(1344+OFFDX),y1:-26},H:110,wet:true,murk:0x0c2414,see:5,wall:[52,62,50],floor:[38,48,36],gem:0x4ae0c8,exitName:'UP TO THE RIVER',
+      walls:[[(1311+OFFDX),-40,(1311.8+OFFDX),-30],[(1322+OFFDX),-36,(1322.8+OFFDX),-26],[(1333+OFFDX),-40,(1333.8+OFFDX),-30]],   // the tunnel winds under the city: three bends
+      pocket:{x0:(1333.8+OFFDX),y0:-40,x1:(1344+OFFDX),y1:-26,lv:75}, exits:[[(1301.2+OFFDX),-33,'UP TO THE RIVER'],[(1342.6+OFFDX),-30,'THE OLD SHAFT UP TO THE RIVER']],
+      pipes:[[(1306+OFFDX),-33,14,0],[(1317+OFFDX),-31,12,.3],[(1328+OFFDX),-34,13,-.2],[(1339+OFFDX),-36,10,.15]],
       lights:[[.02,.5,60,0x4a9a70,8,8],[.3,.25,40,0x40c090,5,6],[.55,.8,40,0x40c090,5,6],[.9,.5,80,0x9fd8b0,10,10]],
       enter:api=>{ RIVER.onBuild.push(()=>{ '@later'; const RB=RIVER.box, WU=T/.84, {x:mx,z:mz}=mouthAt(), by=RB.lv-RIVER.depthAt(mx,mz)*WU, g=new THREE.Group(); g.name='cavern-mouth';
         const rk=new THREE.MeshLambertMaterial({color:0x2c3229}); for(let i=0;i<11;i++){ const a=i/11*Math.PI*2, r=new THREE.Mesh(new THREE.DodecahedronGeometry(.5,0),rk); r.position.set(mx+Math.cos(a)*2.2*T,by+.4*T,mz+Math.sin(a)*2.2*T); r.scale.set(T*(1.1+.5*hs(i,1)),T*(1.4+.9*hs(i,2)),T*(1.1+.5*hs(i,3))); r.rotation.y=hs(i,4)*3; g.add(r); }
@@ -78,11 +78,11 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
       const hole=new THREE.Mesh(new THREE.CircleGeometry(1.15*T,14),new THREE.MeshBasicMaterial({color:0x000000})); hole.rotation.x=-Math.PI/2; hole.position.set(mx,by+.04*T,mz); g.add(hole);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(2.4*T,Y(34),2.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(17),mz); g.add(hb);
       UI.thing({name,obj:hb,reach:2*T,near:3.4*T,tall:Y(34),act:()=>{ const m=gate(); if(m){ if(window.FORAGE&&FORAGE.say)FORAGE.say(m,'#9fd8ff'); return; } api.go(1); }}); };
-    { const LK={m:null}; CAVERNS.make({id:'lake',name:'THE LAKE CAVERN',leaving:'UP TO THE LAKE',lot:{x0:1500,y0:-40,x1:1518,y1:-26},H:70,wet:true,murk:0x14301e,wall:[52,70,58],floor:[36,52,42],gem:0xffd060,exitName:'UP TO THE LAKE',
+    { const LK={m:null}; CAVERNS.make({id:'lake',name:'THE LAKE CAVERN',leaving:'UP TO THE LAKE',lot:{x0:(1500+OFFDX),y0:-40,x1:(1518+OFFDX),y1:-26},H:70,wet:true,murk:0x14301e,wall:[52,70,58],floor:[36,52,42],gem:0xffd060,exitName:'UP TO THE LAKE',
         lights:[[.5,.5,50,0x60c080,12,10],[.8,.3,30,0xd0e060,8,7]],
         enter:api=>{ PARK.later(()=>{ '@park'; const g=MAPG.park||scene, mx=PX(151), mz=PZ(10), by=(PARK.hill?PARK.hill(151,10):0)+.05*T; LK.m={x:mx,z:mz}; mouth(g,mx,by,mz,'A CAVE MOUTH',()=>st.water&&st.water.in?null:'SWIM DOWN TO THE MOUTH.',api); }); },
         out:()=>{ const m=LK.m||{x:PX(151),z:PZ(10)}; UI.goTo(m.x,m.z+1.5*T,'up'); SHARED.heading=Math.PI; }}); }
-    CAVERNS.make({id:'falls',name:'THE CAVERN BEHIND THE FALLS',leaving:'OUT THROUGH THE FALLS',lot:{x0:1400,y0:-50,x1:1432,y1:-20},H:90,empty:true,wall:[84,80,74],floor:[58,54,50],gem:0,exitName:'OUT THROUGH THE FALLS',
+    CAVERNS.make({id:'falls',name:'THE CAVERN BEHIND THE FALLS',leaving:'OUT THROUGH THE FALLS',lot:{x0:(1400+OFFDX),y0:-50,x1:(1432+OFFDX),y1:-20},H:90,empty:true,wall:[84,80,74],floor:[58,54,50],gem:0,exitName:'OUT THROUGH THE FALLS',
       lights:[[.5,.5,70,0x8fb0d0,14,14],[.15,.5,40,0xb0c8e0,8,9]],
       enter:api=>{ PARK.later(()=>{ '@park'; const g=MAPG.park||scene, P=[], Cc=[], c3=new THREE.Color(), q=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };
         const bx=(x0,y0,x1,y1,h,col)=>{ const [a,b,c,d]=[PX(x0),PX(x1),PZ(y0),PZ(y1)], e=0, f=Y(h), dk=col.map(v=>v*.78); q([a,f,d],[b,f,d],[b,f,c],[a,f,c],col.map(v=>v*1.08)); q([a,e,d],[b,e,d],[b,f,d],[a,f,d],col); q([b,e,c],[a,e,c],[a,f,c],[b,f,c],col); q([a,e,c],[a,e,d],[a,f,d],[a,f,c],dk); q([b,e,d],[b,e,c],[b,f,c],[b,f,d],dk); SOL.up.push([a,c,b,d]); FIX.up.push([a,c,0,b,d,f]); };

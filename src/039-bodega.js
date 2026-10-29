@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
@@ -841,7 +841,7 @@ let MUSTURN=null;
 const MUS=(B=>{ const mid=(B.x0+B.x1)/2, hx0=mid-6, hx1=mid+6, by=B.y1-8, i=T;
   return {b:B,f:B,mid,hx0,hx1,by,side:[B.y0+4,B.y0+9],earth:[B.x0+2,B.x0+5],humans:[mid-3,mid+3],closed:[B.x1-5,B.x1-2],archZ:150,H:B.h-4,
     hall:{x0:hx0+i,x1:hx1-i,y0:B.y0+i,y1:by-i},west:{x0:B.x0+i,x1:hx0-i,y0:B.y0+i,y1:by-i},east:{x0:hx1+i,x1:B.x1-i,y0:B.y0+i,y1:by-i},
-    earthR:{x0:B.x0+i,x1:hx0-i,y0:by+i,y1:B.y1-i},humansR:{x0:hx0+i,x1:hx1-i,y0:by+i,y1:B.y1-i},closedR:{x0:hx1+i,x1:B.x1-i,y0:by+i,y1:B.y1-i}}; })((()=>{ const TM=TURN(WROW.mus,WP.museum.face), ox=TM.q?840-TM.cx:0; MUSTURN={T:TM,ox,street:WROW.mus}; return {id:'lmusfront',...WROW.mus,...(TM.q?{x0:TM.L.x0+ox,x1:TM.L.x1+ox,y0:TM.L.y0,y1:TM.L.y1}:{})}; })());
+    earthR:{x0:B.x0+i,x1:hx0-i,y0:by+i,y1:B.y1-i},humansR:{x0:hx0+i,x1:hx1-i,y0:by+i,y1:B.y1-i},closedR:{x0:hx1+i,x1:B.x1-i,y0:by+i,y1:B.y1-i}}; })((()=>{ const TM=TURN(WROW.mus,WP.museum.face), ox=TM.q?840+OFFDX/BLDK-TM.cx:0; MUSTURN={T:TM,ox,street:WROW.mus}; return {id:'lmusfront',...WROW.mus,...(TM.q?{x0:TM.L.x0+ox,x1:TM.L.x1+ox,y0:TM.L.y0,y1:TM.L.y1}:{})}; })());
 const MUC={stone:[214,206,188],stoneL:[226,220,204],stoneD:[186,178,160],joint:[166,158,140],skirt:[52,44,38],gilt:[196,160,82],giltD:[146,114,52],
   marble:[224,218,204],marbleG:[200,198,192],vein:[150,146,140],grout:[176,170,156],verde:[48,72,60],verdeL:[70,98,82],
   oak:[128,88,54],oakL:[146,104,64],oakD:[106,70,42],seam:[66,44,28],flag:[150,140,124],flagL:[166,156,138],flagD:[128,118,104],
@@ -1320,7 +1320,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
   B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1);
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
-  const SB={...B0,x0:1330,x1:1330+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
+  const SB={...B0,x0:1330+OFFDX/BLDK,x1:1330+OFFDX/BLDK+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
   const C=v=>v&&v.e&&v.length===3?[v[0],v[1],v[2],1]:v;
   const faceTex=(w,h,fn)=>{ w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h)); const im=new ImageData(w,h), d=im.data; let ie=null, e=null;

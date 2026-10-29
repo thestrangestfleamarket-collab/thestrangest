@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, QS, SOL, STORE, TILE, TURN, WP, ZU} from './006-map-pre.js';
+import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
@@ -12,7 +12,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar']]){ const b=B_(id), sc=LAY.s(k); if(b&&!b.sized){ b.sized=1; b.s=sc; if(sc!==1){ const m=(b.x0+b.x1)/2, f=b.y1; b.x0=m+(b.x0-m)*sc; b.x1=m+(b.x1-m)*sc; b.y0=f+(b.y0-f)*sc; } } }
   const laid=(k,fn)=>{ const h=LAY.h(k); return h?lift(h*TILE/ZU/BLDK,fn):fn(); };
-  const PLATE={x0:334,y0:-100,x1:456,y1:-70};
+  const PLATE={x0:334+OFFDX/BLDK,y0:-100,x1:456+OFFDX/BLDK,y1:-70};
   const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y1-(j+.5)/24))),kind);
   const sBlobM=SHAD.mat({alpha:.4}), storeBlob=(p,rot)=>{ if(!p.boxes||!p.boxes.some(b=>b.z0<2&&b.z1-b.z0>1.5))return;   // floor-standing furniture only: skip flat things (rugs, litter) and anything up a wall
     let w=Math.abs(X(p.x1)-X(p.x0)), d=Math.abs(Z(p.y1)-Z(p.y0)); const a=w*d/(TILE*TILE); if(a<.08||a>5)return;   // skip tiny bits and room-spanning counters/walls

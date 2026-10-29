@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 const APTS={EMPTY:true};
 await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
@@ -130,7 +130,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994,y0:20,x1:994+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
+  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
   // real window glass: clear looked through straight, the sky's sheen at a slant, the sun's glint
   APTS.glassMat=(o={})=>{ const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),3.); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.72,.82,.92),fr*.5); gl_FragColor.a=mix(gl_FragColor.a,.55,fr);'); };

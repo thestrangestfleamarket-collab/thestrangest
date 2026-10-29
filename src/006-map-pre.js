@@ -87,7 +87,7 @@ try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json"));
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
-const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
+const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const L=LAYOUT0; return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
@@ -110,4 +110,4 @@ const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1}
 const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WPP.lake.r], PARKCAVE=[WPP.cave.x,WPP.cave.y], PARKTOWER=[WPP.tower.x,WPP.tower.y];
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
-export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};
+export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OFFDX, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};

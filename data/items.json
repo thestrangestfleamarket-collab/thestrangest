@@ -735,5 +735,11 @@
   "slot": "hand",
   "value": 120,
   "weight": 1
+ },
+ "glowcap": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "darksight": 240
  }
 }

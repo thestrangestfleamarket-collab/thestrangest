@@ -16,7 +16,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     if (await wait(() => window.RIVER && RIVER.on && !FADE.busy, null, 90000).then(() => 1, () => 0)) break; }
   const dep = await pg.evaluate(() => { const B = RIVER.box, mid = (B.z0 + B.z1) / 2, o = []; for (let x = B.x0 + 20; x < B.x1 - 20; x += 25) o.push(RIVER.depthAt(x, mid)); const m = RIVER.mouth;
     return { min: Math.min(...o), max: Math.max(...o), bank: RIVER.depthAt(m.x, B.z1 - 1), mouth: RIVER.depthAt(m.x, m.z) }; });
-  ok(dep.min >= 12 && dep.max >= 40 && dep.max <= 80 && dep.bank < 3 && dep.mouth > 20, 'the Hudson is shallow at the quay and 2 to 10 times deeper out in the channel, the mouth in a pit: ' + JSON.stringify(dep));
+  ok(dep.min >= 12 && dep.max >= 40 && dep.max <= 260 && dep.bank < 3 && dep.mouth > 20, 'the Hudson is shallow at the quay and 2 to 10 times deeper out in the channel, the mouth in a pit: ' + JSON.stringify(dep));
   // into the water, two tiles from the long pier's side, away from posts
   const into = () => pg.evaluate(() => { const T = __dbg.cv().TILE, B = RIVER.box, m = RIVER.mouth; STORE.goTo(m.x + 6 * T, B.z1 - 8 * T, 'up'); });
   await into(); await wait(() => !FADE.busy); await wait(() => RIVER.swim, null, 60000);

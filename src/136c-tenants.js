@@ -5,7 +5,7 @@ import {BUGS, TENANTS} from './003b-systems.js';
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
   const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
-  const room=()=>'s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const room=()=>'s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   let el=null, D=null, open=null, say='';
 
   /* ---------- the panel ---------- */

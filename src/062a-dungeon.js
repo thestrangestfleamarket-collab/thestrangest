@@ -2,26 +2,32 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js';
+import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH} from './008-batch.js';
 import {castleMat, gboxS} from './062-castle.js';
 await grab('dungeon',async()=>{});
 { const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, GAP=40, G=MAPG.dungeon;
-  const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, LEN=46, lot=n=>({x0:900+(n-1)*GAP,y0:-20,x1:914+(n-1)*GAP,y1:-20+LEN,h:130});
-  const lotAt=(x,z)=>{ const gx=iX(x), gy=iZ(z), n=Math.floor((gx-900)/GAP)+1; if(n<1||n>NL)return 0; const B=lot(n); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1?n:0; };
+  const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, LEN=46, DX0=900+OFFDX, lot=n=>({x0:DX0+(n-1)*GAP,y0:-20,x1:DX0+14+(n-1)*GAP,y1:-20+LEN,h:130});
+  const lotAt=(x,z)=>{ const gx=iX(x), gy=iZ(z), n=Math.floor((gx-DX0)/GAP)+1; if(n<1||n>NL)return 0; const B=lot(n); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1?n:0; };
   const traps=(n,R,dn)=>{ let sd=n*7919+13; const r=()=>{ sd=sd*16807%2147483647; return (sd-1)/2147483646; }, H=[], end=(dn?dn.y0:R.y1)-2; let y=R.y0+6.5, side=r()<.5;   // the same pits, spikes and webs each time you come to a level; more of them deeper
     while(y<end-1.6){ const p=r();
-      if(p<.34+.04*n){ const w=Math.min(8,4.4+r()*2.4+.3*n), d=1.5+r()*1.1, x0=side?R.x0+.5:R.x1-.5-w; H.push({t:'lava',x0,y0:y,x1:x0+w,y1:y+d}); side=!side; y+=d+2.2+r()*1.4; }
+      if(p<.34+.04*n){ const k=r(), rx=k<.3?.7+r()*.5:k<.75?1.3+r()*.9:Math.min(3.4,2.2+r()*1.1+.15*n), ry=Math.max(.6,Math.min(2.4,rx*(.45+r()*.35))), wl=r()<.55, W=R.x1-R.x0;
+        const cx=wl?(side?R.x0+rx*.7:R.x1-rx*.7):R.x0+1.4+rx*1.3+r()*Math.max(0,W-2.8-2.6*rx), cy=y+ry*1.3, src=wl&&r()<.6?'wall':!wl&&r()<.45?'ceil':null;
+        H.push({t:'lava',cx,cy,rx,ry,ph:[r()*6.3,r()*6.3,r()*6.3],src,fz:36+r()*50,fo:r()-.5,x0:Math.max(R.x0,cx-rx*1.3),x1:Math.min(R.x1,cx+rx*1.3),y0:cy-ry*1.3,y1:cy+ry*1.3}); if(wl)side=!side; y+=2.6*ry+2+r()*1.4; }
       else if(p<.6+.05*n){ const w=4.5+r()*4, d=r()<.4?2:1, x0=R.x0+.5+r()*(R.x1-R.x0-1-w); H.push({t:'spike',x0,y0:y,x1:x0+w,y1:y+d,ph:r()*2.4}); y+=d+2+r()*1.4; }
       else if(p<.88){ const rr=.8+r()*.5; H.push({t:'web',cx:R.x0+1.4+r()*(R.x1-R.x0-2.8),cy:y+rr,r:rr}); y+=2*rr+1.6+r(); }
       else y+=2.4; }
+    const LV=H.filter(h=>h.t==='lava'); if(LV.length&&!LV.some(h=>h.src==='ceil'))LV.reduce((a,h)=>(h.src!=='wall')-(a.src!=='wall')||h.rx-a.rx>0?h:a).src='ceil';   // every level has lava pouring from its ceiling
     return H; };
   const lay=n=>{ const B=lot(n), m=!(n&1), R={...D0,b:B,x0:B.x0+T,x1:B.x1-T,y0:B.y0+T,y1:B.y1-T,cx:(B.x0+B.x1)/2,cy:(B.y0+B.y1)/2,in:[B.x0-T,B.y0-T,B.x1+T,B.y1+T],
-      door:{w:'-'},slit:{w:'-'},tally:{w:'-'},banners:[],holes:D0.holes.filter(h=>h.w!=='b'),torches:[]}; for(let u=3.4;u<LEN-2;u+=6.5)R.torches.push({w:'l',u},{w:'r',u:u+3.25>LEN-2?u:u+3.25});
+      door:{w:'-'},slit:{w:'-'},tally:{w:'-'},banners:[],holes:D0.holes.filter(h=>h.w!=='b'),torches:[]};
     const lx=(a,b)=>m?[R.x1-b,R.x1-a]:[R.x0+a,R.x0+b], [ux0,ux1]=lx(2.2,4.2), [dx0,dx1]=lx(9.6,11.6);
-    const up={x0:ux0,x1:ux1,y0:R.y0,y1:R.y0+3,n:6,rise:8,up:1}, dn=n<NL?{x0:dx0,x1:dx1,y0:R.y1-4.4,y1:R.y1-.8,n:6,rise:10,up:0}:null;
-    return {n,B,R,up,dn,hz:traps(n,R,dn),atUp:{x:X((up.x0+up.x1)/2),z:Z(up.y1+.6),h:0},atDn:dn&&{x:X((dn.x0+dn.x1)/2),z:Z(dn.y0-.6),h:Math.PI}}; };
+    const up={x0:ux0,x1:ux1,y0:R.y0,y1:R.y0+3,n:6,rise:8,up:1}, dn=n<NL?{x0:dx0,x1:dx1,y0:R.y1-4.4,y1:R.y1-.8,n:6,rise:10,up:0}:null, hz=traps(n,R,dn);
+    const fall=(w,u)=>hz.some(h=>h.src==='wall'&&(h.cx<R.cx)===(w==='l')&&Math.abs(h.cy+h.fo*h.ry*.6-(R.y0+u))<1.4);   // no torch over a lava fall
+    for(let u=3.4;u<LEN-2;u+=6.5)for(const t of [{w:'l',u},{w:'r',u:u+3.25>LEN-2?u:u+3.25}])if(!fall(t.w,t.u))R.torches.push(t);
+    return {n,B,R,up,dn,hz,atUp:{x:X((up.x0+up.x1)/2),z:Z(up.y1+.6),h:0},atDn:dn&&{x:X((dn.x0+dn.x1)/2),z:Z(dn.y0-.6),h:Math.PI}}; };
+  const lavaR=(h,a)=>1+.16*Math.sin(3*a+h.ph[0])+.09*Math.sin(5*a+h.ph[1])+.05*Math.sin(8*a+h.ph[2]);   // a pool's edge: its radius at each angle
   const tread=(S,gx,gy)=>S&&gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?Math.min(S.n,Math.floor((S.up?S.y1-gy:gy-S.y0)/((S.y1-S.y0)/S.n))+1):0;
   const ground=(x,z)=>{ const n=lotAt(x,z); if(!n)return dy; const L=lay(n), gx=iX(x), gy=iZ(z), u=tread(L.up,gx,gy), d=tread(L.dn,gx,gy); return dy+Y(u?u*L.up.rise:d?-d*L.dn.rise:0); };
   const PL={}, SIDE={b:[0,1],f:[0,-1],w:[1,0],e:[-1,0]}; for(const k in SIDE)PL['K'+k]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
@@ -38,6 +44,7 @@ await grab('dungeon',async()=>{});
     const floor=(x0,y0,x1,y1)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
     if(dn){ floor(R.x0,R.y0,R.x1,dn.y0); floor(R.x0,dn.y1,R.x1,R.y1); floor(R.x0,dn.y0,dn.x0,dn.y1); floor(dn.x1,dn.y0,R.x1,dn.y1); } else floor(R.x0,R.y0,R.x1,R.y1);
     for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:[R.x1-.16,R.y0+t.u]; Kc['wall torch'](x,y,t.w); }
+    const LK=MODS.dunLook, solid=LK?LK.props(L,Kc):[];
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
     for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:dy+Y(6),me,when:()=>SHARED.LVL==='down'&&cur>0}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
@@ -61,8 +68,7 @@ await grab('dungeon',async()=>{});
       const ceil=new THREE.Mesh(new THREE.PlaneGeometry(X(B.x1)-X(B.x0),Math.abs(Z(B.y1)-Z(B.y0))).rotateX(Math.PI/2),new THREE.MeshLambertMaterial({map:CEIL()}));   // faces down: seen when you look up, gone from above
       ceil.position.set((X(B.x0)+X(B.x1))/2,Y(R.H+4)+dy,(Z(B.y0)+Z(B.y1))/2); ceil.material.map.repeat.set(B.x1-B.x0,B.y1-B.y0); ceil.receiveShadow=true; own(ceil);
       const LV=L.hz.filter(h=>h.t==='lava'), SP=L.hz.filter(h=>h.t==='spike'), WE=L.hz.filter(h=>h.t==='web');
-      for(const h of LV){ const g=new THREE.PlaneGeometry(X(h.x1)-X(h.x0),Math.abs(Z(h.y1)-Z(h.y0))).rotateX(-Math.PI/2), me=new THREE.Mesh(g,LAVA); me.position.set((X(h.x0)+X(h.x1))/2,fy+.01*TILE,(Z(h.y0)+Z(h.y1))/2); own(me); H.lava.push(h);
-        const RM=[44,34,30]; box(h.x0-.14,h.y0-.14,0,h.x1+.14,h.y0,2.4,RM); box(h.x0-.14,h.y1,0,h.x1+.14,h.y1+.14,2.4,RM); box(h.x0-.14,h.y0,0,h.x0,h.y1,2.4,RM); box(h.x1,h.y0,0,h.x1+.14,h.y1,2.4,RM); }
+      H.lava.push(...LV);
       let ns=0; const cells=SP.map(h=>{ const c=[]; for(let x=h.x0+.17;x<h.x1;x+=.34)for(let y=h.y0+.17;y<h.y1;y+=.34)c.push([x,y]); ns+=c.length; quad([X(h.x0),fy+.004*TILE,Z(h.y1)],[X(h.x1),fy+.004*TILE,Z(h.y1)],[X(h.x1),fy+.004*TILE,Z(h.y0)],[X(h.x0),fy+.004*TILE,Z(h.y0)],[34,32,32]); return c; });
       if(ns){ const IM=new THREE.InstancedMesh(new THREE.ConeGeometry(.05*TILE,.34*TILE,4),new THREE.MeshLambertMaterial({color:0x8e8a84}),ns); IM.castShadow=true; IM.frustumCulled=false; own(IM); let i=0;
         SP.forEach((h,k)=>{ H.sp.push({...h,i0:i,c:cells[k],up:null,hit:false,IM}); i+=cells[k].length; }); H.spIM=IM; }
@@ -70,16 +76,14 @@ await grab('dungeon',async()=>{});
       M.hz=H; }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const sm=new THREE.Mesh(geo,MODS.castleStairMat); sm.receiveShadow=true; sm.castShadow=true; scene.add(LEVELS.own(sm,'dungeon'));
-    for(const [,b] of WB)sol(b.x0,b.y0,b.x1,b.y1,R.H);
+    for(const [,b] of WB)sol(b.x0,b.y0,b.x1,b.y1,R.H); for(const b of solid)sol(...b);
     const LF=[], light=l=>{ const cm=Math.max(...l.c), Lt=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6);
       Lt.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); Lt.userData.i0=Lt.intensity; Lt.userData.grp=G; LITE.recs.push(Lt); M.lights.push(Lt); return Lt; };
     for(const l of K.LAMPS.slice(l0)){ const Lt=light(l); if(l.flick)LF.push(Lt); } K.LAMPS.length=l0;
     FLAME.props(made,X,z=>Y(z)+dy,Z,LF); M.fl=FLAME.src.slice(f0);
+    if(LK)LK.dress(L,{own:o=>scene.add(LEVELS.own(o,'dungeon')),light,PL,lavaR});
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
     mine=M; cur=n; spikes(true); LITE.t=0; for(const f of HK)f(n); return L; };
-  const LAVA=new THREE.ShaderMaterial({uniforms:{uT:{value:0},uK:{value:8/TILE}},vertexShader:'varying vec2 vW; void main(){ vec4 w=modelMatrix*vec4(position,1.); vW=w.xz; gl_Position=projectionMatrix*viewMatrix*w; }',
-    fragmentShader:'uniform float uT,uK; varying vec2 vW; float h(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5); } float n(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y); }'+
-      'void main(){ vec2 p=floor(vW*uK)/8.; float v=n(p*1.1+vec2(uT*.11,uT*.06))*.62+n(p*2.7-vec2(uT*.23,uT*.05))*.38; gl_FragColor=vec4(v>.7?vec3(1.,.9,.5):v>.55?vec3(1.,.52,.1):v>.38?vec3(.78,.18,.03):vec3(.3,.05,.02),1.); }'});
   let CT=null, WT=null; const can=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; return t; };
   const CEIL=()=>CT||(CT=can(24,24,g=>{ g.fillStyle='#1c1a19'; g.fillRect(0,0,24,24); for(let j=0;j<4;j++)for(let i=0;i<2;i++){ const v=34+((i*7+j*13)%5)*4; g.fillStyle=`rgb(${v},${v-3},${v-6})`; g.fillRect(i*12+(j&1)*6+1,j*6+1,10,4); } }),CT.wrapS=CT.wrapT=THREE.RepeatWrapping,CT);
   const WEB=()=>new THREE.MeshLambertMaterial({map:WT||(WT=can(128,128,g=>{ g.strokeStyle='rgba(225,225,215,.85)'; g.lineWidth=1.5; const c=64; for(let k=0;k<12;k++){ const a=k/12*6.283+.1*Math.sin(k*3); g.beginPath(); g.moveTo(c,c); g.lineTo(c+Math.cos(a)*62,c+Math.sin(a)*62); g.stroke(); }
@@ -88,12 +92,12 @@ await grab('dungeon',async()=>{});
   const spikes=force=>{ if(!mine||!mine.hz)return; const t=performance.now()/1000;
     for(const sp of mine.hz.sp){ const up=((t+sp.ph)%PER)<UP; if(!force&&up===sp.up)continue; sp.up=up; if(!up)sp.hit=false; const fy=Y(.3)+dy;
       sp.c.forEach(([x,y],k)=>{ sp.IM.setMatrixAt(sp.i0+k,m4.compose(v3.set(X(x),up?fy+.17*TILE:fy+.01*TILE,Z(y)),q0,s3.set(1,up?1:.12,1))); }); sp.IM.instanceMatrix.needsUpdate=true; } };
-  const inside=(h,gx,gy)=>gx>h.x0&&gx<h.x1&&gy>h.y0&&gy<h.y1, said={}, say=(k,m,c)=>{ const t=performance.now(); if(t-(said[k]||0)<1600)return; said[k]=t; FORAGE.say(m,c||'#ff9a6a'); };
+  const inside=(h,gx,gy)=>gx>h.x0&&gx<h.x1&&gy>h.y0&&gy<h.y1, inLava=(h,gx,gy,k=.95)=>{ const u=(gx-h.cx)/h.rx, v=(gy-h.cy)/h.ry; return Math.hypot(u,v)<k*lavaR(h,Math.atan2(v,u)); }, said={}, say=(k,m,c)=>{ const t=performance.now(); if(t-(said[k]||0)<1600)return; said[k]=t; FORAGE.say(m,c||'#ff9a6a'); };
   let lavaT=0, webT=0, webFree=0;
   SYS.add('life',dt=>{ if(!mine||!mine.hz||!cur||SHARED.LVL!=='down'){ if(SHARED.drag!==1)SHARED.drag=1; return; } const H=mine.hz, f=1+.35*(cur-1), gx=iX(pos.x), gy=iZ(pos.z), alive=!VIT.dead&&!(VIT.out>0), onG=SHARED.py-ground(pos.x,pos.z)<.2*TILE;
-    LAVA.uniforms.uT.value=performance.now()/1000; spikes(false);
+    spikes(false);
     for(const sp of H.sp)if(sp.up&&!sp.hit&&alive&&onG&&inside(sp,gx,gy)){ sp.hit=true; VIT.hurt(.07*f); say('sp','THE SPIKES STAB UP INTO YOUR FEET!'); }   // a trap's hurt has no side to block from
-    if(alive&&onG&&H.lava.some(h=>inside(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
+    if(alive&&onG&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
     if(webT>0){ webT-=dt; SHARED.drag=.08; if(webT<=0){ webFree=2; SHARED.drag=1; say('web','YOU TEAR YOURSELF FREE OF THE WEB.','#d8d8c8'); } }
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*cur; say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
@@ -108,7 +112,7 @@ await grab('dungeon',async()=>{});
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
   LEVELS.of.dungeon={name:'THE DUNGEON',amb:0,label:()=>'THE DUNGEON'+(cur?' — LEVEL '+cur:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:(x,z)=>bnd(lotAt(x,z)||1)};
-  MODS.dungeon={get B(){ return lot(cur||1); },get level(){ return cur; },traps:()=>cur?lay(cur).hz:[],ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
+  MODS.dungeon={get B(){ return lot(cur||1); },get level(){ return cur; },traps:()=>cur?lay(cur).hz:[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:(x,z)=>bnd(lotAt(x,z)||1),arrive:n=>lay(n).atUp,lay,hook:f=>HK.push(f),tick(){}};
   window.DUNGEON={get level(){ return cur; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>cur?lay(cur).hz:[],go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&n!==cur){ await go(n,'top'); } return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:cur,hp:+VIT.hp.toFixed(3),drag:SHARED.drag,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, CEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, CEL, FADE, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
@@ -252,7 +252,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     { const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],'BODEGA'); }
     if(MODS.apts&&MODS.apts.A){ const a=MODS.apts.A; add(bt(a.x0,a.y0),bt(a.x1,a.y1),[150,74,58],'APARTMENTS'); }
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)add(bt(g.x0,g.y0),bt(g.x1,g.y1),[112,78,48],'GHOST ST'); }
-    if(window.BLK)for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],'');
+    if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],''); }
     { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'CASTLE'); }
     if(GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],'CAVE'); }
     if(GTOWER.site){ const t=GTOWER.site(); if(t)add(wt(t.x-t.w/2,t.z-t.d/2),wt(t.x+t.w/2,t.z+t.d/2),[130,126,116],'TOWER'); }
@@ -276,6 +276,12 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const zoomTo=(z,px,py,fx=.5,fy=.5)=>{ const Q=plan(); V.z=clv(z,1,8); const sw=Q.W/V.z, sh=Q.H/V.z; V.cx=px-fx*sw+sw/2; V.cy=py-fy*sh+sh/2; drawMap(); };
   { const Z=$('#mapz'), B=(t,f,id)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=t; if(id)b.dataset.sec=id; b.onclick=f; Z.append(b); };
     B('−',()=>{ zoomTo(V.z/1.5,V.cx,V.cy); }); B('+',()=>{ zoomTo(V.z*1.5,V.cx,V.cy); }); const sp=document.createElement('span'); sp.className='dim'; sp.textContent='wheel or +/- to zoom, drag to move'; Z.append(sp); }
+  // going to another section: the world starts again behind the fade with only that section loaded 
+  UI.goSection=id=>{ const S=SECTIONS; if(!S.of(id)||id===S.home.id||FADE.busy)return; const u=new URL(location.href); u.searchParams.set('sec',id); for(const k of ['at','place','fresh'])u.searchParams.delete(k);
+    FADE.run('GOING TO SECTION '+id,()=>new Promise(()=>{ location.href=u.toString(); }),{cut:true}); };
+  { const Z=$('#mapz'), lab=document.createElement('span'); lab.className='dim'; lab.style.marginLeft='12px'; lab.textContent='GO TO SECTION'; Z.append(lab);
+    for(let r=SECTIONS.grid.rows-1;r>=0;r--)for(let c=0;c<SECTIONS.grid.cols;c++){ const id=SECTIONS.ids[c][r], b=document.createElement('button'); b.className='btn'; b.textContent=id; b.title=id===SECTIONS.home.id?'you are here':'go to section '+id;
+      if(id===SECTIONS.home.id){ b.setAttribute('aria-pressed','true'); b.disabled=true; } b.onclick=()=>UI.goSection(id); Z.append(b); } }
   const drawDown=(X_,Y_,W,H)=>{ mg.fillStyle='#07080b'; mg.fillRect(0,0,W,H); const D=LOOP.D; if(!D)return;
     const rr=(t,col,lw)=>{ const x0=X_(t.west), x1=X_(t.east), y0=Y_(t.north), y1=Y_(t.south), r=Math.min(Math.abs(X_(D.r)-X_(0)),(x1-x0)/2,(y1-y0)/2); mg.strokeStyle=col; mg.lineWidth=Math.max(lw,lw*V.z*.6); mg.beginPath(); mg.roundRect(x0,y0,x1-x0,y1-y0,r); mg.stroke(); };
     rr(D.tracks.outer,'#c88a3a',3); rr(D.tracks.inner,'#3a8ac8',3);

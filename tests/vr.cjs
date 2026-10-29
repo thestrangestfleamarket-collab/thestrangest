@@ -82,14 +82,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const sh0 = await pg.evaluate(() => VR.state().shots); await pg.waitForTimeout(10000); const sh1 = await pg.evaluate(() => VR.state().shots);
     ok(sh1 - sh0 <= 1, 'a still menu is not pictured over and over (' + (sh1 - sh0) + ' pictures in 10 s)');
     await shot('menu-panel');
-    const a1 = await aim('controllers', 'right', 'MAP');
-    ok(!a1, 'the right controller points at MAP on the panel' + (a1 ? ' (' + a1 + ')' : ''));
+    const a1 = await aim('controllers', 'right', 'SETTINGS');
+    ok(!a1, 'the right controller points at SETTINGS on the panel' + (a1 ? ' (' + a1 + ')' : ''));
     await shot('controller-points');
     const m0 = await menuText();
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 1)); await frames(2);
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0)); await frames(2);
-    ok(await changed(m0), 'the trigger presses MAP (' + (await menuText()).split('\n')[0] + ')');
-    ok(await until(() => VR.state().fresh, 90000), 'the panel shows the MAP page');
+    ok(await changed(m0), 'the trigger presses SETTINGS (' + (await menuText()).split('\n')[0] + ')');
+    ok(await until(() => VR.state().fresh, 90000), 'the panel shows the SETTINGS page');
     await shot('controller-pressed');
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
     ok(await until(() => VR.state().hands === 2, 15000), 'put the controllers down and your hands show (' + (await pg.evaluate(() => VR.state().hands)) + ' hands)');

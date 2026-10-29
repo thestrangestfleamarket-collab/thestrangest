@@ -337,7 +337,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   // the edge ring's and the far rows' shadows painted once on the ground (they no longer cast live ones into every shadow pass)
   { const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,0,32,32,32); gr.addColorStop(0,'rgba(0,0,0,.42)'); gr.addColorStop(.6,'rgba(0,0,0,.3)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64);
     const t=new THREE.CanvasTexture(c), mat=new THREE.MeshBasicMaterial({color:0x000000,map:t,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}), Pp=[], Uv=[], DX=.55, DZ=.83;
-    for(const m of [PARK.ring,P.standFar]){ if(!m)continue; m.castShadow=false; for(const o of m.userData.items||[]){ const h=Math.max(0,o.top-o.y), r=o.r*1.15, cx=o.x+DX*h*.35, cz=o.z+DZ*h*.35, y=o.y+.03*TILE;
+    for(const m of (QS.get('ringbake')==='1'?[PARK.ring,P.standFar]:[])){ if(!m)continue; m.castShadow=false; for(const o of m.userData.items||[]){ const h=Math.max(0,o.top-o.y), r=o.r*1.15, cx=o.x+DX*h*.35, cz=o.z+DZ*h*.35, y=o.y+.03*TILE;
       for(const [a,b,u,v] of [[-1,-1,0,0],[1,-1,1,0],[1,1,1,1],[-1,-1,0,0],[1,1,1,1],[-1,1,0,1]]){ Pp.push(cx+a*r,y,cz+b*r); Uv.push(u,v); } } }
     if(Pp.length){ const G=new THREE.BufferGeometry(); G.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); G.setAttribute('uv',new THREE.Float32BufferAttribute(Uv,2)); G.computeBoundingSphere();
       const me=new THREE.Mesh(G,mat); me.name='ringshade'; me.renderOrder=1; me.raycast=()=>{}; me.userData.cull=1; PARK.ringShade=me; scene.add(me); } }

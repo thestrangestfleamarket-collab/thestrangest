@@ -1,6 +1,6 @@
 // THE FISHING: FISHING and BOAT let the player fish the river and the lakes with a rod (bait, cast, bite, fight, land) and row the river.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -262,5 +262,21 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
   const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-RB.lv), hp=new THREE.Vector3(); if(FORAGE.has('rod')&&!RIVER.swim&&!S_&&ray.intersectPlane(pl,hp)&&FISHING.at(hp.x,hp.z)){ const d=Math.hypot(hp.x-p.x,hp.z-p.z); if(d<16*T&&d>1.5*T){ FISHING.cast(hp.x,hp.z); return true; } }
     return pick0(ray,p); };
   { SYS.add('life',(dt)=>{ FISHING.tick(dt); swimTick(dt); },'142-fishing'); }
+  /* ---------- the others see you fish: your float on the water, your line, the fish you fight or land, and your rowboat ---------- */
+  { const r2=v=>Math.round(v*100)/100, xyz=o=>[r2(o.position.x),r2(o.position.y),r2(o.position.z)]; let shT=0, was='';
+    SYS.add('life',dt=>{ if(!ONLINE.on||(shT-=dt||0)>0)return; shT=.25; const m={t:'fish',b:bob.visible?xyz(bob):null,x:hooked.visible&&S_&&S_.f?xyz(hooked):null,k:hooked.visible&&S_&&S_.f?S_.f.id:null,boat:BOAT.on?[r2(boat.position.x),r2(boat.position.y),r2(boat.position.z),r2(boat.rotation.y)]:null};
+      const j=JSON.stringify(m); if(j===was&&!m.b&&!m.boat)return; was=j; ONLINE.send(m); },'142-fishing-share');
+    const theirs=FISHING.theirs=new Map(), P=new THREE.Vector3();
+    const mk=()=>{ const o={bob:bob.clone(),fish:new THREE.Mesh(fishGeo,fishM.clone()),boat:boat.clone(),line:new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({length:NL+1},()=>new THREE.Vector3())),line.material)};
+      o.line.frustumCulled=false; for(const k of ['bob','fish','boat','line']){ o[k].visible=false; o[k].userData.anyRoom=true; scene.add(LEVELS.own(o[k],'*')); } return o; };
+    const drop=id=>{ const o=theirs.get(id); if(!o)return; for(const k of ['bob','fish','boat','line'])o[k].removeFromParent(); theirs.delete(id); };
+    ONLINE.hear.fish=m=>{ if(!ONLINE.others.has(m.id))return drop(m.id); const ok=a=>Array.isArray(a)&&a.every(v=>typeof v==='number'&&isFinite(v)); if(!ok(m.b)&&!ok(m.x)&&!ok(m.boat))return drop(m.id);
+      let o=theirs.get(m.id); if(!o)theirs.set(m.id,o=mk()); o.at=performance.now(); o.m=m; };
+    SYS.add('life',dt=>{ if(!theirs.size)return; const now=performance.now();
+      for(const [id,o] of theirs){ const R=ONLINE.others.get(id), F=R&&R.fig; if(!R||!F||now-o.at>3000||R.why!=='near you'){ if(!R||now-o.at>3000)drop(id); else for(const k of ['bob','fish','boat','line'])o[k].visible=false; continue; } const m=o.m;
+        o.bob.visible=!!m.b; if(m.b)o.bob.position.set(...m.b); o.fish.visible=!!m.x&&!!NAMES[m.k]; if(o.fish.visible){ o.fish.position.set(...m.x); shape(o.fish,m.k,1); o.fish.material.color.setHex((LOOK[m.k]||[0x8a8a7a])[0]); }
+        o.boat.visible=!!m.boat; if(m.boat){ o.boat.position.set(m.boat[0],m.boat[1],m.boat[2]); o.boat.rotation.y=m.boat[3]; }
+        const e=m.x||m.b; o.line.visible=!!e; if(e){ F.g.updateMatrixWorld(true); const J=R.B&&R.B.J; if(J&&J.palmR)P.set(J.palmR.x,J.palmR.y,J.palmR.z).applyMatrix4(F.g.matrixWorld); else P.copy(F.g.position).y+=1.4*T; P.y+=.9*T;
+          const a=o.line.geometry.attributes.position, sag=m.x?0:Y(.4); for(let i=0;i<=NL;i++){ const u=i/NL; a.setXYZ(i,P.x+(e[0]-P.x)*u,P.y+(e[1]-P.y)*u-sag*4*u*(1-u),P.z+(e[2]-P.z)*u); } a.needsUpdate=true; } } },'142-fishing-theirs'); }
   window.FISHDBG=()=>({rod:FORAGE.has('rod'),hook:S.hook||null,held:WIELD.on,state:S_&&{st:S_.st,t:+S_.t.toFixed(2),fish:S_.f&&{id:S_.f.id,kg:+S_.f.kg.toFixed(2),s:+S_.f.s.toFixed(2)},ten:S_.ten!=null?+S_.ten.toFixed(2):null,D:S_.D!=null?+(S_.D/WU).toFixed(1):null,x:+S_.x.toFixed(2),z:+S_.z.toFixed(2),odds:S_.o},
     boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:{x:SX,z:SZ},pier:PX,skill:FORAGE.sk('fish'),last:FISHING.last||null,swim:swim.visible?swim.count:0}); });

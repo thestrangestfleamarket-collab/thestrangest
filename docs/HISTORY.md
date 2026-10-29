@@ -5007,3 +5007,4 @@ Owner: "start building merchants 11 to 25". The Tiger (jackets, jeans, shades by
 
 ## 29 Oct 2026: the others see what you wear and do
 Owner: "make dyed clothes show for other players, and all players should see the actions of all other players". Other players now see your dyed jacket and jeans, your shades, armour, cloud coat and scuba tank; you sitting, swimming, climbing and hanging; your fishing float, line and catch, and your rowboat; and the puzzle cube in your hand.
+- 29 Oct 2026, owner: "make the night vision goggles show on players". Night-vision goggles sit on the face of whoever wears them (two tubes with green-glowing lenses on a head strap), for you and for the other players.

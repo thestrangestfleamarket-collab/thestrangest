@@ -80,6 +80,16 @@ function legIK(P,n,s,A){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),T
   const ang=v=>{ const l=nrm(v),x=dot(l,Rb.x),y=dot(l,Rb.y),z=dot(l,Rb.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
   P[n].th=ang(sub(Kn,H)); P[n].sh=ang(sub(A2,Kn)); }
 
+function armIK(P,n,s,A){ const {J,m}=build(P),S=J['shoulder'+n],d=sub(A,S),dl=Math.min(len(d),UPPER+FORE-1e-6),u=nrm(d);
+  const ca=clamp((UPPER*UPPER+dl*dl-FORE*FORE)/(2*UPPER*dl),-1,1),out=app(m.Ru,V(s,-0.5,-0.3)),pole=nrm(sub(out,mul(u,dot(out,u))));
+  const E=add(S,add(mul(u,UPPER*ca),mul(pole,UPPER*Math.sqrt(1-ca*ca)))),A2=add(S,mul(u,dl));
+  const ang=v=>{ const l=nrm(v),x=dot(l,m.Ru.x),y=dot(l,m.Ru.y),z=dot(l,m.Ru.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
+  P[n].ua=ang(sub(E,S)); P[n].fa=ang(sub(A2,E)); }
+function gripIK(st,P){ const W=st.world,G=st.climb.grip,c=Math.cos(W.hd),s=Math.sin(W.hd);   // hands and feet onto holds given in the world
+  const toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,(p.y-W.y)*W.ky,dx*s+dz*c); }, nL=p=>nrm(V(p.nx*c-p.nz*s,p.ny,p.nx*s+p.nz*c));
+  for(const n of 'LR'){ const g=G[n],sd=n=='L'?1:-1; if(!g) continue;
+    if(g.f){ const A=add(add(toL(g.f),mul(nL(g.f),2.6)),V(0,1.2,0)); P[n].ik=A; legIK(P,n,sd,A); P[n].foot=-15*D; }
+    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=1; } } }
 function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
     toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
     up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },
@@ -449,11 +459,11 @@ const grabMove=n=>{ const s=n=='R'?1:-1; return move({keys:[[0,{}],[0.24,{bend:5
 MOVES.grab=grabMove('R'); MOVES.grabL=grabMove('L');
 MOVES.carry=move({hold:0.24,keys:[[0,{}],[0.24,{R:{ua:[104,6],fa:[108,2],fist:1}},'out'],[0.5,{R:{ua:[9,8],fa:[19,8],fist:0}}]]});
 MOVES.mantle=(()=>{ const m=climbOut(); m.deck=false; return m; })();
-function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/28),P=neutral(),Q=neutral();
+function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/(st.climb.per||28)),P=neutral(),Q=neutral();
   for(const [A,hi,lo] of [[P,'L','R'],[Q,'R','L']]){ A.root=V(0,z+STAND-1,-1.5); A.bend=8*D; A.nod=-18*D;
     A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
     A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }
-  const M=mix(P,Q,u), k=st.climb.slide?0:Math.sin(Math.PI*u); M.root=V(M.root.x+1.2*(u-.5),M.root.y-2.2*k,M.root.z-.8*k); M.bend=(8+6*k)*D; return M; }   // each pull: sag on the arms, then heave up close to the trunk
+  const M=mix(P,Q,u), k=st.climb.slide?0:Math.sin(Math.PI*u); M.root=V(M.root.x+1.2*(u-.5),M.root.y-2.2*k,M.root.z-.8*k); M.bend=(8+6*k)*D; if(st.climb.grip&&st.world)gripIK(st,M); return M; }   // each pull: sag on the arms, then heave up close to the trunk
 const PICKS={};
 function pickMove(h,z){ const k=clamp(Math.round(h/2)*2,0,50),q=clamp(Math.round(z/2)*2,4,16),key=k+','+q; if(PICKS[key]) return PICKS[key];
   const G=(d,a)=>({root:[0,STAND-7*d,-1.5*d],bend:44*d,nod:12*d,L:{ik:[FOOTX,ANKLE,2.5*d],ua:[9+30*d,14],fa:[19+60*d,10]},R:{ik:[-FOOTX,ANKLE,-2.5*d],ua:[a,-6],fa:[a+8,-8],fist:0}});

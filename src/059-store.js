@@ -1,6 +1,6 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
 import {SHARED, THREE} from './003-shx.js';
-import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS} from './003b-systems.js';
+import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -53,6 +53,12 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       const inFaces=[];
       for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
         const paint=(s,u,z)=>{ const nx=ax==='y'?s:0, ny=ax==='x'?s:0, Xw=ax==='y'?at+s*.1:u, Yw=ax==='x'?at+s*.1:u; return (inner||s===inS)?look.in(B,nx,ny,Xw,Yw,z,1):(look.out||facade)(nx,ny,Xw,Yw,z,1,H); };
+        // a street shop's windows: one each side of its door, glass showing the real inside from the street and the street from inside (130a)
+        if(lazy&&!inner&&door&&door.w===wid&&!o.noWins)for(const sg of [-1,1]){ const wd=1.6, c=door.a+sg*(door.wd/2+.6+wd/2); if(c-wd/2<Math.min(a0,a1)+.3||c+wd/2>Math.max(a0,a1)-.3)continue;
+          const fr=new THREE.Mesh(new THREE.BoxGeometry(wd*TILE+.08*TILE,Y(84)-Y(30)+.08*TILE,.06*TILE),new THREE.MeshLambertMaterial({color:0x1c1a1c})), zc=(Y(30)+Y(84))/2;
+          if(ax==='x')fr.position.set(X(c),zc,Z(at-inS*.1)); else{ fr.position.set(X(at-inS*.1),zc,Z(c)); fr.rotation.y=Math.PI/2; } scene.add(fr);
+          for(const [look,off] of [['in',-inS*.14],['out',inS*.12]]){ const pm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(c+wd/2)-X(c-wd/2)),Y(84)-Y(30)));
+            if(ax==='x')pm.position.set(X(c),zc,Z(at+off)); else{ pm.position.set(X(at+off),zc,Z(c)); pm.rotation.y=Math.PI/2; } scene.add(pm); WINDOWS.pane(pm,id,look,true); } }
         if(lazy&&!inner){ solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint); if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
           inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,holes,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
         const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];

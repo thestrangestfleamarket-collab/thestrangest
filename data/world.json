@@ -65,7 +65,17 @@
     "y1": 495
    },
    "walk": 4.5,
-   "sides": {"note": "sidewalk widths, outer then park side: ns the south and north streets (Market St), we the west and east (West St)", "ns": [7, 12], "we": [3.2, 3]},
+   "sides": {
+    "note": "sidewalk widths, outer then park side: ns the south and north streets (Market St), we the west and east (West St)",
+    "ns": [
+     7,
+     12
+    ],
+    "we": [
+     3.2,
+     3
+    ]
+   },
    "row": 15.4,
    "water": 47.5,
    "shore": 11.1
@@ -328,16 +338,6 @@
     "w": 13,
     "d": 9,
     "face": "s"
-   },
-   {
-    "id": "tombs",
-    "kind": "tombs",
-    "name": "THE OLD TOMBS",
-    "x": 34,
-    "y": 140,
-    "w": 26,
-    "d": 20,
-    "face": "n"
    },
    {
     "id": "bridge",

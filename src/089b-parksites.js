@@ -1,8 +1,7 @@
-// THE PARK'S SITES: SITES builds the woodland folk's places in Central Park from parkPlaces.sites in data/world.json (the pub, the tombs, the ruins, the broken bridge, the huts, the practice yard) and the treehouses in the tallest trees, in stone laid stone by stone; the pub and the crypt have insides off the map.
+// THE PARK'S SITES: SITES builds the woodland folk's places in Central Park from parkPlaces.sites in data/world.json (the pub, the ruins, the broken bridge, the huts, the practice yard), in stone laid stone by stone; the pub has an inside off the map.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, PARK, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {PARK, ROOMS, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {OWNED} from './005-save.js';
 import {CASTLE, LEVEL, MAPG, MODS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const SITES={list:[],at:{},homes:{}}; window.SITES=SITES;
@@ -61,30 +60,6 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
       for(const [x,z] of [[-w/2+.5,d/2+1.1],[w/2-.5,d/2+1.1]]){ K.put(new THREE.BoxGeometry(1.4,.07,.4),WOOD,{at:[x,.48,z],j:.01}); for(const sx of [-.55,.55])K.put(new THREE.BoxGeometry(.08,.48,.3),WOOD2,{at:[x+sx,.24,z]}); }
       for(const [x,z] of [[w/2+.5,d/2-.3],[w/2+.55,d/2-1.1],[w/2+1.1,d/2-.6]])barrel(K,x,z,.32,.78);
       K.solid(-w/2-.2,-d/2-.2,w/2+.2,d/2+.2); K.door_=K.w(0,0,d/2+.6); K.doorIn=[0,d/2]; },
-    tombs:(s,K)=>{ const w=s.w*.84, d=s.d*.84;
-      // the fence of iron spikes between stone posts, a gate in the front
-      const fence=(x0,z0,x1,z1,gap)=>{ const L=Math.hypot(x1-x0,z1-z0), n=Math.round(L/.16); for(let i=0;i<=n;i++){ const t=i/n, x=x0+(x1-x0)*t, z=z0+(z1-z0)*t; if(gap&&Math.abs(x)<1.1&&Math.abs(z-z0)<.01&&z0===z1)continue; K.put(new THREE.CylinderGeometry(.015,.015,.95,4),IRON,{at:[x,.47,z]}); K.put(new THREE.ConeGeometry(.03,.09,4),IRON,{at:[x,1.0,z]}); }
-        for(const t of [0,1])K.put(new THREE.BoxGeometry(.03,.03,L),IRON,{at:[(x0+x1)/2,.3+t*.5,(z0+z1)/2],rot:[0,Math.atan2(x1-x0,z1-z0),0]}); };
-      fence(-w/2,d/2,w/2,d/2,1); fence(-w/2,-d/2,w/2,-d/2); fence(-w/2,-d/2,-w/2,d/2); fence(w/2,-d/2,w/2,d/2);
-      for(const [x,z] of [[-w/2,d/2],[w/2,d/2],[-w/2,-d/2],[w/2,-d/2],[-1.1,d/2],[1.1,d/2]])K.col(x,z,1.25,.16);
-      // the graves: headstones rounded or crossed, some leaning, a mound before each
-      let n=0; for(let gx=-w/2+1.4;gx<w/2-1;gx+=1.45)for(let gz=d/2-1.6;gz>-d/2+4.2;gz-=1.9){ if(Math.abs(gx)<1.4){ continue; } const k=h3(gx,gz,3), lean=(h3(gz,gx,7)-.5)*.35, a=(h3(gx,gz,11)-.5)*.2;
-        if(k<.25){ K.put(new THREE.BoxGeometry(.08,.8,.08),STONE2,{at:[gx,.4,gz],rot:[lean,a,0],j:.01}); K.put(new THREE.BoxGeometry(.45,.08,.08),STONE2,{at:[gx,.58,gz],rot:[lean,a,0]}); }
-        else{ const sh=new THREE.Shape(); sh.moveTo(-.22,0); sh.lineTo(-.22,.45); sh.absarc(0,.45,.22,PI,0,true); sh.lineTo(.22,0); sh.closePath(); K.put(new THREE.ExtrudeGeometry(sh,{depth:.09,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:1}),(px,py,pz,hs)=>vary(py>.55&&hs>.6?MOSS:STONE,hs,.25),{at:[gx,0,gz],rot:[lean,a,0],j:.012}); }
-        K.put(new THREE.SphereGeometry(.4,8,4,0,PI*2,0,PI/2),(px,py,pz,hs)=>vary(h3(Math.round(px*9),Math.round(pz*9),1)>.6?MOSS:DIRT,hs,.25),{at:[gx,0,gz+.55],sc:[.75,.25,1.3],j:.02}); n++; }
-      // the mausoleum at the back: steps, columns, a pediment, its dark door
-      const mz=-d/2+2.2; K.put(new THREE.BoxGeometry(3.4,.18,2.6),STONE2,{at:[0,.09,mz],j:.01}); K.put(new THREE.BoxGeometry(3.1,.14,2.3),STONE,{at:[0,.25,mz],j:.01});
-      K.wall(-1.3,mz-1.0,1.3,mz-1.0,2.3,.3,{y:.32,moss:.4}); K.wall(-1.3,mz-1.0,-1.3,mz+.7,2.3,.3,{y:.32,moss:.4}); K.wall(1.3,mz+.7,1.3,mz-1.0,2.3,.3,{y:.32,moss:.4});
-      K.wall(-1.3,mz+.7,-.5,mz+.7,2.3,.3,{y:.32,moss:.4}); K.wall(.5,mz+.7,1.3,mz+.7,2.3,.3,{y:.32,moss:.4}); K.put(new THREE.BoxGeometry(1.0,.5,.3),STONE,{at:[0,2.37,mz+.7],j:.01});
-      K.put(new THREE.BoxGeometry(1.0,1.95,.05),C('#0a0a0c'),{at:[0,1.3,mz+.6]});
-      for(const x of [-1.05,-.6,.6,1.05])K.col(x,mz+1.05,2.3,.11,{cap:false});
-      const ped=new THREE.Shape(); ped.moveTo(-1.6,0); ped.lineTo(1.6,0); ped.lineTo(0,.8); ped.closePath(); K.put(new THREE.ExtrudeGeometry(ped,{depth:2.4,bevelEnabled:false}),(px,py,pz,hs)=>vary(py<.15?STONE2:STONE,hs,.2),{at:[0,2.62,mz-1.15],j:.015});
-      K.put(new THREE.BoxGeometry(3.4,.14,2.5),STONE2,{at:[0,2.62,mz+.05]});
-      // a skull over the door, candles on the step, two dead trees
-      K.put(new THREE.SphereGeometry(.13,8,6),BONE,{at:[0,2.15,mz+.86],sc:[1,.95,.8]}); for(const sx of [-1,1])K.put(new THREE.SphereGeometry(.03,4,3),IRON,{at:[sx*.045,2.16,mz+.95]});
-      for(const x of [-.75,-.55,.55,.75]){ K.put(new THREE.CylinderGeometry(.025,.025,.12+.06*h3(x,1,2),6),C('#e8e0c8'),{at:[x,.38,mz+1.35]}); K.put(new THREE.ConeGeometry(.02,.05,5),GLOW,{at:[x,.48+.06*h3(x,1,2),mz+1.35],glow:1}); }
-      for(const [x,z] of [[-w/2+1.2,-d/2+1.2],[w/2-1.3,-d/2+3.5]])deadTree(K,x,z,2.6);
-      K.solid(-1.75,mz-1.3,1.75,mz+.9); K.door_=K.w(0,0,mz+1.2); K.doorIn=[0,mz+1.2]; K.fence=[w,d]; for(const [a,b,c,e] of [[-w/2,d/2-.05,-1.1,d/2+.05],[1.1,d/2-.05,w/2,d/2+.05],[-w/2,-d/2-.05,w/2,-d/2+.05],[-w/2-.05,-d/2,-w/2+.05,d/2],[w/2-.05,-d/2,w/2+.05,d/2]])K.solid(a,b,c,e); },
     ruins:(s,K)=>{ const w=s.w*.84, d=s.d*.84;
       K.wall(-w/2,-d/2,w/2,-d/2,3.0,.42,{ruin:.7,gaps:[[w*.3-.7,w*.3+.7,2.0],[w*.7-.7,w*.7+.7,2.0]]}); K.wall(-w/2,-d/2,-w/2,d/2*.4,2.6,.42,{ruin:.85});
       K.wall(w/2,d/2,w/2,-d/2,2.0,.42,{ruin:.9,gaps:[[d*.45,d*.62,1.8]]}); K.wall(-w/2+2,d/2,w/2-4,d/2,1.2,.4,{ruin:1});
@@ -124,23 +99,6 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
     c.fillStyle='#e8c870'; c.font='bold 22px Georgia,serif'; c.textAlign='center'; c.textBaseline='middle'; const W=text.split(' '); const l1=W.slice(0,Math.ceil(W.length/2)).join(' '), l2=W.slice(Math.ceil(W.length/2)).join(' '); c.fillText(l1,128,34); c.fillText(l2,128,64);
     const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const g=new THREE.BoxGeometry(.04,.5,.8); return {g,tx}; };
   const barrel=(K,x,z,r,h)=>{ K.put(PARTSNPC.T.lathe([[r*.85,0],[r,h*.5],[r*.85,h]],14,6),(px,py,pz,hs)=>vary(Math.abs(py-.1)<.04||Math.abs(py-h+.1)<.04?IRON:Math.sin(Math.atan2(px-x,pz-z)*14)>.85?WOOD2:WOOD,hs,.2),{at:[x,0,z]}); K.put(new THREE.CircleGeometry(r*.85,12),WOOD2,{at:[x,h,z],rot:[-PI/2,0,0]}); };
-  const deadTree=(K,x,z,h)=>{ const B=(p,dir,len,r,dep)=>{ const e=[p[0]+dir[0]*len,p[1]+dir[1]*len,p[2]+dir[2]*len]; K.put(PARTSNPC.T.tube([p,[(p[0]+e[0])/2+.05,(p[1]+e[1])/2,(p[2]+e[2])/2],e],[r,r*.8,r*.6],6,4),(px,py,pz,hs)=>vary(C('#3a3028'),hs,.3));
-      if(dep>0)for(let i=0;i<2;i++){ const a=h3(dep,i,x)*PI*2; B(e,[dir[0]*.5+Math.cos(a)*.6,dir[1]*.6+.2,dir[2]*.5+Math.sin(a)*.6].map((v,_,A)=>v/Math.hypot(...A)),len*.65,r*.6,dep-1); } };
-    B([x,0,z],[0,1,0],h*.45,.12,3); };
-
-  // the treehouses: a platform round the trunk of each of the tallest park trees, a hut on it, a rope ladder down
-  const tallTrees=()=>{ const L=(P.treeItems?P.treeItems():[]).filter(t=>t.top&&t.r).sort((a,b)=>b.top-a.top), out=[]; for(const t of L){ const tx=(t.x-X(0))/(X(1)-X(0)), ty=(t.z-Z(0))/(Z(1)-Z(0)); if(P.path(tx,ty)||out.some(o=>Math.hypot(o.x-t.x,o.z-t.z)<20*T))continue; out.push(t); if(out.length>=3)break; } return out; };
-  const treehouse=(t,i)=>{ const base=gnd(t.x,t.z), hy=Math.min((t.top-base)/MV*.55,4.2);
-    const K2=kitAt(t.x,t.z,base); const r=Math.max(.6,(t.r||T)/MH*.18)+.9;
-    for(let k=0;k<14;k++){ const a=k/14*PI*2; K2.put(new THREE.BoxGeometry(.32,.07,r*1.0),(px,py,pz,hs)=>vary(WOOD,hs,.25),{at:[Math.cos(a)*r*.55,hy,Math.sin(a)*r*.55],rot:[0,-a,0],j:.01}); }
-    for(let k=0;k<4;k++){ const a=k/4*PI*2+.4; K2.put(new THREE.CylinderGeometry(.035,.035,.9,5),WOOD2,{at:[Math.cos(a)*r*.85,hy-.45,Math.sin(a)*r*.85],rot:[Math.sin(a)*.5,0,-Math.cos(a)*.5]}); }
-    for(let k=0;k<20;k++){ const a=k/20*PI*2; K2.put(new THREE.CylinderGeometry(.02,.02,.45,4),WOOD2,{at:[Math.cos(a)*r*1.02,hy+.25,Math.sin(a)*r*1.02]}); } K2.put(new THREE.TorusGeometry(r*1.02,.025,4,24),WOOD,{at:[0,hy+.48,0],rot:[PI/2,0,0]});
-    const hx=r*.35; for(let k=0;k<4;k++){ const a=k/4*PI*2+PI/4; K2.put(new THREE.BoxGeometry(.9,.85,.06),(px,py,pz,hs)=>vary(Math.abs(Math.sin(px*20+pz*20))<.2?WOOD2:WOOD,hs,.2),{at:[hx+Math.cos(a)*.45,hy+.47,Math.sin(a)*.45],rot:[0,-a+PI/2,0]}); }
-    K2.put(new THREE.ConeGeometry(.85,.8,4),(px,py,pz,hs)=>vary(hs>.6?MOSS2:THATCH,hs,.3),{at:[hx,hy+1.3,0],rot:[0,PI/4,0],j:.04}); K2.put(new THREE.BoxGeometry(.3,.25,.02),GLOW,{at:[hx+.64,hy+.6,0],rot:[0,PI/2,0],glow:1});
-    for(let k=0;k<Math.floor(hy/.3);k++){ K2.put(new THREE.BoxGeometry(.35,.03,.05),WOOD,{at:[-r*.95,.25+k*.3,0]}); } for(const sz of [-.17,.17])K2.put(new THREE.CylinderGeometry(.012,.012,hy,4),C('#a89060'),{at:[-r*.95,hy/2,sz]});
-    const g=K2.done('treehouse '+i); return {g,K:K2,deck:[t.x,base+hy*MV,t.z],r:r*MH*.9,ladder:K2.w(-r*.95,0,0)}; };
-  const kitAt=(wx,wz,base)=>{ const K=kit(0,0,'s',base); K.w=(lx,ly,lz)=>[wx+lx*MH,base+ly*MV,wz+lz*MH]; return K; };
-
   const grp=MAPG.park||scene;
   for(const s of LEVEL.parkPlaces.sites||[]){ const fn=MAKE[s.kind]; if(!fn)continue; try{ const K=kit(s.x,s.y,s.face); fn(s,K); const ms=K.done(s.name); for(const m of ms)grp.add(m);
       for(const [sg,at] of K.signs||[]){ const m=new THREE.Mesh(sg.g,new THREE.MeshLambertMaterial({map:sg.tx})); const w=K.w(...at); m.position.set(w[0],w[1],w[2]); m.rotation.y=Math.atan2(K.f[0],K.f[1]); m.scale.set(MH,MV,MH); grp.add(m); }
@@ -162,12 +120,11 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
     { const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(WP,3)); g.computeVertexNormals(); const wm=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x5a96b0,specular:0xa8c8e0,shininess:90,side:THREE.DoubleSide})); wm.receiveShadow=true; wm.name='moat water'; grp.add(wm); }
     for(const m of K.done('the moat'))grp.add(m); SITES.moat={rects:WAT.map(([a,b,c,d])=>[K.w(a,0,b),K.w(c,0,d)])};
     if(window.WEEDS&&WEEDS.clear)for(const [p,q] of SITES.moat.rects)WEEDS.clear([Math.min(p[0],q[0]),Math.min(p[2],q[2]),Math.max(p[0],q[0]),Math.max(p[2],q[2])]); }
-  { let i=0; for(const t of tallTrees()){ try{ const h=treehouse(t,i); for(const m of h.g)grp.add(m); const id='tree'+(++i); SITES.at[id]={id,kind:'treehouse',name:'THE TREEHOUSE',deck:h.deck,r:h.r,door:h.ladder}; SITES.homes[id]=h.ladder; }catch(e){ console.warn('treehouse',e); } } }
   // the ground on the bridge's deck and atop the lookout's pillar, for whoever stands there
   SITES.ground=(x,z,g0)=>{ const b=SITES.at.bridge; if(b&&b.deck)for(const [a,c] of b.deck)if(x>Math.min(a[0],c[0])&&x<Math.max(a[0],c[0])&&z>Math.min(a[2],c[2])&&z<Math.max(a[2],c[2]))return a[1];
-    const r=SITES.at.ruins; if(r&&r.pillar&&Math.hypot(x-r.pillar[0],z-r.pillar[2])<.35*T)return r.pillar[1]; for(const id in SITES.at){ const t=SITES.at[id]; if(t.kind==='treehouse'&&Math.hypot(x-t.deck[0],z-t.deck[2])<t.r)return t.deck[1]; } return g0; };
-  // the insides, off the map west of everything: the pub's room and the crypt under the tombs
-  const OFFX=-1500, inside=(id,ty,w,d,h,name,build,exitName)=>{ const site=SITES.at[id==='crypt'?'tombs':id]; if(!site||!site.door)return; const cx=X(OFFX), cz=Z(ty), hw=w/2*MH, hd=d/2*MH; let G=null, S0=[];
+    const r=SITES.at.ruins; if(r&&r.pillar&&Math.hypot(x-r.pillar[0],z-r.pillar[2])<.35*T)return r.pillar[1]; return g0; };
+  // the inside, off the map west of everything: the pub's room
+  const OFFX=-1500, inside=(id,ty,w,d,h,name,build,exitName)=>{ const site=SITES.at[id]; if(!site||!site.door)return; const cx=X(OFFX), cz=Z(ty), hw=w/2*MH, hd=d/2*MH; let G=null, S0=[];
     const room=()=>{ const K=kit(0,0,'s',0); K.w=(lx,ly,lz)=>[cx+lx*MH,ly*MV,cz+lz*MH]; return K; };
     ROOMS.off[id]={name,box:{x0:cx-hw,z0:cz-hd,x1:cx+hw,z1:cz+hd,y0:-1,y1:h*MV+1},need:()=>Promise.resolve(),
       build:()=>{ G=new THREE.Group(); G.name=id+'-in'; scene.add(G); const P2=ROOMS.part(G,()=>{ const K=room(); build(K,w,d,h); for(const m of K.done(name))scene.add(m); S0=K.sol; for(const L of K.lights||[]){ const l=new THREE.PointLight(L[3],L[4],L[5]*MH,1.6); const q=K.w(L[0],L[1],L[2]); l.position.set(...q); scene.add(l); } (K.after||[]).forEach(f=>f()); }); return P2; },
@@ -193,20 +150,6 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
         K.put(new THREE.CylinderGeometry(.03,.03,.1,6),C('#e8e0c8'),{at:[x,.87,z]}); K.put(new THREE.ConeGeometry(.018,.04,5),GLOW,{at:[x,.95,z],glow:1}); K.solid(x-.6,z-.6,x+.6,z+.6); }
       K.solid(-w*.12-w*.31,-d/2+.9,-w*.12+w*.31,-d/2+1.65);
       K.lights=[[-w/2+.9,.9,0,0xff8a3a,4,7],[-w*.12,2.4,-d/2+1.6,0xffc070,3,8],[1.4,2.4,1.6,0xffb060,2.5,7]]; },'OUT TO THE PARK');
-  inside('crypt',60,9,6,2.6,'THE CRYPT',(K,w,d,h)=>{ shell4(K,w,d,h,(x,y,z,hh)=>vary(STONE2,hh,.3),true);
-      for(let i=-3;i<=3;i++){ K.put(new THREE.TorusGeometry(d/2-.1,.12,4,12,PI),(x,y,z,hh)=>vary(STONE,hh,.2),{at:[i*w/7,h-d/2*.55,0],rot:[0,PI/2,0],sc:[1,.55,1]}); }
-      // the sarcophagi with their lids, skulls in niches along the walls, candles, cobwebs
-      for(const [x,z,a] of [[-2.2,-.6,0],[0,-1.2,0],[2.2,-.6,0]]){ K.put(new THREE.BoxGeometry(.9,.75,1.9),(px,py,pz,hh)=>vary(Math.abs(Math.sin(pz*9))<.12?STONE2:STONE,hh,.2),{at:[x,.38,z],j:.012}); K.put(new THREE.BoxGeometry(1.0,.14,2.0),(px,py,pz,hh)=>vary(STONE,hh,.25),{at:[x,.82,z],rot:[0,a+(h3(x,z,1)-.5)*.12,0],j:.01});
-        K.put(new THREE.SphereGeometry(.16,8,6),STONE2,{at:[x,.95,z-.7],sc:[1,.8,1]}); K.solid(x-.5,z-1,x+.5,z+1); }
-      for(let i=0;i<14;i++){ const side=i<7?-1:1, k=i%7, x=-w/2+.9+k*(w-1.8)/6, z=side*(d/2-.18); K.put(new THREE.BoxGeometry(.45,.35,.2),C('#0c0a0a'),{at:[x,1.3+(k%2)*.5,z]}); K.put(new THREE.SphereGeometry(.09,8,6),BONE,{at:[x,1.28+(k%2)*.5,z-side*.05],sc:[1,.95,1.1]}); for(const sx of [-1,1])K.put(new THREE.SphereGeometry(.018,4,3),IRON,{at:[x+sx*.035,1.3+(k%2)*.5,z-side*.13]}); }
-      for(const [x,z] of [[-3.2,1.5],[3.2,1.5],[-1,.6],[1,.6],[0,-2.4]]){ for(let k=0;k<3;k++){ const hh=.1+.12*h3(x,k,z); K.put(new THREE.CylinderGeometry(.025,.028,hh,6),C('#e8e0c8'),{at:[x+(k-1)*.08,hh/2,z+(k%2)*.06]}); K.put(new THREE.ConeGeometry(.016,.035,5),GLOW,{at:[x+(k-1)*.08,hh+.02,z+(k%2)*.06],glow:1}); } }
-      for(const [x,z] of [[-w/2+.2,-d/2+.2],[w/2-.2,-d/2+.2]])for(let k=0;k<8;k++){ const a=k/8*PI*.5; K.put(new THREE.CylinderGeometry(.004,.004,.9,3),C('#d8d8d0'),{at:[x+Math.sign(-x)*Math.cos(a)*.3,h-.3,z+Math.sin(a)*.3],rot:[0,0,PI/2*Math.sign(x)]}); }
-      // the old chest at the back: what it holds comes back each day
-      K.put(new THREE.BoxGeometry(.8,.45,.5),(px,py,pz,hh)=>vary(Math.abs(py-.22)<.03?IRON:WOOD,hh,.2),{at:[0,.23,-d/2+.5]}); K.put(new THREE.CylinderGeometry(.25,.25,.8,10,1,false,0,PI),WOOD2,{at:[0,.45,-d/2+.5],rot:[0,0,PI/2]});
-      K.after=[()=>{ const q=K.w(0,.4,-d/2+.5), hb=new THREE.Mesh(new THREE.BoxGeometry(.9*MH,.8*MV,.6*MH),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(...q); scene.add(hb);
-        UI.thing({name:'THE OLD CHEST',obj:hb,reach:1.4*T,near:2.6*T,tall:1*T,act:()=>{ const day=Math.floor(Date.now()/864e5), k='cryptchest'; if(+OWNED.get(k)===day){ FORAGE.say&&FORAGE.say('THE CHEST IS EMPTY. COME BACK TOMORROW.','#c8a090'); return; } OWNED.set(k,day);
-          const n=5+Math.floor(Math.random()*20); INV.cash+=n; const g=['quartz','amethyst','geode','moonstone'][Math.floor(Math.random()*4)]; (INV.add||FORAGE.give)(g,1); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say('IN THE CHEST: $'+n+' AND A '+g.toUpperCase()+'.','#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.5}); }}); }];
-      K.lights=[[-2.2,1.2,1.2,0xffa050,1.6,6],[2.2,1.2,1.2,0xffa050,1.6,6],[0,1.2,-1.8,0xffa050,1.4,5]]; },'UP TO THE TOMBS');
   ROOMS.reset&&ROOMS.reset();
   // the lawn round you is painted from above: let it look again where the sites now stand
   if(window.WEEDS&&WEEDS.lawnDrop){ const [bx0,bx1,by0,by1]=CASTLE.b; WEEDS.lawnDrop([Math.min(X(bx0-5),X(bx1+5)),Math.min(Z(by0-5),Z(by1+5)),Math.max(X(bx0-5),X(bx1+5)),Math.max(Z(by0-5),Z(by1+5))]);

@@ -494,5 +494,62 @@
  },
  "newsreel": {
   "name": "THE NEWSREEL"
+ },
+ "scanner": {
+  "name": "THE SCANNER",
+  "trade": {
+   "sells": [
+    "radio_scanner",
+    "nv_goggles"
+   ],
+   "line": "Shh. Shh. ...Okay. What."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Shh. Shh. ...Okay. What.",
+      "You're loud. Everybody's loud."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DO YOU HEAR?",
+       "go": "hear"
+      },
+      {
+       "t": "WHY THE BOX?",
+       "go": "box"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "hear": {
+     "say": "Two from the precinct walk the street. Guards downstairs. Hold a scanner and you'll hear them too. What you do with that is your business.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "box": {
+     "say": "You hear better when you don't look.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

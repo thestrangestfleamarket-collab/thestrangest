@@ -451,5 +451,20 @@
   "value": 95,
   "weight": 0.6,
   "offworld": true
+ },
+ "curse_rats": {
+  "value": 15,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_cloud": {
+  "value": 12,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_stink": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.1
  }
 }

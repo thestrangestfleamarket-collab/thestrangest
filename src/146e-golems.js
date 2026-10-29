@@ -14,8 +14,10 @@ const GOLEMS={on:true,list:[]}; window.GOLEMS=GOLEMS;
   SYS.add('life',dt=>{ find(); if(!GOLEMS.on||!GOLEMS.list.length)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='up', near=!!(GCAVE.inBox&&GCAVE.inBox(pos.x,pos.z,4*T)), ST=window.STRIKES;
     const S=alive&&ST?ST.strikes():[];
     for(const r of GOLEMS.list){ const N=r.N, st=N.st; if(r.dead){ if((r.t-=dt)<=0)reform(r); continue; }
+      if(N.distract>performance.now()/1000){ r.agg=false; st.to=null; if(N.distractAt)st.face=N.distractAt; continue; }   // cursed: busy with the rats at its feet (146o)
       for(const s of S)if(ST.inCone(s,st.x,st.z,N.g.position.y,.3*T)){ r.hp-=s.d*ST.strength(s); r.agg=true; ST.landed(s); const dx=st.x-you.x, dz=st.z-you.z, l=Math.hypot(dx,dz)||1, kb=1.2*T*(s.kb||1); st.sx=dx/l*kb; st.sz=dz/l*kb; if(s.heavy)r.cool=Math.max(r.cool,2.5); SFX.play('clunk',{vol:.5,pitch:.9,vary:.2}); if(r.hp<=0){ crumble(r); break; } }
       if(r.dead)continue; const d=Math.hypot(st.x-you.x,st.z-you.z);
       if(alive&&(r.agg?d<12*T:near&&d<6*T)){ r.agg=true; st.v=r.v0*.7; if(d>1.3*T)st.to={x:you.x,z:you.z}; else { st.to=null; st.face={x:you.x,z:you.z}; if((r.cool-=dt)<=0){ r.cool=2.2; if(VIT.hurt(.07,st)===2){ r.cool=4; const dx=st.x-you.x, dz=st.z-you.z, l=Math.hypot(dx,dz)||1; st.sx=dx/l*T; st.sz=dz/l*T; } else SFX.play('thud',{vol:.6,pitch:.7}); } } }
       else if(r.agg){ r.agg=false; st.v=r.v0; st.to=null; } } },'146e-golems');
   window.GOLEMDBG=()=>GOLEMS.list.map(r=>({k:r.N.key,hp:r.hp,dead:r.dead,agg:r.agg,t:+r.t.toFixed(1)})); }
+export {GOLEMS};

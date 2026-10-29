@@ -551,5 +551,63 @@
     }
    }
   }
+ },
+ "petty": {
+  "name": "SISTER PETTY",
+  "trade": {
+   "sells": [
+    "curse_rats",
+    "curse_cloud",
+    "curse_stink"
+   ],
+   "line": "Nothing illegal, dear. Just inconvenient."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Someone's wronged you. I can tell.",
+      "Back again. Who is it this time?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "IS IT LEGAL?",
+       "go": "legal"
+      },
+      {
+       "t": "THE GOLEMS?",
+       "go": "golem"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "legal": {
+     "say": "Annoying is legal. Ask anyone.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "golem": {
+     "say": "Big, slow, very tidy minds. Give one rats and it forgets everything else. Walk on by, dear.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

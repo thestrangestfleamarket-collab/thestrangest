@@ -130,7 +130,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -163,6 +163,9 @@ export class Block extends Server {
     } else if (m.t === "kite") {
       const k = Array.isArray(m.k) ? [num(m.k[0], -1e5, 1e5), num(m.k[1], -1e4, 1e4), num(m.k[2], -1e5, 1e5)] : null;
       this.broadcast(JSON.stringify({ t: "kite", id: s.id, k }), [c.id]);
+    } else if (m.t === "curse") {
+      const k = /^(rats|cloud|stink)$/.test(m.k) ? m.k : ""; const to = String(m.to || ""); if (!k || !to || to === s.id || !this.near(s, to, 12)) return;
+      this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
     } else if (m.t === "ride") {
       this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
     } else if (m.t === "say") {

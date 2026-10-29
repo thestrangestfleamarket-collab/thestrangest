@@ -69,6 +69,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.swords = (() => { const I = window.ITEMS, W = window.WIELD, F = window.FIGHT, S = window.STRIKES, V = __dbg.VIT; if (!I || !W || !F || !S) return { ok: false };
         const h0 = V.hp, took = V.hurt(.01, { x: 0, z: 0 }); V.hp = h0; return { ok: true, dmg: ['sword_wood', 'sword', 'sword_steel', 'sword_ench'].map(k => +I.prop(k, 'damage')).join(), hand: I.prop('sword_steel', 'slot') === 'hand' && I.prop('sword_steel', 'grants') === 'fight', api: 'block' in W && typeof S.landed === 'function' && typeof V.guard === 'function', took }; })();
       o.soft = !!(DN.modes.includes('soft') && DN.D0.soft && DN.D0.soft.shaft > 0 && window.SHAFTS && SHAFTS.list.length && SKY.U.uCldC && SKY.U.uCldK);
+      o.windows = !!(window.WINDOWS && typeof WINDOWS.bake === 'function' && WINDOWS.panes.some(p => p.off === 'bodega' && p.look === 'in') && SYS.P.places.some(s => s.name === '130a-windows') && ROOMS.off.bodega.shift);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
       o.tenants = document.querySelector('[data-t="tenants"]').hidden === true && !!document.getElementById('dten');
@@ -95,9 +96,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
-        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.length === 1 && btns[0] === 'walker';
-        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set(saved || 'walker');
-        return { ok: true, inGame, none, onlyWalker, stays, btns: btns.join(',') }; })();
+        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.join(',') === 'walker,hero';
+        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'hero' && B.by.hero.tris() > 0; B.set(saved || 'walker');
+        return { ok: true, inGame, none, onlyWalker, stays, hero, btns: btns.join(',') }; })();
       o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, sh = W.HIDE[W.idx('bodyTorso')];
         W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', true);
         return { ok: true, hid: sh, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
@@ -134,13 +135,14 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');
     ok(r.swords.ok && r.swords.dmg === '1,2,3,5' && r.swords.hand && r.swords.api && r.swords.took === 1, 'swords: four blades carry DAMAGE on the item model, every blow passes the guard, landed strikes feed SWORDSMANSHIP: ' + JSON.stringify(r.swords));
     ok(r.soft, 'the SOFT DAY look: a fourth look with its clouds, sun-side mist and sun shafts');
+    ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered, retaken while you are in)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.skinned && r.rpg.mixer && r.rpg.street, 'the six RPG townsfolk walk the street, each a rigged skinned body with its own clips: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays, 'YOU can only be the Walker: knight/man/woman stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays && r.bodies.hero, 'YOU can be the Walker or the HERO: knight/man/woman stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
@@ -159,9 +161,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
     ok(rg.ring && rg.n > 40 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
     const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
-    ok(rf && rf.blockProps > 300 && rf.blockBoxes > 1000 && rf.tris < 160000, 'the across-street block (Market St + Hudson rows) wears a busy roof of units, dishes, ducts, planters and debris, within budget: ' + JSON.stringify(rf));
-    const mk = await pg.evaluate(() => { const r = BLK.blds.filter(q => q.row === 1), m = r[0] && r[0].mesh.material[4]; return { n: r.length, kit: r.filter(q => q.kit).length, lit: !!(m && m.emissiveMap), ac: BLK.kitAddons ? BLK.kitAddons() : null }; }).catch(e => ({ err: e.message }));
-    ok(mk.n > 5 && mk.kit === mk.n && !mk.lit && mk.ac && mk.ac.ac > 5 && mk.ac.pl > 2, "Market St's empty fronts wear the MegaKit's wall textures (no windows) and its AC units and planters: " + JSON.stringify(mk));
+    ok(rf && rf.blockProps > 300 && rf.blockBoxes > 600 && rf.tris < 160000, 'the across-street garages (Market St + Hudson rows) wear a busy roof of units, dishes, ducts, planters and debris, within budget: ' + JSON.stringify(rf));
+    const mk = await pg.evaluate(() => { const all = [...BLK.blds.map(q => ({ ...q, kind: 'garage' })), ...BLK.lots], a = q => q.row === 5 ? [q.y0, q.y1] : [q.x0, q.x1]; let same = 0;
+      for (const r of [1, 2, 5]) { const L = all.filter(q => q.row === r).sort((p, q) => a(p)[0] - a(q)[0]); for (let i = 1; i < L.length; i++) if (L[i].kind === L[i - 1].kind && a(L[i])[0] - a(L[i - 1])[1] < .05) same++; }
+      const n = k => all.filter(q => q.kind === k).length; return { n: all.length, garage: n('garage'), park: n('park'), fence: n('fence'), wide: all.filter(q => a(q)[1] - a(q)[0] > 13.1).length, same, signs: BLK.signs.length }; }).catch(e => ({ err: e.message }));
+    ok(mk.n > 50 && mk.garage > 15 && mk.park > 15 && mk.fence > 15 && !mk.wide && !mk.same && !mk.signs, "no filler buildings: closed garages, empty parking lots and fenced-off lots stand between the real buildings, half the old width, no two alike side by side (28 Oct 2026): " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }

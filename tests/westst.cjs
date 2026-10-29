@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
     ok(d>W.x0-1&&o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': its door is on West St and its way out leaves you on West St facing the street ('+d.toFixed(1)+' → '+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
   for(const id of ['arcade','apt']){ await pg.evaluate(id=>ROOMS.enter(id),id); await idle(); await pg.waitForTimeout(800); await pg.evaluate(id=>ROOMS.exit(id),id); await idle(); await pg.waitForTimeout(500); const o=await at();
     ok(o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': out onto West St facing the street ('+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
-  const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=window.BLK.blds;
+  const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=[...window.BLK.blds,...window.BLK.lots];
     const west=B.filter(q=>Math.abs(q.x1-F)<.6).map(q=>[q.y0,q.y1]), mk=B.filter(q=>q.row===1).map(q=>[q.x0,q.x1]);
     return {west,mk}; });
   ok(g.west.length>=5,'West St has its row of buildings ('+g.west.length+')'); ok(g.mk.length>=10,'Market St\'s front row is filled ('+g.mk.length+')');

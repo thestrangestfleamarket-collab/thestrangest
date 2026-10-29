@@ -7,7 +7,7 @@ const GATES=window.GATES={list:[]};
 GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')return;
   const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), yF=SHARED.BOD.K.LSEED.walk-.12, yB=BLOCK.back+.15, za=Math.min(ZS(yF),ZS(yB)), zb=Math.max(ZS(yF),ZS(yB));
   const hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); };
-  const T0=x=>x/T+SHARED.BOD.OX, F=[]; for(const b of BLK.blds)if(b.y1>yF-3&&b.y0<yB+3)F.push([b.x0,b.x1]);
+  const T0=x=>x/T+SHARED.BOD.OX, F=[]; for(const b of [...BLK.blds,...BLK.lots])if(b.y1>yF-3&&b.y0<yB+3)F.push([b.x0,b.x1]);
   for(const k of ['house','bodega','ghost','bar','museum','theatre','arcade','playhouse']){ const b=MAPED.box&&MAPED.box(k); if(b&&b[3]/T+SHARED.BOD.OY>yF-3&&b[1]/T+SHARED.BOD.OY<yB+3)F.push([T0(b[0]),T0(b[2])]); }
   const bl=m=>SHARED.BOD.OX+(m-SHARED.BOD.OX)/BLDK;
   for(const k in WROW){ const w=WROW[k], s=u=>SHARED.BOD.OX+(u-SHARED.BOD.OX)*BLDK; F.push([s(w.x0),s(w.x1)]); }
@@ -24,12 +24,6 @@ GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')
     if(W>1.2*M){ const ca=(A0+A1)/2; bx(ca,y+Hg/2,z,.06*M,Hg,.05*M,IRON[0]); bx(ca+.05*M,y+1.05*M,z+.03*M,.05*M,.12*M,.03*M,0x8a7a4a); bx(ca,y+1.02*M,z+.04*M,.16*M,.025*M,.025*M,0x6a6e70); }
     const [p0x,p0z]=P(A0,z-.08*M), [p1x,p1z]=P(A1,z+.08*M), r=[Math.min(p0x,p1x),Math.min(p0z,p1z),Math.max(p0x,p1x),Math.max(p0z,p1z)]; SOL.up.push(r); FIX.up.push([r[0],r[1],y,r[2],r[3],y+Hg]); };
   for(const [x0,x1] of gaps){ const st=x1>MAPSTAIR.x0&&x0<MAPSTAIR.x1, yy=st?yB:yF; GATES.list.push({x0,x1,y:yy}); gate(XS(x0),XS(x1),ZS(yy),false,x0); }
-  { const A=BLOCK.alley, RC=BLK.blds.map(b=>[b.x0,b.x1,Math.min(b.y0,b.y1),Math.max(b.y0,b.y1)]);
-    for(const k of ['house','bodega','ghost','bar','museum','theatre','arcade','playhouse']){ const b=MAPED.box&&MAPED.box(k); if(b){ const ya=b[1]/T+SHARED.BOD.OY, yb=b[3]/T+SHARED.BOD.OY; RC.push([T0(Math.min(b[0],b[2])),T0(Math.max(b[0],b[2])),Math.min(ya,yb),Math.max(ya,yb)]); } }
-    for(const x of [BLOCK.x0+.3,BLOCK.hudson[0]-.3,BLOCK.hudson[1]+.3,BLOCK.x1-.3]){ let lo=A[0], hi=A[1], fr=1e9, bk=-1e9;
-      for(const [a,b,y0,y1] of RC)if(a<x+.5&&b>x-.5){ if(y0>A[1]-1&&y0<A[1]+8)fr=Math.min(fr,y0); if(y1<A[0]+1&&y1>A[0]-8)bk=Math.max(bk,y1); }
-      if(fr<1e9)hi=Math.max(hi,fr+.1); if(bk>-1e9)lo=Math.min(lo,bk-.1);
-      GATES.list.push({x,alley:true,y0:lo,y1:hi}); gate(Math.min(ZS(lo),ZS(hi)),Math.max(ZS(lo),ZS(hi)),XS(x),true,x); } }
   if(BLOCK.hudson){ const [h0,h1]=BLOCK.hudson, yR=BLOCK.row2[0], zR=ZS(yR), L=Math.min((h1-h0)/2,BLOCK.row2[1]-yR)-.2, zL=ZS(yR+L), y=G(XS((h0+h1)/2),zR), Hp=2.7*M;
     for(const x of [h0+.2,h1-.2])gate(Math.min(zR,zL),Math.max(zR,zL),XS(x),true,x+7);
     for(const x of [h0+.1,h1-.1]){ box(XS(x),y+Hp/2,zR,.18*M,Hp,.18*M,IRON[0]); CN.push([XS(x),y+Hp,zR,.1*M,.18*M]); }

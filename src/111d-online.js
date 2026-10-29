@@ -9,7 +9,7 @@ import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.ONLINE=ONLINE;
 { const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
-  const ROOM='s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const ROOM='s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 

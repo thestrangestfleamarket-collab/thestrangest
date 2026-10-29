@@ -30,7 +30,8 @@ import {castPose, POSES} from './112-main-14.js';
     seat.taken=true; g.rotation.y=seat.hd; musScale(g,h); g.scale.x*=h; g.scale.z*=h;
     if(kind==='riderRead'){ for(const s of [-1,1]){ const q=new THREE.Mesh(new THREE.PlaneGeometry(9,12),paper); q.position.set(s*4.6,26.5,10.4); q.rotation.set(-.18,-s*.35,0); g.add(q); } }
     if(kind==='riderPhone'){ const q=new THREE.Mesh(new THREE.BoxGeometry(2.2,3.6,.4),phoneM); q.position.set(0,22.5,9.2); q.rotation.x=-.7; g.add(q); }
-    car.inner.add(g); const P0=castPose(kind), rd={g,FM,PCS,kind,P0,t:r()*10,seat};
+    car.inner.add(g); const P0=JSON.parse(JSON.stringify(castPose(kind))); P0.root=R.V(P0.root.x,(17+2.4-(14-P0.root.y)*1.2)/(1.2*h),P0.root.z);   // hips on the cushion (17 px up), as you sit, whatever the rider's height
+    const rd={g,FM,PCS,kind,P0,t:r()*10,seat};
     rd.pose=dt=>{ rd.t+=dt; let P=P0; if(kind==='riderSleep'||kind==='riderRead'){ P=JSON.parse(JSON.stringify(P0)); P.root=R.V(P0.root.x,P0.root.y+Math.sin(rd.t*1.1)*.15,P0.root.z); if(kind==='riderSleep')P.nod=P0.nod+Math.sin(rd.t*.37)*.05; }
       R.farOnly(false); const B=R.settle(R.build(P,null),0); PCS.forEach((pc,i)=>FM.set(i,R.frameOf(pc.on||pc.n,B))); };
     rd.pose(0); return rd; };

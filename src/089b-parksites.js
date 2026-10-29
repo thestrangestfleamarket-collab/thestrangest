@@ -173,8 +173,8 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
       build:()=>{ G=new THREE.Group(); G.name=id+'-in'; scene.add(G); const P2=ROOMS.part(G,()=>{ const K=room(); build(K,w,d,h); for(const m of K.done(name))scene.add(m); S0=K.sol; for(const L of K.lights||[]){ const l=new THREE.PointLight(L[3],L[4],L[5]*MH,1.6); const q=K.w(L[0],L[1],L[2]); l.position.set(...q); scene.add(l); } (K.after||[]).forEach(f=>f()); }); return P2; },
       unbuild:()=>{ for(const b of S0){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } S0=[]; if(G){ G.removeFromParent(); G=null; } },
       spawn:[cx,cz+hd-.9*MH,0,Math.PI],out:[site.door[0],site.door[2],0,0],door:site.door,exit:[cx,0,cz+hd-.15*MH],exitName:exitName||'OUTSIDE'};
-    SITES.inside[id]={cx,cz,w,d,h}; };
-  SITES.inside={};
+    SITES.inside[id]={cx,cz,w,d,h,seats:id==='pub'?PUBT.flatMap(([x,z])=>[0,1,2].map(k=>{ const a=k*2.1+x; return {x:cx+(x+Math.cos(a)*.85)*MH,z:cz+(z+Math.sin(a)*.85)*MH,tx:cx+x*MH,tz:cz+z*MH}; })):[]}; };
+  SITES.inside={}; const PUBT=[[-1.2,.6],[1.4,.4],[.1,2.0],[2.8,2.0],[-2.6,2.1]];
   const shell4=(K,w,d,h,floor,wallCol)=>{ K.put(new THREE.BoxGeometry(w,.1,d),floor,{at:[0,-.05,0]}); for(const [x0,z0,x1,z1] of [[-w/2,-d/2,w/2,-d/2],[-w/2,-d/2,-w/2,d/2],[w/2,d/2,w/2,-d/2],[w/2,d/2,-w/2,d/2]])K.wall(x0,z0,x1,z1,h,.3,{moss:wallCol?0:.15,gaps:x0===w/2&&z0===d/2?[[w/2-.6,w/2+.6,2.1]]:null});
     K.door(0,d/2-.2,1.0,2.0,PI,C('#5a3a22')); K.solid(-w/2-.3,-d/2-.3,w/2+.3,-d/2+.15); K.solid(-w/2-.3,-d/2,-w/2+.15,d/2); K.solid(w/2-.15,-d/2,w/2+.3,d/2); K.solid(-w/2,d/2-.15,-.6,d/2+.3); K.solid(.6,d/2-.15,w/2,d/2+.3); };
   inside('pub',0,10,7,3,'THE MOSSY FLAGON',(K,w,d,h)=>{ shell4(K,w,d,h,(x,y,z,hh)=>vary(Math.abs(Math.sin(x*6))<.12?WOOD2:C('#6a4a2e'),hh,.15));
@@ -188,7 +188,7 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
       K.wall(-w/2+.35,-1,-w/2+.35,1,1.5,.5,{sw:.3,sh:.18,moss:0}); K.put(new THREE.BoxGeometry(.4,1.1,1.0),C('#140c08'),{at:[-w/2+.62,.55,0]}); K.put(new THREE.BoxGeometry(.6,.14,2.2),STONE2,{at:[-w/2+.5,1.55,0],j:.01});
       for(let i=0;i<5;i++)K.put(new THREE.ConeGeometry(.1+.05*h3(i,1,1),.35+.2*h3(i,2,2),5),i%2?C('#ffb040'):C('#ff6a20'),{at:[-w/2+.65,.25,(i-2)*.13],glow:1}); K.put(new THREE.BoxGeometry(.4,.1,.6),C('#3a2a1a'),{at:[-w/2+.65,.06,0]});
       // tables and stools, candles on each
-      for(const [x,z] of [[-1.2,.6],[1.4,.4],[.1,2.0],[2.8,2.0],[-2.6,2.1]]){ K.put(new THREE.CylinderGeometry(.55,.55,.07,14),(px,py,pz,hh)=>vary(WOOD,hh,.15),{at:[x,.78,z]}); K.put(new THREE.CylinderGeometry(.07,.12,.75,8),WOOD2,{at:[x,.38,z]});
+      for(const [x,z] of PUBT){ K.put(new THREE.CylinderGeometry(.55,.55,.07,14),(px,py,pz,hh)=>vary(WOOD,hh,.15),{at:[x,.78,z]}); K.put(new THREE.CylinderGeometry(.07,.12,.75,8),WOOD2,{at:[x,.38,z]});
         for(let k=0;k<3;k++){ const a=k*2.1+x; K.put(new THREE.CylinderGeometry(.18,.18,.06,10),WOOD,{at:[x+Math.cos(a)*.85,.45,z+Math.sin(a)*.85]}); K.put(new THREE.CylinderGeometry(.04,.05,.43,6),WOOD2,{at:[x+Math.cos(a)*.85,.22,z+Math.sin(a)*.85]}); }
         K.put(new THREE.CylinderGeometry(.03,.03,.1,6),C('#e8e0c8'),{at:[x,.87,z]}); K.put(new THREE.ConeGeometry(.018,.04,5),GLOW,{at:[x,.95,z],glow:1}); K.solid(x-.6,z-.6,x+.6,z+.6); }
       K.solid(-w*.12-w*.31,-d/2+.9,-w*.12+w*.31,-d/2+1.65);

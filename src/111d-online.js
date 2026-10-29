@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, keys, LOOKS, ONLINE, pos, ROOMS, UI, VIT, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, UI, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
@@ -14,7 +14,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt'+(MODS.apts.num?'#'+MODS.apts.num:''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):'w'+(L.robe?1:0)+(L.bare?1:0)+(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():''); };   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
+  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.robe?1:0)+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -49,14 +49,18 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, a robe or barefoot, or a body from YOU's BODY row), shared by everyone wearing it ---------- */
   const BUILT=new Map();
+  // a dyed shirt or trousers: one material a colour, shared by everyone dyed it
+  const dyeMat=h=>{ const M=R.MATS, n='dye'+h; if(!M.includes(n)){ M.push(n); const c=new THREE.Color(h); W3.ramp.push([1,.9,.7,.42].map(q=>c.clone().multiplyScalar(q))); } return M.indexOf(n); };
   const robeMat=()=>{ const M=R.MATS; if(!M.includes('robe')){ M.push('robe'); W3.ramp.push(['#f6f4ee','#dddbd6','#acaaa7','#676664'].map(h=>new THREE.Color(h))); } return M.indexOf('robe'); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
     if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
     const robe=k[1]==='1', bare=k[2]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), RO=robe?robeMat():-1, ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(robe,ST.form), PCS=musBody(ST).PCS, D=DESIGN.decode(k.split('.')[1]||'');
+    const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
     for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
-      if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined; }
+      if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined;
+      if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    b={PCS,bh:D.h}; BUILT.set(k,b); return b; };
+    b={PCS,bh:D.h,by}; BUILT.set(k,b); return b; };
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
@@ -88,6 +92,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
+      if(!F.body&&EQUIP.draw){ const by=(BUILT.get(o.key)||{}).by; if(by&&Object.keys(by).length)EQUIP.draw(g,o.B,by,F.wornH||(F.wornH={})); }
       tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
@@ -132,6 +137,11 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt); };
+  const PS=['sit','climb','hang','water'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
+  const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
+  let psSent='', psT=0, psKeep=0;
+  SYS.add('life',dt=>{ if(!ONLINE.on)return; psT+=dt||0; psKeep+=dt||0; if(psT<.2)return; psT=0; const s=snap(), j=JSON.stringify(s); if(j!==psSent||(j!=='{}'&&psKeep>3)){ const was=psSent; psSent=j; psKeep=0; if(j!=='{}'||was!=='{}')send({t:'ps',s}); } },'111d-online-ps');
+  ONLINE.hear.ps=m=>{ const o=ONLINE.others.get(m.id); if(!o||!m.s||typeof m.s!=='object')return; for(const k of PS){ const v=m.s[k]; o.S[k]=v&&typeof v==='object'?(k==='water'?{...v,in:true}:{...v}):null; } o.wantPose=true; o.B=null; };
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
   const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };

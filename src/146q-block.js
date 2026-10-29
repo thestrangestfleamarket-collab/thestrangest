@@ -1,6 +1,6 @@
 // THE BLOCK: the robot clad in coloured cube tiles who sells puzzle cubes from a cart on Market St; a cube in your pack opens a real one to solve — drag a face to turn its layer, drag the background to turn the cube, solved when every side is one colour; your best times are kept.
 import {THREE} from './003-shx.js';
-import {FORAGE, keys, NPCS, SHOPS, UI} from './003b-systems.js';
+import {FORAGE, keys, NPCS, SHOPS, UI, WIELD} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {SOL, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
@@ -58,7 +58,11 @@ const CUBE={on:null}; window.CUBE=CUBE;
   let last=0; const loop=(t,k)=>{ if(!CUBE.on||k!==run)return; const dt=Math.min(.05,(t-last)/1000||0); last=t; step(dt); R.render(S,C); ST.textContent=solved?'SOLVED':(((performance.now()-t0)/1000).toFixed(0)+' S · '+moves+' TURNS'+(best['n'+N]?' · BEST '+best['n'+N].toFixed(1)+' S':'')); requestAnimationFrame(t=>loop(t,k)); };
   CUBE.open=id=>{ const n=SIZES[id]; if(!n||!FORAGE.has(id))return; CUBE.on=id; build(n); TI.textContent=FORAGE.NM[id]; W.hidden=false; keys.clear(); mix(); last=performance.now(); const k=++run; requestAnimationFrame(t=>loop(t,k)); };
   CUBE.close=()=>{ CUBE.on=null; W.hidden=true; };
-  FORAGE.ROWB.push(id=>SIZES[id]?[['PLAY','cube']]:[]); FORAGE.ACT.cube=id=>CUBE.open(id);
+  FORAGE.ROWB.push(id=>SIZES[id]?[['PLAY','cube']]:[]); FORAGE.ACT.cube=id=>{ if(WIELD.set&&WIELD.on!==id)WIELD.set(id); CUBE.open(id); };
+  // held, a cube sits in your hand (the others see you turning it); a click opens it to solve
+  const held=n=>{ const G=new THREE.Group(), s=.15/n; for(let x=0;x<n;x++)for(let y=0;y<n;y++)for(let z=0;z<n;z++){ const m=new THREE.Mesh(new THREE.BoxGeometry(s*.94,s*.94,s*.94),new THREE.MeshStandardMaterial({color:COL[(x*7+y*3+z*5)%6],roughness:.35})); m.position.set((x-(n-1)/2)*s,(y-(n-1)/2)*s+.04,(z-(n-1)/2)*s); G.add(m); }
+    G.head=new THREE.Vector3(0,.12,0); return G; };
+  for(const id in SIZES){ const k={name:FORAGE.NM[id]||id,hint:'A CLICK OPENS IT TO SOLVE.',make:()=>held(SIZES[id]),use:()=>CUBE.open(id)}; (WIELD.pend=WIELD.pend||[]).push([id,k]); if(WIELD.kind)WIELD.kind(id,k); }
 
   /* ---------- him: a grey steel box head (a round lens, two studs, a row of dot holes), a black body and arms clad in scuffed coloured tiles, a woven waist ---------- */
   const TC=['#c8202a','#e87ab0','#f2d218','#2a6ad8','#2a9a4a','#ececec','#1a1a1c','#f07818'], STEEL='metal:#8a8c90', BLK='plastic:#18181a';

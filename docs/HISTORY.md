@@ -4999,3 +4999,6 @@ Owner: "build those out for now" (1 to 10 of `docs/MERCHANTS.md`, his specs at i
 
 ## 29 Oct 2026: merchants 11 to 25 built
 Owner: "start building merchants 11 to 25". The Tiger (jackets, jeans, shades by the lake), Soniee (three living soda bottles on the platform: faster, stronger, mending), the plant stall on Market St (the All-Seeing Cactus, whose eye follows you, and the Bonsai, which grows a little each real day you water it), the Stump (sells the map item on a park path), the Blue Hour (cigars), the Operator (a home telephone and a cell phone that call any shop), and eight visitors who walk the city and sell nothing (the Broadcast, the Otter, the Reel Kid, the Bagger, the Secondhand Ghost, the Jellycap, the Wandering Cap, the Watchmaker). Rule: worn clothes dye your shirt or trousers.
+
+## 29 Oct 2026: the others see what you wear and do
+Owner: "make dyed clothes show for other players, and all players should see the actions of all other players". Other players now see your dyed jacket and jeans, your shades, armour, cloud coat and scuba tank; you sitting, swimming, climbing and hanging; your fishing float, line and catch, and your rowboat; and the puzzle cube in your hand.

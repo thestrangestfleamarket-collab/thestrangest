@@ -12,11 +12,11 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     g.add(P('ball',f[3],0,0,0,.05,id==='fr_pear'?.065:.048,.05,0,0,0,{flat:1}),P('cyl',0x5a3a1e,0,.06,0,.004,.03,.004),P('ball',0x4a8a3a,.018,.07,0,.022,.004,.01,0,.5)); return g; }});
   FORAGE.add({names:Object.fromEntries([...FR,BL].map(f=>[f[0],f[1]])),prices:Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]]))}); VEG.add({},Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]])));
   // climbing: while you are on a trunk the ground is where you are on it, so the walk and the camera follow you up
-  const C={it:null,h:0}, rT=it=>it.sol?(it.sol[2]-it.sol[0])/2:.3*T, sg0=STORE.stackGround;   // rT: the trunk's half width
+  const C={it:null,h:0}, rT=it=>it.tr||(it.sol?(it.sol[2]-it.sol[0])/2:.3*T), sg0=STORE.stackGround;   // rT: the bark's radius
   STORE.stackGround=(x,z)=>TREES.h!=null&&C.it&&Math.hypot(x-C.it.x,z-C.it.z)<rT(C.it)+.6*T?TREES.h:(sg0?sg0(x,z):null);   // only on the trunk: what lands elsewhere stays on the ground
   MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
     if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
-    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*(rT(it)+.28*T); pos.z=it.z+dz/l*(rT(it)+.28*T); SHARED.heading=Math.atan2(-dx,-dz);
+    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*(rT(it)+.2*T); pos.z=it.z+dz/l*(rT(it)+.2*T); SHARED.heading=Math.atan2(-dx,-dz);
     C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*38*ZU)); st.climb.ph=C.h/ZU; TREES.h=it.y+C.h;   // as fast as a ladder, a hand over hand per 28 units
     if(off||(dn&&C.h<=0)){ st.climb=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });
   PARK.later(()=>{ '@park'; const IT=PARK.treeItems(), g=MAPG.park||scene, SP=[]; let n=0;

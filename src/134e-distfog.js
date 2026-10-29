@@ -21,7 +21,10 @@ const DFOG={};
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85);
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'; u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
-    u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land); draw(r,w,rb,dt,mask); };
+    u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); if(FAR3.land)u.uK.value.set(...FAR3.land);
+    // under water (owner, 29 Oct 2026: "needs a fog filter but for water so you cant see too far"): the same pass is the water's fog, every pixel by its distance, a little blur
+    const W=DFOG.under; if(W){ u.uS.value=W.s; u.uE.value=Math.max(W.s+1,W.e); u.uB.value=1.4; u.uH.value=1; u.uF.value=0; u.uC.value.copy(W.c); u.uK.value.set(-1e9,-1e9,1e9,1e9); u.uP.value.copy((SHARED.RPASS&&SHARED.RPASS.camera||SHARED.cam).position); }
+    draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },

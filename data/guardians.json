@@ -258,7 +258,7 @@
     "West wall, all clear.",
     "Seen a big rat? Not me. The other kind."
    ],
-   "home": "tree1"
+   "home": "castle"
   },
   {
    "k": "gd_owlaxe",
@@ -279,7 +279,7 @@
     "Who goes there? You. Right.",
     "Back wall's mine. Keep off the moss."
    ],
-   "home": "tree2"
+   "home": "castle"
   },
   {
    "k": "gd_purpleowl",
@@ -305,7 +305,7 @@
     "Every level drawn. Every trap marked. Mostly.",
     "Lost? No. Just not yet found."
    ],
-   "home": "tree1"
+   "home": "castle"
   },
   {
    "k": "gd_redpanda",
@@ -407,7 +407,7 @@
     "Tonics brewed under a full moon. Mostly.",
     "A ward for every worry."
    ],
-   "home": "tree2"
+   "home": "castle"
   },
   {
    "k": "gd_toucan",
@@ -734,7 +734,7 @@
     "The paths go round. So do I.",
     "I have seen every corner of this park. Twice."
    ],
-   "home": "tree3"
+   "home": "castle"
   },
   {
    "k": "gd_rhino",
@@ -830,7 +830,7 @@
     "The stars say: stay out of the lava.",
     "Night watch. My favourite."
    ],
-   "home": "tree3"
+   "home": "castle"
   },
   {
    "k": "gd_skullmouse",
@@ -1073,14 +1073,14 @@
    "c2": "#c8c4bc",
    "w": "heartstaff",
    "pack": "potions",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
-    0,
-    2,
+    -4,
+    3,
     8
    ],
    "role": "night",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "...the dead sleep easier when I pass.",
     "Light for the lost. Even you."
@@ -1312,19 +1312,18 @@
    "coat": "robe",
    "cc": "#3a3a32",
    "c2": "#2a2a24",
-   "site": "tombs",
    "at": [
-    0,
-    -3.2,
+    6,
+    -6,
     0,
     0
    ],
    "role": "post",
-   "home": "tombs",
+   "home": "castle",
    "bulk": 1.35,
    "say": [
-    "The crypt is open. To the respectful.",
-    "Disturb nothing. Take only what the chest gives."
+    "None pass the gate unwatched.",
+    "Mind the moat. It minds you."
    ]
   },
   {
@@ -1364,14 +1363,14 @@
    "cape": "#2a2a2c",
    "beads": 1,
    "w": "spear",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
+    -6,
     4,
-    0,
     8
    ],
    "role": "patrol",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "The bones remember. Ask them nicely.",
     "Charms against the dark. Not for sale."
@@ -1421,14 +1420,14 @@
    "pack": "skulls",
    "w": "crystalstaff",
    "gem": "#e8f0ff",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
-    -4,
-    1,
+    2,
+    5,
     9
    ],
    "role": "wander",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "Every skull has a story. I collect stories.",
     "Don't mind the bag. They don't mind either."

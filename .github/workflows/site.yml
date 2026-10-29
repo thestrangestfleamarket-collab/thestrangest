@@ -32,13 +32,15 @@ jobs:
           C=$(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k lawn    'src/14[0-2]|lawn'
+          k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k vr      'src/162[a-c]|vr\.cjs'
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
-          k fishing 'src/142-|src/066|fishing'
+          k fishing 'src/142-|src/066|src/141f|fishing'
+          k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k guardians 'src/146[i-k]|src/089b|src/062-|guardians'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -67,6 +69,9 @@ jobs:
       - name: The lawn (knee-high tufts, painted ground)
         if: contains(steps.f.outputs.run, ' lawn')
         run: node tests/lawn.cjs dist/market.html
+      - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
+        if: contains(steps.f.outputs.run, ' grass')
+        run: node tests/grasskinds.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
@@ -89,6 +94,9 @@ jobs:
       - name: Fishing on the Hudson's pier (the pier, the rod, a bite, the fight)
         if: contains(steps.f.outputs.run, ' fishing')
         run: node tests/fishing.cjs dist/market.html
+      - name: One water and its fish (the shared simulation, still water still, the fish, the deep)
+        if: contains(steps.f.outputs.run, ' water')
+        run: node tests/water.cjs dist/market.html
       - name: The castle's guardians, their places and a breakout
         if: contains(steps.f.outputs.run, ' guardians')
         run: mkdir -p out && node tests/guardians.cjs dist/market.html out

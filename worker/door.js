@@ -43,6 +43,15 @@ export default {
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); return r; },
       onBeforeRequest: () => new Response("not found", { status: 404 }) })) || new Response("not found", { status: 404 });
+    // the market's shared files the owner sets (the busker's song): anyone logged in reads one, only the owner writes it
+    const sh = /^\/shared\/([a-z0-9.-]{1,40})$/.exec(p);
+    if (sh) { const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
+      if (request.method === "GET") { const f = await postOf(env).getFile(sh[1]); if (!f) return new Response(null, { status: 204 }); return new Response(f.data, { headers: { "content-type": f.type, "cache-control": "no-store" } }); }
+      if (request.method === "POST") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+        const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
+        const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);
+        return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
+      return new Response("not found", { status: 404 }); }
     if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
@@ -128,7 +137,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -161,6 +170,22 @@ export class Block extends Server {
     } else if (m.t === "kite") {
       const k = Array.isArray(m.k) ? [num(m.k[0], -1e5, 1e5), num(m.k[1], -1e4, 1e4), num(m.k[2], -1e5, 1e5)] : null;
       this.broadcast(JSON.stringify({ t: "kite", id: s.id, k }), [c.id]);
+    } else if (m.t === "curse") {
+      const k = /^(rats|cloud|stink)$/.test(m.k) ? m.k : ""; const to = String(m.to || ""); if (!k || !to || to === s.id || !this.near(s, to, 12)) return;
+      this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
+    } else if (m.t === "ride") {
+      this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
+    } else if (m.t === "ps") {
+      // a pose state (sitting, climbing, hanging, swimming): each a few numbers or flags
+      const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
+        for (const f in v) { if (n >= 16) break; const key = word(f, 12); if (!/^[a-zA-Z]+$/.test(key)) continue; const x = v[f]; if (typeof x === "number") { o[key] = num(x, -1e5, 1e5); n++; } else if (typeof x === "boolean") { o[key] = x; n++; } } ps[k] = o; }
+      this.broadcast(JSON.stringify({ t: "ps", id: s.id, s: ps }), [c.id]);
+    } else if (m.t === "fish") {
+      const v = (a, n) => Array.isArray(a) && a.length === n ? a.map(x => num(x, -1e5, 1e5)) : null;
+      this.broadcast(JSON.stringify({ t: "fish", id: s.id, b: v(m.b, 3), x: v(m.x, 3), k: m.k ? word(m.k, 24) : null, boat: v(m.boat, 4) }), [c.id]);
+    } else if (m.t === "puff") {
+      const k = /^cigar(_blue)?$/.test(m.k) ? m.k : "cigar";
+      this.broadcast(JSON.stringify({ t: "puff", id: s.id, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5), k }), [c.id]);
     } else if (m.t === "say") {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
     }
@@ -253,6 +278,12 @@ export class Post extends DurableObject {
   mine(id, seen) { for (const l of seen) this.sql.exec("insert or ignore into seen(letter, who) values(?, ?)", l, id);
     return this.sql.exec("select id, subject, body, at from letters where (too = ? or too = '*') and at > ? and id not in (select letter from seen where who = ?) order by id limit 20", id, Date.now() - 30 * 864e5, id).toArray(); }
   list() { return this.sql.exec("select id, too, subject, body, at, (select count(*) from seen where letter = letters.id) as read from letters order by id desc limit 100").toArray(); }
+  // shared files, kept in 1 MB parts
+  putFile(k, type, buf) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))"); this.sql.exec("delete from files where k = ?", k);
+    for (let i = 0, n = 0; i < buf.byteLength; i += 1 << 20, n++) this.sql.exec("insert into files(k, part, type, data, at) values(?, ?, ?, ?, ?)", k, n, type, buf.slice(i, i + (1 << 20)), Date.now()); return true; }
+  getFile(k) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))");
+    const rows = this.sql.exec("select type, data from files where k = ? order by part", k).toArray(); if (!rows.length) return null;
+    const parts = rows.map(r => new Uint8Array(r.data)), out = new Uint8Array(parts.reduce((a, b) => a + b.length, 0)); let o = 0; for (const q of parts) { out.set(q, o); o += q.length; } return { type: rows[0].type, data: out.buffer }; }
 }
 
 // HOMES: each player's apartment as they decorated it (the room editor), one row a player

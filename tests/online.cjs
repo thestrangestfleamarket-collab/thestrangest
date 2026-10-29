@@ -40,6 +40,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!r3.bShown, 'a player on another level is not drawn');
     const r5 = await pg.evaluate(() => { document.querySelector('#onlwho').click(); return document.querySelector('#onllist').textContent; });
     ok(/on another level/.test(r5), 'the online list says where a player you cannot see is (' + r5 + ')');
+    // what they wear and how they stand: a denim jacket and jeans dye their copy, shades and armour sit on it; sitting and hanging reach their pose
+    await pg.evaluate(() => { const P = __dbg.you(); ONLINE.feed({ t: 'in', p: { id: 'c', name: 'JUNE', look: 'w00..M00.jacket_denim~jeans~~shades~', at: [P.x + 1.2, P.z, SHARED.py, 0, SHARED.LVL, ''] } }); ONLINE.feed({ t: 'in', p: { id: 'd', name: 'OTTO', look: 'w00..M00.armor~~~~', at: [P.x - 1.2, P.z, SHARED.py, 0, SHARED.LVL, ''] } }); ONLINE.feed({ t: 'in', p: { id: 'e', name: 'IVY', look: 'w00..M00.~~~nv_goggles~', at: [P.x, P.z + 1.2, SHARED.py, 0, SHARED.LVL, ''] } }); ONLINE.feed({ t: 'in', p: { id: 'f', name: 'GUS', look: 'w00..M00.~~headlight~~', at: [P.x, P.z - 1.2, SHARED.py, 0, SHARED.LVL, ''] } }); });
+    await pg.waitForTimeout(2500);
+    await pg.evaluate(() => { ONLINE.feed({ t: 'ps', id: 'c', s: { sit: { z: -8 } } }); ONLINE.feed({ t: 'ps', id: 'd', s: { hang: { z: 4, t: 3 } } }); });
+    await pg.waitForTimeout(1500);
+    const r6 = await pg.evaluate(() => { const c = ONLINE.others.get('c'), d = ONLINE.others.get('d'), e = ONLINE.others.get('e'), f = ONLINE.others.get('f'), W = q => q && q.fig && q.fig.wornH || {}; const mats = typeof RIG !== 'undefined' ? RIG.MATS : [];
+      return { dyed: mats.some(m => /^dye#2a4a7a$/i.test(m)) && mats.some(m => /^dye#34507e$/i.test(m)), shades: !!(W(c).eye && W(c).eye.shades && W(c).eye.shades.visible), nv: !!(W(e).eye && W(e).eye.nv && W(e).eye.nv.visible), lamp: !!(W(f).lamp && W(f).lamp.visible), armour: !!(W(d).worn && W(d).worn.root.visible && W(d).worn.armour.visible), sit: !!(c && c.S.sit), hang: !!(d && d.S.hang), mine: (() => { FORAGE.give('jeans', 1); EQUIP.wear('jeans'); return EQUIP.code(); })() }; });
+    ok(r6.dyed && r6.shades && r6.armour && r6.nv && r6.lamp, 'a player\'s worn clothes and gear show on their copy (dyed jacket and jeans, shades, armour, night-vision goggles, headlamp): ' + JSON.stringify(r6));
+    ok(r6.sit && r6.hang && /^~jeans~/.test(r6.mine), 'their sitting and hanging reach their pose, and what you wear goes in your look: ' + JSON.stringify(r6));
     ok(!r3.err.length, 'no SYS errors (' + r3.err.join(',') + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

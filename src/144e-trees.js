@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INSPECT, INV, MAIL, PARK, pos, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {MAPG, MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {MAPG, MODS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {VEG} from './144-veggies.js';
 const TREES={h:null,want:null}; window.TREES=TREES;
 { const T=TILE, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); }, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
@@ -12,12 +12,13 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     g.add(P('ball',f[3],0,0,0,.05,id==='fr_pear'?.065:.048,.05,0,0,0,{flat:1}),P('cyl',0x5a3a1e,0,.06,0,.004,.03,.004),P('ball',0x4a8a3a,.018,.07,0,.022,.004,.01,0,.5)); return g; }});
   FORAGE.add({names:Object.fromEntries([...FR,BL].map(f=>[f[0],f[1]])),prices:Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]]))}); VEG.add({},Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]])));
   // climbing: while you are on a trunk the ground is where you are on it, so the walk and the camera follow you up
-  const C={it:null,h:0}; const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>TREES.h!=null?TREES.h:(sg0?sg0(x,z):null);
+  const C={it:null,h:0}, rT=it=>it.sol?(it.sol[2]-it.sol[0])/2:.3*T, sg0=STORE.stackGround;   // rT: the trunk's half width
+  STORE.stackGround=(x,z)=>TREES.h!=null&&C.it&&Math.hypot(x-C.it.x,z-C.it.z)<rT(C.it)+.6*T?TREES.h:(sg0?sg0(x,z):null);   // only on the trunk: what lands elsewhere stays on the ground
   MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
-    if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<1.1*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
-    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*.5*T; pos.z=it.z+dz/l*.5*T; SHARED.heading=Math.atan2(-dx,-dz);
-    C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*1.7*T)); st.climb.ph=C.h/(.6*T); TREES.h=it.y+C.h;
-    if(off||(dn&&C.h<=0)){ st.climb=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*.9*T; pos.z=it.z+dz/l*.9*T; } return true; });
+    if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
+    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*(rT(it)+.28*T); pos.z=it.z+dz/l*(rT(it)+.28*T); SHARED.heading=Math.atan2(-dx,-dz);
+    C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*38*ZU)); st.climb.ph=C.h/ZU; TREES.h=it.y+C.h;   // as fast as a ladder, a hand over hand per 28 units
+    if(off||(dn&&C.h<=0)){ st.climb=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });
   PARK.later(()=>{ '@park'; const IT=PARK.treeItems(), g=MAPG.park||scene, SP=[]; let n=0;
     for(const it of IT){ const i=n++; if(it.top-it.y<=3*T)continue; const f=/^Oak/.test(it.k)?BL:FR[Math.floor(hs(i,1)*FR.length)];   // blossoms on the oaks, fruit on the tall trees
       const tb=new THREE.Mesh(new THREE.BoxGeometry(.9*T,1.6*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); tb.position.set(it.x,it.y+.8*T,it.z); g.add(tb); UI.thing({name:'CLIMB THE TREE',obj:tb,reach:1.3*T,near:2.4*T,tall:2*T,act:()=>{ TREES.want=it; }});

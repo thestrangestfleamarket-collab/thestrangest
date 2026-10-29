@@ -1,9 +1,10 @@
-// THE GARDEN: GARDEN, the wild flowers (none in the park) and the garden plots the player can plant.
+// THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
+import {GRASS} from './014a-grass.js';
 import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
 { const T=TILE, KEY='garden', say=FORAGE.say, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
@@ -11,10 +12,11 @@ const GARDEN={}; window.GARDEN=GARDEN;
     chicory:['CHICORY',25,3,0x7a9af0,0x5a7ad0,[.05,.3,.42,.3]],goldenrod:['GOLDENROD',30,3,0xe8c030,0,[.045,2.6,.5,0]],aster:['NEW YORK ASTER',35,4,0x9a7ae0,0xf2c81e,[.055,.3,.36,.38]],
     violet:['WILD VIOLET',45,6,0x6a3ab0,0xf2e8a0,[.04,.45,.08,.3]],slipper:["PINK LADY'S SLIPPER",75,30,0xe87aa8,0xb04a78,[.06,1.3,.3,.32]],
     marigold:['MARIGOLD',10,3,0xf09020,0xd06010,[.065,.6,.26,.3]],zinnia:['ZINNIA',20,4,0xe03a5a,0xf2c81e,[.07,.38,.36,.32]],tulip:['TULIP',30,6,0xe02a2a,0,[.05,1.4,.32,0]],
-    sunflower:['SUNFLOWER',40,8,0xf2c81e,0x5a3a1a,[.15,.28,1.3,.55]],rose:['ROSE',55,14,0xc01a2a,0,[.055,.95,.4,0]]};
+    sunflower:['SUNFLOWER',40,8,0xf2c81e,0x5a3a1a,[.15,.28,1.3,.55]],rose:['ROSE',55,14,0xc01a2a,0,[.055,.95,.4,0]],
+    bluebell:['BLUEBELL',10,3,0x6a7ae0,0,[.045,1.3,.3,0]],poppy:['POPPY',15,3,0xe02a1a,0x1a1414,[.06,.4,.42,.3]],cosmos:['COSMOS',15,3,0xe070b0,0xf2c81e,[.06,.15,.62,.3]],
+    lavender:['LAVENDER',20,4,0x8a6ad0,0,[.035,2.4,.45,0]],iris:['IRIS',35,6,0x5a4ad0,0x7a6ae8,[.06,.8,.5,.4]],foxglove:['FOXGLOVE',40,7,0xd060a0,0,[.045,3,.9,0]]};
   const SEED={marigold:['MARIGOLD SEEDS',1],zinnia:['ZINNIA SEEDS',2],tulip:['TULIP BULB',3],sunflower:['SUNFLOWER SEEDS',2],rose:['ROSE CUTTING',8]};
-  const WILD={flat:{dandelion:5,clover:4,daisy:1},roll:{daisy:3,chicory:2,dandelion:2},little:{violet:3,aster:2,clover:1},big:{aster:3,goldenrod:2,violet:1},
-    giant:{goldenrod:3,violet:2,slipper:.3},bigflat:{chicory:3,daisy:2,slipper:.2},tuft:{clover:3,dandelion:3,goldenrod:1}};
+  const WILD=Object.fromEntries(GRASS.K.map(k=>[k.id,k.flowers]));   // each grass kind's wild flowers (GRASS)
   const BQ=[['g_posy','WILDFLOWER POSY','garden',[0,45],{fl_daisy:2,fl_clover:2},'sells for $14'],['g_meadow','MEADOW BOUQUET','garden',[20,65],{fl_chicory:2,fl_goldenrod:2,fl_daisy:1},'sells for $28'],
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
     ['g_garden','GARDEN BOUQUET','garden',[40,85],{fl_zinnia:2,fl_marigold:2,fl_sunflower:1},'sells for $48'],['g_rose','HALF DOZEN ROSES','garden',[60,105],{fl_rose:6},'sells for $110'],
@@ -34,9 +36,9 @@ const GARDEN={}; window.GARDEN=GARDEN;
   let saveT=0; const save=()=>SAVE.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
-  const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD.flat; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };
+  const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD['01']; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], drift=vn(x/T/7,z/T/7,511)>.62;
-      if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005)||WEEDS.inPark(x,z))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;
+      if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;
       out.push({k,x:px,z:pz,y:grp.top(px,y,pz),id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.85+.4*hsh(x,z,529),a:hsh(z,x,531)*6.28}); } return out; };
   const NMX=400, mat=new THREE.MeshLambertMaterial({flatShading:true}), grpG=MAPG.bodega||scene;
   const mk=g=>{ const me=new THREE.InstancedMesh(g,mat,NMX); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NMX*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; grpG.add(me); return me; };
@@ -55,7 +57,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GROW); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }
     for(const [me,c] of [[STEM,n.s],[HEAD,n.h],[CTR,n.c],[LEAF,n.l]]){ me.count=c; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } GARDEN.shown=n.s; };
-  GARDEN.sync=sync;
+  GARDEN.sync=sync; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
   { SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); sync(); },'144a-garden'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))sync(); },'144a-garden');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }

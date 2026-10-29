@@ -102,6 +102,7 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
   const grp=MAPG.park||scene;
   for(const s of LEVEL.parkPlaces.sites||[]){ const fn=MAKE[s.kind]; if(!fn)continue; try{ const K=kit(s.x,s.y,s.face); fn(s,K); const ms=K.done(s.name); for(const m of ms)grp.add(m);
       for(const [sg,at] of K.signs||[]){ const m=new THREE.Mesh(sg.g,new THREE.MeshLambertMaterial({map:sg.tx})); const w=K.w(...at); m.position.set(w[0],w[1],w[2]); m.rotation.y=Math.atan2(K.f[0],K.f[1]); m.scale.set(MH,MV,MH); grp.add(m); }
+      if(WEEDS.keepOff){ const hw=s.w/2*T, hd=s.d/2*T; if(s.kind==='ruins'||s.kind==='pub')WEEDS.keepOff([[K.wx,K.wz,Math.hypot(hw,hd)+(s.kind==='pub'?1.5*T:.5*T)]]); else if(s.kind==='hut')WEEDS.keepOff([[K.wx,K.wz,2.2*T]]); }
       const rec={...s,K,meshes:ms,wx:K.wx,wz:K.wz,door:K.door_,deck:K.deck,top:K.top,pillar:K.pillar,pells:K.pells,butts:K.butts}; SITES.list.push(rec); SITES.at[s.id]=rec; SITES.homes[s.id]=K.door_||[K.wx,K.y0,K.wz];
       if(STORE.places)STORE.places.push([s.name,K.door_?K.door_[0]:K.wx,K.door_?K.door_[2]+.8*T:K.wz,'up']); }catch(e){ console.warn('site '+s.id,e); } }
   // the moat: a stone-lined channel of still water round the castle, crossed only by the drawbridge at the gate

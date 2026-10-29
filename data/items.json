@@ -481,5 +481,12 @@
   "value": 25,
   "weight": 0.2,
   "sellable": true
+ },
+ "balloon": {
+  "slot": "hand",
+  "grants": "lift",
+  "value": 15,
+  "weight": 0.05,
+  "speed": 5
  }
 }

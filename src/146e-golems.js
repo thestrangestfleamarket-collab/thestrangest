@@ -1,6 +1,6 @@
 // THE GOLEM GUARDS: GOLEMS makes the rock golems guard the golems' cave: slow, they come at you near the mouth, your strikes land, they crumble to rocks and form again.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, SFX, VIT} from './003b-systems.js';
+import {FORAGE, pos, RIDE, SFX, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
@@ -11,7 +11,7 @@ const GOLEMS={on:true,list:[]}; window.GOLEMS=GOLEMS;
     for(let i=0;i<6;i++){ const m=new THREE.Mesh(RG,RK), a=i/6*Math.PI*2, d=(.3+Math.random()*.5)*T; m.position.set(N.st.x+Math.cos(a)*d,N.g.position.y+.2*T,N.st.z+Math.sin(a)*d); m.scale.setScalar(T*(.25+Math.random()*.3)); m.rotation.set(Math.random()*3,Math.random()*3,0); g.add(m); r.deb.push(m); }
     SFX.play('clunk',{vol:.7,pitch:.6,vary:.2}); say('THE GOLEM CRUMBLES TO ROCKS.','#e8e2cc'); };
   const reform=r=>{ const N=r.N; for(const m of r.deb)m.removeFromParent(); r.deb=[]; r.dead=false; r.agg=false; r.hp=HP; N.g.visible=true; N.st.hold=false; N.far=false; SFX.play('clunk',{vol:.6,pitch:.8}); say('THE ROCKS GATHER: THE GOLEM STANDS AGAIN.','#c8c2b0'); };
-  SYS.add('life',dt=>{ find(); if(!GOLEMS.on||!GOLEMS.list.length)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='up', near=!!(GCAVE.inBox&&GCAVE.inBox(pos.x,pos.z,4*T)), ST=window.STRIKES;
+  SYS.add('life',dt=>{ find(); if(!GOLEMS.on||!GOLEMS.list.length)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='up'&&!(RIDE.on&&RIDE.lift>2*T), near=!!(GCAVE.inBox&&GCAVE.inBox(pos.x,pos.z,4*T)), ST=window.STRIKES;
     const S=alive&&ST?ST.strikes():[];
     for(const r of GOLEMS.list){ const N=r.N, st=N.st; if(r.dead){ if((r.t-=dt)<=0)reform(r); continue; }
       if(N.distract>performance.now()/1000){ r.agg=false; st.to=null; if(N.distractAt)st.face=N.distractAt; continue; }   // cursed: busy with the rats at its feet (146o)

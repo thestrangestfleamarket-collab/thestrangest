@@ -654,5 +654,48 @@
     }
    }
   }
+ },
+ "balloonwitch": {
+  "name": "THE BALLOON WITCH",
+  "trade": {
+   "sells": [
+    "balloon"
+   ],
+   "line": "Up is easy. Down is the trick."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Up is easy. Down is the trick.",
+      "You again. Still walking? Tsk."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO THEY WORK?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Hold it and it lifts you. Over the fence, over the river, over anything that bites. Not over houses, dear, houses are tall. Two minutes of air, then down you go, gently.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

@@ -364,5 +364,103 @@
  "ticket": {
   "stackable": true,
   "value": 5
+ },
+ "p_refresh": {
+  "stackable": true,
+  "value": 12
+ },
+ "p_heal": {
+  "stackable": true,
+  "value": 20
+ },
+ "p_str": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_keen": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_cure": {
+  "stackable": true,
+  "value": 40
+ },
+ "p_gheal": {
+  "stackable": true,
+  "value": 110
+ },
+ "bottle": {
+  "stackable": true,
+  "value": 2
+ },
+ "quartz": {
+  "stackable": true,
+  "value": 6
+ },
+ "amethyst": {
+  "stackable": true,
+  "value": 14
+ },
+ "geode": {
+  "stackable": true,
+  "value": 18
+ },
+ "amber": {
+  "stackable": true,
+  "value": 24
+ },
+ "moonstone": {
+  "stackable": true,
+  "value": 30
+ },
+ "opal": {
+  "stackable": true,
+  "value": 45
+ },
+ "emerald": {
+  "stackable": true,
+  "value": 70
+ },
+ "sapphire": {
+  "stackable": true,
+  "value": 85
+ },
+ "ruby": {
+  "stackable": true,
+  "value": 100
+ },
+ "meteor": {
+  "stackable": true,
+  "value": 150
+ },
+ "f_roast": {
+  "stackable": true,
+  "edible": true,
+  "value": 8
+ },
+ "f_fritter": {
+  "stackable": true,
+  "edible": true,
+  "value": 10
+ },
+ "f_skewer": {
+  "stackable": true,
+  "edible": true,
+  "value": 16
+ },
+ "f_soup": {
+  "stackable": true,
+  "edible": true,
+  "value": 30
+ },
+ "f_fishfry": {
+  "stackable": true,
+  "edible": true,
+  "value": 12
+ },
+ "f_chowder": {
+  "stackable": true,
+  "edible": true,
+  "value": 30
  }
 }

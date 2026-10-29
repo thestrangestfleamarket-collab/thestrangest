@@ -22,7 +22,7 @@ import {renderer} from './004-main.js';
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&INSPECT.on){ INSPECT.close(); e.stopImmediatePropagation(); } },true); };
   const chips=(id,extra)=>{ const L=[...(extra||[])], d=id&&ITEMS.def&&ITEMS.def(id);
     if(id&&INV.items&&INV.items[id]>0)L.push('YOU HAVE '+INV.items[id]);
-    if(d){ if(d.value)L.push('$'+d.value); if(d.weight&&d.weight!==1)L.push(d.weight+' KG'); for(const [k,n] of [['edible','EDIBLE'],['burnable','BURNS'],['stackable','STACKS']])if(d[k])L.push(n);
+    if(d){ if(d.value)L.push('$'+d.value); if(d.weight&&d.weight!==1)L.push(d.weight+' KG'); if(d.heals)L.push('HEALS '+Math.round(d.heals*100)+'%'); for(const [k,n] of [['edible','EDIBLE'],['burnable','BURNS'],['stackable','STACKS']])if(d[k])L.push(n);
       if(d.slot&&d.slot!=='none')L.push('WORN: '+d.slot.toUpperCase()); if(d.grants&&d.grants!=='none')L.push('GIVES: '+d.grants.toUpperCase()); }
     return L.map(t=>`<span style="background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px">${esc(t)}</span>`).join(''); };
   // what INSPECT made is freed when it closes, geometry only (makers keep their materials cached, or mark their own ownMat); a part marked shared is the world's own

@@ -1,6 +1,6 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {INV, pos} from './003b-systems.js';
+import {FORAGE, INV, pos} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
@@ -38,7 +38,9 @@ import {ROOMK} from './150a-bedroom.js';
     PENDANT:25,CHANDELIER:60,'FLUSH DOME':20,'TRACK SPOTS':35,'PAPER LANTERN':15,SCONCE:18,'PICTURE LIGHT':15,'WALL LANTERN':22,'NEON SIGN':45,'LED STRIP':20};
   const NOSALE=new Set(['CAT']);   // a pet, not furniture
   const kindOf=k=>{ const A=A_(); return A&&A.kinds()[k]; };
-  const price=k=>{ const K=kindOf(k); return K&&K.price!=null?K.price:PRICE[k]??4; }, deptOf=(k,K)=>K&&K.dept?K.dept:K&&K.cat==='light'?'lights':DEPT[k]||'decor';
+  // a kind that needs an item (own: bought from a merchant) costs nothing here: placing it uses the item up, putting it away gives it back
+  const owned=K=>K&&K.own?(FORAGE.has?FORAGE.has(K.own):0):0;
+  const price=k=>{ const K=kindOf(k); return K&&K.own?0:K&&K.price!=null?K.price:PRICE[k]??4; }, deptOf=(k,K)=>K&&K.dept?K.dept:K&&K.cat==='light'?'lights':DEPT[k]||'decor';
   // the room's own departments, then the game's (street, laundry, music, ...)
   const depts=A=>{ const L=DEPTS0.slice(), K=A.kinds(), seen=new Set(); for(const k in K){ const D=K[k]; if(D.dept&&!seen.has(D.dept)){ seen.add(D.dept); L.push([D.dept,D.deptName]); } } return L; };
   // how a kind is carried: 'big' on the floor with a fit check, 'rug' flat on the floor, 'small' onto any surface, 'wall' flat on the wall you point at, 'ceil' under the ceiling
@@ -115,7 +117,7 @@ import {ROOMK} from './150a-bedroom.js';
   const tf=(un,f)=>{ const A=A_(); if(drag&&drag.un===un){ f(drag.t); vis(un,drag.t); drag.fit=showFp(un,drag.t); if(helper)helper.update(); return; } const prev=A.getT(un), t={...prev}; f(t); const ok=fits(un,t); if(!ok.ok&&fits(un,prev).ok){ say(ok.why); showFp(un,prev); return; }
     A.setT(un,t); did({t:'move',un,prev}); if(helper)helper.update(); showFp(un,A.getT(un)); ED.panel(); };
   const turn=(d,free)=>{ if(ED.sel)tf(ED.sel,t=>{ t.ry+=d; if(ED.grid&&!free)t.ry=snap(t.ry,RQ); }); }, size=k=>{ if(ED.sel)tf(ED.sel,t=>{ t.s=Math.max(.3,Math.min(3,t.s*k)); }); }, lift=d=>{ if(ED.sel)tf(ED.sel,t=>{ t.h=Math.max(0,t.h+d); }); };
-  const putAway=()=>{ const un=ED.sel, A=A_(); if(!un)return; if(ED.carry)endCarry(); A.remove(un); did({t:'gone',un}); select(null); };
+  const putAway=()=>{ const un=ED.sel, A=A_(); if(!un)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own&&un.added){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } A.remove(un); did({t:'gone',un}); select(null); };
   const bringBack=un=>{ const A=A_(); A.restore(un); did({t:'back',un}); select(un); };
   // somewhere it fits, near where it was asked for: rings of grid steps outward
   const findSpot=(un,t)=>{ if(fits(un,t).ok)return t; const A=A_(); for(let r=1;r<=24;r++)for(let i=-r;i<=r;i++)for(const [du,dv] of [[i,-r],[i,r],[-r,i],[r,i]]){ const q={...t,u:snap(t.u,GS)+du*GS,v:snap(t.v,GS)+dv*GS}; if(q.u<0||q.v<0||q.u>A.Lx||q.v>A.Ly)continue; if(fits(un,q).ok)return q; } return t; };
@@ -123,9 +125,9 @@ import {ROOMK} from './150a-bedroom.js';
     const t=at||{u:Math.max(.4,Math.min(A.Lx-.4,me.u+.6)),h:K.mount==='ceil'?A.HW:K.mount==='wall'?1.8:K.loose?Math.max(.05,base.h):base.h,v:Math.max(.4,Math.min(A.Ly-.4,me.v+.6)),ry:0,s:1}; const un=A.spawn(kind,t); if(!un)return null;
     un.paid=paid||0; const q=findSpot(un,A.getT(un)); if(q!==t)A.setT(un,q); did({t:'add',un}); select(un); return un; };
   // buying: paid from your cash, carried under the pointer until you click it down
-  ED.buy=kind=>{ const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return null; }
-    INV.cash-=p; const un=add(kind,null,p); if(!un){ INV.cash+=p; return null; } startCarry(un); drawBuy(); return un; };
-  const sell=()=>{ const un=ED.sel, A=A_(); if(!un||!un.added)return; if(ED.carry)endCarry(); const got=Math.floor((un.paid||0)/2), at=A.getT(un); INV.cash+=got; A.drop(un); did({t:'sell',kind:un.kind,at,id:un.id,paid:un.paid||0,got}); select(null); say('SOLD FOR $'+got); drawBuy(); };
+  ED.buy=kind=>{ const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(K.own&&!owned(K)){ say('BUY ONE FIRST'); return null; } if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return null; }
+    INV.cash-=p; if(K.own)FORAGE.take(K.own,1); const un=add(kind,null,p); if(!un){ INV.cash+=p; if(K.own)FORAGE.give(K.own,1); return null; } startCarry(un); drawBuy(); return un; };
+  const sell=()=>{ const un=ED.sel, A=A_(); if(!un||!un.added)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } const got=Math.floor((un.paid||0)/2), at=A.getT(un); INV.cash+=got; A.drop(un); did({t:'sell',kind:un.kind,at,id:un.id,paid:un.paid||0,got}); select(null); say('SOLD FOR $'+got); drawBuy(); };
   const copy=()=>{ const un=ED.sel, A=A_(); if(!un)return; const k=un.kind; if(NOSALE.has(k))return; const p=price(k); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } const t=A.getT(un); INV.cash-=p; add(k,{...t,u:t.u+.3,v:t.v+.3},p); drawBuy(); };
 
   /* ---------- little pictures of each kind for the buy bar (drawn once each, a couple a frame, with the game's own renderer) ---------- */
@@ -145,13 +147,13 @@ import {ROOMK} from './150a-bedroom.js';
     g.putImageData(im,0,0); PICS[kind]=cv.toDataURL(); for(const el of BUY.querySelectorAll('[data-pic]'))if(el.dataset.pic===kind)el.outerHTML=`<img alt="" src="${PICS[kind]}">`; };
 
   /* ---------- the buy bar ---------- */
-  const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad).sort((a,b)=>K[a].name<K[b].name?-1:1); };
+  const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad&&(!K[k].own||owned(K[k]))).sort((a,b)=>K[a].name<K[b].name?-1:1); };
   let find='';
   const drawBuy=()=>{ const A=A_(); if(!ED.on||!A){ BUY.hidden=true; return; } BUY.hidden=false; const K=A.kinds(), q=find.trim().toUpperCase(), ks=forSale(A).filter(k=>q?K[k].name.includes(q):deptOf(k,K[k])===dept).slice(0,q?120:1e9), have=cash();
     let h=`<div class="top"><b>BUY</b><span>YOU HAVE $${have.toLocaleString('en-US')}</span><input id="roomfind" placeholder="FIND" value="${find.replace(/"/g,'')}"><span style="margin-left:auto;color:var(--dim);font-size:10px">${ED.carry?'CLICK TO PUT IT DOWN · ESC TAKES IT BACK':'CLICK A THING TO BUY IT'}</span></div>`;
     h+=`<div class="tabs">${depts(A).map(([k,n])=>`<button data-dept="${k}" class="${!q&&dept===k?'on':''}">${n}</button>`).join('')}</div><div class="tiles">`;
     for(const k of ks){ const p=price(k); if(!PICS[k]&&!PQ.includes(k))PQ.push(k);
-      h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><em>$${p}</em></button>`; }
+      h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><em>${K[k].own?'YOURS x'+owned(K[k]):'$'+p}</em></button>`; }
     const f=document.activeElement&&document.activeElement.id==='roomfind'; BUY.innerHTML=h+(ks.length?'':'<span style="color:var(--dim)">NOTHING HERE</span>')+'</div>';
     if(f){ const i=BUY.querySelector('#roomfind'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); }
     P.style.maxHeight=Math.max(160,innerHeight-BUY.offsetHeight-48)+'px'; };   // the panel stops above the bar, however tall its tabs wrap

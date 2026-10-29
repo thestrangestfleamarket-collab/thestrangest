@@ -111,6 +111,12 @@ import {FOUNT} from './060a-fount.js';
     { const mx=x=>x/T+72-(P.ox||0), my=z=>z/T-77-(P.oy||0), xs=C.map(c=>X(c[0])), zs=C.map(c=>Z(c[1])), m=(W(SL)+B+4)*T;   // the stream and THE LAKE in the one water: the bed under the stream, its surface stepping down the riffles
       FLOW.add({name:'brook',kind:'lake',shown:()=>grp.visible,box:[Math.min(...xs)-m,Math.min(...zs)-m,Math.max(...xs)+m,Math.max(...zs)+m],has:(x,z)=>{ const r=BK.q(mx(x),my(z)); return !!r&&r[1]>=BK.kM*SL/N-1&&r[0]<W(r[1])+B*.5&&!BK.st.some(o=>Math.hypot(mx(x)-o[0],my(z)-o[1])<o[2]*.8); },
         bed:(x,z)=>bedL(mx(x),my(z))*WU+G0,rest:(x,z)=>{ const r=BK.q(mx(x),my(z)); return L(r?r[1]:0)*WU+G0; }}); }
+    { const UF=new THREE.Fog(0,0,1), bg0=new THREE.Color(); UF.uw=true; let fog0=null, uw=false, dome=true;   // under the stream and THE LAKE: the water's murk, as under the big lake
+      (MODS.waters=MODS.waters||[]).unshift({pre:(scene,cam)=>{ const c=cam.position, r=SHARED.LVL==='up'&&!cam.isOrthographicCamera&&grp.visible&&!(scene.fog&&scene.fog.uw)?BK.q(c.x/T+72-(P.ox||0),c.z/T-77-(P.oy||0)):null;
+          uw=!!r&&r[0]<W(r[1])&&c.y<L(r[1])*WU+G0&&!!(scene.background&&scene.background.isColor); if(!uw)return; const lv=L(r[1])*WU+G0, see=FLOW.see(Math.max(0,(lv-c.y)*.84/T),9);
+          UF.color.setRGB(.2,.38,.3,THREE.SRGBColorSpace).multiplyScalar(U.uDay.value*see.k); UF.near=0; UF.far=see.far/.84*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
+          if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } },
+        post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; }}); }
     BROOK.feed=(st,pos,dt,go,keys)=>{ const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null;
       if(!r||r[0]>=W(r[1])){ if(BROOK.swim&&st.water)st.water.in=false; BROOK.swim=false; return false; }
       const W1=RIG.water(st,{level:(L(r[1])*WU+G0+(BROOK.swim?FLOW.carry(pos,dt):0))/ZU,floor:SHARED.groundY(pos.x,pos.z)/ZU}); W1.go=!!go; W1.fast=W1.in&&(keys.has('k')||keys.has('shift'))?1:0;

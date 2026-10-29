@@ -7,7 +7,7 @@ import {SYS} from './006-map-pre.js';
 PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uA:{value:0}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
   fragmentShader:`uniform sampler2D tDiffuse; uniform float uT,uA; uniform vec2 uL; varying vec2 vUv;
-    vec3 fb(vec2 cell){ vec3 c=texture2D(tDiffuse,(cell+.5)/uL).rgb; return floor(clamp(c*255.,0.,255.)/8.)*8./255.; }
+    vec3 fb(vec2 cell){ vec3 c=.25*(texture2D(tDiffuse,(cell+vec2(.25,.25))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.75,.25))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.25,.75))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.75,.75))/uL).rgb); return floor(clamp(c*255.,0.,255.)/8.)*8./255.; }
     vec3 yiq(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)),dot(c,vec3(.596,-.274,-.322)),dot(c,vec3(.211,-.523,.312))); }
     vec3 rgb(vec3 y){ return vec3(y.x+.956*y.y+.621*y.z,y.x-.272*y.y-.647*y.z,y.x-1.106*y.y+1.703*y.z); }
     float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }

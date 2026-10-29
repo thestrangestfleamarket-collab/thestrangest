@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INSPECT, INV, MAIL, PARK, pos, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
+import {MAPG, MODS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {VEG} from './144-veggies.js';
 const TREES={h:null,want:null}; window.TREES=TREES;
 { const T=TILE, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); }, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
@@ -12,7 +12,8 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     g.add(P('ball',f[3],0,0,0,.05,id==='fr_pear'?.065:.048,.05,0,0,0,{flat:1}),P('cyl',0x5a3a1e,0,.06,0,.004,.03,.004),P('ball',0x4a8a3a,.018,.07,0,.022,.004,.01,0,.5)); return g; }});
   FORAGE.add({names:Object.fromEntries([...FR,BL].map(f=>[f[0],f[1]])),prices:Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]]))}); VEG.add({},Object.fromEntries([...FR,BL].map(f=>[f[0],f[2]])));
   // climbing: while you are on a trunk the ground is where you are on it, so the walk and the camera follow you up
-  const C={it:null,h:0}, rT=it=>it.sol?(it.sol[2]-it.sol[0])/2:.3*T;   // the trunk's half width const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>TREES.h!=null&&C.it&&Math.hypot(x-C.it.x,z-C.it.z)<rT(C.it)+.6*T?TREES.h:(sg0?sg0(x,z):null);   // only on the trunk: what lands elsewhere stays on the ground
+  const C={it:null,h:0}, rT=it=>it.sol?(it.sol[2]-it.sol[0])/2:.3*T, sg0=STORE.stackGround;   // rT: the trunk's half width
+  STORE.stackGround=(x,z)=>TREES.h!=null&&C.it&&Math.hypot(x-C.it.x,z-C.it.z)<rT(C.it)+.6*T?TREES.h:(sg0?sg0(x,z):null);   // only on the trunk: what lands elsewhere stays on the ground
   MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
     if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
     const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1; pos.x=it.x+dx/l*(rT(it)+.28*T); pos.z=it.z+dz/l*(rT(it)+.28*T); SHARED.heading=Math.atan2(-dx,-dz);

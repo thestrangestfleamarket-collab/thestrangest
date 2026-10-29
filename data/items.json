@@ -488,5 +488,64 @@
   "value": 15,
   "weight": 0.05,
   "speed": 5
+ },
+ "seed_star": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_sun": {
+  "value": 9,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "pot": {
+  "value": 8,
+  "weight": 2
+ },
+ "dirt": {
+  "value": 3,
+  "stackable": true,
+  "weight": 3
+ },
+ "water": {
+  "value": 1,
+  "stackable": true,
+  "weight": 1
+ },
+ "fr_star": {
+  "value": 10,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.25
+ },
+ "fr_sun": {
+  "value": 16,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.45
+ },
+ "fr_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.12
  }
 }

@@ -697,5 +697,53 @@
     }
    }
   }
+ },
+ "radish": {
+  "name": "THE RADISH",
+  "trade": {
+   "sells": [
+    "seed_star",
+    "seed_sun",
+    "seed_hum",
+    "pot",
+    "dirt",
+    "water"
+   ],
+   "line": "Fresh from far away!"
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Fresh from far away!",
+      "Ooh, a customer. Mind the umbrella."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I GROW THEM?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "A pot, a bag of dirt, a seed, and rain. Set the pot down at home, fill it, plant it, water it. It only grows while it's wet. Eat what it gives you and you'll mend.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

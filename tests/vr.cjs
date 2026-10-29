@@ -94,7 +94,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
     ok(await until(() => VR.state().hands === 2, 15000), 'put the controllers down and your hands show (' + (await pg.evaluate(() => VR.state().hands)) + ' hands)');
     ok(await until(() => VR.state().wrist, 5000), 'a MENU button sits on your left wrist');
-    const m1 = await menuText(), word = /HELP/.test(m1) ? 'HELP' : (await pg.evaluate(() => { const e = [...document.querySelectorAll('#menu button,#menu [role=tab]')].find(e => e.getClientRects().length && e.textContent.trim()); return e ? e.textContent.trim() : ''; }));
+    const m1 = await menuText(), word = await pg.evaluate(() => { const v = [...document.querySelectorAll('#menu button,#menu [role=tab]')].filter(e => e.getClientRects().length && e.textContent.trim()), h = v.find(e => e.textContent.trim() === 'HELP'); return h ? 'HELP' : v[0] ? v[0].textContent.trim() : ''; });
     const a2 = await aim('hands', 'right', word);
     ok(!a2, 'your right hand points at ' + word + ' on the panel' + (a2 ? ' (' + a2 + ')' : ''));
     await shot('hand-points');

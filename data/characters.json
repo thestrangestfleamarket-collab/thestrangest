@@ -1662,5 +1662,382 @@
     }
    }
   }
+ },
+ "tiger": {
+  "name": "THE TIGER",
+  "trade": {
+   "sells": [
+    "jacket_denim",
+    "jacket_stud",
+    "jeans",
+    "shades"
+   ],
+   "line": "Nice. No. Let me fix that."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Nice. No. Let me fix that.",
+      "You again. Better. Not there yet."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE'S IT FROM?",
+       "go": "from"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "from": {
+     "say": "Earth makes the best clothes in the galaxy. Nobody out there knows how to fade denim. I buy it by the crate.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "soniee": {
+  "name": "SONIEE",
+  "trade": {
+   "sells": [
+    "soda_pink",
+    "soda_white",
+    "soda_teal"
+   ],
+   "line": "\"PICK ME.\" \"NO, ME.\" \"GET US OUT OF HERE.\""
+  }
+ },
+ "cactus": {
+  "name": "THE ALL-SEEING CACTUS",
+  "trade": {
+   "sells": [
+    "cactus_eye",
+    "cactus"
+   ],
+   "line": "..."
+  }
+ },
+ "bonsai": {
+  "name": "THE BONSAI",
+  "trade": {
+   "sells": [
+    "bonsai",
+    "water"
+   ],
+   "line": "Patience. And water."
+  }
+ },
+ "stump": {
+  "name": "THE STUMP",
+  "trade": {
+   "sells": [
+    "map"
+   ],
+   "line": "A map. Folded the way the roots run."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Sit. Once, before the city...",
+      "Ah. Lost again? Sit."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "TELL ME A STORY.",
+       "go": "story"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "story": {
+     "say": [
+      "Once, before the city, this was all one tree. The streets are where its roots ran. That's why they bend.",
+      "Once, a man tried to map the market without me. He's still in the park somewhere. Wave if you see him.",
+      "Once, the lake was a puddle a giant stepped in. He said sorry. Nobody heard him.",
+      "Once, the subway was a rabbit hole. The rabbits moved out when the trains came. They live under the bodega now."
+     ],
+     "opts": [
+      {
+       "t": "ANOTHER.",
+       "go": "story"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "bluehour": {
+  "name": "THE BLUE HOUR",
+  "trade": {
+   "sells": [
+    "cigar",
+    "cigar_blue"
+   ],
+   "line": "Bad day? Smoke it off."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Bad day? Smoke it off.",
+      "Evening. It's always evening somewhere."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "THE BLUE ONE?",
+       "go": "blue"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "blue": {
+     "say": "Rolled where the sky stays that colour all day. Smoke's blue too. Lasts longer.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "operator": {
+  "name": "THE OPERATOR",
+  "trade": {
+   "sells": [
+    "phone_home",
+    "phone_cell"
+   ],
+   "line": "Who are we calling? Not her. I won't."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Who are we calling? Not her. I won't.",
+      "Hold, please. ...Yes? You."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT CAN A PHONE DO?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Call any shop in the city. They'll bring it round. The big one goes in your pocket. Well. A big pocket.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "broadcast": {
+  "name": "THE BROADCAST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Wanna be someone else for a minute?",
+      "I've got a pigeon's whole morning on here. Don't ask how."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "otter": {
+  "name": "THE OTTER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Got a run if you've got legs.",
+      "Every drain in this city goes somewhere. Most go somewhere worse."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "reelkid": {
+  "name": "THE REEL KID",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "This one comes out in '94. Good ending.",
+      "Some films get made everywhere. Same film, every planet. Weird, right?"
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "bagger": {
+  "name": "THE BAGGER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Heavy? Let it walk.",
+      "My bag's been following me for years. I think it likes me."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "ghost2": {
+  "name": "THE SECONDHAND GHOST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Oh! You can see me. How embarrassing.",
+      "I can't carry anything, you know. I just like to look."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "jellycap": {
+  "name": "THE JELLYCAP",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "...blub.",
+      "It's warm in here. You should try a bubble."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "wandercap": {
+  "name": "THE WANDERING CAP",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Soil's different up by the lake. Sweeter.",
+      "Been walking since the spores were young."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "watchmaker": {
+  "name": "THE WATCHMAKER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Time? I've got some. Not much.",
+      "Tick. Tock. Sorry. Habit."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

@@ -65,7 +65,17 @@
     "y1": 495
    },
    "walk": 4.5,
-   "sides": {"note": "sidewalk widths, outer then park side: ns the south and north streets (Market St), we the west and east (West St)", "ns": [7, 12], "we": [3.2, 3]},
+   "sides": {
+    "note": "sidewalk widths, outer then park side: ns the south and north streets (Market St), we the west and east (West St)",
+    "ns": [
+     7,
+     12
+    ],
+    "we": [
+     3.2,
+     3
+    ]
+   },
    "row": 15.4,
    "water": 47.5,
    "shore": 11.1
@@ -740,6 +750,72 @@
   "radish": [
    130,
    -117.4,
+   0
+  ],
+  "tiger": [
+   151,
+   27,
+   0
+  ],
+  "plantstall": [
+   172,
+   -71.2,
+   0,
+   0
+  ],
+  "stump": [
+   112,
+   49,
+   0
+  ],
+  "bluehour": [
+   226,
+   -71.6,
+   0
+  ],
+  "operator": [
+   30,
+   -71.6,
+   0
+  ],
+  "broadcast": [
+   112,
+   59.5,
+   8
+  ],
+  "otter": [
+   116,
+   -71,
+   6
+  ],
+  "reelkid": [
+   138,
+   -114,
+   5
+  ],
+  "bagger": [
+   60,
+   -58,
+   25
+  ],
+  "ghost2": [
+   180,
+   -58,
+   20
+  ],
+  "jellycap": [
+   236,
+   -71,
+   4
+  ],
+  "wandercap": [
+   150,
+   60,
+   30
+  ],
+  "watchmaker": [
+   68,
+   -71.6,
    0
   ]
  },

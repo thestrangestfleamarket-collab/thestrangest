@@ -20,7 +20,7 @@ Building now (owner: "build those out for now"):
 9. BALLOON WITCH: black balloons that float you over things (fast travel, over dangerous spots).
 10. RADISH: seeds that grow fruit that heals you; they need dirt, a pot and water.
 
-Queued (owner, same day):
+Built 29 Oct 2026 (owner: "start building merchants 11 to 25"):
 11. TIGER: a small kiosk by the lake: sunglasses, jackets, jeans.
 12. SONIEE: subway platform; three drinks that sell their own juice, each a temporary boost (faster, stronger, more health), good for the dungeon.
 13. ALL-SEEING CACTUS: Market St plant stall; bought as decoration; it watches people, and you.

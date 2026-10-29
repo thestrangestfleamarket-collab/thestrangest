@@ -645,5 +645,99 @@
   "stackable": true,
   "edible": true,
   "value": 30
+ },
+ "jacket_denim": {
+  "slot": "body",
+  "color": "#2a4a7a",
+  "value": 35,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "jacket_stud": {
+  "slot": "body",
+  "color": "#1c1c20",
+  "value": 60,
+  "weight": 1.6,
+  "sellable": true
+ },
+ "jeans": {
+  "slot": "legs",
+  "color": "#34507e",
+  "value": 30,
+  "weight": 0.8,
+  "sellable": true
+ },
+ "shades": {
+  "slot": "eyes",
+  "color": "#1e6a3a",
+  "value": 20,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "soda_pink": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "swift",
+  "boostS": 90
+ },
+ "soda_white": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "str",
+  "boostS": 120
+ },
+ "soda_teal": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "regen",
+  "boostS": 60
+ },
+ "cactus_eye": {
+  "value": 35,
+  "weight": 1.5,
+  "offworld": true
+ },
+ "cactus": {
+  "value": 5,
+  "weight": 1
+ },
+ "bonsai": {
+  "value": 20,
+  "weight": 1.5
+ },
+ "map": {
+  "value": 12,
+  "weight": 0.1
+ },
+ "cigar": {
+  "slot": "hand",
+  "value": 6,
+  "weight": 0.05,
+  "stackable": true
+ },
+ "cigar_blue": {
+  "slot": "hand",
+  "value": 15,
+  "weight": 0.05,
+  "stackable": true,
+  "offworld": true
+ },
+ "phone_home": {
+  "value": 40,
+  "weight": 2
+ },
+ "phone_cell": {
+  "slot": "hand",
+  "value": 120,
+  "weight": 1
  }
 }

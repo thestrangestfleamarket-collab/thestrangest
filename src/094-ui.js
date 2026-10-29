@@ -186,7 +186,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="map">MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
     <div class="pane" data-p="home" id="dhome"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
-      <div class="row" id="mapz"></div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
+      <div class="row" id="mapz"></div><div id="nomap" class="dim" style="margin:14px 0" hidden>YOU HAVE NO MAP. THE STUMP ON A CENTRAL PARK PATH SELLS THEM.</div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
     <div class="pane" data-p="display">
       <div class="row"><span>ZOOM</span><input type="range" id="dzoom" min="0" max="1" step="0.001"></div>
       <div class="row"><span>TILT</span><input type="range" id="dtilt" min="0" max="1" step="0.001"></div>
@@ -288,6 +288,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     for(const st of LOOP.STA){ const a=st.my(0), b=st.my(LOOP.XW), x0=X_(st.x0), x1=X_(st.x0+LOOP.LEN), y0=Y_(Math.max(a,b)), y1=Y_(Math.min(a,b)); mg.fillStyle='#1c2028'; mg.fillRect(x0,y0,x1-x0,y1-y0); mg.strokeStyle='#8a8f9c'; mg.lineWidth=1; mg.strokeRect(x0+.5,y0+.5,x1-x0,y1-y0);
       mg.fillStyle='#c8cdd8'; mg.fillRect(x0,Y_(st.my(LOOP.P0)),x1-x0,Y_(st.my(LOOP.P1))-Y_(st.my(LOOP.P0))); } };
   function drawMap(){ M.querySelectorAll('[data-lv]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lv===mapLv)));
+    const own=!UI.mapOk||UI.mapOk(); mcv.hidden=!own; $('#mapz').hidden=!own; $('#nomap').hidden=own; if(!own)return;   // the map shows only once you own one (the Stump sells them)
     const v=view(), Q=v.Q, W=DW, H=Math.round(DW*Q.H/Q.W); if(mcv.width!==W)mcv.width=W; if(mcv.height!==H)mcv.height=H; mcv.style.width='100%';
     const X_=x=>(Q.sx(x)-v.sx)*v.k, Y_=y=>(Q.sy(y)-v.sy)*v.k; mg.imageSmoothingEnabled=false;
     if(mapLv==='up')mg.drawImage(Q.cv,v.sx,v.sy,v.sw,v.sh,0,0,W,H); else drawDown(X_,Y_,W,H);

@@ -714,10 +714,6 @@
   "value": 20,
   "weight": 1.5
  },
- "map": {
-  "value": 12,
-  "weight": 0.1
- },
  "cigar": {
   "slot": "hand",
   "value": 6,

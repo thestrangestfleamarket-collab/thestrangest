@@ -1,11 +1,9 @@
-// THE STUMP: an old tree being on a Central Park path — his head the top of a cut trunk with a wrinkled face, his body a rust-red clay pot hung with metal leaves, keys and charms — who sells maps from a stump table under his lantern; the menu's MAP shows only once you own one.
+// THE STUMP: an old tree being on a Central Park path — his head the top of a cut trunk with a wrinkled face, his body a rust-red clay pot hung with metal leaves, keys and charms — who sells maps (the map item, 141e) from a stump table under his lantern.
 import {THREE} from './003-shx.js';
-import {FORAGE, NPCS, SHOPS, UI} from './003b-systems.js';
+import {NPCS, SHOPS, UI} from './003b-systems.js';
 import {SOL, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 { const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K;
-  FORAGE.add({names:{map:'MAP OF THE MARKET'}});
-  UI.mapOk=()=>FORAGE.has('map')>0;
 
   /* ---------- him: a bark-ridged trunk top for a head (rings on top, grey tufts), round black glassy eyes, a big nose; a rust clay-pot body with metal leaves and a chain of key and charms; grey knobbly hands ---------- */
   const BARK='wood:#6a5040', FACE='wood:#8a7a68', CLAY='plain:#9a4a30', MET='metal:#a8a49a', GREY='skin:#8a8680';

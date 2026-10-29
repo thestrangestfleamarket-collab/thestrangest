@@ -385,16 +385,6 @@
     "face": "s"
    },
    {
-    "id": "tombs",
-    "kind": "tombs",
-    "name": "THE OLD TOMBS",
-    "x": 34,
-    "y": 140,
-    "w": 26,
-    "d": 20,
-    "face": "n"
-   },
-   {
     "id": "bridge",
     "kind": "bridge",
     "name": "THE BROKEN BRIDGE",

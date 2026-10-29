@@ -1445,7 +1445,7 @@
      ]
     },
     "q": {
-     "say": "The golems' cave, the deep halls, the Hudson's bed. And the crypt's chest, if you're polite.",
+     "say": "The golems' cave, the deep halls, the Hudson's bed. Bring me what you find.",
      "opts": [
       {
        "t": "BACK.",

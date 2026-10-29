@@ -8,6 +8,10 @@ import {GRASS} from './014a-grass.js';
 
 WEEDS.movers=[...Array(8)].map(()=>new THREE.Vector4(0,0,0,0)); WEEDS.UMV={value:WEEDS.movers};
 WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); vec3 dw=vec3(0.); for(int i=0;i<8;i++){ vec4 m=uMv[i]; if(m.w<.5)continue; vec2 d=w0.xz-m.xy; float l=length(d), f=1.-l/m.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dw.xz+=d/max(l,.001)*f*'+(.22*T).toFixed(4)+'; dw.y-=f*'+(.05*T).toFixed(4)+'; } transformed+=inverse(mat3(instanceMatrix))*dw*'+k+'; }';
+// things on the ground the lawn must not grow over (rocks, logs, a campfire), each a circle [x, z, r], kept in a grid of 4-tile cells
+{ const G=new Map(), C=4*TILE, key=(i,j)=>i+','+j; WEEDS.isOff=(x,z)=>{ const L=G.get(key(Math.floor(x/C),Math.floor(z/C))); if(!L)return false; for(const c of L)if((x-c[0])**2+(z-c[1])**2<c[2]*c[2])return true; return false; };
+  WEEDS.keepOff=items=>{ for(const it of items){ const r=it[2]; for(let i=Math.floor((it[0]-r)/C);i<=Math.floor((it[0]+r)/C);i++)for(let j=Math.floor((it[1]-r)/C);j<=Math.floor((it[1]+r)/C);j++){ const k=key(i,j); (G.get(k)||G.set(k,[]).get(k)).push(it); }
+      if(WEEDS.lawnDrop)WEEDS.lawnDrop([it[0]-r,it[1]-r,it[0]+r,it[1]+r]); } }; }   // only the chunks under each thing look again, not all between them
 WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawnDrop(r); };
 WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=WEEDS.movers, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   // who walks near: you and the nearest walkers, for the things that part round them
@@ -44,7 +48,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
     const G=new Float32Array(W*W), I=new Uint8Array(W*W), F=new Uint16Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;   // F: each cell's 4x4 looks, a bit each (the lawn to a quarter of a cell, for the tufts)
     for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0, f=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; f|=1<<((SS-1-b)*SS+a); } }
-      if(!n||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3]))continue; F[ci(i,j)]=f; if(n*2<SS*SS)continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
+      if(!n||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3])||WEEDS.isOff(x,z))continue; F[ci(i,j)]=f; if(n*2<SS*SS)continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
     return {I,G,F,SQ,x0,z0,N,CELL,MG}; };
   WEEDS.CS=CS;

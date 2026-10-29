@@ -81,11 +81,25 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
       for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[]; for(let x=cx;x<Math.min(cx+CH,L.cx+cell);x+=cell)for(let y=cy;y<Math.min(cy+CH,L.cy+cell);y+=cell){ const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
-    // the bed shades smoothly deeper (the water is clear now: bands showed)
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();
     const bedTris=chunks(1,(d,a,b)=>Math.max(...d)>-1.4&&!(lake(a,b)>0&&BK&&BK.wet(a,b)),(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),Math.min(bedY(d[k],a,b),bk(a,b)),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
       const g=Math.min(2.999,dm/.6), i=Math.floor(g), f=g-i, c=lin.setRGB(...BD[i].map((v,j)=>(v+(BD[i+1][j]-v)*f)*.8*(.92+.16*h)),THREE.SRGBColorSpace).toArray(); for(const k of t){ pos.push(...v[k]); col.push(...c); } } });
-    const bedM_=new THREE.MeshLambertMaterial({vertexColors:true}); for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
+    // the bed seen through clear water (owner, 29 Oct 2026, of the lake from above: "fix it"): sand at the edge, mud deeper, patches of weed, pebbles,
+    // dark down the holes, the sun's light dancing on it in the shallows; worked out where it is drawn, so it needs no more triangles; lit as one smooth floor
+    const bedM_=new THREE.MeshLambertMaterial({color:0xffffff}); bedM_.onBeforeCompile=sh=>{ sh.uniforms.uLV={value:LV}; sh.uniforms.uT=FOUNT.uT;
+      sh.vertexShader='varying vec3 vWb;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWb=(modelMatrix*vec4(transformed,1.)).xyz;');
+      sh.fragmentShader=`uniform float uLV,uT; varying vec3 vWb;
+        float bh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
+        float bn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(bh(i),bh(i+vec2(1.,0.)),f.x),mix(bh(i+vec2(0.,1.)),bh(i+vec2(1.,1.)),f.x),f.y); }
+        float cau(vec2 p,float t){ vec2 i=p; float c=1.; for(int n=0;n<3;n++){ float tt=t*(1.-(3.5/float(n+1))); i=p+vec2(cos(tt-i.x)+sin(tt+i.y),sin(tt-i.y)+cos(tt+i.x)); vec2 q=vec2(sin(i.x+tt),cos(i.y+tt)); q=sign(q)*max(abs(q),vec2(1e-3)); c+=1./max(length(vec2(p.x/(q.x/.005),p.y/(q.y/.005))),1e-4); } c/=3.; c=1.17-pow(max(c,0.),1.4); return min(pow(abs(c),8.),3.); }
+        `+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+        { float d=max(0.,uLV-vWb.y)*${(.84/T).toFixed(5)}; vec2 p=vWb.xz*${(.84/T).toFixed(5)}; float n=bn(p*.7)*.6+bn(p*2.6+3.)*.4;
+          vec3 c=mix(vec3(.62,.56,.42),vec3(.34,.3,.22),smoothstep(.3,1.8,d+(n-.5)*.9)); c=mix(c,vec3(.17,.24,.11),smoothstep(.56,.74,n)*smoothstep(.8,2.4,d));
+          float pb=bn(p*13.); if(pb>.8&&d<2.5)c*=.72+.4*bh(floor(p*13.)); c*=.86+.22*bn(p*6.); c=mix(c,vec3(.06,.09,.07),smoothstep(4.,14.,d));
+          float k=d>.05?cau(mod(p*.9,6.2831),uT*.5)*exp(-d*.35):0.; c+=vec3(.22,.28,.24)*min(k,1.2)*.5;
+          diffuseColor.rgb=pow(c,vec3(2.2)); }`); };
+    bedM_.customProgramCacheKey=()=>'lakebed';
+    for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((_,i)=>i%3===1?1:0),3)); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
     const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(25,(bedM(d[k])+pit(q[k][0],q[k][1])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
     { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();

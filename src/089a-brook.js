@@ -28,7 +28,7 @@ import {FOUNT} from './060a-fount.js';
       const me=new THREE.Mesh(g,bankMat); me.receiveShadow=true; grp.add(me); banks.push(me);
       const WV=[], WF=[], WI=[], WL=[-1,-.66,-.33,0,.33,.66,1];   // where the stream's sheet lies inside the big lake it is not drawn (the lake's own clear water is over it)
       for(let k=ci?k0:Math.max(k0,BK.kM),ri=0;k<=k1;k++,ri++){ const [cx,cy,s,nx,ny]=row(k), R=W(s)+.75*B, lv=L(s), kc=Math.max(0,Math.min(N,k));
-        WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),FOUNT.lake(x,y)<-.3?-1:spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
+        WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),FOUNT.lake(x,y)<.05?-1:spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
       const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.Float32BufferAttribute(WV,3)); wg.setAttribute('aF',new THREE.Float32BufferAttribute(WF,4)); wg.setIndex(WI);
       waters.push({g:wg,k0:ci?k0:BK.kM,k1,rk:[]}); }
     const RK=[], STP=[], PB=[], col=[], add=(x,y,r,sy,top,kind)=>RK.push({x,y,r,sy,top,kind,sd:RK.length});
@@ -68,8 +68,8 @@ import {FOUNT} from './060a-fount.js';
         vec3 N=normalize(vec3(-sl.x*.6+(vn(fp*3.1+uT*.4)-.5)*.16*(.3+.7*(1.-pl)),1.,-sl.y*.6+(vn(fp*2.7-uT*.3+9.)-.5)*.16));
         vec3 V=isOrthographic?vec3(0.,.8,.6):normalize(cameraPosition-vW); float c=clamp(dot(N,V),0.,1.), F=.02+.98*pow(1.-c,5.);
         vec3 R=reflect(-V,N); vec3 sky=uSky*(.35+.65*uDay)*mix(1.,1.25,clamp(R.y,0.,1.))+vec3(.02,.03,.05);
-        float dm=max(vF.z,0.), path=dm/max(V.y,.25); vec3 Tr=exp(-vec3(.32,.07,.09)*path);
-        vec3 inC=vec3(.04,.12,.11)*(.3+.7*uDay)+uSun*.03, col=inC*(1.-Tr)+sky*F; float al=max(F,1.-dot(Tr,vec3(.333)))*.92+.06;
+        float dm=max(vF.z,0.), path=dm/max(V.y,.25); vec3 Tr=exp(-vec3(.45,.15,.19)*path);   // the shallows clear, the deep green
+        vec3 inC=vec3(.05,.15,.11)*(.3+.7*uDay)+uSun*.03, col=inC*(1.-Tr)+sky*F; float al=max(F,1.-dot(Tr,vec3(.333)))*.92+.06;
         float sp2=pow(max(dot(R,normalize(uSunD)),0.),900.)*uDay; if(sp2>.6){ col+=uSun*.5; al=max(al,.8); }
         float fo=0.; if(vF.z<.015+.03*n*n2)fo=1.; if(sp>1.5&&vn(vec2(ta*5.,u*7.))*.6+n2*.4>.62-.1*(sp-1.5))fo=1.; if(fs>1.3&&vn(vW.xz/${T.toFixed(4)}*3.+fv*uT*.3)>1.15-fs*.25)fo=1.;
         for(int i=0;i<24;i++){ vec4 r=uRk[i]; if(r.z<=0.)continue; vec2 d=vW.xz-r.xy; float dl=length(d); if(dl>r.z*4.5)continue; vec2 fd=vec2(cos(r.w),sin(r.w)); float al2=dot(d,fd), cr=d.x*fd.y-d.y*fd.x;

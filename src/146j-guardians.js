@@ -42,22 +42,23 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       for(const r of [0,2.1,4.2])add(new THREE.BoxGeometry(.003,.03,.08).translate(0,.018,-.25).rotateZ(r),[.85,.3,.25]);
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); g.computeVertexNormals(); return g; })();
     const AM=new THREE.MeshLambertMaterial({vertexColors:true}), arrows=[], chips=[], Z3=new THREE.Vector3(0,0,1), V=new THREE.Vector3();
-    const loose=(N,to,spread)=>{ const p0=N.g.position.clone(); p0.y+=N.gd.m*.62*MV; const dx=(to.x-p0.x)/MH, dz=(to.z-p0.z)/MH, D=Math.hypot(dx,dz), hy=(to.y-p0.y)/MV, v=16+4*Math.random();
+    const loose=(N,to,spread,hit)=>{ const p0=N.g.position.clone(); p0.y+=N.gd.m*.62*MV; const dx=(to.x-p0.x)/MH, dz=(to.z-p0.z)/MH, D=Math.hypot(dx,dz), hy=(to.y-p0.y)/MV, v=16+4*Math.random();
       const disc=v**4-G*(G*D*D+2*hy*v*v); if(disc<0)return; const th=Math.atan((v*v-Math.sqrt(disc))/(G*D))+(Math.random()-.5)*spread, yaw=Math.atan2(dx,dz)+(Math.random()-.5)*spread;
       const vel=new THREE.Vector3(Math.sin(yaw)*Math.cos(th)*v,Math.sin(th)*v,Math.cos(yaw)*Math.cos(th)*v), m=new THREE.Mesh(AG,AM); m.scale.setScalar(MH); m.position.copy(p0); grp.add(m);
-      arrows.push({m,p:p0,v:vel,t:0,stuck:false,to}); if(arrows.length>24){ const o=arrows.shift(); o.m.removeFromParent(); } SFX.play&&SFX.play('blip',{vol:.25,pitch:2.6,at:{x:p0.x,z:p0.z},far:12*T}); };
+      arrows.push({m,p:p0,v:vel,t:0,stuck:false,to,hit}); if(arrows.length>24){ const o=arrows.shift(); o.m.removeFromParent(); } SFX.play&&SFX.play('blip',{vol:.25,pitch:2.6,at:{x:p0.x,z:p0.z},far:12*T}); };
     const chipsAt=(p,n,col)=>{ for(let i=0;i<n;i++){ const m=new THREE.Mesh(new THREE.BoxGeometry(.03*MH,.012*MV,.02*MH),new THREE.MeshLambertMaterial({color:col})); m.position.copy(p); grp.add(m);
         chips.push({m,v:new THREE.Vector3((Math.random()-.5)*2.4,1+Math.random()*1.6,(Math.random()-.5)*2.4),t:0,w:new THREE.Vector3(Math.random()*9,Math.random()*9,Math.random()*9)}); if(chips.length>40){ const o=chips.shift(); o.m.removeFromParent(); o.m.geometry.dispose(); } } };
     SYS.add('life',dt=>{ if(!PARK.in||(!arrows.length&&!chips.length))return; const h=Math.min(dt,.05);
       for(const a of arrows){ a.t+=dt; if(a.stuck)continue; for(let k=0;k<3;k++){ const s=h/3; a.v.y-=G*s; a.v.multiplyScalar(1-.02*s); a.p.x+=a.v.x*s*MH; a.p.y+=a.v.y*s*MV; a.p.z+=a.v.z*s*MH;
           const dB=Math.hypot((a.p.x-a.to.x)/MH,(a.p.y-a.to.y)/MV,(a.p.z-a.to.z)/MH), gy=MODS.bodega.ground(a.p.x,a.p.z);
-          if(dB<.45||a.p.y<gy){ a.stuck=true; if(dB<.45){ SFX.play&&SFX.play('step',{vol:.5,pitch:1.6,at:{x:a.p.x,z:a.p.z},far:12*T}); chipsAt(a.p,3,0xc8a860); } else a.p.y=gy+.02*MV; break; } }
+          if(a.hit&&a.hit(a.p)){ a.stuck=true; a.t=29; break; } if(!a.hit&&dB<.45||a.p.y<gy){ a.stuck=true; if(dB<.45){ SFX.play&&SFX.play('step',{vol:.5,pitch:1.6,at:{x:a.p.x,z:a.p.z},far:12*T}); chipsAt(a.p,3,0xc8a860); } else a.p.y=gy+.02*MV; break; } }
         a.m.position.copy(a.p); V.set(a.v.x*MH,a.v.y*MV,a.v.z*MH).normalize(); a.m.quaternion.setFromUnitVectors(Z3,V); }
       for(let i=arrows.length-1;i>=0;i--)if(arrows[i].t>30){ arrows[i].m.removeFromParent(); arrows.splice(i,1); }
       for(let i=chips.length-1;i>=0;i--){ const c=chips[i]; c.t+=dt; c.v.y-=G*h; c.m.position.x+=c.v.x*h*MH; c.m.position.y+=c.v.y*h*MV; c.m.position.z+=c.v.z*h*MH; c.m.rotation.x+=c.w.x*h; c.m.rotation.y+=c.w.y*h;
         const gy=MODS.bodega.ground(c.m.position.x,c.m.position.z); if(c.m.position.y<gy){ c.m.position.y=gy; c.v.y*=-.3; c.v.x*=.5; c.v.z*=.5; c.w.multiplyScalar(.4); }
         if(c.t>4){ c.m.removeFromParent(); c.m.geometry.dispose(); chips.splice(i,1); } } },'146j-guardians arrows');
     // the practice yard: blades and spears on the pells (wind up, strike, follow through, recover), bows at the butts
+    Object.assign(GUARD,{MOVE,loose,chipsAt,MH,MV});
     const drill=(N,R,A,s,dt)=>{ const Y=SITES.at.yard; if(!Y)return; const bow=N.grip==='bow', L=bow?Y.butts:Y.pells; if(!L||!L.length)return; const i=R.k.length%L.length, tg=L[i];
       if(!N.spot){ const dx=s.x-tg[0], dz=s.z-tg[2], l=Math.hypot(dx,dz)||1, r=bow?Math.max(l,5*MH):(R.w==='spear'?.85:.62)*MH*(R.bulk||1); N.spot={x:tg[0]+dx/l*r,z:tg[2]+dz/l*r}; }
       s.hold=true; s.to=null; s.x=N.spot.x; s.z=N.spot.z; s.face={x:tg[0],z:tg[2]}; A.act='';
@@ -96,13 +97,14 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const always=IN||R.perch||!R.home||R.home==='castle'&&R.role==='post'&&!site, jit=(R.k.length*37%120)/60;
       const onShift=()=>{ if(always)return true; const h=CLOCK.h??12; return night?(h>=19+jit*.5||h<5.5):(h>=6.5+jit&&h<19.5+jit*.5); };
       const N=RIGNPC.make(def,{key:R.k,name:R.n,eye:-1,metres:R.m,tall:1,radius:big?.26:.18,speed:R.role==='wander'?.45:.35,stride:7,lv:'up',group:'park',x:wx,z:wz,
-        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):((x,z)=>SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z)),
+        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):R.perch==='wall'?((x,z)=>MODS.bodega.ground(x,z)+SHARED.BOD.YS(100)):((x,z)=>SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z)),
         brain:(dt,you,s,N)=>{ if(N.sheet)return; A.t+=dt; if(A.mv)A.mv.t+=dt; const now=performance.now(), gap=now-(N.lastT||0)>2000; N.lastT=now;
           // the day: out on watch, then home to bed (or the other way round for the night watch); seen from far, it is where it should be
           const on=onShift(), H=homeAt();
           if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; N.g.visible=false; return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
               if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; N.g.visible=false; s.to=null; } } return; }
           if(on&&N.mode==='home'){ N.mode=''; N.g.visible=true; if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
+          if(N.ctl&&N.ctl(dt,s,A,N))return;
           if(N.going){ if(Math.hypot(s.x-wx,s.z-wz)<.3*T||gap){ N.going=false; s.x=wx; s.z=wz; s.to=null; } else return; }
           const d=Math.hypot(you.x-s.x,you.z-s.z), fx=Math.sin(face), fz2=-Math.cos(face);
           if(R.role==='drill'&&!TALK.on){ drill(N,R,A,s,dt); }
@@ -120,3 +122,4 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const cx=X((sx0+sx1)/2), cz=Z((sy0+sy1)/2); if(Math.hypot(pos.x-cx,pos.z-cz)>8*T)return;
       let best=null, bd=1e9; for(const N of GUARD.list){ const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<bd&&N.gd.role==='post'){ bd=d; best=N; } } if(best&&bd<10*T)LINES.say(best,'gd_up'); },'146j-guardians');
     window.GUARDDBG=()=>GUARD.list.map(N=>({k:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,far:!!N.far,tris:N.tris})); }); }
+export {GUARD};

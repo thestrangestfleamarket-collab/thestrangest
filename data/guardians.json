@@ -83,7 +83,7 @@
    "wc": "#ffd060",
    "at": [
     12.5,
-    -2.6,
+    -6.0,
     12,
     0
    ],
@@ -225,7 +225,7 @@
    "cape": "#2e3a30",
    "at": [
     14.3,
-    -1.8,
+    -5.0,
     0,
     0
    ],
@@ -296,7 +296,7 @@
    "hold": "map",
    "at": [
     16.6,
-    -3.4,
+    -6.8,
     0,
     0
    ],
@@ -445,18 +445,18 @@
    "c2": "#b0502a",
    "w": "bow",
    "at": [
-    -2,
-    -1,
+    7,
+    0.15,
     0,
-    90
+    0
    ],
-   "role": "drill",
+   "role": "post",
    "say": [
     "I can hit a moth at forty paces.",
     "Watching the gate. Always watching the gate."
    ],
    "home": "castle",
-   "site": "yard"
+   "perch": "wall"
   },
   {
    "k": "gd_beardpanda",
@@ -475,7 +475,7 @@
    "hold": "stones",
    "at": [
     21.4,
-    -3.2,
+    -6.6,
     0,
     315
    ],
@@ -526,7 +526,7 @@
    "w": "greatsword",
    "at": [
     10.7,
-    -1.8,
+    -5.0,
     0,
     0
    ],
@@ -796,18 +796,18 @@
    "sash": "#4a3424",
    "w": "bow",
    "at": [
-    -2,
-    2,
+    18,
+    0.15,
     0,
-    90
+    0
    ],
-   "role": "drill",
+   "role": "post",
    "say": [
     "Back wall's covered.",
     "One arrow, one problem."
    ],
    "home": "castle",
-   "site": "yard"
+   "perch": "wall"
   },
   {
    "k": "gd_starowl",

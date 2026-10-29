@@ -1,9 +1,9 @@
 // THE PARK'S SITES: SITES builds the woodland folk's places in Central Park from parkPlaces.sites in data/world.json (the pub, the tombs, the ruins, the broken bridge, the huts, the practice yard) and the treehouses in the tallest trees, in stone laid stone by stone; the pub and the crypt have insides off the map.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, PARK, ROOMS, SFX, UI} from './003b-systems.js';
+import {FORAGE, INV, PARK, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {LEVEL, MAPG, MODS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, LEVEL, MAPG, MODS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const SITES={list:[],at:{},homes:{}}; window.SITES=SITES;
 PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), MH=T/.84, MV=ZU*24/.84, gnd=(x,z)=>MODS.bodega.ground(x,z);
@@ -41,7 +41,7 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
         K.put(new THREE.BoxGeometry(w+over*2+.1*h3(i,s,1),.12,(d/2+over)/n*1.6),(px,py,pz,hs)=>vary(h3(Math.round(px*6),i,s)>.7?MOSS2:col,hs,.25),{at:[0,yy,zz],rot:[s*Math.atan2(rise,d/2+over),0,0],j:.03}); }
       K.put(new THREE.BoxGeometry(w+over*2,.16,.22),MOSS,{at:[0,y+rise+.02,0],j:.03}); };
     K.dome=(x,z,r,y,col)=>{ const g=new THREE.SphereGeometry(r,14,8,0,PI*2,0,PI/2); K.put(g,(px,py,pz,hs)=>vary(h3(Math.round(px*8),Math.round(pz*8),2)>.6?MOSS2:col,hs,.3),{at:[x,y,z],sc:[1,.7,1],j:.06}); };
-    K.done=(name)=>{ const out=[]; for(const [A,B,m] of [[K.P,K.C,mat],[K.GP,K.GC,glowM]]){ if(!A.length)continue; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B,3)); g.computeVertexNormals();
+    K.done=(name)=>{ if(window.WEEDS&&WEEDS.clear)for(const b of K.sol)WEEDS.clear(b); const out=[]; for(const [A,B,m] of [[K.P,K.C,mat],[K.GP,K.GC,glowM]]){ if(!A.length)continue; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B,3)); g.computeVertexNormals();
         const me=new THREE.Mesh(g,m); me.name=name; me.castShadow=m===mat; me.receiveShadow=true; out.push(me); } for(const b of K.sol)SOL.up.push(b); return out; };
     return K; };
   SITES.kit=kit;
@@ -146,6 +146,22 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
       for(const [sg,at] of K.signs||[]){ const m=new THREE.Mesh(sg.g,new THREE.MeshLambertMaterial({map:sg.tx})); const w=K.w(...at); m.position.set(w[0],w[1],w[2]); m.rotation.y=Math.atan2(K.f[0],K.f[1]); m.scale.set(MH,MV,MH); grp.add(m); }
       const rec={...s,K,meshes:ms,wx:K.wx,wz:K.wz,door:K.door_,deck:K.deck,top:K.top,pillar:K.pillar,pells:K.pells,butts:K.butts}; SITES.list.push(rec); SITES.at[s.id]=rec; SITES.homes[s.id]=K.door_||[K.wx,K.y0,K.wz];
       if(STORE.places)STORE.places.push([s.name,K.door_?K.door_[0]:K.wx,K.door_?K.door_[2]+.8*T:K.wz,'up']); }catch(e){ console.warn('site '+s.id,e); } }
+  // the moat: a stone-lined channel of still water round the castle, crossed only by the drawbridge at the gate
+  { const [bx0,bx1,by0,by1]=CASTLE.b, gx=CASTLE.gate, IN=2.0, OUT=3.6, cx=(bx0+bx1)/2, cy=(by0+by1)/2, K=kit(cx,cy,'s'), WAT=[], WP=[];
+    const LO=(x,y)=>{ const wx=X(x)-K.wx, wz=Z(y)-K.wz; return [(wx*K.r[0]+wz*K.r[1])/MH,(wx*K.f[0]+wz*K.f[1])/MH]; }, box=(a0,b0,a1,b1)=>{ const p=LO(a0,b0), q=LO(a1,b1); return [Math.min(p[0],q[0]),Math.min(p[1],q[1]),Math.max(p[0],q[0]),Math.max(p[1],q[1])]; };
+    const sides=[[bx0-OUT,by0-OUT,bx1+OUT,by0-IN,'f'],[bx0-OUT,by1+IN,bx1+OUT,by1+OUT,'b'],[bx0-OUT,by0-IN,bx0-IN,by1+IN,'w'],[bx1+IN,by0-IN,bx1+OUT,by1+IN,'e']];
+    for(const [x0,y0,x1,y1,k] of sides){ const parts=k==='f'?[[x0,gx-1.2],[gx+1.2,x1]]:[[x0,x1]];
+      for(const [a0,a1] of parts){ const [X0,Z0,X1,Z1]=box(a0,y0,a1,y1); WAT.push([X0,Z0,X1,Z1]);
+        { const a0=K.w(X0,.16,Z0), a1=K.w(X1,.16,Z0), a2=K.w(X1,.16,Z1), a3=K.w(X0,.16,Z1); WP.push(...a0,...a2,...a1,...a0,...a3,...a2); }
+        if(X1-X0>Z1-Z0){ K.wall(X0,Z0,X1,Z0,.28,.22,{sw:.36,sh:.14,moss:.5}); K.wall(X0,Z1,X1,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); }
+        else{ K.wall(X0,Z0,X0,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); K.wall(X1,Z0,X1,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); }
+        K.solid(Math.min(X0,X1),Math.min(Z0,Z1),Math.max(X0,X1),Math.max(Z0,Z1)); } }
+    // the drawbridge: planks on two beams, its chains up to the gatehouse
+    { const [X0,Z0,X1,Z1]=box(gx-1.2,by0-OUT-.3,gx+1.2,by0-IN+.2), outZ=LO(gx,by0-OUT-.3)[1], inZ=LO(gx,by0-IN+.2)[1]; for(let z=Z0;z<Z1;z+=.18)K.put(new THREE.BoxGeometry(X1-X0,.06,.16),(x,y,zz,h)=>vary(Math.abs(Math.sin(x*14))<.1?WOOD2:WOOD,h,.25),{at:[(X0+X1)/2,.3,z+.09],j:.008});
+      for(const x of [X0+.1,X1-.1]){ K.put(new THREE.BoxGeometry(.12,.12,Z1-Z0),WOOD2,{at:[x,.22,(Z0+Z1)/2]}); K.put(PARTSNPC.T.tube([[x,.35,outZ],[x,1.4,(outZ+inZ)/2],[x,2.6,inZ+Math.sign(inZ-outZ)*.2]],[.02,.02,.02],4,8),IRON); } }
+    { const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(WP,3)); g.computeVertexNormals(); const wm=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x5a96b0,specular:0xa8c8e0,shininess:90,side:THREE.DoubleSide})); wm.receiveShadow=true; wm.name='moat water'; grp.add(wm); }
+    for(const m of K.done('the moat'))grp.add(m); SITES.moat={rects:WAT.map(([a,b,c,d])=>[K.w(a,0,b),K.w(c,0,d)])};
+    if(window.WEEDS&&WEEDS.clear)for(const [p,q] of SITES.moat.rects)WEEDS.clear([Math.min(p[0],q[0]),Math.min(p[2],q[2]),Math.max(p[0],q[0]),Math.max(p[2],q[2])]); }
   { let i=0; for(const t of tallTrees()){ try{ const h=treehouse(t,i); for(const m of h.g)grp.add(m); const id='tree'+(++i); SITES.at[id]={id,kind:'treehouse',name:'THE TREEHOUSE',deck:h.deck,r:h.r,door:h.ladder}; SITES.homes[id]=h.ladder; }catch(e){ console.warn('treehouse',e); } } }
   // the ground on the bridge's deck and atop the lookout's pillar, for whoever stands there
   SITES.ground=(x,z,g0)=>{ const b=SITES.at.bridge; if(b&&b.deck)for(const [a,c] of b.deck)if(x>Math.min(a[0],c[0])&&x<Math.max(a[0],c[0])&&z>Math.min(a[2],c[2])&&z<Math.max(a[2],c[2]))return a[1];
@@ -192,6 +208,9 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
           const n=5+Math.floor(Math.random()*20); INV.cash+=n; const g=['quartz','amethyst','geode','moonstone'][Math.floor(Math.random()*4)]; (INV.add||FORAGE.give)(g,1); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say('IN THE CHEST: $'+n+' AND A '+g.toUpperCase()+'.','#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.5}); }}); }];
       K.lights=[[-2.2,1.2,1.2,0xffa050,1.6,6],[2.2,1.2,1.2,0xffa050,1.6,6],[0,1.2,-1.8,0xffa050,1.4,5]]; },'UP TO THE TOMBS');
   ROOMS.reset&&ROOMS.reset();
+  // the lawn round you is painted from above: let it look again where the sites now stand
+  if(window.WEEDS&&WEEDS.lawnDrop){ const [bx0,bx1,by0,by1]=CASTLE.b; WEEDS.lawnDrop([Math.min(X(bx0-5),X(bx1+5)),Math.min(Z(by0-5),Z(by1+5)),Math.max(X(bx0-5),X(bx1+5)),Math.max(Z(by0-5),Z(by1+5))]);
+    for(const q of LEVEL.parkPlaces.sites||[]){ const a=[X(q.x-q.w/2-2),Z(q.y-q.d/2-2),X(q.x+q.w/2+2),Z(q.y+q.d/2+2)]; WEEDS.lawnDrop([Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]); } }
   SITES.ready=true; SYS.run('sites');
   window.SITESDBG=()=>Object.values(SITES.at).map(s=>({id:s.id,kind:s.kind,tris:(s.meshes||[]).reduce((a,m)=>a+m.geometry.attributes.position.count/3,0),door:s.door&&s.door.map(v=>+v.toFixed(1))})); });
 export {SITES};

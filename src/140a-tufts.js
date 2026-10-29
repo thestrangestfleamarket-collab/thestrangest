@@ -9,14 +9,14 @@ const TUFTS=window.TUFTS={wind:0};
   const RINGS=[{sp:.4,sz:1,cap:Math.ceil(Math.PI*R1*R1/(.4*.4)*1.15),geo:new THREE.SphereGeometry(.5,7,4,0,6.283,0,1.75)},{sp:.62,sz:1,cap:Math.ceil(Math.PI*(R2*R2-R1*R1)/(.62*.62)*1.15),geo:new THREE.SphereGeometry(.5,5,3,0,6.283,0,1.75)}];
   const W=TUFTC.reduce((a,c)=>a+c[3],0), COLS=TUFTC.map(c=>new THREE.Color().setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace)), pick=r=>{ r*=W; for(let i=0;i<TUFTC.length;i++)if((r-=TUFTC[i][3])<0)return COLS[i]; return COLS[0]; };
   const PP=[...Array(NP)].map(()=>new THREE.Vector4()), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind},uMe:{value:new THREE.Vector2()},uFd:{value:new THREE.Vector3(R2*.55,R2*.95,TUFTS.dark=.72)}};
-  // each tuft leans away from what presses it (more at its top); the push is turned into the tuft's own frame (a turn about Y and a scale)
+  // each tuft leans away from what presses it (more at its top); the push is turned into the tuft's own frame (a turn about Y and a scale); further out they widen, so the sparser far ring covers the ground as the near one does
   const mat=new THREE.MeshLambertMaterial({flatShading:true}); mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
     sh.vertexShader='uniform vec4 uPP['+NP+']; uniform float uTt,uKn,uWd; uniform vec2 uMe; uniform vec3 uFd; varying float vFd;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
       { vec3 b=(modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz; vec2 dv=vec2(0.); for(int i=0;i<${NP};i++){ vec4 p=uPP[i]; if(p.w==0.)continue; vec2 d=b.xz-p.xy; float l=length(d), f=1.-l/p.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dv+=d/max(l,.001)*f*p.w; }
         float m=length(dv); if(m>1.)dv/=m; dv+=uWd*vec2(sin(uTt*.9+b.x*.35+b.z*.2),sin(uTt*.7+b.z*.3-b.x*.15)); float h=clamp(position.y,0.,1.);
         vec3 dw=vec3(dv.x,-.45*dot(dv,dv),dv.y)*uKn*h*h*1.1; vec3 c0=instanceMatrix[0].xyz, c1=instanceMatrix[1].xyz, c2=instanceMatrix[2].xyz;
         transformed+=vec3(dot(c0,dw)/dot(c0,c0),dot(c1,dw)/dot(c1,c1),dot(c2,dw)/dot(c2,c2));
-        vFd=1.-smoothstep(uFd.x,uFd.y,distance(b.xz,uMe)); transformed.y*=mix(.08,1.,vFd); }`);
+        float dm=distance(b.xz,uMe); vFd=1.-smoothstep(uFd.x,uFd.y,dm); transformed.y*=mix(.08,1.,vFd); transformed.xz*=mix(1.,${(RINGS[1].sp/RINGS[0].sp).toFixed(3)},smoothstep(${(R1*.5).toFixed(3)},${R1.toFixed(3)},dm)); }`);
     sh.fragmentShader='uniform vec3 uFd; varying float vFd;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n diffuseColor.rgb*=mix(uFd.z,1.,vFd);'); };
   mat.customProgramCacheKey=()=>'tufts';
   for(const R of RINGS){ R.geo.translate(0,.36,0); R.geo.scale(.5,.62,.5); R.me=new THREE.InstancedMesh(R.geo,mat,R.cap); R.me.count=0; R.me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); R.me.setColorAt(0,COLS[0]); R.me.instanceColor.setUsage(THREE.DynamicDrawUsage);

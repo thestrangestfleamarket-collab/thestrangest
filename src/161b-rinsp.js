@@ -30,9 +30,9 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&SHARED.py>b.y0-.3&&SHARED.py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
   const collect=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
-    const RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
+    const HG=new Set([...NPCS,...(NPCS.extra||[])].filter(N=>N.hid&&N.g).map(N=>N.g)), npcHid=o=>{ for(let q=o;q;q=q.parent)if(HG.has(q))return true; return false; }, RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
-    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return;
+    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))||HG.size&&npcHid(o))return;
       const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ inV=false; for(const p of R.px)if(F.intersectsObject(p)){ inV=true; tr+=tris(p); } } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
       if(o.frustumCulled&&!inV)return; drawn.add(o); for(const m of ms)progs.add(prog(m));

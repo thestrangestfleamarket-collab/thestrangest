@@ -58,7 +58,7 @@ const GUARD={list:[]}; window.GUARD=GUARD;
         const gy=MODS.bodega.ground(c.m.position.x,c.m.position.z); if(c.m.position.y<gy){ c.m.position.y=gy; c.v.y*=-.3; c.v.x*=.5; c.v.z*=.5; c.w.multiplyScalar(.4); }
         if(c.t>4){ c.m.removeFromParent(); c.m.geometry.dispose(); chips.splice(i,1); } } },'146j-guardians arrows');
     // the practice yard: blades and spears on the pells (wind up, strike, follow through, recover), bows at the butts
-    Object.assign(GUARD,{MOVE,loose,chipsAt,MH,MV});
+    Object.assign(GUARD,{MOVE,loose,chipsAt,MH,MV,LODR:9});
     const drill=(N,R,A,s,dt)=>{ const Y=SITES.at.yard; if(!Y)return; const bow=N.grip==='bow', L=bow?Y.butts:Y.pells; if(!L||!L.length)return; const i=R.k.length%L.length, tg=L[i];
       if(!N.spot){ const dx=s.x-tg[0], dz=s.z-tg[2], l=Math.hypot(dx,dz)||1, r=bow?Math.max(l,5*MH):(R.w==='spear'?.85:.62)*MH*(R.bulk||1); N.spot={x:tg[0]+dx/l*r,z:tg[2]+dz/l*r}; }
       s.hold=true; s.to=null; s.x=N.spot.x; s.z=N.spot.z; s.face={x:tg[0],z:tg[2]}; A.act='';
@@ -104,6 +104,8 @@ const GUARD={list:[]}; window.GUARD=GUARD;
           if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; N.g.visible=false; return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
               if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; N.g.visible=false; s.to=null; } } return; }
           if(on&&N.mode==='home'){ N.mode=''; N.g.visible=true; if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
+          if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T;
+            const g=far?N.geoLo:N.geoHi; if(N.me.geometry!==g){ if(!far&&!N.shaded)N.shade(); N.me.geometry=g; } }
           if(N.ctl&&N.ctl(dt,s,A,N))return;
           if(N.going){ if(Math.hypot(s.x-wx,s.z-wz)<.3*T||gap){ N.going=false; s.x=wx; s.z=wz; s.to=null; } else return; }
           const d=Math.hypot(you.x-s.x,you.z-s.z), fx=Math.sin(face), fz2=-Math.cos(face);
@@ -113,6 +115,8 @@ const GUARD={list:[]}; window.GUARD=GUARD;
           if(!A.mv&&(N.aT=(N.aT??2+Math.random()*4)-dt)<=0){ A.act=A.act?'':ACTS[Math.floor(Math.random()*ACTS.length)]; A.t=0; N.aT=A.act==='scan'?4+Math.random()*3:A.act?2.2:3+Math.random()*5; } }});
       N.park=!IN; N.gd=R; N.A=A; N.grip=grip; N.talk={start:'hi',lines:{hi:{say:R.say,opts:[...(CHARS.trade(N)?[{t:'WHAT DO YOU SELL?',do:'shop'}]:[]),{t:'WHAT DO YOU GUARD?',go:'keep'},{t:'GOODBYE.',go:''}]},keep:{say:D.keep,opts:[{t:'BACK.',go:'hi'}]}}};
       if(IN)scene.add(N.g);
+      { const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=RIGNPC.make({...def,parts:FOLK.parts(R)},{key:R.k+'~lo',name:R.n,eye:-1,metres:R.m,tall:1,radius:.18,speed:0,lv:'up',group:'park',x:wx,z:wz,range:0,brain:()=>{}});
+          lo.shade(); N.geoHi=N.me.geometry; N.geoLo=lo.me.geometry; N.trisLo=lo.tris; const i=NPCS.indexOf(lo); if(i>=0)NPCS.splice(i,1); lo.g.removeFromParent(); lo.me.geometry=new THREE.BufferGeometry(); } finally{ FOLK.Q=q0; } }
       if(at[3]!=null)N.st.h=Math.atan2(X(1)*Math.sin(face)-X(0)*Math.sin(face),Z(1)*-Math.cos(face)-Z(0)*-Math.cos(face));
       return N; };
     for(const R of D.list){ try{ GUARD.list.push(mk(R)); }catch(e){ console.warn('guardian '+R.k,e); } }
@@ -121,5 +125,5 @@ const GUARD={list:[]}; window.GUARD=GUARD;
     SYS.add('life',()=>{ const lv=SHARED.LVL; if(lv===was)return; const up=was==='down'&&lv==='up'; was=lv; if(!up)return;
       const cx=X((sx0+sx1)/2), cz=Z((sy0+sy1)/2); if(Math.hypot(pos.x-cx,pos.z-cz)>8*T)return;
       let best=null, bd=1e9; for(const N of GUARD.list){ const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<bd&&N.gd.role==='post'){ bd=d; best=N; } } if(best&&bd<10*T)LINES.say(best,'gd_up'); },'146j-guardians');
-    window.GUARDDBG=()=>GUARD.list.map(N=>({k:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,far:!!N.far,tris:N.tris})); }); }
+    window.GUARDDBG=()=>GUARD.list.map(N=>({k:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,far:!!N.far,tris:N.tris,lo:N.trisLo||0,hi:N.me.geometry===N.geoHi})); }); }
 export {GUARD};

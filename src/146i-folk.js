@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const FOLK={}; window.FOLK=FOLK;
 FOLK.Q=2;
-FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r,Math.round(nu*Q),Math.round(nv*Q),o), lathe=(a,nu,nv,o)=>PARTSNPC.T.lathe(a,Math.round(nu*Q),Math.round(nv*Q),o), PI=Math.PI, V=new THREE.Vector3(), b=R.bulk||1, HC=[0,.74,0], HR=.13;
+FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r,Math.max(4,Math.round(nu*Q)),Math.max(2,Math.round(nv*Q)),o), lathe=(a,nu,nv,o)=>PARTSNPC.T.lathe(a,Math.max(5,Math.round(nu*Q)),Math.max(2,Math.round(nv*Q)),o), PI=Math.PI, V=new THREE.Vector3(), b=R.bulk||1, HC=[0,.74,0], HR=.13;
   const h3=(x,y,z)=>{ const s=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return s-Math.floor(s); };
   const gss=(x,y,cx,cy,sx,sy)=>Math.exp(-(((x-cx)/sx)**2+((y-cy)/sy)**2)), sm=(a,c,x)=>{ const t=Math.max(0,Math.min(1,(x-a)/(c-a))); return t*t*(3-2*t); };
   const C=h=>{ const n=parseInt(String(h||'#888888').slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; };
@@ -16,7 +16,7 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
     return {P,C:Cc}; };
   const at=(g,p,rot,sc)=>{ if(sc)g.scale(...sc); if(rot)g.applyMatrix4(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(...rot.map(a=>a*PI/180)))); g.translate(...p); return g; };
   // a sculpted shell: the unit sphere's points moved by d(u), scaled by r, turned, placed; col(u of the face's centre, hash)
-  const ICO=[]; const shell=(det0,{d,r=[1,1,1],p=[0,0,0],rot,keep,col,j=0})=>{ const det=det0>=2&&Q>1?det0+1:det0, sp=ICO[det]||(ICO[det]=new THREE.IcosahedronGeometry(1,det).attributes.position), M=rot&&new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(...rot.map(a=>a*PI/180))), P=[], Cc=[];
+  const ICO=[]; const shell=(det0,{d,r=[1,1,1],p=[0,0,0],rot,keep,col,j=0})=>{ const det=det0>=2&&Q>1?det0+1:det0>=2&&Q<1?det0-1:det0, sp=ICO[det]||(ICO[det]=new THREE.IcosahedronGeometry(1,det).attributes.position), M=rot&&new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(...rot.map(a=>a*PI/180))), P=[], Cc=[];
     const put=u=>{ const q=d?d(u):u; V.set(q[0]*r[0],q[1]*r[1],q[2]*r[2]); if(M)V.applyMatrix4(M); let x=V.x+p[0], y=V.y+p[1], z=V.z+p[2]; if(j){ const k=u.map(v=>Math.round(v*600)); x+=(h3(...k)-.5)*j; y+=(h3(k[1],k[2],k[0]+5)-.5)*j; z+=(h3(k[2]+9,k[0],k[1])-.5)*j; } return [x,y,z]; };
     for(let q=0;q<sp.count;q+=3){ const us=[0,1,2].map(i=>{ const x=sp.getX(q+i), y=sp.getY(q+i), z=sp.getZ(q+i), l=Math.hypot(x,y,z); return [x/l,y/l,z/l]; }), m=[0,1,2].map(k=>us[0][k]+us[1][k]+us[2][k]), ml=Math.hypot(...m), cu=m.map(v=>v/ml);
       if(keep&&!keep(cu))continue; const c=typeof col==='function'?col(cu,h3(...cu.map(v=>Math.round(v*500)))):col; for(const u of us){ P.push(...put(u)); Cc.push(...c); } }

@@ -348,6 +348,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       PARK.flame=FLAME.add({kind:'bed',name:'campfire',x:X(CF.x),y:.12*TILE,z:Z(CF.y),w:.78*TILE,h:.95*TILE,embers:4,smoke:2.2,sk:1.3,light:L,seed:5}); }
     PARK.more=mesh([['pillar1',90,-41.5,3.2,.3],['pillar2',102,-41.5,2.6,1.2],
       ].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]).concat([['sitlog',LOG[0],LOG[1],.5,.4+wa(LOG[0]-CF.x,LOG[1]-CF.y)-wa(-1.5,-.9)]]),false,false); PARK.sitlog=[X(LOG[0]),Z(LOG[1])];
+    // the lawn keeps off what lies on the ground (rocks, logs, stones, the campfire and its woodpile, the pillars)
+    if(WEEDS.keepOff)WEEDS.keepOff([PARK.rocks,PARK.underStill,PARK.camp,PARK.more].filter(Boolean).flatMap(m=>m.userData.items||[]).map(it=>[it.x,it.z,it.k==='campfire'?1.1*TILE:Math.max(.5*TILE,it.r*1.15)]));
     for(const [x,y,m] of [[RX(90),RY(-41.5),3.2],[RX(102),RY(-41.5),2.6]]){ const r=.35*m/.84*.2; SOL.up.push([X(x)-r,Z(y)-r,X(x)+r,Z(y)+r]); FIX.up.push([X(x)-r,Z(y)-r,0,X(x)+r,Z(y)+r,m/.84*TILE]); } }
   });
   // the paths' kerb: a row of straight stone bricks along both edges of every path (following its bends) and round the plaza, where the cobbles meet the grass

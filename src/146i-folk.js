@@ -40,7 +40,7 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
     rhino:{sk:[1.2,1,1.15],mz:[.9,.5,.42,-.26],ch:.06,eye:[.62,.18,.7,.016,[.66,.3,.26]],ear:{k:'point',s:.05,dir:[.62,.74,-.25],tilt:30},horn:1},
     rabbit:{sk:[.98,.95,1],mz:[.35,.32,.26,-.22],ch:.14,eye:[.44,.14,.8,.03,[.38,.12,.1]],nose:[.014,PINK],ear:{k:'long',s:.07,dir:[.38,.9,-.12],tilt:16},horns:1},
     hedgehog:{sk:[.9,.88,1],mz:[.7,.26,.24,-.24],ch:.06,eye:[.44,.14,.8,.019],nose:[.017,[.4,.22,.24]],ear:{k:'round',s:.03,dir:[.62,.62,-.1],tilt:6,thick:1},quills:1},
-    batear:{sk:[1,.96,1],mz:[.3,.3,.24,-.24],ch:.12,eye:[.4,.12,.84,.02],nose:[.014,BLACK],ear:{k:'point',s:.09,dir:[.6,.72,-.15],tilt:20,len:1.8}},
+    batear:{sk:[1,.96,1],mz:[.3,.3,.24,-.24],ch:.12,eye:[.4,.12,.84,.02],nose:[.014,BLACK],ear:{k:'point',s:.1,dir:[.7,.6,-.12],tilt:38,len:1.15,w:1.9}},
     toucan:{sk:[.95,1.05,.95],mz:[0,0,0,0],eye:[.6,.18,.66,.017],ring:[.3,.62,.95],bill:1,mark:'toucan'},
     shark:{sk:[1.05,.95,1.25],mz:[.25,.6,.4,-.1],eye:[.72,.12,.55,.017],mark:'shark',fin:1,mouth:2},
     cat:{sk:[1.04,.95,.98],mz:[.22,.3,.22,-.26],ch:.15,eye:[.4,.13,.86,.028,[.72,.66,.26]],nose:[.014,[.82,.52,.5]],ear:{k:'point',s:.075,dir:[.6,.74,-.12],tilt:12,w:1.1},mark:'tabby',tail:'cat'},

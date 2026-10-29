@@ -1,6 +1,6 @@
 // THE WORN LAYER: EQUIP wears gear by slot (body: armour, the cloud coat; head: the headlight; eyes: the goggles) and turns on its granted ability — guard softens blows, float lifts you, light lights the dark, sight sees through murk, night sees in the dark. It also draws body gear on the player: plate armour (the knight's faceted steel) or a coat of drifting clouds. Hand gear stays with WIELD; all read the shared item model (slot, grants).
-import {THREE} from './003-shx.js';
-import {EQUIP, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
+import {SHARED, THREE} from './003-shx.js';
+import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
 { const say=FORAGE.say, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
@@ -54,6 +54,15 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
     shades:c=>{ const G=new THREE.Group(), lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
       for(const s of [1,-1]){ const l=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.05,20),lens); l.rotation.x=Math.PI/2; l.position.set(.25*s,0,0); G.add(l); const r=new THREE.Mesh(new THREE.TorusGeometry(.21,.03,8,20),band); r.position.set(.25*s,0,.01); G.add(r);
         const arm=new THREE.Mesh(new THREE.BoxGeometry(.04,.05,.62),band); arm.position.set(.62*s,.02,-.32); G.add(arm); } const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.04,.04),band); br.position.set(0,.06,.01); G.add(br); G.userData.lens=lens; return G; }};
+  // worn on the head and granting light: a headlamp on the forehead, its lens glowing when the light is on (underground or underwater)
+  EYES.lamp=()=>{ const G=new THREE.Group(), strap=new THREE.MeshStandardMaterial({color:0x2a2a2e,roughness:.8}), body=new THREE.MeshStandardMaterial({color:0xd8d8d0,roughness:.4,metalness:.3}), lens=new THREE.MeshStandardMaterial({color:0xfff2c0,emissive:0xfff0d0,emissiveIntensity:.2,roughness:.1});
+    const band=new THREE.Mesh(new THREE.TorusGeometry(.56,.05,8,32),strap); band.rotation.x=Math.PI/2; band.position.set(0,0,-.6); G.add(band);
+    const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.22,.14),body); b.position.set(0,0,.02); G.add(b); const l=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.04,20),lens); l.rotation.x=Math.PI/2; l.position.set(0,0,.1); G.add(l); G.userData.lamp=lens; return G; };
+  EQUIP.lampOn=()=>SHARED.LVL==='down'||!!FLOW.under;
+  const lamp=(g,B,id,H)=>{ const J=B&&B.J, on=!!id&&EQUIP.ability(id)==='light'; let L=H.lamp; if(!on||!g||!J||g.visible===false){ if(L)L.visible=false; return; }
+    if(!L){ L=H.lamp=EYES.lamp(); L.name='headlamp'; } if(L.parent!==g)g.add(L); L.visible=true; L.userData.lamp.emissiveIntensity=EQUIP.lampOn()?2.5:.2;
+    const hb=J.head, ht=J.headTop, sl=J.shoulderL, sr=J.shoulderR; hu.set(ht.x-hb.x,ht.y-hb.y,ht.z-hb.z); const hh=hu.length()||6; hu.normalize(); hr.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z).normalize(); hf.crossVectors(hr,hu).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf);
+    L.quaternion.setFromRotationMatrix(HM); L.position.set(hb.x,hb.y,hb.z).addScaledVector(hu,hh*.62).addScaledVector(hf,hh*.74); L.scale.setScalar(hh*1.25); };
   const eyeKind=id=>{ if(!id)return null; if(EQUIP.ability(id)==='night')return 'nv'; const c=prop(id,'color'); return c&&c!=='none'?'shades':null; };
   const shades=(g,B,id,H)=>{ const J=B&&B.J, k=eyeKind(id), E=H.eye||(H.eye={}); for(const q in E)if(q!==k||!g||!J||g.visible===false)E[q].visible=false; if(!k||!g||!J||g.visible===false)return;
     const c=prop(id,'color'); let sh=E[k]; if(!sh){ sh=E[k]=EYES[k](c); sh.name='eyes-'+k; }
@@ -61,7 +70,7 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
     const hb=J.head, ht=J.headTop, sl=J.shoulderL, sr=J.shoulderR; hu.set(ht.x-hb.x,ht.y-hb.y,ht.z-hb.z); const hh=hu.length()||6; hu.normalize(); hr.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z).normalize(); hf.crossVectors(hr,hu).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf);
     sh.quaternion.setFromRotationMatrix(HM); sh.position.set(hb.x,hb.y,hb.z).addScaledVector(hu,hh*EQUIP.shY).addScaledVector(hf,hh*EQUIP.shZ); sh.scale.setScalar(hh*EQUIP.shS); };
   EQUIP.shY=.36; EQUIP.shZ=.8; EQUIP.shS=1.25;
-  EQUIP.draw=(g,B,by,H)=>{ const id=by.body, worn0=H.worn; back(g,B,Object.values(by).some(q=>q&&EQUIP.ability(q)==='breathe'),H); shades(g,B,by.eyes,H);
+  EQUIP.draw=(g,B,by,H)=>{ const id=by.body, worn0=H.worn; back(g,B,Object.values(by).some(q=>q&&EQUIP.ability(q)==='breathe'),H); shades(g,B,by.eyes,H); lamp(g,B,by.head,H);
     if(!g||!B||!B.J||!id){ if(worn0)worn0.root.visible=false; return; }
     const grant=EQUIP.ability(id); if(grant!=='guard'&&grant!=='float'){ if(worn0)worn0.root.visible=false; return; }
     const worn=H.worn||build(H); if(worn.root.parent!==g)g.add(worn.root);

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, pos, ROOMS, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FADE, FIX, grab, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
@@ -35,7 +35,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
   MS.unplace('ARCADE'); MS.unplace('THE ARCADE');
 
-  const AR={x0:480,x1:496,y0:-100,y1:-87}, HD={x0:480,x1:496,y0:-113,y1:-100}, cx=(AR.x0+AR.x1)/2, hy=(HD.y0+HD.y1)/2, WH=130, DW=.8, DH=95;
+  const AX=480+OFFDX/BLDK, AR={x0:AX,x1:AX+16,y0:-100,y1:-87}, HD={x0:AX,x1:AX+16,y0:-113,y1:-100}, cx=(AR.x0+AR.x1)/2, hy=(HD.y0+HD.y1)/2, WH=130, DW=.8, DH=95;
   STORE.bound.x1=Math.max(STORE.bound.x1,X(AR.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(HD.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(AR.y1+6));
   let AG=null, AS=[], PA=null; const ARC={scr:null}; SYS.add('places',dt=>{ if(ARC.scr)ARC.scr(dt); },'arcade screens');
   const build=()=>{ '@arcade';

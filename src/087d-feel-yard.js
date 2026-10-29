@@ -5,7 +5,7 @@ import {M, scene} from './004-main.js';
 import {MISTB, MISTB2, STORE} from './006-map-pre.js';
 { const MH=FEEL.MH, MV=FEEL.MV, R=22;
   const Y=FEEL.yard={bvh:null,mesh:null,o:null};
-  const org=()=>Y.o||(Y.o={x:(STORE.bound.x1+900)/MH,z:(STORE.bound.z0+STORE.bound.z1)/2/MH});
+  const org=()=>Y.o||(Y.o={x:(STORE.bound.x0-900)/MH,z:(STORE.bound.z0+STORE.bound.z1)/2/MH});
   Y.in=(x,z)=>{ const o=org(); return Math.abs(x-o.x)<R&&Math.abs(z-o.z)<R; };
   const SP=[['SPAWN',0,0,12,Math.PI],['LONG WALL',-6,0,-9,Math.PI],['CORNERS',4,0,-1,Math.PI],['PASSAGE',-7.35,0,3,Math.PI],['RAMP 14°',9.5,0,10,Math.PI],
     ['RAMP 40° / 55°',-10,0,13,Math.PI],['STEPS',-6,0,6,Math.PI/2],['LOW CEILING',-2,0,2.5,Math.PI],['LEDGE',11,1.5,-1,Math.PI],['GAP',11,1.5,-3.2,Math.PI]];

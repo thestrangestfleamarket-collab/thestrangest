@@ -745,5 +745,922 @@
     }
    }
   }
+ },
+ "gd_goggles": {
+  "name": "OLD MOSSWICK",
+  "trade": {
+   "sells": [
+    "headlight",
+    "p_refresh",
+    "p_heal",
+    "armor"
+   ],
+   "line": "Lamps, tonics, plate. All you need for down below."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Lamps, tonics, plate. All you need for down below.",
+      "Goggles on, wick trimmed. What'll it be?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHY THE GOGGLES?",
+       "go": "why"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "why": {
+     "say": "Down there the dust gets in your eyes. Up here the sun does. Can't win.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_blueowl": {
+  "name": "THE WARDEN OF WARDS",
+  "trade": {
+   "sells": [
+    "p_heal",
+    "p_gheal",
+    "p_str",
+    "p_keen",
+    "p_cure"
+   ],
+   "line": "A tonic for every worry."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Tonics brewed under a full moon. Mostly.",
+      "A ward for every worry."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME YOUR TONICS.",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS A WARD?",
+       "go": "ward"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "ward": {
+     "say": "A promise the dark has to keep. Strength, sharp eyes, a cure for the spiders' bite.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_redpanda": {
+  "name": "RUMMAGE",
+  "trade": {
+   "sells": [
+    "bottle"
+   ],
+   "buys": [
+    "slime"
+   ],
+   "line": "Slime in a bottle? I'll take it."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Slime in a bottle? I'll take it. Don't ask what for.",
+      "Everything from down there is worth something to someone."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU BUY?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS THE SKULL FOR?",
+       "go": "skull"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "skull": {
+     "say": "He was a skeleton guard. Now he's a conversation piece.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_shaman": {
+  "name": "THORNCROWN",
+  "trade": {
+   "sells": [
+    "sword_steel",
+    "sword_ench"
+   ],
+   "line": "Steel remembers what you teach it."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Steel remembers what you teach it.",
+      "The orb hums. It likes you. Or it's hungry."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME THE BLADES.",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DOES THE ORB DO?",
+       "go": "orb"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "orb": {
+     "say": "It sings into the steel until the steel sings back. An enchanted blade bites deeper.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_shark": {
+  "name": "BROTHER FIN",
+  "trade": {
+   "sells": [
+    "p_refresh"
+   ],
+   "teaches": [
+    "fight"
+   ],
+   "line": "Breathe. Then strike."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Breathe. Then strike.",
+      "Even a shark must learn to walk."
+     ],
+     "opts": [
+      {
+       "t": "TEACH ME TO FIGHT.",
+       "do": "shop"
+      },
+      {
+       "t": "A SHARK? ON LAND?",
+       "go": "land"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "land": {
+     "say": "The lake was too small for me. The keep was not.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_panda": {
+  "name": "LITTLE BAO",
+  "trade": {
+   "sells": [
+    "sword_wood",
+    "sword"
+   ],
+   "teaches": [
+    "sword"
+   ],
+   "line": "Spar with me! Please?"
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Spar with me! Please? Nobody spars with me.",
+      "I'm going to be captain one day."
+     ],
+     "opts": [
+      {
+       "t": "TEACH ME THE SWORD.",
+       "do": "shop"
+      },
+      {
+       "t": "CAPTAIN?",
+       "go": "cap"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "cap": {
+     "say": "Captain Voss says I need to grow first. I'm growing. Slowly.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_toucan": {
+  "name": "THE HERBALIST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hurt? Come here. Hold still.",
+      "Leaf and root. It mends what the dark breaks."
+     ],
+     "opts": [
+      {
+       "t": "MEND ME ($8).",
+       "do": "heal",
+       "arg": "8",
+       "go": "mended",
+       "if": "vit:hurt cash:8"
+      },
+      {
+       "t": "WHAT IS IN THE BUNDLE?",
+       "go": "herbs"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "mended": {
+     "say": "There. Good as new. Mostly.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": ""
+      }
+     ]
+    },
+    "herbs": {
+     "say": "Things that grow in the park and nowhere else. Bring me back alive and I'll use them on you.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_beardpanda": {
+  "name": "OLD EMBER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Ash and ember, {name}. The keep pays for what you put down below.",
+      "Sit a while. Or take some work."
+     ],
+     "opts": [
+      {
+       "t": "WHAT WORK IS THERE?",
+       "go": "board",
+       "if": "!bounty:on"
+      },
+      {
+       "t": "HOW GOES MY HUNT?",
+       "go": "hunt",
+       "if": "bounty:on !bounty:done"
+      },
+      {
+       "t": "IT IS DONE.",
+       "do": "bounty",
+       "arg": "pay",
+       "go": "paid",
+       "if": "bounty:done"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "board": {
+     "say": "Pick one. The keep keeps count; I pay on the count.",
+     "opts": [
+      {
+       "t": "BURST 6 SLIMES ($30)",
+       "do": "bounty",
+       "arg": "take slimes",
+       "go": "took"
+      },
+      {
+       "t": "KILL 3 SPIDERS ($45)",
+       "do": "bounty",
+       "arg": "take spiders",
+       "go": "took"
+      },
+      {
+       "t": "PUT DOWN 2 GUARDS ($70)",
+       "do": "bounty",
+       "arg": "take guards",
+       "go": "took"
+      },
+      {
+       "t": "4 KILLS, LEVEL 3 OR DEEPER ($90)",
+       "do": "bounty",
+       "arg": "take deep",
+       "go": "took"
+      },
+      {
+       "t": "FELL THE GOLDEN ONE ($150)",
+       "do": "bounty",
+       "arg": "take gold",
+       "go": "took"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "took": {
+     "say": "Then go. The stair is that way. Come back up when it's done.",
+     "opts": [
+      {
+       "t": "I WILL.",
+       "go": ""
+      }
+     ]
+    },
+    "hunt": {
+     "say": "{bounty}.",
+     "opts": [
+      {
+       "t": "I GIVE IT UP.",
+       "do": "bounty",
+       "arg": "drop",
+       "go": "hi"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "paid": {
+     "say": "Well struck. Here, as promised.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lynx": {
+  "name": "THE ELDER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Sit, if you like. The fire's for everyone.",
+      "I have watched that stair longer than the park has had a wall."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS UNDER THE CASTLE?",
+       "go": "under"
+      },
+      {
+       "t": "WHO ARE YOU ALL?",
+       "go": "who"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "under": {
+     "say": "Halls that go down further than anyone has counted. Slime, spiders, the bones of old guards. Each level worse than the last.",
+     "opts": [
+      {
+       "t": "AND YOU KEEP IT SHUT?",
+       "go": "shut"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "shut": {
+     "say": "We keep it watched. Shut is not something a stair can be.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "who": {
+     "say": "The keep. Mice, owls, frogs, whoever comes. The park is ours to guard. Every section has its stair; this one is ours.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_caterpillar": {
+  "name": "THE BLUE ONE",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Whoooo... are you?",
+      "Ask me something. I may even answer."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS DOWN THE STAIR?",
+       "go": "a1"
+      },
+      {
+       "t": "HOW DO I LIVE LONGER DOWN THERE?",
+       "go": "a2"
+      },
+      {
+       "t": "WHERE IS THE GOLD?",
+       "go": "a3"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "a1": {
+     "say": "Deeper is darker, darker is meaner. The stairs down are always at the far end.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "a2": {
+     "say": "Webs hold. Lava burns. Spikes come up in turns: count, then step.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "a3": {
+     "say": "The golden one walks the deep halls. Fell it and Old Ember will make you rich.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_purpleowl": {
+  "name": "THE CARTOGRAPHER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Every level drawn. Every trap marked. Mostly.",
+      "Lost? No. Just not yet found."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME THE MAP.",
+       "go": "map"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "map": {
+     "say": "One hall per level, longer every time. Up stair at your back, down stair at the far end. Torches the only light.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_skullmouse": {
+  "name": "THE SCOUT",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Been down to the third. Wouldn't go further without a friend.",
+      "The spiders are thicker deeper. So are the webs."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DID YOU SEE?",
+       "go": "saw"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "saw": {
+     "say": "Three to five of them each level, never the same. Slimes up top, spiders and guards below. They notice you sooner the deeper you go.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_captain": {
+  "name": "CAPTAIN VOSS",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "The keep stands. As long as I do, it stands.",
+      "Report anything that crawls. Anything."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU NEED?",
+       "go": "need"
+      },
+      {
+       "t": "WHO RUNS THE KEEP?",
+       "go": "run"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "need": {
+     "say": "Hands. Swords. Old Ember pays bounties by the fire outside the gate.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "run": {
+     "say": "The Elder decides. I enforce. The rest of them do as they like, mostly.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_tiger": {
+  "name": "THE GEM PEDDLER",
+  "trade": {
+   "sells": [
+    "p_keen"
+   ],
+   "line": "Bring me gems. I pay fair.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Stones from every corner of the park. And under it.",
+      "Bring me gems. I pay better than the golems. Mostly."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DO GEMS COME FROM?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The golems' cave, the deep halls, the Hudson's bed. And the crypt's chest, if you're polite.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_gemturtle": {
+  "name": "PEBBLESHELL",
+  "trade": {
+   "sells": [
+    "goggles",
+    "headlight"
+   ],
+   "line": "Rocks are just slow gems.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Rocks are just slow gems.",
+      "Seen anything sparkle? Tell me first."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lizkeeper": {
+  "name": "OLD GRISTLE",
+  "trade": {
+   "sells": [
+    "f_roast",
+    "f_fritter",
+    "f_soup",
+    "f_fishfry",
+    "f_chowder"
+   ],
+   "line": "Moss ale's fresh. Food's hot."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be? Moss ale's fresh.",
+      "Sit. Eat. Don't start anything."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS THIS PLACE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The Mossy Flagon. Every guard in the keep drinks here after the night watch.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_fisher": {
+  "name": "OLD WETWHISKER",
+  "trade": {
+   "sells": [
+    "bait",
+    "rod"
+   ],
+   "line": "Bait's a dollar. Patience is free.",
+   "buys": [
+    "fish"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "The lake gives. You just have to wait.",
+      "Bait's a dollar. Patience is free."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE ARE THE BIG ONES?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Out past the reeds, where the brook runs in. At dusk.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lion": {
+  "name": "MASTER OF ARMS",
+  "trade": {
+   "sells": [
+    "sword_steel"
+   ],
+   "line": "Feet first. Then the blade.",
+   "teaches": [
+    "sword",
+    "fight"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Feet first. Then the blade.",
+      "Again. Until you don't think."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DO THEY PRACTISE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Cuts on the pells, arrows at the butts. Real steel, real wood. Watch them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_spirit": {
+  "name": "THE LANTERN SPIRIT",
+  "trade": {
+   "sells": [
+    "p_heal",
+    "p_cure",
+    "p_gheal"
+   ],
+   "line": "Light for the lost."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "...the dead sleep easier when I pass.",
+      "Light for the lost. Even you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

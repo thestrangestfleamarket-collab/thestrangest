@@ -252,6 +252,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafd'+sway; } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
     if(me.isBatchedMesh&&!opt.far){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
+    if(!me.isBatchedMesh)me.userData.cull=1;
     scene.add(me); return me; };
   const TREEY=12+4.6; PARK.mesh=mesh;
   for(const S of ['A','C','AL','CL'])for(let i=0;i<TREEGEN.count(S);i++)F['G'+S+i]=TREEGEN.get(S,i);
@@ -333,6 +334,13 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   PARK.oaks=TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
   P.stand=mesh(TREES.slice(0,NI),false,false,false,{cards:2,far:1}); P.standFar=mesh(TREES.back,false,false,false,{cards:2,far:1});
+  // the edge ring's and the far rows' shadows painted once on the ground (they no longer cast live ones into every shadow pass)
+  { const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,0,32,32,32); gr.addColorStop(0,'rgba(0,0,0,.42)'); gr.addColorStop(.6,'rgba(0,0,0,.3)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64);
+    const t=new THREE.CanvasTexture(c), mat=new THREE.MeshBasicMaterial({color:0x000000,map:t,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}), Pp=[], Uv=[], DX=.55, DZ=.83;
+    for(const m of [PARK.ring,P.standFar]){ if(!m)continue; m.castShadow=false; for(const o of m.userData.items||[]){ const h=Math.max(0,o.top-o.y), r=o.r*1.15, cx=o.x+DX*h*.35, cz=o.z+DZ*h*.35, y=o.y+.03*TILE;
+      for(const [a,b,u,v] of [[-1,-1,0,0],[1,-1,1,0],[1,1,1,1],[-1,-1,0,0],[1,1,1,1],[-1,1,0,1]]){ Pp.push(cx+a*r,y,cz+b*r); Uv.push(u,v); } } }
+    if(Pp.length){ const G=new THREE.BufferGeometry(); G.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); G.setAttribute('uv',new THREE.Float32BufferAttribute(Uv,2)); G.computeBoundingSphere();
+      const me=new THREE.Mesh(G,mat); me.name='ringshade'; me.renderOrder=1; me.raycast=()=>{}; me.userData.cull=1; PARK.ringShade=me; scene.add(me); } }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

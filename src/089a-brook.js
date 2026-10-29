@@ -26,9 +26,9 @@ import {FOUNT} from './060a-fount.js';
           if(ri&&li){ const a=(ri-1)*nl+li-1, b=a+1, c=ri*nl+li-1, d=c+1; I.push(a,b,c,b,d,c); } } });
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(V,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(CO,3)); g.setAttribute('aWet',new THREE.Float32BufferAttribute(WT,1)); g.setIndex(I); g.computeVertexNormals();
       const me=new THREE.Mesh(g,bankMat); me.receiveShadow=true; grp.add(me); banks.push(me);
-      const WV=[], WF=[], WI=[], WL=[-1,-.66,-.33,0,.33,.66,1];
+      const WV=[], WF=[], WI=[], WL=[-1,-.66,-.33,0,.33,.66,1];   // where the stream's sheet lies inside the big lake it is not drawn (the lake's own clear water is over it)
       for(let k=ci?k0:Math.max(k0,BK.kM),ri=0;k<=k1;k++,ri++){ const [cx,cy,s,nx,ny]=row(k), R=W(s)+.75*B, lv=L(s), kc=Math.max(0,Math.min(N,k));
-        WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
+        WL.forEach((f,li)=>{ const x=cx+nx*f*R, y=cy+ny*f*R; WV.push(X(x),lv*WU+G0+.004,Z(y)); WF.push(tau[kc]+(k-kc)*.5,f*R,lv-bed(x,y),FOUNT.lake(x,y)<-.3?-1:spd(s)); if(ri&&li){ const a=(ri-1)*7+li-1, b=a+1, c=ri*7+li-1, d=c+1; WI.push(a,b,c,b,d,c); } }); }
       const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.Float32BufferAttribute(WV,3)); wg.setAttribute('aF',new THREE.Float32BufferAttribute(WF,4)); wg.setIndex(WI);
       waters.push({g:wg,k0:ci?k0:BK.kM,k1,rk:[]}); }
     const RK=[], STP=[], PB=[], col=[], add=(x,y,r,sy,top,kind)=>RK.push({x,y,r,sy,top,kind,sd:RK.length});
@@ -61,7 +61,7 @@ import {FOUNT} from './060a-fount.js';
     const FS=FLOW.GLSL+`uniform float uT,uDay; uniform vec3 uSky,uSun,uSunD; uniform vec4 uMe, uRk[24]; varying vec4 vF; varying vec3 vW;
       float h1(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h1(i),h1(i+vec2(1,0)),f.x),mix(h1(i+vec2(0,1)),h1(i+vec2(1,1)),f.x),f.y); }
-      void main(){ if(vF.z<-.5)discard; if(!gl_FrontFacing){ vec3 u=uSky*(.35+.65*uDay)*.55+vec3(.02,.06,.05); gl_FragColor=vec4(floor(u*24.+.5)/24.*.8,.8); return; }   // seen from under the water: the bright surface overhead
+      void main(){ if(vF.z<-.5||vF.w<-.2)discard; if(!gl_FrontFacing){ vec3 u=uSky*(.35+.65*uDay)*.55+vec3(.02,.06,.05); gl_FragColor=vec4(floor(u*24.+.5)/24.*.8,.8); return; }   // seen from under the water: the bright surface overhead
         float sp=vF.w, ta=vF.x-uT*.8, u=vF.y, pl=step(sp,.3); vec2 wp=vW.xz/${T.toFixed(4)};
         vec4 fw=flowAt(vW.xz); vec2 sl=flowSlope(vW.xz), fv=fw.gb; float fs=length(fv);
         vec2 fp=mix(vec2(ta*.8,u*2.4),wp*.7+vec2(uT*.05,0.),pl); float n=vn(fp)*.65+vn(fp*2.3+7.)*.35, n2=vn(vec2(ta*2.2,u*5.)+3.);

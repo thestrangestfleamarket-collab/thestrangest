@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, pos, st, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
 await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
@@ -15,9 +16,18 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   D.trains.forEach((t,ti)=>{ const tr=L.TRK[t.track], Lt=tr.L, stops=L.order(t), i0=stops.findIndex(s=>s.old), seq=stops.slice(i0).concat(stops.slice(0,i0)), tbl=[]; let tm=0;
     seq.forEach((st,i)=>{ const nx=seq[(i+1)%seq.length], d=mod(t.dir*(nx.s[t.track]-st.s[t.track]),Lt), Tr=runT(d); tbl.push({st,nx,arr:tm,dep:tm+D.dwell,d,T:Tr}); tm+=D.dwell+Tr; });
     TRAINS.list.push({...t,i:ti,tr,tbl,lap:tm,off:ti*tm/2,cars:[]}); });
-  const state=(tn,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap); for(const e of tn.tbl){ if(t<e.dep)return {s:e.st.s[tn.track],doors:true,at:e.st,next:e.nx,left:e.dep-t};
+  // one station loaded: each train shuttles, the station, out to one tunnel end, back, the station, out to the other end, back
+  if(L.STA.length===1)for(const tn of TRAINS.list){ const st=L.STA[0], k=tn.track, s0=st.s[k], Lt=tn.tr.L, E=L.ENDS[k]||[], MG=CARL+GAP+2, fw=E.find(e=>e.dir>0), bk=E.find(e=>e.dir<0);
+    const ends=[[tn.dir,Math.max(0,(tn.dir>0?(fw?mod(fw.s-s0,Lt):0):(bk?mod(s0-bk.s,Lt):0))-MG)],[-tn.dir,Math.max(0,(tn.dir>0?(bk?mod(s0-bk.s,Lt):0):(fw?mod(fw.s-s0,Lt):0))-MG)]], legs=[]; let tm=0;
+    for(const [sg,d] of ends){ legs.push({t0:tm,dur:D.dwell,s0,sg:0,d:0,doors:true}); tm+=D.dwell; if(d>1){ const Tr=runT(d); legs.push({t0:tm,dur:Tr,s0,sg,d}); tm+=Tr; legs.push({t0:tm,dur:12,s0:s0+sg*d,sg:0,d:0}); tm+=12; legs.push({t0:tm,dur:Tr,s0:s0+sg*d,sg:-sg,d}); tm+=Tr; } }
+    Object.assign(tn,{legs,lap:tm,off:tn.i*tm/2,tbl:[{st,nx:st,arr:0,dep:D.dwell}]}); }
+  const state=(tn,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap);
+    if(tn.legs){ const st=L.STA[0]; for(const g of tn.legs)if(t<g.t0+g.dur){ const u=t-g.t0; return g.doors?{s:g.s0,doors:true,at:st,next:st,left:g.dur-u}:{s:g.s0+g.sg*runS(g.d,u),doors:false,at:null,from:st,next:st,left:tn.legs.filter(q=>q.doors&&q.t0>=g.t0+g.dur).concat(tn.legs.filter(q=>q.doors).map(q=>({...q,t0:q.t0+tn.lap})))[0].t0-t}; } return {s:tn.legs[0].s0,doors:true,at:st,next:st,left:0}; }
+    for(const e of tn.tbl){ if(t<e.dep)return {s:e.st.s[tn.track],doors:true,at:e.st,next:e.nx,left:e.dep-t};
       if(t<e.dep+e.T)return {s:e.st.s[tn.track]+tn.dir*runS(e.d,t-e.dep),doors:false,at:null,from:e.st,next:e.nx,left:e.dep+e.T-t}; } const e=tn.tbl[0]; return {s:e.st.s[tn.track],doors:true,at:e.st,next:e.nx,left:0}; };
-  const until=(tn,st,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap), e=tn.tbl.find(q=>q.st===st); if(t>=e.arr&&t<e.dep)return {now:true,left:e.dep-t}; return {now:false,left:mod(e.arr-t,tn.lap)}; };
+  const until=(tn,st,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap);
+    if(tn.legs){ const g=tn.legs.find(q=>q.doors&&t>=q.t0&&t<q.t0+q.dur); if(g)return {now:true,left:g.t0+g.dur-t}; const n=tn.legs.filter(q=>q.doors).map(q=>q.t0<=t?q.t0+tn.lap:q.t0).sort((a,b)=>a-b)[0]; return {now:false,left:n-t}; }
+    const e=tn.tbl.find(q=>q.st===st); if(t>=e.arr&&t<e.dep)return {now:true,left:e.dep-t}; return {now:false,left:mod(e.arr-t,tn.lap)}; };
   TRAINS.state=state; TRAINS.until=until;
 
   // the cars: steel outside under graffiti with real window openings and sliding doors; inside bucket seats, partitions, poles and rails, ad cards, two light strips and two lights
@@ -108,10 +118,11 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     im(new THREE.CylinderGeometry(.045*T,.045*T,1,8),MPOLE,poles,(o,[x,zz,y0,y1])=>{ o.position.set(x*T,Y((y0+y1)/2),zz*T); o.scale.set(1,Y(y1)-Y(y0),1); });
     for(const s of [-1,1])box(inner,CARL*T-2,.06*T,.06*T,0,Y(FZ+74),s*(CWI-1.05)*T,MPOLE);
     for(const e of [-1,1]){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2.6*T,z(10)),tn.signM); me.position.set(e*(HL-.1),Y(FZ+DOORH+2),0); me.rotation.y=e>0?-Math.PI/2:Math.PI/2; inner.add(me); }
-    for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.55,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
+    for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
     scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0}; };
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});
     for(let c=0;c<2;c++)tn.cars.push(makeCar(tn,c)); }
+  for(const tn of TRAINS.list)for(const car of tn.cars){ for(const g of [car.ext,car.upper['-1'],car.upper['1']])g.traverse(o=>{ if(o.isMesh&&!o.geometry.attributes.aWl)PEEK.mark(o.geometry); }); car.peek={me:car.G,b:new THREE.Box3()}; PEEK.boxes.push(car.peek); }
   LEVELS.of.station.groups.push('trains');
 
   // each frame: where the cars are (centre, along, across in world units), from where the train is on its track
@@ -119,8 +130,8 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   const place=(tn,now,dt)=>{ const S=state(tn,now), tr=tn.tr; tn.S=S; clk+=dt/TRAINS.list.length; const run=S.doors?0:Math.min(1,Math.abs(tn.v||0)/V);
     tn.cars.forEach((car,c)=>{ const sc=S.s+tn.dir*(c?-1:1)*(CARL+GAP)/2, a=tr.pt(sc-tn.dir*CARL/2), b=tr.pt(sc+tn.dir*CARL/2), x=(L.WX(a.x)+L.WX(b.x))/2, zz=(L.WZ(a.y)+L.WZ(b.y))/2;
       let ux=L.WX(b.x)-L.WX(a.x), uz=L.WZ(b.y)-L.WZ(a.y); const l=Math.hypot(ux,uz)||1; ux/=l; uz/=l;
-      car.p0=car.p||null; car.p={x,z:zz,ux,uz}; const k=clk*1.9+c*1.3+tn.i*2.1, sway=run*(.006*Math.sin(k)+.003*Math.sin(k*2.7)), bob=run*.012*Math.sin(clk*7.3+c);
-      car.G.position.set(x,L.H(-32)+bob,zz); car.G.rotation.set(sway,Math.atan2(-uz,ux),0); car.G.updateMatrixWorld();
+      car.p0=car.p||null; car.p={x,z:zz,ux,uz}; car.G.position.set(x,L.H(-32),zz); car.G.rotation.set(0,Math.atan2(-uz,ux),0); car.G.updateMatrixWorld();
+      if(car.peek){ const ex=Math.abs(ux)*HL0+Math.abs(uz)*W0, ez=Math.abs(uz)*HL0+Math.abs(ux)*W0, y0=car.G.position.y; car.peek.b.min.set(x-ex,y0,zz-ez); car.peek.b.max.set(x+ex,y0+z(FZ+TOP+25),zz+ez); }
       car.door+=((S.doors?1:0)-car.door)*Math.min(1,dt*2.6); for(const d of car.leaves)d.me.position.x=d.x0+d.s*car.door*DWH*.95*T;
       for(const Lp of car.lights){ Lp.position.copy(Lp.userData.at).applyMatrix4(car.G.matrixWorld); if(Math.random()<dt*.15)Lp.userData.fl=.12+Math.random()*.15; Lp.userData.fl=Math.max(0,(Lp.userData.fl||0)-dt); Lp.intensity=Lp.userData.i0*(Lp.userData.fl>0&&Lp.userData.fl<.07?.35:1); } });
     tn.v=S.doors?0:(S.s-(tn.s0??S.s))/Math.max(dt,1e-3); tn.s0=S.s; };
@@ -169,8 +180,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
         if(Math.abs(q.v)>=HW+R)continue; const w=wrl(c.p,q.a,Math.sign(q.v||1)*(HW+R)); pos.x=w.x; pos.z=w.z; } }
     for(const tn of TRAINS.list)edges(tn);
     const first=UI.view==='first', cam=SHARED.cam&&SHARED.cam.position;
-    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.ext.visible=!on; c.inner.visible=near; c.strips.visible=!on;
-      for(const s of [-1,1]){ let show=true; if(on&&cam){ const v=-(cam.x-c.p.x)*c.p.uz+(cam.z-c.p.z)*c.p.ux; show=v*s<0; } c.upper[String(s)].visible=show; } }
+    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=true; c.inner.visible=near; c.strips.visible=true; c.upper['-1'].visible=c.upper['1'].visible=true; }
     const ms=performance.now(); if(ms<bt)return; bt=ms+500; if(!down)return;
     if(ride.tn)signText(ride.tn);
     const h=L.here(pos.x,pos.z); if(h.d<40*T){ const st=h.st;

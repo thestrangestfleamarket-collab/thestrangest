@@ -51,7 +51,7 @@
    "m": 0.5,
    "f": "#9a9aa2",
    "f2": "#e8e4e0",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#3a3c42",
    "hat": "helm",
    "hc": "#8a6e56",
@@ -75,7 +75,7 @@
    "m": 0.52,
    "f": "#4e4e54",
    "f2": "#7a7470",
-   "coat": "tunic",
+   "coat": "robe",
    "cc": "#3c4048",
    "c2": "#8a7a5a",
    "cape": "#3a3a3e",
@@ -162,7 +162,9 @@
     "Got this one from a spider. Got the spider too.",
     "Wall's quiet. I like it quiet."
    ],
-   "home": "castle"
+   "home": "castle",
+   "coat": "armour",
+   "cc": "#8a8e96"
   },
   {
    "k": "gd_lynx",
@@ -235,7 +237,9 @@
     "State your business. ...Fine. Pass.",
     "Nothing gets through these scales."
    ],
-   "home": "castle"
+   "home": "castle",
+   "coat": "robe",
+   "cc": "#5a4a3a"
   },
   {
    "k": "gd_raccoon",
@@ -244,7 +248,7 @@
    "m": 0.7,
    "f": "#8a8580",
    "f2": "#f0ece4",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#5a4430",
    "cape": "#3a3a3c",
    "w": "spear",
@@ -258,7 +262,7 @@
     "West wall, all clear.",
     "Seen a big rat? Not me. The other kind."
    ],
-   "home": "tree1"
+   "home": "castle"
   },
   {
    "k": "gd_owlaxe",
@@ -279,7 +283,9 @@
     "Who goes there? You. Right.",
     "Back wall's mine. Keep off the moss."
    ],
-   "home": "tree2"
+   "home": "castle",
+   "coat": "armour",
+   "cc": "#6a6e76"
   },
   {
    "k": "gd_purpleowl",
@@ -305,7 +311,7 @@
     "Every level drawn. Every trap marked. Mostly.",
     "Lost? No. Just not yet found."
    ],
-   "home": "tree1"
+   "home": "castle"
   },
   {
    "k": "gd_redpanda",
@@ -353,7 +359,9 @@
     "Come close and find out.",
     "Small. Sharp. On duty."
    ],
-   "home": "castle"
+   "home": "castle",
+   "coat": "armour",
+   "cc": "#7a7a72"
   },
   {
    "k": "gd_rabbit",
@@ -362,7 +370,7 @@
    "m": 0.6,
    "f": "#9a8070",
    "f2": "#c8b098",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#3a4a6a",
    "c2": "#8a5a3a",
    "hat": "circlet",
@@ -407,7 +415,7 @@
     "Tonics brewed under a full moon. Mostly.",
     "A ward for every worry."
    ],
-   "home": "tree2"
+   "home": "castle"
   },
   {
    "k": "gd_toucan",
@@ -440,7 +448,7 @@
    "m": 0.6,
    "f": "#c87a40",
    "f2": "#f2ede6",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#2e4a34",
    "c2": "#b0502a",
    "w": "bow",
@@ -584,7 +592,9 @@
     "Poison blade. Don't touch.",
     "Green means go. Down, I mean."
    ],
-   "home": "castle"
+   "home": "castle",
+   "coat": "armour",
+   "cc": "#6a7a62"
   },
   {
    "k": "gd_redmouse",
@@ -659,7 +669,9 @@
     "Light blade. It sees in the dark so I don't have to.",
     "Bzzt. Just kidding."
    ],
-   "home": "castle"
+   "home": "castle",
+   "coat": "armour",
+   "cc": "#8a7a4a"
   },
   {
    "k": "gd_caterpillar",
@@ -734,7 +746,7 @@
     "The paths go round. So do I.",
     "I have seen every corner of this park. Twice."
    ],
-   "home": "tree3"
+   "home": "castle"
   },
   {
    "k": "gd_rhino",
@@ -807,7 +819,9 @@
     "One arrow, one problem."
    ],
    "home": "castle",
-   "perch": "wall"
+   "perch": "wall",
+   "coat": "armour",
+   "cc": "#5a6a4a"
   },
   {
    "k": "gd_starowl",
@@ -830,7 +844,9 @@
     "The stars say: stay out of the lava.",
     "Night watch. My favourite."
    ],
-   "home": "tree3"
+   "home": "castle",
+   "coat": "robe",
+   "cc": "#2a2a5a"
   },
   {
    "k": "gd_skullmouse",
@@ -839,7 +855,7 @@
    "m": 0.5,
    "f": "#22222a",
    "f2": "#3a3a44",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#18181c",
    "c2": "#e8e2d0",
    "cape": "#121214",
@@ -890,7 +906,7 @@
    "m": 0.52,
    "f": "#e8d8b8",
    "f2": "#1a1a1c",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#1a1c24",
    "cape": "#8a7050",
    "w": "sword",
@@ -966,7 +982,7 @@
    "m": 0.55,
    "f": "#ece8e2",
    "f2": "#f4f0ea",
-   "coat": "tunic",
+   "coat": "armour",
    "cc": "#7a7058",
    "c2": "#4a4030",
    "shieldback": "#6a6a62",
@@ -1030,7 +1046,9 @@
    "say": [
     "I see the whole park from up here.",
     "Climb up? No. This pillar's taken."
-   ]
+   ],
+   "coat": "armour",
+   "cc": "#6a6a70"
   },
   {
    "k": "gd_tiger",
@@ -1073,14 +1091,14 @@
    "c2": "#c8c4bc",
    "w": "heartstaff",
    "pack": "potions",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
-    0,
-    2,
+    -4,
+    3,
     8
    ],
    "role": "night",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "...the dead sleep easier when I pass.",
     "Light for the lost. Even you."
@@ -1312,19 +1330,18 @@
    "coat": "robe",
    "cc": "#3a3a32",
    "c2": "#2a2a24",
-   "site": "tombs",
    "at": [
-    0,
-    -3.2,
+    6,
+    -6,
     0,
     0
    ],
    "role": "post",
-   "home": "tombs",
+   "home": "castle",
    "bulk": 1.35,
    "say": [
-    "The crypt is open. To the respectful.",
-    "Disturb nothing. Take only what the chest gives."
+    "None pass the gate unwatched.",
+    "Mind the moat. It minds you."
    ]
   },
   {
@@ -1364,14 +1381,14 @@
    "cape": "#2a2a2c",
    "beads": 1,
    "w": "spear",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
+    -6,
     4,
-    0,
     8
    ],
    "role": "patrol",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "The bones remember. Ask them nicely.",
     "Charms against the dark. Not for sale."
@@ -1421,14 +1438,14 @@
    "pack": "skulls",
    "w": "crystalstaff",
    "gem": "#e8f0ff",
-   "site": "tombs",
+   "site": "ruins",
    "at": [
-    -4,
-    1,
+    2,
+    5,
     9
    ],
    "role": "wander",
-   "home": "tombs",
+   "home": "ruins",
    "say": [
     "Every skull has a story. I collect stories.",
     "Don't mind the bag. They don't mind either."

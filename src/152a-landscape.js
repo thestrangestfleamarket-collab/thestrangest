@@ -1,4 +1,4 @@
-// THE LANDSCAPE EDITOR: paint ground (box, border, free brush), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
+// THE LANDSCAPE EDITOR: paint ground (box, border, free brush; the nine grasses set what grows there), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
 import {LAND, W3, WEEDS} from './003b-systems.js';
@@ -6,9 +6,10 @@ import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {TUFTC, tuftCol} from './014-gamekit.js';
+import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
 { const T=TILE;
-  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885']];
+  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
   const rnd=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
   const texCache={};
   function tex(t){ '@later'; if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
@@ -37,6 +38,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   const addPatch=(geo,cx,cz,t)=>{ '@later'; geo.attributes.position.needsUpdate=true; if(geo.attributes.uv)geo.attributes.uv.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere();
     const me=new THREE.Mesh(geo,mat(t)); me.position.set(cx,0,cz); me.receiveShadow=true; me.renderOrder=1; me.frustumCulled=false; me.userData.landPatch=t; scene.add(me); relawn(me); return me; };
   const relawn=me=>{ if(!WEEDS.lawnDrop)return; const b=new THREE.Box3().setFromObject(me); WEEDS.lawnDrop([b.min.x,b.min.z,b.max.x,b.max.z]); };
+  const regrow=r=>{ GRASS.setPainted(regions); const b=GRASS.box(r); if(GRASS.remap)GRASS.remap(...b); if(WEEDS.lawnDrop)WEEDS.lawnDrop(b); };   // a grass patch: the ground's kind map, the standing grass, flowers, mushrooms and butterflies there again
   const makeBox=r=>{ '@later'; const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return;
     const nx=Math.max(1,Math.min(24,Math.round(w/T))), nz=Math.max(1,Math.min(24,Math.round(h/T)));
     const geo=new THREE.PlaneGeometry(w,h,nx,nz); geo.rotateX(-Math.PI/2);
@@ -53,8 +55,8 @@ import {FOREST, PROPS} from './039-bodega.js';
       for(let iz=0;iz<n;iz++)for(let ix=0;ix<n;ix++){ const a=base+iz*(n+1)+ix,b=a+1,c=a+(n+1),d=c+1; IDX.push(a,c,b,b,c,d); } base=P.length/3; }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IDX);
     r.mesh=addPatch(geo,0,0,r.t); };
-  const make=r=>r.brush?makeBrush(r):r.poly?makePoly(r):makeBox(r);
-  const unmake=r=>{ if(r.mesh){ scene.remove(r.mesh); relawn(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); r.mesh=null; } };
+  const make=r=>/^gk:/.test(r.t)?regrow(r):r.brush?makeBrush(r):r.poly?makePoly(r):makeBox(r);
+  const unmake=r=>{ if(/^gk:/.test(r.t)){ GRASS.setPainted(regions.filter(q=>q!==r)); const b=GRASS.box(r); if(GRASS.remap)GRASS.remap(...b); if(WEEDS.lawnDrop)WEEDS.lawnDrop(b); return; } if(r.mesh){ scene.remove(r.mesh); relawn(r.mesh); r.mesh.geometry.dispose(); r.mesh.material.dispose(); r.mesh=null; } };
 
   // ----- plants & rocks (placed props, one path: the baked PROPS/FOREST models) -----
   const MODELS=Object.assign({},FOREST,PROPS);
@@ -77,8 +79,9 @@ import {FOREST, PROPS} from './039-bodega.js';
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
-  { const go=()=>{ if(!window.__started)return setTimeout(go,500); for(const r of regions)make(r); for(const o of gprops)makeProp(o); }; if(regions.length||gprops.length)go(); }
+  { const go=()=>{ if(!window.__started)return setTimeout(go,500); for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); }; if(regions.length||gprops.length)go(); }
 
+  const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;
   let type='grass', drag=null, prev=null, mode='box', poly=null, polyY=0, polyLine=null;
   let brushR=1.5*T, painting=null, paintY=0, paintPrev=null, prop='bush1', propS=null, rot=true;
   const ray=new THREE.Raycaster(), V2=THREE.Vector2, V3=THREE.Vector3;
@@ -103,9 +106,9 @@ import {FOREST, PROPS} from './039-bodega.js';
     drag={y:p.y,x0:p.x,z0:p.z,x1:p.x,z1:p.z}; showPrev(); return true; };
   LAND.move=e=>{ '@later'; if(painting){ screenRay(e); const pl=new THREE.Plane(new V3(0,1,0),-paintY), q=new V3(); if(ray.ray.intersectPlane(pl,q)){ const last=painting[painting.length-1]; if(Math.hypot(q.x-last[0],q.z-last[1])>brushR*.6&&painting.length<160){ painting.push([q.x,q.z]); paintStamp(q.x,q.z); } } return; }
     if(!drag)return; screenRay(e); const pl=new THREE.Plane(new V3(0,1,0),-drag.y), q=new V3(); if(ray.ray.intersectPlane(pl,q)){ drag.x1=q.x; drag.z1=q.z; showPrev(); } };
-  LAND.up=()=>{ if(painting){ const pts=painting; painting=null; clearPaintPrev(); if(pts.length){ const r={brush:pts,r:brushR,y:paintY,t:type}; regions.push(r); make(r); save(); draw(); } return; }
+  LAND.up=()=>{ if(painting){ const pts=painting; painting=null; clearPaintPrev(); if(pts.length){ const r={brush:pts,r:brushR,y:paintY,t:type}; add(r); } return; }
     if(!drag)return; const d=drag; drag=null; hidePrev(); const x0=Math.min(d.x0,d.x1),x1=Math.max(d.x0,d.x1),z0=Math.min(d.z0,d.z1),z1=Math.max(d.z0,d.z1);
-    if(x1-x0>.3*T&&z1-z0>.3*T){ const r={x0,x1,z0,z1,y:d.y,t:type}; regions.push(r); make(r); save(); draw(); } };
+    if(x1-x0>.3*T&&z1-z0>.3*T){ const r={x0,x1,z0,z1,y:d.y,t:type}; add(r); } };
   Object.defineProperty(LAND,'dragging',{get:()=>!!drag||!!painting});
 
   const css=document.createElement('style'); css.textContent=`
@@ -147,10 +150,10 @@ import {FOREST, PROPS} from './039-bodega.js';
     if(b.id==='lpsm'){ propS=Math.max(.05,(propS!=null?propS:dftScale(prop))-.1); draw(); return; }
     if(b.id==='lpbg'){ propS=Math.min(8,(propS!=null?propS:dftScale(prop))+.1); draw(); return; }
     if(b.id==='lprot'){ rot=!rot; draw(); return; }
-    if(b.id==='lfin'){ if(poly&&poly.length>=3){ const r={poly:poly.slice(),y:polyY,t:type}; regions.push(r); make(r); save(); } poly=null; hidePoly(); draw(); return; }
+    if(b.id==='lfin'){ if(poly&&poly.length>=3){ const r={poly:poly.slice(),y:polyY,t:type}; add(r); } poly=null; hidePoly(); draw(); return; }
     if(b.id==='lcancel'){ poly=null; hidePoly(); draw(); return; }
     if(b.id==='lundo'){ if(mode==='plant'||mode==='erase'){ const o=gprops.pop(); if(o){ unprop(o); saveP(); } } else { const r=regions.pop(); if(r)unmake(r); save(); } draw(); return; }
-    if(b.id==='lclear'){ if(!confirm('Remove all ground patches?'))return; for(const r of regions)unmake(r); regions.length=0; save(); draw(); return; }
+    if(b.id==='lclear'){ if(!confirm('Remove all ground patches?'))return; const old=regions.slice(); regions.length=0; for(const r of old)unmake(r); save(); draw(); return; }
     if(b.id==='lclrp'){ if(!confirm('Remove all placed plants and rocks?'))return; for(const o of gprops)unprop(o); gprops.length=0; saveP(); draw(); return; }
     if(b.id==='lexp'){ const plant=mode==='plant'||mode==='erase', data=plant?gprops.map(serP):regions.map(ser); const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=plant?'garden.json':'landscape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); return; }
     if(b.id==='ldone'){ LAND.toggle(); return; } });

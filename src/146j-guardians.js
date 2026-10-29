@@ -1,12 +1,13 @@
 // THE GUARDIANS: GUARD — the woodland folk who keep the castle over the dungeon (data/guardians.json): every body from one maker (a species head, a coat, a weapon), their posts and rounds round the castle, the welcome up the stair, and the keep's bounties on what you slay below.
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, CLOCK, FORAGE, INV, LINES, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
+import {CHARS, CLOCK, FORAGE, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {RIGNPC} from './083-npc-rig.js';
 import {SITES} from './089b-parksites.js';
 import {GEMS} from './101-gems.js';
+import {BODIES} from './111a-bodies.js';
 import {FOLK} from './146i-folk.js';
 const GUARD={list:[]}; window.GUARD=GUARD;
 { const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
@@ -23,6 +24,7 @@ const GUARD={list:[]}; window.GUARD=GUARD;
   TALK.tests.vit=a=>a==='hurt'?VIT.hp<.99:true;
   TALK.ops.heal=a=>{ const c=+a||0; if(INV.cash<c)return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.cash-=c; VIT.hp=1; say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
   FORAGE.BUYK.slime=['slime_']; FORAGE.BUYK.gems=GEMS.map(g=>g[0]); FORAGE.BUYK.fish=['x_'];
+  LINES.add('gd_pub',['Long watch. Good ale.','Sit down, sit down. Old Gristle won\'t bite.','To the keep!','Another round before the stair calls.','You were down there? Tell us everything.']);
   LINES.add('gd_up',['Back up! Good.','You made it out. Most do.','Anything follow you? No? Good.','Welcome back to the light.','Up the stair and still standing.']);
   for(const R of D.list)LINES.add('gd:'+R.k,R.say);
   GUARD.bounty=()=>B&&{...B};
@@ -71,12 +73,12 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const tail=sp==='mouse'||sp==='rat'?[[0,.3,-.1],[0,.2,-.28],[0,.18,-.46],[0,.28,-.6]]:sp==='redpanda'||sp==='raccoon'?[[0,.3,-.12],[0,.22,-.26],[0,.16,-.4],[0,.12,-.54]]:sp==='pangolin'?[[0,.26,-.12],[0,.14,-.3],[0,.06,-.48],[0,.03,-.62]]:sp==='lynx'||sp==='hyena'?[[0,.3,-.12],[0,.24,-.2],[0,.18,-.26],[0,.15,-.3]]:null;
       const bones=[['root',null,[0,0,0]],['hips','root',[0,.36,0]],['head','hips',[0,.66,0]],['earL','head',[-.08,.84,0]],['earR','head',[.08,.84,0]],['cape','hips',[0,.6,-.1]],
         ['armL','hips',[-.16*b,.56,0]],['armR','hips',[.16*b,.56,0]],['legL','hips',[-.08*b,.3,0]],['legR','hips',[.08*b,.3,0]],['tail1','hips',tail?tail[0]:[0,.3,-.12]],['tail2','tail1',tail?tail[1]:[0,.3,-.2]],['tail3','tail2',tail?tail[2]:[0,.3,-.28]]];
-      const parts=FOLK.parts(R);
+      const RIGGED=!cat, parts=RIGGED?[{name:'body',rank:0,bone:'hips',of:[{P:new Float32Array([0,0,0,.001,0,0,0,.001,0]),C:new Float32Array(9)}]}]:FOLK.parts(R);
       const grip=['sword','glowsword','greatsword'].includes(R.w)?'blade':['spear','staff','orbstaff','mushstaff','lantern','axe','mace','starwand'].includes(R.w)?'pole':R.w==='bow'?'bow':'';
       const ACTS=grip==='blade'?['scan','salute','','look']:grip==='bow'?['scan','draw','']:R.w==='orbstaff'||R.w==='starwand'?['raise','scan','']:['scan','',''];
       const def={bones,parts,springs:{cape:{f:-.3,s:.18,k:28,c:4,lim:.5},earL:{f:-.08,s:.1,k:60,c:6,lim:.25},earR:{f:-.08,s:.1,k:60,c:6,lim:.25},tail1:{f:-.12,s:.12,k:40,c:5,lim:.35},tail2:{f:-.18,s:.16,k:30,c:4,lim:.45},tail3:{f:-.24,s:.2,k:24,c:3.4,lim:.6},head:{f:-.03,s:.03,k:90,c:9,lim:.1}},
-        pose:(c,dt)=>{ const B=c.B, k=A.k=A.k+((A.act?1:0)-A.k)*Math.min(1,dt*6), t=A.t; RIGNPC.walk(c,{arm:.35,leg:.5,bob:.02,rock:.04}); B.head.rotation.y=c.look; if(c.sheet)return;
-          if(R.pose==='sit'){ B.hips.position.y-=.17; B.legL.rotation.x=B.legR.rotation.x=-1.45; B.armL.rotation.x=-.5; B.armR.rotation.x=-.5; }
+        pose:(c,dt)=>{ if(RIGGED){ A.k=(A.k||0)+((A.act?1:0)-(A.k||0))*Math.min(1,dt*6); if(N&&N.FIG)FOLK.drive(N,c,dt,A,R,grip); return; } const B=c.B, k=A.k=A.k+((A.act?1:0)-A.k)*Math.min(1,dt*6), t=A.t; RIGNPC.walk(c,{arm:.35,leg:.5,bob:.02,rock:.04}); B.head.rotation.y=c.look; if(c.sheet)return;
+          if(R.pose==='sit'||A.sit){ B.hips.position.y-=.17; B.legL.rotation.x=B.legR.rotation.x=-1.45; B.armL.rotation.x=-.5; B.armR.rotation.x=-.5; }
           if(cat){ B.head.rotation.z=Math.sin(c.t*.7)*.08; B.hips.rotation.x=Math.sin(c.t*.9)*.03; return; }
           if(grip==='blade'){ B.armR.rotation.x=-1.15+.05*Math.sin(c.t*1.3); B.armR.rotation.z=.12; }
           else if(grip==='pole'){ B.armR.rotation.x=R.pose==='sit'?-.6:-.28+.03*Math.sin(c.t*1.1); B.armR.rotation.z=.06; }
@@ -96,16 +98,24 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const homeAt=()=>{ const h=R.home; if(!h||IN||R.perch)return null; if(h==='castle')return {x:X(CASTLE.gate),z:Z(by0-.6)}; const q=SITES.homes[h]; return q?{x:q[0],z:q[2]}:null; };
       const always=IN||R.perch||!R.home||R.home==='castle'&&R.role==='post'&&!site, jit=(R.k.length*37%120)/60;
       const onShift=()=>{ if(always)return true; const h=CLOCK.h??12; return night?(h>=19+jit*.5||h<5.5):(h>=6.5+jit&&h<19.5+jit*.5); };
-      const N=RIGNPC.make(def,{key:R.k,name:R.n,eye:-1,metres:R.m,tall:1,radius:big?.26:.18,speed:R.role==='wander'?.45:.35,stride:7,lv:'up',group:'park',x:wx,z:wz,
-        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):R.perch==='wall'?((x,z)=>MODS.bodega.ground(x,z)+SHARED.BOD.YS(100)):((x,z)=>SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z)),
-        brain:(dt,you,s,N)=>{ if(N.sheet)return; A.t+=dt; if(A.mv)A.mv.t+=dt; const now=performance.now(), gap=now-(N.lastT||0)>2000; N.lastT=now;
+      let BRN=null; const N=RIGNPC.make(def,{key:R.k,name:R.n,eye:-1,metres:R.m,tall:1,radius:big?.26:.18,speed:R.role==='wander'?.45:.35,stride:7,lv:'up',group:'park',x:wx,z:wz,
+        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):(x,z)=>A.sit?0:R.perch==='wall'?MODS.bodega.ground(x,z)+SHARED.BOD.YS(100):SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z),
+        brain:BRN=(dt,you,s,N)=>{ if(N.sheet)return; A.t+=dt; if(A.mv)A.mv.t+=dt; const now=performance.now(), gap=now-(N.lastT||0)>2000; N.lastT=now;
           // the day: out on watch, then home to bed (or the other way round for the night watch); seen from far, it is where it should be
           const on=onShift(), H=homeAt();
+          // the evening at the Mossy Flagon: some of those off watch go there before bed, sit at a table, and leave at closing
+          const PUB=SITES.inside.pub, door=SITES.homes.pub, hh=CLOCK.h??12, evening=hh>=19.5&&hh<23.5, goPub=!on&&!night&&!!PUB&&!!door&&R.home!=='pub'&&evening&&((R.k.length*7+(window.MAIL&&MAIL.ready?MAIL.day():0))%5<2);
+          if(N.mode==='pub'&&!goPub){ PUB.taken.delete(N.seat); N.seat=null; A.sit=false; (MAPG.park||scene).add(N.g); N.park=true; s.x=door[0]; s.z=door[2]; s.to=null; N.mode=''; }
+          if(goPub&&N.mode!=='pub'){ PUB.taken=PUB.taken||new Set(); const seat=PUB.seats.find(q=>!PUB.taken.has(q));
+            if(seat){ if(gap||!N.g.visible||Math.hypot(s.x-door[0],s.z-door[2])<.7*T){ PUB.taken.add(seat); N.seat=seat; N.mode='pub'; N.going=false; N.g.visible=true; scene.add(N.g); N.park=false; A.sit=true; A.mv=null; s.x=seat.x; s.z=seat.z; s.to=null; s.hold=true; s.face={x:seat.tx,z:seat.tz}; s.home={x:seat.x,z:seat.z,r:0,id:s.home.id}; }
+              else{ N.g.visible=true; s.hold=false; s.to={x:door[0],z:door[2]}; s.next=null; } return; } }
+          if(N.mode==='pub'){ s.hold=true; s.to=null; s.x=N.seat.x; s.z=N.seat.z; s.face={x:N.seat.tx,z:N.seat.tz}; if(!A.act&&Math.random()<dt*.08){ A.act='raise'; A.t=0; N.aT=2.4; }
+            if(Math.hypot(you.x-s.x,you.z-s.z)<2.4*T&&!((N.greet=(N.greet||Math.random()*20)-dt)>0)){ N.greet=50+Math.random()*60; LINES.say(N,'gd_pub'); } if((N.aT=(N.aT??3)-dt)<=0){ A.act=''; N.aT=4+Math.random()*6; } return; }
           if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; N.g.visible=false; return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
               if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; N.g.visible=false; s.to=null; } } return; }
           if(on&&N.mode==='home'){ N.mode=''; N.g.visible=true; if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
-          if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T;
-            const g=far?N.geoLo:N.geoHi; if(N.me.geometry!==g){ if(!far&&!N.shaded)N.shade(); N.me.geometry=g; } }
+          if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T, M=N.FIG?N.FIG.me:N.me;
+            const g=far?N.geoLo:N.geoHi; if(M.geometry!==g){ if(!N.FIG&&!far&&!N.shaded)N.shade(); M.geometry=g; } }
           if(N.ctl&&N.ctl(dt,s,A,N))return;
           if(N.going){ if(Math.hypot(s.x-wx,s.z-wz)<.3*T||gap){ N.going=false; s.x=wx; s.z=wz; s.to=null; } else return; }
           const d=Math.hypot(you.x-s.x,you.z-s.z), fx=Math.sin(face), fz2=-Math.cos(face);
@@ -115,7 +125,11 @@ const GUARD={list:[]}; window.GUARD=GUARD;
           if(!A.mv&&(N.aT=(N.aT??2+Math.random()*4)-dt)<=0){ A.act=A.act?'':ACTS[Math.floor(Math.random()*ACTS.length)]; A.t=0; N.aT=A.act==='scan'?4+Math.random()*3:A.act?2.2:3+Math.random()*5; } }});
       N.park=!IN; N.gd=R; N.A=A; N.grip=grip; N.talk={start:'hi',lines:{hi:{say:R.say,opts:[...(CHARS.trade(N)?[{t:'WHAT DO YOU SELL?',do:'shop'}]:[]),{t:'WHAT DO YOU GUARD?',go:'keep'},{t:'GOODBYE.',go:''}]},keep:{say:D.keep,opts:[{t:'BACK.',go:'hi'}]}}};
       if(IN)scene.add(N.g);
-      { const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=RIGNPC.make({...def,parts:FOLK.parts(R)},{key:R.k+'~lo',name:R.n,eye:-1,metres:R.m,tall:1,radius:.18,speed:0,lv:'up',group:'park',x:wx,z:wz,range:0,brain:()=>{}});
+      N.farMove=dt=>{ if((N.fT=(N.fT||0)+dt)<1)return; N.fT=0; N.lastT=0; BRN(0,{x:pos.x,z:pos.z},N.st,N); };
+      if(RIGGED){ const body=FOLK.body(R); BODIES.fit(body); const FIG=BODIES.mesh(body), wrap=new THREE.Group(); wrap.scale.setScalar(1/body.S); wrap.add(FIG.me); N.body.add(wrap); N.me.visible=false;
+        N.FIG=FIG; N.fbody=body; N.SR=RIG.create(); FOLK.drive(N,{mv:0,t:0,look:0},0,A,R,grip); N.st.v=RIG.SPEED*N.H/52*(R.role==='wander'?1.1:1); N.tris=body.tris(); N.geoHi=body.GEO;
+        const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=FOLK.body(R); N.geoLo=lo.GEO; N.trisLo=lo.tris(); } finally{ FOLK.Q=q0; } }
+      else { const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=RIGNPC.make({...def,parts:FOLK.parts(R)},{key:R.k+'~lo',name:R.n,eye:-1,metres:R.m,tall:1,radius:.18,speed:0,lv:'up',group:'park',x:wx,z:wz,range:0,brain:()=>{}});
           lo.shade(); N.geoHi=N.me.geometry; N.geoLo=lo.me.geometry; N.trisLo=lo.tris; const i=NPCS.indexOf(lo); if(i>=0)NPCS.splice(i,1); lo.g.removeFromParent(); lo.me.geometry=new THREE.BufferGeometry(); } finally{ FOLK.Q=q0; } }
       if(at[3]!=null)N.st.h=Math.atan2(X(1)*Math.sin(face)-X(0)*Math.sin(face),Z(1)*-Math.cos(face)-Z(0)*-Math.cos(face));
       return N; };

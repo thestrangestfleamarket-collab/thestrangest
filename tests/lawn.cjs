@@ -1,4 +1,4 @@
-// THE LAWN CHECK: node tests/lawn.cjs dist/market.html. One start on the park lawn: knee-high tufts stand over the lawn round you (none out on the paths or water, none past the far ring), they lean away from you and spring back, the ground is painted in the same tufts, and the lawn is still known chunk by chunk for the foragers.
+// THE LAWN CHECK: node tests/lawn.cjs dist/market.html. One start on the park lawn: the standing grass (each kind its own shape) stands over the lawn round you (none out on the paths or water, none past the far ring), they lean away from you and spring back, the ground is painted in the same tufts, and the lawn is still known chunk by chunk for the foragers.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=lawn::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -11,7 +11,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => WEEDS.chunks.size >= 9 && [...WEEDS.chunks.values()].some(m => m && m.I) && TUFTS.stat().near > 0).catch(() => false)) break; await pg.waitForTimeout(1000); }
     // stand on open lawn
-    await pg.evaluate(() => { const c = W3.group.position; for (let r = 0; r < 16; r += .5) for (let a = 0; a < 6.28; a += .3) { const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r; if ([[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].every(([u, v]) => typeof WEEDS.top(x + u, z + v) === 'number')) { __dbg.UI.goTo(x, z, SHARED.py); return; } } });
+    await pg.evaluate(() => { const c = W3.group.position; for (let r = 0; r < 60; r += .5) for (let a = 0; a < 6.28; a += .3) { const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r; if ([[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].every(([u, v]) => typeof WEEDS.top(x + u, z + v) === 'number' && GRASS.at((x + u) / (33.9 / 30), (z + v) / (33.9 / 30)).shape)) { __dbg.UI.goTo(x, z, SHARED.py); return; } } });
     await pg.waitForTimeout(4000);
     const r = await pg.evaluate(async () => {
       const o = {}, c = W3.group.position, S = TUFTS.stat(); o.stat = S;
@@ -35,7 +35,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
         setTimeout(() => { on = false; T.push(performance.now()); let g = 0; for (let i = 1; i < T.length; i++) g = Math.max(g, T[i] - T[i - 1]); r({ ok: T.length > 3 && g < 10000, frames: T.length - 1, gap: Math.round(g) }); }, 20000); });
       return o;
     });
-    ok(r.stat.near > 300 && r.stat.far > 300 && r.stat.draws === 2, 'tufts stand over the lawn round you, whole ones near and small ones further, one draw each: ' + JSON.stringify(r.stat));
+    ok(r.stat.near > 300 && r.stat.far > 300 && r.stat.draws >= 1 && r.stat.draws <= 10, 'tufts stand over the lawn round you, whole ones near and small ones further, one draw a shape: ' + JSON.stringify(r.stat));
     ok(r.where.n > 0 && r.where.off === 0 && r.where.hit === 0, 'no tuft stands out on a path or the water (each is on the lawn or at its edge): ' + JSON.stringify(r.where));
     ok(r.where.R2 < 26, 'no tuft past the far ring (' + r.where.R2 + ')');
     ok(r.painted.colours > 30 && r.painted.green, 'the lawn ground is painted in the tufts\' greens, not one flat green: ' + JSON.stringify(r.painted));

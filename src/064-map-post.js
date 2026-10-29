@@ -2,7 +2,8 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {GRASS} from './014a-grass.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
 const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=x/TILE+72, gy=z/TILE-77; for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
@@ -70,10 +71,17 @@ const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunD
     for(const r of STORE.roofs)SEEN(r.me,!(r.R.inside(pos.x,pos.z)||ROOMS.cur===r.R)); const L=SHARED.LVL==='down'&&LEVELS.at?LEVELS.of[LEVELS.at(pos.x,pos.z,'down')]:null; SHARED.BOUND=L&&L.bound?L.bound(pos.x,pos.z):ROOMS.cur&&ROOMS.cur.off?ROOMS.cur:STORE.inStore(pos.x,pos.z)?STORE.bound:MB; }; }   // an off-map inside (bodega, apt, arcade) is walled off the map, so bound by its own box, not the street's limit
 window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEntries(Object.entries(MAPG).map(([k,g])=>[k,g.visible])),stairLamp:lamps.filter(L=>L.parent===MAPG.stairs).map(L=>L.intensity),py:typeof SHARED.py!=='undefined'?SHARED.py:null,pos:typeof pos!=='undefined'?[pos.x,pos.z]:null});
 
-{ const K=32, N=K*24, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), GC=SHARED.BOD.g.lawnCol;
-  for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const v=GC((i+.5)/24+200,(j+.5)/24+200), k=(j*N+i)*4; im.data[k]=v[0]; im.data[k+1]=v[1]; im.data[k+2]=v[2]; im.data[k+3]=255; }
-  g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy()); t.colorSpace=THREE.SRGBColorSpace;
-  t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K);
+{ const K=GRASS.TS, N=K*24, GL=GRASS.K.length;
+  // the lawn's nine grasses (GRASS): each kind's painted picture in one array, and a map of which kind grows where over your section, a texel a tile; the land picks by spot, its edges jittered so the kinds mingle
+  const g0=performance.now(), GD=new Uint8Array(N*N*4*GL); GRASS.K.forEach((k,i)=>GD.set(GRASS.paint(k),i*N*N*4)); const gt=new THREE.DataArrayTexture(GD,N,N,GL); gt.magFilter=THREE.NearestFilter; gt.minFilter=THREE.LinearMipmapLinearFilter; gt.generateMipmaps=true;
+  gt.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy()); gt.colorSpace=THREE.SRGBColorSpace; gt.wrapS=gt.wrapT=THREE.MirroredRepeatWrapping; gt.needsUpdate=true;
+  const t=new THREE.DataTexture(GD.subarray(N*N*4,N*N*8),N,N); t.magFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K); t.needsUpdate=true;
+  const KM=(()=>{ const L=SECTIONS.live, xs=[SHARED.BOD.XS(L.x0)/TILE,SHARED.BOD.XS(L.x1)/TILE], zs=[SHARED.BOD.ZS(L.y0)/TILE,SHARED.BOD.ZS(L.y1)/TILE], x0=Math.floor(Math.min(...xs))-4, z0=Math.floor(Math.min(...zs))-4, W=Math.ceil(Math.max(...xs))+4-x0, H=Math.ceil(Math.max(...zs))+4-z0, D=new Uint8Array(W*H);
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++)D[j*W+i]=GRASS.at(x0+i+.5,z0+j+.5).i; const m=new THREE.DataTexture(D,W,H,THREE.RedFormat); m.magFilter=m.minFilter=THREE.NearestFilter; m.needsUpdate=true;
+    // the map again over a box (world coords) when a grass is painted in the landscape editor
+    GRASS.remap=(a,b,c,d)=>{ const i0=Math.max(0,Math.floor(a/TILE)-x0-1), i1=Math.min(W-1,Math.ceil(c/TILE)-x0+1), j0=Math.max(0,Math.floor(b/TILE)-z0-1), j1=Math.min(H-1,Math.ceil(d/TILE)-z0+1); for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)D[j*W+i]=GRASS.at(x0+i+.5,z0+j+.5).i; m.needsUpdate=true; };
+    return {m,v:new THREE.Vector4(x0,z0,1/W,1/H)}; })();
+  GRASS.map=KM; GRASS.ms=Math.round(performance.now()-g0);
   const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, M=SHARED.BOD.MAP, tt=v=>v/TILE, R=320, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};
   const sh=new THREE.Shape([[LR.x0,-LR.z0],[LR.x1,-LR.z0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));
@@ -88,5 +96,9 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   { const z0=tt(Math.min(ZS(RING.river.y0),ZS(RING.river.y1))), z1=tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))); hole(LR.x0+.5,z0,LR.x1-.5,z1); }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
-  const m=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({map:t})); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }
+  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v};
+    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM;\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
+      float gk=floor(texture2D(tKM,(vec2(gt.x,-gt.y)+gj*1.1-uKM.xy)*uKM.zw).r*255.+.5); diffuseColor*=texture(tGK,vec3(vMapUv,gk)); }`); };
+  lm.customProgramCacheKey=()=>'grasskinds';
+  const m=new THREE.Mesh(geo,lm); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }
 export {HEMI, MAPLV};

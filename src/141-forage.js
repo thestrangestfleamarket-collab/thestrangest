@@ -5,6 +5,7 @@ import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
+import {GRASS} from './014a-grass.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
@@ -15,8 +16,7 @@ import {GEMS} from './101-gems.js';
     inkcap:['SHAGGY INK CAP',35,10,.04,0,0xd8d4cc,0xe8e4dc,[.6,1.7,.8,.8]],bolete:['KING BOLETE',45,16,.15,0,0x7a4a2a,0xd8c49a,[1.25,.8,1,1.6]],
     morel:['MOREL',55,26,.08,0,0xb08a5a,0xe6dcc4,[.62,1.5,.7,.9]],moonglow:['MOONGLOW',75,60,0,1,0xa8f0ff,0xd8f4ff,[.95,.6,1,.9]]};
   const MK=Object.keys(MU);
-  const GROWS={flat:{button:6,inkcap:3,puffball:1},roll:{button:3,puffball:3,inkcap:1},little:{button:4,redcap:1,puffball:1},
-    big:{redcap:4,button:2,inkcap:1},giant:{redcap:3,inkcap:2},bigflat:{inkcap:4,puffball:1},tuft:{puffball:5,button:1}}, GOLD=['','morel','chanterelle','bolete','moonglow'];
+  const GROWS=Object.fromEntries(GRASS.K.map(k=>[k.id,k.mush])), GOLD=['','morel','chanterelle','bolete','moonglow'];
   FORAGE.MU=MU; FORAGE.GROWS=GROWS; FORAGE.GOLD=GOLD;
   const RC=[['p_refresh','REFRESH POTION','alchemy',[0,50],{puffball:3},'your stamina all back'],['p_heal','HEAL POTION','alchemy',[15,65],{chanterelle:2,puffball:1},'half your health back'],
     ['p_str','STRENGTH POTION','alchemy',[30,80],{redcap:2},'run without tiring, 3 min'],['p_keen','KEEN EYE POTION','alchemy',[30,80],{inkcap:2},'see and pick as if 20 better, 5 min'],
@@ -79,7 +79,8 @@ import {GEMS} from './101-gems.js';
   const CAPS=mk(capG,new THREE.MeshLambertMaterial({flatShading:true})), STEMS=mk(stemG,new THREE.MeshLambertMaterial({flatShading:true})), GLOW=mk(capG,new THREE.MeshBasicMaterial({}));
   GLOW.castShadow=false; const HB=new THREE.BoxGeometry(.7*T,.5*T,.7*T), HM=new THREE.MeshBasicMaterial({visible:false}), hits=new THREE.Group(); (MAPG.park||scene).add(hits);
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  const pickKind=(g,r)=>{ const W=GROWS[g]||GROWS.flat; let s=0; for(const k in W)s+=W[k]; r*=s; for(const k in W)if((r-=W[k])<0)return k; return 'button'; };
+  FORAGE.spots=()=>[...CH.values()].flat().map(m=>[m.k,m.x,m.z]);
+  const pickKind=(g,r)=>{ const W=GROWS[g]||GROWS['33']; let s=0; for(const k in W)s+=W[k]; r*=s; for(const k in W)if((r-=W[k])<0)return k; return 'button'; };
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2];
       if(hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
       const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.53,202)), px=x+(hsh(x,z,203)-.5)*.4*T, pz=z+(hsh(z,x,204)-.5)*.4*T;

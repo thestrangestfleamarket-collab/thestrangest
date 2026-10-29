@@ -126,7 +126,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       nape=(p,y,a,k)=>H.y+y+a*Math.cos(th(p)*k)-p.y,
       cap=o=>p=>{ const fr=p.z>H.z?.4+.6*cl((p.y-line(p,o.fh??3.4,o.arch??.7,0,1))/2.5,0,1):1;
         let d=skull(p)-fr*(o.t+(o.crown||0)*Math.max(0,up(p))+(o.bell||0)*Math.max(0,-up(p)))-fr*grain(p,o.N||24,o.g||.18);
-        d=Math.max(d,-brow(p,o.fh??3.4,o.arch??.7,o.sc??.5,o.k??.9,o.ph)); if(!o.ears)d=Math.max(d,-ears(p)); return Math.max(d,nape(p,o.ny??-3.4,o.na??.6,o.nk??5)); },
+        d=Math.max(d,-brow(p,o.fh??3.4,o.arch??.7,o.sc??.5,o.k??.9,o.ph)); if(!o.ears)d=Math.max(d,-ears(p),-Math.max(4.6-Math.abs(p.x-H.x),H.z-2.0-p.z,p.y-H.y-.3)); return Math.max(d,nape(p,o.ny??-3.4,o.na??.6,o.nk??5)); },
       tube=(pts,rs,p)=>{ let d=1e9; for(let i=0;i+1<pts.length;i++)d=sm(d,R.rcone(p,ad(H,pts[i]),ad(H,pts[i+1]),rs[i],rs[i+1]),1.0); return d; },
       twist=(p,a,k)=>a*Math.sin((p.y-H.y)*k+Math.atan2(p.x-H.x,p.z-H.z)*2),
       tight=cap({t:.45,crown:.25,g:.22,N:20,fh:5.0,arch:1.5,sc:.2,k:1.1,ny:-4.0,na:.4,nk:3}),

@@ -49,6 +49,7 @@ const ROOMS={lazy:{},off:{}},
   WINDOWS={panes:[],pane(me,off,look,dark){ this.panes.push({me,off,look,dark}); if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
   EQUIP={},
   BOAT={},
+  RIDE={on:null,lift:0},   // what you are riding (146i-ride): a hoverboard, a balloon
   PB={},
   FIGFX={},
   MUS={},
@@ -93,4 +94,4 @@ const ROOMS={lazy:{},off:{}},
   BOOKS={},
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159d-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RINSP, ROOMS, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, st, STAGE, SWIM, TALK, TENANTS, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+export {AMB, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, st, STAGE, SWIM, TALK, TENANTS, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};

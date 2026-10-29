@@ -12,14 +12,14 @@ Object.assign(CHARS,{
     if(r.name)N.name=r.name;
     if(r.hp!=null)N.hp=+r.hp; if(r.stamina!=null)N.sta=+r.stamina;
     if(r.speed!=null&&st)st.v=+r.speed*TILE; if(r.size!=null&&st)st.R=+r.size*TILE;
-    if(+r.scale>0&&N.g)N.g.scale.setScalar(+r.scale);
+    if(+r.scale>0&&N.g){ if('size' in N)N.size=+r.scale; else N.g.scale.setScalar(+r.scale); }
     if(r.tint&&N.ct&&/^#[0-9a-f]{6}$/i.test(r.tint))N.ct.set(r.tint); },
   // one field, live, from the editor; value is already in the record's units (tiles a second, map tiles, ...)
   live(N,f,v){ const st=N&&N.st; if(!N)return; switch(f){
     case 'name': N.name=String(v); break;
     case 'hp': N.hp=+v; break; case 'stamina': N.sta=+v; break;
     case 'speed': if(st)st.v=+v*TILE; break; case 'size': if(st)st.R=+v*TILE; break;
-    case 'scale': if(N.g)N.g.scale.setScalar(+v>0?+v:1); break;
+    case 'scale': if('size' in N)N.size=+v>0?+v:1; else if(N.g)N.g.scale.setScalar(+v>0?+v:1); break;
     case 'tint': if(N.ct)N.ct.set(/^#[0-9a-f]{6}$/i.test(v)?v:'#ffffff'); break; } },
   // tiles <-> world for home positions (same mapping the behaviour editor used)
   tx:w=>{ const b=SHARED.BOD; return b&&b.XS?+((w-b.XS(0))/(b.XS(1)-b.XS(0))).toFixed(2):w; },

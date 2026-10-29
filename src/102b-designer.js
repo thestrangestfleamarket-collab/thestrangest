@@ -1,7 +1,7 @@
 // THE DESIGNER: your Walker's shape — each part's size, turn and place, and his height — designed in a studio (you alone, turned all the way round), kept in OWNED as a short code and sent to the other players with your look.
-import {THREE} from './003-shx.js';
-import {LOOKS, W3} from './003b-systems.js';
-import {renderer} from './004-main.js';
+import {SHARED, THREE} from './003-shx.js';
+import {LOOKS, PS2, W3} from './003b-systems.js';
+import {renderer, RH, ShaderPass} from './004-main.js';
 import {OWNED} from './005-save.js';
 const DESIGN={}; window.DESIGN=DESIGN;
 { const R=RIG, D2R=Math.PI/180;
@@ -13,9 +13,10 @@ const DESIGN={}; window.DESIGN=DESIGN;
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,c);
     renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
   // the parts you shape, each the pieces on one of his bones (a sleeve with its arm, the hair with the head); pairs end L / R
-  const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR','bust'];
-  const NAME={bust:'BUST',head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};
-  const partOf=P=>{ if(/^(bust|bodyBust)/.test(P.n))return 'bust'; const f=P.on||P.n, s=f.slice(-1); if(/^(head|hair|beard|ear|eye)/.test(f))return 'head'; if(f==='neck'||f==='torso'||f==='hips')return f;
+  const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR','bust','face','earL','earR','nose','eyes','brows','lips'];
+  const NAME={face:'FACE SHAPE',ear:'EAR',nose:'NOSE',eyes:'EYES',brows:'EYEBROWS',lips:'LIPS',bust:'BUST',head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};
+  const partOf=P=>{ if(/^(bust|bodyBust)/.test(P.n))return 'bust'; if(/^ear[LR]$/.test(P.n))return P.n; if(/^nose/.test(P.n))return 'nose'; if(/^(eyes|lashes)/.test(P.n))return 'eyes'; if(/^brows/.test(P.n))return 'brows'; if(/^lips/.test(P.n))return 'lips';
+    const f=P.on||P.n, s=f.slice(-1); if(/^(head|hair|beard)/.test(f))return 'face'; if(f==='neck'||f==='torso'||f==='hips')return f;
     for(const [re,k] of [[/^(sleeve|upperArm)/,'upperArm'],[/^forearm/,'forearm'],[/^(hand|fing)/,'hand'],[/^thigh/,'thigh'],[/^shin/,'shin'],[/^(shoe|foot)/,'foot']])if(re.test(f))return k+s; return null; };
   const PART=W3.pcs.map(partOf);
   const blank=()=>({s:[1,1,1],r:[0,0,0],o:[0,0,0]}), plain=d=>d.s.every(v=>Math.abs(v-1)<1e-3)&&d.r.every(v=>Math.abs(v)<.5)&&d.o.every(v=>Math.abs(v)<.025);
@@ -33,8 +34,16 @@ const DESIGN={}; window.DESIGN=DESIGN;
     CACHE.set(c,d); return d; };
   const eu=new THREE.Euler(), qt=new THREE.Quaternion();
   // a piece's edit with a design over it: its sizes times the design's, the design's turn and move in the bone's own frame
-  const mix=(e,i,d)=>{ const k=PART[i], p=d&&d.p[k]; if(!p||plain(p))return e; const b=e||{s:[1,1,1],o:[0,0,0],q:[0,0,0,1]}, hand=/^hand/.test(k);
-    const out={s:b.s.map((v,j)=>v*p.s[hand?0:j]),o:b.o,q:b.q}; if(!hand){ if(p.r.some(v=>Math.abs(v)>=.5))out.lq=qt.setFromEuler(eu.set(p.r[0]*D2R,p.r[1]*D2R,p.r[2]*D2R)).toArray(); if(p.o.some(v=>Math.abs(v)>=.025))out.lo=p.o.slice(); }
+  // the face's parts (on the head): HEAD shapes all of them together first, then each its own part about its own middle
+  const FACE=new Set(['face','earL','earR','nose','eyes','brows','lips']), CEN={};
+  const center=k=>{ if(CEN[k])return CEN[k]; const g=W3.mesh&&W3.mesh.geometry, P=g&&g.attributes.position, I=g&&g.attributes.pidx; if(!I)return null; let x=0,y=0,z=0,n=0;
+    for(let v=0;v<P.count;v++){ if(PART[Math.round(I.getX(v))]!==k)continue; x+=P.getX(v); y+=P.getY(v); z+=P.getZ(v); n++; } return n?(CEN[k]=[x/n,y/n,z/n]):null; };
+  const lq=p=>p.r.some(v=>Math.abs(v)>=.5)?qt.setFromEuler(eu.set(p.r[0]*D2R,p.r[1]*D2R,p.r[2]*D2R)).toArray():null, lo=p=>p.o.some(v=>Math.abs(v)>=.025)?p.o.slice():null;
+  const mix=(e,i,d)=>{ const k=PART[i], f=FACE.has(k), p=d&&d.p[k], hp=f&&d&&d.p.head&&!plain(d.p.head)?d.p.head:null, own=p&&!plain(p); if(!own&&!hp)return e;
+    const b=e||{s:[1,1,1],o:[0,0,0],q:[0,0,0,1]}, hand=/^hand/.test(k);
+    if(!f){ const out={s:b.s.map((v,j)=>v*p.s[hand?0:j]),o:b.o,q:b.q}; if(!hand){ const r=lq(p), m=lo(p); if(r)out.lq=r; if(m)out.lo=m; } return out; }
+    const out={s:b.s,o:b.o,q:b.q}; if(hp){ out.h={s:hp.s.slice()}; const r=lq(hp), m=lo(hp); if(r)out.h.lq=r; if(m)out.h.lo=m; }
+    if(own){ const c=center(k); out.ps=p.s.slice(); const r=lq(p), m=lo(p); if(r)out.lq=r; if(m)out.lo=m; if(c)out.lc=c.map((v,j)=>v*b.s[j]); }
     return out; };
 
   // yours: kept in OWNED, on the Walker you play, in your look for the other players
@@ -66,6 +75,8 @@ const DESIGN={}; window.DESIGN=DESIGN;
       <div class="dz-side"><div class="dz-t">DESIGN YOUR WALKER</div>
         <h3>VIEW</h3><div class="row">${['front','side','back','three'].map(v=>`<button data-view="${v}">${v==='three'?'¾':v.toUpperCase()}</button>`).join('')}</div>
         <h3>PART</h3><div class="row"><button data-part="head">HEAD</button><button data-part="neck">NECK</button><button data-part="torso">CHEST</button><button data-part="hips">HIPS</button>${(LOOKS.L||{}).form==='F'?'<button data-part="bust">BUST</button>':''}</div>
+        <h3>FACE</h3><div class="row"><button data-part="face">FACE SHAPE</button><button data-part="nose">NOSE</button><button data-part="eyes">EYES</button><button data-part="brows">EYEBROWS</button>${(LOOKS.L||{}).form==='F'?'<button data-part="lips">LIPS</button>':''}</div>
+        <div class="dz-part"><span>EAR</span><button data-part="earL">LEFT</button><button data-part="earR">RIGHT</button></div>
         ${pairs.map(k=>`<div class="dz-part"><span>${NAME[k]}</span><button data-part="${k}L">LEFT</button><button data-part="${k}R">RIGHT</button></div>`).join('')}
         <div class="row"><button id="dzmir">MIRROR SIDES</button></div>
         <h3>CHANGE</h3><div class="row">${['size','turn','move'].map(m=>`<button data-mode="${m}">${m.toUpperCase()}</button>`).join('')}</div>
@@ -121,8 +132,14 @@ const DESIGN={}; window.DESIGN=DESIGN;
       cam.left=-hw; cam.right=hw; cam.top=hh; cam.bottom=-hh; cam.near=.01; cam.far=d*2+40; cam.updateProjectionMatrix();
       cam.position.set(c.x+Math.sin(az)*Math.cos(elv)*d,c.y+Math.sin(elv)*d,c.z+Math.cos(az)*Math.cos(elv)*d); cam.up.copy(Y); cam.lookAt(c); cam.updateMatrixWorld(true); };
     const draw=(target,mat)=>DESIGN.portrait(target,cam,mat);
-    const shot=()=>{ if(!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(SW,SH); rt.texture.colorSpace=THREE.SRGBColorSpace; } frame(); draw(rt,null);
-      const px=new Uint8Array(SW*SH*4); renderer.readRenderTargetPixels(rt,0,0,SW,SH,px); const im=g2.createImageData(SW,SH); for(let y=0;y<SH;y++)im.data.set(px.subarray((SH-1-y)*SW*4,(SH-y)*SW*4),y*SW*4); g2.putImageData(im,0,0); handles(); };
+    // he is drawn as the game draws him: at the game's pixel size on screen, through its PS2 filter when that is on
+    let lrt=null, frt=null, psP=null; const small=document.createElement('canvas'), gs=small.getContext('2d');
+    const shot=()=>{ if(!W3.mesh)return; const gc=renderer.domElement, k=gc.clientHeight>0&&cv.clientHeight>0?RH/gc.clientHeight*cv.clientHeight/SH:1, sh=Math.max(60,Math.min(SH,Math.round(SH*k))), sw=Math.round(sh*SW/SH);
+      if(!lrt||lrt.height!==sh){ for(const t of [lrt,frt])if(t)t.dispose(); lrt=new THREE.WebGLRenderTarget(sw,sh); lrt.texture.colorSpace=THREE.SRGBColorSpace; frt=new THREE.WebGLRenderTarget(sw,sh); frt.texture.colorSpace=THREE.SRGBColorSpace; small.width=sw; small.height=sh; }
+      frame(); draw(lrt,null); let out=lrt; const gp=SHARED.composer&&SHARED.composer.passes.find(q=>q.enabled&&q.uniforms&&q.uniforms.uL&&q.uniforms.uA);
+      if(gp){ if(!psP)psP=new ShaderPass(PS2.shader); psP.uniforms.uL.value.set(gp.uniforms.uL.value.x*sh/RH,gp.uniforms.uL.value.y*sh/RH); psP.uniforms.uA.value=gp.uniforms.uA.value; psP.uniforms.uT.value=gp.uniforms.uT.value; psP.render(renderer,frt,lrt); out=frt; renderer.setRenderTarget(null); }
+      const px=new Uint8Array(sw*sh*4); renderer.readRenderTargetPixels(out,0,0,sw,sh,px); const im=gs.createImageData(sw,sh); for(let y=0;y<sh;y++)im.data.set(px.subarray((sh-1-y)*sw*4,(sh-y)*sw*4),y*sw*4); gs.putImageData(im,0,0);
+      g2.imageSmoothingEnabled=false; g2.clearRect(0,0,SW,SH); g2.drawImage(small,0,0,SW,SH); handles(); };
     DESIGN.loop=t=>{ if(!DESIGN.on)return; requestAnimationFrame(DESIGN.loop); if(t-last<33)return; last=t; shot(); };
 
     // a click on him picks the part under the mouse (each piece drawn as its number)
@@ -132,7 +149,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
 
     // the handles: the picked part's three axes from its joint — squares to size it, rings to turn it, arrows to move it
     const HL=9, COL=['#e8604c','#7ed957','#5aa6ff'];
-    const axes=()=>{ const k=sel, i=W3.idx(k==='head'?'head':k==='footL'?'shoeL':k==='footR'?'shoeR':k), B=W3.lastB; if(i<0||!B)return null; const P=W3.pcs[i], F=R.frameOf(P.on||P.n,B), p=part(k);
+    const axes=()=>{ const k=sel, i0=W3.idx(k==='head'?'head':k==='footL'?'shoeL':k==='footR'?'shoeR':k), i=i0>=0?i0:PART.indexOf(k), B=W3.lastB; if(i<0||!B)return null; const P=W3.pcs[i], F=R.frameOf(P.on||P.n,B), p=part(k);
       const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(p.r[0]*D2R,p.r[1]*D2R,p.r[2]*D2R)), Mw=W3.mesh.matrixWorld;
       const fx=new THREE.Vector3(F.x.x,F.x.y,F.x.z), fy=new THREE.Vector3(F.y.x,F.y.y,F.y.z), fz=new THREE.Vector3(F.z.x,F.z.y,F.z.z);
       const o=new THREE.Vector3(F.o.x,F.o.y,F.o.z).addScaledVector(fx,p.o[0]).addScaledVector(fy,p.o[1]).addScaledVector(fz,p.o[2]);

@@ -466,5 +466,20 @@
   "value": 8,
   "stackable": true,
   "weight": 0.1
+ },
+ "cube2": {
+  "value": 6,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "cube3": {
+  "value": 12,
+  "weight": 0.15,
+  "sellable": true
+ },
+ "cube4": {
+  "value": 25,
+  "weight": 0.2,
+  "sellable": true
  }
 }

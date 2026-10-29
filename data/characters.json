@@ -609,5 +609,50 @@
     }
    }
   }
+ },
+ "block": {
+  "name": "THE BLOCK",
+  "trade": {
+   "sells": [
+    "cube2",
+    "cube3",
+    "cube4"
+   ],
+   "line": "Every side one colour. Simple. Go on."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hold still. You'd look better in teal.",
+      "Click. Click. Click. Oh, you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I SOLVE ONE?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Drag a face to turn its row. Drag the dark to look round. Every side one colour and you're done. I'm fast. You won't be.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

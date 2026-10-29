@@ -46,7 +46,7 @@ export default {
     // the market's shared files the owner sets (the busker's song): anyone logged in reads one, only the owner writes it
     const sh = /^\/shared\/([a-z0-9.-]{1,40})$/.exec(p);
     if (sh) { const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
-      if (request.method === "GET") { const f = await postOf(env).getFile(sh[1]); if (!f) return new Response("none", { status: 404 }); return new Response(f.data, { headers: { "content-type": f.type, "cache-control": "no-store" } }); }
+      if (request.method === "GET") { const f = await postOf(env).getFile(sh[1]); if (!f) return new Response(null, { status: 204 }); return new Response(f.data, { headers: { "content-type": f.type, "cache-control": "no-store" } }); }
       if (request.method === "POST") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
         const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
         const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);

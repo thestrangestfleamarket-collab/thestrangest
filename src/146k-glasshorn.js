@@ -89,7 +89,7 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
 
   /* ---------- playing: a song, a rest while she listens, the next; only while you are near enough to hear ---------- */
   const P={i:0,t:0,sent:0,rest:4,list:tunes(),cur:null,start:0,beat:.5,src:'own'};
-  const load=async()=>{ try{ const r=await fetch('/shared/tune.glasshorn',{credentials:'same-origin'}); if(!r.ok)return; const ty=r.headers.get('content-type')||'', buf=await r.arrayBuffer(); HORN.use(buf,ty,'THE OWNER\'S SONG'); }catch(e){} };
+  const load=async()=>{ try{ const r=await fetch('/shared/tune.glasshorn',{credentials:'same-origin'}); if(!r.ok||r.status===204)return; const ty=r.headers.get('content-type')||'', buf=await r.arrayBuffer(); HORN.use(buf,ty,'THE OWNER\'S SONG'); }catch(e){} };
   HORN.use=(buf,ty,name)=>{ if(/midi|mid$/.test(ty)||(new Uint8Array(buf,0,4)).join()==='77,84,104,100'){ const n=HORN.midi(buf); if(n.length){ P.list=[{name,sec:true,notes:n}]; P.src='midi'; P.cur=null; P.rest=1; } return 'midi'; }
     if(audio){ audio.pause(); URL.revokeObjectURL(audio.src); } audio=new Audio(URL.createObjectURL(new Blob([buf],{type:ty||'audio/mpeg'}))); audio.loop=false; audio.crossOrigin='anonymous'; abuf=null; P.src='audio'; P.cur=null; P.rest=1; P.list=[{name,audio:true}]; return 'audio'; };
   const near=N=>N&&N.on&&!ROOMS.cur&&SHARED.LVL==='up'&&Math.hypot(pos.x-N.st.x,pos.z-N.st.z)<30*T;

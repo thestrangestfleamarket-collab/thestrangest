@@ -1,5 +1,5 @@
 // THE WATER CHECK: node tests/water.cjs dist/market.html. One water (FLOW, 065a): the Hudson, the big lake and the stream share the simulation; still water stays still,
-// a splash makes waves, a swimmer is carried; the fish (FISHES, 141e) swim in each water, the catch and the colourful ones; the deep holes, dark below without a light or a glowcap.
+// a splash makes waves, a swimmer is carried; the fish (FISHES, 141f) swim in each water, the catch and the colourful ones; the deep holes, dark below without a light or a glowcap.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=water::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {

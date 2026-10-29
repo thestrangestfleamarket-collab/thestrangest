@@ -6,7 +6,7 @@ import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
-import {FISHES} from './141e-fishes.js';
+import {FISHES} from './141f-fishes.js';
 const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
 // the rod is held through WIELD (146a): its blank bends with the line's pull; the cast and the fight drive the arm
 { const T=TILE, Y=v=>v*T/.84, V3=THREE.Vector3, A=.95;

@@ -38,8 +38,8 @@ jobs:
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
-          k fishing 'src/142-|src/066|src/141e|fishing'
-          k water   'src/065a|src/066-|src/060a|src/089a|src/141e|water'
+          k fishing 'src/142-|src/066|src/141f|fishing'
+          k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k guardians 'src/146[i-k]|src/089b|src/062-|guardians'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4

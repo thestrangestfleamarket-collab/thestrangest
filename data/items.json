@@ -365,6 +365,189 @@
   "stackable": true,
   "value": 5
  },
+ "board_pine": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 40,
+  "speed": 4.5,
+  "len": 0.72,
+  "weight": 2.5
+ },
+ "board_moss": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 65,
+  "speed": 5.5,
+  "len": 0.62,
+  "weight": 2.5
+ },
+ "board_ember": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 95,
+  "speed": 6.5,
+  "len": 0.82,
+  "weight": 2.5
+ },
+ "board_moth": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 130,
+  "speed": 7.2,
+  "len": 0.86,
+  "weight": 2.5
+ },
+ "board_bone": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 170,
+  "speed": 8,
+  "len": 0.92,
+  "weight": 2.5
+ },
+ "board_teal": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 260,
+  "speed": 9.5,
+  "len": 1.05,
+  "weight": 2.5
+ },
+ "tv_console": {
+  "value": 140,
+  "weight": 30,
+  "sellable": true
+ },
+ "tv_small": {
+  "value": 70,
+  "weight": 6,
+  "sellable": true
+ },
+ "pc_home": {
+  "value": 180,
+  "weight": 12,
+  "sellable": true
+ },
+ "modem": {
+  "value": 60,
+  "weight": 1.5,
+  "sellable": true
+ },
+ "radio_scanner": {
+  "slot": "hand",
+  "grants": "scan",
+  "value": 70,
+  "weight": 0.5
+ },
+ "nv_goggles": {
+  "slot": "eyes",
+  "grants": "night",
+  "value": 95,
+  "weight": 0.6,
+  "offworld": true
+ },
+ "curse_rats": {
+  "value": 15,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_cloud": {
+  "value": 12,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_stink": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "cube2": {
+  "value": 6,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "cube3": {
+  "value": 12,
+  "weight": 0.15,
+  "sellable": true
+ },
+ "cube4": {
+  "value": 25,
+  "weight": 0.2,
+  "sellable": true
+ },
+ "balloon": {
+  "slot": "hand",
+  "grants": "lift",
+  "value": 15,
+  "weight": 0.05,
+  "speed": 5
+ },
+ "seed_star": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_sun": {
+  "value": 9,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "pot": {
+  "value": 8,
+  "weight": 2
+ },
+ "dirt": {
+  "value": 3,
+  "stackable": true,
+  "weight": 3
+ },
+ "water": {
+  "value": 1,
+  "stackable": true,
+  "weight": 1
+ },
+ "fr_star": {
+  "value": 10,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.25
+ },
+ "fr_sun": {
+  "value": 16,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.45
+ },
+ "fr_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.12
+ },
  "p_refresh": {
   "stackable": true,
   "value": 12
@@ -462,6 +645,96 @@
   "stackable": true,
   "edible": true,
   "value": 30
+ },
+ "jacket_denim": {
+  "slot": "body",
+  "color": "#2a4a7a",
+  "value": 35,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "jacket_stud": {
+  "slot": "body",
+  "color": "#1c1c20",
+  "value": 60,
+  "weight": 1.6,
+  "sellable": true
+ },
+ "jeans": {
+  "slot": "legs",
+  "color": "#34507e",
+  "value": 30,
+  "weight": 0.8,
+  "sellable": true
+ },
+ "shades": {
+  "slot": "eyes",
+  "color": "#1e6a3a",
+  "value": 20,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "soda_pink": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "swift",
+  "boostS": 90
+ },
+ "soda_white": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "str",
+  "boostS": 120
+ },
+ "soda_teal": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "regen",
+  "boostS": 60
+ },
+ "cactus_eye": {
+  "value": 35,
+  "weight": 1.5,
+  "offworld": true
+ },
+ "cactus": {
+  "value": 5,
+  "weight": 1
+ },
+ "bonsai": {
+  "value": 20,
+  "weight": 1.5
+ },
+ "cigar": {
+  "slot": "hand",
+  "value": 6,
+  "weight": 0.05,
+  "stackable": true
+ },
+ "cigar_blue": {
+  "slot": "hand",
+  "value": 15,
+  "weight": 0.05,
+  "stackable": true,
+  "offworld": true
+ },
+ "phone_home": {
+  "value": 40,
+  "weight": 2
+ },
+ "phone_cell": {
+  "slot": "hand",
+  "value": 120,
+  "weight": 1
  },
  "glowcap": {
   "edible": true,

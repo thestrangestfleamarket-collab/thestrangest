@@ -2,14 +2,14 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, SOL, STN, SYS, TILE} from './006-map-pre.js';
+import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH} from './008-batch.js';
 import {castleMat, gboxS} from './062-castle.js';
 await grab('dungeon',async()=>{});
 { const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, GAP=40, G=MAPG.dungeon;
-  const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, LEN=46, lot=n=>({x0:900+(n-1)*GAP,y0:-20,x1:914+(n-1)*GAP,y1:-20+LEN,h:130});
-  const lotAt=(x,z)=>{ const gx=iX(x), gy=iZ(z), n=Math.floor((gx-900)/GAP)+1; if(n<1||n>NL)return 0; const B=lot(n); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1?n:0; };
+  const iX=x=>(x-X(0))/TILE, iZ=z=>(z-Z(0))/TILE, LEN=46, DX0=900+OFFDX, lot=n=>({x0:DX0+(n-1)*GAP,y0:-20,x1:DX0+14+(n-1)*GAP,y1:-20+LEN,h:130});
+  const lotAt=(x,z)=>{ const gx=iX(x), gy=iZ(z), n=Math.floor((gx-DX0)/GAP)+1; if(n<1||n>NL)return 0; const B=lot(n); return gx>B.x0&&gx<B.x1&&gy>B.y0&&gy<B.y1?n:0; };
   const traps=(n,R,dn)=>{ let sd=n*7919+13; const r=()=>{ sd=sd*16807%2147483647; return (sd-1)/2147483646; }, H=[], end=(dn?dn.y0:R.y1)-2; let y=R.y0+6.5, side=r()<.5;   // the same pits, spikes and webs each time you come to a level; more of them deeper
     while(y<end-1.6){ const p=r();
       if(p<.34+.04*n){ const k=r(), rx=k<.3?.7+r()*.5:k<.75?1.3+r()*.9:Math.min(3.4,2.2+r()*1.1+.15*n), ry=Math.max(.6,Math.min(2.4,rx*(.45+r()*.35))), wl=r()<.55, W=R.x1-R.x0;

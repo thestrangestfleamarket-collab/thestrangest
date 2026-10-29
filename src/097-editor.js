@@ -3,6 +3,7 @@ import {THREE} from './003-shx.js';
 import {ED, W3} from './003b-systems.js';
 Object.assign(ED,{on:false,anim:false});
 { const mS=new THREE.Matrix4(), mT=new THREE.Matrix4(), mQ=new THREE.Matrix4(), qq=new THREE.Quaternion();
-  W3.applyE=(M,E,o)=>{ if(E.lo)M.multiply(mT.makeTranslation(E.lo[0],E.lo[1],E.lo[2])); if(E.lq)M.multiply(mQ.makeRotationFromQuaternion(qq.set(...E.lq))); M.multiply(mS.makeScale(E.s[0],E.s[1],E.s[2])); M.premultiply(mT.makeTranslation(-o.x,-o.y,-o.z)); M.premultiply(mQ.makeRotationFromQuaternion(qq.set(...E.q))); M.premultiply(mT.makeTranslation(o.x+E.o[0],o.y+E.o[1],o.z+E.o[2])); }; }
+  W3.applyE=(M,E,o)=>{ if(E.h){ const h=E.h; if(h.lo)M.multiply(mT.makeTranslation(h.lo[0],h.lo[1],h.lo[2])); if(h.lq)M.multiply(mQ.makeRotationFromQuaternion(qq.set(...h.lq))); M.multiply(mS.makeScale(h.s[0],h.s[1],h.s[2])); }
+  if(E.lo)M.multiply(mT.makeTranslation(E.lo[0],E.lo[1],E.lo[2])); if(E.lc)M.multiply(mT.makeTranslation(E.lc[0],E.lc[1],E.lc[2])); if(E.lq)M.multiply(mQ.makeRotationFromQuaternion(qq.set(...E.lq))); if(E.ps)M.multiply(mS.makeScale(E.ps[0],E.ps[1],E.ps[2])); if(E.lc)M.multiply(mT.makeTranslation(-E.lc[0],-E.lc[1],-E.lc[2])); M.multiply(mS.makeScale(E.s[0],E.s[1],E.s[2])); M.premultiply(mT.makeTranslation(-o.x,-o.y,-o.z)); M.premultiply(mQ.makeRotationFromQuaternion(qq.set(...E.q))); M.premultiply(mT.makeTranslation(o.x+E.o[0],o.y+E.o[1],o.z+E.o[2])); }; }
 ED.HEADS={round:{w:1,h:1,d:1,sq:0,tp:0},oval:{w:.94,h:1.08,d:.98,sq:0,tp:0},square:{w:1.03,h:.98,d:1,sq:.85,tp:0},long:{w:.92,h:1.13,d:.96,sq:.2,tp:0},
   wide:{w:1.12,h:.93,d:1.02,sq:.2,tp:0},heart:{w:1.02,h:1.02,d:1,sq:0,tp:.2},pear:{w:1,h:1,d:1,sq:.25,tp:-.18}};

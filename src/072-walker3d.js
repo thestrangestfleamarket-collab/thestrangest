@@ -176,13 +176,20 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     { // her face: the jaw drawn in softly toward a smaller, rounder chin, and lashes at the outer top of each eye (both only on the female build)
       const ears=p=>Math.min(ell(p,ad(H,Vv(6.2,-1.8,-0.8)),Vv(0.75,1.35,0.9)),ell(p,ad(H,Vv(-6.2,-1.8,-0.8)),Vv(0.75,1.35,0.9))), nape=p=>1.5*cl((H.y-2.0-p.y)/4.5,0,1)*cl((H.z-0.5-p.z)/4.5,0,1);
       const soft=p=>{ const t=cl((H.y-1.0-p.y)/8,0,1), q=Vv(H.x+(p.x-H.x)*(1+.34*t*t+.05),p.y,H.z+(p.z-H.z)*(1+.06*t+.03));
-        return Math.min(sm(rbox(q,H,Vv(5.9,7.7,6.2),4.8+.4*t)+nape(p),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4),ears(p),rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42)); };
+        return sm(rbox(q,H,Vv(5.9,7.7,6.2),4.8+.4*t)+nape(p),R.rcone(q,ad(H,Vv(0,-6.2,1.6)),ad(H,Vv(0,-9.4,.6)),1.7,1.3),1.4); };
       head.form='M'; PCS.push(Object.assign({},head,{n:'headF',d:soft,form:'F',paint:()=>null}));
-      let zf=H.z; while(soft(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
+      const softN=p=>Math.min(soft(p),rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42));
+      let zf=H.z; while(softN(Vv(H.x+2.6,H.y+1.25,zf))<0&&zf<H.z+12)zf+=.05;
       const lash=s=>p=>Math.min(tube([Vv(s*2.95,1.05,zf-H.z-.25),Vv(s*3.45,1.4,zf-H.z-.5)],[.09,.03],p),tube([Vv(s*2.6,1.15,zf-H.z-.15),Vv(s*2.95,1.55,zf-H.z-.35)],[.08,.03],p));
-      let zm=H.z; while(soft(Vv(H.x,H.y-5.3,zm))<0&&zm<H.z+12)zm+=.05;
+      let zm=H.z; while(softN(Vv(H.x,H.y-5.3,zm))<0&&zm<H.z+12)zm+=.05;
       PCS.push({n:'lipsF',on:'head',m:'lips',d:p=>Math.min(ell(p,Vv(H.x,H.y-5.05,zm-.3),Vv(1.2,.3,.42)),ell(p,Vv(H.x,H.y-5.55,zm-.32),Vv(1.05,.34,.42))),bb:[H.x-3,H.x+3,H.y-8,H.y-4,zm-2,zm+2],step:.14,cell:.12,form:'F'});
       PCS.push({n:'lashesF',on:'head',m:'pupil',d:p=>Math.min(lash(1)(p),lash(-1)(p)),bb:[H.x-5,H.x+5,H.y-1,H.y+4,H.z+1,H.z+11],step:.14,cell:.12,form:'F'}); }
+    { // the ears and the nose are their own pieces on the head, so each can be shaped in the designer; his head is the skull and jaw alone
+      const nape=p=>1.7*Math.max(0,Math.min(1,(H.y-2.0-p.y)/4.5))*Math.max(0,Math.min(1,(H.z-0.5-p.z)/4.5));
+      head.d=p=>Math.min(rbox(p,H,Vv(6.0,7.8,6.3),4.6)+nape(p),R.rcone(p,ad(H,Vv(0,-6,1.6)),ad(H,Vv(0,-10.5,0.2)),2.4,2.2));
+      for(const [n,sx] of [['earL',1],['earR',-1]])PCS.push({n,on:'head',under:'head',m:'skin',d:p=>ell(p,ad(H,Vv(sx*6.25,-1.8,-.8)),Vv(.8,1.45,.95)),bb:[H.x+sx*6.25-2,H.x+sx*6.25+2,H.y-4,H.y+.5,H.z-2.6,H.z+1],step:.25,cell:.2});
+      PCS.push({n:'noseM',on:'head',under:'head',m:'skin',d:p=>rbox(p,ad(H,Vv(0,-2.6,6.35)),Vv(0.95,1.75,1.25),0.45),bb:[H.x-2,H.x+2,H.y-5,H.y,H.z+4.5,H.z+8.5],step:.2,cell:.16,form:'M'},
+               {n:'noseF',on:'head',under:'head',m:'skin',d:p=>rbox(p,ad(H,Vv(0,-2.55,6.3)),Vv(0.82,1.55,1.15),0.42),bb:[H.x-2,H.x+2,H.y-5,H.y,H.z+4.5,H.z+8.5],step:.2,cell:.16,form:'F'}); }
     { // brows (his heavier and straighter, hers thinner and arched), in the hair's colour, on each face's front
       const RXb=(a,b)=>[(a-13)*.47,(b+1-13)*.47], RYb=(a,b)=>[.7-(b+1-14)*.47,.7-(a-14)*.47], HF=PCS.find(P=>P.n==='headF'), on=(hdx,x,y,r)=>{ let z=H.z+12; while(hdx(Vv(H.x+x,H.y+y,z))>r*.35&&z>H.z)z-=.05; return Vv(x,y,z-H.z); },
         brow=(hdx,r,ar,tilt)=>{ const pts=s=>[[1.2,2.3+tilt],[2.5,2.5+ar],[3.7,2.25+ar*.3-tilt*.3]].map(([x,y])=>{ const q=on(hdx,s*x,y,r); return q; });

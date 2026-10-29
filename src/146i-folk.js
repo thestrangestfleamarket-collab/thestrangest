@@ -119,7 +119,7 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
       const a=onHead([sx*.55,.62,-.05]); path=[a,[a[0]+sx*.07,a[1]+.0,a[2]+.01],[a[0]+sx*.14,a[1]+.04,a[2]+.03],[a[0]+sx*.18,a[1]+.1,a[2]+.04]]; return S(tube(path,[.026,.022,.015,0],8,12),(x,y,z,h)=>vary(y>a[1]+.07?C('#5a4a3a'):C('#d8ccb0'),h,.1)); }),3));
   if(R.mask==='metal'){ const E=[]; E.push(shell(2,{r:[.1,.11,.06],p:[0,.73,.085],keep:u=>u[2]>-.1,col:(u,h)=>gss(Math.abs(u[0]),u[1],.42,.15,.12,.12)>.5?BLACK:vary([.66,.68,.7],h,.18),d:u=>[u[0],u[1],u[2]*.6]})); for(let i=0;i<10;i++){ const a=onHead([(i%5-2)*.18,i<5?.45:-.1,.95]); E.push(shell(0,{r:[.008,.008,.008],p:[a[0],a[1],a[2]+.03],col:[.4,.4,.42]})); } L.push(pt('mask','head',E,5)); }
   if(R.patch){ const s0=onHead([EYE[0],EYE[1],EYE[2]]); L.push(pt('patch','head',[S(at(new THREE.CircleGeometry(EYE[3]*1.4,12),[s0[0],s0[1],s0[2]+.012],[0,20,0]),BLACK), S(tube([onHead([-1,EYE[1]+.25,0]),onHead([0,EYE[1]+.3,1]).map((v,i)=>i===2?v+.02:v),onHead([1,EYE[1]-.05,0])],[.005,.005,.005],4,10),BLACK)],5)); }
-  if(R.beads)L.push(pt('beads','hips',Array.from({length:22},(_,i)=>{ const a=i/22*Math.PI*1.2-Math.PI*.6; return shell(1,{r:[.014,.012,.014],p:[Math.sin(a)*.1*b,.6-Math.cos(a)*.09,.08*b+Math.cos(a)*.035],col:(u,h)=>vary(i%3?C('#a86a3a'):C('#7a4a2a'),h,.2)}); }),3));
+  if(!R._v2&&R.beads)L.push(pt('beads','hips',Array.from({length:22},(_,i)=>{ const a=i/22*Math.PI*1.2-Math.PI*.6; return shell(1,{r:[.014,.012,.014],p:[Math.sin(a)*.1*b,.6-Math.cos(a)*.09,.08*b+Math.cos(a)*.035],col:(u,h)=>vary(i%3?C('#a86a3a'):C('#7a4a2a'),h,.2)}); }),3));
   if(K.quills)L.push(pt('quills','head',quills(R.quill?C(R.quill):f,hc,.11,30,.085,R.k.length),3));
   // ears: a cup turned out from the skull, the inside paler
   if(K.ear){ const E=K.ear, inC=['mouse','rat','rabbit','rhino','hedgehog'].includes(R.sp)?[.86,.6,.56]:R.sp==='hyena'?dk(f,.5):R.sp==='redpanda'||R.sp==='raccoon'?WHITE:R.sp==='panda'?f2:lt(f,.3), ouC=R.sp==='panda'?f2:R.sp==='batear'?[.32,.29,.3]:f;
@@ -130,6 +130,7 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
       const of=[g]; if(E.tuft)of.push(S(at(new THREE.ConeGeometry(.007,.06,4),[base[0]+sx*.012,base[1]+s*2.2,base[2]],[0,0,sx*-E.tilt]),BLACK));
       L.push(pt('ear '+sx,sx<0?'earL':'earR',of,3)); } }
 
+  if(!R._v2){
   // the body
   const sk=R.sp==='frog'||R.sp==='rhino'||R.sp==='shark'||R.sp==='toucan'?fur(f,.1):R.sp==='pangolin'?((u,h)=>MARK.scales(u,h)):R.stars?((u,h)=>h>.92?[.95,.92,.8]:vary(f,h)):fur(f), lim=R.sp==='panda'?f2:f;
   const hand=['mouse','rat','rabbit','hedgehog'].includes(R.sp)?PINK:R.sp==='owl'||R.sp==='barnowl'?[.62,.58,.52]:R.sp==='panda'?f2:R.sp==='frog'?lt(f,.1):dk(lim,.1);
@@ -177,11 +178,12 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
     S(at(new THREE.TorusGeometry(.07,.016,5,14),[0,.62,0],[90,0,0]),c2)],2)); }
   if(R.sash)L.push(pt('sash','hips',[S(at(new THREE.TorusGeometry(.128*b,.015,5,16),[0,.37,0],[90,0,0]),cloth(C(R.sash))), S(tube([[.1*b,.56,.08],[.03,.47,.13*b],[-.08*b,.38,.1]],[.014,.016,.014],5,6,{sx:1,sz:.35}),cloth(C(R.sash)))],3));
   if(R.cape){ const k=C(R.cape); L.push(pt('cape','cape',[S(lathe([[.1*b,.62],[.15*b,.5],[.2*b,.28],[.24*b,.04]],20,10,{d:folds(8,.016,.05),keep:(u)=>Math.abs(u-.5)<.23}),R.stars?((x,y,z,h)=>h>.9?[.95,.9,.75]:vary(k,h,.1)):clothF(k,.3)), shell(2,{r:[.15*b,.04,.13*b],p:[0,.6,-.005],col:(u,h)=>vary(k,h,.12),j:.006})],2)); }
+  }
   if(R.hood){ const k=C(R.hood); L.push(pt('hood','head',[shell(2,{r:[.158,.16,.15],p:[0,.755,-.01],keep:u=>!(u[2]>.25&&u[1]<.62&&u[1]>-.8&&Math.abs(u[0])<.72),d:u=>[u[0],u[1]+.12*Math.max(0,u[1]-.6)*(u[2]<0?1:0),u[2]-.06*Math.max(0,-u[2])],col:(u,h)=>vary(Math.abs(u[0])>.6&&u[2]>.2?dk(k,.25):k,h,.12),j:.006}),
     shell(2,{r:[.16*b,.06,.14*b],p:[0,.63,-.005],col:(u,h)=>vary(k,h,.12),j:.008})],5)); }
   if(R.hat){ const k=C(R.hc); const H={
       helm:()=>[shell(2,{r:[.148,.15,.152],p:[0,.765,-.005],keep:u=>u[1]>-.05||u[2]<-.3||(Math.abs(u[0])>.7&&u[1]>-.55),col:(u,h)=>Math.abs(u[0])<.06&&u[1]>0?vary(lt(k,.2),h,.08):vary(k,h,.16)}), S(at(new THREE.TorusGeometry(.148,.01,5,18),[0,.758,0],[90,0,0]),dk(k,.2)), S(at(new THREE.BoxGeometry(.016,.075,.016),[0,.745,.15]),dk(k,.15))],
-      straw:()=>[S(at(lathe([[0,.13],[.08,.1],[.18,.04],[.27,0]],20,6),[0,.825,0]),(x,y,z,h)=>vary(Math.sin(Math.atan2(x,z)*30+Math.hypot(x,z)*80)>0?k:dk(k,.18),h,.08))],
+      straw:()=>[S(at(lathe([[0,.13],[.08,.1],[.18,.04],[.27,0]],20,6),[0,R.sp==='frog'?.875:.825,0]),(x,y,z,h)=>vary(Math.sin(Math.atan2(x,z)*30+Math.hypot(x,z)*80)>0?k:dk(k,.18),h,.08))],
       wizard:()=>[S(at(lathe([[.22,0],[.13,.01],[.1,.06],[.06,.17],[.02,.27],[0,.3]],18,10,{d:(p,u,v)=>[p[0]-.05*v*v,p[1],p[2]-.04*v*v*v]}),[0,.835,0]),(x,y,z,h)=>vary(k,h,.12)), S(at(new THREE.TorusGeometry(.105,.012,5,16),[0,.85,0],[90,0,0]),dk(k,.3))],
       circlet:()=>[S(at(new THREE.TorusGeometry(.128,.012,5,18),[0,.81,0],[90,0,0]),k), S(at(new THREE.OctahedronGeometry(.02),[0,.82,.128],null,[1,1.4,.5]),[.5,.6,.95])],
       crown:()=>[S(at(new THREE.TorusGeometry(.105,.011,5,16),[0,.83,0],[90,0,0]),k), ...[0,1,2,3,4,5,6].map(i=>S(at(new THREE.ConeGeometry(.012,.045,4),[Math.sin(i*.9)*.105,.85,Math.cos(i*.9)*.105]),k)), S(at(new THREE.OctahedronGeometry(.016),[0,.84,.11]),[.7,.3,.8])]};
@@ -189,6 +191,7 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
   if(R.eyes==='goggles'){ const E=[]; for(const sx of [-1,1]){ const s=onHead([sx*EYE[0],EYE[1],EYE[2]]); E.push(S(at(new THREE.TorusGeometry(.03,.009,6,14),[s[0],s[1],s[2]+.004],[0,sx*20,0]),[.6,.36,.2])); E.push(S(at(new THREE.CircleGeometry(.029,12),[s[0],s[1],s[2]+.006],[0,sx*20,0]),R.k==='gd_captain'?[.06,.06,.08]:[.12,.1,.09])); }
     E.push(S(tube([onHead([-.95,EYE[1],0]),onHead([0,EYE[1]+.05,-1]),onHead([.95,EYE[1],0])].map(p=>[p[0]*1.06,p[1],p[2]*1.06]),[.006,.006,.006],4,10),[.36,.22,.14])); L.push(pt('goggles','head',E,5)); }
 
+  if(!R._v2){
   // the weapon, held as it is used
   const H=[.192*b,.33,.05], HL=[-.192*b,.33,.05], W=R.wc?C(R.wc):null, glow=R.w==='glowsword';
   const blade=(len,w,col)=>{ const sh=new THREE.Shape(); sh.moveTo(-w,0); sh.lineTo(w,0); sh.lineTo(w*.92,len*.82); sh.lineTo(0,len); sh.lineTo(-w*.92,len*.82); sh.closePath();
@@ -233,6 +236,8 @@ FOLK.parts=R=>{ '@park'; const Q=FOLK.Q, tube=(a,r,nu,nv,o)=>PARTSNPC.T.tube(a,r
     flute:()=>[S(tube([[-.2*b,.42,.12],[0,.4,.14],[.22*b,.43,.12]],[.012,.012,.012],7,10),(x,y,z,hh)=>Math.abs(Math.sin(x*80))<.1?C('#6a3a1a'):vary([.72,.46,.24],hh,.12))],
     stones:()=>[0,1,2].map(i=>shell(1,{r:[.03,.026,.028],p:[-.13*b+i*.022,.27+(i%2)*.03,.08],col:fur([.5,.5,.48],.2),j:.004}))};
   if(R.hold&&HOLD[R.hold])L.push(pt(R.hold,R.hold==='skull'||R.hold==='stones'||R.hold==='flute'?'hips':'armL',HOLD[R.hold](),2));
+  }
+  if(R._v2)R._k={K,EYE,f,f2,C,mix,dk,lt,vary,fur,cloth,shell,S,at,tube,lathe,quills,pt,pair,h3,gss,sm,BLACK,WHITE,PINK,WOOD,LEATH,GOLD,STEEL,BONE,Q};
   return L;
   function quills(c,o,r,n,len,seed){ const out=[]; for(let i=0;i<n;i++){ const a=(i*2.399+seed)%(PI*2), u=((i*.618+seed*.1)%1), d=[Math.sin(a)*.9,.25+.6*u,-.55-.45*Math.abs(Math.cos(a))], l=Math.hypot(...d), q=d.map(v=>v/l), g=new THREE.ConeGeometry(.008,len*(.7+.6*((i*.37)%1)),4);
       g.translate(0,len/2,0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...q))); g.translate(o[0]+q[0]*r*.75,o[1]+q[1]*r*.75,o[2]+q[2]*r*.75); out.push(S(g,(x,y,z,hh)=>hh>.6?lt(c,.45):vary(c,hh,.2))); } return out; } };

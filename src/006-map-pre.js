@@ -75,14 +75,19 @@ const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c][r],col:c,row:r,x0:G.x0+c*G.w,x1:G.x0+(c+1)*G.w,y0:G.y0+r*G.h,y1:G.y0+(r+1)*G.h});
   const list=[]; for(let c=0;c<G.cols;c++)for(let r=0;r<G.rows;r++)list.push(box(c,r));
   // live: the area built and walkable, the sections loaded (yours); the rest is not loaded at all
-  const home=list.find(b=>b.id===SECTION.id)||list[0];
-  return {...S,list,all:{x0:G.x0,x1:G.x0+G.cols*G.w,y0:G.y0,y1:G.y0+G.rows*G.h},live:{x0:home.x0,x1:home.x1,y0:home.y0,y1:home.y1},loaded:[home],of:id=>list.find(b=>b.id===id)||null,
+  const want=(QS.get('sec')||'').toUpperCase(), home=list.find(b=>b.id===want)||list.find(b=>b.id===SECTION.id)||list[0];
+  return {...S,list,all:{x0:G.x0,x1:G.x0+G.cols*G.w,y0:G.y0,y1:G.y0+G.rows*G.h},live:{x0:home.x0,x1:home.x1,y0:home.y0,y1:home.y1},loaded:[home],home,of:id=>list.find(b=>b.id===id)||null,
+    // where you arrive in a section: the middle of its stretch of the ring street (map units)
+    spawn:b=>{ const R=S.ring; return {x:(b.x0+b.x1)/2,y:b.row===0?(R.outer.y0+R.park.y0)/2:(R.outer.y1+R.park.y1)/2}; },
+    // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground and the hand-built section's insides off the map stay
+    fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.py<-1.6)return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
+      if(home.id===SECTION.id&&ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
     at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
-const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000;
+const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const L=LAYOUT0; return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();
 const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:-98*ZU};
@@ -98,11 +103,11 @@ const TURN=(R,face)=>{ const q={n:0,w:1,s:2,e:3}[face||'n']||0, cx=(R.x0+R.x1)/2
   const back=(x,y)=>{ let dx=x-cx, dy=y-cy; for(let i=0;i<q;i++){ const t=dx; dx=dy; dy=-t; } return [cx+dx,cy+dy]; };
   return {q,face:face||'n',cx,cy,L:{...R,x0:cx-hw,x1:cx+hw,y0:cy-hd,y1:cy+hd},pt,back,side:s=>S[(S.indexOf(s)+q)%4],unside:s=>S[(S.indexOf(s)+4-q)%4],hd:h=>h-q*Math.PI/2,
     box:(x0,y0,x1,y1)=>{ const a=pt(x0,y0), b=pt(x1,y1); return {x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1])}; }}; };
-const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=RING.top+WID;
+const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=Math.max(RING.top+WID,(SECTIONS.of(SECTION.id)||{y1:0}).y1);   // West St runs on to the section's edge, where the next section's carries on
 RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WPP.lake.r], PARKCAVE=[WPP.cave.x,WPP.cave.y], PARKTOWER=[WPP.tower.x,WPP.tower.y];
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
-export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};
+export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OFFDX, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};

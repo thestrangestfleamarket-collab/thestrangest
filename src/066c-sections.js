@@ -9,7 +9,8 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
   const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const clip=(r,b)=>{ const q={x0:Math.max(r.x0,b.x0),x1:Math.min(r.x1,b.x1),y0:Math.max(r.y0,b.y0),y1:Math.min(r.y1,b.y1)}; return q.x1-q.x0>.01&&q.y1-q.y0>.01?q:null; };
   const P=G.park, O=G.outer, ROW=G.row, A=S.all;
-  const road={x0:O.x0+W,y0:O.y0+W,x1:O.x1-W,y1:O.y1-W}, inner={x0:P.x0-W,y0:P.y0-W,x1:P.x1+W,y1:P.y1+W};
+  // the street laid out like Section A's, so it lines up where sections meet: Market St's sidewalks 7 (outer) and 12 (park side), West St's 3.2 and 3
+  const SW=G.sides, road={x0:O.x0+SW.we[0],y0:O.y0+SW.ns[0],x1:O.x1-SW.we[0],y1:O.y1-SW.ns[0]}, inner={x0:P.x0-SW.we[1],y0:P.y0-SW.ns[1],x1:P.x1+SW.we[1],y1:P.y1+SW.ns[1]};
   const frame=(o,i)=>[{x0:o.x0,x1:o.x1,y0:o.y0,y1:i.y0},{x0:o.x0,x1:o.x1,y0:i.y1,y1:o.y1},{x0:o.x0,x1:i.x0,y0:i.y0,y1:i.y1},{x0:i.x1,x1:o.x1,y0:i.y0,y1:i.y1}];
   const secs=S.list.filter(b=>b.id!==home&&S.loaded.includes(b));   // only loaded sections are built: today none but yours
 

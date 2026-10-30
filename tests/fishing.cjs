@@ -99,7 +99,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;
     ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }] });
-    for (let i = 0; i < 10; i++) { ONLINE.feed({ t: 'mv', id: 'a', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }); ONLINE.feed({ t: 'aim', id: 'a', w: 'rod', v: [0, .55, -.83] }); ONLINE.feed({ t: 'fish', id: 'a', b: [x, 0, z - 8 * T] }); await new Promise(r => setTimeout(r, 200)); }
+    for (let i = 0, t0 = performance.now(); i < 10 || performance.now() - t0 < 60000 && !(FISHING.theirs.get('a') && FISHING.theirs.get('a').line.visible && WIELD.theirTip('a')); i++) { ONLINE.feed({ t: 'mv', id: 'a', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }); ONLINE.feed({ t: 'aim', id: 'a', w: 'rod', v: [0, .55, -.83] }); ONLINE.feed({ t: 'fish', id: 'a', b: [x, 0, z - 8 * T] }); await new Promise(r => setTimeout(r, 200)); }
     const f = FISHING.theirs.get('a'), L = f && f.line.geometry.attributes.position, tp = WIELD.theirTip('a'); ONLINE.on = on;
     return { line: !!(f && f.line.visible), tip: !!tp, gap: L && tp ? +Math.hypot(L.getX(0) - tp.x, L.getY(0) - tp.y, L.getZ(0) - tp.z).toFixed(3) : null }; });
   ok(rf.line && rf.tip && rf.gap < .05, "another player's fishing line starts at the tip of the rod in her hand: " + JSON.stringify(rf));

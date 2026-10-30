@@ -1,7 +1,7 @@
 // THE PLACES' CODE (20 Oct 2026, the code split): runs the website's own worker (wrangler dev) on dist/, logs in, and checks that THE
 // MARKET starts with only its start code, then goes into every place whose code is its own file (dungeon, park, fire escape,
 // arcade, bath house), and back. Each must fetch its file, build, and never fall back to a slow fetch ("was not loaded before
-// use"); a cabinet in the arcade must fetch its game's own file when played; then a saved spot inside the dungeon must load the dungeon's code at the start. Prints the start's download (gzipped).
+// use"); a cabinet in the arcade must fetch its game's own file when played; then a login after the dungeon must start on the subway platform. Prints the start's download (gzipped).
 // node tests/places.cjs [out dir]. Exits 1 if anything fails.
 const {chromium}=require('playwright'), {spawn}=require('child_process'), fs=require('fs'), path=require('path'), zlib=require('zlib');
 const OUT=process.argv[2]||'out', PORT=8797, BASE='http://127.0.0.1:'+PORT;
@@ -60,10 +60,10 @@ const TOUR=[
     ok(errs.length===e0&&late.length===l0,name+': no page errors, no slow fetch '+errs.slice(e0).concat(late.slice(l0)).join(' | '));
     await pg.evaluate(`(${back})()`).catch(e=>errs.push(name+' back: '+e.message)); await wait(1500); }
   await pg.evaluate(async()=>{ await DUNGEON.go(2); for(const t=Date.now();Date.now()-t<60000&&!(DUNDBG().level===2&&DUNDBG().objs>0);)await new Promise(r=>setTimeout(r,250)); await new Promise(r=>setTimeout(r,2500)); }); await wait(1000);
-  phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); for(let i=0;i<60&&!(await pg.evaluate(()=>DUNDBG().objs>0).catch(()=>false));i++)await wait(1000);
-  const lv=await pg.evaluate(()=>Object.assign(DUNDBG(),{you:__dbg.you(),saved:(JSON.parse(localStorage.getItem('market-save')||'{}')||{}).where})).catch(e=>'ERR '+e.message);
-  ok(lv&&lv.level===2&&lv.objs>0,'a saved spot in the dungeon loads its code at the start ('+JSON.stringify(lv).slice(0,400)+')');
-  ok(errs.length===e1&&late.length===l1,'the saved start: no page errors, no slow fetch '+errs.slice(e1).concat(late.slice(l1)).join(' | '));
+  phase='login'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); await wait(3000);
+  const lv=await pg.evaluate(()=>{ const p=__dbg.MAPK.MODS.station.plat, y=__dbg.you(); return {lvl:__dbg.lvl(),dist:Math.hypot(y.x-p.x,y.z-p.z),you:y}; }).catch(e=>'ERR '+e.message);
+  ok(lv&&lv.lvl==='down'&&lv.dist<2,'a login after the dungeon starts on the subway platform, not the saved spot ('+JSON.stringify(lv).slice(0,400)+')');
+  ok(errs.length===e1&&late.length===l1,'the login start: no page errors, no slow fetch '+errs.slice(e1).concat(late.slice(l1)).join(' | '));
   ok(!late.length,'no slow fetch anywhere '+late.join(' | '));
   await b.close(); w.kill(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })().catch(e=>{ console.log('FAIL '+e.message); process.exit(1); });

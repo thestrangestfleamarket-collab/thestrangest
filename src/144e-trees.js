@@ -20,7 +20,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     for(let v=it.v0;v+2<it.v1;v+=3){ if(F[v]||F[v+1]||F[v+2])continue; for(let k=0;k<9;k++)A.push(it.P[v*3+k]); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A,3)); g.computeBoundingSphere(); return it.bark=new THREE.Mesh(g,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); };
   const cast=(it,ux,uz,y)=>{   // from just outside the trunk, so a branch further out is not taken for bark
-    const b=bark(it); if(!b)return null; const r0=2*rT(it)+.5*T; RC.set(O3.set(it.x+ux*r0,y,it.z+uz*r0),D3.set(-ux,0,-uz)); RC.far=r0; const lim=1.6*rT(it)+.1*T, h=RC.intersectObject(b,false).find(q=>Math.hypot(q.point.x-it.x,q.point.z-it.z)<lim); if(!h)return null;   // the trunk's own bark, not a branch beside it
+    const b=bark(it); if(!b)return null; const r0=2*rT(it)+.5*T; RC.set(O3.set(it.x+ux*r0,y,it.z+uz*r0),D3.set(-ux,0,-uz)); RC.far=r0; const lim=1.3*rT(it)+.05*T, h=RC.intersectObject(b,false).find(q=>Math.hypot(q.point.x-it.x,q.point.z-it.z)<lim); if(!h)return null;   // the trunk's own bark, not a branch beside it
     const n=h.face.normal; let nx=n.x, ny=n.y, nz=n.z; if(nx*ux+nz*uz<0){ nx=-nx; ny=-ny; nz=-nz; } return {x:h.point.x,y:h.point.y,z:h.point.z,nx,ny,nz}; };
   const hold=(it,lx,ly)=>{ const W=st.world, kx=W?W.kx:1/ZU, ky=W?W.ky:1/ZU, c=Math.cos(SHARED.heading), s=Math.sin(SHARED.heading), x=pos.x+lx*c/kx, z=pos.z-lx*s/kx, dx=x-it.x, dz=z-it.z, l=Math.hypot(dx,dz)||1, y=SHARED.py+ly/ky;
     return cast(it,dx/l,dz/l,y)||{x:it.x+dx/l*rT(it),y,z:it.z+dz/l*rT(it),nx:dx/l,ny:0,nz:dz/l}; };
@@ -33,9 +33,9 @@ const TREES={h:null,want:null}; window.TREES=TREES;
         S.p={x:q(F.x,Tt.x)+Tt.nx*a,y:q(F.y,Tt.y)+(kind==='h'?.05*T*Math.sin(Math.PI*S.e):0),z:q(F.z,Tt.z)+Tt.nz*a,nx:Tt.nx,ny:Tt.ny,nz:Tt.nz}; if(S.e>=1){ S.p=Tt; S.to=null; } } }
     G.w=w; st.climb.grip={L:{h:G.L.hL.p,f:G.L.fL.p},R:{h:G.L.hR.p,f:G.L.fR.p}}; };
   MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems();
-    if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; st.climb={z:0,ph:0}; }
-    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1, ky=st.world?st.world.ky:1/ZU, gap=10/(st.world?st.world.kx:1/ZU);   // the body hangs back an arm's length from the widest bark between its feet and hands, its head clear
-    let d=0; for(const ly of [AT.f[0],AT.f[1],AT.h[0],AT.h[1]]){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
+    if(!C.it){ if(!up&&!TREES.want)return false; const it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.8*T&&o.top-o.y>3*T); TREES.want=null; if(!it)return false; C.it=it; C.h=0; C.d=null; st.climb={z:0,ph:0}; }
+    const it=C.it, dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1, ky=st.world?st.world.ky:1/ZU, gap=8/(st.world?st.world.kx:1/ZU);   // the body hangs back an arm's length from the widest bark between its feet and hands, its head clear
+    let d=0; for(const ly of [AT.f[0],AT.f[1],AT.h[0],AT.h[1]]){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); C.d=C.d==null?d:C.d+(d-C.d)*Math.min(1,dt*4); d=C.d;   // eased, so one bulge doesn't jerk the body out pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
     C.h=Math.max(0,Math.min(it.top-it.y-.8*T,C.h+(up?1:dn?-1:0)*dt*16*ZU)); st.climb.ph=C.h/ZU; st.climb.per=PER; TREES.h=it.y+C.h;
     grip(it,dt,up?1:dn?-1:0);
     if(off||(dn&&C.h<=0)){ st.climb=null; C.g=null; TREES.h=null; C.it=null; pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });

@@ -61,7 +61,8 @@ const GRASS={}; window.GRASS=GRASS;
   GRASS.box=r=>{ const R=r.r||0, P=r.brush||r.poly; return P?[Math.min(...P.map(p=>p[0]))-R,Math.min(...P.map(p=>p[1]))-R,Math.max(...P.map(p=>p[0]))+R,Math.max(...P.map(p=>p[1]))+R]:[r.x0,r.z0,r.x1,r.z1]; };
   GRASS.setPainted=regions=>{ OV.length=0; for(const r of regions||[]){ const k=/^gk:/.test(r.t||'')&&GRASS.of[r.t.slice(3)]; if(k)OV.push({r,k,b:GRASS.box(r)}); } };
   try{ const B=__DATA__("data/landscape.json")||[], L=JSON.parse(SAVE.get('land')||'null'); GRASS.setPainted(Array.isArray(L)?L:B); }catch(e){}
-  GRASS.at=(tx,tz)=>{ if(OV.length){ const x=tx*TILE, z=tz*TILE; for(let i=OV.length-1;i>=0;i--){ const o=OV[i]; if(x>=o.b[0]&&x<=o.b[2]&&z>=o.b[1]&&z<=o.b[3]&&inside(o.r,x,z))return o.k; } } return at0(tx,tz); };
+  GRASS.only='01';   // one grass everywhere for now (owner, 30 Oct 2026); null brings back the nine
+  GRASS.at=(tx,tz)=>{ if(GRASS.only)return GRASS.of[GRASS.only]; if(OV.length){ const x=tx*TILE, z=tz*TILE; for(let i=OV.length-1;i>=0;i--){ const o=OV[i]; if(x>=o.b[0]&&x<=o.b[2]&&z>=o.b[1]&&z<=o.b[3]&&inside(o.r,x,z))return o.k; } } return at0(tx,tz); };
   GRASS.TS=12; GRASS.pms={}; GRASS.paint=k=>{ const p0=performance.now(), N=GRASS.TS*24; if(k.img){ const A=k.img(N); GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; } const A=new Uint8Array(N*N*4); for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=k.paint((i+.5)/24+200,(j+.5)/24+200), q=(j*N+i)*4; A[q]=c[0]; A[q+1]=c[1]; A[q+2]=c[2]; A[q+3]=255; } GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; };
 }
 export {GRASS};

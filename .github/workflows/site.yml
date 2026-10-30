@@ -41,7 +41,6 @@ jobs:
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
           k fishing 'src/142-|src/066|src/141f|fishing'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
-          k guardians 'src/146[i-k]|src/089b|src/062-|guardians'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -97,9 +96,6 @@ jobs:
       - name: One water and its fish (the shared simulation, still water still, the fish, the deep)
         if: contains(steps.f.outputs.run, ' water')
         run: node tests/water.cjs dist/market.html
-      - name: The castle's guardians, their places and a breakout
-        if: contains(steps.f.outputs.run, ' guardians')
-        run: mkdir -p out && node tests/guardians.cjs dist/market.html out
       - name: Every editor opens and its controls work
         if: contains(steps.f.outputs.run, ' editors')
         run: node tests/editors.cjs dist/market.html

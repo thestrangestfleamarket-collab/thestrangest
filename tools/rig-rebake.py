@@ -90,12 +90,33 @@ RPG_W={'Root':'hips','Body':'hips','Hips':'hips','Abdomen':'torso','Torso':'tors
   'Shoulder_R':'upperArmR','UpperArm_R':'upperArmR','LowerArm_R':'forearmR','Fist_R':'handR','Fist1_R':'handR','Fist2_R':'handR','Thumb1_R':'handR','Thumb2_R':'handR','Weapon_R':'handR',
   'UpperLeg_L':'thighL','LowerLeg_L':'shinL','Foot_L':'shoeL','UpperLeg_R':'thighR','LowerLeg_R':'shinR','Foot_R':'shoeR'}
 
+# --- Dungeon skeletons / guards (KayKit) map: one shared rig, per-char mesh ---
+SKEL_ROLE={'pelvis':'hips','waist':'chest','neck':'head',
+  'shoulderL':'upperarm.l','elbowL':'lowerarm.l','wristL':'wrist.l',
+  'shoulderR':'upperarm.r','elbowR':'lowerarm.r','wristR':'wrist.r',
+  'hipL':'upperleg.l','kneeL':'lowerleg.l','ankleL':'foot.l',
+  'hipR':'upperleg.r','kneeR':'lowerleg.r','ankleR':'foot.r'}
+SKEL_W={'root':'hips','hips':'hips','spine':'torso','chest':'torso','head':'head',
+  'upperarm.l':'upperArmL','lowerarm.l':'forearmL','wrist.l':'handL','hand.l':'handL','handslot.l':'handL',
+  'upperarm.r':'upperArmR','lowerarm.r':'forearmR','wrist.r':'handR','hand.r':'handR','handslot.r':'handR',
+  'upperleg.l':'thighL','lowerleg.l':'shinL','foot.l':'shoeL','toes.l':'shoeL',
+  'upperleg.r':'thighR','lowerleg.r':'shinR','foot.r':'shoeR','toes.r':'shoeR'}
+
+def bake_shared(src, keys, role, wmap, outpath):
+    d=json.load(open(src)); rig=d['rig']; out={'bones':BONES,'bodies':{}}
+    for key in keys:
+        body,J=rebake({'rig':rig,'mesh':d['chars'][key]}, role, wmap)
+        out['bodies'][key]=body; print(key,'height',body['height'],'tris',len(body['tri'])//3)
+    json.dump(out,open(outpath,'w'),separators=(',',':'))
+    import os; print(outpath,round(os.path.getsize(outpath)/1e6,2),'MB')
+
 if __name__=='__main__':
-    d=json.load(open('data/rpgchars.json'))
-    out={'bones':BONES,'bodies':{}}
-    for key in ['warrior','cleric','monk','ranger','rogue','wizard']:
-        body,J=rebake(d[key],RPG_ROLE,RPG_W)
-        out['bodies'][key]=body
-        print(key,'height',body['height'],'tris',len(body['tri'])//3)
-    json.dump(out,open('data/rpgbodies.json','w'),separators=(',',':'))
-    import os; print('data/rpgbodies.json',round(os.path.getsize('data/rpgbodies.json')/1e6,2),'MB')
+    import sys; which=sys.argv[1] if len(sys.argv)>1 else 'all'
+    if which in ('all','rpg'):
+        d=json.load(open('data/rpgchars.json')); out={'bones':BONES,'bodies':{}}
+        for key in ['warrior','cleric','monk','ranger','rogue','wizard']:
+            body,J=rebake(d[key],RPG_ROLE,RPG_W); out['bodies'][key]=body; print(key,'height',body['height'],'tris',len(body['tri'])//3)
+        json.dump(out,open('data/rpgbodies.json','w'),separators=(',',':'))
+        import os; print('data/rpgbodies.json',round(os.path.getsize('data/rpgbodies.json')/1e6,2),'MB')
+    if which in ('all','skel'):
+        bake_shared('data/skel.json',['Warrior','Mage','Minion','Rogue'],SKEL_ROLE,SKEL_W,'data/skelbodies.json')

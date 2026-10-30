@@ -48,9 +48,9 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       const DPX=(W,Hd)=>{ '@later'; const WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84]; return (ii,jj)=>{ const z=Hd-jj, m=(ii+.5)/W; if(ii<2||ii>=W-2||z>Hd-2)return WK; if(m>.82&&m<.9&&Math.abs(z-Hd*.42)<2)return BR; const top=z>Hd*.55; if(m>.16&&m<.84&&(top?z>Hd*.6&&z<Hd*.92:z>Hd*.1&&z<Hd*.48))return (ii+jj)%7?WL:WD; return WD; }; };
       const solidWall=(wid,ax,at,a0,a1,inS,holes,s,kind,paint)=>{ const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)], W=Math.max(1,Math.round((a1-a0)*24));
         const px=(u,z)=>{ for(const h of holes){ if(u<h.a0||u>h.a1||z<h.z0||z>h.z1)continue; const Wd=Math.max(1,Math.round((h.a1-h.a0)*24)), ii=Math.min(Wd-1,Math.floor((u-h.a0)*24)), jj=Math.floor(h.z1-z);
-            if(h.z0===0&&door&&door.w===wid)return DPX(Wd,h.z1-h.z0)(ii,jj); const e=Math.min(u-h.a0,h.a1-u)*24, t=Math.min(z-h.z0,h.z1-z); if(e<2||t<2||Math.abs(u-(h.a0+h.a1)/2)*24<1)return [46,42,40];
+            if(h.z0===0&&door&&door.w===wid)return door.pic?door.pic(ii,jj,Wd,h.z1-h.z0):DPX(Wd,h.z1-h.z0)(ii,jj); const e=Math.min(u-h.a0,h.a1-u)*24, t=Math.min(z-h.z0,h.z1-z); if(e<2||t<2||Math.abs(u-(h.a0+h.a1)/2)*24<1)return [46,42,40];
             if(s!==inS&&hash(Math.floor(h.a0*7+at*13),Math.floor(h.z0),11)<.5)return [255,206,140,1]; return (Math.floor(u*24)+Math.floor(z))%9===0?[58,64,74]:[34,38,46]; } return paint(s,u,z); };
-        bq(pt(a0,0,s*.1),pt(a1,0,s*.1),pt(a1,H,s*.1),pt(a0,H,s*.1),faceTex(W,H,(ii,jj)=>C(px(a0+(ii+.5)/W,H-jj-.5))),kind); };
+        bq(pt(a0,0,s*.1),pt(a1,0,s*.1),pt(a1,H,s*.1),pt(a0,H,s*.1),faceTex(W,H,(ii,jj)=>C(px(a0+(ii+.5)/24,H-jj-.5))),kind); };
       const inFaces=[];
       for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
         const paint=(s,u,z)=>{ const nx=ax==='y'?s:0, ny=ax==='x'?s:0, Xw=ax==='y'?at+s*.1:u, Yw=ax==='x'?at+s*.1:u; return (inner||s===inS)?look.in(B,nx,ny,Xw,Yw,z,1):(look.out||facade)(nx,ny,Xw,Yw,z,1,H); };
@@ -72,7 +72,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
         for(const h of holes){ for(const a of [h.a0,h.a1])fr([pt(a,h.z0,-.1),pt(a,h.z0,.1),pt(a,h.z1,.1),pt(a,h.z1,-.1)],.2,h.z1-h.z0,FR); fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,FR);
           if(h.z0>0&&!h.open){ const sd=Math.floor(Math.abs(h.a0*7+at*13+h.z0)); SHARED.BOD.window([pt(h.a0,h.z0,0),pt(h.a1,h.z0,0),pt(h.a1,h.z1,0),pt(h.a0,h.z1,0)],h.a1-h.a0,h.z1-h.z0,SHARED.BOD.g.hash(sd,3,11)<.5,sd,kind); } }
         if(door&&door.w===wid){ const d0=door.a-door.wd/2, d1=door.a+door.wd/2, W=Math.max(1,Math.round(door.wd*24)), Hd=door.h, WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84];
-          const dp=(ii,jj)=>{ const z=Hd-jj, m=(ii+.5)/W; if(ii<2||ii>=W-2||z>Hd-2)return WK; if(m>.82&&m<.9&&Math.abs(z-Hd*.42)<2)return BR; const top=z>Hd*.55; if(m>.16&&m<.84&&(top?z>Hd*.6&&z<Hd*.92:z>Hd*.1&&z<Hd*.48))return (ii+jj)%7?WL:WD; return WD; };
+          const dp=door.pic?(ii,jj)=>door.pic(ii,jj,W,Hd):(ii,jj)=>{ const z=Hd-jj, m=(ii+.5)/W; if(ii<2||ii>=W-2||z>Hd-2)return WK; if(m>.82&&m<.9&&Math.abs(z-Hd*.42)<2)return BR; const top=z>Hd*.55; if(m>.16&&m<.84&&(top?z>Hd*.6&&z<Hd*.92:z>Hd*.1&&z<Hd*.48))return (ii+jj)%7?WL:WD; return WD; };
           for(const s2 of [-1,1])bq(pt(d0,0,s2*.02),pt(d1,0,s2*.02),pt(d1,Hd,s2*.02),pt(d0,Hd,s2*.02),faceTex(W,Hd,(ii,jj)=>C(dp(ii,jj))),kind); }
         let a=a0; const ds=holes.filter(h=>h.z0===0).sort((p,q)=>p.a0-q.a0), seg=(p,q)=>{ if(q-p<.01)return; if(ax==='x')sol(p,at-.1,q,at+.1,H); else sol(at-.1,p,at+.1,q,H); }; for(const d of ds){ seg(a,d.a0); a=d.a1; } seg(a,a1);
         cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:inner?(ax==='y'?X(at):Z(at)):null}); }

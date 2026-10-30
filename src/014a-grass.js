@@ -1,4 +1,6 @@
 // THE GRASS KINDS: GRASS, the lawns' nine grasses (the owner's picks from the grass gallery, 29 Oct 2026): where each grows, how it looks painted and standing near you, and what lives in it.
+import {SAVE} from './005-save.js';
+import {TILE} from './006-map-pre.js';
 import {cvNoise, grain, hash, sh, TUFTC, tuftCol} from './014-gamekit.js';
 const GRASS={}; window.GRASS=GRASS;
 { // a faceted-tuft painter (like tuftCol, its own palette and size), its tufts kept while the painter is near them
@@ -37,23 +39,29 @@ const GRASS={}; window.GRASS=GRASS;
   const pal=(f,p)=>p.map(c=>[c[0]*f[0],c[1]*f[1],c[2]*f[2],c[3]]);
   // the nine: id (its number in the gallery), name, painter, what stands near you (shape, its colours, height), and what lives in it: wild flowers (GARDEN's, with their odds), butterflies (their names; one rare that lives only here), mushrooms (FORAGE's, with their odds)
   const K=GRASS.K=[
-    {id:'34',name:'PIXEL MEADOW',paint:pixel,shape:null,hi:.6,flowers:{marigold:3,tulip:2,clover:2,dandelion:2},bf:['Eastern Tailed-Blue','Clouded Sulphur'],rare:'Island Marble',mush:{button:3,moonglow:1}},
-    {id:'33',name:'ROUND TUFTS',paint:tuftCol,shape:'round',cols:TUFTC,hi:1,flowers:{daisy:3,bluebell:3,clover:2},bf:['Cabbage White','Pearl Crescent'],rare:'Miami Blue',mush:{button:4,puffball:2}},
-    {id:'32',name:'CROWN TUFTS',paint:tufts(.45,pal([1.1,1.12,1.05],TUFTC),.6,.3),shape:'crown',cols:pal([1.1,1.12,1.05],TUFTC),hi:1.2,flowers:{tulip:3,poppy:3,chicory:1},bf:['Red Admiral','Painted Lady'],rare:'Corsican Swallowtail',mush:{redcap:3,puffball:2}},
-    {id:'29',name:'DRY BLADES',img:blades({dir:0,jit:6.28,len:7,dens:.95,lo:[63,99,15],hi:[103,136,24],dry:.55,dryC:[150,138,64]}),shape:'blade',cols:[[63,99,15,1],[84,118,20,2],[103,136,24,2],[130,128,58,1]],hi:.9,flowers:{sunflower:3,marigold:3,goldenrod:2},bf:['Monarch','Painted Lady'],rare:'Apollo',mush:{puffball:5,redcap:1}},
-    {id:'30',name:'BLADE FLOOR',img:blades({dir:-1.57,jit:1.6,len:10,dens:.9,lo:[79,124,19],hi:[121,160,28],dry:.25,dryC:[184,169,78]}),shape:'blade',cols:[[79,124,19,1],[100,142,24,2],[121,160,28,2]],hi:1.3,flowers:{lavender:3,cosmos:3,aster:2,goldenrod:1},bf:['Eastern Tiger Swallowtail','Monarch'],rare:'Kaiser-i-Hind',mush:{redcap:4,button:2}},
-    {id:'08',name:'SOFT TUSSOCKS',paint:tufts(.8,[[52,96,70,1],[64,112,80,2],[78,126,88,2],[92,140,98,1]],.62,.3),shape:'tussock',cols:[[52,96,70,1],[64,112,80,2],[78,126,88,2],[92,140,98,1]],hi:1.5,flowers:{iris:3,foxglove:2,violet:2,slipper:.3},bf:['Black Swallowtail','Red Admiral'],rare:'Large Blue',mush:{inkcap:4,morel:1}},
-    {id:'04',name:'LEAF CLUMPS',paint:tufts(1,[[40,74,36,1],[52,90,42,2],[64,104,48,2],[80,120,56,1]],.55,.3),shape:'clump',cols:[[40,74,36,1],[52,90,42,2],[64,104,48,2],[80,120,56,1]],hi:.8,flowers:{bluebell:3,foxglove:3,violet:2},bf:['Mourning Cloak','Question Mark','Spicebush Swallowtail'],rare:'Bhutan Glory',mush:{chanterelle:3,bolete:2,inkcap:1}},
-    {id:'01',name:'MOWN LAWN',paint:mown,shape:null,hi:.5,flowers:{daisy:4,dandelion:3,clover:3},bf:['Cabbage White','Eastern Tailed-Blue'],rare:'Karner Blue',mush:{button:6,inkcap:3}},
-    {id:'03',name:'LONG BLADES',img:blades({dir:.35,jit:.5,len:13,dens:.85,lo:[56,100,40],hi:[104,150,64],dry:0,dryC:[0,0,0]}),shape:'blade',flat:1,cols:[[56,100,40,1],[80,126,52,2],[104,150,64,2]],hi:.7,flowers:{cosmos:3,poppy:3,chicory:2,aster:1},bf:['Clouded Sulphur','Pearl Crescent'],rare:'Mission Blue',mush:{puffball:4,button:3}}];
+    {id:'34',name:'PIXEL MEADOW',sw:'#6a9050',paint:pixel,shape:null,hi:.6,flowers:{marigold:3,tulip:2,clover:2,dandelion:2},bf:['Eastern Tailed-Blue','Clouded Sulphur'],rare:'Island Marble',mush:{button:3,moonglow:1}},
+    {id:'33',name:'ROUND TUFTS',sw:'#55803a',paint:tuftCol,shape:'round',cols:TUFTC,hi:1,flowers:{daisy:3,bluebell:3,clover:2},bf:['Cabbage White','Pearl Crescent'],rare:'Miami Blue',mush:{button:4,puffball:2}},
+    {id:'32',name:'CROWN TUFTS',sw:'#62904a',paint:tufts(.45,pal([1.1,1.12,1.05],TUFTC),.6,.3),shape:'crown',cols:pal([1.1,1.12,1.05],TUFTC),hi:1.2,flowers:{tulip:3,poppy:3,chicory:1},bf:['Red Admiral','Painted Lady'],rare:'Corsican Swallowtail',mush:{redcap:3,puffball:2}},
+    {id:'29',name:'DRY BLADES',sw:'#6b7a22',img:blades({dir:0,jit:6.28,len:7,dens:.95,lo:[63,99,15],hi:[103,136,24],dry:.55,dryC:[150,138,64]}),shape:'blade',cols:[[63,99,15,1],[84,118,20,2],[103,136,24,2],[130,128,58,1]],hi:.9,flowers:{sunflower:3,marigold:3,goldenrod:2},bf:['Monarch','Painted Lady'],rare:'Apollo',mush:{puffball:5,redcap:1}},
+    {id:'30',name:'BLADE FLOOR',sw:'#7a9a24',img:blades({dir:-1.57,jit:1.6,len:10,dens:.9,lo:[79,124,19],hi:[121,160,28],dry:.25,dryC:[184,169,78]}),shape:'blade',cols:[[79,124,19,1],[100,142,24,2],[121,160,28,2]],hi:1.3,flowers:{lavender:3,cosmos:3,aster:2,goldenrod:1},bf:['Eastern Tiger Swallowtail','Monarch'],rare:'Kaiser-i-Hind',mush:{redcap:4,button:2}},
+    {id:'08',name:'SOFT TUSSOCKS',sw:'#4a7a5a',paint:tufts(.8,[[52,96,70,1],[64,112,80,2],[78,126,88,2],[92,140,98,1]],.62,.3),shape:'tussock',cols:[[52,96,70,1],[64,112,80,2],[78,126,88,2],[92,140,98,1]],hi:1.5,flowers:{iris:3,foxglove:2,violet:2,slipper:.3},bf:['Black Swallowtail','Red Admiral'],rare:'Large Blue',mush:{inkcap:4,morel:1}},
+    {id:'04',name:'LEAF CLUMPS',sw:'#3a5e30',paint:tufts(1,[[40,74,36,1],[52,90,42,2],[64,104,48,2],[80,120,56,1]],.55,.3),shape:'clump',cols:[[40,74,36,1],[52,90,42,2],[64,104,48,2],[80,120,56,1]],hi:.8,flowers:{bluebell:3,foxglove:3,violet:2},bf:['Mourning Cloak','Question Mark','Spicebush Swallowtail'],rare:'Bhutan Glory',mush:{chanterelle:3,bolete:2,inkcap:1}},
+    {id:'01',name:'MOWN LAWN',sw:'#427a36',paint:mown,shape:null,hi:.5,flowers:{daisy:4,dandelion:3,clover:3},bf:['Cabbage White','Eastern Tailed-Blue'],rare:'Karner Blue',mush:{button:6,inkcap:3}},
+    {id:'03',name:'LONG BLADES',sw:'#5a8a40',img:blades({dir:.35,jit:.5,len:13,dens:.85,lo:[56,100,40],hi:[104,150,64],dry:0,dryC:[0,0,0]}),shape:'blade',flat:1,cols:[[56,100,40,1],[80,126,52,2],[104,150,64,2]],hi:.7,flowers:{cosmos:3,poppy:3,chicory:2,aster:1},bf:['Clouded Sulphur','Pearl Crescent'],rare:'Mission Blue',mush:{puffball:4,button:3}}];
   K.forEach((k,i)=>{ k.i=i; }); GRASS.of=Object.fromEntries(K.map(k=>[k.id,k]));
   // where each grows: patches about 30 tiles across on a bent grid, their borders mingled a few tiles deep (tile coords, x east, z south)
   const PS=30;
-  GRASS.at=(tx,tz)=>{ const wx=tx+16*(cvNoise(tx/18,tz/18,91)-.5)+5*(cvNoise(tx/6,tz/6,93)-.5), wz=tz+16*(cvNoise(tx/18,tz/18,92)-.5)+5*(cvNoise(tx/6,tz/6,94)-.5), gx=Math.floor(wx/PS), gz=Math.floor(wz/PS);
+  const at0=(tx,tz)=>{ const wx=tx+16*(cvNoise(tx/18,tz/18,91)-.5)+5*(cvNoise(tx/6,tz/6,93)-.5), wz=tz+16*(cvNoise(tx/18,tz/18,92)-.5)+5*(cvNoise(tx/6,tz/6,94)-.5), gx=Math.floor(wx/PS), gz=Math.floor(wz/PS);
     let d1=1e18, d2=1e18, k1=0, k2=0; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hash(a,b,71))*PS, pz=(b+hash(b,a,72))*PS, d=(wx-px)**2+(wz-pz)**2, k=Math.floor(hash(a,b,73)*K.length);
       if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
     return K[Math.sqrt(d2)-Math.sqrt(d1)<3.5*hash(Math.floor(tx*2),Math.floor(tz*2),95)?k2:k1]; };
   // each kind's painted picture: 12 tiles square, 24 to a tile, mirrored when laid
+  // where the landscape editor painted a grass (its patches whose ground is gk:<id>, world coords): the latest patch over a spot wins
+  const OV=[], inside=(r,x,z)=>r.brush?r.brush.some(([px,pz])=>(x-px)**2+(z-pz)**2<=r.r*r.r):r.poly?(()=>{ let c=false; const P=r.poly; for(let i=0,j=P.length-1;i<P.length;j=i++)if((P[i][1]>z)!==(P[j][1]>z)&&x<(P[j][0]-P[i][0])*(z-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c; return c; })():x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1;
+  GRASS.box=r=>{ const R=r.r||0, P=r.brush||r.poly; return P?[Math.min(...P.map(p=>p[0]))-R,Math.min(...P.map(p=>p[1]))-R,Math.max(...P.map(p=>p[0]))+R,Math.max(...P.map(p=>p[1]))+R]:[r.x0,r.z0,r.x1,r.z1]; };
+  GRASS.setPainted=regions=>{ OV.length=0; for(const r of regions||[]){ const k=/^gk:/.test(r.t||'')&&GRASS.of[r.t.slice(3)]; if(k)OV.push({r,k,b:GRASS.box(r)}); } };
+  try{ const B=__DATA__("data/landscape.json")||[], L=JSON.parse(SAVE.get('land')||'null'); GRASS.setPainted(Array.isArray(L)?L:B); }catch(e){}
+  GRASS.at=(tx,tz)=>{ if(OV.length){ const x=tx*TILE, z=tz*TILE; for(let i=OV.length-1;i>=0;i--){ const o=OV[i]; if(x>=o.b[0]&&x<=o.b[2]&&z>=o.b[1]&&z<=o.b[3]&&inside(o.r,x,z))return o.k; } } return at0(tx,tz); };
   GRASS.TS=12; GRASS.pms={}; GRASS.paint=k=>{ const p0=performance.now(), N=GRASS.TS*24; if(k.img){ const A=k.img(N); GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; } const A=new Uint8Array(N*N*4); for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=k.paint((i+.5)/24+200,(j+.5)/24+200), q=(j*N+i)*4; A[q]=c[0]; A[q+1]=c[1]; A[q+2]=c[2]; A[q+3]=255; } GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; };
 }
 export {GRASS};

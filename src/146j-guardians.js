@@ -7,6 +7,7 @@ import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {RIGNPC} from './083-npc-rig.js';
 import {SITES} from './089b-parksites.js';
 import {GEMS} from './101-gems.js';
+import {BODIES} from './111a-bodies.js';
 import {FOLK} from './146i-folk.js';
 const GUARD={list:[]}; window.GUARD=GUARD;
 { const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
@@ -72,11 +73,11 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const tail=sp==='mouse'||sp==='rat'?[[0,.3,-.1],[0,.2,-.28],[0,.18,-.46],[0,.28,-.6]]:sp==='redpanda'||sp==='raccoon'?[[0,.3,-.12],[0,.22,-.26],[0,.16,-.4],[0,.12,-.54]]:sp==='pangolin'?[[0,.26,-.12],[0,.14,-.3],[0,.06,-.48],[0,.03,-.62]]:sp==='lynx'||sp==='hyena'?[[0,.3,-.12],[0,.24,-.2],[0,.18,-.26],[0,.15,-.3]]:null;
       const bones=[['root',null,[0,0,0]],['hips','root',[0,.36,0]],['head','hips',[0,.66,0]],['earL','head',[-.08,.84,0]],['earR','head',[.08,.84,0]],['cape','hips',[0,.6,-.1]],
         ['armL','hips',[-.16*b,.56,0]],['armR','hips',[.16*b,.56,0]],['legL','hips',[-.08*b,.3,0]],['legR','hips',[.08*b,.3,0]],['tail1','hips',tail?tail[0]:[0,.3,-.12]],['tail2','tail1',tail?tail[1]:[0,.3,-.2]],['tail3','tail2',tail?tail[2]:[0,.3,-.28]]];
-      const parts=FOLK.parts(R);
+      const RIGGED=!cat, parts=RIGGED?[{name:'body',rank:0,bone:'hips',of:[{P:new Float32Array([0,0,0,.001,0,0,0,.001,0]),C:new Float32Array(9)}]}]:FOLK.parts(R);
       const grip=['sword','glowsword','greatsword'].includes(R.w)?'blade':['spear','staff','orbstaff','mushstaff','lantern','axe','mace','starwand'].includes(R.w)?'pole':R.w==='bow'?'bow':'';
       const ACTS=grip==='blade'?['scan','salute','','look']:grip==='bow'?['scan','draw','']:R.w==='orbstaff'||R.w==='starwand'?['raise','scan','']:['scan','',''];
       const def={bones,parts,springs:{cape:{f:-.3,s:.18,k:28,c:4,lim:.5},earL:{f:-.08,s:.1,k:60,c:6,lim:.25},earR:{f:-.08,s:.1,k:60,c:6,lim:.25},tail1:{f:-.12,s:.12,k:40,c:5,lim:.35},tail2:{f:-.18,s:.16,k:30,c:4,lim:.45},tail3:{f:-.24,s:.2,k:24,c:3.4,lim:.6},head:{f:-.03,s:.03,k:90,c:9,lim:.1}},
-        pose:(c,dt)=>{ const B=c.B, k=A.k=A.k+((A.act?1:0)-A.k)*Math.min(1,dt*6), t=A.t; RIGNPC.walk(c,{arm:.35,leg:.5,bob:.02,rock:.04}); B.head.rotation.y=c.look; if(c.sheet)return;
+        pose:(c,dt)=>{ if(RIGGED){ A.k=(A.k||0)+((A.act?1:0)-(A.k||0))*Math.min(1,dt*6); if(N&&N.FIG)FOLK.drive(N,c,dt,A,R,grip); return; } const B=c.B, k=A.k=A.k+((A.act?1:0)-A.k)*Math.min(1,dt*6), t=A.t; RIGNPC.walk(c,{arm:.35,leg:.5,bob:.02,rock:.04}); B.head.rotation.y=c.look; if(c.sheet)return;
           if(R.pose==='sit'||A.sit){ B.hips.position.y-=.17; B.legL.rotation.x=B.legR.rotation.x=-1.45; B.armL.rotation.x=-.5; B.armR.rotation.x=-.5; }
           if(cat){ B.head.rotation.z=Math.sin(c.t*.7)*.08; B.hips.rotation.x=Math.sin(c.t*.9)*.03; return; }
           if(grip==='blade'){ B.armR.rotation.x=-1.15+.05*Math.sin(c.t*1.3); B.armR.rotation.z=.12; }
@@ -113,8 +114,8 @@ const GUARD={list:[]}; window.GUARD=GUARD;
           if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; N.g.visible=false; return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
               if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; N.g.visible=false; s.to=null; } } return; }
           if(on&&N.mode==='home'){ N.mode=''; N.g.visible=true; if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
-          if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T;
-            const g=far?N.geoLo:N.geoHi; if(N.me.geometry!==g){ if(!far&&!N.shaded)N.shade(); N.me.geometry=g; } }
+          if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T, M=N.FIG?N.FIG.me:N.me;
+            const g=far?N.geoLo:N.geoHi; if(M.geometry!==g){ if(!N.FIG&&!far&&!N.shaded)N.shade(); M.geometry=g; } }
           if(N.ctl&&N.ctl(dt,s,A,N))return;
           if(N.going){ if(Math.hypot(s.x-wx,s.z-wz)<.3*T||gap){ N.going=false; s.x=wx; s.z=wz; s.to=null; } else return; }
           const d=Math.hypot(you.x-s.x,you.z-s.z), fx=Math.sin(face), fz2=-Math.cos(face);
@@ -125,7 +126,10 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       N.park=!IN; N.gd=R; N.A=A; N.grip=grip; N.talk={start:'hi',lines:{hi:{say:R.say,opts:[...(CHARS.trade(N)?[{t:'WHAT DO YOU SELL?',do:'shop'}]:[]),{t:'WHAT DO YOU GUARD?',go:'keep'},{t:'GOODBYE.',go:''}]},keep:{say:D.keep,opts:[{t:'BACK.',go:'hi'}]}}};
       if(IN)scene.add(N.g);
       N.farMove=dt=>{ if((N.fT=(N.fT||0)+dt)<1)return; N.fT=0; N.lastT=0; BRN(0,{x:pos.x,z:pos.z},N.st,N); };
-      { const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=RIGNPC.make({...def,parts:FOLK.parts(R)},{key:R.k+'~lo',name:R.n,eye:-1,metres:R.m,tall:1,radius:.18,speed:0,lv:'up',group:'park',x:wx,z:wz,range:0,brain:()=>{}});
+      if(RIGGED){ const body=FOLK.body(R); BODIES.fit(body); const FIG=BODIES.mesh(body), wrap=new THREE.Group(); wrap.scale.setScalar(1/body.S); wrap.add(FIG.me); N.body.add(wrap); N.me.visible=false;
+        N.FIG=FIG; N.fbody=body; N.SR=RIG.create(); FOLK.drive(N,{mv:0,t:0,look:0},0,A,R,grip); N.st.v=RIG.SPEED*N.H/52*(R.role==='wander'?1.1:1); N.tris=body.tris(); N.geoHi=body.GEO;
+        const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=FOLK.body(R); N.geoLo=lo.GEO; N.trisLo=lo.tris(); } finally{ FOLK.Q=q0; } }
+      else { const q0=FOLK.Q; FOLK.Q=.5; try{ const lo=RIGNPC.make({...def,parts:FOLK.parts(R)},{key:R.k+'~lo',name:R.n,eye:-1,metres:R.m,tall:1,radius:.18,speed:0,lv:'up',group:'park',x:wx,z:wz,range:0,brain:()=>{}});
           lo.shade(); N.geoHi=N.me.geometry; N.geoLo=lo.me.geometry; N.trisLo=lo.tris; const i=NPCS.indexOf(lo); if(i>=0)NPCS.splice(i,1); lo.g.removeFromParent(); lo.me.geometry=new THREE.BufferGeometry(); } finally{ FOLK.Q=q0; } }
       if(at[3]!=null)N.st.h=Math.atan2(X(1)*Math.sin(face)-X(0)*Math.sin(face),Z(1)*-Math.cos(face)-Z(0)*-Math.cos(face));
       return N; };

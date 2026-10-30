@@ -201,14 +201,17 @@
   "name": "THE BEAR MERCHANT",
   "trade": {
    "sells": [
+    "coat_red",
+    "coat_green",
+    "coat_navy",
     "cloudcoat"
    ]
   },
   "scale": 0.5,
-  "tint": "#a86e3c",
+  "tint": "#ffffff",
   "home": [
-   -66.75,
-   49.2,
+   138,
+   -116.5,
    0
   ],
   "talk": {

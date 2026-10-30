@@ -5043,3 +5043,4 @@ Owner (of the grass gallery, https://claude.ai/artifact/LiUhm3UoTpi2ZyedXnuK9d):
 - 30 Oct 2026, LOADING FILM (owner: "add the loading film message too"): while the theatre's film is still on its way, LOADING FILM… shows in the middle of the screen.
 - 30 Oct 2026, inside the theatre, nothing in the way (owner: "remove the marquee and see-through circle in theater too"): while you are in the theatre the marquee outside is hidden and there is no see-through circle.
 - 30 Oct 2026, a softer haze (owner: "its too blocky and cut off when it becomes dark, needs way more gradient"): the haze begins nearer and thickens slowly to whole at its end, and the skyline is whole haze at the horizon, clearing gradually up the screen.
+- 30 Oct 2026, the look's glow at half size (owner: "half size"): the glow round lights is worked out on a half-size picture and laid over the full one; the colour and tint stay full size.

@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {GUARD} from './146j-guardians.js';
 const BREAK={list:[]}; window.BREAK=BREAK;
-PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, MH=T/.84, MV=ZU*24/.84, grp=MAPG.park||scene, S=CASTLE.stair, gnd=(x,z)=>MODS.bodega.ground(x,z);
+if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, MH=T/.84, MV=ZU*24/.84, grp=MAPG.park||scene, S=CASTLE.stair, gnd=(x,z)=>MODS.bodega.ground(x,z);
   const h3=(a,b,c)=>{ const q=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return q-Math.floor(q); }, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
   const TOP={x:X((S.x0+S.x1)/2),z:Z(S.y1+.4)};
   // the crawlers: a slime that hops (squashes as it lands, stretches as it leaves) and a spider that walks on eight legs in two sets of four

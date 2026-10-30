@@ -17,6 +17,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     return {off,binv:BONES.map((n,i)=>R[i].clone().setPosition(O[i]).invert())}; };
 
   /* ---------- one mesh a body: every face flat (its normal from the screen), coloured, held by up to two bones ---------- */
+  // its own bounding sphere (the posed bones, set in pose) so a body off screen or out of the light is not drawn
+  const cull=(me,PM,body)=>{ const O=body.binv?body.binv.map(m=>new V3().setFromMatrixPosition(m.clone().invert())):null, Sp=new THREE.Sphere(), G=new THREE.Sphere(), P=BONES.map(()=>new V3());
+    Object.defineProperty(me,'boundingSphere',{configurable:true,get(){ const c=Sp.center; c.set(0,0,0);
+      for(let i=0;i<NB;i++){ const p=P[i]; if(O)p.copy(O[i]).applyMatrix4(PM.value[i]); else p.setFromMatrixPosition(PM.value[i]); c.add(p); } c.multiplyScalar(1/NB);
+      let r=0; for(const p of P)r=Math.max(r,p.distanceTo(c)); Sp.radius=r*2.2+1e-3;
+      // and the body at rest carried by its hips (all a body is before it is first posed)
+      const g=me.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); const H=PM.value[0]; G.copy(g.boundingSphere).applyMatrix4(H); return Sp.union(G); },set(){}}); me.userData.PM=PM; me.frustumCulled=true; };
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
     const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`, AT_=`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`;
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
@@ -26,7 +33,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     mat.customProgramCacheKey=()=>'body'+NB;
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
-    const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false;
+    const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
     return {me,PM}; }
 
   /* ---------- a smooth body (the merchants): smooth normals, and each part's surface drawn from where it is on the part — knit, woven cloth, denim, leather, metal, skin, fur, wood, ivory, glass — with its own relief, roughness and shine ---------- */
@@ -56,7 +63,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
     const geo=body.GEO||(body.GEO=body.geo()), see=geo.groups.length>1?mat.clone():null;
     if(see){ see.onBeforeCompile=mat.onBeforeCompile; see.customProgramCacheKey=()=>'bodysmg'+NB; see.transparent=true; see.opacity=1; see.depthWrite=false; }
-    const me=new THREE.Mesh(geo,see?[mat,see]:mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; return {me,PM}; }
+    const me=new THREE.Mesh(geo,see?[mat,see]:mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body); return {me,PM}; }
 
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();

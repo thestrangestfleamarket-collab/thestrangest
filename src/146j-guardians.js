@@ -29,7 +29,7 @@ const GUARD={list:[]}; window.GUARD=GUARD;
   for(const R of D.list)LINES.add('gd:'+R.k,R.say);
   GUARD.bounty=()=>B&&{...B};
 
-  PARK.later(()=>{ '@park'; const PI=Math.PI, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, [bx0,,by0]=CASTLE.b;
+  GUARD.shelved=!!D.shelved; if(!GUARD.shelved)PARK.later(()=>{ '@park'; const PI=Math.PI, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, [bx0,,by0]=CASTLE.b;
     // the weapon moves, keyed by time: [u, [arm R x, arm R z, arm R twist, hips turn, arm L x, hips forward], 'fast' for the strike]; hit is when the blade meets the pell
     const G0=[-1.15,.12,0,0,0,0], MOVE={
       slash:{T:1.3,hit:.5,K:[[0,G0],[.35,[-1.5,1.2,-.6,.9,-.4,-.01]],[.5,[-1.5,-.4,.4,-.8,-.2,.02],'fast'],[.62,[-1.3,-.6,.5,-1,-.1,.02]],[1,G0]]},

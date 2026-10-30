@@ -77,7 +77,10 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   gt.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy()); gt.colorSpace=THREE.SRGBColorSpace; gt.wrapS=gt.wrapT=THREE.MirroredRepeatWrapping; gt.needsUpdate=true;
   const t=new THREE.DataTexture(GD.subarray(N*N*4,N*N*8),N,N); t.magFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K); t.needsUpdate=true;
   const KM=(()=>{ const L=SECTIONS.live, xs=[SHARED.BOD.XS(L.x0)/TILE,SHARED.BOD.XS(L.x1)/TILE], zs=[SHARED.BOD.ZS(L.y0)/TILE,SHARED.BOD.ZS(L.y1)/TILE], x0=Math.floor(Math.min(...xs))-4, z0=Math.floor(Math.min(...zs))-4, W=Math.ceil(Math.max(...xs))+4-x0, H=Math.ceil(Math.max(...zs))+4-z0, D=new Uint8Array(W*H);
-    for(let j=0;j<H;j++)for(let i=0;i<W;i++)D[j*W+i]=GRASS.at(x0+i+.5,z0+j+.5).i; const m=new THREE.DataTexture(D,W,H,THREE.RedFormat); m.magFilter=m.minFilter=THREE.NearestFilter; m.needsUpdate=true; return {m,v:new THREE.Vector4(x0,z0,1/W,1/H)}; })();
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++)D[j*W+i]=GRASS.at(x0+i+.5,z0+j+.5).i; const m=new THREE.DataTexture(D,W,H,THREE.RedFormat); m.magFilter=m.minFilter=THREE.NearestFilter; m.needsUpdate=true;
+    // the map again over a box (world coords) when a grass is painted in the landscape editor
+    GRASS.remap=(a,b,c,d)=>{ const i0=Math.max(0,Math.floor(a/TILE)-x0-1), i1=Math.min(W-1,Math.ceil(c/TILE)-x0+1), j0=Math.max(0,Math.floor(b/TILE)-z0-1), j1=Math.min(H-1,Math.ceil(d/TILE)-z0+1); for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)D[j*W+i]=GRASS.at(x0+i+.5,z0+j+.5).i; m.needsUpdate=true; };
+    return {m,v:new THREE.Vector4(x0,z0,1/W,1/H)}; })();
   GRASS.map=KM; GRASS.ms=Math.round(performance.now()-g0);
   const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, M=SHARED.BOD.MAP, tt=v=>v/TILE, R=320, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};

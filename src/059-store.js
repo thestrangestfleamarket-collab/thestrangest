@@ -97,7 +97,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       for(const x of [2.5,4.3,6.1])put('candle on the bar',L+2.76,along(x));
       // the octopus drummer's stage, back-east corner (125-128)
       const SX=R-2.5, SY=Kb+1.4; put('wide stage cloth',SX,Kb+.07,0); put('stage',SX,SY); put('neon sign: LIVE',SX+1.0,Kb+.16,1);
-      const PX=SX-1.4, PY=Kb+2.686; put('grand piano on a stage',PX,PY,2); put('drum kit on a stage',SX+.35,Kb+1.25,0);
+      const PX=SX-1.4, PY=Kb+2.686; put('drum kit on a stage',SX+.35,Kb+1.25,0);   // octopus-only stage (owner, 30 Oct 2026); no piano
       // a wooden staircase up to the street, back-west corner
       put('staircase',L+1.0,Kb+.15);
       // the pool table, mid-room; darts on the east wall with a throw lane in front

@@ -1,4 +1,4 @@
-// YOUR CANDLES: a beeswax candle (146za) is a thing for your apartment — DECORATE shows it as YOURS; its flame flickers (no light of its own, so it costs nothing).
+// YOUR CANDLES: a beeswax candle (147a) is a thing for your apartment — DECORATE shows it as YOURS; its flame flickers (no light of its own, so it costs nothing).
 import {THREE} from './003-shx.js';
 import {SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';

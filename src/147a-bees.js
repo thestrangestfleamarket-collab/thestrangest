@@ -1,12 +1,13 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, ITEMS, NPCS, pos, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FORAGE, NPCS, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
+import {SMOKE} from './146x-bluehour.js';
 const BEES={list:[]}; window.BEES=BEES;
 { const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
   // the honeys: what the flowers near a hive make of it (a rare moon honey by night, deep in the park)
@@ -79,7 +80,7 @@ const BEES={list:[]}; window.BEES=BEES;
     if((tt+=dt||0)<.05)return; tt=0; const now=performance.now()/1000, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur), day=!(window.CLOCK&&CLOCK.dark()); let n=0;
     for(const h of S.hives){ if(!h.g)continue; const near=Math.hypot(h.x-pos.x,h.z-pos.z); h.g.visible=out&&near<60*T; if(!h.g.visible||near>20*T||!day)continue; const busy=Math.min(1,.3+frames(h)/FULL);
       for(let i=0;i<NB*busy;i++){ const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
-    BEE.count=n; BEE.instanceMatrix.needsUpdate=true; },'146za-bees');
+    BEE.count=n; BEE.instanceMatrix.needsUpdate=true; },'147a-bees');
 
   /* ---------- the beekeeper: a round figure in a white suit and a veiled hat, a smoker in one gloved hand ---------- */
   const SUIT='cloth:#eeeae0', GLOVE='leather:#d8c890', VEIL='tulle:#2a2c30';
@@ -99,4 +100,3 @@ const BEES={list:[]}; window.BEES=BEES;
   { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='beekeeper'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }; go(); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }
-export {BEES};

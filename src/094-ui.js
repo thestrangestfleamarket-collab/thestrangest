@@ -41,7 +41,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     document.body.appendChild(P);
     UI.moves=()=>{ '@later'; if(P.style.display!=='none'){ P.style.display='none'; return; }
       const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
-      let o='<div style="display:flex;justify-content:space-between"><b>WHAT YOU CAN DO</b><span style="color:#8a8f9c">? OR ESC CLOSES</span></div>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
+      let o='<h3 style="margin:0 0 6px">WHAT YOU CAN DO</h3>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
       o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP (IF YOU CARRY ONE)')+row('SHIFT + N','NOON / 7 PM')+row('SHIFT + 0','ALL THE EDITORS: PICK ONE')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('SHIFT + E','EDIT THE WORLD')+row('I','YOUR PACK: WHAT YOU CARRY, HUNGER, SKILLS, CRAFTING')+row('ESC','THE MENU')+row('?','THIS LIST')+row('L','FEEL LAB: THE NEW CONTROLLER, ITS TUNING AND ITS TEST YARD')+row('O','FEEL LAB DEBUG')+row('T','IN THE YARD: BACK TO ITS SPAWN')+row('F8','REPORT A BUG');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
@@ -167,8 +167,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu h3{font-size:13px;color:var(--md);margin:18px 0 6px;padding:0 4px 6px;border-bottom:2px solid var(--mi)} #menu h3:first-child{margin-top:0}
   #menu .row{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:4px 0} #menu .row>span:first-child{flex:1;width:auto!important;padding:6px 4px;white-space:nowrap}
   #menu .btn{font:inherit;color:var(--md);background:transparent;border:0;padding:6px 6px;cursor:pointer} #menu .btn:hover,#menu .btn:focus-visible{color:var(--mk);background:var(--mf);outline:0}
-  #menu .btn[aria-pressed="true"]{color:var(--mo)} #menu .btn[aria-pressed="true"]:hover{color:var(--mb)} #menu .btn:not([aria-pressed]){color:var(--mt)} #menu .dim{color:var(--md);font-size:13px;line-height:1.6}
-  #menu input[type=range]{width:168px;height:16px;margin:0;-webkit-appearance:none;appearance:none;border:0;box-shadow:0 0 0 2px var(--mk);cursor:pointer;background:repeating-linear-gradient(90deg,transparent 0 16px,var(--mk) 16px 21px),linear-gradient(90deg,var(--mo) var(--p,50%),var(--me) var(--p,50%))}
+  #menu .btn[aria-pressed="true"]{color:var(--mo)} #menu .btn[aria-pressed="true"]:hover{color:var(--mb)} #menu .btn:not([aria-pressed]){color:var(--mt)} #menu .dim{color:var(--md);font-size:15px;line-height:1.6}
+  #menu input[type=range]{width:140px;height:16px;margin:0;-webkit-appearance:none;appearance:none;border:0;box-shadow:0 0 0 2px var(--mk);cursor:pointer;background:repeating-linear-gradient(90deg,transparent 0 16px,var(--mk) 16px 21px),linear-gradient(90deg,var(--mo) var(--p,50%),var(--me) var(--p,50%))}
   #menu input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:4px;height:16px;background:transparent;border:0}
   #menu input[type=range]::-moz-range-thumb{width:4px;height:16px;background:transparent;border:0}
   #menu .pick .btn{display:none} #menu .pick .btn[aria-pressed="true"],#menu .pick .btn.arr{display:inline-block;color:var(--mt)} #menu .pick .btn.arr{color:var(--md)} #menu .pick .btn:hover{color:var(--mb)}
@@ -210,8 +210,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <h3>RESOLUTION</h3><div class="row" id="dres"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
       <h3>CHARACTERS</h3><div class="row"><button class="btn" id="danim">ANIMATION</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
-      <div class="row"><span style="width:110px">SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"><span style="width:110px">SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
-    <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span style="width:60px">VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
+      <div class="row"><span>SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"></div><div class="row"><span>SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
+    <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
     <div class="pane" data-p="guide" id="dguide"></div>
@@ -338,7 +338,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
     $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dhelp').setAttribute('aria-pressed',String(!document.getElementById('hud').hidden)); $('#dstat').setAttribute('aria-pressed',String(!document.getElementById('stat').hidden)); $('#drin').setAttribute('aria-pressed',String(!!(window.RINSP&&RINSP.on)));
-    const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
+    const sh=document.getElementById('shd'); $('#dshd').innerHTML=''; sh.querySelectorAll('button:not(.pX)').forEach(b=>{ const c=document.createElement('button'); c.className='btn'; c.textContent=b.textContent; c.setAttribute('aria-pressed',b.getAttribute('aria-pressed')); c.onclick=()=>{ b.click(); drawDisplay(); }; $('#dshd').appendChild(c); }); }
   { const b=$('#danim'), L=[8,10,12,0], name=()=>'ANIMATION '+(ASTEP.fps>0?'STEPPED '+ASTEP.fps:'EVERY FRAME'); b.textContent=name();
     b.onclick=()=>{ const i=L.indexOf(ASTEP.fps); ASTEP.fps=L[(i+1)%L.length]; try{ SAVE.set('animfps',String(ASTEP.fps)); }catch(e){} b.textContent=name(); }; }
   $('#dsmooth').textContent='LIGHT BANDS '+CEL; $('#dsmooth').onclick=()=>{ const n=CEL>=5?3:CEL+1; try{ SAVE.set('bands',String(n)); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); };
@@ -382,17 +382,20 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
 .ml button:hover:not(:disabled),.ml button:focus-visible{color:#020a06!important;background:#7dffa8!important;outline:0}
 .ml button:disabled{opacity:.4}
 ${sel('background',['#f2c14e','#8fe3d6'])}{color:#020a06!important;background:#7dffa8!important}
-.ml h1,.ml h2,.ml h3,.ml h4{${C};font-weight:normal;padding-bottom:6px;border-bottom:2px solid #3aa866!important} .ml h3::before{content:'[ '} .ml h3::after{content:' ]'}
+.ml h1,.ml h2,.ml h3,.ml h4{${C};font-weight:normal;font-size:20px!important;letter-spacing:3px!important;padding-bottom:6px;border-bottom:2px solid #3aa866!important} .ml h3::before{content:'[ '} .ml h3::after{content:' ]'}
 .ml b,${sel('color',['#f2c14e','#fff','#ffffff'])}{${HI}}
 ${sel('color',['#8fe3d6','#e8e2cc','#ece5d3','#d8dae2','#c8c2b0','#d8d8c8'])}{${C}}
-${sel('color',['#9b9584','#7d7a70','#8a8676','#5d5a52','#8a8f9c','#9b9a92','#7a7668'])}{${DIM}}
+${sel('color',['#9b9584','#7d7a70','#8a8676','#5d5a52','#8a8f9c','#9b9a92','#7a7668','#c3a7a0','#8f7470'])}{${DIM}}
+${sel('color',['#d8a845'])}{${HI}}
+.ml td:last-child{white-space:nowrap}
 .ml tr,.ml td,.ml [style*="border-bottom:1px solid"],.ml [style*="border:1px solid"]{border-color:#0d3a1f!important}
+.ml .mclose{display:none!important}
 .ml .pX{color:#7dffa8!important;background:#020a06!important;box-shadow:inset 0 0 0 2px #3aa866!important;border:0!important}
 .ml .pX:hover{color:#020a06!important;background:#7dffa8!important}`;
     document.head.appendChild(ML);
-    const NOT=/^(stage|subfade|hud|stat|shd|mode|said|vit|fjour|plcap|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead|vrbtn)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11)/;
+    const NOT=/^(stage|subfade|hud|stat|shd|mode|said|vit|fjour|plcap|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead|vrbtn)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|pcp|nsp|talkp|hornp|shopg|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
-      el.dataset.ml=DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
+      el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';
   const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
@@ -402,4 +405,9 @@ ${sel('color',['#9b9584','#7d7a70','#8a8676','#5d5a52','#8a8f9c','#9b9a92','#7a7
   const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
       if(!box.dataset.pan){ box.dataset.pan=1; drag(box); if(getComputedStyle(box).position==='static')box.style.position='relative'; }
       if(!box.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); close?close(el):hide(el); }; box.appendChild(x); } } };
-  look(); setInterval(()=>{ look(); UI.menuLook(); },400); }
+  const own=el=>[...el.querySelectorAll('button')].find(b=>/^(CLOSE|DONE|PUT AWAY|LEAVE|CANCEL|X|✕|×)$/i.test(b.textContent.trim())&&!b.classList.contains('pX'));
+  const frame=()=>{ for(const el of document.querySelectorAll('body>.ml')){ if(PANS.some(p=>p[0]===el.id))continue;   // every menu: the same frame, drag and X; its own CLOSE button folds into the X
+      if(!el.dataset.pan){ el.dataset.pan=1; drag(el); }
+      const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');
+      if(!el.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); const b=own(el); if(b)b.click(); else hide(el); }; el.appendChild(x); } } };
+  look(); setInterval(()=>{ look(); UI.menuLook(); frame(); },400); }

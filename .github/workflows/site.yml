@@ -41,7 +41,7 @@ jobs:
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
-          k bank    'src/059h|src/059-store|bank'
+          k bank    'src/059h|src/059-store|src/161-perf|bank'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4

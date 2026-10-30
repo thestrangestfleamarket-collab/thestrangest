@@ -1,6 +1,6 @@
 // THE BANK: the bank on the block, between the playhouse and the bar (its own builder): a stone front with a big vault door, and inside a dragon's hoard, a dungeon where a sleeping dragon's head comes out of the back wall over piles of gold.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, SFX} from './003b-systems.js';
+import {PERFX, pos, SFX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, BLOCK, FIX, grab, SOL, STORE, SYS} from './006-map-pre.js';
 import {dgnRoom} from './038z-dungeon.js';
@@ -74,7 +74,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
     const cv=document.createElement('canvas'); cv.width=cv.height=32; const cx=cv.getContext('2d'), gr=cx.createRadialGradient(16,16,0,16,16,16); gr.addColorStop(0,'rgba(235,235,230,.9)'); gr.addColorStop(1,'rgba(235,235,230,0)'); cx.fillStyle=gr; cx.fillRect(0,0,32,32);
     const ST=new THREE.CanvasTexture(cv), puffs=[...Array(18)].map(()=>{ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ST,transparent:true,depthWrite:false,opacity:0})); s.visible=false; g.add(s); return {s,t:9}; });
     const noseL=[-1,1].map(s=>new THREE.Vector3(s*.72*k,2.62*k,5.15*k)), nose=()=>{ head.updateMatrixWorld(true); return noseL.map(v=>head.localToWorld(v.clone())); };
-    scene.add(g); STORE.bank.hoard=g; STORE.bank.head=head;
+    scene.add(g); PERFX.own(g); STORE.bank.hoard=g; STORE.bank.head=head;
     const inB=()=>pos.x>Math.min(X(B.x0),X(B.x1))&&pos.x<Math.max(X(B.x0),X(B.x1))&&pos.z>Math.min(Z(B.y0),Z(B.y1))&&pos.z<Math.max(Z(B.y0),Z(B.y1));
     // it wakes when you come near: its eyes open, it lifts its head and follows you, snorts and growls; it settles back to sleep a while after you leave
     let t=0, out=false, pi=0, W=0, awake=false, away=0; const HZ=wallZ+3*k, snort=n=>{ const N=nose(); for(let i=0;i<n;i++){ const p=puffs[pi++%puffs.length]; p.t=-i*.06; p.n=N[i&1]; } };

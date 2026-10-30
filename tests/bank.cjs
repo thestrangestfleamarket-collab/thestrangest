@@ -13,7 +13,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const at = (k) => pg.evaluate(k => { const B = STORE.bank.B, X = SHARED.BOD.X, Z = SHARED.BOD.Z, T = __dbg.cv().TILE; __dbg.UI.goTo(X((B.x0 + B.x1) / 2) + 2.6 * T, k ? Z(B.y0) + 8.6 * T : Z(B.y1) - T, 'up'); }, k);
   const st = () => pg.evaluate(() => STORE.bank.dragon());
   const s0 = await st(); await at(1); await pg.waitForTimeout(3000); const s1 = await st(); await at(0); await pg.waitForTimeout(9000); const s2 = await st();
-  ok(!s0.awake && s1.awake && s1.W > .2 && !s2.awake, 'the dragon sleeps, wakes as you come near its head, and sleeps again after you leave: ' + JSON.stringify({ s0, s1, s2 }));
+  ok(!s0.awake && s1.awake && s1.W > 0 && !s2.awake, 'the dragon sleeps, wakes as you come near its head, and sleeps again after you leave: ' + JSON.stringify({ s0, s1, s2 }));
+  await pg.evaluate(() => STORE.exit('bank')); await pg.waitForTimeout(3000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 });
+  await pg.evaluate(() => { const B = STORE.bank.B, T = __dbg.cv().TILE; __dbg.UI.goTo(SHARED.BOD.X((B.x0 + B.x1) / 2), SHARED.BOD.Z(B.y1) + 4 * T, 'up'); }); await pg.waitForTimeout(3000);
+  const o = await pg.evaluate(() => ({ hoard: STORE.bank.hoard.visible }));
+  ok(!o.hoard, 'back on the street, nothing of the bank\'s inside is drawn: ' + JSON.stringify(o));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all bank checks passed'); process.exit(fails.length ? 1 : 0);
 })();

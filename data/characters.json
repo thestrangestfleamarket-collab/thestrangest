@@ -10,7 +10,8 @@
     "cutter",
     "extractor",
     "rod",
-    "bait"
+    "bait",
+    "gem_wheel"
    ],
    "line": "Going down? Rent a tank, grab the kit."
   },
@@ -98,15 +99,25 @@
    "sells": [
     "net",
     "bnet",
+    "frame",
+    "cage",
+    "bseed",
+    "feeder",
+    "binoc",
     "jar_s",
     "jar_m",
     "jar_l",
     "kite"
    ],
    "buys": [
-    "butterflies"
+    "butterflies",
+    "birds"
    ],
-   "line": "Nets, jars, and I buy every butterfly you bring me."
+   "line": "Nets, jars, cages and glasses. I buy every butterfly and bird you bring me, and I teach what I know.",
+   "teaches": [
+    "ento",
+    "bird"
+   ]
   },
   "talk": {
    "start": "hi",
@@ -439,7 +450,10 @@
     "pc_home",
     "modem"
    ],
-   "line": "(the little one) He fixed them. They work. Mostly."
+   "line": "(the little one) He fixed them. They work. Mostly.",
+   "buys": [
+    "ore"
+   ]
   },
   "talk": {
    "start": "hi",
@@ -709,7 +723,14 @@
     "dirt",
     "water"
    ],
-   "line": "Fresh from far away!"
+   "line": "Fresh from far away!",
+   "buys": [
+    "mushrooms"
+   ],
+   "teaches": [
+    "forage",
+    "garden"
+   ]
   },
   "talk": {
    "start": "hi",
@@ -2034,6 +2055,58 @@
       {
        "t": "GOODBYE.",
        "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "beekeeper": {
+  "name": "THE BEEKEEPER",
+  "trade": {
+   "sells": [
+    "bee_hive",
+    "bee_smoker",
+    "bee_veil",
+    "jar_honey"
+   ],
+   "buys": [
+    "honey"
+   ],
+   "teaches": [
+    "bee"
+   ],
+   "line": "Hives, smoke and jars. I buy honey and wax, and I'll teach you to keep them."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Slow hands, calm bees.",
+      "Mind the smoke. It's for them, not you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I KEEP BEES?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Set a hive on the lawn where the flowers are thick. Come back in an hour or so with empty jars. Smoke them first, and wear a veil. The flowers near the hive make the honey: clover, lavender, sunflower, rose. And by night, deep in the park, once in a while... moon honey.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": "hi"
       }
      ]
     }

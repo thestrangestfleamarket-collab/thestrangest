@@ -33,6 +33,7 @@ FISHING.NAMES={x_sunfish:'SUNFISH',x_perch:'WHITE PERCH',x_tomcod:'ATLANTIC TOMC
 FISHING.guide=()=>{ const P=FORAGE.PACK; if(!P)return; if(!P.open)P.toggle('fishing'); else { P.tab='fishing'; P.draw(); } };
 FORAGE.ACT.fguide=()=>FISHING.guide();
 FORAGE.HELP.push('FISHING: a rod and bait from BAIT & BOATS by the Hudson pier; F by the water to fish. The FISHING tab in your pack (I) is the whole guide.');
+FORAGE.BOOK.push({id:'fish',title:'FISH',rows:()=>{ const kg=(FORAGE.S&&FORAGE.S.fishkg)||{}; return Object.keys(FISHING.NAMES).map(id=>[FISHING.NAMES[id],!!kg[id],kg[id]?'BEST '+kg[id][1]+' KG':'',(+ITEMS.prop(id,'value')||0)>=40]); },foot:'The FISHING tab tells where, when and on what each one bites.'});
 FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(id,k), kg=(FORAGE.S&&FORAGE.S.fishkg)||{}, h=CLOCK.h??12, now=h>=7&&h<17?'day':h>=21||h<5?'night':'dusk';
   const H=t=>`<div style="color:#f2c14e;margin:10px 0 4px">${t}</div>`, R=(a,b)=>`<div style="padding:3px 0;border-bottom:1px solid #22252f;line-height:1.45;font-size:10px"><span style="color:#8fe3d6">${a}</span> · ${b}</div>`;
   const ids=Object.keys(FISHING.NAMES), got=ids.filter(id=>kg[id]).length, sk=Math.round(FORAGE.sk?FORAGE.sk('fish'):0);

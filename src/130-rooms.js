@@ -4,7 +4,7 @@ import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS,
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH} from './008-batch.js';
+import {BATCH, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
 import {VIS} from './129a-vis.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
@@ -128,9 +128,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(hit&&!FREE){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
-    // a room's walls that vanish while you are in it (STORE.open[id]: the theatre keeps only its screen wall)
+    // a room's walls that vanish while you are in it (STORE.open[id]: the theatre keeps only its screen wall), with what of its front would show (STORE.openHide) and the see-through circle
     { const o=hit&&STORE.open&&STORE.open[hit.id]?hit:null; if(o!==OPEN.r){ for(const me of OPEN.m)VIS.hide(me,'open',false); OPEN.m=[]; OPEN.r=o;
-        if(o)for(const w of STORE.open[o.id])for(const me of BATCH.all(STORE.meshes,'W'+o.id+':'+w)){ VIS.hide(me,'open'); OPEN.m.push(me); } } }
+        if(o){ for(const w of STORE.open[o.id])for(const me of BATCH.all(STORE.meshes,'W'+o.id+':'+w)){ VIS.hide(me,'open'); OPEN.m.push(me); }
+          for(const me of (STORE.openHide&&STORE.openHide[o.id])||[]){ VIS.hide(me,'open'); OPEN.m.push(me); } } PEEK.off=!!o; } }
     const HB=IV.key?IV.b:FREE?null:hit, show=(g,x,z,o,y)=>{ const sh=!HB||within(HB,x,z,.4*TILE)&&(y==null||y>HB.y0-.3&&y<HB.y1); VIS.hide(g,'roof',!sh); };
     for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y); }
     if(ONLINE.others)for(const o of ONLINE.others.values()){ const g=o.fig&&o.fig.g; if(g&&g.parent)show(g,g.position.x,g.position.z,o,g.position.y); }

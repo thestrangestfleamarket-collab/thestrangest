@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {VEG} from './144-veggies.js';
@@ -16,6 +16,8 @@ const GARDEN={}; window.GARDEN=GARDEN;
     bluebell:['BLUEBELL',10,3,0x6a7ae0,0,[.045,1.3,.3,0]],poppy:['POPPY',15,3,0xe02a1a,0x1a1414,[.06,.4,.42,.3]],cosmos:['COSMOS',15,3,0xe070b0,0xf2c81e,[.06,.15,.62,.3]],
     lavender:['LAVENDER',20,4,0x8a6ad0,0,[.035,2.4,.45,0]],iris:['IRIS',35,6,0x5a4ad0,0x7a6ae8,[.06,.8,.5,.4]],foxglove:['FOXGLOVE',40,7,0xd060a0,0,[.045,3,.9,0]]};
   const SEED={marigold:['MARIGOLD SEEDS',1],zinnia:['ZINNIA SEEDS',2],tulip:['TULIP BULB',3],sunflower:['SUNFLOWER SEEDS',2],rose:['ROSE CUTTING',8]};
+  // a rarer seed each week, sold by the mushroom seller only that week
+  const WEEK={lavender:['LAVENDER SEEDS',3],iris:['IRIS BULB',5],foxglove:['FOXGLOVE SEEDS',4],violet:['WILD VIOLET SEEDS',6],slipper:["LADY'S SLIPPER ROOT",40]};
   const WILD=Object.fromEntries(GRASS.K.map(k=>[k.id,k.flowers]));   // each grass kind's wild flowers (GRASS)
   const BQ=[['g_posy','WILDFLOWER POSY','garden',[0,45],{fl_daisy:2,fl_clover:2},'sells for $14'],['g_meadow','MEADOW BOUQUET','garden',[20,65],{fl_chicory:2,fl_goldenrod:2,fl_daisy:1},'sells for $28'],
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
@@ -27,13 +29,13 @@ const GARDEN={}; window.GARDEN=GARDEN;
     const [, , ,hc,cc,[r,hh,st,cr]]=FL[id.slice(3)], R=r*1.6, H=Math.max(.06,st*1.25), g=new THREE.Group();
     g.add(P('cyl',0x4a8a3a,0,H/2,0,.012,H,.012),P('ball',0x3e7a32,.03,H*.3,0,.07,.012,.03,0,.4),P('ball',hc,0,H,0,R,R*hh,R,0,0,0,{flat:1})); if(cr)g.add(P('ball',cc,0,H+R*hh*.55,0,R*cr,R*cr*.6,R*cr,0,0,0,{flat:1})); return g; }});
   const BP={g_posy:14,g_meadow:28,g_tulip:40,g_aster:36,g_garden:48,g_rose:110,g_corsage:120};
-  const NM={}, PR={}; for(const k in FL){ NM['fl_'+k]=FL[k][0]; PR['fl_'+k]=FL[k][2]; } for(const k in SEED)NM['sd_'+k]=SEED[k][0]; for(const r of BQ)NM[r[0]]=r[1];
+  const NM={}, PR={}; for(const k in FL){ NM['fl_'+k]=FL[k][0]; PR['fl_'+k]=FL[k][2]; } for(const k in WEEK)SEED[k]=WEEK[k]; for(const k in SEED)NM['sd_'+k]=SEED[k][0]; for(const r of BQ)NM[r[0]]=r[1];
   FORAGE.add({names:NM,prices:Object.assign({},PR,BP),recipes:BQ});
   FORAGE.CK.garden={short:'GARD',made:nm=>`YOU TIE A ${nm}.`,fail:'THE STEMS SNAP. THE FLOWERS ARE SPOILED.'};
   FORAGE.HELP.push('GARDENING picks wildflowers, grows flowers from seed on any lawn (the tomato sells seeds) and ties bouquets.');
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, now=()=>day()*24+CLOCK.h, GROW=24;
-  const S={v:1,picked:{},pd:-1,plots:[]}; try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){}
-  let saveT=0; const save=()=>SAVE.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
+  const S={v:1,picked:{},pd:-1,plots:[],log:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); S.log=S.log||{}; }catch(e){}
+  let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
   const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD['01']; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };
@@ -57,13 +59,13 @@ const GARDEN={}; window.GARDEN=GARDEN;
     for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GROW); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }
     for(const [me,c] of [[STEM,n.s],[HEAD,n.h],[CTR,n.c],[LEAF,n.l]]){ me.count=c; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } GARDEN.shown=n.s; };
-  GARDEN.sync=sync; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
+  GARDEN.sync=sync; GARDEN.plots=()=>S.plots; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
   { SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); sync(); },'144a-garden'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))sync(); },'144a-garden');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
     const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GROW)<1?Math.floor((now()-p.t)/GROW*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
   GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
-    if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }
+    if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); S.log[f.k]=(S.log[f.k]||0)+n; say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }
     else if(Math.random()<.3){ S.picked[f.id]=1; say('YOU CRUSH IT. THE PETALS FALL.','#c8a090'); } else say('THE STEM WILL NOT COME CLEANLY.','#c8a090');
     saveSoon(); sync(); FORAGE.draw(); };
   const lawnAt=(x,z)=>{ const g=WEEDS.chunks&&WEEDS.chunks.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!g||!g.sq)return null; const Q=g.sq; let b=null, bd=(.4*T)**2;
@@ -76,9 +78,12 @@ const GARDEN={}; window.GARDEN=GARDEN;
     FORAGE.take(id,1); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
   GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GROW); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
     const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4});
-    if(use('garden',d-25,d+25)){ const n=2+(sk('garden')>d+20?1:0), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
+    if(use('garden',d-25,d+25)){ const n=2+(sk('garden')>d+20?1:0), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); S.log[p.k]=(S.log[p.k]||0)+n; if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
     else { FORAGE.give('fl_'+p.k,1); say(`ONLY ONE ${nm} IS ANY GOOD.`,'#c8a090'); }
     save(); sync(); FORAGE.draw(); };
-  const wait=()=>{ if(!VEG.add)return setTimeout(wait,500); VEG.add(Object.fromEntries(Object.keys(SEED).map(k=>['sd_'+k,SEED[k][1]])),Object.assign({},PR,BP)); }; wait();
+  const wait=()=>{ if(!VEG.add)return setTimeout(wait,500); VEG.add(Object.fromEntries(Object.keys(SEED).filter(k=>!WEEK[k]).map(k=>['sd_'+k,SEED[k][1]])),Object.assign({},PR,BP)); }; wait();
+  const WK=Object.keys(WEEK), week=()=>Math.floor(day()/7)%WK.length; GARDEN.week=()=>WK[week()];
+  WK.forEach((k,i)=>FORAGE.SELLS.push(['sd_'+k,WEEK[k][1],()=>week()===i]));
+  FORAGE.BOOK.push({id:'flowers',title:'FLOWERS',rows:()=>Object.keys(FL).map(k=>[FL[k][0],!!S.log[k],S.log[k]?'PICKED '+S.log[k]:'',FL[k][1]>=55]),foot:'Each grass grows its own wild flowers. The mushroom seller has a rarer seed each week.'});
   window.GARDDBG=()=>({shown:GARDEN.shown,chunks:CH.size,plots:S.plots.map(p=>({k:p.k,g:+Math.min(1,(now()-p.t)/GROW).toFixed(2)})),garden:sk('garden'),lawn:lawnAt(pos.x,pos.z)}); }
 export {GARDEN};

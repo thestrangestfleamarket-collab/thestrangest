@@ -219,7 +219,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       hb.position.set(X(cx),1.2*TILE,Z(y)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>!FADE.busy&&FADE.run('',()=>UI.goTo(X(cx),Z(ty),0,hd),{cut:true})}); }
     for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,hy,0x66ff99,5]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(2.2*TILE,Y(50),.4*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(cx),Y(66),Z(HD.y0+.2)); scene.add(hb);
-      UI.thing({name:'THE HOLODECK PANEL',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:Y(90),act:()=>HOLO.menu()}); HOLO.hall={x:X(cx),z:Z(hy),G:AG}; } };
+      UI.thing({name:'THE HOLODECK PANEL',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:Y(90),act:()=>HOLO.menu()}); const hb4=box4(HD.x0,HD.y0,HD.x1,HD.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(AR.y0-1.3)}}; } };
   const unbuild=()=>{ ARC.scr=null; HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
   const wb=box4(AR.x0-.2,HD.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };

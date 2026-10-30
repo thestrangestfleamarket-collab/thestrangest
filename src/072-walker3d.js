@@ -265,7 +265,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   build();
   { W3.reindex=()=>{ let n=0; for(let i=0;i<RG.length;i++)if(!W3.HIDE[i])n+=RG[i][1]; const I=new Uint32Array(n); let k=0; for(let i=0;i<RG.length;i++){ if(W3.HIDE[i])continue; const [a,c]=RG[i]; for(let v=0;v<c;v++)I[k++]=a+v; }
       all.setIndex(new THREE.BufferAttribute(I,1)); W3.trisWorn=n/3; };
-    W3.dress=()=>{ let made=false; PCS.forEach((P,i)=>{ const v=W3.shows(P,W3.style,W3.worn); if(v!==null)W3.HIDE[i]=!v; if(!W3.HIDE[i]&&!geos[i]){ geos[i]=mk(P,i); made=true; } }); if(made){ build(); if(W3.recolor)W3.recolor(); } W3.reindex(); };
+    W3.dress=()=>{ let made=false; PCS.forEach((P,i)=>{ const v=W3.shows(P,W3.style,W3.worn); if(v!==null)W3.HIDE[i]=!v; if(W3.noHead&&(P.on==='head'||P.on==='hair'||/^(head|hair|beard|eyes)/.test(P.n)))W3.HIDE[i]=true; if(!W3.HIDE[i]&&!geos[i]){ geos[i]=mk(P,i); made=true; } }); if(made){ build(); if(W3.recolor)W3.recolor(); } W3.reindex(); };
+    W3.setHead=on=>{ W3.noHead=!on; W3.dress(); };
     W3.wear=(l,on)=>{ if(l in W3.worn){ W3.worn[l]=!!on; W3.dress(); } }; W3.dress(); }
   const U={uPM:W3.PM,uL:{value:W3.L},uTint:{value:W3.tint},uLv:W3.lv,uLVP:W3.LVP,uSM:{value:W3.sm.depthTexture},uLook:W3.look,uG:W3.G,uLP:W3.LP,uLC:W3.LC,uCamW:W3.CamW};
   const m=new THREE.Mesh(all,new THREE.ShaderMaterial({vertexShader:VS,fragmentShader:FS,side:THREE.DoubleSide,uniforms:U}));

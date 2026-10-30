@@ -1,22 +1,30 @@
-// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, three cabinets along each side wall (double-click one to play its game), and the holodeck behind the back wall (double-click its door) with its training programs.
+// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, three cabinets along each side wall (double-click one to play its game), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, pos, ROOMS, UI, WIELD} from './003b-systems.js';
+import {FORAGE, INV, ROOMS, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
-  const HOLO=STORE.holo={programs:[],run:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
-  HOLO.open=(x,z,G)=>{ '@later'; const n=HOLO.programs.length; HOLO.programs.forEach((P,i)=>{ const px=x+(i-(n-1)/2)*2.2*TILE; if(P.place)P.place(px,z,0,G);
-      const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(px,TILE,z); scene.add(hb);
-      UI.thing({name:P.name,obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:2*TILE,act:()=>HOLO.start(P,px,z)}); }); };
-  HOLO.close=()=>{ HOLO.run=null; for(const P of HOLO.programs)if(P.hide)P.hide(); };
-  HOLO.start=(P,x,z)=>{ if(HOLO.run)return; const c=P.cost||8; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
-    HOLO.run={P,x,z,n:0,good:0,cue:false,t:2}; say(P.intro,'#7dffa4'); };
-  SYS.add('strike',()=>{ const D=HOLO.run; if(!D)return; if(D.P.strike)return D.P.strike(D); if(!D.cue||Math.hypot(pos.x-D.x,pos.z-D.z)>2.6*TILE)return; D.cue=false; D.good++; D.n++; D.t=1.2+Math.random()*1.6; say('GOOD.','#7dffa4'); if(D.P.skill)FORAGE.use(D.P.skill,0,100); },'holodeck drill');
-  SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return; if(D.P.run)return D.P.run(D,dt); D.t-=dt; if(D.t>0)return;
-    if(D.cue){ D.cue=false; D.n++; D.t=1.2+Math.random()*1.6; say('TOO SLOW.','#c8a090'); return; }
-    if(D.n>=5){ say('PROGRAM COMPLETE: '+D.good+' OF 5.','#7dffa4'); if(D.P.skill&&D.good)FORAGE.train(D.P.skill,600,0,D.good*4); HOLO.run=null; return; } D.cue=true; D.t=1.1; say(D.P.cue,'#5dff8f'); },'holodeck drill');
+  const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
+  const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const hp=document.createElement('div'); hp.id='holog'; hp.hidden=true;
+  hp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(520px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
+  document.body.appendChild(hp); hp.addEventListener('keyup',e=>e.stopPropagation()); hp.addEventListener('keydown',e=>{ if(e.key==='Escape')HOLO.hide(); e.stopPropagation(); });
+  const xb=document.createElement('button'); xb.className='pX'; xb.textContent='X'; xb.style.cssText='position:absolute;right:10px;top:10px;font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer'; xb.onclick=()=>HOLO.hide(); hp.appendChild(xb);
+  const B='style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
+  HOLO.draw=()=>{ if(hp.hidden)return; let o='<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE HOLODECK</h3><div style="color:#9b9584;margin-bottom:8px">'+(HOLO.run?'RUNNING: '+esc(HOLO.run.P.name):'PICK AN ADVENTURE.')+'</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$'+Math.round(INV.cash)+'</b></div>';
+    o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">$'+(P.cost||8)+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'"'+(HOLO.run?' disabled':'')+'>RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
+    if(HOLO.run)o+='<div style="margin-top:8px"><button '+B+' data-end="1">END PROGRAM</button></div>'; hp.innerHTML=o; hp.appendChild(xb); };
+  hp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; if(b.dataset.end){ HOLO.end(); HOLO.draw(); return; } const P=HOLO.programs[+b.dataset.run]; if(P)HOLO.start(P); });
+  HOLO.menu=()=>{ hp.hidden=false; HOLO.draw(); if(UI.menuLook)UI.menuLook(); };
+  HOLO.hide=()=>{ hp.hidden=true; };
+  HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); };
+  HOLO.close=()=>{ HOLO.end(); HOLO.hide(); HOLO.hall=null; };
+  HOLO.start=P=>{ if(HOLO.run||!HOLO.hall)return; const c=P.cost||8; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+    const H=HOLO.hall; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); if(P.place)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
+  SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
+  SYS.add('places',dt=>{ const D=HOLO.run; if(D&&D.P.run)D.P.run(D,dt); },'holodeck program');
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
@@ -94,7 +102,9 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     const door=(u,z)=>{ const d=Math.abs(u-cx); return d>DW-.06||z>DH-3?[60,255,120,1]:Math.abs(d-DW/2)<.03?[28,120,58,1]:sh([10,18,14],.9); };
     WALL(PX(AR.y0,.03),PX(AR.y0,.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):back(u,z));
     WALL(PX(AR.y0,-.03),PX(AR.y0,-.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):GRID(u,z/24));
-    WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>GRID(u,z/24));
+    const panel=(u,z)=>{ const du=(u-cx)*24, dz=z-66; if(Math.abs(du)>24||Math.abs(dz)>22)return null; if(Math.abs(du)>22||Math.abs(dz)>20)return [60,255,120,1]; if(Math.abs(du)>20||Math.abs(dz)>18)return [8,30,16];
+      const r=Math.floor((dz+18)/6); if(r%2===0&&du>-16&&du<(r===4?2:14-((r*7)%9)))return r===4?[217,255,230,1]:[120,255,160,1]; return [4,12,7]; };
+    WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>panel(u,z)||GRID(u,z/24));
     sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1);
     const CW_=Math.abs(X(1)-X(0)), ZW_=Math.abs(Y(1)-Y(0)), KIT=STORE.cabs.kit(), SCRS=[];
     const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
@@ -208,7 +218,8 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     for(const [y,name,ty,hd] of [[AR.y0+.3,'THE HOLODECK',AR.y0-1.3,Math.PI],[AR.y0-.3,'BACK TO THE ARCADE',AR.y0+1.3,0]]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(cx),1.2*TILE,Z(y)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>!FADE.busy&&FADE.run('',()=>UI.goTo(X(cx),Z(ty),0,hd),{cut:true})}); }
     for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,hy,0x66ff99,5]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
-    HOLO.open(X(cx),Z(hy-1.5),AG); };
+    { const hb=new THREE.Mesh(new THREE.BoxGeometry(2.2*TILE,Y(50),.4*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(cx),Y(66),Z(HD.y0+.2)); scene.add(hb);
+      UI.thing({name:'THE HOLODECK PANEL',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:Y(90),act:()=>HOLO.menu()}); HOLO.hall={x:X(cx),z:Z(hy),G:AG}; } };
   const unbuild=()=>{ ARC.scr=null; HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
   const wb=box4(AR.x0-.2,HD.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
@@ -216,5 +227,5 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
   { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+3),'up','off',Math.PI]); }
-  window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/SWORD/.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],knight:(q=>!!(q&&q.by.knight&&q.by.knight.npc&&q.by.knight.npc.on))(window.BODIES)});
+  window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,run:HOLO.run?HOLO.run.P.name:null,rows:hp.querySelectorAll('button[data-run]').length}});
 });

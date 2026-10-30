@@ -1,6 +1,7 @@
 // THE MINING: MINING seeds each cavern's finds by the calendar day, shows the ones your prospecting can spot, and lets you work them free with the cutter; the golems buy them all.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INSPECT, INV, MAIL, pos, SFX, UI} from './003b-systems.js';
+import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {CAVERNS} from './066a-caverns.js';
 import {GEMS} from './101-gems.js';
@@ -15,6 +16,17 @@ const MINING={live:[]}; window.MINING=MINING;
     if(/pearl|seaglass/.test(id))return INSPECT.shape('lump',c); if(/ore|nug|geode|meteor/.test(id))return INSPECT.shape('lump',c);
     const g=new THREE.Group(); g.add(INSPECT.part('oct',c,0,0,0,.08,.14,.08,0,0,0,{flat:1})); return g; }});
   for(const k in FINDS)if(k!=='gemcave')for(const f of FINDS[k])GEMS.push([f[0],f[1],f[2],0]);   // the golems buy every find; weight 0 keeps them out of the old cave glints
+  // what you have found (the book), stones you can cut on a gem wheel (PROSPECTING) for twice and more, the museum's thanks for the first of each, the Fixer's ore
+  const ALL=Object.values(FINDS).flat(), CUT=ALL.filter(f=>!/pearl|seaglass|ore|nug|geode|shell/.test(f[0]+' '+f[1].toLowerCase())), LOG={v:1,got:{}};
+  try{ const D=JSON.parse(OWNED.get('finds')||'null'); if(D&&D.v===1)Object.assign(LOG,D); }catch(e){} const saveLog=()=>{ try{ OWNED.set('finds',JSON.stringify(LOG)); }catch(e){} };
+  FORAGE.add({names:{gem_wheel:'A GEM WHEEL',...Object.fromEntries(CUT.map(f=>['cut_'+f[0],'CUT '+f[1]]))},prices:Object.fromEntries(CUT.map(f=>['cut_'+f[0],Math.round(f[2]*2.2)])),
+    recipes:CUT.map(f=>['cut_'+f[0],'CUT '+f[1],'prosp',[f[4]-10,f[4]+45],{[f[0]]:1},'sells for $'+Math.round(f[2]*2.2)])});
+  for(const f of CUT)GEMS.push(['cut_'+f[0],'CUT '+f[1],Math.round(f[2]*2.2),0]);
+  FORAGE.CK.prosp={short:'CUT',need:()=>FORAGE.has('gem_wheel')?null:'YOU NEED A GEM WHEEL (THE SHARK SELLS THEM).',made:nm=>`YOU GRIND AND POLISH IT: ${nm}.`,fail:'IT CRACKS ON THE WHEEL. THE STONE IS LOST.'};
+  FORAGE.GIFTS.push({is:id=>ALL.some(f=>f[0]===id||'cut_'+f[0]===id),place:'museum',key:id=>id.replace(/^cut_/,''),pay:id=>{ const f=ALL.find(q=>q[0]===id.replace(/^cut_/,'')); return f[2]*(id.startsWith('cut_')?3:2); }});
+  FORAGE.BUYK.ore=['silver','goldnug','platinum'];
+  FORAGE.BOOK.push({id:'finds',title:'FINDS',rows:()=>ALL.map(f=>[f[1],!!LOG.got[f[0]],LOG.got[f[0]]?'FOUND '+LOG.got[f[0]]+(FORAGE.gave('museum',f[0])?' · IN THE MUSEUM':''):'',f[4]>=45]),foot:'The gem cave, the Hudson\'s bed and the lake\'s bed each hold their own finds; the rarer ones lie further in, and only a keen prospector spots them.'});
+  MINING.log=LOG;
   CAVERNS.hooks.push((C,G,m)=>{ '@later'; MINING.live=[]; const F=FINDS[C.id]; if(!F)return; const B=C.lot, d=day(), n=10+Math.floor(hs(d,1)*6), sk=FORAGE.sk?FORAGE.sk('prosp'):0, fy=C.api.ground(0,0), W=F.reduce((a,f)=>a+f[3],0);
     for(let i=0;i<n;i++){ const gx=B.x0+1.5+hs(d,i,2)*(B.x1-B.x0-3), gy=B.y0+1.5+hs(d,i,3)*(B.y1-B.y0-3), deep=(gx-B.x0)/(B.x1-B.x0); if(C.api.solidAt&&C.api.solidAt(gx,gy))continue;   // further in, the rarer finds; none inside a wall
       let r=hs(d,i,4)*Math.pow(deep+.2,1.5)*W, f=F[0]; for(const q of F){ if((r-=q[3])<0){ f=q; break; } }
@@ -23,7 +35,7 @@ const MINING={live:[]}; window.MINING=MINING;
       const hb=new THREE.Mesh(new THREE.BoxGeometry(.7*T,Y(14),.7*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(gx),fy+Y(7),Z(gy)); hb.visible=seen; G.add(hb); m.objs.push(hb);
       const R={cr,hb,f,key,seen,gone:false}; R.pick=()=>{ if(R.gone||!INV.ready(key))return false; R.gone=true; cr.visible=hb.visible=false;
         if(FORAGE.use&&!FORAGE.use('prosp',f[4]-20,f[4]+30)){ say('IT CRUMBLES AS YOU WORK IT FREE.','#c8a090'); return false; }
-        INV.picked[key]=d; INV.add(f[0],1); SFX.play('chirp',{vol:.4}); say('YOU FIND '+(/^[AEIOU]/.test(f[1])?'AN ':'A ')+f[1]+' · THE GOLEMS PAY $'+f[2],'#f2c14e'); return true; };
+        INV.picked[key]=d; INV.add(f[0],1); LOG.got[f[0]]=(LOG.got[f[0]]||0)+1; saveLog(); SFX.play('chirp',{vol:.4}); say('YOU FIND '+(/^[AEIOU]/.test(f[1])?'AN ':'A ')+f[1]+' · THE GOLEMS PAY $'+f[2],'#f2c14e'); return true; };
       R.th={name:'A GLINT',obj:hb,reach:.9*T,near:1.8*T,tall:Y(20),act:()=>{ if(!FORAGE.has('cutter')){ say('YOU NEED A CUTTER BEAM TO WORK IT FREE.','#c8a090'); return; } R.pick(); }};
       UI.thing(R.th); m.things.push(R.th); MINING.live.push(R); } });
   MINING.scan=()=>{ let n=0; for(const R of MINING.live)if(!R.gone&&!R.hb.visible){ R.hb.visible=R.cr.visible=true; n++; } if(n)setTimeout(()=>{ for(const R of MINING.live)if(!R.gone&&!R.seen)R.hb.visible=R.cr.visible=false; },60000); return n; };

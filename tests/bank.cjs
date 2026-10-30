@@ -16,8 +16,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(!s0.awake && s1.awake && s1.W > 0 && !s2.awake, 'the dragon sleeps, wakes as you come near its head, and sleeps again after you leave: ' + JSON.stringify({ s0, s1, s2 }));
   await pg.evaluate(() => STORE.exit('bank')); await pg.waitForTimeout(3000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 });
   await pg.evaluate(() => { const B = STORE.bank.B, T = __dbg.cv().TILE; __dbg.UI.goTo(SHARED.BOD.X((B.x0 + B.x1) / 2), SHARED.BOD.Z(B.y1) + 4 * T, 'up'); }); await pg.waitForTimeout(3000);
-  const o = await pg.evaluate(() => ({ hoard: STORE.bank.hoard.visible }));
+  const o = await pg.evaluate(() => ({ hoard: STORE.bank.hoard.visible, p: __dbg.pos().map(v => +v.toFixed(1)), why: VIS.why(STORE.bank.hoard), lvl: SHARED.LVL, dead: __dbg.VIT.dead }));
   ok(!o.hoard, 'back on the street, nothing of the bank\'s inside is drawn: ' + JSON.stringify(o));
+  await pg.evaluate(() => STORE.enter('bank', true)); await pg.waitForTimeout(2000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 }); await at(1); await pg.waitForTimeout(1500); const g0 = await pg.evaluate(() => { const c = INV.cash; STORE.bank.steal(); return c; }); await pg.waitForTimeout(4000);
+  const fr = await pg.evaluate(() => ({ dead: __dbg.VIT.dead, cash: INV.cash, d: STORE.bank.dragon(), p: __dbg.pos().map(v => +v.toFixed(1)) }));
+  ok(fr.dead && fr.cash === g0, 'taking its gold, the dragon breathes fire and burns you up; the gold falls back: ' + JSON.stringify(fr));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all bank checks passed'); process.exit(fails.length ? 1 : 0);
 })();

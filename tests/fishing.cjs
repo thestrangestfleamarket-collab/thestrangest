@@ -25,14 +25,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const p = __dbg.pos(); return { held: WIELD.on, hook: FISHDBG().hook, tip: WIELD.tip.y > SHARED.py + 1, cut: FORAGE.has('bait_cut'), swim: RIVER.swim, deck: Math.abs(p[1]) < .2 && RIVER.onPier(p[0], p[2]) }; });
   ok(r2.held === 'rod' && r2.hook === 'bait_cut' && r2.tip && r2.cut === 5 && !r2.swim && r2.deck, 'he stands on the deck (not in the water), holds the rod (its tip above his head) on the pier and baits the hook: ' + JSON.stringify(r2));
   // FISHING MODE: the FISH button by the water, locked in place (WASD does nothing), the behind view, SPACE held for power casts where you face, SPACE reels in, ESC leaves
-  await pg.waitForTimeout(800); const v0 = await pg.evaluate(() => __dbg.UI.view);
+  await pg.waitForTimeout(800); const v0 = await pg.evaluate(() => { FISHING.speed = 1; return __dbg.UI.view; });
   const m1 = await pg.evaluate(() => { const go = !document.getElementById('fishgo').hidden; FISHING.enter(); return { go, mode: FISHING.mode, view: __dbg.UI.view, panel: !document.getElementById('fishmode').hidden || true }; });
   const p0 = await pg.evaluate(() => __dbg.pos()); await pg.keyboard.down('w'); await pg.waitForTimeout(900); await pg.keyboard.up('w'); const p1 = await pg.evaluate(() => __dbg.pos());
   await pg.keyboard.down(' '); await pg.waitForTimeout(700); const pb = await pg.evaluate(() => document.querySelector('#fishmode').textContent); await pg.keyboard.up(' ');
   await pg.waitForTimeout(300); const m2 = await pg.evaluate(() => { const s = FISHING.state(), T = __dbg.cv().TILE; return { st: s && s.st, d: s ? +(Math.hypot(s.x - s.ax, s.z - s.az) / T).toFixed(1) : 0, ahead: s ? Math.cos(Math.atan2(s.x - s.ax, s.z - s.az) - SHARED.heading) > .9 : false }; });
   await pg.waitForTimeout(1500); await pg.keyboard.press(' '); await pg.waitForTimeout(200); const m3 = await pg.evaluate(() => ({ st: FISHING.state() && FISHING.state().st }));
-  await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); const m4 = await pg.evaluate(() => ({ mode: FISHING.mode, view: __dbg.UI.view, menu: !!__dbg.UI.menuOpen }));
-  ok(m1.go && m1.mode && m1.view === 'follow' && Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) < 1e-3 && /CAST/.test(pb) && /HOOK/.test(pb) && m2.st && m2.ahead && m2.d > 2 && !m3.st && !m4.mode && m4.view === v0 && !m4.menu,
+  await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); const m4 = await pg.evaluate(() => ({ speed: FISHING.speed = 20, drag: FISHING.drag = 3, mode: FISHING.mode, view: __dbg.UI.view, menu: !!__dbg.UI.menuOpen, panel: getComputedStyle(document.getElementById('fishmode')).display }));
+  ok(m1.go && m1.mode && m1.view === 'follow' && Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) < 1e-3 && /CAST/.test(pb) && /HOOK/.test(pb) && m2.st && m2.ahead && m2.d > 2 && !m3.st && !m4.mode && m4.view === v0 && !m4.menu && m4.panel === 'none',
     'fishing mode: the FISH button by the water, locked in place, the behind view, SPACE held casts where you face, SPACE reels in, ESC leaves back to your view: ' + JSON.stringify({ m1, moved: Math.hypot(p1[0] - p0[0], p1[2] - p0[2]), pb, m2, m3, m4, v0 }));
   const od = await pg.evaluate(() => { const T = __dbg.cv().TILE, x = PIER.x, z = PIER.zE - 6 * T, o = {}; for (const [b, h] of [['bait', 13], ['bait_cut', 13], ['bait_cut', 19], ['bait', 23]]) o[b + '@' + h] = FISHING.odds(x, z, b, h);
     o.bare = FISHING.odds(x, z, null, 13); o.shallow = FISHING.odds(x + 4 * T, PIER.z0 - 2 * T, 'bait', 13); return o; });
@@ -41,19 +41,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(Object.keys(od).filter(k => k !== 'bare').every(k => Math.abs(sum(od[k]) - 1) < .01 && od[k].bite > 0 && od[k].bite < 1), 'every odds table sums to one and some casts get nothing');
   ok(od['bait_cut@19'].per.x_bass > od['bait@13'].per.x_bass * 3 && od['bait@23'].per.x_eel > od['bait@13'].per.x_eel && od.bare.rate === 0 && !od.shallow.per.x_sturgeon && !od['bait@13'].per.x_bluegill,
     'bass take cut bait at dusk, eels worms at night, a bare hook catches nothing, sturgeon keep to deep water, lake fish not in the river');
-  const r3 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, seen = new Set(); FISHING.force = 'x_bass'; FISHING.win = 30; FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
+  const r3 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, seen = new Set(), tk = FISHING.tick; FISHING.tick = dt => { tk(dt); const q = FISHING.state(); if (q) seen.add(q.st); }; FISHING.force = 'x_bass'; FISHING.win = 30; FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); while (performance.now() - t0 < 400000) { const s = FISHING.state(); if (s) seen.add(s.st); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     const bob = FISHDBG().state; FISHING.click(); const hooked = FISHING.state() && FISHING.state().st; FISHING.auto = true;
-    while (performance.now() - t0 < 900000) { const s = FISHING.state(); if (s) seen.add(s.st); if (!s) break; await new Promise(r => setTimeout(r, 50)); } FISHING.auto = false; FISHING.force = null;
+    while (performance.now() - t0 < 900000) { const s = FISHING.state(); if (s) seen.add(s.st); if (!s) break; await new Promise(r => setTimeout(r, 50)); } FISHING.auto = false; FISHING.force = null; FISHING.tick = tk;
     return { seen: [...seen], bob, hooked, bass: INV.items.x_bass || 0, kg: FORAGE.S.fishkg.x_bass, last: FISHING.last, hook: FORAGE.S.hook || null }; });
   ok(['wind', 'fly', 'wait', 'bite', 'fight', 'land'].every(s => r3.seen.includes(s)) && r3.hooked === 'fight', 'a cast goes back and through, the float sits, a bite, the strike sets the hook, the fight, the lift out: ' + r3.seen.join(','));
   ok(r3.bass === 1 && r3.kg && r3.kg[0] > 0 && r3.last && r3.last.id === 'x_bass' && !r3.hook, 'the striped bass comes off the hook into the pack with its weight, the bait eaten: ' + JSON.stringify({ kg: r3.kg, last: r3.last, hook: r3.hook }));
   // the fish shows at the bait as it bites; a strike on a nibble spooks it (big words in the middle), the bait stays and another may come
-  const r4 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, out = {}; FISHING.force = 'x_shad'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
-    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.nib) break; await new Promise(r => setTimeout(r, 30)); }
+  const r4 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, out = {}; FISHING.speed = 1; FISHING.force = 'x_shad'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
+    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.nib && s.st === 'wait') break; await new Promise(r => setTimeout(r, 30)); }
     FISHING.click(); await new Promise(r => setTimeout(r, 300)); const d = FISHDBG(); out.spook = d.shout; out.still = d.state && d.state.st; out.hook = d.hook;
     while (performance.now() - t0 < 400000) { s = FISHING.state(); if (!s || s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
-    for (let i = 0; i < 5; i++) await new Promise(r => requestAnimationFrame(r)); out.bite = s && s.st; out.shown = FISHDBG().shown; FISHING.click(); out.on = FISHDBG().shout; FISHING.reel(); FISHING.force = null; return out; });
+    for (let i = 0; i < 5; i++) await new Promise(r => requestAnimationFrame(r)); out.bite = s && s.st; out.shown = FISHDBG().shown; FISHING.click(); out.on = FISHDBG().shout; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return out; });
   ok(/TOO EARLY/.test(r4.spook) && r4.still === 'wait' && r4.hook && r4.bite === 'bite' && r4.shown && /FISH ON/.test(r4.on), 'a strike on a nibble spooks the fish (said big in the middle), the bait stays; the next one shows at the bait as it bites: ' + JSON.stringify(r4));
   const fight = (id, reel) => pg.evaluate(async ([id, reel]) => { const T = __dbg.cv().TILE; FISHING.force = id; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
@@ -63,6 +63,35 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(!snap.landed && snap.msg.some(m => /SNAPS/.test(m)), 'reeling hard against a sturgeon snaps the line: ' + JSON.stringify(snap));
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));
+  // the tackle: better rods cast further on stronger line, reels reel faster; bought at the stand
+  const g = await pg.evaluate(() => { const g0 = { ...FISHING.gear() }; INV.cash = 1000; FISHING.STAND.open(); for (const id of ['rod_surf', 'reel_pro', 'lure_spoon', 'cooler_s', 'crabpot']) document.querySelector('#fishp [data-tack="' + id + '"]').click();
+    document.getElementById('fishp').hidden = true; return { g0, cash: INV.cash }; });
+  const g1 = await pg.evaluate(() => new Promise(r => setTimeout(() => r({ ...FISHING.gear() }), 700)));
+  ok(g.g0.cast === 12 && g.g0.line === 1 && g1.cast === 22 && g1.line === 1.6 && g1.reel === 1.7 && g.cash === 1000 - 180 - 120 - 14 - 20 - 25, 'BAIT & BOATS sells better rods (cast, line), reels, lures, a cooler and a crab pot: ' + JSON.stringify({ g0: g.g0, g1, cash: g.cash }));
+  // the fight: pulling against the fish's run tires it faster than pulling with it; low drag lets it take line instead of snapping
+  const st = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)); FISHING.speed = 4; FISHING.force = 'x_bass'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait_cut'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
+    const t0 = performance.now(); let s; while (performance.now() - t0 < 300000) { s = FISHING.state(); if (s && s.st === 'bite') break; await wait(50); } FISHING.click(); s = FISHING.state();
+    const tire = async side => { s.f.s = 1; s.run = 1; s.runT = 999; s.D = 30 * T; FISHING.side = side; FISHING.reeling = false; const a = s.f.s; await wait(1500); return +(a - s.f.s).toFixed(3); };
+    const against = await tire(-1), withIt = await tire(1);
+    const reel = async d => { FISHING.drag = d; s.f.s = 1; s.run = 0; s.surge = 0; s.D = 30 * T; FISHING.side = 0; FISHING.reeling = true; let mx = 0; const t = performance.now(); while (performance.now() - t < 1200) { mx = Math.max(mx, s.ten); s.over = 0; await wait(30); } FISHING.reeling = false; return +mx.toFixed(2); };
+    const lo = await reel(1), hi = await reel(5); FISHING.drag = 3; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return { against, withIt, lo, hi }; });
+  ok(st.against > st.withIt * 1.5 && st.lo < st.hi, 'pulling against the run tires the fish (' + st.against + ') faster than with it (' + st.withIt + '); low drag keeps the strain down (' + st.lo + ' vs ' + st.hi + ')');
+  // a lure stays on the hook after a catch; with no cooler you carry five fish, a cooler holds more
+  const cl = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)), land = async () => { FISHING.force = 'x_bass'; FISHING.win = 30; FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T); FISHING.auto = true;
+      const t0 = performance.now(); while (performance.now() - t0 < 300000) { const s = FISHING.state(); if (s && s.st === 'bite') { FISHING.click(); } if (!s) break; await wait(50); } FISHING.auto = false; FISHING.force = null; };
+    FORAGE.ACT.fhook('lure_spoon'); await land(); const lure = FORAGE.S.hook, room0 = FISHING.room();
+    FORAGE.take('cooler_s', 1); for (const id of ['x_perch', 'x_eel', 'x_shad', 'x_bass']) FORAGE.take(id, FORAGE.has(id) || 0); FORAGE.give('x_perch', 5); const n0 = FISHING.held(); await land(); const n1 = FISHING.held(), freed = !!(FISHING.last && FISHING.last.freed);
+    FORAGE.give('cooler_s'); return { lure, room0, n0, n1, freed, room1: FISHING.room() }; });
+  ok(cl.lure === 'lure_spoon' && cl.n0 === 5 && cl.n1 === 5 && cl.freed && cl.room1 === 20, 'the spoon lure stays on the hook; without a cooler a sixth fish goes back, a small cooler holds 15 more: ' + JSON.stringify(cl));
+  // crab pots: drop one ahead, it is kept, haul it later for what crawled in
+  const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
+  ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));
+  // a pond in each new section, fished like THE LAKE, with no Hudson built: section C on its own
+  { const p2 = await b.newPage({ viewport: { width: 640, height: 400 } }); p2.on('pageerror', e => errs.push(e.message.slice(0, 300)));
+    await p2.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&sec=C', { waitUntil: 'commit' }); await p2.waitForFunction(() => window.__started && window.FISHING && FISHING.at, null, { timeout: 300000, polling: 500 });
+    const pd = await p2.evaluate(() => { const P = __dbg.MAPK.MODS.ponds || [], p = P[0]; if (!p) return { n: 0 }; const x = (p.x0 + p.x1) / 2, z = (p.z0 + p.z1) / 2, w = FISHING.at(x, z), o = FISHING.odds(x, z, 'bait', 13);
+      return { n: P.length, id: p.id, river: !!RIVER.on, kind: w && w.kind, fish: Object.keys(o.per), solid: __dbg.collide(x, z).every((v, i) => Math.abs(v - [x, z][i]) > 1e-6) || true }; });
+    ok(pd.n === 1 && pd.id === 'C' && !pd.river && pd.kind === 'lake' && pd.fish.includes('x_bluegill'), 'section C has its pond, fished like THE LAKE without the Hudson built: ' + JSON.stringify(pd)); await p2.close(); }
   const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
   ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float

@@ -1,0 +1,250 @@
+{
+ "intro": "Everything you can do in THE MARKET, step by step. Pick a chapter. Keys look like [THIS]; you can change most of them in SETTINGS, KEYS. Press [SHIFT] + [G] to open or close this guide anywhere.",
+ "chapters": [
+  {"id": "start", "title": "GETTING STARTED",
+   "what": "Walk, run, jump and use things. Almost everything is used by double-clicking it.",
+   "steps": [
+    "Walk with [W] [A] [S] [D] or the arrow keys.",
+    "Hold [SHIFT] to run. Press [SPACE] to jump. Hold [C] to crouch.",
+    "Double-click a thing to walk to it and use it: a door, a seat, a lamp, a person, even yourself.",
+    "Double-click does nothing while something is in your hands. Press [1] until your hands are free.",
+    "Press [?] for the list of every key. Press [ESC] for the menu.",
+    "Your game saves by itself. Next time you come back where you left off."
+   ]},
+  {"id": "view", "title": "THE CAMERA AND VIEWS",
+   "what": "Look at the world from above, from behind you or through your own eyes.",
+   "steps": [
+    "Press [V] to change the view: ISOMETRIC (from above), BEHIND, FIRST PERSON, and round again.",
+    "Turn the view with [Q] and [E]. Tilt it with [Z] and [X] (not in isometric).",
+    "In isometric, [R] turns the view a quarter.",
+    "Zoom with the mouse wheel.",
+    "Drag with the mouse to move the view (isometric) or look around (other views).",
+    "Press [0] to put the view back."
+   ],
+   "tips": ["More views (MAP VIEW, THIRD PERSON) are in [ESC], SETTINGS, DISPLAY, VIEW."]},
+  {"id": "menu", "title": "MENU, PACK AND MAP",
+   "what": "Your character page, everything you carry, and the map that takes you places.",
+   "sections": [
+    {"head": "THE MENU", "steps": [
+     "Press [ESC]. Your CHARACTER page opens: you, your health and stamina, and your gear slots.",
+     "Click a gear slot to wear or hold something.",
+     "SETTINGS opens the other pages: DISPLAY, ATMOSPHERE, GRAPHICS, SOUND, KEYS, GUIDE and REPORT A BUG.",
+     "Press [ESC] again to close it."]},
+    {"head": "YOUR PACK", "steps": [
+     "Press [I]. The PACK tab shows your money and what you carry.",
+     "Each thing has buttons: EAT, DRINK, HOLD, WEAR, LOOK and more.",
+     "SKILLS shows your skills. CRAFT makes things."]},
+    {"head": "THE MAP", "steps": [
+     "Press [SHIFT] + [M]. (You need the MAP OF THE SECTION. Everyone starts with one.)",
+     "Click a spot on the map to go there. THE STREET or UNDERGROUND changes the level.",
+     "MY APARTMENT takes you home.",
+     "The CHOOSE A PLACE list at the bottom takes you to any place or room.",
+     "The A to H buttons take you to another section."]}
+   ]},
+  {"id": "you", "title": "YOUR CHARACTER",
+   "what": "Change your name, body, hair, clothes and shape.",
+   "steps": [
+    "Double-click yourself, or press [ESC] and click EDIT.",
+    "The YOU page opens: your name, BUILD, HAIR, BEARD, CLOTHES and SHOES.",
+    "For your body's shape click SHAPE, then DESIGN YOUR WALKER. Pick a part and drag the sliders. Click DONE.",
+    "Press [M] to take your shoes off or put them on.",
+    "Clothes and gear you buy go on through the gear slots on the CHARACTER page."
+   ]},
+  {"id": "home", "title": "YOUR APARTMENT",
+   "what": "Your own home. Fill it with furniture and make it yours.",
+   "sections": [
+    {"head": "GETTING IN AND OUT", "steps": [
+     "Double-click the front door of the apartment house (YOUR APARTMENT), or use MY APARTMENT on the map.",
+     "To leave, double-click OUT TO THE STREET.",
+     "Double-click the FIRE ESCAPE DOOR to open it, then walk out. Double-click a window to open it."]},
+    {"head": "DECORATING", "steps": [
+     "At home, press [T]. The DECORATE panel opens: THINGS, WALLS, FLOOR and LIGHTS.",
+     "To buy: pick a department or type in FIND, click a thing, then click where it goes.",
+     "To move: click a thing and drag it. Green means it fits, red means it doesn't.",
+     "Turn it with [Q] [E]. Resize with [SHIFT] + wheel. Lower or raise it with the square-bracket keys.",
+     "[DELETE] puts it away. SELL gives you back half. [CTRL] + [Z] undoes.",
+     "Press [ESC] when you are done."]},
+    {"head": "ORDERING BY DRONE", "steps": [
+     "Double-click THE COMPUTER in your apartment. THE MARKET BBS opens.",
+     "Order from the CATALOG. The drone flies it to your fire escape.",
+     "Double-click A PARCEL to bring it in."]}
+   ]},
+  {"id": "money", "title": "MONEY AND SHOPS",
+   "what": "You start with $1,000,000. Buy from the merchants and sell them what you find.",
+   "steps": [
+    "Double-click a merchant. A talk window opens.",
+    "Choose WHAT DO YOU SELL? to open the shop.",
+    "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
+    "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
+    "Who buys what: the Nature Merchant buys butterflies; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller buys mushrooms, potions, food, butterflies and birds.",
+    "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
+   ]},
+  {"id": "talk", "title": "TALKING TO PEOPLE",
+   "what": "The people of THE MARKET talk, remember you, and some have work for you.",
+   "steps": [
+    "Double-click a character. You walk up and they speak.",
+    "Choose an answer with [W] [S] or the arrows, then [ENTER]. Or press [1] to [4].",
+    "Press [ESC] to walk away. Walking off also ends the talk."
+   ]},
+  {"id": "forage", "title": "FORAGING AND FOOD",
+   "what": "Pick mushrooms and flowers in the park, eat them, sell them or make things.",
+   "steps": [
+    "Go to a park lawn. Press [M] to take your shoes off (shoes squash mushrooms).",
+    "Double-click a mushroom or a wildflower to pick it.",
+    "Unknown ones are STRANGE MUSHROOM. Press IDENTIFY in your pack.",
+    "To eat, press [I] and click EAT. Careful: RED CAP and MOONGLOW poison you. A CURE POTION fixes it.",
+    "Mushrooms grow back every day.",
+    "Grow your own: buy seeds at the tomato stall, plant them from your pack on bare lawn, and double-click to pick when they bloom."
+   ]},
+  {"id": "skills", "title": "SKILLS, LESSONS AND CRAFTING",
+   "what": "Get better at what you do. Make potions, food and bouquets.",
+   "sections": [
+    {"head": "SKILLS", "steps": [
+     "Press [I], then SKILLS. A skill grows each time you use it, fastest on hard tasks.",
+     "All skills together go up to 600. Set each to ▲ raise, ▼ lower or ■ keep."]},
+    {"head": "LESSONS", "steps": [
+     "Merchants teach what they buy: talk to them and choose a LESSON (each +1.0, up to 30).",
+     "The arcade games and the holodeck train skills too (see PLACES TO GO)."]},
+    {"head": "CRAFTING", "steps": [
+     "Press [I], then CRAFT. Pick a recipe and click MAKE.",
+     "Potions need a mortar and an empty bottle (you start with both).",
+     "Food needs a flame near you: a fire, a candle or a torch."]}
+   ]},
+  {"id": "health", "title": "HEALTH, STAMINA AND HEALING",
+   "what": "The red bar is health, the yellow bar is stamina. They show in a fight or in water.",
+   "steps": [
+    "Running, fighting and blocking use stamina. Stop for a moment and it fills again.",
+    "Health does not come back by itself.",
+    "To heal: double-click a bench, chair or bed and sit (about 2 minutes to full).",
+    "Or stand in the bath house steam (under a minute), or eat food and potions.",
+    "At zero health you faint for 15 seconds. If you are hit again then, you die (see IF YOU DIE)."
+   ]},
+  {"id": "fish", "title": "FISHING",
+   "what": "Fish the Hudson from the pier, THE LAKE in the park, or the pond in each section.",
+   "sections": [
+    {"head": "GET READY", "steps": [
+     "Go to the Hudson fishing pier. Double-click the BAIT & BOATS stand.",
+     "Buy a FISHING ROD ($15) and WORMS or CUT BAIT.",
+     "Hold the rod: press [1] until you hold it, or HOLD in your pack.",
+     "Face the water. A FISH button shows. Press [F] or click it."]},
+    {"head": "CAST AND CATCH", "steps": [
+     "Hold [SPACE]. The bar fills; a ring on the water shows where it will land. Let go to cast.",
+     "Wait for a bite. When it says BITE!, press [SPACE] to strike.",
+     "Fight: hold [SPACE] to reel. The fish runs left or right. Pull against it: [A] if it runs right, [D] if it runs left. It tires faster.",
+     "Watch the LINE bar. Too much strain snaps the line. [W] [S] set the DRAG: low lets the fish take line, high brings it in faster.",
+     "When it is out of the water, press [SPACE] to take it off the hook.",
+     "[V] changes the view. [ESC] leaves fishing."]},
+    {"head": "WHAT BITES", "steps": [
+     "Worms for perch, eels, shad and sturgeon. Cut bait for bass, bluefish, catfish, fluke and crabs.",
+     "Deeper water off the pier's end, bigger fish. Bass bite at dusk, eels at night.",
+     "Sell your catch at BAIT & BOATS or to Old Wetwhisker."]}
+   ],
+   "tips": ["Better rods cast further on stronger line; better reels reel faster; lures are not used up. All at BAIT & BOATS."]},
+  {"id": "pots", "title": "CRAB POTS AND COOLERS",
+   "what": "Catch crabs while you are away, and carry more fish.",
+   "steps": [
+    "Buy a CRAB POT ($25) at BAIT & BOATS. You can have three out.",
+    "Face the water and press [P] in fishing mode (or DROP IN THE WATER in your pack). If you carry cut bait, the pot is baited and catches twice as fast.",
+    "Leave it. Come back later and double-click its orange buoy to haul it up.",
+    "You can carry 5 fish in your hands. A cooler (small, medium or big) holds 15, 40 or 100 more. With no room, a new fish goes back in the water."
+   ]},
+  {"id": "nature", "title": "BUTTERFLIES AND BIRDS",
+   "what": "Catch butterflies with a net, tame birds, collect them or sell them.",
+   "sections": [
+    {"head": "BUTTERFLIES", "steps": [
+     "Buy a BUTTERFLY NET ($8) from the Nature Merchant (the paper fox by the arcade).",
+     "Press [1] until you hold the net. Aim with the mouse and click to swing. Swinging fast or jumping helps.",
+     "You can carry 5. Jars hold 20, 50 or 100 more.",
+     "In your pack: IDENTIFY, MOUNT (needs a frame) or RELEASE.",
+     "Butterflies hide at night and in bad weather."]},
+    {"head": "BIRDS", "steps": [
+     "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
+     "A tamed bird follows you. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed."]}
+   ]},
+  {"id": "swim", "title": "SWIMMING AND DIVING",
+   "what": "Swim the Hudson, dive to the bottom and explore the caverns.",
+   "steps": [
+    "Walk into the water to swim.",
+    "[SPACE] swims down, [SHIFT] swims up. In first person you swim where you look.",
+    "You have 16 seconds of air. It fills again at the surface.",
+    "For more air: eat an AIRCAP mushroom (+20 s, from the mushroom seller), or rent a SCUBA SET from THE SHARK ($40, 5 minutes).",
+    "A GLOWCAP lets you see in the dark water.",
+    "Swim to the bottom in the middle of the Hudson and double-click A CAVE MOUTH. You need 45 seconds of air."
+   ]},
+  {"id": "ride", "title": "ROWBOAT, KITE AND HOVERBOARD",
+   "what": "Get out on the water, fly a kite or ride a board.",
+   "sections": [
+    {"head": "ROWBOAT", "steps": [
+     "At BAIT & BOATS, choose ROWBOAT · A TRIP ($5).",
+     "Row with [W] [A] [S] [D]. You can fish from the boat.",
+     "Row to a ladder or the pier and click STEP ASHORE."]},
+    {"head": "KITE", "steps": [
+     "Buy a KITE ($10) from the Nature Merchant. Hold it with [1].",
+     "Click to launch it. Hold the mouse button to wind it in. On calm days run into the wind."]},
+    {"head": "HOVERBOARD", "steps": [
+     "Buy a board from the Boardwright on West St. Hold it with [1].",
+     "Click to get on, click to get off. Steer with [W] [A] [S] [D], [SPACE] hops."]}
+   ]},
+  {"id": "fight", "title": "FIGHTING",
+   "what": "Fists, feet and swords. Fight the dungeon's monsters, or other players.",
+   "steps": [
+    "[J] punches, [K] kicks, [N] slaps. Press again in time to chain a combo (press [?] for them all).",
+    "Hold [C] to crouch, then [J] uppercut or [K] sweep. [2] leg sweep, [3] back flip, [4] front flip, [Y] roll, [U] cartwheel.",
+    "Hold [P] to block. Block on the beat with a sword to stagger them.",
+    "Swords: buy one from the swordsmith. Press [1] to hold it, aim with the mouse, click to swing. Three quick swings make the third a heavy one.",
+    "Armour from the knight on Main Street halves the hurt. WEAR it from your pack.",
+    "Players: knock one down, then double-click to pick them up and [J] to throw. If you are held, mash any key to break free."
+   ]},
+  {"id": "ghost", "title": "IF YOU DIE",
+   "what": "You become a ghost. You can come back.",
+   "steps": [
+    "As a ghost you can walk and go through doors, but not fight or use most things.",
+    "Open the map ([SHIFT] + [M]) and choose THE BATHS in CHOOSE A PLACE, or walk there.",
+    "Double-click the door of THE BATH HOUSE and walk into the steam.",
+    "You come back to life with full health."
+   ]},
+  {"id": "subway", "title": "THE SUBWAY AND OTHER SECTIONS",
+   "what": "Ride the trains, and visit the other sections of the city.",
+   "steps": [
+    "Walk down the green-railed SUBWAY stairs on Market St.",
+    "The board on the platform shows each train: NOW, ARRIVING or the minutes until it comes.",
+    "A train waits 60 seconds. Walk in through an open door. Double-click a seat to sit.",
+    "To get off, walk out through a door while it is open.",
+    "To go to another section, open the map ([SHIFT] + [M]) and click a letter, A to H. Each section has its own street, station and park pond."
+   ]},
+  {"id": "places", "title": "PLACES TO GO",
+   "what": "Double-click a door to go in. Double-click OUT TO THE STREET to leave.",
+   "sections": [
+    {"head": "THE ARCADE (MAIN ST)", "steps": [
+     "Double-click a cabinet to play ($2). [SPACE] starts, [ESC] leaves.",
+     "Each game trains a skill: RAINBOW RUN birding, GALAXY RAID swords, MAZE prospecting, ROAD 85 fishing, TELEMAK entomology, ISTANBUL TAKSI foraging."]},
+    {"head": "THE HOLODECK (BACK OF THE ARCADE)", "steps": [
+     "SWORD TRAINING ($8): swing when the knight calls STRIKE!",
+     "THE DUEL ($15): hold [P] to block on the beat. Both train swords, and lend you a sword."]},
+    {"head": "THE MOVIE THEATRE", "steps": [
+     "Buy a MOVIE TICKET ($5) from the ticket fox, then double-click the door.",
+     "Films play on a schedule. Double-click THE SCREEN for sound."]},
+    {"head": "THE GOLEMS' CAVE AND THE CASTLE (CENTRAL PARK)", "steps": [
+     "Double-click A GLINT to dig gems; sell them at THE TRADING STONE. A CRACK IN THE FLOOR goes deeper (needs a cutter beam).",
+     "The castle's stairs go down to the dungeon: traps, slimes and loot to double-click."]},
+    {"head": "MORE", "steps": [
+     "THE BATH HOUSE heals you. The bar has a band. The museum and the playhouse are open to walk around."]}
+   ]},
+  {"id": "online", "title": "OTHER PLAYERS AND CHAT",
+   "what": "Everyone in your section is here with you.",
+   "steps": [
+    "Other players walk, fish, fight and wear what they wear, just like you.",
+    "Press [ENTER] to chat. Type, then [ENTER] to send ([ESC] closes).",
+    "Click ONLINE at the bottom right for the list of players."
+   ]},
+  {"id": "settings", "title": "SETTINGS, KEYS AND BUGS",
+   "what": "Make the game look and play the way you like.",
+   "steps": [
+    "[ESC], SETTINGS. DISPLAY: zoom, view, camera sway, size of the writing.",
+    "GRAPHICS: resolution, shadows, outline. ATMOSPHERE: time of day, weather, haze.",
+    "KEYS: click a key, then press the one you want. ALL BACK AS THEY WERE resets them.",
+    "Found something broken? Press [F8] (or REPORT A BUG), say what happened, and SEND.",
+    "Got a Quest 3? Open THE MARKET in its browser and press ENTER VR."
+   ]}
+ ]
+}

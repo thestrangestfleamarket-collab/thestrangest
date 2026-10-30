@@ -13,6 +13,6 @@ STAGE.make=()=>{ if(!STORE.bar)return; const ALL=[['pn',PNM],['sg',SGM],['dr',DR
   STAGE.next=()=>STAGE.go((i+1)%ALL.length); STAGE.who=()=>ALL[i][0]; STAGE.left=()=>SET-t;
   STAGE.heard=()=>{ const v=n=>n?+n.gain.value.toFixed(3):null, K=IMX.nodes.get('bar|drum kit'); return {gtr:v(GTA.g),pn:v(PNA.g),sg:v(VOX.out),dr:v(K&&K.g),shown:ALL.filter(a=>a[1].g.visible).map(a=>a[0]).concat(MUS.g&&MUS.g.visible?['gtr']:[])}; };
   STAGE.tick=dt=>{ const A=PNM.at; if(!MAPG.bodega.visible||Math.hypot(pos.x-A.x,pos.z-A.z)>18)return; t+=dt; if(t>=SET)STAGE.next(); };
-  for(const [,X] of ALL)NPCS.extra.push(X); STAGE.go(0); };
+  for(const [,X] of ALL)NPCS.extra.push(X); STAGE.go('dr'); };
 if(!AWAY.has('bar'))STORE.kit.STEPS.push(PNM.make,SGM.make,DRM.make,STAGE.make);
 if(MUS.g){ MUS.on=true; MUS.g.visible=true; MUS.start(); NPCS.extra.push(MUS); }

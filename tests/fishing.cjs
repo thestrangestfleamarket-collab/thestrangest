@@ -92,6 +92,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const pd = await p2.evaluate(() => { const P = __dbg.MAPK.MODS.ponds || [], p = P[0]; if (!p) return { n: 0 }; const x = (p.x0 + p.x1) / 2, z = (p.z0 + p.z1) / 2, w = FISHING.at(x, z), o = FISHING.odds(x, z, 'bait', 13);
       return { n: P.length, id: p.id, river: !!RIVER.on, kind: w && w.kind, fish: Object.keys(o.per), solid: __dbg.collide(x, z).every((v, i) => Math.abs(v - [x, z][i]) > 1e-6) || true }; });
     ok(pd.n === 1 && pd.id === 'C' && !pd.river && pd.kind === 'lake' && pd.fish.includes('x_bluegill'), 'section C has its pond, fished like THE LAKE without the Hudson built: ' + JSON.stringify(pd)); await p2.close(); }
+  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
+  ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;
     ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }] });

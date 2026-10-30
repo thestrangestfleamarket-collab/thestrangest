@@ -5054,3 +5054,6 @@ Owner (of the grass gallery, https://claude.ai/artifact/LiUhm3UoTpi2ZyedXnuK9d):
 - 30 Oct 2026, the skyline rises out of the haze (owner: "fade the skyline out completely near the ground"): the far city's buildings and the painted skyline are whole haze at their foot and clear going up.
 - 30 Oct 2026, owner: "turn off the tree pushing too". Park trees no longer lean aside as you walk into their low branches.
 - 30 Oct 2026, the start (owner: "start all players in platform when they login"; "subway platform, start all playes, go"): every login starts on the subway platform, new players and returning ones alike; you no longer come back to where you logged off and new players no longer start in Central Park. Rule: the login spot is one place for everyone.
+
+## 30 Oct 2026: the computer's BBS is the old C64 terminal again
+Owner: "add the computer back and bbs system" (keep NEWS, use $). The apartment computer now fills the screen with THE MARKET BBS, an 8-bit terminal: dial-in, logo, the main menu, the bodega, the furniture catalog, your orders and NEWS; Esc stands you up. DRONE VIEW watches the delivery drone carry your parcel to the fire escape. Screen only for now (no typing hands). The ordering, the money and the drone delivery are unchanged — one path (146-drone). tests/bbs.cjs.

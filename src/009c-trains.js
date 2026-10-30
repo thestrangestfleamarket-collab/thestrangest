@@ -13,15 +13,18 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   TRAINS.now=()=>Date.now()/1000+TRAINS.skew;
   { const q=QS.get('traint'); if(q!=null&&q!=='')TRAINS.skew=+q-Date.now()/1000; }
 
-  // the timetable: from A round the loop, 60 s at every station, the runs between them at the trains' speed
+  // the timetable: from A round the loop, 60 s at every station, the runs between them at the trains' speed; train 2 runs a quarter lap behind train 1, so the two never call at a station together (a half lap put the shuttles there at once)
   D.trains.forEach((t,ti)=>{ const tr=L.TRK[t.track], Lt=tr.L, stops=L.order(t), i0=stops.findIndex(s=>s.old), seq=stops.slice(i0).concat(stops.slice(0,i0)), tbl=[]; let tm=0;
     seq.forEach((st,i)=>{ const nx=seq[(i+1)%seq.length], d=mod(t.dir*(nx.s[t.track]-st.s[t.track]),Lt), Tr=runT(d); tbl.push({st,nx,arr:tm,dep:tm+D.dwell,d,T:Tr}); tm+=D.dwell+Tr; });
-    TRAINS.list.push({...t,i:ti,tr,tbl,lap:tm,off:ti*tm/2,cars:[]}); });
-  // one station loaded: each train shuttles, the station, out to one tunnel end, back, the station, out to the other end, back
-  if(L.STA.length===1)for(const tn of TRAINS.list){ const st=L.STA[0], k=tn.track, s0=st.s[k], Lt=tn.tr.L, E=L.ENDS[k]||[], MG=CARL+GAP+2, fw=E.find(e=>e.dir>0), bk=E.find(e=>e.dir<0);
-    const ends=[[tn.dir,Math.max(0,(tn.dir>0?(fw?mod(fw.s-s0,Lt):0):(bk?mod(s0-bk.s,Lt):0))-MG)],[-tn.dir,Math.max(0,(tn.dir>0?(bk?mod(s0-bk.s,Lt):0):(fw?mod(fw.s-s0,Lt):0))-MG)]], legs=[]; let tm=0;
-    for(const [sg,d] of ends){ legs.push({t0:tm,dur:D.dwell,s0,sg:0,d:0,doors:true}); tm+=D.dwell; if(d>1){ const Tr=runT(d); legs.push({t0:tm,dur:Tr,s0,sg,d}); tm+=Tr; legs.push({t0:tm,dur:12,s0:s0+sg*d,sg:0,d:0}); tm+=12; legs.push({t0:tm,dur:Tr,s0:s0+sg*d,sg:-sg,d}); tm+=Tr; } }
-    Object.assign(tn,{legs,lap:tm,off:tn.i*tm/2,tbl:[{st,nx:st,arr:0,dep:D.dwell}]}); }
+    TRAINS.list.push({...t,i:ti,tr,tbl,lap:tm,off:ti*tm/4,cars:[]}); });
+  // one station loaded: each train shuttles, the station, out to one tunnel end, back, the station, out to the other end, back; every leg takes the same time (a train waits longer in the dark at a nearer end), so the two trains take turns at the platform, one every half leg, for good
+  if(L.STA.length===1){ const st=L.STA[0], s0of=tn=>st.s[tn.track], MG=CARL+GAP+2;
+    for(const tn of TRAINS.list){ const k=tn.track, s0=s0of(tn), Lt=tn.tr.L, E=L.ENDS[k]||[], fw=E.find(e=>e.dir>0), bk=E.find(e=>e.dir<0);
+      tn.ends=[[tn.dir,Math.max(0,(tn.dir>0?(fw?mod(fw.s-s0,Lt):0):(bk?mod(s0-bk.s,Lt):0))-MG)],[-tn.dir,Math.max(0,(tn.dir>0?(bk?mod(s0-bk.s,Lt):0):(fw?mod(fw.s-s0,Lt):0))-MG)]]; }
+    const P=D.dwell+12+2*Math.max(...TRAINS.list.flatMap(tn=>tn.ends.map(([,d])=>d>1?runT(d):0)));
+    for(const tn of TRAINS.list){ const s0=s0of(tn), legs=[]; let tm=0;
+      for(const [sg,d] of tn.ends){ if(d>1){ const Tr=runT(d); legs.push({t0:tm,dur:D.dwell,s0,sg:0,d:0,doors:true}); tm+=D.dwell; legs.push({t0:tm,dur:Tr,s0,sg,d}); tm+=Tr; legs.push({t0:tm,dur:P-D.dwell-2*Tr,s0:s0+sg*d,sg:0,d:0}); tm+=P-D.dwell-2*Tr; legs.push({t0:tm,dur:Tr,s0:s0+sg*d,sg:-sg,d}); tm+=Tr; } else { legs.push({t0:tm,dur:P,s0,sg:0,d:0,doors:true}); tm+=P; } }
+      Object.assign(tn,{legs,lap:tm,off:tn.i*P/2,tbl:[{st,nx:st,arr:0,dep:D.dwell}]}); } }
   const state=(tn,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap);
     if(tn.legs){ const st=L.STA[0]; for(const g of tn.legs)if(t<g.t0+g.dur){ const u=t-g.t0; return g.doors?{s:g.s0,doors:true,at:st,next:st,left:g.dur-u}:{s:g.s0+g.sg*runS(g.d,u),doors:false,at:null,from:st,next:st,left:tn.legs.filter(q=>q.doors&&q.t0>=g.t0+g.dur).concat(tn.legs.filter(q=>q.doors).map(q=>({...q,t0:q.t0+tn.lap})))[0].t0-t}; } return {s:tn.legs[0].s0,doors:true,at:st,next:st,left:0}; }
     for(const e of tn.tbl){ if(t<e.dep)return {s:e.st.s[tn.track],doors:true,at:e.st,next:e.nx,left:e.dep-t};

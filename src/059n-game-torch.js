@@ -43,7 +43,7 @@ STORE.cabs.add({name:'TORCHBEARER',skill:'myco',hold:1,lore:{maker:'HALCYON GAME
     const hurt=(v,why)=>{ P.hp-=Math.round(v*P.arm); P.hurt=.25; beep(90,.12,'sawtooth',.06,50); };
     const kill=m=>{ const i=mons.indexOf(m); if(i>=0)mons.splice(i,1); occ.delete(m.tx+','+m.ty); if(m.nx!=null)occ.delete(m.nx+','+m.ny); };
     const hitMon=(m,d,melee)=>{ m.hp-=d; if(m.hp<=0){ const v=MON[m.t].pts[m.lv-1]; s.score+=v; kill(m); beep(240,.08,'square',.05,120); } else beep(400,.04,'square',.04); };
-    const hitGen=(g,d)=>{ for(;d>0&&g.lv>0;d--){ s.score+=100*g.lv; g.lv--; } beep(160,.2,'sawtooth',.06,60); if(g.lv<=0){ gens.splice(gens.indexOf(g),1); occ.delete(g.x+','+g.y); s.pops.push({s:'GENERATOR',x:(g.x+.5-cam.x)*8,y:(g.y-cam.y)*8+8,t:1,c:'#ffe83c'}); } };
+    const hitGen=(g,d)=>{ while(d-- >0&&g.lv>0){ s.score+=100*g.lv; g.lv--; } beep(160,.2,'sawtooth',.06,60); if(g.lv<=0){ gens.splice(gens.indexOf(g),1); occ.delete(g.x+','+g.y); s.pops.push({s:'GENERATOR',x:(g.x+.5-cam.x)*8,y:(g.y-cam.y)*8+8,t:1,c:'#ffe83c'}); } };
     const fire=()=>{ if(P.cd>0||shots.filter(q=>q.me).length>=12)return; P.cd=1/P.rate; const n=Math.hypot(P.fx,P.fy)||1; shots.push({x:P.x,y:P.y,dx:P.fx/n*P.ss,dy:P.fy/n*P.ss,me:true,d:P.dmg}); beep(900,.04,'square',.03,500); };
     const magic=()=>{ if(P.pots<=0)return; P.pots--; s.flash=.3; beep(300,.5,'square',.07,1800); for(const m of mons.slice())if(onScreen(m.px,m.py))hitMon(m,P.pot); for(const g of gens.slice())if(onScreen(g.x+.5,g.y+.5))hitGen(g,P.pot); };
     const onScreen=(x,y)=>x>=cam.x-1&&x<=cam.x+33&&y>=cam.y-1&&y<=cam.y+26;

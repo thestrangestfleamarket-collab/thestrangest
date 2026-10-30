@@ -17,6 +17,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/home',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/home without a login is refused');
     const put=await home({put:{v:1,wall:'brick',things:{}}}), got=await home({});
     ok(put.ok===true&&got.home&&got.home.wall==='brick','/home keeps your decorated room ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const own=body=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass=dev:own-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
+    const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});
+    ok(p1.ok===true&&p2.ok===true&&got.owned&&got.owned.inv==='{"v":1}'&&!('birds' in got.owned)&&!bad.ok,'/owned keeps what you own, key by key ('+JSON.stringify(got).slice(0,80)+')'); }
   { const T=(body,ck)=>fetch(BASE+'/admin',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)});
     ok((await T({do:'text',key:'check.x',text:'HELLO'},'dev:site-check')).status===403,'/admin text: not for a player who is not the owner');
     const put=await (await T({do:'text',key:'check.x',text:'HELLO'},'dev:owner-check')).json(), got=await (await fetch(BASE+'/texts',{headers:{cookie:'tsfm-pass=dev:site-check'}})).json(); await T({do:'text',key:'check.x',text:''},'dev:owner-check');
@@ -33,6 +37,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(await g.evaluate(()=>!!document.querySelector('meta[name=market-build]')).catch(()=>false),'/ with a login: THE MARKET');
   ok(started,'THE MARKET starts');
   ok(started&&await g.evaluate(()=>!!document.querySelector('#stage canvas')).catch(()=>false),'THE MARKET draws (its canvas is on the page)');
+  if(started){ let keys=[]; for(let i=0;i<20&&!keys.includes('forage');i++){ await g.waitForTimeout(1500); keys=await g.evaluate(()=>fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>Object.keys(j.owned||{}))).catch(()=>[]); }
+    ok(keys.includes('forage')&&keys.includes('inv'),'what you own in THE MARKET is kept on the server ('+keys.slice(0,8).join(' ')+')'); }
   ok(!gerr.length,'THE MARKET: no page errors '+[...new Set(gerr)].join(' | '));
   await b.close(); w.kill();
   console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);

@@ -20,7 +20,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     for(let v=it.v0;v+2<it.v1;v+=3){ if(F[v]||F[v+1]||F[v+2])continue; for(let k=0;k<9;k++)A.push(it.P[v*3+k]); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A,3)); g.computeBoundingSphere(); return it.bark=new THREE.Mesh(g,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); };
   const cast=(it,ux,uz,y)=>{   // from just outside the trunk, so a branch further out is not taken for bark
-    const b=bark(it); if(!b)return null; const r0=2*rT(it)+.5*T; RC.set(O3.set(it.x+ux*r0,y,it.z+uz*r0),D3.set(-ux,0,-uz)); RC.far=r0; const h=RC.intersectObject(b,false)[0]; if(!h)return null;
+    const b=bark(it); if(!b)return null; const r0=2*rT(it)+.5*T; RC.set(O3.set(it.x+ux*r0,y,it.z+uz*r0),D3.set(-ux,0,-uz)); RC.far=r0; const lim=1.6*rT(it)+.1*T, h=RC.intersectObject(b,false).find(q=>Math.hypot(q.point.x-it.x,q.point.z-it.z)<lim); if(!h)return null;   // the trunk's own bark, not a branch beside it
     const n=h.face.normal; let nx=n.x, ny=n.y, nz=n.z; if(nx*ux+nz*uz<0){ nx=-nx; ny=-ny; nz=-nz; } return {x:h.point.x,y:h.point.y,z:h.point.z,nx,ny,nz}; };
   const hold=(it,lx,ly)=>{ const W=st.world, kx=W?W.kx:1/ZU, ky=W?W.ky:1/ZU, c=Math.cos(SHARED.heading), s=Math.sin(SHARED.heading), x=pos.x+lx*c/kx, z=pos.z-lx*s/kx, dx=x-it.x, dz=z-it.z, l=Math.hypot(dx,dz)||1, y=SHARED.py+ly/ky;
     return cast(it,dx/l,dz/l,y)||{x:it.x+dx/l*rT(it),y,z:it.z+dz/l*rT(it),nx:dx/l,ny:0,nz:dz/l}; };

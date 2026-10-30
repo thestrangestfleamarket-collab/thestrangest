@@ -39,7 +39,7 @@ const BFLY={}; window.BFLY=BFLY;
   const bfGo=()=>{ if(!window.__started){ setTimeout(bfGo,200); return; } LOAD('later').then(()=>{ SYS.add('weedsAdd',(key,grp)=>{ if(!CH.has(key))CH.set(key,spawn(key,grp)); },'143-bfly'); SYS.add('weedsDrop',key=>{ const L=CH.get(key); if(L){ L.forEach(drop); CH.delete(key); } },'143-bfly');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g));
     let fa=0; SYS.add('life',dt=>{ if((fa+=dt||0)<.1)return; fa=0; if(!BFLY.out||SHARED.LVL!=='up'||!CH.size)return; const p=W3.group.position, v=st.run>.5?1.5:(st.move&&st.move.name==='crouch')||(st.w||0)<.4?.45:1, sk=Math.min(1,FORAGE.sk('ento')/100);
-      for(const L of CH.values())for(const b of L){ if(b.dur||!b.g.parent)continue; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<(.8+b.fast)*T*v*(1-.35*sk)){ b.until=0; b.away=[p.x,p.z]; } } },'143-bfly');
+      for(const L of CH.values())for(const b of L){ b.g.visible=Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<20*T; if(b.dur||!b.g.parent)continue; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<(.8+b.fast)*T*v*(1-.35*sk)){ b.until=0; b.away=[p.x,p.z]; } } },'143-bfly');
     let turn0=-1; setInterval(()=>{ const tn=Math.floor((window.CLOCK?CLOCK.h:12)/2); if(tn!==turn0&&WEEDS.chunks){ const first=turn0<0; turn0=tn; if(!first){ for(const L of CH.values())L.forEach(drop); CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); } }
     beds(); const W=window.WX&&WX.now, hide=(window.CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); for(const L of CH.values())for(const b of L)b.g.visible=!hide; BFLY.out=!hide; },1000); }); };
   bfGo();

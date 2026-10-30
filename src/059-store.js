@@ -8,6 +8,7 @@ import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
+  STORE.here=id=>{ const R=STORE.inside[id]||STORE.rooms.find(r=>r.id===id); if(!R||!R.B||SHARED.LVL!=='up')return false; const B=R.B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); return pos.x>Math.min(xa,xb)&&pos.x<Math.max(xa,xb)&&pos.z>Math.min(za,zb)&&pos.z<Math.max(za,zb); };
   const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar']]){ const b=B_(id), sc=LAY.s(k); if(b&&!b.sized){ b.sized=1; b.s=sc; if(sc!==1){ const m=(b.x0+b.x1)/2, f=b.y1; b.x0=m+(b.x0-m)*sc; b.x1=m+(b.x1-m)*sc; b.y0=f+(b.y0-f)*sc; } } }
@@ -88,23 +89,32 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   if(!AWAY.has('diner')){ const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
 
   if(!AWAY.has('bar')){ const B=B_('lbodega2'), TB=TURN(B,WP.bar.face), BL={...B,...TB.L}, dp=TB.pt((BL.x0+BL.x1)/2,BL.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}; rec('bar','THE BAR',B,D,true); STEPS.push(()=>laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},D,(B0,l0)=>{ const n0=PROPS.length, B=BL, L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
-      put('back bar',L+.42,along(5.2),3); put('bar soffit',L+1.5,along(4.5),3); put('neon sign: BAR',L+.08,Kb+2.3,0);
+      const mid=(Kb+F)/2;
+      // THE BAR: counter, back-bar shelves and stools down the front-west wall
+      put('back bar',L+.42,along(5.2),3); put('bar soffit',L+1.5,along(4.5),3); put('neon sign: BAR',L+.08,along(5.2),0);
       put('bar round end',L+2.56,yE,3); put('bar counter: ashtray',L+2.66,along(3.3),3); put('bar counter: bottle',L+2.66,along(5.1),3); put('bar counter: glass',L+2.66,along(6.9),3); put('bar corner',L+1.6,along(8.26),3);
       const stools=[2.7,3.85,5,6.15,7.3].map(x=>{ put('bar stool',L+3.62,along(x)); return {x:L+3.62,y:along(x)}; });
-      put('bar fridge',L+.4,Kb+1.0); put('potted plant',L+.5,Kb+2.7);
+      put('bar fridge',L+.4,along(9.7)); put('potted plant',L+.55,along(10.9));
+      for(const x of [2.5,4.3,6.1])put('candle on the bar',L+2.76,along(x));
+      // the octopus drummer's stage, back-east corner (125-128)
       const SX=R-2.5, SY=Kb+1.4; put('wide stage cloth',SX,Kb+.07,0); put('stage',SX,SY); put('neon sign: LIVE',SX+1.0,Kb+.16,1);
-      const PX=SX-1.4, PY=Kb+2.686; put('grand piano on a stage',PX,PY,2); put('drum kit on a stage',SX+.35,Kb+1.25,0);
-      put('red leather sofa',R-.46,Kb+4.6,2); put('red rug',R-1.7,Kb+4.6,1); put('bar table',R-1.55,Kb+4.6); put('red leather armchair',R-2.6,Kb+3.85); put('red leather armchair',R-2.6,Kb+5.35);
-      put('bar table',R-1.5,Kb+8.0); put('red leather armchair',R-.55,Kb+8.0,2); put('red leather armchair',R-2.45,Kb+8.0);
-      put('bar table',R-1.5,F-1.5); put('red leather armchair',R-.55,F-1.5,2); put('red leather armchair',R-2.45,F-1.5);
-      put('poster: moon shrine',R-.02,Kb+3.2,2); put('poster: ghost sale',R-.02,Kb+6.5,2); put('poster: koi night',R-.02,Kb+11.3,2); put('poster: night painting',L+.02,F-3.6,0);
-      put('TV on a bracket',R-.06,F-3.0,2); put('black cupboard',R-.31,F-3.0,2);
-      put('exit sign, lit',m,F-.05,3); put('red rug',m,F-1.1,0); put('potted palm',L+.8,F-.75);
-      put('ceiling fan',m,Kb+4.2); put('ceiling fan',m,F-4.2);
-      for(const [i,y] of [[0,Kb+1.9],[1,Kb+5.0],[2,Kb+8.0],[3,F-2.0]]){ const x=i<3?R:L, n=i<3?[-1,0]:[1,0]; K.bar.theatreSconce(x,y,n); LAMPS.push({x:x+n[0]*.35,y,z:68,r:3.2,c:[1,.62,.34],room:true,own:true,day:true}); }
-      LAMPS.push({x:SX,y:SY,z:108,r:5.5,c:[1.3,1.05,.66],room:true,own:true,day:true});
-      for(const l of LAMPS.slice(l0)){ const k=l.prop&&(l.prop.kind||l.prop.name)||''; if(k==='bar table')continue; if(k==='exit sign, lit'){ l.c=l.c.map(v=>v*.45); continue; } l.off=1; }
-      for(const x of [2.5,4.3,6.1])put('candle on the bar',L+2.76,along(x)); put('console TV',L+6.3,Kb+7.4);
+      const PX=SX-1.4, PY=Kb+2.686; put('drum kit on a stage',SX+.35,Kb+1.25,0);   // octopus-only stage (owner, 30 Oct 2026); no piano
+      // a wooden staircase up to the street, back-west corner
+      put('staircase',L+1.0,Kb+.15);
+      // the pool table, mid-room; darts on the east wall with a throw lane in front
+      put('pool table',m-.3,mid-1.2);
+      put('dartboard',R-.03,mid+3.0,2);
+      // one table by the door
+      put('red rug',R-1.9,F-2.1,1); put('bar table',R-1.6,F-2.1); put('red leather armchair',R-.7,F-2.1,2); put('red leather armchair',R-2.5,F-2.1);
+      // posters (made in-house), a palm, the way out
+      put('poster: moon shrine',R-.02,Kb+4.4,2); put('poster: ghost sale',R-.02,mid-1.2,2); put('poster: koi night',R-.02,F-5.2,2); put('poster: night painting',L+.02,mid+1.2,0);
+      put('potted palm',L+.8,F-.8); put('exit sign, lit',m,F-.05,3);
+      put('ceiling fan',m,Kb+5.2); put('ceiling fan',m,mid+.4); put('ceiling fan',m,F-3.6);
+      // warm wall sconces down both long walls
+      for(const [i,y] of [[0,Kb+3.6],[1,Kb+8],[2,mid-2],[3,mid+2.5],[4,F-6],[5,F-2.6]]){ const x=i&1?R:L, n=i&1?[-1,0]:[1,0]; K.bar.theatreSconce(x,y,n); LAMPS.push({x:x+n[0]*.35,y,z:68,r:3.4,c:[1,.62,.34],room:true,own:true,day:true,sconce:1}); }
+      // super dark: keep the candles, the pool light, the stair's street glow and dim sconces; the rest off
+      for(const l of LAMPS.slice(l0)){ const k=l.prop&&(l.prop.kind||l.prop.name)||''; if(k==='bar table'||k==='pool table'||k==='staircase')continue; if(l.sconce){ l.c=l.c.map(v=>v*.6); continue; } if(k==='exit sign, lit'){ l.c=l.c.map(v=>v*.45); continue; } l.off=1; }
+      LAMPS.push({x:SX,y:SY,z:92,r:5,c:[1.2,.9,.55],room:true,own:true,day:true});   // a dim spot on the stage
       LAMPS.push({own:1,room:1,day:true,x:stools[1].x,y:stools[1].y,z:38,r:1.4,c:[.9,.36,.1]});
       turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; }))); }
 

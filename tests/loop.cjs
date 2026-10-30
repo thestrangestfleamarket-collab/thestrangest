@@ -12,6 +12,8 @@ const {chromium}=require('playwright');
   ok(S.ids==='ABCDEFGH'&&S.st==='ABCDEFGH'&&S.inSec,'eight sections, one station in each ('+S.st+')');
   ok(S.trains.length===2&&S.trains[0].dir===-S.trains[1].dir,'two trains, one each way');
   ok(S.trains.every(t=>t.n===8&&t.ids===8&&t.dwell&&Math.abs(t.lap-t.sum)<1e-6),'each train stops 60 s at all eight stations every lap ('+S.trains.map(t=>(t.lap/60).toFixed(1)+' min').join(', ')+')');
+  const G=await pg.evaluate(()=>{ const A=LOOP.STA.find(s=>s.old), arr=t=>(t.legs?t.legs.filter(g=>g.doors).map(g=>g.t0):[t.tbl.find(e=>e.st===A).arr]).map(a=>a+t.off), [a,b]=TRAINS.list, lap=a.lap; let gap=lap; for(const x of arr(a))for(const y of arr(b))gap=Math.min(gap,Math.abs(((x-y)%lap+lap*1.5)%lap-lap/2)); return {gap,lap}; });
+  ok(G.gap>=G.lap/4-1,'the two trains never call at A together: a quarter lap apart at least ('+Math.round(G.gap)+' s of a '+Math.round(G.lap)+' s lap)');
   const tun=await pg.evaluate(()=>{ const M=SHARED.METRO, out={}; for(const k in LOOP.TRK){ const tr=LOOP.TRK[k]; let gap=0, n=0; for(let s=0;s<tr.L;s+=5){ const o=tr.pt(s), x=LOOP.WX(o.x), z=LOOP.WZ(o.y); n++; if(!M.inside(x,z))gap++; } out[k]=gap+'/'+n; } return out; });
   ok(Object.values(tun).every(v=>v.startsWith('0/')),'both tracks run unbroken round the loop, tunnels and stations ('+JSON.stringify(tun)+')');
   // a train comes into A, waits 60 s with its doors open, then leaves

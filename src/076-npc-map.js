@@ -169,10 +169,10 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen);
-      N.far=far; N.hid=!N.sheet&&(far||!seen||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
+      N.far=far; N.hid=!N.sheet&&(far||!seen||d>NPCS.DRAW||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
-  NPCS.R=25*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
+  NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
 export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};

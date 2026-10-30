@@ -813,5 +813,101 @@
   "stackable": true,
   "value": 25,
   "sellable": true
+ },
+ "frame": {
+  "stackable": true,
+  "value": 4
+ },
+ "cage": {
+  "stackable": true,
+  "value": 5
+ },
+ "bseed": {
+  "stackable": true,
+  "value": 1
+ },
+ "feeder": {
+  "value": 14
+ },
+ "binoc": {
+  "value": 30
+ },
+ "bird_feather": {
+  "stackable": true,
+  "sellable": true,
+  "value": 2
+ },
+ "quill_pen": {
+  "sellable": true,
+  "value": 9
+ },
+ "bee_hive": {
+  "value": 40
+ },
+ "bee_smoker": {
+  "value": 12
+ },
+ "bee_veil": {
+  "slot": "head",
+  "value": 15
+ },
+ "jar_honey": {
+  "stackable": true,
+  "value": 1
+ },
+ "bee_wax": {
+  "stackable": true,
+  "sellable": true,
+  "value": 3
+ },
+ "wax_candle": {
+  "stackable": true,
+  "sellable": true,
+  "value": 12
+ },
+ "honey_wild": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.15,
+  "value": 8
+ },
+ "honey_clover": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.15,
+  "value": 10
+ },
+ "honey_lav": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.2,
+  "value": 16
+ },
+ "honey_sun": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.2,
+  "value": 14
+ },
+ "honey_rose": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.25,
+  "value": 22
+ },
+ "honey_moon": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.6,
+  "value": 80
+ },
+ "gem_wheel": {
+  "value": 35
  }
 }

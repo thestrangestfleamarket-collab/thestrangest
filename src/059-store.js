@@ -8,6 +8,7 @@ import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
+  STORE.here=id=>{ const R=STORE.inside[id]||STORE.rooms.find(r=>r.id===id); if(!R||!R.B||SHARED.LVL!=='up')return false; const B=R.B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); return pos.x>Math.min(xa,xb)&&pos.x<Math.max(xa,xb)&&pos.z>Math.min(za,zb)&&pos.z<Math.max(za,zb); };
   const LG=k=>{ const o=LAY.o(k); return [o.x/BLDK,o.y/BLDK]; }, AO=LG('apartments');
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar'],['lcastle','apartments']]){ const b=B_(id), [dx,dy]=LG(k); if(b&&!b.laid){ b.x0+=dx; b.x1+=dx; b.y0+=dy; b.y1+=dy; b.laid=1; } }
   for(const [id,k] of [['ldiner','diner'],['lbodega2','bar']]){ const b=B_(id), sc=LAY.s(k); if(b&&!b.sized){ b.sized=1; b.s=sc; if(sc!==1){ const m=(b.x0+b.x1)/2, f=b.y1; b.x0=m+(b.x0-m)*sc; b.x1=m+(b.x1-m)*sc; b.y0=f+(b.y0-f)*sc; } } }

@@ -270,7 +270,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     box.position.copy(at(cS,cd/2+.02,Yb(119))); box.rotation.y=ry; scene.add(box);
     const pl=canv(512,128); { const g=pl.g; for(let i=0;i<5;i++){ const x=52+i*102, gr=g.createRadialGradient(x,64,0,x,64,60); gr.addColorStop(0,'rgba(255,233,184,.55)'); gr.addColorStop(1,'rgba(255,233,184,0)'); g.fillStyle=gr; g.fillRect(x-60,4,120,120); } pl.tex.needsUpdate=true; }
     const pool=new THREE.Mesh(new THREE.PlaneGeometry(cw,cd*1.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:pl.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-    const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''};
+    const gp=at(cS,cd*.7,0); gp.y=SHARED.groundY(gp.x,gp.z)+.03; pool.position.copy(gp); pool.rotation.y=ry; scene.add(pool); canopy={box,pool,front,side,key:''}; STORE.openHide=STORE.openHide||{}; (STORE.openHide.theatre=STORE.openHide.theatre||[]).push(box,pool);   // not seen from inside
     post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post});
     const dS=alongX?bx:bz, ph=Yb(70)-Yb(14), pw=ph*27/40;
     // the box office in the theatre's front: a glass window over a low counter, the ticket fox behind it, the showtimes small on the back wall

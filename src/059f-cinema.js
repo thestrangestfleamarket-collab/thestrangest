@@ -124,8 +124,9 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
     wrap.style.transform=m3d(coef(at(u0,v0),at(u1,v0),at(u1,v1),at(u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
     if(PS2.keepAlpha)PS2.keepAlpha(ok); if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
-    soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail?'none':'auto';
-    if(vFail||ok&&!snd.on){ const b=at(.5,Math.min(1,s[3])); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-6)+'px'; } else soundBtn.style.display='none'; };
+    const wait=!ok&&!vFail;   // the film still on its way: say so on the screen
+    soundBtn.textContent=vFail?vFail.toUpperCase():wait?'LOADING FILM…':'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail||wait?'none':'auto';
+    if(vFail||wait||ok&&!snd.on){ const b=at(.5,wait?(s[2]+s[3])/2:Math.min(1,s[3])); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-(wait?-16:6))+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});

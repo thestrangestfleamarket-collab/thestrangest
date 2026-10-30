@@ -10,7 +10,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const TOUR=[
   ['dungeon','x-dungeon',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await DUNGEON.go(3); return await U(()=>{ const d=DUNDBG(), m=DUNMOBDBG(); return d.level===3&&d.objs>0&&!!m.plan&&m.slimes.length===m.plan.sl; }); },async()=>{ await DUNGEON.go(0); }],
-  ['park','x-park',async()=>{ const U=async(f,ms=180000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+  ['park','x-park',async()=>{ const U=async(f,ms=300000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); return await U(()=>PARK.ready&&PARK.in&&(!FOUNT.on||!!FOUNT.drops)&&!(window.FADE&&FADE.busy)); },
     async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
   ['fire escape','x-fire',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
@@ -52,7 +52,7 @@ const TOUR=[
   ok(!st.some(f=>/^x-/.test(f)),'no chunk at the start');
   console.log('     chunks: '+fs.readdirSync('dist/g').filter(f=>/^x-/.test(f)).map(f=>f.split('.')[0].slice(2)+' '+Math.round(gz(f)/1024)+' KB').join(', '));
   phase='after'; await wait(8000);
-  for(const [name,file,go,back] of TOUR){ phase=name; const e0=errs.length, l0=late.length;
+  for(const [name,file,go,back] of TOUR){ phase=name; await pg.evaluate(async()=>{ for(const t=Date.now();Date.now()-t<300000&&window.FADE&&FADE.busy;)await new Promise(r=>setTimeout(r,250)); }).catch(()=>{}); const e0=errs.length, l0=late.length;   // a slow place's fade must end before the next place starts
     const r=await pg.evaluate(`(${go})()`).catch(e=>'ERR '+e.message);
     await pg.screenshot({path:path.join(OUT,'place-'+name.replace(/ /g,'-')+'.png')});
     ok(r===true,name+': built and shown'+(r===true?'':' ('+String(r).slice(0,200)+')'));

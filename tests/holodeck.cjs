@@ -33,7 +33,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     return { cash: INV.cash, w1, set, lv, inHall, w2, arena: DUNMOBDBG().arena, run: ARCDBG().holo.run, menu: ARCDBG().holo.open }; });
   ok(c1.cash === 38 && c1.w1 && c1.set.set && c1.set.pillars === 4 && c1.set.torches === 4 && c1.set.fire === 4 && c1.lv === 'up' && c1.inHall && c1.w2 && c1.arena && c1.run === 'THE CATACOMB RUN' && !c1.menu,
     'THE CATACOMB RUN: $12, the hall becomes a catacomb (pillars, torches), three slimes in the hall for wave 1, four more when they burst: ' + JSON.stringify(c1));
-  const c2 = await pg.evaluate(() => { const VIT = __dbg.VIT, hp0 = VIT.hp, sk0 = FORAGE.sk('fight'); VIT.hp = .05; return new Promise(r => setTimeout(() => r({ hp0, hp: VIT.hp, sk0, sk: FORAGE.sk('fight'), run: ARCDBG().holo.run, set: CATDBG(), slimes: DUNMOBDBG().slimes.length, arena: DUNMOBDBG().arena, sol: SOL.up.length }), 800)); });
+  const c2 = await pg.evaluate(() => { const VIT = __dbg.VIT, hp0 = VIT.hp, sk0 = FORAGE.sk('fight'); VIT.hp = .05; return new Promise(r => setTimeout(() => r({ hp0, hp: VIT.hp, sk0, sk: FORAGE.sk('fight'), run: ARCDBG().holo.run, set: CATDBG(), slimes: DUNMOBDBG().slimes.length, arena: DUNMOBDBG().arena, sol: __dbg.SOL.up.length }), 800)); });
   ok(!c2.run && c2.hp >= c2.hp0 - 1e-6 && c2.sk > c2.sk0 && !c2.set.on && !c2.set.set && c2.set.fire === 0 && c2.slimes === 0 && !c2.arena,
     'the safety ends the run before you faint: health back as it was, the cleared wave paid MARTIAL ARTS, the catacomb and the slimes gone: ' + JSON.stringify(c2));
   await pg.evaluate(() => { STORE.holo.menu(); ROOMS.exit('arcade'); }); await pg.waitForTimeout(1500); await wait(() => !FADE.busy).catch(() => {});

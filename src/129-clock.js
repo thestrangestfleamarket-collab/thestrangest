@@ -6,8 +6,8 @@ import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
 Object.assign(CLOCK,{h:17.4,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)});
-{ const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||2048),renderer.capabilities.maxTextureSize);
-  for(const [L,r,m] of [[sunL,R,3072],[sunD,RD,2048],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
+{ const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
+  for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
   const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);

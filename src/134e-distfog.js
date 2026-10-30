@@ -5,7 +5,7 @@ import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 const DFOG={};
-{ const D0={on:true,start:20,end:60,blur:2.2,haze:.75}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog2')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,start:20,end:45,blur:2.2,haze:.75}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog3')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -26,7 +26,7 @@ const DFOG={};
     const W=DFOG.under; if(W){ u.uS.value=W.s; u.uE.value=Math.max(W.s+1,W.e); u.uB.value=1.4; u.uH.value=1; u.uF.value=0; u.uC.value.copy(W.c); u.uK.value.set(-1e9,-1e9,1e9,1e9); u.uP.value.copy((SHARED.RPASS&&SHARED.RPASS.camera||SHARED.cam).position); }
     draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
-  const save=()=>{ try{ SAVE.set('dfog2',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
+  const save=()=>{ try{ SAVE.set('dfog3',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0}); window.DFOG=DFOG;
   // its numbers in ATMOSPHERE, under HAZE

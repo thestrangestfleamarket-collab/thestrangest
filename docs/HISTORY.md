@@ -5054,4 +5054,4 @@ Owner (of the grass gallery, https://claude.ai/artifact/LiUhm3UoTpi2ZyedXnuK9d):
 - 30 Oct 2026, the skyline rises out of the haze (owner: "fade the skyline out completely near the ground"): the far city's buildings and the painted skyline are whole haze at their foot and clear going up.
 - 30 Oct 2026, owner: "turn off the tree pushing too". Park trees no longer lean aside as you walk into their low branches.
 - 30 Oct 2026, the start (owner: "start all players in platform when they login"; "subway platform, start all playes, go"): every login starts on the subway platform, new players and returning ones alike; you no longer come back to where you logged off and new players no longer start in Central Park. Rule: the login spot is one place for everyone.
-- 30 Oct 2026, owner: "make it its own window". Shift+M opens the map alone in a window titled MAP, without the settings tabs; Shift+M or Esc closes it.
+- 30 Oct 2026, owner: "make it its own window". Shift+M opens the map alone in a window titled MAP, without the settings tabs; Shift+M or Esc closes it. It opens showing the whole section (owner: "you should be able to see entire section in the map area").

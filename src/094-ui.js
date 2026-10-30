@@ -180,7 +180,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:var(--mk)}
   #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
   #menu .foot{display:none}
-  #menu.solo .tabs{display:none} #menu.solo .box{grid-template-columns:minmax(0,1fr)} #menu.solo .pane{grid-column:1/-1}
+  #menu.solo .tabs{display:none} #menu.solo .box{grid-template-columns:minmax(0,1fr)} #menu.solo .pane{grid-column:1/-1} #menu.solo #mapcv{display:block;margin:0 auto;max-width:100%;max-height:calc(92vh - 300px);width:auto!important;image-rendering:pixelated}
   @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);font-size:14px} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} #menu #dhome .cp-btn{font-size:14px} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
@@ -228,7 +228,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const bars=()=>M.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/((r.max-r.min)||1)*100+'%')); M.addEventListener('input',bars);
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; show(t); };
-  UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); document.getElementById('mttl').textContent='MAP'; show('map'); };   // the map alone, no settings tabs (Shift+M)
+  UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; show('map'); };   // the map alone, no settings tabs (Shift+M)
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; if(UI.menuOpen){ mapLv=SHARED.LVL; show('home'); } else if(CHARP.hide)CHARP.hide(); }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;

@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
 import {VIS} from './129a-vis.js';
 
@@ -99,8 +99,8 @@ import {VIS} from './129a-vis.js';
     pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
     { const home=(SHARED.SECTION&&SHARED.SECTION.id)||'A'; SYS.add('places',()=>VIS.hide(pan,'section',SHARED.LVL==='up'&&SECTIONS.at(pos.x/TILE+72,pos.z/TILE-77)!==home),'134-panels'); } }
   let TM=null; { const RB=RINGX.bound, T=TILE, P=[], out=(x,z)=>B.some(([bx,bz,sx,sz])=>Math.abs(x/T-bx)<sx/2+1.5&&Math.abs(z/T-bz)<sz/2+1.5);
-    const TFAR=8*T, TSC=.2; for(const [k,[ax,fx,a0,a1]] of [['x',RB.z0-TFAR,RB.x0-6*T,RB.x1+6*T],['x',RB.z1+TFAR,RB.x0-6*T,RB.x1+6*T],['z',RB.x0-TFAR,RB.z0,RB.z1],['z',RB.x1+TFAR,RB.z0,RB.z1]].entries()){ const sg=k%2?1:-1;
-      for(let a=a0;a<a1;a+=(2.6+hs(a,k+80)*1.6)*T){ const off=sg*(hs(a,k+81)*4)*T, x=ax==='x'?a:fx+off, z=ax==='x'?fx+off:a; if(out(x,z)||RINGX.inPocket(x,z,10*T))continue; P.push([x,z,(2.2+hs(a,k+82)*1.4)*T*TSC,(5+hs(a,k+83)*4)*T*TSC,hs(a,k+84)]); } }
+    const TFAR=8*T, TSC=.2, wet=Math.max(SHARED.BOD.ZS(RING.river.y0),SHARED.BOD.ZS(RING.river.y1)); for(const [k,[ax,fx,a0,a1]] of [['x',RB.z0-TFAR,RB.x0-6*T,RB.x1+6*T],['x',RB.z1+TFAR,RB.x0-6*T,RB.x1+6*T],['z',RB.x0-TFAR,RB.z0,RB.z1],['z',RB.x1+TFAR,RB.z0,RB.z1]].entries()){ const sg=k%2?1:-1;
+      for(let a=a0;a<a1;a+=(2.6+hs(a,k+80)*1.6)*T){ const off=sg*(hs(a,k+81)*4)*T, x=ax==='x'?a:fx+off, z=ax==='x'?fx+off:a; if(out(x,z)||RINGX.inPocket(x,z,10*T)||z<wet)continue; P.push([x,z,(2.2+hs(a,k+82)*1.4)*T*TSC,(5+hs(a,k+83)*4)*T*TSC,hs(a,k+84)]); } }
     const geo=new THREE.IcosahedronGeometry(1,0), mt=new THREE.MeshLambertMaterial({color:0x2e4a2a,flatShading:true}); TM=new THREE.InstancedMesh(geo,mt,P.length*2); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
     P.forEach(([x,z,r,h,g],i)=>{ m4.compose(new THREE.Vector3(x,h-r*.7,z),q.setFromEuler(new THREE.Euler(0,g*6,0)),new THREE.Vector3(r,r*1.1,r)); TM.setMatrixAt(i*2,m4); TM.setColorAt(i*2,c.setHSL(.27+g*.06,.32,.2+g*.08));
       m4.compose(new THREE.Vector3(x+(g-.5)*r,h*.55,z+(g-.4)*r),q,new THREE.Vector3(r*.8,r*.9,r*.8)); TM.setMatrixAt(i*2+1,m4); TM.setColorAt(i*2+1,c.setHSL(.25+g*.05,.3,.17+g*.06)); });

@@ -242,7 +242,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; junk.visible=grass.visible=up&&real;
     if(!RIVER.deep&&up&&RIVER.over(pos.x,pos.z)&&(pos.z<rz1-10*T||RIVER.swim&&RIVER.dep>2.5))RIVER.load();
     RIVER.wallN.visible=up; if(RIVER.sea)RIVER.sea.visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
-    surfMat.transparent=way==='swell'; surfMat.depthWrite=way!=='swell'; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
+    surfMat.transparent=way==='swell'; surfMat.depthWrite=true; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
     SU.uAmp.value=1;
     const S=CLOCK.sun; uSunD.value.copy(CLOCK.sunV); SU.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SU.uSkyH.value.copy(SKY.U.uH.value); SU.uSkyZ.value.copy(SKY.U.uZ.value); FU.uSky.value.copy(SKY.U.uH.value); }
     SU.uAmb.value.copy(SU.uSkyZ.value).multiplyScalar(.55).addScalar(.03); uAmbB.value.copy(SU.uSkyZ.value).multiplyScalar(.6).add(SU.uSkyH.value.clone().multiplyScalar(.25)); uSunCB.value.copy(SU.uSunC.value).multiplyScalar(.75); FU.uDay.value=cl((CLOCK.elev()+4)/14,.15,1);

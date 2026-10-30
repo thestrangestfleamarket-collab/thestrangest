@@ -37,7 +37,7 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   WEEDS.kindAt=(x,z)=>GRASS.at(x/T,z/T).id;   // the grass kind growing here (GRASS)
   // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it
   const mask=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
-    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&skip(o))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); if(o.visible&&/^grass/.test(o.userData.landPatch))LW.push(o); }); hid.forEach(o=>o.visible=false);
+    scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&(skip(o)||o.userData.tall))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); if(o.visible&&/^grass/.test(o.userData.landPatch))LW.push(o); }); hid.forEach(o=>o.visible=false);
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();

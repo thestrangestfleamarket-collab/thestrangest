@@ -1,6 +1,6 @@
 // THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
+import {LEVELS, LITE, PARK, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -34,8 +34,8 @@ Object.assign(WE,{on:false}); window.WE=WE;
   function applyProp(o){ '@later'; const e=stOf(o), me=o.me, id=o.id, pv=o.pivot, en=o.en, inst=!!(me&&me.isInstancedMesh); if(!me||!me.setMatrixAt)return;
     foot(o.it,e); follow(o.it,e,pv);
     if(inst&&!en.base){ en.base=me.instanceMatrix.array.slice(); if(me.instanceColor)en.col0=me.instanceColor.array.slice(); }
-    if(e.del){ if(inst){ me.setMatrixAt(id,Mx.makeScale(0,0,0).setPosition(pv[0],pv[1],pv[2])); me.instanceMatrix.needsUpdate=true; me.computeBoundingSphere(); } else me.setVisibleAt&&me.setVisibleAt(id,false); return; }
-    me.setVisibleAt&&me.setVisibleAt(id,true);
+    if(e.del){ if(inst){ me.setMatrixAt(id,Mx.makeScale(0,0,0).setPosition(pv[0],pv[1],pv[2])); me.instanceMatrix.needsUpdate=true; me.computeBoundingSphere(); } else if(me.setVisibleAt){ me.setVisibleAt(id,false); (me.userData.gone||(me.userData.gone=new Set())).add(id); } return; }
+    if(me.setVisibleAt){ me.setVisibleAt(id,true); if(me.userData.gone)me.userData.gone.delete(id); (me.userData.edited||(me.userData.edited=new Set())).add(id); if(PARK.lodReset)PARK.lodReset(); }
     Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ'); Mx.makeRotationFromEuler(Ex); Mx.multiply(Tx.makeScale(e.s[0],e.s[1],e.s[2]));
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2]));
     if(inst){ Mx.multiply(Bx.fromArray(en.base,id*16)); me.instanceMatrix.needsUpdate=true;

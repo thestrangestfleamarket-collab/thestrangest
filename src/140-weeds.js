@@ -36,17 +36,20 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   WEEDS.mushAt=(x,z)=>vn(x/T/13,z/T/13,311)>.7;
   WEEDS.kindAt=(x,z)=>GRASS.at(x/T,z/T).id;   // the grass kind growing here (GRASS)
   // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it
-  const mask=(cx,cz)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+  const PBO=[], mask=(cx,cz,later)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
     scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&(skip(o)||o.userData.tall))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); if(o.visible&&/^grass/.test(o.userData.landPatch))LW.push(o); }); hid.forEach(o=>o.visible=false);
     const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
     renderer.setRenderTarget(RT); renderer.setClearColor(0,0); scene.background=null; scene.fog=null; renderer.autoClear=false; renderer.clear();
     CAM.layers.set(0); scene.overrideMaterial=M0; renderer.render(scene,CAM); CAM.layers.set(5); scene.overrideMaterial=M1; renderer.render(scene,CAM);
-    renderer.readRenderTargetPixels(RT,0,0,W*SS,W*SS,PIX);
+    let job=null; if(later){ const gl=renderer.getContext(), pb=PBO.pop()||gl.createBuffer(); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,pb); gl.bufferData(gl.PIXEL_PACK_BUFFER,PIX.byteLength,gl.STREAM_READ); gl.readPixels(0,0,W*SS,W*SS,gl.RGBA,gl.UNSIGNED_BYTE,0); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); job={cx,cz,pb,sync:gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0)}; gl.flush(); }
+    else renderer.readRenderTargetPixels(RT,0,0,W*SS,W*SS,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
     LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
-    const G=new Float32Array(W*W), I=new Uint8Array(W*W), F=new Uint16Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;   // F: each cell's 4x4 looks, a bit each (the lawn to a quarter of a cell, for the tufts)
+    return job||read(cx,cz,PIX); };
+  // the picture read into one chunk's lawn
+  const read=(cx,cz,PIX)=>{ const x0=cx*CS, z0=cz*CS, G=new Float32Array(W*W), I=new Uint8Array(W*W), F=new Uint16Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;   // F: each cell's 4x4 looks, a bit each (the lawn to a quarter of a cell, for the tufts)
     for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0, f=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; f|=1<<((SS-1-b)*SS+a); } }
       if(!n||clr.some(q=>x>q[0]&&x<q[2]&&z>q[1]&&z<q[3])||WEEDS.isOff(x,z))continue; F[ci(i,j)]=f; if(n*2<SS*SS)continue; I[ci(i,j)]=1; G[ci(i,j)]=g/n/255*4-.5; }
     for(let j=0;j<N;j+=2)for(let i=0;i<N;i+=2){ const c=ci(i,j); if(I[c])SQ.push(x0+(i+1)*CELL,G[c],z0+(j+1)*CELL); }
@@ -55,16 +58,24 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   // each chunk's lawn is drawn from above once and kept (BAKED), not drawn again each time you come back; a lawn edit or a chunk still being painted clears it
   const BAKED=new Map(); WEEDS.baked=BAKED;
   const painting=(x0,z0)=>BATCH.queues.some(q=>q.jobs.some(j=>j.x1>x0-CS&&j.x0<x0+2*CS&&j.z1>z0-CS&&j.z0<z0+2*CS));
-  const build=(cx,cz)=>{ const k=cx+','+cz; if(BAKED.has(k))return BAKED.get(k); const m0=mask(cx,cz), m=m0.I.some(Boolean)?m0:null; if(m){ m.sq=m.SQ; m.top=(x,y,z)=>SHARED.groundY(x,z); } if(!painting(cx*CS,cz*CS)){ BAKED.set(k,m); if(BAKED.size>600)BAKED.delete(BAKED.keys().next().value); } return m; };
+  const keep=(cx,cz,m0)=>{ const k=cx+','+cz, m=m0.I.some(Boolean)?m0:null; if(m){ m.sq=m.SQ; m.top=(x,y,z)=>SHARED.groundY(x,z); } if(!painting(cx*CS,cz*CS)){ BAKED.set(k,m); if(BAKED.size>600)BAKED.delete(BAKED.keys().next().value); } return m; };
+  const build=(cx,cz)=>{ const k=cx+','+cz; return BAKED.has(k)?BAKED.get(k):keep(cx,cz,mask(cx,cz)); };
+  // a chunk ahead of you is drawn from above and its picture fetched without waiting for the graphics card: it is taken up a frame or two later (WAIT), the page never stalls on it
+  const WAIT=new Map(); let epoch=0; const PX2=new Uint8Array(W*W*SS*SS*4);
+  const ask=(cx,cz,k)=>{ const j=mask(cx,cz,true); j.k=k; j.ep=epoch; WAIT.set(k,j); };
+  const collect=()=>{ if(!WAIT.size)return; const gl=renderer.getContext();
+    for(const [k,j] of [...WAIT]){ const st=gl.clientWaitSync(j.sync,0,0); if(st===gl.TIMEOUT_EXPIRED)continue; WAIT.delete(k); gl.deleteSync(j.sync);
+      if(st!==gl.WAIT_FAILED&&j.ep===epoch&&!CH.has(k)){ gl.bindBuffer(gl.PIXEL_PACK_BUFFER,j.pb); gl.getBufferSubData(gl.PIXEL_PACK_BUFFER,0,PX2); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); const gb=keep(j.cx,j.cz,read(j.cx,j.cz,PX2)); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); }
+      PBO.push(j.pb); } };
   const drop=k=>{ CH.delete(k); SYS.run('weedsDrop',k); };
   WEEDS.top=(x,z)=>{ const k=Math.floor(x/CS)+','+Math.floor(z/CS); if(!CH.has(k))return undefined; const me=CH.get(k); if(!me)return null; const i=Math.floor((x-me.x0)/CELL), j=Math.floor((z-me.z0)/CELL); if(i<0||j<0||i>=N||j>=N)return null; const c=(j+MG)*W+i+MG; return me.I[c]?SHARED.groundY(x,z):null; };
   WEEDS.fine=(x,z)=>{ const me=CH.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!me)return me===null?null:undefined; const u=(x-me.x0)/CELL, v=(z-me.z0)/CELL, i=Math.floor(u), j=Math.floor(v); if(i<0||j<0||i>=N||j>=N)return null;
     return me.F[(j+MG)*W+i+MG]>>(Math.floor((v-j)*SS)*SS+Math.floor((u-i)*SS))&1?SHARED.groundY(x,z):null; };
-  WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); const hit=k=>{ const [a,b]=k.split(',').map(Number); return r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL; }; for(const k of [...BAKED.keys()])if(hit(k))BAKED.delete(k); for(const k of [...CH.keys()])if(hit(k))drop(k); };
-  let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS);
+  WEEDS.lawnDrop=r=>{ SYS.run('lawnEdit',r); const hit=k=>{ const [a,b]=k.split(',').map(Number); return r[2]>a*CS-MG*CELL&&r[0]<(a+1)*CS+MG*CELL&&r[3]>b*CS-MG*CELL&&r[1]<(b+1)*CS+MG*CELL; }; for(const k of [...BAKED.keys()])if(hit(k))BAKED.delete(k); for(const k of [...CH.keys()])if(hit(k))drop(k); epoch++; };
+  let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS); collect();
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }
     const add=(a,b,k)=>{ const gb=build(a,b); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); };
     for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(!CH.has(k))add(pcx+a,pcz+b,k); }   // all that can be on screen, at once, so no lawn shows half built
-    let best=null, bd=1e9; for(let b=-3;b<=3;b++)for(let a=-3;a<=3;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
-    if(best&&performance.now()>=next){ const t0=performance.now(); add(...best); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
+    let best=null, bd=1e9; for(let b=-3;b<=3;b++)for(let a=-3;a<=3;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k)||WAIT.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
+    if(best&&WAIT.size<2&&performance.now()>=next){ const t0=performance.now(); if(BAKED.has(best[2]))add(...best); else ask(...best); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
   SYS.add('life',(dt)=>{ WEEDS.lawnTick(); WEEDS.moveTick(); },'140-weeds'); };

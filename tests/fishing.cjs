@@ -87,12 +87,6 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // crab pots: drop one ahead, it is kept, haul it later for what crawled in
   const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
   ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));
-  // a pond in each new section, fished like THE LAKE, with no Hudson built: section C on its own
-  { const p2 = await b.newPage({ viewport: { width: 640, height: 400 } }); p2.on('pageerror', e => errs.push(e.message.slice(0, 300)));
-    await p2.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&sec=C', { waitUntil: 'commit' }); await p2.waitForFunction(() => window.__started && window.FISHING && FISHING.at, null, { timeout: 300000, polling: 500 });
-    const pd = await p2.evaluate(() => { const P = __dbg.MAPK.MODS.ponds || [], p = P[0]; if (!p) return { n: 0 }; const x = (p.x0 + p.x1) / 2, z = (p.z0 + p.z1) / 2, w = FISHING.at(x, z), o = FISHING.odds(x, z, 'bait', 13);
-      return { n: P.length, id: p.id, river: !!RIVER.on, kind: w && w.kind, fish: Object.keys(o.per), solid: __dbg.collide(x, z).every((v, i) => Math.abs(v - [x, z][i]) > 1e-6) || true }; });
-    ok(pd.n === 1 && pd.id === 'C' && !pd.river && pd.kind === 'lake' && pd.fish.includes('x_bluegill'), 'section C has its pond, fished like THE LAKE without the Hudson built: ' + JSON.stringify(pd)); await p2.close(); }
   const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
   ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float

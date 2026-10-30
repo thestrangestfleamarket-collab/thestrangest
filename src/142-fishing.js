@@ -155,15 +155,17 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
   FISHING.click=()=>{ const s=S_;
     if(!s){ const r=WIELD.ray; if(!r)return; const ok=v=>v&&FISHING.at(v.x,v.z); let hit=null; for(const lv of [RB.lv,FOUNT.LV,-.25*T].filter(v=>v!=null)){ const h=new THREE.Vector3(); if(r.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-lv),h)&&ok(h)){ hit=h; break; } }
       if(!hit)return say('CLICK ON OPEN WATER TO CAST.','#c8a090'); let dx=hit.x-pos.x, dz=hit.z-pos.z, d=Math.hypot(dx,dz); const mx=16*T; if(d>mx){ hit.x=pos.x+dx/d*mx; hit.z=pos.z+dz/d*mx; } if(d<1.5*T)return say('CAST FURTHER OUT.','#c8a090'); return FISHING.cast(hit.x,hit.z); }
-    if(s.st==='bite')return strike(); if(s.st==='fight'){ FISHING.reeling=true; return; } if(s.st==='land')return unhook(); if(s.st==='wait'||s.st==='fly'){ FISHING.reel(); say('YOU REEL IN YOUR LINE.'); } };
+    if(s.st==='bite')return strike(); if(s.st==='fight'){ FISHING.reeling=true; return; } if(s.st==='land')return unhook(); if(s.st==='wait'&&s.nib){ FISHES.free(s.fish); s.nib=0; s.tb=s.t+8+Math.random()*10; s.bid=pickBite(s.o); s.fish=NAMES[s.bid]?FISHES.lure(s.bid,s.x,s.z,s.tb-s.t-.3):null; return shout('TOO EARLY! THE FISH TAKES FRIGHT AND SWIMS OFF.','#e0a888'); }
+    if(s.st==='wait'||s.st==='fly'){ FISHING.reel(); say('YOU REEL IN YOUR LINE.'); } };
   const strike=()=>{ const s=S_, id=s.f.id, fi=IP(id,'fight')||1, quick=s.t<.45?10:0; const ok=FISHING.force===id||FORAGE.use('fish',fi*5-40,fi*5+50,quick);
-    if(!ok){ S.hook=Math.random()<.5?S.hook:null; say(S.hook?'YOU STRIKE, BUT THE HOOK DOES NOT SET.':'YOU STRIKE TOO LATE. THE BAIT IS GONE.','#c8a090'); s.st='wait'; s.t=SOAK+1; s.bare=!S.hook; FISHES.free(s.fish); s.fish=null; return; }
-    s.st='fight'; s.t=0; s.D=Math.hypot(s.x-pos.x,s.z-pos.z); s.ten=.4; s.over=0; s.slack=0; s.surge=0; SFX.play('step',{vol:.4,pitch:1.2}); say('FISH ON!','#b8f0a0'); RIVER.drop&&RIVER.drop(s.x,s.z,.4*T,.05*WU); };
+    if(!ok){ S.hook=Math.random()<.5?S.hook:null; shout(S.hook?'YOU STRIKE, BUT THE HOOK DOES NOT SET.':'YOU STRIKE TOO LATE. THE BAIT IS GONE.','#e0a888'); s.st='wait'; s.t=SOAK+1; s.bare=!S.hook; FISHES.free(s.fish); s.fish=null; return; }
+    s.st='fight'; s.t=0; s.D=Math.hypot(s.x-pos.x,s.z-pos.z); s.ten=.4; s.over=0; s.slack=0; s.surge=0; SFX.play('step',{vol:.4,pitch:1.2}); shout('FISH ON!','#b8f0a0'); RIVER.drop&&RIVER.drop(s.x,s.z,.4*T,.05*WU); };
   const unhook=()=>{ const s=S_, f=s.f; FORAGE.give(f.id); if(s.fish){ FISHES.gone(s.fish); s.landed=true; } const r=S.fishkg[f.id]||[0,0]; S.fishkg[f.id]=[+f.kg.toFixed(2),Math.max(r[1],+f.kg.toFixed(2))]; S.hook=null; FORAGE.save();
     if(f.id==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; FORAGE.take('chest',1); say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e'); if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
     else say(`YOU TAKE ${NAMES[f.id]?'THE '+f.kg.toFixed(2)+' KG '+NAMES[f.id]:'THE '+FORAGE.NM[f.id]} OFF THE HOOK.`,NAMES[f.id]?'#b8f0a0':'#c8c2b0');
     SFX.play('drip',{vol:.6}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2)}; FISHING.reel(); FORAGE.draw(); };
-  const V=new THREE.Vector3();
+  const V=new THREE.Vector3(), SH=document.createElement('div'); let shT=0; SH.style.cssText='position:fixed;left:50%;top:28%;transform:translateX(-50%);z-index:20;pointer-events:none;font:inherit;font-size:22px;letter-spacing:1px;text-align:center;max-width:90vw;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;opacity:0;transition:opacity .35s'; document.body.appendChild(SH);
+  const shout=(t,c)=>{ say(t,c); SH.textContent=t; SH.style.color=c; SH.style.opacity=1; clearTimeout(shT); shT=setTimeout(()=>{ SH.style.opacity=0; },2400); };
   FISHING.tick=dt=>{ dt*=FISHING.speed||1; const s=S_; if(!s){ FISHING.bendK=.03; return; } s.t+=dt;
     if(Math.hypot(pos.x-s.ax,pos.z-s.az)>(BOAT.on?2.5*T:.6*T)||!FORAGE.has('rod')){ if(s.st==='land')return unhook(); FISHING.reel(); return say('YOU REEL IN YOUR LINE.'); }
     const lv=s.w.lv, a=from(); let bx=s.x, bz=s.z, by=lv+(s.w.kind==='river'?RIVER.hAt(s.x,s.z):0), fx=null;
@@ -173,18 +175,18 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
     else if(s.st==='wait'){ s.x+=(s.w.kind==='river'?.05*WU:0)*dt*Math.max(0,1-s.t/30); bx=s.x; if(s.t>s.tb-1.2&&s.t<s.tb){ s.nib=1; by-=.03*T*Math.max(0,Math.sin(s.t*22)); } else s.nib=0;
       if(s.t>=s.tb){ const id=s.bid||pickBite(s.o), w=IP(id,'weight')||.6; s.f={id,kg:s.fish?s.fish.kg:w*(.5+Math.pow(Math.random(),1.4)*1.2),s:1}; if(FISHING.force===id){ s.f.kg=Math.max(s.f.kg,w); if(s.fish)s.fish.kg=s.f.kg; } FISHES.hook(s.fish); dressHook(id,s.f.kg); s.st='bite'; s.t=0; rests.push([s.x,s.z,performance.now()/1000]); if(rests.length>20)rests.shift(); SFX.play('drip',{vol:.5,pitch:1.4}); RIVER.drop&&s.w.kind==='river'&&RIVER.drop(s.x,s.z,.25*T,.04*WU); }
       FISHING.bendK=.04+s.nib*.05; }
-    else if(s.st==='bite'){ by-=.12*T*(.6+.4*Math.abs(Math.sin(s.t*9))); FISHING.bendK=.18+.06*Math.sin(s.t*14); if(FISHING.auto&&s.t>.3)return strike(); if(s.t>(FISHING.win||1.4)){ S.hook=null; s.bare=true; s.st='wait'; s.t=SOAK+1; FISHES.free(s.fish); s.fish=null; say('THE FISH STEALS YOUR BAIT.','#c8a090'); } }
+    else if(s.st==='bite'){ by-=.12*T*(.6+.4*Math.abs(Math.sin(s.t*9))); fx=[s.x,lv-Y(.35),s.z]; FISHING.bendK=.18+.06*Math.sin(s.t*14); if(FISHING.auto&&s.t>.3)return strike(); if(s.t>(FISHING.win||1.4)){ S.hook=null; s.bare=true; s.st='wait'; s.t=SOAK+1; FISHES.free(s.fish); s.fish=null; shout('THE FISH STEALS YOUR BAIT.','#e0a888'); } }
     else if(s.st==='fight'){ const f=s.f, fi=(IP(f.id,'fight')||1)/10, W0=IP(f.id,'weight')||.6, P0=fi*(.5+.5*Math.min(1.6,f.kg/W0));
       if(s.surge>0)s.surge-=dt; else if(Math.random()<dt*.5*f.s){ s.surge=.6+Math.random()*.7; RIVER.drop&&s.w.kind==='river'&&RIVER.drop(s.x,s.z,.3*T,.03*WU); }
       const pull=P0*(.3+.7*f.s)*(s.surge>0?1.6:1); if(FISHING.auto)FISHING.reeling=pull*.9+.3<.95&&s.over<.2;
       if(FISHING.reeling){ s.ten=pull*.9+.3; s.D-=dt*Y(1.1)*Math.max(.15,1-.6*pull); } else { s.ten=pull*.45; s.D=Math.min(Y(45),s.D+dt*Y(1.4)*pull*f.s); }
       f.s=Math.max(0,f.s-dt*(.03+.12*s.ten));
-      if(s.ten>1){ s.over+=dt; if(s.over>.6){ S.hook=null; FISHING.reel(); return say('THE LINE SNAPS! TOO MUCH STRAIN.','#d88a70'); } } else s.over=Math.max(0,s.over-dt);
-      if(s.ten<.18){ s.slack+=dt; if(s.slack>3){ S.hook=null; FISHING.reel(); return say('THE LINE WENT SLACK. THE HOOK SLIPS AND THE FISH IS GONE.','#c8a090'); } } else s.slack=0;
+      if(s.ten>1){ s.over+=dt; if(s.over>.6){ S.hook=null; FISHING.reel(); return shout('THE LINE SNAPS! TOO MUCH STRAIN.','#f09070'); } } else s.over=Math.max(0,s.over-dt);
+      if(s.ten<.18){ s.slack+=dt; if(s.slack>3){ S.hook=null; FISHING.reel(); return shout('THE LINE WENT SLACK. THE HOOK SLIPS AND THE FISH IS GONE.','#e0a888'); } } else s.slack=0;
       const dx=s.tx-s.ax, dz=s.tz-s.az, dl=Math.hypot(dx,dz)+1e-4, sw=Math.sin(s.t*1.7)*Y(1.2)*f.s; s.x=pos.x+dx/dl*s.D+(-dz/dl)*sw; s.z=pos.z+dz/dl*s.D+(dx/dl)*sw;
       if(s.w.kind==='river'&&RIVER.onPier(s.x,s.z,.2*T)){ s.D=Math.max(0,s.D-dt*Y(1)); }
       fx=[s.x,lv-Y(.25+.7*f.s)+(s.surge>0?Y(.2):0),s.z]; FISHING.bendK=.05+.4*Math.min(1.2,s.ten);
-      if(s.D<Y(1.4)){ s.st='land'; s.t=0; SFX.play('drip',{vol:.6,pitch:.8}); say(`YOU LIFT ${NAMES[f.id]?'A '+NAMES[f.id]:'IT'} OUT OF THE WATER.`,'#b8f0a0'); } }
+      if(s.D<Y(1.4)){ s.st='land'; s.t=0; SFX.play('drip',{vol:.6,pitch:.8}); shout(`YOU LIFT ${NAMES[f.id]?'A '+NAMES[f.id]:'IT'} OUT OF THE WATER.`,'#b8f0a0'); } }
     else if(s.st==='land'){ FISHING.bendK=.12+Math.min(.3,s.f.kg*.04); fx=[a.x+Math.sin(s.t*2.4)*Y(.08),a.y-Y(.55)-lenOf(s.f.id,s.f.kg)*.5,a.z+Math.cos(s.t*1.9)*Y(.06)]; if(FISHING.auto&&s.t>1.2)return unhook(); }
     bob.visible=s.st!=='land'&&s.st!=='fight'; bob.position.set(bx,by,bz);
     hooked.visible=!!fx&&!!NAMES[s.f.id]; if(fx){ hooked.position.set(...fx); if(hooked.userData.real)hooked.scale.setScalar(FISHES.len(s.f.id,s.f.kg)); else { shape(hooked,s.f.id,s.f.kg); hooked.material.color.setHex((LOOK[s.f.id]||[0x8a8a7a])[0]); } if(s.st==='land'){ hooked.rotation.set(0,s.t*.7,Math.PI/2+Math.sin(s.t*11)*.25); } else hooked.rotation.set(0,Math.atan2(-(s.z-s.az),s.x-s.ax)+Math.sin(s.t*6)*.4,0); }
@@ -269,5 +271,5 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
         o.boat.visible=!!m.boat; if(m.boat){ o.boat.position.set(m.boat[0],m.boat[1],m.boat[2]); o.boat.rotation.y=m.boat[3]; }
         const e=m.x||m.b; o.line.visible=!!e; if(e){ F.g.updateMatrixWorld(true); const J=R.B&&R.B.J; if(J&&J.palmR)P.set(J.palmR.x,J.palmR.y,J.palmR.z).applyMatrix4(F.g.matrixWorld); else P.copy(F.g.position).y+=1.4*T; P.y+=.9*T;
           const a=o.line.geometry.attributes.position, sag=m.x?0:Y(.4); for(let i=0;i<=NL;i++){ const u=i/NL; a.setXYZ(i,P.x+(e[0]-P.x)*u,P.y+(e[1]-P.y)*u-sag*4*u*(1-u),P.z+(e[2]-P.z)*u); } a.needsUpdate=true; } } },'142-fishing-theirs'); }
-  window.FISHDBG=()=>({rod:FORAGE.has('rod'),hook:S.hook||null,held:WIELD.on,state:S_&&{st:S_.st,t:+S_.t.toFixed(2),fish:S_.f&&{id:S_.f.id,kg:+S_.f.kg.toFixed(2),s:+S_.f.s.toFixed(2)},ten:S_.ten!=null?+S_.ten.toFixed(2):null,D:S_.D!=null?+(S_.D/WU).toFixed(1):null,x:+S_.x.toFixed(2),z:+S_.z.toFixed(2),odds:S_.o},
+  window.FISHDBG=()=>({rod:FORAGE.has('rod'),hook:S.hook||null,held:WIELD.on,shown:hooked.visible,shout:+SH.style.opacity?SH.textContent:'',state:S_&&{st:S_.st,t:+S_.t.toFixed(2),fish:S_.f&&{id:S_.f.id,kg:+S_.f.kg.toFixed(2),s:+S_.f.s.toFixed(2)},ten:S_.ten!=null?+S_.ten.toFixed(2):null,D:S_.D!=null?+(S_.D/WU).toFixed(1):null,x:+S_.x.toFixed(2),z:+S_.z.toFixed(2),odds:S_.o},
     boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:{x:SX,z:SZ},pier:PX,skill:FORAGE.sk('fish'),last:FISHING.last||null,swim:FISHES.list.filter(f=>!f.hooked).length,lured:!!(S_&&S_.fish)}); });

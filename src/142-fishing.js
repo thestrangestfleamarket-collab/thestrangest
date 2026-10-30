@@ -26,6 +26,30 @@ const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BO
     use:()=>{ if(FISHING.click&&!FISHING.mode)FISHING.click(); } };
   (WIELD.pend=WIELD.pend||[]).push(['rod',rod]); if(WIELD.kind)WIELD.kind('rod',rod);
   addEventListener('pointerup',()=>{ FISHING.reeling=false; }); addEventListener('blur',()=>{ FISHING.reeling=false; }); }
+// the fishing guide: a tab in your pack, read from the fish's own habits in the item model (so the item editor keeps it true) and your catch
+FISHING.NAMES={x_sunfish:'SUNFISH',x_perch:'WHITE PERCH',x_tomcod:'ATLANTIC TOMCOD',x_crab:'BLUE CRAB',x_eel:'AMERICAN EEL',x_catfish:'CHANNEL CATFISH',x_flounder:'SUMMER FLOUNDER',x_shad:'AMERICAN SHAD',x_bluefish:'BLUEFISH',x_bass:'STRIPED BASS',x_sturgeon:'ATLANTIC STURGEON',
+  x_bluegill:'BLUEGILL',x_yperch:'YELLOW PERCH',x_trout:'RAINBOW TROUT',x_carp:'CARP',x_lbass:'LARGEMOUTH BASS',x_pike:'NORTHERN PIKE'};
+FISHING.guide=()=>{ const P=FORAGE.PACK; if(!P)return; if(!P.open)P.toggle('fishing'); else { P.tab='fishing'; P.draw(); } };
+FORAGE.ACT.fguide=()=>FISHING.guide();
+FORAGE.HELP.push('FISHING: a rod and bait from BAIT & BOATS by the Hudson pier; F by the water to fish. The FISHING tab in your pack (I) is the whole guide.');
+FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(id,k), kg=(FORAGE.S&&FORAGE.S.fishkg)||{}, h=CLOCK.h??12, now=h>=7&&h<17?'day':h>=21||h<5?'night':'dusk';
+  const H=t=>`<div style="color:#f2c14e;margin:10px 0 4px">${t}</div>`, R=(a,b)=>`<div style="padding:3px 0;border-bottom:1px solid #22252f;line-height:1.45;font-size:10px"><span style="color:#8fe3d6">${a}</span> · ${b}</div>`;
+  const ids=Object.keys(FISHING.NAMES), got=ids.filter(id=>kg[id]).length, sk=Math.round(FORAGE.sk?FORAGE.sk('fish'):0);
+  let o=`<div style="margin-bottom:4px">THE FISHING GUIDE · ${got} OF ${ids.length} CAUGHT · YOUR FISHING ${sk} · NOW: ${now.toUpperCase()}</div>`;
+  o+=H('1. GEAR')+R('BAIT & BOATS','The self-serve stand on the Hudson quay by the long pier. A ROD $15, WORMS $3 (a dozen), CUT BAIT $4 (six), a ROWBOAT $5 a trip. It buys your catch and teaches FISHING.')+'';
+  o+=H('2. WHERE')+R('THE HUDSON','Any open river water; best off the long pier. It gets deeper the further out you cast.')+R('THE LAKES','The big lake, the stream and THE LAKE in the park: their own fish.')+'';
+  o+=H('3. FISH')+R('QUICK','Hold the rod, click open water (1.5 to 16 tiles away). Click again to reel in.')+R('FISHING MODE','By the water press F. Hold SPACE for power (the ring shows where it lands), let go to cast. B changes bait, V first person, drag looks round, the wheel zooms, ESC leaves.')+'';
+  o+=H('4. THE BITE')+R('BAIT','The hook baits itself when you cast; pick WORM or CUT BAIT yourself with B or ON THE HOOK in your pack. A bare hook catches nothing.')+R('NIBBLE','The float twitches: get ready.')+R('BITE','The float goes under: STRIKE (SPACE or click) within 1.4 s, sooner is surer. Too late and the bait is gone.')+R('NOTHING?','After 25 s with no bite try another spot, bait or hour. A spot rests 40 s after a bite.')+'';
+  o+=H('5. THE FIGHT')+R('REEL','Hold SPACE or the mouse to reel, let go to give line.')+R('STRAIN','Reeling while it surges (a splash) builds strain: too much and the line snaps.')+R('SLACK','Three seconds without pull and the hook slips.')+R('LAND','It tires; bring it in, then TAKE OFF THE HOOK.')+'';
+  o+=H('6. WHAT BITES')+`<div style="color:#9b9584;margin-bottom:4px;line-height:1.45">The water, the depth under the float, the hour (DAY 7-17, DUSK, NIGHT 21-5) and the bait. The right bait and its hour make a fish far likelier. Your FISHING skill brings bites sooner and sets the hook on harder fighters.</div>`;
+  for(const w of ['river','lake']){ o+=`<div style="margin:6px 0 2px">${w==='river'?'THE HUDSON':'THE PARK LAKES'}</div><table style="border-collapse:collapse;width:100%;font-size:9px"><tr style="color:#7d7a70"><td>FISH</td><td>DEPTH</td><td>HOUR</td><td>BAIT</td><td>FIGHT</td><td style="text-align:right">$</td><td style="text-align:right">BEST</td></tr>`;
+    for(const id of ids.filter(i=>IP(i,'water')===w).sort((a,b)=>(IP(a,'depth')||0)-(IP(b,'depth')||0)||(IP(a,'fight')||0)-(IP(b,'fight')||0))){ const c=kg[id], bt=IP(id,'bites')||'any', on=bt==='any'||bt===now;
+      o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:3px 4px 3px 0">${FISHING.NAMES[id]}</td><td style="padding-right:4px">${w==='river'?(IP(id,'depth')||0)+' M':'-'}</td><td style="color:${on?'#9fe07f':'#9b9584'}">${bt.toUpperCase()}</td><td>${IP(id,'bait')==='cut'?'CUT':'WORM'}</td><td>${'|'.repeat(Math.max(1,Math.round((IP(id,'fight')||1)/2)))}</td><td style="text-align:right">${IP(id,'value')??''}</td><td style="text-align:right;color:${c?'#b8f0a0':'#5d5a52'}">${c?c[1]+' KG':'-'}</td></tr>`; }
+    o+='</table>'; }
+  o+=`<div style="color:#9b9584;margin-top:4px;line-height:1.45">A baited hook in the Hudson can bring up an old boot, a tin can, a message in a bottle, a water-stained novel or, rarely, a SUNKEN CHEST (a gem and $10-40).</div>`;
+  o+=H('7. THE ROWBOAT')+'<div style="line-height:1.45">Rent it at the stand, row with W A S D, fish from it for the deep fish, STEP ASHORE at a ladder or pier.</div>';
+  o+=H('8. COOK AND SELL')+R('FISH FRY','2 white perch: fills a third')+R('SMOKED EEL','2 eels: fills two fifths, strong 2 min')+R('GRILLED STRIPED BASS','1 striped bass: fills half, mends you a minute')+R('FISH CHOWDER','1 catfish, 2 button mushrooms: fills more than half')+R('STURGEON STEAK','1 sturgeon: fills most of you, quick 3 min')+R('SELL','At BAIT & BOATS, the $ above. Cook by a flame; raw fish is risky.')+'';
+  return o; }});
 // what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
 INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ const P=INSPECT.part;
     if(id==='x_boot'){ const g=new THREE.Group(); g.add(P('box',0x3a2e22,0,.06,0,.09,.12,.1),P('box',0x3a2e22,0,.02,.07,.09,.04,.16),P('box',0x1e1812,0,0,.04,.095,.012,.24)); return g; }
@@ -34,8 +58,7 @@ INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:i
     if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
     return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
 RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB.z1, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v, IP=(id,k)=>ITEMS.prop(id,k);
-  const NAMES={x_sunfish:'SUNFISH',x_perch:'WHITE PERCH',x_tomcod:'ATLANTIC TOMCOD',x_crab:'BLUE CRAB',x_eel:'AMERICAN EEL',x_catfish:'CHANNEL CATFISH',x_flounder:'SUMMER FLOUNDER',x_shad:'AMERICAN SHAD',x_bluefish:'BLUEFISH',x_bass:'STRIPED BASS',x_sturgeon:'ATLANTIC STURGEON',
-    x_bluegill:'BLUEGILL',x_yperch:'YELLOW PERCH',x_trout:'RAINBOW TROUT',x_carp:'CARP',x_lbass:'LARGEMOUTH BASS',x_pike:'NORTHERN PIKE'};
+  const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
   const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['bk_novel','WATER-STAINED NOVEL',.1,1],['chest','SUNKEN CHEST',.05,0]];
   FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]])),
@@ -69,7 +92,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation());
   const WARES=[['bait','WORMS · A DOZEN',3,12],['bait_cut','CUT BAIT (BUNKER) · SIX',4,6]];
   STAND.draw=()=>{ if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&PRICE[id]!=null).sort();
-    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">BAIT & BOATS</h3><div style="color:#9b9584;margin-bottom:8px">Self serve. Pay in the box. Catches bought at the board's price.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · FISHING ${FORAGE.sk('fish').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
+    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">BAIT & BOATS <button ${B} data-guide="1">FISHING GUIDE</button></h3><div style="color:#9b9584;margin-bottom:8px">Self serve. Pay in the box. Catches bought at the board's price.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · FISHING ${FORAGE.sk('fish').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">FISHING ROD</td><td style="text-align:right;padding:4px 6px">$15</td><td style="text-align:right">${FORAGE.has('rod')?'YOURS':`<button ${B} data-buy="rod">BUY</button>`}</td></tr>`;
     for(const [id,nm,c,n] of WARES)o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">x${FORAGE.has(id)} <button ${B} data-bait="${id}">BUY</button></td></tr>`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">ROWBOAT · A TRIP</td><td style="text-align:right;padding:4px 6px">$5</td><td style="text-align:right">${BOAT.on?'OUT':`<button ${B} data-boat="1">RENT</button>`}</td></tr></table>`;
@@ -78,6 +101,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
     o+=FORAGE.trainRows(['fish'])+`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:6px">Nothing yet. Hold the rod, bait the hook, click the water to cast. Worms for perch, eels, shad and sturgeon; cut bait for bass, bluefish, catfish, fluke and crabs. Deeper water off the pier\'s end, bigger fish; bass bite at dusk, eels and tomcod at night.</div>'}`;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
+    if(d.guide)return FISHING.guide();
     if(d.train){ FORAGE.train(d.train,+d.cap); STAND.draw(); return; } if(d.buy==='rod'){ if(INV.cash<15)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=15; FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
     if(d.bait){ const w=WARES.find(x=>x[0]===d.bait); if(INV.cash<w[2])say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=w[2]; FORAGE.give(w[0],w[3]); say(`YOU TAKE ${w[1]} AND DROP $${w[2]} IN THE BOX.`); } }
     if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
@@ -203,7 +227,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
     if(s.st==='land')return set(.7,.35),true; return set(.9,-.25+(s.st==='bite'?.05*Math.sin(t*20):0)),true; };
   FISHING.bendK=.03;
   /* ---------- the pack: bait the hook, cast, and each fish's last and best weight ---------- */
-  FORAGE.ROWB.push(id=>id==='rod'?[[S_?'REEL IN':'CAST','fcast']]:(id==='bait'||id==='bait_cut')?[['ON THE HOOK','fhook']]:[]);
+  FORAGE.ROWB.push(id=>id==='rod'?[[S_?'REEL IN':'CAST','fcast'],['GUIDE','fguide']]:(id==='bait'||id==='bait_cut')?[['ON THE HOOK','fhook']]:[]);
   FORAGE.NOTE.push(id=>id==='rod'?'HOOK: '+(S.hook==='bait'?'WORM':S.hook==='bait_cut'?'CUT BAIT':'BARE'):S.fishkg[id]?`LAST ${S.fishkg[id][0]} KG · BEST ${S.fishkg[id][1]} KG`:'');
   FORAGE.ACT.fhook=id=>{ if(S.hook&&S.hook!==id)FORAGE.give(S.hook,1); if(S.hook!==id)hookOn(id); };
   FORAGE.ACT.fcast=()=>{ if(S_){ if(S_.st==='land')return unhook(); FISHING.reel(); return say('YOU REEL IN YOUR LINE.'); } const h=SHARED.heading; for(const d of [6,4,9,3]){ const x=pos.x+Math.sin(h)*d*T, z=pos.z+Math.cos(h)*d*T; if(FISHING.at(x,z))return FISHING.cast(x,z); } say('NO WATER AHEAD TO CAST INTO.','#c8a090'); };
@@ -236,7 +260,7 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
       else if(st0==='fight')B('REEL (HOLD)','SPACE',()=>down(),{hold:1,hot:1});
       else if(st0==='land')B('TAKE OFF THE HOOK','SPACE',()=>down(),{hot:1});
       else B('REEL IN','SPACE',()=>down());
-      B('VIEW: '+(UI.view==='first'?'FIRST PERSON':'BEHIND'),'V',view); B('LEAVE','ESC',()=>FISHING.leave()); };
+      B('VIEW: '+(UI.view==='first'?'FIRST PERSON':'BEHIND'),'V',view); B('GUIDE','',()=>FISHING.guide()); B('LEAVE','ESC',()=>FISHING.leave()); };
     GO.onclick=()=>FISHING.enter();
     addEventListener('pointerup',()=>{ if(FISHING.mode)up(); });
     const typing=e=>e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]');

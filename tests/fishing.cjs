@@ -63,6 +63,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(!snap.landed && snap.msg.some(m => /SNAPS/.test(m)), 'reeling hard against a sturgeon snaps the line: ' + JSON.stringify(snap));
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));
+  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
+  ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;
     ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }] });

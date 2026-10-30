@@ -310,10 +310,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const BTN='font:600 13px system-ui;border:0;border-radius:6px;cursor:pointer;', RED=BTN+'background:#b22133;color:#fff;', DIM=BTN+'background:transparent;color:#c3a7a0;border:1px solid #3a2130;';
   const FLD='width:100%;box-sizing:border-box;font:inherit;background:#0e0a10;color:#f3e7dd;border:1px solid #3a2130;border-radius:6px;padding:7px';
   const LBL='display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#c3a7a0';
-  const box_=()=>{ const d=document.createElement('div'); d.style.cssText=DLG; document.body.appendChild(d); for(const ev of ['keydown','keyup'])d.addEventListener(ev,e=>e.stopPropagation()); return d; };
+  const box_=()=>{ const d=document.createElement('div'); d.id='cinemap'; d.style.cssText=DLG; document.body.appendChild(d); for(const ev of ['keydown','keyup'])d.addEventListener(ev,e=>e.stopPropagation()); return d; };
   let dlg=null, edlg=null, tlT=0;
   const openMenu=async()=>{ '@later'; const a=await isAdmin(), c=cur(), yt=ytOn(), P=CINEMA.playing(); if(!dlg)dlg=box_();
-    dlg.innerHTML=`<div style="font:600 18px system-ui;color:#d8a845;margin-bottom:4px">THE SCREEN${a?' · admin':''}</div><div style="color:#c3a7a0;margin-bottom:10px">${P?'NOW: '+esc(P.title)+(P.year?' ('+P.year+')':''):'BETWEEN SHOWINGS'}</div>
+    dlg.innerHTML=`<h3 style="margin:0 0 4px">THE SCREEN${a?' · ADMIN':''}</h3><div style="color:#c3a7a0;margin-bottom:10px">${P?'NOW: '+esc(P.title)+(P.year?' ('+P.year+')':''):'BETWEEN SHOWINGS'}</div>
       <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #3a2130"><label><input id="cmsnd" type="checkbox" ${snd.on?'checked':''}> sound</label>
         <label style="display:block;margin-top:6px">Volume <span id="cmvv" style="color:#d8a845">${snd.vol}%</span><br><input id="cmv" type="range" min="0" max="100" value="${snd.vol}" style="width:100%"></label>
         <label style="display:block;margin-top:8px">Timeline <span id="cmtv" style="color:#d8a845">0:00 / 0:00</span>${a?'':' <span style="color:#8f7470;font-size:12px">(admins move it, for everyone)</span>'}<br><input id="cmt" type="range" min="0" max="1000" value="0" style="width:100%" ${a?'':'disabled'}></label></div>`+(a?`

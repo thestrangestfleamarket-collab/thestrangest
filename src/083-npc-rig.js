@@ -55,22 +55,29 @@ const RIGNPC={};
       geo.attributes.position.needsUpdate=true; N.renorm(); };
     N.recolour=(name,col)=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.color.array; for(let i=r.start;i<r.start+r.count;i++)for(let j=0;j<3;j++)A[i*3+j]=col?col[j]:baseC[i*3+j]; geo.attributes.color.needsUpdate=true; };
     return N; };
-  RIGNPC.walk=(c,{legs=['legL','legR'],arms=['armL','armR'],body='hips',leg=.5,arm=.45,bob=.025,rock=.04}={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
-    if(c.sheet){ if(arms[0])B[arms[0]].rotation.z=-1.25; if(arms[1])B[arms[1]].rotation.z=1.25; if(legs[0]){ B[legs[0]].rotation.z=-.22; B[legs[1]].rotation.z=.22; } return; }
-    if(legs[0]){ B[legs[0]].rotation.x=-sw*leg; B[legs[1]].rotation.x=sw*leg; }
-    if(arms[0]){ B[arms[0]].rotation.x=sw*arm; B[arms[1]].rotation.x=-sw*arm; B[arms[0]].rotation.z=-.08; B[arms[1]].rotation.z=.08; }
-    B[body].position.y+=Math.abs(Math.cos(ph))*bob*m; B[body].rotation.z=Math.sin(ph)*rock*m; B[body].rotation.y=sw*.06;
+  // the walk: legs swing, arms counter-swing with a bent elbow (where a fore bone exists), hips sway and twist, chest counter-rotates. every joint drive is guarded so a body lacking it is unchanged.
+  RIGNPC.walk=(c,{legs=['legL','legR'],arms=['armL','armR'],body='hips',leg=.5,arm=.45,bob=.025,rock=.04,twist=.05,bend=1,energy=1.45}={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, E=energy, sw=Math.sin(ph)*m;
+    if(c.sheet){ for(const [s,k,n] of [['L',1,arms[0]],['R',-1,arms[1]]]){ const a=B[n]; if(a)a.rotation.set(-.1,0,-1.2*k); const f=B['fore'+s]; if(f)f.rotation.set(-.35,0,0); }
+      if(legs[0]&&B[legs[0]]){ B[legs[0]].rotation.set(0,0,-.22); B[legs[1]].rotation.set(0,0,.22); } return; }
+    if(legs[0]&&B[legs[0]]){ B[legs[0]].rotation.x=-sw*leg*E; B[legs[1]].rotation.x=sw*leg*E; }
+    for(const [s,k,n] of [['L',1,arms[0]],['R',-1,arms[1]]]){ const a=B[n]; if(!a)continue; const asw=sw*k, f=B['fore'+s];
+      a.rotation.z=-.1*k; a.rotation.x=f?asw*arm*E-.1*bend:asw*arm*E;
+      if(f){ f.rotation.x=-(.38+Math.max(0,asw)*.85)*bend*(.5+.5*m)-.3*bend*(1-m); f.rotation.z=-.04*k; } }
+    B[body].position.y+=Math.abs(Math.cos(ph))*bob*1.9*m; B[body].rotation.z=Math.sin(ph)*rock*1.3*m; B[body].rotation.y=sw*twist*1.25;
+    if(B.chest)B.chest.rotation.y=-sw*twist*1.6; if(B.head)B.head.rotation.y=(c.look||0)+sw*twist*.6;
     if(m<1)B[body].position.y+=Math.sin(c.t*1.7)*.003*(1-m); };
   const pts=M=>{ const q=new Int16Array(B64(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
   RIGNPC.glb=D=>{ const c=B64(D.c), C=new Float32Array(c.length); for(let i=0;i<c.length;i++)C[i]=c[i]/255; const w=B64(D.w), SW=new Float32Array(w.length); for(let i=0;i<w.length;i++)SW[i]=w[i]/255;
     return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW,parts:D.parts}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
+  // the jointed walk: the walk plus a knee that lifts in swing, a foot that rolls off and plants, and an elbow that keeps a rest flex (for rigs whose arm bones are named elbow, not fore).
   RIGNPC.limbs=(c,o={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
     RIGNPC.walk(c,Object.assign({body:'hips'},o));
     if(c.sheet)return;
-    for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s];
-      if(kn)kn.rotation.x=Math.max(0,Math.sin(ph+(k>0?0:Math.PI)+.9))*.75*m; if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45;
-      if(el)el.rotation.x=-.18-Math.max(0,-sw*k)*.35; }
-    if(B.chest)B.chest.rotation.y=-sw*.08; if(B.head)B.head.rotation.y=c.look; };
+    for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s], p=ph+(k>0?0:Math.PI);
+      if(kn)kn.rotation.x=Math.max(0,Math.sin(p+.9))*1.05*m;
+      if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45+Math.max(0,-Math.sin(p))*.2*m;
+      if(el)el.rotation.x=-.2-Math.max(0,-sw*k)*.55-.15*(1-m); }
+    if(B.chest)B.chest.rotation.y=-sw*.11; if(B.head)B.head.rotation.y=c.look; };
   RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=SHARED.cam.position.x-you.x, cz=SHARED.cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
     st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:SHARED.cam.position.x,z:SHARED.cam.position.z}; }}:{}; }
 export {RIGNPC};

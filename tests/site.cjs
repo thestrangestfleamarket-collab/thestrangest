@@ -17,6 +17,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/home',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/home without a login is refused');
     const put=await home({put:{v:1,wall:'brick',things:{}}}), got=await home({});
     ok(put.ok===true&&got.home&&got.home.wall==='brick','/home keeps your decorated room ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const T=(body,ck)=>fetch(BASE+'/admin',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)});
+    ok((await T({do:'text',key:'check.x',text:'HELLO'},'dev:site-check')).status===403,'/admin text: not for a player who is not the owner');
+    const put=await (await T({do:'text',key:'check.x',text:'HELLO'},'dev:owner-check')).json(), got=await (await fetch(BASE+'/texts',{headers:{cookie:'tsfm-pass=dev:site-check'}})).json(); await T({do:'text',key:'check.x',text:''},'dev:owner-check');
+    ok(put.ok===true&&got['check.x']==='HELLO'&&(await fetch(BASE+'/texts')).status===401,'/texts carries the owner\'s words to every player, and only to players ('+JSON.stringify(got).slice(0,80)+')'); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);

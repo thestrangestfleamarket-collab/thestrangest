@@ -1,10 +1,11 @@
 // THE TRAINS: TRAINS runs the loop's two trains on the timetable (from the clock, so everyone sees the same train), carries whoever rides, and keeps the stations' boards and the cars' next-stop signs.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, pos, st, UI, USE} from './003b-systems.js';
+import {LEVELS, pos, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
+for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
 await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
   const mod=(a,n)=>((a%n)+n)%n, V=D.speed, A=D.accel, ta=V/A, da=V*V/(2*A);
@@ -146,7 +147,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     if(tn.open&&tn.open!==st){ for(const e of tn.open.edge[k])e.box.splice(0,4,...e.keep); tn.open=null; }
     if(st&&!tn.open){ const us=[]; for(const car of tn.cars)for(const m of DOORS)us.push(st.ua(car.p.x+car.p.ux*m*T,car.p.z+car.p.uz*m*T).u);
       for(const e of st.edge[k])if(us.some(u=>e.u0<u+DWH+.2&&e.u1>u-DWH-.2))e.box.splice(0,4,1e7,1e7,1e7,1e7); tn.open=st; } };
-  L.riding=()=>ride.tn?'TRAIN '+ride.tn.id+' '+(ride.tn.dir>0?'↻':'↺')+' '+ride.tn.way:null;
+  L.riding=()=>ride.tn?TEXT.t('loop.riding',null,{id:ride.tn.id,next:ride.tn.S&&ride.tn.S.next?ride.tn.S.next.name:''}):null;
   TRAINS.ride=ride;
   const signText=(tn)=>{ const S=tn.S, k=S.doors?S.at.name+' · '+S.at.id+'|DOORS CLOSE IN '+Math.ceil(S.left)+' S':'NEXT STOP  '+S.next.name+' · '+S.next.id+'|'+(S.left<30?'ARRIVING':Math.ceil(S.left/60)+' MIN');
     if(tn.sign.last===k)return; tn.sign.last=k; const g=tn.sign.cv.getContext('2d'), w=512, h=64, [a,b]=k.split('|'); g.fillStyle='#050505'; g.fillRect(0,0,w,h); g.textBaseline='middle';

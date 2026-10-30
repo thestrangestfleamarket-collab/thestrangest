@@ -1,10 +1,11 @@
 // THE SECTIONS: B to H round the park (grab('sections')), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, FLOW} from './003b-systems.js';
+import {DRESS, FLOW, TEXT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
+for(const [k,d] of Object.entries({'loop.entrance':'SUBWAY · THE LOOP · TO {a} & {b}','loop.entrance0':'SUBWAY · THE LOOP'}))TEXT.t(k,d);
 await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
   const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const clip=(r,b)=>{ const q={x0:Math.max(r.x0,b.x0),x1:Math.min(r.x1,b.x1),y0:Math.max(r.y0,b.y0),y1:Math.min(r.y1,b.y1)}; return q.x1-q.x0>.01&&q.y1-q.y0>.01?q:null; };
@@ -113,7 +114,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     bx(k.x0,back-.06,k.x1,back+.06,0,1.1,rail); bx(k.x0,out-.06,k.x1,out+.06,0,1.1,rail); bx(k.x1-.06,k.y0,k.x1+.06,k.y1,0,1.1,rail);
     for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
     sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
-      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; g.fillText('SUBWAY · THE LOOP · TRAINS 1 ↻  2 ↺',h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
+      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; const M_=SHARED.METRO, a=M_&&M_.nextOf&&M_.nextOf(st.id,0), b=M_&&M_.nextOf&&M_.nextOf(st.id,1); g.fillText(a&&b?TEXT.t('loop.entrance',null,{a,b}):TEXT.t('loop.entrance0',null),h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
   const edge=(x,y,al,from,to)=>{ if(!S.loaded.some(b=>b.id===from)||!S.loaded.some(b=>b.id===to))return; const H=.9*T, X=XS(x), Z=ZS(y), e=.012, plate=id=>(g,w,h)=>{ g.fillStyle='#14361f'; g.fillRect(0,0,w,h); g.strokeStyle='#e8f2e8'; g.lineWidth=4; g.strokeRect(6,6,w-12,h-12); g.fillStyle='#e8f2e8'; g.textBaseline='middle'; g.textAlign='center';
       font(g,h*.22,700); g.fillText('ENTERING',w/2,h*.32); font(g,h*.36,900); g.fillText('SECTION '+id,w/2,h*.66); };
     bx(x-.06,y-.06,x+.06,y+.06,0,2.4,postM);

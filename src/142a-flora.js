@@ -92,7 +92,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
   for(const L of BEDS){ let x=0, z=0; for(const i of L){ x+=FL[i].x; z+=FL[i].z; } x/=L.length; z/=L.length; const p=L.filter((_,j)=>j%Math.max(1,Math.floor(L.length/8))===0).slice(0,8).map(i=>[FL[i].x,top(FL[i])+.02*T,FL[i].z]);
     FLORA.beds.push({id:FLORA.beds.length,x,z,y:FL[L[0]].y,n:L.length,street:!!FL[L[0]].street,p,k:[...new Set(L.map(i=>FL[i].k))]}); }
   for(const d of FLORA.beds.slice(b0))d.p=d.p.concat(FLORA.bushes.filter(b=>b.bloom&&Math.hypot(b.x-d.x,b.z-d.z)<5*T).slice(0,3).map(b=>[b.x,b.y+b.h*.97,b.z]));
-  const grp=park?MAPG.park:MAPG.bodega, sway=sh=>{ sh.uniforms.uMv=WEEDS.UMV; sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.uniforms.uSwAt=PARK.swayAt;
+  const grp=park?MAPG.park:MAPG.bodega, MV0={value:[...Array(8)].map(()=>new THREE.Vector4())}, sway=sh=>{ sh.uniforms.uMv=MV0; sh.uniforms.uSw=PARK.sway; sh.uniforms.uWk=PARK.windK; sh.uniforms.uSwAt=PARK.swayAt;
     sh.vertexShader='uniform vec4 uMv[8]; uniform vec4 uSwAt; uniform float uSw,uWk;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n { float ph=instanceMatrix[3].x*.37+instanceMatrix[3].z*.23, g=(.7+.3*sin(uSw*.23+ph))*uWk*max(position.y,0.)*.06*(1.-smoothstep(uSwAt.w*.85,uSwAt.w,distance((modelMatrix*vec4(instanceMatrix[3].xyz,1.)).xz,uSwAt.xz))); transformed.x+=sin(uSw*2.3+ph)*g; transformed.z+=sin(uSw*1.9+ph*1.7)*g*.7; }\n '+WEEDS.PART(T,'min(max(position.y,0.)*2.,1.)')); };
   const MB=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true}), MF=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide});
   MF.onBeforeCompile=sway; MF.customProgramCacheKey=()=>'florasway';

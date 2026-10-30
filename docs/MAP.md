@@ -187,8 +187,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `138-oldlook.js` | 4.3 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK; 004: RH RW ShaderPass renderer; 005: SAVE; 006: OUT |
 | `138a-ps2.js` | 4.1 | top level |  | 003: SHARED THREE; 003b: PS2; 004: RH RW ShaderPass; 005: SAVE; 006: SYS |
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |
-| `140-weeds.js` | 10.3 | top level |  | 003: SHARED THREE; 003b: NPCS ONLINE PARK POND ROOMS W3 WED WEEDS pos; 004: renderer scene; 006: MODS STORE SYS TILE; 008: BATCH; 014a: GRASS |
-| `140a-tufts.js` | 9.4 | top level |  | 003: SHARED THREE; 003b: ROOMS W3 WEEDS pos; 004: scene; 006: SYS TILE; 014: TUFTC cvNoise; 014a: GRASS |
+| `140-weeds.js` | 11.8 | top level |  | 003: SHARED THREE; 003b: NPCS ONLINE PARK POND ROOMS W3 WED WEEDS pos; 004: renderer scene; 006: MODS STORE SYS TILE; 008: BATCH; 014a: GRASS |
+| `140a-tufts.js` | 8.6 | top level |  | 003: SHARED THREE; 003b: ROOMS W3 WEEDS pos; 004: scene; 006: SYS TILE; 014: TUFTC cvNoise; 014a: GRASS |
 | `141-forage.js` | 31.2 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC ED EQUIP FORAGE INSPECT INV ITEMS LINES LOOKS MAIL NPCS SFX TALK UI VIT WE WEEDS pos st; 004: scene; 005: OWNED; 006: MAPG QS SYS TILE; 007: FLAME; 014a: GRASS; 081: STALL; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 15.1 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 GPH SFX SKY UI pos; 004: scene; 006: BLDK MISTE MODS STORE SYS TILE; 008: BATCH |
@@ -196,7 +196,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `141e-map.js` | 0.9 | top level |  | 003b: FORAGE UI |
 | `141f-fishes.js` | 11.1 | top level | FISHES (142) | 003: SHARED THREE; 003b: BROOK FLOW ITEMS pos; 004: scene; 006: SYS TILE; 060a: FOUNT; 066: RIVER |
 | `142-fishing.js` | 56.0 | top level | FISHING (142b) | 003: SHARED THREE; 003b: BOAT BOOKS CLOCK FORAGE INSPECT INV ITEMS LEVELS ONLINE SFX UI VIT W3 WIELD pos st; 004: scene; 005: OWNED; 006: FIX MAPG SOL SYS TILE ZU; 060a: FOUNT; 066: RIVER; 101: GEMS; 141f: FISHES |
-| `142a-flora.js` | 15.6 | top level | FLORA (143 144b) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |
+| `142a-flora.js` | 15.7 | top level | FLORA (143 144b) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |
 | `142b-pots.js` | 5.7 | top level |  | 003: SHARED THREE; 003b: FORAGE ITEMS SFX UI pos; 004: scene; 005: OWNED; 006: SYS TILE; 066: RIVER; 142: FISHING |
 | `143-bfly.js` | 10.6 | top level | BFLY (146a) | 003: SHARED THREE; 003b: CLOCK FORAGE INSPECT INV ITEMS MAIL PARK SFX UI W3 WEEDS WX pos st; 004: scene; 006: BF SYS TILE; 014a: GRASS; 142a: FLORA |
 | `144-veggies.js` | 6.7 | top level | VEG (144a 144e) | 003: SHARED; 003b: CIVIC FORAGE INSPECT INV LINES PARK SFX TALK UI VIT; 006: TILE; 081: STALL; 083a: MUSH; 084: TOONS |

@@ -44,10 +44,10 @@ import {BUILDV} from './135-where.js';
   const ST=[['new','NEW'],['approved','APPROVED'],['later','LATER'],['fixed','FIXED'],['no','NO']];
   let shot=null, ctx=null, filt='new', rows=[], el=null;
   const draw=async()=>{ '@later'; const be=await backend(), own=be?await be.owner().catch(()=>false):false;
-    el.innerHTML=`<h3>REPORT A BUG</h3><div class="dim">what went wrong? what did you expect? the picture is the screen behind this menu, taken when you opened it (F8 opens this anywhere)</div>
+    el.innerHTML=`<h3>REPORT A BUG</h3><div class="dim">what went wrong, and what did you expect? the screen behind this menu goes with it · F8 opens this anywhere</div>
       <div class="row"><textarea id="bugtx" rows="4" maxlength="2000" style="flex:1;min-width:240px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:6px"></textarea></div>
       <div class="row"><img id="bugim" alt="the screen" style="max-width:min(320px,80vw);border:2px solid var(--line);image-rendering:pixelated"><label class="dim"><input type="checkbox" id="bugwith" checked> send the picture</label></div>
-      <div class="row"><button class="btn" id="bugsend">SEND</button><span class="dim" id="bugsay">${be?'':'reports send from the game on thestrangestfleamarket.com or the claude.ai link'}</span></div>
+      <div class="row"><button class="btn" id="bugsend">SEND</button><span class="dim" id="bugsay">${be?'':'reports send from thestrangestfleamarket.com'}</span></div>
       ${own?'<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>':''}`;
     const $=s=>el.querySelector(s); if(shot)$('#bugim').src=shot; else $('#bugim').hidden=true; $('#bugsend').disabled=!be;
     for(const ev of ['keydown','keyup'])$('#bugtx').addEventListener(ev,e=>e.stopPropagation());

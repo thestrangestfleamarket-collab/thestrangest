@@ -1,11 +1,11 @@
-// THE LAWN CHECK: node tests/lawn.cjs dist/market.html. One start on the park lawn: the standing grass (each kind its own shape) stands over the lawn round you (none out on the paths or water, none past the far ring), they lean away from you and spring back, the ground is painted in the same tufts, and the lawn is still known chunk by chunk for the foragers.
+// THE LAWN CHECK: node tests/lawn.cjs dist/market.html. One start on the park lawn: the standing grass (each kind its own shape) stands over the lawn round you (none out on the paths or water, none past the far ring), they do not bend as you walk through, the ground is painted in the same tufts, and the lawn is still known chunk by chunk for the foragers.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=lawn::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage(), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
-  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=40,150&res=0&grass=all', { waitUntil: 'commit' });
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&grass=all&hour=13&at=40,150&res=0', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts in the park');
   if (st) {
@@ -25,12 +25,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       let off = 0, far = 0, n = 0, R2 = 0; const P = []; for (const me of TUFTS.meshes) { const A = me.instanceMatrix.array; for (let i = 0; i < me.count; i++) { const x = A[i * 16 + 12], z = A[i * 16 + 14]; n++; P.push([x, z]); const d = Math.hypot(x - c.x, z - c.z); R2 = Math.max(R2, d); if (!near(x, z, .36)) off++; } }
       let bare = 0, hit = 0; for (let x = c.x - 10; x < c.x + 10; x += .5) for (let z = c.z - 10; z < c.z + 10; z += .5) { if ([0, .4, .75].every(d => [...Array(8)].every((_, k) => WEEDS.fine(x + d * Math.cos(k * .785), z + d * Math.sin(k * .785)) === null))) { bare++; if (P.some(p => Math.hypot(p[0] - x, p[1] - z) < .2)) hit++; } }
       o.where = { n, off, bare, hit, R2: +R2.toFixed(1) };
-      // the bend: you press the tufts round you; when you step away they spring back
-      const y0 = __dbg.you(), p0 = [y0.x, y0.z], wait = async (f, n = 80) => { for (let i = 0; i < n; i++) { const v = f(); if (v) return v; await new Promise(r => setTimeout(r, 50)); } return null; };
-      o.press0 = !!await wait(() => TUFTS.pressing().some(p => Math.hypot(p[0] - p0[0], p[1] - p0[1]) < .05 && p[3] === 1 && p[2] > 1), 200);
-      __dbg.UI.goTo(p0[0] + 3, p0[1], SHARED.py);
-      const old = await wait(() => TUFTS.pressing().find(p => Math.hypot(p[0] - p0[0], p[1] - p0[1]) < .6 && p[3] < 1)); o.press1 = !!old && old[3] > -1;
-      o.press2 = !!await wait(() => !TUFTS.pressing().some(p => Math.hypot(p[0] - p0[0], p[1] - p0[1]) < .6), 1600);   // the spring runs on the game's own clock (slow frames here: up to a minute)
+      // no bending (owner, 30 Oct 2026: "turn off grass bending too"): nothing presses the tufts as you walk through
+      const y0 = __dbg.you(), p0 = [y0.x, y0.z]; __dbg.UI.goTo(p0[0] + 3, p0[1], SHARED.py); await new Promise(r => setTimeout(r, 3000)); o.press0 = TUFTS.pressing().length === 0;
       o.live = await new Promise(r => { const T = []; let on = true; const f = () => { if (!on) return; T.push(performance.now()); requestAnimationFrame(f); }; requestAnimationFrame(f);   // the page keeps drawing after the start: frames 20 s long, no gap of 10 s (a slow software-drawn page or a one-off stall passes, a freeze does not)
         setTimeout(() => { on = false; T.push(performance.now()); let g = 0; for (let i = 1; i < T.length; i++) g = Math.max(g, T[i] - T[i - 1]); r({ ok: T.length > 3 && g < 10000, frames: T.length - 1, gap: Math.round(g) }); }, 20000); });
       return o;
@@ -39,7 +35,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r.where.n > 0 && r.where.off === 0 && r.where.hit === 0, 'no tuft stands out on a path or the water (each is on the lawn or at its edge): ' + JSON.stringify(r.where));
     ok(r.where.R2 < 26, 'no tuft past the far ring (' + r.where.R2 + ')');
     ok(r.painted.colours > 30 && r.painted.green, 'the lawn ground is painted in the tufts\' greens, not one flat green: ' + JSON.stringify(r.painted));
-    ok(r.press0 && r.press1 && r.press2, 'the tufts lean away from you and spring back when you leave: ' + JSON.stringify([r.press0, r.press1, r.press2]));
+    ok(r.press0, 'the tufts do not bend as you walk through them');
     ok(r.chunks > 0 && r.onGround, 'the lawn is known round you (' + r.chunks + ' chunks), its top the ground itself');
     ok(r.live.ok, 'the page keeps running after the start (' + r.live.frames + ' frames in 20 s, the longest gap ' + r.live.gap + ' ms)');
   }

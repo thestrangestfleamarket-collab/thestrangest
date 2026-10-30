@@ -18,7 +18,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keyup',e=>e.stopPropagation());
   sp.addEventListener('keydown',e=>{ if(e.key==='Escape')SHOPS.close(); e.stopPropagation(); });
-  const closeB=document.createElement('button'); closeB.className='pX'; closeB.textContent='CLOSE';
+  const closeB=document.createElement('button'); closeB.className='pX'; closeB.textContent='X';
   closeB.style.cssText='position:absolute;right:10px;top:10px;font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer'; closeB.onclick=()=>SHOPS.close(); sp.appendChild(closeB);
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
 

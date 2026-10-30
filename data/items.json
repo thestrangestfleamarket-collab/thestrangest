@@ -32,7 +32,10 @@
  "rod": {
   "value": 15,
   "slot": "hand",
-  "grants": "fish"
+  "grants": "fish",
+  "cast": 12,
+  "line": 1,
+  "reel": 1
  },
  "bait": {
   "stackable": true,
@@ -138,7 +141,8 @@
   "bait": "worm",
   "weight": 0.25,
   "value": 4,
-  "common": 5
+  "common": 5,
+  "potted": true
  },
  "x_eel": {
   "edible": true,
@@ -151,7 +155,8 @@
   "bait": "worm",
   "weight": 0.9,
   "value": 9,
-  "common": 4
+  "common": 4,
+  "potted": true
  },
  "x_crab": {
   "edible": true,
@@ -164,7 +169,8 @@
   "bait": "cut",
   "weight": 0.25,
   "value": 8,
-  "common": 3
+  "common": 3,
+  "potted": true
  },
  "x_catfish": {
   "edible": true,
@@ -177,7 +183,8 @@
   "bait": "cut",
   "weight": 2.5,
   "value": 10,
-  "common": 4
+  "common": 4,
+  "potted": true
  },
  "x_shad": {
   "edible": true,
@@ -268,7 +275,8 @@
   "bait": "worm",
   "weight": 0.25,
   "value": 3,
-  "common": 7
+  "common": 7,
+  "potted": true
  },
  "x_yperch": {
   "edible": true,
@@ -281,7 +289,8 @@
   "bait": "worm",
   "weight": 0.3,
   "value": 5,
-  "common": 6
+  "common": 6,
+  "potted": true
  },
  "x_trout": {
   "edible": true,
@@ -307,7 +316,8 @@
   "bait": "worm",
   "weight": 4,
   "value": 8,
-  "common": 3
+  "common": 3,
+  "potted": true
  },
  "x_lbass": {
   "edible": true,
@@ -741,5 +751,67 @@
   "offworld": true,
   "stackable": true,
   "darksight": 240
+ },
+ "rod_carbon": {
+  "value": 60,
+  "cast": 16,
+  "line": 1.3,
+  "sellable": true
+ },
+ "rod_surf": {
+  "value": 180,
+  "cast": 22,
+  "line": 1.6,
+  "sellable": true
+ },
+ "reel_fast": {
+  "value": 40,
+  "reel": 1.35,
+  "sellable": true
+ },
+ "reel_pro": {
+  "value": 120,
+  "reel": 1.7,
+  "sellable": true
+ },
+ "lure_worm": {
+  "stackable": true,
+  "value": 10,
+  "bait": "worm",
+  "reuse": true,
+  "sellable": true
+ },
+ "lure_spoon": {
+  "stackable": true,
+  "value": 14,
+  "bait": "cut",
+  "reuse": true,
+  "sellable": true
+ },
+ "cooler_s": {
+  "stackable": true,
+  "value": 20,
+  "holds": 15,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "cooler_m": {
+  "stackable": true,
+  "value": 50,
+  "holds": 40,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "cooler_l": {
+  "stackable": true,
+  "value": 120,
+  "holds": 100,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "crabpot": {
+  "stackable": true,
+  "value": 25,
+  "sellable": true
  }
 }

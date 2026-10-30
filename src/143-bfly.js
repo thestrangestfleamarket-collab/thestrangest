@@ -12,7 +12,7 @@ const BFLY={}; window.BFLY=BFLY;
   const DIFF=k=>k<12?Math.round(30-COMMON[k]*10):50+Math.round((k-12)/(NK-13)*40), PR=k=>k<12?Math.max(3,Math.round(14-COMMON[k]*4)):Math.round(40+(k-12)/(NK-13)*210);
   const SPD=k=>k<12?1+(DIFF(k)-10)/40:1.4+(k-12)/(NK-13)*.6, wild=b=>{ b.wild=true; b.fast=SPD(b.k); b.hi=b.k>=12?2.4:1+(SPD(b.k)-1)*2; };
   // live butterflies ride in your hands (5) or in jars: the HOLDS item property, summed over the jars you own
-  const room=()=>{ let n=0; for(const id of ITEMS.ids()){ const h=+ITEMS.prop(id,'holds')||0; if(h>0)n+=h*FORAGE.has(id); } return Math.max(5,n); }, held=()=>{ let n=0; for(const id in INV.items)if(/^bu?_\d/.test(id))n+=INV.items[id]; return n; };
+  const room=()=>{ let n=0; for(const id of ITEMS.ids()){ const h=ITEMS.prop(id,'keeps')==='fish'?0:+ITEMS.prop(id,'holds')||0; if(h>0)n+=h*FORAGE.has(id); } return Math.max(5,n); }, held=()=>{ let n=0; for(const id in INV.items)if(/^bu?_\d/.test(id))n+=INV.items[id]; return n; };
   BFLY.room=room; BFLY.held=held; FORAGE.NOTE.push(id=>{ const h=+ITEMS.prop(id,'holds')||0; return h>0?'HOLDS '+h+' BUTTERFLIES':/^bu?_\d/.test(id)?held()+'/'+room()+' HELD':''; });
   const NM={net:'BUTTERFLY NET',frame:'SPECIMEN FRAME',jar_s:'SMALL BUTTERFLY JAR',jar_m:'MEDIUM BUTTERFLY JAR',jar_l:'LARGE BUTTERFLY JAR'}, PRICES={}, size=k=>BF_KINDS[k][3]<45?'SMALL':BF_KINDS[k][3]<90?'':'LARGE';
   for(let k=0;k<NK;k++){ const n=BF_KINDS[k][0].toUpperCase(); NM['b_'+k]=n+(k>=12?' (RARE)':''); NM['bu_'+k]=('UNKNOWN '+size(k)+' BUTTERFLY').replace('  ',' '); NM['s_'+k]='MOUNTED '+n;

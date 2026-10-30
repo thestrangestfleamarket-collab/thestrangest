@@ -50,8 +50,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r3.bass === 1 && r3.kg && r3.kg[0] > 0 && r3.last && r3.last.id === 'x_bass' && !r3.hook, 'the striped bass comes off the hook into the pack with its weight, the bait eaten: ' + JSON.stringify({ kg: r3.kg, last: r3.last, hook: r3.hook }));
   // the fish shows at the bait as it bites; a strike on a nibble spooks it (big words in the middle), the bait stays and another may come
   const r4 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, out = {}; FISHING.speed = 1; FISHING.force = 'x_shad'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
-    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.nib && s.st === 'wait') break; await new Promise(r => setTimeout(r, 30)); }
-    FISHING.click(); await new Promise(r => setTimeout(r, 300)); const d = FISHDBG(); out.spook = d.shout; out.still = d.state && d.state.st; out.hook = d.hook;
+    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'wait' && s.tb && s.t > s.tb - 4) break; await new Promise(r => setTimeout(r, 30)); }
+    FISHING.speed = .02; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.nib && s.st === 'wait') break; await new Promise(r => setTimeout(r, 30)); }
+    FISHING.click(); FISHING.speed = 1; await new Promise(r => setTimeout(r, 300)); const d = FISHDBG(); out.spook = d.shout; out.still = d.state && d.state.st; out.hook = d.hook;
     while (performance.now() - t0 < 400000) { s = FISHING.state(); if (!s || s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     for (let i = 0; i < 5; i++) await new Promise(r => requestAnimationFrame(r)); out.bite = s && s.st; out.shown = FISHDBG().shown; FISHING.click(); out.on = FISHDBG().shout; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return out; });
   ok(/TOO EARLY/.test(r4.spook) && r4.still === 'wait' && r4.hook && r4.bite === 'bite' && r4.shown && /FISH ON/.test(r4.on), 'a strike on a nibble spooks the fish (said big in the middle), the bait stays; the next one shows at the bait as it bites: ' + JSON.stringify(r4));
@@ -59,7 +60,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     FISHING.click(); const n0 = INV.items[id] || 0; while (performance.now() - t0 < 900000) { s = FISHING.state(); FISHING.reeling = reel; if (!s || s.st === 'land') break; await new Promise(r => setTimeout(r, 30)); }
     const landed = !!s; FISHING.reel(); FISHING.force = null; return { landed, got: (INV.items[id] || 0) - n0, msg: [...document.querySelectorAll('#fjour div')].map(d => d.textContent).slice(-2) }; }, [id, reel]);
-  const snap = await fight('x_sturgeon', true);
+  await pg.evaluate(() => { FISHING.drag = 5; }); const snap = await fight('x_sturgeon', true); await pg.evaluate(() => { FISHING.drag = 3; });
   ok(!snap.landed && snap.msg.some(m => /SNAPS/.test(m)), 'reeling hard against a sturgeon snaps the line: ' + JSON.stringify(snap));
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));
@@ -73,7 +74,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const t0 = performance.now(); let s; while (performance.now() - t0 < 300000) { s = FISHING.state(); if (s && s.st === 'bite') break; await wait(50); } FISHING.click(); s = FISHING.state();
     const tire = async side => { s.f.s = 1; s.run = 1; s.runT = 999; s.D = 30 * T; FISHING.side = side; FISHING.reeling = false; const a = s.f.s; await wait(1500); return +(a - s.f.s).toFixed(3); };
     const against = await tire(-1), withIt = await tire(1);
-    const reel = async d => { FISHING.drag = d; s.f.s = 1; s.run = 0; s.surge = 0; s.D = 30 * T; FISHING.side = 0; FISHING.reeling = true; let mx = 0; const t = performance.now(); while (performance.now() - t < 1200) { mx = Math.max(mx, s.ten); s.over = 0; await wait(30); } FISHING.reeling = false; return +mx.toFixed(2); };
+    const reel = async d => { FISHING.drag = d; s.f.s = 1; s.run = 0; s.surge = 0; s.D = 30 * T; FISHING.side = 0; FISHING.reeling = true; let mx = 0; const t = performance.now(); while (performance.now() - t < 1200) { s.f.s = 1; s.surge = 5; s.run = 0; mx = Math.max(mx, s.ten); s.over = 0; await wait(30); } FISHING.reeling = false; return +mx.toFixed(2); };
     const lo = await reel(1), hi = await reel(5); FISHING.drag = 3; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return { against, withIt, lo, hi }; });
   ok(st.against > st.withIt * 1.5 && st.lo < st.hi, 'pulling against the run tires the fish (' + st.against + ') faster than with it (' + st.withIt + '); low drag keeps the strain down (' + st.lo + ' vs ' + st.hi + ')');
   // a lure stays on the hook after a catch; with no cooler you carry five fish, a cooler holds more

@@ -14,7 +14,7 @@ const TUFTS=window.TUFTS={wind:0};
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); g.computeVertexNormals(); return g; };
   const SHP={round:{g:[sph(7,4),sph(5,3)],t:[.36,.5,.62],w:2.3},crown:{g:[ico(),ico()],t:[.42,.42,.86],w:2.1},clump:{g:[sph(6,3),sph(5,3)],t:[.3,.78,.42],w:2.2},tussock:{g:[sph(6,5),sph(5,3)],t:[.4,.5,1.25],w:1.7},blade:{g:[fan(6),fan(4)],t:[0,1,1],w:1.4,two:1}};
   const KC=GRASS.K.map(k=>{ const P=k.cols||TUFTC, W=P.reduce((a,c)=>a+c[3],0), C=P.map(c=>new THREE.Color().setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace)); return r=>{ r*=W; for(let i=0;i<P.length;i++)if((r-=P[i][3])<0)return C[i]; return C[0]; }; });
-  const PP=[...Array(NP)].map(()=>new THREE.Vector4()), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind},uMe:{value:new THREE.Vector2()},uFd:{value:new THREE.Vector3(R2*.55,R2*.95,TUFTS.dark=.72)}};
+  const PP=[...Array(NP)].map(()=>new THREE.Vector4(0,0,0,0)), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind},uMe:{value:new THREE.Vector2()},uFd:{value:new THREE.Vector3(R2*.55,R2*.95,TUFTS.dark=.72)}};
   // each tuft leans away from what presses it (more at its top); the push is turned into the tuft's own frame (a turn about Y and a scale); further out they widen, so the sparser far ring covers the ground as the near one does
   const mat=new THREE.MeshLambertMaterial({flatShading:true}); mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
     sh.vertexShader='uniform vec4 uPP['+NP+']; uniform float uTt,uKn,uWd; uniform vec2 uMe; uniform vec3 uFd; varying float vFd;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
@@ -49,18 +49,10 @@ const TUFTS=window.TUFTS={wind:0};
       for(const c of CH.values()){ if(!c)continue; const L=c.L[ri][sn]; if(!L)continue; const dx=Math.max(c.x0-px,0,px-c.x0-c.CS), dz=Math.max(c.z0-pz,0,pz-c.z0-c.CS); if(dx*dx+dz*dz>=r1*r1)continue;
         for(let k=0;k<L.length&&n<R.cap;k+=19){ const d=(L[k]-px)**2+(L[k+1]-pz)**2; if(d<r0*r0||d>=r1*r1)continue; for(let e=0;e<16;e++)A[n*16+e]=L[k+2+e]; const cl=L[k+18]; C[n*3]=cl.r; C[n*3+1]=cl.g; C[n*3+2]=cl.b; n++; } }
       me.count=n; me.visible=n>0; me.instanceMatrix.needsUpdate=true; me.instanceColor.needsUpdate=true; } }); lx=px; lz=pz; dirty=false; };
-  // what presses: whoever walks near (WEEDS.movers), and where they were a moment ago, springing back
-  const trail=[]; let clk=0;   // its own clock, a fifteenth of a second a frame at most, so a slow frame doesn't skip the spring
-  const press=now=>{ const MV=WEEDS.movers||[], live=[]; for(const m of MV){ if(m.w<.5)continue; const r=m.z*2.1; live.push([m.x,m.y,r]); let q=null;
-      for(const p of trail)if((p[0]-m.x)**2+(p[1]-m.y)**2<(.4*T)**2){ q=p; break; } if(q)q[3]=now; else trail.push([m.x,m.y,r,now]); }
-    for(let i=trail.length-1;i>=0;i--)if(now-trail[i][3]>1.4)trail.splice(i,1);
-    const rel=trail.filter(p=>now-p[3]>.02).sort((a,b)=>b[3]-a[3]); let i=0;
-    for(const l of live)if(i<NP)PP[i++].set(l[0],l[1],l[2],1);
-    for(const p of rel){ if(i>=NP)break; const a=now-p[3]; PP[i++].set(p[0],p[1],p[2],Math.exp(-3*a)*Math.cos(4*a)); }
-    for(;i<NP;i++)PP[i].w=0; };
+  let clk=0;   // its own clock, a fifteenth of a second a frame at most
   const cnt=R=>SN.reduce((a,sn)=>a+R.M[sn].count,0);
   TUFTS.stat=()=>({near:cnt(RINGS[0]),far:cnt(RINGS[1]),tris:ME.reduce((a,m)=>a+m.count*m.userData.tris,0),draws:ME.filter(m=>m.visible&&m.count).length,shapes:Object.fromEntries(SN.map(sn=>[sn,RINGS[0].M[sn].count+RINGS[1].M[sn].count])),chunks:CH.size,knee,ms:TUFTS.ms});
   TUFTS.meshes=ME; TUFTS.pressing=()=>PP.filter(p=>p.w).map(p=>[p.x,p.y,p.z,p.w]);
   SYS.add('life',dt=>{ const on=SHARED.LVL==='up'&&!(ROOMS&&ROOMS.cur); G.visible=on; if(!on)return; if(!added){ scene.add(G); added=true; }
-    clk+=Math.min(+dt||0,1/15); U.uTt.value=clk; U.uMe.value.set(pos.x,pos.z); U.uFd.value.z=TUFTS.dark; U.uWd.value=TUFTS.wind; press(clk);
+    clk+=Math.min(+dt||0,1/15); U.uTt.value=clk; U.uMe.value.set(pos.x,pos.z); U.uFd.value.z=TUFTS.dark; U.uWd.value=TUFTS.wind;
     if(dirty||(pos.x-lx)**2+(pos.z-lz)**2>(.7*T)**2){ const a=performance.now(); fill(); TUFTS.ms=+(performance.now()-a).toFixed(2); } },'140a-tufts'); }

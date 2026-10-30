@@ -12,7 +12,7 @@ more in depth though … fully fledged out games that are intricate and detailed
 | east | DRAGON POP | Bubble Bobble | forage | — | coming soon |
 | west | ROAD 85 | OutRun | fish | `059m-game-road.js` | playing; to be brought up to the full original |
 | west | KNUCKLE CITY | Final Fight | ento | — | coming soon |
-| west | TORCHBEARER | Gauntlet | myco | — | designed: [torchbearer.md](torchbearer.md); next to build |
+| west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); the engine built (its §15.1: floors 1–5, grunts and ghosts), the rest of the dungeon next |
 | west | MONSTER ROAD | Wonder Boy in Monster Land | alch | — | coming soon |
 
 Order of build: TORCHBEARER, then KNUCKLE CITY, DRAGON POP, MONSTER ROAD, then the four kept games up to their originals' full

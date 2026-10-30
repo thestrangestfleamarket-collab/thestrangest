@@ -56,7 +56,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     const coin=()=>{ if(INV.cash<2){ msg='YOU NEED $2 TO PLAY'; beep(120,.2); return false; } INV.cash-=2; msg=''; beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };
     const end=()=>{ mode='over'; wait=1.2; nb=setBest(name,g.score); if(nb)beep(1568,.6,'square',.05,2093); const amt=1+G.grade.filter(v=>g.score>=v).length; if(e.skill)FORAGE.train(e.skill,400,0,amt); foot.textContent='SPACE TO PLAY AGAIN ($2) · ESC TO LEAVE'; };
     const close=()=>{ if(!C.on)return; C.on=false; C.tick=null; removeEventListener('keydown',kd,true); removeEventListener('keyup',ku,true); removeEventListener('blur',blur); box.remove(); keys.clear(); };
-    C.close=close; C.dbg=()=>({name,mode,loaded:!!G,loading,score:g?g.score:0,over:g?g.over:false});
+    C.close=close; C.dbg=()=>({name,mode,loaded:!!G,loading,score:g?g.score:0,over:g?g.over:false,g:g&&g.dbg?g.dbg():null});
     C.tick=dt=>{ if(mode==='title'||mode==='over'){ wait=Math.max(0,wait-dt); if(T.F&&wait<=0&&G&&coin()){ g=G.make(); mode='play'; nb=false; foot.textContent='ESC TO LEAVE'; } }
       else if(mode==='play'){ g.step(dt,K,T); if(g.over)end(); }
       for(const k in T)delete T[k];
@@ -64,7 +64,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
       if(mode==='title'&&!g){ card(c,name,false); if(G){ G.help.forEach((l,i)=>tx(c,l,128,166+i*11,'#e8f0ff',8,'center')); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,192,msg?'#ff3c5a':'#5aff6a',8,'center'); } else if(loading)tx(c,'LOADING',128,192,'#a090c0',8,'center'); else if(msg)tx(c,msg,128,192,'#ff3c5a',8,'center'); return; }
       g.draw(c);
       if(mode!=='play'){ c.fillStyle='rgba(0,0,0,.65)'; c.fillRect(20,62,216,104); c.strokeStyle=L.col; c.strokeRect(20.5,62.5,215,103);
-        tx(c,'GAME OVER',128,72,'#ff3c5a',14,'center'); tx(c,'SCORE '+g.score,128,94,'#fff',10,'center'); tx(c,nb?'NEW HIGH SCORE!':'HI-SCORE '+(bests()[name]||0),128,110,nb&&bl?'#ffe83c':'#a090c0',8,'center');
+        tx(c,'GAME OVER',128,72,'#ff3c5a',14,'center'); tx(c,'SCORE '+g.score+(g.sub?' · '+g.sub:''),128,94,'#fff',10,'center'); tx(c,nb?'NEW HIGH SCORE!':'HI-SCORE '+(bests()[name]||0),128,110,nb&&bl?'#ffe83c':'#a090c0',8,'center');
         tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } };
     keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; beep(660,.1); };
   return C.K={LIB,lore,game,open,demo,crt}; };

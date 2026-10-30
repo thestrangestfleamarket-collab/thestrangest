@@ -105,7 +105,7 @@ potion on the floor sets it off at power 1 (a waste).
 | trap wall | `-` | solid until a trap is stepped on |
 | stun tile | `S` | freezes you for 2 s; from floor 45 |
 | invisible wall | `I` | solid, drawn as floor; shows when you walk into it or when a potion flashes; from floor 35 |
-| generator | `g` `d` `l` `s` + `1`–`3` | ghost / demon / lobber / sorcerer generator at that level; grunts' is `u` |
+| generator | `g` `u` `n` `l` `z` | ghost / grunt / demon / lobber / sorcerer generator at the floor's level (each floor's header gives it); a capital is one level higher |
 | placed monster | `H` thief, `X` death, `A` acid | where a loose monster starts |
 | key `k` · potion `p` · plate `f` · cider `c` · poison `x` · chest `$` (100) · bag `b` (50) · amulet `m` · hero start `h` | | |
 
@@ -124,7 +124,8 @@ SPEED +4 — for the whole run.
 
 A hundred, then more.
 
-- **Floors 1–30 are laid by hand** (text maps in `data/torch-floors.json`, about 3 KB): floor 1 is the lesson (one grunt generator,
+- **Floors 1–30 are laid by hand** (text maps inside the game's own file and chunk, about 3 KB, so they cost the start nothing and
+  reach the page only with the game): floor 1 is the lesson (one grunt generator,
   food in plain view, a key and a door, the exit visible), the first ten teach one thing each (ghost swarms, the demon's line,
   the lobber over a wall, the thief, the door choice, Death on 6, the 4-exit's bargain on 8, the first treasure room on 7, the trap
   on 20…), and 11–30 are the real game with the themes turning at 20.
@@ -199,12 +200,12 @@ cabinet shows the card until the game's chunk is first fetched (a play), then th
 
 ## 14. The check
 
-`tests/arcade-torch.cjs` drives `dist/market.html`: enters THE ARCADE, plays TORCHBEARER with injected keys (coin, WARRIOR, start);
-asserts floor 1 is up with 2000 health; walks the scripted route of floor 1 (the lesson floor is laid so that it is straight: right,
-down, the key, the door, the exit) and asserts floor 2; asserts health fell by the seconds elapsed within 2; asserts a shot killed a
-level-1 grunt and a hit knocked a generator down a level; asserts the generated floor 57's tiles hash to the committed constant (so
-the board stays fair across builds); sets health to 1 through the debug hook and asserts GAME OVER. `tests/places.cjs` gets
-TORCHBEARER as a cabinet whose chunk must be fetched on play.
+`tests/arcade-torch.cjs` drives `dist/market.html`: enters THE ARCADE, plays TORCHBEARER with real key presses (coin, WARRIOR,
+start); asserts floor 1 is up with 2000 health; finds its own way on the game's map (`TORCHDBG().map`: to a key avoiding doors, then
+through a door to the stairs), walks it with the arrow keys and asserts floor 2; asserts health fell by the seconds elapsed; asserts a
+shot killed a level-1 grunt and the Warrior's shot took a level-3 generator out; sets health to 1 through the debug hook and asserts
+GAME OVER; ESC leaves. From the third pull request on it also asserts the generated floor 57's tiles hash to the committed constant
+(so the board stays fair across builds). `tests/places.cjs` has TORCHBEARER as a cabinet whose chunk must be fetched on play.
 
 ## 15. The build, in three pull requests
 

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {VEG} from './144-veggies.js';
@@ -34,8 +34,8 @@ const GARDEN={}; window.GARDEN=GARDEN;
   FORAGE.CK.garden={short:'GARD',made:nm=>`YOU TIE A ${nm}.`,fail:'THE STEMS SNAP. THE FLOWERS ARE SPOILED.'};
   FORAGE.HELP.push('GARDENING picks wildflowers, grows flowers from seed on any lawn (the tomato sells seeds) and ties bouquets.');
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, now=()=>day()*24+CLOCK.h, GROW=24;
-  const S={v:1,picked:{},pd:-1,plots:[],log:{}}; try{ const D=JSON.parse(SAVE.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); S.log=S.log||{}; }catch(e){}
-  let saveT=0; const save=()=>SAVE.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
+  const S={v:1,picked:{},pd:-1,plots:[],log:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); S.log=S.log||{}; }catch(e){}
+  let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
   const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD['01']; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };

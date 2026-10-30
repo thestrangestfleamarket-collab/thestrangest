@@ -94,7 +94,7 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
-  { const z0=tt(Math.min(ZS(RING.river.y0),ZS(RING.river.y1))), z1=tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))); hole(LR.x0+.5,z0,LR.x1-.5,z1); }
+  { const z1=tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))); hole(LR.x0+.5,LR.z0+.5,LR.x1-.5,z1); }   // no land past the Hudson's near bank: open water out to the far skyline
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
   const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v};

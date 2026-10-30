@@ -75,7 +75,7 @@ STORE.cabs.add({name:'TORCHBEARER',skill:'myco',hold:1,lore:{maker:'HALCYON GAME
       if(m.carry){ const k=m.tx+','+m.ty; if(!items.has(k)){ items.set(k,m.carry); say('THE THIEF DROPPED YOUR '+(m.carry==='key'?'KEY':m.carry==='pot'?'POTION':'AMULET')+'.'); } } };
     const hitMon=(m,d,magic)=>{ const M=MON[m.t]; if(M.magic&&!magic)return; m.hp-=d; if(m.hp<=0){ kill(m,M.pts[m.lv-1]); beep(240,.08,'square',.05,120); } else beep(400,.04,'square',.04); };
     const melee=m=>{ if(m.t==='sorcerer'&&!m.vis)return; hitMon(m,P.mel); };
-    const hitGen=(g,d)=>{ while(d-->0&&g.lv>0){ s.score+=100*g.lv; g.lv--; } beep(160,.2,'sawtooth',.06,60); if(g.lv<=0){ gens.splice(gens.indexOf(g),1); occ.delete(g.x+','+g.y); s.pops.push({s:'GENERATOR',x:(g.x+.5-cam.x)*8,y:(g.y-cam.y)*8+8,t:1,c:'#ffe83c'}); } };
+    const hitGen=(g,d)=>{ while(d-- >0&&g.lv>0){ s.score+=100*g.lv; g.lv--; } beep(160,.2,'sawtooth',.06,60); if(g.lv<=0){ gens.splice(gens.indexOf(g),1); occ.delete(g.x+','+g.y); s.pops.push({s:'GENERATOR',x:(g.x+.5-cam.x)*8,y:(g.y-cam.y)*8+8,t:1,c:'#ffe83c'}); } };
     const fire=()=>{ if(P.cd>0||shots.length>=12)return; P.cd=1/P.rate; const n=Math.hypot(P.fx,P.fy)||1; shots.push({x:P.x,y:P.y,dx:P.fx/n*P.ss,dy:P.fy/n*P.ss,d:dmgOf()}); beep(900,.04,'square',.03,500); };
     const onScreen=(x,y)=>x>=cam.x-1&&x<=cam.x+33&&y>=cam.y-1&&y<=cam.y+26;
     const blast=pow=>{ s.flash=.3; for(const m of mons.slice())if(onScreen(m.px,m.py))hitMon(m,pow,true); for(const g of gens.slice())if(onScreen(g.x+.5,g.y+.5))hitGen(g,pow);

@@ -17,7 +17,7 @@ import {renderer} from './004-main.js';
     P.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;width:min(360px,92vw);padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     P.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b id="inspn" style="color:#f2c14e"></b><button id="inspx" style="font:inherit;color:#d8dae2;background:none;border:0;cursor:pointer">X</button></div>'+
       `<canvas id="inspc" width="${W}" height="${H}" style="display:block;width:100%;aspect-ratio:1;margin:8px 0;background:#15171e;cursor:grab;touch-action:none"></canvas><div id="inspi" style="display:flex;flex-wrap:wrap;gap:4px"></div>`+
-      '<div style="color:#7d7a70;margin-top:8px">DRAG TO TURN · WHEEL TO ZOOM · ESC CLOSES</div>';
+      '<div style="color:#7d7a70;margin-top:8px">DRAG TO TURN · WHEEL TO ZOOM</div>';
     document.body.appendChild(P); cv=P.querySelector('#inspc'); g2=cv.getContext('2d'); im=g2.createImageData(W,H); px=new Uint8Array(W*H*4);
     P.querySelector('#inspx').onclick=()=>INSPECT.close();
     cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; spin=false; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; });

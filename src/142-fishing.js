@@ -164,8 +164,8 @@ RIVER.onBuild.push(()=>{ '@later'; const T=TILE, RB=RIVER.box, rz0=RB.z0, rz1=RB
     if(f.id==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; FORAGE.take('chest',1); say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e'); if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
     else say(`YOU TAKE ${NAMES[f.id]?'THE '+f.kg.toFixed(2)+' KG '+NAMES[f.id]:'THE '+FORAGE.NM[f.id]} OFF THE HOOK.`,NAMES[f.id]?'#b8f0a0':'#c8c2b0');
     SFX.play('drip',{vol:.6}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2)}; FISHING.reel(); FORAGE.draw(); };
-  const V=new THREE.Vector3(), SH=document.createElement('div'); let shT=0; SH.style.cssText='position:fixed;left:50%;top:28%;transform:translateX(-50%);z-index:20;pointer-events:none;font:inherit;font-size:22px;letter-spacing:1px;text-align:center;max-width:90vw;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;opacity:0;transition:opacity .35s'; document.body.appendChild(SH);
-  const shout=(t,c)=>{ say(t,c); SH.textContent=t; SH.style.color=c; SH.style.opacity=1; clearTimeout(shT); shT=setTimeout(()=>{ SH.style.opacity=0; },2400); };
+  const V=new THREE.Vector3(), SH=document.createElement('div'); let shT=0; SH.style.cssText='position:fixed;left:50%;top:28%;transform:translateX(-50%);z-index:20;pointer-events:none;font:20px Silkscreen,monospace;letter-spacing:1px;text-align:center;max-width:90vw;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;opacity:0;transition:opacity .35s'; document.body.appendChild(SH);
+  const shout=(t,c)=>{ say(t,c); SH.textContent=t; SH.style.color=c; SH.style.opacity=1; clearTimeout(shT); shT=setTimeout(()=>{ SH.style.opacity=0; },3000); };
   FISHING.tick=dt=>{ dt*=FISHING.speed||1; const s=S_; if(!s){ FISHING.bendK=.03; return; } s.t+=dt;
     if(Math.hypot(pos.x-s.ax,pos.z-s.az)>(BOAT.on?2.5*T:.6*T)||!FORAGE.has('rod')){ if(s.st==='land')return unhook(); FISHING.reel(); return say('YOU REEL IN YOUR LINE.'); }
     const lv=s.w.lv, a=from(); let bx=s.x, bz=s.z, by=lv+(s.w.kind==='river'?RIVER.hAt(s.x,s.z):0), fx=null;

@@ -33,7 +33,9 @@
     {"head": "YOUR PACK", "steps": [
      "Press [I]. The PACK tab shows your money and what you carry.",
      "Each thing has buttons: EAT, DRINK, HOLD, WEAR, LOOK and more.",
-     "SKILLS shows your skills. CRAFT makes things."]},
+     "SKILLS shows your skills. CRAFT makes things.",
+     "BOOK keeps a page for each thing you collect: recipes, mushrooms, flowers, butterflies, birds, fish, honey, finds and books.",
+     "ASKS lists what merchants want today. Bring it to their shop and press HAND IN for extra money."]},
     {"head": "THE MAP", "steps": [
      "Press [SHIFT] + [M]. (You need the MAP OF THE SECTION. Everyone starts with one.)",
      "Click a spot on the map to go there. THE STREET or UNDERGROUND changes the level.",
@@ -76,7 +78,8 @@
     "Choose WHAT DO YOU SELL? to open the shop.",
     "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
     "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
-    "Who buys what: the Nature Merchant buys butterflies; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller buys mushrooms, potions, food, butterflies and birds.",
+    "Who buys what: the Nature Merchant buys butterflies, birds and feathers; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller and the Radish buy mushrooms, potions and food; the mushroom seller also buys butterflies and birds.",
+    "Merchants teach what they know: LESSON raises a skill for a fee.",
     "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
    ]},
   {"id": "talk", "title": "TALKING TO PEOPLE",
@@ -93,7 +96,8 @@
     "Double-click a mushroom or a wildflower to pick it.",
     "Unknown ones are STRANGE MUSHROOM. Press IDENTIFY in your pack.",
     "To eat, press [I] and click EAT. Careful: RED CAP and MOONGLOW poison you. A CURE POTION fixes it.",
-    "Mushrooms grow back every day.",
+    "Mushrooms grow back every day. Some come up only after rain (INK CAP, BLACK TRUMPET), at dawn (OYSTER) or by night (GHOST CAP, only deep in the park).",
+    "Your BOOK (press [I], then BOOK) keeps a page for each thing you collect: mushrooms, butterflies, birds and fish.",
     "Grow your own: buy seeds at the tomato stall, plant them from your pack on bare lawn, and double-click to pick when they bloom."
    ]},
   {"id": "skills", "title": "SKILLS, LESSONS AND CRAFTING",
@@ -101,14 +105,20 @@
    "sections": [
     {"head": "SKILLS", "steps": [
      "Press [I], then SKILLS. A skill grows each time you use it, fastest on hard tasks.",
-     "All skills together go up to 600. Set each to ▲ raise, ▼ lower or ■ keep."]},
+     "All skills together go up to 600. Set each to ▲ raise, ▼ lower or ■ keep.",
+     "Each skill has a rank: NOVICE, APPRENTICE, JOURNEYMAN, EXPERT, ADEPT, MASTER and GRANDMASTER."]},
     {"head": "LESSONS", "steps": [
      "Merchants teach what they buy: talk to them and choose a LESSON (each +1.0, up to 30).",
-     "The arcade games and the holodeck train skills too (see PLACES TO GO)."]},
+     "The arcade games and the holodeck train skills too (see PLACES TO GO).",
+     "The SPARRING DUMMY beside the Swordsmith teaches the basics (to 40): hold a sword for SWORDSMANSHIP, bare hands for MARTIAL ARTS. Each bout tires you."]},
     {"head": "CRAFTING", "steps": [
      "Press [I], then CRAFT. Pick a recipe and click MAKE.",
      "Potions need a mortar and an empty bottle (you start with both).",
-     "Food needs a flame near you: a fire, a candle or a torch."]}
+     "Food needs a flame near you: a fire, a candle or a torch.",
+     "Cut stones on a GEM WHEEL (the Shark sells one; PROSPECTING): a cut stone sells for twice as much and more.",
+     "Mend old books with a binder's kit (BOOKBINDING). Daisies and bluebells make BOOKCLOTH. A feather QUILL helps you mend.",
+     "In the MUSEUM OF EARTH, DONATE in your pack gives the museum the first of each specimen, find or restored book, for pay.",
+     "The mushroom seller has a rarer flower seed each week."]}
    ]},
   {"id": "health", "title": "HEALTH, STAMINA AND HEALING",
    "what": "The red bar is health, the yellow bar is stamina. They show in a fight or in water.",
@@ -155,11 +165,30 @@
      "Buy a BUTTERFLY NET ($8) from the Nature Merchant (the paper fox by the arcade).",
      "Press [1] until you hold the net. Aim with the mouse and click to swing. Swinging fast or jumping helps.",
      "You can carry 5. Jars hold 20, 50 or 100 more.",
-     "In your pack: IDENTIFY, MOUNT (needs a frame) or RELEASE.",
+     "In your pack: IDENTIFY, MOUNT (needs a SPECIMEN FRAME, $4, Nature Merchant) or RELEASE (you learn a little).",
+     "Hang a mounted one on your wall: DECORATE, then SPECIMENS.",
+     "In the MUSEUM OF EARTH, press DONATE on a mounted one. The museum pays for the first of each kind.",
      "Butterflies hide at night and in bad weather."]},
     {"head": "BIRDS", "steps": [
      "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
-     "A tamed bird follows you. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed."]}
+     "A tamed bird follows you, and other players see it on your shoulder. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed.",
+     "The Nature Merchant sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
+     "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down.",
+     "Birds sometimes leave a FEATHER. Three make a QUILL (CRAFT, BIND), which helps you mend books.",
+     "A caged bird can stand in your apartment: DECORATE, then SPECIMENS."]}
+   ]},
+  {"id": "bees", "title": "BEES AND HONEY",
+   "what": "Keep bees in the park, take their honey and wax, eat it, cook with it or sell it.",
+   "steps": [
+    "Find THE BEEKEEPER on the park path near the Stump. Buy a HIVE ($40), EMPTY HONEY JARS ($1), a SMOKER ($12) and a VEIL ($15).",
+    "Stand on a park lawn where flowers grow thick. In your pack press SET IT HERE on the hive. You can keep three.",
+    "The hive fills over real time: about a frame every half hour, up to four times faster among flowers. Your own garden's flowers count double.",
+    "Double-click the hive and press TAKE HONEY. Two frames fill one jar; you also get beeswax.",
+    "The smoker calms the bees (BEEKEEPING). Without it, or if it fails, you get stung. The veil keeps stings off.",
+    "The flowers near the hive make the honey: clover, lavender, sunflower or rose; otherwise wildflower. By night, deep in the park, sometimes MOON HONEY.",
+    "Eat honey to heal. Cook HONEY-GLAZED BASS or HONEYED CHANTERELLES by a flame. Brew a ROYAL JELLY TONIC from moon honey and a moonglow.",
+    "Three beeswax make a CANDLE (CRAFT). Put candles in your apartment with DECORATE.",
+    "The Beekeeper buys honey, wax and candles, and teaches BEEKEEPING. LIFT IT puts an empty hive back in your pack."
    ]},
   {"id": "swim", "title": "SWIMMING AND DIVING",
    "what": "Swim the Hudson, dive to the bottom and explore the caverns.",

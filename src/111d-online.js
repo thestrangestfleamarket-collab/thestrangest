@@ -30,7 +30,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
 
   const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
-    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.at)push(o,p.at); } return o; };
+    if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
   ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
     if(ONLINE.me&&(m.id===ONLINE.me||(m.p&&m.p.id===ONLINE.me))&&m.t!=='tell')return;   // your own moves from your other tab: never a body of yours in your own head
@@ -133,7 +133,7 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{}}); window.O
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
-      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, s=n+'|'+k+'|'+dead+'|'+hp; if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp}); } }
+      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt); };

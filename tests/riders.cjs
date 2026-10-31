@@ -1,0 +1,22 @@
+// THE RIDERS: node tests/riders.cjs [dist/market.html]. Underground with train 1 at A: every rider sits with bent knees and feet on the floor, and none stays still.
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:800,height:450}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+  await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(2000);
+  const idle=()=>pg.waitForFunction(()=>FADE.busy===0&&getComputedStyle(document.getElementById('subfade')).opacity==='0',null,{timeout:300000,polling:500}).catch(()=>{});
+  await idle(); await pg.evaluate(()=>{ const p=SHARED.METRO.plat; __dbg.UI.goTo(p.x,p.z,'down'); }); await idle();
+  await pg.evaluate(()=>{ const t=TRAINS.list[0], e=t.tbl.find(q=>q.st.old), now=TRAINS.now(); TRAINS.skew+=((e.arr+5-((now-t.off)%t.lap))%t.lap+t.lap)%t.lap; });
+  await pg.waitForFunction(()=>window.RIDERS&&RIDERS.list.length>=8,null,{timeout:180000}).catch(()=>{});
+  const S=await pg.evaluate(()=>{ const R=RIG, out=[]; for(const rd of RIDERS.list){ const B=R.settle(R.build(rd.P0,null),0), J=B.J, top=(rd.seat.y-rd.seat.floor)/rd.g.scale.y;
+      for(const s of 'LR'){ const h=J['hip'+s], a=J['ankle'+s]; out.push({kind:rd.kind,foot:+a.y.toFixed(2),reach:+Math.hypot(a.x-h.x,a.y-h.y,a.z-h.z).toFixed(2),hip:+h.y.toFixed(2),top:+top.toFixed(2)}); } } return {n:RIDERS.list.length,legs:out,thigh:R.RIGP.bones.thigh,shin:R.RIGP.bones.shin,ankle:R.ANKLE}; });
+  ok(S.n>=8,'riders made on the trains ('+S.n+')');
+  const bentAll=S.legs.every(l=>l.reach<S.thigh+S.shin-.4), onFloor=S.legs.every(l=>Math.abs(l.foot-S.ankle)<.8), onSeat=S.legs.every(l=>l.hip>l.top&&l.hip<l.top+3.5);
+  ok(bentAll,'every rider\'s knees bend (reach < '+(S.thigh+S.shin-.4).toFixed(1)+': '+S.legs.map(l=>l.reach).join(' ')+')');
+  ok(onFloor,'every rider\'s feet rest on the floor (ankle heights '+S.legs.map(l=>l.foot).join(' ')+', standing '+S.ankle+')');
+  ok(onSeat,'every rider\'s hips sit just above the cushion ('+S.legs.slice(0,4).map(l=>l.hip+' over '+l.top).join(', ')+')');
+  const snap=()=>pg.evaluate(()=>{ const P=__dbg.you(); return RIDERS.list.map(rd=>{ const w=rd.g.localToWorld(rd.g.position.clone().set(0,0,0)); return {near:Math.hypot(w.x-P.x,w.z-P.z)<80,v:+rd.FM.PM.value.reduce((a,m)=>a+m.elements[13]+m.elements[12]*.37,0).toFixed(4)}; }); });
+  const m0=await snap(); await pg.waitForTimeout(2500); const m1=await snap();
+  const near=m0.filter(q=>q.near).length, moved=m0.filter((q,i)=>q.near&&q.v!==m1[i].v).length; ok(near>=3&&moved===near,'every rider near you keeps moving in their seat ('+moved+' of '+near+' near, over 2.5 s; the far ones rest)');
+  ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
+  await b.close(); process.exit(bad?1:0); })();

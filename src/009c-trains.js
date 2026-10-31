@@ -110,13 +110,13 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     // seats along both walls between the doors, a partition at each end of a run, poles and rails
     const pan=[], back=[], skirt=[], part=[], poles=[];
     for(const s of [-1,1])for(const [a,b] of bays){ const n=Math.max(1,Math.floor((b-a-.5)/1.05)), w=(b-a-.5)/n; skirt.push([(a+b)/2,s,b-a-.5]);
-      for(let i=0;i<n;i++){ const x=a+.25+w*(i+.5); pan.push([x,s,i%2]); back.push([x,s,i%2]); seats.push({x:x*T,y:Y(FZ+17),floor:Y(FZ),z:s*(CWI-.55)*T,hd:s>0?Math.PI:0,s}); }
+      for(let i=0;i<n;i++){ const x=a+.25+w*(i+.5); pan.push([x,s,i%2]); back.push([x,s,i%2]); seats.push({x:x*T,y:Y(FZ+12.5),floor:Y(FZ),z:s*(CWI-.32)*T,hd:s>0?Math.PI:0,s}); }
       for(const e of [a,b])if(Math.abs(e)<CARL/2-1){ part.push([e,s]); poles.push([e,s*(CWI-1.05),FZ,FZ+CEIL]); } }
     for(const m of DOORS)poles.push([m,0,FZ,FZ+CEIL]);
     const im=(geo,mat,L,fn)=>{ if(!L.length)return; const I=new THREE.InstancedMesh(geo,mat,L.length), o=new THREE.Object3D(); L.forEach((q,i)=>{ fn(o,q); o.updateMatrix(); I.setMatrixAt(i,o.matrix); }); inner.add(I); return I; };
-    for(const k of [0,1]){ im(new THREE.BoxGeometry(.92*T,z(3),.95*T),MSEAT[k],pan.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+15.5),s*(CWI-.52)*T); o.rotation.set(s*.06,0,0); });
-      im(new THREE.BoxGeometry(.92*T,z(22),.1*T),MSEAT[k],back.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+29),s*(CWI-.1)*T); o.rotation.set(-s*.13,0,0); }); }
-    im(new THREE.BoxGeometry(1,z(14),.8*T),MDARK,skirt,(o,[x,s,w])=>{ o.position.set(x*T,Y(FZ+7),s*(CWI-.45)*T); o.scale.set(w*T,1,1); });
+    for(const k of [0,1]){ im(new THREE.BoxGeometry(.92*T,z(3),.42*T),MSEAT[k],pan.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+11),s*(CWI-.32)*T); o.rotation.set(s*.06,0,0); });
+      im(new THREE.BoxGeometry(.92*T,z(26),.1*T),MSEAT[k],back.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+24.5),s*(CWI-.1)*T); o.rotation.set(-s*.13,0,0); }); }
+    im(new THREE.BoxGeometry(1,z(11),.42*T),MDARK,skirt,(o,[x,s,w])=>{ o.position.set(x*T,Y(FZ+5.5),s*(CWI-.32)*T); o.scale.set(w*T,1,1); });
     im(new THREE.BoxGeometry(.05*T,z(48),1.05*T),MSTEEL,part,(o,[x,s])=>{ o.position.set(x*T,Y(FZ+24),s*(CWI-.55)*T); });
     im(new THREE.CylinderGeometry(.045*T,.045*T,1,8),MPOLE,poles,(o,[x,zz,y0,y1])=>{ o.position.set(x*T,Y((y0+y1)/2),zz*T); o.scale.set(1,Y(y1)-Y(y0),1); });
     for(const s of [-1,1])box(inner,CARL*T-2,.06*T,.06*T,0,Y(FZ+74),s*(CWI-1.05)*T,MPOLE);

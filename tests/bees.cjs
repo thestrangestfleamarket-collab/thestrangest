@@ -39,7 +39,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // other players: your hives go to the section; theirs stand where they set them, with their name, and come down when they lift them
   const op = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), sent = []; ONLINE.on = true; const send = ONLINE.send; ONLINE.send = m => sent.push(m);
     ONLINE.hear.puts({ all: [{ id: 'z', name: 'Rosa', k: 'hive', list: [[p[0] + 3 * T, p[1], p[2] + 2 * T, 6]] }] }); await new Promise(r => setTimeout(r, 400));
-    const L = BEES.theirs.get('z') || [], h = L[0], o = { n: L.length, shown: !!(h && h.g && h.g.visible), name: h && h.th && h.th.name, mine: (sent.find(m => m.t === 'puts') || {}).list };
+    const L = BEES.theirs.get('z') || [], h = L[0], o = { n: L.length, shown: !!(h && h.g && h.g.visible), name: h && h.th && h.th.name, mine: (sent.find(m => m.t === 'puts' && m.k === 'hive') || {}).list };
     ONLINE.hear.puts({ id: 'z', k: 'hive', name: 'Rosa', list: [] }); o.gone = !BEES.theirs.has('z') && !(h && h.g); ONLINE.send = send; return o; });
   ok(op.n === 1 && op.shown && op.name === "ROSA'S BEEHIVE" && Array.isArray(op.mine) && op.mine.length === 2 && op.gone, "another player's hive stands where they set it, with their name, and goes when they lift it; yours are sent to the section: " + JSON.stringify(op));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

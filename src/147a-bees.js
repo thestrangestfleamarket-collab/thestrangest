@@ -53,7 +53,7 @@ const BEES={list:[]}; window.BEES=BEES;
   const THEIRS=new Map(); BEES.theirs=THEIRS;
   const theirs=(id,name,list)=>{ for(const h of THEIRS.get(id)||[])unbox(h); THEIRS.delete(id); if(!id||id===ONLINE.me||!Array.isArray(list)||!list.length)return;
     const L=list.map(a=>({x:+a[0],y:+a[1],z:+a[2],f:+a[3]||0,who:String(name||'A NEIGHBOUR').toUpperCase()})).filter(h=>isFinite(h.x)&&isFinite(h.z)); if(ready)for(const h of L)box(h); THEIRS.set(id,L); };
-  ONLINE.hear.puts=m=>{ if(m.all){ for(const id of [...THEIRS.keys()])theirs(id); for(const r of m.all)if(r&&r.k==='hive')theirs(r.id,r.name,r.list); share(); return; } if(m.k==='hive')theirs(m.id,m.name,m.list); };
+  ONLINE.puts.hive={set:theirs,clear:()=>{ for(const id of [...THEIRS.keys()])theirs(id); },share};
   BEES.set=()=>{ if(!FORAGE.has('bee_hive'))return say('YOU HAVE NO HIVE. THE BEEKEEPER SELLS THEM.','#c8a090'); if(S.hives.length>=MAX)return say('YOU KEEP THREE HIVES ALREADY.','#c8a090');
     if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur)||!(WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)))return say('SET A HIVE ON THE PARK LAWN, AMONG FLOWERS.','#c8a090');
     const h0=SHARED.heading, x=pos.x+Math.sin(h0)*1.2*T, z=pos.z+Math.cos(h0)*1.2*T; if(S.hives.some(h=>Math.hypot(h.x-x,h.z-z)<2*T))return say('TOO CLOSE TO ANOTHER HIVE.','#c8a090');

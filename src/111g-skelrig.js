@@ -8,7 +8,10 @@ const SKELRIG={seen:new Set()}; window.SKELRIG=SKELRIG;
   SKD().then(J=>{ SKB={}; for(const k in J.bodies)SKB[k]=BODIES.rebakedBody(J,k); }).catch(e=>console.warn('SKELRIG skel',e));
   PWD().then(J=>{ PWB={}; for(const k in J.bodies)PWB[k]=BODIES.rebakedBody(J,k); }).catch(e=>console.warn('SKELRIG pawn',e));
   const YS=ZU*24/TILE;
-  const bodyOf=N=>N.skelChar?(SKB&&SKB[N.skelChar]):(N.pawnKind&&!N.copy)?(PWB&&PWB[N.pawnKind]):null;   // golem copies keep their stone skinned body
+  const PEOPLE=new Set(['hero_m','hero_f','villager_m','villager_f']);
+  const bodyOf=N=>{ if(N.skelChar)return SKB&&SKB[N.skelChar]; if(!N.pawnKind||!PWB)return null;
+    if(N.copy)return PEOPLE.has(N.pawnKind)?PWB[N.pawnKind+'_golem']:null;   // a golem copy -> its stone body
+    return PWB[N.pawnKind]; };
   const add=(N,body)=>{ const {me,PM}=BODIES.mesh(body), grp=new THREE.Group(), k=body.height*N.H/((N.tall0||2.166)*52);
     grp.scale.set(k,k*YS,k); grp.add(me); N.g.add(grp);
     for(const m of N.g.children)if(m!==grp)m.visible=false;   // hide the skinned body (and its gear)

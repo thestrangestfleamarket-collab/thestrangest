@@ -133,35 +133,48 @@ def seg(aP,aC,aB,aI, A,B, ra,rb, bi, color):
             t=a/6*2*np.pi; aP.append(C+(np.cos(t)*r)*x+(np.sin(t)*r)*z); aC.append(color); aB.append([bi,bi])
     for a in range(6):
         a1=(a+1)%6; aI.append([o+a,o+6+a,o+a1]); aI.append([o+a1,o+6+a,o+6+a1])
+def build_pawn(c, r):
+    rig=c['rig']; names=rig['names']; nidx={n:i for i,n in enumerate(names)}
+    P,col,idx,ji,wt=decode_mesh(c['mesh']); W=bone_world(rig); jp=lambda nm:W[nidx[nm]]
+    dom=np.array([ji[v][int(np.argmax(wt[v]))] for v in range(len(P))])
+    sp=nidx['DEF_spine']; hli={'L':nidx['DEF_hand_L'],'R':nidx['DEF_hand_R']}
+    shy=1.72; tv=P[(dom==sp)&(np.abs(P[:,1]-shy)<0.13)]; sx=float(np.abs(tv[:,0]).max()) if len(tv) else 0.22
+    def meancol(mask,dflt): return col[mask].mean(0) if mask.any() else np.array(dflt)
+    tcol=meancol((dom==sp)&(np.abs(P[:,1]-shy)<0.16),[0.5,0.5,0.55])
+    J={'pelvis':jp('DEF_pelvis'),'waist':jp('DEF_spine'),'neck':jp('DEF_head')}
+    J['headTop']=J['neck']+np.array([0,float(P[:,1].max())-J['neck'][1],0])
+    aP=[]; aC=[]; aB=[]; aI=[]
+    for n,sg in (('L',1),('R',-1)):
+        Wr=jp('DEF_hand_'+n); S=np.array([sg*sx*0.95, shy, Wr[2]]); E=(S+Wr)/2
+        J['shoulder'+n]=S; J['elbow'+n]=E; J['wrist'+n]=Wr
+        J['hip'+n]=jp('DEF_thigh_'+n); J['knee'+n]=jp('DEF_calf_'+n); J['ankle'+n]=jp('DEF_foot_'+n)
+        ad=Wr-E; J['tip'+n]=Wr+ad/(np.linalg.norm(ad) or 1)*0.1*float(P[:,1].max()); J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12])
+        hc=meancol(dom==hli[n],[0.8,0.6,0.5])
+        seg(aP,aC,aB,aI, S,E, r,r*0.92, BONES.index('upperArm'+n), tcol)
+        seg(aP,aC,aB,aI, E,Wr, r*0.92,r*0.8, BONES.index('forearm'+n), hc)
+    bone,wout=remap_weights(names,ji,wt,PAWN_W)
+    if aP:
+        base=len(P); P=np.vstack([P,np.array(aP)]); col=np.vstack([col,np.array(aC)])
+        bone=np.vstack([bone,np.array(aB,int)]); wout=np.concatenate([wout,np.ones(len(aP))]); idx=np.vstack([idx,np.array(aI,int)+base])
+    return P,idx,bone,wout,col,J
+def stonify(P, col, seed):   # gray mottled stone with a few dark cracks (the rock golems, cel)
+    l=(col[:,0]*0.3+col[:,1]*0.59+col[:,2]*0.11)
+    base=np.array([0.52,0.51,0.49])
+    nz=np.abs(np.sin(P[:,0]*17.1+P[:,1]*13.3+P[:,2]*23.7+seed*2.3))
+    crack=(np.sin(P[:,1]*55+P[:,0]*22+seed)>0.95).astype(float)*0.4
+    return np.clip(base[None,:]*(0.5+0.6*l)[:,None]*(0.8+0.32*nz)[:,None]*(1-crack)[:,None],0.04,1.0)
 def bake_pawns(outpath):
     d=json.load(open('data/pawns.json'))
     kinds=['hero_m','hero_f','villager_m','villager_f','ogre','ogre_mage','ogre_guard_light','ogre_guard_heavy','skeleton_mage','skeleton_reaper','skeleton_guard_light','skeleton_guard_heavy']
+    people=['hero_m','hero_f','villager_m','villager_f']
     out={'bones':BONES,'bodies':{}}
     for key in kinds:
-        c=d[key]; rig=c['rig']; names=rig['names']; nidx={n:i for i,n in enumerate(names)}
-        P,col,idx,ji,wt=decode_mesh(c['mesh']); W=bone_world(rig); jp=lambda nm:W[nidx[nm]]
-        dom=np.array([ji[v][int(np.argmax(wt[v]))] for v in range(len(P))])
-        sp=nidx['DEF_spine']; hli={'L':nidx['DEF_hand_L'],'R':nidx['DEF_hand_R']}
-        shy=1.72; tv=P[(dom==sp)&(np.abs(P[:,1]-shy)<0.13)]; sx=float(np.abs(tv[:,0]).max()) if len(tv) else 0.22
-        def meancol(mask,dflt): return col[mask].mean(0) if mask.any() else np.array(dflt)
-        tcol=meancol((dom==sp)&(np.abs(P[:,1]-shy)<0.16),[0.5,0.5,0.55])
         r=0.12 if key.startswith('ogre') else (0.05 if key.startswith('skeleton') else 0.085)
-        J={'pelvis':jp('DEF_pelvis'),'waist':jp('DEF_spine'),'neck':jp('DEF_head')}
-        J['headTop']=J['neck']+np.array([0,float(P[:,1].max())-J['neck'][1],0])
-        aP=[]; aC=[]; aB=[]; aI=[]
-        for n,sg in (('L',1),('R',-1)):
-            Wr=jp('DEF_hand_'+n); S=np.array([sg*sx*0.95, shy, Wr[2]]); E=(S+Wr)/2
-            J['shoulder'+n]=S; J['elbow'+n]=E; J['wrist'+n]=Wr
-            J['hip'+n]=jp('DEF_thigh_'+n); J['knee'+n]=jp('DEF_calf_'+n); J['ankle'+n]=jp('DEF_foot_'+n)
-            ad=Wr-E; J['tip'+n]=Wr+ad/(np.linalg.norm(ad) or 1)*0.1*float(P[:,1].max()); J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12])
-            hc=meancol(dom==hli[n],[0.8,0.6,0.5])
-            seg(aP,aC,aB,aI, S,E, r,r*0.92, BONES.index('upperArm'+n), tcol)
-            seg(aP,aC,aB,aI, E,Wr, r*0.92,r*0.8, BONES.index('forearm'+n), hc)
-        bone,wout=remap_weights(names,ji,wt,PAWN_W)
-        if aP:
-            base=len(P); P=np.vstack([P,np.array(aP)]); col=np.vstack([col,np.array(aC)])
-            bone=np.vstack([bone,np.array(aB,int)]); wout=np.concatenate([wout,np.ones(len(aP))]); idx=np.vstack([idx,np.array(aI,int)+base])
-        out['bodies'][key]=encode_body(P,idx,bone,wout,col,J); print(key,'verts',len(P),'arms',len(aP))
+        P,idx,bone,wout,col,J=build_pawn(d[key], r)
+        out['bodies'][key]=encode_body(P,idx,bone,wout,col,J); print(key,'verts',len(P))
+    for key in people:   # rock golems: the people bodies turned to stone
+        P,idx,bone,wout,col,J=build_pawn(d[key], 0.1)
+        out['bodies'][key+'_golem']=encode_body(P,idx,bone,wout,stonify(P,col,7),J); print(key+'_golem','verts',len(P))
     json.dump(out,open(outpath,'w'),separators=(',',':')); import os; print(outpath,round(os.path.getsize(outpath)/1e6,2),'MB')
 
 if __name__=='__main__':

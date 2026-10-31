@@ -2,7 +2,8 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, STORE, TILE, WP, WROW} from './006-map-pre.js';
+import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTIONS, STORE, TILE, WP, WROW} from './006-map-pre.js';
+import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
 { const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
@@ -78,15 +79,15 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     ['shop','BUILDINGS',1],['filler','GARAGES AND LOTS',1],['park','PARK PLACES',1],['tree','TREES',1],['label','NAMES',1],['grid','GRID',0]];
   const GROUND=LAYERS.slice(0,7), LAYERS_CH=[...GROUND,['mapthings','MAP THINGS (FAINT)',1],['you','YOU',1],['people','PEOPLE',1],['toon','TOONS',1],['merchant','MERCHANTS',1],['animal','ANIMALS',1],['monster','MONSTERS',1],['label','NAMES',1],['grid','GRID',0]];
   const SHOW={}; for(const [k,,on] of [...LAYERS,...LAYERS_CH])SHOW[k]=!!on; try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('maped-show')||'{}')); }catch(e){}
-  const C={void:[11,13,18],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
-  const LAYOF={water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall'};
+  const C={void:[11,13,18],lot:[70,66,60],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
+  const LAYOF={lot:'walk',water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall'};
   const LCOL={shop:[176,86,62],filler:[110,100,96],shell:[140,106,88],park:[154,148,136],tree:[36,80,42],path:[186,170,128]};
   const FACEROT={n:0,e:-90,s:180,w:90}, faceOf=r=>['n','w','s','e'][((Math.round((r||0)/90)%4)+4)%4], bld=o=>!!(o&&o.gid&&WP[o.gid]&&WP[o.gid].kind==='front'), turns=o=>bld(o)&&WP[o.gid].y1!=null;
   const K=BLDK, bt=(x,y)=>[SHARED.BOD.OX+(x-SHARED.BOD.OX)*K,SHARED.BOD.OY+(y-SHARED.BOD.OY)*K], wt=(x,z)=>[SHARED.BOD.OX+x/T,SHARED.BOD.OY+z/T];
   const FRONT=-77, BACK=BLOCK.back;
   let TER=null, F=null; const S=2;
   const terrain=()=>{ F={...RING.cf}; const W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=SHARED.BOD.grounds.filter(g=>!g.bld), RA=SHARED.BOD.road.at;
-    const kind=(x,y)=>{ if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
+    const SM=MODS.sections, kind=(x,y)=>{ const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; const u=x-P.ox, v=y-P.oy; if(FOUNT.lake(u,v)<0)return 'water'; if(FOUNT.ter(u,v)<0)return 'way';
         if(P.brook){ const h=P.brook.h(u,v), q=P.brook.q(u,v); if(h!=null&&q&&h<P.brook.L(q[1]))return 'water'; } return 'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
@@ -179,6 +180,10 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   function draw(){ if(!MAPED.open||!TER)return; const dpr=Math.min(2,devicePixelRatio||1); g.setTransform(1,0,0,1,0,0); g.fillStyle='#07090d'; g.fillRect(0,0,cv.width,cv.height); g.imageSmoothingEnabled=false;
     g.drawImage(TER.cv,sx(F.x0),sy(F.y1),(F.x1-F.x0)*V.k,(F.y1-F.y0)*V.k);
     if(SHOW.grid){ g.strokeStyle='rgba(255,255,255,.07)'; g.lineWidth=1; const st=V.k<2?50:V.k<6?10:5; for(let x=Math.ceil(F.x0/st)*st;x<=F.x1;x+=st){ g.beginPath(); g.moveTo(sx(x),sy(F.y1)); g.lineTo(sx(x),sy(F.y0)); g.stroke(); } for(let y=Math.ceil(F.y0/st)*st;y<=F.y1;y+=st){ g.beginPath(); g.moveTo(sx(F.x0),sy(y)); g.lineTo(sx(F.x1),sy(y)); g.stroke(); } }
+    const SM=MODS.sections, homeA=SECTIONS.home.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A');
+    if(SM&&SM.secs.length){ for(const R of SM.rows){ const L=R.lot, c=R.col||[120,110,100]; g.fillStyle=`rgb(${c})`; g.fillRect(sx(L.x0),sy(L.y1),(L.x1-L.x0)*V.k,(L.y1-L.y0)*V.k); g.strokeStyle='rgba(0,0,0,.5)'; g.lineWidth=1; g.strokeRect(sx(L.x0)+.5,sy(L.y1)+.5,(L.x1-L.x0)*V.k-1,(L.y1-L.y0)*V.k-1); }
+      for(const st of LOOP.STA||[]){ if(st.old)continue; const k=st.kiosk; g.fillStyle='#1e1e22'; g.fillRect(sx(k.x0),sy(k.y1),(k.x1-k.x0)*V.k,(k.y1-k.y0)*V.k); } }
+    { const b=SECTIONS.home, d=Math.min((b.x1-b.x0),(b.y1-b.y0))*V.k; g.font=`bold ${Math.round(Math.min(160,d*.2))}px Silkscreen,monospace`; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='rgba(236,229,211,.12)'; g.fillText(b.id,sx((b.x0+b.x1)/2),sy((b.y0+b.y1)/2)); }
     g.strokeStyle='#46c8d2'; g.lineWidth=2; g.strokeRect(sx(F.x0),sy(F.y1),(F.x1-F.x0)*V.k,(F.y1-F.y0)*V.k);
     const chars=MODE==='chars', LIST=chars?(SHOW.mapthings?(ST.map.items||(ST.map.items=mapStart())):[]):ITEMS;
     for(const ly of ORDER){ if(!(chars?SHOW.mapthings:SHOW[ly]))continue; for(const o of LIST){ if(o.ly!==ly||(chars&&!SHOW[o.ly]&&o.ly!=='path'))continue; const on=!chars&&o===sel, [hw,hd]=sz(o); if(chars)g.globalAlpha=.3; g.save(); g.translate(sx(o.x),sy(o.y)); g.rotate(-(o.rot||0)*Math.PI/180); g.globalAlpha=Math.max(.15,o.opacity==null?1:o.opacity)*(chars?.3:1);
@@ -193,7 +198,10 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       g.beginPath(); g.arc(sx(H.rot[0]),sy(H.rot[1]),6*dpr,0,7); g.fill(); g.stroke(); g.fillRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); g.strokeRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); }
     if(SHOW.label){ g.font=Math.round(9*dpr)+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
       for(const o of ITEMS){ if(!SHOW[o.ly]||o.ly==='filler'||o.ly==='tree'||(o.ly==='path'&&o!==sel)||(o.ly==='shell'&&V.k<3)||(chars&&(!onMap(o)||(V.k<4&&o!==sel))))continue; const t=o.n.replace(/ \(.*\)/,''); g.fillStyle='rgba(0,0,0,.6)'; const w=g.measureText(t).width; g.fillRect(sx(o.x)-w/2-2,sy(o.y)-7*dpr,w+4,14*dpr); g.fillStyle=o===sel?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); }
-      g.fillStyle='rgba(236,229,211,.5)'; for(const [t,x,y] of [['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]])g.fillText(t,sx(x),sy(y)); } }
+      g.fillStyle='rgba(236,229,211,.5)'; const LB=homeA?[['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]]:[];
+      if(!homeA&&SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, b=SECTIONS.home, cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; LB.push([b.row===0?ST.south:ST.north,cx,b.row===0?(rd.y0+inn.y0)/2:(rd.y1+inn.y1)/2]); if(b.col===0)LB.push([ST.west,(rd.x0+inn.x0)/2,cy]); if(b.col===SECTIONS.grid.cols-1)LB.push([ST.east,(rd.x1+inn.x1)/2,cy]);
+        for(const st of LOOP.STA||[])if(!st.old)LB.push([st.id+'1 '+st.name,(st.kiosk.x0+st.kiosk.x1)/2,st.side==='south'?st.kiosk.y0-2.5:st.kiosk.y1+2.5]); }
+      for(const [t,x,y] of LB)g.fillText(t,sx(x),sy(y)); } }
 
   const f2=v=>(+v||0).toFixed(2), KINDS={shop:'BUILDING',filler:'GARAGE OR LOT',park:'PARK PLACE',tree:'TREE',path:'PATH'};
   const fld=(lab,k,v,step=.25,type='number')=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">'+lab+(type==='number'?'<input data-f="'+k+'" type="number" step="'+step+'" value="'+f2(v)+'"':'<input data-f="'+k+'" type="'+type+'" value="'+String(v).replace(/"/g,'&quot;')+'"')+' style="width:'+(type==='color'?'60px':'110px')+';font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e;padding:2px 4px"></label>';

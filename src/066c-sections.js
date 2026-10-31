@@ -66,7 +66,9 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     const q=[XS(L.x0),ZS(L.y0),XS(L.x1),ZS(L.y1)]; SOL.up.push(q); FIX.up.push([q[0],q[1],0,q[2],q[3],H*ZU*BLDK]); }
   for(const b of secs)for(const r of [{x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water},mirrorY({x0:b.x0,x1:b.x1,y0:A.y0+G.water-.4,y1:A.y0+G.water})]){ const q=clip(r,b); if(q){ const w=[XS(q.x0),ZS(q.y0),XS(q.x1),ZS(q.y1)]; SOL.up.push(w); FIX.up.push([w[0],w[1],0,w[2],w[3],.9]); } }
 
-  MODS.sections={pieces:MP,rows,road,inner};
+  const SPC={}, SKN={lot:'lot',water:'water',shore:'quay',walk:'walk',road:'road',grass:'lawn'}, inB=(r,b)=>r.x0>=b.x0-.01&&r.x1<=b.x1+.01&&r.y0>=b.y0-.01&&r.y1<=b.y1+.01;
+  for(const q of MP){ const b=secs.find(c=>inB(q.r,c)); if(b)(SPC[b.id]=SPC[b.id]||[]).push(q); } for(const k in SPC)SPC[k].sort((a,b)=>b.lift-a.lift);
+  MODS.sections={pieces:MP,rows,road,inner,secs,kindAt:(x,y)=>{ const b=secs.find(c=>x>=c.x0&&x<c.x1&&y>=c.y0&&y<c.y1); if(!b)return null; for(const pd of ponds){ const r=pd.r; if(pd.id===b.id&&x>=r.x0-.35&&x<r.x1+.35&&y>=r.y0-.35&&y<r.y1+.35)return x>=r.x0&&x<r.x1&&y>=r.y0&&y<r.y1?'water':'quay'; } for(const q of SPC[b.id]||[])if(x>=q.r.x0&&x<q.r.x1&&y>=q.r.y0&&y<q.r.y1)return SKN[q.k]; return 'land'; }};
   // a pond in each section's park, fished like THE LAKE: a stone kerb round still water in the one water (FLOW), 3 m deep; you fish it from the kerb
   const ponds=[], LV=.12, KH=.36;
   for(const b of secs){ const q=clip(P,b); if(!q||q.x1-q.x0<24||q.y1-q.y0<18)continue; const w=10+hash(b.col,b.row,55)*4, h=6+hash(b.row,b.col,57)*2;

@@ -147,6 +147,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   const sheet=()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(1,DZ).rotateX(-Math.PI/2),flatMat); m.position.set(0,LV,(rz0+rz1)/2); scene.add(m); return m; };
   const flatAll=sheet(), flatL=sheet(), flatR=sheet();
   const sea=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0+400,900).rotateX(-Math.PI/2),flatMat); sea.position.set((lx0+lx1)/2,LV-0.05,rz0-450); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
+  for(const [a,b] of [[lx0-200,lx0+2*T],[lx1-2*T,lx1+200]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),flatMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
   const setFlats=()=>{ flatAll.scale.x=lx1-lx0; flatAll.position.x=(lx0+lx1)/2; const a=RIVER.cx-WIN/2, b=RIVER.cx+WIN/2;
     flatL.scale.x=Math.max(.01,a-lx0); flatL.position.x=(lx0+a)/2; flatR.scale.x=Math.max(.01,lx1-b); flatR.position.x=(b+lx1)/2; };
 
@@ -159,8 +160,8 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     { const w=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0,H),wm); w.position.set((lx0+lx1)/2,-H/2,rz1); w.rotation.y=Math.PI; w.receiveShadow=true; scene.add(w); RIVER.wallN=w; } RIVER.wallS=null; }
   const selfLit=m=>{ m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.5;'); }; return m; };
   const cope=new THREE.Mesh(new THREE.BoxGeometry(lx1-lx0,.12*T,.45*T),selfLit(new THREE.MeshLambertMaterial({color:0x8c8a82}))); cope.position.set((lx0+lx1)/2,.06*T-.5*ZU,rz1+.22*T); cope.receiveShadow=true; scene.add(cope);
-  const LAD=[]; for(let x=fx0+10*T;x<fx1-4*T;x+=20*T)LAD.push(x); RIVER.ladders=LAD;
-  const PL=9*T, PW=1.2*T, P3=LAD.filter((x,i)=>i%3===1), FP=P3.reduce((b,x)=>Math.abs(x-XS(61))<Math.abs(b-XS(61))?x:b,P3[0]), PIERS=P3.filter(x=>x!==FP); RIVER.piers=PIERS; RIVER.fpier=FP;
+  const LAD=[]; for(let x=fx0+10*T;x<fx1-4*T;x+=10*T)LAD.push(x); RIVER.ladders=LAD;   // ladders close along the quay so one is always within reach
+  const PL=9*T, PW=1.2*T, P3=LAD.filter((x,i)=>i%3===1), FP=P3.reduce((b,x)=>Math.abs(x-XS(61))<Math.abs(b-XS(61))?x:b,P3[0]), PIERS=[]; RIVER.piers=PIERS; RIVER.fpier=FP;   // the small decks are gone (owner); only the long fishing pier remains
   const POSTS=[]; RIVER.posts=POSTS; for(const px of PIERS)for(let k=0;k<4;k++)for(const o of [-1,1])POSTS.push([px+o*1.0*T,rz1-(1.2+2.4*k)*T,.16*T]);
   FLOW.add({name:'hudson',kind:'river',shown:()=>RIVER.shown&&RIVER.way!=='flat',box:[lx0,rz0,lx1,rz1],has:(x,z)=>x>lx0&&x<lx1&&z>rz0&&z<rz1,bed:(x,z)=>LV-depthAt(x,z)*WU,rest:()=>LV,swell:true,solid:(x,z)=>POSTS.some(([px,pz,r])=>Math.hypot(x-px,z-pz)<r)});
   const DECKS=RIVER.decks=PIERS.map(px=>({r:[[px-PW,rz1-PL,px+PW,rz1]],lad:[px,rz1-PL-.55*T,px,rz1-PL+.8*T]}));   // walkable decks over the water: their rectangles, and a ladder (in the water, out on the deck); the long pier adds its own (066b)
@@ -223,8 +224,8 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     wasIn=W.in;
     for(const e of W.events)if(e.k==='splash'){ RIVER.drop(pos.x,pos.z,.5*T,Math.min(.14,.02+e.v*.0009)*WU); splash(pos.x,LV+h,pos.z,Math.min(90,20+e.v*.5),Math.min(3,1+e.v*.015)); sound(Math.min(1,e.v/120),false); } W.events.length=0;
     wake-=dt; if(W.in&&wake<0){ wake=.07; const s=(go?.016:.006)*(1+W.fast)*WU*.6; RIVER.drop(pos.x+(Math.random()-.5)*.25,pos.z+(Math.random()-.5)*.25,.35*T,s); if(go&&!W.dive&&Math.random()<.35)splash(pos.x,LV+h,pos.z,3+(W.fast?4:0),1.1); }
-    if(W.in&&keys.has(' ')&&W.y>lvl-40){ const dk=DECKS.find(d=>d.lad&&Math.abs(d.lad[0]-pos.x)<.8*T&&Math.abs(d.lad[1]-pos.z)<.6*T), pe=dk?dk.lad:null; if(pe!=null){ W.in=false; W.dive=false; st.water.level=null; pos.x=pe[2]; pos.z=pe[3]; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
-      const lx=pos.z>rz1-1.1*T?LAD.find(x=>Math.abs(x-pos.x)<.8*T):null; if(pe==null&&lx!=null){ W.in=false; W.dive=false; st.water.level=null; pos.x=lx; pos.z=rz1+.7*T; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; } }
+    if(W.in&&keys.has(' ')&&W.y>lvl-40){ const dk=DECKS.find(d=>d.lad&&Math.abs(d.lad[0]-pos.x)<1.1*T&&Math.abs(d.lad[1]-pos.z)<1.0*T), pe=dk?dk.lad:null; if(pe!=null){ W.in=false; W.dive=false; st.water.level=null; pos.x=pe[2]; pos.z=pe[3]; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
+      const lx=pos.z>rz1-2.0*T?LAD.reduce((b,x)=>Math.abs(x-pos.x)<Math.abs(b-pos.x)?x:b,LAD[0]):null; if(pe==null&&lx!=null&&Math.abs(lx-pos.x)<6*T){ W.in=false; W.dive=false; st.water.level=null; pos.x=lx; pos.z=rz1+.7*T; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; } }   // near the quay, SPACE climbs you out at the nearest ladder
     return true; };
   RIVER.clamp=pos=>{ const m=.35*T; pos.x=cl(pos.x,lx0+m,lx1-m); pos.z=cl(pos.z,rz0+m,rz1-m); for(const [x,z,r] of POSTS){ const dx=pos.x-x, dz=pos.z-z, d=Math.hypot(dx,dz), R0=r+.3*T; if(d<R0&&d>1e-4){ pos.x=x+dx/d*R0; pos.z=z+dz/d*R0; } } };
 

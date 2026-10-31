@@ -1,4 +1,4 @@
-// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and fenced-off lots.
+// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and empty dirt lots (no fences).
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -48,7 +48,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),o.e?[F,Bk,roofM,roofM,S,S]:[S,S,roofM,roofM,Bk,F]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.castShadow=false; m.receiveShadow=true; G.add(m);
     const cope=new THREE.Mesh(new THREE.BoxGeometry(W*T+.1*T,YP(8),D*T+.1*T),new THREE.MeshLambertMaterial({color:0x4a464e})); cope.position.set(m.position.x,H+YP(4),m.position.z); G.add(cope); PEEK.whole(m); PEEK.whole(cope);
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
-  const M=T/.84, FH=2*M, gy=(x,y)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(XS(x),ZS(y)):0;
+  const gy=(x,y)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(XS(x),ZS(y)):0;
   const quad=(P,U,I,a,b,c,d,ua,ub,uc,ud)=>{ const o=P.length/3; P.push(...a,...b,...c,...d); U.push(...ua,...ub,...uc,...ud); I.push(o,o+1,o+2,o,o+2,o+3); };
   const mesh=(P,U,I,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.receiveShadow=true; G.add(me); PEEK.whole(me); return me; };
   const lotPaint=(q,g,w,h)=>{ const R=(a,b)=>a+rnd()*(b-a), toC=(x,y)=>[(x-q.x0)*24,(q.y1-y)*24];
@@ -60,20 +60,12 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     else { g.fillStyle='#5e5040'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/30;k++){ const v=rnd(); g.fillStyle=v<.5?'#6e5e4a':v<.8?'#4e4234':'#7a6a54'; g.fillRect(R(0,w)|0,R(0,h)|0,2,2); }
       for(let k=0;k<w*h/260;k++){ const x=R(2,w-2), y=R(2,h-2), c=['#5a7a32','#6e8e3a','#48682a','#7e9a44'][rnd()*4|0]; g.fillStyle=c; for(let t=0;t<5;t++)g.fillRect(x+R(-3,3),y+R(-4,1),1,R(3,6)); }
       for(let k=0;k<3;k++){ g.fillStyle=['#b8b4a8','#8a3a2a','#3a5a7a'][k]; g.fillRect(R(6,w-12)|0,R(6,h-12)|0,R(3,7)|0,R(2,4)|0); } } };
-  const LINK=(()=>{ const c=cv(24,24), g=c.getContext('2d'); g.strokeStyle='#a8acb0'; g.lineWidth=1.4; for(const o of [-24,0,24]){ g.beginPath(); g.moveTo(o,0); g.lineTo(o+24,24); g.stroke(); g.beginPath(); g.moveTo(o+24,0); g.lineTo(o,24); g.stroke(); }
-    const t=tex(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return new THREE.MeshLambertMaterial({map:t,alphaTest:.4,side:THREE.DoubleSide}); })();
-  const FP=[], FU=[], FI=[], POST=[];
   function lot(q){ const W=q.x1-q.x0, D=q.y1-q.y0, c=cv(W*24,D*24); lotPaint(q,c.getContext('2d'),c.width,c.height);
     const P=[], U=[], I=[], y=.02*T, v=(x,yy)=>[XS(x),gy(x,yy)+y,ZS(yy)];
     quad(P,U,I,v(q.x0,q.y0),v(q.x1,q.y0),v(q.x1,q.y1),v(q.x0,q.y1),[0,0],[1,0],[1,1],[0,1]);
     mesh(P,U,I,new THREE.MeshLambertMaterial({map:tex(c),side:THREE.DoubleSide}));
-    if(q.kind==='fence'){ const g0=a=>gy(a[0],a[1]), sides=[[[q.x0,q.y0],[q.x1,q.y0]],[[q.x1,q.y0],[q.x1,q.y1]],[[q.x1,q.y1],[q.x0,q.y1]],[[q.x0,q.y1],[q.x0,q.y0]]];
-      for(const [a,b] of sides){ const len=Math.hypot(b[0]-a[0],b[1]-a[1]), ya=g0(a), yb=g0(b);
-        quad(FP,FU,FI,[XS(a[0]),ya,ZS(a[1])],[XS(b[0]),yb,ZS(b[1])],[XS(b[0]),yb+FH,ZS(b[1])],[XS(a[0]),ya+FH,ZS(a[1])],[0,0],[len*1.2,0],[len*1.2,FH/T*1.2],[0,FH/T*1.2]);
-        for(let k=0,n=Math.max(1,Math.round(len/3));k<=n;k++){ const t=k/n, x=a[0]+(b[0]-a[0])*t, yy=a[1]+(b[1]-a[1])*t; POST.push([XS(x),g0([x,yy]),ZS(yy)]); } }
-      solid(q.x0,q.y0,q.x1,q.y1,FH/ZU); }
     BLK.lots.push(q); }
-  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','fence'];
+  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
   let n=0; const spot=(row,off,i,box)=>{ n++; const kind=KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';
@@ -82,9 +74,6 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   for(const [a,b] of holes(MAINROW,B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
   for(const [a,b] of [[B.x0,-62.4],[-33.6,B.hudson[0]],[B.hudson[1],B.x1]])fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
   { const F=RING.wx0; for(const [a,b] of holes(LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }
-  if(FP.length){ mesh(FP,FU,FI,LINK);
-    const PM=new THREE.InstancedMesh(new THREE.BoxGeometry(.07*M,FH+.05*M,.07*M).translate(0,(FH+.05*M)/2,0),new THREE.MeshLambertMaterial({color:0x5a5e62}),POST.length), m4=new THREE.Matrix4();
-    POST.forEach(([x,y,z],i)=>PM.setMatrixAt(i,m4.makeTranslation(x,y,z))); G.add(PM); }
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
   { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;

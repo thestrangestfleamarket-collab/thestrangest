@@ -74,8 +74,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     return o.isMesh&&!(o.material&&o.material.visible===false)&&!(o.material&&o.material.transparent&&o.material.opacity<.05); };
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }
     ray.setFromCamera(ndc(e),SHARED.cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
-  UI.isoStep=d=>{ const A=Math.PI/2, k=(SHARED.yawTo-Math.PI/4)/A; SHARED.yawTo=Math.PI/4+(d>0?Math.floor(k+1e-6)+1:Math.ceil(k-1e-6)-1)*A; SHARED.yaw=SHARED.yawTo; };
-  UI.orbit=(dx,dy)=>{ '@later'; if(UI.view==='iso'){ SHARED.yawTo-=dx*.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
+  UI.isoStep=d=>{ const A=Math.PI/4, k=(SHARED.yawTo-Math.PI/4)/A; SHARED.yawTo=Math.PI/4+(d>0?Math.floor(k+1e-6)+1:Math.ceil(k-1e-6)-1)*A; SHARED.yaw=SHARED.yawTo; };
+  UI.orbit=(dx,dy)=>{ '@later'; if(UI.view==='iso')return;   // iso tilt is locked and only Q/E/R turn it (the eight angles); a drag never spins or tilts it
     if(UI.persp){ SHARED.yawTo-=dx*.006; SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dy*.005); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
     q0.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ')); SHARED.yawTo-=dx*0.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*0.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; q1.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
@@ -100,7 +100,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.setView=v=>{ UI.view=v; UI.persp=v==='third'||v==='first'||v==='follow'; if(UI.freeCam&&UI.persp)setFree(false);
     if(v==='iso'){ UI.isoTo(); SHARED.pitchTo=Math.PI/6; SHARED.ppuTo=PPU*1.5; UI.off.set(0,0,0); zAt=null; }
     if(v==='follow'){ UI.dist=4*TILE; SHARED.pitchTo=.2; }
-    if(v==='first'){ SHARED.pitchTo=.05; UI._fpy=null; } if(v==='third')SHARED.pitchTo=.3; if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
+    if(v==='first'){ SHARED.pitchTo=.05; UI._fpy=null; } if(v==='third'){ UI.off.set(0,0,0); UI.dist=8*TILE; SHARED.pitchTo=.45; SHARED.yawTo=SHARED.yaw=SHARED.heading+Math.PI; }   // third person opens behind him, looking down the street
+    if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
   UI.inIso=()=>{ UI.setView('iso'); requestAnimationFrame(()=>requestAnimationFrame(()=>UI.isoTo())); };   // going into an inside starts in the overhead view at the room's angle
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ UI.isoStep(-1); return; } SHARED.yawTo=Math.round((SHARED.yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{
@@ -180,11 +181,12 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:var(--mk)}
   #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
   #menu .foot{display:none}
+  #menu.solo .tabs{display:none} #menu.solo .box{grid-template-columns:minmax(0,1fr)} #menu.solo .pane{grid-column:1/-1} #menu.solo #mapcv{display:block;margin:0 auto;max-width:100%;max-height:calc(92vh - 300px);width:auto!important;image-rendering:pixelated}
   @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);font-size:14px} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} #menu #dhome .cp-btn{font-size:14px} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
     <div class="ttl frame"><span id="mttl">THE STRANGEST FLEA MARKET</span></div>
-    <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="map" hidden>MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="guide">GUIDE</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
+    <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="map" hidden>MAP</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button><button role="tab" data-t="guide">GUIDE</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
     <div class="pane" data-p="home" id="dhome"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <div class="row" id="mapz"></div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div><div class="row" id="places" hidden></div></div>
@@ -214,20 +216,22 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
+    <div class="pane" data-p="vr" id="dvr"></div>
     <div class="pane" data-p="guide" id="dguide"></div>
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="pane" data-p="tenants" id="dten"></div>
     <div class="foot"><span>ESC: CLOSE</span><span>ENTER: PICK</span></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
+  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.querySelectorAll('.row.pick').forEach(r=>{ const o=()=>[...r.querySelectorAll('.btn:not(.arr)')], arr=(t,d)=>{ const b=document.createElement('button'); b.className='btn arr'; b.textContent=t; b.setAttribute('aria-label',d<0?'previous':'next');
     b.onclick=()=>{ const L=o(), i=L.findIndex(x=>x.getAttribute('aria-pressed')==='true'); L[(i+d+L.length)%L.length].click(); }; return b; }; r.insertBefore(arr('<',-1),o()[0]); r.appendChild(arr('>',1)); });   // a row of choices shows only the one picked, stepped with < >
   const bars=()=>M.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/((r.max-r.min)||1)*100+'%')); M.addEventListener('input',bars);
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
-  UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); show(t); };
-  function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; if(UI.menuOpen){ mapLv=SHARED.LVL; show('home'); } else if(CHARP.hide)CHARP.hide(); }
+  UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; show(t); };
+  UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; show('map'); };   // the map alone, no settings tabs (Shift+M)
+  function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; if(UI.menuOpen){ mapLv=SHARED.LVL; show('home'); } else if(CHARP.hide)CHARP.hide(); }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;
     const w=B.x1-B.x0, d=B.z1-B.z0, k=Math.min(800/w,420/d); return {x0:B.x0,x1:B.x1,z0:B.z0,z1:B.z1,W:Math.round(w*k),H:Math.round(d*k)}; };

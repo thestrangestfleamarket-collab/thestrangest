@@ -1,6 +1,6 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, NPCS, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
@@ -41,17 +41,23 @@ const BEES={list:[]}; window.BEES=BEES;
   /* ---------- a hive: a white box on legs, its bees about it while you are near ---------- */
   const wood=new THREE.MeshLambertMaterial({color:0xf0ead8}), roofM=new THREE.MeshLambertMaterial({color:0x8a6a4a}), legM=new THREE.MeshLambertMaterial({color:0x5a4434}), HIT=new THREE.MeshBasicMaterial({visible:false});
   const BG=new THREE.BoxGeometry(.5*WU,.22*WU,.42*WU), RG=new THREE.BoxGeometry(.56*WU,.05*WU,.48*WU), LG=new THREE.BoxGeometry(.04*WU,.3*WU,.04*WU), HG=new THREE.BoxGeometry(.8*T,.9*T,.8*T);
-  const NB=8, beeG=new THREE.SphereGeometry(.018*WU,5,4), BEE=new THREE.InstancedMesh(beeG,new THREE.MeshBasicMaterial({color:0xe8b020}),MAX*NB); BEE.count=0; BEE.frustumCulled=false; BEE.raycast=()=>{}; scene.add(BEE);
+  const NB=8, beeG=new THREE.SphereGeometry(.018*WU,5,4), BEE=new THREE.InstancedMesh(beeG,new THREE.MeshBasicMaterial({color:0xe8b020}),MAX*NB*4); BEE.count=0; BEE.frustumCulled=false; BEE.raycast=()=>{}; scene.add(BEE);
   const box=h=>{ const g=new THREE.Group(); for(const [x,z] of [[-.2,-.16],[.2,-.16],[-.2,.16],[.2,.16]]){ const l=new THREE.Mesh(LG,legM); l.position.set(x*WU,.15*WU,z*WU); g.add(l); }
     for(let i=0;i<3;i++){ const b=new THREE.Mesh(BG,wood); b.position.y=(.41+i*.23)*WU; b.castShadow=true; g.add(b); } const r=new THREE.Mesh(RG,roofM); r.position.y=1.08*WU; g.add(r);
     const hb=new THREE.Mesh(HG,HIT); hb.position.y=.45*T; g.add(hb); g.position.set(h.x,h.y,h.z); scene.add(g); h.g=g;
-    h.th={name:'YOUR BEEHIVE',obj:hb,reach:2*T,near:3*T,tall:.9*T,act:()=>BEES.menu(h)}; UI.thing(h.th); };
+    h.th=h.who?{name:h.who+"'S BEEHIVE",obj:hb,reach:2*T,near:3*T,tall:.9*T,act:()=>say(`${h.who}'S HIVE. THE BEES HUM. BEST LEAVE IT TO THEM.`,'#e8e2cc')}:{name:'YOUR BEEHIVE',obj:hb,reach:2*T,near:3*T,tall:.9*T,act:()=>BEES.menu(h)}; UI.thing(h.th); };
   const unbox=h=>{ if(!h.g)return; scene.remove(h.g); const i=UI.things.indexOf(h.th); if(i>=0)UI.things.splice(i,1); h.g=null; };
   const ground=(x,z)=>(GARDEN.lawnAt&&GARDEN.lawnAt(x,z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):SHARED.py);
+  // your hives go to the section (the server keeps them while you are away); other players' hives come back and stand where they set them
+  const share=()=>{ if(ONLINE.on&&ONLINE.send)ONLINE.send({t:'puts',k:'hive',list:S.hives.map(h=>[+h.x.toFixed(2),+h.y.toFixed(2),+h.z.toFixed(2),Math.floor(frames(h))])}); };
+  const THEIRS=new Map(); BEES.theirs=THEIRS;
+  const theirs=(id,name,list)=>{ for(const h of THEIRS.get(id)||[])unbox(h); THEIRS.delete(id); if(!id||id===ONLINE.me||!Array.isArray(list)||!list.length)return;
+    const L=list.map(a=>({x:+a[0],y:+a[1],z:+a[2],f:+a[3]||0,who:String(name||'A NEIGHBOUR').toUpperCase()})).filter(h=>isFinite(h.x)&&isFinite(h.z)); if(ready)for(const h of L)box(h); THEIRS.set(id,L); };
+  ONLINE.hear.puts=m=>{ if(m.all){ for(const id of [...THEIRS.keys()])theirs(id); for(const r of m.all)if(r&&r.k==='hive')theirs(r.id,r.name,r.list); share(); return; } if(m.k==='hive')theirs(m.id,m.name,m.list); };
   BEES.set=()=>{ if(!FORAGE.has('bee_hive'))return say('YOU HAVE NO HIVE. THE BEEKEEPER SELLS THEM.','#c8a090'); if(S.hives.length>=MAX)return say('YOU KEEP THREE HIVES ALREADY.','#c8a090');
     if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur)||!(WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)))return say('SET A HIVE ON THE PARK LAWN, AMONG FLOWERS.','#c8a090');
     const h0=SHARED.heading, x=pos.x+Math.sin(h0)*1.2*T, z=pos.z+Math.cos(h0)*1.2*T; if(S.hives.some(h=>Math.hypot(h.x-x,h.z-z)<2*T))return say('TOO CLOSE TO ANOTHER HIVE.','#c8a090');
-    FORAGE.take('bee_hive',1); const h={x,z,y:ground(x,z),t:Date.now(),f:0}; S.hives.push(h); box(h); save(); FORAGE.draw(); const f=flowers(x,z).t;
+    FORAGE.take('bee_hive',1); const h={x,z,y:ground(x,z),t:Date.now(),f:0}; S.hives.push(h); box(h); save(); share(); FORAGE.draw(); const f=flowers(x,z).t;
     say(f>=6?'YOU SET THE HIVE AMONG THE FLOWERS. THE BEES SETTLE IN.':f?'YOU SET THE HIVE. A FEW FLOWERS NEAR: IT WILL FILL SLOWLY.':'YOU SET THE HIVE. NO FLOWERS NEAR: IT WILL FILL VERY SLOWLY.','#b8f0a0'); return h; };
   FORAGE.ROWB.push(id=>id==='bee_hive'?[['SET IT HERE','hiveset']]:[]); FORAGE.ACT.hiveset=()=>BEES.set();
 
@@ -62,8 +68,8 @@ const BEES={list:[]}; window.BEES=BEES;
     else say('A PUFF OF SMOKE AND THE BEES GO QUIET.','#9fe07f');
     const id=kindOf(h,!!(window.CLOCK&&CLOCK.dark())), n0=Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
     FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80);
-    h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
-  BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
+    h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
+  BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); share(); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='hivep'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(P); P.addEventListener('keydown',e=>{ if(e.key==='Escape')P.hidden=true; e.stopPropagation(); }); let cur=null;
@@ -76,9 +82,10 @@ const BEES={list:[]}; window.BEES=BEES;
 
   /* ---------- your hives stand where you left them; their bees buzz about while you are near ---------- */
   let ready=false, tt=0; const m4=new THREE.Matrix4();
-  SYS.add('life',dt=>{ if(!ready){ if(!window.__started)return; ready=true; for(const h of S.hives)box(h); }
+  SYS.add('life',dt=>{ if(!ready){ if(!window.__started)return; ready=true; for(const h of S.hives)box(h); for(const L of THEIRS.values())for(const h of L)box(h); }
     if((tt+=dt||0)<.05)return; tt=0; const now=performance.now()/1000, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur), day=!(window.CLOCK&&CLOCK.dark()); let n=0;
-    for(const h of S.hives){ if(!h.g)continue; const near=Math.hypot(h.x-pos.x,h.z-pos.z); h.g.visible=out&&near<60*T; if(!h.g.visible||near>20*T||!day)continue; const busy=Math.min(1,.3+frames(h)/FULL);
+    const all=[...S.hives]; if(ONLINE.on)for(const L of THEIRS.values())all.push(...L); for(const L of THEIRS.values())for(const h of L)if(h.g&&!ONLINE.on)h.g.visible=false;
+    for(const h of all){ if(!h.g)continue; if(n>=BEE.instanceMatrix.count-NB)break; const near=Math.hypot(h.x-pos.x,h.z-pos.z); h.g.visible=out&&near<60*T; if(!h.g.visible||near>20*T||!day)continue; const busy=Math.min(1,.3+(h.who?h.f:frames(h))/FULL);
       for(let i=0;i<NB*busy;i++){ const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
     BEE.count=n; BEE.instanceMatrix.needsUpdate=true; },'147a-bees');
 

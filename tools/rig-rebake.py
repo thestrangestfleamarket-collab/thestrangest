@@ -7,6 +7,7 @@ import json, base64, sys, numpy as np
 BONES=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR']
 
 def b64(s,dt): return np.frombuffer(base64.b64decode(s),dt)
+def enc(a): return base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 
 def decode_mesh(M):
     p=b64(M['p'],np.int16).reshape(-1,3).astype(float)
@@ -71,12 +72,15 @@ def rebake(char, name2role, w_map):
         a=top[0][0]; c=top[1][0] if len(top)>1 else a
         wa=top[0][1]; wc=top[1][1] if len(top)>1 else 0.0
         bone[v]=[a,c]; wout[v]=wa/((wa+wc) or 1)
+    lo=P.min(0); sc=float((P.max(0)-lo).max())/65000.0 or 1e-6
+    q=np.clip(np.round((P-lo)/sc)-32500,-32768,32767).astype(np.int16)
     out={'height':round(float(P[:,1].max()),4),'hipY':round(float(J['pelvis'][1]),4),
       'origin':[np.round(F[b][0],4).tolist() for b in BONES],
       'rest':[np.round(F[b][2].T.reshape(-1),5).tolist() for b in BONES],
-      'pos':np.round(P,4).reshape(-1).tolist(),'tri':idx.reshape(-1).tolist(),
-      'bone':bone.reshape(-1).tolist(),'w':np.round(wout,3).tolist(),
-      'vcol':np.round(col,3).reshape(-1).tolist()}
+      'lo':[round(float(x),5) for x in lo],'sc':sc,
+      'pos':enc(q),'tri':enc(idx.reshape(-1).astype(np.uint16)),
+      'bone':enc(bone.reshape(-1).astype(np.uint8)),'w':enc(np.clip(np.round(wout*255),0,255).astype(np.uint8)),
+      'vcol':enc(np.clip(np.round(col*255),0,255).astype(np.uint8))}
     return out,J
 
 # --- RPG townsfolk (Quaternius) map ---

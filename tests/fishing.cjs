@@ -88,6 +88,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // crab pots: drop one ahead, it is kept, haul it later for what crawled in
   const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
   ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));
+  // other players: their pots float where they dropped them, with their name, and go when they haul them; yours go to the section
+  const tp = await pg.evaluate(async () => { const T = __dbg.cv().TILE, sent = [], on = ONLINE.on, send = ONLINE.send; ONLINE.on = true; ONLINE.send = m => sent.push(m);
+    ONLINE.hear.puts({ all: [{ id: 'q', name: 'Otto', k: 'pot', list: [[PIER.x + 3 * T, 0, PIER.zE - 6 * T, 1]] }] }); await new Promise(r => setTimeout(r, 400));
+    const p = (POTS.theirs.get('q') || [])[0], o = { shown: !!(p && p.g && p.g.visible), name: p && p.th && p.th.name, mine: !!sent.find(m => m.t === 'puts' && m.k === 'pot') };
+    ONLINE.hear.puts({ id: 'q', k: 'pot', name: 'Otto', list: [] }); o.gone = !POTS.theirs.has('q') && !(p && p.g); ONLINE.on = on; ONLINE.send = send; return o; });
+  ok(tp.shown && tp.name === "OTTO'S CRAB POT" && tp.mine && tp.gone, "another player's crab pot floats where they dropped it, with their name, and goes when they haul it; yours go to the section: " + JSON.stringify(tp));
   // a pond in each new section, fished like THE LAKE, with no Hudson built: section C on its own
   { const p2 = await b.newPage({ viewport: { width: 640, height: 400 } }); p2.on('pageerror', e => errs.push(e.message.slice(0, 300)));
     await p2.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&sec=C', { waitUntil: 'commit' }); await p2.waitForFunction(() => window.__started && window.FISHING && FISHING.at, null, { timeout: 300000, polling: 500 });

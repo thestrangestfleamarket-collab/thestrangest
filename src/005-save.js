@@ -17,7 +17,22 @@ const SAVE=(()=>{ const KEY='market-save', V=4;
     all:()=>Object.assign({},S),
     clear:()=>{ S={v:V}; try{ localStorage.removeItem(KEY); }catch(e){} }};
   return A; })();
-// THE OWNED STORE: player-owned state — cash, inventory, items, mail, forage. The one seam between the game and where that state
-// lives, so owned things can move to the server (the owner's rule) without touching the game. Backed by SAVE today; swap here.
-const OWNED={ get:k=>SAVE.get(k), set:(k,v)=>SAVE.set(k,v), del:k=>SAVE.del(k) };
+// THE OWNED STORE: player-owned state — cash, inventory, items, mail, forage. The one seam between the game and where that state lives.
+// On the website it is kept on the server (/owned, one copy for every device you log in from), read once before the game starts and written back
+// a moment after each change; the browser keeps a copy too. The first time, what this browser already had goes up. The single-file page keeps it local.
+const OWNED=await (async()=>{ const L={ get:k=>SAVE.get(k), set:(k,v)=>SAVE.set(k,v), del:k=>SAVE.del(k) };
+  if(!/^https?:$/.test(location.protocol)||new URLSearchParams(location.search).has('fresh'))return L;
+  const ask=(body,keep)=>fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',keepalive:!!keep,body:JSON.stringify(body)});
+  let srv=null; try{ const r=await ask({}); if(r.ok){ const j=await r.json(); if(j&&typeof j==='object'&&'owned' in j)srv=j.owned||{}; } }catch(e){}
+  if(!srv)return L;   // the server can't be reached: play from this browser's copy, and leave the server's alone
+  const KEYS=new Set(SAVE.get('owned-keys')?SAVE.get('owned-keys').split(','):[]), first=!Object.keys(srv).length, dirty={}; let t=0;
+  for(const k in srv)SAVE.set(k,srv[k]); if(!first)for(const k of KEYS)if(!(k in srv))SAVE.del(k);   // the server's copy is the truth; this browser's copy follows it (and drops what the server doesn't have: another login's)
+  const flush=keep=>{ clearTimeout(t); const put=Object.assign({},dirty); for(const k in dirty)delete dirty[k]; if(!Object.keys(put).length)return;
+    ask({put},keep).then(r=>r.ok?r.json():null).then(j=>{ if(!j||j.ok!==true)throw 0; }).catch(()=>{ for(const k in put)if(!(k in dirty))dirty[k]=put[k]; t=setTimeout(flush,15000); }); };
+  const note=k=>{ if(!KEYS.has(k)){ KEYS.add(k); SAVE.set('owned-keys',[...KEYS].join(',')); } };
+  addEventListener('pagehide',()=>flush(true)); addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')flush(true); });
+  // first time on the server: once the game has read everything it owns, send up what this browser had
+  if(first){ const up=()=>{ if(!window.__started)return setTimeout(up,1000); for(const k of KEYS){ const v=SAVE.get(k); if(v!=null)dirty[k]=v; } flush(); }; setTimeout(up,1000); }
+  return { get:k=>{ note(k); return SAVE.get(k); }, set:(k,v)=>{ note(k); dirty[k]=v==null?null:String(v); clearTimeout(t); t=setTimeout(flush,2000); return SAVE.set(k,v); },
+    del:k=>{ dirty[k]=null; clearTimeout(t); t=setTimeout(flush,2000); return SAVE.del(k); }, server:true }; })();
 export {OWNED, SAVE};

@@ -109,7 +109,7 @@ game = ('document.body.insertAdjacentHTML("afterbegin",' + json.dumps(read('dist
     + re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>__GJ(' + names[m.group(1)] + ',' + bins.get(m.group(1), 'null') + '))', re.sub(r'__DATA__\("([^"]+)"\)', lambda m: '(await __DP[' + names[m.group(1)] + '])', body)))
 os.remove('dist/g/page.html')
 open('dist/g/game.js', 'w').write(re.sub(r"'https://cdn\.jsdelivr\.net/npm/((?:@[^/@']+/)?[^/@']+)@([^/']+)[^']*'", npm, data(game)))
-for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use strict";__CREG(' + c + ');\n')
+for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use strict";__CREG(' + data(c) + ');\n')
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html']

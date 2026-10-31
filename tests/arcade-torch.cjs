@@ -17,7 +17,7 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   const gwait=async(sec,until)=>{ const t0=(await G()).t, w0=Date.now(); for(;;){ const g=await G(); if(g.t-t0>=sec||(until&&until(g))||Date.now()-w0>60000)return g; await pg.waitForTimeout(50); } };   // game seconds, not wall-clock: frames are slow here
   await pg.keyboard.press('Space'); await pg.waitForTimeout(500); let d=await D(); ok(d.mode==='play'&&d.g&&d.g.mode==='hero','the coin goes in and CHOOSE YOUR HERO shows ('+JSON.stringify({mode:d.mode,g:d.g&&d.g.mode})+')');
   await pg.keyboard.press('Space'); await pg.waitForTimeout(400); d=await D(); ok(d.g&&d.g.hero==='WARRIOR'&&d.g.floor===1&&d.g.hp===2000,'the WARRIOR starts floor 1 with 2000 health ('+JSON.stringify(d.g&&{hero:d.g.hero,floor:d.g.floor,hp:d.g.hp})+')');
-  await pg.evaluate(()=>TORCHDBG().cheat.skip());
+  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); });   // no ghosts in the way: the walk proves the key, the door and the stairs
   const walk=async(path_)=>{ for(let i=1;i<path_.length;i++){ const [tx,ty]=path_[i], [px,py]=path_[i-1], key=tx>px?'ArrowRight':tx<px?'ArrowLeft':ty>py?'ArrowDown':'ArrowUp';
       await pg.keyboard.down(key); const t0=Date.now(); let there=false; while(Date.now()-t0<8000){ const g=await G(); if(Math.floor(g.x)===tx&&Math.floor(g.y)===ty){ there=true; break; } if(g.mode!=='play'){ await pg.keyboard.up(key); return g.floor>1?true:'left play mode at '+i; } await pg.waitForTimeout(20); } await pg.keyboard.up(key);
       if(!there)return 'stuck at step '+i+' of '+path_.length+' going '+key+' to '+tx+','+ty; } return true; };
@@ -28,7 +28,7 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   r=p2?await walk(p2):'no path'; await pg.waitForTimeout(300); g=await G(); const secs=g.t-gt0;
   ok(g.floor===2,'the door opened with the key and the stairs led to floor 2 ('+r+', floor '+g.floor+')');
   ok(g.hp<=hp0-Math.floor(secs)+2&&g.hp>0,'health drained by the game seconds spent ('+hp0+' → '+g.hp+' in '+secs.toFixed(1)+' s)');
-  await pg.evaluate(()=>TORCHDBG().cheat.skip()); await gwait(.2);
+  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); }); await gwait(.2);   // the floor's own generators would spawn into the counts
   await pg.keyboard.down('ArrowRight'); await gwait(.15); await pg.keyboard.up('ArrowRight'); await gwait(.1); const n0=(await G()).mons, s0=(await G()).score; await pg.evaluate(()=>TORCHDBG().cheat.spawn('grunt',1,3,0));
   await pg.keyboard.down('Space'); g=await gwait(2,g=>g.mons<=n0&&g.score>=s0+20); await pg.keyboard.up('Space'); ok(g.mons<=n0&&g.score>=s0+20,'a shot kills a level-1 grunt (monsters '+(n0+1)+' → '+g.mons+', score +'+(g.score-s0)+')');
   await gwait(.3); const gn0=(await G()).gens.length; await pg.evaluate(()=>TORCHDBG().cheat.gen('grunt',3,3,0)); await pg.keyboard.down('Space'); g=await gwait(2,g=>g.gens.length===gn0); await pg.keyboard.up('Space');

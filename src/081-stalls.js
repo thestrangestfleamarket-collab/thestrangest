@@ -13,6 +13,8 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     bolete:{s:.055,h:1.4,f:(p,s)=>{ p('cyl',0xd8c4a0,0,s*.45,0,s*.45,s*.9,s*.45); p('cap',0x7a4a24,0,s*.85,0,s,s*.55,s); }},
     morel:{s:.03,h:2.2,f:(p,s)=>{ p('cyl',0xe2d4b4,0,s*.35,0,s*.4,s*.7,s*.4); p('cone',0x5e4428,0,s*1.5,0,s*.75,s*1.8,s*.75); }},
     moonglow:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x9fe8f0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cap',0x48d8f0,0,s*.9,0,s,s*.6,s,0,1); }},
+    flyagaric:{s:.05,h:1.6,f:(p,s,r)=>{ p('cyl',0xf2ece0,0,s*.5,0,s*.32,s,s*.32); p('cap',0xd8261a,0,s*.95,0,s,s*.6,s); for(let k=0;k<3;k++){ const a=r+k*2.1; p('ball',0xfaf6ec,Math.cos(a)*s*.5,s*1.3,Math.sin(a)*s*.5,s*.14,s*.08,s*.14); } }},
+    trumpet:{s:.035,h:1.8,f:(p,s)=>{ p('cone',0x2a2428,0,s*.8,0,s*.8,s*1.6,s*.8,Math.PI); }},
     ghostcap:{s:.04,h:1.5,f:(p,s)=>{ p('cyl',0xe8ddf6,0,s*.5,0,s*.28,s,s*.28,0,1); p('cap',0xc8a8ff,0,s*.95,0,s,s*.7,s,0,1); }},
     ember:{s:.035,h:1.6,f:(p,s)=>{ p('cyl',0xffd8a0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cone',0xff8a2a,0,s*1.1,0,s*.8,s*.9,s*.8,0,0,1); }},
     oyster:{s:.05,h:1,f:(p,s,r)=>{ p('cap',0xb8b4aa,0,s*.4,0,s,s*.3,s*.7,.5); p('cap',0x9a968c,s*.5,s*.6,0,s*.7,s*.25,s*.5,.6); }},

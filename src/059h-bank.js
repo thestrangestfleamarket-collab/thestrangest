@@ -1,6 +1,6 @@
 // THE BANK: the bank on the block, between the playhouse and the bar (its own builder): a stone front with a big vault door, and inside a dragon's hoard, a dungeon where a sleeping dragon's head comes out of the back wall over piles of gold.
 import {SHARED, THREE} from './003-shx.js';
-import {pos} from './003b-systems.js';
+import {FORAGE, PERFX, pos, SFX, UI, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, BLOCK, FIX, grab, SOL, STORE, SYS} from './006-map-pre.js';
 import {dgnRoom} from './038z-dungeon.js';
@@ -41,7 +41,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
       [mx-6.2,B.y0+2.4,2.2,.42],[mx+6.4,B.y0+2.6,2.4,.55],[B.x0+3,B.y1-3.4,1.9,.3],[mx+10,B.y0+8,1.8,.4],[mx-2.8,B.y0+2.2,1,.12],[mx+3,B.y0+2,1.2,.16],[mx-9.6,B.y0+6.6,1.4,.22]];
     const coinG=new THREE.CylinderGeometry(.09*TU,.09*TU,.025*TU,8), coins=[], hsh=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
     PILES.forEach(([x,y,r,hk],i)=>{ const h=HH*hk, rw=r*TU, pts=[]; for(let k=0;k<=9;k++){ const t=k/9; pts.push(new THREE.Vector2(rw*Math.pow(1-t,.75)*(1+(hsh(i,k)-.5)*.16)+.01,h*t)); }
-      const me=new THREE.Mesh(new THREE.LatheGeometry(pts,11),i%3?gold:goldL); me.position.set(X(x),0,Z(y)); me.rotation.y=i; me.castShadow=me.receiveShadow=true; g.add(me);
+      const me=new THREE.Mesh(new THREE.LatheGeometry(pts,11),i%3?gold:goldL); me.position.set(X(x),0,Z(y)); me.rotation.y=i; me.castShadow=me.receiveShadow=true; g.add(me); UI.thing({name:"THE DRAGON'S GOLD",obj:me,reach:1.2*TU+rw,near:2*TU+rw,tall:h,act:()=>steal()});
       for(let k=0;k<Math.round(30*r);k++){ const a=hsh(i,k+20)*6.283, t=hsh(i,k+40)*.92, rr=rw*Math.pow(1-t,.75)+.02; coins.push([X(x)+Math.cos(a)*rr,h*t+.02,Z(y)+Math.sin(a)*rr,hsh(i,k)]); }
       const s=rw*.62; SOL.up.push([X(x)-s,Z(y)-s,X(x)+s,Z(y)+s]); FIX.up.push([X(x)-s,Z(y)-s,0,X(x)+s,Z(y)+s,h]); });
     for(let k=0;k<420;k++){ const x=B.x0+.6+hsh(k,7)*(B.x1-B.x0-1.2), y=B.y0+.6+hsh(k,9)*(B.y1-B.y0-1.2); if(Math.abs(x-mx)<2.2&&y>B.y0+6)continue; coins.push([X(x),.015,Z(y),hsh(k,3)]); }
@@ -56,10 +56,12 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
       const e=S[S.length-1], tip=P.length/3; P.push(0,e[3],e[0]+.25); for(let a=0;a<N;a++)I.push((S.length-1)*N+a,(S.length-1)*N+(a+1)%N,tip);
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setIndex(I); g.computeVertexNormals(); return g; };
     part(loft([[-1.6,6.6,4.6,2.5],[0,6.2,4.3,2.5],[1.2,5,3.3,2.3],[2.4,3.6,2.3,1.95],[3.6,3,1.85,1.8],[4.6,2.7,1.6,1.8],[5.2,2,1.15,1.65]]),G1,0,0,0,1,1,1);
-    part(loft([[-1,5.6,1.6,.8],[1,4.4,1.3,.7],[3,3,1,.55],[4.6,2.3,.8,.45],[5,1.8,.5,.45]]),BEL,0,0,0,1,1,1);
+    const jaw=part(loft([[-1,5.6,1.6,.8],[1,4.4,1.3,.7],[3,3,1,.55],[4.6,2.3,.8,.45],[5,1.8,.5,.45]]),BEL,0,0,0,1,1,1);
     const ball=new THREE.IcosahedronGeometry(1,1), box=new THREE.BoxGeometry(1,1,1), cone=new THREE.ConeGeometry(1,1,6);
+    const EYE=new THREE.MeshBasicMaterial({color:0xffb020}), eyes=[];
     for(const s of [-1,1]){
-      part(ball,G2,s*2.35,3.2,.75,1.05,.6,.9,0,s*.5); part(box,DK,s*2.62,3.12,1.42,1.15,.07,.09,0,s*.5,s*-.1);   // a closed eye: the lid and its shut line
+      const lid=part(ball,G2,s*2.35,3.2,.75,1.05,.6,.9,0,s*.5), shut=part(box,DK,s*2.62,3.12,1.42,1.15,.07,.09,0,s*.5,s*-.1);   // a closed eye: the lid and its shut line
+      const eye=part(ball,EYE,s*2.42,3.12,.95,.82,.5,.7,0,s*.5), pupil=part(box,DK,s*2.82,3.12,1.66,.12,.62,.08,0,s*.5); eye.visible=pupil.visible=false; eyes.push({lid,shut,eye,pupil});   // the eye under it, shown when it wakes
       part(box,G0,s*2.2,3.85,.85,1.9,.5,1.25,.12,s*.35,s*.25); for(let i=0;i<3;i++)part(cone,G0,s*(1.8+i*.5),4.25+i*.1,.2-i*.3,.18,.75,.18,-.7,0,s*-.35);   // the brow and its spikes
       part(ball,G2,s*.72,2.6,4.75,.44,.3,.44); part(ball,DK,s*.72,2.62,5.08,.22,.15,.12);   // a nostril
       part(cone,IV,s*1.15,.95,4.3,.15,.7,.15,Math.PI); part(cone,IV,s*1.45,1.02,3.4,.11,.45,.11,Math.PI);   // fangs over the lip
@@ -71,12 +73,30 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
     // its steam: puffs out of both nostrils as it breathes out
     const cv=document.createElement('canvas'); cv.width=cv.height=32; const cx=cv.getContext('2d'), gr=cx.createRadialGradient(16,16,0,16,16,16); gr.addColorStop(0,'rgba(235,235,230,.9)'); gr.addColorStop(1,'rgba(235,235,230,0)'); cx.fillStyle=gr; cx.fillRect(0,0,32,32);
     const ST=new THREE.CanvasTexture(cv), puffs=[...Array(18)].map(()=>{ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ST,transparent:true,depthWrite:false,opacity:0})); s.visible=false; g.add(s); return {s,t:9}; });
-    const nose=[-1,1].map(s=>new THREE.Vector3(X(mx)+s*.72*k,2.62*k,wallZ+5.15*k));
-    scene.add(g); STORE.bank.hoard=g; STORE.bank.head=head;
+    const noseL=[-1,1].map(s=>new THREE.Vector3(s*.72*k,2.62*k,5.15*k)), nose=()=>{ head.updateMatrixWorld(true); return noseL.map(v=>head.localToWorld(v.clone())); };
+    scene.add(g); PERFX.own(g); STORE.bank.hoard=g; STORE.bank.head=head;
     const inB=()=>pos.x>Math.min(X(B.x0),X(B.x1))&&pos.x<Math.max(X(B.x0),X(B.x1))&&pos.z>Math.min(Z(B.y0),Z(B.y1))&&pos.z<Math.max(Z(B.y0),Z(B.y1));
-    let t=0, out=false, pi=0; SYS.add('places',dt=>{ if(!g.parent||!inB())return; t+=dt; const ph=(t%5.2)/5.2, br=ph<.62?Math.sin(ph/.62*Math.PI/2):Math.cos((ph-.62)/.38*Math.PI/2);
-      head.position.y=br*.06*k; head.scale.set(1,1+br*.012,1);
-      if(ph>=.62&&!out){ out=true; for(let n=0;n<6;n++){ const p=puffs[pi++%puffs.length]; p.t=-n*.07; p.n=nose[n&1]; } } else if(ph<.62)out=false;
+    // it wakes when you come near: its eyes open, it lifts its head and follows you, snorts and growls; it settles back to sleep a while after you leave
+    let t=0, out=false, pi=0, W=0, awake=false, away=0; const HZ=wallZ+3*k, snort=n=>{ const N=nose(); for(let i=0;i<n;i++){ const p=puffs[pi++%puffs.length]; p.t=-i*.06; p.n=N[i&1]; } };
+    // take its gold and it breathes fire: you burn up where you stand (the handful falls back on the heap)
+    const ft=document.createElement('canvas'); ft.width=ft.height=32; { const c=ft.getContext('2d'), q=c.createRadialGradient(16,16,0,16,16,16); q.addColorStop(0,'rgba(255,250,210,1)'); q.addColorStop(.35,'rgba(255,190,60,.9)'); q.addColorStop(1,'rgba(220,60,10,0)'); c.fillStyle=q; c.fillRect(0,0,32,32); }
+    const FT=new THREE.CanvasTexture(ft), FC=[new THREE.Color(0xfff2b0),new THREE.Color(0xffa030),new THREE.Color(0xd83a10)], flames=[...Array(110)].map(()=>{ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:FT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0})); s.visible=false; g.add(s); return {s,t:9,a:new THREE.Vector3(),b:new THREE.Vector3(),j:new THREE.Vector3()}; });
+    let fire=-1, fi=0, burnt=false, f0=0; const MOUTH=new THREE.Vector3(0,1.15*k,5.4*k), steal=()=>{ if(fire>=0||VIT.dead)return; fire=0; f0=performance.now(); burnt=false; awake=true; W=Math.max(W,.8); SFX.play('boom',{vol:.7,pitch:.6}); FORAGE.say('YOU REACH INTO THE GOLD. THE DRAGON WAKES.','#f2a35e'); };
+    STORE.bank.steal=steal;
+    STORE.bank.dragon=()=>({awake,W:+W.toFixed(2),d:+(Math.hypot(pos.x-X(mx),pos.z-HZ)/TU).toFixed(1),fire:+fire.toFixed(2)});
+    SYS.add('places',dt=>{ if(!g.parent||!inB()){ awake=false; W=0; return; } dt=Math.min(dt||0,.1); const d=Math.hypot(pos.x-X(mx),pos.z-HZ);
+      const now=performance.now(); if(d<7*TU){ away=0; if(!awake){ awake=true; snort(10); SFX.play('boom',{vol:.35,pitch:.45}); } } else if(awake){ if(!away)away=now; else if(now-away>3000)awake=false; }
+      W+=((awake?1:0)-W)*Math.min(1,dt*(awake?2.2:.6)); t+=dt*(1+W*.7);
+      const ph=(t%5.2)/5.2, br=ph<.62?Math.sin(ph/.62*Math.PI/2):Math.cos((ph-.62)/.38*Math.PI/2), want=Math.max(-.5,Math.min(.5,Math.atan2(pos.x-X(mx),pos.z-wallZ)));
+      head.position.y=br*.06*k+W*.45*k; head.scale.set(1,1+br*.012,1); head.rotation.set(-.14*W,want*W,0);
+      for(const e of eyes){ e.lid.scale.y=.6*k*(1-.72*W); e.lid.position.y=(3.2+.38*W)*k; e.shut.visible=W<.25; e.eye.visible=e.pupil.visible=W>.05; e.pupil.scale.x=.12*k*(1.3-W*.6); }
+      if(ph>=.62&&!out){ out=true; snort(6); } else if(ph<.62)out=false;
+      if(fire>=0){ fire+=dt; jaw.rotation.x=Math.min(1,fire*6)*.32*(fire<1.4?1:Math.max(0,1-(fire-1.4)*3)); head.updateMatrixWorld(true); const m=head.localToWorld(MOUTH.clone()), tg=new THREE.Vector3(pos.x,SHARED.py+.9*TU,pos.z);
+        if(fire<1.4)for(let n=0;n<Math.max(3,Math.round(dt*240));n++){ const f=flames[fi++%flames.length]; f.t=-Math.random()*dt; f.a.copy(m); f.b.copy(tg); f.j.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(.9*TU); }
+        if(performance.now()-f0>350&&!burnt){ burnt=true; SFX.play('boom',{vol:.5,pitch:.9}); VIT.die(); FORAGE.say('THE DRAGON BURNS YOU TO ASHES. THE GOLD FALLS BACK ON THE HEAP.','#ff7a40'); }
+        if(fire>2.4)fire=-1; }
+      for(const f of flames){ if(f.t>.45){ f.s.visible=false; continue; } f.t+=dt; if(f.t<0)continue; const u=f.t/.45; f.s.visible=true; f.s.position.lerpVectors(f.a,f.b,Math.min(1,u*1.15)).addScaledVector(f.j,u);
+        f.s.scale.setScalar((.35+u*1.5)*k); f.s.material.color.copy(u<.35?FC[0]:u<.7?FC[1]:FC[2]); f.s.material.opacity=.95*(1-u); }
       for(const p of puffs){ if(p.t>2.4){ p.s.visible=false; continue; } p.t+=dt; if(p.t<0)continue; const u=p.t/2.4; p.s.visible=true; p.s.position.set(p.n.x+(p.n.x-X(mx))*u*1.6,p.n.y-u*.3*k,p.n.z+u*1.8*k);
         p.s.scale.setScalar((.15+u*1.2)*k); p.s.material.opacity=.24*(1-u)*Math.min(1,u*6); } },'059h-bank'); };
 });

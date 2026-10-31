@@ -55,13 +55,15 @@ def rebake(char, name2role, w_map):
         J['hip'+n]=jp(name2role['hip'+n]); J['knee'+n]=jp(name2role['knee'+n]); J['ankle'+n]=jp(name2role['ankle'+n])
         armdir=J['wrist'+n]-J['elbow'+n]; J['tip'+n]=J['wrist'+n]+armdir/ (np.linalg.norm(armdir) or 1)*0.1*(P[:,1].max())
         J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12*(P[:,1].max())])
-    F=frames(J)
-    # remap per-vertex weights (src bone idx -> 15-bone bucket)
+    bone,wout=remap_weights(names,ji,wt,w_map)
+    return encode_body(P,idx,bone,wout,col,J),J
+
+def remap_weights(names,ji,wt,w_map):
     srcmap=np.full(len(names),-1,int)
     for i,nm in enumerate(names):
         r=w_map.get(nm)
         if r is not None: srcmap[i]=BONES.index(r)
-    nV=len(P); bone=np.zeros((nV,2),int); wout=np.ones(nV)
+    nV=ji.shape[0]; bone=np.zeros((nV,2),int); wout=np.ones(nV)
     for v in range(nV):
         acc={}
         for k in range(4):
@@ -72,16 +74,18 @@ def rebake(char, name2role, w_map):
         a=top[0][0]; c=top[1][0] if len(top)>1 else a
         wa=top[0][1]; wc=top[1][1] if len(top)>1 else 0.0
         bone[v]=[a,c]; wout[v]=wa/((wa+wc) or 1)
-    lo=P.min(0); sc=float((P.max(0)-lo).max())/65000.0 or 1e-6
+    return bone,wout
+
+def encode_body(P,idx,bone,wout,col,J):
+    F=frames(J); lo=P.min(0); sc=float((P.max(0)-lo).max())/65000.0 or 1e-6
     q=np.clip(np.round((P-lo)/sc)-32500,-32768,32767).astype(np.int16)
-    out={'height':round(float(P[:,1].max()),4),'hipY':round(float(J['pelvis'][1]),4),
+    return {'height':round(float(P[:,1].max()),4),'hipY':round(float(J['pelvis'][1]),4),
       'origin':[np.round(F[b][0],4).tolist() for b in BONES],
       'rest':[np.round(F[b][2].T.reshape(-1),5).tolist() for b in BONES],
       'lo':[round(float(x),5) for x in lo],'sc':sc,
       'pos':enc(q),'tri':enc(idx.reshape(-1).astype(np.uint16)),
       'bone':enc(bone.reshape(-1).astype(np.uint8)),'w':enc(np.clip(np.round(wout*255),0,255).astype(np.uint8)),
       'vcol':enc(np.clip(np.round(col*255),0,255).astype(np.uint8))}
-    return out,J
 
 # --- RPG townsfolk (Quaternius) map ---
 RPG_ROLE={'pelvis':'Hips','waist':'Torso','neck':'Neck',
@@ -114,6 +118,52 @@ def bake_shared(src, keys, role, wmap, outpath):
     json.dump(out,open(outpath,'w'),separators=(',',':'))
     import os; print(outpath,round(os.path.getsize(outpath)/1e6,2),'MB')
 
+# --- Pawns (KayKit/UAL): their rig has NO arm bones (hands float in a T-pose); we generate arm tubes between a derived shoulder and the hand. ---
+PAWN_W={'root':'hips','DEF_pelvis':'hips','DEF_spine':'torso','DEF_head':'head','DEF_hand_L':'handL','DEF_hand_R':'handR',
+  'DEF_thigh_L':'thighL','DEF_thigh_L_001':'thighL','DEF_calf_L':'shinL','DEF_calf_L_001':'shinL','DEF_foot_L':'shoeL',
+  'DEF_thigh_R':'thighR','DEF_thigh_R_001':'thighR','DEF_calf_R':'shinR','DEF_calf_R_001':'shinR','DEF_foot_R':'shoeR'}
+def seg(aP,aC,aB,aI, A,B, ra,rb, bi, color):
+    d=B-A; L=np.linalg.norm(d)
+    if L<1e-6: return
+    d=d/L; up=np.array([0,1.0,0.0]) if abs(d[1])<0.9 else np.array([1.0,0,0])
+    x=np.cross(up,d); x/=(np.linalg.norm(x) or 1); z=np.cross(d,x)
+    o=len(aP)
+    for (C,r) in [(A,ra),(B,rb)]:
+        for a in range(6):
+            t=a/6*2*np.pi; aP.append(C+(np.cos(t)*r)*x+(np.sin(t)*r)*z); aC.append(color); aB.append([bi,bi])
+    for a in range(6):
+        a1=(a+1)%6; aI.append([o+a,o+6+a,o+a1]); aI.append([o+a1,o+6+a,o+6+a1])
+def bake_pawns(outpath):
+    d=json.load(open('data/pawns.json'))
+    kinds=['hero_m','hero_f','villager_m','villager_f','ogre','ogre_mage','ogre_guard_light','ogre_guard_heavy','skeleton_mage','skeleton_reaper','skeleton_guard_light','skeleton_guard_heavy']
+    out={'bones':BONES,'bodies':{}}
+    for key in kinds:
+        c=d[key]; rig=c['rig']; names=rig['names']; nidx={n:i for i,n in enumerate(names)}
+        P,col,idx,ji,wt=decode_mesh(c['mesh']); W=bone_world(rig); jp=lambda nm:W[nidx[nm]]
+        dom=np.array([ji[v][int(np.argmax(wt[v]))] for v in range(len(P))])
+        sp=nidx['DEF_spine']; hli={'L':nidx['DEF_hand_L'],'R':nidx['DEF_hand_R']}
+        shy=1.72; tv=P[(dom==sp)&(np.abs(P[:,1]-shy)<0.13)]; sx=float(np.abs(tv[:,0]).max()) if len(tv) else 0.22
+        def meancol(mask,dflt): return col[mask].mean(0) if mask.any() else np.array(dflt)
+        tcol=meancol((dom==sp)&(np.abs(P[:,1]-shy)<0.16),[0.5,0.5,0.55])
+        r=0.12 if key.startswith('ogre') else (0.05 if key.startswith('skeleton') else 0.085)
+        J={'pelvis':jp('DEF_pelvis'),'waist':jp('DEF_spine'),'neck':jp('DEF_head')}
+        J['headTop']=J['neck']+np.array([0,float(P[:,1].max())-J['neck'][1],0])
+        aP=[]; aC=[]; aB=[]; aI=[]
+        for n,sg in (('L',1),('R',-1)):
+            Wr=jp('DEF_hand_'+n); S=np.array([sg*sx*0.95, shy, Wr[2]]); E=(S+Wr)/2
+            J['shoulder'+n]=S; J['elbow'+n]=E; J['wrist'+n]=Wr
+            J['hip'+n]=jp('DEF_thigh_'+n); J['knee'+n]=jp('DEF_calf_'+n); J['ankle'+n]=jp('DEF_foot_'+n)
+            ad=Wr-E; J['tip'+n]=Wr+ad/(np.linalg.norm(ad) or 1)*0.1*float(P[:,1].max()); J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12])
+            hc=meancol(dom==hli[n],[0.8,0.6,0.5])
+            seg(aP,aC,aB,aI, S,E, r,r*0.92, BONES.index('upperArm'+n), tcol)
+            seg(aP,aC,aB,aI, E,Wr, r*0.92,r*0.8, BONES.index('forearm'+n), hc)
+        bone,wout=remap_weights(names,ji,wt,PAWN_W)
+        if aP:
+            base=len(P); P=np.vstack([P,np.array(aP)]); col=np.vstack([col,np.array(aC)])
+            bone=np.vstack([bone,np.array(aB,int)]); wout=np.concatenate([wout,np.ones(len(aP))]); idx=np.vstack([idx,np.array(aI,int)+base])
+        out['bodies'][key]=encode_body(P,idx,bone,wout,col,J); print(key,'verts',len(P),'arms',len(aP))
+    json.dump(out,open(outpath,'w'),separators=(',',':')); import os; print(outpath,round(os.path.getsize(outpath)/1e6,2),'MB')
+
 if __name__=='__main__':
     import sys; which=sys.argv[1] if len(sys.argv)>1 else 'all'
     if which in ('all','rpg'):
@@ -124,3 +174,5 @@ if __name__=='__main__':
         import os; print('data/rpgbodies.json',round(os.path.getsize('data/rpgbodies.json')/1e6,2),'MB')
     if which in ('all','skel'):
         bake_shared('data/skel.json',['Warrior','Mage','Minion','Rogue'],SKEL_ROLE,SKEL_W,'data/skelbodies.json')
+    if which in ('all','pawn'):
+        bake_pawns('data/pawnbodies.json')

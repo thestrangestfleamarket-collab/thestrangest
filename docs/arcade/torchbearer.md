@@ -171,9 +171,9 @@ Kills and generators as in §5 (a generator is worth 100 × its level each time 
 exit is worth floor × 50 / 150 / 300 for a 1 / 4 / 8; a treasure room pays its gold; Death 1000 by potion. Health is not score.
 The run's record is the score, with the deepest floor beside it.
 
-**High scores**: this is the first cabinet for the shared table of the arcade layer (a top 10 with three initials, on the server,
-shown in attract mode on the cabinet in the room) — built with it if the owner agrees; until then the per-player best like the other
-cabinets. A continued run shows with `*`.
+**High scores**: the shared table of the arcade layer (a top 10 with three initials, on the server, shown in attract mode on the
+cabinet in the room; owner, 31 Oct 2026: "yes build the shared high score table"), with the deepest floor beside each run. A
+continued run shows with `*`.
 
 ## 11. The hero's shot and the feel
 

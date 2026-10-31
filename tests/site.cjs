@@ -21,6 +21,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
     const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});
     ok(p1.ok===true&&p2.ok===true&&got.owned&&got.owned.inv==='{"v":1}'&&!('birds' in got.owned)&&!bad.ok,'/owned keeps what you own, key by key ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const sc=(body,who='dev:score-check')=>fetch(BASE+'/scores',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    ok((await fetch(BASE+'/scores',{method:'POST',headers:{origin:BASE},body:'{"cab":"MAZE"}'})).status===401,'/scores without a login is refused');
+    const p1=await sc({cab:'MAZE',put:{ini:'ABC',score:5000,sub:'ROUND 4'}}), p2=await sc({cab:'MAZE',put:{ini:'XYZ',score:9000,sub:'ROUND 7'}},'dev:score-two'), bad=await sc({cab:'MAZE',put:{ini:'a!',score:10}}), got=await sc({cab:'MAZE'}), all=await sc({cab:'*'});
+    ok(p1.ok===true&&p1.rank===1&&p2.ok===true&&p2.rank===1&&!bad.ok&&got.top&&got.top[0].ini==='XYZ'&&got.top[1].ini==='ABC'&&got.top[1].sub==='ROUND 4'&&all.top&&all.top.MAZE&&all.top.MAZE.length===2,'/scores keeps the arcade\'s top ten a cabinet, shared ('+JSON.stringify(got).slice(0,90)+')'); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);

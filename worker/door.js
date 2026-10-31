@@ -136,14 +136,18 @@ export class Block extends Server {
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null });
     c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id) }));
+    c.send(JSON.stringify({ t: "puts", all: this.puts() }));
   }
+  // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
+  putT() { this.ctx.storage.sql.exec("create table if not exists puts(who text, k text, name text, list text, at integer, primary key(who, k))"); }
+  puts() { this.putT(); return this.ctx.storage.sql.exec("select who as id, k, name, list from puts").toArray().map(r => { let list = []; try { list = JSON.parse(r.list); } catch (e) {} return { id: r.id, k: r.k, name: r.name, list }; }); }
   // a player within reach of another: both placed, same level and room, a few tiles apart
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -193,6 +197,11 @@ export class Block extends Server {
     } else if (m.t === "puff") {
       const k = /^cigar(_blue)?$/.test(m.k) ? m.k : "cigar";
       this.broadcast(JSON.stringify({ t: "puff", id: s.id, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5), k }), [c.id]);
+    } else if (m.t === "puts" && typeof m.k === "string" && /^[a-z]{1,12}$/.test(m.k) && Array.isArray(m.list)) {
+      const list = m.list.slice(0, 6).filter(Array.isArray).map(a => [num(a[0], -1e5, 1e5), num(a[1], -1e4, 1e4), num(a[2], -1e5, 1e5), num(a[3], 0, 100)]);
+      this.putT(); if (list.length) this.ctx.storage.sql.exec("insert into puts(who, k, name, list, at) values(?, ?, ?, ?, ?) on conflict(who, k) do update set name = excluded.name, list = excluded.list, at = excluded.at", s.id, m.k, s.name || "", JSON.stringify(list), now);
+      else this.ctx.storage.sql.exec("delete from puts where who = ? and k = ?", s.id, m.k);
+      this.broadcast(JSON.stringify({ t: "puts", id: s.id, k: m.k, name: s.name || "", list }), [c.id]);
     } else if (m.t === "say") {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
     }

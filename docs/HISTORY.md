@@ -5057,6 +5057,7 @@ Owner, with a picture: "create replica of this underground bar ... super dark at
 - 30 Oct 2026, owner: "turn off grass bending too". The standing grass and the low flowers no longer bend as you or anyone walks through them.
 - 30 Oct 2026, the Hudson open to the skyline (owner: "it should look like open water because the other side of the hudson is far away"): the map's land stops at the near bank; past the river there is only water out to the far city (it was a green strip of land at the horizon).
 - 30 Oct 2026, the Hudson (owner: "remove the trees, fix the edge"): no far trees past the river; the river's water fades into the haze softly and further out than land (to 85%), so seen from high up there is no hard ring.
+- 30 Oct 2026, the Hudson's ends (owner: "fix the wedge"): past both ends of the river is open water too (it was a hole showing the haze); the land ends exactly at the near bank (no thin strip left).
 - 30 Oct 2026, the views he showed (owner, two shots): third person now opens behind him, looking down the street (camera to his back, a moderate down-tilt, close in), whichever way he faces when you switch to it. Isometric is locked — the tilt fixed, Q/E/R turn it an eighth at a time (eight angles, up from four), a drag only slides it, never spins or tilts it; its start angle unchanged.
 
 ## 30 Oct 2026: the arcade's eight cabinets

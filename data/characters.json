@@ -365,7 +365,8 @@
     "ticket"
    ],
    "line": "One for the next showing? The times are on the screen behind me."
-  }
+  },
+  "scale": 1.5
  },
  "boardwright": {
   "name": "THE BOARDWRIGHT",

@@ -217,8 +217,8 @@ export class Block extends Server {
     } else if (m.t === "say") {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
     } else if (m.t === "world") {
-      const k = word(m.k, 40); if (!k) return; this.world().then(W => { if (Object.keys(W).length > 2000 && !(k in W)) return;
-        const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, 200);
+      const k = word(m.k, 40); if (!k) return; this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
+        const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : 200);
         W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
     }
   }

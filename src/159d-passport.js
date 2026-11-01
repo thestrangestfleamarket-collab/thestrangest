@@ -1,6 +1,6 @@
 // THE PASSPORT: every player is issued one at first login (a number, the home section, the date; the name and look are yours), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LOOKS, ONLINE, pos, SFX, UI} from './003b-systems.js';
+import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';

@@ -1,6 +1,6 @@
 // THE LOOP MAP: the square map sign on a platform's end wall is a thing: double-click it for the close-up window (all eight sections with the trains on the loop, this section, the next trains here, the schedule at every station, details).
 import {SHARED} from './003-shx.js';
-import {pos, UI} from './003b-systems.js';
+import {LOOPMAP, pos, UI} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {TRAINS} from './009c-trains.js';

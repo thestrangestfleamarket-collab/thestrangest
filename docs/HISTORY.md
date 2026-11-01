@@ -5095,3 +5095,4 @@ Owner: "add the computer back and bbs system" (keep NEWS, use $). The apartment 
 ## 31 Oct 2026: the theatre front: no spotlights, the box office in the wall, a taller ticket fox
 Owner: "remove the spotlights, the ticket booth should not be pertruding outside wall, it should be embeded inside. the merchant inside should be 50% taller." The pools of light on the pavement are gone; the box office is set into the theatre's front wall, its glass flush with it, the fox seen through it; THE TICKET FOX is 1.5 times his size.
 - 31 Oct 2026, feeders for everyone to see (owner: "make feeders show for other players"): your bird feeder is kept by the section like hives and pots, so other players see it where you hung it (with your name), and birds come to it for them too; only you can take yours down.
+- 1 Nov 2026, owner: "undo, remove all clutte[r]". The junk and weed clumps are gone from the empty lots; they are bare dirt again.

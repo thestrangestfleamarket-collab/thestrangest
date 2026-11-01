@@ -42,6 +42,7 @@ jobs:
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
           k spray   'src/159f|src/146-|spray\.cjs'
+          k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
@@ -109,6 +110,9 @@ jobs:
       - name: spray
         if: contains(steps.f.outputs.run, ' spray')
         run: node tests/spray.cjs dist/market.html
+      - name: bodega80
+        if: contains(steps.f.outputs.run, ' bodega80')
+        run: node tests/bodega80s.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html

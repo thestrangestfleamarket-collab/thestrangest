@@ -100,9 +100,13 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.length === 1 && btns[0] === 'walker';
         const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set(saved || 'walker');
         return { ok: true, inGame, none, onlyWalker, stays, hero, btns: btns.join(',') }; })();
-      o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, sh = W.HIDE[W.idx('bodyTorso')];
-        W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', true);
-        return { ok: true, hid: sh, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
+      o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, was = !!W.worn.shirt;
+        W.wear('shirt', true); const hid = W.HIDE[W.idx('bodyTorso')] && !W.HIDE[W.idx('torso')];
+        W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', was);
+        return { ok: true, hid, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
+      o.garb = (() => { const d = window.GARBDBG && GARBDBG(); if (!d) return { ok: false };
+        const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.k === 'shirt' ? p.free === 0 : p.free > 0 && p.free < p.points), sp = GARBDBG.spec(31, true, true);
+        return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], robe: !sp.shirt && !sp.pants && !sp.shoes && sp.hat, ms: d.ms }; })();
       o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; })();
       return o;
     });
@@ -145,6 +149,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.skinned && r.rpg.mixer && r.rpg.street, 'the six RPG townsfolk walk the street, each a rigged skinned body with its own clips: ' + JSON.stringify(r.rpg));
     ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays && r.bodies.hero, 'YOU can only be the Walker: knight/man/woman/hero stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
+    ok(r.garb.ok && r.garb.parts === 'jacket,pants,shirt' && r.garb.free && r.garb.held === 3 && r.garb.shown && r.garb.under && r.garb.robe, 'you wear real clothes (trousers and jacket on cloth at their loose edges, the shirt held under the jacket; shoes and hat held), the body\'s own shirt and trousers hidden under them, a bathrobe over the rest: ' + JSON.stringify(r.garb));
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));

@@ -77,7 +77,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059n-game-torch.js` | 74.9 | top level |  | 006: STORE |
 | `060-cave.js` | 11.4 | top level | GCAVE (061 063 066a 094 142a 146e 151) | 003: SHARED THREE; 003b: CITY CLOCK INV LITE MAIL PARK ROOMS TRADE UI WEEDS; 004: scene; 006: FIX MAPG MODS PARKCAVE PARKTOWER SOL STORE TILE; 007: FLAME |
 | `060a-fount.js` | 25.1 | top level | FOUNT (061 064 075 076 080 087 089a 093 094 096 141f 142 142a 146g 151 153) | 003: SHARED THREE; 003b: BROOK CLOCK FLOW PARK ROOMS SKY WED; 004: scene; 006: FIX MAPG SOL STORE TILE ZU |
-| `060b-trees.js` | 9.4 | top level | TREEGEN (061) | 003: THREE |
+| `060b-trees.js` | 10.1 | top level | TREEGEN (061) | 003: THREE |
 | `061-park.js` | 67.3 | top level, opens grab(parkwall) |  | 003: SHARED THREE; 003a: B64 F32; 003b: CLIP CLOCK CULL DN LITE NPCS PARK PERFX ROOMS UI WED WEEDS pos; 004: renderer scene; 006: CASTLE CLIPX EASTX FADE FIX LAY LEVEL MAINX MAPG MODS NORTHX NORTHY PARKGX PARKLAKE PARKRY QS SOL SYS TILE ZU grab lamps; 007: FLAME; 008: BATCH OBJ PEEK; 014: BRICKS; 039: FOREST PROPS; 060: GCAVE; 060a: FOUNT; 060b: TREEGEN |
 | `062-castle.js` | 9.4 | top level, opens grab(castle) | castleMat (062a), gboxS (062a) | 003: SHARED THREE; 003b: PARK pos; 004: scene; 006: CASTLE FIX MAPG MODS SOL STN TILE cutWalls grab lamps; 008: BATCH OBJ |
 | `062a-dungeon.js` | 16.6 | top level, opens grab(dungeon) |  | 003: SHARED THREE; 003b: FORAGE LEVELS LITE PH RAG UI VIT pos; 004: scene; 006: CASTLE FADE FIX MAPG MODS OFFDX SOL STN SYS TILE cutWalls grab; 007: FLAME; 008: BATCH; 062: castleMat gboxS |

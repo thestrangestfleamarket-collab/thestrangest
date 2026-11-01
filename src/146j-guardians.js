@@ -14,7 +14,7 @@ const GUARD={list:[]}; window.GUARD=GUARD;
   // the bounty you hold: {id, n, got}, kept with your things; the dungeon's kills count toward it (SYS 'slain')
   let B=null; try{ B=JSON.parse(OWNED.get('bounty')||'null'); }catch(e){ B=null; }
   const keep=()=>{ try{ OWNED.set('bounty',JSON.stringify(B)); }catch(e){} }, def=id=>D.bounties.find(b=>b.id===id), done=()=>!!B&&B.got>=B.n;
-  SYS.add('slain',e=>{ const d=B&&def(B.id); if(!d||done())return; if((d.kind==='any'||d.kind===e.kind)&&(e.lvl||1)>=(d.lvl||1)){ B.got++; keep(); if(done())say('BOUNTY DONE: '+d.t+'. OLD EMBER WILL PAY.'); } },'146j-guardians');
+  SYS.add('slain',e=>{ const d=B&&def(B.id); if(!d||done()||e.sim)return; if((d.kind==='any'||d.kind===e.kind)&&(e.lvl||1)>=(d.lvl||1)){ B.got++; keep(); if(done())say('BOUNTY DONE: '+d.t+'. OLD EMBER WILL PAY.'); } },'146j-guardians');
   TALK.ops.bounty=a=>{ const [w,id]=String(a).split(/\s+/), d=def(id||(B&&B.id));
     if(w==='take'&&d){ B={id:d.id,n:d.n,got:0}; keep(); say('BOUNTY: '+d.t+' ($'+d.pay+').'); }
     else if(w==='pay'&&d&&done()){ INV.cash+=d.pay; say('OLD EMBER PAYS YOU $'+d.pay+'.'); B=null; keep(); FORAGE.draw&&FORAGE.draw(); }

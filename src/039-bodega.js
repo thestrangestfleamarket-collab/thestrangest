@@ -1842,7 +1842,7 @@ SHARED.BODB={};
       for(const [p,n] of tri){ const lx=p[0]+pa.c[0], ly=p[1]+pa.c[1], lz=p[2]+pa.c[2], gx=it.x+lx*cs-ly*sn, gy=it.y+lx*sn+ly*cs;
         P.push(X(gx),Y(it.z+lz*24),Z(gy)); N.push(n[0]*cs-n[1]*sn,n[2],n[0]*sn+n[1]*cs); Cc.push(col.r,col.g,col.b); UV.push(WU,WV); } };
     const label=(it,pa)=>{ const [u0,v0,u1,v1]=uvOf(pa.bi), n=[0,1,0]; let w,h,y; if(pa.t==='box'){ w=pa.h[0]*.92; h=pa.h[2]*.86; y=pa.h[1]+.004; } else { w=pa.r*.95; h=pa.hh*.78; y=pa.r+.004; }
-      const Q=[[[-w,y,-h],[u1,v1]],[[w,y,-h],[u0,v1]],[[w,y,h],[u0,v0]],[[-w,y,h],[u1,v0]]], cs=Math.cos(it.yaw), sn=Math.sin(it.yaw);
+      const Q=[[[-w,y,-h],[u0,v1]],[[w,y,-h],[u1,v1]],[[w,y,h],[u1,v0]],[[-w,y,h],[u0,v0]]], cs=Math.cos(it.yaw), sn=Math.sin(it.yaw);
       for(const k of [0,1,2,0,2,3]){ const [p,uv]=Q[k], lx=p[0]+pa.c[0], ly=p[1]+pa.c[1], lz=p[2]+pa.c[2]; P.push(X(it.x+lx*cs-ly*sn),Y(it.z+lz*24),Z(it.y+lx*sn+ly*cs)); N.push(-sn,0,cs); Cc.push(1,1,1); UV.push(uv[0],uv[1]); } };
     const quad=(it,pa,a,b,c,d,n)=>{ emit(it,pa,[[a,n],[b,n],[c,n]]); emit(it,pa,[[a,n],[c,n],[d,n]]); };
     const same=C=>C.every(c=>c[0]===C[0][0]&&c[1]===C[0][1]&&c[2]===C[0][2]);

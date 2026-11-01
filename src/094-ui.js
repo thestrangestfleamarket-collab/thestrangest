@@ -397,7 +397,7 @@ ${sel('color',['#d8a845'])}{${HI}}
 .ml .pX{color:#7dffa8!important;background:#020a06!important;box-shadow:inset 0 0 0 2px #3aa866!important;border:0!important}
 .ml .pX:hover{color:#020a06!important;background:#7dffa8!important}`;
     document.head.appendChild(ML);
-    const NOT=/^(stage|subfade|hud|stat|shd|mode|said|vit|fjour|plcap|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead|vrbtn)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|pcp|nsp|talkp|hornp|shopg|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp)$/;
+    const NOT=/^(stage|subfade|hud|stat|shd|mode|said|vit|fjour|plcap|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead|vrbtn)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|pcp|nsp|talkp|hornp|shopg|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };

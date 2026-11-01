@@ -5103,3 +5103,4 @@ Owner: "remove the spotlights, the ticket booth should not be pertruding outside
 - 1 Nov 2026, owner: "undo, remove all clutte[r]". The junk and weed clumps are gone from the empty lots; they are bare dirt again.
 ## 1 Nov 2026: 480 lines under the PS2 filter
 Owner, of the review's first item (the frame shaded at the screen's own pixels, then box-filtered into 240 lines): "lets do this first". While the PS2 filter is on the picture is drawn at 480 lines at most (each of its 240 cells reads a 2x2 box, so the picture is the same for a fraction of the pixels); HIGH and HIGHEST mean 480 then. With the filter off the RESOLUTION steps are as before. Rule: nothing drawn finer than the look can show.
+- 1 Nov 2026, the character page's avatar at your resolution (owner: "why does avatar look so bulky even on highest graphic setting"): its portrait was always cut to about 80 lines of pixels whatever RESOLUTION said; it now uses the same pixel size as the game around it.

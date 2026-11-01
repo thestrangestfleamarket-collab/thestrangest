@@ -49,9 +49,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(['wind', 'fly', 'wait', 'bite', 'fight', 'land'].every(s => r3.seen.includes(s)) && r3.hooked === 'fight', 'a cast goes back and through, the float sits, a bite, the strike sets the hook, the fight, the lift out: ' + r3.seen.join(','));
   ok(r3.bass === 1 && r3.kg && r3.kg[0] > 0 && r3.last && r3.last.id === 'x_bass' && !r3.hook, 'the striped bass comes off the hook into the pack with its weight, the bait eaten: ' + JSON.stringify({ kg: r3.kg, last: r3.last, hook: r3.hook }));
   // the fish shows at the bait as it bites; a strike on a nibble spooks it (big words in the middle), the bait stays and another may come
+  // the nibble is started by hand: on a slow machine one frame can jump the whole 1.2 s nibble
   const r4 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, out = {}; FISHING.speed = 1; FISHING.force = 'x_shad'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
-    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.nib && s.st === 'wait') break; await new Promise(r => setTimeout(r, 30)); }
-    FISHING.click(); await new Promise(r => setTimeout(r, 300)); const d = FISHDBG(); out.spook = d.shout; out.still = d.state && d.state.st; out.hook = d.hook;
+    const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'wait') break; await new Promise(r => setTimeout(r, 30)); }
+    s.tb = s.t + 30; s.nib = 1; FISHING.click(); await new Promise(r => setTimeout(r, 300)); const d = FISHDBG(); out.spook = d.shout; out.still = d.state && d.state.st; out.hook = d.hook;
     FISHING.speed = 20; FISHING.win = 1e4;   // fishing time runs on frames: on a slow runner a real-time wait for the next bite never ends
     const t1 = performance.now(); while (performance.now() - t1 < 400000) { s = FISHING.state(); if (!s || s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }   // its own wait: on a slow machine the nibble alone can take most of the first
     for (let i = 0; i < 5; i++) await new Promise(r => requestAnimationFrame(r)); out.bite = s && s.st; out.shown = FISHDBG().shown; FISHING.click(); out.on = FISHDBG().shout; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return out; });
@@ -87,6 +88,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // crab pots: drop one ahead, it is kept, haul it later for what crawled in
   const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
   ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));
+  // other players: their pots float where they dropped them, with their name, and go when they haul them; yours go to the section
+  const tp = await pg.evaluate(async () => { const T = __dbg.cv().TILE, sent = [], on = ONLINE.on, send = ONLINE.send; ONLINE.on = true; ONLINE.send = m => sent.push(m);
+    ONLINE.hear.puts({ all: [{ id: 'q', name: 'Otto', k: 'pot', list: [[PIER.x + 3 * T, 0, PIER.zE - 6 * T, 1]] }] }); await new Promise(r => setTimeout(r, 400));
+    const p = (POTS.theirs.get('q') || [])[0], o = { shown: !!(p && p.g && p.g.visible), name: p && p.th && p.th.name, mine: !!sent.find(m => m.t === 'puts' && m.k === 'pot') };
+    ONLINE.hear.puts({ id: 'q', k: 'pot', name: 'Otto', list: [] }); o.gone = !POTS.theirs.has('q') && !(p && p.g); ONLINE.on = on; ONLINE.send = send; return o; });
+  ok(tp.shown && tp.name === "OTTO'S CRAB POT" && tp.mine && tp.gone, "another player's crab pot floats where they dropped it, with their name, and goes when they haul it; yours go to the section: " + JSON.stringify(tp));
   // a pond in each new section, fished like THE LAKE, with no Hudson built: section C on its own
   { const p2 = await b.newPage({ viewport: { width: 640, height: 400 } }); p2.on('pageerror', e => errs.push(e.message.slice(0, 300)));
     await p2.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&sec=C', { waitUntil: 'commit' }); await p2.waitForFunction(() => window.__started && window.FISHING && FISHING.at, null, { timeout: 300000, polling: 500 });
@@ -98,7 +105,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;
     ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }] });
-    for (let i = 0; i < 10; i++) { ONLINE.feed({ t: 'mv', id: 'a', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }); ONLINE.feed({ t: 'aim', id: 'a', w: 'rod', v: [0, .55, -.83] }); ONLINE.feed({ t: 'fish', id: 'a', b: [x, 0, z - 8 * T] }); await new Promise(r => setTimeout(r, 200)); }
+    for (let i = 0, t0 = performance.now(); i < 10 || performance.now() - t0 < 60000 && !(FISHING.theirs.get('a') && FISHING.theirs.get('a').line.visible && WIELD.theirTip('a')); i++) { ONLINE.feed({ t: 'mv', id: 'a', at: [x, z, 0, Math.PI, SHARED.LVL, ''] }); ONLINE.feed({ t: 'aim', id: 'a', w: 'rod', v: [0, .55, -.83] }); ONLINE.feed({ t: 'fish', id: 'a', b: [x, 0, z - 8 * T] }); await new Promise(r => setTimeout(r, 200)); }
     const f = FISHING.theirs.get('a'), L = f && f.line.geometry.attributes.position, tp = WIELD.theirTip('a'); ONLINE.on = on;
     return { line: !!(f && f.line.visible), tip: !!tp, gap: L && tp ? +Math.hypot(L.getX(0) - tp.x, L.getY(0) - tp.y, L.getZ(0) - tp.z).toFixed(3) : null }; });
   ok(rf.line && rf.tip && rf.gap < .05, "another player's fishing line starts at the tip of the rod in her hand: " + JSON.stringify(rf));

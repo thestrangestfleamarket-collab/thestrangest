@@ -100,14 +100,14 @@ potion on the floor sets it off at power 1 (a waste).
 | door | `D` | solid until a key is used on it; one key opens the whole connected run of door tiles; doors stay open |
 | exit | `1` `4` `8` | stairs down 1, 4 or 8 floors; the number is painted on it; `1` is on every floor, `4` and `8` on some, further off and guarded |
 | treasure-room exit | `*` | into the floor's treasure room (§8), then down one |
-| teleporter | `T` (pairs `a`…`d`) | step on, come out of its twin; from floor 12 |
+| teleporter | `T` | step on one, come out of the next one in reading order (the last leads back to the first); from floor 12 |
 | trap | `^` | step on it and every trap wall (`-`) on the floor vanishes — a shortcut, or a horde let loose |
 | trap wall | `-` | solid until a trap is stepped on |
 | stun tile | `S` | freezes you for 2 s; from floor 45 |
 | invisible wall | `I` | solid, drawn as floor; shows when you walk into it or when a potion flashes; from floor 35 |
 | generator | `g` `u` `n` `l` `z` | ghost / grunt / demon / lobber / sorcerer generator at the floor's level (each floor's header gives it); a capital is one level higher |
 | placed monster | `H` thief, `X` death, `A` acid | where a loose monster starts |
-| key `k` · potion `p` · plate `f` · cider `c` · poison `x` · chest `$` (100) · bag `b` (50) · amulet `m` · hero start `h` | | |
+| key `k` · potion `p` · plate `f` · cider `c` · poison `x` · chest `$` (100) · bag `b` (50) · amulet `m` · gifts `!` `&` `>` `<` (§7) · hero start `h` | | |
 
 Keys and potions are carried: up to 9 of each.
 
@@ -208,6 +208,8 @@ GAME OVER; ESC leaves. From the third pull request on it also asserts the genera
 (so the board stays fair across builds). `tests/places.cjs` has TORCHBEARER as a cabinet whose chunk must be fetched on play.
 
 ## 15. The build, in three pull requests
+
+*Where it stands (30 Oct 2026): 1 and 2 are built; 2 lays floors 6–20 by hand, and 21–30 come with 3 alongside the generator, so each pull request stays reviewable.*
 
 1. **The engine, playable end to end**: tiles and scrolling, CHOOSE YOUR HERO with the four, move / shoot / melee, grunts and
    ghosts and their generators, keys and doors, food and poison, treasure, the three exits, the HUD, the announcer, floors 1–5, the

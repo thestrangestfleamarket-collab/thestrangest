@@ -68,7 +68,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
-  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';
+  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // the Hudson row (row 2) is all closed garages (owner)
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   for(const [a,b] of holes(MAINROW,B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));

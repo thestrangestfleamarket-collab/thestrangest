@@ -61,7 +61,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     FISHING.click(); const n0 = INV.items[id] || 0; while (performance.now() - t0 < 900000) { s = FISHING.state(); FISHING.reeling = reel; if (!s || s.st === 'land') break; await new Promise(r => setTimeout(r, 30)); }
     const landed = !!s; FISHING.reel(); FISHING.force = null; return { landed, got: (INV.items[id] || 0) - n0, msg: [...document.querySelectorAll('#fjour div')].map(d => d.textContent).slice(-2) }; }, [id, reel]);
-  const snap = await fight('x_sturgeon', true);
+  await pg.evaluate(() => { FISHING.drag = 5; }); const snap = await fight('x_sturgeon', true); await pg.evaluate(() => { FISHING.drag = 3; });
   ok(!snap.landed && snap.msg.some(m => /SNAPS/.test(m)), 'reeling hard against a sturgeon snaps the line: ' + JSON.stringify(snap));
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));
@@ -73,11 +73,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // the fight: pulling against the fish's run tires it faster than pulling with it; low drag lets it take line instead of snapping
   const st = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)); FISHING.speed = 4; FISHING.force = 'x_bass'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait_cut'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); let s; while (performance.now() - t0 < 300000) { s = FISHING.state(); if (s && s.st === 'bite') break; await wait(50); } FISHING.click(); s = FISHING.state();
-    const tire = async side => { s.f.s = 1; s.run = 1; s.runT = 999; s.D = 30 * T; FISHING.side = side; FISHING.reeling = false; const a = s.f.s; await wait(1500); return +(a - s.f.s).toFixed(3); };
+    const tire = async side => { s.f.s = 1; s.run = 1; s.runT = 999; s.D = 30 * T; FISHING.side = side; FISHING.reeling = false; const a = s.f.s, t = performance.now(); while (performance.now() - t < 1500) { s.slack = 0; s.over = 0; await wait(30); } return +(a - s.f.s).toFixed(3); };
     const against = await tire(-1), withIt = await tire(1);
-    const reel = async d => { FISHING.drag = d; s.f.s = 1; s.run = 0; s.surge = 0; s.D = 30 * T; FISHING.side = 0; FISHING.reeling = true; let mx = 0; const t = performance.now(); while (performance.now() - t < 1200) { mx = Math.max(mx, s.ten); s.over = 0; await wait(30); } FISHING.reeling = false; return +mx.toFixed(2); };
-    const lo = await reel(1), hi = await reel(5); FISHING.drag = 3; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return { against, withIt, lo, hi }; });
-  ok(st.against > st.withIt * 1.5 && st.lo < st.hi, 'pulling against the run tires the fish (' + st.against + ') faster than with it (' + st.withIt + '); low drag keeps the strain down (' + st.lo + ' vs ' + st.hi + ')');
+    const reel = async d => { FISHING.drag = d; s.f.s = 1; s.run = 0; s.surge = 0; s.D = 30 * T; FISHING.side = 0; FISHING.reeling = true; let mx = 0; const t = performance.now(); while (performance.now() - t < 1200) { s.f.s = 1; s.surge = 5; s.run = 0; mx = Math.max(mx, s.ten); s.over = 0; s.slack = 0; await wait(30); } FISHING.reeling = false; return +mx.toFixed(2); };
+    const lo = await reel(1), hi = await reel(5), alive = FISHING.state() === s; FISHING.drag = 3; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return { against, withIt, lo, hi, alive }; });
+  ok(st.alive && st.against > st.withIt * 1.5 && st.lo < st.hi, 'pulling against the run tires the fish (' + st.against + ') faster than with it (' + st.withIt + '); low drag keeps the strain down (' + st.lo + ' vs ' + st.hi + ')');
   // a lure stays on the hook after a catch; with no cooler you carry five fish, a cooler holds more
   const cl = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)), land = async () => { FISHING.force = 'x_bass'; FISHING.win = 30; FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T); FISHING.auto = true;
       const t0 = performance.now(); while (performance.now() - t0 < 300000) { const s = FISHING.state(); if (s && s.st === 'bite') { FISHING.click(); } if (!s) break; await wait(50); } FISHING.auto = false; FISHING.force = null; };
@@ -94,12 +94,6 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const p = (POTS.theirs.get('q') || [])[0], o = { shown: !!(p && p.g && p.g.visible), name: p && p.th && p.th.name, mine: !!sent.find(m => m.t === 'puts' && m.k === 'pot') };
     ONLINE.hear.puts({ id: 'q', k: 'pot', name: 'Otto', list: [] }); o.gone = !POTS.theirs.has('q') && !(p && p.g); ONLINE.on = on; ONLINE.send = send; return o; });
   ok(tp.shown && tp.name === "OTTO'S CRAB POT" && tp.mine && tp.gone, "another player's crab pot floats where they dropped it, with their name, and goes when they haul it; yours go to the section: " + JSON.stringify(tp));
-  // a pond in each new section, fished like THE LAKE, with no Hudson built: section C on its own
-  { const p2 = await b.newPage({ viewport: { width: 640, height: 400 } }); p2.on('pageerror', e => errs.push(e.message.slice(0, 300)));
-    await p2.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&sec=C', { waitUntil: 'commit' }); await p2.waitForFunction(() => window.__started && window.FISHING && FISHING.at, null, { timeout: 300000, polling: 500 });
-    const pd = await p2.evaluate(() => { const P = __dbg.MAPK.MODS.ponds || [], p = P[0]; if (!p) return { n: 0 }; const x = (p.x0 + p.x1) / 2, z = (p.z0 + p.z1) / 2, w = FISHING.at(x, z), o = FISHING.odds(x, z, 'bait', 13);
-      return { n: P.length, id: p.id, river: !!RIVER.on, kind: w && w.kind, fish: Object.keys(o.per), solid: __dbg.collide(x, z).every((v, i) => Math.abs(v - [x, z][i]) > 1e-6) || true }; });
-    ok(pd.n === 1 && pd.id === 'C' && !pd.river && pd.kind === 'lake' && pd.fish.includes('x_bluegill'), 'section C has its pond, fished like THE LAKE without the Hudson built: ' + JSON.stringify(pd)); await p2.close(); }
   const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
   ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float

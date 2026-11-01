@@ -56,7 +56,8 @@ export default {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/home") { if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
+      if (p === "/home") { if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
+        if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
         const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 65536) return json({ why: "bad room" }, 400);
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }

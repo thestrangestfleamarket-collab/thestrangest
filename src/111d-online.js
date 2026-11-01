@@ -15,7 +15,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
-  const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt'+(MODS.apts.num?'#'+MODS.apts.num:''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
+  const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt:'+(MODS.apts.host||ONLINE.me||MODS.apts.num||''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
   const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.robe?1:0)+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:''));
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
@@ -112,6 +112,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     document.body.appendChild(EL); EL.hidden=false;
     const who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist'), I=EL.querySelector('#onlin');
     who.onclick=()=>{ L.hidden=!L.hidden; who.setAttribute('aria-expanded',String(!L.hidden)); list(); };
+    L.onclick=e=>{ const b=e.target.closest('button[data-visit]'); if(!b||!ONLINE.visit)return; const o=ONLINE.others.get(b.dataset.visit); if(o)ONLINE.visit(o.id,o.name); };
     for(const ev of ['keydown','keyup'])I.addEventListener(ev,e=>{ e.stopPropagation(); if(ev!=='keydown')return;
       if(e.key==='Enter'){ const t=I.value.trim(); if(t){ send({t:'say',text:t}); line(myName(),t); } shut(); }
       else if(e.key==='Escape')shut(); });
@@ -123,7 +124,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
   const list=()=>{ if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
     who.textContent='ONLINE '+(all.length+1)+(ONLINE.on||!sock?'':' · OFF'); EL.querySelector('.k').textContent=UI.keyOf?UI.keyOf('chat').toUpperCase()+' TO TALK':'';
-    if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+' <span style="color:#8a8f9c">'+esc(o.why||(o.s.length?'':'no position yet'))+'</span></div>').join(''); };
+    if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+' <span style="color:#8a8f9c">'+esc(o.why||(o.s.length?'':'no position yet'))+'</span>'+(ONLINE.visit?' <button data-visit="'+esc(o.id)+'" style="font:inherit;color:#ece5d3;background:#0e1016;border:1px solid #3a3f4e;padding:0 5px;cursor:pointer">VISIT</button>':'')+'</div>').join(''); };
   let fadeT=0; const fade=dt=>{ if(!EL||(fadeT+=dt)<1)return; fadeT=0; if(!EL.querySelector('#onllist').hidden)list(); const now=performance.now(); for(const d of EL.querySelector('#onllog').children)d.classList.toggle('old',now-+d.dataset.t>FADE_S); };
 
   /* ---------- the connection: partysocket (it reconnects by itself); your moves at most six times a second, only when you move ---------- */

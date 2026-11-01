@@ -1,6 +1,6 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, pos} from './003b-systems.js';
+import {FORAGE, INV, ONLINE, pos} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
@@ -22,7 +22,13 @@ import {ROOMK} from './150a-bedroom.js';
     for(const id in L.lights||{})A.light(id,L.lights[id]); };
   // the room starts empty: its pieces are only kinds to buy, what you bought comes back from your layout (?furnished=1 keeps it as built, for the tests of its pieces)
   const SORT={};
-  ROOMK.built.push(A=>{ sortKinds(A); if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added)A.drop(un); if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
+  ROOMK.built.push(A=>{ sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added)A.drop(un); if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
+  // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
+  const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
+  HOME.visit=async(id,name,L0)=>{ if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
+    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:L||null}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
+  ONLINE.visit=(id,name)=>HOME.visit(id,name);
+  SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); } },'150d-visit');
   HOME.load();
 
   /* ---------- the catalog: what each kind is, its department and its price ---------- */
@@ -214,7 +220,7 @@ import {ROOMK} from './150a-bedroom.js';
     ED.undo.length=0; dirty(); ED.panel(); };
 
   /* ---------- the camera over the room while you decorate (back as it was when you're done) ---------- */
-  ED.toggle=()=>{ if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&HOME.guest){ FORAGE.say&&FORAGE.say("THIS IS "+HOME.guest.name+"'S APARTMENT. YOU CAN LOOK, NOT DECORATE.",'#c8a090'); return; } if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);

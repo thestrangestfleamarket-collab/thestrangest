@@ -16,7 +16,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/home',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/home without a login is refused');
     const put=await home({put:{v:1,wall:'brick',things:{}}}), got=await home({});
-    ok(put.ok===true&&got.home&&got.home.wall==='brick','/home keeps your decorated room ('+JSON.stringify(got).slice(0,80)+')'); }
+    ok(put.ok===true&&got.home&&got.home.wall==='brick','/home keeps your decorated room ('+JSON.stringify(got).slice(0,80)+')');
+    const seen=await fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:a-visitor',origin:BASE,'content-type':'application/json'},body:JSON.stringify({who:'dev-site-check'})}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    ok(seen.home&&seen.home.wall==='brick','another player can look at your room when they visit ('+JSON.stringify(seen).slice(0,60)+')'); }
   { const own=body=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass=dev:own-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
     const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});

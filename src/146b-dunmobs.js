@@ -46,15 +46,16 @@ import {GEMS} from './101-gems.js';
   for(const m of [IM,GL]){ m.frustumCulled=false; m.count=0; m.castShadow=false; G.add(m); } IM.receiveShadow=true;
   const H0=.42/.84*T, S0=H0/SD.tall, SY=ZU*24/TILE, m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), UP=new THREE.Vector3(0,1,0), v3=new THREE.Vector3(), s3=new THREE.Vector3(), col=new THREE.Color(), WH=new THREE.Color(0xffffff);
   const HB=new THREE.BoxGeometry(.6*T,.4*T,.6*T), HM=new THREE.MeshBasicMaterial({visible:false}), CG=new THREE.CylinderGeometry(.07*T,.07*T,.025*T,8), OG=new THREE.OctahedronGeometry(.07*T,0), PG=new THREE.BoxGeometry(.06*T,.11*T,.06*T), LM={};
-  let lvl=0, L=null, slimes=[], things=[], RES=null, bolts=[], SPI=[], TR=[], plan=null;
-  const lane=()=>{ const R=L.R; return {x0:X(R.x0+.9),x1:X(R.x1-.9),z0:Z(R.y0+.9),z1:Z(R.y1-.9)}; };
+  let lvl=0, L=null, AR=null, slimes=[], things=[], RES=null, bolts=[], SPI=[], TR=[], plan=null;   // AR: an arena elsewhere (the holodeck's hall) running the slimes instead of a dungeon level
+  const grp=()=>AR?AR.G:MAPG.dungeon, gnd=(x,z)=>AR?AR.ground(x,z):D.ground(x,z), lvOf=()=>AR?AR.lv:'down';
+  const lane=()=>{ if(AR)return AR.lane; const R=L.R; return {x0:X(R.x0+.9),x1:X(R.x1-.9),z0:Z(R.y0+.9),z1:Z(R.y1-.9)}; };
   const inR=(S,x,z,m)=>S&&x>X(S.x0-m)&&x<X(S.x1+m)&&z>Z(S.y0-m)&&z<Z(S.y1+m);
-  const free=(x,z,R)=>{ if(!L)return false; const A=lane(); return x>A.x0&&x<A.x1&&z>A.z0&&z<A.z1&&!inR(L.up,x,z,.5)&&!inR(L.dn,x,z,.5)&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!TR.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); };
-  const crowd=(x,z,R,me)=>slimes.some(o=>o!==me&&!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T*TIER[o.k].s)||NPCS.some(q=>q!==me&&q.lv==='down'&&!q.far&&q.mode!=='hidden'&&q.g.parent===MAPG.dungeon&&q.blocks(x,z,R));   // no creature walks through another
+  const free=(x,z,R)=>{ if(!L&&!AR)return false; const A=lane(); if(!(x>A.x0&&x<A.x1&&z>A.z0&&z<A.z1)||!AR&&(inR(L.up,x,z,.5)||inR(L.dn,x,z,.5)))return false; return !(AR?AR.sol:SOL.down).some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!TR.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); };
+  const crowd=(x,z,R,me)=>slimes.some(o=>o!==me&&!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T*TIER[o.k].s)||NPCS.some(q=>q!==me&&q.lv===lvOf()&&!q.far&&q.mode!=='hidden'&&q.g.parent===grp()&&q.blocks(x,z,R));   // no creature walks through another
   const spot=(R,away)=>{ const A=lane(); for(let k=0;k<80;k++){ const x=A.x0+Math.random()*(A.x1-A.x0), z=A.z0+Math.random()*(A.z1-A.z0); if(free(x,z,R)&&away.every(p=>!p||Math.hypot(p.x-x,p.z-z)>3.5*T))return {x,z}; } return {x:(A.x0+A.x1)/2,z:(A.z0+A.z1)/2}; };
   const near=(x,z,r0,r1,R)=>{ for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=r0+Math.random()*(r1-r0), p={x:x+Math.sin(a)*r,z:z+Math.cos(a)*r}; if(free(p.x,p.z,R))return p; } return null; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); const j=things.indexOf(th); if(j>=0)things.splice(j,1); th.obj.removeFromParent(); if(th.vis)th.vis.removeFromParent(); };
-  const thing=(name,x,z,act,vis)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,D.ground(x,z)+.15*T,z); G.add(hb); if(vis)G.add(vis); const th={name,pick:true,obj:hb,vis,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>act(th)}; UI.thing(th); things.push(th); return th; };
+  const thing=(name,x,z,act,vis)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,gnd(x,z)+.15*T,z); G.add(hb); if(vis)G.add(vis); const th={name,pick:true,obj:hb,vis,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>act(th)}; UI.thing(th); things.push(th); return th; };
   const roll=k=>{ const t=LOOT[k], w=t.reduce((a,e)=>a+e[3],0); let r=Math.random()*w; for(const e of t)if((r-=e[3])<0)return e; return t[0]; };
   const UPT={green:'blue',blue:'purple',purple:'red',red:'red',bone:'red',spider:'red',gold:'gold'};
   const xp=(a,b)=>{ for(let i=0;i<lvl;i++)FORAGE.use('fight',a+(lvl-1)*6,b+(lvl-1)*6); };   // deeper kills teach more
@@ -70,7 +71,7 @@ import {GEMS} from './101-gems.js';
   const hitSlime=(S,dmg,from,s)=>{ if(S.dead)return; const t=TIER[S.k]; S.hp-=dmg; S.flash=.12; S.agg=true; sfx('step',{vol:.6,pitch:.55,vary:.2});
     const dx=S.x-from.x, dz=S.z-from.z, l=Math.hypot(dx,dz)||1, kb=.45*T*(s&&s.kb||1), p={x:S.x+dx/l*kb,z:S.z+dz/l*kb}; if(free(p.x,p.z,.18*T)){ S.kb={x:p.x,z:p.z}; }
     if(S.hp>0)return; S.dead=true; S.pop=0; S.air=0; sfx('drip',{vol:.8,pitch:.45}); sfx('boom',{vol:.15,pitch:2.4});
-    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); xp(t.sk[0],t.sk[1]); goo(S); loot(S.k,t.loot,S.x,S.z); SYS.run('slain',{kind:'slime',lvl}); };
+    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); xp(t.sk[0],t.sk[1]); if(!AR){ goo(S); loot(S.k,t.loot,S.x,S.z); } SYS.run('slain',{kind:'slime',lvl,sim:!!AR}); };   // an arena's slimes are light: nothing to scoop or pick up
   const killRes=r=>{ const N=r.N; r.dead=true; r.t=0; N.alert=false; N.st.to=null; N.st.face=null; N.st.hold=true;
     if(r.kk)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); say(r.kk?'THE '+N.name+' FALLS.':r.spider?'THE SPIDER CURLS UP AND DIES.':r.ogre?'THE OGRE GOES DOWN.':'THE SKELETON CRUMBLES.','#e8e2cc');
     xp(10+lvl*8,60+lvl*8); const k=r.key==='Gold'?'gold':r.spider?'spider':'bone'; loot(k,.6,N.st.x,N.st.z); if(r.key==='Gold')drop('gold',N.st.x,N.st.z); SYS.run('slain',{kind:k==='bone'?'guard':k,lvl}); };
@@ -97,19 +98,20 @@ import {GEMS} from './101-gems.js';
     for(let i=0;i<4;i++){ const N=window.CREATNEW('Spider','spider',.55,{paint:toxic,npc:{lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.6,radius:.16}});
       N.name='RADIOACTIVE SPIDER'; const gl=new THREE.Mesh(GLG,GLOW); gl.position.y=.02*T; N.g.add(gl); N.clip='Spider_Idle';
       const r={N,key:'spider',lv:[],kk:false,spider:true,v0:1.4*T,hp:0,style:{hit:'',reach:.6,at:.38}}; SPI.push(r); park(r); } };
-  const spawnSlimes=(n,k0)=>{ slimes=[]; const used=[]; for(let i=0;i<k0;i++){ const k=tierAt(n), p=spot(.2*T,[L.atUp,L.atDn,...used]); used.push(p); const t=TIER[k];
+  const spawnSlimes=(n,k0)=>{ slimes=[]; const used=[]; for(let i=0;i<k0;i++){ const k=tierAt(n), p=spot(.2*T,[...(AR?AR.away:[L.atUp,L.atDn]),...used]); used.push(p); const t=TIER[k];
     slimes.push({i,k,x:p.x,z:p.z,h:Math.random()*6.28,hp:Math.ceil(t.hp*F()),dmg:Math.max(t.dmg,.025)*F(),v:t.v*(1+.08*(n-1)),to:null,wait:Math.random()*3,air:0,ph:0,cool:1,flash:0,dead:false,pop:0,agg:false,kb:null}); } IM.count=GL.count=slimes.length; draw(); };
   const planOf=n=>{ const N=3+Math.floor(Math.random()*3), g=Math.min(N-1,n===1?(Math.random()<.5?1:0):1+Math.floor(Math.random()*Math.min(3,n-1))); let sp=0, sl=0; for(let i=g;i<N;i++){ if(Math.random()<.25+.06*n)sp++; else sl++; } return {g,sp,sl}; };
-  const onLevel=n=>{ for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
+  const arena=(A,n,k)=>{ if(!A){ if(!AR)return; AR=null; lvl=0; slimes=[]; IM.count=GL.count=0; MAPG.dungeon.add(G); return; } AR=A; A.G.add(G); L=null; TR=[]; plan=null; lvl=n; spawnSlimes(n,k); };
+  const onLevel=n=>{ if(AR)arena(null); for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
     TR=n?D.traps().filter(h=>h.t!=='web').map(h=>[Math.min(X(h.x0),X(h.x1)),Math.min(Z(h.y0),Z(h.y1)),Math.max(X(h.x0),X(h.x1)),Math.max(Z(h.y0),Z(h.y1))]):[];
     if(!n){ plan=null; arrange(0); return; } plan=planOf(n); spawnSlimes(n,plan.sl); arrange(n); if(plan.sp&&!SPI.length)mkSpiders().then(()=>{ if(lvl===n)arrange(n); });
     if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(lvl===n)arrange(n); else arrange(lvl); }); } };
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
       if(S.dead){ const u=Math.min(1,S.pop/.28); sx=u<.4?1+u*.8:1.32+(u-.4)*.4; sy=u<.4?1+u*.5:Math.max(.13,1.2-(u-.4)*1.8); }
       else if(S.air>0){ const u=S.ph; if(u<.2){ sy=1-u*1.2; sx=1+u*.6; } else if(u<.8){ const a=(u-.2)/.6; y=Math.sin(Math.PI*a)*.34*T; sy=1.12-.12*Math.abs(a-.5)*2; sx=.94; } else{ const a=(u-.8)/.2; sy=.78+.22*a; sx=1.12-.12*a; } }
-      q4.setFromAxisAngle(UP,S.h-Math.PI/2); m4.compose(v3.set(S.x,D.ground(S.x,S.z)+y,S.z),q4,s3.set(s*sx,s*SY*sy,s*sx));
+      q4.setFromAxisAngle(UP,S.h-Math.PI/2); m4.compose(v3.set(S.x,gnd(S.x,S.z)+y,S.z),q4,s3.set(s*sx,s*SY*sy,s*sx));
       if(S.gone)s3.set(0,0,0); IM.setMatrixAt(i,m4.compose(v3,q4,s3)); col.setHex(t.c); if(S.flash>0)col.lerp(WH,.7); IM.setColorAt(i,col);
-      const gr=(S.dead?.5:.42)*T*t.s*(S.gone?0:1); m4.compose(v3.set(S.x,D.ground(S.x,S.z)+.012*T,S.z),q4.identity(),s3.set(gr,1,gr)); GL.setMatrixAt(i,m4); col.setHex(t.c).multiplyScalar(S.dead?.6:1); GL.setColorAt(i,col); });
+      const gr=(S.dead?.5:.42)*T*t.s*(S.gone?0:1); m4.compose(v3.set(S.x,gnd(S.x,S.z)+.012*T,S.z),q4.identity(),s3.set(gr,1,gr)); GL.setMatrixAt(i,m4); col.setHex(t.c).multiplyScalar(S.dead?.6:1); GL.setColorAt(i,col); });
     for(const m of [IM,GL]){ m.instanceMatrix.needsUpdate=true; if(m.instanceColor)m.instanceColor.needsUpdate=true; } };
   const slimeTick=(dt,you,alive)=>{ let ch=false; for(const S of slimes){ const t=TIER[S.k];
       if(S.flash>0){ S.flash-=dt; ch=true; }
@@ -147,12 +149,14 @@ import {GEMS} from './101-gems.js';
     if(r.cool>0||off>.45)return; r.cool=(1.8+Math.random()*.7)/(1+.1*lvl);
     const land=()=>{ if(VIT.dead||r.dead)return; if(ranged)return shoot(r,r.style.bolt); if(Math.hypot(pos.x-st.x,pos.z-st.z)<R*1.45&&VIT.hurt(r.dmg,st)===2){ r.cool=3.2; if(r.kk)N.an.play('Hit_A'); else r.jolt=.6; } };   // parried: it staggers, open to you
     if(r.kk)N.an.play(r.style.hit==='1H_Melee_Attack_Chop'&&Math.random()<.5?'1H_Melee_Attack_Slice_Diagonal':r.style.hit,{at:[r.style.at,land]}); else r.lunge={t:0,hit:land}; };
-  const tick=dt=>{ if(!lvl||!L)return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL==='down';
-    const S=alive?strikes():[]; for(const s of S){ const m=strength(s); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,D.ground(sl.x,sl.z),.2*T)){ hitSlime(sl,s.d*m,you,s); STRIKES.landed(s); }
+  const tick=dt=>{ if(!lvl||!(L||AR))return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL===lvOf();
+    const S=alive?strikes():[]; for(const s of S){ const m=strength(s); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,gnd(sl.x,sl.z),.2*T)){ hitSlime(sl,s.d*m,you,s); STRIKES.landed(s); }
       for(const r of [...(RES||[]),...SPI])if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); for(const r of SPI)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes([...(RES||[]),...SPI].filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
-    plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12)}); return {onLevel,tick}; };
+    plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); return {onLevel,tick,arena,wave:(n,k)=>{ lvl=n; spawnSlimes(n,k); },alive:()=>slimes.filter(S=>!S.dead).length}; };
   D.hook(n=>{ if(!M){ if(!n)return; M=init(); } M.onLevel(n); });
+  // an arena elsewhere runs the slimes: {G, lane:{x0,z0,x1,z1}, sol:[rects], away:[{x,z}], ground(x,z), lv}; wave n of k slimes (tier and toughness by n, as the dungeon's levels)
+  MODS.dunmobs={arena:async(A,n,k)=>{ if(window.LOAD)await LOAD('dungeon'); if(!M)M=init(); M.arena(A,n,k); },wave:(n,k)=>M&&M.wave(n,k),off:()=>M&&M.arena(null),alive:()=>M?M.alive():0};
   SYS.add('life',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }

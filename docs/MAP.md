@@ -9,7 +9,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 - `grab(down)`: 009-down.js to 009-down.js (41 KB)
 - `grab(loop)`: 009b-loop.js to 009b-loop.js (26 KB)
 - `grab(trains)`: 009c-trains.js to 009c-trains.js (25 KB)
-- `grab(bodega)`: 039-bodega.js to 039-bodega.js (76 KB)
+- `grab(bodega)`: 039-bodega.js to 039-bodega.js (82 KB)
 - `grab(store)`: 059-store.js to 059-store.js (33 KB)
 - `grab(mainstreet)`: 059-street.js to 059-street.js (28 KB)
 - `grab(apts)`: 059a-apts.js to 059a-apts.js (28 KB)
@@ -52,13 +52,13 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `014-gamekit.js` | 10.1 | top level | BRICKS (039 061 069a), CATALOG (015 016 020 023 027 039), CAT_DEPTS (016 020 023 027 039), CAT_INFO (016 020 023 027 039 146), COPE (039), DTBRICK (039), FP (039), KIND_OF (015 016 020 023 027 039), LAMPS (015 016 020 023 026z 027 039 059b), LBLD (015 023 027 039), LIFE (015 016 020 023 027 038z 039), LSEED (016 023 039), PROPL (023 039), ROT (020), SQB (023), STORY (016 023 027 039), T (023 027 038z 039), TUFTC (014a 134a 140a 152a), crack (015), cvNoise (014a 027 038z 039 140a), grain (014a 015 039), grassCol (039), hash (014a 015 016 020 023 026z 027 038z 039), kerbCol (039), kerbFace (039), lawnCol (039), mt (015 016 020 023 039), prop (015 016 020 023 026z 027 038z 039), rlf (039), roadCol (039), sh (014a 015 016 020 023 026z 027 038z 039), sided (015 016 023 026z 027 038z 039), slabCol (039), speck (016 027 039), spot (015), tuftCol (014a 152a), woodCol (027), zShift (026z 027 039) | 003: SHARED |
 | `014a-grass.js` | 11.0 | top level | GRASS (064 140 140a 141 143 144a 152a) | 005: SAVE; 006: TILE; 014: TUFTC cvNoise grain hash sh tuftCol |
 | `015-game-w-bodega-shop.js` | 15.3 | top level | bodegaFloorCol (039), bodegaWall (039) | 003: SHARED; 003b: DRONE; 014: CATALOG KIND_OF LAMPS LBLD LIFE crack grain hash mt prop sh sided spot |
-| `016-street-kit.js` | 65.2 | top level | MKS (039) | 003: SHARED; 006: NEONS; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE LSEED STORY hash mt prop sh sided speck |
+| `016-street-kit.js` | 65.6 | top level | MKS (039) | 003: SHARED; 006: NEONS; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE LSEED STORY hash mt prop sh sided speck |
 | `020-studio-kit.js` | 35.9 | top level | STUDIO (023 039) | 003: SHARED; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LIFE ROT hash mt prop sh |
 | `023-west-kits.js` | 42.4 | top level | DEEPW (027), KEEPC (039), PRESETS (027 039), SQLV (027), STOREK (027 039) | 003: SHARED; 003b: vwV; 006: WROW; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE LSEED PROPL SQB STORY T hash mt prop sh sided; 020: STUDIO |
 | `026z-barkit.js` | 18.2 | top level | barKit (027) | 003: SHARED; 014: LAMPS hash prop sh sided zShift |
 | `027-rooms-kits.js` | 155.3 | top level |  | 003: SHARED; 003b: vwV wvV; 014: CATALOG CAT_DEPTS CAT_INFO KIND_OF LAMPS LBLD LIFE STORY T cvNoise hash prop sh sided speck woodCol zShift; 023: DEEPW PRESETS SQLV STOREK; 026z: barKit |
 | `038z-dungeon.js` | 27.8 | top level | dgnRoom (039 059h), dgnThings (039) | 003: SHARED; 014: LIFE T cvNoise hash prop sh sided |
-| `039-bodega.js` | 230.5 | top level, opens grab(bodega) | FOREST (061 152a), PROPS (061 152a) | 003: SHARED THREE; 003b: CLOCK DRESS FORAGE LITE ROOMS SFX UI WINDOWS pos; 004: scene; 006: BF BLDK BLOCK CASTLE EASTX FIX LAY LOTX MAPG MAPSTAIR MODS NEONS NORTHX OFFDX OVERHEAD PARKGX RING SOL SYS TILE TURN WESTX WP WROW ZU cutWalls grab lamps; 006a: PAINTC; 008: BATCH OBJ; 014: BRICKS CATALOG CAT_DEPTS CAT_INFO COPE DTBRICK FP KIND_OF LAMPS LBLD LIFE LSEED PROPL STORY T cvNoise grain grassCol hash kerbCol kerbFace lawnCol mt prop rlf roadCol sh sided slabCol speck zShift; 015: bodegaFloorCol bodegaWall; 016: MKS; 020: STUDIO; 023: KEEPC PRESETS STOREK; 038z: dgnRoom dgnThings |
+| `039-bodega.js` | 237.0 | top level, opens grab(bodega) | FOREST (061 152a), PROPS (061 152a) | 003: SHARED THREE; 003b: CLOCK DRESS FORAGE LITE ROOMS SFX UI WINDOWS pos; 004: scene; 006: BF BLDK BLOCK CASTLE EASTX FIX LAY LOTX MAPG MAPSTAIR MODS NEONS NORTHX OFFDX OVERHEAD PARKGX RING SOL SYS TILE TURN WESTX WP WROW ZU cutWalls grab lamps; 006a: PAINTC; 008: BATCH OBJ; 014: BRICKS CATALOG CAT_DEPTS CAT_INFO COPE DTBRICK FP KIND_OF LAMPS LBLD LIFE LSEED PROPL STORY T cvNoise grain grassCol hash kerbCol kerbFace lawnCol mt prop rlf roadCol sh sided slabCol speck zShift; 015: bodegaFloorCol bodegaWall; 016: MKS; 020: STUDIO; 023: KEEPC PRESETS STOREK; 038z: dgnRoom dgnThings |
 | `059-store.js` | 33.6 | top level, opens grab(store) |  | 003: SHARED THREE; 003b: INTERIORS LITE ROOMS SHAD UI WEEDS WINDOWS pos; 004: scene; 006: AWAY BF BLDK EASTX FADE FIX LAY OFFDX QS SOL STORE TILE TURN WP ZU cutWalls grab lamps; 007: FLAME; 008: BATCH OBJ; 009: WATER |
 | `059-street.js` | 28.3 | top level, opens grab(mainstreet) |  | 003: SHARED THREE; 003b: BLK CINEMA LITE SFX USE pos; 004: scene; 006: BLDK BLOCK FIX OFFDX SOL STORE SYS TILE TURN WP cutWalls grab; 008: BATCH OBJ OBJS |
 | `059a-apts.js` | 28.1 | top level, opens grab(apts) |  | 003: SHARED THREE; 003b: CLOCK ROOMS UI pos st; 004: scene; 006: BLDK FADE FIX LOTX LOTY MODS OFFDX SOL STORE SYS TILE TURN WP grab; 008: BATCH |
@@ -175,8 +175,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `128-bandstand.js` | 1.6 | top level |  | 003b: DRM MUS NPCS STAGE pos; 006: AWAY MAPG QS STORE; 106: GTA; 114: PNA; 119: IMX; 123: VOX |
 | `129-clock.js` | 8.7 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
 | `129a-vis.js` | 3.9 | top level | VIS (130 134 161 162) | 003: SHARED; 003b: LEVELS PARK ROOMS ZONES pos; 004: scene; 006: SECTIONS TILE |
-| `130-rooms.js` | 19.6 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS ONLINE PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH PEEK; 009: WATER; 129a: VIS |
-| `130a-windows.js` | 4.2 | top level |  | 003: THREE; 003b: CLOCK ROOMS WINDOWS; 004: renderer scene; 006: FADE STORE SYS TILE |
+| `130-rooms.js` | 20.1 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS ONLINE PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH PEEK; 009: WATER; 129a: VIS |
+| `130a-windows.js` | 6.6 | top level |  | 003: THREE; 003b: CLOCK ROOMS WINDOWS; 004: renderer scene; 006: FADE STORE SYS TILE |
 | `131-weather.js` | 6.0 | top level |  | 003: SHARED THREE; 003b: CLOCK PARK WX pos; 004: scene; 006: OUT QS SYS TILE; 064: HEMI |
 | `132-sky.js` | 16.9 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK SKY WX; 004: renderer scene; 006: CEL LFX OUT QS SMOOTH SYS; 064: HEMI |
 | `133-lookfx.js` | 5.8 | top level |  | 003: SHARED THREE; 003b: CLOCK LOOK PARK ROOMS WX pos; 004: scene; 006: LFX OUT SOL SYS TILE |

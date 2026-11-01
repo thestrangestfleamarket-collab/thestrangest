@@ -200,7 +200,7 @@
   {
    "id": "fish",
    "title": "FISHING",
-   "what": "Fish the Hudson from the pier, THE LAKE in the park, or the pond in each section.",
+   "what": "Fish the Hudson from the pier, or THE LAKE in the park.",
    "sections": [
     {
      "head": "GET READY",
@@ -269,7 +269,7 @@
       "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
       "A tamed bird follows you, and other players see it on your shoulder. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed.",
       "The Nature Merchant sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
-      "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down.",
+      "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down. Other players see your feeder, and birds come to theirs for you too.",
       "Birds sometimes leave a FEATHER. Three make a QUILL (CRAFT, BIND), which helps you mend books.",
       "A caged bird can stand in your apartment: DECORATE, then SPECIMENS."
      ]
@@ -367,7 +367,7 @@
     "The board on the platform shows each train: NOW, ARRIVING or the minutes until it comes.",
     "A train waits 60 seconds. Walk in through an open door. Double-click a seat to sit.",
     "To get off, walk out through a door while it is open.",
-    "To go to another section, open the map ([SHIFT] + [M]) and click a letter, A to H. Each section has its own street, station and park pond."
+    "To go to another section, open the map ([SHIFT] + [M]) and click a letter, A to H. Each section has its own street and station."
    ]
   },
   {

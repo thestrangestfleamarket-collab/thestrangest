@@ -12,7 +12,7 @@ more in depth though … fully fledged out games that are intricate and detailed
 | east | DRAGON POP | Bubble Bobble | forage | — | coming soon |
 | west | ROAD 85 | OutRun | fish | `059m-game-road.js` | playing; to be brought up to the full original |
 | west | KNUCKLE CITY | Final Fight | ento | — | coming soon |
-| west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); the engine built (its §15.1: floors 1–5, grunts and ghosts), the rest of the dungeon next |
+| west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); built: all eight monsters, amulets, traps, teleporters, treasure rooms, floors 1–30 by hand and the generator beyond, the attract bot; the shared high-score table next |
 | west | MONSTER ROAD | Wonder Boy in Monster Land | alch | — | coming soon |
 
 Order of build: TORCHBEARER, then KNUCKLE CITY, DRAGON POP, MONSTER ROAD, then the four kept games up to their originals' full
@@ -38,9 +38,15 @@ STORE.cabs.add({name:'RAINBOW RUN', skill:'bird', hold:1, lore:{maker,place,year
 - A cabinet whose game is not built yet registers lore only (in 059g): its card says COMING SOON and takes no money.
 
 The layer gives every cabinet: the window over the page (ESC leaves), the $2 coin, the title card with the maker's story, the best
-score per player (`OWNED`, `arcade-best`), skill training by score, the game-over card, and the attract mode on the cabinet's screen
-in the room (the card, and once a game's chunk is here, the game playing itself).
+score per player (`OWNED`, `arcade-best`), skill training by score, the game-over card, the shared high-score table, and the attract
+mode on the cabinet's screen in the room (the card, the top ten, and once a game's chunk is here, the game playing itself).
 
-Planned for the layer (each a decision for the owner when its first game needs it): a shared top-10 high-score table with
-initials, server-side, shown in attract mode; CONTINUE? with a 10-second count for another $2; operator settings (difficulty,
-lives) per cabinet from the TENANTS tab.
+**The high-score table** (owner, 31 Oct 2026: "yes build the shared high score table"): a top ten a cabinet, shared by everyone,
+kept by the worker (`POST /scores` on the `Post` Durable Object; the hundred best runs a cabinet kept, the ten best shown). A run
+that makes the top ten asks for three initials on the game-over card (▲▼ letter, ◀▶ slot, SPACE enters; your last initials are
+remembered); the run goes up with the game's own sub line (`g.sub`, e.g. `FLOOR 14`) and the card shows its rank. The title card's
+HI-SCORE is the table's best. Off the website (the single-file page the checks drive) your own runs stand in for the table.
+`tests/arcade-scores.cjs` proves the flow; `tests/site.cjs` the worker's round trip.
+
+Planned for the layer (each a decision for the owner when its first game needs it): CONTINUE? with a 10-second count for another
+$2; operator settings (difficulty, lives) per cabinet from the TENANTS tab.

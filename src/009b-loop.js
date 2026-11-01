@@ -1,9 +1,10 @@
 // THE LOOP: the subway under the ring street round all eight sections (grab('loop')): both tracks' tunnels, the stations B to H, every station's signs and board, and each station's exit up to its street.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, pos, RAG, ROOMS, UI} from './003b-systems.js';
+import {LEVELS, pos, RAG, ROOMS, TEXT, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, LEVEL, MODS, SECTIONS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
+for(const [k,d] of Object.entries({'loop.name':'{street}','loop.track':'TO {next}','loop.shuttle':'SHUTTLE · {street} ONLY','loop.then':'THEN {then} · {after}','loop.exit':'EXIT {id}1','loop.up':'↑ {street}','loop.exitsub':'{name} · SECTION {id}','loop.map':'THE LOOP · {street}','loop.here':'● YOU ARE HERE','loop.train1':'TO {next}','loop.train2':'TO {next}'}))TEXT.t(k,d);
 const LOOP=window.LOOP={};
 await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98, c0=cutWalls.length;
   const WX=mx=>(mx-72)*T, WZ=my=>(my+77)*T, H=h=>M.DY+h*ZU, MX=x=>x/T+72, MY=z=>z/T-77;
@@ -101,33 +102,33 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
   const bullet=(g,x,y,r,n)=>{ g.fillStyle=n===1?SIGN.t1:SIGN.t2; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.fillStyle='#111'; font(g,r*1.3,900); g.textAlign='center'; g.textBaseline='middle'; g.fillText(n,x,y+r*.06); g.textAlign='left'; };
   const TR=Object.fromEntries(D.trains.map(t=>[t.id,t])), next=(st,t)=>{ const L=order(t), i=L.indexOf(st); return L[(i+1)%L.length]; };
-  const sign=(mk,P,w,h,cut=[],peek,face)=>{ const t=draw(w,h,mk), m=new THREE.MeshBasicMaterial({map:t,clippingPlanes:cut}), me=[quad(...P,m),quad(P[1],P[0],P[3],P[2],m)];
+  const REP=[]; const sign=(mk,P,w,h,cut=[],peek,face)=>{ const t=draw(w,h,mk); REP.push({t,mk,w,h}); const m=new THREE.MeshBasicMaterial({map:t,clippingPlanes:cut}), me=[quad(...P,m),quad(P[1],P[0],P[3],P[2],m)];
     if(face){ const V=THREE.Vector3, c=new V(...P[0]).add(new V(...P[2])).multiplyScalar(.5), n=new V().crossVectors(new V(...P[1]).sub(new V(...P[0])),new V(...P[3]).sub(new V(...P[0]))), k=n.dot(new V(...face).sub(c))>0?1:0; me[k].removeFromParent(); me.splice(k,1); } if(peek)me.forEach(e=>PEEK.whole(e)); return {me,t,m}; };
   const nameSign=(g,w,h,st)=>{ g.fillStyle='#ddd8c8'; g.fillRect(0,0,w,h); g.strokeStyle='#2f6b45'; g.lineWidth=h*.12; g.strokeRect(0,0,w,h); g.fillStyle='#111'; font(g,h*.52,900); g.textBaseline='middle';
-    const tw=g.measureText(st.name).width; g.fillText(st.name,(w-tw-h*.7)/2,h*.54); g.lineWidth=h*.05; g.strokeStyle='#111'; const bx=(w+tw-h*.5)/2+h*.1; g.strokeRect(bx,h*.27,h*.46,h*.46); font(g,h*.34,900); g.fillText(st.id,bx+h*.1,h*.52); };
+    const nm=TEXT.t('loop.name',null,{street:st.name}), tw=g.measureText(nm).width; g.fillText(nm,(w-tw-h*.7)/2,h*.54); g.lineWidth=h*.05; g.strokeStyle='#111'; const bx=(w+tw-h*.5)/2+h*.1; g.strokeRect(bx,h*.27,h*.46,h*.46); font(g,h*.34,900); g.fillText(st.id,bx+h*.1,h*.52); };
   const trackSign=(g,w,h,st,t)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); bullet(g,h*.55,h/2,h*.36,t.id); g.fillStyle='#f6f6f1'; font(g,h*.34); g.textBaseline='middle';
-    g.fillText((t.dir>0?'↻ ':'↺ ')+t.way,h*1.1,h*.36); const nx=next(st,t); font(g,h*.22,600); g.fillStyle='#c9c9c0'; g.fillText(STA.length>1?'NEXT  '+nx.name+' · '+nx.id+'   THEN  '+next(nx,t).name:'SHUTTLE  ·  SECTION '+st.id+' ONLY',h*1.1,h*.74); };
+    const nx=next(st,t), nn=next(nx,t); g.fillText(STA.length>1?TEXT.t('loop.track',null,{next:nx.name}):TEXT.t('loop.shuttle',null,{street:st.name}),h*1.1,h*.36); font(g,h*.22,600); g.fillStyle='#c9c9c0'; if(STA.length>1)g.fillText(TEXT.t('loop.then',null,{then:nn.name,after:next(nn,t).name}),h*1.1,h*.74); };
   const exitSign=(g,w,h,st)=>{ g.fillStyle=SIGN.ex; g.fillRect(0,0,w,h); g.strokeStyle='#bff2b0'; g.lineWidth=h*.06; g.strokeRect(h*.12,h*.2,h*1.7,h*.6); g.fillStyle='#bff2b0'; font(g,h*.36,900); g.textBaseline='middle';
-    g.fillText('EXIT '+st.id+'1',h*.24,h*.52); g.fillStyle='#f4fff0'; font(g,h*.42); g.fillText('↑ '+st.street,h*2.1,h*.4); font(g,h*.24,600); g.fillText(st.name+' · SECTION '+st.id,h*2.1,h*.76); };
-  const mapSign=(g,w,h,st)=>{ g.fillStyle='#0b0d0c'; g.fillRect(0,0,w,h); g.fillStyle='#f6f6f1'; font(g,h*.07); g.fillText('THE LOOP · SECTION '+st.id,w*.05,h*.1); const A=SECTIONS.live, m=w*.08, sx=(w-2*m)/(A.x1-A.x0), sy=(h*.62)/(A.y1-A.y0), X=x=>m+(x-A.x0)*sx, Y=y=>h*.16+(A.y1-y)*sy;
+    g.fillText(TEXT.t('loop.exit',null,{id:st.id}),h*.24,h*.52); g.fillStyle='#f4fff0'; font(g,h*.42); g.fillText(TEXT.t('loop.up',null,{street:st.street}),h*2.1,h*.4); font(g,h*.24,600); g.fillText(TEXT.t('loop.exitsub',null,{name:st.name,id:st.id}),h*2.1,h*.76); };
+  const mapSign=(g,w,h,st)=>{ g.fillStyle='#0b0d0c'; g.fillRect(0,0,w,h); g.fillStyle='#f6f6f1'; font(g,h*.07); g.fillText(TEXT.t('loop.map',null,{street:st.name}),w*.05,h*.1); const A=SECTIONS.live, m=w*.08, sx=(w-2*m)/(A.x1-A.x0), sy=(h*.62)/(A.y1-A.y0), X=x=>m+(x-A.x0)*sx, Y=y=>h*.16+(A.y1-y)*sy;
     g.fillStyle='#22382a'; g.fillRect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.strokeStyle='#3a3f3c'; g.lineWidth=1; for(const b of SECTIONS.loaded)g.strokeRect(X(b.x0),Y(b.y1),(b.x1-b.x0)*sx,(b.y1-b.y0)*sy);
     g.save(); g.beginPath(); g.rect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.clip(); for(const k of ['outer','inner']){ const t=D.tracks[k]; g.strokeStyle=k==='outer'?SIGN.t1:SIGN.t2; g.lineWidth=Math.max(2,h*.012); g.strokeRect(X(t.west),Y(t.north),(t.east-t.west)*sx,(t.north-t.south)*sy); } g.restore();
     for(const s of STA){ const x=X(s.x), y=Y(D.tracks.inner[s.side]+(s.side==='south'?-8.7:8.7)), r=h*.035; g.fillStyle=s===st?'#e7685a':'#050505'; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.strokeStyle='#f6f6f1'; g.lineWidth=2; g.stroke();
       g.fillStyle='#f6f6f1'; font(g,r*1.1,900); g.textAlign='center'; g.textBaseline='middle'; g.fillText(s.id,x,y+1); font(g,h*.032,600); g.fillText(s.name,x,y+(s.side==='south'?r*2.2:-r*2.2)); g.textAlign='left'; }
-    font(g,h*.05,700); g.fillStyle='#e7685a'; g.fillText('● YOU ARE HERE',w*.05,h*.93); bullet(g,w*.5,h*.92,h*.035,1); g.fillStyle='#f6f6f1'; font(g,h*.04,600); g.fillText('↻ CLOCKWISE',w*.53,h*.92); bullet(g,w*.76,h*.92,h*.035,2); g.fillStyle='#f6f6f1'; g.fillText('↺ COUNTER',w*.79,h*.92); };
+    font(g,h*.05,700); g.fillStyle='#e7685a'; g.fillText(TEXT.t('loop.here',null),w*.05,h*.93); bullet(g,w*.5,h*.92,h*.035,1); g.fillStyle='#f6f6f1'; font(g,h*.04,600); g.fillText(TEXT.t('loop.train1',null,{next:STA.length>1?next(st,D.trains[0]).name:st.name}),w*.53,h*.92); bullet(g,w*.76,h*.92,h*.035,2); g.fillStyle='#f6f6f1'; g.fillText(TEXT.t('loop.train2',null,{next:STA.length>1?next(st,D.trains[1]).name:st.name}),w*.79,h*.92); };
   for(const st of STA){ const P=st.P, Q=(u0,a0,u1,a1,h)=>[P(u0,a0,h),P(u1,a0,h),P(u1,a1,h),P(u0,a1,h)];
-    const hang=(u0,u1,a,z0,z1,mk,w,h)=>sign(mk,[P(u0,a,z0),P(u1,a,z0),P(u1,a,z1),P(u0,a,z1)],w,h,[],true), IN=P(LEN/2,MID,90);
-    st.signs={};
+    const IN=P(LEN/2,MID,90), cutAt=(a,nx)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), n=new THREE.Vector3(...P(0,a+nx,0)).sub(new THREE.Vector3(...P(0,a,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null}); return pl; };
+    st.signs={}; let pw0, pw1, pe1;
     if(!st.old){
       quad(...Q(0,P0,LEN,P1,0),MFLOOR,[0,0,0,LEN/4,1,LEN/4,1,0]);
       for(const [a0,a1] of [[0,P0],[P1,XW]]){ const v=x=>(x-(a0+a1)/2+BED/2)/BED; quad(P(0,a0,-32),P(LEN,a0,-32),P(LEN,a1,-32),P(0,a1,-32),MBED,[0,v(a0),LEN/1.1,v(a0),LEN/1.1,v(a1),0,v(a1)]); }
       for(const a of [P0,P1])quad(P(0,a,-32),P(LEN,a,-32),P(LEN,a,0),P(0,a,0),MEDGE,[0,0,LEN/2,0,LEN/2,1,0,1]);
       const wall=(a,nx)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}), me=quad(P(0,a,-32),P(LEN,a,-32),P(LEN,a,196),P(0,a,196),m,[0,0,LEN/6,0,LEN/6,1,0,1]);
         const n=new THREE.Vector3(...P(0,a+nx,0)).sub(new THREE.Vector3(...P(0,a,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me}); return pl; };
-      const pw0=wall(0,1), pw1=wall(XW,-1);
+      pw0=wall(0,1); pw1=wall(XW,-1);
       const endw=(u,R)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}); for(const [a0,a1,z0,z1] of R)quad(P(u,a0,z0),P(u,a1,z0),P(u,a1,z1),P(u,a0,z1),m,[a0/6,(z0+32)/228,a1/6,(z0+32)/228,a1/6,(z1+32)/228,a0/6,(z1+32)/228]);
         const n=new THREE.Vector3(...P(u+(u?-1:1),0,0)).sub(new THREE.Vector3(...P(u,0,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null}); return pl; };
-      const pe0=endw(0,[[P0,EX0,-32,196],[EX1,P1,-32,196],[EX0,EX1,-32,0],[EX0,EX1,86,196],[0,P0,140,196],[P1,XW,140,196]]), pe1=endw(LEN,[[P0,P1,-32,196],[0,P0,140,196],[P1,XW,140,196]]);
+      const pe0=endw(0,[[P0,EX0,-32,196],[EX1,P1,-32,196],[EX0,EX1,-32,0],[EX0,EX1,86,196],[0,P0,140,196],[P1,XW,140,196]]); pe1=endw(LEN,[[P0,P1,-32,196],[0,P0,140,196],[P1,XW,140,196]]);
       quad(...Q(0,0,LEN,XW,196),MDARK);
       quad(...Q(-ED,EX0,0,EX1,0),MFLOOR,[.3,0,.3,ED/4,.53,ED/4,.53,0]); for(const a of [EX0,EX1])quad(P(-ED,a,0),P(0,a,0),P(0,a,86),P(-ED,a,86),MWALL,[0,0,ED/9,0,ED/9,.6,0,.6]); quad(P(-ED,EX0,0),P(-ED,EX1,0),P(-ED,EX1,86),P(-ED,EX0,86),MDARK); quad(...Q(-ED,EX0,0,EX1,86),MDARK);
       const sb=(u0,a0,u1,a1,h)=>{ const p=P(u0,a0,0), q=P(u1,a1,0); solidW(p[0],p[2],q[0],q[2],h); };
@@ -140,10 +141,10 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [7,21,37,51]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1],false,IN); }
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0],false,IN);
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-4,30),P(LEN-.05,MID+4,30),P(LEN-.05,MID+4,100),P(LEN-.05,MID-4,100)],512,384,[pe1],false,IN); }
-    else { const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), n=new THREE.Vector3(...P(LEN-1,0,0)).sub(new THREE.Vector3(...P(LEN,0,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null});   // gone with its wall when the wall is cut away
-      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-3.2,36),P(LEN-.05,MID+3.2,36),P(LEN-.05,MID+3.2,92),P(LEN-.05,MID-3.2,92)],512,384,[pl],false,IN); }
-    for(const t of D.trains){ const a=(t.track==='inner')?COLX[0]+.35:COLX[1]+.35; for(const u0 of [9,LEN-16])st.signs['t'+t.id+'_'+u0]=hang(u0,u0+7,a,140,170,(g,W,Hh)=>trackSign(g,W,Hh,st,t),840,150); }
-    const bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN/2-3,MID,124),P(LEN/2+3,MID,124),P(LEN/2+3,MID,148),P(LEN/2-3,MID,148)],512,112,[],true); st.board={t:bd.t,last:''};
+    else { pe1=cutAt(LEN,-1); pw0=cutAt(0,1); pw1=cutAt(XW,-1);   // gone with their walls when a wall is cut away
+      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-3.2,36),P(LEN-.05,MID+3.2,36),P(LEN-.05,MID+3.2,92),P(LEN-.05,MID-3.2,92)],512,384,[pe1],false,IN); }
+    for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [11,LEN-18])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
+    const bz=st.old?100:108, bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN-.05,MID-3,bz),P(LEN-.05,MID+3,bz),P(LEN-.05,MID+3,bz+24),P(LEN-.05,MID-3,bz+24)],512,112,[pe1],false,IN); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};
       [['inner',P0,steps[0]],['outer',P1,steps[1]]].forEach(([k,e,stp])=>{ const L=st.edge[k]=[]; let u=0; const cut=(a,b)=>{ for(let p=a;p<b-1e-6;p+=1){ const q=Math.min(b,p+1), A=P(p,e-.05,0), B=P(q,e+.05,0), box=[Math.min(A[0],B[0]),Math.min(A[2],B[2]),Math.max(A[0],B[0]),Math.max(A[2],B[2])]; SOL.down.push(box); L.push({box,keep:box.slice(),u0:p,u1:q}); } };
         for(const [a,b] of stp){ if(a>u)cut(u,a); u=b; } if(u<LEN)cut(u,LEN); }); }
@@ -170,6 +171,8 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const hooks={inside:(x,z)=>LOOP.under.some(f=>f.inside(x,z))||!!inSta(x,z)||!!inTun(MX(x),MY(z)),ground:(x,z)=>{ for(const f of LOOP.under)if(f.inside(x,z))return f.ground(x,z); const st=inSta(x,z); if(st)return stGround(st,x,z); return inTun(MX(x),MY(z))?H(-32):null; }};
   LOOP.under=[]; M.more.push(hooks);
   const here=(x,z)=>{ let b=null, bd=1e9; for(const st of STA){ const d=Math.hypot(WX(st.x)-x,WZ(st.my(MID))-z); if(d<bd){ bd=d; b=st; } } return {st:b,d:bd}; };
+  M.nextOf=(id,ti)=>{ const st=STA.find(q=>q.id===id); return st&&STA.length>1?next(st,D.trains[ti]).name:null; }; M.nextHere=()=>{ const h=here(pos.x,pos.z); return h.st&&STA.length>1?[next(h.st,D.trains[0]).name,next(h.st,D.trains[1]).name]:null; };
+  TEXT.on.push(id=>{ if(id&&!/^loop\./.test(id))return; for(const r of REP){ r.mk(r.t.image.getContext('2d'),r.w,r.h); r.t.needsUpdate=true; } });
   M.label=()=>{ const r=LOOP.riding&&LOOP.riding(); if(r)return r; const h=here(pos.x,pos.z); return h.d<30*T?h.st.name+' STATION · '+h.st.id:'THE LOOP'; };
   LEVELS.of.station.groups.push('loop');
   { const all=[]; for(const k in TRK){ const t=TRK[k].line; all.push([WX(t.west-6),WZ(t.south-6)],[WX(t.east+6),WZ(t.north+6)]); } const B=MODS.station.BOUND;

@@ -1,10 +1,11 @@
 // THE SECTIONS: B to H round the park (grab('sections')), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, FLOW} from './003b-systems.js';
+import {DRESS, TEXT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
+for(const [k,d] of Object.entries({'loop.entrance':'SUBWAY · THE LOOP · TO {a} & {b}','loop.entrance0':'SUBWAY · THE LOOP'}))TEXT.t(k,d);
 await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
   const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const clip=(r,b)=>{ const q={x0:Math.max(r.x0,b.x0),x1:Math.min(r.x1,b.x1),y0:Math.max(r.y0,b.y0),y1:Math.min(r.y1,b.y1)}; return q.x1-q.x0>.01&&q.y1-q.y0>.01?q:null; };
@@ -68,29 +69,10 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
 
   const SPC={}, SKN={lot:'lot',water:'water',shore:'quay',walk:'walk',road:'road',grass:'lawn'}, inB=(r,b)=>r.x0>=b.x0-.01&&r.x1<=b.x1+.01&&r.y0>=b.y0-.01&&r.y1<=b.y1+.01;
   for(const q of MP){ const b=secs.find(c=>inB(q.r,c)); if(b)(SPC[b.id]=SPC[b.id]||[]).push(q); } for(const k in SPC)SPC[k].sort((a,b)=>b.lift-a.lift);
-  MODS.sections={pieces:MP,rows,road,inner,secs,kindAt:(x,y)=>{ const b=secs.find(c=>x>=c.x0&&x<c.x1&&y>=c.y0&&y<c.y1); if(!b)return null; for(const pd of ponds){ const r=pd.r; if(pd.id===b.id&&x>=r.x0-.35&&x<r.x1+.35&&y>=r.y0-.35&&y<r.y1+.35)return x>=r.x0&&x<r.x1&&y>=r.y0&&y<r.y1?'water':'quay'; } for(const q of SPC[b.id]||[])if(x>=q.r.x0&&x<q.r.x1&&y>=q.r.y0&&y<q.r.y1)return SKN[q.k]; return 'land'; }};
-  // a pond in each section's park, fished like THE LAKE: a stone kerb round still water in the one water (FLOW), 3 m deep; you fish it from the kerb
-  const ponds=[], LV=.12, KH=.36;
-  for(const b of secs){ const q=clip(P,b); if(!q||q.x1-q.x0<24||q.y1-q.y0<18)continue; const w=10+hash(b.col,b.row,55)*4, h=6+hash(b.row,b.col,57)*2;
-    const cx=(q.x0+q.x1)/2+(hash(b.col,b.row,51)-.5)*(q.x1-q.x0-w-8), cy=(q.y0+q.y1)/2+(hash(b.row,b.col,53)-.5)*(q.y1-q.y0-h-8); ponds.push({id:b.id,r:{x0:cx-w/2,x1:cx+w/2,y0:cy-h/2,y1:cy+h/2}}); }
-  if(ponds.length){ const M=new THREE.Matrix4(), V=THREE.Vector3, Q=new THREE.Quaternion(), K=[], P2=[], I2=[], kw=.35;
-    for(const pd of ponds){ const r=pd.r, xa=XS(r.x0), xb=XS(r.x1), za=ZS(r.y0), zb=ZS(r.y1), x0=Math.min(xa,xb), x1=Math.max(xa,xb), z0=Math.min(za,zb), z1=Math.max(za,zb), e=kw*T;
-      pd.x0=x0; pd.x1=x1; pd.z0=z0; pd.z1=z1; pd.lv=LV; pd.depth=3;
-      K.push([x0-e,z0-e,x1+e,z0],[x0-e,z1,x1+e,z1+e],[x0-e,z0,x0,z1],[x1,z0,x1+e,z1]);
-      const nx=Math.max(2,Math.round((x1-x0)/T)), nz=Math.max(2,Math.round((z1-z0)/T)), o=P2.length/3;
-      for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++)P2.push(x0+(x1-x0)*i/nx,LV,z0+(z1-z0)*j/nz);
-      for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){ const a=o+j*(nx+1)+i, c=a+nx+1; I2.push(a,c,a+1,a+1,c,c+1); }
-      SOL.up.push([x0-e,z0-e,x1+e,z1+e]); FIX.up.push([x0-e,z0-e,0,x1+e,z1+e,KH]);
-      FLOW.add({name:'pond '+pd.id,kind:'lake',shown:()=>SHARED.LVL==='up',box:[x0,z0,x1,z1],has:(x,z)=>SHARED.LVL==='up'&&x>x0&&x<x1&&z>z0&&z<z1,bed:()=>LV-pd.depth*FLOW.WU,rest:()=>LV}); }
-    const km=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x8a857a}),K.length);
-    K.forEach(([a,b,c,d],i)=>km.setMatrixAt(i,M.compose(new V((a+c)/2,KH/2,(b+d)/2),Q,new V(c-a,KH,d-b)))); km.castShadow=km.receiveShadow=true; scene.add(km);
-    const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.Float32BufferAttribute(P2,3)); wg.setIndex(I2); wg.computeVertexNormals();
-    const wm=new THREE.MeshLambertMaterial({color:0x2c6266}); wm.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,FLOW.U); sh.vertexShader=FLOW.GLSL+'\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n transformed.y+=flowAt((modelMatrix*vec4(transformed,1.)).xz).r;'); };
-    const wme=new THREE.Mesh(wg,wm); wme.receiveShadow=true; wme.name='ponds'; scene.add(wme); }
-  MODS.ponds=ponds;
+  MODS.sections={pieces:MP,rows,road,inner,secs,kindAt:(x,y)=>{ const b=secs.find(c=>x>=c.x0&&x<c.x1&&y>=c.y0&&y<c.y1); if(!b)return null; for(const q of SPC[b.id]||[])if(x>=q.r.x0&&x<q.r.x1&&y>=q.r.y0&&y<q.r.y1)return SKN[q.k]; return 'land'; }};
   // trees in the park and lamps along it, one instanced mesh each
-  const trees=[], posts=[], inPond=(x,y)=>ponds.some(pd=>x>pd.r.x0-4&&x<pd.r.x1+4&&y>pd.r.y0-4&&y<pd.r.y1+4);
-  for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(inPond(x,y)||trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
+  const trees=[], posts=[];
+  for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
   // the globe posts, as on Market St: both sidewalks, a post every 28 of A's lamp spacing (33 tiles), the sides staggered half that, none by a station entrance; DRESS builds and lights them
   { const SP=28/.84, kiosks=LOOP.STA.filter(st=>!st.old).map(st=>st.kiosk), near=(x,y)=>kiosks.some(k=>x>k.x0-4&&x<k.x1+4&&y>k.y0-4&&y<k.y1+4);
     for(const b of secs)for(const [o,i,off] of [[inner,P,0],[O,road,SP/2]])for(const r of frame(o,i)){ const q=clip(r,b); if(!q)continue; const al=q.x1-q.x0>q.y1-q.y0, a0=al?q.x0:q.y0, a1=al?q.x1:q.y1, c=al?(q.y0+q.y1)/2:(q.x0+q.x1)/2;
@@ -115,7 +97,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARE
     bx(k.x0,back-.06,k.x1,back+.06,0,1.1,rail); bx(k.x0,out-.06,k.x1,out+.06,0,1.1,rail); bx(k.x1-.06,k.y0,k.x1+.06,k.y1,0,1.1,rail);
     for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
     sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
-      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; g.fillText('SUBWAY · THE LOOP · TRAINS 1 ↻  2 ↺',h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
+      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; const M_=SHARED.METRO, a=M_&&M_.nextOf&&M_.nextOf(st.id,0), b=M_&&M_.nextOf&&M_.nextOf(st.id,1); g.fillText(a&&b?TEXT.t('loop.entrance',null,{a,b}):TEXT.t('loop.entrance0',null),h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
   const edge=(x,y,al,from,to)=>{ if(!S.loaded.some(b=>b.id===from)||!S.loaded.some(b=>b.id===to))return; const H=.9*T, X=XS(x), Z=ZS(y), e=.012, plate=id=>(g,w,h)=>{ g.fillStyle='#14361f'; g.fillRect(0,0,w,h); g.strokeStyle='#e8f2e8'; g.lineWidth=4; g.strokeRect(6,6,w-12,h-12); g.fillStyle='#e8f2e8'; g.textBaseline='middle'; g.textAlign='center';
       font(g,h*.22,700); g.fillText('ENTERING',w/2,h*.32); font(g,h*.36,900); g.fillText('SECTION '+id,w/2,h*.66); };
     bx(x-.06,y-.06,x+.06,y+.06,0,2.4,postM);

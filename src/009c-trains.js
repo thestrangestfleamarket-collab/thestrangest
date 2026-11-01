@@ -1,10 +1,11 @@
 // THE TRAINS: TRAINS runs the loop's two trains on the timetable (from the clock, so everyone sees the same train), carries whoever rides, and keeps the stations' boards and the cars' next-stop signs.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, pos, st, UI, USE} from './003b-systems.js';
+import {LEVELS, pos, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
+for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
 await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
   const mod=(a,n)=>((a%n)+n)%n, V=D.speed, A=D.accel, ta=V/A, da=V*V/(2*A);
@@ -110,13 +111,13 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     // seats along both walls between the doors, a partition at each end of a run, poles and rails
     const pan=[], back=[], skirt=[], part=[], poles=[];
     for(const s of [-1,1])for(const [a,b] of bays){ const n=Math.max(1,Math.floor((b-a-.5)/1.05)), w=(b-a-.5)/n; skirt.push([(a+b)/2,s,b-a-.5]);
-      for(let i=0;i<n;i++){ const x=a+.25+w*(i+.5); pan.push([x,s,i%2]); back.push([x,s,i%2]); seats.push({x:x*T,y:Y(FZ+17),floor:Y(FZ),z:s*(CWI-.55)*T,hd:s>0?Math.PI:0,s}); }
+      for(let i=0;i<n;i++){ const x=a+.25+w*(i+.5); pan.push([x,s,i%2]); back.push([x,s,i%2]); seats.push({x:x*T,y:Y(FZ+12.5),floor:Y(FZ),z:s*(CWI-.32)*T,hd:s>0?Math.PI:0,s}); }
       for(const e of [a,b])if(Math.abs(e)<CARL/2-1){ part.push([e,s]); poles.push([e,s*(CWI-1.05),FZ,FZ+CEIL]); } }
     for(const m of DOORS)poles.push([m,0,FZ,FZ+CEIL]);
     const im=(geo,mat,L,fn)=>{ if(!L.length)return; const I=new THREE.InstancedMesh(geo,mat,L.length), o=new THREE.Object3D(); L.forEach((q,i)=>{ fn(o,q); o.updateMatrix(); I.setMatrixAt(i,o.matrix); }); inner.add(I); return I; };
-    for(const k of [0,1]){ im(new THREE.BoxGeometry(.92*T,z(3),.95*T),MSEAT[k],pan.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+15.5),s*(CWI-.52)*T); o.rotation.set(s*.06,0,0); });
-      im(new THREE.BoxGeometry(.92*T,z(22),.1*T),MSEAT[k],back.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+29),s*(CWI-.1)*T); o.rotation.set(-s*.13,0,0); }); }
-    im(new THREE.BoxGeometry(1,z(14),.8*T),MDARK,skirt,(o,[x,s,w])=>{ o.position.set(x*T,Y(FZ+7),s*(CWI-.45)*T); o.scale.set(w*T,1,1); });
+    for(const k of [0,1]){ im(new THREE.BoxGeometry(.92*T,z(3),.42*T),MSEAT[k],pan.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+11),s*(CWI-.32)*T); o.rotation.set(s*.06,0,0); });
+      im(new THREE.BoxGeometry(.92*T,z(26),.1*T),MSEAT[k],back.filter(q=>q[2]===k),(o,[x,s])=>{ o.position.set(x*T,Y(FZ+24.5),s*(CWI-.1)*T); o.rotation.set(-s*.13,0,0); }); }
+    im(new THREE.BoxGeometry(1,z(11),.42*T),MDARK,skirt,(o,[x,s,w])=>{ o.position.set(x*T,Y(FZ+5.5),s*(CWI-.32)*T); o.scale.set(w*T,1,1); });
     im(new THREE.BoxGeometry(.05*T,z(48),1.05*T),MSTEEL,part,(o,[x,s])=>{ o.position.set(x*T,Y(FZ+24),s*(CWI-.55)*T); });
     im(new THREE.CylinderGeometry(.045*T,.045*T,1,8),MPOLE,poles,(o,[x,zz,y0,y1])=>{ o.position.set(x*T,Y((y0+y1)/2),zz*T); o.scale.set(1,Y(y1)-Y(y0),1); });
     for(const s of [-1,1])box(inner,CARL*T-2,.06*T,.06*T,0,Y(FZ+74),s*(CWI-1.05)*T,MPOLE);
@@ -149,7 +150,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     if(tn.open&&tn.open!==st){ for(const e of tn.open.edge[k])e.box.splice(0,4,...e.keep); tn.open=null; }
     if(st&&!tn.open){ const us=[]; for(const car of tn.cars)for(const m of DOORS)us.push(st.ua(car.p.x+car.p.ux*m*T,car.p.z+car.p.uz*m*T).u);
       for(const e of st.edge[k])if(us.some(u=>e.u0<u+DWH+.2&&e.u1>u-DWH-.2))e.box.splice(0,4,1e7,1e7,1e7,1e7); tn.open=st; } };
-  L.riding=()=>ride.tn?'TRAIN '+ride.tn.id+' '+(ride.tn.dir>0?'↻':'↺')+' '+ride.tn.way:null;
+  L.riding=()=>ride.tn?TEXT.t('loop.riding',null,{id:ride.tn.id,next:ride.tn.S&&ride.tn.S.next?ride.tn.S.next.name:''}):null;
   TRAINS.ride=ride;
   const signText=(tn)=>{ const S=tn.S, k=S.doors?S.at.name+' · '+S.at.id+'|DOORS CLOSE IN '+Math.ceil(S.left)+' S':'NEXT STOP  '+S.next.name+' · '+S.next.id+'|'+(S.left<30?'ARRIVING':Math.ceil(S.left/60)+' MIN');
     if(tn.sign.last===k)return; tn.sign.last=k; const g=tn.sign.cv.getContext('2d'), w=512, h=64, [a,b]=k.split('|'); g.fillStyle='#050505'; g.fillRect(0,0,w,h); g.textBaseline='middle';

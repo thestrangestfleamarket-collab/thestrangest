@@ -119,8 +119,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(Math.abs((await pg.evaluate(() => VR.state().yaw)) - yg) < 1e-6, 'the right stick does not turn you while the game is up');
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 1)); await frames(1); await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 0)); await frames(2);   // one frame: B held over two slow frames is the hold that leaves VR
     ok(await until(() => !STORE.cabs.on, 8000), 'B leaves the cabinet');
-    await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 0)); await frames(1);
-    ok(await until(() => VR.state().menu, 8000), 'the menu opens again after the cabinet');
+    await pg.evaluate(() => { window.__keys = []; }); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 0)); await frames(1);
+    ok(await until(() => VR.state().menu, 8000), 'the menu opens again after the cabinet (' + JSON.stringify(await pg.evaluate(() => { const s = VR.state(); return { menu: s.menu, panel: s.panel, win: s.win, gamewin: s.gamewin, cab: STORE.cabs.on, keys: __keys.splice(0) }; })) + ')');
     ok(await until(() => VR.state().panel && VR.state().fresh, 90000), 'and shows on the panel');
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
     ok(await until(() => VR.state().hands === 2, 15000), 'put the controllers down and your hands show (' + (await pg.evaluate(() => VR.state().hands)) + ' hands)');

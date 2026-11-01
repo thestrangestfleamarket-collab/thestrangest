@@ -5100,3 +5100,5 @@ Owner: "remove the spotlights, the ticket booth should not be pertruding outside
 - 31 Oct 2026, feeders for everyone to see (owner: "make feeders show for other players"): your bird feeder is kept by the section like hives and pots, so other players see it where you hung it (with your name), and birds come to it for them too; only you can take yours down.
 - 1 Nov 2026, the ponds in sections B-H removed (owner: "remove the ponds from sections B-H"; sections B-H hold only filler above ground, 28 Oct). Fishing is the Hudson and the park's lakes.
 - 1 Nov 2026, owner: "undo, remove all clutte[r]". The junk and weed clumps are gone from the empty lots; they are bare dirt again.
+## 1 Nov 2026: 480 lines under the PS2 filter
+Owner, of the review's first item (the frame shaded at the screen's own pixels, then box-filtered into 240 lines): "lets do this first". While the PS2 filter is on the picture is drawn at 480 lines at most (each of its 240 cells reads a 2x2 box, so the picture is the same for a fraction of the pixels); HIGH and HIGHEST mean 480 then. With the filter off the RESOLUTION steps are as before. Rule: nothing drawn finer than the look can show.

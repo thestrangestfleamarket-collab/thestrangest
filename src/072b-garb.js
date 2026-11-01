@@ -83,7 +83,14 @@ const GARB={};
     grid(t,nu,rings.length,true,(i,j)=>{ const g=rings[j], p=along(g[0],g[1],g[2],i/nu*TAU); pt(t,p,g[3]||g[0],g[3]?g[0]:null,g[3]?g[4]:0,K(j)); },(c,j)=>[c/nu*reps,vl[j]/TS],m); };
   // ...where g[3] is the other piece a ring by a joint also hangs from, and g[4] how much of its own piece it takes
 
-  const TPL={}, tpl=k=>TPL[k]||(TPL[k]=fin(MAKE[k]()));
+  // her shape: the shirt and jacket go out over her bust (her own bust shape, kept cl clear) and fall from it
+  const BUST={shirt:.3,jacket:1.15}, bustP=()=>W3.pcs&&W3.pcs[W3.idx('bustF')];
+  const bustFit=(t,cl)=>{ const B=bustP(); if(!B)return t; const d=B.d, by=B.bb[2]+5, zc=B.bb[4]+5.7, P=t.P, S=t.S; CAP.bust=['torso',V(2.4,by,zc),V(-2.4,by,zc),2.6];
+    const need=(x,y,z)=>{ let dz=0; while(dz<4&&d(V(x,y,z+dz))<cl)dz+=.05; return dz; };
+    S.forEach((s,i)=>{ const p=s[3]; if(p.z<=0||p.y>by+5||p.y<by-10)return; let dz=p.y>by-5?need(p.x,p.y,p.z):0;
+      if(p.y<by)dz=Math.max(dz,need(p.x,by,p.z)*sm(1-(by-p.y)/9)); if(dz>0){ p.z+=dz; P[i*3+2]=p.z; } });
+    return t; };
+  const TPL={}, tpl=(k,f)=>{ const q=f==='F'&&BUST[k]?k+'F':k; return TPL[q]||(TPL[q]=fin(q===k?MAKE[k]():bustFit(MAKE[k](),BUST[k]))); };
   const neck=th=>-.55*Math.cos(th), yoke=th=>-.3*Math.cos(th)-.3*Math.sin(th)**2, shoulder=th=>-.2*Math.cos(th)-.65*Math.sin(th)**2;
   const MAKE={
     // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
@@ -153,13 +160,13 @@ const GARB={};
     g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('uv',new THREE.BufferAttribute(t.uvF,2)); g.setIndex(new THREE.BufferAttribute(t.ixU,1)); for(const [s,c,m] of t.grp)g.addGroup(s,c,m);
     g.computeVertexNormals(); g.computeBoundingSphere(); return SG[k]=g; };
   // a hanging garment on one figure: its own cloth and mesh
-  const hang=(k,c,held)=>{ const t=tpl(k), n=t.n, pin=new Uint8Array(n), C=[]; for(let i=0;i<n;i++)pin[i]=held||t.Kf[i]===0?1:0;
+  const hang=(k,c,held,f)=>{ const t=tpl(k,f), n=t.n, pin=new Uint8Array(n), C=[]; for(let i=0;i<n;i++)pin[i]=held||t.Kf[i]===0?1:0;
     for(let q=0;q<t.C.length;q+=2){ const a=t.C[q], b=t.C[q+1]; if(!(pin[a]&&pin[b]))C.push(a,b); }
     const d=DRAPE.make(Float32Array.from(t.P),C,pin), g=new THREE.BufferGeometry(), nv=t.gv.length;
     g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(nv*3),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(nv*3),3));
     g.setAttribute('uv',new THREE.BufferAttribute(t.uvF,2)); g.setIndex(new THREE.BufferAttribute(t.ixU,1)); for(const [s,cn,m] of t.grp)g.addGroup(s,cn,m);
     const me=new THREE.Mesh(g,MATS[k](c)); me.castShadow=me.receiveShadow=true; me.frustumCulled=false;
-    const col=(KEEP[k]||[]).map(([q,inf])=>({q:CAP[q],inf,c:{a:[0,0,0],b:[0,0,0],r:1}})), K=t.Kf;
+    const col=(KEEP[k]||[]).concat(f==='F'&&BUST[k]?[['bust',BUST[k]-.1]]:[]).map(([q,inf])=>({q:CAP[q],inf,c:{a:[0,0,0],b:[0,0,0],r:1}})), K=t.Kf;
     const o={g:FALL,dm:.975,ks:0,it:4,post:1,col:col.map(x=>x.c),push:(i,a,F)=>{ const X=d.X, T=d.X0, s=K[i]; F[0]=(T[a]-X[a])*s; F[1]=(T[a+1]-X[a+1])*s; F[2]=(T[a+2]-X[a+2])*s; }};
     return {k,t,d,g,me,col,o,free:C.length>0}; };
   // where every point should be: on its pieces as they are now (blended between two at a joint)
@@ -181,7 +188,7 @@ const GARB={};
   // what is worn, built (again) when it changes
   const dress=(spec,H)=>{ const o=H.garb; if(o){ o.root.removeFromParent(); for(const w of o.ws)w.g.dispose(); }
     const root=new THREE.Group(), ws=[], rg=[], c=spec.col; root.name='garb';
-    for(const k of ['pants','shirt','jacket'])if(spec[k]){ const w=hang(k,c,k==='shirt'&&spec.jacket); ws.push(w); root.add(w.me); }
+    for(const k of ['pants','shirt','jacket'])if(spec[k]){ const w=hang(k,c,k==='shirt'&&spec.jacket,spec.form); ws.push(w); root.add(w.me); }
     for(const k of ['shoeL','shoeR','hat'])if(spec[k==='hat'?'hat':'shoes']){ const me=new THREE.Mesh(still(k),MATS[k](c)); me.matrixAutoUpdate=false; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; rg.push({me,k:NI[k==='hat'?'head':k],head:k==='hat'}); root.add(me); }
     return H.garb={k:spec.k,root,ws,rg,Gp:null,t:0,away:true,ms:0}; };
   const FR=new THREE.Frustum(), PV=new THREE.Matrix4(), SPH=new THREE.Sphere();
@@ -213,9 +220,9 @@ const GARB={};
     W.ms=performance.now()-t0; };
   // what a figure wears, from its outfit (bits: shirt 1, trousers 2, shoes 4, hat 8, jacket 16), its bathrobe, bare feet and dyes ({shirt, pants} colours from what it wears)
   const SPEC=new Map();
-  GARB.spec=(bits,robe,bare,dye)=>{ bits=bits??31; const ds=dye&&dye.shirt, dp=dye&&dye.pants, q=bits+'|'+(robe?1:0)+(bare?1:0)+'|'+(ds||'')+'|'+(dp||''); let s=SPEC.get(q); if(s)return s;
+  GARB.spec=(bits,robe,bare,dye,form)=>{ bits=bits??31; const ds=dye&&dye.shirt, dp=dye&&dye.pants, f=form==='F'?'F':'M', q=bits+'|'+(robe?1:0)+(bare?1:0)+'|'+(ds||'')+'|'+(dp||'')+'|'+f; let s=SPEC.get(q); if(s)return s;
     const on=b=>!!(bits&b), jk=on(16)&&!robe;
-    s={k:q,shirt:on(1)&&!robe,pants:on(2)&&!robe,shoes:on(4)&&!bare,hat:on(8),jacket:jk,col:{shirt:!jk&&ds||COL.shirt,jacket:jk&&ds||COL.jacket,pants:dp||COL.pants,shoes:COL.shoes,hat:COL.hat}};
+    s={k:q,form:f,shirt:on(1)&&!robe,pants:on(2)&&!robe,shoes:on(4)&&!bare,hat:on(8),jacket:jk,col:{shirt:!jk&&ds||COL.shirt,jacket:jk&&ds||COL.jacket,pants:dp||COL.pants,shoes:COL.shoes,hat:COL.hat}};
     SPEC.set(q,s); return s; };
   // the body's own clothing layers under real clothes: only a bathrobe keeps its shirt and trousers (it is drawn on them); his feet are bare inside the shoes
   GARB.worn=robe=>({shirt:!!robe,pants:!!robe,shoes:false,hair:true,beard:true});

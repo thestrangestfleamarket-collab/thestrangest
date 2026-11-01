@@ -66,7 +66,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(bare&&/^shoe/.test(p.n))p.recol=()=>SK; else if(robe&&LOOKS.robed(p.n))p.recol=()=>RO; else if(robe&&/^shin/.test(p.n))p.recol=m=>m===PA?SK:undefined;
       if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    b={PCS,bh:D.h,by,garb:GARB.spec(ST.garb,robe,bare,dc),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
+    b={PCS,bh:D.h,by,garb:GARB.spec(ST.garb,robe,bare,dc,ST.form),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }

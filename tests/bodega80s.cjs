@@ -1,0 +1,18 @@
+// THE 1980s BODEGA CHECK: node tests/bodega80s.cjs [dist/market.html]. The front wears what the photographs show (the GROCERY awning, the window posters and signs, the Miller neon, milk crates) and inside every good is a real named product on a labelled face.
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+  await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(2500);
+  const F=await pg.evaluate(()=>{ const names=SHARED.BOD.FRONT.map(p=>p.name); const n=k=>names.filter(x=>x===k).length; return {awning:n('awning'),neon:n('neon sign'),poster:n('poster'),sign:n('shop sign'),crates:n('milk crates'),names:[...new Set(names)]}; });
+  ok(F.awning===1&&F.sign>=2&&F.poster>=3&&F.neon>=4&&F.crates===2,'the front: a GROCERY awning, the Lotto and Café Bustelo signs, the window posters, the Miller High Life and OPEN neons, milk crates by the door ('+JSON.stringify(F)+')');
+  const idle=()=>pg.waitForFunction(()=>FADE.busy===0&&getComputedStyle(document.getElementById('subfade')).opacity==='0',null,{timeout:300000,polling:500}).catch(()=>{});
+  await idle(); await pg.evaluate(()=>ROOMS.enter('bodega')); await pg.waitForFunction(()=>ROOMS.cur&&ROOMS.cur.off==='bodega'&&SHARED.BOD.goodsMesh,null,{timeout:180000}).catch(()=>{}); await idle(); await pg.waitForTimeout(1500);
+  const G=await pg.evaluate(()=>{ const B=SHARED.BOD, m=B.goodsMesh; return {brands:B.brands||[],map:!!(m&&m.material.map),uv:!!(m&&m.geometry.attributes.uv),goods:B.goods?B.goods.length:0,kinds:[...new Set((B.goods||[]).map(g=>g.k))],keys:Object.keys(B.O).filter(k=>/^w|^win/.test(k))}; });
+  const must=['CAFE BUSTELO','GOYA','WONDER',"CAMPBELL'S",'COCA-COLA','SCHAEFER','MALTA GOYA','WISE','NOW & LATER','TIDE','PAMPERS','KOOL-AID','RONZONI','CAROLINA','PLATANOS','COLT 45','MILLER HIGH LIFE','DAIRYLEA'];
+  ok(G.brands.length>=50&&must.every(n=>G.brands.includes(n)),'every good is a real named 1980s product ('+G.brands.length+' brands; missing: '+must.filter(n=>!G.brands.includes(n)).join(', ')+')');
+  ok(G.map&&G.uv,'the goods carry their labels from the atlas');
+  ok(G.kinds.includes('sack')&&G.kinds.includes('goya')&&G.kinds.includes('candle')&&G.kinds.includes('platano'),'rice sacks, Goya cans, candles and platanos are in ('+G.kinds.length+' kinds)');
+  ok(G.keys.includes('wm1')&&G.keys.includes('win1')&&G.keys.includes('win2'),'a middle shelf and two window displays stand with the old shelves ('+G.keys.join(' ')+')');
+  ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
+  await b.close(); process.exit(bad?1:0); })();

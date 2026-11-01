@@ -1385,7 +1385,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('wb1','shop shelf',B.x0+1.1,B.y0+.36); put('wb2','shop shelf',B.x0+3.1,B.y0+.36); put('wb3','shop shelf',B.x0+5.1,B.y0+.36);
   for(const [i,dy] of [[1,1.0],[2,1.95],[3,2.9]])put('fridge'+i,'drinks fridge',B.x0+.5,B.y0+dy);
   put('wl1','shop shelf',B.x0+.36,B.y0+4.45,3); put('wl2','shop shelf',B.x0+.36,B.y0+6.55,3);
-  put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1);
+  put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1); put('wm1','shop shelf',m-.3,B.y0+3.3,3); put('win1','shop shelf',m-2.6,B.y1-.62); put('win2','shop shelf',m+.8,B.y1-.62);
   put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); O.cigs.boxes=O.cigs.boxes.map(b=>b.foot?b:zShift(b,42));
   put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
   put('lotto','lottery machine',B.x1-1.05,B.y0+4.15,1); put('jar','candy jar',B.x1-1.05,B.y0+4.62);
@@ -1405,7 +1405,12 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const FRONT=[], ROOF=[], STREET=[], GHOSTST=[];
   { const M=MKS, bo=B0, bm=(bo.x0+bo.x1)/2, n0=PROPL.length;
     M.pipe(bo.x0+.2,bo.y1,bo.h-6);
-    M.neon(bo.x0+1.5,bo.y1,64,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
+    M.neon(bm,bo.y1,80,'OPEN',[255,90,110]); M.signbox(bo.x0+.45,bo.x0+2.3,bo.y1,36,48,[250,250,246],[40,80,200],'LOTTO',false);
+    M.awning(bo.x0+.2,bo.x1-.2,bo.y1,108,[250,248,240],[250,248,240],'GROCERY','WE DELIVER - COLD CUTS - COLD BEER - SODA - DAIRY',[200,40,40],[40,70,170]);
+    { const w0=bo.x0+.5, w1=bm-1.05, bk=[22,22,24], wh=[250,250,246]; M.poster(w0,w1,bo.y1,52,76,wh,[['ESTA CASA',bk,1,3],['REGALA LOS',bk,1,9],['SELLOS DE LA',bk,1,15]]); M.signbox(w0,w1,bo.y1,20,34,[236,196,40],[200,40,40],'CAFE BUSTELO',false,1);
+      const r0=bm+1.05, r1=bo.x1-.5, rm=(r0+r1)/2; M.neon(rm,bo.y1,74,'MILLER',[255,70,70],2); M.neon(rm,bo.y1,64,'HIGH LIFE',[255,70,70],1); M.neon(rm,bo.y1,55,'CERVEZA FRIA',[90,160,255],1);
+      M.poster(r0,r1,bo.y1,36,50,wh,[['STOP',[200,40,40],1,2],['DRUG TRAFFIC',bk,1,8]]); M.poster(r0+.4,r1-.4,bo.y1,20,32,[40,90,170],[['ICE CUBES',wh,1,3]]);
+      M.milkcrates(bo.x0+.25,bo.y1+.18,3); M.milkcrates(bo.x1-1.05,bo.y1+.18,2); }
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p);
     { const K=SHARED.GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
@@ -1552,7 +1557,7 @@ const gMat=(hh,o)=>(q,n)=>{ if(n[2]>.5)return o.top||gk(o.c,1.1); if(n[2]<-.5)re
   return o.c; };
 const GW=[240,238,230], GR=[200,200,206];
 const GSC=1.25;
-const box=(x,y,z,o)=>({t:'box',c:[0,0,z*GSC],h:[x*GSC,y*GSC,z*GSC],mat:gMat(z*GSC,o)}), cyl=(r,hh,o,z0=0)=>({t:'cyl',c:[0,0,(z0+hh)*GSC],r:r*GSC,hh:hh*GSC,mat:gMat(hh*GSC,o)});
+const box=(x,y,z,o)=>({t:'box',c:[0,0,z*GSC],h:[x*GSC,y*GSC,z*GSC],mat:gMat(z*GSC,o),bc:o.c,brand:o.brand}), cyl=(r,hh,o,z0=0)=>({t:'cyl',c:[0,0,(z0+hh)*GSC],r:r*GSC,hh:hh*GSC,mat:gMat(hh*GSC,o),bc:o.c,brand:o.brand});
 const GOOD={
   can:(c)=>({parts:[cyl(.07,.125,{c,top:GR,bot:GR,bands:[[.85,1.01,GR],[-1.01,-.85,GR],[-.15,.35,gk(c,1.35)]]})],m:.37}),
   water:()=>({parts:[cyl(.068,.17,{c:[170,206,236],bands:[[-.2,.25,GW]]}),cyl(.026,.035,{c:[170,206,236],top:GW,bands:[[.3,1.01,GW]]},.34)],m:.52}),
@@ -1597,17 +1602,33 @@ const GOOD={
   fishfood:()=>({parts:[cyl(.065,.09,{c:[236,232,222],top:[200,50,40],bands:[[.7,1.01,[200,50,40]],[-.4,.1,[50,104,176]]]})],m:.08}),
   bananas:()=>({parts:[box(.16,.08,.045,{c:[240,210,60],top:[244,220,80],bands:[[-1.01,-.5,[200,170,40]]]})],m:.9})};
 const GC={red:[196,60,52],blue:[40,90,170],grn:[70,150,90],yel:[228,170,60],org:[240,140,40],pur:[120,60,150],pink:[226,120,150],brn:[120,70,40],blk:[40,40,46],sky:[150,200,240]};
+// every good takes a brand as its last word: painted on its label face from the atlas (the real names of the 1980s)
+for(const k of Object.keys(GOOD)){ const f=GOOD[k]; GOOD[k]=(...a)=>{ const b=typeof a[a.length-1]==='string'?a.pop():null; const g=f(...a); if(b)g.parts[0].brand=b; return g; }; }
+Object.assign(GOOD,{
+  goya:()=>({parts:[cyl(.075,.11,{c:[40,90,170],top:GR,bot:GR,bands:[[.85,1.01,GR],[-1.01,-.85,GR],[-.3,.3,[240,200,60]]],brand:'GOYA'})],m:.45}),
+  vienna:()=>({parts:[cyl(.055,.085,{c:[60,110,170],top:GR,bot:GR,bands:[[.85,1.01,GR],[-1.01,-.85,GR]],brand:'VIENNA'})],m:.2}),
+  spam:()=>({parts:[box(.1,.06,.085,{c:[40,80,170],top:GR,brand:'SPAM'})],m:.35}),
+  tide:()=>({parts:[box(.2,.08,.26,{c:[240,120,30],top:[250,160,60],brand:'TIDE'})],m:.9}),
+  ajax:()=>({parts:[cyl(.06,.19,{c:[60,120,200],top:[220,60,60],brand:'AJAX'})],m:.4}),
+  pampers:()=>({parts:[box(.3,.14,.24,{c:[90,160,220],top:[120,180,230],brand:'PAMPERS'})],m:.8}),
+  koolaid:()=>({parts:[box(.075,.02,.1,{c:[200,40,40],top:[220,60,60],brand:'KOOL-AID'})],m:.02}),
+  candle:(c=GW)=>({parts:[cyl(.045,.2,{c,top:[240,220,120],brand:'7 DIAS'})],m:.4}),
+  sack:(c=[240,236,220])=>({parts:[box(.42,.26,.5,{c,top:gk(c,.95),bands:[[-.2,.3,[220,60,40]]],brand:'CAROLINA'})],m:9}),
+  platano:()=>({parts:[box(.22,.1,.06,{c:[120,160,60],top:[150,190,80],brand:'PLATANOS'})],m:.6})});
 const GLAY={
-  fridge1:[[['water',4]],[['can',3,GC.red],['can',2,GC.grn]],[['can',3,GC.blk],['can',2,GC.sky]],[['bottle',4,[110,60,40],[220,40,40]]]],
-  fridge2:[[['bottle',4,GC.org]],[['bottle',4,GC.yel,GW,[90,150,70]]],[['can',5,GC.blk]],[['bottle',4,[200,170,130],[90,60,40],[90,60,40]]]],
-  fridge3:[[['milk',2,GC.blue],['milk',2,GC.red]],[['eggs',2]],[['butter',2],['cheese',2]],[['yogurt',3,GC.pink],['yogurt',2,GC.blue]]],
-  aisle1a:[[['bread',2],['bagels',2]],[['cereal',2,GC.red],['cereal',2,GC.yel],['cereal',1,GC.blue],['oats',2]],[['coffee',2,GC.brn],['coffee',1,GC.red],['bag',2,GW,.15,.09,.22,2],['bag',1,[230,200,140],.15,.09,.22,2]],[['jar',3,[160,100,50]],['jar',3,[150,40,80],GR],['bag',2,[240,236,226],.14,.07,.19,1]]],
-  aisle1b:[[['soup',4,GC.red],['soup',3,GC.grn],['soup',3,[200,120,60]]],[['soup',4,GC.blue],['tuna',4]],[['pasta',5],['bag',2,GW,.13,.06,.2,1]],[['noodle',7]]],
-  aisle2a:[[['bag',3,GC.yel,.22,.075,.3,.2],['bag',3,GC.red,.22,.075,.3,.2]],[['bag',3,GC.grn,.2,.07,.25,.2],['bag',2,GC.org,.2,.07,.25,.2]],[['bag',3,[140,90,60],.2,.06,.1,.3],['bag',3,[240,220,160],.12,.05,.17,.25]],[['candy',6,GC.brn],['candy',6,GC.red]]],
-  aisle2b:[[['catfood',8]],[['catfood',6],['jar',2,GW,[60,60,60]]],[['dogfood',3]],[['fishfood',5]]],
-  back1:[[['tp',3],['towels',3]],[['dish',3],['jug',2],['sponge',2]],[['tbags',2],['bulbs',3],['batt',3]],[['matches',6]]],
-  back2:[[['soap',4,[150,200,230]],['paste',3]],[['shampoo',3,GC.blue],['shampoo',3,GC.pink],['deo',4]],[['brush',6,[120,200,230]],['pills',4]],[['cotton',4]]],
-  counter:[['candy',3,GC.brn],['candy',3,GC.yel],['gum',3,GC.grn],['gum',3,GC.blue],['lighter',3,GC.red],['bananas',1]]};
+  fridge1:[[['water',4,'POLAND SPRING']],[['can',3,GC.red,'COCA-COLA'],['can',2,GC.grn,'SPRITE']],[['can',3,GC.blue,'PEPSI'],['can',2,GC.sky,'SCHAEFER']],[['bottle',4,[110,60,40],[220,40,40],'MALTA GOYA']]],
+  fridge2:[[['bottle',4,GC.org,GW,GW,'ORANGE CRUSH']],[['bottle',4,[90,150,70],GW,[90,150,70],'COCO RICO']],[['can',5,[230,190,70],'COLT 45']],[['bottle',4,[200,170,130],[90,60,40],[90,60,40],'MILLER HIGH LIFE']]],
+  fridge3:[[['milk',2,GC.blue,'DAIRYLEA'],['milk',2,GC.red,'TUSCAN']],[['eggs',2,'GRADE A EGGS']],[['butter',2,"BREAKSTONE'S"],['cheese',2,'KRAFT']],[['yogurt',3,GC.pink,'DANNON'],['yogurt',2,GC.blue,'DANNON']]],
+  aisle1a:[[['bread',2,'WONDER'],['bagels',2,'BAGELS']],[['cereal',2,GC.yel,'CHEERIOS'],['cereal',2,GC.red,'CORN FLAKES'],['cereal',1,GC.blue,'FROOT LOOPS'],['oats',2,'QUAKER']],[['coffee',2,[236,196,40],'CAFE BUSTELO'],['coffee',1,GC.red,'EL PICO'],['bag',2,GW,.15,.09,.22,2,'GOYA RICE'],['bag',1,[230,200,140],.15,.09,.22,2,'GOYA BEANS']],[['jar',3,[160,100,50],'GOYA ADOBO'],['jar',3,[150,40,80],GR,'SAZON'],['bag',2,[240,236,226],.14,.07,.19,1,'DOMINO SUGAR']]],
+  aisle1b:[[['soup',4,GC.red,"CAMPBELL'S"],['soup',3,GC.grn,'PROGRESSO'],['goya',3]],[['soup',4,GC.blue,'CHEF BOYARDEE'],['tuna',4,'STARKIST']],[['pasta',5,'RONZONI'],['vienna',3],['spam',2]],[['noodle',3,'NISSIN'],['koolaid',6]]],
+  aisle2a:[[['bag',3,GC.yel,.22,.075,.3,.2,'WISE'],['bag',3,GC.red,.22,.075,.3,.2,'DORITOS']],[['bag',3,GC.grn,.2,.07,.25,.2,'WISE ONION'],['bag',2,GC.org,.2,.07,.25,.2,'CHEEZ DOODLES']],[['bag',3,[140,90,60],.2,.06,.1,.3,"DRAKE'S"],['bag',3,[240,220,160],.12,.05,.17,.25,"ENTENMANN'S"]],[['candy',3,GC.brn,"HERSHEY'S"],['candy',3,GC.red,'NOW & LATER'],['candy',3,GC.yel,'BAZOOKA']]],
+  aisle2b:[[['catfood',8,'PURINA']],[['catfood',6,'9 LIVES'],['jar',2,GW,[60,60,60],'VASELINE']],[['dogfood',3,'ALPO']],[['fishfood',5,'TETRA']]],
+  back1:[[['tp',3,'SCOTT'],['towels',3,'BOUNTY']],[['dish',3,'PALMOLIVE'],['jug',2,'CLOROX'],['sponge',2,'BRILLO']],[['tide',2],['ajax',2],['pampers',1]],[['tbags',2,'LIPTON'],['bulbs',3,'GE'],['batt',3,'DURACELL'],['matches',4,'DIAMOND']]],
+  back2:[[['soap',4,[150,200,230],'IVORY'],['paste',3,'COLGATE']],[['shampoo',3,GC.blue,'PRELL'],['shampoo',3,GC.pink,"JOHNSON'S"],['deo',4,'RIGHT GUARD']],[['brush',6,[120,200,230],'REACH'],['pills',4,'BAYER']],[['cotton',4,'Q-TIPS'],['candle',4]]],
+  mid1:[[['goya',6],['goya',4]],[['platano',3],['vienna',4],['spam',3]],[['koolaid',8],['candy',6,GC.yel,'BAZOOKA'],['candy',4,GC.org,'CHICK-O-STICK']],[['candle',5,[200,60,50]],['candle',5,[60,120,80]]]],
+  win1:[[['coffee',5,[236,196,40],'CAFE BUSTELO']],[['coffee',5,[236,196,40],'CAFE BUSTELO']],[['coffee',4,[236,196,40],'CAFE BUSTELO']],[['coffee',3,[236,196,40],'CAFE BUSTELO']]],
+  win2:[[['can',5,GC.red,'COCA-COLA']],[['can',5,[230,190,70],'COLT 45']],[['bag',3,GC.yel,.22,.075,.3,.2,'WISE']],[['pampers',2]]],
+  counter:[['candy',3,GC.brn,'SNICKERS'],['candy',3,GC.yel,"M&M'S"],['gum',3,GC.grn,"WRIGLEY'S"],['gum',3,GC.blue,'BUBBLE YUM'],['lighter',3,GC.red,'BIC'],['bananas',1,'CHIQUITA']]};
 // THE BODEGA'S SOLIDS: walls and props become collision boxes; BOUND and groundY for the bodega.
 
   SHARED.BOD.GOOD=GOOD; SHARED.BOD.GLAY=GLAY; SHARED.BOD.GC=GC;
@@ -1803,15 +1824,26 @@ SHARED.BODB={};
     const SZ=[14,32,50,68], FZ=[7,23,36,49];
     for(const i of [1,2,3])lay('fridge'+i,[1,0],FZ,GLAY['fridge'+i]);
     lay('wl1',[1,0],SZ,GLAY.aisle1a); lay('wl2',[1,0],SZ,GLAY.aisle1b); lay('wr1',[-1,0],SZ,GLAY.aisle2a); lay('wb3',[0,1],SZ,GLAY.aisle2b); lay('wl3',[1,0],SZ,GLAY.aisle2a);
-    lay('wb1',[0,1],SZ,GLAY.back1); lay('wb2',[0,1],SZ,GLAY.back2);
+    lay('wb1',[0,1],SZ,GLAY.back1); lay('wb2',[0,1],SZ,GLAY.back2); lay('wm1',[1,0],SZ,GLAY.mid1); lay('win1',[0,1],SZ,GLAY.win1); lay('win2',[0,1],SZ,GLAY.win2);
     { const c=O.counter, F=SHARED.BOD.food, z=30; for(let i=0;i<3;i++)list.push({g:GOOD.fishfood(),k:'fishfood',x:F.x-.08+i*.16*(i%2?1:.5),y:F.y+(i===2?.15:0),z,yaw:0});
+      list.push({g:GOOD.sack(),k:'sack',x:c.x0-.45,y:c.y0+.5,z:0,yaw:.15},{g:GOOD.sack([236,224,200]),k:'sack',x:c.x0-.45,y:c.y0+1.15,z:0,yaw:-.1});
       const along=c.y1-c.y0>c.x1-c.x0, cx=(c.x0+c.x1)/2, cy=(c.y0+c.y1)/2; let a=(along?c.y0:c.x0)+.95;
       for(const [k,n,...args] of GLAY.counter)for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
-    const P=[], N=[], Cc=[], col=new THREE.Color();
+    const brands=[], bidx=new Map(); for(const it of list)for(const pa of it.g.parts)if(pa.brand){ const bc=pa.bc||GR, key=pa.brand+'|'+bc.join(); if(!bidx.has(key)){ bidx.set(key,brands.length+1); brands.push([pa.brand,bc]); } pa.bi=bidx.get(key); }
+    const AW=1024, CW=128, CH=64, COLS=AW/CW, AH=Math.max(64,Math.ceil((brands.length+1)/COLS)*CH), acv=document.createElement('canvas'); acv.width=AW; acv.height=AH; const ag=acv.getContext('2d'); ag.fillStyle='#fff'; ag.fillRect(0,0,AW,AH);
+    brands.forEach(([name,bc],i)=>{ const n=i+1, x=(n%COLS)*CW, y=Math.floor(n/COLS)*CH, lum=bc[0]*.3+bc[1]*.59+bc[2]*.11; ag.fillStyle=`rgb(${bc[0]|0},${bc[1]|0},${bc[2]|0})`; ag.fillRect(x,y,CW,CH); ag.fillStyle=lum>150?'rgba(255,255,255,.45)':'rgba(255,255,255,.22)'; ag.fillRect(x+5,y+14,CW-10,36); ag.strokeStyle=lum>150?'rgba(0,0,0,.35)':'rgba(255,255,255,.4)'; ag.lineWidth=2; ag.strokeRect(x+5,y+14,CW-10,36);
+      ag.fillStyle=lum>150?'#1a1410':'#fff8e8'; ag.textAlign='center'; ag.textBaseline='middle'; const w=name.split(' '), L=w.length>1&&name.length>9?[w.slice(0,Math.ceil(w.length/2)).join(' '),w.slice(Math.ceil(w.length/2)).join(' ')]:[name];
+      L.forEach((l,j)=>{ let px=L.length>1?17:24; do{ ag.font='bold '+px+'px Silkscreen, "Arial Black", sans-serif'; }while(ag.measureText(l).width>CW-16&&--px>7); ag.fillText(l,x+CW/2,y+CH/2+(j-(L.length-1)/2)*18); }); });
+    const atex=new THREE.CanvasTexture(acv); atex.colorSpace=THREE.SRGBColorSpace; atex.flipY=false; atex.magFilter=THREE.NearestFilter; SHARED.BOD.brands=brands.map(b=>b[0]); SHARED.BOD.atlas=acv;
+    const uvOf=n=>{ const x=(n%COLS)*CW, y=Math.floor(n/COLS)*CH; return [(x+4)/AW,(y+4)/AH,(x+CW-4)/AW,(y+CH-4)/AH]; }, WU=2/AW, WV=2/AH;
+    const P=[], N=[], Cc=[], UV=[], col=new THREE.Color();
     const tc=(pa,tri)=>pa.mat([0,1,2].map(i=>tri[i][0]).reduce((s,v)=>[s[0]+v[0]/3,s[1]+v[1]/3,s[2]+v[2]/3],[0,0,0]),tri[0][1])||[200,200,200];
     const emit=(it,pa,tri,c=tc(pa,tri))=>{ const cs=Math.cos(it.yaw), sn=Math.sin(it.yaw); col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace);
       for(const [p,n] of tri){ const lx=p[0]+pa.c[0], ly=p[1]+pa.c[1], lz=p[2]+pa.c[2], gx=it.x+lx*cs-ly*sn, gy=it.y+lx*sn+ly*cs;
-        P.push(X(gx),Y(it.z+lz*24),Z(gy)); N.push(n[0]*cs-n[1]*sn,n[2],n[0]*sn+n[1]*cs); Cc.push(col.r,col.g,col.b); } };
+        P.push(X(gx),Y(it.z+lz*24),Z(gy)); N.push(n[0]*cs-n[1]*sn,n[2],n[0]*sn+n[1]*cs); Cc.push(col.r,col.g,col.b); UV.push(WU,WV); } };
+    const label=(it,pa)=>{ const [u0,v0,u1,v1]=uvOf(pa.bi), n=[0,1,0]; let w,h,y; if(pa.t==='box'){ w=pa.h[0]*.92; h=pa.h[2]*.86; y=pa.h[1]+.004; } else { w=pa.r*.95; h=pa.hh*.78; y=pa.r+.004; }
+      const Q=[[[-w,y,-h],[u1,v1]],[[w,y,-h],[u0,v1]],[[w,y,h],[u0,v0]],[[-w,y,h],[u1,v0]]], cs=Math.cos(it.yaw), sn=Math.sin(it.yaw);
+      for(const k of [0,1,2,0,2,3]){ const [p,uv]=Q[k], lx=p[0]+pa.c[0], ly=p[1]+pa.c[1], lz=p[2]+pa.c[2]; P.push(X(it.x+lx*cs-ly*sn),Y(it.z+lz*24),Z(it.y+lx*sn+ly*cs)); N.push(-sn,0,cs); Cc.push(1,1,1); UV.push(uv[0],uv[1]); } };
     const quad=(it,pa,a,b,c,d,n)=>{ emit(it,pa,[[a,n],[b,n],[c,n]]); emit(it,pa,[[a,n],[c,n],[d,n]]); };
     const same=C=>C.every(c=>c[0]===C[0][0]&&c[1]===C[0][1]&&c[2]===C[0][2]);
     const sheet=(it,pa,Q,n,A,B,Cq,D)=>{ const T=Q.flatMap(([a,b,c,d])=>[[[a,n],[b,n],[c,n]],[[a,n],[c,n],[d,n]]]), C=T.map(t=>tc(pa,t));
@@ -1821,20 +1853,20 @@ SHARED.BODB={};
         for(const [ax,s] of [[0,1],[0,-1],[1,1],[1,-1]]){ const n=ax?[0,s,0]:[s,0,0], ha=ax?hx:hy, pt=(u,z)=>ax?[u,s*hy,z]:[s*hx,u,z], Q=[];
           for(let i=0;i<NA;i++)for(let j=0;j<NZ;j++){ const u0=-ha+2*ha*i/NA, u1=-ha+2*ha*(i+1)/NA, z0=-hz+2*hz*j/NZ, z1=-hz+2*hz*(j+1)/NZ; Q.push([pt(u0,z0),pt(u1,z0),pt(u1,z1),pt(u0,z1)]); }
           sheet(it,pa,Q,n,pt(-ha,-hz),pt(ha,-hz),pt(ha,hz),pt(-ha,hz)); }
-        for(const s of [1,-1])quad(it,pa,[-hx,-hy,s*hz],[hx,-hy,s*hz],[hx,hy,s*hz],[-hx,hy,s*hz],[0,0,s]); }
+        for(const s of [1,-1])quad(it,pa,[-hx,-hy,s*hz],[hx,-hy,s*hz],[hx,hy,s*hz],[-hx,hy,s*hz],[0,0,s]); if(pa.bi)label(it,pa); }
       else if(pa.t==='cyl'){ const r=pa.r, hh=pa.hh, NS=10, NZ=6;
         for(let i=0;i<NS;i++){ const a0=i/NS*2*Math.PI, a1=(i+1)/NS*2*Math.PI, am=(a0+a1)/2, n=[Math.cos(am),Math.sin(am),0];
           const pc=(a,z)=>[Math.cos(a)*r,Math.sin(a)*r,z], Q=[]; for(let j=0;j<NZ;j++){ const z0=-hh+2*hh*j/NZ, z1=-hh+2*hh*(j+1)/NZ; Q.push([pc(a0,z0),pc(a1,z0),pc(a1,z1),pc(a0,z1)]); } sheet(it,pa,Q,n,pc(a0,-hh),pc(a1,-hh),pc(a1,hh),pc(a0,hh));
-          for(const s of [1,-1])emit(it,pa,[[[0,0,s*hh],[0,0,s]],[[Math.cos(a0)*r,Math.sin(a0)*r,s*hh],[0,0,s]],[[Math.cos(a1)*r,Math.sin(a1)*r,s*hh],[0,0,s]]]); } } }
+          for(const s of [1,-1])emit(it,pa,[[[0,0,s*hh],[0,0,s]],[[Math.cos(a0)*r,Math.sin(a0)*r,s*hh],[0,0,s]],[[Math.cos(a1)*r,Math.sin(a1)*r,s*hh],[0,0,s]]]); } if(pa.bi)label(it,pa); } }
       GL.push({k:it.k,m:it.g.m||.5,v0,v1:P.length/3}); }
-    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3));
-    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); me.receiveShadow=true; me.userData.goods=true; scene.add(me); SHARED.BOD.goodsMesh=me; };
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2));
+    const me=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,map:atex,side:THREE.DoubleSide})); me.receiveShadow=true; me.userData.goods=true; scene.add(me); SHARED.BOD.goodsMesh=me; };
   const HALO=(c,W,H)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
     for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const dx=(i+.5)/W*2-1, dy=(j+.5)/H*2-1, d=Math.hypot(dx,dy), t=(s0=>s0-Math.floor(s0))(Math.sin(i*12.9898+j*78.233)*43758.5453), s=d<.42+(t-.5)*.12?.5:d<.68+(t-.5)*.14?.26:d<.96+(t-.5)*.12?.1:0, q=(j*W+i)*4;
       im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=Math.round(s*255); }
     g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
-  for(const N of NEONS){ const n=N.cells.length/4, k=1/24, geo=new THREE.BoxGeometry(2*k*TILE,Y(2)-Y(0),2*k*TILE*.8), me=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(N.c[0]/255*1.1,N.c[1]/255*1.1,N.c[2]/255*1.1)}),n), m4=new THREE.Matrix4(); let i=0;
-    for(const [a,b] of N.cells){ if(a%2||b%2)continue; m4.makeTranslation(X(N.x-N.W*k/2+(a+1)*k),Y(N.z+7-(b+1)),Z(N.y-.08)); me.setMatrixAt(i++,m4); }
+  for(const N of NEONS){ const kk=N.k||2, n=N.cells.length, k=1/24, geo=new THREE.BoxGeometry(kk*k*TILE,Y(kk)-Y(0),kk*k*TILE*.8), me=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:new THREE.Color(N.c[0]/255*1.1,N.c[1]/255*1.1,N.c[2]/255*1.1)}),n), m4=new THREE.Matrix4(); let i=0;
+    for(const [a,b] of N.cells){ if(kk===2&&(a%2||b%2))continue; m4.makeTranslation(X(N.x-N.W*k/2+(a+kk/2)*k),Y(N.z+7-(b+kk/2)),Z(N.y-.08)); me.setMatrixAt(i++,m4); }
     me.count=i; N.me=me; me.castShadow=false; me.receiveShadow=false; scene.add(me);
     { const w=N.W*k*TILE*2, h=(Y(14)-Y(0))*2.6, m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:HALO(N.c,Math.round(N.W*k*24*2/1.2),Math.round(14*2.6/1.2)),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
       const at=new THREE.Vector3(X(N.x),Y(N.z),Z(N.y-.08)), f=new THREE.Vector3(); m.position.copy(at); m.renderOrder=2;

@@ -64,7 +64,8 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   if(RAG.on){ ragStep(dt); st.target=0; pos.x=P.x*TL; pos.z=-P.y*TL; SHARED.py=0; if(!RAG.on){ SHARED.heading=PH.hd; pos.x=P.x*TL; pos.z=-P.y*TL; } }
   if(RAG.on)B=ragPose();
   else{
-    if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; } if(RIDE.on){ RIDE.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; } const ml=Math.hypot(mx,mz), busy=st.move;
+    if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; } if(RIDE.on){ RIDE.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; }
+    if(window.RUNNER&&RUNNER.on){ const r=RUNNER.steer(dt); mx=r[0]; mz=r[1]; SHARED.target=null; st.runTarget=1; } const ml=Math.hypot(mx,mz), busy=st.move;
     if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
     else{
     if(window.WIELD)WIELD.pre(dt);

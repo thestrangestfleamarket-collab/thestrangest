@@ -1,4 +1,4 @@
-// THE HUD: HUD draws the round minimap top right (from the MAP's plan, when you carry a map), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
+// THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
 import {ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, UI, WE, WIELD, ZONES} from './003b-systems.js';
 import {OWNED} from './005-save.js';
@@ -32,7 +32,7 @@ import {SYS, TILE} from './006-map-pre.js';
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
-  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur&&!!(FORAGE.has&&FORAGE.has('map')); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
+  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur; if(MP.hidden===on)MP.hidden=!on; if(!on)return;
     if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=(SHARED.SECTION&&SHARED.SECTION.id)||''; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); };
 
   /* ---------- the quick bar ---------- */

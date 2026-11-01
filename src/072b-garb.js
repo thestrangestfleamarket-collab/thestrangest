@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {FLOOR, TILE} from './006-map-pre.js';
+import {TILE} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
 const GARB={};
 { const R=RIG, REST=R.build(R.walkPose({ph:0,w:0},null),null), TAU=Math.PI*2, FALL=-286, V=(x,y,z)=>({x,y,z});   // the rig is about 29 units a metre, so things fall at 286 units a second squared
@@ -51,8 +51,8 @@ const GARB={};
     if(PAINT[k]){ const f=FAB[k]||(FAB[k]=paint(k)); o.map=f.map; o.normalMap=f.nm; o.normalScale=new THREE.Vector2(D.ns,D.ns); }
     if(D.sh){ o.sheen=D.sh; o.sheenRoughness=D.shr; o.sheenColor=new THREE.Color(c).lerp(new THREE.Color(0xffffff),.35); } if(D.cc){ o.clearcoat=D.cc; o.clearcoatRoughness=D.ccr; }
     const M=new THREE.MeshPhysicalMaterial(o);
-    // in shade it gets the world's own least light (as the cel things do), so it never goes black
-    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<'+FLOOR+') reflectedLight.indirectDiffuse+=al/3.14159*('+FLOOR+'-m0); }'); };
+    // in shade it keeps the Walker's own least light (his darkest tone), so it never goes black
+    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }'); };
     return MAT[q]=M; };
 
   /* ---------- a garment's shape, made once and shared by everyone wearing it ---------- */
@@ -74,7 +74,7 @@ const GARB={};
     t.S.forEach(([a,b,w,p],i)=>{ t.s1[i]=NI[a]; t.l1.set(toL(a,p),i*3); t.s2[i]=b?NI[b]:-1; if(b){ t.l2.set(toL(b,p),i*3); t.w2[i]=w; } });
     t.uvF=new Float32Array(t.uv); t.ixU=new Uint32Array(t.ix); delete t.S; return t; };
   // the body it is worn over, as a distance (the Walker's own pieces at rest; under the shirt the jeans, as their waist): out of it by cl
-  const SDF={}, body=f=>SDF[f]||(SDF[f]=(()=>{ const ps=(f==='F'?['torsoF','bustF','hips']:f==='P'?['hips']:['torso','hips']).map(n=>W3.pcs[W3.idx(n)]).filter(Boolean);
+  const SDF={}, body=(f,a)=>SDF[f+(a||'')]||(SDF[f+(a||'')]=(()=>{ const ps=(f==='F'?['torsoF','bustF','hips']:f==='P'?['hips']:['torso','hips']).concat(a?['upperArmL','upperArmR']:[]).map(n=>W3.pcs[W3.idx(n)]).filter(Boolean);
     return p=>{ let d=1e9; for(const P of ps)d=Math.min(d,P.d(p)-(P.n==='hips'&&f!=='P'&&p.y>14.8&&p.y<20.9?.75:0)); return d; }; })());
   // a point pushed out from c (through where it was put) till it is cl clear of the body, looking no further than smax; never pulled in
   const onto=(d,c,p,cl,smax)=>{ const dx=p.x-c.x, dy=p.y-c.y, dz=p.z-c.z, s0=Math.hypot(dx,dy,dz)||1e-6, at=s=>d(V(c.x+dx/s0*s,c.y+dy/s0*s,c.z+dz/s0*s))<cl; let last=-1; for(let s=0;s<smax;s+=.2)if(at(s))last=s;
@@ -82,10 +82,10 @@ const GARB={};
   const NECK=V(0,27,0);
   // a torso garment: rows [y, half width, half depth, lean(th), cl, c] from its top, round from th0 to th1 (closed: all round); sk(y) what a point hangs from at that height;
   // each point fitted onto the body f wears (c: from the chest's middle, over the shoulders; else straight out), and below the chest it falls from the fullest row above it
-  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), P=[], col=[];
+  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), da=body(f||'M',1), P=[], col=[];
     for(let j=0;j<rows.length;j++)for(let i=0;i<nu;i++){ const r=rows[j], th=closed?i/nu*TAU:th0+span*i/(nu-1); let p=V(r[1]*Math.sin(th),r[0]+(r[3]?r[3](th):0),r[2]*Math.cos(th));
-      if(r[4]!=null){ p=onto(d,r[5]?NECK:V(0,p.y,0),p,r[4],r[5]?9:13);
-        if(!r[5]&&p.y<28.8&&Math.abs(Math.sin(th))<.75){ const h=Math.hypot(p.x,p.z), k=Math.max(h,(col[i]||0)*.985); if(k>h){ p.x*=k/h; p.z*=k/h; } col[i]=k; } }
+      if(r[4]!=null){ p=r[5]?onto(da,NECK,p,r[4],12):onto(d,V(0,p.y,0),p,r[4],13);
+        if(!r[5]&&p.y<28.8&&Math.abs(Math.sin(th))<.75){ const h=Math.hypot(p.x,p.z), k=Math.max(h,(col[i]||0)*.97); if(k>h){ p.x*=k/h; p.z*=k/h; } col[i]=k; } }
       P.push(p); }
     const vl=[0]; for(let j=1;j<rows.length;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); }
     let per=0; for(let i=0;i<nu-1;i++)per+=dist(P[i+nu*(rows.length>>1)],P[i+1+nu*(rows.length>>1)]); const reps=Math.max(1,Math.round(per*(closed?nu/(nu-1):1)/TS));

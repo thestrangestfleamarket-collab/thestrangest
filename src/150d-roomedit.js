@@ -52,14 +52,14 @@ import {ROOMK} from './150a-bedroom.js';
   const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=ED;
   const A_=()=>ROOMK.api, inHome=()=>!!(MODS.apts&&MODS.apts.inReal&&ROOMK.api);
   const css=document.createElement('style'); css.textContent=`
-  #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);overflow:auto;scroll-padding-bottom:56px;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
-  #roomed[hidden],#roomedbtn[hidden],#roombuy[hidden],#roomsay[hidden]{display:none} #roomed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:10px 12px;border-bottom:2px solid var(--line)}
-  #roomed .tabs,#roombuy .tabs{display:flex;border-bottom:2px solid var(--line)} #roomed .tabs button,#roombuy .tabs button{flex:1;font:inherit;color:var(--dim);background:none;border:0;padding:8px 2px;cursor:pointer} #roomed .tabs button.on,#roombuy .tabs button.on{color:var(--key);background:#161924}
-  #roomed .pane{padding:8px 12px} #roomed .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0} #roomed .lab{color:var(--dim);margin:10px 0 4px}
+  #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
+  #roomed[hidden],#roomedbtn[hidden],#roombuy[hidden],#roomsay[hidden]{display:none} #roomed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:10px 12px;border-bottom:2px solid var(--line);flex-shrink:0}
+  #roomed .tabs,#roombuy .tabs{display:flex;border-bottom:2px solid var(--line)} #roomed .tabs{flex-shrink:0} #roomed .tabs button,#roombuy .tabs button{flex:1;font:inherit;color:var(--dim);background:none;border:0;padding:8px 2px;cursor:pointer} #roomed .tabs button.on,#roombuy .tabs button.on{color:var(--key);background:#161924}
+  #roomed .pane{padding:8px 12px;overflow:auto;flex:1 1 auto;min-height:0} #roomed .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0} #roomed .lab{color:var(--dim);margin:10px 0 4px}
   #roomed .btn,#roombuy .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:4px 7px;cursor:pointer} #roomed .btn:hover,#roombuy .btn:hover{border-color:var(--key)} #roomed .btn.on{border-color:var(--key);color:var(--key)}
   #roomed .sw{width:58px;height:34px;border:2px solid #3a3f4e;cursor:pointer;margin-bottom:20px} #roomed .sw.on{border-color:var(--key)} #roomed .sw span{display:block;font-size:8px;line-height:1.15;margin-top:36px;color:var(--dim);text-align:center}
   #roomed .light{border-top:1px solid var(--line);padding:6px 0} #roomed input[type=range]{width:120px} #roomed .hint{color:var(--dim);font-size:10px;line-height:1.6}
-  #roomed .foot{display:flex;gap:6px;padding:8px 12px;border-top:2px solid var(--line);position:sticky;bottom:0;background:var(--bg)}
+  #roomed .foot{display:flex;gap:6px;padding:8px 12px;border-top:2px solid var(--line);background:var(--bg);flex-shrink:0}
   #roombuy{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:980px;margin:0 auto;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #roombuy .top{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:2px solid var(--line)} #roombuy .top b{color:var(--key)} #roombuy .tabs{flex-wrap:wrap} #roombuy .tabs button{font-size:10px;flex:1 0 auto;padding:6px 6px}
   #roombuy input{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px;width:150px}

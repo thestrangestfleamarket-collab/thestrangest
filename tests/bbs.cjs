@@ -52,7 +52,21 @@ const dispatch = (pg, key) => pg.evaluate(k => window.dispatchEvent(new Keyboard
 
     // DRONE VIEW, then Esc stands you up
     await pg.evaluate(() => { window.DRONE.open(); }); await pg.waitForTimeout(200);
-    await pg.evaluate(() => { for (let i = 0; i < 20 && DRONEDBG().page === 'boot'; i++) {} });
+    // THE ARCADE from the BBS: the main menu by arrows and RETURN, the cabinets' list, a game over the terminal, ESC brings the terminal back
+    const page = () => pg.evaluate(() => DRONEDBG().page);   // the terminal may still be up from the order: M brings its menu back
+    for (let i = 0; i < 40 && (await page()) === 'boot'; i++) await pg.waitForTimeout(500);
+    if ((await page()) === 'logo') await dispatch(pg, 'x'); else if ((await page()) !== 'menu') await dispatch(pg, 'm'); for (let i = 0; i < 20 && (await page()) !== 'menu'; i++) await pg.waitForTimeout(300);
+    await dispatch(pg, 'ArrowDown'); await dispatch(pg, 'ArrowDown'); await pg.waitForTimeout(100); await dispatch(pg, 'Enter'); await pg.waitForTimeout(200);
+    ok((await page()) === 'games', 'arrows and RETURN pick THE ARCADE on the main menu (' + await page() + ')');
+    for (let i = 0; i < 60 && !(await pg.evaluate(() => DRONEDBG().arc)); i++) await pg.waitForTimeout(500);
+    const ga = await pg.evaluate(() => DRONEDBG()); ok(ga.arc && ga.games.length === 8 && ga.games[0] === 'RAINBOW RUN' && ga.games[6] === 'TORCHBEARER', 'the arcade\'s eight cabinets list, wall by wall (' + ga.games.join(', ') + ')');
+    await pg.evaluate(() => { INV.cash = Math.max(INV.cash || 0, 20); }); await dispatch(pg, 'Enter');
+    let cab = false; for (let i = 0; i < 120 && !(cab = await pg.evaluate(() => STORE.cabs.on && STORE.cabs.dbg().loaded)); i++) await pg.waitForTimeout(500);
+    ok(cab && (await pg.evaluate(() => STORE.cabs.dbg().name)) === 'RAINBOW RUN', 'RETURN opens the cabinet over the terminal');
+    await dispatch(pg, ' '); await pg.waitForTimeout(400); ok((await pg.evaluate(() => STORE.cabs.dbg().mode)) === 'play', 'the keys reach the game, not the terminal (a coin starts a run)');
+    await dispatch(pg, 'Escape'); await pg.waitForTimeout(300);
+    ok(await pg.evaluate(() => !STORE.cabs.on && DRONEDBG().on && DRONEDBG().page === 'games'), 'ESC leaves the cabinet and the terminal is still up on THE ARCADE');
+    await dispatch(pg, 'm'); await pg.waitForTimeout(150); ok((await pg.evaluate(() => DRONEDBG().page)) === 'menu', 'M goes back to the main menu');
     await dispatch(pg, 'Escape'); await pg.waitForTimeout(200);
     ok(await pg.evaluate(() => !document.getElementById('bbswin') && !DRONEDBG().on), 'Esc stands you up and clears the screen');
 

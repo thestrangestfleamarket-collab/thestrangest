@@ -104,12 +104,12 @@ const GARB={};
   const BUST={shirt:.3,jacket:.85}, tpl=(k,f)=>{ const q=BUST[k]&&f==='F'?k+'F':k; if(!TPL[q]){ const t0=performance.now(); TPL[q]=fin(MAKE[k](f==='F'?'F':'M')); GARB.made[q]=+(performance.now()-t0).toFixed(1); } return TPL[q]; }, TPL={}; GARB.made={};
   // the rows over the shoulders, put on the body from the chest's middle (lower in front)
   const neck=th=>-.9*Math.cos(th)+.3*Math.sin(th)**2, yoke=th=>-.9*Math.cos(th)-.3*Math.sin(th)**2, shoulder=th=>-.6*Math.cos(th)+.4*Math.sin(th)**2;
-  const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.32+e,1],[29.3,9,4.6,null,.35+e,1]];
+  const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.32+e,1],[29.3,9,4.6,null,.35+e,1],[28.4,8.6,4.5,null,.4+e,1]];
   const MAKE={
     // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
     shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, CL=[.45,.5,.55,.6,.65,.7,.75,.8];
       const rows=TOP(0).concat([27.8,25.8,23.8,21.8,19.8,18,16.4,15].map((y,j)=>[y,4,3,null,CL[j]]));
-      const KR=[0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
+      const KR=[0,0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
       torso(t,rows,28,true,0,0,(i,j)=>KR[j],0,TS,chest,f);
       torso(t,[[34.4,2,1.8,neck,.22,1],[35,2,1.8,neck,.2,1]],28,true,0,0,()=>0,0,TS*.5,chest,f);   // the ribbed neckband
       for(const s of 'LR'){ const u='upperArm'+s; limb(t,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]],16,j=>j===4?.3:0,0,TS); }
@@ -125,7 +125,7 @@ const GARB={};
           16,j=>j===10?.3:j===11?.2:j===12?.14:0,0,TS); }
       return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs
-    jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);
+    jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);
       const rows=TOP(.55).concat([27.6,25.4,23.2,21,18.8,16.8,14.9,13.3].map((y,j)=>[y,4,3,null,CL[j]]));
       // the fronts by the opening hang looser than the back
       torso(t,rows,26,false,th0,th1,(i,j)=>{ const e=Math.min(i,25-i); return KR[j]*(e<3?.55+.15*e:1); },0,TS,chest,f);

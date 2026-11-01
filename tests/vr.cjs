@@ -105,6 +105,26 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await changed(m0), 'the trigger presses SETTINGS (' + (await menuText()).split('\n')[0] + ')');
     ok(await until(() => VR.state().fresh, 90000), 'the panel shows the SETTINGS page');
     await shot('controller-pressed');
+    // a cabinet in the headset: the game's canvas lives on the panel, the stick and the buttons play it, the sticks do not turn you meanwhile
+    await pg.keyboard.press('Escape'); await until(() => !VR.state().menu, 8000);
+    await pg.evaluate(() => { INV.cash = Math.max(INV.cash || 0, 20); STORE.cabs.play('RAINBOW RUN'); });
+    ok(await until(() => STORE.cabs.on && STORE.cabs.dbg().loaded, 90000), 'a cabinet opens in the headset');
+    ok(await until(() => VR.state().panel && VR.state().live, 90000), 'its game shows live on the panel (' + JSON.stringify(await pg.evaluate(() => { const s = VR.state(); return { panel: s.panel, live: s.live, gamewin: s.gamewin }; })) + ')');
+    await shot('cabinet-panel');
+    await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('a-button', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('a-button', 0)); await frames(2);
+    ok(await until(() => STORE.cabs.dbg().mode === 'play', 8000), 'A puts the coin in and starts the run');
+    await pg.evaluate(() => { window.__keys = []; }); await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', -1, 0)); await frames(3); await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, 0)); await frames(2);
+    const gk = await pg.evaluate(() => __keys.splice(0)); ok(gk.includes('arrowleft'), 'the left stick is the game\'s arrows (' + JSON.stringify(gk) + ')');
+    const yg = await pg.evaluate(() => VR.state().yaw); await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 1, 0)); await frames(3); await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 0, 0)); await frames(2);
+    ok(Math.abs((await pg.evaluate(() => VR.state().yaw)) - yg) < 1e-6, 'the right stick does not turn you while the game is up');
+    await pg.evaluate(() => { window.__keys = []; STORE.cabs.close(); }); await frames(2);   // (B is ESC on the pad, the same path; held over two of these slow frames it would be the hold that leaves VR)
+    ok(await until(() => !STORE.cabs.on && !VR.state().win, 15000), 'leaving the cabinet takes its panel down (' + JSON.stringify(await pg.evaluate(() => { const s = VR.state(); return { win: s.win, panel: s.panel, gamewin: s.gamewin }; })) + ')');
+    await pg.evaluate(() => { window.__keys = []; }); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 0)); await frames(1);
+    ok(await until(() => VR.state().menu, 8000), 'the menu opens again after the cabinet (' + JSON.stringify(await pg.evaluate(() => { const s = VR.state(); return { menu: s.menu, panel: s.panel, win: s.win, gamewin: s.gamewin, cab: STORE.cabs.on, keys: __keys.splice(0) }; })) + ')');
+    ok(await until(() => VR.state().panel && VR.state().fresh, 90000), 'and shows on the panel');
+    ok(await until(() => VR.state().fresh, 90000), 'its picture is fresh'); const a3 = await aim('controllers', 'right', 'SETTINGS'); ok(!a3, 'the right controller points at SETTINGS again' + (a3 ? ' (' + a3 + ')' : ''));   // back where the hands' part of this check began
+    await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0)); await frames(2);
+    ok(await until(() => VR.state().fresh, 90000), 'the panel shows SETTINGS again');
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
     ok(await until(() => VR.state().hands === 2, 15000), 'put the controllers down and your hands show (' + (await pg.evaluate(() => VR.state().hands)) + ' hands)');
     ok(await until(() => VR.state().wrist, 5000), 'a MENU button sits on your left wrist');

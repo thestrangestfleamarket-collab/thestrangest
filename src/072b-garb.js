@@ -209,6 +209,7 @@ const GARB={};
     for(const k of ['pants','shirt','jacket'])if(spec[k]){ const w=hang(k,c,k==='shirt'&&spec.jacket,spec.form); ws.push(w); root.add(w.me); }
     for(const k of ['shoeL','shoeR','hat'])if(spec[k==='hat'?'hat':'shoes']){ const me=new THREE.Mesh(still(k),MATS[k](c)); me.matrixAutoUpdate=false; me.castShadow=me.receiveShadow=true; me.frustumCulled=false; rg.push({me,k:NI[k==='hat'?'head':k],head:k==='hat'}); root.add(me); }
     return H.garb={k:spec.k,root,ws,rg,Gp:null,t:0,away:true,ms:0}; };
+  const HATCUT=6.9;   // head-local height of the hat's band: hair above it is inside the crown, so not drawn
   const FR=new THREE.Frustum(), PV=new THREE.Matrix4(), SPH=new THREE.Sphere();
   const seen=g=>{ const cam=SHARED.cam; if(!cam)return true; PV.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(PV); SPH.center.set(g.position.x,g.position.y+TILE,g.position.z); SPH.radius=2*TILE; return FR.intersectsSphere(SPH); };
   // each frame: g the figure's group, B its pose, spec what it wears (null: nothing shown), H what it keeps, me its body (hidden: so are its clothes), E its body's shape by piece name
@@ -216,7 +217,7 @@ const GARB={};
     if(!spec||me&&!me.visible){ if(W)W.root.visible=false; return; }
     if(!W||W.k!==spec.k)W=dress(spec,H);
     if(W.root.parent!==g)g.add(W.root); W.root.visible=true;
-    const mine=g===W3.group, dt=W.t?Math.min(.1,(t0-W.t)/1000):1/60; W.t=t0; if(mine)GARB.mine=H;
+    const mine=g===W3.group, dt=W.t?Math.min(.1,(t0-W.t)/1000):1/60; W.t=t0; if(mine){ GARB.mine=H; W3.uHatCut.value=spec.hat?HATCUT:1e9; }
     // off screen nothing moves (it settles where it should be when it comes back); far, the cloth rides the body
     let sim=true; if(!mine&&SHARED.cam){ if(!seen(g)){ W.away=true; return; } if(SHARED.cam.position.distanceTo(g.position)>45*TILE)sim=false; }
     for(let i=0;i<NAMES.length;i++)PM(NAMES[i],B,E&&E[NAMES[i]],scratch[i]);

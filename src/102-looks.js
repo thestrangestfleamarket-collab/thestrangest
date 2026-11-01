@@ -32,7 +32,7 @@ LOOKS.over={};
   const shape=(form=L.form)=>W3.pcs.map((P,i)=>(form==='F'?EF:E0)[i]);
   LOOKS.shape=shape;
   W3.recolor=()=>LOOKS.refresh(); window.LOOKS=LOOKS;
-  LOOKS.refresh=()=>{ '@later'; recolor(); shape().forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); feet(); };
+  LOOKS.refresh=()=>{ recolor(); shape().forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); feet(); };
   const feet=()=>{ if(!L.bare)return; const A=W3.mesh.geometry.attributes, n=A.mat.count, SK=W3.ramp[MATS.indexOf('skin')]; if(!SK)return;
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0]; if(P&&/^shoe/.test(P.n))put(A,i,SK); } for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }

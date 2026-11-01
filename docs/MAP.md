@@ -274,8 +274,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `159-jobs.js` | 5.4 | top level | JOBS (160) | 003: SHARED; 003b: CITY CLIP CLOCK MAIL PARK ROOMS; 006: QS SOL SYS TILE |
 | `159b-shops.js` | 6.8 | top level |  | 003: THREE; 003b: CHARS FORAGE INV ITEMS LINES NPCS SFX SHOPS TALK UI; 006: SYS TILE |
 | `159c-coatrack.js` | 3.2 | top level |  | 003: SHARED THREE; 003b: FORAGE SHOPS UI; 004: scene; 006: FIX LEVEL SOL SYS TILE; 084b: GLBTOONS |
-| `159c-loopmap.js` | 7.7 | top level |  | 003: SHARED; 003b: LOOPMAP UI pos; 006: SYS TILE; 009b: LOOP; 009c: TRAINS |
-| `159d-passport.js` | 8.5 | top level |  | 003: SHARED THREE; 003b: FORAGE LOOKS ONLINE PASSPORT SFX UI pos; 005: OWNED; 006: MAPG SOL SYS TILE; 009b: LOOP |
+| `159c-loopmap.js` | 7.8 | top level |  | 003: SHARED; 003b: LOOPMAP UI pos; 006: SYS TILE; 009b: LOOP; 009c: TRAINS |
+| `159d-passport.js` | 8.6 | top level |  | 003: SHARED THREE; 003b: FORAGE LOOKS ONLINE PASSPORT SFX UI pos; 005: OWNED; 006: MAPG SOL SYS TILE; 009b: LOOP |
 | `159d-talk.js` | 9.0 | top level |  | 003: THREE; 003b: CHARS FORAGE INV LINES LOOKS NPCS SFX SHOPS TALK UI VIT keys pos; 005: OWNED; 006: TILE |
 | `159e-scanner.js` | 6.4 | top level |  | 003: SHARED THREE; 003b: DRONE LOOKS ONLINE SCANNER pos; 006: MAPG SYS TILE; 009b: LOOP; 009c: TRAINS |
 | `159f-spray.js` | 8.6 | top level |  | 003: SHARED THREE; 003b: FORAGE LEVELS ONLINE SFX SPRAY W3 pos; 004: renderer scene; 005: OWNED; 006: SYS TILE |

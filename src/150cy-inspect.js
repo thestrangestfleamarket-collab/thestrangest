@@ -3,8 +3,14 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, INSPECT, INV, ITEMS, UI} from './003b-systems.js';
 import {renderer} from './004-main.js';
 { const W=320, H=320, esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xffffff,2.2), FILL=new THREE.DirectionalLight(0xc8d4ff,.8), PIV=new THREE.Group();
-  KEY.position.set(-2,3,4); FILL.position.set(3,1,-3); ROOM.add(new THREE.AmbientLight(0xffffff,.75),KEY,FILL,PIV);
+  const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xfff4e2,1.9), FILL=new THREE.DirectionalLight(0xbcd0ff,.6), RIM=new THREE.DirectionalLight(0xffffff,.55), PIV=new THREE.Group();
+  KEY.position.set(-3,4,4); FILL.position.set(4,1,-3); RIM.position.set(0,2,-5); ROOM.add(new THREE.AmbientLight(0xffffff,.18),KEY,FILL,RIM,PIV);
+  let ENV=null; const makeEnv=()=>{ const pm=new THREE.PMREMGenerator(renderer), s=new THREE.Scene();
+    s.add(new THREE.Mesh(new THREE.BoxGeometry(24,24,24),new THREE.MeshStandardMaterial({side:THREE.BackSide,color:0x2b3040,roughness:1})));
+    const lite=(r,gn,b,x,y,z,sx,sy,sz)=>{ const mm=new THREE.MeshBasicMaterial(); mm.color.setRGB(r,gn,b); const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm); m.position.set(x,y,z); s.add(m); };
+    lite(7,6.6,6,-6,9,5,7,.1,7); lite(2.6,3,4,7,3,-6,6,6,.1); lite(1.6,1.7,2,0,-7,0,12,.1,12); lite(2.4,2.6,3,0,10,0,9,.1,9);
+    try{ ENV=pm.fromScene(s,.04).texture; ROOM.environment=ENV; }catch(e){ console.warn('INSPECT env',e); }
+    pm.dispose(); s.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); };
   const cam=new THREE.PerspectiveCamera(30,W/H,.01,100), CC=new THREE.Color(), BX=new THREE.Box3(), SP=new THREE.Sphere();
   let rt=null, P=null, cv=null, g2=null, px=null, im=null, obj=null, own=false, raf=0, last=0, yaw=0, pitch=.35, zoom=1, R=1, drag=null, spin=true;
   const make=()=>{ P=document.createElement('div'); P.id='inspp'; P.hidden=true;
@@ -27,9 +33,9 @@ import {renderer} from './004-main.js';
     return L.map(t=>`<span style="background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px">${esc(t)}</span>`).join(''); };
   // what INSPECT made is freed when it closes, geometry only (makers keep their materials cached, or mark their own ownMat); a part marked shared is the world's own
   const drop=()=>{ if(!obj)return; PIV.remove(obj); if(own)obj.traverse(c=>{ if(c.isInstancedMesh)c.dispose(); else if(c.geometry&&!c.userData.shared)c.geometry.dispose(); if(c.userData.ownMat&&c.material)c.material.dispose(); }); obj=null; };
-  const shot=()=>{ if(!obj)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; }
+  const shot=()=>{ if(!obj)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; } if(!ENV)makeEnv();
     PIV.rotation.set(pitch,yaw,0,'XYZ'); const d=R/Math.sin(cam.fov*Math.PI/360)*1.08/zoom; cam.position.set(0,0,d); cam.near=Math.max(.001,d-R*3); cam.far=d+R*3; cam.lookAt(0,0,0); cam.updateProjectionMatrix();
-    renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(rt); renderer.setClearColor(0x15171e,1); renderer.clear(); renderer.render(ROOM,cam); renderer.setRenderTarget(null); renderer.setClearColor(CC,ca);
+    renderer.getClearColor(CC); const ca=renderer.getClearAlpha(), tm=renderer.toneMapping, te=renderer.toneMappingExposure; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15; renderer.setRenderTarget(rt); renderer.setClearColor(0x14161d,1); renderer.clear(); renderer.render(ROOM,cam); renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); renderer.toneMapping=tm; renderer.toneMappingExposure=te;
     renderer.readRenderTargetPixels(rt,0,0,W,H,px); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!INSPECT.on){ raf=0; return; } raf=requestAnimationFrame(loop); const dt=Math.min(.1,(t-(last||t))/1000); if(t-last<33)return; last=t; if(spin)yaw+=dt*.7; shot(); };
   // o: the thing to show; mine: INSPECT made it (dropped when closed), else it is shared with the world and only cloned
@@ -41,30 +47,39 @@ import {renderer} from './004-main.js';
     P.hidden=false; INSPECT.on=true; INSPECT.id=id; if(!raf){ last=0; raf=requestAnimationFrame(loop); } return true; };
   INSPECT.close=()=>{ if(!P)return; P.hidden=true; INSPECT.on=false; INSPECT.id=null; drop(); };
     // for the families' makers: one material per colour, kept; a STALL-style recipe (MUSH, VEG) as meshes; simple shapes for the things with no model of their own
-  const MATS=new Map(); INSPECT.mat=(c,{glow=0,flat=0,glass=0}={})=>{ const k=c+':'+glow+flat+glass; let m=MATS.get(k); if(!m){ m=glow?new THREE.MeshBasicMaterial({color:c}):new THREE.MeshLambertMaterial({color:c,flatShading:!!flat,side:THREE.DoubleSide,transparent:!!glass,opacity:glass?.55:1}); MATS.set(k,m); } return m; };
-  const GG={ball:new THREE.IcosahedronGeometry(1,1),cap:new THREE.SphereGeometry(1,8,3,0,Math.PI*2,0,Math.PI/2),cone:new THREE.ConeGeometry(1,1,8),cyl:new THREE.CylinderGeometry(1,1,1,8),box:new THREE.BoxGeometry(1,1,1),tor:new THREE.TorusGeometry(1,.18,6,14),oct:new THREE.OctahedronGeometry(1,0)};
+  const MATS=new Map(), KINDS={ metal:{m:1,r:.32}, steel:{m:1,r:.14}, chrome:{m:1,r:.08}, iron:{m:1,r:.45}, gold:{m:1,r:.28}, brass:{m:1,r:.3}, copper:{m:1,r:.34}, tin:{m:1,r:.22}, wood:{r:.72}, bark:{r:.92,flat:1}, stone:{r:.9}, rock:{r:.95,flat:1}, ceramic:{r:.35,cc:.4}, clay:{r:.8}, food:{r:.58}, bread:{r:.72}, meat:{r:.5,cc:.25,ccr:.4}, fruit:{r:.45,cc:.3,ccr:.5}, cloth:{r:.96,sh:.5}, leather:{r:.68}, paper:{r:.85}, plastic:{r:.4,cc:.45,ccr:.2}, rubber:{r:.9}, wax:{r:.4,cc:.5,ccr:.3}, skin:{r:.55,cc:.15}, wet:{r:.18,cc:.6,ccr:.1}, leaf:{r:.5,sh:.6}, bone:{r:.6}, default:{r:.55} };
+  INSPECT.mat=(c,o={})=>{ if(o.glow){ const gk='g'+c+(o.ei||''); let gm=MATS.get(gk); if(!gm){ gm=new THREE.MeshBasicMaterial({color:c,toneMapped:false}); MATS.set(gk,gm); } return gm; }
+    const kind=o.kind||(o.glass?'glass':o.gem?'gem':'default'), base=KINDS[kind]||KINDS.default, glassy=kind==='glass'||kind==='gem';
+    const key=c+'|'+kind+'|'+(o.flat?1:0)+'|'+(o.rough??'')+'|'+(o.metal??'')+'|'+(o.emissive??'')+'|'+(o.ei??''); let m=MATS.get(key);
+    if(!m){ const P={color:c,side:THREE.DoubleSide,flatShading:!!(o.flat||base.flat),roughness:o.rough!=null?o.rough:(base.r!=null?base.r:.55),metalness:o.metal!=null?o.metal:(base.m||0)};
+      if(o.emissive!=null){ P.emissive=o.emissive; P.emissiveIntensity=o.ei!=null?o.ei:1; }
+      if(glassy){ P.metalness=0; P.transmission=kind==='gem'?.9:1; P.roughness=o.rough!=null?o.rough:(kind==='gem'?.04:.05); P.ior=kind==='gem'?2.1:1.46; P.thickness=kind==='gem'?.5:.35; P.transparent=true; P.specularIntensity=1; if(kind==='gem')P.clearcoat=.7; m=new THREE.MeshPhysicalMaterial(P); }
+      else if(base.cc!=null||base.sh!=null){ if(base.cc!=null){ P.clearcoat=base.cc; P.clearcoatRoughness=base.ccr!=null?base.ccr:.3; } if(base.sh!=null)P.sheen=base.sh; m=new THREE.MeshPhysicalMaterial(P); }
+      else m=new THREE.MeshStandardMaterial(P);
+      m.envMapIntensity=glassy?1.5:1; MATS.set(key,m); } return m; };
+  const GG={ball:new THREE.IcosahedronGeometry(1,3),cap:new THREE.SphereGeometry(1,24,8,0,Math.PI*2,0,Math.PI/2),cone:new THREE.ConeGeometry(1,1,24),cyl:new THREE.CylinderGeometry(1,1,1,24),box:new THREE.BoxGeometry(1,1,1),sph:new THREE.SphereGeometry(1,24,16),tor:new THREE.TorusGeometry(1,.18,14,32),oct:new THREE.OctahedronGeometry(1,0),ico:new THREE.IcosahedronGeometry(1,0),dod:new THREE.DodecahedronGeometry(1,0)};
   for(const g of Object.values(GG))g.userData.keep=true;
   const part=(g,c,x,y,z,sx,sy,sz,rx=0,rz=0,glow=0,o={})=>{ const m=new THREE.Mesh(GG[g],INSPECT.mat(c,{glow,...o})); m.position.set(x,y,z); m.scale.set(sx,sy,sz); m.rotation.set(rx,0,rz); m.userData.shared=true; return m; };
   INSPECT.part=part;
   INSPECT.recipe=K=>{ const g=new THREE.Group(); let i=0; K.f((...a)=>g.add(part(...a)),K.s,0,()=>(i=(i*7+3)%10)/10); return g; };
   const B=(g,...a)=>{ g.add(part(...a)); return g; };
   INSPECT.shape=(kind,c=0x8a6a4a,c2=0xe8e0c8)=>{ const g=new THREE.Group();
-    if(kind==='book'){ B(g,'box',c,0,0,0,.2,.05,.28); B(g,'box',c2,.006,0,0,.19,.042,.27); }
-    else if(kind==='bottle'){ B(g,'cyl',c,0,.12,0,.06,.24,.06,0,0,0,{glass:1}); B(g,'cone',c,0,.27,0,.06,.06,.06,0,0,0,{glass:1}); B(g,'cyl',c,0,.33,0,.022,.08,.022,0,0,0,{glass:1}); B(g,'cyl',0x8a6a44,0,.38,0,.024,.04,.024); }
-    else if(kind==='jar'){ B(g,'cyl',c,0,.09,0,.08,.18,.08,0,0,0,{glass:1}); B(g,'cyl',c2,0,.19,0,.084,.03,.084); }
-    else if(kind==='sack'){ B(g,'ball',c,0,.1,0,.11,.11,.1); B(g,'cone',c,0,.22,0,.05,.08,.05); B(g,'tor',0x6a4a2a,0,.2,0,.035,.035,.035,Math.PI/2); }
-    else if(kind==='packet'){ B(g,'box',c,0,.1,0,.14,.2,.02); B(g,'box',c2,0,.13,.011,.1,.08,.002); }
-    else if(kind==='bowl'){ B(g,'cap',0xe8e2d4,0,.08,0,.13,.08,.13,Math.PI); B(g,'cyl',c,0,.075,0,.11,.01,.11); }
-    else if(kind==='frame'){ B(g,'box',0x4a3424,0,0,0,.34,.26,.03); B(g,'box',c2,0,0,.012,.3,.22,.012); }
-    else if(kind==='cage'){ B(g,'cyl',0x5a4a3a,0,.01,0,.16,.02,.16); B(g,'cap',0x8a7a5a,0,.32,0,.16,.1,.16); for(let i=0;i<12;i++){ const a=i/12*Math.PI*2; B(g,'cyl',0x8a7a5a,Math.cos(a)*.155,.17,Math.sin(a)*.155,.005,.3,.005); } B(g,'tor',0x8a7a5a,0,.43,0,.03,.03,.03,Math.PI/2); }
-    else if(kind==='gadget'){ B(g,'box',c,0,0,0,.18,.08,.12); B(g,'cyl',c2,.1,0,0,.03,.05,.03,0,Math.PI/2,1); B(g,'box',0x222428,0,.042,0,.1,.004,.06); B(g,'cyl',0x3a3a40,-.04,-.08,0,.025,.12,.025); }
-    else if(kind==='bouquet'){ B(g,'cone',c2,0,.12,0,.08,.26,.08,Math.PI); B(g,'cyl',0x3a7a2a,0,.3,0,.012,.16,.012); for(let i=0;i<7;i++){ const a=i*2.4, r=i?.06:0; B(g,'ball',Array.isArray(c)?c[i%c.length]:c,Math.cos(a)*r,.3+(i?0:.03),Math.sin(a)*r,.04,.035,.04); } }
-    else if(kind==='goggles'){ for(const s of [-1,1])B(g,'tor',c,s*.055,0,0,.045,.045,.05,Math.PI/2*0); for(const s of [-1,1])B(g,'cyl',c2,s*.055,0,0,.04,.01,.04,Math.PI/2,0,0,{glass:1}); B(g,'tor',0x2a2a2e,0,0,-.08,.13,.13,.09,Math.PI/2); }
-    else if(kind==='lamp'){ B(g,'tor',0x2a2a2e,0,0,0,.12,.12,.09,Math.PI/2); B(g,'cyl',c,0,0,.12,.05,.06,.05,Math.PI/2); B(g,'cyl',c2,0,0,.152,.042,.004,.042,Math.PI/2,0,1); }
-    else if(kind==='coat'){ for(let i=0;i<9;i++){ const a=i*2.1, y=.05+i*.04; B(g,'ball',c,Math.cos(a)*.1,y,Math.sin(a)*.06,.09,.07,.08); } }
-    else if(kind==='plate'){ B(g,'cap',c,0,.2,0,.17,.12,.11,Math.PI/2*0); B(g,'box',c,0,.1,0,.3,.2,.14); for(const s of [-1,1])B(g,'cap',c2,s*.19,.22,0,.08,.06,.08); }
-    else if(kind==='lump'){ B(g,'ball',c,0,0,0,.1,.08,.09,0,0,0,{flat:1}); }
-    else { B(g,'box',c,0,0,0,.3,.18,.22); for(const [w,d] of [[.31,.03],[.03,.23]])B(g,'box',c2,0,0,0,w,.185,d); }
+    if(kind==='book'){ B(g,'box',c,0,0,0,.2,.052,.28,0,0,0,{kind:'leather'}); B(g,'box',c2,.01,0,0,.188,.044,.27,0,0,0,{kind:'paper'}); B(g,'box',c,-.098,0,0,.014,.058,.286,0,0,0,{kind:'leather'}); B(g,'box',0xcbb27a,.06,0,.146,.02,.03,.004,0,0,0,{kind:'gold',metal:1,rough:.3}); }
+    else if(kind==='bottle'){ B(g,'cyl',c,0,.08,0,.05,.15,.05,0,0,0,{kind:'wet'}); B(g,'cyl',0xdfeee8,0,.12,0,.062,.24,.062,0,0,0,{glass:1}); B(g,'cone',0xdfeee8,0,.265,0,.062,.07,.062,0,0,0,{glass:1}); B(g,'cyl',0xdfeee8,0,.33,0,.023,.08,.023,0,0,0,{glass:1}); B(g,'cyl',0x8a6a44,0,.385,0,.026,.045,.026,0,0,0,{kind:'wood'}); }
+    else if(kind==='jar'){ B(g,'cyl',c,0,.07,0,.07,.13,.07,0,0,0,{kind:'wet'}); B(g,'cyl',0xe6f0ec,0,.09,0,.08,.18,.08,0,0,0,{glass:1}); B(g,'cyl',c2,0,.195,0,.086,.035,.086,0,0,0,{kind:'metal',metal:1,rough:.35}); B(g,'tor',c2,0,.178,0,.08,.08,.025,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.35}); }
+    else if(kind==='sack'){ B(g,'ball',c,0,.1,0,.12,.11,.11,0,0,0,{kind:'cloth'}); B(g,'ball',c,.05,.14,.03,.07,.07,.07,0,0,0,{kind:'cloth'}); B(g,'cone',c,0,.22,0,.055,.09,.055,0,0,0,{kind:'cloth'}); B(g,'tor',0x6a4a2a,0,.2,0,.04,.04,.03,Math.PI/2,0,0,{kind:'leather'}); }
+    else if(kind==='packet'){ B(g,'box',c,0,.1,0,.14,.2,.025,0,0,0,{kind:'paper'}); B(g,'box',c2,0,.13,.014,.1,.08,.002,0,0,0,{kind:'paper'}); for(const s of [-1,1])B(g,'box',c,0,.198,0,.14,.016,.028,0,s*.5,0,{kind:'paper'}); }
+    else if(kind==='bowl'){ B(g,'cap',0xe8e2d4,0,.09,0,.14,.1,.14,Math.PI,0,0,{kind:'ceramic'}); B(g,'tor',0xe0d8c4,0,.092,0,.14,.14,.014,Math.PI/2,0,0,{kind:'ceramic'}); B(g,'cap',c,0,.05,0,.11,.055,.11,0,0,0,{kind:'food'}); }
+    else if(kind==='frame'){ B(g,'box',0x5a3e26,0,0,0,.34,.26,.03,0,0,0,{kind:'wood'}); B(g,'box',0x3a2818,0,0,.005,.3,.22,.026,0,0,0,{kind:'wood'}); B(g,'box',c2,0,0,.018,.28,.2,.006,0,0,0,{kind:'paper'}); B(g,'box',0xdfeee8,0,0,.024,.28,.2,.004,0,0,0,{glass:1}); }
+    else if(kind==='cage'){ B(g,'cyl',0x5a4a3a,0,.01,0,.16,.025,.16,0,0,0,{kind:'wood'}); B(g,'cap',0x9a8a6a,0,.33,0,.16,.11,.16,0,0,0,{kind:'metal',metal:1,rough:.4}); for(let i=0;i<14;i++){ const a=i/14*Math.PI*2; B(g,'cyl',0xa89868,Math.cos(a)*.155,.17,Math.sin(a)*.155,.006,.3,.006,0,0,0,{kind:'metal',metal:1,rough:.35}); } B(g,'tor',0xa89868,0,.17,0,.155,.155,.012,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.35}); B(g,'tor',0xa89868,0,.44,0,.03,.03,.012,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.3}); }
+    else if(kind==='gadget'){ B(g,'box',c,0,0,0,.18,.08,.12,0,0,0,{kind:'plastic'}); B(g,'cyl',0xc8ccd2,.1,0,0,.032,.05,.032,0,Math.PI/2,0,{kind:'chrome',metal:1,rough:.1}); B(g,'box',0x16181c,0,.042,0,.1,.006,.06,0,0,0,{kind:'glass'}); B(g,'cyl',0x3a3a40,-.04,-.08,0,.025,.12,.025,0,0,0,{kind:'rubber'}); B(g,'ball',0xffcf4a,.06,.045,.04,.012,.008,.012,0,0,1); }
+    else if(kind==='bouquet'){ B(g,'cone',c2,0,.12,0,.08,.26,.08,Math.PI,0,0,{kind:'paper'}); for(let i=0;i<7;i++){ const a=i*2.4, r=i?.06:0; B(g,'cyl',0x3a7a2a,Math.cos(a)*r,.28,Math.sin(a)*r,.01,.18,.01,0,0,0,{kind:'leaf'}); B(g,'ball',Array.isArray(c)?c[i%c.length]:c,Math.cos(a)*r,.4+(i?0:.03),Math.sin(a)*r,.045,.04,.045,0,0,0,{kind:'wax'}); } }
+    else if(kind==='goggles'){ for(const s of [-1,1]){ B(g,'tor',0x4a4e58,s*.052,0,.012,.05,.05,.015,0,0,0,{kind:'metal',metal:1,rough:.28}); B(g,'cyl',c2,s*.052,0,.016,.044,.01,.044,Math.PI/2,0,0,{glass:1}); } B(g,'box',0x4a4e58,0,0,.012,.028,.022,.022,0,0,0,{kind:'metal',metal:1,rough:.3}); B(g,'tor',0x2a2a30,0,0,-.03,.11,.08,.045,Math.PI/2,0,0,{kind:'rubber'}); }
+    else if(kind==='lamp'){ B(g,'tor',0x2a2a2e,0,0,0,.12,.12,.04,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.4}); B(g,'cyl',0x3a3a40,0,0,.1,.055,.04,.055,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.3}); B(g,'cap',0xcfe8ff,0,0,.14,.05,.05,.05,-Math.PI/2,0,0,{glass:1}); B(g,'ball',c2,0,0,.13,.03,.03,.03,0,0,1); }
+    else if(kind==='coat'){ for(let i=0;i<9;i++){ const a=i*2.1, y=.05+i*.04; B(g,'ball',c,Math.cos(a)*.1,y,Math.sin(a)*.06,.095,.075,.085,0,0,0,{kind:'cloth'}); } for(let i=0;i<4;i++)B(g,'ball',0xe8e2d4,Math.cos(i*2.1)*.1,.08+i*.09,Math.sin(i*2.1)*.06+.06,.016,.016,.016,0,0,0,{kind:'metal',metal:1,rough:.25}); }
+    else if(kind==='plate'){ B(g,'box',c,0,.1,0,.3,.2,.14,0,0,0,{kind:'meat'}); B(g,'cap',c,0,.2,0,.17,.12,.11,0,0,0,{kind:'meat'}); for(const s of [-1,1])B(g,'cap',c2,s*.19,.22,0,.08,.06,.08,0,0,0,{kind:'bread'}); }
+    else if(kind==='lump'){ B(g,'ball',c,0,0,0,.1,.08,.09,0,0,0,{kind:'food'}); B(g,'ball',c,.04,.03,.02,.05,.045,.05,0,0,0,{kind:'food'}); }
+    else { B(g,'box',c,0,0,0,.3,.18,.22,0,0,0,{kind:'paper'}); for(const [w,d] of [[.31,.025],[.025,.23]])B(g,'box',0x8a6a44,0,0,0,w,.188,d,0,0,0,{kind:'leather'}); B(g,'tor',0x8a6a44,0,.095,0,.04,.04,.02,0,0,0,{kind:'leather'}); }
     return g; };
   const parcel=()=>INSPECT.shape('parcel',0xb08a5a,0x6a4a2a);
   // a pack item: the first kind that knows its id makes it (each family registers in its own file); one that none knows is shown as a wrapped parcel

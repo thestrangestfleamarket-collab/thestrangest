@@ -209,7 +209,7 @@ GAME OVER; ESC leaves. From the third pull request on it also asserts the genera
 
 ## 15. The build, in three pull requests
 
-*Where it stands (30 Oct 2026): 1 and 2 are built; 2 lays floors 6–20 by hand, and 21–30 come with 3 alongside the generator, so each pull request stays reviewable.*
+*Where it stands (31 Oct 2026): all three are built. Floors 1–30 are laid by hand, 31 and beyond by the generator (the floor number its seed; the check holds floor 57's hash), the attract bot plays the cabinet in the room. The shared high-score table is its own pull request across all eight cabinets, after the owner's word on §16.3.*
 
 1. **The engine, playable end to end**: tiles and scrolling, CHOOSE YOUR HERO with the four, move / shoot / melee, grunts and
    ghosts and their generators, keys and doors, food and poison, treasure, the three exits, the HUD, the announcer, floors 1–5, the

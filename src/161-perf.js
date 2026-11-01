@@ -50,17 +50,17 @@ Object.assign(PERFX,{on:{}, inner:[], gen:0});
   PERFX.rooms=()=>{ if(!PERFX.inner.length)return; const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE;
     for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&SHARED.py>B.y0-.3&&SHARED.py<B.y1))); }
   };
-  // the rest of what is inside a room, not painted with it: the people and players' bodies there, the band, and what a place adds (PERFX.own): drawn only while you are in that room
+  // the rest of what is inside a room, not painted with it (unless marked userData.seenOut: seen through a window from the street): the people and players' bodies there, the band, and what a place adds (PERFX.own): drawn only while you are in that room
   const OWN=PERFX.owned=new Set(), V=new THREE.Vector3(), BX=new THREE.Box3(); let st=0; PERFX.own=o=>{ if(o)OWN.add(o); };
   const boxes=()=>{ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y; return ROOMS.boxes().concat(Object.values(STORE.inside||{}).map(R=>{ const B=R.B; return {x0:Math.min(X(B.x0),X(B.x1)),x1:Math.max(X(B.x0),X(B.x1)),z0:Math.min(Z(B.y0),Z(B.y1)),z1:Math.max(Z(B.y0),Z(B.y1)),y0:-4,y1:Y(B.h)}; })); };
   // any mesh lying wholly inside a room's walls (not its shell, which lies on them) belongs to that room; looked for when the rooms change
-  PERFX.claim=()=>{ const RB=boxes(), m=.2*TILE; scene.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isSprite)||o.isSkinnedMesh||o.userData.shutChk||OWN.has(o)||o.userData.inner)return; o.userData.shutChk=1; const g=o.geometry; if(!g)return;
+  PERFX.claim=()=>{ const RB=boxes(), m=.2*TILE; scene.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isSprite)||o.isSkinnedMesh||o.userData.shutChk||o.userData.seenOut||OWN.has(o)||o.userData.inner)return; o.userData.shutChk=1; const g=o.geometry; if(!g)return;
       if(o.isInstancedMesh){ if(!o.count)return; o.computeBoundingBox(); BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } else { if(!g.boundingBox)g.computeBoundingBox(); o.updateWorldMatrix(true,false); BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); }
       if(BX.isEmpty())return; if(RB.some(b=>BX.min.x>b.x0+m&&BX.max.x<b.x1-m&&BX.min.z>b.z0+m&&BX.max.z<b.z1-m&&BX.min.y>b.y0-.3&&BX.max.y<b.y1-.05))OWN.add(o); }); };
   SYS.add('roomsReset',()=>PERFX.claim(),'161-perf-claim'); { const go=()=>{ if(!window.__started){ setTimeout(go,500); return; } setTimeout(()=>PERFX.claim(),4000); }; go(); }
   let ct=0; PERFX.shut=()=>{ const now=performance.now(); if(now-st<300)return; st=now; if(now-ct>5000&&window.__started){ ct=now; PERFX.claim(); } const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE, RB=boxes(), inR=(B,x,y,z,m)=>x>B.x0-m&&x<B.x1+m&&z>B.z0-m&&z<B.z1+m&&y>B.y0-.3&&y<B.y1;
     const list=[...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(X=>X&&X.g),...[MUS,PNM,SGM,DRM].map(M=>M&&M.g),...OWN];
-    for(const g of list){ if(!g||!g.parent)continue; if(OWN.has(g)){ if(!g.userData.mid)g.userData.mid=new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()); V.copy(g.userData.mid); } else g.getWorldPosition(V); const B=RB.find(b=>inR(b,V.x,V.y,V.z,-.15*TILE)); VIS.hide(g,'shut',!!B&&!(all||(ck?key(B)===ck:inR(B,pos.x,SHARED.py,pos.z,d)))); } }; }
+    for(const g of list){ if(!g||!g.parent||g.userData.seenOut)continue; if(OWN.has(g)){ if(!g.userData.mid)g.userData.mid=new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()); V.copy(g.userData.mid); } else g.getWorldPosition(V); const B=RB.find(b=>inR(b,V.x,V.y,V.z,-.15*TILE)); VIS.hide(g,'shut',!!B&&!(all||(ck?key(B)===ck:inR(B,pos.x,SHARED.py,pos.z,d)))); } }; }
 Object.assign(SELFSH,{set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)});
 SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c=[];
   for(const N of NPCS){ if(N.far||!N.g.visible||!N.g.parent||!N.g.parent.visible||!N.shadowPass)continue; const d=Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z); if(d<R)c.push([d,N]); }

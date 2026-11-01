@@ -165,9 +165,10 @@ const GARB={};
   const CAP={chestL:['torso',V(1.9,24,0),V(1.9,28,0),4.45],chestR:['torso',V(-1.9,24,0),V(-1.9,28,0),4.45],waistL:['torso',V(1.4,18.5,0),V(1.4,24,0),4],waistR:['torso',V(-1.4,18.5,0),V(-1.4,24,0),4],hips:['hips',V(3.5,17,0),V(-3.5,17,0),3.85]};
   const bustCap=()=>{ if(!CAP.bust){ const B=W3.pcs[W3.idx('bustF')], by=B.bb[2]+5, zc=B.bb[4]+5.7; CAP.bust=['torso',V(2.4,by,zc),V(-2.4,by,zc),2.6]; } return 'bust'; };
   for(const s of 'LR'){ CAP['thigh'+s]=['thigh'+s,along('thigh'+s,.5,0,0),along('thigh'+s,6.6,0,0),3.55]; CAP['shin'+s]=['shin'+s,along('shin'+s,.3,0,0),along('shin'+s,6.3,0,0),2.85];
+    CAP['hand'+s]=['forearm'+s,along('forearm'+s,.5,0,0),along('forearm'+s,LEN.forearm+2.4,0,0),1.6];
     const A=J0['ankle'+s]; CAP['shoe'+s]=['shoe'+s,V(A.x,1.5,A.z-.9),V(A.x,1.3,A.z+2.5),1.85]; }
   // what each garment's loose cloth is kept out of, and how much further (the jacket stays outside the shirt)
-  const KEEP={shirt:[['chestL',.45],['chestR',.45],['waistL',.55],['waistR',.55],['hips',1.35],['thighL',.1],['thighR',.1]],jacket:[['chestL',1],['chestR',1],['waistL',1.1],['waistR',1.1],['hips',1.9],['thighL',.4],['thighR',.4]],pants:[['shinL',.25],['shinR',.25],['shoeL',.1],['shoeR',.1]]};
+  const KEEP={shirt:[['chestL',.45],['chestR',.45],['waistL',.55],['waistR',.55],['hips',1.35],['thighL',.1],['thighR',.1],['handL',.2],['handR',.2]],jacket:[['chestL',1],['chestR',1],['waistL',1.1],['waistR',1.1],['hips',1.9],['thighL',.4],['thighR',.4],['handL',.3],['handR',.3]],pants:[['shinL',.25],['shinR',.25],['shoeL',.1],['shoeR',.1]]};
   const MATS={shirt:c=>[mat('jersey',c.shirt)],pants:c=>[mat('denim',c.pants),mat('leather',COL.belt),mat('brass',COL.buckle)],jacket:c=>[mat('canvas',c.jacket)],
     shoeL:c=>[mat('leather',c.shoes),mat('rubber',COL.sole),mat('lace',COL.lace)],shoeR:c=>MATS.shoeL(c),hat:c=>[mat('felt',c.hat),mat('band',COL.band)]};
   const RIGID={shoeL:1,shoeR:1,hat:1}, SG={};

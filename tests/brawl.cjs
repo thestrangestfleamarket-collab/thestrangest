@@ -46,10 +46,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const idle = async () => { for (let i = 0; i < 40 && await pg.evaluate(() => !!(__dbg.ST.move || __dbg.ST.up)); i++) await pg.waitForTimeout(250); };
     await idle(); await pg.evaluate(() => { __sent.length = 0; }); await pg.keyboard.press('n'); await pg.waitForTimeout(300);
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'act' && m.k === 'N' && m.on === 1)), 'N slaps, and everyone sees it');
-    await idle(); await pg.keyboard.down('i'); for (let i = 0; i < 20 && await pg.evaluate(() => !(__dbg.ST.move && __dbg.ST.move.name === 'crouch' && __dbg.ST.move.t > .1)); i++) await pg.waitForTimeout(100);
+    await idle(); await pg.keyboard.down('c'); for (let i = 0; i < 20 && await pg.evaluate(() => !(__dbg.ST.move && __dbg.ST.move.name === 'crouch' && __dbg.ST.move.t > .1)); i++) await pg.waitForTimeout(100);
     await pg.keyboard.press('j'); await pg.waitForTimeout(50);
     const up = await pg.evaluate(() => __dbg.ST.up && __dbg.ST.up.name);
-    await pg.keyboard.up('i'); await idle();
+    await pg.keyboard.up('c'); await idle();
     ok(up === 'uppercut', 'crouch, then J: an uppercut (' + up + ')');
     await pg.keyboard.down('p'); await pg.waitForTimeout(400);
     const bk = await pg.evaluate(() => { const h = SHARED.heading, f = { x: __dbg.you().x + Math.sin(h), z: __dbg.you().z + Math.cos(h) }; return { block: WIELD.block, bare: WIELD.bare, d: __dbg.VIT.guard(.1, f).d, act: __sent.some(m => m.t === 'act' && m.k === 'B' && m.on === 1) }; });

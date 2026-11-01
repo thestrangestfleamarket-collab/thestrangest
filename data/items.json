@@ -930,5 +930,14 @@
   "value": 28,
   "weight": 1.2,
   "sellable": true
+ },
+ "spray_silver": {
+  "value": 6
+ },
+ "spray_gold": {
+  "value": 14
+ },
+ "passport": {
+  "value": 0
  }
 }

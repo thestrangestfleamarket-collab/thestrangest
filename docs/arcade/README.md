@@ -14,7 +14,7 @@ more in depth though … fully fledged out games that are intricate and detailed
 | west | KNUCKLE CITY | Final Fight | ento | — | coming soon |
 | west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); built: all eight monsters, amulets, traps, teleporters, treasure rooms, floors 1–30 by hand and the generator beyond, the attract bot; the shared high-score table next |
 | west | MONSTER ROAD | Wonder Boy in Monster Land | alch | — | coming soon |
-| back wall | PETRI | agar.io | alch | `059o-game-petri.js` | designed: [petri.md](petri.md); built: the dish with bots, the cabinet, the check; the whole market in one dish (its §11.2) next |
+| back wall | PETRI | agar.io | alch | `059o-game-petri.js`, `worker/dish.js` | designed: [petri.md](petri.md); built: the dish, the cabinet, the whole market in one dish on the worker (`Dish`), bots filling it |
 
 Order of build: TORCHBEARER, then KNUCKLE CITY, DRAGON POP, MONSTER ROAD, then the four kept games up to their originals' full
 feature sets. One game per pull request; each starts with its design doc here, which the owner reads before any code.

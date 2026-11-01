@@ -85,7 +85,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
         if(mode==='initials'){ tx(c,'YOU MADE THE TOP TEN. YOUR INITIALS:',128,110,'#ffe83c',7,'center'); ini.forEach((ch,i)=>{ const x=108+i*20, on=i===slot; if(on&&bl){ c.fillStyle=L.col; c.fillRect(x-7,124,14,16); } tx(c,ch,x,127,on&&bl?'#000':'#fff',12,'center'); }); tx(c,'▲▼ LETTER  ◀▶ SLOT  SPACE',128,150,'#a090c0',7,'center'); }
         else { tx(c,rank>0?'RANK '+rank+' OF THE TOP TEN':nb?'NEW HIGH SCORE!':'HI-SCORE '+hi(name),128,110,(rank>0||nb)&&bl?'#ffe83c':'#a090c0',8,'center'); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } } };
     keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; UI.gamewin='cab'; beep(660,.1); };   // gamewin: the pad and the headset drive the game, not the page
-  return C.K={LIB,lore,game,open,demo,crt,top:topOf}; };
+  C.ini=()=>OWNED.get('arcade-ini')||''; return C.K={LIB,lore,game,open,demo,crt,top:topOf}; };
 // The four cabinets whose games are still to come (their files register over these when they land): the cards show COMING SOON.
 STORE.cabs.add({name:'TORCHBEARER',skill:'myco',lore:{maker:'HALCYON GAMES',place:'CHICAGO',year:1985,col:'#3cf0ff',tag:'WARRIOR NEEDS FOOD. BADLY.',story:['A HUNDRED FLOORS DOWN. FOUR HEROES.','YOUR HEALTH IS A CLOCK; ONLY FOOD STOPS IT.']}});
 STORE.cabs.add({name:'KNUCKLE CITY',skill:'ento',lore:{maker:'CAPSTONE AMUSEMENTS',place:'OSAKA',year:1991,col:'#ff3c5a',tag:'SIX STAGES. ONE CITY. YOUR FISTS.',story:['FROM THE SLUMS TO THE PENTHOUSE.','EAT THE CHICKEN IN THE TRASH CAN.']}});

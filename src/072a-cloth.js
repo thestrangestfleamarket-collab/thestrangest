@@ -20,7 +20,7 @@ const DRAPE={};
       X[a]+=vx+(X0[a]-X[a])*ks+F[0]; X[a+1]+=vy+g+(X0[a+1]-X[a+1])*ks+F[1]; X[a+2]+=vz+(X0[a+2]-X[a+2])*ks+F[2];
       if(col)for(let k=0;k<col.length;k++)out(X,a,col[k]);
       mv=Math.max(mv,Math.abs(vx)+Math.abs(vy)+Math.abs(vz)); }
-    for(let it=o.it??3;it-->0;)for(let q=0;q<C.length;q+=2){ const i=C[q], j=C[q+1], pi=pin[i], pj=pin[j]; if(pi&&pj)continue;
+    for(let it=o.it??3;it-- >0;)for(let q=0;q<C.length;q+=2){ const i=C[q], j=C[q+1], pi=pin[i], pj=pin[j]; if(pi&&pj)continue;
       const a=i*3, b=j*3, dx=X[b]-X[a], dy=X[b+1]-X[a+1], dz=X[b+2]-X[a+2], d=Math.hypot(dx,dy,dz)||1e-6, e=(d-L[q/2])/d, wa=pi?0:pj?1:.5, wb=1-wa;
       X[a]+=dx*e*wa; X[a+1]+=dy*e*wa; X[a+2]+=dz*e*wa; X[b]-=dx*e*wb; X[b+1]-=dy*e*wb; X[b+2]-=dz*e*wb; }
     if(o.post&&col)for(let i=0;i<n;i++)if(!pin[i])for(let k=0;k<col.length;k++)out(X,i*3,col[k]);

@@ -1,7 +1,8 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, UI, VIT, W3} from './003b-systems.js';
-import {scene} from './004-main.js';
+import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
@@ -12,6 +13,11 @@ Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); 
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
 { const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+  // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
+  const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
+  const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
+  function style(o){ const r={}; if(!o||typeof o!=='object')return r; if(Number.isInteger(o.f)&&o.f>=0&&o.f<FONTS.length)r.f=o.f; if(typeof o.c==='string'&&/^#[0-9a-f]{6}$/i.test(o.c))r.c=o.c.toLowerCase(); if(Number.isInteger(o.s)&&o.s>=0&&o.s<SIZES.length)r.s=o.s; return r; }
+  ONLINE.sayFor=(()=>{ const v=+SAVE.get('sayfor'); return v>=2&&v<=30?v:7; })(); ONLINE.style=SP; ONLINE.FONTS=FONTS; ONLINE.COLS=COLS;
   const ROOM='s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
@@ -50,7 +56,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
-    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); } line(m.name||(o&&o.name)||'TENANT',m.text); }
+    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); }
     list(); };
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
@@ -76,11 +82,11 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
-  const tag=o=>{ const say=o.say&&performance.now()-o.sayT<7000?o.say:'', nm=(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp; if(o.tag&&o.tagS===s)return; o.tagS=s;
-    const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.font='28px Silkscreen, monospace'; x.textAlign='center'; x.textBaseline='middle';
-    if(say){ let t=say; while(t.length>3&&x.measureText(t+'…').width>480)t=t.slice(0,-1); if(t!==say)t+='…'; const w=Math.min(504,x.measureText(t).width+20);
-      x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,28,w,44); x.fillStyle='#f4f2ea'; x.fillText(t,256,51); }
-    x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle=o.dead?'#cfe0ff':'#ffd27a'; x.fillText(nm,256,100);
+  const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
+    const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.textAlign='center'; x.textBaseline='middle';
+    if(say){ const px=SIZES[st.s]; x.font=px+'px '+FONTS[st.f][0]; let t=say; while(t.length>3&&x.measureText(t+'…').width>480)t=t.slice(0,-1); if(t!==say)t+='…'; const w=Math.min(504,x.measureText(t).width+20), h=px+16;
+      x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,50-h/2,w,h); x.fillStyle=st.c; x.fillText(t,256,51); }
+    x.font='28px Silkscreen, monospace'; if(nm){ x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle=o.dead?'#cfe0ff':'#ffd27a'; x.fillText(nm,256,100); }
     if(hp>=0){ x.fillStyle='#0b0d13'; x.fillRect(176,116,160,10); x.fillStyle='#c84a3a'; x.fillRect(178,118,156*hp,6); }   // their health, while it's not full
     const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
     if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; o.tag.userData.anyRoom=true; scene.add(o.tag); }
@@ -88,6 +94,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
 
   /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */
   const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; };
+  // a tag keeps one size on the screen whatever the zoom or the view: half a canvas pixel a screen pixel (the name 14 px, the words 11 to 18)
+  const fit=sp=>{ const cam=SHARED.cam, H=renderer.domElement.clientHeight||innerHeight; let u; if(cam.isOrthographicCamera)u=(cam.top-cam.bottom)/(cam.zoom||1)/H; else u=2*cam.position.distanceTo(sp.position)*Math.tan((cam.fov||60)*Math.PI/360)/H; const k=u*.5; sp.scale.set(512*k,128*k,1); };
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
     for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
@@ -98,7 +106,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }
-      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
+      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
@@ -117,7 +125,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     who.onclick=()=>{ L.hidden=!L.hidden; who.setAttribute('aria-expanded',String(!L.hidden)); list(); };
     L.onclick=e=>{ const b=e.target.closest('button[data-visit]'); if(!b||!ONLINE.visit)return; const o=ONLINE.others.get(b.dataset.visit); if(o)ONLINE.visit(o.id,o.name); };
     for(const ev of ['keydown','keyup'])I.addEventListener(ev,e=>{ e.stopPropagation(); if(ev!=='keydown')return;
-      if(e.key==='Enter'){ const t=I.value.trim(); if(t){ send({t:'say',text:t}); line(myName(),t); } shut(); }
+      if(e.key==='Enter'){ ONLINE.said(I.value); shut(); }
       else if(e.key==='Escape')shut(); });
     I.addEventListener('blur',()=>setTimeout(shut,0)); };
   const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
@@ -142,7 +150,10 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
-    if(ONLINE.others.size)draw(dt,now); fade(dt); };
+    if(ONLINE.others.size)draw(dt,now); fade(dt);
+    if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else if(ME.tag)ME.tag.visible=false; };
+  const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
+  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
   const PS=['sit','climb','hang','water'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;
@@ -151,4 +162,19 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
   const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };
+  // the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
+  { const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
+    const you=()=>{ const P=document.getElementById('looks'); if(!P)return setTimeout(you,1000); if(P.querySelector('#lsay'))return;
+      const B=document.createElement('div'); B.id='lsay'; B.innerHTML=`<h3>YOUR WORDS</h3><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
+        <div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
+        <div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
+      const nameRow=P.querySelector('#lname').closest('.row'); nameRow.after(B);
+      const show=()=>{ B.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===SP.f))); B.querySelectorAll('[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SP.c))); B.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===SP.s)));
+        const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
+      B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
+    you();
+    const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
+      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
+      const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
+    disp(); }
   go(); }

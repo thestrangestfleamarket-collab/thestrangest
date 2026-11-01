@@ -1,6 +1,6 @@
 # The arcade's games
 
-Eight cabinets in THE ARCADE (off the map, `src/059b-arcade.js`), four along each side wall. Each is a full arcade game in the
+Eight cabinets in THE ARCADE (off the map, `src/059b-arcade.js`), four along each side wall, and a ninth to come on the wall facing the door (PETRI). Each is a full arcade game in the
 line of a real 80s–90s machine, built out the way the originals were (owner, 30 Oct 2026: "very similar to 80-90s arcade games.
 more in depth though … fully fledged out games that are intricate and detailed and you could play for hours. dont rush it").
 
@@ -14,6 +14,7 @@ more in depth though … fully fledged out games that are intricate and detailed
 | west | KNUCKLE CITY | Final Fight | ento | — | coming soon |
 | west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); built: all eight monsters, amulets, traps, teleporters, treasure rooms, floors 1–30 by hand and the generator beyond, the attract bot; the shared high-score table next |
 | west | MONSTER ROAD | Wonder Boy in Monster Land | alch | — | coming soon |
+| facing the door | PETRI | agar.io | alch | — | designed: [petri.md](petri.md), the owner's word on its §12 next |
 
 Order of build: TORCHBEARER, then KNUCKLE CITY, DRAGON POP, MONSTER ROAD, then the four kept games up to their originals' full
 feature sets. One game per pull request; each starts with its design doc here, which the owner reads before any code.
@@ -47,6 +48,14 @@ that makes the top ten asks for three initials on the game-over card (▲▼ let
 remembered); the run goes up with the game's own sub line (`g.sub`, e.g. `FLOOR 14`) and the card shows its rank. The title card's
 HI-SCORE is the table's best. Off the website (the single-file page the checks drive) your own runs stand in for the table.
 `tests/arcade-scores.cjs` proves the flow; `tests/site.cjs` the worker's round trip.
+
+**From home and in the headset** (owner, 1 Nov 2026: "all arcade games are also available in the VR headset from home and BBS
+games"): the apartment's computer dials THE MARKET BBS, whose main menu has THE ARCADE: the cabinets wall by wall with their high
+scores; RETURN opens one over the terminal (the same window, coin and table), ESC brings the terminal back. In a headset the
+cabinet's screen shows live on the panel (a small plane over the window's picture, since a canvas never mutates the DOM) and the
+controllers play it: left stick the arrows, A fires or enters, B leaves, X the game's magic (`H`), Y its menu; the sticks stop
+turning or teleporting you while a game window is up (`UI.gamewin`, set by the cabinet layer and the BBS, read by the pad and the
+headset). A gamepad on screen plays the same way. `tests/bbs.cjs` and `tests/vr.cjs` prove it.
 
 Planned for the layer (each a decision for the owner when its first game needs it): CONTINUE? with a 10-second count for another
 $2; operator settings (difficulty, lives) per cabinet from the TENANTS tab.

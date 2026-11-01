@@ -27,15 +27,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r4.listed && r4.run === 'TEST RUN' && r4.cash === 8 && r4.hid && r4.ran && r4.L[0] === 'go' && r4.after === null && r4.L[1] === 'hide' && r4.rowsNow === 1,
     'a registered adventure is listed with its skill and cost; RUN takes $12, closes the menu and starts it in the hall; END PROGRAM stops it: ' + JSON.stringify(r4));
   const c1 = await pg.evaluate(async () => { const H = STORE.holo, P = H.programs.find(p => p.name === 'THE CATACOMB RUN'); INV.cash = 50; H.start(P);
-    const U = async (f, ms = 90000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 200))) if (f()) return true; return false; };
-    const w1 = await U(() => CATDBG().ready && DUNMOBDBG().level === 1 && DUNMOBDBG().slimes.length === 3 && !FADE.busy); const set = CATDBG(), lv = SHARED.LVL, inHall = DUNMOBDBG().slimes.every(s => { const b = H.hall.box, T = __dbg.cv().TILE; return s.x * T > b.x0 && s.x * T < b.x1 && s.z * T > b.z0 && s.z * T < b.z1; });
-    for (let i = 0; i < 3; i++) DUNMOBS.hit(i, 99); const w2 = await U(() => DUNMOBDBG().level === 2 && DUNMOBDBG().slimes.length === 4, 90000);
-    return { cash: INV.cash, w1, set, lv, inHall, w2, arena: DUNMOBDBG().arena, run: ARCDBG().holo.run, menu: ARCDBG().holo.open }; });
-  ok(c1.cash === 38 && c1.w1 && c1.set.set && c1.set.pillars === 4 && c1.set.torches === 4 && c1.set.fire === 4 && c1.lv === 'up' && c1.inHall && c1.w2 && c1.arena && c1.run === 'THE CATACOMB RUN' && !c1.menu,
-    'THE CATACOMB RUN: $12, the hall becomes a catacomb (pillars, torches), three slimes in the hall for wave 1, four more when they burst: ' + JSON.stringify(c1));
-  const c2 = await pg.evaluate(() => { const VIT = __dbg.VIT, hp0 = VIT.hp, sk0 = FORAGE.sk('fight'); VIT.hp = .05; return new Promise(r => setTimeout(() => r({ hp0, hp: VIT.hp, sk0, sk: FORAGE.sk('fight'), run: ARCDBG().holo.run, set: CATDBG(), slimes: DUNMOBDBG().slimes.length, arena: DUNMOBDBG().arena, sol: __dbg.SOL.up.length }), 800)); });
-  ok(!c2.run && c2.hp >= c2.hp0 - 1e-6 && c2.sk > c2.sk0 && !c2.set.on && !c2.set.set && c2.set.fire === 0 && c2.slimes === 0 && !c2.arena,
-    'the safety ends the run before you faint: health back as it was, the cleared wave paid MARTIAL ARTS, the catacomb and the slimes gone: ' + JSON.stringify(c2));
+    const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
+    const w1 = await U(() => CATDBG().on && CATDBG().ready && !FADE.busy); const set = CATDBG(), off = ROOMS.offIn && ROOMS.offIn(), lv = SHARED.LVL;
+    const d0 = CATDBG().dist, moved = await U(() => CATDBG().dist > d0 + 2, 20000);   // the track auto-runs you forward
+    const lane0 = CATDBG().lane; dispatchEvent(new KeyboardEvent('keydown', { key: lane0 === 2 ? 'ArrowLeft' : 'ArrowRight', bubbles: true })); await new Promise(r => setTimeout(r, 350)); const laneMoved = CATDBG().lane !== lane0;
+    return { cash: INV.cash, w1, on: set.on, rows: set.rows, obst: set.obst, off, lv, moved, laneMoved, run: ARCDBG().holo.run, menu: ARCDBG().holo.open }; });
+  ok(c1.cash === 38 && c1.w1 && c1.on && c1.rows > 0 && c1.obst > 0 && c1.off === 'catrun' && c1.lv === 'up' && c1.moved && c1.laneMoved && c1.run === 'THE CATACOMB RUN' && !c1.menu,
+    'THE CATACOMB RUN: $12, fades to an off-world jungle track (street not drawn), auto-runs you forward with obstacles ahead, arrows change lane: ' + JSON.stringify(c1));
+  const c2 = await pg.evaluate(async () => { const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
+    const died = await U(() => CATDBG().dead);   // no reaction -> you hit an obstacle and wipe out
+    const best = window.CATBEST, back = await U(() => !ARCDBG().holo.run && ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 20000);
+    return { died, best, back, run: ARCDBG().holo.run, on: CATDBG().on, off: ROOMS.offIn && ROOMS.offIn() }; });
+  ok(c2.died && c2.best > 0 && c2.back && !c2.run && !c2.on && c2.off === 'arcade',
+    'a hit wipes you out (your furthest metres kept as a best) and fades you back into the holodeck, the program ended: ' + JSON.stringify(c2));
   await pg.evaluate(() => { STORE.holo.menu(); ROOMS.exit('arcade'); }); await pg.waitForTimeout(1500); await wait(() => !FADE.busy).catch(() => {});
   const r5 = await pg.evaluate(() => ({ open: ARCDBG().holo.open, hall: !!STORE.holo.hall, run: ARCDBG().holo.run }));
   ok(!r5.open && !r5.hall && !r5.run, 'leaving the arcade drops the holodeck and closes its menu: ' + JSON.stringify(r5));

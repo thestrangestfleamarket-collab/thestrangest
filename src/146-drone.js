@@ -1,6 +1,6 @@
 // THE DRONE & BBS: double-click the computer in your apartment to dial into THE MARKET BBS (an old C64-style terminal, full screen); order bodega essentials or apartment furniture, watch the delivery on DRONE VIEW, and a drone drops the parcel on your front fire escape — you bring it in (furniture places itself).
 import {SHARED, THREE} from './003-shx.js';
-import {DRONE, INV, keys, UI} from './003b-systems.js';
+import {DRONE, FORAGE, INV, keys, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -9,7 +9,7 @@ import {CAT_INFO} from './014-gamekit.js';
 DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, AR=APTS.R, K=SHARED.BOD.K;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
 
-  const BODEGA=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3]];
+  const BODEGA=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3],['SPRAY PAINT, SILVER',6,'spray_silver'],['SPRAY PAINT, GOLD',14,'spray_gold']];
   const FURN=['armchair','floor lamp','bookcase','coffee table','plant pot','fiddle-leaf fig','patterned rug','desk lamp','poster','radio']
     .filter(k=>K.CATALOG[k]).map(k=>{ const i=CAT_INFO[k]||{}; return [k,(i.name||k.replace(/\b\w/g,c=>c.toUpperCase())),(i.price||20)]; });
 
@@ -22,7 +22,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   // THE DRONE: a quadcopter that carries the parcel to your fire escape, drops it and flies off (its lifecycle a 'life' SYS below)
   const mkDrone=()=>{ const D=new THREE.Group(), GREY=lam(0x3a3d44), LIGHT=lam(0x9aa0aa); D.add(bx(.3,.08,.3,GREY)); const rot=[];
     for(const [sx,sz] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.22,.03,.04,GREY); arm.position.set(sx*.13,0,sz*.13); D.add(arm); const r=new THREE.Group(); r.position.set(sx*.22,.06,sz*.22); r.add(bx(.24,.01,.035,LIGHT)); D.add(r); rot.push(r); }
-    const dot=bx(.05,.03,.05,flat(0xff3a3a)); dot.position.set(0,.055,.1); D.add(dot); const parcel=bx(.2,.15,.2,lam(0xa77a48)); parcel.position.set(0,-.13,0); D.add(parcel); D.scale.setScalar(T/1.13); return {D,rot,parcel}; };
+    const dot=bx(.05,.03,.05,flat(0xff3a3a)); dot.position.set(0,.055,.1); D.add(dot); const parcel=bx(.2,.15,.2,lam(0xa77a48)); parcel.position.set(0,-.13,0); D.add(parcel); D.scale.setScalar(T/1.13); return {D,rot,parcel}; }; DRONE.mk=mkDrone;
   const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
 
   const flights=[], parcels=[]; let spin=0; const V=new THREE.Vector3();
@@ -108,7 +108,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
     else{ const b=BITF[c.toUpperCase()]||BITF['?']; for(let r=0;r<7;r++){ const v=b[r]; for(let q=0;q<5;q++)if(v&(16>>q))g.fillRect(X+1+q,Y+r,1,1); } } } };
   const doOrder=()=>{ const furn=COMP.list==='furn', it=(furn?FURN:BODEGA)[COMP.sel]; if(!it)return; const label=furn?it[1]:it[0], price=furn?it[2]:it[1], kind=furn?it[0]:null;
     if(DRONE.state!=='home'){ COMP.page='busy'; return; } if(purse.get()<price){ COMP.page='poor'; return; }
-    purse.add(-price); COMP.orders.push({no:1001+COMP.orders.length,name:label}); deliver(label,furn?()=>bringFurn(kind):()=>{}); COMP.page='ordered'; };
+    purse.add(-price); COMP.orders.push({no:1001+COMP.orders.length,name:label}); deliver(label,furn?()=>bringFurn(kind):()=>{ const b=BODEGA.find(q=>q[0]===label); if(b&&b[2]&&FORAGE.give){ FORAGE.give(b[2],1); if(FORAGE.draw)FORAGE.draw(); } }); COMP.page='ordered'; };
   DRONE.pick=(list,i)=>{ COMP.list=list; COMP.sel=i; doOrder(); };   // (for tests and the key handler: one ordering path)
   const MENU=[['S','THE BODEGA (SHOP)'],['F','CATALOG (FURNITURE)'],['A','THE ARCADE (GAMES)'],['O','YOUR ORDERS'],['N','NEWS'],['G','GOODBYE']], CABS=()=>[...STORE.cabs.walls.e,...STORE.cabs.walls.w].filter(n=>STORE.cabs.reg[n]);
   const bbsKey=e=>{ const k=e.key, K=k.length===1?k.toUpperCase():k, p=COMP.page;

@@ -246,7 +246,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,hy,0x66ff99,5]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(2.2*TILE,Y(50),.4*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(cx),Y(66),Z(HD.y0+.2)); scene.add(hb);
       UI.thing({name:'THE HOLODECK PANEL',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:Y(90),act:()=>HOLO.menu()}); const hb4=box4(HD.x0,HD.y0,HD.x1,HD.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(AR.y0-1.3)}}; } };
-  const unbuild=()=>{ ARC.scr=null; HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
+  const unbuild=()=>{ ARC.scr=null; if(!(HOLO.run&&HOLO.run.P.offWorld))HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };   // an off-world adventure (the catacomb run) keeps the holodeck open while it drops the arcade; it re-enters on return
   const wb=box4(AR.x0-.2,HD.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
   ROOMS.off.arcade={name:'THE ARCADE',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),

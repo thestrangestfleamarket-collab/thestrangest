@@ -82,14 +82,15 @@ const GARB={};
   const NECK=V(0,27,0);
   // a torso garment: rows [y, half width, half depth, lean(th), cl, c] from its top, round from th0 to th1 (closed: all round); sk(y) what a point hangs from at that height;
   // each point fitted onto the body f wears (c: from the chest's middle, over the shoulders; else straight out), and below the chest it falls from the fullest row above it
-  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), da=body(f||'M',1), P=[], col=[];
+  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), da=body(f||'M',1), P=[], col=[], pc=n=>W3.pcs[W3.idx(n)], TP=[pc(f==='F'?'torsoF':'torso'),f==='F'&&pc('bustF')].filter(Boolean), HP=pc('hips');
     for(let j=0;j<rows.length;j++)for(let i=0;i<nu;i++){ const r=rows[j], th=closed?i/nu*TAU:th0+span*i/(nu-1); let p=V(r[1]*Math.sin(th),r[0]+(r[3]?r[3](th):0),r[2]*Math.cos(th));
       if(r[4]!=null){ p=r[5]?onto(da,NECK,p,r[4],12):onto(d,V(0,p.y,0),p,r[4],13);
         if(!r[5]&&p.y<28.8&&Math.abs(Math.sin(th))<.75){ const h=Math.hypot(p.x,p.z), k=Math.max(h,(col[i]||0)*.97); if(k>h){ p.x*=k/h; p.z*=k/h; } col[i]=k; } }
       P.push(p); }
     const vl=[0]; for(let j=1;j<rows.length;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); }
     let per=0; for(let i=0;i<nu-1;i++)per+=dist(P[i+nu*(rows.length>>1)],P[i+1+nu*(rows.length>>1)]); const reps=Math.max(1,Math.round(per*(closed?nu/(nu-1):1)/TS));
-    grid(t,nu,rows.length,closed,(i,j)=>{ const p=P[j*nu+i], s=sk(p.y), th=closed?i/nu*TAU:th0+span*i/(nu-1); pt(t,p,s[0],s[1],s[2],K(i,j,th)); },
+    const near=p=>{ let dt=1e9; for(const q of TP)dt=Math.min(dt,q.d(p)); const w=sm((dt-HP.d(p))/2+.5); return w>=1?['hips',null,0]:w<=0?['torso',null,0]:['torso','hips',w]; };
+    grid(t,nu,rows.length,closed,(i,j)=>{ const p=P[j*nu+i], s=sk===chest&&rows[j][4]!=null?near(p):sk(p.y), th=closed?i/nu*TAU:th0+span*i/(nu-1); pt(t,p,s[0],s[1],s[2],K(i,j,th)); },
       (c,j)=>[c/(closed?nu:nu-1)*reps,vl[j]/TS],m); return P; };
   // the chest takes the top of a torso garment, the pelvis the bottom
   const chest=y=>{ const w=sm((28-y)/10); return w>=1?['hips',null,0]:w<=0?['torso',null,0]:['torso','hips',w]; };
@@ -111,7 +112,7 @@ const GARB={};
       const KR=[0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
       torso(t,rows,28,true,0,0,(i,j)=>KR[j],0,TS,chest,f);
       torso(t,[[34.4,2,1.8,neck,.22,1],[35,2,1.8,neck,.2,1]],28,true,0,0,()=>0,0,TS*.5,chest,f);   // the ribbed neckband
-      for(const s of 'LR'){ const u='upperArm'+s; limb(t,[[u,-.5,3.35,'torso',.2],[u,.4,3.3,'torso',.7],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]],16,j=>j===4?.3:0,0,TS); }
+      for(const s of 'LR'){ const u='upperArm'+s; limb(t,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]],16,j=>j===4?.3:0,0,TS); }
       return t; },
     // straight-leg jeans on a leather belt with a brass buckle: held from the waist down, the cuffs swing and break over the shoes
     pants:()=>{ const t=NEW(), TS=DEF.denim.TS, hip=()=>['hips',null,0], d=body('P');
@@ -131,7 +132,7 @@ const GARB={};
       torso(t,[[34.4,2,1.8,neck,.77,1],[36,2,1.8,neck,1.05,1],[33.4,4.6,3,yoke,1.4,1]],26,false,th0,th1,()=>0,0,TS*.6,chest,f);   // the collar, folded down
       for(const sg of [1,-1]){ const tc=sg*.85; grid(t,3,2,false,(i,j)=>{ const th=tc+(i-1)*.22, y=j?27.6:29; pt(t,onto(d,V(0,y,0),V(Math.sin(th),y,Math.cos(th)),1.1,13),'torso'); },(c,j)=>[c*.5,j*.6],0); }
       for(const s of 'LR'){ const u='upperArm'+s, f='forearm'+s;
-        limb(t,[[u,-.6,3.62,'torso',.2],[u,.7,3.55,'torso',.75],[u,2.4,3.45],[u,4.2,3.38],[u,5.8,3.32,f,.8],[u,7,3.28,f,.45],[f,.6,3.24,u,.85],[f,2,3.16],[f,3.4,3.08],[f,4.8,3],[f,5.9,2.96],[f,6.5,3.02]],
+        limb(t,[[u,-.6,3.62,'torso',.6],[u,.7,3.55,'torso',.9],[u,2.4,3.45],[u,4.2,3.38],[u,5.8,3.32,f,.8],[u,7,3.28,f,.45],[f,.6,3.24,u,.85],[f,2,3.16],[f,3.4,3.08],[f,4.8,3],[f,5.9,2.96],[f,6.5,3.02]],
           16,j=>j===11?.3:0,0,TS); }
       return t; },
     // leather boots on rubber soles, laced: the upper lofted along the foot, the sole a slab, the laces across the vamp

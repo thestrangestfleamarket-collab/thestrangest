@@ -1,8 +1,9 @@
 # PETRI — the ninth cabinet, in the line of agar.io
 
 Owner, 1 Nov 2026: "lets create an agar.io style clone in arcade", then "build petri". Not an 80s machine: the one new cabinet
-wheeled into the room. *Where it stands (1 Nov 2026): §11.1 is built — the dish with bots, the cabinet, the check; §11.2 (the whole
-market in one dish on the worker) next.*
+wheeled into the room. *Where it stands (1 Nov 2026): built. §11.1 the dish with bots, the cabinet, the check; §11.2 the whole market in one dish:
+the simulation lives in `worker/dish.js` (the page gets it by the build's `__CODE__`), the `Dish` Durable Object runs it, every
+player on the website is in it, bots fill it, the site check reaches it with two players.*
 
 ## 1. The game in a sentence
 

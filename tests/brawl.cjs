@@ -98,6 +98,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       return { seen: !!(seen && seen.w === 'sword'), shown: !!(seen && seen.shown), swing: !!(sw && sw.sw), mine: mine ? mine.w + ':' + (mine.v || []).length : '', off: off ? off.w : null, left: WIELDDBG().length }; });
     ok(blade.seen && blade.shown && blade.swing, 'a player\'s sword is drawn in their hand and swings (' + JSON.stringify(blade) + ')');
     ok(blade.mine === 'sword:3' && blade.off === '' && blade.left === 0, 'your sword and your aim go out to everyone, and putting it away too');
+    const hand = await pg.evaluate(async () => { ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1], h: 'L' }); await new Promise(r => setTimeout(r, 300)); const o = ONLINE.others.get('a'), l = o.S.hand; ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] }); await new Promise(r => setTimeout(r, 300)); const r = o.S.hand; ONLINE.feed({ t: 'aim', id: 'a', w: '' }); return { l, r }; });
+    ok(hand.l === 'L' && hand.r === 'R', 'a left-hander\'s sword is drawn in their left hand (' + JSON.stringify(hand) + ')');
     const faint = await pg.evaluate(async () => { const V = __dbg.VIT, o = ONLINE.others.get('a'); V.hp = .05; await new Promise(r => setTimeout(r, 200));
       ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); const a = { fainted: V.fainted, dead: V.dead };
       await new Promise(r => setTimeout(r, 200)); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return { ...a, dead2: V.dead }; });

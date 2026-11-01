@@ -17,17 +17,19 @@ function txt(put,s,x0,y0,c,k=2){ [...s].forEach((ch,i)=>{ const g=F3[ch]; if(!g)
 const tw=(s,k=1)=>(s.length*4-1)*k;
 function face(W,H,bg,lines,flip,a0,zt,len){ const A=art(W,H,put=>{ for(let y=0;y<H;y++)for(let x=0;x<W;x++)put(x,y,typeof bg==='function'?bg(x,y):bg); for(const [s,c,k,y] of lines)txt(put,s,Math.floor((W-tw(s,k))/2),y,c,k); });
   return onFace(a0,zt,A,()=>null,flip,len); }
-MK.awning=(x0,x1,y,z,ca,cb,name,sub)=>{ '@later'; SHARED.PNAME='awning'; const d=.9, W=Math.round((x1-x0)*FP), lines=[[name,[250,246,230],2,sub?3:8]]; if(sub)lines.push([sub,[250,246,230],2,15]);
+MK.awning=(x0,x1,y,z,ca,cb,name,sub,ink=[250,246,230],ink2)=>{ SHARED.PNAME='awning'; const d=.9, W=Math.round((x1-x0)*FP), lines=[[name,ink,2,sub?3:8]]; if(sub)lines.push([sub,ink2||ink,sub.length*4>W/1.2?1:2,15]);
   const same=ca.join()===cb.join(), val0=face(W,26,ca,lines,FL(y),x0,z-4,x1-x0), val=(u,zz)=>{ const k=Math.floor((u-x0)*FP/6); if(zz<z-28&&((k&1)?zz<z-28:zz<z-29))return null; const c=val0(u,zz); return c&&hash(Math.floor(u*24),Math.floor(zz),88)<.08?sh(c,.9):c; }, top=(u,v)=>{ const n=hash(Math.floor(u*12),Math.floor(v*12),87); return same?(n<.12?sh(ca,.92):n>.96?sh(ca,1.06):ca):Math.floor(((u-x0)*FP)/6)&1?ca:cb; };
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.1,d,z-4,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
     Bw(x0,x1,y,d-.08,d,z-30,z-4,cb,{foot:0,fj:val,fi:()=>sh(cb,.7),top:()=>cb}),
     Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[60,62,66],{foot:0}),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[60,62,66],{foot:0})],null,{solids:[Bw(x0+.05,x0+.11,y,d-.06,d,0,z-24,[0,0,0]),Bw(x1-.11,x1-.05,y,d-.06,d,0,z-24,[0,0,0])]}); };
 MK.gatebox=(x0,x1,y,z)=>{ SHARED.PNAME='security gate'; const c=[96,100,106]; return prop([WF(x0,x1,y),Bw(x0,x1,y,0,.3,z,z+12,c,{foot:0,fj:(u,zz)=>(Math.floor(zz-z)&1)?sh(c,.85):sh(c,1.08),fi:()=>sh(c,.7),top:()=>sh(c,.9)})]); };
 MK.bell=(x,y,z)=>{ SHARED.PNAME='door bell'; return prop([WF(x-.1,x+.1,y),Bw(x-.02,x+.02,y,0,.14,z+6,z+8,[60,60,64],{foot:0,nb:1}),Bw(x-.06,x+.06,y,.06,.16,z,z+6,[220,180,90],{foot:0,fj:(u,zz)=>zz<z+2?[160,120,50]:[220,180,90]})]); };
-MK.signbox=(x0,x1,y,z0,z1,bg,fg,s,lit)=>{ SHARED.PNAME='shop sign'; const W=Math.round((x1-x0)*FP), H=z1-z0, f=face(W,H,(x,y2)=>Math.min(x,W-1-x,y2,H-1-y2)<1?sh(bg,.6):bg,[[s,fg,2,Math.floor((H-10)/2)]],FL(y),x0,z1,x1-x0);
+MK.signbox=(x0,x1,y,z0,z1,bg,fg,s,lit,k=2)=>{ SHARED.PNAME='shop sign'; const W=Math.round((x1-x0)*FP), H=z1-z0, f=face(W,H,(x,y2)=>Math.min(x,W-1-x,y2,H-1-y2)<1?sh(bg,.6):bg,[[s,fg,k,Math.floor((H-5*k)/2)]],FL(y),x0,z1,x1-x0);
   const p=prop([WF(x0,x1,y),Bw(x0,x1,y,0,.12,z0,z1,bg,{foot:0,em:lit?1:0,fj:f,fi:()=>sh(bg,.6),top:()=>sh(bg,.8)})]); if(lit)LAMPS.push({x:(x0+x1)/2,y:y+.4*WD(y),z:z0,r:3,c:[1,.9,.7],prop:p}); return p; };
-MK.neon=(x,y,z,s,c)=>{ SHARED.PNAME='neon sign'; const W=tw(s,2)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,2);
-  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };
+MK.neon=(x,y,z,s,c,k=2)=>{ SHARED.PNAME='neon sign'; const W=tw(s,k)+4, cells=[]; txt((a,b)=>cells.push([a,b]),s,2,2,c,k);
+  const p=prop([WF(x-.3,x+.3,y)]); NEONS.push({x,y,z,W,cells,c,k}); LAMPS.push({x,y:y+.3*WD(y),z,r:2.2,c:[c[0]/255,c[1]/255,c[2]/255],prop:p,neon:true}); return p; };
+MK.poster=(x0,x1,y,z0,z1,bg,lines)=>{ SHARED.PNAME='poster'; const W=Math.round((x1-x0)*FP), H=z1-z0, f=face(W,H,(x,y2)=>Math.min(x,W-1-x,y2,H-1-y2)<1?sh(bg,.7):bg,lines.map(([s,c,k,yy])=>[s,c,k||1,yy]),FL(y),x0,z1,x1-x0);
+  return prop([WF(x0,x1,y),Bw(x0,x1,y,0,.02,z0,z1,bg,{foot:0,fj:f,fi:()=>null,top:()=>null})]); };
 MK.posters=(x0,x1,y,z0,n,seed)=>{ '@later'; SHARED.PNAME='posters'; const bs=[WF(x0,x1,y)]; const C=[[220,70,60],[240,200,70],[60,120,200],[240,240,230],[40,160,120],[230,120,40],[200,80,160]];
   for(let i=0;i<n;i++){ const h=hash(i,seed,1), w=.35+hash(i,seed,2)*.35, hh=12+hash(i,seed,3)*18, px=x0+h*(x1-x0-w), pz=z0+hash(i,seed,4)*30, c=C[Math.floor(hash(i,seed,5)*C.length)];
     bs.push(Bw(px,px+w,y,0,.02,pz,pz+hh,c,{foot:0,fj:(u,z)=>{ const e=Math.min(u-px,px+w-u), ez=Math.min(z-pz,pz+hh-z); return e<.04||ez<1?sh(c,.75):(Math.floor(z/3)&1)&&Math.abs(u-px-w/2)<w*.3&&z>pz+2&&z<pz+hh-3?sh(c,.55):c; },fi:()=>null,top:()=>null})); }
@@ -95,7 +97,7 @@ MK.buckets=(x,y)=>{ '@later'; SHARED.PNAME='flower buckets'; const bs=[], C=[[23
     bs.push(Bx(u,v,u+.36,v+.36,0,2,g,{foot:1,top:()=>[26,27,30]}),Bx(u,v,u+.36,v+t,2,14,g),Bx(u,v+.36-t,u+.36,v+.36,2,14,g),Bx(u,v+t,u+t,v+.36-t,2,14,g),Bx(u+.36-t,v+t,u+.36,v+.36-t,2,14,g));
     for(let k=0;k<5;k++){ const a=u+.08+hash(i,k,21)*.18, b=v+.08+hash(i,k,22)*.18, h=19+Math.floor(hash(i,k,23)*8), bc=sh(C[i],.85+hash(i,k,24)*.25);
       bs.push(Bx(a,b,a+.042,b+.042,2,h,[70,120,70],{foot:0,nb:1}),Bx(a-.03,b-.03,a+.072,b+.072,h,h+3,bc,{foot:0,nb:1,top:(p,q)=>Math.abs(p-a-.021)<.02&&Math.abs(q-b-.021)<.02?sh(bc,.7):sh(bc,1.08)})); } } return prop(bs); };
-MK.milkcrates=(x,y,n=3)=>{ '@later'; SHARED.PNAME='milk crates'; const C=[[200,50,50],[50,80,200],[230,200,60]], bs=[], t=.05; for(let k=0;k<n;k++){ const c=C[k%3], a=x+(k%2)*.02, b=y+(k%2)*.02, e=x+.5, f=y+.5, m=(a+e)/2, mv=(b+f)/2, z=k*12, o={foot:0};
+MK.milkcrates=(x,y,n=3)=>{ SHARED.PNAME='milk crates'; const C=[[200,50,50],[50,80,200],[230,200,60]], bs=[], t=.05; for(let k=0;k<n;k++){ const c=C[k%3], a=x+(k%2)*.02, b=y+(k%2)*.02, e=x+.5, f=y+.5, m=(a+e)/2, mv=(b+f)/2, z=k*12, o={foot:0};
   bs.push(Bx(a,b,e,f,z,z+2,c,{foot:k===0,top:(u,v)=>((Math.floor(u*20)+Math.floor(v*20))&1)?sh(c,.6):c}));
   for(const [u,v] of [[a,b],[e-t,b],[a,f-t],[e-t,f-t],[m-t/2,b],[m-t/2,f-t],[a,mv-t/2],[e-t,mv-t/2]])bs.push(Bx(u,v,u+t,v+t,z+2,z+12,c,o));
   for(const [zz,h] of [[z+10,2],[z+6,1]])bs.push(Bx(a,b,e,b+t,zz,zz+h,c,o),Bx(a,f-t,e,f,zz,zz+h,c,o),Bx(a,b+t,a+t,f-t,zz,zz+h,sh(c,.9),o),Bx(e-t,b+t,e,f-t,zz,zz+h,sh(c,.9),o)); }

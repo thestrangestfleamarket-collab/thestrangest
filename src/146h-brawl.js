@@ -19,7 +19,7 @@ import {collide} from './075-main-13.js';
   /* ---------- your blows: each strike STRIKES gives is live for a moment; whichever of your fists, feet or blade touches a body part lands once on that player ---------- */
   let live=[];
   const mine=(kind,J)=>{ const me={x:pos.x,y:SHARED.py,z:pos.z,hd:SHARED.heading}, out=[];
-    if(kind==='blade'){ if(!J.wristR||!J.elbowR)return out; toW(J.wristR,me,undefined,A); toW(J.elbowR,me,undefined,B); C.subVectors(A,B).normalize();
+    if(kind==='blade'){ const h=st.hand==='L'?'L':'R'; if(!J['wrist'+h]||!J['elbow'+h])return out; toW(J['wrist'+h],me,undefined,A); toW(J['elbow'+h],me,undefined,B); C.subVectors(A,B).normalize();
       for(let i=1;i<=5;i++)out.push([A.clone().addScaledVector(C,i*.19*T),.07]); return out; }
     for(const [j,r] of LIMBS[kind])if(J[j])out.push([toW(J[j],me,undefined,new THREE.Vector3()),r*sh()]); return out; };
   const swing=dt=>{ const now=performance.now(), S=window.STRIKES; if(!S||!ONLINE.others.size)return;

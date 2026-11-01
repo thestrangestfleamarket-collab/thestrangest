@@ -4,6 +4,7 @@ const ROOMS={lazy:{},off:{}},
   LEVELS={of:{},ways:[],own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
+  HUD={},   // the heads-up display (162d-hud): the minimap, the message log and the quick bar
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),
   keys=new Set(),
@@ -47,6 +48,7 @@ const ROOMS={lazy:{},off:{}},
   GUIDE={},
   VR={on:false},
   BINS={},
+  LOOPMAP={}, PASSPORT={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
   WINDOWS={panes:[],pane(me,off,look,dark){ this.panes.push({me,off,look,dark}); if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
@@ -98,4 +100,4 @@ const ROOMS={lazy:{},off:{}},
   BOOKS={},
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159d-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUIDE, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};

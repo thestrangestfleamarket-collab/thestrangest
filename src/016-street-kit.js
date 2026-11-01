@@ -97,7 +97,7 @@ MK.buckets=(x,y)=>{ '@later'; SHARED.PNAME='flower buckets'; const bs=[], C=[[23
     bs.push(Bx(u,v,u+.36,v+.36,0,2,g,{foot:1,top:()=>[26,27,30]}),Bx(u,v,u+.36,v+t,2,14,g),Bx(u,v+.36-t,u+.36,v+.36,2,14,g),Bx(u,v+t,u+t,v+.36-t,2,14,g),Bx(u+.36-t,v+t,u+.36,v+.36-t,2,14,g));
     for(let k=0;k<5;k++){ const a=u+.08+hash(i,k,21)*.18, b=v+.08+hash(i,k,22)*.18, h=19+Math.floor(hash(i,k,23)*8), bc=sh(C[i],.85+hash(i,k,24)*.25);
       bs.push(Bx(a,b,a+.042,b+.042,2,h,[70,120,70],{foot:0,nb:1}),Bx(a-.03,b-.03,a+.072,b+.072,h,h+3,bc,{foot:0,nb:1,top:(p,q)=>Math.abs(p-a-.021)<.02&&Math.abs(q-b-.021)<.02?sh(bc,.7):sh(bc,1.08)})); } } return prop(bs); };
-MK.milkcrates=(x,y,n=3)=>{ '@later'; SHARED.PNAME='milk crates'; const C=[[200,50,50],[50,80,200],[230,200,60]], bs=[], t=.05; for(let k=0;k<n;k++){ const c=C[k%3], a=x+(k%2)*.02, b=y+(k%2)*.02, e=x+.5, f=y+.5, m=(a+e)/2, mv=(b+f)/2, z=k*12, o={foot:0};
+MK.milkcrates=(x,y,n=3)=>{ SHARED.PNAME='milk crates'; const C=[[200,50,50],[50,80,200],[230,200,60]], bs=[], t=.05; for(let k=0;k<n;k++){ const c=C[k%3], a=x+(k%2)*.02, b=y+(k%2)*.02, e=x+.5, f=y+.5, m=(a+e)/2, mv=(b+f)/2, z=k*12, o={foot:0};
   bs.push(Bx(a,b,e,f,z,z+2,c,{foot:k===0,top:(u,v)=>((Math.floor(u*20)+Math.floor(v*20))&1)?sh(c,.6):c}));
   for(const [u,v] of [[a,b],[e-t,b],[a,f-t],[e-t,f-t],[m-t/2,b],[m-t/2,f-t],[a,mv-t/2],[e-t,mv-t/2]])bs.push(Bx(u,v,u+t,v+t,z+2,z+12,c,o));
   for(const [zz,h] of [[z+10,2],[z+6,1]])bs.push(Bx(a,b,e,b+t,zz,zz+h,c,o),Bx(a,f-t,e,f,zz,zz+h,c,o),Bx(a,b+t,a+t,f-t,zz,zz+h,sh(c,.9),o),Bx(e-t,b+t,e,f-t,zz,zz+h,sh(c,.9),o)); }

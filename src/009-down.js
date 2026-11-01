@@ -251,14 +251,6 @@ const SSUB=(()=>{ const W={};
       {x0:xc-.55,x1:xc+.55,y0:y0+len/2-.06,y1:y0+len/2+.06,z0:0,z1:12,c:MET}];
     for(let k=1;k<4;k++){ const y=y0+.12+k*(len-.24)/4; bs.push({x0:xa+.06,x1:xc-.12,y0:y-.03,y1:y+.03,z0:15,z1:21,c:MET},{x0:xc+.12,x1:xb-.06,y0:y-.03,y1:y+.03,z0:15,z1:21,c:MET}); }
     return prop(bs); };
-  const binBoxes=(x,y)=>{ PNAME='trash bin'; const x0=x-.28, x1=x+.28, y0=y-.28, y1=y+.28, B=[50,56,54];
-    const fs=(nx,ny,X,Yy,zr,b)=>{ const z=zr+b.z0, cx=seen(nx,ny,X,Yy,b); if(z>30)return [28,30,30]; let c=sh(B,(mod(cx,3)<1?.75:1)*(.82+.3*fbm(cx/6,z/9,171+nx+ny*2)));
-      if(ny&&Math.abs(cx-6.7)<4&&Math.abs(z-19)<5){ const dx=cx-6.7, dz=z-19; if(Math.abs(Math.abs(dx)*.8+dz*.6-2.4)<.9||(dz>2&&dz<3.6&&Math.abs(dx)<2.6))return [70,186,96]; }
-      return c; };
-    return prop([{x0,x1,y0,y1,z0:0,z1:32,fs,top:(X,Yy)=>Math.max(Math.abs(X-x),Math.abs(Yy-y))<.16?[14,14,16]:[36,38,38]},{x0:x0+.12,x1:x0+.34,y0:y0+.14,y1:y0+.3,z0:32,z1:34,c:[206,200,186]}]); };
-  const litter=[[8.1,26.1,'can'],[13.9,15.6,'cup'],[6.9,33.8,'canb'],[15.8,22.2,'can'],[9.2,9.6,'cup']].map(([x,y,k])=>{ PNAME='litter';
-    if(k==='cup')return prop([{x0:x-.06,x1:x+.06,y0:y-.06,y1:y+.06,z0:0,z1:4,c:[200,40,36],top:()=>[60,20,20]}]);
-    const c=k==='canb'?[44,96,200]:[206,40,36]; return prop([{x0:x-.11,x1:x+.11,y0:y-.05,y1:y+.05,z0:0,z1:3,c,fs:(nx,ny,X,Yy,zr)=>Math.abs(X-x)<.03?[230,230,226]:c,top:(X)=>Math.abs(X-x)<.03?[230,230,226]:c}]); });
   const PB=plane(), PF=plane();
   flat(P0,0,P1,LEN,0,floorPaint);
   for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,0,x1,LEN,-32,trackPaint,16);
@@ -280,8 +272,7 @@ const SSUB=(()=>{ const W={};
   BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   const sBlob=SHAD.mat({alpha:.5}), blobAt=(x0,y0,x1,y1)=>{ const v=V((x0+x1)/2,(y0+y1)/2,SZ); SHAD.blob(scene,v[0],v[1],v[2],(y1-y0)*TILE*1.1,(x1-x0)*TILE*1.3,{mat:sBlob}); };   // a soft contact shadow grounds each platform prop
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); blobAt(MID-.75,y,MID+.75,y+3.2); });
-  SL.BINS.forEach(y=>{ put(binBoxes(MID,y),'trash bin'); solid(MID-.28,y-.28,MID+.28,y+.28,32); blobAt(MID-.28,y-.28,MID+.28,y+.28); });
-  litter.forEach(p=>put(p,'litter'));
+  SL.BINS.forEach(y=>solid(MID-.28,y-.28,MID+.28,y+.28,32));
   const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
@@ -295,8 +286,7 @@ const SSUB=(()=>{ const W={};
   { const LEDTXT=['PLEASE MIND THE GAP','TRAIN ARRIVING','14:03'], xa=MID-.9, xb=MID+.9, yb=7.6, LW=xb-xa;
     const led=(cx,z)=>{ const r=Math.floor((150-z)*2); for(let l=0;l<3;l++){ const t=LEDTXT[l], w=t.length*4, x=Math.floor(cx-(LW*48-w)/2), yy=r-6-l*9; if(yy<0||yy>=5||x<0||x>=w)continue;
         const g=W.LED[t[Math.floor(x/4)]], q=x%4; return q<3&&g&&g[yy*3+q]==='1'?SC6.dot:SC6.dotDim; } return SC6.board; };
-    put(prop([{x0:xa,x1:xb,y0:yb-.05,y1:yb+.05,z0:122,z1:150,c:SC6.board,em:1,fs:(nx,ny,X,Yy,zr,b)=>ny?led(seen(nx,ny,X,Yy,b)*2,zr+122):SC6.board},
-      ...[xa+.2,xb-.2].map(rx=>({x0:rx-.02,x1:rx+.02,y0:yb-.02,y1:yb+.02,z0:150,z1:H2,c:SC6.dark}))]),'arrival board');
+    put(prop([{x0:.02,x1:.12,y0:yb-LW/2,y1:yb+LW/2,z0:122,z1:150,c:SC6.board,em:1,fs:(nx,ny,X,Yy,zr,b)=>nx>0?led(seen(nx,ny,X,Yy,b)*2,zr+122):SC6.board}]),'arrival board');
     const cy=SL.COLY[1]+.7, cx=SL.COLX[0]+.25; put(prop([{x0:cx,x1:cx+.2,y0:cy,y1:cy+.16,z0:150,z1:157,c:SC6.cam,fj:(X,z)=>Math.hypot((X-cx-.1)*24,z-153.5)<1.6?SC6.lens:sh(SC6.cam,.7)}]),'camera'); }
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PF]}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PF],...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   { const c=flat(0,0,XW,LEN,H2,ceilPaint,12,true); c.material.side=THREE.FrontSide; c.material.clippingPlanes=[PF]; }

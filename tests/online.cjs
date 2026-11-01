@@ -27,6 +27,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(1500);
     const r2 = await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { x: o.fig.g.position.x, walk: o.S.target }; });
     ok(r2.x > x0 + 1.5, 'ROSA walks where the server sends her (' + x0.toFixed(2) + ' -> ' + r2.x.toFixed(2) + ')');
+    const w = await pg.evaluate(() => { const sent = []; const s0 = ONLINE.send; ONLINE.send = m => sent.push(m); ONLINE.feed({ t: 'world', k: 'bin:T', v: 3 }); ONLINE.add('bin:T', 2); ONLINE.put('lit:T', 1); ONLINE.send = s0; return { v: ONLINE.world['bin:T'], l: ONLINE.world['lit:T'], sent }; });
+    ok(w.v === 5 && w.l === 1 && w.sent.length === 2 && w.sent[0].add === 2 && w.sent[1].v === 1, 'the block\'s shared world: what it sends is kept, what you add or put goes back to it (' + JSON.stringify(w) + ')');
     await pg.evaluate(() => ONLINE.feed({ t: 'tell', from: 'THE MARKET', text: 'the bodega closes early tonight' }));
     await pg.waitForTimeout(500);
     const r4 = await pg.evaluate(() => { const b = document.getElementById('onltell'); return { shown: !!b && !b.hidden && /bodega closes early/.test(b.textContent), log: /THE MARKET/.test(document.querySelector('#onllog').textContent) }; });

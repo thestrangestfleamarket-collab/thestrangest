@@ -1,6 +1,5 @@
 // THE KNIGHT: a faceted plate-armoured knight made in parts, baked once into one body for BODIES (you can be him; one walks main street).
 import {THREE} from './003-shx.js';
-import {STORE} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 { const V3=THREE.Vector3, BONES=BODIES.BONES, HIPY=1.02;
   const PAL={steel:['#7d8187',.1],steelDark:['#4e5156',.08],cloth:['#3d3a37',.08],mail:['#4a4c50',.14],leather:['#4b2f1f',.08],skinFlat:['#c99273',.04],
@@ -115,6 +114,4 @@ import {BODIES} from './111a-bodies.js';
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));
     geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W,1)); geo.computeBoundingSphere(); return geo; }
   BODIES.add({key:'knight',label:'KNIGHT',geo:bake,height:1.89,hipY:HIPY,off:OFF,binv:null,at:76});
-  if(STORE.holo)STORE.holo.programs.push({name:'SWORD TRAINING',skill:'sword',tool:'sword',intro:'SWORD TRAINING. THE KNIGHT RAISES HIS SWORD: SWING YOURS WHEN HE CALLS STRIKE.',cue:'STRIKE!',
-    place:(x,z,hd,G)=>BODIES.place('knight',x,z,hd,G),hide:()=>BODIES.restore('knight')});
 }

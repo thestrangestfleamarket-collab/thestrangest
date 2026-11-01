@@ -1,4 +1,4 @@
-// THE TORCHBEARER CHECK: node tests/arcade-torch.cjs [dist/market.html]. Enters THE ARCADE, plays TORCHBEARER as the WARRIOR: the coin, the hero screen, floor 1 with 2000 health; walks floor 1 (a path found on the game's own map: the key, the door, the stairs) and reaches floor 2 with the health drained by the seconds spent; a shot kills a grunt and knocks a generator down; health 1 is GAME OVER. Exits 1 if anything fails.
+// THE TORCHBEARER CHECK: node tests/arcade-torch.cjs [dist/market.html]. Enters THE ARCADE, plays TORCHBEARER as the WARRIOR: the coin, the hero screen, floor 1 with 2000 health; walks floor 1 (a path found on the game's own map: the key, the door, the stairs) and reaches floor 2 with the health drained by the seconds spent; a shot kills a grunt and knocks a generator down; a potion kills Death; an amulet, a teleporter, a trap and a treasure room each do their thing; health 1 is GAME OVER. Exits 1 if anything fails.
 const {chromium}=require('playwright'), path=require('path');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; if(process.env.GITHUB_ACTIONS)console.log('::error title=arcade-torch::'+String(m).replace(/\n/g,' ').slice(0,900)); } };
 const bfs=(map,from,to,doors)=>{ const h=map.length, w=map[0].length, solid=ch=>ch==='#'||ch==='%'||(!doors&&ch==='D'); const prev=new Map([[from.join(),null]]), q=[from];
@@ -17,7 +17,7 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   const gwait=async(sec,until)=>{ const t0=(await G()).t, w0=Date.now(); for(;;){ const g=await G(); if(g.t-t0>=sec||(until&&until(g))||Date.now()-w0>60000)return g; await pg.waitForTimeout(50); } };   // game seconds, not wall-clock: frames are slow here
   await pg.keyboard.press('Space'); await pg.waitForTimeout(500); let d=await D(); ok(d.mode==='play'&&d.g&&d.g.mode==='hero','the coin goes in and CHOOSE YOUR HERO shows ('+JSON.stringify({mode:d.mode,g:d.g&&d.g.mode})+')');
   await pg.keyboard.press('Space'); await pg.waitForTimeout(400); d=await D(); ok(d.g&&d.g.hero==='WARRIOR'&&d.g.floor===1&&d.g.hp===2000,'the WARRIOR starts floor 1 with 2000 health ('+JSON.stringify(d.g&&{hero:d.g.hero,floor:d.g.floor,hp:d.g.hp})+')');
-  await pg.evaluate(()=>TORCHDBG().cheat.skip());
+  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); });   // no ghosts in the way: the walk proves the key, the door and the stairs
   const walk=async(path_)=>{ for(let i=1;i<path_.length;i++){ const [tx,ty]=path_[i], [px,py]=path_[i-1], key=tx>px?'ArrowRight':tx<px?'ArrowLeft':ty>py?'ArrowDown':'ArrowUp';
       await pg.keyboard.down(key); const t0=Date.now(); let there=false; while(Date.now()-t0<8000){ const g=await G(); if(Math.floor(g.x)===tx&&Math.floor(g.y)===ty){ there=true; break; } if(g.mode!=='play'){ await pg.keyboard.up(key); return g.floor>1?true:'left play mode at '+i; } await pg.waitForTimeout(20); } await pg.keyboard.up(key);
       if(!there)return 'stuck at step '+i+' of '+path_.length+' going '+key+' to '+tx+','+ty; } return true; };
@@ -28,11 +28,21 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   r=p2?await walk(p2):'no path'; await pg.waitForTimeout(300); g=await G(); const secs=g.t-gt0;
   ok(g.floor===2,'the door opened with the key and the stairs led to floor 2 ('+r+', floor '+g.floor+')');
   ok(g.hp<=hp0-Math.floor(secs)+2&&g.hp>0,'health drained by the game seconds spent ('+hp0+' → '+g.hp+' in '+secs.toFixed(1)+' s)');
-  await pg.evaluate(()=>TORCHDBG().cheat.skip()); await gwait(.2);
+  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); }); await gwait(.2);   // the floor's own generators would spawn into the counts
   await pg.keyboard.down('ArrowRight'); await gwait(.15); await pg.keyboard.up('ArrowRight'); await gwait(.1); const n0=(await G()).mons, s0=(await G()).score; await pg.evaluate(()=>TORCHDBG().cheat.spawn('grunt',1,3,0));
   await pg.keyboard.down('Space'); g=await gwait(2,g=>g.mons<=n0&&g.score>=s0+20); await pg.keyboard.up('Space'); ok(g.mons<=n0&&g.score>=s0+20,'a shot kills a level-1 grunt (monsters '+(n0+1)+' → '+g.mons+', score +'+(g.score-s0)+')');
   await gwait(.3); const gn0=(await G()).gens.length; await pg.evaluate(()=>TORCHDBG().cheat.gen('grunt',3,3,0)); await pg.keyboard.down('Space'); g=await gwait(2,g=>g.gens.length===gn0); await pg.keyboard.up('Space');
   ok(g.gens.length===gn0,'the WARRIOR\'s shot knocks a level-3 generator out in one ('+(gn0+1)+' generators → '+g.gens.length+')');
+  const n1=(await G()).mons, s1=(await G()).score; await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.spawn('death',1,2,0); C.give({pots:1}); }); await gwait(.1); await pg.keyboard.press('c'); g=await gwait(1.5,g=>g.mons<=n1&&g.score>=s1+1000);
+  ok(g.mons<=n1&&g.score>=s1+1000,'Death falls only to magic: a potion kills it (monsters '+(n1+1)+' → '+g.mons+', score +'+(g.score-s1)+')');
+  await pg.evaluate(()=>TORCHDBG().cheat.item('m',1,0)); await pg.keyboard.down('ArrowRight'); g=await gwait(1.5,g=>!!g.am); await pg.keyboard.up('ArrowRight'); ok(!!g.am,'walking onto an amulet wears it ('+g.am+')');
+  await gwait(.2); const x1=(await G()).x; await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.tile('T',-3,0); C.tile('T',1,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(1.5,g=>g.x<x1-2); await pg.keyboard.up('ArrowRight');
+  ok(g.x<x1-2,'a teleporter sends the hero to the next one ('+x1.toFixed(1)+' → '+g.x.toFixed(1)+')');
+  await gwait(.2); g=await G(); const tx0=Math.floor(g.x), ty0=Math.floor(g.y); await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.tile('^',1,0); C.tile('-',2,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(1.5,g=>g.map[ty0][tx0+2]==='.'); await pg.keyboard.up('ArrowRight');
+  ok(g.map[ty0][tx0+2]==='.','stepping on the trap drops the trap walls (tile '+JSON.stringify(g.map[ty0][tx0+2])+')');
+  await gwait(.2); await pg.evaluate(()=>TORCHDBG().cheat.tile('*',1,0)); await pg.keyboard.down('ArrowRight'); g=await gwait(1.5,g=>g.tr!=null); await pg.keyboard.up('ArrowRight'); ok(g.tr!=null,'the gold stairs lead to a treasure room ('+(g.tr&&g.tr.toFixed(0))+' seconds on the clock)');
+  const fl=(await G()).floor; await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.troom(0); }); g=await gwait(1,g=>g.floor!==fl&&g.tr==null); ok(g.floor===3&&g.tr==null,'when the clock runs out you go down a floor (floor '+g.floor+')');
+  await pg.evaluate(()=>TORCHDBG().cheat.skip()); await gwait(.1);
   await pg.evaluate(()=>TORCHDBG().cheat.hp(1)); await gwait(2.5,g=>g.hp<=0); await pg.waitForTimeout(300); d=await D(); ok(d.over&&d.mode==='over','health 0 is GAME OVER ('+JSON.stringify({over:d.over,mode:d.mode})+')');
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); ok(!(await pg.evaluate(()=>STORE.cabs.on)),'ESC leaves the cabinet');
   ok(!errs.length&&!late.length,'no page errors, no slow chunk fetch '+errs.concat(late).slice(0,3).join(' | '));

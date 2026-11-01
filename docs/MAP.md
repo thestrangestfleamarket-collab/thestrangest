@@ -66,7 +66,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `059d-fireview.js` | 0.7 | top level, opens grab(fire) |  | 003: SHARED; 006: BLDK MODS OFFDX STORE grab |
 | `059e-ghostdojo.js` | 32.1 | top level, opens grab(ghostdojo) |  | 003: SHARED THREE; 003b: CLIP CLOCK LITE ROOMS UI VIT pos; 004: PPU scene; 006: BLDK FIX MAPG SEEN SOL TILE cutWalls grab; 007: FLAME; 008: BATCH OBJ |
 | `059f-cinema.js` | 53.4 | top level |  | 003: SHARED THREE; 003b: CINEMA CLOCK LITE PS2 SIGNS UI pos; 004: ShaderPass renderer scene; 006: FADE SOL STORE SYS TILE |
-| `059g-arcade-games.js` | 10.9 | top level |  | 003b: FORAGE INV SFX keys; 005: OWNED; 006: STORE SYS |
+| `059g-arcade-games.js` | 14.2 | top level |  | 003b: FORAGE INV SFX keys; 005: OWNED; 006: STORE SYS |
 | `059h-bank.js` | 14.4 | top level, opens grab(bank) |  | 003: SHARED THREE; 003b: FORAGE PERFX SFX UI VIT pos; 004: scene; 006: BLDK BLOCK FIX SOL STORE SYS grab; 038z: dgnRoom |
 | `059i-mshops.js` | 8.2 | top level, opens grab(mshops) | MSHOP (146j 146l 146n) | 003: SHARED THREE; 003b: ROOMS; 004: scene; 006: FIX LEVEL SOL STORE TILE TURN WP grab; 008: BATCH |
 | `059j-game-blocks.js` | 5.1 | top level |  | 006: STORE |

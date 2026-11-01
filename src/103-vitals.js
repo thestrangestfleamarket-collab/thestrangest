@@ -6,10 +6,10 @@ const AIR=16, AIRCEIL=240;                       // seconds: a plain breath, and
 Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR});
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
 VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing mushroom adds air for the next dive
-{ const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:12px;bottom:12px;width:150px;display:grid;gap:4px;z-index:5;pointer-events:none}
-    #vit[hidden]{display:none} #vit div{height:7px;background:#0b0d13cc;border:1px solid #2a3040} #vit i{display:block;height:100%} #vit #vairrow{position:relative} #vit #vairn{position:absolute;right:2px;top:-11px;font:9px Silkscreen,monospace;color:#8fd0ff;text-shadow:1px 1px 0 #000}`; document.head.appendChild(css);
-  const B=document.createElement('div'); B.id='vit'; B.hidden=true; B.innerHTML='<div><i id="vhp" style="background:#c84a3a"></i></div><div><i id="vst" style="background:#d8b84a"></i></div><div id="vairrow"><i id="vair" style="background:#4aa6e0"></i><span id="vairn"></span></div>'; document.body.appendChild(B);
-  const hpI=B.querySelector('#vhp'), stI=B.querySelector('#vst'), airRow=B.querySelector('#vairrow'), airI=B.querySelector('#vair'), airN=B.querySelector('#vairn'); let lx=pos.x, lz=pos.z, rest=0, glug=0;
+{ const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:calc(12px + var(--fx,0px) + env(safe-area-inset-left,0px));top:calc(12px + var(--fy,0px) + env(safe-area-inset-top,0px));width:170px;z-index:5;pointer-events:none;font:10px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
+    #vit[hidden]{display:none} #vit #vnm{font-size:11px} #vit .b{position:relative;height:8px;margin-top:13px;background:#00000088} #vit .b i{display:block;height:100%} #vit .b s,#vit .b b{position:absolute;top:-12px;font-size:8px;text-decoration:none;font-weight:400} #vit .b s{left:0} #vit .b b{right:0}`; document.head.appendChild(css);
+  const B=document.createElement('div'); B.id='vit'; B.hidden=true; B.innerHTML='<div id="vnm"></div><div class="b"><i id="vhp" style="background:#e0543f"></i><s>HP</s><b id="vhpn"></b></div><div class="b"><i id="vst" style="background:#e8c650"></i><s>STA</s><b id="vstn"></b></div><div class="b" id="vairrow"><i id="vair" style="background:#5ab8f0"></i><s>AIR</s><b id="vairn"></b></div>'; document.body.appendChild(B);
+  const hpI=B.querySelector('#vhp'), stI=B.querySelector('#vst'), airRow=B.querySelector('#vairrow'), airI=B.querySelector('#vair'), airN=B.querySelector('#vairn'), hpN=B.querySelector('#vhpn'), stN=B.querySelector('#vstn'); let lx=pos.x, lz=pos.z, rest=0, glug=0;
   VIT.guard=null;   // set by the swordplay: (d, from) -> {d: what gets through, parry}
   // at none you faint (out cold, the medic comes, up again with some back); a real blow while out cold kills
   let thudAt=0; const FAINT=15;
@@ -28,8 +28,8 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     else if(!under){ if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5); glug=0; }   // a plain breath comes back at the surface; banked air stays
     if(VIT.out>0){ VIT.out-=dt; keys.clear(); SHARED.target=null; if(VIT.out<=0){ VIT.fainted=false; if(!VIT.dead)VIT.hp=Math.max(VIT.hp,.4); } } else if(!VIT.dead){ let k=0; for(const f of VIT.mends)k+=f()||0; if(k>0)VIT.hp=Math.min(1,VIT.hp+dt*k); }   // health never comes back by itself: food, potions, rest, the bath
     VIT.fight=Math.max(0,VIT.fight-dt);
-    const wet=!!(st.water&&st.water.in)||VIT.air<VIT.airMax-.05, show=VIT.fight>0||VIT.out>0||wet; if(B.hidden===show)B.hidden=!show;
-    if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%';
+    const wet=!!(st.water&&st.water.in)||VIT.air<VIT.airMax-.05, show=!!window.__started; if(B.hidden===show)B.hidden=!show;
+    if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; hpN.textContent=Math.round(VIT.hp*100)+' / 100'; stN.textContent=Math.round(VIT.sta*100)+' / 100';
       airRow.style.display=wet?'':'none'; if(wet){ airI.style.width=(VIT.air/Math.max(VIT.airMax,VIT.air)*100).toFixed(0)+'%'; airI.style.background=VIT.air<=0?'#c84a3a':'#4aa6e0'; airN.textContent=Math.ceil(VIT.air)+'s'+(VIT.tankTxt?VIT.tankTxt():''); } }
     LOOKS.stats(VIT.hp,VIT.sta); };
 }

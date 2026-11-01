@@ -1,0 +1,143 @@
+<!doctype html><html><head><meta charset="utf-8"><title>HUD mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Silkscreen&display=swap">
+<style>
+body{margin:0;background:#111;color:#ddd;font:14px system-ui}
+.sh{position:relative;width:1280px;height:720px;background:url(hud-shot.png) 0 0/1280px 720px;overflow:hidden;margin:0 auto}
+.sh *{box-sizing:border-box}
+.tl{position:absolute;left:100px;top:62px}
+.tr{position:absolute;right:100px;top:62px}
+.bl{position:absolute;left:100px;bottom:66px;width:272px}
+.bc{position:absolute;left:50%;bottom:66px;transform:translateX(-50%)}
+.mid{position:absolute;left:0;right:0;top:300px;text-align:center}
+.bar{position:relative;height:12px;margin-bottom:5px}
+.bar i{display:block;height:100%}
+.bar b{position:absolute;right:4px;top:-1px;font-weight:400;font-size:9px;line-height:12px}
+.lbl{position:absolute;left:4px;top:-1px;font-size:9px;line-height:12px}
+.slots{display:flex;gap:3px}
+.slot{width:46px;height:46px;position:relative;display:flex;align-items:center;justify-content:center;font-size:9px;text-align:center;line-height:1.2}
+.slot em{position:absolute;left:3px;top:2px;font-style:normal;font-size:9px}
+.slot u{position:absolute;right:3px;bottom:2px;text-decoration:none;font-size:8px}
+.log div{padding:2px 6px}
+.log .hd{display:flex;justify-content:space-between;padding:3px 6px}
+.mm{width:200px;height:200px;position:relative}
+.mm svg{display:block;width:100%;height:100%}
+.mmf{display:flex;justify-content:space-between;font-size:9px;padding:3px 4px}
+.cap{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:11px Silkscreen,monospace;color:#fff;text-shadow:1px 1px 0 #000;letter-spacing:1px}
+
+/* A · CODEC: the ESC menu's green on black, scanlines, Share Tech Mono */
+.A{--f:'Share Tech Mono',monospace;--g:#7dffa8;--gd:#3aa866;--bg:#020a06e6;--sl:repeating-linear-gradient(0deg,rgba(125,255,168,.06) 0 1px,transparent 1px 3px)}
+.A .pn{background:var(--sl),var(--bg);border:1px solid var(--gd);color:var(--g);font:12px var(--f);letter-spacing:1px}
+.A .tl{width:220px;padding:8px}
+.A .tl .nm{font-size:12px;margin-bottom:6px;color:#d8ffe4}
+.A .bar{background:#031a0d;border:1px solid var(--gd)}
+.A .bar i{background:var(--g)} .A .bar.st i{background:#d8ffe4} .A .bar.air i{background:#5ad0ff}
+.A .bar b,.A .lbl{color:#fff;text-shadow:1px 1px 0 #000;font-family:var(--f)}
+.A .slot{background:#031a0d;border:1px solid var(--gd);color:var(--g)} .A .slot.on{border-color:#d8ffe4;box-shadow:inset 0 0 0 1px #d8ffe4}
+.A .slot em,.A .slot u{color:var(--gd)}
+.A .log{font:12px var(--f);height:150px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.A .log .hd{color:#d8ffe4;border-bottom:1px solid var(--gd)} .A .log .dim{color:var(--gd)} .A .log .you{color:#d8ffe4}
+.A .mm{padding:4px} .A .mmf{color:var(--gd)}
+.A .mid{font:14px var(--f);color:#d8ffe4;text-shadow:0 0 6px #7dffa8aa,1px 1px 0 #000;letter-spacing:1px}
+
+/* B · STEEL: the game's current dark panels, gold, Silkscreen */
+.B{--f:Silkscreen,monospace;--bg:#0b0d13d8;--ln:#2a3040;--au:#ffd27a;--tx:#d8dbe4}
+.B .pn{background:var(--bg);border:2px solid var(--ln);color:var(--tx);font:11px var(--f);letter-spacing:1px}
+.B .tl{width:220px;padding:8px}
+.B .tl .nm{color:var(--au);margin-bottom:6px}
+.B .bar{background:#0b0d13;border:1px solid var(--ln);height:10px}
+.B .bar i{background:#c84a3a} .B .bar.st i{background:#d8b84a} .B .bar.air i{background:#4aa6e0}
+.B .bar b,.B .lbl{color:#fff;text-shadow:1px 1px 0 #000;font-size:8px;line-height:10px}
+.B .slot{background:#0b0d13d8;border:2px solid var(--ln);color:var(--tx)} .B .slot.on{border-color:var(--au)}
+.B .slot em,.B .slot u{color:#8a8f9c}
+.B .log{font:11px var(--f);height:150px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.B .log .hd{color:var(--au);border-bottom:2px solid var(--ln)} .B .log .dim{color:#8a8f9c} .B .log .you{color:var(--au)}
+.B .mm{padding:4px} .B .mmf{color:#8a8f9c}
+.B .mid{font:12px var(--f);color:#fff;text-shadow:1px 1px 0 #000,-1px -1px 0 #000;letter-spacing:1px}
+
+/* C · BARE: no boxes, just the bars, text and a round map over the picture */
+.C{--f:Silkscreen,monospace;--tx:#fff}
+.C .pn{background:none;border:0;color:var(--tx);font:11px var(--f);letter-spacing:1px;text-shadow:1px 1px 0 #000,0 0 3px #000}
+.C .tl{width:200px}
+.C .tl .nm{margin-bottom:6px}
+.C .bar{background:#00000088;height:8px;margin-bottom:6px}
+.C .bar i{background:#e0543f;box-shadow:0 0 0 1px #00000088} .C .bar.st i{background:#e8c650} .C .bar.air i{background:#5ab8f0}
+.C .bar b{top:-13px;font-size:8px;right:0} .C .lbl{top:-13px;left:0;font-size:8px}
+.C .slot{background:#00000080;border:1px solid #ffffff40;color:var(--tx)} .C .slot.on{border-color:#fff;background:#000000b0}
+.C .slot em,.C .slot u{color:#ffffffa0}
+.C .log{font:11px var(--f);height:150px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.C .log .hd{display:none} .C .log div{padding:1px 0} .C .log .dim{color:#c0c4cc} .C .log .you{color:#ffd27a}
+.C .mm{border-radius:50%;overflow:hidden;border:2px solid #ffffff90;box-shadow:0 0 0 2px #00000080;width:190px;height:190px}
+.C .mmf{color:#fff;padding-top:6px;width:190px}
+.C .mid{font:12px var(--f);color:#fff;text-shadow:1px 1px 0 #000,-1px -1px 0 #000;letter-spacing:1px}
+
+/* D · SUBWAY STEEL: the 25 Oct 16-bit look, steel frames, corner studs, signal orange, Press Start 2P */
+.D{--f:'Press Start 2P',monospace;--st:#5a6478;--sth:#8a94a8;--bg:#1c2130;--or:#ff8a1f;--tx:#e6e9f0}
+.D .pn{background:repeating-conic-gradient(#1c2130 0 25%,#222838 0 50%) 0 0/4px 4px;border:3px solid var(--st);box-shadow:inset 0 0 0 1px var(--sth),0 2px 0 #000;color:var(--tx);font:8px var(--f);line-height:1.6}
+.D .pn:before,.D .pn:after,.D .pn .s1,.D .pn .s2{content:'';position:absolute;width:4px;height:4px;background:#fff;z-index:2}
+.D .pn:before{left:-1px;top:-1px} .D .pn:after{right:-1px;top:-1px} .D .pn .s1{left:-1px;bottom:-1px} .D .pn .s2{right:-1px;bottom:-1px}
+.D .tl{width:230px;padding:8px}
+.D .tl .nm{color:var(--or);margin-bottom:8px}
+.D .bar{background:#0a0d14;border:2px solid var(--st);height:14px;margin-bottom:6px}
+.D .bar i{background:repeating-linear-gradient(90deg,#d94030 0 10px,#0a0d14 10px 12px)} .D .bar.st i{background:repeating-linear-gradient(90deg,#e8b23c 0 10px,#0a0d14 10px 12px)} .D .bar.air i{background:repeating-linear-gradient(90deg,#4aa6e0 0 10px,#0a0d14 10px 12px)}
+.D .bar b,.D .lbl{color:#fff;text-shadow:1px 1px 0 #000;font-size:7px;line-height:10px}
+.D .slot{width:46px;height:46px;background:#0a0d14;border:3px solid var(--st);box-shadow:inset 0 0 0 1px var(--sth);color:var(--tx)} .D .slot.on{border-color:var(--or)}
+.D .slot em,.D .slot u{color:var(--sth)} .D .slot.on em{color:var(--or)}
+.D .log{font:8px var(--f);line-height:1.7;height:150px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.D .log .hd{color:var(--or);background:#0a0d14;border-bottom:2px solid var(--st)} .D .log .dim{color:var(--sth)} .D .log .you{color:var(--or)}
+.D .mm{padding:4px} .D .mmf{color:var(--sth);font-size:7px}
+.D .mid{font:9px var(--f);color:#fff;text-shadow:2px 2px 0 #000;line-height:2}
+</style></head><body>
+<template id="hud">
+ <div class="tl pn"><span class="s1"></span><span class="s2"></span>
+  <div class="nm">BRALYNN</div>
+  <div class="bar hp"><i style="width:72%"></i><span class="lbl">HP</span><b>72 / 100</b></div>
+  <div class="bar st"><i style="width:45%"></i><span class="lbl">STA</span><b>45 / 100</b></div>
+  <div class="bar air" data-wet><i style="width:88%"></i><span class="lbl">AIR</span><b>14s</b></div>
+ </div>
+ <div class="tr">
+  <div class="mm pn"><span class="s1"></span><span class="s2"></span>
+   <svg viewBox="0 0 100 100" shape-rendering="crispEdges">
+    <rect width="100" height="100" fill="#4f7a3a"/>
+    <rect x="0" y="0" width="100" height="22" fill="#6c6a62"/>
+    <rect x="0" y="20" width="100" height="6" fill="#b9b094"/>
+    <rect x="0" y="26" width="100" height="3" fill="#2b2f33"/>
+    <rect x="30" y="26" width="7" height="3" fill="#8a8f9c"/>
+    <path d="M38 29 Q46 50 40 72 Q36 86 48 100" stroke="#8c7a5a" stroke-width="5" fill="none"/>
+    <circle cx="70" cy="60" r="9" fill="#3b6a2c"/><circle cx="82" cy="78" r="6" fill="#3b6a2c"/><circle cx="18" cy="70" r="7" fill="#3b6a2c"/>
+    <circle cx="86" cy="42" r="2" fill="#ffd27a"/><circle cx="22" cy="48" r="2" fill="#ffd27a"/><circle cx="60" cy="88" r="2" fill="#ffd27a"/>
+    <circle cx="8" cy="10" r="2" fill="#ff5050"/>
+    <polygon points="50,44 45,56 50,53 55,56" fill="#fff" stroke="#000" stroke-width=".8"/>
+    <text x="50" y="9" font-size="8" fill="#fff" text-anchor="middle" font-family="monospace">N</text>
+   </svg>
+  </div>
+  <div class="mmf"><span>A · CENTRAL PARK</span><span>x 99  z -12</span></div>
+ </div>
+ <div class="bl log pn"><span class="s1"></span><span class="s2"></span>
+  <div class="hd"><span>LOCAL</span><span class="dim">ENTER TO TALK</span></div>
+  <div class="dim">Entering CENTRAL PARK.</div>
+  <div>You begin chopping.</div>
+  <div>You chopped some WOOD LOG.</div>
+  <div class="dim">Your skill in LUMBERJACKING rose: 9.</div>
+  <div><span class="you">MEL</span> anyone at the bodega?</div>
+  <div>A squirrel watches you.</div>
+  <div><span class="you">BRALYNN</span> heading to the pier</div>
+ </div>
+ <div class="bc slots">
+  <div class="slot pn on"><span class="s1"></span><span class="s2"></span><em>1</em>AXE</div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>2</em>PICK</div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>3</em>ROD</div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>4</em>BREAD<u>3</u></div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>5</em>MOREL<u>12</u></div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>6</em>TORCH</div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>7</em>GOGGLES</div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>8</em></div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>9</em></div>
+  <div class="slot pn"><span class="s1"></span><span class="s2"></span><em>0</em></div>
+ </div>
+ <div class="mid">You chopped some WOOD LOG.</div>
+</template>
+<script>
+const names={A:'A · CODEC (the ESC menu look)',B:'B · STEEL (the game\'s dark panels)',C:'C · BARE (no boxes)',D:'D · SUBWAY STEEL (16-bit frames)'};
+const q=new URLSearchParams(location.search).get('v'); const list=q?[q]:['A','B','C','D'];
+for(const v of list){ const d=document.createElement('div'); d.className='sh '+v; d.appendChild(document.getElementById('hud').content.cloneNode(true)); if(!q){ const c=document.createElement('div'); c.className='cap'; c.textContent=names[v]; d.appendChild(c); } document.body.appendChild(d); if(!q)document.body.appendChild(document.createElement('br')); }
+</script></body></html>

@@ -97,7 +97,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `069c-shine.js` | 19.3 | top level |  | 003: SHARED THREE; 003b: BLK CLOCK DRESS LITE WED WX pos; 004: scene; 006: LFX MODS NEONS OUT STORE SYS TILE TURN WP WROW lamps; 069: TLX |
 | `070-grid.js` | 15.3 | top level |  | 003: SHARED THREE; 003b: DRESS LITE PARK; 004: renderer scene; 006: AWAY FIX LAY MAPG MAPSTAIR MODS QS SOL STORE SYS TILE; 007: FLAME |
 | `071-main-11.js` | 1.5 | top level | AX (073 075), AY (073 075), PICH (073 075), PW (073 075), VS (073), cloud (075), uimg (073 075), you (075) | 003: SHARED THREE; 003b: LEVELS pos st; 004: PPU scene; 006: MODS QS SECTIONS |
-| `072-walker3d.js` | 53.7 | top level | OUTL (073 075 094 161b 163) | 003: SHARED THREE; 003b: CLOCK LEVELS W3; 004: PPU scene; 005: SAVE; 006: QS SHL SYS |
+| `072-walker3d.js` | 53.2 | top level | OUTL (073 075 094 161b 163) | 003: SHARED THREE; 003b: CLOCK LEVELS W3; 004: PPU scene; 005: SAVE; 006: QS SHL SYS |
 | `072a-cloth.js` | 3.5 | top level | DRAPE (072b 150a) |  |
 | `072b-garb.js` | 29.5 | top level | GARB (102 111d 146c) | 003: SHARED THREE; 003b: W3; 004: renderer; 006: TILE; 072a: DRAPE |
 | `073-main-12.js` | 22.4 | top level | P (075 109 146h), PHH (075), PHYOU (075 146h), STATIC (075), TL (075 111d 146h), loose (075), looseDraw (075), phyStep (075), phyYouNow (075), qMat (111d), ragBlend (075), ragPose (075), ragPoseOf (111d), ragStart (075), ragStep (075), ragStrikes (075), setPhys (075), view0 (075) | 003: SHARED THREE; 003b: ONLINE PH RAG pos st vwV wvV; 004: PPU; 006: FIX cutWalls; 071: AX AY PICH PW VS uimg; 072: OUTL |

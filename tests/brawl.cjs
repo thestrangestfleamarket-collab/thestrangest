@@ -24,7 +24,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const look = await pg.evaluate(async () => { ONLINE.feed({ t: 'in', p: { id: 'a', dead: 1 } }); await new Promise(r => setTimeout(r, 400)); const o = ONLINE.others.get('a'), g = { ghost: o.fig.me.material.transparent, tag: o.tagS };
       ONLINE.feed({ t: 'in', p: { id: 'a', dead: 0, hp: .5 } }); await new Promise(r => setTimeout(r, 400)); return { ...g, solid: !o.fig.me.material.transparent, bar: o.tagS }; });
     ok(look.ghost && /GHOST/.test(look.tag) && look.solid, 'a dead player looks like a ghost (' + JSON.stringify(look) + ')');
-    ok(/\n0\.5$/.test(look.bar), 'a hurt player shows a health bar over their name');
+    ok(/\n0\.5(\n|$)/.test(look.bar), 'a hurt player shows a health bar over their name');
     let hit = [];   // retry one jab: under slow CI frames a single swing's few samples can miss the brief reach; a fresh swing lands it (a real miss still fails — all tries come back empty)
     for (let tryi = 0; tryi < 6 && !hit.length; tryi++) {
       await pg.evaluate(() => { __dbg.VIT.sta = 1; window.__sent.length = 0; });

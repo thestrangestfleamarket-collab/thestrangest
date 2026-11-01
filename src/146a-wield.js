@@ -46,10 +46,10 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       try{ if(WIELD.bare){ RIG.act(st,'B'); SYS.run('act','B',1); } else if(was){ RIG.release(st,'B'); SYS.run('act','B',0); } }catch(e){} }
     if(WIELD.block){ VIT.sta=Math.max(0,VIT.sta-dt*.2); VIT.inFight(3); }
     if(on){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ const nx=(ms.x-r.left)/r.width*2-1, ny=-((ms.y-r.top)/r.height*2-1), asp=r.width/Math.max(1,r.height); rc.setFromCamera(new THREE.Vector2(nx,ny),SHARED.cam); WIELD.ray=rc.ray;
-        // the arm follows the mouse round the shoulder on the screen, any way round: on the shoulder it points away from the camera, a torso's length out it lies across the screen, twice that it points back at the camera
+        // the arm follows the mouse round the shoulder on the screen, any way round: on the shoulder it points away from the camera, a torso's length out it lies across the screen, further out it leans back toward the camera (120 degrees at most, so the mouse's side always counts)
         const C=SHARED.cam.matrixWorld.elements; cx.set(C[0],C[1],C[2]); cy.set(C[4],C[5],C[6]); cz.set(-C[8],-C[9],-C[10]); let px=0, py=0, R0=.5;
-        if(sh.lengthSq()&&hip.lengthSq()){ const a=sh.clone().project(SHARED.cam), b=hip.clone().project(SHARED.cam); if(a.z<1&&Math.abs(a.x)<1.5&&Math.abs(a.y)<1.5){ px=a.x*asp; py=a.y; R0=Math.max(.08,Math.hypot((b.x-a.x)*asp,b.y-a.y)*1.3); } }
-        const dx=nx*asp-px, dy=ny-py, f=Math.min(2,Math.hypot(dx,dy)/R0)*Math.PI/2, th=Math.atan2(dy,dx);
+        if(sh.lengthSq()&&hip.lengthSq()){ const a=sh.clone().project(SHARED.cam), b=hip.clone().project(SHARED.cam); if(a.z<1&&Math.abs(a.x)<1.5&&Math.abs(a.y)<1.5){ px=a.x*asp; py=a.y; R0=Math.max(.25,Math.hypot((b.x-a.x)*asp,b.y-a.y)*1.3); } }
+        const dx=nx*asp-px, dy=ny-py, f=Math.min(4/3,Math.hypot(dx,dy)/R0)*Math.PI/2, th=Math.atan2(dy,dx);
         aim.copy(cz).multiplyScalar(Math.cos(f)).addScaledVector(cx,Math.cos(th)*Math.sin(f)).addScaledVector(cy,Math.sin(th)*Math.sin(f)); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } aim.copy(aim0);
       const K=KIND[WIELD.on], own=!!(K&&K.aim&&K.aim(dt,aim,aim0)); if(own)sw=null;
       if(WIELD.block&&!own){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }

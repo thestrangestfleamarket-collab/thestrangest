@@ -24,7 +24,7 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
   const S=pxS(); SCL=S; RW=Math.ceil(pw/S/2)*2; RH=Math.ceil(ph/S/2)*2;
   renderer.setSize(RW,RH,false); if(SHARED.composer)SHARED.composer.setSize(RW,RH);
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px'; c.style.imageRendering=S>1?'pixelated':'';
-  c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; c.style.borderRadius=FRAMEK<1?'18px':'0';
+  c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; document.documentElement.style.setProperty('--fx',c.style.left); document.documentElement.style.setProperty('--fy',c.style.top); c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
 let SCL=1; SHARED.ppu=PPU; SHARED.RESI=(r=>r>=0&&r<=4?r:4)(+(new URLSearchParams(location.search).get('res')??4));
 const V0=PPU*PXS, ZMAX=PPU*80;

@@ -1,6 +1,6 @@
 // THE SCANNER: a drone perched at each platform's end flies to every person stepping off a train, hovers before them and scans them (blue grid lines sweeping down the body, a card: who, section, CLEAR), then returns to its perch.
 import {SHARED, THREE} from './003-shx.js';
-import {DRONE, LOOKS, ONLINE, pos, SCANNER} from './003b-systems.js';
+import {DRONE, LOOKS, ONLINE, pos} from './003b-systems.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {TRAINS} from './009c-trains.js';

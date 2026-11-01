@@ -1,6 +1,6 @@
 // SPRAY PAINT: a can from the bodega (ordered on your computer, the drone brings it) holds 256 colours; SPRAY it from the pack, pick a colour on the grid, hold the mouse on a wall or floor to paint; every tag is the block's shared world (kept for all), and the can runs out.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LEVELS, ONLINE, pos, SFX, SPRAY, W3} from './003b-systems.js';
+import {FORAGE, LEVELS, ONLINE, pos, SFX, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';

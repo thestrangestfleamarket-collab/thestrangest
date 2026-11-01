@@ -1,7 +1,8 @@
 # PETRI — the ninth cabinet, in the line of agar.io
 
-Owner, 1 Nov 2026: "lets create an agar.io style clone in arcade". Not an 80s machine: the one new cabinet wheeled into the room,
-on the wall facing the door. The design the owner reads before any code (as TORCHBEARER's). Open questions for him in §12.
+Owner, 1 Nov 2026: "lets create an agar.io style clone in arcade", then "build petri". Not an 80s machine: the one new cabinet
+wheeled into the room. *Where it stands (1 Nov 2026): §11.1 is built — the dish with bots, the cabinet, the check; §11.2 (the whole
+market in one dish on the worker) next.*
 
 ## 1. The game in a sentence
 
@@ -12,8 +13,8 @@ a bigger one touch you. Everyone in the market who plays is in the same dish at 
 
 - Name **PETRI**. Lore: maker NODE 9, place BERLIN, year 2015, colour `#7aff6a`, tag `EAT. SPLIT. DON'T GET EATEN.`, story
   `ONE DISH FOR THE WHOLE MARKET.` / `THE BIGGEST CELL WEARS THE CROWN.` Skill trained: alch (the other cabinets each train one).
-- Where: a ninth cabinet, centred on the arcade's wall facing the door (the room has four a side; this one stands alone, newer and
-  brighter, a flat screen in a slim body). `STORE.cabs.walls` gets a third wall `f:['PETRI']`; the room's builder places it like the
+- Where: a ninth cabinet on the back wall beside the holodeck's door, facing the street door (the room has four a side; this one
+  stands alone, newer and brighter). `STORE.cabs.walls` gets a third wall `b:['PETRI']`; the room's builder places it like the
   others. If the owner would rather replace a COMING SOON cabinet (KNUCKLE CITY, DRAGON POP, MONSTER ROAD), it takes that slot.
 - The same window, coin ($2), title card, high-score table (initials, the best mass reached beside the score) and attract mode.
 

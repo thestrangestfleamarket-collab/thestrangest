@@ -50,7 +50,11 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
         const px=(u,z)=>{ for(const h of holes){ if(u<h.a0||u>h.a1||z<h.z0||z>h.z1)continue; const Wd=Math.max(1,Math.round((h.a1-h.a0)*24)), ii=Math.min(Wd-1,Math.floor((u-h.a0)*24)), jj=Math.floor(h.z1-z);
             if(h.z0===0&&door&&door.w===wid)return door.pic?door.pic(ii,jj,Wd,h.z1-h.z0):DPX(Wd,h.z1-h.z0)(ii,jj); const e=Math.min(u-h.a0,h.a1-u)*24, t=Math.min(z-h.z0,h.z1-z); if(e<2||t<2||Math.abs(u-(h.a0+h.a1)/2)*24<1)return [46,42,40];
             if(s!==inS&&hash(Math.floor(h.a0*7+at*13),Math.floor(h.z0),11)<.5)return [255,206,140,1]; return (Math.floor(u*24)+Math.floor(z))%9===0?[58,64,74]:[34,38,46]; } return paint(s,u,z); };
-        bq(pt(a0,0,s*.1),pt(a1,0,s*.1),pt(a1,H,s*.1),pt(a0,H,s*.1),faceTex(W,H,(ii,jj)=>C(px(a0+(ii+.5)/24,H-jj-.5))),kind); };
+        const OH=holes.filter(h=>h.open); if(!OH.length)return bq(pt(a0,0,s*.1),pt(a1,0,s*.1),pt(a1,H,s*.1),pt(a0,H,s*.1),faceTex(W,H,(ii,jj)=>C(px(a0+(ii+.5)/24,H-jj-.5))),kind);
+        // an open hole (a booth set into the wall) is cut right through: the wall in pieces round it
+        const A=[...new Set([a0,a1,...OH.flatMap(h=>[Math.max(a0,h.a0),Math.min(a1,h.a1)])])].sort((p,q)=>p-q), Zs=[...new Set([0,H,...OH.flatMap(h=>[h.z0,h.z1])])].sort((p,q)=>p-q);
+        for(let i=0;i+1<A.length;i++)for(let j=0;j+1<Zs.length;j++){ const u0=A[i], u1=A[i+1], z0=Zs[j], z1=Zs[j+1]; if(OH.some(h=>(u0+u1)/2>h.a0&&(u0+u1)/2<h.a1&&(z0+z1)/2>h.z0&&(z0+z1)/2<h.z1))continue;
+          bq(pt(u0,z0,s*.1),pt(u1,z0,s*.1),pt(u1,z1,s*.1),pt(u0,z1,s*.1),faceTex(Math.max(1,Math.round((u1-u0)*24)),Math.max(1,z1-z0),(ii,jj)=>C(px(u0+(ii+.5)/24,z1-jj-.5))),kind); } };
       const inFaces=[];
       for(const [wid,ax,at,a0,a1,inS,holes0,inner] of walls){ const holes=(holes0||[]).concat(o.holes&&o.holes[wid]||[],door&&door.w===wid?[{a0:door.a-door.wd/2,a1:door.a+door.wd/2,z0:0,z1:door.h}]:[]), kind='W'+id+':'+wid, pl=planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
         const paint=(s,u,z)=>{ const nx=ax==='y'?s:0, ny=ax==='x'?s:0, Xw=ax==='y'?at+s*.1:u, Yw=ax==='x'?at+s*.1:u; return (inner||s===inS)?look.in(B,nx,ny,Xw,Yw,z,1):(look.out||facade)(nx,ny,Xw,Yw,z,1,H); };

@@ -56,6 +56,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const b = BIRDS.list.find(x => x.st === 'opet'); return { bird: b ? BIRDS.K[b.k][0] : null, on: b ? +Math.hypot(b.x - ONLINE.others.get('z').fig.g.position.x, b.z - ONLINE.others.get('z').fig.g.position.z).toFixed(2) : null, mine: ONLINE.mine.pet && ONLINE.mine.pet() }; });
   ok(op.bird === 'BLUE JAY' && op.on < 1, "another player's tame blue jay rides on their shoulder: " + JSON.stringify(op));
 
+  // another player's feeder stands where they hung it, with their name, and goes when they take it down; yours goes to the section
+  const fd = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), sent = [], on = ONLINE.on, send = ONLINE.send; ONLINE.on = true; ONLINE.send = m => sent.push(m);
+    ONLINE.hear.puts({ all: [{ id: 'w', name: 'Wren', k: 'feeder', list: [[p[0] + 4 * T, p[1], p[2], 0]] }] }); const F = BIRDS.feeds.get('w'), o = { there: !!(F && F.g.parent), name: F && F.th.name };
+    FORAGE.give('feeder'); FORAGE.ACT.bhang('feeder'); o.mine = (sent.filter(m => m.t === 'puts' && m.k === 'feeder').pop() || {}).list; if (BIRDS.feeder()) BIRDS.feeder().act();
+    ONLINE.hear.puts({ id: 'w', k: 'feeder', name: 'Wren', list: [] }); o.gone = !BIRDS.feeds.has('w') && !(F && F.g.parent); ONLINE.on = on; ONLINE.send = send; return o; });
+  ok(fd.there && fd.name === "WREN'S BIRD FEEDER" && Array.isArray(fd.mine) && fd.mine.length === 1 && fd.gone, "another player's feeder stands where they hung it, with their name, and goes when they take it down; yours goes to the section: " + JSON.stringify(fd));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all nature checks passed'); process.exit(fails.length ? 1 : 0);
 })();

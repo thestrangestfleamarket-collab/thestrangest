@@ -140,7 +140,7 @@ KMK.gravel=(x0,y0,x1,y1)=>{ SHARED.PNAME='gravel'; const G=[[120,114,104],[134,1
   return prop([{x0,y0,x1,y1,z0:0,z1:1,c:G[0],foot:1,nb:1,top,fi:()=>null,fj:()=>null}],null,{walk:true,lift:1}); };
 })();
 
-STOREK.keep={KEEPR,keepOutWall,keepInWall,keepFloorCol,KMK,DGP};
+STOREK.keep={KEEPR,keepOutWall,keepInWall,keepFloorCol,keepStone,KMK,DGP};
 }
 
 }

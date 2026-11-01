@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {EQUIP, FLOW, FORAGE} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
-{ const T=TILE, MPU=.84/T, WU=1/MPU, G=192, SW=48*T, CELL=SW/G, L=CELL*MPU, SNAP=16*CELL, EDGE=10, CAP=1.6, NW=8;
+{ const T=TILE, MPU=.84/T, WU=1/MPU, G=192, SW=48*T, CELL=SW/G, L=CELL*MPU, SNAP=16*CELL, EDGE=10, CAP=1.6, NW=8, DMAX=20;   // the waves feel no more than 20 m of water: deeper (the Hudson's holes) they would outrun a step and blow up
   const waters=[], bed=new Float32Array(G*G*4), bedTex=new THREE.DataTexture(bed,G,G,THREE.RGBAFormat,THREE.FloatType); bedTex.magFilter=bedTex.minFilter=THREE.NearestFilter;
   let RT=null, ty=THREE.HalfFloatType, pend=0, x0=1e9, z0=1e9, live=false, acc=0, quiet=0, rows=0;
   const uRect={value:new THREE.Vector4(0,0,SW,SW)}, uOn={value:0}, uTex={value:null}, uWA={value:Array.from({length:NW},()=>new THREE.Vector4())}, uWB={value:Array.from({length:NW},()=>new THREE.Vector4())}, uNW={value:0};
@@ -45,7 +45,7 @@ import {SYS, TILE} from './006-map-pre.js';
   const near=(px,pz)=>waters.filter(w=>!w.off&&w.box[0]<px+SW&&w.box[2]>px-SW&&w.box[1]<pz+SW&&w.box[3]>pz-SW);
   // the bed and rest surface under every cell, from the waters' own shapes; a cell no water claims is a wall
   const fill=(ws,j0,j1,i0,i1)=>{ for(let j=j0;j<j1;j++){ const z=z0+(j+.5)*CELL; for(let i=i0;i<i1;i++){ const x=x0+(i+.5)*CELL, o=(j*G+i)*4; let w=null; for(const q of ws)if(q.has(x,z)){ w=q; break; }
-        if(!w||w.solid&&w.solid(x,z)){ bed[o]=1e3; bed[o+1]=0; bed[o+2]=0; bed[o+3]=0; continue; } bed[o]=w.bed(x,z)*MPU; bed[o+1]=w.rest(x,z)*MPU; bed[o+2]=w.swell?1:0; bed[o+3]=1; } } };
+        if(!w||w.solid&&w.solid(x,z)){ bed[o]=1e3; bed[o+1]=0; bed[o+2]=0; bed[o+3]=0; continue; } bed[o]=Math.max(w.bed(x,z),w.rest(x,z)-DMAX*WU)*MPU; bed[o+1]=w.rest(x,z)*MPU; bed[o+2]=w.swell?1:0; bed[o+3]=1; } } };
   FLOW.step=(renderer,dt,pos)=>{ FLOW.under=false; if(SHARED.LVL!=='up'||!waters.length){ uOn.value=0; live=false; return; }
     const ws=near(pos.x,pos.z); if(!ws.length){ uOn.value=0; live=false; return; } init(renderer);
     const nx=Math.round((pos.x-SW/2)/SNAP)*SNAP, nz=Math.round((pos.z-SW/2)/SNAP)*SNAP;

@@ -42,5 +42,5 @@ import {ROOMK} from './150a-bedroom.js';
     H.built=true; });
   SYS.add('places',()=>{ if(!H.built||!APTS.inReal||!window.POSOK||FADE.busy)return; const on=H.on(); if(on==='down')APTS.exitReal('DOWN THE STAIRS'); else if(on==='up')APTS.roofGo(); },'150n-hall');
   window.HALLDBG=()=>({built:H.built,real:!!APTS.inReal,floors:APTS.floors,things:UI.things.filter(t=>t.name==='ELEVATOR'||t.name==='FRONT DOOR'||t.name==='STAIRS DOWN').map(t=>t.name),on:H.built?H.on():null,door:!!(APTS.frontDoor&&APTS.frontDoor.open),
-    land:k=>{ const p=H.land(k); UI.goTo(p.x,p.z,APTS.floorY); },go:()=>{ UI.goTo(H.mid.x,H.mid.z,APTS.floorY); },use:n=>{ const t=UI.things.find(t=>t.name===n); if(t)t.act(); return !!t; }});
+    land:k=>{ const p=H.land(k); UI.goTo(p.x,p.z,APTS.floorY); },go:()=>{ UI.goTo(H.mid.x,H.mid.z,APTS.floorY); },view:v=>UI.setView(v),use:n=>{ const t=UI.things.find(t=>t.name===n); if(t)t.act(); return !!t; }});
 }

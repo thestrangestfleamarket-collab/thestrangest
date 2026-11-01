@@ -32,7 +32,7 @@ import {PAD} from './075-main-13.js';
   const cv=renderer.domElement;
   const zoom=d=>{ const r=cv.getBoundingClientRect(); cv.dispatchEvent(new WheelEvent('wheel',{deltaY:d*-240,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true})); };
   const C='button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,a[href],[tabindex]:not([tabindex="-1"])';
-  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
+  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn|hlog|hmap|hqb|vit|hud)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
   const ctls=()=>panels().flatMap(p=>[...p.querySelectorAll(C)]).filter(e=>{ if(e.closest('[inert],[hidden]'))return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'; });
   const grab=el=>{ if(PAD.grab)PAD.grab.classList.remove('padgrab'); PAD.grab=el; if(el)el.classList.add('padgrab'); };
   const mark=el=>{ grab(null); if(PAD.ui)PAD.ui.classList.remove('padon'); PAD.ui=el; if(el){ el.classList.add('padon'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); PAD.at=[r.left+r.width/2,r.top+r.height/2]; } };

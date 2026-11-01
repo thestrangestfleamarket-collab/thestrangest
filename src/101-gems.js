@@ -11,7 +11,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.own=D.cash??INV.START; if(!D.g1m)INV.own=Math.max(INV.own,INV.START); } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; } if(INV.own==null)INV.own=INV.START;
   const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,g1m:1,items:INV.items,picked:INV.picked,cash:INV.own})); if(window.MAIL&&MAIL.save)MAIL.save(); };
   Object.defineProperty(INV,'cash',{get:()=>window.MAIL&&MAIL.on&&MAIL.you?MAIL.you.cash:INV.own,set:v=>{ if(window.MAIL&&MAIL.on&&MAIL.you)MAIL.you.cash=v; else INV.own=v; }});
-  INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); };
+  INV.save=save; INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); };
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();

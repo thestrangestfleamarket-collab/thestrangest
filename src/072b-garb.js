@@ -104,6 +104,8 @@ const GARB={};
   const BUST={shirt:.3,jacket:.85}, tpl=(k,f)=>{ const q=BUST[k]&&f==='F'?k+'F':k; if(!TPL[q]){ const t0=performance.now(); TPL[q]=fin(MAKE[k](f==='F'?'F':'M')); GARB.made[q]=+(performance.now()-t0).toFixed(1); } return TPL[q]; }, TPL={}; GARB.made={};
   // the rows over the shoulders, put on the body from the chest's middle (lower in front)
   const neck=th=>-.9*Math.cos(th)+.3*Math.sin(th)**2, yoke=th=>-.9*Math.cos(th)-.3*Math.sin(th)**2, shoulder=th=>-.6*Math.cos(th)+.4*Math.sin(th)**2;
+  // her arms are slimmer than her shoulders: the sleeve's top is roomier on her, so her shoulder stays inside it
+  const roomy=(f,R)=>f==='F'?R.map((g,j)=>{ const q=g.slice(); q[2]*=1+.12*Math.max(0,1-j/3); return q; }):R;
   const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.32+e,1],[29.3,9,4.6,null,.35+e,1],[28.4,8.6,4.5,null,.4+e,1]];
   const MAKE={
     // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
@@ -112,7 +114,7 @@ const GARB={};
       const KR=[0,0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
       torso(t,rows,28,true,0,0,(i,j)=>KR[j],0,TS,chest,f);
       torso(t,[[34.4,2,1.8,neck,.22,1],[35,2,1.8,neck,.2,1]],28,true,0,0,()=>0,0,TS*.5,chest,f);   // the ribbed neckband
-      for(const s of 'LR'){ const u='upperArm'+s; limb(t,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]],16,j=>j===4?.3:0,0,TS); }
+      for(const s of 'LR'){ const u='upperArm'+s; limb(t,roomy(f,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]]),16,j=>j===4?.3:0,0,TS); }
       return t; },
     // straight-leg jeans on a leather belt with a brass buckle: held from the waist down, the cuffs swing and break over the shoes
     pants:()=>{ const t=NEW(), TS=DEF.denim.TS, hip=()=>['hips',null,0], d=body('P');
@@ -131,8 +133,8 @@ const GARB={};
       torso(t,rows,26,false,th0,th1,(i,j)=>{ const e=Math.min(i,25-i); return KR[j]*(e<3?.55+.15*e:1); },0,TS,chest,f);
       torso(t,[[34.4,2,1.8,neck,.77,1],[36,2,1.8,neck,1.05,1],[33.4,4.6,3,yoke,1.4,1]],26,false,th0,th1,()=>0,0,TS*.6,chest,f);   // the collar, folded down
       for(const sg of [1,-1]){ const tc=sg*.85; grid(t,3,2,false,(i,j)=>{ const th=tc+(i-1)*.22, y=j?27.6:29; pt(t,onto(d,V(0,y,0),V(Math.sin(th),y,Math.cos(th)),1.1,13),'torso'); },(c,j)=>[c*.5,j*.6],0); }
-      for(const s of 'LR'){ const u='upperArm'+s, f='forearm'+s;
-        limb(t,[[u,-.6,3.62,'torso',.6],[u,.7,3.55,'torso',.9],[u,2.4,3.45],[u,4.2,3.38],[u,5.8,3.32,f,.8],[u,7,3.28,f,.45],[f,.6,3.24,u,.85],[f,2,3.16],[f,3.4,3.08],[f,4.8,3],[f,5.9,2.96],[f,6.5,3.02]],
+      const fm=f; for(const s of 'LR'){ const u='upperArm'+s, f='forearm'+s;
+        limb(t,roomy(fm,[[u,-.6,3.62,'torso',.6],[u,.7,3.55,'torso',.9],[u,2.4,3.45],[u,4.2,3.38],[u,5.8,3.32,f,.8],[u,7,3.28,f,.45],[f,.6,3.24,u,.85],[f,2,3.16],[f,3.4,3.08],[f,4.8,3],[f,5.9,2.96],[f,6.5,3.02]]),
           16,j=>j===11?.3:0,0,TS); }
       return t; },
     // leather boots on rubber soles, laced: the upper lofted along the foot, the sole a slab, the laces across the vamp

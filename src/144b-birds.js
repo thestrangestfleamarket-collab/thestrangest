@@ -1,6 +1,6 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DRESS, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, DRESS, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -8,7 +8,7 @@ import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
-{ const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
+{ const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
     ['ROCK PIGEON','Columba livia',.32,5,4,3,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
     ['EUROPEAN STARLING','Sturnus vulgaris',.21,10,4,4,'walk',{body:0x1e2228,breast:0x26302a,head:0x1a1e24,wing:0x2a2a2a,bar:0xa89a6a,tail:0x1a1a1e,beak:0xe8c040,leg:0xb08a70}],
@@ -87,7 +87,8 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const step=(b,dt)=>{ '@later'; b.t+=dt; if(b.st==='still')return; const ws=b.k===HAWK?.45:1;
     if(b.st==='opet'){ const o=b.o, g=o&&o.fig&&o.fig.g; if(!g)return; const hd=g.rotation.y, rx=Math.cos(hd), rz=-Math.sin(hd), tx=g.position.x+rx*.2*WU, tz=g.position.z+rz*.2*WU, ty=g.position.y+1.42*WU, k=Math.min(1,dt*6);
       b.x+=(tx-b.x)*k; b.y+=(ty-b.y)*k; b.z+=(tz-b.z)*k; b.yaw=hd; b.wing=Math.max(0,b.wing-dt*6); b.pitch=0; b.lift=0; return; }
-    if(b.st==='pet'){ const hd=SHARED.heading, rx=Math.cos(hd), rz=-Math.sin(hd), on=still>1.2, tx=on?pos.x+rx*.2*WU:pos.x-Math.sin(hd)*.7*T+rx*.4*T, tz=on?pos.z+rz*.2*WU:pos.z-Math.cos(hd)*.7*T+rz*.4*T, ty=SHARED.py+(on?1.42:1.9)*WU;
+    if(b.st==='pet'){ const hd=SHARED.heading, rx=Math.cos(hd), rz=-Math.sin(hd), on=still>1.2, J=W3.lastB&&W3.lastB.J, SJ=on&&J&&(b.side===-1?J.shoulderR:J.shoulderL); if(SJ)SPOT.set(SJ.x+(b.side||1)*.9,SJ.y+2.4,SJ.z).applyMatrix4(W3.group.matrixWorld);
+      const tx=SJ?SPOT.x:on?pos.x+rx*.2*WU:pos.x-Math.sin(hd)*.7*T+rx*.4*T, tz=SJ?SPOT.z:on?pos.z+rz*.2*WU:pos.z-Math.cos(hd)*.7*T+rz*.4*T, ty=SJ?SPOT.y:SHARED.py+(on?1.42:1.9)*WU;
       const k=Math.min(1,dt*(on?6:3)); b.x+=(tx-b.x)*k; b.y+=(ty-b.y)*k; b.z+=(tz-b.z)*k; const moving=Math.hypot(tx-b.x,tz-b.z)>.05*T||!on; b.yaw=on||spd>.2*T?hd:Math.atan2(pos.x-b.x,pos.z-b.z);
       b.wing=moving?1+.9*Math.sin(b.t*20):Math.max(0,b.wing-dt*6); b.pitch=moving?.2:0; b.lift=0; return; }
     if(b.st==='fly'){ const F=b.fly; F.t+=dt; const u=Math.min(1,F.t/F.dur), A=F.a, C=F.c; b.x=A[0]+(C[0]-A[0])*u; b.z=A[2]+(C[2]-A[2])*u; b.y=A[1]+(C[1]-A[1])*u+Math.sin(Math.PI*u)*F.h*(F.away?.3:1);
@@ -153,7 +154,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     for(const b of [...BIRDS.list])if(b.st==='opet'){ const w=want.get(b.o.id); if(!w||w[1]!==b.k)drop(b); else want.delete(b.o.id); }
     for(const [,[o,k]] of want){ const g=o.fig.g, b=add(k,g.position.x,g.position.y+1.4*WU,g.position.z,{src:'opet'}); b.st='opet'; b.o=o; b.th.name=(o.name||'THEIR')+"'S TAME "+K[k][0]; b.th.act=()=>say('IT IS NOT YOUR BIRD. IT EYES YOU FROM ITS PERCH.','#c8c2b0'); } };
   const makePet=(k,b)=>{ '@later'; const old=petOf(); if(old){ freePet(true); } for(const id of Object.keys(INV.items))if(id.startsWith('pet_'))delete INV.items[id]; FORAGE.give('pet_'+k,1);
-    const p=b&&BIRDS.list.includes(b)?b:add(k,pos.x,SHARED.py+1.2*WU,pos.z); p.st='pet'; p.src='pet'; p.fly=null; p.hop=null; p.th.name='YOUR TAME '+K[k][0]; say(`THE ${K[k][0]} IS TAME. IT WILL FOLLOW YOU.`,'#9fe07f'); };
+    const p=b&&BIRDS.list.includes(b)?b:add(k,pos.x,SHARED.py+1.2*WU,pos.z); p.st='pet'; p.src='pet'; p.fly=null; p.hop=null; p.side=Math.random()<.5?-1:1; p.th.name='YOUR TAME '+K[k][0]; say(`THE ${K[k][0]} IS TAME. IT WILL FOLLOW YOU.`,'#9fe07f'); };
   const freePet=quiet=>{ const b=petOf(); for(const id of Object.keys(INV.items))if(id.startsWith('pet_'))delete INV.items[id]; if(!b)return; if(!quiet)say(`YOU LET THE ${K[b.k][0]} GO. IT FLIES OFF.`,'#9fe07f'); b.st='ground'; b.src='free'; flyTo(b,b.x+20*T,b.y+8*WU,b.z+12*T,true); };
   FORAGE.ROWB.push(id=>id.startsWith('bd_')?[['TAME','btame'],['RELEASE','bfree2']]:id==='bseed'?[['SCATTER','bscatter']]:id==='feeder'?[['HANG IT HERE','bhang']]:id.startsWith('pet_')?[['CAGE IT','bcage'],['LET GO','bletgo']]:[]);
   FORAGE.ACT.bfree2=id=>{ const k=+id.slice(3); FORAGE.take(id,1); FORAGE.give('cage',1); const b=add(k,pos.x,SHARED.py+1*WU,pos.z,{src:'free'}); flyTo(b,pos.x+18*T,b.y+7*WU,pos.z-14*T,true); say(`YOU OPEN THE CAGE. THE ${K[k][0]} FLIES OFF.`,'#9fe07f'); };

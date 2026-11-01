@@ -57,11 +57,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const t1 = performance.now(); while (performance.now() - t1 < 400000) { s = FISHING.state(); if (!s || s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }   // its own wait: on a slow machine the nibble alone can take most of the first
     for (let i = 0; i < 5; i++) await new Promise(r => requestAnimationFrame(r)); out.bite = s && s.st; out.shown = FISHDBG().shown; FISHING.click(); out.on = FISHDBG().shout; FISHING.reel(); FISHING.force = null; FISHING.speed = 20; return out; });
   ok(/TOO EARLY/.test(r4.spook) && r4.still === 'wait' && r4.hook && r4.bite === 'bite' && r4.shown && /FISH ON/.test(r4.on), 'a strike on a nibble spooks the fish (said big in the middle), the bait stays; the next one shows at the bait as it bites: ' + JSON.stringify(r4));
-  const fight = (id, reel) => pg.evaluate(async ([id, reel]) => { const T = __dbg.cv().TILE; FISHING.force = id; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
+  const fight = (id, reel, fresh) => pg.evaluate(async ([id, reel, fresh]) => { const T = __dbg.cv().TILE; FISHING.force = id; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); let s; while (performance.now() - t0 < 400000) { s = FISHING.state(); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
-    FISHING.click(); const n0 = INV.items[id] || 0; while (performance.now() - t0 < 900000) { s = FISHING.state(); FISHING.reeling = reel; if (!s || s.st === 'land') break; await new Promise(r => setTimeout(r, 30)); }
-    const landed = !!s; FISHING.reel(); FISHING.force = null; return { landed, got: (INV.items[id] || 0) - n0, msg: [...document.querySelectorAll('#fjour div')].map(d => d.textContent).slice(-2) }; }, [id, reel]);
-  await pg.evaluate(() => { FISHING.drag = 5; }); const snap = await fight('x_sturgeon', true); await pg.evaluate(() => { FISHING.drag = 3; });
+    FISHING.click(); const n0 = INV.items[id] || 0; while (performance.now() - t0 < 900000) { s = FISHING.state(); FISHING.reeling = reel; if (s && fresh && s.f) s.f.s = 1; if (!s || s.st === 'land') break; await new Promise(r => setTimeout(r, 30)); }
+    const landed = !!s; FISHING.reel(); FISHING.force = null; return { landed, got: (INV.items[id] || 0) - n0, msg: [...document.querySelectorAll('#fjour div')].map(d => d.textContent).slice(-2) }; }, [id, reel, fresh]);
+  await pg.evaluate(() => { FISHING.drag = 5; }); const snap = await fight('x_sturgeon', true, true); await pg.evaluate(() => { FISHING.drag = 3; });
   ok(!snap.landed && snap.msg.some(m => /SNAPS/.test(m)), 'reeling hard against a sturgeon snaps the line: ' + JSON.stringify(snap));
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));

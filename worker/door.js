@@ -1,5 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
+import { DISH, DISHK } from "./dish.js";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
@@ -40,7 +41,8 @@ export default {
       out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; } }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        if (party !== "block" || !ROOM.test(name) || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
+        const room = party === "block" ? ROOM.test(name) : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI
+        if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); return r; },
       onBeforeRequest: () => new Response("not found", { status: 404 }) })) || new Response("not found", { status: 404 });
@@ -302,6 +304,40 @@ async function admin(env, b) {
     await blockAsk(env, room, "kick", { id }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
+// THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
+// each player sends only how they steer, and gets back what is in their view ten times a second; bots fill the dish
+export class Dish extends Server {
+  static options = { hibernate: false };
+  dish() { if (!this.S) { this.S = DISH.make(Math.floor(Math.random() * 1e9) + 1); this.S.ev = []; for (let i = 0; i < DISHK.FILL - 1; i++) DISH.join(this.S, "bot" + i, DISHK.BOTS[i % DISHK.BOTS.length], DISHK.COLS[(i * 5 + 3) % DISHK.COLS.length], true); } return this.S; }
+  snap(S) { return { t: S.t, cells: S.cells.map(c => [c.id, c.o, Math.round(c.x), Math.round(c.y), +c.m.toFixed(1), Math.round(c.vx), Math.round(c.vy), +(c.mt - S.t).toFixed(1)]), pellets: S.pellets.map(q => [q.id, Math.round(q.x), Math.round(q.y), q.c]), vir: S.viruses.map(v => [Math.round(v.x), Math.round(v.y), v.m, Math.round(v.vx), Math.round(v.vy)]),
+    blobs: S.blobs.map(b => [Math.round(b.x), Math.round(b.y), b.m, b.c, Math.round(b.vx), Math.round(b.vy)]), players: Object.values(S.players).map(p => [p.id, p.name, p.col, p.bot ? 1 : 0, p.dead, Math.round(p.best), p.eaten]), board: S.board }; }
+  async onConnect(c, ctx) {
+    const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
+    for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
+    const S = this.dish(); c.setState({ id, cx: DISHK.DW / 2, cy: DISHK.DH / 2 }); if (!S.players[id]) DISH.join(S, id, "???", DISHK.COLS[Math.floor(Math.random() * DISHK.COLS.length)]);
+    c.send(JSON.stringify({ t: "hi", you: id, S: this.snap(S) }));
+    if (!this.timer) { this.last = Date.now(); this.n = 0; this.timer = setInterval(() => this.tick(), 50); }
+  }
+  onClose(c) { const S = this.S; if (S && c.state && c.state.id) DISH.leave(S, c.state.id); if (![...this.getConnections()].length && this.timer) { clearInterval(this.timer); this.timer = null; } }
+  onError(c) { this.onClose(c); }
+  onMessage(c, raw) {
+    const s = c.state, S = this.S; if (!s || !S || typeof raw !== "string" || raw.length > 300) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 40) return;
+    const p = S.players[s.id]; if (!p) return;
+    if (m.t === "in") DISH.input(S, s.id, num(m.dx, -1, 1), num(m.dy, -1, 1), !!m.s, !!m.e);
+    else if (m.t === "name") { p.name = word(m.n, 12) || "???"; if (/^#[0-9a-f]{6}$/i.test(m.c || "")) p.col = m.c; }
+    else if (m.t === "again") { if (p.dead) { p.eaten = 0; p.best = 0; DISH.spawn(S, p); } }
+  }
+  tick() { const S = this.S; if (!S) return; const now = Date.now(), dt = Math.min(.1, (now - this.last) / 1000); this.last = now; DISH.step(S, dt); if (++this.n % 2) return;
+    const ev = S.ev.splice(0), vir = S.viruses.map(v => [Math.round(v.x), Math.round(v.y), v.m, Math.round(v.vx), Math.round(v.vy)]), blobs = S.blobs.map(b => [Math.round(b.x), Math.round(b.y), b.m, b.c, Math.round(b.vx), Math.round(b.vy)]);
+    const who = Object.values(S.players).map(p => [p.id, p.name, p.col, p.bot ? 1 : 0, p.dead, Math.round(p.best), p.eaten]);
+    for (const c of this.getConnections()) { const s = c.state; if (!s) continue; const p = S.players[s.id]; if (!p) continue;
+      let cx = 0, cy = 0, w = 0, mass = 0; for (const q of S.cells) if (q.o === s.id) { cx += q.x * q.m; cy += q.y * q.m; w += q.m; mass += q.m; } if (w) { s.cx = cx / w; s.cy = cy / w; }
+      const z = 1 / (1 + Math.sqrt(Math.max(mass, 10)) / 20), rx = 256 / z, ry = 224 / z, cells = [];
+      for (const q of S.cells) if (Math.abs(q.x - s.cx) < rx + q.r && Math.abs(q.y - s.cy) < ry + q.r) cells.push([q.id, q.o, Math.round(q.x), Math.round(q.y), +q.m.toFixed(1), Math.round(q.vx), Math.round(q.vy), +(q.mt - S.t).toFixed(1)]);
+      c.send(JSON.stringify({ t: "tk", t2: +S.t.toFixed(2), cells, vir, blobs, ev, board: S.board, who, me: [p.dead, Math.round(p.best), p.eaten, p.n, p.ate || ""] })); } }
+}
+
 // letters from the market: kept here (no Supabase table needed), shown to the player when they next open the game
 export class Post extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql;

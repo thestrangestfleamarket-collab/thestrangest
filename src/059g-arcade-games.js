@@ -1,8 +1,8 @@
 // THE ARCADE'S GAMES, the shared cabinet layer: each cabinet's game registers here (STORE.cabs.add: its name, the skill it trains, its lore, and its game as its own chunk, fetched the first time you play it); the window a game plays in over the page (a play costs $2 and trains the skill by your score), the best scores, the title cards, and the attract mode the cabinets' screens run. A cabinet whose game is not built yet shows its card: COMING SOON.
-import {FORAGE, INV, keys, SFX} from './003b-systems.js';
+import {FORAGE, INV, keys, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {STORE, SYS} from './006-map-pre.js';
-STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; }};
+STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
 SYS.add('places',dt=>{ if(STORE.cabs.tick)STORE.cabs.tick(dt); },'arcade games');
 STORE.cabs.play=name=>STORE.cabs.kit().open(name);
 STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
@@ -63,6 +63,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     if(matchMedia('(pointer:coarse)').matches){ const pad=document.createElement('div'); pad.style.cssText='display:flex;gap:10px';
       for(const [k,l] of [['L','◀'],['U','▲'],['D','▼'],['R','▶'],['F','●'],...(e.hold?[['H','H']]:[]),['X','✕']]){ const b=document.createElement('button'); b.textContent=l; b.style.cssText='width:50px;height:46px;font-size:20px;background:#241a30;color:#fff;border:2px solid #5a3a70;border-radius:8px';
         b.onpointerdown=ev=>{ ev.preventDefault(); if(k==='X')return close(); if(!K[k])T[k]=1; K[k]=1; }; b.onpointerup=b.onpointerleave=()=>{ if(k!=='X')K[k]=0; }; pad.append(b); } box.append(pad); }
+    cv.addEventListener('pointermove',ev=>{ const r=cv.getBoundingClientRect(); K.mx=(ev.clientX-r.left)/r.width*W; K.my=(ev.clientY-r.top)/r.height*H; }); cv.addEventListener('pointerleave',()=>{ K.mx=K.my=null; });   // a game that steers by the pointer (PETRI) reads where it is over the screen
     const kd=ev=>{ ev.stopPropagation(); const k=(ev.key||'').toLowerCase(); if(k==='escape'){ ev.preventDefault(); close(); return; } const m=map(k); if(!m)return; ev.preventDefault(); if(!ev.repeat&&!K[m])T[m]=1; K[m]=1; };
     const ku=ev=>{ ev.stopPropagation(); const m=map((ev.key||'').toLowerCase()); if(m)K[m]=0; }, blur=()=>{ for(const k in K)K[k]=0; };
     const coin=()=>{ if(INV.cash<2){ msg='YOU NEED $2 TO PLAY'; beep(120,.2); return false; } INV.cash-=2; msg=''; beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };
@@ -70,7 +71,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     const end=()=>{ nb=setBest(name,g.score); const amt=1+G.grade.filter(v=>g.score>=v).length; if(e.skill)FORAGE.train(e.skill,400,0,amt); rank=0;
       if(qualifies(name,g.score)){ mode='initials'; slot=0; foot.textContent='▲▼ LETTER · ◀▶ SLOT · SPACE TO ENTER'; beep(1568,.6,'square',.05,2093); } else { if(nb)beep(1568,.6,'square',.05,2093); again(); } };
     const enter=()=>{ const s=ini.join(''); OWNED.set('arcade-ini',s); again(); post(name,s,g.score,g.sub||'').then(r=>{ rank=r; }); beep(1319,.2,'square',.05,1760); };
-    const close=()=>{ if(!C.on)return; C.on=false; C.tick=null; removeEventListener('keydown',kd,true); removeEventListener('keyup',ku,true); removeEventListener('blur',blur); box.remove(); keys.clear(); };
+    const close=()=>{ if(!C.on)return; C.on=false; C.tick=null; UI.gamewin=document.getElementById('bbswin')?'bbs':null; removeEventListener('keydown',kd,true); removeEventListener('keyup',ku,true); removeEventListener('blur',blur); box.remove(); keys.clear(); };
     C.close=close; C.dbg=()=>({name,mode,loaded:!!G,loading,score:g?g.score:0,over:g?g.over:false,top:topOf(name),ini:ini.join(''),rank,g:g&&g.dbg?g.dbg():null}); C.cheat={over:(score,sub)=>{ if(mode==='play'&&g){ g.score=score; if(sub)g.sub=sub; g.over=true; } }};
     C.tick=dt=>{ if(mode==='title'||mode==='over'){ wait=Math.max(0,wait-dt); if(T.F&&wait<=0&&G&&coin()){ g=G.make(); mode='play'; nb=false; foot.textContent='ESC TO LEAVE'; } }
       else if(mode==='play'){ g.step(dt,K,T); if(g.over)end(); }
@@ -83,8 +84,8 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
         tx(c,'GAME OVER',128,72,'#ff3c5a',14,'center'); tx(c,'SCORE '+g.score+(g.sub?' · '+g.sub:''),128,94,'#fff',10,'center');
         if(mode==='initials'){ tx(c,'YOU MADE THE TOP TEN. YOUR INITIALS:',128,110,'#ffe83c',7,'center'); ini.forEach((ch,i)=>{ const x=108+i*20, on=i===slot; if(on&&bl){ c.fillStyle=L.col; c.fillRect(x-7,124,14,16); } tx(c,ch,x,127,on&&bl?'#000':'#fff',12,'center'); }); tx(c,'▲▼ LETTER  ◀▶ SLOT  SPACE',128,150,'#a090c0',7,'center'); }
         else { tx(c,rank>0?'RANK '+rank+' OF THE TOP TEN':nb?'NEW HIGH SCORE!':'HI-SCORE '+hi(name),128,110,(rank>0||nb)&&bl?'#ffe83c':'#a090c0',8,'center'); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } } };
-    keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; beep(660,.1); };
-  return C.K={LIB,lore,game,open,demo,crt}; };
+    keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; UI.gamewin='cab'; beep(660,.1); };   // gamewin: the pad and the headset drive the game, not the page
+  C.ini=()=>OWNED.get('arcade-ini')||''; return C.K={LIB,lore,game,open,demo,crt,top:topOf}; };
 // The four cabinets whose games are still to come (their files register over these when they land): the cards show COMING SOON.
 STORE.cabs.add({name:'TORCHBEARER',skill:'myco',lore:{maker:'HALCYON GAMES',place:'CHICAGO',year:1985,col:'#3cf0ff',tag:'WARRIOR NEEDS FOOD. BADLY.',story:['A HUNDRED FLOORS DOWN. FOUR HEROES.','YOUR HEALTH IS A CLOCK; ONLY FOOD STOPS IT.']}});
 STORE.cabs.add({name:'KNUCKLE CITY',skill:'ento',lore:{maker:'CAPSTONE AMUSEMENTS',place:'OSAKA',year:1991,col:'#ff3c5a',tag:'SIX STAGES. ONE CITY. YOUR FISTS.',story:['FROM THE SLUMS TO THE PENTHOUSE.','EAT THE CHICKEN IN THE TRASH CAN.']}});

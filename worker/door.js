@@ -63,7 +63,7 @@ export default {
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
-      if (p === "/owned") { if (body.put === undefined) return json({ owned: await homeOf(env).ownedGet(id) });
+      if (p === "/owned") { if (body.put === undefined) return json({ owned: await homeOf(env).ownedGet(id), me: meOf(request, id) });
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -94,9 +94,11 @@ async function who(env, request, dev) {
   const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""); if (!m) return "";
   const t = decodeURIComponent(m[1]), now = Date.now(), seen = passed.get(t); if (seen && seen.until > now) return seen.id;
   const r = await pass(env, t, dev); if (!r.ok) return "";
-  if (passed.size > 2000) for (const [k, v] of passed) if (v.until <= now) passed.delete(k); passed.set(t, { until: now + 300000, id: r.id });
+  if (passed.size > 2000) for (const [k, v] of passed) if (v.until <= now) passed.delete(k); passed.set(t, { until: now + 300000, id: r.id, joined: r.joined || "", email: r.email || "" });
   return r.id;
 }
+// who you are, for your passport: the login's id, email and the day it was made (only what who() just checked)
+function meOf(request, id) { const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), s = m && passed.get(decodeURIComponent(m[1])); return { id, email: s && s.id === id && s.email || "", joined: s && s.id === id && s.joined || "" }; }
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
 
 async function page(env, url, path, request, cache) {
@@ -111,7 +113,7 @@ async function pass(env, token, dev) {
   const r = await get("/auth/v1/user"); if (!r.ok) return { why: "login" };
   const u = await r.json(); if (!u || !UUID.test(u.id || "") || (u.banned_until && Date.parse(u.banned_until) > Date.now())) return { why: "login" };
   const pr = await get("/rest/v1/players?select=id&id=eq." + u.id);
-  return pr.ok && (await pr.json()).length > 0 ? { ok: true, id: u.id } : { why: "code" };
+  return pr.ok && (await pr.json()).length > 0 ? { ok: true, id: u.id, joined: u.created_at || "", email: u.email || "" } : { why: "code" };
 }
 
 const svc = env => { const k = env.SUPABASE_SERVICE_KEY; return k ? { apikey: k, ...(k.startsWith("ey") ? { Authorization: "Bearer " + k } : {}) } : null; };

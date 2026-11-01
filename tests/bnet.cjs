@@ -22,11 +22,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     return { off: w.until < 1e9 || !!w.dur, to: w.to }; });
   ok(r3 && r3.off && r3.to === 1, 'a perched butterfly takes off from you as you come close, away from you: ' + JSON.stringify(r3));
 
-  // the swing: hold the net, aim ahead, set a butterfly where the hoop rests, aim off to one side, then sweep the mouse fast across
+  // the swing: hold the net, aim a little ahead, set a butterfly where the hoop rests, aim off to one side, then sweep the mouse fast across (through where it rested)
   const scr = async (fx, fz) => pg.evaluate(([fx, fz]) => { const T = __dbg.cv().TILE, h = SHARED.heading, p = __dbg.pos(), v = new __dbg.THREE.Vector3(p[0] + Math.sin(h) * fz * T + Math.cos(h) * fx * T, p[1] + .9 * T, p[2] + Math.cos(h) * fz * T - Math.sin(h) * fx * T).project(SHARED.cam), r = __dbg.renderer.domElement.getBoundingClientRect();
     return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }, [fx, fz]);
   await pg.evaluate(() => { FORAGE.S.sk.ento = 1000; FORAGE.give('net'); WIELD.set('net'); });
-  let c = await scr(0, 2.5); await pg.mouse.move(c[0], c[1]); await frames(40);
+  let c = await scr(0, 1.2); await pg.mouse.move(c[0], c[1]); await frames(40);
   const r4a = await pg.evaluate(() => { const w = BFLY.list().filter(x => x.wild && x.g.parent && !x.dur).sort((a, b) => a.g.position.distanceTo(W3.group.position) - b.g.position.distanceTo(W3.group.position))[0], H = WIELD.head;
     w.perches = [[H.x, H.y, H.z]]; w.at = w.to = 0; w.until = 1e9; w.nt = 0; w.fast = -.75; window.__bt = w; return { k: w.k, b: BFLY.held() }; });
   c = await scr(-2.5, 1.2); await pg.mouse.move(c[0], c[1]); await frames(40);
@@ -34,6 +34,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const e = await scr(2.5, 1.2); await pg.mouse.move(e[0], e[1], { steps: 4 }); await frames(20);
   const r4 = await pg.evaluate(() => ({ held: BFLY.held(), gone: !__bt.g.parent }));
   ok(r4.held === r4a.b + 1 && r4.gone, 'a fast sweep of the net through a butterfly catches it: ' + JSON.stringify({ ...r4a, ...r4 }));
+  // the mouse takes the arm round in a full circle: above him the hoop rises over his head, below him it drops; a left-hander's net is in the left hand
+  const hoop = () => pg.evaluate(() => { const p = __dbg.pos(), h = SHARED.heading, H = WIELD.head; return { y: H.y - p[1], side: (H.x - p[0]) * Math.cos(h) - (H.z - p[2]) * Math.sin(h) }; });
+  const body = await pg.evaluate(() => { const v = W3.group.position.clone(); v.y += __dbg.cv().TILE * 1.3; v.project(SHARED.cam); const r = __dbg.renderer.domElement.getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height, r.height]; });
+  await pg.mouse.move(body[0], body[1] - body[2] * .4); await frames(30); const hi = await hoop(); await pg.mouse.move(body[0], body[1] + body[2] * .4); await frames(30); const lo = await hoop();
+  await pg.mouse.move(body[0] - body[2] * .3, body[1]); await frames(30); const rt = await hoop(); await pg.evaluate(() => PASSPORT.setHand('L')); await frames(30); const lf = await hoop(); await pg.evaluate(() => PASSPORT.setHand('R'));
+  ok(hi.y > lo.y + 1 && lf.side < rt.side - .1, 'the net goes over his head and down past his knees as the mouse circles him, and into the left hand for a left-hander: ' + JSON.stringify({ hi, lo, rt, lf }));
 
   const r5 = await pg.evaluate(async () => { INV.cash = 100; const N = __dbg.NPCS.find(n => CHARS.id(n) === 'origamifox'), F = __dbg.NPCS.find(n => CHARS.id(n) === 'fox'), o = {};
     o.fox = !!(F && CHARS.trade(F) && CHARS.trade(F).sells.includes('jar_m'));

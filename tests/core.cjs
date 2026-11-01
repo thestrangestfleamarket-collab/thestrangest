@@ -22,7 +22,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   let bad = 0; for (const hold of [1, 3, 6, 10]) { const st = R.create(); st.snap = st.smooth = true; let z = 0, t = 0;
     for (let f = 0; f < 70; f++) { st.target = f >= 30 && f < 30 + hold ? 1 : 0; const b = st.dist; R.step(st, 1 / 60); z += st.dist - b; t += 1 / 60; st.world = { x: 0, z, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t };
       const J = R.pose(st).J; if (!['ankleL', 'ankleR', 'kneeL', 'kneeR'].every(n => isFinite(J[n].x + J[n].y + J[n].z))) bad++; } }
-  ok(!bad, 'a one-tap step and stop keeps both legs finite (world foot lock)' + (bad ? ' (' + bad + ' bad frames)' : '')); }
+  ok(!bad, 'a one-tap step and stop keeps both legs finite (world foot lock)' + (bad ? ' (' + bad + ' bad frames)' : ''));
+  // the held thing's arm is the passport's hand: an aim moves the right wrist for a right-hander, the left for a left-hander, and an arm pointing up or back still poses
+  const wr = (hand, v) => { const st = R.create(); st.hand = hand; if (v) st.aim = { v: R.V(...v), w: 1 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), o = wr('R'), aR = wr('R', [0, -.3, 1]), aL = wr('L', [0, -.3, 1]), up = wr('L', [0, 1, 0]), back = wr('R', [0, 0, -1]);
+  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included'); }
 
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -196,6 +200,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
   { const tx = await pg.evaluate(() => { const a = TEXT.t('core.x', 'A {b}', { b: 'C' }); TEXT.set('core.x', 'Z {b}'); const z = TEXT.t('core.x', null, { b: 'C' }); TEXT.set('core.x', ''); return { a, z, back: TEXT.t('core.x'), loop: TEXT.list().some(t => t.id === 'loop.track'), n: TEXT.list().length }; }).catch(e => ({ err: e.message }));
     ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
+  { const r = await pg.evaluate(() => { const o = { rows: PASSPORT.facts().map(x => x[0]).join(','), was: PASSPORT.hand }; PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = __dbg.OWNED ? __dbg.OWNED.get('hand') : localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; return o; });
+    ok(r.rows === 'NAME,LOGIN,JOINED,SECTION,CASH,SKILLS,HAND' && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && (r.saved === 'L' || r.saved === true) && r.back === 'R', 'the passport lists you and keeps your hand with what you own: ' + JSON.stringify(r)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

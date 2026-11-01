@@ -10,7 +10,7 @@ import {LOOP} from './009b-loop.js';
   let P=null; try{ P=JSON.parse(OWNED.get('passport')||'null'); }catch(e){}
   if(!P||!P.no){ const home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', day=new Date().toISOString().slice(0,10); P={no:String(1000+Math.floor(Math.random()*9000)),issued:day,home,stamps:{[home]:day}}; OWNED.set('passport',JSON.stringify(P)); }
   PASSPORT.P=P; const save=()=>OWNED.set('passport',JSON.stringify(P));
-  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); if(!FORAGE.has('passport')){ FORAGE.give('passport',1); FORAGE.draw(); } })();
+  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); if(!FORAGE.has('passport'))FORAGE.give('passport',1); })();
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
   sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font:11px Silkscreen,monospace;color:#ece5d3;zoom:var(--uiz,1)';

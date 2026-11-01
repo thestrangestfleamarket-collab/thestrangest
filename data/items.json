@@ -909,5 +909,26 @@
  },
  "gem_wheel": {
   "value": 35
+ },
+ "coat_red": {
+  "slot": "body",
+  "color": "#7a2e2a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "coat_green": {
+  "slot": "body",
+  "color": "#2e4a3a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "coat_navy": {
+  "slot": "body",
+  "color": "#2e3a5a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
  }
 }

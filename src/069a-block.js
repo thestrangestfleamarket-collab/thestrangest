@@ -1,10 +1,11 @@
 // THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and empty dirt lots (no fences).
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, pos, ROOMS, UI} from './003b-systems.js';
+import {BLK, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLOCK, cutWalls, FIX, LEVEL, MAINROW, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
-import {PEEK} from './008-batch.js';
-import {BRICKS} from './014-gamekit.js';
+import {BLDK, BLOCK, cutWalls, FIX, LEVEL, MAINROW, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
+import {BATCH, PEEK} from './008-batch.js';
+import {BRICKS, CATALOG, LAMPS, PROPL} from './014-gamekit.js';
+import {MKS} from './016-street-kit.js';
 Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
 { const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
   let seed=11; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
@@ -68,7 +69,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
-  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';
+  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // the Hudson row (row 2) is all closed garages (owner)
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   for(const [a,b] of holes(MAINROW,B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
@@ -80,5 +81,17 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
       w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
+  // the empty lots' junk and weeds (owner, 31 Oct 2026: "add some junk and weeds to the empty lots"): the street kit's own pieces, painted as the street paints them, once the start is done (they live in the later chunk)
+  BLK.junk=()=>{ '@later'; const B=SHARED.BOD, OX=B.OX, OY=B.OY, bx=x=>OX+(x-OX)/BLDK, by=y=>OY+(y-OY)/BLDK, KJ=['tires','oil drum','pallets','trashbags','cardboard boxes','shopping cart','milk crates','litter'];
+    const PL=[], keepI=BATCH.items, keepM=BATCH.meshes, kc=BATCH.cast, n0=PROPL.length, l0=LAMPS.length; BATCH.items=[]; BATCH.meshes={}; BATCH.cast=true; let n=0;
+    try{ for(const q of BLK.lots){ if(q.kind!=='empty')continue; let rs=Math.abs(Math.round(q.x0*131+q.y0*17))%2147483646+1; const R=()=>(rs=rs*48271%2147483647)/2147483647, W=q.x1-q.x0, D=q.y1-q.y0;
+        const put=(k,m)=>{ const p=(CATALOG[k]||MKS[k])(bx(q.x0+m+R()*Math.max(.1,W-2*m)),by(q.y0+m+R()*Math.max(.1,D-2*m))); if(p&&p.boxes)for(const b of p.boxes)B.gbox(b,'A'); n++; };
+        for(let k=0;k<4+(R()*3|0);k++)put('weeds',2); for(let k=0;k<2+(R()*3|0);k++)put(KJ[R()*KJ.length|0],1.5);
+        for(let k=0;k<12+(R()*8|0);k++){ const x=q.x0+.6+R()*(W-1.2), y=q.y0+.6+R()*(D-1.2), kk=['grass2','grass1','grass2','hbush1','bush4','grass2'][R()*6|0]; PL.push([kk,XS(x)/TILE+OX-PARK.ox,ZS(y)/TILE+OY-PARK.oy,(/grass/.test(kk)?.7:.55)+R()*.5,R()*6.28]); } }
+      if(BATCH.items.length){ BATCH.build(MODS.apts.MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=me.receiveShadow=true; me.userData.cull=1; G.add(me); } } }
+    catch(e){ console.warn('lot junk',e); }
+    finally{ BATCH.items=keepI; BATCH.meshes=keepM; BATCH.cast=kc; PROPL.length=n0; LAMPS.length=l0; }
+    if(PL.length&&PARK.mesh)BLK.weeds=PARK.mesh(PL,false,false,2); return n; };
+  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); BLK.junk(); })();
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

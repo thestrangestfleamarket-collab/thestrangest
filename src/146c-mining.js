@@ -13,8 +13,12 @@ const MINING={live:[]}; window.MINING=MINING;
     hudson:[['pearl','RIVER PEARL',12,30,0,0xf0ecff],['seaglass','SEA GLASS',6,34,0,0x8fe3d6],['coral','RED CORAL',22,18,15,0xff6a5a],['nacre','NACRE SHELL',30,12,30,0xe8d8ff],['aquamarine','AQUAMARINE',70,7,45,0x60d0ff],['blackpearl','BLACK PEARL',110,4,55,0x2a2a3a]],
     lake:[['jade','JADE',26,22,0,0x60c080],['amber','LAKE AMBER',18,26,0,0xffb040],['silver','SILVER ORE',38,14,20,0xd0d8e0],['goldnug','GOLD NUGGET',60,10,30,0xffd040],['garnet','GARNET',48,9,40,0xa02040],['platinum','PLATINUM ORE',140,3,65,0xe8f0f8]]};
   INSPECT.kinds.push({is:id=>Object.values(FINDS).some(F=>F.some(f=>f[0]===id)),make:id=>{ let f=null; for(const F of Object.values(FINDS))f=f||F.find(q=>q[0]===id); const c=f[5];
-    if(/pearl|seaglass/.test(id))return INSPECT.shape('lump',c); if(/ore|nug|geode|meteor/.test(id))return INSPECT.shape('lump',c);
-    const g=new THREE.Group(); g.add(INSPECT.part('oct',c,0,0,0,.08,.14,.08,0,0,0,{flat:1})); return g; }});
+    const P=INSPECT.part;
+    if(/pearl/.test(id)){ const g=new THREE.Group(); g.add(P('sph',c,0,0,0,.09,.09,.09,0,0,0,{kind:'wax'})); return g; }
+    if(id==='seaglass'){ const g=new THREE.Group(); g.add(P('ico',c,0,0,0,.1,.08,.06,0,0,0,{kind:'glass'})); return g; }
+    if(/ore|nug|platinum|silver|goldnug/.test(id)){ const g=new THREE.Group(); for(let i=0;i<5;i++){ const a=i*1.4; g.add(P('ico',c,Math.cos(a)*.04,i*.02-.03,Math.sin(a)*.04,.05,.045,.05,0,0,0,{kind:'metal',metal:1,rough:.45,flat:1})); } return g; }
+    if(/geode|meteor|coral|nacre|jade/.test(id)){ const g=new THREE.Group(); g.add(P('ball',c,0,0,0,.1,.09,.1,0,0,0,{kind:'rock'})); return g; }
+    const g=new THREE.Group(); g.add(P('oct',c,0,0,0,.078,.19,.078,0,0,0,{kind:'gem'})); g.add(P('oct',c,.02,.03,.02,.05,.12,.05,.15,.5,0,{kind:'gem'})); return g; }});
   for(const k in FINDS)if(k!=='gemcave')for(const f of FINDS[k])GEMS.push([f[0],f[1],f[2],0]);   // the golems buy every find; weight 0 keeps them out of the old cave glints
   // what you have found (the book), stones you can cut on a gem wheel (PROSPECTING) for twice and more, the museum's thanks for the first of each, the Fixer's ore
   const ALL=Object.values(FINDS).flat(), CUT=ALL.filter(f=>!/pearl|seaglass|ore|nug|geode|shell/.test(f[0]+' '+f[1].toLowerCase())), LOG={v:1,got:{}};

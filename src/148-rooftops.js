@@ -103,8 +103,8 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(cl,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,BMAT); m.castShadow=false; m.receiveShadow=true; RM.add(m); OUT.add(m,'open'); blkV+=nv; blkB+=boxes.length; blkR+=cyls.length; blkM++; }
       B2.length=0; C2.length=0; };
-    let props=0;
-    for(const q of BLK.blds){ if(q.row!==1&&q.row!==2)continue; rs=(Math.abs((q.x0*131+q.y0*17+q.h)|0)%2147483646)+1;
+    let props=0; const propRows=new Set();
+    for(const q of BLK.blds){ if(q.row!==1)continue; propRows.add(q.row); rs=(Math.abs((q.x0*131+q.y0*17+q.h)|0)%2147483646)+1;   // only the Market St row wears a busy roof; the Hudson row's garages are bare (owner)
       const x0=Math.min(XS(q.x0),XS(q.x1)), x1=Math.max(XS(q.x0),XS(q.x1)), z0=Math.min(ZS(q.y0),ZS(q.y1)), z1=Math.max(ZS(q.y0),ZS(q.y1)), top=YS(q.h);
       const inn=.6*MH, gx0=x0+inn, gx1=x1-inn, gz0=z0+inn, gz1=z1-inn, W=gx1-gx0, D=gz1-gz0; if(W<MH||D<MH)continue;
       if(rr()<.4){ tank(gx0+(.1+rr()*.25)*W,gz0+(.1+rr()*.25)*D,top,.7+rr()*.45); props++; }
@@ -118,7 +118,7 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
       for(let x=ax0+3*MH;x<ax1-3*MH;x+=5*MH){ if(rr()<.5){ const y=YS(112); for(let k=1,n=Math.max(4,Math.round(D/(.5*MH)));k<n;k++){ const f=k/n; b(x,y-Math.sin(f*Math.PI)*.5*MV,zm-D/2+f*D,.06*MH,.1*MV,.06*MH,WARM); } }
         else { b(x,YS(116+(((x|0)%5)*4)),zm,.14*MH,.14*MV,D,pick([DK,DUCT,RUST])); if(rr()<.5)vent(x+1.4*MH,YS(114),zm); }
         if((x|0)%37<5)flush(); } flush(); }
-    ROOFS.blockProps=props; ROOFS.blockBoxes=blkB; ROOFS.blockRounds=blkR; ROOFS.blockMeshes=blkM; ROOFS.blockTris=Math.round(blkV/3); }
+    ROOFS.blockProps=props; ROOFS.blockBoxes=blkB; ROOFS.blockRounds=blkR; ROOFS.blockMeshes=blkM; ROOFS.blockTris=Math.round(blkV/3); ROOFS.propRows=[...propRows]; }
   const geo=new THREE.BoxGeometry(1,1,1), lam=new THREE.MeshLambertMaterial({color:0xffffff});
   const BM=new THREE.InstancedMesh(geo,lam,BX.length); BX.forEach(([x,y,z,sx,sy,sz,c],i)=>{ BM.setMatrixAt(i,m4.compose(new V(x,y,z),q,new V(Math.max(.001,sx),Math.max(.001,sy),Math.max(.001,sz)))); BM.setColorAt(i,col.setHex(c)); });
   const CG=new THREE.CylinderGeometry(1,1,1,8).translate(0,.5,0), KG=new THREE.ConeGeometry(1,1,8).translate(0,.5,0);
@@ -126,5 +126,5 @@ ROOFS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!MODS.apts||!MODS.apts.A)re
   const CM=mk(CG,cy), KM=mk(KG,co);
   for(const M of [BM,CM,KM]){ M.castShadow=M.receiveShadow=true; scene.add(M); }
   for(const M of [BM,CM,KM])OUT.add(M,'open');
-  ROOFS.tris=BX.length*12+cy.length*32+co.length*16+(ROOFS.blockTris||0); window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,blockMeshes:ROOFS.blockMeshes||0,blockBoxes:ROOFS.blockBoxes||0,blockRounds:ROOFS.blockRounds||0,blockProps:ROOFS.blockProps||0,blockTris:ROOFS.blockTris||0,tris:ROOFS.tris}); };
+  ROOFS.tris=BX.length*12+cy.length*32+co.length*16+(ROOFS.blockTris||0); window.ROOFSDBG=()=>({boxes:BX.length,rounds:cy.length,cones:co.length,blockMeshes:ROOFS.blockMeshes||0,blockBoxes:ROOFS.blockBoxes||0,blockRounds:ROOFS.blockRounds||0,blockProps:ROOFS.blockProps||0,blockTris:ROOFS.blockTris||0,tris:ROOFS.tris,propRows:ROOFS.propRows||[]}); };
 export {ROOFS};

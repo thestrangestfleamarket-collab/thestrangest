@@ -5,6 +5,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 try { execFileSync('node', ['--stack-size=8000', ROOT + '/tools/imports.cjs', '--check'], { stdio: 'pipe' }); ok(true, 'every file\'s imports are up to date and point back only'); }
 catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || '')); }
+{ const fs = require('fs'), bad = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f) && /CLOCKWISE/.test(fs.readFileSync(ROOT + '/src/' + f, 'utf8'))); ok(!bad.length, 'the Loop\'s signs name streets, not directions (no CLOCKWISE in src' + (bad.length ? ': ' + bad.join(', ') : '') + ')'); }
 
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
@@ -140,7 +141,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
-    ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
+    ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.skinned && r.rpg.mixer && r.rpg.street, 'the six RPG townsfolk walk the street, each a rigged skinned body with its own clips: ' + JSON.stringify(r.rpg));
     ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays && r.bodies.hero, 'YOU can only be the Walker: knight/man/woman/hero stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
@@ -161,11 +162,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
     ok(rg.ring && rg.n > 40 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
     const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
-    ok(rf && rf.blockProps > 300 && rf.blockBoxes > 600 && rf.tris < 160000, 'the across-street garages (Market St + Hudson rows) wear a busy roof of units, dishes, ducts, planters and debris, within budget: ' + JSON.stringify(rf));
+    ok(rf && rf.blockProps > 120 && rf.blockBoxes > 250 && rf.tris < 160000 && rf.propRows.length === 1 && rf.propRows[0] === 1, 'the Market St row garages wear a busy roof of units, dishes, ducts, planters and debris (within budget); the Hudson row is bare (30 Oct 2026): ' + JSON.stringify(rf));
     const mk = await pg.evaluate(() => { const all = [...BLK.blds.map(q => ({ ...q, kind: 'garage' })), ...BLK.lots], a = q => q.row === 5 ? [q.y0, q.y1] : [q.x0, q.x1]; let same = 0;
-      for (const r of [1, 2, 5]) { const L = all.filter(q => q.row === r).sort((p, q) => a(p)[0] - a(q)[0]); for (let i = 1; i < L.length; i++) if (L[i].kind === L[i - 1].kind && a(L[i])[0] - a(L[i - 1])[1] < .05) same++; }
-      const n = k => all.filter(q => q.kind === k).length; return { n: all.length, garage: n('garage'), park: n('park'), empty: n('empty'), wide: all.filter(q => a(q)[1] - a(q)[0] > 13.1).length, same, signs: BLK.signs.length }; }).catch(e => ({ err: e.message }));
-    ok(mk.n > 50 && mk.garage > 15 && mk.park > 15 && mk.empty > 15 && !mk.wide && !mk.same && !mk.signs, "no filler buildings: closed garages, empty parking lots and empty dirt lots (no fences, 30 Oct 2026) stand between the real buildings, half the old width, no two alike side by side (28 Oct 2026): " + JSON.stringify(mk));
+      for (const r of [1, 5]) { const L = all.filter(q => q.row === r).sort((p, q) => a(p)[0] - a(q)[0]); for (let i = 1; i < L.length; i++) if (L[i].kind === L[i - 1].kind && a(L[i])[0] - a(L[i - 1])[1] < .05) same++; }
+      const n = k => all.filter(q => q.kind === k).length; return { n: all.length, garage: n('garage'), park: n('park'), empty: n('empty'), wide: all.filter(q => a(q)[1] - a(q)[0] > 13.1).length, same, signs: BLK.signs.length, hud2lots: BLK.lots.filter(q => q.row === 2).length, hud2g: BLK.blds.filter(q => q.row === 2).length }; }).catch(e => ({ err: e.message }));
+    ok(mk.n > 50 && mk.garage > 15 && mk.park > 10 && mk.empty > 10 && !mk.wide && !mk.same && !mk.signs && !mk.hud2lots && mk.hud2g > 5, "fillers: rows 1 and 5 stay a mix of closed garages, empty parking lots and dirt lots (no two alike side by side); the Hudson row (row 2) is all closed garages (30 Oct 2026): " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }
@@ -193,6 +194,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
       return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
     ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
+  { const tx = await pg.evaluate(() => { const a = TEXT.t('core.x', 'A {b}', { b: 'C' }); TEXT.set('core.x', 'Z {b}'); const z = TEXT.t('core.x', null, { b: 'C' }); TEXT.set('core.x', ''); return { a, z, back: TEXT.t('core.x'), loop: TEXT.list().some(t => t.id === 'loop.track'), n: TEXT.list().length }; }).catch(e => ({ err: e.message }));
+    ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

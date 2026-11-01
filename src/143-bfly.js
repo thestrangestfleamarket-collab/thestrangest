@@ -62,7 +62,7 @@ const BFLY={}; window.BFLY=BFLY;
     FORAGE.draw(); };
   const BM=new Map(), wings=k=>{ const t=BF.pic&&BF.pic(k,0); if(!t)return null; let m=BM.get(k); if(!m){ m=new THREE.MeshLambertMaterial({map:t.T,transparent:true,alphaTest:.5,side:THREE.DoubleSide}); BM.set(k,m); }
     const o=new THREE.Mesh(new THREE.PlaneGeometry(t.w/16*.08,t.h/16*.08),m); return o; };
-  INSPECT.kinds.push({is:id=>/^(b|bu|s)_\d+$/.test(id)||id==='frame',make:id=>{ if(id==='frame')return INSPECT.shape('frame',0,0xf2ead6);
+  INSPECT.kinds.push({is:id=>/^(b|bu|s)_\d+$/.test(id)||id==='frame'||/^jar_[sml]$/.test(id),make:id=>{ if(id==='frame')return INSPECT.shape('frame',0,0xf2ead6); if(/^jar_/.test(id))return INSPECT.shape('jar',0xcfe8e0,0xc8b48a);
     const w=wings(+id.split('_')[1]); if(!id.startsWith('s_'))return w; const g=INSPECT.shape('frame',0,0xf2ead6); if(w){ const s=Math.min(.26/w.geometry.parameters.width,.18/w.geometry.parameters.height); w.scale.setScalar(s); w.position.z=.02; g.add(w); } return g; }});
   FORAGE.ROWB.push(id=>id.startsWith('bu_')?[['IDENTIFY','bident']]:id.startsWith('b_')?[['MOUNT','bmount'],['RELEASE','bfree']]:[]);
   FORAGE.GIFTS.push({is:id=>/^s_\d+$/.test(id),place:'museum',pay:id=>PR(+id.slice(2))*3});

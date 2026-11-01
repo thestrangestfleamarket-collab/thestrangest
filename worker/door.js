@@ -25,6 +25,7 @@ export default {
     if (request.method === "GET" && p === "/now") {
       let r = null; try { r = await fetch("https://jvcetttmqseoteidfggn.supabase.co/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik" } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
+    if (request.method === "GET" && p === "/texts") { if (!(await inside(env, request, dev))) return json({}, 401); return json(await postOf(env).texts()); }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const [, id, file] = FILM.exec(p), h = new Headers(), rg = request.headers.get("range"); if (rg) h.set("range", rg);
@@ -52,7 +53,7 @@ export default {
         const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -67,8 +68,16 @@ export default {
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).ownedPut(id, put) }); }
+      // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
+      if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
+        if (body.put === undefined) return json({ top: await postOf(env).top(cab) });
+        const put = body.put && typeof body.put === "object" ? body.put : {}, ini = word(put.ini, 3).toUpperCase(), score = Math.floor(+put.score), sub = word(put.sub, 20);
+        if (cab === "*" || !/^[A-Z0-9 ]{3}$/.test(ini) || !(score >= 1 && score <= 99999999)) return json({ why: "bad score" }, 400);
+        if (tooMany("score:" + id, 30)) return json({ why: "too many scores, wait a minute" }, 429);
+        return json(await postOf(env).score(cab, id, ini, score, sub)); }
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
+      if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
       return json(await admin(env, body)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
@@ -295,6 +304,16 @@ export class Post extends DurableObject {
   mine(id, seen) { for (const l of seen) this.sql.exec("insert or ignore into seen(letter, who) values(?, ?)", l, id);
     return this.sql.exec("select id, subject, body, at from letters where (too = ? or too = '*') and at > ? and id not in (select letter from seen where who = ?) order by id limit 20", id, Date.now() - 30 * 864e5, id).toArray(); }
   list() { return this.sql.exec("select id, too, subject, body, at, (select count(*) from seen where letter = letters.id) as read from letters order by id desc limit 100").toArray(); }
+  // the arcade's high scores: the hundred best runs a cabinet are kept, the ten best shown
+  scoresT() { this.sql.exec("create table if not exists scores(id integer primary key autoincrement, cab text, who text, ini text, score integer, sub text, at integer)"); }
+  top(cab) { this.scoresT(); const rows = this.sql.exec(cab === "*" ? "select cab, ini, score, sub from scores order by score desc, id" : "select cab, ini, score, sub from scores where cab = ? order by score desc, id limit 10", ...(cab === "*" ? [] : [cab])).toArray();
+    if (cab !== "*") return rows.map(r => ({ ini: r.ini, score: r.score, sub: r.sub })); const all = {}; for (const r of rows) { const l = all[r.cab] || (all[r.cab] = []); if (l.length < 10) l.push({ ini: r.ini, score: r.score, sub: r.sub }); } return all; }
+  score(cab, who, ini, score, sub) { this.scoresT(); this.sql.exec("insert into scores(cab, who, ini, score, sub, at) values(?, ?, ?, ?, ?, ?)", cab, who, ini, score, sub, Date.now());
+    this.sql.exec("delete from scores where cab = ? and id not in (select id from scores where cab = ? order by score desc, id limit 100)", cab, cab);
+    const top = this.top(cab), rank = this.sql.exec("select count(*) as n from scores where cab = ? and score > ?", cab, score).toArray()[0].n + 1; return { ok: true, top, rank }; }
+  // the owner's words over the game's text boxes (TEXT in the game), one row a text box
+  texts() { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); const o = {}; for (const r of this.sql.exec("select k, t from texts").toArray()) o[r.k] = r.t; return o; }
+  putText(k, t) { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); if (t) this.sql.exec("insert into texts(k, t, at) values(?, ?, ?) on conflict(k) do update set t = excluded.t, at = excluded.at", k, t, Date.now()); else this.sql.exec("delete from texts where k = ?", k); return true; }
   // shared files, kept in 1 MB parts
   putFile(k, type, buf) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))"); this.sql.exec("delete from files where k = ?", k);
     for (let i = 0, n = 0; i < buf.byteLength; i += 1 << 20, n++) this.sql.exec("insert into files(k, part, type, data, at) values(?, ?, ?, ?, ?)", k, n, type, buf.slice(i, i + (1 << 20)), Date.now()); return true; }

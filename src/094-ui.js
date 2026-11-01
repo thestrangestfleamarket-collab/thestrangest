@@ -1,6 +1,6 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, CEL, FADE, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -13,6 +13,7 @@ import {RIVER} from './066-river.js';
 import {OUTL} from './072-walker3d.js';
 import {clampP, disp, marker, PMAX, PMIN, ray, VIEW0} from './075-main-13.js';
 import {SOUND} from './091-sfx.js';
+for(const [k,d] of Object.entries({'map.train1':'TRAIN 1 · TO {next}','map.train2':'TRAIN 2 · TO {next}'}))TEXT.t(k,d);
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · sink (free camera, fly) · swim up'],[' ','jump · rise (free camera, fly) · swim down'],
@@ -303,7 +304,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const U=[], lab=(n,x,y,sz,col)=>{ mg.font=`${sz}px Silkscreen,monospace`; const a=Math.round(X_(x)), w=mg.measureText(n).width/2+2; if(a<-w||a>W+w)return; let b=Math.round(Y_(y)); if(b<-10||b>H+10)return; while(U.some(u=>Math.abs(u[0]-a)<u[2]+w&&Math.abs(u[1]-b)<sz+1))b+=sz+1; U.push([a,b,w]); mg.fillStyle='#000'; mg.fillText(n,a+1,b+1); mg.fillStyle=col; mg.fillText(n,a,b); };
     if(mapLv==='up'){ for(const [n,x,y] of Q.L2)lab(n,x,y,12,'#f2d27a'); if(V.z>=1.6)for(const [n,x,y] of Q.L)lab(n,x,y,V.z>=3?12:10,'#ece5d3'); }
     else for(const st of LOOP.STA)lab(st.id+' · '+st.name,st.x,st.my(LOOP.XW/2)+(st.sg>0?26:-26),12,'#ece5d3');
-    if(mapLv!=='up'){ mg.font='12px Silkscreen,monospace'; mg.textAlign='left'; for(const [i,t] of [[0,'TRAIN 1 CLOCKWISE'],[1,'TRAIN 2 COUNTERCLOCKWISE']]){ const y=H-30+i*16; mg.fillStyle=i?'#3a8ac8':'#c88a3a'; mg.fillRect(12,y-2,22,4); mg.fillStyle='#ece5d3'; mg.fillText(t,42,y); } mg.textAlign='center'; }
+    if(mapLv!=='up'){ mg.font='12px Silkscreen,monospace'; mg.textAlign='left'; const nn=(SHARED.METRO&&SHARED.METRO.nextHere&&SHARED.METRO.nextHere())||['…','…']; for(const [i,t] of [[0,TEXT.t('map.train1',null,{next:nn[0]})],[1,TEXT.t('map.train2',null,{next:nn[1]})]]){ const y=H-30+i*16; mg.fillStyle=i?'#3a8ac8':'#c88a3a'; mg.fillRect(12,y-2,22,4); mg.fillStyle='#ece5d3'; mg.fillText(t,42,y); } mg.textAlign='center'; }
     if(SHARED.LVL===mapLv){ const a=Math.round(X_(SHARED.BOD.OX+pos.x/TILE)), b=Math.round(Y_(SHARED.BOD.OY+pos.z/TILE)); mg.fillStyle='#000'; mg.fillRect(a-5,b-5,11,11); mg.fillStyle='#f2c14e'; mg.fillRect(a-4,b-4,9,9); } }
   STORE.goTo=(x,z,lv,hd,fl)=>goTo(x,z,lv,hd,fl);
   window.__UI=UI;

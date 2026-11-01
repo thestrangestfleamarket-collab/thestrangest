@@ -1,5 +1,6 @@
 // THE PAGE: renderer, scene, camera, the shared painters (tex, hash3) and the loading of the data files.
 import {SHARED, THREE} from './003-shx.js';
+import {PS2} from './003b-systems.js';
 
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -23,12 +24,12 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
   const S=pxS(); SCL=S; RW=Math.ceil(pw/S/2)*2; RH=Math.ceil(ph/S/2)*2;
   renderer.setSize(RW,RH,false); if(SHARED.composer)SHARED.composer.setSize(RW,RH);
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px'; c.style.imageRendering=S>1?'pixelated':'';
-  c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; c.style.borderRadius=FRAMEK<1?'18px':'0';
+  c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; document.documentElement.style.setProperty('--fx',c.style.left); document.documentElement.style.setProperty('--fy',c.style.top); c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
 let SCL=1; SHARED.ppu=PPU; SHARED.RESI=(r=>r>=0&&r<=4?r:4)(+(new URLSearchParams(location.search).get('res')??4));
 const V0=PPU*PXS, ZMAX=PPU*80;
-const RESN=['LOWEST','LOW','MED','HIGH','HIGHEST'], RESLN=[240,360,480,720,0];
-const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L=RESLN[SHARED.RESI]; return L?Math.max(1,innerHeight*FRAMEK*(devicePixelRatio||1)/L):1; }, rppu=()=>vpu()/pxS();
+const RESN=['LOWEST','LOW','MED','HIGH','HIGHEST'], RESLN=[240,360,480,720,0];   // with the PS2 filter on, never more than 480 lines: its 240 cells each read a 2x2 box, so 480 gives the same picture as the screen's own pixels
+const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L0=RESLN[SHARED.RESI], L=PS2.on?Math.min(L0||480,480):L0; return L?Math.max(1,innerHeight*FRAMEK*(devicePixelRatio||1)/L):1; }, rppu=()=>vpu()/pxS();
 function frustum(){ const u=rppu(); let hw=RW/2/u, hh=RH/2/u; const mw=SHARED.camMaxW; if(mw>0&&2*hw>mw){ const k=mw/(2*hw); hw*=k; hh*=k; } SHARED.cam.left=-hw; SHARED.cam.right=hw; SHARED.cam.top=hh; SHARED.cam.bottom=-hh; SHARED.cam.updateProjectionMatrix(); }   // the visible width is capped at SHARED.camMaxW (set by the UI) so zooming all the way out shows the same extent at every resolution
 addEventListener('resize',resize);
 

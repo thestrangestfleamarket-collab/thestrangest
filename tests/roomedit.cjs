@@ -20,6 +20,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const buy = async (kind, u, h, v) => { const n0 = (await db()).added; await pg.evaluate(k => { const b = [...document.querySelectorAll('#roombuy [data-add]')].find(x => x.dataset.add === k); if (b) b.click(); else ROOMED.buy(k); }, kind); await pg.waitForTimeout(300);
     const p = await at(u, h, v); await pg.mouse.move(p.x - 30, p.y - 20); await pg.mouse.move(p.x, p.y, { steps: 4 }); await pg.mouse.down(); await pg.mouse.up(); await pg.waitForTimeout(400);
     return pg.evaluate(n0 => { const A = ROOMED._api(), L = A.units().filter(u => u.added); return L.length > n0 ? L[L.length - 1].id : null; }, n0); };
+  // pick a wall/floor/kitchen-floor swatch: scroll it into the pane, check it is not hidden behind the footer, then click it (returns whether it was reachable)
+  const pick = async (set, key) => { const sel = `#roomed [data-${set}="${key}"]`; await pg.waitForSelector(sel);
+    const hit = await pg.$eval(sel, el => { el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(), t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); el.click(); return !!(t && (t === el || el.contains(t))); });
+    await pg.waitForTimeout(150); return hit; };
   const st = await start('&fresh=1');
   ok(st, 'the page starts');
   if (st) {
@@ -81,9 +85,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bus stop'));
     await pg.click('#roomed [data-a="sell"]'); await pg.waitForTimeout(300);
     ok((await db()).cash === cs0 + Math.floor(pr / 2), 'SELL pays half back ($' + Math.floor(pr / 2) + ')');
-    await pg.click('#roomed [data-tab="walls"]'); await pg.click('#roomed [data-wall="brick"]');
-    await pg.click('#roomed [data-tab="floor"]'); await pg.click('#roomed [data-floor="checker"]'); await pg.click('#roomed [data-kfloor="diner"]'); await pg.waitForTimeout(300);
-    ok((await db()).wall === 'brick' && (await db()).floor === 'checker' && (await db()).kfloor === 'diner', 'brick walls, a checker floor, the kitchen\'s own floor');
+    await pg.click('#roomed [data-tab="walls"]'); const hitW = await pick('wall', 'brick');
+    await pg.click('#roomed [data-tab="floor"]'); const hitF = await pick('floor', 'checker'); const hitK = await pick('kfloor', 'diner'); await pg.waitForTimeout(300);
+    ok((await db()).wall === 'brick' && (await db()).floor === 'checker' && (await db()).kfloor === 'diner' && hitW && hitF && hitK, 'brick walls, a checker floor, the kitchen\'s own floor (each swatch reachable, not under the footer)');
     await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-add="SCONCE"]'); await pg.waitForTimeout(300); await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
     ok(!(await db()).carry && !(await pg.evaluate(() => ROOMED._api().units().some(u => u.kind === 'SCONCE'))), 'ESC takes back a thing you are carrying (paid back)');
     await pg.click('#roomed [data-tab="lights"]'); await pg.click('#roomed [data-add="TRACK SPOTS"]'); await pg.waitForTimeout(300); await pg.evaluate(() => ROOMED.place()); await pg.waitForTimeout(300);
@@ -95,7 +99,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(id => { const q = ROOMED._api().lightsAll().find(x => x.id === id); return q.L.userData.on === false && q.L.intensity === 0; }, lid), 'UNDO takes it back: off');
     await pg.screenshot({ path: process.env.SHOT || '/tmp/roomedit.png' });
     const n = (await db()).added, tbx = await T(bed);
-    await pg.click('#roomed [data-a="done"]'); await pg.waitForTimeout(600);
+    await pg.keyboard.press('t'); await pg.waitForTimeout(600);
     const saved = await pg.evaluate(() => JSON.parse(localStorage.getItem('market-home') || 'null'));
     ok(saved && saved.wall === 'brick' && saved.added.length === n && saved.added.every(a => a.paid > 0) && !(await db()).on, 'DONE closes the editor and saves the room (' + n + ' things)');
     await start('');

@@ -200,7 +200,7 @@
   {
    "id": "fish",
    "title": "FISHING",
-   "what": "Fish the Hudson from the pier, THE LAKE in the park, or the pond in each section.",
+   "what": "Fish the Hudson from the pier, or THE LAKE in the park.",
    "sections": [
     {
      "head": "GET READY",
@@ -367,7 +367,7 @@
     "The board on the platform shows each train: NOW, ARRIVING or the minutes until it comes.",
     "A train waits 60 seconds. Walk in through an open door. Double-click a seat to sit.",
     "To get off, walk out through a door while it is open.",
-    "To go to another section, open the map ([SHIFT] + [M]) and click a letter, A to H. Each section has its own street, station and park pond."
+    "To go to another section, open the map ([SHIFT] + [M]) and click a letter, A to H. Each section has its own street and station."
    ]
   },
   {
@@ -419,7 +419,7 @@
    "steps": [
     "Other players walk, fish, fight and wear what they wear, just like you.",
     "Press [ENTER] to chat. Type, then [ENTER] to send ([ESC] closes).",
-    "Click ONLINE at the bottom right for the list of players."
+    "Click ONLINE at the bottom right for the list of players.", "Press VISIT beside a name to go into that player's apartment and see how they decorated it (their caged birds, specimens, candles...). You can look, not change anything. Leave by the door as usual."
    ]
   },
   {

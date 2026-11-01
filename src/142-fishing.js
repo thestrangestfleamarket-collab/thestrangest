@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {FIX, MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {GEMS} from './101-gems.js';
@@ -39,7 +39,7 @@ FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(
   const ids=Object.keys(FISHING.NAMES), got=ids.filter(id=>kg[id]).length, sk=Math.round(FORAGE.sk?FORAGE.sk('fish'):0);
   let o=`<div style="margin-bottom:4px">THE FISHING GUIDE · ${got} OF ${ids.length} CAUGHT · YOUR FISHING ${sk} · NOW: ${now.toUpperCase()}</div>`;
   o+=H('1. GEAR')+R('BAIT & BOATS','The self-serve stand on the Hudson quay by the long pier. A ROD $15, WORMS $3 (a dozen), CUT BAIT $4 (six), a ROWBOAT $5 a trip. It buys your catch and teaches FISHING.')+R('TACKLE','Better rods (CARBON, SURF) cast further on stronger line; FAST and PRO reels reel faster; RUBBER WORM and SPOON lures are not used up.')+R('COOLERS','You carry 5 fish in hand; a cooler holds 15, 40 or 100 more.')+R('CRAB POTS','$25, up to 3. Face the water and press P in fishing mode; come back later and double-click its buoy.')+'';
-  o+=H('2. WHERE')+R('THE HUDSON','Any open river water; best off the long pier. It gets deeper the further out you cast.')+R('THE LAKES','The big lake, the stream and THE LAKE in the park: their own fish.')+R('THE PONDS','A pond in the park of each section B to H, fished like THE LAKE.')+'';
+  o+=H('2. WHERE')+R('THE HUDSON','Any open river water; best off the long pier. It gets deeper the further out you cast.')+R('THE LAKES','The big lake, the stream and THE LAKE in the park: their own fish.')+'';
   o+=H('3. FISH')+R('QUICK','Hold the rod, click open water (1.5 to 16 tiles away). Click again to reel in.')+R('FISHING MODE','By the water press F. Hold SPACE for power (the ring shows where it lands), let go to cast. B changes bait, V first person, drag looks round, the wheel zooms, ESC leaves.')+'';
   o+=H('4. THE BITE')+R('BAIT','The hook baits itself when you cast; pick WORM or CUT BAIT yourself with B or ON THE HOOK in your pack. A bare hook catches nothing.')+R('NIBBLE','The float twitches: get ready.')+R('BITE','The float goes under: STRIKE (SPACE or click) within 1.4 s, sooner is surer. Too late and the bait is gone.')+R('NOTHING?','After 25 s with no bite try another spot, bait or hour. A spot rests 40 s after a bite.')+'';
   o+=H('5. THE FIGHT')+R('REEL','Hold SPACE or the mouse to reel, let go to give line.')+R('PULL','The fish runs left or right: pull the rod against it (A or D) and it tires fast; with it, the line takes the strain.')+R('DRAG','W and S set the drag, 1 to 5: low lets it take line instead of snapping, high brings it in faster.')+R('STRAIN','Reeling while it surges (a splash) builds strain: too much and the line snaps.')+R('SLACK','Three seconds without pull and the hook slips.')+R('LAND','It tires; bring it in, then TAKE OFF THE HOOK.')+'';
@@ -59,7 +59,7 @@ INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:i
     if(id==='chest'){ const g=new THREE.Group(); g.add(P('box',0x5a3a1e,0,0,0,.36,.2,.24),P('cap',0x5a3a1e,0,.1,0,.18,.08,.12,0,Math.PI/2),P('box',0xb08a2a,0,0,.121,.05,.06,.01)); g.children[1].rotation.set(0,0,0); g.children[1].scale.set(.18,.08,.12); return g; }
     if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
     return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
-// fishing starts with the game (THE LAKE and the sections' ponds need no river); the Hudson's own parts (the stand, the rowboat, clicking its water) are added when it is built
+// fishing starts with the game (THE LAKE needs no river); the Hudson's own parts (the stand, the rowboat, clicking its water) are added when it is built
 const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){ return RIVER.box?RIVER.box.lv:0; },get x0(){ return RIVER.box.x0; },get x1(){ return RIVER.box.x1; },get z0(){ return RIVER.box.z0; },get z1(){ return RIVER.box.z1; }}, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v, IP=(id,k)=>ITEMS.prop(id,k);
   const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
@@ -153,7 +153,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   const S=FORAGE.S; S.fishkg=S.fishkg||{};
   const period=h=>h>=7&&h<17?'day':h>=21||h<5?'night':'dusk';
   const lakeAt=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); if(b!=null)return FOUNT.LV; const h=window.HILL?HILL(x,z):0; return h<-.35*T?-.25*T:null; };   // still water: the big lake, the stream and THE LAKE
-  FISHING.at=(x,z)=>{ if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; for(const p of MODS.ponds||[])if(x>p.x0&&x<p.x1&&z>p.z0&&z<p.z1)return {kind:'lake',lv:p.lv,depth:p.depth}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
+  FISHING.at=(x,z)=>{ if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
   const SOAK=25, K=.0022, rests=[];   // a bite's rate per second is K x the sum of the weights below; a spot just bitten rests 40 s
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;
     for(const id of SPECIES){ if(IP(id,'water')!==w.kind||w.depth<(IP(id,'depth')||0))continue; const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, v=(IP(id,'common')||0)*b*tm; if(v>0){ per[id]=v; sum+=v; } }

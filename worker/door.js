@@ -137,6 +137,7 @@ async function join(env, k, code, body) {
 }
 
 const num = (v, lo, hi) => typeof v === "number" && isFinite(v) ? Math.max(lo, Math.min(hi, v)) : 0;
+const sayStyle = o => { const r = {}; if (!o || typeof o !== "object") return r; if (Number.isInteger(o.f) && o.f >= 0 && o.f < 6) r.f = o.f; if (typeof o.c === "string" && /^#[0-9a-f]{6}$/i.test(o.c)) r.c = o.c.toLowerCase(); if (Number.isInteger(o.s) && o.s >= 0 && o.s < 3) r.s = o.s; return r; };   // the font, colour and size a player chose for their words
 const word = (v, n) => String(v ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, n);
 export class Block extends Server {
   static options = { hibernate: false };
@@ -215,7 +216,7 @@ export class Block extends Server {
       else this.ctx.storage.sql.exec("delete from puts where who = ? and k = ?", s.id, m.k);
       this.broadcast(JSON.stringify({ t: "puts", id: s.id, k: m.k, name: s.name || "", list }), [c.id]);
     } else if (m.t === "say") {
-      const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
+      const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
         const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : 200);

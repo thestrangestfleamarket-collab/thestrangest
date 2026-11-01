@@ -101,16 +101,16 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
-        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.length === 1 && btns[0] === 'walker';
+        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns.length === 0 && !/BODY/.test(document.querySelector('#looks').innerText);
         const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set(saved || 'walker');
-        return { ok: true, inGame, none, onlyWalker, stays, hero, btns: btns.join(',') }; })();
+        return { ok: true, inGame, none, noRow, stays, hero, btns: btns.join(',') }; })();
       o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, was = !!W.worn.shirt;
         W.wear('shirt', true); const hid = W.HIDE[W.idx('bodyTorso')] && !W.HIDE[W.idx('torso')];
         W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', was);
         return { ok: true, hid, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
       o.garb = (() => { const d = window.GARBDBG && GARBDBG(); if (!d) return { ok: false };
-        const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.k === 'shirt' ? p.free === 0 : p.free > 0 && p.free < p.points), sp = GARBDBG.spec(31, true, true);
-        return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], robe: !sp.shirt && !sp.pants && !sp.shoes && sp.hat, ms: d.ms }; })();
+        const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.free > 0 && p.free < p.points), sp = GARBDBG.spec(true), menu = document.querySelector('#looks').innerText;
+        return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], bare: sp.shirt && sp.pants && !sp.shoes && !sp.hat && !sp.jacket, lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(menu), ms: d.ms }; })();
       o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; })();
       return o;
     });
@@ -151,9 +151,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays && r.bodies.hero, 'YOU can only be the Walker: knight/man/woman/hero stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero, 'you are always the Walker: knight/man/woman/hero stay in the game, YOU has no BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
-    ok(r.garb.ok && r.garb.parts === 'jacket,pants,shirt' && r.garb.free && r.garb.held === 3 && r.garb.shown && r.garb.under && r.garb.robe, 'you wear real clothes (trousers and jacket on cloth at their loose edges, the shirt held under the jacket; shoes and hat held), the body\'s own shirt and trousers hidden under them, a bathrobe over the rest: ' + JSON.stringify(r.garb));
+    ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
@@ -200,7 +200,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       c('hair', ''); out.bald = !W3.pcs.some((P, i) => P.layer === 'hair' && !W3.HIDE[i]); c('beard', 'beardGoatee'); out.beard = on('beardGoatee');
       c('form', 'F'); out.female = on('bodyBustF') && !on('beardGoatee') && document.querySelector('#lbeard').hidden; out.code = LOOKS.code(); out.back = JSON.stringify(LOOKS.decode(out.code));
       c('form', 'M'); c('hair', 'hair'); c('beard', ''); out.reset = on('hair') && !on('bustF') && LOOKS.code() === 'M00'; return out; }).catch(e => ({ err: e.message }));
-    ok(av.start && av.wavy && av.bald && av.beard && av.female && av.code === 'F60' && av.back === '{"form":"F","hair":"","beard":"","garb":31}' && av.reset, 'YOU: a hairstyle, bald, a beard and FEMALE each show only their pieces, and the look\'s code for the other players reads back: ' + JSON.stringify(av)); }
+    ok(av.start && av.wavy && av.bald && av.beard && av.female && av.code === 'F60' && av.back === '{"form":"F","hair":"","beard":""}' && av.reset, 'YOU: a hairstyle, bald, a beard and FEMALE each show only their pieces, and the look\'s code for the other players reads back: ' + JSON.stringify(av)); }
   { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
       return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
     ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }

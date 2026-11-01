@@ -1,4 +1,4 @@
-// THE PASSPORT CHECK: node tests/passport.cjs [dist/market.html]. You are issued a passport at the start and carry it; its window shows it; the station's exit gate blocks the way out until the passport is shown at the machine, opens six seconds for everyone, and lets you in from the street freely.
+// THE PASSPORT CHECK: node tests/passport.cjs [dist/market.html]. You are issued a passport at the start and carry it; its window shows it; the station's exit gate, unseen until you walk into it, blocks the way out until the passport is shown at the machine, opens six seconds for everyone, and lets you in from the street freely.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
@@ -13,7 +13,9 @@ const {chromium}=require('playwright');
   await idle(); await pg.evaluate(()=>{ const p=SHARED.METRO.plat; __dbg.UI.goTo(p.x,p.z,'down'); }); await idle();
   await pg.waitForFunction(()=>PASSPORT.gates&&PASSPORT.gates.length>=1,null,{timeout:60000}).catch(()=>{}); await pg.waitForTimeout(800);
   const G=await pg.evaluate(()=>{ const g=PASSPORT.gates[0]; return {n:PASSPORT.gates.length,shown:g.me.visible,solid:SHARED.solids.includes(g.box),thing:__dbg.ui().things.some(t=>t.name==='PASSPORT MACHINE'),u:g.u()}; });
-  ok(G.n>=1&&G.shown&&G.solid&&G.thing,'the station exit has a forcefield that blocks you, and a passport machine beside it ('+JSON.stringify(G)+')');
+  ok(G.n>=1&&!G.shown&&G.solid&&G.thing,'the station exit has an unseen forcefield that blocks you, and a passport machine beside it ('+JSON.stringify(G)+')');
+  await pg.evaluate(()=>{ const g=PASSPORT.gates[0], p=g.st.P(.7,LOOP.MID+1.5,0); __dbg.UI.goTo(p[0],p[2],'down'); }); await idle(); await pg.waitForTimeout(700);
+  const V=await pg.evaluate(()=>{ const g=PASSPORT.gates[0]; return {shown:g.me.visible,vis:+g.vis.toFixed(2),u:+g.u().toFixed(2)}; }); ok(V.shown&&V.vis>.5,'walking into it from the platform shows the field ('+JSON.stringify(V)+')');
   const O=await pg.evaluate(()=>{ const sent=[]; ONLINE.send=m=>sent.push(m); const th=__dbg.ui().things.find(t=>t.name==='PASSPORT MACHINE'); th.act(); const g=PASSPORT.gates[0]; return {open:g.until>0,shown:g.me.visible,solid:SHARED.solids.includes(g.box),sent:sent.filter(m=>m.t==='world'&&m.k==='gate:A').length}; });
   ok(O.open&&!O.shown&&!O.solid&&O.sent===1,'showing the passport at the machine opens the gate and tells the block ('+JSON.stringify(O)+')');
   await pg.waitForTimeout(6800);

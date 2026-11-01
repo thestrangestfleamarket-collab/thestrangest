@@ -11,14 +11,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     await pg.waitForTimeout(2000);
     await pg.evaluate(() => { const P = __dbg.you(); const a = (dx, dz) => [P.x + dx, P.z + dz, SHARED.py, 0, SHARED.LVL, ''];
-      ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: a(1.5, 0) }, { id: 'b', name: 'MILO', look: 'w11', at: a(-1.5, .5) }] });
+      ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: a(1.5, 0) }, { id: 'b', name: 'MILO', look: 'w1', at: a(-1.5, .5) }] });
       ONLINE.feed({ t: 'say', id: 'a', name: 'ROSA', text: 'hello block' }); });
     await pg.waitForTimeout(1500);
     const r1 = await pg.evaluate(() => { const L = [...ONLINE.others.values()];
-      return { n: L.length, figs: L.filter(o => o.fig && o.fig.g.visible).length, tags: L.filter(o => o.tag && o.tag.visible).length, robe: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').key === 'w11'),
+      return { n: L.length, figs: L.filter(o => o.fig && o.fig.g.visible).length, tags: L.filter(o => o.tag && o.tag.visible).length, bare: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').key === 'w1'),
         who: (document.querySelector('#onlwho') || {}).textContent, log: (document.querySelector('#onllog') || {}).textContent, say: ONLINE.others.get('a').tagS, at: ONLINE.at(ONLINE.others.get('a'), performance.now()).every(Number.isFinite) }; });
     ok(r1.n === 2 && r1.figs === 2 && r1.tags === 2, 'two players near you are drawn with name tags (' + JSON.stringify(r1) + ')');
-    ok(r1.robe, 'a player in the bathrobe and barefoot gets that look');
+    ok(r1.bare, 'a barefoot player gets that look');
     ok(/ONLINE 3/.test(r1.who || ''), 'the list counts you and the two others (' + r1.who + ')');
     ok(/ROSA/.test(r1.log || '') && /hello block/.test(r1.log || '') && /hello block/.test(r1.say || ''), 'what ROSA said is in the chat and over her head');
     ok(r1.at, 'ONLINE.at gives the ragdoll a place to be carried to');

@@ -53,7 +53,7 @@ export default {
         const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -67,6 +67,13 @@ export default {
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).ownedPut(id, put) }); }
+      // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
+      if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
+        if (body.put === undefined) return json({ top: await postOf(env).top(cab) });
+        const put = body.put && typeof body.put === "object" ? body.put : {}, ini = word(put.ini, 3).toUpperCase(), score = Math.floor(+put.score), sub = word(put.sub, 20);
+        if (cab === "*" || !/^[A-Z0-9 ]{3}$/.test(ini) || !(score >= 1 && score <= 99999999)) return json({ why: "bad score" }, 400);
+        if (tooMany("score:" + id, 30)) return json({ why: "too many scores, wait a minute" }, 429);
+        return json(await postOf(env).score(cab, id, ini, score, sub)); }
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
@@ -133,11 +140,13 @@ const word = (v, n) => String(v ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").t
 export class Block extends Server {
   static options = { hibernate: false };
   roster(skip) { const by = new Map(); for (const c of this.getConnections()) if (c.id !== skip && c.state && c.state.id) by.set(c.state.id, c.state); return [...by.values()]; }
-  onConnect(c, ctx) {
+  // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
+  async world() { if (!this.W) this.W = (await this.ctx.storage.get("world")) || {}; return this.W; }
+  async onConnect(c, ctx) {
     const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null });
-    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id) }));
+    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world() }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
@@ -149,7 +158,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -206,6 +215,10 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "puts", id: s.id, k: m.k, name: s.name || "", list }), [c.id]);
     } else if (m.t === "say") {
       const text = word(m.text, 200); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text }), [c.id]);
+    } else if (m.t === "world") {
+      const k = word(m.k, 40); if (!k) return; this.world().then(W => { if (Object.keys(W).length > 2000 && !(k in W)) return;
+        const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, 200);
+        W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
     }
   }
   async onRequest(req) { const path = new URL(req.url).pathname;
@@ -296,6 +309,13 @@ export class Post extends DurableObject {
   mine(id, seen) { for (const l of seen) this.sql.exec("insert or ignore into seen(letter, who) values(?, ?)", l, id);
     return this.sql.exec("select id, subject, body, at from letters where (too = ? or too = '*') and at > ? and id not in (select letter from seen where who = ?) order by id limit 20", id, Date.now() - 30 * 864e5, id).toArray(); }
   list() { return this.sql.exec("select id, too, subject, body, at, (select count(*) from seen where letter = letters.id) as read from letters order by id desc limit 100").toArray(); }
+  // the arcade's high scores: the hundred best runs a cabinet are kept, the ten best shown
+  scoresT() { this.sql.exec("create table if not exists scores(id integer primary key autoincrement, cab text, who text, ini text, score integer, sub text, at integer)"); }
+  top(cab) { this.scoresT(); const rows = this.sql.exec(cab === "*" ? "select cab, ini, score, sub from scores order by score desc, id" : "select cab, ini, score, sub from scores where cab = ? order by score desc, id limit 10", ...(cab === "*" ? [] : [cab])).toArray();
+    if (cab !== "*") return rows.map(r => ({ ini: r.ini, score: r.score, sub: r.sub })); const all = {}; for (const r of rows) { const l = all[r.cab] || (all[r.cab] = []); if (l.length < 10) l.push({ ini: r.ini, score: r.score, sub: r.sub }); } return all; }
+  score(cab, who, ini, score, sub) { this.scoresT(); this.sql.exec("insert into scores(cab, who, ini, score, sub, at) values(?, ?, ?, ?, ?, ?)", cab, who, ini, score, sub, Date.now());
+    this.sql.exec("delete from scores where cab = ? and id not in (select id from scores where cab = ? order by score desc, id limit 100)", cab, cab);
+    const top = this.top(cab), rank = this.sql.exec("select count(*) as n from scores where cab = ? and score > ?", cab, score).toArray()[0].n + 1; return { ok: true, top, rank }; }
   // the owner's words over the game's text boxes (TEXT in the game), one row a text box
   texts() { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); const o = {}; for (const r of this.sql.exec("select k, t from texts").toArray()) o[r.k] = r.t; return o; }
   putText(k, t) { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); if (t) this.sql.exec("insert into texts(k, t, at) values(?, ?, ?) on conflict(k) do update set t = excluded.t, at = excluded.at", k, t, Date.now()); else this.sql.exec("delete from texts where k = ?", k); return true; }

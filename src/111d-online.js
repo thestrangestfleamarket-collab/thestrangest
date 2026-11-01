@@ -34,10 +34,13 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
+  ONLINE.world={}; const wset=(k,v)=>{ ONLINE.world[k]=v; SYS.run('world',k,v); };
+  ONLINE.put=(k,v)=>{ wset(k,v); ONLINE.send({t:'world',k,v}); }; ONLINE.add=(k,n)=>{ wset(k,(+ONLINE.world[k]||0)+n); ONLINE.send({t:'world',k,add:n}); };
   ONLINE.feed=m=>{ '@later'; if(!m||typeof m!=='object')return; ui();
+    if(m.t==='world'&&typeof m.k==='string'){ wset(m.k,m.v); return; }
     if(ONLINE.me&&(m.id===ONLINE.me||(m.p&&m.p.id===ONLINE.me))&&m.t!=='tell')return;   // your own moves from your other tab: never a body of yours in your own head
     if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
-    if(m.t==='hi'){ ONLINE.me=m.you||''; const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
+    if(m.t==='hi'){ ONLINE.me=m.you||''; if(m.world&&typeof m.world==='object')for(const k in m.world)wset(k,m.world[k]); const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }

@@ -36,6 +36,8 @@ jobs:
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k vr      'src/162[a-c]|vr\.cjs'
+          k riders  'src/117a|src/009c|riders\.cjs'
+          k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
@@ -43,6 +45,7 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
+          k scores  'src/059g|arcade-scores'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -83,6 +86,12 @@ jobs:
       - name: The headset (VR on an emulated Quest 3)
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
+      - name: riders
+        if: contains(steps.f.outputs.run, ' riders')
+        run: node tests/riders.cjs dist/market.html
+      - name: bins
+        if: contains(steps.f.outputs.run, ' bins')
+        run: node tests/bins.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
@@ -111,6 +120,9 @@ jobs:
       - name: Every editor opens and its controls work
         if: contains(steps.f.outputs.run, ' editors')
         run: node tests/editors.cjs dist/market.html
+      - name: The arcade's high-score table (a run that makes the top ten, the initials, the table)
+        if: contains(steps.f.outputs.run, ' scores')
+        run: node tests/arcade-scores.cjs dist/market.html
       - name: The page's errors, when it did not open
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html

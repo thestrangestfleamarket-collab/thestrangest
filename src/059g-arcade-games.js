@@ -25,20 +25,32 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
   const game=e=>e.G||(e.game&&LOADED(e.game.chunk)?(e.G=e.game(LIB)):null);   // a game's maker, once its chunk is here
   const BK='arcade-best', bests=()=>{ try{ return JSON.parse(OWNED.get(BK)||'{}')||{}; }catch(e){ return {}; } };
   const setBest=(n,v)=>{ const b=bests(); if(v<=(b[n]||0))return false; b[n]=v; OWNED.set(BK,JSON.stringify(b)); return true; };
+  // the shared high-score table: a top ten a cabinet with three initials, kept by the worker (/scores); off the website (the single-file page) a copy of your own runs stands in
+  const TK='arcade-top', TOP={}, srv=/^http/.test(location.protocol), mirror=()=>{ if(srv)return {}; try{ return JSON.parse(OWNED.get(TK)||'{}')||{}; }catch(e){ return {}; } };
+  const ask=body=>srv?fetch('/scores',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}).then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);
+  const topOf=n=>TOP[n]||(TOP[n]=(mirror()[n]||[]).slice(0,10)), refresh=n=>ask({cab:n}).then(j=>{ if(!j||!j.top)return; if(n==='*')for(const k in j.top)TOP[k]=j.top[k]; else TOP[n]=j.top; });
+  const qualifies=(n,v)=>v>0&&(topOf(n).length<10||v>topOf(n)[9].score);
+  const post=(n,ini,score,sub)=>{ const l=topOf(n); l.push({ini,score,sub}); l.sort((a,b)=>b.score-a.score); l.length=Math.min(l.length,10); const rank=l.findIndex(e=>e.ini===ini&&e.score===score)+1; if(!srv){ const m=mirror(); m[n]=l; OWNED.set(TK,JSON.stringify(m)); }
+    return ask({cab:n,put:{ini,score,sub}}).then(j=>{ if(j&&j.top){ TOP[n]=j.top; return j.rank||rank; } return rank; }); };
+  const hi=n=>{ const t=topOf(n)[0]; return t?t.score+' '+t.ini:String(bests()[n]||0); };
+  refresh('*');
 
-  const card=(c,name,blink)=>{ const L=lore(name), e=C.reg[name], b=bests()[name]||0; c.fillStyle='#05040a'; c.fillRect(0,0,W,H);
+  const card=(c,name,blink)=>{ const L=lore(name), e=C.reg[name], b=hi(name); c.fillStyle='#05040a'; c.fillRect(0,0,W,H);
     tx(c,name,128,30,L.col,name.length>11?16:20,'center'); tx(c,L.maker+' · '+L.place+' '+L.year,128,58,'#a090c0',8,'center'); tx(c,L.tag,128,80,'#e8f0ff',8,'center');
     L.story.forEach((l,i)=>tx(c,l,128,104+i*11,'#7a6a90',7,'center')); tx(c,'HI-SCORE '+b,128,146,'#ffe83c',10,'center');
     if(!e.game)tx(c,'COMING SOON',128,176,'#ffe83c',10,'center'); else if(blink)tx(c,'INSERT $2',128,176,'#5aff6a',10,'center'); tx(c,'©'+L.year+' '+L.maker,128,206,'#4a3a60',7,'center'); };
+  const table=(c,name)=>{ const L=lore(name), l=topOf(name); c.fillStyle='#05040a'; c.fillRect(0,0,W,H); tx(c,name,128,12,L.col,name.length>11?14:18,'center'); tx(c,'THE TOP TEN',128,38,'#e8f0ff',8,'center');
+    if(!l.length)tx(c,'NO ONE YET. BE THE FIRST.',128,110,'#7a6a90',8,'center'); l.forEach((e,i)=>{ const y=56+i*14, col=i?'#e8f0ff':'#ffe83c'; tx(c,String(i+1).padStart(2),34,y,'#7a6a90',8); tx(c,e.ini,58,y,col,8); tx(c,String(e.score),152,y,col,8,'right'); if(e.sub)tx(c,e.sub,226,y,'#a090c0',7,'right'); });
+    tx(c,'INSERT $2',128,206,'#5aff6a',8,'center'); };
   const crt=c=>{ c.fillStyle='rgba(0,0,0,.28)'; for(let y=0;y<H;y+=2)c.fillRect(0,y,W,1); const v=c.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.8); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)'); c.fillStyle=v; c.fillRect(0,0,W,H);
     const g=c.createLinearGradient(0,0,W,H); g.addColorStop(0,'rgba(255,255,255,.10)'); g.addColorStop(.35,'rgba(255,255,255,0)'); c.fillStyle=g; c.fillRect(0,0,W,H); };
   const demo=name=>{ const e=C.reg[name], cv=document.createElement('canvas'); cv.width=W; cv.height=H; const c=cv.getContext('2d'); let g=null, t=0, page=1, kt=0, dead=0; const K={}, T={};
-    return {cv,step(dt){ t+=dt; const G=game(e); if(!G){ page=1; return; } MUTE=true; try{ if(page===0){ if(!g)g=G.make(); kt-=dt; if(kt<=0){ kt=.15+R()*.45; for(const k of 'LRUDF')K[k]=0; const k='LRUDF'[ri(5)]; K[k]=1; T[k]=1; if(G.attract)G.attract(K,g); }
-        g.step(dt,K,T); for(const k in T)delete T[k]; if(g.over){ dead+=dt; if(dead>2){ g=null; dead=0; page=1; t=0; } } else if(t>30){ g=null; page=1; t=0; } } else if(t>7){ page=0; t=0; } } finally{ MUTE=false; } },
-      draw(){ const G=game(e); if(page===0&&g)g.draw(c); else card(c,name,Math.floor(performance.now()/500)%2); if(page===0&&g)tx(c,'INSERT $2',128,G.insert||4,Math.floor(performance.now()/500)%2?'#5aff6a':'rgba(0,0,0,0)',8,'center'); crt(c); }}; };
+    return {cv,step(dt){ t+=dt; const G=game(e); MUTE=true; try{ if(page===0){ if(!G){ page=1; t=0; return; } if(!g)g=G.make(); kt-=dt; if(kt<=0){ kt=.15+R()*.45; for(const k of 'LRUDF')K[k]=0; const k='LRUDF'[ri(5)]; K[k]=1; T[k]=1; if(G.attract)G.attract(K,g); }
+        g.step(dt,K,T); for(const k in T)delete T[k]; if(g.over){ dead+=dt; if(dead>2){ g=null; dead=0; page=1; t=0; } } else if(t>30){ g=null; page=1; t=0; } } else if(t>7){ page=page===1&&topOf(name).length?2:G?0:1; t=0; } } finally{ MUTE=false; } },   // the card, the top ten, then the game playing itself
+      draw(){ const G=game(e); if(page===0&&g)g.draw(c); else if(page===2)table(c,name); else card(c,name,Math.floor(performance.now()/500)%2); if(page===0&&g)tx(c,'INSERT $2',128,G.insert||4,Math.floor(performance.now()/500)%2?'#5aff6a':'rgba(0,0,0,0)',8,'center'); crt(c); }}; };
 
   const open=name=>{ if(C.on)return; const e=C.reg[name]; if(!e)return; const L=e.lore;
-    let mode='title', g=null, wait=0, msg='', nb=false, G=game(e), loading=!!e.game&&!G;
+    let mode='title', g=null, wait=0, msg='', nb=false, G=game(e), loading=!!e.game&&!G, slot=0, rank=0; const CH=' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', ini=[...(OWNED.get('arcade-ini')||'AAA').padEnd(3,'A').slice(0,3)]; refresh(name);
     if(loading)LOAD(e.game.chunk).then(()=>{ G=game(e); loading=false; },err=>{ loading=false; msg='THE GAME DID NOT LOAD'; console.warn(err); });
     const box=document.createElement('div'); box.id='cabwin';
     box.style.cssText='position:fixed;inset:0;z-index:40;background:radial-gradient(circle at 50% 45%,rgba(30,12,40,.9),rgba(2,1,4,.96));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:bold 13px monospace;color:#fff;user-select:none;touch-action:none';
@@ -54,18 +66,23 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     const kd=ev=>{ ev.stopPropagation(); const k=(ev.key||'').toLowerCase(); if(k==='escape'){ ev.preventDefault(); close(); return; } const m=map(k); if(!m)return; ev.preventDefault(); if(!ev.repeat&&!K[m])T[m]=1; K[m]=1; };
     const ku=ev=>{ ev.stopPropagation(); const m=map((ev.key||'').toLowerCase()); if(m)K[m]=0; }, blur=()=>{ for(const k in K)K[k]=0; };
     const coin=()=>{ if(INV.cash<2){ msg='YOU NEED $2 TO PLAY'; beep(120,.2); return false; } INV.cash-=2; msg=''; beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };
-    const end=()=>{ mode='over'; wait=1.2; nb=setBest(name,g.score); if(nb)beep(1568,.6,'square',.05,2093); const amt=1+G.grade.filter(v=>g.score>=v).length; if(e.skill)FORAGE.train(e.skill,400,0,amt); foot.textContent='SPACE TO PLAY AGAIN ($2) · ESC TO LEAVE'; };
+    const again=()=>{ mode='over'; wait=1.2; foot.textContent='SPACE TO PLAY AGAIN ($2) · ESC TO LEAVE'; };
+    const end=()=>{ nb=setBest(name,g.score); const amt=1+G.grade.filter(v=>g.score>=v).length; if(e.skill)FORAGE.train(e.skill,400,0,amt); rank=0;
+      if(qualifies(name,g.score)){ mode='initials'; slot=0; foot.textContent='▲▼ LETTER · ◀▶ SLOT · SPACE TO ENTER'; beep(1568,.6,'square',.05,2093); } else { if(nb)beep(1568,.6,'square',.05,2093); again(); } };
+    const enter=()=>{ const s=ini.join(''); OWNED.set('arcade-ini',s); again(); post(name,s,g.score,g.sub||'').then(r=>{ rank=r; }); beep(1319,.2,'square',.05,1760); };
     const close=()=>{ if(!C.on)return; C.on=false; C.tick=null; removeEventListener('keydown',kd,true); removeEventListener('keyup',ku,true); removeEventListener('blur',blur); box.remove(); keys.clear(); };
-    C.close=close; C.dbg=()=>({name,mode,loaded:!!G,loading,score:g?g.score:0,over:g?g.over:false,g:g&&g.dbg?g.dbg():null});
+    C.close=close; C.dbg=()=>({name,mode,loaded:!!G,loading,score:g?g.score:0,over:g?g.over:false,top:topOf(name),ini:ini.join(''),rank,g:g&&g.dbg?g.dbg():null}); C.cheat={over:(score,sub)=>{ if(mode==='play'&&g){ g.score=score; if(sub)g.sub=sub; g.over=true; } }};
     C.tick=dt=>{ if(mode==='title'||mode==='over'){ wait=Math.max(0,wait-dt); if(T.F&&wait<=0&&G&&coin()){ g=G.make(); mode='play'; nb=false; foot.textContent='ESC TO LEAVE'; } }
       else if(mode==='play'){ g.step(dt,K,T); if(g.over)end(); }
+      else if(mode==='initials'){ if(T.U||T.D){ const i=CH.indexOf(ini[slot]); ini[slot]=CH[(i+(T.U?1:CH.length-1))%CH.length]; beep(500,.04); } if(T.L&&slot>0)slot--; if(T.R&&slot<2)slot++; if(T.F){ if(slot<2)slot++; else enter(); } }
       for(const k in T)delete T[k];
       const bl=Math.floor(performance.now()/400)%2;
       if(mode==='title'&&!g){ card(c,name,false); if(G){ G.help.forEach((l,i)=>tx(c,l,128,166+i*11,'#e8f0ff',8,'center')); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,192,msg?'#ff3c5a':'#5aff6a',8,'center'); } else if(loading)tx(c,'LOADING',128,192,'#a090c0',8,'center'); else if(msg)tx(c,msg,128,192,'#ff3c5a',8,'center'); return; }
       g.draw(c);
       if(mode!=='play'){ c.fillStyle='rgba(0,0,0,.65)'; c.fillRect(20,62,216,104); c.strokeStyle=L.col; c.strokeRect(20.5,62.5,215,103);
-        tx(c,'GAME OVER',128,72,'#ff3c5a',14,'center'); tx(c,'SCORE '+g.score+(g.sub?' · '+g.sub:''),128,94,'#fff',10,'center'); tx(c,nb?'NEW HIGH SCORE!':'HI-SCORE '+(bests()[name]||0),128,110,nb&&bl?'#ffe83c':'#a090c0',8,'center');
-        tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } };
+        tx(c,'GAME OVER',128,72,'#ff3c5a',14,'center'); tx(c,'SCORE '+g.score+(g.sub?' · '+g.sub:''),128,94,'#fff',10,'center');
+        if(mode==='initials'){ tx(c,'YOU MADE THE TOP TEN. YOUR INITIALS:',128,110,'#ffe83c',7,'center'); ini.forEach((ch,i)=>{ const x=108+i*20, on=i===slot; if(on&&bl){ c.fillStyle=L.col; c.fillRect(x-7,124,14,16); } tx(c,ch,x,127,on&&bl?'#000':'#fff',12,'center'); }); tx(c,'▲▼ LETTER  ◀▶ SLOT  SPACE',128,150,'#a090c0',7,'center'); }
+        else { tx(c,rank>0?'RANK '+rank+' OF THE TOP TEN':nb?'NEW HIGH SCORE!':'HI-SCORE '+hi(name),128,110,(rank>0||nb)&&bl?'#ffe83c':'#a090c0',8,'center'); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } } };
     keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; beep(660,.1); };
   return C.K={LIB,lore,game,open,demo,crt}; };
 // The four cabinets whose games are still to come (their files register over these when they land): the cards show COMING SOON.

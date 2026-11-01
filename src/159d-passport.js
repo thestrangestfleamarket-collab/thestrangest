@@ -13,7 +13,7 @@ import {LOOP} from './009b-loop.js';
   (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); if(!FORAGE.has('passport')){ FORAGE.give('passport',1); FORAGE.draw(); } })();
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
-  sp.style.cssText='position:fixed;inset:0;z-index:22;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font:11px Silkscreen,monospace;color:#ece5d3;zoom:var(--uiz,1)';
+  sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font:11px Silkscreen,monospace;color:#ece5d3;zoom:var(--uiz,1)';
   sp.addEventListener('click',e=>{ if(e.target===sp)PASSPORT.close(); }); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')PASSPORT.close(); e.stopPropagation(); }); document.body.appendChild(sp);
   const draw=()=>{ const name=((LOOKS.L&&LOOKS.L.name)||'').trim()||'A TENANT', st=Object.keys(P.stamps);
     sp.innerHTML=`<div style="display:flex;box-shadow:0 20px 60px #000;position:relative"><button class="pX" style="position:absolute;right:-2px;top:-34px;font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer">X</button>
@@ -22,7 +22,7 @@ import {LOOP} from './009b-loop.js';
         <div style="color:#666;font-size:9px;margin-top:10px">ISSUED</div><div>${esc(P.issued)} · AT THE DOOR</div><div style="color:#666;font-size:9px;margin-top:10px">STAMPS · SECTIONS VISITED</div><div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">${st.map(k=>`<div title="${esc(P.stamps[k])}" style="width:42px;height:42px;border:2px dashed #3aa866;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3aa866;transform:rotate(${(k.charCodeAt(0)*37)%30-15}deg)">${esc(k)}</div>`).join('')}</div>
         <div style="margin-top:14px;border-top:2px solid #1a1a1a;padding-top:6px;font-size:9px;color:#444">P&lt;TSFM&lt;&lt;${esc(name.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,12))}&lt;&lt;&lt;&lt;&lt;&lt;&lt;${esc(P.no)}${esc(P.home)}</div><div style="margin-top:10px;font-size:9px;color:#666">SHOW IT AT A STATION'S MACHINE TO LEAVE</div></div></div>`;
     sp.querySelector('.pX').onclick=()=>PASSPORT.close(); };
-  PASSPORT.open=()=>{ sp.hidden=false; draw(); }; PASSPORT.close=()=>{ sp.hidden=true; };
+  PASSPORT.open=()=>{ sp.hidden=false; sp.style.display='flex'; draw(); }; PASSPORT.close=()=>{ sp.hidden=true; sp.style.display='none'; };
   FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);
   // the gates: a hex forcefield across each station's exit, solid while closed; a machine beside it
   const [fcv,ftex]=(()=>{ const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.clearRect(0,0,512,512); g.strokeStyle='rgba(110,210,255,.85)'; g.lineWidth=2; const r=22;

@@ -35,7 +35,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const r4 = await pg.evaluate(() => ({ held: BFLY.held(), gone: !__bt.g.parent }));
   ok(r4.held === r4a.b + 1 && r4.gone, 'a fast sweep of the net through a butterfly catches it: ' + JSON.stringify({ ...r4a, ...r4 }));
   // the mouse takes the arm round in a full circle: above him the hoop rises over his head, below him it drops; a left-hander's net is in the left hand
-  const hoop = () => pg.evaluate(() => { const p = __dbg.pos(), h = SHARED.heading, H = WIELD.head; return { y: H.y - p[1], side: (H.x - p[0]) * Math.cos(h) - (H.z - p[2]) * Math.sin(h) }; });
+  const hoop = () => pg.evaluate(() => { const p = __dbg.pos(), h = SHARED.heading, H = WIELD.head; return { y: H.y - p[1], side: (H.z - p[2]) * Math.sin(h) - (H.x - p[0]) * Math.cos(h) }; });
   const body = await pg.evaluate(() => { const v = W3.group.position.clone(); v.y += __dbg.cv().TILE * 1.3; v.project(SHARED.cam); const r = __dbg.renderer.domElement.getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height, r.height]; });
   await pg.mouse.move(body[0], body[1] - body[2] * .4); await frames(30); const hi = await hoop(); await pg.mouse.move(body[0], body[1] + body[2] * .4); await frames(30); const lo = await hoop();
   await pg.mouse.move(body[0] - body[2] * .3, body[1]); await frames(30); const rt = await hoop(); await pg.evaluate(() => PASSPORT.setHand('L')); await frames(30); const lf = await hoop(); await pg.evaluate(() => PASSPORT.setHand('R'));

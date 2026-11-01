@@ -55,7 +55,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       if(WIELD.block&&!own){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }
       if(sw&&slash(aim,sw,dt))sw=null;
       const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw||own?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0;
-      const moving=st.target>0||SHARED.target||own, d=Math.atan2(Math.sin(Math.atan2(cur.x,cur.z)-SHARED.heading),Math.cos(Math.atan2(cur.x,cur.z)-SHARED.heading)); if(!moving&&Math.abs(d)>1.1&&Math.abs(cur.y)<.6)turning=true; if(Math.abs(d)<.3||Math.abs(cur.y)>.8)turning=false;
+      const moving=st.target>0||SHARED.target||own, d=Math.atan2(Math.sin(Math.atan2(cur.x,cur.z)-SHARED.heading),Math.cos(Math.atan2(cur.x,cur.z)-SHARED.heading)); if(!moving&&ms.x>=0&&Math.abs(d)>1.1&&Math.abs(cur.y)<.6)turning=true; if(Math.abs(d)<.3||Math.abs(cur.y)>.8)turning=false;
       if(turning&&!moving&&!st.move)SHARED.heading+=Math.max(-7*dt,Math.min(7*dt,d)); }
     const w0=st.aim?st.aim.w:0, w=w0+((on&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };

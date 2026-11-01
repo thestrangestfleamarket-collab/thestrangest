@@ -112,7 +112,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.free > 0 && p.free < p.points), sp = GARBDBG.spec(true), menu = document.querySelector('#looks').innerText;
         return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], bare: sp.shirt && sp.pants && !sp.shoes && !sp.hat && !sp.jacket, lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(menu), ms: d.ms }; })();
       o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; })();
-      o.hatcut = (() => { const W = window.W3, L = window.LOOKS && LOOKS.L; return { hat: !!(L && (L.garb ?? 31) & 8), cut: W && W.uHatCut ? W.uHatCut.value : null }; })();
+      o.hatcut = (() => { const W = window.W3, G = window.GARB && GARB.mine && GARB.mine.garb; return { hat: !!(G && G.rg && G.rg.some(r => r.head)), cut: W && W.uHatCut ? W.uHatCut.value : null }; })();
       return o;
     });
     for (const p of ['dress', 'ring', 'water', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
@@ -155,7 +155,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero, 'you are always the Walker: knight/man/woman/hero stay in the game, YOU has no BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
     ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
-    ok(r.hatcut.hat && r.hatcut.cut != null && r.hatcut.cut < 10, 'with the hat on, hair above its band is not drawn (the cut is set): ' + JSON.stringify(r.hatcut));
+    ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));

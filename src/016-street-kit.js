@@ -17,7 +17,7 @@ function txt(put,s,x0,y0,c,k=2){ [...s].forEach((ch,i)=>{ const g=F3[ch]; if(!g)
 const tw=(s,k=1)=>(s.length*4-1)*k;
 function face(W,H,bg,lines,flip,a0,zt,len){ const A=art(W,H,put=>{ for(let y=0;y<H;y++)for(let x=0;x<W;x++)put(x,y,typeof bg==='function'?bg(x,y):bg); for(const [s,c,k,y] of lines)txt(put,s,Math.floor((W-tw(s,k))/2),y,c,k); });
   return onFace(a0,zt,A,()=>null,flip,len); }
-MK.awning=(x0,x1,y,z,ca,cb,name,sub,ink=[250,246,230],ink2)=>{ '@later'; SHARED.PNAME='awning'; const d=.9, W=Math.round((x1-x0)*FP), lines=[[name,ink,2,sub?3:8]]; if(sub)lines.push([sub,ink2||ink,sub.length*4>W/1.2?1:2,15]);
+MK.awning=(x0,x1,y,z,ca,cb,name,sub,ink=[250,246,230],ink2)=>{ SHARED.PNAME='awning'; const d=.9, W=Math.round((x1-x0)*FP), lines=[[name,ink,2,sub?3:8]]; if(sub)lines.push([sub,ink2||ink,sub.length*4>W/1.2?1:2,15]);
   const same=ca.join()===cb.join(), val0=face(W,26,ca,lines,FL(y),x0,z-4,x1-x0), val=(u,zz)=>{ const k=Math.floor((u-x0)*FP/6); if(zz<z-28&&((k&1)?zz<z-28:zz<z-29))return null; const c=val0(u,zz); return c&&hash(Math.floor(u*24),Math.floor(zz),88)<.08?sh(c,.9):c; }, top=(u,v)=>{ const n=hash(Math.floor(u*12),Math.floor(v*12),87); return same?(n<.12?sh(ca,.92):n>.96?sh(ca,1.06):ca):Math.floor(((u-x0)*FP)/6)&1?ca:cb; };
   return prop([WF(x0,x1,y),Bw(x0,x1,y,-.1,d,z-4,z,ca,{foot:0,top,fj:(u,z2)=>sh(ca,.9),fi:(v,z2)=>sh(cb,.7)}),
     Bw(x0,x1,y,d-.08,d,z-30,z-4,cb,{foot:0,fj:val,fi:()=>sh(cb,.7),top:()=>cb}),

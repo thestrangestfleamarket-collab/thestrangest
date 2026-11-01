@@ -81,15 +81,15 @@ const GARB={};
     if(last>=0)for(let s=last+.025;s<last+.2;s+=.025)if(at(s))last=s; const s=Math.max(s0,last+.025); return V(c.x+dx/s0*s,c.y+dy/s0*s,c.z+dz/s0*s); };
   const NECK=V(0,27,0);
   // a torso garment: rows [y, half width, half depth, lean(th), cl, c] from its top, round from th0 to th1 (closed: all round); sk(y) what a point hangs from at that height;
-  // each point fitted onto the body f wears (c: from the chest's middle, over the shoulders; else straight out), and below the chest it falls from the fullest row above it
-  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), da=body(f||'M',1), P=[], col=[], pc=n=>W3.pcs[W3.idx(n)], TP=[pc(f==='F'?'torsoF':'torso'),f==='F'&&pc('bustF')].filter(Boolean), HP=pc('hips');
+  // each point fitted onto the body f wears, and riding the piece it lies on (chest, an arm over the shoulder, the hips) (c: from the chest's middle, over the shoulders; else straight out), and below the chest it falls from the fullest row above it
+  const torso=(t,rows,nu,closed,th0,th1,K,m,TS,sk,f)=>{ const span=closed?TAU:th1-th0, d=body(f||'M'), da=body(f||'M',1), P=[], col=[], pc=n=>W3.pcs[W3.idx(n)], TP=[pc(f==='F'?'torsoF':'torso'),f==='F'&&pc('bustF')].filter(Boolean), HP=pc('hips'), AP={L:pc('upperArmL'),R:pc('upperArmR')};
     for(let j=0;j<rows.length;j++)for(let i=0;i<nu;i++){ const r=rows[j], th=closed?i/nu*TAU:th0+span*i/(nu-1); let p=V(r[1]*Math.sin(th),r[0]+(r[3]?r[3](th):0),r[2]*Math.cos(th));
-      if(r[4]!=null){ p=r[5]?onto(da,NECK,p,r[4],12):onto(d,V(0,p.y,0),p,r[4],13);
+      if(r[4]!=null){ p=r[5]?onto(da,NECK,p,r[4]+(f==='F'&&j>=2?.25:0),12):onto(d,V(0,p.y,0),p,r[4],13);
         if(!r[5]&&p.y<28.8&&Math.abs(Math.sin(th))<.75){ const h=Math.hypot(p.x,p.z), k=Math.max(h,(col[i]||0)*.97); if(k>h){ p.x*=k/h; p.z*=k/h; } col[i]=k; } }
       P.push(p); }
     const vl=[0]; for(let j=1;j<rows.length;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); }
     let per=0; for(let i=0;i<nu-1;i++)per+=dist(P[i+nu*(rows.length>>1)],P[i+1+nu*(rows.length>>1)]); const reps=Math.max(1,Math.round(per*(closed?nu/(nu-1):1)/TS));
-    const near=p=>{ let dt=1e9; for(const q of TP)dt=Math.min(dt,q.d(p)); const w=sm((dt-HP.d(p))/2+.5); return w>=1?['hips',null,0]:w<=0?['torso',null,0]:['torso','hips',w]; };
+    const near=p=>{ let dt=1e9; for(const q of TP)dt=Math.min(dt,q.d(p)); const s=p.x>0?'L':'R', up=p.y>27, o=up?'upperArm'+s:'hips', w=sm((dt-(up?AP[s]:HP).d(p))/2+.5); return w>=1?[o,null,0]:w<=0?['torso',null,0]:['torso',o,w]; };
     grid(t,nu,rows.length,closed,(i,j)=>{ const p=P[j*nu+i], s=sk===chest&&rows[j][4]!=null?near(p):sk(p.y), th=closed?i/nu*TAU:th0+span*i/(nu-1); pt(t,p,s[0],s[1],s[2],K(i,j,th)); },
       (c,j)=>[c/(closed?nu:nu-1)*reps,vl[j]/TS],m); return P; };
   // the chest takes the top of a torso garment, the pelvis the bottom
@@ -104,9 +104,9 @@ const GARB={};
   const BUST={shirt:.3,jacket:.85}, tpl=(k,f)=>{ const q=BUST[k]&&f==='F'?k+'F':k; if(!TPL[q]){ const t0=performance.now(); TPL[q]=fin(MAKE[k](f==='F'?'F':'M')); GARB.made[q]=+(performance.now()-t0).toFixed(1); } return TPL[q]; }, TPL={}; GARB.made={};
   // the rows over the shoulders, put on the body from the chest's middle (lower in front)
   const neck=th=>-.9*Math.cos(th)+.3*Math.sin(th)**2, yoke=th=>-.9*Math.cos(th)-.3*Math.sin(th)**2, shoulder=th=>-.6*Math.cos(th)+.4*Math.sin(th)**2;
-  // her arms are slimmer than her shoulders: the sleeve's top is roomier on her, so her shoulder stays inside it
-  const roomy=(f,R)=>f==='F'?R.map((g,j)=>{ const q=g.slice(); q[2]*=1+.12*Math.max(0,1-j/3); return q; }):R;
-  const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.32+e,1],[29.3,9,4.6,null,.35+e,1],[28.4,8.6,4.5,null,.4+e,1]];
+  // her arms are slimmer than her shoulders: the sleeve is roomier on her just under its top (its top ring stays tucked in under the shoulder)
+  const roomy=(f,R)=>f==='F'?R.map((g,j)=>{ const q=g.slice(); q[2]*=[1,1.12,1.06,1.02][j]||1; return q; }):R;
+  const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.42+e,1],[29.3,9,4.6,null,.5+e,1],[28.4,8.6,4.5,null,.55+e,1]];
   const MAKE={
     // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
     shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, CL=[.45,.5,.55,.6,.65,.7,.75,.8];

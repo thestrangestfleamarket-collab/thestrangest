@@ -156,8 +156,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
              V('hairSlick','hair','hair',p=>sm(cap({t:.55,crown:1.5,g:.3,N:14,fh:4.3,arch:1.1,sc:.1,k:.6,ny:-3.4,na:.4,nk:3})(p)-.25*Math.cos((p.x-H.x)*2.2)*cl(up(p)+.3,0,1),
                Math.max(ell(p,ad(H,Vv(0,6.6,3.0)),Vv(5.2,2.6,3.6)),-brow(p,4.3,1.1,.1,.6)),1.4)),
              V('hairSpiky','hair','hair',p=>{ let d=cap({t:.7,crown:.4,g:.25,N:18,fh:3.6,arch:.6,sc:.6,k:1.5,ny:-3.4,na:.6,nk:6})(p); for(const f of SPK)d=sm(d,f(p),.9); return d; }),
-             V('hairMohawk','hair','hair',p=>{ const side=cap({t:.14,g:.05,N:70,fh:4.0,arch:.9,sc:0,k:1,ny:-3.4,na:.4,nk:3})(p), z=p.z-H.z, a=cl((z+9)/14,0,1);
-               const crest=Math.max(Math.hypot((p.x-H.x)/(1.25-.25*a),(p.y-H.y-7.0-1.4*Math.sin(a*Math.PI)-.6*sq(Math.sin(z*1.3)))/2.8)-1,Math.abs(z+1.6)-8.2,H.y+3-p.y); return sm(side,crest,1.2); }),
+             V('hairMohawk','hair','hair',p=>{ const side=cap({t:.14,g:.05,N:70,fh:4.0,arch:.9,sc:0,k:1,ny:-3.4,na:.4,nk:3})(p), z=p.z-H.z, a=cl((z+6.2)/12.8,0,1);
+               const crest=Math.max(Math.hypot((p.x-H.x)/(1.25-.25*a),(p.y-H.y-7.0-1.4*Math.sin(a*Math.PI)-.6*sq(Math.sin(z*1.3)))/2.8)-1,Math.abs(z-.2)-6.4,H.y+3-p.y); return sm(side,crest,1.2); }),
              V('hairCurly','hair','hair',p=>Math.max(sm(cap({t:.8,crown:.4,g:.2,N:20,fh:3.6,arch:.7,sc:.7,k:1.3,ny:-3.2,na:.8,nk:7})(p),curls(p),.8),-brow(p,3.0,.7,.6,1.3))),
              V('hairPixie','hair','hair',p=>sm(cap({t:.7,crown:.7,g:.3,N:26,fh:4.2,arch:.6,sc:.4,k:1.2,ny:-4.4,na:1.0,nk:6})(p),Math.max(tube([Vv(-4.0,6.4,3.4),Vv(.5,5.4,5.9),Vv(4.6,3.0,6.2)],[1.9,1.4,.3],p),-skull(p)-.1),.8)),
              V('hairBob','hair','hair',p=>{ const y=p.y-H.y, face=Math.max(sq((p.x-H.x)/6.0)+sq((y+2.4)/7.4)-1,H.z+.3-p.z,y-line(p,3.0,.5,.7,1.2)+H.y);
@@ -194,15 +194,18 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       const RXb=(a,b)=>[(a-13)*.47,(b+1-13)*.47], RYb=(a,b)=>[.7-(b+1-14)*.47,.7-(a-14)*.47], HF=PCS.find(P=>P.n==='headF'), on=(hdx,x,y,r)=>{ let z=H.z+12; while(hdx(Vv(H.x+x,H.y+y,z))>r*.35&&z>H.z)z-=.05; return Vv(x,y,z-H.z); },
         brow=(hdx,r,ar,tilt)=>{ const pts=s=>[[1.2,2.3+tilt],[2.5,2.5+ar],[3.7,2.25+ar*.3-tilt*.3]].map(([x,y])=>{ const q=on(hdx,s*x,y,r); return q; });
           const L=pts(-1), Rr=pts(1); return p=>Math.min(tube(L,[r,r*.95,r*.55],p),tube(Rr,[r,r*.95,r*.55],p)); };
-      PCS.push({n:'browsM',on:'head',m:'hair',d:brow(hd,.4,.1,.12),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.16,cell:.13,form:'M'},
-               {n:'browsF',on:'head',m:'hair',d:brow(HF.d,.12,.3,.1),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.14,cell:.12,form:'F',flatEye:{R2:[{x:RXb(6,9),y:RYb(12,15),m:'hair',o:'brow'}],H,hd:HF.d}}); }
+      const FACE=/[?&]face=([AB])/.exec(location.search), FB=FACE?.62:.4;
+      PCS.push({n:'browsM',on:'head',m:'hair',d:brow(hd,FB,.1,.12),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.16,cell:.13,form:'M'},
+               {n:'browsF',on:'head',m:'hair',d:brow(HF.d,.12,.3,.1),bb:[H.x-6,H.x+6,H.y,H.y+5,H.z,H.z+11],step:.14,cell:.12,form:'F',flatEye:{R2:[{x:RXb(6,9),y:RYb(12,15),m:'hair',o:'brow'}],H,hd:HF.d}});
+      if(FACE){ let zm=H.z; while(hd(Vv(H.x,H.y-5.3,zm))<0&&zm<H.z+12)zm+=.05; PCS.push({n:'lipsM',on:'head',m:'lips',d:p=>Math.min(ell(p,Vv(H.x,H.y-5.0,zm-.3),Vv(1.5,.22,.42)),ell(p,Vv(H.x,H.y-5.45,zm-.32),Vv(1.35,.3,.42))),bb:[H.x-3,H.x+3,H.y-8,H.y-4,zm-2,zm+2],step:.14,cell:.12,form:'M'}); } }
     { const BODY=['torso','neck','sleeveL','sleeveR','upperArmL','upperArmR'].map(n=>PCS.find(P=>P.n===n)).filter(Boolean), clear=p=>Math.min(...BODY.map(P=>P.d(p)));
       const strand=p=>{ const a=th(p), y=p.y-H.y, v=Math.sin(a*17+y*.3+1.7*Math.sin(a*5+y*.15))*Math.sin(a*7.3-y*.21+2.1); return v>.62&&y>-4?'hairHi':v<-.66?'hairLo':null; };
       for(const P of PCS)if(/^(hair|beard)/.test(P.n)&&!P.paint)P.paint=strand;
       for(const P of PCS)if(/^hair/.test(P.n)){ const d0=P.d; P.d=p=>Math.max(d0(p),.6-clear(p)); }
       for(const P of PCS)if(/^beard/.test(P.n))P.layer='beard'; }
     const EYES=[[[7,13,8,14,'eye','o']], [[6,13,8,14,'eyeW'],[7,13,8,14,'eye']], [[6,12,9,15,'eyeW'],[7,12,8,15,'eye'],[7,13,7,13,'pupil'],[8,12,8,12,'eyeW']],
-      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']], [[6,12,9,15,'eyeW','o'],[7,13,8,14,'eye','o'],[8,13,8,13,'eyeW','o'],[6,12,9,15,'pupil','capd'],[6,12,9,15,'lid','cap']]];
+      [[6,13,9,14,'eyeW'],[7,13,8,14,'eye'],[6,12,9,12,'lid']], [[6,12,9,14,'eyeW'],[7,12,8,14,'eye'],[5,11,9,11,'pupil'],[5,12,5,12,'pupil']], [[6,14,6,14,'pupil'],[7,13,7,13,'pupil'],[8,14,8,14,'pupil']], [[6,12,9,15,'eyeW','o'],[7,13,8,14,'eye','o'],[8,13,8,13,'eyeW','o'],[6,12,9,15,'pupil','capd'],[6,12,9,15,'lid','cap']],
+      [[5,12,9,15,'eyeW','o'],[6,12,8,15,'eye','o'],[8,13,8,13,'eyeW','o'],[5,12,9,15,'pupil','capd'],[5,12,9,15,'lid','cap']]];
     const U=.47, RX=r=>[(r[0]-13)*U,(r[2]+1-13)*U], RY=r=>[.7-(r[3]+1-14)*U,.7-(r[1]-14)*U];
     EYES.forEach((E,k)=>{ const R2=E.map(r=>({x:RX(r),y:RY(r),m:r[4],o:r[5]})), sx=p=>-Math.abs(p.x-H.x);
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
@@ -286,8 +289,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.selfOff=true; try{ W3.selfOff=localStorage.getItem('market-self')!=='1'; }catch(e){}
   W3.setSelf=on=>{ W3.selfOff=!on; W3.smClr=false; W3.uSelf.value=on?1-W3.shade.depth*.55:1; try{ localStorage.setItem('market-self',on?'1':'0'); }catch(e){} };
   { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); let bd=null; try{ bd=+SAVE.get('bands'); }catch(e){} if(!s0.cel){ s0={steps:Math.max(3,Math.min(5,+(P.get('cel')||bd||4))),depth:.72,cel:1}; } W3.setShade(s0.steps,s0.depth,false); }
-  W3.PAT={value:[0,1,2].map(()=>new THREE.Vector4(0,1,-9,0))}; W3.PB={value:[0,1,2].map(()=>new THREE.Vector3(1,1,1))}; W3.uRim={value:0}; W3.uFl={value:.5};
-  const PATG=`uniform vec4 uPat[3]; uniform vec3 uPB[3]; uniform float uRim; varying float vMt; varying vec3 vPL;
+  W3.PAT={value:[0,1,2].map(()=>new THREE.Vector4(0,1,-9,0))}; W3.PB={value:[0,1,2].map(()=>new THREE.Vector3(1,1,1))}; W3.uRim={value:0}; W3.uFl={value:.5}; W3.uHatCut={value:1e9};
+  const HMI=['hair','hairHi','hairLo'].map(n=>MATS.indexOf(n)), HAIRF='('+HMI.map(i=>'abs(vMt-'+i+'.)<.5').join('||')+')';
+  const PATG=`uniform vec4 uPat[3]; uniform vec3 uPB[3]; uniform float uRim,uHatCut; varying float vMt; varying vec3 vPL;
   float pH(vec3 q){ return fract(sin(dot(q,vec3(12.9898,78.233,37.719)))*43758.5453); }
   float pN(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(pH(i),pH(i+vec3(1,0,0)),f.x),mix(pH(i+vec3(0,1,0)),pH(i+vec3(1,1,0)),f.x),f.y),mix(mix(pH(i+vec3(0,0,1)),pH(i+vec3(1,0,1)),f.x),mix(pH(i+vec3(0,1,1)),pH(i+vec3(1,1,1)),f.x),f.y),f.z); }
   float patW(float t,vec3 p){ float h=p.x+p.z;
@@ -299,8 +303,8 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     return step(length(fract(p+vec3(0.,.5*step(.5,fract(p.y*.5)),0.))-.5),.27); }`;
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:GP,side:THREE.DoubleSide});
   toon.onBeforeCompile=sh=>{ sh.uniforms.uPM=W3.PM; sh.vertexShader='attribute float mat; varying float vMt; varying vec3 vPL;\n'+MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz; vMt=mat; vPL=position;');
-    sh.uniforms.uPat=W3.PAT; sh.uniforms.uPB=W3.PB; sh.uniforms.uRim=W3.uRim;
-    sh.fragmentShader=PATG+'\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n for(int i=0;i<3;i++) if(uPat[i].x>.5&&abs(vMt-uPat[i].z)<.5) diffuseColor.rgb=mix(diffuseColor.rgb,uPB[i],patW(uPat[i].x,vPL*uPat[i].y));')
+    sh.uniforms.uPat=W3.PAT; sh.uniforms.uPB=W3.PB; sh.uniforms.uRim=W3.uRim; sh.uniforms.uHatCut=W3.uHatCut;
+    sh.fragmentShader=PATG+'\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vPL.y>uHatCut&&'+HAIRF+')discard;\n for(int i=0;i<3;i++) if(uPat[i].x>.5&&abs(vMt-uPat[i].z)<.5) diffuseColor.rgb=mix(diffuseColor.rgb,uPB[i],patW(uPat[i].x,vPL*uPat[i].y));')
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n if(uRim>0.){ vec3 vd=isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition); totalEmissiveRadiance+=mix(diffuseColor.rgb,vec3(1.),.4)*uRim*pow(1.-abs(dot(normalize(vNormal),vd)),3.); }');
     sh.uniforms.uLv=W3.lv; sh.uniforms.uLVP=W3.LVP; sh.uniforms.uSM={value:W3.sm.depthTexture}; sh.uniforms.uSelf=W3.uSelf;
     sh.vertexShader='varying vec3 vWW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;').replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point|spot)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.18)'));

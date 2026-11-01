@@ -2,7 +2,7 @@
 import {FORAGE, INV, keys, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {STORE, SYS} from './006-map-pre.js';
-STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
+STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
 SYS.add('places',dt=>{ if(STORE.cabs.tick)STORE.cabs.tick(dt); },'arcade games');
 STORE.cabs.play=name=>STORE.cabs.kit().open(name);
 STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
@@ -63,6 +63,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     if(matchMedia('(pointer:coarse)').matches){ const pad=document.createElement('div'); pad.style.cssText='display:flex;gap:10px';
       for(const [k,l] of [['L','◀'],['U','▲'],['D','▼'],['R','▶'],['F','●'],...(e.hold?[['H','H']]:[]),['X','✕']]){ const b=document.createElement('button'); b.textContent=l; b.style.cssText='width:50px;height:46px;font-size:20px;background:#241a30;color:#fff;border:2px solid #5a3a70;border-radius:8px';
         b.onpointerdown=ev=>{ ev.preventDefault(); if(k==='X')return close(); if(!K[k])T[k]=1; K[k]=1; }; b.onpointerup=b.onpointerleave=()=>{ if(k!=='X')K[k]=0; }; pad.append(b); } box.append(pad); }
+    cv.addEventListener('pointermove',ev=>{ const r=cv.getBoundingClientRect(); K.mx=(ev.clientX-r.left)/r.width*W; K.my=(ev.clientY-r.top)/r.height*H; }); cv.addEventListener('pointerleave',()=>{ K.mx=K.my=null; });   // a game that steers by the pointer (PETRI) reads where it is over the screen
     const kd=ev=>{ ev.stopPropagation(); const k=(ev.key||'').toLowerCase(); if(k==='escape'){ ev.preventDefault(); close(); return; } const m=map(k); if(!m)return; ev.preventDefault(); if(!ev.repeat&&!K[m])T[m]=1; K[m]=1; };
     const ku=ev=>{ ev.stopPropagation(); const m=map((ev.key||'').toLowerCase()); if(m)K[m]=0; }, blur=()=>{ for(const k in K)K[k]=0; };
     const coin=()=>{ if(INV.cash<2){ msg='YOU NEED $2 TO PLAY'; beep(120,.2); return false; } INV.cash-=2; msg=''; beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };

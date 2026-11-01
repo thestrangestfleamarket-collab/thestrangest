@@ -1,6 +1,6 @@
 # The arcade's games
 
-Eight cabinets in THE ARCADE (off the map, `src/059b-arcade.js`), four along each side wall, and a ninth to come on the wall facing the door (PETRI). Each is a full arcade game in the
+Nine cabinets in THE ARCADE (off the map, `src/059b-arcade.js`), four along each side wall and PETRI on the back wall by the holodeck's door. Each is a full arcade game in the
 line of a real 80s–90s machine, built out the way the originals were (owner, 30 Oct 2026: "very similar to 80-90s arcade games.
 more in depth though … fully fledged out games that are intricate and detailed and you could play for hours. dont rush it").
 
@@ -14,7 +14,7 @@ more in depth though … fully fledged out games that are intricate and detailed
 | west | KNUCKLE CITY | Final Fight | ento | — | coming soon |
 | west | TORCHBEARER | Gauntlet | myco | `059n-game-torch.js` | designed: [torchbearer.md](torchbearer.md); built: all eight monsters, amulets, traps, teleporters, treasure rooms, floors 1–30 by hand and the generator beyond, the attract bot; the shared high-score table next |
 | west | MONSTER ROAD | Wonder Boy in Monster Land | alch | — | coming soon |
-| facing the door | PETRI | agar.io | alch | — | designed: [petri.md](petri.md), the owner's word on its §12 next |
+| back wall | PETRI | agar.io | alch | `059o-game-petri.js` | designed: [petri.md](petri.md); built: the dish with bots, the cabinet, the check; the whole market in one dish (its §11.2) next |
 
 Order of build: TORCHBEARER, then KNUCKLE CITY, DRAGON POP, MONSTER ROAD, then the four kept games up to their originals' full
 feature sets. One game per pull request; each starts with its design doc here, which the owner reads before any code.

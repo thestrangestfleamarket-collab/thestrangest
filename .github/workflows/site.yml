@@ -46,6 +46,7 @@ jobs:
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
+          k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -123,6 +124,9 @@ jobs:
       - name: The arcade's high-score table (a run that makes the top ten, the initials, the table)
         if: contains(steps.f.outputs.run, ' scores')
         run: node tests/arcade-scores.cjs dist/market.html
+      - name: TORCHBEARER (the dungeon, floor by floor) and PETRI (the dish)
+        if: contains(steps.f.outputs.run, ' arcade')
+        run: node tests/arcade-torch.cjs dist/market.html && node tests/arcade-petri.cjs dist/market.html
       - name: The page's errors, when it did not open
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html

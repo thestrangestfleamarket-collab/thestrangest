@@ -1,0 +1,23 @@
+// THE BINS CHECK: node tests/bins.cjs [dist/market.html]. On station A's platform: three hollow trash cans and litter on the floor; picking litter up puts LITTER in your pack, the can takes it and its heap rises, a full can refuses, and the block's shared world moves the heap for everyone.
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:800,height:450}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+  await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(2000);
+  const idle=()=>pg.waitForFunction(()=>FADE.busy===0&&getComputedStyle(document.getElementById('subfade')).opacity==='0',null,{timeout:300000,polling:500}).catch(()=>{});
+  await idle(); await pg.evaluate(()=>{ const p=SHARED.METRO.plat; __dbg.UI.goTo(p.x,p.z,'down'); }); await idle(); await pg.waitForTimeout(1000);
+  const S=await pg.evaluate(()=>{ const B=window.BINS||__dbg.BINS; const sent=[]; ONLINE.send=m=>sent.push(m); window.__sent=sent;
+    const can=B.list[0], wall=can.G.children[0], open=!!wall.geometry.parameters.openEnded, floor=can.G.children.some(c=>c.geometry&&c.geometry.type==='CircleGeometry');
+    const things=__dbg.ui().things.filter(t=>t.name==='TRASH CAN'&&B.list.some(b=>b.hit===t.obj)).length, lit=__dbg.ui().things.filter(t=>t.name==='LITTER').length;
+    return {cans:B.list.length,open,floor,heapShown:can.hp.children.filter(m=>m.visible).length,things,lit,cap:B.CAP}; });
+  ok(S.cans===3&&S.things===3,'three trash cans on the platform, each a thing to use ('+S.cans+', '+S.things+')');
+  ok(S.open&&S.floor&&S.heapShown===0,'a can is hollow: open at the top, a floor inside, nothing in it yet');
+  ok(S.lit>=5,'litter lies on the platform ('+S.lit+' pieces)');
+  const P=await pg.evaluate(()=>{ const L=__dbg.ui().things.filter(t=>t.name==='LITTER'); L[0].act(); L[1].act(); return {pack:FORAGE.has('litter'),gone:!L[0].obj.visible,sent:__sent.filter(m=>m.t==='world').length}; });
+  ok(P.pack===2&&P.gone&&P.sent===2,'picking two pieces up puts LITTER in your pack and tells the block ('+JSON.stringify(P)+')');
+  const C=await pg.evaluate(()=>{ const B=window.BINS||__dbg.BINS, can=__dbg.ui().things.find(t=>t.obj===B.list[0].hit); can.act(); return {pack:FORAGE.has('litter')|0,fill:B.list[0].fill,heap:B.list[0].hp.children.filter(m=>m.visible).length,add:__sent.filter(m=>m.t==='world'&&m.add).map(m=>m.add)}; });
+  ok(C.pack===0&&C.fill===2&&C.heap===2&&C.add[0]===2,'the can takes the litter: pack empty, two in the can, its heap shows two, the block told +2 ('+JSON.stringify(C)+')');
+  const W=await pg.evaluate(()=>{ const B=window.BINS||__dbg.BINS; ONLINE.feed({t:'world',k:'bin:A1',v:B.CAP}); const full=B.list[1]; const can=__dbg.ui().things.find(t=>t.obj===full.hit); FORAGE.give('litter',1); can.act(); return {fill:full.fill,heap:full.hp.children.filter(m=>m.visible).length,y:full.hp.position.y>.2,kept:FORAGE.has('litter')}; });
+  ok(W.fill===W.heap&&W.y&&W.kept===1,'what the block says fills a can for everyone, and a full can keeps your litter out ('+JSON.stringify(W)+')');
+  ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
+  await b.close(); process.exit(bad?1:0); })();

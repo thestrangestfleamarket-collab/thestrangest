@@ -183,7 +183,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `134b-daynight.js` | 8.3 | top level |  | 003: SHARED THREE; 003b: CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
 | `134c-editors.js` | 4.4 | top level |  | 003b: CHARED EDITORS GAMEED ITEMED LAND LIGHTED UI WE |
 | `134d-shafts.js` | 7.0 | top level |  | 003: SHARED THREE; 003b: CLOCK DN SKY WX pos; 004: renderer scene; 006: MODS OUT SYS TILE |
-| `134e-distfog.js` | 6.2 | top level | DFOG (146g 161a) | 003: SHARED THREE; 003b: ED FAR3 MAPED UI pos; 004: ShaderPass renderer scene; 005: SAVE; 006: TILE; 066: RIVER |
+| `134e-distfog.js` | 7.3 | top level | DFOG (146g 161a) | 003: SHARED THREE; 003b: ED FAR3 MAPED UI pos; 004: ShaderPass renderer scene; 005: SAVE; 006: TILE; 066: RIVER |
 | `135-where.js` | 1.0 | top level | BUILDV (136 136a) | 003: SHARED; 003b: RAG WHERE pos; 005: SAVE; 006: QS STORE |
 | `136-version.js` | 2.0 | top level |  | 135: BUILDV |
 | `136a-bugs.js` | 9.4 | top level |  | 003: SHARED; 003b: BUGS CLOCK UI pos; 004: renderer; 006: STORE; 135: BUILDV |
@@ -196,11 +196,11 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `139-clip.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: CLIP NPCS; 006: CLIPX FIX MODS QS SOL STORE TILE ZU; 008: OBJS |
 | `140-weeds.js` | 11.8 | top level |  | 003: SHARED THREE; 003b: NPCS ONLINE PARK POND ROOMS W3 WED WEEDS pos; 004: renderer scene; 006: MODS STORE SYS TILE; 008: BATCH; 014a: GRASS |
 | `140a-tufts.js` | 8.6 | top level |  | 003: SHARED THREE; 003b: ROOMS W3 WEEDS pos; 004: scene; 006: SYS TILE; 014: TUFTC cvNoise; 014a: GRASS |
-| `141-forage.js` | 36.7 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC CLOCK ED EQUIP FORAGE INSPECT INV ITEMS LINES LOOKS MAIL NPCS SFX TALK UI VIT WE WEEDS WX pos st; 004: scene; 005: OWNED; 006: MAPG QS STORE SYS TILE; 007: FLAME; 014a: GRASS; 081: STALL; 083a: MUSH; 101: GEMS |
+| `141-forage.js` | 36.8 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC CLOCK ED EQUIP FORAGE INSPECT INV ITEMS LINES LOOKS MAIL NPCS SFX TALK UI VIT WE WEEDS WX pos st; 004: scene; 005: OWNED; 006: MAPG QS STORE SYS TILE; 007: FLAME; 014a: GRASS; 081: STALL; 083a: MUSH; 101: GEMS |
 | `141b-fairy.js` | 3.5 | top level |  | 003: SHARED THREE; 003b: FORAGE PARK ROOMS UI WEEDS pos; 004: scene; 006: SOL SYS TILE |
 | `141c-fireview.js` | 15.1 | top level |  | 003: SHARED THREE; 003b: CLOCK FAR3 GPH SFX SKY UI pos; 004: scene; 006: BLDK MISTE MODS STORE SYS TILE; 008: BATCH |
 | `141d-items.js` | 8.8 | top level |  | 003b: FORAGE ITEMED ITEMS; 005: OWNED |
-| `141e-map.js` | 0.9 | top level |  | 003b: FORAGE UI |
+| `141e-map.js` | 0.7 | top level |  | 003b: FORAGE UI |
 | `141f-fishes.js` | 11.1 | top level | FISHES (142) | 003: SHARED THREE; 003b: BROOK FLOW ITEMS pos; 004: scene; 006: SYS TILE; 060a: FOUNT; 066: RIVER |
 | `142-fishing.js` | 56.0 | top level | FISHING (142b) | 003: SHARED THREE; 003b: BOAT BOOKS CLOCK FORAGE INSPECT INV ITEMS LEVELS ONLINE SFX UI VIT W3 WIELD pos st; 004: scene; 005: OWNED; 006: FIX MAPG SOL SYS TILE ZU; 060a: FOUNT; 066: RIVER; 101: GEMS; 141f: FISHES |
 | `142a-flora.js` | 15.7 | top level | FLORA (143 144b 147a) | 003: SHARED THREE; 003b: DRESS PARK WEEDS; 006: CASTLE FIX MAPG SOL STORE TILE; 060: GCAVE; 060a: FOUNT; 081: STALL |
@@ -288,5 +288,5 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `162a-pad.js` | 13.5 | top level |  | 003b: FORAGE UI VR keys; 004: renderer; 005: SAVE; 075: PAD |
 | `162b-charp.js` | 12.8 | top level |  | 003: THREE; 003b: CHARP CINEMA EQUIP FORAGE INV ITEMS LOOKS PS2 UI VIT W3 WIELD; 004: pxS renderer; 102b: DESIGN |
 | `162c-vr.js` | 31.8 | top level |  | 003: SHARED THREE; 003b: BOAT ED FEEL RAG UI VIT VR W3 keys pos st; 004: PCAM renderer resize scene; 005: SAVE; 006: FADE SYS TILE; 075: PAD collide frame |
-| `162d-hud.js` | 9.5 | top level |  | 003: SHARED; 003b: ED FORAGE HUD INV ONLINE ROOMS UI WE WIELD ZONES pos; 005: OWNED; 006: SYS TILE |
+| `162d-hud.js` | 9.4 | top level |  | 003: SHARED; 003b: ED FORAGE HUD INV ONLINE ROOMS UI WE WIELD ZONES pos; 005: OWNED; 006: SYS TILE |
 | `163-main-15.js` | 3.8 | top level |  | 003: SHARED THREE; 003b: AMB BINS CLIP CLOCK CULL DRONE ED GHOSTS GPH INTERIORS LAND LINES LITE LOOKS NPCS PARK PERFX RAG ROOMS SFX SNDED UI VIT W3 WEEDS WHERE keys pos st; 004: PPU renderer resize scene; 005: SAVE; 006: AWAY CASTLE DITH FIX FREE LAY MAPG MAPSTAIR MODS QS RING SECTIONS SOL STORE SYS TILE applyTime cutWalls lamps; 008: OBJS; 072: OUTL; 075: collide frame; 137: BVH; 147: NEWS; 148: ROOFS; 148a: GATES; 148b: DRAINS; 153: NAV |

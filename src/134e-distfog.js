@@ -32,16 +32,22 @@ const DFOG={};
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   const save=()=>{ try{ SAVE.set('dfog3',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
-    cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0}); window.DFOG=DFOG;
+    cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
+    range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;
+  // the player's HAZE RANGE in GRAPHICS: where the haze takes everything (the fog's END; the band before it keeps its width)
+  const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dhaze'))return;
+    const B=document.createElement('div'); B.innerHTML='<h3>HAZE RANGE</h3><div class="row"><span>NEAR</span><input type="range" id="dhaze" min="20" max="120" step="5"><span>FAR</span><span id="dhazev"></span></div><div class="dim">how far you see before the haze takes everything; further draws more and costs more</div>';
+    P.appendChild(B); const R=B.querySelector('#dhaze'), V=B.querySelector('#dhazev'), show=()=>{ R.value=C.end; V.textContent=C.end+' TILES'; }; R.oninput=e=>DFOG.range(+e.target.value); DFOG.onchange.push(show); show(); };
+  gfx();
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
     const S=[['dfs','START','start',4,60,1],['dfe','END','end',8,120,1],['dfb','BLUR','blur',0,5,.1],['dfh','HAZE','haze',0,1,.01]];
     const B=document.createElement('div'); B.id='dfog';
     B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to blur into the haze (START, in tiles) and where it is whole and nothing past it is drawn (END)</div>';
-    P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; };
+    P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; }; DFOG.onchange.push(sync);
     B.querySelector('#dfon').onclick=()=>{ C.on=!C.on; save(); sync(); };
     B.querySelector('#dfrs').onclick=()=>{ Object.assign(C,D0); save(); sync(); };   // back to the owner's default haze
-    for(const [id,,k] of S)B.querySelector('#'+id).oninput=e=>{ C[k]=+e.target.value; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); sync(); };
+    for(const [id,,k] of S)B.querySelector('#'+id).oninput=e=>{ C[k]=+e.target.value; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); for(const f of DFOG.onchange)f(); };
     sync(); };
   ui();
 }

@@ -45,6 +45,7 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
+          k bbs     'src/146-drone|src/059a|bbs\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -96,6 +97,9 @@ jobs:
       - name: The room editor (decorate your apartment, saved and back after a reload)
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
+      - name: The computer's BBS (dial-in, order, drone delivery, drone view)
+        if: contains(steps.f.outputs.run, ' bbs')
+        run: node tests/bbs.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

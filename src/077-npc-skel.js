@@ -44,7 +44,7 @@ MODS.skel=SKELGO;
       if(N.sheet){ if(!N.posed){ N.posed=true; spread(rig); } return; }
       if(QS.get('skelrest'))return; an.base=moving?(run?'Running_A':o.walkN):(N.alert?'Idle_Combat':o.idleN); an.ts=moving?st.v/((run?RUNU:WALK)*sc):1; an.update(dt); }});
     for(const [gn,slot] of o.gear||[]){ const m=new THREE.Mesh(geomOf(S.gear[gn],false),N.me.material); m.castShadow=true; rig.bones[JI[slot]].add(m); }
-    N.mixer=mixer; N.an=an; N.restless=()=>!!N.alert||!!an.once; return N; };
+    N.mixer=mixer; N.an=an; N.skelChar=key; N.restless=()=>!!N.alert||!!an.once; return N; };
   const shoot=(G,T,col,dmg)=>{ let b=BOLTS.find(b=>!b.on); if(!b){ b={m:new THREE.Mesh(new THREE.BoxGeometry(.05*TILE,.05*TILE,.3*TILE),new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}))}; MAPG.bodega.add(b.m); BOLTS.push(b); }
     b.m.material.color.setRGB(...col); b.on=true; b.T=T; b.from=G; b.dmg=dmg; b.m.visible=true; b.m.position.set(G.st.x,G.g.position.y+G.H*.55,G.st.z); };
   const bolts=dt=>{ for(const b of BOLTS){ if(!b.on)continue; const T=b.T, to=new THREE.Vector3(T.st.x,T.g.position.y+T.H*.5,T.st.z), d=to.clone().sub(b.m.position), l=d.length(), step=16*TILE*dt;

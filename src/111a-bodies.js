@@ -1,5 +1,6 @@
 // THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
+import {B64, I16, U16} from './003a-skin.js';
 import {CHARS, NPCS, pos, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -135,6 +136,17 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
       g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.computeBoundingSphere(); return g; };
     BODIES.add({key,label,geo,height:b.height,hipY:b.hipY,off,binv,at,...more}); };
+  /* ---------- a re-baked body (rig-rebake.py: a clip character's own skeleton baked onto these 15 bones, its own per-vertex colours) as one flat-faced mesh ---------- */
+  const rebakedObj=(D,key,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
+    const geo=()=>{ const Q=I16(b.pos), P=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)P[i]=(Q[i]+32500)*b.sc+b.lo[i%3];
+      const T=U16(b.tri), VC=B64(b.vcol), BN=B64(b.bone), BW=B64(b.w), nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), va=new V3(),vb=new V3(),vc=new V3(),n=new V3(),e=new V3();
+      for(let f=0;f<nf;f++){ const ix=[T[f*3],T[f*3+1],T[f*3+2]]; va.fromArray(P,ix[0]*3); vb.fromArray(P,ix[1]*3); vc.fromArray(P,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
+        ix.forEach((v,j)=>{ const o=f*3+j; pos.set([P[v*3],P[v*3+1],P[v*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([VC[v*3]/255,VC[v*3+1]/255,VC[v*3+2]/255],o*3); bi.set([BN[v*2],BN[v*2+1]],o*2); bw[o]=BW[v]/255; }); }
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
+      g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.computeBoundingSphere(); return g; };
+    return {key,geo,height:b.height,hipY:b.hipY,off,binv,...more}; };
+  BODIES.rebaked=(D,key,label,at,more)=>BODIES.add(rebakedObj(D,key,{label,at,...more}));
+  BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
     if(body.playable)addButton(body.key,body.label); walker(body); };

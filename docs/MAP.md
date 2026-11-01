@@ -174,8 +174,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `128-bandstand.js` | 1.6 | top level |  | 003b: DRM MUS NPCS STAGE pos; 006: AWAY MAPG QS STORE; 106: GTA; 114: PNA; 119: IMX; 123: VOX |
 | `129-clock.js` | 8.7 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
 | `129a-vis.js` | 3.9 | top level | VIS (130 134 161 162) | 003: SHARED; 003b: LEVELS PARK ROOMS ZONES pos; 004: scene; 006: SECTIONS TILE |
-| `130-rooms.js` | 19.8 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS ONLINE PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH PEEK; 009: WATER; 129a: VIS |
-| `130a-windows.js` | 6.5 | top level |  | 003: THREE; 003b: CLOCK ROOMS WINDOWS; 004: renderer scene; 006: FADE STORE SYS TILE |
+| `130-rooms.js` | 20.1 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS ONLINE PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH PEEK; 009: WATER; 129a: VIS |
+| `130a-windows.js` | 6.6 | top level |  | 003: THREE; 003b: CLOCK ROOMS WINDOWS; 004: renderer scene; 006: FADE STORE SYS TILE |
 | `131-weather.js` | 6.0 | top level |  | 003: SHARED THREE; 003b: CLOCK PARK WX pos; 004: scene; 006: OUT QS SYS TILE; 064: HEMI |
 | `132-sky.js` | 16.9 | top level |  | 003: SHARED THREE; 003b: CLOCK DN LOOK SKY WX; 004: renderer scene; 006: CEL LFX OUT QS SMOOTH SYS; 064: HEMI |
 | `133-lookfx.js` | 5.8 | top level |  | 003: SHARED THREE; 003b: CLOCK LOOK PARK ROOMS WX pos; 004: scene; 006: LFX OUT SOL SYS TILE |

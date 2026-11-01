@@ -16,7 +16,7 @@ import {ROOMK} from './150a-bedroom.js';
     const DH=1.1, paint=(u0,va,u1,vb)=>{ box(u0,va,u1,vb,DH,HW,wallM); box(u0,va,u1,vb,.12,DH,dadoM); box(u0,va,u1,vb,0,.12,skirtM); };
     paint(0,v1,Lx,v1+TH); paint(-TH,Ly,0,v1+TH); paint(Lx,Ly,Lx+TH,v1+TH); paint(0,Ly+TH,du-.56,Ly+TH+.012); paint(du+.56,Ly+TH,Lx,Ly+TH+.012);
     // the lights: three ceiling bowls down the hall
-    for(const u of [EW+1.1,(EW+us)/2,us-.9]){ part(new THREE.CylinderGeometry(.2,.24,.07,12),litM,u,HW-.04,vc,0,apt,false); const L=new THREE.PointLight(0xffe2b8,1.1,4.6*M,1.8); L.position.set(u,HW-.4,vc); apt.add(L); }
+    for(const u of [EW+1.1,(EW+us)/2,us-.9]){ part(new THREE.CylinderGeometry(.2,.24,.07,12),litM,u,HW-.04,vc,0,apt,false); const L=new THREE.PointLight(0xffe2b8,2.4,6*M,1.8); L.position.set(u,HW-.4,vc); apt.add(L); }
     // the elevator: the shaft, its doors on the hall side, the lit sign, the call button
     const DW=1.0, DT=2.2; box(0,v0,EW,v1,0,HW,elevM); box(EW,vc-DW/2-.08,EW+.04,vc+DW/2+.08,0,DT+.1,frameM); for(const s of [-1,1])box(EW+.04,vc+(s<0?-DW/2:.01),EW+.07,vc+(s<0?-.01:DW/2),0,DT,leafM);
     box(EW+.04,vc-.3,EW+.08,vc+.3,DT+.2,DT+.42,signM); box(EW+.04,vc+DW/2+.2,EW+.07,vc+DW/2+.34,1.0,1.26,frameM); box(EW+.07,vc+DW/2+.24,EW+.085,vc+DW/2+.3,1.1,1.16,signM);

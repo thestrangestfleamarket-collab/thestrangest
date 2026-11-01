@@ -1,4 +1,4 @@
-// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
+// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, the back wall blank (your front door opens on the hall, 150n), a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, CLOCK, GPH, pos, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {M, renderer, scene} from './004-main.js';
@@ -97,7 +97,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
       R.plaster=wallTex;
       const wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); R.wallMats.push(wm); return part(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false}),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
-      wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[win(fw[0]),win(fw[1]),BD],0,Ly,0);
+      wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
       wallOf('Ww',Ly,SWS.map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWS.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
       // a slim dark skirting at the foot of every wall (no crown: the picture's walls are plain to the top)
       // each wall's own frame: x along it from its start, z into the room
@@ -148,9 +148,8 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         else { part(rbox(w-.02,h-.02,.05,.008),wm,0,h/2,0,0,leaf); for(let r=0;r<2;r++)for(let c=0;c<2;c++)part(rbox(w*.34,h*(r?.42:.3),.012,.006),mat([118,68,38],{roughness:.5,...clip(k)}),(c-.5)*w*.44,h*(r?.68:.25),.03,0,leaf); }
         part(new THREE.SphereGeometry(.03,12,8),mat([200,160,90],{roughness:.3,metalness:.7,...clip(k)}),w/2-.1,1.0,.05,0,leaf); };
       windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW,[2,2],false);
-      windowAt('Wb',fw[0],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW); windowAt('Wb',fw[1],Ly,Math.PI,[0,1,-1,0],wz[0],wz[1],WW);
       for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[2,2],true,w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[2,2],true,w[4]).position.set(Lx,0,w[0]); }
-      doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,[0,1,-1,0],BD);
+      doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
 
       /* ---------- the pieces: each one a unit you can move, turn, resize or put away (the room editor, 150d) ---------- */
       const unitBox=o=>{ o.updateWorldMatrix(true,true); const B=new THREE.Box3(); o.traverse(q=>{ if(q.isMesh&&!q.userData.soft&&q.visible!==false)B.expandByObject(q,true); }); return B; };
@@ -208,7 +207,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         for(const me of [].concat(...Object.values(R.outs)))if(me.isMesh){ const g=me.geometry, uv=g.attributes.uv, w=g.parameters.width, h=g.parameters.height; for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w,uv.getY(i)*h); }
         // the sky just past the railings, seen through the glass from above (from inside you see the real sky)
         const back=(k,u,v,ry,nx,nz,len)=>{ const m=skyGlass(k,nx,nz,-nz,nx); m.clippingPlanes=cp(k); const me=part(new THREE.PlaneGeometry(len,HW+8),m,u,HW/2-4,v,ry,apt,false); me.renderOrder=-2; R.outs[k].push(me); R.backs.push(me); };
-        back('Wf',Lx/2,-TH-2.0,0,0,-1,Lx+2*TH); back('Wb',Lx/2,Ly+TH+1.8,Math.PI,0,1,Lx+2*TH); back('Ww',-TH-1.8,Ly/2,Math.PI/2,-1,0,Ly+2*TH); }
+        back('Wf',Lx/2,-TH-2.0,0,0,-1,Lx+2*TH); back('Ww',-TH-1.8,Ly/2,Math.PI/2,-1,0,Ly+2*TH); }
       R.beams=[];   // no painted sunbeams: the light is the real sun's, through the glass
 
       const kind=(k,o)=>{ R.kinds[k]={kind:k,name:o.name,loose:false,m:0,wire:o.wire||null,sol:[],shf:[],tpl:o.tpl,mount:o.mount,cat:o.cat}; };   // a kind with no piece in the room yet (the light fittings), only to add
@@ -311,7 +310,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       { const isoV=!UI.persp&&SHARED.pitch<1.45&&!APTS.onEsc;
         for(const k in R.tops){ const p=R.tops[k]; p.normal.set(0,-1,0); p.constant=isoV?R.fy+SHARED.BOD.Y(45)-SHARED.BOD.Y(0):1e6; } R.bot.constant=1e6; for(const k in R.edges)for(const p of APTS.OUTP.side[k])p.constant=1e6;
         for(const k in R.outs)for(const o of R.outs[k])o.visible=!APTS.onEsc&&!R.backs.includes(o); }
-      { const D=R.doors.Wf, ED=APTS.escDoor; if(D&&ED){ const t=ED.open?-1.45:0; D.rotation.y+=(t-D.rotation.y)*Math.min(1,(dt||0)*7); } }
+      for(const [k,D0] of [['Wf',APTS.escDoor],['Wb',APTS.frontDoor]]){ const D=R.doors[k]; if(D&&D0){ const t=D0.open?-1.45:0; D.rotation.y+=(t-D.rotation.y)*Math.min(1,(dt||0)*7); } }
       for(const b of R.beams)b.uniforms.uOp.value=inn?.16*day:0;
       const iso=!UI.persp&&SHARED.pitch<1.45; ISO.value=iso?1:0;
     }, '150a-bedroom'); } }

@@ -10,14 +10,14 @@ import {DESIGN} from './102b-designer.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
-// your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
-const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
-const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
-function style(o){ const r={}; if(!o||typeof o!=='object')return r; if(Number.isInteger(o.f)&&o.f>=0&&o.f<FONTS.length)r.f=o.f; if(typeof o.c==='string'&&/^#[0-9a-f]{6}$/i.test(o.c))r.c=o.c.toLowerCase(); if(Number.isInteger(o.s)&&o.s>=0&&o.s<SIZES.length)r.s=o.s; return r; }
-ONLINE.sayFor=(()=>{ const v=+SAVE.get('sayfor'); return v>=2&&v<=30?v:7; })(); ONLINE.style=SP; ONLINE.FONTS=FONTS; ONLINE.COLS=COLS;
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
 { const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+  // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
+  const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
+  const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
+  function style(o){ const r={}; if(!o||typeof o!=='object')return r; if(Number.isInteger(o.f)&&o.f>=0&&o.f<FONTS.length)r.f=o.f; if(typeof o.c==='string'&&/^#[0-9a-f]{6}$/i.test(o.c))r.c=o.c.toLowerCase(); if(Number.isInteger(o.s)&&o.s>=0&&o.s<SIZES.length)r.s=o.s; return r; }
+  ONLINE.sayFor=(()=>{ const v=+SAVE.get('sayfor'); return v>=2&&v<=30?v:7; })(); ONLINE.style=SP; ONLINE.FONTS=FONTS; ONLINE.COLS=COLS;
   const ROOM='s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
@@ -163,19 +163,19 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
   const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };
+  // the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
+  { const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
+    const you=()=>{ const P=document.getElementById('looks'); if(!P)return setTimeout(you,1000); if(P.querySelector('#lsay'))return;
+      const B=document.createElement('div'); B.id='lsay'; B.innerHTML=`<h3>YOUR WORDS</h3><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
+        <div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
+        <div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
+      const nameRow=P.querySelector('#lname').closest('.row'); nameRow.after(B);
+      const show=()=>{ B.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===SP.f))); B.querySelectorAll('[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SP.c))); B.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===SP.s)));
+        const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
+      B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
+    you();
+    const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
+      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
+      const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
+    disp(); }
   go(); }
-// the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
-{ const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
-  const you=()=>{ const P=document.getElementById('looks'); if(!P)return setTimeout(you,1000); if(P.querySelector('#lsay'))return;
-    const B=document.createElement('div'); B.id='lsay'; B.innerHTML=`<h3>YOUR WORDS</h3><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
-      <div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
-      <div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
-    const nameRow=P.querySelector('#lname').closest('.row'); nameRow.after(B);
-    const show=()=>{ B.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===SP.f))); B.querySelectorAll('[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SP.c))); B.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===SP.s)));
-      const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
-    B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
-  you();
-  const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
-    const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
-    const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
-  disp(); }

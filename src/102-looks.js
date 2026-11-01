@@ -34,7 +34,7 @@ LOOKS.over={};
   const shape=(on,form=L.form)=>W3.pcs.map((P,i)=>{ const e=(form==='F'?EF:E0)[i], k=on&&RB[P.n]; return k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; });
   LOOKS.shape=shape; LOOKS.robed=n=>!!RB[n];
   W3.recolor=()=>LOOKS.robe(L.robe); window.LOOKS=LOOKS;
-  LOOKS.robe=on=>{ '@later'; const ch=L.robe!==!!on; L.robe=!!on; save(); if(ch){ layers(); if(W3.dress)W3.dress(); } recolor();
+  LOOKS.robe=on=>{ const ch=L.robe!==!!on; L.robe=!!on; save(); if(ch){ layers(); if(W3.dress)W3.dress(); } recolor();
     shape(on).forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); if(!on)return feet();
     const A=W3.mesh.geometry.attributes, n=A.mat.count, TN=L.form==='F'?'torsoF':'torso', ti=W3.idx(TN), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }

@@ -4,9 +4,9 @@ import {DRAPE} from './072a-cloth.js';
 import {PHX} from './151b-ph-kit.js';
 PHX.parts.push({make:K=>{ '@playhouse';
   const D=K.D, M=K.M, TX=K.TX, PI=Math.PI, SY=D.SY, V3=THREE.Vector3, h2=TX.h2, F=K.fly.byId;
-  const ST=K.sets={P:{},look:null,lights:[]}, ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k), PM=lam({map:TX.marble,color:0xd8d2c8});
+  const ST=K.sets={P:{},look:null,lights:[]}, ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
   const grp=(p)=>{ const g=new THREE.Group(); (p||K.G).add(g); return g; }, at=(g,o)=>Object.assign({},o,{p:g});
-  const paint=(w,h,f)=>TX.print(w,h,f), lam=o=>new THREE.MeshLambertMaterial(o);
+  const paint=(w,h,f)=>TX.print(w,h,f), lam=o=>new THREE.MeshLambertMaterial(o), PM=lam({map:TX.marble,color:0xd8d2c8});
   // a piece that flies: built in its bar's own frame (y 0 at the bar), sent in to its trim or out to the grid
   const flyP=(id,set,trims,build)=>{ const s=F[set], g=grp(s.g); build(g); const P=ST.P[id]={id,type:'fly',s,g,trims,on:null}; g.visible=false; return P; };
   // a piece on a wagon: rolled on from a wing to its mark, off again
@@ -146,8 +146,8 @@ PHX.parts.push({make:K=>{ '@playhouse';
   { const n=60, m=new THREE.InstancedMesh(new THREE.SphereGeometry(.035,6,4),new THREE.MeshBasicMaterial({color:0xd8ff70,transparent:true,opacity:0}),n); m.castShadow=false; K.G.add(m); ST.flies={m,n,ph:Array.from({length:n},(_,i)=>[h2(i,1,73)*6,h2(i,2,73)*6,h2(i,3,73)])};
     fadeP('flies',v=>{ m.material.opacity=v; m.visible=v>.01; });
     const ft=paint(256,128,(g,w,h)=>{ for(let i=0;i<30;i++){ const x=h2(i,1,74)*w, y=h*.4+h2(i,2,74)*h*.4, r=30+h2(i,3,74)*50, gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(210,235,230,.35)'); gr.addColorStop(1,'rgba(210,235,230,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h); } });
-    const fm=new THREE.MeshBasicMaterial({map:ft,color:0x5a7a80,transparent:true,opacity:0,depthWrite:false}), fog=[]; for(let k=0;k<5;k++){ const me=K.plane(22,2.2,fm,0,SY+.6,-3-k*2.1,{cast:false}); me.renderOrder=4; fog.push(me); } ST.fog=fog;
-    fadeP('fog',v=>{ fm.opacity=v*.6; for(const f of fog)f.visible=v>.01; }); }
+    const fm=new THREE.MeshBasicMaterial({map:ft,color:0x2a3c40,transparent:true,opacity:0,depthWrite:false}), fog=[]; for(let k=0;k<5;k++){ const me=K.plane(22,1.2,fm,0,SY+.3,-3-k*2.1,{cast:false}); me.renderOrder=4; fog.push(me); } ST.fog=fog;
+    fadeP('fog',v=>{ fm.opacity=v*.35; for(const f of fog)f.visible=v>.01; }); }
   // the moonlight's shaft through the workshop window
   { const b=new THREE.Mesh(new THREE.CylinderGeometry(1.1,.5,7,4,1,true),new THREE.MeshBasicMaterial({color:0x8090ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
     b.position.set(-.2,SY+2.0,-6.4); b.rotation.set(1.1,0,.25); b.renderOrder=5; K.G.add(b); fadeP('shaft',v=>{ b.material.opacity=v*.09; b.visible=v>.01; }); }
@@ -157,7 +157,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
     ge.setAttribute('color',new THREE.BufferAttribute(c,3)); K.cycMat=new THREE.MeshBasicMaterial({color:0x101018,vertexColors:true}); const m=new THREE.Mesh(ge,K.cycMat); m.position.set(0,-H/2-.05,0); s.g.add(m); K.rod([-W/2,-H-.05,.02],[W/2,-H-.05,.02],.04,M.steel,{p:s.g}); }
 
   /* ---------- the looks: which pieces are in for each (the rest go out) ---------- */
-  ST.LOOKS={strike:{}, dusk:{cols:'in',banners:'in',throne:1,brzL:1,brzR:1}, court:{cols:'in',throne:1,brzL:1,brzR:1,moon:'in'}, wood:{cols:'in',moon:'in',ivy:'in',treeL:1,treeR:1,flies:1,fog:1},
+  ST.LOOKS={strike:{}, dusk:{cols:'in',banners:'in',throne:1,brzL:1,brzR:1}, court:{cols:'in',throne:1,brzL:1,brzR:1,moon:'in'}, strike1:{cols:'in',moon:'in',brzL:1,brzR:1}, wood:{cols:'in',moon:'in',ivy:'in',treeL:1,treeR:1,flies:1,fog:1},
     shop:{wall:'in',sideL:1,sideR:1,bench:1}, shopNight:{wall:'in',sideL:1,sideR:1,bench:1,moon:'window',shaft:1}, flats:{wall:'in',sideL:1,sideR:1,bench:1,flats:'in',moon:'window'}};
   ST.go=(name,instant)=>{ const L=ST.LOOKS[name]; if(!L)return; ST.look=name;
     for(const P of Object.values(ST.P)){ const v=L[P.id];

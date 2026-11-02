@@ -7,6 +7,7 @@ import {PHT} from './151a-ph-tex.js';
 import {PHK, PHX} from './151b-ph-kit.js';
 import {PHA} from './151c-ph-house.js';
 import {PHS} from './151d-ph-stage.js';
+import {PHP} from './151i-ph-play.js';
 await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI;
   const LW=MS.lot('play',190), TP=TURN(LW,WP.play.face), L=TP.L, m=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TP.pt(u,v); return [X(p[0]),Z(p[1])]; };
   const OX=SHARED.BOD.XS(-2400), OZ=SHARED.BOD.ZS(0), W=(x,y,z)=>[OX+x*MH,y*MV,OZ+z*MH], lx=x=>(x-OX)/MH, lz=z=>(z-OZ)/MH;
@@ -64,5 +65,5 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     if(ENV){ ENV.due-=dt; if(ENV.due<=0&&(ENV.lvl<0||Math.abs(hl-ENV.lvl)>.05)){ ENV.lvl=hl; ENV.due=1; const vis=MIR.map(o=>o.r.visible); for(const o of MIR)o.r.visible=false; ENV.cam.update(renderer,scene); MIR.forEach((o,i)=>o.r.visible=vis[i]); } } },'151z-playhouse');
   window.PHDBG=()=>({built:!!K,inside:inside(),seats:K?K.seats.length:0,things:K?K.things.length:0,solids:SO.length,sets:K?K.fly.sets.map(s=>[s.id,+s.y.toFixed(2)]):[],mirrors:MIR.map(o=>[o.zone,o.r.visible]),
     tris:G?(()=>{ let n=0; G.traverse(c=>{ if(c.isMesh&&c.geometry){ const g=c.geometry, k=(g.index?g.index.count:g.attributes.position.count)/3; n+=c.isInstancedMesh?k*c.count:k; } }); return Math.round(n); })():0,
-    W:(x,y,z)=>W(x,y,z),curtain:t=>K&&K.cloth&&K.cloth.curtain&&K.cloth.curtain.set(t),fly:(id,y)=>K&&K.flyTo(id,y),run:f=>f(K,PHX),look:(x,z,hd,pt,view)=>{ if(view)UI.setView(view); const w=W(x,0,z); UI.goTo(w[0],w[2],0,hd); SHARED.heading=hd; SHARED.yaw=SHARED.yawTo=hd+PI; SHARED.pitch=SHARED.pitchTo=pt; },L:(x,z)=>[lx(x),lz(z)],ground:(x,z)=>K&&K.groundAt(x,z)});
+    W:(x,y,z)=>W(x,y,z),curtain:t=>K&&K.cloth&&K.cloth.curtain&&K.cloth.curtain.set(t),fly:(id,y)=>K&&K.flyTo(id,y),run:f=>f(K,PHX),showAt:s=>PHP.at(s),look:(x,z,hd,pt,view)=>{ if(view)UI.setView(view); const w=W(x,0,z); UI.goTo(w[0],w[2],0,hd); SHARED.heading=hd; SHARED.yaw=SHARED.yawTo=hd+PI; SHARED.pitch=SHARED.pitchTo=pt; },L:(x,z)=>[lx(x),lz(z)],ground:(x,z)=>K&&K.groundAt(x,z)});
 });

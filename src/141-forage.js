@@ -81,6 +81,7 @@ import {GEMS} from './101-gems.js';
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }
     return ok; };
   FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon;
+  FORAGE.climbK=()=>.7+.8*sk('climb')/100; FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders), and a reach that works it
   const RANK=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']]; FORAGE.rank=k=>RANK.find(r=>sk(k)>=r[0])[1];
   // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap
   FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');

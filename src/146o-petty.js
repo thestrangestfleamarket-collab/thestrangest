@@ -76,10 +76,9 @@ const CURSE={list:[],T:60}; window.CURSE=CURSE;
     const top=new THREE.Mesh(new THREE.SphereGeometry(.035,12,10),std(0x5a3a28)); top.position.y=.02; root.add(top); root.position.set(.55,1.1,-.12); G.add(root);
     const pole=add(new THREE.CylinderGeometry(.015,.015,2.1,8),std(0xd8d8d8,{metalness:.6}),-.2,1.05,-.4); const um=new THREE.Mesh(new THREE.ConeGeometry(1.2,.35,16,1,true),std(0xb02a2a,{side:THREE.DoubleSide,roughness:.8})); um.position.set(-.2,2.05,-.4); G.add(um);
     G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x+Math.sin(hd)*.8*T,(N.st.y||0),N.st.z+Math.cos(hd)*.8*T); G.rotation.y=hd+Math.PI; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='petty'); if(!window.__started||!N||!N.g)return setTimeout(go,800); TABLE.g=table(N);
+  { NPCS.when('petty',N=>{ TABLE.g=table(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.8*T,1.2*T,1*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(TABLE.g.position.x,.6*T,TABLE.g.position.z); N.g.parent.add(hb);
       UI.thing({name:'SISTER PETTY\'S TABLE',obj:hb,reach:2.2*T,near:3.2*T,tall:1.2*T,act:()=>{ if(window.SHOPS&&SHOPS.open)SHOPS.open(N); }});
-      const x=TABLE.g.position.x, z=TABLE.g.position.z; SOL.up.push([x-.85*T,z-.85*T,x+.85*T,z+.85*T]); };
-    go(); }
+      const x=TABLE.g.position.x, z=TABLE.g.position.z; SOL.up.push([x-.85*T,z-.85*T,x+.85*T,z+.85*T]); }); }
   window.CURSEDBG=()=>CURSE.list.map(c=>({what:c.what,tgt:c.tgt.N?(c.tgt.N.key||c.tgt.N.name):c.tgt.id||'me',left:+(c.until-now()).toFixed(1)}));
 }

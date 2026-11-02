@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, TEXT, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -10,7 +10,7 @@ import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
  window.FORAGE=FORAGE;
-{ const PACK={tab:'pack'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+{ const PACK={tab:'pack'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
   const MU={button:['MEADOW BUTTON',0,2,.06,0,0xe8dcc0,0xeee6d2,[1,.6,1,1]],puffball:['PUFFBALL',5,3,.05,0,0xf2efe6,0xf2efe6,[1,1.15,.15,1]],
     chanterelle:['CHANTERELLE',20,8,.1,0,0xe08a2a,0xe8a24a,[1.15,.4,1,.9]],redcap:['RED CAP',30,10,0,1,0xc0321e,0xeee6d2,[1.2,.7,1.2,1]],
     inkcap:['SHAGGY INK CAP',35,10,.04,0,0xd8d4cc,0xe8e4dc,[.6,1.7,.8,.8]],bolete:['KING BOLETE',45,16,.15,0,0x7a4a2a,0xd8c49a,[1.25,.8,1,1.6]],
@@ -43,7 +43,7 @@ import {GEMS} from './101-gems.js';
     return INSPECT.shape('bowl',{f_roast:0x9a6a3a,f_fritter:0xd8b060,f_soup:0x7a4a2a,f_morel:0x8a6a4a,f_oyster:0xc8a070,f_chicken:0xe8a030}[id]||0x9a6a3a); }});
   const iid=m=>MU[m]?'m_'+m:m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
     p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.hp=Math.min(1,VIT.hp+.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
-  const PRICE=FORAGE.PRICE={p_refresh:12,p_heal:20,p_str:28,p_keen:28,p_cure:40,p_gheal:110,f_roast:8,f_fritter:10,f_skewer:16,f_soup:30,f_morel:56,f_oyster:14,f_chicken:44,p_ghost:150,bottle:2};
+  const PRICE={f_morel:56,f_oyster:14,f_chicken:44,p_ghost:150};   // the rest are in data/items.json
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING','FAN-SHAPED','PURPLE','BLACK','SPOTTED','YELLOW','GHOSTLY'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
   const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING']], CAP=6000;
   const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100,fight:100,bee:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{}};
@@ -56,10 +56,15 @@ import {GEMS} from './101-gems.js';
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
   const J=document.createElement('div'); J.id='fjour'; J.style.cssText='position:fixed;left:50%;top:40%;transform:translateX(-50%);max-width:70vw;text-align:center;z-index:6;pointer-events:none;font:11px Silkscreen,monospace;letter-spacing:.3px;display:grid;gap:2px;zoom:var(--uiz,1)'; document.body.appendChild(J);
   const say=(t,c='#e8e2cc')=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>3)J.firstChild.remove(); setTimeout(()=>d.remove(),5000); if(UI.log)UI.log(t,c); };
-  FORAGE.say=say; FORAGE.name=id=>NAME(id); FORAGE.eats=id=>id.startsWith('m_')||id.startsWith('u_')||id.startsWith('f_')||id.startsWith('p_')||!!FORAGE.RAW[id]||!!(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
-  FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(PRICE,o.prices||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); };
-  FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k in PRICE)s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
-  FORAGE.SELLP=[]; FORAGE.BUYK={mushrooms:['m_','u_','p_','f_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.say=say; FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
+  // a family's items join the model: a price is its VALUE; m_/u_/p_/f_ things and raw foods are EDIBLE and SELLABLE, as is anything added with sellable:true
+  const FOOD=/^(m_|u_|p_|f_)/, reg=o=>{ const ids=new Set([...Object.keys(o.names||{}),...Object.keys(o.prices||{}),...Object.keys(o.does||{}),...Object.keys(o.raw||{}),...(o.recipes||[]).map(r=>r[0])]);
+    for(const id of ids){ const p={}; if(o.prices&&o.prices[id]!=null)p.value=o.prices[id]; if(FOOD.test(id)||o.raw&&o.raw[id]||o.edible)p.edible=true; if(FOOD.test(id)||o.sellable)p.sellable=true; ITEMS.reg(id,p); } };
+  FORAGE.add=(o)=>{ Object.assign(NM,o.names||{}); Object.assign(FORAGE.RAW,o.raw||{}); Object.assign(DO,o.does||{}); if(o.recipes)RC.push(...o.recipes); reg(o); };
+  FORAGE.sell=(...ids)=>{ for(const id of ids)ITEMS.reg(id,{sellable:true}); };
+  reg({does:DO,prices:PRICE}); for(const k in MU)reg({prices:{['m_'+k]:MU[k][2],['u_'+k]:Math.floor(MU[k][2]/2)}});
+  FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k of ITEMS.ids())s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
+  FORAGE.BUYK={mushrooms:['m_','u_','p_','f_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM',glowcap:'GLOWCAP MUSHROOM'},prices:{airshroom:8,glowcap:10}}); FORAGE.SELLS.push(['airshroom',8,()=>true],['glowcap',10,()=>true]);   // glowcap: you see in the dark deep water a while (its DARKSIGHT)   // off-world: the seller's one wares, lets you hold your breath longer underwater
   // a gift: a place (STORE.here) takes the first of each kind you bring it and pays for it ({is, place, pay, key, thanks})
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
@@ -189,9 +194,9 @@ import {GEMS} from './101-gems.js';
     if(d.tab){ PACK.tab=d.tab; } else if(d.page){ PACK.page=d.page; } else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.craft)FORAGE.craft(d.craft); else if(d.act&&FORAGE.ACT[d.act]){ FORAGE.ACT[d.act](d.aid); saveSoon(); } else if(d.lock){ S.lock[d.lock]={up:'down',down:'lock',lock:'up'}[S.lock[d.lock]]; saveSoon(); } PACK.draw(); });
   PACK.toggle=t=>{ pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; PACK.toggle(); });
-  const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>id.startsWith('m_')?MU[id.slice(2)][2]:id.startsWith('u_')?Math.floor(MU[id.slice(2)][2]/2):PRICE[id]||(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'value'))||0;
+  const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>+ITEMS.prop(id,'value')||0;
   const sp=panel('shopp','left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw)');
-  SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&(/^(m_|u_|p_|f_)/.test(id)||FORAGE.SELLP.some(p=>id.startsWith(p))||(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'sellable')))).sort();
+  SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&ITEMS.prop(id,'sellable')).sort();
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE MUSHROOM SELLER</h3><div style="color:#9b9584;margin-bottom:8px">"Caps, stems, brews and broths. I'll take them all. Strange ones at half: I have to look them up."</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div><table style="border-collapse:collapse;width:100%">`;
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">EMPTY BOTTLE</td><td style="text-align:right;padding:4px 6px">$2</td><td style="text-align:right">${have('bottle')}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-buy="bottle">BUY</button><button ${B} data-buy="bottle" data-n="5">BUY 5</button></td></tr>`;
     for(const [sid,pr,show] of FORAGE.SELLS)if(show())o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(NAME(sid))}</td><td style="text-align:right;padding:4px 6px">$${pr}</td><td style="text-align:right">${have(sid)||''}</td><td style="text-align:right"><button ${B} data-buy="${sid}">BUY</button></td></tr>`;

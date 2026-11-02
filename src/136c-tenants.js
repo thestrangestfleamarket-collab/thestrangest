@@ -1,11 +1,11 @@
 // THE TENANTS: the owner's panel in the menu (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
-import {SHARED} from './003-shx.js';
-import {BUGS, SIGNS, TENANTS, TEXT} from './003b-systems.js';
-{ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
+{ const esc=TEXT.esc;
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
   const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
-  const room=()=>'s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
 
   /* ---------- the panel ---------- */
@@ -53,8 +53,8 @@ import {BUGS, SIGNS, TENANTS, TEXT} from './003b-systems.js';
     P.innerHTML=L.map(l=>`<div style="margin-bottom:16px"><div style="font-size:11px;color:#6a6255">${esc(day(l.at))} · FROM THE MARKET</div><div style="font-size:15px;margin:4px 0 8px">${esc(l.subject)}</div><div style="white-space:pre-wrap">${esc(l.body)}</div></div>`).join('<hr style="border:0;border-top:2px dashed #2a262055">')+'<button id="tletok" style="font:inherit;padding:6px 12px;cursor:pointer;background:#2a2620;color:#f4efe0;border:2px solid #2a2620">PUT IT AWAY</button>';
     document.body.appendChild(P); P.querySelector('#tletok').onclick=()=>{ P.remove(); api('/post',{seen:L.map(l=>l.id)}); }; };
 
-  const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
+  const go=async()=>{ await LOAD('later');
     if(!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return;
     letters().catch(()=>{});
     if(BUGS.owner&&await BUGS.owner().catch(()=>false)){ const b=document.querySelector('[data-t="tenants"]'); if(b)b.hidden=false; } };
-  go(); }
+  SYS.onStart(go,'136c-tenants'); }

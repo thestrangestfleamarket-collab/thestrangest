@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, PARK, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {TILE} from './006-map-pre.js';
+import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 Object.assign(WE,{on:false}); window.WE=WE;
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
@@ -101,7 +101,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   try{ Object.assign(ST,BAKED,LOCAL); }catch(e){}
   const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); };
   const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); applyLights(); applySigns(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
-  { const go=()=>{ if(!Object.keys(ST).length)return; if(!window.__started){ setTimeout(go,300); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); }; go(); }
+  if(Object.keys(ST).length)SYS.onStart(()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); },'099-worldedit');
   WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}

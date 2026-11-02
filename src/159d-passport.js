@@ -2,19 +2,19 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, st, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
+import {MAPG, SECTION, SOL, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 {
-  const T=TILE, OPEN=6, V3=THREE.Vector3, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), say=(t,c)=>FORAGE.say(t,c||'#c8c2b0');
+  const T=TILE, OPEN=6, V3=THREE.Vector3, esc=TEXT.esc, say=(t,c)=>FORAGE.say(t,c||'#c8c2b0');
   FORAGE.add({names:{passport:'PASSPORT'},prices:{passport:0}});
   let P=null; try{ P=JSON.parse(OWNED.get('passport')||'null'); }catch(e){}
   const sno=OWNED.me&&OWNED.me.no!=null?String(OWNED.me.no):null;   // the server numbers citizens in order; the single-file page draws one
-  if(!P||!P.no){ const home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', day=new Date().toISOString().slice(0,10); P={no:sno||String(1000+Math.floor(Math.random()*9000)),issued:day,home,stamps:{[home]:day}}; OWNED.set('passport',JSON.stringify(P)); }
+  if(!P||!P.no){ const home=SECTION.id, j=OWNED.me&&OWNED.me.joined?new Date(OWNED.me.joined):new Date(), day=(isNaN(j)?new Date():j).toISOString().slice(0,10); P={no:sno||String(1000+Math.floor(Math.random()*9000)),issued:day,home,stamps:{[home]:day}}; OWNED.set('passport',JSON.stringify(P)); }
   else if(sno&&P.no!==sno){ P.no=sno; OWNED.set('passport',JSON.stringify(P)); }
   PASSPORT.P=P; const save=()=>OWNED.set('passport',JSON.stringify(P));
   st.hand=OWNED.get('hand')==='L'?'L':'R'; Object.defineProperty(PASSPORT,'hand',{get:()=>st.hand==='L'?'L':'R'}); PASSPORT.setHand=h=>{ h=h==='L'?'L':'R'; if(st.hand===h)return; st.hand=h; OWNED.set('hand',h); if(!sp.hidden)draw(); };
   const day=t=>{ const d=new Date(t); return isNaN(d)?'':d.toISOString().slice(0,10); };
-  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); if(!FORAGE.has('passport'))FORAGE.give('passport',1); })();
+  SYS.onStart(()=>{ if(!FORAGE.has('passport'))FORAGE.give('passport',1); },'159d-passport');
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
   sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);font:11px Silkscreen,monospace;color:#ece5d3;zoom:var(--uiz,1)';

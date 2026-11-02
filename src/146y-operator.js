@@ -50,10 +50,9 @@ const PHONE={}; window.PHONE=PHONE;
     add(new THREE.BoxGeometry(1.2,.06,.4),std(0x5a4030),0,.7,.25); for(let i=0;i<6;i++){ const cd=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-.4+i*.15,.72,.3),new THREE.Vector3(-.35+i*.13,.55,.38),new THREE.Vector3(-.3+i*.12,.95+(i%3)*.15,.24)]),16,.008,5),std([0xc83a2a,0x2a2a2a,0xe8c050][i%3])); G.add(cd); }
     for(let i=0;i<4;i++){ add(new THREE.CapsuleGeometry(.025,.16,6,10),std([0x9ac8e8,0x2a2a2a,0xe8e4da,0xc8302a][i]),-.5+i*.33,1.8,.1,[0,0,Math.PI/2]); }
     G.userData.lamps=lamps; G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x-Math.sin(hd)*.7*T,N.st.y||0,N.st.z-Math.cos(hd)*.7*T); G.rotation.y=hd; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='operator'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=KIT.g=kit(N);
+  { NPCS.when('operator',N=>{ const G=KIT.g=kit(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.3*T,1.7*T,.5*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.85*T,G.position.z); N.g.parent.add(hb);
       UI.thing({name:'THE OPERATOR\'S SWITCHBOARD',obj:hb,reach:2*T,near:3*T,tall:1.7*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.65*T,z-.25*T,x+.65*T,z+.25*T]);
-      let lt=0; SYS.add('life',dt=>{ if((lt-=dt||0)>0||!G.visible)return; lt=.7; for(const l of G.userData.lamps)l.material.color.setHex(Math.random()<.18?0xffb040:0x402010); },'146y-operator'); };
-    go(); }
+      let lt=0; SYS.add('life',dt=>{ if((lt-=dt||0)>0||!G.visible)return; lt=.7; for(const l of G.userData.lamps)l.material.color.setHex(Math.random()<.18?0xffb040:0x402010); },'146y-operator'); }); }
 }
 export {PHONE};

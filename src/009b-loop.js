@@ -7,7 +7,7 @@ import {PEEK} from './008-batch.js';
 for(const [k,d] of Object.entries({'loop.name':'{street}','loop.track':'TO {next}','loop.shuttle':'SHUTTLE · {street} ONLY','loop.then':'THEN {then} · {after}','loop.exit':'EXIT {id}1','loop.up':'↑ {street}','loop.exitsub':'{name} · SECTION {id}','loop.map':'THE LOOP · {street}','loop.here':'● YOU ARE HERE','loop.train1':'TO {next}','loop.train2':'TO {next}'}))TEXT.t(k,d);
 const LOOP=window.LOOP={};
 await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98, c0=cutWalls.length;
-  const WX=mx=>(mx-72)*T, WZ=my=>(my+77)*T, H=h=>M.DY+h*ZU, MX=x=>x/T+72, MY=z=>z/T-77;
+  const WX=SHARED.BOD.XS, WZ=SHARED.BOD.ZS, H=h=>M.DY+h*ZU, MX=SHARED.BOD.MX, MY=SHARED.BOD.MY;
   const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const sh=(c,f)=>[Math.min(255,c[0]*f),Math.min(255,c[1]*f),Math.min(255,c[2]*f)], mod=(a,n)=>((a%n)+n)%n;
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };

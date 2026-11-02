@@ -99,7 +99,6 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
   const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop){ L.drop(); L.done=false; IV.C.clear(); } } };
   const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
-  const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; try{ await FADE.run(lz?'ENTERING '+lz.name:'',async()=>{ if(lz){ if(lz.S)lz.S.busy=true; await lz.need(); lz.go(); }

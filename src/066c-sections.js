@@ -2,12 +2,12 @@
 import {SHARED, THREE} from './003-shx.js';
 import {DRESS, TEXT} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
+import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTION, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 import {BLOCKS} from './038zb-blocks.js';
 for(const [k,d] of Object.entries({'loop.entrance':'SUBWAY · THE LOOP · TO {a} & {b}','loop.entrance0':'SUBWAY · THE LOOP'}))TEXT.t(k,d);
-await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=(SHARED.SECTION&&SHARED.SECTION.id)||'A', W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
+await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTION.id, W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
   const hash=(a,b,c=0)=>{ let h=(a*374761393+b*668265263+c*2147483647)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const clip=(r,b)=>{ const q={x0:Math.max(r.x0,b.x0),x1:Math.min(r.x1,b.x1),y0:Math.max(r.y0,b.y0),y1:Math.min(r.y1,b.y1)}; return q.x1-q.x0>.01&&q.y1-q.y0>.01?q:null; };
   const P=G.park, O=G.outer, ROW=G.row, A=S.all;

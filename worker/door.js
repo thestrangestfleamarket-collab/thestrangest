@@ -24,7 +24,7 @@ export default {
       if (gz) { out.headers.set("content-type", "application/octet-stream"); out.headers.set("content-encoding", "gzip"); }
       out.headers.set("cache-control", "private, max-age=31536000, immutable"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method === "GET" && p === "/now") {
-      let r = null; try { r = await fetch("https://jvcetttmqseoteidfggn.supabase.co/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik" } }); } catch (e) {}
+      let r = null; try { r = await fetch(env.SUPABASE_URL + "/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: env.SUPABASE_KEY } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
     if (request.method === "GET" && p === "/texts") { if (!(await inside(env, request, dev))) return json({}, 401); return json(await postOf(env).texts()); }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
@@ -96,11 +96,11 @@ async function who(env, request, dev) {
   const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""); if (!m) return "";
   const t = decodeURIComponent(m[1]), now = Date.now(), seen = passed.get(t); if (seen && seen.until > now) return seen.id;
   const r = await pass(env, t, dev); if (!r.ok) return "";
-  if (passed.size > 2000) for (const [k, v] of passed) if (v.until <= now) passed.delete(k); passed.set(t, { until: now + 300000, id: r.id, joined: r.joined || "", email: r.email || "" });
+  if (passed.size > 2000) for (const [k, v] of passed) if (v.until <= now) passed.delete(k); passed.set(t, { until: now + 300000, id: r.id, joined: r.joined || "", email: r.email || "", apt: r.apt ?? null });
   return r.id;
 }
 // who you are, for your passport: the login's id, email and the day it was made (only what who() just checked)
-function meOf(request, id) { const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), s = m && passed.get(decodeURIComponent(m[1])); return { id, email: s && s.id === id && s.email || "", joined: s && s.id === id && s.joined || "" }; }
+function meOf(request, id) { const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), s = m && passed.get(decodeURIComponent(m[1])); return { id, email: s && s.id === id && s.email || "", joined: s && s.id === id && s.joined || "", apt: s && s.id === id ? s.apt ?? null : null }; }
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
 const forget = id => { for (const [k, v] of passed) if (v.id === id) passed.delete(k); };
 
@@ -115,8 +115,8 @@ async function pass(env, token, dev) {
   const headers = { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + token }, get = path => fetch(env.SUPABASE_URL + path, { headers });
   const r = await get("/auth/v1/user"); if (!r.ok) return { why: "login" };
   const u = await r.json(); if (!u || !UUID.test(u.id || "") || (u.banned_until && Date.parse(u.banned_until) > Date.now())) return { why: "login" };
-  const pr = await get("/rest/v1/players?select=id&id=eq." + u.id);
-  return pr.ok && (await pr.json()).length > 0 ? { ok: true, id: u.id, joined: u.created_at || "", email: u.email || "" } : { why: "code" };
+  const pr = await get("/rest/v1/players?select=id,apt&id=eq." + u.id), pl = pr.ok ? (await pr.json())[0] : null;
+  return pl ? { ok: true, id: u.id, joined: u.created_at || "", email: u.email || "", apt: pl.apt ?? null } : { why: "code" };
 }
 
 const svc = env => { const k = env.SUPABASE_SERVICE_KEY; return k ? { apikey: k, ...(k.startsWith("ey") ? { Authorization: "Bearer " + k } : {}) } : null; };

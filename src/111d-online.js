@@ -1,9 +1,9 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, UI, VIT, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {ASTEP, MODS, QS, SYS, TILE} from './006-map-pre.js';
+import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
 import {DESIGN} from './102b-designer.js';
@@ -18,7 +18,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
   function style(o){ const r={}; if(!o||typeof o!=='object')return r; if(Number.isInteger(o.f)&&o.f>=0&&o.f<FONTS.length)r.f=o.f; if(typeof o.c==='string'&&/^#[0-9a-f]{6}$/i.test(o.c))r.c=o.c.toLowerCase(); if(Number.isInteger(o.s)&&o.s>=0&&o.s<SIZES.length)r.s=o.s; return r; }
   ONLINE.sayFor=(()=>{ const v=+SAVE.get('sayfor'); return v>=2&&v<=30?v:7; })(); ONLINE.style=SP; ONLINE.FONTS=FONTS; ONLINE.COLS=COLS;
-  const ROOM='s-'+String((SHARED.SECTIONS&&SHARED.SECTIONS.home&&SHARED.SECTIONS.home.id)||(SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+  const ROOM=ONLINE.room='s-'+String(SECTIONS.home.id).toLowerCase().replace(/[^a-z0-9-]/g,'');   // the section you are in has its own room
   const V8=Array.from({length:8},(_,d)=>[Math.sin(d*PI4),-Math.cos(d*PI4)]);
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
@@ -110,7 +110,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
-  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const esc=TEXT.esc;
   const ui=()=>{ '@later'; if(EL)return;
     const css=document.createElement('style'); css.textContent=`#onl{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100vw - 24px));z-index:6;font:11px Silkscreen,monospace;letter-spacing:1px;color:#d8dbe4;pointer-events:none}
       #onl .hd{display:flex;gap:8px;align-items:center} #onl button{pointer-events:auto;font:inherit;color:#ffd27a;background:#0b0d13d0;border:2px solid #2a3040;padding:2px 6px;cursor:pointer} #onl .k{color:#8a8f9c;text-shadow:0 1px 0 #000}
@@ -143,7 +143,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     ui(); sock=new PS({host:location.host,party:'block',room:ROOM,query:async()=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){} return {}; }});
     sock.addEventListener('open',()=>{ ONLINE.on=true; last=null; meSent=''; meAcc=1; list(); });
     sock.addEventListener('close',e=>{ ONLINE.on=false; for(const id of [...ONLINE.others.keys()])drop(id);
-      if(e.code===4002){ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(_){ } location.replace('/'); return; }   // sent out (banned or removed): to the door
+      if(e.code===4002){ BUGS.logout(); return; }   // sent out (banned or removed): to the door
       if(e.code===4000||e.code===4001){ sock.close(); line('THE MARKET',e.code===4000?'you came in from another window; this one is alone now':'log in again to see the others'); } list(); });
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
   ONLINE.tick=dt=>{ const now=performance.now();
@@ -161,7 +161,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('life',dt=>{ if(!ONLINE.on)return; psT+=dt||0; psKeep+=dt||0; if(psT<.2)return; psT=0; const s=snap(), j=JSON.stringify(s); if(j!==psSent||(j!=='{}'&&psKeep>3)){ const was=psSent; psSent=j; psKeep=0; if(j!=='{}'||was!=='{}')send({t:'ps',s}); } },'111d-online-ps');
   ONLINE.hear.ps=m=>{ const o=ONLINE.others.get(m.id); if(!o||!m.s||typeof m.s!=='object')return; for(const k of PS){ const v=m.s[k]; o.S[k]=v&&typeof v==='object'?(k==='water'?{...v,in:true}:{...v}):null; } o.wantPose=true; o.B=null; };
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
-  const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
+  const go=async()=>{ await LOAD('later');
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };
   // the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
   { const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
@@ -178,4 +178,4 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
       const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
     disp(); }
-  go(); }
+  SYS.onStart(go,'111d-online'); }

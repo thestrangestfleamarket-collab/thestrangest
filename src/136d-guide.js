@@ -1,7 +1,7 @@
 // THE GUIDE: GUIDE is the guide book (the menu's GUIDE tab, Shift+G): a chapter for each thing you can do, simple steps and a picture from the game; its words and pictures are fetched the first time it opens.
-import {GUIDE} from './003b-systems.js';
+import {GUIDE, TEXT} from './003b-systems.js';
 Object.assign(GUIDE,{ch:0});
-{ const esc=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+{ const esc=TEXT.esc;
   // a step's [KEY] shows as a key cap
   const keys=s=>esc(s).replace(/\[([^\]]+)\]/g,'<b class="gk">$1</b>');
   const draw=el=>{ '@guide'; const G=__DATA__("data/guide.json"), P=__DATA__("data/guide-pics.json"), C=G.chapters, i=Math.max(0,Math.min(C.length-1,GUIDE.ch)), c=C[i];

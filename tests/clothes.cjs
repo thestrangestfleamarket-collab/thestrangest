@@ -10,7 +10,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=12&at=32,25', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started, null, { timeout: 300000 });
   const frames = n => pg.evaluate(async n => { for (let i = 0; i < n; i++) await new Promise(r => requestAnimationFrame(r)); }, n);
-  const check = form => pg.evaluate(form => {
+  const check = form => pg.evaluate(form => { const GARB = GARBDBG.G;
     const Z = GARB.SIZE, J = W3.rest.J, F = form === 'F', V = (x, y, z) => ({ x, y, z }), sub = (a, b) => V(a.x - b.x, a.y - b.y, a.z - b.z), dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z, len = a => Math.sqrt(dot(a, a)), lerp = (a, b, t) => a + (b - a) * t;
     const pc = n => W3.pcs[W3.idx(n)], d = n => { const P = pc(n); return P ? p => P.d(p) : () => 1e9; };
     const TORSO = F ? ['torsoF', 'bustF'] : ['torso'], BODY = TORSO.concat(['hips', 'thighL', 'thighR', 'shinL', 'shinR', 'neck', 'upperArmL', 'upperArmR', 'footL', 'footR']);

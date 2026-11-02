@@ -18,7 +18,7 @@ const BFLY={}; window.BFLY=BFLY;
   const NM={net:'BUTTERFLY NET',jar_s:'SMALL BUTTERFLY JAR',jar_m:'MEDIUM BUTTERFLY JAR',jar_l:'LARGE BUTTERFLY JAR'}, PRICES={}, size=k=>BF_KINDS[k][3]<45?'SMALL':BF_KINDS[k][3]<90?'':'LARGE';
   for(let k=0;k<NK;k++){ const n=BF_KINDS[k][0].toUpperCase(); NM['b_'+k]=n+(k>=12?' (RARE)':''); NM['bu_'+k]=('UNKNOWN '+size(k)+' BUTTERFLY').replace('  ',' ');
     PRICES['b_'+k]=PR(k); PRICES['bu_'+k]=Math.max(1,Math.floor(PR(k)/2)); }
-  FORAGE.add({names:NM,prices:PRICES,sellable:true}); FORAGE.BUYK.butterflies=['b_','bu_']; FORAGE.SELLS.push(['net',+ITEMS.prop('net','value')||8,()=>!FORAGE.has('net')]);
+  FORAGE.add({names:NM,prices:PRICES}); FORAGE.sell(...Object.keys(PRICES)); FORAGE.BUYK.butterflies=['b_','bu_'];   // the butterflies sell, not the net and jars FORAGE.SELLS.push(['net',+ITEMS.prop('net','value')||8,()=>!FORAGE.has('net')]);
   // mounting is gone (owner, 2 Nov 2026: "no harming animals at all"): a mounted butterfly or a frame still in a pack goes, the frame's price back
   { let n=FORAGE.has('frame'); if(n>0){ FORAGE.take('frame',n); INV.cash+=n*4; } for(let k=0;k<NK;k++){ n=FORAGE.has('s_'+k); if(n>0)FORAGE.take('s_'+k,n); } }
   // your log of what you caught

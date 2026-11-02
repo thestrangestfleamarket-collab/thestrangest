@@ -51,8 +51,9 @@ const GARB={};
     if(PAINT[k]){ const f=FAB[k]||(FAB[k]=paint(k)); o.map=f.map; o.normalMap=f.nm; o.normalScale=new THREE.Vector2(D.ns,D.ns); }
     if(D.sh){ o.sheen=D.sh; o.sheenRoughness=D.shr; o.sheenColor=new THREE.Color(c).lerp(new THREE.Color(0xffffff),.35); } if(D.cc){ o.clearcoat=D.cc; o.clearcoatRoughness=D.ccr; }
     const M=new THREE.MeshPhysicalMaterial(o);
+    // the inside of a garment is in its own shade, as real cloth is: a fold or an open hem shows dark, never lit like the outside
     // in shade it keeps the Walker's own least light (his darkest tone), so it never goes black
-    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }'); };
+    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }\n if(!gl_FrontFacing){ reflectedLight.directDiffuse*=.25; reflectedLight.indirectDiffuse*=.4; reflectedLight.directSpecular*=0.; reflectedLight.indirectSpecular*=0.; }'); };
     return MAT[q]=M; };
 
   /* ---------- a garment's shape, made once and shared by everyone wearing it ---------- */
@@ -123,7 +124,7 @@ const GARB={};
       const P=[]; for(let j=0;j<nr;j++)for(let i=0;i<nu;i++)P.push(at(i,j));
       const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<21.5?['hips',null,0]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them
       const vl=[0]; for(let j=1;j<nr;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); } let per=0; for(let i=0;i<nu;i++)per+=dist(P[nu*3+i],P[nu*3+(i+1)%nu]); const reps=Math.max(1,Math.round(per/TS));
-      grid(t,nu,nr,true,(i,j)=>{ const p=P[j*nu+i], k=skin(p); pt(t,p,k[0],k[1],k[2],j===0?.015:0); },(c,j)=>[c/nu*reps,vl[j]/TS],0);   // only the hem moves, a little, so it keeps a straight line (owner, 2 Nov 2026)
+      grid(t,nu,nr,true,(i,j)=>{ const p=P[j*nu+i], k=skin(p); pt(t,p,k[0],k[1],k[2]); },(c,j)=>[c/nu*reps,vl[j]/TS],0);   // held: the hem keeps a straight line (owner, 2 Nov 2026)
       grid(t,nu,2,true,(i,j)=>{ const th=i/nu*TAU, N=Z.neck, [x,z]=se(th,N.W+.12-j*.3,N.D+.12-j*.3,2); pt(t,V(x,N.y-N.dip*Math.cos(th)+j*.6,z),'torso'); },(c,j)=>[c/nu*reps*2,j*.3],0);   // the ribbed neckband
       for(const s of 'LR'){ const S=J0['shoulder'+s], E=J0['elbow'+s], a=nrm3(sub3(E,S)), u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), {R:Rs,L,Rh}=Z.slv, RG=[[-Rs,.05],[-Rs*.87,Rs*.5],[-Rs*.7,Rs*.71],[-Rs*.4,Rs*.92],[0,Rs],[L*.5,(Rs+Rh)/2],[L,Rh]];
         grid(t,16,RG.length,true,(i,j)=>{ const [tt,r]=RG[j], q=i/16*TAU; pt(t,V(S.x+a.x*tt+(u.x*Math.cos(q)+w.x*Math.sin(q))*r,S.y+a.y*tt+(u.y*Math.cos(q)+w.y*Math.sin(q))*r,S.z+a.z*tt+(u.z*Math.cos(q)+w.z*Math.sin(q))*r),'upperArm'+s,null,0,j===RG.length-1?.01:0); },
@@ -133,7 +134,7 @@ const GARB={};
     pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28;
       const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
       const sv=[0]; for(let j=1;j<Z.rows.length;j++)sv.push(sv[j-1]+Z.rows[j-1][0]-Z.rows[j][0]); const reps=Math.max(1,Math.round(2*(Z.rows[1][1]+Z.rows[1][2])*1.5/TS));
-      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], p=ring(y,W,D,i), lo=Math.min(1,Math.max(0,(16.5-y)/3.7))*.85; if(lo>0&&Math.abs(p.x)<1.2)pt(t,p,'thighL','thighR',.5); else pt(t,p,'hips',y>20.5?'torso':lo>0?'thigh'+(p.x>0?'L':'R'):null,y>20.5?.4:lo); },(c,j)=>[c/nu*reps,sv[j]/TS],0);   // the crotch moves with the legs (its middle with both, its sides with their own thigh), so it never shows as a leg swings
+      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], p=ring(y,W,D,i), lo=Math.min(1,Math.max(0,(16.5-y)/2.5))*Math.min(1,Math.abs(p.x)/2)*.5; pt(t,p,'hips',y>20.5?'torso':lo>0?'thigh'+(p.x>0?'L':'R'):null,y>20.5?.4:lo); },(c,j)=>[c/nu*reps,sv[j]/TS],0);   // the seat's lower sides go a little with each thigh, so its edge never opens as a leg swings
       const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',j?0:.4); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
       const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?20:21.05,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
       for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];

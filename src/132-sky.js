@@ -78,7 +78,7 @@ import {HEMI} from './064-map-post.js';
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
         c=mix(c,uGrey,uGreyK); c=mix(c,uFogC,uFogK*(1.-smoothstep(0.,.4,el)));
         if(uMistK>0.){ vec3 sk=c, m=mix(uMistC*uHk,uMistC*.95,smoothstep(0.,.22,el)); m=mix(m,uMistC*uZk,smoothstep(.35,.95,el)); m=mix(m,uMistC*uHk,1.-smoothstep(0.,.06,el));
-          m=mix(m,mix(sk,uS*.7+uMistC*.3,.3),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK); }
+          m=mix(m,mix(sk,uS*.7+uMistC*.3,.3),uSkyK*smoothstep(0.,.08,el)); c=mix(c,m,uMistK*(1.-smoothstep(0.,.06,el))); }   // only where land meets sky: above it the sky, clouds and sun are clear of the mist (owner, 2 Nov 2026)
         float D=0.; if(d.y>-.02){ float sa=sin(uCumA), ca=cos(uCumA); vec4 g=textureCube(uCum,vec3(ca*d.x+sa*d.z,d.y,ca*d.z-sa*d.x)); D=smoothstep(.12,.8,g.a)*smoothstep(-.01,.04,d.y);   // the cumulus: soft-edged puffs
           if(D>.003){ vec3 v=g.rgb/max(g.a,.02)*2.-1.; float m=length(v); vec3 n=v/max(m,.001); n=vec3(ca*n.x-sa*n.z,n.y,sa*n.x+ca*n.z);
             vec3 cc=cumShade(n,clamp((m-.3)/.7,0.,1.),-d); float sp=max(dot(d,uSunDir),0.); cc+=uSunCol*g.a*(1.-g.a)*4.*(pow(sp,10.)*1.3+pow(sp,3.)*.25)*uSunK;   // a silver lining by the sun

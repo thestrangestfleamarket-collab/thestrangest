@@ -127,14 +127,18 @@ import {VIS} from './129a-vis.js';
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',
       fragmentShader:'uniform sampler2D uT; uniform vec2 uD; varying vec2 vU; void main(){ vec4 c=texture2D(uT,vU)*.2; float w[4]; w[0]=.17; w[1]=.13; w[2]=.08; w[3]=.04; for(int i=1;i<=4;i++){ c+=texture2D(uT,vU+uD*float(i))*w[i-1]+texture2D(uT,vU-uD*float(i))*w[i-1]; } gl_FragColor=c; }'});
     const QS2=new THREE.Scene(), QC=new THREE.OrthographicCamera(-1,1,1,-1,0,1); QS2.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),BM)); let live=false;
+    // the blurred far city goes over the sky only where nothing nearer stands (the far plane's depth), its soft edges see-through: the sky, clouds and sun stay sharp, out of the haze (owner, 2 Nov 2026)
+    const FQ=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:{uT:{value:null}},depthTest:true,depthWrite:false,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneMinusSrcAlphaFactor,
+      vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,1.,1.); }',fragmentShader:'uniform sampler2D uT; varying vec2 vU; void main(){ gl_FragColor=texture2D(uT,vU); }'}));
+    FQ.frustumCulled=false; FQ.renderOrder=901; FQ.visible=false; FQ.raycast=()=>{}; FQ.userData.sky=1; scene.add(FQ); FAR3.quad=FQ; const CC=new THREE.Color();
     FAR3.pre=(renderer,cam)=>{ live=false; if(!on||!(FL.bl>0)||!FAR3.on||!FAR3.mist||!me.visible||scene.fog!==FOG||!SKY.dome.visible){ me.layers.set(0); if(pan)pan.layers.set(0); if(TM)TM.layers.set(0); SKY.dome.layers.set(0); return; }
       const W=Math.max(2,Math.ceil(RW/FL.br)), H=Math.max(2,Math.ceil(RH/FL.br)); if(A.width!==W||A.height!==H){ A.setSize(W,H); Bt.setSize(W,H); }
-      me.layers.set(LAY); if(pan)pan.layers.set(LAY); if(TM)TM.layers.set(LAY); SKY.dome.layers.set(LAY); const mask=cam.layers.mask, nu=renderer.shadowMap.needsUpdate; cam.layers.set(LAY); renderer.shadowMap.needsUpdate=false;
-      renderer.setRenderTarget(A); renderer.clear(); renderer.render(scene,cam); cam.layers.mask=mask;
+      me.layers.set(LAY); if(pan)pan.layers.set(LAY); if(TM)TM.layers.set(LAY); SKY.dome.layers.set(0); const mask=cam.layers.mask, nu=renderer.shadowMap.needsUpdate, ca=renderer.getClearAlpha(), bg=scene.background; renderer.getClearColor(CC); cam.layers.set(LAY); renderer.shadowMap.needsUpdate=false;
+      scene.background=null; renderer.setClearColor(0x000000,0); renderer.setRenderTarget(A); renderer.clear(); renderer.render(scene,cam); cam.layers.mask=mask; renderer.setClearColor(CC,ca); scene.background=bg;   // the far things alone on a clear picture, their colour already times their cover
       BM.uniforms.uT.value=A.texture; BM.uniforms.uD.value.set(FL.bl/W,0); renderer.setRenderTarget(Bt); renderer.render(QS2,QC);
       BM.uniforms.uT.value=Bt.texture; BM.uniforms.uD.value.set(0,FL.bl/H); renderer.setRenderTarget(A); renderer.render(QS2,QC);
-      renderer.setRenderTarget(null); renderer.shadowMap.needsUpdate=nu; scene.background=A.texture; live=true; };
-    FAR3.post=()=>{ if(scene.background!==BGC)scene.background=BGC; }; }
+      renderer.setRenderTarget(null); renderer.shadowMap.needsUpdate=nu; FQ.material.uniforms.uT.value=A.texture; FQ.visible=true; live=true; };
+    FAR3.post=()=>{ if(scene.background!==BGC)scene.background=BGC; FQ.visible=false; }; }
   { const ST={'GAME':{},'CLEAR AIR':{m0:14,m1:60,md:.25,hn:.1,hf:.6,hd:260,hs:10,dt:.6,bl:0,cov:.6},'HAZY':{m0:0,m1:18,md:.35,hn:.35,hf:.9,hd:120,hs:8,dt:.3,bl:.8,cov:.4},
       'DREAMY':{m0:2,m1:30,md:.15,hn:.3,hf:.88,hd:150,hs:12,dt:.35,bl:1.4,br:2,cov:.5,cl:1.3},'DUSK CITY':{m0:8,m1:40,md:.6,hn:.15,hf:.75,hd:200,hs:6,dt:.6,wn:.3,wd:.06,bl:.3,cov:.52,zk:.45}};
     const D=[['m0','MIST STARTS (tiles past town)',-10,60,1],['m1','MIST DEPTH (tiles)',4,160,1],['md','MIST DARKER FAR',0,1,.01],['hn','BUILDINGS: HAZE NEAR',0,1,.01],['hf','BUILDINGS: HAZE FAR',0,1,.01],

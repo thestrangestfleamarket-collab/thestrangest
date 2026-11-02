@@ -11,6 +11,8 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
   const ter=FOUNT.ter=(x,y)=>FOUNT.S&&FOUNT.on?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
+  // the running track round the lake (owner, 2 Nov 2026, his picture of the reservoir's path and rail): a band TRACK[1] either side of TRACK[0] tiles off the water, along the whole shore inside the park
+  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(lake(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
@@ -28,8 +30,10 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     const rocks=[]; let acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; const gap=1.3+.8*hs(i,3,1); if(acc<gap)continue; acc=0; const [x,y]=shore[i], n=nrm(x,y), k=.15+.5*hs(i,5,2), s=.24+.5*Math.pow(hs(i,7,3),1.5);
       const rx=x-n[0]*k, ry=y-n[1]*k; if(ter(rx,ry)<.25)continue; rocks.push([rx,ry,s,hs(i,9,4)]); }
     S.rocks=rocks;
-    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<9+3*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=1.6+2.2*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
-      if(ter(ox,oy)<r+.5||P.pd(ox,oy)<r||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
+    S.shore=shore; S.nrm=nrm;
+    // the shore's trees stand past the running track (owner, 2 Nov 2026), their crowns over it and the water
+    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
+      if(ter(ox,oy)<r+.5||P.pd(ox,oy)<2.2||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
     S.oaks=oaks; S.lamps=!FOUNT.on?[]:[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
     if(FOUNT.on&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
     return S; };
@@ -102,6 +106,13 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((_,i)=>i%3===1?1:0),3)); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
     const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(25,(bedM(d[k])+pit(q[k][0],q[k][1])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
+    // the lake's water is the Hudson's (owner, 2 Nov 2026: "calm, real water, clear, like hudson same options"): the river's surface shader over the lake's own depth picture, no swell; the river's panel (a double click on the water) sets it
+    const RV=window.RIVER; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
+      for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const px=mx(ax+wx*(i+.5)/N), py=mz(az+wz*(j+.5)/N), d=-lake(px,py), m=d>0?bedM(d)+pit(px,py)*Math.min(1,Math.max(0,(d-1.5)/3)):0, k=(j*N+i)*4; img[k]=Math.min(255,Math.round(m*20)); img[k+3]=255; }
+      const bt=new THREE.DataTexture(img,N,N); bt.magFilter=bt.minFilter=THREE.LinearFilter; bt.needsUpdate=true;
+      swap=()=>{ if(!RV||!RV.surface)return; const m=RV.surface({bed:bt,bedR:new THREE.Vector4(ax,az,wx,wz),lv:LV}); for(const me of FOUNT.waters||[])me.material=m; FOUNT.lakeM=m; };
+      if(RV&&RV.surface)swap(); else if(RV)RV.onBuild.push(swap);
+      if(RV&&RV.pickers){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-LV), ph=new THREE.Vector3(); RV.pickers.push((ray,pos)=>SHARED.LVL==='up'&&grp.visible&&!!ray.intersectPlane(pl,ph)&&FOUNT.bedAt(ph.x,ph.z)!=null&&Math.hypot(ph.x-pos.x,ph.z-pos.z)<40*T); } }
     { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();
       S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d,x,y)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });
       me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.rockN=N;
@@ -161,7 +172,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
       if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
       let kick=0; for(const e of W.events)if(e.k==='splash')kick=Math.max(kick,Math.min(1.6,.4+e.v*.01)); W.events.length=0; if(W.in&&!wasIn)kick=1.4; wasIn=W.in; FOUNT.swim=W.in;
       const wet=W.in||W.floor<W.level, z=wet?Math.max(kick,W.in?(go?.9:.35):(go?.55:0)):0; uP.value.set(pos.x,pos.z,uP.value.z+(z-uP.value.z)*Math.min(1,dt*(z>uP.value.z?12:2)),0); return true; };
-    let ft=0; FOUNT.tick=(dt,pos)=>{ if(SHARED.LVL!=='up'||!grp.visible)return; const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; ft+=dt;
+    let ft=0; FOUNT.tick=(dt,pos)=>{ if(SHARED.LVL!=='up'||!grp.visible)return; if(RV&&!RV.on&&RV.shade)RV.shade(); const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; ft+=dt;
       try{ uGl.value=Math.max(0,Math.min(1,(CLOCK.elev()+2)/10)); }catch(e){} if(drops){ drops.visible=fn; if(fn)flow(ft); } };
     const UF=new THREE.Fog(0,0,1), bg0=new THREE.Color(); let fog0=null, uw=false, dome=true;
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;

@@ -35,6 +35,7 @@ jobs:
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
+          k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
           k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
@@ -92,6 +93,9 @@ jobs:
       - name: Fights between players (hitboxes, blows, knockdown)
         if: contains(steps.f.outputs.run, ' brawl')
         run: node tests/brawl.cjs dist/market.html
+      - name: The physics extras (shapes, stepping up, ragdolls, the go-kart)
+        if: contains(steps.f.outputs.run, ' physx')
+        run: node tests/physx.cjs dist/market.html
       - name: The headset (VR on an emulated Quest 3)
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html

@@ -4,12 +4,13 @@ const ROOT = path.resolve(__dirname, '..'), G = require('./treegen.cjs')(THREE),
 const src = fs.readFileSync(ROOT + '/src/060b-trees.js', 'utf8').replace('__DATA__("data/trees.json")', '{}').replace(/^import .*$/mg, '').replace(/^export .*$/mg, '');
 const TREEGEN = new Function('THREE', src + ';return TREEGEN;')(THREE);
 const N = 6, out = { v: 1 };
-const tree = (style, seed, low) => { const t = G.tree(style, seed, low), rec = { pr: t.pr, c: t.c, kN: t.kN, tr: t.tr }, m = TREEGEN.assemble(rec), H = m.H;
+const tree = (style, seed, low) => { const t = /^(elm|cherry)$/.test(style) ? G.vase(style, seed) : G.tree(style, seed, low), rec = { pr: t.pr, c: t.c, kN: t.kN, tr: t.tr }, m = TREEGEN.assemble(rec), H = m.H;
   rec.sum = { cl: G.cluster(t.CL, t.K).map(q => [q[0] / H, q[1] / H, q[2] / H, q[3] / H].map(r3).concat(q.slice(4).map(Math.round))),
-    lb: t.LB.map(([a, b, r]) => [a.x, a.y, a.z, b.x, b.y, b.z, r].map(v => r3(v / H))), bc: t.bc };
+    lb: t.LB.map(([a, b, r]) => [a.x, a.y, a.z, b.x, b.y, b.z, r].map(v => r3(v / H))), bc: t.bc, ...(t.vase ? { vase: 1, card: t.card } : {}) };
+  if (t.vase) { const r2 = v => Math.round(v * 100) / 100; rec.sum.lb = rec.sum.lb.map(q => q.map(r2)); return [{ sum: rec.sum, tr: r2(rec.tr / H), wide: r2(m.wide) }, m.tris]; }
   return [rec, m.tris]; };
-const sets = { A: ['clumps', 1000, false], C: ['bunches', 2000, false], AL: ['clumps', 4000, true], CL: ['bunches', 5000, true] };
-for (const [k, [style, s0, low]] of Object.entries(sets)) { const R = [...Array(N)].map((_, i) => tree(style, s0 + i, low)); out[k] = R.map(r => r[0]); console.log(k, 'tris', R.map(r => r[1]).join(' ')); }
+const sets = { A: ['clumps', 1000, false], C: ['bunches', 2000, false], AL: ['clumps', 4000, true], CL: ['bunches', 5000, true], E: ['elm', 6000, false], K: ['cherry', 7000, false] };
+for (const [k, [style, s0, low]] of Object.entries(sets)) { const R = [...Array(k === 'K' ? 2 : N)].map((_, i) => tree(style, s0 + i, low)); out[k] = R.map(r => r[0]); console.log(k, 'tris', R.map(r => r[1]).join(' ')); }
 out.B = [0, 1, 2, 3].map(i => { const b = G.bush(3000 + i); return { pr: b.pr, c: b.c, kN: b.kN, tr: b.tr }; });
 // the old pack trees' stand-ins: their leaves gathered into a few clumps, and the trunk
 const F = JSON.parse(fs.readFileSync(ROOT + '/data/forest.json', 'utf8')), b64 = s => Buffer.from(s, 'base64');

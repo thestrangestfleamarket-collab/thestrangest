@@ -28,7 +28,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const sband=R=>{ const d=R.dw, B=R.B, h=d.wd/2+.2; return box(SHARED.BOD.X,SHARED.BOD.Z,d.w==='f'?[d.a-h,B.y1-.05,d.a+h,B.y1+.55]:d.w==='b'?[d.a-h,B.y0-.55,d.a+h,B.y0+.05]:d.w==='w'?[B.x0-.55,d.a-h,B.x0+.05,d.a+h]:[B.x1-.05,d.a-h,B.x1+.55,d.a+h],-1,0); };
   const build=()=>{ RL=[];
-    if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(SHARED.BOD.X,SHARED.BOD.Z,G.r,G.y0||-1,SHARED.BOD.Y(G.H)); gb.lz='bath'; gb.band=box(SHARED.BOD.X,SHARED.BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
+    if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, gb=box(SHARED.BOD.X,SHARED.BOD.Z,G.r,G.y0||-1,SHARED.BOD.Y(G.H)); gb.lz='bath'; RL.push(gb); }
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
     for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };

@@ -1,0 +1,33 @@
+// THE ART MUSEUM CHECK: node tests/art.cjs dist/market.html. Its lot and door on Market St, nothing hung before you go in; going in, every painting of data/art.json hung with its plaque and its thing, their pictures loaded; one opened full screen, its full-resolution file fetched only then, zoomed, closed; out to the street by its door with nothing of the inside drawn.
+const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
+const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=art::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
+(async () => {
+  const N = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../data/art.json'), 'utf8')).length;
+  const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const pg = await b.newPage({ viewport: { width: 640, height: 400 } }), errs = [];
+  pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (/not loaded before use|art museum/.test(m.text())) errs.push(m.text().slice(0, 200)); });
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13', { waitUntil: 'commit' });
+  await pg.waitForFunction(() => window.__started && STORE.inside && STORE.inside.art && STORE.art && STORE.streetDoor && STORE.streetDoor.art, null, { timeout: 300000, polling: 500 });
+  const d0 = await pg.evaluate(() => { const D = STORE.inside.art.door, o = STORE.streetDoor.art.out, T = __dbg.cv().TILE; return { wd: D.wd, h: D.h, hung: STORE.art.hung, out: [Math.round(SHARED.BOD.X(o[0]) / T + SHARED.BOD.OX), Math.round(SHARED.BOD.Z(o[1]) / T + SHARED.BOD.OY)], place: !!STORE.places.find(p => p[0] === 'THE ART MUSEUM') }; });
+  ok(d0.wd >= 3 && d0.h >= 80 && d0.hung === 0 && d0.place && d0.out[0] > 10 && d0.out[0] < 50 && d0.out[1] > -78 && d0.out[1] < -70, 'the art museum stands on Market St with its door, in the menu, and nothing hung before you go in: ' + JSON.stringify(d0));
+  await pg.evaluate(() => STORE.enter('art', true)); await pg.waitForFunction(() => STORE.art.hung > 0 && !FADE.busy, null, { timeout: 300000, polling: 500 });
+  const d1 = await pg.evaluate(() => { const G = STORE.art.group, d = STORE.art.dbg(); return { ...d, things: __dbg.UI.things.filter(t => t.obj && t.obj.parent === G).length, plaques: G.children.filter(g => g.children.length >= 3).length, inside: STORE.here('art'), lvl: SHARED.LVL }; });
+  ok(d1.hung === N && d1.n === N && d1.things === N && d1.plaques === N && d1.inside && d1.lvl === 'up', 'all ' + N + ' paintings are hung, each with its plaque and its thing, and you stand inside: ' + JSON.stringify(d1));
+  await pg.waitForFunction(() => STORE.art.group.children.every(g => g.children.some(m => m.material && m.material.map && m.material.map.image && m.material.map.image.width > 0)), null, { timeout: 120000, polling: 500 }).catch(() => {});
+  const d2 = await pg.evaluate(() => ({ pics: STORE.art.group.children.filter(g => g.children.some(m => m.material && m.material.map && m.material.map.image && m.material.map.image.width > 0)).length, rooms: [...new Set(STORE.art.group.children.map(g => { const B = STORE.art.B, X = SHARED.BOD.X, Z = SHARED.BOD.Z, x = g.position.x, z = g.position.z; const c = x < X(B.x0 + (B.x1 - B.x0) / 3) ? 0 : x < X(B.x0 + 2 * (B.x1 - B.x0) / 3) ? 1 : 2; return (z < Z(B.y1 - 12) ? 'b' : 'f') + c; }))].sort() }));
+  ok(d2.pics === N && d2.rooms.length === 6, 'every painting has its picture, hung across the hall and the five galleries: ' + JSON.stringify(d2));
+  const v0 = await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.obj && t.obj.parent === STORE.art.group); th.act(); return STORE.art.viewer(); });
+  ok(v0 && v0.open && !v0.full && v0.t, 'double-clicking a painting opens it full screen at once, its full-resolution file still on its way: ' + JSON.stringify(v0));
+  const v1 = await pg.evaluate(async () => { const t = Date.now(); while (Date.now() - t < 60000 && !STORE.art.viewer().full) await new Promise(r => setTimeout(r, 250)); return STORE.art.viewer(); });
+  if (v1.full) ok(v1.w > 1000 && v1.max >= 4 && v1.max > v1.fit, 'the full-resolution file comes and you can zoom to four screen pixels a painting pixel: ' + JSON.stringify(v1));
+  else console.log('skip the full-resolution file did not come here (no network?): ' + JSON.stringify(v1));
+  const v2 = await pg.evaluate(async () => { const kd = (t, k, c) => document.body.dispatchEvent(new KeyboardEvent(t, { key: k, code: c, bubbles: true })); await new Promise(r => setTimeout(r, 1500)); const p0 = __dbg.pos().map(v => v.toFixed(2)).join();
+    kd('keydown', 'w', 'KeyW'); kd('keydown', '+', 'Equal'); kd('keydown', 'ArrowLeft', 'ArrowLeft'); await new Promise(r => setTimeout(r, 800)); kd('keyup', 'w', 'KeyW'); kd('keyup', 'ArrowLeft', 'ArrowLeft'); const z = STORE.art.viewer(), p1 = __dbg.pos().map(v => v.toFixed(2)).join();
+    kd('keydown', 'Escape', 'Escape'); return { zoomed: z.s > z.fit, still: p1 === p0, p0, p1, open: STORE.art.viewer().open, win: __dbg.UI.gamewin || null }; });
+  ok(v2.zoomed && v2.still && !v2.open && !v2.win, 'in the viewer the keys zoom it and do not walk you, and Escape closes it: ' + JSON.stringify(v2));
+  await pg.evaluate(() => STORE.exit('art')); await pg.waitForTimeout(3000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 }); await pg.waitForTimeout(2500);
+  const d3 = await pg.evaluate(() => { const o = STORE.streetDoor.art.out, p = __dbg.pos(), T = __dbg.cv().TILE; return { d: +(Math.hypot(p[0] - SHARED.BOD.X(o[0]), p[2] - SHARED.BOD.Z(o[1])) / T).toFixed(2), drawn: STORE.art.group.visible, lvl: SHARED.LVL, inside: STORE.here('art') }; });
+  ok(d3.d < 3 && !d3.drawn && d3.lvl === 'up' && !d3.inside, 'out by the door onto Market St, nothing of the inside drawn: ' + JSON.stringify(d3));
+  ok(!errs.length, 'no page errors, no slow fetch, no room short of wall' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
+  await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all art museum checks passed'); process.exit(fails.length ? 1 : 0);
+})();

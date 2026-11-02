@@ -54,7 +54,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
             X[a]=r.p0[0]+(g[0]-r.p0[0])*q; X[a+1]=r.p0[1]+(g[1]-r.p0[1])*q; X[a+2]=r.p0[2]+(g[2]-r.p0[2])*q; X.set([X[a],X[a+1],X[a+2]],a); c.Xp.set([X[a],X[a+1],X[a+2]],a); }
           h.lines.forEach((m,k)=>{ const a=h.R[k].i*3; m.visible=e>0; if(e>0)seg(m,[X[a],X[a+1],X[a+2]],h.pul); });
           c.o.col.length=0; if(pl&&Math.abs(pl.z-CU.Z)<1.2&&pl.y<top)c.o.col.push({cy:1,x:pl.x,z:pl.z,r:.32,y0:pl.y-.1,y1:pl.y+1.9});
-          if(CU.open!==before||c.o.col.length||c.still<90){ for(let n=Math.max(1,Math.min(3,Math.round(dt*60)));n-->0;)DRAPE.step(c,1/60,c.o); DRAPE.out(c,c.me.geometry); c.hemOut(); } } } }; }
+          if(CU.open!==before||c.o.col.length||c.still<90){ for(let n=Math.max(1,Math.min(3,Math.round(dt*60)));n>0;n--)DRAPE.step(c,1/60,c.o); DRAPE.out(c,c.me.geometry); c.hemOut(); } } } }; }
 
   if(K.prompt)K.thing('THE HOUSE CURTAIN: UP OR DOWN',K.prompt[0],K.prompt[1],K.prompt[2],1.3,.6,.9,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; const c=C.curtain; c.set(c.target>.5?0:1); },{reach:1.8,near:3});
 

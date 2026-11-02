@@ -136,18 +136,21 @@ const GARB={};
           (c,j)=>[c/16*Math.max(1,Math.round(TAU*Rs/TS)),(RG[j][0]+Rs)/TS],0); }
       return t; },
     // straight-leg jeans cut to their own size on a leather belt with a brass buckle: a seat to the crotch, two straight legs tapering a little to the knee, hems breaking over the shoes
-    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28;
+    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28, nl=24, G=Z.leg;
       const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
-      const sv=[0]; for(let j=1;j<Z.rows.length;j++)sv.push(sv[j-1]+Z.rows[j-1][0]-Z.rows[j][0]); const reps=Math.max(1,Math.round(2*(Z.rows[1][1]+Z.rows[1][2])*1.5/TS));
-      // the waist turns partly with the chest, as the body under it does
-      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], k=tw(y); pt(t,ring(y,W,D,i),'hips',k>0?'torso':null,k); },(c,j)=>[c/nu*reps,sv[j]/TS],0);
-      const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',tw(B[0]+.1-j*1.15)); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
+      const seat=y=>{ const r=Z.rows; if(y>=r[0][0])return [r[0][1],r[0][2]]; for(let j=1;j<r.length;j++)if(r[j][0]<=y){ const a=r[j-1], b=r[j], f=(a[0]-y)/(a[0]-b[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; } const l=r[r.length-1]; return [l[1],l[2]]; };
+      const B=Z.rows[0], reps=Math.max(1,Math.round(2*(B[1]+B[2])*1.5/TS));
+      grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',tw(B[0]+.1-j*1.15)); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
       const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>{ const y=j?20:21.05; pt(t,V(i?1:-1,y,zb),'hips','torso',tw(y)); },(c,j)=>[c,j],2);   // the buckle
-      for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];
-        for(let q=G.top;q<L1-1.8;q+=.6)T.push(q); for(let q=-1.5;q<=1.51;q+=.5)T.push(L1+q); for(let q=L1+2.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);
-        const R=q=>q<0?G.R0+q*G.topIn:q<L1?G.R0+(G.Rk-G.R0)*q/L1:G.Rk+(G.Rh-G.Rk)*Math.min(1,(q-L1)/L2), sk=q=>q<0?['hips','thigh'+s,sm((q-G.top)/-G.top)]:q<L1-1.55?['thigh'+s,null,0]:q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0];
-        grid(t,16,T.length,true,(i,j)=>{ const q=T[j], top=q<=L1, o=top?add3(H,mul3(a1,q)):add3(K,mul3(a2,q-L1)), a=top?a1:a2, u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), r=R(q), th=i/16*TAU, k=sk(q);
-          pt(t,add3(o,add3(mul3(u,Math.cos(th)*r),mul3(w,Math.sin(th)*r))),k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/16*Math.max(1,Math.round(TAU*G.Rk/TS)),(T[j]-G.top)/TS],0); }
+      // one piece of cloth: each leg begins at the waist as its half of the seat, closed by the centre seam, and turns round into the leg below it; the outside of the hip turns first, the inside keeps the crotch lower, then the legs part
+      for(const s of 'LR'){ const sg=s==='L'?1:-1, H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), T=[], q0=-(B[0]-H.y)/Math.abs(a1.y);
+        for(let q=q0;q<L1-1.8;q+=.55)T.push(q); for(let q=-1.5;q<=1.51;q+=.5)T.push(L1+q); for(let q=L1+2.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);
+        const R=q=>q<0?G.R0+q*G.topIn:q<L1?G.R0+(G.Rk-G.R0)*q/L1:G.Rk+(G.Rh-G.Rk)*Math.min(1,(q-L1)/L2), fo=q=>sm((q+1.4)/3.4), fi=q=>sm((q-3.4)/1.8);
+        grid(t,nl,T.length,true,(i,j)=>{ const q=T[j], top=q<=L1, o=top?add3(H,mul3(a1,q)):add3(K,mul3(a2,q-L1)), a=top?a1:a2, u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), r=R(q), th=i/nl*TAU, c=Math.cos(th), sn=Math.sin(th);
+          const C=add3(o,add3(mul3(u,c*r),mul3(w,sn*r))), dx=-c, out=sg*dx, f=fi(q)+(fo(q)-fi(q))*Math.max(0,out);
+          let p=C; if(f<1){ const [W,D]=seat(o.y), Hp=out>=0?V(W*Math.sign(dx)*Math.abs(dx)**(2/Z.n),o.y,D*Math.sign(sn)*Math.abs(sn)**(2/Z.n)):V(0,o.y,D*sn); p=add3(mul3(Hp,1-f),mul3(C,f)); }
+          const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):f>=1?['thigh'+s,null,0]:f>0||p.y<18.6?['hips','thigh'+s,f]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
+          pt(t,p,k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/nl*reps,(T[j]-q0)/TS],0); }
       return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs
     jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);

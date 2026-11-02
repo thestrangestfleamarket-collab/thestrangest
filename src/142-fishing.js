@@ -326,5 +326,5 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
           const a=o.line.geometry.attributes.position, sag=m.x?0:Y(.4); for(let i=0;i<=NL;i++){ const u=i/NL; a.setXYZ(i,P.x+(e[0]-P.x)*u,P.y+(e[1]-P.y)*u-sag*4*u*(1-u),P.z+(e[2]-P.z)*u); } a.needsUpdate=true; } } },'142-fishing-theirs'); }
   window.FISHDBG=()=>({rod:FORAGE.has('rod'),hook:S.hook||null,held:WIELD.on,shown:hooked.visible,shout:+SH.style.opacity?SH.textContent:'',state:S_&&{st:S_.st,t:+S_.t.toFixed(2),fish:S_.f&&{id:S_.f.id,kg:+S_.f.kg.toFixed(2),s:+S_.f.s.toFixed(2)},ten:S_.ten!=null?+S_.ten.toFixed(2):null,D:S_.D!=null?+(S_.D/WU).toFixed(1):null,x:+S_.x.toFixed(2),z:+S_.z.toFixed(2),odds:S_.o},
     boat:BOAT.on?{x:+BOAT.x.toFixed(2),z:+BOAT.z.toFixed(2),v:+BOAT.v.toFixed(2)}:null,stand:RIVER.on?{x:RIVER.fpier+2.6*T,z:RB.z1+1.55*T}:null,pier:RIVER.fpier,skill:FORAGE.sk('fish'),last:FISHING.last||null,swim:FISHES.list.filter(f=>!f.hooked).length,lured:!!(S_&&S_.fish)}); };
-RIVER.onBuild.push(fishInit); { const go=()=>{ if(!window.__started){ setTimeout(go,300); return; } LOAD('later').then(()=>fishInit()); }; go(); }
+RIVER.onBuild.push(fishInit); SYS.onStart(()=>LOAD('later').then(()=>fishInit()),'142-fishing');
 export {FISHING};

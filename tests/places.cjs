@@ -49,7 +49,7 @@ const TOUR=[
   const ctx=await b.newContext({viewport:{width:640,height:360}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=performance.now(); }}); });
   const pg=await ctx.newPage(); pg.setDefaultTimeout(900000); const errs=[], late=[], req=[]; let phase='start';
-  pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ const t=m.text(); if(/not loaded before use/.test(t))late.push(t); else if(m.type()==='error')errs.push(t.slice(0,300)+(/Failed to load resource/.test(t)&&m.location().url?' ('+m.location().url.slice(0,200)+')':'')); });
+  pg.on('pageerror',e=>errs.push(e.message.slice(0,300))); pg.on('console',m=>{ const t=m.text(); if(/not loaded before use/.test(t))late.push(t); else if(m.type()==='error'&&!(/^Failed to load resource/.test(t)&&(m.location().url||'').indexOf(BASE)!==0))errs.push(t.slice(0,300)); });   // another site refusing (YouTube's titles) is not the game's error
   pg.on('request',r=>{ const u=new URL(r.url()); if(u.pathname.startsWith('/g/'))req.push({f:u.pathname.slice(3),phase}); });
   const start=async q=>{ const t0=Date.now(); await pg.goto(BASE+'/'+q,{waitUntil:'commit',timeout:600000}); let s=false; for(let i=0;i<1500&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await wait(200); return s&&Date.now()-t0; };
   const ms=await start('?fresh=1&hour=13&wx=CLEAR'); ok(!!ms,'THE MARKET starts ('+ms+' ms)');

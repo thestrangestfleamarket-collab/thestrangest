@@ -1,5 +1,5 @@
 // THE GEMS: GEMS lists the gems, INV keeps what the player carries, and TRADE buys and sells them.
-import {CITY, CIVIC, FORAGE, INV, LINES, MAIL, pos, SFX, TRADE, UI} from './003b-systems.js';
+import {CITY, CIVIC, FORAGE, INV, LINES, MAIL, pos, SFX, TEXT, TRADE, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {QS} from './006-map-pre.js';
 const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geode','GEODE',18,16],['amber','FOSSIL AMBER',24,12],['moonstone','MOONSTONE',30,10],
@@ -20,7 +20,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV;
   INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
     if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
  window.TRADE=TRADE;
-{ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
+{ const esc=TEXT.esc, btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const panel=()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
     P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation());

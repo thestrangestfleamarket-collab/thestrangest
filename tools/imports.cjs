@@ -9,7 +9,7 @@ module.exports = { blank, LOCAL };
 if (require.main !== module) return;
 
 const check = process.argv.includes('--check');
-const files = fs.readdirSync(SRC).filter(f => /^\d{3}[a-z]?-.+\.(js|html)$/.test(f)).sort();
+const files = fs.readdirSync(SRC).filter(f => /^\d{3}[a-z]*-.+\.(js|html)$/.test(f)).sort();
 const text = {}, stripped = {};
 for (const f of files) { text[f] = fs.readFileSync(SRC + '/' + f, 'utf8'); stripped[f] = text[f].replace(/^(?:import \{[^}\n]*\} from '\.\/[^'\n]+';|export \{[^}\n]*\};)[ \t]*\n/gm, ''); }
 let page = '', spans = [];

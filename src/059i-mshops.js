@@ -4,6 +4,7 @@ import {ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
+import {BLOCKS} from './038zb-blocks.js';
 const MSHOP={kit:{},at:{},defs:{}};
 await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, MS=STORE.main, T=TILE;
   const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1});

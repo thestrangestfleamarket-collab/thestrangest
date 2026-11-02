@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,13 +29,14 @@ jobs:
           FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full') }}
           BASE: ${{ github.base_ref || 'main' }}
         run: |
-          C=$(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL)
+          C=$(for f in $(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL); do [ "$f" = ALL ] && { echo ALL; break; }; case "$f" in src/*.js) git diff -U0 "origin/$BASE"...HEAD -- "$f" | grep -E '^[-+][^-+]' | grep -vqE "^[-+](import \{[^}]*\} from '\./[^']+';|export \{[^}]*\};) *$" && echo "$f";; *) echo "$f";; esac; done)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k vr      'src/162[a-c]|vr\.cjs'
+          k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -45,7 +46,7 @@ jobs:
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
+          k editors 'src/09[4-9]|src/13[34]|src/140b|src/136|editors'
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
@@ -94,6 +95,9 @@ jobs:
       - name: The headset (VR on an emulated Quest 3)
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
+      - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
+        if: contains(steps.f.outputs.run, ' catrun')
+        run: node tests/catrun.cjs dist/market.html
       - name: riders
         if: contains(steps.f.outputs.run, ' riders')
         run: node tests/riders.cjs dist/market.html

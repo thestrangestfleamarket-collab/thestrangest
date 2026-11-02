@@ -44,8 +44,8 @@ def frames(J):
 
 def rebake(char, name2role, w_map):
     rig=char['rig']; names=rig['names']; nidx={n:i for i,n in enumerate(names)}
-    P,col,idx,ji,wt=decode_mesh(char['mesh'])
-    W=bone_world(rig)
+    P,col,idx,ji,wt=char['arrays'] if 'arrays' in char else decode_mesh(char['mesh'])
+    W=rig['world'] if 'world' in rig else bone_world(rig)
     jp=lambda nm: W[nidx[nm]]
     J={}
     J['pelvis']=jp(name2role['pelvis']); J['waist']=jp(name2role['waist']); J['neck']=jp(name2role['neck'])
@@ -106,6 +106,38 @@ SKEL_W={'root':'hips','hips':'hips','spine':'torso','chest':'torso','head':'head
   'upperleg.l':'thighL','lowerleg.l':'shinL','foot.l':'shoeL','toes.l':'shoeL',
   'upperleg.r':'thighR','lowerleg.r':'shinR','foot.r':'shoeR','toes.r':'shoeR'}
 
+# --- a character-maker .glb (Mixamo-named bones, every part its own skin on one skeleton, flat faces with per-vertex colours) ---
+MIXAMO_ROLE={'pelvis':'Hips','waist':'Spine','neck':'Neck',
+  'shoulderL':'LeftArm','elbowL':'LeftForeArm','wristL':'LeftHand','shoulderR':'RightArm','elbowR':'RightForeArm','wristR':'RightHand',
+  'hipL':'LeftUpLeg','kneeL':'LeftLeg','ankleL':'LeftFoot','hipR':'RightUpLeg','kneeR':'RightLeg','ankleR':'RightFoot'}
+MIXAMO_W={'Hips':'hips','Spine':'torso','Spine1':'torso','Spine2':'torso','Neck':'head','Head':'head'}
+for n in 'LR':
+    s={'L':'Left','R':'Right'}[n]
+    MIXAMO_W.update({s+'Shoulder':'torso',s+'Arm':'upperArm'+n,s+'ForeArm':'forearm'+n,s+'Hand':'hand'+n,'attach-'+s.lower()+'hand':'hand'+n,
+      s+'UpLeg':'thigh'+n,s+'Leg':'shin'+n,s+'Foot':'shoe'+n,s+'ToeBase':'shoe'+n})
+
+def read_glb(path):
+    import struct
+    b=open(path,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
+    def acc(i):
+        a=J['accessors'][i]; v=J['bufferViews'][a['bufferView']]; k={'VEC4':4,'VEC3':3,'VEC2':2,'SCALAR':1,'MAT4':16}[a['type']]
+        dt={5126:np.float32,5123:np.uint16,5121:np.uint8}[a['componentType']]
+        return np.frombuffer(BF,dt,a['count']*k,v.get('byteOffset',0)+a.get('byteOffset',0)).reshape(-1,k)
+    sk=J['skins'][0]; names=[J['nodes'][j]['name'] for j in sk['joints']]
+    world=np.array([np.linalg.inv(M.reshape(4,4).T)[:3,3] for M in acc(sk['inverseBindMatrices'])])
+    PP=[];CC=[];JJ=[];WW=[]
+    for nd in J['nodes']:
+        if 'mesh' not in nd: continue
+        assert J['skins'][nd['skin']]['joints']==sk['joints']
+        for p in J['meshes'][nd['mesh']]['primitives']:
+            a=p['attributes']; P=acc(a['POSITION']).astype(float); ix=acc(p['indices']).reshape(-1) if 'indices' in p else np.arange(len(P))
+            PP.append(P[ix]); CC.append(acc(a['COLOR_0'])[:,:3].astype(float)[ix]); JJ.append(acc(a['JOINTS_0']).astype(int)[ix]); WW.append(acc(a['WEIGHTS_0']).astype(float)[ix])
+    P=np.vstack(PP); C=np.vstack(CC); Jt=np.vstack(JJ); Wt=np.vstack(WW)
+    key=np.hstack([np.round(P,5),np.round(C,3),Jt,np.round(Wt,3)])   # weld the flat faces' corners that share everything
+    u,first,inv=np.unique(key,axis=0,return_index=True,return_inverse=True); F=inv.reshape(-1,3)
+    F=F[(F[:,0]!=F[:,1])&(F[:,1]!=F[:,2])&(F[:,0]!=F[:,2])]
+    return {'rig':{'names':names,'world':world},'arrays':(P[first],C[first],F,Jt[first],Wt[first])}
+
 def bake_shared(src, keys, role, wmap, outpath):
     d=json.load(open(src)); rig=d['rig']; out={'bones':BONES,'bodies':{}}
     for key in keys:
@@ -124,3 +156,7 @@ if __name__=='__main__':
         import os; print('data/rpgbodies.json',round(os.path.getsize('data/rpgbodies.json')/1e6,2),'MB')
     if which in ('all','skel'):
         bake_shared('data/skel.json',['Warrior','Mage','Minion','Rogue'],SKEL_ROLE,SKEL_W,'data/skelbodies.json')
+    if which in ('all','poacher'):
+        body,J=rebake(read_glb('data/full/egg-poacher.glb'),MIXAMO_ROLE,MIXAMO_W); print('poacher','height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
+        json.dump({'bones':BONES,'bodies':{'poacher':body}},open('data/poacher.json','w'),separators=(',',':'))
+        import os; print('data/poacher.json',round(os.path.getsize('data/poacher.json')/1e3),'KB')

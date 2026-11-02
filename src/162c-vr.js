@@ -10,7 +10,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
   const opt=Object.assign({},DEF); try{ const o=JSON.parse(SAVE.get('vr')||'{}'); for(const k in o)if(k in DEF&&typeof o[k]===typeof DEF[k])opt[k]=o[k]; }catch(e){}
   const PT={fast:[300,150,1000],normal:[800,300,1500],slow:[2000,500,3000]};
-  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
+  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(), TRK=new THREE.Group(); HG.matrixAutoUpdate=TRK.matrixAutoUpdate=false; HUD.add(HG,TRK);
@@ -24,6 +24,8 @@ import {collide, frame, PAD} from './075-main-13.js';
   const TIP=['THE MARKET IN VR','LEFT STICK WALKS · RIGHT STICK TURNS · A JUMPS','X USES · Y KICKS · RIGHT TRIGGER RUNS · LEFT STICK PRESS: MENU','POINT + TRIGGER OR PINCH PRESSES · HOLD B: LEAVE VR'];
   const write=(c,t,L,big,small)=>{ const g=c.getContext('2d'), W=c.width, H=c.height; g.clearRect(0,0,W,H); g.fillStyle='rgba(16,18,26,.9)'; g.fillRect(0,0,W,H); g.strokeStyle='#2a2e3a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle';
     L.forEach((l,i)=>{ let px=i?small:big; do{ g.font=px+'px Silkscreen, monospace'; }while(g.measureText(l).width>W-28&&--px>9); g.fillStyle=i?'#ece5d3':'#f2c14e'; g.fillText(l,W/2,H/(L.length*2)*(i*2+1)); }); t.needsUpdate=true; };
+  const note=()=>{ const g=cv.getContext('2d'), W=cv.width, H=cv.height, L=VR.notes; g.clearRect(0,0,W,H); g.fillStyle='rgba(16,18,26,.9)'; g.fillRect(0,0,W,H); g.strokeStyle='#2a2e3a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle';
+    L.forEach((o,i)=>{ const big=o.big&&L.length===1; let px=big?64:24; do{ g.font=px+'px Silkscreen, monospace'; }while(g.measureText(o.t).width>W-28&&--px>9); g.fillStyle=o.c||'#ece5d3'; g.fillText(o.t,W/2,H/(L.length*2)*(i*2+1)); }); tex.needsUpdate=true; };
   const tap=k=>{ for(const t of ['keydown','keyup'])dispatchEvent(new KeyboardEvent(t,{key:k,bubbles:true,cancelable:true})); };
 
   const B0=()=>({value:0,pressed:false,touched:false});
@@ -132,7 +134,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     if(wrist.visible&&tip){ const d=TIPR.distanceTo(wrist.position); if(d<.03&&!VR.wt){ VR.wt=1; tap('Escape'); } else if(d>.06)VR.wt=0; } };
 
   const teleport=()=>{ if(VR.tpWas&&!VR.tpa&&VR.tp&&VR.tp.ok&&free()){ const dx=VR.tp.x-pos.x, dz=VR.tp.z-pos.z; pos.x+=dx; pos.z+=dz; O.x+=dx; O.z+=dz; collide(pos); VR.px=pos.x; VR.pz=pos.z; if(FEEL.take())FEEL.sync(); VR.blink=1; }
-    VR.tpWas=VR.tpa; const want=VR.tpa&&opt.view==='first'&&free(), P=want&&PTR.find(p=>p.src&&p.src.handedness===walkHand()&&!p.src.hand&&p.o); let hit=null;
+    VR.tpWas=VR.tpa; const want=VR.tpa&&vw()==='first'&&free(), P=want&&PTR.find(p=>p.src&&p.src.handedness===walkHand()&&!p.src.hand&&p.o); let hit=null;
     if(P){ RO.set(P.o[0],P.o[1],P.o[2]); RD.set(P.d[0],P.d[1],P.d[2]); const a=ARC.geometry.attributes.position, gy=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):SHARED.py; let n=0;
       for(let t=0;t<2.5&&n<64;t+=.05){ TPP.set(RO.x+RD.x*5*t,RO.y+RD.y*5*t-4.9*t*t,RO.z+RD.z*5*t); DOLLY.localToWorld(TPP); a.setXYZ(n++,TPP.x,TPP.y,TPP.z); const g=gy(TPP.x,TPP.z); if(TPP.y<=g+.01){ hit={x:TPP.x,y:g,z:TPP.z,ok:true}; break; } }
       for(let i=n;i<64;i++)a.setXYZ(i,TPP.x,TPP.y,TPP.z); a.needsUpdate=true;
@@ -151,17 +153,19 @@ import {collide, frame, PAD} from './075-main-13.js';
   const turn=d=>{ head(EV); VR.yaw+=d; rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(EV.x-O.x,0,EV.z-O.z); };
   const calib=()=>{ VR.yaw=SHARED.heading+Math.PI-yawOf(HQ); rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(pos.x-O.x,0,pos.z-O.z); VR.y0=HL.y;
     VR.eye=W3.eyeAt&&W3.eyeAt(EV)?Math.max(.5*TILE,EV.y-SHARED.py):1.62/.84*TILE*(W3.SZ||1); VR.px=pos.x; VR.pz=pos.z; VR.cal=true; };
+  const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!SHARED.drive&&!(VR.want&&VR.want.turn===false);
   const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
-    if(!VR.cal)calib(); else { O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z; } if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
+    O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;   // a move since the last frame (a door, a fade, a teleport) carries the room with you
+    if(!VR.cal)calib(); if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
-    if(UI.gamewin||SHARED.drive){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
-    if(!SHARED.drive){ if(edge('q',keys.has('q')))turn(snap()); if(edge('e',keys.has('e')))turn(-snap()); }
+    if(UI.gamewin||!turns()){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
+    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',keys.has('e'))&&turns())turn(-snap());
     if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
-    if(opt.view==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
+    if(vw()==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
       if(d>L){ if(free()){ const k=1-L/d; pos.x+=dx*k; pos.z+=dz*k; collide(pos); if(FEEL.take())FEEL.sync(); dx=EV.x-pos.x; dz=EV.z-pos.z; d=Math.hypot(dx,dz); }
         if(d>L){ const m=(d-L)/d; O.x-=dx*m; O.z-=dz*m; } } }
     VR.px=pos.x; VR.pz=pos.z;
@@ -172,13 +176,14 @@ import {collide, frame, PAD} from './075-main-13.js';
   VR.draw=hold=>{ if(!VR.pose)return; const r=renderer;
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;
     const ey=SHARED.py+VR.eye+opt.height/100*FEEL.MV-VR.y0*FEEL.MV;
-    if(SHARED.drive&&SHARED.drive.dolly)SHARED.drive.dolly(DOLLY,HL,HQ); else { if(opt.view==='behind')DOLLY.position.set(pos.x+Math.sin(VR.yaw)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(VR.yaw)*2.6*FEEL.MH); else DOLLY.position.set(O.x,ey,O.z);
+    if(SHARED.drive&&SHARED.drive.dolly)SHARED.drive.dolly(DOLLY,HL,HQ); else { if(vw()==='behind'){ const Y=VR.want&&VR.want.face!=null?VR.want.face+Math.PI:VR.yaw; DOLLY.position.set(pos.x+Math.sin(Y)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(Y)*2.6*FEEL.MH); } else DOLLY.position.set(O.x,ey,O.z);
     DOLLY.rotation.set(0,VR.yaw,0); DOLLY.scale.set(FEEL.MH,FEEL.MV,FEEL.MH); } DOLLY.updateMatrixWorld(true); TRK.matrix.copy(DOLLY.matrixWorld); TRK.matrixWorldNeedsUpdate=true;
-    const nh=opt.view==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=!SHARED.drive&&(opt.view==='behind'||opt.body);
+    const nh=vw()==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=!SHARED.drive&&(vw()==='behind'||opt.body);
     const f=Math.max(FADE.el?+FADE.el.style.opacity||0:0,VR.blink); veil.material.opacity=f; veil.visible=f>.01;
     if(--VR.ct<=0){ VR.ct=10; const els=PAD.panels(), w=!!UI.menuOpen||els.length>0; if(w!==VR.win){ VR.win=w; if(w)openPanel(); else closePanel(); } else if(w&&(els.length!==PN.els.length||els.some((e,i)=>e!==PN.els[i])))watch(); }
     { const n=performance.now(), T=PT[opt.panel]||PT.normal; if(panel.visible&&PN.dirty&&!PN.busy&&n-PN.t>T[0]&&(n-PN.ch>T[1]||n-PN.d0>T[2]))shoot(); }
-    const m=VR.tip>0&&!VR.win?'tip':''; if(m!==VR.m){ VR.m=m; if(m)write(cv,tex,TIP,22,17); } card.visible=!!m;
+    { const n=performance.now(); VR.notes=VR.notes.filter(o=>o.until>n); }
+    const m=VR.win?'':VR.notes.length?'n'+VR.notes.map(o=>o.t).join('|'):VR.tip>0?'tip':''; if(m!==VR.m){ VR.m=m; if(m==='tip')write(cv,tex,TIP,22,17); else if(m)note(); } card.visible=!!m;
     r.xr.enabled=true; r.setRenderTarget(VR.rt);
     if(hold||!VR.cal)r.clear(); else{ r.render(SHARED.drive&&SHARED.drive.scene||scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
     r.xr.enabled=false; };
@@ -209,8 +214,10 @@ import {collide, frame, PAD} from './075-main-13.js';
     el.oninput=e=>{ const r=e.target; if(r.type!=='range'||!r.dataset.k)return; VR.set(r.dataset.k,r.value,true); const s=el.querySelector('[data-rv="'+r.dataset.k+'"]'); if(s)s.textContent=r.value+(r.dataset.k==='height'?' cm':' m'); };
     el.onchange=e=>{ if(e.target.type==='range')save(); }; };
 
+  VR.note=(t,c,o)=>{ if(!VR.on||!t)return; o=o||{}; VR.tip=0; if(o.only)VR.notes.length=0; VR.notes.push({t:String(t),c,big:!!o.big,until:performance.now()+(o.ms||4000)}); while(VR.notes.length>3)VR.notes.shift(); };
+  VR.ask=w=>{ VR.want=w||null; VR.cal=false; };
   VR.hand=side=>{ if(!VR.on)return null; const C=CTL.find(c=>c.userData.on&&c.userData.h===side); return C?C.userData:null; };   // {wp, wq, v}: the controller's world position, orientation and velocity, or null
-  window.VR=VR; VR.state=()=>({view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
+  window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});
 

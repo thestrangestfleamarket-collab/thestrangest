@@ -25,6 +25,7 @@ import {DESIGN} from './102b-designer.js';
   const btns=()=>{ const B=[['INVENTORY','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['SETTINGS','',()=>UI.menuTab('display')],['GUIDE','SHIFT+G',()=>UI.menuTab('guide')],['REPORT A BUG','F8',()=>UI.menuTab('bug')],['LOG OUT','',logout],['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }]];
     if(isAdmin)B.push(['ADMIN','',adminOpen,1]);
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
+  CHARP.admin=()=>adminOpen();   // the handheld's ADMIN page opens it too
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
   let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';

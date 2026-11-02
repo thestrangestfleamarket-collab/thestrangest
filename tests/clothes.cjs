@@ -38,7 +38,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
         // the part it belongs to, by the bone it hangs on: a sleeve hangs on its arm alone, a leg on its thigh or shin, the rest of the tee and the seat on the torso and hips
         const onSeat = !inSeat(V(p.x * 1.03, p.y, p.z * 1.03)) && inSeat(V(p.x * .97, p.y, p.z * .97)) || p.y > Z.jeans.rows[0][0] - 1.3, part = k !== 'shirt' && k !== 'pants' ? k : k === 'shirt' ? (/^upperArm/.test(a) && !b ? 'sleeve' + a.slice(-1) : 'shirt') : (onSeat ? 'seat' : /^(thigh|shin)/.test(a) || b ? 'leg' + (b || a).slice(-1) : 'leg' + (p.x > 0 ? 'L' : 'R'));
         // a sleeve is checked against the arm it goes round too
-        const dd = bd(against.concat(/^sleeve/.test(part) ? ['upperArm' + part.slice(-1)] : []))(p), cov = Object.keys(VOL).some(n => n !== part && VOL[n](p));
+        // the jeans are one piece: only another garment covers them; the centre-seam wall inside the seat (each leg's half of the waist closed by it) is inside the body and never seen
+        if (k === 'pants' && Math.abs(p.x) < .05 && p.y < 16) continue;   // where the legs press together at the middle: between them, never seen
+        if (k === 'pants' && p.y > 12 && Math.abs(p.x) < .3) { const r = Z.jeans.rows; let D = r[r.length - 1][2]; for (let j = 1; j < r.length; j++) if (r[j][0] <= p.y) { const q = (r[j - 1][0] - p.y) / (r[j - 1][0] - r[j][0]); D = r[j - 1][2] + (r[j][2] - r[j - 1][2]) * q; break; } if (Math.abs(p.z) < D - .3) continue; }
+        const dd = bd(against.concat(/^sleeve/.test(part) ? ['upperArm' + part.slice(-1)] : []))(p), cov = Object.keys(VOL).some(n => (k === 'pants' ? !['seat', 'legL', 'legR'].includes(n) : n !== part) && VOL[n](p));
         if (cov || p.y < .05) continue; least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }
     // 1b: the tee is worn over the jeans: every point of the jeans and belt above its hem is inside it with room to spare (points under the ground excepted)
     const lay = {}; { const t = GARB.tpl('pants', form), P = t.P, hem = T.rows[0][0] + .1, inTeeIn = p => inTee(V(p.x * 1.04, p.y, p.z * 1.04)) || inSleeve(p, 'L') || inSleeve(p, 'R');
@@ -67,7 +70,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
         const g2 = cv.getContext('2d'), im = g2.createImageData(W, H); for (let y = 0; y < H; y++) im.data.set(px.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4); g2.putImageData(im, 0, 0); rt.dispose(); }; });
       const shot = async (nm, sp) => { await pg.evaluate(sp => __portrait(420, 700, sp), sp); await (await pg.$('#__pcv')).screenshot({ path: `${out}-${nm}.png`, timeout: 180000 }); };
       for (const [nm, sp] of [['front', 0], ['left', Math.PI / 2], ['back', Math.PI], ['right', -Math.PI / 2]]) await shot(nm, sp);
-      await pg.keyboard.down('w'); await frames(12); await shot('walk-front', 0); await frames(6); await shot('walk-left', Math.PI / 2); await frames(6); await shot('walk-right', -Math.PI / 2); await frames(5); await shot('walk-left2', Math.PI / 2); await frames(5); await shot('walk-back', Math.PI); await pg.keyboard.up('w'); await frames(30); }
+      await pg.keyboard.down('w'); await frames(12); await shot('walk-front', 0); await frames(6); await shot('walk-left', Math.PI / 2); await frames(6); await shot('walk-right', -Math.PI / 2); await frames(5); await shot('walk-left2', Math.PI / 2); await frames(5); await shot('walk-back', Math.PI); await pg.keyboard.up('w'); await frames(30);
+      // holding something with the arm up (the body leans into it), and crouching
+      await pg.evaluate(() => { FORAGE.give('net'); WIELD.set('net'); }); await pg.mouse.move(450, 60); await frames(30); await shot('hold-front', 0); await shot('hold-left', Math.PI / 2); await pg.evaluate(() => WIELD.set(null)); await frames(20);
+      await pg.keyboard.down('c'); await frames(25); await shot('crouch-left', Math.PI / 2); await shot('crouch-front', 0); await pg.keyboard.up('c'); await frames(30); }
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); if (fails.length) process.exit(1);

@@ -1,6 +1,6 @@
 // THE APARTMENTS: the brownstone apartment house on the street as one painted block (brick, windows, flower boxes, ivy; the back blank: the halls), its 3D fire escapes with plants, its stoop and the stair head on the roof; YOUR APARTMENT and its hall (stairs, elevator) inside are built off the map when you go in (their own builders).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos, ROOMS, st, UI} from './003b-systems.js';
+import {CLOCK, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
@@ -121,8 +121,10 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     const [x,z]=lpt(LAD.F,1.3); if(Math.hypot(pos.x-x,pos.z-z)>1.5*TILE){ LAD.F=null; st.climb=null; return false; }
     const at=LS_.find(y=>Math.abs(LAD.y-y)<4);
     if(at!=null&&off&&!up&&!dn){ loff(at===AH); return false; }
-    if(up){ if(LAD.y>=AH-22){ loff(1); RIG.act(st,'mantle'); return false; } LAD.y=Math.min(AH,LAD.y+LV*dt); }
-    else if(dn){ if(LAD.y<=-RZ){ loff(0); return false; } LAD.y=Math.max(-RZ,LAD.y-LV*dt); }
+    const K=FORAGE.climbK?FORAGE.climbK():1, r0=Math.floor(LAD.y/12);   // the CLIMBING skill sets the pace; every rung reached works it
+    if(up){ if(LAD.y>=AH-22){ loff(1); RIG.act(st,'mantle'); return false; } LAD.y=Math.min(AH,LAD.y+LV*K*dt); }
+    else if(dn){ if(LAD.y<=-RZ){ loff(0); return false; } LAD.y=Math.max(-RZ,LAD.y-LV*K*dt); }
+    if(Math.floor(LAD.y/12)!==r0&&FORAGE.climbed)FORAGE.climbed();
     if(st.climb)st.climb.ph=LAD.y;
     else { const n=LS_.reduce((p,q)=>Math.abs(q-LAD.y)<Math.abs(p-LAD.y)?q:p); if(Math.abs(n-LAD.y)<10)LAD.y+=(n-LAD.y)*Math.min(1,dt*8); }
     lpos(LAD.F); return true; };

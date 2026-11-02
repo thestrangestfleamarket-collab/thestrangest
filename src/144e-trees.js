@@ -14,7 +14,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
   // climbing (the CLIMBING skill: how fast, how far up the trunk, how far a jump reaches). On the trunk: up and down climb, left and right go round it, SPACE jumps up (onto higher bark, or a branch within reach);
   // under a branch you hang: left and right go along it, up pulls you onto it to stand, down or SPACE lets go. The ground is raised only under the climber himself.
   const C={it:null,h:0}, rT=it=>it.tr||(it.sol?(it.sol[2]-it.sol[0])/2:.3*T), sg0=STORE.stackGround, MH=T/.84, HANG=45, HOLD=38;   // rT: the bark's radius; HANG, HOLD: the hands' height over the feet, hanging and holding bark
-  const SKL=()=>FORAGE.sk?FORAGE.sk('climb'):10, SPD=()=>16*ZU*(.7+.8*SKL()/100), HMAX=it=>(it.top-it.y-.8*T)*(.5+.5*SKL()/100), REACH=()=>(3+.9*SKL()/100)*T, LEAP=()=>(1.2+SKL()/100)*T, roll=()=>FORAGE.use?FORAGE.use('climb',-50,150):true;
+  const SKL=()=>FORAGE.sk?FORAGE.sk('climb'):10, SPD=()=>16*ZU*(FORAGE.climbK?FORAGE.climbK():1), HMAX=it=>(it.top-it.y-.8*T)*(.5+.5*SKL()/100), REACH=()=>(3+.9*SKL()/100)*T, LEAP=()=>(1.2+SKL()/100)*T, roll=()=>FORAGE.climbed?FORAGE.climbed():true;
   const ky=()=>st.world?st.world.ky:1/ZU, kx=()=>st.world?st.world.kx:1/ZU;
   const RH=.03*MH, RS=.06*MH, lr=(l,u)=>l[6]+(l[7]-l[6])*u, at=(l,u)=>({x:l[0]+(l[3]-l[0])*u,y:l[1]+(l[4]-l[1])*u,z:l[2]+(l[5]-l[2])*u,r:lr(l,u)}), llen=l=>Math.hypot(l[3]-l[0],l[5]-l[2]);   // a branch: hang from r>=RH, stand on r>=RS
   const near=(l,x,z)=>{ const dx=l[3]-l[0], dz=l[5]-l[2], L=dx*dx+dz*dz; return L<1e-6?0:Math.max(0,Math.min(1,((x-l[0])*dx+(z-l[2])*dz)/L)); };

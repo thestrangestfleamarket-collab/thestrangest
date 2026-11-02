@@ -52,7 +52,7 @@ use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs in your
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.cjs`, read with acorn), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
 `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
-split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
+split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `m.<hash>.js` (the game, with esbuild's shared `c-<hash>.js`), each `data/*.json` as `<name>.<hash>.json`
 fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging. `SKIP=g python3 build.py` writes only `dist/market.html` and `dist/door.html` (no `dist/g/`, so no npm packages beyond esbuild: for a workspace that cannot reach the registry).
 
 **Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
@@ -61,7 +61,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts`, `playhouse` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places (`dist/chunks.txt` lists every chunk and its functions; today also `caverns`, `blocks`, `nightmkt`, `editor`, `guide`, `log`, `greens`, `art` and the arcade games): `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts`, `playhouse` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails
@@ -83,7 +83,7 @@ under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` 
 **VR (26 Oct 2026)**: `src/162c-vr.js` (`VR`: WebXR, a Quest 3 in its browser; the controllers become one gamepad driven by `PAD.step` from the headset's frames; the main loop's `xr` SYS phase and `VR.draw` replace the composer in the headset; open windows (`PAD.panels()`) are pictured with `html-to-image` onto a panel you point at with a controller or a tracked hand); `tests/vr.cjs` drives it on an emulated Quest 3 (IWER) with the website's ONLINE box up.
 **The owner's panel (23 Oct 2026)**: the TENANTS menu tab (`src/136c-tenants.js`, owners only) calls `/admin` in `worker/door.js` (players, invite codes, bans, messages; the worker checks `admins`, then uses the service key); letters live in the `Post` Durable Object and show at login (`/post`); email needs the `RESEND_API_KEY` secret on the worker. Never copy `market.html` anywhere by hand.
 **Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
-safe"): a pull request gets the build check only: build, core, site, places, plus the other checks whose files it changes (all of them with the `full` label or the full box when started by hand). The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
+safe"): a pull request gets the build check only: build, core, site, places, plus the other checks whose files it changes (all of them with the `full` label or the full box when started by hand). The measuring checks (budget, same picture, same pixels: three machines, 8–10 minutes)
 run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
 then start the workflow by hand or push), or start the workflow by hand with `measure` ticked. Don't ask for them (owner, 21 Oct 2026: "forget about speed checks just check for major conflicts and go"): merge on the build
 check when the pull request has no conflicts. If GitHub drops a pull request's

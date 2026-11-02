@@ -7,11 +7,11 @@ import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTIONS, STORE, S
 import {RINGX} from './065-ring.js';
 import {VIS} from './129a-vis.js';
 
-{ const q=QS.get('far'); let on=q!=='0'; try{ if(q==null&&localStorage.getItem('market-haze3')==='0')on=false; }catch(e){}
+{ const q=QS.get('far'); let on=q!=='0'; if(q==null&&SAVE.get('haze')==='0')on=false;
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
   const FOG=new THREE.Fog(0x8fa3c0,1,2), fc=new THREE.Color(), pale=new THREE.Color(.74,.84,.98), navy=new THREE.Color(.08,.1,.17), V=new THREE.Vector3();
   FAR3.on=on; FAR3.fog=FOG; window.FAR3=FAR3;
-  const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; try{ if(mq==null&&localStorage.getItem('market-haze3')==='2')mist=false; }catch(e){}
+  const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=='0'; if(mq==null&&SAVE.get('haze')==='2')mist=false;
   const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:40, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:20, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
   const FL0={corner:2,m0:MIST0,m1:MIST1,md:.5,hn:.2,hf:.82,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==2){ delete s.m0; delete s.m1; s.corner=2; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
@@ -120,8 +120,8 @@ import {VIS} from './129a-vis.js';
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z;
     if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); { const Wn=WX.now||{cloud:.2}, dk=Math.max(0,Math.min(1,(CLOCK.elev()-3)/10))*(1-Math.max(0,Math.min(1,(Wn.cloud-.4)/.5))); FOG.color.lerp(SKY.U.uH.value,Math.max(SKY.SC&&SKY.SC.sky?SKY.SC.sky*.45:0,dk*.6)); } if(SKY.SC&&SKY.SC.blood)FOG.color.lerp(SKY.MB,.4*SKY.SC.blood*(1-k)); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=FL.m0; MISTE.z=FL.m1; MISTF.x=FL.md; scene.fog=FOG; SKY.dome.visible=true; SKY.U.uMistK.value=1; SKY.U.uMistC.value.copy(FOG.color); scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }
     FOG.color.copy(SKY.U.uH.value); FOG.near=d+HAZE0*TILE; FOG.far=d+HAZE1*TILE; scene.fog=FOG; },'134-skyline');
-  const g=document.querySelector('#atmhaze'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhaze'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };
-    b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; try{ localStorage.setItem('market-haze3',!FAR3.on?'0':FAR3.mist?'1':'2'); }catch(e){} draw(); }; g.appendChild(b); draw(); }
+  const g=document.querySelector('#atmhaze'); if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dhazem'; const draw=()=>{ b.textContent='DISTANCE HAZE '+(!FAR3.on?'OFF':FAR3.mist?'MIST':'FAR'); b.setAttribute('aria-pressed',String(FAR3.on)); };
+    b.onclick=()=>{ if(!FAR3.on){ FAR3.on=true; FAR3.mist=true; } else if(FAR3.mist)FAR3.mist=false; else FAR3.on=false; SAVE.set('haze',!FAR3.on?'0':FAR3.mist?'1':'2'); draw(); }; g.appendChild(b); draw(); }
   { const on=QS.get('farblur')!=='0', BGC=scene.background, LAY=4, rt=()=>{ const t=new THREE.WebGLRenderTarget(2,2,{depthBuffer:true,type:THREE.HalfFloatType}); t.texture.minFilter=t.texture.magFilter=THREE.LinearFilter; return t; }, A=rt(), Bt=rt();
     const BM=new THREE.ShaderMaterial({uniforms:{uT:{value:null},uD:{value:new THREE.Vector2()}},depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.); }',
@@ -158,7 +158,6 @@ import {VIS} from './129a-vis.js';
         if(t.id==='flreset'){ Object.assign(FL,FL0); SAVE.del?SAVE.del('farlook'):SAVE.set('farlook','{}'); draw(); msg.textContent='back to the game\'s own'; }
         if(t.id==='flexp'){ const o=P.querySelector('#flout'); o.hidden=false; o.value='FARLOOK '+JSON.stringify(Object.fromEntries(Object.entries(FL).map(([k,v])=>[k,+(+v).toFixed(3)]))); o.select(); msg.textContent='copy this and send it to Claude'; } });
       draw(); };
-    if(g){ const b=document.createElement('button'); b.className='btn'; b.id='dfarlook'; b.textContent='DISTANCE LOOK'; b.onclick=()=>FAR3.panel(); (document.getElementById('dhaze')||g).after(b); }
     if(QS.get('farlook')==='1')setTimeout(()=>FAR3.panel(),500); }
   // inside a street shop the sections round the park stand between the camera and the room: not drawn
   SYS.add('places',()=>{ if(MAPG.sections)VIS.hide(MAPG.sections,'inside',SHARED.LVL==='up'&&!!STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z))); },'134-sections');

@@ -1,6 +1,6 @@
 // THE LOOK: DN holds the looks, DAY, GOLDEN, SOFT DAY and NIGHT (one pick sets the sun, sky, mist, clouds, shafts and the colour of everything), and the ATMOSPHERE panel for their details.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
@@ -34,18 +34,18 @@ Object.assign(DN,{lk:1,mode:'live',modes:['live','day','golden','soft','night'],
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
-  const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2); let dirty=false;
+  const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2), NOTLIVE=['zen','hor','cov','cl','cldc','cldk','grade','lift','liftk'];   // LIVE takes these from the clock and the sky, not from the look
   DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
-    box.innerHTML=`<h3>THE LOOK</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}<span class="dim">N goes to the next</span></div>
-      <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
+    box.innerHTML=`<h3>THE LOOK</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}<span class="dim">SHIFT+N goes to the next</span></div>
+      <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ if(m==='live'&&NOTLIVE.includes(f[0]))return false; const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
         :`<div class="row"><span style="width:250px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
-      +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button><button class="btn" id="dnexp">EXPORT</button><span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
+      +`<div class="row"><button class="btn" id="dnreset">RESET</button>${DN.owner?'<button class="btn" id="dnexp">EXPORT</button>':''}<span class="dim" id="dnmsg">${DN.test?'a test look: not kept':'kept as you change it'}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
   if(box){ for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
-    box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.P(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
+    box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.P(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='lamp')fix(); if(!DN.test)SAVE.set('dn-'+DN.mode,JSON.stringify(P)); });
     box.addEventListener('click',e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
       if(m)DN.set(m);
-      if(t.id==='dnsave'){ SAVE.set('dn-'+DN.mode,JSON.stringify(DN.P())); dirty=false; msg().textContent='saved'; }
-      if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
+      if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
       if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.P()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
   addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&e.shiftKey&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
+  setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
   CLOCK.run=(DN.mode==='live'&&!DN.test); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,run:CLOCK.run,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

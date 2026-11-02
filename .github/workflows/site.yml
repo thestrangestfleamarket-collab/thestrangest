@@ -53,6 +53,7 @@ jobs:
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -122,6 +123,9 @@ jobs:
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
+      - name: The tablet (TAB pulls it up, its apps)
+        if: contains(steps.f.outputs.run, ' tablet')
+        run: node tests/tablet.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

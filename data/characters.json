@@ -2167,6 +2167,18 @@
      ]
     }
    }
+  },
+  "pf": "street-vendor-139de3",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE CART MAN, HOT DOG CART",
+   "hours": [
+    10,
+    22
+   ],
+   "r": 0,
+   "home": "house"
   }
  },
  "fruitseller": {
@@ -2217,6 +2229,18 @@
      ]
     }
    }
+  },
+  "pf": "shopkeeper-be5547",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE FRUIT SELLER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 0,
+   "home": "house"
   }
  },
  "trader": {
@@ -2269,6 +2293,18 @@
      ]
     }
    }
+  },
+  "pf": "merchant-6f606b",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE TRADER, ODDS AND ENDS",
+   "hours": [
+    9,
+    18
+   ],
+   "r": 0,
+   "home": "house"
   }
  },
  "junkman": {
@@ -2320,6 +2356,18 @@
      ]
     }
    }
+  },
+  "pf": "cove-trader-0f94a6",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE JUNK DEALER",
+   "hours": [
+    10,
+    19
+   ],
+   "r": 0,
+   "home": "house"
   }
  },
  "flowerlady": {
@@ -2372,6 +2420,2751 @@
      ]
     }
    }
+  },
+  "pf": "flower-vendor-bc708b",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE FLOWER LADY, SEEDS AND POTS",
+   "hours": [
+    8,
+    17
+   ],
+   "r": 0,
+   "home": "house"
   }
+ },
+ "tradesman": {
+  "pf": "tradesman-1707b9",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "TOOL STALL (NEW STALL)",
+   "hours": [
+    9,
+    17
+   ],
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE TRADESMAN"
+ },
+ "organillero": {
+  "pf": "organillero-67b687",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "BARREL-ORGAN BUSKER AT THE GATE",
+   "hours": [
+    12,
+    20
+   ],
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE ORGANILLERO"
+ },
+ "saloon_keeper": {
+  "pf": "saloon-keeper-5eed40",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "OWNER",
+   "hours": [
+    16,
+    24
+   ]
+  },
+  "name": "THE SALOON KEEPER"
+ },
+ "lounge_bartender": {
+  "pf": "lounge-bartender-9d425a",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "BARKEEP",
+   "hours": [
+    16,
+    24
+   ]
+  },
+  "name": "THE LOUNGE BARTENDER"
+ },
+ "cocktail_server": {
+  "pf": "cocktail-server-eb211b",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "SERVER",
+   "hours": [
+    17,
+    24
+   ]
+  },
+  "name": "THE COCKTAIL SERVER"
+ },
+ "lounge_crooner": {
+  "pf": "lounge-crooner-ad77ec",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "SINGS FRI/SAT NIGHTS",
+   "hours": [
+    20,
+    24
+   ]
+  },
+  "name": "THE LOUNGE CROONER"
+ },
+ "doorman": {
+  "pf": "doorman-3f2e09",
+  "group": "theatre",
+  "job": {
+   "at": "theatre",
+   "title": "DOORMAN, TICKETS WITH THE TICKET FOX",
+   "hours": [
+    13,
+    23
+   ]
+  },
+  "name": "THE DOORMAN"
+ },
+ "valet_attendant": {
+  "pf": "valet-attendant-c351e6",
+  "group": "theatre",
+  "job": {
+   "at": "theatre",
+   "title": "USHER",
+   "hours": [
+    13,
+    23
+   ]
+  },
+  "name": "THE VALET ATTENDANT"
+ },
+ "stage_magician": {
+  "pf": "stage-magician-2ecd48",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "HEADLINER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE STAGE MAGICIAN"
+ },
+ "showgirl": {
+  "pf": "showgirl-5bfa7a",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE SHOWGIRL"
+ },
+ "la_catrina": {
+  "pf": "la-catrina-b427ca",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "PERFORMER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE LA CATRINA"
+ },
+ "el_catr_n": {
+  "pf": "el-catr-n-be48ea",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "PERFORMER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE EL CATRÍN"
+ },
+ "skeleton_mariachi": {
+  "pf": "skeleton-mariachi-c1b4d5",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "BAND",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE SKELETON MARIACHI"
+ },
+ "china_cueca_dancer": {
+  "pf": "china-cueca-dancer-c1707a",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE CHINA, CUECA DANCER"
+ },
+ "tapati_dancer": {
+  "pf": "tapati-dancer-5557aa",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE TAPATI DANCER"
+ },
+ "cage_cashier": {
+  "pf": "cage-cashier-f76725",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "TELLER",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE CAGE CASHIER"
+ },
+ "front_desk_clerk": {
+  "pf": "front-desk-clerk-99f0c2",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE FRONT DESK CLERK"
+ },
+ "uniformed_floor_guard": {
+  "pf": "uniformed-floor-guard-d06c03",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "GUARD",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE UNIFORMED FLOOR GUARD"
+ },
+ "high_roller": {
+  "pf": "high-roller-9d0aa1",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "MANAGER",
+   "hours": [
+    10,
+    16
+   ]
+  },
+  "name": "THE HIGH ROLLER"
+ },
+ "professor": {
+  "pf": "professor-14dc4d",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "CURATOR",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE PROFESSOR"
+ },
+ "tour_guide": {
+  "pf": "tour-guide-1b0428",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "TOURS OF THE GALLERIES",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE TOUR GUIDE"
+ },
+ "graduate_in_gown": {
+  "pf": "graduate-in-gown-c72050",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "DOCENT",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE GRADUATE IN GOWN"
+ },
+ "senior_scientist": {
+  "pf": "senior-scientist-631736",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "CURATOR",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE SENIOR SCIENTIST"
+ },
+ "bench_researcher": {
+  "pf": "bench-researcher-d0f1b9",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "COLLECTIONS",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE BENCH RESEARCHER"
+ },
+ "graduate_student": {
+  "pf": "graduate-student-945ef0",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "ASSISTANT",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE GRADUATE STUDENT"
+ },
+ "aquarium_service_technician": {
+  "pf": "aquarium-service-technician-b1fc4f",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "KEEPS THE TANKS",
+   "hours": [
+    8,
+    16
+   ]
+  },
+  "name": "THE AQUARIUM SERVICE TECHNICIAN"
+ },
+ "clean_room_technician": {
+  "pf": "clean-room-technician-da290a",
+  "group": "feel",
+  "job": {
+   "at": "feel",
+   "title": "LAB TECH",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE CLEAN-ROOM TECHNICIAN"
+ },
+ "room_attendant": {
+  "pf": "room-attendant-a5a309",
+  "group": "bath",
+  "job": {
+   "at": "bath",
+   "title": "ATTENDANT",
+   "hours": [
+    9,
+    21
+   ]
+  },
+  "name": "THE ROOM ATTENDANT"
+ },
+ "lifeguard": {
+  "pf": "lifeguard-321302",
+  "group": "bath",
+  "job": {
+   "at": "bath",
+   "title": "POOL LIFEGUARD",
+   "hours": [
+    9,
+    21
+   ]
+  },
+  "name": "THE LIFEGUARD"
+ },
+ "gas_station_attendant": {
+  "pf": "gas-station-attendant-38bd86",
+  "group": "bodega",
+  "job": {
+   "at": "bodega",
+   "title": "STOCK CLERK WITH THE FOX",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE GAS STATION ATTENDANT"
+ },
+ "motel_clerk": {
+  "pf": "motel-clerk-950c39",
+  "group": "bodega",
+  "job": {
+   "at": "bodega",
+   "title": "NIGHT COUNTER",
+   "hours": [
+    22,
+    7
+   ]
+  },
+  "name": "THE MOTEL CLERK"
+ },
+ "game_master": {
+  "pf": "game-master-2b8912",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "RUNS THE FLOOR",
+   "hours": [
+    12,
+    24
+   ]
+  },
+  "name": "THE GAME MASTER"
+ },
+ "teen_player": {
+  "pf": "teen-player-37865e",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE TEEN PLAYER"
+ },
+ "player_in_flannel": {
+  "pf": "player-in-flannel-d0bae4",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE PLAYER IN FLANNEL"
+ },
+ "player_in_a_cardigan": {
+  "pf": "player-in-a-cardigan-b558c9",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE PLAYER IN A CARDIGAN"
+ },
+ "skate_shop_owner": {
+  "pf": "skate-shop-owner-137ca9",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "HELPS BEHIND THE COUNTER",
+   "hours": [
+    10,
+    19
+   ]
+  },
+  "name": "THE SKATE SHOP OWNER"
+ },
+ "street_skater": {
+  "pf": "street-skater-4ee28b",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR OUT FRONT",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE STREET SKATER"
+ },
+ "longboarder": {
+  "pf": "longboarder-0ea806",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE LONGBOARDER"
+ },
+ "vert_skater": {
+  "pf": "vert-skater-972639",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE VERT SKATER"
+ },
+ "maintenance_technician": {
+  "pf": "maintenance-technician-4bcfb8",
+  "group": "fixit",
+  "job": {
+   "at": "fixit",
+   "title": "REPAIRS",
+   "hours": [
+    9,
+    18
+   ]
+  },
+  "name": "THE MAINTENANCE TECHNICIAN"
+ },
+ "village_mechanic": {
+  "pf": "village-mechanic-508a0a",
+  "group": "fixit",
+  "job": {
+   "at": "fixit",
+   "title": "MECHANIC",
+   "hours": [
+    9,
+    18
+   ]
+  },
+  "name": "THE VILLAGE MECHANIC"
+ },
+ "commuter": {
+  "pf": "commuter-381e7f",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP TO WORK",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE COMMUTER"
+ },
+ "city_commuter": {
+  "pf": "city-commuter-52a53f",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE CITY COMMUTER"
+ },
+ "salaryman_commuter": {
+  "pf": "salaryman-commuter-4170c1",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE SALARYMAN COMMUTER"
+ },
+ "passenger": {
+  "pf": "passenger-ac425a",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    11,
+    15
+   ],
+   "home": "house"
+  },
+  "name": "THE PASSENGER"
+ },
+ "station_master": {
+  "pf": "station-master-1d6a0a",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "STATION MASTER",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE STATION MASTER"
+ },
+ "guard": {
+  "pf": "guard-bfa819",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "PLATFORM GUARD",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE GUARD"
+ },
+ "porter": {
+  "pf": "porter-e4e566",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "PORTER",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE PORTER"
+ },
+ "engine_driver": {
+  "pf": "engine-driver-1ba1e2",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "DRIVES THE TRAIN",
+   "hours": [
+    6,
+    24
+   ]
+  },
+  "name": "THE ENGINE DRIVER"
+ },
+ "fireman": {
+  "pf": "fireman-96bf23",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "RIDES WITH THE DRIVER",
+   "hours": [
+    6,
+    24
+   ]
+  },
+  "name": "THE FIREMAN"
+ },
+ "signalman": {
+  "pf": "signalman-c561d7",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "SIGNALS",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE SIGNALMAN"
+ },
+ "shunter": {
+  "pf": "shunter-f25d24",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "YARD",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE SHUNTER"
+ },
+ "platelayer": {
+  "pf": "platelayer-47dbe6",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "TRACK WORK",
+   "hours": [
+    22,
+    6
+   ]
+  },
+  "name": "THE PLATELAYER"
+ },
+ "crossing_keeper": {
+  "pf": "crossing-keeper-e13207",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "CROSSING",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE CROSSING KEEPER"
+ },
+ "railway_carter": {
+  "pf": "railway-carter-971897",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "FREIGHT",
+   "hours": [
+    6,
+    14
+   ]
+  },
+  "name": "THE RAILWAY CARTER"
+ },
+ "trainspotter": {
+  "pf": "trainspotter-ffd141",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "WATCHES THE TRAINS",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE TRAINSPOTTER"
+ },
+ "waving_child": {
+  "pf": "waving-child-dfada0",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "WAVES AT TRAINS",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE WAVING CHILD"
+ },
+ "firefighter": {
+  "pf": "firefighter-b13b36",
+  "group": "firehouse",
+  "job": {
+   "at": "firehouse",
+   "title": "FIREFIGHTER",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE FIREFIGHTER"
+ },
+ "doctor": {
+  "pf": "doctor-d49de0",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "DOCTOR",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE DOCTOR"
+ },
+ "ward_nurse": {
+  "pf": "ward-nurse-84b61d",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "NURSE",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE WARD NURSE"
+ },
+ "surgeon_in_scrubs": {
+  "pf": "surgeon-in-scrubs-4f1360",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "SURGEON",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE SURGEON IN SCRUBS"
+ },
+ "paramedic": {
+  "pf": "paramedic-b0f358",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "AMBULANCE",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE PARAMEDIC"
+ },
+ "field_medic": {
+  "pf": "field-medic-fd8919",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "PARAMEDIC",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE FIELD MEDIC"
+ },
+ "patient_in_gown": {
+  "pf": "patient-in-gown-fdab75",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "PATIENT (STAYS)",
+   "hours": [
+    10,
+    16
+   ],
+   "r": 3,
+   "home": "house"
+  },
+  "name": "THE PATIENT IN GOWN"
+ },
+ "police_officer": {
+  "pf": "police-officer-1cc379",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "PATROLS MARKET ST",
+   "hours": [
+    8,
+    20
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE POLICE OFFICER"
+ },
+ "highway_patrol_officer": {
+  "pf": "highway-patrol-officer-e81282",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "PATROLS THE RING",
+   "hours": [
+    8,
+    20
+   ],
+   "spot": "west",
+   "r": 30,
+   "home": "house"
+  },
+  "name": "THE HIGHWAY PATROL OFFICER"
+ },
+ "civic_security_officer": {
+  "pf": "civic-security-officer-30b6fb",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "DESK",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE CIVIC SECURITY OFFICER"
+ },
+ "squad_officer": {
+  "pf": "squad-officer-e5c52b",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "SERGEANT",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE SQUAD OFFICER"
+ },
+ "delivery_courier": {
+  "pf": "delivery-courier-327e30",
+  "group": "post",
+  "job": {
+   "at": "post",
+   "title": "DELIVERS THE MAIL",
+   "hours": [
+    8,
+    16
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE DELIVERY COURIER"
+ },
+ "site_manager": {
+  "pf": "site-manager-d60b95",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "BOSS",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE SITE MANAGER"
+ },
+ "construction_worker": {
+  "pf": "construction-worker-c1ad8c",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE CONSTRUCTION WORKER"
+ },
+ "groundworker": {
+  "pf": "groundworker-083f5c",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE GROUNDWORKER"
+ },
+ "steel_erector": {
+  "pf": "steel-erector-124bef",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE STEEL ERECTOR"
+ },
+ "crane_banksman": {
+  "pf": "crane-banksman-3994e0",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE CRANE BANKSMAN"
+ },
+ "surveyor": {
+  "pf": "surveyor-82e5c7",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE SURVEYOR"
+ },
+ "trucker": {
+  "pf": "trucker-9266a8",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "DRIVES THE TRUCK",
+   "hours": [
+    6,
+    14
+   ]
+  },
+  "name": "THE TRUCKER"
+ },
+ "village_engineer": {
+  "pf": "village-engineer-a44949",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "ENGINEER",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE VILLAGE ENGINEER"
+ },
+ "seated_office_worker": {
+  "pf": "seated-office-worker-854671",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE SEATED OFFICE WORKER"
+ },
+ "standing_worker_on_a_call": {
+  "pf": "standing-worker-on-a-8a0f9a",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE STANDING WORKER ON A CALL"
+ },
+ "visitor_with_badge": {
+  "pf": "visitor-with-badge-1005a3",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "VISITOR",
+   "hours": [
+    10,
+    16
+   ]
+  },
+  "name": "THE VISITOR WITH BADGE"
+ },
+ "park_ranger": {
+  "pf": "park-ranger-c1697e",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RANGER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE PARK RANGER"
+ },
+ "forest_ranger": {
+  "pf": "forest-ranger-6906b0",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RANGER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE FOREST RANGER"
+ },
+ "groundskeeper_university": {
+  "pf": "groundskeeper-3e5578",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GROUNDSKEEPER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE GROUNDSKEEPER"
+ },
+ "groundskeeper_stadium": {
+  "pf": "groundskeeper-71be56",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GROUNDSKEEPER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE GROUNDSKEEPER"
+ },
+ "hiker": {
+  "pf": "hiker-3d1a41",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE HIKER"
+ },
+ "hiker_visitor": {
+  "pf": "hiker-visitor-d10aa5",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE HIKER VISITOR"
+ },
+ "backpacker": {
+  "pf": "backpacker-f56207",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BACKPACKER"
+ },
+ "kite_kid": {
+  "pf": "kite-kid-0a7d70",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "FLIES A KITE ON THE LAWN",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE KITE KID"
+ },
+ "neighborhood_child": {
+  "pf": "neighborhood-child-8cc5ac",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE NEIGHBORHOOD CHILD"
+ },
+ "scooter_kid": {
+  "pf": "scooter-kid-28cff9",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RIDES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SCOOTER KID"
+ },
+ "beginner_kid_skater": {
+  "pf": "beginner-kid-skater-1ad8ab",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BEGINNER KID SKATER"
+ },
+ "roller_skater": {
+  "pf": "roller-skater-841ec1",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE ROLLER SKATER"
+ },
+ "bmx_rider": {
+  "pf": "bmx-rider-91f1b0",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RIDES",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BMX RIDER"
+ },
+ "graffiti_artist": {
+  "pf": "graffiti-artist-2deb3d",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PAINTS WALLS AT NIGHT",
+   "hours": [
+    20,
+    2
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE GRAFFITI ARTIST"
+ },
+ "skate_filmer": {
+  "pf": "skate-filmer-b9d393",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "FILMS THE SKATERS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SKATE FILMER"
+ },
+ "skate_coach": {
+  "pf": "skate-coach-53be7d",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "COACHES KIDS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SKATE COACH"
+ },
+ "veteran_pool_skater": {
+  "pf": "veteran-pool-skater-2c63ab",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VETERAN POOL SKATER"
+ },
+ "campfire_parent": {
+  "pf": "campfire-parent-b1c0d5",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PICNICS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE CAMPFIRE PARENT"
+ },
+ "kid_with_a_flashlight": {
+  "pf": "kid-with-a-flashlight-1a9e4c",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS AT DUSK",
+   "hours": [
+    17,
+    21
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE KID WITH A FLASHLIGHT"
+ },
+ "chinchinero": {
+  "pf": "chinchinero-2cc296",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "ONE-MAN BAND AT THE BANDSTAND",
+   "hours": [
+    12,
+    19
+   ],
+   "spot": "round",
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE CHINCHINERO"
+ },
+ "village_gardener": {
+  "pf": "village-gardener-9f7af6",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GARDENER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VILLAGE GARDENER"
+ },
+ "village_child": {
+  "pf": "village-child-bef09e",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VILLAGE CHILD"
+ },
+ "lake_angler": {
+  "pf": "lake-angler-1c4740",
+  "group": "lake",
+  "job": {
+   "at": "lake",
+   "title": "FISHES (FISHING)",
+   "hours": [
+    6,
+    12
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE LAKE ANGLER"
+ },
+ "fisherman_in_waders": {
+  "pf": "fisherman-in-waders-6dc25e",
+  "group": "lake",
+  "job": {
+   "at": "lake",
+   "title": "FISHES (FISHING)",
+   "hours": [
+    6,
+    12
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE FISHERMAN IN WADERS"
+ },
+ "armoured_knight_hero": {
+  "pf": "armoured-knight-hero-07121f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "CASTLE KEEPER",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE ARMOURED KNIGHT HERO"
+ },
+ "village_guard": {
+  "pf": "village-guard-5f0f6f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "GATE GUARD",
+   "hours": [
+    8,
+    20
+   ],
+   "r": 3,
+   "home": "house"
+  },
+  "name": "THE VILLAGE GUARD"
+ },
+ "goblin": {
+  "pf": "goblin-2461c8",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE GOBLIN"
+ },
+ "orc_brute": {
+  "pf": "orc-brute-08c6ca",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE ORC BRUTE"
+ },
+ "hooded_cultist": {
+  "pf": "hooded-cultist-8a488f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HOODED CULTIST"
+ },
+ "shambling_ghoul": {
+  "pf": "shambling-ghoul-256f2f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SHAMBLING GHOUL"
+ },
+ "hanga_roa_fisherman": {
+  "pf": "hanga-roa-fisherman-e56812",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "FISHES OFF THE PIER",
+   "hours": [
+    6,
+    14
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HANGA ROA FISHERMAN"
+ },
+ "scuba_diver": {
+  "pf": "scuba-diver-bdd1c8",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "DIVES WITH THE SHARK",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SCUBA DIVER"
+ },
+ "swimmer_in_a_wetsuit": {
+  "pf": "swimmer-in-a-wetsuit-9fca8f",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "SWIMS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SWIMMER IN A WETSUIT"
+ },
+ "holidaymaker_in_a_sun_hat": {
+  "pf": "holidaymaker-in-a-sun-2ba5e5",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "STROLLS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HOLIDAYMAKER IN A SUN HAT"
+ },
+ "naval_officer": {
+  "pf": "naval-officer-93027f",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "HARBOUR MASTER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE NAVAL OFFICER"
+ },
+ "pirate_captain": {
+  "pf": "pirate-captain-91f545",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "RUNS THE HARBOUR BOAT RIDE",
+   "hours": [
+    10,
+    20
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE PIRATE CAPTAIN"
+ },
+ "pirate_deckhand": {
+  "pf": "pirate-deckhand-98a6e7",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "CREW",
+   "hours": [
+    10,
+    20
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE PIRATE DECKHAND"
+ },
+ "parrilla_cook": {
+  "pf": "parrilla-cook-255918",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "GRILL STALL",
+   "hours": [
+    18,
+    2
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE PARRILLA COOK"
+ },
+ "huaso": {
+  "pf": "huaso-c4847f",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "STALL",
+   "hours": [
+    18,
+    2
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE HUASO"
+ },
+ "grandmother_in_a_rebozo": {
+  "pf": "grandmother-in-a-rebozo-4d5190",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "TAMALES STALL",
+   "hours": [
+    18,
+    24
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE GRANDMOTHER IN A REBOZO"
+ },
+ "child_with_a_painted_face": {
+  "pf": "child-with-a-painted-b8a19f",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "HELPS HER",
+   "hours": [
+    18,
+    22
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE CHILD WITH A PAINTED FACE"
+ },
+ "diner_waitress": {
+  "pf": "diner-waitress-60f6a1",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "WAITRESS",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE DINER WAITRESS"
+ },
+ "carving_chef": {
+  "pf": "carving-chef-102bf5",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "COOK",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE CARVING CHEF"
+ },
+ "waiter": {
+  "pf": "waiter-73dab1",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "WAITER",
+   "hours": [
+    11,
+    22
+   ]
+  },
+  "name": "THE WAITER"
+ },
+ "barista": {
+  "pf": "barista-505240",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "COFFEE",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE BARISTA"
+ },
+ "cafe_customer": {
+  "pf": "cafe-customer-ca7e8e",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "REGULAR",
+   "hours": [
+    8,
+    10
+   ]
+  },
+  "name": "THE CAFE CUSTOMER"
+ },
+ "suburban_resident": {
+  "pf": "suburban-resident-a9db9c",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SUBURBAN RESIDENT"
+ },
+ "townswoman_frontier_town": {
+  "pf": "townswoman-5aa87f",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE TOWNSWOMAN"
+ },
+ "male_villager": {
+  "pf": "villager-40255c",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE MALE VILLAGER"
+ },
+ "family_road_tripper": {
+  "pf": "family-road-tripper-247570",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE FAMILY ROAD-TRIPPER"
+ },
+ "slot_tourist": {
+  "pf": "slot-tourist-08b37d",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SLOT TOURIST"
+ },
+ "arriving_hotel_guest": {
+  "pf": "arriving-hotel-guest-b03353",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE ARRIVING HOTEL GUEST"
+ },
+ "pool_guest": {
+  "pf": "pool-guest-78b655",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE POOL GUEST"
+ },
+ "spectator": {
+  "pf": "spectator-d086fe",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SPECTATOR"
+ },
+ "school_student": {
+  "pf": "school-student-385134",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SCHOOL STUDENT"
+ },
+ "student_with_backpack": {
+  "pf": "student-with-backpack-65d2b4",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE STUDENT WITH BACKPACK"
+ },
+ "student_in_a_hoodie": {
+  "pf": "student-in-a-hoodie-7c8223",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE STUDENT IN A HOODIE"
+ },
+ "pupil_girl": {
+  "pf": "pupil-seated-597f54",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PUPIL GIRL"
+ },
+ "pupil_standing": {
+  "pf": "pupil-standing-0bd6d5",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PUPIL STANDING"
+ },
+ "school_teacher": {
+  "pf": "school-teacher-8b8bfc",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SCHOOL TEACHER"
+ },
+ "school_caretaker": {
+  "pf": "school-caretaker-b49fae",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SCHOOL CARETAKER"
+ },
+ "parent_chaperone": {
+  "pf": "parent-chaperone-79e535",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PARENT CHAPERONE"
+ },
+ "neighbour_handing_out_candy": {
+  "pf": "neighbour-handing-out-candy-2c1159",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE NEIGHBOUR HANDING OUT CANDY"
+ },
+ "preacher": {
+  "pf": "preacher-a49199",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PREACHER"
+ },
+ "bellhop": {
+  "name": "THE BELLHOP",
+  "pf": "bellhop-053c4d",
+  "group": "v-casino",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "blackjack_dealer": {
+  "name": "THE BLACKJACK DEALER",
+  "pf": "blackjack-dealer-fc0ab1",
+  "group": "v-casino",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "casino_security_officer": {
+  "name": "THE CASINO SECURITY OFFICER",
+  "pf": "casino-security-officer-adca27",
+  "group": "v-casino",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "pit_boss": {
+  "name": "THE PIT BOSS",
+  "pf": "pit-boss-234a94",
+  "group": "v-casino",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "poker_pro": {
+  "name": "THE POKER PRO",
+  "pf": "poker-pro-da0258",
+  "group": "v-casino",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "outlaw": {
+  "name": "THE OUTLAW",
+  "pf": "outlaw-e0fd6a",
+  "group": "v-frontier",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "prospector": {
+  "name": "THE PROSPECTOR",
+  "pf": "prospector-69a481",
+  "group": "v-frontier",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "sheriff": {
+  "name": "THE SHERIFF",
+  "pf": "sheriff-986181",
+  "group": "v-frontier",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "ashigaru_foot_soldier": {
+  "name": "THE ASHIGARU FOOT SOLDIER",
+  "pf": "ashigaru-foot-soldier-806707",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "buddhist_monk": {
+  "name": "THE BUDDHIST MONK",
+  "pf": "buddhist-monk-39f498",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "daimyo_lord": {
+  "name": "THE DAIMYO LORD",
+  "pf": "daimyo-lord-78364a",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "farmer_medieval_japan": {
+  "name": "THE FARMER",
+  "pf": "farmer-363820",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "samurai_warrior": {
+  "name": "THE SAMURAI WARRIOR",
+  "pf": "samurai-warrior-f2ebbe",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "townswoman_medieval_japan": {
+  "name": "THE TOWNSWOMAN",
+  "pf": "townswoman-5ca8b5",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "astronaut_engineer": {
+  "name": "THE ASTRONAUT ENGINEER",
+  "pf": "astronaut-engineer-20b738",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "astronaut_explorer": {
+  "name": "THE ASTRONAUT EXPLORER",
+  "pf": "astronaut-explorer-323482",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "astronaut_scientist": {
+  "name": "THE ASTRONAUT SCIENTIST",
+  "pf": "astronaut-scientist-47d733",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "base_commander": {
+  "name": "THE BASE COMMANDER",
+  "pf": "base-commander-0ec028",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "service_robot": {
+  "name": "THE SERVICE ROBOT",
+  "pf": "service-robot-93f82e",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "shuttle_pilot": {
+  "name": "THE SHUTTLE PILOT",
+  "pf": "shuttle-pilot-067166",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "aircrew_pilot": {
+  "name": "THE AIRCREW PILOT",
+  "pf": "aircrew-pilot-e6b732",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "flight_attendant": {
+  "name": "THE FLIGHT ATTENDANT",
+  "pf": "flight-attendant-befaf4",
+  "group": "v-space",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "cheerleader": {
+  "name": "THE CHEERLEADER",
+  "pf": "cheerleader-90875e",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "goalkeeper": {
+  "name": "THE GOALKEEPER",
+  "pf": "goalkeeper-10017a",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "gridiron_player": {
+  "name": "THE GRIDIRON PLAYER",
+  "pf": "gridiron-player-9d4168",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "outfield_player": {
+  "name": "THE OUTFIELD PLAYER",
+  "pf": "outfield-player-2b742a",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "referee": {
+  "name": "THE REFEREE",
+  "pf": "referee-9e9e73",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "team_mascot": {
+  "name": "THE TEAM MASCOT",
+  "pf": "team-mascot-abf426",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "touchline_manager": {
+  "name": "THE TOUCHLINE MANAGER",
+  "pf": "touchline-manager-13a94b",
+  "group": "v-stadium",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "kid_witch": {
+  "name": "THE KID WITCH",
+  "pf": "kid-witch-01c770",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_bedsheet_ghost_costume": {
+  "name": "THE KID IN A BEDSHEET GHOST COSTUME",
+  "pf": "kid-in-a-bedsheet-f9c403",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_black_cat_costume": {
+  "name": "THE KID IN A BLACK CAT COSTUME",
+  "pf": "kid-in-a-black-2e5f87",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_caped_hero_costume": {
+  "name": "THE KID IN A CAPED HERO COSTUME",
+  "pf": "kid-in-a-caped-663f11",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_cardboard_robot_costume": {
+  "name": "THE KID IN A CARDBOARD ROBOT COSTUME",
+  "pf": "kid-in-a-cardboard-670f7d",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_pumpkin_costume": {
+  "name": "THE KID IN A PUMPKIN COSTUME",
+  "pf": "kid-in-a-pumpkin-169f79",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_skeleton_suit": {
+  "name": "THE KID IN A SKELETON SUIT",
+  "pf": "kid-in-a-skeleton-6bb49d",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "teen_zombie": {
+  "name": "THE TEEN ZOMBIE",
+  "pf": "teen-zombie-b5bb27",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "pumpkin_stand_keeper": {
+  "name": "THE PUMPKIN STAND KEEPER",
+  "pf": "pumpkin-stand-keeper-77ced9",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "skier": {
+  "name": "THE SKIER",
+  "pf": "skier-e7ad44",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "mountaineer": {
+  "name": "THE MOUNTAINEER",
+  "pf": "mountaineer-13df29",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "lift_operator": {
+  "name": "THE LIFT OPERATOR",
+  "pf": "lift-operator-899cf8",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "piste_patroller": {
+  "name": "THE PISTE PATROLLER",
+  "pf": "piste-patroller-cef4c2",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "farmer_cozy_farm": {
+  "name": "THE FARMER",
+  "pf": "farmer-304a43",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "infantry_rifleman": {
+  "name": "THE INFANTRY RIFLEMAN",
+  "pf": "infantry-rifleman-c1c0a5",
+  "group": "v-mountain",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "mountain"
  }
 }

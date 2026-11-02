@@ -5230,3 +5230,7 @@ Owner: "add the market stalls, street furniture and vendors" (from polyfork.dev'
 ## 2 Nov 2026: the cast plan
 
 Owner: "I want to add all the characters into game and make sure we have a place for them to live, work". The plan is `docs/CAST.md`: 149 polyfork characters get a job at a place in Section A, and 44 come as visitors. His picks: jobs and hours back on (the city's services stay off); the themed 44 come in now as visitors; townspeople live in the apartment house (never a player's apartment); build the diner. Rule: workers sleep over their workplace; a character's body loads only near its place.
+
+## 2 Nov 2026: the cast at work
+
+Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`data/characters.json` `job`; `docs/CAST.md`). Jobs and hours are on by default (`?jobs=0` turns them off); the city's services stay off. THE DINER opens on the empty lot east of the bus shelter. Rules: a character's body loads only when you come near its place; the day follows the shared clock, so every player sees the same person at the same place at the same hour; whoever no player can see moves straight to where the hour puts them.

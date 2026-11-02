@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]; const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); let bad=0;
   const pg=await b.newPage({viewport:{width:1100,height:760}}); pg.on('pageerror',e=>{ bad++; console.log('ERR',e.message); });
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:240000});
-  await pg.waitForFunction(()=>window.FLEA&&FLEA.made.length,null,{timeout:120000}); await pg.waitForTimeout(4000);
+  await pg.waitForFunction(()=>window.FLEA&&FLEA.made.length&&CREW.ready,null,{timeout:120000}); await pg.evaluate(()=>CREW.bring()); await pg.waitForTimeout(4000);
   const r=await pg.evaluate(()=>{ const V=['hotdogman','fruitseller','trader','junkman','flowerlady'], S=SHOPDBG();
     return {made:FLEA.made.length,want:FLEA.want,vendors:V.map(k=>{ const B=BODIES.by[k], st=B&&B.npc&&B.npc.st, t=FLEA.made.find(m=>m.o.who===k); return {k,on:!!(B&&B.npc.on),shop:S.bound.includes(k),d:st&&t?+Math.hypot(st.x-t.x,st.z-t.z).toFixed(2):null}; })}; });
   console.log(JSON.stringify(r));

@@ -110,13 +110,14 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
     NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
-    NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
+    NPC.tick=dt=>{ if((!NPC.on||NPC.mode==='hidden')&&!SHEET){ g.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
       if(NPC.rag){ const B=NPC.rag(dt); if(B){ NPC.B=B; pose(B,FIG.PM,body); return; } }
       const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
-      if(!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
-      if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
+      if(!st.pin&&!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
+      if(st.pin)st.to=null;
+      if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!st.hold&&!NPC.errand&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
       if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez);
         if(d<.15*TILE){ st.to=st.next||null; st.next=null; if(!st.to)st.wait=3+Math.random()*7; }
         else{ const e=turn(Math.atan2(ex,ez)); st.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*3); SR.target=Math.abs(e)<.6?1:0; } }

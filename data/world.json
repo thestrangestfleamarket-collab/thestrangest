@@ -351,6 +351,21 @@
    "x1": 153.2,
    "lot": true,
    "merchant": "scanner"
+  },
+  {
+   "id": "diner",
+   "name": "THE DINER",
+   "kind": "front",
+   "x0": 193.3,
+   "x1": 201.5,
+   "lot": true
+  },
+  {
+   "id": "flea",
+   "name": "THE FLEA MARKET",
+   "kind": "lot",
+   "x0": 216.6,
+   "x1": 229.65
   }
  ],
  "shells": [],

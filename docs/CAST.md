@@ -347,12 +347,6 @@
 3. The 18 townspeople live in the apartment house: in at the front door at night, out in the morning. They never take a player's apartment and have no inside.
 4. The diner gets built on an empty lot, with its 5 jobs.
 
-## Build order
+## Built (2 Nov 2026, steps 1 to 5)
 
-1. Market St: the shops above, the diner, the townspeople.
-2. The civic row.
-3. The Loop.
-4. The park, the lake, the castle, the river, the night market.
-5. The visitors.
-
-Each step ships with its check.
+All 192 are in the game; the Kid in a Cardboard Robot Costume is not published on polyfork yet. Each character's `job` is in `data/characters.json`, editable under JOB on the character editor's behaviour tab. Bodies load one place at a time as you come within reach of it. The Loop's staff work below and go down the subway stairs. The night market's sellers keep night stalls at the flea market (the night market has no way in yet). Indoor staff stand inside the in-place shops (bar, bank, both museums, theatre) and the off-map ones (diner, arcade, playhouse, bodega, boardwright, fix-it); at the rest (the civic row, the bath house, the feel lab, the castle) they are out of sight while at work.

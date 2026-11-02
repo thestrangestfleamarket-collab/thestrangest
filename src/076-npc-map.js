@@ -174,7 +174,8 @@ ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; for(le
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
 SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
-{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
+{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[]; NPCS.all=()=>NPCS.concat(NPCS.extra);
+  NPCS.when=(key,fn)=>SYS.onStart(()=>{ const t=()=>{ const N=NPCS.all().find(q=>q.key===key); if(N&&N.g&&N.st)fn(N); else setTimeout(t,800); }; t(); },'npc '+key);   // run fn with a character once the start is done and its body stands
   NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen);

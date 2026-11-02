@@ -2,7 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {CHARS, NPCS} from './003b-systems.js';
 import {SAVE} from './005-save.js';
-import {LEVEL, TILE} from './006-map-pre.js';
+import {LEVEL, SYS, TILE} from './006-map-pre.js';
 Object.assign(CHARS,{
   rec:id=>(LEVEL.chars&&LEVEL.chars[id])||null,
   id:N=>(N&&N.st&&N.st.home&&N.st.home.id)||(N&&N.key)||null,
@@ -36,5 +36,5 @@ Object.assign(CHARS,{
   applyAll(){ for(const id in CHARS.store){ const N=CHARS.byId(id); if(!N)continue; const r=CHARS.store[id]; CHARS.put(N,r);
     if(r.home&&N.st)N.home={id,x:CHARS.wx(r.home[0]),z:CHARS.wz(r.home[1]),r:(+r.home[2]||0)*TILE}; } },
 });
-{ const go=()=>{ if(!window.__started)return setTimeout(go,500); CHARS.applyAll(); }; if(Object.keys(CHARS.store).length)go(); }
+if(Object.keys(CHARS.store).length)SYS.onStart(()=>CHARS.applyAll(),'076a-chars');
 window.CHARS=CHARS;

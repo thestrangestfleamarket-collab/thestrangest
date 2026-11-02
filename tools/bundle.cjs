@@ -5,12 +5,17 @@ const opt = { bundle: true, format: 'esm', target: 'es2022', charset: 'utf8', mi
   const nav = (await es.build({ ...opt, stdin: { contents: "export * from '@recast-navigation/core';export * from '@recast-navigation/generators';", resolveDir: process.cwd() } })).outputFiles[0].text;
   const navName = 'nav.' + sha(nav) + '.js';
   fs.writeFileSync(path.join(out, navName), nav);
-  const cu = {};
+  const cu = {}, libs = {}, src = Object.fromEntries(xs.map(x => [x, fs.readFileSync(x, 'utf8')]));
+  // a package a chunk imports (build.py's lib: __LIBS["name"]) is bundled as its own file, fetched when that code first wants it
+  for (const p of new Set(xs.flatMap(x => [...src[x].matchAll(/__LIBS\["([^"]+)"\]/g)].map(m => m[1])))) {
+    const t = (await es.build({ ...opt, stdin: { contents: `export * from '${p}'; import * as M from '${p}'; export default (M.default ?? M);`, resolveDir: process.cwd() } })).outputFiles[0].text;
+    libs[p] = 'lib-' + p.replace(/^@/, '').replace(/[^a-z0-9]+/gi, '-') + '.' + sha(t) + '.js'; fs.writeFileSync(path.join(out, libs[p]), t);
+  }
   for (const x of xs) {
-    const c = (await es.transform(fs.readFileSync(x, 'utf8'), { target: 'es2022', charset: 'utf8', minify: opt.minify, legalComments: 'none' })).code, n = path.basename(x, '.js');
+    const c = (await es.transform(src[x], { target: 'es2022', charset: 'utf8', minify: opt.minify, legalComments: 'none' })).code, n = path.basename(x, '.js');
     cu[n.slice(2)] = n + '.' + sha(c) + '.js'; fs.writeFileSync(path.join(out, cu[n.slice(2)]), c); fs.unlinkSync(x);
   }
-  fs.writeFileSync(entry, fs.readFileSync(entry, 'utf8').replaceAll('__NAV__', navName).replaceAll('__CHUNKURLS__', JSON.stringify(cu)));
+  fs.writeFileSync(entry, fs.readFileSync(entry, 'utf8').replaceAll('__NAV__', navName).replaceAll('__CHUNKURLS__', JSON.stringify(cu)).replaceAll('__LIBURLS__', JSON.stringify(libs)));
   const r = await es.build({ ...opt, entryPoints: { m: entry }, splitting: true, outdir: out, chunkNames: 'c-[hash]', metafile: true });
   const text = {}, deps = {}, name = {};
   for (const f of r.outputFiles) text[path.basename(f.path)] = f.text;

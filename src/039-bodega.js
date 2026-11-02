@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, ORIGIN, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
@@ -11,6 +11,7 @@ import {MKS} from './016-street-kit.js';
 import {STUDIO} from './020-studio-kit.js';
 import {KEEPC, PRESETS, STOREK} from './023-west-kits.js';
 import {dgnRoom, dgnThings} from './038z-dungeon.js';
+import {BLOCKS} from './038zb-blocks.js';
 {
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);
@@ -1013,7 +1014,7 @@ function porticoSteps(x,y){ SHARED.PNAME='museum portico steps'; const W=9, D=3;
     const i=Math.floor((X-x+W)/1.2), j=Math.floor(v/.8); if(((X-x+W)%1.2)<.03||(v%.8)<.03&&v>1.2)return mt('concrete',sh(MARBD,.95)); return mt('concrete',hash(i,j,1801)<.4?sh(MARB,.96):MARB); },fi:()=>sh(MARBD,.62),fj:()=>sh(MARBD,.8)}],null,{walk:true,flat:true}); }
 const portColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,150)); };
 const hallColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,190)); };
-function entablature(x,y,nm='MUSEUM OF EARTH',k=1){ SHARED.PNAME=k>1?'bank entablature':'museum entablature'; const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
+function entablature(x,y,nm='MUSEUM OF EARTH',k=1,pn){ SHARED.PNAME=pn||(k>1?'bank entablature':'museum entablature'); const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
   B.push(fb(r,0,1,0,1,Z,Z+H,MARB,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP;
     if(z>=H-5)return z>=H-2?MARBL:Math.floor(a/4)%2?MARBD:MARB;
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
@@ -1040,7 +1041,7 @@ function museumBench(x,y){ SHARED.PNAME='museum bench'; const r=rect(x,y,[0,1],2
   for(const t of [.04,.92])B.push(fb(r,t,t+.04,.05,.95,0,12,S,null,()=>S));
   B.push(fb(r,0,1,0,1,12,17,L,(s,t,z)=>z<1?sh(L,.7):L,(t,d)=>{ const a=Math.floor(t*48), b=Math.floor(d*14); return (a%6===3&&b%4===2)?sh(L,.7):(a+b)%7===0?sh(L,1.08):L; }));
   return prop(B); }
-const K={'museum portico steps':porticoSteps,'museum column':portColumn,'museum hall column':hallColumn,'museum entablature':entablature,'bank entablature':(x,y)=>entablature(x,y,'BANK',2),'information desk':infoDesk,'museum bench':museumBench};
+const K={'museum portico steps':porticoSteps,'museum column':portColumn,'museum hall column':hallColumn,'museum entablature':entablature,'bank entablature':(x,y)=>entablature(x,y,'BANK',2),'art entablature':(x,y)=>entablature(x,y,'ART MUSEUM',2,'art entablature'),'information desk':infoDesk,'museum bench':museumBench};
 for(const k in K){ CATALOG[k]=(x,y)=>K[k](x,y); KIND_OF[k]=k; }
 })();
 (()=>{ const {FP,rect,fb,worn,art,plane,line,ell,glassCase,plinth,BRZ,BRZL}=MUK, c=MUC;
@@ -1200,7 +1201,7 @@ function meteorite(x,y){ SHARED.PNAME='Gibeon meteorite'; const r=rect(x,y,[0,1]
 const K={'Lucy':lucy,'Laetoli footprints':laetoli,'hand axes':handAxes,'four skulls':skulls,'woolly mammoth':mammoth,'Gibeon meteorite':meteorite};
 for(const k in K){ CATALOG[k]=(x,y)=>K[k](x,y); KIND_OF[k]=k; }
 })();
-STOREK.museum={MUS,MUP,museumWall,museumFloorCol,museumOutside,museumHallCol,turn:MUSTURN};
+STOREK.museum={MUS,MUP,museumWall,museumFloorCol,museumOutside,museumHallCol,turn:MUSTURN,font:MUF};
 }
 
 { const {art,onF,lit,C,rect,sub,fb,worn,metal}=MLK, FP=24;
@@ -1316,7 +1317,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
 
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
-  const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU; Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,OX,OY,B0});
+  const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU, MX=x=>x/TILE+OX, MY=z=>z/TILE+OY; if(OX!==ORIGIN[0]||OY!==ORIGIN[1])console.warn('the bodega lot is not on the level file\'s origin',OX,OY,ORIGIN); Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,MX,MY,OX,OY,B0});
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
   B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1);
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;

@@ -142,10 +142,9 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
     try{ const r=await fetch('/shared/tune.glasshorn',{method:'POST',credentials:'same-origin',headers:{'content-type':ty},body:buf}), j=await r.json().catch(()=>({})); st.textContent=r.ok&&j.ok?'SENT. EVERYONE HEARS IT FROM NOW ON.':'NOT SENT: '+(j.why||r.status); }
     catch(er){ st.textContent='NOT SENT (NO SERVER HERE); SHE PLAYS IT FOR YOU.'; } HORN.use(buf,ty,f.name.replace(/\.[^.]+$/,'').toUpperCase().slice(0,30)); });
   HORN.panel=()=>{ panel.hidden=false; draw(); wake(); };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='glasshorn'); if(!window.__started||!N||!N.g||!UI.thing)return setTimeout(go,700);
+  { NPCS.when('glasshorn',N=>{
       const hb=new THREE.Mesh(new THREE.BoxGeometry(30,58,30),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=29; N.g.add(hb); UI.thing({name:'THE GLASS HORN',npc:N,obj:hb,reach:2.2*T,near:3*T,tall:1.9*T,act:()=>HORN.panel()});
-      const cup=new THREE.Mesh(new THREE.CylinderGeometry(.06*T,.045*T,.13*T,14,1,true),new THREE.MeshStandardMaterial({color:0x6a4a34,roughness:.8,side:THREE.DoubleSide})); cup.position.set(N.st.x+Math.sin(N.st.hd)*.55*T+Math.cos(N.st.hd)*.3*T,(N.st.y||0)+.065*T,N.st.z+Math.cos(N.st.hd)*.55*T-Math.sin(N.st.hd)*.3*T); N.g.parent.add(cup); load(); };
-    go(); }
+      const cup=new THREE.Mesh(new THREE.CylinderGeometry(.06*T,.045*T,.13*T,14,1,true),new THREE.MeshStandardMaterial({color:0x6a4a34,roughness:.8,side:THREE.DoubleSide})); cup.position.set(N.st.x+Math.sin(N.st.hd)*.55*T+Math.cos(N.st.hd)*.3*T,(N.st.y||0)+.065*T,N.st.z+Math.cos(N.st.hd)*.55*T-Math.sin(N.st.hd)*.3*T); N.g.parent.add(cup); load(); }); }
   HORN.make=horn; HORN.next=()=>{ P.cur=null; P.rest=0; };
   window.HORNDBG=()=>({on:HORN.on,src:P.src,song:P.cur&&P.cur.name,rest:+P.rest.toFixed(1),note:+HORN.now.m.toFixed(1),v:+HORN.now.v.toFixed(2),valves:HORN.now.valves.join(''),ctx:ctx&&ctx.state,tips:HORN.tips,trumpet:!!H0.g&&H0.g.visible});
 }

@@ -1,9 +1,9 @@
 // THE CATACOMB RUN: the holodeck's off-world jungle endless runner. Pick it in the holodeck and it fades you to a jungle track far off the map; you auto-run and must JUMP logs, DUCK/ROLL under branches and DODGE rocks (arrow left/right). You run as long as you can; a hit sends you back to the holodeck. The run drives the player through the frame's RUNNER hook (075), like a vehicle.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {FORAGE, pos, ROOMS, st, UI, VR} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FADE, SYS, TILE} from './006-map-pre.js';
-import {STORE} from './006-map-pre.js';
+import {STORE, TILE} from './006-map-pre.js';
+import {PAD} from './075-main-13.js';
 { const H=STORE.holo, T=TILE, say=(t,c,o)=>FORAGE.say&&FORAGE.say(t,c,o);
   const WX=3000, PATHW=3.4*T, LANE=[-1.05*T,0,1.05*T], SEG=3*T, AHEAD=46*T, SPD0=3.2*T, SPD1=5.6*T, RAMPD=200*T;
   const RUN=window.RUNNER={on:false}, TEACH=['jump','duck','dodge'], FREE0=18, WANT={view:'behind',face:0,turn:false};

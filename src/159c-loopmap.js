@@ -1,11 +1,11 @@
 // THE LOOP MAP: the square map sign on a platform's end wall is a thing: double-click it for the close-up window (all eight sections with the trains on the loop, this section, the next trains here, the schedule at every station, details).
 import {SHARED} from './003-shx.js';
-import {LOOPMAP, pos, UI} from './003b-systems.js';
+import {LOOPMAP, pos, TEXT, UI} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {TRAINS} from './009c-trains.js';
 {
-  const T=TILE, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const T=TILE, esc=TEXT.esc;
   const sp=document.createElement('div'); sp.id='loopmap'; sp.hidden=true;
   sp.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(980px,96vw);max-height:92vh;overflow:auto;z-index:21;padding:14px 18px;box-sizing:border-box;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#7dffa8;background:rgba(3,26,13,.97);box-shadow:inset 0 0 0 2px #3aa866,0 20px 60px #000;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')LOOPMAP.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());

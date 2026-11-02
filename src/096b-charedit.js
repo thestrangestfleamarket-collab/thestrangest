@@ -1,12 +1,11 @@
 // THE CHARACTER EDITOR: a list of every character in the game; pick one to edit its name, look, home and stats, with the 360 view. Writes characters.json; the game reads it (CHARS). shift+3 opens it; the behaviour editor (shift+8) opens it on the BEHAVIOUR tab.
-import {SHARED} from './003-shx.js';
-import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS, TALK} from './003b-systems.js';
-import {FADE, TILE} from './006-map-pre.js';
+import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS, TALK, TEXT} from './003b-systems.js';
+import {FADE, SECTION, TILE} from './006-map-pre.js';
 Object.assign(CHARED,{on:false,built:false});
 { const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>MERCH.includes(k)?'MERCHANT':MONST.test(k)?'MONSTER':PEOPLE.test(k)?'PEOPLE':ANIMALS.includes(k)?'ANIMAL':'TOON';
   const behOf=N=>{ const j=N.rig&&N.rig.job; if(j)return 'WORK'; if(MONST.test(N.key))return 'FIGHT'; if(N.roam)return 'ROAM'; if(N.life)return 'DAILY LIFE'; if(N.st&&N.st.hold)return 'STAND'; return 'WANDER'; };
-  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const esc=TEXT.esc;
 
 CHARED.build=()=>{ '@editor';
   const skin=MAPED.skin, fld=MAPED.fld, download=MAPED.download, stamp=MAPED.stamp, VIEW=MAPED.VIEW;
@@ -63,7 +62,7 @@ CHARED.build=()=>{ '@editor';
     case 'speed': return r.speed!=null?r.speed:+(((N.st?N.st.v:0)/TILE)).toFixed(2);
     case 'size': return r.size!=null?r.size:+(((N.st?N.st.R:.3*TILE)/TILE)).toFixed(2); } };
 
-  const ALL=()=>NPCS.concat(NPCS.extra||[]);
+  const ALL=()=>NPCS.all();
   const listHTML=()=>{ const groups={}; ALL().forEach((N,i)=>{ if(!N||!N.st)return; (groups[kindOf(N.key)]||(groups[kindOf(N.key)]=[])).push([i,N]); });
     return Object.keys(groups).sort().map(k=>'<div class="grp">'+k+' ('+groups[k].length+')</div>'+groups[k].map(([i,N])=>'<button class="row mb'+(N===sel?' hot':'')+'" data-i="'+i+'">'+esc(N.name||N.key||'someone')+'</button>').join('')).join(''); };
   const detailHTML=()=>{ if(!sel)return '<div class="dim">Pick a character from the list to edit it. Changes are a draft in this browser; EXPORT writes characters.json, which the game reads.</div>';
@@ -71,7 +70,7 @@ CHARED.build=()=>{ '@editor';
     if(tab==='id'){ b=fld('NAME','name',cur(N,'name'),0,'text')
       +'<div class="kv">KIND <span>'+kindOf(N.key)+'</span></div>'
       +'<div class="kv">WHO <span>'+esc(N.key||'')+'</span></div>'
-      +'<div class="kv">SECTION <span>'+esc((SHARED.SECTION&&SHARED.SECTION.id)||'A')+'</span></div>'
+      +'<div class="kv">SECTION <span>'+esc(SECTION.id)+'</span></div>'
       +'<div class="kv">LEVEL <span>'+(N.lv==='down'?'UNDERGROUND':'STREET')+'</span></div>'; }
     else if(tab==='look'){ b=fld('SCALE','scale',cur(N,'scale'),.05)+fld('TINT','tint',cur(N,'tint'),0,'color')
       +'<div class="dim">Scale and tint both ship — tint is a colour grade over the whole body. (Body swap &amp; part palette: a larger effort, not yet.)</div>'

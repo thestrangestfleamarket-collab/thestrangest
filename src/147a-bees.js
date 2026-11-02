@@ -20,7 +20,7 @@ const BEES={list:[]}; window.BEES=BEES;
     ['p_royal','ROYAL JELLY TONIC','alchemy',[50,100],{honey_moon:1,moonglow:1},'all your health, mending 2 min']],
     does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.hp=Math.min(1,VIT.hp+.25); },p_royal:()=>{ VIT.hp=1; FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
   FORAGE.CK.bee={short:'BEES',made:nm=>`YOU ROLL AND WICK THE WAX: ${nm}.`,fail:'THE WAX CRACKS. TRY AGAIN.'};
-  FORAGE.BUYK.honey=['honey_','bee_wax','wax_candle']; FORAGE.SELLP.push('honey_','bee_wax','wax_candle');
+  FORAGE.BUYK.honey=['honey_','bee_wax','wax_candle']; FORAGE.sell(...Object.keys(HONEY),'bee_wax','wax_candle');
   FORAGE.HELP.push('BEEKEEPING: set a hive on the lawn (from your pack) among flowers; come back to take its honey (empty jars, a smoker, a veil).');
   const S={v:1,hives:[],got:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} S.hives=(S.hives||[]).filter(h=>h&&Number.isFinite(h.x)&&Number.isFinite(h.z));
   const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
@@ -104,6 +104,6 @@ const BEES={list:[]}; window.BEES=BEES;
   MERCH.add({key:'beekeeper',label:'THE BEEKEEPER',height:1.7,model,size:10,hd:0,
     idle:t=>MERCH.pose({nod:Math.sin(t*.6)*4,yaw:Math.sin(t*.3)*14,L:{ua:[20,14],fa:[40,0]},R:{ua:[30,-10],fa:[70,-20]}}),
     after:(Bd,N)=>{ if(!N.g.visible||!window.SMOKE||Math.hypot(pos.x-N.st.x,pos.z-N.st.z)>20*T)return; const t=performance.now()/1000; if(t-pt<2.2)return; pt=t; MERCH.at(N,'handR',[0,.1,.04],V); SMOKE.puff(V.x,V.y,V.z,2,0xd8d8d0,.6); }});
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='beekeeper'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }; go(); }
+  { NPCS.when('beekeeper',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }

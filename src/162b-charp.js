@@ -4,7 +4,7 @@ import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, TEXT, UI, W3} 
 import {pxS, renderer} from './004-main.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=TEXT.esc;
-  const CLOG=__CHANGELOG__;   // [date, summary] of every HISTORY update, newest first; baked by build.py
+  const CLOG=()=>{ '@log'; return __CHANGELOG__; };   // [date, summary] of every HISTORY update, newest first; baked by build.py into its own chunk
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
@@ -27,13 +27,13 @@ import {DESIGN} from './102b-designer.js';
   CHARP.admin=()=>adminOpen();   // the handheld's ADMIN page opens it too
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
-  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
+  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
       ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
         <button class="cp-btn cp-adm" id="cpaq" style="width:100%;margin-bottom:8px">BUG / REPORT QUEUE</button>
         <div style="display:flex;gap:8px;margin-bottom:14px"><button class="cp-btn" id="cpstat" style="flex:1">STATS</button><button class="cp-btn" id="cprin" style="flex:1">RENDER INSPECTOR</button></div>
         <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
-        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${CLOG.length}</div>
-        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${CLOG.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
+        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${L.length}</div>
+        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
       document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); };
       const tools=()=>{ const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
       ap.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(); };

@@ -6,6 +6,17 @@ import {OWNED} from './005-save.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {CAT_INFO} from './014-gamekit.js';
 
+const ballGeo=(o={})=>{ const R=o.R||.15, P=[], N=[], C=[], c=new THREE.Color(), add=(g,h)=>{ if(g.index)g=g.toNonIndexed(); P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array); c.setHex(h); for(let i=0;i<g.attributes.position.count;i++)C.push(c.r,c.g,c.b); };
+  add(new THREE.IcosahedronGeometry(R,1),o.body??0xb8bec8); add(new THREE.CylinderGeometry(R*1.02,R*1.02,R*.22,10),o.band??0x3a3e48);
+  for(const [w,h,d,k,x,y,z] of o.more||[])add(new THREE.BoxGeometry(w,h,d).translate(x,y,z),k);
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); return g; };
+let DGEO=null; const VCM=new THREE.MeshLambertMaterial({vertexColors:true});
+DRONE.ballGeo=ballGeo;
+DRONE.mk=(o={})=>{ const R=.15, D=new THREE.Group(); D.add(new THREE.Mesh(DGEO||(DGEO=ballGeo()),VCM));
+  const lens=new THREE.Mesh(new THREE.BoxGeometry(R*.5,R*.3,R*.2),new THREE.MeshBasicMaterial({color:o.lens??0xff3a3a})); lens.position.set(0,-R*.36,R*.86); D.add(lens);
+  const parcel=new THREE.Mesh(new THREE.BoxGeometry(.2,.15,.2),new THREE.MeshLambertMaterial({color:0xa77a48})); parcel.position.set(0,-R-.085,0); D.add(parcel); parcel.visible=o.parcel!==false;
+  D.scale.setScalar(o.s??TILE/1.13); return {D,parcel,lens}; };
+
 DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, AR=APTS.R, K=SHARED.BOD.K;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
 
@@ -19,21 +30,18 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   for(const f of ownedFurn())placeFurn(f.kind,f.u,f.v,f.r);
   const bringFurn=kind=>{ const l=ownedFurn(), [u,v]=SLOTS[l.length%SLOTS.length]; l.push({kind,u,v,r:0}); saveFurn(l); placeFurn(kind,u,v,0); };
 
-  // THE DRONE: a quadcopter that carries the parcel to your fire escape, drops it and flies off (its lifecycle a 'life' SYS below)
-  const mkDrone=()=>{ const D=new THREE.Group(), GREY=lam(0x3a3d44), LIGHT=lam(0x9aa0aa); D.add(bx(.3,.08,.3,GREY)); const rot=[];
-    for(const [sx,sz] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.22,.03,.04,GREY); arm.position.set(sx*.13,0,sz*.13); D.add(arm); const r=new THREE.Group(); r.position.set(sx*.22,.06,sz*.22); r.add(bx(.24,.01,.035,LIGHT)); D.add(r); rot.push(r); }
-    const dot=bx(.05,.03,.05,flat(0xff3a3a)); dot.position.set(0,.055,.1); D.add(dot); const parcel=bx(.2,.15,.2,lam(0xa77a48)); parcel.position.set(0,-.13,0); D.add(parcel); D.scale.setScalar(T/1.13); return {D,rot,parcel}; }; DRONE.mk=mkDrone;
+  const mkDrone=()=>DRONE.mk();
   const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
 
-  const flights=[], parcels=[]; let spin=0; const V=new THREE.Vector3();
+  const flights=[], parcels=[]; const V=new THREE.Vector3();
   const landParcel=(label,onIn,dp)=>{ const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
     const th={name:'A PARCEL: '+label,pick:true,obj:p,reach:1.3*T,near:2.6*T,tall:.7*T,act:()=>{ if(!p.parent)return; scene.remove(p); const i=parcels.indexOf(p); if(i>=0)parcels.splice(i,1); onIn(); toast('YOU BRING IN: '+label); }};
     UI.thing(th); toast('THE DRONE DROPPED '+label+' ON YOUR FIRE ESCAPE'); };
   const deliver=(label,onIn)=>{ '@later'; const dp=dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
-    const {D,rot,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,rot,parcel,label,onIn,dp,ph:'in'}); };
+    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,ph:'in'}); };
   DRONE.go=deliver;
-  SYS.add('life',dt=>{ if(!dt)return; spin+=dt*40;
-    for(const f of flights){ for(const r of f.rot)r.rotation.y=spin;
+  SYS.add('life',dt=>{ if(!dt)return;
+    for(const f of flights){
       if(f.ph==='in'){ V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }
       else if(f.ph==='drop'){ f.parcel.visible=false; landParcel(f.label,f.onIn,f.dp); f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
       else if(f.ph==='away'){ f.D.position.lerp(f.away,Math.min(1,dt*2)); if(f.D.position.distanceTo(f.away)<.4*T){ scene.remove(f.D); f.done=true; } } }

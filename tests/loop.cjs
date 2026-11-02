@@ -23,10 +23,12 @@ const {chromium}=require('playwright');
   ok(A.doors&&A.at==='A'&&A.inSta,'train 1 stands in A with its doors open ('+JSON.stringify(A)+')');
   ok(/NOW/.test(A.board),'A\'s board says train 1 is in ('+A.board+')');
   // ride it: walk off the platform through a door, out again, back in; carried when it leaves
-  const step=dir=>pg.evaluate(async dir=>{ const t=TRAINS.list[0], c=t.cars[0].p, T=LOOP.WX(1)-LOOP.WX(0), px=-c.uz, pz=c.ux, fr=()=>new Promise(r=>requestAnimationFrame(r));
-      const side=[1,-1].find(sg=>METRO.ground(c.x+px*sg*3*T,c.z+pz*sg*3*T)>LOOP.H(-2)); if(dir<0)__dbg.UI.goTo(c.x+px*side*3.4*T,c.z+pz*side*3.4*T,'down'); await fr(); await fr();
-      for(let i=0;i<50&&(dir<0?!TRAINS.ride.c:!!TRAINS.ride.c);i++){ const q=__dbg.pos(), r=__dbg.collide(q[0]+px*side*dir*.12*T,q[2]+pz*side*dir*.12*T); __dbg.UI.goTo(r[0],r[1],'down'); await fr(); await fr(); }
-      const q=__dbg.pos(); return {ride:!!TRAINS.ride.c,side,y:+q[1].toFixed(2),plat:+LOOP.H(0).toFixed(2),z:ZONES.cur&&ZONES.cur.name}; },dir);
+  // the train's clock is held while you walk through the door: on a slow runner a hundred frames outlast its 60 s stop and the doors would shut on you
+  const step=dir=>pg.evaluate(async dir=>{ const t=TRAINS.list[0], c=t.cars[0].p, T=LOOP.WX(1)-LOOP.WX(0), px=-c.uz, pz=c.ux, fr=()=>new Promise(r=>requestAnimationFrame(r)), clock=TRAINS.now, t0=clock(); TRAINS.now=()=>t0;
+      try{ const side=[1,-1].find(sg=>METRO.ground(c.x+px*sg*3*T,c.z+pz*sg*3*T)>LOOP.H(-2)); if(dir<0)__dbg.UI.goTo(c.x+px*side*3.4*T,c.z+pz*side*3.4*T,'down'); await fr(); await fr();
+        for(let i=0;i<50&&(dir<0?!TRAINS.ride.c:!!TRAINS.ride.c);i++){ const q=__dbg.pos(), r=__dbg.collide(q[0]+px*side*dir*.12*T,q[2]+pz*side*dir*.12*T); __dbg.UI.goTo(r[0],r[1],'down'); await fr(); await fr(); }
+        const q=__dbg.pos(); return {ride:!!TRAINS.ride.c,side,y:+q[1].toFixed(2),plat:+LOOP.H(0).toFixed(2),z:ZONES.cur&&ZONES.cur.name}; }
+      finally{ TRAINS.now=clock; } },dir);
   const on=await step(-1); ok(on.ride,'you walk through a door onto train 1 ('+JSON.stringify(on)+')');
   const off=await step(1); ok(!off.ride&&Math.abs(off.y-off.plat)<.05,'and back out onto the platform ('+JSON.stringify(off)+')');
   const on2=await step(-1); const r0=await pg.evaluate(()=>({ride:!!TRAINS.ride.c,z:ZONES.cur&&ZONES.cur.name,p:__dbg.pos()}));

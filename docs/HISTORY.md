@@ -5208,3 +5208,7 @@ Owner (his model, a rugged red tablet): "i want to import this into the game, fu
 ## 2 Nov 2026: a too-big owned save stops retrying instead of looping silently
 
 Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser stops retrying (before, `ownedPut` returned false, the client treated it as a transient failure, re-queued it and retried every 15 s forever, saving nothing and telling the player nothing). The device keeps its own copy and `OWNED.isFull()` is set; a visible player notice is still to add. Found in a fresh code audit.
+
+## 2 Nov 2026: the flea market and street furniture from polyfork
+
+Owner: "add the market stalls, street furniture and vendors" (from polyfork.dev's free catalog). The empty lot beside the theatre is a flea market: a fruit stand, a bookstall, a market stall, a mercado stall, a folding table, crates and sacks, a sign board, and a hot dog cart on the sidewalk. Its five vendors (THE CART MAN, THE FRUIT SELLER, THE TRADER, THE JUNK DEALER, THE FLOWER LADY) stand at their stalls and sell existing goods. Market St gets parking meters, benches, trash baskets, a bus shelter, a bike rack, a pay phone and a street sign. No mailbox or hydrant was added (one mailbox per street; the street has its own hydrants). Rules: polyfork's raw files are never committed (their licence lets the game ship them baked, not host the files), and every placed piece is listed in `data/world.json`'s `things`.

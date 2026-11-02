@@ -2116,5 +2116,262 @@
     }
    }
   }
+ },
+ "hotdogman": {
+  "name": "THE CART MAN",
+  "trade": {
+   "sells": [
+    "f_skewer",
+    "f_roast",
+    "f_fritter",
+    "soda_pink",
+    "soda_white",
+    "soda_teal"
+   ],
+   "line": "Hot off the cart. Cold out of the box."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hot off the cart. Cold out of the box.",
+      "Back again, {name}? Usual?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S IN THE SKEWER?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Meat. Probably. It's a market, friend.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "fruitseller": {
+  "name": "THE FRUIT SELLER",
+  "trade": {
+   "sells": [
+    "fr_apple",
+    "fr_pear",
+    "fr_plum",
+    "fr_fig"
+   ],
+   "line": "Picked this morning. Somewhere."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Picked this morning. Somewhere.",
+      "Squeeze it, you bought it."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DOES IT GROW?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The park's trees, mostly. Don't tell the squirrel.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "trader": {
+  "name": "THE TRADER",
+  "trade": {
+   "sells": [
+    "jar_s",
+    "jar_m",
+    "bottle",
+    "wax_candle",
+    "quill_pen",
+    "cigar"
+   ],
+   "line": "Odds and ends. Mostly ends."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Odds and ends. Mostly ends.",
+      "Everything here was somebody's once."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DO YOU GET IT ALL?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Attics, alleys, the river at low tide. Don't ask which.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "junkman": {
+  "name": "THE JUNK DEALER",
+  "trade": {
+   "sells": [
+    "tv_small",
+    "phone_home",
+    "modem",
+    "binoc",
+    "shades"
+   ],
+   "line": "It all works. Some of it on purpose."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "It all works. Some of it on purpose.",
+      "No refunds. No questions. No warranty."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "DOES IT REALLY WORK?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Plug it in and find out. That's the fun.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "flowerlady": {
+  "name": "THE FLOWER LADY",
+  "trade": {
+   "sells": [
+    "seed_star",
+    "seed_sun",
+    "seed_hum",
+    "pot",
+    "dirt",
+    "honey_clover"
+   ],
+   "line": "Seeds, pots, a little dirt. Grow something."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Seeds, pots, a little dirt. Grow something.",
+      "Your windowsill looks lonely, {name}."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT GROWS BEST?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Hum seeds. They grow anywhere and they sing a little.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

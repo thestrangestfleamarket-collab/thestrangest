@@ -56,7 +56,7 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
+          k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -129,9 +129,9 @@ jobs:
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
-      - name: The tablet (TAB pulls it up, its apps)
-        if: contains(steps.f.outputs.run, ' tablet')
-        run: node tests/tablet.cjs dist/market.html
+      - name: The handheld (ESC pops it up, its icons open the menus)
+        if: contains(steps.f.outputs.run, ' handheld')
+        run: node tests/handheld.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

@@ -119,13 +119,13 @@ const GARB={};
   const MAKE={
     // a cotton crew-neck tee cut to its own size: a boxy body to a level hem a little below the belt, a crew neck with a ribbed band, set-in short sleeves capping the shoulders
     shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, Z=SZ.tee, nu=28, nr=Z.rows.length+1, F=f==='F';
-      const at=(i,j)=>{ const th=i/nu*TAU; if(j===Z.rows.length){ const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
+      const at=(i,j)=>{ const th=-i/nu*TAU; if(j===Z.rows.length){   // round the other way from the sleeves, as its rows rise: its outside faces out const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
         const [y,W,D]=Z.rows[j], [x,z]=se(th,W,D,Z.n), b=F&&z>0?Z.bust*Math.max(0,1-((y-27.4)/3.6)**2):0; return V(x,y,z*(1+b/D)); };   // her front fuller at the bust
       const P=[]; for(let j=0;j<nr;j++)for(let i=0;i<nu;i++)P.push(at(i,j));
       const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<21.5?['hips',null,0]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them
       const vl=[0]; for(let j=1;j<nr;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); } let per=0; for(let i=0;i<nu;i++)per+=dist(P[nu*3+i],P[nu*3+(i+1)%nu]); const reps=Math.max(1,Math.round(per/TS));
       grid(t,nu,nr,true,(i,j)=>{ const p=P[j*nu+i], k=skin(p); pt(t,p,k[0],k[1],k[2]); },(c,j)=>[c/nu*reps,vl[j]/TS],0);   // held: the hem keeps a straight line (owner, 2 Nov 2026)
-      grid(t,nu,2,true,(i,j)=>{ const th=i/nu*TAU, N=Z.neck, [x,z]=se(th,N.W+.12-j*.3,N.D+.12-j*.3,2); pt(t,V(x,N.y-N.dip*Math.cos(th)+j*.6,z),'torso'); },(c,j)=>[c/nu*reps*2,j*.3],0);   // the ribbed neckband
+      grid(t,nu,2,true,(i,j)=>{ const th=-i/nu*TAU, N=Z.neck, [x,z]=se(th,N.W+.12-j*.3,N.D+.12-j*.3,2); pt(t,V(x,N.y-N.dip*Math.cos(th)+j*.6,z),'torso'); },(c,j)=>[c/nu*reps*2,j*.3],0);   // the ribbed neckband
       for(const s of 'LR'){ const S=J0['shoulder'+s], E=J0['elbow'+s], a=nrm3(sub3(E,S)), u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), {R:Rs,L,Rh}=Z.slv, RG=[[-Rs,.05],[-Rs*.87,Rs*.5],[-Rs*.7,Rs*.71],[-Rs*.4,Rs*.92],[0,Rs],[L*.5,(Rs+Rh)/2],[L,Rh]];
         grid(t,16,RG.length,true,(i,j)=>{ const [tt,r]=RG[j], q=i/16*TAU; pt(t,V(S.x+a.x*tt+(u.x*Math.cos(q)+w.x*Math.sin(q))*r,S.y+a.y*tt+(u.y*Math.cos(q)+w.y*Math.sin(q))*r,S.z+a.z*tt+(u.z*Math.cos(q)+w.z*Math.sin(q))*r),'upperArm'+s,null,0,j===RG.length-1?.01:0); },
           (c,j)=>[c/16*Math.max(1,Math.round(TAU*Rs/TS)),(RG[j][0]+Rs)/TS],0); }

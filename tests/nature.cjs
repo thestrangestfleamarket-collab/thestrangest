@@ -29,14 +29,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const sh = await pg.evaluate(() => { const T = id => CHARS.trade({ key: id }) || (window.LEVEL && LEVEL.chars && LEVEL.chars[id] && LEVEL.chars[id].trade); const r = T('radish') || {}, n = T('origamifox') || {};
     return { rb: r.buys, rt: r.teaches, ns: n.sells, nb: n.buys, nt: n.teaches, bnet: (FORAGE.SELLS.find(s => s[0] === 'bnet') || [])[1], net: (FORAGE.SELLS.find(s => s[0] === 'net') || [])[1] }; });
   ok((sh.rb || []).includes('mushrooms') && (sh.rt || []).includes('forage'), 'the Radish buys mushrooms and teaches foraging: ' + JSON.stringify([sh.rb, sh.rt]));
-  ok(['frame', 'feeder', 'binoc'].every(i => (sh.ns || []).includes(i)) && (sh.nb || []).includes('birds') && ['ento', 'bird'].every(i => (sh.nt || []).includes(i)), 'the Nature Merchant sells frames, feeders and binoculars, buys birds, teaches birding and entomology: ' + JSON.stringify(sh));
+  ok(['feeder', 'binoc'].every(i => (sh.ns || []).includes(i)) && !(sh.ns || []).includes('frame') && (sh.nb || []).includes('birds') && ['ento', 'bird'].every(i => (sh.nt || []).includes(i)), 'the Nature Merchant sells feeders and binoculars (no specimen frames), buys birds, teaches birding and entomology: ' + JSON.stringify(sh));
   ok(sh.bnet === 12 && sh.net === 8, 'a net costs the same from every seller (butterfly $8, bird $12): ' + JSON.stringify([sh.net, sh.bnet]));
 
-  // butterflies: mount one, give the museum its first, and only its first
-  const bf = await pg.evaluate(() => { FORAGE.S.sk.ento = 1000; FORAGE.give('b_3', 2); FORAGE.give('frame', 2); FORAGE.ACT.bmount('b_3'); FORAGE.ACT.bmount('b_3'); const o = { mounted: FORAGE.has('s_3') };
-    const here = STORE.here; STORE.here = id => id === 'museum'; const btn = () => FORAGE.ROWB.flatMap(f => f('s_3')).map(x => x[0]); o.before = btn(); const c0 = INV.cash; FORAGE.ACT.gift('s_3'); o.paid = INV.cash - c0; o.after = btn(); o.left = FORAGE.has('s_3');
-    STORE.here = here; o.away = FORAGE.ROWB.flatMap(f => f('s_3')).map(x => x[0]); o.page = FORAGE.BOOK.find(p => p.id === 'bfly').rows()[3]; return o; });
-  ok(bf.mounted === 2 && bf.before.includes('DONATE') && bf.paid > 0 && !bf.after.includes('DONATE') && bf.left === 1 && !bf.away.includes('DONATE'), 'a mounted butterfly can be given to the museum once, for pay, only inside it: ' + JSON.stringify(bf));
+  // butterflies are never mounted (owner, 2 Nov 2026): no MOUNT, no frames, no specimens on the wall; a caught one is kept, sold or released
+  const bf = await pg.evaluate(() => { FORAGE.give('b_3', 1); const rows = FORAGE.ROWB.flatMap(f => f('b_3')).map(x => x[0]); const R = { kinds: {} }; const d = window.SPECDBG ? SPECDBG() : null; return { rows, mount: typeof FORAGE.ACT.bmount, name: FORAGE.NM.frame || null, wall: d ? Object.keys(d).includes('wall') : false }; });
+  ok(bf.rows.includes('RELEASE') && !bf.rows.includes('MOUNT') && bf.mount === 'undefined' && !bf.name && !bf.wall, 'a butterfly can be released but never mounted, and there are no specimen frames: ' + JSON.stringify(bf));
 
   // birds: feathers make a quill; a feeder hangs outdoors and comes down; binoculars reach birds far off
   const bd = await pg.evaluate(async () => { const o = {}; FORAGE.S.sk.bind = 1000; FORAGE.give('bs_kit'); FORAGE.give('bird_feather', 3); FORAGE.craft('quill_pen'); o.quill = FORAGE.has('quill_pen');
@@ -48,7 +46,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 
   // at home: a mounted butterfly for the wall, a caged bird for the floor, each yours from your pack
   const sp = await pg.evaluate(() => SPECDBG());
-  ok(sp.n === 45 && sp.wall === 'wall' && sp.own[0] === 's_3' && sp.own[1] === 'bd_2' && sp.meshes.every(n => n > 1), 'mounted butterflies and caged birds are things for your apartment: ' + JSON.stringify(sp));
+  ok(sp.n === 13 && sp.wall === undefined && sp.own[0] === 'bd_2' && sp.meshes.every(n => n > 1), 'caged tame birds are things for your apartment, mounted butterflies no longer: ' + JSON.stringify(sp));
 
   // another player's tame bird rides on their shoulder
   const op = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), at = [p[0] + 2 * T, p[2] + 1 * T, 0, 0, SHARED.LVL, '']; ONLINE.on = true;

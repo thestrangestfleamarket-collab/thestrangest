@@ -4,89 +4,14 @@ import {CLOCK, FLOW, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {BLOCK, FADE, FIX, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
-const RIVER={way:'fluid',wi:0,step:false,t:0,on:false};
-Object.assign(RIVER,{onBuild:[],feed:()=>false,over:()=>false,clamp:()=>{},tick:()=>{},pre:()=>{},post:()=>{},hud:()=>{},pick:()=>false,swim:false,shown:false}); window.RIVER=RIVER;
+const RIVER={way:'fluid',wi:0,step:true,t:0,on:false};
+Object.assign(RIVER,{onBuild:[],pickers:[],feed:()=>false,over:()=>false,clamp:()=>{},tick:()=>{},pre:()=>{},post:()=>{},hud:()=>{},pick:()=>false,swim:false,shown:false}); window.RIVER=RIVER;
 const RIVERG=new THREE.Group(); RIVERG.name='river'; RIVERG.visible=false; scene.add(RIVERG);
-RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
-  const MPU=0.84/T, WU=1/MPU;
-  const L=MODS.landR, lx0=L.x0*T, lx1=L.x1*T, rz0=Math.min(ZS(R.river.y0),ZS(R.river.y1)), rz1=Math.max(ZS(R.river.y0),ZS(R.river.y1));
-  RIVER.mouth={x:XS(117.5),z:(rz0+rz1)/2};
-  const fx0=XS(R.ff.x0), fx1=XS(R.ff.x1);
-  const LVm=-1.0, LV=LVm*WU;
-  RIVER.box={x0:lx0,x1:lx1,z0:rz0,z1:rz1,lv:LV};
-  const WATERS=[
-   {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: green and clear, a slow low swell, the mud bed and the fish seen many metres down.',
-    sig:[0.34,0.075,0.1],scat:[0.02,0.07,0.045],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.04,.085,.05],sky:.16,
-    waves:[[8,0.035,265,.25],[4.6,0.022,250,.3],[2.8,0.012,285,.3],[1.7,0.006,240,.3]]},
-   {key:'b',name:'B · OPEN SEA',desc:'A long swell under a wind sea: crests a metre high that break white. A rock bed.',
-    sig:[0.3,0.06,0.045],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,far:[.06,.16,.2],sky:.32,
-    waves:[[18,0.42,268,.5],[11,0.24,255,.6],[7,0.14,280,.7],[4,0.08,245,.8],[2.5,0.05,290,.8],[1.6,0.025,230,.7],[5.5,0.09,262,.7]]},
-   {key:'c',name:'C · CLEAR COVE',desc:'Glassy and clear: the sand rippled eight metres down, light dancing over it, bright fish.',
-    sig:[0.36,0.05,0.04],scat:[0.03,0.34,0.38],deep:8,bed:2,foam:0.15,refr:1.4,far:[.06,.16,.2],sky:.32,
-    waves:[[9,0.07,268,.3],[3.5,0.016,240,.4],[2.2,0.01,290,.4],[1.4,0.006,255,.4]]}];
-  RIVER.WATERS=WATERS;
-  const cl=(v,a,b)=>v<a?a:v>b?b:v;
-  const hash=(x,y)=>{ let h=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
-  const vn=(x,y)=>{ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
-  const fbm=(x,y)=>vn(x,y)*0.5+vn(x*2.1+5,y*2.1+3)*0.3+vn(x*4.3+9,y*4.3+1)*0.2;
-  // the very deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): along the channel, 60 to 110 m more, black without a light
-  const RW=(lx1-lx0)*MPU, HOLES=[[.18,.55,7,70],[.47,.7,9,110],[.79,.5,6,60]].map(([f,u,r,d])=>[(lx0*MPU)/RW+f,u,r,d]);
-  const depthAt=(x,z)=>{ const Wt=WATERS[RIVER.wi], xm=x*MPU, zm=z*MPU, e=(rz1-z)*MPU, t=cl(e/16,0,1);
-    let d=1.3+(Wt.deep-1.3)*Math.pow(t,1.1)-(fbm(xm*0.25,zm*0.25)-0.5)*1.8;
-    if(Wt.bed===2)d-=Math.sin(xm*2.7+fbm(xm*0.55,zm*0.55)*6)*0.07;
-    if(Wt.bed===1)d-=Math.max(0,fbm(xm*0.55+3,zm*0.55)-0.52)*6;
-    if(Wt.bed===0)d-=(vn(xm*1.6,zm*1.6)-0.5)*0.25;
-    const u=e/((rz1-rz0)*MPU), mx=(x-RIVER.mouth.x)*MPU, mz=(z-RIVER.mouth.z)*MPU, near=Math.exp(-mx*mx/1600), m=(2+8*cl(vn(xm/70+.3,3.7)*1.5-.25,0,1))*(1-near)+3*near;   // two to ten times deeper out in the channel; the cavern's pit mid-river
-    d*=1+(m-1)*cl((u-.2)/.35,0,1)*cl((u-.2)/.35,0,1); d+=6*Math.exp(-(mx*mx+mz*mz)/49); for(const [px,pu,r,dd] of HOLES){ const hx=xm-px*RW, hz=(u-pu)*(rz1-rz0)*MPU; d+=dd*Math.exp(-(hx*hx+hz*hz)/(r*r)); }
-    return Math.max(1.2,d); };
-  RIVER.depthAt=depthAt;
-  const NW=8, WA=Array.from({length:NW},()=>new THREE.Vector4()), WB=Array.from({length:NW},()=>new THREE.Vector4()); let WV=[];
-  const setWaves=()=>{ const ws=WATERS[RIVER.wi].waves, n=ws.length, tm=WATERS[RIVER.wi].tm||1; WV=ws.map(([lam,A,deg,st],m)=>{ const k=2*Math.PI/lam, a=deg*Math.PI/180; return {dx:Math.cos(a),dz:-Math.sin(a),k:k*MPU,w:Math.sqrt(9.81*k)*tm,A:A*WU,Q:st/(k*A*n),ph:m*1.7}; });
-    for(let i=0;i<NW;i++){ const w=WV[i]; if(w){ WA[i].set(w.dx,w.dz,w.k,w.w); WB[i].set(w.A,w.Q,w.ph,0); } else { WA[i].set(1,0,0,0); WB[i].set(0,0,0,0); } } };
-  const ampAt=x=>RIVER.way==='flat'?0:cl(Math.min(x-(RIVER.cx-WIN/2),RIVER.cx+WIN/2-x)/(10*T),0,1);
-  const hAt=(x,z)=>{ const f=ampAt(x); if(!f)return 0; let h=0; for(const w of WV)h+=w.A*Math.sin(w.k*(w.dx*x+w.dz*z)-w.w*RIVER.t+w.ph); return h*f; };
-  const slopeAt=(x,z)=>{ const f=ampAt(x); let sx=0,sz=0; for(const w of WV){ const c=w.k*w.A*Math.cos(w.k*(w.dx*x+w.dz*z)-w.w*RIVER.t+w.ph); sx+=w.dx*c; sz+=w.dz*c; } return [sx*f,sz*f]; };
-  RIVER.hAt=hAt;
-
-  const WIN=88*T, CELL=T, NX=Math.round(WIN/CELL), DZ=rz1-rz0, NZ=Math.round(DZ/CELL); RIVER.cx=1e9;
-  const snapX=x=>Math.round(cl(x,lx0+WIN/2,lx1-WIN/2)/(8*T))*8*T;
-  const SW=48*T, uRipOn={value:0};   // the water round you is FLOW's (065a): the one simulation every water shares
-  RIVER.drop=(x,z,r,s)=>{ if(RIVER.way!=='full'&&RIVER.way!=='fluid')return; FLOW.drop(x,z,r,s); };
-
-  const ND=16*T, PG=(d,nx,nz,o)=>{ const g=new THREE.PlaneGeometry(WIN,d,nx,nz); g.rotateX(-Math.PI/2); g.translate(0,0,o); return g; };
-  const BN=[Math.round(WIN/(2*T)),Math.round(DZ/(2*T))];
-  const uT0={value:0}, uBedK={value:0}, uCau={value:1}, uLvW={value:LV}, uSunD={value:new THREE.Vector3()};
-  const GLN=`float rh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
+// the water surface's shader, every water's (the river's, the lake's), and what every surface shares (the sun, the sky, the lamps, the clock, FLOW's ripples), kept out here so a lake can wear the river's water before the river is built
+const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
     float rn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(rh(i),rh(i+vec2(1.,0.)),f.x),mix(rh(i+vec2(0.,1.)),rh(i+vec2(1.,1.)),f.x),f.y); }
     float rf(vec2 p){ return rn(p)*.5+rn(p*2.1+5.)*.3+rn(p*4.3+9.)*.2; }`;
-  const uAmbB={value:new THREE.Color()}, uSunCB={value:new THREE.Color()};
-  const UWU={uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};   // the murk on the river's own water, bed and sheets, seen from under it
-  const bedMat=new THREE.ShaderMaterial({uniforms:{uT:uT0,uBedK,uCau,uLvW,uSunD,uSunC:uSunCB,uAmb:uAmbB,...UWU},
-    vertexShader:'varying vec3 vRw,vN; void main(){ vec4 w=modelMatrix*vec4(position,1.); vRw=w.xyz; vN=normal; gl_Position=projectionMatrix*viewMatrix*w; }',
-    fragmentShader:`uniform float uUW,uUWF; uniform vec3 uUWC; uniform float uT,uBedK,uCau,uLvW; uniform vec3 uSunD,uSunC,uAmb; varying vec3 vRw,vN;
-    ${GLN}
-    float cau(vec2 p,float t){ vec2 i=p; float c=1.; for(int n=0;n<4;n++){ float tt=t*(1.-(3.5/float(n+1))); i=p+vec2(cos(tt-i.x)+sin(tt+i.y),sin(tt-i.y)+cos(tt+i.x)); vec2 q=vec2(sin(i.x+tt),cos(i.y+tt)); q=sign(q)*max(abs(q),vec2(1e-3)); c+=1./max(length(vec2(p.x/(q.x/.005),p.y/(q.y/.005))),1e-4); } c/=4.; c=1.17-pow(max(c,0.),1.4); return min(pow(abs(c),8.),4.); }
-    void main(){ vec2 q=floor(vRw.xz/${(TILE/12).toFixed(4)})*${(TILE/12*MPU).toFixed(4)}; float v=rf(q*2.), h=rh(floor(q*14.)); vec3 c;
-      if(uBedK<.5){ c=vec3(.33,.29,.21)*(.78+.44*v); if(h>.94)c=vec3(.24,.22,.19); else if(h>.925)c=vec3(.55,.53,.46); }
-      else if(uBedK<1.5){ float r=rf(q*.55+3.); if(r>.55){ float k=.75+.45*rn(q*4.); c=vec3(.40,.40,.38)*k; if(rn(q*7.)>.82)c=vec3(.22); if(h>.9)c=vec3(.5,.3,.32); } else c=vec3(.6,.56,.46)*(.82+.3*v); }
-      else { float s=sin(q.x*5.5+rf(q*.7)*5.); c=vec3(.86,.8,.62)*(.86+.2*v)*(.93+.07*s); if(h>.96)c=vec3(.95,.9,.82); if(h<.01)c=vec3(.72,.5,.45); }
-      vec3 n=normalize(vN); vec3 L=uAmb*.7+uSunC*max(dot(n,uSunD),0.)*.32; c*=L;
-      float d=uLvW-vRw.y; c*=max(.1,exp(-max(d,0.)*${MPU.toFixed(4)}*.07)); if(d>0.&&uCau>0.){ vec2 p=vRw.xz*${MPU.toFixed(4)}*.62+uSunD.xz*d*${MPU.toFixed(4)}*.5; float k=cau(mod(p,6.2831),uT*.5)+.6*cau(mod(p*1.7+1.3,6.2831),uT*.4); float kk=clamp(k*1.6,0.,1.4); c*=.72+uCau*.9*kk*exp(-d*${MPU.toFixed(4)}*.1); c+=vec3(.25,.55,.55)*uCau*kk*.35*exp(-d*${MPU.toFixed(4)}*.1); }
-      if(uUW>0.)c=mix(c,uUWC,clamp(length(vRw-cameraPosition)/uUWF,0.,1.)); gl_FragColor=vec4(c,1.); }`});
-  const bed=new THREE.Mesh(PG(ND,BN[0],Math.round(ND/(2*T)),(DZ-ND)/2),bedMat), bedF=new THREE.Mesh(PG(DZ-ND,BN[0],12,-ND/2),bedMat);
-  bed.frustumCulled=bedF.frustumCulled=false; bed.add(bedF); scene.add(bed);
-  const bedTex=new THREE.DataTexture(new Uint8Array((BN[0]+1)*(BN[1]+1)*4),BN[0]+1,BN[1]+1); bedTex.magFilter=bedTex.minFilter=THREE.LinearFilter;
-  const buildBed=()=>{ const a=bedTex.image.data; for(const m of [bed,...bed.children]){ const g=m.geometry, p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i)+RIVER.cx, z=p.getZ(i)+(rz0+rz1)/2, d=depthAt(x,z); p.setY(i,LV-d*WU); } p.needsUpdate=true; g.computeVertexNormals(); }
-    for(let j=0;j<=BN[1];j++)for(let i=0;i<=BN[0];i++){ const x=RIVER.cx-WIN/2+i/BN[0]*WIN, z=rz0+j/BN[1]*DZ, k=(j*(BN[0]+1)+i)*4; a[k]=Math.min(255,depthAt(x,z)*20); a[k+3]=255; }
-    bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
-
-  const RT=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType}); RT.depthTexture=new THREE.DepthTexture(4,4); RT.depthTexture.type=THREE.FloatType;
-  const SU={...UWU,uT:uT0,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
-    uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
-    uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:LV},uBank:{value:new THREE.Vector2(rz0,rz1)},
-    uSunD:uSunD,uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},
-    uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRefl:{value:.45},uHi:{value:new THREE.Color(.05,.22,.22)}};
-  const surfMat=new THREE.ShaderMaterial({uniforms:SU,side:THREE.DoubleSide,fog:false,
+  return {gln:GLN,NW,
     vertexShader:`uniform float uT,uAmp,uRT,uRipOn,uMode; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect; uniform int uNW; uniform sampler2D uRip; uniform vec2 uBank;
       varying vec3 vW; varying vec2 vP0; varying float vVz, vH;
       void main(){ vec4 w=modelMatrix*vec4(position,1.); vec2 p=w.xz; vP0=p;
@@ -134,7 +59,95 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
         }
         if(uStep>0.)col=floor(col*24.+.5)/24.;
         if(uUW>0.)col=mix(col,uUWC,clamp(length(vW-cameraPosition)/uUWF,0.,1.)); if(uUW>0.)alpha=1.;
-        gl_FragColor=vec4(col,alpha); }`});
+        gl_FragColor=vec4(col,alpha); }`}; })();
+const SH={uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
+const WATERS=[
+ {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: green and clear, a slow low swell, the mud bed and the fish seen many metres down.',
+  sig:[0.34,0.075,0.1],scat:[0.02,0.07,0.045],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.04,.085,.05],sky:.16,
+  waves:[[8,0.035,265,.25],[4.6,0.022,250,.3],[2.8,0.012,285,.3],[1.7,0.006,240,.3]]},
+ {key:'b',name:'B · OPEN SEA',desc:'A long swell under a wind sea: crests a metre high that break white. A rock bed.',
+  sig:[0.3,0.06,0.045],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,far:[.06,.16,.2],sky:.32,
+  waves:[[18,0.42,268,.5],[11,0.24,255,.6],[7,0.14,280,.7],[4,0.08,245,.8],[2.5,0.05,290,.8],[1.6,0.025,230,.7],[5.5,0.09,262,.7]]},
+ {key:'c',name:'C · CLEAR COVE',desc:'Glassy and clear: the sand rippled eight metres down, light dancing over it, bright fish.',
+  sig:[0.36,0.05,0.04],scat:[0.03,0.34,0.38],deep:8,bed:2,foam:0.15,refr:1.4,far:[.06,.16,.2],sky:.32,
+  waves:[[9,0.07,268,.3],[3.5,0.016,240,.4],[2.2,0.01,290,.4],[1.4,0.006,255,.4]]}];
+RIVER.WATERS=WATERS;
+try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s&&s.v===2){ RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){}
+const setWater=U=>{ const Wt=WATERS[RIVER.wi]; U.uSig.value.set(...Wt.sig); U.uScat.value.set(...Wt.scat); U.uFoam.value=Wt.foam; U.uRefr.value=Wt.refr; U.uRefl.value=Wt.refl||.45; U.uHi.value.setRGB(...(Wt.hi||[.05,.22,.22])); };
+const SURFS=[]; RIVER.surface=o=>{ const U={uUW:SH.uUW,uUWF:SH.uUWF,uUWC:SH.uUWC,uT:SH.uT,uWA:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4(1,0,0,0))},uWB:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4())},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4(-1e7,1e7,0,0)},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:SH.uRipOn,uRT:{value:1/FLOW.G},uScene:{value:null},uDepth:{value:null},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:1},uBed:{value:o.bed},uBedR:{value:o.bedR},
+    uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:o.lv},uBank:{value:new THREE.Vector2(-1e7,1e7)},uSunD:SH.uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,uLP:SH.uLP,uLC:SH.uLC,uStep:SH.uStep,uRefl:{value:.45},uHi:{value:new THREE.Color()}};
+  const m=new THREE.ShaderMaterial({uniforms:U,side:THREE.DoubleSide,fog:false,transparent:true,depthWrite:false,vertexShader:SURF.vertexShader,fragmentShader:SURF.fragmentShader}); SURFS.push(U); setWater(U); return m; };
+// once a frame (the river's tick, or the lake's while the river is not built): the shared uniforms from the clock, the sky and the lamps
+RIVER.shade=()=>{ if(!CLOCK.sun)return; if(!RIVER.on){ SH.uT.value=RIVER.t; SH.uRipOn.value=FLOW.on.value?1:0; SHARED.cam.getWorldDirection(SH.uCamD.value); }
+  const S=CLOCK.sun; SH.uSunD.value.copy(CLOCK.sunV); SH.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SH.uSkyH.value.copy(SKY.U.uH.value); SH.uSkyZ.value.copy(SKY.U.uZ.value); }
+  SH.uAmb.value.copy(SH.uSkyZ.value).multiplyScalar(.55).addScalar(.03); LITE.pool.forEach((Lp,i)=>{ if(i>=8)return; SH.uLP.value[i].copy(Lp.position); SH.uLC.value[i].set(Lp.color.r,Lp.color.g,Lp.color.b).multiplyScalar(Math.min(1,Lp.intensity/3)); }); SH.uStep.value=RIVER.step?1:0; };
+RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
+  const MPU=0.84/T, WU=1/MPU;
+  const L=MODS.landR, lx0=L.x0*T, lx1=L.x1*T, rz0=Math.min(ZS(R.river.y0),ZS(R.river.y1)), rz1=Math.max(ZS(R.river.y0),ZS(R.river.y1));
+  RIVER.mouth={x:XS(117.5),z:(rz0+rz1)/2};
+  const fx0=XS(R.ff.x0), fx1=XS(R.ff.x1);
+  const LVm=-1.0, LV=LVm*WU;
+  RIVER.box={x0:lx0,x1:lx1,z0:rz0,z1:rz1,lv:LV};
+  const cl=(v,a,b)=>v<a?a:v>b?b:v;
+  const hash=(x,y)=>{ let h=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
+  const vn=(x,y)=>{ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; };
+  const fbm=(x,y)=>vn(x,y)*0.5+vn(x*2.1+5,y*2.1+3)*0.3+vn(x*4.3+9,y*4.3+1)*0.2;
+  // the very deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): along the channel, 60 to 110 m more, black without a light
+  const RW=(lx1-lx0)*MPU, HOLES=[[.18,.55,7,70],[.47,.7,9,110],[.79,.5,6,60]].map(([f,u,r,d])=>[(lx0*MPU)/RW+f,u,r,d]);
+  const depthAt=(x,z)=>{ const Wt=WATERS[RIVER.wi], xm=x*MPU, zm=z*MPU, e=(rz1-z)*MPU, t=cl(e/16,0,1);
+    let d=1.3+(Wt.deep-1.3)*Math.pow(t,1.1)-(fbm(xm*0.25,zm*0.25)-0.5)*1.8;
+    if(Wt.bed===2)d-=Math.sin(xm*2.7+fbm(xm*0.55,zm*0.55)*6)*0.07;
+    if(Wt.bed===1)d-=Math.max(0,fbm(xm*0.55+3,zm*0.55)-0.52)*6;
+    if(Wt.bed===0)d-=(vn(xm*1.6,zm*1.6)-0.5)*0.25;
+    const u=e/((rz1-rz0)*MPU), mx=(x-RIVER.mouth.x)*MPU, mz=(z-RIVER.mouth.z)*MPU, near=Math.exp(-mx*mx/1600), m=(2+8*cl(vn(xm/70+.3,3.7)*1.5-.25,0,1))*(1-near)+3*near;   // two to ten times deeper out in the channel; the cavern's pit mid-river
+    d*=1+(m-1)*cl((u-.2)/.35,0,1)*cl((u-.2)/.35,0,1); d+=6*Math.exp(-(mx*mx+mz*mz)/49); for(const [px,pu,r,dd] of HOLES){ const hx=xm-px*RW, hz=(u-pu)*(rz1-rz0)*MPU; d+=dd*Math.exp(-(hx*hx+hz*hz)/(r*r)); }
+    return Math.max(1.2,d); };
+  RIVER.depthAt=depthAt;
+  const NW=8, WA=Array.from({length:NW},()=>new THREE.Vector4()), WB=Array.from({length:NW},()=>new THREE.Vector4()); let WV=[];
+  const setWaves=()=>{ const ws=WATERS[RIVER.wi].waves, n=ws.length, tm=WATERS[RIVER.wi].tm||1; WV=ws.map(([lam,A,deg,st],m)=>{ const k=2*Math.PI/lam, a=deg*Math.PI/180; return {dx:Math.cos(a),dz:-Math.sin(a),k:k*MPU,w:Math.sqrt(9.81*k)*tm,A:A*WU,Q:st/(k*A*n),ph:m*1.7}; });
+    for(let i=0;i<NW;i++){ const w=WV[i]; if(w){ WA[i].set(w.dx,w.dz,w.k,w.w); WB[i].set(w.A,w.Q,w.ph,0); } else { WA[i].set(1,0,0,0); WB[i].set(0,0,0,0); } } };
+  const ampAt=x=>RIVER.way==='flat'?0:cl(Math.min(x-(RIVER.cx-WIN/2),RIVER.cx+WIN/2-x)/(10*T),0,1);
+  const hAt=(x,z)=>{ const f=ampAt(x); if(!f)return 0; let h=0; for(const w of WV)h+=w.A*Math.sin(w.k*(w.dx*x+w.dz*z)-w.w*RIVER.t+w.ph); return h*f; };
+  const slopeAt=(x,z)=>{ const f=ampAt(x); let sx=0,sz=0; for(const w of WV){ const c=w.k*w.A*Math.cos(w.k*(w.dx*x+w.dz*z)-w.w*RIVER.t+w.ph); sx+=w.dx*c; sz+=w.dz*c; } return [sx*f,sz*f]; };
+  RIVER.hAt=hAt;
+
+  const WIN=88*T, CELL=T, NX=Math.round(WIN/CELL), DZ=rz1-rz0, NZ=Math.round(DZ/CELL); RIVER.cx=1e9;
+  const snapX=x=>Math.round(cl(x,lx0+WIN/2,lx1-WIN/2)/(8*T))*8*T;
+  const SW=48*T, uRipOn=SH.uRipOn;   // the water round you is FLOW's (065a): the one simulation every water shares
+  RIVER.drop=(x,z,r,s)=>{ if(RIVER.way!=='full'&&RIVER.way!=='fluid')return; FLOW.drop(x,z,r,s); };
+
+  const ND=16*T, PG=(d,nx,nz,o)=>{ const g=new THREE.PlaneGeometry(WIN,d,nx,nz); g.rotateX(-Math.PI/2); g.translate(0,0,o); return g; };
+  const BN=[Math.round(WIN/(2*T)),Math.round(DZ/(2*T))];
+  const uT0=SH.uT, uBedK={value:0}, uCau={value:1}, uLvW={value:LV}, uSunD=SH.uSunD;
+  const GLN=SURF.gln;
+  const uAmbB={value:new THREE.Color()}, uSunCB={value:new THREE.Color()};
+  const UWU={uUW:SH.uUW,uUWF:SH.uUWF,uUWC:SH.uUWC};   // the murk on the river's own water, bed and sheets, seen from under it
+  const bedMat=new THREE.ShaderMaterial({uniforms:{uT:uT0,uBedK,uCau,uLvW,uSunD,uSunC:uSunCB,uAmb:uAmbB,...UWU},
+    vertexShader:'varying vec3 vRw,vN; void main(){ vec4 w=modelMatrix*vec4(position,1.); vRw=w.xyz; vN=normal; gl_Position=projectionMatrix*viewMatrix*w; }',
+    fragmentShader:`uniform float uUW,uUWF; uniform vec3 uUWC; uniform float uT,uBedK,uCau,uLvW; uniform vec3 uSunD,uSunC,uAmb; varying vec3 vRw,vN;
+    ${GLN}
+    float cau(vec2 p,float t){ vec2 i=p; float c=1.; for(int n=0;n<4;n++){ float tt=t*(1.-(3.5/float(n+1))); i=p+vec2(cos(tt-i.x)+sin(tt+i.y),sin(tt-i.y)+cos(tt+i.x)); vec2 q=vec2(sin(i.x+tt),cos(i.y+tt)); q=sign(q)*max(abs(q),vec2(1e-3)); c+=1./max(length(vec2(p.x/(q.x/.005),p.y/(q.y/.005))),1e-4); } c/=4.; c=1.17-pow(max(c,0.),1.4); return min(pow(abs(c),8.),4.); }
+    void main(){ vec2 q=floor(vRw.xz/${(TILE/12).toFixed(4)})*${(TILE/12*MPU).toFixed(4)}; float v=rf(q*2.), h=rh(floor(q*14.)); vec3 c;
+      if(uBedK<.5){ c=vec3(.33,.29,.21)*(.78+.44*v); if(h>.94)c=vec3(.24,.22,.19); else if(h>.925)c=vec3(.55,.53,.46); }
+      else if(uBedK<1.5){ float r=rf(q*.55+3.); if(r>.55){ float k=.75+.45*rn(q*4.); c=vec3(.40,.40,.38)*k; if(rn(q*7.)>.82)c=vec3(.22); if(h>.9)c=vec3(.5,.3,.32); } else c=vec3(.6,.56,.46)*(.82+.3*v); }
+      else { float s=sin(q.x*5.5+rf(q*.7)*5.); c=vec3(.86,.8,.62)*(.86+.2*v)*(.93+.07*s); if(h>.96)c=vec3(.95,.9,.82); if(h<.01)c=vec3(.72,.5,.45); }
+      vec3 n=normalize(vN); vec3 L=uAmb*.7+uSunC*max(dot(n,uSunD),0.)*.32; c*=L;
+      float d=uLvW-vRw.y; c*=max(.1,exp(-max(d,0.)*${MPU.toFixed(4)}*.07)); if(d>0.&&uCau>0.){ vec2 p=vRw.xz*${MPU.toFixed(4)}*.62+uSunD.xz*d*${MPU.toFixed(4)}*.5; float k=cau(mod(p,6.2831),uT*.5)+.6*cau(mod(p*1.7+1.3,6.2831),uT*.4); float kk=clamp(k*1.6,0.,1.4); c*=.72+uCau*.9*kk*exp(-d*${MPU.toFixed(4)}*.1); c+=vec3(.25,.55,.55)*uCau*kk*.35*exp(-d*${MPU.toFixed(4)}*.1); }
+      if(uUW>0.)c=mix(c,uUWC,clamp(length(vRw-cameraPosition)/uUWF,0.,1.)); gl_FragColor=vec4(c,1.); }`});
+  const bed=new THREE.Mesh(PG(ND,BN[0],Math.round(ND/(2*T)),(DZ-ND)/2),bedMat), bedF=new THREE.Mesh(PG(DZ-ND,BN[0],12,-ND/2),bedMat);
+  bed.frustumCulled=bedF.frustumCulled=false; bed.add(bedF); scene.add(bed);
+  const bedTex=new THREE.DataTexture(new Uint8Array((BN[0]+1)*(BN[1]+1)*4),BN[0]+1,BN[1]+1); bedTex.magFilter=bedTex.minFilter=THREE.LinearFilter;
+  const buildBed=()=>{ const a=bedTex.image.data; for(const m of [bed,...bed.children]){ const g=m.geometry, p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i)+RIVER.cx, z=p.getZ(i)+(rz0+rz1)/2, d=depthAt(x,z); p.setY(i,LV-d*WU); } p.needsUpdate=true; g.computeVertexNormals(); }
+    for(let j=0;j<=BN[1];j++)for(let i=0;i<=BN[0];i++){ const x=RIVER.cx-WIN/2+i/BN[0]*WIN, z=rz0+j/BN[1]*DZ, k=(j*(BN[0]+1)+i)*4; a[k]=Math.min(255,depthAt(x,z)*20); a[k+3]=255; }
+    bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
+
+  const RT=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType}); RT.depthTexture=new THREE.DepthTexture(4,4); RT.depthTexture.type=THREE.FloatType;
+  const SU={...UWU,uT:uT0,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
+    uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
+    uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:LV},uBank:{value:new THREE.Vector2(rz0,rz1)},
+    uSunD:uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,
+    uLP:SH.uLP,uLC:SH.uLC,uStep:SH.uStep,uRefl:{value:.45},uHi:{value:new THREE.Color(.05,.22,.22)}};
+  const surfMat=new THREE.ShaderMaterial({uniforms:SU,side:THREE.DoubleSide,fog:false,vertexShader:SURF.vertexShader,fragmentShader:SURF.fragmentShader});
   const surf=new THREE.Mesh(PG(ND,NX,Math.round(ND/CELL),(DZ-ND)/2),surfMat), surfF=new THREE.Mesh(PG(DZ-ND+T,1,1,(T-ND)/2),surfMat); surf.frustumCulled=surfF.frustumCulled=false; surf.add(surfF); scene.add(surf);
   const FU={...UWU,uT:uT0,uSky:{value:new THREE.Color(.5,.62,.75)},uDay:{value:1},uDeep:{value:new THREE.Color(.06,.16,.2)},uSkyK:{value:.32}};
   const flatMat=new THREE.ShaderMaterial({uniforms:FU,fog:false,
@@ -232,9 +245,9 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   RIVER.clamp=pos=>{ const m=.35*T; pos.x=cl(pos.x,lx0+m,lx1-m); pos.z=cl(pos.z,rz0+m,rz1-m); for(const [x,z,r] of POSTS){ const dx=pos.x-x, dz=pos.z-z, d=Math.hypot(dx,dz), R0=r+.3*T; if(d<R0&&d>1e-4){ pos.x=x+dx/d*R0; pos.z=z+dz/d*R0; } } };
 
   const save=()=>{ try{ SAVE.set('river',JSON.stringify({v:2,way:RIVER.way,wi:RIVER.wi,step:RIVER.step})); }catch(e){} };
-  try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s&&s.v===2){ RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){} RIVER.step=true;
+  RIVER.step=true;
   if(QSr.get('river'))RIVER.way=QSr.get('river'); if(QSr.get('water'))RIVER.wi=Math.max(0,'abc'.indexOf(QSr.get('water')));
-  const applyWater=()=>{ const Wt=WATERS[RIVER.wi]; setWaves(); SU.uNW.value=WV.length; SU.uSig.value.set(...Wt.sig); SU.uScat.value.set(...Wt.scat); SU.uFoam.value=Wt.foam; SU.uRefr.value=Wt.refr; SU.uRefl.value=Wt.refl||.45; SU.uHi.value.setRGB(...(Wt.hi||[.05,.22,.22])); uBedK.value=Wt.bed; FU.uDeep.value.setRGB(...Wt.far); FU.uSkyK.value=Wt.sky;
+  const applyWater=()=>{ const Wt=WATERS[RIVER.wi]; setWaves(); SU.uNW.value=WV.length; setWater(SU); for(const U of SURFS)setWater(U); uBedK.value=Wt.bed; FU.uDeep.value.setRGB(...Wt.far); FU.uSkyK.value=Wt.sky;
     uCau.value=Wt.bed===0?.6:Wt.bed===1?.7:1; RIVER.cx=1e9; FLOW.rest(); seedJunk(); };
   RIVER.set=(o={})=>{ if(o.way)RIVER.way=o.way; if(o.wi!=null){ RIVER.wi=o.wi; applyWater(); } if(o.step!=null)RIVER.step=o.step; save(); RIVER.panel&&RIVER.panel(); };
   applyWater();
@@ -247,9 +260,8 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
     RIVER.wallN.visible=up; if(RIVER.sea)RIVER.sea.visible=up; for(const c of RIVER.curtain)c.visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
     surfMat.transparent=way==='swell'; surfMat.depthWrite=way!=='swell'; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
     SU.uAmp.value=1;
-    const S=CLOCK.sun; uSunD.value.copy(CLOCK.sunV); SU.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SU.uSkyH.value.copy(SKY.U.uH.value); SU.uSkyZ.value.copy(SKY.U.uZ.value); FU.uSky.value.copy(SKY.U.uH.value); }
-    SU.uAmb.value.copy(SU.uSkyZ.value).multiplyScalar(.55).addScalar(.03); uAmbB.value.copy(SU.uSkyZ.value).multiplyScalar(.6).add(SU.uSkyH.value.clone().multiplyScalar(.25)); uSunCB.value.copy(SU.uSunC.value).multiplyScalar(.75); FU.uDay.value=cl((CLOCK.elev()+4)/14,.15,1);
-    LITE.pool.forEach((Lp,i)=>{ if(i>=8)return; SU.uLP.value[i].copy(Lp.position); SU.uLC.value[i].set(Lp.color.r,Lp.color.g,Lp.color.b).multiplyScalar(Math.min(1,Lp.intensity/3)); });
+    RIVER.shade(); if(window.SKY&&SKY.U)FU.uSky.value.copy(SKY.U.uH.value);
+    uAmbB.value.copy(SU.uSkyZ.value).multiplyScalar(.6).add(SU.uSkyH.value.clone().multiplyScalar(.25)); uSunCB.value.copy(SU.uSunC.value).multiplyScalar(.75); FU.uDay.value=cl((CLOCK.elev()+4)/14,.15,1);
     for(const B of BUOYS){ const h=hAt(B.x,B.z), [sx,sz]=slopeAt(B.x,B.z); B.m.position.set(B.x,LV+h-.12*T,B.z); B.m.rotation.set(-sz*.8,0,sx*.8); const a=B.ln.geometry.attributes.position; a.setXYZ(0,B.x,LV+h-.2*T,B.z); a.setXYZ(1,B.x+.8*T,LV-depthAt(B.x,B.z)*WU,B.z-.5*T); a.needsUpdate=true; }
     spray(Math.min(dt,1/30)); };
 
@@ -298,7 +310,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
       if(b.dataset.go==='1')STORE.goTo(lx-3*T,rz1+1.6*T,'up'); else STORE.goTo(lx-3*T,rz1-4*T,'up'); if(UI.view==='iso'&&UI.isoTurn)UI.isoTurn(Math.PI*3/4); }); };
   RIVER.panel(); pan.hidden=QSr.get('rvpanel')!=='1';
   const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-LV), ph=new THREE.Vector3();
-  RIVER.pick=(ray,pos)=>{ if(SHARED.LVL!=='up'||!ray.intersectPlane(pl,ph)||!RIVER.over(ph.x,ph.z)||onPier(ph.x,ph.z)||Math.hypot(ph.x-pos.x,ph.z-pos.z)>40*T)return false; pan.hidden=false; return true; };
+  RIVER.pick=(ray,pos)=>{ if(SHARED.LVL!=='up')return false; if(!ray.intersectPlane(pl,ph)||!RIVER.over(ph.x,ph.z)||onPier(ph.x,ph.z)||Math.hypot(ph.x-pos.x,ph.z-pos.z)>40*T){ if(!RIVER.pickers.some(f=>f(ray,pos)))return false; } pan.hidden=false; return true; };
   RIVER.hud=()=>{ if(!RIVER.swim){ hud.style.display='none'; return; } hud.style.display='block'; document.getElementById('rvd').textContent=RIVER.dep.toFixed(1)+' m'; document.getElementById('rvb').textContent=RIVER.bot.toFixed(1)+' m';
     };
   RIVER.U={SU,uCau,uRipOn,surf,bed,grass,kit:RIVER.kit}; RIVER.on=true;

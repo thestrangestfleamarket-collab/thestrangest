@@ -1,8 +1,10 @@
 # THE GREENS — mini golf in the holodeck, in the line of Walkabout Mini Golf
 
-Owner, 2 Nov 2026: "i want to add a VR golfing game into TSFM. in the holodeck". The research behind this is in
-`docs/research/walkabout-mini-golf.md` and `walkabout-mini-golf-controls.md`. *Where it stands: designed, not built. The owner reads
-this first; §12 is his to answer.*
+Owner, 2 Nov 2026: "i want to add a VR golfing game into TSFM. in the holodeck"; then "only 1 hole to start. single player. do a zen
+garden. look up scerenshots. very realistic, relaxing, waterfall, calm". The research behind this is in `docs/research/walkabout-mini-golf.md`
+and `walkabout-mini-golf-controls.md`. *Where it stands (2 Nov 2026): built as the owner answered: one hole, single player, a zen garden at
+dusk (`src/146bc-greens.js`, its own chunk `greens`, the check `tests/greens.cjs`). §5 describes what was built; §7 and §10's later pull
+requests wait on him.*
 
 ## 1. The game in a sentence
 
@@ -55,18 +57,22 @@ head's speed and direction at contact; no power bar in the headset, as Walkabout
 - **Scorecard**: the pause menu's window in the menu look: nine columns, par and your strokes, the total against par, your best
   on each hole (kept server-side in OWNED like every owned thing).
 
-## 5. The course (the essence; one course now, the shape for more)
+## 5. The course: one hole in a zen garden (built)
 
-- **THE GREENS**: a garden of nine mini golf holes floating in the holodeck's sky at dusk, the market's own kit for the scenery
-  (the park's lamps, benches, brick and railings, the fountain) so it is cheap and looks like ours; cel look, nothing photoreal.
-  Walkabout's lesson is place first: the course is a walk with a view at every tee, the ninth hole the highlight (a ramp that
-  drops the ball through a ring into the cup).
-- A hole is data, not code: `{tee, cup, par, planes:[...], walls:[...], ramps:[...]}` in the file, so a second course or a hard
-  night version is another list. Surfaces: green felt (rolls true), rubber bumpers (bounce), brick ramps (slope), water (OB), a
-  tunnel (two cups joined), a windmill with a turning sail (the one moving thing).
-- Holes 1 to 9: a straight par 2; a dog-leg; a bank shot off a bumper; a tunnel; a slope with the cup on top; a two-level
-  drop; a loop round a fountain; the windmill; the ring drop. Each teaches one surface.
-- **Hard mode** (night, the holes reversed, more bumpers) and **a second course** are later lists on the same code.
+- **THE ZEN GARDEN**: a Japanese garden at dusk, built for calm and as real as the engine allows (the owner's "very realistic,
+  relaxing"): raked white gravel with the rake circling the stones, moss round their feet, a koi pond under a waterfall with its
+  mist, five koi, two stone lanterns lit warm, two red maples, two bamboo groves, an arched wooden bridge over the pond's outflow,
+  stepping stones beside the lane, a shishi-odoshi that fills, tips and knocks, blossom drifting on the air, a pink-to-blue sky
+  and dark hills all round. Standard (lit, rough) materials with procedural textures, a low warm sun with shadows: the holodeck's
+  "more realistic simulations" (owner, 22 Oct 2026), not the street's cel.
+- **The hole**: par 2. A smooth felt lane 0.9 m wide on a curve: straight from the tee, a dog-leg right round a mossy boulder, a
+  soft rise onto the green with the cup and flag. The lane's edge is a wooden rail the ball banks off; the rail is exactly where the
+  physics stops the ball (the lane is the points within half its width of the centreline). A fast ball runs over the cup's lip; a slow
+  one drops.
+- A hole is data: the centreline points, the width, the rise. The next hole, a hard night version, or nine more are more lists on the
+  same code. Only the one hole is built (owner: "only 1 hole to start").
+- After the ball drops (or the stroke limit) the score is written and the ball goes back on the tee for another go; END PROGRAM
+  leaves. Your best on the hole is kept with your things (server-side).
 
 ## 6. Skill, money and the market
 
@@ -74,10 +80,10 @@ head's speed and direction at contact; no power bar in the headset, as Walkabout
   list. Every hole at or under par pays a point (to 60, the holodeck's cap; the holodeck's programs "pay out by how well you do").
 - What GOLF does for you (one of these, the owner's call, §12): the mouse aim line grows longer with skill (a stand-in for a
   steadier hand), or nothing (pure player skill, as Walkabout) and the skill is only a score.
-- The program costs $10 a round, $4 for practice. A round under par pays back $10, a hole-in-one $5 (the holodeck's prize).
+- The program costs $6 (one hole). Par or better pays GOLF; under par pays GOLF twice and $5 (the holodeck's prize).
 - The putter is sold by the market too (the toy stall, $20) so you can own your own; the holodeck lends one.
 
-## 7. Multiplayer (the second pull request)
+## 7. Multiplayer (a later pull request; the owner said single player first)
 
 Walkabout is a hangout first (55 % of its sessions are multiplayer). THE GREENS opens a room: players already in the holodeck
 section see THE GREENS on the panel with "JOIN" while one is running; up to 8 on one course, everyone at their own pace with their
@@ -104,10 +110,10 @@ follows the emulated controller.
 
 ## 10. Build, in pull requests
 
-1. **The greens**: putter item and WIELD kind, the VR hand hook for held tools, ball physics, nine holes, rules, scorecard,
-   skill, the check. Playable alone, headset and screen.
+1. **The zen garden** (built, 2 Nov 2026): putter item and WIELD kind, the VR hand hook for held tools, ball physics, the one hole,
+   rules, card, the GOLF skill, `tests/greens.cjs`. Playable alone, headset and screen.
 2. **Together**: the room, others' balls, the shared scorecard, voice.
-3. **More**: hard mode at night, a lost ball hidden on each hole (a collectible ball skin), a second course.
+3. **More**: more holes, hard mode at night, a lost ball hidden on each hole (a collectible ball skin).
 
 ## 11. What is deliberately not built
 
@@ -116,9 +122,11 @@ every one of these out on purpose and its players agree.
 
 ## 12. Open for the owner
 
+Answered 2 Nov 2026: one hole, single player, a zen garden, realistic and calm. Still his:
 1. The name: THE GREENS, or another?
-2. Nine holes first (then nine more), or eighteen from the start?
-3. The theme: a dusk garden in the sky from the market's own kit (cheap, ours), or something stranger?
-4. GOLF the skill: steadies the screen aim line, or a score only (pure skill, Walkabout's way)?
-5. The screen swing: hold-and-release power bar (recommended), or a real mouse swing like the sword (hard to control)?
-6. Multiplayer in the second pull request, yes?
+2. GOLF the skill: steadies the screen aim line, or a score only (pure skill, Walkabout's way)? Built as a score only for now; the
+   aim line is a fixed 2.4 m.
+3. The screen swing: hold-and-release power bar (built), or a real mouse swing like the sword?
+4. Grip To Putt in the headset: built as "the head only counts when it moves" (a slow nudge never putts); the grip-held version
+   needs the controller's grip button read as a key, which the headset's gamepad layer does not pass through yet.
+5. Multiplayer next, or more holes?

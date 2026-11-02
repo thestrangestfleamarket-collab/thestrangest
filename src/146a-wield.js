@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, ITEMS, keys, LEVELS, ONLINE, RAG, SFX, st, VIT, W3, WEEDS, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, ITEMS, keys, LEVELS, ONLINE, RAG, SFX, st, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {BFLY} from './143-bfly.js';
@@ -62,7 +62,8 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J, P=(p,o)=>o.set(p.x,p.y,p.z).applyMatrix4(G);
     P(J_(J,'shoulder'),sh); P(J.pelvis,hip); P(J_(J,'elbow'),ax); P(J_(J,'palm'),base); ax.subVectors(P(J_(J,'wrist'),tip),ax).normalize();
-    bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); bz.crossVectors(bx2,ax);
+    const HV=VR.on&&VR.hand&&VR.hand(WIELD.hand==='L'?'left':'right'); WIELD.vel=HV?HV.v:null;   // in the headset the tool hangs from the controller: its forward is the shaft, its roll the face
+    if(HV){ base.copy(HV.wp); ax.set(0,0,-1).applyQuaternion(HV.wq); bx2.set(1,0,0).applyQuaternion(HV.wq); } else { bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); } bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); if(m.tipL){ WIELD.tip.copy(m.tipL).applyMatrix4(M); if(m.bend)m.bend(); } head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
     const fast=(spd>7||sw)&&!KIND[WIELD.on], now=performance.now(); if(!WIELD.mv){ WIELD.mv=1; SYS.add('weedsMove',()=>{ if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); },'146a-wield'); } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.sword&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();

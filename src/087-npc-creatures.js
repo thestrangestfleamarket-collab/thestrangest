@@ -71,5 +71,5 @@ import {CREATURES} from './086-npc-fox.js';
     N.g.rotation.order='YXZ'; N.me.rotation.y=K.turn||0; N.me.position.set(0,0,0); N.mixer=mixer; return N; };
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible})); }
 
-const PAWNS=__DATA__("data/pawns.json");
+const PAWNS=__LAZY__("data/pawns.json");
 export {PAWNS};

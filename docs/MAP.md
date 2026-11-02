@@ -122,7 +122,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `087c-feel-anim.js` | 4.2 | top level |  | 003: SHARED THREE; 003b: FEEL SFX pos |
 | `087d-feel-yard.js` | 4.7 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: M scene; 006: MISTB MISTB2 STORE |
 | `087e-feel-panel.js` | 11.1 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: renderer scene; 006: QS |
-| `088-npc-pawns.js` | 14.6 | top level |  | 003: SHARED THREE; 003a: BY F32 SKIN; 003b: UI pos; 004: PPU; 006: MODS QS SOL SYS TILE; 076: DUN STLANE makeNPC stfree; 087: PAWNS |
+| `088-npc-pawns.js` | 14.8 | top level |  | 003: SHARED THREE; 003a: BY F32 SKIN; 003b: UI pos; 004: PPU; 006: MODS QS SOL SYS TILE; 076: DUN STLANE makeNPC stfree; 087: PAWNS |
 | `089-pond.js` | 1.9 | top level |  | 003: SHARED THREE; 003b: PARK POND; 006: MODS TILE ZU |
 | `089a-brook.js` | 20.8 | top level |  | 003: SHARED THREE; 003b: BROOK CLOCK FLOW PARK SFX SKY WED; 004: scene; 006: FIX MAPG MODS SOL TILE ZU; 060a: FOUNT |
 | `089b-parksites.js` | 24.2 | top level | SITES (146j) | 003: SHARED THREE; 003b: PARK ROOMS WEEDS; 004: scene; 006: CASTLE LEVEL MAPG MODS SOL STORE SYS TILE ZU; 080: PARTSNPC |

@@ -69,7 +69,7 @@ export default {
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
-        return json({ ok: await homeOf(env).ownedPut(id, put) }); }
+        return (await homeOf(env).ownedPut(id, put)) ? json({ ok: true }) : json({ why: "too much saved (2 MB a player)", full: true }, 413); }
       // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
       if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
         if (body.put === undefined) return json({ top: await postOf(env).top(cab) });

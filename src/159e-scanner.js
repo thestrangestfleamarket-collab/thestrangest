@@ -25,20 +25,19 @@ import {LABELS} from './104-labels.js';
   const undress=d=>{ for(const [,o] of d.ov||[])o.removeFromParent(); d.ov=null; };
   const GT=grid(), drones=[], Q=new Map(), ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; SCANNER.list=drones;
   const label=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return [c,t]; };
-  const fallback=()=>{ const D=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:0x3a3d44}); D.add(new THREE.Mesh(new THREE.BoxGeometry(.3,.08,.3),m)); return {D,rot:[]}; };
   // where a drone can sit on this platform (u along, a across, h up): the end, the bench backs, and on the first platform the bins and the passport machine
   const perches=st=>{ const SL=SHARED.METRO&&SHARED.METRO.SL, M=LOOP.MID, out=[['end',LOOP.LEN-2.5,M,165]];
     for(const by of (SL&&SL.BENCH)||[])out.push(['bench',by+1.6,M,42]);
     if(st.old&&SL){ for(const y of SL.BINS||[])out.push(['bin',y,M,38]); const K=SHARED.METRO.MACH; if(K)out.push(['machine',K.y,K.x,54]); }
     return out.map(([n,u,a,h])=>({n,at:new V3(...st.P(u,a,h))})); };
   const mid=st=>new V3(...st.P(LOOP.LEN/2,LOOP.MID,0));
-  const mk=(st,i)=>{ const {D,rot,parcel}=DRONE.mk?DRONE.mk():fallback(); if(parcel)parcel.visible=false; D.scale.setScalar(1.4*T/1.13); const eye=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),flat({color:BLUE,opacity:1})); eye.position.set(0,-.06,.12); D.add(eye);
+  const mk=(st,i)=>{ const {D}=DRONE.mk({lens:BLUE,parcel:false,s:1.4*T/1.13});
     const P=perches(st), sit0=P[i%P.length]; D.position.copy(sit0.at); MAPG.down.add(D);
     const S=new THREE.Group(); S.visible=false; MAPG.down.add(S); const h=1.9*T;
     const sweep=new THREE.Object3D(); S.add(sweep);   // where the sweep is: the beam ends there and the body's grid is brightest there
     const beam=new THREE.Mesh(new THREE.CylinderGeometry(.01,.12*T,1,10,1,true),flat({color:0x6fd0ff,opacity:.25,blending:THREE.AdditiveBlending})); MAPG.down.add(beam); beam.visible=false;
     const [cv,tex]=label(512,128); const card=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,fog:false})); card.scale.set(1.6*T,.4*T,1); card.visible=false; MAPG.down.add(card);   // the card in the headset; on the screen it is page text (LABELS)
-    const d={st,D,rot,P,on:sit0,S,sweep,beam,card,cv,tex,lab:LABELS.add(),GM:gridMat(),ov:null,ph:'perch',t:0,sit:rnd(6,14),from:null,to:null,next:null,dur:1,target:null,h,done:0}; face(d,mid(st)); drones.push(d); if(!Q.has(st))Q.set(st,[]); return d; };
+    const d={st,D,P,on:sit0,S,sweep,beam,card,cv,tex,lab:LABELS.add(),GM:gridMat(),ov:null,ph:'perch',t:0,sit:rnd(6,14),from:null,to:null,next:null,dur:1,target:null,h,done:0}; face(d,mid(st)); drones.push(d); if(!Q.has(st))Q.set(st,[]); return d; };
   const face=(d,p)=>d.D.lookAt(p.x,d.D.position.y,p.z);
   const write=(d,name)=>{ const g=d.cv.getContext('2d'), W=512, H=128; g.clearRect(0,0,W,H); g.fillStyle='rgba(10,20,34,.85)'; g.fillRect(0,0,W,H); g.strokeStyle='#4fc3ff'; g.lineWidth=3; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#7fd8ff'; g.font='30px Silkscreen,monospace'; g.fillText('SCANNING  ·  '+name,W/2,40); g.font='22px Silkscreen,monospace'; g.fillStyle='#ece5d3'; g.fillText('SECTION '+d.st.id+'  ·  CLEAR',W/2,88); d.tex.needsUpdate=true;
     const e=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); d.lab.set('<div style="background:rgba(10,20,34,.88);border:2px solid #4fc3ff;padding:6px 14px 7px;font-family:Silkscreen,monospace;letter-spacing:.5px;box-shadow:0 0 10px rgba(79,195,255,.35)"><div style="font-size:14px;color:#7fd8ff">SCANNING &nbsp;·&nbsp; '+e(name)+'</div><div style="font-size:11px;color:#ece5d3;margin-top:3px">SECTION '+e(d.st.id)+' &nbsp;·&nbsp; CLEAR</div></div>'); };
@@ -49,7 +48,7 @@ import {LABELS} from './104-labels.js';
   const elsewhere=d=>{ const taken=drones.filter(q=>q!==d&&q.st===d.st).map(q=>q.on), open=d.P.filter(p=>p!==d.on&&!taken.includes(p)); return open.length?open[Math.floor(Math.random()*open.length)]:d.P[0]; };
   const drift=d=>new V3(...d.st.P(rnd(4,LOOP.LEN-4),LOOP.MID+rnd(-2,2),150));
   const wander=d=>{ if(Math.random()<.4){ d.on=null; fly(d,drift(d),'float'); } else { d.on=elsewhere(d); fly(d,d.on.at,'perch'); } };
-  const step=(d,dt)=>{ for(const r of d.rot||[])r.rotation.y+=dt*(d.ph==='perch'?6:40); d.t+=dt;
+  const step=(d,dt)=>{ d.t+=dt;
     if(d.ph==='perch'){ if(d.t>d.sit)wander(d); return; }
     if(d.ph==='float'){ d.D.position.copy(d.to).add(new V3(Math.sin(d.t*.7)*.3*T,Math.sin(d.t*1.3)*.12*T,Math.cos(d.t*.5)*.3*T)); if(d.t>d.sit){ d.on=elsewhere(d); fly(d,d.on.at,'perch'); } return; }
     if(d.ph==='fly'){ const goal=d.next==='scan'?hover(d,at(d.target)):d.to, k=ease(Math.min(1,d.t/d.dur)); d.D.position.lerpVectors(d.from,goal,k); d.D.position.y+=Math.sin(k*Math.PI)*.6*T*(d.next==='perch'?1:0);

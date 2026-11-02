@@ -10,6 +10,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     await pg.waitForTimeout(2000);
+    await pg.evaluate(() => new Promise(res => { const t0 = performance.now(); let last = t0, calm = t0; const f = () => { const n = performance.now(); if (n - last > 500) calm = n; last = n; if (n - calm > 3000 || n - t0 > 120000) res(); else requestAnimationFrame(f); }; requestAnimationFrame(f); }));   // past the start's window pictures (a long frame on a slow machine) before anyone speaks
     await pg.evaluate(() => { const P = __dbg.you(); const a = (dx, dz) => [P.x + dx, P.z + dz, SHARED.py, 0, SHARED.LVL, ''];
       ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: a(1.5, 0) }, { id: 'b', name: 'MILO', look: 'w1', at: a(-1.5, .5) }] });
       ONLINE.feed({ t: 'say', id: 'a', name: 'ROSA', text: 'hello block', st: { f: 1, c: '#ff8ad8', s: 2 } }); ONLINE.said('over my head'); });
@@ -20,7 +21,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r1.n === 2 && r1.figs === 2 && r1.tags === 2, 'two players near you are drawn with name tags (' + JSON.stringify(r1) + ')');
     ok(r1.bare, 'a barefoot player gets that look');
     ok(/ONLINE 3/.test(r1.who || ''), 'the list counts you and the two others (' + r1.who + ')');
-    ok(/ROSA/.test(r1.log || '') && /hello block/.test(r1.log || '') && /hello block/.test(r1.say || ''), 'what ROSA said is in the chat and over her head');
+    ok(/ROSA/.test(r1.log || '') && /hello block/.test(r1.log || '') && /hello block/.test(r1.say || ''), 'what ROSA said is in the chat and over her head (' + JSON.stringify({log: (r1.log || '').slice(-120), say: r1.say}) + ')');
     ok(r1.at, 'ONLINE.at gives the ragdoll a place to be carried to');
     const r1b = await pg.evaluate(() => ({ styled: /1#ff8ad82$/.test(ONLINE.others.get('a').tagS), mine: !!(ONLINE.ME.lab && /over my head/.test(ONLINE.ME.tagS) && (ONLINE.ME.lab.on || performance.now() - ONLINE.ME.sayT >= ONLINE.sayFor * 1000)), noName: !/TENANT/.test(ONLINE.ME.tagS), you: !!document.querySelector('#looks #lsay [data-f="1"]') && document.querySelectorAll('#looks #lsay [data-c]').length === 8, stay: !!document.querySelector('#menu [data-p="display"] #dsayfor'), sayFor: ONLINE.sayFor, logged: /over my head/.test((document.querySelector('#onllog') || {}).textContent || '') }));
     ok(r1b.styled && r1b.mine && r1b.noName && r1b.you && r1b.stay && r1b.sayFor === 7 && r1b.logged, 'words over heads: ROSA\'s in her font, colour and size; your own over your head with no name; YOUR WORDS in the YOU window and WORDS STAY in DISPLAY (' + JSON.stringify(r1b) + ')');

@@ -1,4 +1,4 @@
-// THE CLOTHES: a real shirt, trousers, shoes, hat and jacket worn over the Walker, each its own mesh in photoreal fabric on the rig's frames (shaped as his body is); their loose parts hang and swing on DRAPE, kept out of his body: the shirt's and the jacket's lower body, the jacket's open front, the trouser cuffs and the sleeve ends.
+// THE CLOTHES: a real shirt, trousers, shoes, hat and jacket worn over the Walker, each its own mesh in photoreal fabric, cut to its own size chart and put on by the rig's joints (the jacket still fitted to the body); their loose parts hang and swing on DRAPE, kept out of his body: the shirt's and the jacket's lower body, the jacket's open front, the trouser cuffs and the sleeve ends.
 import {SHARED, THREE} from './003-shx.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
@@ -51,8 +51,9 @@ const GARB={};
     if(PAINT[k]){ const f=FAB[k]||(FAB[k]=paint(k)); o.map=f.map; o.normalMap=f.nm; o.normalScale=new THREE.Vector2(D.ns,D.ns); }
     if(D.sh){ o.sheen=D.sh; o.sheenRoughness=D.shr; o.sheenColor=new THREE.Color(c).lerp(new THREE.Color(0xffffff),.35); } if(D.cc){ o.clearcoat=D.cc; o.clearcoatRoughness=D.ccr; }
     const M=new THREE.MeshPhysicalMaterial(o);
+    // the inside of a garment is in its own shade, as real cloth is: a fold or an open hem shows dark, never lit like the outside
     // in shade it keeps the Walker's own least light (his darkest tone), so it never goes black
-    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }'); };
+    M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }\n if(!gl_FrontFacing){ reflectedLight.directDiffuse*=.25; reflectedLight.indirectDiffuse*=.4; reflectedLight.directSpecular*=0.; reflectedLight.indirectSpecular*=0.; }'); };
     return MAT[q]=M; };
 
   /* ---------- a garment's shape, made once and shared by everyone wearing it ---------- */
@@ -101,30 +102,48 @@ const GARB={};
   // ...where g[3] is the other piece a ring by a joint also hangs from, and g[4] how much of its own piece it takes
 
   // the shirt and the jacket are fitted to his body or to hers (her bust, her waist)
-  const BUST={shirt:.3,jacket:.85}, tpl=(k,f)=>{ const q=BUST[k]&&f==='F'?k+'F':k; if(!TPL[q]){ const t0=performance.now(); TPL[q]=fin(MAKE[k](f==='F'?'F':'M')); GARB.made[q]=+(performance.now()-t0).toFixed(1); } return TPL[q]; }, TPL={}; GARB.made={};
+  const BUST={shirt:.3,jacket:.85}, tpl=(k,f)=>{ const q=BUST[k]&&f==='F'?k+'F':k; if(!TPL[q]){ const t0=performance.now(); TPL[q]=fin(MAKE[k](f==='F'?'F':'M')); GARB.made[q]=+(performance.now()-t0).toFixed(1); } return TPL[q]; }, TPL={}; GARB.made={}; GARB.tpl=tpl;
   // the rows over the shoulders, put on the body from the chest's middle (lower in front)
   const neck=th=>-.9*Math.cos(th)+.3*Math.sin(th)**2, yoke=th=>-.9*Math.cos(th)-.3*Math.sin(th)**2, shoulder=th=>-.6*Math.cos(th)+.4*Math.sin(th)**2;
   // her arms are slimmer than her shoulders: the sleeve is roomier on her just under its top (its top ring stays tucked in under the shoulder)
   const roomy=(f,R)=>f==='F'?R.map((g,j)=>{ const q=g.slice(); q[2]*=[1,1.12,1.06,1.02][j]||1; return q; }):R;
   const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.42+e,1],[29.3,9,4.6,null,.5+e,1],[28.4,8.6,4.5,null,.55+e,1]];
+  /* ---------- the clothes cut first, to their own sizes, then put on by the skeleton's joints (owner, 2 Nov 2026: "make the clothes first, then put them on avatar, dont base them on avatar body"); tests/clothes.cjs checks them against the body ---------- */
+  // the size chart in rig units (about 29 a metre): the tee's rows [height, half width, half depth] from the hem up, its crew neck and sleeves; the jeans' seat rows from the waist down and legs; the shoe's stations along the foot [z, half width, top]
+  const SZ=GARB.SIZE={tee:{n:3,bust:1.15,rows:[[18.8,8.5,5.9],[20.2,8.35,5.8],[21.8,7.6,5.4],[23.6,7,5.2],[25.6,6.7,5.25],[27.4,6.5,5.25],[29.2,7.4,5.05],[31,8.4,4.7],[33.7,8.25,4.4],[34.6,7,4],[35.4,5.4,3.55]],
+      neck:{y:35.85,dip:.75,W:3.45,D:3.15},slv:{R:3.3,L:3.6,Rh:3.25}},
+    jeans:{n:2.6,rows:[[21,6.9,4.95],[19.6,7.9,4.95],[17.6,8.05,4.6],[16,7.6,4.35],[14.6,6.6,4.05],[13.6,4.6,3.8],[12.8,3,3.5]],leg:{top:-2.8,R0:4.3,Rk:3.75,Rh:3.65,ext:1.55,topIn:.3}},
+    shoe:{bot:.32,st:[[-3.02,.05,1.2],[-2.95,.9,1.6],[-2.6,1.75,3.1],[-2,2.12,3.75],[-1,2.25,3.95],[0,2.3,3.85],[.9,2.38,3.45],[1.9,2.48,3.05],[2.9,2.42,2.75],[3.8,2.12,2.45],[4.4,1.5,2],[4.78,.55,1.3],[4.85,.05,.9]]}};
+  const se=(th,W,D,n)=>{ const a=Math.sin(th), b=Math.cos(th); return [W*Math.sign(a)*Math.abs(a)**(2/n),D*Math.sign(b)*Math.abs(b)**(2/n)]; };
+  const sub3=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z), add3=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z), mul3=(a,k)=>V(a.x*k,a.y*k,a.z*k), nrm3=a=>mul3(a,1/(Math.hypot(a.x,a.y,a.z)||1)), crs3=(a,b)=>V(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x);
   const MAKE={
-    // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
-    shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, CL=[.45,.5,.55,.6,.65,.7,.75,.8];
-      const rows=TOP(0).concat([27.8,25.8,23.8,21.8,19.8,18,16.4,15].map((y,j)=>[y,4,3,null,CL[j]]));
-      const KR=[0,0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
-      torso(t,rows,28,true,0,0,(i,j)=>KR[j],0,TS,chest,f);
-      torso(t,[[34.4,2,1.8,neck,.22,1],[35,2,1.8,neck,.2,1]],28,true,0,0,()=>0,0,TS*.5,chest,f);   // the ribbed neckband
-      for(const s of 'LR'){ const u='upperArm'+s; limb(t,roomy(f,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]]),16,j=>j===4?.3:0,0,TS); }
+    // a cotton crew-neck tee cut to its own size: a boxy body to a level hem a little below the belt, a crew neck with a ribbed band, set-in short sleeves capping the shoulders
+    shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, Z=SZ.tee, nu=28, nr=Z.rows.length+1, F=f==='F';
+      // round the other way from the sleeves, as its rows rise: its outside faces out
+      const at=(i,j)=>{ const th=-i/nu*TAU; if(j===Z.rows.length){ const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
+        const [y,W,D]=Z.rows[j], [x,z]=se(th,W,D,Z.n), b=F&&z>0?Z.bust*Math.max(0,1-((y-27.4)/3.6)**2):0; return V(x,y,z*(1+b/D)); };   // her front fuller at the bust
+      const P=[]; for(let j=0;j<nr;j++)for(let i=0;i<nu;i++)P.push(at(i,j));
+      const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<21.5?['hips',null,0]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them
+      const vl=[0]; for(let j=1;j<nr;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); } let per=0; for(let i=0;i<nu;i++)per+=dist(P[nu*3+i],P[nu*3+(i+1)%nu]); const reps=Math.max(1,Math.round(per/TS));
+      grid(t,nu,nr,true,(i,j)=>{ const p=P[j*nu+i], k=skin(p); pt(t,p,k[0],k[1],k[2]); },(c,j)=>[c/nu*reps,vl[j]/TS],0);   // held: the hem keeps a straight line (owner, 2 Nov 2026)
+      grid(t,nu,2,true,(i,j)=>{ const th=-i/nu*TAU, N=Z.neck, [x,z]=se(th,N.W+.12-j*.3,N.D+.12-j*.3,2); pt(t,V(x,N.y-N.dip*Math.cos(th)+j*.6,z),'torso'); },(c,j)=>[c/nu*reps*2,j*.3],0);   // the ribbed neckband
+      for(const s of 'LR'){ const S=J0['shoulder'+s], E=J0['elbow'+s], a=nrm3(sub3(E,S)), u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), {R:Rs,L,Rh}=Z.slv, RG=[[-Rs,.05],[-Rs*.87,Rs*.5],[-Rs*.7,Rs*.71],[-Rs*.4,Rs*.92],[0,Rs],[L*.5,(Rs+Rh)/2],[L,Rh]];
+        grid(t,16,RG.length,true,(i,j)=>{ const [tt,r]=RG[j], q=i/16*TAU; pt(t,V(S.x+a.x*tt+(u.x*Math.cos(q)+w.x*Math.sin(q))*r,S.y+a.y*tt+(u.y*Math.cos(q)+w.y*Math.sin(q))*r,S.z+a.z*tt+(u.z*Math.cos(q)+w.z*Math.sin(q))*r),'upperArm'+s,null,0,j===RG.length-1?.01:0); },
+          (c,j)=>[c/16*Math.max(1,Math.round(TAU*Rs/TS)),(RG[j][0]+Rs)/TS],0); }
       return t; },
-    // straight-leg jeans on a leather belt with a brass buckle: held from the waist down, the cuffs swing and break over the shoes
-    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, hip=()=>['hips',null,0], d=body('P');
-      torso(t,[[20.4,4,3,null,.45],[19.6,4,3,null,.5],[18.2,4,3,null,.55],[16.6,4,3,null,.6],[15.2,4,3,null,.6]],28,true,0,0,()=>0,0,TS,hip,'P');
-      torso(t,[[20.55,4,3,null,.62],[19.45,4,3,null,.67]],28,true,0,0,()=>0,1,DEF.leather.TS,hip,'P');
-      const zb=onto(d,V(0,20,0),V(0,20,1),.67,13).z+.06;
-      grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?19.35:20.65,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
-      for(const s of 'LR'){ const th='thigh'+s, sh='shin'+s;
-        limb(t,[[th,-1.4,4.42,'hips',.35],[th,.4,4.35,'hips',.8],[th,2.2,4.15],[th,4,3.98],[th,5.6,3.82,sh,.75],[th,6.6,3.74,sh,.4],[sh,.6,3.7,th,.85],[sh,2.2,3.6],[sh,3.8,3.52],[sh,5.4,3.46],[sh,6.4,3.45],[sh,7.1,3.5],[sh,7.6,3.56]],
-          16,j=>j===10?.3:j===11?.2:j===12?.14:0,0,TS); }
+    // straight-leg jeans cut to their own size on a leather belt with a brass buckle: a seat to the crotch, two straight legs tapering a little to the knee, hems breaking over the shoes
+    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28;
+      const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
+      const sv=[0]; for(let j=1;j<Z.rows.length;j++)sv.push(sv[j-1]+Z.rows[j-1][0]-Z.rows[j][0]); const reps=Math.max(1,Math.round(2*(Z.rows[1][1]+Z.rows[1][2])*1.5/TS));
+      // the waist turns partly with the chest, as the body under it does
+      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], tw=y>20.5?.6:y>19?.35:0; pt(t,ring(y,W,D,i),'hips',tw?'torso':null,tw); },(c,j)=>[c/nu*reps,sv[j]/TS],0);
+      const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',j?.35:.6); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
+      const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?20:21.05,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
+      for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];
+        for(let q=G.top;q<L1-.7;q+=.9)T.push(q); T.push(L1-.5,L1,L1+.5); for(let q=L1+1.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);
+        const R=q=>q<0?G.R0+q*G.topIn:q<L1?G.R0+(G.Rk-G.R0)*q/L1:G.Rk+(G.Rh-G.Rk)*Math.min(1,(q-L1)/L2), sk=q=>q<0?['hips','thigh'+s,sm((q-G.top)/-G.top)]:q<L1-.3?['thigh'+s,null,0]:q<=L1+.3?['thigh'+s,'shin'+s,.5]:['shin'+s,null,0];
+        grid(t,16,T.length,true,(i,j)=>{ const q=T[j], top=q<=L1, o=top?add3(H,mul3(a1,q)):add3(K,mul3(a2,q-L1)), a=top?a1:a2, u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), r=R(q), th=i/16*TAU, k=sk(q);
+          pt(t,add3(o,add3(mul3(u,Math.cos(th)*r),mul3(w,Math.sin(th)*r))),k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/16*Math.max(1,Math.round(TAU*G.Rk/TS)),(T[j]-G.top)/TS],0); }
       return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs
     jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);
@@ -147,14 +166,13 @@ const GARB={};
       grid(t,32,4,true,(i,j)=>{ const th=i/32*TAU, f=j/3, a=5.82+3.13*f, b=6.36+3.29*f; pt(t,V(a*Math.sin(th),yb(th)+.05+(.6*Math.sin(th)**2-.2*Math.cos(th))*f*f,cz+b*Math.cos(th)),hd()); },(c,j)=>[c/32*16,j*.9],0);
       grid(t,32,2,true,(i,j)=>{ const th=i/32*TAU, a=5.85, b=6.39; pt(t,V(a*Math.sin(th),yb(th)+(j?1.15:.06),cz+b*Math.cos(th)),hd()); },(c,j)=>[c/32*24,j],1);
       return t; } };
-  // a boot: stations along the foot [z, half width, top]; the upper an arch over them, the sole a slab under them, both closed at the heel and the toe
-  const shoe=s=>{ const t=NEW(), n='shoe'+s, A=J0['ankle'+s], x0=A.x, z0=A.z, BOT=.58, e=2/2.6, sp=(c,q)=>Math.sign(c)*Math.abs(c)**q;
-    const ST=[[-1.85,0,BOT],[-1.75,.5,2.2],[-1.4,1.42,4.85],[-.7,1.68,4.95],[.3,1.74,4.65],[1.3,1.94,3.05],[2.1,2,2.35],[2.8,1.8,2],[3.3,1.32,1.75],[3.62,.42,1.35],[3.72,0,BOT]];
-    const vz=ST.map(q=>(q[0]+1.85)/DEF.leather.TS);
-    grid(t,13,ST.length,false,(i,j)=>{ const [z,w,top]=ST[j], a=i/12*Math.PI; pt(t,V(x0+w*sp(Math.cos(a),e),BOT+(top-BOT)*Math.abs(Math.sin(a))**e,z0+z),n); },(c,j)=>[c/12*3,vz[j]],0);
-    grid(t,4,ST.length,true,(i,j)=>{ const [z,w0]=ST[j], w=w0?w0+.16:0, X=[x0-w,x0+w,x0+w,x0-w][i], Y=[0,0,.62,.62][i]; pt(t,V(X,Y,z0+z),n); },(c,j)=>[c*.6,vz[j]],1);
-    const top=z=>{ for(let j=1;j<ST.length;j++)if(ST[j][0]>=z){ const a=ST[j-1], b=ST[j], f=(z-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; } return [0,BOT]; };
-    for(const z of [.45,.85,1.25,1.65,2]){ const [w,y]=top(z); grid(t,4,2,true,(i,j)=>{ const hx=w*.55, X=x0+(j?hx:-hx), Y=y+[.02,.02,.14,.14][i], Z=z0+z+[-.07,.07,.07,-.07][i]; pt(t,V(X,Y,Z),n); },(c,j)=>[c*.3,j],2); }
+  // a shoe cut to its own last, bigger than the foot it holds: a closed leather upper from heel to toe, a rubber sole, laces across the vamp, a padded collar round the ankle
+  const shoe=s=>{ const t=NEW(), n='shoe'+s, A=J0['ankle'+s], Z=SZ.shoe, ST=Z.st, nu=20, vz=ST.map(q=>(q[0]-ST[0][0])/DEF.leather.TS);
+    grid(t,nu,ST.length,true,(i,j)=>{ const [z,w,top]=ST[j], q=i/nu*TAU, cx=Math.sin(q), cy=Math.cos(q), y=top/2+top/2*Math.sign(cy)*Math.abs(cy)**(cy<0?1/3:2/2.4); pt(t,V(A.x+w*Math.sign(cx)*Math.abs(cx)**(2/3),Math.max(Z.bot,y),A.z+z),n); },(c,j)=>[c/nu*3,vz[j]],0);
+    grid(t,4,ST.length,true,(i,j)=>{ const [z,w0]=ST[j], w=w0<.1?0:w0+.16; pt(t,V(A.x+[-w,w,w,-w][i],[0,0,.62,.62][i],A.z+z),n); },(c,j)=>[c*.6,vz[j]],1);   // the sole
+    grid(t,16,2,true,(i,j)=>{ const q=i/16*TAU, r=j?2.05:2.3; pt(t,V(A.x+Math.sin(q)*r,j?4.2:3.7,A.z-.45+Math.cos(q)*r*1.05),n); },(c,j)=>[c/16*4,j*.4],0);   // the collar
+    const top=z=>{ for(let j=1;j<ST.length;j++)if(ST[j][0]>=z){ const a=ST[j-1], b=ST[j], f=(z-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; } return [0,Z.bot]; };
+    for(const z of [1.1,1.5,1.9,2.3]){ const [w,y]=top(z); grid(t,4,2,true,(i,j)=>{ const hx=w*.5, X=A.x+(j?hx:-hx), Y=y+[.03,.03,.16,.16][i], Zz=A.z+z+[-.08,.08,.08,-.08][i]; pt(t,V(X,Y,Zz),n); },(c,j)=>[c*.3,j],2); }   // the laces
     return t; };
 
   /* ---------- worn, on one figure ---------- */
@@ -168,7 +186,7 @@ const GARB={};
     CAP['hand'+s]=['forearm'+s,along('forearm'+s,.5,0,0),along('forearm'+s,LEN.forearm+2.4,0,0),1.6];
     const A=J0['ankle'+s]; CAP['shoe'+s]=['shoe'+s,V(A.x,1.5,A.z-.9),V(A.x,1.3,A.z+2.5),1.85]; }
   // what each garment's loose cloth is kept out of, and how much further (the jacket stays outside the shirt)
-  const KEEP={shirt:[['chestL',.45],['chestR',.45],['waistL',.55],['waistR',.55],['hips',1.35],['thighL',.1],['thighR',.1],['handL',.2],['handR',.2]],jacket:[['chestL',1],['chestR',1],['waistL',1.1],['waistR',1.1],['hips',1.9],['thighL',.4],['thighR',.4],['handL',.3],['handR',.3]],pants:[['shinL',.25],['shinR',.25],['shoeL',.1],['shoeR',.1]]};
+  const KEEP={shirt:[['chestL',.45],['chestR',.45],['waistL',.55],['waistR',.55],['hips',.6],['thighL',.1],['thighR',.1]],jacket:[['chestL',1],['chestR',1],['waistL',1.1],['waistR',1.1],['hips',1.9],['thighL',.4],['thighR',.4],['handL',.3],['handR',.3]],pants:[['shinL',.25],['shinR',.25]]};   // the cuff already clears the shoe, which never moves against it
   const MATS={shirt:c=>[mat('jersey',c.shirt)],pants:c=>[mat('denim',c.pants),mat('leather',COL.belt),mat('brass',COL.buckle)],jacket:c=>[mat('canvas',c.jacket)],
     shoeL:c=>[mat('leather',c.shoes),mat('rubber',COL.sole),mat('lace',COL.lace)],shoeR:c=>MATS.shoeL(c),hat:c=>[mat('felt',c.hat),mat('band',COL.band)]};
   const RIGID={shoeL:1,shoeR:1,hat:1}, SG={};
@@ -248,5 +266,5 @@ const GARB={};
   const myE={}, IDX={};
   GARB.myE=()=>{ const f=W3.style&&W3.style.form==='F'; for(const n of NAMES){ const p=f&&n==='torso'?'torsoF':f&&n==='head'?'headF':n; const i=IDX[p]??(IDX[p]=W3.idx(p)); myE[n]=i>=0&&W3.E?W3.E[i]:null; } return myE; };
   GARB.of=(form,i2E)=>{ const o={}; for(const n of NAMES){ const p=form==='F'&&n==='torso'?'torsoF':form==='F'&&n==='head'?'headF':n, i=W3.idx(p); o[n]=i>=0?i2E(i):null; } return o; };
-  window.GARBDBG=()=>{ const H=GARB.mine, W=H&&H.garb; return W?{k:W.k,parts:W.ws.map(w=>({k:w.k,points:w.t.n,free:w.d.pin.reduce((a,p)=>a+(p?0:1),0),still:w.d.still})),held:W.rg.length,made:GARB.made,ms:+W.ms.toFixed(3),shown:W.root.visible}:null; }; window.GARBDBG.spec=GARB.spec; }
+  window.GARBDBG=()=>{ const H=GARB.mine, W=H&&H.garb; return W?{k:W.k,parts:W.ws.map(w=>({k:w.k,points:w.t.n,free:w.d.pin.reduce((a,p)=>a+(p?0:1),0),still:w.d.still})),held:W.rg.length,made:GARB.made,ms:+W.ms.toFixed(3),shown:W.root.visible}:null; }; window.GARBDBG.spec=GARB.spec; window.GARBDBG.G=GARB; }
 export {GARB};

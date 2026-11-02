@@ -6,7 +6,10 @@ const {chromium}=require('playwright'), out=process.argv[2]||'.';
   for(let i=0;i<150;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started).catch(()=>false))break; }
   const T=await pg.evaluate(()=>{ const D=PARKDBG(); return D.trees.map((t,i)=>[t[0],t[1],t[2],t[3],D.oaks[i][0],D.oaks[i][1]]); });
   const n={}; for(const t of T)n[t[0]]=(n[t[0]]||0)+1; console.log('trees',T.length,JSON.stringify(n));
-  for(const t of T.filter(t=>!/^(Oak|Elder)/.test(t[0])))console.log(t[0],'at',t[1],t[2],'size',t[3]);
+  for(const t of T.filter(t=>!/^(Oak|Elder|GE)/.test(t[0])))console.log(t[0],'at',t[1],t[2],'size',t[3]);
+  // the entrance rows of elms, the lake's track, its rail, the cherry and the lake's water (2 Nov 2026)
+  const L=await pg.evaluate(()=>({alley:(PARK.alley||[]).length,rail:PARK.rail&&PARK.rail.posts,cherry:!!PARK.cherry,track:!!PARK.track,lakeMat:FOUNT.lakeM&&FOUNT.lakeM.type,elms:PARKDBG().trees.filter(t=>/^GE/.test(t[0])).length})); console.log('lakeside',JSON.stringify(L));
+  if(!(L.alley>=12&&L.rail>=20&&L.cherry&&L.track&&L.lakeMat==='ShaderMaterial'&&L.elms>=20)){ console.log('FAIL: the entrance rows, the lake track, its rail, the cherry or the lake water are missing'); process.exitCode=1; }
   const shot=async(name,x,z)=>{ await pg.evaluate(([x,z])=>STORE.goTo(x,z+6,'up'),[x,z]); await pg.waitForTimeout(7000); await pg.screenshot({path:`${out}/${name}.png`}); console.log(name); };
   for(const k of ['Willow1','Giant1','Spruce1']){ const t=T.find(t=>t[0]===k); if(t)await shot(k,t[4],t[5],.7); }
   const e=T.find(t=>/^Elder/.test(t[0])); if(e)await shot('common',e[4],e[5],.55);

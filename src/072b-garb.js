@@ -108,23 +108,23 @@ const GARB={};
   const roomy=(f,R)=>f==='F'?R.map((g,j)=>{ const q=g.slice(); q[2]*=[1,1.12,1.06,1.02][j]||1; return q; }):R;
   const TOP=e=>[[34.4,2,1.8,neck,.22+e,1],[33.6,4.6,3,yoke,.3+e,1],[31.8,8,3.8,shoulder,.42+e,1],[29.3,9,4.6,null,.5+e,1],[28.4,8.6,4.5,null,.55+e,1]];
   const MAKE={
-    // a cotton crew-neck tee, worn loose: held from the shoulders to the chest, the rest hangs; short sleeves with loose hems
+    // a cotton crew-neck tee, a plain straight tube from the shoulders to a level hem (owner, 2 Nov 2026: a normal shirt shape, not the body's contour), held from the shoulders to the chest, the hem swinging a little; short straight sleeves
     shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, CL=[.45,.5,.55,.6,.65,.7,.75,.8];
-      const rows=TOP(0).concat([27.8,25.8,23.8,21.8,19.8,18,16.4,15].map((y,j)=>[y,4,3,null,CL[j]]));
-      const KR=[0,0,0,0,0,0,.22,.16,.11,.08,.065,.055,.05];
+      const rows=TOP(0).concat([27.8,25.8,23.8,21.8,19.8,18,16.4,15].map((y,j)=>[y,8.8,5.2,null,CL[j]]));
+      const KR=[0,0,0,0,0,0,.1,.08,.06,.045,.035,.03,.025];
       torso(t,rows,28,true,0,0,(i,j)=>KR[j],0,TS,chest,f);
       torso(t,[[34.4,2,1.8,neck,.22,1],[35,2,1.8,neck,.2,1]],28,true,0,0,()=>0,0,TS*.5,chest,f);   // the ribbed neckband
-      for(const s of 'LR'){ const u='upperArm'+s; limb(t,roomy(f,[[u,-.5,3.35,'torso',.6],[u,.4,3.3,'torso',.9],[u,1.4,3.22],[u,2.4,3.18],[u,3.1,3.28]]),16,j=>j===4?.3:0,0,TS); }
+      for(const s of 'LR'){ const u='upperArm'+s; limb(t,roomy(f,[[u,-.5,3.4,'torso',.6],[u,.4,3.4,'torso',.9],[u,1.4,3.4],[u,2.4,3.4],[u,3.1,3.4]]),16,j=>j===4?.08:0,0,TS); }
       return t; },
-    // straight-leg jeans on a leather belt with a brass buckle: held from the waist down, the cuffs swing and break over the shoes
+    // straight-leg jeans on a leather belt with a brass buckle: each leg one straight tube (owner, 2 Nov 2026: normal pants, not the body's contour), held from the waist down, the cuffs swinging a little over the shoes
     pants:()=>{ const t=NEW(), TS=DEF.denim.TS, hip=()=>['hips',null,0], d=body('P');
       torso(t,[[20.4,4,3,null,.45],[19.6,4,3,null,.5],[18.2,4,3,null,.55],[16.6,4,3,null,.6],[15.2,4,3,null,.6]],28,true,0,0,()=>0,0,TS,hip,'P');
       torso(t,[[20.55,4,3,null,.62],[19.45,4,3,null,.67]],28,true,0,0,()=>0,1,DEF.leather.TS,hip,'P');
       const zb=onto(d,V(0,20,0),V(0,20,1),.67,13).z+.06;
       grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?19.35:20.65,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
       for(const s of 'LR'){ const th='thigh'+s, sh='shin'+s;
-        limb(t,[[th,-1.4,4.42,'hips',.35],[th,.4,4.35,'hips',.8],[th,2.2,4.15],[th,4,3.98],[th,5.6,3.82,sh,.75],[th,6.6,3.74,sh,.4],[sh,.6,3.7,th,.85],[sh,2.2,3.6],[sh,3.8,3.52],[sh,5.4,3.46],[sh,6.4,3.45],[sh,7.1,3.5],[sh,7.6,3.56]],
-          16,j=>j===10?.3:j===11?.2:j===12?.14:0,0,TS); }
+        limb(t,[[th,-1.4,4.4,'hips',.35],[th,.4,4.4,'hips',.8],[th,2.2,4.4],[th,4,4.4],[th,5.6,4.4,sh,.75],[th,6.6,4.4,sh,.4],[sh,.6,4.4,th,.85],[sh,2.2,4.4],[sh,3.8,4.4],[sh,5.4,4.4],[sh,6.4,4.4],[sh,7.1,4.4],[sh,7.6,4.4]],
+          16,j=>j===10?.1:j===11?.07:j===12?.05:0,0,TS); }
       return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs
     jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);

@@ -1,6 +1,6 @@
 // THE HEADSET: VR plays THE MARKET in a WebXR headset (a Quest 3 in its browser): you look out of the Walker's eyes or from behind him, walk by stick or teleport, see your body, hands and controllers, and an open window floats on a panel you point at with a controller or your hand; the menu's VR tab holds every setting.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, ED, FEEL, keys, pos, RAG, st, UI, VIT, VR, W3} from './003b-systems.js';
+import {BOAT, ED, FEEL, HANDHELD, keys, pos, RAG, st, UI, VIT, VR, W3} from './003b-systems.js';
 import {PCAM, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FADE, SYS, TILE} from './006-map-pre.js';
@@ -217,7 +217,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   VR.note=(t,c,o)=>{ if(!VR.on||!t)return; o=o||{}; VR.tip=0; if(o.only)VR.notes.length=0; VR.notes.push({t:String(t),c,big:!!o.big,until:performance.now()+(o.ms||4000)}); while(VR.notes.length>3)VR.notes.shift(); };
   VR.ask=w=>{ VR.want=w||null; VR.cal=false; };
   VR.hand=side=>{ if(!VR.on)return null; const C=CTL.find(c=>c.userData.on&&c.userData.h===side); return C?C.userData:null; };   // {wp, wq, v}: the controller's world position, orientation and velocity, or null
-  window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
+  window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen||!!(HANDHELD.up&&HANDHELD.up()),fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});
 

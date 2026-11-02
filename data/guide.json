@@ -10,7 +10,7 @@
     "Hold [SHIFT] to run. Press [SPACE] to jump. Hold [C] to crouch.",
     "Double-click a thing to walk to it and use it: a door, a seat, a lamp, a person, even yourself.",
     "Double-click does nothing while something is in your hands. Press [1] until your hands are free.",
-    "Press [?] for the list of every key. Press [ESC] for the menu.",
+    "Press [?] for the list of every key. Press [ESC] for your handheld (the menu).",
     "Your game saves by itself. Next time you come back where you left off."
    ]
   },
@@ -27,7 +27,7 @@
     "Press [0] to put the view back."
    ],
    "tips": [
-    "More views (MAP VIEW, THIRD PERSON) are in [ESC], SETTINGS, DISPLAY, VIEW."
+    "More views (MAP VIEW, THIRD PERSON) are in [ESC], SET, DISPLAY, VIEW."
    ]
   },
   {
@@ -38,10 +38,11 @@
     {
      "head": "THE MENU",
      "steps": [
-      "Press [ESC]. Your CHARACTER page opens: you, your health and stamina, and your gear slots.",
-      "Click a gear slot to wear or hold something.",
-      "SETTINGS opens the other pages: DISPLAY, ATMOSPHERE, GRAPHICS, SOUND, KEYS, GUIDE and REPORT A BUG.",
-      "Press [ESC] again to close it."
+      "Press [ESC]. Your handheld pops up: a grid of icons.",
+      "YOU is your character page. PACK, MAP, CALL (any shop), BBS, CHAT and PEOPLE are there too.",
+      "SET opens the settings: DISPLAY, ATMOSPHERE, GRAPHICS, SOUND, KEYS. GUIDE, HELP and BUG too.",
+      "Click an icon, or use the arrow keys and [ENTER].",
+      "[ESC] goes back, then puts the handheld away."
      ]
     },
     {
@@ -63,14 +64,6 @@
       "The CHOOSE A PLACE list at the bottom takes you to any place or room.",
       "The A to H buttons take you to another section."
      ]
-    },
-    {
-     "head": "YOUR TABLET",
-     "steps": [
-      "Press [TAB]. Your tablet comes up in your hands. Everyone has one.",
-      "CALL rings any shop. ORDER and ARCADE open THE MARKET BBS. MAP, CHAT and PLAYERS too.",
-      "Click while holding it to wake the screen again. [TAB] or [ESC] puts it away."
-     ]
     }
    ]
   },
@@ -79,7 +72,7 @@
    "title": "YOUR CHARACTER",
    "what": "Change your name, body, hair, clothes and shape.",
    "steps": [
-    "Double-click yourself, or press [ESC] and click EDIT.",
+    "Double-click yourself, or press [ESC], YOU, and click EDIT.",
     "The YOU page opens: your name, BUILD, HAIR, BEARD, CLOTHES and SHOES.",
     "For your body's shape click SHAPE, then DESIGN YOUR WALKER. Pick a part and drag the sliders. Click DONE.",
     "Press [M] to take your shoes off or put them on.",
@@ -436,7 +429,7 @@
    "title": "SETTINGS, KEYS AND BUGS",
    "what": "Make the game look and play the way you like.",
    "steps": [
-    "[ESC], SETTINGS. DISPLAY: zoom, view, camera sway, size of the writing.",
+    "[ESC], SET. DISPLAY: zoom, view, camera sway, size of the writing.",
     "GRAPHICS: resolution, shadows, outline. ATMOSPHERE: time of day, weather, haze.",
     "KEYS: click a key, then press the one you want. ALL BACK AS THEY WERE resets them.",
     "Found something broken? Press [F8] (or REPORT A BUG), say what happened, and SEND.",

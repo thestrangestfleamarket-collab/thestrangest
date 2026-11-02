@@ -12,7 +12,7 @@ import {PHONE} from './146y-operator.js';
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true});
   const fill=G=>{ const m=new THREE.Mesh(geo,MAT); m.castShadow=true; m.position.set(0,-.02,-.02); G.inner.add(m); };
   // held: its bottom edge in the palm, tipped up toward your face (the arm points out and down, the hand's frame is the forearm's)
-  const make=()=>{ const G=new THREE.Group(), I=new THREE.Group(); I.rotation.x=.95; I.scale.setScalar(1.5); G.add(I); G.inner=I; G.head=new THREE.Vector3(0,.3,0);
+  const make=()=>{ const G=new THREE.Group(), I=new THREE.Group(); I.rotation.x=.95; I.scale.setScalar(2.6); G.add(I); G.inner=I; G.head=new THREE.Vector3(0,.3,0);
     if(geo)fill(G); else{ want.push(G); if(want.length===1)DATA().then(d=>{ geo=build(d); for(const g of want.splice(0))fill(g); }); } return G; };
   const kind={name:'TABLET',hint:'A CLICK WAKES THE SCREEN. TAB PUTS IT AWAY.',make,
     aim:(dt,aim)=>{ const h=SHARED.heading||0; aim.set(Math.sin(h)*.75,-.6,Math.cos(h)*.75).normalize(); return true; },

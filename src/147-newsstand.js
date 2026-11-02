@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {TOONS} from './084-npc-toons.js';
 const NEWS=window.NEWS={};
-NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
+NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; const N=TOONS.cat; if(!N){ setTimeout(NEWS.init,600); return; } NEWS._d=1;   // the cat (data/raincat.json) loads just after the start; wait for it, build once
   const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
   const BX=[]; const box=(a,b,c,d,z0,z1,col,L=BX,r=0)=>{ L.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col,r]); };

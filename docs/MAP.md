@@ -113,7 +113,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `081-stalls.js` | 15.0 | top level | STALL (083a 084 141 142a 144) | 003: THREE; 003b: CLOCK NPCS WEEDS; 004: scene; 006: FIX MAPG SOL TILE ZU |
 | `083-npc-rig.js` | 10.5 | top level | RIGNPC (083a 084 084b 085 146j) | 003: SHARED THREE; 003a: B64; 006: QS TILE; 076: makeNPC |
 | `083a-npc-mushroom.js` | 6.7 | top level | MUSH (141 144) | 003: SHARED THREE; 003b: PARK; 006: MODS; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
-| `084-npc-toons.js` | 15.8 | top level | TOONS (144 147) | 003: SHARED THREE; 006: RING TILE; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
+| `084-npc-toons.js` | 15.9 | top level | TOONS (144 147) | 003: SHARED THREE; 006: RING TILE; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
 | `084b-npc-glbtoons.js` | 3.6 | top level | GLBTOONS (159c) | 003b: CINEMA; 006: QS; 080: PARTSNPC; 083: RIGNPC |
 | `085-npc-squirrel.js` | 7.5 | top level |  | 003: SHARED; 003b: PARK st; 006: MODS TILE; 063: GTOWER; 080: PARTSNPC; 083: RIGNPC |
 | `086-npc-fox.js` | 4.2 | top level | CREATURES (087 146b), CREATURESREADY (087 146b) | 003: SHARED THREE; 003b: LINES; 004: scene; 006: LAY MODS TILE; 080: PARTSNPC |
@@ -247,7 +247,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146x-bluehour.js` | 7.0 | top level | SMOKE (147a) | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE W3 WIELD pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH |
 | `146y-operator.js` | 8.6 | top level | PHONE (150j) | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD; 006: LEVEL SOL SYS TILE; 111e: MERCH |
 | `146z-visitors.js` | 12.6 | top level |  | 003: THREE; 006: TILE; 111e: MERCH |
-| `147-newsstand.js` | 16.5 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
+| `147-newsstand.js` | 16.7 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
 | `147a-bees.js` | 14.8 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE NPCS ONLINE ROOMS SFX UI VIT WEEDS pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH; 142a: FLORA; 144a: GARDEN; 146x: SMOKE |
 | `147b-requests.js` | 3.9 | top level |  | 003b: CITY FORAGE INV ITEMS MAIL SFX; 005: OWNED |
 | `147c-dummy.js` | 2.4 | top level |  | 003: THREE; 003b: FORAGE ITEMS NPCS SFX UI VIT WIELD; 004: scene; 006: SOL TILE |

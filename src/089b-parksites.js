@@ -106,20 +106,21 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
       const rec={...s,K,meshes:ms,wx:K.wx,wz:K.wz,door:K.door_,deck:K.deck,top:K.top,pillar:K.pillar,pells:K.pells,butts:K.butts}; SITES.list.push(rec); SITES.at[s.id]=rec; SITES.homes[s.id]=K.door_||[K.wx,K.y0,K.wz];
       if(STORE.places)STORE.places.push([s.name,K.door_?K.door_[0]:K.wx,K.door_?K.door_[2]+.8*T:K.wz,'up']); }catch(e){ console.warn('site '+s.id,e); } }
   // the moat: a stone-lined channel of still water round the castle, crossed only by the drawbridge at the gate
-  { const [bx0,bx1,by0,by1]=CASTLE.b, gx=CASTLE.gate, IN=2.0, OUT=3.6, cx=(bx0+bx1)/2, cy=(by0+by1)/2, K=kit(cx,cy,'s'), WAT=[], WP=[];
+  { const [bx0,bx1,by0,by1]=CASTLE.b, gx=CASTLE.gate, {i:IN,o:OUT,bw:BW}=CASTLE.moat, cx=(bx0+bx1)/2, cy=(by0+by1)/2, K=kit(cx,cy,'s'), WAT=[], WP=[], WL=.16, CP={sw:.36,sh:.14,moss:.5};
     const LO=(x,y)=>{ const wx=X(x)-K.wx, wz=Z(y)-K.wz; return [(wx*K.r[0]+wz*K.r[1])/MH,(wx*K.f[0]+wz*K.f[1])/MH]; }, box=(a0,b0,a1,b1)=>{ const p=LO(a0,b0), q=LO(a1,b1); return [Math.min(p[0],q[0]),Math.min(p[1],q[1]),Math.max(p[0],q[0]),Math.max(p[1],q[1])]; };
-    const sides=[[bx0-OUT,by0-OUT,bx1+OUT,by0-IN,'f'],[bx0-OUT,by1+IN,bx1+OUT,by1+OUT,'b'],[bx0-OUT,by0-IN,bx0-IN,by1+IN,'w'],[bx1+IN,by0-IN,bx1+OUT,by1+IN,'e']];
-    for(const [x0,y0,x1,y1,k] of sides){ const parts=k==='f'?[[x0,gx-1.2],[gx+1.2,x1]]:[[x0,x1]];
-      for(const [a0,a1] of parts){ const [X0,Z0,X1,Z1]=box(a0,y0,a1,y1); WAT.push([X0,Z0,X1,Z1]);
-        { const a0=K.w(X0,.16,Z0), a1=K.w(X1,.16,Z0), a2=K.w(X1,.16,Z1), a3=K.w(X0,.16,Z1); WP.push(...a0,...a2,...a1,...a0,...a3,...a2); }
-        if(X1-X0>Z1-Z0){ K.wall(X0,Z0,X1,Z0,.28,.22,{sw:.36,sh:.14,moss:.5}); K.wall(X0,Z1,X1,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); }
-        else{ K.wall(X0,Z0,X0,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); K.wall(X1,Z0,X1,Z1,.28,.22,{sw:.36,sh:.14,moss:.5}); }
-        K.solid(Math.min(X0,X1),Math.min(Z0,Z1),Math.max(X0,X1),Math.max(Z0,Z1)); } }
-    // the drawbridge: planks on two beams, its chains up to the gatehouse
-    { const [X0,Z0,X1,Z1]=box(gx-1.2,by0-OUT-.3,gx+1.2,by0-IN+.2), outZ=LO(gx,by0-OUT-.3)[1], inZ=LO(gx,by0-IN+.2)[1]; for(let z=Z0;z<Z1;z+=.18)K.put(new THREE.BoxGeometry(X1-X0,.06,.16),(x,y,zz,h)=>vary(Math.abs(Math.sin(x*14))<.1?WOOD2:WOOD,h,.25),{at:[(X0+X1)/2,.3,z+.09],j:.008});
-      for(const x of [X0+.1,X1-.1]){ K.put(new THREE.BoxGeometry(.12,.12,Z1-Z0),WOOD2,{at:[x,.22,(Z0+Z1)/2]}); K.put(PARTSNPC.T.tube([[x,.35,outZ],[x,1.4,(outZ+inZ)/2],[x,2.6,inZ+Math.sign(inZ-outZ)*.2]],[.02,.02,.02],4,8),IRON); } }
-    { const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(WP,3)); g.computeVertexNormals(); const wm=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x5a96b0,specular:0xa8c8e0,shininess:90,side:THREE.DoubleSide})); wm.receiveShadow=true; wm.name='moat water'; grp.add(wm); }
-    for(const m of K.done('the moat'))grp.add(m); SITES.moat={rects:WAT.map(([a,b,c,d])=>[K.w(a,0,b),K.w(c,0,d)])};
+    const cope=(x0,y0,x1,y1)=>{ const a=LO(x0,y0), b=LO(x1,y1); K.wall(a[0],a[1],b[0],b[1],.3,.22,CP); };
+    // one sheet of water at one level all the way round, under the bridge too
+    for(const [x0,y0,x1,y1] of [[bx0-OUT,by0-OUT,bx1+OUT,by0-IN],[bx0-OUT,by1+IN,bx1+OUT,by1+OUT],[bx0-OUT,by0-IN,bx0-IN,by1+IN],[bx1+IN,by0-IN,bx1+OUT,by1+IN]]){ const [X0,Z0,X1,Z1]=box(x0,y0,x1,y1); const a0=K.w(X0,WL,Z0), a1=K.w(X1,WL,Z0), a2=K.w(X1,WL,Z1), a3=K.w(X0,WL,Z1); WP.push(...a0,...a2,...a1,...a0,...a3,...a2); }
+    // the stone kerb along both banks, unbroken but for the bridge's two landings
+    for(const e of [OUT,IN]){ const s=e===OUT?1:-1, x0=bx0-e, x1=bx1+e, y0=by0-e, y1=by1+e; cope(x0,y1,x1,y1); cope(x0,y0+s*.1,x0,y1-s*.1); cope(x1,y0+s*.1,x1,y1-s*.1); cope(x0,y0,gx-BW,y0); cope(gx+BW,y0,x1,y0); }
+    // what you cannot walk into: the four arms of the moat, the front one either side of the bridge
+    for(const [x0,y0,x1,y1] of [[bx0-OUT,by0-OUT,gx-BW,by0-IN],[gx+BW,by0-OUT,bx1+OUT,by0-IN],[bx0-OUT,by1+IN,bx1+OUT,by1+OUT],[bx0-OUT,by0-IN,bx0-IN,by1+IN],[bx1+IN,by0-IN,bx1+OUT,by1+IN]]){ const [X0,Z0,X1,Z1]=box(x0,y0,x1,y1); WAT.push([X0,Z0,X1,Z1]); K.solid(X0,Z0,X1,Z1); }
+    // the drawbridge: planks on two beams from the far bank to the gatehouse's threshold, as wide as the gate, its chains up to the gatehouse over the arch
+    { const [X0,Z0,X1,Z1]=box(gx-BW,by0-OUT-.3,gx+BW,by0-1.1), outZ=LO(gx,by0-OUT-.3)[1], inZ=LO(gx,by0-1.1)[1], D=.26; for(let z=Z0;z<Z1;z+=.18)K.put(new THREE.BoxGeometry(X1-X0,.06,.16),(x,y,zz,h)=>vary(Math.abs(Math.sin(x*14))<.1?WOOD2:WOOD,h,.25),{at:[(X0+X1)/2,D,z+.09],j:.008});
+      for(const x of [X0+.1,X1-.1]){ K.put(new THREE.BoxGeometry(.12,.12,Z1-Z0),WOOD2,{at:[x,D-.09,(Z0+Z1)/2]}); K.put(PARTSNPC.T.tube([[x,D+.05,outZ],[x,1.5,(outZ+inZ)/2],[x,2.5,inZ]],[.02,.02,.02],4,8),IRON); }
+      for(const z of [outZ,inZ])K.put(new THREE.BoxGeometry(X1-X0+.3,D-.03,.3),(x,y,zz,h)=>vary(STONE2,h,.2),{at:[(X0+X1)/2,(D-.03)/2,z],j:.01}); }
+    { const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(WP,3)); g.computeVertexNormals(); const wm=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x3a6a7a,side:THREE.DoubleSide})); wm.receiveShadow=true; wm.name='moat water'; grp.add(wm); }
+    for(const m of K.done('the moat'))grp.add(m); SITES.moat={rects:WAT.map(([a,b,c,d])=>[K.w(a,0,b),K.w(c,0,d)]),level:K.y0+WL*MV};
     if(window.WEEDS&&WEEDS.clear)for(const [p,q] of SITES.moat.rects)WEEDS.clear([Math.min(p[0],q[0]),Math.min(p[2],q[2]),Math.max(p[0],q[0]),Math.max(p[2],q[2])]); }
   // the ground on the bridge's deck and atop the lookout's pillar, for whoever stands there
   SITES.ground=(x,z,g0)=>{ const b=SITES.at.bridge; if(b&&b.deck)for(const [a,c] of b.deck)if(x>Math.min(a[0],c[0])&&x<Math.max(a[0],c[0])&&z>Math.min(a[2],c[2])&&z<Math.max(a[2],c[2]))return a[1];

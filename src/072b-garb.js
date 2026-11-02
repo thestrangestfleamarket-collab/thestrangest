@@ -112,7 +112,7 @@ const GARB={};
   // the size chart in rig units (about 29 a metre): the tee's rows [height, half width, half depth] from the hem up, its crew neck and sleeves; the jeans' seat rows from the waist down and legs; the shoe's stations along the foot [z, half width, top]
   const SZ=GARB.SIZE={tee:{n:3,bust:1.15,rows:[[18.8,8.5,5.9],[20.2,8.35,5.8],[21.8,7.6,5.4],[23.6,7,5.2],[25.6,6.7,5.25],[27.4,6.5,5.25],[29.2,7.4,5.05],[31,8.4,4.7],[33.7,8.25,4.4],[34.6,7,4],[35.4,5.4,3.55]],
       neck:{y:35.85,dip:.75,W:3.45,D:3.15},slv:{R:3.3,L:3.6,Rh:3.25}},
-    jeans:{n:2.6,rows:[[21,6.9,4.95],[19.6,7.9,4.95],[17.6,8.05,4.6],[16,7.6,4.35],[14.6,6.6,4.05],[13.6,4.6,3.8],[12.8,3,3.5]],leg:{top:-2.8,R0:4.1,Rk:3.75,Rh:3.65,ext:1.55,topIn:.25}},
+    jeans:{n:2.6,rows:[[21,6.9,4.95],[19.6,7.9,4.95],[17.6,8.05,4.6],[16,7.6,4.35],[14.6,6.6,4.05],[13.6,4.6,3.8],[12.8,3,3.5]],leg:{top:-2.8,R0:4.3,Rk:3.75,Rh:3.65,ext:1.55,topIn:.3}},
     shoe:{bot:.32,st:[[-3.02,.05,1.2],[-2.95,.9,1.6],[-2.6,1.75,3.1],[-2,2.12,3.75],[-1,2.25,3.95],[0,2.3,3.85],[.9,2.38,3.45],[1.9,2.48,3.05],[2.9,2.42,2.75],[3.8,2.12,2.45],[4.4,1.5,2],[4.78,.55,1.3],[4.85,.05,.9]]}};
   const se=(th,W,D,n)=>{ const a=Math.sin(th), b=Math.cos(th); return [W*Math.sign(a)*Math.abs(a)**(2/n),D*Math.sign(b)*Math.abs(b)**(2/n)]; };
   const sub3=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z), add3=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z), mul3=(a,k)=>V(a.x*k,a.y*k,a.z*k), nrm3=a=>mul3(a,1/(Math.hypot(a.x,a.y,a.z)||1)), crs3=(a,b)=>V(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x);
@@ -135,7 +135,7 @@ const GARB={};
     pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28;
       const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
       const sv=[0]; for(let j=1;j<Z.rows.length;j++)sv.push(sv[j-1]+Z.rows[j-1][0]-Z.rows[j][0]); const reps=Math.max(1,Math.round(2*(Z.rows[1][1]+Z.rows[1][2])*1.5/TS));
-      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], p=ring(y,W,D,i), lo=Math.min(1,Math.max(0,(16.5-y)/2.5))*Math.min(1,Math.abs(p.x)/2)*.5; pt(t,p,'hips',y>20.5?'torso':lo>0?'thigh'+(p.x>0?'L':'R'):null,y>20.5?.4:lo); },(c,j)=>[c/nu*reps,sv[j]/TS],0);   // the seat's lower sides go a little with each thigh, so its edge never opens as a leg swings
+      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j]; pt(t,ring(y,W,D,i),'hips',y>20.5?'torso':null,y>20.5?.4:0); },(c,j)=>[c/nu*reps,sv[j]/TS],0);
       const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',j?0:.4); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
       const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?20:21.05,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
       for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, TILE, TURN, WP, ZU} from './006-map-pre.js';
+import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
@@ -136,22 +136,22 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     const mr=(lk,set,o)=>()=>room('museum','MUSEUM OF EARTH',B,lk,D,set,o);
     rec('museum','MUSEUM OF EARTH',B,D,true);
     const ym=(B.y0+B.y1)/2, lw={...look,floor:null};
-    STEPS.push(()=>flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'),()=>flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'),
-      mr(lw,()=>{},{xo:1,xw:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1]]}),
-      mr(lw,()=>{ flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,B.h,roofCol,'Rmuseum'); },{xo:1,xw:[['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]}),
-      mr({in:look.in},()=>{},{xo:1,xw:[...[M.hx0,M.hx1].map((x,i)=>['s'+i,'y',SX-x,SY-M.by,B.y1-T,i?1:-1,[{a0:SY-M.side[1],a1:SY-M.side[0],z0:0,z1:M.archZ}],true]),
+    const inWalls=mr({in:look.in},()=>{},{xo:1,xw:[...[M.hx0,M.hx1].map((x,i)=>['s'+i,'y',SX-x,SY-M.by,B.y1-T,i?1:-1,[{a0:SY-M.side[1],a1:SY-M.side[0],z0:0,z1:M.archZ}],true]),
         ['k','x',SY-M.by,B.x0+T,B.x1-T,1,[M.earth,M.humans,M.closed].map(([a,b])=>({a0:SX-b,a1:SX-a,z0:0,z1:M.archZ})),true],
-        ...[M.hx0,M.hx1].map((x,i)=>['r'+i,'y',SX-x,B.y0+T,SY-M.by-T,i?1:-1,[],true])]}),
-      mr({},()=>{ const py=B.y0-3, sd=(M.side[0]+M.side[1])/2;
+        ...[M.hx0,M.hx1].map((x,i)=>['r'+i,'y',SX-x,B.y0+T,SY-M.by-T,i?1:-1,[],true])]});
+    STEPS.push(mr(lw,()=>{},{xo:1,xw:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1]]}),
+      mr(lw,()=>{ flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,B.h,roofCol,'Rmuseum'); },{xo:1,xw:[['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]}),
+      mr({in:look.in},()=>{ const py=B.y0-3, sd=(M.side[0]+M.side[1])/2;
         for(const m of MT?[mp,mpS]:[mp]){ m('museum portico steps',M.mid,(py+B.y0)/2); for(const dx of [-3.7,-1.2,1.2,3.7])m('museum column',M.mid+dx,py+.7); m('museum entablature',M.mid,py+.7,2); }
         for(const x of [M.hx0+.8,M.hx1-.8])for(const y of [M.side[0]-.8,M.side[1]+.8,M.by-1.4])mp('museum hall column',x,y);
         mp('information desk',M.hx0+2.9,B.y0+1.8,2);
         mp('the Rosetta Stone',M.west.x0+3.4,sd,3); mp('Tutankhamun\'s mask',M.west.x0+3.4,B.y0+2,3); mp('painted coffin',M.west.x0+.55,M.by-2.2,3); mp('museum bench',M.west.x0+1.4,sd,3);
         mp('Lucy',M.east.x0+3.4,sd,1); mp('Laetoli footprints',M.east.x1-.65,B.y0+4,1); mp('four skulls',M.east.x1-.35,M.by-5,1); mp('hand axes',M.east.x0+.4,B.y0+2.5,3); mp('the Ishango bone',M.east.x0+.4,M.by-1.5,3);
-        L(M.hall,3,[1.3,1.3,1.26],170,16); L(M.west,3,sp,96,10); L(M.east,3,sp,96,10); }),
-      mr({},()=>{ const C=M.closedR; mp('woolly mammoth',M.mid,(M.humansR.y0+M.humansR.y1)/2+.4); mp('Gibeon meteorite',M.earthR.x0+1.6,M.earthR.y1-1.9);
+        L(M.hall,3,[1.3,1.3,1.26],170,16); L(M.west,3,sp,96,10); L(M.east,3,sp,96,10); },{xo:1}),
+      mr({in:look.in},()=>{ const C=M.closedR; mp('woolly mammoth',M.mid,(M.humansR.y0+M.humansR.y1)/2+.4); mp('Gibeon meteorite',M.earthR.x0+1.6,M.earthR.y1-1.9);
         mp('terracotta warriors',(C.x0+C.x1)/2,C.y1-.9,2); mp('jade burial suit',C.x1-.55,C.y0+2.4,1); mp('the Sutton Hoo helmet',C.x0+.6,C.y0+1,3); mp('clay tablets',C.x0+.35,C.y0+3.4,3); mp('the Antikythera mechanism',(C.x0+C.x1)/2,C.y0+2.9,2);
-        L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); })); }
+        L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); },{xo:1}),
+      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); }; R.drop=true; }); }   // nothing of its inside until you go in, dropped when you leave
 
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
@@ -223,8 +223,17 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.ensure=async()=>{ await LOAD(...need()); finish(); };
     STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; if(!LOADED(o.fn.chunk)||need().some(c=>!LOADED(c)))return o.wait||(o.wait=LOAD(o.fn.chunk,...need()).then(()=>STORE.offGo(n))); finish(); o.done=1; STORE.now=1; o.fn(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
-    STORE.inGo=id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; finish(); STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+    const took=()=>({n:scene.children.length,t:UI.things.length,c:cutWalls.length,r:STORE.roofs.length,l:LITE.recs.length,s:SOL.up.length,f:FIX.up.length});
+    STORE.inGo=id=>{ '@later'; finish(); const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; const S=R.drop?took():null; STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+      if(S)R.P={objs:scene.children.slice(S.n),things:UI.things.slice(S.t),cuts:cutWalls.slice(S.c),roofs:STORE.roofs.slice(S.r),lights:LITE.recs.slice(S.l),sol:SOL.up.slice(S.s),fix:FIX.up.slice(S.f)};
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+    // an inside marked drop (R.drop) is taken down once you are out of it, built again behind the fade next time
+    STORE.unGo=id=>{ '@later'; const R=STORE.inside[id], P=R&&R.P; if(!P)return; R.P=null; R.done=false; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
+      out(UI.things,P.things); out(cutWalls,P.cuts); out(STORE.roofs,P.roofs); out(LITE.recs,P.lights); out(SOL.up,P.sol); out(FIX.up,P.fix); LITE.t=0;
+      for(const k in STORE.meshes)if(P.objs.includes(STORE.meshes[k]))delete STORE.meshes[k];
+      for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
+      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+    { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P)continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in
     STORE.pre={};   // a door that fetches something first (the art museum: its paintings): id -> async () => done, run behind the fade before the inside is built

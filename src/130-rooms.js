@@ -68,6 +68,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||null;
+  BATCH.away=()=>!!ROOMS.offIn();   // in a room off the map the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
   ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();

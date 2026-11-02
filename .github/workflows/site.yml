@@ -57,7 +57,7 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
+          k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159c|loop\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146bc|holodeck'
@@ -142,9 +142,9 @@ jobs:
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
-      - name: The tablet (TAB pulls it up, its apps)
-        if: contains(steps.f.outputs.run, ' tablet')
-        run: node tests/tablet.cjs dist/market.html
+      - name: The handheld (ESC pops it up, its icons open the menus)
+        if: contains(steps.f.outputs.run, ' handheld')
+        run: node tests/handheld.cjs dist/market.html
       - name: The loop (two trains shuttle from A, you ride one out and back)
         if: contains(steps.f.outputs.run, ' train')
         run: node tests/loop.cjs dist/market.html

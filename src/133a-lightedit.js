@@ -1,8 +1,9 @@
-// THE LIGHTING EDITOR: LIGHTED, the global render-system and quality panel (cel is the floor); shift+5.
+// THE LIGHTING EDITOR: LIGHTED, the global render-system and quality panel (cel is the floor, its band count here too); EDITORS (shift+0).
 import {THREE} from './003-shx.js';
 import {LIGHTED, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
+import {CEL} from './006-map-pre.js';
 { const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
   const D=()=>({q:'lowest',shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
@@ -37,12 +38,14 @@ import {SAVE} from './005-save.js';
     <div class="row"><span class="lab">SHADOW EDGE</span>${sel('sh',[['basic','HARD'],['pcf','PCF'],['soft','SOFT'],['vsm','VSM']])}</div>
     <div class="row"><span class="lab">TONE MAP</span>${sel('tn',[['none','NONE'],['linear','LINEAR'],['reinhard','REINHARD'],['cineon','CINEON'],['aces','ACES']])}</div>
     <div class="row"><span class="lab">EXPOSURE</span><input type="range" id="lexp" min="0.3" max="2" step="0.01" value="${st.exposure}"><span id="lexpv">${(+st.exposure).toFixed(2)}</span></div>
+    <div class="row"><span class="lab">LIGHT BANDS</span>${[3,4,5].map(n=>`<button class="btn" data-bands="${n}" aria-pressed="${CEL===n}">${n}</button>`).join('')}<span class="dim">the cel shading's steps; reloads the page</span></div>
     <div class="row"><button class="btn" id="lreset">RESET TO CEL</button><button class="btn" id="lexport">EXPORT</button><button class="btn" id="ldone">DONE</button></div>
     <div class="dim" id="lmsg"></div></div>`; }
   const refresh=()=>{ draw(); };
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
     if(b.dataset.ps2!==undefined){ PS2.set(b.dataset.ps2==='1'); refresh(); return; }
+    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }

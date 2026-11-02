@@ -1,27 +1,28 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ROOMS, UI, WIELD} from './003b-systems.js';
+import {FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
+import {BLOCKS} from './038zb-blocks.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
-  const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=TEXT.esc;
   const hp=document.createElement('div'); hp.id='holog'; hp.hidden=true;
   hp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(520px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(hp); hp.addEventListener('keyup',e=>e.stopPropagation()); hp.addEventListener('keydown',e=>{ if(e.key==='Escape')HOLO.hide(); e.stopPropagation(); });
   const xb=document.createElement('button'); xb.className='pX'; xb.textContent='X'; xb.style.cssText='position:absolute;right:10px;top:10px;font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer'; xb.onclick=()=>HOLO.hide(); hp.appendChild(xb);
   const B='style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   HOLO.draw=()=>{ if(hp.hidden)return; let o='<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE HOLODECK</h3><div style="color:#9b9584;margin-bottom:8px">'+(HOLO.run?'RUNNING: '+esc(HOLO.run.P.name):'PICK AN ADVENTURE.')+'</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$'+Math.round(INV.cash)+'</b></div>';
-    o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">$'+(P.cost||8)+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'"'+(HOLO.run?' disabled':'')+'>RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
+    o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">'+(P.cost===0?'FREE':'$'+(P.cost==null?8:P.cost))+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'"'+(HOLO.run?' disabled':'')+'>RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
     if(HOLO.run)o+='<div style="margin-top:8px"><button '+B+' data-end="1">END PROGRAM</button></div>'; hp.innerHTML=o; hp.appendChild(xb); };
   hp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; if(b.dataset.end){ HOLO.end(); HOLO.draw(); return; } const P=HOLO.programs[+b.dataset.run]; if(P)HOLO.start(P); });
   HOLO.menu=()=>{ hp.hidden=false; HOLO.draw(); if(UI.menuLook)UI.menuLook(); };
   HOLO.hide=()=>{ hp.hidden=true; };
   HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); };
   HOLO.close=()=>{ HOLO.end(); HOLO.hide(); HOLO.hall=null; };
-  HOLO.start=P=>{ if(HOLO.run||!HOLO.hall)return; const c=P.cost||8; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+  HOLO.start=P=>{ if(HOLO.run||!HOLO.hall)return; const c=P.cost==null?8:P.cost; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
     const H=HOLO.hall; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); if(P.place)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
   SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
   SYS.add('places',dt=>{ const D=HOLO.run; if(D&&D.P.run)D.P.run(D,dt); },'holodeck program');

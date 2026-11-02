@@ -305,7 +305,7 @@ const SSUB=(()=>{ const W={};
     BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:[PT]}));
     cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null}); }
   { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
-  const TX=(wx,wz)=>SL.MY0+77-wz/TILE, TY=(wx,wz)=>wx/TILE+72-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
+  const TX=(wx,wz)=>SL.MY0-SHARED.BOD.MY(wz), TY=(wx,wz)=>SHARED.BOD.MX(wx)-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
   const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
   LEVELS.of.station={name:'THE SUBWAY STATION',label:()=>M.label?M.label():'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
   const inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
@@ -328,7 +328,7 @@ const SSUB=(()=>{ const W={};
       q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],((k&1)?CON:CON2).map(v=>v*(1-.3*k/n))); q4(TR,[a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CON2.map(v=>v*.82));
       q4(TR,[a,zt,Z(yB-.03)],[b,zt,Z(yB-.03)],[b,zt+1.2*ZU,Z(yB-.03)],[a,zt+1.2*ZU,Z(yB-.03)],[86,52,44]); }
     const EX=[[],[]], E=4, J=6, yL=S.y0-E*run, LD=S.x1-S.x0, zL=-S.depth-E*rise, xE=S.x1+J*run, xm=(S.x0+S.x1)/2, CC=[138,136,130], CR=[104,102,98], CW=[120,118,112], CK=[84,84,82];
-    const dim=v=>{ const x=v[0]/TILE+72, y=v[2]/TILE-77, d=Math.max(0,S.y0-Math.max(y,yL))+Math.max(0,x-xm)+Math.max(0,yL-y)*.4; return Math.max(0,1-Math.min(10,d)/10)**1.5; };
+    const dim=v=>{ const x=SHARED.BOD.MX(v[0]), y=SHARED.BOD.MY(v[2]), d=Math.max(0,S.y0-Math.max(y,yL))+Math.max(0,x-xm)+Math.max(0,yL-y)*.4; return Math.max(0,1-Math.min(10,d)/10)**1.5; };
     const qe=(a,b,c,d,col)=>{ for(const v of [a,b,c,a,c,d]){ const k=dim(v); c3.setRGB(col[0]/255*k,col[1]/255*k,col[2]/255*k,THREE.SRGBColorSpace); EX[0].push(...v); EX[1].push(c3.r,c3.g,c3.b); } }, be=boxer(qe);
     for(let k=0;k<E;k++){ const yA=S.y0-(k+1)*run, yB=S.y0-k*run, zt=(-S.depth-(k+1)*rise)*ZU, zr=zt+rise*ZU, a=X(S.x0), b=X(S.x1);
       qe([a,zt,Z(yB)],[b,zt,Z(yB)],[b,zt,Z(yA)],[a,zt,Z(yA)],CC); qe([a,zt,Z(yB)],[b,zt,Z(yB)],[b,zr,Z(yB)],[a,zr,Z(yB)],CR); }
@@ -367,7 +367,7 @@ const SSUB=(()=>{ const W={};
     const sol=(lv,x0,y0,x1,y1,h)=>{ SOL[lv].push([X(x0),Z(y0),X(x1),Z(y1)]); FIX[lv].push([X(x0),Z(y0),0,X(x1),Z(y1),h]); };
     for(const x of [S.x0-.3,S.x1])sol('up',x,S.y0,x+.3,S.y1,36*ZU);
     sol('up',S.x0-.3,S.y0-.3,S.x1+.3,S.y0,36*ZU); };
-  { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=x/TILE+72, gy=z/TILE-77; return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
+  { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
     const el=document.createElement('div'); el.id='subfade';
     el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
     document.body.appendChild(el);
@@ -379,14 +379,14 @@ const SSUB=(()=>{ const W={};
       if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
       FADE.busy--; };
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
-    let busy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
+    let busy=false;
     const go=async dir=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING SUBWAY':'LEAVING SUBWAY',()=>{
       const p=dir==='in'?M.foot:M.street; UI.goTo(p.x,p.z,dir==='in'?'down':'up');
       if(UI.view==='iso'||UI.view==='map'){ if(dir==='in'){ SHARED.yaw=SHARED.yawTo=M.YAW; } else if(UI.isoTo){ UI.isoTo(); SHARED.yaw=SHARED.yawTo; } } },{hold:120}); busy=false; };
     const inExit=p=>{ const tx=TX(p.x,p.z), ty=TY(p.x,p.z); return tx>SL.EX0&&tx<SL.EX1&&ty<-2.5&&ty>-SL.ED-1; };
     M.door=(py,p)=>{ if(M.deep)M.deep.visible=SHARED.LVL==='up'; if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
-    { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
+    { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
   M.tick=dt=>{ M.flick(dt); };
 }

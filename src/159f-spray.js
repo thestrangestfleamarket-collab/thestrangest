@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LEVELS, ONLINE, pos, SFX, SPRAY, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {SECTION, SYS, TILE} from './006-map-pre.js';
 {
   const T=TILE, V3=THREE.Vector3, DOTS=20000, PER={spray_silver:900,spray_gold:900}, say=(t,c)=>FORAGE.say(t,c||'#c8c2b0');
   FORAGE.add({names:{spray_silver:'SPRAY PAINT, SILVER',spray_gold:'SPRAY PAINT, GOLD'},prices:{spray_silver:6,spray_gold:14}});
@@ -32,7 +32,7 @@ import {SYS, TILE} from './006-map-pre.js';
       <div style="color:#8a8a92;margin-top:8px;line-height:1.7">HOLD THE MOUSE ON A WALL OR THE FLOOR TO SPRAY<br>WHEEL: WIDTH · ESC: PUT THE CAN AWAY</div>`;
     sp.querySelector('.pX').onclick=()=>SPRAY.close(); sp.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ SPRAY.c=+b.dataset.c; end(); draw(); }); sp.querySelector('[data-w]').oninput=e=>{ SPRAY.w=+e.target.value*T; }; };
   let cur=null, down=false;
-  const end=()=>{ if(cur&&cur.p.length){ const k='tag:'+((SHARED.SECTION&&SHARED.SECTION.id)||'A')+':'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); mine.add(k);
+  const end=()=>{ if(cur&&cur.p.length){ const k='tag:'+(SECTION.id)+':'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); mine.add(k);
       ONLINE.put(k,JSON.stringify({o:cur.o.toArray().map(v=>+v.toFixed(2)),n:cur.n.toArray().map(v=>+v.toFixed(3)),c:cur.c,w:+cur.w.toFixed(3),p:cur.p.map(v=>Math.round(v*100)).join(',')})); } cur=null; };
   const out=()=>{ say('THE CAN IS EMPTY. THE BODEGA SELLS MORE.','#e5403a'); FORAGE.take(SPRAY.id,1); FORAGE.draw(); SPRAY.close(); };
   SPRAY.at=(p,n)=>{ if(!SPRAY.on)return false; if(SPRAY.left(SPRAY.id)<=0){ out(); return false; } n=n.clone().normalize();

@@ -33,7 +33,7 @@ Object.assign(WX,{hold:null,now:null});
     if(up){ scene.background.lerp(cA.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day),cl(W.cloud*W.cloud*.85)); if(W.storm)scene.background.multiplyScalar(1-.45*W.storm);
       CLOCK.sun.intensity*=1-.72*cl((W.cloud-.2)/.8); }
     if(W.flash&&flashT<=0)flashT=.14; if(flashT>0){ flashT-=dt; if(up){ const f=WX.hold==='RAIN'?.3:1; scene.background.lerp(cA.setRGB(.85,.88,.95),f); HEMI.intensity+=2.5*f; } }
-    if(PARK.windK)PARK.windK.value=0;
+    if(PARK.windK)PARK.windK.value=.25+W.wind;
     if(up&&!inside&&W.fog>.02){ scene.fog=FOG; FOG.color.setRGB(.7,.72,.74).multiplyScalar(.15+.85*day).lerp(scene.background,.25); FOG.near=2*TILE; FOG.far=(11+70*Math.pow(1-W.fog,2))*TILE; scene.background.lerp(FOG.color,cl(W.fog*1.3)); } else if(scene.fog===FOG)scene.fog=null;
     const wx=Math.cos(W.dir)*W.wind*5*TILE, wz=Math.sin(W.dir)*W.wind*5*TILE;
     const nr=inside?0:Math.round(NR*W.rain); RAIN.visible=nr>0; if(nr){ const v=14*TILE, L=.45*TILE, sx=wx/v*L, sz=wz/v*L; for(let i=0;i<nr;i++){ let y=rs[i*3+1]-v*dt; if(y<0)y+=RH; rs[i*3+1]=y;

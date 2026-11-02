@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,13 +29,14 @@ jobs:
           FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full') }}
           BASE: ${{ github.base_ref || 'main' }}
         run: |
-          C=$(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL)
+          C=$(for f in $(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL); do [ "$f" = ALL ] && { echo ALL; break; }; case "$f" in src/*.js) git diff -U0 "origin/$BASE"...HEAD -- "$f" | grep -E '^[-+][^-+]' | grep -vqE "^[-+](import \{[^}]*\} from '\./[^']+';|export \{[^}]*\};) *$" && echo "$f";; *) echo "$f";; esac; done)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k vr      'src/162[a-c]|vr\.cjs'
+          k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -45,14 +46,17 @@ jobs:
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
+          k editors 'src/09[4-9]|src/13[34]|src/140b|src/136|editors'
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
+          k art     'src/059p-art|data/art|art\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k playhouse 'src/151[a-z]|src/059-street|playhouse'
+          k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -92,6 +96,9 @@ jobs:
       - name: The headset (VR on an emulated Quest 3)
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
+      - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
+        if: contains(steps.f.outputs.run, ' catrun')
+        run: node tests/catrun.cjs dist/market.html
       - name: riders
         if: contains(steps.f.outputs.run, ' riders')
         run: node tests/riders.cjs dist/market.html
@@ -122,6 +129,9 @@ jobs:
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
+      - name: The tablet (TAB pulls it up, its apps)
+        if: contains(steps.f.outputs.run, ' tablet')
+        run: node tests/tablet.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
@@ -132,6 +142,12 @@ jobs:
       - name: The bank (its door, the hoard, the dragon waking)
         if: contains(steps.f.outputs.run, ' bank')
         run: node tests/bank.cjs dist/market.html
+      - name: The playhouse (its hall, the cloth curtain, the bars, the show at a moment)
+        if: contains(steps.f.outputs.run, ' playhouse')
+        run: node tests/playhouse.cjs
+      - name: The art museum (the lot, the paintings hung when you go in, the plaques, out again)
+        if: contains(steps.f.outputs.run, ' art')
+        run: node tests/art.cjs dist/market.html
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         if: contains(steps.f.outputs.run, ' guide')
         run: node tests/guide.cjs dist/market.html

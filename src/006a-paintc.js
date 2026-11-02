@@ -1,5 +1,5 @@
 // THE PAINT CACHE: painted ground patches kept in IndexedDB (gzip) so a second visit skips the painting; ?paintc=0 turns it off.
-import {QS} from './006-map-pre.js';
+import {QS, SYS} from './006-map-pre.js';
 const PAINTC=(()=>{ const V='__BUILDV__', DB='market-paint', ST='p', KEY='ground', M=new Map(), NEW=[], P={hit:0,miss:0,bad:0,ms:0,loaded:0,saved:0};
   const off=QS.get('paintc')==='0'||typeof indexedDB==='undefined'||typeof DecompressionStream==='undefined';
   const idb=()=>new Promise((res,rej)=>{ const r=indexedDB.open(DB,1); r.onupgradeneeded=()=>r.result.createObjectStore(ST); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
@@ -18,7 +18,7 @@ const PAINTC=(()=>{ const V='__BUILDV__', DB='market-paint', ST='p', KEY='ground
       const idx=[], parts=[]; for(const [k,[w,h,d]] of all){ idx.push([k,w,h]); parts.push(d); } NEW.length=0;
       const blob=await new Response(new Blob(parts).stream().pipeThrough(new CompressionStream('gzip'))).blob();
       const db=await idb(); await tx(db,'readwrite',s=>s.put({v:V,idx,blob},KEY)); db.close(); P.saved=idx.length; }catch(e){} };
-  const later=()=>{ if(!window.__started)return setTimeout(later,2000); (window.requestIdleCallback||setTimeout)(()=>save(),{timeout:20000}); };
+  const later=()=>SYS.onStart(()=>(window.requestIdleCallback||setTimeout)(()=>save(),{timeout:20000}),'006a-paintc');
   if(!off)setTimeout(later,5000);
   return {ready,get,put,save,P}; })();
 window.PAINTC=PAINTC;

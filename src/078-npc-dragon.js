@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
 import {BLAZE, CLOCK, DRESS, NPCS, PARK, pos, SFX, VIT, WEEDS} from './003b-systems.js';
-import {MAPG, MODS, TILE} from './006-map-pre.js';
+import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {WIRES} from './069b-poles.js';
 import {makeNPC} from './076-npc-map.js';
@@ -72,7 +72,7 @@ import {DRAGON} from './077-npc-skel.js';
         if(D.mode!=='perch'){ FW.set(Math.sin(st.h),0,Math.cos(st.h)); RT.set(Math.cos(st.h),0,-Math.sin(st.h)); D.tw+=dt;
           TAIL.forEach((b,k)=>{ bend(b,UP,-D.turn*.18*(k+1)/3+Math.sin(D.tw*1.1+k*.7)*.05); bend(b,RT,D.climb*.08); });
           NECK.forEach((b,k)=>bend(b,UP,D.turn*.12)); } } });
-    N.push=()=>{}; N.blocks=()=>false;
+    N.push=()=>{}; N.blocks=()=>false; N.pack();
     const tick0=N.tick, st=N.st; st.hold=true; st.h=Math.random()*6; N.g.rotation.order='YXZ'; if(D.home){ D.mode='perch'; D.t=5+Math.random()*80; st.x=D.home.x; st.z=D.home.z; N.home={x:D.home.x,z:D.home.z,r:0,id:N.home&&N.home.id}; D.y=D.home.y; wI=1; wF=0; }
     N.tick=(dt,you)=>{ st.to=null; st.face=null; tick0(dt,you); let turn=0; D.snap-=dt;
       { const g=CLOCK.dark()?.35:0; N.toon.emissive.lerp(GLC.setRGB(.04*g,.2*g,.06*g),Math.min(1,dt*.5)); }
@@ -111,4 +111,4 @@ import {DRAGON} from './077-npc-skel.js';
   window.DRAGONPERCH=(i,k)=>{ const N=DR[i], D=N.D; D.p=PER[k]; D.p.on=1; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return PER.length; };
   window.DRAGONHOME=i=>{ const N=DR[i], D=N.D; if(!D.home)return null; D.p=D.home; D.mode='perch'; D.t=999; N.st.x=D.p.x; N.st.z=D.p.z; D.y=D.p.y; return {x:D.p.x,z:D.p.z,y:D.p.y}; };
   window.DRAGONDBG=()=>DR.map(N=>({mode:N.D.mode,tree:!!N.D.p.tree,ground:!!N.D.p.ground,peek:+N.D.pw.toFixed(2),breath:Math.round(N.D.breath),x:+N.st.x.toFixed(1),y:+N.D.y.toFixed(1),z:+N.st.z.toFixed(1)}));
-}; const go=()=>window.__started?DRAGON().then(DGO).catch(e=>console.warn('DRAGONS',e)):setTimeout(go,400); go(); }
+}; SYS.onStart(()=>DRAGON().then(DGO).catch(e=>console.warn('DRAGONS',e)),'078-npc-dragon'); }

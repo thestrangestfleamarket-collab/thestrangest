@@ -4,7 +4,7 @@ import {B64, F32} from './003a-skin.js';
 import {LAND, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {TILE} from './006-map-pre.js';
+import {SYS, TILE} from './006-map-pre.js';
 import {TUFTC, tuftCol} from './014-gamekit.js';
 import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
@@ -79,7 +79,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
-  { const go=()=>{ if(!window.__started)return setTimeout(go,500); for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); }; if(regions.length||gprops.length)go(); }
+  if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;
   let type='grass', drag=null, prev=null, mode='box', poly=null, polyY=0, polyLine=null;

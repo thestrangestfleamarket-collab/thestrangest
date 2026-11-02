@@ -43,8 +43,7 @@ import {MERCH} from './111e-merch.js';
     add(new THREE.BoxGeometry(.3,.5,.03),std(0xc8d8e0,{roughness:.05,metalness:.8}),.62,1.3,.15,[0,-.5,0]); add(new THREE.CylinderGeometry(.03,.05,.32,10),std(0x1a1a1e),.25,1.11,.15);
     for(let i=0;i<4;i++){ const a=i/4*Math.PI*2; add(new THREE.BoxGeometry(.12,.03,.02),std(0x1e6a3a,{roughness:.1,metalness:.4}),.25+Math.sin(a)*.05,1.3,.15+Math.cos(a)*.05,[0,a,0]); }
     G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x+Math.sin(hd+1.57)*1.1*T,N.st.y||0,N.st.z+Math.cos(hd+1.57)*1.1*T); G.rotation.y=hd; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='tiger'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=KIT.g=kit(N);
+  { NPCS.when('tiger',N=>{ const G=KIT.g=kit(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.7*T,1.4*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.7*T,G.position.z); N.g.parent.add(hb);
-      UI.thing({name:'THE TIGER\'S KIOSK',obj:hb,reach:2*T,near:3*T,tall:1.4*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.85*T,z-.45*T,x+.85*T,z+.45*T]); };
-    go(); }
+      UI.thing({name:'THE TIGER\'S KIOSK',obj:hb,reach:2*T,near:3*T,tall:1.4*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.85*T,z-.45*T,x+.85*T,z+.45*T]); }); }
 }

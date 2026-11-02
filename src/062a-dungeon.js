@@ -100,7 +100,6 @@ await grab('dungeon',async()=>{});
     if(alive&&onG&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
     if(webT>0){ webT-=dt; SHARED.drag=.08; if(webT<=0){ webFree=2; SHARED.drag=1; say('web','YOU TEAR YOURSELF FREE OF THE WEB.','#d8d8c8'); } }
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*cur; say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
-  const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=n=>{ const B=lot(n); return {x0:X(B.x0),x1:X(B.x1),z0:Z(B.y0),z1:Z(B.y1)}; };
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(cur||how==='load'&&n>1?'':'ENTERING ')+'DUNGEON — LEVEL '+n:'LEAVING DUNGEON',async()=>{
@@ -108,7 +107,7 @@ await grab('dungeon',async()=>{});
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
     PH.hd=SHARED.heading; },{hold:140}); busy=false; };
   MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
-    if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=p.x/TILE+72, gy=p.z/TILE-77; if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
+    if(!m){ if(cur&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=SHARED.BOD.MX(p.x), gy=SHARED.BOD.MY(p.z); if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(m!==cur)return go(m,'load');
     const L=lay(cur), gx=iX(p.x), gy=iZ(p.z); if(tread(L.up,gx,gy))go(cur-1,'below'); else if(tread(L.dn,gx,gy))go(cur+1,'top'); };
   LEVELS.of.dungeon={name:'THE DUNGEON',amb:0,label:()=>'THE DUNGEON'+(cur?' — LEVEL '+cur:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:(x,z)=>bnd(lotAt(x,z)||1)};

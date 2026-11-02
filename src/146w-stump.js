@@ -34,8 +34,7 @@ import {MERCH} from './111e-merch.js';
     const ir=std(0x2a2a2c,{metalness:.6,roughness:.4}); add(new THREE.BoxGeometry(.14,.02,.14),ir,.2,.62,-.15); for(const s of [-1,1])for(const q of [-1,1])add(new THREE.BoxGeometry(.01,.2,.01),ir,.2+s*.06,.73,-.15+q*.06); add(new THREE.ConeGeometry(.1,.08,4),ir,.2,.87,-.15,[0,Math.PI/4,0]);
     const fl=new THREE.Mesh(new THREE.SphereGeometry(.03,10,8),new THREE.MeshBasicMaterial({color:0xffb040})); fl.scale.y=1.6; fl.position.set(.2,.72,-.15); G.add(fl); const L=new THREE.PointLight(0xffa040,.8,3.5,2); L.position.set(.2,.75,-.15); G.add(L);
     G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x+Math.sin(hd)*.8*T,N.st.y||0,N.st.z+Math.cos(hd)*.8*T); G.rotation.y=hd+Math.PI; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='stump'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=KIT.g=kit(N);
+  { NPCS.when('stump',N=>{ const G=KIT.g=kit(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1*T,.8*T,1*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.4*T,G.position.z); N.g.parent.add(hb);
-      UI.thing({name:'THE STUMP\'S TABLE',obj:hb,reach:2*T,near:3*T,tall:.8*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.45*T,z-.45*T,x+.45*T,z+.45*T]); };
-    go(); }
+      UI.thing({name:'THE STUMP\'S TABLE',obj:hb,reach:2*T,near:3*T,tall:.8*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.45*T,z-.45*T,x+.45*T,z+.45*T]); }); }
 }

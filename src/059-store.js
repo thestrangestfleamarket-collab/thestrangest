@@ -6,6 +6,7 @@ import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS,
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
+import {BLOCKS} from './038zb-blocks.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
   STORE.here=id=>{ const R=STORE.inside[id]||STORE.rooms.find(r=>r.id===id); if(!R||!R.B||SHARED.LVL!=='up')return false; const B=R.B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); return pos.x>Math.min(xa,xb)&&pos.x<Math.max(xa,xb)&&pos.z>Math.min(za,zb)&&pos.z<Math.max(za,zb); };
@@ -154,7 +155,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
 
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
-  const GARDEN=STORE.garden={cottage:[72-15/BLDK,-77-14.6/BLDK],house:[72-4.6/BLDK,-77-9.2/BLDK]};
+  const GARDEN=STORE.garden={cottage:[SHARED.BOD.OX-15/BLDK,SHARED.BOD.OY-14.6/BLDK],house:[SHARED.BOD.OX-4.6/BLDK,SHARED.BOD.OY-9.2/BLDK]};
   if(!AWAY.has('garden'))STEPS.push(()=>{ '@later'; const O=GARDEN.cottage, R=room('cottage','THE HERB COTTAGE',{x0:O[0],y0:O[1],x1:O[0]+9,y1:O[1]+12,h:96},{floor:grassCol},null,()=>{ PRESETS['Preset Herb Cottage 1'].forEach(([k,dx,dy,r])=>put(k,O[0]+dx,O[1]+dy,r)); },
       {z:.05,pieceWalls:{'herb cottage wall, west':['w',1,0],'herb cottage wall, east':['e',-1,0],'herb cottage wall, north':['b',0,1],'herb cottage wall, south':['f',0,-1]}});
     R.at={x:-4.6*TILE,z:1.6*TILE}; const pl=STORE.places.find(q=>q[0]===R.name); if(pl){ pl[1]=R.at.x; pl[2]=R.at.z; } });
@@ -225,10 +226,10 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.inGo=id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; finish(); STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
-    const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in
+    STORE.pre={};   // a door that fetches something first (the art museum: its paintings): id -> async () => done, run behind the fade before the inside is built
     STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; if(STORE.gate[id]&&!STORE.gate[id]())return; R.busy=true; const name=/^THE /.test(R.name)?R.name:'THE '+R.name;
-      await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(!R.done){ await LOAD(...need()); STORE.inGo(id); }
+      await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(!R.done){ await LOAD(...need()); if(STORE.pre[id])await STORE.pre[id](); STORE.inGo(id); }
         if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); } if(UI.inIso)UI.inIso(); },{cut:true,silent:R.done&&!walk}); R.busy=false; };
     STORE.exit=async id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.busy||FADE.busy)return; R.busy=true; const d=R.door, SD=STORE.streetDoor[id], [x,y]=SD?SD.out:DOORP(R,1.4);
       await FADE.run('',async()=>{ STORE.goTo(X(x),Z(y),'up',SD?SD.out[2]:d.w==='f'?0:d.w==='b'?Math.PI:d.w==='w'?-Math.PI/2:Math.PI/2); },{cut:true}); R.busy=false; };

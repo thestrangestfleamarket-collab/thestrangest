@@ -1,8 +1,8 @@
 // THE INSPECT WINDOW: INSPECT turns a thing over in a little studio window (drag to turn, wheel to zoom): what you hold or point at (the inspect key, 5), or anything in your pack (LOOK); each family of items says how it looks with INSPECT.kinds.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, GPH, INSPECT, INV, ITEMS, UI} from './003b-systems.js';
+import {FORAGE, GPH, INSPECT, INV, ITEMS, TEXT, UI} from './003b-systems.js';
 import {renderer} from './004-main.js';
-{ const W=320, H=320, esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+{ const W=320, H=320, esc=TEXT.esc;
   const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xfff4e2,1.9), FILL=new THREE.DirectionalLight(0xbcd0ff,.6), RIM=new THREE.DirectionalLight(0xffffff,.55), PIV=new THREE.Group();
   KEY.position.set(-3,4,4); FILL.position.set(4,1,-3); RIM.position.set(0,2,-5); ROOM.add(new THREE.AmbientLight(0xffffff,.18),KEY,FILL,RIM,PIV);
   let ENV=null; const makeEnv=()=>{ const pm=new THREE.PMREMGenerator(renderer), s=new THREE.Scene();

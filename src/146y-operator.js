@@ -11,7 +11,7 @@ const PHONE={}; window.PHONE=PHONE;
   const W=document.createElement('div'); W.hidden=true; W.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;background:#0b0d13f4;border:2px solid #3a3f4e;padding:12px;font:11px Silkscreen,monospace;color:#d8dae2;width:min(360px,90vw);max-height:70vh;overflow:auto;zoom:var(--uiz,1)';
   document.body.appendChild(W); for(const ev of ['keydown','keyup'])W.addEventListener(ev,e=>{ if(e.key==='Escape')W.hidden=true; e.stopPropagation(); });
   PHONE.list=()=>Object.entries(LEVEL.chars||{}).filter(([id,r])=>r&&r.trade&&Array.isArray(r.trade.sells)&&r.trade.sells.length).map(([id,r])=>({id,name:r.name||id.toUpperCase()})).sort((a,b)=>a.name<b.name?-1:1);
-  PHONE.dial=how=>{ const L=PHONE.list(); W.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b style="color:#9ac8f0">${how==='home'?'THE HOME TELEPHONE':'THE CELL PHONE'}: WHO ARE WE CALLING?</b><button data-x style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;cursor:pointer">HANG UP</button></div>`+
+  PHONE.dial=how=>{ const L=PHONE.list(); W.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b style="color:#9ac8f0">${how==='home'?'THE HOME TELEPHONE':how==='tablet'?'THE TABLET':'THE CELL PHONE'}: WHO ARE WE CALLING?</b><button data-x style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;cursor:pointer">HANG UP</button></div>`+
       L.map(c=>`<button data-c="${c.id}" style="display:block;width:100%;text-align:left;margin:2px 0;font:inherit;color:#ece5d3;background:#141822;border:2px solid #2a3040;padding:4px 6px;cursor:pointer">${c.name}</button>`).join(''); W.hidden=false; };
   W.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x!==undefined){ W.hidden=true; return; }
     const id=b.dataset.c; if(!id)return; W.hidden=true; const r=(LEVEL.chars||{})[id]; FORAGE.say&&FORAGE.say('RING... RING... '+((r&&r.name)||'THEY')+' PICKS UP. "DELIVERY? SURE."','#9ac8f0'); if(SHOPS.open)SHOPS.open(NPCS.extra&&NPCS.extra.find(q=>q.key===id)||{key:id,name:r&&r.name}); });
@@ -50,10 +50,9 @@ const PHONE={}; window.PHONE=PHONE;
     add(new THREE.BoxGeometry(1.2,.06,.4),std(0x5a4030),0,.7,.25); for(let i=0;i<6;i++){ const cd=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-.4+i*.15,.72,.3),new THREE.Vector3(-.35+i*.13,.55,.38),new THREE.Vector3(-.3+i*.12,.95+(i%3)*.15,.24)]),16,.008,5),std([0xc83a2a,0x2a2a2a,0xe8c050][i%3])); G.add(cd); }
     for(let i=0;i<4;i++){ add(new THREE.CapsuleGeometry(.025,.16,6,10),std([0x9ac8e8,0x2a2a2a,0xe8e4da,0xc8302a][i]),-.5+i*.33,1.8,.1,[0,0,Math.PI/2]); }
     G.userData.lamps=lamps; G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x-Math.sin(hd)*.7*T,N.st.y||0,N.st.z-Math.cos(hd)*.7*T); G.rotation.y=hd; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='operator'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=KIT.g=kit(N);
+  { NPCS.when('operator',N=>{ const G=KIT.g=kit(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.3*T,1.7*T,.5*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.85*T,G.position.z); N.g.parent.add(hb);
       UI.thing({name:'THE OPERATOR\'S SWITCHBOARD',obj:hb,reach:2*T,near:3*T,tall:1.7*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.65*T,z-.25*T,x+.65*T,z+.25*T]);
-      let lt=0; SYS.add('life',dt=>{ if((lt-=dt||0)>0||!G.visible)return; lt=.7; for(const l of G.userData.lamps)l.material.color.setHex(Math.random()<.18?0xffb040:0x402010); },'146y-operator'); };
-    go(); }
+      let lt=0; SYS.add('life',dt=>{ if((lt-=dt||0)>0||!G.visible)return; lt=.7; for(const l of G.userData.lamps)l.material.color.setHex(Math.random()<.18?0xffb040:0x402010); },'146y-operator'); }); }
 }
 export {PHONE};

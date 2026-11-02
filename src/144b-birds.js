@@ -24,7 +24,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     ['RED-TAILED HAWK','Buteo jamaicensis',.55,85,0,0,'walk',{body:0x6a4a30,breast:0xe8dcc8,head:0x5a4028,wing:0x5a3e28,bar:0xd8c8b0,tail:0xb8562a,beak:0x2a2622,leg:0xe8c040}]];
   const NK=K.length, HAWK=12, BOUNTY={10:40,11:60,12:80}, DIFF=k=>K[k][3], RARE=k=>k>=10;
   const NM={bseed:'BIRDSEED (A HANDFUL)',bnet:'BIRD NET',cage:'EMPTY BIRD CAGE',feeder:'BIRD FEEDER',binoc:'BINOCULARS',bird_feather:'A FEATHER',quill_pen:'A FEATHER QUILL'}, PR={bird_feather:2,quill_pen:9}; for(let k=0;k<NK;k++){ NM['bd_'+k]=K[k][0]+' (IN A CAGE)'; NM['pet_'+k]='YOUR TAME '+K[k][0]; PR['bd_'+k]=K[k][4]; }
-  FORAGE.add({names:NM,prices:PR}); FORAGE.SELLP.push('bd_'); FORAGE.BUYK.birds=['bd_']; const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.SELLP.push('bird_feather','quill_pen'); FORAGE.BUYK.birds.push('bird_feather','quill_pen');
+  FORAGE.add({names:NM,prices:PR}); FORAGE.sell(...Object.keys(NM).filter(k=>/^bd_/.test(k)),'bird_feather','quill_pen'); FORAGE.BUYK.birds=['bd_']; const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.BUYK.birds.push('bird_feather','quill_pen');
   FORAGE.SELLS.push(['bseed',IV('bseed',1),()=>true],['bnet',IV('bnet',12),()=>!FORAGE.has('bnet')],['cage',IV('cage',5),()=>true]);
   // a quill from feathers: mending books goes better while you carry one
   FORAGE.add({recipes:[['quill_pen','A FEATHER QUILL','bind',[0,40],{bird_feather:3},'mending books goes better while you carry it']]});

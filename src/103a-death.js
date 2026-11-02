@@ -3,12 +3,11 @@ import {SHARED, THREE} from './003-shx.js';
 import {GHOSTS, keys, LEVELS, PH, pos, RAG, st, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
+import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
 { const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FIND THE BATH HOUSE.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
-  const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const MH=T/.84; let S=null, gh=0, rise=-1, busy=false, dp=null;
   const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
@@ -33,4 +32,4 @@ import {FADE, QS, STORE, SYS, TILE} from './006-map-pre.js';
     const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading); S.eyes.forEach((e,k)=>{ const sd=k?1:-1, ex=to.x+fx*(S.BR+.05)+fz*sd*.09, ey=to.y+.03, ez=to.z+fz*(S.BR+.05)-fx*sd*.09; e.position.set(ex*MH,ey*S.MV,ez*MH); e.lookAt(V.set((ex+fx)*MH,ey*S.MV,(ez+fz)*MH)); }); },'103a-death');
   window.KILLME=()=>VIT.die(); window.DEADDBG=()=>({gh,rise,busy,out:VIT.out,lvl:SHARED.LVL,py:SHARED.py,sheet:!!S,pool:!!(SHARED.BOD.GD&&SHARED.BOD.GD.inPool&&SHARED.BOD.GD.inPool(pos.x,pos.z)),on:S?GHOSTS.on(S):null,span:S?(()=>{ let lo=9,hi=-9; for(const k of S.live){ lo=Math.min(lo,S.P[k+1]); hi=Math.max(hi,S.P[k+1]); } return +(hi-lo).toFixed(2); })():null});
   if(SAVE.get('dead')==='1'){ VIT.dead=true; VIT.hp=0; note(DEAD); }
-  if(QS.get('die')){ const go=()=>window.__started?VIT.die():setTimeout(go,200); setTimeout(go,300); } }
+  if(QS.get('die'))SYS.onStart(()=>setTimeout(()=>VIT.die(),300),'103a-death'); }

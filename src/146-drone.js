@@ -130,6 +130,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
     const cv=document.createElement('canvas'); cv.width=SCOLS*8; cv.height=SROWS*8; cv.style.cssText='image-rendering:pixelated;width:min(94vw,calc((100vh - 48px)*'+(SCOLS*8)+'/'+(SROWS*8)+'));aspect-ratio:'+(SCOLS*8)+'/'+(SROWS*8)+';border:12px solid #0d0f0d;border-radius:14px;box-shadow:0 0 0 3px #1a3a1a,0 0 60px #2a6a2a66,inset 0 0 40px #000';
     box.appendChild(cv); document.body.appendChild(box); COMP.box=box; COMP.cv=cv; COMP.g=cv.getContext('2d'); if(!COMP.scr)COMP.scr=scrNew();
     COMP.page='boot'; COMP.t0=performance.now(); COMP.sel=0; COMP.msel=0; COMP.on=true; UI.gamewin='bbs'; keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); };
+  DRONE.openAt=pg=>{ DRONE.open(); COMP.page=pg; if(pg==='games'&&!COMP.arc)LOAD('arcade').then(()=>{ COMP.arc=1; }); };   // the tablet's apps: straight to a page, no boot
   DRONE.close=bbsClose;
   SYS.add('places',dt=>{ if(COMP.on){ bbsDraw(); if(COMP.g)scrPaint(); } },'146-bbs');
 

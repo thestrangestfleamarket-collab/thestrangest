@@ -49,10 +49,9 @@ NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; co
     BU.count=n; if(n){ BU.instanceMatrix.needsUpdate=true; BU.instanceColor.needsUpdate=true; } };
   const sol=(a,b,c,d,h)=>{ const r=[Math.min(X(a),X(b)),Math.min(Z(c),Z(d)),Math.max(X(a),X(b)),Math.max(Z(c),Z(d))]; SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(h)]); };
   sol(x0-.95,x1+.56,y0,y1+.66,26);
-  const DR=[0,1].map(i=>{ const g=new THREE.Group(), m=c=>new THREE.MeshLambertMaterial({color:c}); const bx=(w,h,d,mm)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm);
-    g.add(bx(.36,.1,.36,m(0x30343a))); for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.3,.03,.04,m(0x50565e)); arm.position.set(a*.15,.02,b*.15); arm.rotation.y=Math.atan2(b,a); g.add(arm); const r=bx(.26,.01,.03,m(0x9aa0a8)); r.position.set(a*.24,.07,b*.24); r.userData.rot=1; g.add(r); }
+  const DR=[0,1].map(i=>{ const {D:g}=DRONE.mk({s:1,parcel:false}), m=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,mm)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm);
     const line=bx(.01,.5,.01,m(0x9a7040)); line.position.y=-.3; g.add(line); const load=bx(.5*T*.9,Y(10)-Y(0),.36*T*.9,m(PAPER)); load.position.y=-.6; g.add(load); g.userData.load=load;
-    const dot=bx(.05,.04,.05,new THREE.MeshBasicMaterial({color:0xff4040})); dot.position.set(0,-.06,.18); g.add(dot); g.visible=false; scene.add(g); return {g,legs:[],carry:0,spin:0}; });
+    g.visible=false; scene.add(g); return {g,legs:[],carry:0}; });
   const fly=(d,k)=>{ const s=[bspot(k*2),bspot(k*2+1)], home=new V(X(x1+60),Y(420),Z(y1+2+k*2)); d.g.position.copy(home); d.g.visible=true; d.carry=2; d.legs=[];
     for(let j=0;j<2;j++){ const [bx,by,bz]=s[j], over=new V(X(bx),Y(260),Z(by)), down=new V(X(bx),Y(bz+10)+.75,Z(by)); d.legs.push([over,6],[down,2],['drop',[bx,by,bz]],['wait',.6],[over,2.5]); }
     d.legs.push([home,6],['gone']); };
@@ -61,7 +60,7 @@ NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; co
     if(L[0]==='drop'){ bundles.push({at:L[1],t:CLOCK.h}); drawB(); d.carry--; d.g.userData.load.visible=d.carry>0; d.legs.shift(); continue; }
     if(L[0]==='wait'){ if((L[1]-=dt)<=0)d.legs.shift(); }
     else { const v=new V().subVectors(L[0],d.g.position), l=v.length(), s=L[1]*dt; if(l<=s){ d.g.position.copy(L[0]); d.legs.shift(); } else d.g.position.addScaledVector(v,s/l); d.g.rotation.x=v.y>-.1&&Math.hypot(v.x,v.z)>.1?.15:0; d.g.rotation.y=Math.atan2(v.x,v.z); }
-    d.spin+=dt*40; for(const c of d.g.children)if(c.userData.rot)c.rotation.y=d.spin; } };
+    } };
   const ACT={serve:1.6,change:2,wave:2,stack:2.6,cut:1.8,arrange:3,stretch:3,open:2.6,close:2.6,doze:1e9,yawn:2.2};
   let sold=0, act=null, queue=[], idleT=12, waved=false, napT=0;
   const doAct=(n,then)=>queue.push({n,d:ACT[n],t:0,then});

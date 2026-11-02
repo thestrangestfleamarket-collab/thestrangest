@@ -620,127 +620,11 @@ function vrStation(x,y){ '@later'; SHARED.PNAME='VR headset station'; const Z=30
 STOREK.theatre={THFONT,THFRONT,thAt,thFront,theatreCarpet,theatreWall,theatreScreen,theatreDrape,theatreValance,theatreSeat,theatreAisleLights,theatreExit,theatrePort,filmFrame,FILMW,FILMH,FILMN,ARCN,arcadeFloor,arcadeLights,arcadeWallOf,ARC,grProp,GRM,vrStation};
 }
 {
-const PLAY={title:'THE HOUND OF THE BASKERVILLES',
-  marks:{DL:[-3,.5],DC:[0,.5],DR:[3,.5],L:[-3,1.8],C:[0,1.8],R:[3,1.8],UL:[-3,3.1],UC:[0,3.1],UR:[3,3.1],OL:[-5.3,1.9],OR:[5.3,1.9],
-    CHAIRL:[-2.2,1.5],CHAIRR:[1.6,1.5],WINDOW:[3.4,2.6],FIRE:[-.4,2.5],TOR:[.6,3.1],ROCK:[-2.4,.8],MIRE:[-4.1,3],PATH:[3.2,2.4]},
-  cast:{
-    holmes:{name:'Sherlock Holmes',look:{shirt:'#3a3d44',pants:'#2b2c31',hair:'#1e1a18',skin:'#e2c2ac',shoes:'#221a14'},hat:'deerstalker',hatC:'#7a6a50'},
-    watson:{name:'Dr. Watson',look:{shirt:'#6a5440',pants:'#4a3e34',hair:'#6e5236',skin:'#e6c4b0',shoes:'#3a2a1c'},hat:'bowler',hatC:'#25211e'},
-    mortimer:{name:'Dr. Mortimer',look:{shirt:'#2c3a32',pants:'#3c3c3a',hair:'#8a7a62',skin:'#eccab6',shoes:'#2a2420'},hat:'top',hatC:'#1c1c1e'},
-    henry:{name:'Sir Henry Baskerville',look:{shirt:'#8a6a3e',pants:'#5a4630',hair:'#a0682c',skin:'#e8c0a0',shoes:'#4a3020'},hat:'wide',hatC:'#5a4a36'},
-    stapleton:{name:'Jack Stapleton',look:{shirt:'#7a7a5a',pants:'#5e5a46',hair:'#c4a870',skin:'#e4c2a8',shoes:'#4a3c2a'},hat:'straw',hatC:'#d8c48a'},
-    barrymore:{name:'Barrymore',look:{shirt:'#141416',pants:'#141416',hair:'#2a2420',skin:'#d8b8a0',shoes:'#0c0c0c'},hat:null}},
-  scenes:[
-    {name:'221B Baker Street',set:'baker',lt:'warm',cast:{holmes:'WINDOW',watson:'CHAIRL'},face:{holmes:'R',watson:'C'},beats:[
-      {x:'street',over:true},
-      {w:'watson',s:'Holmes, our visitor of last night forgot his walking stick. What do you make of it?',a:'wave'},
-      {w:'holmes',s:'[amused] How did you know what I was doing? I believe you have eyes in the back of your head.',f:'watson'},
-      {w:'watson',s:'I have, at least, a well-polished coffee pot in front of me.'},
-      {w:'holmes',s:'Then tell me, Watson. What do you read in our visitor\'s stick?',go:'C'},
-      {w:'watson',s:'An elderly country doctor. Well esteemed. One who walks a great deal.',f:'holmes'},
-      {w:'holmes',s:'[laughs softly] Splendid, Watson. Wrong in almost every particular! A young man, amiable, unambitious, absent-minded, and the owner of a favourite dog. Larger than a terrier, and smaller than a mastiff.',a:'wave',f:'out'},
-      {x:'knock'},
-      {w:'holmes',s:'And here, unless I am mistaken, is the man himself.',f:'OR'},
-      {do:[['mortimer','enter','OR','R']]},
-      {w:'mortimer',s:'Mr. Sherlock Holmes? Doctor James Mortimer. I have come about a death on Dartmoor. And about a legend.',f:'holmes'},
-      {w:'holmes',s:'Pray, sit down, Doctor. Watson, the lamp.',go:'CHAIRR',f:'mortimer'},
-      {do:[['watson','go','FIRE']]},
-      {x:'reading',over:true},
-      {w:'mortimer',s:'[reading slowly, low] Know then, that in the time of the Great Rebellion, Hugo Baskerville, a wild and godless man, hunted a maiden across the moor by night. And there stood over him a foul thing. A great black beast, shaped like a hound, yet larger than any hound that ever mortal eye has rested upon.',go:'C',f:'out'},
-      {x:'howlfar',over:true},
-      {w:'mortimer',s:'Three weeks ago, Sir Charles Baskerville was found dead at the end of the yew alley. There was no mark upon him. But his face. His face was twisted with terror.'},
-      {w:'watson',s:'[quietly] Good heavens.',f:'mortimer'},
-      {w:'mortimer',s:'There were footprints near the body, Mr. Holmes.',f:'holmes'},
-      {w:'holmes',s:'A man\'s, or a woman\'s?',f:'mortimer'},
-      {w:'mortimer',s:'[whispers] Mr. Holmes. They were the footprints of a gigantic hound!',a:'wave'},
-      {x:'sting'},{p:1.2}]},
-    {name:'Baskerville Hall',set:'hall',lt:'hall',cast:{henry:'UL',watson:'L',barrymore:'UR'},face:{henry:'C',watson:'C',barrymore:'henry'},beats:[
-      {x:'door'},
-      {w:'barrymore',s:'[gravely] Welcome to Baskerville Hall, Sir Henry. Dinner is laid in the hall, sir.',go:'R'},
-      {w:'henry',s:'Some welcome. It\'s not a cheerful place, is it, Barrymore? I don\'t wonder my uncle got a little jumpy, living here alone.',go:'C',f:'barrymore'},
-      {w:'watson',s:'Mr. Holmes has sent me to see that you are never left alone, Sir Henry. Especially after dark.',f:'henry'},
-      {w:'henry',s:'[laughs] A ghost dog! I\'ve lived in the West, Doctor Watson. I\'ve heard wolves at night. I\'ll not be frightened off by a story.',f:'watson',a:'wave'},
-      {x:'sob'},
-      {w:'watson',s:'[hushed] Listen. Did you hear that? A woman, crying.',f:'UR'},
-      {w:'henry',s:'Barrymore. Who is that?',f:'barrymore'},
-      {w:'barrymore',s:'[hesitating] There are only two women in the house, sir. The scullery maid sleeps in the far wing, and my wife. And I can answer for it, sir, it was not my wife.',f:'henry'},
-      {w:'henry',s:'Then who?'},
-      {w:'barrymore',s:'[uneasy] The wind, sir. The wind on the moor does strange things. Good night, sir.',f:'out'},
-      {do:[['barrymore','exit','OR']]},
-      {w:'watson',s:'[quietly, to himself] It was not the wind.',go:'DC',f:'out'},
-      {x:'howlfar'},{p:1}]},
-    {name:'The Moor at Dusk',set:'moor',lt:'dusk',cast:{watson:'DL'},face:{watson:'R'},beats:[
-      {do:[['watson','go','L']]},{p:1.5},
-      {do:[['stapleton','enter','OR','R']]},
-      {w:'stapleton',s:'[cheerfully] Doctor Watson! Forgive the liberty. Stapleton, of Merripit House. I chase butterflies on the moor.',f:'watson',a:'wave'},
-      {w:'watson',s:'A lonely place for it.',f:'stapleton'},
-      {w:'stapleton',s:'A wonderful place! But take care where you walk, Doctor. That bright green patch is the great Grimpen Mire. A false step there means death, to man or beast.',go:'C',f:'MIRE'},
-      {x:'mire'},
-      {w:'stapleton',s:'[softly] There. A moor pony. Two in a week. The Mire has them, and it does not let go.'},
-      {x:'howlfar',over:true},
-      {w:'watson',s:'[uneasy] What on earth is that?',f:'UL'},
-      {w:'stapleton',s:'[lightly] The peasants say it is the Hound of the Baskervilles, calling for its prey.',f:'watson'},
-      {w:'watson',s:'And you, a man of science, believe that?'},
-      {w:'stapleton',s:'[smiling] I believe in getting home before dark, Doctor. Good evening.',f:'out'},
-      {do:[['stapleton','exit','OR']]},{p:1.2},
-      {do:[['holmes','enter','OL','TOR']]},
-      {w:'holmes',s:'It is a lovely evening, my dear Watson.',f:'watson'},
-      {w:'watson',s:'[startled] Holmes! You, here? I thought you were in London!',f:'holmes',a:'block'},
-      {w:'holmes',s:'That was what I wished you to think. Our naturalist is no stranger to that hound, Watson. Tonight we set a trap. And Sir Henry, I am afraid, must be the bait.',go:'C',f:'out'},
-      {x:'sting'},{p:1}]},
-    {name:'The Moor at Night',set:'fog',lt:'night',cast:{holmes:'ROCK',watson:'L'},face:{holmes:'R',watson:'R'},beats:[
-      {do:[['holmes','a','crouch'],['watson','go','DL']]},
-      {w:'holmes',s:'[whispers] Keep down. Sir Henry leaves Merripit House at ten. He must cross the moor alone.',f:'watson'},
-      {w:'watson',s:'[whispers] The fog, Holmes. It is rolling in from the Mire.',f:'R'},
-      {w:'holmes',s:'[whispers, tense] The one thing on earth that could have spoiled my plans.',f:'R'},
-      {x:'owl'},
-      {do:[['henry','enter','OR','PATH']]},{p:1.5},
-      {do:[['henry','go','C']]},
-      {x:'paws',over:true},{hound:'enter',from:'OR'},
-      {x:'snarl',over:true},{hound:'leap',at:'henry'},
-      {w:'henry',s:'[screams] Holmes! Watson! Help me!',a:'fall'},
-      {w:'holmes',s:'[shouting] Now, Watson! The lantern!',go:'R',a:'block'},
-      {do:[['watson','go','C']]},
-      {x:'howlnear',over:true},{hound:'flee',to:'MIRE'},
-      {x:'splash'},
-      {w:'watson',s:'[breathless] It is gone. Into the Mire!',f:'MIRE'},
-      {w:'holmes',s:'Did you see its jaws, Watson? Phosphorus. A cunning preparation. It was a living dog, painted to look like a fiend from hell.',f:'watson'},
-      {w:'henry',s:'[shaken] Then who? Who would do such a thing?',go:'C',f:'holmes'},
-      {w:'holmes',s:'Stapleton. A Baskerville himself, Sir Henry, hidden under another name, and next in line for your fortune. He has fled into the fog. The Mire will judge him now.',f:'out'},
-      {x:'mire'},{p:1}]},
-    {name:'221B Baker Street, Evening',set:'baker',lt:'evening',cast:{holmes:'CHAIRR',watson:'CHAIRL'},face:{holmes:'out',watson:'holmes'},beats:[
-      {w:'watson',s:'A dreadful business, Holmes. And yet you saw it all from the first.'},
-      {w:'holmes',s:'[warmly] The world is full of obvious things, Watson, which nobody by any chance ever observes.',f:'watson'},
-      {w:'holmes',s:'Come. Dinner, I think. And afterwards, a little music.',go:'WINDOW',f:'out'},
-      {x:'violin'},{p:.5}]}]};
-const PLAYT={"walk":1.5,"open":3,"close":3,"scenes":[{"S":12,"E":131.06},{"S":137.56,"E":211.23},{"S":217.73,"E":314.13},{"S":320.63,"E":410.51},{"S":417.01,"E":444.56}],"beats":[[15,0,0],[15.5,0,1],[20.99,0,2],[25.92,0,3],[29.65,0,4],[34.1,0,5],[39.83,0,6],[56.68,0,7],[58.88,0,8],[63.41,0,9],[65.24,0,10],[73.29,0,11],[76.78,0,12],[78.46,0,13],[78.96,0,14],[99.33,0,15],[99.83,0,16],[111.56,0,17],[113.69,0,18],[116.78,0,19],[119.55,0,20],[126.16,0,21],[129.36,0,22],[140.56,1,0],[143.76,1,1],[149.25,1,2],[156.26,1,3],[162.23,1,4],[170.04,1,5],[175.24,1,6],[180.89,1,7],[183.74,1,8],[193.15,1,9],[194.32,1,10],[200.05,1,11],[201.88,1,12],[203.53,1,13],[209.73,1,14],[220.73,2,0],[221.9,2,1],[223.4,2,2],[225.23,2,3],[233.12,2,4],[235.41,2,5],[250.18,2,6],[256.38,2,7],[264.19,2,8],[264.69,2,9],[266.82,2,10],[271.99,2,11],[275.16,2,12],[280.49,2,13],[284.33,2,14],[285.53,2,15],[289.84,2,16],[292.53,2,17],[296.5,2,18],[309.43,2,19],[312.63,2,20],[323.63,3,0],[324.93,3,1],[332.58,3,2],[336.31,3,3],[340.52,3,4],[343.72,3,5],[345.46,3,6],[346.96,3,7],[349.43,3,8],[349.93,3,9],[352.13,3,10],[352.63,3,11],[353.73,3,12],[358.1,3,13],[360.71,3,14],[363.19,3,15],[363.69,3,16],[366.29,3,17],[371.49,3,18],[374.34,3,19],[383.91,3,20],[387.16,3,21],[402.81,3,22],[409.01,3,23],[420.01,4,0],[424.3,4,1],[430.59,4,2],[435.36,4,3],[443.56,4,4]],"lines":[[15.5,5.04,0,1],[20.99,4.48,0,2],[25.92,3.28,0,3],[29.65,4,0,4],[34.1,5.28,0,5],[39.83,16.4,0,6],[58.88,4.08,0,8],[65.24,7.6,0,10],[73.29,3.04,0,11],[78.96,19.92,0,14],[99.83,11.28,0,16],[111.56,1.68,0,17],[113.69,2.64,0,18],[116.78,2.32,0,19],[119.55,6.16,0,20],[143.76,5.04,1,1],[149.25,6.56,1,2],[156.26,5.52,1,3],[162.23,7.36,1,4],[175.24,5.2,1,6],[180.89,2.4,1,7],[183.74,8.96,1,8],[193.15,0.72,1,9],[194.32,5.28,1,10],[201.88,1.2,1,12],[225.23,7.44,2,3],[233.12,1.84,2,4],[235.41,14.32,2,5],[256.38,7.36,2,7],[264.69,1.68,2,9],[266.82,4.72,2,10],[271.99,2.72,2,11],[275.16,4.88,2,12],[289.84,2.24,2,16],[292.53,3.52,2,17],[296.5,12.48,2,18],[324.93,7.2,3,1],[332.58,3.28,3,2],[336.31,3.76,3,3],[353.73,3.92,3,12],[358.1,2.16,3,13],[371.49,2.4,3,18],[374.34,9.12,3,19],[383.91,2.8,3,20],[387.16,15.2,3,21],[420.01,3.84,4,0],[424.3,5.84,4,1],[430.59,4.32,4,2]],"sounds":[{"k":"bell","at":0,"vol":0.7},{"k":"overture","at":2.5,"vol":0.55},{"k":"street","at":15,"vol":0.35},{"k":"knock","at":56.68,"vol":0.8},{"k":"reading","at":78.46,"vol":0.4},{"k":"howlfar","at":99.33,"vol":0.55},{"k":"sting","at":126.16,"vol":0.6},{"k":"fire","at":10.5,"vol":0.22,"bed":1,"until":134.06},{"k":"clock","at":10.5,"vol":0.12,"bed":1,"until":134.06},{"k":"door","at":140.56,"vol":0.7},{"k":"sob","at":170.04,"vol":0.45},{"k":"howlfar","at":203.53,"vol":0.55},{"k":"hallwind","at":136.06,"vol":0.26,"bed":1,"until":214.23},{"k":"mire","at":250.18,"vol":0.6},{"k":"howlfar","at":264.19,"vol":0.55},{"k":"sting","at":309.43,"vol":0.6},{"k":"wind","at":216.23,"vol":0.3,"bed":1,"until":317.13},{"k":"owl","at":340.52,"vol":0.5},{"k":"paws","at":349.43,"vol":0.8},{"k":"snarl","at":352.13,"vol":0.95},{"k":"howlnear","at":363.19,"vol":0.9},{"k":"splash","at":366.29,"vol":0.8},{"k":"mire","at":402.81,"vol":0.6},{"k":"fog","at":319.13,"vol":0.3,"bed":1,"until":413.51},{"k":"wind","at":319.13,"vol":0.3,"bed":1,"until":413.51},{"k":"violin","at":435.36,"vol":0.6},{"k":"fire","at":415.51,"vol":0.22,"bed":1,"until":447.56},{"k":"clock","at":415.51,"vol":0.12,"bed":1,"until":447.56}],"call":{"S":450.06,"bow":[454.06,456.56],"E":459.56},"len":464.56};
-const PLL=PLAYT.len, plEase=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
-const W_=[1,.86,.62], LOB=[.15,.12,.08], WL=[.32,.21,.1], PLCUE={house:{house:W_,lobby:W_,wall:[.8,.52,.26],candle:[.9,.6,.28]},preshow:{house:[.3,.26,.2],lobby:[.6,.5,.36],wall:[.6,.4,.2],candle:[1,.66,.3]},
-  warm:{lobby:LOB,wall:WL,candle:[1.2,.78,.36],prac:[1.2,.6,.24]},hall:{lobby:LOB,wall:WL,candle:[1,.64,.28],prac:[.7,.48,.22]},dusk:{lobby:LOB,wall:WL,candle:[.95,.6,.28]},
-  night:{lobby:LOB,wall:WL,candle:[.8,.5,.24]},evening:{lobby:LOB,wall:WL,candle:[1,.64,.3],prac:[1.3,.66,.26]},between:{lobby:LOB,wall:WL,candle:[.18,.12,.06]},
-  call:{house:[.4,.34,.25],lobby:LOB,wall:[.6,.4,.2],candle:[1.2,.8,.38]}};
-function lobbyCol(x,y){ const i=Math.floor(x*3),j=Math.floor(y*3);
-  return mt('tiles',(x*3-i)<.05||(y*3-j)<.05?[118,116,110]:((i+j)&1?[206,202,192]:[58,58,60])); }
+// the playhouse's street front (its inside is the playhouse's own, 151*)
 const PFONT={...STOREK.theatre.THFONT,D:'####.#...##...##...##...##...#####.',F:'######....#....####.#....#....#....',L:'#....#....#....#....#....#....#####',V:'#...##...##...##...##...#.#.#..#...',
   Y:'#...##...#.#.#..#....#....#....#...',0:'.###.#...##..###.#.###..##...#.###.',1:'..#...##....#....#....#....#...###.',2:'.###.#...#....#...#...#...#...#####',
   4:'...#...##..#.#.#..#.#####...#....#.',6:'..##..#...#....####.#...##...#.###.',8:'.###.#...##...#.###.#...##...#.###.'};
-const PLAYK=PLB=>{ const PLMID=(PLB.x0+PLB.x1)/2, SY=PLB.y0+7.9, ay=a=>SY+(a+48.3)*6/6.2;
-const PLS={x0:PLB.x0+.1,x1:PLB.x1-.1,SY,PRY:ay(-47.4),PRX0:PLMID-4.3,PRX1:PLMID+4.3,PRZ:90,CY:ay(-46.8),SZ:22,back:PLB.y1-.1,LEGS:[ay(-45.4),ay(-43.9)],legW:1.6,
-  rows:[2.4].map(d=>SY-d),SPOT:[PLMID,SY+2.7,1.6],SX0:PLMID-2.5,SX1:PLMID+2.5,lobby:PLB.y0+1.6};
-const PLWALLS=[SY-1.9,SY-4.3], PLCANDLES=[[PLMID-3.5,SY+.25,20],[PLMID-1.4,SY+.25,14],[PLMID+1.4,SY+.25,14],[PLMID+3.5,SY+.25,20],[PLMID+3.9,ay(-45.2),24]];
-const plMark=m=>[PLMID+m[0],PLS.CY+.5+m[1]], PLC=PLS.CY+.5;
-function playFloorCol(x,y){ '@later'; if(y<PLS.lobby)return lobbyCol(x,y);
-  { const a=Math.abs(x-PLMID); if(a>PLS.SX1-PLMID+.15&&a<PLS.SX1-PLMID+1.25&&y<PLS.SY)return mt('carpet',speck(a<PLS.SX1-PLMID+.22||a>PLS.SX1-PLMID+1.18?[150,118,58]:[128,26,34],x,y,23)); }
-  const r=Math.floor(x*4), b=Math.floor(y/1.5+hash(r,0,41)*3), c=[[86,58,40],[78,52,36],[92,62,42]][Math.floor(hash(b,r,43)*3)];
-  return mt('wood',(x*4-r)<.08?sh(c,.7):c); }
-function playWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X;
-  if(ny<0&&Math.abs(Y-PLB.y1)<.3||ny>0&&Math.abs(Y-PLB.y0)<.3)return sh((u*24|0)%9<4?[96,14,26]:[74,10,20],f);
-  if(Y>PLS.PRY+.05)return sh(z<PLS.SZ&&ny?[60,46,34]:[20,20,22],f);
-  if(z<6)return sh([40,26,20],f);
-  if(z<40)return sh(z%10<1?[52,32,24]:[74,46,32],f);
-  if(z<44)return sh([186,150,72],f*1.1);
-  const d=hash(Math.floor(u*24/6),Math.floor(z/8),57)<.5, m=((u*24|0)+(z|0))%12<2;
-  return sh(m&&d?[112,34,40]:[98,26,32],f); }
+const PLAYK=PLB=>{ const PLMID=(PLB.x0+PLB.x1)/2;
 const PFRONT=(()=>{ let o=null; const build=()=>{ const W=Math.round((PLB.x1-PLB.x0)*24), H=PLB.h, a=new Array(W*H).fill(null), px=(c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; };
   const box=(c0,z0,c1,z1,col)=>{ for(let z=Math.floor(z0);z<z1;z++)for(let c=Math.floor(c0);c<c1;c++)px(c,z,col); }, U=x=>(x-PLB.x0)*24, lit=c=>{ const o=c.slice(); o.e=1; return o; };
   const text=(s,c,z,k,col,ol)=>{ for(const pass of ol?[0,1]:[1])[...s].forEach((ch,i)=>{ const g=PFONT[ch]; if(!g)return; for(let j=0;j<7;j++)for(let q=0;q<5;q++)if(g[j*5+q]==='#'){
@@ -755,79 +639,21 @@ const PFRONT=(()=>{ let o=null; const build=()=>{ const W=Math.round((PLB.x1-PLB
   for(const [x0,x1] of [[PLMID-3.9,PLMID-2.3],[PLMID+2.3,PLMID+3.9]]){ box(U(x0)-3,25,U(x1)+3,72,CREAM); box(U(x0)-4,24,U(x1)+4,26,CREAMD); }
   for(const [x0,x1] of [[PLMID-3.9,PLMID-2.3],[PLMID+2.3,PLMID+3.9]]){ box(U(x0),27,U(x1),70,lit([236,196,120])); box((U(x0)+U(x1))/2-1,27,(U(x0)+U(x1))/2+1,70,CREAM); box(U(x0),47,U(x1),49,CREAM); }
   const cw=96; box(W/2-cw,74,W/2+cw,86,[30,40,36]); box(W/2-cw,84,W/2+cw,87,GILT); for(let c=W/2-cw+2;c<W/2+cw;c+=6)px(c,75,BULB);
-  const nm='THE HOUND OF THE BASKERVILLES'; text(nm,(W-tw(nm,1))/2,77,1,lit([240,226,180]));
+  const nm='A MIDSUMMER NIGHTS DREAM'; text(nm,(W-tw(nm,1))/2,77,1,lit([240,226,180]));
   const bw=tw('PLAYHOUSE',2)+18, b0=(W-bw)/2; box(b0,90,b0+bw,114,CREAM); box(b0-2,88,b0+bw+2,90,GILT); box(b0-2,114,b0+bw+2,116,GILT);
   for(let z=92;z<113;z+=5){ px(b0+2,z,BULB); px(b0+bw-3,z,BULB); }
   text('PLAYHOUSE',b0+9,100,2,[150,28,34],[90,16,20]); const ts='TAKE A SEAT'; text(ts,(W-tw(ts,1))/2,91,1,[120,90,40]);
   for(const c0 of [14,W-14-30]){ box(c0-2,16,c0+32,72,GILT); box(c0,18,c0+30,70,[46,74,62]);
     for(let z=18;z<70;z++)for(let c=c0;c<c0+30;c++)if(hash(c,z,881)<.12)px(c,z,[70,104,88]);
-    for(let z=26;z<58;z++)for(let c=c0+4;c<c0+26;c++){ const x=(c-c0-15)/10, y=(z-40)/14; if(x*x+y*y<1||(Math.abs(x)<.5&&y>-1.5&&y<-.5)||(Math.abs(x+.55)<.22&&y>.7&&y<1.4)||(Math.abs(x-.55)<.22&&y>.7&&y<1.4))px(c,z,[14,16,14]); }
-    px(c0+11,44,lit([250,236,120])); px(c0+19,44,lit([250,236,120])); px(c0+12,44,lit([250,236,120])); px(c0+18,44,lit([250,236,120]));
-    text('HOUND',c0+1,61,1,lit([236,222,176])); }
+    for(let z=30;z<56;z++)for(let c=c0+3;c<c0+27;c++){ const a=Math.hypot(c-c0-14,z-43), b=Math.hypot(c-c0-19,z-46); if(a<10&&b>9)px(c,z,lit([244,232,190])); }
+    for(const [sc,sz] of [[5,25],[24,58],[8,62],[26,30],[4,52]])px(c0+sc,sz,lit([250,240,170]));
+    text('DREAM',c0+1,61,1,lit([236,222,176])); }
   return {W,H,a}; }; return {get W(){ return (o||(o=build())).W; },get H(){ return (o||(o=build())).H; },get a(){ return (o||(o=build())).a; }}; })();
 const plAt=m=>plMark(PLAY.marks[m]);
-const PLTR=PLAY.scenes.map((sc,si)=>{ const A={}, pos={}, H=[], get=w=>A[w]||(A[w]={walks:[],faces:[],acts:[],talk:[],in:-1e9,out:1e9,p0:null});
-  for(const [w,m] of Object.entries(sc.cast)){ const a=get(w); pos[w]=plAt(m); a.p0=pos[w].slice(); a.faces.push([-1e9,(sc.face||{})[w]||'out']); }
-  const walk=(w,to,t)=>{ const a=get(w), p=pos[w], q=plAt(to), d=Math.hypot(q[0]-p[0],q[1]-p[1]); if(d<.01)return t; const t1=t+d/PLAYT.walk; a.walks.push([t,t1,p[0],p[1],q[0],q[1]]); a.faces.push([t1,{dir:[q[0]-p[0],q[1]-p[1]]}]); pos[w]=q; return t1; };
-  const dur=new Map(PLAYT.lines.filter(l=>l[2]===si).map(l=>[l[3],l[1]]));
-  for(const [t0,s,bi] of PLAYT.beats){ if(s!==si)continue; const b=sc.beats[bi];
-    if(b.w){ const a=get(b.w); const te=b.go?walk(b.w,b.go,t0):t0; if(b.f)a.faces.push([te,b.f]); if(b.a)a.acts.push([t0+.3,b.a]); a.talk.push([t0,t0+(dur.get(bi)||1)]); }
-    if(b.do)for(const [w,what,m1,m2] of b.do){ const a=get(w);
-      if(what==='go')walk(w,m1,t0); else if(what==='face')a.faces.push([t0,m1]); else if(what==='a')a.acts.push([t0,m1]);
-      else if(what==='enter'){ a.in=t0; pos[w]=plAt(m1); a.p0=pos[w].slice(); walk(w,m2,t0); }
-      else if(what==='exit')a.out=walk(w,m1,t0); }
-    if(b.hound==='enter'){ const p=plAt(b.from), q=pos.henry, d=Math.hypot(q[0]-p[0],q[1]-p[1]), k=Math.max(0,(d-1.3)/d); H.push([t0,t0+2.2,p[0],p[1],p[0]+(q[0]-p[0])*k,p[1]+(q[1]-p[1])*k,0]); }
-    if(b.hound==='leap'){ const p=H[H.length-1], q=pos.henry; H.push([t0,t0+1.1,p[4],p[5],q[0]+.45,q[1]-.15,1]); }
-    if(b.hound==='flee'){ const p=H[H.length-1], q=plAt(b.to), r=plAt('OL'); H.push([t0,t0+1.9,p[4],p[5],q[0],q[1],0],[t0+1.9,t0+2.6,q[0],q[1],r[0],r[1]+1,0]); } }
-  for(const a of Object.values(A)){ a.faces.sort((p,q)=>p[0]-q[0]); }
-  return {A,H}; });
-const PLCALL=(()=>{ const ws=['stapleton','mortimer','watson','holmes','henry','barrymore'], A={};
-  ws.forEach((w,i)=>{ const x=PLMID+(i-2.5)*1.45, y=PLS.CY+1.1; A[w]={walks:[],faces:[[-1e9,'out']],acts:PLAYT.call.bow.map(t=>[t,'crouch']),talk:[],in:-1e9,out:1e9,p0:[x,y]}; }); return {A,H:[]}; })();
-function plPos(a,t){ '@later'; if(t<a.in||t>a.out)return null; let x=a.p0[0], y=a.p0[1], mv=null;
-  for(const w of a.walks){ if(t<w[0])break; if(t>=w[1]){ x=w[4]; y=w[5]; continue; } const k=(t-w[0])/(w[1]-w[0]); x=w[2]+(w[4]-w[2])*k; y=w[3]+(w[5]-w[3])*k; mv=[w[4]-w[2],w[5]-w[3]]; break; }
-  return {x,y,mv}; }
-function plPlayer(a,t,TR){ '@later'; const p=plPos(a,t); if(!p)return null; const {x,y,mv}=p;
-  let f=null; for(const e of a.faces)if(e[0]<=t)f=e[1];
-  const at=typeof f==='string'&&f!=='out'?(TR.A[f]?plPos(TR.A[f],t):PLAY.marks[f]?(m=>({x:m[0],y:m[1]}))(plAt(f)):null):null;
-  const dir=mv||(f&&f.dir)||(at?[at.x-x,at.y-y]:[0,-1]);
-  return {x,y,walking:!!mv,dir}; }
-function plState(t){ const SC=PLAYT.scenes, C=PLAYT.call, cur=(S,E)=>t<S?0:t<S+PLAYT.open?plEase((t-S)/PLAYT.open):t<E?1:plEase(1-(t-E)/PLAYT.close);
-  if(t<0||t>=PLL)return {si:-1,c:0,set:PLAY.scenes[0].set,lt:'house'};
-  for(let i=0;i<SC.length;i++){ const {S,E}=SC[i]; if(t>=S&&t<E+PLAYT.close)return {si:i,c:cur(S,E),set:PLAY.scenes[i].set,lt:PLAY.scenes[i].lt}; }
-  if(t>=C.S&&t<C.E+PLAYT.close)return {si:-2,c:cur(C.S,C.E),set:PLAY.scenes[SC.length-1].set,lt:'call'};
-  if(t<SC[0].S)return {si:-1,c:0,set:PLAY.scenes[0].set,lt:t<SC[0].S-6?'house':'preshow'};
-  if(t>=C.E+PLAYT.close)return {si:-1,c:0,set:PLAY.scenes[SC.length-1].set,lt:'house'};
-  let n=SC.findIndex(s=>s.S>t); return {si:-1,c:0,set:PLAY.scenes[n<0?SC.length-1:n].set,lt:'between'}; }
 function playFront(X,z,f){ const P=PFRONT, c=Math.floor((X-PLB.x0)*24),
   zz=Math.floor(z); if(c<0||c>=P.W||zz<0||zz>=P.H)return null; const o=P.a[zz*P.W+c]; if(!o)return null; if(o.e)return o; return sh(o,f); }
-const props=()=>{ const S=PLS, B=PLB, wood=(x,y)=>{ const r=Math.floor(x*5), c=[[150,108,66],[140,100,60],[158,116,72]][Math.floor(hash(r,Math.floor(y/2),61)*3)]; return mt('wood',(x*5-r)<.07?sh(c,.72):c); };
-  const BLK=[22,22,24], blk={c:BLK,top:()=>[30,30,32],fi:()=>[18,18,20],fj:()=>[24,24,26]}, GILT=[200,162,78], RED=[132,28,34];
-  SHARED.PNAME='stage'; prop([{x0:S.x0,y0:S.SY,x1:S.x1,y1:S.back,z0:0,z1:S.SZ,c:[120,86,54],top:wood,fi:(y,z)=>sh(z>S.SZ-3?GILT:[46,30,24],.62),fj:(x,z)=>sh(z>S.SZ-3?GILT:[52,34,26],.8)}
-  ]);
-  const n=Math.round((S.SX1-S.SX0)/1), w=(S.SX1-S.SX0)/n, V=[150,30,42], Vd=[100,16,28], Vh=[186,54,64], Wd=[52,30,22], G=[190,150,70];
-  const vel=(c0,top)=>({c:c0,top:()=>top||sh(c0,1.12),fi:()=>sh(c0,.68),fj:()=>sh(c0,.86)});
-  const arm=(a,y)=>[{x0:a-.08,y0:y-.42,x1:a+.08,y1:y+.36,z0:0,z1:20,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:(x,z)=>z<3?sh(G,.8):Wd},
-    {x0:a-.11,y0:y-.4,x1:a+.11,y1:y+.42,z0:20,z1:25,foot:0,...vel(V,Vh),fj:(x,z)=>sh(z>23?Vh:V,.86)}];
-  for(const y of S.rows)for(let i=0;i<n;i++){ const a=S.SX0+i*w, b=a+w; SHARED.PNAME='playhouse chair'; prop([
-    {x0:a+.1,y0:y-.4,x1:b-.1,y1:y+.3,z0:0,z1:5,c:Wd,top:()=>Wd,fi:()=>sh(Wd,.7),fj:()=>sh(Wd,.85)},
-    {x0:a+.1,y0:y-.24,x1:b-.1,y1:y+.44,z0:5,z1:13,foot:0,...vel(V),fj:(x,z)=>sh(z>10?Vh:V,.86)},
-    {x0:a+.16,y0:y-.2,x1:b-.16,y1:y+.38,z0:13,z1:16,foot:0,...vel(V,Vh),fj:()=>sh(Vh,.86)},
-    {x0:a+.1,y0:y-.48,x1:b-.1,y1:y-.24,z0:5,z1:40,foot:0,...vel(Vd),fj:(x,z)=>sh(z<7?G:Vd,.86)},
-    {x0:a+.17,y0:y-.48,x1:b-.17,y1:y-.24,z0:40,z1:44,foot:0,...vel(Vd,sh(Vd,1.2))},
-    {x0:a+.28,y0:y-.48,x1:b-.28,y1:y-.24,z0:44,z1:46,foot:0,...vel(Vd,sh(Vd,1.2))},
-    {x0:a+.17,y0:y-.24,x1:b-.17,y1:y-.1,z0:16,z1:39,foot:0,...vel(V,Vh),fj:(x,z)=>{ const q=(x-a-.17)/(w-.34)*3%1; return sh(z>36?Vh:q<.08||q>.92?Vd:V,.9); }},
-    ...arm(a,y),...(i===n-1?arm(b,y):[])]); }
-  for(const [x,nx] of [[B.x0+T,1],[B.x1-T,-1]])for(const y of PLWALLS)STOREK.bar.theatreSconce(x,y,[nx,0]);
-  };
-function plHoundAt(H,t){ '@later'; if(!H.length||t<H[0][0]||t>=H[H.length-1][1])return null; let s=H[0]; for(const q of H)if(q[0]<=t)s=q;
-  const run=t<s[1], k=run?(t-s[0])/(s[1]-s[0]):1, x=s[2]+(s[4]-s[2])*k, y=s[3]+(s[5]-s[3])*k, a=Math.atan2(s[5]-s[3],s[4]-s[2]);
-  return {x,y,a,s:run?(t*2.6)%1:.12+.03*Math.sin(t*9),up:s[6]&&run?Math.sin(k*Math.PI)*.7:0,run}; }
-const PLPRAC={baker:[PLMID-.4,ay(-42.75),30],hall:[PLMID-.2,PLC+2.6,62],moor:null,fog:null};
-const M=[46,42,40], Wd=[96,58,36], Lt=[120,30,28], FI=[250,150,50], Ok=[64,44,30], OkD=[46,30,20], GO=[200,170,90], HE=[84,90,62], GR=[140,136,128], BA=[58,50,44];
-const SETS={baker:[],hall:[],moor:[]};
-SETS.fog=SETS.moor;
-return {PLS,PLMID,PLWALLS,PLCANDLES,PFRONT,playFront,playFloorCol,playWall,props,PLTR,PLCALL,plState,plPlayer,plHoundAt,SETS,PLPRAC,plMark}; };
-STOREK.play={PLAY,PLAYT,PLL,PLCUE,PLAYK};
+return {PLMID,PFRONT,playFront}; };
+STOREK.play={PLAYK};
 }
 {
 const HOLOK=[8,14,10], HOLOL=Object.assign([60,255,120],{e:1}), HOLOM=Object.assign([28,120,58],{e:1});

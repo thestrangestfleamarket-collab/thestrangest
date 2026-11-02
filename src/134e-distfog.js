@@ -1,6 +1,6 @@
 // THE DISTANCE FOG: the further past you a thing is (from the camera), the more it blurs and fades into the haze, smoothly, whole at its end (nothing past it is drawn: CULL); the skyline past the map's edge is whole haze at its foot and a faint silhouette higher up, the sky clear; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
-import {ED, FAR3, MAPED, pos, UI} from './003b-systems.js';
+import {ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
@@ -22,7 +22,7 @@ const DFOG={};
         c.rgb=mix(c.rgb,uC,m); gl_FragColor=c; }`});
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85), HV=new THREE.Vector3();
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
-    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'; u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
+    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); u.uW.value=window.RIVER&&RIVER.box&&!dn?RIVER.box.lv+.2*TILE:-1e9; u.uV.value=1;   // the Hudson's water fades softer and further than land, so from high up it has no hard ring
     { const c=cam.position, d=HV.set(0,0,-1).applyQuaternion(cam.quaternion); d.y=0; d.normalize(); HV.copy(c).addScaledVector(d,400*TILE).setY(0).project(cam); const hz=(HV.y+1)/2; u.uY.value.set(hz+.08,hz+.5); }   // the skyline: whole haze at the horizon, clearing up the screen
     if(FAR3.land)u.uK.value.set(...FAR3.land);

@@ -36,7 +36,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(c4.strokes === 5 && c4.done && !c4.inCup && c4.best === 2 && c4.rounds === 2 && c4.back, 'the stroke limit: the fifth stroke ends the hole (par+4 written), the best stays, the ball comes back: ' + JSON.stringify(c4));
   const c5 = await pg.evaluate(async () => { const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
     STORE.holo.end(); const back = await U(() => !ARCDBG().holo.run && ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 60000); await new Promise(r => setTimeout(r, 500)); const d = GREENSDBG();
-    return { back, on: d.on, built: d.built, card: !!document.getElementById('greensc') && !document.getElementById('greensc').hidden, saved: JSON.parse(OWNED.get('greens') || '{}') }; });
+    return { back, on: d.on, built: d.built, card: !!document.getElementById('greensc') && !document.getElementById('greensc').hidden, saved: d.saved }; });
   ok(c5.back && !c5.on && !c5.built && !c5.card && c5.saved.best && c5.saved.best.zen === 2 && c5.saved.rounds === 2, 'END PROGRAM fades you back into the holodeck, the garden dropped, the card gone, the best kept: ' + JSON.stringify(c5));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'all good'); process.exit(fails.length ? 1 : 0);

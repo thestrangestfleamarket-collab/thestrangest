@@ -1,8 +1,8 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {keys, LEVELS, LINES, pos, RAG, SFX, SHAD, UI} from './003b-systems.js';
+import {keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPG, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -388,34 +388,7 @@ const SSUB=(()=>{ const W={};
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
     { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=x/TILE+72, gy=z/TILE-77; return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
     M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
-  { const G=new THREE.Group(), lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), R=.2, H=46*ZU, S0=Y(SZ)+H+R+.02, SAY='THANK YOU FOR YOUR COOPERATION.';
-    const BODY=lam(0xb8bec8), RIM=lam(0x3a3e48), DK=lam(0x2a2d34), LENS=flat(0x4dff86), TALK=flat(0x9be8ff), BEAM=new THREE.MeshBasicMaterial({color:0x5dff8e,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide});
-    const ring=new THREE.Mesh(new THREE.RingGeometry(.3,.35,16).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x5dff8e,side:THREE.DoubleSide})), CG=new THREE.ConeGeometry(1,1,12,1,true).translate(0,-.5,0).rotateX(-Math.PI/2);
-    ring.visible=false; G.add(ring); scene.add(G);
-    const D=[-.2,.2].map((o,i)=>{ const g=new THREE.Group(), body=new THREE.Mesh(new THREE.IcosahedronGeometry(R,1),BODY), band=new THREE.Mesh(new THREE.CylinderGeometry(R*1.02,R*1.02,R*.22,10),RIM), lens=new THREE.Mesh(new THREE.BoxGeometry(R*.5,R*.3,R*.2),LENS);
-      lens.position.set(0,-R*.15,R*.92); const rot=new THREE.Group(), mast=new THREE.Mesh(new THREE.BoxGeometry(R*.12,R*.5,R*.12),DK), blade=new THREE.Mesh(new THREE.BoxGeometry(R*2.2,R*.06,R*.16),DK);
-      mast.position.y=R*1.1; blade.position.y=R*1.35; rot.add(blade); g.add(body,band,lens,mast,rot); const home=new THREE.Vector3(...V(M.MACH.x,M.MACH.y+o,0)).setY(S0); g.position.copy(home); const cone=new THREE.Mesh(CG,BEAM); cone.visible=false; G.add(g,cone);
-      return {i,g,lens,rot,cone,home,st:'perch',t:0,N:{g,st:{x:home.x,z:home.z},lv:'down',H:R*2,key:'security drone '+i}}; });
-    const mach=new THREE.Vector3(...V(M.MACH.x,M.MACH.y,0)), tv=new THREE.Vector3(); let seen=false;
-    const home=()=>{ for(const d of D){ d.st='perch'; d.t=0; d.g.position.copy(d.home); d.g.rotation.set(0,0,0); d.lens.material=LENS; d.cone.visible=false; } ring.visible=false; };
-    M.drones=D; M.tick=(dt,you)=>{ M.flick(dt); if(!MAPG.down.visible||SHARED.LVL!=='down'){ if(SHARED.LVL!=='down'){ seen=false; if(D.some(d=>d.st!=='perch'))home(); } return; }
-      if(!seen&&M.inside(you.x,you.z)&&Math.hypot(you.x-mach.x,you.z-mach.z)<4*TILE&&Math.abs(SHARED.py-M.DY)<.3){ seen=true; for(const d of D){ d.st='wait'; d.t=-d.i*.7; } SFX.play('chirp',{at:{x:mach.x,z:mach.z}}); }
-      if(D.every(d=>d.st==='perch'))return;
-      const rx=Math.cos(SHARED.yaw), rz=-Math.sin(SHARED.yaw); let scan=null;
-      for(const d of D){ d.t+=dt; const p=d.g.position, sd=d.i?-.62:.62, out=d.st==='go'||d.st==='scan'||d.st==='say';
-        if(d.st==='wait'&&d.t>1){ d.st='go'; d.t=0; }
-        if(d.st==='wait')continue;
-        if(out)tv.set(you.x+rx*sd,SHARED.py+1.85+.35,you.z+rz*sd); else tv.copy(d.home);
-        const dx=tv.x-p.x, dz=tv.z-p.z, l=Math.hypot(dx,dz), s=Math.min(l,1.8*dt*(d.st==='go'||d.st==='home'?1:2)); if(l>1e-6){ p.x+=dx/l*s; p.z+=dz/l*s; } p.y+=(tv.y-p.y)*Math.min(1,dt*2);
-        if(d.st!=='home')p.y+=Math.sin(d.t*3)*.004; d.rot.rotation.y+=dt*40; d.g.rotation.y=Math.atan2(you.x-p.x,you.z-p.z);
-        if(d.st==='go'&&l<.12){ d.st='scan'; d.t=0; if(!d.i&&typeof SFX!=='undefined')SFX.play('scan',{at:{x:p.x,z:p.z}}); }
-        else if(d.st==='scan'&&d.t>6){ d.st=d.i?'home':'say'; d.t=0; if(!d.i){ d.lens.material=TALK; LINES.say(d.N,SAY); } }
-        else if(d.st==='say'&&d.t>3){ d.st='home'; d.t=0; d.lens.material=LENS; }
-        else if(d.st==='home'&&l<.05&&Math.abs(tv.y-p.y)<.04){ d.st='perch'; p.copy(d.home); d.g.rotation.set(0,0,0); }
-        d.N.st.x=p.x; d.N.st.z=p.z; d.cone.visible=d.st==='scan'; if(d.cone.visible&&(!scan||d.t>scan.t))scan=d; }
-      ring.visible=!!scan; if(scan){ const h=(1-Math.abs(((scan.t/3)%1)*2-1))*1.85; ring.position.set(you.x,SHARED.py+h+.02,you.z);
-        for(const d of D)if(d.cone.visible){ const a=d.g.position; d.cone.position.copy(a); d.cone.lookAt(ring.position); d.cone.scale.set(.32,.32,a.distanceTo(ring.position)); } } };
-    M.droneScan=()=>{ seen=false; }; }
+  M.tick=dt=>{ M.flick(dt); };
 }
 MODS.station={BOUND,ground:(x,z)=>SHARED.METRO.inside(x,z)?SHARED.METRO.ground(x,z):STN.DY,DY:SHARED.METRO.DY,plat:SHARED.METRO.plat,lane:SHARED.METRO.lane,path:SHARED.METRO.path};
  for(const w of cutWalls.slice(c0))if(!w.when)w.when=()=>SHARED.LVL==='down'; for(const L of SHL)L.removeFromParent(); });

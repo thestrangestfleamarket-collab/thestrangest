@@ -5167,3 +5167,6 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
+
+## 2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS
+Owner (asked what else Rapier could do): "lets add them all, add them as toggles in graphics we can turn off if we want (or change value 0-10 if that applies)"; his picks: doors stay fixed (joints go on hanging things), a go-kart sold by a merchant, everything on to start. Rapier 0.19. GRAPHICS > PHYSICS: SHAPES (boxes, round, true), IMPACTS 0–10 (knocks sound, glass breaks, a fast thing hurts you), PRECISE HITS, TRIGGER ZONES (the bar's dartboard scores a throw, an upright trash can takes small things), SWAYING THINGS 0–10 (hanging plants, lanterns and bulbs on a joint), STAND ON THINGS 0–10 (you step up onto low loose things), VEHICLE PHYSICS (the go-kart, the Boardwright's, on four wheels), RAGDOLLS (a townsperson hit hard falls and gets up).

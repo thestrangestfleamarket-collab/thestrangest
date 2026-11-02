@@ -6,8 +6,8 @@ import {PPU} from './004-main.js';
 import {MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {DUN, makeNPC, stfree, STLANE} from './076-npc-map.js';
 import {PAWNS} from './087-npc-creatures.js';
-{ const PW=PAWNS, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
-  const R0=PW.hero_m.rig, CLD=PW.hero_m.clips, CLIPS=SKIN.clips(CLD,R0.names,false);
+{ const geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
+  let PW=null, CLIPS=null, ALL=null, MK=null;   // filled by build() once the pawns data (data/pawns.json, lazy) has loaded, just after the start
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);
   const PAWNL=[]; window.PAWNL=PAWNL;
   const UNIFORM={};
@@ -72,8 +72,8 @@ import {PAWNS} from './087-npc-creatures.js';
   const withArms=(g,A)=>{ const G=A.G, o=g.userData.n0=g.attributes.position.count, cat=(name,arr,T,sz,norm)=>{ const a=g.attributes[name]; const out=new T(a.array.length+arr.length); out.set(a.array); out.set(arr,a.array.length); g.setAttribute(name,new THREE.BufferAttribute(out,sz,norm)); };
     cat('position',G.p,Float32Array,3); cat('color',G.c,Uint8Array,3,true); cat('reg',G.r,Float32Array,1); cat('sh',new Array(G.r.length).fill(0),Float32Array,1); cat('skinIndex',G.j,Uint8Array,4); cat('skinWeight',G.w,Uint8Array,4,true);
     const ix=g.index.array, I=new Uint32Array(ix.length+G.i.length); I.set(ix); for(let k=0;k<G.i.length;k++)I[ix.length+k]=G.i[k]+o; g.setIndex(new THREE.BufferAttribute(I,1)); return g; };
-  const PEOPLE=['hero_m','hero_f','villager_m','villager_f'], ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3].flatMap(n=>PEOPLE.map(k=>[k+'_'+n,k,n]))];
-  const MK=([key,kind,copy],i,X={})=>{ const D=PW[kind], rig=rigOf(D.rig), AR=armsOf(D,kind,rig,!!copy), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
+  const PEOPLE=['hero_m','hero_f','villager_m','villager_f'];
+  MK=([key,kind,copy],i,X={})=>{ const D=PW[kind], rig=rigOf(D.rig), AR=armsOf(D,kind,rig,!!copy), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
     const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.cloth!=null?recloth(withArms(geomOf(D.mesh),AR),X.cloth):copy?golem(withArms(geomOf(D.mesh),AR),copy*7+i):dressed(withArms(geomOf(D.mesh),AR),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:SHARED.BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:SHARED.BOD.ZS(i%2?SHARED.BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...(!copy&&/^(skeleton|ogre)/.test(key)&&QS.get('sheet')!==key&&DUN()||{}),
       brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,...(X.npc||{}),
       anim:(dt,moving,st,sc)=>{ '@later'; let want, ts=1;
@@ -82,12 +82,14 @@ import {PAWNS} from './087-npc-creatures.js';
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); armsSolve(AR,rig.bones); }});
     N.restless=()=>!!HOLD||cur===N.dwell&&!STILLC.has(cur)&&(cur!=='UAL_Idle_Talking_Loop'||!!(N.walker&&N.walker.talk));
     N.mixer=mixer; N.kind=kind; N.act=act; if(copy&&!X.npc)N.park=true; if(!X.npc)PAWNL.push(N); return N; };
-  ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i));
-  window.PAWNNEW=(kind,key,X)=>MK([key,kind,0],0,X);
+  const build=J=>{ PW=J; const R0=PW.hero_m.rig; CLIPS=SKIN.clips(PW.hero_m.clips,R0.names,false); ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3].flatMap(n=>PEOPLE.map(k=>[k+'_'+n,k,n]))];
+    ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i)); };
+  const go=()=>window.__started?PAWNS().then(build).catch(e=>console.warn('PAWNS',e)):setTimeout(go,600); go();
+  window.PAWNNEW=(kind,key,X)=>PW&&MK([key,kind,0],0,X);
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); SHARED.ppu=SHARED.ppuTo=PPU*k; };
   window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible}));
   // THE SOAK (tests/soak.cjs): n extra pawns scattered over the walkable map, roaming wide, not in the crowd; PAWNSOAKDBG reports the ones breaking an invariant.
-  const SOAK={list:[],t:0}; window.PAWNSOAK=(n=100)=>{ '@later'; const B=SHARED.BOUND, T=TILE, R=.3*T; let tries=0;
+  const SOAK={list:[],t:0}; window.PAWNSOAK=(n=100)=>{ '@later'; if(!PW)return 0; const B=SHARED.BOUND, T=TILE, R=.3*T; let tries=0;
     while(SOAK.list.length<n&&tries++<n*300){ const x=B.x0+Math.random()*(B.x1-B.x0), z=B.z0+Math.random()*(B.z1-B.z0); if(!stfree(x,z,R))continue;
       const i=SOAK.list.length, P=ALL.filter(([k])=>!/^(skeleton|ogre)/.test(k)), N=MK(P[i%P.length],900+i,{npc:{x,z,home:{x,z,r:40*T},roam:true}}); N.soak={lx:x,lz:z,still:0,hops:0,ticks:0,toSeen:false,t0:SOAK.t}; N.farMove=dt=>{ N.soak.ticks++; N.tick(dt,pos); }; SOAK.list.push(N); } return SOAK.list.length; };
   SYS.add('life',dt=>{ if(!SOAK.list.length)return; SOAK.t+=dt; for(const N of SOAK.list){ const s=N.st, k=N.soak; if(s.to)k.toSeen=true; if(Math.hypot(s.x-k.lx,s.z-k.lz)>.05*TILE){ k.still=0; k.hops++; k.lx=s.x; k.lz=s.z; } else if(s.to)k.still+=dt; } },'088 soak');

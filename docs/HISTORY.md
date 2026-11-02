@@ -5219,3 +5219,7 @@ Owner (his model, a rugged red tablet): "i want to import this into the game, fu
 ## 2 Nov 2026: a too-big owned save stops retrying instead of looping silently
 
 Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser stops retrying (before, `ownedPut` returned false, the client treated it as a transient failure, re-queued it and retried every 15 s forever, saving nothing and telling the player nothing). The device keeps its own copy and `OWNED.isFull()` is set; a visible player notice is still to add. Found in a fresh code audit.
+
+## 2 Nov 2026: PHOSPHOR, a screen-trail toggle
+
+Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".

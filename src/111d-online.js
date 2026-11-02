@@ -1,12 +1,13 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
 import {DESIGN} from './102b-designer.js';
+import {LABELS} from './104-labels.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
@@ -78,8 +79,11 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(g); };
+  const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
+    if(!o.lab)o.lab=LABELS.add();
+    o.lab.set((say?'<div style="display:inline-block;max-width:250px;overflow:hidden;text-overflow:ellipsis;font:'+(SIZES[st.s]/2)+'px '+FONTS[st.f][0]+';color:'+st.c+';background:rgba(11,13,19,.88);padding:3px 6px;margin-bottom:3px">'+TEXT.esc(say)+'</div>':'')+(nm?'<div style="font:14px Silkscreen,monospace;color:'+(o.dead?'#cfe0ff':'#ffd27a')+';text-shadow:0 0 2px #0b0d13,1px 1px 0 #0b0d13,-1px -1px 0 #0b0d13,1px -1px 0 #0b0d13,-1px 1px 0 #0b0d13">'+TEXT.esc(nm)+'</div>':'')+(hp>=0?'<div style="width:80px;height:5px;margin:2px auto 0;background:#0b0d13;padding:1px"><div style="height:3px;width:'+Math.round(hp*100)+'%;background:#c84a3a"></div></div>':'')).show(!!(say||nm||hp>=0)); };
   const unfig=o=>{ if(o.fig){ const i=UI.things.indexOf(o.fig.th); if(i>=0)UI.things.splice(i,1); scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
-    if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } };
+    if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } if(o.lab){ o.lab.remove(); o.lab=null; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
   const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
@@ -93,7 +97,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else{ o.tag.material.map.dispose(); o.tag.material.map=tx; } };
 
   /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */
-  const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; };
+  const hide=o=>{ if(o.fig)o.fig.g.visible=false; if(o.tag)o.tag.visible=false; if(o.lab)o.lab.show(false); };
   // a tag keeps one size on the screen whatever the zoom or the view: half a canvas pixel a screen pixel (the name 14 px, the words 11 to 18)
   const fit=sp=>{ const cam=SHARED.cam, H=renderer.domElement.clientHeight||innerHeight; let u; if(cam.isOrthographicCamera)u=(cam.top-cam.bottom)/(cam.zoom||1)/H; else u=2*cam.position.distanceTo(sp.position)*Math.tan((cam.fov||60)*Math.PI/360)/H; const k=u*.5; sp.scale.set(512*k,128*k,1); };
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
@@ -106,7 +110,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }
-      tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
+      if(VR.on){ if(o.lab)o.lab.show(false); tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); } else { if(o.tag)o.tag.visible=false; lab(o); o.lab.at(p.x,p.y+2.15*TILE,p.z); } }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
 
   /* ---------- the chat and who's online (ENTER talks; the key is in the controls) ---------- */
@@ -152,7 +156,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt);
-    if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else if(ME.tag)ME.tag.visible=false; };
+    if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
   ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
   const PS=['sit','climb','hang','water'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };

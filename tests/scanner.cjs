@@ -1,4 +1,4 @@
-// THE SCANNER CHECK: node tests/scanner.cjs [dist/market.html]. On the platform: two drones perch on things and float about; showing up books a scan ten to twenty seconds later; a scan comes (the drone flies over, the grid cage shows, the card), then the drone goes back to a perch; stepping off a train is showing up.
+// THE SCANNER CHECK: node tests/scanner.cjs [dist/market.html]. On the platform: two drones perch on things and float about; showing up books a scan ten to twenty seconds later; a scan comes (the drone flies over, a grid on the body, a sharp card), then the drone goes back to a perch; stepping off a train is showing up.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
@@ -12,6 +12,8 @@ const {chromium}=require('playwright');
   const Q=await pg.evaluate(()=>{ const P=__dbg.you(); return SCANNER.off('me','TEST',{x:P.x,y:SHARED.py,z:P.z}); }); ok(Q,'stepping off a train brings the scan forward');
   const until=async(f,ms,arg)=>{ for(let t=0;t<ms;t+=200){ if(await pg.evaluate(f,arg))return true; await pg.waitForTimeout(200); } return false; };
   ok(await until(()=>SCANNER.state().some(d=>d.ph==='scan'&&d.scan),30000),'a drone flies over and the grid scan shows');
+  { const g=await pg.evaluate(()=>{ const d=SCANNER.list.find(d=>d.ph==='scan'); if(!d)return null; const L=[...LABELS.list].find(L=>L.on&&/SCANNING/.test(L.el.textContent)); return {ov:d.ov?d.ov.length:0,onBody:!!(d.ov&&d.ov.length&&d.ov.every(([m,o])=>o.parent===m)),box:d.S.children.some(c=>c.isMesh||c.isLineSegments),card:L?L.el.textContent:null,sprite:d.card.visible}; });
+    ok(g&&g.ov>0&&g.onBody&&!g.box&&/SCANNING/.test(g.card||'')&&/CLEAR/.test(g.card||'')&&!g.sprite,'the scan is a grid drawn on the body itself (no box), and its card is sharp page text, not a picture in the scene: '+JSON.stringify(g)); }
   const D=await pg.evaluate(()=>{ const s=SCANNER.state().find(d=>d.ph==='scan'), P=__dbg.you(); return s?Math.hypot(s.at[0]-P.x,s.at[2]-P.z):99; }); ok(D<3,'it hovers close in front of the person ('+D.toFixed(2)+' away)');
   ok(await until(()=>SCANNER.state().some(d=>d.done===1&&d.ph==='perch'&&d.perch),60000),'then goes to a perch, one scan done');
   const P0=await pg.evaluate(()=>SCANNER.state().filter(d=>d.st==='A').map(d=>d.perch));

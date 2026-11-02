@@ -17,4 +17,5 @@ const SPOTS={
     await pg.evaluate(([x,z,hd,pt])=>{ PHDBG().look(x,z,hd,pt,'first'); },[x,z,hd,pt]);
     await pg.waitForTimeout(2500); await pg.screenshot({path:OUT+'/'+k+'.png',timeout:240000}); console.log('shot',k); }
   if(process.env.CURTAIN){ for(const [k,t] of [['curtainShut',0],['curtainOpen',1],['curtainHalf',.5]]){ await pg.evaluate(t=>{ PHDBG().curtain(t); PHDBG().look(0,9,Math.PI,.04,'first'); PHDBG().run((K)=>{ const c=K.cloth.curtain; for(let i=0;i<400;i++)c.step(1/20,null); }); },t); await pg.waitForTimeout(3000); await pg.screenshot({path:OUT+'/'+k+'.png',timeout:240000}); console.log('shot',k); } }
+  if(process.env.LOOKS){ for(const lk of process.env.LOOKS.split(',')){ await pg.evaluate(lk=>{ PHDBG().curtain(1); PHDBG().run((K)=>{ const c=K.cloth.curtain; for(let i=0;i<400;i++)c.step(1/20,null); K.lx.cue(lk,.01); }); PHDBG().look(0,13,Math.PI,.04,'first'); },lk); await pg.waitForTimeout(4000); await pg.screenshot({path:OUT+'/look-'+lk+'.png',timeout:240000}); console.log('shot',lk); } }
   console.log(errs.length?'errors: '+errs.join(' | '):'no page errors'); await b.close(); })();

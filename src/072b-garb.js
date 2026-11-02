@@ -144,8 +144,8 @@ const GARB={};
       const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',tw(B[0]+.1-j*1.15)); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
       const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>{ const y=j?20:21.05; pt(t,V(i?1:-1,y,zb),'hips','torso',tw(y)); },(c,j)=>[c,j],2);   // the buckle
       for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];
-        for(let q=G.top;q<L1-.7;q+=.9)T.push(q); T.push(L1-.5,L1,L1+.5); for(let q=L1+1.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);
-        const R=q=>q<0?G.R0+q*G.topIn:q<L1?G.R0+(G.Rk-G.R0)*q/L1:G.Rk+(G.Rh-G.Rk)*Math.min(1,(q-L1)/L2), sk=q=>q<0?['hips','thigh'+s,sm((q-G.top)/-G.top)]:q<L1-.3?['thigh'+s,null,0]:q<=L1+.3?['thigh'+s,'shin'+s,.5]:['shin'+s,null,0];
+        for(let q=G.top;q<L1-1.8;q+=.6)T.push(q); for(let q=-1.5;q<=1.51;q+=.5)T.push(L1+q); for(let q=L1+2.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);
+        const R=q=>q<0?G.R0+q*G.topIn:q<L1?G.R0+(G.Rk-G.R0)*q/L1:G.Rk+(G.Rh-G.Rk)*Math.min(1,(q-L1)/L2), sk=q=>q<0?['hips','thigh'+s,sm((q-G.top)/-G.top)]:q<L1-1.55?['thigh'+s,null,0]:q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0];
         grid(t,16,T.length,true,(i,j)=>{ const q=T[j], top=q<=L1, o=top?add3(H,mul3(a1,q)):add3(K,mul3(a2,q-L1)), a=top?a1:a2, u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), r=R(q), th=i/16*TAU, k=sk(q);
           pt(t,add3(o,add3(mul3(u,Math.cos(th)*r),mul3(w,Math.sin(th)*r))),k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/16*Math.max(1,Math.round(TAU*G.Rk/TS)),(T[j]-G.top)/TS],0); }
       return t; },

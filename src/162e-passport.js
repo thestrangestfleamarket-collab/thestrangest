@@ -1,6 +1,6 @@
 // THE PASSPORT: PASSPORT is the menu's page of you — your name, login, when you joined, your section, cash and skills — and your choice of hand (L or R: the one that holds, swings, punches and picks up; kept with what you own).
 import {SHARED} from './003-shx.js';
-import {FORAGE, INV, LOOKS, PASSPORT, st} from './003b-systems.js';
+import {FORAGE, INV, LOOKS, PASSPORT, st, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 { const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'), day=t=>{ const d=new Date(t); return isNaN(d)?'—':d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase(); };
   const saved=OWNED.get('hand'); st.hand=saved==='L'?'L':'R';
@@ -14,6 +14,7 @@ import {OWNED} from './005-save.js';
       <div class="pp-hand"><span>HANDED</span><button class="btn" data-h="R" aria-pressed="${st.hand!=='L'}">RIGHT</button><button class="btn" data-h="L" aria-pressed="${st.hand==='L'}">LEFT</button></div>
       <div class="dim">your hand holds, swings, punches and picks things up; the mouse takes the arm round you in full circles</div></div>`; };
   PASSPORT.page=host=>{ el=host; if(!el._pp){ el._pp=1; el.addEventListener('click',e=>{ const b=e.target.closest('[data-h]'); if(b)PASSPORT.setHand(b.dataset.h); }); } draw(); };
+  setInterval(()=>{ if(el&&!el.hidden&&UI.menuOpen)draw(); },1000);   // the facts stay live while the tab is open
   window.PASSPORT=PASSPORT;
   const css=document.createElement('style'); css.textContent=`
   #dpass .pp{max-width:420px;border:2px solid var(--line);padding:14px 16px;background:#0b0d12}

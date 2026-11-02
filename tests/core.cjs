@@ -99,7 +99,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.charp = (() => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), tabs = document.querySelector('#menu .tabs');
         const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = !!(tabs && tabs.style.display === 'none'), open = U.menuOpen === true;
-        const hs = home && home.querySelector('#cpslots [data-slot="head"]'), pk = home && home.querySelector('#cppick'); if (hs && !hs.classList.contains('on')) hs.click(); const pick = !!(pk && !pk.hidden && /HEAD/.test(pk.textContent));
+        const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
         let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();

@@ -158,7 +158,7 @@ import {GEMS} from './101-gems.js';
     P.style.cssText='position:fixed;z-index:21;padding:14px 16px;max-height:80vh;overflow:auto;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1);'+css;
     document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation()); return P; };
   PACK.bars=()=>{ const P=document.getElementById('packp'); const b=P&&P.querySelector('#pbars'); if(b)b.innerHTML=bars(); };
-  const bars=()=>`<div>HEALTH ${bar(VIT.hp,'#c84a3a')}</div><div>STAMINA ${bar(VIT.sta,'#d8b84a')}</div><div>HUNGER ${bar(S.food,'#8ac04a')} ${S.food<.25?'<b style="color:#f2c14e">HUNGRY</b>':''}</div>`+
+  const bars=()=>''+
     (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING'}[k]||k)+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
   PACK.draw=()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const tab=t=>`<button ${B} data-tab="${t}" style="${PACK.tab===t?'color:#f2c14e;':''}margin-right:4px;font:inherit;background:#0e1016;border:2px solid ${PACK.tab===t?'#f2c14e':'#3a3f4e'};padding:3px 9px;cursor:pointer">${t.toUpperCase()}</button>`;
     let o=`<div style="margin-bottom:10px">${tab('pack')}${tab('skills')}${tab('craft')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);

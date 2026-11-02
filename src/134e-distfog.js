@@ -41,9 +41,9 @@ const DFOG={};
   gfx();
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
-    const S=[['dfs','START','start',4,60,1],['dfe','END','end',8,120,1],['dfb','BLUR','blur',0,5,.1],['dfh','HAZE','haze',0,1,.01]];
+    const S=[['dfs','START','start',4,60,1],['dfb','BLUR','blur',0,5,.1],['dfh','HAZE','haze',0,1,.01]];
     const B=document.createElement('div'); B.id='dfog';
-    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to blur into the haze (START, in tiles) and where it is whole and nothing past it is drawn (END)</div>';
+    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to blur into the haze (START, in tiles); where it is whole and nothing past it is drawn is HAZE RANGE, in GRAPHICS</div>';
     P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; }; DFOG.onchange.push(sync);
     B.querySelector('#dfon').onclick=()=>{ C.on=!C.on; save(); sync(); };
     B.querySelector('#dfrs').onclick=()=>{ Object.assign(C,D0); save(); sync(); };   // back to the owner's default haze

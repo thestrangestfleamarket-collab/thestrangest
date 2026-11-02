@@ -5157,3 +5157,6 @@ Owner (his picture of a trunk's plain block on bare lawn): "i want to add tufts 
 
 ## 2 Nov 2026: the PS2 filter's grain still, patchy, none in the dark
 Owner (his shot of the catacomb run, a black screen crawling with grain): "i want it to not be uniform and freeze it, also fade in dark". The PS2 filter's grain holds still, is stronger in some patches and fainter in others, and fades out in the dark (black stays black).
+
+## 2 Nov 2026: the tablet
+Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.

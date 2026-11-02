@@ -1,4 +1,4 @@
-// THE GHOST DOJO: the ghost street's dojo (gdShape lays its lot for 050; its own builder for the court, the pool and the ghosts inside).
+// THE BATH HOUSE (the ghost street's dojo until 19 Oct 2026): gdShape lays its lot; its own builder for the court, the pool and the ghosts inside.
 import {SHARED, THREE} from './003-shx.js';
 import {CLIP, CLOCK, LITE, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, scene} from './004-main.js';

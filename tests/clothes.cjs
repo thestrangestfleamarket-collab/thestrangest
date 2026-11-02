@@ -23,7 +23,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       D += p.z > 0 ? bust(p.y, 1) : 0; return (Math.abs(p.x) / W) ** n + (Math.abs(p.z) / D) ** n <= 1.0001; };
     const inSleeve = (p, s) => { const S = J['shoulder' + s], E = J['elbow' + s], a = sub(E, S), L = len(a); a.x /= L; a.y /= L; a.z /= L; const q = sub(p, S), t = dot(q, a);
       if (t < 0) return len(q) <= T.slv.R; if (t > T.slv.L) return false; return len(sub(q, V(a.x * t, a.y * t, a.z * t))) <= lerp(T.slv.R, T.slv.Rh, t / T.slv.L); };
-    const G = Z.jeans.leg, inLeg = (p, s) => { const H = J['hip' + s], K = J['knee' + s], A = J['ankle' + s], L1 = len(sub(K, H)), L2 = len(sub(A, K)), R = q => q < L1 ? G.R0 + (G.Rk - G.R0) * Math.max(0, q) / L1 : G.Rk + (G.Rh - G.Rk) * Math.min(1, (q - L1) / L2);
+    const G = Z.jeans.leg, inLeg = (p, s) => { const H = J['hip' + s], K = J['knee' + s], A = J['ankle' + s], L1 = len(sub(K, H)), L2 = len(sub(A, K)), R = q => q < 0 ? G.R0 + q * G.topIn : q < L1 ? G.R0 + (G.Rk - G.R0) * Math.max(0, q) / L1 : G.Rk + (G.Rh - G.Rk) * Math.min(1, (q - L1) / L2);
       for (const [o, e, t0, t1, off] of [[H, K, G.top, L1, 0], [K, A, -.5, L2 + G.ext, L1]]) { const a = sub(e, o), l = len(a); a.x /= l; a.y /= l; a.z /= l; const q = sub(p, o), t = dot(q, a); if (t >= t0 && t <= t1 && len(sub(q, V(a.x * t, a.y * t, a.z * t))) <= R(t + off)) return true; } return false; };
     const inSeat = p => { const r = Z.jeans.rows; if (p.y > r[0][0] || p.y < r[r.length - 1][0]) return false; let j = 1; while (r[j][0] > p.y) j++; const a = r[j - 1], c = r[j], f = (a[0] - p.y) / (a[0] - c[0]); return (Math.abs(p.x) / lerp(a[1], c[1], f)) ** Z.jeans.n + (Math.abs(p.z) / lerp(a[2], c[2], f)) ** Z.jeans.n <= 1; };
     const shoeAt = z => { const st = Z.shoe.st; if (z < st[0][0] || z > st[st.length - 1][0]) return null; let j = 1; while (st[j][0] < z) j++; const a = st[j - 1], c = st[j], f = (z - a[0]) / (c[0] - a[0]); return [lerp(a[1], c[1], f), lerp(a[2], c[2], f)]; };
@@ -32,26 +32,30 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const inAll = p => Object.values(VOL).some(f => f(p));
     // 1: every garment point clear of what it covers, unless another garment covers it there
     const pokes = {}; let least = 1e9, npts = 0;
-    for (const [k, own, against] of [['shirt', ['shirt', 'sleeveL', 'sleeveR'], TORSO.concat(['hips', 'neck'])], ['pants', ['seat', 'legL', 'legR'], ['hips', 'thighL', 'thighR', 'shinL', 'shinR']], ['shoeL', ['shoeL'], ['footL']], ['shoeR', ['shoeR'], ['footR']]]) {
+    for (const [k, own, against] of [['shirt', ['shirt', 'sleeveL', 'sleeveR'], TORSO.concat(['hips', 'neck', 'thighL', 'thighR'])], ['pants', ['seat', 'legL', 'legR'], ['hips', 'thighL', 'thighR', 'shinL', 'shinR']], ['shoeL', ['shoeL'], ['footL']], ['shoeR', ['shoeR'], ['footR']]]) {
       const t = GARB.tpl(k, form), P = t.P, NM = GARB.NAMES;
       for (let i = 0; i < P.length; i += 3) { const p = V(P[i], P[i + 1], P[i + 2]), a = NM[t.s1[i / 3]], b = t.s2[i / 3] >= 0 ? NM[t.s2[i / 3]] : null; npts++;
         // the part it belongs to, by the bone it hangs on: a sleeve hangs on its arm alone, a leg on its thigh or shin, the rest of the tee and the seat on the torso and hips
         const part = k !== 'shirt' && k !== 'pants' ? k : k === 'shirt' ? (/^upperArm/.test(a) && !b ? 'sleeve' + a.slice(-1) : 'shirt') : (/^(thigh|shin)/.test(a) || b ? 'leg' + (b || a).slice(-1) : 'seat');
         // a sleeve is checked against the arm it goes round too
         const dd = bd(against.concat(/^sleeve/.test(part) ? ['upperArm' + part.slice(-1)] : []))(p), cov = Object.keys(VOL).some(n => n !== part && VOL[n](p));
-        if (cov || p.y < .05) continue;   // at the ground: the floor hides it least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }
+        if (cov || p.y < .05) continue; least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }
+    // 1b: the tee is worn over the jeans: every point of the jeans and belt above its hem is inside it with room to spare (points under the ground excepted)
+    const lay = {}; { const t = GARB.tpl('pants', form), P = t.P, hem = T.rows[0][0] + .1, inTeeIn = p => inTee(V(p.x * 1.04, p.y, p.z * 1.04)) || inSleeve(p, 'L') || inSleeve(p, 'R');
+      for (let i = 0; i < P.length; i += 3) { const p = V(P[i], P[i + 1], P[i + 2]); if (p.y > hem && !inTeeIn(p)) { const key = 'y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); lay[key] = (lay[key] || 0) + 1; } } }
     // 2: the skin to be covered, sampled near the body's surface
     const miss = {}; let ns = 0, all = bd(BODY);
     const want = p => { if (d('neck')(p) < 0 || p.y > 35.2 && Math.abs(p.x) < 3.6) return null; for (const n of TORSO) if (d(n)(p) < .05 && p.y > 15.6) return 'chest'; if (d('hips')(p) < .05) return 'hips';
       for (const s of 'LR') { if (d('thigh' + s)(p) < .05) return 'thigh'; if (d('shin' + s)(p) < .05 && p.y > 2.9) return 'shin'; if (d('foot' + s)(p) < .05 && p.y > .3 && p.y < 3.6) return 'foot'; } return null; };
     for (let x = -12; x <= 12; x += .4) for (let y = 0; y <= 36; y += .4) for (let z = -7; z <= 7; z += .4) { const p = V(x, y, z); if (Math.abs(all(p)) > .2) continue; const k = want(p); if (!k) continue; ns++;
       if (!inAll(p)) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); miss[key] = (miss[key] || 0) + 1; } }
-    return { npts, least: +least.toFixed(2), pokes, ns, miss, foot: !!pc('footL') };
+    return { npts, least: +least.toFixed(2), pokes, ns, miss, lay, foot: !!pc('footL') };
   }, form);
   for (const form of ['M', 'F']) {
     if (form === 'F') { await pg.evaluate(() => LOOKS.style('form', 'F')); await frames(40); }
     const r = await check(form);
     ok(r.foot && r.npts > 1000 && !Object.keys(r.pokes).length, `${form === 'F' ? 'her' : 'his'} tee, jeans and shoes clear the body everywhere they are not covered by another garment (${r.npts} points, least ${r.least}): ` + JSON.stringify(r.pokes));
+    ok(!Object.keys(r.lay).length, `${form === 'F' ? 'her' : 'his'} tee is worn over the jeans: none of the jeans or the belt shows through it: ` + JSON.stringify(r.lay));
     ok(r.ns > 1000 && !Object.keys(r.miss).length, `${form === 'F' ? 'her' : 'his'} chest, hips, legs and feet are all inside the clothes (${r.ns} samples): ` + JSON.stringify(r.miss));
     if (process.argv[3]) { const out = process.argv[3] + '/clothes-' + form;
       await pg.evaluate(() => { window.__portrait = (W, H, spin) => { const THREE = __dbg.THREE, renderer = __dbg.renderer, g = W3.group, rt = new THREE.WebGLRenderTarget(W, H); rt.texture.colorSpace = THREE.SRGBColorSpace;

@@ -324,7 +324,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const PLACEN=PLACES.map(p=>p[0]), ROOMN=[];
   { const add=(n,x,z,lv)=>{ ROOMN.push(n); PLACES.push([n,x,z,lv]); }, mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=SHARED.BOD.SB;
     add('THE SHOP',...mid(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,SHARED.BOD.BODOFF,B.x1,B.y1]),'up');
-    if(SHARED.BOD.GD)add('THE BATHS',...mid(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.floor||SHARED.BOD.GD.r),'up');
+    if(SHARED.BOD.GD){ const s=SHARED.BOD.GD.shift||[0,0], m=mid(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.floor||SHARED.BOD.GD.r); add('THE BATHS',m[0]+s[0],m[1]+s[1],'up'); }
     add('THE SUBWAY STAIRS',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
   { const sel=$('#placesel'), grp=(label,list,go)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list){ const o=document.createElement('option'); o.value=n; o.textContent=n; o.dataset.go=go; g.appendChild(o); } sel.appendChild(g); };
     const first=document.createElement('option'); first.value=''; first.textContent='CHOOSE A PLACE...'; sel.appendChild(first);

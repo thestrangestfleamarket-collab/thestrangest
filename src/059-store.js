@@ -236,10 +236,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const SD=STORE.streetDoor[id], [x,y]=SD?SD.door:DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
         const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);
-        UI.thing({name:'OUT TO THE STREET',ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }
-      if(!STORE.xth){ STORE.xth=1; const xd=(name,x,y,ix,iy,hd=Math.PI)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb);
-          UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.goTo(X(ix),Z(iy),'up',hd)}); };
-        if(SHARED.BOD.GD){ const [x,y]=SHARED.BOD.GD.door; xd('THE BATH HOUSE',x,y+.35,x,y-1); xd('OUT TO THE STREET',x,y-.6,x,y+1.4,0); } } };
+        UI.thing({name:'OUT TO THE STREET',ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }};
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }

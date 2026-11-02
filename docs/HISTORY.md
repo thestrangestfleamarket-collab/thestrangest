@@ -5183,3 +5183,4 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
+- 2 Nov 2026, owner: "make the ladders use the climbing skill too". The fire escape ladder climbs at the CLIMBING skill's pace and every rung works the skill, as the trees do. Rule: every climb reads the one skill.

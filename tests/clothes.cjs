@@ -27,8 +27,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       for (const [o, e, t0, t1, off] of [[H, K, G.top, L1, 0], [K, A, -.5, L2 + G.ext, L1]]) { const a = sub(e, o), l = len(a); a.x /= l; a.y /= l; a.z /= l; const q = sub(p, o), t = dot(q, a); if (t >= t0 && t <= t1 && len(sub(q, V(a.x * t, a.y * t, a.z * t))) <= R(t + off)) return true; } return false; };
     const inSeat = p => { const r = Z.jeans.rows; if (p.y > r[0][0] || p.y < r[r.length - 1][0]) return false; let j = 1; while (r[j][0] > p.y) j++; const a = r[j - 1], c = r[j], f = (a[0] - p.y) / (a[0] - c[0]); return (Math.abs(p.x) / lerp(a[1], c[1], f)) ** Z.jeans.n + (Math.abs(p.z) / lerp(a[2], c[2], f)) ** Z.jeans.n <= 1; };
     const shoeAt = z => { const st = Z.shoe.st; if (z < st[0][0] || z > st[st.length - 1][0]) return null; let j = 1; while (st[j][0] < z) j++; const a = st[j - 1], c = st[j], f = (z - a[0]) / (c[0] - a[0]); return [lerp(a[1], c[1], f), lerp(a[2], c[2], f)]; };
-    const inShoe = (p, s) => { const A = J['ankle' + s], q = shoeAt(p.z - A.z); if (!q) return false; const [w, top] = q; if (p.y < .62 && Math.abs(p.x - A.x) <= w + .16) return true; const x = (p.x - A.x) / w, y = (p.y - top / 2) / (top / 2); return p.y >= 0 && Math.abs(x) ** 3 + Math.abs(y) ** (y < 0 ? 6 : 2.4) <= 1; };
-    const VOL = { shirt: inTee, sleeveL: p => inSleeve(p, 'L'), sleeveR: p => inSleeve(p, 'R'), seat: inSeat, legL: p => inLeg(p, 'L'), legR: p => inLeg(p, 'R'), shoeL: p => inShoe(p, 'L'), shoeR: p => inShoe(p, 'R') };
+    const inShoe = (p, s) => { const A = J['ankle' + s], q = shoeAt(p.z - A.z); if (!q) return false; const [w, top] = q; const x = (p.x - A.x) / w, y = (p.y - top / 2) / (top / 2); return p.y >= 0 && Math.abs(x) ** 3 + Math.abs(y) ** (y < 0 ? 6 : 2.4) <= 1; };
+    const VOL = { shirt: inTee, sleeveL: p => inSleeve(p, 'L'), sleeveR: p => inSleeve(p, 'R'), seat: inSeat, legL: p => inLeg(p, 'L'), legR: p => inLeg(p, 'R'), shoeL: p => inShoe(p, 'L'), shoeR: p => inShoe(p, 'R'), sole: p => p.y < .62 && ['L', 'R'].some(s => { const A = J['ankle' + s], q = shoeAt(p.z - A.z); return q && Math.abs(p.x - A.x) <= q[0] + .16; }) };
     const inAll = p => Object.values(VOL).some(f => f(p));
     // 1: every garment point clear of what it covers, unless another garment covers it there
     const pokes = {}; let least = 1e9, npts = 0;
@@ -39,7 +39,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
         const part = k !== 'shirt' && k !== 'pants' ? k : k === 'shirt' ? (/^upperArm/.test(a) && !b ? 'sleeve' + a.slice(-1) : 'shirt') : (/^(thigh|shin)/.test(a) || b ? 'leg' + (b || a).slice(-1) : 'seat');
         // a sleeve is checked against the arm it goes round too
         const dd = bd(against.concat(/^sleeve/.test(part) ? ['upperArm' + part.slice(-1)] : []))(p), cov = Object.keys(VOL).some(n => n !== part && VOL[n](p));
-        if (cov) continue; least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }
+        if (cov || p.y < .05) continue;   // at the ground: the floor hides it least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }
     // 2: the skin to be covered, sampled near the body's surface
     const miss = {}; let ns = 0, all = bd(BODY);
     const want = p => { if (d('neck')(p) < 0 || p.y > 35.2 && Math.abs(p.x) < 3.6) return null; for (const n of TORSO) if (d(n)(p) < .05 && p.y > 15.6) return 'chest'; if (d('hips')(p) < .05) return 'hips';

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, ROOMS, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {CASTLE, LEVEL, MAPG, MODS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, LEVEL, MAPG, MODS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const SITES={list:[],at:{},homes:{}}; window.SITES=SITES;
 PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), MH=T/.84, MV=ZU*24/.84, gnd=(x,z)=>MODS.bodega.ground(x,z);
@@ -155,6 +155,6 @@ PARK.later(()=>{ '@park'; const P=PARK, T=TILE, PI=Math.PI, X=x=>SHARED.BOD.XS(x
   // the lawn round you is painted from above: let it look again where the sites now stand
   if(window.WEEDS&&WEEDS.lawnDrop){ const [bx0,bx1,by0,by1]=CASTLE.b; WEEDS.lawnDrop([Math.min(X(bx0-5),X(bx1+5)),Math.min(Z(by0-5),Z(by1+5)),Math.max(X(bx0-5),X(bx1+5)),Math.max(Z(by0-5),Z(by1+5))]);
     for(const q of LEVEL.parkPlaces.sites||[]){ const a=[X(q.x-q.w/2-2),Z(q.y-q.d/2-2),X(q.x+q.w/2+2),Z(q.y+q.d/2+2)]; WEEDS.lawnDrop([Math.min(a[0],a[2]),Math.min(a[1],a[3]),Math.max(a[0],a[2]),Math.max(a[1],a[3])]); } }
-  SITES.ready=true; SYS.run('sites');
+  SITES.ready=true;
   window.SITESDBG=()=>Object.values(SITES.at).map(s=>({id:s.id,kind:s.kind,tris:(s.meshes||[]).reduce((a,m)=>a+m.geometry.attributes.position.count/3,0),door:s.door&&s.door.map(v=>+v.toFixed(1))})); });
 export {SITES};

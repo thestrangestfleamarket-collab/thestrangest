@@ -1,4 +1,4 @@
-// THE PASSPORT: every player is issued one at first login (a number, the home section, the date; the name and look are yours), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
+// THE PASSPORT: every player is issued one at first login (a number, the home section, the date; the name and look are yours), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out, unseen until you walk into it without showing your passport, that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
@@ -34,16 +34,17 @@ import {LOOP} from './009b-loop.js';
     const me=quad(st.P(.15,a0,0),st.P(.15,a1,0),st.P(.15,a1,72),st.P(.15,a0,72),mat); MAPG.down.add(me); const L=new THREE.PointLight(0x4fb8ff,1.2,4*T); L.position.set(...st.P(1,(a0+a1)/2,40)); MAPG.down.add(L);
     const p=st.P(-.15,a0,0), q=st.P(.45,a1,0), box=[Math.min(p[0],q[0]),Math.min(p[2],q[2]),Math.max(p[0],q[0]),Math.max(p[2],q[2])];
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*T,1.9*T,.7*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(...st.P(.4,a0-.68,24)); MAPG.down.add(hb);
-    const g={st,me,L,box,until:0,said:0,hb}; const A=new V3(...st.P(0,a0,0)), B=new V3(...st.P(1,a0,0)).sub(A); g.u=()=>new V3(pos.x,A.y,pos.z).sub(A).dot(B)/B.lengthSq();
+    const g={st,me,L,box,until:0,said:0,hb,vis:0}; const A=new V3(...st.P(0,a0,0)), B=new V3(...st.P(1,a0,0)).sub(A); g.u=()=>new V3(pos.x,A.y,pos.z).sub(A).dot(B)/B.lengthSq();
     UI.thing({name:'PASSPORT MACHINE',pick:true,obj:hb,reach:1.1*T,near:2.2*T,tall:1.6*T,act:()=>{ if(!FORAGE.has('passport'))return say('YOU HAVE NO PASSPORT. EVERY TENANT IS ISSUED ONE AT THE DOOR.','#e5403a'); ONLINE.put('gate:'+st.id,Date.now()); SFX.play('latch',{vol:.5}); say('THE GATE READS YOUR PASSPORT AND OPENS FOR '+OPEN+' SECONDS. GO.','#7fd8ff'); }});
     gates.push(g); closeG(g); return g; };
   const openG=(g,until)=>{ g.until=until; const i=SOL.down.indexOf(g.box); if(i>=0)SOL.down.splice(i,1); g.me.visible=false; g.L.visible=false; };
-  const closeG=g=>{ g.until=0; if(!SOL.down.includes(g.box))SOL.down.push(g.box); g.me.visible=true; g.L.visible=true; };
+  const closeG=g=>{ g.until=0; if(!SOL.down.includes(g.box))SOL.down.push(g.box); g.vis=0; g.me.visible=false; g.L.visible=false; };
   PASSPORT.openAt=(st,until)=>{ const g=gates.find(q=>q.st===st); if(g)openG(g,until); };
   SYS.add('world',(k,v)=>{ if(!k.startsWith('gate:'))return; const g=gates.find(q=>'gate:'+q.st.id===k); if(g&&Date.now()-v<OPEN*1000)openG(g,v+OPEN*1000); },'159d-passport');
   let bl=0; SYS.add('places',dt=>{ if(!LOOP.STA||!MAPG.down)return; for(const st of LOOP.STA)if(st.P&&!gates.some(g=>g.st===st))mk(st); const now=Date.now(); bl+=dt;
     for(const g of gates){ if(g.until&&now>g.until)closeG(g); if(g.until)continue; const u=g.u(), inB=pos.x>g.box[0]-1.2*T&&pos.x<g.box[2]+1.2*T&&pos.z>g.box[1]-1.2*T&&pos.z<g.box[3]+1.2*T;
       if(inB&&u<.1){ const i=SOL.down.indexOf(g.box); if(i>=0)SOL.down.splice(i,1); } else if(!SOL.down.includes(g.box))SOL.down.push(g.box);   // in from the street is free: the field lets you through when you come from the hall side
-      g.me.material.opacity=.7+.25*Math.sin(bl*4); if(inB&&u>.1&&SHARED.LVL==='down'&&now-g.said>5000){ g.said=now; say('THE GATE: SHOW YOUR PASSPORT AT THE MACHINE TO LEAVE.','#7fd8ff'); } } },'159d-gates');
+      const push=inB&&u>.1&&SHARED.LVL==='down'; g.vis=Math.max(0,Math.min(1,g.vis+(push?dt*4:-dt*1.2))); g.me.visible=g.L.visible=g.vis>0; g.me.material.opacity=g.vis*(.7+.25*Math.sin(bl*4)); g.L.intensity=1.2*g.vis;   // the field shows only to someone walking into it
+      if(push&&now-g.said>5000){ g.said=now; say('THE GATE: SHOW YOUR PASSPORT AT THE MACHINE TO LEAVE.','#7fd8ff'); } } },'159d-gates');
   window.PASSPORT=PASSPORT;
 }

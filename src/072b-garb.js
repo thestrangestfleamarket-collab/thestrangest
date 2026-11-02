@@ -237,14 +237,13 @@ const GARB={};
         keepOut(w,scratch); DRAPE.step(d,h,w.o); }
       draw(w); }
     W.ms=performance.now()-t0; };
-  // what a figure wears, from its outfit (bits: shirt 1, trousers 2, shoes 4, hat 8, jacket 16), its bathrobe, bare feet and dyes ({shirt, pants} colours from what it wears)
+  // what a figure wears: everyone's shirt, trousers and shoes (bare feet take the shoes off) and the dyes ({shirt, pants} colours from what it wears); the hat and jacket pieces are kept for gear to wear
   const SPEC=new Map();
-  GARB.spec=(bits,robe,bare,dye,form)=>{ bits=bits??31; const ds=dye&&dye.shirt, dp=dye&&dye.pants, f=form==='F'?'F':'M', q=bits+'|'+(robe?1:0)+(bare?1:0)+'|'+(ds||'')+'|'+(dp||'')+'|'+f; let s=SPEC.get(q); if(s)return s;
-    const on=b=>!!(bits&b), jk=on(16)&&!robe;
-    s={k:q,form:f,shirt:on(1)&&!robe,pants:on(2)&&!robe,shoes:on(4)&&!bare,hat:on(8),jacket:jk,col:{shirt:!jk&&ds||COL.shirt,jacket:jk&&ds||COL.jacket,pants:dp||COL.pants,shoes:COL.shoes,hat:COL.hat}};
+  GARB.spec=(bare,dye,form)=>{ const ds=dye&&dye.shirt, dp=dye&&dye.pants, f=form==='F'?'F':'M', q=(bare?1:0)+'|'+(ds||'')+'|'+(dp||'')+'|'+f; let s=SPEC.get(q); if(s)return s;
+    s={k:q,form:f,shirt:true,pants:true,shoes:!bare,hat:false,jacket:false,col:{shirt:ds||COL.shirt,jacket:COL.jacket,pants:dp||COL.pants,shoes:COL.shoes,hat:COL.hat}};
     SPEC.set(q,s); return s; };
-  // the body's own clothing layers under real clothes: only a bathrobe keeps its shirt and trousers (it is drawn on them); his feet are bare inside the shoes
-  GARB.worn=robe=>({shirt:!!robe,pants:!!robe,shoes:false,hair:true,beard:true});
+  // the body's own clothing layers are all under real clothes; his feet are bare inside the shoes
+  GARB.worn=()=>({shirt:false,pants:false,shoes:false,hair:true,beard:true});
   // your body's shape by piece name (her chest and head are their own pieces)
   const myE={}, IDX={};
   GARB.myE=()=>{ const f=W3.style&&W3.style.form==='F'; for(const n of NAMES){ const p=f&&n==='torso'?'torsoF':f&&n==='head'?'headF':n; const i=IDX[p]??(IDX[p]=W3.idx(p)); myE[n]=i>=0&&W3.E?W3.E[i]:null; } return myE; };

@@ -13,7 +13,7 @@ import {OWNED} from './005-save.js';
   let el=null; const draw=()=>{ if(!el)return; el.innerHTML=`<div class="pp"><div class="pp-hd">PASSPORT<span>THE STRANGEST FLEA MARKET</span></div><table class="pp-t">${PASSPORT.facts().map(([k,v])=>`<tr><td>${k}</td><td>${esc(v)}</td></tr>`).join('')}</table>
       <div class="pp-hand"><span>HANDED</span><button class="btn" data-h="R" aria-pressed="${st.hand!=='L'}">RIGHT</button><button class="btn" data-h="L" aria-pressed="${st.hand==='L'}">LEFT</button></div>
       <div class="dim">your hand holds, swings, punches and picks things up; the mouse takes the arm round you in full circles</div></div>`; };
-  PASSPORT.open=host=>{ el=host; if(!el._pp){ el._pp=1; el.addEventListener('click',e=>{ const b=e.target.closest('[data-h]'); if(b)PASSPORT.setHand(b.dataset.h); }); } draw(); };
+  PASSPORT.page=host=>{ el=host; if(!el._pp){ el._pp=1; el.addEventListener('click',e=>{ const b=e.target.closest('[data-h]'); if(b)PASSPORT.setHand(b.dataset.h); }); } draw(); };
   window.PASSPORT=PASSPORT;
   const css=document.createElement('style'); css.textContent=`
   #dpass .pp{max-width:420px;border:2px solid var(--line);padding:14px 16px;background:#0b0d12}

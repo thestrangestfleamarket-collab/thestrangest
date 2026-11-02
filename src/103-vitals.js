@@ -1,6 +1,6 @@
 // THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars; every blow goes through VIT.hurt (and the guard the swords set on it).
 import {SHARED} from './003-shx.js';
-import {FORAGE, keys, LOOKS, pos, SFX, st, UI, VIT} from './003b-systems.js';
+import {FORAGE, keys, pos, SFX, st, UI, VIT} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 const AIR=16, AIRCEIL=240;                       // seconds: a plain breath, and the most air you can bank from mushrooms
 Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR});
@@ -30,6 +30,5 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     VIT.fight=Math.max(0,VIT.fight-dt);
     const wet=!!(st.water&&st.water.in)||VIT.air<VIT.airMax-.05, show=!!window.__started; if(B.hidden===show)B.hidden=!show;
     if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; hpN.textContent=Math.round(VIT.hp*100)+' / 100'; stN.textContent=Math.round(VIT.sta*100)+' / 100';
-      airRow.style.display=wet?'':'none'; if(wet){ airI.style.width=(VIT.air/Math.max(VIT.airMax,VIT.air)*100).toFixed(0)+'%'; airI.style.background=VIT.air<=0?'#c84a3a':'#4aa6e0'; airN.textContent=Math.ceil(VIT.air)+'s'+(VIT.tankTxt?VIT.tankTxt():''); } }
-    LOOKS.stats(VIT.hp,VIT.sta); };
+      airRow.style.display=wet?'':'none'; if(wet){ airI.style.width=(VIT.air/Math.max(VIT.airMax,VIT.air)*100).toFixed(0)+'%'; airI.style.background=VIT.air<=0?'#c84a3a':'#4aa6e0'; airN.textContent=Math.ceil(VIT.air)+'s'+(VIT.tankTxt?VIT.tankTxt():''); } } };
 }

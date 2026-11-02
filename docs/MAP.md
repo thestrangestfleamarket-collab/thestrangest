@@ -105,7 +105,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `073-main-12.js` | 22.4 | top level | P (075 109 146h), PHH (075), PHYOU (075 146h), STATIC (075), TL (075 111d 146h), loose (075), looseDraw (075), phyStep (075), phyYouNow (075), qMat (111d), ragBlend (075), ragPose (075), ragPoseOf (111d), ragStart (075), ragStep (075), ragStrikes (075), setPhys (075), view0 (075) | 003: SHARED THREE; 003b: ONLINE PH RAG pos st vwV wvV; 004: PPU; 006: FIX cutWalls; 071: AX AY PICH PW VS uimg; 072: OUTL |
 | `074-floats.js` | 0.1 | top level | FLOATS (075) |  |
 | `075-main-13.js` | 21.2 | top level | PAD (162a 162c), PMAX (094), PMIN (094), SKEL (077), VIEW0 (094), clampP (094), collide (077 146h 146i 162c 163), disp (094), frame (162c 163), marker (094), ray (094) | 003: SHARED THREE; 003b: AMB BOAT BROOK BWK CITY CLOCK CULL DRESS DRM ED EQUIP FAR3 FEEL FIGFX INTERIORS LEVELS LINES LITE LOOK MUS NPCS ONLINE PARK PB PERFX PH PNM RAG RIDE ROOMS SFX SGM STAGE UI VIT VR W3 WHERE WIELD ZONES keys pos st wvV; 004: EffectComposer OCAM OutputPass PPU RH RW RenderPass SCL ShaderPass V0 ZMAX frustum pxS renderer resize rppu scene statEl; 006: ASTEP BF C2 MODS SEEN STORE SYS TILE ZU applyTime cutWalls lamps nightTo shopGroups; 007: FLAME; 008: BATCH PEEK; 009: WATER; 060a: FOUNT; 064: MAPLV; 065: RINGX; 066: RIVER; 071: AX AY PICH PW cloud uimg you; 072: OUTL; 073: P PHH PHYOU STATIC TL loose looseDraw phyStep phyYouNow ragBlend ragPose ragStart ragStep ragStrikes setPhys view0; 074: FLOATS |
-| `076-npc-map.js` | 22.9 | top level | CSB (153), CSHOLE (153), DUN (077 088), HOMES (111a), ROAM (111 111a), STHOLE (077 080 087 152 153), STLANE (080 088), makeNPC (077 078 080 083 087 088), stfree (077 080 088 111 111a) | 003: SHARED THREE; 003a: B64; 003b: CHARS CLIP CULL LEVELS NPCS PARK ROOMS SELFSH UI VIT W3 pos; 004: PPU renderer; 006: ASTEP CASTLE LEVEL MAPG MAPSTAIR MODS RING SOL STN STORE SYS TILE ZU; 060a: FOUNT; 065: RINGX |
+| `076-npc-map.js` | 23.1 | top level | CSB (153), CSHOLE (153), DUN (077 088), HOMES (111a), ROAM (111 111a), STHOLE (077 080 087 152 153), STLANE (080 088), makeNPC (077 078 080 083 087 088), stfree (077 080 088 111 111a) | 003: SHARED THREE; 003a: B64; 003b: CHARS CLIP CULL LEVELS NPCS PARK ROOMS SELFSH UI VIT W3 pos; 004: PPU renderer; 006: ASTEP CASTLE LEVEL MAPG MAPSTAIR MODS RING SOL STN STORE SYS TILE ZU; 060a: FOUNT; 065: RINGX |
 | `076a-chars.js` | 3.1 | top level |  | 003: SHARED; 003b: CHARS NPCS; 005: SAVE; 006: LEVEL SYS TILE |
 | `077-npc-skel.js` | 11.6 | top level | DRAGON (078), SKELGO (146b) | 003: SHARED THREE; 003a: SKIN; 003b: CLOCK LINES NPCS VIT pos; 006: MAPG MAPSTAIR MODS QS SOL TILE; 075: SKEL collide; 076: DUN STHOLE makeNPC stfree |
 | `078-npc-dragon.js` | 13.9 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: BLAZE CLOCK DRESS NPCS PARK SFX VIT WEEDS pos; 006: MAPG MODS SYS TILE; 007: FLAME; 069b: WIRES; 076: makeNPC; 077: DRAGON |
@@ -235,26 +235,26 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146j-boardwright.js` | 19.1 | top level |  | 003: THREE; 003b: FORAGE INSPECT ITEMS NPCS RIDE SHOPS UI; 004: scene; 006: TILE; 059i: MSHOP; 111e: MERCH |
 | `146j-guardians.js` | 20.3 | top level |  | 003: SHARED THREE; 003b: CHARS CLOCK FORAGE GUARD INV LINES MAIL NPCS PARK SFX TALK VIT pos; 004: scene; 005: OWNED; 006: CASTLE MAPG MODS SYS TILE ZU; 083: RIGNPC; 089b: SITES; 101: GEMS; 111a: BODIES; 146i: FOLK |
 | `146k-breakout.js` | 11.1 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE GUARD INV LINES MAIL PARK SFX VIT pos; 004: scene; 006: CASTLE MAPG MODS SYS TILE ZU |
-| `146k-glasshorn.js` | 22.0 | top level |  | 003: SHARED THREE; 003b: BUGS FORAGE INV NPCS ROOMS UI pos; 005: SAVE; 006: SYS TILE; 111e: MERCH |
+| `146k-glasshorn.js` | 21.9 | top level |  | 003: SHARED THREE; 003b: BUGS FORAGE INV NPCS ROOMS UI pos; 005: SAVE; 006: SYS TILE; 111e: MERCH |
 | `146l-fixer.js` | 18.0 | top level | FIXIT (150f) | 003: SHARED THREE; 003b: CINEMA FORAGE INSPECT ITEMS NPCS SHOPS UI; 006: SYS TILE; 059i: MSHOP; 111e: MERCH |
-| `146m-newsreel.js` | 11.1 | top level | PHOTOS (150g) | 003: SHARED THREE; 003b: FORAGE INV NPCS ROOMS UI ZONES pos; 004: renderer scene; 005: OWNED; 006: SYS TILE; 111e: MERCH |
+| `146m-newsreel.js` | 11.0 | top level | PHOTOS (150g) | 003: SHARED THREE; 003b: FORAGE INV NPCS ROOMS UI ZONES pos; 004: renderer scene; 005: OWNED; 006: SYS TILE; 111e: MERCH |
 | `146n-scanner.js` | 13.5 | top level |  | 003: SHARED THREE; 003b: CIVIC EQUIP FORAGE ITEMS NPCS SHOPS UI WIELD pos; 004: ShaderPass; 006: SYS TILE; 059i: MSHOP; 111e: MERCH |
-| `146o-petty.js` | 13.3 | top level |  | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE SFX SHOPS UI pos; 004: scene; 006: SOL SYS TILE; 111e: MERCH; 146e: GOLEMS |
+| `146o-petty.js` | 13.2 | top level |  | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE SFX SHOPS UI pos; 004: scene; 006: SOL SYS TILE; 111e: MERCH; 146e: GOLEMS |
 | `146p-eye.js` | 4.2 | top level |  | 003: SHARED THREE; 003b: FORAGE ROOMS UI pos; 006: LEVEL MAPG SYS TILE |
-| `146q-block.js` | 14.4 | top level |  | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD keys; 005: OWNED; 006: SOL TILE; 111e: MERCH |
+| `146q-block.js` | 14.3 | top level |  | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD keys; 005: OWNED; 006: SOL TILE; 111e: MERCH |
 | `146r-balloon.js` | 7.2 | top level |  | 003: SHARED THREE; 003b: FORAGE ITEMS RIDE SFX pos st; 005: OWNED; 006: TILE; 111e: MERCH |
-| `146s-radish.js` | 5.5 | top level | RADISH (150h) | 003: THREE; 003b: FORAGE NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
-| `146t-tiger.js` | 6.0 | top level |  | 003: THREE; 003b: FORAGE NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
+| `146s-radish.js` | 5.4 | top level | RADISH (150h) | 003: THREE; 003b: FORAGE NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
+| `146t-tiger.js` | 5.9 | top level |  | 003: THREE; 003b: FORAGE NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
 | `146u-soniee.js` | 6.3 | top level |  | 003: SHARED THREE; 003b: FORAGE SHOPS UI; 006: MAPG SOL SYS TILE |
 | `146v-plants.js` | 8.6 | top level | PLANTS (150i) | 003: SHARED THREE; 003b: FORAGE ONLINE SHOPS UI pos; 006: LEVEL MAPG SOL SYS TILE |
-| `146w-stump.js` | 5.6 | top level |  | 003: THREE; 003b: NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
-| `146x-bluehour.js` | 7.0 | top level | SMOKE (147a) | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE W3 WIELD pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH |
-| `146y-operator.js` | 8.6 | top level | PHONE (150j) | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD; 006: LEVEL SOL SYS TILE; 111e: MERCH |
+| `146w-stump.js` | 5.5 | top level |  | 003: THREE; 003b: NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
+| `146x-bluehour.js` | 6.9 | top level | SMOKE (147a) | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE W3 WIELD pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH |
+| `146y-operator.js` | 8.5 | top level | PHONE (150j) | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD; 006: LEVEL SOL SYS TILE; 111e: MERCH |
 | `146z-visitors.js` | 12.6 | top level |  | 003: THREE; 006: TILE; 111e: MERCH |
 | `147-newsstand.js` | 16.5 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
-| `147a-bees.js` | 14.8 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE NPCS ONLINE ROOMS SFX UI VIT WEEDS pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH; 142a: FLORA; 144a: GARDEN; 146x: SMOKE |
+| `147a-bees.js` | 14.7 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE NPCS ONLINE ROOMS SFX UI VIT WEEDS pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH; 142a: FLORA; 144a: GARDEN; 146x: SMOKE |
 | `147b-requests.js` | 3.8 | top level |  | 003b: CITY FORAGE INV ITEMS MAIL SFX; 005: OWNED |
-| `147c-dummy.js` | 2.4 | top level |  | 003: THREE; 003b: FORAGE ITEMS NPCS SFX UI VIT WIELD; 004: scene; 006: SOL TILE |
+| `147c-dummy.js` | 2.3 | top level |  | 003: THREE; 003b: FORAGE ITEMS NPCS SFX UI VIT WIELD; 004: scene; 006: SOL TILE |
 | `148-rooftops.js` | 20.0 | top level | ROOFS (163) | 003: SHARED THREE; 003b: BLK; 004: scene; 006: BLOCK MODS OUT TILE |
 | `148a-gates.js` | 4.6 | top level | GATES (163) | 003: SHARED THREE; 003b: BLK MAPED; 004: scene; 006: BLDK BLOCK FIX MAPSTAIR MODS SOL TILE WROW |
 | `148b-drains.js` | 2.1 | top level | DRAINS (163) | 003: SHARED THREE; 004: scene; 006: TILE |

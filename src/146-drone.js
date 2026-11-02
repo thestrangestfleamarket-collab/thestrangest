@@ -118,7 +118,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
       if(M==='S'){ COMP.page='shop'; COMP.list='shop'; COMP.sel=0; } else if(M==='F'){ COMP.page='furn'; COMP.list='furn'; COMP.sel=0; } else if(M==='A'){ COMP.page='games'; COMP.sel=0; if(!COMP.arc)LOAD('arcade').then(()=>{ COMP.arc=1; }); } else if(M==='O')COMP.page='orders'; else if(M==='N')COMP.page='news'; else if(M==='G'){ COMP.page='bye'; COMP.t0=performance.now(); } return; }
     if(p==='games'){ const L=CABS(); if(!COMP.arc)return; if(K>='0'&&K<='9'){ const i=K==='0'?9:(+K-1); if(i<L.length)COMP.sel=i; } else if(k==='ArrowDown')COMP.sel=(COMP.sel+1)%L.length; else if(k==='ArrowUp')COMP.sel=(COMP.sel+L.length-1)%L.length; else if(k==='Enter'){ const n=L[COMP.sel]; if(STORE.cabs.reg[n].game)STORE.cabs.play(n); } else if(K==='M')COMP.page='menu'; return; }
     if(p==='shop'||p==='furn'){ const L=p==='shop'?BODEGA:FURN; if(K>='0'&&K<='9'){ const i=K==='0'?9:(+K-1); if(i<L.length)COMP.sel=i; } else if(k==='ArrowDown')COMP.sel=(COMP.sel+1)%L.length; else if(k==='ArrowUp')COMP.sel=(COMP.sel+L.length-1)%L.length; else if(k==='Enter'){ COMP.list=p; COMP.page='confirm'; } else if(K==='M')COMP.page='menu'; return; }
-    if(p==='confirm'){ if(K==='Y')doOrder(); else if(K==='N')COMP.page=COMP.list; return; }
+    if(p==='confirm'){ if(K==='Y'||k==='Enter')doOrder(); else if(K==='N'||K==='M')COMP.page=COMP.list; return; }
     if(p==='ordered'||p==='orders'){ if(K==='D'&&flights.length)COMP.page='droneview'; else if(K==='M')COMP.page='menu'; return; }
     if(p==='droneview'){ if(K==='M')COMP.page='orders'; return; }
     if(K==='M')COMP.page='menu'; };

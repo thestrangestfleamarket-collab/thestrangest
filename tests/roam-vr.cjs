@@ -37,9 +37,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 0, -1)); await frames(30); await pg.evaluate(() => __xrd.controllers.right.updateAxes('thumbstick', 0, 0)); await frames(2);
   const p1 = await pg.evaluate(() => ({ up: ROAMDBG().up, fwd: ROAMDBG().fwd, you: __dbg.you(), yaw: VR.yaw }));
   ok(Math.abs(p1.fwd[1] - p0.fwd[1]) > .2 && p1.yaw === p0.yaw && p1.you.x === p0.you.x && p1.you.z === p0.you.z, 'the right stick pitches the ship (the nose moved ' + (p1.fwd[1] - p0.fwd[1]).toFixed(2) + ' up or down), never snap-turning or walking the Walker');
+  await pg.evaluate(() => VR.set('move', 'teleport', true));
   await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, -1)); await frames(30); await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, 0));
+  await pg.evaluate(() => VR.set('move', 'stick', true));
   const t1 = await pg.evaluate(() => ROAMDBG());
-  ok(t1.thr > .5 && t1.speed > 20, 'the left stick opens the throttle (' + t1.thr + ', ' + t1.speed + ' m/s)');
+  ok(t1.thr > .5 && t1.speed > 20, 'the left stick opens the throttle, even with MOVE set to TELEPORT (' + t1.thr + ', ' + t1.speed + ' m/s)');
   await shot('headset-flying');
   await pg.evaluate(() => { ROAM.aim(); __xrd.controllers.right.updateButtonValue('trigger', 1); }); await frames(12); await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0));
   const f1 = await pg.evaluate(() => ROAMDBG());

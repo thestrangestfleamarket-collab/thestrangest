@@ -222,6 +222,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
   { const r = await pg.evaluate(() => { const o = { was: PASSPORT.hand }; PASSPORT.open(); o.shown = document.querySelector('#passportw').textContent.includes('HAND'); PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; PASSPORT.close(); return o; });
     ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
+  { const p = await pg.evaluate(() => { const b = document.getElementById('dps2'); if (!b) return null; const was = PS2.on; b.click(); const flip = PS2.on !== was; b.click(); return { flip, back: PS2.on === was, label: b.textContent }; });
+    ok(p && p.flip && p.back && /PS2 FILTER (ON|OFF)/.test(p.label), 'GRAPHICS has a PS2 FILTER switch that turns the filter on and off: ' + JSON.stringify(p)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

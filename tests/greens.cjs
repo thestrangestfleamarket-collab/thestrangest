@@ -34,6 +34,16 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (let i = 0; i < 5; i++) { GREENS.putt(Math.PI + (i % 2 ? .3 : -.3), .4); await U(() => !GREENSDBG().rest, 3000); await U(() => GREENSDBG().rest, 20000); if (GREENSDBG().done) break; }
     const d1 = GREENSDBG(); const back = await U(() => GREENSDBG().strokes === 0 && !GREENSDBG().done, 20000); const d2 = GREENSDBG(); return { strokes: d1.strokes, done: d1.done, inCup: d1.inCup, best: d2.best, rounds: d2.rounds, back }; });
   ok(c4.strokes === 5 && c4.done && !c4.inCup && c4.best === 2 && c4.rounds === 2 && c4.back, 'the stroke limit: the fifth stroke ends the hole (par+4 written), the best stays, the ball comes back: ' + JSON.stringify(c4));
+  const c45 = await pg.evaluate(async () => { const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
+    await U(() => GREENSDBG().rest && !GREENSDBG().done, 20000); const b0 = GREENSDBG().ball, s0 = GREENSDBG().strokes;
+    // a stand-in pad: d-pad left walks you to the ball, RT held and let go putts, d-pad down takes it back
+    const pad = { id: 'test pad', connected: true, mapping: 'standard', index: 0, timestamp: 0, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ value: 0, pressed: false })) };
+    const real = navigator.getGamepads; navigator.getGamepads = () => [pad]; const press = async (i, v, ms = 300) => { pad.buttons[i] = { value: v, pressed: v > .5 }; await new Promise(r => setTimeout(r, ms)); };
+    await press(14, 1); await press(14, 0); const addr = await U(() => GREENSDBG().addr, 5000);
+    await press(7, 1, 700); await press(7, 0); const moved = await U(() => !GREENSDBG().rest, 5000); await U(() => GREENSDBG().rest, 20000); const s1 = GREENSDBG().strokes, b1 = GREENSDBG().ball;
+    await press(13, 1); await press(13, 0); const d = GREENSDBG(); navigator.getGamepads = real;
+    return { addr, moved, s0, s1, back: d.strokes === s0 && Math.hypot(d.ball[0] - b0[0], d.ball[1] - b0[1]) < .01, ball: d.ball, b0, b1 }; });
+  ok(c45.addr && c45.moved && c45.s1 === c45.s0 + 1 && c45.back, 'on a pad: d-pad left addresses the ball, RT held and let go putts, d-pad down takes the putt back (ball and stroke count as they were): ' + JSON.stringify(c45));
   const c5 = await pg.evaluate(async () => { const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
     STORE.holo.end(); const back = await U(() => !ARCDBG().holo.run && ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 60000); await new Promise(r => setTimeout(r, 500)); const d = GREENSDBG();
     return { back, on: d.on, built: d.built, card: !!document.getElementById('greensc') && !document.getElementById('greensc').hidden, saved: d.saved }; });

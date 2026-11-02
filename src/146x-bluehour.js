@@ -52,6 +52,6 @@ const SMOKE={}; window.SMOKE=SMOKE;
   MERCH.add({key:'bluehour',label:'THE BLUE HOUR',height:1.85,model,size:10,hd:0,
     idle:t=>{ const blow=(t%9)<2; return MERCH.pose({nod:blow?-14:4,bend:-6,yaw:Math.sin(t*.25)*10,L:{ua:[28,-16],fa:[80,-40]},R:{ua:[28,-16],fa:[84,-40]}}); },
     after:(B,N,dt)=>{ if(!N.g.visible||Math.hypot(pos.x-N.st.x,pos.z-N.st.z)>25*T)return; const t=performance.now()/1000; if(t-pt<((t%9)<2?.25:1.6))return; pt=t; MERCH.at(N,'head',[.03,-.06,.2],V); SMOKE.puff(V.x,V.y,V.z,(t%9)<2?5:1,0xb8c4d8,.8); }});
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='bluehour'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }; go(); }
+  { NPCS.when('bluehour',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
 }
 export {SMOKE};

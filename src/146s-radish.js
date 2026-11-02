@@ -39,9 +39,8 @@ const RADISH={}; window.RADISH=RADISH;
     const clay=std(0xb86a42,{roughness:.8}); for(let i=0;i<3;i++)add(new THREE.CylinderGeometry(.13,.1,.18,20),clay,-.7,.09+i*.12,.1);
     add(new THREE.CylinderGeometry(.16,.18,.32,16),std(0x8a7a5a,{roughness:1}),-.7,.16,-.25);
     G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x+Math.sin(hd)*.75*T+Math.cos(hd)*.15*T,N.st.y||0,N.st.z+Math.cos(hd)*.75*T-Math.sin(hd)*.15*T); G.rotation.y=hd+Math.PI; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='radish'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=KIT.g=kit(N);
+  { NPCS.when('radish',N=>{ const G=KIT.g=kit(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.6*T,.6*T,.8*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.3*T,G.position.z); N.g.parent.add(hb);
-      UI.thing({name:'THE RADISH\'S SUITCASE',obj:hb,reach:2*T,near:3*T,tall:.6*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.6*T,z-.35*T,x+.6*T,z+.35*T]); };
-    go(); }
+      UI.thing({name:'THE RADISH\'S SUITCASE',obj:hb,reach:2*T,near:3*T,tall:.6*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.6*T,z-.35*T,x+.6*T,z+.35*T]); }); }
 }
 export {RADISH};

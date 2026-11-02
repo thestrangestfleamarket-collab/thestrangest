@@ -91,9 +91,8 @@ const CUBE={on:null}; window.CUBE=CUBE;
     for(let i=0;i<8;i++){ const a=add(new THREE.BoxGeometry(.2,.03,1.1),std(i%2?0xf2ece0:0xc8302a),-.7+i*.2,2.28,-.05); a.rotation.x=.25; }
     const cols=COL; let k=0; for(let r=0;r<3;r++)for(let i=0;i<4-r;i++){ const g=new THREE.Group(); g.position.set(-.35+i*.24+r*.12,1.02+r*.2,0); for(let f=0;f<6;f++){ const m=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,.18),[0,1,2,3,4,5].map(q=>std(cols[(q+k+f)%6],{roughness:.35}))); if(f===0)g.add(m); } g.rotation.y=k*.4; G.add(g); k++; }
     G.scale.setScalar(T); const hd=N.st.hd; G.position.set(N.st.x+Math.sin(hd)*.9*T,N.st.y||0,N.st.z+Math.cos(hd)*.9*T); G.rotation.y=hd; N.g.parent.add(G); return G; };
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='block'); if(!window.__started||!N||!N.g)return setTimeout(go,800); const G=CART.g=cart(N);
+  { NPCS.when('block',N=>{ const G=CART.g=cart(N);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1.6*T,1.4*T,1*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,.7*T,G.position.z); N.g.parent.add(hb);
-      UI.thing({name:'THE BLOCK\'S CART',obj:hb,reach:2.2*T,near:3*T,tall:1.4*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.85*T,z-.5*T,x+.85*T,z+.5*T]); };
-    go(); }
+      UI.thing({name:'THE BLOCK\'S CART',obj:hb,reach:2.2*T,near:3*T,tall:1.4*T,act:()=>{ if(SHOPS.open)SHOPS.open(N); }}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.85*T,z-.5*T,x+.85*T,z+.5*T]); }); }
   window.CUBEDBG=()=>({on:CUBE.on,n:N,moves,solved,queue:queue.length,anim:!!anim,best});
 }

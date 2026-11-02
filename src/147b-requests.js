@@ -6,7 +6,7 @@ import {OWNED} from './005-save.js';
   const POOL=[['mushroom','THE MUSHROOM SELLER',()=>Object.keys(FORAGE.MU).map(k=>'m_'+k),4],['radish','THE RADISH',()=>['m_button','m_puffball','m_chanterelle','m_oyster','m_bolete','fl_daisy','fl_clover','fl_tulip','fl_sunflower','fl_rose'],3],
     ['origamifox','THE NATURE MERCHANT',()=>[...Array(12).keys()].map(k=>'b_'+k).concat(['bd_0','bd_1','bd_2','bd_3','bird_feather']),3],['beekeeper','THE BEEKEEPER',()=>['honey_wild','honey_clover','honey_lav','honey_sun','honey_rose','bee_wax'],3]];
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-  const worth=id=>Math.max(1,(FORAGE.PRICE&&FORAGE.PRICE[id])||(FORAGE.MU&&id.startsWith('m_')&&FORAGE.MU[id.slice(2)]?FORAGE.MU[id.slice(2)][2]:0)||(window.ITEMS?+ITEMS.prop(id,'value'):0)||2);
+  const worth=id=>Math.max(1,+ITEMS.prop(id,'value')||2);
   let S={v:1,d:-1,done:{}}; try{ const D=JSON.parse(OWNED.get('asks')||'null'); if(D&&D.v===1)S=D; }catch(e){} const save=()=>{ try{ OWNED.set('asks',JSON.stringify(S)); }catch(e){} };
   // today's asks: the same for the whole day, a new set each day
   const today=()=>{ const d=day(); if(S.d!==d){ S={v:1,d,done:{}}; save(); } const out=[], used=new Set();

@@ -66,11 +66,12 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 SHARED.solids=SOL.up; SHARED.fixed=FIX.up; SHARED.BOUND=undefined; SHARED.groundY=undefined; SHARED.LVL='up'; SHARED.BOD=undefined; SHARED.BODB=undefined; SHARED.METRO=undefined;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
-const SYS={P:{},add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)])),bad:new Set(),go:(fn,name)=>{ try{ fn(); }catch(e){ if(!SYS.bad.has(name)){ SYS.bad.add(name); console.warn('SYS '+name,e); } } }}; window.SYS=SYS;
+const SYS={P:{},started:false,onStart:(fn,name)=>{ if(!SYS.started)return SYS.add('start',fn,name); try{ fn(); }catch(e){ console.warn('SYS start '+(name||''),e); } },add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)])),bad:new Set(),go:(fn,name)=>{ try{ fn(); }catch(e){ if(!SYS.bad.has(name)){ SYS.bad.add(name); console.warn('SYS '+name,e); } } }}; window.SYS=SYS;
 const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
+const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, LOTX=m=>72+(m-72)/BLDK, LOTY=m=>-77+(m+77)/BLDK;
+const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, ORIGIN=LEVEL.block.origin||[72,LEVEL.block.front], LOTX=m=>ORIGIN[0]+(m-ORIGIN[0])/BLDK, LOTY=m=>ORIGIN[1]+(m-ORIGIN[1])/BLDK;   // the map origin: world 0,0 in map tiles
 const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c][r],col:c,row:r,x0:G.x0+c*G.w,x1:G.x0+(c+1)*G.w,y0:G.y0+r*G.h,y1:G.y0+(r+1)*G.h});
   const list=[]; for(let c=0;c<G.cols;c++)for(let r=0;r<G.rows;r++)list.push(box(c,r));
@@ -94,7 +95,7 @@ const STN={DX:(-11+LAY.o('subway').x)*TILE, DZ:(-35+LAY.o('subway').y)*TILE, DY:
 const WESTX=LEVEL.streets.market.x0, EASTX=LEVEL.streets.market.x1, MAINX={w:46-LEVEL.streets.west.x1}; MAINX.e=EASTX-152;
 const WID=31.5-MAINX.w-LEVEL.streets.west.x0, NORTHY=9+WID, NORTHX=LEVEL.park.y1-12.5-NORTHY;
 LAYOUT0.park.e=[LEVEL.park.x0-50+MAINX.w,0,LEVEL.park.x1-EASTX,0];
-const WB=LEVEL.block, BLOCK={back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB.walk,river:WB.river,x0:WB.x0,x1:WB.x1,lots:{},hudson:[WP.hudson.x0,WP.hudson.x1]};
+const WB=LEVEL.block, BLOCK={front:WB.front,back:WB.back,alley:WB.alley,row2:WB.backrow,prom:WB.walk,river:WB.river,x0:WB.x0,x1:WB.x1,lots:{},hudson:[WP.hudson.x0,WP.hudson.x1]};
 for(const k of ['play','bank','theatre','arcade'])BLOCK.lots[k]=[WP[k].x0,WP[k].x1]; for(const p of LEVEL.places)if(p.lot&&p.y1==null)BLOCK.lots[p.id]=[p.x0,p.x1];   // (a place marked lot is a building of its own on the block's row)
 const ROWP=LEVEL.places.filter(p=>p.y1==null).sort((a,b)=>a.x0-b.x0), ROWID=ROWP.map(p=>p.id), MAINROW=ROWP.map(p=>[p.x0,p.x1]);
 const WROW={bar:{x0:LOTX(WP.bar.x0),x1:LOTX(WP.bar.x1),y0:WP.bar.y1!=null?LOTY(WP.bar.y0):-89.5,y1:WP.bar.y1!=null?LOTY(WP.bar.y1):-77},mus:{x0:LOTX(WP.museum.x0),y0:WP.museum.y1!=null?LOTY(WP.museum.y0):-101,x1:LOTX(WP.museum.x1),y1:WP.museum.y1!=null?LOTY(WP.museum.y1):-80,h:210}};
@@ -110,4 +111,4 @@ const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1}
 const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WPP.lake.r], PARKCAVE=[WPP.cave.x,WPP.cave.y], PARKTOWER=[WPP.tower.x,WPP.tower.y];
 const CASTLE={b:[46,67,-21,-4],gate:58.5,stair:{x0:61.5,x1:63.5,y0:-19.4,y1:-13.4,steps:12,depth:98,dir:1},hall:{x0:51,y0:-20,x1:65,y1:-6.8,h:130}};
 { const o=LAY.o('castle'), C=CASTLE, S=C.stair, H=C.hall; C.b=[C.b[0]+o.x,C.b[1]+o.x,C.b[2]+o.y,C.b[3]+o.y]; C.gate+=o.x; for(const R of [S,H]){ R.x0+=o.x; R.x1+=o.x; R.y0+=o.y; R.y1+=o.y; } }
-export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OFFDX, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU};
+export {applyTime, ASTEP, AWAY, BF, BLDK, BLOCK, C2, CASTLE, CEL, CLIPX, cutWalls, DITH, EASTX, FADE, FIX, FREE, grab, LAMPD, LAMPI, lamps, LAY, LEVEL, LFX, LOTX, LOTY, MAINROW, MAINX, MAPG, MAPSTAIR, MISTB, MISTB2, MISTE, MISTF, MISTS, MISTSC, MODS, NEONS, nightTo, NORTHX, NORTHY, OFFDX, ORIGIN, OUT, OVERHEAD, PARKCAVE, PARKGX, PARKLAKE, PARKRY, PARKTOWER, PFAR, QS, RING, SECTION, SECTIONS, SEEN, SHL, shopGroups, SMOOTH, SOL, STN, STORE, SYS, TILE, TURN, wait, WESTX, WP, WROW, ZU};

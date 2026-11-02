@@ -12,9 +12,8 @@ const DUMMY={}; window.DUMMY=DUMMY;
     if(VIT.sta<.15)return say('YOU ARE TOO TIRED TO SPAR. CATCH YOUR BREATH.','#c8a090'); VIT.sta=Math.max(0,VIT.sta-.12); SFX.play('clunk',{vol:.4,pitch:blade?1.3:.8});
     if(FORAGE.sk(k)>=CAP)return say(`THE DUMMY HAS NOTHING MORE TO TEACH YOU IN ${nm}. FIND A REAL FOE, OR A MASTER.`,'#c8a090');
     FORAGE.use(k,-10,CAP+10); say(blade?'YOU CUT AT THE DUMMY. STRAW FLIES.':'YOU STRIKE THE DUMMY. IT ROCKS ON ITS POST.','#e8e2cc'); DUMMY.last=k; };
-  const go=()=>{ const N=NPCS.extra.find(q=>q.key==='stump'); if(!window.__started||!N||!N.st)return setTimeout(go,900); const P=N.g&&N.g.parent||scene; const G=make(), hd=N.st.hd||0;
+  NPCS.when('stump',N=>{ const P=N.g&&N.g.parent||scene; const G=make(), hd=N.st.hd||0;
     G.position.set(N.st.x+Math.cos(hd)*4*T,N.st.y||0,N.st.z-Math.sin(hd)*4*T); P.add(G); DUMMY.g=G;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*T,1.8*T,.8*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,G.position.y+.9*T,G.position.z); P.add(hb);
-    UI.thing({name:'A SPARRING DUMMY',obj:hb,reach:1.8*T,near:2.6*T,tall:1.8*T,act:()=>DUMMY.spar()}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.2*T,z-.2*T,x+.2*T,z+.2*T]); };
-  go();
+    UI.thing({name:'A SPARRING DUMMY',obj:hb,reach:1.8*T,near:2.6*T,tall:1.8*T,act:()=>DUMMY.spar()}); const x=G.position.x, z=G.position.z; SOL.up.push([x-.2*T,z-.2*T,x+.2*T,z+.2*T]); });
 }

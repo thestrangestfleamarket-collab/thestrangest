@@ -19,7 +19,8 @@
  },
  "scanner": {
   "offworld": true,
-  "value": 40
+  "value": 40,
+  "grants": "prospect"
  },
  "cutter": {
   "offworld": true,
@@ -27,7 +28,8 @@
  },
  "extractor": {
   "offworld": true,
-  "value": 90
+  "value": 90,
+  "grants": "extract"
  },
  "rod": {
   "value": 15,

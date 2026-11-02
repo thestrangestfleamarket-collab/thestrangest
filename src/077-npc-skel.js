@@ -4,12 +4,12 @@ import {SKIN} from './003a-skin.js';
 import {CLOCK, LINES, NPCS, pos, VIT} from './003b-systems.js';
 import {MAPG, MAPSTAIR, MODS, QS, SOL, TILE} from './006-map-pre.js';
 import {collide, SKEL} from './075-main-13.js';
-import {DUN, makeNPC, stfree} from './076-npc-map.js';
+import {DUN, makeNPC, stfree, STHOLE} from './076-npc-map.js';
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
 MODS.skel=SKELGO;
   const BN=S.rig.names.map(n=>n.replace(/\./g,'_')), JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const geomOf=(M,rigged)=>SKIN.geom(M,rigged), rigOf=()=>SKIN.rig(S.rig,BN), CLIPS=SKIN.clips(S.clips,BN,false,n=>n.replace(/\./g,'_'));
-  const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
+  const LANE={x0:SHARED.BOD.XS(52),x1:SHARED.BOD.XS(106),z0:SHARED.BOD.ZS(-76.3),z1:SHARED.BOD.ZS(SHARED.BOD.FAR+2.8)}, HOLE=STHOLE,
     free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R), WALK=.87;
   const RUNU=2.6;
   const Anim=(mixer)=>{ const A={}, W={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n]));

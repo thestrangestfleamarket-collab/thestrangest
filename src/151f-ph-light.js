@@ -43,11 +43,11 @@ PHX.parts.push({make:K=>{ '@playhouse';
   const spot=(p,t,ang,pen,i,dist,shadow)=>{ const l=new THREE.SpotLight(0xffffff,0,dist*K.MH,ang,pen,1.2); l.position.set(...p); l.target.position.set(...t); K.G.add(l); K.G.add(l.target);
     if(shadow){ l.castShadow=true; l.shadow.mapSize.set(1024,1024); l.shadow.bias=-.0008; l.shadow.normalBias=.04; l.shadow.camera.near=1; l.shadow.camera.far=60*K.MH; } return {l,i}; };
   const ch=(k,o)=>{ LX.ch[k]={v:0,c:new THREE.Color(0),to:{v:0,c:new THREE.Color(0)},from:null,t0:0,dur:0,...o}; };
-  ch('fohL',{L:[spot([-6,D.CY-.7,D.Z1-.6],[-.5,SY+1,-3],.32,.55,0,0,true)],I:900,dist:45});
-  ch('fohR',{L:[spot([6,D.CY-.7,D.Z1-.6],[.5,SY+1,-3],.32,.55,0,0)],I:700,dist:45});
-  ch('wash',{L:[spot([0,11,-1.7],[0,SY,-4],.75,.7,0,0)],I:500,dist:30});
+  ch('fohL',{L:[spot([-6,D.CY-.7,D.Z1-.6],[-.5,SY+1,-3],.32,.55,0,0,true)],I:560,dist:45});
+  ch('fohR',{L:[spot([6,D.CY-.7,D.Z1-.6],[.5,SY+1,-3],.32,.55,0,0)],I:440,dist:45});
+  ch('wash',{L:[spot([0,11,-1.7],[0,SY,-4],.75,.7,0,0)],I:320,dist:30});
   ch('washC',{L:[]});
-  ch('back',{L:[spot([0,11,-8.8],[0,SY,-3],.7,.6,0,0)],I:450,dist:30});
+  ch('back',{L:[spot([0,11,-8.8],[0,SY,-3],.7,.6,0,0)],I:300,dist:30});
   ch('side',{L:[spot([9.4,SY+2.3,-5.9],[-3,SY+1.2,-4],.55,.6,0,0)],I:260,dist:24});
   ch('follow',{L:[spot([0,D.LY+1.45,D.ZC+.6],[0,SY+1,-3],.055,.35,0,0,true)],I:2600,dist:60});
   ch('cyc',{L:[],pt:[]}); { const l=new THREE.PointLight(0,0,16*K.MH,1.2); l.userData.pool=true; l.position.set(0,SY+5,-12.8); K.G.add(l); LX.ch.cyc.pt.push({l,i:60}); }
@@ -58,7 +58,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
     { const p=g.attributes.position, c=new Float32Array(p.count*3); for(let i=0;i<p.count;i++){ const f=.5-p.getY(i)/L; c.set([.35+.65*f,.35+.65*f,.35+.65*f],i*3); } g.setAttribute('color',new THREE.BufferAttribute(c,3)); m.vertexColors=true; }
     const me=new THREE.Mesh(g,m); me.position.copy(A).add(B).multiplyScalar(.5); me.quaternion.setFromUnitVectors(new V3(0,1,0),B.clone().sub(A).normalize()); me.renderOrder=5; me.castShadow=false; me.receiveShadow=false; K.G.add(me); LX.beams.push({me,k,op}); return me; };
   for(let i=0;i<8;i++){ const x=-7+i*2; beam([x,10.3,-1.75],[x*.6,SY,-2.6],.06,1.4,i%2?'washC':'wash',.022); beam([x,10.3,-8.85],[x*.6,SY,-4.2],.06,1.2,'back',.028); }
-  LX.fbeam=beam([0,D.LY+1.45,D.ZC],[0,SY,-3],.1,.5,'follow',.07);
+  LX.fbeam=beam([0,D.LY+1.45,D.ZC],[0,SY,-3],.1,.5,'follow',.03);
 
   /* ---------- the board: named looks, each channel's level and colour; a cue fades from where things are to its look ---------- */
   const W='#ffd9a0', CO='#a8c4ff', MO='#6c86ff', DU='#ff9a50', VI='#a070ff', GR='#5cd88a', CA='#ffae50', WH='#fff4e4', AM='#ffb870';
@@ -94,7 +94,7 @@ tick:(dt,K,now,inn)=>{ const LX=K.lx; if(!LX)return; LX.t+=dt; const ease=k=>k<=
   PHX.houseLevel=C.house.v;
   for(const k of ['fohL','fohR','wash','back','side','follow'])for(const e of C[k].L){ e.l.intensity=C[k].I*(k==='wash'?Math.max(C.wash.v,C.washC.v):C[k].v); e.l.color.copy(C[k].c); if(k==='wash'&&C.washC.v>0)e.l.color.lerp(C.washC.c,C.washC.v/(C.wash.v+C.washC.v+1e-6)); }
   for(const e of C.cyc.pt){ e.l.intensity=e.i*C.cyc.v; e.l.color.copy(C.cyc.c); }
-  if(K.cycMat)K.cycMat.color.copy(C.cyc.c).multiplyScalar(.25+1.1*C.cyc.v);
+  if(K.cycMat)K.cycMat.color.copy(C.cyc.c).multiplyScalar(.08+.72*C.cyc.v);
   const tmp=new THREE.Color(); for(const f of LX.fix){ const c=C[f.ch]||C.wash; tmp.copy(c.c).multiplyScalar(Math.min(1,c.v*1.6)+.03); f.ln.setColorAt(f.i,tmp); f.ln.instanceColor.needsUpdate=true; }
   if(LX.footI)LX.footI.material.color.copy(C.foot.c).multiplyScalar(C.foot.v*flick);
   for(const b of LX.beams){ const c=C[b.k]; b.me.material.color.copy(c.c).multiplyScalar(c.v*b.op*14); b.me.visible=c.v>.02; }

@@ -11,7 +11,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   const LW=MS.lot('play',190), TP=TURN(LW,WP.play.face), L=TP.L, m=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TP.pt(u,v); return [X(p[0]),Z(p[1])]; };
   const OX=SHARED.BOD.XS(-2400), OZ=SHARED.BOD.ZS(0), W=(x,y,z)=>[OX+x*MH,y*MV,OZ+z*MH], lx=x=>(x-OX)/MH, lz=z=>(z-OZ)/MH;
   const B={x0:-15.2,x1:15.2,z0:-25.2,z1:42.6};
-  let G=null, K=null, P=null, SO=[], ENV=null, MIR=[], LT={}, t0=0;
+  let G=null, K=null, P=null, SO=[], DS=[], ENV=null, MIR=[], LT={}, t0=0;
   const build=()=>{ '@playhouse';
     G=new THREE.Group(); G.name='playhouse-in'; G.position.set(OX,0,OZ); G.scale.set(MH,MV,MH); scene.add(G);
     const TX=PHT.make(); K=PHK.make(TX); K.you=()=>({x:lx(pos.x),y:SHARED.py/MV,z:lz(pos.z)}); K.MH=MH; K.MV=MV; G.add(K.G); try{ PHA.make(K); PHS.make(K); for(const p of PHX.parts)if(p.make)p.make(K); }catch(e){ console.error('playhouse build',e); }
@@ -42,7 +42,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     SO=K.sol.map(([a,b,c,d])=>[OX+a*MH,OZ+b*MH,OX+c*MH,OZ+d*MH]); SOL.up.push(...SO);
     t0=performance.now(); P=P2; return P2; };
   const D={SY:1.1};
-  const unbuild=()=>{ for(const r of SO){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } SO=[]; for(const p of PHX.parts)if(p.drop&&K)p.drop(K);
+  const unbuild=()=>{ for(const r of SO.concat(DS)){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } SO=[]; DS=[]; for(const p of PHX.parts)if(p.drop&&K)p.drop(K);
     if(ENV){ ENV.rt.dispose(); if(ENV.cam)ENV.cam.removeFromParent(); ENV=null; } for(const o of MIR)o.r.dispose(); MIR=[]; LT={};
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); G=null; } K=null; P=null; };
   const inside=()=>!!K&&ROOMS.offIn&&ROOMS.offIn()==='playhouse';
@@ -55,6 +55,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   ROOMS.reset&&ROOMS.reset();
   // each frame while you are inside: the bars that are flying, the parts' own work, the mirrors of the room you are in, the reflection when it is due
   SYS.add('places',dt=>{ if(!K)return; const now=performance.now(), inn=inside(); if(G&&G.visible!==inn)G.visible=inn; K.flyStep(dt); for(const p of PHX.parts)if(p.tick)p.tick(dt,K,now,inn); if(K.shadowDue){ K.shadowDue=false; renderer.shadowMap.needsUpdate=true; }
+    if(K.solDirty&&K.sets){ K.solDirty=false; for(const r of DS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } DS=K.sets.solids().map(([a,b,c,d])=>[OX+a*MH,OZ+b*MH,OX+c*MH,OZ+d*MH]); SOL.up.push(...DS); }
     if(!inn){ for(const o of MIR)o.r.visible=false; return; }
     const px=lx(pos.x), pz=lz(pos.z), zone=pz>29.6&&Math.abs(px)<12.2?'foyer':pz<-18.6?(px<0?'dr1':'dr2'):'';
     for(const o of MIR)o.r.visible=o.zone===zone;

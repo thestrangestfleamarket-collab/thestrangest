@@ -11,6 +11,7 @@ import {MKS} from './016-street-kit.js';
 import {STUDIO} from './020-studio-kit.js';
 import {KEEPC, PRESETS, STOREK} from './023-west-kits.js';
 import {dgnRoom, dgnThings} from './038z-dungeon.js';
+import {BLOCKS} from './038zb-blocks.js';
 {
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 dgnThings(CATALOG,CAT_INFO,LAMPS,CAT_DEPTS,DGP,dgnLit,DGN,dgnWeb);

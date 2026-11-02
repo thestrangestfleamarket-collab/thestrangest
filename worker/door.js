@@ -65,7 +65,7 @@ export default {
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
-      if (p === "/owned") { if (body.put === undefined) return json({ owned: await homeOf(env).ownedGet(id), me: meOf(request, id) });
+      if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no] = await Promise.all([H.ownedGet(id), H.passport(id)]); return json({ owned, me: { ...meOf(request, id), no } }); }
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -102,6 +102,7 @@ async function who(env, request, dev) {
 // who you are, for your passport: the login's id, email and the day it was made (only what who() just checked)
 function meOf(request, id) { const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), s = m && passed.get(decodeURIComponent(m[1])); return { id, email: s && s.id === id && s.email || "", joined: s && s.id === id && s.joined || "" }; }
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
+const forget = id => { for (const [k, v] of passed) if (v.id === id) passed.delete(k); };
 
 async function page(env, url, path, request, cache) {
   const h = new Headers(); const inm = request.headers.get("If-None-Match"); if (inm) h.set("If-None-Match", inm);
@@ -232,7 +233,7 @@ export class Block extends Server {
     let b = {}; try { b = await req.json(); } catch (e) {}
     if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
       for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
-    if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(4001, "removed"); return Response.json({ ok: true }); }
+    if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(b.out ? 4002 : 4001, b.out ? "out" : "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
       if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k); } }
@@ -301,9 +302,9 @@ async function admin(env, b) {
   }
   if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
   if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
-    if (r.ok && b.on) await blockAsk(env, room, "kick", { id }).catch(() => {}); return res(r); }
+    if (r.ok && b.on) { forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); } return res(r); }
   if (b.do === "delete") { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok) return res(r);
-    await blockAsk(env, room, "kick", { id }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
+    forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
@@ -374,6 +375,9 @@ export class Home extends DurableObject {
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }
+  // every citizen's passport number, issued in order from 1000 the first time the game asks
+  passport(id) { this.sql.exec("create table if not exists passports(who text primary key, no integer, at integer)"); const r = this.sql.exec("select no from passports where who = ?", id).toArray()[0]; if (r) return r.no;
+    const no = this.sql.exec("select coalesce(max(no), 999) + 1 as no from passports").toArray()[0].no; this.sql.exec("insert into passports(who, no, at) values(?, ?, ?)", id, no, Date.now()); return no; }
   ownedGet(id) { this.ownedT(); const o = {}; for (const r of this.sql.exec("select k, v from owned where who = ?", id).toArray()) o[r.k] = r.v; return o; }
   ownedPut(id, put) { this.ownedT(); const now = Date.now(), had = this.ownedGet(id); let n = 0; for (const k in had) n += k in put ? 0 : had[k].length; for (const k in put) n += put[k] === null ? 0 : put[k].length;
     if (n > 2 << 20) return false;

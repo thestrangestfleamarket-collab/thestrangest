@@ -1,5 +1,5 @@
-// THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu and the shift+1-8 keys that open each editor.
-import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
+// THE EDITORS LAUNCHER: EDITORS holds the shift+0 menu that opens each editor (the ITEM editor for the owner only).
+import {BUGS, CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
 { const ge=async mode=>{ hide(); if(!GAMEED.open)await GAMEED.toggle(); const b=document.getElementById(mode==='map'?'meTM':'meTC'); if(b&&b.dataset.hot!=='1')b.click(); };
   const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
@@ -8,7 +8,7 @@ import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-sys
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
     {key:5,n:'LIGHTING',d:'render system and quality; cel is the floor',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
-    {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
+    {key:7,n:'ITEM',d:'item types and their properties',own:true,go:()=>ITEMED.toggle()},
     {key:8,n:'BEHAVIOUR',d:'homes, routines, jobs',go:()=>CHARED.toggle('beh')},
     {key:9,n:'LANDSCAPE',d:'paint ground, free-draw, place plants & rocks',go:()=>LAND.toggle()}];
   const css=document.createElement('style'); css.textContent=`
@@ -29,9 +29,11 @@ import {CHARED, EDITORS, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-sys
   menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn${it.soon?' soon':''}" data-k="${it.key}"><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">PICK AN EDITOR · SHIFT+0 OR ESC CLOSES</div></div>';
   document.body.appendChild(menu);
   const soon=document.createElement('div'); soon.id='edsoon'; document.body.appendChild(soon);
-  const show=()=>menu.classList.add('on'), hide=()=>menu.classList.remove('on');
+  let own=null; const isOwner=async()=>{ if(own!=null)return own; if(!/^https?:$/.test(location.protocol))return own=true; if(!BUGS.owner)return false; return own=!!(await BUGS.owner().catch(()=>false)); };
+  const hide=()=>menu.classList.remove('on'), show=()=>{ menu.classList.add('on'); isOwner().then(o=>{ for(const it of list)if(it.own){ const b=menu.querySelector(`[data-k="${it.key}"]`); if(b)b.hidden=!o; } }); };
   EDITORS.menu=()=>menu.classList.contains('on')?hide():show();
-  EDITORS.open=it=>{ '@later'; if(!it)return; hide(); soon.classList.remove('on');
+  EDITORS.open=async it=>{ '@later'; if(!it)return; hide(); soon.classList.remove('on');
+    if(it.own&&!await isOwner()){ soon.innerHTML=`<h3>${it.n} EDITOR</h3><p>For the owner: ${it.d}.</p><button class="btn" id="edsx">OK</button>`; soon.classList.add('on'); soon.querySelector('#edsx').onclick=()=>soon.classList.remove('on'); return; }
     if(it.soon){ soon.innerHTML=`<h3>${it.n} EDITOR</h3><p>Not built yet — ${it.d}.</p><button class="btn" id="edsx">OK</button>`; soon.classList.add('on'); soon.querySelector('#edsx').onclick=()=>soon.classList.remove('on'); return; }
     if(it.go)it.go(); };
   EDITORS.key=d=>{ soon.classList.remove('on'); if(d===0){ EDITORS.menu(); return; } EDITORS.open(list.find(x=>x.key===d)); };

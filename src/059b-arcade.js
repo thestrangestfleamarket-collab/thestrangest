@@ -5,6 +5,7 @@ import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
+import {BLOCKS} from './038zb-blocks.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
   const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');

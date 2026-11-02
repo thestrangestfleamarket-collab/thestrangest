@@ -143,6 +143,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     ui(); sock=new PS({host:location.host,party:'block',room:ROOM,query:async()=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){} return {}; }});
     sock.addEventListener('open',()=>{ ONLINE.on=true; last=null; meSent=''; meAcc=1; list(); });
     sock.addEventListener('close',e=>{ ONLINE.on=false; for(const id of [...ONLINE.others.keys()])drop(id);
+      if(e.code===4002){ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(_){ } location.replace('/'); return; }   // sent out (banned or removed): to the door
       if(e.code===4000||e.code===4001){ sock.close(); line('THE MARKET',e.code===4000?'you came in from another window; this one is alone now':'log in again to see the others'); } list(); });
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
   ONLINE.tick=dt=>{ const now=performance.now();

@@ -6,6 +6,7 @@ import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS,
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {WATER} from './009-down.js';
+import {BLOCKS} from './038zb-blocks.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
   const B_=id=>LBLD.find(b=>b.id===id);
   STORE.here=id=>{ const R=STORE.inside[id]||STORE.rooms.find(r=>r.id===id); if(!R||!R.B||SHARED.LVL!=='up')return false; const B=R.B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); return pos.x>Math.min(xa,xb)&&pos.x<Math.max(xa,xb)&&pos.z>Math.min(za,zb)&&pos.z<Math.max(za,zb); };

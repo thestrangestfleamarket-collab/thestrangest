@@ -23,6 +23,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
     const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});
     ok(p1.ok===true&&p2.ok===true&&got.owned&&got.owned.inv==='{"v":1}'&&!('birds' in got.owned)&&!bad.ok,'/owned keeps what you own, key by key ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const me=who=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.no).catch(()=>null);
+    const a1=await me('dev:pass-a'), a2=await me('dev:pass-a'), b1=await me('dev:pass-b');
+    ok(Number.isInteger(a1)&&a1>=1000&&a1===a2&&Number.isInteger(b1)&&b1!==a1,'/owned issues each player one passport number, in order, and keeps it ('+a1+', '+b1+')'); }
   { const CAB='CHECK '+String(Date.now()%1e6), sc=(body,who='dev:score-check')=>fetch(BASE+'/scores',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/scores',{method:'POST',headers:{origin:BASE},body:'{"cab":"MAZE"}'})).status===401,'/scores without a login is refused');
     const p1=await sc({cab:CAB,put:{ini:'ABC',score:5000,sub:'ROUND 4'}}), p2=await sc({cab:CAB,put:{ini:'XYZ',score:9000,sub:'ROUND 7'}},'dev:score-two'), bad=await sc({cab:CAB,put:{ini:'a!',score:10}}), got=await sc({cab:CAB}), all=await sc({cab:'*'});

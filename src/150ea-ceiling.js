@@ -1,7 +1,7 @@
 // THE CEILING LIGHTS: four flush domes overhead in your apartment, set from a panel on the wall by the front door (on, brightness, warmth, colour); the fittings hide with the ceiling, their light stays.
 import {THREE} from './003-shx.js';
-import {ED, MODS, SFX, UI} from './003b-systems.js';
-import {SYS} from './006-map-pre.js';
+import {ED, SFX, UI} from './003b-systems.js';
+import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEIL=CEIL;
 { const P=document.createElement('div'); P.id='ceilp'; P.hidden=true;
@@ -33,4 +33,3 @@ const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEI
     for(const sh of CEIL.shells){ sh.visible=vis; const L=sh.userData.L, u=L.userData, lit=u.on!==false; for(const m of sh.userData.B){ m.emissive.copy(L.color); m.emissiveIntensity=lit?1.3*Math.min(1.6,Math.max(.25,u.k??1)):.03; } } },'150ea-ceiling');
   window.CEILDBG=()=>{ const a=A(); return {n:CEIL.shells.length,vis:CEIL.shells.map(s=>s.visible),i:CEIL.shells.map(s=>+s.userData.L.intensity.toFixed(2)),set:a?CEIL.ids.map(id=>a.lightGet(id)):null,panel:!P.hidden,thing:UI.things.some(t=>t.name==='CEILING LIGHTS')}; };
 }
-export {CEIL};

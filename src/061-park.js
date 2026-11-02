@@ -7,6 +7,7 @@ import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, M
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
+import {BLOCKS} from './038zb-blocks.js';
 import {FOREST, PROPS} from './039-bodega.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';

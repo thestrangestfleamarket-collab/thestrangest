@@ -4,6 +4,7 @@ import {CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
+import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x1-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor

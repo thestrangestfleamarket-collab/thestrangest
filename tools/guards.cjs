@@ -1,7 +1,7 @@
 // THE GUARDS: removes "does it exist yet?" checks (typeof X!=='undefined', window.X&&) for names an earlier file always made. Run by hand: node tools/guards.cjs [--write].
 const fs = require('fs'), path = require('path'), acorn = require('acorn');
 const { analyse } = require('./scope.cjs'), { blank } = require('./imports.cjs');
-const SRC = path.resolve(__dirname, '../src'), files = fs.readdirSync(SRC).filter(f => /^\d{3}[a-z]?-.+\.(js|html)$/.test(f)).sort();
+const SRC = path.resolve(__dirname, '../src'), files = fs.readdirSync(SRC).filter(f => /^\d{3}[a-z]*-.+\.(js|html)$/.test(f)).sort();
 let page = '', spans = []; for (const f of files) { spans.push([page.length, f]); page += blank(fs.readFileSync(SRC + '/' + f, 'utf8')); }
 const A = page.indexOf('<script type="module">') + 22, B = page.lastIndexOf('</script>');
 const code = page.slice(A, B).replace(/__(DATA|LAZY|B64)__\("[^"]+"\)/g, m => '0'.padEnd(m.length, ' ')).replace(/__BUILDV__/g, '0'.padEnd(10, ' '));

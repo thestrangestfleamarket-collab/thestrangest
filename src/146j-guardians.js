@@ -1,6 +1,6 @@
 // THE GUARDIANS: GUARD — the woodland folk who keep the castle over the dungeon (data/guardians.json): every body from one maker (a species head, a coat, a weapon), their posts and rounds round the castle, the welcome up the stair, and the keep's bounties on what you slay below.
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, CLOCK, FORAGE, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
+import {CHARS, CLOCK, FORAGE, GUARD, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
@@ -9,7 +9,7 @@ import {SITES} from './089b-parksites.js';
 import {GEMS} from './101-gems.js';
 import {BODIES} from './111a-bodies.js';
 import {FOLK} from './146i-folk.js';
-const GUARD={list:[]}; window.GUARD=GUARD;
+GUARD.list=[];
 { const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
   // the bounty you hold: {id, n, got}, kept with your things; the dungeon's kills count toward it (SYS 'slain')
   let B=null; try{ B=JSON.parse(OWNED.get('bounty')||'null'); }catch(e){ B=null; }
@@ -140,4 +140,3 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       const cx=X((sx0+sx1)/2), cz=Z((sy0+sy1)/2); if(Math.hypot(pos.x-cx,pos.z-cz)>8*T)return;
       let best=null, bd=1e9; for(const N of GUARD.list){ const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<bd&&N.gd.role==='post'){ bd=d; best=N; } } if(best&&bd<10*T)LINES.say(best,'gd_up'); },'146j-guardians');
     window.GUARDDBG=()=>GUARD.list.map(N=>({k:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,far:!!N.far,tris:N.tris,lo:N.trisLo||0,hi:N.me.geometry===N.geoHi})); }); }
-export {GUARD};

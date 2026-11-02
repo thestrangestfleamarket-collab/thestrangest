@@ -40,6 +40,8 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     siren:{len:1.6,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(700+150*Math.sin(TAU*s*1.1))*s)*Math.sin(t*Math.PI)*.08; } }},
     thunder:{len:2.2,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++){ const t=i/n; D[i]=F(rnd(),.03+.04*rnd())*Math.min(t*30,1)*env(t,1.8)*(1+.5*Math.sin(t*37))*1.2; } }},
     scan:{len:1.1,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(820+620*t)*s)*(Math.floor(s*22)%2?.45:1)*Math.sin(t*Math.PI)*.1; } }},
+    laser:{len:.16,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n, f0=1900-1300*t; D[i]=(Math.sin(TAU*f0*s)*.5+Math.sin(TAU*f0*2.01*s)*.2+rnd()*.08)*env(t,1.6)*.7; } }},
+    whoosh:{len:.55,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++){ const t=i/n; D[i]=F(rnd(),.08+t*.5)*Math.sin(Math.min(1,t*2.2)*Math.PI/2)*env(Math.max(0,(t-.35)/.65),1.5)*.9; } }},
     hum:{len:4,loop:true,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++)D[i]=F(rnd(),.03); const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
     rain:{len:3,loop:true,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++)D[i]=(rnd()-F(rnd(),.5)*.5)*.6; const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
     wind:{len:5,loop:true,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S; D[i]=F(rnd(),.05)*(.6+.4*Math.sin(TAU*s*.23)*Math.sin(TAU*s*.071)); } const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},

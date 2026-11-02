@@ -107,7 +107,7 @@ collar and a gold chest piece. A full skirt of sheer tulle. Her trumpet is gold 
 cheeks, breath), lowers the horn, listens, and plays again.
 
 **Where.** West St, the second blank shell (`shell3`), next to the playhouse (the theatre end). **Outside:** a deep shop window lit
-warm from inside, with her playing in it (the street hears her: her music fades with distance, quiet by day, clear at night), gold leaf
+warm from inside, with her playing in it (silently: no sound in the game, owner 2 Nov 2026), gold leaf
 lettering on the glass, GLASS HORN, a takeaway coffee cup on the sill outside for tips, condensation at the window's corners.
 
 **Inside (half the bodega; a narrow music shop).** Horns hanging by their bells from a ceiling rail, swaying a little, so the
@@ -129,7 +129,7 @@ more for a better horn and by how many people are near. She buys back horns at h
 
 **Talk.** "Listen. No, *listen*." / WHAT DO YOU SELL? / HOW DO I EARN WITH IT? ("Open the case. Play where the feet are.") / GOODBYE.
 
-**Touches.** 3 items + `play` grant, the instruments' play mode, tips (cash), SFX (her music in the world), West St `shell3`, `ROOMS.off`.
+**Touches.** 3 items + `play` grant, the instruments' play mode, tips (cash), West St `shell3`, `ROOMS.off`.
 
 ## 3. THE FIXER and the little one: repairs, old electronics (queued 28 Oct 2026)
 

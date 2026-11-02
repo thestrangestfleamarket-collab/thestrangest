@@ -1,9 +1,8 @@
 // THE LINES: LINES holds what characters say and shows it over their heads.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LEVELS, LINES, LOOKS, SFX} from './003b-systems.js';
+import {CLOCK, LEVELS, LINES, LOOKS} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {TILE} from './006-map-pre.js';
 Object.assign(LINES,{log:[]});
 { const POOL={
     greet:['Hello, {{name}}.','You again. Good.','Welcome to the market.','Watch your step out here.','Quiet tonight, isn\'t it?','Looking for something?','Hm? Oh. Hello.','Don\'t mind me.','The dragons are out again.','Mind the stairs down there.','Nice to see a face.','Hey there, {{name}}.'],
@@ -30,11 +29,11 @@ Object.assign(LINES,{log:[]});
   LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);
-    const o={N,el,text,n:0,t:0,life:Math.max(1.5,Math.min(4.5,text.length/40+.8)),voice:N.voice||(N.voice=SFX.voiceOf(N.key||N.name))}; ON.push(o);
+    const o={N,el,text,n:0,t:0,life:Math.max(1.5,Math.min(4.5,text.length/40+.8)),voice:N.voice||(N.voice=null)}; ON.push(o);
     LINES.log.push({who:N.key||N.name,pool:POOL[k]?k:null,text,at:Date.now(),h:typeof CLOCK!=='undefined'?+CLOCK.h.toFixed(2):null}); if(LINES.log.length>100)LINES.log.shift(); return text; };
   LINES.tick=dt=>{ if(!ON.length)return; const r=renderer.domElement.getBoundingClientRect();
     for(let i=ON.length-1;i>=0;i--){ const o=ON[i], N=o.N; o.t+=dt;
-      const n=Math.min(o.text.length,Math.floor(o.t*40)); if(n>o.n){ if((n&1)===0||n===o.text.length)SFX.blip(o.voice,{at:{x:N.st.x,z:N.st.z},far:14*TILE}); o.n=n; o.el.textContent=o.text.slice(0,n); }
+      const n=Math.min(o.text.length,Math.floor(o.t*40)); if(n>o.n){ if((n&1)===0||n===o.text.length){} o.n=n; o.el.textContent=o.text.slice(0,n); }
       const shown=N.g.visible&&!N.far&&N.lv===SHARED.LVL&&(!N.g.parent||N.g.parent.visible)&&LEVELS.drawn(N.g); if(!shown||o.t>o.life+o.text.length/40){ o.el.remove(); ON.splice(i,1); continue; }
       V.set(N.st.x,N.g.position.y+(N.H||1.8)*1.06,N.st.z).project(SHARED.cam); const off=V.z>1||V.x<-1.2||V.x>1.2||V.y<-1.2||V.y>1.2; o.el.hidden=off; if(off)continue;
       o.el.style.left=Math.round(r.left+(V.x+1)/2*r.width)+'px'; o.el.style.top=Math.round(r.top+(1-V.y)/2*r.height)+'px'; } };

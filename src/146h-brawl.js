@@ -1,6 +1,6 @@
 // THE BRAWL: fights between players (ONLINE): your moving fists, feet and blade against their body parts as drawn, and their blows on you through VIT.hurt.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, pos, RAG, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, ONLINE, pos, RAG, st, VIT, W3, WIELD} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {ASTEP, SYS, TILE, ZU} from './006-map-pre.js';
 import {P, PHYOU, TL} from './073-main-12.js';
@@ -28,7 +28,7 @@ import {collide} from './075-main-13.js';
     for(const l of live){ l.n++; const pts=mine(l.kind,J);
       for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead||l.hit.has(o.id)||carry&&carry.id===o.id||thrown.id===o.id&&now<thrown.until)continue; let part=null;
         for(const [c,r] of pts)if((part=touch(o,c,r)))break;
-        if(part){ l.hit.add(o.id); const s=l.s; S.landed(s); o.flashT=now+130; SFX.play('thud',{vol:.55,pitch:1.35,vary:.15}); ONLINE.send({t:'hit',to:o.id,d:+(.05*s.d*S.strength(s)*(part==='head'?1.3:1)).toFixed(3),kb:s.kb||(l.kind==='foot'?1.5:1),heavy:!!s.heavy,k:l.kind}); } } } };
+        if(part){ l.hit.add(o.id); const s=l.s; S.landed(s); o.flashT=now+130;  ONLINE.send({t:'hit',to:o.id,d:+(.05*s.d*S.strength(s)*(part==='head'?1.3:1)).toFixed(3),kb:s.kb||(l.kind==='foot'?1.5:1),heavy:!!s.heavy,k:l.kind}); } } } };
 
   /* ---------- their blows on you: VIT.hurt (guard, parry, armour, death) as from any foe; a shove and a flinch, or down into the ragdoll ---------- */
   let shove=null, recent=[], wasRag=false, parT=0; const last={};

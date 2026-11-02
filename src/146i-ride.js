@@ -1,6 +1,6 @@
 // THE RIDE: RIDE carries you on a thing you hold and then stand on or hang from — any item whose GRANTS is a kind registered here (ride: a hoverboard; lift: a balloon). Hold it and click to get on, click again to get off; WASD steers it, SPACE hops; others see you on it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, st, VIT, W3, WIELD} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {collide} from './075-main-13.js';
@@ -15,7 +15,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   const free=()=>!(RAG.on||st.water&&st.water.in||st.climb||st.hang||st.sit||VIT.dead||VIT.out>0);
   RIDE.mount=id=>{ const k=RIDE.kinds[prop(id,'grants')]; if(!k||!FORAGE.has(id))return false; if(ROOMS.cur&&!k.inside)return say('NOT INDOORS. TAKE IT OUTSIDE.','#c8a090'),false; if(!free())return false;
     RIDE.on=id; RIDE.kind=k; RIDE.v=0; RIDE.hd=SHARED.heading; RIDE.z=0; RIDE.vz=0; RIDE.lean=0; RIDE.dry=!!k.dry; RIDE.ease=k.ease||20; RIDE.t0=performance.now(); st.move=null;
-    st.ride=k.pose(RIDE); SHARED.target=null; if(k.on)k.on(RIDE); share(); say(k.onSay||'YOU STEP ON.'); if(SFX.play)SFX.play('step',{vol:.4,pitch:.7}); return true; };
+    st.ride=k.pose(RIDE); SHARED.target=null; if(k.on)k.on(RIDE); share(); say(k.onSay||'YOU STEP ON.');  return true; };
   RIDE.off=(why,fall)=>{ if(!RIDE.on)return; const k=RIDE.kind, id=RIDE.on; RIDE.on=null; RIDE.kind=null; RIDE.dry=false; RIDE.ease=20; st.ride=null; RIDE.lift=0; if(k&&k.off)k.off(id,fall); const m=M.get(id); if(m)m.visible=false; share();
     if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=true; };
   RIDE.floor=g=>{ const k=RIDE.kind; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
@@ -26,7 +26,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
     if(ml>0){ const want=Math.atan2(mx,mz), e=wrap(want-R.hd), back=Math.abs(e)>2.4&&R.v>.5*T;
       if(back)R.v=Math.max(0,R.v-acc*2.2*dt); else { const turn=(k.turn||2.6)/(1+R.v/T*.12*len)*dt, d=Math.max(-turn,Math.min(turn,e)); R.hd+=d; R.lean+=((d/Math.max(dt,1e-3))*.12-R.lean)*Math.min(1,dt*6); if(Math.abs(e)<1.4)R.v=Math.min(vmax,R.v+acc*dt*(1-R.v/vmax*.6)); } }
     else { R.v=Math.max(0,R.v-(k.drag||.5)*T*dt); R.lean*=1-Math.min(1,dt*4); }
-    if(R.z>0||R.vz>0){ R.vz-=9.8*T*dt; R.z=Math.max(0,R.z+R.vz*dt); if(R.z===0&&R.vz<0){ R.vz=0; if(SFX.play)SFX.play('step',{vol:.5,pitch:.5}); } }
+    if(R.z>0||R.vz>0){ R.vz-=9.8*T*dt; R.z=Math.max(0,R.z+R.vz*dt); if(R.z===0&&R.vz<0){ R.vz=0;  } }
     if(keys.has(' ')&&!R.sp&&R.z===0&&k.hop!==false){ R.vz=(k.hop||3.2)*T; R.z=.001; } R.sp=keys.has(' ');
     const ox=pos.x, oz=pos.z, go=R.v*dt; pos.x+=Math.sin(R.hd)*go; pos.z+=Math.cos(R.hd)*go; (k.collide||collide)(pos);
     const moved=Math.hypot(pos.x-ox,pos.z-oz); if(go>.001&&moved<go*.5){ if(R.v>(k.knock||5.5)*T){ R.v=0; R.off('YOU HIT IT HARD AND FALL OFF.',true); return; } R.v*=.4; }

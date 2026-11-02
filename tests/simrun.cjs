@@ -1,7 +1,7 @@
 // THE HEADLESS SIMULATION (owner, 17 Oct 2026, after his physician game's full_playthrough and verify_* scripts: the game played through by a
 // script, its rules checked as it runs): node tests/simrun.cjs [minutes=3] [out.json] loads THE MARKET and plays it for that long with the clock
 // at a day a minute: it goes to every place in the menu in turn (the street, the shop, the pool, the platform, the park, the castle, the
-// dungeon, the stored rooms...), walks and runs from each (a double click ahead, Shift+W), opens the menu and the sound editor once, and holds
+// dungeon, the stored rooms...), walks and runs from each (a double click ahead, Shift+W), opens the menu once, and holds
 // each weather in turn. Every two seconds it checks the budget and the rules: the whole picture under 100,000 triangles; at most 8 lamps lit;
 // no number gone NaN (his place, the camera, every character, the vitals, the clock, the weather); every character's health and stamina 0..1;
 // the clock 0..24; the level matches the place (down on the platform and in the dungeon); at most three speaking; the save still readable;
@@ -18,7 +18,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
   if(!up){ console.log('FAIL: the page never started',JSON.stringify(errs)); await b.close(); process.exit(1); }
   const loadS=((Date.now()-t0)/1000).toFixed(0); console.log('started in '+loadS+' s');
   const startedAt=await pg.evaluate(()=>performance.now()), GL=await pg.evaluate(()=>__dbg.gl()), SOFT=/swiftshader|llvmpipe|software/i.test(GL); console.log('renderer: '+GL+(SOFT?' (software: freezes reported, not failed)':''));
-  await pg.evaluate(async()=>{ const c=__dbg.SFX.ctx(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); __dbg.CLOCK.run=true; __dbg.CLOCK.speed=1440/60; if(window.STORE&&STORE.ensure)STORE.ensure(); window.__long.length=0; });   /* (the stacked rooms built at once here: not the game's freeze) */
+  await pg.evaluate(async()=>{ __dbg.CLOCK.run=true; __dbg.CLOCK.speed=1440/60; if(window.STORE&&STORE.ensure)STORE.ensure(); window.__long.length=0; });   /* (the stacked rooms built at once here: not the game's freeze) */
   const places=await pg.evaluate(()=>__dbg.UI.places().map(p=>p[0])); console.log('places: '+places.length);
   const WX=['CLEAR','CLOUDY','RAIN','STORM','SNOW','FOG',null];
   const fails=[], notes=[], S={longs:[],samples:0,maxTris:0,maxLights:0,minFps:1e9,maxLong:0,clipChars:0,audits:0,lines:0,sounds:0}, seen={};
@@ -37,7 +37,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
     for(const m of r.bad)fails.push(where+': '+m); return r; };
   const audit=async(where)=>{ const a=await pg.evaluate(()=>{ const r=CLIP.audit(); window.__long.length=0;   /* (the audit's own time isn't the game's) */ return {chars:r.chars.map(c=>c.key+(c.solid?' in a solid':'')+(c.other?' in '+c.other:'')),things:r.things.length}; }); S.audits++; S.clipChars+=a.chars.length;
     for(const c of a.chars)fails.push(where+': character clipping: '+c); if(a.things)notes.push(a.things+' things without a solid in the audit (the Moon Shrine opened on purpose: pre-existing)'); };
-  // ---- THE TOUR: each place, a walk and a run from it, the weather held in turn; the menu and the sound editor once
+  // ---- THE TOUR: each place, a walk and a run from it, the weather held in turn; the menu once
   const end=Date.now()+MIN*60000; let i=0, lastAudit=0;
   while(Date.now()<end){ const name=places[i%places.length], wx=WX[i%WX.length]; i++;
     await pg.evaluate(([n,w])=>{ __dbg.UI.goPlace(n); if(window.WX)WX.hold=w; },[name,wx]); await pg.waitForTimeout(900);
@@ -45,7 +45,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
     seen[name]=(seen[name]||0)+1;
     await pg.mouse.dblclick(480+(i%3-1)*120,420); await pg.waitForTimeout(1500); await sample(name+' (walking)');
     await pg.keyboard.down('Shift'); await pg.keyboard.down('w'); await pg.waitForTimeout(1500); await sample(name+' (running)'); await pg.keyboard.up('w'); await pg.keyboard.up('Shift'); await pg.waitForTimeout(400);
-    if(i===2){ await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); await pg.click('[data-t="display"]'); await pg.waitForTimeout(300); await sample(name+' (menu)'); await pg.keyboard.press('Escape'); await pg.evaluate(()=>{ __dbg.SNDED.open(); }); await pg.waitForTimeout(300); await sample(name+' (sound editor)'); await pg.evaluate(()=>__dbg.SNDED.close()); }
+    if(i===2){ await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); await pg.click('[data-t="display"]'); await pg.waitForTimeout(300); await sample(name+' (menu)'); await pg.keyboard.press('Escape'); }
     if(i===3){ const th=await pg.evaluate(()=>{ const t=__dbg.UI.things.find(t=>t.npc&&t.obj.visible); if(!t)return null; t.act(); return __dbg.LINES.say(t.npc,'greet'); }); if(th)S.sounds++; }
     if(Date.now()-lastAudit>20000){ lastAudit=Date.now(); await audit(name); } }
   // ---- DAYS AT THE FASTEST: the clock wraps, the weather runs over days

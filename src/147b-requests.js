@@ -1,5 +1,5 @@
 // THE DAILY REQUESTS: each day some merchants ask for things you can find (mushrooms, butterflies, birds, honey, flowers) and pay over the odds; the pack's ASKS tab lists them, and you hand them in at that merchant's shop.
-import {CITY, FORAGE, INV, ITEMS, MAIL, SFX} from './003b-systems.js';
+import {CITY, FORAGE, INV, ITEMS, MAIL} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 { const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, N=3;
   // who asks, and from what: [merchant key, their name, the things they might want, how many at most]
@@ -13,7 +13,7 @@ import {OWNED} from './005-save.js';
     for(let i=0;out.length<N&&i<12;i++){ const P=POOL[Math.floor(hs(d,i)*POOL.length)]; if(used.has(P[0]))continue; used.add(P[0]); const L=P[2](), id=L[Math.floor(hs(d+7,i)*L.length)], n=1+Math.floor(hs(d+3,i)*P[3]);
       out.push({i:out.length,who:P[0],name:P[1],id,n,pay:Math.round(worth(id)*n*1.8)+5,done:!!S.done[out.length]}); } return out; };
   FORAGE.asks=today;
-  FORAGE.hand=i=>{ const a=today()[i]; if(!a||a.done)return; if(FORAGE.has(a.id)<a.n)return say(`YOU NEED ${a.n} ${FORAGE.NM[a.id]||a.id}.`,'#c8a090'); FORAGE.take(a.id,a.n); INV.cash+=a.pay; S.done[i]=1; save(); SFX.play('clunk',{vol:.5});
+  FORAGE.hand=i=>{ const a=today()[i]; if(!a||a.done)return; if(FORAGE.has(a.id)<a.n)return say(`YOU NEED ${a.n} ${FORAGE.NM[a.id]||a.id}.`,'#c8a090'); FORAGE.take(a.id,a.n); INV.cash+=a.pay; S.done[i]=1; save(); 
     say(`${a.name} TAKES THE ${a.n>1?a.n+' ':''}${FORAGE.NM[a.id]||a.id} AND PAYS $${a.pay}. THANK YOU!`,'#f2c14e'); FORAGE.draw(); };
   // the rows a shop shows for its keeper's asks today
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';

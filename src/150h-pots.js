@@ -1,6 +1,6 @@
 // YOUR POTS: each clay pot bought from the Radish (146s) is a thing for your apartment (DECORATE shows it as YOURS); a click fills it with dirt, plants a seed, waters it, picks its fruit. It grows only while its dirt is wet (a jug of rain keeps it wet 12 game hours).
 import {THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, MAIL, SFX} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, MAIL} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {RADISH} from './146s-radish.js';
@@ -39,7 +39,7 @@ import {ROOMK} from './150a-bedroom.js';
       if(!s.dirt){ if(!has('dirt'))return say('IT NEEDS DIRT. THE RADISH SELLS IT BY THE BAG.','#c8a090'); FORAGE.take('dirt',1); s.dirt=1; say('YOU FILL THE POT WITH DIRT.'); }
       else if(!s.k){ const k=Object.keys(P).find(q=>has(P[q].seed)); if(!k)return say('PLANT A SEED: THE RADISH SELLS THEM.','#c8a090'); FORAGE.take(P[k].seed,1); Object.assign(s,{k,g:0,at:hour(),fr:0,picked:0}); say('YOU PRESS A '+P[k].name+' SEED INTO THE DIRT.'); }
       else if(s.fr>0){ const p=P[s.k], n=s.fr; FORAGE.give(p.fruit,n); s.picked=(s.picked||0)+n; s.fr=0; say('YOU PICK '+n+' '+p.name+(n>1?'S':'')+'.','#b8f0a0'); }
-      else if(s.wet<=hour()){ if(!has('water'))return say('THE DIRT IS DRY. IT NEEDS WATER (A JUG OF RAIN).','#c8a090'); grow(s); FORAGE.take('water',1); s.wet=hour()+WET; s.at=hour(); say('THE DIRT DRINKS IT IN.','#9fd8ff'); if(SFX.play)SFX.play('splash',{vol:.3}); }
+      else if(s.wet<=hour()){ if(!has('water'))return say('THE DIRT IS DRY. IT NEEDS WATER (A JUG OF RAIN).','#c8a090'); grow(s); FORAGE.take('water',1); s.wet=hour()+WET; s.at=hour(); say('THE DIRT DRINKS IT IN.','#9fd8ff');  }
       else return say('IT IS GROWING. COME BACK LATER.');
       if(FORAGE.draw)FORAGE.draw(); save(); draw(G,s); }); };
   // every few seconds the pots in the room catch up with the clock (the fruit ripens while you are out)

@@ -1,6 +1,6 @@
 // THE GUARDIANS: GUARD — the woodland folk who keep the castle over the dungeon (data/guardians.json): every body from one maker (a species head, a coat, a weapon), their posts and rounds round the castle, the welcome up the stair, and the keep's bounties on what you slay below.
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, CLOCK, FORAGE, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
+import {CHARS, CLOCK, FORAGE, INV, LINES, MAIL, NPCS, PARK, pos, TALK, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
@@ -47,13 +47,13 @@ const GUARD={list:[]}; window.GUARD=GUARD;
     const loose=(N,to,spread,hit)=>{ const p0=N.g.position.clone(); p0.y+=N.gd.m*.62*MV; const dx=(to.x-p0.x)/MH, dz=(to.z-p0.z)/MH, D=Math.hypot(dx,dz), hy=(to.y-p0.y)/MV, v=16+4*Math.random();
       const disc=v**4-G*(G*D*D+2*hy*v*v); if(disc<0)return; const th=Math.atan((v*v-Math.sqrt(disc))/(G*D))+(Math.random()-.5)*spread, yaw=Math.atan2(dx,dz)+(Math.random()-.5)*spread;
       const vel=new THREE.Vector3(Math.sin(yaw)*Math.cos(th)*v,Math.sin(th)*v,Math.cos(yaw)*Math.cos(th)*v), m=new THREE.Mesh(AG,AM); m.scale.setScalar(MH); m.position.copy(p0); grp.add(m);
-      arrows.push({m,p:p0,v:vel,t:0,stuck:false,to,hit}); if(arrows.length>24){ const o=arrows.shift(); o.m.removeFromParent(); } SFX.play&&SFX.play('blip',{vol:.25,pitch:2.6,at:{x:p0.x,z:p0.z},far:12*T}); };
+      arrows.push({m,p:p0,v:vel,t:0,stuck:false,to,hit}); if(arrows.length>24){ const o=arrows.shift(); o.m.removeFromParent(); }  };
     const chipsAt=(p,n,col)=>{ for(let i=0;i<n;i++){ const m=new THREE.Mesh(new THREE.BoxGeometry(.03*MH,.012*MV,.02*MH),new THREE.MeshLambertMaterial({color:col})); m.position.copy(p); grp.add(m);
         chips.push({m,v:new THREE.Vector3((Math.random()-.5)*2.4,1+Math.random()*1.6,(Math.random()-.5)*2.4),t:0,w:new THREE.Vector3(Math.random()*9,Math.random()*9,Math.random()*9)}); if(chips.length>40){ const o=chips.shift(); o.m.removeFromParent(); o.m.geometry.dispose(); } } };
     SYS.add('life',dt=>{ if(!PARK.in||(!arrows.length&&!chips.length))return; const h=Math.min(dt,.05);
       for(const a of arrows){ a.t+=dt; if(a.stuck)continue; for(let k=0;k<3;k++){ const s=h/3; a.v.y-=G*s; a.v.multiplyScalar(1-.02*s); a.p.x+=a.v.x*s*MH; a.p.y+=a.v.y*s*MV; a.p.z+=a.v.z*s*MH;
           const dB=Math.hypot((a.p.x-a.to.x)/MH,(a.p.y-a.to.y)/MV,(a.p.z-a.to.z)/MH), gy=MODS.bodega.ground(a.p.x,a.p.z);
-          if(a.hit&&a.hit(a.p)){ a.stuck=true; a.t=29; break; } if(!a.hit&&dB<.45||a.p.y<gy){ a.stuck=true; if(dB<.45){ SFX.play&&SFX.play('step',{vol:.5,pitch:1.6,at:{x:a.p.x,z:a.p.z},far:12*T}); chipsAt(a.p,3,0xc8a860); } else a.p.y=gy+.02*MV; break; } }
+          if(a.hit&&a.hit(a.p)){ a.stuck=true; a.t=29; break; } if(!a.hit&&dB<.45||a.p.y<gy){ a.stuck=true; if(dB<.45){  chipsAt(a.p,3,0xc8a860); } else a.p.y=gy+.02*MV; break; } }
         a.m.position.copy(a.p); V.set(a.v.x*MH,a.v.y*MV,a.v.z*MH).normalize(); a.m.quaternion.setFromUnitVectors(Z3,V); }
       for(let i=arrows.length-1;i>=0;i--)if(arrows[i].t>30){ arrows[i].m.removeFromParent(); arrows.splice(i,1); }
       for(let i=chips.length-1;i>=0;i--){ const c=chips[i]; c.t+=dt; c.v.y-=G*h; c.m.position.x+=c.v.x*h*MH; c.m.position.y+=c.v.y*h*MV; c.m.position.z+=c.v.z*h*MH; c.m.rotation.x+=c.w.x*h; c.m.rotation.y+=c.w.y*h;
@@ -66,7 +66,7 @@ const GUARD={list:[]}; window.GUARD=GUARD;
       s.hold=true; s.to=null; s.x=N.spot.x; s.z=N.spot.z; s.face={x:tg[0],z:tg[2]}; A.act='';
       const M=A.mv; if(!M){ if((N.cd=(N.cd??Math.random()*2)-dt)>0)return; const k=bow?'draw':R.w==='spear'?'thrust':['slash','back','overhead','thrust','slash'][Math.floor(Math.random()*5)]; A.mv={k,t:0,hit:false}; return; }
       const q=MOVE[M.k], u=M.t/q.T; if(!M.hit&&u>=q.hit){ M.hit=true; const vis=NPCS.live?NPCS.live(s.x,N.g.position.y,s.z):true;
-        if(bow)loose(N,new THREE.Vector3(tg[0],tg[1],tg[2]),.05+.04*Math.random()); else if(vis){ const p=new THREE.Vector3(tg[0],tg[1]-(M.k==='thrust'?.15*MV:0),tg[2]); chipsAt(p,M.k==='overhead'?6:4,0x8a6a42); SFX.play&&SFX.play('step',{vol:.6,pitch:.8+Math.random()*.3,at:{x:p.x,z:p.z},far:14*T}); } }
+        if(bow)loose(N,new THREE.Vector3(tg[0],tg[1],tg[2]),.05+.04*Math.random()); else if(vis){ const p=new THREE.Vector3(tg[0],tg[1]-(M.k==='thrust'?.15*MV:0),tg[2]); chipsAt(p,M.k==='overhead'?6:4,0x8a6a42);  } }
       if(u>=1){ A.mv=null; N.cd=bow?1.5+Math.random()*2:.5+Math.random()*1.2; } };
     // the rig: the squirrel knight's bones, scaled to its bulk, with a cape and two ears that swing; the body from FOLK
     const mk=R=>{ const b=R.bulk||1, sp=R.sp, cat=sp==='caterpillar', A={act:'',t:0,k:0};

@@ -1,6 +1,6 @@
 // THE HALL: the floor's hall behind your front door, off the map with your rooms (every floor has one; owner, 1 Nov 2026): the elevator at one end, the stairs at the other (down to the street, up to the stair head on the roof), no windows; your door opens on it.
 import {THREE} from './003-shx.js';
-import {pos, SFX, UI} from './003b-systems.js';
+import {pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FADE, MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
@@ -38,7 +38,7 @@ import {ROOMK} from './150a-bedroom.js';
     // the things: the elevator's doors, your front door (double-click opens and shuts it)
     const hitAt=(u,h,v,w,hh,d,name,act)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*M,hh*M,d*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(W(u,h,v)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.6*M,near:2.8*M,tall:hh*M,act}); };
     hitAt(EW+.3,DT/2,vc,.6,DT,1.4,'ELEVATOR',()=>{ if(APTS.inReal)APTS.exitReal('DOWN TO THE STREET'); });
-    hitAt(du,1.15,Ly+TH/2,1.2,2.3,.8,'FRONT DOOR',()=>{ const D=APTS.frontDoor; if(!APTS.inReal||!D)return; D.set(!D.open); const at=W(du,1.1,Ly); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); });
+    hitAt(du,1.15,Ly+TH/2,1.2,2.3,.8,'FRONT DOOR',()=>{ const D=APTS.frontDoor; if(!APTS.inReal||!D)return; D.set(!D.open); const at=W(du,1.1,Ly); if(D.open){} else {} });
     H.built=true; });
   SYS.add('places',()=>{ if(!H.built||!APTS.inReal||!window.POSOK||FADE.busy)return; const on=H.on(); if(on==='down')APTS.exitReal('DOWN THE STAIRS'); else if(on==='up')APTS.roofGo(); },'150n-hall');
   window.HALLDBG=()=>({built:H.built,real:!!APTS.inReal,floors:APTS.floors,things:UI.things.filter(t=>t.name==='ELEVATOR'||t.name==='FRONT DOOR'||t.name==='STAIRS DOWN').map(t=>t.name),on:H.built?H.on():null,door:!!(APTS.frontDoor&&APTS.frontDoor.open),

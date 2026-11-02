@@ -1,6 +1,6 @@
 // THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, the back wall blank (your front door opens on the hall, 150n), a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, CLOCK, GPH, pos, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
+import {CLOCK, GPH, pos, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {M, renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
@@ -126,7 +126,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         // double-click it: it opens (the sash up half way) and a calm breeze comes in; again, it shuts
         const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,cloth:[]}; R.wins.push(W_);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
-        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
+        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW';  }};
         UI.thing(th); R.winTh.push(th); W_.th=th;
         if(!curtains)return g; const rod=mat([40,30,24],{roughness:.4,metalness:.5,...clip(k)}); part(new THREE.CylinderGeometry(.014,.014,w+.8,10).rotateZ(Math.PI/2),rod,0,z1+.18,.08,0,g);
         for(const s of [-1,1]){ part(new THREE.SphereGeometry(.025,10,8),rod,s*(w/2+.4),z1+.18,.08,0,g);
@@ -181,7 +181,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       WIRES.sit=un=>{ hit(un,()=>'SIT ON THE '+un.name,th=>{ if(USE.sit)USE.sit(un.obj,th); }); };
       WIRES.lamp=un=>{ let L=null, halo=null; const sm=[]; un.obj.traverse(o=>{ if(o.isPointLight)L=o; if(o.userData.halo)halo=o; if(o.userData.shade){ o.material=o.material.clone(); sm.push(o.material); } }); if(!L)return;
         if(halo)halo.material=halo.material.clone(); const Lp={g:un.obj,L,sm:sm[0]||{},halo,on:false,i0:L.userData.i0}; L.userData.lp=Lp; R.lamps.push(Lp);
-        Lp.th=hit(un,()=>'LAMP: '+(Lp.on?'ON':'OFF'),()=>{ Lp.on=!Lp.on; if(SFX)SFX.play('click',{vol:.8,vary:.2}); },[.3,.5,.3,0,.25,0]); };
+        Lp.th=hit(un,()=>'LAMP: '+(Lp.on?'ON':'OFF'),()=>{ Lp.on=!Lp.on;  },[.3,.5,.3,0,.25,0]); };
       const wireUp=un=>{ if(un.wire&&WIRES[un.wire])WIRES[un.wire](un,ctx); };
       // a soft contact shadow under each piece that stands on the floor, carried with it wherever it goes (SHAD.blob; cheap, no light)
       const bm=SHAD.mat({alpha:.42}), blobFor=un=>{ if(!SHAD.blob)return; const o=un.obj, B=unitBox(o); if(B.isEmpty())return; B.applyMatrix4(o.matrixWorld.clone().invert()); const sz=B.getSize(new V3()); if(B.min.y>.05||sz.y<.03)return;
@@ -264,7 +264,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics, the ones you added leave the scene
-    const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const t of Q.winTh||[]){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } AMB.breeze=0; for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
+    const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const t of Q.winTh||[]){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
     APTS.furnish(APTS.my,()=>{ clear(R); R=null; ROOMK.api=null; build(); });
 
     /* ---------- each frame: the lamps glow (brighter as the day goes), the room's lights at their brightness, the pieces that move (fridge doors, flames), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
@@ -292,7 +292,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
         for(const w of R.wins){ w.o+=((w.open?w.H:0)-w.o)*Math.min(1,h*3); w.sash.position.y=w.o; w.br+=((w.open?1:0)-w.br)*Math.min(1,h*.6); any=Math.max(any,w.br);
           if(!w.cloth.length||!inn||!h)continue; TV3.copy(TV4); w.g.worldToLocal(TV3); const near=Math.hypot(TV3.x,TV3.z)<1.6;
           for(const c of w.cloth){ if(w.br<.01&&!near&&c.still>30)continue; clothStep(c,h,w.br,t,near?TV3:null); } }
-        AMB.breeze=inn?any:0; }
+        }
       // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
       if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const un of R.units)darken(un.obj);
         for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};

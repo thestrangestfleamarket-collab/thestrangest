@@ -1,6 +1,6 @@
 // BFLY: wild butterflies spawn on the lawn and flowerbed chunks near you (catch with a net, mount or release); their models come from BF.add, which lives in the later chunk.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, INSPECT, INV, ITEMS, MAIL, PARK, pos, SFX, st, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {CLOCK, FORAGE, INSPECT, INV, ITEMS, MAIL, PARK, pos, st, UI, W3, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
@@ -54,7 +54,7 @@ const BFLY={}; window.BFLY=BFLY;
   BFLY.catch=(b,sw)=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(!sw&&Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
     const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE NATURE MERCHANT HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
     if(held()>=room()){ b.until=0; b.away=[p.x,p.z]; return say(room()>5?'YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.':'YOUR HANDS HOLD ONLY 5 BUTTERFLIES. A JAR HOLDS MORE: THE FOX AT THE BODEGA OR THE NATURE MERCHANT.','#c8a090'); }
-    const d=DIFF(b.k)+(fly?Math.round(8*SPD(b.k)):0)-(net?10:0), bonus=sw?Math.max(0,Math.min(8,(sw.spd-5)*.8))+(fly&&sw.air?5:0):0; SFX.play('step',{vol:.4});
+    const d=DIFF(b.k)+(fly?Math.round(8*SPD(b.k)):0)-(net?10:0), bonus=sw?Math.max(0,Math.min(8,(sw.spd-5)*.8))+(fly&&sw.air?5:0):0; 
     if(use('ento',d-25,d+25,bonus)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1); if(known)got(b.k);
       say(known?`YOU CATCH A ${BF_KINDS[b.k][0].toUpperCase()}${b.k>=12?'. A RARE ONE!':'.'}`:'YOU CATCH A BUTTERFLY YOU DO NOT KNOW.',b.k>=12?'#f2c14e':known?'#e8e2cc':'#c8b0ff');
       const L=CH.get(b.chunk); if(L){ const i=L.indexOf(b); if(i>=0)L.splice(i,1); } drop(b); }

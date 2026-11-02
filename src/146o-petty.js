@@ -1,6 +1,6 @@
 // SISTER PETTY: her table under a red parasol in Central Park, near the golems' cave; she sells petty curses (nothing magic: little transmitters and drones; legal, only annoying) — CURSE puts one on the nearest character or player: rats that follow them, a cloud that rains on them, a stink; a golem with rats at its feet fights the rats and forgets the cave.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, NPCS, ONLINE, pos, SFX, SHOPS, UI} from './003b-systems.js';
+import {FORAGE, NPCS, ONLINE, pos, SHOPS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
@@ -27,7 +27,7 @@ const CURSE={list:[],T:60}; window.CURSE=CURSE;
   const make={rats:()=>[0,1,2,3].map(rat),cloud:()=>[cloud()],stink:()=>[stink()]};
   // rats loose in a group of golems busy them all
   CURSE.put=(what,tgt,silent)=>{ const fx=make[what](); for(const m of fx){ m.userData.anyRoom=true; scene.add(m); } const c={what,tgt,until:now()+CURSE.T,fx,ph:Math.random()*6}; CURSE.list.push(c);
-    if(tgt.N){ tgt.N.distract=c.until; if(what==='rats')for(const r of window.GOLEMS&&GOLEMS.list||[]){ const q=r.N; if(q!==tgt.N&&Math.hypot(q.st.x-tgt.N.st.x,q.st.z-tgt.N.st.z)<6*T){ q.distract=c.until; c.also=(c.also||[]).concat(q); } } } if(!silent&&SFX.play)SFX.play('click',{vol:.5,pitch:.6}); return c; };
+    if(tgt.N){ tgt.N.distract=c.until; if(what==='rats')for(const r of window.GOLEMS&&GOLEMS.list||[]){ const q=r.N; if(q!==tgt.N&&Math.hypot(q.st.x-tgt.N.st.x,q.st.z-tgt.N.st.z)<6*T){ q.distract=c.until; c.also=(c.also||[]).concat(q); } } } return c; };
   CURSE.cast=id=>{ const k=KINDS[id]; if(!k||!FORAGE.has(id))return; const t=nearest(); if(!t)return say('NO ONE CLOSE ENOUGH TO CURSE.','#c8a090');
     FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw(); CURSE.put(k.what,t); if(t.id&&ONLINE.send)ONLINE.send({t:'curse',to:t.id,k:k.what});
     say((t.N?(t.N.name||'THEM'):(t.name||'THEM'))+': '+({rats:'THE RATS FIND THEM.',cloud:'A LITTLE CLOUD SETTLES OVER THEM.',stink:'OH. OH NO.'}[k.what]),'#b8d890'); };

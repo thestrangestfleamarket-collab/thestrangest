@@ -1,10 +1,10 @@
-// THE GUITAR BODY: GT builds the guitar's shape and strings; SND and GTA set up its sound.
-import {GTRH, GTSAMP, SND, UI} from './003b-systems.js';
+// THE GUITAR BODY: GT builds the guitar's shape and strings (it is played silently: no sound in the game, owner 2 Nov 2026).
+import {UI} from './003b-systems.js';
 import {KIT} from './068-kit.js';
 
 for(const th of KIT.things)UI.thing(th);
 
-const CAST={}, PLAY221={seeking:false,pre:0}, PLAYA={}, GTPHYS={model:false,ok:false}, GTWR={R:[-3.22,3.15,2.06]}; Object.assign(SND,{ctx:null,on:true,out:null});
+const CAST={}, GTWR={R:[-3.22,3.15,2.06]};
 
 const GT=(()=>{ const {V,add,sub,mul,nrm,cross,dot,rcone,ell,box,D}=RIG;
   const S=19.32, U=0.03365, fy=k=>S*Math.pow(2,-k/12);
@@ -42,18 +42,5 @@ const GT=(()=>{ const {V,add,sub,mul,nrm,cross,dot,rcone,ell,box,D}=RIG;
   const PIECE={n:'guitar',on:'prop',m:'spruce',d:shape,paint,bb:[-6,6,-5.3,S+6.2,-3.4,1]};
   return {S,U,fy,sx,sz,spc,YP,YS,SH,SR,FB,PIECE,SOLID:p=>shape(p,true),mid:k=>k?fy(k)+0.3*(fy(k-1)-fy(k)):fy(0)-0.4}; })();
 
-const GTSTR=(()=>{ const IN=0.0254, L0=GT.S*GT.U;
-  return [[0.028,1140,329.63],[0.0325,1140,246.94],[0.040,1140,196.00],[0.029,4500,146.83],[0.035,5500,110.00],[0.043,6500,82.41]].map(([g,rho,f])=>{
-    const d=g*IN, mu=rho*Math.PI*d*d/4; return {g,mu,T:mu*(2*L0*f)**2,f}; }); })();
-const GTOPEN=[64,59,55,50,45,40];
-const gtHz=(s,k)=>{ const q=GTSTR[s-1]; return Math.sqrt(q.T/q.mu)/(2*GT.S*Math.pow(2,-k/12)*GT.U); };
-const GTA={buf:null,busy:false,failed:0,ok:false,g:null,pan:null,at:{},on:[null,null,null,null,null,null]};
-function gtAudio(){ return false; }
-function gtMute(s,when,T){ if(GTPHYS.model&&GTPHYS.ok)gtPhysMute(s,when,0.25); const v=GTA.on[s-1]; if(!v)return; GTA.on[s-1]=null; v.g.gain.setTargetAtTime(0,Math.max(when,v.when),T/3); try{ v.src.stop(Math.max(when,v.when)+T*5); }catch(e){} }
-function gtPlay(s,k,when,amp,tone,r){ '@later'; if(GTPHYS.model&&gtPhys()){ gtMute(s,when,0.012); gtPhysPluck(s,k,when,amp,gtBright(tone),(r==='s'?GT.YS:r&&GTYP[GTRH[r]]||GT.YP)/GT.S); return; }
-  const c=SND.ctx, m=GTOPEN[s-1]+k; let q=GTSAMP[0]; for(const x of GTSAMP)if(Math.abs(x[0]-m)<Math.abs(q[0]-m))q=x; const A=GTA.at[q[0]]; if(!A)return;
-  gtMute(s,when,0.012);
-  const src=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); src.buffer=GTA.buf; src.playbackRate.value=gtHz(s,k)/A.hz; f.type='lowpass'; f.frequency.value=tone; f.Q.value=0.5;
-  g.gain.value=amp; src.connect(f); f.connect(g); g.connect(GTA.g); src.start(when,A.t,A.L); GTA.on[s-1]={src,g,when}; }
 const GTYP=[GT.YP+1.3,GT.YP+0.65,GT.YP,GT.YP-0.6];
-export {CAST, GT, GTA, gtAudio, gtHz, gtMute, GTPHYS, gtPlay, GTWR, GTYP, PLAY221, PLAYA};
+export {CAST, GT, GTWR, GTYP};

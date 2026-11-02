@@ -1,6 +1,6 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, UI, VIT, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
@@ -62,13 +62,13 @@ const BEES={list:[]}; window.BEES=BEES;
   FORAGE.ROWB.push(id=>id==='bee_hive'?[['SET IT HERE','hiveset']]:[]); FORAGE.ACT.hiveset=()=>BEES.set();
 
   /* ---------- taking honey: smoke calms them (BEEKEEPING); a veil keeps the stings off ---------- */
-  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt?VIT.hurt(.06*n):VIT.hp=Math.max(.05,VIT.hp-.06*n); SFX.play('cough',{vol:.4,pitch:1.6}); say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
+  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt?VIT.hurt(.06*n):VIT.hp=Math.max(.05,VIT.hp-.06*n);  say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
   BEES.take=h=>{ const f=Math.floor(frames(h)); if(f<2)return say('THE FRAMES ARE NEARLY EMPTY. COME BACK LATER.','#c8a090'); const jars=FORAGE.has('jar_honey'); if(!jars)return say('YOU NEED EMPTY HONEY JARS. THE BEEKEEPER SELLS THEM.','#c8a090');
-    const smoke=FORAGE.has('bee_smoker')&&use('bee',0,70); SFX.play('step',{vol:.3,pitch:.6}); if(!smoke){ const n=1+Math.floor(Math.random()*3*(1-Math.min(.8,FORAGE.sk('bee')/120))); sting(n); if(!FORAGE.has('bee_veil')&&Math.random()<.5){ say('YOU BACK OFF BEFORE YOU GET ANY HONEY.','#c8a090'); return; } }
+    const smoke=FORAGE.has('bee_smoker')&&use('bee',0,70);  if(!smoke){ const n=1+Math.floor(Math.random()*3*(1-Math.min(.8,FORAGE.sk('bee')/120))); sting(n); if(!FORAGE.has('bee_veil')&&Math.random()<.5){ say('YOU BACK OFF BEFORE YOU GET ANY HONEY.','#c8a090'); return; } }
     else say('A PUFF OF SMOKE AND THE BEES GO QUIET.','#9fe07f');
     const id=kindOf(h,!!(window.CLOCK&&CLOCK.dark())), n0=Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
     FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80);
-    h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
+    h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw();  say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
   BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); share(); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='hivep'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';

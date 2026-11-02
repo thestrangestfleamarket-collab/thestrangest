@@ -70,11 +70,11 @@ function gtCompile(T){ if(T.c)return T.c; const tune=[], strum=[], bars=[], AMP=
   const damp=[]; for(const q of lh)for(const t of [q.t0,q.t1]){ const last=tune.filter(n=>n.s===q.s&&n.t<=t).pop(); if(last&&t-last.t<6&&t-last.t>0.02&&fret(q.s,t-0.001)!==fret(q.s,t+0.001))damp.push({s:q.s,t}); } damp.sort((a,b)=>a.t-b.t);
   const len=tune.reduce((m,n)=>Math.max(m,n.t),0)+2.5, ev=tune.map(n=>({t:n.t,n})).concat(damp.map(q=>({t:q.t,s:q.s}))).sort((a,b)=>a.t-b.t);
   return T.c={tune,strum,bars,lh,pos,damp,len,ev}; }
-let GTSONG=0, GTTUNE=[], GTSTRUM=[], GTBAR=[], GTLH=[], GTPOS=[{t:0,p:1}], GTDAMP=[], GTEND=0, GTPRE=0, GTEV=[], GTBEAT=0.75;
-const GTS={t:0,i:0,sent:0,env:[0,0,0,0,0,0]};
-function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; GTSTRUM=c.strum; GTBAR=c.bars; GTLH=c.lh; GTPOS=c.pos; GTDAMP=c.damp; GTEND=c.len; GTPRE=Math.ceil(GTEND)+0.6; GTEV=c.ev; GTBEAT=T.beat;
-  GTS.t=0; GTS.i=0; GTS.sent=0; GTS.env.fill(0); }
+let GTSONG=0, GTTUNE=[], GTSTRUM=[], GTBAR=[], GTLH=[], GTPOS=[{t:0,p:1}], GTEND=0, GTPRE=0, GTBEAT=0.75;
+const GTS={t:0,i:0};
+function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; GTSTRUM=c.strum; GTBAR=c.bars; GTLH=c.lh; GTPOS=c.pos; GTEND=c.len; GTPRE=Math.ceil(GTEND)+0.6; GTBEAT=T.beat;
+  GTS.t=0; GTS.i=0; }
 const gtNext=i=>{ do i=(i+1)%GTBOOK.length; while(GTBOOK[i].kept); return i; };
 for(const T of GTBOOK)gtCompile(T); gtSet(0);
 const gtPosAt=t=>{ let a=GTPOS[0]; for(const q of GTPOS){ if(q.t-0.15>t)break; a=q; } const i=GTPOS.indexOf(a), pv=i>0?GTPOS[i-1]:a, u=Math.max(0,Math.min(1,(t-(a.t-0.15))/0.13)); return pv.p+(a.p-pv.p)*u*u*(3-2*u); };
-export {GTBEAT, GTBOOK, GTDAMP, GTEND, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE};
+export {GTBEAT, GTBOOK, GTEND, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE};

@@ -1,7 +1,7 @@
 // THE DUNGEON SLIMES: the coloured slimes that roam the dungeon, fight and drop slime.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, pos, st, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {SKELGO} from './077-npc-skel.js';
@@ -35,7 +35,7 @@ import {GEMS} from './101-gems.js';
   const SST={ogre:[4,.05],ogre_mage:[3,.05],ogre_guard_light:[4,.06],ogre_guard_heavy:[5,.07],spider:[3,.05],skeleton_guard_light:[3,.06],skeleton_guard_heavy:[5,.08],skeleton_mage:[3,.06],skeleton_reaper:[6,.1],Minion:[3,.05],Warrior:[5,.08],Rogue:[3,.05],Mage:[3,.06],Gold:[9,.1]}, KK=['Minion','Warrior','Rogue','Mage','Gold'];
   const OGRE=['ogre','ogre_mage','ogre_guard_light','ogre_guard_heavy'];
   const nameOf=id=>id==='$'?'COINS':GEMS.find(g=>g[0]===id)?GEMS.find(g=>g[0]===id)[1]:id.startsWith('m_')?FORAGE.MU[id.slice(2)][0]:(FORAGE.RC.find(r=>r[0]===id)||[0,id])[1];
-  const sfx=(k,o)=>{ SFX.play(k,o); };
+  const sfx=(k,o)=>{  };
   const SD=CREATURES.Slime, g0=SKIN.geom(SD.mesh,false); g0.deleteAttribute('sh'); g0.computeBoundingBox(); g0.translate(0,-g0.boundingBox.min.y,0);
   { const P=g0.attributes.position.array, R=g0.attributes.reg.array, n=P.length/3, C=new Float32Array(n*3), h=(x,y,z)=>{ const v=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5; return v-Math.floor(v); };
     for(let i=0;i<n;i++){ const x=P[i*3], y=P[i*3+1], z=P[i*3+2], q=y/SD.tall, b=h(Math.floor(x*5),Math.floor(y*5),Math.floor(z*5))>.82, v=R[i]>.5?.03:b?1:q>.8?.95:.62+.22*q; C[i*3]=C[i*3+1]=C[i*3+2]=v; }

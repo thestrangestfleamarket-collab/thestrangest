@@ -1,6 +1,6 @@
 // THE PASSPORT: every player is issued one at first login (a number, the home section, the date; the name and look are yours), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out, unseen until you walk into it without showing your passport, that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, UI} from './003b-systems.js';
+import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
@@ -35,7 +35,7 @@ import {LOOP} from './009b-loop.js';
     const p=st.P(-.15,a0,0), q=st.P(.45,a1,0), box=[Math.min(p[0],q[0]),Math.min(p[2],q[2]),Math.max(p[0],q[0]),Math.max(p[2],q[2])];
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.6*T,1.9*T,.7*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(...st.P(.4,a0-.68,24)); MAPG.down.add(hb);
     const g={st,me,L,box,until:0,said:0,hb,vis:0}; const A=new V3(...st.P(0,a0,0)), B=new V3(...st.P(1,a0,0)).sub(A); g.u=()=>new V3(pos.x,A.y,pos.z).sub(A).dot(B)/B.lengthSq();
-    UI.thing({name:'PASSPORT MACHINE',pick:true,obj:hb,reach:1.1*T,near:2.2*T,tall:1.6*T,act:()=>{ if(!FORAGE.has('passport'))return say('YOU HAVE NO PASSPORT. EVERY TENANT IS ISSUED ONE AT THE DOOR.','#e5403a'); ONLINE.put('gate:'+st.id,Date.now()); SFX.play('latch',{vol:.5}); say('THE GATE READS YOUR PASSPORT AND OPENS FOR '+OPEN+' SECONDS. GO.','#7fd8ff'); }});
+    UI.thing({name:'PASSPORT MACHINE',pick:true,obj:hb,reach:1.1*T,near:2.2*T,tall:1.6*T,act:()=>{ if(!FORAGE.has('passport'))return say('YOU HAVE NO PASSPORT. EVERY TENANT IS ISSUED ONE AT THE DOOR.','#e5403a'); ONLINE.put('gate:'+st.id,Date.now());  say('THE GATE READS YOUR PASSPORT AND OPENS FOR '+OPEN+' SECONDS. GO.','#7fd8ff'); }});
     gates.push(g); closeG(g); return g; };
   const openG=(g,until)=>{ g.until=until; const i=SOL.down.indexOf(g.box); if(i>=0)SOL.down.splice(i,1); g.me.visible=false; g.L.visible=false; };
   const closeG=g=>{ g.until=0; if(!SOL.down.includes(g.box))SOL.down.push(g.box); g.vis=0; g.me.visible=false; g.L.visible=false; };

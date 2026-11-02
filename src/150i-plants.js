@@ -1,6 +1,6 @@
 // YOUR PLANTS: the watching cactus, the little cactus and the bonsai from the Market St plant stall (146v) are things for your apartment (DECORATE shows them as YOURS). The watching cactus's eye follows you round the room; the bonsai grows a little each real day you water it (a click), up to full size.
 import {THREE} from './003-shx.js';
-import {FORAGE, SFX} from './003b-systems.js';
+import {FORAGE} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {PLANTS} from './146v-plants.js';
@@ -18,7 +18,7 @@ import {ROOMK} from './150a-bedroom.js';
   const grow=(un,s)=>{ const r=un.obj.getObjectByName('bonsaiRoot')||un.obj; r.clear(); r.add(PLANTS.bonsai(Math.min(1,s.age))); };
   ROOMK.wires.bonsai=(un,c)=>{ const id=String(un.id), s=age(id); grow(un,s);
     const name=()=>'BONSAI: '+(s.age>=1?'FULL GROWN':Math.round(s.age*100)+'% GROWN')+(s.wet===DAY()?' · WATERED TODAY':' · THIRSTY');
-    c.hit(un,name,()=>{ if(s.wet===DAY())return say('IT HAS HAD ITS WATER TODAY. PATIENCE.'); s.wet=DAY(); if(s.age<1)s.age=Math.min(1,+(s.age+STEP).toFixed(2)); save(); grow(un,s); say(s.age>=1?'YOU WATER IT. IT IS AS BIG AS IT WILL GET.':'YOU WATER IT. IT GROWS A LITTLE.','#9fd8a0'); if(SFX.play)SFX.play('splash',{vol:.2}); }); };
+    c.hit(un,name,()=>{ if(s.wet===DAY())return say('IT HAS HAD ITS WATER TODAY. PATIENCE.'); s.wet=DAY(); if(s.age<1)s.age=Math.min(1,+(s.age+STEP).toFixed(2)); save(); grow(un,s); say(s.age>=1?'YOU WATER IT. IT IS AS BIG AS IT WILL GET.':'YOU WATER IT. IT GROWS A LITTLE.','#9fd8a0');  }); };
   SYS.add('life',dt=>{ if(!EYES.size)return; const t=performance.now()/1000; for(const L of EYES){ if(!L.E.parent||L.un.gone||!L.un.obj.parent){ EYES.delete(L); continue; } PLANTS.look(L.E,dt||0,t,L.seed); } },'150i-plants');
   window.BONSAIDBG=()=>S;
 }

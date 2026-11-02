@@ -18,7 +18,7 @@ const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEI
       <div class="row"><span>WARMTH</span><input type="range" min="2000" max="6500" step="50" value="${tone}" data-k="tone"><span>${tone}K</span></div>
       <div class="row"><span>COLOUR</span><input type="color" value="${L.col||'#ffffff'}" data-k="col"><input type="range" min="0" max="100" value="${tint}" data-k="tint"><span>${tint}%</span></div>`; };
   CEIL.open=()=>{ if(!first())return; draw(); P.hidden=false; }; CEIL.close=()=>{ P.hidden=true; };
-  P.addEventListener('click',e=>{ const b=e.target.closest('button[data-a]'); if(!b)return; const a=b.dataset.a; if(a==='close')return CEIL.close(); if(ED.HOME&&ED.HOME.guest)return; set({on:a==='on'}); if(SFX)SFX.play('click',{vol:.8,vary:.2}); draw(); });
+  P.addEventListener('click',e=>{ const b=e.target.closest('button[data-a]'); if(!b)return; const a=b.dataset.a; if(a==='close')return CEIL.close(); if(ED.HOME&&ED.HOME.guest)return; set({on:a==='on'});  draw(); });
   P.addEventListener('input',e=>{ const t=e.target, k=t.dataset.k; if(!k||(ED.HOME&&ED.HOME.guest))return; const o={}; if(k==='k')o.k=+t.value/100; else if(k==='tone')o.tone=+t.value; else if(k==='tint'){ o.tint=+t.value/100; if(!first().col)o.col='#ffffff'; } else if(k==='col'){ o.col=t.value; if(!(first().tint>0))o.tint=1; }
     set(o); if(t.nextElementSibling&&t.type==='range')t.nextElementSibling.textContent=t.value+(k==='tone'?'K':'%'); });
   ROOMK.parts.push(c=>{ '@apts'; const {apt,R,Lx,Ly,HW,hit,mat,rbox,V3,du,fw,WW}=c, K=R.kinds['FLUSH DOME']; if(!K)return; CEIL.shells=[]; P.hidden=true;

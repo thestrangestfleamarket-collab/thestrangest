@@ -1,8 +1,6 @@
 // THE GUITAR HANDS: places the player's arms and fingers on the guitar's frets and strings.
-import {GTRH, SND} from './003b-systems.js';
-import {P} from './073-main-12.js';
-import {CAST, GT, GTA, gtAudio, gtHz, gtMute, GTPHYS, gtPlay, GTWR, GTYP, PLAY221, PLAYA} from './106-game-play-3-guitar-1-body.js';
-import {GTBOOK, GTDAMP, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE} from './108-game-play-3-guitar-2-tunes.js';
+import {CAST, GT, GTWR, GTYP} from './106-game-play-3-guitar-1-body.js';
+import {GTBOOK, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE} from './108-game-play-3-guitar-2-tunes.js';
 const GTF=(()=>{ const {V,add,mul,nrm,cross,dot,sub}=RIG, y=nrm(V(0.9,0.38,0.12)), z0=V(-0.1,0.16,1), z=nrm(sub(z0,mul(y,dot(z0,y)))), x=cross(y,z);
   return {o:V(-4,22.5,8.2),x,y,z}; })();
 const gtAt=(x,y,z)=>RIG.add(GTF.o,RIG.add(RIG.add(RIG.mul(GTF.x,x),RIG.mul(GTF.y,y)),RIG.mul(GTF.z,z)));
@@ -20,7 +18,7 @@ function gtLeft(t){ '@later'; const out=[]; out.w=[]; for(let f=1;f<=4;f++){ let
     const a=(prev?prev.t1:t)+0.08, b=(next?next.t0:t+1)-0.1; out[f]=gtMix(hover(prev||next),hover(next||prev),gtSm((t-a)/Math.max(0.05,b-a))); out.w[f]=0.1; }
   for(let f=1;f<=4;f++)for(let g=f+1;g<=4;g++){ const d=RIG.sub(out[g],out[f]), along=RIG.dot(d,GTF.y), off=RIG.len(d); if(off>=0.42)continue; const push=(0.42-off)/2*(along<0?-1:1); out[f]=RIG.add(out[f],RIG.mul(GTF.y,-push)); out[g]=RIG.add(out[g],RIG.mul(GTF.y,push)); }
   return out; }
-const GTHOME=[5,3,2,1]; Object.assign(GTRH,{p:0,i:1,m:2,a:3});
+const GTHOME=[5,3,2,1], GTRH={p:0,i:1,m:2,a:3};
 function gtRight(t){ '@later'; const out=[]; out.w=[]; for(const r in GTRH){ const d=GTRH[r]; let last=null, next=null;
     for(const n of GTTUNE){ if(n.r!==r)continue; if(n.t<=t)last=n; else { next=n; break; } }
     const yp=GTYP[d], z0=s=>GT.sz(yp)+0.3, s=next?next.s:last?last.s:GTHOME[d];
@@ -107,15 +105,7 @@ CAST.walker={id:'walker',name:'the Walker',own:true,tall:69,cos:(J,base)=>base.c
 function gtStep(a,dt,now){ '@later'; if(!a.playing){ CAST.step(a,dt,now); if(a.B)gtSlung(a,a.B); return; }
   GTS.t+=dt; const t=GTS.t, P=gtPose(t); npcSpring(a,P,dt,NPCARMS); gtFing(P,RIG.build(P,null),P._T); npcSpring(a,P,dt,NPCFING); a.t+=dt;
   a.P=P; a.pose='guitar'; a.to='guitar'; const B=RIG.settle(RIG.build(P,null),0); B.head=B.J.head; B.props={guitar:GTF}; a.B=B;
-  for(let i=0;i<6;i++)GTS.env[i]*=Math.exp(-dt*(i>2?0.9:1.6));
-  while(GTS.i<GTTUNE.length&&GTTUNE[GTS.i].t<=t){ const n=GTTUNE[GTS.i++]; GTS.env[n.s-1]=1; }
-  for(const q of GTDAMP)if(q.t<=t&&q.t>t-dt)GTS.env[q.s-1]*=0.1;
-  gtSound(a,t); }
-function gtSound(a,t){ '@later'; if(PLAY221.seeking)return; const ok=GTPHYS.model?gtPhys():gtAudio(); if(!ok)return; const c=SND.ctx, ct=c.currentTime, A=t+0.1, when=x=>ct+Math.max(0,x-t)+0.03;
-  const d=Math.hypot(a.x-P.x,a.y-P.y); GTA.g.gain.setTargetAtTime(SND.on?0.42*Math.max(0.2,1-d/9):0,ct,0.05);
-  { const [sx]=toS(...vw(a.x,a.y)), [px]=toS(...vw(P.x,P.y)); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,(sx-px)/120)),ct,0.1); }
-  while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue;
-    if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
+  while(GTS.i<GTTUNE.length&&GTTUNE[GTS.i].t<=t)GTS.i++; }
 function gtSlung(a,B){ const {V,nrm,cross,sub,mul,dot}=RIG, y=nrm(V(0.75,0.62,0.1)), z0=V(-0.2,0.1,1), z=nrm(sub(z0,mul(y,dot(z0,y)))); B.props.guitar={o:GTSLUNG.o,x:cross(y,z),y,z}; }
-window.__gtStep=gtStep; window.__guitar={GTA,GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext,PLAY221,PLAYA,get SND(){ return SND; },pre:()=>PLAY221.pre,hz:gtHz,get pm(){ return GTPM; }};
+window.__gtStep=gtStep; window.__guitar={GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext};
 export {gtArm, GTF, gtFing, GTH, gtMix, GTPOLE, gtPose, gtReach, gtSm, NPCARMS, NPCFING, npcSpring};

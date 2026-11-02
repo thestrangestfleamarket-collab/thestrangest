@@ -1,12 +1,11 @@
 // THE SINGER: SGM, the singer at the bar, dressed and posed.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, SGM, SND, W3} from './003b-systems.js';
+import {pos, SGM, W3} from './003b-systems.js';
 import {AWAY, MAPG, STORE} from './006-map-pre.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {castPose} from './112-main-14.js';
 import {WOMAN} from './121-game-play-6-woman.js';
 import {CORDN, SINGF, singMic, SINGMIC, singStep} from './122-game-play-7-singer.js';
-import {voxStep, voxStop} from './123-game-zzz-bar-singer.js';
 Object.assign(SGM,{tick:()=>{}}); STORE.SGM=SGM;
 if(!AWAY.has('bar')){ const R=RIG;
   const D=WOMAN.DESIGNS[2], LOOK={...D.look,metal:'#d6d8de',tie:'#1a181c',cover:'#2c2620',linen:'#ece4cc',ember:'#ff3a28',hole:'#2a282e'};
@@ -27,16 +26,14 @@ SGM.make=()=>{ if(!STORE.bar)return; const R=RIG, V=R.V, S=STORE.bar, AT={...S.a
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0); musScale(g,FEM[1]);
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(CORDN*3),3)); const cord=new THREE.Line(cg,new THREE.LineBasicMaterial({color:0x1a1618})); cord.frustumCulled=false; g.add(cord);
   const a={pose:'singA',from:null,P:null,B:null,bt:1,bT:1.6,t:0,next:2.5,props:{}};
-  SGM.dist=()=>Math.hypot(pos.x-AT.x,pos.z-AT.z); SGM.pan=()=>{ const v=new THREE.Vector3(AT.x,1,AT.z).project(SHARED.cam); return Math.max(-.8,Math.min(.8,v.x*.8)); };
-  SGM.stop=()=>voxStop();
-  SGM.tick=dt=>{ const d=SGM.dist(); if(!SGM.on||!MAPG.bodega.visible||d>18){ voxStop(); return; } musScale(g,FEM[1]);
+  SGM.dist=()=>Math.hypot(pos.x-AT.x,pos.z-AT.z);
+  SGM.tick=dt=>{ const d=SGM.dist(); if(!SGM.on||!MAPG.bodega.visible||d>18)return; musScale(g,FEM[1]);
     a.t+=dt; a.next-=dt; if(a.next<=0){ a.next=1.8+Math.random()*1.6; const ps=['singA','singB','singC'].filter(p=>p!==a.pose); a.from=a.P?JSON.parse(JSON.stringify(a.P)):null; a.pose=ps[Math.random()*ps.length|0]; a.bt=0; a.bT=1.4+Math.random()*.6; }
     a.bt+=dt; const T=castPose(a.pose), u=a.from?Math.min(1,a.bt/a.bT):1, e=u*u*(3-2*u), P=u<1?R.mix(a.from,T,e):JSON.parse(JSON.stringify(T));
     P.bend+=Math.sin(a.t*1.6)*.5*R.D; P.nod+=Math.sin(a.t*.9)*1.5*R.D; P.look+=Math.sin(a.t*.5)*.25; a.P=P;
     const B=R.settle(R.build(P,null),0); B.props={}; a.B=B; singStep(a,dt);
     PCS.forEach((pc,i)=>FM.set(i,pc.on==='prop'?B.props[pc.n]:R.frameOf(pc.on||pc.n,B)));
-    const q=cg.attributes.position.array; a.cord.forEach((c,i)=>{ q[i*3]=c.p.x; q[i*3+1]=c.p.y; q[i*3+2]=c.p.z; }); cg.attributes.position.needsUpdate=true;
-    if(SND.ctx&&SND.ctx.state==='running')voxStep(dt,performance.now()); }; };
+    const q=cg.attributes.position.array; a.cord.forEach((c,i)=>{ q[i*3]=c.p.x; q[i*3+1]=c.p.y; q[i*3+2]=c.p.z; }); cg.attributes.position.needsUpdate=true; }; };
 
-const E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null; const BARP={lead:'d'};
+const E=(x,y,z,rx,ry,rz,c,yaw=0,pit=0,rol=0,grp)=>[x,y,z,rx,ry,rz,yaw,pit,rol,c,grp]; const pupPaint=()=>null;
 export {E, pupPaint};

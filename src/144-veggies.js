@@ -1,6 +1,6 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
-import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT} from './003b-systems.js';
+import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, TALK, UI, VIT} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
@@ -39,7 +39,7 @@ const VEG={}; window.VEG=VEG;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.train){ FORAGE.train(d.train,+d.cap); SHOP.draw(); return; } if(d.buy){ const n=+d.n||1, c=SELL[d.buy]*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); say(`YOU BUY ${n} ${NMV(d.buy)} FOR $${c}.`); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NMV(d.buy).toLowerCase()+' from the tomato','park'); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=BUY[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=BUY[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e');  }
     INV.add('x',0); delete INV.items.x; SHOP.draw(); FORAGE.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(TOONS.tomato)LINES.say(TOONS.tomato,'greet'); };
   window.VEGDBG=()=>({stand:!!VEG.stand,wx:TOONS.tomato&&TOONS.tomato.st.x,wz:TOONS.tomato&&TOONS.tomato.st.z,x:TOONS.tomato&&+(TOONS.tomato.st.x/T).toFixed(1),z:TOONS.tomato&&+(TOONS.tomato.st.z/T).toFixed(1),held:TOONS.tomato&&TOONS.tomato.st.hold,mine:V.map(v=>[v[0],FORAGE.has(v[0])]).filter(a=>a[1])}); }

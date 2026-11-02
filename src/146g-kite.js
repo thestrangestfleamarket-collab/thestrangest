@@ -1,6 +1,6 @@
 // THE KITE: KITE flies any item that grants 'fly' from the winder in your hand: a diamond sail on its bridle in the day's wind (stronger and steadier with height, gusty low down), its tail, and a line that sags under its own weight and the wind's drag.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, LEVELS, ONLINE, pos, SFX, st, VIT, WIELD, WX} from './003b-systems.js';
+import {FORAGE, ITEMS, LEVELS, ONLINE, pos, st, VIT, WIELD, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OUT, SYS, TILE} from './006-map-pre.js';
 const KITE={on:false,reeling:false}; window.KITE=KITE;
@@ -52,7 +52,7 @@ const KITE={on:false,reeling:false}; window.KITE=KITE;
   const hold=id=>{ k.id=id; KITE.mass=ITEMS.prop(id,'weight')||.05; };
   KITE.launch=()=>{ const id=WIELD.on; if(!id||ITEMS.prop(id,'grants')!=='fly')return; if(!open())return say('THERE IS NO WIND IN HERE.','#c8a090'); hold(id); handAt(hand); hv.set(0,0,0);
     KITE.wind(2,performance.now()/1000,W); const wl=Math.hypot(W.x,W.z)||1; k.p.copy(hand).add(tmp.set(W.x/wl*1.3,.35,W.z/wl*1.3)); k.v.set(0,.5,0); k.L=k.p.distanceTo(hand)+.05; k.ten=0; k.roll=0; k.ground=false; KITE.on=true;
-    for(let i=0;i<NT;i++){ tail[i].p.copy(k.p).y-=.6+i*TSEG; tail[i].o.copy(tail[i].p); } SFX.play('step',{vol:.3,pitch:1.6}); share(1); hud(); };
+    for(let i=0;i<NT;i++){ tail[i].p.copy(k.p).y-=.6+i*TSEG; tail[i].o.copy(tail[i].p); }  share(1); hud(); };
   KITE.stow=msg=>{ if(!KITE.on)return; KITE.on=false; KITE.reeling=false; if(msg)say(msg); share(1); hud(); };
   KITE.click=()=>{ if(!KITE.on)return KITE.launch(); if(k.ground&&k.L<6)return KITE.stow('YOU PICK UP THE KITE AND WIND THE LINE.'); KITE.reeling=true; };
   const step=(dt,tm)=>{ handAt(tmp); hv.subVectors(tmp,hand).divideScalar(Math.max(dt,1e-3)); hand.copy(tmp);

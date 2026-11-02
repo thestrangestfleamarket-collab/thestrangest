@@ -1,6 +1,6 @@
 // THE FEEL ANIMATION: blends the player's idle, walk, jog, sprint and jump clips for FEEL.
 import {SHARED, THREE} from './003-shx.js';
-import {FEEL, pos, SFX} from './003b-systems.js';
+import {FEEL, pos} from './003b-systems.js';
 { const LOCO=['Walk_Loop','Jog_Fwd_Loop','Sprint_Loop'], ALL=['Idle_Loop',...LOCO,'Jump_Start','Jump_Loop','Jump_Land'];
   const A={act:{},w:{},tw:{},ph:0,moving:false,mode:'idle',st:0,land:0,landT:0,jump:0,land0:0,lean:new THREE.Vector2(),vx:0,vz:0,ax:0,az:0,comp:0,base:null,stepSt:{ph:0,w:0,run:0}};
   FEEL.A=A;
@@ -35,6 +35,6 @@ import {FEEL, pos, SFX} from './003b-systems.js';
     A.comp*=Math.exp(-dt*9);
     C.g.position.set(pos.x,SHARED.py,pos.z); C.g.rotation.set(A.lean.x,h,A.lean.y); C.g.scale.y=A.base.sy*(1-A.comp);
     if(C.relax)C.relax(dt,A.w.Idle_Loop/sum>.6);
-    const ss=A.stepSt; ss.ph=A.ph; ss.w=A.moving&&!air?1:0; ss.run=hs>2.6?1:0; SFX.steps(ss,FEEL.go); };
+    const ss=A.stepSt; ss.ph=A.ph; ss.w=A.moving&&!air?1:0; ss.run=hs>2.6?1:0;  };
   const IN_MOVE=()=>Math.hypot(FEEL.IN.x,FEEL.IN.z)>.1;
 }

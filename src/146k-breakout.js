@@ -1,6 +1,6 @@
 // THE BREAKOUT: BREAK — some nights things crawl up the castle stair from the dungeon (slimes, radioactive spiders); the guardians close in and fight them with what they carry (blades and spears strike, bows shoot, staves cast), and your strikes land on them too.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, INV, LINES, MAIL, PARK, pos, SFX, VIT} from './003b-systems.js';
+import {CLOCK, FORAGE, INV, LINES, MAIL, PARK, pos, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {GUARD} from './146j-guardians.js';
@@ -20,7 +20,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     g.userData.legs=legs; return g; };
   const make=(kind,i)=>{ const K=KIND[kind], g=kind==='slime'?slimeMesh([0x5ce04a,0x3fa2ff,0xb058ff][i%3]):spiderMesh(); g.scale.set(MH,MV,MH); grp.add(g);
     const a=(i/6)*PI*2, c={kind,K,g,x:TOP.x+Math.cos(a)*.6*T,z:TOP.z+Math.sin(a)*.6*T,h:0,hp:K.hp,ph:Math.random()*6,dead:false,t:0,cool:0,byYou:false,flash:0}; BREAK.list.push(c); return c; };
-  const kill=c=>{ c.dead=true; c.t=0; const p=new THREE.Vector3(c.x,c.g.position.y+.2*MV,c.z); GUARD.chipsAt&&GUARD.chipsAt(p,8,c.kind==='slime'?0x5ce04a:0x2a3020); SFX.play&&SFX.play(c.kind==='slime'?'drip':'clunk',{vol:.6,pitch:.6,at:{x:c.x,z:c.z},far:16*T});
+  const kill=c=>{ c.dead=true; c.t=0; const p=new THREE.Vector3(c.x,c.g.position.y+.2*MV,c.z); GUARD.chipsAt&&GUARD.chipsAt(p,8,c.kind==='slime'?0x5ce04a:0x2a3020); 
     if(c.byYou){ SYS.run('slain',{kind:c.kind,lvl:1}); const n=2+Math.floor(Math.random()*5); INV.cash+=n; say((c.kind==='slime'?'THE SLIME BURSTS':'THE SPIDER CURLS UP')+'. YOU PICK UP $'+n+'.','#f2c14e'); FORAGE.draw&&FORAGE.draw(); } };
   const hurt=(c,d,you)=>{ if(c.dead)return; c.hp-=d; c.flash=.15; if(you)c.byYou=true; if(c.hp<=0)kill(c); };
   BREAK.hurt=hurt;
@@ -30,7 +30,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
   const nearest=(x,z,max)=>{ let b=null, bd=max; for(const c of BREAK.list){ if(c.dead)continue; const d=Math.hypot(c.x-x,c.z-z); if(d<bd){ bd=d; b=c; } } return b&&{c:b,d:bd}; };
   // a guardian in the fight: closes to striking distance and swings in time (melee), or keeps its distance and shoots (bow) or casts (staff)
   const bolts=[], boltG=new THREE.SphereGeometry(.06,10,8);
-  const cast=(N,c,col)=>{ const m=new THREE.Mesh(boltG,new THREE.MeshBasicMaterial({color:col})); m.scale.set(MH,MV,MH); m.position.copy(N.g.position); m.position.y+=N.gd.m*.8*MV; grp.add(m); bolts.push({m,c,t:0}); SFX.play&&SFX.play('blip',{vol:.3,pitch:3,at:{x:N.st.x,z:N.st.z},far:12*T}); };
+  const cast=(N,c,col)=>{ const m=new THREE.Mesh(boltG,new THREE.MeshBasicMaterial({color:col})); m.scale.set(MH,MV,MH); m.position.copy(N.g.position); m.position.y+=N.gd.m*.8*MV; grp.add(m); bolts.push({m,c,t:0});  };
   const ctl=(dt,s,A,N)=>{ const R=N.gd, tgt=nearest(s.x,s.z,(N.grip==='bow'?16:R.w&&/staff|wand/.test(R.w)?12:9)*T); if(!tgt){ if(N.inFight){ N.inFight=false; A.mv=null; N.going=true; s.to={x:s.home.x,z:s.home.z}; s.hold=false; } return false; }
     N.inFight=true; const c=tgt.c, d=tgt.d; s.hold=false; A.act='';
     if(N.grip==='bow'){ s.to=null; s.face={x:c.x,z:c.z}; if(!A.mv){ if((N.cd=(N.cd??0)-dt)<=0)A.mv={k:'draw',t:0,hit:false}; return true; }
@@ -43,7 +43,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     if(!A.mv){ if(d>reach){ s.to={x:c.x,z:c.z}; s.v0=s.v0||s.v; s.v=s.v0*2.2; return true; } s.to=null; s.face={x:c.x,z:c.z}; if((N.cd=(N.cd??0)-dt)>0)return true;
       A.mv={k:R.w==='spear'?'thrust':['slash','back','overhead','thrust'][Math.floor(Math.random()*4)],t:0,hit:false,c}; return true; }
     s.to=null; s.face={x:A.mv.c.x,z:A.mv.c.z}; const q=GUARD.MOVE[A.mv.k];
-    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T}; SFX.play&&SFX.play('step',{vol:.6,pitch:1.2,at:{x:k.x,z:k.z},far:14*T}); } }
+    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T};  } }
     if(A.mv.t>=q.T){ A.mv=null; N.cd=.3+Math.random()*.6; if(s.v0)s.v=s.v0; } return true; };
   SYS.add('life',dt=>{ const day=window.MAIL&&MAIL.ready?MAIL.day():Math.floor(Date.now()/864e5), h=CLOCK.h??12, w=waveAt(day);
     if(w!=null&&lastWave!==day&&((h>=w&&h<w+1)||(w>=24&&h>=w-24&&h<w-23))){ lastWave=day; if(PARK.ready)BREAK.wave(); }
@@ -62,7 +62,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
       if(c.kb){ const nx=c.x+c.kb.x*dt*4, nz=c.z+c.kb.z*dt*4; c.x=nx; c.z=nz; c.kb.x*=.8; c.kb.z*=.8; if(Math.abs(c.kb.x)+Math.abs(c.kb.z)<.01)c.kb=null; }
       if(tx!=null){ const want=Math.atan2(tx-c.x,tz-c.z); c.h+=((((want-c.h)%(2*PI))+3*PI)%(2*PI)-PI)*Math.min(1,dt*5); const reach=(K.reach+.2)*MH;
         if(td>reach){ const step=K.v*T*dt*(c.kind==='slime'?Math.max(0,Math.sin(c.ph))*1.8:1); c.x+=Math.sin(c.h)*step; c.z+=Math.cos(c.h)*step; }
-        else if((c.cool-=dt)<=0){ c.cool=1.4+Math.random(); if(!tN&&alive){ VIT.hurt(K.dmg,{x:c.x,z:c.z}); } else if(tN){ tN.A.act='scan'; } SFX.play&&SFX.play(c.kind==='slime'?'drip':'step',{vol:.5,pitch:1.8,at:{x:c.x,z:c.z},far:12*T}); } }
+        else if((c.cool-=dt)<=0){ c.cool=1.4+Math.random(); if(!tN&&alive){ VIT.hurt(K.dmg,{x:c.x,z:c.z}); } else if(tN){ tN.A.act='scan'; }  } }
       // the body: the slime squashes and stretches on its hop, the spider's legs step in two sets
       c.ph+=dt*(c.kind==='slime'?6:11); const g=c.g, y=gnd(c.x,c.z); g.position.set(c.x,y,c.z); g.rotation.y=c.h;
       if(c.kind==='slime'){ const hop=Math.max(0,Math.sin(c.ph)), sq=1-.25*Math.max(0,-Math.sin(c.ph)); g.position.y=y+hop*.18*MV; g.userData.body.scale.set(1/Math.sqrt(sq),sq*(1+.15*hop),1/Math.sqrt(sq)); }

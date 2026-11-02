@@ -1,6 +1,6 @@
 // THE TALK WINDOW: TALK — double-click a character to talk: its line types out in a window with your replies under it (W/S or 1-4, Enter or a click picks, Esc leaves). A character's script is `talk` in characters.json (the character editor's TALK tab); one without gets a short chat from the line pools. A reply can lead on, open the shop, give or take items, and set what the character remembers (saved with your things).
 import {THREE} from './003-shx.js';
-import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, UI, VIT} from './003b-systems.js';
+import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SHOPS, TALK, UI, VIT} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 { const T=TILE, esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -30,7 +30,7 @@ import {TILE} from './006-map-pre.js';
   document.body.appendChild(P);
   const tEl=P.querySelector('#talkt'), oEl=P.querySelector('#talko');
   let N=null, S=null, id='', L=null, text='', shown=0, acc=0, opts=[], at=0, raf=0, last=0, keep=null;
-  const voice=()=>N.voice||(N.voice=SFX.voiceOf(N.key||N.name));
+  const voice=()=>N.voice||(N.voice=null);
   const sayOf=s=>{ const a=Array.isArray(s)?s[Math.floor(Math.random()*s.length)]:String(s||''); if(a[0]==='@')return LINES.pick(a.slice(1),{name:you()})||'...'; return a.replace(/\{(\w+)\}/g,(m,k)=>k==='name'?you():TALK.vars[k]?TALK.vars[k]():m); };
   const drawOpts=()=>{ oEl.innerHTML=opts.map((o,i)=>{ const lack=o.do==='take'&&have(item(o.arg).id)<item(o.arg).n;
       return `<div data-i="${i}" style="cursor:${lack?'default':'pointer'};padding:2px 6px;${i===at?'background:#1c2130;color:#f2c14e':''}${lack?';color:#6f7686':''}">${i+1}. ${esc(o.t)}${lack?` <span style="color:#8a6a5a">(YOU NEED ${item(o.arg).n} ${esc(nm(item(o.arg).id))})</span>`:''}</div>`; }).join('')||'<div data-i="-1" style="cursor:pointer;padding:2px 6px;background:#1c2130;color:#f2c14e">1. (LEAVE)</div>'; };
@@ -39,14 +39,14 @@ import {TILE} from './006-map-pre.js';
   const set=a=>{ const m=mem(CHARS.id(N)); for(const w of String(a).trim().split(/\s+/).filter(Boolean)){ const [k,v]=w.split('='); if(k[0]==='!')delete m[k.slice(1)]; else m[k]=v==null?1:v; } save(); };
   const pick=i=>{ if(!N)return; if(shown<text.length){ shown=text.length; tEl.textContent=text; drawOpts(); return; } if(i===-1||!opts.length)return TALK.close(); const o=opts[i]; if(!o)return;
     if(o.do==='take'){ const {id:t,n}=item(o.arg); if(have(t)<n)return; FORAGE.take(t,n); FORAGE.say&&FORAGE.say(`YOU HAND OVER ${n} ${nm(t)}.`,'#e8e2cc'); }
-    else if(o.do==='give'){ const {id:t,n}=item(o.arg); FORAGE.give(t,n); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say(`YOU GET ${n} ${nm(t)}.`,'#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.4}); }
+    else if(o.do==='give'){ const {id:t,n}=item(o.arg); FORAGE.give(t,n); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say(`YOU GET ${n} ${nm(t)}.`,'#f2c14e');  }
     else if(o.do==='set')set(o.arg);
     else if(TALK.ops[o.do])TALK.ops[o.do](o.arg||'',N);
     if(o.set)set(o.set);
     if(o.do==='shop'){ const n0=N, f=TALK.shops.get(n0); TALK.close(); if(f)f(); else if(SHOPS.open)SHOPS.open(n0); return; }
     show(o.go); };
   const loop=t=>{ if(!N){ raf=0; return; } raf=requestAnimationFrame(loop); const dt=Math.min(.1,(t-(last||t))/1000); last=t;
-    if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length)SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
+    if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length){} shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
     if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); };
   TALK.open=n=>{ if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save();
     const st=N.st; keep={to:st.to,next:st.next,face:st.face,hold:st.hold}; st.to=null; st.next=null; st.face={x:pos.x,z:pos.z}; st.hold=true;

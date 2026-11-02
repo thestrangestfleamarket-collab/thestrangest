@@ -1,6 +1,6 @@
 // THE RIVER: RIVER builds the river, its banks and its moving water past the edge of town.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FLOW, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
+import {CLOCK, FLOW, LITE, pos, ROOMS, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {BLOCK, FADE, FIX, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -207,27 +207,22 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   const spray=dt=>{ const g=9.81*WU; let k=0; for(let i=0;i<SP.n;i++){ const p=SP.p, v=SP.v; v[i*3+1]-=g*dt; for(let q=0;q<3;q++)p[i*3+q]+=v[i*3+q]*dt; const x=p[i*3], y=p[i*3+1], z=p[i*3+2];
       if(y<LV+hAt(x,z)&&v[i*3+1]<0){ RIVER.drop(x,z,.12*T,.004*WU); continue; } if(k!==i)for(let q=0;q<3;q++){ p[k*3+q]=p[i*3+q]; v[k*3+q]=v[i*3+q]; } k++; }
     SP.n=k; spg.attributes.position.array.set(SP.p.subarray(0,k*3)); spg.attributes.position.needsUpdate=true; spg.setDrawRange(0,k); };
-  const sound=(s,muff)=>{ try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Math.floor(c.sampleRate*.8), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=(l+.05*(Math.random()*2-1))/1.05; d[i]=l*4*Math.exp(-i/n*(5-s*2)); }
-    const src=c.createBufferSource(); src.buffer=b; const f=c.createBiquadFilter(); f.type=muff?'lowpass':'bandpass'; f.frequency.value=muff?300:1300; f.Q.value=.6; const G=c.createGain(); G.gain.value=(.25+s*.5)*SFX.vol; src.connect(f).connect(G).connect(c.destination); src.start(); }catch(e){} };
-
   RIVER.deep=false; let dbusy=false; const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const deepGo=()=>{ if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,PG(DZ,NX,NZ,0)],[bed,bedF,PG(DZ,BN[0],BN[1],0)]]){ m.remove(c); c.geometry.dispose(); m.geometry.dispose(); m.geometry=g; }
     seedJunk(); RIVER.cx=1e9; };
   RIVER.load=async()=>{ if(RIVER.deep||dbusy)return; dbusy=true; await FADE.run('LOADING...',()=>deepGo()); dbusy=false; };
   RIVER.over=(x,z)=>SHARED.LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
-  RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, wasUnder=false;
+  RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0;
   RIVER.feed=(st,pos,dt,go,keys)=>{ if(!RIVER.over(pos.x,pos.z)||!RIVER.swim&&onPier(pos.x,pos.z)){ RIVER.swim=false; if(wasIn)wasIn=false; return false; }
     const h=hAt(pos.x,pos.z)+(RIVER.swim?FLOW.carry(pos,dt):0), lvl=(LV+h)/ZU, floor=(LV-depthAt(pos.x,pos.z)*WU)/ZU;
     const W=RIG.water(st,{level:lvl,floor}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0; RIVER.swim=W.in;
-    const under=W.in&&W.y<lvl-34;   // your air is VIT.air (103-vitals): one breath for every water
-    RIVER.dep=Math.max(0,(lvl-34-W.y)*ZU*MPU); RIVER.bot=(lvl-floor)*ZU*MPU;
-    if(under!==wasUnder){ wasUnder=under; if(!under&&W.in)sound(.1,false); }
-    if(W.in&&!wasIn){ RIVER.drop(pos.x,pos.z,.55*T,.09*WU); splash(pos.x,LV+h,pos.z,70,2.6); sound(.8,false); }
+    RIVER.dep=Math.max(0,(lvl-34-W.y)*ZU*MPU); RIVER.bot=(lvl-floor)*ZU*MPU;   // your air is VIT.air (103-vitals): one breath for every water
+    if(W.in&&!wasIn){ RIVER.drop(pos.x,pos.z,.55*T,.09*WU); splash(pos.x,LV+h,pos.z,70,2.6); }
     wasIn=W.in;
-    for(const e of W.events)if(e.k==='splash'){ RIVER.drop(pos.x,pos.z,.5*T,Math.min(.14,.02+e.v*.0009)*WU); splash(pos.x,LV+h,pos.z,Math.min(90,20+e.v*.5),Math.min(3,1+e.v*.015)); sound(Math.min(1,e.v/120),false); } W.events.length=0;
+    for(const e of W.events)if(e.k==='splash'){ RIVER.drop(pos.x,pos.z,.5*T,Math.min(.14,.02+e.v*.0009)*WU); splash(pos.x,LV+h,pos.z,Math.min(90,20+e.v*.5),Math.min(3,1+e.v*.015)); } W.events.length=0;
     wake-=dt; if(W.in&&wake<0){ wake=.07; const s=(go?.016:.006)*(1+W.fast)*WU*.6; RIVER.drop(pos.x+(Math.random()-.5)*.25,pos.z+(Math.random()-.5)*.25,.35*T,s); if(go&&!W.dive&&Math.random()<.35)splash(pos.x,LV+h,pos.z,3+(W.fast?4:0),1.1); }
-    if(W.in&&keys.has(' ')&&W.y>lvl-40){ const dk=DECKS.find(d=>d.lad&&Math.abs(d.lad[0]-pos.x)<1.1*T&&Math.abs(d.lad[1]-pos.z)<1.0*T), pe=dk?dk.lad:null; if(pe!=null){ W.in=false; W.dive=false; st.water.level=null; pos.x=pe[2]; pos.z=pe[3]; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
-      const lx=pos.z>rz1-2.0*T?LAD.reduce((b,x)=>Math.abs(x-pos.x)<Math.abs(b-pos.x)?x:b,LAD[0]):null; if(pe==null&&lx!=null&&Math.abs(lx-pos.x)<6*T){ W.in=false; W.dive=false; st.water.level=null; pos.x=lx; pos.z=rz1+.7*T; RIVER.swim=false; wasIn=false; sound(.05,false); if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; } }   // near the quay, SPACE climbs you out at the nearest ladder
+    if(W.in&&keys.has(' ')&&W.y>lvl-40){ const dk=DECKS.find(d=>d.lad&&Math.abs(d.lad[0]-pos.x)<1.1*T&&Math.abs(d.lad[1]-pos.z)<1.0*T), pe=dk?dk.lad:null; if(pe!=null){ W.in=false; W.dive=false; st.water.level=null; pos.x=pe[2]; pos.z=pe[3]; RIVER.swim=false; wasIn=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
+      const lx=pos.z>rz1-2.0*T?LAD.reduce((b,x)=>Math.abs(x-pos.x)<Math.abs(b-pos.x)?x:b,LAD[0]):null; if(pe==null&&lx!=null&&Math.abs(lx-pos.x)<6*T){ W.in=false; W.dive=false; st.water.level=null; pos.x=lx; pos.z=rz1+.7*T; RIVER.swim=false; wasIn=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; } }   // near the quay, SPACE climbs you out at the nearest ladder
     return true; };
   RIVER.clamp=pos=>{ const m=.35*T; pos.x=cl(pos.x,lx0+m,lx1-m); pos.z=cl(pos.z,rz0+m,rz1-m); for(const [x,z,r] of POSTS){ const dx=pos.x-x, dz=pos.z-z, d=Math.hypot(dx,dz), R0=r+.3*T; if(d<R0&&d>1e-4){ pos.x=x+dx/d*R0; pos.z=z+dz/d*R0; } } };
 

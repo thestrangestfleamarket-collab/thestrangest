@@ -1,11 +1,10 @@
 // THE MUSICIAN: MUS, the street musician, and the shared figure makers (musBody, figureMesh) the players use.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, MUS, NPCS, pos, SKY, SND, UI, W3} from './003b-systems.js';
+import {LEVELS, MUS, NPCS, pos, SKY, UI, W3} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, MAPG, MODS, STORE, TILE, ZU} from './006-map-pre.js';
-import {SOUND} from './091-sfx.js';
-import {GT, GTA, gtAudio, gtMute, gtPlay, GTWR} from './106-game-play-3-guitar-1-body.js';
-import {GTBEAT, GTEND, GTEV, gtNext, GTS, gtSet} from './108-game-play-3-guitar-2-tunes.js';
+import {GT, GTWR} from './106-game-play-3-guitar-1-body.js';
+import {GTBEAT, GTEND, gtNext, GTS, gtSet} from './108-game-play-3-guitar-2-tunes.js';
 import {GTF, gtFing, GTH, GTPOLE, gtPose, NPCARMS, NPCFING, npcSpring} from './109-game-play-3-guitar-3-hands.js';
 Object.assign(MUS,{shelf:true,tick:()=>{}}); STORE.MUS=MUS;
 function musBody(st){ const R=RIG; if(!musBody.FG){ R.farOnly(false); R.fine(true); const J=R.build(R.walkPose({ph:0,w:0},null),null).J, FG=R.shell(J,0).filter(p=>/^fing\d\d[LR]$/.test(p.n)); R.fine(false);
@@ -103,7 +102,7 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
   MUS.hold(4,10*R.D,[-4.2,2.2,2],[-.3,-1,-.2]);
   MUS.elbow=()=>MUS.B&&['shoulderR','elbowR','wristR','shoulderL','elbowL','wristL'].map(k=>{ const p=MUS.B.J[k]; return k+' '+[p.x,p.y,p.z].map(v=>v.toFixed(1)).join(','); });
   const a={t:0}; let song=0;
-  MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.stop=()=>gtHush(); MUS.rest=()=>{ if(WK.mode==='play'){ WK.mode='stop'; WK.t=2; } }; MUS.tones=(t,d,x,z)=>gtTones(t,d,x,z); MUS.hush=()=>gtHush();
+  MUS.start=()=>{ song=gtNext(song); gtSet(song); }; MUS.rest=()=>{ if(WK.mode==='play'){ WK.mode='stop'; WK.t=2; } };
   const WK={mode:'stop',t:1+Math.random()*3,dir:1,to:AT.x,st:R.create(),d0:0}, X0=SHARED.BOD.XS(36), X1=SHARED.BOD.XS(165), Z0=AT.z, RAD=.3*TILE; MUS.wk=WK;
   const free=(x,z)=>typeof STFREE!=='function'||STFREE(x,z,RAD), turn=hd=>{ let e=hd-AT.hd; e=Math.atan2(Math.sin(e),Math.cos(e)); return e; };
   const pickTo=()=>{ if(Math.random()<.35)WK.dir=-WK.dir; let x=AT.x+WK.dir*(6+Math.random()*22)*TILE; if(x<X0||x>X1){ WK.dir=-WK.dir; x=AT.x+WK.dir*(6+Math.random()*22)*TILE; } WK.to=Math.max(X0,Math.min(X1,x)); };
@@ -127,20 +126,11 @@ if(!MUS.shelf){ const R=RIG, V=R.V, AT={x:SHARED.BOD.XS(70),z:SHARED.BOD.ZS(-73)
       if(!MUS.sheetOn){ MUS.sheetOn=true; sheetView(g,AT.y+g.scale.y*27); } return; }
     if(MUS.watch&&!UI.freeCam){ MUS.watch=false; } const d=Math.hypot(pos.x-AT.x,pos.z-AT.z);
     if(WK.mode==='play'&&(d>18&&!MUS.watch||GTS.t>GTEND+1.5)){ WK.mode='stop'; WK.t=1.5+Math.random()*2; }
-    if(WK.mode!=='play'){ if(!MUS.lent)gtHush(); const near=MAPG.bodega.visible&&LEVELS.drawn(MAPG.bodega)&&d<40, B=MUS.on&&near?walkTick(dt,near):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
-    if(!MUS.on||!MAPG.bodega.visible){ gtHush(); return; }
-    const B=gtBody(a,dt), t=GTS.t; MUS.B=B; musScale(g);
+    if(WK.mode!=='play'){ const near=MAPG.bodega.visible&&LEVELS.drawn(MAPG.bodega)&&d<40, B=MUS.on&&near?walkTick(dt,near):null; if(!B)return SF.cloth(dt,null); MUS.B=B; SF.pose(dt,B,backOf()); musScale(g); return; }
+    if(!MUS.on||!MAPG.bodega.visible)return;
+    const B=gtBody(a,dt); MUS.B=B; musScale(g);
     if(MUS.err){ const T=a.P._T; for(const n of 'LR')for(let i=0;i<5;i++)if(T[n][i]&&T[n].w[i]>=.99){ const k=B.J['k'+i+'3'+n]; if(k){ const e=MUS.err[n]; e[0]+=R.len(R.sub(k,T[n][i])); e[1]++; } } }
-    SF.pose(dt,B,GTF); R.farOnly(false);
-    gtTones(t,d,AT.x,AT.z); };
-  function gtTones(t,d,x,z){ '@later'; if(!SND.ctx||SND.ctx.state!=='running')return; if(!gtAudio())return; const c=SND.ctx, ct=c.currentTime, A=t+0.1, when=x=>ct+Math.max(0,x-t)+0.03;
-    if(GTA.wet)GTA.wet.gain.value=.08;
-    GTA.g.gain.setTargetAtTime(0.5*Math.max(0,1-d/16),ct,0.05);
-    const v=new THREE.Vector3(x,1,z).project(SHARED.cam); GTA.pan.pan.setTargetAtTime(Math.max(-0.8,Math.min(0.8,v.x*0.8)),ct,0.1);
-    while(GTS.sent<GTEV.length&&GTEV[GTS.sent].t<=A){ const e=GTEV[GTS.sent++]; if(e.t<t-0.05)continue; if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
-  function gtHush(){ if(GTA.g&&SND.ctx)GTA.g.gain.setTargetAtTime(0,SND.ctx.currentTime,0.2); }
-  const wake=()=>{ if(!SOUND)return; if(!SND.ctx){ try{ SND.ctx=new (window.AudioContext||window.webkitAudioContext)(); SND.out=SND.ctx.destination; }catch(e){ return; } } if(SND.ctx.state!=='running')SND.ctx.resume(); };
-  addEventListener('pointerdown',wake); addEventListener('keydown',wake);
+    SF.pose(dt,B,GTF); R.farOnly(false); };
   const hitBox=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hitBox.position.set(0,29,2); g.add(hitBox);
   UI.thing({name:'THE GUITARIST',obj:hitBox,reach:1.6,tall:1.9,act:()=>{ '@later'; MUS.ask(); const p=new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().multiplyMatrices(g.matrixWorld,new THREE.Matrix4().makeTranslation(GTF.o.x,GTF.o.y,GTF.o.z)));
     UI.setFree(true); UI.camT.copy(p); SHARED.ppuTo=PPU*16; MUS.watch=true; }});

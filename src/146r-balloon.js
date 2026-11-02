@@ -1,6 +1,6 @@
 // THE BALLOON WITCH: a tiny witch carried over Market St by her black balloon, who sells black balloons — hold one and click: it lifts you over fences, cars, water and the golems (not buildings), WASD drifts you along; click again to come down; a balloon has two minutes of air, then it sinks you gently and is gone.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {FORAGE, ITEMS, pos, RIDE, st} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
@@ -30,7 +30,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
     step:(R,dt,I)=>{ const id=R.on; let a=airGet(); if(R.h>.05*T)a=Math.max(0,a-dt); air=a; if((R.saveT=(R.saveT||0)-dt)<=0){ R.saveT=3; airSet(a); }
       if(a<15&&!R.warned){ R.warned=true; say('THE BALLOON IS GOING SOFT.','#c8a090'); }
       const sinking=R.down||a<=0, want=sinking?0:TOP*T; R.h=Math.max(0,R.h+Math.max(-(a<=0?.6:1.1)*T*dt,Math.min(1.4*T*dt,want-R.h)));
-      if(sinking&&R.h<=0){ if(a<=0){ FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw(); airSet(BALLOON.AIR); RIDE.off('THE BALLOON WRINKLES AND IS DONE.'); if(SFX.play)SFX.play('click',{vol:.5,pitch:.4}); } else { airSet(a); RIDE.off('YOUR FEET FIND THE GROUND.'); } return true; }
+      if(sinking&&R.h<=0){ if(a<=0){ FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw(); airSet(BALLOON.AIR); RIDE.off('THE BALLOON WRINKLES AND IS DONE.');  } else { airSet(a); RIDE.off('YOUR FEET FIND THE GROUND.'); } return true; }
       const up=Math.min(1,R.h/(1.5*T)), vmax=(+prop(id,'speed')||5)*T*up, k=Math.min(1,dt*1.6);
       R.vx+=((I.ml?I.mx/I.ml*vmax:0)-R.vx)*k; R.vz2+=((I.ml?I.mz/I.ml*vmax:0)-R.vz2)*k;
       pos.x+=R.vx*dt; pos.z+=R.vz2*dt; fly(pos); R.v=Math.hypot(R.vx,R.vz2); if(R.v>.3*T)R.hd=Math.atan2(R.vx,R.vz2); SHARED.heading=R.hd;

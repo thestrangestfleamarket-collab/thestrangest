@@ -29,7 +29,6 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       [3, 'CHARACTER', `(() => { const e = document.getElementById('chared'); return !!e && e.style.display === 'flex'; })()`],
       [4, 'ATMOSPHERE', `(() => { const e = document.getElementById('menu'); return !!e && !e.hidden; })()`],
       [5, 'LIGHTING', `(() => { const e = document.getElementById('led'); return !!e && !e.hidden; })()`],
-      [6, 'SOUND', `(() => { const e = document.getElementById('menu'); return !!e && !e.hidden; })()`],
       [7, 'ITEM', `(() => { const e = document.getElementById('ited'); return !!e && !e.hidden; })()`],
       [8, 'BEHAVIOUR', `(() => { const e = document.getElementById('chared'); return !!e && e.style.display === 'flex'; })()`],
       [9, 'LANDSCAPE', `(() => { const e = document.getElementById('lnd'); return !!e && !e.hidden; })()`],

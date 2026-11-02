@@ -1,6 +1,6 @@
 // SPRAY PAINT: a can from the bodega (ordered on your computer, the drone brings it) holds 256 colours; SPRAY it from the pack, pick a colour on the grid, hold the mouse on a wall or floor to paint; every tag is the block's shared world (kept for all), and the can runs out.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LEVELS, ONLINE, pos, SFX, SPRAY, W3} from './003b-systems.js';
+import {FORAGE, LEVELS, ONLINE, pos, SPRAY, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -49,7 +49,7 @@ import {SYS, TILE} from './006-map-pre.js';
   cv.addEventListener('click',e=>{ if(SPRAY.on){ e.stopImmediatePropagation(); e.preventDefault(); } },true); cv.addEventListener('dblclick',e=>{ if(SPRAY.on){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
   cv.addEventListener('wheel',e=>{ if(!SPRAY.on)return; e.preventDefault(); e.stopImmediatePropagation(); SPRAY.w=Math.max(.02*T,Math.min(.12*T,SPRAY.w*(e.deltaY<0?1.15:.87))); draw(); },{capture:true,passive:false});
   addEventListener('keydown',e=>{ if(SPRAY.on&&e.key==='Escape'){ e.stopImmediatePropagation(); SPRAY.close(); } },true);
-  SPRAY.open=id=>{ if(!FORAGE.has(id))return say('YOU HAVE NO SPRAY PAINT. THE BODEGA SELLS IT.','#c8a090'); SPRAY.id=id; SPRAY.on=true; sp.hidden=false; draw(); say('HOLD THE MOUSE ON A WALL TO SPRAY. ESC PUTS THE CAN AWAY.','#7dffa8'); SFX.play('click',{vol:.3}); };
+  SPRAY.open=id=>{ if(!FORAGE.has(id))return say('YOU HAVE NO SPRAY PAINT. THE BODEGA SELLS IT.','#c8a090'); SPRAY.id=id; SPRAY.on=true; sp.hidden=false; draw(); say('HOLD THE MOUSE ON A WALL TO SPRAY. ESC PUTS THE CAN AWAY.','#7dffa8');  };
   SPRAY.close=()=>{ if(down){ down=false; } end(); SPRAY.on=false; sp.hidden=true; };
   FORAGE.ACT.spray=id=>SPRAY.open(id); FORAGE.ROWB.push(id=>id.startsWith('spray_')?[['SPRAY','spray']]:[]);
   SPRAY.state=()=>({on:SPRAY.on,id:SPRAY.id,c:SPRAY.c,dots:IM.count,left:SPRAY.id?SPRAY.left(SPRAY.id):null,open:!sp.hidden});

@@ -1,12 +1,10 @@
-// THE GLASS HORN: the busker of living glass outside the playhouse; her body (clear glass, a gold engraved cap under a white fur hood, a gold shoulder plate and collar, a tulle skirt), her gold trumpet with its glass bell, her fingers on its valves note by note, her songs (her own, or one the owner uploads: an audio file her fingers follow by ear, or a MIDI file), and the tips you drop in her cup.
+// THE GLASS HORN: the busker of living glass outside the playhouse; her body (clear glass, a gold engraved cap under a white fur hood, a gold shoulder plate and collar, a tulle skirt), her gold trumpet with its glass bell, her fingers on its valves note by note, her songs (her own, or a MIDI file the owner uploads), played silently (no sound in the game, owner 2 Nov 2026), and the tips you drop in her cup.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, FORAGE, INV, NPCS, pos, ROOMS, UI} from './003b-systems.js';
-import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
-const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,tips:0}; window.HORN=HORN;
+const HORN={on:false,now:{m:0,v:0,valves:[0,0,0]},song:null,tips:0}; window.HORN=HORN;
 { const T=TILE, K=MERCH.K, {mk,grp,BOX,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
-  try{ const v=SAVE.get('hornvol'); if(v!=null)HORN.vol=Math.max(0,Math.min(1,+v)); HORN.mute=SAVE.get('hornmute')==='1'; }catch(e){}
 
   /* ---------- her body ---------- */
   const GL='glass:#a8d8d0', GLD='glass:#78b0a8', GOLD='metal:#d0a248', GOLDD='metal:#8a6424', FUR='fur:#eceae4', TUL='tulle:#efe6d8';
@@ -55,7 +53,7 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
   const FING={54:'123',55:'13',56:'23',57:'12',58:'1',59:'2',60:'',61:'123',62:'13',63:'23',64:'12',65:'1',66:'2',67:'',68:'23',69:'12',70:'1',71:'2',72:'',73:'12',74:'1',75:'2',76:'',77:'1',78:'2',79:'',80:'23',81:'12',82:'1',83:'2',84:''};
   const valvesOf=m=>{ let w=Math.round(m)+2; while(w<54)w+=12; while(w>84)w-=12; const f=FING[w]||''; return [+f.includes('1'),+f.includes('2'),+f.includes('3')]; };
 
-  /* ---------- her songs: notes [start beat, beats, written MIDI] in her own tunes, or a MIDI file's top voice, or an audio file she follows by ear ---------- */
+  /* ---------- her songs: notes [start beat, beats, written MIDI] in her own tunes, or a MIDI file's top voice ---------- */
   const SAINTS=[[0,1,72],[1,1,76],[2,1,77],[3,5,79],[8,1,72],[9,1,76],[10,1,77],[11,5,79],[16,1,72],[17,1,76],[18,1,77],[19,2,79],[21,2,76],[23,2,72],[25,2,76],[27,4,74],[31,1,76],[32,1,76],[33,1,74],[34,3,72],[37,1,72],[38,2,76],[40,2,79],[42,1,79],[43,1,79],[44,4,77],[48,1,76],[49,1,77],[50,2,79],[52,2,76],[54,2,72],[56,2,74],[58,5,72]];
   const blues=seed=>{ let s=seed; const r=()=>((s=(s*16807)%2147483647)/2147483647), SC=[72,75,77,78,79,82,84], out=[]; let b=0;
     for(let bar=0;bar<12;bar++){ const root=[0,0,0,0,5,5,0,0,7,5,0,7][bar]; let x=0; while(x<4){ const d=[.5,.5,1,1.5,1,2][Math.floor(r()*6)]; if(r()<.22){ x+=d; continue; } let m=SC[Math.floor(r()*SC.length)]+(root&&r()<.5?root-12+(root>5?0:12):0); if(m>86)m-=12; out.push([b+x,Math.min(d,4-x)*.92,m]); x+=d; } b+=4; } return out; };
@@ -74,38 +72,17 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
     notes.sort((a,b)=>a[0]-b[0]||b[2]-a[2]); const top=[]; for(const q of notes){ const L=top[top.length-1]; if(L&&q[0]<L[0]+L[1]-.02){ if(q[2]>L[2]&&q[0]-L[0]<.03)top[top.length-1]=q; continue; } top.push(q); }
     return top.slice(0,3000).map(([t,d,n,v])=>{ let w=n; while(w<58)w+=12; while(w>86)w-=12; return [t,d,w-2,v]; }); };
 
-  /* ---------- the sound: her own voice, made here (the game's other sounds stay off); it carries 30 tiles and fades with distance ---------- */
-  let ctx=null, bus=null, pan=null, echo=null, audio=null, an=null, abuf=null;
-  const wake=()=>{ if(ctx){ if(ctx.state!=='running')ctx.resume(); return; } try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
-    bus=ctx.createGain(); bus.gain.value=0; pan=ctx.createStereoPanner(); echo=ctx.createDelay(1); echo.delayTime.value=.23; const fb=ctx.createGain(), wet=ctx.createGain(); fb.gain.value=.22; wet.gain.value=.25;
-    bus.connect(pan); pan.connect(ctx.destination); bus.connect(echo); echo.connect(fb); fb.connect(echo); echo.connect(wet); wet.connect(pan); };
-  addEventListener('pointerdown',wake); addEventListener('keydown',wake);
-  const voice=(m,t0,dur,vel)=>{ const f=440*Math.pow(2,(m-69)/12), o=ctx.createOscillator(), o2=ctx.createOscillator(), lp=ctx.createBiquadFilter(), g=ctx.createGain(), lfo=ctx.createOscillator(), lg=ctx.createGain(), t1=t0+dur;
-    o.type='sawtooth'; o2.type='square'; o.frequency.value=f; o2.frequency.value=f*1.003; lp.type='lowpass'; lp.Q.value=3; lfo.frequency.value=5.4; lg.gain.value=0; lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
-    lg.gain.setValueAtTime(0,t0); lg.gain.linearRampToValueAtTime(f*.007,t0+Math.min(.5,dur*.6));
-    lp.frequency.setValueAtTime(f*1.2,t0); lp.frequency.linearRampToValueAtTime(f*(3.5+vel*4),t0+.05); lp.frequency.exponentialRampToValueAtTime(f*(2.4+vel*2),t0+.25);
-    g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.16*vel,t0+.035); g.gain.linearRampToValueAtTime(.11*vel,t0+.18); g.gain.setValueAtTime(.11*vel,Math.max(t0+.18,t1-.05)); g.gain.linearRampToValueAtTime(0,t1+.04);
-    const g2=ctx.createGain(); g2.gain.value=.35; o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(bus); for(const x of [o,o2,lfo]){ x.start(t0); x.stop(t1+.1); } };
-
-  /* ---------- playing: a song, a rest while she listens, the next; only while you are near enough to hear ---------- */
-  const P={i:0,t:0,sent:0,rest:4,list:tunes(),cur:null,start:0,beat:.5,src:'own'};
+  /* ---------- playing: a song, a rest while she listens, the next; only while you are near enough to see her play ---------- */
+  const P={i:0,t:0,sent:0,rest:4,list:tunes(),cur:null,beat:.5,src:'own'};
   const load=async()=>{ try{ const r=await fetch('/shared/tune.glasshorn',{credentials:'same-origin'}); if(!r.ok||r.status===204)return; const ty=r.headers.get('content-type')||'', buf=await r.arrayBuffer(); HORN.use(buf,ty,'THE OWNER\'S SONG'); }catch(e){} };
-  HORN.use=(buf,ty,name)=>{ if(/midi|mid$/.test(ty)||(new Uint8Array(buf,0,4)).join()==='77,84,104,100'){ const n=HORN.midi(buf); if(n.length){ P.list=[{name,sec:true,notes:n}]; P.src='midi'; P.cur=null; P.rest=1; } return 'midi'; }
-    if(audio){ audio.pause(); URL.revokeObjectURL(audio.src); } audio=new Audio(URL.createObjectURL(new Blob([buf],{type:ty||'audio/mpeg'}))); audio.loop=false; audio.crossOrigin='anonymous'; abuf=null; P.src='audio'; P.cur=null; P.rest=1; P.list=[{name,audio:true}]; return 'audio'; };
+  HORN.use=(buf,ty,name)=>{ if(/midi|mid$/.test(ty)||(new Uint8Array(buf,0,4)).join()==='77,84,104,100'){ const n=HORN.midi(buf); if(n.length){ P.list=[{name,sec:true,notes:n}]; P.src='midi'; P.cur=null; P.rest=1; } return 'midi'; } return null; };
   const near=N=>N&&N.on&&!ROOMS.cur&&SHARED.LVL==='up'&&Math.hypot(pos.x-N.st.x,pos.z-N.st.z)<30*T;
-  const pitch=()=>{ if(!an)return null; const n=an.fftSize; if(!abuf)abuf=new Float32Array(n); an.getFloatTimeDomainData(abuf); let rms=0; for(let i=0;i<n;i++)rms+=abuf[i]*abuf[i]; rms=Math.sqrt(rms/n); if(rms<.01)return {m:0,v:0};
-    const sr=ctx.sampleRate, lo=Math.floor(sr/1400), hi=Math.floor(sr/150); let best=-1, bl=0; for(let l=lo;l<hi;l++){ let c=0; for(let i=0;i<n-l;i+=2)c+=abuf[i]*abuf[i+l]; if(c>best){ best=c; bl=l; } }
-    return {m:69+12*Math.log2(sr/bl/440),v:Math.min(1,rms*6)}; };
   SYS.add('life',dt=>{ const N=NPCS.extra.find(q=>q.key==='glasshorn'), hear=near(N); HORN.on=!!hear;
-    if(ctx&&bus){ const d=N?Math.hypot(pos.x-N.st.x,pos.z-N.st.z)/T:99, k=hear&&!HORN.mute?HORN.vol*Math.max(0,1-d/30)**1.4:0; bus.gain.setTargetAtTime(k,ctx.currentTime,.15);
-      if(N&&SHARED.cam){ const v=new THREE.Vector3(N.st.x,1,N.st.z).project(SHARED.cam); pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),ctx.currentTime,.1); } }
-    if(!hear){ if(audio&&!audio.paused)audio.pause(); HORN.now.v+=(0-HORN.now.v)*Math.min(1,dt*4); return; }
-    if(!P.cur){ P.rest-=dt; HORN.now.v=0; if(P.rest>0)return; const S=P.list[P.i++%P.list.length]; P.cur=S; P.t=0; P.sent=0; P.beat=S.sec?1:60/S.bpm; P.start=ctx?ctx.currentTime+.1:0;
-      if(S.audio&&audio&&ctx){ if(!an){ const src=ctx.createMediaElementSource(audio); an=ctx.createAnalyser(); an.fftSize=2048; src.connect(an); an.connect(bus); } audio.currentTime=0; audio.play().catch(()=>{}); } }
+    if(!hear){ HORN.now.v+=(0-HORN.now.v)*Math.min(1,dt*4); return; }
+    if(!P.cur){ P.rest-=dt; HORN.now.v=0; if(P.rest>0)return; const S=P.list[P.i++%P.list.length]; P.cur=S; P.t=0; P.sent=0; P.beat=S.sec?1:60/S.bpm; }
     const S=P.cur; P.t+=dt;
-    if(S.audio){ if(audio&&ctx){ if(audio.paused&&!audio.ended&&P.t>.3)audio.play().catch(()=>{}); const q=pitch(); if(q){ HORN.now.v=q.v; if(q.v>0){ HORN.now.m=q.m; HORN.now.valves=valvesOf(q.m); } } if(audio.ended){ P.cur=null; P.rest=6+Math.random()*4; } } else { P.cur=null; P.rest=3; } return; }
     const B=P.beat, L=S.notes, now=P.t; let on=null; for(let i=Math.max(0,P.sent-3);i<L.length;i++){ const [b,l,m]=L[i]; if(b*B>now+.05)break; if(b*B<=now&&now<(b+l)*B){ on=L[i]; } }
-    if(ctx&&bus)while(P.sent<L.length&&L[P.sent][0]*B<P.t+.3){ const [b,l,m,v]=L[P.sent++]; voice(m-2,P.start+b*B,Math.max(.06,l*B*.94),v||.8); }
+    while(P.sent<L.length&&L[P.sent][0]*B<P.t+.3)P.sent++;   // the scan above starts near the notes playing now
     if(on){ HORN.now.m=on[2]-2; HORN.now.v+=(1-HORN.now.v)*Math.min(1,dt*20); HORN.now.valves=valvesOf(on[2]-2); } else HORN.now.v+=(0-HORN.now.v)*Math.min(1,dt*12);
     const last=L[L.length-1]; if(!last||now>(last[0]+last[1])*B+.5){ P.cur=null; P.rest=6+Math.random()*5; } },'146k-glasshorn');
 
@@ -122,7 +99,7 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
       else { MERCH.at(N,'handL',[0,-.05,0],V); G.position.copy(V); G.quaternion.setFromAxisAngle(UP,hd+Math.PI/2); G.rotateX(1.2); }
       G.scale.setScalar(T); for(let i=0;i<3;i++){ const q=G.userData.V[i], dn=playing&&HORN.now.v>.3&&HORN.now.valves[i]?-.012:0; q.cap.position.y+=((-.01+dn)-q.cap.position.y)*.6; q.stem.position.y=q.cap.position.y-.01; q.fing.position.y=q.cap.position.y+.017; q.fing.visible=playing; } }});
 
-  /* ---------- her cup, and what a double-click on her gives: tip her, her volume, and for the owner a new song ---------- */
+  /* ---------- her cup, and what a double-click on her gives: tip her, and for the owner a new song ---------- */
   const panel=document.createElement('div'); panel.id='hornp'; panel.hidden=true; panel.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(panel); panel.addEventListener('keydown',e=>{ if(e.key==='Escape')panel.hidden=true; e.stopPropagation(); }); panel.addEventListener('keyup',e=>e.stopPropagation());
   const Bt='style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer;margin:2px"';
@@ -130,22 +107,19 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
     panel.innerHTML=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE GLASS HORN</h3><div style="color:#9b9584;margin-bottom:8px">"Listen. No — listen."</div>
       <div>NOW: <b style="color:#f2c14e">${S?S.name:'—'}</b></div><div style="margin:8px 0">HER CUP: $${HORN.tips} · YOU HAVE $${Math.round(INV.cash||0)}</div>
       <div><button ${Bt} data-tip="1">TIP $1</button><button ${Bt} data-tip="5">TIP $5</button></div>
-      <div style="margin-top:8px">VOLUME <input type="range" min="0" max="1" step=".05" value="${HORN.vol}" data-vol> <button ${Bt} data-mute>${HORN.mute?'UNMUTE':'MUTE'}</button></div>
-      ${own?`<div style="margin-top:10px;border-top:2px solid #22252f;padding-top:8px;color:#9b9584">OWNER: GIVE HER A NEW SONG (AN AUDIO FILE OR A MIDI FILE, 8 MB AT MOST)</div><input type="file" accept="audio/*,.mid,.midi" data-up style="margin-top:6px;color:#d8dae2"><div data-st style="color:#9b9584;margin-top:4px"></div>`:''}
+      ${own?`<div style="margin-top:10px;border-top:2px solid #22252f;padding-top:8px;color:#9b9584">OWNER: GIVE HER A NEW SONG (A MIDI FILE, 8 MB AT MOST; SHE PLAYS IT SILENTLY)</div><input type="file" accept=".mid,.midi,audio/midi" data-up style="margin-top:6px;color:#d8dae2"><div data-st style="color:#9b9584;margin-top:4px"></div>`:''}
       <div style="margin-top:10px"><button ${Bt} data-x>CLOSE</button></div>`; };
   panel.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x!==undefined){ panel.hidden=true; return; }
-    if(b.dataset.mute!==undefined){ HORN.mute=!HORN.mute; try{ SAVE.set('hornmute',HORN.mute?'1':'0'); }catch(e){} draw(); return; }
     if(b.dataset.tip){ const n=+b.dataset.tip; if((INV.cash||0)<n)return say('YOU CANNOT SPARE IT.','#c8a090'); INV.cash-=n; HORN.tips+=n; INV.add('x',0); delete INV.items.x; if(FORAGE.draw)FORAGE.draw(); say(n>1?'SHE BOWS HER HEAD, STILL PLAYING.':'A NOTE BENDS YOUR WAY.','#bff0e6'); draw(); } });
-  panel.addEventListener('input',e=>{ if(e.target.dataset.vol!==undefined){ HORN.vol=+e.target.value; try{ SAVE.set('hornvol',String(HORN.vol)); }catch(er){} } });
   panel.addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||e.target.dataset.up===undefined)return; const st=panel.querySelector('[data-st]'); if(f.size>8<<20){ st.textContent='TOO BIG.'; return; }
-    const ty=f.type||(/\.midi?$/i.test(f.name)?'audio/midi':'application/octet-stream'), buf=await f.arrayBuffer(); st.textContent='SENDING…';
-    try{ const r=await fetch('/shared/tune.glasshorn',{method:'POST',credentials:'same-origin',headers:{'content-type':ty},body:buf}), j=await r.json().catch(()=>({})); st.textContent=r.ok&&j.ok?'SENT. EVERYONE HEARS IT FROM NOW ON.':'NOT SENT: '+(j.why||r.status); }
-    catch(er){ st.textContent='NOT SENT (NO SERVER HERE); SHE PLAYS IT FOR YOU.'; } HORN.use(buf,ty,f.name.replace(/\.[^.]+$/,'').toUpperCase().slice(0,30)); });
-  HORN.panel=()=>{ panel.hidden=false; draw(); wake(); };
+    const ty=f.type||(/\.midi?$/i.test(f.name)?'audio/midi':'application/octet-stream'), buf=await f.arrayBuffer(); if(!HORN.use(buf,ty,f.name.replace(/\.[^.]+$/,'').toUpperCase().slice(0,30))){ st.textContent='NOT A MIDI FILE.'; return; } st.textContent='SENDING…';
+    try{ const r=await fetch('/shared/tune.glasshorn',{method:'POST',credentials:'same-origin',headers:{'content-type':ty},body:buf}), j=await r.json().catch(()=>({})); st.textContent=r.ok&&j.ok?'SENT. SHE PLAYS IT FROM NOW ON.':'NOT SENT: '+(j.why||r.status); }
+    catch(er){ st.textContent='NOT SENT (NO SERVER HERE); SHE PLAYS IT FOR YOU.'; } });
+  HORN.panel=()=>{ panel.hidden=false; draw(); };
   { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='glasshorn'); if(!window.__started||!N||!N.g||!UI.thing)return setTimeout(go,700);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(30,58,30),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=29; N.g.add(hb); UI.thing({name:'THE GLASS HORN',npc:N,obj:hb,reach:2.2*T,near:3*T,tall:1.9*T,act:()=>HORN.panel()});
       const cup=new THREE.Mesh(new THREE.CylinderGeometry(.06*T,.045*T,.13*T,14,1,true),new THREE.MeshStandardMaterial({color:0x6a4a34,roughness:.8,side:THREE.DoubleSide})); cup.position.set(N.st.x+Math.sin(N.st.hd)*.55*T+Math.cos(N.st.hd)*.3*T,(N.st.y||0)+.065*T,N.st.z+Math.cos(N.st.hd)*.55*T-Math.sin(N.st.hd)*.3*T); N.g.parent.add(cup); load(); };
     go(); }
   HORN.make=horn; HORN.next=()=>{ P.cur=null; P.rest=0; };
-  window.HORNDBG=()=>({on:HORN.on,src:P.src,song:P.cur&&P.cur.name,rest:+P.rest.toFixed(1),note:+HORN.now.m.toFixed(1),v:+HORN.now.v.toFixed(2),valves:HORN.now.valves.join(''),ctx:ctx&&ctx.state,tips:HORN.tips,trumpet:!!H0.g&&H0.g.visible});
+  window.HORNDBG=()=>({on:HORN.on,src:P.src,song:P.cur&&P.cur.name,rest:+P.rest.toFixed(1),note:+HORN.now.m.toFixed(1),v:+HORN.now.v.toFixed(2),valves:HORN.now.valves.join(''),tips:HORN.tips,trumpet:!!H0.g&&H0.g.visible});
 }

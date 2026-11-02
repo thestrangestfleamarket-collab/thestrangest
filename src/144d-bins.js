@@ -1,6 +1,6 @@
 // THE BINS: a real trash can is hollow, you drop litter in it (double-click it with litter in your pack) and it fills up as the block's players feed it; the litter on the floor is picked up the same way. The station's three cans and its litter are made here; the fill is the block's shared world (ONLINE.add), so everyone sees the same heap.
 import {THREE} from './003-shx.js';
-import {BINS, FORAGE, ONLINE, SFX, SHAD, UI} from './003b-systems.js';
+import {BINS, FORAGE, ONLINE, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
@@ -27,14 +27,14 @@ import {LOOP} from './009b-loop.js';
     UI.thing({name:'TRASH CAN',pick:true,obj:hit,reach:1*T,near:1.8*T,tall:h,act:()=>{ '@later'; const n=FORAGE.has('litter')|0, f=fillOf(id);
       if(!n)return say(f>=CAP?'FULL TO THE BRIM. SOMEONE SHOULD EMPTY IT.':f>CAP*.6?'HALF FULL OF CANS AND CUPS.':f?'A FEW CANS IN THE BOTTOM.':'EMPTY, BUT FOR A GUM WRAPPER.');
       if(f>=CAP)return say('THIS ONE IS FULL. FIND ANOTHER.','#e5403a');
-      const put=Math.min(n,CAP-f); FORAGE.take('litter',put); ONLINE.add(key(id),put); SFX.play('clunk',{vol:.3}); say(put>1?put+' PIECES IN. THE PLATFORM LOOKS BETTER.':'IN IT GOES.','#7dffa8'); FORAGE.draw(); }});
+      const put=Math.min(n,CAP-f); FORAGE.take('litter',put); ONLINE.add(key(id),put);  say(put>1?put+' PIECES IN. THE PLATFORM LOOKS BETTER.':'IN IT GOES.','#7dffa8'); FORAGE.draw(); }});
     return bin; };
   // a piece of litter on the floor: a can or a cup; picked up into your pack, gone for everyone until tomorrow
   BINS.drop=({id,at,kind,grp})=>{ const k='lit:'+id+':'+day(); if(ONLINE.world[k])return null;
     const m=kind==='cup'?new THREE.Mesh(new THREE.CylinderGeometry(.045*T,.035*T,.11*T,8),new THREE.MeshLambertMaterial({color:0xc82824})):new THREE.Mesh(new THREE.CylinderGeometry(.04*T,.04*T,.13*T,8),new THREE.MeshLambertMaterial({color:kind==='canb'?0x2c60c8:0xce2824}));
     if(kind!=='cup'){ m.rotation.z=Math.PI/2; m.position.set(at[0],at[1]+.04*T,at[2]); m.rotation.y=(id.length*1.7)%3; } else m.position.set(at[0],at[1]+.055*T,at[2]);
     (grp||scene).add(m); const lt={id,m,k}; BINS.litter.push(lt);
-    UI.thing({name:'LITTER',pick:true,obj:m,reach:.9*T,near:1.6*T,tall:.2*T,act:()=>{ '@later'; if(ONLINE.world[lt.k])return; ONLINE.put(lt.k,1); FORAGE.give('litter',1); SFX.play('clunk',{vol:.15,vary:.4}); say('PICKED UP. THE CAN IS OVER THERE.','#7dffa8'); FORAGE.draw(); }});
+    UI.thing({name:'LITTER',pick:true,obj:m,reach:.9*T,near:1.6*T,tall:.2*T,act:()=>{ '@later'; if(ONLINE.world[lt.k])return; ONLINE.put(lt.k,1); FORAGE.give('litter',1);  say('PICKED UP. THE CAN IS OVER THERE.','#7dffa8'); FORAGE.draw(); }});
     return lt; };
   SYS.add('world',(k,v)=>{ if(k.startsWith('bin:')){ const b=BINS.list.find(q=>key(q.id)===k); if(b)b.show(); } else if(k.startsWith('lit:')&&v){ const l=BINS.litter.find(q=>q.k===k); if(l)l.m.visible=false; } },'144d-bins');
   // the station's cans and litter (station A's platform; the props it used to paint are gone)

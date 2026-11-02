@@ -6,7 +6,6 @@ import {CHARED, EDITORS, FAR3, FEEL, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from
     {key:3,n:'CHARACTER',d:'a list of every character to edit',go:()=>CHARED.toggle('id')},
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
     {key:5,n:'LIGHTING',d:'render system, quality, the cel bands',go:()=>LIGHTED.toggle()},
-    {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
     {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
     {key:8,n:'BEHAVIOUR',d:'homes, stats, jobs, talk',go:()=>CHARED.toggle('beh')},
     {key:9,n:'LANDSCAPE',d:'paint ground, free-draw, place plants & rocks',go:()=>LAND.toggle()},

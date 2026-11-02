@@ -1,5 +1,5 @@
 // THE ARCADE'S GAMES, the shared cabinet layer: each cabinet's game registers here (STORE.cabs.add: its name, the skill it trains, its lore, and its game as its own chunk, fetched the first time you play it); the window a game plays in over the page (a play costs $2 and trains the skill by your score), the best scores, the title cards, and the attract mode the cabinets' screens run. A cabinet whose game is not built yet shows its card: COMING SOON.
-import {FORAGE, INV, keys, SFX, UI} from './003b-systems.js';
+import {FORAGE, INV, keys, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {STORE, SYS} from './006-map-pre.js';
 STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
@@ -7,11 +7,9 @@ SYS.add('places',dt=>{ if(STORE.cabs.tick)STORE.cabs.tick(dt); },'arcade games')
 STORE.cabs.play=name=>STORE.cabs.kit().open(name);
 STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
   const W=256, H=224, R=Math.random, ri=n=>Math.floor(R()*n), cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-  let MUTE=false;
   const tx=(c,s,x,y,col,sz=8,al='left')=>{ c.font=`bold ${sz}px monospace`; c.textAlign=al; c.textBaseline='top'; c.fillStyle='#000'; c.fillText(s,x+1,y+1); c.fillStyle=col; c.fillText(s,x,y); };
   const bmp=(c,rows,x,y,col,k=1)=>{ c.fillStyle=col; rows.forEach((r,j)=>{ for(let i=0;i<r.length;i++)if(r[i]==='#')c.fillRect(Math.round(x+i*k),Math.round(y+j*k),k,k); }); };
-  const beep=(f,d=.08,ty='square',v=.06,f2)=>{ if(MUTE)return; const a=SFX.live&&SFX.live(); if(!a||!SFX.on)return; const o=a.createOscillator(), g=a.createGain(), t=a.currentTime; o.type=ty; o.frequency.setValueAtTime(f,t); if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
-    g.gain.setValueAtTime(v*(SFX.vol??1),t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.02); };
+  const beep=()=>{};   // the games call it where a cabinet would beep; the game has no sound (owner, 2 Nov 2026)
   const DIRS={L:[-1,0],R:[1,0],U:[0,-1],D:[0,1]}, OPP={L:'R',R:'L',U:'D',D:'U'};
   const mv=(e,sp,ok,wrap)=>{ if(e.pick&&!e.d)e.pick(e); if(e.n&&e.d&&e.n===OPP[e.d]){ const v=DIRS[e.d]; e.x+=v[0]; e.y+=v[1]; if(wrap)e.x=(e.x+wrap)%wrap; e.t=1-e.t; e.d=e.n; }
     if(!e.d){ if(e.n&&ok(e.x+DIRS[e.n][0],e.y+DIRS[e.n][1]))e.d=e.n; else return; }
@@ -45,8 +43,8 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
   const crt=c=>{ c.fillStyle='rgba(0,0,0,.28)'; for(let y=0;y<H;y+=2)c.fillRect(0,y,W,1); const v=c.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.8); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)'); c.fillStyle=v; c.fillRect(0,0,W,H);
     const g=c.createLinearGradient(0,0,W,H); g.addColorStop(0,'rgba(255,255,255,.10)'); g.addColorStop(.35,'rgba(255,255,255,0)'); c.fillStyle=g; c.fillRect(0,0,W,H); };
   const demo=name=>{ const e=C.reg[name], cv=document.createElement('canvas'); cv.width=W; cv.height=H; const c=cv.getContext('2d'); let g=null, t=0, page=1, kt=0, dead=0; const K={}, T={};
-    return {cv,step(dt){ t+=dt; const G=game(e); MUTE=true; try{ if(page===0){ if(!G){ page=1; t=0; return; } if(!g)g=G.make(); kt-=dt; if(kt<=0){ kt=.15+R()*.45; for(const k of 'LRUDF')K[k]=0; const k='LRUDF'[ri(5)]; K[k]=1; T[k]=1; if(G.attract)G.attract(K,g); }
-        g.step(dt,K,T); for(const k in T)delete T[k]; if(g.over){ dead+=dt; if(dead>2){ g=null; dead=0; page=1; t=0; } } else if(t>30){ g=null; page=1; t=0; } } else if(t>7){ page=page===1&&topOf(name).length?2:G?0:1; t=0; } } finally{ MUTE=false; } },   // the card, the top ten, then the game playing itself
+    return {cv,step(dt){ t+=dt; const G=game(e); { if(page===0){ if(!G){ page=1; t=0; return; } if(!g)g=G.make(); kt-=dt; if(kt<=0){ kt=.15+R()*.45; for(const k of 'LRUDF')K[k]=0; const k='LRUDF'[ri(5)]; K[k]=1; T[k]=1; if(G.attract)G.attract(K,g); }
+        g.step(dt,K,T); for(const k in T)delete T[k]; if(g.over){ dead+=dt; if(dead>2){ g=null; dead=0; page=1; t=0; } } else if(t>30){ g=null; page=1; t=0; } } else if(t>7){ page=page===1&&topOf(name).length?2:G?0:1; t=0; } } },   // the card, the top ten, then the game playing itself
       draw(){ const G=game(e); if(page===0&&g)g.draw(c); else if(page===2)table(c,name); else card(c,name,Math.floor(performance.now()/500)%2); if(page===0&&g)tx(c,'INSERT $2',128,G.insert||4,Math.floor(performance.now()/500)%2?'#5aff6a':'rgba(0,0,0,0)',8,'center'); crt(c); }}; };
 
   const open=name=>{ if(C.on)return; const e=C.reg[name]; if(!e)return; const L=e.lore;

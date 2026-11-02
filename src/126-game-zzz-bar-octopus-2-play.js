@@ -1,8 +1,6 @@
 // THE OCTOPUS PLAYING: the octopus's beats, moods and arm swings on the drums.
 import {hash3} from './004-main.js';
 import {IMKITBAR} from './117-pianist.js';
-import {imxNode, imxSend} from './119-game-music-1-engine.js';
-import {imAct} from './120-game-music-2-instruments.js';
 import {pupPaint} from './124-singer.js';
 import {octBody, OCTP, OCTS, OCTSEAT} from './125-game-zzz-bar-octopus-1-body.js';
 const OCT={t:0,g:0,gbar:0,last:-1,src:null,hits:{L:[],R:[],K:[],A:[],B:[]},mood:'groove',puff:{next:4000,at:-1e9},sip:{next:9000,at:-1e9},lev:.85,cig:null,slo:{th:0,w:0,px:null,vx:0},hat:false,pics:new Map(),key:'',cur:null,L:[1,1,1],lk:'',lightAt:-1e9,b:{octo:true,inst:true,playing:true,c:{name:'the drummer',dress:''}}};
@@ -37,16 +35,15 @@ function octSoloStep(bar,i){ '@later'; const b=bar%8, out=[], acc=i%4===0;
   else if(b===6){ out.push([[2,2,2,3,3,3,3,4,4,4,4,4,1,1,1,1][i],i%2?'L':'R',acc?.95:.66]); if(i===0)out.push([6,'A',1]); if(i%4===0)out.push([0,'K',.75]); }
   else{ if(i===0||i===6||i===12)out.push([6,'A',1],[7,'B',.95],[1,'L',1],[0,'K',1]); if(i===14||i===15)out.push([1,i===14?'R':'L',.8]); }
   return out; }
-function octStep(dt,now){ '@later'; const N=imxNode('bar','drum kit');
+function octStep(dt,now){ '@later';
   if(OCT.src!=='alone'){ OCT.t=0; OCT.last=-1; OCT.g=0; OCT.src='alone'; }
   let E=OCTSET[OCT.g%OCTSET.length], G=OCTG[E.g]; OCT.mood=E.m; let spb=60/G.bpm/G.sub; OCT.t+=dt; const t=OCT.t;
   OCT.spb=spb; OCT.beats=G.beats; OCT.sub=G.sub; OCT.tnow=t;
   const per=G.beats*G.sub, upto=Math.floor((t+.12)/spb);
   for(let s=Math.max(0,OCT.last+1);s<=upto;s++){ OCT.last=s; const bar=Math.floor(s/per), i=s%per, at=s*spb, delay=Math.max(0,at-t), when=now+delay*1000;
-    if(bar>=E.bars&&i===0){ OCT.g++; OCT.t-=bar*per*spb; OCT.last=0; E=OCTSET[OCT.g%OCTSET.length]; G=OCTG[E.g]; OCT.mood=E.m; spb=60/G.bpm/G.sub; octHit(N,6,'A',1,when,delay,.3); octHit(N,0,'K',1,when,delay); break; }
-    const soft=G.soft||1; for(const [d,h,v] of E.m==='solo'?octSoloStep(bar,i):octGrooveStep(G,bar,i,E.bars))octHit(N,d,h==='F'?null:h,v*soft,when,delay,d===1?.3:d===5?.4:.45); } }
-function octHit(N,i,hand,v,when,delay,r=.3){ if(N)imxSend(N,imAct('drum kit',{k:'hit',i,v,r,dt:Math.min(1,delay)}));
-  if(hand){ const q=OCT.hits[hand]; q.push({at:when,i}); if(q.length>24)q.shift(); } }
+    if(bar>=E.bars&&i===0){ OCT.g++; OCT.t-=bar*per*spb; OCT.last=0; E=OCTSET[OCT.g%OCTSET.length]; G=OCTG[E.g]; OCT.mood=E.m; spb=60/G.bpm/G.sub; octHit(6,'A',when); octHit(0,'K',when); break; }
+    for(const [d,h] of E.m==='solo'?octSoloStep(bar,i):octGrooveStep(G,bar,i,E.bars))octHit(d,h==='F'?null:h,when); } }   // the hits are what the arms play; the kit itself is silent (no sound in the game, owner 2 Nov 2026)
+function octHit(i,hand,when){ if(hand){ const q=OCT.hits[hand]; q.push({at:when,i}); if(q.length>24)q.shift(); } }
 const octPh=(o,now)=>{ const k=(now-o.at)/3200; return k>=0&&k<1?k:-1; };
 function octHabits(now){ '@later'; const solo=OCT.mood==='solo';
   if(!solo&&now>OCT.puff.next&&octPh(OCT.sip,now)<0){ OCT.puff.at=now; OCT.puff.next=now+7000+hash3(Math.floor(now/1000),1,741)*5000; }

@@ -1,6 +1,6 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
@@ -64,7 +64,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
     const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GROW)<1?Math.floor((now()-p.t)/GROW*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
-  GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
+  GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; 
     if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); S.log[f.k]=(S.log[f.k]||0)+n; say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }
     else if(Math.random()<.3){ S.picked[f.id]=1; say('YOU CRUSH IT. THE PETALS FALL.','#c8a090'); } else say('THE STEM WILL NOT COME CLEANLY.','#c8a090');
     saveSoon(); sync(); FORAGE.draw(); };
@@ -77,7 +77,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     if(S.plots.length>=12)return say('YOU ALREADY TEND TWELVE PLANTS. PICK SOME FIRST.','#c8a090'); if(S.plots.some(p=>Math.hypot(p.x-pos.x,p.z-pos.z)<.45*T))return say('SOMETHING IS ALREADY PLANTED HERE.','#c8a090');
     FORAGE.take(id,1); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
   GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GROW); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
-    const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4});
+    const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); 
     if(use('garden',d-25,d+25)){ const n=2+(sk('garden')>d+20?1:0), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); S.log[p.k]=(S.log[p.k]||0)+n; if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
     else { FORAGE.give('fl_'+p.k,1); say(`ONLY ONE ${nm} IS ANY GOOD.`,'#c8a090'); }
     save(); sync(); FORAGE.draw(); };

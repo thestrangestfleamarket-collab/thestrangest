@@ -1,7 +1,6 @@
 // THE PIANO HANDS: PK sets out the keyboard; pnPose and pnFing put the pianist's hands on the keys.
 import {gtArm, gtMix, gtReach, gtSm} from './109-game-play-3-guitar-3-hands.js';
 import {castPose, POSES} from './112-main-14.js';
-import {PNA} from './114-game-play-5-piano-1-sound.js';
 import {pnBlack, PNBOOK, pnCompile, pnWhite} from './115-game-play-5-piano-2-music.js';
 const PK={W:0.698,Y:21.4,Z:10,LW:4.46,LB:2.8,PIV:9};
 const pkX=m=>(25.5-pnWhite(m))*PK.W;
@@ -31,8 +30,8 @@ const PKBENCH={o:RIG.V(0,0,0),x:RIG.V(1,0,0),y:RIG.V(0,1,0),z:RIG.V(0,0,1)};
 Object.assign(POSES,{pianoSit:{root:[0,15,0],L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE+.8,8.5]}},
   pianoPed:{root:[0,15,0],L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE+.2,8.5]}},
   pianoRest:{root:[0,15,0],bend:-2,L:{ik:[RIG.FOOTX+.8,RIG.ANKLE,8]},R:{ik:[-RIG.FOOTX-.5,RIG.ANKLE,8.5]},hands:{L:[4.6,17.8,7.4],R:[-4.6,17.8,7.4]}}});
-const PNS={t:0,sent:0,song:0,c:null};
-function pnSet(i){ PNS.song=i; PNS.c=pnCompile(PNBOOK[i]); PNS.t=0; PNS.sent=0; }
+const PNS={t:0,song:0,c:null};
+function pnSet(i){ PNS.song=i; PNS.c=pnCompile(PNBOOK[i]); PNS.t=0; }
 const pkAt=(m,u,f)=>RIG.V(pkX(m),PK.Y+(pnBlack(m)?.4:0)+.32-u*.3,pnBlack(m)?13.1:f===1?11.0:11.5), pkOver=(m,f)=>RIG.add(pkAt(m,0,f),RIG.V(0,1.3,-.3));
 const pkDown=(n,t)=>t<n.t0-0.04||t>n.t1+0.05?0:t<n.t0?(t-(n.t0-0.04))/0.04:t<=n.t1?1:1-(t-n.t1)/0.05;
 function pnFingers(h,t){ '@later'; const ns=PNS.c[h], out=[], w=[]; const home=f=>h==='R'?60+[0,2,4,5,7][f-1]:48+[7,5,4,2,0][f-1];
@@ -57,5 +56,5 @@ function pnPose(t){ '@later'; const {V,add,mul,sub}=RIG, T={L:pnFingers('L',t),R
   P._T=T; return P; }
 const pnFing=(P,B,T)=>{ for(const n of 'LR'){ const s=n==='L'?1:-1; P[n].fg=[0,1,2,3,4].map(i=>gtReach(RIG.digitBase(B.m.hf[n],s,i),i,T[n][i+1])); } };
 function pnKeys(t){ const pr=Object.assign({},PNKF); for(const n of PNS.c.notes){ if(n.t0-0.05>t)break; if(n.t1+0.06<t)continue; const u=pkDown(n,t); if(u>0)pr['pk'+n.m]=pkFrame(n.m,u); } pr.bench=pr.benchTop=PKBENCH; return pr; }
-window.__piano={PNS,PNBOOK,PNA,set:pnSet,compile:pnCompile,pose:pnPose,keys:pnKeys,x:pkX};
+window.__piano={PNS,PNBOOK,set:pnSet,compile:pnCompile,pose:pnPose,keys:pnKeys,x:pkX};
 export {PK, PKBENCH, pnFing, pnKeys, PNKF, PNPIECES, pnPose, PNS, pnSet};

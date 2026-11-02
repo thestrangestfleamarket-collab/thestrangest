@@ -1,6 +1,6 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, pos, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, pos, RINSP, ROOMS, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, FADE, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -12,7 +12,6 @@ import {HEMI} from './064-map-post.js';
 import {RIVER} from './066-river.js';
 import {OUTL} from './072-walker3d.js';
 import {clampP, disp, marker, PMAX, PMIN, ray, VIEW0} from './075-main-13.js';
-import {SOUND} from './091-sfx.js';
 for(const [k,d] of Object.entries({'map.train1':'TRAIN 1 · TO {next}','map.train2':'TRAIN 2 · TO {next}'}))TEXT.t(k,d);
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
@@ -157,7 +156,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const css=document.createElement('style'); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#said[hidden]{display:none}
-  #menu .box,#looks,#we,#movesp,#maped,#snded,#shbar,#stat,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
+  #menu .box,#looks,#we,#movesp,#maped,#shbar,#stat,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
   #menu{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--me:#0d3a1f;--mk:#020a06;--ms:#3aa866;--pixel:'Share Tech Mono',ui-monospace,monospace;--key:var(--mo);--fg:var(--mt);--dim:var(--md);--line:var(--mi);position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
@@ -186,7 +185,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
     <div class="ttl frame"><span id="mttl">THE STRANGEST FLEA MARKET</span></div>
-    <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="passport">PASSPORT</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button><button role="tab" data-t="guide">GUIDE</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
+    <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="passport">PASSPORT</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button><button role="tab" data-t="guide">GUIDE</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
     <div class="pane" data-p="home" id="dhome"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <div class="row" id="mapz"></div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div></div>
@@ -210,7 +209,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
       <h3>CHARACTERS</h3><div class="row"><button class="btn" id="danim">ANIMATION</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span>SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"></div><div class="row"><span>SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
-    <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
     <div class="pane" data-p="vr" id="dvr"></div>
@@ -219,8 +217,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="bug" id="dbug"></div>
     <div class="pane" data-p="tenants" id="dten"></div></div>`;
   document.body.appendChild(M);
-  const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='passport'&&PASSPORT.open)PASSPORT.page($('#dpass')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
+  const $=s=>M.querySelector(s); let tab='home', mapLv='up';
+  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='atmo')drawDisplay(); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='passport'&&PASSPORT.open)PASSPORT.page($('#dpass')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.querySelectorAll('.row.pick').forEach(r=>{ const o=()=>[...r.querySelectorAll('.btn:not(.arr)')], arr=(t,d)=>{ const b=document.createElement('button'); b.className='btn arr'; b.textContent=t; b.setAttribute('aria-label',d<0?'previous':'next');
     b.onclick=()=>{ const L=o(), i=L.findIndex(x=>x.getAttribute('aria-pressed')==='true'); L[(i+d+L.length)%L.length].click(); }; return b; }; r.insertBefore(arr('<',-1),o()[0]); r.appendChild(arr('>',1)); });   // a row of choices shows only the one picked, stepped with < >
@@ -332,7 +330,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     sel.onchange=()=>{ const o=sel.selectedOptions[0]; if(!o||!o.value)return; const n=o.value; sel.value=''; if(o.dataset.go==='s')goPlace(n); else { const P=PLACES.find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); } };
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
-  function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
+  function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
     $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); }
   { const SH={on:true,lv:2}, D=$('#dshd'); D.innerHTML='<button class="btn" data-s="1">ON</button><button class="btn" data-l="1">SHADED</button><button class="btn" data-l="2">SELF</button>';   // the figures' shadows: on/off, lit by the lamps, or self-shadowed too
     const drawSh=()=>{ W3.lv.value=SH.on?SH.lv:0; D.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); D.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
@@ -353,7 +351,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.setLit=on=>{ UI.lit=on; W3.mesh.material=on?W3.toon:W3.flat; for(const N of NPCS)N.me.material=on?N.toon:N.flat; try{ SAVE.set('avlight',on?'1':'0'); }catch(e){} };
   { let v='1'; try{ v=SAVE.get('avlight')||'1'; }catch(e){} UI.setLit(v==='1'); }
   $('#dlit').onclick=()=>{ UI.setLit(!UI.lit); drawDisplay(); };
-  $('#dsfx').onclick=()=>{ SFX.set(!SFX.on,null); drawDisplay(); }; $('#damb').onclick=()=>{ AMB.set(!AMB.on); drawDisplay(); }; $('#dvol').oninput=e=>SFX.set(null,+e.target.value);
   $('#dbody').onclick=()=>{ PB.set(!PB.on,true); drawDisplay(); };
   { UI.sway=false; UI.swayL=2; try{ UI.sway=SAVE.get('sway')==='1'; UI.swayL=Math.max(1,Math.min(10,+(SAVE.get('swayl')||2)||2)); }catch(e){}
     $('#dsway').onclick=()=>{ UI.sway=!UI.sway; try{ SAVE.set('sway',UI.sway?'1':'0'); }catch(e){} drawDisplay(); };
@@ -367,7 +364,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   document.getElementById('stat').hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['cpadmin',el=>{ el.hidden=true; }],['rinsp',()=>RINSP.toggle(false)]];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['cpadmin',el=>{ el.hidden=true; }],['rinsp',()=>RINSP.toggle(false)]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   { const ML=document.createElement('style'), C='color:#7dffa8!important', DIM='color:#3aa866!important', HI='color:#d8ffe4!important', sel=(k,cs)=>cs.map(c=>`.ml [style*="${k}:${c}"]`).join(',');   // every menu in the ESC menu's look (owner, 30 Oct 2026)
     ML.textContent=`.ml{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:18px!important;line-height:1.45;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important}
@@ -389,7 +386,7 @@ ${sel('color',['#d8a845'])}{${HI}}
 .ml .pX{color:#7dffa8!important;background:#020a06!important;box-shadow:inset 0 0 0 2px #3aa866!important;border:0!important}
 .ml .pX:hover{color:#020a06!important;background:#7dffa8!important}`;
     document.head.appendChild(ML);
-    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|shopg|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp)$/;
+    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|shopg|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|edmenu|chared|design|feelp|rinsp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };

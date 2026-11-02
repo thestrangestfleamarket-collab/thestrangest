@@ -1,6 +1,6 @@
 // THE BROOK: BROOK builds the park's brook, its banks, riffles, pools and flowing water.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, CLOCK, FLOW, PARK, SFX, SKY, WED} from './003b-systems.js';
+import {BROOK, CLOCK, FLOW, PARK, SKY, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -98,15 +98,9 @@ import {FOUNT} from './060a-fount.js';
       const dv=[], di=[], n=24; for(let i=0;i<=n;i++){ const u=-U0+2*U0*i/n, hc=hump(...wp(u,0))*WU+.003; for(const f of [-1,1]){ const q=wp(u,f*3.58); dv.push(X(q[0]),hc,Z(q[1])); } if(i)di.push(2*i-2,2*i,2*i-1,2*i-1,2*i,2*i+1); }
       const dg=new THREE.BufferGeometry(); dg.setAttribute('position',new THREE.Float32BufferAttribute(dv,3)); dg.setIndex(di); dg.computeVertexNormals(); const uv=[]; for(let i=0;i<dv.length;i+=3)uv.push(dv[i]/T*1.2,dv[i+2]/T*1.2); dg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
       const dk=new THREE.Mesh(dg,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide})); dk.receiveShadow=true; grp.add(dk); BROOK.bridge=dk; }
-    let snd=null, splash=0, wasIn=false;
-    const sound=(c,near,rf)=>{ if(!snd||snd.ctx!==c){ const n=c.sampleRate*2, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=l*.9+(Math.random()*2-1)*.1; d[i]=l*3*(.7+.3*Math.sin(i/n*Math.PI*14+Math.sin(i/n*Math.PI*6)*3)); }
-        const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; s.loop=true; F.type='bandpass'; F.frequency.value=1400; F.Q.value=.8; G.gain.value=0; s.connect(F).connect(G).connect(c.destination); s.start(); snd={ctx:c,F,G}; }
-      const v=SFX.on?Math.max(0,1-near/14)**2*(.12+.12*rf)*SFX.vol:0; snd.G.gain.setTargetAtTime(v,c.currentTime,.3); snd.F.frequency.setTargetAtTime(1200+700*rf+300*Math.sin(c.currentTime*.7),c.currentTime,.4); };
-    const plash=c=>{ const n=Math.floor(c.sampleRate*.25), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/n*7); const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=b; F.type='bandpass'; F.frequency.value=900+Math.random()*600; G.gain.value=.18*SFX.vol; s.connect(F).connect(G).connect(c.destination); s.start(); };
     BROOK.tick=(dt,pos)=>{ const px=pos.x/T+72-(P.ox||0), py=pos.z/T-77-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null, s=r?r[1]:0, h=r?BK.h(px,py):null, wade=r&&s>=BK.m&&h!=null&&h<L(s)-.04&&!BK.st.some(o=>Math.hypot(px-o[0],py-o[1])<o[2]);
       const mv=wade||FOUNT.swim||BROOK.swim?Math.min(1,Math.hypot(pos.x-(BROOK.lx||pos.x),pos.z-(BROOK.lz||pos.z))/Math.max(dt,1e-3)/T):0; BROOK.lx=pos.x; BROOK.lz=pos.z; U.uMe.value.set(pos.x,pos.z,0,wade||FOUNT.swim||BROOK.swim?.35+.65*mv:0); BROOK.wade=!!wade; BROOK.over=!!r;
-      if(CLOCK.sun){ if(CLOCK.sunV)U.uSunD.value.copy(CLOCK.sunV); U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value);
-      try{ const c=SFX.live&&SFX.live(); if(c){ sound(c,r?Math.max(0,r[0]-W(s)):99,r?Math.min(1,rif(s)):0); if(wade&&mv>.3&&(splash-=dt)<0){ splash=.42; plash(c); } if(wade&&!wasIn)plash(c); } }catch(_){ } wasIn=!!wade; };
+      if(CLOCK.sun){ if(CLOCK.sunV)U.uSunD.value.copy(CLOCK.sunV); U.uSun.value.copy(CLOCK.sun.color).multiplyScalar(Math.min(1.2,CLOCK.sun.intensity)); U.uDay.value=Math.max(.15,Math.min(1,(CLOCK.elev()+4)/14)); } if(window.SKY&&SKY.U)U.uSky.value.copy(SKY.U.uH.value); };
     BROOK.tris=()=>[...banks,...waters.map(w=>w.me)].reduce((a,m)=>a+m.geometry.index.count/3,0)+BROOK.rocks.reduce((t,m)=>t+m.count*80,0)+BROOK.pebbles.reduce((t,m)=>t+m.count*20,0);
     { const mx=x=>x/T+72-(P.ox||0), my=z=>z/T-77-(P.oy||0), xs=C.map(c=>X(c[0])), zs=C.map(c=>Z(c[1])), m=(W(SL)+B+4)*T;   // the stream and THE LAKE in the one water: the bed under the stream, its surface stepping down the riffles
       FLOW.add({name:'brook',kind:'lake',shown:()=>grp.visible,box:[Math.min(...xs)-m,Math.min(...zs)-m,Math.max(...xs)+m,Math.max(...zs)+m],has:(x,z)=>{ const r=BK.q(mx(x),my(z)); return !!r&&r[1]>=BK.kM*SL/N-1&&r[0]<W(r[1])+B*.5&&!BK.st.some(o=>Math.hypot(mx(x)-o[0],my(z)-o[1])<o[2]*.8); },

@@ -1,6 +1,6 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
+import {CLOCK, FAR3, GPH, pos, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -15,7 +15,7 @@ import {BATCH} from './008-batch.js';
   F.out=()=>APTS.enterReal([X(DX),Z(V(.9)),Y(HZ),Math.PI]);
   F.back=()=>APTS.enterReal();
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; UI.thing({name:'FIRE ESCAPE DOOR',ghost:1,obj:hit(1.1*T*KK,Y(78)-Y(0),1.6*T,X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1]-.15)),reach:1.9*T,near:2.6*T,tall:2*T,act:()=>{ const D=APTS.escDoor; if(!APTS.in||!D)return; D.set(!D.open); const at=new THREE.Vector3(X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1])); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); }});
+  let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; UI.thing({name:'FIRE ESCAPE DOOR',ghost:1,obj:hit(1.1*T*KK,Y(78)-Y(0),1.6*T,X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1]-.15)),reach:1.9*T,near:2.6*T,tall:2*T,act:()=>{ const D=APTS.escDoor; if(!APTS.in||!D)return; D.set(!D.open); const at=new THREE.Vector3(X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1])); if(D.open){} else {} }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101','0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111'};
   { const W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;

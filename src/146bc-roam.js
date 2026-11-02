@@ -5,7 +5,7 @@ import {EffectComposer, OutputPass, PCAM, renderer, RenderPass} from './004-main
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 { const H=STORE.holo, T=TILE, M=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), V3=THREE.Vector3, Q4=THREE.Quaternion;
-  const WX=-4200, WZ=0, FIELD=620;
+  const WX=3000, WZ=-80, FIELD=620;
   const ROAM=window.ROAM={on:false,fake:null};
   let D=null, API=null;
 

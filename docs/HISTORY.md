@@ -5168,4 +5168,4 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
-- 2 Nov 2026, ROAM's off-map box is room-sized (you sit still; the field moves round you): a box the size of the field made the townspeople's navmesh run out of memory.
+- 2 Nov 2026, ROAM sits off the map east, beside the catacomb run, in a room-sized box: a box far west of the map doubled the townspeople's street navmesh and it ran out of memory.

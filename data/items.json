@@ -814,10 +814,6 @@
   "value": 25,
   "sellable": true
  },
- "frame": {
-  "stackable": true,
-  "value": 4
- },
  "cage": {
   "stackable": true,
   "value": 5

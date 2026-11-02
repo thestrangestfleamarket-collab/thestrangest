@@ -28,7 +28,9 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const J_=(J,n)=>J[n+WIELD.hand];
   // a slash across: round the world's up, or round the camera's forward when the arm is raised or dropped (so a lifted arm still cuts across the screen)
   const slash=(v,S,dt)=>{ S.t+=dt; const u=Math.min(1,S.t/S.T), e=u*u*(3-2*u); sax.copy(UP).addScaledVector(v,-v.y); if(sax.lengthSq()<.1)sax.copy(cz); sax.normalize(); v.applyAxisAngle(sax,S.s*(1.5-3*e)*(S.h?1.4:1)).setY(v.y-(S.h?.45:.25)*Math.sin(Math.PI*u)).normalize(); return S.t>=S.T; };
-  let phOk=false, sw=null, side=1, spd=0, turning=false, cutT=0, combo=0, lastSw=0;
+  let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0;
+  // the arm swings only in front of the body (owner, 2 Nov 2026): an aim going behind is held at the body's sides; the keys turn the body, never the swing
+  const front=v=>{ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), k=v.x*fx+v.z*fz; if(k<.05)v.x+=fx*(.05-k),v.z+=fz*(.05-k); return v.normalize(); };
   renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); }   // what you hold comes into every room with you (the room cull leaves it be) WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
@@ -53,10 +55,8 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
         aim.copy(cz).multiplyScalar(Math.cos(f)).addScaledVector(cx,Math.cos(th)*Math.sin(f)).addScaledVector(cy,Math.sin(th)*Math.sin(f)); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } aim.copy(aim0);
       const K=KIND[WIELD.on], own=!!(K&&K.aim&&K.aim(dt,aim,aim0)); if(own)sw=null;
       if(WIELD.block&&!own){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }
-      if(sw&&slash(aim,sw,dt))sw=null;
-      const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw||own?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0;
-      const moving=st.target>0||SHARED.target||own, d=Math.atan2(Math.sin(Math.atan2(cur.x,cur.z)-SHARED.heading),Math.cos(Math.atan2(cur.x,cur.z)-SHARED.heading)); if(!moving&&ms.x>=0&&Math.abs(d)>1.1&&Math.abs(cur.y)<.6)turning=true; if(Math.abs(d)<.3||Math.abs(cur.y)>.8)turning=false;
-      if(turning&&!moving&&!st.move)SHARED.heading+=Math.max(-7*dt,Math.min(7*dt,d)); }
+      if(sw&&slash(aim,sw,dt))sw=null; if(!own)front(aim);
+      const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw||own?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0; }
     const w0=st.aim?st.aim.w:0, w=w0+((on&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
   WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }

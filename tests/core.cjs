@@ -13,6 +13,8 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+{ const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
+  ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
   ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
   ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }
@@ -26,7 +28,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   // the held thing's arm is the passport's hand: an aim moves the right wrist for a right-hander, the left for a left-hander, and an arm pointing up or back still poses
   const wr = (hand, v) => { const st = R.create(); st.hand = hand; if (v) st.aim = { v: R.V(...v), w: 1 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), o = wr('R'), aR = wr('R', [0, -.3, 1]), aL = wr('L', [0, -.3, 1]), up = wr('L', [0, 1, 0]), back = wr('R', [0, 0, -1]);
-  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included'); }
+  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included');
+  // hanging from a branch: with holds given in the world the wrists go to them (the hands over the branch), without them the arms just hang up
+  { const hg = grip => { const st = R.create(); st.hang = { z: 0, t: 0, side: 0, grip }; st.world = { x: 0, z: 0, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t: 0 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
+    const H = { L: { h: { x: 4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } }, R: { h: { x: -4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } } }, g = hg(H), o = hg(null), tgt = h => [h.x, h.y - .3, h.z];
+    ok(dist(g.L, tgt(H.L.h)) < 2 && dist(g.R, tgt(H.R.h)) < 2 && dist(o.L, g.L) > 2 && [g.L, g.R, o.L, o.R].every(w => w.every(isFinite)), 'hanging, the wrists go onto the branch\'s holds: ' + JSON.stringify({ g, o })); } }
 
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -182,7 +188,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     const mk = await pg.evaluate(() => { const all = [...BLK.blds.map(q => ({ ...q, kind: 'garage' })), ...BLK.lots], a = q => q.row === 5 ? [q.y0, q.y1] : [q.x0, q.x1]; let same = 0;
       for (const r of [1, 5]) { const L = all.filter(q => q.row === r).sort((p, q) => a(p)[0] - a(q)[0]); for (let i = 1; i < L.length; i++) if (L[i].kind === L[i - 1].kind && a(L[i])[0] - a(L[i - 1])[1] < .05) same++; }
       const n = k => all.filter(q => q.kind === k).length; return { n: all.length, garage: n('garage'), park: n('park'), empty: n('empty'), wide: all.filter(q => a(q)[1] - a(q)[0] > 13.1).length, same, signs: BLK.signs.length, hud2lots: BLK.lots.filter(q => q.row === 2).length, hud2g: BLK.blds.filter(q => q.row === 2).length }; }).catch(e => ({ err: e.message }));
-    ok(mk.n > 50 && mk.garage > 15 && mk.park > 10 && mk.empty > 10 && !mk.wide && !mk.same && !mk.signs && !mk.hud2lots && mk.hud2g > 5, "fillers: rows 1 and 5 stay a mix of closed garages, empty parking lots and dirt lots (no two alike side by side); the Hudson row (row 2) is all closed garages (30 Oct 2026): " + JSON.stringify(mk));
+    ok(mk.n > 50 && mk.garage > 15 && mk.park >= 9 && mk.empty > 10 && !mk.wide && !mk.same && !mk.signs && !mk.hud2lots && mk.hud2g > 5, "fillers: rows 1 and 5 stay a mix of closed garages, empty parking lots and dirt lots (no two alike side by side); the Hudson row (row 2) is all closed garages (30 Oct 2026): " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }

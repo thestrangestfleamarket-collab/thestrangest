@@ -256,7 +256,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146w-stump.js` | 5.5 | top level |  | 003: THREE; 003b: NPCS SHOPS UI; 006: SOL TILE; 111e: MERCH |
 | `146x-bluehour.js` | 6.9 | top level | SMOKE (147a) | 003: SHARED THREE; 003b: FORAGE NPCS ONLINE W3 WIELD pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH |
 | `146y-operator.js` | 8.5 | top level | PHONE (146ya 150j) | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD; 006: LEVEL SOL SYS TILE; 111e: MERCH |
-| `146ya-handheld.js` | 7.0 | top level |  | 003b: CHARP CINEMA CLOCK DRONE FORAGE HANDHELD INV ONLINE UI keys; 146y: PHONE |
+| `146ya-handheld.js` | 7.2 | top level |  | 003b: CHARP CINEMA CLOCK DRONE FORAGE HANDHELD INV ONLINE UI keys; 146y: PHONE |
 | `146z-visitors.js` | 12.6 | top level |  | 003: THREE; 006: TILE; 111e: MERCH |
 | `147-newsstand.js` | 16.7 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
 | `147a-bees.js` | 14.7 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE NPCS ONLINE ROOMS SFX UI VIT WEEDS pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH; 142a: FLORA; 144a: GARDEN; 146x: SMOKE |

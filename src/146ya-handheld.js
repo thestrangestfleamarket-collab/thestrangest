@@ -33,7 +33,8 @@ import {PHONE} from './146y-operator.js';
     if(b.dataset.visit){ const o=ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ close(); ONLINE.visit(o.id,o.name); } return; }
     if(b.dataset.go){ close(); if(b.dataset.go==='panel'){ if(CHARP.admin)CHARP.admin(); } else tab('tenants')(); return; }
     if(b.dataset.app)go(b.dataset.app); });
-  addEventListener('keydown',e=>{ if(W.hidden)return; const k=e.key; if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+  let fresh=false;   // a key sent to the window itself (the headset's) reaches this after the menu key opened it: not again
+  addEventListener('keydown',e=>{ if(W.hidden||fresh)return; const k=e.key; if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
     const nav={ArrowLeft:-1,ArrowRight:1,ArrowUp:-4,ArrowDown:4}[k];
     if(k==='Escape'){ if(page!=='home'){ page='home'; draw(); } else close(); }
     else if(nav&&page==='home'){ const n=W.querySelectorAll('.grid button').length; sel=(sel+nav+n)%n; draw(); }
@@ -44,7 +45,7 @@ import {PHONE} from './146y-operator.js';
     if(!admin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a&&!admin){ admin=true; if(!W.hidden&&page==='home')draw(); } }).catch(()=>{}); };
   const close=()=>{ W.hidden=true; clearInterval(tick); };
   admin=!!CINEMA.admin;
-  HANDHELD.toggle=()=>{ if(W.hidden)open(); else close(); };
+  HANDHELD.toggle=()=>{ if(W.hidden){ open(); fresh=true; setTimeout(()=>{ fresh=false; },0); } else close(); };
   HANDHELD.back=()=>{ if(back)open(); };   // ESC out of a menu page the handheld opened comes back to it
   HANDHELD.up=()=>!W.hidden;
   // the old tablet item leaves the pack

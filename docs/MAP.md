@@ -178,7 +178,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `126-game-zzz-bar-octopus-2-play.js` | 7.9 | top level | OCTBK (127), octArms (127), octHabits (127), octPose (127), octStep (127) | 004: hash3; 117: IMKITBAR; 119: imxNode imxSend; 120: imAct; 124: pupPaint; 125: OCTP OCTS OCTSEAT octBody |
 | `127-drummer.js` | 2.5 | top level |  | 003: SHARED THREE; 003b: DRM SND pos; 004: PPU; 006: MAPG STORE ZU; 119: IMX; 125: OCTP octBody; 126: OCTBK octArms octHabits octPose octStep |
 | `128-bandstand.js` | 1.6 | top level |  | 003b: DRM MUS NPCS STAGE pos; 006: AWAY MAPG QS STORE; 106: GTA; 114: PNA; 119: IMX; 123: VOX |
-| `129-clock.js` | 8.7 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
+| `129-clock.js` | 8.9 | top level |  | 003: SHARED THREE; 003b: CLOCK NPCS ROOMS W3 pos; 004: renderer scene; 006: QS RING TILE; 009: WATER; 064: HEMI |
 | `129a-vis.js` | 3.9 | top level | VIS (130 134 161 162) | 003: SHARED; 003b: LEVELS PARK ROOMS ZONES pos; 004: scene; 006: SECTION SECTIONS TILE |
 | `130-rooms.js` | 20.0 | top level |  | 003: SHARED THREE; 003b: BLK CIVIC CULL DRM DRONE ED LEVELS LITE LOOKS MAPED MUS NPCS ONLINE PNM ROOMS SGM UI W3 pos; 004: renderer scene; 006: FADE FREE MAPG MODS OUT OVERHEAD SEEN STORE SYS TILE ZU cutWalls; 007: FLAME; 008: BATCH PEEK; 009: WATER; 129a: VIS |
 | `130a-windows.js` | 6.6 | top level |  | 003: THREE; 003b: CLOCK ROOMS WINDOWS; 004: renderer scene; 006: FADE STORE SYS TILE |
@@ -188,7 +188,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `133a-lightedit.js` | 6.4 | top level |  | 003: THREE; 003b: LIGHTED PS2; 004: renderer resize scene; 005: SAVE; 006: CEL |
 | `134-skyline.js` | 25.3 | top level |  | 003: SHARED THREE; 003b: CLOCK CULL FAR3 SKY WX pos; 004: RH RW renderer scene; 005: SAVE; 006: MAPG MISTB MISTE MISTF MODS OUT PFAR QS RING SECTION SECTIONS STORE SYS TILE ZU; 065: RINGX; 129a: VIS |
 | `134a-parkfar.js` | 2.9 | top level |  | 003: SHARED THREE; 004: scene; 006: MAPG MISTE PFAR SYS TILE; 014: TUFTC; 065: RINGX |
-| `134b-daynight.js` | 9.5 | top level |  | 003: SHARED THREE; 003b: BUGS CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
+| `134b-daynight.js` | 10.4 | top level |  | 003: SHARED THREE; 003b: BUGS CLOCK DN FAR3 PARK SKY WX; 004: scene; 005: SAVE; 006: MISTE MISTS MISTSC QS SYS; 064: HEMI |
 | `134c-editors.js` | 3.7 | top level |  | 003b: BUGS CHARED EDITORS FAR3 FEEL GAMEED ITEMED LAND LIGHTED UI WE |
 | `134d-shafts.js` | 7.0 | top level |  | 003: SHARED THREE; 003b: CLOCK DN SKY WX pos; 004: renderer scene; 006: MODS OUT SYS TILE |
 | `134e-distfog.js` | 7.3 | top level | DFOG (146g 161a) | 003: SHARED THREE; 003b: ED FAR3 MAPED UI pos; 004: ShaderPass renderer scene; 005: SAVE; 006: TILE; 066: RIVER |
@@ -286,7 +286,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `152-city.js` | 9.4 | top level |  | 003: SHARED; 003b: CITY CLIP CLOCK MAPED NPCS PARK; 006: CASTLE MAPSTAIR MODS QS SOL STORE TILE; 076: STHOLE |
 | `152a-landscape.js` | 21.1 | top level |  | 003: SHARED THREE; 003a: B64 F32; 003b: LAND W3 WEEDS; 004: renderer scene; 005: SAVE; 006: SYS TILE; 014: TUFTC tuftCol; 014a: GRASS; 039: FOREST PROPS |
 | `153-nav.js` | 5.8 | top level | NAV (163) | 003: SHARED; 003b: CITY ROOMS; 006: MODS QS SOL TILE; 060a: FOUNT; 076: CSB CSHOLE STHOLE |
-| `155-civic.js` | 9.5 | top level |  | 003: SHARED THREE; 003b: BUGS CITY CIVIC CLOCK FAR3 MAIL UI; 006: AWAY FIX MAPG MODS RING SOL TILE ZU; 008: PEEK |
+| `155-civic.js` | 9.4 | top level |  | 003: SHARED THREE; 003b: BUGS CITY CIVIC CLOCK FAR3 MAIL UI; 006: AWAY FIX MAPG MODS RING SOL TILE ZU; 008: PEEK |
 | `156-duties.js` | 12.5 | top level |  | 003: SHARED THREE; 003a: B64 SKIN; 003b: CITY CIVIC CLOCK DRESS LITE NPCS VIT WX pos; 006: MAPG MODS SYS TILE ZU; 007: FLAME |
 | `159-jobs.js` | 5.4 | top level | JOBS (160) | 003: SHARED; 003b: CITY CLIP CLOCK MAIL PARK ROOMS; 006: QS SOL SYS TILE |
 | `159b-shops.js` | 6.6 | top level |  | 003: THREE; 003b: CHARS FORAGE INV ITEMS LINES NPCS SFX SHOPS TALK TEXT UI; 006: SYS TILE |

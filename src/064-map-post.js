@@ -62,7 +62,7 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.far=F; SYS.add('life',dt=>LITE.farTick(dt),'064-farglow'); }
 scene.background=new THREE.Color(0x050507);
 SHARED.floor='up';
-const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?(py<-1.6?'down':'up'):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
+const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?LEVELS.below(py):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
   if(MAPG.park)MAPG.park.visible=cur==='street'&&!!PARK.in;
   for(const w of LEVELS.ways)if(w.cut)w.cut.constant=LEVELS.way?py+.25:cur===w.b&&LEVELS.of[w.b].ceil!=null?LEVELS.of[w.b].ceil:1e6;
   if(lv==='down'){ const o=LEVELS.of[cur]; HEMI.intensity=o&&o.amb!=null?o.amb:.1; }   // a down level may have no light but its own lamps

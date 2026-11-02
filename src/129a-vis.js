@@ -22,7 +22,7 @@ LEVELS.of.street={name:'MARKET ST',floor:'up',base:true};
   const on=(id,cur)=>id==='*'||id===cur||typeof id==='object'&&(id===LEVELS.way||(id.at||[id.a,id.b]).includes(cur));
   const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o.parent===scene?o:null; };
   LEVELS.at=(x,z,floor)=>{ let b=null; for(const id in LEVELS.of){ const L=LEVELS.of[id]; if(L.floor!==floor)continue; if(L.has){ if(L.has(x,z))return id; } else if(L.base&&!b)b=id; } return b; };
-  LEVELS.floor=(cur,y,si)=>si?(y<-1.6?'down':'up'):cur;
+  LEVELS.floor=(cur,y,si)=>si?LEVELS.below(y):cur;
   LEVELS.set=(lv,x,z,si)=>{ const w=si&&LEVELS.ways.find(w=>w.stair===si.S)||null; LEVELS.way=w; return LEVELS.cur=w?(lv==='down'?w.b:w.a):LEVELS.at(x,z,lv); };
   LEVELS.drawn=(o,cur=LEVELS.cur)=>{ const t=top(o); return !t||on(owner(t),cur); };
   LEVELS.hide=(cur=LEVELS.cur)=>{ const H=[]; for(const o of scene.children)if(o.visible&&!on(owner(o),cur)){ o.visible=false; H.push(o); } return H; };

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CIVIC, CLOCK, INV, MAIL, PARK, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-import {FIX, MAPG, MODS, QS, RING, SOL, STORE, TILE} from './006-map-pre.js';
+import {FIX, MAPG, MODS, QS, RING, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {JOBS} from './159-jobs.js';
 Object.assign(MAIL,{on:QS.has('mail')?QS.get('mail')!=='0':CITY.on,addr:[],L:[],nid:0,day0:0,you:{cash:INV.START,g1m:1},cboxes:[],ready:false}); window.MAIL=MAIL;
 if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), rnd=Math.random, pick=a=>a[Math.floor(rnd()*a.length)], log=(w,p)=>CIVIC.note(w,p||'post');
@@ -210,7 +210,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
     MAIL.day0=Math.max(0,(D.day||0)+((D.h||0)>CLOCK.h?1:0)); MAIL.nid=D.nid||0; MAIL.you=D.you||MAIL.you; if(!MAIL.you.g1m){ MAIL.you.cash=Math.max(MAIL.you.cash||0,INV.START); MAIL.you.g1m=1; } MAIL.L=(D.L||[]).filter(l=>l&&l.id);
     (D.cb||[]).forEach((a,i)=>{ if(MAIL.cboxes[i])MAIL.cboxes[i].in=a||[]; }); for(const [id,v] of Object.entries(D.cash||{})){ const A=MAIL.byId(id); if(A&&A.who&&A.who.ref)A.who.ref.cash=v; }
     for(const l of MAIL.L)if(l.state==='out')l.state='sorted'; refresh(); };
-  setInterval(save,30000); addEventListener('beforeunload',save); MAIL.save=save;
+  SYS.every(save,30000,'160-mail save'); addEventListener('beforeunload',save); MAIL.save=save;
 
   const wait=()=>{ const ok=(STORE.places||[]).every(p=>p[1]||p[2]||p[4]==='off')||performance.now()-(MAIL.t0||(MAIL.t0=performance.now()))>90000; if(ok)MAIL.build(); else setTimeout(wait,1500); };
   setTimeout(wait,1500);

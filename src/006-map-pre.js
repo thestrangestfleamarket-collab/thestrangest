@@ -66,7 +66,7 @@ const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 SHARED.solids=SOL.up; SHARED.fixed=FIX.up; SHARED.BOUND=undefined; SHARED.groundY=undefined; SHARED.LVL='up'; SHARED.BOD=undefined; SHARED.BODB=undefined; SHARED.METRO=undefined;
 const STORE={rooms:[],places:[],roofs:[]}, BF={list:[]}; window.STORE=STORE;
-const SYS={P:{},started:false,onStart:(fn,name)=>{ if(!SYS.started)return SYS.add('start',fn,name); try{ fn(); }catch(e){ console.warn('SYS start '+(name||''),e); } },add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)])),bad:new Set(),go:(fn,name)=>{ try{ fn(); }catch(e){ if(!SYS.bad.has(name)){ SYS.bad.add(name); console.warn('SYS '+name,e); } } }}; window.SYS=SYS;
+const SYS={P:{},started:false,onStart:(fn,name)=>{ if(!SYS.started)return SYS.add('start',fn,name); try{ fn(); }catch(e){ console.warn('SYS start '+(name||''),e); } },add:(ph,fn,name)=>{ (SYS.P[ph]=SYS.P[ph]||[]).push({fn,name:name||''}); },run:(ph,...a)=>{ const L=SYS.P[ph]; if(!L)return; for(const s of L){ try{ s.fn(...a); }catch(e){ if(!s.err){ s.err=1; console.warn('SYS '+ph+' '+s.name,e); } } } },every:(fn,ms,name)=>{ let next=null; SYS.add('every',now=>{ if(next===null){ next=now+ms; return; } if(now<next)return; next=now+ms; fn(); },name); },list:()=>Object.fromEntries(Object.entries(SYS.P).map(([k,v])=>[k,v.map(s=>s.name)])),bad:new Set(),go:(fn,name)=>{ try{ fn(); }catch(e){ if(!SYS.bad.has(name)){ SYS.bad.add(name); console.warn('SYS '+name,e); } } }}; window.SYS=SYS;
 const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
@@ -81,7 +81,7 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
     // where you arrive in a section: the middle of its stretch of the ring street (map units)
     spawn:b=>{ const R=S.ring; return {x:(b.x0+b.x1)/2,y:b.row===0?(R.outer.y0+R.park.y0)/2:(R.outer.y1+R.park.y1)/2}; },
     // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground and the hand-built section's insides off the map stay
-    fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.py<-1.6)return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
+    fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.floor==='down')return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
       if(home.id===SECTION.id&&ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
     at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}

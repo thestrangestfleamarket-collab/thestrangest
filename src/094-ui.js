@@ -304,7 +304,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(SHARED.LVL===mapLv){ const a=Math.round(X_(SHARED.BOD.OX+pos.x/TILE)), b=Math.round(Y_(SHARED.BOD.OY+pos.z/TILE)); mg.fillStyle='#000'; mg.fillRect(a-5,b-5,11,11); mg.fillStyle='#f2c14e'; mg.fillRect(a-4,b-4,9,9); } }
   STORE.goTo=(x,z,lv,hd,fl)=>goTo(x,z,lv,hd,fl);
   window.__UI=UI;
-  const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?(lv<-1.6?'down':'up'):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
+  const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?LEVELS.below(lv):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
   UI.goTo=goTo;
   const toPlace=(x,z,lv,hd)=>{ const id=(lv==null||lv==='up')&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]); else goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
   { let dr=null, moved=false; mcv.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy}; moved=false; mcv.setPointerCapture(e.pointerId); });
@@ -406,4 +406,4 @@ ${sel('color',['#d8a845'])}{${HI}}
       if(!el.dataset.pan){ el.dataset.pan=1; drag(el); }
       const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');
       if(!el.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); const b=own(el); if(b)b.click(); else hide(el); }; el.appendChild(x); } } };
-  look(); setInterval(()=>{ look(); UI.menuLook(); frame(); },400); }
+  look(); SYS.every(()=>{ look(); UI.menuLook(); frame(); },400,'094-ui look'); }

@@ -329,10 +329,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const $=s=>dlg.querySelector(s), say=t=>{ $('#cmsay').textContent=t; };
     $('#cmsnd').onchange=e=>CINEMA.sound(e.target.checked,null); $('#cmv').oninput=e=>{ $('#cmvv').textContent=e.target.value+'%'; CINEMA.sound(null,+e.target.value); };
     $('#cmfull').onclick=()=>{ $('#cmclose').onclick(); CINEMA.fullscreen(true); };
-    $('#cmclose').onclick=()=>{ dlg.style.display='none'; if(tlT){ clearInterval(tlT); tlT=0; } };
+    $('#cmclose').onclick=()=>{ dlg.style.display='none'; };
     const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }, F_=()=>!ytOn()&&film(), dur=()=>{ const f=F_(); if(f)return f.f.len; try{ return player&&player.getDuration?player.getDuration()||0:0; }catch(e){ return 0; } }; let drag=false;
-    if(tlT)clearInterval(tlT); tlT=setInterval(()=>{ if(dlg.style.display==='none'){ clearInterval(tlT); tlT=0; return; } const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
-      if(!drag&&d)$('#cmt').value=Math.round(t/d*1000); $('#cmtv').textContent=fmt(t)+' / '+fmt(d); },500);
+    if(!tlT){ tlT=1; SYS.every(()=>{ if(!dlg||dlg.style.display==='none')return; const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
+      if(!drag&&d)$('#cmt').value=Math.round(t/d*1000); $('#cmtv').textContent=fmt(t)+' / '+fmt(d); },500,'059f-cinema timeline'); }
     $('#cmt').oninput=e=>{ drag=true; const d=dur(); $('#cmtv').textContent=fmt(+e.target.value/1000*d)+' / '+fmt(d); };
     $('#cmt').onchange=async e=>{ drag=false; if(!a||F_())return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
     if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
@@ -375,5 +375,5 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     buildSigns(m); buildHole(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');
-  SYS.onStart(async()=>{ await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); },'059f-cinema');   // after the start, so the later chunk is not pulled in early
+  SYS.onStart(async()=>{ await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); SYS.every(pull,5000,'059f-cinema pull'); },'059f-cinema');   // after the start, so the later chunk is not pulled in early
 }

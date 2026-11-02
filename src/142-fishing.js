@@ -147,7 +147,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   BOAT.carry=(st,pos)=>{ pos.x=BOAT.x; pos.z=BOAT.z; st.sit={z:Math.max(2,Y(.3)/(ZU*W3.SZ*(W3.BH||1)))}; if(RIVER.swim)RIVER.swim=false; if(st.water)st.water.in=false; };
   const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; { const c=document.createElement('style'); c.textContent='#boathud[hidden],#fishhud[hidden],#minehud[hidden],#fjour:empty{display:none!important}'; document.head.appendChild(c); } HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
   HUD.innerHTML='<span>ROWBOAT · W A S D</span><button style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">STEP ASHORE</button>'; document.body.appendChild(HUD);
-  HUD.querySelector('button').onclick=()=>BOAT.ashore(); setInterval(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400);
+  HUD.querySelector('button').onclick=()=>BOAT.ashore(); SYS.every(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400,'142-fishing ashore');
 
   /* ---------- the catch: who bites where, when and on what (the odds), and how hard they fight ---------- */
   const S=FORAGE.S; S.fishkg=S.fishkg||{};

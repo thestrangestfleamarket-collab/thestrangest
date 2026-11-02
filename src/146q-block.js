@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 import {FORAGE, keys, NPCS, SHOPS, UI, WIELD} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-import {SOL, TILE} from './006-map-pre.js';
+import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const CUBE={on:null}; window.CUBE=CUBE;
 { const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
@@ -15,7 +15,7 @@ const CUBE={on:null}; window.CUBE=CUBE;
   W.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b data-t style="color:#f2c14e">PUZZLE CUBE</b><span data-s></span></div><canvas width="420" height="420" style="display:block;cursor:grab;touch-action:none"></canvas><div style="margin-top:6px;display:flex;gap:6px;justify-content:space-between"><span style="color:#9b9584">DRAG A FACE TO TURN IT · DRAG THE DARK TO LOOK ROUND</span><span><button data-m style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer">MIX</button> <button data-x style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer">PUT AWAY</button></span></div>';
   document.body.appendChild(W); const CV=W.querySelector('canvas'), ST=W.querySelector('[data-s]'), TI=W.querySelector('[data-t]');
   for(const ev of ['keydown','keyup'])W.addEventListener(ev,e=>{ if(e.key==='Escape')CUBE.close(); e.stopPropagation(); });
-  let R=null, S=null, C=null, root=null, cubies=[], N=3, anim=null, queue=[], moves=0, t0=0, solved=false, run=0;
+  let R=null, S=null, C=null, root=null, cubies=[], N=3, anim=null, queue=[], moves=0, t0=0, solved=false;
   const V=THREE.Vector3;
   const build=n=>{ N=n; if(!R){ R=new THREE.WebGLRenderer({canvas:CV,antialias:true}); R.setPixelRatio(1); R.outputColorSpace=THREE.SRGBColorSpace; S=new THREE.Scene(); S.background=new THREE.Color(0x101218); C=new THREE.PerspectiveCamera(32,1,.1,50);
       S.add(new THREE.HemisphereLight(0xffffff,0x40404a,1.6)); const d=new THREE.DirectionalLight(0xffffff,1.6); d.position.set(3,5,4); S.add(d); }
@@ -55,8 +55,8 @@ const CUBE={on:null}; window.CUBE=CUBE;
     const cub=h.object.parent, layer=Math.round(cub.position[axis]+(N-1)/2); turn(axis,layer,dir,false); });
   CV.addEventListener('pointerup',()=>{ drag=null; });
   W.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x!==undefined)CUBE.close(); if(b.dataset.m!==undefined)mix(); });
-  let last=0; const loop=(t,k)=>{ if(!CUBE.on||k!==run)return; const dt=Math.min(.05,(t-last)/1000||0); last=t; step(dt); R.render(S,C); ST.textContent=solved?'SOLVED':(((performance.now()-t0)/1000).toFixed(0)+' S · '+moves+' TURNS'+(best['n'+N]?' · BEST '+best['n'+N].toFixed(1)+' S':'')); requestAnimationFrame(t=>loop(t,k)); };
-  CUBE.open=id=>{ const n=SIZES[id]; if(!n||!FORAGE.has(id))return; CUBE.on=id; build(n); TI.textContent=FORAGE.NM[id]; W.hidden=false; keys.clear(); mix(); last=performance.now(); const k=++run; requestAnimationFrame(t=>loop(t,k)); };
+  let last=0; const loop=t=>{ if(!CUBE.on)return; const dt=Math.min(.05,(t-last)/1000||0); last=t; step(dt); R.render(S,C); ST.textContent=solved?'SOLVED':(((performance.now()-t0)/1000).toFixed(0)+' S · '+moves+' TURNS'+(best['n'+N]?' · BEST '+best['n'+N].toFixed(1)+' S':'')); }; SYS.add('win',loop,'146q-block');
+  CUBE.open=id=>{ const n=SIZES[id]; if(!n||!FORAGE.has(id))return; CUBE.on=id; build(n); TI.textContent=FORAGE.NM[id]; W.hidden=false; keys.clear(); mix(); last=performance.now(); };
   CUBE.close=()=>{ CUBE.on=null; W.hidden=true; };
   FORAGE.ROWB.push(id=>SIZES[id]?[['PLAY','cube']]:[]); FORAGE.ACT.cube=id=>{ if(WIELD.set&&WIELD.on!==id)WIELD.set(id); CUBE.open(id); };
   // held, a cube sits in your hand (the others see you turning it); a click opens it to solve

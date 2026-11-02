@@ -120,7 +120,7 @@ import {GEMS} from './101-gems.js';
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
-  setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
+  SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
       for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };

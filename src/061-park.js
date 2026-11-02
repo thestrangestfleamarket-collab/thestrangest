@@ -1,7 +1,7 @@
 // THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CLIP, CLOCK, CULL, DN, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, WED, WEEDS} from './003b-systems.js';
+import {CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, MODS, NORTHX, NORTHY, PARKGX, PARKLAKE, PARKRY, QS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -227,7 +227,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
-      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):2;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));
@@ -463,7 +463,7 @@ await grab('park',async()=>{});
   P.show=on=>{ P.in=on; G.visible=on&&SHARED.LVL==='up'; if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
   let bg=false; const NEAR=14;   // the park is drawn (and loaded quietly first) from this many tiles outside its wall, so its gates show the real inside
-  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||py<-1||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
+  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
     if(!P.ready&&!bg&&P.within(p.x,p.z,-NEAR-6)){ bg=true; P.load().finally(()=>{ bg=false; }); }
     const w=P.within(p.x,p.z,P.in?-NEAR-.35:-NEAR+.35); if(w===P.in)return; if(w&&!P.ready&&!bg||jump)go(w,jump); else if(!w||P.ready)P.show(w); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

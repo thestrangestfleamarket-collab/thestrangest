@@ -1,6 +1,7 @@
 // THE TABLET: everyone carries a rugged red tablet (data/tablet.json, the owner's model); TAB raises it in your hands and wakes its screen, a home of apps for what the game already has: CALL (any shop), ORDER and ARCADE (the BBS), MAP, CHAT and PLAYERS (online).
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRONE, FORAGE, INV, ONLINE, TABLET, UI, WIELD} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
 import {PHONE} from './146y-operator.js';
 { const DATA=__LAZY__("data/tablet.json"), ID='tablet';
   FORAGE.add({names:{[ID]:'TABLET'}});
@@ -49,8 +50,9 @@ import {PHONE} from './146y-operator.js';
     if(b.dataset.x!==undefined)return TABLET.away(); if(b.dataset.home!==undefined){ page='home'; return draw(); }
     if(b.dataset.visit){ const o=ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ close(); ONLINE.visit(o.id,o.name); } return; }
     const a=APPS.find(q=>q[0]===b.dataset.app); if(!a)return; if(!a[5]){ page=a[0]; return draw(); } close(); a[5](); });
-  let tick=0; const open=()=>{ page='home'; draw(); W.hidden=false; clearInterval(tick); tick=setInterval(()=>{ if(W.hidden)clearInterval(tick); else{ W.querySelector('[data-t]').textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); } },5000); };
-  const close=()=>{ W.hidden=true; clearInterval(tick); };
+  SYS.every(()=>{ if(W.hidden)return; W.querySelector('[data-t]').textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); },5000,'146ya-tablet clock');
+  const open=()=>{ page='home'; draw(); W.hidden=false; };
+  const close=()=>{ W.hidden=true; };
   // pulled up: in your hands (the WIELD, so others see it too) and the screen awake; put away: both gone
   TABLET.up=async()=>{ await LOAD('later'); if(!FORAGE.has(ID))INV.add(ID,1); if(WIELD.on!==ID)WIELD.set(ID); open(); };
   TABLET.away=()=>{ close(); if(WIELD.on===ID)WIELD.set(null); };

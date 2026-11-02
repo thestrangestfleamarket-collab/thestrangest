@@ -1,4 +1,5 @@
 // THE NEW VERSION: tells the player when a newer build of the game is ready.
+import {SYS} from './006-map-pre.js';
 import {BUILDV} from './135-where.js';
 { const show=()=>{ '@later'; if(document.getElementById('newver'))return; const d=document.createElement('div'); d.id='newver';
     d.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;font:12px var(--pixel,monospace);color:#f2c14e;background:#0b0d13f2;border:2px solid #f2c14e;padding:8px 12px;display:flex;gap:12px;align-items:center';
@@ -8,5 +9,5 @@ import {BUILDV} from './135-where.js';
       const rd=r.body.getReader(), dec=new TextDecoder(); let s='';
       while(s.length<65536){ const {value,done}=await rd.read(); if(done)break; s+=dec.decode(value,{stream:true}); const m=/name="market-build" content="(\d+)"/.exec(s); if(m){ rd.cancel().catch(()=>{}); NEWVER.seen=+m[1]; if(+m[1]>BUILDV)show(); return; } }
       rd.cancel().catch(()=>{}); }catch(e){} };
-  setTimeout(peek,3000); setInterval(peek,90000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden)peek(); });
+  setTimeout(peek,3000); SYS.every(peek,90000,'136-version'); document.addEventListener('visibilitychange',()=>{ if(!document.hidden)peek(); });
   window.NEWVER=show; NEWVER.peek=peek; }

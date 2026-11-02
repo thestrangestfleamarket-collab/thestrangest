@@ -62,7 +62,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   GARDEN.sync=sync; GARDEN.plots=()=>S.plots; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
   { SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); sync(); },'144a-garden'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))sync(); },'144a-garden');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
-  let st0=-1; setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
+  let st0=-1; SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
     const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GROW)<1?Math.floor((now()-p.t)/GROW*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
   GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
     if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); S.log[f.k]=(S.log[f.k]||0)+n; say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }

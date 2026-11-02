@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, CLOCK, DRESS, LITE, pos, WED, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {lamps, LFX, MODS, NEONS, OUT, STORE, SYS, TILE, TURN, WP, WROW} from './006-map-pre.js';
+import {AWAY, lamps, LFX, MODS, NEONS, OUT, STORE, SYS, TILE, TURN, WP, WROW} from './006-map-pre.js';
 import {TLX} from './069-dress.js';
 const SHINE=window.SHINE={src:[],porch:[]};
 { const MS=[], M=1/.84*TILE, G=(x,z)=>SHARED.groundY(x,z), V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y1=V(0,1,0), cc=new THREE.Color();
@@ -56,7 +56,8 @@ const SHINE=window.SHINE={src:[],porch:[]};
   { const B=SHARED.BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(MODS.apts.doorAt[0],MODS.apts.doorAt[1],MODS.apts.doorHd,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[3],d[4],d[5]);
-    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5); }
+    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5);
+      if(WP.art&&!AWAY.has('art')&&STORE.main){ const TA=TURN(STORE.main.lot('art',1),WP.art.face), ap=TA.pt((TA.L.x0+TA.L.x1)/2,TA.L.y1), ax=B.X(ap[0]), az=B.Z(ap[1]); porch(ax,az,TA.hd(0),1.6,1.5); porch(ax,az,TA.hd(0),-1.6,1.5); } }
     sconce.computeBoundingSphere(); jar.computeBoundingSphere(); WED.meshes.push({place:'street',me:sconce,items:PI.slice(0,sconce.count)},{place:'street',me:jar,items:PI.slice(0,jar.count).map(o=>({k:o.k,x:o.x,y:o.y,z:o.z}))}); }
   if(TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }
   if(pool){ const N=160, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), f=r=>{ const d=Math.hypot(.5,r); return .5/d*d**-1.6*Math.max(0,1-d**4)**2; }, f0=f(0);

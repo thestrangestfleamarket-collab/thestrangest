@@ -74,7 +74,7 @@ const GARB={};
   const fin=t=>{ const n=t.P.length/3; t.n=n; t.s1=new Int8Array(n); t.s2=new Int8Array(n); t.l1=new Float32Array(n*3); t.l2=new Float32Array(n*3); t.w2=new Float32Array(n); t.Kf=Float32Array.from(t.K);
     t.rv=new Float32Array(n);
     // a point shared with a limb keeps its distance from the joint the limb bends at, so cloth arcs over a bent knee or elbow instead of cutting through it
-    t.S.forEach(([a,b,w,p],i)=>{ t.s1[i]=NI[a]; t.l1.set(toL(a,p),i*3); t.s2[i]=b?NI[b]:-1; if(b){ t.l2.set(toL(b,p),i*3); t.w2[i]=w; if(/^(thigh|shin|upperArm|forearm)/.test(b)){ const o=fr0(b).o; t.rv[i]=Math.hypot(p.x-o.x,p.y-o.y,p.z-o.z); } } });
+    t.S.forEach(([a,b,w,p],i)=>{ t.s1[i]=NI[a]; t.l1.set(toL(a,p),i*3); t.s2[i]=b?NI[b]:-1; if(b){ t.l2.set(toL(b,p),i*3); t.w2[i]=w; if(/^(thigh|shin|upperArm|forearm)/.test(b)&&!/^thigh/.test(a)||/^shin/.test(b)){ const o=fr0(b).o; t.rv[i]=Math.hypot(p.x-o.x,p.y-o.y,p.z-o.z); } } });
     t.uvF=new Float32Array(t.uv); t.ixU=new Uint32Array(t.ix); delete t.S; return t; };
   // the body it is worn over, as a distance (the Walker's own pieces at rest; under the shirt the jeans, as their waist): out of it by cl
   const SDF={}, body=(f,a)=>SDF[f+(a||'')]||(SDF[f+(a||'')]=(()=>{ const ps=(f==='F'?['torsoF','bustF','hips']:f==='P'?['hips']:['torso','hips']).concat(a?['upperArmL','upperArmR']:[]).map(n=>W3.pcs[W3.idx(n)]).filter(Boolean);
@@ -150,7 +150,9 @@ const GARB={};
           const C=add3(o,add3(mul3(u,c*r),mul3(w,sn*r))), dx=-c, out=sg*dx, f=fi(q)+(fo(q)-fi(q))*Math.max(0,out);
           let p=C; if(f<1){ const [W,D]=seat(o.y), Hp=out>=0?V(W*Math.sign(dx)*Math.abs(dx)**(2/Z.n),o.y,D*Math.sign(sn)*Math.abs(sn)**(2/Z.n)):V(0,o.y,D*sn); p=add3(mul3(Hp,1-f),mul3(C,f)); }
           if(sg*p.x<0)p=V(0,p.y,p.z);   // where the legs meet they press flat against each other at the middle, never one through the other
-          const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):f>=1?['thigh'+s,null,0]:f>0||p.y<18.6?['hips','thigh'+s,f]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
+          // the crotch's middle sits halfway between both thighs, a gusset that keeps the legs joined as they part; elsewhere the leg goes with its own thigh as soon as it leaves the seat
+          const ks=Math.max(f,fo(q)), gus=p.y>12&&p.y<15.8&&Math.abs(p.x)<.6;
+          const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):gus?['thighL','thighR',.5]:ks>=1?['thigh'+s,null,0]:ks>0||p.y<18.6?['hips','thigh'+s,ks]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
           pt(t,p,k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/nl*reps,(T[j]-q0)/TS],0); }
       return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs

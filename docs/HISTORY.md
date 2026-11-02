@@ -5223,3 +5223,6 @@ Owner: "lets change the tablet to look like 1980s retro tech, like a pager, or n
 ## 2 Nov 2026: a too-big owned save stops retrying instead of looping silently
 
 Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser stops retrying (before, `ownedPut` returned false, the client treated it as a transient failure, re-queued it and retried every 15 s forever, saving nothing and telling the player nothing). The device keeps its own copy and `OWNED.isFull()` is set; a visible player notice is still to add. Found in a fresh code audit.
+
+## 2 Nov 2026: the painted ground near you only; the museum's inside on the way in
+Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · MUSEUM OF EARTH" 92 MB loaded but not drawn): picks "1,2,3" for the street's painted ground, then "yes fix the museum too". The ground is painted at half detail, only near you, and dropped (freed) when far or while you are in a room off the map, painted again on the way out. The museum's inside (floor, inner walls, exhibits) is built only when you go in and dropped when you leave. Rule: painted pictures are kept only near you; an inside marked to drop goes when you leave it.

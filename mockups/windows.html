@@ -1,0 +1,296 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>One window system</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Silkscreen&display=swap">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--me:#0d3a1f;--mk:#020a06;--hi:#f2c14e;--bg:#0d0f14;--mono:'Share Tech Mono',ui-monospace,monospace;--px:'Silkscreen',monospace}
+html,body{margin:0;background:var(--bg);color:#ece5d3;font:15px/1.5 var(--mono)}
+body{padding:16px}
+h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
+.lead{color:#9b9584;max-width:980px;margin:0 0 14px}
+.picks{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.picks button{font:16px var(--mono);letter-spacing:2px;color:var(--mt);background:var(--mk);border:0;box-shadow:0 0 0 2px var(--mi);padding:8px 14px;cursor:pointer}
+.picks button[aria-selected=true]{color:var(--mk);background:var(--mf)}
+.v{display:none}.v.on{display:block}
+.about{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:1120px;margin:12px 0 18px}
+.about h3{font:13px var(--mono);letter-spacing:2px;color:var(--md);margin:0 0 4px;border-bottom:2px solid var(--me);padding-bottom:4px}
+.about ul{margin:0;padding-left:16px;color:#c8c2b0;font-size:13px}
+.about li{margin:2px 0}
+@media (max-width:800px){.about{grid-template-columns:1fr}}
+
+/* the fake screen */
+.shell{max-width:1120px}
+.scr{position:relative;width:1120px;height:630px;overflow:hidden;background:#0b0e14;transform-origin:0 0}
+.scr .world{position:absolute;inset:0;background:
+ linear-gradient(180deg,#141a2a 0,#1c2436 38%,#2a2a2c 38.2%,#3a3836 60%,#2c2a28 60.2%,#1d1b19 100%)}
+.scr .bld{position:absolute;bottom:38%;background:#2a2630;box-shadow:inset 0 0 0 2px #1a1720}
+.scr .bld i{position:absolute;width:10px;height:14px;background:#f2c14e;opacity:.8;box-shadow:0 0 8px #f2c14e88}
+.scr .lamp{position:absolute;bottom:36%;width:4px;height:120px;background:#444}.scr .lamp::after{content:'';position:absolute;top:-8px;left:-6px;width:16px;height:10px;background:#ffe9a8;box-shadow:0 0 30px 12px #ffd68044}
+.scr .you{position:absolute;left:540px;bottom:40%;width:18px;height:48px;background:#e8e2cc;border-radius:6px 6px 2px 2px}
+.scr .you::before{content:'';position:absolute;left:3px;top:-14px;width:12px;height:12px;border-radius:50%;background:#e8e2cc}
+.scr .npc{position:absolute;bottom:40%;width:18px;height:46px;background:#c94b4b;border-radius:6px 6px 2px 2px}
+.scr .dim{position:absolute;inset:0;background:rgba(2,10,6,.62)}
+
+/* HUD (1 Nov, kept) */
+.hud{position:absolute;font:9px var(--px);color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;letter-spacing:1px}
+.vit{left:12px;top:12px;width:170px}.vit .nm{margin-bottom:3px}.vit .bar{height:9px;background:#0008;margin:2px 0;position:relative}.vit .bar b{position:absolute;left:0;top:0;bottom:0;background:#c43}.vit .bar.s b{background:#dcb43a}.vit .bar span{position:absolute;right:3px;top:-1px}
+.mm{right:12px;top:12px;width:120px;text-align:center}.mm .c{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#2a3b2a 0 30%,#52524a 31% 44%,#2a3b2a 45% 100%);position:relative}.mm .c::after{content:'';position:absolute;left:56px;top:56px;width:8px;height:8px;background:#fff;transform:rotate(45deg)}
+.log{left:12px;bottom:12px;width:300px;font:9px var(--px)}.log div{padding:1px 0}.log .o{opacity:.5}.log b{color:#ffd27a;font-weight:400}
+.qb{left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:3px}.qb i{width:38px;height:38px;background:#0006;font:7px var(--px);font-style:normal;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;color:#fff}.qb i em{position:absolute;left:3px;top:2px;font-style:normal;color:#fffa}.qb i.on{background:#000b;outline:1px solid var(--mf)}
+
+/* THE ONE FRAME */
+.win{position:absolute;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),var(--mk);box-shadow:0 0 0 2px var(--mi);color:var(--mt);font:12px/1.45 var(--mono);letter-spacing:1px;display:flex;flex-direction:column}
+.win .tt{display:flex;align-items:center;gap:10px;padding:6px 10px;background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi);color:var(--mf);font-size:14px;letter-spacing:3px}
+.win .tt .n::before{content:'[ '}.win .tt .n::after{content:' ]'}
+.win .tt .x{margin-left:auto;width:18px;height:18px;line-height:18px;text-align:center;box-shadow:inset 0 0 0 2px var(--mi);font-size:11px}
+.win .tabs{display:flex;gap:2px;padding:4px 8px 0;flex-wrap:wrap}
+.win .tabs span{padding:3px 8px;color:var(--md);font-size:11px}.win .tabs span.on{color:var(--mk);background:var(--mf)}
+.win .body{padding:8px 10px;flex:1;min-height:0;overflow:hidden}
+.win .foot{padding:4px 10px;color:var(--md);font-size:10px;letter-spacing:2px;box-shadow:inset 0 2px 0 var(--me)}
+.win h4{margin:6px 0 3px;font-size:10px;color:var(--md);border-bottom:2px solid var(--me);padding-bottom:2px;letter-spacing:2px}
+.win h4:first-child{margin-top:0}
+.row{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.row .a{color:var(--md)}.row .a b{color:var(--mt);font-weight:400;padding:0 4px}.row .a b.on{color:var(--mk);background:var(--mf)}
+.row.sel{color:var(--mk);background:var(--mf)}.row.sel .a,.row.sel .a b{color:var(--mk)}
+.hi{color:var(--mo)}
+.bar2{height:10px;background:var(--me);position:relative;margin:2px 0}.bar2 b{position:absolute;left:0;top:0;bottom:0;background:var(--mf)}
+.seg{display:flex;gap:2px}.seg i{flex:1;height:10px;background:var(--me)}.seg i.on{background:var(--mo)}
+.port{width:84px;height:84px;background:var(--mb);box-shadow:inset 0 0 0 2px var(--mi);position:relative;flex:none}
+.port::before{content:'';position:absolute;left:34px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--mf)}.port::after{content:'';position:absolute;left:30px;top:34px;width:24px;height:40px;background:var(--mf);border-radius:6px 6px 0 0}
+.port.red::before,.port.red::after{background:#ff8a7a}
+.port>span{background:var(--mk);padding:0 3px;z-index:1}
+.btn{display:inline-block;padding:2px 8px;color:var(--mt)}.btn.on{color:var(--mk);background:var(--mf)}
+.kbd{display:inline-block;padding:0 5px;box-shadow:inset 0 0 0 1px var(--mi);color:var(--mo);font-size:10px}
+.cap{position:absolute;left:12px;right:12px;bottom:60px;text-align:center;color:var(--hi);font:11px var(--px);text-shadow:1px 1px 0 #000;letter-spacing:1px;pointer-events:none}
+.note{position:absolute;font:11px var(--mono);color:#ffd27a;background:#000a;padding:3px 7px;letter-spacing:1px;pointer-events:none}
+.note::before{content:'◀ '}
+
+/* strips: the same frame holding other content */
+.strip{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 0}
+.strip .mini{position:relative;width:360px;height:220px;background:#0b0e14;overflow:hidden}
+.strip .mini .lab{position:absolute;left:8px;top:6px;font:10px var(--px);color:#9b9584;letter-spacing:1px;z-index:2}
+.strip .mini .win{font-size:10px}
+.strip .mini .win .tt{font-size:11px;padding:4px 8px}
+</style>
+
+<h1>ONE WINDOW SYSTEM: FOUR WAYS</h1>
+<p class="lead">All four keep the Codec look (27 Oct) and the 1 Nov HUD (bars top left, minimap, log, quick bar). All four put <b>every</b> menu, shop, talk, activity and editor into the <b>same frame</b>: title bar <span class="hi">[ NAME ]</span>, a tab row, the body, a footer with the live keys, one X. They differ in <b>where the frame lives</b> and <b>how many can be open</b>. Pick a letter; the smaller pictures under each screen show the same frame holding the menu, a shop and a talk.</p>
+<div class="picks" role="tablist">
+  <button role="tab" aria-selected="true" data-v="A">A · THE DECK</button>
+  <button role="tab" data-v="B">B · THE SLOTS</button>
+  <button role="tab" data-v="C">C · THE OVERLAY + THE BAR</button>
+  <button role="tab" data-v="D">D · THE CODEC CALL</button>
+</div>
+
+<!-- ============ A: THE DECK ============ -->
+<section class="v on" data-v="A">
+<div class="about">
+  <div><h3>WHAT IT IS</h3><ul><li>One frame, one place: a column down the right side.</li><li>Everything opens <b>into</b> it as a tab: CHARACTER, PACK, MAP, GUIDE, SETTINGS; a shop or a talk adds a tab while it lasts (RADISH), then goes.</li><li>Only one deck. Never two windows.</li></ul></div>
+  <div><h3>HOW IT WORKS</h3><ul><li><span class="kbd">ESC</span> opens/closes · <span class="kbd">TAB</span> / <span class="kbd">SHIFT+TAB</span> next tab · <span class="kbd">1–9</span> jump to a tab while open.</li><li>Pad: START opens, LB/RB tabs, stick moves, A picks, B closes. VR: the one panel.</li><li>Double-clicking a merchant opens the deck on their tab with WARES and TALK as sub-tabs. The pack is one tab away, so buy/sell sees your things.</li><li>Editors are tabs too (a wider deck when one is on).</li></ul></div>
+  <div><h3>WHAT IT FIXES</h3><ul><li>No corner collisions, no stacking, nothing hidden behind anything.</li><li>One X, one drag (none needed), one place to look.</li><li>Pad and VR become trivial (one panel).</li><li>Costs: you can't see the pack and a shop side by side (the shop shows what you carry of its goods instead); the deck covers a third of the picture.</li></ul></div>
+</div>
+<div class="shell"><div class="scr">
+  <div class="world"></div>
+  <div class="bld" style="left:40px;width:160px;height:200px"><i style="left:20px;top:30px"></i><i style="left:60px;top:70px"></i><i style="left:110px;top:30px"></i></div>
+  <div class="bld" style="left:230px;width:120px;height:150px"><i style="left:30px;top:40px"></i></div>
+  <div class="bld" style="left:380px;width:200px;height:230px"><i style="left:40px;top:50px"></i><i style="left:120px;top:90px"></i></div>
+  <div class="lamp" style="left:300px"></div><div class="lamp" style="left:620px"></div>
+  <div class="you"></div><div class="npc" style="left:600px"></div>
+  <div class="hud vit"><div class="nm">BRALYNN</div><div class="bar"><b style="width:78%"></b><span>HP 78 / 100</span></div><div class="bar s"><b style="width:52%"></b><span>STA 52 / 100</span></div></div>
+  <div class="hud mm"><div class="c"></div>A · MARKET ST</div>
+  <div class="hud log"><div class="o">YOU PICK A CHANTERELLE.</div><div class="o"><b>MOSS</b> anyone at the pier?</div><div><b>THE RADISH</b> Suitcase's open. Take your pick.</div></div>
+  <div class="hud qb"><i><em>1</em>SWORD</i><i class="on"><em>2</em>NET</i><i><em>3</em>ROD</i><i><em>4</em>CAP</i><i><em>5</em></i><i><em>6</em></i><i><em>7</em></i><i><em>8</em></i><i><em>9</em></i><i><em>0</em></i></div>
+
+  <div class="win" style="right:0;top:0;bottom:0;width:400px">
+    <div class="tt"><span class="n">THE RADISH</span><span class="x">X</span></div>
+    <div class="tabs"><span>CHARACTER</span><span>PACK</span><span>MAP</span><span>GUIDE</span><span>SETTINGS</span><span class="on">RADISH</span></div>
+    <div class="body">
+      <div style="display:flex;gap:10px;align-items:flex-start"><div class="port red"></div><div><div class="hi">"Suitcase's open. Take your pick, or tell me what you've got."</div><div style="margin-top:6px"><span class="btn on">WARES</span><span class="btn">TALK</span><span class="btn">ASKS</span></div></div></div>
+      <h4>SELLS · YOU HAVE $1,240</h4>
+      <div class="row"><span>RADISH SEEDS</span><span class="a">$4 <b>BUY</b><b>×5</b></span></div>
+      <div class="row sel"><span>PICKLING JAR</span><span class="a">$9 <b>BUY</b><b>×5</b></span></div>
+      <div class="row"><span>BINOCULARS</span><span class="a">$38 <b>BUY</b></span></div>
+      <div class="row"><span>MAP OF THE SECTION</span><span class="a">YOURS</span></div>
+      <h4>BUYS · WHAT YOU CARRY</h4>
+      <div class="row"><span>RADISH ×6</span><span class="a">$2 <b>SELL</b><b>ALL $12</b></span></div>
+      <div class="row"><span>OXEYE DAISY ×3</span><span class="a">$1 <b>SELL</b><b>ALL $3</b></span></div>
+      <h4>TRAIN</h4>
+      <div class="row"><span>GARDENING · 3.2</span><span class="a">$12 <b>LESSON</b></span></div>
+    </div>
+    <div class="foot">ESC CLOSE · TAB NEXT · ↑↓ PICK · ENTER DO · W/S WALK AWAY ENDS IT</div>
+  </div>
+  <div class="note" style="left:560px;top:120px">one deck: a shop is just a tab</div>
+  <div class="cap">THE RADISH · DOUBLE-CLICK OPENED HIS TAB</div>
+</div></div>
+<div class="strip">
+  <div class="mini"><div class="lab">THE MENU (ESC)</div><div class="win" style="right:0;top:0;bottom:0;width:230px"><div class="tt"><span class="n">CHARACTER</span><span class="x">X</span></div><div class="tabs"><span class="on">CHARACTER</span><span>PACK</span><span>MAP</span><span>GUIDE</span><span>SETTINGS</span></div><div class="body"><div style="display:flex;gap:8px"><div class="port" style="width:60px;height:60px"></div><div><div class="hi">BRALYNN</div><div class="bar2"><b style="width:78%"></b></div><div class="bar2"><b style="width:52%;background:var(--mo)"></b></div><div style="color:var(--md);font-size:9px">$1,240 · SECTION A</div></div></div><div class="row"><span>PASSPORT</span></div><div class="row"><span>REPORT A BUG</span><span class="a">F8</span></div><div class="row"><span>LOG OUT</span></div></div><div class="foot">ESC CLOSE · TAB NEXT</div></div></div>
+  <div class="mini"><div class="lab">THE PACK (I)</div><div class="win" style="right:0;top:0;bottom:0;width:230px"><div class="tt"><span class="n">PACK</span><span class="x">X</span></div><div class="tabs"><span>CHARACTER</span><span class="on">PACK</span><span>MAP</span><span>GUIDE</span><span>SETTINGS</span></div><div class="body"><div class="tabs" style="padding:0 0 4px"><span class="on">THINGS</span><span>SKILLS</span><span>CRAFT</span><span>BOOK</span></div><div class="row sel"><span>CHANTERELLE ×4</span><span class="a">EAT · LOOK</span></div><div class="row"><span>BUTTERFLY NET</span><span class="a">HOLD</span></div><div class="row"><span>FISHING ROD</span><span class="a">HOLD</span></div><div class="row"><span>WORMS ×11</span><span class="a">ON THE HOOK</span></div></div><div class="foot">DRAG A ROW TO THE QUICK BAR</div></div></div>
+  <div class="mini"><div class="lab">AN EDITOR (SHIFT+0) · THE DECK WIDENS</div><div class="win" style="right:0;top:0;bottom:0;width:300px"><div class="tt"><span class="n">EDIT THE WORLD</span><span class="x">X</span></div><div class="tabs"><span>WORLD</span><span>MAP</span><span>CHARACTER</span><span>LIGHT</span><span>ITEM</span><span>LAND</span></div><div class="body"><div class="row"><span>PICKED</span><span class="hi">BENCH (MARKET ST)</span></div><div class="row"><span>MOVE</span><span class="a"><b>◀</b><b>▲</b><b>▼</b><b>▶</b><b>UP</b><b>DN</b></span></div><div class="row"><span>TURN</span><span class="a"><b>⟲</b><b>⟳</b><b>90°</b></span></div><div class="row"><span>SIZE</span><span class="seg" style="width:90px"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div></div><div class="foot">OWNER: SEND TO SERVER · ESC DONE</div></div></div>
+</div>
+</section>
+
+<!-- ============ B: THE SLOTS ============ -->
+<section class="v" data-v="B">
+<div class="about">
+  <div><h3>WHAT IT IS</h3><ul><li>The same frame, but four fixed homes: <b>LEFT</b> (you: pack, skills, book), <b>RIGHT</b> (the thing: a shop, inspect, an editor), <b>BOTTOM</b> (the moment: talk, fishing, decorate bar), <b>CENTRE</b> (the menu; dims the rest).</li><li>Several can be open at once, one per home. A second in the same home replaces it (a counter shows you can Tab back).</li></ul></div>
+  <div><h3>HOW IT WORKS</h3><ul><li>Every window kind has a home and never opens anywhere else. No dragging, nothing to arrange.</li><li><span class="kbd">ESC</span> closes the newest; <span class="kbd">TAB</span> moves focus between open homes; <span class="kbd">I</span> left, <span class="kbd">5</span> right (inspect), Esc again the menu.</li><li>Pad: LB/RB jump homes, LT/RT tabs inside one. VR: each home is its own panel at its side.</li></ul></div>
+  <div><h3>WHAT IT FIXES</h3><ul><li>Pack and shop side by side; talk under both; inspect while you shop.</li><li>Every corner collision gone: one window per home, HUD in the gaps.</li><li>Costs: up to three frames on screen; the picture shrinks to the middle while trading; needs a rule for each of the ~45 windows (which home).</li></ul></div>
+</div>
+<div class="shell"><div class="scr">
+  <div class="world"></div>
+  <div class="bld" style="left:40px;width:160px;height:200px"><i style="left:20px;top:30px"></i><i style="left:110px;top:30px"></i></div>
+  <div class="bld" style="left:380px;width:200px;height:230px"><i style="left:40px;top:50px"></i><i style="left:120px;top:90px"></i></div>
+  <div class="bld" style="left:900px;width:180px;height:180px"><i style="left:40px;top:50px"></i></div>
+  <div class="lamp" style="left:300px"></div><div class="lamp" style="left:720px"></div>
+  <div class="you"></div><div class="npc" style="left:600px"></div>
+  <div class="hud vit"><div class="nm">BRALYNN</div><div class="bar"><b style="width:78%"></b><span>HP 78 / 100</span></div><div class="bar s"><b style="width:52%"></b><span>STA 52 / 100</span></div></div>
+  <div class="hud mm"><div class="c"></div>A · MARKET ST</div>
+  <div class="hud qb" style="bottom:176px"><i><em>1</em>SWORD</i><i class="on"><em>2</em>NET</i><i><em>3</em>ROD</i><i><em>4</em>CAP</i><i><em>5</em></i><i><em>6</em></i><i><em>7</em></i><i><em>8</em></i><i><em>9</em></i><i><em>0</em></i></div>
+
+  <div class="win" style="left:0;top:70px;bottom:160px;width:300px">
+    <div class="tt"><span class="n">PACK</span><span class="x">X</span></div>
+    <div class="tabs"><span class="on">THINGS</span><span>SKILLS</span><span>CRAFT</span><span>BOOK</span><span>ASKS</span></div>
+    <div class="body">
+      <div class="row"><span class="a">$1,240 · 9 KG</span></div>
+      <div class="row sel"><span>RADISH ×6</span><span class="a">SELL →</span></div>
+      <div class="row"><span>CHANTERELLE ×4</span><span class="a">EAT · LOOK</span></div>
+      <div class="row"><span>OXEYE DAISY ×3</span><span class="a">LOOK</span></div>
+      <div class="row"><span>BUTTERFLY NET</span><span class="a">HOLD</span></div>
+      <div class="row"><span>FISHING ROD</span><span class="a">HOLD</span></div>
+      <div class="row"><span>WORMS ×11</span><span class="a">HOOK</span></div>
+      <div class="row"><span>PASSPORT</span><span class="a">SHOW</span></div>
+    </div>
+    <div class="foot">LEFT · YOU</div>
+  </div>
+  <div class="win" style="right:0;top:150px;bottom:160px;width:330px">
+    <div class="tt"><span class="n">THE RADISH</span><span style="color:var(--md);font-size:10px">2 ▸</span><span class="x">X</span></div>
+    <div class="tabs"><span class="on">WARES</span><span>ASKS</span><span>TRAIN</span></div>
+    <div class="body">
+      <div class="row"><span class="a">YOU HAVE $1,240</span></div>
+      <div class="row"><span>RADISH SEEDS</span><span class="a">$4 <b>BUY</b></span></div>
+      <div class="row"><span>PICKLING JAR</span><span class="a">$9 <b>BUY</b></span></div>
+      <div class="row"><span>BINOCULARS</span><span class="a">$38 <b>BUY</b></span></div>
+      <h4>HE BUYS</h4>
+      <div class="row sel"><span>← RADISH ×6</span><span class="a">$2 <b>ALL $12</b></span></div>
+      <div class="row"><span>← OXEYE DAISY ×3</span><span class="a">$1 <b>ALL $3</b></span></div>
+    </div>
+    <div class="foot">RIGHT · THE THING · 2 OPEN HERE (TAB)</div>
+  </div>
+  <div class="win" style="left:0;right:0;bottom:0;height:150px">
+    <div class="tt"><span class="n">TALK · THE RADISH</span><span class="x">X</span></div>
+    <div class="body" style="display:flex;gap:12px"><div class="port red" style="width:70px;height:70px"></div><div style="flex:1"><div class="hi">"Radishes. Six of them. I'll take the lot, and I've a jar that would suit you."</div><div style="display:flex;gap:16px;margin-top:6px"><span class="row sel" style="padding:1px 6px">1. SELL HIM THE RADISHES</span><span>2. WHAT'S IN THE JAR?</span><span>3. GOODBYE.</span></div></div></div>
+    <div class="foot">BOTTOM · THE MOMENT · W/S OR 1–3 · ENTER · ESC LEAVES</div>
+  </div>
+  <div class="note" style="left:320px;top:80px">pack and shop at once: drag or SELL → across</div>
+</div></div>
+<div class="strip">
+  <div class="mini"><div class="lab">THE MENU · CENTRE, DIMS THE REST</div><div class="dim" style="position:absolute;inset:0;background:rgba(2,10,6,.6)"></div><div class="win" style="left:40px;right:40px;top:20px;bottom:20px"><div class="tt"><span class="n">THE STRANGEST FLEA MARKET</span><span class="x">X</span></div><div class="body" style="display:flex;gap:10px"><div style="width:90px"><div class="row sel"><span>CHARACTER</span></div><div class="row"><span>MAP</span></div><div class="row"><span>GUIDE</span></div><div class="row"><span>SETTINGS</span></div><div class="row"><span>BUG</span></div><div class="row"><span>LOG OUT</span></div></div><div style="flex:1;display:flex;gap:8px"><div class="port" style="width:56px;height:56px"></div><div><div class="hi">BRALYNN</div><div class="bar2"><b style="width:78%"></b></div><div class="bar2"><b style="width:52%;background:var(--mo)"></b></div></div></div></div><div class="foot">ESC CLOSE</div></div></div>
+  <div class="mini"><div class="lab">INSPECT (5) · RIGHT HOME</div><div class="win" style="right:0;top:30px;bottom:20px;width:170px"><div class="tt"><span class="n">CHANTERELLE</span><span class="x">X</span></div><div class="body"><div class="port" style="width:100%;height:80px"></div><div class="row"><span class="a">YOU HAVE 4 · $3 · EDIBLE</span></div></div><div class="foot">DRAG TURNS</div></div></div>
+  <div class="mini"><div class="lab">FISHING · BOTTOM HOME</div><div class="win" style="left:0;right:0;bottom:0;height:80px"><div class="tt"><span class="n">FISHING</span><span class="x">X</span></div><div class="body" style="display:flex;gap:10px;align-items:center"><span class="btn on">CAST (HOLD) SPACE</span><span class="seg" style="width:80px"><i class="on"></i><i class="on"></i><i></i><i></i></span><span>HOOK: WORM</span><span class="btn">BAIT B</span><span class="btn">DRAG 3 W/S</span></div></div></div>
+</div>
+</section>
+
+<!-- ============ C: THE OVERLAY + THE BAR ============ -->
+<section class="v" data-v="C">
+<div class="about">
+  <div><h3>WHAT IT IS</h3><ul><li>Two uses of the one frame. <b>The overlay</b>: Esc fills the screen (the game dimmed and paused for you) with a left nav and a page: CHARACTER, PACK, SKILLS, MAP, GUIDE, SETTINGS, REPORT A BUG, LOG OUT, ADMIN. <b>The bar</b>: everything that happens <i>in</i> the world (talk, a shop, fishing, decorating, the arcade's footer) is the same frame across the bottom third.</li><li>Nothing floats. Ever.</li></ul></div>
+  <div><h3>HOW IT WORKS</h3><ul><li><span class="kbd">ESC</span> overlay; <span class="kbd">I</span> overlay on PACK; <span class="kbd">M</span> on MAP. In the overlay: <span class="kbd">↑↓</span>/<span class="kbd">1–9</span> pages, <span class="kbd">TAB</span> into the page.</li><li>The bar opens itself when you double-click someone or start an activity; Esc or walking away closes it. Its tabs are the thing's: TALK · WARES · ASKS.</li><li>Editors are overlay pages (the game not dimmed, so you see what you edit).</li></ul></div>
+  <div><h3>WHAT IT FIXES</h3><ul><li>The clearest two states: "I'm in the menu" vs "I'm doing something". Modern-console familiar.</li><li>Big, readable pages; the pack can show pictures, not rows.</li><li>Pad/VR: two panels, both simple.</li><li>Costs: you can't check the pack while a shop is open without leaving the bar (the bar shows what you carry of its goods); the overlay hides the world.</li></ul></div>
+</div>
+<div class="shell"><div class="scr">
+  <div class="world"></div>
+  <div class="bld" style="left:40px;width:160px;height:200px"></div><div class="bld" style="left:380px;width:200px;height:230px"></div><div class="bld" style="left:900px;width:180px;height:180px"></div>
+  <div class="you"></div>
+  <div class="dim"></div>
+  <div class="win" style="left:60px;right:60px;top:30px;bottom:30px">
+    <div class="tt"><span class="n">THE STRANGEST FLEA MARKET</span><span style="color:var(--md);font-size:11px">BRALYNN · $1,240 · SECTION A · 7:40 PM</span><span class="x">X</span></div>
+    <div class="body" style="display:flex;gap:16px">
+      <div style="width:170px;border-right:2px solid var(--me);padding-right:10px">
+        <div class="row"><span>CHARACTER</span></div><div class="row sel"><span>PACK</span><span class="a">I</span></div><div class="row"><span>SKILLS</span></div><div class="row"><span>MAP</span><span class="a">M</span></div><div class="row"><span>GUIDE</span><span class="a">?</span></div><div class="row"><span>SETTINGS</span></div><div class="row"><span>REPORT A BUG</span><span class="a">F8</span></div><div class="row"><span>LOG OUT</span></div><div class="row" style="color:#ff8a7a"><span>ADMIN</span></div>
+        <div style="margin-top:18px;display:flex;gap:8px;align-items:center"><div class="port" style="width:56px;height:56px"></div><div style="font-size:10px"><div class="bar2"><b style="width:78%"></b></div><div class="bar2"><b style="width:52%;background:var(--mo)"></b></div><div style="color:var(--md)">HP 78 · STA 52</div></div></div>
+      </div>
+      <div style="flex:1">
+        <div class="tabs" style="padding:0 0 6px"><span class="on">THINGS</span><span>CRAFT</span><span>BOOK</span><span>ASKS</span><span>FISHING GUIDE</span></div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">CHANTERELLE ×4</span></div>
+          <div class="port" style="width:auto;height:70px;box-shadow:inset 0 0 0 2px var(--mf)"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">RADISH ×6</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">NET</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">ROD</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">WORMS ×11</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">PASSPORT</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">OXEYE ×3</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">BOTTLE ×3</span></div>
+          <div class="port" style="width:auto;height:70px"><span style="position:absolute;left:4px;bottom:2px;font-size:9px;color:var(--mo)">MORTAR</span></div>
+          <div class="port" style="width:auto;height:70px;background:transparent;box-shadow:inset 0 0 0 2px var(--me)"></div><div class="port" style="width:auto;height:70px;background:transparent;box-shadow:inset 0 0 0 2px var(--me)"></div><div class="port" style="width:auto;height:70px;background:transparent;box-shadow:inset 0 0 0 2px var(--me)"></div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:10px;align-items:flex-start"><div class="port"></div><div><div class="hi" style="font-size:14px">RADISH ×6</div><div style="color:var(--md);font-size:11px">A ROOT. CRISP. THE RADISH BUYS THEM BACK AT $2.</div><div style="margin-top:6px"><span class="btn on">EAT</span><span class="btn">LOOK</span><span class="btn">TO THE QUICK BAR ▸ 5</span><span class="btn">DROP</span></div></div></div>
+        <h4 style="margin-top:14px">QUICK BAR</h4>
+        <div class="seg" style="gap:4px"><i class="on" style="height:22px"></i><i class="on" style="height:22px"></i><i class="on" style="height:22px"></i><i class="on" style="height:22px"></i><i style="height:22px"></i><i style="height:22px"></i><i style="height:22px"></i><i style="height:22px"></i><i style="height:22px"></i><i style="height:22px"></i></div>
+      </div>
+    </div>
+    <div class="foot">ESC BACK TO THE GAME · ↑↓ PAGES · TAB INTO THE PAGE · ENTER DO</div>
+  </div>
+</div></div>
+<div class="strip">
+  <div class="mini"><div class="lab">THE BAR · TALK</div><div class="win" style="left:0;right:0;bottom:0;height:96px"><div class="tt"><span class="n">THE RADISH</span><span class="x">X</span></div><div class="tabs"><span class="on">TALK</span><span>WARES</span><span>ASKS</span></div><div class="body" style="display:flex;gap:8px"><div class="port red" style="width:40px;height:40px"></div><div><div class="hi">"Radishes. Six. I'll take the lot."</div><div style="font-size:9px"><span class="row sel" style="display:inline;padding:0 4px">1. SELL THEM</span> · 2. WHAT'S IN THE JAR? · 3. GOODBYE</div></div></div></div></div>
+  <div class="mini"><div class="lab">THE BAR · WARES</div><div class="win" style="left:0;right:0;bottom:0;height:110px"><div class="tt"><span class="n">THE RADISH</span><span class="x">X</span></div><div class="tabs"><span>TALK</span><span class="on">WARES</span><span>ASKS</span></div><div class="body" style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px;font-size:9px"><div class="row"><span>RADISH SEEDS</span><span class="a">$4 <b>BUY</b></span></div><div class="row sel"><span>YOUR RADISH ×6</span><span class="a"><b>SELL ALL $12</b></span></div><div class="row"><span>PICKLING JAR</span><span class="a">$9 <b>BUY</b></span></div><div class="row"><span>YOUR DAISIES ×3</span><span class="a"><b>SELL ALL $3</b></span></div></div></div></div>
+  <div class="mini"><div class="lab">THE BAR · DECORATE (T)</div><div class="win" style="left:0;right:0;bottom:0;height:110px"><div class="tt"><span class="n">DECORATE</span><span class="x">X</span></div><div class="tabs"><span class="on">THINGS</span><span>WALLS</span><span>FLOOR</span><span>LIGHTS</span><span>BUY</span></div><div class="body" style="font-size:9px"><div class="row"><span class="hi">PICKED UP: ARMCHAIR</span><span class="a"><b>⟲ Q</b><b>E ⟳</b><b>[ ]</b><b>PUT AWAY DEL</b><b>SELL $20</b></span></div><div class="row"><span class="a">GREEN FITS · RED DOESN'T · ALT FREE · G GRID · CTRL+Z</span></div></div></div></div>
+</div>
+</section>
+
+<!-- ============ D: THE CODEC CALL ============ -->
+<section class="v" data-v="D">
+<div class="about">
+  <div><h3>WHAT IT IS</h3><ul><li>Everything is a <b>call</b>: one frame across the bottom third, a portrait on the left (who you talk to, your own face for the menu, the spinning item for inspect, a map tile for the map), the content in the middle, the thing's tabs down the right.</li><li>Metal Gear codec, all the way. Only one call at a time.</li></ul></div>
+  <div><h3>HOW IT WORKS</h3><ul><li><span class="kbd">ESC</span> calls yourself (the menu: CHARACTER · PACK · MAP · GUIDE · SETTINGS · BUG · LOG OUT). Double-click someone: calls them (TALK · WARES · ASKS). <span class="kbd">5</span>: calls the item.</li><li><span class="kbd">↑↓</span> rows, <span class="kbd">←→</span> or <span class="kbd">TAB</span> tabs, <span class="kbd">ENTER</span> do, <span class="kbd">ESC</span> hang up. Pad identical. VR: the one panel, low, where your hands are.</li><li>Editors: the same call, taller (two thirds), the portrait is the picked thing.</li></ul></div>
+  <div><h3>WHAT IT FIXES</h3><ul><li>The strongest single identity; every screen reads the same way at a glance.</li><li>The world stays visible above the call — you see who you're talking to and where you are.</li><li>Pad/VR/phone: one bottom panel is the easiest shape there is.</li><li>Costs: least room per screen (the pack scrolls; the map is small unless the call grows); nothing side by side.</li></ul></div>
+</div>
+<div class="shell"><div class="scr">
+  <div class="world"></div>
+  <div class="bld" style="left:40px;width:160px;height:200px"><i style="left:20px;top:30px"></i></div>
+  <div class="bld" style="left:380px;width:200px;height:230px"><i style="left:40px;top:50px"></i><i style="left:120px;top:90px"></i></div>
+  <div class="bld" style="left:900px;width:180px;height:180px"><i style="left:40px;top:50px"></i></div>
+  <div class="lamp" style="left:300px"></div><div class="lamp" style="left:720px"></div>
+  <div class="you"></div><div class="npc" style="left:600px"></div>
+  <div class="hud vit"><div class="nm">BRALYNN</div><div class="bar"><b style="width:78%"></b><span>HP 78 / 100</span></div><div class="bar s"><b style="width:52%"></b><span>STA 52 / 100</span></div></div>
+  <div class="hud mm"><div class="c"></div>A · MARKET ST</div>
+  <div class="hud log" style="bottom:236px"><div class="o">YOU PICK A CHANTERELLE.</div><div><b>MOSS</b> anyone at the pier?</div></div>
+  <div class="hud qb" style="bottom:236px"><i><em>1</em>SWORD</i><i class="on"><em>2</em>NET</i><i><em>3</em>ROD</i><i><em>4</em>CAP</i><i><em>5</em></i><i><em>6</em></i><i><em>7</em></i><i><em>8</em></i><i><em>9</em></i><i><em>0</em></i></div>
+
+  <div class="win" style="left:0;right:0;bottom:0;height:226px">
+    <div class="tt"><span class="n">THE RADISH</span><span style="color:var(--md);font-size:11px">MARKET ST · 7:40 PM</span><span class="x">X</span></div>
+    <div class="body" style="display:flex;gap:16px">
+      <div style="width:150px;flex:none"><div class="port red" style="width:150px;height:130px"></div><div style="font-size:10px;color:var(--md);text-align:center;margin-top:3px">THE RADISH · MERCHANT</div></div>
+      <div style="flex:1;min-width:0">
+        <div class="hi" style="font-size:14px;min-height:40px">"Radishes. Six of them. I'll take the lot — and I've a pickling jar that would suit you, nine dollars."</div>
+        <div class="row sel"><span>1. SELL HIM THE RADISHES</span><span class="a">+$12</span></div>
+        <div class="row"><span>2. WHAT'S IN THE JAR?</span></div>
+        <div class="row"><span>3. SHOW ME YOUR WARES</span><span class="a">→ WARES</span></div>
+        <div class="row"><span>4. GOODBYE.</span></div>
+      </div>
+      <div style="width:120px;flex:none;border-left:2px solid var(--me);padding-left:10px">
+        <div class="row sel"><span>TALK</span></div><div class="row"><span>WARES</span></div><div class="row"><span>ASKS</span><span class="a">1</span></div><div class="row"><span>TRAIN</span></div>
+        <div style="margin-top:14px;font-size:10px;color:var(--md)">YOU HAVE<br><span class="hi">$1,240</span><br>RADISH ×6</div>
+      </div>
+    </div>
+    <div class="foot">↑↓ PICK · ENTER SAY IT · ←→ TABS · ESC HANG UP · WALK AWAY ENDS THE CALL</div>
+  </div>
+  <div class="note" style="left:560px;top:150px">the world stays above the call</div>
+</div></div>
+<div class="strip">
+  <div class="mini"><div class="lab">THE MENU (ESC) · YOU CALL YOURSELF</div><div class="win" style="left:0;right:0;bottom:0;height:120px"><div class="tt"><span class="n">BRALYNN</span><span class="x">X</span></div><div class="body" style="display:flex;gap:8px;font-size:9px"><div class="port" style="width:60px;height:60px"></div><div style="flex:1"><div class="bar2"><b style="width:78%"></b></div><div class="bar2"><b style="width:52%;background:var(--mo)"></b></div><div style="color:var(--md)">$1,240 · SECTION A · 12 SKILLS · 7 STAMPS</div><div><span class="btn">LOG OUT</span><span class="btn">REPORT A BUG F8</span></div></div><div style="width:70px;border-left:2px solid var(--me);padding-left:6px"><div class="row sel"><span>CHARACTER</span></div><div class="row"><span>PACK</span></div><div class="row"><span>MAP</span></div><div class="row"><span>GUIDE</span></div><div class="row"><span>SETTINGS</span></div></div></div></div></div>
+  <div class="mini"><div class="lab">INSPECT (5) · YOU CALL THE THING</div><div class="win" style="left:0;right:0;bottom:0;height:120px"><div class="tt"><span class="n">CHANTERELLE</span><span class="x">X</span></div><div class="body" style="display:flex;gap:8px;font-size:9px"><div class="port" style="width:70px;height:70px"></div><div style="flex:1"><div class="hi">A GOLDEN MUSHROOM. SMELLS OF APRICOT.</div><div style="color:var(--md)">YOU HAVE 4 · $3 · EDIBLE · 0.1 KG</div><div><span class="btn on">EAT</span><span class="btn">QUICK BAR ▸</span><span class="btn">DROP</span></div></div><div style="width:60px;border-left:2px solid var(--me);padding-left:6px"><div class="row sel"><span>ABOUT</span></div><div class="row"><span>USES</span></div><div class="row"><span>BOOK</span></div></div></div></div></div>
+  <div class="mini"><div class="lab">AN EDITOR · THE CALL GROWS</div><div class="win" style="left:0;right:0;bottom:0;height:160px"><div class="tt"><span class="n">EDIT THE WORLD · BENCH</span><span class="x">X</span></div><div class="body" style="display:flex;gap:8px;font-size:9px"><div class="port" style="width:70px;height:90px"></div><div style="flex:1"><div class="row"><span>MOVE</span><span class="a"><b>◀</b><b>▲</b><b>▼</b><b>▶</b><b>UP</b><b>DN</b></span></div><div class="row"><span>TURN</span><span class="a"><b>⟲</b><b>⟳</b><b>90°</b></span></div><div class="row"><span>SIZE</span><span class="seg" style="width:70px"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div><div class="row"><span>COLOUR</span><span class="a"><b>■</b><b>NONE</b></span></div></div><div style="width:70px;border-left:2px solid var(--me);padding-left:6px"><div class="row sel"><span>WORLD</span></div><div class="row"><span>LIGHT</span></div><div class="row"><span>SIGN</span></div><div class="row"><span>SEND</span></div></div></div></div></div>
+</div>
+</section>
+
+<script>
+const tabs=[...document.querySelectorAll('.picks button')],secs=[...document.querySelectorAll('.v')];
+const pick=v=>{tabs.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));secs.forEach(s=>s.classList.toggle('on',s.dataset.v===v));fit();try{location.hash=v}catch(e){}};
+tabs.forEach(b=>b.onclick=()=>pick(b.dataset.v));
+function fit(){for(const sh of document.querySelectorAll('.shell')){const scr=sh.firstElementChild,k=Math.min(1,sh.clientWidth/1120);scr.style.transform='scale('+k+')';sh.style.height=(630*k)+'px';}}
+addEventListener('resize',fit);
+pick(/^#[ABCD]$/.test(location.hash)?location.hash.slice(1):'A');
+</script>

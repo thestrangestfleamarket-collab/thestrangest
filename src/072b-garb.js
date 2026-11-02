@@ -151,7 +151,7 @@ const GARB={};
           let p=C; if(f<1){ const [W,D]=seat(o.y), Hp=out>=0?V(W*Math.sign(dx)*Math.abs(dx)**(2/Z.n),o.y,D*Math.sign(sn)*Math.abs(sn)**(2/Z.n)):V(0,o.y,D*sn); p=add3(mul3(Hp,1-f),mul3(C,f)); }
           if(sg*p.x<0)p=V(0,p.y,p.z);   // where the legs meet they press flat against each other at the middle, never one through the other
           // the crotch's middle sits halfway between both thighs, a gusset that keeps the legs joined as they part; elsewhere the leg goes with its own thigh as soon as it leaves the seat
-          const ks=Math.max(f,fo(q)), gus=p.y>12&&p.y<15.8&&Math.abs(p.x)<.6;
+          const ks=Math.max(f,fo(q)*(1-.75*Math.max(0,-sn))), gus=p.y>12&&p.y<15.8&&Math.abs(p.x)<.6;   // the seat's back stays with the hips longer, over the buttocks
           const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):gus?['thighL','thighR',.5]:ks>=1?['thigh'+s,null,0]:ks>0||p.y<18.6?['hips','thigh'+s,ks]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
           pt(t,p,k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/nl*reps,(T[j]-q0)/TS],0); }
       return t; },

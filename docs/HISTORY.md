@@ -5185,3 +5185,4 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
+- 2 Nov 2026, the egg poacher (owner, his file egg-poacher.glb: "add this player to the game"; his picks: "this is an npc", "Keep its colours"): THE EGG POACHER, a townsperson on your rig in the file's own colours, walks main street (?poacher=0 keeps it off); not playable. Its body loads after the start.

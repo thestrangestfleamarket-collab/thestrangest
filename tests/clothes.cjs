@@ -36,7 +36,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const t = GARB.tpl(k, form), P = t.P, NM = GARB.NAMES;
       for (let i = 0; i < P.length; i += 3) { const p = V(P[i], P[i + 1], P[i + 2]), a = NM[t.s1[i / 3]], b = t.s2[i / 3] >= 0 ? NM[t.s2[i / 3]] : null; npts++;
         // the part it belongs to, by the bone it hangs on: a sleeve hangs on its arm alone, a leg on its thigh or shin, the rest of the tee and the seat on the torso and hips
-        const part = k !== 'shirt' && k !== 'pants' ? k : k === 'shirt' ? (/^upperArm/.test(a) && !b ? 'sleeve' + a.slice(-1) : 'shirt') : (/^(thigh|shin)/.test(a) || b ? 'leg' + (b || a).slice(-1) : 'seat');
+        const onSeat = inSeat(V(p.x * 1.03, p.y, p.z * 1.03)) && !inSeat(V(p.x * .97, p.y, p.z * .97)) || p.y > Z.jeans.rows[0][0] - 1.3, part = k !== 'shirt' && k !== 'pants' ? k : k === 'shirt' ? (/^upperArm/.test(a) && !b ? 'sleeve' + a.slice(-1) : 'shirt') : (/^(thigh|shin)/.test(a) || b ? 'leg' + (b || a).slice(-1) : onSeat ? 'seat' : 'leg' + (p.x > 0 ? 'L' : 'R'));
         // a sleeve is checked against the arm it goes round too
         const dd = bd(against.concat(/^sleeve/.test(part) ? ['upperArm' + part.slice(-1)] : []))(p), cov = Object.keys(VOL).some(n => n !== part && VOL[n](p));
         if (cov || p.y < .05) continue; least = Math.min(least, dd); if (dd < .1) { const key = k + ' y' + Math.round(p.y) + (p.z > 1.5 ? ' front' : p.z < -1.5 ? ' back' : ' side'); pokes[key] = Math.min(pokes[key] ?? 1e9, +dd.toFixed(2)); } } }

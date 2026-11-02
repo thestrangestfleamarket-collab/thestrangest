@@ -935,5 +935,10 @@
  },
  "passport": {
   "value": 0
+ },
+ "putter": {
+  "slot": "hand",
+  "grants": "golf",
+  "value": 20
  }
 }

@@ -216,7 +216,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row"><span>SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"></div><div class="row"><span>SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div>
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
-      <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
     <div class="pane" data-p="vr" id="dvr"></div>
     <div class="pane" data-p="guide" id="dguide"></div>
     <div class="pane" data-p="bug" id="dbug"></div>
@@ -404,9 +404,10 @@ ${sel('color',['#d8a845'])}{${HI}}
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';
+  const zoomOf=el=>{ let z=1; for(let q=el;q;q=q.parentElement){ const v=parseFloat(getComputedStyle(q).zoom); if(v>0)z*=v; } return z; };
   const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
-      const r=box.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top; Object.assign(box.style,{position:'fixed',left:r.left+'px',top:r.top+'px',right:'auto',bottom:'auto',transform:'none',margin:'0',width:r.width+'px',height:box.id==='ed'?r.height+'px':box.style.height}); const fit=t=>{ box.style.maxHeight=Math.max(120,innerHeight-t-8)+'px'; if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=r.left+'px'; box.style.top=r.top+'px';
-      const mv=e=>{ box.style.left=Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))+'px'; box.style.top=Math.max(0,Math.min(innerHeight-30,e.clientY-dy))+'px'; fit(parseFloat(box.style.top)); }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); };
+      const r=box.getBoundingClientRect(), z=zoomOf(box), dx=e.clientX-r.left, dy=e.clientY-r.top, px=v=>(v/z)+'px'; Object.assign(box.style,{position:'fixed',left:px(r.left),top:px(r.top),right:'auto',bottom:'auto',transform:'none',margin:'0',width:px(r.width),height:box.id==='ed'?px(r.height):box.style.height}); const fit=t=>{ box.style.maxHeight=px(Math.max(120,innerHeight-t-8)); if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=px(r.left); box.style.top=px(r.top);
+      const mv=e=>{ const t=Math.max(0,Math.min(innerHeight-30,e.clientY-dy)); box.style.left=px(Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))); box.style.top=px(t); fit(t); }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); };
       addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
   const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
       if(!box.dataset.pan){ box.dataset.pan=1; drag(box); if(getComputedStyle(box).position==='static')box.style.position='relative'; }

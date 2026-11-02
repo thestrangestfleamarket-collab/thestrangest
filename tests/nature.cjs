@@ -46,7 +46,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 
   // at home: a mounted butterfly for the wall, a caged bird for the floor, each yours from your pack
   const sp = await pg.evaluate(() => SPECDBG());
-  ok(sp.n === 45 && sp.wall === 'wall' && sp.own[0] === 's_3' && sp.own[1] === 'bd_2' && sp.meshes.every(n => n > 1), 'mounted butterflies and caged birds are things for your apartment: ' + JSON.stringify(sp));
+  ok(sp.n === 13 && sp.wall === undefined && sp.own[0] === 'bd_2' && sp.meshes.every(n => n > 1), 'caged tame birds are things for your apartment, mounted butterflies no longer: ' + JSON.stringify(sp));
 
   // another player's tame bird rides on their shoulder
   const op = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), at = [p[0] + 2 * T, p[2] + 1 * T, 0, 0, SHARED.LVL, '']; ONLINE.on = true;

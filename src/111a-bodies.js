@@ -1,4 +1,4 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); only a body.playable one is on YOU's BODY row (just the Walker now); one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are always the Walker (a body.playable one could be picked with BODIES.set); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {CHARS, NPCS, pos, W3} from './003b-systems.js';
@@ -78,7 +78,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (YOU's BODY: only a playable body, else the Walker; knight/man/woman stay in the game but off the row — set body.playable to put one back; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (always the Walker unless a playable body is set; knight/man/woman stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
@@ -88,13 +88,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
     hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
   BODIES.pick=()=>curKey();
-  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
-  const LP=document.getElementById('looks'); let ROW=null;
-  if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row';
-    LP.insertBefore(h,at); LP.insertBefore(ROW,at); addButton('walker','WALKER'); }
-  function addButton(key,label){ if(!ROW)return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
-  BODIES.credit=t=>{ if(!ROW)return; const c=document.createElement('div'); c.textContent=t; c.style.cssText='color:var(--dim,#8a8f9c);font-size:9px;margin-top:3px'; ROW.after(c); };
-  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
+  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} };
+  // a borrowed model's licence line, shown under the menu's KEYS
+  BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
@@ -149,6 +145,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>(body.GEO||(body.GEO=body.geo())).attributes.position.count/3; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    if(body.playable)addButton(body.key,body.label); walker(body); };
+    walker(body); };
 }
 export {BODIES};

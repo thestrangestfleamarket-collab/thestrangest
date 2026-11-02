@@ -48,7 +48,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
 
   // yours: kept in OWNED, on the Walker you play, in your look for the other players
   let mine=decode(OWNED.get('design')||''); mine={h:mine.h,p:JSON.parse(JSON.stringify(mine.p))};
-  const apply=()=>{ const S=LOOKS.shape((LOOKS.L||{}).robe); W3.pcs.forEach((P,i)=>{ W3.E[i]=mix(S[i],i,mine); }); W3.BH=mine.h; };
+  const apply=()=>{ const S=LOOKS.shape(); W3.pcs.forEach((P,i)=>{ W3.E[i]=mix(S[i],i,mine); }); W3.BH=mine.h; };
   LOOKS.mix=(e,i)=>mix(e,i,mine);
   Object.assign(DESIGN,{PARTS,NAME,PART,partOf,encode,decode,mix,blank,plain,
     code:()=>encode(mine), get:()=>mine,

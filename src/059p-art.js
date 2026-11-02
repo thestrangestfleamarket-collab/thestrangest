@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {PERFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BLDK, grab, OFFDX, STORE, TILE, TURN, WP} from './006-map-pre.js';
+import {BLOCKS} from './038zb-blocks.js';
 const ART=__LAZY__("data/art.json");
 await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const K=STORE.kit, {room,rec,STEPS,sol,put}=K, SK=SHARED.BOD.STOREK, {CATALOG,LAMPS,T,sh,hash}=SK, MK=SK.museum, MB=MK.MUS.b, MUF=MK.font, {X,Y,Z,faceTex,bq,C}=SHARED.BOD, MS=STORE.main, U=TILE*BLDK;

@@ -5185,3 +5185,4 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
+- 2 Nov 2026, owner: "make shops, lamps and npcs follow the hours too". The day's hour now runs through the four looks, a quarter of the day each (SUNRISE 5–11, DAY 11–17, SUNSET 17–23, NIGHT 23–5; six game hours a real hour, the same for everyone), so shops' hours, the lamps, jobs, duties, the mail's days and every routine keyed to the hour move again while the sky and sun stay each look's own. Rule: the sun and sky are the look's; everything else reads the day's hour.

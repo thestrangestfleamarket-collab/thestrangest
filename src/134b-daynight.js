@@ -1,4 +1,4 @@
-// THE HOURS: DN holds the four looks, SUNRISE, DAY, SUNSET and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything; smooth skies, the far fading into the horizon's colour), takes turns through them one real hour each with a minute's fade (no running clock), and the ATMOSPHERE panel for their details.
+// THE HOURS: DN holds the four looks, SUNRISE, DAY, SUNSET and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything; smooth skies, the far fading into the horizon's colour), takes turns through them one real hour each with a minute's fade, runs the day's hour through them (a quarter of the day each, for the shops, lamps and routines), and the ATMOSPHERE panel for their details.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -20,6 +20,7 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
   const S={}; for(const m of DN.modes){ S[m]={...D0[m]}; try{ Object.assign(S[m],JSON.parse(SAVE.get('dn-'+m)||'{}')); }catch(e){} }
   { const q=Q('look').toLowerCase(), qh=+(Q('hour')||NaN); if(DN.modes.includes(q)){ DN.hold=DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.hold=DN.mode=qh<6||qh>19?'night':'day'; S[DN.mode].h=qh; DN.test=1; } }
   // the hours: the four looks take turns, one real hour each, the same for everyone (the wall clock, nothing stored); the first minute of each hour fades from the last look
+  const DAY0=[5,11,17,23]; DN.dayAt=t=>{ const n=Math.floor(t/DN.HOUR), i=((n%4)+4)%4; return (DAY0[i]+6*((t-n*DN.HOUR)/DN.HOUR))%24; };   // the day's hour: six game hours a real hour, each look's quarter holding its own sun hour
   DN.cycleAt=t=>{ const n=Math.floor(t/DN.HOUR), i=((n%4)+4)%4, f=Math.min(1,(t-n*DN.HOUR)/DN.FADE); return {cur:DN.modes[i],prev:DN.modes[(i+3)%4],f:f*f*(3-2*f)}; };
   const B={}, ca=new THREE.Color(), cb=new THREE.Color(), blend=(A,C,f)=>{ for(const k in C){ const a=A[k]??C[k], c=C[k]; if(typeof c==='number'){ if(k==='h'){ let d=((c-a)%24+24)%24; if(d>12)d-=24; B[k]=((a+d*f)%24+24)%24; } else B[k]=a+(c-a)*f; } else if(typeof c==='string'&&c[0]==='#'&&typeof a==='string'&&a[0]==='#')B[k]='#'+ca.set(a).lerp(cb.set(c),f).getHexString(); else B[k]=c; } return B; };
   DN.P=()=>B; DN.E=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
@@ -27,7 +28,7 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
   DN.set=m=>{ if(!DN.modes.includes(m))return; DN.hold=DN.mode=m; fix(); DN.draw(); };   // a pick holds that look (the editor's preview, the tests); FOLLOW THE HOURS lets go
   DN.follow=()=>{ DN.hold=null; DN.draw(); };
   const tc=new THREE.Color(); DN.U={grade:{value:new THREE.Color(1,1,1)},lift:{value:new THREE.Color(0,0,0)},liftK:{value:0}};
-  SYS.add('clockPre',()=>{ if(DN.hold||DN.test)blend(S[DN.mode],S[DN.mode],1); else { const c=DN.cycleAt(Date.now()); if(c.cur!==DN.mode){ DN.mode=c.cur; fix(); DN.draw(); } blend(S[c.prev],S[c.cur],c.f); } CLOCK.h=B.h; },'134b-daynight');
+  SYS.add('clockPre',()=>{ if(DN.hold||DN.test)blend(S[DN.mode],S[DN.mode],1); else { const c=DN.cycleAt(Date.now()); if(c.cur!==DN.mode){ DN.mode=c.cur; fix(); DN.draw(); } blend(S[c.prev],S[c.cur],c.f); } if(!CLOCK.run){ CLOCK.sunH=B.h; CLOCK.h=DN.hold||DN.test?B.h:DN.dayAt(Date.now()); } else CLOCK.sunH=null; },'134b-daynight');
   SYS.add('sky',()=>{ const P=B, up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=P.lamp;
     DN.U.grade.value.set(P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up?P.liftk:0;
@@ -36,10 +37,11 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
-  const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2); let dirty=false;
+  const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
+  DN.dayText=()=>'one real hour each, the same for everyone; the day at '+fmt(CLOCK.h)+', the next look in '+Math.ceil((DN.HOUR-Date.now()%DN.HOUR)/60000)+' min';
+  let dayT=0; SYS.add('clockPre',()=>{ const t=Date.now(); if(t-dayT<1000||DN.hold||!box||box.offsetParent===null)return; dayT=t; const el=box.querySelector('#dnday'); if(el)el.textContent=DN.dayText(); },'134b-dayText');   // the panel's line keeps the time while it is open
   DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
-    const next=Math.ceil((DN.HOUR-Date.now()%DN.HOUR)/60000);
-    box.innerHTML=`<h3>THE HOURS</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}${DN.hold?'<button class="btn" id="dnfollow">FOLLOW THE HOURS</button>':''}<span class="dim">${DN.hold?'held to edit; shift+N the next':'one real hour each, the same for everyone; the next in '+next+' min'}</span></div>
+    box.innerHTML=`<h3>THE HOURS</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}${DN.hold?'<button class="btn" id="dnfollow">FOLLOW THE HOURS</button>':''}<span class="dim" id="dnday">${DN.hold?'held to edit; shift+N the next':DN.dayText()}</span></div>
       <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
         :`<div class="row"><span style="width:250px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
       +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button>${DN.owner?'<button class="btn" id="dnexp">EXPORT</button>':''}<span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };

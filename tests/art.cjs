@@ -1,4 +1,4 @@
-// THE ART MUSEUM CHECK: node tests/art.cjs dist/market.html. Its lot and door on Market St, nothing hung before you go in; going in, every painting of data/art.json hung with its plaque and its thing, their pictures loaded, spread over six galleries on three floors; the elevator and the stairs between the floors; one opened full screen, its full-resolution file fetched only then, zoomed, closed; out to the street by its door with nothing of the inside drawn.
+// THE ART MUSEUM CHECK: node tests/art.cjs dist/market.html. Its lot and door on Market St, nothing hung before you go in; going in, every painting of data/art.json hung with its plaque and its thing, their pictures loaded, one big room a floor, three on each wall; the elevator between the floors (no stairs); one opened full screen, its full-resolution file fetched only then, zoomed, closed; out to the street by its door with nothing of the inside drawn.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=art::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -17,22 +17,23 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const d2 = await pg.evaluate(() => { const L = STORE.art.lay(); let close = null;
     for (const a of L) for (const b of L) if (a !== b && a.key === b.key && Math.abs(a.a - b.a) < (a.w + b.w) / 2 + 1.7) close = close || [a, b];
     return { pics: STORE.art.pics().filter(g => g.children.some(m => m.material && m.material.map && m.material.map.image && m.material.map.image.width > 0)).length, galleries: [...new Set(L.map(p => p.k + ':' + p.g))].sort(), close }; });
-  ok(d2.pics === N && d2.galleries.length === 6 && !d2.close, 'every painting has its picture, spread over six galleries on three floors, none closer than 1.7 to the next on its wall: ' + JSON.stringify(d2));
+  const per = await pg.evaluate(() => { const c = {}; for (const p of STORE.art.lay()) c[p.key + '@' + p.k] = (c[p.key + '@' + p.k] || 0) + 1; return { max: Math.max(...Object.values(c)), walls: Object.keys(c).length, floors: STORE.art.dbg().floors, per: STORE.art.PER }; });
+  ok(d2.pics === N && d2.galleries.length === Math.ceil(N / 12) && per.floors === d2.galleries.length && per.max <= per.per && !d2.close, 'every painting has its picture, one big room a floor, three on each wall, as many floors as they need, none closer than 1.7 to the next: ' + JSON.stringify({ ...d2, ...per }));
   const lv = async (f, ms = 30000) => pg.evaluate(async ([f, ms]) => { const t = Date.now(); while (Date.now() - t < ms && (FADE.busy || STORE.art.busy || STORE.art.floor() !== f)) await new Promise(r => setTimeout(r, 250)); await new Promise(r => setTimeout(r, 800)); return STORE.art.floor(); }, [f, ms]);
   await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)); th.act(); document.querySelector('#artlift [data-f="2"]').click(); });
   const e2 = await lv(2);
-  await pg.evaluate(() => { const A = STORE.art, b = A.FB[2], X = SHARED.BOD.X, Z = SHARED.BOD.Z, cx = (b.x0 + b.x1) / 2; STORE.goTo(X(cx + 1.8), Z(b.y0 + 1.2), 'up', Math.PI); });
-  const s1 = await lv(1);
-  await pg.evaluate(() => { const A = STORE.art, b = A.FB[1], X = SHARED.BOD.X, Z = SHARED.BOD.Z, cx = (b.x0 + b.x1) / 2; STORE.goTo(X(cx - 1.8), Z(b.y0 + 1.2), 'up', Math.PI); });
-  const s2 = await lv(2);
-  const sy = await pg.evaluate(() => { const A = STORE.art, b = A.FB[1], X = SHARED.BOD.X, Z = SHARED.BOD.Z, cx = (b.x0 + b.x1) / 2, T = __dbg.cv().TILE; return { up: +(STORE.stackGround(X(cx - 1.8), Z(b.y0 + 7)) / T).toFixed(2), down: +(STORE.stackGround(X(cx + 1.8), Z(b.y0 + 7)) / T).toFixed(2) }; });
-  ok(e2 === 2 && s1 === 1 && s2 === 2 && sy.up > 0 && sy.down < 0, 'the elevator takes you to the third floor, its stairs down to the second, the second\'s stairs up again; the flights climb and sink: ' + JSON.stringify({ e2, s1, s2, sy }));
+  await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.name === 'ELEVATOR' && t.obj.parent === STORE.art.groups[2]); th.act(); document.querySelector('#artlift [data-f="1"]').click(); });
+  const e1 = await lv(1);
+  const st = await pg.evaluate(() => ({ stairs: __dbg.UI.things.filter(t => /STAIR/.test(t.name || '') && t.obj && STORE.art.groups.includes(t.obj.parent)).length, lifts: __dbg.UI.things.filter(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)).length, floors: STORE.art.dbg().floors }));
+  ok(e2 === 2 && e1 === 1 && st.stairs === 0 && st.lifts === st.floors && st.floors >= 3, 'the elevator takes you up to the third floor and down to the second; no stairs, an elevator on each floor: ' + JSON.stringify({ e2, e1, st }));
   await pg.evaluate(() => STORE.art.go(0, '', 'lift')); await lv(0);
   const v0 = await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.obj && t.obj.userData.at); th.act(); return STORE.art.viewer(); });
   ok(v0 && v0.open && !v0.full && v0.t, 'double-clicking a painting opens it full screen at once, its full-resolution file still on its way: ' + JSON.stringify(v0));
   const v1 = await pg.evaluate(async () => { const t = Date.now(); while (Date.now() - t < 60000 && !STORE.art.viewer().full) await new Promise(r => setTimeout(r, 250)); return STORE.art.viewer(); });
   if (v1.full) ok(v1.w > 1000 && v1.max >= 4 && v1.max > v1.fit, 'the full-resolution file comes and you can zoom to four screen pixels a painting pixel: ' + JSON.stringify(v1));
   else console.log('skip the full-resolution file did not come here (no network?): ' + JSON.stringify(v1));
+  const tr = await pg.evaluate(async () => { const th = __dbg.UI.things.find(t => t.obj && t.obj.userData.at && t.name === 'SELF-PORTRAIT'); th.act(); await new Promise(r => setTimeout(r, 800)); const v = STORE.art.viewer(); STORE.art.tourOn(); await new Promise(r => setTimeout(r, 1600)); const a = STORE.art.viewer().tour; STORE.art.tourNext(); await new Promise(r => setTimeout(r, 1600)); const b = STORE.art.viewer(); STORE.art.tourOff(); const c = STORE.art.viewer(); return { wall: v.wall, has: v.hasTour, a, b: b.tour, zoomed: b.s > b.fit * 1.5, off: !c.tour }; });
+  ok(tr.wall && tr.has && tr.a && tr.a.i === 0 && tr.a.n >= 5 && tr.b && tr.b.i === 1 && tr.zoomed && tr.off, 'Van Gogh\'s self-portrait opens framed on its wall with a guided tour: it starts, its next step zooms in, it ends: ' + JSON.stringify(tr));
   const v2 = await pg.evaluate(async () => { const kd = (t, k, c) => document.body.dispatchEvent(new KeyboardEvent(t, { key: k, code: c, bubbles: true })); await new Promise(r => setTimeout(r, 1500)); const p0 = __dbg.pos().map(v => v.toFixed(2)).join();
     kd('keydown', 'w', 'KeyW'); kd('keydown', '+', 'Equal'); kd('keydown', 'ArrowLeft', 'ArrowLeft'); await new Promise(r => setTimeout(r, 800)); kd('keyup', 'w', 'KeyW'); kd('keyup', 'ArrowLeft', 'ArrowLeft'); const z = STORE.art.viewer(), p1 = __dbg.pos().map(v => v.toFixed(2)).join();
     kd('keydown', 'Escape', 'Escape'); return { zoomed: z.s > z.fit, still: p1 === p0, p0, p1, open: STORE.art.viewer().open, win: __dbg.UI.gamewin || null }; });

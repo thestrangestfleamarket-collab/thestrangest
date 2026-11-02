@@ -60,12 +60,14 @@ const TREEGEN={};
         const mid=new V().lerpVectors(st,end,.5); mid.y+=r*.25+R()*r*.2; mid.x+=(R()-.5)*r*.3; mid.z+=(R()-.5)*r*.3; limb(st,mid,r0*.5,r0*.32); limb(mid,end,r0*.32,r0*.12);
         const tw=new V(end.x+(R()-.5)*r*.8,end.y+r*.3,end.z+(R()-.5)*r*.8); limb(mid,tw,r0*.2,r0*.07); }); B.dispose(); }
     // a round dark core well inside the cards (never poking through them) so the crown has bulk; airy crowns have none
-    if(!airy){ const C=new THREE.IcosahedronGeometry(1,1); for(const [x,y,z,r,Rc,Gc,Bc] of S.cl){ const g=C.clone(); g.scale(r*.6,r*.52,r*.6); g.translate(x,y,z); const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,[Rc*.5,Gc*.5,Bc*.5],0); } C.dispose(); }
+    if(!airy&&!S.hollow){ const C=new THREE.IcosahedronGeometry(1,1); for(const [x,y,z,r,Rc,Gc,Bc] of S.cl){ const g=C.clone(); g.scale(r*.6,r*.52,r*.6); g.translate(x,y,z); const u=g.attributes.uv.array; for(let i=0;i<u.length;i+=2){ u[i]=.97; u[i+1]=.5; } put(A,g,[Rc*.5,Gc*.5,Bc*.5],0); } C.dispose(); }
     L.dispose(); let cx=0, cy=0, cz=0, w=0; for(const q of S.cl){ const k=q[3]*q[3]; cx+=q[0]*k; cy+=q[1]*k; cz+=q[2]*k; w+=k; } const cc=new V(cx/w,cy/w,cz/w); let cr=1e-3; for(const q of S.cl)cr=Math.max(cr,cc.distanceTo(new V(q[0],q[1],q[2]))+q[3]);
     const RL=Math.max(...S.cl.map(q=>Math.hypot(q[0],q[2])+q[3])), CF=S.card||1, D=(lite?700:2240)*[1,1.8,.6,1.1][look]/(CF*CF), SZ=(lite?.19:.135)*cr/.45*[1,.62,1,.7][look]*CF, VQ=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];
     const quad=(q,sz,col)=>{ n.copy(o).sub(cc).normalize().lerp(UP,.15).normalize(); for(const [x,y] of VQ){ e.set(x*sz/2,y*sz/2,0).applyQuaternion(q).add(o); const h=Math.hypot(e.x,e.z); if(h>RL){ e.x*=RL/h; e.z*=RL/h; } A.P.push(e.x,e.y,e.z); A.N.push(n.x,n.y,n.z); A.C.push(...col); A.U.push((x+1)/2*.44+(fine?.5:0),(y+1)/2); } A.K.push(0,0); };
-    for(const [qx,qy,qz,qr,Rc,Gc,Bc] of S.cl){ const r=qr*1.15, m=Math.max(3,Math.round(D*qr*qr*(.45/cr)**2));
-      for(let i=0;i<m;i++){ e.set(R()*2-1,R()*2-1,R()*2-1).normalize(); o.set(qx,qy,qz).addScaledVector(e,r*(lite?.55+.45*Math.sqrt(R()):.45+.55*Math.sqrt(R())));
+    // a hollow crown (the elms, owner 2 Nov 2026: "the inside should be empty enough to climb"): leaves only on each clump's outer half, none in the open middle round the trunk and its leaders
+    const HR=S.hollow?RL*.55:0, HY=cc.y+cr*.3;
+    for(const [qx,qy,qz,qr,Rc,Gc,Bc] of S.cl){ const r=qr*1.15, m=Math.max(3,Math.round(D*qr*qr*(.45/cr)**2)), ox=qx/(Math.hypot(qx,qz)||1), oz=qz/(Math.hypot(qx,qz)||1);
+      for(let i=0;i<m;i++){ e.set(R()*2-1,R()*2-1,R()*2-1).normalize(); if(HR&&e.x*ox+e.z*oz<-.2)e.set(-e.x,e.y,-e.z); o.set(qx,qy,qz).addScaledVector(e,r*(lite?.55+.45*Math.sqrt(R()):HR?.7+.3*Math.sqrt(R()):.45+.55*Math.sqrt(R()))); if(HR&&o.y<HY&&Math.hypot(o.x,o.z)<HR)continue;
         const dp=Math.min(1,o.distanceTo(cc)/cr), tp=Math.max(0,Math.min(1,(o.y-cc.y+cr)/(2*cr))), f=(.68+.42*dp*dp+.25*tp)*(.9+R()*.2), col=[Rc*f,Gc*f,Bc*f], sz=SZ*(.75+R()*.5);
         Q.setFromEuler(E.set(R()*6.28,R()*6.28,R()*6.28)); quad(Q,sz,col); if(!lite)quad(Q.clone().multiply(Y90),sz,col); } }
     let H=0, wd=0; for(let i=0;i<A.P.length;i+=3){ H=Math.max(H,A.P[i+1]); wd=Math.max(wd,Math.hypot(A.P[i],A.P[i+2])); }

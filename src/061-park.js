@@ -249,7 +249,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); const cy=(y0+y1)/2, ry=Math.max(1e-3,(y1-y0)/2);
         for(let v=q0;v<q1;v++){ TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); RN.push((P3[v*3]-cx)/(r1*r1),(P3[v*3+1]-cy)/(ry*ry),(P3[v*3+2]-cz)/(r1*r1)); } }
       { let t=oy, r=0; for(let v=p0+1;v<P3.length;v+=3)if(P3[v]>t)t=P3[v]; const hm=(oy+t)/2; for(let v=p0;v<P3.length;v+=3)if(P3[v+1]>hm)r=Math.max(r,Math.hypot(P3[v]-ox,P3[v+2]-oz)); const D=[]; for(let v=p0/3;v<P3.length/3;v++){ const y=P3[v*3+1]-oy; if(!LF[v]&&y>.6*TILE&&y<1.6*TILE)D.push(Math.hypot(P3[v*3]-ox,P3[v*3+2]-oz)); } D.sort((a,b)=>a-b);   // tr: the bark's radius at reaching height
-        IT.push({k:key,x:ox,z:oz,y:oy,top:t,r,tr:D.length?D[D.length>>1]:0,v0:p0/3,v1:P3.length/3,P:P3,LF}); }   // v0..v1 of P: its own triangles, for what touches it
+        const tr=D.length?D[D.length>>1]:0; let fork=0; if(tr)for(let v=p0/3;v<P3.length/3;v++)if(k[Math.floor((v-p0/3)/3)]!==0&&Math.hypot(P3[v*3]-ox,P3[v*3+2]-oz)<1.8*tr)fork=Math.max(fork,P3[v*3+1]-oy);   // fork: how high the bark goes straight up
+        IT.push({k:key,x:ox,z:oz,y:oy,top:t,r,tr,fork,v0:p0/3,v1:P3.length/3,P:P3,LF}); }   // v0..v1 of P: its own triangles, for what touches it
       if(!opt.far)CLIPX.push({place:'park',name:key,P:P3.slice(p0)});
       if(solid){ const r=Math.max(.3,D.trunk*s*.5*(opt.noTrunk?PARK.TRK:1)), sb=[ox-r,oz-r,ox+r,oz+r], fb=[ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]; SOL.up.push(sb); FIX.up.push(fb); const it=IT[IT.length-1]; if(it){ it.sol=sb; it.fix=fb; } } }   // the item keeps its footprint, so the world editor can move it
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
@@ -282,9 +283,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     { const ya=P.y0+T+5, yb=cy-P.round[2]-5, STEP=13, OFF=[3.6+3.2,3.6+3.2+10.5]; let n=0; PARK.alley=[];
       for(const [ri,off] of OFF.entries())for(let y=ya+ri*STEP/2;y<yb;y+=STEP)for(const sd of [-1,1]){ n++; const x=P.armX(y)+sd*off, k=ELM(n,sd+5,169), m=EM(n,sd+7,171);
         if(FOUNT.lake(x,y)<m*W(k)*.35+1.5||BK.wet(x,y,m*.03)||FOUNT.ter(x,y)<2||pd(x,y)<1.2)continue; add(k,x,y,m,hash(n,sd+9,173)*6.28); PARK.alley.push([x,y]); } }
-    let nm=0; for(let i=0;i<2400&&nm<16;i++){ const k=ELM(i,61,7), m=EM(i,47,11), r=m*W(k), hy=hash(i,43,9)<.5, y0=hy?Math.max(P.y0+TREEY+4,P.y0+r+8):cy, y1=hy?cy:P.y1, x=P.x0+(P.x1-P.x0)*(.12+.76*hash(i,41,7)), y=(y0+y1)/2+(hash(i,49,5)-.5)*(y1-y0)*.4;
-      if(!ok(x,y,r)||near(x,y,r,.75,12))continue; add(k,x,y,m,hash(i,63,3)*6.28); nm++;
-      if(hash(i,65,9)<.45)for(let j=0,nb=1+Math.floor(hash(i,67,5)*2);j<nb;j++){ const a=hash(i,69+j,3)*6.28, mm=m*(.5+.25*hash(i,79+j,5)), kk=ELM(i,81+j,7), rr=mm*W(kk), d=r*.55+rr*.6+2, x2=x+Math.cos(a)*d, y2=y+Math.sin(a)*d;
+    let nm=0; for(let i=0;i<2400&&nm<40;i++){ const k=ELM(i,61,7), m=EM(i,47,11), r=m*W(k), hy=hash(i,43,9)<.5, y0=hy?Math.max(P.y0+TREEY+4,P.y0+r+8):cy, y1=hy?cy:P.y1, x=P.x0+(P.x1-P.x0)*(.12+.76*hash(i,41,7)), y=(y0+y1)/2+(hash(i,49,5)-.5)*(y1-y0)*.8;
+      if(!ok(x,y,r)||near(x,y,r,.5,9))continue; add(k,x,y,m,hash(i,63,3)*6.28); nm++;
+      if(hash(i,65,9)<.65)for(let j=0,nb=1+Math.floor(hash(i,67,5)*2);j<nb;j++){ const a=hash(i,69+j,3)*6.28, mm=m*(.75+.2*hash(i,79+j,5)), kk=ELM(i,81+j,7), rr=mm*W(kk), d=r*.55+rr*.6+2, x2=x+Math.cos(a)*d, y2=y+Math.sin(a)*d;
         if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
     for(const [k0,x,y,m0] of FOUNT.S.oaks){ const k=ELM(Math.round(x),Math.round(y),87), m=m0*1.6; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
     // the great cherry by the lake (owner, 2 Nov 2026, his picture: "a super large cherry blossom tree by the lake"): past the track at the lake's end nearest the plaza, leaning out over the track, the rail and the water
@@ -349,7 +350,22 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         st.receiveShadow=hd.receiveShadow=true; grp.add(st,hd); grp.flowers=fl.length; }
       grp.userData.cull=(far,px,pz)=>{ for(const im of gims){ const cx=im.userData.cx, cz=im.userData.cz, m0=im.userData.m0, vis=im.userData.vis; let ch=false; for(let i=0;i<cx.length;i++){ const sh=Math.hypot(cx[i]-px,cz[i]-pz)<=far?1:0; if(sh!==vis[i]){ im.setMatrixAt(i,sh?m0[i]:ZERO); vis[i]=sh; ch=true; } } if(ch)im.instanceMatrix.needsUpdate=true; } };
       scene.add(grp); return grp; }; })();
-  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1}); PARK.trunks=trunks(TREES.slice(0,NI));
+  // round every big tree's foot (owner, 2 Nov 2026: "tufts, flowers, mushrooms, etc. eco system around larger trees"): wild flowers in the grass and mushrooms in the roots' shade, beside the tufts
+  const feet=list=>{ const fl=[], mu=[], FLW=[[.95,.93,.86],[.98,.84,.25],[.72,.55,.9],[.95,.6,.7],[.6,.75,.98]], MU=[[.78,.2,.16],[.62,.44,.3],[.86,.78,.62],[.55,.36,.24]];
+    for(const [k,x,y,m] of list){ if(!/^G[EK]/.test(k))continue; const s=m/.84*TILE, rw=Math.max(.3*TILE,F[k].trunk*s*.5), sx=Math.round(x*7), sy=Math.round(y*7);
+      for(let f=0,nf=12+Math.floor(hash(sx,sy,301)*10);f<nf;f++){ const a=hash(sx+f,sy,303)*6.28, d=rw+(.4+2.6*Math.sqrt(hash(f,sx,305)))*TILE; fl.push([X(x)+Math.cos(a)*d,Z(y)+Math.sin(a)*d,x+Math.cos(a)*d/TILE,y+Math.sin(a)*d/TILE,FLW[Math.floor(hash(f,sy,307)*FLW.length)],a]); }
+      for(let f=0,nf=4+Math.floor(hash(sx,sy,311)*6);f<nf;f++){ const a=hash(sx+f,sy,313)*6.28, d=rw+(.15+.9*hash(f,sx,315))*TILE; mu.push([X(x)+Math.cos(a)*d,Z(y)+Math.sin(a)*d,x+Math.cos(a)*d/TILE,y+Math.sin(a)*d/TILE,MU[Math.floor(hash(f,sy,317)*MU.length)],(.6+.7*hash(f,sy,319))]); } }
+    const ok=([,,x,y])=>!path(x,y)&&!BK.wet(x,y,.3), F1=fl.filter(ok), M1=mu.filter(ok); if(!F1.length&&!M1.length)return null;
+    const grp=new THREE.Group(), M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), up=new THREE.Vector3(0,1,0), c=new THREE.Color(), gy=(wx,wz,x,y)=>SHARED.groundY?SHARED.groundY(wx,wz):P.hill(x,y);
+    const inst=(geo,mat,n,fn)=>{ const im=new THREE.InstancedMesh(geo,mat,n); for(let i=0;i<n;i++)fn(im,i); im.receiveShadow=true; grp.add(im); return im; };
+    if(F1.length){ const sg=new THREE.CylinderGeometry(.012*TILE,.016*TILE,1,4,1,true).translate(0,.5,0), hg=new THREE.IcosahedronGeometry(.06*TILE,0), H=F1.map((q,i)=>(.4+.35*hash(i,9,321))*TILE);
+      inst(sg,new THREE.MeshLambertMaterial(),F1.length,(im,i)=>{ const [wx,wz,x,y,,a]=F1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y),wz),Q.setFromAxisAngle(up,a),S.set(1,H[i],1))); im.setColorAt(i,c.setRGB(.25,.45,.18,THREE.SRGBColorSpace)); });
+      inst(hg,new THREE.MeshLambertMaterial({flatShading:true}),F1.length,(im,i)=>{ const [wx,wz,x,y,col]=F1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y)+H[i],wz),Q.identity(),S.set(1,.7,1))); im.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); }); }
+    if(M1.length){ const sg=new THREE.CylinderGeometry(.035*TILE,.045*TILE,.12*TILE,6,1).translate(0,.06*TILE,0), cg=new THREE.SphereGeometry(.11*TILE,8,4,0,6.283,0,1.5).scale(1,.6,1);
+      inst(sg,new THREE.MeshLambertMaterial(),M1.length,(im,i)=>{ const [wx,wz,x,y,,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y),wz),Q.identity(),S.set(k,k,k))); im.setColorAt(i,c.setRGB(.9,.86,.76,THREE.SRGBColorSpace)); });
+      inst(cg,new THREE.MeshLambertMaterial({flatShading:true}),M1.length,(im,i)=>{ const [wx,wz,x,y,col,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y)+.11*TILE*k,wz),Q.setFromAxisAngle(up,i),S.set(k,k,k))); im.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); }); }
+    grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
+  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1}); PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2}); PARK.ringTrunks=trunks(TREES.slice(NI));
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }

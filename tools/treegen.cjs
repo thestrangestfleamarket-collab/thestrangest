@@ -52,7 +52,7 @@ module.exports = THREE => {
   const PINKS = [[214,118,160],[232,150,186],[244,176,206]];
   const vase = (style, seed) => {
     const R = mul(seed), cherry = style === 'cherry', h = 10, pal = cherry ? PINKS : PALS[Math.floor(R() * PALS.length)], bc = cherry ? [64,48,42] : BARK[Math.floor(R() * BARK.length)];
-    const r0 = cherry ? .3 : .25 + R() * .04, fy = h * (cherry ? .13 + R() * .05 : .24 + R() * .06), segs = [], tips = [], arcs = [];
+    const r0 = cherry ? .3 : .36 + R() * .05, fy = h * (cherry ? .13 + R() * .05 : .24 + R() * .06), segs = [], tips = [], arcs = [];
     const lean = new V((R() - .5) * .12, 1, (R() - .5) * .12).normalize(), p1 = new V().addScaledVector(lean, fy * .55), fork = new V().addScaledVector(lean, fy);
     segs.push([new V(0, 0, 0), p1, r0, r0 * .93, 3], [p1, fork, r0 * .93, r0 * .86, 3]);
     const arc = (p, az, th0, th1, len, rad, depth) => { const k = 4; let cur = p.clone(), a = az, dir = null;
@@ -64,7 +64,7 @@ module.exports = THREE => {
       tips.push({ p: cur, d: dir, len: len / k }); };
     const n = cherry ? 4 + Math.floor(R() * 2) : 3 + Math.floor(R() * 3), az0 = R() * 6.283;
     for (let i = 0; i < n; i++) { const az = cherry ? (i < n - 1 ? -1.15 + 2.3 * i / (n - 2) + (R() - .5) * .3 : 3.14 + (R() - .5) * .8) : az0 + i / n * 6.283 + (R() - .5) * .6;
-      const th0 = cherry ? .5 + R() * .25 : .15 + R() * .12, th1 = cherry ? 1.1 + R() * .2 : .8 + R() * .2, len = h * (cherry ? .75 + R() * .15 : .8 + R() * .15);
+      const th0 = cherry ? .5 + R() * .25 : .22 + R() * .12, th1 = cherry ? 1.1 + R() * .2 : 1 + R() * .2, len = h * (cherry ? .75 + R() * .15 : .95 + R() * .15);
       arc(fork, az, th0, th1, len, r0 * (cherry ? .6 : .55), 2); }
     const pr = [], LB = [], CL = [];
     for (const [a, b, q0, q1, dp] of segs) { const j = .9 + R() * .2; pr.push([0, r3(a.x), r3(a.y), r3(a.z), r3(b.x), r3(b.y), r3(b.z), r3(Math.max(.03, q0)), r3(Math.max(.02, q1)), dp === 3 ? 7 : 4, ri(bc[0] * j), ri(bc[1] * j), ri(bc[2] * j)]); if (dp >= 1) LB.push([a, b, q0]); }
@@ -78,7 +78,7 @@ module.exports = THREE => {
     const c = new V(); for (const t of tips) c.add(t.p); c.divideScalar(tips.length || 1); let rad = 1.5, rh = 1, y0 = 1e9, y1 = -1e9;
     for (const t of tips) { rad = Math.max(rad, t.p.distanceTo(c)); rh = Math.max(rh, Math.hypot(t.p.x - c.x, t.p.z - c.z)); y0 = Math.min(y0, t.p.y); y1 = Math.max(y1, t.p.y); }
     for (let i = 0, nf = cherry ? 10 : 8; i < nf; i++) { const a = R() * 6.283, u = .3 + Math.sqrt(R()) * .6; leaf(c.x + Math.cos(a) * rh * u, y1 - (y1 - y0) * .35 * u * u + (R() - .5) * .8, c.z + Math.sin(a) * rh * u, S() * 1.1); }
-    return { pr, c: [r3(c.x), r3(c.y), r3(c.z), r3(rad + .8)], kN: .4, tr: r3(2 * r0), CL, LB, bc, K: cherry ? 14 : 13, vase: 1, card: cherry ? .45 : .8 };
+    return { pr, c: [r3(c.x), r3(c.y), r3(c.z), r3(rad + .8)], kN: .4, tr: r3(2 * r0), CL, LB, bc, K: cherry ? 14 : 22, vase: 1, card: cherry ? .45 : .8, hollow: cherry ? 0 : 1 };
   };
   // a bush: a few stems from one root, a low dome of leaf bunches on crossed cards, full to the ground
   const bush = seed => { const R = mul(seed), H = 1.2 + R() * .5, W = 1.7 + R() * .9, D = W * (.8 + R() * .3), pal = PALS[Math.floor(R() * PALS.length)], bc = BARK[Math.floor(R() * BARK.length)], cy = H * .42, pr = [];

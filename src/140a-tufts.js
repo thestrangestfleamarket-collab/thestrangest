@@ -39,7 +39,14 @@ const TUFTS=window.TUFTS={wind:0};
         const x=(i+.1+.8*hsh(i,j,11+ri))*sp, z=(j+.1+.8*hsh(j,i,13+ri))*sp; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS)continue; const K=GRASS.at(x/T,z/T); if(!K.shape)continue; const y=lawnNear(x,z); if(typeof y!=='number')continue;
         const D=SHP[K.shape], s=knee*R.sz*(.75+.5*hsh(i,j,17+ri)), w=s*D.w*(K.flat?1.5:1), a=K.flat?.35+(hsh(i,j,19)-.5)*.6:hsh(i,j,19)*6.283;
         M.compose(V.set(x,y,z),Q.setFromAxisAngle(up,a),S.set(w,s*TUFTS.height(x,z)*K.hi*(K.flat?.4:1),w)); (L[K.shape]=L[K.shape]||[]).push(x,z,...M.elements,KC[K.i](hsh(i,j,23+ri)));
-      } out.push(L); });
+      }
+      // tufts at the foot of every tree (owner, 2 Nov 2026: "add tufts at bottom of trees naturally"): a ragged ring of taller ones hugging each trunk, the lawn's own kind there
+      if(!ri)for(const [fx,fz,fr] of WEEDS.feet||[]){ if(fx<x0-2*T||fx>=x0+CS+2*T||fz<z0-2*T||fz>=z0+CS+2*T)continue; const n=10+Math.floor(hsh(Math.round(fx),Math.round(fz),31)*8);
+        for(let k=0;k<n;k++){ const h1=hsh(Math.round(fx*7)+k,Math.round(fz*7),33), h2=hsh(k,Math.round(fx*3+fz*5),37), a=k/n*6.283+(h1-.5)*.7, d=fr+.08*T+h2*h2*.9*T, x=fx+Math.cos(a)*d, z=fz+Math.sin(a)*d; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS)continue;
+          const K=GRASS.at(x/T,z/T), sn=K.shape||'clump'; let y=lawnNear(x,z); if(typeof y!=='number'){ if(typeof WEEDS.fine(x,z)==='undefined'||WEEDS.isOff(x,z))continue; y=SHARED.groundY(x,z); }
+          const D=SHP[sn], tall=1.3+.9*(1-Math.min(1,(d-fr)/(.9*T)))*(.8+.4*h1), s=knee*R.sz*(.85+.4*h2), w=s*D.w*(K.flat?1.4:1.1), M2=M.compose(V.set(x,y,z),Q.setFromAxisAngle(up,h1*6.283),S.set(w,s*TUFTS.height(x,z)*Math.max(.7,K.hi)*tall*(K.flat?.5:1),w));
+          (L[sn]=L[sn]||[]).push(x,z,...M2.elements,KC[K.i](h2)); } }
+      out.push(L); });
     return {x0,z0,CS,L:out}; };
   const SP=.3*T, lawnNear=(x,z)=>{ const y=WEEDS.fine(x,z); if(typeof y==='number')return y; for(const [u,v] of [[SP,0],[-SP,0],[0,SP],[0,-SP]])if(typeof WEEDS.fine(x+u,z+v)==='number')return SHARED.groundY(x,z); return null; };   // a tuft a little past the lawn's edge, so they run right up to the paths
   let dirty=true, lx=1e9, lz=1e9;

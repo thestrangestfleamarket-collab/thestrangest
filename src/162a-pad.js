@@ -1,4 +1,5 @@
 // THE GAMEPAD: PAD lets the player play with an Xbox or PlayStation controller.
+import {SHARED} from './003-shx.js';
 import {FORAGE, keys, UI, VR} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -67,6 +68,7 @@ import {PAD} from './075-main-13.js';
     if(UI.gamewin){ const lx=ax[0]||0, ly=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(lx)>.4?Math.sign(lx):0, dy=on(12)?-1:on(13)?1:Math.abs(ly)>.4?Math.sign(ly):0;   // a cabinet or the BBS: the stick is the arrows, A fires or enters, B leaves, X is the game's magic, Y its menu
       hold('h',dx<0?'ArrowLeft':dx>0?'ArrowRight':null); hold('v',dy<0?'ArrowUp':dy>0?'ArrowDown':null); hold('A',on(b('jump'))?(UI.gamewin==='bbs'?'Enter':' '):null); hold('X',on(b('use'))?'c':null); if(hit(b('kick')))tap('m'); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }
     if(panels().length){ letGo(); PAD.aWait=true; menus(on,hit,ax,act); if(hit(b('back')))back(); else if(hit(b('menu'))&&UI.menuOpen)tap('Escape'); return; }
+    if(SHARED.drive){ letGo(); nav=''; PAD.mv=null; if(SHARED.drive.pad)SHARED.drive.pad(gp,dt,hit,on); if(hit(b('menu')))tap('Escape'); return; }
     nav=''; if(PAD.ui||PAD.at){ mark(null); PAD.at=null; } if(PAD.aWait&&!on(b('jump')))PAD.aWait=false;
     const lx=ax[0]||0, ly=ax[1]||0; let h=null, v=null;
     if(Math.hypot(lx,ly)>.2){ const s=(Math.round(Math.atan2(ly,lx)/(Math.PI/4))+8)%8; h=s===0||s===1||s===7?'d':s>=3&&s<=5?'a':null; v=s>=1&&s<=3?'s':s>=5?'w':null; }

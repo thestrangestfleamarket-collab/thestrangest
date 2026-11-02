@@ -147,30 +147,30 @@ import {collide, frame, PAD} from './075-main-13.js';
   const turn=d=>{ head(EV); VR.yaw+=d; rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(EV.x-O.x,0,EV.z-O.z); };
   const calib=()=>{ VR.yaw=SHARED.heading+Math.PI-yawOf(HQ); rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(pos.x-O.x,0,pos.z-O.z); VR.y0=HL.y;
     VR.eye=W3.eyeAt&&W3.eyeAt(EV)?Math.max(.5*TILE,EV.y-SHARED.py):1.62/.84*TILE*(W3.SZ||1); VR.px=pos.x; VR.pz=pos.z; VR.cal=true; };
-  const free=()=>!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
+  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
     if(!VR.cal)calib(); if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
-    if(UI.gamewin){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
-    if(edge('q',keys.has('q')))turn(snap()); if(edge('e',keys.has('e')))turn(-snap());
-    if(edge('rc',VR.r3))VR.cal=false; if(edge('lc',VR.l3))tap('Escape');
+    if(UI.gamewin||SHARED.drive){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
+    if(!SHARED.drive){ if(edge('q',keys.has('q')))turn(snap()); if(edge('e',keys.has('e')))turn(-snap()); }
+    if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     if(opt.view==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
       if(d>L){ if(free()){ const k=1-L/d; pos.x+=dx*k; pos.z+=dz*k; collide(pos); if(FEEL.take())FEEL.sync(); dx=EV.x-pos.x; dz=EV.z-pos.z; d=Math.hypot(dx,dz); }
         if(d>L){ const m=(d-L)/d; O.x-=dx*m; O.z-=dz*m; } } }
     VR.px=pos.x; VR.pz=pos.z;
     const a=VR.yaw+yawOf(HQ); SHARED.yaw=SHARED.yawTo=a; SHARED.pitch=SHARED.pitchTo=Math.max(-1.2,Math.min(1.3,-Math.asin(Math.max(-1,Math.min(1,FW.y)))));
-    const mv=opt.vig&&(opt.move==='stick'&&Math.hypot(VP.axes[0],VP.axes[1])>.2||opt.turn==='smooth'&&Math.abs(rx)>.3)?1:0; vig.material.opacity+=(mv-vig.material.opacity)*Math.min(1,dt*8); vig.visible=vig.material.opacity>.02;
+    const mv=opt.vig&&!SHARED.drive&&(opt.move==='stick'&&Math.hypot(VP.axes[0],VP.axes[1])>.2||opt.turn==='smooth'&&Math.abs(rx)>.3)?1:0; vig.material.opacity+=(mv-vig.material.opacity)*Math.min(1,dt*8); vig.visible=vig.material.opacity>.02;
     if(ref){ point(xf,ref,dt); hands(xf,ref); if(!UI.gamewin)teleport(); else { VR.tp=null; VR.tpWas=false; ARC.visible=RING.visible=false; } } live(); },'162c-vr');
 
   VR.draw=hold=>{ if(!VR.pose)return; const r=renderer;
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;
     const ey=SHARED.py+VR.eye+opt.height/100*FEEL.MV-VR.y0*FEEL.MV;
-    if(opt.view==='behind')DOLLY.position.set(pos.x+Math.sin(VR.yaw)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(VR.yaw)*2.6*FEEL.MH); else DOLLY.position.set(O.x,ey,O.z);
-    DOLLY.rotation.set(0,VR.yaw,0); DOLLY.scale.set(FEEL.MH,FEEL.MV,FEEL.MH); DOLLY.updateMatrixWorld(true); TRK.matrix.copy(DOLLY.matrixWorld); TRK.matrixWorldNeedsUpdate=true;
-    const nh=opt.view==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=opt.view==='behind'||opt.body;
+    if(SHARED.drive&&SHARED.drive.dolly)SHARED.drive.dolly(DOLLY,HL,HQ); else { if(opt.view==='behind')DOLLY.position.set(pos.x+Math.sin(VR.yaw)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(VR.yaw)*2.6*FEEL.MH); else DOLLY.position.set(O.x,ey,O.z);
+    DOLLY.rotation.set(0,VR.yaw,0); DOLLY.scale.set(FEEL.MH,FEEL.MV,FEEL.MH); } DOLLY.updateMatrixWorld(true); TRK.matrix.copy(DOLLY.matrixWorld); TRK.matrixWorldNeedsUpdate=true;
+    const nh=opt.view==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=!SHARED.drive&&(opt.view==='behind'||opt.body);
     const f=Math.max(FADE.el?+FADE.el.style.opacity||0:0,VR.blink); veil.material.opacity=f; veil.visible=f>.01;
     if(--VR.ct<=0){ VR.ct=10; const els=PAD.panels(), w=!!UI.menuOpen||els.length>0; if(w!==VR.win){ VR.win=w; if(w)openPanel(); else closePanel(); } else if(w&&(els.length!==PN.els.length||els.some((e,i)=>e!==PN.els[i])))watch(); }
     { const n=performance.now(), T=PT[opt.panel]||PT.normal; if(panel.visible&&PN.dirty&&!PN.busy&&n-PN.t>T[0]&&(n-PN.ch>T[1]||n-PN.d0>T[2]))shoot(); }

@@ -1,5 +1,5 @@
 # THE RPG TOWNSFOLK (owner, 24 Oct 2026, his RPG Characters pack, "both"): six Quaternius classes (Cleric, Monk, Ranger, Rogue, Warrior,
-# Wizard), each a rigged .fbx with its own clips (Walk, Run, Idle, ...), baked into data/rpgchars.json for src/NNN-npc-rpg.js the way the
+# Wizard), each a rigged .fbx with its own clips (Walk, Run, Idle, ...), baked into data/full/rpgchars.json for src/NNN-npc-rpg.js the way the
 # creatures are (rig + skinned mesh + clips, the armature's 100x and quarter-turn folded into the root bone). Unlike the creatures their
 # colour is sampled from the pack's per-character texture at each vertex (so the model ships no texture, as the rule is); the face and
 # shoulder pads and the held weapon (on the right hand's Weapon.R bone, coloured from its own texture) are still meshes bound whole to their bone.
@@ -107,4 +107,4 @@ for key in KEYS:
         clips[nm]={'dur':round(dur,4),'n':nf,'q':b64(np.round(Q*32000).astype(np.int16)),'p':TR}
     OUT[key.lower()]={'rig':rig,'mesh':mesh,'clips':clips,'tall':float(np.round(hi[1]-lo[1],4)),'lo':np.round(lo,4).tolist(),'hi':np.round(hi,4).tolist()}
     print(key,mesh['tris'],'tris',len(names),'bones; box',np.round(lo,2),np.round(hi,2),'clips',list(clips),'parts',parts)
-OUTF=os.environ.get('OUT','data/rpgchars.json'); open(OUTF,'w').write(json.dumps(OUT,separators=(',',':'))); print(OUTF,os.path.getsize(OUTF),'bytes')
+OUTF=os.environ.get('OUT','data/full/rpgchars.json'); open(OUTF,'w').write(json.dumps(OUT,separators=(',',':'))); print(OUTF,os.path.getsize(OUTF),'bytes')

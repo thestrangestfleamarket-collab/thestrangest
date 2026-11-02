@@ -1,6 +1,7 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -8,7 +9,7 @@ import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
-{ const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
+{ const T=TILE, WU=T/.84, say=SAY, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
     ['ROCK PIGEON','Columba livia',.32,5,4,3,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
     ['EUROPEAN STARLING','Sturnus vulgaris',.21,10,4,4,'walk',{body:0x1e2228,breast:0x26302a,head:0x1a1e24,wing:0x2a2a2a,bar:0xa89a6a,tail:0x1a1a1e,beak:0xe8c040,leg:0xb08a70}],

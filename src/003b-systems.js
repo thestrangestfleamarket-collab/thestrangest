@@ -1,6 +1,7 @@
 // THE GAME'S SYSTEMS, DECLARED FIRST: every system another file uses before its own file runs is made here (empty, or its first value) and filled in its own file, so each file only reads names from files before it.
 import {THREE} from './003-shx.js';
 const ROOMS={lazy:{},off:{}},
+  VIS={all:false},
   LEVELS={of:{},ways:[],below:y=>y<-1.6?'down':'up',own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
@@ -48,7 +49,7 @@ const ROOMS={lazy:{},off:{}},
   GUIDE={},
   VR={on:false},
   BINS={},
-  LOOPMAP={}, PASSPORT={}, SCANNER={}, SPRAY={},
+  PASSPORT={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
   TABLET={},   // the tablet everyone carries (146ya): TAB pulls it up
@@ -59,7 +60,6 @@ const ROOMS={lazy:{},off:{}},
   PB={},
   FIGFX={},
   MUS={},
-  BWK={},
   PNM={},
   SGM={},
   DRM={},
@@ -101,6 +101,6 @@ const ROOMS={lazy:{},off:{}},
   GTSAMP=[],
   IMK={},
   BOOKS={},
-  TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159d-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
+  TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLET, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLET, TALK, TENANTS, TEXT, TRADE, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};

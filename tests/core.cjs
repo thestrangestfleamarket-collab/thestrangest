@@ -53,7 +53,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.hud = (() => { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /\/ 100$/.test(document.getElementById('vhpn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].textContent); HUD.set(1, null);
-        __dbg.ui().log('a test line', null, 'MEL'); FORAGE.say('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
+        __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
         { const R = document.querySelector('#menu [data-p="graphics"] #dhaze'), e0 = DFOG.get().end, b0 = e0 - DFOG.get().start; DFOG.range(100); ok.haze = !!R && +R.value === 100 && DFOG.get().end === 100 && DFOG.get().end - DFOG.get().start === b0 && document.getElementById('dhazev').textContent === '100 TILES'; DFOG.range(e0); } return ok; } catch (e) { return { err: String(e) }; } })();
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
@@ -63,6 +63,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const T = __dbg.THREE, m = new T.Object3D();
       VIS.hide(m, 'a'); VIS.hide(m, 'b'); const h2 = !m.visible; VIS.hide(m, 'a', false); const h1 = !m.visible; VIS.hide(m, 'b', false);
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
+      { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
+        o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
+      { const h0 = VIT.hp; VIT.heal(-1, .05); const lo = VIT.hp; VIT.heal(.5); const mid = VIT.hp; VIT.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, VIT.hp === 1].join(); VIT.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
@@ -109,10 +113,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         U.toggleMenu();
         let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { await LOAD('log'); CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
-      o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
+      o.bodies = (() => { const B = window.BODIES; if (!B || !B.by) return { ok: false };
         const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns.length === 0 && !/BODY/.test(document.querySelector('#looks').innerText);
-        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set('poacher'); const poacher = B.pick() === 'walker' && !!B.by.poacher && B.by.poacher.tris() > 0 && B.by.poacher.npc.on; B.set(saved || 'walker');
+        const stays = !B.set && !B.pick; const hero = B.by.hero.tris() > 0 && B.by.hero.npc.on; const poacher = !!B.by.poacher && B.by.poacher.tris() > 0 && B.by.poacher.npc.on;
         return { ok: true, inGame, none, noRow, stays, hero, poacher, btns: btns.join(',') }; })();
       o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, was = !!W.worn.shirt;
         W.wear('shirt', true); const hid = W.HIDE[W.idx('bodyTorso')] && !W.HIDE[W.idx('torso')];
@@ -136,6 +140,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
+    ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
+    ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
@@ -162,7 +169,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are always the Walker: knight/man/woman/hero/egg poacher stay in the game, YOU has no BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are always the Walker: knight/man/woman/hero/egg poacher stay in the game, YOU has no BODY row and no body picker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
     ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
     ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));

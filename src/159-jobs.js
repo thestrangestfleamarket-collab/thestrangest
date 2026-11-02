@@ -1,6 +1,6 @@
 // THE JOBS: JOBS sends the town's people to work at the diner, the bar and the rest, by the hour.
 import {SHARED} from './003-shx.js';
-import {CITY, CLIP, CLOCK, MAIL, PARK, ROOMS} from './003b-systems.js';
+import {CITY, CLIP, CLOCK, MAIL, PARK, ROOMS, VIS} from './003b-systems.js';
 import {QS, SOL, SYS, TILE} from './006-map-pre.js';
 const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':CITY.on,list:[],plan:null}; window.JOBS=JOBS;
 if(JOBS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random;
@@ -22,7 +22,7 @@ if(JOBS.on){ const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, rnd=Math.random;
     for(const dep of [2.2,1.6,2.8,3.4,1.2,4])for(const lat of [0,.8,-.8,1.6,-1.6,2.4,-2.4]){ const x=F.at.x-F.n.x*dep*T+F.t.x*lat*T, z=F.at.z-F.n.z*dep*T+F.t.z*lat*T; if(ok(x,z))return J.spot={x,z,face:{x:F.at.x+F.n.x*3*T,z:F.at.z+F.n.z*3*T}}; }
     return J.spot=J.S.door; };
   const homeOf=J=>J.w.home;
-  const hide=(N,v)=>{ if(v){ N.mode='hidden'; N.g.visible=false; N.st.hold=true; N.st.to=null; } else { delete N.mode; N.g.visible=true; N.fv=true; N.st.hold=false; } };
+  const hide=(N,v)=>{ if(v){ N.mode='hidden'; VIS.hide(N.g,'away'); N.st.hold=true; N.st.to=null; } else { delete N.mode; VIS.hide(N.g,'away',false); N.fv=true; N.st.hold=false; } };
   const go=(J,to,v,then)=>{ const N=J.w.N; N.st.hold=false; CITY.send(N,to,{v,then}); };
   const bed=J=>Math.min(25,J.close+1+(J.w.N.key.length%3)*.4), wake=J=>J.open-1-(J.w.N.key.length%4)*.15;
   const shouldBe=(J,h)=>{ const b=bed(J)%24, wk=wake(J); const night=b<wk?(h>=b&&h<wk):(h>=b||h<wk); if(night)return 'home'; if(h>=J.open&&h<J.close)return 'work'; return h<J.open?'work':'off'; };

@@ -1,6 +1,7 @@
-// THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars; every blow goes through VIT.hurt (and the guard the swords set on it).
+// THE VITALS: VIT keeps the player's health, stamina and breath and shows their bars; every blow goes through VIT.hurt (and the guard the swords set on it), every mend through VIT.heal.
 import {SHARED} from './003-shx.js';
-import {FORAGE, keys, pos, SFX, st, UI, VIT} from './003b-systems.js';
+import {keys, pos, SFX, st, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 const AIR=16, AIRCEIL=240;                       // seconds: a plain breath, and the most air you can bank from mushrooms
 Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR});
@@ -13,7 +14,8 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.guard=null;   // set by the swordplay: (d, from) -> {d: what gets through, parry}
   // at none you faint (out cold, the medic comes, up again with some back); a real blow while out cold kills
   let thudAt=0; const FAINT=15;
-  VIT.faint=()=>{ if(VIT.dead||VIT.out>0)return; VIT.hp=0; VIT.out=FAINT; VIT.fainted=true; SHARED.trip=true; if(FORAGE.say)FORAGE.say('YOU FAINT'); };
+  VIT.faint=()=>{ if(VIT.dead||VIT.out>0)return; VIT.hp=0; VIT.out=FAINT; VIT.fainted=true; SHARED.trip=true; SAY('YOU FAINT'); };
+  VIT.heal=(a,lo=0)=>{ if(VIT.dead)return 0; const h0=VIT.hp; VIT.hp=Math.max(lo,Math.min(1,VIT.hp+a)); return VIT.hp-h0; };   // every mend (and a slow drain, a<0, that stops at lo)
   VIT.hurt=(d,from)=>{ if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
     if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };

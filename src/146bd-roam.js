@@ -1,11 +1,12 @@
 // ROAM: the holodeck's space flight. Pick it in the holodeck and it fades you into the cockpit of a small, worn ship among the meteors far off the map: a gritty cockpit painted pixel by pixel (scuffed gunmetal, chipped paint, cracked leather, grimy glass) lit by its own instruments, full 360° flight with a flight assist, boost, lasers and missiles that blow small rocks apart and break big ones up a piece at a time; ramming rocks cracks the glass and wears the hull, and a dead hull sends you back to the holodeck. The ship owns the controls and the camera through SHARED.drive (the frame, the headset and the gamepad read it). On screen the mouse or the arrows aim; in the headset the Quest sticks fly, or you reach out and take the stick and the throttle with your hands or controllers.
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, ROOMS, SFX, UI, VR, W3} from './003b-systems.js';
+import {pos, ROOMS, SFX, UI, VR, W3} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {EffectComposer, OutputPass, PCAM, renderer, RenderPass} from './004-main.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
-{ const H=STORE.holo, T=TILE, M=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), V3=THREE.Vector3, Q4=THREE.Quaternion;
+{ const H=STORE.holo, T=TILE, M=T/.84, say=(t,c)=>SAY(t,c), V3=THREE.Vector3, Q4=THREE.Quaternion;
   const WX=3000, WZ=-80, FIELD=620;
   const ROAM=window.ROAM={on:false,fake:null};
   let D=null, API=null;

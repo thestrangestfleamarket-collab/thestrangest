@@ -1,6 +1,7 @@
 // THE INSPECT WINDOW: INSPECT turns a thing over in a little studio window (drag to turn, wheel to zoom): what you hold or point at (the inspect key, 5), or anything in your pack (LOOK); each family of items says how it looks with INSPECT.kinds.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, INSPECT, INV, ITEMS, TEXT, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 { const W=320, H=320, esc=TEXT.esc;
@@ -89,5 +90,5 @@ import {SYS} from './006-map-pre.js';
   const ray=new THREE.Raycaster(), NDC=new THREE.Vector2(); let mx=-1, my=-1; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; },{passive:true});
   INSPECT.key=()=>{ if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }
     const h=GPH.inspectable&&GPH.inspectable(r); if(h)return INSPECT.open(h.obj,h);
-    if(FORAGE.say)FORAGE.say('PICK SOMETHING UP OR POINT AT IT, THEN PRESS '+String(UI.keyOf?UI.keyOf('inspect'):'5').toUpperCase()+' TO LOOK IT OVER. YOUR PACK HAS A LOOK BUTTON TOO.','#9b9584'); };
+    SAY('PICK SOMETHING UP OR POINT AT IT, THEN PRESS '+String(UI.keyOf?UI.keyOf('inspect'):'5').toUpperCase()+' TO LOOK IT OVER. YOUR PACK HAS A LOOK BUTTON TOO.','#9b9584'); };
   if(FORAGE.ROWB)FORAGE.ROWB.push(()=>[['LOOK','inspect']]); FORAGE.ACT&&(FORAGE.ACT.inspect=id=>INSPECT.item(id)); }

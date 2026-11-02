@@ -1,11 +1,12 @@
 // YOUR POTS: each clay pot bought from the Radish (146s) is a thing for your apartment (DECORATE shows it as YOURS); a click fills it with dirt, plants a seed, waters it, picks its fruit. It grows only while its dirt is wet (a jug of rain keeps it wet 12 game hours).
 import {THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, MAIL, SFX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {RADISH} from './146s-radish.js';
 import {ROOMK} from './150a-bedroom.js';
-{ const P=RADISH.PLANTS, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), WET=12, MAXF=3;
+{ const P=RADISH.PLANTS, say=(t,c)=>SAY(t,c||'#e8e2cc'), WET=12, MAXF=3;
   const hour=()=>((window.MAIL&&MAIL.ready?MAIL.day():window.CITY&&CITY.day||0)*24+(CLOCK.h||0));
   let S={}; try{ S=JSON.parse(OWNED.get('pots')||'{}')||{}; }catch(e){ S={}; } const save=()=>{ try{ OWNED.set('pots',JSON.stringify(S)); }catch(e){} };
   // growth is the wet hours since planting, counted up to now (or to when the dirt dried)

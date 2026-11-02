@@ -1,13 +1,14 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
-  const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
+  const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>SAY(t,c);
   const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=TEXT.esc;
   const hp=document.createElement('div'); hp.id='holog'; hp.hidden=true;
   hp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(520px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';

@@ -1,11 +1,12 @@
 // THE BLOCK: the robot clad in coloured cube tiles who sells puzzle cubes from a cart on Market St; a cube in your pack opens a real one to solve — drag a face to turn its layer, drag the background to turn the cube, solved when every side is one colour; your best times are kept.
 import {THREE} from './003-shx.js';
 import {FORAGE, keys, NPCS, SHOPS, UI, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const CUBE={on:null}; window.CUBE=CUBE;
-{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE}=K, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const SIZES={cube2:2,cube3:3,cube4:4}; FORAGE.add({names:{cube2:'POCKET PUZZLE CUBE (2)',cube3:'PUZZLE CUBE (3)',cube4:'MASTER PUZZLE CUBE (4)'}});
   const COL=[0xc8202a,0xf07818,0xf2f2ee,0xf2d218,0x1a4ec8,0x1a9a3a];   // +x red, -x orange, +y white, -y yellow, +z blue, -z green
   let best={}; try{ best=JSON.parse(OWNED.get('cubebest')||'{}')||{}; }catch(e){}

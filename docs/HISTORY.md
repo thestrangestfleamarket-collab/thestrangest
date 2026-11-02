@@ -5218,3 +5218,16 @@ Owner (his model, a rugged red tablet): "i want to import this into the game, fu
 ## 2 Nov 2026: a too-big owned save stops retrying instead of looping silently
 
 Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser stops retrying (before, `ownedPut` returned false, the client treated it as a transient failure, re-queued it and retried every 15 s forever, saving nothing and telling the player nothing). The device keeps its own copy and `OWNED.isFull()` is set; a visible player notice is still to add. Found in a fresh code audit.
+
+## 2 Nov 2026: the audit's open questions (owner: "fix the still open ones")
+- The main loop's last inline blocks, every timer (`SYS.every`) and every open window's own picture (the `win` phase) run through SYS. Where height still decides (a stairway, the free camera) it is one rule, `LEVELS.below`.
+- One purse (`INV.cash`); every message is `SAY`; every mend is `VIT.heal`. Characters hide through VIS (`away`), so the performance switch cannot show one its own system hid; the park's group too.
+- The owner's panel sends a banned player out of every section's room.
+- Every file has its own number (058-store, 146bd-roam, 146ca-mining, 146ga-swim, 146ha-folk, 146ja-guardians, 146ka-glasshorn, 159ca-loopmap, 159da-talk).
+- Removed: the playable-body picker (`?avatar=`), the bearded Walker (`?bwk`), the troublemakers (`?trouble`) with the guards' street fight and the police call that answered them.
+- The LIGHTING editor holds the outline and the glow and night look (out of DISPLAY), beside the bands and the PS2 filter.
+- `data/` holds only what the page loads; the bakes' inputs (rpgchars, ual, humanoid, megakit, far) are in `data/full/`.
+- The small settings and your apartment's local layout are in the one save; a missing save no longer wipes the editors' drafts.
+- Gone: the fire escape's empty group, LOOPMAP's early declaration, build.py's copy of the import pattern.
+- Left for the owner: the two character systems (`makeNPC` and the walker bodies). Merging them changes how the townsfolk walk.
+- Rule: a timer is `SYS.every`, a window's picture a `win` entry, a mend `VIT.heal`, a message `SAY`; a thing another system may hide is hidden through VIS.

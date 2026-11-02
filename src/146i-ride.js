@@ -1,11 +1,12 @@
 // THE RIDE: RIDE carries you on a thing you hold and then stand on or hang from — any item whose GRANTS is a kind registered here (ride: a hoverboard; lift: a balloon). Hold it and click to get on, click again to get off; WASD steers it, SPACE hops; others see you on it.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {collide} from './075-main-13.js';
 Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20,kinds:{},mesh:null,lean:0,knock:0}); window.RIDE=RIDE;
-{ const T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined, V3=THREE.Vector3, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+{ const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined, V3=THREE.Vector3, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   // a kind: {name, hint, make(id) -> Object3D in metres, place(mesh, R, t) each frame, pose(R) -> the rig's st.ride, floor(g, R) -> how high you are, step(R, dt, input) -> true when it moves you itself, dry: over water too}
   RIDE.kind=(grant,k)=>{ RIDE.kinds[grant]=k; for(const id of ITEMS.ids?ITEMS.ids():[])if(prop(id,'grants')===grant)hold(id,k); };
   const M=new Map(), mesh=id=>{ let m=M.get(id); if(!m){ const k=RIDE.kinds[prop(id,'grants')]; m=k.make(id); m.userData.anyRoom=true; m.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.userData.ownMat=true; } }); scene.add(LEVELS.own(m,'*')); M.set(id,m); } return m; };

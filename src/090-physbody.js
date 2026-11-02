@@ -31,7 +31,7 @@ Object.assign(PB,{on:false,ready:false,loose:0.5});
       rb.setAngvel({x:w.x+(ax.x*k-w.x)*0.6,y:w.y+(ax.y*k-w.y)*0.6,z:w.z+(ax.z*k-w.z)*0.6},true);
       if(!down){ const p=rb.translation(), v=rb.linvel(), kp=(i===0?0.35:/^(torso|head)$/.test(KEYS[i])?0.1:0.04)*(0.4+0.6*(1-PB.loose))/h, f=t.v;
         rb.setLinvel({x:v.x+((t.p.x-p.x)*kp+f.x-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp+f.y-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp+f.z-v.z)*0.7},true); } }); }
-  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim||W3.body.on)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
+  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
     if(tgt[0].p.distanceTo(bodies[0].translation())>40)reset();
     if(!down&&tgt.every(t=>t.v.lengthSq()<64)){ reset(); acc=0; }
     else{ ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);

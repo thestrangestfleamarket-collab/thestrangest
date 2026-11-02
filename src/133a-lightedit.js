@@ -1,9 +1,10 @@
-// THE LIGHTING EDITOR: LIGHTED, the global render-system and quality panel (cel is the floor, its band count here too); EDITORS (shift+0).
+// THE LIGHTING EDITOR: LIGHTED, the global render-system and quality panel (cel is the floor; its band count, outline, glow and night look and the PS2 filter here too); EDITORS (shift+0).
 import {THREE} from './003-shx.js';
-import {LIGHTED, PS2} from './003b-systems.js';
+import {LIGHTED, LOOK, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {CEL} from './006-map-pre.js';
+import {OUTL} from './072-walker3d.js';
 { const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
   const D=()=>({q:'lowest',shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
@@ -34,6 +35,8 @@ import {CEL} from './006-map-pre.js';
     <div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after.</div>
     <div class="row"><span class="lab">QUALITY</span>${tierBtns()}</div>
     <div class="row"><span class="lab">PS2 FILTER</span><button class="btn" data-ps2="1" aria-pressed="${!!PS2.on}">ON</button><button class="btn" data-ps2="0" aria-pressed="${!PS2.on}">OFF</button></div>
+    <div class="row"><span class="lab">OUTLINE</span><button class="btn" data-outl="1" aria-pressed="${!!OUTL.on}">ON</button><button class="btn" data-outl="0" aria-pressed="${!OUTL.on}">OFF</button></div>
+    <div class="row"><span class="lab">GLOW AND NIGHT LOOK</span><button class="btn" data-look="1" aria-pressed="${!!LOOK.on}">ON</button><button class="btn" data-look="0" aria-pressed="${!LOOK.on}">OFF</button></div>
     <div class="row"><span class="lab">SHADOWS</span><button class="btn" data-shadows="1" aria-pressed="${!!st.shadows}">ON</button><button class="btn" data-shadows="0" aria-pressed="${!st.shadows}">OFF</button></div>
     <div class="row"><span class="lab">SHADOW EDGE</span>${sel('sh',[['basic','HARD'],['pcf','PCF'],['soft','SOFT'],['vsm','VSM']])}</div>
     <div class="row"><span class="lab">TONE MAP</span>${sel('tn',[['none','NONE'],['linear','LINEAR'],['reinhard','REINHARD'],['cineon','CINEON'],['aces','ACES']])}</div>
@@ -45,7 +48,9 @@ import {CEL} from './006-map-pre.js';
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
     if(b.dataset.ps2!==undefined){ PS2.set(b.dataset.ps2==='1'); refresh(); return; }
-    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); return; }
+    if(b.dataset.outl!==undefined){ OUTL.on=b.dataset.outl==='1'; if(OUTL.sp)OUTL.sp.enabled=OUTL.on; try{ SAVE.set('outline',OUTL.on?'1':'0'); }catch(e){} refresh(); return; }
+    if(b.dataset.look!==undefined){ LOOK.on=b.dataset.look==='1'; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} refresh(); return; }
+    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); SAVE.del('shade'); }catch(e){} location.reload(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }

@@ -1,9 +1,8 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are always the Walker (a body.playable one could be picked with BODIES.set); one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are always the Walker; one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CHARS, NPCS, pos, W3} from './003b-systems.js';
+import {CHARS, NPCS, pos, VIS, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
-import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -78,33 +77,22 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (always the Walker unless a playable body is set; knight/man/woman stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
-  const playable=b=>!!(b&&b.playable);
-  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
-  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
-  let ME=null, MEK=null, hid=false;
-  W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
-    if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
-    if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
-  BODIES.pick=()=>curKey();
-  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} };
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
   BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
-  BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; N.g.visible=false; } };
+  BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; VIS.hide(N.g,'away'); } };
   // a borrowed body (one a place conjures for a while) goes back where it was: its group, spot, home and roaming
-  BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; N.g.visible=!!P.on; delete N.prev; };
-  // weld a townsperson body's duplicate vertices (one that building it a face at a time left). A smooth body uses its normals, so they must match to merge; a flat body takes its normal from the screen (dFdx), so that attribute is free to differ — dropping it from the key merges more. The index keeps the original length and triangle order, so material groups stay valid. Never a playable body (the Walker shares and reshapes its geometry).
+  BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; VIS.hide(N.g,'away',!P.on); delete N.prev; };
+  // weld a townsperson body's duplicate vertices (one that building it a face at a time left). A smooth body uses its normals, so they must match to merge; a flat body takes its normal from the screen (dFdx), so that attribute is free to differ — dropping it from the key merges more. The index keeps the original length and triangle order, so material groups stay valid.
   const weldBody=(g,smooth)=>{ if(g.index)return; const A=g.attributes, all=Object.keys(A), key=smooth?all:['position','color','bi','bw'].filter(k=>A[k]), KA=key.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
     const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;
     for(let i=0;i<n;i++){ const o=i*3, h=(Math.imul(PA[o]*4096|0,73856093)^Math.imul(PA[o+1]*4096|0,19349663)^Math.imul(PA[o+2]*4096|0,83492791))>>>0; let bk=buckets.get(h), u=-1; if(bk){ for(let x=0;x<bk.length;x++)if(eq(i,uq[bk[x]])){ u=bk[x]; break; } } else buckets.set(h,bk=[]); if(u<0){ u=uq.length; uq.push(i); bk.push(u); } idx[i]=u; }
     if(uq.length>n*0.95)return; for(const nm of all){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const o=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[o+c]; } g.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
     g.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1)); g.boundingSphere=null; };
-  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; if(!playable(body)){ body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); } const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
+  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
     const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }

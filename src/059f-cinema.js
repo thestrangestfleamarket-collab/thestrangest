@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
 { const ROW='theatre';
@@ -43,8 +44,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const offset=()=>{ const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
 
   // sound is each viewer's own (browsers only let it on after a tap)
-  let snd={on:false,vol:80}; try{ const s=JSON.parse(localStorage.getItem('cinema-snd')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
-  const saveSnd=()=>{ try{ localStorage.setItem('cinema-snd',JSON.stringify(snd)); }catch(e){} };
+  let snd={on:false,vol:80}; try{ const s=JSON.parse(SAVE.get('cinema')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
+  const saveSnd=()=>{ SAVE.set('cinema',JSON.stringify(snd)); };
   let vf=1, fv=null; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(snd.vol*vf)); } else player.mute(); } }catch(e){} if(fv){ fv.muted=!snd.on; fv.volume=Math.min(1,snd.vol*vf/100); } };
   CINEMA.sound=(on,vol)=>{ if(on!=null)snd.on=!!on; if(vol!=null)snd.vol=Math.max(0,Math.min(100,+vol)); saveSnd(); applySnd(); };
 

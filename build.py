@@ -26,12 +26,10 @@ def lib(m):
 
 imp = subprocess.run(['node', '--stack-size=8000', 'tools/imports.cjs'], capture_output=True, text=True)
 if imp.returncode: sys.exit(imp.stderr or imp.stdout)
-LOCAL = re.compile(r"^(?:import \{[^}\n]*\} from '\./[^'\n]+';|export \{[^}\n]*\};)[ \t]*$", re.M)
-blank = lambda t: LOCAL.sub(lambda m: ' ' * len(m.group(0)), t)
 # code the page shares with the worker (the dish's simulation): __CODE__("worker/x.js") puts the file in, its export line dropped
 code = lambda t: re.sub(r'__CODE__\("([^"]+)"\)', lambda m: re.sub(r'^export \{[^}]*\};[ \t]*$', '', read(m.group(1)), flags=re.M), t)
 clog = json.dumps([[m.group(1), m.group(2).strip()] for m in reversed(list(re.finditer(r'^## (\d[^:]*): (.+)$', read('docs/HISTORY.md'), re.M)))])
-page = ''.join(blank(code(read(f))) for f in src).replace('__BUILDV__', bv).replace('__CHANGELOG__', clog)
+page = code(subprocess.run(['node', 'tools/imports.cjs', '--join'] + src, check=True, capture_output=True, text=True).stdout).replace('__BUILDV__', bv).replace('__CHANGELOG__', clog)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 os.makedirs('dist', exist_ok=True)

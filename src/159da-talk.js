@@ -1,6 +1,7 @@
 // THE TALK WINDOW: TALK — double-click a character to talk: its line types out in a window with your replies under it (W/S or 1-4, Enter or a click picks, Esc leaves). A character's script is `talk` in characters.json (the character editor's TALK tab); one without gets a short chat from the line pools. A reply can lead on, open the shop, give or take items, and set what the character remembers (saved with your things).
 import {THREE} from './003-shx.js';
 import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, TEXT, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 { const T=TILE, esc=TEXT.esc;
@@ -38,8 +39,8 @@ import {SYS, TILE} from './006-map-pre.js';
     const m=mem(CHARS.id(N)); opts=(L.opts||[]).filter(o=>test(o.if,m)); oEl.innerHTML=''; tEl.textContent=''; if(L.set)set(L.set); };
   const set=a=>{ const m=mem(CHARS.id(N)); for(const w of String(a).trim().split(/\s+/).filter(Boolean)){ const [k,v]=w.split('='); if(k[0]==='!')delete m[k.slice(1)]; else m[k]=v==null?1:v; } save(); };
   const pick=i=>{ if(!N)return; if(shown<text.length){ shown=text.length; tEl.textContent=text; drawOpts(); return; } if(i===-1||!opts.length)return TALK.close(); const o=opts[i]; if(!o)return;
-    if(o.do==='take'){ const {id:t,n}=item(o.arg); if(have(t)<n)return; FORAGE.take(t,n); FORAGE.say&&FORAGE.say(`YOU HAND OVER ${n} ${nm(t)}.`,'#e8e2cc'); }
-    else if(o.do==='give'){ const {id:t,n}=item(o.arg); FORAGE.give(t,n); FORAGE.draw&&FORAGE.draw(); FORAGE.say&&FORAGE.say(`YOU GET ${n} ${nm(t)}.`,'#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.4}); }
+    if(o.do==='take'){ const {id:t,n}=item(o.arg); if(have(t)<n)return; FORAGE.take(t,n); SAY(`YOU HAND OVER ${n} ${nm(t)}.`,'#e8e2cc'); }
+    else if(o.do==='give'){ const {id:t,n}=item(o.arg); FORAGE.give(t,n); FORAGE.draw&&FORAGE.draw(); SAY(`YOU GET ${n} ${nm(t)}.`,'#f2c14e'); SFX.play&&SFX.play('clunk',{vol:.4}); }
     else if(o.do==='set')set(o.arg);
     else if(TALK.ops[o.do])TALK.ops[o.do](o.arg||'',N);
     if(o.set)set(o.set);
@@ -47,7 +48,7 @@ import {SYS, TILE} from './006-map-pre.js';
     show(o.go); };
   const loop=t=>{ if(!N)return; const dt=Math.min(.1,(t-(last||t))/1000); last=t;
     if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length)SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
-    if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); }; SYS.add('win',loop,'159d-talk');
+    if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); }; SYS.add('win',loop,'159da-talk');
   TALK.open=n=>{ if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save();
     const st=N.st; keep={to:st.to,next:st.next,face:st.face,hold:st.hold}; st.to=null; st.next=null; st.face={x:pos.x,z:pos.z}; st.hold=true;
     P.querySelector('#talkn').textContent=(N.name||'SOMEONE').toUpperCase(); P.hidden=false; TALK.on=true; if(keys.clear)keys.clear(); show(S.start); last=0; };
@@ -67,4 +68,4 @@ import {SYS, TILE} from './006-map-pre.js';
     const sc=n.g.scale.y||1, H=(n.H||1.8*T)/sc, hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T/sc,H,1.2*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; n.g.add(hb);
     UI.thing({name:n.name||'SOMEONE',npc:n,obj:hb,reach:1.6*T,near:3*T,tall:(n.H||1.8*T)+.3*T,act:()=>TALK.open(n)}); };
   TALK.sync=()=>{ for(const n of NPCS.all())try{ bind(n); }catch(e){} };
-  SYS.onStart(()=>{ SHOPS.sync(); TALK.sync(); SYS.every(TALK.sync,5000,'159d-talk sync'); },'159d-talk'); }
+  SYS.onStart(()=>{ SHOPS.sync(); TALK.sync(); SYS.every(TALK.sync,5000,'159da-talk sync'); },'159da-talk'); }

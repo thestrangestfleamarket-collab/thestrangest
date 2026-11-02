@@ -1,6 +1,7 @@
 // SONIEE: a mint vending machine on the subway platform whose three bottles are alive (they grin, peek and fidget in its window); it sells them: pink makes you faster, white stronger, teal mends you, each for a while (the items' BOOST).
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, SHOPS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 const SONIEE={g:null}; window.SONIEE=SONIEE;
 { const T=TILE; FORAGE.add({names:{soda_pink:'SONIEE PINK (FASTER)',soda_white:'SONIEE WHITE (STRONGER)',soda_teal:'SONIEE TEAL (MENDING)'}});
@@ -34,7 +35,7 @@ const SONIEE={g:null}; window.SONIEE=SONIEE;
       const SL=M.SL, tx=(SL.P0+SL.P1)/2, ty=SL.BENCH[1]-3.2, p=M.at(tx,ty), q=M.at(tx,ty-1);
       const G=SONIEE.g=machine(); G.scale.setScalar(T); G.position.set(p.x,M.ground(p.x,p.z),p.z); G.rotation.y=Math.atan2(q.x-p.x,q.z-p.z); MAPG.down.add(G);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(1*T,1.9*T,.8*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=.95; hb.scale.setScalar(1/T); G.add(hb);
-      UI.thing({name:'SONIEE',obj:hb,reach:2*T,near:3*T,tall:1.9*T,act:()=>{ if(SHOPS.open)SHOPS.open({key:'soniee',name:'SONIEE'}); FORAGE.say&&FORAGE.say(['"PICK ME. NO, ME."','"GET US OUT OF HERE."','"PSST. THE BUTTON. PRESS IT."'][Math.floor(Math.random()*3)],'#9ad8c0'); }});
+      UI.thing({name:'SONIEE',obj:hb,reach:2*T,near:3*T,tall:1.9*T,act:()=>{ if(SHOPS.open)SHOPS.open({key:'soniee',name:'SONIEE'}); SAY(['"PICK ME. NO, ME."','"GET US OUT OF HERE."','"PSST. THE BUTTON. PRESS IT."'][Math.floor(Math.random()*3)],'#9ad8c0'); }});
       SOL.down.push([p.x-.45*T,p.z-.45*T,p.x+.45*T,p.z+.45*T]); };
     go(); }
   // the bottles fidget: they bob, lean together to plot, and now and then one presses its face to the glass

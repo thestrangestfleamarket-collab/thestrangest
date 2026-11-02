@@ -262,11 +262,11 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.celHue=+(new URLSearchParams(location.search).get('hue')??1); const GP=new THREE.DataTexture(new Uint8Array(48),12,1,THREE.RGBAFormat); GP.magFilter=GP.minFilter=THREE.NearestFilter; W3.GP=GP; W3.uSelf={value:.7};
   W3.setShade=(n,dp,sm)=>{ sm=false; n=Math.max(2,Math.min(12,Math.round(n))); dp=Math.max(.02,Math.min(.98,dp)); if(sm==null)sm=W3.shade?W3.shade.smooth:W3.smooth0; W3.shade={steps:n,depth:dp,smooth:false,cel:1};
     const w=sm?32:n, f=sm?THREE.LinearFilter:THREE.NearestFilter, d=new Uint8Array(w*4); for(let i=0;i<w;i++){ const v=255*((1-dp)+dp*i/(w-1)), k=W3.celHue*(1-i/(w-1)); d.set([Math.round(v*(1-.18*k)),Math.round(v*(1-.1*k)),Math.min(255,Math.round(v*(1+.2*k))),255],i*4); }
-    if((GP.image&&GP.image.width)!==w||GP.magFilter!==f)GP.dispose(); GP.magFilter=GP.minFilter=f; GP.image={data:d,width:w,height:1}; GP.needsUpdate=true; W3.uSelf.value=W3.selfOff?1:1-dp*.55; try{ localStorage.setItem('market-shade',JSON.stringify(W3.shade)); }catch(e){} };
+    if((GP.image&&GP.image.width)!==w||GP.magFilter!==f)GP.dispose(); GP.magFilter=GP.minFilter=f; GP.image={data:d,width:w,height:1}; GP.needsUpdate=true; W3.uSelf.value=W3.selfOff?1:1-dp*.55; try{ SAVE.set('shade',JSON.stringify(W3.shade)); }catch(e){} };
   W3.smooth0=false;
-  W3.selfOff=true; try{ W3.selfOff=localStorage.getItem('market-self')!=='1'; }catch(e){}
-  W3.setSelf=on=>{ W3.selfOff=!on; W3.smClr=false; W3.uSelf.value=on?1-W3.shade.depth*.55:1; try{ localStorage.setItem('market-self',on?'1':'0'); }catch(e){} };
-  { let s0={steps:4,depth:.78}; try{ const v=localStorage.getItem('market-shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); let bd=null; try{ bd=+SAVE.get('bands'); }catch(e){} if(!s0.cel){ s0={steps:Math.max(3,Math.min(5,+(P.get('cel')||bd||4))),depth:.72,cel:1}; } W3.setShade(s0.steps,s0.depth,false); }
+  W3.selfOff=true; try{ W3.selfOff=SAVE.get('self')!=='1'; }catch(e){}
+  W3.setSelf=on=>{ W3.selfOff=!on; W3.smClr=false; W3.uSelf.value=on?1-W3.shade.depth*.55:1; try{ SAVE.set('self',on?'1':'0'); }catch(e){} };
+  { let s0={steps:4,depth:.78}; try{ const v=SAVE.get('shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); let bd=null; try{ bd=+SAVE.get('bands'); }catch(e){} if(!s0.cel){ s0={steps:Math.max(3,Math.min(5,+(P.get('cel')||bd||4))),depth:.72,cel:1}; } W3.setShade(s0.steps,s0.depth,false); }
   W3.PAT={value:[0,1,2].map(()=>new THREE.Vector4(0,1,-9,0))}; W3.PB={value:[0,1,2].map(()=>new THREE.Vector3(1,1,1))}; W3.uRim={value:0}; W3.uFl={value:.5}; W3.uHatCut={value:1e9};
   const HMI=['hair','hairHi','hairLo'].map(n=>MATS.indexOf(n)), HAIRF='('+HMI.map(i=>'abs(vMt-'+i+'.)<.5').join('||')+')';
   const PATG=`uniform vec4 uPat[3]; uniform vec3 uPB[3]; uniform float uRim,uHatCut; varying float vMt; varying vec3 vPL;
@@ -295,7 +295,6 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   W3.SZ=1.2; W3.rest=rest;
   { const H0=PCS.findIndex(P=>P.n==='head'), HF=PCS.findIndex(P=>P.n==='headF'), EYEL=new THREE.Vector3(); W3.headIdx=()=>W3.HIDE[H0]&&HF>=0?HF:H0; W3.eyeAt=out=>{ const HI=W3.headIdx(); if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
-  W3.body={place:()=>{}};
   W3.place=(B,x,y,z,hd,yawA,ZY)=>{ W3.lastB=B; if(W3.hideMe)W3.group.traverse(o=>{ if(o.isMesh)o.visible=false; }); W3.group.position.set(x,y,z); W3.group.rotation.set(0,hd,0); W3.group.scale.set(W3.SZ/PPU,ZY*W3.SZ*(W3.BH||1),W3.SZ/PPU);
     const L=R.yaw(LIGHT,-yawA); W3.L.set(L.x,L.y,L.z);
     W3.G.value.set(Math.cos(hd),0,Math.sin(hd),0,1,0,-Math.sin(hd),0,Math.cos(hd)); SHL.forEach((S,i)=>{ W3.LP.value[i].copy(S.position);
@@ -307,7 +306,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     W3.LVP.value.multiplyMatrices(W3.smCam.projectionMatrix,W3.smCam.matrixWorldInverse);
     PCS.forEach((P,i)=>{ const F=R.frameOf(P.on||P.n,B); W3.PM.value[i].set(F.x.x,F.y.x,F.z.x,F.o.x, F.x.y,F.y.y,F.z.y,F.o.y, F.x.z,F.y.z,F.z.z,F.o.z, 0,0,0,1); if(W3.E&&W3.E[i])W3.applyE(W3.PM.value[i],W3.E[i],F.o); if(W3.HIDE[i])W3.PM.value[i].makeScale(0,0,0); }); };
   { const place0=W3.place; W3.place=(...a)=>{ place0(...a); W3.uFl.value=CLOCK.dark()?.26:.5; W3.group.updateMatrixWorld(true); const now=performance.now(), hdt=Math.min(.05,(now-(W3.hairT||now))/1000); W3.hairT=now;
-      PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); }); W3.body.place(a[0]); }; }
+      PCS.forEach((P,i)=>{ if(P.swing&&!W3.HIDE[i])swing(P,i,hdt); });  }; }
   const SW={fw:new THREE.Vector3(),pv:new THREE.Vector3(),ax:new THREE.Vector3(),p:new THREE.Vector3(),M3:new THREE.Matrix4(),pW:new THREE.Vector3(),rest:new THREE.Vector3(),m:new THREE.Vector3(),v:new THREE.Vector3(),d:new THREE.Vector3(),q:new THREE.Quaternion(),M1:new THREE.Matrix4(),M2:new THREE.Matrix4(),inv:new THREE.Matrix3(),G:new THREE.Vector3()};
   function swing(P,i,dt){ '@later'; const S=P.swing, st=P.sw||(P.sw={m:null,pm:new THREE.Vector3()}), PM=W3.PM.value[i], GW=W3.group.matrixWorld;
     SW.inv.setFromMatrix4(GW).invert(); const sy=W3.group.scale.y, L=S.len*sy;

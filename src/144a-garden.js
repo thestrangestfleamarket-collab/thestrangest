@@ -1,13 +1,14 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
-{ const T=TILE, KEY='garden', say=FORAGE.say, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
+{ const T=TILE, KEY='garden', say=SAY, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
   const FL={dandelion:['DANDELION',0,1,0xf2c81e,0xe0a810,[.05,.4,.14,.5]],clover:['RED CLOVER',5,1,0xc86a9a,0,[.042,1,.1,0]],daisy:['OXEYE DAISY',15,2,0xf4f2ea,0xf2c81e,[.065,.28,.3,.38]],
     chicory:['CHICORY',25,3,0x7a9af0,0x5a7ad0,[.05,.3,.42,.3]],goldenrod:['GOLDENROD',30,3,0xe8c030,0,[.045,2.6,.5,0]],aster:['NEW YORK ASTER',35,4,0x9a7ae0,0xf2c81e,[.055,.3,.36,.38]],
     violet:['WILD VIOLET',45,6,0x6a3ab0,0xf2e8a0,[.04,.45,.08,.3]],slipper:["PINK LADY'S SLIPPER",75,30,0xe87aa8,0xb04a78,[.06,1.3,.3,.32]],

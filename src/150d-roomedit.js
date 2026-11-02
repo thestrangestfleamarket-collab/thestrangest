@@ -2,11 +2,12 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ONLINE, pos} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
-{ const HOME={layout:null,loaded:false}, LS='market-home', web=/^https?:$/.test(location.protocol);
-  const getLocal=()=>{ try{ return JSON.parse(localStorage.getItem(LS)||'null'); }catch(e){ return null; } };
-  const setLocal=L=>{ try{ localStorage.setItem(LS,JSON.stringify(L)); }catch(e){} };
+{ const HOME={layout:null,loaded:false}, web=/^https?:$/.test(location.protocol);
+  const getLocal=()=>{ try{ return JSON.parse(SAVE.get('home')||'null'); }catch(e){ return null; } };
+  const setLocal=L=>{ SAVE.set('home',JSON.stringify(L)); };
   const ask=async body=>{ const r=await fetch('/home',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}); if(!r.ok)throw new Error(r.status); return r.json(); };
   HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
   HOME.save=async L=>{ HOME.layout=L; setLocal(L); if(web){ try{ await ask({put:L}); HOME.saved=Date.now(); }catch(e){ HOME.err=String(e); } } };
@@ -220,7 +221,7 @@ import {ROOMK} from './150a-bedroom.js';
     ED.undo.length=0; dirty(); ED.panel(); };
 
   /* ---------- the camera over the room while you decorate (back as it was when you're done) ---------- */
-  ED.toggle=()=>{ if(!ED.on&&HOME.guest){ FORAGE.say&&FORAGE.say("THIS IS "+HOME.guest.name+"'S APARTMENT. YOU CAN LOOK, NOT DECORATE.",'#c8a090'); return; } if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&HOME.guest){ SAY("THIS IS "+HOME.guest.name+"'S APARTMENT. YOU CAN LOOK, NOT DECORATE.",'#c8a090'); return; } if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);

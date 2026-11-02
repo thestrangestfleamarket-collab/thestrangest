@@ -1,12 +1,11 @@
 // ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
+import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, VIS, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
-import {VIS} from './129a-vis.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
 // A room's inside built late (ROOMS.part) records all it adds (meshes, its lights, things to use, wall cuts), so ROOMS.unpart takes it all away again.
 ROOMS.part=(group,fn,make,cast=true)=>{ '@later'; const n0=scene.children.length, t0=UI.things.length, c0=cutWalls.length, keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag; BATCH.meshes={}; BATCH.tag=null;

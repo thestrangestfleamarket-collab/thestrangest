@@ -1,6 +1,7 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
@@ -9,7 +10,7 @@ import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 import {SMOKE} from './146x-bluehour.js';
 const BEES={list:[]}; window.BEES=BEES;
-{ const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
+{ const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
   // the honeys: what the flowers near a hive make of it (a rare moon honey by night, deep in the park)
   const HONEY={honey_wild:['WILDFLOWER HONEY',null],honey_clover:['CLOVER HONEY',['clover','dandelion','daisy']],honey_lav:['LAVENDER HONEY',['lavender','aster','chicory','iris']],
     honey_sun:['SUNFLOWER HONEY',['sunflower','marigold','goldenrod','zinnia']],honey_rose:['ROSE HONEY',['rose','tulip','foxglove','slipper']],honey_moon:['MOON HONEY',null]};
@@ -18,7 +19,7 @@ const BEES={list:[]}; window.BEES=BEES;
   FORAGE.add({names:NM,recipes:[['wax_candle','A BEESWAX CANDLE','bee',[0,45],{bee_wax:3},'a candle for your home; sells for $12'],
     ['f_hfish','HONEY-GLAZED BASS','cooking',[25,70],{honey_wild:1,x_bass:1},'mends you a minute, stamina back'],['f_hmush','HONEYED CHANTERELLES','cooking',[20,60],{honey_clover:1,chanterelle:2},'some health'],
     ['p_royal','ROYAL JELLY TONIC','alchemy',[50,100],{honey_moon:1,moonglow:1},'all your health, mending 2 min']],
-    does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.hp=Math.min(1,VIT.hp+.25); },p_royal:()=>{ VIT.hp=1; FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
+    does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.heal(.25); },p_royal:()=>{ VIT.heal(1); FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
   FORAGE.CK.bee={short:'BEES',made:nm=>`YOU ROLL AND WICK THE WAX: ${nm}.`,fail:'THE WAX CRACKS. TRY AGAIN.'};
   FORAGE.BUYK.honey=['honey_','bee_wax','wax_candle']; FORAGE.sell(...Object.keys(HONEY),'bee_wax','wax_candle');
   FORAGE.HELP.push('BEEKEEPING: set a hive on the lawn (from your pack) among flowers; come back to take its honey (empty jars, a smoker, a veil).');
@@ -62,7 +63,7 @@ const BEES={list:[]}; window.BEES=BEES;
   FORAGE.ROWB.push(id=>id==='bee_hive'?[['SET IT HERE','hiveset']]:[]); FORAGE.ACT.hiveset=()=>BEES.set();
 
   /* ---------- taking honey: smoke calms them (BEEKEEPING); a veil keeps the stings off ---------- */
-  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt?VIT.hurt(.06*n):VIT.hp=Math.max(.05,VIT.hp-.06*n); SFX.play('cough',{vol:.4,pitch:1.6}); say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
+  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt(.06*n); SFX.play('cough',{vol:.4,pitch:1.6}); say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
   BEES.take=h=>{ const f=Math.floor(frames(h)); if(f<2)return say('THE FRAMES ARE NEARLY EMPTY. COME BACK LATER.','#c8a090'); const jars=FORAGE.has('jar_honey'); if(!jars)return say('YOU NEED EMPTY HONEY JARS. THE BEEKEEPER SELLS THEM.','#c8a090');
     const smoke=FORAGE.has('bee_smoker')&&use('bee',0,70); SFX.play('step',{vol:.3,pitch:.6}); if(!smoke){ const n=1+Math.floor(Math.random()*3*(1-Math.min(.8,FORAGE.sk('bee')/120))); sting(n); if(!FORAGE.has('bee_veil')&&Math.random()<.5){ say('YOU BACK OFF BEFORE YOU GET ANY HONEY.','#c8a090'); return; } }
     else say('A PUFF OF SMOKE AND THE BEES GO QUIET.','#9fe07f');

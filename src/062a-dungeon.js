@@ -1,6 +1,7 @@
 // THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
+import {LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -92,7 +93,7 @@ await grab('dungeon',async()=>{});
   const spikes=force=>{ if(!mine||!mine.hz)return; const t=performance.now()/1000;
     for(const sp of mine.hz.sp){ const up=((t+sp.ph)%PER)<UP; if(!force&&up===sp.up)continue; sp.up=up; if(!up)sp.hit=false; const fy=Y(.3)+dy;
       sp.c.forEach(([x,y],k)=>{ sp.IM.setMatrixAt(sp.i0+k,m4.compose(v3.set(X(x),up?fy+.17*TILE:fy+.01*TILE,Z(y)),q0,s3.set(1,up?1:.12,1))); }); sp.IM.instanceMatrix.needsUpdate=true; } };
-  const inside=(h,gx,gy)=>gx>h.x0&&gx<h.x1&&gy>h.y0&&gy<h.y1, inLava=(h,gx,gy,k=.95)=>{ const u=(gx-h.cx)/h.rx, v=(gy-h.cy)/h.ry; return Math.hypot(u,v)<k*lavaR(h,Math.atan2(v,u)); }, said={}, say=(k,m,c)=>{ const t=performance.now(); if(t-(said[k]||0)<1600)return; said[k]=t; FORAGE.say(m,c||'#ff9a6a'); };
+  const inside=(h,gx,gy)=>gx>h.x0&&gx<h.x1&&gy>h.y0&&gy<h.y1, inLava=(h,gx,gy,k=.95)=>{ const u=(gx-h.cx)/h.rx, v=(gy-h.cy)/h.ry; return Math.hypot(u,v)<k*lavaR(h,Math.atan2(v,u)); }, said={}, say=(k,m,c)=>{ const t=performance.now(); if(t-(said[k]||0)<1600)return; said[k]=t; SAY(m,c||'#ff9a6a'); };
   let lavaT=0, webT=0, webFree=0;
   SYS.add('life',dt=>{ if(!mine||!mine.hz||!cur||SHARED.LVL!=='down'){ if(SHARED.drag!==1)SHARED.drag=1; return; } const H=mine.hz, f=1+.35*(cur-1), gx=iX(pos.x), gy=iZ(pos.z), alive=!VIT.dead&&!(VIT.out>0), onG=SHARED.py-ground(pos.x,pos.z)<.2*TILE;
     spikes(false);

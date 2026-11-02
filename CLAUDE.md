@@ -24,11 +24,11 @@ Look there before changing how something looks or behaves, and add a dated entry
   strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never
   in the source. No comments in HTML or CSS (the build checks pages for an unclosed `<!--`).
 - `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`.
-  `data/full/` keeps the unsimplified originals (never shipped). `tools/`: bake and trim scripts.
+  `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
-  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
+  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`058-store` to
   `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`038z`) and the bodega (`039-bodega`, its kits, layout and build)
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
   main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the imports cannot see that (they are property reads); the build check's error step can. Prove a move with the scope proof, then run the build check.
@@ -43,7 +43,7 @@ no holes, no clipping planes; `BLOCKS.facade` paints brick, windows, flower boxe
 sticks out (fire escapes, stoops). Its inside is registered in `ROOMS.off[id]` (`{name, box, need, build, unbuild, spawn, out, door, exit,
 rooms, keep}`, 130-rooms) away from the map: built behind the fade only when you go in (`ROOMS.enter(id)`: double-clicking the door's thing,
 the menu, a saved spot; doors never move and walking into one does nothing, owner 21 Oct 2026), the street not drawn while you are in, dropped when you leave (`ROOMS.exit(id)`). The apartment house
-(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) and the bodega are blocks off the map. The street's shops (bar, museum, bank, theatre, playhouse; 059-store) have solid painted outsides (no cuts)
+(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) and the bodega are blocks off the map. The street's shops (bar, museum, bank, theatre, playhouse; 058-store) have solid painted outsides (no cuts)
 and build their insides in place behind the fade when you double-click the door (`STORE.enter`; out by the inside door, `STORE.exit`); the bath is a lazy room in `ROOMS.lazy`. Build any inside with `ROOMS.part(group, fn, make)` (it records the meshes, lights, things to
 use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs in your apartment joins it with `MODS.apts.furnish(lv, fn)`.
 

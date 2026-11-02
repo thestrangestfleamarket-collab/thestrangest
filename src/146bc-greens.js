@@ -63,7 +63,7 @@ import {STORE, TILE} from './006-map-pre.js';
 
   /* ---------- addressing the ball on screen: F or the ball itself walks you behind it; the mouse aims, the held button draws back ---------- */
   const warp=()=>{ if(!D||!W)return; const dx=CUP.x-B.x, dz=CUP.z-B.z, l=Math.hypot(dx,dz)||1, ux=dx/l, uz=dz/l;
-    pos.x=wx(B.x-ux*.62); pos.z=wz(B.z-uz*.62); SHARED.target=null; SHARED.heading=Math.atan2(ux,uz); D.aimA=SHARED.heading; D.addr=true; if(WIELD.on!=='putter')WIELD.set('putter'); };
+    const side=WIELD.hand==='L'?-1:1; pos.x=wx(B.x-ux*.3+uz*side*.38); pos.z=wz(B.z-uz*.3-ux*side*.38); SHARED.target=null; SHARED.heading=Math.atan2(ux,uz); D.aimA=SHARED.heading; D.addr=true; if(WIELD.on!=='putter')WIELD.set('putter'); };
   const nearBall=()=>Math.hypot(lx()-B.x,lz()-B.z)<1.5;
   const aimDir=()=>[Math.sin(D.aimA),Math.cos(D.aimA)];
   let ms={x:-1}; const onMove=e=>{ ms.x=e.clientX; };
@@ -77,7 +77,7 @@ import {STORE, TILE} from './006-map-pre.js';
   const STONES=[[-3.6,-1.2,1.1],[2.2,-2.6,.8],[-1.9,3.9,.9],[5.6,1.4,.7],[-2.9,-4.4,.55]];   // x, z, size in metres; the rake circles round them
   const gravelTex=()=>cvs(1024,(g,w,h)=>{ const im=g.createImageData(w,h), d=im.data, S=30/w; for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const x=(i-w/2)*S, z=(j-h/2)*S; let dm=1e9, k=null; for(const s of STONES){ const dd=Math.hypot(x-s[0],z-s[1])-s[2]*.9; if(dd<dm){ dm=dd; k=s; } }
       const rake=dm<2.2?Math.sin(dm/.09*Math.PI*2):Math.sin((x+z*.08)/.09*Math.PI*2), moss=dm<.55?Math.min(1,(.55-dm)/.35):0, n=(hashN(i,j)-.5)*26, sp=hashN(i*3,j*7)>.985?-70:0;
-      let r=196+rake*22+n+sp, gg=188+rake*20+n+sp, b=172+rake*17+n*.8+sp; if(moss>0){ const mn=(hashN(i*5,j*3)-.5)*30; r=r*(1-moss)+(62+mn*.6)*moss; gg=gg*(1-moss)+(96+mn)*moss; b=b*(1-moss)+(44+mn*.4)*moss; }
+      let r=222+rake*26+n+sp, gg=216+rake*24+n+sp, b=204+rake*20+n*.8+sp; if(moss>0){ const mn=(hashN(i*5,j*3)-.5)*30; r=r*(1-moss)+(62+mn*.6)*moss; gg=gg*(1-moss)+(96+mn)*moss; b=b*(1-moss)+(44+mn*.4)*moss; }
       const o=(j*w+i)*4; d[o]=r; d[o+1]=gg; d[o+2]=b; d[o+3]=255; } g.putImageData(im,0,0); });
   const rippleTex=()=>cvs(256,(g,w,h)=>{ const im=g.createImageData(w,h), d=im.data, H=(x,y)=>Math.sin(x*.18+y*.07)*.5+Math.sin(x*.05-y*.21)*.5+Math.sin((x+y)*.11)*.35; for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const dx=H(i+1,j)-H(i-1,j), dy=H(i,j+1)-H(i,j-1), o=(j*w+i)*4; d[o]=128-dx*40; d[o+1]=128-dy*40; d[o+2]=255; d[o+3]=255; } g.putImageData(im,0,0); },{data:1});
   const fallTex=()=>cvs(128,(g,w,h)=>{ g.clearRect(0,0,w,h); for(let k=0;k<160;k++){ const x=rnd()*w, y=rnd()*h, L=20+rnd()*90, a=.25+rnd()*.5; g.strokeStyle=`rgba(235,245,255,${a})`; g.lineWidth=1+rnd()*2; g.beginPath(); g.moveTo(x,y); g.lineTo(x+(rnd()-.5)*3,y+L); g.stroke(); } },{w:128,h:512});
@@ -116,7 +116,7 @@ import {STORE, TILE} from './006-map-pre.js';
     const felt=noiseTex(256,[52,110,58],9); felt.repeat.set(2,2); const stoneT=noiseTex(256,[128,128,124],14); stoneT.repeat.set(3,3);
     W.M={ stone:std(0x8d8c86,{roughness:.95,bumpMap:stoneT,bumpScale:.012}), granite:std(0x9a9a94,{roughness:.9,bumpMap:stoneT,bumpScale:.008}), glow:new THREE.MeshBasicMaterial({color:0xffc98a}),
       bark:std(0x4a3626,{roughness:1}), maple:std(0xff5a2a,{roughness:.85,map:leafTex('#ff8a4a','#b8260f'),alphaTest:.5,side:THREE.DoubleSide}), bamboo:std(0x7faa58,{roughness:.75}), node:std(0x4f6b35,{roughness:.9}), blade:std(0x5f9a44,{map:bladeTex(),alphaTest:.5,side:THREE.DoubleSide,roughness:.9}),
-      plank:std(0x6b4a2e,{roughness:.9}), koi:[std(0xff7a1e,{roughness:.5}),std(0xf4efe6,{roughness:.5}),std(0xd8401a,{roughness:.5})], felt:std(0xffffff,{roughness:.98,map:felt,side:THREE.DoubleSide}), rail:std(0x4a3524,{roughness:.9}), gravel:std(0xb9b3a8,{roughness:1,map:grav,bumpMap:grav,bumpScale:.03}) };
+      plank:std(0x6b4a2e,{roughness:.9}), koi:[std(0xff7a1e,{roughness:.5}),std(0xf4efe6,{roughness:.5}),std(0xd8401a,{roughness:.5})], felt:std(0xffffff,{roughness:.98,map:felt,side:THREE.DoubleSide}), rail:std(0x4a3524,{roughness:.9}), gravel:std(0xf2eee6,{roughness:1,map:grav,bumpMap:grav,bumpScale:.035}) };
     // the light of dusk: a low warm sun with shadows, a pink-and-blue sky in everything
     const hemi=new THREE.HemisphereLight(0xffd2c0,0x3a4a36,1.15), sun=new THREE.DirectionalLight(0xffb98a,2.3); sun.position.set(wx(-12),m(7),wz(-9)); sun.target.position.set(wx(1),0,wz(1)); sun.castShadow=true; sun.shadow.mapSize.set(1024,1024);
     const sc=sun.shadow.camera; sc.left=sc.bottom=-m(15); sc.right=sc.top=m(15); sc.near=1; sc.far=m(50); sun.shadow.bias=-.0015; G.add(hemi,sun,sun.target); W.sun=sun;
@@ -184,7 +184,7 @@ import {STORE, TILE} from './006-map-pre.js';
     go:R=>{ const d=D=Object.assign(R,{strokes:0,rounds:0,done:false,addr:false,aimA:0,charge:null,swing:null,best:null,ready:false,prevTip:null,cool:0}); try{ const S=JSON.parse(OWNED.get('greens')||'{}'); D.best=S&&S.best?S.best.zen:null; }catch(e){}
       if(!ROOMS.enterAt)return; place(TEE.x,TEE.z);
       ROOMS.enterAt('greens',[wx(TEE.x),wz(TEE.z-1.2),0,0]).then(()=>{ if(D!==d)return;
-        savedGY=SHARED.groundY; SHARED.groundY=(x,z)=>{ const q=near((x-WX)/M,(z-WZ)/M); return q.d<LANEW/2?m(hOf(q.s)):0; };
+        savedView=UI.view; if(UI.setView&&UI.view==='iso')UI.setView('follow'); savedGY=SHARED.groundY; SHARED.groundY=(x,z)=>{ const q=near((x-WX)/M,(z-WZ)/M); return q.d<LANEW/2?m(hOf(q.s)):0; };
         pos.x=wx(TEE.x); pos.z=wz(TEE.z-1.2); SHARED.py=0; SHARED.heading=0; SHARED.target=null;
         const onkey=e=>{ if(!D||!D.ready)return; const k=(e.key||'').toLowerCase(); if(k==='f'&&!e.repeat&&B.rest&&!D.done){ warp(); e.stopPropagation(); } };
         addEventListener('keydown',onkey,true); const cv=renderer.domElement; cv.addEventListener('pointermove',onMove); cv.addEventListener('pointerdown',onDown,true); addEventListener('pointerup',onUp,true);
@@ -212,7 +212,7 @@ import {STORE, TILE} from './006-map-pre.js';
           if(pv&&D.cool<=0){ const v=new V3().subVectors(p,pv).divideScalar(dt), sp=Math.hypot(v.x,v.z), bh=hOf(near(B.x,B.z).s)+BALLR, d=new V3().subVectors(p,pv), L=d.lengthSq(), bp=new V3(B.x,bh,B.z), u=L>1e-9?Math.max(0,Math.min(1,bp.clone().sub(pv).dot(d)/L)):0, cl=pv.clone().addScaledVector(d,u);
             if(cl.distanceTo(bp)<HEADR+BALLR&&sp>.35){ D.cool=.5; hit(v.x,v.z,sp*1.25); } } } else D.prevTip=null; } },
     hide:()=>{ if(!D)return; D=null; cardOff(); const off=ROOMS.offIn&&ROOMS.offIn()==='greens', Hl=H.hall;
-      if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(keyoff){ keyoff(); keyoff=null; } if(amb){ try{ amb.s.stop(); }catch(e){} amb=null; }
+      if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; } if(amb){ try{ amb.s.stop(); }catch(e){} amb=null; }
       if(off&&Hl&&ROOMS.enterAt)ROOMS.enterAt('arcade',[Hl.x,Hl.z,0,Math.PI]); else if(ROOMS.lazy&&ROOMS.lazy.greens&&ROOMS.lazy.greens.drop)ROOMS.lazy.greens.drop(); } });
   window.GREENS={putt:(ang,speed)=>hit(Math.sin(ang),Math.cos(ang),speed),toCup:()=>{ const q=near(B.x,B.z); return {ang:Math.atan2(CUP.x-B.x,CUP.z-B.z),d:Math.hypot(CUP.x-B.x,CUP.z-B.z),s:q.s,len:LEN}; },warp,place:(x,z)=>place(x,z),cup:CUP,tee:TEE};
   window.GREENSDBG=()=>({on:!!D,ready:!!(D&&D.ready),strokes:D?D.strokes:0,rounds:D?D.rounds:0,done:!!(D&&D.done),addr:!!(D&&D.addr),best:D?D.best:null,ball:[+B.x.toFixed(3),+B.z.toFixed(3)],rest:B.rest,inCup:B.inCup,speed:+Math.hypot(B.vx,B.vz).toFixed(3),built:!!W,meshes:W?W.G.children.length:0,tool:WIELD.on,saved:(()=>{ try{ return JSON.parse(OWNED.get('greens')||'{}'); }catch(e){ return null; } })()}); }

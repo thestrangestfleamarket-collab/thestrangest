@@ -21,13 +21,10 @@ const OUT=process.argv[2]||'shots', PAGE=path.resolve(process.argv[3]||path.reso
   await pg.evaluate(()=>{ INV.cash=50; const hp=document.getElementById('holog'), i=STORE.holo.programs.findIndex(p=>p.name==='THE GREENS'); hp.querySelector('button[data-run="'+i+'"]').click(); });
   await U(()=>GREENSDBG().ready&&ROOMS.offIn&&ROOMS.offIn()==='greens'&&!FADE.busy); await pg.waitForTimeout(1500);
   const look=(x,z,yaw,pitch,view='first')=>pg.evaluate(([x,z,yaw,pitch,view])=>{ const M=33.9/30/.84; STORE.goTo(4200+x*M,z*M,'up',yaw); __dbg.UI.setView(view); SHARED.yawTo=SHARED.yaw=yaw; SHARED.pitchTo=SHARED.pitch=pitch; },[x,z,yaw,pitch,view]);
-  await look(0,-4.6,0,-.08); await shot('garden-from-the-tee');
-  await look(0,-4.6,Math.PI,-.08); await shot('garden-from-the-tee-yaw-pi');
-  await look(-5.6,-.2,0,-.05); await shot('pond-and-waterfall');
-  await look(-5.6,-.2,Math.PI,-.05); await shot('pond-and-waterfall-yaw-pi');
-  await look(3.2,-5.2,-.55,-.05); await shot('lantern-and-maple');
-  await look(3.2,-5.2,Math.PI-.55,-.05); await shot('lantern-and-maple-yaw-pi');
-  await look(0,-4.6,0,-.08,'iso'); await shot('garden-wide-iso');
+  await look(0,-4.6,Math.PI,-.08); await shot('garden-from-the-tee');
+  await look(-1.2,-5.2,Math.PI,.0,'follow'); await shot('garden-from-behind');
+  await look(-5.6,-.2,Math.PI,-.05); await shot('pond-and-waterfall');
+  await look(3.2,-5.2,Math.PI-.55,-.05); await shot('lantern-and-maple');
   // 6 addressing the ball: the aim line, the bar while the button is held; 7 the ball rolling
   await pg.evaluate(()=>{ GREENS.warp(); __dbg.UI.setView('follow'); }); await pg.waitForTimeout(1500); await shot('address');
   const cv=await pg.$('canvas'); const bb=await cv.boundingBox(); await pg.mouse.move(bb.x+bb.width/2,bb.y+bb.height*.6); await pg.mouse.down(); await pg.waitForTimeout(700); await shot('drawing-back'); await pg.mouse.up(); await pg.waitForTimeout(500); await shot('rolling');

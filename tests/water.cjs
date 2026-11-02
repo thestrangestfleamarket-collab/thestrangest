@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     return { d: +d.toFixed(0), top, deep, lamp, glow, dark, item: ITEMS.prop('glowcap', 'darksight') }; });
   ok(r4.d > 100, 'the Hudson goes very deep in places: ' + r4.d + ' m');
   ok(r4.deep[0] < r4.top[0] * .2 && r4.deep[1] < 3 && r4.lamp[1] > r4.deep[1] * 3 && r4.glow[1] > r4.lamp[1] && r4.dark > 0 && r4.item > 0, 'deep down it is dark; a headlight lights round you, a glowcap lets you see far: ' + JSON.stringify(r4));
-  const r6 = await pg.evaluate(() => { const THREE = __dbg.THREE, T = __dbg.cv().TILE, B = RIVER.box, rc = new THREE.Raycaster(), out = [];
+  const r6 = await pg.evaluate(() => { const THREE = __dbg.THREE, T = __dbg.cv().TILE, B = RIVER.box, rc = new THREE.Raycaster(), out = []; rc.camera = SHARED.cam;   // the scene has sprites (lamp halos, name tags): a raycast needs the camera for them
     for (const d of [5, 40, 150]) { rc.set(new THREE.Vector3(PIER.x, 300 * T, B.z0 - d * T), new THREE.Vector3(0, -1, 0)); const h = rc.intersectObjects(__dbg.scene.children, true).find(h => { for (let p = h.object; p; p = p.parent) if (!p.visible) return false; return true; }); out.push(h && h.object === __dbg.MAPK.MODS.land ? 'land' : h ? 'other' : 'none'); } return out; });
   ok(!r6.includes('land'), 'no land past the Hudson: open water out to the skyline: ' + JSON.stringify(r6));
   // the big lake: its deep holes, its fish (koi and goldfish among them)

@@ -13,10 +13,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.waitForTimeout(12000); await wait(() => !FADE.busy).catch(() => {});   // the fresh start fades into the park a few seconds in; an entry during that fade is dropped
   for (let k = 0; k < 4; k++) { await pg.evaluate(() => { if (!ARCDBG().built && !FADE.busy) ROOMS.enter('arcade'); }); if (await wait(() => ARCDBG().built && !FADE.busy, null, 60000).then(() => 1, () => 0)) break; }
   const r1 = await pg.evaluate(() => { const d = ARCDBG(), K = BODIES.by.knight && BODIES.by.knight.npc; return { things: d.things, programs: d.holo.programs, open: d.holo.open, knightOnStreet: !!(K && K.on && K.st.home.id === 'knight') }; });
-  ok(r1.things.includes('THE HOLODECK PANEL') && r1.things.includes('THE HOLODECK') && !r1.things.some(t => /SWORD|DUEL/.test(t)) && r1.programs.join() === 'THE CATACOMB RUN,ROAM' && !r1.open && r1.knightOnStreet,
-    'the holodeck has its panel and door, no knight and no sword programs (THE CATACOMB RUN and ROAM are the adventures); the knight stays on the street: ' + JSON.stringify(r1));
+  ok(r1.things.includes('THE HOLODECK PANEL') && r1.things.includes('THE HOLODECK') && !r1.things.some(t => /SWORD|DUEL/.test(t)) && r1.programs.join() === 'THE CATACOMB RUN,THE GREENS,ROAM' && !r1.open && r1.knightOnStreet,
+    'the holodeck has its panel and door, no knight and no sword programs (THE CATACOMB RUN, THE GREENS and ROAM are the adventures); the knight stays on the street: ' + JSON.stringify(r1));
   const r2 = await pg.evaluate(() => { __dbg.UI.things.find(t => t.name === 'THE HOLODECK PANEL').act(); const hp = document.getElementById('holog'); return { open: !hp.hidden, look: hp.classList.contains('ml'), text: hp.textContent, rows: ARCDBG().holo.rows }; });
-  ok(r2.open && r2.look && /THE HOLODECK/.test(r2.text) && /THE CATACOMB RUN/.test(r2.text) && /MARTIAL ARTS/.test(r2.text) && /\$12/.test(r2.text) && /ROAM/.test(r2.text) && /FREE/.test(r2.text) && r2.rows === 2, 'the panel opens the adventures menu in the menu look, listing the catacomb run with its skill and price and ROAM free: ' + JSON.stringify({ ...r2, text: r2.text.slice(0, 120) }));
+  ok(r2.open && r2.look && /THE HOLODECK/.test(r2.text) && /THE CATACOMB RUN/.test(r2.text) && /MARTIAL ARTS/.test(r2.text) && /\$12/.test(r2.text) && /THE GREENS/.test(r2.text) && /ROAM/.test(r2.text) && /FREE/.test(r2.text) && r2.rows === 3, 'the panel opens the adventures menu in the menu look, listing the catacomb run and the greens with their skills and prices, and ROAM free: ' + JSON.stringify({ ...r2, text: r2.text.slice(0, 120) }));
   await pg.evaluate(() => document.getElementById('holog').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
   const r3 = await pg.evaluate(() => ({ open: ARCDBG().holo.open }));
   ok(!r3.open, 'ESC closes the menu');
@@ -24,7 +24,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     INV.cash = 20; H.menu(); const hp = document.getElementById('holog'), row = [...hp.querySelectorAll('button[data-run]')].pop(), listed = /TEST RUN/.test(hp.textContent) && /SWORDSMANSHIP/.test(hp.textContent) && /\$12/.test(hp.textContent);
     row.click(); const d1 = ARCDBG().holo, cash = INV.cash, hid = hp.hidden; H.menu(); const endB = hp.querySelector('button[data-end]'), ran = H.run && H.run.n >= 0 && H.run.x === H.hall.x; if (endB) endB.click(); const d2 = ARCDBG().holo; H.hide(); H.programs.pop();
     return { listed, run: d1.run, cash, hid, ran, L, after: d2.run, rowsNow: ARCDBG().holo.programs.length }; });
-  ok(r4.listed && r4.run === 'TEST RUN' && r4.cash === 8 && r4.hid && r4.ran && r4.L[0] === 'go' && r4.after === null && r4.L[1] === 'hide' && r4.rowsNow === 2,
+  ok(r4.listed && r4.run === 'TEST RUN' && r4.cash === 8 && r4.hid && r4.ran && r4.L[0] === 'go' && r4.after === null && r4.L[1] === 'hide' && r4.rowsNow === 3,
     'a registered adventure is listed with its skill and cost; RUN takes $12, closes the menu and starts it in the hall; END PROGRAM stops it: ' + JSON.stringify(r4));
   const c1 = await pg.evaluate(async () => { const H = STORE.holo, P = H.programs.find(p => p.name === 'THE CATACOMB RUN'); INV.cash = 50; H.start(P);
     const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };

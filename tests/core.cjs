@@ -28,7 +28,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   // the held thing's arm is the passport's hand: an aim moves the right wrist for a right-hander, the left for a left-hander, and an arm pointing up or back still poses
   const wr = (hand, v) => { const st = R.create(); st.hand = hand; if (v) st.aim = { v: R.V(...v), w: 1 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), o = wr('R'), aR = wr('R', [0, -.3, 1]), aL = wr('L', [0, -.3, 1]), up = wr('L', [0, 1, 0]), back = wr('R', [0, 0, -1]);
-  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included'); }
+  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included');
+  // hanging from a branch: with holds given in the world the wrists go to them (the hands over the branch), without them the arms just hang up
+  { const hg = grip => { const st = R.create(); st.hang = { z: 0, t: 0, side: 0, grip }; st.world = { x: 0, z: 0, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t: 0 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
+    const H = { L: { h: { x: 4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } }, R: { h: { x: -4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } } }, g = hg(H), o = hg(null), tgt = h => [h.x, h.y - .3, h.z];
+    ok(dist(g.L, tgt(H.L.h)) < 2 && dist(g.R, tgt(H.R.h)) < 2 && dist(o.L, g.L) > 2 && [g.L, g.R, o.L, o.R].every(w => w.every(isFinite)), 'hanging, the wrists go onto the branch\'s holds: ' + JSON.stringify({ g, o })); } }
 
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

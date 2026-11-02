@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, TEXT, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, TEXT, UI, VIT, VR, WE, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -55,7 +55,7 @@ import {GEMS} from './101-gems.js';
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
   const J=document.createElement('div'); J.id='fjour'; J.style.cssText='position:fixed;left:50%;top:40%;transform:translateX(-50%);max-width:70vw;text-align:center;z-index:6;pointer-events:none;font:11px Silkscreen,monospace;letter-spacing:.3px;display:grid;gap:2px;zoom:var(--uiz,1)'; document.body.appendChild(J);
-  const say=(t,c='#e8e2cc')=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>3)J.firstChild.remove(); setTimeout(()=>d.remove(),5000); if(UI.log)UI.log(t,c); };
+  const say=(t,c='#e8e2cc',o)=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>3)J.firstChild.remove(); setTimeout(()=>d.remove(),5000); if(UI.log)UI.log(t,c); if(VR.note)VR.note(t,c,o); };
   FORAGE.say=say; FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
   // a family's items join the model: a price is its VALUE; m_/u_/p_/f_ things and raw foods are EDIBLE and SELLABLE, as is anything added with sellable:true
   const FOOD=/^(m_|u_|p_|f_)/, reg=o=>{ const ids=new Set([...Object.keys(o.names||{}),...Object.keys(o.prices||{}),...Object.keys(o.does||{}),...Object.keys(o.raw||{}),...(o.recipes||[]).map(r=>r[0])]);

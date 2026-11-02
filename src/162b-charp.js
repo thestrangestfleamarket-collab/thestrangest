@@ -1,6 +1,6 @@
 // THE CHARACTER PAGE: the menu's home (ESC) — your live avatar, drag-drop gear, and the menu buttons.
 import {THREE} from './003-shx.js';
-import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, PASSPORT, PS2, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {BUGS, CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, PASSPORT, PS2, TEXT, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=TEXT.esc;

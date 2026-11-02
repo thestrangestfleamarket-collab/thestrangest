@@ -5154,7 +5154,7 @@ Owner (his picture of a trunk's plain block on bare lawn): "i want to add tufts 
 - Not done, for the owner: the headset draws without the cel outline, LOOK and PS2 passes (the composer is not XR-aware; per-eye post passes would cost on a Quest 3).
 
 ## 2 Nov 2026: one path where there were two (owner: "now fix the two paths section")
-- The passport is one set of facts: 159d issues it (the server's number, the day you joined), the menu's page (162e) shows it with your login, cash, skills and hand.
+- The passport's ISSUED day is the day you joined (the server's); the owner had already made it one passport with the hand in it (2 Nov).
 - One seam to the server: the apartment number rides `/owned` (`me.apt`); the cinema uses the site's one client (136a); one `BUGS.logout`; the worker's `/now` reads its own settings.
 - Items: edible, sellable and value are read from the item model only (`ITEMS.prop`); what a family registers in code (`FORAGE.add`) joins the model under the baked file and the owner's edits (140b, moved before the forage). The mining tools work by what they grant (prospect, extract), not by name. Checked: every one of 398 items eats, sells and prices as before.
 - This section's id is `SECTION.id`, the one you are in `SECTIONS.home`; the map origin is `SHARED.BOD.OX/OY` (`MX`/`MY` back from world units), the block's front `BLOCK.front`: no more literal 72, -77 or 'A' in the game's files.

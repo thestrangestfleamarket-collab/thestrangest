@@ -48,6 +48,17 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       a.w.send(JSON.stringify({t:'in',dx:1,dy:0})); const tk=await wait(a,g=>g.filter(m=>m.t==='tk').length>=5&&g.filter(m=>m.t==='tk').slice(-1)[0]); const mv=tk&&tk.cells.find(c=>c[1]===A), first=hiA&&hiA.S.cells.find(c=>c[1]===A);
       ok(mv&&first&&mv[2]>first[2]+5&&tk.who.length>=13&&tk.board.length>0,'the dish ticks ten times a second and steering moves your cell ('+(first&&first[2])+' → '+(mv&&mv[2])+')');
       a.w.close(); bb.w.close(); }
+    // the section's room (the Block): a login reaches it, the second player hears the first is there, a move and a name go across
+    const blk=who=>new Promise((res,rej)=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/block/s-a',{headers:{cookie:'tsfm-pass='+who,origin:BASE}}); const got=[]; w.on('message',d=>{ try{ got.push(JSON.parse(d)); }catch(e){} }); w.on('open',()=>res({w,got})); w.on('error',rej); setTimeout(()=>rej(new Error('no block')),20000); });
+    ok(await new Promise(r=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/block/s-a',{headers:{origin:BASE}}); w.on('unexpected-response',(q,res)=>r(res.statusCode===401||res.statusCode===404)); w.on('open',()=>r(false)); w.on('error',()=>r(true)); }),'the block without a login is refused');
+    let p=null, q=null; try{ p=await blk('dev:blk-a'); q=await blk('dev:blk-b'); }catch(e){ ok(false,'two players reach the block ('+e.message+')'); }
+    if(p&&q){ const hiP=await wait(p,g=>g.find(m=>m.t==='hi')), hiQ=await wait(q,g=>g.find(m=>m.t==='hi'));
+      ok(hiP&&hiQ&&hiP.you==='dev-blk-a'&&hiQ.you==='dev-blk-b'&&hiQ.all.some(o=>o.id==='dev-blk-a')&&hiP.world&&typeof hiP.world==='object','two players reach the block and the second is told the first is there');
+      p.w.send(JSON.stringify({t:'mv',at:[12.5,-3,0,1.2,'up','']})); const mv=await wait(q,g=>g.find(m=>m.t==='mv'&&m.id==='dev-blk-a'));
+      ok(mv&&mv.at[0]===12.5&&mv.at[1]===-3&&mv.at[4]==='up','a move goes across to the other player ('+JSON.stringify(mv&&mv.at)+')');
+      p.w.send(JSON.stringify({t:'me',name:'ADA',look:'w00',hp:1,x:{}})); const inn=await wait(q,g=>g.find(m=>m.t==='in'&&m.p&&m.p.id==='dev-blk-a'));
+      ok(inn&&inn.p.name==='ADA','a player\'s name and look reach the others');
+      p.w.close(); q.w.close(); }
   }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));

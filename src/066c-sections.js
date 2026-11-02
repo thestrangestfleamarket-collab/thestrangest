@@ -1,4 +1,4 @@
-// THE SECTIONS: B to H round the park (grab('sections')), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
+// THE SECTIONS: B to H round the park (grab('sections')), built only when loaded (today only yours is: their builder waits in the later chunk), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
 import {SHARED, THREE} from './003-shx.js';
 import {DRESS, TEXT} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -16,6 +16,22 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
   const frame=(o,i)=>[{x0:o.x0,x1:o.x1,y0:o.y0,y1:i.y0},{x0:o.x0,x1:o.x1,y0:i.y1,y1:o.y1},{x0:o.x0,x1:i.x0,y0:i.y0,y1:i.y1},{x0:i.x1,x1:o.x1,y0:i.y0,y1:i.y1}];
   const secs=S.list.filter(b=>b.id!==home&&S.loaded.includes(b));   // only loaded sections are built: today none but yours
 
+
+  // signs: each station's entrance (railings, two green globes, its name) and each section's edge
+  const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
+  const sign=(w,h,fn,a,b,z0,z1,one)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
+    const m=new THREE.MeshBasicMaterial({map:t}), q=(p,r)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([p[0],z0,p[1],r[0],z0,r[1],r[0],z1,r[1],p[0],z0,p[1],r[0],z1,r[1],p[0],z1,p[1]],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); scene.add(new THREE.Mesh(g,m)); };
+    q(a,b); if(!one)q(b,a); };
+  const postM=new THREE.MeshLambertMaterial({color:0x2a2c30}), rail=new THREE.MeshLambertMaterial({color:0x2f6b45}), globe=new THREE.MeshBasicMaterial({color:0xdcf3dc}), hole=new THREE.MeshBasicMaterial({color:0x050506});
+  const bx=(x0,y0,x1,y1,h0,h1,m)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(x1)-XS(x0)),h1-h0,Math.abs(ZS(y1)-ZS(y0))),m); me.position.set((XS(x0)+XS(x1))/2,(h0+h1)/2,(ZS(y0)+ZS(y1))/2); scene.add(me); return me; };
+  for(const st of LOOP.STA){ if(st.old)continue; const k=st.kiosk, ym=(k.y0+k.y1)/2, out=st.side==='south'?k.y1:k.y0, back=st.side==='south'?k.y0:k.y1;
+    bx(k.x0,k.y0,k.x1,k.y1,.005,.02,hole);
+    bx(k.x0,back-.06,k.x1,back+.06,0,1.1,rail); bx(k.x0,out-.06,k.x1,out+.06,0,1.1,rail); bx(k.x1-.06,k.y0,k.x1+.06,k.y1,0,1.1,rail);
+    for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
+    sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
+      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; const M_=SHARED.METRO, a=M_&&M_.nextOf&&M_.nextOf(st.id,0), b=M_&&M_.nextOf&&M_.nextOf(st.id,1); g.fillText(a&&b?TEXT.t('loop.entrance',null,{a,b}):TEXT.t('loop.entrance0',null),h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
+  // the other sections' ground, blocks, water edges, trees, posts and edge signs: only when another section is loaded (none today), so this waits in the later chunk
+  const others=()=>{ '@later';
   // the ground: flat pieces, each kind one repeated picture, laid in order (later ones a hair higher)
   const pic=(n,fn)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=n; const g=cv.getContext('2d'), im=g.createImageData(n,n); for(let j=0;j<n;j++)for(let i=0;i<n;i++){ const c=fn(i,j,n), k=(j*n+i)*4; im.data[k]=c[0]; im.data[k+1]=c[1]; im.data[k+2]=c[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
@@ -85,20 +101,6 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
       const r=.2*T*t.s; SOL.up.push([XS(t.x)-r,ZS(t.y)-r,XS(t.x)+r,ZS(t.y)+r]); FIX.up.push([XS(t.x)-r,ZS(t.y)-r,0,XS(t.x)+r,ZS(t.y)+r,3.4*t.s]); });
     tm.castShadow=cm.castShadow=true; scene.add(tm,cm);
   }
-
-  // signs: each station's entrance (railings, two green globes, its name) and each section's edge
-  const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
-  const sign=(w,h,fn,a,b,z0,z1,one)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
-    const m=new THREE.MeshBasicMaterial({map:t}), q=(p,r)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([p[0],z0,p[1],r[0],z0,r[1],r[0],z1,r[1],p[0],z0,p[1],r[0],z1,r[1],p[0],z1,p[1]],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); scene.add(new THREE.Mesh(g,m)); };
-    q(a,b); if(!one)q(b,a); };
-  const postM=new THREE.MeshLambertMaterial({color:0x2a2c30}), rail=new THREE.MeshLambertMaterial({color:0x2f6b45}), globe=new THREE.MeshBasicMaterial({color:0xdcf3dc}), hole=new THREE.MeshBasicMaterial({color:0x050506});
-  const bx=(x0,y0,x1,y1,h0,h1,m)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(x1)-XS(x0)),h1-h0,Math.abs(ZS(y1)-ZS(y0))),m); me.position.set((XS(x0)+XS(x1))/2,(h0+h1)/2,(ZS(y0)+ZS(y1))/2); scene.add(me); return me; };
-  for(const st of LOOP.STA){ if(st.old)continue; const k=st.kiosk, ym=(k.y0+k.y1)/2, out=st.side==='south'?k.y1:k.y0, back=st.side==='south'?k.y0:k.y1;
-    bx(k.x0,k.y0,k.x1,k.y1,.005,.02,hole);
-    bx(k.x0,back-.06,k.x1,back+.06,0,1.1,rail); bx(k.x0,out-.06,k.x1,out+.06,0,1.1,rail); bx(k.x1-.06,k.y0,k.x1+.06,k.y1,0,1.1,rail);
-    for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
-    sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
-      g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; const M_=SHARED.METRO, a=M_&&M_.nextOf&&M_.nextOf(st.id,0), b=M_&&M_.nextOf&&M_.nextOf(st.id,1); g.fillText(a&&b?TEXT.t('loop.entrance',null,{a,b}):TEXT.t('loop.entrance0',null),h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
   const edge=(x,y,al,from,to)=>{ if(!S.loaded.some(b=>b.id===from)||!S.loaded.some(b=>b.id===to))return; const H=.9*T, X=XS(x), Z=ZS(y), e=.012, plate=id=>(g,w,h)=>{ g.fillStyle='#14361f'; g.fillRect(0,0,w,h); g.strokeStyle='#e8f2e8'; g.lineWidth=4; g.strokeRect(6,6,w-12,h-12); g.fillStyle='#e8f2e8'; g.textBaseline='middle'; g.textAlign='center';
       font(g,h*.22,700); g.fillText('ENTERING',w/2,h*.32); font(g,h*.36,900); g.fillText('SECTION '+id,w/2,h*.66); };
     bx(x-.06,y-.06,x+.06,y+.06,0,2.4,postM);
@@ -106,4 +108,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
     else { sign(256,96,plate(from),[X-H,Z+e],[X+H,Z+e],1.7,2.35,true); sign(256,96,plate(to),[X+H,Z-e],[X-H,Z-e],1.7,2.35,true); } };
   for(let c=1;c<S.grid.cols;c++){ const x=S.grid.x0+c*S.grid.w; for(let r=0;r<S.grid.rows;r++){ const y=r?P.y1+1.5:P.y0-1.5; edge(x,y,false,S.ids[c-1][r],S.ids[c][r]); } }
   for(const c of [0,S.grid.cols-1]){ const y=S.grid.y0+S.grid.h, x=c?P.x1+1.5:P.x0-1.5; edge(x,y,true,S.ids[c][0],S.ids[c][1]); }
+  };
+  MODS.sections={pieces:[],rows:[],road,inner,secs,kindAt:()=>null}; DRESS.extra=[];
+  if(secs.length){ await LOAD('later'); others(); }
 });

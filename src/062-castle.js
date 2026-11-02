@@ -19,7 +19,7 @@ const castleMat=(k,map,emap,pl)=>new THREE.MeshLambertMaterial({map,emissiveMap:
 const castleSolid=(lv,p,base,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys); if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
   for(const s of p.solids||[p]){ SOL[lv].push([X(s.x0),Z(s.y0),X(s.x1),Z(s.y1)]); FIX[lv].push([X(s.x0),Z(s.y0),base,X(s.x1),Z(s.y1),base+Math.max(.05,Y(h))]); } };
 const CYS=.5;
-await grab('castle',async()=>{}); PARK.later(()=>{ '@park'; const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;
+PARK.later(()=>{ '@park'; const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;
   const run=(a,b,fn)=>{ const n=Math.max(1,Math.round((b-a)/4)), s=(b-a)/n; for(let i=0;i<n;i++)fn(a+i*s,a+(i+1)*s); };
   run(bx0+r,bx1-r,(a,b)=>K.KMK.curtain(a,by1,b,by1,H,'y+')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx0,a,bx0,b,H,'x-')); run(by0+r,by1-r,(a,b)=>K.KMK.curtain(bx1,a,bx1,b,H,'x+'));
   run(bx0+r,gx-3.1,(a,b)=>K.KMK.curtain(a,wy,b,wy,H,'y-')); run(gx+3.1,bx1-r,(a,b)=>K.KMK.curtain(a,wy,b,wy,H,'y-'));

@@ -58,6 +58,15 @@ jobs:
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
+          k train   'src/009b|src/009c|src/066c|src/159c|loop\.cjs'
+          k hall    'src/150n|src/059a|hall\.cjs'
+          k holodeck 'src/059b-arcade|src/146bb|src/146bc|holodeck'
+          k kite    'src/146g-kite|src/093|kite\.cjs'
+          k swim    'src/146g-swim|src/066-river|src/065a|swim\.cjs'
+          k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
+          k westst  'src/023|src/059-|src/059[e-h]|westst'
+          k zones   'src/129a|src/066-river|src/065a|zones\.cjs'
+          k bees    'src/147a|bees\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -136,6 +145,33 @@ jobs:
       - name: The tablet (TAB pulls it up, its apps)
         if: contains(steps.f.outputs.run, ' tablet')
         run: node tests/tablet.cjs dist/market.html
+      - name: The loop (two trains shuttle from A, you ride one out and back)
+        if: contains(steps.f.outputs.run, ' train')
+        run: node tests/loop.cjs dist/market.html
+      - name: Your hall (the elevator, the stairs, the roof)
+        if: contains(steps.f.outputs.run, ' hall')
+        run: node tests/hall.cjs
+      - name: The holodeck (its panel, the adventures menu)
+        if: contains(steps.f.outputs.run, ' holodeck')
+        run: node tests/holodeck.cjs dist/market.html
+      - name: The kite (held, launched, climbing in the wind)
+        if: contains(steps.f.outputs.run, ' kite')
+        run: node tests/kite.cjs dist/market.html
+      - name: Swimming in the Hudson (down, up, the depths, the tunnel)
+        if: contains(steps.f.outputs.run, ' swim')
+        run: node tests/swim.cjs dist/market.html
+      - name: Visiting another player's apartment
+        if: contains(steps.f.outputs.run, ' visit')
+        run: node tests/visit.cjs dist/market.html
+      - name: West St faces its street (every door and way out)
+        if: contains(steps.f.outputs.run, ' westst')
+        run: node tests/westst.cjs
+      - name: The Hudson loads when you go in
+        if: contains(steps.f.outputs.run, ' zones')
+        run: node tests/zones.cjs
+      - name: The bees (the Beekeeper, hives on the lawn, honey)
+        if: contains(steps.f.outputs.run, ' bees')
+        run: node tests/bees.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
@@ -171,7 +207,6 @@ jobs:
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.c.outputs.tests }}

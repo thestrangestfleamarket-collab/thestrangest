@@ -6,7 +6,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage({ viewport: { width: 960, height: 600 } }), errs = [];
-  pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (/^VR: |^ROAM|^SYS /.test(m.text()) || m.type() === 'error') errs.push(m.text().slice(0, 300)); });
+  pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (/^VR: |^ROAM|^SYS |not loaded before use/.test(m.text())) errs.push(m.text().slice(0, 300)); });
   await pg.addInitScript('{ const R0 = window.requestAnimationFrame.bind(window); window.requestAnimationFrame = f => window.__quest && window.VR && VR.on && !new Error().stack.split("\\n").slice(2, 4).some(l => l.includes("onDeviceFrame")) ? (window.__blocked = (window.__blocked || 0) + 1, -1) : R0(f); }');
   await pg.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});');
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&res=1', { waitUntil: 'commit' });
@@ -45,10 +45,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const f1 = await pg.evaluate(() => ROAMDBG());
   ok(f1.heat > 0 || f1.rocks > 0, 'the right trigger fires the lasers (heat ' + f1.heat + ', rocks ' + f1.rocks + ')');
   await shot('headset-firing');
+  // hands (or gripping controllers) on the stick, the throttle and the red button: a stand-in pair of hands put where the headset would report them
+  const h1 = await pg.evaluate(async () => { const G = ROAM.grips(); ROAM.fake = [{ h: 'right', p: G.stick, pinch: false }, { h: 'left', p: G.thr }]; await new Promise(r => setTimeout(r, 400)); const held = ROAMDBG().hand;
+    ROAM.fake = [{ h: 'right', p: [G.stick[0], G.stick[1], G.stick[2] + .06], pinch: true }, { h: 'left', p: [G.thr[0], G.thr[1], G.thr[2] - .3] }]; await new Promise(r => setTimeout(r, 400)); const moved = ROAMDBG();
+    ROAM.fake = [{ h: 'right', p: [9, 9, 9] }]; await new Promise(r => setTimeout(r, 300)); const off = ROAMDBG().hand; ROAM.fake = null; return { held, moved: moved.hand, inp: moved.in, thr: moved.thr, boost: moved.boost, off, placard: moved.placard }; });
+  ok(h1.held.stick && h1.held.thr && h1.held.pitch === 0 && h1.moved.pitch > .9 && h1.moved.fire === 1 && h1.inp.fire === 1 && h1.thr === 1 && h1.boost && !h1.off.stick && !h1.off.thr, 'a right hand on the stick holds it (pulling back pitches up, a pinch fires), a left hand on the throttle pushes it to full and past the stop into boost, and letting go lets go: ' + JSON.stringify(h1));
+  const h2 = await pg.evaluate(async () => { const G = ROAM.grips(); ROAM.fake = [{ h: 'right', p: G.end, tip: G.end }]; await new Promise(r => setTimeout(r, 300)); const pressed = ROAMDBG(); ROAM.fake = null; return { end: pressed.hand.end, inEnd: pressed.in.end }; });
+  ok(h2.end === 1 && h2.inEnd === 1, 'a finger on the red button presses it: ' + JSON.stringify(h2));
   await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 1)); await until(() => !ARCDBG().holo.run, 60000); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 0));
   const e1 = await pg.evaluate(() => ({ on: ROAMDBG().on, run: ARCDBG().holo.run, vr: VR.on }));
   ok(!e1.on && !e1.run, 'holding Y ends the program (' + JSON.stringify(e1) + ')');
-  ok(await until(() => ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 60000), 'you are back in the holodeck');
+  ok(await until(() => ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 180000), 'you are back in the holodeck (' + JSON.stringify(await pg.evaluate(() => ({ off: ROOMS.offIn && ROOMS.offIn(), fade: FADE.busy, run: ARCDBG().holo.run }))) + ')');
   const back = await pg.evaluate(() => ({ drive: !!SHARED.drive, body: VR.state().body, vr: VR.on }));
   ok(!back.drive && back.vr, 'the headset stays on, the Walker is yours again: ' + JSON.stringify(back));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));

@@ -10,7 +10,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
   const opt=Object.assign({},DEF); try{ const o=JSON.parse(SAVE.get('vr')||'{}'); for(const k in o)if(k in DEF&&typeof o[k]===typeof DEF[k])opt[k]=o[k]; }catch(e){}
   const PT={fast:[300,150,1000],normal:[800,300,1500],slow:[2000,500,3000]};
-  Object.assign(VR,{opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
+  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(), TRK=new THREE.Group(); HG.matrixAutoUpdate=TRK.matrixAutoUpdate=false; HUD.add(HG,TRK);
@@ -103,10 +103,11 @@ import {collide, frame, PAD} from './075-main-13.js';
       P.press={x0:x,y0:y,ly:P.y,moved:false,el,range:!!(el.matches&&el.matches('input[type=range]'))}; if(P.press.range)rangeAt(el,x); return; }
     const pr=P.press; P.press=null; if(pr&&!pr.moved&&!pr.range&&pr.el.isConnected)clickAt(pr.x0,pr.y0,pr.el); };
 
-  const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0;
+  const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0; VR.grips.length=0;
     for(const s of xf.session.inputSources){ if(k>=PTR.length)break; const p=s.targetRaySpace&&xf.getPose(s.targetRaySpace,ref); if(!p)continue; const P=PTR[k++], T=p.transform; P.src=s; P.hit=false;
       RO.set(T.position.x,T.position.y,T.position.z); RD.set(0,0,-1).applyQuaternion(Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w)); P.o=[RO.x,RO.y,RO.z]; P.d=[RD.x,RD.y,RD.z]; let len=1.2;
-      if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++]; if(g&&opt.ctl){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=true; } else C.visible=false; }
+      if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++]; if(g){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=!!opt.ctl;
+          const gp=s.gamepad, w=C.position.clone().applyMatrix4(DOLLY.matrixWorld), wq=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(C.quaternion); VR.grips.push({h:s.handedness,p:w,q:wq,grip:gp&&gp.buttons[1]?gp.buttons[1].value:0,trig:gp&&gp.buttons[0]?gp.buttons[0].value:0}); } else C.visible=false; }
       if(panel.visible&&PN.ready){ PNRM.set(0,0,1).applyQuaternion(panel.quaternion); const den=RD.dot(PNRM);
         if(den<-1e-4){ const t=HIT.copy(panel.position).sub(RO).dot(PNRM)/den; if(t>0&&t<4){ HIT.copy(RO).addScaledVector(RD,t); P4.copy(HIT).sub(panel.position).applyQuaternion(Q4.copy(panel.quaternion).invert());
           const u=P4.x/panel.scale.x+.5, v=.5-P4.y/panel.scale.y; if(u>=0&&u<=1&&v>=0&&v<=1){ P.hit=true; P.x=u*PN.W; P.y=v*PN.H; len=t; P.dot.position.copy(HIT).addScaledVector(PNRM,.002); P.dot.quaternion.copy(panel.quaternion); if(!top)top=P; } } } }
@@ -118,12 +119,14 @@ import {collide, frame, PAD} from './075-main-13.js';
     hl.visible=false; if(top){ const el=PN.fresh&&at(top.x,top.y), c0=el&&el.closest(CLK), w=c0?null:inPic(top.x,top.y), c=c0||(w&&w[0]);
       if(c){ const r=c0?c0.getBoundingClientRect():w[1], a=hl.geometry.attributes.position, U=x=>x/PN.W-.5, V=y=>.5-y/PN.H; a.setXYZ(0,U(r.left),V(r.top),.001); a.setXYZ(1,U(r.right),V(r.top),.001); a.setXYZ(2,U(r.right),V(r.bottom),.001); a.setXYZ(3,U(r.left),V(r.bottom),.001); a.needsUpdate=true; hl.visible=true; } } };
 
-  const hands=(xf,ref)=>{ let n=0, nh=0, tip=false; wrist.visible=false;
-    for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++;
+  const hands=(xf,ref)=>{ let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null;
+    for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
+        if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
         JM.setMatrixAt(n++,M4.compose(P4,Q4,S4.setScalar(p.radius||.008)));
         if(name==='wrist'&&s.handedness==='left'){ wrist.visible=true; wrist.position.copy(P4).add(EV.set(0,.04,.03).applyQuaternion(Q4)); wrist.quaternion.copy(Q4).multiply(QX); }
         if(name==='index-finger-tip'&&s.handedness==='right'){ TIPR.copy(P4); tip=true; } } }
+    for(const k of 'LR'){ const J=VR.joints[k]; if(J&&J.index&&J.thumb)J.pinch=J.index.distanceTo(J.thumb)<.03*FEEL.MH; }
     JM.count=n; JM.instanceMatrix.needsUpdate=true; JM.visible=opt.hands; VR.hands=nh;
     if(wrist.visible&&tip){ const d=TIPR.distanceTo(wrist.position); if(d<.03&&!VR.wt){ VR.wt=1; tap('Escape'); } else if(d>.06)VR.wt=0; } };
 
@@ -176,7 +179,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     { const n=performance.now(), T=PT[opt.panel]||PT.normal; if(panel.visible&&PN.dirty&&!PN.busy&&n-PN.t>T[0]&&(n-PN.ch>T[1]||n-PN.d0>T[2]))shoot(); }
     const m=VR.tip>0&&!VR.win?'tip':''; if(m!==VR.m){ VR.m=m; if(m)write(cv,tex,TIP,22,17); } card.visible=!!m;
     r.xr.enabled=true; r.setRenderTarget(VR.rt);
-    if(hold||!VR.cal)r.clear(); else{ r.render(scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
+    if(hold||!VR.cal)r.clear(); else{ r.render(SHARED.drive&&SHARED.drive.scene||scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
     r.xr.enabled=false; };
 
   const loop=(t,xf)=>{ const ref=renderer.xr.getReferenceSpace(); VR.pose=ref?xf.getViewerPose(ref):null; VR.rt=renderer.getRenderTarget(); read(xf); flush(t);

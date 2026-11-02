@@ -149,6 +149,7 @@ const GARB={};
         grid(t,nl,T.length,true,(i,j)=>{ const q=T[j], top=q<=L1, o=top?add3(H,mul3(a1,q)):add3(K,mul3(a2,q-L1)), a=top?a1:a2, u=nrm3(crs3(a,V(0,0,1))), w=crs3(u,a), r=R(q), th=i/nl*TAU, c=Math.cos(th), sn=Math.sin(th);
           const C=add3(o,add3(mul3(u,c*r),mul3(w,sn*r))), dx=-c, out=sg*dx, f=fi(q)+(fo(q)-fi(q))*Math.max(0,out);
           let p=C; if(f<1){ const [W,D]=seat(o.y), Hp=out>=0?V(W*Math.sign(dx)*Math.abs(dx)**(2/Z.n),o.y,D*Math.sign(sn)*Math.abs(sn)**(2/Z.n)):V(0,o.y,D*sn); p=add3(mul3(Hp,1-f),mul3(C,f)); }
+          if(sg*p.x<0)p=V(0,p.y,p.z);   // where the legs meet they press flat against each other at the middle, never one through the other
           const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):f>=1?['thigh'+s,null,0]:f>0||p.y<18.6?['hips','thigh'+s,f]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
           pt(t,p,k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/nl*reps,(T[j]-q0)/TS],0); }
       return t; },

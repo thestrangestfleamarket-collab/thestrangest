@@ -942,5 +942,14 @@
   "slot": "hand",
   "grants": "golf",
   "value": 20
+ },
+ "kart": {
+  "slot": "hand",
+  "grants": "kart",
+  "offworld": true,
+  "value": 120,
+  "speed": 7,
+  "len": 1.25,
+  "weight": 8
  }
 }

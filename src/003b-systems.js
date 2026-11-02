@@ -94,6 +94,7 @@ const ROOMS={lazy:{},off:{}},
   FORAGE={},
   CIVIC={},
   GHOSTS=window.GHOSTS={list:[]},
+  PHYS={},   // the physics extras' settings (090a-physx) and what they share
   GUARD=window.GUARD={list:[]},   // the castle's guardians (146j fills it; the folk's bodies read its moves)
   GPH=window.GPH={ms:0,n:0},   // the loose things' physics (150-loose fills it); declared here so the places before it can add their things
   GTRH={},
@@ -102,4 +103,4 @@ const ROOMS={lazy:{},off:{}},
   BOOKS={},
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159d-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};

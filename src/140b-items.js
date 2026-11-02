@@ -1,14 +1,15 @@
-// THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, ...); ITEMED edits them (shift+7).
-import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
+// THE ITEM MODEL AND EDITOR: ITEMS holds each item type's shared properties (burnable, edible, sellable, value, ...): data/items.json, the owner's edits over it, and what the families register in code (FORAGE.add) under both; ITEMED edits them (the owner's).
+import {FORAGE, ITEMED, ITEMS, TEXT} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 { const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD'],['rental','RENTAL'],['reuse','NOT USED UP'],['potted','IN CRAB POTS']];
   const NUM=[['weight','WEIGHT',0,50,0.1,1],['value','VALUE',0,500,1,0],['breath','BREATH s',0,180,5,0],['darksight','DARKSIGHT s',0,900,30,0],['heals','HEALS',0,1,.05,0],['boostS','BOOST s',0,600,10,0],['tank','TANK s',0,900,30,0],['damage','DAMAGE',0,10,.5,0],['depth','DEPTH m',0,12,.5,0],['fight','FIGHT',0,10,.5,0],['common','COMMON',0,10,.1,0],['holds','HOLDS',0,200,5,0],['speed','SPEED m/s',0,20,.5,0],['len','LENGTH m',0,3,.05,0],['cast','CAST m',0,40,1,0],['line','LINE STRENGTH',0,3,.1,0],['reel','REEL SPEED',0,3,.05,0]];
-  const SEL=[['slot','WORN / HELD',['none','hand','body','legs','head','eyes','back']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float','light','sight','fish','breathe','fly','ride','scan','night','lift']],['water','LIVES IN',['none','river','lake']],['bites','BITES',['any','day','dusk','night']],['bait','BAIT',['none','worm','cut']],['keeps','HOLDS WHAT',['butterflies','fish']],['boost','BOOST',['none','swift','str','regen','keen']]];
+  const SEL=[['slot','WORN / HELD',['none','hand','body','legs','head','eyes','back']],['grants','GRANTS (ABILITY)',['none','catch','fight','guard','float','light','sight','fish','breathe','fly','ride','scan','night','lift','prospect','extract']],['water','LIVES IN',['none','river','lake']],['bites','BITES',['any','day','dusk','night']],['bait','BAIT',['none','worm','cut']],['keeps','HOLDS WHAT',['butterflies','fish']],['boost','BOOST',['none','swift','str','regen','keen']]];
   const CLR=[['color','WORN COLOUR']];
   const DEF=()=>{ const d={}; for(const [k] of BOOL)d[k]=false; for(const [k,,,,,v] of NUM)d[k]=v; for(const [k,,opts] of SEL)d[k]=opts[0]; return d; };
   let BAKED={}; try{ BAKED=__DATA__("data/items.json")||{}; }catch(e){}
   try{ for(const id in BAKED)ITEMS.defs[id]=Object.assign(DEF(),BAKED[id]); }catch(e){}
-  try{ const L=JSON.parse(OWNED.get('items')||'{}'); for(const id in L)ITEMS.defs[id]=Object.assign(ITEMS.defs[id]||DEF(),L[id]); }catch(e){}
+  let OVER={}; try{ OVER=JSON.parse(OWNED.get('items')||'{}')||{}; for(const id in OVER)ITEMS.defs[id]=Object.assign(ITEMS.defs[id]||DEF(),OVER[id]); }catch(e){ OVER={}; }
+  ITEMS.reg=(id,props)=>{ const d=ITEMS.defs[id]||(ITEMS.defs[id]=DEF()), b=BAKED[id]||{}, o=OVER[id]||{}; for(const k in props)if(!(k in b)&&!(k in o))d[k]=props[k]; return d; };
   ITEMS.def=id=>ITEMS.defs[id];
   ITEMS.prop=(id,k)=>{ const d=ITEMS.defs[id]; return d?d[k]:undefined; };
   ITEMS.ids=()=>Object.keys(ITEMS.defs).sort();
@@ -23,7 +24,7 @@ import {OWNED} from './005-save.js';
   #ited input[type=text]{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 7px;flex:1;min-width:120px} #ited .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='ited'; P.hidden=true; document.body.appendChild(P);
-  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const esc=TEXT.esc;
   const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_');
   const discovered=()=>{ const s=new Set();
     try{ if(window.FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}

@@ -1,9 +1,9 @@
 // THE TALK WINDOW: TALK — double-click a character to talk: its line types out in a window with your replies under it (W/S or 1-4, Enter or a click picks, Esc leaves). A character's script is `talk` in characters.json (the character editor's TALK tab); one without gets a short chat from the line pools. A reply can lead on, open the shop, give or take items, and set what the character remembers (saved with your things).
 import {THREE} from './003-shx.js';
-import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, UI, VIT} from './003b-systems.js';
+import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, TEXT, UI, VIT} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-import {TILE} from './006-map-pre.js';
-{ const T=TILE, esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+import {SYS, TILE} from './006-map-pre.js';
+{ const T=TILE, esc=TEXT.esc;
   const NOTALK=/^(ogre|skeleton|slime|dragon|rat|frog|bat|wasp|spider|snake)$|^(ogre|skeleton)_/, CPS=45;
   LINES.add('about',['This is the Strangest Flea Market. Everything is for sale, eventually.','Market St runs the whole block. The park is north, the subway under your feet.','You find things here you did not know you lost.',
     'Stalls open with the sun. The odd ones open later.','Ask the merchants. They know what sells and who buys.','Mind the dragons. They mostly just sit.']);
@@ -66,5 +66,5 @@ import {TILE} from './006-map-pre.js';
     for(const th of UI.things)if(th.npc===n){ th.act=()=>TALK.open(n); return; }
     const sc=n.g.scale.y||1, H=(n.H||1.8*T)/sc, hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T/sc,H,1.2*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; n.g.add(hb);
     UI.thing({name:n.name||'SOMEONE',npc:n,obj:hb,reach:1.6*T,near:3*T,tall:(n.H||1.8*T)+.3*T,act:()=>TALK.open(n)}); };
-  TALK.sync=()=>{ for(const n of NPCS.concat(NPCS.extra||[]))try{ bind(n); }catch(e){} };
-  { const go=()=>{ if(!window.__started||!SHOPS.sync)return setTimeout(go,900); SHOPS.sync(); TALK.sync(); setInterval(TALK.sync,5000); }; go(); } }
+  TALK.sync=()=>{ for(const n of NPCS.all())try{ bind(n); }catch(e){} };
+  SYS.onStart(()=>{ SHOPS.sync(); TALK.sync(); setInterval(TALK.sync,5000); },'159d-talk'); }

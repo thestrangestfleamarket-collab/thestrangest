@@ -1,16 +1,10 @@
 // THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee, poster and showtimes outside follow it.
 import {SHARED, THREE} from './003-shx.js';
-import {CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
+import {BUGS, CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
-{ const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token', ROW='theatre';
-  const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
-  const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };
-  let T=''; const renew=async()=>{ '@later'; const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
-    const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'content-type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})}); if(!r.ok)return '';
-    const n=await r.json(); localStorage.setItem(LS,JSON.stringify({...s,...n})); document.cookie='tsfm-pass='+n.access_token+'; path=/; max-age=3600; secure; samesite=strict'; return T=n.access_token; };
-  const tok=async()=>{ '@later'; let t=ck()||T; if(t.startsWith('dev:'))return ''; if(!t||(jw(t).exp||0)*1000<Date.now()+60000)t=await renew().catch(()=>''); return t; };
+{ const ROW='theatre';
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
 
   // the schedule: free films one after another from a fixed start, each in a slot of its length and a short break rounded up to the quarter hour (so everyone sees the same showing)
@@ -38,12 +32,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
   const pull=async()=>{ '@later'; if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
-  const push=async patch=>{ '@later'; const t=await tok(); if(!t)return false; try{
-    const r=await fetch(SB+'/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{apikey:KEY,Authorization:'Bearer '+t,'content-type':'application/json',Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
-    if(!r.ok)return false; const a=await r.json(); if(a[0]){ rec=a[0]; onRec(); } return true; }catch(e){ return false; } };
+  const push=async patch=>{ '@later'; if(!BUGS.sb)return false; try{   // the site's one client to the server (136a)
+    const r=await BUGS.sb('/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
+    const a=await r.json(); if(a[0]){ rec=a[0]; onRec(); } return true; }catch(e){ return false; } };
   CINEMA.push=push;
-  const isAdmin=async()=>{ '@later'; if(adm!=null)return adm; const t=await tok(); if(!t)return adm=false;
-    try{ const r=await fetch(SB+'/rest/v1/admins?select=user_id&user_id=eq.'+jw(t).sub,{headers:{apikey:KEY,Authorization:'Bearer '+t}}); adm=r.ok&&(await r.json()).length>0; }catch(e){ adm=false; } return adm; };
+  const isAdmin=async()=>{ '@later'; if(adm!=null)return adm; try{ adm=!!(BUGS.owner&&await BUGS.owner()); }catch(e){ adm=false; } return adm; };
   CINEMA.isAdmin=isAdmin;
 
   const startMs=()=>{ const s=cur().started_at; return s?Date.parse(s):0; };
@@ -309,7 +302,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       g.fillStyle=now?'#ffcf6a':'#c9c3b6'; fit(g,f.title+' ('+f.year+')',W*.66,rh*.44); g.fillText(f.title+' ('+f.year+')',W*.3,y); }); };
 
   // double-click the screen: sound and the timeline for everyone, a YouTube link and the brightness for admins; admins also double-click the marquee and the poster
-  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const esc=TEXT.esc;
   const DLG='position:fixed;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,420px);max-height:86vh;overflow:auto;background:#141018;color:#f3e7dd;border:2px solid #bc923a;border-radius:12px;padding:16px;font:14px/1.5 system-ui';
   const BTN='font:600 13px system-ui;border:0;border-radius:6px;cursor:pointer;', RED=BTN+'background:#b22133;color:#fff;', DIM=BTN+'background:transparent;color:#c3a7a0;border:1px solid #3a2130;';
   const FLD='width:100%;box-sizing:border-box;font:inherit;background:#0e0a10;color:#f3e7dd;border:1px solid #3a2130;border-radius:6px;padding:7px';
@@ -382,5 +375,5 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     buildSigns(m); buildHole(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');
-  (async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,250)); await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); })();   // after the start, so the later chunk is not pulled in early
+  SYS.onStart(async()=>{ await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); },'059f-cinema');   // after the start, so the later chunk is not pulled in early
 }

@@ -1,9 +1,9 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, UI, WE, WIELD, ZONES} from './003b-systems.js';
+import {ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, TEXT, UI, WE, WIELD, ZONES} from './003b-systems.js';
 import {OWNED} from './005-save.js';
-import {SYS, TILE} from './006-map-pre.js';
-{ const T=TILE, MW=150, N=10, esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+import {SECTION, SYS, TILE} from './006-map-pre.js';
+{ const T=TILE, MW=150, N=10, esc=TEXT.esc;
   const css=document.createElement('style'); css.textContent=`#hmap{position:fixed;right:calc(12px + var(--fx,0px) + env(safe-area-inset-right,0px));top:calc(12px + var(--fy,0px) + env(safe-area-inset-top,0px));width:${MW}px;z-index:5;font:9px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
     #hmap[hidden]{display:none} #hmap canvas{display:block;width:${MW}px;height:${MW}px;border-radius:50%;image-rendering:pixelated;cursor:pointer} #hmap canvas[hidden]{display:none} #hmap .f{padding-top:5px;text-align:center} #hmap .f span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #hlog{position:fixed;left:calc(12px + var(--fx,0px) + env(safe-area-inset-left,0px));bottom:calc(12px + var(--fy,0px) + env(safe-area-inset-bottom,0px));width:min(320px,40vw);z-index:6;font:11px Silkscreen,monospace;letter-spacing:.3px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;pointer-events:none;zoom:var(--uiz,1)}
@@ -33,7 +33,7 @@ import {SYS, TILE} from './006-map-pre.js';
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
   const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur; if(MP.hidden===on)MP.hidden=!on; if(!on)return;
-    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=(SHARED.SECTION&&SHARED.SECTION.id)||''; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); };
+    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); };
 
   /* ---------- the quick bar ---------- */
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;

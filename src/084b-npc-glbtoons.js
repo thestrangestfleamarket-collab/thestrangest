@@ -1,6 +1,6 @@
 // The owner's .glb toons (donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee, teddy bear): fetched after the start, walking the street.
 import {CINEMA} from './003b-systems.js';
-import {QS} from './006-map-pre.js';
+import {QS, SYS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {RIGNPC} from './083-npc-rig.js';
 const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
@@ -31,5 +31,5 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     const N=RIGNPC.make(def,Object.assign({key,name:D.name,eye:-1,metres:K.metres,radius:K.radius,speed:K.speed,stride:K.stride},PARTSNPC.street(K.at,-70)));
     GLBTOONS.list.push(N); GLBTOONS[key]=N; if(CINEMA.toon)CINEMA.toon(key,N); return N; };
   GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
-  const SH=QS.get('sheet'), go=()=>window.__started||SH&&KIND[SH]?GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)):setTimeout(go,600); go(); }
+  const SH=QS.get('sheet'), go=()=>GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)); if(SH&&KIND[SH])go(); else SYS.onStart(go,'084b-npc-glbtoons'); }
 export {GLBTOONS};

@@ -33,5 +33,6 @@ const FOX={};
       st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; }});
   scene.add(N.g); FOX.N=N; window.FOXDBG=()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
 
-const CREATURES=__DATA__("data/creatures.json");
-export {CREATURES};
+const CREATURES={};   // the creature makers (data/creatures.json); filled by the lazy load just after the start
+const CREATURESREADY=new Promise(res=>{ const L=__LAZY__("data/creatures.json"), go=()=>window.__started?L().then(J=>{ Object.assign(CREATURES,J); res(CREATURES); }).catch(e=>{ console.warn('CREATURES',e); res(CREATURES); }):setTimeout(go,600); go(); });
+export {CREATURES, CREATURESREADY};

@@ -85,7 +85,7 @@ function armIK(P,n,s,A){ const {J,m}=build(P),S=J['shoulder'+n],d=sub(A,S),dl=Ma
   const E=add(S,add(mul(u,UPPER*ca),mul(pole,UPPER*Math.sqrt(1-ca*ca)))),A2=add(S,mul(u,dl));
   const ang=v=>{ const l=nrm(v),x=dot(l,m.Ru.x),y=dot(l,m.Ru.y),z=dot(l,m.Ru.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
   P[n].ua=ang(sub(E,S)); P[n].fa=ang(sub(A2,E)); }
-function gripIK(st,P){ const W=st.world,G=st.climb.grip,c=Math.cos(W.hd),s=Math.sin(W.hd);   // hands and feet onto holds given in the world
+function gripIK(st,P,G=st.climb.grip){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd);   // hands and feet onto holds given in the world
   const toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,(p.y-W.y)*W.ky,dx*s+dz*c); }, nL=p=>nrm(V(p.nx*c-p.nz*s,p.ny,p.nx*s+p.nz*c));
   for(const n of 'LR'){ const g=G[n],sd=n=='L'?1:-1; if(!g) continue;
     if(g.f){ const A=add(add(toL(g.f),mul(nL(g.f),2.6)),V(0,1.2,0)); P[n].ik=A; P[n].kp=V(sd*.8,.3,1); legIK(P,n,sd,A,P[n].kp); P[n].foot=-35*D; }   // knees out round the trunk, soles flat on the bark
@@ -515,6 +515,7 @@ function hangPose(st){ const H=st.hang,a=2*Math.PI*H.t/24,s=Math.sin(a),P=neutra
   for(const [n,k] of [['L',1],['R',-1]]){ const r=H.side?0:k*s;
     P[n].ua=[(176-24*Math.max(0,r))*D,(H.side?18+8*Math.max(0,k*s):18)*D]; P[n].fa=[(178-16*Math.max(0,r))*D,6*D]; P[n].fist=1;
     P[n].th=[(10+6*k*s)*D,6*D]; P[n].sh=[(2+4*k*s)*D,6*D]; P[n].foot=-20*D; }
+  if(H.grip&&st.world){ P.nod=-26*D; gripIK(st,P,H.grip); }   // hands onto the branch's holds
   return P; }
 
 function sitPose(st){ const P=neutral(); P.root=V(0,st.sit.z+2,0); P.bend=-5*D; P.nod=-4*D;

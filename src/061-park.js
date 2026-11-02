@@ -7,6 +7,7 @@ import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, M
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
+import {BLOCKS} from './038zb-blocks.js';
 import {FOREST, PROPS} from './039-bodega.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
@@ -65,7 +66,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     P.camp0=best||{x:S.C.x+S.R+6,y:S.C.y,nx:1,ny:0}; S.oaks=S.oaks.filter(o=>Math.hypot(o[1]-P.camp0.x,o[2]-P.camp0.y)>10); return P.camp0; };
   { const c=P.campAt(); HK.push([c.x-5,c.y-5,c.x+5,c.y+5]); }
   { const h0=P.hill; P.hill=(x,y)=>{ const r=BK.q(x,y); if(!r)return h0(x,y); const e=r[0]-BK.W(r[1])-BK.B; if(path(x,y))return BK.hump(x,y)*TILE/.84; if(e>=0)return h0(x,y)*ss(0,5,e); return BK.h(x,y)*TILE/.84; }; }
-  window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(wx/TILE+72-(g.ox||0),wz/TILE-77-(g.oy||0)):0; };
+  window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(SHARED.BOD.MX(wx)-(g.ox||0),SHARED.BOD.MY(wz)-(g.oy||0)):0; };
   const [rcx,rcy,rr]=P.round, smx=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.max(a,b)+h*h*k/4; };
   const dep=(x,y)=>smx(3.6-segD(x,y),rr-Math.hypot(x-rcx,y-rcy),2), eo=(x,y)=>{ const n=1.3*(cvn(x/4.5,y/4.5,421)-.5)+.6*(cvn(x/1.4,y/1.4,423)-.5)-.12; return n>.12?.12+(n-.12)*.35:n; }, vis=P.vis=(x,y)=>dep(x,y)+eo(x,y);
   const SC=.36, GR=.05, STN=[[112,109,102],[126,122,113],[140,135,124],[102,104,104],[134,124,108]], TF=[[40,72,32],[54,92,40],[72,114,50],[96,138,62]], SOIL=[[78,66,50],[66,56,44]], KC=new Map();
@@ -241,7 +242,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; ID[i]=-1; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(ID[i]=me.addGeometry(G),I); }
     me.sortObjects=false; return me; };
   const CK={}, CARDS=(key,lite,look=0)=>{ const q=key+(lite===2?'.cl':'.c')+look; if(q in CK)return CK[q]; const D=F[key]; return CK[q]=D&&D.sum?TREEGEN.cards(D.sum,D.trunk,key.length*31+key.charCodeAt(key.length-1),lite===2,look):null; };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ if(opt.cards)opt.map=TREEGEN.leaf(); const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=opt.cards&&CARDS(key,opt.cards,Math.floor(hash(Math.round(x*7),Math.round(y*7),977)*4)%4)||F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y);
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ if(opt.cards)opt.map=TREEGEN.leaf(); const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=opt.cards&&CARDS(key,opt.cards,Math.floor(hash(Math.round(x*7),Math.round(y*7),977)*4)%4)||F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y), LBW=(D.limbs||[]).map(([ax,ay,az,bx,by,bz,ra,rb])=>[ox+(ax*ca-az*sa)*s,ay*s+oy,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,by*s+oy,oz+(bx*sa+bz*ca)*s,ra*s,rb*s]);
       const nt=opt.noTrunk&&/^OakTree/.test(key); for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; if(nt&&k[Math.floor(i/9)]===1)P3.push(ox,oy,oz); else P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), tq=D.cards?t>>1:t, sh=k[t]===0?.86+.28*hash(tq,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       if(D.n)CN.push([p0,D.n,ca,sa]); if(opt.map){ const u=D.uv; for(let i=0,n=p.length/3;i<n;i++)UV.push(u?u[i*2]:0,u?u[i*2+1]:0); }
@@ -249,7 +250,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         for(let v=q0;v<q1;v++)if(LF[v])r1=Math.max(r1,Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)); const cy=(y0+y1)/2, ry=Math.max(1e-3,(y1-y0)/2);
         for(let v=q0;v<q1;v++){ TR.push(LF[v]?(P3[v*3+1]-y0)/Math.max(1e-3,y1-y0):0,LF[v]?Math.hypot(P3[v*3]-cx,P3[v*3+2]-cz)/r1:0,LF[v]); RN.push((P3[v*3]-cx)/(r1*r1),(P3[v*3+1]-cy)/(ry*ry),(P3[v*3+2]-cz)/(r1*r1)); } }
       { let t=oy, r=0; for(let v=p0+1;v<P3.length;v+=3)if(P3[v]>t)t=P3[v]; const hm=(oy+t)/2; for(let v=p0;v<P3.length;v+=3)if(P3[v+1]>hm)r=Math.max(r,Math.hypot(P3[v]-ox,P3[v+2]-oz)); const D=[]; for(let v=p0/3;v<P3.length/3;v++){ const y=P3[v*3+1]-oy; if(!LF[v]&&y>.6*TILE&&y<1.6*TILE)D.push(Math.hypot(P3[v*3]-ox,P3[v*3+2]-oz)); } D.sort((a,b)=>a-b);   // tr: the bark's radius at reaching height
-        IT.push({k:key,x:ox,z:oz,y:oy,top:t,r,tr:D.length?D[D.length>>1]:0,v0:p0/3,v1:P3.length/3,P:P3,LF}); }   // v0..v1 of P: its own triangles, for what touches it
+        IT.push({k:key,x:ox,z:oz,y:oy,top:t,r,tr:D.length?D[D.length>>1]:0,v0:p0/3,v1:P3.length/3,P:P3,LF,lb:LBW}); }   // v0..v1 of P: its own triangles, for what touches it
       if(!opt.far)CLIPX.push({place:'park',name:key,P:P3.slice(p0)});
       if(solid){ const r=Math.max(.3,D.trunk*s*.5*(opt.noTrunk?PARK.TRK:1)), sb=[ox-r,oz-r,ox+r,oz+r], fb=[ox-r,oz-r,0,ox+r,oz+r,leafy?Y(60):s*.9]; SOL.up.push(sb); FIX.up.push(fb); const it=IT[IT.length-1]; if(it){ it.sol=sb; it.fix=fb; } } }   // the item keeps its footprint, so the world editor can move it
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P3,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C3,3)); g.computeVertexNormals();
@@ -434,7 +435,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   MODS.park={BOUND:{x0:X(P.x0+.3),x1:X(P.x1-.3),z0:Z(P.y0),z1:Z(P.y1-.3)},inside:()=>false}; });
 PARK.later(()=>GCAVE.build&&GCAVE.build());
 await grab('park',async()=>{});
-{ const G=MAPG.park, P=PARK, wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); }), brk=()=>new Promise(r=>{ const c=new MessageChannel(); c.port1.onmessage=()=>r(); c.port2.postMessage(0); });
+{ const G=MAPG.park, P=PARK, brk=()=>new Promise(r=>{ const c=new MessageChannel(); c.port1.onmessage=()=>r(); c.port2.postMessage(0); });
   G.visible=false; let busy=false, lx=null, lz=null;
   P.G=G; P.run=f=>{ const n0=scene.children.length; try{ f(); }catch(e){ console.warn('PARK: a part not built',e); } for(const o of scene.children.slice(n0))G.add(o);
     const L=[]; G.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)L.push(o); }); for(const l of L){ l.userData.grp=G; l.castShadow=false; l.removeFromParent(); if(!LITE.recs.includes(l))LITE.recs.push(l); } };

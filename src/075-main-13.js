@@ -29,7 +29,7 @@ renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
 renderer.domElement.addEventListener('wheel',e=>{ '@later'; e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } if(e.deltaY>0&&!UI.persp&&RW/rppu()>=UI.MAXW*.995)return; SHARED.ppuTo=Math.max(3,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
 addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='h')document.getElementById('hud').hidden^=1; if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
+  if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='shift'&&!VIT.tired)st.runTarget=1; if(st.water&&st.water.in&&(k===' '||k==='j')){ e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!ED.on&&!(UI.fly&&k===' ')&&!(FT&&k===' ')){ RIG.act(st,MOVEK[k]); SYS.run('act',MOVEK[k],1); } });
 const MOVEK={' ':' ',j:'J',k:'K',r:'R',v:'V',u:'U',n:'N',i:'C','2':'X','3':'Q','4':'E'};
 addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k); if(k==='shift')st.runTarget=0; if(MOVEK[k]){ RIG.release(st,MOVEK[k]); SYS.run('act',MOVEK[k],0); } });
@@ -54,7 +54,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on||SHARED.fishing)up=dn=lf=rt=false;
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
   if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
-  if(!RAG.on&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf||rt||!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
+  if(!RAG.on&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf,rt,!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
   if(mx||mz)SHARED.target=null; else if(SHARED.target){ const dx=SHARED.target.x-pos.x, dz=SHARED.target.z-pos.z, d=Math.hypot(dx,dz); if(d<0.12)SHARED.target=null; else {mx=dx/d;mz=dz/d;} }
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=SHARED.heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;
@@ -73,7 +73,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
     if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(RIDE.on&&RIDE.dry){ if(st.water)st.water.in=false; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=ml>0?1:0; const before=st.dist; RIG.step(st,dt); const go=(st.dist-before)*W3.SZ/PPU*(SHARED.drag??1)*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(SHARED.heading)*go; pos.z+=Math.cos(SHARED.heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos);
     if(SHARED.target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)SHARED.target=null; }
-    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk&&!st.climb)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } if(window.EQUIP&&EQUIP.float)g+=.6*TILE; if(RIDE.on)g=RIDE.floor(g); SHARED.py+=(g-SHARED.py)*Math.min(1,dt*(RIDE.on?RIDE.ease:20)); } }
+    if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk&&!st.climb&&!st.hang&&!st.move)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } if(window.EQUIP&&EQUIP.float)g+=.6*TILE; if(RIDE.on)g=RIDE.floor(g); SHARED.py+=(g-SHARED.py)*Math.min(1,dt*(RIDE.on?RIDE.ease:20)); } }
     P.x=pos.x/TL;
     P.y=-pos.z/TL; PH.hd=SHARED.heading;
     { const rf=SHARED.floorFrame, dx=rf?pos.x-rf.x:0, dz=rf?pos.z-rf.z:0;   // on a moving floor (a train) the feet stand in its frame, so they don't step as it moves
@@ -132,7 +132,6 @@ gl_FragColor=sRGBTransferOETF(gl_FragColor);
 #endif`,
     defs:()=>{ const d={}; if(THREE.ColorManagement.getTransfer(renderer.outputColorSpace)===THREE.SRGBTransfer)d.SRGB_TRANSFER=''; const t=TM[renderer.toneMapping]; if(t)d[t+'_TONE_MAPPING']=''; return d; }});
   SHARED.carry(OUTL.sp); }
-{ const SH={on:true,lv:2}, el=document.getElementById('shd'), draw=()=>{ W3.lv.value=SH.on?(SH.lv>=2?2:1):0; el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); el.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
-  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } b.blur(); draw(); }); draw(); }
+W3.lv.value=2;
 const SKEL=__LAZY__("data/skel.json");
 export {clampP, collide, disp, frame, marker, PAD, PMAX, PMIN, ray, SKEL, VIEW0};

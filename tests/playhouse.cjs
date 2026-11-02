@@ -18,7 +18,7 @@ const {chromium}=require('playwright');
   ok(sat,'double-clicking a row of the stalls sits you in it');
   const fly=await pg.evaluate(()=>PHDBG().run(K=>{ const s=K.fly.byId.s3, y0=s.y; K.flyTo('s3',y0<15?20.5:12); for(let i=0;i<400;i++)K.flyStep(1/30); return [y0,s.y]; }));
   ok(Math.abs(fly[1]-fly[0])>5,'a bar flies on its lines ('+fly[0].toFixed(1)+' → '+fly[1].toFixed(1)+')');
-  const cur=await pg.evaluate(()=>PHDBG().run(K=>{ const c=K.cloth.curtain, h=c.halves[0].c, y=i=>h.X[i*3+1], b=(h.ny-1)*h.nx+h.nx-2, y0=y(b); c.set(1); for(let i=0;i<300;i++)c.step(1/20,null); const y1=y(b); c.set(0); for(let i=0;i<300;i++)c.step(1/20,null); return [y0,y1,y(b)]; }));
+  const cur=await pg.evaluate(()=>PHDBG().run(K=>{ const c=K.cloth.curtain; c.set(0); for(let i=0;i<300;i++)c.step(1/20,null); const h=c.halves[0].c, y=i=>h.X[i*3+1], b=(h.ny-1)*h.nx+h.nx-2, y0=y(b); c.set(1); for(let i=0;i<300;i++)c.step(1/20,null); const y1=y(b); c.set(0); for(let i=0;i<300;i++)c.step(1/20,null); return [y0,y1,y(b)]; }));
   ok(cur[1]>cur[0]+3&&cur[2]<cur[0]+.5,'the house curtain rises on its lines and falls back as cloth ('+cur.map(v=>v.toFixed(1)).join(' → ')+')');
   await pg.evaluate(()=>PHDBG().showAt(62)); await pg.waitForTimeout(3500);
   const sh=await pg.evaluate(()=>({cap:document.getElementById('phcap').textContent,look:PHDBG().run(K=>K.sets.look),lx:PHDBG().run(K=>K.lx.now),on:PHDBG().run(K=>Object.values(K.cast).filter(a=>a.g.visible&&a.z>-12).length)}));

@@ -47,7 +47,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
-    const r = await pg.evaluate(() => {
+    const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
@@ -104,12 +104,12 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const street = K.on === true && K.st.home.id === 'knight' && K.name === 'THE ARMOURER', bound = SHOPDBG().bound.includes('knight');
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;
         return { ok: true, street, bound, borrowed, back }; })();
-      o.charp = (() => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
+      o.charp = await (async () => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), tabs = document.querySelector('#menu .tabs');
         const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = !!(tabs && tabs.style.display === 'none'), open = U.menuOpen === true;
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
-        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
+        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { await LOAD('log'); CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);

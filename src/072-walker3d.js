@@ -208,13 +208,27 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       const r2=(p,r)=>{ const x=sx(p), y=p.y-H.y; if(r.o){ const cx=(r.x[0]+r.x[1])/2, cy=(r.y[0]+r.y[1])/2; return Math.hypot(x-cx,y-cy)-(r.x[1]-r.x[0])*.45; } return Math.max(r.x[0]-x,x-r.x[1],r.y[0]-y,y-r.y[1]); };
       PCS.push({n:'eyes'+k,on:'head',m:E[0][4],bb:[H.x-5.5,H.x+5.5,H.y-1.5,H.y+3.5,H.z+1,H.z+12],step:.18,cell:.14,
         d:p=>Math.max(hd(p)-.22,Math.min(...R2.map(r=>r2(p,r))),H.z+2-p.z), paint:p=>{ let m=null; for(const r of R2)if(r2(p,r)<.03)m=r.m; return m; }, flatEye:{R2,H,hd}}); }); } }
+  // plain clothes (owner, 2 Nov 2026: "a normal shirt shape ... same for pants and shoes. dont try to match the contour of body"): a straight-hemmed shirt with short sleeves, straight pant legs with cuffs, box shoes, each sized from the body it covers; the skin under them keeps the body's own shape (P.skin)
+  if(!W3.lite){ const J=rest.J, {V,add,sub,mul,rcone,rbox,box}=R, get=n=>PCS.find(P=>P.n===n), nrm=v=>{ const l=Math.hypot(v.x,v.y,v.z)||1; return V(v.x/l,v.y/l,v.z/l); }, dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+    const reach=(d,o,dir)=>{ let r=0; while(r<20&&d(add(o,mul(dir,r)))<0)r+=.1; return r; }, plain=(n,d,ps,m)=>{ const P=get(n); if(!P)return; P.skin=P.skin||P.d; P.d=d; P.bb=around(ps,m); };
+    const TOR=get('torso'), C=J.chest, P0=J.pelvis, SL=J.shoulderL, SR=J.shoulderR; if(TOR){ const cy=C.y-1, o=V(C.x,cy,C.z), hw=Math.max(reach(TOR.d,o,V(1,0,0)),reach(TOR.d,o,V(-1,0,0)))+.6, hf=reach(TOR.d,o,V(0,0,1))+.5, hb=reach(TOR.d,o,V(0,0,-1))+.5;
+      const top=Math.max(SL.y,SR.y)+1.2, hem=P0.y-1.6, tc=V(C.x,(top+hem)/2,C.z+(hf-hb)/2), th=V(Math.max(hw,Math.abs(SL.x-SR.x)/2+2.4),(top-hem)/2,(hf+hb)/2), nk=add(J.neck,V(0,-1.6,0));
+      plain('torso',p=>Math.max(rbox(p,tc,th,2.0),-rcone(p,nk,add(nk,V(0,9,0)),2.8,2.8)),[add(tc,th),sub(tc,th)],2); }
+    const HIP=get('hips'); if(HIP){ const o=V(P0.x,P0.y-.4,P0.z), hw=Math.max(reach(HIP.d,o,V(1,0,0)),reach(HIP.d,o,V(-1,0,0)))+.5, hf=reach(HIP.d,o,V(0,0,1))+.4, hb=reach(HIP.d,o,V(0,0,-1))+.4, hc=V(P0.x,P0.y-.6,P0.z+(hf-hb)/2);
+      plain('hips',p=>rbox(p,hc,V(hw,3.0,(hf+hb)/2),1.6),[add(hc,V(hw,3,hf)),sub(hc,V(hw,3,hb))],1.5); }
+    for(const n of 'LR'){ const S=J['shoulder'+n],E=J['elbow'+n],H=J['hip'+n],K=J['knee'+n],Ak=J['ankle'+n],toe=J['toe'+n],heel=J['heel'+n];
+      const UA=get('upperArm'+n); if(UA){ const m=add(S,mul(sub(E,S),.3)), ra=reach(UA.d,m,nrm(V(E.z-S.z,0,S.x-E.x)))+.55, L=Math.hypot(E.x-S.x,E.y-S.y,E.z-S.z)*.42, dir=nrm(sub(E,S));
+        plain('sleeve'+n,p=>Math.max(rcone(p,S,E,ra,ra),dot(sub(p,S),dir)-L,-dot(sub(p,S),dir)-1.6),[S,add(S,mul(dir,L))],ra+1); }
+      const TH=get('thigh'+n); if(TH){ const m=add(H,mul(sub(K,H),.45)), rt=reach(TH.d,m,V(1,0,0))+.45;
+        plain('thigh'+n,p=>rcone(p,add(H,V(0,.8,0)),K,rt,rt),[H,K],rt+1); plain('shin'+n,p=>Math.max(rcone(p,K,add(Ak,V(0,-.4,0)),rt,rt),Ak.y-1.3-p.y),[K,Ak],rt+1); }
+      const c=add(mul(add(heel,toe),.5),V(0,1.25,.3)); plain('shoe'+n,p=>rbox(p,c,V(2.5,1.9,Math.hypot(toe.x-heel.x,toe.z-heel.z)/2+2.0),.7),[heel,toe,Ak],4.5); } }
   { const J=rest.J, {V,add,rcone}=R, get=n=>PCS.find(P=>P.n===n), LAY={torso:'shirt',sleeveL:'shirt',sleeveR:'shirt',hips:'pants',thighL:'pants',thighR:'pants',shinL:'pants',shinR:'pants',shoeL:'shoes',shoeR:'shoes'};
     for(const P of PCS){ if(LAY[P.n])P.layer=LAY[P.n]; else if(P.n==='hair'||P.on==='hair')P.layer='hair'; }
-    const under=(n,src,m,cover,d)=>{ const S=get(src); if(S)PCS.push({n,on:S.on||S.n,m,d:d||(p=>S.d(p)+.35),bb:S.bb,step:S.step,cell:S.cell,under:src,cover}); }, hips=get('hips');
+    const skinOf=P=>P.skin||P.d, under=(n,src,m,cover,d)=>{ const S=get(src); if(S)PCS.push({n,on:S.on||S.n,m,d:d||(p=>skinOf(S)(p)+.35),bb:S.bb,step:S.step,cell:S.cell,under:src,cover}); }, hips=get('hips');
     { const TOR=get('torso'), cz=J.chest.z, sqz=p=>V(p.x,p.y,cz+(p.z-cz)/.78),   // fill the shirt-collar V so the bare chest reads as smooth skin, not a seam
         neck=p=>rcone(sqz(p),add(J.chest,V(0,2.2,0)),add(J.neck,V(0,0.4,0)),3.1,2.4);
-      under('bodyTorso','torso','skin',['shirt'],p=>Math.min(TOR.d(p)+.35,neck(p))); }
-    if(hips)under('briefs','hips','under',['pants'],p=>Math.min(hips.d(p)+.15,...['L','R'].map(n=>Math.max(get('thigh'+n).d(p)+.15,J['hip'+n].y-3-p.y))));
+      under('bodyTorso','torso','skin',['shirt'],p=>Math.min(skinOf(TOR)(p)+.35,neck(p))); }
+    if(hips)under('briefs','hips','under',['pants'],p=>Math.min(skinOf(hips)(p)+.15,...['L','R'].map(n=>Math.max(skinOf(get('thigh'+n))(p)+.15,J['hip'+n].y-3-p.y))));
     for(const n of 'LR'){ const up=(k,y)=>add(J[k+n],V(0,y,0));
       under('bodyThigh'+n,'thigh'+n,'skin',['pants']); under('bodyShin'+n,'shin'+n,'skin',['pants']);
       under('foot'+n,'shoe'+n,'skin',['shoes'],p=>Math.min(rcone(p,up('heel',1.3),up('toe',1),1.55,1.25),rcone(p,J['ankle'+n],up('heel',1.3),1.9,1.6))); }
@@ -222,12 +236,12 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       const TOR=get('torso'), BT=get('bodyTorso'), C=J.chest, P0=J.pelvis, wy=P0.y+.38*(C.y-P0.y), cx=C.x, cz=C.z, sq=x=>x*x;
       const pinch=d=>p=>{ const w=Math.exp(-sq((p.y-wy)/3.6)), u=Math.max(0,Math.min(1,(p.y-wy)/(C.y-wy))); return d(V(cx+(p.x-cx)*(1+.24*w+.12*u),p.y,cz+(p.z-cz)*(1+.1*w+.06*u))); };
       TOR.form='M'; BT.form='M';
-      PCS.push(Object.assign({},TOR,{n:'torsoF',on:'torso',under:'torso',d:pinch(TOR.d),layer:'shirt',form:'F'}),Object.assign({},BT,{n:'bodyTorsoF',d:pinch(BT.d),form:'F'}));
-      const y=C.y-.9, td=pinch(TOR.d); let zf=cz; while(td(V(cx+2.4,y,zf))<0&&zf<cz+12)zf+=.1;
+      PCS.push(Object.assign({},TOR,{n:'torsoF',on:'torso',under:'torso',d:TOR.skin?TOR.d:pinch(TOR.d),layer:'shirt',form:'F'}),Object.assign({},BT,{n:'bodyTorsoF',d:pinch(BT.d),form:'F'}));
+      const y=C.y-.9, td=pinch(skinOf(TOR)); let zf=cz; while(td(V(cx+2.4,y,zf))<0&&zf<cz+12)zf+=.1;
       const sm=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k/4; };
       const bust=t=>p=>sm(R.ell(p,V(cx+2.4,y,zf-.3),V(2.2+t,2.0+t,1.9+t)),R.ell(p,V(cx-2.4,y,zf-.3),V(2.2+t,2.0+t,1.9+t)),.7);
-      PCS.push({n:'bustF',on:'torso',m:'shirt',d:bust(.35),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,layer:'shirt',form:'F'},
-               {n:'bodyBustF',on:'torso',m:'skin',d:bust(0),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,cover:['shirt'],form:'F'}); } }
+      if(!TOR.skin)PCS.push({n:'bustF',on:'torso',m:'shirt',d:bust(.35),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,layer:'shirt',form:'F'});
+      PCS.push({n:'bodyBustF',on:'torso',m:'skin',d:bust(0),bb:[cx-7,cx+7,y-5,y+5,zf-6,zf+5],step:TOR.step,cell:TOR.cell,cover:['shirt'],form:'F'}); } }
   const NP=PCS.length; W3.HIDE=new Array(NP).fill(false); W3.idx=n=>PCS.findIndex(P=>P.n===n); W3.PM={value:PCS.map(()=>new THREE.Matrix4())}; W3.pcs=PCS;
   const MOVE=`attribute float pidx; uniform mat4 uPM[${NP}];`, AT=`mat4 PM=uPM[int(pidx+0.5)];`;
   const VS=MOVE+`attribute vec3 c0,c1,c2,cd; varying vec3 vC0,vC1,vC2,vCd,vN,vW; void main(){ `+AT+` vN=mat3(PM)*normal; vC0=c0; vC1=c1; vC2=c2; vCd=cd; vec4 w=modelMatrix*(PM*vec4(position,1.)); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;

@@ -26,6 +26,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   { const me=who=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.no).catch(()=>null);
     const a1=await me('dev:pass-a'), a2=await me('dev:pass-a'), b1=await me('dev:pass-b');
     ok(Number.isInteger(a1)&&a1>=1000&&a1===a2&&Number.isInteger(b1)&&b1!==a1,'/owned issues each player one passport number, in order, and keeps it ('+a1+', '+b1+')'); }
+  { const sh=(who,init)=>fetch(BASE+'/shared/world-edits.json',{...init,headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json',...(init&&init.headers||{})}});
+    ok((await fetch(BASE+'/shared/world-edits.json')).status===401,'/shared/world-edits.json without a login is refused');
+    ok((await sh('dev:site-check',{method:'POST',body:'{"x":1}'})).status===403,'a player cannot write the shared world edits');
+    const put=await (await sh('dev:owner-check',{method:'POST',body:JSON.stringify({'park|rock|1,2,3':{t:[0,1,0],del:false}})})).json(), got=await (await sh('dev:site-check')).json().catch(()=>null);
+    ok(put.ok===true&&got&&got['park|rock|1,2,3']&&got['park|rock|1,2,3'].t[1]===1,'the owner\'s world edits are kept and every player reads them ('+JSON.stringify(got).slice(0,80)+')'); }
   { const CAB='CHECK '+String(Date.now()%1e6), sc=(body,who='dev:score-check')=>fetch(BASE+'/scores',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/scores',{method:'POST',headers:{origin:BASE},body:'{"cab":"MAZE"}'})).status===401,'/scores without a login is refused');
     const p1=await sc({cab:CAB,put:{ini:'ABC',score:5000,sub:'ROUND 4'}}), p2=await sc({cab:CAB,put:{ini:'XYZ',score:9000,sub:'ROUND 7'}},'dev:score-two'), bad=await sc({cab:CAB,put:{ini:'a!',score:10}}), got=await sc({cab:CAB}), all=await sc({cab:'*'});
@@ -58,6 +63,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(started&&await g.evaluate(()=>!!document.querySelector('#stage canvas')).catch(()=>false),'THE MARKET draws (its canvas is on the page)');
   if(started){ let keys=[]; for(let i=0;i<20&&!keys.includes('forage');i++){ await g.waitForTimeout(1500); keys=await g.evaluate(()=>fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>Object.keys(j.owned||{}))).catch(()=>[]); }
     ok(keys.includes('forage')&&keys.includes('inv'),'what you own in THE MARKET is kept on the server ('+keys.slice(0,8).join(' ')+')'); }
+  if(started){ let st=null; for(let i=0;i<10&&!(st&&st['park|rock|1,2,3']);i++){ await g.waitForTimeout(1000); st=await g.evaluate(()=>window.WE&&WE.getState&&WE.getState()).catch(()=>null); }
+    ok(st&&st['park|rock|1,2,3']&&st['park|rock|1,2,3'].t[1]===1,'the owner\'s world edits reach a player\'s page at start ('+Object.keys(st||{}).join(' ').slice(0,60)+')'); }
   ok(!gerr.length,'THE MARKET: no page errors '+[...new Set(gerr)].join(' | '));
   await b.close(); w.kill();
   console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);

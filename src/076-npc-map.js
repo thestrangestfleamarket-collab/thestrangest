@@ -32,6 +32,15 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const tall=o.tall||geo.boundingBox.max.y-geo.boundingBox.min.y;
   N.renorm();
   { const n0=geo.attributes.position.count; geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n0),1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n0),1)); }
+  // weld bit-identical vertices (toNonIndexed left many), keeping every attribute: no visual change, less memory. Returns the kept original indices (ascending), or null if not worth it. Safe only when nothing reshapes the body by its original vertex ranges after this.
+  N.pack=ranges=>{ if(geo.index)return null; const A=geo.attributes, keys=Object.keys(A), KA=keys.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
+    const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;   // a spatial hash on position buckets likely-equal vertices; the exact compare keeps the weld lossless
+    for(let i=0;i<n;i++){ const o=i*3, h=(Math.imul(PA[o]*4096|0,73856093)^Math.imul(PA[o+1]*4096|0,19349663)^Math.imul(PA[o+2]*4096|0,83492791))>>>0; let bk=buckets.get(h), u=-1; if(bk){ for(let x=0;x<bk.length;x++)if(eq(i,uq[bk[x]])){ u=bk[x]; break; } } else buckets.set(h,bk=[]); if(u<0){ u=uq.length; uq.push(i); bk.push(u); } idx[i]=u; }
+    if(uq.length>n*0.95)return null;
+    for(const nm of keys){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const s=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[s+c]; } geo.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
+    geo.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1));
+    if(ranges){ const lb=x=>{ let lo=0,hi=uq.length; while(lo<hi){ const m=(lo+hi)>>1; if(uq[m]<x)lo=m+1; else hi=m; } return lo; }; for(const nm in ranges){ const r=ranges[nm], s=lb(r.start); r.count=lb(r.start+r.count)-s; r.start=s; } }   // the per-part vertex ranges, remapped into the welded layout (parts stay contiguous: reg is in the weld key, so parts never share a vertex)
+    return uq; };
   N.shade=()=>{ if(N.shaded)return; N.shaded=true; const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=geo.attributes.sh.array, w=tall*.07, grid=new Map(),
       CI=new Int32Array(n*3); let cm=0; for(let i=0;i<n*3;i++){ CI[i]=Math.floor(P[i]/w); cm=Math.max(cm,Math.abs(CI[i])); }
     const ck=cm<500?(x,y,z)=>((x+512)*1024+y+512)*1024+z+512:(x,y,z)=>x+','+y+','+z, RK=new Float64Array(n), w2=w*w*1.000001;

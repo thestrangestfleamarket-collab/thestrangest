@@ -20,7 +20,8 @@ const {chromium}=require('playwright');
   await pg.evaluate(([a,c])=>{ SUMMON.back(a); ONLINE.feed({t:'world',k:'sum:'+c,v:''}); },[L.far.k,L.next.k]); await pg.waitForTimeout(800);
   const C=await pg.evaluate(([a,c,da,dc])=>{ const N=SUMMON.byId(a), M=SUMMON.byId(c); return {back:Math.hypot(N.st.x-__N0.x,N.st.z-__N0.z)<da/10,parent:N.g.parent===__N0.p,hold:!!N.st.hold,here:SUMMON.here().length,sent:__sent.slice(-1)[0],m:Math.hypot(M.st.x-__N1.x,M.st.z-__N1.z)<Math.max(dc/10,1)}; },[L.far.k,L.next.k,L.far.d,L.next.d]);
   ok(C.back&&C.parent&&C.m&&C.here===0&&C.sent&&C.sent.v==='','SEND BACK puts each where it was and tells the block ('+JSON.stringify(C)+')');
-  const W=await pg.evaluate(k=>{ CHARP.admin(); const ap=document.getElementById('cpadmin'), sq=ap.querySelector('#cpsq'), sl=ap.querySelector('#cpsl'), all=sl.querySelectorAll('[data-sk]').length;
+  await pg.evaluate(()=>CHARP.admin()); await pg.waitForFunction(()=>{ const a=document.getElementById('cpadmin'); return a&&!a.hidden; },null,{timeout:60000}).catch(()=>{});   // the window waits for the game log's chunk
+  const W=await pg.evaluate(k=>{ const ap=document.getElementById('cpadmin'), sq=ap.querySelector('#cpsq'), sl=ap.querySelector('#cpsl'), all=sl.querySelectorAll('[data-sk]').length;
     const N=SUMMON.byId(k), nm=N.name||N.key; sq.value=nm; sq.dispatchEvent(new Event('input')); const one=[...sl.querySelectorAll('[data-sk]')].find(e=>e.dataset.sk===k);
     if(one)one.click(); return {open:!ap.hidden,all,found:!!one,nm}; },L.far.k);
   await pg.waitForTimeout(300);

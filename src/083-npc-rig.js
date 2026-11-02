@@ -48,12 +48,13 @@ const RIGNPC={};
       const g2=new THREE.BufferGeometry(); g2.setAttribute('position',new THREE.Float32BufferAttribute(P2,3)); g2.setAttribute('color',new THREE.Float32BufferAttribute(C2,4)); g2.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(S2,4)); g2.setAttribute('skinWeight',new THREE.Float32BufferAttribute(W2,4));
       const gm=new THREE.SkinnedMesh(g2,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide})); gm.frustumCulled=false; N.me.parent.add(gm); gm.bind(skeleton,N.me.bindMatrix); N.glass=gm; N.tris+=P2.length/9; }
     const p0=N.push; let bumped=false; N.push=p=>{ const d=Math.hypot(p.x-N.st.x,p.z-N.st.z); if(d<N.st.R+.3){ if(!bumped){ bumped=true; for(const q of SP){ q.vx+=(Math.random()-.5)*6; q.vz+=(Math.random()-.5)*6; } } } else if(d>N.st.R+.45)bumped=false; p0(p); };
-    const base=Float32Array.from(P), baseC=Float32Array.from(C);
+    let base=Float32Array.from(P), baseC=Float32Array.from(C);
     N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ '@later'; const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
       for(let i=r.start;i<r.start+r.count;i++){ cx+=base[i*3]; cy+=base[i*3+1]; cz+=base[i*3+2]; } cx/=r.count; cy/=r.count; cz/=r.count;
       for(let i=r.start;i<r.start+r.count;i++){ A[i*3]=cx+(base[i*3]-cx)*scale[0]+move[0]; A[i*3+1]=cy+(base[i*3+1]-cy)*scale[1]+move[1]; A[i*3+2]=cz+(base[i*3+2]-cz)*scale[2]+move[2]; }
       geo.attributes.position.needsUpdate=true; N.renorm(); };
     N.recolour=(name,col)=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.color.array; for(let i=r.start;i<r.start+r.count;i++)for(let j=0;j<3;j++)A[i*3+j]=col?col[j]:baseC[i*3+j]; geo.attributes.color.needsUpdate=true; };
+    if(N.pack(ranges)){ base=Float32Array.from(geo.attributes.position.array); baseC=Float32Array.from(geo.attributes.color.array); }   // weld the body's duplicate vertices from building it in parts (a baked .glb mesh is already indexed, so pack no-ops)
     return N; };
   // the walk: legs swing, arms counter-swing with a bent elbow (where a fore bone exists), hips sway and twist, chest counter-rotates. every joint drive is guarded so a body lacking it is unchanged.
   RIGNPC.walk=(c,{legs=['legL','legR'],arms=['armL','armR'],body='hips',leg=.5,arm=.45,bob=.025,rock=.04,twist=.05,bend=1,energy=1.45}={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, E=energy, sw=Math.sin(ph)*m;

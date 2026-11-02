@@ -1,4 +1,4 @@
-// MAIN STREET: the lots along Main Street (the theatre, the arcade, the playhouse and the rest; its own builder).
+// MARKET ST: the lots along Market St (the theatre, the arcade, the playhouse and the rest; its own builder).
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, CINEMA, LITE, pos, SFX, USE} from './003b-systems.js';
 import {scene} from './004-main.js';

@@ -163,7 +163,6 @@ jobs:
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.c.outputs.tests }}

@@ -5185,3 +5185,12 @@ Owner (his shot of the catacomb run, a black screen crawling with grain): "i wan
 
 ## 2 Nov 2026: the tablet
 Owner (his model, a rugged red tablet): "i want to import this into the game, fully usable tablet you can pull up and use"; his picks: a hub of the apps the game already has, and everyone has one. TAB (in KEYS) raises it in your hands, seen by other players, with its screen up: CALL, ORDER, ARCADE, MAP, CHAT, PLAYERS. A click wakes it; TAB or ESC puts it away.
+
+## 2 Nov 2026: the dead, the stale and the costly (owner: "now fix the dead, stale or costly section")
+- A character's self-shadow map (a 256² render target each) is made only when its shadow pass first runs; most never get one. The dungeon skeletons' rig bodies are posed only near you.
+- The admin's GAME LOG is its own chunk (`log`), fetched when the admin opens it; every player downloaded it.
+- The other sections' builder (066c) waits in the later chunk: nothing but yours is loaded (28 Oct).
+- The claude.ai backends in the bug reporter and the version check are gone (no claude.ai copy since 20 Oct).
+- The site check now reaches the section's room (the Block): two players meet, a move and a name go across. Checks nothing ran before are wired to the files they prove (see the pull request).
+- Gone: `grab('castle')` (its group was never used), `SYS.run('sites')` and `SYS.run('lawnEdit')` (no listener), two dead lines in build.py, a CI guard that was always true. Headers set right: THE BATH HOUSE (059e), MARKET ST (059-street), ROOMS (130), the looks' passes (138, 138a); CLAUDE.md names `m.<hash>.js`, every chunk, three measuring machines.
+- Left as they are: JOBS planned with no workers (159) and the duties' missing staff (156) are dormant by the owner's choices (CITY off; the droids removed); `offworld` and `stackable` on items have no system yet.

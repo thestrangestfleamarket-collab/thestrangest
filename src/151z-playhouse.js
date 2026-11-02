@@ -14,7 +14,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   let G=null, K=null, P=null, SO=[], ENV=null, MIR=[], LT={}, t0=0;
   const build=()=>{ '@playhouse';
     G=new THREE.Group(); G.name='playhouse-in'; G.position.set(OX,0,OZ); G.scale.set(MH,MV,MH); scene.add(G);
-    const TX=PHT.make(); K=PHK.make(TX); G.add(K.G); try{ PHA.make(K); PHS.make(K); for(const p of PHX.parts)if(p.make)p.make(K); }catch(e){ console.error('playhouse build',e); }
+    const TX=PHT.make(); K=PHK.make(TX); K.you=()=>({x:lx(pos.x),y:SHARED.py/MV,z:lz(pos.z)}); G.add(K.G); try{ PHA.make(K); PHS.make(K); for(const p of PHX.parts)if(p.make)p.make(K); }catch(e){ console.error('playhouse build',e); }
     // the house lights: the great chandelier, the sconces down the walls, the foyer's two, the newel lamps; backstage the corridor and the rooms (each a lamp of its own, dimmed by the show)
     const lamp=(k,p,c,i,r)=>{ const l=new THREE.PointLight(c,i,r*MH,1.4); l.userData.pool=true; l.position.set(...p); K.G.add(l); (LT[k]=LT[k]||[]).push({l,i}); return l; };
     lamp('house',[K.chandelier[0],K.chandelier[1]-.2,K.chandelier[2]],0xffe2b0,140,45); for(const s of [-1,1])lamp('house',[s*9,6,13],0xffc890,25,25);
@@ -63,5 +63,5 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     if(ENV){ ENV.due-=dt; if(ENV.due<=0&&(ENV.lvl<0||Math.abs(hl-ENV.lvl)>.05)){ ENV.lvl=hl; ENV.due=1; const vis=MIR.map(o=>o.r.visible); for(const o of MIR)o.r.visible=false; ENV.cam.update(renderer,scene); MIR.forEach((o,i)=>o.r.visible=vis[i]); } } },'151z-playhouse');
   window.PHDBG=()=>({built:!!K,inside:inside(),seats:K?K.seats.length:0,things:K?K.things.length:0,solids:SO.length,sets:K?K.fly.sets.map(s=>[s.id,+s.y.toFixed(2)]):[],mirrors:MIR.map(o=>[o.zone,o.r.visible]),
     tris:G?(()=>{ let n=0; G.traverse(c=>{ if(c.isMesh&&c.geometry){ const g=c.geometry, k=(g.index?g.index.count:g.attributes.position.count)/3; n+=c.isInstancedMesh?k*c.count:k; } }); return Math.round(n); })():0,
-    W:(x,y,z)=>W(x,y,z),look:(x,z,hd,pt,view)=>{ if(view)UI.setView(view); const w=W(x,0,z); UI.goTo(w[0],w[2],0,hd); SHARED.heading=hd; SHARED.yaw=SHARED.yawTo=hd+PI; SHARED.pitch=SHARED.pitchTo=pt; },L:(x,z)=>[lx(x),lz(z)],ground:(x,z)=>K&&K.groundAt(x,z)});
+    W:(x,y,z)=>W(x,y,z),curtain:t=>K&&K.cloth&&K.cloth.curtain&&K.cloth.curtain.set(t),fly:(id,y)=>K&&K.flyTo(id,y),run:f=>f(K,PHX),look:(x,z,hd,pt,view)=>{ if(view)UI.setView(view); const w=W(x,0,z); UI.goTo(w[0],w[2],0,hd); SHARED.heading=hd; SHARED.yaw=SHARED.yawTo=hd+PI; SHARED.pitch=SHARED.pitchTo=pt; },L:(x,z)=>[lx(x),lz(z)],ground:(x,z)=>K&&K.groundAt(x,z)});
 });

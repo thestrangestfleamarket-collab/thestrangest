@@ -94,6 +94,8 @@ const GARB={};
     grid(t,nu,rows.length,closed,(i,j)=>{ const p=P[j*nu+i], s=sk===chest&&rows[j][4]!=null?near(p):sk(p.y), th=closed?i/nu*TAU:th0+span*i/(nu-1); pt(t,p,s[0],s[1],s[2],K(i,j,th)); },
       (c,j)=>[c/(closed?nu:nu-1)*reps,vl[j]/TS],m); return P; };
   // the chest takes the top of a torso garment, the pelvis the bottom
+  // round the waist every garment takes the chest by the same amount at the same height, so the tee, the jeans' waist and the belt lean and turn together
+  const tw=y=>Math.max(0,Math.min(1,(y-17.5)/6.5));
   const chest=y=>{ const w=sm((28-y)/10); return w>=1?['hips',null,0]:w<=0?['torso',null,0]:['torso','hips',w]; };
   // a sleeve or a trouser leg: rings [piece, t along it, radius, (piece b, w)] down the limb
   const limb=(t,rings,nu,K,m,TS)=>{ const vl=[0]; for(let j=1;j<rings.length;j++)vl.push(vl[j-1]+Math.abs(rings[j][1]-rings[j-1][1]+(rings[j][0]!==rings[j-1][0]?LEN[rings[j-1][0].replace(/[LR]$/,'')]:0)));
@@ -123,7 +125,7 @@ const GARB={};
       const at=(i,j)=>{ const th=-i/nu*TAU; if(j===Z.rows.length){ const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
         const [y,W,D]=Z.rows[j], [x,z]=se(th,W,D,Z.n), b=F&&z>0?Z.bust*Math.max(0,1-((y-27.4)/3.6)**2):0; return V(x,y,z*(1+b/D)); };   // her front fuller at the bust
       const P=[]; for(let j=0;j<nr;j++)for(let i=0;i<nu;i++)P.push(at(i,j));
-      const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<21.5?['hips',null,0]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them
+      const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<24?['hips','torso',tw(p.y)]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them
       const vl=[0]; for(let j=1;j<nr;j++){ let a=0; for(let i=0;i<nu;i++)a+=dist(P[j*nu+i],P[(j-1)*nu+i]); vl.push(vl[j-1]+a/nu); } let per=0; for(let i=0;i<nu;i++)per+=dist(P[nu*3+i],P[nu*3+(i+1)%nu]); const reps=Math.max(1,Math.round(per/TS));
       grid(t,nu,nr,true,(i,j)=>{ const p=P[j*nu+i], k=skin(p); pt(t,p,k[0],k[1],k[2]); },(c,j)=>[c/nu*reps,vl[j]/TS],0);   // held: the hem keeps a straight line (owner, 2 Nov 2026)
       grid(t,nu,2,true,(i,j)=>{ const th=-i/nu*TAU, N=Z.neck, [x,z]=se(th,N.W+.12-j*.3,N.D+.12-j*.3,2); pt(t,V(x,N.y-N.dip*Math.cos(th)+j*.6,z),'torso'); },(c,j)=>[c/nu*reps*2,j*.3],0);   // the ribbed neckband
@@ -136,8 +138,8 @@ const GARB={};
       const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
       const sv=[0]; for(let j=1;j<Z.rows.length;j++)sv.push(sv[j-1]+Z.rows[j-1][0]-Z.rows[j][0]); const reps=Math.max(1,Math.round(2*(Z.rows[1][1]+Z.rows[1][2])*1.5/TS));
       // the waist turns partly with the chest, as the body under it does
-      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], tw=y>20.5?.6:y>19?.35:0; pt(t,ring(y,W,D,i),'hips',tw?'torso':null,tw); },(c,j)=>[c/nu*reps,sv[j]/TS],0);
-      const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',j?.35:.6); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
+      grid(t,nu,Z.rows.length,true,(i,j)=>{ const [y,W,D]=Z.rows[j], k=tw(y); pt(t,ring(y,W,D,i),'hips',k>0?'torso':null,k); },(c,j)=>[c/nu*reps,sv[j]/TS],0);
+      const B=Z.rows[0]; grid(t,nu,2,true,(i,j)=>{ pt(t,ring(B[0]+.1-j*1.15,B[1]+.12,B[2]+.12,i),'hips','torso',tw(B[0]+.1-j*1.15)); },(c,j)=>[c/nu*reps*2,j],1);   // the belt
       const zb=B[2]+.2; grid(t,2,2,false,(i,j)=>pt(t,V(i?1:-1,j?20:21.05,zb),'hips'),(c,j)=>[c,j],2);   // the buckle
       for(const s of 'LR'){ const H=J0['hip'+s], K=J0['knee'+s], A=J0['ankle'+s], a1=nrm3(sub3(K,H)), a2=nrm3(sub3(A,K)), L1=dist(H,K), L2=dist(K,A), G=Z.leg, T=[];
         for(let q=G.top;q<L1-.7;q+=.9)T.push(q); T.push(L1-.5,L1,L1+.5); for(let q=L1+1.2;q<L1+L2+G.ext-.4;q+=1)T.push(q); T.push(L1+L2+G.ext-.35,L1+L2+G.ext);

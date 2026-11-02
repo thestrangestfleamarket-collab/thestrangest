@@ -67,7 +67,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
         const g2 = cv.getContext('2d'), im = g2.createImageData(W, H); for (let y = 0; y < H; y++) im.data.set(px.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4); g2.putImageData(im, 0, 0); rt.dispose(); }; });
       const shot = async (nm, sp) => { await pg.evaluate(sp => __portrait(420, 700, sp), sp); await (await pg.$('#__pcv')).screenshot({ path: `${out}-${nm}.png`, timeout: 180000 }); };
       for (const [nm, sp] of [['front', 0], ['left', Math.PI / 2], ['back', Math.PI], ['right', -Math.PI / 2]]) await shot(nm, sp);
-      await pg.keyboard.down('w'); await frames(12); await shot('walk-front', 0); await frames(6); await shot('walk-left', Math.PI / 2); await frames(6); await shot('walk-right', -Math.PI / 2); await pg.keyboard.up('w'); await frames(30); }
+      await pg.keyboard.down('w'); await frames(12); await shot('walk-front', 0); await frames(6); await shot('walk-left', Math.PI / 2); await frames(6); await shot('walk-right', -Math.PI / 2); await frames(5); await shot('walk-left2', Math.PI / 2); await frames(5); await shot('walk-back', Math.PI); await pg.keyboard.up('w'); await frames(30); }
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); if (fails.length) process.exit(1);

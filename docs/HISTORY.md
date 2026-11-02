@@ -5229,11 +5229,14 @@ Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser st
 - The owner's panel sends a banned player out of every section's room.
 - Every file has its own number (058-store, 146bd-roam, 146ca-mining, 146ga-swim, 146ha-folk, 146ja-guardians, 146ka-glasshorn, 159ca-loopmap, 159da-talk).
 - Removed: the playable-body picker (`?avatar=`), the bearded Walker (`?bwk`), the troublemakers (`?trouble`) with the guards' street fight and the police call that answered them.
-- The LIGHTING editor holds the outline and the glow and night look (out of DISPLAY), beside the bands and the PS2 filter.
 - `data/` holds only what the page loads; the bakes' inputs (rpgchars, ual, humanoid, megakit, far) are in `data/full/`.
 - The small settings and your apartment's local layout are in the one save; a missing save no longer wipes the editors' drafts.
 - Gone: the fire escape's empty group, LOOPMAP's early declaration, build.py's copy of the import pattern.
 - Left for the owner: the two character systems (`makeNPC` and the walker bodies). Merging them changes how the townsfolk walk.
+- Left for the owner: the outline and the glow stay in DISPLAY, not the LIGHTING editor (his PHOSPHOR decision the same day keeps GLOW in the menu's LIGHT row).
 - Rule: a timer is `SYS.every`, a window's picture a `win` entry, a mend `VIT.heal`, a message `SAY`; a thing another system may hide is hidden through VIS.
+## 2 Nov 2026: PHOSPHOR, a screen-trail toggle
+
+Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".
 ## 2 Nov 2026: the painted ground near you only; the museum's inside on the way in
 Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · MUSEUM OF EARTH" 92 MB loaded but not drawn): picks "1,2,3" for the street's painted ground, then "yes fix the museum too". The ground is painted at half detail, only near you, and dropped (freed) when far or while you are in a room off the map, painted again on the way out. The museum's inside (floor, inner walls, exhibits) is built only when you go in and dropped when you leave. Rule: painted pictures are kept only near you; an inside marked to drop goes when you leave it.

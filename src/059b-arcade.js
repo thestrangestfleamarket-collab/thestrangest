@@ -25,7 +25,9 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   HOLO.start=P=>{ if(HOLO.run||!HOLO.hall)return; const c=P.cost==null?8:P.cost; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
     const H=HOLO.hall; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); if(P.place)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
   SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
-  SYS.add('places',dt=>{ const D=HOLO.run; if(D&&D.P.run)D.P.run(D,dt); },'holodeck program');
+  SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return;
+    if(D.P.room&&ROOMS.offIn&&!FADE.busy){ const at=ROOMS.offIn(); if(at===D.P.room)D.inWorld=true; else if(D.inWorld){ HOLO.end(); if(at!=='arcade'){ HOLO.hide(); HOLO.hall=null; } return; } }   // left an adventure's world any way at all: the program is over
+    if(D.P.run)D.P.run(D,dt); },'holodeck program');
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});

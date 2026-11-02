@@ -38,6 +38,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     STORE.holo.end(); const back = await U(() => !ARCDBG().holo.run && ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 60000); await new Promise(r => setTimeout(r, 500)); const d = GREENSDBG();
     return { back, on: d.on, built: d.built, card: !!document.getElementById('greensc') && !document.getElementById('greensc').hidden, saved: d.saved }; });
   ok(c5.back && !c5.on && !c5.built && !c5.card && c5.saved.best && c5.saved.best.zen === 2 && c5.saved.rounds === 2, 'END PROGRAM fades you back into the holodeck, the garden dropped, the card gone, the best kept: ' + JSON.stringify(c5));
+  const c6 = await pg.evaluate(async () => { const U = async (f, ms = 90000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
+    const H = STORE.holo; INV.cash = 50; H.start(H.programs.find(p => p.name === 'THE GREENS')); const inn = await U(() => GREENSDBG().ready && ROOMS.offIn && ROOMS.offIn() === 'greens' && !FADE.busy);
+    ROOMS.enter('arcade'); const out = await U(() => ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy); await new Promise(r => setTimeout(r, 1200));
+    const c = document.getElementById('greensc'); H.menu(); const hp = document.getElementById('holog'), off = [...hp.querySelectorAll('button[data-run]')].filter(b => b.disabled).length; H.hide();
+    return { inn, out, run: ARCDBG().holo.run, on: GREENSDBG().on, built: GREENSDBG().built, card: !!c && !c.hidden, disabled: off, tool: WIELD.on }; });
+  ok(c6.inn && c6.out && !c6.run && !c6.on && !c6.built && !c6.card && c6.disabled === 0, 'leaving the garden any other way (straight to the arcade) ends the program: the card goes and every RUN is open again: ' + JSON.stringify(c6));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'all good'); process.exit(fails.length ? 1 : 0);
 })().catch(e => { console.log('FAIL ' + e.message); process.exit(1); });

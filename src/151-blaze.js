@@ -1,6 +1,6 @@
 // THE BLAZE: BLAZE starts fires that spread through grass and brush and go out in the wet.
 import {SHARED, THREE} from './003-shx.js';
-import {BLAZE, DRESS, GPH, PARK, pos, WEEDS} from './003b-systems.js';
+import {BLAZE, DRESS, DRONE, GPH, PARK, pos, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, MODS, QS, RING, SOL, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -64,16 +64,13 @@ import {FOUNT} from './060a-fount.js';
       for(const [w,d,x,z] of [[1.09,.06,0,.52],[1.09,.06,0,-.52],[.06,1.09,.52,0],[.06,1.09,-.52,0]])a(w,.06,d,0xc8302a,x,2.86,z);
       a(.62,.012,.12,0xe8e6de,0,2.84,0); a(.12,.012,.62,0xe8e6de,0,2.84,0); a(.34,.42,.22,0xc8302a,0,1.2,.16); a(.26,.06,.01,0xe8e6de,0,1.3,.275); } });
     const me=new THREE.Mesh(g,VC); me.castShadow=me.receiveShadow=true; me.name='fire drone docks'; MAPG.bodega.add(me); }
-  const HUB=[[1,1],[1,-1],[-1,1],[-1,-1]].map(([x,z])=>[x*.22,z*.22]);
-  const DG=geo(a=>{ a(.36,.11,.36,0xc22a20,0,0,0); a(.37,.02,.1,0xece8e0,0,.065,0); a(.2,.11,.26,0xd8dadc,0,-.1,0); a(.04,.04,.16,0x2a2c30,0,-.12,.2);
-    for(const [x,z] of HUB){ a(.3,.035,.045,0x2a2c30,x/2,.01,z/2,-Math.atan2(z,x)); a(.075,.07,.075,0x2a2c30,x,.02,z); }
-    for(const sx of [1,-1]){ a(.03,.03,.36,0x2a2c30,sx*.13,-.2,0); for(const sz of [1,-1])a(.022,.09,.022,0x2a2c30,sx*.13,-.15,sz*.1); } });
-  const ND=ST.length, DB=new THREE.InstancedMesh(DG,VC,Math.max(1,ND)), BL=new THREE.InstancedMesh(new THREE.BoxGeometry(.3,.008,.04),new THREE.MeshLambertMaterial({color:0x8a9098}),Math.max(1,ND*4)), LP=new THREE.InstancedMesh(new THREE.BoxGeometry(.05,.035,.05),BAS,Math.max(1,ND*2));
+  const DR0=.18, DG=DRONE.ballGeo({R:DR0,body:0xc22a20,band:0xece8e0,more:[[.04,.04,.16,0x2a2c30,0,-.12,.2]]});
+  const ND=ST.length, DB=new THREE.InstancedMesh(DG,VC,Math.max(1,ND)), LP=new THREE.InstancedMesh(new THREE.BoxGeometry(.05,.035,.05),BAS,Math.max(1,ND*2));
   const NDROP=140, DROP=new THREE.InstancedMesh(new THREE.BoxGeometry(.045*M,.09*M,.045*M),BAS,NDROP), DR=BLAZE.D, DROPS=[], GV=9.8*M;
-  for(const [me,n] of [[DB,ND],[BL,ND*4],[LP,ND*2],[DROP,0]]){ me.frustumCulled=false; me.raycast=()=>{}; me.count=n; MAPG.bodega.add(me); }
+  for(const [me,n] of [[DB,ND],[LP,ND*2],[DROP,0]]){ me.frustumCulled=false; me.raycast=()=>{}; me.count=n; MAPG.bodega.add(me); }
   DB.castShadow=true; DB.name='fire drones'; DROP.name='drone spray'; DROP.visible=false;
   for(let i=0;i<NDROP;i++)DROP.setColorAt(i,cc.setHex(i%3?0xe6f2ff:0x86c4ff));
-  ST.forEach((s,i)=>{ const h=new V3(s.x,s.y+3.05*M,s.z); DR.push({i,home:h,p:h.clone(),v:new V3(),a:new V3(),yaw:i*1.57,st:'home',legs:[],f:null,spin:0,sp:0,sa:0,dirty:true});
+  ST.forEach((s,i)=>{ const h=new V3(s.x,s.y+(2.835+DR0)*M,s.z); DR.push({i,home:h,p:h.clone(),v:new V3(),a:new V3(),yaw:i*1.57,st:'home',legs:[],f:null,sp:0,sa:0,dirty:true});
     LP.setMatrixAt(ND+i,m4.compose(p3.set(s.x+.42*M,s.y+2.91*M,s.z+.42*M),q4.identity(),s3.set(M,M,M))); });
   const CRUISE=Math.min(20*M,Math.max(9*M,...ITEMS.filter(o=>o.top-o.y>2*T).map(o=>o.top-o.y+1.2*M)));
   const hover=(d,f)=>{ const dx=d.p.x-f.x, dz=d.p.z-f.z, l=Math.hypot(dx,dz)||1; return new V3(f.x+dx/l*2.2*M,f.y+2.6*M,f.z+dz/l*2.2*M); };
@@ -101,9 +98,8 @@ import {FOUNT} from './060a-fount.js';
       d.dirty=d.st!=='home'||d.sp>0;
       const hv=d.st==='spray'?Math.sin(tt*2.1+d.i)*.04*M:0, fw=d.a.x*Math.sin(d.yaw)+d.a.z*Math.cos(d.yaw), rt=d.a.x*Math.cos(d.yaw)-d.a.z*Math.sin(d.yaw), cl=v=>Math.max(-.42,Math.min(.42,v/M*.09));
       q4.setFromEuler(e3.set(cl(fw),d.yaw,-cl(rt))); BM4.compose(p3.copy(d.p).setY(d.p.y+hv),q4,s3.set(M,M,M)); DB.setMatrixAt(d.i,BM4);
-      d.spin+=dt*42*d.sp; HUB.forEach(([x,z],k)=>BL.setMatrixAt(d.i*4+k,HM.copy(BM4).multiply(RM.makeTranslation(x,.065,z)).multiply(RM.makeRotationY(d.spin*(k&1?1:-1)+k))));
-      LP.setMatrixAt(d.i,HM.copy(BM4).multiply(RM.makeTranslation(0,.075,-.14)));
-      DB.instanceMatrix.needsUpdate=BL.instanceMatrix.needsUpdate=LP.instanceMatrix.needsUpdate=true; }
+      LP.setMatrixAt(d.i,HM.copy(BM4).multiply(RM.makeTranslation(0,-DR0*.36,DR0*.86)));
+      DB.instanceMatrix.needsUpdate=LP.instanceMatrix.needsUpdate=true; }
     if(LP.instanceColor==null||(tt*4|0)!==LP.bk){ LP.bk=tt*4|0; for(const d of DR){ const out=d.st!=='home'; LP.setColorAt(d.i,cc.setHex(out?LP.bk%2?0xff3a2a:0x3a7aff:0x3cff6a)); LP.setColorAt(ND+d.i,cc.setHex(out?0xffb030:0x3cff6a)); } LP.instanceColor.needsUpdate=true; }
     for(let i=DROPS.length-1;i>=0;i--){ const q=DROPS[i]; q.t+=dt; q.vy-=GV*dt; q.x+=q.vx*dt; q.y+=q.vy*dt; q.z+=q.vz*dt; if(q.y<q.gy||q.t>1.2)DROPS.splice(i,1); }
     let n=0; for(const q of DROPS)DROP.setMatrixAt(n++,m4.compose(p3.set(q.x,q.y,q.z),q4.identity(),s3.set(1,1,1)));

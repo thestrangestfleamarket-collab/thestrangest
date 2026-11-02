@@ -53,6 +53,7 @@ jobs:
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k playhouse 'src/151[a-z]|src/059-street|playhouse'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -132,6 +133,9 @@ jobs:
       - name: The bank (its door, the hoard, the dragon waking)
         if: contains(steps.f.outputs.run, ' bank')
         run: node tests/bank.cjs dist/market.html
+      - name: The playhouse (its hall, the cloth curtain, the bars, the show at a moment)
+        if: contains(steps.f.outputs.run, ' playhouse')
+        run: node tests/playhouse.cjs
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         if: contains(steps.f.outputs.run, ' guide')
         run: node tests/guide.cjs dist/market.html

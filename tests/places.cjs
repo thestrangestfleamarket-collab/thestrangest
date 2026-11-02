@@ -17,6 +17,8 @@ const TOUR=[
     FIREV.out(); return await U(()=>FIREDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ FIREV.back(); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['arcade','x-arcade',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); return await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
+  ['playhouse','x-playhouse',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    ROOMS.enter('playhouse'); return await U(()=>PHDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ ROOMS.exit('playhouse'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['arcade game','x-blocks',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; STORE.cabs.play('RAINBOW RUN'); return await U(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded); },
     async()=>{ STORE.cabs.close(); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],

@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,0&hour=12'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(1500);
   const idle=()=>pg.waitForFunction(()=>!(window.FADE&&FADE.busy),null,{timeout:180000,polling:300}).catch(()=>{});
   ok(await pg.evaluate(()=>!!(ROOMS.off.playhouse&&ROOMS.off.playhouse.door)),'the playhouse is an inside off the map with a door on West St');
-  await pg.evaluate(()=>ROOMS.enter('playhouse')); await idle(); await pg.waitForTimeout(2500);
+  await pg.evaluate(()=>ROOMS.enter('playhouse')); await idle(); await pg.evaluate(()=>PHDBG().showAt(-1500)); await pg.waitForTimeout(2500);
   const d=await pg.evaluate(()=>{ const D=PHDBG(); return {built:D.built,inside:D.inside,seats:D.seats,solids:D.solids,sets:D.sets.length,mirrors:D.mirrors.length,tris:D.tris}; });
   ok(d.built&&d.inside,'built and you are inside'); ok(d.seats>600,'its seats ('+d.seats+')'); ok(d.solids>50,'its walls are solid ('+d.solids+')'); ok(d.sets===20,'twenty line sets over the stage'); ok(d.mirrors>=5,'its mirrors ('+d.mirrors+')');
   console.log('     triangles inside: '+d.tris);

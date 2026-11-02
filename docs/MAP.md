@@ -116,8 +116,8 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `084-npc-toons.js` | 15.8 | top level | TOONS (144 147) | 003: SHARED THREE; 006: RING TILE; 080: PARTSNPC; 081: STALL; 083: RIGNPC |
 | `084b-npc-glbtoons.js` | 3.6 | top level | GLBTOONS (159c) | 003b: CINEMA; 006: QS; 080: PARTSNPC; 083: RIGNPC |
 | `085-npc-squirrel.js` | 7.5 | top level |  | 003: SHARED; 003b: PARK st; 006: MODS TILE; 063: GTOWER; 080: PARTSNPC; 083: RIGNPC |
-| `086-npc-fox.js` | 3.9 | top level | CREATURES (087 146b) | 003: SHARED THREE; 003b: LINES; 004: scene; 006: LAY MODS TILE; 080: PARTSNPC |
-| `087-npc-creatures.js` | 10.0 | top level | PAWNS (088) | 003: SHARED THREE; 003a: SKIN; 003b: CLOCK PARK POND; 006: MAPSTAIR MODS SOL TILE; 060a: FOUNT; 076: makeNPC; 086: CREATURES |
+| `086-npc-fox.js` | 4.2 | top level | CREATURES (087 146b), CREATURESREADY (087 146b) | 003: SHARED THREE; 003b: LINES; 004: scene; 006: LAY MODS TILE; 080: PARTSNPC |
+| `087-npc-creatures.js` | 10.0 | top level | PAWNS (088) | 003: SHARED THREE; 003a: SKIN; 003b: CLOCK PARK POND; 006: MAPSTAIR MODS SOL TILE; 060a: FOUNT; 076: makeNPC; 086: CREATURES CREATURESREADY |
 | `087b-feel.js` | 13.3 | top level |  | 003: SHARED THREE; 003b: BOAT ED FEEL NPCS RAG UI VIT W3 keys pos st; 005: SAVE; 006: QS TILE ZU |
 | `087c-feel-anim.js` | 4.2 | top level |  | 003: SHARED THREE; 003b: FEEL SFX pos |
 | `087d-feel-yard.js` | 4.7 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: M scene; 006: MISTB MISTB2 STORE |
@@ -217,7 +217,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `144e-trees.js` | 8.1 | top level |  | 003: SHARED THREE; 003b: CITY FORAGE INSPECT INV MAIL PARK UI pos st; 004: scene; 006: MAPG MODS STORE SYS TILE ZU; 144: VEG |
 | `146-drone.js` | 19.2 | top level |  | 003: SHARED THREE; 003b: DRONE FORAGE INV UI keys; 004: scene; 005: OWNED; 006: MODS STORE SYS TILE; 014: CAT_INFO |
 | `146a-wield.js` | 14.4 | top level |  | 003: SHARED THREE; 003b: FORAGE INSPECT ITEMS LEVELS ONLINE RAG SFX VIT W3 WEEDS WIELD keys st; 004: renderer scene; 006: BF SYS TILE; 143: BFLY; 144b: BIRDS |
-| `146b-dunmobs.js` | 24.5 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: FORAGE INSPECT INV ITEMS LEVELS NPCS SFX UI VIT W3 WIELD pos st; 004: renderer scene; 006: MAPG MODS SOL SYS TILE ZU; 077: SKELGO; 086: CREATURES; 101: GEMS |
+| `146b-dunmobs.js` | 24.7 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: FORAGE INSPECT INV ITEMS LEVELS NPCS SFX UI VIT W3 WIELD pos st; 004: renderer scene; 006: MAPG MODS SOL SYS TILE ZU; 077: SKELGO; 086: CREATURES CREATURESREADY; 101: GEMS |
 | `146c-equip.js` | 12.7 | top level |  | 003: SHARED THREE; 003b: EQUIP FLOW FORAGE ITEMS LOOKS VIT W3; 005: OWNED; 072b: GARB |
 | `146c-mining.js` | 6.9 | top level | MINING (146d) | 003: SHARED THREE; 003b: CITY FORAGE INSPECT INV MAIL SFX UI pos; 005: OWNED; 006: TILE; 066a: CAVERNS; 101: GEMS |
 | `146d-gear.js` | 2.8 | top level |  | 003: SHARED THREE; 003b: EQUIP FORAGE INSPECT LITE ONLINE pos; 006: SYS TILE; 146c: MINING |

@@ -1,4 +1,4 @@
-// THE OLD LOOK: LOOK, the picture's last pass: the old game's glow, and the look's colour of everything and haze over everything (DN.U). The sun's rays are the shafts in the world (134d), never a star drawn on the screen at the player.
+// THE OLD LOOK: LOOK, a late pass (the PS2 filter after it): the old game's glow, and the look's colour of everything and haze over everything (DN.U). The sun's rays are the shafts in the world (134d), never a star drawn on the screen at the player.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DN, LOOK} from './003b-systems.js';
 import {renderer, RH, RW, ShaderPass} from './004-main.js';

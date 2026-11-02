@@ -1,4 +1,4 @@
-// ROOMS: which room you are in, roofs hidden when inside, and roofAt.
+// ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';

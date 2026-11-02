@@ -1,6 +1,6 @@
 // THE HOURS: DN holds the four looks, SUNRISE, DAY, SUNSET and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything; smooth skies, the far fading into the horizon's colour), takes turns through them one real hour each with a minute's fade (no running clock), and the ATMOSPHERE panel for their details.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
@@ -42,7 +42,7 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
     box.innerHTML=`<h3>THE HOURS</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}${DN.hold?'<button class="btn" id="dnfollow">FOLLOW THE HOURS</button>':''}<span class="dim">${DN.hold?'held to edit; shift+N the next':'one real hour each, the same for everyone; the next in '+next+' min'}</span></div>
       <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
         :`<div class="row"><span style="width:250px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
-      +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button><button class="btn" id="dnexp">EXPORT</button><span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
+      +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button>${DN.owner?'<button class="btn" id="dnexp">EXPORT</button>':''}<span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
   if(box){ for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
     box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.E(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
     box.addEventListener('click',e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
@@ -51,4 +51,5 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
       if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
       if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.E()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
   addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&e.shiftKey&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
+  setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
   CLOCK.run=false; blend(S[DN.mode],S[DN.mode],1); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,hold:DN.hold,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

@@ -119,7 +119,8 @@ const GARB={};
   const MAKE={
     // a cotton crew-neck tee cut to its own size: a boxy body to a level hem a little below the belt, a crew neck with a ribbed band, set-in short sleeves capping the shoulders
     shirt:f=>{ const t=NEW(), TS=DEF.jersey.TS, Z=SZ.tee, nu=28, nr=Z.rows.length+1, F=f==='F';
-      const at=(i,j)=>{ const th=-i/nu*TAU; if(j===Z.rows.length){   // round the other way from the sleeves, as its rows rise: its outside faces out const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
+      // round the other way from the sleeves, as its rows rise: its outside faces out
+      const at=(i,j)=>{ const th=-i/nu*TAU; if(j===Z.rows.length){ const N=Z.neck, [x,z]=se(th,N.W,N.D,2); return V(x,N.y-N.dip*Math.cos(th),z); }
         const [y,W,D]=Z.rows[j], [x,z]=se(th,W,D,Z.n), b=F&&z>0?Z.bust*Math.max(0,1-((y-27.4)/3.6)**2):0; return V(x,y,z*(1+b/D)); };   // her front fuller at the bust
       const P=[]; for(let j=0;j<nr;j++)for(let i=0;i<nu;i++)P.push(at(i,j));
       const skin=p=>Math.abs(p.x)>6.6&&p.y>27?['torso','upperArm'+(p.x>0?'L':'R'),Math.min(1,(Math.abs(p.x)-6.6)/2)*.45]:p.y<21.5?['hips',null,0]:chest(p.y);   // below the waist it moves with the hips, as the jeans do   // by the arms the shoulders give a little with them

@@ -20,6 +20,9 @@ const TOUR=[
   ['arcade game','x-blocks',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; STORE.cabs.play('RAINBOW RUN'); return await U(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded); },
     async()=>{ STORE.cabs.close(); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
+  ['petri','x-petri',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; STORE.cabs.play('PETRI'); return await U(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded); },
+    async()=>{ STORE.cabs.close(); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['torchbearer','x-torch',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; STORE.cabs.play('TORCHBEARER'); return await U(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded); },
     async()=>{ STORE.cabs.close(); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],

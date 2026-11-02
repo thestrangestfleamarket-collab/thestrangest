@@ -38,6 +38,10 @@ jobs:
           k vr      'src/162[a-c]|vr\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
+          k loopmap 'src/159c|src/009b|loopmap\.cjs'
+          k passport 'src/159d|passport\.cjs'
+          k scanner 'src/159e|src/146-|scanner\.cjs'
+          k spray   'src/159f|src/146-|spray\.cjs'
           k bedroom 'src/150[a-c]|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
           k editors 'src/09[4-9]|src/13[34]|src/141d|src/136|editors'
@@ -46,6 +50,7 @@ jobs:
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
+          k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -92,6 +97,18 @@ jobs:
       - name: bins
         if: contains(steps.f.outputs.run, ' bins')
         run: node tests/bins.cjs dist/market.html
+      - name: loopmap
+        if: contains(steps.f.outputs.run, ' loopmap')
+        run: node tests/loopmap.cjs dist/market.html
+      - name: passport
+        if: contains(steps.f.outputs.run, ' passport')
+        run: node tests/passport.cjs dist/market.html
+      - name: scanner
+        if: contains(steps.f.outputs.run, ' scanner')
+        run: node tests/scanner.cjs dist/market.html
+      - name: spray
+        if: contains(steps.f.outputs.run, ' spray')
+        run: node tests/spray.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
@@ -123,6 +140,9 @@ jobs:
       - name: The arcade's high-score table (a run that makes the top ten, the initials, the table)
         if: contains(steps.f.outputs.run, ' scores')
         run: node tests/arcade-scores.cjs dist/market.html
+      - name: TORCHBEARER (the dungeon, floor by floor) and PETRI (the dish)
+        if: contains(steps.f.outputs.run, ' arcade')
+        run: node tests/arcade-torch.cjs dist/market.html && node tests/arcade-petri.cjs dist/market.html
       - name: The page's errors, when it did not open
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html

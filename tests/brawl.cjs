@@ -24,7 +24,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const look = await pg.evaluate(async () => { ONLINE.feed({ t: 'in', p: { id: 'a', dead: 1 } }); await new Promise(r => setTimeout(r, 400)); const o = ONLINE.others.get('a'), g = { ghost: o.fig.me.material.transparent, tag: o.tagS };
       ONLINE.feed({ t: 'in', p: { id: 'a', dead: 0, hp: .5 } }); await new Promise(r => setTimeout(r, 400)); return { ...g, solid: !o.fig.me.material.transparent, bar: o.tagS }; });
     ok(look.ghost && /GHOST/.test(look.tag) && look.solid, 'a dead player looks like a ghost (' + JSON.stringify(look) + ')');
-    ok(/\n0\.5$/.test(look.bar), 'a hurt player shows a health bar over their name');
+    ok(/\n0\.5(\n|$)/.test(look.bar), 'a hurt player shows a health bar over their name');
     let hit = [];   // retry one jab: under slow CI frames a single swing's few samples can miss the brief reach; a fresh swing lands it (a real miss still fails — all tries come back empty)
     for (let tryi = 0; tryi < 6 && !hit.length; tryi++) {
       await pg.evaluate(() => { __dbg.VIT.sta = 1; window.__sent.length = 0; });
@@ -46,10 +46,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const idle = async () => { for (let i = 0; i < 40 && await pg.evaluate(() => !!(__dbg.ST.move || __dbg.ST.up)); i++) await pg.waitForTimeout(250); };
     await idle(); await pg.evaluate(() => { __sent.length = 0; }); await pg.keyboard.press('n'); await pg.waitForTimeout(300);
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'act' && m.k === 'N' && m.on === 1)), 'N slaps, and everyone sees it');
-    await idle(); await pg.keyboard.down('i'); for (let i = 0; i < 20 && await pg.evaluate(() => !(__dbg.ST.move && __dbg.ST.move.name === 'crouch' && __dbg.ST.move.t > .1)); i++) await pg.waitForTimeout(100);
+    await idle(); await pg.keyboard.down('c'); for (let i = 0; i < 20 && await pg.evaluate(() => !(__dbg.ST.move && __dbg.ST.move.name === 'crouch' && __dbg.ST.move.t > .1)); i++) await pg.waitForTimeout(100);
     await pg.keyboard.press('j'); await pg.waitForTimeout(50);
     const up = await pg.evaluate(() => __dbg.ST.up && __dbg.ST.up.name);
-    await pg.keyboard.up('i'); await idle();
+    await pg.keyboard.up('c'); await idle();
     ok(up === 'uppercut', 'crouch, then J: an uppercut (' + up + ')');
     await pg.keyboard.down('p'); await pg.waitForTimeout(400);
     const bk = await pg.evaluate(() => { const h = SHARED.heading, f = { x: __dbg.you().x + Math.sin(h), z: __dbg.you().z + Math.cos(h) }; return { block: WIELD.block, bare: WIELD.bare, d: __dbg.VIT.guard(.1, f).d, act: __sent.some(m => m.t === 'act' && m.k === 'B' && m.on === 1) }; });

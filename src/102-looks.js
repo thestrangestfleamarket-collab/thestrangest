@@ -4,6 +4,7 @@ import {CLOCK, FORAGE, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {QS, SHL, TILE} from './006-map-pre.js';
+import {GARB} from './072b-garb.js';
 
 LOOKS.over={};
 { const $=s=>document.querySelector(s), MATS=RIG.MATS;
@@ -15,12 +16,15 @@ LOOKS.over={};
   const HAIRS=[['hair','SHORT'],['hairBuzz','BUZZ'],['hairSlick','SLICKED BACK'],['hairSpiky','SPIKY'],['hairMohawk','MOHAWK'],['hairCurly','CURLY'],['','BALD'],
     ['hairPixie','PIXIE'],['hairBob','BOB'],['hairPony','PONYTAIL'],['hairPigtails','PIGTAILS'],['hairBraid','BRAID'],['hairBun','BUN'],['hairLong','LONG'],['hairWavy','WAVY LONG']];
   const BEARDS=[['','NONE'],['beardStubble','STUBBLE'],['beardShort','SHORT'],['beardFull','FULL'],['beardGoatee','GOATEE'],['beardMoustache','MOUSTACHE']];
-  const L={name:'',robe:false,bare:false,form:'M',hair:'hair',beard:''};
-  try{ const o=JSON.parse(SAVE.get('looks')||'{}'); L.name=o.name||''; L.robe=!!o.robe; L.bare=!!o.bare; if(o.form==='F')L.form='F'; if(HAIRS.some(h=>h[0]===o.hair))L.hair=o.hair; if(L.form==='M'&&BEARDS.some(b=>b[0]===o.beard))L.beard=o.beard; }catch(e){}
-  const save=()=>{ try{ SAVE.set('looks',JSON.stringify({name:L.name,robe:L.robe,bare:L.bare,form:L.form,hair:L.hair,beard:L.beard})); }catch(e){} };
-  // a look's style as a short code for the other players (build, hair, beard), and back
-  LOOKS.code=(o=L)=>(o.form==='F'?'F':'M')+Math.max(0,HAIRS.findIndex(h=>h[0]===o.hair)).toString(36)+Math.max(0,BEARDS.findIndex(b=>b[0]===o.beard)).toString(36);
-  LOOKS.decode=c=>{ const h=HAIRS[parseInt((c||'')[1],36)], b=BEARDS[parseInt((c||'')[2],36)], form=(c||'')[0]==='F'?'F':'M'; return {form,hair:h?h[0]:'hair',beard:form==='M'&&b?b[0]:''}; };
+  // garb: the real clothes you wear (shirt 1, trousers 2, shoes 4, hat 8, jacket 16; all of them unless you take some off)
+  const L={name:'',robe:false,bare:false,form:'M',hair:'hair',beard:'',garb:31};
+  try{ const o=JSON.parse(SAVE.get('looks')||'{}'); L.name=o.name||''; L.robe=!!o.robe; L.bare=!!o.bare; if(o.form==='F')L.form='F'; if(HAIRS.some(h=>h[0]===o.hair))L.hair=o.hair; if(L.form==='M'&&BEARDS.some(b=>b[0]===o.beard))L.beard=o.beard; if(o.garb>=0&&o.garb<32)L.garb=o.garb|4; }catch(e){}
+  const save=()=>{ try{ SAVE.set('looks',JSON.stringify({name:L.name,robe:L.robe,bare:L.bare,form:L.form,hair:L.hair,beard:L.beard,garb:L.garb})); }catch(e){} };
+  // a look's style as a short code for the other players (build, hair, beard, and the clothes when not all of them), and back
+  LOOKS.code=(o=L)=>(o.form==='F'?'F':'M')+Math.max(0,HAIRS.findIndex(h=>h[0]===o.hair)).toString(36)+Math.max(0,BEARDS.findIndex(b=>b[0]===o.beard)).toString(36)+((o.garb??31)!==31?(o.garb).toString(36):'');
+  LOOKS.decode=c=>{ const h=HAIRS[parseInt((c||'')[1],36)], b=BEARDS[parseInt((c||'')[2],36)], form=(c||'')[0]==='F'?'F':'M', g=parseInt((c||'')[3],36); return {form,hair:h?h[0]:'hair',beard:form==='M'&&b?b[0]:'',garb:g>=0&&g<32?g:31}; };
+  // the body's own clothing layers follow what's worn over them (a bathrobe is drawn on them; real clothes replace them)
+  const layers=()=>{ Object.assign(W3.worn,GARB.worn(L.robe)); };
   const tones=h=>{ const c=new THREE.Color(h); return [1,.9,.7,.42].map(k=>c.clone().multiplyScalar(k)); };
   const put=(A,i,r)=>{ A.c0.setXYZ(i,r[0].r,r[0].g,r[0].b); A.c1.setXYZ(i,r[1].r,r[1].g,r[1].b); A.c2.setXYZ(i,r[2].r,r[2].g,r[2].b); A.cd.setXYZ(i,(r[2].r+r[3].r)/2,(r[2].g+r[3].g)/2,(r[2].b+r[3].b)/2); if(A.color)A.color.setXYZ(i,r[1].r,r[1].g,r[1].b); };
   const recolor=()=>{ const g=W3.mesh.geometry, A=g.attributes, mt=A.mat.array, n=mt.length;
@@ -30,7 +34,7 @@ LOOKS.over={};
   const shape=(on,form=L.form)=>W3.pcs.map((P,i)=>{ const e=(form==='F'?EF:E0)[i], k=on&&RB[P.n]; return k?{s:(e?e.s:[1,1,1]).map((v,j)=>v*k[j]),o:[0,0,0],q:[0,0,0,1]}:e; });
   LOOKS.shape=shape; LOOKS.robed=n=>!!RB[n];
   W3.recolor=()=>LOOKS.robe(L.robe); window.LOOKS=LOOKS;
-  LOOKS.robe=on=>{ '@later'; L.robe=!!on; save(); recolor();
+  LOOKS.robe=on=>{ const ch=L.robe!==!!on; L.robe=!!on; save(); if(ch){ layers(); if(W3.dress)W3.dress(); } recolor();
     shape(on).forEach((e,i)=>{ W3.E[i]=LOOKS.mix?LOOKS.mix(e,i):e; }); if(!on)return feet();
     const A=W3.mesh.geometry.attributes, n=A.mat.count, TN=L.form==='F'?'torsoF':'torso', ti=W3.idx(TN), hi=W3.idx('hips'), SK=W3.ramp[MATS.indexOf('skin')]; let y0=1e9, y1=-1e9, h1=-1e9;
     for(let i=0;i<n;i++){ const k=A.pidx.getX(i), y=A.position.getY(i); if(k===ti){ y0=Math.min(y0,y); y1=Math.max(y1,y); } else if(k===hi)h1=Math.max(h1,y); }
@@ -45,7 +49,7 @@ LOOKS.over={};
   LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
     setTimeout(()=>{ LOOKS.robe(L.robe); draw(); },320); if(FORAGE.say)FORAGE.say(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,LOOKS.over[k]||COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } { const h=new THREE.Color(COL.hair); for(const [m,k] of [['hairHi',1.2],['hairLo',.78]]){ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones('#'+h.clone().multiplyScalar(k).getHexString()); } } recolor();
-    for(let k=0;k<7;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==6; } if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
+    for(let k=0;k<7;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==6; } layers(); if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
   const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}
     #looks .row{display:flex;flex-wrap:wrap;gap:4px;align-items:center} #looks button{font:inherit;color:inherit;background:#1a1f2b;border:2px solid #2a3040;padding:3px 6px;cursor:pointer} #looks button[aria-pressed=true]{border-color:#ffd27a;color:#ffd27a}
@@ -56,6 +60,7 @@ LOOKS.over={};
   P.innerHTML=`<h2>YOU</h2><div class="row"><input type="text" id="lname" maxlength="24" placeholder="your name"><button id="lclose">CLOSE</button></div>
     <h3>BUILD</h3><div class="row" id="lform"></div><h3>HAIR</h3><div class="row" id="lhair"></div><h3 id="lbeardh">BEARD</h3><div class="row" id="lbeard"></div>
     <h3>CLOTHES</h3><div class="row"><button id="lwear0">YOUR CLOTHES</button><button id="lwear1">WHITE BATHROBE</button></div>
+    <h3>WEARING</h3><div class="row" id="lgarb"></div>
     <h3>SHOES</h3><div class="row"><button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span></div>
     <h3>STATS</h3><div class="row"><span style="width:70px">HEALTH</span><div class="bar"><i id="lhp" style="background:#c84a3a;width:100%"></i></div></div>
     <div class="row" style="margin-top:4px"><span style="width:70px">STAMINA</span><div class="bar"><i id="lst" style="background:#d8b84a;width:100%"></i></div></div>`;
@@ -64,8 +69,11 @@ LOOKS.over={};
   for(const [id,k,list] of rows)$(id).innerHTML=list.map(([v,t])=>`<button data-${k}="${v}">${t}</button>`).join('');
   LOOKS.style=(k,v)=>{ '@later'; L[k]=v; if(L.form==='F')L.beard=''; save(); W3.style={form:L.form,hair:L.hair,beard:L.beard}; W3.dress(); if(k==='form')LOOKS.robe(L.robe); draw(); };
   for(const [id,k] of rows)$(id).onclick=e=>{ const b=e.target.closest('button'); if(b)LOOKS.style(k,b.dataset[k]); };
-  const draw=()=>{ '@later'; $('#lname').value=L.name; for(const [id,k] of rows)for(const b of $(id).children)b.setAttribute('aria-pressed',String(b.dataset[k]===L[k])); $('#lbeard').hidden=$('#lbeardh').hidden=L.form==='F'; $('#lwear0').setAttribute('aria-pressed',String(!L.robe)); $('#lwear1').setAttribute('aria-pressed',String(L.robe)); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
+  const draw=()=>{ '@later'; $('#lname').value=L.name; for(const [id,k] of rows)for(const b of $(id).children)b.setAttribute('aria-pressed',String(b.dataset[k]===L[k])); $('#lbeard').hidden=$('#lbeardh').hidden=L.form==='F'; $('#lwear0').setAttribute('aria-pressed',String(!L.robe)); $('#lwear1').setAttribute('aria-pressed',String(L.robe)); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); for(const x of $('#lgarb').children)x.setAttribute('aria-pressed',String(!!(L.garb&+x.dataset.g))); };
   $('#lwear0').onclick=()=>{ LOOKS.robe(false); draw(); }; $('#lwear1').onclick=()=>{ LOOKS.robe(true); draw(); }; $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
+  // what you wear, piece by piece (your shoes come and go with SHOES ON / BAREFOOT)
+  $('#lgarb').innerHTML=[[1,'SHIRT'],[2,'TROUSERS'],[8,'HAT'],[16,'JACKET']].map(([g,t])=>`<button data-g="${g}">${t}</button>`).join('');
+  $('#lgarb').onclick=e=>{ const b=e.target.closest('button'); if(!b)return; L.garb^=+b.dataset.g; save(); draw(); };
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };

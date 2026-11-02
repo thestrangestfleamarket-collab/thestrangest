@@ -1,35 +1,92 @@
-// THE CATACOMB RUN: the holodeck's adventure: the hall becomes a torch-lit stone catacomb and the dungeon's slimes come at you in five waves (fists or blade); the safety ends it before you faint and your health comes back as it was; cleared waves pay MARTIAL ARTS.
+// THE CATACOMB RUN: the holodeck's off-world jungle endless runner. Pick it in the holodeck and it fades you to a jungle track far off the map; you auto-run and must JUMP logs, DUCK/ROLL under branches and DODGE rocks (arrow left/right). You run as long as you can; a hit sends you back to the holodeck. The run drives the player through the frame's RUNNER hook (075), like a vehicle.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, VIT} from './003b-systems.js';
-import {FADE, MODS, SOL, STORE, TILE} from './006-map-pre.js';
-import {FLAME} from './007-fire.js';
-{ const H=STORE.holo, T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), WAVES=5, SIZE=n=>2+n; let D=null;
-  const conjure=hall=>{ '@arcade'; const {faceTex,C}=SHARED.BOD, K=SHARED.BOD.STOREK.keep, sh=SHARED.BOD.K.sh, b=hall.box, y0=hall.y, h=hall.h, HP=hall.hpx, w=b.x1-b.x0, d=b.z1-b.z0, cx=(b.x0+b.x1)/2, cz=(b.z0+b.z1)/2;
-    const G=new THREE.Group(); G.name='catacomb'; hall.G.add(G); const geos=[], mats=[], sol=[], fl=[], px=v=>Math.round(v/T*24);
-    const tex=tx=>{ const im=tx.map.image, c=document.createElement('canvas'); c.width=im.width; c.height=im.height; c.getContext('2d').putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=t.minFilter=THREE.NearestFilter; return t; };
-    const stone=(pw,seed,f=.8)=>{ const m=new THREE.MeshLambertMaterial({map:tex(faceTex(pw,HP,(i,j)=>C(sh(K.keepStone(i,HP-1-j,seed),f)))),side:THREE.DoubleSide}); mats.push(m); return m; };
-    const add=(g,m,x,y,z,ry=0,rx=0)=>{ geos.push(g); const me=new THREE.Mesh(g,m); me.position.set(x,y,z); me.rotation.set(rx,ry,0); me.receiveShadow=true; G.add(me); return me; };
-    add(new THREE.PlaneGeometry(w,h),stone(px(w),11),cx,y0+h/2,b.z0+.04*T); add(new THREE.PlaneGeometry(w,h),stone(px(w),12),cx,y0+h/2,b.z1-.04*T,Math.PI);
-    add(new THREE.PlaneGeometry(d,h),stone(px(d),13),b.x0+.04*T,y0+h/2,cz,Math.PI/2); add(new THREE.PlaneGeometry(d,h),stone(px(d),14),b.x1-.04*T,y0+h/2,cz,-Math.PI/2);
-    { const m=new THREE.MeshLambertMaterial({map:tex(faceTex(px(w),px(d),(i,j)=>C(sh(K.keepFloorCol(i/24,j/24),.75))))}); mats.push(m); add(new THREE.PlaneGeometry(w,d),m,cx,y0+.02*T,cz,0,-Math.PI/2); }
-    for(const [u,v] of [[.28,.34],[.72,.34],[.28,.66],[.72,.66]]){ const x=b.x0+w*u, z=b.z0+d*v; add(new THREE.BoxGeometry(.5*T,h,.5*T),stone(12,Math.round(u*9+v*7)),x,y0+h/2,z); const r=[x-.25*T,z-.25*T,x+.25*T,z+.25*T]; sol.push(r); SOL.up.push(r); }
-    const bone=new THREE.MeshLambertMaterial({color:0xe8e0d0}); mats.push(bone); for(let i=0;i<7;i++){ const a=i*2.4, x=cx+Math.sin(a)*w*(.12+(i%3)*.11), z=cz+Math.cos(a)*d*(.1+(i%4)*.09); add(new THREE.BoxGeometry(.26*T,.05*T,.07*T),bone,x,y0+.045*T,z,a*1.7); }
-    const brk=new THREE.MeshLambertMaterial({color:0x2a2420}); mats.push(brk);
-    for(const [x,z,ry] of [[b.x0+w*.25,b.z0+.12*T,0],[b.x0+w*.75,b.z0+.12*T,0],[b.x0+.12*T,cz,Math.PI/2],[b.x1-.12*T,cz,-Math.PI/2]]){ const y=y0+h*.55; add(new THREE.BoxGeometry(.08*T,.16*T,.08*T),brk,x,y,z,ry);
-      const Lt=new THREE.PointLight(0xffa040,14,7*T,1.6); Lt.position.set(x+Math.sin(ry)*.18*T,y+.2*T,z+Math.cos(ry)*.18*T); G.add(Lt);
-      fl.push(FLAME.add({kind:'torch',x:Lt.position.x,y:y+.08*T,z:Lt.position.z,w:.2*T,h:.42*T,embers:.9,smoke:1.2,sk:.7,light:Lt,parent:G,seed:x*7+z*13,name:'holodeck torch'})); }
-    return {sol,pillars:4,torches:fl.length,off:()=>{ for(const s of fl){ const i=FLAME.src.indexOf(s); if(i>=0)FLAME.src.splice(i,1); s.a.removeFromParent(); } for(const r of sol){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); }
-      G.removeFromParent(); for(const g of geos)g.dispose(); for(const m of mats){ if(m.map)m.map.dispose(); m.dispose(); } }}; };
-  const end=(t,c,waves)=>{ D.done=true; say(t,c); if(waves>0)FORAGE.train('fight',800,0,waves*4); H.end(); };
-  H.programs.push({name:'THE CATACOMB RUN',skill:'fight',cost:12,intro:'THE CATACOMB RUN. FIVE WAVES OF SLIMES, FISTS OR BLADE. THE SAFETY ENDS IT BEFORE YOU FAINT.',
-    go:R=>{ const hall=H.hall, d=D=Object.assign(R,{wave:0,hp0:VIT.hp,t:0,ready:false,done:false,set:null});
-      FADE.run('',async()=>{ if(window.LOAD)await LOAD('dungeon'); if(D!==d)return; d.set=conjure(hall);
-        d.A={G:hall.G,lane:{x0:hall.box.x0+.8*T,z0:hall.box.z0+.8*T,x1:hall.box.x1-.8*T,z1:hall.box.z1-.8*T},sol:d.set.sol,away:[hall.door],ground:()=>hall.y,lv:'up'};
-        await MODS.dunmobs.arena(d.A,1,SIZE(1)); if(D!==d){ MODS.dunmobs.off(); return; } d.wave=1; d.ready=true; say('WAVE 1.','#7dffa4'); }); },
-    run:(R,dt)=>{ if(!D||!D.ready||D.done)return;
-      if(VIT.hp<.12&&!VIT.dead)return end('THE SAFETY CATCHES YOU. '+(D.wave-1)+' OF '+WAVES+' WAVES CLEARED.','#c8a090',D.wave-1);
-      if(MODS.dunmobs.alive()>0){ D.t=2; return; } if((D.t-=dt)>0)return;
-      if(D.wave>=WAVES)return end('CATACOMB RUN COMPLETE: '+WAVES+' WAVES.','#7dffa4',WAVES);
-      D.wave++; MODS.dunmobs.wave(D.wave,SIZE(D.wave)); say('WAVE '+D.wave+'.','#5dff8f'); },
-    hide:()=>{ const d=D; if(!d)return; D=null; MODS.dunmobs.off(); if(d.set)d.set.off(); VIT.hp=Math.max(VIT.hp,d.hp0); }});   // the blows were light: your health comes back as you came in
-  window.CATDBG=()=>({on:!!D,ready:!!(D&&D.ready),wave:D?D.wave:0,set:!!(D&&D.set),pillars:D&&D.set?D.set.pillars:0,torches:D&&D.set?D.set.torches:0,fire:FLAME.src.filter(s=>s.name==='holodeck torch').length}); }
+import {FORAGE, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {scene} from './004-main.js';
+import {FADE, SYS, TILE} from './006-map-pre.js';
+import {STORE} from './006-map-pre.js';
+{ const H=STORE.holo, T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
+  const WX=3000, PATHW=3.4*T, LANE=[-1.05*T,0,1.05*T], SEG=3*T, AHEAD=46*T, SPD0=3.2*T, SPD1=5.6*T, RAMPD=200*T;
+  const RUN=window.RUNNER={on:false};
+  let D=null, W=null, savedGY=null, savedView=null, keyoff=null;
+  const rnd=s=>{ const x=Math.sin(s*127.1+11.7)*43758.5453; return x-Math.floor(x); };
+  const M={ path:new THREE.MeshLambertMaterial({color:0x6a5636}), dirt:new THREE.MeshLambertMaterial({color:0x33401f}),
+    leaf:new THREE.MeshLambertMaterial({color:0x2d5522}), leaf2:new THREE.MeshLambertMaterial({color:0x40722f}),
+    trunk:new THREE.MeshLambertMaterial({color:0x463221}), log:new THREE.MeshLambertMaterial({color:0x5a3f26}),
+    rock:new THREE.MeshLambertMaterial({color:0x6b6b63}), branch:new THREE.MeshLambertMaterial({color:0x4a3a22}) };
+  const canopy=new THREE.MeshLambertMaterial({color:0x24451c,transparent:true,opacity:.9,side:THREE.DoubleSide});
+  const foliage=(G,x,z,out)=>{ const s=.7+rnd(x+z)*.7, big=rnd(x*z+1)>.5, add=m=>{ G.add(m); out.push(m); return m; };
+    if(big){ const t=add(new THREE.Mesh(new THREE.CylinderGeometry(s*.14,s*.2,s*2.6,6),M.trunk)); t.position.set(x,s*1.3,z); t.castShadow=true;
+      for(let i=0;i<3;i++){ const c=add(new THREE.Mesh(new THREE.IcosahedronGeometry(s*(1-i*.18),0),i%2?M.leaf:M.leaf2)); c.position.set(x+(rnd(x+i)-.5)*s,s*(2.1+i*.55),z); c.castShadow=true; } }
+    else for(let i=0;i<2;i++){ const c=add(new THREE.Mesh(new THREE.IcosahedronGeometry(s*(.6-i*.18),0),i%2?M.leaf:M.leaf2)); c.position.set(x,s*(.5+i*.4),z); c.scale.y=.8; } };
+  // one strip of track at z: ground + roadside foliage; now and then an obstacle (every mesh tracked so the cull can drop it)
+  const strip=(z,i)=>{ const G=W.G, ms=[], add=m=>{ G.add(m); ms.push(m); return m; };
+    const g=add(new THREE.Mesh(new THREE.PlaneGeometry(PATHW,SEG+.02),M.path)); g.rotation.x=-Math.PI/2; g.position.set(WX,0,z+SEG/2); g.receiveShadow=true;
+    const dl=add(new THREE.Mesh(new THREE.PlaneGeometry(26*T,SEG+.02),M.dirt)); dl.rotation.x=-Math.PI/2; dl.position.set(WX,-.03,z+SEG/2); dl.receiveShadow=true;
+    for(const sx of [-1,1])for(let k=0;k<2;k++)foliage(G,WX+sx*(PATHW/2+(.6+k*1.4+rnd(z+k+sx))*T),z+rnd(z*2+k+sx)*SEG,ms);
+    if(rnd(z+9)>.6){ const c=add(new THREE.Mesh(new THREE.PlaneGeometry(PATHW+6*T,SEG),canopy)); c.rotation.x=Math.PI/2; c.position.set(WX,5.5*T+rnd(z)*T,z+SEG/2); }
+    W.rows.push({z,meshes:ms});
+    if(i>5&&i%2===0){ addObst(z+SEG*(.3+rnd(z)*.4)); } };
+  const addObst=z=>{ const G=W.G, r=rnd(z*3+7), lane=Math.floor(rnd(z*5)*3), x=WX+LANE[lane], ms=[], add=m=>{ G.add(m); ms.push(m); return m; }; let kind, hb;
+    if(r<.4){ kind='jump'; const lg=add(new THREE.Mesh(new THREE.CylinderGeometry(.28*T,.28*T,PATHW*.95,8),M.log)); lg.rotation.z=Math.PI/2; lg.position.set(WX,.28*T,z); lg.castShadow=true; hb={all:true}; }   // a log across the path: jump it
+    else if(r<.72){ kind='duck'; const bar=add(new THREE.Mesh(new THREE.CylinderGeometry(.16*T,.16*T,PATHW*.95,6),M.branch)); bar.rotation.z=Math.PI/2; bar.position.set(WX,1.5*T,z);
+      const lf=add(new THREE.Mesh(new THREE.IcosahedronGeometry(.5*T,0),M.leaf)); lf.position.set(WX+1.3*T,1.7*T,z); hb={all:true,lo:1.05*T}; }   // a branch overhead: duck or roll
+    else { kind='dodge'; const rk=add(new THREE.Mesh(new THREE.DodecahedronGeometry(.55*T,0),M.rock)); rk.position.set(x,.5*T,z); rk.castShadow=true; hb={lane}; }   // a rock in one lane: dodge aside
+    W.obst.push({z,kind,lane,hb,meshes:ms,hit:false}); };
+  const drop=m=>{ m.removeFromParent(); if(m.geometry)m.geometry.dispose(); };
+  const clearAhead=()=>{ while(W.segZ<pos.z+AHEAD){ strip(W.segZ,W.i++); W.segZ+=SEG; }
+    const back=pos.z-8*T;
+    W.rows=W.rows.filter(r=>{ if(r.z>back)return true; for(const m of r.meshes)drop(m); return false; });
+    W.obst=W.obst.filter(o=>{ if(o.z>back)return true; for(const m of o.meshes)drop(m); return false; }); };
+
+  RUN.steer=dt=>[0,1];   // keep the rig running forward on the spot; RUN.run owns the real speed and lane
+  const dodge=dir=>{ if(!D||!D.ready||D.dead)return; D.lane=Math.max(0,Math.min(2,D.lane+dir)); };
+
+  // the airborne / low tests from the rig state (st is the player's rig)
+  const mvName=()=>(st&&st.move&&st.move.name)||'';
+  const airborne=()=>/jump|flip|leap/i.test(mvName())||SHARED.py>.5*T;   // jump, runJump, back/frontflip all clear a log
+  const low=()=>/roll|crouch|slide|duck/i.test(mvName());   // roll or crouch clears an overhead branch
+  const check=(z0,z1)=>{ for(const o of W.obst){ if(o.hit||!(o.z>z0&&o.z<=z1))continue; o.hit=true;   // the frame the player crosses the obstacle's line
+      let ok=true; if(o.kind==='jump')ok=airborne(); else if(o.kind==='duck')ok=low(); else if(o.kind==='dodge')ok=D.lane!==o.hb.lane;
+      if(!ok)return fail(); } };
+  const fail=()=>{ if(!D||D.dead)return; D.dead=true; RUN.on=false; st.runTarget=0;
+    const m=Math.round(D.dist/T); say('YOU WIPE OUT AT '+m+'M.'+(m>(window.CATBEST||0)?' A NEW BEST!':''),'#c8a090'); if(m>(window.CATBEST||0))window.CATBEST=m;
+    setTimeout(()=>{ if(D&&D.dead)H.end(); },1400); };   // END the program; hide() cleans up and fades you back into the holodeck
+
+  ROOMS.off.catrun={name:'THE CATACOMB RUN',noCeil:1,box:{x0:WX-560*T,z0:-20*T,x1:WX+560*T,z1:2300*T,y0:-3,y1:560*T},
+    spawn:[WX,2*T,0,0],out:[WX,2*T,0,0],
+    build:()=>{ const G=new THREE.Group(); G.name='catrun'; scene.add(G); W={G,segZ:0,i:0,rows:[],obst:[]};
+      const amb=new THREE.HemisphereLight(0xbfe4ff,0x24380f,1.0); G.add(amb);
+      const sun=new THREE.DirectionalLight(0xfff0cc,1.2); sun.position.set(WX+18,40,-10); sun.target.position.set(WX,0,30*T); G.add(sun,sun.target);
+      const sky=new THREE.Mesh(new THREE.SphereGeometry(500*T,20,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:0x8fcfe8,side:THREE.BackSide,fog:false})); sky.position.set(WX,0,0); sky.userData.anyRoom=1; G.add(sky); W.sky=sky;   // a bright sky dome inside the room's black (anyRoom: the room cull keeps it)
+      const far=new THREE.Mesh(new THREE.CircleGeometry(500*T,32),new THREE.MeshLambertMaterial({color:0x2c3d1c})); far.rotation.x=-Math.PI/2; far.position.set(WX,-.5,0); far.userData.anyRoom=1; G.add(far); W.far=far;   // distant jungle floor past the track
+      W.segZ=-6*T; W.i=0; while(W.segZ<60*T){ strip(W.segZ,W.i++); W.segZ+=SEG; }
+      return ROOMS.part(G,()=>{},null); },   // G already holds the world; part just gives a droppable record
+    unbuild:()=>{ RUN.on=false; const G=W&&W.G; if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); }
+      if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; } W=null; } };
+
+  H.programs.push({ name:'THE CATACOMB RUN', skill:'fight', cost:12, offWorld:true,
+    intro:'THE CATACOMB RUN. A JUNGLE TRACK. RUN — JUMP THE LOGS, DUCK THE BRANCHES, DODGE (ARROWS) THE ROCKS. LAST AS LONG AS YOU CAN.',
+    go:R=>{ const d=D=Object.assign(R,{dist:0,lane:1,dead:false,ready:false,spd:SPD0,prevZ:2*T});
+      if(!ROOMS.enterAt)return;
+      ROOMS.enterAt('catrun',[WX,2*T,0,0]).then(()=>{ if(D!==d)return;
+        savedGY=SHARED.groundY; SHARED.groundY=()=>0;
+        savedView=UI.view; if(UI.setView)UI.setView('follow');
+        pos.x=WX; pos.z=2*T; SHARED.py=0; SHARED.heading=0; SHARED.target=null;
+        const onkey=e=>{ if(!D||!D.ready||D.dead)return; const k=(e.key||'').toLowerCase();   // arrows (or A/D) drive the run: left/right change lane, up jumps, down crouch-slides
+          if(k==='arrowleft'||k==='a'){ dodge(-1); e.stopPropagation(); } else if(k==='arrowright'||k==='d'){ dodge(1); e.stopPropagation(); }
+          else if(k==='arrowup'){ if(!e.repeat)RIG.act(st,' '); e.stopPropagation(); } else if(k==='arrowdown'){ if(!e.repeat)RIG.act(st,'C'); e.stopPropagation(); } };
+        const onup=e=>{ if((e.key||'').toLowerCase()==='arrowdown')RIG.release(st,'C'); };
+        addEventListener('keydown',onkey,true); addEventListener('keyup',onup,true); keyoff=()=>{ removeEventListener('keydown',onkey,true); removeEventListener('keyup',onup,true); };
+        RUN.on=true; d.ready=true; say('GO!','#7dffa4'); }); },
+    run:(R,dt)=>{ if(!D||!D.ready||D.dead||!W)return; dt=Math.min(dt||1/60,.25);   // match RIG.step's cap so the run and the jump/roll stay in sync
+      D.spd=SPD0+(SPD1-SPD0)*Math.min(1,D.dist/RAMPD);   // the run speeds up the further you get
+      const z0=D.prevZ; pos.z+=D.spd*dt; const laneX=WX+LANE[D.lane]; pos.x+=(laneX-pos.x)*Math.min(1,dt*12); SHARED.heading=0;
+      if(W.sky)W.sky.position.z=pos.z; if(W.far)W.far.position.z=pos.z;
+      clearAhead(); check(z0,pos.z); D.dist=Math.max(D.dist,pos.z); D.prevZ=pos.z; },
+    hide:()=>{ if(!D)return; D=null; RUN.on=false; st.runTarget=0;
+      const off=ROOMS.offIn&&ROOMS.offIn()==='catrun', Hl=H.hall;
+      if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; }
+      if(off&&Hl&&ROOMS.enterAt)ROOMS.enterAt('arcade',[Hl.x,Hl.z,0,Math.PI]);   // still off-world: fade back into the holodeck (which drops the catrun)
+      else if(ROOMS.lazy&&ROOMS.lazy.catrun&&ROOMS.lazy.catrun.drop)ROOMS.lazy.catrun.drop(); } });
+  window.CATNEXT=()=>{ if(!W||!D)return null; const o=W.obst.filter(o=>!o.hit&&o.z>pos.z).sort((a,b)=>a.z-b.z)[0]; return o?{kind:o.kind,dz:+((o.z-pos.z)/T).toFixed(1),lane:o.hb&&o.hb.lane!=null?o.hb.lane:null}:null; };
+  window.CATDBG=()=>({on:RUN.on,ready:!!(D&&D.ready),dead:!!(D&&D.dead),lane:D?D.lane:0,dist:D?Math.round(D.dist/T):0,rows:W?W.rows.length:0,obst:W?W.obst.length:0,mv:st&&st.move?st.move.name:null}); }

@@ -32,7 +32,7 @@ import {PAD} from './075-main-13.js';
   const cv=renderer.domElement;
   const zoom=d=>{ const r=cv.getBoundingClientRect(); cv.dispatchEvent(new WheelEvent('wheel',{deltaY:d*-240,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true})); };
   const C='button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,a[href],[tabindex]:not([tabindex="-1"])';
-  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
+  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn|hlog|hmap|hqb|vit|hud)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
   const ctls=()=>panels().flatMap(p=>[...p.querySelectorAll(C)]).filter(e=>{ if(e.closest('[inert],[hidden]'))return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'; });
   const grab=el=>{ if(PAD.grab)PAD.grab.classList.remove('padgrab'); PAD.grab=el; if(el)el.classList.add('padgrab'); };
   const mark=el=>{ grab(null); if(PAD.ui)PAD.ui.classList.remove('padon'); PAD.ui=el; if(el){ el.classList.add('padon'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); PAD.at=[r.left+r.width/2,r.top+r.height/2]; } };
@@ -64,6 +64,8 @@ import {PAD} from './075-main-13.js';
     const act=Bv.some((v,i)=>Math.abs(v-(pr[i]||0))>.1)||ax.some(a=>Math.abs(a)>.4); PAD.prev=Bv;
     if(act&&!PAD.cur){ PAD.cur=true; document.body.classList.add('padcur'); }
     if(PAD.capture){ const f=PAD.capture, i=Bv.findIndex((v,j)=>j<16&&v>.5); if(i<0)capUp=true; if(capUp&&i>=0||now>capT){ PAD.capture=null; f(i>=0&&capUp?i:null); } return; }
+    if(UI.gamewin){ const lx=ax[0]||0, ly=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(lx)>.4?Math.sign(lx):0, dy=on(12)?-1:on(13)?1:Math.abs(ly)>.4?Math.sign(ly):0;   // a cabinet or the BBS: the stick is the arrows, A fires or enters, B leaves, X is the game's magic, Y its menu
+      hold('h',dx<0?'ArrowLeft':dx>0?'ArrowRight':null); hold('v',dy<0?'ArrowUp':dy>0?'ArrowDown':null); hold('A',on(b('jump'))?(UI.gamewin==='bbs'?'Enter':' '):null); hold('X',on(b('use'))?'c':null); if(hit(b('kick')))tap('m'); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }
     if(panels().length){ letGo(); PAD.aWait=true; menus(on,hit,ax,act); if(hit(b('back')))back(); else if(hit(b('menu'))&&UI.menuOpen)tap('Escape'); return; }
     nav=''; if(PAD.ui||PAD.at){ mark(null); PAD.at=null; } if(PAD.aWait&&!on(b('jump')))PAD.aWait=false;
     const lx=ax[0]||0, ly=ax[1]||0; let h=null, v=null;

@@ -140,9 +140,9 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       for(const fy of FIXY){ const L=new THREE.PointLight(new THREE.Color(.74,1,.8),LAMPI*1.9,17*T,LAMPD); L.position.set(...P(fy,MID,140)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
       for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [7,21,37,51]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1],false,IN); }
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0],false,IN);
-      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-4,30),P(LEN-.05,MID+4,30),P(LEN-.05,MID+4,100),P(LEN-.05,MID-4,100)],512,384,[pe1],false,IN); }
+      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,40),P(LEN-.05,MID+1,40),P(LEN-.05,MID+1,99),P(LEN-.05,MID-1,99)],512,512,[pe1],false,IN); }
     else { pe1=cutAt(LEN,-1); pw0=cutAt(0,1); pw1=cutAt(XW,-1);   // gone with their walls when a wall is cut away
-      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-3.2,36),P(LEN-.05,MID+3.2,36),P(LEN-.05,MID+3.2,92),P(LEN-.05,MID-3.2,92)],512,384,[pe1],false,IN); }
+      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN); }
     for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [11,LEN-18])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
     const bz=st.old?100:108, bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN-.05,MID-3,bz),P(LEN-.05,MID+3,bz),P(LEN-.05,MID+3,bz+24),P(LEN-.05,MID-3,bz+24)],512,112,[pe1],false,IN); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};

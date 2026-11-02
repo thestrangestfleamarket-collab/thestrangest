@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {AMB, CLOCK, GPH, pos, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {M, renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
+import {DRAPE} from './072a-cloth.js';
 const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (the bedroom 150b, the kitchen 150c) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
@@ -114,10 +115,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       const glass=k=>APTS.glassMat(clip(k));
       // the picture's window: a thick orange frame of four panes and its sill, a dark rod, the mint sheers tied back
       // a curtain as cloth: its points held by their neighbours, the top row on the rod, hanging, tied back to its shape, moved by a breeze and by you walking through it
-      const clothOf=me=>{ const P=me.geometry.attributes.position, n=P.count, nx=19, ny=n/nx, X0=Float32Array.from(P.array), C=[];
-        for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){ const a=j*nx+i; if(i<nx-1)C.push(a,a+1); if(j<ny-1)C.push(a,a+nx); }
-        const L=new Float32Array(C.length/2); for(let c=0;c<C.length;c+=2){ const a=C[c]*3, b=C[c+1]*3; L[c/2]=Math.hypot(X0[a]-X0[b],X0[a+1]-X0[b+1],X0[a+2]-X0[b+2]); }
-        return {me,P,n,nx,ny,X0,X:Float32Array.from(X0),Xp:Float32Array.from(X0),C,L,still:0}; };
+      const clothOf=me=>{ const P=me.geometry.attributes.position, nx=19, ny=P.count/nx; return Object.assign(DRAPE.make(P.array,DRAPE.grid(nx,ny),new Uint8Array(P.count).fill(1,0,nx)),{me,nx,ny}); };
       const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[2,2],curtains=true,fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
         const sash=new THREE.Group(); g.add(sash);   // the glass and its bars: slides up into the wall when the window is opened
         part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,sash,false);
@@ -272,15 +270,12 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
 
     /* ---------- each frame: the lamps glow (brighter as the day goes), the room's lights at their brightness, the pieces that move (fridge doors, flames), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
     let prevShadow=null; const TV3=new THREE.Vector3(), TV4=new THREE.Vector3();
-    const clothStep=(c,h,br,t,pl)=>{ const {X,Xp,X0,n,nx,ny,C,L}=c, h2=h*h, g=-4*h2, ks=.006, dm=.97; let mv=0;
-      for(let i=nx;i<n;i++){ const a=i*3, fr=(i/nx|0)/(ny-1), gust=br*(1.6+1.2*Math.sin(t*.9+X0[a]*2.1)+.6*Math.sin(t*2.3+X0[a+1]*3+X0[a]))*(.3+.7*fr);
-        const vx=(X[a]-Xp[a])*dm, vy=(X[a+1]-Xp[a+1])*dm, vz=(X[a+2]-Xp[a+2])*dm; Xp[a]=X[a]; Xp[a+1]=X[a+1]; Xp[a+2]=X[a+2];
-        X[a]+=vx+(X0[a]-X[a])*ks+gust*.25*h2*Math.sin(t*.7+fr*2); X[a+1]+=vy+g+(X0[a+1]-X[a+1])*ks; X[a+2]+=vz+(X0[a+2]-X[a+2])*ks+gust*.45*h2;
-        if(pl){ const dx=X[a]-pl.x, dz=X[a+2]-pl.z, d=Math.hypot(dx,dz); if(d<.28&&X[a+1]>pl.y-1&&X[a+1]<pl.y+1){ const k=(.28-d)/(d||1); X[a]+=dx*k; X[a+2]+=dz*k; } }
-        mv=Math.max(mv,Math.abs(vx)+Math.abs(vy)+Math.abs(vz)); }
-      for(let it=0;it<3;it++)for(let q=0;q<C.length;q+=2){ const i=C[q], j=C[q+1], a=i*3, b=j*3, dx=X[b]-X[a], dy=X[b+1]-X[a+1], dz=X[b+2]-X[a+2], d=Math.hypot(dx,dy,dz)||1e-6, e=(d-L[q/2])/d;
-        const wa=i<nx?0:j<nx?1:.5, wb=1-wa; X[a]+=dx*e*wa; X[a+1]+=dy*e*wa; X[a+2]+=dz*e*wa; X[b]-=dx*e*wb; X[b+1]-=dy*e*wb; X[b+2]-=dz*e*wb; }
-      c.still=mv<2e-5?c.still+1:0; c.P.array.set(X); c.P.needsUpdate=true; c.me.geometry.computeVertexNormals(); c.me.geometry.computeBoundingSphere(); };
+    // a curtain's step: it falls, is tied back to its shape, the breeze gusts it harder low down, and you push through it
+    const clothStep=(c,h,br,t,pl)=>{ const o=c.o||(c.o={g:-4,dm:.97,ks:.006,col:[],cyl:{cy:1,x:0,z:0,r:.28,y0:0,y1:0},
+        push:(i,a,F)=>{ const X0=c.X0, fr=(i/c.nx|0)/(c.ny-1), h2=c.h2, t=c.t, gust=c.br*(1.6+1.2*Math.sin(t*.9+X0[a]*2.1)+.6*Math.sin(t*2.3+X0[a+1]*3+X0[a]))*(.3+.7*fr);
+          F[0]=gust*.25*h2*Math.sin(t*.7+fr*2); F[2]=gust*.45*h2; }});
+      c.h2=h*h; c.br=br; c.t=t; o.col.length=0; if(pl){ const y=o.cyl; y.x=pl.x; y.z=pl.z; y.y0=pl.y-1; y.y1=pl.y+1; o.col.push(y); }
+      DRAPE.step(c,h,o); DRAPE.out(c,c.me.geometry); };
     const DARK={value:0}, FILL={value:new THREE.Color(0,0,0)}, LFB=THREE.ShaderChunk.lights_fragment_begin.replace('vec3 irradiance = getAmbientLightIrradiance( ambientLightColor );','vec3 irradiance = getAmbientLightIrradiance( ambientLightColor )*(1.-uIn)+uFill;').replace('irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal );','irradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometryNormal )*(1.-uIn);');
     const darken=o=>o&&o.traverse(q=>{ if(!q.isMesh)return; for(const m of [].concat(q.material)){ if(!m||m.userData.dk||m.isMeshBasicMaterial||m.isShaderMaterial)continue; m.userData.dk=1; const f=m.onBeforeCompile, ck=m.customProgramCacheKey;
       m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.uniforms.uFill=FILL; sh.fragmentShader='uniform float uIn; uniform vec3 uFill;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };

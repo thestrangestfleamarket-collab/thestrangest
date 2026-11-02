@@ -20,7 +20,7 @@ const OUT=process.argv[2]||'shots', PAGE=path.resolve(process.argv[3]||path.reso
   // 5 RUN: the garden from the tee, first person
   await pg.evaluate(()=>{ INV.cash=50; const hp=document.getElementById('holog'), i=STORE.holo.programs.findIndex(p=>p.name==='THE GREENS'); hp.querySelector('button[data-run="'+i+'"]').click(); });
   await U(()=>GREENSDBG().ready&&ROOMS.offIn&&ROOMS.offIn()==='greens'&&!FADE.busy); await pg.waitForTimeout(1500);
-  const look=(x,z,yaw,pitch,view='first')=>pg.evaluate(([x,z,yaw,pitch,view])=>{ const M=FEEL.MH; pos.x=4200+x*M; pos.z=z*M; SHARED.target=null; SHARED.heading=yaw; __dbg.UI.setView(view); SHARED.yawTo=SHARED.yaw=yaw; SHARED.pitchTo=SHARED.pitch=pitch; },[x,z,yaw,pitch,view]);
+  const look=(x,z,yaw,pitch,view='first')=>pg.evaluate(([x,z,yaw,pitch,view])=>{ const M=33.9/30/.84; STORE.goTo(4200+x*M,z*M,'up',yaw); __dbg.UI.setView(view); SHARED.yawTo=SHARED.yaw=yaw; SHARED.pitchTo=SHARED.pitch=pitch; },[x,z,yaw,pitch,view]);
   await look(0,-4.6,0,-.08); await shot('garden-from-the-tee');
   await look(0,-4.6,Math.PI,-.08); await shot('garden-from-the-tee-yaw-pi');
   await look(-5.6,-.2,0,-.05); await shot('pond-and-waterfall');

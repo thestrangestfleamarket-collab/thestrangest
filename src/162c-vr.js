@@ -108,7 +108,8 @@ import {collide, frame, PAD} from './075-main-13.js';
   const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0;
     for(const s of xf.session.inputSources){ if(k>=PTR.length)break; const p=s.targetRaySpace&&xf.getPose(s.targetRaySpace,ref); if(!p)continue; const P=PTR[k++], T=p.transform; P.src=s; P.hit=false;
       RO.set(T.position.x,T.position.y,T.position.z); RD.set(0,0,-1).applyQuaternion(Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w)); P.o=[RO.x,RO.y,RO.z]; P.d=[RD.x,RD.y,RD.z]; let len=1.2;
-      if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++]; if(g&&opt.ctl){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=true; } else C.visible=false; }
+      if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++], U=C.userData; if(g){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=!!opt.ctl;
+        U.h=s.handedness; U.wp=U.wp||new V3(); U.wq=U.wq||new THREE.Quaternion(); U.v=U.v||new V3(); P4.copy(C.position).applyMatrix4(TRK.matrix); if(U.on&&dt>0)U.v.copy(P4).sub(U.wp).divideScalar(dt); else U.v.set(0,0,0); U.wp.copy(P4); U.wq.copy(DOLLY.quaternion).multiply(C.quaternion); U.on=1; } else { C.visible=false; U.on=0; } }   // the hand's world pose and speed, read by WIELD for a held tool (the putter)
       if(panel.visible&&PN.ready){ PNRM.set(0,0,1).applyQuaternion(panel.quaternion); const den=RD.dot(PNRM);
         if(den<-1e-4){ const t=HIT.copy(panel.position).sub(RO).dot(PNRM)/den; if(t>0&&t<4){ HIT.copy(RO).addScaledVector(RD,t); P4.copy(HIT).sub(panel.position).applyQuaternion(Q4.copy(panel.quaternion).invert());
           const u=P4.x/panel.scale.x+.5, v=.5-P4.y/panel.scale.y; if(u>=0&&u<=1&&v>=0&&v<=1){ P.hit=true; P.x=u*PN.W; P.y=v*PN.H; len=t; P.dot.position.copy(HIT).addScaledVector(PNRM,.002); P.dot.quaternion.copy(panel.quaternion); if(!top)top=P; } } } }
@@ -116,7 +117,7 @@ import {collide, frame, PAD} from './075-main-13.js';
       const pr=P.press; if(pr&&P.hit){ if(pr.range)rangeAt(pr.el,P.x); else{ if(!pr.moved&&Math.abs(P.y-pr.y0)>14)pr.moved=true; if(pr.moved){ const sc=scroller(pr.el); if(sc){ sc.scrollTop-=P.y-pr.ly; mark(); } } } pr.ly=P.y; }
       if(P.hit&&s.handedness!==walkHand()&&!s.hand&&Math.abs(VP.axes[3])>.25){ const sc=scroller(at(P.x,P.y)); if(sc){ sc.scrollTop+=VP.axes[3]*dt*900; mark(); } } }
     for(let i=k;i<PTR.length;i++){ const P=PTR[i]; P.src=null; P.hit=false; P.press=null; P.ray.visible=P.dot.visible=false; }
-    for(let i=nc;i<2;i++)CTL[i].visible=false; VR.ctl=opt.ctl?nc:0;
+    for(let i=nc;i<2;i++){ CTL[i].visible=false; CTL[i].userData.on=0; } VR.ctl=opt.ctl?nc:0;
     hl.visible=false; if(top){ const el=PN.fresh&&at(top.x,top.y), c0=el&&el.closest(CLK), w=c0?null:inPic(top.x,top.y), c=c0||(w&&w[0]);
       if(c){ const r=c0?c0.getBoundingClientRect():w[1], a=hl.geometry.attributes.position, U=x=>x/PN.W-.5, V=y=>.5-y/PN.H; a.setXYZ(0,U(r.left),V(r.top),.001); a.setXYZ(1,U(r.right),V(r.top),.001); a.setXYZ(2,U(r.right),V(r.bottom),.001); a.setXYZ(3,U(r.left),V(r.bottom),.001); a.needsUpdate=true; hl.visible=true; } } };
 
@@ -212,6 +213,7 @@ import {collide, frame, PAD} from './075-main-13.js';
 
   VR.note=(t,c,o)=>{ if(!VR.on||!t)return; o=o||{}; VR.tip=0; if(o.only)VR.notes.length=0; VR.notes.push({t:String(t),c,big:!!o.big,until:performance.now()+(o.ms||4000)}); while(VR.notes.length>3)VR.notes.shift(); };
   VR.ask=w=>{ VR.want=w||null; VR.cal=false; };
+  VR.hand=side=>{ if(!VR.on)return null; const C=CTL.find(c=>c.userData.on&&c.userData.h===side); return C?C.userData:null; };   // {wp, wq, v}: the controller's world position, orientation and velocity, or null
   window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});

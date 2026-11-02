@@ -1,6 +1,6 @@
-# The cast: every polyfork character a job and a home (DRAFT for the owner)
+# The cast: every polyfork character a job and a home (the plan)
 
-Draft, 2 Nov 2026. Nothing here is built yet except the flea market. 193 characters: 149 in our section (A), 44 held for themed sections B to H.
+2 Nov 2026. Nothing here is built yet except the flea market. 193 characters: 149 in our section (A), 44 held for themed sections B to H.
 
 **Homes.** By your rule of 18 Oct ("workers live only over their own workplace"), each worker sleeps over their workplace (walks in at night, out in the morning). Townspeople with no job need new homes: see decision 3 below.
 
@@ -323,9 +323,7 @@ Draft, 2 Nov 2026. Nothing here is built yet except the flea market. 193 charact
 | Neighbour Handing Out Candy |  |  |
 | Preacher | preaches on the corner |  |
 
-## Held for the themed sections (B to H round the park)
-
-These don't fit a New York market street. Each section is meant to be copy-rename-retheme, so each set could be its section's theme; they wait until that section is built.
+## Visitors (no job; by theme, so each set can later be its own section's people)
 
 - **B: THE CASINO STRIP** (5): Bellhop, Blackjack Dealer, Casino Security Officer, Pit Boss, Poker Pro
 - **C: THE FRONTIER / ROADSIDE** (3): Outlaw, Prospector, Sheriff
@@ -342,10 +340,19 @@ These don't fit a New York market street. Each section is meant to be copy-renam
 - **Many players.** Schedules run off the shared clock, so every player sees the same person at the same place at the same hour; nothing is saved per player.
 - **Checks.** A check that walks the clock through a day and proves each worker reaches their job and gets home.
 
-## Decisions for you
+## Decided (owner, 2 Nov 2026)
 
-1. Turn the city back on (jobs, hours, going home)?
-2. The themed seven: hold them for sections B to H, or bring them into Section A now as visitors?
-3. Homes for the 18 townspeople: (a) the plain buildings across Market St become row houses they walk into (no inside); (b) the apartment house's other floors; (c) they live in the other sections and visit.
-4. The diner: open it on an empty lot (5 jobs), or put those five elsewhere?
-5. Order: everyone at once, or place by place (the street first, then civic row, the Loop, the park)?
+1. Jobs and hours back on (walk to work, go home at night); the city's services (fires, patrols, tills, wages) stay off.
+2. The themed 44 come in now as visitors: they walk Section A by day with no job and leave by the subway at night.
+3. The 18 townspeople live in the apartment house: in at the front door at night, out in the morning. They never take a player's apartment and have no inside.
+4. The diner gets built on an empty lot, with its 5 jobs.
+
+## Build order
+
+1. Market St: the shops above, the diner, the townspeople.
+2. The civic row.
+3. The Loop.
+4. The park, the lake, the castle, the river, the night market.
+5. The visitors.
+
+Each step ships with its check.

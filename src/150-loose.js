@@ -1,6 +1,6 @@
 // THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, ED, GPH, keys, PB, PERFX, PHX, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
+import {DRESS, ED, GPH, keys, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -59,16 +59,16 @@ import {BVH} from './137-bvh.js';
     else if(it.k==='m'&&!it.dm){ const s=Math.max(1,Math.floor(it.parts.length/40)); for(let i=0;i<it.parts.length;i+=s){ const p=it.parts[i], A=p.me.geometry.attributes.position.array; for(let v=p.v0;v<p.v0+6;v++)pt(A[v*3],A[v*3+1],A[v*3+2]); } }
     else if(it.k==='o'){ it.obj.updateMatrixWorld(true); it.obj.traverse(q=>{ if(!q.isMesh||q.userData.soft)return; const A=q.geometry.attributes.position, s=Math.max(1,Math.floor(A.count/120)); for(let v=0;v<A.count;v+=s){ V.fromBufferAttribute(A,v).applyMatrix4(q.matrixWorld); pt(V.x,V.y,V.z); } }); }
     return it.hull=L.length>=12?new Float32Array(L):null; };
-  const shapeOf=it=>{ '@later'; const h=it.h.map(v=>v*.97), s=PHX.lv('shape');
+  const shapeOf=it=>{ '@later'; const h=it.h.map(v=>v*.97), s=PHYS.lv('shape');
     if(s>=2&&it.k!=='i'){ const P=hullOf(it), d=P&&R.ColliderDesc.convexHull(P); if(d)return d; }
     if(s>=1){ const r=Math.min(h[0],h[2]); if(it.k==='i'||ROUND.test(it.name)&&Math.abs(h[0]-h[2])<.35*Math.max(h[0],h[2]))return R.ColliderDesc.roundCylinder(Math.max(.01,h[1]-r*.12),r*.88,r*.12);
       const b=Math.min(h[0],h[1],h[2])*.18; return R.ColliderDesc.roundCuboid(h[0]-b,h[1]-b,h[2]-b,b); }
     return R.ColliderDesc.cuboid(h[0],h[1],h[2]); };
   const on=it=>{ '@later'; const t=it.t, rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(t.x,t.y,t.z).setRotation(it.q).setCanSleep(true).setSleeping(true).setLinearDamping(.15).setAngularDamping(.3).setCcdEnabled(it.m<8));
     const cd=shapeOf(it).setMass(it.m).setFriction(it.heavy?.5:.6).setRestitution(.1).setCollisionGroups(GI);
-    if(PHX.on('impact'))cd.setActiveEvents(R.ActiveEvents.CONTACT_FORCE_EVENTS|R.ActiveEvents.COLLISION_EVENTS).setContactForceEventThreshold(it.m*13*3); else cd.setActiveEvents(R.ActiveEvents.COLLISION_EVENTS);
+    if(PHYS.on('impact'))cd.setActiveEvents(R.ActiveEvents.CONTACT_FORCE_EVENTS|R.ActiveEvents.COLLISION_EVENTS).setContactForceEventThreshold(it.m*13*3); else cd.setActiveEvents(R.ActiveEvents.COLLISION_EVENTS);
     if(it.ov&&hooks)cd.setActiveHooks(R.ActiveHooks.FILTER_CONTACT_PAIRS); const co=world.createCollider(cd,rb); byC.set(co.handle,it); it.rb=rb;
-    if(it.hang){ const k=PHX.lv('joints'); rb.setAngularDamping(2.6-k*.22); rb.setLinearDamping(1.2-k*.1); world.createImpulseJoint(R.JointData.spherical({x:0,y:it.h[1],z:0},{x:it.c[0],y:it.b[1],z:it.c[2]}),rb,fb,true); } byB.set(rb.handle,it); act.add(it); if(!it.heavy||it.hang)setSol(it,true);
+    if(it.hang){ const k=PHYS.lv('joints'); rb.setAngularDamping(2.6-k*.22); rb.setLinearDamping(1.2-k*.1); world.createImpulseJoint(R.JointData.spherical({x:0,y:it.h[1],z:0},{x:it.c[0],y:it.b[1],z:it.c[2]}),rb,fb,true); } byB.set(rb.handle,it); act.add(it); if(!it.heavy||it.hang)setSol(it,true);
     if(it.k==='m'&&it.rest===undefined&&!it.hang){ const g=SHARED.groundY(it.c[0],it.c[2]); it.rest=isFinite(g)&&it.a[1]>g+.08*T&&!items.some(p=>p!==it&&p.b[1]<=it.a[1]+.02*T&&p.b[1]>it.a[1]-.1*T&&p.a[0]<it.b[0]&&it.a[0]<p.b[0]&&p.a[2]<it.b[2]&&it.a[2]<p.b[2]); } };
   const off=it=>{ const rb=it.rb; for(let i=0;i<rb.numColliders();i++)byC.delete(rb.collider(i).handle); const t=rb.translation(), r=rb.rotation(); it.t={x:t.x,y:t.y,z:t.z}; it.q={x:r.x,y:r.y,z:r.z,w:r.w}; byB.delete(rb.handle); world.removeRigidBody(rb); it.rb=null; act.delete(it); };
   const statics=()=>{ '@later'; const W=new Map(), px=pos.x, pz=pos.z, Rr=RF+T, k=SHARED.LVL+Math.round(SHARED.py/(1.5*T)), X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z;
@@ -92,7 +92,7 @@ import {BVH} from './137-bvh.js';
   const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else if(it.k==='o')it.obj.traverse(c=>{ if(c.isMesh)S.add(c); }); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
   const zone=()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=SHARED.py-1.1*T, hi=SHARED.py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
-      if(!it.rb){ if(d<RS&&inL&&!(it.hang&&!PHX.on('joints')))on(it); } else if(it!==held&&(d>RF||!inL)&&it.rb.isSleeping())off(it); }
+      if(!it.rb){ if(d<RS&&inL&&!(it.hang&&!PHYS.on('joints')))on(it); } else if(it!==held&&(d>RF||!inL)&&it.rb.isSleeping())off(it); }
     statics(); pickList(); };
   function build(){ '@later'; R=PB.R; world=new R.World({x:0,y:-13,z:0}); world.timestep=DT; fb=world.createRigidBody(R.RigidBodyDesc.fixed()); eq=new R.EventQueue(true);
     if(R.ActiveHooks&&R.SolverFlags)hooks={filterContactPair:(c1,c2,b1,b2)=>{ const p=byB.get(b1), q=byB.get(b2); return p&&q&&p.ov&&p.ov.has(q)?R.SolverFlags.EMPTY:R.SolverFlags.COMPUTE_IMPULSE; },filterIntersectionPair:()=>true};
@@ -128,7 +128,7 @@ import {BVH} from './137-bvh.js';
   const STRIKE=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i;
   const strike=()=>{ '@later'; const s=(st.up&&STRIKE.test(st.up.name)&&st.up)||(st.move&&STRIKE.test(st.move.name)&&st.move); if(!s||s===lastHit||s.t<.08)return; lastHit=s;
     const kick=/kick|sweep|round/i.test(s.name);
-    if(PHX.on('rays')){ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), y=SHARED.py+(kick?.45:1.05)*T, rr=.22*T, reach=1.1*T, from={x:pos.x+fx*.2*T,y,z:pos.z+fz*.2*T};
+    if(PHYS.on('rays')){ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), y=SHARED.py+(kick?.45:1.05)*T, rr=.22*T, reach=1.1*T, from={x:pos.x+fx*.2*T,y,z:pos.z+fz*.2*T};
       const hit=world.castShape(from,{x:0,y:0,z:0,w:1},{x:fx*reach,y:0,z:fz*reach},new R.Ball(rr),0,1,true,undefined,undefined,you.collider(0),held?held.rb:undefined), it=hit&&byC.get(hit.collider.handle);
       if(it&&it.rb){ const k=(kick?5.5:3.8)*Math.min(it.m,25), w=hit.witness1, p=it.rb.translation(), at=w?{x:w.x,y:w.y,z:w.z}:p; it.rb.wakeUp(); it.rb.applyImpulseAtPoint({x:fx*k,y:k*.35,z:fz*k},at,true); } return; }
     const inB=(x,z)=>{ const B=SHARED.BOD.SB; return x>SHARED.BOD.X(B.x0)&&x<SHARED.BOD.X(B.x1)&&z>SHARED.BOD.Z(B.y0)&&z<SHARED.BOD.Z(B.y1); }, me0=inB(pos.x,pos.z), fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), hy=SHARED.py+(kick?.45:1.05)*T;
@@ -162,7 +162,7 @@ import {BVH} from './137-bvh.js';
     if((live||shade===0)&&(shade-=dt)<=0){ shade=.25; reshade(); }
     GPH.ms=GPH.ms*.95+(performance.now()-t0)*.05; };
   // knocks: how hard a thing hit (its force over its weight); loud ones sound, a breakable one breaks past what IMPACTS allows, a fast one into you hurts
-  const events=()=>{ '@later'; const lv=PHX.lv('impact'), now=performance.now();
+  const events=()=>{ '@later'; const lv=PHYS.lv('impact'), now=performance.now();
     eq.drainContactForceEvents(e=>{ if(!lv)return; const a=byC.get(e.collider1()), b=byC.get(e.collider2()), f=e.totalForceMagnitude();
       for(const it of [a,b]){ if(!it||!it.rb||it===held||it.gone)continue; const g=f/(it.m*13), p=it.rb.translation(); if((hit0.get(it)||0)>now)continue; hit0.set(it,now+150);
         if(BRK.test(it.name)&&!it.heavy&&g>260/lv){ GPH.smash(it); continue; }
@@ -175,11 +175,11 @@ import {BVH} from './137-bvh.js';
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
   Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
-  let gt=0; const gust=dt=>{ '@later'; const k=PHX.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(window.WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
+  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(window.WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };
   // standing on things: Rapier's character controller as your body here; it steps up onto low loose things (STAND ON THINGS: how high), stands on them, and shoves the rest
   const CH=.45, CR=.38, HH=CH+CR+.01; let kcc=null, kb=null, kco=null, kfoot=null;
-  const ctl=dt=>{ '@later'; const lv=PHX.lv('ctrl'), skip=!lv||RIDE.on||UI.fly||ED.on; if(skip){ if(kco&&kco.isEnabled()){ kco.setEnabled(false); you.collider(0).setEnabled(true); } kfoot=null; return; }
+  const ctl=dt=>{ '@later'; const lv=PHYS.lv('ctrl'), skip=!lv||RIDE.on||UI.fly||ED.on; if(skip){ if(kco&&kco.isEnabled()){ kco.setEnabled(false); you.collider(0).setEnabled(true); } kfoot=null; return; }
     if(!kcc){ kcc=world.createCharacterController(.01*T); kcc.setApplyImpulsesToDynamicBodies(true); kcc.setCharacterMass(80); kcc.enableSnapToGround(.25*T); kcc.setSlideEnabled(true); kcc.setMaxSlopeClimbAngle(.9);
       kb=world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x,SHARED.py+HH,pos.z)); kco=world.createCollider(R.ColliderDesc.capsule(CH,CR).setCollisionGroups(0x00020005),kb); }
     if(!kco.isEnabled()){ kco.setEnabled(true); kb.setTranslation({x:pos.x,y:SHARED.py+HH,z:pos.z},true); } you.collider(0).setEnabled(false); kcc.enableAutostep(lv*.05*M1,.08*M1,true);
@@ -219,7 +219,7 @@ import {BVH} from './137-bvh.js';
   GPH.drop=it=>{ if(!it)return; if(it===held)held=null; if(it.rb)off(it); pre.delete(it); const i=items.indexOf(it); if(i>=0)items.splice(i,1); GPH.n=items.length; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };
     SYS.add('life',(dt)=>{ GPH.tick(dt); },'150-loose');
-    PHX.onchange.push(k=>{ if(!ready||(k!=='shape'&&k!=='impact'))return; for(const it of [...act])if(it!==held){ off(it); on(it); } }); };
+    PHYS.onchange.push(k=>{ if(!ready||(k!=='shape'&&k!=='impact'))return; for(const it of [...act])if(it!==held){ off(it); on(it); } }); };
   const nearest=f=>{ let b=null, bd=1e9; for(const it of ready?act:pre){ if(!f(it))continue; const p=at(it), d=Math.hypot(p.x-pos.x,p.z-pos.z); if(d<bd){ bd=d; b=it; } } return b; };
   const rx=s=>s instanceof RegExp?s:new RegExp(s||'.','i');
   window.GOODSGRAB=(n)=>{ const b=nearest(it=>it.m<=CARRY&&(n?rx(n).test(it.name):it.k==='v')); if(!b)return null; grab(b); return b.name; };

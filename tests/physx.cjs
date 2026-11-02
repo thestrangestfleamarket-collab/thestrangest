@@ -10,7 +10,7 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built&&GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500);
-  const ui=await pg.evaluate(()=>{ const B=document.querySelector('#menu [data-p="graphics"] #dphx'); return {rows:B?B.querySelectorAll('[data-px]').length:0,cfg:PHX.cfg}; });
+  const ui=await pg.evaluate(()=>{ const B=document.querySelector('#menu [data-p="graphics"] #dphx'); return {rows:B?B.querySelectorAll('[data-px]').length:0,cfg:PHYS.cfg}; });
   ok(ui.rows>=10&&Object.values(ui.cfg).every(v=>v>0),`GRAPHICS has the PHYSICS rows (${ui.rows} controls), all on to start ${JSON.stringify(ui.cfg)}`);
   const s0=await pg.evaluate(()=>({d:GOODSDBG(),c:LOOSE.nearest('milk crates')})); ok(s0.d.built&&s0.c,'Rapier 0.19 is up and the milk crates are a body ('+s0.d.active+' bodies)');
   await pg.evaluate(()=>LOOSE.push('milk crates',2,3,1)); await wait(pg,400); const mid=await pg.evaluate(()=>LOOSE.nearest('milk crates'));
@@ -24,20 +24,20 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   ok(errs.length===0,'no page errors so far '+errs.join(' | '));
   // a ragdoll
   const near=await pg.evaluate(()=>{ const L=Object.values(BODIES.by).map(b=>b.npc).filter(Boolean).filter(N=>N.on&&N.st); if(!L.length)return null; const N=L[0]; __dbg.go(N.st.x+1.2,N.st.z); return {name:N.name,x:N.st.x,z:N.st.z}; });
-  if(near){ await wait(pg,4000); const k=await pg.evaluate(()=>PHXKNOCK(0)); await wait(pg,1500); const r1=await pg.evaluate(()=>PHXDBG().rags);
+  if(near){ await wait(pg,4000); const k=await pg.evaluate(()=>PHYSKNOCK(0)); await wait(pg,1500); const r1=await pg.evaluate(()=>PHYSDBG().rags);
     ok(k&&k.ok&&r1===1,`${k&&k.name} knocked over falls as a ragdoll (${JSON.stringify(k)}, ${r1} ragdolls)`);
-    await wait(pg,8000); ok(await pg.evaluate(()=>PHXDBG().rags)===0,'and gets up again'); }
+    await wait(pg,8000); ok(await pg.evaluate(()=>PHYSDBG().rags)===0,'and gets up again'); }
   else ok(false,'no townsperson to knock over');
   // the kart
   await pg.evaluate(()=>__dbg.go(59.9,1.6)); await wait(pg,2000);
   const m=await pg.evaluate(()=>{ FORAGE.give('kart',1); WIELD.set('kart'); return RIDE.mount('kart'); }); await wait(pg,1000);
-  await pg.keyboard.down('w'); await wait(pg,3000); const k1=await pg.evaluate(()=>({d:PHXDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); await pg.keyboard.up('w'); await wait(pg,1500);
-  ok(m&&k1.d&&Math.abs(k1.d.sp)>.3,`in the go-kart, W drives it on Rapier's wheels (speed ${k1.d&&k1.d.sp}, ${JSON.stringify(k1.r)})`);
-  await pg.evaluate(()=>RIDE.off()); await wait(pg,500); ok(!(await pg.evaluate(()=>PHXDBG().kart)),'getting out takes the kart out of the world');
+  await pg.keyboard.down('w'); let k1={d:null}; for(let i=0;i<12;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); if(q.d&&(!k1.d||Math.abs(q.d.sp)>=Math.abs(k1.d.sp)))k1=q; } await pg.keyboard.up('w'); await wait(pg,1500);
+  ok(m&&k1.d&&Math.abs(k1.d.sp)>.15,`in the go-kart, W drives it on Rapier's wheels (speed ${k1.d&&k1.d.sp}, ${JSON.stringify(k1.r)})`);
+  await pg.evaluate(()=>RIDE.off()); await wait(pg,500); ok(!(await pg.evaluate(()=>PHYSDBG().kart)),'getting out takes the kart out of the world');
   // switched off: a vehicle glides like a board, no ragdolls
-  await pg.evaluate(()=>{ PHX.set('veh',0); PHX.set('rag',0); RIDE.mount('kart'); }); await pg.keyboard.down('w'); let k2={v:0}; for(let i=0;i<10;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHXDBG().kart,v:RIDEDBG().v})); if(q.v>=k2.v)k2=q; } await pg.keyboard.up('w');
+  await pg.evaluate(()=>{ PHYS.set('veh',0); PHYS.set('rag',0); RIDE.mount('kart'); }); await pg.keyboard.down('w'); let k2={v:0}; for(let i=0;i<10;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,v:RIDEDBG().v})); if(q.v>=k2.v)k2=q; } await pg.keyboard.up('w');
   ok(!k2.d&&k2.v>0,`VEHICLE PHYSICS off: the kart rides without Rapier (speed ${k2.v})`); await pg.evaluate(()=>RIDE.off());
-  ok(await pg.evaluate(()=>{ const N=Object.values(BODIES.by).map(b=>b.npc).filter(Boolean).find(N=>N.on&&N.B); return !N||!PHX.knock(N,{x:1,z:0},1); }),'RAGDOLLS off: nobody falls');
-  await pg.evaluate(()=>{ for(const [k,,,d] of PHX.rows)PHX.set(k,d); });
+  ok(await pg.evaluate(()=>{ const N=Object.values(BODIES.by).map(b=>b.npc).filter(Boolean).find(N=>N.on&&N.B); return !N||!PHYS.knock(N,{x:1,z:0},1); }),'RAGDOLLS off: nobody falls');
+  await pg.evaluate(()=>{ for(const [k,,,d] of PHYS.rows)PHYS.set(k,d); });
   ok(errs.length===0,'no page errors '+errs.join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0); })();

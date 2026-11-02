@@ -1,0 +1,207 @@
+<title>Midsummer Stage Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Share+Tech+Mono&display=swap">
+<style>
+/* layout: a playbill on velvet; each set a lit stage card, picked by letter */
+:root{
+  --velvet:#1a0b10; --velvet2:#2a1219; --gilt:#c9a24a; --cream:#efe2c4; --dim:#a8957a; --line:#4a2a30;
+  --display:'IM Fell English SC',Georgia,serif; --body:'IM Fell English',Georgia,serif; --mono:'Share Tech Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{background:var(--velvet);color:var(--cream);font:17px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 60px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+header{text-align:center;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line);padding-block:0 22px}
+.eyebrow{font:13px var(--mono);letter-spacing:.18em;color:var(--gilt);text-transform:uppercase}
+h1{font:400 clamp(30px,5vw,54px)/1.05 var(--display);margin:0;text-wrap:balance;color:var(--cream)}
+h1 em{font-family:var(--body);font-style:italic;color:var(--gilt)}
+.lede{max-width:66ch;margin:0 auto;color:var(--dim)}
+h2{font:400 26px/1.2 var(--display);margin:0;color:var(--gilt);text-wrap:balance}
+.sec{display:flex;flex-direction:column;gap:14px}
+.sec>p{margin:0;max-width:72ch;color:var(--dim)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.card{display:flex;flex-direction:column;gap:8px;min-width:0}
+canvas{width:100%;aspect-ratio:16/9;image-rendering:pixelated;background:#000;border:1px solid var(--line);display:block}
+.card h3{margin:0;font:400 20px var(--display);display:flex;gap:10px;align-items:baseline}
+.card h3 b{font:15px var(--mono);color:var(--velvet);background:var(--gilt);padding:0 7px}
+.card p{margin:0;font-size:15.5px;color:var(--dim)}
+.cues{font:13px/1.5 var(--mono);color:var(--cream);opacity:.85}
+.tl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:15px}
+th{font:400 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gilt)}
+td:first-child{font-family:var(--mono);color:var(--gilt);white-space:nowrap}
+.cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:4px 22px;font-size:15.5px}
+.cast div{display:flex;gap:10px;align-items:center;border-bottom:1px dotted var(--line);padding-block:3px}
+.cast i{width:12px;height:12px;flex:none}
+.cast span{color:var(--dim);margin-left:auto;font-size:14px;text-align:right}
+footer{color:var(--dim);font-size:15px;border-top:1px solid var(--line);padding-block:16px 0}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">The Playhouse · West St · every :00 and :30</div>
+  <h1>A Midsummer Night’s Dream <em>Act the First</em></h1>
+  <p class="lede">Mockups of the production: a front curtain, two sets, the lighting for each, the cast and the cue sheet. Pick one letter for each set (or mix them, e.g. “A with C’s fireflies”).</p>
+</header>
+
+<section class="sec">
+  <h2>The house and the curtain</h2>
+  <p>A gilt proscenium and a red velvet front curtain are added to the stage you have now (the back drapes, the spotlight and the row of plush seats stay). The curtain is shut between shows, opens on the first line, closes for the scene change and opens again for the curtain call.</p>
+  <div class="grid">
+    <div class="card"><canvas id="c-closed" width="384" height="216"></canvas><h3>Before the show</h3><p>House lights warm and low, the curtain lit from the front by its footlights, ACT I in gilt on the pelmet.</p></div>
+    <div class="card"><canvas id="c-open" width="384" height="216"></canvas><h3>Curtain up</h3><p>The house goes dark, the curtain rises in swags and the first set’s light comes up behind it.</p></div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>Scene I · Athens, the palace of Theseus</h2>
+  <p>The duke and Hippolyta count the days to their wedding by the moon; Egeus drags in Hermia to wed Demetrius, she loves Lysander; the lovers plan to flee to the wood; Helena tells all to Demetrius.</p>
+  <div class="grid">
+    <div class="card"><canvas id="s1a" width="384" height="216"></canvas><h3><b>A</b>Moonlit marble court</h3><p>White columns washed in cold blue, a huge painted crescent moon, two torches burning warm at the sides, haze low on the floor.</p><div class="cues">cues: blue wash · torch flicker · moon brightens on “another moon”</div></div>
+    <div class="card"><canvas id="s1b" width="384" height="216"></canvas><h3><b>B</b>Golden hall at dusk</h3><p>Arches open on a sunset going to violet, red and gold banners, two bronze braziers; it cools to night through the scene.</p><div class="cues">cues: amber → violet over the scene · brazier glow</div></div>
+    <div class="card"><canvas id="s1c" width="384" height="216"></canvas><h3><b>C</b>The court where the wood creeps in</h3><p>Broken columns under ivy and hanging moss, fireflies drifting, a single moonbeam picks out whoever speaks. The forest of Act II is already showing.</p><div class="cues">cues: speaker spot · fireflies · green mist</div></div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>Scene II · Athens, Quince’s house</h2>
+  <p>Peter Quince hands out the parts of “Pyramus and Thisbe”; Bottom wants to play every one; they agree to rehearse in the palace wood by moonlight.</p>
+  <div class="grid">
+    <div class="card"><canvas id="s2a" width="384" height="216"></canvas><h3><b>A</b>Candlelit carpenter’s shop</h3><p>Timber beams, a long workbench, saws and mallets on the wall, shavings on the floor, candle pools in deep amber.</p><div class="cues">cues: candle flicker · warm pools on the bench</div></div>
+    <div class="card"><canvas id="s2b" width="384" height="216"></canvas><h3><b>B</b>Cottage by moonlight</h3><p>A dark plaster room, moonlight through a leaded window in a dusty blue shaft, one lantern hanging warm over the table.</p><div class="cues">cues: window shaft with dust · lantern sway</div></div>
+    <div class="card"><canvas id="s2c" width="384" height="216"></canvas><h3><b>C</b>Painted flats, played for laughs</h3><p>Wobbly cut-out flats of a cottage and a sun on a stick, bright footlights, colour gels: a stage that knows it is a stage, like the actors in it.</p><div class="cues">cues: full footlights · coloured gels · bump on Bottom’s lines</div></div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>The cast</h2>
+  <p>Thirteen parts, each its own ElevenLabs voice, made once and saved. Bodies are the Walker, dressed per part (the old play’s dresser, re-used).</p>
+  <div class="cast" id="cast"></div>
+</section>
+
+<section class="sec">
+  <h2>Cue sheet (about 8 minutes, lightly trimmed)</h2>
+  <div class="tl"><table>
+    <thead><tr><th>Time</th><th>Stage</th><th>Light and sound</th></tr></thead>
+    <tbody>
+      <tr><td>−0:30</td><td>Curtain shut; chimes</td><td>House lights dim in three steps</td></tr>
+      <tr><td>0:00</td><td>Curtain rises · Scene I</td><td>Set I’s light comes up over 4 s; footlights on</td></tr>
+      <tr><td>0:05</td><td>Theseus: “Now, fair Hippolyta, our nuptial hour…”</td><td>The moon brightens</td></tr>
+      <tr><td>0:40</td><td>Egeus enters with Hermia, Lysander, Demetrius</td><td>Light hardens and goes colder</td></tr>
+      <tr><td>2:30</td><td>The court leaves; Hermia and Lysander alone</td><td>Narrows to a pool around the two</td></tr>
+      <tr><td>3:10</td><td>“The course of true love never did run smooth”</td><td>Spot tightens</td></tr>
+      <tr><td>4:00</td><td>Helena enters; the lovers tell her their plan</td><td>Pool widens</td></tr>
+      <tr><td>4:40</td><td>Helena alone: “Things base and vile…”</td><td>Single spot, the rest dark</td></tr>
+      <tr><td>5:10</td><td>Curtain falls · scene change</td><td>Chime; the set changes unseen</td></tr>
+      <tr><td>5:30</td><td>Curtain rises · Scene II</td><td>Set II’s warm light</td></tr>
+      <tr><td>5:35</td><td>Quince: “Is all our company here?”</td><td>Candles flicker</td></tr>
+      <tr><td>6:30</td><td>Bottom: “Let me play the lion too”</td><td>A bump of light; laughter from the house</td></tr>
+      <tr><td>7:40</td><td>“Hold, or cut bow-strings.” All leave</td><td>Fades to the window or candle alone</td></tr>
+      <tr><td>7:50</td><td>Curtain call: the cast bow in a line</td><td>Full stage; applause</td></tr>
+      <tr><td>8:10</td><td>Curtain shut</td><td>House lights up</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>The cost: inside the playhouse only. Thirteen Walker bodies and one set at a time; the voices about 2–3 MB of audio, fetched when you go in. Nothing outside the building.</footer>
+</div>
+
+<script>
+const CAST=[
+ ['Theseus','duke of Athens','#5b3c8c','I'],['Hippolyta','queen of the Amazons','#3f7d55','I'],['Egeus','Hermia’s father','#8a8a86','I'],
+ ['Hermia','loves Lysander','#c0566e','I'],['Lysander','loves Hermia','#3a64a8','I'],['Demetrius','wants Hermia','#a83a32','I'],['Helena','loves Demetrius','#d8c46a','I'],
+ ['Peter Quince','carpenter','#7a5532','II'],['Nick Bottom','weaver','#d07a2a','II'],['Francis Flute','bellows-mender','#6a9a9a','II'],
+ ['Tom Snout','tinker','#7d6e4e','II'],['Snug','joiner','#9a6a4a','II'],['Robin Starveling','tailor','#5e5a74','II']];
+document.getElementById('cast').innerHTML=CAST.map(c=>`<div><i style="background:${c[2]}"></i>${c[0]}<span>${c[1]} · Sc. ${c[3]}</span></div>`).join('');
+const col=c=>CAST.find(x=>x[0].endsWith(c)||x[0]===c)[2];
+
+const W=384,H=216, FLOOR=150, EDGE=186;
+function rnd(s){return()=>{s=(s*16807)%2147483647;return s/2147483647}}
+const lerp=(a,b,t)=>a+(b-a)*t;
+function grad(g,y0,y1,stops){const G=g.createLinearGradient(0,y0,0,y1);stops.forEach((c,i)=>G.addColorStop(i/(stops.length-1),c));return G}
+function glow(g,x,y,r,c,a=1){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=a;const G=g.createRadialGradient(x,y,0,x,y,r);G.addColorStop(0,c);G.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=G;g.fillRect(x-r,y-r,r*2,r*2);g.restore()}
+function beam(g,x,top,w0,x1,y1,w1,c,a){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=a;const G=g.createLinearGradient(0,top,0,y1);G.addColorStop(0,c);G.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=G;g.beginPath();g.moveTo(x-w0,top);g.lineTo(x+w0,top);g.lineTo(x1+w1,y1);g.lineTo(x1-w1,y1);g.fill();g.restore()}
+function floor(g,c1,c2){g.fillStyle=grad(g,FLOOR,EDGE,[c1,c2]);g.fillRect(0,FLOOR,W,EDGE-FLOOR);g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1;for(let i=-12;i<=12;i++){g.beginPath();g.moveTo(192+i*9,FLOOR);g.lineTo(192+i*17,EDGE);g.stroke()}}
+function fig(g,x,c,h=34,crown){const y=EDGE-8-(x%3);g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(x,y+1,8,2,0,0,7);g.fill();
+  g.fillStyle=c;g.beginPath();g.moveTo(x-4,y-h*.62);g.lineTo(x+4,y-h*.62);g.lineTo(x+7,y);g.lineTo(x-7,y);g.fill();
+  g.fillStyle='#d9b494';g.beginPath();g.arc(x,y-h*.62-5,4.2,0,7);g.fill();g.fillStyle='#2a1a12';g.fillRect(x-4,y-h*.62-10,8,3);
+  if(crown){g.fillStyle='#e8c050';g.fillRect(x-4,y-h*.62-12,8,2);for(let i=-4;i<=2;i+=3)g.fillRect(x+i,y-h*.62-14,2,2)}}
+function tint(g,c){g.save();g.globalCompositeOperation='multiply';g.fillStyle=c;g.fillRect(0,0,W,EDGE);g.restore()}
+function haze(g,c,a,y=FLOOR+4){g.save();g.globalAlpha=a;g.fillStyle=grad(g,y-30,EDGE,['rgba(0,0,0,0)',c,c]);g.fillRect(0,y-30,W,EDGE-y+30);g.restore()}
+function house(g,lit){ // proscenium, side drapes, footlights, seats
+  g.fillStyle='#120608';g.fillRect(0,EDGE,W,H-EDGE);
+  g.fillStyle='#3a1b0e';g.fillRect(0,EDGE,W,3);
+  for(let i=0;i<14;i++)glow(g,22+i*26.2,EDGE-1,lit?16:7,'#ffd890',lit?.55:.25);
+  g.fillStyle='#4a0d18';for(let x=0;x<W;x+=48){g.beginPath();g.moveTo(x+4,H);g.quadraticCurveTo(x+4,H-20,x+24,H-21);g.quadraticCurveTo(x+44,H-20,x+44,H);g.fill()}
+  g.fillStyle='rgba(255,255,255,.06)';for(let x=0;x<W;x+=48)g.fillRect(x+10,H-18,28,2);
+  const pg=grad(g,0,H,['#8a6a28','#c9a24a','#6a4c1a']);g.fillStyle=pg;g.fillRect(0,0,W,10);g.fillRect(0,0,12,EDGE);g.fillRect(W-12,0,12,EDGE);
+  g.fillStyle='#5a3e12';for(let x=16;x<W;x+=14)g.fillRect(x,3,6,4);
+  side(g,12,1);side(g,W-12,-1);
+  g.fillStyle='#6a0f1c';g.fillRect(12,10,W-24,12);g.fillStyle='#c9a24a';for(let x=14;x<W-14;x+=4)g.fillRect(x,22,2,3);
+}
+function side(g,x,s){for(let i=0;i<5;i++){g.fillStyle=i%2?'#5a0c18':'#7a1424';g.fillRect(s>0?x+i*5:x-(i+1)*5,10,5,EDGE-10)}g.fillStyle='#c9a24a';g.fillRect(s>0?x+18:x-22,98,4,6)}
+
+const SETS={
+ s1a(g){const R=rnd(7);g.fillStyle=grad(g,0,FLOOR,['#050a22','#13235a','#24387a']);g.fillRect(0,0,W,FLOOR);
+  for(let i=0;i<70;i++){g.fillStyle=`rgba(220,230,255,${R()*.8})`;g.fillRect(R()*W|0,R()*110|0,1,1)}
+  g.fillStyle='#f4f0d8';g.beginPath();g.arc(196,62,30,0,7);g.fill();g.fillStyle='#13235a';g.beginPath();g.arc(208,55,28,0,7);g.fill();glow(g,188,64,70,'#a8b8ff',.35);
+  floor(g,'#5a5e72','#2a2c3a');g.fillStyle='#8a8ea4';g.fillRect(60,FLOOR-8,264,8);g.fillStyle='#a8acc0';g.fillRect(70,FLOOR-14,244,6);
+  for(const x of [52,100,148,236,284,332]){g.fillStyle='#d8dce8';g.fillRect(x-7,30,14,FLOOR-44);g.fillStyle='#b4b8cc';for(let k=-5;k<6;k+=4)g.fillRect(x+k,32,1,FLOOR-48);g.fillStyle='#eef0f8';g.fillRect(x-10,26,20,6);g.fillRect(x-10,FLOOR-16,20,4)}
+  g.fillStyle='#e8ecf4';g.fillRect(40,20,304,8);
+  for(const x of [30,354]){g.fillStyle='#3a2a1a';g.fillRect(x-1,110,3,40);g.fillStyle='#ffb040';g.beginPath();g.moveTo(x-4,110);g.lineTo(x+1,96);g.lineTo(x+5,110);g.fill()}
+  [['Theseus',150,1],['Hippolyta',172],['Egeus',214],['Hermia',236],['Lysander',258],['Demetrius',196]].forEach(([n,x,c])=>fig(g,x,col(n),n==='Egeus'?32:34,c));
+  tint(g,'#7a8cd8');glow(g,30,100,60,'#ff9a40',.8);glow(g,354,100,60,'#ff9a40',.8);beam(g,196,0,10,200,EDGE,70,'#b8c8ff',.18);glow(g,200,176,70,'#c0d0ff',.35);haze(g,'#5868a8',.35)},
+ s1b(g){g.fillStyle=grad(g,0,FLOOR,['#2a1240','#a0406a','#f09a4a','#ffd27a']);g.fillRect(0,0,W,FLOOR);
+  g.fillStyle='#e8a050';g.beginPath();g.arc(192,118,22,0,7);g.fill();
+  g.fillStyle='#7a5228';g.fillRect(0,0,W,30);for(const[x0,x1]of[[0,40],[124,140],[244,260],[344,384]])g.fillRect(x0,0,x1-x0,FLOOR);
+  g.fillStyle='#7a5228';for(const[a,b]of[[40,124],[140,244],[260,344]]){g.beginPath();g.moveTo(a,30);g.lineTo(a,58);g.quadraticCurveTo((a+b)/2,14,b,58);g.lineTo(b,30);g.fill()}
+  for(const x of [18,132,252,364]){g.fillStyle='#9a1c22';g.fillRect(x-8,30,16,64);g.fillStyle='#e0b040';g.fillRect(x-8,30,16,3);g.beginPath();g.moveTo(x-8,94);g.lineTo(x,102);g.lineTo(x+8,94);g.fill();g.fillStyle='#e0b040';g.fillRect(x-2,52,4,12)}
+  floor(g,'#8a5a30','#3a2414');
+  for(const x of [70,314]){g.fillStyle='#6a4a20';g.fillRect(x-2,128,4,22);g.fillStyle='#8a6a2a';g.fillRect(x-10,122,20,6);g.fillStyle='#ff8a30';g.fillRect(x-8,116,16,6)}
+  [['Theseus',160,1],['Hippolyta',182],['Egeus',212],['Hermia',232],['Lysander',254],['Demetrius',140]].forEach(([n,x,c])=>fig(g,x,col(n),34,c));
+  tint(g,'#ffc890');glow(g,70,118,70,'#ff7a20',.8);glow(g,314,118,70,'#ff7a20',.8);glow(g,192,120,90,'#ffb060',.3);haze(g,'#a05a3a',.25)},
+ s1c(g){const R=rnd(3);g.fillStyle=grad(g,0,FLOOR,['#020a10','#0a2a2a','#14403a']);g.fillRect(0,0,W,FLOOR);
+  for(let i=0;i<9;i++){const x=R()*W;g.fillStyle='#0a1e1a';g.beginPath();g.moveTo(x-30,FLOOR);g.lineTo(x,20+R()*40);g.lineTo(x+30,FLOOR);g.fill()}
+  floor(g,'#2a3a30','#121a16');
+  for(const[x,h]of[[60,96],[110,70],[278,88],[330,104]]){g.fillStyle='#b8c0b4';g.fillRect(x-7,FLOOR-h,14,h);g.fillStyle='#9aa496';g.beginPath();g.moveTo(x-7,FLOOR-h);g.lineTo(x-2,FLOOR-h-6);g.lineTo(x+4,FLOOR-h+2);g.lineTo(x+7,FLOOR-h-3);g.lineTo(x+7,FLOOR-h);g.fill();
+   for(let k=0;k<26;k++){g.fillStyle=R()>.5?'#2e6a2a':'#1e4a20';g.fillRect(x-8+R()*16|0,FLOOR-h+R()*h|0,3,3)}}
+  g.fillStyle='#1a3a20';for(let i=0;i<22;i++){const x=R()*W|0,l=10+R()*30|0;g.fillRect(x,22,2,l)}g.fillStyle='#163018';g.fillRect(0,10,W,14);
+  [['Theseus',148,1],['Hippolyta',168],['Egeus',206],['Hermia',228],['Lysander',250],['Demetrius',190]].forEach(([n,x,c])=>fig(g,x,col(n),34,c));
+  tint(g,'#5a8a80');beam(g,228,0,5,228,EDGE,22,'#e8f4ff',.45);glow(g,228,178,34,'#e8f4ff',.5);
+  for(let i=0;i<30;i++)glow(g,R()*W,40+R()*120,4,'#d8ff70',.9);haze(g,'#3a7a5a',.4)},
+ s2a(g){const R=rnd(11);g.fillStyle='#4a2e18';g.fillRect(0,0,W,FLOOR);for(let x=0;x<W;x+=11){g.fillStyle=R()>.5?'#553620':'#43281a';g.fillRect(x,0,10,FLOOR)}
+  g.fillStyle='#2a180c';g.fillRect(0,26,W,8);for(const x of [40,192,344])g.fillRect(x-4,0,8,FLOOR);
+  g.fillStyle='#6a6a6a';[[80,54],[110,50],[262,56],[300,52]].forEach(([x,y])=>{g.fillRect(x,y,18,4);g.fillStyle='#3a2414';g.fillRect(x-5,y-1,6,6);g.fillStyle='#6a6a6a'});
+  g.fillStyle='#3a2414';g.fillRect(140,48,4,16);g.fillRect(134,46,16,5);g.fillRect(230,46,3,18);
+  floor(g,'#6a4a2a','#2a1a10');g.fillStyle='#c8a060';for(let i=0;i<40;i++)g.fillRect(R()*W|0,FLOOR+R()*30|0,2,1);
+  g.fillStyle='#5a3a1e';g.fillRect(70,124,244,8);g.fillRect(78,132,6,22);g.fillRect(300,132,6,22);g.fillStyle='#7a5430';g.fillRect(70,122,244,3);
+  for(const x of [110,192,270]){g.fillStyle='#efe2c4';g.fillRect(x-1,114,3,8);g.fillStyle='#ffd060';g.fillRect(x,110,1,4)}
+  [['Quince',130],['Bottom',168],['Flute',206],['Snout',232],['Snug',258],['Starveling',284]].forEach(([n,x])=>fig(g,x,col(n),n==='Bottom'?36:32));
+  tint(g,'#b07a48');for(const x of [110,192,270])glow(g,x,112,58,'#ffa040',.85);haze(g,'#5a3a1a',.25)},
+ s2b(g){const R=rnd(5);g.fillStyle='#24222e';g.fillRect(0,0,W,FLOOR);for(let i=0;i<300;i++){g.fillStyle=`rgba(255,255,255,${R()*.04})`;g.fillRect(R()*W|0,R()*FLOOR|0,3,2)}
+  g.fillStyle='#0a1430';g.fillRect(250,40,60,56);g.fillStyle='#f0ecd0';g.beginPath();g.arc(286,58,8,0,7);g.fill();g.strokeStyle='#14121a';g.lineWidth=2;for(let i=0;i<5;i++){g.beginPath();g.moveTo(250+i*15,40);g.lineTo(250+i*15,96);g.stroke()}for(let j=0;j<5;j++){g.beginPath();g.moveTo(250,40+j*14);g.lineTo(310,40+j*14);g.stroke()}
+  g.fillStyle='#3a2a1a';g.fillRect(246,36,68,4);g.fillRect(246,96,68,4);
+  floor(g,'#3a3440','#16141c');g.fillStyle='#4a3420';g.fillRect(110,128,140,6);g.fillRect(118,134,5,18);g.fillRect(238,134,5,18);
+  g.fillStyle='#2a2a2a';g.fillRect(179,0,2,62);g.fillRect(172,62,16,14);
+  [['Quince',120],['Bottom',150],['Flute',182],['Snout',214],['Snug',246],['Starveling',276]].forEach(([n,x])=>fig(g,x,col(n),n==='Bottom'?36:32));
+  tint(g,'#6a74a0');beam(g,280,68,26,200,EDGE,46,'#a8c0ff',.28);for(let i=0;i<40;i++){const t=R();glow(g,lerp(280,200,t)+(R()-.5)*50*t,lerp(68,EDGE,t),1.6,'#ffffff',.5)}
+  glow(g,180,72,70,'#ffb050',.75);glow(g,200,170,60,'#a8c0ff',.25);haze(g,'#3a4a7a',.3)},
+ s2c(g){g.fillStyle='#d8cfa0';g.fillRect(0,0,W,FLOOR);g.fillStyle='#8ac0e0';g.fillRect(20,24,344,96);
+  g.fillStyle='#ffd040';g.beginPath();g.arc(300,54,16,0,7);g.fill();g.strokeStyle='#ffd040';g.lineWidth=2;for(let a=0;a<6.28;a+=.6){g.beginPath();g.moveTo(300+Math.cos(a)*20,54+Math.sin(a)*20);g.lineTo(300+Math.cos(a)*27,54+Math.sin(a)*27);g.stroke()}
+  g.fillStyle='#7a5a3a';g.fillRect(298,70,3,80);
+  g.fillStyle='#f0e0b0';g.beginPath();g.moveTo(60,FLOOR);g.lineTo(58,72);g.lineTo(110,40);g.lineTo(164,74);g.lineTo(162,FLOOR);g.fill();g.strokeStyle='#3a2a1a';g.lineWidth=2;g.stroke();
+  g.fillStyle='#c04a3a';g.beginPath();g.moveTo(52,76);g.lineTo(110,36);g.lineTo(170,78);g.fill();g.stroke();g.fillStyle='#6a9ad0';g.fillRect(76,90,22,20);g.strokeRect(76,90,22,20);g.fillStyle='#7a4a2a';g.fillRect(124,104,22,46);g.strokeRect(124,104,22,46);
+  g.fillStyle='#4a8a3a';for(const x of [200,232,350]){g.beginPath();g.arc(x,108,16,0,7);g.fill();g.stroke();g.fillStyle='#6a4a2a';g.fillRect(x-2,122,4,28);g.fillStyle='#4a8a3a'}
+  g.fillStyle='#d8b880';g.fillRect(56,FLOOR-2,110,4);floor(g,'#9a7a4a','#4a3420');
+  [['Quince',120],['Bottom',176],['Flute',212],['Snout',240],['Snug',266],['Starveling',292]].forEach(([n,x])=>fig(g,x,col(n),n==='Bottom'?36:32));
+  tint(g,'#f0e0c8');glow(g,96,200,120,'#ff5a8a',.35);glow(g,288,200,120,'#5aa0ff',.35);glow(g,176,170,40,'#fff0a0',.5)}
+};
+function draw(id,fn){const g=document.getElementById(id).getContext('2d');g.imageSmoothingEnabled=false;fn(g);return g}
+for(const k in SETS)draw(k,g=>{SETS[k](g);house(g,true)});
+draw('c-closed',g=>{g.fillStyle='#000';g.fillRect(0,0,W,H);for(let x=12;x<W-12;x+=6){g.fillStyle=((x/6)|0)%2?'#7a1424':'#5a0c18';g.fillRect(x,10,6,EDGE-10)}
+  g.fillStyle='#c9a24a';for(let x=12;x<W-12;x+=4)g.fillRect(x,EDGE-6,2,4);house(g,true);
+  g.fillStyle='#c9a24a';g.font='9px "IM Fell English SC",serif';g.textAlign='center';g.fillText('A MIDSUMMER NIGHT’S DREAM · ACT I',W/2,19);
+  tint(g,'#e0a080');glow(g,W/2,EDGE,180,'#ff9a50',.35)});
+draw('c-open',g=>{SETS.s1a(g);g.save();for(const s of [1,-1]){const x0=s>0?12:W-12;for(let i=0;i<14;i++){const w=6,x=s>0?x0+i*w:x0-(i+1)*w;g.fillStyle=i%2?'#5a0c18':'#7a1424';const h=lerp(EDGE-10,40,i/13);g.fillRect(x,10,w,h)}}
+  g.fillStyle='#7a1424';g.beginPath();g.moveTo(96,10);g.quadraticCurveTo(192,70,288,10);g.fill();g.restore();house(g,true)});
+</script>

@@ -1,6 +1,6 @@
 // THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or the kart knocks them over), and the go-kart (a RIDE kind on Rapier's raycast vehicle).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, GPH, keys, NPCS, PB, PHX, pos, RIDE, SFX, st} from './003b-systems.js';
+import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, st} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 { const T=TILE, M1=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
@@ -19,12 +19,12 @@ import {OBJS} from './008-batch.js';
     if(z.kind==='dart'){ if(performance.now()-(it.thrown||0)>3000)return; const d=Math.hypot(...[0,1,2].map(k=>k===z.thin?0:[p.x,p.y,p.z][k]-z.c[k]))/z.r, pts=d<.08?50:d<.18?25:d<.6?15:5;
       it.rb.setLinvel({x:0,y:0,z:0},true); it.rb.setAngvel({x:0,y:0,z:0},true); say(pts===50?'BULLSEYE! 50.':'THE BOARD: '+pts+'.','#f2c14e'); if(SFX.play)SFX.play('clunk',{vol:.6,pitch:1.4,at:p}); }
     else if(z.kind==='can'){ const c=z.it; if(it===c||it.heavy||it.m>8||!c.rb)return; const r=c.rb.rotation(), up=1-2*(r.x*r.x+r.z*r.z); if(up<.8)return; GPH.bin(it); say('IN THE CAN.'); } };
-  GPH.coll.push((h1,h2,on)=>{ if(!on||!PHX.on('zones'))return; const a=ZN.get(h1), b=ZN.get(h2); if(a)enter(a,GPH.ofCollider(h2)); if(b)enter(b,GPH.ofCollider(h1)); });
+  GPH.coll.push((h1,h2,on)=>{ if(!on||!PHYS.on('zones'))return; const a=ZN.get(h1), b=ZN.get(h2); if(a)enter(a,GPH.ofCollider(h2)); if(b)enter(b,GPH.ofCollider(h1)); });
 
   /* ---------- ragdolls: a townsperson knocked over falls as a body of eleven parts on Rapier joints, lies a moment, then gets up ---------- */
   const RAGS=new Set(), Q=new THREE.Quaternion(), M4=new THREE.Matrix4(), V=new THREE.Vector3(), V2=new THREE.Vector3();
   const v3=p=>new THREE.Vector3(p.x,p.y,p.z);
-  PHX.knock=(N,dir,k=1)=>{ '@later'; if(!PHX.on('rag')||!PB.R||N.rag||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
+  PHYS.knock=(N,dir,k=1)=>{ '@later'; if(!PHYS.on('rag')||!PB.R||N.rag||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
     const world=new R.World({x:0,y:-(RG.G?RG.G():280),z:0}); world.timestep=1/120; const gy=Math.min(...['toeL','toeR','heelL','heelR'].map(n=>J[n]?J[n].y:0));
     world.createCollider(R.ColliderDesc.cuboid(400,5,400).setTranslation(0,gy-5,0).setFriction(1.1).setCollisionGroups(0x00010002));
     const W=n=>v3(J[n]), bs={}, list=[], hd=N.st.hd||0, ch=Math.cos(hd), sn=Math.sin(hd), push={x:(dir.x*ch-dir.z*sn)*90*k,y:30*k,z:(dir.x*sn+dir.z*ch)*90*k};
@@ -57,7 +57,7 @@ import {OBJS} from './008-batch.js';
     return true; };
   // what knocks one over: a loose thing flying into them, or the kart
   const knockNear=(x,y,z,vx,vz,sp,r,k)=>{ for(const N of NPCS.extra||[]){ if(!N.on||N.rag||!N.st)continue; const s=N.st, dx=s.x-x, dz=s.z-z; if(Math.hypot(dx,dz)>r||y<(s.y||0)-.2*T||y>(s.y||0)+2*M1)continue;
-      if(PHX.knock(N,{x:vx/sp,z:vz/sp},k))return N; } return null; };
+      if(PHYS.knock(N,{x:vx/sp,z:vz/sp},k))return N; } return null; };
 
   /* ---------- the go-kart: a RIDE kind; with VEHICLE PHYSICS on, Rapier's raycast vehicle drives it (four wheels, suspension, grip), else it glides like a board ---------- */
   FORAGE.add({names:{kart:'THE GO-KART'}});
@@ -87,7 +87,7 @@ import {OBJS} from './008-batch.js';
     make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false,
     on:()=>{ if(!PB.R)PB.load(); }, off:()=>drop(),
     pose:R=>{ POSE.steer=KR.on?KR.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },
-    step:(R,dt)=>{ if(!PHX.on('veh')||!PB.R||!GPH.phys()){ if(KR.on)drop(); return false; } if(!KR.on&&!build())return false;
+    step:(R,dt)=>{ if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(KR.on)drop(); return false; } if(!KR.on&&!build())return false;
       const p=KR.rb.translation(), r=KR.rb.rotation(), g=SHARED.groundY(p.x,p.z); if(!isFinite(g)||p.y<g-2*T){ drop(); return false; }
       pos.x=p.x; pos.z=p.z; Q.set(r.x,r.y,r.z,r.w); V.set(0,0,1).applyQuaternion(Q); R.hd=SHARED.heading=Math.atan2(V.x,V.z); KR.sp=KR.vc.currentVehicleSpeed(); R.v=Math.abs(KR.sp); R.lift=0;
       if(R.v>2*T){ const v=KR.rb.linvel(); if(knockNear(p.x,p.y,p.z,v.x,v.z,Math.hypot(v.x,v.z)||1,.55*M1,Math.min(1.6,R.v/(4*T))))KR.rb.setLinvel({x:v.x*.6,y:v.y,z:v.z*.6},true); }
@@ -98,9 +98,9 @@ import {OBJS} from './008-batch.js';
       if(m.userData.sw)m.userData.sw.rotation.z=-(KR.on?KR.steer:R.lean)*2; } });
 
   // each frame: zones kept up to date, a flying loose thing knocks over who it hits
-  SYS.add('life',dt=>{ if(!GPH.phys())return; if((zt-=dt)<=0){ zt=1; if(PHX.on('zones'))zones(); }
-    if(PHX.on('rag'))for(const it of GPH.active()){ if(!it.rb||it.rb.isSleeping()||it===GPH.heldNow())continue; const v=it.rb.linvel(), sp=Math.hypot(v.x,v.z); if(sp<3*T)continue;
+  SYS.add('life',dt=>{ if(!GPH.phys())return; if((zt-=dt)<=0){ zt=1; if(PHYS.on('zones'))zones(); }
+    if(PHYS.on('rag'))for(const it of GPH.active()){ if(!it.rb||it.rb.isSleeping()||it===GPH.heldNow())continue; const v=it.rb.linvel(), sp=Math.hypot(v.x,v.z); if(sp<3*T)continue;
       const p=it.rb.translation(); if(knockNear(p.x,p.y,p.z,v.x,v.z,sp,.4*M1+Math.max(it.h[0],it.h[2]),Math.min(1.4,sp*it.m/(40*T))))it.rb.setLinvel({x:-v.x*.25,y:v.y,z:-v.z*.25},true); } },'150o-physmore');
-  window.PHXDBG=()=>({zones:[...ZN.values()].map(z=>z.kind),boards:[...ZN.values()].filter(z=>z.kind==='dart').map(z=>z.c.map(v=>+v.toFixed(2))),rags:RAGS.size,ragt:[...RAGS].map(r=>+r.t().toFixed(2)),kart:KR.on&&{sp:+KR.sp.toFixed(2),at:(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(2)))(KR.rb.translation())},cfg:PHX.cfg});
-  window.PHXKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHX.knock(N,{x:1,z:0},1)}:null; };
+  window.PHYSDBG=()=>({zones:[...ZN.values()].map(z=>z.kind),boards:[...ZN.values()].filter(z=>z.kind==='dart').map(z=>z.c.map(v=>+v.toFixed(2))),rags:RAGS.size,ragt:[...RAGS].map(r=>+r.t().toFixed(2)),kart:KR.on&&{sp:+KR.sp.toFixed(2),at:(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(2)))(KR.rb.translation())},cfg:PHYS.cfg});
+  window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
 }

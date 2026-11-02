@@ -21,7 +21,7 @@ import {STORE, TILE} from './006-map-pre.js';
     const face=new THREE.Mesh(new THREE.BoxGeometry(.105,.022,.004),std(0xe8eaee,{roughness:.3,metalness:.6})); face.position.set(0,1.0,.004);
     arm.add(grip,shaft,head,face); g.tipL=new V3(0,1.0,.02); g.head=g.tipL; return g; };
   const KIND={name:'PUTTER',hint:'STAND BY YOUR BALL: THE MOUSE AIMS, HOLD THE BUTTON TO DRAW BACK, LET GO TO PUTT. F WALKS YOU TO THE BALL.',make:()=>{ const g=putter(); KIND.gs.push(g); return g; },
-    aim:(dt,aim)=>{ if(!D||!D.addr||VR.on)return false; aim.set(D.ball.x-lx(),-1.1,D.ball.z-lz()); if(aim.lengthSq()<1e-4)aim.set(0,-1,.2); aim.normalize(); return true; },
+    aim:(dt,aim)=>{ if(!D||!D.addr||VR.on)return false; aim.set(B.x-lx(),-1.1,B.z-lz()); if(aim.lengthSq()<1e-4)aim.set(0,-1,.2); aim.normalize(); return true; },
     use:()=>!!(D&&D.addr) };
   KIND.gs=[]; WIELD.kind('putter',KIND);
 

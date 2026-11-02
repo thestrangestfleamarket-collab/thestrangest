@@ -1,4 +1,4 @@
-// THE PS2 FILTER: PS2, the picture's last pass: 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
+// THE PS2 FILTER: PS2, the picture's last pass but the cinema's cut: 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';

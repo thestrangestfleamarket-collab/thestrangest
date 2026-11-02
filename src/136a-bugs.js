@@ -26,21 +26,13 @@ import {BUILDV} from './135-where.js';
     shot:async r=>{ const a=await (await sb('/rest/v1/bug_shots?select=jpg&report=eq.'+r.id)).json(); if(a.length)return a[0].jpg; if(!r.shots)return '';
       const b=await (await sb('/storage/v1/object/authenticated/bugs/'+r.player+'/'+r.id+'/000.jpg')).blob(); return URL.createObjectURL(b); },
     mark:(id,status)=>sb('/rest/v1/bug_reports?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status})}) };
-  const ART=(db,user)=>({
-    send:async(body,context,jpg)=>{ const id=crypto.randomUUID(); await db.doc('bugs/'+id).set({body,context,status:'new',at:Date.now(),shots:jpg?1:0}); if(jpg)await db.doc('bugshots/'+id).set({jpg}); },
-    owner:async()=>!!(user&&await user.isOwner()),
-    list:async()=>(await db.collection('bugs').orderBy('at','desc').limit(300).get()).docs.map(d=>({id:d.id,...d.data()})),
-    shot:async r=>{ const s=await db.doc('bugshots/'+r.id).get(); return s.exists?s.data().jpg:''; },
-    mark:(id,status)=>db.doc('bugs/'+id).update({status}) });
-  let BE=null; const backend=async()=>{ if(BE)return BE; const c=window.claude;
-    if(c&&c.use){ const db=await c.use('db').catch(()=>null); if(db){ const u=await c.use('user').catch(()=>null); return BE=ART(db,u); } }
-    if(ck()||localStorage.getItem(LS))return BE=SITE; return null; };
+  let BE=null; const backend=async()=>BE||(ck()||localStorage.getItem(LS)?(BE=SITE):null);
   const grab=()=>new Promise(res=>requestAnimationFrame(()=>{ try{ const s=renderer.domElement, k=s.width>=1280?1280/s.width:Math.min(3,Math.floor(1280/s.width)), c=document.createElement('canvas');
     c.width=Math.round(s.width*k); c.height=Math.round(s.height*k); const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.drawImage(s,0,0,c.width,c.height);
     let q=.85, u; do{ u=c.toDataURL('image/jpeg',q); q-=.15; }while(u.length>300000&&q>.2); res(u.length>300000?null:u); }catch(e){ res(null); } }));
   const where=()=>{ '@later'; let near='', d=1e9; try{ for(const p of UI.places()){ const q=Math.hypot(p[1]-pos.x,p[2]-pos.z); if(q<d){ d=q; near=p[0]; } } }catch(e){}
     return {build:BUILDV, at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2)], hd:+SHARED.heading.toFixed(2), lvl:SHARED.LVL, near, far:Math.round(d), hour:+CLOCK.h.toFixed(2), view:UI.view,
-      screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:window.claude?'artifact':'site'}; };
+      screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:'site'}; };
   const ST=[['new','NEW'],['approved','APPROVED'],['later','LATER'],['fixed','FIXED'],['no','NO']];
   let shot=null, ctx=null, filt='new', rows=[], el=null;
   const draw=async()=>{ '@later'; const be=await backend(), own=be?await be.owner().catch(()=>false):false;

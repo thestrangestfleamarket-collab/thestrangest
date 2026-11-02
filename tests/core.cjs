@@ -44,7 +44,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   if (st) {
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
-    await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
+    await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
     const r = await pg.evaluate(() => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
@@ -83,7 +83,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.downs = ['dungeon', 'gemcave', 'hudson'].map(k => { const L = LEVELS.of[k]; return !!(L && L.floor === 'down' && typeof L.has === 'function' && typeof L.ground === 'function' && typeof L.bound === 'function'); });
       o.swords = (() => { const I = window.ITEMS, W = window.WIELD, F = window.FIGHT, S = window.STRIKES, V = __dbg.VIT; if (!I || !W || !F || !S) return { ok: false };
         const h0 = V.hp, took = V.hurt(.01, { x: 0, z: 0 }); V.hp = h0; return { ok: true, dmg: ['sword_wood', 'sword', 'sword_steel', 'sword_ench'].map(k => +I.prop(k, 'damage')).join(), hand: I.prop('sword_steel', 'slot') === 'hand' && I.prop('sword_steel', 'grants') === 'fight', api: 'block' in W && typeof S.landed === 'function' && typeof V.guard === 'function', took }; })();
-      o.hours = (() => { const c0 = DN.cycleAt(0), c1 = DN.cycleAt(3 * DN.HOUR + DN.FADE / 2), c2 = DN.cycleAt(3 * DN.HOUR + DN.FADE); return !!(DN.modes.join() === 'sunrise,day,sunset,night' && !CLOCK.run && DN.modes.every(m => DN.D0[m].bands === 0 && DN.D0[m].cov >= 1 && DN.D0[m].skym === 0 && DN.D0[m].shaft === 0) && c0.cur === 'sunrise' && c0.prev === 'night' && c1.cur === 'night' && c1.prev === 'sunset' && c1.f > .4 && c1.f < .6 && c2.f === 1 && DN.hold === 'day' && typeof DN.follow === 'function' && window.DFOG && DFOG.get().blur < 1 && DFOG.get().start === 10); })();
+      o.hours = (() => { const c0 = DN.cycleAt(0), c1 = DN.cycleAt(3 * DN.HOUR + DN.FADE / 2), c2 = DN.cycleAt(3 * DN.HOUR + DN.FADE); return !!(DN.modes.join() === 'sunrise,day,sunset,night' && !CLOCK.run && DN.modes.every(m => DN.D0[m].bands === 0 && DN.D0[m].cov >= 1 && DN.D0[m].skym === 0 && DN.D0[m].shaft === 0) && c0.cur === 'sunrise' && c0.prev === 'night' && c1.cur === 'night' && c1.prev === 'sunset' && c1.f > .4 && c1.f < .6 && c2.f === 1 && DN.hold === 'day' && typeof DN.follow === 'function' && DN.dayAt(0) === 5 && Math.abs(DN.dayAt(3 * DN.HOUR + DN.HOUR / 2) - 2) < 1e-9 && CLOCK.sunH === 13 && CLOCK.h === 13 && typeof CLOCK.dayElev === 'function' && window.DFOG && DFOG.get().blur < 1 && DFOG.get().start === 10); })();
       o.windows = !!(window.WINDOWS && typeof WINDOWS.bake === 'function' && WINDOWS.panes.some(p => p.off === 'bodega' && p.look === 'in') && SYS.P.places.some(s => s.name === '130a-windows') && ROOMS.off.bodega.shift);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
@@ -112,8 +112,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns.length === 0 && !/BODY/.test(document.querySelector('#looks').innerText);
-        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set(saved || 'walker');
-        return { ok: true, inGame, none, noRow, stays, hero, btns: btns.join(',') }; })();
+        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set('poacher'); const poacher = B.pick() === 'walker' && !!B.by.poacher && B.by.poacher.tris() > 0 && B.by.poacher.npc.on; B.set(saved || 'walker');
+        return { ok: true, inGame, none, noRow, stays, hero, poacher, btns: btns.join(',') }; })();
       o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, was = !!W.worn.shirt;
         W.wear('shirt', true); const hid = W.HIDE[W.idx('bodyTorso')] && !W.HIDE[W.idx('torso')];
         W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', was);
@@ -154,7 +154,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.breath[0] && r.breath[1] && r.breath[2] > 0, 'breath: VIT.air + VIT.breathe exist and the AIRCAP mushroom grants air (' + r.breath.join(',') + ')');
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');
     ok(r.swords.ok && r.swords.dmg === '1,2,3,5' && r.swords.hand && r.swords.api && r.swords.took === 1, 'swords: four blades carry DAMAGE on the item model, every blow passes the guard, landed strikes feed SWORDSMANSHIP: ' + JSON.stringify(r.swords));
-    ok(r.hours, 'the hours: SUNRISE, DAY, SUNSET, NIGHT take turns one real hour each with a minute\'s fade, no running clock; smooth cloudless skies, the far fading into the horizon colour, the distance fog gentle');
+    ok(r.hours, 'the hours: SUNRISE, DAY, SUNSET, NIGHT take turns one real hour each with a minute\'s fade, the day\'s hour running a quarter of the day through each; smooth cloudless skies, the far fading into the horizon colour, the distance fog gentle');
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered, retaken while you are in)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
@@ -162,7 +162,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero, 'you are always the Walker: knight/man/woman/hero stay in the game, YOU has no BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are always the Walker: knight/man/woman/hero/egg poacher stay in the game, YOU has no BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
     ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
     ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));

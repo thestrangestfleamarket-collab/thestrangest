@@ -59,12 +59,15 @@ head's speed and direction at contact; no power bar in the headset, as Walkabout
 
 ## 5. The course: one hole in a zen garden (built)
 
-- **THE ZEN GARDEN**: a Japanese garden at dusk, built for calm and as real as the engine allows (the owner's "very realistic,
-  relaxing"): raked white gravel with the rake circling the stones, moss round their feet, a koi pond under a waterfall with its
-  mist, five koi, two stone lanterns lit warm, two red maples, two bamboo groves, an arched wooden bridge over the pond's outflow,
-  stepping stones beside the lane, a shishi-odoshi that fills, tips and knocks, blossom drifting on the air, a pink-to-blue sky
-  and dark hills all round. Standard (lit, rough) materials with procedural textures, a low warm sun with shadows: the holodeck's
-  "more realistic simulations" (owner, 22 Oct 2026), not the street's cel.
+- **THE ZEN GARDEN**: a Japanese garden deep in a jungle valley, built for calm and as real as the engine allows (the owner:
+  "very realistic, relaxing"; then "completely enclosed by greenery jungle ... in a deep cavern between massive hills, overcast,
+  very moody lighting, foggy, eerie"): raked white gravel with the rake circling the stones, moss round their feet, a koi pond
+  under a waterfall with its mist, five koi, two stone lanterns lit warm (the only warm light), two red maples, two bamboo groves,
+  an arched wooden bridge over the pond's outflow, stepping stones beside the lane, a shishi-odoshi that fills, tips and knocks,
+  blossom drifting on the air. Round it all, massive green hills close in on every side with jungle canopies up their slopes,
+  ferns at the gravel's edge, mist lying on the ground, an overcast sky and fog that swallows the hilltops. Standard (lit, rough)
+  materials with procedural textures, soft grey light with shadows: the holodeck's "more realistic simulations" (owner, 22 Oct
+  2026), not the street's cel.
 - **The hole**: par 2. A smooth felt lane 0.9 m wide on a curve: straight from the tee, a dog-leg right round a mossy boulder, a
   soft rise onto the green with the cup and flag. The lane's edge is a wooden rail the ball banks off; the rail is exactly where the
   physics stops the ball (the lane is the points within half its width of the centreline). A fast ball runs over the cup's lip; a slow

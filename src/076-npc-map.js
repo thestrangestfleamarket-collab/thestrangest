@@ -33,8 +33,9 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.renorm();
   { const n0=geo.attributes.position.count; geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n0),1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n0),1)); }
   // weld bit-identical vertices (toNonIndexed left many), keeping every attribute: no visual change, less memory. Returns the kept original indices (ascending), or null if not worth it. Safe only when nothing reshapes the body by its original vertex ranges after this.
-  N.pack=ranges=>{ if(geo.index)return null; const A=geo.attributes, keys=Object.keys(A), n=A.position.count, map=new Map(), idx=new Uint32Array(n), uq=[];
-    for(let i=0;i<n;i++){ let k=''; for(const nm of keys){ const a=A[nm], sz=a.itemSize, ar=a.array, o=i*sz; for(let c=0;c<sz;c++)k+=ar[o+c]+'|'; } let u=map.get(k); if(u===undefined){ u=uq.length; map.set(k,u); uq.push(i); } idx[i]=u; }
+  N.pack=ranges=>{ if(geo.index)return null; const A=geo.attributes, keys=Object.keys(A), KA=keys.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
+    const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;   // a spatial hash on position buckets likely-equal vertices; the exact compare keeps the weld lossless
+    for(let i=0;i<n;i++){ const o=i*3, h=(Math.imul(PA[o]*4096|0,73856093)^Math.imul(PA[o+1]*4096|0,19349663)^Math.imul(PA[o+2]*4096|0,83492791))>>>0; let bk=buckets.get(h), u=-1; if(bk){ for(let x=0;x<bk.length;x++)if(eq(i,uq[bk[x]])){ u=bk[x]; break; } } else buckets.set(h,bk=[]); if(u<0){ u=uq.length; uq.push(i); bk.push(u); } idx[i]=u; }
     if(uq.length>n*0.95)return null;
     for(const nm of keys){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const s=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[s+c]; } geo.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
     geo.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1));

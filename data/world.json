@@ -246,7 +246,7 @@
    "kind": "front",
    "x0": 53.95,
    "x1": 82.55
-  },
+  }, {"id": "art", "name": "THE ART MUSEUM", "kind": "front", "x0": 10, "x1": 50, "lot": true},
   {
    "id": "bar",
    "name": "THE BAR",

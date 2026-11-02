@@ -4,7 +4,7 @@ import {RING, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {STALL} from './081-stalls.js';
 import {RIGNPC} from './083-npc-rig.js';
-const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
+const TOONS={}, RAINCAT=__LAZY__("data/raincat.json");
 { const {shape,limb,sph,cyl,box,torus,blob,shell}=PARTSNPC.T;
   const part=(name,rank,bone,of)=>({name,rank,bone,of}), BLACK=[0,0,0], WHITE=[.96,.95,.9];
   const make=(def,o,i)=>RIGNPC.make(def,Object.assign({eye:0,eyeC:'0.,0.,0.',stride:6},PARTSNPC.street(o.at,-70),o,RIGNPC.hold(i)));
@@ -46,8 +46,8 @@ const TOONS={}, RAINCAT=__DATA__("data/raincat.json");
         if(r>.9&&(c.turnT=(c.turnT??5)-dt)<=0){ c.turnT=4+Math.random()*5; c.kick('page','w',-3); }
         c.at('armR',[.2,.38,.05],V); V.y-=.11; const g=[.25,0,.16]; B.jar.position.set(V.x+(g[0]-V.x)*r,V.y+(g[1]-V.y)*r,V.z+(g[2]-V.z)*r);
         if(c.extra)c.extra(c,dt,r); } };
-    { const G=RIGNPC.glb(RAINCAT.chars.raincat); def.bones=[...G.bones,['jar','root',[.22,0,.1]]]; def.mesh=G.mesh; }
-    TOONS.cat=make(def,{key:'raincat',name:'THE CAT IN THE RAINCOAT',eye:-1,metres:1.1,radius:.25,speed:.32,stride:8,at:66},1); }
+    const go=()=>window.__started?RAINCAT().then(J=>{ const G=RIGNPC.glb(J.chars.raincat); def.bones=[...G.bones,['jar','root',[.22,0,.1]]]; def.mesh=G.mesh;
+      TOONS.cat=make(def,{key:'raincat',name:'THE CAT IN THE RAINCOAT',eye:-1,metres:1.1,radius:.25,speed:.32,stride:8,at:66},1); }).catch(e=>console.warn('RAINCAT',e)):setTimeout(go,600); go(); }
 
   { const ORA=[.84,.47,.32], ORA2=[.7,.36,.24], FUR=[.74,.53,.3], FUR2=[.62,.42,.22], CHROME=[.82,.82,.8], DARK=[.1,.1,.11], SCREEN=[.2,.24,.27];
     const CAB=[[-.25,.3,-.02],[-.34,.14,-.08],[-.4,.03,-.24],[-.42,.02,-.46],[-.44,.02,-.7]];

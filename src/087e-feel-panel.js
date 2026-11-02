@@ -25,7 +25,7 @@ import {QS} from './006-map-pre.js';
   const msg=t=>{ const m=P.querySelector('.msg'); if(m)m.textContent=t; };
   const btn=(a,t,on)=>`<button type="button" data-a="${a}"${on===undefined?'':` aria-pressed="${!!on}"`}>${t}</button>`;
   const draw=()=>{ '@later'; const c=FEEL.cfg, R=FEEL.RANGE; let o=`<h3 data-a="min"><span>FEEL LAB</span><span>${P.dataset.min==='1'?'+':'–'}</span></h3><div class="bd">`;
-    o+=`<div>${btn('on','NEW CONTROLLER ON THE STREET',FEEL.on)}${btn('dbg','DEBUG (O)',FEEL.dbg)}${btn('shadow','SHADOWS',renderer.shadowMap.enabled)}</div>`;
+    o+=`<div>${btn('on','NEW CONTROLLER ON THE STREET',FEEL.on)}${btn('dbg','DEBUG',FEEL.dbg)}${btn('shadow','SHADOWS',renderer.shadowMap.enabled)}</div>`;
     o+=`<h4>THE YARD (T: BACK TO SPAWN)</h4><div>${FEEL.yard.spots().map((s,i)=>btn('spot'+i,s.n)).join('')}${btn('street','BACK TO THE STREET')}</div>`;
     o+=`<h4>PRESETS</h4><div>${Object.keys(FEEL.PRE).map(n=>btn('pre'+n,n)).join('')}</div>`;
     for(const [h,rows] of ROWS){ o+=`<h4>${h}</h4>`; for(const [k,lab,s] of rows)o+=`<div class="r"><span title="${k}">${lab}</span><input type="number" data-k="${k}" step="${s}" min="${R[k][0]}" max="${R[k][1]}" value="${+c[k].toFixed(3)}"><input type="range" data-k="${k}" step="${s}" min="${R[k][0]}" max="${R[k][1]}" value="${c[k]}"></div>`; }
@@ -70,6 +70,6 @@ import {QS} from './006-map-pre.js';
     const R=FEEL.camRays; if(R&&FEEL.camHit!=null){ const a=[]; for(const [p,q] of R)a.push(p.x,p.y,p.z,q.x,q.y,q.z); camL.geometry.setAttribute('position',new THREE.Float32BufferAttribute(a,3)); camL.visible=true; } else camL.visible=false;
     const w=A&&A.C?Object.entries(A.w).filter(([,v])=>v>.01).map(([n,v])=>n.replace(/_Loop|_Fwd/g,'').toUpperCase()+' '+v.toFixed(2)).join(' · '):'-';
     D.textContent=`${fps.toFixed(0)} FPS · ${ms.toFixed(1)} MS A FRAME\nCONTROLLER ${on?(Y.bvh&&Y.in(px,pz)?'YARD':'STREET'):'OLD (OFF)'} · ${FEEL.ready?'BVH READY':'BVH LOADING'}\nSTATE ${on&&A?A.mode.toUpperCase():'-'} · ${S.gnd?'GROUNDED':'IN THE AIR'}${S.wall?' · WALL':''}${S.ceil?' · CEILING':''}\nSPEED ${Math.hypot(S.v.x,S.v.z).toFixed(2)} m/s (MOVED ${FEEL.hs.toFixed(2)}) · UP ${S.v.y.toFixed(2)} m/s\nCOYOTE ${Math.max(0,c.coyote-(S.t-S.lastG)).toFixed(2)} · BUFFER ${S.buf>=0?Math.max(0,c.buffer-(S.t-S.buf)).toFixed(2):'-'} · STEPS ${S.steps}\nCLIPS ${w}\nCAMERA ${FEEL.camHit?'PULLED IN':'CLEAR'}`; };
-  FEEL.key=(k,e)=>{ if(e.repeat)return false; if(k==='l'){ FEEL.panel(); return true; } if(k==='o'){ FEEL.setDbg(!FEEL.dbg); return true; } if(k==='t'&&FEEL.take()&&FEEL.yard.in(pos.x/MH,pos.z/MH)){ FEEL.respawn(); return true; } return false; };
+  FEEL.key=(k,e)=>{ if(e.repeat)return false; if(k==='t'&&FEEL.take()&&FEEL.yard.in(pos.x/MH,pos.z/MH)){ FEEL.respawn(); return true; } return false; };
   if(QS.get('feel')!=null){ FEEL.load(); FEEL.panel(QS.get('feelpanel')!=='0'); }
 }

@@ -63,6 +63,14 @@
       "The CHOOSE A PLACE list at the bottom takes you to any place or room.",
       "The A to H buttons take you to another section."
      ]
+    },
+    {
+     "head": "YOUR TABLET",
+     "steps": [
+      "Press [TAB]. Your tablet comes up in your hands. Everyone has one.",
+      "CALL rings any shop. ORDER and ARCADE open THE MARKET BBS. MAP, CHAT and PLAYERS too.",
+      "Click while holding it to wake the screen again. [TAB] or [ESC] puts it away."
+     ]
     }
    ]
   },
@@ -419,7 +427,8 @@
    "steps": [
     "Other players walk, fish, fight and wear what they wear, just like you.",
     "Press [ENTER] to chat. Type, then [ENTER] to send ([ESC] closes).",
-    "Click ONLINE at the bottom right for the list of players.", "Press VISIT beside a name to go into that player's apartment and see how they decorated it (their caged birds, specimens, candles...). You can look, not change anything. Leave by the door as usual."
+    "Click ONLINE at the bottom right for the list of players.",
+    "Press VISIT beside a name to go into that player's apartment and see how they decorated it (their caged birds, specimens, candles...). You can look, not change anything. Leave by the door as usual."
    ]
   },
   {

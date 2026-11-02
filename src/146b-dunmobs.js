@@ -5,9 +5,9 @@ import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, pos, SFX, st, UI, VIT, W3, WI
 import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {SKELGO} from './077-npc-skel.js';
-import {CREATURES} from './086-npc-fox.js';
+import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
 import {GEMS} from './101-gems.js';
-{ const D=MODS.dungeon; let M=null;
+{ const D=MODS.dungeon; let M=null, Mp=null;
   const TIER={green:{c:0x5ce04a,hp:2,v:.9,dmg:0,s:1,loot:.25,sk:[-10,40],nm:'GREEN',p:4,see:0},blue:{c:0x3fa2ff,hp:3,v:1.1,dmg:.03,s:1.06,loot:.35,sk:[0,50],nm:'BLUE',p:8,see:3},
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   INSPECT.kinds.push({is:id=>/^slime_/.test(id)&&!!TIER[id.slice(6)],make:id=>{ const g=INSPECT.shape('bottle',0xd8e8e0); g.add(INSPECT.part('cyl',TIER[id.slice(6)].c,0,.08,0,.052,.15,.052,0,0,1)); return g; }});
@@ -156,7 +156,8 @@ import {GEMS} from './101-gems.js';
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes([...(RES||[]),...SPI].filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); return {onLevel,tick,arena,wave:(n,k)=>{ lvl=n; spawnSlimes(n,k); },alive:()=>slimes.filter(S=>!S.dead).length}; };
-  D.hook(n=>{ if(!M){ if(!n)return; M=init(); } M.onLevel(n); });
+  const ensureInit=()=>Mp||(Mp=CREATURESREADY.then(()=>M||(M=init())));   // the slimes' mesh needs the creature data (lazy, loads just after the start), so init waits for it
+  D.hook(n=>{ if(!n&&!M)return; ensureInit().then(m=>m.onLevel(n)); });
   // an arena elsewhere runs the slimes: {G, lane:{x0,z0,x1,z1}, sol:[rects], away:[{x,z}], ground(x,z), lv}; wave n of k slimes (tier and toughness by n, as the dungeon's levels)
-  MODS.dunmobs={arena:async(A,n,k)=>{ if(window.LOAD)await LOAD('dungeon'); if(!M)M=init(); M.arena(A,n,k); },wave:(n,k)=>M&&M.wave(n,k),off:()=>M&&M.arena(null),alive:()=>M?M.alive():0};
+  MODS.dunmobs={arena:async(A,n,k)=>{ if(window.LOAD)await LOAD('dungeon'); const m=await ensureInit(); m.arena(A,n,k); },wave:(n,k)=>M&&M.wave(n,k),off:()=>M&&M.arena(null),alive:()=>M?M.alive():0};
   SYS.add('life',(dt)=>{ if(M)M.tick(dt); },'146b-dunmobs'); }

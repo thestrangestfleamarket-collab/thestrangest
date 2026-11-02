@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,10 +49,12 @@ jobs:
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
+          k art     'src/059p-art|data/art|art\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k tablet  'src/146ya-tablet|src/146y-operator|src/146-drone|src/146a-wield|data/tablet|tablet\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -122,6 +124,9 @@ jobs:
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
+      - name: The tablet (TAB pulls it up, its apps)
+        if: contains(steps.f.outputs.run, ' tablet')
+        run: node tests/tablet.cjs dist/market.html
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
@@ -132,6 +137,9 @@ jobs:
       - name: The bank (its door, the hoard, the dragon waking)
         if: contains(steps.f.outputs.run, ' bank')
         run: node tests/bank.cjs dist/market.html
+      - name: The art museum (the lot, the paintings hung when you go in, the plaques, out again)
+        if: contains(steps.f.outputs.run, ' art')
+        run: node tests/art.cjs dist/market.html
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         if: contains(steps.f.outputs.run, ' guide')
         run: node tests/guide.cjs dist/market.html

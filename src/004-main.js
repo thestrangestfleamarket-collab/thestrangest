@@ -6,6 +6,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {Reflector} from 'three/addons/objects/Reflector.js';
 
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',alpha:true}); renderer.setClearAlpha(1); renderer.info.autoReset=false;
@@ -52,4 +53,4 @@ function M(color,map=grainT,o={}){ const k=color+'|'+(map?map.id:0)+'|'+JSON.str
 
 const TEXTURES=__DATA__("data/textures.json");
 const KITD=__DATA__("data/kit.json");
-export {EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, renderer, RenderPass, resize, RESN, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX};
+export {EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, Reflector, renderer, RenderPass, resize, RESN, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX};

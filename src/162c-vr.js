@@ -10,7 +10,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
   const opt=Object.assign({},DEF); try{ const o=JSON.parse(SAVE.get('vr')||'{}'); for(const k in o)if(k in DEF&&typeof o[k]===typeof DEF[k])opt[k]=o[k]; }catch(e){}
   const PT={fast:[300,150,1000],normal:[800,300,1500],slow:[2000,500,3000]};
-  Object.assign(VR,{opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
+  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(), TRK=new THREE.Group(); HG.matrixAutoUpdate=TRK.matrixAutoUpdate=false; HUD.add(HG,TRK);
@@ -105,11 +105,12 @@ import {collide, frame, PAD} from './075-main-13.js';
       P.press={x0:x,y0:y,ly:P.y,moved:false,el,range:!!(el.matches&&el.matches('input[type=range]'))}; if(P.press.range)rangeAt(el,x); return; }
     const pr=P.press; P.press=null; if(pr&&!pr.moved&&!pr.range&&pr.el.isConnected)clickAt(pr.x0,pr.y0,pr.el); };
 
-  const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0;
+  const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0; VR.grips.length=0;
     for(const s of xf.session.inputSources){ if(k>=PTR.length)break; const p=s.targetRaySpace&&xf.getPose(s.targetRaySpace,ref); if(!p)continue; const P=PTR[k++], T=p.transform; P.src=s; P.hit=false;
       RO.set(T.position.x,T.position.y,T.position.z); RD.set(0,0,-1).applyQuaternion(Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w)); P.o=[RO.x,RO.y,RO.z]; P.d=[RD.x,RD.y,RD.z]; let len=1.2;
       if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++], U=C.userData; if(g){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=!!opt.ctl;
-        U.h=s.handedness; U.wp=U.wp||new V3(); U.wq=U.wq||new THREE.Quaternion(); U.v=U.v||new V3(); P4.copy(C.position).applyMatrix4(TRK.matrix); if(U.on&&dt>0)U.v.copy(P4).sub(U.wp).divideScalar(dt); else U.v.set(0,0,0); U.wp.copy(P4); U.wq.copy(DOLLY.quaternion).multiply(C.quaternion); U.on=1; } else { C.visible=false; U.on=0; } }   // the hand's world pose and speed, read by WIELD for a held tool (the putter)
+        U.h=s.handedness; U.wp=U.wp||new V3(); U.wq=U.wq||new THREE.Quaternion(); U.v=U.v||new V3(); P4.copy(C.position).applyMatrix4(TRK.matrix); if(U.on&&dt>0)U.v.copy(P4).sub(U.wp).divideScalar(dt); else U.v.set(0,0,0); U.wp.copy(P4); U.wq.copy(DOLLY.quaternion).multiply(C.quaternion); U.on=1;
+          const gp=s.gamepad; VR.grips.push({h:s.handedness,p:U.wp.clone(),q:U.wq.clone(),grip:gp&&gp.buttons[1]?gp.buttons[1].value:0,trig:gp&&gp.buttons[0]?gp.buttons[0].value:0}); } else { C.visible=false; U.on=0; } }   // the hand's world pose and speed, read by WIELD for a held tool (the putter)
       if(panel.visible&&PN.ready){ PNRM.set(0,0,1).applyQuaternion(panel.quaternion); const den=RD.dot(PNRM);
         if(den<-1e-4){ const t=HIT.copy(panel.position).sub(RO).dot(PNRM)/den; if(t>0&&t<4){ HIT.copy(RO).addScaledVector(RD,t); P4.copy(HIT).sub(panel.position).applyQuaternion(Q4.copy(panel.quaternion).invert());
           const u=P4.x/panel.scale.x+.5, v=.5-P4.y/panel.scale.y; if(u>=0&&u<=1&&v>=0&&v<=1){ P.hit=true; P.x=u*PN.W; P.y=v*PN.H; len=t; P.dot.position.copy(HIT).addScaledVector(PNRM,.002); P.dot.quaternion.copy(panel.quaternion); if(!top)top=P; } } } }
@@ -121,12 +122,14 @@ import {collide, frame, PAD} from './075-main-13.js';
     hl.visible=false; if(top){ const el=PN.fresh&&at(top.x,top.y), c0=el&&el.closest(CLK), w=c0?null:inPic(top.x,top.y), c=c0||(w&&w[0]);
       if(c){ const r=c0?c0.getBoundingClientRect():w[1], a=hl.geometry.attributes.position, U=x=>x/PN.W-.5, V=y=>.5-y/PN.H; a.setXYZ(0,U(r.left),V(r.top),.001); a.setXYZ(1,U(r.right),V(r.top),.001); a.setXYZ(2,U(r.right),V(r.bottom),.001); a.setXYZ(3,U(r.left),V(r.bottom),.001); a.needsUpdate=true; hl.visible=true; } } };
 
-  const hands=(xf,ref)=>{ let n=0, nh=0, tip=false; wrist.visible=false;
-    for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++;
+  const hands=(xf,ref)=>{ let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null;
+    for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
+        if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
         JM.setMatrixAt(n++,M4.compose(P4,Q4,S4.setScalar(p.radius||.008)));
         if(name==='wrist'&&s.handedness==='left'){ wrist.visible=true; wrist.position.copy(P4).add(EV.set(0,.04,.03).applyQuaternion(Q4)); wrist.quaternion.copy(Q4).multiply(QX); }
         if(name==='index-finger-tip'&&s.handedness==='right'){ TIPR.copy(P4); tip=true; } } }
+    for(const k of 'LR'){ const J=VR.joints[k]; if(J&&J.index&&J.thumb)J.pinch=J.index.distanceTo(J.thumb)<.03*FEEL.MH; }
     JM.count=n; JM.instanceMatrix.needsUpdate=true; JM.visible=opt.hands; VR.hands=nh;
     if(wrist.visible&&tip){ const d=TIPR.distanceTo(wrist.position); if(d<.03&&!VR.wt){ VR.wt=1; tap('Escape'); } else if(d>.06)VR.wt=0; } };
 
@@ -150,8 +153,8 @@ import {collide, frame, PAD} from './075-main-13.js';
   const turn=d=>{ head(EV); VR.yaw+=d; rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(EV.x-O.x,0,EV.z-O.z); };
   const calib=()=>{ VR.yaw=SHARED.heading+Math.PI-yawOf(HQ); rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(pos.x-O.x,0,pos.z-O.z); VR.y0=HL.y;
     VR.eye=W3.eyeAt&&W3.eyeAt(EV)?Math.max(.5*TILE,EV.y-SHARED.py):1.62/.84*TILE*(W3.SZ||1); VR.px=pos.x; VR.pz=pos.z; VR.cal=true; };
-  const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!(VR.want&&VR.want.turn===false);
-  const free=()=>!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
+  const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!SHARED.drive&&!(VR.want&&VR.want.turn===false);
+  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;   // a move since the last frame (a door, a fade, a teleport) carries the room with you
@@ -160,29 +163,29 @@ import {collide, frame, PAD} from './075-main-13.js';
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
     if(UI.gamewin||!turns()){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
     if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',keys.has('e'))&&turns())turn(-snap());
-    if(edge('rc',VR.r3))VR.cal=false; if(edge('lc',VR.l3))tap('Escape');
+    if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     if(vw()==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
       if(d>L){ if(free()){ const k=1-L/d; pos.x+=dx*k; pos.z+=dz*k; collide(pos); if(FEEL.take())FEEL.sync(); dx=EV.x-pos.x; dz=EV.z-pos.z; d=Math.hypot(dx,dz); }
         if(d>L){ const m=(d-L)/d; O.x-=dx*m; O.z-=dz*m; } } }
     VR.px=pos.x; VR.pz=pos.z;
     const a=VR.yaw+yawOf(HQ); SHARED.yaw=SHARED.yawTo=a; SHARED.pitch=SHARED.pitchTo=Math.max(-1.2,Math.min(1.3,-Math.asin(Math.max(-1,Math.min(1,FW.y)))));
-    const mv=opt.vig&&(opt.move==='stick'&&Math.hypot(VP.axes[0],VP.axes[1])>.2||opt.turn==='smooth'&&Math.abs(rx)>.3)?1:0; vig.material.opacity+=(mv-vig.material.opacity)*Math.min(1,dt*8); vig.visible=vig.material.opacity>.02;
+    const mv=opt.vig&&!SHARED.drive&&(opt.move==='stick'&&Math.hypot(VP.axes[0],VP.axes[1])>.2||opt.turn==='smooth'&&Math.abs(rx)>.3)?1:0; vig.material.opacity+=(mv-vig.material.opacity)*Math.min(1,dt*8); vig.visible=vig.material.opacity>.02;
     if(ref){ point(xf,ref,dt); hands(xf,ref); if(!UI.gamewin)teleport(); else { VR.tp=null; VR.tpWas=false; ARC.visible=RING.visible=false; } } live(); },'162c-vr');
 
   VR.draw=hold=>{ if(!VR.pose)return; const r=renderer;
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;
     const ey=SHARED.py+VR.eye+opt.height/100*FEEL.MV-VR.y0*FEEL.MV;
-    if(vw()==='behind'){ const Y=VR.want&&VR.want.face!=null?VR.want.face+Math.PI:VR.yaw; DOLLY.position.set(pos.x+Math.sin(Y)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(Y)*2.6*FEEL.MH); } else DOLLY.position.set(O.x,ey,O.z);
-    DOLLY.rotation.set(0,VR.yaw,0); DOLLY.scale.set(FEEL.MH,FEEL.MV,FEEL.MH); DOLLY.updateMatrixWorld(true); TRK.matrix.copy(DOLLY.matrixWorld); TRK.matrixWorldNeedsUpdate=true;
-    const nh=vw()==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=vw()==='behind'||opt.body;
+    if(SHARED.drive&&SHARED.drive.dolly)SHARED.drive.dolly(DOLLY,HL,HQ); else { if(vw()==='behind'){ const Y=VR.want&&VR.want.face!=null?VR.want.face+Math.PI:VR.yaw; DOLLY.position.set(pos.x+Math.sin(Y)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(Y)*2.6*FEEL.MH); } else DOLLY.position.set(O.x,ey,O.z);
+    DOLLY.rotation.set(0,VR.yaw,0); DOLLY.scale.set(FEEL.MH,FEEL.MV,FEEL.MH); } DOLLY.updateMatrixWorld(true); TRK.matrix.copy(DOLLY.matrixWorld); TRK.matrixWorldNeedsUpdate=true;
+    const nh=vw()==='first'&&opt.body; if(nh!==VR.nh){ VR.nh=nh; if(W3.setHead)W3.setHead(!nh); } W3.group.visible=!SHARED.drive&&(vw()==='behind'||opt.body);
     const f=Math.max(FADE.el?+FADE.el.style.opacity||0:0,VR.blink); veil.material.opacity=f; veil.visible=f>.01;
     if(--VR.ct<=0){ VR.ct=10; const els=PAD.panels(), w=!!UI.menuOpen||els.length>0; if(w!==VR.win){ VR.win=w; if(w)openPanel(); else closePanel(); } else if(w&&(els.length!==PN.els.length||els.some((e,i)=>e!==PN.els[i])))watch(); }
     { const n=performance.now(), T=PT[opt.panel]||PT.normal; if(panel.visible&&PN.dirty&&!PN.busy&&n-PN.t>T[0]&&(n-PN.ch>T[1]||n-PN.d0>T[2]))shoot(); }
     { const n=performance.now(); VR.notes=VR.notes.filter(o=>o.until>n); }
     const m=VR.win?'':VR.notes.length?'n'+VR.notes.map(o=>o.t).join('|'):VR.tip>0?'tip':''; if(m!==VR.m){ VR.m=m; if(m==='tip')write(cv,tex,TIP,22,17); else if(m)note(); } card.visible=!!m;
     r.xr.enabled=true; r.setRenderTarget(VR.rt);
-    if(hold||!VR.cal)r.clear(); else{ r.render(scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
+    if(hold||!VR.cal)r.clear(); else{ r.render(SHARED.drive&&SHARED.drive.scene||scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
     r.xr.enabled=false; };
 
   const loop=(t,xf)=>{ const ref=renderer.xr.getReferenceSpace(); VR.pose=ref?xf.getViewerPose(ref):null; VR.rt=renderer.getRenderTarget(); read(xf); flush(t);

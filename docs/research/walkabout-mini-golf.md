@@ -142,3 +142,14 @@ The model proved sensitive to the VR market's new-buyer inflow. On 23 Jan 2026 t
 For a developer building a 3D multiplayer web game, Walkabout's most transferable lesson is structural rather than mechanical: one physical verb everyone already knows, a rule set whose only cost is the stroke you already took, and a world laid out as a walk whose hidden goals turn looking into play. The two unlock routes (10 balls or par) let explorers and golfers reach the same Hard content, and gating collectibles rather than access behind ownership (Guest Pass) keeps rooms full without giving the content away. Small named rooms with voice, a host who owns the settings, an "observer" who is simply a non-playing body in the space, and no leaderboards together create a hangout where competition is organised by the community rather than the client. The settings surface is a checklist of the problems a swing-based game must solve: false hits (Grip To Putt, look gating), power calibration (Strength), seated play (Lock Ball), and blow-ups (Stroke Limit, Mulligans).
 
 Two things the record does not supply are exactly the two a web port would need: the netcode (authority, ball synchronisation, whether balls collide) and the swing-to-ball algorithm. Both must be designed rather than copied, and the studio's own rule, cheat the physics when it helps the player, is the best available guidance for both. The 2026 contraction also shows the ceiling of the model: a steady cadence of small paid worlds sustains a studio only while new players keep arriving, which is why the next Walkabout is a different game on flat screens as well as in headsets.
+
+## Verification note (2 Nov 2026)
+
+The official site, support knowledge base and Steam were later read in full (see `walkabout-mini-golf-controls.md`). Corrections to the above:
+
+- Grip To Putt uses the grip button, and holding grip also keeps a ball alive when it goes out of bounds (official controller diagrams).
+- Y/B is Instant Replay, X/A the pause menu and scorecard, holding the Oculus / Options button recenters.
+- Players' balls never collide: the studio has "no current plans for supporting real-time multiplayer ball collisions" (June 2024).
+- Quick Match gained a 3x3 course grid with a Closest Putt mode and opponent ratings (May 2026); hole records show on the wristwatch; a Friends list with direct invites arrived Dec 2025.
+- Platforms now also include Steam Frame and Samsung Galaxy XR; the game is in Horizon+.
+- The hard-mode unlock rule (10 lost balls or par) is still only in community sources; no official page states it.

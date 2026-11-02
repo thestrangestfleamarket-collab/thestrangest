@@ -401,5 +401,5 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     go:R=>{ D=R; if(!ROOMS.enterAt)return; ROOMS.enterAt('roam',[WX,WZ,0,0]).then(()=>{ if(D!==R||!API)return; API.start(R); }).catch(e=>console.warn('ROAM',e)); },
     run:(R,dt)=>{ if(API&&ROAM.on)API.step(dt); },
     hide:()=>{ if(API)API.end(); else D=null; } });
-  ROAM.aim=()=>API?API.aim():null; ROAM.input=o=>{ if(API)API.input(o); }; ROAM.hurt=n=>{ if(API)API.hurt(n); }; ROAM.grips=()=>API?API.grips():null;
+  ROAM.exit=EXIT; ROAM.aim=()=>API?API.aim():null; ROAM.input=o=>{ if(API)API.input(o); }; ROAM.hurt=n=>{ if(API)API.hurt(n); }; ROAM.grips=()=>API?API.grips():null;
   window.ROAMDBG=()=>API?API.dbg():{on:false,loaded:false}; }

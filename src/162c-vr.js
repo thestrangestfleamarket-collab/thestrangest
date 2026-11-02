@@ -153,7 +153,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
-    if(!VR.cal)calib(); if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
+    if(!VR.cal)calib(); else { O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z; } if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
     if(UI.gamewin||SHARED.drive){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }

@@ -55,7 +55,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 1)); await until(() => !ARCDBG().holo.run, 60000); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('y-button', 0));
   const e1 = await pg.evaluate(() => ({ on: ROAMDBG().on, run: ARCDBG().holo.run, vr: VR.on }));
   ok(!e1.on && !e1.run, 'holding Y ends the program (' + JSON.stringify(e1) + ')');
-  ok(await until(() => ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 180000), 'you are back in the holodeck (' + JSON.stringify(await pg.evaluate(() => ({ off: ROOMS.offIn && ROOMS.offIn(), fade: FADE.busy, run: ARCDBG().holo.run }))) + ')');
+  ok(await until(() => ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 120000), 'you are back in the holodeck, the headset carried with you (' + JSON.stringify(await pg.evaluate(() => ({ off: ROOMS.offIn && ROOMS.offIn(), fade: FADE.busy, run: ARCDBG().holo.run, you: __dbg.you() }))) + ')');
   const back = await pg.evaluate(() => ({ drive: !!SHARED.drive, body: VR.state().body, vr: VR.on }));
   ok(!back.drive && back.vr, 'the headset stays on, the Walker is yours again: ' + JSON.stringify(back));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));

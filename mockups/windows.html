@@ -5,17 +5,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Silkscreen&display=swap">
 <style>
-:root{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--me:#0d3a1f;--mk:#020a06;--hi:#f2c14e;--bg:#0d0f14;--mono:'Share Tech Mono',ui-monospace,monospace;--px:'Silkscreen',monospace}
-html,body{margin:0;background:var(--bg);color:#ece5d3;font:15px/1.5 var(--mono)}
+:root{--mf:#ffffff;--mi:#ffffff;--mb:#0a1c62;--mt:#ffffff;--md:#b8c6f0;--mo:#f8d848;--me:#0f2a86;--mk:#1434a4;--hi:#f8d848;--bg:#0d0f14;--mono:'Press Start 2P',monospace;--px:'Silkscreen',monospace}
+html,body{margin:0;background:var(--bg);color:#ece5d3;font:15px/1.5 'Share Tech Mono',ui-monospace,monospace}
 body{padding:16px}
-h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
+h1{font:16px var(--mono);color:#f8d848;margin:0 0 8px}
 .lead{color:#9b9584;max-width:980px;margin:0 0 14px}
 .picks{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
-.picks button{font:16px var(--mono);letter-spacing:2px;color:var(--mt);background:var(--mk);border:0;box-shadow:0 0 0 2px var(--mi);padding:8px 14px;cursor:pointer}
-.picks button[aria-selected=true]{color:var(--mk);background:var(--mf)}
+.picks button{font:11px var(--mono);color:#fff;background:#1434a4;border:4px solid #fff;padding:8px 14px;cursor:pointer}
+.picks button[aria-selected=true]{color:#f8d848}
 .v{display:none}.v.on{display:block}
 .about{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;max-width:1120px;margin:12px 0 18px}
-.about h3{font:13px var(--mono);letter-spacing:2px;color:var(--md);margin:0 0 4px;border-bottom:2px solid var(--me);padding-bottom:4px}
+.about h3{font:11px var(--mono);color:#f8d848;margin:0 0 4px;border-bottom:2px solid var(--me);padding-bottom:4px}
 .about ul{margin:0;padding-left:16px;color:#c8c2b0;font-size:13px}
 .about li{margin:2px 0}
 @media (max-width:800px){.about{grid-template-columns:1fr}}
@@ -31,7 +31,7 @@ h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
 .scr .you{position:absolute;left:540px;bottom:40%;width:18px;height:48px;background:#e8e2cc;border-radius:6px 6px 2px 2px}
 .scr .you::before{content:'';position:absolute;left:3px;top:-14px;width:12px;height:12px;border-radius:50%;background:#e8e2cc}
 .scr .npc{position:absolute;bottom:40%;width:18px;height:46px;background:#c94b4b;border-radius:6px 6px 2px 2px}
-.scr .dim{position:absolute;inset:0;background:rgba(2,10,6,.62)}
+.scr .dim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
 
 /* HUD (1 Nov, kept) */
 .hud{position:absolute;font:9px var(--px);color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;letter-spacing:1px}
@@ -41,42 +41,44 @@ h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
 .qb{left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:3px}.qb i{width:38px;height:38px;background:#0006;font:7px var(--px);font-style:normal;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;color:#fff}.qb i em{position:absolute;left:3px;top:2px;font-style:normal;color:#fffa}.qb i.on{background:#000b;outline:1px solid var(--mf)}
 
 /* THE ONE FRAME */
-.win{position:absolute;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),var(--mk);box-shadow:0 0 0 2px var(--mi);color:var(--mt);font:12px/1.45 var(--mono);letter-spacing:1px;display:flex;flex-direction:column}
-.win .tt{display:flex;align-items:center;gap:10px;padding:6px 10px;background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi);color:var(--mf);font-size:14px;letter-spacing:3px}
-.win .tt .n::before{content:'[ '}.win .tt .n::after{content:' ]'}
-.win .tt .x{margin-left:auto;width:18px;height:18px;line-height:18px;text-align:center;box-shadow:inset 0 0 0 2px var(--mi);font-size:11px}
+.win{position:absolute;background:var(--mk);border:4px solid #fff;box-shadow:8px 8px 0 #000;color:var(--mt);font:9px/1.7 var(--mono);display:flex;flex-direction:column;image-rendering:pixelated}
+.win::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(rgba(0,0,0,.1) 0 25%,transparent 0 50%) 0 0/4px 4px}
+.grain{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.2;mix-blend-mode:overlay;image-rendering:pixelated;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/192px 192px}
+.win .tt{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--mk);border-bottom:4px solid #fff;color:#fff;font-size:10px}
+.win .tt .n::before{content:''}.win .tt .n::after{content:''}
+.win .tt .x{margin-left:auto;width:20px;height:20px;line-height:20px;text-align:center;border:4px solid #fff;font-size:8px;box-sizing:border-box}
 .win .tabs{display:flex;gap:2px;padding:4px 8px 0;flex-wrap:wrap}
-.win .tabs span{padding:3px 8px;color:var(--md);font-size:11px}.win .tabs span.on{color:var(--mk);background:var(--mf)}
+.win .tabs span{padding:4px 8px;color:var(--md);font-size:8px}.win .tabs span.on{color:var(--mo);background:transparent}.win .tabs span.on::before{content:'▶ '}
 .win .body{padding:8px 10px;flex:1;min-height:0;overflow:hidden}
-.win .foot{padding:4px 10px;color:var(--md);font-size:10px;letter-spacing:2px;box-shadow:inset 0 2px 0 var(--me)}
-.win h4{margin:6px 0 3px;font-size:10px;color:var(--md);border-bottom:2px solid var(--me);padding-bottom:2px;letter-spacing:2px}
+.win .foot{padding:6px 10px;color:var(--md);font-size:7px;background:var(--me)}
+.win h4{margin:8px 0 4px;font-size:8px;color:var(--mo);padding:3px 6px;background:var(--me)}
 .win h4:first-child{margin-top:0}
 .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
-.row .a{color:var(--md)}.row .a b{color:var(--mt);font-weight:400;padding:0 4px}.row .a b.on{color:var(--mk);background:var(--mf)}
-.row.sel{color:var(--mk);background:var(--mf)}.row.sel .a,.row.sel .a b{color:var(--mk)}
+.row{padding:3px 6px}.row:nth-child(even){background:var(--me)}.row .a{color:var(--md)}.row .a b{color:var(--mo);font-weight:400;padding:0 4px}.row .a b.on{color:var(--mo)}
+.row.sel{color:var(--mo)}.row.sel>span:first-child::before{content:'▶ '}.row.sel .a,.row.sel .a b{color:var(--mo)}
 .hi{color:var(--mo)}
-.bar2{height:10px;background:var(--me);position:relative;margin:2px 0}.bar2 b{position:absolute;left:0;top:0;bottom:0;background:var(--mf)}
-.seg{display:flex;gap:2px}.seg i{flex:1;height:10px;background:var(--me)}.seg i.on{background:var(--mo)}
-.port{width:84px;height:84px;background:var(--mb);box-shadow:inset 0 0 0 2px var(--mi);position:relative;flex:none}
-.port::before{content:'';position:absolute;left:34px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--mf)}.port::after{content:'';position:absolute;left:30px;top:34px;width:24px;height:40px;background:var(--mf);border-radius:6px 6px 0 0}
+.bar2{height:12px;background:var(--mb);position:relative;margin:3px 0}.bar2 b{position:absolute;left:0;top:0;bottom:0;background:var(--mo)}
+.seg{display:flex;gap:4px}.seg i{flex:1;height:12px;background:var(--mb)}.seg i.on{background:var(--mo)}
+.port{width:84px;height:84px;background:var(--mb);border:4px solid #fff;box-sizing:border-box;position:relative;flex:none}
+.port::before{content:'';position:absolute;left:30px;top:10px;width:16px;height:16px;background:var(--mf)}.port::after{content:'';position:absolute;left:26px;top:30px;width:24px;height:40px;background:var(--mf)}
 .port.red::before,.port.red::after{background:#ff8a7a}
 .port>span{background:var(--mk);padding:0 3px;z-index:1}
-.btn{display:inline-block;padding:2px 8px;color:var(--mt)}.btn.on{color:var(--mk);background:var(--mf)}
-.kbd{display:inline-block;padding:0 5px;box-shadow:inset 0 0 0 1px var(--mi);color:var(--mo);font-size:10px}
-.cap{position:absolute;left:12px;right:12px;bottom:60px;text-align:center;color:var(--hi);font:11px var(--px);text-shadow:1px 1px 0 #000;letter-spacing:1px;pointer-events:none}
-.note{position:absolute;font:11px var(--mono);color:#ffd27a;background:#000a;padding:3px 7px;letter-spacing:1px;pointer-events:none}
+.btn{display:inline-block;padding:3px 8px;color:var(--md)}.btn.on{color:var(--mo)}.btn.on::before{content:'▶ '}
+.kbd{display:inline-block;padding:0 5px;border:2px solid var(--mi);color:var(--mo);font-size:10px}
+.cap{position:absolute;left:12px;right:12px;bottom:60px;text-align:center;color:var(--hi);font:8px var(--mono);text-shadow:2px 2px 0 #000;pointer-events:none;z-index:6}
+.note{position:absolute;font:8px var(--mono);color:#f8d848;background:#000;padding:4px 8px;pointer-events:none;z-index:6}
 .note::before{content:'◀ '}
 
 /* strips: the same frame holding other content */
 .strip{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 0}
 .strip .mini{position:relative;width:360px;height:220px;background:#0b0e14;overflow:hidden}
 .strip .mini .lab{position:absolute;left:8px;top:6px;font:10px var(--px);color:#9b9584;letter-spacing:1px;z-index:2}
-.strip .mini .win{font-size:10px}
-.strip .mini .win .tt{font-size:11px;padding:4px 8px}
+.strip .mini .win{font-size:7px}
+.strip .mini .win .tt{font-size:8px;padding:4px 8px}
 </style>
 
 <h1>ONE WINDOW SYSTEM: FOUR WAYS</h1>
-<p class="lead">All four keep the Codec look (27 Oct) and the 1 Nov HUD (bars top left, minimap, log, quick bar). All four put <b>every</b> menu, shop, talk, activity and editor into the <b>same frame</b>: title bar <span class="hi">[ NAME ]</span>, a tab row, the body, a footer with the live keys, one X. They differ in <b>where the frame lives</b> and <b>how many can be open</b>. Pick a letter; the smaller pictures under each screen show the same frame holding the menu, a shop and a talk.</p>
+<p class="lead">All four are drawn in the RETRO 16-BIT look (owner's pick, 2 Nov 2026) with the 1 Nov HUD (bars top left, minimap, log, quick bar). All four put <b>every</b> menu, shop, talk, activity and editor into the <b>same frame</b>: title bar <span class="hi">[ NAME ]</span>, a tab row, the body, a footer with the live keys, one X. They differ in <b>where the frame lives</b> and <b>how many can be open</b>. Pick a letter; the smaller pictures under each screen show the same frame holding the menu, a shop and a talk.</p>
 <div class="picks" role="tablist">
   <button role="tab" aria-selected="true" data-v="A">A · THE DECK</button>
   <button role="tab" data-v="B">B · THE SLOTS</button>
@@ -122,7 +124,7 @@ h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
     <div class="foot">ESC CLOSE · TAB NEXT · ↑↓ PICK · ENTER DO · W/S WALK AWAY ENDS IT</div>
   </div>
   <div class="note" style="left:560px;top:120px">one deck: a shop is just a tab</div>
-  <div class="cap">THE RADISH · DOUBLE-CLICK OPENED HIS TAB</div>
+  <div class="cap">THE RADISH · DOUBLE-CLICK OPENED HIS TAB</div><div class="grain"></div>
 </div></div>
 <div class="strip">
   <div class="mini"><div class="lab">THE MENU (ESC)</div><div class="win" style="right:0;top:0;bottom:0;width:230px"><div class="tt"><span class="n">CHARACTER</span><span class="x">X</span></div><div class="tabs"><span class="on">CHARACTER</span><span>PACK</span><span>MAP</span><span>GUIDE</span><span>SETTINGS</span></div><div class="body"><div style="display:flex;gap:8px"><div class="port" style="width:60px;height:60px"></div><div><div class="hi">BRALYNN</div><div class="bar2"><b style="width:78%"></b></div><div class="bar2"><b style="width:52%;background:var(--mo)"></b></div><div style="color:var(--md);font-size:9px">$1,240 · SECTION A</div></div></div><div class="row"><span>PASSPORT</span></div><div class="row"><span>REPORT A BUG</span><span class="a">F8</span></div><div class="row"><span>LOG OUT</span></div></div><div class="foot">ESC CLOSE · TAB NEXT</div></div></div>
@@ -203,7 +205,7 @@ h1{font:22px var(--mono);letter-spacing:3px;color:var(--mf);margin:0 0 4px}
   <div class="world"></div>
   <div class="bld" style="left:40px;width:160px;height:200px"></div><div class="bld" style="left:380px;width:200px;height:230px"></div><div class="bld" style="left:900px;width:180px;height:180px"></div>
   <div class="you"></div>
-  <div class="dim"></div>
+  <div class="dim"></div><div class="grain"></div>
   <div class="win" style="left:60px;right:60px;top:30px;bottom:30px">
     <div class="tt"><span class="n">THE STRANGEST FLEA MARKET</span><span style="color:var(--md);font-size:11px">BRALYNN · $1,240 · SECTION A · 7:40 PM</span><span class="x">X</span></div>
     <div class="body" style="display:flex;gap:16px">

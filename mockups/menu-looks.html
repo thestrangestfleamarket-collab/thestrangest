@@ -3,7 +3,7 @@
 <title>Menu looks</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Silkscreen&family=Audiowide&family=Monoton&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@500;700&family=Crimson+Text:wght@400;600&family=Open+Sans:wght@400;600;700&family=IM+Fell+English+SC&family=Orbitron:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Silkscreen&family=Audiowide&family=Monoton&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;0,600;1,400&family=Cinzel:wght@500;700&family=Crimson+Text:wght@400;600&family=Open+Sans:wght@400;600;700&family=Pixelify+Sans:wght@400;600&family=Jacquard+12&family=Jacquard+24&display=swap">
 <style>
 html,body{margin:0;background:#0d0f14;color:#ece5d3;font:15px/1.5 'Share Tech Mono',ui-monospace,monospace}
 body{padding:16px}
@@ -16,98 +16,96 @@ h1{font:22px 'Share Tech Mono',monospace;letter-spacing:3px;color:#7dffa8;margin
 .about{color:#c8c2b0;font-size:13px;max-width:1120px;margin:0 0 12px;line-height:1.6}
 .about b{color:#ece5d3}
 .shell{max-width:1120px}
-.scr{position:relative;width:1120px;height:630px;overflow:hidden;background:#0b0e14;transform-origin:0 0;font-size:12px}
-.world{position:absolute;inset:0;background:linear-gradient(180deg,#141a2a 0,#1c2436 38%,#2a2a2c 38.2%,#3a3836 60%,#2c2a28 60.2%,#1d1b19 100%)}
-.bld{position:absolute;bottom:38%;background:#2a2630;box-shadow:inset 0 0 0 2px #1a1720}.bld i{position:absolute;width:10px;height:14px;background:#f2c14e;opacity:.8;box-shadow:0 0 8px #f2c14e88}
-.lamp{position:absolute;bottom:36%;width:4px;height:120px;background:#444}.lamp::after{content:'';position:absolute;top:-8px;left:-6px;width:16px;height:10px;background:#ffe9a8;box-shadow:0 0 30px 12px #ffd68044}
-.you{position:absolute;left:540px;bottom:40%;width:18px;height:48px;background:#e8e2cc;border-radius:6px 6px 2px 2px}.you::before{content:'';position:absolute;left:3px;top:-14px;width:12px;height:12px;border-radius:50%;background:#e8e2cc}
-.npc{position:absolute;left:600px;bottom:40%;width:18px;height:46px;background:#c94b4b;border-radius:6px 6px 2px 2px}
-.dim{position:absolute;inset:0;background:var(--dimbg,rgba(0,0,0,.45))}
+.scr{position:relative;width:1120px;height:630px;overflow:hidden;background:#0b0e14;transform-origin:0 0;font-size:12px;image-rendering:pixelated}
+.world{position:absolute;inset:0;background:linear-gradient(180deg,#141a2a 0 38%,#2a2a2c 38% 60%,#1d1b19 60% 100%)}
+.bld{position:absolute;bottom:38%;background:#2a2630;border:4px solid #1a1720}.bld i{position:absolute;width:12px;height:16px;background:#f2c14e}
+.lamp{position:absolute;bottom:36%;width:4px;height:120px;background:#444}.lamp::after{content:'';position:absolute;top:-8px;left:-6px;width:16px;height:12px;background:#ffe9a8}
+.you{position:absolute;left:540px;bottom:40%;width:20px;height:48px;background:#e8e2cc}.you::before{content:'';position:absolute;left:4px;top:-16px;width:12px;height:12px;background:#e8e2cc}
+.npc{position:absolute;left:600px;bottom:40%;width:20px;height:48px;background:#c94b4b}
+.dim{position:absolute;inset:0;background:var(--dimbg,rgba(0,0,0,.5))}
+/* the grain: a chunky noise over everything, and a 2px dither on the panels */
+.grain{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:var(--grain,.22);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='64' height='64' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/192px 192px;mix-blend-mode:overlay;image-rendering:pixelated}
+.win::after,.talk::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-conic-gradient(rgba(0,0,0,.09) 0 25%,transparent 0 50%) 0 0/4px 4px;opacity:var(--dith,1)}
 
 /* ---- the shared structure; every theme skins these ---- */
-.hud{position:absolute;font:var(--hudfont,9px 'Silkscreen',monospace);color:var(--hudfg,#fff);text-shadow:var(--hudshadow,1px 1px 0 #000)}
-.vit{left:12px;top:12px;width:170px}.vit .bar{height:9px;background:var(--barbg,#0008);margin:3px 0;position:relative}.vit .bar b{position:absolute;left:0;top:0;bottom:0;background:var(--hp,#c43)}.vit .bar.s b{background:var(--sta,#dcb43a)}.vit .bar span{position:absolute;right:3px;top:-1px;font-size:.9em}
-.mm{right:12px;top:12px;width:110px;text-align:center}.mm .c{width:110px;height:110px;border-radius:var(--mmround,50%);background:radial-gradient(circle,#2a3b2a 0 30%,#52524a 31% 44%,#2a3b2a 45% 100%);position:relative;box-shadow:var(--mmring,none)}.mm .c::after{content:'';position:absolute;left:51px;top:51px;width:8px;height:8px;background:#fff;transform:rotate(45deg)}
-.qb{left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:3px}.qb i{width:38px;height:38px;background:var(--slot,#0006);border:var(--slotb,0);font:7px 'Silkscreen',monospace;font-style:normal;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;color:var(--hudfg,#fff)}.qb i em{position:absolute;left:3px;top:2px;font-style:normal;opacity:.7}.qb i.on{outline:2px solid var(--acc)}
+.hud{position:absolute;font:var(--hudfont,8px 'Press Start 2P',monospace);color:var(--hudfg,#fff);text-shadow:var(--hudshadow,2px 2px 0 #000);line-height:1.6}
+.vit{left:12px;top:12px;width:180px}.vit .bar{height:12px;background:var(--barbg,#000);margin:4px 0;position:relative;border:var(--barb,0)}.vit .bar b{position:absolute;left:0;top:0;bottom:0;background:var(--hp,#c43)}.vit .bar.s b{background:var(--sta,#dcb43a)}.vit .bar span{position:absolute;right:4px;top:0;font-size:8px;line-height:12px}
+.mm{right:12px;top:12px;width:112px;text-align:center}.mm .c{width:112px;height:112px;background:#2a3b2a;position:relative;border:var(--mmb,4px solid #fff);clip-path:var(--mmclip,none)}.mm .c::before{content:'';position:absolute;inset:28px;background:#52524a;clip-path:var(--mmclip,none)}.mm .c::after{content:'';position:absolute;left:52px;top:52px;width:8px;height:8px;background:#fff}
+.qb{left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px}.qb i{width:40px;height:40px;background:var(--slot,#000);border:var(--slotb,4px solid #fff);font:6px 'Press Start 2P',monospace;font-style:normal;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;color:var(--hudfg,#fff)}.qb i em{position:absolute;left:3px;top:3px;font-style:normal;opacity:.8}.qb i.on{border-color:var(--acc)}
 
-.win{position:absolute;left:150px;right:150px;top:36px;bottom:150px;display:grid;grid-template-rows:auto 1fr;background:var(--panel);color:var(--fg);font:var(--font);border:var(--border);border-radius:var(--radius,0);box-shadow:var(--shadow,none)}
-.win .tt{display:flex;align-items:center;gap:12px;padding:var(--ttpad,10px 16px);font:var(--titlefont);color:var(--title);letter-spacing:var(--ttls,2px);border-bottom:var(--ttline);background:var(--ttbg,transparent);border-radius:var(--radius,0) var(--radius,0) 0 0}
-.win .tt .x{margin-left:auto;width:22px;height:22px;line-height:22px;text-align:center;border:var(--xb,1px solid currentColor);border-radius:var(--xr,0);font-size:11px}
-.win .body{display:grid;grid-template-columns:190px 1fr;min-height:0}
-.nav{display:flex;flex-direction:column;gap:var(--navgap,2px);padding:12px;border-right:var(--navline)}
-.nav span{padding:7px 10px;color:var(--dimfg);border-radius:var(--radius,0)}.nav span.on{color:var(--onfg);background:var(--onbg);border:var(--onb,0)}
-.page{padding:14px 18px;min-width:0;display:grid;grid-template-columns:150px 1fr;gap:16px;align-content:start}
-.port{width:150px;height:200px;background:var(--portbg,#0004);border:var(--portb,1px solid currentColor);position:relative;border-radius:var(--radius,0)}.port::before{content:'';position:absolute;left:62px;top:40px;width:26px;height:26px;border-radius:50%;background:var(--fg)}.port::after{content:'';position:absolute;left:55px;top:72px;width:40px;height:90px;background:var(--fg);border-radius:8px 8px 0 0}
-.facts h2{margin:0 0 6px;font:var(--h2font);color:var(--title);letter-spacing:var(--h2ls,1px)}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:var(--rowline)}
+.win{position:absolute;left:148px;right:148px;top:36px;bottom:152px;display:grid;grid-template-rows:auto 1fr;background:var(--panel);color:var(--fg);font:var(--font);border:var(--border);box-shadow:var(--shadow,none);image-rendering:pixelated}
+.win .tt{display:flex;align-items:center;gap:12px;padding:12px 16px;font:var(--titlefont);color:var(--title);letter-spacing:var(--ttls,0);border-bottom:var(--border);background:var(--ttbg,transparent)}
+.win .tt .x{margin-left:auto;width:24px;height:24px;line-height:24px;text-align:center;background:var(--xbg,transparent);border:var(--xb,4px solid currentColor);font-size:10px;color:var(--xfg,inherit)}
+.win .body{display:grid;grid-template-columns:200px 1fr;min-height:0}
+.nav{display:flex;flex-direction:column;gap:4px;padding:12px;border-right:var(--border)}
+.nav span{padding:8px 10px;color:var(--dimfg);background:var(--navbg,transparent);border:var(--navb,0)}.nav span.on{color:var(--onfg);background:var(--onbg);border:var(--onb,0)}
+.page{padding:16px 20px;min-width:0;display:grid;grid-template-columns:150px 1fr;gap:16px;align-content:start}
+.port{width:150px;height:200px;background:var(--portbg,#000);border:var(--border);position:relative;box-sizing:border-box}.port::before{content:'';position:absolute;left:60px;top:40px;width:28px;height:28px;background:var(--fg)}.port::after{content:'';position:absolute;left:54px;top:72px;width:40px;height:92px;background:var(--fg)}
+.facts h2{margin:0 0 8px;font:var(--h2font);color:var(--title)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 8px}.row:nth-child(even){background:var(--stripe,rgba(0,0,0,.15))}
 .row .k{color:var(--dimfg)}.row .v2{color:var(--fg)}
-.bar2{height:10px;width:140px;background:var(--barbg,#0008);position:relative;display:inline-block;vertical-align:middle;margin-left:8px;border-radius:var(--barround,0)}.bar2 b{position:absolute;left:0;top:0;bottom:0;background:var(--acc);border-radius:var(--barround,0)}
-.ctl{color:var(--dimfg)}.ctl b{color:var(--onfg);background:var(--onbg);padding:1px 6px;font-weight:400;border-radius:var(--radius,0)}
-.seg{display:inline-flex;gap:2px;vertical-align:middle;margin-left:8px}.seg i{width:16px;height:10px;background:var(--barbg,#0008)}.seg i.on{background:var(--acc)}
-.hint{grid-column:1/-1;color:var(--dimfg);font-size:.85em;letter-spacing:1px;padding-top:6px;border-top:var(--rowline)}
-.talk{position:absolute;left:150px;right:150px;bottom:60px;height:78px;display:flex;gap:12px;align-items:center;padding:8px 14px;background:var(--panel);color:var(--fg);font:var(--font);border:var(--border);border-radius:var(--radius,0);box-shadow:var(--shadow,none)}
-.talk .face{width:54px;height:54px;background:var(--portbg,#0004);border:var(--portb,1px solid currentColor);flex:none;position:relative;border-radius:var(--radius,0)}.talk .face::before{content:'';position:absolute;left:20px;top:8px;width:14px;height:14px;border-radius:50%;background:#ff8a7a}.talk .face::after{content:'';position:absolute;left:16px;top:24px;width:22px;height:28px;background:#ff8a7a;border-radius:6px 6px 0 0}
-.talk .say{color:var(--title);font-style:var(--sayit,normal)}.talk .opts{font-size:.9em;color:var(--dimfg)}.talk .opts b{color:var(--onfg);background:var(--onbg);padding:1px 6px;font-weight:400;border-radius:var(--radius,0)}
+.bar2{height:12px;width:140px;background:var(--barbg,#000);position:relative;display:inline-block;vertical-align:middle;margin-left:8px}.bar2 b{position:absolute;left:0;top:0;bottom:0;background:var(--acc)}
+.ctl{color:var(--dimfg)}.ctl b{color:var(--onfg);background:var(--onbg);padding:2px 8px;font-weight:400}
+.seg{display:inline-flex;gap:4px;vertical-align:middle;margin-left:8px}.seg i{width:16px;height:12px;background:var(--barbg,#000)}.seg i.on{background:var(--acc)}
+.hint{grid-column:1/-1;color:var(--dimfg);font-size:.85em;padding:8px;background:var(--stripe,rgba(0,0,0,.15))}
+.talk{position:absolute;left:148px;right:148px;bottom:60px;height:80px;display:flex;gap:14px;align-items:center;padding:8px 14px;background:var(--panel);color:var(--fg);font:var(--font);border:var(--border);box-shadow:var(--shadow,none)}
+.talk .face{width:56px;height:56px;background:var(--portbg,#000);border:var(--border);flex:none;position:relative;box-sizing:border-box}.talk .face::before{content:'';position:absolute;left:20px;top:8px;width:14px;height:14px;background:#ff8a7a}.talk .face::after{content:'';position:absolute;left:16px;top:24px;width:22px;height:24px;background:#ff8a7a}
+.talk .say{color:var(--title)}.talk .opts{font-size:.9em;color:var(--dimfg);margin-top:4px}.talk .opts b{color:var(--onfg);background:var(--onbg);padding:2px 8px;font-weight:400}
 .deco{position:absolute;pointer-events:none}
 
-/* ---- 1 PS2 ---- */
-.t-ps2{--panel:linear-gradient(180deg,rgba(18,28,44,.92),rgba(8,12,22,.95));--fg:#cfe3ff;--dimfg:#6f87a8;--title:#e8f2ff;--acc:#39c5ff;--onfg:#07131f;--onbg:#39c5ff;--border:1px solid #3d5e8a;--shadow:0 0 0 1px #0b1626,0 0 24px #0a2a4a88;--font:13px 'Orbitron','Share Tech Mono',monospace;--titlefont:15px 'Orbitron',monospace;--h2font:16px 'Orbitron',monospace;--ttline:1px solid #3d5e8a;--navline:1px solid #243a5a;--rowline:1px solid #1d2f49;--barbg:#0b1626;--portbg:#0b1626;--portb:1px solid #3d5e8a;--hudfg:#cfe3ff;--slot:#0b1626cc;--slotb:1px solid #3d5e8a;--mmring:0 0 0 2px #3d5e8a}
-.t-ps2 .win::after,.t-ps2 .talk::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
-.t-ps2 .tt{background:linear-gradient(90deg,#1b3a66,#0d1b30)}
-/* ---- 2 80s ---- */
-.t-80s{--panel:linear-gradient(180deg,#1a0b2e,#0d0620);--fg:#ffd6f5;--dimfg:#9a6bb8;--title:#ff3fb4;--acc:#19e6ff;--onfg:#1a0b2e;--onbg:#19e6ff;--border:2px solid #ff3fb4;--shadow:0 0 16px #ff3fb488,inset 0 0 24px #19e6ff22;--font:13px 'Audiowide','Share Tech Mono',sans-serif;--titlefont:22px 'Monoton','Audiowide',cursive;--ttls:4px;--h2font:17px 'Audiowide',sans-serif;--ttline:2px solid #19e6ff;--navline:1px solid #ff3fb466;--rowline:1px dashed #ff3fb455;--barbg:#2a1247;--portbg:linear-gradient(180deg,#2a1247,#0d0620);--portb:2px solid #19e6ff;--hudfg:#ffd6f5;--hudshadow:0 0 6px #ff3fb4;--slot:#1a0b2ecc;--slotb:1px solid #19e6ff;--dimbg:rgba(10,3,24,.55)}
-.t-80s .world{background:linear-gradient(180deg,#120427 0,#3a0f5e 45%,#ff5fa2 46%,#1a0b2e 47%,#0d0620 100%)}
-.t-80s .grid{left:0;right:0;bottom:0;height:52%;background:linear-gradient(transparent 95%,#19e6ff 96%) 0 0/100% 40px,linear-gradient(90deg,transparent 97%,#19e6ff 98%) 0 0/60px 100%;opacity:.35;transform:perspective(300px) rotateX(55deg);transform-origin:50% 0}
-.t-80s .sun{left:50%;top:60px;width:160px;height:160px;margin-left:-80px;border-radius:50%;background:linear-gradient(#ffd23f,#ff3fb4);box-shadow:0 0 60px #ff3fb488}
-.t-80s .tt{background:linear-gradient(90deg,#ff3fb4 0,#8b2bd1 50%,#19e6ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}.t-80s .tt .x{color:#19e6ff}
+/* ---- 1 PS2: steel blue, flat ---- */
+.t-ps2{--panel:#111c2c;--fg:#cfe3ff;--dimfg:#6f87a8;--title:#ffffff;--acc:#39c5ff;--onfg:#07131f;--onbg:#39c5ff;--border:4px solid #3d5e8a;--shadow:8px 8px 0 #000;--font:12px 'Silkscreen',monospace;--titlefont:12px 'Press Start 2P',monospace;--h2font:14px 'Press Start 2P',monospace;--stripe:#0b1626;--barbg:#0b1626;--portbg:#0b1626;--ttbg:#1b3a66;--slot:#0b1626;--slotb:4px solid #3d5e8a;--mmb:4px solid #3d5e8a}
+/* ---- 2 80s: neon, flat ---- */
+.t-80s{--panel:#1a0b2e;--fg:#ffd6f5;--dimfg:#9a6bb8;--title:#ff3fb4;--acc:#19e6ff;--onfg:#1a0b2e;--onbg:#19e6ff;--border:4px solid #ff3fb4;--shadow:8px 8px 0 #19e6ff;--font:12px 'Silkscreen',monospace;--titlefont:14px 'Press Start 2P',monospace;--h2font:14px 'Press Start 2P',monospace;--stripe:#24103d;--barbg:#2a1247;--portbg:#2a1247;--slot:#1a0b2e;--slotb:4px solid #19e6ff;--mmb:4px solid #ff3fb4;--dimbg:rgba(10,3,24,.55);--hudshadow:2px 2px 0 #ff3fb4}
+.t-80s .world{background:linear-gradient(180deg,#120427 0 45%,#ff5fa2 45% 47%,#0d0620 47% 100%)}
+.t-80s .grid{left:0;right:0;bottom:0;height:52%;background:linear-gradient(transparent 92%,#19e6ff 92%) 0 0/100% 40px,linear-gradient(90deg,transparent 94%,#19e6ff 94%) 0 0/60px 100%;opacity:.5;transform:perspective(300px) rotateX(55deg);transform-origin:50% 0}
+.t-80s .sun{left:50%;top:60px;width:160px;height:160px;margin-left:-80px;background:linear-gradient(#ffd23f 0 50%,#ff3fb4 50% 100%);clip-path:polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%)}
 /* ---- 3 retro 16-bit ---- */
-.t-retro{--panel:#1434a4;--fg:#fff;--dimfg:#b8c6f0;--title:#fff;--acc:#f8d848;--onfg:#1434a4;--onbg:#fff;--border:4px double #fff;--shadow:0 0 0 2px #1434a4,0 0 0 4px #fff;--font:11px 'Press Start 2P',monospace;--titlefont:12px 'Press Start 2P',monospace;--h2font:12px 'Press Start 2P',monospace;--ttline:4px double #fff;--navline:4px double #fff;--rowline:0;--barbg:#0a1c62;--portbg:#0a1c62;--portb:4px double #fff;--hudfg:#fff;--hudshadow:2px 2px 0 #000;--slot:#1434a4;--slotb:2px solid #fff;--mmround:0;--mmring:0 0 0 2px #fff;--xb:0;--navgap:6px;--ttpad:12px 16px}
-.t-retro .nav span.on::before{content:'▶ ';color:#f8d848}.t-retro .nav span.on{background:transparent;color:#fff}.t-retro .ctl b{background:transparent;color:#f8d848;padding:0}.t-retro .talk .opts b{background:transparent;color:#f8d848}
-.t-retro .win,.t-retro .talk{image-rendering:pixelated}
-/* ---- 4 minimalist ---- */
-.t-min{--panel:rgba(250,250,248,.96);--fg:#1a1a1a;--dimfg:#8a8a86;--title:#1a1a1a;--acc:#1a1a1a;--onfg:#fff;--onbg:#1a1a1a;--border:0;--shadow:0 24px 60px rgba(0,0,0,.35);--font:300 13px 'Inter',system-ui,sans-serif;--titlefont:500 13px 'Inter',sans-serif;--ttls:3px;--h2font:600 22px 'Inter',sans-serif;--h2ls:-.3px;--ttline:0;--navline:0;--rowline:1px solid #ececea;--barbg:#ececea;--portbg:#f1f1ef;--portb:0;--radius:8px;--barround:5px;--hudfg:#fff;--hudshadow:0 1px 2px rgba(0,0,0,.6);--slot:rgba(255,255,255,.14);--slotb:0;--xb:0;--navgap:4px;--dimbg:rgba(0,0,0,.35);--ttpad:18px 20px 6px}
-.t-min .nav span.on{background:#f1f1ef;color:#1a1a1a}.t-min .hud{font:10px 'Inter',sans-serif;letter-spacing:.5px}
-/* ---- 5 warm ---- */
-.t-warm{--panel:#f6ead8;--fg:#4a3328;--dimfg:#9a7b66;--title:#8a3b22;--acc:#d9833a;--onfg:#fff6ea;--onbg:#c7542f;--border:2px solid #d9b48a;--shadow:0 12px 40px rgba(60,30,10,.45),inset 0 0 0 6px #fbf3e6;--font:14px 'Lora',Georgia,serif;--titlefont:600 16px 'Lora',serif;--h2font:600 20px 'Lora',serif;--ttline:2px solid #e8d2b4;--navline:2px solid #e8d2b4;--rowline:1px solid #ecdcc5;--barbg:#e8d2b4;--portbg:#fbf3e6;--portb:2px solid #d9b48a;--radius:14px;--barround:6px;--hudfg:#fff6ea;--hudshadow:0 1px 3px rgba(60,30,10,.7);--slot:rgba(246,234,216,.25);--slotb:1px solid rgba(246,234,216,.4);--mmring:0 0 0 3px #d9b48a;--xr:50%;--xb:2px solid #d9b48a;--sayit:italic;--dimbg:rgba(60,30,10,.4)}
-.t-warm .world{background:linear-gradient(180deg,#f0a86a 0,#e8c08a 38%,#7a6a52 38.2%,#8f7d60 60%,#5e503f 60.2%,#3d3328 100%)}
-/* ---- 6 RPG ---- */
-.t-rpg{--panel:linear-gradient(180deg,#2b1d14,#1a110b);--fg:#e9d9b8;--dimfg:#a08964;--title:#f2c45a;--acc:#c0392b;--onfg:#1a110b;--onbg:#f2c45a;--border:3px solid #8a6a2e;--shadow:0 0 0 1px #3a2a14,0 0 0 6px #1a110b,0 0 0 7px #8a6a2e,0 20px 50px rgba(0,0,0,.7);--font:14px 'Crimson Text',Georgia,serif;--titlefont:700 15px 'Cinzel',serif;--ttls:4px;--h2font:700 18px 'Cinzel',serif;--ttline:2px solid #8a6a2e;--navline:2px solid #5a4420;--rowline:1px solid #3a2a14;--barbg:#0d0806;--portbg:#0d0806;--portb:2px solid #8a6a2e;--hudfg:#e9d9b8;--hudshadow:1px 1px 0 #000;--slot:#1a110bdd;--slotb:1px solid #8a6a2e;--mmring:0 0 0 3px #8a6a2e,0 0 0 5px #3a2a14}
-.t-rpg .tt{background:linear-gradient(90deg,#3a2a14,#2b1d14 40%,#2b1d14 60%,#3a2a14)}.t-rpg .nav span.on{background:#f2c45a22;color:#f2c45a;border:1px solid #8a6a2e}.t-rpg .tt::before,.t-rpg .tt::after{content:'❧';color:#8a6a2e;font-size:16px}
-/* ---- 7 MMORPG ---- */
-.t-mmo{--panel:linear-gradient(180deg,#2f3f52,#1b2634);--fg:#e3e9f2;--dimfg:#8d9bb0;--title:#ffd36b;--acc:#58c35a;--onfg:#0c1420;--onbg:#ffd36b;--border:2px solid #0c1420;--shadow:0 0 0 2px #7a8ba3,0 0 0 4px #0c1420,0 14px 40px rgba(0,0,0,.6);--font:600 12px 'Open Sans',Verdana,sans-serif;--titlefont:700 14px 'Open Sans',sans-serif;--h2font:700 16px 'Open Sans',sans-serif;--ttline:2px solid #0c1420;--navline:2px solid #0c1420;--rowline:1px solid #0c142066;--barbg:#0c1420;--portbg:#0c1420;--portb:2px solid #7a8ba3;--radius:4px;--barround:2px;--hudfg:#e3e9f2;--slot:#1b2634;--slotb:2px solid #7a8ba3;--mmring:0 0 0 3px #7a8ba3,0 0 0 5px #0c1420;--ttbg:linear-gradient(180deg,#5a6b84,#3a4a60)}
-.t-mmo .nav span{background:#0c142055;border:1px solid #0c1420}.t-mmo .nav span.on{background:linear-gradient(180deg,#ffe29a,#d9a92e);color:#0c1420}.t-mmo .vit .bar{height:12px;border:1px solid #0c1420}.t-mmo .hud{font:10px 'Open Sans',sans-serif;font-weight:700}
-/* ---- 8 UO ---- */
-.t-uo{--panel:#8e8a82;--fg:#1e1a16;--dimfg:#4a443c;--title:#2a2520;--acc:#c9a24a;--onfg:#f4e9c8;--onbg:#5a4a30;--border:6px ridge #b8b3aa;--shadow:inset 0 0 0 2px #5e5952,0 8px 24px rgba(0,0,0,.6);--font:13px 'IM Fell English SC','Cinzel',serif;--titlefont:16px 'IM Fell English SC',serif;--h2font:17px 'IM Fell English SC',serif;--ttline:2px groove #b8b3aa;--navline:2px groove #b8b3aa;--rowline:1px solid #6e6960;--barbg:#5e5952;--portbg:#6e6960;--portb:4px ridge #b8b3aa;--hudfg:#f4e9c8;--hudshadow:1px 1px 0 #000;--slot:#8e8a82;--slotb:3px ridge #b8b3aa;--mmround:0;--mmring:0 0 0 4px #8e8a82,0 0 0 6px #5e5952;--xb:3px ridge #b8b3aa}
-.t-uo .panel-tex{inset:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 2px,transparent 2px 6px)}
-.t-uo .nav span{background:#6e6960;border:3px ridge #b8b3aa;color:#f4e9c8}.t-uo .nav span.on{background:#5a4a30;color:#f4e9c8}.t-uo .win,.t-uo .talk{image-rendering:pixelated}
+.t-retro{--panel:#1434a4;--fg:#fff;--dimfg:#b8c6f0;--title:#fff;--acc:#f8d848;--onfg:#1434a4;--onbg:#fff;--border:4px solid #fff;--shadow:8px 8px 0 #000;--font:11px 'Press Start 2P',monospace;--titlefont:12px 'Press Start 2P',monospace;--h2font:12px 'Press Start 2P',monospace;--stripe:#0f2a86;--barbg:#0a1c62;--portbg:#0a1c62;--slot:#1434a4;--slotb:4px solid #fff;--mmb:4px solid #fff}
+.t-retro .nav span.on::before{content:'▶ ';color:#f8d848}.t-retro .nav span.on{background:transparent;color:#fff}.t-retro .ctl b,.t-retro .talk .opts b{background:transparent;color:#f8d848;padding:0}.t-retro .page{line-height:1.9}
+/* ---- 4 minimalist: two flat tones, no lines ---- */
+.t-min{--panel:#f4f3ef;--fg:#1a1a1a;--dimfg:#7a7a76;--title:#1a1a1a;--acc:#1a1a1a;--onfg:#f4f3ef;--onbg:#1a1a1a;--border:0;--shadow:8px 8px 0 rgba(0,0,0,.35);--font:14px 'Pixelify Sans','Silkscreen',monospace;--titlefont:14px 'Pixelify Sans',monospace;--ttls:2px;--h2font:22px 'Pixelify Sans',monospace;--stripe:#e9e8e3;--barbg:#dcdbd5;--portbg:#e9e8e3;--hudfg:#fff;--hudshadow:2px 2px 0 #000;--slot:rgba(255,255,255,.15);--slotb:0;--mmb:0;--xb:0;--navbg:transparent;--dith:.6}
+.t-min .nav span.on{background:#e9e8e3;color:#1a1a1a}.t-min .hud{font:8px 'Silkscreen',monospace}.t-min .mm .c{border:0}
+/* ---- 5 warm: paper and terracotta, flat ---- */
+.t-warm{--panel:#f3e4cc;--fg:#4a3328;--dimfg:#9a7b66;--title:#8a3b22;--acc:#d9833a;--onfg:#fff6ea;--onbg:#c7542f;--border:4px solid #c9a27a;--shadow:8px 8px 0 #5a3a24;--font:14px 'Pixelify Sans','Silkscreen',monospace;--titlefont:16px 'Pixelify Sans',monospace;--h2font:20px 'Pixelify Sans',monospace;--stripe:#eadbbf;--barbg:#e0cfae;--portbg:#faf1e2;--hudfg:#fff6ea;--hudshadow:2px 2px 0 #5a3a24;--slot:#f3e4cc;--slotb:4px solid #c9a27a;--mmb:4px solid #c9a27a;--dimbg:rgba(60,30,10,.4);--xb:4px solid #c9a27a;--xfg:#8a3b22}
+.t-warm .world{background:linear-gradient(180deg,#f0a86a 0 38%,#7a6a52 38% 60%,#3d3328 60% 100%)}
+/* ---- 6 RPG: wood and gold, flat ---- */
+.t-rpg{--panel:#2b1d14;--fg:#e9d9b8;--dimfg:#a08964;--title:#f2c45a;--acc:#c0392b;--onfg:#1a110b;--onbg:#f2c45a;--border:4px solid #8a6a2e;--shadow:8px 8px 0 #000,0 0 0 8px #1a110b;--font:14px 'Pixelify Sans','Silkscreen',monospace;--titlefont:22px 'Jacquard 24','Jacquard 12','Press Start 2P',monospace;--ttls:1px;--h2font:24px 'Jacquard 24','Press Start 2P',monospace;--stripe:#20150e;--barbg:#0d0806;--portbg:#0d0806;--ttbg:#3a2a14;--slot:#1a110b;--slotb:4px solid #8a6a2e;--mmb:4px solid #8a6a2e}
+.t-rpg .nav span.on{background:#3a2a14;color:#f2c45a;border:4px solid #8a6a2e;padding:4px 6px}
+/* ---- 7 MMORPG: stone blue and gold, flat ---- */
+.t-mmo{--panel:#2a3747;--fg:#e3e9f2;--dimfg:#8d9bb0;--title:#ffd36b;--acc:#58c35a;--onfg:#0c1420;--onbg:#ffd36b;--border:4px solid #0c1420;--shadow:0 0 0 4px #7a8ba3,8px 8px 0 #000;--font:12px 'Silkscreen',monospace;--titlefont:12px 'Press Start 2P',monospace;--h2font:14px 'Press Start 2P',monospace;--stripe:#1e2a39;--barbg:#0c1420;--portbg:#0c1420;--ttbg:#3f5370;--slot:#1b2634;--slotb:4px solid #7a8ba3;--mmb:4px solid #7a8ba3;--navbg:#1b2634;--navb:4px solid #0c1420}
+.t-mmo .nav span.on{background:#ffd36b;color:#0c1420;border-color:#0c1420}.t-mmo .vit .bar{border:4px solid #0c1420;height:16px}.t-mmo .vit .bar span{line-height:8px;top:0}
+/* ---- 8 UO: grey stone, flat ---- */
+.t-uo{--panel:#8e8a82;--fg:#1e1a16;--dimfg:#4a443c;--title:#2a2520;--acc:#c9a24a;--onfg:#f4e9c8;--onbg:#5a4a30;--border:4px solid #5e5952;--shadow:0 0 0 4px #b8b3aa,8px 8px 0 #000;--font:14px 'Pixelify Sans','Silkscreen',monospace;--titlefont:22px 'Jacquard 24','Jacquard 12',monospace;--h2font:24px 'Jacquard 24',monospace;--stripe:#827e76;--barbg:#5e5952;--portbg:#6e6960;--hudfg:#f4e9c8;--slot:#8e8a82;--slotb:4px solid #5e5952;--mmb:4px solid #5e5952;--navbg:#6e6960;--navb:4px solid #5e5952;--xb:4px solid #5e5952;--dith:1.6}
+.t-uo .nav span{color:#f4e9c8}.t-uo .nav span.on{background:#5a4a30;color:#f4e9c8;border-color:#5e5952}
 
 .strip{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 0}
 </style>
 
 <h1>HOW THE MENUS COULD LOOK: EIGHT WAYS</h1>
-<p class="lead">The same menu in each (the character page with a couple of setting rows), the same HUD, the same talk bar; only the look changes. Structure is not decided here (A–D are in <code>mockups/windows.html</code>). Fonts come from Google Fonts: open this in a browser to see them properly.</p>
+<p class="lead">The same menu in each (the character page with a couple of setting rows), the same HUD, the same talk bar; only the look changes. Every look is flat, grainy and pixel (owner, 2 Nov 2026: "flatter, grainier, pixelated looks, no thin lines"): pixel fonts, 4px block borders, no gradients or glows, flat offset shadows, striped rows instead of rules, a chunky grain over the screen and a 2px dither on the panels. Structure is not decided here (A–D are in <code>mockups/windows.html</code>). Fonts come from Google Fonts: open this in a browser to see them properly.</p>
 <div class="picks" role="tablist"></div>
 <div id="all"></div>
 
 <script>
 const THEMES=[
- ['ps2','PS2','System-menu blue: dark translucent panels, thin steel-blue lines, a scanline sheen, a tech typeface. The Codec look\'s cousin, colder and glossier. Reads well over the night street; the least "game-y" of the console looks.'],
- ['80s','80s','Synthwave: magenta and cyan neon on deep purple, a chrome title, a grid horizon behind the dim. Loud and fun; the neon fights the street\'s own lamps and gets tiring in long menus.'],
- ['retro','RETRO 16-BIT','Dragon Quest / Final Fantasy window: blue box, white double border, pixel font, a ▶ cursor. Instantly readable as "a game"; little room for text, so pages must be short.'],
- ['min','MINIMALIST','Near-white panel, one dark ink, thin rules, lots of air, a modern sans. Calm and legible; the odd one out against a pixel-art world unless the HUD stays bare like this.'],
- ['warm','WARM','Cream paper, terracotta and amber, rounded corners, a book serif, italics for speech. Cosy (Stardew / Animal Crossing). Soft against the night; strong by day.'],
- ['rpg','RPG','Dark wood and leather, gold filigree, a parchment serif, Cinzel headings. Skyrim / Baldur\'s Gate. Heavy chrome: every window feels important, which is the point and the cost.'],
- ['mmo','MMORPG','Stone-blue panels in a steel frame, gold tabs, thick bars, bold sans. WoW / FFXIV. Built for many windows and slot grids at once; dense.'],
- ['uo','UO','Ultima Online gump: grey stone with ridged edges, wooden buttons, an old serif, the paperdoll in a stone frame. Your original reference (23 Oct). Nostalgic and heavy; text is small.']];
+ ['ps2','PS2','System-menu blue: flat navy panels in steel-blue blocks, pixel type, a 2px dither. The Codec look\'s cousin, colder. Reads well over the night street.'],
+ ['80s','80s','Synthwave in flat colour: magenta blocks on deep purple, a cyan drop shadow, a pixel sun and grid behind. Loud and fun; the magenta fights the street\'s own lamps.'],
+ ['retro','RETRO 16-BIT','Dragon Quest / Final Fantasy window: blue box, white block border, Press Start 2P, a ▶ cursor. Instantly "a game"; little room for text, so pages must be short.'],
+ ['min','MINIMALIST','Two flat tones: paper-white and ink, no borders at all, stripes instead of rules, a rounded pixel sans. Calm and the most legible; the odd one against a night street.'],
+ ['warm','WARM','Paper and terracotta in flat blocks, a rounded pixel sans (Stardew). Cosy; soft against the night, strong by day.'],
+ ['rpg','RPG','Dark wood and flat gold, a pixel blackletter for titles. Heavy frames: every window feels important, which is the point and the cost.'],
+ ['mmo','MMORPG','Stone-blue panels in a black-and-steel frame, gold buttons, thick bars. Built for many windows and slot grids at once; dense.'],
+ ['uo','UO','Ultima Online gump in flat grey stone with dark block edges, wooden buttons, a pixel blackletter. Your original reference (23 Oct). Nostalgic and heavy.']];
 const scene=t=>`<div class="world"></div>${t==='80s'?'<div class="deco sun"></div><div class="deco grid"></div>':''}
  <div class="bld" style="left:40px;width:160px;height:200px"><i style="left:20px;top:30px"></i><i style="left:110px;top:30px"></i></div>
  <div class="bld" style="left:380px;width:200px;height:230px"><i style="left:40px;top:50px"></i><i style="left:120px;top:90px"></i></div>
  <div class="bld" style="left:900px;width:180px;height:180px"><i style="left:40px;top:50px"></i></div>
- <div class="lamp" style="left:300px"></div><div class="lamp" style="left:720px"></div><div class="you"></div><div class="npc"></div><div class="dim"></div>
+ <div class="lamp" style="left:300px"></div><div class="lamp" style="left:720px"></div><div class="you"></div><div class="npc"></div><div class="dim"></div><div class="grain"></div>
  <div class="hud vit"><div>BRALYNN</div><div class="bar"><b style="width:78%"></b><span>HP 78</span></div><div class="bar s"><b style="width:52%"></b><span>STA 52</span></div></div>
  <div class="hud mm"><div class="c"></div>A · MARKET ST</div>
  <div class="hud qb"><i><em>1</em>SWORD</i><i class="on"><em>2</em>NET</i><i><em>3</em>ROD</i><i><em>4</em>CAP</i><i><em>5</em></i><i><em>6</em></i><i><em>7</em></i><i><em>8</em></i><i><em>9</em></i><i><em>0</em></i></div>
- <div class="win">${t==='uo'?'<div class="deco panel-tex"></div>':''}<div class="tt"><span>THE STRANGEST FLEA MARKET</span><span class="x">X</span></div>
+ <div class="win"><div class="tt"><span>THE STRANGEST FLEA MARKET</span><span class="x">X</span></div>
   <div class="body"><div class="nav"><span class="on">CHARACTER</span><span>PACK</span><span>MAP</span><span>GUIDE</span><span>SETTINGS</span><span>REPORT A BUG</span><span>LOG OUT</span></div>
    <div class="page"><div class="port"></div><div class="facts"><h2>BRALYNN</h2>
      <div class="row"><span class="k">HEALTH</span><span class="v2">78 / 100 <span class="bar2"><b style="width:78%"></b></span></span></div>

@@ -1,6 +1,6 @@
 // THE BUG REPORTS: BUGS, the REPORT A BUG form and the owner's queue, sent to the reports database.
 import {SHARED} from './003-shx.js';
-import {BUGS, CLOCK, pos, UI} from './003b-systems.js';
+import {BUGS, CLOCK, pos, TEXT, UI} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {STORE} from './006-map-pre.js';
 import {BUILDV} from './135-where.js';
@@ -8,7 +8,7 @@ import {BUILDV} from './135-where.js';
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token';
   const errs=[], err=m=>{ errs.push(String(m||'').slice(0,240)); if(errs.length>8)errs.shift(); };
   addEventListener('error',e=>err(e.message)); addEventListener('unhandledrejection',e=>err(e.reason&&e.reason.message||e.reason));
-  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const esc=TEXT.esc;
   const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
   const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };
   const renew=async()=>{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
@@ -70,6 +70,7 @@ import {BUILDV} from './135-where.js';
       if(b.dataset.s){ b.disabled=true; try{ await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
-  Object.assign(BUGS,{sb,tok,owner:SITE.owner});
+  const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };
+  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout});
   BUGS.open=async e=>{ el=e; ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

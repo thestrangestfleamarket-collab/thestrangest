@@ -70,9 +70,8 @@ const PHOTOS={stock:[],mine:[],price:10,sitting:15}; window.PHOTOS=PHOTOS;
     if(b.dataset.buy){ const p=PHOTOS.stock[+b.dataset.buy]; if(!p)return; if((INV.cash||0)<PHOTOS.price)return say('YOU CANNOT AFFORD THAT.','#c8a090'); INV.cash-=PHOTOS.price; PHOTOS.stock.splice(+b.dataset.buy,1); own(p); say('A PRINT, STILL WARM. FRAME IT AT HOME (DECORATE).','#e8e2cc'); draw(); return; }
     if(b.dataset.me!==undefined){ const N=NPCS.extra.find(q=>q.key==='newsreel'); if(!N)return; if((INV.cash||0)<PHOTOS.sitting)return say('YOU CANNOT AFFORD THAT.','#c8a090'); INV.cash-=PHOTOS.sitting;
       const hd=Math.atan2(pos.x-N.st.x,pos.z-N.st.z); N.st.hd=hd; snapT=1.4; setTimeout(()=>{ const p=PHOTOS.take(N.st.x,(N.st.y||0)+1.3*T,N.st.z,hd,-.18,'YOU'); own(p); say('CLICK. "DON\'T BLINK. TOO LATE."','#e8e2cc'); draw(); },700); } });
-  { const go=()=>{ const N=NPCS.extra.find(q=>q.key==='newsreel'); if(!window.__started||!N||!N.g||!UI.thing)return setTimeout(go,700);
-      const hb=new THREE.Mesh(new THREE.BoxGeometry(28,56,28),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=28; N.g.add(hb); UI.thing({name:'THE NEWSREEL',npc:N,obj:hb,reach:2.2*T,near:3*T,tall:1.8*T,act:()=>{ PANEL.hidden=false; draw(); }}); };
-    go(); }
+  { NPCS.when('newsreel',N=>{
+      const hb=new THREE.Mesh(new THREE.BoxGeometry(28,56,28),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=28; N.g.add(hb); UI.thing({name:'THE NEWSREEL',npc:N,obj:hb,reach:2.2*T,near:3*T,tall:1.8*T,act:()=>{ PANEL.hidden=false; draw(); }}); }); }
   window.PHOTODBG=()=>({stock:PHOTOS.stock.map(p=>p.cap),mine:PHOTOS.mine.length,size:PHOTOS.stock[0]&&PHOTOS.stock[0].src.length});
 }
 export {PHOTOS};

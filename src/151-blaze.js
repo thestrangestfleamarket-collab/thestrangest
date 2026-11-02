@@ -112,5 +112,5 @@ import {FOUNT} from './060a-fount.js';
   { SYS.add('life',(dt)=>{ if(!(dt>0))return; dt=Math.min(dt,.1); fireTick(dt); droneTick(dt); },'151-blaze'); }
   window.FIREAT=(x,z)=>{ const f=start(x,z,true); return f?{x:+f.x.toFixed(2),y:+f.y.toFixed(2),z:+f.z.toFixed(2)}:null; };
   window.BLAZEDBG=()=>({fires:F.map(f=>({x:+f.x.toFixed(1),z:+f.z.toFixed(1),age:Math.round(f.age),wet:+f.wet.toFixed(1),by:f.by?f.by.i:null})),drones:DR.map(d=>({st:d.st,x:+d.p.x.toFixed(1),y:+d.p.y.toFixed(1),z:+d.p.z.toFixed(1)})),marks:BM.filter(Boolean).length,docks:ST.length,cruise:+CRUISE.toFixed(1),light:+L.intensity.toFixed(1)});
-  if(QS.get('fire')==='1'){ const go=()=>{ if(!window.__started)return setTimeout(go,500); setTimeout(()=>window.FIREAT(pos.x+2.4*T,pos.z+1.6*T),1500); }; go(); }
+  if(QS.get('fire')==='1')SYS.onStart(()=>setTimeout(()=>window.FIREAT(pos.x+2.4*T,pos.z+1.6*T),1500),'151-blaze');
 }

@@ -1,5 +1,5 @@
-// THE EDITORS LAUNCHER: EDITORS is the shift+0 menu of every editor (the per-editor shift+digit keys are gone, owner 22 Oct 2026).
-import {CHARED, EDITORS, FAR3, FEEL, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
+// THE EDITORS LAUNCHER: EDITORS is the shift+0 menu of every editor (the per-editor shift+digit keys are gone, owner 22 Oct 2026; the ITEM editor is the owner's).
+import {BUGS, CHARED, EDITORS, FAR3, FEEL, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from './003b-systems.js';
 { const list=[
     {key:1,n:'WORLD',d:'double-click a thing to move, size, turn, colour it',go:()=>{ if(!WE.on)WE.toggle(); }},
     {key:2,n:'MAP',d:'the top-down layout',go:()=>{ if(!GAMEED.open)GAMEED.toggle(); }},
@@ -7,7 +7,7 @@ import {CHARED, EDITORS, FAR3, FEEL, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from
     {key:4,n:'ATMOSPHERE',d:'weather, sky, sun, fog',go:()=>UI.menuTab('atmo')},
     {key:5,n:'LIGHTING',d:'render system, quality, the cel bands',go:()=>LIGHTED.toggle()},
     {key:6,n:'SOUND',d:'each sound and its level',go:()=>UI.menuTab('sound')},
-    {key:7,n:'ITEM',d:'item types and their properties',go:()=>ITEMED.toggle()},
+    {key:7,n:'ITEM',d:'item types and their properties',own:true,go:()=>ITEMED.toggle()},
     {key:8,n:'BEHAVIOUR',d:'homes, stats, jobs, talk',go:()=>CHARED.toggle('beh')},
     {key:9,n:'LANDSCAPE',d:'paint ground, free-draw, place plants & rocks',go:()=>LAND.toggle()},
     {key:10,n:'DISTANCE LOOK',d:'the far skyline, its mist and haze',go:()=>FAR3.panel&&FAR3.panel()},
@@ -24,9 +24,10 @@ import {CHARED, EDITORS, FAR3, FEEL, GAMEED, ITEMED, LAND, LIGHTED, UI, WE} from
   const menu=document.createElement('div'); menu.id='edmenu';
   menu.innerHTML='<div class="box"><h2>EDITORS</h2>'+list.map(it=>`<button class="btn" data-k="${it.key}"><span class="n">${it.n}</span><span class="d">${it.d}</span></button>`).join('')+'<div class="hint">PICK AN EDITOR · SHIFT+0 OR ESC CLOSES</div></div>';
   document.body.appendChild(menu);
-  const show=()=>menu.classList.add('on'), hide=()=>menu.classList.remove('on');
+  let own=null; const isOwner=async()=>{ if(own!=null)return own; if(!/^https?:$/.test(location.protocol))return own=true; if(!BUGS.owner)return false; return own=!!(await BUGS.owner().catch(()=>false)); };
+  const hide=()=>menu.classList.remove('on'), show=()=>{ menu.classList.add('on'); isOwner().then(o=>{ for(const it of list)if(it.own){ const b=menu.querySelector(`[data-k="${it.key}"]`); if(b)b.hidden=!o; } }); };
   EDITORS.menu=()=>menu.classList.contains('on')?hide():show();
-  EDITORS.open=it=>{ '@later'; if(!it)return; hide(); if(it.go)it.go(); };
+  EDITORS.open=async it=>{ '@later'; if(!it)return; hide(); if(it.own&&!await isOwner())return; if(it.go)it.go(); };
   EDITORS.key=d=>{ if(d===0){ EDITORS.menu(); return; } EDITORS.open(list.find(x=>x.key===d)); };
   menu.addEventListener('click',e=>{ if(e.target===menu){ hide(); return; } const b=e.target.closest('button[data-k]'); if(b)EDITORS.open(list.find(x=>x.key===+b.dataset.k)); });
   addEventListener('keydown',e=>{ if(e.key==='Escape'&&menu.classList.contains('on')){ hide(); e.stopImmediatePropagation(); } },true);

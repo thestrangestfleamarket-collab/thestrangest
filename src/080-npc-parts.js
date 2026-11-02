@@ -1,9 +1,9 @@
 // CHARACTERS IN PARTS: the shape kit (boxes, blobs, curves traced from a photo, lathes, tubes, skin weights) and PARTSNPC.street for the street's walkers.
 import {SHARED, THREE} from './003-shx.js';
 import {NPCS} from './003b-systems.js';
-import {MAPSTAIR, MODS, SOL} from './006-map-pre.js';
+import {MODS, SOL} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
-import {makeNPC, stfree, STLANE} from './076-npc-map.js';
+import {makeNPC, stfree, STHOLE, STLANE} from './076-npc-map.js';
 const PARTSNPC={};
 { const D2R=Math.PI/180, M4=new THREE.Matrix4(), E=new THREE.Euler(), Q=new THREE.Quaternion(), UP=new THREE.Vector3(0,1,0), V=new THREE.Vector3();
   const shape=(g,col,at,sz,rot)=>{ g=g.toNonIndexed(); if(sz)g.scale(sz[0],sz[1],sz[2]); if(rot)g.applyMatrix4(M4.makeRotationFromEuler(E.set(rot[0]*D2R,rot[1]*D2R,rot[2]*D2R))); if(at)g.translate(at[0],at[1],at[2]);
@@ -55,7 +55,7 @@ const PARTSNPC={};
     return N; };
   window.RESHAPE=(key,part,scale,move)=>{ const N=NPCS.find(q=>q.key===key); if(N&&N.reshape)N.reshape(part,{scale,move}); };
   PARTSNPC.LANE=STLANE;
-  { const HOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)];
+  { const HOLE=STHOLE;
     PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R); }
   PARTSNPC.street=(x,y)=>({lv:'up',group:'bodega',x:SHARED.BOD.XS(x),z:SHARED.BOD.ZS(y),lane:PARTSNPC.LANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z)}); }
 export {PARTSNPC};

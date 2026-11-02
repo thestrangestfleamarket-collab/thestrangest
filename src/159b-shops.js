@@ -1,6 +1,6 @@
 // THE SHOPS: any character the character editor marks a shopkeeper (trade.sells in characters.json) sells those item types to the player, priced by each item's shared VALUE, teaches the skills in trade.teaches and buys the groups of goods in trade.buys. Walk up or double-click to buy; goods go into your pack and behave by their item properties (edible → eat, sellable → resell). The mushroom and tomato sellers keep their own hand-built shops.
 import {THREE} from './003-shx.js';
-import {CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, UI} from './003b-systems.js';
+import {CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, TEXT, UI} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
@@ -11,8 +11,8 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   const say=t=>{ const F=window.FORAGE; if(F&&F.say)F.say(t); };
   // trade.buys names groups of goods (FORAGE.BUYK: butterflies, birds, ...); paid at the price the game already gives each
   const buying=tr=>{ const F=window.FORAGE, P=(tr.buys||[]).flatMap(g=>F&&F.BUYK&&F.BUYK[g]||[]); return P.length?Object.keys(INV.items).filter(id=>INV.items[id]>0&&P.some(p=>id.startsWith(p))).sort():[]; };
-  const worth=id=>{ const F=window.FORAGE, v=F&&F.PRICE&&F.PRICE[id]||(ITEMS&&ITEMS.prop?+ITEMS.prop(id,'value'):0); return Math.max(1,Math.round(+v||1)); };
-  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const worth=id=>Math.max(1,Math.round(+ITEMS.prop(id,'value')||1));
+  const esc=TEXT.esc;
 
   const sp=document.createElement('div'); sp.id='shopg'; sp.hidden=true;
   sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
@@ -45,6 +45,6 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T/sc,H,1.4*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; N.g.add(hb);
     UI.thing({name:N.name||'A MERCHANT',npc:N,obj:hb,reach:2.2*T,near:3*T,tall:(N.H||1.8*T)+.3*T,act:()=>(TALK.open||SHOPS.open)(N)}); };
   SHOPS.sync=()=>{ for(const N of NPCS.concat(NPCS.extra||[]))try{ bind(N); }catch(e){} };
-  { const go=()=>{ if(!window.__started)return setTimeout(go,800); SHOPS.sync(); }; go(); }
+  SYS.onStart(()=>SHOPS.sync(),'159b-shops');
   window.SHOPS=SHOPS;
   window.SHOPDBG=()=>({bound:[...SHOPS.bound],cur:SHOPS.cur&&SHOPS.cur.name,cash:window.INV&&INV.cash,things:(UI.things||[]).filter(t=>t.npc&&SHOPS.bound.has(CHARS.id(t.npc))).map(t=>t.name)}); }

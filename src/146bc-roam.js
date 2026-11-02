@@ -394,7 +394,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
   const EXIT={want:false,hall:null,tries:0,go:()=>{ if(!EXIT.want)return; const off=ROOMS.offIn&&ROOMS.offIn()==='roam', Hl=EXIT.hall; if(!off){ EXIT.want=false; if(ROOMS.lazy&&ROOMS.lazy.roam&&ROOMS.lazy.roam.drop)ROOMS.lazy.roam.drop(); return; } if(!Hl||!ROOMS.enterAt){ EXIT.want=false; return; } const p=ROOMS.enterAt('arcade',[Hl.x,Hl.z,0,Math.PI]); if(p){ EXIT.want=false; p.catch(e=>console.warn('ROAM exit',e)); } else if(++EXIT.tries>600)EXIT.want=false; }};
   SYS.add('cam',dt=>{ if(ROAM.on&&API)API.cam(dt); if(EXIT.want&&!ROAM.on)EXIT.go(); },'roam');
-  ROOMS.off.roam={name:'ROAM',noCeil:1,box:{x0:WX-900*T,z0:WZ-900*T,x1:WX+900*T,z1:WZ+900*T,y0:-900*T,y1:900*T},spawn:[WX,WZ,0,0],out:[WX,WZ,0,0],
+  ROOMS.off.roam={name:'ROAM',noCeil:1,box:{x0:WX-12*T,z0:WZ-12*T,x1:WX+12*T,z1:WZ+12*T,y0:-3,y1:20*T},spawn:[WX,WZ,0,0],out:[WX,WZ,0,0],
     need:()=>LOAD('roam').then(()=>{ if(!API)API=MAKE(); }),build:()=>API.build(),unbuild:()=>{ if(API)API.unbuild(); }};
   H.programs.push({ name:'ROAM', cost:0, offWorld:true,
     intro:'ROAM. A SMALL SHIP AMONG THE METEORS. FLY ANY WAY UP; LASERS BREAK THE ROCKS, MISSILES BREAK THE BIG ONES. DON\'T RAM THEM.',

@@ -222,6 +222,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
   { const r = await pg.evaluate(() => { const o = { was: PASSPORT.hand }; PASSPORT.open(); o.shown = document.querySelector('#passportw').textContent.includes('HAND'); PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; PASSPORT.close(); return o; });
     ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
+  { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
+      const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => BATCH.queues.reduce((s, q) => s + q.groups.reduce((t, G) => t + G.ms.reduce((u, me) => u + ['map', 'emissiveMap'].reduce((v, k) => v + (me.material[k] && me.material[k].image ? me.material[k].image.width * me.material[k].image.height * 4 : 0), 0), 0), 0), 0);
+      const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.away; BATCH.away = () => true; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.away = a0; await fr(6); o.g2 = groups(); return o; });
+    ok(g.g0 > 0 && g.kept && g.g1 === 0 && g.mb1 === 0 && g.g2 > 0, 'the painted ground and walls are only kept near you, all dropped while you are in a room off the map, painted again near you on the way out: ' + JSON.stringify(g)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

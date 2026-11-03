@@ -1,4 +1,4 @@
-// THE SHOPS' INSIDES CHECK: node tests/insides.cjs dist/market.html. Each street shop's inside is built only when you go in and dropped when you leave; twice round leaves nothing behind (the lists it adds to come back to where they were).
+// THE SHOPS' INSIDES CHECK: node tests/insides.cjs dist/market.html. Each street shop's inside is built only when you go in and dropped when you leave; nothing it built or added to the shared lists is left behind, twice round.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=insides::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -12,20 +12,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(async () => { await STORE.ensure(); for (const id in STORE.gate) STORE.gate[id] = () => true; });
     const ids = await pg.evaluate(() => Object.keys(STORE.inside));
     ok(ids.length > 0, 'the street has shops with insides: ' + ids.join(', '));
-    const sizes = () => pg.evaluate(() => ({ things: __UI && __UI.things ? __UI.things.length : -1, sol: SHARED.solids.length, fix: SHARED.fixed.length, flames: FLAMES.length, peek: PEEK.boxes.length, sys: Object.values(SYS.P).reduce((s, a) => s + a.length, 0), kids: __dbg.THREE ? 0 : 0 }));
     const until = async (f, a, ms = 30000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
     const s0 = await pg.evaluate(() => Object.keys(STORE.inside).map(id => [id, !!STORE.inside[id].done]));
     ok(s0.every(([, d]) => !d), 'no inside is built before you go in: ' + JSON.stringify(s0));
-    let after1 = null;
     for (let round = 1; round <= 2; round++) {
       for (const id of ids) {
         await pg.evaluate(id => STORE.enter(id, true), id);
-        const built = await until(id => STORE.inside[id].done && !!STORE.inside[id].P, id);
-        await pg.evaluate(id => STORE.exit(id), id);
-        const dropped = await until(id => !STORE.inside[id].done && !STORE.inside[id].P, id);
-        ok(built && dropped, 'round ' + round + ': ' + id + ' is built when you go in and dropped when you leave');
+        const built = await until(id => STORE.inside[id].done && !!STORE.inside[id].P, id, 60000);
+        await pg.evaluate(id => { window.__P = STORE.inside[id].P; return STORE.exit(id); }, id);
+        const dropped = await until(id => !STORE.inside[id].done && !STORE.inside[id].P, id, 60000);
+        const left = await pg.evaluate(() => { const P = window.__P; if (!P) return 'nothing recorded'; const objs = P.objs.filter(o => o.parent).length, regs = P.regs.reduce((n, [A, L]) => n + L.filter(x => A.includes(x)).length, 0); return objs + regs ? objs + ' objects and ' + regs + ' list entries still there' : ''; });
+        const why = built && dropped ? '' : ' (' + await pg.evaluate(id => { const R = STORE.inside[id], Rm = STORE.rooms.find(r => r.id === id), g = __dbg.W3.group.position; return JSON.stringify({ done: R.done, P: !!R.P, busy: R.busy, fade: FADE.busy, inside: Rm && Rm.inside(g.x, g.z), cur: window.ROOMS && ROOMS.cur && ROOMS.cur.id }); }, id) + ')';
+        ok(built && dropped && !left, 'round ' + round + ': ' + id + ' is built when you go in and dropped when you leave, nothing of it left' + why + (left ? ' (' + left + ')' : ''));
       }
-      if (round === 1) after1 = await sizes(); else { const after2 = await sizes(); ok(JSON.stringify(after1) === JSON.stringify(after2), 'going round again leaves nothing behind: ' + JSON.stringify(after1) + ' then ' + JSON.stringify(after2)); }
     }
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

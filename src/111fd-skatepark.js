@@ -47,7 +47,7 @@ const SKATE={}; window.SKATE=SKATE;
     if(SK){ for(const N of SK.list)N.on=false; SK.g.removeFromParent(); }
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); if(LIT){ LIT.day.dispose(); LIT.night.dispose(); LIT.nm.dispose(); LIT.dm.dispose(); } G.removeFromParent(); G=null; LIT=null; } };
   SKATE.dbg=()=>({built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
-  SYS.add('dress',()=>tick&&tick(),'111fb-skatepark');   // the lamps and the sky follow the clock while it is built
+  SYS.add('dress',()=>tick&&tick(),'111fd-skatepark');   // the lamps and the sky follow the clock while it is built
   const gin=[wx_(GX),wz_(GZ-3)];
 
   // the gateway in Central Park: the door

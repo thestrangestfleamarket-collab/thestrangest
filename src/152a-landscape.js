@@ -1,7 +1,7 @@
 // THE LANDSCAPE EDITOR: paint ground (box, border, free brush; the nine grasses set what grows there), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {LAND, W3, WEEDS} from './003b-systems.js';
+import {LAND, pos, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
@@ -86,6 +86,8 @@ import {FOREST, PROPS} from './039-bodega.js';
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot,...(o.solid===false?{solid:false}:{})});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
+  // the Drive's placed models drawn only near you (a few metres past their own size)
+  let cullT=0; SYS.add('places',dt=>{ if((cullT-=dt)>0)return; cullT=.5; for(const o of gprops){ const m=o.mesh; if(!m||!MODELS[o.k]||!MODELS[o.k].sc)continue; const r=m.geometry.boundingSphere.radius*m.scale.x; m.visible=Math.hypot(o.x-pos.x,o.z-pos.z)<70+r; } },'152a-landscape cull');
   if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;

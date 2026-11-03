@@ -135,7 +135,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.SZ/PPU*.85; }
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
-      if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y-(b.userData.top||0),st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0); }
+      if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0); }
       if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
       R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }

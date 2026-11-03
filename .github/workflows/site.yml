@@ -53,6 +53,7 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
+          k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|worker/|cars\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
@@ -192,6 +193,12 @@ jobs:
       - name: The art museum (the lot, the paintings hung when you go in, the plaques, out again)
         if: contains(steps.f.outputs.run, ' art')
         run: node tests/art.cjs dist/market.html
+      - name: The cars (parked on Market St, get in, drive, get out, someone else's car)
+        if: contains(steps.f.outputs.run, ' cars')
+        run: node tests/cars.cjs dist/market.html
+      - name: The cars' server (one driver a car, parking kept and heard)
+        if: contains(steps.f.outputs.run, ' cars')
+        run: node tests/cars-server.cjs
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         if: contains(steps.f.outputs.run, ' guide')
         run: node tests/guide.cjs dist/market.html

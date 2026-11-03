@@ -6,6 +6,7 @@ import {OWNED} from './005-save.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
+import {KIT} from './068-kit.js';
 import {GEMS} from './101-gems.js';
 import {FISHES} from './141f-fishes.js';
 const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
@@ -56,7 +57,7 @@ FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(
 INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ const P=INSPECT.part;
     if(id==='x_boot'){ const g=new THREE.Group(); g.add(P('box',0x3a2e22,0,.06,0,.09,.12,.1),P('box',0x3a2e22,0,.02,.07,.09,.04,.16),P('box',0x1e1812,0,0,.04,.095,.012,.24)); return g; }
     if(id==='x_can')return INSPECT.shape('jar',0x9aa0a4,0x8a9094); if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
-    if(id==='chest'){ const g=new THREE.Group(); g.add(P('box',0x5a3a1e,0,0,0,.36,.2,.24),P('cap',0x5a3a1e,0,.1,0,.18,.08,.12,0,Math.PI/2),P('box',0xb08a2a,0,0,.121,.05,.06,.01)); g.children[1].rotation.set(0,0,0); g.children[1].scale.set(.18,.08,.12); return g; }
+    if(id==='chest')return KIT.piece('chest',.36);
     if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
     return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
 // fishing starts with the game (THE LAKE needs no river); the Hudson's own parts (the stand, the rowboat, clicking its water) are added when it is built

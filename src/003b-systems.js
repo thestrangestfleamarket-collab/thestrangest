@@ -1,6 +1,6 @@
 // THE GAME'S SYSTEMS, DECLARED FIRST: every system another file uses before its own file runs is made here (empty, or its first value) and filled in its own file, so each file only reads names from files before it.
 import {THREE} from './003-shx.js';
-const ROOMS={lazy:{},off:{}},
+const ROOMS={lazy:{},off:{},grounds:[]},
   VIS={all:false},
   LEVELS={of:{},ways:[],below:y=>y<-1.6?'down':'up',own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls

@@ -5287,3 +5287,4 @@ Owner: "i want the interiors of the cars to be realistic with windows you can vi
 
 ## 3 Nov 2026: a held tool rests in front of you
 Owner, asked how a tool should rest when no mouse aims it (a held rod pointed at the ground facing away from north since 2 Nov): "Follow where he faces". With no mouse aim the rod, sword or net rests in front of him, a little down, whichever way he faces.
+- 3 Nov 2026, the skate park's skaters ride (owner: "make the skaters ride their boards"): the five board skaters (street, pool veteran, vert, the kid, the longboarder) ride the kit's skateboard round the park, pushing off and coasting, on the ramps and in the bowl; the rest walk. Rule: a walker can ride any RIDE kind (`body.ride`); the skateboard is RIDE kind `skate`, ready for a board players could own.

@@ -38,6 +38,10 @@ const TOUR=[
     STORE.enter('art',true); return await U(()=>STORE.art&&STORE.art.hung>0&&!(window.FADE&&FADE.busy)); },async()=>{ STORE.exit('art'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['gem cave','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await GEMCAVE.go(1); return await U(()=>GEMCAVEDBG().built&&GEMCAVEDBG().inside&&!(window.FADE&&FADE.busy)); },async()=>{ await GEMCAVE.go(0); }],
+  ['skate park','x-skatepark',async()=>{ const U=async(f,ms=300000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); if(!await U(()=>window.SKATE&&SKATE.ready&&PARK.in&&!(window.FADE&&FADE.busy)))return false;
+    ROOMS.enter('skatepark'); return await U(()=>{ const d=SKATE.dbg(); return d.built&&d.solids>0&&d.grounds===1&&d.people>0&&ROOMS.offIn()==='skatepark'&&!(window.FADE&&FADE.busy); }); },
+    async()=>{ ROOMS.exit('skatepark'); for(const t=Date.now();Date.now()-t<30000&&(ROOMS.offIn()||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
   ['hudson cavern','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await HUDSON.go(1); return await U(()=>{ const d=HUDSONDBG(); return d.built&&d.inside&&d.swim&&!(window.FADE&&FADE.busy); }); },async()=>{ await HUDSON.go(0); }],
 ];

@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {STORE, TILE} from './006-map-pre.js';
+import {PAD} from './075-main-13.js';
 { const H=STORE.holo, T=TILE, M=FEEL.MH, V3=THREE.Vector3, say=(t,c)=>SAY(t,c), m=v=>v*M;
   const WX=4200, WZ=0, PAR=2, COST=6, BALLR=.021, CUPR=.054, LANEW=.9, HEADR=.055;
   let D=null, W=null, savedGY=null, savedView=null, keyoff=null, amb=null; const FG=new THREE.Fog(0x4b5852,1,60), FV=new V3();
@@ -52,7 +53,7 @@ import {STORE, TILE} from './006-map-pre.js';
       if(dc<CUPR+BALLR&&s2>=2.1){ const nx=(B.x-CUP.x)/dc, nz=(B.z-CUP.z)/dc; B.vx+=nx*.3*dt*60; B.vz+=nz*.3*dt*60; }   // the lip kicks a hot ball
     }
     const sp=Math.hypot(B.vx,B.vz); if(sp<.045){ B.restT+=dt*n; if(B.restT>.4){ B.vx=B.vz=0; B.rest=true; B.lie=[B.x,B.z]; onRest(); } } else B.restT=0; };
-  const hit=(dx,dz,speed)=>{ if(!D||D.done||B.inCup||!B.rest)return false; const l=Math.hypot(dx,dz)||1; speed=Math.max(.15,Math.min(4.6,speed)); B.vx=dx/l*speed; B.vz=dz/l*speed; B.rest=false; B.restT=0; D.strokes++; D.addr=false; D.charge=null;
+  const hit=(dx,dz,speed)=>{ if(!D||D.done||B.inCup||!B.rest)return false; D.prev={x:B.x,z:B.z,s:D.strokes}; const l=Math.hypot(dx,dz)||1; speed=Math.max(.15,Math.min(4.6,speed)); B.vx=dx/l*speed; B.vz=dz/l*speed; B.rest=false; B.restT=0; D.strokes++; D.addr=false; D.charge=null;
     SFX.play('clunk',{vol:.25+speed*.08,pitch:2.6-speed*.15}); card(); return true; };
   const place=(x,z)=>{ B.x=x; B.z=z; B.vx=B.vz=0; B.rest=true; B.restT=0; B.lie=[x,z]; B.inCup=false; B.sink=0; };
   const onRest=()=>{ if(!D)return; if(D.strokes>=PAR+3){ say('PICK UP. '+(PAR+4)+' WRITTEN FOR THE HOLE.','#c8a090'); finishHole(PAR+4); } else card(); };
@@ -71,6 +72,15 @@ import {STORE, TILE} from './006-map-pre.js';
   const onDown=e=>{ if(!D||e.button!==0||VR.on||!D.addr||!B.rest||D.done||WIELD.on!=='putter')return; D.charge={t:0}; };
   const onUp=e=>{ if(!D||e.button!==0||!D.charge)return; const p=power(D.charge.t); D.charge=null; const [ux,uz]=aimDir(); D.swing={t:0}; hit(ux,uz,.45+p*3.9); };
   const power=t=>{ const u=(t/1.5)%2; return u<1?u:2-u; };   // the bar runs up and back down while you hold
+  const undo=()=>{ if(!D||!D.prev||!B.rest||D.done)return; place(D.prev.x,D.prev.z); D.strokes=D.prev.s; D.prev=null; D.addr=false; D.charge=null; say('THE PUTT IS TAKEN BACK.','#9b9584'); card(); };
+  const padNow=()=>{ if(VR.on)return PAD.xr||null; const L=navigator.getGamepads?[...navigator.getGamepads()]:[]; return L.find(g=>g&&g.connected&&g.mapping==='standard')||L.find(g=>g&&g.connected)||null; };
+  // a pad on screen: d-pad left walks you to the ball, the right stick aims, RT held and let go putts, d-pad down takes the putt back; in the headset the putter hand's trigger walks you to the ball and B takes it back
+  const padStep=dt=>{ const g=padNow(); if(!g){ D.pb=null; return; } const pr=D.pb||[], bv=i=>(g.buttons[i]&&g.buttons[i].value)||0, edge=i=>bv(i)>.5&&!((pr[i]||0)>.5);
+    if(!VR.on){ if(edge(14)&&B.rest&&!D.done)warp(); if(edge(13))undo();
+      if(D.addr&&B.rest&&!D.done){ const rx=g.axes[2]||0; if(Math.abs(rx)>.2){ D.aimA+=rx*dt*1.2; ms.x=-1; }
+        if(bv(7)>.5){ if(!D.charge)D.charge={t:0,pad:1}; } else if(D.charge&&D.charge.pad){ const p=power(D.charge.t); D.charge=null; const [ux,uz]=aimDir(); D.swing={t:0}; hit(ux,uz,.45+p*3.9); } } }
+    else { if(edge(1))undo(); const hd=WIELD.hand==='L'?'left':'right', c=(VR.grips||[]).find(x=>x.h===hd), on=!!(c&&c.trig>.5); if(on&&!D.trigW&&B.rest&&!D.done)warp(); D.trigW=on; }
+    D.pb=g.buttons.map(b=>b.value); };
 
   /* ---------- the garden ---------- */
   const cvs=(n,f,o={})=>{ const c=document.createElement('canvas'); c.width=o.w||n; c.height=o.h||n; f(c.getContext('2d'),c.width,c.height); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; if(!o.data)t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
@@ -191,7 +201,7 @@ import {STORE, TILE} from './006-map-pre.js';
 
   /* ---------- the program ---------- */
   H.programs.push({ name:'THE GREENS', skill:'golf', cost:COST, offWorld:true, room:'greens', tool:'putter',
-    intro:'THE GREENS. A ZEN GARDEN DEEP IN A FOGGY VALLEY, ONE HOLE, PAR '+PAR+'. WALK TO YOUR BALL (OR PRESS F). THE MOUSE AIMS, HOLD THE BUTTON TO DRAW BACK, LET GO TO PUTT. IN THE HEADSET, JUST SWING.',
+    intro:'THE GREENS. A ZEN GARDEN DEEP IN A FOGGY VALLEY, ONE HOLE, PAR '+PAR+'. WALK TO YOUR BALL (OR PRESS F). THE MOUSE AIMS, HOLD THE BUTTON TO DRAW BACK, LET GO TO PUTT. ON A PAD: D-PAD LEFT WALKS TO THE BALL, THE RIGHT STICK AIMS, HOLD RT AND LET GO, D-PAD DOWN TAKES IT BACK. IN THE HEADSET, SWING; YOUR PUTTER HAND\'S TRIGGER WALKS TO THE BALL, B TAKES IT BACK.',
     go:R=>{ const d=D=Object.assign(R,{strokes:0,rounds:0,done:false,addr:false,aimA:0,charge:null,swing:null,best:null,ready:false,prevTip:null,cool:0}); try{ const S=JSON.parse(OWNED.get('greens')||'{}'); D.best=S&&S.best?S.best.zen:null; }catch(e){}
       if(!ROOMS.enterAt)return; place(TEE.x,TEE.z);
       ROOMS.enterAt('greens',[wx(TEE.x),wz(TEE.z-1.2),0,0]).then(()=>{ if(D!==d)return;
@@ -214,6 +224,7 @@ import {STORE, TILE} from './006-map-pre.js';
       if(W.gfog){ const a=W.gfog.geometry.attributes.position; for(let i=0;i<a.count;i++)a.setX(i,a.getX(i)+Math.sin(W.t*.15+i)*dt*m(.12)); a.needsUpdate=true; }
       // the ball
       stepBall(dt); const h=hOf(near(B.x,B.z).s); W.ball.position.set(wx(B.x),m(h+BALLR)-B.sink*m(.09),wz(B.z)); if(!B.rest){ const sp=Math.hypot(B.vx,B.vz); if(sp>1e-4){ const ax=new V3(B.vz,0,-B.vx).normalize(); W.ball.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(ax,sp*dt/BALLR)); } }
+      padStep(dt);
       // on screen: standing by the ball addresses it; the mouse aims; the held button draws back; a swing animates the putter
       if(!VR.on){ if(D.addr&&(!nearBall()||WIELD.on!=='putter'||!B.rest))D.addr=false; if(!D.addr&&nearBall()&&B.rest&&!D.done&&WIELD.on==='putter'&&!SHARED.target&&!(st&&st.move)){ D.addr=true; D.aimA=Math.atan2(CUP.x-B.x,CUP.z-B.z); }
         if(D.addr&&ms.x>=0){ const r=renderer.domElement.getBoundingClientRect(), nx=(ms.x-r.left)/r.width*2-1; D.aimA=SHARED.heading+nx*.9; }

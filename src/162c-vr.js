@@ -35,7 +35,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const read=xf=>{ const H={L:null,R:null}; for(const s of xf.session.inputSources)if(s.gamepad&&!s.hand&&(s.handedness==='left'||s.handedness==='right'))H[s.handedness==='left'?'L':'R']=s.gamepad;
     MAPB.forEach((m,i)=>{ const b=H[m[0]]&&H[m[0]].buttons[m[1]], v=b?b.value:0; VP.buttons[i].value=v; VP.buttons[i].pressed=v>.5; });
     const ax=(g,k)=>!g?0:(g.axes.length>=4?g.axes[2+k]:g.axes[k])||0, [GW,GT]=opt.hand==='left'?[H.R,H.L]:[H.L,H.R]; VP.axes[0]=ax(GW,0); VP.axes[1]=ax(GW,1); VP.axes[2]=ax(GT,0); VP.axes[3]=ax(GT,1); VP.timestamp=performance.now();
-    if(opt.move==='teleport'&&!UI.gamewin){ VR.tpa=VP.axes[1]<-.5; VP.axes[0]=VP.axes[1]=0; } else VR.tpa=false;
+    if(opt.move==='teleport'&&!UI.gamewin&&!SHARED.drive&&!VR.win&&vw()==='first'){ VR.tpa=VP.axes[1]<-.5; VP.axes[0]=VP.axes[1]=0; } else VR.tpa=false;   // in a vehicle, a window or a place that sets the view (the catacomb run), the walking stick stays a stick
     const st3=g=>!!(g&&g.buttons[3]&&g.buttons[3].value>.5); VR.l3=st3(H.L); VR.r3=st3(H.R); };
 
   const RAF=window.requestAnimationFrame, CAF=window.cancelAnimationFrame, Q=new Map(); let qid=1e9, nat=0, beat=false;
@@ -207,10 +207,11 @@ import {collide, frame, PAD} from './075-main-13.js';
       <h3>MOVING</h3>${row('MOVE','move',[['stick','STICK'],['teleport','TELEPORT']])}${row('TURN','turn',[['snap30','SNAP 30°'],['snap45','SNAP 45°'],['snap90','SNAP 90°'],['smooth','SMOOTH']])}${row('VIEW','view',[['first','FIRST PERSON'],['behind','BEHIND']])}${row('HANDED','hand',[['right','RIGHT: LEFT STICK WALKS'],['left','LEFT: RIGHT STICK WALKS']])}${onoff('COMFORT VIGNETTE','vig')}${range('EYE HEIGHT','height',-30,30,1,' cm')}
       <h3>YOU</h3>${onoff('YOUR BODY','body')}${onoff('YOUR HANDS','hands')}${onoff('CONTROLLERS','ctl')}
       <h3>PICTURE</h3>${row('EYE PICTURE','scale',[[.5,'50%'],[.65,'65%'],[.75,'75%'],[1,'100%']])}<div class="dim">the eye picture takes effect when you next enter VR</div>${row('FRAME RATE','rate',[[72,'72'],[80,'80'],[90,'90'],[120,'120']])}${row('SHADOWS','shadow',[['full','FULL'],['light','LIGHT'],['off','OFF']])}${onoff('WATER REFLECTIONS','water')}${row('DRAW DISTANCE','far',[[150,'NEAR'],[300,'MID'],[600,'FAR']])}
+      <h3>MOVES</h3><div class="row"><button class="btn" data-mv="v">WAVE</button><button class="btn" data-mv="u">CARTWHEEL</button></div><div class="dim">the menu closes and you do the move (the headset has no button for these)</div>
       <h3>WINDOWS</h3>${range('PANEL SIZE','panw',.8,2.5,.1,' m')}${range('PANEL DISTANCE','pand',.6,2,.1,' m')}${row('PANEL REFRESH','panel',[['fast','FAST'],['normal','NORMAL'],['slow','SLOW']])}
       <div class="row"><button class="btn" id="dvrreset">ALL BACK AS THEY WERE</button></div>`;
     el.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/((r.max-r.min)||1)*100+'%'));
-    el.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; if(b.id==='dvrgo'){ VR.on?VR.leave():VR.enter(); return; } if(b.id==='dvrreset'){ for(const k in DEF)VR.set(k,DEF[k],true); save(); VR.open(el); return; } if(b.dataset.k)VR.set(b.dataset.k,b.dataset.v); };
+    el.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; if(b.id==='dvrgo'){ VR.on?VR.leave():VR.enter(); return; } if(b.id==='dvrreset'){ for(const k in DEF)VR.set(k,DEF[k],true); save(); VR.open(el); return; } if(b.dataset.mv){ const k=UI.keyOf?UI.keyOf(b.dataset.mv):b.dataset.mv; if(UI.menuOpen)tap('Escape'); setTimeout(()=>tap(k),150); return; } if(b.dataset.k)VR.set(b.dataset.k,b.dataset.v); };
     el.oninput=e=>{ const r=e.target; if(r.type!=='range'||!r.dataset.k)return; VR.set(r.dataset.k,r.value,true); const s=el.querySelector('[data-rv="'+r.dataset.k+'"]'); if(s)s.textContent=r.value+(r.dataset.k==='height'?' cm':' m'); };
     el.onchange=e=>{ if(e.target.type==='range')save(); }; };
 

@@ -27,6 +27,9 @@ const dispatch = (pg, key) => pg.evaluate(k => window.dispatchEvent(new Keyboard
     await dispatch(pg, 'S'); await pg.waitForTimeout(150);
     ok((await pg.evaluate(() => DRONEDBG().page)) === 'shop', 'S opens the bodega shop');
 
+    await dispatch(pg, 'Enter'); await pg.waitForTimeout(150); const cf = await pg.evaluate(() => DRONEDBG().page);
+    await dispatch(pg, 'N'); await pg.waitForTimeout(150); const nb = await pg.evaluate(() => DRONEDBG().page);
+    ok(cf === 'confirm' && nb === 'shop', 'Enter on a pick opens the confirm screen, N backs out (' + cf + ', ' + nb + ')');
     // place an order (the one delivery path, DRONE.pick -> DRONE.go); the money comes off
     const d0 = await pg.evaluate(() => DRONEDBG());
     const furn = d0.furn > 0;
@@ -34,6 +37,8 @@ const dispatch = (pg, key) => pg.evaluate(k => window.dispatchEvent(new Keyboard
     const d1 = await pg.evaluate(() => DRONEDBG());
     ok(d1.cash < d0.cash, 'the order takes the money off (' + d0.cash + ' -> ' + d1.cash + ')');
     ok(d1.page === 'ordered', 'the screen confirms the order');
+    { const e0 = await pg.evaluate(() => { const D = DRONEDBG(); return { cash: D.cash }; }); await dispatch(pg, 'M'); await pg.waitForTimeout(150); await dispatch(pg, 'S'); await pg.waitForTimeout(150); await dispatch(pg, 'Enter'); await pg.waitForTimeout(150); const p1 = await pg.evaluate(() => DRONEDBG().page); await dispatch(pg, 'Enter'); await pg.waitForTimeout(500); const e1 = await pg.evaluate(() => DRONEDBG());
+      ok(p1 === 'confirm' && e1.page !== 'confirm', 'Enter on the confirm screen orders, so a pad\'s or the headset\'s A can buy (' + p1 + ' -> ' + e1.page + ')'); }
 
     // the drone delivers to the fire escape; bring the parcel in (furniture becomes yours)
     let delivered = false;

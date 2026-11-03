@@ -31,9 +31,9 @@ import {SYS, TILE} from './006-map-pre.js';
     const A=Q.pos.array, P=Q.P; for(const k of Q.live){ A[k]=P[k]*MH; A[k+1]=P[k+1]*MV; A[k+2]=P[k+2]*MH; } Q.pos.needsUpdate=true; Q.geo.computeVertexNormals(); }; }
 GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, MH=TILE/.84, MV=SHARED.BOD.YS(24)/.84;
   const [a0,b0,a1,b1]=SHARED.BOD.GD.r, Y1=SHARED.BOD.GD.door[1], fy=Z(Y1)>Z((b0+b1)/2)?1:-1;
-  const mx=v=>v/MH, ix0=mx(Math.min(X(a0),X(a1)))+.6, ix1=mx(Math.max(X(a0),X(a1)))-.6, iz0=mx(Math.min(Z(b0),Z(b1)))+.6, iz1=mx(Math.max(Z(b0),Z(b1)))-.6;
+  const sh=SHARED.BOD.GD.shift||[0,0], mx=v=>v/MH, ix0=mx(Math.min(X(a0),X(a1)))+.6, ix1=mx(Math.max(X(a0),X(a1)))-.6, iz0=mx(Math.min(Z(b0),Z(b1)))+.6, iz1=mx(Math.max(Z(b0),Z(b1)))-.6;
   const fz0=mx(Z(Y1))+fy*.5, fz1=mx(Z(Y1+4*fy))-fy*.3, FZ0=Math.min(fz0,fz1), FZ1=Math.max(fz0,fz1);
-  const spot=inside=>inside?[ix0+Math.random()*(ix1-ix0),iz0+Math.random()*(iz1-iz0)]:[ix0-1+Math.random()*(ix1-ix0+2),FZ0+Math.random()*(FZ1-FZ0)];
+  const spot=inside=>inside?[ix0+mx(sh[0])+Math.random()*(ix1-ix0),iz0+mx(sh[1])+Math.random()*(iz1-iz0)]:[ix0-1+Math.random()*(ix1-ix0+2),FZ0+Math.random()*(FZ1-FZ0)];
   const KINDS=[['THE HAND TOWEL',.34,false,13],['THE PILLOWCASE',.52,false,15],['THE NAPKIN',.36,true,13],['THE BEDSHEET',.62,true,17]];
   const BR=.12;
   const mat=new THREE.MeshLambertMaterial({color:0xf2f0ea,emissive:0x3a4050,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false});
@@ -51,7 +51,7 @@ GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; con
     for(const Q of GHOSTS.list){ const b=Q.ball, b0={...b}; Q.t+=dt;
       const dx=Q.to[0]-b.x, dz=Q.to[1]-b.z, dd=Math.hypot(dx,dz);
       if(dd>.12){ const sp=.28, k=Math.min(1,dt*.8); Q.v.x+=((dx/dd)*Math.min(sp,dd*.5)-Q.v.x)*k; Q.v.z+=((dz/dd)*Math.min(sp,dd*.5)-Q.v.z)*k; Q.yawTo=Math.atan2(dx,dz); }
-      else { Q.v.x*=1-Math.min(1,dt*2); Q.v.z*=1-Math.min(1,dt*2); if((Q.wait-=dt)<=0){ if(Math.random()<.3)Q.in=!Q.in; Q.to=spot(Q.in); Q.wait=4+Math.random()*10; }
+      else { Q.v.x*=1-Math.min(1,dt*2); Q.v.z*=1-Math.min(1,dt*2); if((Q.wait-=dt)<=0){ Q.to=spot(Q.in); Q.wait=4+Math.random()*10; }
         else if(Math.random()<dt*.25)Q.yawTo=Math.random()<.7?Math.atan2(SHARED.cam.position.x/MH-b.x,SHARED.cam.position.z/MH-b.z)+(Math.random()-.5)*.6:Q.yawTo+(Math.random()-.5)*2; }
       b.x+=Q.v.x*dt; b.z+=Q.v.z*dt; b.y=.52+Math.sin(Q.t*1.6)*.05+Math.sin(Q.t*.55)*.03;
       let dy=Q.yawTo-Q.yaw; dy=Math.atan2(Math.sin(dy),Math.cos(dy)); Q.yaw+=dy*Math.min(1,dt*1.5);

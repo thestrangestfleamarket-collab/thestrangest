@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FIX, grab, lamps, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
@@ -52,6 +53,17 @@ PARK.later(()=>{ '@park'; const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, X=SHARED
       spire(tx,ty,1.6,520,230); SOL.up.push([wx-R,wz-R,wx+R,wz+R]); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(PP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(CC,3)); g.computeVertexNormals();
     const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.castShadow=me.receiveShadow=true; me.name='castle spires'; (MAPG.park||scene).add(me); }
+  // the torches: one either side of the gate on its drums and one on each corner drum, facing out; lit by night with the park's lamps (lampLit)
+  { const PP=[], CC=[], gy=(x,y)=>MODS.bodega.ground(X(x),Z(y)), IRN=[.16,.16,.18], PITCH=[.1,.08,.07], WD=[.36,.27,.18], T=TILE;
+    const put=(g,c,at,rx=0,ry=0)=>{ g=g.index?g.toNonIndexed():g; if(rx)g.rotateX(rx); if(ry)g.rotateY(ry); g.translate(...at); const p=g.attributes.position; for(let i=0;i<p.count;i++){ PP.push(p.getX(i),p.getY(i),p.getZ(i)); CC.push(...c); } };
+    const cx=(bx0+bx1)/2, cy=(by0+by1)/2, spots=[[gx-2,wy-.25,1.1,0,-1],[gx+2,wy-.25,1.1,0,-1],...[[bx0,by0],[bx1,by0],[bx0,by1],[bx1,by1]].map(([x,y])=>{ const l=Math.hypot(x-cx,y-cy); return [x,y,r,(x-cx)/l,(y-cy)/l]; })];
+    for(const [dx,dy,rr,ux,uy] of spots){ const mx=dx+ux*(rr+.04), my=dy+uy*(rr+.04), wx=X(mx), wz=Z(my), ox=X(mx+ux)-wx, oz=Z(my+uy)-wz, ol=Math.hypot(ox,oz), nx=ox/ol, nz=oz/ol, y0=gy(mx,my)+Y(58), ry=Math.atan2(nx,nz);
+      put(new THREE.BoxGeometry(.07*T,Y(2.5),.28*T),IRN,[wx+nx*.12*T,y0,wz+nz*.12*T],0,ry); put(new THREE.CylinderGeometry(.05*T,.05*T,Y(2),6),IRN,[wx+nx*.24*T,y0+Y(1),wz+nz*.24*T]);
+      put(new THREE.CylinderGeometry(.025*T,.02*T,Y(13),5),WD,[wx+nx*.26*T,y0+Y(4.5),wz+nz*.26*T],.18,ry); put(new THREE.CylinderGeometry(.045*T,.035*T,Y(4),6),PITCH,[wx+nx*.3*T,y0+Y(11),wz+nz*.3*T],.18,ry);
+      const L=new THREE.PointLight(new THREE.Color(1,.64,.32),60,10*T,1.6); L.position.set(wx+nx*.9*T,y0+Y(12),wz+nz*.9*T); L.userData.i0=60; L.userData.torch=1; L.intensity=0; (PARK.hoods||(PARK.hoods=[])).push(L); scene.add(L); lamps.push(L);
+      FLAME.add({kind:'torch',name:'castle torch',x:wx+nx*.31*T,y:y0+Y(13),z:wz+nz*.31*T,w:.3*T,h:Y(12),embers:.6,smoke:1,sk:.6,seed:mx*7+my*13,parent:MAPG.park||scene}); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(PP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(CC,3)); g.computeVertexNormals();
+    const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.castShadow=true; me.name='castle torches'; (MAPG.park||scene).add(me); MODS.castleTorches=spots.length; }
   MODS.castle={BOUND:{x0:X(bx0-r),x1:X(bx1+r),z0:Z(by0-r),z1:Z(by1+r)}}; });
 await grab('castlestairs',async()=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, S=CASTLE.stair, sd=STN.DY, n=S.steps, rise=S.depth/n, rn=(S.y1-S.y0)/n, P=[], Cc=[], c3=new THREE.Color();
   const quad=(a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ P.push(...v); Cc.push(c3.r,c3.g,c3.b); } };

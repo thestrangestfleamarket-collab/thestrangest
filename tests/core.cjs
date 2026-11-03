@@ -13,6 +13,9 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+{ const c = L.parkPlaces.castle, P = L.park, [n, e] = ['path0', 'path1'].map(id => L.paths.find(p => p.id === id)), x0 = c.x0 - 3.6, x1 = c.x0 + 21 + 3.6, y0 = c.y0 - 3.9, y1 = c.y0 + 17 + 3.6, gx = c.x0 + 12.5;
+  ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
+  ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
 { const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
   ok(P.length && P.every(c => C[c.model] && c.x > L.streets.market.x0 && c.x < L.streets.market.x1 && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St between its kerbs, its id its own (' + P.length + ')'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));

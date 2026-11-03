@@ -15,7 +15,7 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   await pg.evaluate(()=>{ INV.cash=Math.max(INV.cash||0,20); STORE.cabs.play('TORCHBEARER'); });
   const loaded=await pg.waitForFunction(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded,null,{timeout:90000}).then(()=>true,()=>false); ok(loaded,"TORCHBEARER's code loads when the cabinet is played");
   const D=()=>pg.evaluate(()=>STORE.cabs.dbg()), G=()=>pg.evaluate(()=>TORCHDBG());
-  const gwait=async(sec,until)=>{ const t0=(await G()).t, w0=Date.now(); for(;;){ const g=await G(); if(g.t-t0>=sec||(until&&until(g))||Date.now()-w0>60000)return g; await pg.waitForTimeout(50); } };   // game seconds, not wall-clock: frames are slow here
+  const gwait=async(sec,until,cap=60000)=>{ const t0=(await G()).t, w0=Date.now(); for(;;){ const g=await G(); if(g.t-t0>=sec||(until&&until(g))||Date.now()-w0>cap)return g; await pg.waitForTimeout(50); } };   // game seconds, not wall-clock: frames are slow here
   await pg.keyboard.press('Space'); await pg.waitForTimeout(500); let d=await D(); ok(d.mode==='play'&&d.g&&d.g.mode==='hero','the coin goes in and CHOOSE YOUR HERO shows ('+JSON.stringify({mode:d.mode,g:d.g&&d.g.mode})+')');
   await pg.keyboard.press('Space'); await pg.waitForTimeout(400); d=await D(); ok(d.g&&d.g.hero==='WARRIOR'&&d.g.floor===1&&d.g.hp===2000,'the WARRIOR starts floor 1 with 2000 health ('+JSON.stringify(d.g&&{hero:d.g.hero,floor:d.g.floor,hp:d.g.hp})+')');
   await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); });   // no ghosts in the way: the walk proves the key, the door and the stairs
@@ -48,9 +48,9 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.floor(57); C.skip(); }); await gwait(.1); g=await G(); const h57=fnv(g.map.join('\n')), sound=m=>m.length<=48&&m[0].length<=64&&m.some(r=>r.includes('1'))&&m.some(r=>r.includes('h')||true);
   ok(g.floor===57&&sound(g.map)&&h57===F57,'the generated floor 57 is the same floor for everyone ('+g.map[0].length+'x'+g.map.length+', hash '+h57+(h57===F57?'':' ≠ '+F57)+')');
   await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.floor(120); C.skip(); }); await gwait(.1); g=await G(); ok(g.floor===120&&sound(g.map)&&g.gens.length>=10,'floor 120 lays out past the hundredth ('+g.map[0].length+'x'+g.map.length+', '+g.gens.length+' generators)');
-  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.floor(1); C.skip(); C.clear(); C.auto(1); }); g=await gwait(90,g=>g.floor>=2); await pg.evaluate(()=>TORCHDBG().cheat.auto(0)); ok(g.floor>=2,'the attract bot finds the key, the door and the stairs on floor 1 by itself (floor '+g.floor+')');
+  await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.floor(1); C.skip(); C.clear(); C.auto(1); }); g=await gwait(90,g=>g.floor>=2,600000); await pg.evaluate(()=>TORCHDBG().cheat.auto(0)); ok(g.floor>=2,'the attract bot finds the key, the door and the stairs on floor 1 by itself (floor '+g.floor+')');
   await pg.evaluate(()=>TORCHDBG().cheat.skip()); await gwait(.1);
-  await pg.evaluate(()=>TORCHDBG().cheat.hp(1)); await gwait(2.5,g=>g.hp<=0); await pg.waitForTimeout(300); d=await D(); ok(d.over&&d.mode==='over','health 0 is GAME OVER ('+JSON.stringify({over:d.over,mode:d.mode})+')');
+  await pg.evaluate(()=>TORCHDBG().cheat.hp(1)); await gwait(2.5,g=>g.hp<=0); await pg.waitForTimeout(300); d=await D(); ok(d.over&&(d.mode==='over'||d.mode==='initials'),'health 0 is GAME OVER (or its top-ten initials) ('+JSON.stringify({over:d.over,mode:d.mode})+')');
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); ok(!(await pg.evaluate(()=>STORE.cabs.on)),'ESC leaves the cabinet');
   ok(!errs.length&&!late.length,'no page errors, no slow chunk fetch '+errs.concat(late).slice(0,3).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0);

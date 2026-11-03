@@ -6,7 +6,8 @@ src = sorted(glob.glob('src/[0-9][0-9][0-9]*-*'))
 bv = str(int(time.time()))
 b64 = lambda f: json.dumps('data:image/png;base64,' + base64.b64encode(open(f, 'rb').read()).decode())
 lazy = lambda t: re.sub(r'__LAZY__\("([^"]+)"\)', lambda m: '(()=>Promise.resolve(' + read(m.group(1)) + '))', t)
-data = lambda t: re.sub(r'__B64__\("([^"]+)"\)', lambda m: b64(m.group(1)), re.sub(r'__DATA__\("([^"]+)"\)', lambda m: read(m.group(1)), lazy(t)))
+files = lambda t: re.sub(r'__FILE__\("([^"]+)"\)', lambda m: json.dumps('../' + m.group(1)), t)   # a file fetched as it is (audio): beside the one-file page, it is read from data/
+data = lambda t: files(re.sub(r'__B64__\("([^"]+)"\)', lambda m: b64(m.group(1)), re.sub(r'__DATA__\("([^"]+)"\)', lambda m: read(m.group(1)), lazy(t))))
 sha = lambda f: hashlib.sha256(open(f, 'rb').read()).hexdigest()[:10]
 def hashed(f):
     n = f[:-len(os.path.splitext(f)[1])] + '.' + sha(f) + os.path.splitext(f)[1]
@@ -92,6 +93,9 @@ if 'g' in os.environ.get('SKIP', '').split(','):
     sys.exit(print('built', pages[0], 'and', pages[1], 'only (SKIP=g: no dist/g, no npm packages needed)'))
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
+for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
+    o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))
+body = re.sub(r'__FILE__\("([^"]+)"\)', lambda m: names[m.group(1)], body)
 used = [f for f in names if '__DATA__("' + f + '")' in body]
 UNB = ('const __GF=(n,k)=>fetch("/g/"+n).then(r=>{ if(!r.ok)throw new Error(n+" "+r.status); return k?r.arrayBuffer():r.json(); });\n'
     + 'const __UNB=(j,u)=>{ const w=o=>{ for(const k in o){ const v=o[k]; if(!v||typeof v!=="object")continue; const p=v.$;'

@@ -153,7 +153,7 @@ export class Block extends Server {
     const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null });
-    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world() }));
+    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []) }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
@@ -165,7 +165,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -204,6 +204,14 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
     } else if (m.t === "ride") {
       this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
+    } else if (m.t === "car") {
+      // the parked cars (150p-cars): one driver a car; getting out parks it where it stands, kept in the block's world as car:<id> = "x,z,heading"
+      const k = word(m.k, 24); if (!k) return; const cars = this.cars || (this.cars = new Map()), by = cars.get(k);
+      if (m.on) { if (by && by !== s.id && this.roster().some(p => p.id === by)) { c.send(JSON.stringify({ t: "car", k, by, no: 1 })); return; }
+        for (const [q, w] of cars) if (w === s.id && q !== k) cars.delete(q); cars.set(k, s.id); this.broadcast(JSON.stringify({ t: "car", k, by: s.id })); return; }
+      if (by !== s.id) return; cars.delete(k); const a = Array.isArray(m.at) ? m.at : null;
+      if (a) { const v = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -10, 10)].map(x => +x.toFixed(3)).join(","); this.world().then(W => { W["car:" + k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v })); }); }
+      else this.broadcast(JSON.stringify({ t: "car", k, by: null }));
     } else if (m.t === "ps") {
       // a pose state (sitting, climbing, hanging, swimming): each a few numbers or flags
       const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
@@ -236,7 +244,9 @@ export class Block extends Server {
     if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(b.out ? 4002 : 4001, b.out ? "out" : "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
-      if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k); } }
+      if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k);
+      if (this.cars) for (const [k, v] of this.cars) if (v === s.id) { this.cars.delete(k); const a = s.at, v2 = a ? [a[0], a[1], a[3]].map(x => +(+x || 0).toFixed(3)).join(",") : null;
+        if (v2) this.world().then(W => { W["car:" + k] = v2; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v2 })); }); else this.broadcast(JSON.stringify({ t: "car", k, by: null })); } } }
 }
 
 // the owner's panel (TENANTS in the game): every call checks the caller is in admins, then uses the service key

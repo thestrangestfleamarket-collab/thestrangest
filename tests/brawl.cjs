@@ -71,8 +71,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(sent.on && sent.on.n.length >= 11 && sent.frames >= 1, 'your ragdoll goes out to everyone (' + (sent.on ? sent.on.n.length : 0) + ' bodies, ' + sent.frames + ' frames)');
     await pg.evaluate(() => ONLINE.feed({ t: 'grab', id: 'a' }));
     ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'a player can pick you up while you are down');
-    await pg.evaluate(() => ONLINE.feed({ t: 'toss', id: 'b', v: [1, 0] }));
-    ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'only the one holding you can throw you');
+    ok(await pg.evaluate(() => { ONLINE.feed({ t: 'grab', id: 'a' }); ONLINE.feed({ t: 'toss', id: 'b', v: [1, 0] }); return __dbg.RAG.held && __dbg.RAG.held.by === 'a'; }), 'only the one holding you can throw you');   // in one step: a hold lets go by itself after 10 s, which a slow runner can reach between steps
     const ko0 = await pg.evaluate(() => __dbg.RAG.ko);
     await pg.waitForTimeout(200); await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .01, kb: 1, heavy: true, k: 'fist', from: [o.p.x, o.p.z] }); });
     ok(await pg.evaluate(k => __dbg.RAG.ko === k, ko0), 'a blow while you are down does not keep you down longer');
@@ -91,8 +90,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(g.sent.includes('grab'), 'double-clicking a player who is down picks them up (' + JSON.stringify(g) + ')');
     await pg.evaluate(() => { SYS.run('act', 'J', 1); __ragI = 0; });
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'toss' && m.to === 'a')), 'a punch throws them');
-    const blade = await pg.evaluate(async () => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'ragoff', id: 'a' }); ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] }); await new Promise(r => setTimeout(r, 500));
-      const seen = WIELDDBG().find(x => x.id === 'a'); ONLINE.feed({ t: 'swing', id: 'a', s: 1, h: 0 }); const sw = WIELDDBG().find(x => x.id === 'a');
+    const blade = await pg.evaluate(async () => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'ragoff', id: 'a' }); ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] });
+      // their sword is drawn on a frame: wait for it, not a fixed time
+      let seen = null; for (const t0 = performance.now(); performance.now() - t0 < 15000; await new Promise(r => setTimeout(r, 250))) { seen = WIELDDBG().find(x => x.id === 'a'); if (seen && seen.w === 'sword' && seen.shown) break; } ONLINE.feed({ t: 'swing', id: 'a', s: 1, h: 0 }); const sw = WIELDDBG().find(x => x.id === 'a');
       __sent.length = 0; ONLINE.on = true; FORAGE.give('sword', 1); WIELD.set('sword'); await new Promise(r => setTimeout(r, 1500)); const mine = __sent.find(m => m.t === 'aim');
       WIELD.set(null); await new Promise(r => setTimeout(r, 800)); const off = __sent.filter(m => m.t === 'aim').pop(); ONLINE.on = false; ONLINE.feed({ t: 'aim', id: 'a', w: '' });
       return { seen: !!(seen && seen.w === 'sword'), shown: !!(seen && seen.shown), swing: !!(sw && sw.sw), mine: mine ? mine.w + ':' + (mine.v || []).length : '', off: off ? off.w : null, left: WIELDDBG().length }; });

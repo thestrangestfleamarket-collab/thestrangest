@@ -47,7 +47,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(m.t==='world'&&typeof m.k==='string'){ wset(m.k,m.v); return; }
     if(ONLINE.me&&(m.id===ONLINE.me||(m.p&&m.p.id===ONLINE.me))&&m.t!=='tell')return;   // your own moves from your other tab: never a body of yours in your own head
     if(m.t==='mv'&&m.id&&Array.isArray(m.at)){ push(up(m.id),m.at); return; }
-    if(m.t==='hi'){ ONLINE.me=m.you||''; if(m.world&&typeof m.world==='object')for(const k in m.world)wset(k,m.world[k]); const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
+    if(m.t==='hi'){ ONLINE.me=m.you||''; if(m.world&&typeof m.world==='object')for(const k in m.world)wset(k,m.world[k]); SYS.run('hi',m); const keep=new Set(); for(const p of m.all||[])if(p&&p.id){ keep.add(p.id); up(p.id,p); } for(const id of [...ONLINE.others.keys()])if(!keep.has(id))drop(id); }
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }

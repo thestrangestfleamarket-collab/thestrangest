@@ -64,7 +64,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   // a dyed shirt or trousers: one material a colour, shared by everyone dyed it
   const dyeMat=h=>{ const M=R.MATS, n='dye'+h; if(!M.includes(n)){ M.push(n); const c=new THREE.Color(h); W3.ramp.push([1,.9,.7,.42].map(q=>c.clone().multiplyScalar(q))); } return M.indexOf(n); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
-    if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; b=body?{body}:built('w00'); BUILT.set(k,b); return b; }
+    if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return built('w00'); b={body}; BUILT.set(k,b); return b; }
     const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS, D=DESIGN.decode(k.split('.')[1]||'');
     const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
     for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);

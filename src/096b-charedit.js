@@ -2,7 +2,7 @@
 import {CHARED, CHARS, FORAGE, GAMEED, ITEMS, keys, MAPED, NPCS, pos, SHOPS, TALK, TEXT} from './003b-systems.js';
 import {FADE, SECTION, TILE} from './006-map-pre.js';
 Object.assign(CHARED,{on:false,built:false});
-{ const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
+{ const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox','deer','wolf','bear','crow','owl','duck','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','penguin','raptor','stego','brachio','ptera','antqueen','woodant','aphid','ladybird','hopper','beetle','mantis','caterpillar','slug','snail','crab','bee','bumblebee','firefly'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>MERCH.includes(k)?'MERCHANT':MONST.test(k)?'MONSTER':PEOPLE.test(k)?'PEOPLE':ANIMALS.includes(k)?'ANIMAL':'TOON';
   const behOf=N=>{ const j=N.rig&&N.rig.job; if(j)return 'WORK'; if(MONST.test(N.key))return 'FIGHT'; if(N.roam)return 'ROAM'; if(N.life)return 'DAILY LIFE'; if(N.st&&N.st.hold)return 'STAND'; return 'WANDER'; };
   const esc=TEXT.esc;

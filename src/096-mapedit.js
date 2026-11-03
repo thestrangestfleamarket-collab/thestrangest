@@ -125,7 +125,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     for(const o of L)if(bld(o)){ const f=WP[o.gid].face||'n'; o.rot=FACEROT[f]; if(f==='e'||f==='w'){ const w=o.w; o.w=o.d; o.d=w; } }
     return L; };
 
-  const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
+  const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox','deer','wolf','bear','crow','owl','duck','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','penguin','raptor','stego','brachio','ptera','antqueen','woodant','aphid','ladybird','hopper','beetle','mantis','caterpillar','slug','snail','crab','bee','bumblebee','firefly'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>k==='you'?'you':MERCH.includes(k)?'merchant':MONST.test(k)?'monster':PEOPLE.test(k)?'people':ANIMALS.includes(k)?'animal':'toon';
   const KCOL={you:'#f2f2f2',people:'#e8c49a',toon:'#c88ae0',merchant:'#f2a040',animal:'#8ad07a',monster:'#e05a5a'};
   const BEH=['STAND','WANDER','ROAM','DAILY LIFE','WORK','GUARD','FOLLOW YOU','SLEEP','FIGHT'];

@@ -17,10 +17,18 @@ def row(items,x0,front,gap=3,face=N):
     for k in items:
         w,_,d=size['pf_'+k]; put(k,x+T(w)/2,front-T(d)/2 if face==N else front+T(d)/2,face); x+=T(w)+gap
     return x
-# Old Town, in the open north of the park's cross path (the park's trees stand thick south of it): two rows of the city's buildings facing each other
-# across their own street (map rows 78 to 92), split where the path to the castle (x 43) crosses; its cars parked along both kerbs
-row(['corner_tenement','brownstone_row_house','narrow_walk_up','cast_iron_loft'],-12,78,face=N); row(['office_tower','corner_shop','brick_church','street_diner'],49,78,face=N)
-row(['one_storey_shop_row','fire_station','auto_repair_garage'],-12,92,face=S); row(['public_school','village_hall'],49,92,face=S)
+# the city's buildings stand on the block (owner, 3 Nov 2026: "put them down further market st and open it up", "along side the hudson ... towards fishing pier"),
+# in the gaps the garages and lots kept (data/world.json block.pf holds the spans they take, so src/069a-block.js leaves them free)
+B=json.load(open('data/world.json'))['block']; FR,BK,R2=B['front'],B['back'],B['backrow']; SPANS={'1':[],'2':[]}
+def strip(items,x0,x1,front,face,rowid,gap):
+    n0=len(P); x=row(items,x0,front,gap=gap,face=face); assert x-gap<=x1+.01,(items,x,x1)
+    for o in P[n0:]:
+        w=T(size[o['k']][0]); cx=(o['x']+81.36)/1.13; SPANS[rowid].append([round(cx-w/2-.3,2),round(cx+w/2+.3,2)]); assert T(size[o['k']][2])<=(FR-BK if rowid=='1' else R2[1]-R2[0])+.4,o['k']
+# Market St's east end, between the Scanner and the theatre, fronts on the street; the fire station by the bank; the school, hall and garage at its west end
+strip(['corner_tenement','brownstone_row_house','narrow_walk_up','cast_iron_loft','office_tower','brick_church','corner_shop'],153.6,229.4,FR,N,'1',1.2)
+strip(['fire_station'],82.75,92.4,FR,N,'1',0); strip(['public_school','village_hall','parking_garage'],-49.2,9.7,FR,N,'1',.7)
+# the Hudson row round the fishing pier (x 61), facing the river: the diner at the pier's foot
+strip(['auto_repair_garage','motel_office','motel_room_run','corner_shophouse','two_storey_shophouse','street_diner','three_storey_shophouse','wide_shophouse','convenience_store','small_shrine_hall','one_storey_shop_row'],-4.5,110.8,R2[0],S,'2',.5)
 put('subway_entrance',40,74,N); put('escalator_flight',47,70,E)
 x=-10
 for i,k in enumerate(['fire_engine','vintage_hearse','patrol_cruiser','security_patrol_cruiser','stretch_limousine','compact_hatchback','wheeled_city_coupe','team_minibus',
@@ -30,8 +38,8 @@ for i,k in enumerate(['fire_engine','vintage_hearse','patrol_cruiser','security_
     if 36<x+T(l)/2<50: x=51
     put(k,x+T(l)/2,81.5 if i<8 else 88.5,E if i<8 else W); x+=T(l)+3
 put('roadside_billboard',106,84,W)
-# a motel south of the reservoir, its pool behind; the lighthouse on the lake's east shore
-x=row(['motel_office','motel_room_run'],154,94,face=N); put('kidney_pool',166,76,S,solid=False); put('old_lighthouse',165,12,W)
+# a pool south of the reservoir; the lighthouse on the lake's east shore
+put('kidney_pool',166,76,S,solid=False); put('old_lighthouse',165,12,W)
 # a rail yard on the lawn west of the reservoir, its stock on three sidings, a footbridge over them, a bookstall; the viaduct's arches carry the brook
 for y,x,ks in [(142,124,['mainline_diesel_locomotive']),(153,122,['passenger_carriage']),(164,122,['railbus','tender_steam_locomotive']),(171,124,['guideway_rail_shuttle'])]:
     for k in ks: l=size['pf_'+k][2]; put(k,x+T(l)/2,y,E); x+=T(l)+1.5
@@ -72,6 +80,31 @@ for k,tx,ty,h in [('dandelion',84,40,4),('common_daisy',90,44,3),('dandelion_see
                   ('wild_honeycomb_panel',80,46,1.4),('swallowtail_chrysalis',97,36,.8),('sycamore_seed',86,48,.7),('fallen_blackberry',82,36,.6),('dragonsbane_thistle',94,49,1.2)]:
     put(k,tx,ty,S,s=round(h/size['pf_'+k][1],4),solid=False)
 put('wall_vine_curtain',-23.2,60,E,solid=False)
+# the second batch (owner added it to the folder, 3 Nov 2026)
+def at(k):
+    o=next(o for o in P if o['k']=='pf_'+k); w,_,d=size['pf_'+k]; return (o['x']+81.36)/1.13,(o['z']-87.01)/1.13,T(w),T(d)
+put('promenade_bandstand',245,8,S)
+# the riverside walk: an ice cream kiosk; a pier head off the pier
+put('ice_cream_kiosk_on',120,-113,S); put('pier_head_platform',8,-121,S,solid=False)
+# the zoo's way in, on its north side: the gate, the ticket booth, the turnstiles
+put('main_entrance_gate',4,103,S,solid=False); put('ticket_booth',-6,103,S); put('turnstile_bank',13,103,S)
+# by the planes: a press box and a helipad
+put('press_box',50,36,N); put('rooftop_helipad_deck',-12,28,S,solid=False)
+# the castle's moat bridge at its north gate
+put('moat_bridge',39,106.5,E,solid=False)
+# the buildings' doors: the office tower's revolving entrance, the school's doors, the fire station's side door; a lift by the old subway entrance
+x,y,w,d=at('office_tower'); put('revolving_entrance_bay',x,FR+T(1),N,solid=False)
+x,y,w,d=at('public_school'); put('school_door_set',x,FR+T(.2),N,solid=False)
+x,y,w,d=at('fire_station'); put('fire_door_set',x+w/2-T(.4),y+d/2-T(1.5),E,solid=False)
+put('lift_landing_door',44,72,N,solid=False)
+# the haunted house's grand staircase; the rail yard footbridge's stairs
+x,y,w,d=at('haunted_victorian_house'); put('grand_marble_staircase',x,y-d/2-T(4),N,solid=False)
+put('straight_stair_flight',144,138,N,solid=False); put('stair_core_flight',144,158,N)
+# a tent by the cabin, a mushroom cottage in the bug's-eye garden, a glass conservatory on the graveyard's lawn
+put('camp_tent',48,146,W); put('mushroom_cottage',91,38,S,solid=False); put('glass_conservatory',30,168,S)
 old=[o for o in json.load(open('data/garden.json')) if not str(o.get('k','')).startswith('pf_')]
 json.dump(old+P,open('data/garden.json','w'),indent=0)
+import re
+t=open('data/world.json').read(); pf=json.dumps({k:sorted(v) for k,v in SPANS.items()},separators=(',',':')); t=re.sub(r'\n  "pf": [^\n]*','',t)
+t=t.replace('\n "block": {\n','\n "block": {\n  "pf": '+pf+',\n',1); assert json.loads(t)['block']['pf']; open('data/world.json','w').write(t)
 used={o['k'] for o in P}; print(len(P),'placed;',len(used),'of',len(size),'models; unplaced:',sorted(set(size)-used))

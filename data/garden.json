@@ -1,104 +1,176 @@
 [
 {
 "k": "pf_corner_tenement",
-"x": -89.129,
-"z": 166.271,
+"x": 97.999,
+"z": -8.879,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
 "k": "pf_brownstone_row_house",
-"x": -74.567,
-"z": 169.769,
+"x": 110.527,
+"z": -5.381,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
 "k": "pf_narrow_walk_up",
-"x": -63.105,
-"z": 168.848,
+"x": 119.955,
+"z": -6.302,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
 "k": "pf_cast_iron_loft",
-"x": -48.953,
-"z": 169.13,
+"x": 132.073,
+"z": -6.02,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
 "k": "pf_office_tower",
-"x": -20.609,
-"z": 169.769,
-"y": 0,
-"s": 1,
-"rot": 0
-},
-{
-"k": "pf_corner_shop",
-"x": -5.885,
-"z": 169.197,
+"x": 146.881,
+"z": -5.381,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
 "k": "pf_brick_church",
-"x": 8.838,
-"z": 167.079,
+"x": 158.999,
+"z": -8.071,
 "y": 0,
 "s": 1,
 "rot": 0
 },
 {
-"k": "pf_street_diner",
-"x": 22.99,
-"z": 172.46,
+"k": "pf_corner_shop",
+"x": 171.689,
+"z": -5.953,
 "y": 0,
 "s": 1,
 "rot": 0
-},
-{
-"k": "pf_one_storey_shop_row",
-"x": -86.849,
-"z": 196.97,
-"y": 0,
-"s": 1,
-"rot": 3.1416
 },
 {
 "k": "pf_fire_station",
-"x": -70.006,
-"z": 196.351,
+"x": 17.528,
+"z": -5.381,
 "y": 0,
 "s": 1,
-"rot": 3.1416
-},
-{
-"k": "pf_auto_repair_garage",
-"x": -53.164,
-"z": 196.351,
-"y": 0,
-"s": 1,
-"rot": 3.1416
+"rot": 0
 },
 {
 "k": "pf_public_school",
-"x": -12.538,
-"z": 199.041,
+"x": -123.504,
+"z": -8.071,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_village_hall",
+"x": -98.808,
+"z": -8.465,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_parking_garage",
+"x": -79.493,
+"z": -8.071,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_auto_repair_garage",
+"x": -78.374,
+"z": -29.536,
 "y": 0,
 "s": 1,
 "rot": 3.1416
 },
 {
-"k": "pf_village_hall",
-"x": 14.757,
-"z": 199.435,
+"k": "pf_motel_office",
+"x": -64.356,
+"z": -29.536,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_motel_room_run",
+"x": -44.958,
+"z": -29.536,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_corner_shophouse",
+"x": -28.25,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_two_storey_shophouse",
+"x": -22.304,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_street_diner",
+"x": -13.668,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_three_storey_shophouse",
+"x": -5.031,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wide_shophouse",
+"x": 3.605,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_convenience_store",
+"x": 14.932,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_small_shrine_hall",
+"x": 23.569,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_one_storey_shop_row",
+"x": 34.895,
+"z": -28.917,
 "y": 0,
 "s": 1,
 "rot": 3.1416
@@ -246,22 +318,6 @@
 "y": 0,
 "s": 1,
 "rot": -1.5708
-},
-{
-"k": "pf_motel_office",
-"x": 98.041,
-"z": 187.849,
-"y": 0,
-"s": 1,
-"rot": 0
-},
-{
-"k": "pf_motel_room_run",
-"x": 120.264,
-"z": 187.849,
-"y": 0,
-"s": 1,
-"rot": 0
 },
 {
 "k": "pf_kidney_pool",
@@ -970,5 +1026,168 @@
 "s": 1,
 "rot": 1.5708,
 "solid": false
+},
+{
+"k": "pf_promenade_bandstand",
+"x": 195.49,
+"z": 96.05,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_ice_cream_kiosk_on",
+"x": 54.24,
+"z": -40.68,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_pier_head_platform",
+"x": -72.32,
+"z": -49.72,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_main_entrance_gate",
+"x": -76.84,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_ticket_booth",
+"x": -88.14,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_turnstile_bank",
+"x": -66.67,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_press_box",
+"x": -24.86,
+"z": 127.69,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_rooftop_helipad_deck",
+"x": -94.92,
+"z": 118.65,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_moat_bridge",
+"x": -37.29,
+"z": 207.355,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_revolving_entrance_bay",
+"x": 146.881,
+"z": 1.345,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_school_door_set",
+"x": -123.504,
+"z": 0.269,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_fire_door_set",
+"x": 22.371,
+"z": -2.018,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_lift_landing_door",
+"x": -31.64,
+"z": 168.37,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_grand_marble_staircase",
+"x": -79.1,
+"z": 261.138,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_straight_stair_flight",
+"x": 81.36,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_stair_core_flight",
+"x": 81.36,
+"z": 265.55,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_camp_tent",
+"x": -27.12,
+"z": 251.99,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_mushroom_cottage",
+"x": 21.47,
+"z": 129.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_glass_conservatory",
+"x": -47.46,
+"z": 276.85,
+"y": 0,
+"s": 1,
+"rot": 3.1416
 }
 ]

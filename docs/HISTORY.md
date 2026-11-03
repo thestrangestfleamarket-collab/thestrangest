@@ -5213,6 +5213,7 @@ Owner (his model, a rugged red tablet): "i want to import this into the game, fu
 - 2 Nov 2026, ROAM sits off the map east, beside the catacomb run, in a room-sized box: a box far west of the map doubled the townspeople's street navmesh and it ran out of memory.
 - 2 Nov 2026, the egg poacher (owner, his file egg-poacher.glb: "add this player to the game"; his picks: "this is an npc", "Keep its colours"): THE EGG POACHER, a townsperson on your rig in the file's own colours, walks main street (?poacher=0 keeps it off); not playable. Its body loads after the start.
 - 2 Nov 2026, owner: "make shops, lamps and npcs follow the hours too". The day's hour now runs through the four looks, a quarter of the day each (SUNRISE 5–11, DAY 11–17, SUNSET 17–23, NIGHT 23–5; six game hours a real hour, the same for everyone), so shops' hours, the lamps, jobs, duties, the mail's days and every routine keyed to the hour move again while the sky and sun stay each look's own. Rule: the sun and sky are the look's; everything else reads the day's hour.
+- 2 Nov 2026, summon (owner: "add abiltiy to summon any character in game as admin"; his picks: the real one comes, everyone nearby sees it, in the ADMIN window): ADMIN lists every character, a search finds one, SUMMON brings it to stand in front of you facing you, SEND BACK returns it where it was. Everyone in the section sees it there, and it stays until sent back. Only an owner can summon; the server checks.
 - 2 Nov 2026, leaving a holodeck world (owner: "when you leave VR worlds you should leave completely (this hud is still on screen) and when i go to use other VR games they are grayed out even though im not in golf anymore"): leaving an adventure's world any way at all (the menu, a jump to another place, not only END PROGRAM) ends its program: its card goes and every RUN is open again. Rule: each off-world adventure names its world (`room`) and the holodeck ends the program when you are no longer in it.
 
 ## 2 Nov 2026: the handheld is the menu
@@ -5249,6 +5250,10 @@ Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`
 Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".
 ## 2 Nov 2026: the painted ground near you only; the museum's inside on the way in
 Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · MUSEUM OF EARTH" 92 MB loaded but not drawn): picks "1,2,3" for the street's painted ground, then "yes fix the museum too". The ground is painted at half detail, only near you, and dropped (freed) when far or while you are in a room off the map, painted again on the way out. The museum's inside (floor, inner walls, exhibits) is built only when you go in and dropped when you leave. Rule: painted pictures are kept only near you; an inside marked to drop goes when you leave it.
+## 3 Nov 2026: the Drive glb folder's models replace the game's own
+Owner: "start unpacking them all for the game and finding places for them. replace current things in game first with these better versions"; his picks: all four swaps (rat + wasp, butterflies + fish, street props, mining + chests), new things after. The rat and the wasp, the mandarin fish and the shark are the Drive's (Polyfork) models; six of its reef fish (yellow tang, firefish, Banggai cardinalfish, green chromis, cleaner wrasse, foxface) join the Hudson's look-only fish. Rule: the Polyfork files are never put in the repo (their license: use, don't redistribute); only the baked data is.
+- 3 Nov 2026, the backwards fish (owner: "fix the backwards fish too"): the cartoon pack's fish, the sockeye and the trout swam tail first; all turned round.
+- 3 Nov 2026, the street props, mining and chests: the street's trash cans, the caverns' finds (an ore deposit, its crystals or nuggets in the find's colour; the Hudson's pearls stay glints), the cut stones and the sunken chest are the Drive's models. The guitar stays the game's (the playable one, fitted to the hands); the butterflies wait for the owner (the Drive has one butterfly, the game 32 painted kinds).
 
 ## 3 Nov 2026: the nearest walkers move smoothly
 
@@ -5257,6 +5262,9 @@ Owner, of the new characters walking stiff: "A" (of: their pose every frame whil
 ## 3 Nov 2026: the Merchant is playable
 
 Owner: "allow the Merchant character to be playable as well as Walker". YOU's BODY row is back with WALKER and MERCHANT (polyfork's Merchant, the flea market's TRADER's model). Rule: the BODY row is the Walker and the Merchant (was the Walker only, 29 Oct); the townsfolk stay off it.
+## 3 Nov 2026: the player is told when their saved things are full
+
+When `/owned` hits the 2 MB-a-player cap (413), the HUD log now tells the player their things are full and new changes are kept on this device only — the flag (`OWNED.isFull()`) was there, the notice was missing. Follow-up to the 2 Nov save fix.
 ## 3 Nov 2026: PHOSPHOR removed; the haze gone for now
 
 Owner: "lets remove it and also lets remove the haze from the game for now, just have it get slightly darker and blurred the further away, minimal effect". PHOSPHOR (2 Nov) is gone. The distance fog no longer washes the world into the horizon's colour: the far is only slightly darker and blurred (ATMOSPHERE's DISTANCE FOG: START, BLUR, DARKER); only its last stretch fades softly where the drawing stops, so nothing pops; the sky is untouched. Water's own fog unchanged. Supersedes the haze rules above while it holds.

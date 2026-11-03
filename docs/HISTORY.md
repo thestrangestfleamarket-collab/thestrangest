@@ -5246,3 +5246,7 @@ Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`
 Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".
 ## 2 Nov 2026: the painted ground near you only; the museum's inside on the way in
 Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · MUSEUM OF EARTH" 92 MB loaded but not drawn): picks "1,2,3" for the street's painted ground, then "yes fix the museum too". The ground is painted at half detail, only near you, and dropped (freed) when far or while you are in a room off the map, painted again on the way out. The museum's inside (floor, inner walls, exhibits) is built only when you go in and dropped when you leave. Rule: painted pictures are kept only near you; an inside marked to drop goes when you leave it.
+
+## 3 Nov 2026: the nearest walkers move smoothly
+
+Owner, of the new characters walking stiff: "A" (of: their pose every frame while they walk, as yours is). The 8 nearest walking bodies get a pose every frame; everyone else keeps the 10-a-second step (18 Oct) while standing or far.

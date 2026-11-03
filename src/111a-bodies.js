@@ -124,10 +124,15 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const d0=SR.dist; R.step(SR,dt); const go=(SR.dist-d0)*W3.SZ/PPU*.85;
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); } }
       st.y=MODS.bodega.ground(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
-      if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!ASTEP.gate(NPC,dt))return;
+      if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
       R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
-  SYS.add('dress',dt=>{ for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
+  // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
+  const LIVEP=new Set(); let smT=0;
+  const liveP=dt=>{ if((smT-=dt)>0)return; smT=.25; LIVEP.clear(); const L=[]; for(const b of BODIES.list){ const N=b.npc; if(N&&N.on&&N.mode!=='hidden'&&N.st&&N.st.to)L.push([Math.hypot(N.st.x-pos.x,N.st.z-pos.z),N]); }
+    L.sort((a,b)=>a[0]-b[0]); for(let i=0;i<Math.min(BODIES.SMOOTH,L.length);i++)LIVEP.add(L[i][1]); };
+  BODIES.SMOOTH=8;
+  SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   /* ---------- a baked body (bases-bake, hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */

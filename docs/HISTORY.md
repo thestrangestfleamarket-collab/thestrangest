@@ -5290,3 +5290,4 @@ Owner: "i want the interiors of the cars to be realistic with windows you can vi
 ## 3 Nov 2026: a held tool rests in front of you
 Owner, asked how a tool should rest when no mouse aims it (a held rod pointed at the ground facing away from north since 2 Nov): "Follow where he faces". With no mouse aim the rod, sword or net rests in front of him, a little down, whichever way he faces.
 - 3 Nov 2026, one skate park: main's (111fd, rideable, its skaters) stays; this branch's own copy (089c) is gone. Market St's east end makes room for main's diner and flea market lot: the loft stands between them, the corner shop and church join the west end.
+- 3 Nov 2026, the crowd at the bank door (owner, his picture of a crowd of townspeople at one door: "all the npcs are spawning from one spot right now"): a character too far to be walked kept its body where it was made (the bank's door) while it lived elsewhere; now its body always stands where the character is.

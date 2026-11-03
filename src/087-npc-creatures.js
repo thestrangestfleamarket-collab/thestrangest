@@ -1,7 +1,7 @@
 // THE CREATURES: PAWNS sets the rats, frogs, snakes, spiders and bats loose in their lanes, painted and animated.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {CLOCK, PARK, POND} from './003b-systems.js';
+import {CLOCK, FLOW, PARK, POND} from './003b-systems.js';
 import {MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';

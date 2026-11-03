@@ -2,6 +2,7 @@
 # Polyfork .glb (flat colours in COLOR_0, Y up, nose toward +Z) read at rest and packed into the format of the data file it replaces.
 #   fish  <glb> <key>  data/fish.json: a flat soup, nose on +X, unit length (src/141f-fishes.js swims it)
 #   kit   <glb> <key>  data/kit.json: int16 over its box, colours, indices (src/068-kit.js)
+#   props <list> -     data/pfprops.json: every 'key path' line of <list>, as kit, in metres (src/152a-landscape.js places them from data/garden.json)
 #   bfly  <glb> bfly   data/bfly.json: the butterfly's body (coloured) and its left wings (shape only), wings closed upright, about the hinge
 # Run: python3 tools/polyfork-bake.py fish ~/dl/yellow-tang-base.glb yellowtang [TRIS=600]
 import sys, os, json, struct, base64, numpy as np
@@ -50,6 +51,17 @@ def simplify(P,C,F,target):
     fc=cKDTree(P[F].mean(1)).query(p2[f2].mean(1))[1]; col=C[F[fc,0]]
     return p2[f2].reshape(-1,3).astype(float),np.repeat(col,3,0),np.arange(len(f2)*3).reshape(-1,3)
 mode,f,key=sys.argv[1:4]; TRIS=int(os.environ.get('TRIS',0))
+def kit(P,C,F):
+    P,C,F=weld(P,C,F); lo=P.min(0); hi=P.max(0); sc=(hi-lo).max()/65000; I=F.reshape(-1); big=len(P)>65535
+    return {'n':len(P),'lo':np.round(lo,5).tolist(),'sc':float(sc),'p':b64(np.round((P-lo)/sc-32500).astype(np.int16)),'c':b64(C.round().astype(np.uint8)),'i':b64(I.astype(np.uint32 if big else np.uint16)),'i32':int(big),'tris':len(F),'size':np.round(hi-lo,4).tolist()}
+if mode=='props':
+    out=os.environ.get('OUT','data/pfprops.json'); D={}
+    for line in open(f):
+        if not line.strip() or line.startswith('#'): continue
+        k,path=line.split()[:2]; P,C,F=load(path)
+        if TRIS: P,C,F=simplify(P,C,F,TRIS)
+        D[k]=kit(P,C,F); print(k,D[k]['tris'],'tris',D[k]['size'])
+    open(out,'w').write(json.dumps(D,separators=(',',':'))); print(out,os.path.getsize(out),'bytes'); sys.exit()
 P,C,F=load(f)
 if mode=='fish':
     P=np.stack([P[:,2],P[:,1],-P[:,0]],1)   # nose from +Z onto +X, Y up

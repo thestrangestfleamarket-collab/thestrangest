@@ -5234,3 +5234,7 @@ Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser st
 Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".
 ## 2 Nov 2026: the painted ground near you only; the museum's inside on the way in
 Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · MUSEUM OF EARTH" 92 MB loaded but not drawn): picks "1,2,3" for the street's painted ground, then "yes fix the museum too". The ground is painted at half detail, only near you, and dropped (freed) when far or while you are in a room off the map, painted again on the way out. The museum's inside (floor, inner walls, exhibits) is built only when you go in and dropped when you leave. Rule: painted pictures are kept only near you; an inside marked to drop goes when you leave it.
+
+## 3 Nov 2026: the player is told when their saved things are full
+
+When `/owned` hits the 2 MB-a-player cap (413), the HUD log now tells the player their things are full and new changes are kept on this device only — the flag (`OWNED.isFull()`) was there, the notice was missing. Follow-up to the 2 Nov save fix.

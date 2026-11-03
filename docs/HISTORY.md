@@ -5254,3 +5254,5 @@ Owner, of the new characters walking stiff: "A" (of: their pose every frame whil
 ## 3 Nov 2026: the Merchant is playable
 
 Owner: "allow the Merchant character to be playable as well as Walker". YOU's BODY row is back with WALKER and MERCHANT (polyfork's Merchant, the flea market's TRADER's model). Rule: the BODY row is the Walker and the Merchant (was the Walker only, 29 Oct); the townsfolk stay off it.
+## 3 Nov 2026: car interiors
+Owner: "i want the interiors of the cars to be realistic with windows you can view. steering wheel, radio, etc."; then "i dont see inside of car , seats, seat belt, etc?". Each car's windows are see-through glass and its cabin hollow: seats (benches in the muscle car, wagon and pickup), seat belts, a steering wheel that turns as you steer, dash with two gauges, a radio, shifter, pedals, mirror, visors, door panels and carpet. In first person the driver looks out from the seat.

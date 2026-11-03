@@ -42,6 +42,7 @@ jobs:
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k passport 'src/159d|passport\.cjs'
+          k summon  'src/076b|src/162b|summon\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
           k spray   'src/159f|src/146-|spray\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
@@ -125,6 +126,9 @@ jobs:
       - name: passport
         if: contains(steps.f.outputs.run, ' passport')
         run: node tests/passport.cjs dist/market.html
+      - name: Summoning a character (the owner's ADMIN window)
+        if: contains(steps.f.outputs.run, ' summon')
+        run: node tests/summon.cjs dist/market.html
       - name: scanner
         if: contains(steps.f.outputs.run, ' scanner')
         run: node tests/scanner.cjs dist/market.html

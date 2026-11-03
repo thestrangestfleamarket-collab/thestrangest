@@ -1,0 +1,32 @@
+// THE SUMMON CHECK: node tests/summon.cjs [dist/market.html]. An owner summons a character from far away: the real one stands in front of them, facing them, and the block is told; one another owner summoned appears where they put it; SEND BACK puts each where it was; the ADMIN window lists everyone, finds by name, summons and sends back.
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+  await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(2500);
+  const L=await pg.evaluate(()=>{ window.__sent=[]; ONLINE.send=m=>__sent.push(m); window.__P=()=>{ const p=__dbg.pos(); return {x:p[0],y:p[1],z:p[2]}; }; const pos=__P(), A=SUMMON.list(), L=A.map(N=>({k:SUMMON.id(N,A),d:Math.hypot(N.st.x-pos.x,N.st.z-pos.z)})).sort((a,b)=>b.d-a.d); return {n:L.length,far:L[0],next:L[1],ids:new Set(L.map(r=>r.k)).size,dragons:L.filter(r=>/^dragon/.test(r.k)).length}; });
+  ok(L.ids===L.n,'every character has its own summon id, though keys repeat ('+L.dragons+' dragons)');
+  ok(L.n>=10,'SUMMON lists the game\'s characters ('+L.n+')');
+  const A0=await pg.evaluate(k=>{ const N=SUMMON.byId(k); window.__N0={x:N.st.x,z:N.st.z,p:N.g.parent}; SUMMON.go(N); return __sent.slice(-1)[0]; },L.far.k);
+  ok(A0&&A0.t==='world'&&A0.k==='sum:'+L.far.k&&typeof A0.v==='string'&&A0.v.split(',').length===5,'summoning tells the block, so everyone in the section sees it ('+JSON.stringify(A0)+')');
+  await pg.waitForTimeout(1200);
+  const A=await pg.evaluate(k=>{ const pos=__P(), N=SUMMON.byId(k), st=N.st, d=Math.hypot(st.x-pos.x,st.z-pos.z), to=Math.atan2(pos.x-st.x,pos.z-st.z), turn=Math.abs(Math.atan2(Math.sin(to-st.h),Math.cos(to-st.h)));
+    return {d:+d.toFixed(1),turn:+turn.toFixed(2),top:!!N.g.parent.isScene,far:N.far,vis:N.g.visible,dy:+Math.abs(N.g.position.y-__P().y).toFixed(2)}; },L.far.k);
+  ok(A.top&&A.d<L.far.d/4&&A.turn<.3&&!A.far&&A.vis&&A.dy<.05,'the real one now stands in front of you, facing you, drawn ('+L.far.k+', was '+L.far.d.toFixed(0)+' away: '+JSON.stringify(A)+')');
+  const B=await pg.evaluate(k=>{ const N=SUMMON.byId(k); window.__N1={x:N.st.x,z:N.st.z}; const pos=__P(), x=pos.x+20, z=pos.z-12; ONLINE.feed({t:'world',k:'sum:'+k,v:[x,z,__P().y,1.2].join(',')+','+LEVELS.cur}); return {x,z}; },L.next.k);
+  await pg.waitForTimeout(800);
+  const B1=await pg.evaluate(([k,x,z])=>{ const N=SUMMON.byId(k); return {dx:+Math.abs(N.st.x-x).toFixed(2),dz:+Math.abs(N.st.z-z).toFixed(2),h:+N.st.h.toFixed(2)}; },[L.next.k,B.x,B.z]);
+  ok(B1.dx<.01&&B1.dz<.01&&B1.h===1.2,'one another owner summoned stands where they put it ('+JSON.stringify(B1)+')');
+  await pg.evaluate(([a,c])=>{ SUMMON.back(a); ONLINE.feed({t:'world',k:'sum:'+c,v:''}); },[L.far.k,L.next.k]); await pg.waitForTimeout(800);
+  const C=await pg.evaluate(([a,c,da,dc])=>{ const N=SUMMON.byId(a), M=SUMMON.byId(c); return {back:Math.hypot(N.st.x-__N0.x,N.st.z-__N0.z)<da/10,parent:N.g.parent===__N0.p,hold:!!N.st.hold,here:SUMMON.here().length,sent:__sent.slice(-1)[0],m:Math.hypot(M.st.x-__N1.x,M.st.z-__N1.z)<Math.max(dc/10,1)}; },[L.far.k,L.next.k,L.far.d,L.next.d]);
+  ok(C.back&&C.parent&&C.m&&C.here===0&&C.sent&&C.sent.v==='','SEND BACK puts each where it was and tells the block ('+JSON.stringify(C)+')');
+  await pg.evaluate(()=>CHARP.admin()); await pg.waitForFunction(()=>{ const a=document.getElementById('cpadmin'); return a&&!a.hidden; },null,{timeout:60000}).catch(()=>{});   // the window waits for the game log's chunk
+  const W=await pg.evaluate(k=>{ const ap=document.getElementById('cpadmin'), sq=ap.querySelector('#cpsq'), sl=ap.querySelector('#cpsl'), all=sl.querySelectorAll('[data-sk]').length;
+    const N=SUMMON.byId(k), nm=N.name||N.key; sq.value=nm; sq.dispatchEvent(new Event('input')); const one=[...sl.querySelectorAll('[data-sk]')].find(e=>e.dataset.sk===k);
+    if(one)one.click(); return {open:!ap.hidden,all,found:!!one,nm}; },L.far.k);
+  await pg.waitForTimeout(300);
+  const W1=await pg.evaluate(k=>{ const sl=document.querySelector('#cpsl'), sb=sl.querySelector('[data-sb="'+k+'"]'); const was=SUMMON.here().includes(k); if(sb)sb.click(); return {was,sb:!!sb}; },L.far.k);
+  await pg.waitForTimeout(300); const W2=await pg.evaluate(k=>SUMMON.here().includes(k),L.far.k);
+  ok(W.open&&W.all>=10&&W.found&&W1.was&&W1.sb&&!W2,'the ADMIN window lists everyone, finds '+W.nm+' by name, summons and sends back ('+JSON.stringify({W,W1,W2})+')');
+  ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
+  await b.close(); process.exit(bad?1:0); })();

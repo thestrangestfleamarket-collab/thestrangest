@@ -1,9 +1,10 @@
-// THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or the kart knocks them over), and the go-kart (a RIDE kind on Rapier's raycast vehicle).
+// THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or a vehicle knocks them over), VEH (Rapier's raycast vehicle for anything you drive) and the go-kart on it.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, st} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
+const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); the go-kart's here, the cars' in 150p-cars
 { const T=TILE, M1=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc');
   /* ---------- trigger zones: a sensor that notices a loose thing coming in; the dartboard scores a throw, an upright trash can swallows small things ---------- */
   const ZN=new Map(), boards=new Set(), cans=new Map(); let zt=0, nO=0;
@@ -62,7 +63,36 @@ import {OBJS} from './008-batch.js';
 
   /* ---------- the go-kart: a RIDE kind; with VEHICLE PHYSICS on, Rapier's raycast vehicle drives it (four wheels, suspension, grip), else it glides like a board ---------- */
   FORAGE.add({names:{kart:'THE GO-KART'}});
-  const KR={on:false,rb:null,vc:null,steer:0,sp:0}, POSE={k:'kart',steer:0,z:0};
+  /* ---------- VEH: Rapier's raycast vehicle for anything you drive (the go-kart, the cars): a body box, four wheels (two front that steer, two rear that drive), suspension and grip; W goes, S brakes then backs, A and D steer ---------- */
+  // a spec, in world units: half [x,y,z] of the body box, cy its centre over the rigid body, lift where it starts over your feet, mass, wheels [fl,fr,rl,rr] [x,y,z], r their radius, rest and travel of the springs,
+  // engine and reverse forces, vmax and vback, brake and idle braking, steer (the most) and steerFade (the speed it halves at), knockR (how near a townsfolk is knocked), and for drawing: down (the mesh under the body), wy (a wheel's height in the mesh), unit (the mesh's scale)
+  const LIVE=new Set(), VQ=new THREE.Quaternion(), VV=new THREE.Vector3();
+  VEH.make=S=>{ const V={on:false,rb:null,vc:null,steer:0,sp:0,S};
+    V.build=()=>{ '@later'; const P=GPH.phys(); if(!P)return false; const {R,world}=P, y=SHARED.py+S.lift, h0=V.hd!=null?V.hd:SHARED.heading, x0=V.x!=null?V.x:pos.x, z0=V.z!=null?V.z:pos.z;
+      V.rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(x0,y,z0).setRotation({x:0,y:Math.sin(h0/2),z:0,w:Math.cos(h0/2)}).setLinearDamping(.15).setAngularDamping(1.2).setCanSleep(false));
+      world.createCollider(R.ColliderDesc.cuboid(S.half[0],S.half[1],S.half[2]).setTranslation(0,S.cy||0,0).setMass(S.mass).setFriction(.4).setCollisionGroups(0x00010005),V.rb);
+      const vc=V.vc=world.createVehicleController(V.rb); try{ vc.indexUpAxis=1; vc.setIndexForwardAxis=2; }catch(e){}
+      for(const w of S.wheels)vc.addWheel({x:w[0],y:w[1],z:w[2]},{x:0,y:-1,z:0},{x:-1,y:0,z:0},S.rest,S.r);
+      for(let i=0;i<S.wheels.length;i++){ vc.setWheelSuspensionStiffness(i,S.stiff||40); vc.setWheelSuspensionCompression(i,4); vc.setWheelSuspensionRelaxation(i,3); vc.setWheelFrictionSlip(i,S.grip||2.2); vc.setWheelMaxSuspensionTravel(i,S.travel); vc.setWheelSideFrictionStiffness(i,1); }
+      V.on=true; LIVE.add(V); return true; };
+    V.drop=()=>{ const P=GPH.phys(); if(P&&V.vc){ try{ P.world.removeVehicleController(V.vc); }catch(e){} try{ P.world.removeRigidBody(V.rb); }catch(e){} } V.vc=V.rb=null; V.on=false; LIVE.delete(V); };
+    // each frame while ridden: you go where it is; false hands the ride back to the board's own glide (VEHICLE PHYSICS off, or no physics yet)
+    V.step=R=>{ if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(V.on)V.drop(); return false; } if(!V.on&&!V.build())return false;
+      const p=V.rb.translation(), r=V.rb.rotation(), g=SHARED.groundY(p.x,p.z); if(!isFinite(g)||p.y<g-2*T){ V.drop(); return false; }
+      pos.x=p.x; pos.z=p.z; VQ.set(r.x,r.y,r.z,r.w); VV.set(0,0,1).applyQuaternion(VQ); R.hd=SHARED.heading=Math.atan2(VV.x,VV.z); V.sp=V.vc.currentVehicleSpeed(); R.v=Math.abs(V.sp); R.lift=0;
+      if(R.v>2*T){ const v=V.rb.linvel(); if(knockNear(p.x,p.y,p.z,v.x,v.z,Math.hypot(v.x,v.z)||1,S.knockR,Math.min(1.6,R.v/(4*T))))V.rb.setLinvel({x:v.x*.6,y:v.y,z:v.z*.6},true); }
+      return true; };
+    V.place=(m,w)=>{ if(!V.on)return false; const r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
+      for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(V.vc.wheelRotation(i)||0,i<2?V.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=V.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=S.wy+(S.rest-L)/S.unit; } return true; };
+    return V; };
+  GPH.ext.push(()=>LIVE.size>0);
+  GPH.pre.push(h=>{ for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
+    V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax||f<0&&sp<-S.vback?0:f*(f>0?S.engine:S.reverse);
+    for(const i of [0,1])vc.setWheelSteering(i,V.steer); for(const i of [2,3])vc.setWheelEngineForce(i,eng); for(let i=0;i<4;i++)vc.setWheelBrake(i,back?S.brake:f?0:S.idle); vc.updateVehicle(h,undefined,0x00010005); } });
+
+  /* ---------- the go-kart: a RIDE kind on VEH; with VEHICLE PHYSICS off it glides like a board ---------- */
+  FORAGE.add({names:{kart:'THE GO-KART'}});
+  const POSE={k:'kart',steer:0,z:0};
   const mat=c=>new THREE.MeshLambertMaterial({color:c}), WH=.15, WX=.36, WZ=.5;
   const make=()=>{ const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
     const M=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; G.add(o); return o; };
@@ -72,30 +102,14 @@ import {OBJS} from './008-batch.js';
     G.userData.wh=[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>{ const w=new THREE.Group(); w.position.set(x,WH,z); const t=new THREE.Mesh(new THREE.CylinderGeometry(WH,WH,.12,12),blk); t.rotation.z=Math.PI/2; t.castShadow=true; w.add(t);
       const h=new THREE.Mesh(new THREE.CylinderGeometry(WH*.45,WH*.45,.13,8),gr); h.rotation.z=Math.PI/2; w.add(h); G.add(w); return w; });
     G.scale.setScalar(T); return G; };
-  const build=()=>{ '@later'; const P=GPH.phys(); if(!P)return false; const {R,world}=P, s=M1*.84, y=SHARED.py+.35*s;
-    KR.rb=world.createRigidBody(R.RigidBodyDesc.dynamic().setTranslation(pos.x,y,pos.z).setRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)}).setLinearDamping(.15).setAngularDamping(1.2).setCanSleep(false));
-    world.createCollider(R.ColliderDesc.cuboid(.31*s,.1*s,.62*s).setTranslation(0,0,0).setMass(140).setFriction(.4).setCollisionGroups(0x00010005),KR.rb);
-    const vc=KR.vc=world.createVehicleController(KR.rb); try{ vc.indexUpAxis=1; vc.setIndexForwardAxis=2; }catch(e){}
-    for(const [x,z] of [[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]]){ vc.addWheel({x:x*s,y:-.02*s,z:z*s},{x:0,y:-1,z:0},{x:-1,y:0,z:0},.14*s,WH*s); }
-    for(let i=0;i<4;i++){ vc.setWheelSuspensionStiffness(i,40); vc.setWheelSuspensionCompression(i,4); vc.setWheelSuspensionRelaxation(i,3); vc.setWheelFrictionSlip(i,2.2); vc.setWheelMaxSuspensionTravel(i,.1*s); vc.setWheelSideFrictionStiffness(i,1); }
-    KR.on=true; return true; };
-  const drop=()=>{ const P=GPH.phys(); if(P&&KR.vc){ try{ P.world.removeVehicleController(KR.vc); }catch(e){} try{ P.world.removeRigidBody(KR.rb); }catch(e){} } KR.vc=KR.rb=null; KR.on=false; };
-  GPH.ext.push(()=>KR.on);
-  GPH.pre.push(h=>{ if(!KR.on)return; const vc=KR.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
-    KR.steer+=(sd*.5/(1+Math.abs(sp)/(4*M1))-KR.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>8*M1||f<0&&sp<-2.5*M1?0:f*(f>0?260:150)*M1;
-    for(const i of [0,1])vc.setWheelSteering(i,KR.steer); for(const i of [2,3])vc.setWheelEngineForce(i,eng); for(let i=0;i<4;i++)vc.setWheelBrake(i,back?6*M1:f?0:.6*M1); vc.updateVehicle(h,undefined,0x00010005); });
+  const s0=M1*.84, KR=VEH.make({half:[.31*s0,.1*s0,.62*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
+    engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,knockR:.55*M1,down:.31*T,wy:WH,unit:T});
   RIDE.kind('kart',{name:'GO-KART',hint:'A CLICK SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, A CLICK GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
     make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false,
-    on:()=>{ if(!PB.R)PB.load(); }, off:()=>drop(),
+    on:()=>{ if(!PB.R)PB.load(); }, off:()=>KR.drop(),
     pose:R=>{ POSE.steer=KR.on?KR.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },
-    step:(R,dt)=>{ if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(KR.on)drop(); return false; } if(!KR.on&&!build())return false;
-      const p=KR.rb.translation(), r=KR.rb.rotation(), g=SHARED.groundY(p.x,p.z); if(!isFinite(g)||p.y<g-2*T){ drop(); return false; }
-      pos.x=p.x; pos.z=p.z; Q.set(r.x,r.y,r.z,r.w); V.set(0,0,1).applyQuaternion(Q); R.hd=SHARED.heading=Math.atan2(V.x,V.z); KR.sp=KR.vc.currentVehicleSpeed(); R.v=Math.abs(KR.sp); R.lift=0;
-      if(R.v>2*T){ const v=KR.rb.linvel(); if(knockNear(p.x,p.y,p.z,v.x,v.z,Math.hypot(v.x,v.z)||1,.55*M1,Math.min(1.6,R.v/(4*T))))KR.rb.setLinvel({x:v.x*.6,y:v.y,z:v.z*.6},true); }
-      st.ride=POSE; return true; },
-    place:(m,R,t)=>{ const w=m.userData.wh; if(KR.on){ const r=KR.rb.rotation(), p=KR.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-.31*T,p.z);
-        for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(KR.vc.wheelRotation(i)||0,i<2?KR.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=KR.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=WH+(.14*M1*.84-L)/T; } }
-      else { m.position.y=SHARED.py; for(let i=0;i<4;i++)w[i].rotation.x+=R.v*.02; }
+    step:(R,dt)=>{ if(!KR.step(R))return false; st.ride=POSE; return true; },
+    place:(m,R,t)=>{ const w=m.userData.wh; if(!KR.place(m,w)){ m.position.y=SHARED.py; for(let i=0;i<4;i++)w[i].rotation.x+=R.v*.02; }
       if(m.userData.sw)m.userData.sw.rotation.z=-(KR.on?KR.steer:R.lean)*2; } });
 
   // each frame: zones kept up to date, a flying loose thing knocks over who it hits
@@ -105,3 +119,4 @@ import {OBJS} from './008-batch.js';
   window.PHYSDBG=()=>({zones:[...ZN.values()].map(z=>z.kind),boards:[...ZN.values()].filter(z=>z.kind==='dart').map(z=>z.c.map(v=>+v.toFixed(2))),rags:RAGS.size,ragt:[...RAGS].map(r=>+r.t().toFixed(2)),kart:KR.on&&{sp:+KR.sp.toFixed(2),at:(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(2)))(KR.rb.translation())},cfg:PHYS.cfg});
   window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
 }
+export {VEH};

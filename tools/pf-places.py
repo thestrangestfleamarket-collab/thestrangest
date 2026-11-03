@@ -117,7 +117,7 @@ for o in P:
 # where the townspeople spend their own time (src/158-lives.js): a band to wander or spots [x, y, r], in map tiles; hd, the way to face (the pier's anglers look at the river)
 sh=next(o for o in P if o['k']=='pf_small_shrine_hall'); shx=(sh['x']+81.36)/1.13
 HANG={'pier':{'band':[30,100,-117.6,-116.6],'hd':3.1416},'meadow':{'areas':[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},'path':{'band':[-15,250,57,60]},
-  'bench':{'areas':[[113,52,6],[30,140,5]]},'river':{'band':[0,200,-115,-111]},'flea':{'areas':[[223,-84,5]]},'shrine':{'areas':[[round(shx,2),-110.2,2]]}}
+  'bench':{'areas':[[113,52,6],[30,140,5]]},'river':{'band':[0,200,-115,-111]},'flea':{'areas':[[223,-84,5]]},'shrine':{'band':[round(shx-2,2),round(shx+2,2),-110.6,-109.8],'hd':0}}
 import re
 t=open('data/world.json').read(); pf=json.dumps({k:sorted(v) for k,v in SPANS.items()},separators=(',',':')); t=re.sub(r'\n  "pf": [^\n]*','',t)
 t=t.replace('\n "block": {\n','\n "block": {\n  "pf": '+pf+',\n',1); assert json.loads(t)['block']['pf']

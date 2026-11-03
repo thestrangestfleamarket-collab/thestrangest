@@ -52,7 +52,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
         const C=SHARED.cam.matrixWorld.elements; cx.set(C[0],C[1],C[2]); cy.set(C[4],C[5],C[6]); cz.set(-C[8],-C[9],-C[10]); let px=0, py=0, R0=.5;
         if(sh.lengthSq()&&hip.lengthSq()){ const a=sh.clone().project(SHARED.cam), b=hip.clone().project(SHARED.cam); if(a.z<1&&Math.abs(a.x)<1.5&&Math.abs(a.y)<1.5){ px=a.x*asp; py=a.y; R0=Math.max(.25,Math.hypot((b.x-a.x)*asp,b.y-a.y)*1.3); } }
         const dx=nx*asp-px, dy=ny-py, f=Math.min(4/3,Math.hypot(dx,dy)/R0)*Math.PI/2, th=Math.atan2(dy,dx);
-        aim.copy(cz).multiplyScalar(Math.cos(f)).addScaledVector(cx,Math.cos(th)*Math.sin(f)).addScaledVector(cy,Math.sin(th)*Math.sin(f)); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } aim.copy(aim0);
+        aim.copy(cz).multiplyScalar(Math.cos(f)).addScaledVector(cx,Math.cos(th)*Math.sin(f)).addScaledVector(cy,Math.sin(th)*Math.sin(f)); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } else aim0.set(Math.sin(SHARED.heading),-.3,Math.cos(SHARED.heading)).normalize(); aim.copy(aim0);   /* no mouse aiming it: the tool rests in front of him, a little down, wherever he faces */
       const K=KIND[WIELD.on], own=!!(K&&K.aim&&K.aim(dt,aim,aim0)); if(own)sw=null;
       if(WIELD.block&&!own){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }
       if(sw&&slash(aim,sw,dt))sw=null; if(!own)front(aim);

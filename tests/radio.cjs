@@ -14,7 +14,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r1.mine === 1 && r1.ch.jazz && !r1.ch.jazz.paused && r1.ch.jazz.g > .5 && /WJAZ/.test(r1.hud) && sync < 1.6, 'T turns the radio on: the first station plays loud in the car, at the moment everyone hears: ' + JSON.stringify({ mine: r1.mine, jazz: r1.ch.jazz, sync: +sync.toFixed(2), hud: r1.hud.split('\n')[0] }));
   const seen = []; for (let i = 0; i < 4; i++) { await pg.keyboard.press('t'); await pg.waitForTimeout(400); seen.push(await pg.evaluate(() => CARS.radio().mine)); }
   ok(seen.join() === '2,3,4,0', 'T goes through the stations and off: ' + seen.join());
-  await pg.keyboard.press('t'); await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(3000);
+  await pg.keyboard.press('t'); await pg.waitForTimeout(1500); await pg.keyboard.press('f');
+  await pg.waitForFunction(() => { const r = CARS.radio(); return r.ch.jazz && r.ch.jazz.paused; }, null, { timeout: 15000, polling: 200 }).catch(() => {});   // the quiet channel is paused on a frame 1.5 s after it fades: wait for it, not a fixed time
   const r2 = await pg.evaluate(() => ({ ...CARS.radio(), w: ONLINE.world['radio:c3'] }));
   ok(r2.w === 0 && r2.ch.jazz && r2.ch.jazz.paused, 'getting out turns it off: ' + JSON.stringify({ w: r2.w, jazz: r2.ch.jazz }));
   await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c3', by: 'a' }); ONLINE.feed({ t: 'world', k: 'radio:c3', v: 3 }); });

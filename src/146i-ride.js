@@ -15,15 +15,16 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   // held, it is a WIELD tool: a click gets on; on it, a click (or the same key) gets off
   const hold=(id,k)=>{ const w={name:(FORAGE.NM&&FORAGE.NM[id])||id.toUpperCase(),hint:k.hint||'A CLICK GETS ON; A CLICK GETS OFF.',make:()=>{ const g=k.make(id); g.scale.multiplyScalar(k.held||.6); g.head=new V3(0,.4,0); return g; },use:()=>{ RIDE.on?(RIDE.kind&&RIDE.kind.leave?RIDE.kind.leave(RIDE):RIDE.off()):RIDE.mount(id); },aim:(dt,aim)=>{ aim.set(Math.sin(SHARED.heading)*.25,-.95,Math.cos(SHARED.heading)*.25).normalize(); return true; }};
     (WIELD.pend=WIELD.pend||[]).push([id,w]); if(WIELD.kind)WIELD.kind(id,w); };
+  const indoors=()=>{ const c=ROOMS.cur, o=c&&c.off&&ROOMS.off[c.off]; return !!c&&!(o&&o.outdoor); };   // an off-map place can be outdoors (ROOMS.off[id].outdoor): ride there
   const free=()=>!(RAG.on||st.water&&st.water.in||st.climb||st.hang||st.sit||VIT.dead||VIT.out>0);
-  RIDE.mount=id=>{ const k=kindOf(id); if(!k||!k.world&&!FORAGE.has(id))return false; if(ROOMS.cur&&!k.inside)return say('NOT INDOORS. TAKE IT OUTSIDE.','#c8a090'),false; if(!free())return false;
+  RIDE.mount=id=>{ const k=kindOf(id); if(!k||!k.world&&!FORAGE.has(id))return false; if(indoors()&&!k.inside)return say('NOT INDOORS. TAKE IT OUTSIDE.','#c8a090'),false; if(!free())return false;
     RIDE.on=id; RIDE.kind=k; RIDE.v=0; RIDE.hd=SHARED.heading; RIDE.z=0; RIDE.vz=0; RIDE.lean=0; RIDE.dry=!!k.dry; RIDE.ease=k.ease||20; RIDE.t0=performance.now(); st.move=null;
     st.ride=k.pose(RIDE); SHARED.target=null; if(k.on)k.on(RIDE); share(); say(k.onSay||'YOU STEP ON.'); if(SFX.play)SFX.play('step',{vol:.4,pitch:.7}); return true; };
   RIDE.off=(why,fall)=>{ if(!RIDE.on)return; const k=RIDE.kind, id=RIDE.on; RIDE.on=null; RIDE.kind=null; RIDE.dry=false; RIDE.ease=20; st.ride=null; RIDE.lift=0; if(k&&k.off)k.off(id,fall); const m=M.get(id); if(m)m.visible=false; share();
     if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=true; };
   RIDE.floor=g=>{ const k=RIDE.kind; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
   // the board's own motion: it keeps its speed, carves toward where you steer, brakes when you pull back; a wall at speed throws you off
-  RIDE.steer=(dt,mx,mz)=>{ const R=RIDE, k=R.kind, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(ROOMS.cur&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
+  RIDE.steer=(dt,mx,mz)=>{ const R=RIDE, k=R.kind, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
     const ml=Math.hypot(mx,mz), vmax=(+prop(id,'speed')||5)*T, acc=(k.acc||3)*T, len=+prop(id,'len')||.8, input={mx,mz,ml};
     if(k.step&&k.step(R,dt,input))return;
     if(ml>0){ const want=Math.atan2(mx,mz), e=wrap(want-R.hd), back=Math.abs(e)>2.4&&R.v>.5*T;

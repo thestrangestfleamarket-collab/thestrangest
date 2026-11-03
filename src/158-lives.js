@@ -21,7 +21,9 @@ const LIVES={data:__DATA__("data/lives.json"),rec:{},local:{},server:false,LV_DO
   LIVES.spot=(k,key,H)=>{ const D=LV_DO[k]; if(!D)return null; if(D.at)return {at:D.at,door:CREW.door(D.at)};
     const g=HG[D.out]; if(!g)return null; const pick=lvHash(key+'@'+Math.floor(H/3));
     if(g.band){ const [x0,x1,y0,y1]=g.band, u=(pick%1000)/1000, c=W(x0+u*(x1-x0),(y0+y1)/2); return g.hd!=null?{...c,r:0,hd:g.hd}:{...c,r:30*TILE,band:()=>W(x0+Math.random()*(x1-x0),y0+Math.random()*(y1-y0)),fast:D.fast}; }
-    const a=g.areas[pick%g.areas.length], c=W(a[0],a[1]); return {...c,r:a[2]*TILE,hd:g.hd}; };
+    const a=g.areas[pick%g.areas.length], c=W(a[0],a[1]);
+    if(D.still){ const u=(pick>>>8)%360*Math.PI/180, v=a[2]*TILE*(((pick>>>17)%100)/100); return {x:c.x+Math.cos(u)*v,z:c.z+Math.sin(u)*v,r:0,hd:g.hd!=null?g.hd:Math.atan2(-Math.cos(u),-Math.sin(u))}; }   // (a spot of their own in it, to stay at, facing its middle)
+    return {...c,r:a[2]*TILE,hd:g.hd}; };
   // the section's server keeps the records: asked when you come online and each game hour after
   ONLINE.hear.lives=m=>{ if(!m.all||typeof m.all!=='object')return; LIVES.server=true; for(const k in m.all)if(LIVES.data[k])LIVES.rec[k]=m.all[k]; };
   let lastH=-1; SYS.add('hi',()=>{ lastH=-1; },'158-lives');

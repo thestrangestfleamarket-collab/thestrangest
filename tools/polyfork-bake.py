@@ -2,6 +2,7 @@
 # Polyfork .glb (flat colours in COLOR_0, Y up, nose toward +Z) read at rest and packed into the format of the data file it replaces.
 #   fish  <glb> <key>  data/fish.json: a flat soup, nose on +X, unit length (src/141f-fishes.js swims it)
 #   kit   <glb> <key>  data/kit.json: int16 over its box, colours, indices (src/068-kit.js)
+#   bfly  <glb> bfly   data/bfly.json: the butterfly's body (coloured) and its left wings (shape only), wings closed upright, about the hinge
 # Run: python3 tools/polyfork-bake.py fish ~/dl/yellow-tang-base.glb yellowtang [TRIS=600]
 import sys, os, json, struct, base64, numpy as np
 CT={5126:np.float32,5123:np.uint16,5121:np.uint8,5125:np.uint32}; NC={'SCALAR':1,'VEC2':2,'VEC3':3,'VEC4':4,'MAT4':16}
@@ -62,6 +63,21 @@ elif mode=='kit':
     I=F.reshape(-1); big=len(P)>65535
     rec={'n':len(P),'lo':np.round(lo,5).tolist(),'sc':float(sc),'p':b64(np.round((P-lo)/sc-32500).astype(np.int16)),'c':b64(C.round().astype(np.uint8)),'i':b64(I.astype(np.uint32 if big else np.uint16)),'i32':int(big),'tris':len(F),'size':np.round(hi-lo,4).tolist()}
     out='data/kit.json'
-else: sys.exit('mode: fish | kit')
+elif mode=='bfly':
+    j,b=glb(f); sk=j['skins'][0]; names=[j['nodes'][i]['name'] for i in sk['joints']]; par={c:i for i,n in enumerate(j['nodes']) for c in n.get('children',[])}
+    def G(i): M=trs(j['nodes'][i]); return G(par[i])@M if i in par else M
+    p=j['meshes'][0]['primitives'][0]; jn=acc(j,b,p['attributes']['JOINTS_0']).astype(int); w=acc(j,b,p['attributes']['WEIGHTS_0']).astype(float); dom=np.array(names)[jn[np.arange(len(jn)),w.argmax(1)]]
+    H=G(sk['joints'][names.index('LeftForeWing')])[:3,3]; H=np.array([H[0],H[1],0.])   # the hinge: x and height of the fore wing's root
+    tri=F; vd=dom[tri]; left=np.isin(vd,['LeftForeWing','LeftHindWing']).all(1); right=np.isin(vd,['RightForeWing','RightHindWing']).any(1); body=~left&~right
+    def part(sel,tr,col):
+        q,c,fq=P,C,F[sel]
+        if tr: q,c,fq=simplify(P,C,F[sel],tr)
+        used=np.unique(fq); remap=-np.ones(len(q),int); remap[used]=np.arange(len(used)); out={'p':b64(((q[used]-H)).astype(np.float32)),'i':b64(remap[fq].reshape(-1).astype(np.uint16)),'tris':len(fq)}
+        if col: out['c']=b64(np.clip(c[used].round(),0,255).astype(np.uint8))
+        return out
+    L=P[F[left].reshape(-1)]-H
+    rec={'body':part(body,TRIS or 600,True),'wing':part(left,int(os.environ.get('WTRIS',160)),False),'a':float(round(L[:,1].max(),5)),'f':[float(round(L[:,2].min(),5)),float(round(L[:,2].max(),5))],'span':float(round(2*(L[:,1].max()+H[0]),5))}
+    out='data/bfly.json'; open(out,'w').write(json.dumps(rec,separators=(',',':'))); print('bfly ->',out,rec['body']['tris'],'+',rec['wing']['tris'],'tris',os.path.getsize(out),'bytes'); sys.exit()
+else: sys.exit('mode: fish | kit | bfly')
 out=os.environ.get('OUT',out); D=json.load(open(out)); D[key]=rec; open(out,'w').write(json.dumps(D,separators=(',',':')))
 print(key,'->',out,rec['tris'],'tris',os.path.getsize(out),'bytes')

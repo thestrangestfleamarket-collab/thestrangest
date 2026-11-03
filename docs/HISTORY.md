@@ -5226,6 +5226,18 @@ Owner: "lets change the tablet to look like 1980s retro tech, like a pager, or n
 ## 2 Nov 2026: a too-big owned save stops retrying instead of looping silently
 
 Past the server's 2 MB-a-player cap, `/owned` now answers 413 and the browser stops retrying (before, `ownedPut` returned false, the client treated it as a transient failure, re-queued it and retried every 15 s forever, saving nothing and telling the player nothing). The device keeps its own copy and `OWNED.isFull()` is set; a visible player notice is still to add. Found in a fresh code audit.
+
+## 2 Nov 2026: the flea market and street furniture from polyfork
+
+Owner: "add the market stalls, street furniture and vendors" (from polyfork.dev's free catalog). The empty lot beside the theatre is a flea market: a fruit stand, a bookstall, a market stall, a mercado stall, a folding table, crates and sacks, a sign board, and a hot dog cart on the sidewalk. Its five vendors (THE CART MAN, THE FRUIT SELLER, THE TRADER, THE JUNK DEALER, THE FLOWER LADY) stand at their stalls and sell existing goods. Market St gets parking meters, benches, trash baskets, a bus shelter, a bike rack, a pay phone and a street sign. No mailbox or hydrant was added (one mailbox per street; the street has its own hydrants). Rules: polyfork's raw files are never committed (their licence lets the game ship them baked, not host the files), and every placed piece is listed in `data/world.json`'s `things`.
+
+## 2 Nov 2026: the cast plan
+
+Owner: "I want to add all the characters into game and make sure we have a place for them to live, work". The plan is `docs/CAST.md`: 149 polyfork characters get a job at a place in Section A, and 44 come as visitors. His picks: jobs and hours back on (the city's services stay off); the themed 44 come in now as visitors; townspeople live in the apartment house (never a player's apartment); build the diner. Rule: workers sleep over their workplace; a character's body loads only near its place.
+
+## 2 Nov 2026: the cast at work
+
+Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`data/characters.json` `job`; `docs/CAST.md`). Jobs and hours are on by default (`?jobs=0` turns them off); the city's services stay off. THE DINER opens on the empty lot east of the bus shelter. Rules: a character's body loads only when you come near its place; the day follows the shared clock, so every player sees the same person at the same place at the same hour; whoever no player can see moves straight to where the hour puts them.
 - 2 Nov 2026, the castle moved and its moat, gate, lamps and lights fixed (owner, his night picture at the castle and a crop of the park's map: "i want to fix the moat, gate, lighting , lamp post position, lets move the castle into this block of grass."): the castle with its moat, drawbridge and stair down to the dungeon stands in the middle of the park's north-west block, reached by its own way up from the cross path; nothing of it is left by the lake. The moat is one sheet of still water all round; the drawbridge is as wide as the gate and runs from the far bank to it; the lamps stand beside the way, a pair at the drawbridge's foot; six torches on its drums light it by night. Rule: no lamp, tree, hill or plant of the park stands on the castle or its moat.
 - 2 Nov 2026, the art museum's floors (owner: "lets remove stairs from museum only elevator"; then "lets make the museum just one big room per floor, with 3 paintings on each wall, as many floors as needed"). No stairs: the elevator only, in each back wall. Each floor one big room, three paintings on each wall, as many floors as the paintings need (five for the 53). Rule: three a wall; a new painting adds a floor when the last is full.
 - 2 Nov 2026, the painting viewer (owner, his picture of the viewer: "when going full screen, still show the wall its on instead of black void"; "realistic wood texture, make sure the wall behind matches realistic texture"). Full screen, the painting hangs in its frame on its own wall: the floor's colour over a real painted-plaster texture, the dado and frames in real wood (both CC0 photo textures from Poly Haven), gilt frames for the old masters.
@@ -5246,6 +5258,13 @@ Owner: "start unpacking them all for the game and finding places for them. repla
 - 3 Nov 2026, the backwards fish (owner: "fix the backwards fish too"): the cartoon pack's fish, the sockeye and the trout swam tail first; all turned round.
 - 3 Nov 2026, the street props, mining and chests: the street's trash cans, the caverns' finds (an ore deposit, its crystals or nuggets in the find's colour; the Hudson's pearls stay glints), the cut stones and the sunken chest are the Drive's models. The guitar stays the game's (the playable one, fitted to the hands); the butterflies wait for the owner (the Drive has one butterfly, the game 32 painted kinds).
 
+## 3 Nov 2026: the nearest walkers move smoothly
+
+Owner, of the new characters walking stiff: "A" (of: their pose every frame while they walk, as yours is). The 8 nearest walking bodies get a pose every frame; everyone else keeps the 10-a-second step (18 Oct) while standing or far.
+
+## 3 Nov 2026: the Merchant is playable
+
+Owner: "allow the Merchant character to be playable as well as Walker". YOU's BODY row is back with WALKER and MERCHANT (polyfork's Merchant, the flea market's TRADER's model). Rule: the BODY row is the Walker and the Merchant (was the Walker only, 29 Oct); the townsfolk stay off it.
 ## 3 Nov 2026: the player is told when their saved things are full
 
 When `/owned` hits the 2 MB-a-player cap (413), the HUD log now tells the player their things are full and new changes are kept on this device only — the flag (`OWNED.isFull()`) was there, the notice was missing. Follow-up to the 2 Nov save fix.

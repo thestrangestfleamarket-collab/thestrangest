@@ -5250,7 +5250,7 @@ Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`
 - One purse (`INV.cash`); every message is `SAY`; every mend is `VIT.heal`. Characters hide through VIS (`away`), so the performance switch cannot show one its own system hid; the park's group too.
 - The owner's panel sends a banned player out of every section's room.
 - Every file has its own number (058-store, 146bd-roam, 146ca-mining, 146ga-swim, 146ha-folk, 146ja-guardians, 146ka-glasshorn, 159ca-loopmap, 159da-talk).
-- Removed: the playable-body picker (`?avatar=`), the bearded Walker (`?bwk`), the troublemakers (`?trouble`) with the guards' street fight and the police call that answered them.
+- Removed: the bearded Walker (`?bwk`), the troublemakers (`?trouble`) with the guards' street fight and the police call that answered them. The body picker stays (the Merchant is playable, 3 Nov).
 - `data/` holds only what the page loads; the bakes' inputs (rpgchars, ual, humanoid, megakit, far) are in `data/full/`.
 - The small settings and your apartment's local layout are in the one save; a missing save no longer wipes the editors' drafts.
 - Gone: the fire escape's empty group, LOOPMAP's early declaration, build.py's copy of the import pattern.

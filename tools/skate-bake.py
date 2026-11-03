@@ -36,8 +36,7 @@ parts={}
 for k in sorted({p['part'] for p in L if p['part']!='_terrain'}):
     f=os.path.join(R,k+'.glb')
     if os.path.exists(f):
-        P,C,F=load(f); tr=2000 if len(F)>3000 else 1500
-        if len(F)>tr: P,C,F=simplify(P,C,F,tr)
+        P,C,F=load(f)   # (as the Drive gives it, not simplified)
     elif k in STAND: P,C,F=boxes(STAND[k])
     else: print('no part',k); continue
     parts[k]=kit(P,C,F)

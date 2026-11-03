@@ -66,8 +66,10 @@ def pawns(d):
 def flat(d):
     yield 'clips', lambda: d['clips'], lambda v: d.__setitem__('clips', v)
 
+KEEP = {'Rat', 'Wasp'}   # the Drive's models (owner, 3 Nov 2026: "Don't simplify or change the glbs just use as is")
 def creatures(d):
     for k in d:
+        if k in KEEP: continue
         yield k, (lambda k=k: d[k]['clips']), (lambda v, k=k: d[k].__setitem__('clips', v))
 
 run('data/pawns.json', pawns)
@@ -75,7 +77,6 @@ run('data/skel.json', flat)
 run('data/dragon.json', flat)
 run('data/creatures.json', creatures)
 run('data/rpgchars.json', creatures)
-run('data/fauna.json', creatures, lambda n: re.search(r'_(Walk|Run|Idle|Fly|Crawl)$', n) is not None)   # (src/087 names these clips by kind, not literally)
 
 def ual(d):
     yield 'ual', lambda: d['ual']['clips'], lambda v: d['ual'].__setitem__('clips', v)

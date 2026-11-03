@@ -88,7 +88,7 @@ elif mode=='bfly':
         if col: out['c']=b64(np.clip(c[used].round(),0,255).astype(np.uint8))
         return out
     L=P[F[left].reshape(-1)]-H
-    rec={'body':part(body,TRIS or 600,True),'wing':part(left,int(os.environ.get('WTRIS',160)),False),'a':float(round(L[:,1].max(),5)),'f':[float(round(L[:,2].min(),5)),float(round(L[:,2].max(),5))],'span':float(round(2*(L[:,1].max()+H[0]),5))}
+    rec={'body':part(body,TRIS,True),'wing':part(left,int(os.environ.get('WTRIS',0)),False),'a':float(round(L[:,1].max(),5)),'f':[float(round(L[:,2].min(),5)),float(round(L[:,2].max(),5))],'span':float(round(2*(L[:,1].max()+H[0]),5))}
     out='data/bfly.json'; open(out,'w').write(json.dumps(rec,separators=(',',':'))); print('bfly ->',out,rec['body']['tris'],'+',rec['wing']['tris'],'tris',os.path.getsize(out),'bytes'); sys.exit()
 else: sys.exit('mode: fish | kit | bfly')
 out=os.environ.get('OUT',out); D=json.load(open(out)); D[key]=rec; open(out,'w').write(json.dumps(D,separators=(',',':')))

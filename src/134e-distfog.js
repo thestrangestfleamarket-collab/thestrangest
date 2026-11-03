@@ -1,4 +1,4 @@
-// THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly; only the last stretch before its end fades into the horizon's colour, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; ATMOSPHERE sets it.
+// THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly; only the last stretch before its end fades into the sky seen just above it, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
 import {ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
@@ -19,8 +19,9 @@ const DFOG={};
         else if(uH>0.&&uV>0.){ vec4 v=uPInv*vec4(vUv*2.-1.,1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; m=smoothstep(0.,-.03,(w.y-cp.y)/length(w-cp)); }
         if(f>.001&&uB>0.){ vec2 o=uB*f/uR; vec4 s=c*2.+texture2D(tDiffuse,vUv+vec2(o.x,0.))+texture2D(tDiffuse,vUv-vec2(o.x,0.))+texture2D(tDiffuse,vUv+vec2(0.,o.y))+texture2D(tDiffuse,vUv-vec2(0.,o.y))
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
-        if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*(land>.5?smoothstep(uS,uE,dd):1.); m=uF*land*smoothstep(mix(uS,uE,.82),uE,dd); } }
-        c.rgb=mix(c.rgb,uC,m); gl_FragColor=c; }`});
+        vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*(land>.5?smoothstep(uS,uE,dd):1.); m=uF*land*smoothstep(mix(uS,uE,.82),uE,dd);
+            if(m>.001){ float hit=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; if(texture2D(tDepth,q).x>=.99999){ to=texture2D(tDiffuse,q).rgb; hit=1.; break; } } m*=hit; } } }
+        c.rgb=mix(c.rgb,to,m); gl_FragColor=c; }`});
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85), HV=new THREE.Vector3();
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;

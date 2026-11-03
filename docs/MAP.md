@@ -227,7 +227,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `144d-bins.js` | 4.9 | top level |  | 003: THREE; 003b: BINS FORAGE ONLINE SFX SHAD UI; 004: scene; 006: MAPG SYS TILE; 009b: LOOP |
 | `144e-trees.js` | 14.6 | top level |  | 003: SHARED THREE; 003b: CITY FORAGE INSPECT INV MAIL PARK UI keys pos st; 004: scene; 006: MAPG MODS STORE SYS TILE ZU; 144: VEG |
 | `146-drone.js` | 20.0 | top level |  | 003: SHARED THREE; 003b: DRONE FORAGE INV UI keys; 004: scene; 005: OWNED; 006: MODS STORE SYS TILE; 014: CAT_INFO |
-| `146a-wield.js` | 14.7 | top level |  | 003: SHARED THREE; 003b: FORAGE INSPECT ITEMS LEVELS ONLINE RAG SFX VIT VR W3 WEEDS WIELD keys st; 004: renderer scene; 006: BF SYS TILE; 143: BFLY; 144b: BIRDS |
+| `146a-wield.js` | 14.9 | top level |  | 003: SHARED THREE; 003b: FORAGE INSPECT ITEMS LEVELS ONLINE RAG SFX VIT VR W3 WEEDS WIELD keys st; 004: renderer scene; 006: BF SYS TILE; 143: BFLY; 144b: BIRDS |
 | `146b-dunmobs.js` | 24.7 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: FORAGE INSPECT INV ITEMS LEVELS NPCS SFX UI VIT W3 WIELD pos st; 004: renderer scene; 006: MAPG MODS SOL SYS TILE ZU; 077: SKELGO; 086: CREATURES CREATURESREADY; 101: GEMS |
 | `146bb-catacomb.js` | 12.3 | top level |  | 003: SHARED THREE; 003b: FORAGE ROOMS UI VR pos st; 004: scene; 006: STORE TILE; 075: PAD |
 | `146bc-greens.js` | 41.0 | top level |  | 003: SHARED THREE; 003b: FEEL FORAGE INV ROOMS SFX UI VR WIELD pos st; 004: renderer scene; 005: OWNED; 006: STORE TILE; 075: PAD |

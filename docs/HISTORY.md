@@ -5243,6 +5243,9 @@ Owner: "start unpacking them all for the game and finding places for them. repla
 - 3 Nov 2026, the backwards fish (owner: "fix the backwards fish too"): the cartoon pack's fish, the sockeye and the trout swam tail first; all turned round.
 - 3 Nov 2026, the street props, mining and chests: the street's trash cans, the caverns' finds (an ore deposit, its crystals or nuggets in the find's colour; the Hudson's pearls stay glints), the cut stones and the sunken chest are the Drive's models. The guitar stays the game's (the playable one, fitted to the hands); the butterflies wait for the owner (the Drive has one butterfly, the game 32 painted kinds).
 
+## 3 Nov 2026: the player is told when their saved things are full
+
+When `/owned` hits the 2 MB-a-player cap (413), the HUD log now tells the player their things are full and new changes are kept on this device only — the flag (`OWNED.isFull()`) was there, the notice was missing. Follow-up to the 2 Nov save fix.
 ## 3 Nov 2026: PHOSPHOR removed; the haze gone for now
 
 Owner: "lets remove it and also lets remove the haze from the game for now, just have it get slightly darker and blurred the further away, minimal effect". PHOSPHOR (2 Nov) is gone. The distance fog no longer washes the world into the horizon's colour: the far is only slightly darker and blurred (ATMOSPHERE's DISTANCE FOG: START, BLUR, DARKER); only its last stretch fades softly where the drawing stops, so nothing pops; the sky is untouched. Water's own fog unchanged. Supersedes the haze rules above while it holds.

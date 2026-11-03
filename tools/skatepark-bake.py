@@ -2,7 +2,8 @@
 # the kit's composed scene (scene.glb: 1267 placements of 60 parts, Y up, metres) baked whole into data/skatepark.json:
 #   mesh   every still part in world metres, welded, its own vertex colours, cut into 16 m squares {lo,sc,p int16, c uint8, i uint32} per square
 #   glow   the parts' lit zones (kit.json "night": a part's colour that lights up after dusk) as their own mesh, day and night colours
-#   ground a height grid (0.25 m cells, 5 cm steps) of what you can stand on: the terrain, the tiles, decks, ramps, ledges under knee height
+#   ground a height grid (0.25 m cells, 5 cm steps) of what you can stand on: the terrain, the tiles, decks, ledges under knee height, and the ramps and bowl
+#          up their curves however steep (no step wall on or beside a ramp: they are ridden)
 #   solid  the cells a body can't pass (walls, rises over the knee, posts, trees, buildings), merged to rectangles
 #   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
@@ -47,25 +48,79 @@ def prims(i):   # every primitive under node i in world metres (skinned ones at 
     return out
 part=lambda nm:nm if nm in KIT['classes'] or nm=='skatepark-terrain' else nm.rsplit('-',1)[0]
 TILES={'skate-slab-tile','composite-deck-tile'}
+RAMPS={'concrete-transition-module','plywood-ramp-module','galvanised-prefab-ramp','asphalt-pump-track-section','red-brick-bank','concrete-skate-bump'}   # ridden up their curves: ground however steep
 LOOSE={'energy-drink-can','spray-paint-can','roller-skate','protective-pad','skate-helmet','wheel-scuff-decal','graffiti-wall-decal','pavement-crack-weed','fisheye-camcorder','cruiser-and-longboard'}
 GLOW={}
 for z in KIT['night']:
     for p in z['parts']: GLOW.setdefault(p,[]).append((np.array([int(z['from'][k:k+2],16)/255 for k in (1,3,5)])**2.2,np.array([int(z['to'][k:k+2],16)/255 for k in (1,3,5)]),z['intensity']))
 root=N[g['scenes'][0]['nodes'][0]]
+# HALF THE PARK (owner, 3 Nov 2026: "lets make the park 50% smaller, lose any duplicate spots"; his picks: half the area at full size, one of each kind):
+# the kept placements (by their order in the scene) moved as whole features onto one level; the rest dropped; the kit's terrain dropped and the
+# floor re-tiled under the new footprint. KEEP: placement -> (dx, dz, dy) in metres; a feature moves by whole 2 m tiles so the floor's grid meets it.
+KEEP={}
+def keep(ix,dx,dz,dy=0.):
+    for i in ix: KEEP[i]=(dx,dz,dy)
+keep([1203,*range(1204,1213),1213,1214],-4,-10)                                                  # the gate, its fence, banner and rules board
+keep([*range(1180,1187),1187,1188,1189,1246,1247],-6,-4)                                         # the pump track, its bike stand, scooter, BMX, rider and kid
+keep([*range(1139,1159),1190,1191,1192,1193,1256,1237,1238,1239,1240,1258,1260],-8,-2)           # the vert ramp on its decks; the shade sail, seats, kiosk, filmer, roller skater
+keep([1115,1116,1117,1119,1263,1264,1265],12,-2)                                                 # the skate shop, its van, owner, longboarder
+keep([1088,1091,1099,1100,1101,1105,1106],2,0)                                                   # one hall bay and its mini ramp
+keep([1114],-18,-4)                                                                              # the wallride
+keep([*range(1021,1028)],8,-2); keep([1015],16,-2)                                               # the terrace funbox (transitions, stairs, rail), one brick bank
+keep([*range(1038,1046),1233],-2,4,-1.2)                                                         # the bowl and the pool veteran
+keep([1046,1215,1231],2,-2,-1.2)                                                                 # the clubhouse, a floodlight, a tree
+keep([1063,1064,1066,1067,1068,1069,1071,1079,1081,1249,1086],8,8,-1.2)                          # one overpass span, a full pipe, the graffiti artist
+KEEP[1072]=(3,1.5,-1.2)                                                                          # one jersey barrier
+keep([1123],9,5.5); keep([1122],16,9.5); keep([1125],2,13.5); keep([1131],2,12); keep([1137],-4,4)   # one ledge, rail, granite block, grind box, bump
+keep([1177],-32,-26); keep([1135,1136],0,-13); keep([1232],5.3,8.2); keep([1241,1242,1243],0,0); keep([1037],1,1.4)
+keep([1049],31.8,24.2,-1.65)                                                                     # the filmer's camcorder, at his feet
+KIDS=[c for c in root['children']]; TILE0=next(i for i,c in enumerate(KIDS) if N[c]['name'].startswith('skate-slab-tile') and abs(WM[c][1,3])<.01)
+NOFLOOR={'concrete-transition-module','asphalt-pump-track-section','plywood-ramp-module','composite-deck-tile','skate-hall-bay','skatepark-clubhouse','skate-shop','container-snack-kiosk',
+  'overpass-pier','concrete-full-pipe','red-brick-bank','concrete-stair-set','galvanised-prefab-ramp','concrete-skate-bump','wallride-wall'}
+FOOT=(-24,-34,24,34)   # the new footprint, x0 z0 x1 z1
 TP,TC,TG,TK,TN=[],[],[],[],[]   # triangle corners, colours, glow night colour (or nan), part kind (0 terrain, 1 solid part, 2 loose), night strength
-people=[]
-for c in root['children']:
-    nm=N[c]['name']; k=part(nm); cls=KIT['classes'].get(k)
-    if cls=='character':
-        M=WM[c]; people.append({'key':k,'x':round(M[0,3],3),'y':round(M[1,3],3),'z':round(M[2,3],3),'hd':round(float(np.arctan2(M[0,2],M[2,2])),3)}); continue
-    kind=0 if k=='skatepark-terrain' else 2 if k in LOOSE else 1
-    for P,C in prims(c):
+people=[]; ITEMS=[]; COVER={}   # floor cells a part covers from above: True when the part is sunk (no tile there)
+SLAB=prims(KIDS[TILE0]); S0=WM[KIDS[TILE0]][:3,3]; boxes=[]; ci=0; chars=0
+def placed():   # the kept placements with their moves, then the new floor's tiles (copies of one slab tile)
+    global chars
+    for i,c in enumerate(KIDS):
+        nm=N[c]['name']; k=part(nm); ch=KIT['classes'].get(k)=='character'
+        if ch: chars+=1
+        if i in KEEP: yield c,nm,k,KEEP[i],(chars-1 if ch else None)
+for c,nm,k,(dx,dz,dy),bi in list(placed()):
+    if bi is not None:
+        M=WM[c]; people.append({'key':k,'b':bi,'x':round(M[0,3]+dx,3),'y':round(M[1,3]+dy,3),'z':round(M[2,3]+dz,3),'hd':round(float(np.arctan2(M[0,2],M[2,2])),3)}); continue
+    pr=[(P+np.array([dx,dy,dz]),C) for P,C in prims(c)]
+    if k in NOFLOOR:
+        Q=np.vstack([P for P,C in pr]); boxes.append((Q[:,0].min(),Q[:,2].min(),Q[:,0].max(),Q[:,2].max(),Q[:,1].min(),(dx,dz,dy)))
+        for P,C in pr:
+            T=P.reshape(-1,3,3); nn=np.cross(T[:,1]-T[:,0],T[:,2]-T[:,0]); T=T[np.abs(nn[:,1])>.2*np.linalg.norm(nn,axis=1)]
+            for t in T:   # the floor's 2 m cells whose middle this part covers from above
+                a_,b_,c_=t[:,[0,2]]; d=(b_[1]-c_[1])*(a_[0]-c_[0])+(c_[0]-b_[0])*(a_[1]-c_[1])
+                if abs(d)<1e-9: continue
+                for x in np.arange(np.floor((t[:,0].min()-1)/2)*2+1,t[:,0].max()+1,2.):
+                    for z in np.arange(np.floor((t[:,2].min()-1)/2)*2+1,t[:,2].max()+1,2.):
+                        l1=((b_[1]-c_[1])*(x-c_[0])+(c_[0]-b_[0])*(z-c_[1]))/d; l2=((c_[1]-a_[1])*(x-c_[0])+(a_[0]-c_[0])*(z-c_[1]))/d
+                        if l1>=-1e-6 and l2>=-1e-6 and 1-l1-l2>=-1e-6: COVER[(round(x),round(z))]=COVER.get((round(x),round(z)),False) or Q[:,1].min()<-.5
+    ITEMS.append((nm,k,pr))
+SUNK={}   # a sunken feature (the bowl): its whole box, and how deep; an uncovered cell inside it is floored at its bottom
+for b in boxes:
+    if b[4]<-.5: q=SUNK.setdefault(b[5],[1e9,1e9,-1e9,-1e9,0]); q[:]=[min(q[0],b[0]),min(q[1],b[1]),max(q[2],b[2]),max(q[3],b[3]),min(q[4],b[4])]
+for x in np.arange(FOOT[0]+1,FOOT[2],2.):
+    for z in np.arange(FOOT[1]+1,FOOT[3],2.):
+        cv=COVER.get((round(x),round(z)))
+        if cv: continue
+        y=next((q[4]-.05 for q in SUNK.values() if q[0]<x<q[2] and q[1]<z<q[3]),-.03 if cv is False else 0.)   # under a part a tile sits 3 cm low, never flush with its base
+        ITEMS.append(('skate-slab-tile','skate-slab-tile',[(P+np.array([x-S0[0],y-S0[1],z-S0[2]]),C) for P,C in SLAB]))
+for nm,k,pr in ITEMS:
+    kind=0 if k=='skatepark-terrain' else 2 if k in LOOSE else 5 if k in RAMPS else 1
+    for P,C in pr:
         if k in TILES:   # a floor tile drawn as its top on a flat 2 m underlay of its edge colour (its bevels read as heavy seams from above, and were half the park's triangles); stood on whole
             T=P.reshape(-1,3,3); Cq=C.reshape(-1,3,3); n0=len(T); TP.append(T); TC.append(Cq); TK.append(np.full(n0,3,np.int8)); TG.append(np.full((n0,3),np.nan)); TN.append(np.zeros(n0))
             nn=np.cross(T[:,1]-T[:,0],T[:,2]-T[:,0]); ny_=nn[:,1]/np.maximum(np.linalg.norm(nn,axis=1),1e-12); top=T[:,:,1].max(); m=(ny_>.9)&(T[:,:,1].min(1)>top-.012)
             x0,z0=T.reshape(-1,3)[:,[0,2]].min(0); x1,z1=T.reshape(-1,3)[:,[0,2]].max(0); y=top-.006; ec=Cq[~m].reshape(-1,3).mean(0) if (~m).any() else Cq.reshape(-1,3).mean(0)
             U=np.array([[[x0,y,z0],[x1,y,z1],[x1,y,z0]],[[x0,y,z0],[x0,y,z1],[x1,y,z1]]]); P=np.vstack([T[m],U]).reshape(-1,3); C=np.vstack([Cq[m],np.tile(ec,(2,3,1))]).reshape(-1,3); kind=4
-        n=len(P)//3; TP.append(P.reshape(n,3,3)); TC.append(C.reshape(n,3,3)); TK.append(np.full(n,kind,np.int8)); kind=0 if k=='skatepark-terrain' else 2 if k in LOOSE else 1
+        n=len(P)//3; TP.append(P.reshape(n,3,3)); TC.append(C.reshape(n,3,3)); TK.append(np.full(n,kind,np.int8)); kind=0 if k=='skatepark-terrain' else 2 if k in LOOSE else 5 if k in RAMPS else 1
         G=np.full((n,3),np.nan); S=np.zeros(n)
         for fr,to,it in GLOW.get(k,[]):
             hit=(np.abs(C.reshape(n,3,3)-fr).max(2).max(1)<.02); G[hit]=to; S[hit]=it
@@ -107,16 +162,19 @@ for t in np.nonzero(TK==0)[0]:
     i,j,y=cover(TP[t],False); np.maximum.at(TER,(j,i),y)
 TER[np.isinf(TER)]=np.nan
 H=np.where(np.isnan(TER),-np.inf,TER)
-walk=np.nonzero(((TK==1)|(TK==3))&(ny>=UPN))[0]
+RUP=.15; walk=np.nonzero((((TK==1)|(TK==3))&(ny>=UPN))|((TK==5)&(ny>=RUP)))[0]
 for t in walk:
-    i,j,y=cover(TP[t],False); ok=y-np.nan_to_num(TER[j,i],nan=-99)<CAP; np.maximum.at(H,(j[ok],i[ok]),y[ok])
+    i,j,y=cover(TP[t],False); ok=y-np.nan_to_num(TER[j,i],nan=0.)<CAP; np.maximum.at(H,(j[ok],i[ok]),y[ok])
 H[np.isinf(H)]=np.nan
-for t in np.nonzero(((TK==1)|(TK==3))&(ny<UPN))[0]:
+for t in np.nonzero((((TK==1)|(TK==3))&(ny<UPN))|((TK==5)&(ny<RUP)))[0]:
     i,j,y=cover(TP[t],True); h=H[j,i]; m=~np.isnan(h)&(y>h+KNEE)&(y<h+BODY); BL[j[m],i[m]]=True
 # a top too high above its neighbour (a deck, a ledge over the knee) is a wall on the low side; nowhere to stand is a wall too
+RC=np.zeros((NZ,NX),bool)
+for t in np.nonzero((TK==5)&(ny>=RUP))[0]:
+    i,j,y=cover(TP[t],False); RC[j,i]=True
 Hn=np.nan_to_num(H,nan=-99)
 for dj,di in ((0,1),(0,-1),(1,0),(-1,0)):
-    nb=np.roll(np.roll(Hn,dj,0),di,1); BL|=(nb>Hn+KNEE)
+    nb=np.roll(np.roll(Hn,dj,0),di,1); nr=np.roll(np.roll(RC,dj,0),di,1); BL|=(nb>Hn+KNEE)&~RC&~nr
 BL|=np.isnan(H)
 def rects(B):   # greedy: the widest runs, grown down while the run stays whole
     B=B.copy(); out=[]
@@ -132,11 +190,11 @@ def rects(B):   # greedy: the widest runs, grown down while the run stays whole
     return out
 SR=rects(BL); print('ground cells',NX,'x',NZ,'walls',len(SR))
 Hq=np.nan_to_num(H,nan=float(np.nanmin(H))); y0=float(np.floor(Hq.min()*20)/20); Q=np.clip(np.round((Hq-y0)/.05),0,65535).astype(np.uint16)
-pj=[{'key':p['key'],'x':p['x'],'z':p['z'],'y':p['y'],'hd':p['hd']} for p in people]
+pj=[{'key':p['key'],'b':p['b'],'x':p['x'],'z':p['z'],'y':p['y'],'hd':p['hd']} for p in people]
 D={'v':1,'kit':KIT['kit'],'license':'Polyfork (polyfork.dev/licensing): use in games, no reselling the files','bounds':[round(float(x),3) for x in (*lo,*hi)],
    'mesh':mesh,'glow':glow,'ground':{'x0':float(X0),'z0':float(Z0),'cs':CS,'nx':NX,'nz':NZ,'y0':y0,'dy':.05,'h':b64(Q)},
    'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj}
-gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc]; IG=np.linalg.inv(GM)
+gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); IG=np.linalg.inv(GM); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
 D['gate']={'x':round(GM[0,3],3),'y':round(GM[1,3],3),'z':round(GM[2,3],3),'hd':round(float(np.arctan2(GM[0,2],GM[2,2])),4)}
 GP=[]; GC=[]
 for P,C in prims(gc): GP.append(((np.c_[P,np.ones(len(P))]@IG.T)[:,:3]).reshape(-1,3,3)); GC.append(C.reshape(-1,3,3))

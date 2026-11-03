@@ -173,5 +173,6 @@ if __name__=='__main__':
             if not skinned or nd['name'].startswith(('pavement','vinyl','shade')): continue
             body,_=rebake(read_glb(f,c,J,BF),MIXAMO_ROLE,MIXAMO_W); key='s%d'%k; k+=1; body['part']=nd['name']; out['bodies'][key]=body
             print(key,nd['name'],'height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
+        used={'s%d'%q['b'] for q in json.load(open('data/skatepark.json'))['people']}; out['bodies']={k:v for k,v in out['bodies'].items() if k in used}   # only the ones the park keeps (run skatepark-bake.py first)
         json.dump(out,open('data/skaters.json','w'),separators=(',',':'))
         import os; print('data/skaters.json',round(os.path.getsize('data/skaters.json')/1e6,2),'MB')

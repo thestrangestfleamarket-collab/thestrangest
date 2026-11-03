@@ -75,7 +75,11 @@ const GARB={};
     t.rv=new Float32Array(n);
     // a point shared with a limb keeps its distance from the joint the limb bends at, so cloth arcs over a bent knee or elbow instead of cutting through it
     t.S.forEach(([a,b,w,p],i)=>{ t.s1[i]=NI[a]; t.l1.set(toL(a,p),i*3); t.s2[i]=b?NI[b]:-1; if(b){ t.l2.set(toL(b,p),i*3); t.w2[i]=w; if(/^(thigh|shin|upperArm|forearm)/.test(b)&&!/^thigh/.test(a)||/^shin/.test(b)){ const o=fr0(b).o; t.rv[i]=Math.hypot(p.x-o.x,p.y-o.y,p.z-o.z); } } });
+    // cloth that hangs between two pieces of the body (hips and thigh, thigh and shin) is kept out of both, by their own shapes, at least as far as it is at rest: a leg swinging or a knee bending never comes through it
+    if(t.firm)t.firm=Object.entries(t.firm).map(([s,ix])=>{ const ps=s.split(','), P=ps.map(sdfOf), m=ps.length; return {ps,ix:Int32Array.from(ix),d:Float32Array.from({length:ix.length*m},(_,q)=>{ const i=ix[Math.floor(q/m)]*3; return P[q%m](V(t.P[i],t.P[i+1],t.P[i+2])); })}; });
     t.uvF=new Float32Array(t.uv); t.ixU=new Uint32Array(t.ix); delete t.S; return t; };
+  // the body on a bone as a distance: every piece of it riding that bone (the briefs on the hips reach over the tops of the thighs)
+  const SDFS=new Map(), sdfOf=n=>{ let e=SDFS.get(n); if(!e||e.pcs!==W3.pcs){ const ps=W3.pcs.filter(P=>(P.under||P.n)===n); e={pcs:W3.pcs,d:ps.length?p=>{ let d=1e9; for(const P of ps)d=Math.min(d,P.d(p)); return d; }:null}; SDFS.set(n,e); } return e.d; };
   // the body it is worn over, as a distance (the Walker's own pieces at rest; under the shirt the jeans, as their waist): out of it by cl
   const SDF={}, body=(f,a)=>SDF[f+(a||'')]||(SDF[f+(a||'')]=(()=>{ const ps=(f==='F'?['torsoF','bustF','hips']:f==='P'?['hips']:['torso','hips']).concat(a?['upperArmL','upperArmR']:[]).map(n=>W3.pcs[W3.idx(n)]).filter(Boolean);
     return p=>{ let d=1e9; for(const P of ps)d=Math.min(d,P.d(p)-(P.n==='hips'&&f!=='P'&&p.y>14.8&&p.y<20.9?.75:0)); return d; }; })());
@@ -136,7 +140,7 @@ const GARB={};
           (c,j)=>[c/16*Math.max(1,Math.round(TAU*Rs/TS)),(RG[j][0]+Rs)/TS],0); }
       return t; },
     // straight-leg jeans cut to their own size on a leather belt with a brass buckle: a seat to the crotch, two straight legs tapering a little to the knee, hems breaking over the shoes
-    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28, nl=24, G=Z.leg;
+    pants:()=>{ const t=NEW(), TS=DEF.denim.TS, Z=SZ.jeans, nu=28, nl=24, G=Z.leg, firm={};
       const ring=(y,W,D,i)=>{ const [x,z]=se(i/nu*TAU,W,D,Z.n); return V(x,y,z); };
       const seat=y=>{ const r=Z.rows; if(y>=r[0][0])return [r[0][1],r[0][2]]; for(let j=1;j<r.length;j++)if(r[j][0]<=y){ const a=r[j-1], b=r[j], f=(a[0]-y)/(a[0]-b[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; } const l=r[r.length-1]; return [l[1],l[2]]; };
       const B=Z.rows[0], reps=Math.max(1,Math.round(2*(B[1]+B[2])*1.5/TS));
@@ -151,10 +155,13 @@ const GARB={};
           let p=C; if(f<1){ const [W,D]=seat(o.y), Hp=out>=0?V(W*Math.sign(dx)*Math.abs(dx)**(2/Z.n),o.y,D*Math.sign(sn)*Math.abs(sn)**(2/Z.n)):V(0,o.y,D*sn); p=add3(mul3(Hp,1-f),mul3(C,f)); }
           if(sg*p.x<0)p=V(0,p.y,p.z);   // where the legs meet they press flat against each other at the middle, never one through the other
           // the crotch's middle sits halfway between both thighs, a gusset that keeps the legs joined as they part; elsewhere the leg goes with its own thigh as soon as it leaves the seat
-          const ks=Math.max(f,fo(q)*(1-.75*Math.max(0,-sn))), gus=p.y>12&&p.y<15.8&&Math.abs(p.x)<.6;   // the seat's back stays with the hips longer, over the buttocks
-          const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:['shin'+s,null,0]):gus?['thighL','thighR',.5]:ks>=1?['thigh'+s,null,0]:ks>0||p.y<18.6?['hips','thigh'+s,ks]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
+          // the centre seam above the gusset is the same point on both legs, so it goes with the hips alone (each leg pulling it with its own thigh opened a slit mid-stride)
+          const mid=f<1&&Math.abs(p.x)<.05, ks=mid?0:Math.max(f,fo(q)*(1-.75*Math.max(0,-sn))), gus=p.y>12&&p.y<15.8&&Math.abs(p.x)<.6;   // the seat's back stays with the hips longer, over the buttocks
+          // the hem rests on the shoe: below the shin it goes over to the shoe, so a leg swung back never lifts it off the heel to show the ankle
+          const k=q>=L1-1.55?(q<=L1+1.55?['thigh'+s,'shin'+s,sm((q-L1+1.5)/3)]:q>L1+L2-2.5?['shin'+s,'shoe'+s,sm((q-L1-L2+2.5)/2.5)]:['shin'+s,null,0]):gus?['thighL','thighR',.5]:ks>=1?['thigh'+s,null,0]:mid&&p.y<18.6?['hips',null,0]:ks>0||p.y<18.6?['hips','thigh'+s,ks]:['hips','torso',tw(p.y)*sm(p.y-18.6)];
+          const fp=mid&&p.y<18.6||k[0]==='thighL'&&k[1]==='thighR'?'hips,thighL,thighR':k[1]&&/^(hips|thigh)/.test(k[0])&&/^(thigh|shin)/.test(k[1])?k[0]+','+k[1]:!k[1]&&k[0]==='thigh'+s&&q<L1/2?'hips':null; if(fp)(firm[fp]||(firm[fp]=[])).push(t.P.length/3);   // the middle and the gusset are kept off both thighs (halfway between two thighs swinging apart pulls them in), the top of the leg off the hips (crouching)
           pt(t,p,k[0],k[1],k[2],j===T.length-1?.015:0); },(c,j)=>[c/nl*reps,(T[j]-q0)/TS],0); }
-      return t; },
+      t.firm=firm; return t; },
     // an olive waxed-canvas chore jacket worn open: held over the shoulders and chest, the body hangs and its two fronts swing; a folded collar, chest pockets, long sleeves with loose cuffs
     jacket:f=>{ const t=NEW(), TS=DEF.canvas.TS, th0=.36, th1=TAU-.36, KR=[0,0,0,0,0,0,.2,.14,.1,.075,.06,.05,.045], CL=[1,1.05,1.1,1.15,1.2,1.25,1.3,1.35], d=body(f);
       const rows=TOP(.55).concat([27.6,25.4,23.2,21,18.8,16.8,14.9,13.3].map((y,j)=>[y,4,3,null,CL[j]]));
@@ -179,7 +186,7 @@ const GARB={};
   // a shoe cut to its own last, bigger than the foot it holds: a closed leather upper from heel to toe, a rubber sole, laces across the vamp, a padded collar round the ankle
   const shoe=s=>{ const t=NEW(), n='shoe'+s, A=J0['ankle'+s], Z=SZ.shoe, ST=Z.st, nu=20, vz=ST.map(q=>(q[0]-ST[0][0])/DEF.leather.TS);
     grid(t,nu,ST.length,true,(i,j)=>{ const [z,w,top]=ST[j], q=i/nu*TAU, cx=Math.sin(q), cy=Math.cos(q), y=top/2+top/2*Math.sign(cy)*Math.abs(cy)**(cy<0?1/3:2/2.4); pt(t,V(A.x+w*Math.sign(cx)*Math.abs(cx)**(2/3),Math.max(Z.bot,y),A.z+z),n); },(c,j)=>[c/nu*3,vz[j]],0);
-    grid(t,4,ST.length,true,(i,j)=>{ const [z,w0]=ST[j], w=w0<.1?0:w0+.16; pt(t,V(A.x+[-w,w,w,-w][i],[0,0,.62,.62][i],A.z+z),n); },(c,j)=>[c*.6,vz[j]],1);   // the sole
+    grid(t,4,ST.length,true,(i,j)=>{ const [z,w0]=ST[j], w=w0<.1?0:w0+.16; pt(t,V(A.x+[-w,w,w,-w][i],[-.55,-.55,.62,.62][i],A.z+z),n); },(c,j)=>[c*.6,vz[j]],1);   // the sole, its tread a little under the ground (the foot inside reaches below it, and shows when the heel lifts)
     grid(t,16,2,true,(i,j)=>{ const q=i/16*TAU, r=j?2.05:2.3; pt(t,V(A.x+Math.sin(q)*r,j?4.2:3.7,A.z-.45+Math.cos(q)*r*1.05),n); },(c,j)=>[c/16*4,j*.4],0);   // the collar
     const top=z=>{ for(let j=1;j<ST.length;j++)if(ST[j][0]>=z){ const a=ST[j-1], b=ST[j], f=(z-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; } return [0,Z.bot]; };
     for(const z of [1.1,1.5,1.9,2.3]){ const [w,y]=top(z); grid(t,4,2,true,(i,j)=>{ const hx=w*.5, X=A.x+(j?hx:-hx), Y=y+[.03,.03,.16,.16][i], Zz=A.z+z+[-.08,.08,.08,-.08][i]; pt(t,V(X,Y,Zz),n); },(c,j)=>[c*.3,j],2); }   // the laces
@@ -226,6 +233,12 @@ const GARB={};
       c.a[0]=e[0]*a[0]+e[4]*a[1]+e[8]*a[2]+e[12]; c.a[1]=e[1]*a[0]+e[5]*a[1]+e[9]*a[2]+e[13]; c.a[2]=e[2]*a[0]+e[6]*a[1]+e[10]*a[2]+e[14];
       c.b[0]=e[0]*b[0]+e[4]*b[1]+e[8]*b[2]+e[12]; c.b[1]=e[1]*b[0]+e[5]*b[1]+e[9]*b[2]+e[13]; c.b[2]=e[2]*b[0]+e[6]*b[1]+e[10]*b[2]+e[14];
       c.r=r*Math.sqrt(Math.hypot(e[0],e[1],e[2])*Math.hypot(e[8],e[9],e[10]))+x.inf; } };
+  const FIRM=.45, RW={}, WR={}, FM=new THREE.Matrix4(), FQ=V(0,0,0);
+  const firm=(w,Ms)=>{ const T=w.d.X0; for(const F of w.t.firm)for(let k=0,m=F.ps.length;k<m;k++){ const n=F.ps[k], D=sdfOf(n); if(!D)continue; const f=fr0(n), rw=RW[n]||(RW[n]=new THREE.Matrix4()), wr=WR[n]||(WR[n]=new THREE.Matrix4());
+      FM.set(f.x.x,f.y.x,f.z.x,f.o.x,f.x.y,f.y.y,f.z.y,f.o.y,f.x.z,f.y.z,f.z.z,f.o.z,0,0,0,1); wr.copy(FM).invert().premultiply(Ms[NI[n]]); rw.copy(wr).invert(); const a=rw.elements, b=wr.elements;
+      for(let q=0;q<F.ix.length;q++){ const i=F.ix[q]*3, x=T[i], y=T[i+1], z=T[i+2]; FQ.x=a[0]*x+a[4]*y+a[8]*z+a[12]; FQ.y=a[1]*x+a[5]*y+a[9]*z+a[13]; FQ.z=a[2]*x+a[6]*y+a[10]*z+a[14];
+        const need=Math.min(F.d[q*m+k],FIRM), d=D(FQ); if(d>=need)continue; const h=.05, gx=D(V(FQ.x+h,FQ.y,FQ.z))-D(V(FQ.x-h,FQ.y,FQ.z)), gy=D(V(FQ.x,FQ.y+h,FQ.z))-D(V(FQ.x,FQ.y-h,FQ.z)), gz=D(V(FQ.x,FQ.y,FQ.z+h))-D(V(FQ.x,FQ.y,FQ.z-h)), gl=Math.hypot(gx,gy,gz);
+        if(gl<1e-6)continue; const u=(need-d)/gl, qx=FQ.x+gx*u, qy=FQ.y+gy*u, qz=FQ.z+gz*u; T[i]=b[0]*qx+b[4]*qy+b[8]*qz+b[12]; T[i+1]=b[1]*qx+b[5]*qy+b[9]*qz+b[13]; T[i+2]=b[2]*qx+b[6]*qy+b[10]*qz+b[14]; } } };
   const LA=new Map(), toLA=(k,p)=>{ let m=LA.get(p); if(!m){ m=toL(k,p); LA.set(p,m); } return m; };
   // the cloth into its mesh (the seam's two copies of a point share one normal)
   const draw=w=>{ const pa=w.g.attributes.position.array, X=w.d.X, gv=w.t.gv;
@@ -257,7 +270,7 @@ const GARB={};
     if(!jump){ Gi.copy(G).invert(); Md.multiplyMatrices(Gi,W.Gp); const e=Md.elements; if(Math.hypot(e[12],e[13],e[14])>30)jump=true; }
     W.Gp=(W.Gp||new THREE.Matrix4()).copy(G);
     const h=Math.max(1/120,Math.min(1/40,dt||1/60));
-    for(const w of W.ws){ aim(w,scratch); const d=w.d, X=d.X, Xp=d.Xp, T=d.X0, pin=d.pin;
+    for(const w of W.ws){ aim(w,scratch); if(w.t.firm&&sim)firm(w,scratch); const d=w.d, X=d.X, Xp=d.Xp, T=d.X0, pin=d.pin;
       if(jump||!sim||!w.free)DRAPE.settle(d,T);
       else{ const e=Md.elements;
         for(let i=0;i<d.n;i++){ const a=i*3; if(pin[i]){ X[a]=T[a]; X[a+1]=T[a+1]; X[a+2]=T[a+2]; continue; }

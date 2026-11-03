@@ -19,14 +19,14 @@ PARK.Q=[]; PARK.in=false; PARK.ready=false; PARK.onShow=[]; PARK.later=f=>PARK.r
 await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50-MAINX.w+PE[0]; PARK.x1=EASTX+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>SHARED.BOD.XS(x+PO.x), Z=y=>SHARED.BOD.ZS(y+PO.y), Y=SHARED.BOD.YS, {hash,grain,speck,grassCol}=SHARED.BOD.g, P=PARK, U=TILE/.84, f32=F32, b8=B64;
   P.round=[PARKGX,PARKRY,7]; P.gate=[PARKGX-5,PARKGX+5]; P.lake=PARKLAKE; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
   const WA=3; P.wobX=y=>P.armX(y)-P.round[0]; P.wobY=x=>P.armY(x)-P.round[1];
-  const CF=CASTLE.b[3]-PO.y+1, CGX=CASTLE.gate-PO.x, [LX,LY,LR]=P.lake, [RX0,RY0]=P.round;
+  const CF=CASTLE.b[3]-PO.y+1, CGX=CASTLE.gate-PO.x, CL=[CASTLE.lot[0]-PO.x,CASTLE.lot[2]-PO.y,CASTLE.lot[1]-PO.x,CASTLE.lot[3]-PO.y], inCL=(x,y,m=0)=>x>CL[0]-m&&x<CL[2]+m&&y>CL[1]-m&&y<CL[3]+m, [LX,LY,LR]=P.lake, [RX0,RY0]=P.round;
   const SEG=P.segs=LEVEL.paths.map(q=>[q.a[0]-PO.x,q.a[1]-PO.y,q.b[0]-PO.x,q.b[1]-PO.y]);
   const sgd=(x,y,a,b)=>{ const dx=b[0]-a[0], dy=b[1]-a[1], t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy||1))); return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t); };
   const segD=P.segD=(x,y)=>{ let m=1e9; for(let si=0;si<SEG.length;si++){ const [ax,ay,bx,by]=SEG[si]; if(si===1&&P.bend&&x>P.bend.x0&&x<P.bend.x1){ const L=P.bend.L; for(let i=0;i<3;i++)m=Math.min(m,sgd(x,y,L[i],L[i+1])); continue; } const dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=x-ax, py=y-ay, s=px*ux+py*uy; let d; if(s<=0)d=Math.hypot(px,py); else if(s>=L)d=Math.hypot(x-bx,y-by); else d=Math.abs(px*-uy+py*ux-WA*Math.sin(2*Math.PI*Math.round(L/70)*s/L)); if(d<m)m=d; } return m; };
   P.armY=x=>{ const [ax,ay,bx]=SEG[1], L=bx-ax; return ay+WA*Math.sin(2*Math.PI*Math.round(L/70)*(x-ax)/L); }; P.armX=y=>{ const [ax,ay,,by]=SEG[0], L=by-ay; return ax+WA*Math.sin(2*Math.PI*Math.round(L/70)*(y-ay)/L); };
   const pd=P.pd=(x,y)=>{ const [cx,cy,r]=P.round; return Math.min(segD(x,y)-3.6,Math.hypot(x-cx,y-cy)-r,FOUNT.trackD(x,y)); };
   const path=(x,y)=>pd(x,y)<0;   P.path=path; FOUNT.at(P);
-  const HK=[[LX-LR-1,LY-LR-1,LX+LR+1,LY+LR+1],[CASTLE.b[0]-PO.x-3,CASTLE.b[2]-PO.y-3,CASTLE.b[1]-PO.x+3,CASTLE.b[3]-PO.y+3],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
+  const HK=[[LX-LR-1,LY-LR-1,LX+LR+1,LY+LR+1],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
   const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, cvn=SHARED.BOD.g.cvNoise;
   P.hill=(x,y)=>{ if(x<P.x0||x>P.x1||y<P.y0||y>P.y1)return 0; const [cx,cy,r]=P.round;
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
@@ -276,7 +276,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   // the park's trees are elms (owner, 2 Nov 2026, his picture of the Mall: "this large compared to avatars and shaped exactly the same"): 26 to 31 m; the rows past the north wall half the old pack's, half grown
   const ELM=(a,b,c)=>'G'+'E'+Math.floor(hash(a,b,c)*TREEGEN.count('E')), EM=(a,b,c)=>26+hash(a,b,c)*5;
   const gk=(x,y,sd,low)=>{ const h=k=>hash(Math.round(x*3),Math.round(y*3),sd+k); if(h(0)<.5)return null; const S=(h(1)<.5?'A':'C')+(low?'L':''); return 'G'+S+Math.floor(h(2)*TREEGEN.count(S)); };
-  const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CASTLE.b[0]-3,CASTLE.b[2]-3,CASTLE.b[1]+3,CASTLE.b[3]+3],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
+  const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(pd(x,y)<3+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
     // the entrance (owner, 2 Nov 2026: "make the entrance full of trees that go over like this"): the Mall's double rows of elms along both sides of the
@@ -298,7 +298,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
     { const TK=['Giant1','Elder1','Elder2','OakTree1','OakTree2','OakTree3','Spruce1','Willow1'];
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
-      edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||(x>CB[0]-3.5&&x<CB[1]+3.5&&y>CB[2]-3.5&&y<CB[3]+3.5));
+      edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||inCL(x,y,1));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
       const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
@@ -386,7 +386,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];
-    const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-NORTHX-1-Math.pow(hash(i,7,93),1.6)*(P.y1-NORTHX-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||BK.wet(x,y,1)||hash(i,11,95)<.3||FOUNT.away(x,y)<0)continue; if(x>67&&x<77&&y>-44+NORTHY&&y<-24+NORTHY)continue; if(Math.hypot(x-P.campAt().x,y-P.campAt().y)<4)continue; if(GCAVE.keep(P).some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; { const [a,b,c,d]=CASTLE.b.map((v,i)=>v-(i<2?PO.x:PO.y)); if(x>a-1.6&&x<b+1.6&&y>c-1.6&&y<d+1.6)continue; }
+    const list=[]; for(let i=0;i<90;i++){ const x=P.x0+2+hash(i,3,91)*(P.x1-P.x0-4), y=P.y1-NORTHX-1-Math.pow(hash(i,7,93),1.6)*(P.y1-NORTHX-P.y0-3); if(path(x,y)||path(x+1,y)||path(x-1,y)||path(x,y+1)||path(x,y-1)||BK.wet(x,y,1)||hash(i,11,95)<.3||FOUNT.away(x,y)<0)continue; if(x>67&&x<77&&y>-44+NORTHY&&y<-24+NORTHY)continue; if(Math.hypot(x-P.campAt().x,y-P.campAt().y)<4)continue; if(GCAVE.keep(P).some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; if(inCL(x,y,1))continue;
       const [k,m]=UG[Math.floor(hash(i,13,97)*UG.length)]; if(/^(bush|flower)/.test(k))continue; list.push([k,x,y,m*(.8+.4*hash(i,17,99)),hash(i,19,101)*6.28]); }
     list.push(...[['log1',65,-41,.5,.4],['log2',86,-40.5,.6,1.2],['log3',104,-39,.6,2.6],['fence1',57,-41,.8,0],['fence1',126,-41,.8,1.57],['pmushroom1',62.5,-36.5,.6,0],['pmushroom2',63.5,-36.2,.5,1],['pmushroom3',61.8,-35.5,.55,2]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]));
     const isPlant=k=>/^(bush|flower|grass)/.test(k);
@@ -433,8 +433,11 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     LP.push(...FOUNT.S.lamps); { const r=P.round[2]+1.4, n=Math.max(4,Math.round(2*Math.PI*r/12)); for(let i=0;i<n;i++){ const t=(i+.5)/n*2*Math.PI; LP.push([cx+Math.cos(t)*r,cy+Math.sin(t)*r]); } }
     // each lamp just off its path's edge, never on a path, in water or against a trunk, and none crowding another
     const ok=[], snap=(x,y)=>{ for(let k=0;k<14;k++){ const d=pd(x,y); if(d>=.5&&d<2.5)break; const e=.05, gx=pd(x+e,y)-pd(x-e,y), gy=pd(x,y+e)-pd(x,y-e), g=Math.hypot(gx,gy)||1, s=d<.5?.4:-.4; x+=gx/g*s; y+=gy/g*s; } return [x,y]; };
-    for(const q of LP){ const [x,y]=snap(q[0],q[1]), d=pd(x,y); if(d<.5||d>2.6||BK.wet(x,y,.8)||FOUNT.lake(x,y)<1||x<P.x0+2||x>P.x1-2||y<P.y0+2||y>P.y1-2)continue;
-      if(TREES.some(t=>Math.hypot(t[1]-x,t[2]-y)<1.6)||ok.some(o=>Math.hypot(o[0]-x,o[1]-y)<9))continue; ok.push([x,y]); } LP.length=0; LP.push(...ok); }
+    for(const q of LP){ const [x,y]=snap(q[0],q[1]), d=pd(x,y); if(d<.5||d>2.6||BK.wet(x,y,.8)||FOUNT.lake(x,y)<1||inCL(x,y,1)||x<P.x0+2||x>P.x1-2||y<P.y0+2||y>P.y1-2)continue;
+      if(TREES.some(t=>Math.hypot(t[1]-x,t[2]-y)<1.6)||ok.some(o=>Math.hypot(o[0]-x,o[1]-y)<9))continue; ok.push([x,y]); }
+    // a pair at the drawbridge's foot, either side of the way up to the gate
+    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push([x,y]); }
+    LP.length=0; LP.push(...ok); }
   // the park lamp (owner, 28 Oct 2026): a dark metal post and a metal hood; the bulb hides under the hood, so only its light on the ground shows
   const MET=(c0,c1)=>(i,j)=>{ const t=(i*7+j*3)%11<2?1.12:1; return [c0*t|0,c1*t|0,(c1+6)*t|0]; };
   for(const [x,y] of LP){ const h0=172; const o=BATCH.tag=OBJ('park','park lamp'); block(x-.11,y-.11,x+.11,y+.11,0,10,35,()=>[44,46,50],0,10,MET(40,42)); block(x-.055,y-.055,x+.055,y+.055,10,h0,31,()=>[40,42,46],0,h0-10,(i,j)=>[34+(i%5===0?14:0),36+(i%5===0?14:0),42+(i%5===0?14:0)]);

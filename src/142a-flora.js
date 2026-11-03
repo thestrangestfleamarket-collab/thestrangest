@@ -47,7 +47,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
   const grow=park=>{ BU=[]; FL=[]; BEDS=[]; const b0=FLORA.beds.length;
   if(park&&typeof PARK!=='undefined'&&PARK.ox!=null&&PARK.brook&&PARK.hill){ const P=PARK, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), [cx,cy,cr]=P.round, BK=P.brook, F=FOUNT;
     const pd=P.pd, RX=x=>x-96+cx, RY=y=>y+47+cy;
-    const KEEP=[[cx+12.5-6.5,cy+11.5-6.5,cx+12.5+6.5,cy+11.5+6.5],[CASTLE.b[0]-P.ox-2,CASTLE.b[2]-P.oy-2,CASTLE.b[1]-P.ox+2,CASTLE.b[3]-P.oy+2],...(P.campAt?[(c=>[c.x-4,c.y-4,c.x+4,c.y+4])(P.campAt())]:[]),...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
+    const KEEP=[[cx+12.5-6.5,cy+11.5-6.5,cx+12.5+6.5,cy+11.5+6.5],[CASTLE.lot[0]-P.ox-1,CASTLE.lot[2]-P.oy-1,CASTLE.lot[1]-P.ox+1,CASTLE.lot[3]-P.oy+1],...(P.campAt?[(c=>[c.x-4,c.y-4,c.x+4,c.y+4])(P.campAt())]:[]),...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[])];
     const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
     const xa=Math.min(X(P.x0),X(P.x1))-T, xb=Math.max(X(P.x0),X(P.x1))+T, za=Math.min(Z(P.y0),Z(P.y1))-T, zb=Math.max(Z(P.y0),Z(P.y1))+T;
     const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=STALL.zones||[];

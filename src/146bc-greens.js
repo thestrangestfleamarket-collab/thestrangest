@@ -199,7 +199,7 @@ import {PAD} from './075-main-13.js';
   const cardOff=()=>{ const c=document.getElementById('greensc'); if(c)c.hidden=true; };
 
   /* ---------- the program ---------- */
-  H.programs.push({ name:'THE GREENS', skill:'golf', cost:COST, offWorld:true, tool:'putter',
+  H.programs.push({ name:'THE GREENS', skill:'golf', cost:COST, offWorld:true, room:'greens', tool:'putter',
     intro:'THE GREENS. A ZEN GARDEN DEEP IN A FOGGY VALLEY, ONE HOLE, PAR '+PAR+'. WALK TO YOUR BALL (OR PRESS F). THE MOUSE AIMS, HOLD THE BUTTON TO DRAW BACK, LET GO TO PUTT. ON A PAD: D-PAD LEFT WALKS TO THE BALL, THE RIGHT STICK AIMS, HOLD RT AND LET GO, D-PAD DOWN TAKES IT BACK. IN THE HEADSET, SWING; YOUR PUTTER HAND\'S TRIGGER WALKS TO THE BALL, B TAKES IT BACK.',
     go:R=>{ const d=D=Object.assign(R,{strokes:0,rounds:0,done:false,addr:false,aimA:0,charge:null,swing:null,best:null,ready:false,prevTip:null,cool:0}); try{ const S=JSON.parse(OWNED.get('greens')||'{}'); D.best=S&&S.best?S.best.zen:null; }catch(e){}
       if(!ROOMS.enterAt)return; place(TEE.x,TEE.z);

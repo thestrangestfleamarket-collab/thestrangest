@@ -42,22 +42,22 @@ def resample(C, nb):
         p[bn] = pack(o, 'f')
     return {**C, 'n': m, 'q': pack(q, 'h'), 'p': p}
 
-def trim(clips, nb, label):
-    keep = {k: resample(v, nb) for k, v in clips.items() if named(k)}
+def trim(clips, nb, label, keepf=None):
+    keep = {k: resample(v, nb) for k, v in clips.items() if (keepf or named)(k)}
     print(label, len(clips), '->', len(keep), 'clips')
     return keep
 
 def bones(C, n):
     return len(unpack(C['q'], 'h')) // 4 // n
 
-def run(path, groups):
+def run(path, groups, keepf=None):
     d = json.load(open(path))
     for label, get, put in groups(d):
         clips = get()
         if not clips:
             continue
         c0 = next(iter(clips.values()))
-        put(trim(clips, bones(c0, c0['n']), label))
+        put(trim(clips, bones(c0, c0['n']), label, keepf))
     json.dump(d, open(path, 'w'), separators=(',', ':'))
 
 def pawns(d):
@@ -75,6 +75,7 @@ run('data/skel.json', flat)
 run('data/dragon.json', flat)
 run('data/creatures.json', creatures)
 run('data/rpgchars.json', creatures)
+run('data/fauna.json', creatures, lambda n: re.search(r'_(Walk|Run|Idle|Fly|Crawl)$', n) is not None)   # (src/087 names these clips by kind, not literally)
 
 def ual(d):
     yield 'ual', lambda: d['ual']['clips'], lambda v: d['ual'].__setitem__('clips', v)

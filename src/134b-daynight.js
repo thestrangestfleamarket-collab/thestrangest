@@ -1,15 +1,14 @@
 // THE HOURS: DN holds the four looks, SUNRISE, DAY, SUNSET and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything; smooth skies, the far fading into the horizon's colour), takes turns through them one real hour each with a minute's fade, runs the day's hour through them (a quarter of the day each, for the shops, lamps and routines), and the ATMOSPHERE panel for their details.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, CLOCK, DN, FAR3, PARK, SKY, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, SKY, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
 import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','night'],names:{sunrise:'SUNRISE',day:'DAY',sunset:'SUNSET',night:'NIGHT'},HOUR:3600000,FADE:60000});
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
-    D0={sunrise:{h:7.75,sun:1.3,amb:1.5,sunc:'#ffc890',ambc:'#c8c0d8',zen:'#7f8ab0',hor:'#f2b48c',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#d4a898',skym:0,farb:1.05,grade:'#fff4ee',lift:'#d4a898',liftk:.06,lamp:1,star:1,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:.4,shaft:0,glow:1.1,bands:0},
-      day:{h:13,sun:1.35,amb:1.3,sunc:'#fff0d6',ambc:'#e8eef8',zen:'#4a86d8',hor:'#c4d6ea',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#c0d2e6',skym:0,farb:1.05,grade:'#fffaf4',lift:'#c0d2e6',liftk:.05,lamp:1,star:1,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:.2,shaft:0,glow:1.1,bands:0},
-      sunset:{h:17.95,sun:1.5,amb:1.6,sunc:'#ffd2a0',ambc:'#dcc6cc',zen:'#868cac',hor:'#e09d75',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#c99a84',skym:0,farb:1.05,grade:'#fff3ea',lift:'#c99a84',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:.4,shaft:0,glow:1.1,bands:0},
+    D0={sunrise:{h:7.75,sun:1.3,amb:1.5,sunc:'#ffc890',ambc:'#c8c0d8',zen:'#7f8ab0',hor:'#f2b48c',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#d4a898',skym:0,farb:1.05,grade:'#fff4ee',lift:'#d4a898',liftk:.06,lamp:1,star:1,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:.4,shaft:0,glow:1.1,bands:0},
+      day:{h:17.2,sun:1.35,amb:1.3,sunc:'#fff0d6',ambc:'#e8eef8',zen:'#6f92d8',hor:'#c4d6ea',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#c0d2e6',skym:0,farb:1.05,grade:'#fffaf4',lift:'#c0d2e6',liftk:.05,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#f4c9a8',sunk:.2,shaft:0,glow:1.1,bands:0},
+      sunset:{h:17.95,sun:1.5,amb:1.6,sunc:'#ffd2a0',ambc:'#dcc6cc',zen:'#868cac',hor:'#e09d75',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#c99a84',skym:0,farb:1.05,grade:'#fff3ea',lift:'#c99a84',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:.4,shaft:0,glow:1.1,bands:0},
       night:{h:23,sun:1.1,amb:1.05,sunc:'#ffffff',ambc:'#ffffff',zen:'#0e1322',hor:'#2c3350',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1f2640',skym:0,farb:.62,grade:'#ffffff',lift:'#1a2038',liftk:.1,lamp:1.25,star:1.3,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['bands','SKY BANDS (0 = SMOOTH)',0,8,1],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','CLOUD COVER (LOWER = MORE, 1 = NONE)',.2,1,.01],['cl','CLOUD BRIGHTNESS',.5,1.6,.01],
@@ -17,7 +16,7 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
     ['cldc','CLOUD COLOUR','c','d'],['cldk','CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],
     ['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
-  const S={}; for(const m of DN.modes){ S[m]={...D0[m]}; try{ Object.assign(S[m],JSON.parse(SAVE.get('dn-'+m)||'{}')); }catch(e){} }
+  const S={}; for(const m of DN.modes)S[m]={...D0[m]};
   { const q=Q('look').toLowerCase(), qh=+(Q('hour')||NaN); if(DN.modes.includes(q)){ DN.hold=DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.hold=DN.mode=qh<6||qh>19?'night':'day'; S[DN.mode].h=qh; DN.test=1; } }
   // the hours: the four looks take turns, one real hour each, the same for everyone (the wall clock, nothing stored); the first minute of each hour fades from the last look
   const DAY0=[5,11,17,23]; DN.dayAt=t=>{ const n=Math.floor(t/DN.HOUR), i=((n%4)+4)%4; return (DAY0[i]+6*((t-n*DN.HOUR)/DN.HOUR))%24; };   // the day's hour: six game hours a real hour, each look's quarter holding its own sun hour
@@ -41,6 +40,7 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
   DN.dayText=()=>'one real hour each, the same for everyone; the day at '+fmt(CLOCK.h)+', the next look in '+Math.ceil((DN.HOUR-Date.now()%DN.HOUR)/60000)+' min';
   let dayT=0; SYS.add('clockPre',()=>{ const t=Date.now(); if(t-dayT<1000||DN.hold||!box||box.offsetParent===null)return; dayT=t; const el=box.querySelector('#dnday'); if(el)el.textContent=DN.dayText(); },'134b-dayText');   // the panel's line keeps the time while it is open
   DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
+    if(!DN.owner){ box.innerHTML=`<h3>THE HOURS</h3><div class="row"><span class="dim" id="dnday">${DN.names[m]}: ${DN.dayText()}</span></div>`; return; }
     box.innerHTML=`<h3>THE HOURS</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}${DN.hold?'<button class="btn" id="dnfollow">FOLLOW THE HOURS</button>':''}<span class="dim" id="dnday">${DN.hold?'held to edit; shift+N the next':DN.dayText()}</span></div>
       <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
         :`<div class="row"><span style="width:250px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
@@ -48,10 +48,15 @@ Object.assign(DN,{lk:1,mode:'sunset',hold:null,modes:['sunrise','day','sunset','
   if(box){ for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
     box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.E(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
     box.addEventListener('click',e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
-      if(m)DN.set(m); if(t.id==='dnfollow')DN.follow();
-      if(t.id==='dnsave'){ SAVE.set('dn-'+DN.mode,JSON.stringify(DN.E())); dirty=false; msg().textContent='saved'; }
-      if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; SAVE.del('dn-'+DN.mode); dirty=false; fix(); DN.draw(); msg().textContent='back to the game\'s own'; }
+      if(!DN.owner)return; if(m)DN.set(m); if(t.id==='dnfollow')DN.follow();
+      if(t.id==='dnsave'){ msg().textContent='saving...'; DN.push().then(()=>{ dirty=false; msg().textContent='live for everyone'; }).catch(e=>{ msg().textContent='not saved: '+(e.message||'try again'); }); }
+      if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; fix(); DN.draw(); dirty=true; msg().textContent='back to the game\'s own: SAVE to put it live'; }
       if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.E()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
-  addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='n'&&e.shiftKey&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
+  addEventListener('keydown',e=>{ if(DN.owner&&e.key.toLowerCase()==='n'&&e.shiftKey&&!e.repeat&&!e.ctrlKey&&!e.metaKey&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))DN.set(DN.modes[(DN.modes.indexOf(DN.mode)+1)%DN.modes.length]); });
   setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
+  { const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };
+    const get=()=>fetch(FILE,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(take).catch(()=>{});
+    if(!DN.test)get();
+    DN.push=()=>fetch(FILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(S)}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('looks',Date.now()); });
+    let lastL=null; SYS.add('world',(k,v)=>{ if(k!=='looks'||DN.owner||v===lastL)return; lastL=v; get(); },'134b-looks'); }
   CLOCK.run=false; blend(S[DN.mode],S[DN.mode],1); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,hold:DN.hold,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

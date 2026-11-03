@@ -6,7 +6,7 @@ import {scene} from './004-main.js';
 import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {VEH} from './150o-physmore.js';
 const CARD=__LAZY__("data/cars.json");
-{ const T=TILE, M1=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
+{ const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
   const CARS=new Map(), KINDS={}; let DATA=null, mine=null, want=null;
   const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=CAR;
   for(const c of LEVEL.cars||[])CARS.set(c.id,{id:c.id,model:c.model,x:X(c.x),z:Z(c.y),hd:(c.hd||0)*Math.PI/180,by:null,mesh:null,sol:null});
@@ -54,11 +54,11 @@ const CARD=__LAZY__("data/cars.json");
     for(const dx of [-.12,0,.1])bx(.07,.02,.09,mDark,drv+dx,fl+.12,dashB+.1,-.9);   // the pedals
     if(roof-belt>.25){ bx(.2,.06,.02,mDark,0,roof-.13,zf-.3); for(const sd of [-1,1])bx(.36,.02,.18,mHead,sd*.33,roof-.08,zf-.33); }   // the mirror and the sun visors
     // the seats: a bench or two buckets in front, a bench behind when there's room; a three-point belt for each place, its buckle by the hip
-    const seat=(x,w,z)=>{ bx(w,.14,.5,mSeat,x,fl+.1,z); bx(w,.55,.12,mSeat,x,fl+.42,z-.27,-.18); if(!bench)bx(w*.6,.16,.1,mSeat,x,fl+.78,z-.33); };
-    const belt3=(x,z,sd)=>{ const top=V(sd*(hw-.06),Math.min(roof-.12,fl+.76),z-.2), hip=V(x-sd*.2,fl+.2,z-.02), out=V(sd*(hw-.07),fl+.2,z-.02); strap(top,hip); strap(out,hip); bx(.05,.05,.03,mChrome,hip.x,hip.y,hip.z); };
+    const seat=(x,w,z)=>{ bx(w,.14,.5,mSeat,x,fl+.04,z); bx(w,.55,.12,mSeat,x,fl+.36,z-.27,-.18); if(!bench)bx(w*.6,.16,.1,mSeat,x,fl+.72,z-.33); };
+    const belt3=(x,z,sd)=>{ const top=V(sd*(hw-.06),Math.min(roof-.12,fl+.7),z-.2), hip=V(x-sd*.2,fl+.14,z-.02), out=V(sd*(hw-.07),fl+.14,z-.02); strap(top,hip); strap(out,hip); bx(.05,.05,.03,mChrome,hip.x,hip.y,hip.z); };
     if(bench)seat(0,hw*2-.12,seatZ); else for(const x of [drv,-drv])seat(x,.5,seatZ); for(const x of [drv,-drv])belt3(x,seatZ,Math.sign(x));
     if(rear){ seat(0,hw*2-.12,rearZ); for(const x of [drv,-drv])belt3(x,rearZ,Math.sign(x)); }
-    g.userData={sw,seat:V(drv,fl+.17,Math.max(seatZ-.08,WZ-.32)),fit:Math.max(.6,Math.min(1,(roof-.16-fl-.17)/1.07)),eye:V(drv,Math.max(belt+.22,roof-.13),seatZ-.12)}; return g; };
+    g.userData={sw,seat:V(drv,fl+.11,Math.max(seatZ-.08,WZ-.32)),fit:Math.max(.6,Math.min(1,(roof-.08-fl-.11)*BIG/1.01)),eye:V(drv,Math.max(belt+.22,roof-.13),seatZ-.12)}; return g; };
   // a car in metres under one group scaled to the world: its body, a wheel at each corner (fl, fr, rl, rr; the right ones turned round), forward +z
   const build=model=>{ const D=DATA.cars[model], G=new THREE.Group(), B=part(D.body); B.traverse(o=>{ if(o.isMesh)o.material.side=THREE.DoubleSide; }); G.add(B); if(D.glass&&D.glass.length){ const GL=glassPart(D.glass); G.add(GL); const I=cabin(model,D.cab,D.size[0]); if(I){ G.add(I); G.userData.cab=I.userData; } } const W=part(D.wheel), wh=D.wheels.map((w,i)=>{ const o=new THREE.Group(); o.position.set(w[0],w[1],w[2]); const inner=i?W.clone():W; if(i===1||i===3)inner.rotation.y=Math.PI; o.add(inner); G.add(o); return o; });
     G.userData.wh=wh; G.scale.setScalar(M1); return G; };
@@ -67,7 +67,7 @@ const CARD=__LAZY__("data/cars.json");
   const POSE={k:'car',steer:0,z:0};
   const kindFor=model=>{ if(KINDS[model])return KINDS[model]; const D=DATA.cars[model], [w,h,L]=D.size, r=D.r, rest=.15, top=D.low+h;
     const V=VEH.make({half:[w*.46*M1,(top-.25)/2*M1,L*.47*M1],cy:((top+.25)/2-r)*M1,lift:(r+.05)*M1,mass:1200,wheels:D.wheels.map(q=>[q[0]*M1,(q[1]-r+rest)*M1,q[2]*M1]),r:r*M1,rest:rest*M1,travel:.12*M1,stiff:30,grip:3,
-      engine:2400*M1,reverse:1200*M1,vmax:20*M1,vback:4*M1,brake:50*M1,idle:5*M1,steer:.55,steerFade:8*M1,knockR:1.6*M1,down:r*M1,wy:D.wheels[0][1],unit:M1});
+      engine:2400*M0,reverse:1200*M0,vmax:20*M0,vback:4*M0,brake:50*M0,idle:5*M0,steer:.55,steerFade:8*M0,knockR:1.6*M1,down:r*M1,wy:D.wheels[0][1],unit:M1});
     const k=KINDS[model]={name:D.name,world:true,V,seat:(m,o)=>{ const c=m.userData.cab; return c?o.copy(c.seat):o.set(0,.5,0); }, fit:m=>{ const c=m.userData.cab; return c?c.fit:1; },make:()=>build(model),lift:.001,acc:4,turn:1.4,drag:1.2,knock:99,hop:false,ease:20,
       on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
       pose:R=>{ POSE.steer=V.on?V.steer*2:0; return POSE; },

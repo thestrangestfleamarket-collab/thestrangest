@@ -5,7 +5,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage({ viewport: { width: 960, height: 600 } }), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
-  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=53,10', { waitUntil: 'commit' });
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=49,10', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   if (st) {
@@ -57,11 +57,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(bk.block && bk.bare && bk.d < .1 && bk.act, 'P with bare hands blocks and softens a blow (' + JSON.stringify(bk) + ')');
     const before = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you() }));
     const busy = await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .1, kb: 1, k: 'fist', from: [o.p.x, o.p.z] }); return JSON.stringify({ rag: RAGON(), out: __dbg.VIT.out }); });
-    await pg.waitForFunction(b => { const p = __dbg.you(); return Math.hypot(p.x - b.x, p.z - b.z) > .1 || window.RAGON(); }, before.p, { timeout: 6000 }).catch(() => {});   // the shove lands when the runner gets to it; wait for it rather than a fixed time
+    await pg.waitForFunction(b => { const p = __dbg.you(); return Math.hypot(p.x - b.x, p.z - b.z) > .05 || window.RAGON(); }, before.p, { timeout: 6000 }).catch(() => {});   // the shove lands when the runner gets to it; wait for it rather than a fixed time
     await pg.waitForTimeout(300);
     const after = await pg.evaluate(() => ({ hp: __dbg.VIT.hp, p: __dbg.you(), rag: window.RAGON() }));
     ok(after.hp < before.hp, 'their blow takes health (' + before.hp.toFixed(2) + ' -> ' + after.hp.toFixed(2) + ')');
-    ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .1 && !after.rag, 'a light blow shoves you without knocking you down' + (after.rag || Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) <= .1 ? ' ' + busy + JSON.stringify([before, after]) : ''));
+    // the light blow's whole shove is 0.35 of a tile (0.099 here): half of it counts, a bump from elsewhere is not needed
+    ok(Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) > .05 && !after.rag, 'a light blow shoves you without knocking you down' + (after.rag || Math.hypot(after.p.x - before.p.x, after.p.z - before.p.z) <= .05 ? ' ' + busy + JSON.stringify([before, after]) : ''));
     await pg.waitForTimeout(400);
     await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .05, kb: 1.8, heavy: true, k: 'blade', from: [o.p.x, o.p.z] }); });
     await pg.waitForTimeout(600);
@@ -71,8 +72,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(sent.on && sent.on.n.length >= 11 && sent.frames >= 1, 'your ragdoll goes out to everyone (' + (sent.on ? sent.on.n.length : 0) + ' bodies, ' + sent.frames + ' frames)');
     await pg.evaluate(() => ONLINE.feed({ t: 'grab', id: 'a' }));
     ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'a player can pick you up while you are down');
-    await pg.evaluate(() => ONLINE.feed({ t: 'toss', id: 'b', v: [1, 0] }));
-    ok(await pg.evaluate(() => __dbg.RAG.held && __dbg.RAG.held.by === 'a'), 'only the one holding you can throw you');
+    ok(await pg.evaluate(() => { ONLINE.feed({ t: 'grab', id: 'a' }); ONLINE.feed({ t: 'toss', id: 'b', v: [1, 0] }); return __dbg.RAG.held && __dbg.RAG.held.by === 'a'; }), 'only the one holding you can throw you');   // in one step: a hold lets go by itself after 10 s, which a slow runner can reach between steps
     const ko0 = await pg.evaluate(() => __dbg.RAG.ko);
     await pg.waitForTimeout(200); await pg.evaluate(() => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'hit', id: 'a', d: .01, kb: 1, heavy: true, k: 'fist', from: [o.p.x, o.p.z] }); });
     ok(await pg.evaluate(k => __dbg.RAG.ko === k, ko0), 'a blow while you are down does not keep you down longer');
@@ -91,8 +91,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(g.sent.includes('grab'), 'double-clicking a player who is down picks them up (' + JSON.stringify(g) + ')');
     await pg.evaluate(() => { SYS.run('act', 'J', 1); __ragI = 0; });
     ok(await pg.evaluate(() => __sent.some(m => m.t === 'toss' && m.to === 'a')), 'a punch throws them');
-    const blade = await pg.evaluate(async () => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'ragoff', id: 'a' }); ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] }); await new Promise(r => setTimeout(r, 500));
-      const seen = WIELDDBG().find(x => x.id === 'a'); ONLINE.feed({ t: 'swing', id: 'a', s: 1, h: 0 }); const sw = WIELDDBG().find(x => x.id === 'a');
+    const blade = await pg.evaluate(async () => { const o = ONLINE.others.get('a'); ONLINE.feed({ t: 'ragoff', id: 'a' }); ONLINE.feed({ t: 'aim', id: 'a', w: 'sword', v: [0, -.3, 1] });
+      // their sword is drawn on a frame: wait for it, not a fixed time
+      let seen = null; for (const t0 = performance.now(); performance.now() - t0 < 15000; await new Promise(r => setTimeout(r, 250))) { seen = WIELDDBG().find(x => x.id === 'a'); if (seen && seen.w === 'sword' && seen.shown) break; } ONLINE.feed({ t: 'swing', id: 'a', s: 1, h: 0 }); const sw = WIELDDBG().find(x => x.id === 'a');
       __sent.length = 0; ONLINE.on = true; FORAGE.give('sword', 1); WIELD.set('sword'); await new Promise(r => setTimeout(r, 1500)); const mine = __sent.find(m => m.t === 'aim');
       WIELD.set(null); await new Promise(r => setTimeout(r, 800)); const off = __sent.filter(m => m.t === 'aim').pop(); ONLINE.on = false; ONLINE.feed({ t: 'aim', id: 'a', w: '' });
       return { seen: !!(seen && seen.w === 'sword'), shown: !!(seen && seen.shown), swing: !!(sw && sw.sw), mine: mine ? mine.w + ':' + (mine.v || []).length : '', off: off ? off.w : null, left: WIELDDBG().length }; });

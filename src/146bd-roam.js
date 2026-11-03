@@ -398,7 +398,7 @@ import {PAD} from './075-main-13.js';
   SYS.add('cam',dt=>{ if(ROAM.on&&API)API.cam(dt); if(EXIT.want&&!ROAM.on)EXIT.go(); },'roam');
   ROOMS.off.roam={name:'ROAM',noCeil:1,box:{x0:WX-12*T,z0:WZ-12*T,x1:WX+12*T,z1:WZ+12*T,y0:-3,y1:20*T},spawn:[WX,WZ,0,0],out:[WX,WZ,0,0],
     need:()=>LOAD('roam').then(()=>{ if(!API)API=MAKE(); }),build:()=>API.build(),unbuild:()=>{ if(API)API.unbuild(); }};
-  H.programs.push({ name:'ROAM', cost:0, offWorld:true,
+  H.programs.push({ name:'ROAM', cost:0, offWorld:true, room:'roam',
     intro:'ROAM. A SMALL SHIP AMONG THE METEORS. FLY ANY WAY UP; LASERS BREAK THE ROCKS, MISSILES BREAK THE BIG ONES. DON\'T RAM THEM.',
     go:R=>{ D=R; if(!ROOMS.enterAt)return; ROOMS.enterAt('roam',[WX,WZ,0,0]).then(()=>{ if(D!==R||!API)return; API.start(R); }).catch(e=>console.warn('ROAM',e)); },
     run:(R,dt)=>{ if(API&&ROAM.on)API.step(dt); },

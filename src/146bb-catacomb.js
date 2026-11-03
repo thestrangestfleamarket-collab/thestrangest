@@ -70,7 +70,7 @@ import {PAD} from './075-main-13.js';
     unbuild:()=>{ RUN.on=false; const G=W&&W.G; if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); }
       if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; } if(VR.want===WANT)VR.ask(null); W=null; } };
 
-  H.programs.push({ name:'THE CATACOMB RUN', skill:'fight', cost:12, offWorld:true,
+  H.programs.push({ name:'THE CATACOMB RUN', skill:'fight', cost:12, offWorld:true, room:'catrun',
     intro:'THE CATACOMB RUN: JUMP THE LOGS, DUCK THE BRANCHES, DODGE THE ROCKS. LAST AS LONG AS YOU CAN.',
     go:R=>{ const d=D=Object.assign(R,{dist:0,lane:1,dead:false,ready:false,go:false,t:0,cd:0,spd:SPD0,prevZ:2*T,hint:{},ms:1,best:false,log:[]});
       if(!ROOMS.enterAt)return;

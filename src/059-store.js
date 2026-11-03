@@ -4,7 +4,7 @@ import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-syst
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {BATCH, OBJ, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
 import {BLOCKS} from './038zb-blocks.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
@@ -67,7 +67,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
             if(ax==='x')pm.position.set(X(c),zc,Z(at+off)); else{ pm.position.set(X(at+off),zc,Z(c)); pm.rotation.y=Math.PI/2; } scene.add(pm); WINDOWS.pane(pm,id,look,true); } }
         if(lazy&&!inner){ solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint); if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
           inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,holes,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
-        const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
+        const full=()=>{ const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
         const as=new Set([a0,a1]), zs=new Set([0,H]); for(const h of holes){ as.add(Math.max(a0,h.a0)); as.add(Math.min(a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
         const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
         for(const s of [-1,1])for(let i=0;i+1<A.length;i++)for(let j=0;j+1<Zs.length;j++){ const u0=A[i], u1=A[i+1], z0=Zs[j], z1=Zs[j+1]; if(holes.some(h=>(u0+u1)/2>h.a0&&(u0+u1)/2<h.a1&&(z0+z1)/2>h.z0&&(z0+z1)/2<h.z1))continue;
@@ -80,10 +80,11 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
           const dp=door.pic?(ii,jj)=>door.pic(ii,jj,W,Hd):(ii,jj)=>{ const z=Hd-jj, m=(ii+.5)/W; if(ii<2||ii>=W-2||z>Hd-2)return WK; if(m>.82&&m<.9&&Math.abs(z-Hd*.42)<2)return BR; const top=z>Hd*.55; if(m>.16&&m<.84&&(top?z>Hd*.6&&z<Hd*.92:z>Hd*.1&&z<Hd*.48))return (ii+jj)%7?WL:WD; return WD; };
           for(const s2 of [-1,1])bq(pt(d0,0,s2*.02),pt(d1,0,s2*.02),pt(d1,Hd,s2*.02),pt(d0,Hd,s2*.02),faceTex(W,Hd,(ii,jj)=>C(dp(ii,jj))),kind); }
         let a=a0; const ds=holes.filter(h=>h.z0===0).sort((p,q)=>p.a0-q.a0), seg=(p,q)=>{ if(q-p<.01)return; if(ax==='x')sol(p,at-.1,q,at+.1,H); else sol(at-.1,p,at+.1,q,H); }; for(const d of ds){ seg(a,d.a0); a=d.a1; } seg(a,a1);
-        cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:inner?(ax==='y'?X(at):Z(at)):null}); }
+        cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:inner?(ax==='y'?X(at):Z(at)):null}); };
+        if(lazy&&inner)inFaces.push(full); else full(); }   // a wall inside the shop waits for the way in too
       inFaces0=inFaces; if(!o.xo)flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,H,look.roof||roofCol,'R'+id); }
     solids_(outer); lamps_(lout); FLAME.props(outer,X,Y,Z,lamps);
-    if(lazy){ const P0=STORE.inside[id]; STORE.inside[id]={id,name,B,door,go:P0&&!P0.done?()=>{ P0.go(); inside(); }:inside,done:false}; } else inside();
+    if(lazy){ const P0=STORE.inside[id]; STORE.inside[id]={id,name,B,door,go:P0&&!P0.done?()=>{ P0.go(); inside(); }:inside,done:false,drop:true,un:P0&&P0.un}; } else inside();
     return rec(id,name,B,door,!!look.in||!!o.pieceWalls); };
   const rec=(id,name,B,door,walls)=>{ const R0=STORE.rooms.find(r=>r.id===id); if(R0)return R0;
     const dx=door?(door.w==='f'||door.w==='b'?door.a:door.w==='w'?B.x0+1.2:B.x1-1.2):(B.x0+B.x1)/2, dy=door?(door.w==='f'?B.y1-1.2:door.w==='b'?B.y0+1.2:door.a):(B.y0+B.y1)/2;
@@ -151,7 +152,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       mr({in:look.in},()=>{ const C=M.closedR; mp('woolly mammoth',M.mid,(M.humansR.y0+M.humansR.y1)/2+.4); mp('Gibeon meteorite',M.earthR.x0+1.6,M.earthR.y1-1.9);
         mp('terracotta warriors',(C.x0+C.x1)/2,C.y1-.9,2); mp('jade burial suit',C.x1-.55,C.y0+2.4,1); mp('the Sutton Hoo helmet',C.x0+.6,C.y0+1,3); mp('clay tablets',C.x0+.35,C.y0+3.4,3); mp('the Antikythera mechanism',(C.x0+C.x1)/2,C.y0+2.9,2);
         L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); },{xo:1}),
-      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); }; R.drop=true; }); }   // nothing of its inside until you go in, dropped when you leave
+      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); }; }); }   // nothing of its inside until you go in, dropped when you leave
 
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);
@@ -223,13 +224,14 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.ensure=async()=>{ await LOAD(...need()); finish(); };
     STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; if(!LOADED(o.fn.chunk)||need().some(c=>!LOADED(c)))return o.wait||(o.wait=LOAD(o.fn.chunk,...need()).then(()=>STORE.offGo(n))); finish(); o.done=1; STORE.now=1; o.fn(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
-    const took=()=>({n:scene.children.length,t:UI.things.length,c:cutWalls.length,r:STORE.roofs.length,l:LITE.recs.length,s:SOL.up.length,f:FIX.up.length});
+    const REGS=()=>[UI.things,cutWalls,STORE.roofs,LITE.recs,SOL.up,FIX.up,lamps,FLAME.src,PEEK.boxes,...Object.values(SYS.P)];   // every list an inside's build adds to
+    const took=()=>({n:scene.children.length,regs:REGS().map(A=>[A,A.length])});
     STORE.inGo=id=>{ '@later'; finish(); const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; const S=R.drop?took():null; STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
-      if(S)R.P={objs:scene.children.slice(S.n),things:UI.things.slice(S.t),cuts:cutWalls.slice(S.c),roofs:STORE.roofs.slice(S.r),lights:LITE.recs.slice(S.l),sol:SOL.up.slice(S.s),fix:FIX.up.slice(S.f)};
+      if(S){ const seen=new Set(S.regs.map(r=>r[0])); R.P={objs:scene.children.slice(S.n),regs:[...S.regs.map(([A,n])=>[A,A.slice(n)]),...REGS().filter(A=>!seen.has(A)).map(A=>[A,A.slice(0)])]}; }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
     // an inside marked drop (R.drop) is taken down once you are out of it, built again behind the fade next time
     STORE.unGo=id=>{ '@later'; const R=STORE.inside[id], P=R&&R.P; if(!P)return; R.P=null; R.done=false; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
-      out(UI.things,P.things); out(cutWalls,P.cuts); out(STORE.roofs,P.roofs); out(LITE.recs,P.lights); out(SOL.up,P.sol); out(FIX.up,P.fix); LITE.t=0;
+      for(const [A,L] of P.regs)out(A,L); LITE.t=0; if(R.un)R.un();
       for(const k in STORE.meshes)if(P.objs.includes(STORE.meshes[k]))delete STORE.meshes[k];
       for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };

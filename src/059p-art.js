@@ -75,7 +75,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   // the inside drawn when you go in: the walls, walkways, balustrades, the shaft and its cab, the skylight, then the paintings
   const canvasTex=(w,h,draw,rx=1,ry=1)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
   const img=src=>new Promise(r=>{ if(!src)return r(null); const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
-  const build=async()=>{ '@art'; if(!DATA||!LAY)return; const G=new THREE.Group(); G.name='art museum'; const WL=await img(TEX&&TEX.plaster), WD=await img(TEX&&TEX.wood), WDV=await img(TEX&&TEX.woodv);
+  const build=async()=>{ '@art'; if(!DATA||!LAY)return; const gen=A_.gen; const G=new THREE.Group(); G.name='art museum'; const WL=await img(TEX&&TEX.plaster), WD=await img(TEX&&TEX.wood), WDV=await img(TEX&&TEX.woodv);
     const rgb=a=>'rgb('+a.map(v=>Math.round(v)).join(',')+')';
     // a floor's band of wall, one floor high and as wide: the plaster in the floor's colour, the wood dado and its rail, the picture rail, the slab's edge above
     const wallTex=col=>canvasTex(512,512,(g,w,h)=>{ const zy=z=>h*(1-z/FZ); g.fillStyle=rgb(col); g.fillRect(0,0,w,h); if(WL){ g.globalCompositeOperation='multiply'; for(let x=0;x<w;x+=256)for(let y=0;y<h;y+=256)g.drawImage(WL,x,y,256,256); g.globalCompositeOperation='source-over'; }
@@ -123,6 +123,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
       const pq2=plaque(t); pq2.position.set(w/2+.4*U,Y(44)-Y(ZC),.008*U); g.add(pq2);
       const yy=Y(k*FZ+ZC); if(f.ax==='y'){ g.position.set(X(f.at+f.nx*.012),yy,Z(p.a)); g.rotation.y=f.nx>0?Math.PI/2:-Math.PI/2; } else { g.position.set(X(p.a),yy,Z(f.at+f.ny*.012)); g.rotation.y=f.ny>0?0:Math.PI; }
       g.userData.at={k,g:f.rm.g,key:fk(f.nx,f.ny,f.at,k),a:+p.a.toFixed(2),w:+p.w.toFixed(2)}; G.add(g); UI.thing({name:t.t.toUpperCase(),obj:g,reach:1.6*U,near:3.4*U,tall:h+.3*U,act:()=>view(t,p)}); }
+    if(gen!==A_.gen){ for(let i=UI.things.length-1;i>=0;i--){ let q=UI.things[i].obj; while(q&&q!==G)q=q.parent; if(q)UI.things.splice(i,1); } return; }   // left before it was hung: nothing kept
     scene.add(G); PERFX.own(G); A_.groups=[G]; A_.hung=LAY.length; A_.built=true;
     // the third person's camera stays under the walkway above you, pulled in along the line to you
     if(!A_.cam&&UI.camKeeps){ A_.cam=1; UI.camKeeps.push((c,t)=>{ if(!A_.built||!UI.persp||!inB(t.x,t.z))return; const lv=ride?ride.z/FZ:A_.lv, u=t.x/U+SHARED.BOD.OX, v=t.z/U+SHARED.BOD.OY, open=u>VD.x0&&u<VD.x1&&v>VD.y0&&v<VD.y1, top=Y((open?NF:Math.min(NF,Math.floor(lv)+1))*FZ-14); if(c.y>top&&c.y>t.y+1e-6){ const k=Math.max(0,(top-t.y)/(c.y-t.y)); c.lerpVectors(t,c,k); } }); } };
@@ -214,6 +215,8 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   rec('art','THE ART MUSEUM',B,D,true);
   STEPS.push(()=>{ room('art','THE ART MUSEUM',B,{floor:null,in:()=>STONE,out:front,cope:STONEL},D,set0,{xo:1,noCeil:1,noWins:1}); const S=STORE.inside.art;
     if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); for(const [a,c] of [[B.x0,cx-5],[cx-5,cx+5],[cx+5,B.x1]])K.flat(a,B.y0,c,B.y1,.15,marble,'L'); build(); }; }
+    if(S)S.un=()=>{ A_.gen=(A_.gen||0)+1; for(const G of A_.groups){ const inG=o=>{ for(let q=o;q;q=q.parent)if(q===G)return true; return false; }; for(let i=UI.things.length-1;i>=0;i--)if(UI.things[i].obj&&inG(UI.things[i].obj))UI.things.splice(i,1);
+      PERFX.owned.delete(G); G.removeFromParent(); G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.map)q.map.dispose(); q.dispose(); } }); } A_.groups=[]; A_.built=false; A_.hung=0; A_.cab=null; };   // dropped when you leave (the paintings come back next time)
     const NRM={f:[0,1],b:[0,-1],w:[-1,0],e:[1,0]}; BLOCKS.make({...LW,z0:0,z1:H,kind:'Rart',turn:TP,roof:(x,y)=>sh([58,57,57],.92+.12*hash(Math.floor(x*4),Math.floor(y*4),1769)),
       paint:(sd,u,z,f)=>{ const n=NRM[sd], P=sd==='f'?[u+OX,L.y1]:sd==='b'?[u+OX,L.y0]:sd==='w'?[L.x0+OX,u]:[L.x1+OX,u]; return front(n[0],n[1],P[0],P[1],z,f,H); }});
     sol(LW.x0,LW.y0,LW.x1,LW.y1,H); STORE.streetDoor.art={door:TP.pt(cxL,L.y1+.35),out:[...TP.pt(cxL,L.y1+1.4),TP.hd(0)]};

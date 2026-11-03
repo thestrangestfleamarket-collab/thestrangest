@@ -353,6 +353,15 @@
 "rot": 0
 },
 {
+"k": "pf_skatepark_entrance_gateway",
+"x": 116.39,
+"z": 157.748,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
 "k": "pf_heavy_bomber",
 "x": 63.28,
 "z": 186.45,

@@ -37,6 +37,8 @@ x=122
 for k in ['mainline_diesel_locomotive','passenger_carriage','railbus','tender_steam_locomotive','guideway_rail_shuttle']:
     l=size['pf_'+k][2]; put(k,x+T(l)/2,176,E); x+=T(l)+1.5
 put('station_footbridge',x+8,176,E); put('platform_bookstall',x+8,170,N); put('stone_viaduct_span',x+24,174,N); put('stone_viaduct_span',x+24+T(6),174,N)
+# the skatepark's gateway: its door (src/089c-skatepark.js)
+put('skatepark_entrance_gateway',175,62.6,S,solid=False)
 # the planes, a display on the meadow north of the bandstand
 put('heavy_bomber',128,88,S); put('single_engine_fighter',146,84,W)
 # the river: a liner moored mid-stream, a fishing boat by the pier, an old wreck in the shallows

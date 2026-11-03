@@ -5,10 +5,10 @@ import {KITD} from './004-main.js';
 import {CLIPX, FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
 const KIT={data:KITD,geos:{},things:[]};
 { const b=B64, i16=I16, u16=U16, u32=s=>new Uint32Array(b(s).buffer), YS=ZU*24/TILE;
-  KIT.geo=name=>{ if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; }
-    const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
+  KIT.decode=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(M.i32?u32(M.i):u16(M.i),1));
-    g.computeVertexNormals(); g.computeBoundingBox(); return KIT.geos[name]=g; };
+    g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); return g; };
+  KIT.geo=name=>{ if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; } return KIT.geos[name]=KIT.decode(M); };
   KIT.mat=new THREE.MeshLambertMaterial({vertexColors:true});
   KIT.piece=(name,w,geo)=>{ const g=geo||KIT.geo(name); if(!g)return null; g.boundingBox||g.computeBoundingBox(); const bb=g.boundingBox, s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z), me=new THREE.Mesh(g,KIT.mat), o=new THREE.Group();
     me.position.set(-(bb.min.x+bb.max.x)/2*s,-(bb.min.y+bb.max.y)/2*s,-(bb.min.z+bb.max.z)/2*s); me.scale.setScalar(s); me.userData.shared=true; o.add(me); return o; };

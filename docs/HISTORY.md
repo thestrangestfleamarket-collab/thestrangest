@@ -5287,3 +5287,4 @@ Owner: "i want the interiors of the cars to be realistic with windows you can vi
 
 ## 3 Nov 2026: a held tool rests in front of you
 Owner, asked how a tool should rest when no mouse aims it (a held rod pointed at the ground facing away from north since 2 Nov): "Follow where he faces". With no mouse aim the rod, sword or net rests in front of him, a little down, whichever way he faces.
+- 3 Nov 2026, the bar's inside on the way in too (owner: "yes fix the bar too"): the bar's soffit, staircase and other inside props that poked past its wall line now wait for the way in like the rest of its inside; the museum's inside box (off the street, its front a block) no longer paints an outside nobody sees. Rule: a prop belongs to the inside when its middle is inside.

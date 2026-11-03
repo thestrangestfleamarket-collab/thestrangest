@@ -9,7 +9,8 @@ await grab('stairs',async()=>SHARED.METRO.exit());
 const STAIRS=[MAPSTAIR,CASTLE.stair,...RING.stairs], inStair=(x,z,lv)=>{ const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); for(const S of STAIRS)if(S.has?S.has(x,z,lv):gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)return {S,gy}; return null; };
 MODS.inStair=inStair;
 LEVELS.ways.push({id:'subway stairs',stair:MAPSTAIR,a:'street',b:'station',at:['street'],groups:['stairs'],cut:MODS.stairCut},{id:'castle stairs',stair:CASTLE.stair,a:'street',b:'dungeon',at:['street'],groups:['castlestairs'],cut:MODS.castleStairCut});
-SHARED.groundY=(x,z)=>{ const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.ground(x,z); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
+SHARED.groundY=(x,z)=>{ for(const g of ROOMS.grounds)if(x>g.x0&&x<g.x1&&z>g.z0&&z<g.z1)return g.ground(x,z);   // a built off-map place with ground of its own (ROOMS.grounds)
+  const s=inStair(x,z); if(s){ const S=s.S; if(S.ground)return S.ground(x,z); const t=S.dir>0?s.gy-S.y0:S.y1-s.gy, k=Math.min(S.steps,Math.max(1,Math.floor(t/((S.y1-S.y0)/S.steps))+1)); return -k*S.depth/S.steps*ZU; }
   { const st=SHARED.LVL==='up'&&STORE.stackGround?STORE.stackGround(x,z):null; if(st!=null)return st; }
   { const bg=SHARED.LVL==='up'&&SHARED.BOD.GD&&SHARED.BOD.GD.ground?SHARED.BOD.GD.ground(x,z):null; if(bg!=null)return bg; }
   { const sp=SHARED.LVL==='up'&&MODS.apts&&MODS.apts.stoop?MODS.apts.stoop(x,z):null; if(sp!=null)return sp; }

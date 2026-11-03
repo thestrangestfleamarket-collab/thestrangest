@@ -116,18 +116,22 @@ for n in 'LR':
     MIXAMO_W.update({s+'Shoulder':'torso',s+'Arm':'upperArm'+n,s+'ForeArm':'forearm'+n,s+'Hand':'hand'+n,'attach-'+s.lower()+'hand':'hand'+n,
       s+'UpLeg':'thigh'+n,s+'Leg':'shin'+n,s+'Foot':'shoe'+n,s+'ToeBase':'shoe'+n})
 
-def read_glb(path):
+def read_glb(path,under=None,J=None,BF=None):   # under: only the meshes below that node (one person in a composed scene)
     import struct
-    b=open(path,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
+    if J is None: b=open(path,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
     def acc(i):
         a=J['accessors'][i]; v=J['bufferViews'][a['bufferView']]; k={'VEC4':4,'VEC3':3,'VEC2':2,'SCALAR':1,'MAT4':16}[a['type']]
-        dt={5126:np.float32,5123:np.uint16,5121:np.uint8}[a['componentType']]
+        dt={5126:np.float32,5123:np.uint16,5121:np.uint8,5125:np.uint32}[a['componentType']]
         return np.frombuffer(BF,dt,a['count']*k,v.get('byteOffset',0)+a.get('byteOffset',0)).reshape(-1,k)
-    sk=J['skins'][0]; names=[J['nodes'][j]['name'] for j in sk['joints']]
+    keep=None
+    if under is not None:
+        keep=set(); st=[under]
+        while st: k=st.pop(); keep.add(k); st+=J['nodes'][k].get('children',[])
+    nodes=[i for i,nd in enumerate(J['nodes']) if 'mesh' in nd and (keep is None or i in keep)]
+    sk=J['skins'][J['nodes'][nodes[0]]['skin']] if under is not None else J['skins'][0]; names=[J['nodes'][j]['name'] for j in sk['joints']]
     world=np.array([np.linalg.inv(M.reshape(4,4).T)[:3,3] for M in acc(sk['inverseBindMatrices'])])
     PP=[];CC=[];JJ=[];WW=[]
-    for nd in J['nodes']:
-        if 'mesh' not in nd: continue
+    for nd in (J['nodes'][i] for i in nodes):
         assert J['skins'][nd['skin']]['joints']==sk['joints']
         for p in J['meshes'][nd['mesh']]['primitives']:
             a=p['attributes']; P=acc(a['POSITION']).astype(float); ix=acc(p['indices']).reshape(-1) if 'indices' in p else np.arange(len(P))
@@ -160,3 +164,14 @@ if __name__=='__main__':
         body,J=rebake(read_glb('data/full/egg-poacher.glb'),MIXAMO_ROLE,MIXAMO_W); print('poacher','height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
         json.dump({'bones':BONES,'bodies':{'poacher':body}},open('data/poacher.json','w'),separators=(',',':'))
         import os; print('data/poacher.json',round(os.path.getsize('data/poacher.json')/1e3),'KB')
+    if which in ('all','skaters'):   # the skate park's 22 people, each from its own spot in the kit's composed scene (its own colours), keyed by spot
+        import struct; f='data/full/skatepark/scene.glb'; b=open(f,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
+        root=J['nodes'][J['scenes'][0]['nodes'][0]]; out={'bones':BONES,'bodies':{}}; k=0
+        for c in root['children']:
+            nd=J['nodes'][c]; st=[c]; skinned=False
+            while st: q=st.pop(); skinned|='skin' in J['nodes'][q]; st+=J['nodes'][q].get('children',[])
+            if not skinned or nd['name'].startswith(('pavement','vinyl','shade')): continue
+            body,_=rebake(read_glb(f,c,J,BF),MIXAMO_ROLE,MIXAMO_W); key='s%d'%k; k+=1; body['part']=nd['name']; out['bodies'][key]=body
+            print(key,nd['name'],'height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
+        json.dump(out,open('data/skaters.json','w'),separators=(',',':'))
+        import os; print('data/skaters.json',round(os.path.getsize('data/skaters.json')/1e6,2),'MB')

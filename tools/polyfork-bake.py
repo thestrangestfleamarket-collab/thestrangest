@@ -1,4 +1,5 @@
 # POLYFORK: free low-poly models from polyfork.dev (no credit needed; their licence lets the game ship them baked but not keep the raw files, so they are fetched into .polyfork/, git-ignored, never committed): the stalls, street furniture and diner baked by props-bake.py into data/polyfork.json; every character in data/characters.json with a pf id re-baked onto your rig by rig-rebake.py into data/cast/<its group>.json.
+# Bodies you can play as (YOU's BODY row) get their own file: data/<key>.json.
 # Run: python3 tools/polyfork-bake.py
 import time, os, sys, json, base64, subprocess, urllib.request, importlib.util
 PROPS={'mstall':'market-stall-94937d','mercado':'mercado-stall-6e6ba3','fruitstand':'fruit-stand-4cc7d7','bookstall':'platform-bookstall-8598bf','hotdog':'hot-dog-cart-115192',
@@ -33,3 +34,7 @@ for g,L in sorted(G.items()):
         except Exception as e: print('SKIP',k,i,e); continue
         body,J=rr.rebake(rr.read_glb(f),rr.MIXAMO_ROLE,rr.MIXAMO_W); B[k]=body
     f='data/cast/'+g+'.json'; json.dump({'bones':rr.BONES,'bodies':B},open(f,'w'),separators=(',',':')); print(f,len(B),round(os.path.getsize(f)/1e3),'KB')
+PLAYABLE={'merchant':'merchant-6f606b'}
+for k,i in PLAYABLE.items():
+    body,J=rr.rebake(rr.read_glb(get(i)),rr.MIXAMO_ROLE,rr.MIXAMO_W); f='data/'+k+'.json'
+    json.dump({'bones':rr.BONES,'bodies':{k:body}},open(f,'w'),separators=(',',':')); print(f,round(os.path.getsize(f)/1e3),'KB')

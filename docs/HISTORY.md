@@ -5250,3 +5250,7 @@ Owner (after the render inspector showed "bodega / BATCH" 100 MB and "BATCH · M
 ## 3 Nov 2026: the nearest walkers move smoothly
 
 Owner, of the new characters walking stiff: "A" (of: their pose every frame while they walk, as yours is). The 8 nearest walking bodies get a pose every frame; everyone else keeps the 10-a-second step (18 Oct) while standing or far.
+
+## 3 Nov 2026: the Merchant is playable
+
+Owner: "allow the Merchant character to be playable as well as Walker". YOU's BODY row is back with WALKER and MERCHANT (polyfork's Merchant, the flea market's TRADER's model). Rule: the BODY row is the Walker and the Merchant (was the Walker only, 29 Oct); the townsfolk stay off it.

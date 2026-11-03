@@ -68,6 +68,7 @@ jobs:
           k westst  'src/023|src/059-|src/059[e-h]|westst'
           k zones   'src/129a|src/066-river|src/065a|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
+          k cast    'src/111a|src/111f[bc]|src/159-jobs|src/059i|data/cast/|data/characters|data/merchant|flea\.cjs|jobsim|merchant\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -125,6 +126,9 @@ jobs:
       - name: passport
         if: contains(steps.f.outputs.run, ' passport')
         run: node tests/passport.cjs dist/market.html
+      - name: The cast (the flea market, a day at work, the playable Merchant)
+        if: contains(steps.f.outputs.run, ' cast')
+        run: node tests/flea.cjs && node tests/merchant.cjs && node tests/jobsim.cjs
       - name: scanner
         if: contains(steps.f.outputs.run, ' scanner')
         run: node tests/scanner.cjs dist/market.html

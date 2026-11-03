@@ -35,7 +35,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(c1.cash === 38 && c1.w1 && c1.on && c1.rows > 0 && c1.obst > 0 && c1.off === 'catrun' && c1.lv === 'up' && c1.moved && c1.laneMoved && c1.run === 'THE CATACOMB RUN' && !c1.menu,
     'THE CATACOMB RUN: $12, fades to an off-world jungle track (street not drawn), auto-runs you forward with obstacles ahead, arrows change lane: ' + JSON.stringify(c1));
   const c2 = await pg.evaluate(async () => { const U = async (f, ms = 60000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
-    const died = await U(() => CATDBG().dead);   // no reaction -> you hit an obstacle and wipe out
+    const died = await (async () => { let last = CATDBG().dist, at = Date.now();   // no reaction -> you hit an obstacle and wipe out; waits while the run moves on (software drawing runs it slowly)
+      for (const t0 = Date.now(); Date.now() - t0 < 300000; await new Promise(r => setTimeout(r, 150))) { const c = CATDBG(); if (c.dead) return true; if (c.dist > last) { last = c.dist; at = Date.now(); } else if (Date.now() - at > 30000) return false; } return false; })();
     const best = window.CATBEST, back = await U(() => !ARCDBG().holo.run && ROOMS.offIn && ROOMS.offIn() === 'arcade' && !FADE.busy, 20000);
     return { died, best, back, run: ARCDBG().holo.run, on: CATDBG().on, off: ROOMS.offIn && ROOMS.offIn() }; });
   ok(c2.died && c2.best > 0 && c2.back && !c2.run && !c2.on && c2.off === 'arcade',

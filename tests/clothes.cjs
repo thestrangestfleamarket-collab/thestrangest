@@ -1,5 +1,5 @@
 // THE CLOTHES CHECK: node tests/clothes.cjs dist/market.html [out-dir]. The tee, jeans and shoes are cut to their own size chart (GARB.SIZE) and put on by the joints (owner, 2 Nov 2026);
-// here they are checked against the body they go on, his and hers, at rest: no garment point inside the body unless another garment covers it there, and no skin that should be covered left outside every garment.
+// here they are checked against the body they go on, his and hers, at rest: no garment point inside the body unless another garment covers it there, and no skin that should be covered left outside every garment; then walking and running, seen all round: no leg showing through the jeans.
 // With an out-dir it also saves portraits (front, left, back, right, mid-stride) of each build to look at.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=clothes::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
@@ -60,6 +60,20 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r.foot && r.npts > 1000 && !Object.keys(r.pokes).length, `${form === 'F' ? 'her' : 'his'} tee, jeans and shoes clear the body everywhere they are not covered by another garment (${r.npts} points, least ${r.least}): ` + JSON.stringify(r.pokes));
     ok(!Object.keys(r.lay).length, `${form === 'F' ? 'her' : 'his'} tee is worn over the jeans: none of the jeans or the belt shows through it: ` + JSON.stringify(r.lay));
     ok(r.ns > 1000 && !Object.keys(r.miss).length, `${form === 'F' ? 'her' : 'his'} chest, hips, legs and feet are all inside the clothes (${r.ns} samples): ` + JSON.stringify(r.miss));
+    // 4: walking and running, seen from above all round: the jeans and shoes hide the legs' skin, the briefs and the feet in every step (the body drawn by its pieces, the clothes flat; a pixel of leg seen is a hole, a slit or a leg through the cloth)
+    const gait = await pg.evaluate(() => { const THREE = __dbg.THREE, renderer = __dbg.renderer, W = 160, H = 200, rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.FloatType, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter }), R = RIG, g = W3.group;
+      const flat = new THREE.ShaderMaterial({ side: THREE.DoubleSide, vertexShader: 'void main(){ gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }', fragmentShader: 'void main(){ gl_FragColor=vec4(-10.,0.,0.,1.); }' });
+      const legs = R.PIECES.map(n => /^(thigh|shin|hips|shoe)/.test(n)), px = new Float32Array(W * H * 4), x = g.position.x, y = g.position.y, z = g.position.z, hd = g.rotation.y, ZY = g.scale.y / (W3.SZ * (W3.BH || 1)), worst = {}; let views = 0, max = 0;
+      for (const run of [0, 1]) for (let f = 0; f < 12; f++) { const B = R.build(R.walkPose({ ph: f / 12, w: 1, run }, null), null); W3.place(B, x, y, z, hd, 0, ZY); EQUIP.post(B); g.updateMatrixWorld(true);
+        for (const [vn, az, el] of [['behind', Math.PI, .6], ['back left', Math.PI * .75, .55], ['back right', -Math.PI * .75, .55], ['left', Math.PI / 2, .5], ['right', -Math.PI / 2, .5], ['front left', Math.PI / 4, .55], ['front right', -Math.PI / 4, .55], ['front', 0, .6], ['above', Math.PI, 1.15]]) {
+          const gp = g.getWorldPosition(new THREE.Vector3()), hh = (W3.eyeAt(new THREE.Vector3()).y - gp.y) * .62, cy = gp.y + hh * .45, ww = hh * W / H, a = hd + az, cam = new THREE.OrthographicCamera(-ww / 2, ww / 2, hh / 2, -hh / 2, .01, 400);
+          cam.position.set(gp.x + Math.sin(a) * Math.cos(el) * 40, cy + Math.sin(el) * 40, gp.z + Math.cos(a) * Math.cos(el) * 40); cam.lookAt(gp.x, cy, gp.z); cam.updateMatrixWorld(true);
+          const sv = []; g.getObjectByName('garb').traverse(o => { if (o.isMesh) { sv.push([o, o.material]); o.material = flat; } }); const m0 = W3.mesh.material, par = g.parent, sc = new THREE.Scene(); W3.mesh.material = W3.idMat; sc.add(g);
+          const cc = new THREE.Color(); renderer.getClearColor(cc); const ca = renderer.getClearAlpha(); renderer.setRenderTarget(rt); renderer.setClearColor(0, 0); renderer.clear(); renderer.render(sc, cam); renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
+          renderer.setRenderTarget(null); renderer.setClearColor(cc, ca); W3.mesh.material = m0; for (const [o, m] of sv) o.material = m; if (par) par.add(g);
+          let n = 0; for (let i = 0; i < W * H; i++) if (px[i * 4 + 3] > 0 && px[i * 4] >= 0 && legs[Math.round(px[i * 4])]) n++; views++; max = Math.max(max, n); if (n > 8) worst[(run ? 'running' : 'walking') + ' step ' + f + ' from the ' + vn] = n; } }
+      rt.dispose(); return { views, max, worst }; });
+    ok(gait.views === 216 && !Object.keys(gait.worst).length, `${form === 'F' ? 'her' : 'his'} jeans and shoes cover the legs walking and running, seen all round from above (${gait.views} views, at most ${gait.max} pixels of leg seen): ` + JSON.stringify(gait.worst));
     if (process.argv[3]) { const out = process.argv[3] + '/clothes-' + form;
       await pg.evaluate(() => { window.__portrait = (W, H, spin) => { const THREE = __dbg.THREE, renderer = __dbg.renderer, g = W3.group, rt = new THREE.WebGLRenderTarget(W, H); rt.texture.colorSpace = THREE.SRGBColorSpace;
         const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, .01, 100), sv = { ry: g.rotation.y, vis: g.visible, am: g.matrixAutoUpdate }; g.visible = true; g.matrixAutoUpdate = true; g.rotation.y = spin; g.updateMatrixWorld(true);

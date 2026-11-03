@@ -1,6 +1,6 @@
-// THE CHARACTER PAGE: the menu's home (ESC) — your live avatar and the menu buttons; ADMIN (owners) holds the bug queue, the game log, the stats box and the render inspector.
+// THE CHARACTER PAGE: the menu's home (ESC) — your live avatar and the menu buttons; ADMIN (owners) holds the bug queue, the stats box, the render inspector, SUMMON and the game log.
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, TEXT, UI, W3} from './003b-systems.js';
+import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
@@ -32,14 +32,23 @@ import {DESIGN} from './102b-designer.js';
       ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
         <button class="cp-btn cp-adm" id="cpaq" style="width:100%;margin-bottom:8px">BUG / REPORT QUEUE</button>
         <div style="display:flex;gap:8px;margin-bottom:14px"><button class="cp-btn" id="cpstat" style="flex:1">STATS</button><button class="cp-btn" id="cprin" style="flex:1">RENDER INSPECTOR</button></div>
+        <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">SUMMON</div>
+        <div style="color:#9b9584;margin-bottom:6px">bring anyone to stand in front of you; everyone here sees them until SEND BACK</div>
+        <input id="cpsq" placeholder="find a character" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px;font:11px Silkscreen,monospace;color:#d8dae2;background:#0e1016;border:2px solid #3a3f4e;padding:6px 8px">
+        <div id="cpsl" style="max-height:30vh;overflow:auto;margin-bottom:14px"></div>
         <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
         <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${L.length}</div>
         <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
       document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); };
       const tools=()=>{ const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
       ap.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(); };
+      const sl=ap.querySelector('#cpsl'), sq=ap.querySelector('#cpsq');
+      const sum=()=>{ const f=sq.value.trim().toLowerCase(), here=new Set(SUMMON.here()), A=SUMMON.list(), R=A.map(N=>{ const id=SUMMON.id(N,A), n=id.split('#')[1]; return {N,id,nm:(N.name||N.key)+(n?' '+n:'')}; }), L=R.filter(r=>!f||r.nm.toLowerCase().includes(f)||r.id.toLowerCase().includes(f)).sort((a,b)=>(here.has(b.id)-here.has(a.id))||a.nm.localeCompare(b.nm,undefined,{numeric:true})).slice(0,150);
+        sl.innerHTML=L.length?L.map(r=>'<div style="display:flex;gap:6px;margin-bottom:4px"><button class="cp-btn" data-sk="'+esc(r.id)+'" style="flex:1;padding:6px 10px">'+esc(r.nm)+'</button>'+(here.has(r.id)?'<button class="cp-btn cp-adm" data-sb="'+esc(r.id)+'" style="padding:6px 10px">SEND BACK</button>':'')+'</div>').join(''):'<div style="color:#9b9584">no one by that name</div>'; };
+      sq.addEventListener('input',sum); sl.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const k=b.dataset.sk||b.dataset.sb, A=SUMMON.list(), N=A.find(q=>SUMMON.id(q,A)===k);
+        if(b.dataset.sb)SUMMON.back(k); else if(N)SUMMON.go(N); sum(); }); ap._sum=sum;
       ap.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); tools(); if(RINSP.on)ap.hidden=true; }; ap._tools=tools; }
-    ap._tools(); ap.hidden=false; };
+    ap._tools(); ap._sum(); ap.hidden=false; };
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;
     el.innerHTML=`<div class="cp-wrap"><div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span><button class="cp-edit" id="cpedit" title="change your body, hair and shape">EDIT</button></div>

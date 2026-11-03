@@ -69,8 +69,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => !!document.querySelector('#menu [data-t="vr"]') && typeof VR.open === 'function'), 'the menu has a VR tab');
     await pg.evaluate(() => VR.set('move', 'teleport'));
     const t0 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
-    await pg.evaluate(() => { __xrd.controllers.left.quaternion.set(-.2, 0, 0, .98); __xrd.controllers.left.updateAxes('thumbstick', 0, -1); }); await frames(4);
-    const tp = await pg.evaluate(() => VR.state().tp);
+    let tp = null;   // aim ahead, turning the controller until the arc lands on clear ground (a parked car can stand straight ahead)
+    for (const a of [0, .8, -.8, 1.6, -1.6, 3.1]) {
+      await pg.evaluate(a => { const sy = Math.sin(a / 2), cy = Math.cos(a / 2), sx = -.2, cx = .98; __xrd.controllers.left.quaternion.set(cy * sx, cx * sy, -sy * sx, cy * cx); __xrd.controllers.left.updateAxes('thumbstick', 0, -1); }, a); await frames(4);
+      tp = await pg.evaluate(() => VR.state().tp); if (tp && tp.ok) break;
+    }
     ok(tp && tp.ok, 'in TELEPORT the left stick forward shows an arc landing ahead (' + JSON.stringify(tp) + ')');
     await shot('teleport-arc');
     await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, 0)); await frames(3);

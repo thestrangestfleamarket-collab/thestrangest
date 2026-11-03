@@ -60,6 +60,19 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(inn&&inn.p.name==='ADA','a player\'s name and look reach the others');
       p.w.close(); q.w.close(); }
   }
+  { const WS=require('ws'), U=BASE.replace(/^http/,'ws')+'/parties/block/s-sumcheck';
+    const join=who=>new Promise((res,rej)=>{ const w=new WS(U,{headers:{cookie:'tsfm-pass='+who,origin:BASE}}); const got=[]; w.on('message',d=>{ try{ got.push(JSON.parse(d)); }catch(e){} }); w.on('open',()=>res({w,got})); w.on('error',rej); setTimeout(()=>rej(new Error('timeout')),15000); });
+    const wait=(c,f,ms=6000)=>new Promise(r=>{ const t0=Date.now(); const k=setInterval(()=>{ const v=f(c.got); if(v||Date.now()-t0>ms){ clearInterval(k); r(v); } },100); });
+    let P=null, O=null, V=null; try{ P=await join('dev:sum-player'); O=await join('dev:owner-sum'); await wait(P,g=>g.find(m=>m.t==='hi')); await wait(O,g=>g.find(m=>m.t==='hi'));
+      P.w.send(JSON.stringify({t:'world',k:'sum:dragon#2',v:'1,2,0,0,street'})); const sneak=await wait(O,g=>g.find(m=>m.t==='world'&&m.k==='sum:dragon#2'),2500);
+      O.w.send(JSON.stringify({t:'world',k:'sum:dragon#3',v:'5,6,0,1.5,street'})); const seen=await wait(P,g=>g.find(m=>m.t==='world'&&m.k==='sum:dragon#3'));
+      V=await join('dev:sum-late'); const hi=await wait(V,g=>g.find(m=>m.t==='hi')); V.w.close();
+      ok(!sneak&&seen&&seen.v==='5,6,0,1.5,street'&&hi&&hi.world['sum:dragon#3']==='5,6,0,1.5,street'&&!('sum:dragon#2' in hi.world),'SUMMON: a player cannot summon; the owner\'s summon reaches everyone in the section and is kept for whoever comes later');
+      await new Promise(r=>setTimeout(r,200)); O.w.send(JSON.stringify({t:'world',k:'sum:dragon#3',v:''})); const back=await wait(P,g=>g.find(m=>m.t==='world'&&m.k==='sum:dragon#3'&&m.v===''));
+      V=await join('dev:sum-late2'); const hi2=await wait(V,g=>g.find(m=>m.t==='hi')); V.w.close();
+      ok(back&&hi2&&!('sum:dragon#3' in hi2.world),'SUMMON: SEND BACK reaches everyone and is forgotten'); }
+    catch(e){ ok(false,'SUMMON: two players reach the block ('+e.message+')'); }
+    finally{ if(P)P.w.close(); if(O)O.w.close(); } }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);

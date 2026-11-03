@@ -73,6 +73,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     else lot({...box,kind,row,side}); };
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
   for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[]),B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
+  for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
   for(const [a0,b0] of [[B.x0,-62.4],[-33.6,B.hudson[0]],[B.hudson[1],B.x1]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
   { const F=RING.wx0; for(const [a,b] of holes(LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);

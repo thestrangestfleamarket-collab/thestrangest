@@ -24,9 +24,10 @@ def strip(items,x0,x1,front,face,rowid,gap):
     n0=len(P); x=row(items,x0,front,gap=gap,face=face); assert x-gap<=x1+.01,(items,x,x1)
     for o in P[n0:]:
         w=T(size[o['k']][0]); cx=(o['x']+81.36)/1.13; SPANS[rowid].append([round(cx-w/2-.3,2),round(cx+w/2+.3,2)]); assert T(size[o['k']][2])<=(FR-BK if rowid=='1' else R2[1]-R2[0])+.4,o['k']
-# Market St's east end, between the Scanner and the theatre, fronts on the street; the fire station by the bank; the school, hall and garage at its west end
-strip(['corner_tenement','brownstone_row_house','narrow_walk_up','cast_iron_loft','office_tower','brick_church','corner_shop'],153.6,229.4,FR,N,'1',1.2)
-strip(['fire_station'],82.75,92.4,FR,N,'1',0); strip(['public_school','village_hall','parking_garage'],-49.2,9.7,FR,N,'1',.7)
+# Market St's east end, either side of the diner (between the Scanner and the flea market), fronts on the street; the fire station by the bank;
+# the corner shop, church, school, hall and garage at its west end
+strip(['corner_tenement','brownstone_row_house','narrow_walk_up','office_tower'],153.5,193.1,FR,N,'1',1.2); strip(['cast_iron_loft'],201.7,216.4,FR,N,'1',0)
+strip(['fire_station'],82.75,92.4,FR,N,'1',0); strip(['corner_shop','brick_church','public_school','village_hall','parking_garage'],-71.6,9.7,FR,N,'1',.7)
 # the Hudson row round the fishing pier (x 61), facing the river: the diner at the pier's foot
 strip(['auto_repair_garage','motel_office','motel_room_run','corner_shophouse','two_storey_shophouse','street_diner','three_storey_shophouse','wide_shophouse','convenience_store','small_shrine_hall','one_storey_shop_row'],-4.5,110.8,R2[0],S,'2',.5)
 put('subway_entrance',40,74,N); put('escalator_flight',47,70,E)
@@ -44,8 +45,6 @@ put('kidney_pool',166,76,S,solid=False); put('old_lighthouse',165,12,W)
 for y,x,ks in [(142,124,['mainline_diesel_locomotive']),(153,122,['passenger_carriage']),(164,122,['railbus','tender_steam_locomotive']),(171,124,['guideway_rail_shuttle'])]:
     for k in ks: l=size['pf_'+k][2]; put(k,x+T(l)/2,y,E); x+=T(l)+1.5
 put('station_footbridge',144,148,E); put('platform_bookstall',141,171,N); put('stone_viaduct_span',140,36,E); put('stone_viaduct_span',140+T(size['pf_stone_viaduct_span'][2]),36,E)
-# the skatepark's gateway: its door (src/089c-skatepark.js)
-put('skatepark_entrance_gateway',175,62.6,S,solid=False)
 # the planes, a display on the west meadow south of the cross path
 put('heavy_bomber',18,43,E); put('single_engine_fighter',40,44,E)
 # the river: a liner moored mid-stream, a fishing boat by the pier, an old wreck in the shallows

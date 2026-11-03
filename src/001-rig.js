@@ -522,7 +522,7 @@ function sitPose(st){ const P=neutral(); P.root=V(0,st.sit.z+2,0); P.bend=-5*D; 
   for(const n of "LR"){ P[n].th=[88*D,6*D]; P[n].sh=[6*D,4*D]; P[n].foot=4*D; P[n].ua=[22*D,16*D]; P[n].fa=[74*D,6*D]; P[n].fist=0; }
   return P; }
 
-const RIDEG={bb:[5.6,0.4],crank:3.1,seat:[16.6,-3.6],bar:[19.4,9.6],deck:4.2};
+const RIDEG={bb:[5.6,0.4],crank:3.1,seat:[16.6,-3.6],bar:[19.4,9.6],deck:4.2,sit:4.5};
 function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   if(R.k==='bike'){
     P.root=V(0,RIDEG.seat[0]+1.4,RIDEG.seat[1]); P.bend=(R.brake?20:26)*D; P.nod=-12*D; P.pitch=0;
@@ -540,6 +540,9 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   else if(R.k==='kart'){
     P.root=V(0,6+z,-1.5); P.bend=-16*D; P.nod=-6*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[82*D,5*D]; P[n].sh=[14*D,2*D]; P[n].foot=-12*D; P[n].ua=[50*D,12*D]; P[n].fa=[58*D,(4+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
+  else if(R.k==='car'){
+    P.root=V(0,RIDEG.sit,0); P.bend=-24*D; P.nod=4*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
   else if(R.k==='zip'){
     P.root=V(0,z+STAND,0); P.nod=-10*D; P.pitch=(R.sway||0); P.bend=6*D;
     for(const n of 'LR'){ P[n].ua=[174*D,14*D]; P[n].fa=[178*D,6*D]; P[n].fist=1; P[n].th=[26*D,4*D]; P[n].sh=[18*D,4*D]; P[n].foot=-14*D; } }

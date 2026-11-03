@@ -5287,3 +5287,4 @@ Owner: "i want the interiors of the cars to be realistic with windows you can vi
 
 ## 3 Nov 2026: a held tool rests in front of you
 Owner, asked how a tool should rest when no mouse aims it (a held rod pointed at the ground facing away from north since 2 Nov): "Follow where he faces". With no mouse aim the rod, sword or net rests in front of him, a little down, whichever way he faces.
+- 3 Nov 2026, owner: "lets make the only two times to be day and night. admin can select time for other players. all share same time. no options for other players to chagne any time settings." Only DAY and NIGHT (SUNRISE, SUNSET and the hourly turns are gone). The owner picks which in ATMOSPHERE and it is the same for everyone (on the server, /shared/time.json; players in the game see it fade over a minute). The day's hour is the look's own (shops and lamps follow it). Players have no time settings; ?look and ?hour work only in a local test copy.

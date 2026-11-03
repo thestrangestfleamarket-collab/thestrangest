@@ -13,6 +13,8 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+{ const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
+  ok(P.length && P.every(c => C[c.model] && c.x > L.streets.market.x0 && c.x < L.streets.market.x1 && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St between its kerbs, its id its own (' + P.length + ')'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
   ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
@@ -222,6 +224,13 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
   { const r = await pg.evaluate(() => { const o = { was: PASSPORT.hand }; PASSPORT.open(); o.shown = document.querySelector('#passportw').textContent.includes('HAND'); PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; PASSPORT.close(); return o; });
     ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
+  { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
+      const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => BATCH.queues.reduce((s, q) => s + q.groups.reduce((t, G) => t + G.ms.reduce((u, me) => u + ['map', 'emissiveMap'].reduce((v, k) => v + (me.material[k] && me.material[k].image ? me.material[k].image.width * me.material[k].image.height * 4 : 0), 0), 0), 0), 0);
+      const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.away; BATCH.away = () => true; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.away = a0; await fr(6); o.g2 = groups(); return o; });
+    ok(g.g0 > 0 && g.kept && g.g1 === 0 && g.mb1 === 0 && g.g2 > 0, 'the painted ground and walls are only kept near you, all dropped while you are in a room off the map, painted again near you on the way out: ' + JSON.stringify(g)); }
+  { const m = await pg.evaluate(async () => { const ST = window.STORE; if (!ST || !ST.inside) return { none: true }; await ST.ensure(); const R = ST.inside.museum; if (!R) return { noMuseum: true };
+      const o = { before: !!R.done }; await ST.enter('museum', true); o.built = !!R.done && !!R.P && R.P.objs.length > 0; await ST.exit('museum'); await new Promise(r => setTimeout(r, 2500)); o.dropped = !R.done && !R.P; await ST.enter('museum', true); o.again = !!R.done && !!R.P; await ST.exit('museum'); return o; });
+    ok(m.before === false && m.built && m.dropped && m.again, 'the museum\'s inside is built only when you go in and dropped when you leave (built again next time): ' + JSON.stringify(m)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

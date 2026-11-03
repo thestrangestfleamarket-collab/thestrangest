@@ -79,6 +79,9 @@ CHARED.build=()=>{ '@editor';
       +fld('HOME X (TILES)','homex',ht[0],.5)+fld('HOME Y (TILES)','homey',ht[1],.5)+fld('RANGE (TILES)','range',ht[2],.5)
       +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0"><button class="mb" id="chHere">HOME = MY SPOT</button><button class="mb" id="chPut">STAYS PUT</button></div>'
       +'<div class="dim">A character keeps to its home range — a circle it is usually found in. Range 0 stays put.</div>'
+      +(()=>{ const j=recR(N).job||{}, h=j.hours||['','']; return '<div class="sec">JOB</div>'+fld('WORKS AT','jobat',j.at||'',1,'text')+fld('TITLE','jobtitle',j.title||'',1,'text')+fld('OPENS (HOUR)','jobopen',h[0],.5)+fld('CLOSES (HOUR)','jobclose',h[1],.5)
+        +fld('OUT: AREA (TILES, BLANK = INSIDE)','jobr',j.r==null?'':j.r,1,'text')+fld('HOME (BLANK = OVER WORK; HOUSE, SUBWAY)','jobhome',j.home||'',1,'text')
+        +'<div class="dim">Where they work (a place id: bar, bank, diner, park, street...), their hours by the clock, out at a spot or over an area or inside, and where they sleep. Takes effect when the game next loads.</div>'; })()
       +'<div class="sec">STATS</div><div class="kv">BEHAVIOR <span>'+behOf(N)+'</span></div>'
       +fld('HEALTH','hp',cur(N,'hp'),.1)+fld('STAMINA','stamina',cur(N,'stamina'),.1)+fld('SPEED (TILES/S)','speed',cur(N,'speed'),.05)+fld('SIZE (RADIUS)','size',cur(N,'size'),.05); }
     else if(tab==='talk')b=talkHTML(N);
@@ -123,6 +126,9 @@ CHARED.build=()=>{ '@editor';
     else if(f==='stamina'){ const v=Math.max(0,+raw||0); r.stamina=v; CHARS.live(N,'stamina',v); }
     else if(f==='speed'){ const v=Math.max(0,+raw||0); r.speed=v; CHARS.live(N,'speed',v); }
     else if(f==='size'){ const v=Math.max(.05,+raw||.3); r.size=v; CHARS.live(N,'size',v); }
+    else if(/^job/.test(f)){ const j=r.job=r.job||{}; if(f==='jobat')j.at=raw.trim().toLowerCase(); else if(f==='jobtitle')j.title=raw.trim().toUpperCase(); else if(f==='jobhome'){ const v=raw.trim().toLowerCase(); if(v)j.home=v; else delete j.home; }
+      else if(f==='jobr'){ if(raw.trim()==='')delete j.r; else j.r=Math.max(0,+raw||0); } else { j.hours=j.hours||[9,17]; j.hours[f==='jobopen'?0:1]=Math.max(0,Math.min(24,+raw||0)); }
+      if(!j.at)delete r.job; }
     else if(f==='homex'||f==='homey'||f==='range'){ const ht=homeTiles(N); if(f==='homex')ht[0]=+raw||0; else if(f==='homey')ht[1]=+raw||0; else ht[2]=Math.max(0,+raw||0); r.home=[+ht[0],+ht[1],+ht[2]]; applyHome(N,r.home); }
     CHARS.save(); dirty(); };
 

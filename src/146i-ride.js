@@ -8,7 +8,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
 { const T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined, V3=THREE.Vector3, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   // a kind: {name, hint, make(id) -> Object3D in metres, place(mesh, R, t) each frame, pose(R) -> the rig's st.ride, floor(g, R) -> how high you are, step(R, dt, input) -> true when it moves you itself, dry: over water too}
   RIDE.kind=(grant,k)=>{ RIDE.kinds[grant]=k; for(const id of ITEMS.ids?ITEMS.ids():[])if(prop(id,'grants')===grant)hold(id,k); };
-  // a kind you board where it stands instead of carrying it (a parked car): registered under its own id with world:true; hide:true draws no rider (you are inside it)
+  // a kind you board where it stands instead of carrying it (a parked car): registered under its own id with world:true; hide:true draws no rider (you are inside it); seat(m) gives where the rider sits in the mesh and fit(m) how much smaller to draw them there
   const kindOf=id=>RIDE.kinds[prop(id,'grants')]||(RIDE.kinds[id]&&RIDE.kinds[id].world?RIDE.kinds[id]:null); RIDE.kindOf=kindOf;
   const M=new Map(), mesh=id=>{ let m=M.get(id); if(!m){ const k=kindOf(id); m=k.make(id); m.userData.anyRoom=true; m.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.userData.ownMat=true; } }); scene.add(LEVELS.own(m,'*')); M.set(id,m); } return m; };
   // held, it is a WIELD tool: a click gets on; on it, a click (or the same key) gets off
@@ -43,9 +43,11 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   const deck=()=>RIG.RIDEG.deck*(W3.group.scale.y||.046);
   SYS.add('life',dt=>{ const t=performance.now()/1000;
     for(const [id,m] of M)if(id!==RIDE.on)m.visible=false;
-    if(RIDE.on){ const m=mesh(RIDE.on); m.visible=RIDE.kind.hide||!(W3.group&&W3.group.visible===false); m.position.set(pos.x,SHARED.py+deck(),pos.z); m.rotation.set(0,RIDE.hd,0); RIDE.kind.place(m,RIDE,t); if((shT-=dt||0)<=0)share(); }
+    if(RIDE.on){ const m=mesh(RIDE.on); m.visible=RIDE.kind.hide||RIDE.kind.seat||!(W3.group&&W3.group.visible===false); m.position.set(pos.x,SHARED.py+deck(),pos.z); m.rotation.set(0,RIDE.hd,0); RIDE.kind.place(m,RIDE,t); if((shT-=dt||0)<=0)share(); }
     for(const [pid,o] of theirs){ const R=ONLINE.others&&ONLINE.others.get(pid); if(!R||!R.fig||!R.p){ o.m.removeFromParent(); theirs.delete(pid); continue; }
-      if(R.S)R.S.ride=o.k.pose(o.R); const g=R.fig.g; o.m.visible=o.k.hide||g.visible; o.m.position.set(g.position.x,g.position.y+RIG.RIDEG.deck*(g.scale.y||.046),g.position.z); o.R.hd=R.p.hd||0; o.m.rotation.set(0,o.R.hd,0); o.k.place(o.m,o.R,t); } },'146i-ride');
-  SYS.add('cam',()=>{ if(RIDE.on&&RIDE.kind&&RIDE.kind.hide)W3.group.visible=false; for(const [pid,o] of theirs)if(o.k.hide){ const R=ONLINE.others&&ONLINE.others.get(pid); if(R&&R.fig)R.fig.g.visible=false; } },'146i-ride');   // after the view sets who is drawn
+      if(R.S)R.S.ride=o.k.pose(o.R); const g=R.fig.g; o.m.visible=o.k.hide||o.k.seat||g.visible; o.m.position.set(g.position.x,g.position.y+RIG.RIDEG.deck*(g.scale.y||.046),g.position.z); o.R.hd=R.p.hd||0; o.m.rotation.set(0,o.R.hd,0); o.k.place(o.m,o.R,t); } },'146i-ride');
+  const SEAT=new THREE.Vector3(), sitIn=(g,k,m)=>{ m.updateMatrixWorld(true); m.localToWorld(k.seat(m,SEAT)); const f=k.fit?k.fit(m):1; g.scale.multiplyScalar(f); m.getWorldQuaternion(g.quaternion); SEAT.y-=RIG.RIDEG.sit*g.scale.y; g.position.copy(SEAT); g.updateMatrixWorld(true); };
+  SYS.add('cam',()=>{ if(RIDE.on&&RIDE.kind){ if(RIDE.kind.seat)sitIn(W3.group,RIDE.kind,mesh(RIDE.on)); else if(RIDE.kind.hide)W3.group.visible=false; }
+    for(const [pid,o] of theirs)if(o.k.hide||o.k.seat){ const R=ONLINE.others&&ONLINE.others.get(pid); if(!R||!R.fig)continue; if(o.k.seat)sitIn(R.fig.g,o.k,o.m); else R.fig.g.visible=false; } },'146i-ride');   // after the view sets who is drawn
   window.RIDEDBG=()=>({on:RIDE.on,v:+(RIDE.v/T).toFixed(2),hd:+RIDE.hd.toFixed(2),lift:+(RIDE.lift/T).toFixed(2),py:+SHARED.py.toFixed(2),ride:st.ride&&st.ride.k,kinds:Object.keys(RIDE.kinds),theirs:[...theirs].map(([id,o])=>({id,b:o.id,shown:o.m.visible}))});
 }

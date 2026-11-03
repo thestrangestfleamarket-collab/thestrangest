@@ -1,35 +1,24 @@
-// WORK AND HOME, PLAYED THROUGH (src/159-jobs.js): node tests/jobsim.cjs <out folder>, the whole town brought in. Every workplace has a worker; every worker whose work has a building
-// lives over it (no homes in the apartment house, owner 19 Oct 2026; the newsstand, and the park keeper with the keep away, have none); through a day (the clock held, set hour by hour): at 11 everyone open is at his post, on his own time after closing,
-// home asleep at 2 (the homeless off on their own time); a look inside the Diner at its cook and at a flat's street door over a shop. Exits 1 on any failure.
-const {chromium}=require('playwright'); const OUT=process.argv[2]||'.';
-(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={};
+// THE CAST'S DAY (src/159-jobs.js, src/111fb-fleamarket.js): node tests/jobsim.cjs [out folder]: every cast member brought in; the clock held and set: at 11 everyone whose hours hold 11 is at work, at 2 everyone off shift is home and out of sight; the diner stands; no page error. Exits 1 on any failure.
+const {chromium}=require('playwright'); const OUT=process.argv[2];
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
-  const R=[]; const rec=(n,ok,i)=>{ R.push([n,ok]); console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?city=1&hour=6&fresh=1&bring=all'); for(let i=0;i<240&&!(await pg.evaluate(()=>!!window.__started&&window.MAIL&&MAIL.ready).catch(()=>false));i++)await pg.waitForTimeout(1000);
-  await pg.evaluate(()=>{ __dbg.CLOCK.run=false; }); await pg.waitForTimeout(2000);
-  const J=()=>pg.evaluate(()=>JOBDBG());
-  let j=await J(); console.log('the jobs:'); for(const x of j)console.log('  '+x.title.padEnd(14)+' '+x.id.padEnd(9)+' '+x.hours.padEnd(10)+' '+x.who.padEnd(14)+' home '+x.home+' ('+x.homeTiles+' tiles)');
-  const places=['diner','bar','aquarium','dojo','market','museum','lucky','yellow','theatre','playhouse','baker','cottage','keep','park','subway'];
-  rec('every workplace has a worker',places.every(p=>j.some(x=>x.id===p)),places.filter(p=>!j.some(x=>x.id===p)).join()||places.length+' of '+places.length);
-  rec('every worker\'s home over his work, none in the apartment house',j.every(x=>!x.home||/^APT /.test(x.home)&&x.homeTiles<=25),j.filter(x=>x.home&&!(/^APT /.test(x.home)&&x.homeTiles<=25)).map(x=>x.id+' '+x.home).concat(j.filter(x=>!x.home).map(x=>x.id+' none')).join());
-  rec('the Fox lives over the bodega',await pg.evaluate(()=>MAIL.addr.some(a=>a.up&&a.b.id==='bodega'&&a.name==='THE FOX')));
-  const waitAll=async(want,pred,ms)=>{ const t=Date.now(); let k; while(Date.now()-t<ms){ k=await J(); if(k.filter(pred).every(x=>x.state===want))return [true,k]; await pg.waitForTimeout(4000); } return [false,k]; };
-  // 11:00: everyone whose place is open at 11 at his post
-  await pg.evaluate(()=>CITY.setHour(11)); let [ok,k]=await waitAll('work',x=>{ const [o,c]=x.hours.split('-').map(Number); return 11>=o&&11<c; },600000);
-  rec('at 11:00 every open place\'s worker is at his post',ok,k.filter(x=>x.state!=='work').map(x=>x.id+':'+x.state).join()||'all '+k.filter(x=>x.state==='work').length);
-  // the cook inside the Diner
-  await pg.evaluate(()=>{ const D=JOBDBG().find(x=>x.id==='diner'), T=__dbg.cv().TILE; const A=MAIL.addr.find(a=>a.id==='diner'); const s=A.b.step; STORE.goTo(s.x-A.b.F.n.x*1.2*T,s.z-A.b.F.n.z*1.2*T,'up'); }); await pg.waitForTimeout(5000); await pg.screenshot({path:OUT+'/job_diner.png'});
-  // a flat's door over a shop
-  await pg.evaluate(()=>{ const A=MAIL.addr.find(a=>a.up&&a.b.id!=='bodega')||MAIL.addr.find(a=>a.up), T=__dbg.cv().TILE; window.__UP=A.label; STORE.goTo(A.step.x+A.b.F.n.x*2*T,A.step.z+A.b.F.n.z*2*T,'up'); }); await pg.waitForTimeout(5000); await pg.screenshot({path:OUT+'/job_upstairs.png'}); console.log('  a flat over a shop:',await pg.evaluate(()=>window.__UP));
-  // 18:30: the day shifts done, on their own time
-  await pg.evaluate(()=>CITY.setHour(18.5)); [ok,k]=await waitAll('off',x=>{ const [o,c]=x.hours.split('-').map(Number); return c<18.5&&c+1.2<18.5; },400000);
-  rec('after closing, the day workers are on their own time',ok,k.filter(x=>{ const [o,c]=x.hours.split('-').map(Number); return c+1.2<18.5&&x.state!=='off'; }).map(x=>x.id+':'+x.state).join()||'ok');
-  // 2:00: everyone home and out of sight
-  await pg.evaluate(()=>{ CITY.setHour(23.9); }); await pg.waitForTimeout(1500); await pg.evaluate(()=>CITY.setHour(2)); [ok,k]=await waitAll('home',x=>!!x.home,900000);
-  rec('at 2:00 every worker is home',ok,k.filter(x=>x.home&&x.state!=='home').map(x=>x.id+':'+x.state).join()||'all '+k.filter(x=>x.home).length+' with homes; '+k.filter(x=>!x.home).map(x=>x.id+':'+x.state).join());
+  const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1',{timeout:240000}); await pg.waitForFunction(()=>window.__started&&window.CREW&&CREW.ready&&window.NEWSCLK,null,{timeout:300000});
+  await pg.evaluate(()=>{ NEWSCLK(11,0); return CREW.bring(); });
+  await pg.waitForFunction(()=>JOBDBG().length>=190,null,{timeout:120000});
+  const J=()=>pg.evaluate(()=>JOBDBG()); let j=await J();
+  rec('the whole cast has jobs',j.length>=190,j.length+' at work or home');
+  const inH=(h,[a,c])=>{ a%=24; c%=24; return a<=c?h>=a+.4&&h<c-.4:h>=a+.4||h<c-.4; };
+  const hrs=x=>x.hours.split('-').map(Number);
+  const waitAll=async(h,want,pred,ms)=>{ await pg.evaluate(h=>NEWSCLK(h,0),h); const t=Date.now(); let k;
+    while(Date.now()-t<ms){ k=await J(); if(k.filter(pred).every(x=>x.state===want))return [true,k]; await pg.waitForTimeout(3000); } return [false,k]; };
+  let [ok,k]=await waitAll(11,'work',x=>inH(11,hrs(x)),420000);
+  rec('at 11 everyone on shift is at work',ok,k.filter(x=>inH(11,hrs(x))&&x.state!=='work').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='work').length+' at work');
+  rec('the outdoor workers are out in sight',k.filter(x=>x.state==='work'&&x.out).every(x=>x.vis));
+  if(OUT){ await pg.screenshot({path:OUT+'/cast-11.png'}); }
+  [ok,k]=await waitAll(2.5,'home',x=>!inH(2.5,hrs(x))&&!inH(2.5,[hrs(x)[1]-.5,hrs(x)[1]+2]),600000);
+  rec('at 2:30 everyone off shift is home',ok,k.filter(x=>!inH(2.5,hrs(x))&&!inH(2.5,[hrs(x)[1]-.5,hrs(x)[1]+2])&&x.state!=='home').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='home').length+' home');
   rec('home means out of sight',k.filter(x=>x.state==='home').every(x=>!x.vis));
-  // 7:30 the next morning: the early ones out again
-  await pg.evaluate(()=>CITY.setHour(7.6)); await pg.waitForTimeout(6000); k=await J(); const early=k.filter(x=>+x.hours.split('-')[0]<=8.5);
-  rec('the early shifts leave home in the morning',early.every(x=>x.state!=='home'),early.map(x=>x.id+':'+x.state).join());
-  rec('no page errors',!Object.keys(errs).length,JSON.stringify(errs));
-  await b.close(); process.exit(R.some(r=>!r[1])?1:0); })();
+  rec('the diner stands',await pg.evaluate(()=>MSHOPDBG().shops.includes('diner')));
+  const E=Object.keys(errs); rec('no page errors',!E.length,E.slice(0,3).join(' | '));
+  await b.close(); process.exit(bad?1:0); })();

@@ -17,8 +17,8 @@ def weld(P,F,tol):   # merge coincident corners (the pack ships each part unweld
 R=json.load(open(RAW)); OUT={}; FULL={}
 for key,D in R.items():
     P=np.array(D['P'],np.float32).reshape(-1,3); C=np.array(D['C'],np.uint8).reshape(-1,3); F=np.array(D['I'],np.int64).reshape(-1,3)
-    # turn length onto +X (nose forward, as the shoal swims), keep Y up:  x'=-z, z'=x
-    P=np.stack([-P[:,2],P[:,1],P[:,0]],1)
+    # turn length onto +X (nose forward, as the shoal swims), keep Y up:  x'=z, z'=-x (the pack's noses are on -Z)
+    P=np.stack([P[:,2],P[:,1],-P[:,0]],1)
     tris=len(F)
     def pack(P,C,F):
         lo=P.min(0); hi=P.max(0); ctr=(lo+hi)/2; L=hi[0]-lo[0] or 1.0   # centre, scale to unit length along X

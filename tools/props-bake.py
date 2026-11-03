@@ -40,7 +40,10 @@ def from_glb(f):
         for p in j['meshes'][n['mesh']]['primitives']:
             A=p['attributes']; P=acc(j,b,A['POSITION']).astype(float); idx=acc(j,b,p['indices']).reshape(-1).astype(int); mat=j['materials'][p['material']]; pbr=mat.get('pbrMetallicRoughness',{})
             fac=np.array(pbr.get('baseColorFactor',[1,1,1,1])[:3])
-            if 'baseColorTexture' in pbr and 'TEXCOORD_0' in A: col=sample(imgs[j['textures'][pbr['baseColorTexture']['index']]['source']],acc(j,b,A['TEXCOORD_0']).astype(float))*fac
+            if 'COLOR_0' in A:   # (per-vertex colours, linear in glTF: to sRGB, times the factor; normalized ints read as 0..1)
+                a=j['accessors'][A['COLOR_0']]; v=acc(j,b,A['COLOR_0']).astype(float)[:,:3]; v=v/{5121:255,5123:65535}.get(a['componentType'],1)
+                col=np.clip(v*fac,0,1)**(1/2.2)*255
+            elif 'baseColorTexture' in pbr and 'TEXCOORD_0' in A: col=sample(imgs[j['textures'][pbr['baseColorTexture']['index']]['source']],acc(j,b,A['TEXCOORD_0']).astype(float))*fac
             else: col=np.tile(np.clip(fac,0,1)**(1/2.2)*255,(len(P),1))
             W=(M[:3,:3]@P.T).T+M[:3,3]; T.append(W[idx].reshape(-1,3,3)); C.append(col[idx].reshape(-1,3,3))
     return np.vstack(T),np.vstack(C)

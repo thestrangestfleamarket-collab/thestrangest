@@ -30,13 +30,12 @@ for i,k in enumerate(['fire_engine','vintage_hearse','patrol_cruiser','security_
     if 36<x+T(l)/2<50: x=51
     put(k,x+T(l)/2,81.5 if i<8 else 88.5,E if i<8 else W); x+=T(l)+3
 put('roadside_billboard',106,84,W)
-# a motel by the farm road, its pool in front; the lighthouse on the lake's east shore
-x=row(['motel_office','motel_room_run'],190,104,face=S); put('kidney_pool',218,98,S,solid=False); put('old_lighthouse',165,12,W)
-# a rail yard on the park's north edge: the locomotives, a carriage, the railbus and the guideway shuttle, a footbridge, a bookstall, the viaduct's arches
-x=122
-for k in ['mainline_diesel_locomotive','passenger_carriage','railbus','tender_steam_locomotive','guideway_rail_shuttle']:
-    l=size['pf_'+k][2]; put(k,x+T(l)/2,176,E); x+=T(l)+1.5
-put('station_footbridge',x+8,176,E); put('platform_bookstall',x+8,170,N); put('stone_viaduct_span',x+24,174,N); put('stone_viaduct_span',x+24+T(6),174,N)
+# a motel south of the reservoir, its pool behind; the lighthouse on the lake's east shore
+x=row(['motel_office','motel_room_run'],154,94,face=N); put('kidney_pool',166,76,S,solid=False); put('old_lighthouse',165,12,W)
+# a rail yard on the lawn west of the reservoir, its stock on three sidings, a footbridge over them, a bookstall; the viaduct's arches carry the brook
+for y,x,ks in [(142,124,['mainline_diesel_locomotive']),(153,122,['passenger_carriage']),(164,122,['railbus','tender_steam_locomotive']),(171,124,['guideway_rail_shuttle'])]:
+    for k in ks: l=size['pf_'+k][2]; put(k,x+T(l)/2,y,E); x+=T(l)+1.5
+put('station_footbridge',144,148,E); put('platform_bookstall',141,171,N); put('stone_viaduct_span',140,36,E); put('stone_viaduct_span',140+T(size['pf_stone_viaduct_span'][2]),36,E)
 # the skatepark's gateway: its door (src/089c-skatepark.js)
 put('skatepark_entrance_gateway',175,62.6,S,solid=False)
 # the planes, a display on the meadow north of the bandstand
@@ -53,7 +52,7 @@ for i in range(-3,4):
 for tx in (-6,10): put('cemetery_lantern_post',tx,141,S)
 put('twisted_dead_oak',-12,156,E); put('twisted_dead_oak',20,160,W)
 # a cabin in the woods; a boardwalk at the lake; a skiff on it
-put('porch_log_cabin',96,118,S)
+put('porch_log_cabin',40,150,S)
 for i in range(4): put('wetland_boardwalk_run',161+i*T(2),2,E,solid=False)
 put('lake_rowing_skiff',148,12,E+.5,solid=False)
 # an Easter Island corner by the east tower: moai, the stone houses, a garden of taro, the boat-shaped house

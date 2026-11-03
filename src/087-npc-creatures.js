@@ -63,7 +63,7 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
     N.mixer=mixer; N.restless=()=>!!K.fly; if(!ex&&(K.lane===PARKL||K.park))N.park=true; N.pack(); CREATS.push(N); };
   CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); });
   // the Drive's animals (owner, 3 Nov 2026): the park's woods, its farm, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
-  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,122,250,172), ZOO=R(150,122,196,172), DINO=R(62,132,120,176), LAKE=R(140,-2,166,22);
+  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
     const DRY=(x,z,R)=>FREE(x,z,R)&&!((window.FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
     const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
     k('Fox',WOOD,3,{night:.5}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});

@@ -38,8 +38,8 @@ for y,x,ks in [(142,124,['mainline_diesel_locomotive']),(153,122,['passenger_car
 put('station_footbridge',144,148,E); put('platform_bookstall',141,171,N); put('stone_viaduct_span',140,36,E); put('stone_viaduct_span',140+T(size['pf_stone_viaduct_span'][2]),36,E)
 # the skatepark's gateway: its door (src/089c-skatepark.js)
 put('skatepark_entrance_gateway',175,62.6,S,solid=False)
-# the planes, a display on the meadow north of the bandstand
-put('heavy_bomber',128,88,S); put('single_engine_fighter',146,84,W)
+# the planes, a display on the west meadow south of the cross path
+put('heavy_bomber',18,43,E); put('single_engine_fighter',40,44,E)
 # the river: a liner moored mid-stream, a fishing boat by the pier, an old wreck in the shallows
 put('capital_cruiser',170,-146,E,solid=False); put('hanga_roa_fishing_boat',-4,-127,E,solid=False); put('wooden_wreck_stern_section',118,-160,W+.4,solid=False)
 # the riverside walk: vendors, a pay phone, games
@@ -59,10 +59,10 @@ put('lake_rowing_skiff',148,12,E+.5,solid=False)
 for i,tx in enumerate([230,236,242,248]): put('moai_kavakava',tx,44,S,s=9)
 put('orongo_house_run',236,34,S); put('hare_paenga_boat_house',236,24,S); put('taheta_stone_basin',246,30,S,solid=False); put('mata_a_obsidian_blade',246,30.4,S,s=2,solid=False)
 for tx,ty in [(226,30),(228,26),(250,26)]: put('taro_plant',tx,ty,S,solid=False)
-# the castle's treasure, on its forecourt: the dragon's pillars and egg, the looted throne, the harp, a naginata, a chest with its key and lock, a hoard
-put('coiled_dragon_pillar',24,104,S); put('coiled_dragon_pillar',38,104,S); put('ember_dragon_egg',31,101,S,s=2)
-put('looted_gilded_throne',31,107,S); put('gilded_harp',35,107,S); put('samurai_naginata',27,107,S,solid=False)
-put('common_chest',33,103,S); put('chest_key',33.8,102,S,solid=False); put('chest_padlock',32,102,S,solid=False); put('coin_hoard_heap',29,103,S,solid=False)
+# the castle's treasure, in its courtyard (clear of the stair): the dragon's pillars and egg, the looted throne, the harp, a naginata, a chest with its key and lock, a hoard
+put('coiled_dragon_pillar',35.5,127.5,N); put('coiled_dragon_pillar',46,127.5,N); put('ember_dragon_egg',41,125,N,s=2)
+put('looted_gilded_throne',38,117,S); put('gilded_harp',35,117,S); put('samurai_naginata',33,120,S,solid=False)
+put('common_chest',37.5,122,S); put('chest_key',38.3,121,S,solid=False); put('chest_padlock',36.6,121,S,solid=False); put('coin_hoard_heap',34,123,S,solid=False)
 # the bandstand's guitar
 put('guitar',113,58,S,solid=False)
 # by the cave: the fungus that glows, coal and emerald in the rock

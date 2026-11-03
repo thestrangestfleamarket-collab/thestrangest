@@ -6,6 +6,7 @@
 #          up their curves however steep (no step wall on or beside a ramp: they are ridden)
 #   solid  the cells a body can't pass (walls, rises over the knee, posts, trees, buildings), merged to rectangles
 #   lamps  the floodlights' heads (the park's lights after dark)
+#   board  the skaters' board (data/skateboard.json: the kit's cruiser, ridden by the board skaters)
 #   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
 # Run: python3 tools/skatepark-bake.py data/full/skatepark
@@ -205,5 +206,9 @@ GP=[]; GC=[]
 for P,C in prims(gc): GP.append(((np.c_[P,np.ones(len(P))]@IG.T)[:,:3]).reshape(-1,3,3)); GC.append(C.reshape(-1,3,3))
 gate=pack(np.vstack(GP),np.vstack(GC)); gate.update(D['gate'])
 json.dump(gate,open(os.path.join(os.path.dirname(OUT),'skategate.json'),'w'),separators=(',',':')); print('gate',gate['t'],'triangles at',D['gate'])
+bc=KIDS[1265]; IB=np.linalg.inv(WM[bc]); BP=[]; BC=[]   # the skaters' board (the kit's cruiser): its own frame, along z, wheels on y=0
+for P,C in prims(bc): BP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); BC.append(C.reshape(-1,3,3))
+BP=np.vstack(BP); BP[:,:,1]-=BP[:,:,1].min(); board=pack(BP,np.vstack(BC)); board['top']=round(float(BP[:,:,1].max()),3)
+json.dump(board,open(os.path.join(os.path.dirname(OUT),'skateboard.json'),'w'),separators=(',',':')); print('board',board['t'],'triangles, deck top',board['top'])
 json.dump(D,open(OUT,'w'),separators=(',',':'))
 print(OUT,round(os.path.getsize(OUT)/1e6,2),'MB,',sum(m['t'] for m in mesh),'still triangles in',len(mesh),'squares')

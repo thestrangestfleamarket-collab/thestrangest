@@ -1,4 +1,4 @@
-// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its lamps lit after dark, one of each of its skaters on your rig (data/skaters.json); its decks, ramps and ledges are ground to walk and ride.
+// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json); its decks, ramps and ledges are ground to walk and ride.
 import {SHARED, THREE} from './003-shx.js';
 import {CLIP, CLOCK, PARK, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -17,8 +17,8 @@ const SKATE={}; window.SKATE=SKATE;
 
   // the park, off the map west of the sections; you come in just inside its gateway
   const WX=SHARED.BOD.X(1700+OFFDX/BLDK), WZ=SHARED.BOD.Z(-45), B={x0:WX-27*MH,x1:WX+27*MH,z0:WZ-37*MH,z1:WZ+37*MH}, GX=0, GZ=32.5;   // its footprint and its gateway, in the park's metres (tools/skatepark-bake.py)
-  let D=null, G=null, SK=null, LIT=null, SOLS=[], GR=null, tick=null, Y0=0;
-  const wx_=x=>WX+x*MH, wz_=z=>WZ+z*MH, wy_=y=>(y-Y0)*MV;
+  let D=null, G=null, SK=null, LIT=null, LAMPS=[], SOLS=[], GR=null, tick=null, Y0=0;
+  const LAMPI=26, wx_=x=>WX+x*MH, wz_=z=>WZ+z*MH, wy_=y=>(y-Y0)*MV;
   SKATE.ground=(x,z)=>{ const g=D&&D.ground; if(!g)return 0; const i=Math.floor(((x-WX)/MH-g.x0)/g.cs), j=Math.floor(((z-WZ)/MH-g.z0)/g.cs); if(i<0||j<0||i>=g.nx||j>=g.nz)return 0; return wy_(g.y0+g.H[j*g.nx+i]*g.dy); };
   const need=()=>Promise.all([LOAD('skatepark'),DATA().then(d=>{ D=d; if(!D.ground.H)D.ground.H=new Uint16Array(I16(D.ground.h)); Y0=D.gate.y; })]);
   const build=()=>{ '@skatepark';
@@ -41,12 +41,12 @@ const SKATE={}; window.SKATE=SKATE;
       D.people.forEach((p,i)=>{ const k='skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground});
         const N=BODIES.by[k].npc, s=N.st; s.x=wx_(p.x); s.z=wz_(p.z); s.hd=p.hd; s.home={x:s.x,z:s.z,r:1.6*TILE}; N.free=(x,z)=>x>B.x0&&x<B.x1&&z>B.z0&&z<B.z1&&!CLIP.hit(SOL.up,x,z,.25*TILE); N.on=true; SK.list.push(N); }); }).catch(e=>console.warn('SKATE skaters',e));
     if(SK)for(const N of SK.list)N.on=true;
-    tick=()=>{ const n=CLOCK.dark?CLOCK.dark():false; if(LIT&&LIT.on!==n){ LIT.on=n; LIT.m.geometry=n?LIT.night:LIT.day; LIT.m.material=n?LIT.nm:LIT.dm; } sky.material.uniforms.n.value+=((n?1:0)-sky.material.uniforms.n.value)*.05; };
-    return ROOMS.part(G,()=>{},null); };
-  const unbuild=()=>{ for(const b of SOLS){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } SOLS=[]; const gi=ROOMS.grounds.indexOf(GR); if(gi>=0)ROOMS.grounds.splice(gi,1); GR=null; tick=null;
+    tick=()=>{ const n=CLOCK.dark?CLOCK.dark():false; if(LIT&&LIT.on!==n){ LIT.on=n; LIT.m.geometry=n?LIT.night:LIT.day; LIT.m.material=n?LIT.nm:LIT.dm; for(const l of LAMPS)l.intensity=n?LAMPI:0; } sky.material.uniforms.n.value+=((n?1:0)-sky.material.uniforms.n.value)*.05; };
+    return ROOMS.part(G,()=>{ LAMPS=(D.lamps||[]).map(([x,y,z])=>{ const l=new THREE.PointLight(0xffe2b0,0,52*MH,1); l.position.set(wx_(x),wy_(y),wz_(z)); scene.add(l); return l; }); },null); };   // the floodlights: part records them into the lights you get the nearest of
+  const unbuild=()=>{ LAMPS=[]; for(const b of SOLS){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } SOLS=[]; const gi=ROOMS.grounds.indexOf(GR); if(gi>=0)ROOMS.grounds.splice(gi,1); GR=null; tick=null;
     if(SK){ for(const N of SK.list)N.on=false; SK.g.removeFromParent(); }
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); if(LIT){ LIT.day.dispose(); LIT.night.dispose(); LIT.nm.dispose(); LIT.dm.dispose(); } G.removeFromParent(); G=null; LIT=null; } };
-  SKATE.dbg=()=>({built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
+  SKATE.LAMPI=LAMPI; SKATE.dbg=()=>({lamps:LAMPS.filter(l=>l.intensity>0).length,built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
   SYS.add('dress',()=>tick&&tick(),'111fd-skatepark');   // the lamps and the sky follow the clock while it is built
   const gin=[wx_(GX),wz_(GZ-3)];
 

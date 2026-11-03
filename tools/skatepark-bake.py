@@ -5,6 +5,7 @@
 #   ground a height grid (0.25 m cells, 5 cm steps) of what you can stand on: the terrain, the tiles, decks, ledges under knee height, and the ramps and bowl
 #          up their curves however steep (no step wall on or beside a ramp: they are ridden)
 #   solid  the cells a body can't pass (walls, rises over the knee, posts, trees, buildings), merged to rectangles
+#   lamps  the floodlights' heads (the park's lights after dark)
 #   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
 # Run: python3 tools/skatepark-bake.py data/full/skatepark
@@ -71,6 +72,7 @@ keep([*range(1038,1046),1233],-2,4,-1.2)                                        
 keep([1046,1215,1231],2,-2,-1.2)                                                                 # the clubhouse, a floodlight, a tree
 keep([1063,1064,1066,1067,1068,1069,1071,1079,1081,1249,1086],8,8,-1.2)                          # one overpass span, a full pipe, the graffiti artist
 KEEP[1072]=(3,1.5,-1.2)                                                                          # one jersey barrier
+KEEP[1216]=(-26.5,-17,-1.2); KEEP[1217]=(1.5,16,0); KEEP[1218]=(-9.9,9.4,0)   # the floodlights: four columns (owner, 3 Nov 2026: "Bring back 4 columns"), lit after dark
 keep([1123],9,5.5); keep([1122],16,9.5); keep([1125],2,13.5); keep([1131],2,12); keep([1137],-4,4)   # one ledge, rail, granite block, grind box, bump
 keep([1177],-32,-26); keep([1135,1136],0,-13); keep([1232],5.3,8.2); keep([1241,1242,1243],0,0); keep([1037],1,1.4)
 keep([1049],31.8,24.2,-1.65)                                                                     # the filmer's camcorder, at his feet
@@ -112,6 +114,9 @@ for x in np.arange(FOOT[0]+1,FOOT[2],2.):
         if cv: continue
         y=next((q[4]-.05 for q in SUNK.values() if q[0]<x<q[2] and q[1]<z<q[3]),-.03 if cv is False else 0.)   # under a part a tile sits 3 cm low, never flush with its base
         ITEMS.append(('skate-slab-tile','skate-slab-tile',[(P+np.array([x-S0[0],y-S0[1],z-S0[2]]),C) for P,C in SLAB]))
+LAMPS=[]   # each floodlight's head: the middle of its top half metre
+for nm,k,pr in ITEMS:
+    if k=='skatepark-floodlight-column': Q=np.vstack([P for P,C in pr]); top=Q[Q[:,1]>Q[:,1].max()-.6]; LAMPS.append([round(float(v),3) for v in top.mean(0)])
 for nm,k,pr in ITEMS:
     kind=0 if k=='skatepark-terrain' else 2 if k in LOOSE else 5 if k in RAMPS else 1
     for P,C in pr:
@@ -193,7 +198,7 @@ Hq=np.nan_to_num(H,nan=float(np.nanmin(H))); y0=float(np.floor(Hq.min()*20)/20);
 pj=[{'key':p['key'],'b':p['b'],'x':p['x'],'z':p['z'],'y':p['y'],'hd':p['hd']} for p in people]
 D={'v':1,'kit':KIT['kit'],'license':'Polyfork (polyfork.dev/licensing): use in games, no reselling the files','bounds':[round(float(x),3) for x in (*lo,*hi)],
    'mesh':mesh,'glow':glow,'ground':{'x0':float(X0),'z0':float(Z0),'cs':CS,'nx':NX,'nz':NZ,'y0':y0,'dy':.05,'h':b64(Q)},
-   'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj}
+   'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj,'lamps':LAMPS}
 gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); IG=np.linalg.inv(GM); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
 D['gate']={'x':round(GM[0,3],3),'y':round(GM[1,3],3),'z':round(GM[2,3],3),'hd':round(float(np.arctan2(GM[0,2],GM[2,2])),4)}
 GP=[]; GC=[]

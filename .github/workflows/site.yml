@@ -58,6 +58,7 @@ jobs:
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
@@ -148,6 +149,9 @@ jobs:
       - name: The room editor (decorate your apartment, saved and back after a reload)
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
+      - name: The shops' insides (built on the way in, dropped on the way out, nothing left behind)
+        if: contains(steps.f.outputs.run, ' insides')
+        run: node tests/insides.cjs dist/market.html
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html

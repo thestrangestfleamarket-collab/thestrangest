@@ -23,7 +23,7 @@ Look there before changing how something looks or behaves, and add a dated entry
   touch a file that lacks it. Otherwise keep comments rare and short: a line where the code would mislead without it. The minifier
   strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never
   in the source. No comments in HTML or CSS (the build checks pages for an unclosed `<!--`).
-- `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`.
+- `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`. `__FILE__("data/radio/x.mp3")` is a file fetched as it is (the car radio's stations, `tools/radio-bake.py`).
   `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).

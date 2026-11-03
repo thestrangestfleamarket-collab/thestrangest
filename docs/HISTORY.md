@@ -5257,5 +5257,8 @@ Owner, of the new characters walking stiff: "A" (of: their pose every frame whil
 ## 3 Nov 2026: the Merchant is playable
 
 Owner: "allow the Merchant character to be playable as well as Walker". YOU's BODY row is back with WALKER and MERCHANT (polyfork's Merchant, the flea market's TRADER's model). Rule: the BODY row is the Walker and the Merchant (was the Walker only, 29 Oct); the townsfolk stay off it.
+## 3 Nov 2026: PHOSPHOR removed; the haze gone for now
+
+Owner: "lets remove it and also lets remove the haze from the game for now, just have it get slightly darker and blurred the further away, minimal effect". PHOSPHOR (2 Nov) is gone. The distance fog no longer washes the world into the horizon's colour: the far is only slightly darker and blurred (ATMOSPHERE's DISTANCE FOG: START, BLUR, DARKER); only its last stretch fades softly where the drawing stops, so nothing pops; the sky is untouched. Water's own fog unchanged. Supersedes the haze rules above while it holds.
 ## 3 Nov 2026: car interiors
 Owner: "i want the interiors of the cars to be realistic with windows you can view. steering wheel, radio, etc."; then "i dont see inside of car , seats, seat belt, etc?". Each car's windows are see-through glass and its cabin hollow: seats (benches in the muscle car, wagon and pickup), seat belts, a steering wheel that turns as you steer, dash with two gauges, a radio, shifter, pedals, mirror, visors, door panels and carpet. In first person the driver looks out from the seat.

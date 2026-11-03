@@ -20,7 +20,8 @@ const find=(map,ch)=>{ for(let y=0;y<map.length;y++){ const x=map[y].indexOf(ch)
   await pg.keyboard.press('Space'); await pg.waitForTimeout(400); d=await D(); ok(d.g&&d.g.hero==='WARRIOR'&&d.g.floor===1&&d.g.hp===2000,'the WARRIOR starts floor 1 with 2000 health ('+JSON.stringify(d.g&&{hero:d.g.hero,floor:d.g.floor,hp:d.g.hp})+')');
   await pg.evaluate(()=>{ const C=TORCHDBG().cheat; C.skip(); C.clear(); });   // no ghosts in the way: the walk proves the key, the door and the stairs
   const walk=async(path_)=>{ for(let i=1;i<path_.length;i++){ const [tx,ty]=path_[i], [px,py]=path_[i-1], key=tx>px?'ArrowRight':tx<px?'ArrowLeft':ty>py?'ArrowDown':'ArrowUp';
-      await pg.keyboard.down(key); const t0=Date.now(); let there=false; while(Date.now()-t0<8000){ const g=await G(); if(Math.floor(g.x)===tx&&Math.floor(g.y)===ty){ there=true; break; } if(g.mode!=='play'){ await pg.keyboard.up(key); return g.floor>1?true:'left play mode at '+i; } await pg.waitForTimeout(20); } await pg.keyboard.up(key);
+      await pg.keyboard.down(key); const t0=Date.now(), gt0=(await G()).t; let there=false; for(;;){ const g=await G(); if(g.t-gt0>2||Date.now()-t0>120000)break;   // two game seconds a tile, not wall-clock: frames are slow here
+      if(Math.floor(g.x)===tx&&Math.floor(g.y)===ty){ there=true; break; } if(g.mode!=='play'){ await pg.keyboard.up(key); return g.floor>1?true:'left play mode at '+i; } await pg.waitForTimeout(20); } await pg.keyboard.up(key);
       if(!there)return 'stuck at step '+i+' of '+path_.length+' going '+key+' to '+tx+','+ty; } return true; };
   let g=await G(); const map=g.map, start=[Math.floor(g.x),Math.floor(g.y)], key=find(map,'k'), exit=find(map,'1'); const gt0=g.t, hp0=g.hp;
   const p1=bfs(map,start,key,false); ok(!!p1,'floor 1: a path to a key without a door ('+(p1&&p1.length)+' steps)');

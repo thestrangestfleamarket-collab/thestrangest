@@ -103,7 +103,24 @@ put('straight_stair_flight',144,138,N,solid=False); put('stair_core_flight',144,
 put('camp_tent',48,146,W); put('mushroom_cottage',91,38,S,solid=False); put('glass_conservatory',30,168,S)
 old=[o for o in json.load(open('data/garden.json')) if not str(o.get('k','')).startswith('pf_')]
 json.dump(old+P,open('data/garden.json','w'),indent=0)
+# the homes among them (src/158-lives.js): a door just out of the front, beds by storeys and floor (about 15 m2 a bed, city flats; a shophouse lives over its shop)
+HOMES={'corner_tenement':'THE CORNER TENEMENT','brownstone_row_house':'THE BROWNSTONE','narrow_walk_up':'THE WALK-UP','cast_iron_loft':'THE CAST-IRON LOFT',
+  'corner_shophouse':'THE CORNER SHOPHOUSE','two_storey_shophouse':'THE TWO-STOREY SHOPHOUSE','three_storey_shophouse':'THE THREE-STOREY SHOPHOUSE','wide_shophouse':'THE WIDE SHOPHOUSE',
+  'motel_room_run':'THE RIVER MOTEL','porch_log_cabin':'THE LOG CABIN','haunted_victorian_house':'THE HAUNTED HOUSE'}
+RES=[]
+for o in P:
+    k=o['k'][3:]
+    if k not in HOMES: continue
+    w,h,d=size[o['k']]; st=max(1,round(h/3)); shop='shophouse' in k; beds={'motel_room_run':8,'porch_log_cabin':2,'haunted_victorian_house':1}.get(k) or max(1,round((st-(1 if shop else 0))*w*d/15))
+    tx=(o['x']+81.36)/1.13; ty=(o['z']-87.01)/1.13; f=T(d)/2+.9
+    RES.append({'id':k,'name':HOMES[k],'door':[round(tx+math.sin(o['rot'])*f,2),round(ty+math.cos(o['rot'])*f,2)],'beds':beds})
+# where the townspeople spend their own time (src/158-lives.js): a band to wander or spots [x, y, r], in map tiles; hd, the way to face (the pier's anglers look at the river)
+sh=next(o for o in P if o['k']=='pf_small_shrine_hall'); shx=(sh['x']+81.36)/1.13
+HANG={'pier':{'band':[30,100,-117.6,-116.6],'hd':3.1416},'meadow':{'areas':[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},'path':{'band':[-15,250,57,60]},
+  'bench':{'areas':[[113,52,6],[30,140,5]]},'river':{'band':[0,200,-115,-111]},'flea':{'areas':[[223,-84,5]]},'shrine':{'areas':[[round(shx,2),-110.2,2]]}}
 import re
 t=open('data/world.json').read(); pf=json.dumps({k:sorted(v) for k,v in SPANS.items()},separators=(',',':')); t=re.sub(r'\n  "pf": [^\n]*','',t)
-t=t.replace('\n "block": {\n','\n "block": {\n  "pf": '+pf+',\n',1); assert json.loads(t)['block']['pf']; open('data/world.json','w').write(t)
+t=t.replace('\n "block": {\n','\n "block": {\n  "pf": '+pf+',\n',1); assert json.loads(t)['block']['pf']
+t=re.sub(r'\n "residences": [^\n]*','',t); t=re.sub(r'\n "hangouts": [^\n]*','',t); t=t.replace('\n "block": {\n','\n "hangouts": '+json.dumps(HANG,separators=(',',':'))+',\n "block": {\n',1); t=t.replace('\n "block": {\n','\n "residences": '+json.dumps(RES,separators=(',',':'))+',\n "block": {\n',1); assert json.loads(t)['residences']; open('data/world.json','w').write(t)
+print(len(RES),'homes,',sum(r['beds'] for r in RES),'beds')
 used={o['k'] for o in P}; print(len(P),'placed;',len(used),'of',len(size),'models; unplaced:',sorted(set(size)-used))

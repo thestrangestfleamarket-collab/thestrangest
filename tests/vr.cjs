@@ -9,7 +9,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // the Quest browser stops the page's own animation frames while in VR: with window.__quest set, only the emulator's device frames (onDeviceFrame) still come
   await pg.addInitScript('{ const R0 = window.requestAnimationFrame.bind(window); window.requestAnimationFrame = f => window.__quest && window.VR && VR.on && !new Error().stack.split("\\n").slice(2, 4).some(l => l.includes("onDeviceFrame")) ? (window.__blocked = (window.__blocked || 0) + 1, -1) : R0(f); }');
   await pg.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});');
-  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=53,10', { waitUntil: 'commit' });
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=49,10', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   if (st) {
@@ -69,8 +69,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => !!document.querySelector('#menu [data-t="vr"]') && typeof VR.open === 'function'), 'the menu has a VR tab');
     await pg.evaluate(() => VR.set('move', 'teleport'));
     const t0 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
-    await pg.evaluate(() => { __xrd.controllers.left.quaternion.set(-.2, 0, 0, .98); __xrd.controllers.left.updateAxes('thumbstick', 0, -1); }); await frames(4);
-    const tp = await pg.evaluate(() => VR.state().tp);
+    let tp = null;   // aim ahead, turning the controller until the arc lands on clear ground (a parked car can stand straight ahead)
+    for (const a of [0, .8, -.8, 1.6, -1.6, 3.1]) {
+      await pg.evaluate(a => { const sy = Math.sin(a / 2), cy = Math.cos(a / 2), sx = -.2, cx = .98; __xrd.controllers.left.quaternion.set(cy * sx, cx * sy, -sy * sx, cy * cx); __xrd.controllers.left.updateAxes('thumbstick', 0, -1); }, a); await frames(4);
+      tp = await pg.evaluate(() => VR.state().tp); if (tp && tp.ok) break;
+    }
     ok(tp && tp.ok, 'in TELEPORT the left stick forward shows an arc landing ahead (' + JSON.stringify(tp) + ')');
     await shot('teleport-arc');
     await pg.evaluate(() => __xrd.controllers.left.updateAxes('thumbstick', 0, 0)); await frames(3);

@@ -3,7 +3,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1',{timeout:240000}); await pg.waitForFunction(()=>window.__started&&window.CREW&&CREW.ready,null,{timeout:300000});
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1',{timeout:240000}); await pg.waitForFunction(()=>window.__started&&window.CREW&&CREW.ready&&window.NEWSCLK,null,{timeout:300000});
   await pg.evaluate(()=>{ NEWSCLK(11,0); return CREW.bring(); });
   await pg.waitForFunction(()=>JOBDBG().length>=190,null,{timeout:120000});
   const J=()=>pg.evaluate(()=>JOBDBG()); let j=await J();

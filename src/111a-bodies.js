@@ -1,8 +1,9 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are always the Walker; one of each walks main street.
+// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are the Walker or a body.playable one, picked on YOU's BODY row (BODIES.set); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {CHARS, NPCS, pos, VIS, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -77,6 +78,23 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
+  /* ---------- you (always the Walker unless a playable body is set; knight/man/woman stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  const playable=b=>!!(b&&b.playable);
+  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
+  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
+  let ME=null, MEK=null, hid=false;
+  W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
+    if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
+    if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
+    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
+  BODIES.pick=()=>curKey();
+  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
+  // YOU's BODY row: the Walker and every playable body, added as it loads
+  const LP=document.getElementById('looks'); let ROW=null;
+  if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row'; LP.insertBefore(h,at); LP.insertBefore(ROW,at); }
+  function addButton(key,label){ if(!ROW||document.getElementById('lbody-'+key))return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
+  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
+  addButton('walker','WALKER');
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -86,35 +104,41 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; VIS.hide(N.g,'away'); } };
   // a borrowed body (one a place conjures for a while) goes back where it was: its group, spot, home and roaming
   BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; VIS.hide(N.g,'away',!P.on); delete N.prev; };
-  // weld a townsperson body's duplicate vertices (one that building it a face at a time left). A smooth body uses its normals, so they must match to merge; a flat body takes its normal from the screen (dFdx), so that attribute is free to differ — dropping it from the key merges more. The index keeps the original length and triangle order, so material groups stay valid.
+  // weld a townsperson body's duplicate vertices (one that building it a face at a time left). A smooth body uses its normals, so they must match to merge; a flat body takes its normal from the screen (dFdx), so that attribute is free to differ — dropping it from the key merges more. The index keeps the original length and triangle order, so material groups stay valid. Never a playable body (the Walker shares and reshapes its geometry).
   const weldBody=(g,smooth)=>{ if(g.index)return; const A=g.attributes, all=Object.keys(A), key=smooth?all:['position','color','bi','bw'].filter(k=>A[k]), KA=key.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
     const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;
     for(let i=0;i<n;i++){ const o=i*3, h=(Math.imul(PA[o]*4096|0,73856093)^Math.imul(PA[o+1]*4096|0,19349663)^Math.imul(PA[o+2]*4096|0,83492791))>>>0; let bk=buckets.get(h), u=-1; if(bk){ for(let x=0;x<bk.length;x++)if(eq(i,uq[bk[x]])){ u=bk[x]; break; } } else buckets.set(h,bk=[]); if(u<0){ u=uq.length; uq.push(i); bk.push(u); } idx[i]=u; }
     if(uq.length>n*0.95)return; for(const nm of all){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const o=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[o+c]; } g.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
     g.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1)); g.boundingSphere=null; };
-  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
+  function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; if(!playable(body)){ body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); } const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
     const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
     NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
-    NPC.tick=dt=>{ if(!NPC.on&&!SHEET){ g.visible=false; return; } g.visible=true;
+    NPC.tick=dt=>{ if((!NPC.on||NPC.mode==='hidden')&&!SHEET){ g.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
       if(NPC.rag){ const B=NPC.rag(dt); if(B){ NPC.B=B; pose(B,FIG.PM,body); return; } }
       const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
-      if(!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
-      if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
+      if(!st.pin&&!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
+      if(st.pin)st.to=null;
+      if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!st.hold&&!NPC.errand&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
       if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez);
         if(d<.15*TILE){ st.to=st.next||null; st.next=null; if(!st.to)st.wait=3+Math.random()*7; }
         else{ const e=turn(Math.atan2(ex,ez)); st.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*3); SR.target=Math.abs(e)<.6?1:0; } }
       const d0=SR.dist; R.step(SR,dt); const go=(SR.dist-d0)*W3.SZ/PPU*.85;
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); } }
       st.y=MODS.bodega.ground(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
-      if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!ASTEP.gate(NPC,dt))return;
+      if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
       R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
-  SYS.add('dress',dt=>{ for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
+  // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
+  const LIVEP=new Set(); let smT=0;
+  const liveP=dt=>{ if((smT-=dt)>0)return; smT=.25; LIVEP.clear(); const L=[]; for(const b of BODIES.list){ const N=b.npc; if(N&&N.on&&N.mode!=='hidden'&&N.st&&N.st.to)L.push([Math.hypot(N.st.x-pos.x,N.st.z-pos.z),N]); }
+    L.sort((a,b)=>a[0]-b[0]); for(let i=0;i<Math.min(BODIES.SMOOTH,L.length);i++)LIVEP.add(L[i][1]); };
+  BODIES.SMOOTH=8;
+  SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   /* ---------- a baked body (bases-bake, hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
@@ -141,6 +165,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); };
+    walker(body); if(playable(body))addButton(body.key,body.label||body.key.toUpperCase()); };
 }
 export {BODIES};

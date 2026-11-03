@@ -29,7 +29,7 @@ const OWNED=await (async()=>{ const L={ get:k=>SAVE.get(k), set:(k,v)=>SAVE.set(
   const KEYS=new Set(SAVE.get('owned-keys')?SAVE.get('owned-keys').split(','):[]), first=!Object.keys(srv).length, dirty={}; let t=0, full=false;
   for(const k in srv)SAVE.set(k,srv[k]); if(!first)for(const k of KEYS)if(!(k in srv))SAVE.del(k);   // the server's copy is the truth; this browser's copy follows it (and drops what the server doesn't have: another login's)
   const flush=keep=>{ clearTimeout(t); const put=Object.assign({},dirty); for(const k in dirty)delete dirty[k]; if(!Object.keys(put).length)return;
-    ask({put},keep).then(async r=>{ if(r.status===413){ if(!full){ full=true; console.warn('OWNED: server save full (2 MB a player); changes kept on this device only'); } return; }
+    ask({put},keep).then(async r=>{ if(r.status===413){ if(!full){ full=true; console.warn('OWNED: server save full (2 MB a player); changes kept on this device only'); try{ if(window.UI&&window.UI.log)window.UI.log('Your saved things are full — new changes are kept on this device only.','#e8a23a'); }catch(e){} } return; }
       const j=r.ok?await r.json():null; if(!j||j.ok!==true)throw 0; full=false; }).catch(()=>{ for(const k in put)if(!(k in dirty))dirty[k]=put[k]; t=setTimeout(flush,15000); }); };
   const note=k=>{ if(!KEYS.has(k)){ KEYS.add(k); SAVE.set('owned-keys',[...KEYS].join(',')); } };
   addEventListener('pagehide',()=>flush(true)); addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')flush(true); });

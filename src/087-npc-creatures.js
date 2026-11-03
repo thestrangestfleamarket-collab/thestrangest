@@ -10,7 +10,7 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
   const M=SHARED.BOD.MAP, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2.2),x1:X(PARK.x1+PARK.ox-2.2),z0:Z(PARK.y0+PARK.oy+2.2),z1:Z(PARK.y1+PARK.oy-2.2)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},
     HOLE=STHOLE, FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
   const KIND={Rat:{walk:'Rat_Walk',run:'Rat_Run',idle:'Rat_Idle',pace:3,lane:ALL,night:.6},Frog:{walk:'Frog_Jump',idle:'Frog_Idle',pace:2.4,lane:PARKL,hop:[.33,.78]},Slime:{walk:'Slime_Walk',idle:'Slime_Idle',pace:1.2,lane:PARKL,turn:-Math.PI/2},
-    Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL},Bat:{walk:'Bat_Flying',idle:'Bat_Flying',pace:3,lane:PARKL,fly:[6,13],night:1},Wasp:{walk:'Wasp_Flying',idle:'Wasp_Flying',pace:3,lane:PARKL,fly:[1,2.5],day:1,turn:-Math.PI/2}};
+    Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL},Bat:{walk:'Bat_Flying',idle:'Bat_Flying',pace:3,lane:PARKL,fly:[6,13],night:1},Wasp:{walk:'Wasp_Flying',idle:'Wasp_Flying',pace:3,lane:PARKL,fly:[1,2.5],day:1}};
   const PAINT=(()=>{ const hh=(x,y,z)=>{ const v=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return v-Math.floor(v); }, vn=(x,y,z)=>{ const i=Math.floor(x), j=Math.floor(y), k=Math.floor(z), f=x-i, g=y-j, e=z-k, s=t=>t*t*(3-2*t), u=s(f), v=s(g), w=s(e), L=(a,b,t)=>a+(b-a)*t;
       return L(L(L(hh(i,j,k),hh(i+1,j,k),u),L(hh(i,j+1,k),hh(i+1,j+1,k),u),v),L(L(hh(i,j,k+1),hh(i+1,j,k+1),u),L(hh(i,j+1,k+1),hh(i+1,j+1,k+1),u),v),w); };
     const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t], mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
@@ -23,13 +23,9 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
         if(r===1||belly)return mul(mix([226,214,160],[200,190,128],vn(P[0]*4,P[1]*4,P[2]*4)),1);
         const b=vn(P[0]*2.2+3,P[1]*2.2,P[2]*2.2), side=n[1]<.35; let o=b>.62?[40,78,34]:b>.55?[56,96,42]:[92,146,58]; if(side)o=mix(o,[150,160,84],.35);
         if(Math.abs(q[0]-.5)<.03&&n[1]>.5)o=[150,178,90]; return mul(o,.9+.2*vn(P[0]*9,P[1]*9,P[2]*9)); },
-      Rat:(q,n,c,r,P)=>{ if(r===1)return mul(c,.85+.25*q[1]); const f=vn(P[0]*5,P[1]*5,P[2]*5), belly=n[1]<-.3;
-        let o=mix([86,76,68],[124,112,98],f); if(belly)o=[176,166,150]; else if(n[1]>.6&&Math.abs(q[0]-.5)<.12)o=mul(o,.78); return o; },
       Snake:(q,n,c,r,P)=>{ if(r>=2&&r!==3)return c; if(r===3)return c; const belly=n[1]<-.3;
         if(belly)return [214,200,150]; const a=P[1]*3.2+Math.atan2(P[2]-.3,P[0])*.8, d=Math.abs((a%1+1)%1-.5)*2, l=Math.abs(n[0])*1.1;
         const dm=d+l*.6; return dm<.55?[52,66,36]:dm<.7?[176,160,96]:mul([96,120,62],.9+.2*vn(P[0]*5,P[1]*5,P[2]*5)); },
-      Wasp:(q,n,c,r,P)=>{ if(r===3){ const v=Math.abs(Math.sin(P[0]*9+P[2]*5))<.12||Math.abs(Math.sin(P[2]*14))<.1; return v?[90,110,118]:[176,214,226]; }
-        if(r===2||r===1){ const back=q[0]<.42; return back&&Math.floor(P[0]*5.5+10)%2===0?[30,26,22]:r===2?[230,190,60]:[200,96,30]; } return c; },
       Bat:(q,n,c,r,P)=>{ if(r>=2)return c; const wing=Math.abs(q[0]-.5)>.18;
         if(wing){ const v=Math.abs(Math.sin(Math.atan2(P[1]-3,P[0])*7))<.14; return v?[24,18,28]:mix([62,44,58],[86,62,70],vn(P[0]*3,P[1]*3,P[2]*3)); }
         return r===1?mix([140,104,70],[170,130,84],vn(P[0]*6,P[1]*6,P[2]*6)):mix([60,44,40],[84,62,52],vn(P[0]*6,P[1]*6,P[2]*6)); },

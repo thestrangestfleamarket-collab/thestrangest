@@ -12,7 +12,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],['road','ROAD','#34363c'],['alley','ALLEY','#46474c'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
   const rnd=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
   const texCache={};
-  function tex(t){ '@later'; if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
+  function tex(t){ if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
     const base=(TYPES.find(a=>a[0]===t)||['','','#4a7a3a'])[2]; g.fillStyle=base; g.fillRect(0,0,N,N);
     const dot=(x,y,r,c)=>{ g.fillStyle=c; g.fillRect(x-r,y-r,r*2,r*2); };
     if(/^grass/.test(t)){ const M=256, b=[1,3,5].map(i=>parseInt(base.slice(i,i+2),16)), A=[0,0,0], W=TUFTC.reduce((a,c)=>a+c[3],0); for(const c of TUFTC)for(let k=0;k<3;k++)A[k]+=c[k]*c[3]/W*.6;   // the lawn's tufts from above, in this grass's colour; 4 tiles a picture, mirrored
@@ -29,29 +29,29 @@ import {FOREST, PROPS} from './039-bodega.js';
   const mat=t=>{ const m=new THREE.MeshToonMaterial({map:tex(t),side:THREE.DoubleSide}); if(W3.GP)m.gradientMap=W3.GP; return m; };
   const _rc=new THREE.Raycaster(), _O=new THREE.Vector3(), _D=new THREE.Vector3(0,-1,0);
   const groundY=(h)=>{ if(h.object.isSkinnedMesh||h.object.userData.landPatch||h.object.userData.landProp)return false; let q=h.object; for(;q;q=q.parent){ if(!q.visible||q===W3.group)return false; } return h.object.isMesh; };
-  const groundYAt=(wx,wz,y0)=>{ '@later'; _O.set(wx,(y0||0)+30,wz); _rc.set(_O,_D); _rc.camera=SHARED.cam;
+  const groundYAt=(wx,wz,y0)=>{ _O.set(wx,(y0||0)+30,wz); _rc.set(_O,_D); _rc.camera=SHARED.cam;
     for(const hh of _rc.intersectObjects(scene.children,true)){ if(groundY(hh))return hh.point.y; } return y0||0; };
 
   // ----- ground patches -----
   let regions; try{ const B=__DATA__("data/landscape.json")||[]; const L=JSON.parse(SAVE.get('land')||'null'); regions=Array.isArray(L)?L:B.slice(); }catch(e){ regions=[]; }
   const ser=r=>r.brush?{brush:r.brush,r:r.r,y:r.y,t:r.t}:r.poly?{poly:r.poly,y:r.y,t:r.t}:{x0:r.x0,x1:r.x1,z0:r.z0,z1:r.z1,y:r.y,t:r.t};
   const save=()=>{ try{ SAVE.set('land',JSON.stringify(regions.map(ser))); }catch(e){} };
-  const addPatch=(geo,cx,cz,t)=>{ '@later'; geo.attributes.position.needsUpdate=true; if(geo.attributes.uv)geo.attributes.uv.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere();
+  const addPatch=(geo,cx,cz,t)=>{ geo.attributes.position.needsUpdate=true; if(geo.attributes.uv)geo.attributes.uv.needsUpdate=true; geo.computeVertexNormals(); geo.computeBoundingSphere();
     const me=new THREE.Mesh(geo,mat(t)); me.position.set(cx,0,cz); me.receiveShadow=true; me.renderOrder=1; me.frustumCulled=false; me.userData.landPatch=t; scene.add(me); relawn(me); return me; };
   const relawn=me=>{ if(!WEEDS.lawnDrop)return; const b=new THREE.Box3().setFromObject(me); WEEDS.lawnDrop([b.min.x,b.min.z,b.max.x,b.max.z]); };
   const regrow=r=>{ GRASS.setPainted(regions); const b=GRASS.box(r); if(GRASS.remap)GRASS.remap(...b); if(WEEDS.lawnDrop)WEEDS.lawnDrop(b); };   // a grass patch: the ground's kind map, the standing grass, flowers, mushrooms and butterflies there again
-  const makeBox=r=>{ '@later'; const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return;
+  const makeBox=r=>{ const w=r.x1-r.x0, h=r.z1-r.z0; if(w<=0||h<=0)return;
     const nx=Math.max(1,Math.min(24,Math.round(w/T))), nz=Math.max(1,Math.min(24,Math.round(h/T)));
     const geo=new THREE.PlaneGeometry(w,h,nx,nz); geo.rotateX(-Math.PI/2);
     const cx=(r.x0+r.x1)/2, cz=(r.z0+r.z1)/2, P=geo.attributes.position.array, uv=geo.attributes.uv.array;
     for(let i=0,j=0;i<P.length;i+=3,j+=2){ const wx=cx+P[i], wz=cz+P[i+2]; P[i+1]=groundYAt(wx,wz,r.y)+.05; uv[j]=wx/T; uv[j+1]=wz/T; }
     r.mesh=addPatch(geo,cx,cz,r.t); };
-  const makePoly=r=>{ '@later'; const pts=r.poly; if(!pts||pts.length<3)return; let cx=0,cz=0; for(const p of pts){ cx+=p[0]; cz+=p[1]; } cx/=pts.length; cz/=pts.length;
+  const makePoly=r=>{ const pts=r.poly; if(!pts||pts.length<3)return; let cx=0,cz=0; for(const p of pts){ cx+=p[0]; cz+=p[1]; } cx/=pts.length; cz/=pts.length;
     const shape=new THREE.Shape(pts.map(p=>new THREE.Vector2(p[0]-cx,p[1]-cz))), geo=new THREE.ShapeGeometry(shape);
     const P=geo.attributes.position.array, uv=geo.attributes.uv&&geo.attributes.uv.array;
     for(let i=0,j=0;i<P.length;i+=3,j+=2){ const sx=P[i], sy=P[i+1], wx=cx+sx, wz=cz+sy; P[i+1]=groundYAt(wx,wz,r.y)+.05; P[i+2]=sy; if(uv){ uv[j]=wx/T; uv[j+1]=wz/T; } }
     r.mesh=addPatch(geo,cx,cz,r.t); };
-  const makeBrush=r=>{ '@later'; const pts=r.brush; if(!pts||!pts.length)return; const R=r.r||1.5*T, n=2, P=[],UV=[],IDX=[]; let base=0;
+  const makeBrush=r=>{ const pts=r.brush; if(!pts||!pts.length)return; const R=r.r||1.5*T, n=2, P=[],UV=[],IDX=[]; let base=0;
     for(const [x,z] of pts){ for(let iz=0;iz<=n;iz++)for(let ix=0;ix<=n;ix++){ const wx=x-R+2*R*ix/n, wz=z-R+2*R*iz/n; P.push(wx,groundYAt(wx,wz,r.y)+.05,wz); UV.push(wx/T,wz/T); }
       for(let iz=0;iz<n;iz++)for(let ix=0;ix<n;ix++){ const a=base+iz*(n+1)+ix,b=a+1,c=a+(n+1),d=c+1; IDX.push(a,c,b,b,c,d); } base=P.length/3; }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IDX);
@@ -74,7 +74,7 @@ import {FOREST, PROPS} from './039-bodega.js';
   const kitGeo=D=>{ const q=new Int16Array(B64(D.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*D.sc+D.lo[i%3];
     const col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color(); for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(D.i32?new Uint32Array(B64(D.i).buffer):new Uint16Array(B64(D.i).buffer),1)); g.computeVertexNormals(); g.computeBoundingSphere(); g.computeBoundingBox(); return g; };
-  const propGeo=k=>{ '@later'; if(geoCache[k])return geoCache[k]; const D=MODELS[k]; if(!D)return null; if(D.sc)return geoCache[k]=kitGeo(D); const p=F32(D.p), col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color();
+  const propGeo=k=>{ if(geoCache[k])return geoCache[k]; const D=MODELS[k]; if(!D)return null; if(D.sc)return geoCache[k]=kitGeo(D); const p=F32(D.p), col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(Array.from(p),3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); geoCache[k]=g; return g; };
   let gard=null; const gardGroup=()=>{ if(!gard){ gard=new THREE.Group(); gard.userData.landProp=1; scene.add(gard); } return gard; };

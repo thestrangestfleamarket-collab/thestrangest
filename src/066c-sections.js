@@ -44,7 +44,10 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
     road:{rep:4,t:pic(96,(i,j)=>sh([52,52,56],.84+.24*hash(i,j,11)))},
     grass:{rep:8,t:pic(192,(i,j)=>GC((i+.5)/24+300,(j+.5)/24+300))},
     line:{rep:1,c:0xd8b23a}, dash:{rep:1,c:0xe8e8e0}};
-  const gm={}, MP=[], add=(k,r,lift)=>{ if(k!=='line'&&k!=='dash')MP.push({k,r,lift}); const L=gm[k]||(gm[k]={P:[],U:[],lift}); const R=KIND[k].rep, a=[XS(r.x0),ZS(r.y0)], b=[XS(r.x1),ZS(r.y1)], y=(lift+1)*.004;
+  // the places a section holds (sections.places: the skate park) bring their own ground: the section's is cut round them, and no tree grows on them
+  const HOLES=(S.places||[]).filter(q=>secs.some(b=>b.id===q.section)).map(q=>({x0:q.x-q.w/2,x1:q.x+q.w/2,y0:q.y-q.d/2,y1:q.y+q.d/2}));
+  const cut=(r,h)=>{ if(!clip(r,h))return [r]; return [{...r,y1:h.y0},{...r,y0:h.y1},{x0:r.x0,x1:h.x0,y0:Math.max(r.y0,h.y0),y1:Math.min(r.y1,h.y1)},{x0:h.x1,x1:r.x1,y0:Math.max(r.y0,h.y0),y1:Math.min(r.y1,h.y1)}].filter(q=>q.x1-q.x0>.01&&q.y1-q.y0>.01); };
+  const gm={}, MP=[], add=(k,r,lift)=>{ let L=[r]; for(const h of HOLES)L=L.flatMap(q=>cut(q,h)); if(L.length!==1||L[0]!==r){ for(const q of L)add0(k,q,lift); return; } add0(k,r,lift); }, add0=(k,r,lift)=>{ if(k!=='line'&&k!=='dash')MP.push({k,r,lift}); const L=gm[k]||(gm[k]={P:[],U:[],lift}); const R=KIND[k].rep, a=[XS(r.x0),ZS(r.y0)], b=[XS(r.x1),ZS(r.y1)], y=(lift+1)*.004;
     L.P.push(a[0],y,a[1],b[0],y,b[1],b[0],y,a[1],a[0],y,a[1],a[0],y,b[1],b[0],y,b[1]); L.U.push(r.x0/R,r.y0/R,r.x1/R,r.y1/R,r.x1/R,r.y0/R,r.x0/R,r.y0/R,r.x0/R,r.y1/R,r.x1/R,r.y1/R); };
   const mirrorY=r=>({x0:r.x0,x1:r.x1,y0:A.y0+A.y1-r.y1,y1:A.y0+A.y1-r.y0});
   const rows=[], kiosks=LOOP.STA.filter(s=>!s.old).map(s=>s.kiosk);
@@ -89,7 +92,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
   MODS.sections={pieces:MP,rows,road,inner,secs,kindAt:(x,y)=>{ const b=secs.find(c=>x>=c.x0&&x<c.x1&&y>=c.y0&&y<c.y1); if(!b)return null; for(const q of SPC[b.id]||[])if(x>=q.r.x0&&x<q.r.x1&&y>=q.r.y0&&y<q.r.y1)return SKN[q.k]; return 'land'; }};
   // trees in the park and lamps along it, one instanced mesh each
   const trees=[], posts=[];
-  for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
+  for(const b of secs){ const q=clip(P,b); if(!q)continue; let n=0; for(let i=0;i<260&&n<70;i++){ const x=q.x0+3+hash(b.col,i,41)*(q.x1-q.x0-6), y=q.y0+3+hash(b.row+9,i,43)*(q.y1-q.y0-6); if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<9)||HOLES.some(h=>x>h.x0-4&&x<h.x1+4&&y>h.y0-4&&y<h.y1+4))continue; trees.push({x,y,s:.8+.5*hash(i,b.col,47),k:i}); n++; } }
   // the globe posts, as on Market St: both sidewalks, a post every 28 of A's lamp spacing (33 tiles), the sides staggered half that, none by a station entrance; DRESS builds and lights them
   { const SP=28/.84, kiosks=LOOP.STA.filter(st=>!st.old).map(st=>st.kiosk), near=(x,y)=>kiosks.some(k=>x>k.x0-4&&x<k.x1+4&&y>k.y0-4&&y<k.y1+4);
     for(const b of secs)for(const [o,i,off] of [[inner,P,0],[O,road,SP/2]])for(const r of frame(o,i)){ const q=clip(r,b); if(!q)continue; const al=q.x1-q.x0>q.y1-q.y0, a0=al?q.x0:q.y0, a1=al?q.x1:q.y1, c=al?(q.y0+q.y1)/2:(q.x0+q.x1)/2;

@@ -51,6 +51,9 @@
    "north": "LANTERN ST",
    "east": "CURIO AVE"
   },
+  "places": [
+   {"id": "skatepark", "section": "B", "x": 24.5, "y": 328.5, "face": "w", "w": 81, "d": 57, "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"}
+  ],
   "ring": {
    "park": {
     "x0": -24,
@@ -361,7 +364,10 @@
    "kind": "front",
    "x0": 193.3,
    "x1": 201.5,
-   "lot": true
+   "lot": true,
+   "inW": 14,
+   "inD": 14,
+   "inH": 112
   },
   {
    "id": "flea",
@@ -402,11 +408,6 @@
   "tower3": {
    "x": 255,
    "y": 59.5
-  },
-  "skatepark": {
-   "x": 180,
-   "y": 63,
-   "face": "n"
   },
   "brook": {"note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it", "pts": [[248, 168], [230, 150], [212, 128], [200, 114], [190, 104], [203, 90], [205, 76], [187.5, 68], [189, 59], [190.5, 50], [178, 42], [165, 34], [155, 20]]},
   "shelvedSites": [

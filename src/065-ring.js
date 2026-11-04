@@ -1,6 +1,6 @@
 // THE TOWN WALL: RINGX sets the town's outer bounds and the invisible walls around them.
 import {SHARED, THREE} from './003-shx.js';
-import {PARK} from './003b-systems.js';
+import {PARK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MISTB, MISTE, MODS, PFAR, RING, SECTIONS, SOL, TILE} from './006-map-pre.js';
 const RINGX={};
@@ -12,13 +12,16 @@ const RINGX={};
   wall(x0-th,z0,x0,z1); wall(x1,z0,x1+th,z1); wall(x0,z0-th,x1,z0); wall(x0,z1,x1,z1+th);
   RINGX.inside=(x,z,R=0)=>x>x0+R&&x<x1-R&&z>z0+R&&z<z1-R;
   // the force field: where your section meets the next one you can't walk on, only go there from the map
-  { const A=SECTIONS.all, U={uT:{value:0}}, M=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,
+  { const A=SECTIONS.all, U={uT:{value:0},uP:{value:new THREE.Vector2()},uR:{value:3*T}}, M=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,
       vertexShader:'varying vec2 vU; varying vec3 vW; void main(){ vU=uv; vW=(modelMatrix*vec4(position,1.)).xyz; gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.); }',
-      fragmentShader:'uniform float uT; varying vec2 vU; varying vec3 vW; void main(){ float s=vW.x+vW.z; vec2 h=fract(vec2(s*.9,vW.y*1.04)); float edge=step(.92,max(h.x,h.y)); float band=.5+.5*sin(vW.y*3.-uT*2.5+s*.3); float a=(1.-vU.y)*(.05+.16*edge+.07*band)*(.75+.25*sin(uT*1.7+s*.5)); gl_FragColor=vec4(vec3(.35,.8,1.)*a,1.); }'});
+      fragmentShader:'uniform float uT,uR; uniform vec2 uP; varying vec2 vU; varying vec3 vW; void main(){ float s=vW.x+vW.z; vec2 h=fract(vec2(s*.9,vW.y*1.04)); float edge=step(.92,max(h.x,h.y)); float band=.5+.5*sin(vW.y*3.-uT*2.5+s*.3); float a=(1.-vU.y)*(.05+.16*edge+.07*band)*(.75+.25*sin(uT*1.7+s*.5))*smoothstep(uR,uR*.2,distance(vW.xz,uP)); gl_FragColor=vec4(vec3(.35,.8,1.)*a,1.); }'});
     const FH=7*T, G=new THREE.Group(); G.name='forcefield';
-    const side=(ax,az,bx,bz)=>{ const L=Math.hypot(bx-ax,bz-az), m=new THREE.Mesh(new THREE.PlaneGeometry(L,FH),M); m.position.set((ax+bx)/2,FH/2,(az+bz)/2); m.rotation.y=Math.atan2(bz-az,ax-bx); m.frustumCulled=true; m.raycast=()=>{}; G.add(m); };
+    const SEG=[], side=(ax,az,bx,bz)=>{ SEG.push([ax,az,bx,bz]); const L=Math.hypot(bx-ax,bz-az), m=new THREE.Mesh(new THREE.PlaneGeometry(L,FH),M); m.position.set((ax+bx)/2,FH/2,(az+bz)/2); m.rotation.y=Math.atan2(bz-az,ax-bx); m.frustumCulled=true; m.raycast=()=>{}; G.add(m); };
     if(F.x0>A.x0+.01)side(x0,z0,x0,z1); if(F.x1<A.x1-.01)side(x1,z0,x1,z1); if(Math.min(F.y0,F.y1)>Math.min(A.y0,A.y1)+.01)side(XS(F.x0),ZS(F.y0),XS(F.x1),ZS(F.y0)); if(Math.max(F.y0,F.y1)<Math.max(A.y0,A.y1)-.01)side(XS(F.x0),ZS(F.y1),XS(F.x1),ZS(F.y1));
-    if(G.children.length){ scene.add(G); for(const c of G.children)c.onBeforeRender=()=>{ U.uT.value=performance.now()/1e3; }; RINGX.field=G; } }
-  RINGX.tick=()=>{ if(SHARED.LVL==='down')scene.background.setRGB(0,0,0); };
+    if(G.children.length){ scene.add(G); G.visible=false; for(const c of G.children)c.onBeforeRender=()=>{ U.uT.value=performance.now()/1e3; }; RINGX.field=G; }
+    // seen only where you press against it (owner, 4 Nov 2026: "should only pop up to stop players from leaving")
+    RINGX.near=(x,z)=>{ let d=1e9; for(const [ax,az,bx,bz] of SEG){ const vx=bx-ax, vz=bz-az, t=Math.max(0,Math.min(1,((x-ax)*vx+(z-az)*vz)/(vx*vx+vz*vz))); d=Math.min(d,Math.hypot(x-ax-t*vx,z-az-t*vz)); } return d; };
+    RINGX.fieldTick=(x,z)=>{ if(!RINGX.field)return; const on=SHARED.LVL==='up'&&RINGX.near(x,z)<U.uR.value*1.3; if(on!==G.visible)G.visible=on; if(on)U.uP.value.set(x,z); }; }
+  RINGX.tick=()=>{ if(SHARED.LVL==='down')scene.background.setRGB(0,0,0); if(RINGX.fieldTick)RINGX.fieldTick(pos.x,pos.z); };
   window.RINGX=RINGX; }
 export {RINGX};

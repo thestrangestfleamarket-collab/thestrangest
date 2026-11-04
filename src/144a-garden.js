@@ -1,6 +1,6 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
@@ -76,9 +76,9 @@ const GARDEN={}; window.GARDEN=GARDEN;
   FORAGE.ACT.gplant=id=>{ '@later'; const k=id.slice(3); if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('PLANT IT IN A LAWN, OUTDOORS.','#c8a090');
     const y=lawnAt(pos.x,pos.z); if(y==null)return say('YOU NEED BARE LAWN UNDER YOUR FEET TO PLANT IT.','#c8a090');
     if(S.plots.length>=12)return say('YOU ALREADY TEND TWELVE PLANTS. PICK SOME FIRST.','#c8a090'); if(S.plots.some(p=>Math.hypot(p.x-pos.x,p.z-pos.z)<.45*T))return say('SOMETHING IS ALREADY PLANTED HERE.','#c8a090');
-    FORAGE.take(id,1); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
+    FORAGE.take(id,1); MOTION.play('plant'); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
   GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GROW); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
-    const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4});
+    const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4}); MOTION.play('harvest');
     const R=15*T, near=L=>L.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<R), cs=CREATS.filter(N=>N.wild&&N.body.visible).map(N=>({k:N.kind,x:N.web?N.web.x:N.st.x,z:N.web?N.web.z:N.st.z})), W=window.WX&&WX.now;
     const help=near(cs.filter(c=>c.k==='Frog'||c.k==='Spider'))||!!(window.BIRDS&&near(window.BIRDS.list)), harm=near(cs.filter(c=>c.k==='Rat'))||!!(W&&W.rain>.3&&CLOCK.dark()), pm=help&&!harm?1:harm&&!help?-1:0;
     if(pm>0)say('FROGS, SPIDERS AND BIRDS NEARBY HAVE KEPT THE PESTS OFF.','#9fe07f'); else if(pm<0)say(W&&W.rain>.3?'SLUGS HAVE BEEN AT IT IN THE WET NIGHT.':'RATS HAVE BEEN NIBBLING AT IT.','#c8a090');

@@ -206,6 +206,21 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **Archive the characters** · P1 · XL · code · risk high · queued, owner says when to start (4 Nov). Owner, 4 Nov: "archive all the
+  characters and remove them 100% from game (do not load unless pulled from archive specifically told)".
+  - Stay: the Tomato, the Mushroom Seller, the Teddy Bear, the dragons, the dungeon (ogres, skeletons, its creatures), all animals, every
+    skater (skate shop crew, park skaters, skatepark), the Diner Waitress, the Cart Man, the Scuba Diver, the Samurai Warrior, and the
+    buyers below. Everyone else goes to an archive folder the build never reads (castle cast, pawns, woodland folk, the Fox, the Gas
+    Station Attendant, the castle guardians included); one comes back only when the owner names it.
+  - Remove the Museum of Earth, building included (not the art museum; its gift shop goes with it), and the cinema snack stand, the bar's
+    taps and register, the playhouse drinks.
+  - Sellers: the Radish's goods and teaching go to the Tomato; the Shark's to the Scuba Diver at the same spot; the Swordsmith's swords and
+    teaching to the Samurai Warrior at the Swordsmith's spot; the Boardwright's boards and kart to the Skate Shop Owner.
+  - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), Lake Angler
+    (fish), the Tomato (mushrooms).
+  - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
+    staff, pay at the register yourself; take off the groceries that do nothing (toilet paper, soap, and the like).
+
 - [ ] **Who stands on Market St, and why** · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
   one on the street"; he has not said yes to fixing these. The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at
   work" (`CREW.spot`, `src/111fb-fleamarket.js:30,49`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`),

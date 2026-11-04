@@ -137,7 +137,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }
       const eye=!near&&WINDOWS.near(st.x,st.z); if(!(near||eye)||!seen(g)||NPC.hid&&!eye)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
+      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy&&!SR.sit?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
   // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
   const LIVEP=new Set(); let smT=0;

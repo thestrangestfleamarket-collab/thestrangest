@@ -9,6 +9,7 @@ catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || 
 
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
+{ const T = JSON.parse(fs.readFileSync(ROOT + '/data/topmap.json', 'utf8')); ok(T.tiles.length === T.NX * T.NZ && T.tiles.every(t => fs.existsSync(ROOT + '/data/topmap/' + t)), 'the map editor\'s ground picture has all its ' + T.tiles.length + ' pieces (node tools/topmap.cjs)'); }
 const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block.back, -77], into = (a, b) => a.kind === 'stairs' && b.kind === 'passage';
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
@@ -230,6 +231,17 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
         out['phase' + k] = { style: n.D.style, beats: +(fly.getEffectiveTimeScale() / fly.getClip().duration).toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.beats > .25 && dg.phase1.beats > .25, 'a flying dragon beats its wings through both halves of its flight (a beat every few seconds at least): ' + JSON.stringify(dg));
+    const db = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, TI = D.cv().TILE, you = D.pos(), ds = D.npcs().filter(q => q.key === 'dragon' && !q.D.p.sign), out = {};
+      const n = ds[0], w = name => { const a = n.mixer._actions.find(x => x.getClip().name === name); return a ? a.getEffectiveWeight() : -1; }, s0 = n.D.shots || 0; let seen = 0, wt = 0;
+      const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 10 * TI; n.st.z = you[2]; n.st.h = Math.PI / 2; n.D.y = n.D.cruise = you[1] + 4 * TI; };
+      put(); n.D.breath = 0; for (let i = 0; i < 300 && (n.D.shots || 0) === s0; i++) { await raf(); put(); if (n.D.fx) { seen = n.D.fx.a.getClip().name; wt = Math.max(wt, w(seen)); } }
+      out.breath = { clip: seen, weight: +wt.toFixed(2), shots: (n.D.shots || 0) - s0 };
+      const m = ds.find(q => q !== n && q.D.home && q.D.home.tree); if (!m) return { ...out, err: 'no dragon with a home tree' };
+      const H0 = m.D.home, H = m.D.home = { x: you[0] + 7 * TI, z: you[2], y: you[1] + 3 * TI, h: 0, tree: { x: you[0] + 7 * TI, z: you[2], r: .5 * TI, y: you[1], top: you[1] + 4 * TI } }, perch = () => { m.D.mode = 'perch'; m.D.p = H; m.st.x = H.x; m.st.z = H.z; m.D.y = H.y; }; perch(); m.D.t = 999; m.D.pw = 0; m.D.peek = false; m.D.pk = 99; m.D.zz = 0;
+      const sw = () => { const a = m.mixer._actions.find(x => x.getClip().name === 'Sleep'); return a.getEffectiveWeight(); };
+      for (let i = 0; i < 400 && !(m.D.asleep && sw() > .5); i++) { await raf(); perch(); }
+      out.nap = { asleep: m.D.asleep, sleep: +sw().toFixed(2) }; m.D.t = 3; for (let i = 0; i < 3; i++) { await raf(); perch(); } out.woke = !m.D.asleep; m.D.home = m.D.p = H0; m.D.t = 1; return out; }).catch(e => ({ err: e.message }));
+    ok(db.breath && db.breath.clip === 'Fly_Fire' && db.breath.weight > .5 && db.breath.shots === 1 && db.nap && db.nap.asleep && db.nap.sleep > .5 && db.woke, 'a flying dragon breathes its fireball on its fire-breath clip; one resting on its home tree falls asleep on its sleep clip and wakes before it leaves: ' + JSON.stringify(db));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }

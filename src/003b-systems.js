@@ -17,6 +17,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   wvV=(u,v)=>[(u-v)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2],
   CLOCK={},
   DRESS={},
+  PONDS={wet:()=>false,strips:[]},
   LITE={},
   SHAD={},
   CLIP={},
@@ -49,7 +50,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   GUIDE={},
   VR={on:false},
   BINS={},
-  PASSPORT={}, SUMMON={}, SCANNER={}, SPRAY={},
+  MOTION={}, PASSPORT={}, SUMMON={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
   HANDHELD={},   // the handheld (146ya): ESC pops it up, every menu opens from it
@@ -104,4 +105,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   BOOKS={},
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};

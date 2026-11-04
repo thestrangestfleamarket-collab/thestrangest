@@ -32,7 +32,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
     for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
     const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
-  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[187.5,68],[189,59],[190.5,50],[178,42],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
+  const BK=P.brook=(()=>{ const K=[...((LEVEL.parkPlaces.brook&&LEVEL.parkPlaces.brook.pts)||[]).map(p=>[p[0],p[1]]),[LX,LY]], Q=[]; let bs=null;
     { const [ax,ay]=K[0], l=Math.hypot(ax-K[1][0],ay-K[1][1]), ux=(ax-K[1][0])/l, uy=(ay-K[1][1])/l; for(let a=-1.3;a<=1.3;a+=.05){ const dx=ux*Math.cos(a)-uy*Math.sin(a), dy=ux*Math.sin(a)+uy*Math.cos(a); let t=0; while(t<40&&FOUNT.lake(ax+dx*t,ay+dy*t)>=0)t+=.25; if(t>=40)continue; let ok=true; for(let u=0;u<=t+4;u+=.5)if(FOUNT.ter(ax+dx*u,ay+dy*u)<7)ok=false; if(ok&&(!bs||t<bs[0]))bs=[t,dx,dy]; } if(bs)K.unshift([ax+bs[1]*(bs[0]+4),ay+bs[2]*(bs[0]+4)]); }
     for(let i=0;i<K.length-1;i++){ const a=K[Math.max(0,i-1)], b=K[i], c=K[i+1], d=K[Math.min(K.length-1,i+2)]; for(let k=0;k<16;k++){ const t=k/16, f=j=>.5*(2*b[j]+(c[j]-a[j])*t+(2*a[j]-5*b[j]+4*c[j]-d[j])*t*t+(3*b[j]-a[j]-3*c[j]+d[j])*t*t*t); Q.push([f(0),f(1)]); } } Q.push(K[K.length-1]);
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];

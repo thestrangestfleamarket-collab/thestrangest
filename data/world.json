@@ -300,8 +300,11 @@
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": 229.75,
-   "x1": 242.68
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 91.2,
+   "y1": 105.2,
+   "face": "e"
   },
   {
    "id": "arcade",
@@ -375,6 +378,28 @@
    "kind": "lot",
    "x0": 216.6,
    "x1": 229.65
+  },
+  {
+   "id": "fairgate",
+   "name": "THE FAIR GATE",
+   "kind": "gate",
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 105.3,
+   "y1": 116.1,
+   "face": "e"
+  },
+  {
+   "id": "fair",
+   "name": "THE STRANGEST FAIR",
+   "kind": "fair",
+   "x0": -128.0,
+   "x1": -80.5,
+   "y0": -58.0,
+   "y1": 205.0,
+   "face": "e",
+   "door": [-79, 110.7],
+   "gate": [105.3, 116.1]
   }
  ],
  "shells": [],

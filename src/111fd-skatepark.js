@@ -1,11 +1,11 @@
-// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json); its decks, ramps and ledges are ground to walk and ride.
+// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json), the board skaters riding the kit's skateboard (data/skateboard.json); its decks, ramps and ledges are ground to walk and ride.
 import {SHARED, THREE} from './003-shx.js';
-import {CLIP, CLOCK, PARK, ROOMS} from './003b-systems.js';
+import {CLIP, CLOCK, FORAGE, PARK, RIDE, ROOMS, SHOPS, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, LEVEL, MAPG, MODS, OFFDX, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const SKATE={}; window.SKATE=SKATE;
-{ const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), GATE=__LAZY__("data/skategate.json");
+{ const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), GATE=__LAZY__("data/skategate.json"), BOARD=__LAZY__("data/skateboard.json");
   const MH=TILE/.84, MV=ZU*24/.84, I16=s=>{ const b=atob(s), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u.buffer; };
   const NAMES={'skate-filmer':'THE FILMER','street-skater':'A STREET SKATER','veteran-pool-skater':'THE POOL VETERAN','vert-skater':'A VERT SKATER','roller-skater':'THE ROLLER SKATER','skate-coach':'THE COACH',
     'beginner-kid-skater':'A KID ON A BOARD','scooter-kid':'A KID ON A SCOOTER','bmx-rider':'A BMX RIDER','graffiti-artist':'THE GRAFFITI ARTIST','longboarder':'A LONGBOARDER','skate-shop-owner':'THE SKATE SHOP OWNER'};
@@ -14,13 +14,25 @@ const SKATE={}; window.SKATE=SKATE;
     for(let i=0;i<Q.length;i+=3){ for(let k=0;k<3;k++)v[k]=(Q[i+k]+32500)*M.sc+M.lo[k]; const w=f(v[0],v[1],v[2]); P[i]=w[0]; P[i+1]=w[1]; P[i+2]=w[2]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3,true)); g.setIndex(new THREE.BufferAttribute(new Uint32Array(I16(M.i)),1)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const MAT=()=>new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
+  // the skateboard (the kit's cruiser) as a RIDE kind: what the board skaters stand on, posed by the rig's skate stance and push
+  const RIDERS={'street-skater':3.2,'veteran-pool-skater':3,'vert-skater':3.4,'beginner-kid-skater':2,'longboarder':3.6};   // who rides, how fast (m/s)
+  let BD=null; const SPOSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
+  const deckH=()=>RIG.RIDEG.deck*(W3.group&&W3.group.scale.y||.046);
+  const SKATEK={name:'SKATEBOARD',hint:'A CLICK SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
+    make:()=>{ const m=new THREE.Mesh(geo(BD,(x,y,z)=>[x*MH,y*MV,z*MH]),MAT()); m.castShadow=true; m.userData.top=BD.top*MV; return m; },
+    floor:(g,R)=>g+BD.top*MV-deckH()+(R.z||0),   // you stand on the deck, its wheels on the ground
+    pose:R=>{ let p=R.push; if(p==null){ const up=R.v>(R.pv||0)+1e-4&&R.v<4.5*TILE; R.pv=R.v; R.pt=up?(R.pt||0)+.022:0; p=up?R.pt%1:-1; } SPOSE.push=p; SPOSE.brake=!(R.v>.2*TILE); SPOSE.z=R.z||0; return SPOSE; },   // pushes off while it gathers speed
+    place:(m,R)=>{ m.position.y-=m.userData.top||0; m.rotation.z=Math.max(-.25,Math.min(.25,-(R.lean||0)*.3)); }};
+  SKATE.board=SKATEK;
+  // anyone can own one: the skate shop sells it (data/items.json skateboard, grants skate; the shop owner's trade in characters.json)
+  SYS.onStart(()=>{ FORAGE.add({names:{skateboard:'SKATEBOARD'}}); BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); }).catch(e=>console.warn('SKATE board',e)); },'111fd-skateboard');
 
   // the park, off the map west of the sections; you come in just inside its gateway
   const WX=SHARED.BOD.X(1700+OFFDX/BLDK), WZ=SHARED.BOD.Z(-45), B={x0:WX-27*MH,x1:WX+27*MH,z0:WZ-37*MH,z1:WZ+37*MH}, GX=0, GZ=32.5;   // its footprint and its gateway, in the park's metres (tools/skatepark-bake.py)
   let D=null, G=null, SK=null, LIT=null, LAMPS=[], SOLS=[], GR=null, tick=null, Y0=0;
   const LAMPI=26, wx_=x=>WX+x*MH, wz_=z=>WZ+z*MH, wy_=y=>(y-Y0)*MV;
   SKATE.ground=(x,z)=>{ const g=D&&D.ground; if(!g)return 0; const i=Math.floor(((x-WX)/MH-g.x0)/g.cs), j=Math.floor(((z-WZ)/MH-g.z0)/g.cs); if(i<0||j<0||i>=g.nx||j>=g.nz)return 0; return wy_(g.y0+g.H[j*g.nx+i]*g.dy); };
-  const need=()=>Promise.all([LOAD('skatepark'),DATA().then(d=>{ D=d; if(!D.ground.H)D.ground.H=new Uint16Array(I16(D.ground.h)); Y0=D.gate.y; })]);
+  const need=()=>Promise.all([LOAD('skatepark'),DATA().then(d=>{ D=d; if(!D.ground.H)D.ground.H=new Uint16Array(I16(D.ground.h)); Y0=D.gate.y; }),BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); })]);
   const build=()=>{ '@skatepark';
     G=new THREE.Group(); G.name='skatepark'; scene.add(G); const f=(x,y,z)=>[wx_(x),wy_(y),wz_(z)];
     for(const M of D.mesh){ const m=new THREE.Mesh(geo(M,f),MAT()); m.castShadow=m.receiveShadow=true; G.add(m); }
@@ -38,15 +50,15 @@ const SKATE={}; window.SKATE=SKATE;
     GR={...B,ground:SKATE.ground}; ROOMS.grounds.push(GR);
     // the skaters, each where the kit stood them; they mill about near their spot
     if(SK)scene.add(SK.g); else BODS().then(J=>{ if(!G)return; SK={g:new THREE.Group(),list:[]}; SK.g.name='skaters'; scene.add(SK.g);
-      D.people.forEach((p,i)=>{ const k='skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground});
-        const N=BODIES.by[k].npc, s=N.st; s.x=wx_(p.x); s.z=wz_(p.z); s.hd=p.hd; s.home={x:s.x,z:s.z,r:1.6*TILE}; N.free=(x,z)=>x>B.x0&&x<B.x1&&z>B.z0&&z<B.z1&&!CLIP.hit(SOL.up,x,z,.25*TILE); N.on=true; SK.list.push(N); }); }).catch(e=>console.warn('SKATE skaters',e));
+      D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground,...(RIDERS[p.key]?{ride:SKATEK,rideSpeed:RIDERS[p.key]}:{})});
+        const N=BODIES.by[k].npc, s=N.st; s.x=wx_(p.x); s.z=wz_(p.z); s.hd=p.hd; s.home={x:s.x,z:s.z,r:(RIDERS[p.key]?7:1.6)*TILE}; N.free=(x,z)=>x>B.x0&&x<B.x1&&z>B.z0&&z<B.z1&&!CLIP.hit(SOL.up,x,z,.25*TILE); N.on=true; SK.list.push(N); }); if(SHOPS.sync)SHOPS.sync(); }).catch(e=>console.warn('SKATE skaters',e));
     if(SK)for(const N of SK.list)N.on=true;
     tick=()=>{ const n=CLOCK.dark?CLOCK.dark():false; if(LIT&&LIT.on!==n){ LIT.on=n; LIT.m.geometry=n?LIT.night:LIT.day; LIT.m.material=n?LIT.nm:LIT.dm; for(const l of LAMPS)l.intensity=n?LAMPI:0; } sky.material.uniforms.n.value+=((n?1:0)-sky.material.uniforms.n.value)*.05; };
     return ROOMS.part(G,()=>{ LAMPS=(D.lamps||[]).map(([x,y,z])=>{ const l=new THREE.PointLight(0xffe2b0,0,52*MH,1); l.position.set(wx_(x),wy_(y),wz_(z)); scene.add(l); return l; }); },null); };   // the floodlights: part records them into the lights you get the nearest of
   const unbuild=()=>{ LAMPS=[]; for(const b of SOLS){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } SOLS=[]; const gi=ROOMS.grounds.indexOf(GR); if(gi>=0)ROOMS.grounds.splice(gi,1); GR=null; tick=null;
     if(SK){ for(const N of SK.list)N.on=false; SK.g.removeFromParent(); }
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); if(LIT){ LIT.day.dispose(); LIT.night.dispose(); LIT.nm.dispose(); LIT.dm.dispose(); } G.removeFromParent(); G=null; LIT=null; } };
-  SKATE.LAMPI=LAMPI; SKATE.dbg=()=>({lamps:LAMPS.filter(l=>l.intensity>0).length,built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
+  SKATE.LAMPI=LAMPI; SKATE.dbg=()=>({shop:!!(SHOPS.bound&&SHOPS.bound.has('skateshop')),lamps:LAMPS.filter(l=>l.intensity>0).length,built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,riding:SK?SK.list.filter(N=>N.board&&N.RS&&N.RS.v>0).length:0,boards:SK?SK.list.filter(N=>N.board).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
   SYS.add('dress',()=>tick&&tick(),'111fd-skatepark');   // the lamps and the sky follow the clock while it is built
   const gin=[wx_(GX),wz_(GZ-3)];
 
@@ -57,7 +69,7 @@ const SKATE={}; window.SKATE=SKATE;
     SKATE.door=[door[0],y0,door[1]];
     GATE().then(G=>{ const g=new THREE.Mesh(geo(G,(x,y,z)=>{ const q=at(x,z); return [q[0],y0+y*MV,q[1]]; }),MAT()); g.name='the skate park gateway'; g.castShadow=g.receiveShadow=true; (MAPG.park||scene).add(g);
       SKATE.gateSol=[]; for(const sx of [-1,1]){ const a=at(sx*3.4-.4,-.4), b=at(sx*3.4+.4,.4); SKATE.gateSol.push([Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])]); } SOL.up.push(...SKATE.gateSol); }).catch(e=>console.warn('SKATE gate',e));
-    ROOMS.off.skatepark={name:'THE SKATE PARK',noCeil:1,clearAir:1,box:{x0:B.x0,z0:B.z0,x1:B.x1,z1:B.z1,y0:-12*MV,y1:40*MV},need,build,unbuild,
+    ROOMS.off.skatepark={name:'THE SKATE PARK',noCeil:1,clearAir:1,outdoor:1,box:{x0:B.x0,z0:B.z0,x1:B.x1,z1:B.z1,y0:-12*MV,y1:40*MV},need,build,unbuild,
       spawn:[gin[0],gin[1],0,Math.PI],out:[door[0],door[1],0,Math.atan2(f[0],f[1])],door:SKATE.door,exit:[wx_(GX),0,wz_(GZ+.1)],exitName:'OUT TO THE PARK'};
     if(STORE.places)STORE.places.push(['THE SKATE PARK',door[0],door[1]+.8*TILE,'up']);
     ROOMS.reset&&ROOMS.reset(); SKATE.ready=true; });

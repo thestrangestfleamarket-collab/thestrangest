@@ -28,7 +28,8 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   const turnIn=(TB,n0,l0)=>{ if(!TB.q)return; for(const p of PROPS.slice(n0))SHARED.BOD.placeAt(p,TB.q,TB.cx,TB.cy,TB.cx,TB.cy); for(const l of LAMPS.slice(l0))[l.x,l.y]=TB.pt(l.x,l.y); }; STORE.turnIn=turnIn;
   const room=(id,name,B,look,door,set,o={})=>{ const n0=PROPS.length, l0=LAMPS.length; set(B,l0); const all=PROPS.slice(n0), lamAll=LAMPS.slice(l0);
     const lazy=!!(door&&look.in&&!o.now&&!STORE.now), inB=b=>b.x0>=B.x0-.2&&b.x1<=B.x1+.2&&b.y0>=B.y0-.2&&b.y1<=B.y1+.2;
-    const inner=lazy?all.filter(p=>p.boxes&&p.boxes.length&&p.boxes.every(inB)):[], outer=all.filter(p=>!inner.includes(p));
+    const mid=p=>{ const bs=p.boxes; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(const b of bs){ x0=Math.min(x0,b.x0); y0=Math.min(y0,b.y0); x1=Math.max(x1,b.x1); y1=Math.max(y1,b.y1); } const cx=(x0+x1)/2, cy=(y0+y1)/2; return cx>B.x0&&cx<B.x1&&cy>B.y0&&cy<B.y1; };   // a prop whose middle is inside belongs to the inside (a soffit or a stair may poke into the wall)
+    const inner=lazy?all.filter(p=>p.boxes&&p.boxes.length&&(p.boxes.every(inB)||mid(p))):[], outer=all.filter(p=>!inner.includes(p));
     const lin=lazy?lamAll.filter(l=>l.x>B.x0&&l.x<B.x1&&l.y>B.y0&&l.y<B.y1):[], lout=lamAll.filter(l=>!lin.includes(l));
     const boxes=props=>{ for(const p of props){ BATCH.tag=OBJ('store:'+id,p.name||p.kind); const pw=o.pieceWalls&&o.pieceWalls[p.kind], kind=pw?'W'+id+':'+pw[0]:o.pieceWalls&&/roof/.test(p.kind||'')?'R'+id:'L';
       if(pw&&!planes[kind]){ planes[kind]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); cuts.push({kind,nx:pw[1],nz:pw[2],id}); }
@@ -65,7 +66,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
           if(ax==='x')fr.position.set(X(c),zc,Z(at-inS*.1)); else{ fr.position.set(X(at-inS*.1),zc,Z(c)); fr.rotation.y=Math.PI/2; } scene.add(fr);
           for(const [look,off] of [['in',-inS*.14],['out',inS*.12]]){ const pm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(c+wd/2)-X(c-wd/2)),Y(84)-Y(30)));
             if(ax==='x')pm.position.set(X(c),zc,Z(at+off)); else{ pm.position.set(X(at+off),zc,Z(c)); pm.rotation.y=Math.PI/2; } scene.add(pm); WINDOWS.pane(pm,id,look,true); } }
-        if(lazy&&!inner){ solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint); if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
+        if(lazy&&!inner){ if(!o.noOut)solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint);   // noOut: the box is off the street (its front a block there), its outside never seen if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
           inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,holes,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
         const full=()=>{ const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
         const as=new Set([a0,a1]), zs=new Set([0,H]); for(const h of holes){ as.add(Math.max(a0,h.a0)); as.add(Math.min(a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
@@ -140,8 +141,8 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     const inWalls=mr({in:look.in},()=>{},{xo:1,xw:[...[M.hx0,M.hx1].map((x,i)=>['s'+i,'y',SX-x,SY-M.by,B.y1-T,i?1:-1,[{a0:SY-M.side[1],a1:SY-M.side[0],z0:0,z1:M.archZ}],true]),
         ['k','x',SY-M.by,B.x0+T,B.x1-T,1,[M.earth,M.humans,M.closed].map(([a,b])=>({a0:SX-b,a1:SX-a,z0:0,z1:M.archZ})),true],
         ...[M.hx0,M.hx1].map((x,i)=>['r'+i,'y',SX-x,B.y0+T,SY-M.by-T,i?1:-1,[],true])]});
-    STEPS.push(mr(lw,()=>{},{xo:1,xw:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1]]}),
-      mr(lw,()=>{ flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,B.h,roofCol,'Rmuseum'); },{xo:1,xw:[['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]}),
+    STEPS.push(mr(lw,()=>{},{xo:1,noOut:!!MT,xw:[['f','x',B.y1,B.x0,B.x1,-1],['b','x',B.y0,B.x0,B.x1,1]]}),
+      mr(lw,()=>{ if(!MT)flat(B.x0-.1,B.y0-.1,B.x1+.1,B.y1+.1,B.h,roofCol,'Rmuseum'); },{xo:1,noOut:!!MT,xw:[['w','y',B.x0,B.y0-T,B.y1+T,1],['e','y',B.x1,B.y0-T,B.y1+T,-1]]}),
       mr({in:look.in},()=>{ const py=B.y0-3, sd=(M.side[0]+M.side[1])/2;
         for(const m of MT?[mp,mpS]:[mp]){ m('museum portico steps',M.mid,(py+B.y0)/2); for(const dx of [-3.7,-1.2,1.2,3.7])m('museum column',M.mid+dx,py+.7); m('museum entablature',M.mid,py+.7,2); }
         for(const x of [M.hx0+.8,M.hx1-.8])for(const y of [M.side[0]-.8,M.side[1]+.8,M.by-1.4])mp('museum hall column',x,y);

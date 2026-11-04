@@ -81,15 +81,15 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     ['shop','BUILDINGS',1],['filler','GARAGES AND LOTS',1],['park','PARK PLACES',1],['tree','TREES',1],['label','NAMES',1],['grid','GRID',0]];
   const GROUND=LAYERS.slice(0,7), LAYERS_CH=[...GROUND,['mapthings','MAP THINGS (FAINT)',1],['you','YOU',1],['people','PEOPLE',1],['toon','TOONS',1],['merchant','MERCHANTS',1],['animal','ANIMALS',1],['monster','MONSTERS',1],['label','NAMES',1],['grid','GRID',0]];
   const SHOW={}; for(const [k,,on] of [...LAYERS,...LAYERS_CH])SHOW[k]=!!on; try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('maped-show')||'{}')); }catch(e){}
-  const C={void:[11,13,18],lot:[70,66,60],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
-  const LAYOF={lot:'walk',water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall'};
+  const C={void:[11,13,18],lot:[70,66,60],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46],fair:[122,120,116]};
+  const LAYOF={lot:'walk',water:'water',quay:'walk',road:'road',alley:'alley',walk:'walk',land:'grass',lawn:'grass',way:'path',wall:'wall',fair:'walk'};
   const LCOL={shop:[176,86,62],filler:[110,100,96],shell:[140,106,88],park:[154,148,136],tree:[36,80,42],path:[186,170,128]};
   const FACEROT={n:0,e:-90,s:180,w:90}, faceOf=r=>['n','w','s','e'][((Math.round((r||0)/90)%4)+4)%4], bld=o=>!!(o&&o.gid&&WP[o.gid]&&WP[o.gid].kind==='front'), turns=o=>bld(o)&&WP[o.gid].y1!=null;
   const K=BLDK, bt=(x,y)=>[SHARED.BOD.OX+(x-SHARED.BOD.OX)*K,SHARED.BOD.OY+(y-SHARED.BOD.OY)*K], wt=(x,z)=>[SHARED.BOD.OX+x/T,SHARED.BOD.OY+z/T];
   const FRONT=BLOCK.front, BACK=BLOCK.back;
   let TER=null, F=null; const S=2;
   const terrain=()=>{ F={...RING.cf}; const W=Math.round((F.x1-F.x0)*S), H=Math.round((F.y1-F.y0)*S), P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=SHARED.BOD.grounds.filter(g=>!g.bld), RA=SHARED.BOD.road.at;
-    const SM=MODS.sections, kind=(x,y)=>{ const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
+    const SM=MODS.sections, FR=(LEVEL.places||[]).filter(p=>p.kind==='fair'||p.kind==='gate'), kind=(x,y)=>{ for(const q of FR)if(x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)return 'fair'; const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; const u=x-P.ox, v=y-P.oy; if(FOUNT.lake(u,v)<0)return 'water'; if(FOUNT.ter(u,v)<0)return 'way';
         if(P.brook){ const h=P.brook.h(u,v), q=P.brook.q(u,v); if(h!=null&&q&&h<P.brook.L(q[1]))return 'water'; } return 'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
@@ -107,6 +107,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     { const m=WROW.mus; R('MUSEUM OF EARTH','shop',bt(m.x0,m.y0),bt(m.x1,m.y1),m.h,'museum stone','museum'); }
     const lot=k=>WP[k]&&WP[k].y1!=null?[[WP[k].x0,WP[k].y0],[WP[k].x1,WP[k].y1]]:[[BLOCK.lots[k][0],BACK],[BLOCK.lots[k][1],FRONT]];
     R('THE PLAYHOUSE','shop',...lot('play'),150,'red brick, marquee','play');
+    { const f=WP.fair; if(f)R('THE STRANGEST FAIR','park',[f.x0,f.y0],[f.x1,f.y1],0,'concrete','fair'); }
     { const b=STORE.bank&&STORE.bank.B; if(b)R('THE BANK','shop',bt(b.x0,b.y0),bt(b.x1,b.y1),b.h,'museum stone','bank'); else R('THE BANK','shop',...lot('bank'),200,'museum stone','bank'); }
     { const w=WROW.bar; R('THE BAR','shop',bt(w.x0,w.y0),bt(w.x1,w.y1),130,'bar walls','bar'); }
     R('SUBWAY STAIRS','shop',[MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],8,'concrete pavement','subway');

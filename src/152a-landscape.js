@@ -50,7 +50,7 @@ import {FOREST, PROPS} from './039-bodega.js';
     const P=geo.attributes.position.array, uv=geo.attributes.uv&&geo.attributes.uv.array;
     for(let i=0,j=0;i<P.length;i+=3,j+=2){ const sx=P[i], sy=P[i+1], wx=cx+sx, wz=cz+sy; P[i+1]=groundYAt(wx,wz,r.y)+.05; P[i+2]=sy; if(uv){ uv[j]=wx/T; uv[j+1]=wz/T; } }
     r.mesh=addPatch(geo,cx,cz,r.t); };
-  const makeBrush=r=>{ '@later'; const pts=r.brush; if(!pts||!pts.length)return; const R=r.r||1.5*T, n=2, P=[],UV=[],IDX=[]; let base=0;
+  const makeBrush=r=>{ const pts=r.brush; if(!pts||!pts.length)return; const R=r.r||1.5*T, n=2, P=[],UV=[],IDX=[]; let base=0;
     for(const [x,z] of pts){ for(let iz=0;iz<=n;iz++)for(let ix=0;ix<=n;ix++){ const wx=x-R+2*R*ix/n, wz=z-R+2*R*iz/n; P.push(wx,groundYAt(wx,wz,r.y)+.05,wz); UV.push(wx/T,wz/T); }
       for(let iz=0;iz<n;iz++)for(let ix=0;ix<n;ix++){ const a=base+iz*(n+1)+ix,b=a+1,c=a+(n+1),d=c+1; IDX.push(a,c,b,b,c,d); } base=P.length/3; }
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IDX);

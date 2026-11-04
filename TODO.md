@@ -69,3 +69,22 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+
+- [ ] **Server-side money** (from the 1 Nov review, its #1; owner: add to TODO, 4 Nov 2026). Cash is a client-held opaque string in
+  `/owned`, so any logged-in player can set their balance and the server never notices — and shops + the apartment BBS now spend it. Fix:
+  a `buy`/`sell` ledger in a Durable Object, priced from `data/items.json` (already in the worker's `dist/`); `/owned` stops taking a cash
+  field; migrate each player's current cash once. Touches `worker/door.js` and the few client spend sites. **Owner decides first**: which DO
+  and how to migrate live balances. (`docs/REVIEW-2026-11-01.md` §B6.)
+- [ ] **Login cookie HttpOnly** (1 Nov review §B8). `src/door/door.html` sets the Supabase token as a JS-readable cookie (`document.cookie`),
+  so any script on the page (an XSS) can lift the session. Fix: the worker sets it `HttpOnly` on `/enter` instead of door.html's JS. Live
+  auth — test login on the site before merge.
+- [ ] **Shard the global `Home` Durable Object** (fresh audit, 2 Nov 2026). `homeOf` is one DO named `homes` that holds every player's owned
+  state, apartment and passport — one single-threaded object for the whole game (a bottleneck and a single point of failure, against "build
+  for many, cheap per player"). Fix: a DO per player (`idFromName(id)`) plus a small passport-counter DO; migrate live data. Do it before
+  access widens; the migration is the risk.
+- [ ] **Self-host the CDN libs** (1 Nov review §B8, supply chain). `@supabase/supabase-js`, `partysocket` and `html-to-image` load from
+  jsdelivr via dynamic `import()`, where integrity hashes don't apply, so a bad CDN response runs on a logged-in page. Fix: bundle and serve
+  them from the site (not three.js — that's deliberately CDN). Needs a build step (the `+esm` bundles chain-import more CDN modules).
+- [ ] **Commit the Supabase RLS SQL** (1 Nov review §B9). `players`, `admins`, `invite_codes`, `bug_reports` and their row-level security live
+  only in the dashboard, so they can't be reviewed or rebuilt from the repo. Add them under `supabase/` beside `apartments.sql` / `cinema.sql`.
+  Needs the owner to paste the current policies, or to review drafted ones before applying.

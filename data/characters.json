@@ -2834,7 +2834,8 @@
     15
    ]
   },
-  "name": "THE GAS STATION ATTENDANT"
+  "name": "THE GAS STATION ATTENDANT",
+  "trade": {"sells": ["f_bec", "f_hero", "f_chopped", "d_coffee"], "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."}
  },
  "motel_clerk": {
   "pf": "motel-clerk-950c39",

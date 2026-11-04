@@ -1,4 +1,4 @@
-// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside: its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
+// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside (the bar, the arcade, the bodega): its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -42,5 +42,27 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     rec('arcade: tickets buy prizes at the counter; the soda machine sells a cola',a.prize&&a.soda);
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
+  /* ---------- THE BODEGA ---------- */
+  { await pg.evaluate(()=>ROOMS.enter('bodega')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='bodega'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE REGISTER (PAY)'),180000);
+    const p=await people('bodega'); rec('bodega: staff spots and customer places inside it, standing places clear of the shelves',p.spots>=2&&p.seats>=12&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
+    const b=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), wait=ms=>new Promise(r=>setTimeout(r,ms)), click=async(x,y)=>{ const S=MINI.state(); S.mx=x; S.my=y; S.press=true; await wait(150); };
+      const shelves=__dbg.UI.things.filter(t=>/^THE (SHELF|DRINKS FRIDGE)/.test(t.name)).length; BODEGA.basket.clear(); INV.cash=10; const w0=INV.items.g_water||0;
+      th('THE DRINKS FRIDGE').act(); const rows=MINI.state().rows, i=rows.findIndex(r=>r.id==='g_water'); await click(100,12+i*22+11); MINI.close(); const picked=BODEGA.basket.get('g_water')===1;
+      th('THE REGISTER (PAY)').act(); await click(100,410); const paid=(INV.items.g_water||0)===w0+1&&INV.cash===9&&!BODEGA.basket.size; MINI.close();
+      BODEGA.pick('g_rice'); INV.cash=0; const broke=!!BODEGA.pay()&&BODEGA.basket.size===1; BODEGA.basket.clear();
+      INV.cash=10; th('THE LOTTERY MACHINE').act(); const S=MINI.state(), card=!!S&&S.cells.length===9; S.keys.add(' '); await wait(300); const lotto=!!S.over&&INV.cash===8+(S.win||0); MINI.close();
+      th('THE DELI CASE').act(); const deli=!!SHOPS.cur&&SHOPS.cur.key==='gas_station_attendant'&&['f_bec','f_hero','f_chopped'].every(k=>CHARS.trade({key:'gas_station_attendant'}).sells.includes(k)&&ITEMS.prop(k,'edible'));
+      INV.cash=5; th('THE COFFEE URN').act(); th('THE ICE CHEST').act(); const urn=INV.cash===3&&INV.items.f_icepop>=1;
+      INV.add('g_catfood',1); const cf=INV.items.g_catfood; BODEGA.lucky=false; th('MANGO').act(); const cat=BODEGA.lucky&&(INV.items.g_catfood||0)===cf-1;
+      th('THE BULLETIN BOARD').act(); const board=MINI.on&&MINI.on.title==='THE BULLETIN BOARD'; MINI.close();
+      const crates=__dbg.UI.things.filter(t=>t.name==='A MILK CRATE').length;
+      return {shelves,picked,paid,broke,card,lotto,deli,urn,cat,board,crates}; });
+    rec('bodega: every shelf and fridge opens what is on it; picked goods are yours only once paid at the register; not when you are short',b.shelves>=13&&b.picked&&b.paid&&b.broke,JSON.stringify(b));
+    rec('bodega: a scratch-off is $2 and pays what it shows',b.card&&b.lotto);
+    rec('bodega: the deli sells sandwiches, the urn coffee, the chest ice pops',b.deli&&b.urn);
+    rec('bodega: MANGO eats cat food and brings luck; the board reads; two crates to sit on',b.cat&&b.board&&b.crates===2);
+    if(OUT){ await pg.screenshot({path:OUT+'/bodega.png'}); }
+    await pg.evaluate(()=>BODEGA.pick('g_soda')); await pg.evaluate(()=>ROOMS.exit('bodega')); await pg.waitForTimeout(4000);
+    rec('bodega: an unpaid basket stays behind when you leave',await pg.evaluate(()=>!BODEGA.basket.size)); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

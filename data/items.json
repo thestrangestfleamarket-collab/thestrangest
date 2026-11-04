@@ -1073,5 +1073,320 @@
   "value": 1,
   "stackable": true,
   "weight": 0.01
+ },
+ "f_bec": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_hero": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "f_chopped": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_icepop": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.1,
+  "edible": true
+ },
+ "lotto_ticket": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "g_water": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_soda": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_juice": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_milk": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_eggs": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_butter": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_cheese": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_yogurt": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_cereal": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_bread": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_bagels": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_coffee": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_oats": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_chips": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_vaseline": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_soup": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_tuna": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_pasta": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_noodles": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_candy": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_gum": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_tp": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_towels": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_dishsoap": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bleach": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_sponge": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_tea": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bulb": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_batteries": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_matches": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_lighter": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_soap": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_toothpaste": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_toothbrush": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_shampoo": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_deodorant": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_aspirin": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_qtips": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_catfood": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_dogfood": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_fishfood": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bananas": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_beans": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_vienna": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_spam": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_detergent": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_cleanser": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_diapers": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_koolaid": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_candle": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_rice": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_plantains": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_beer": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
  }
 }

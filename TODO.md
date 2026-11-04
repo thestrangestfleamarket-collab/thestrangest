@@ -63,7 +63,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **`docs/MAP.md` conflicts on nearly every merge** (done 4 Nov: his pick, out of git) · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
   open pull requests keep editing it. Options: stop keeping it in git (CLAUDE.md tells chats to grep it, so that line changes too), or the
   cheap one, `docs/MAP.md merge=ours` in `.gitattributes` and let the build rewrite it. `TODO.md merge=union` would help this file the same way.
-- [ ] **"chunk later was not loaded before use" on the lawn** · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
+- [x] **"chunk later was not loaded before use" on the lawn** (done 4 Nov: the parts builder's shape helpers in `src/080-npc-parts.js` run at the start; `?at=40,150` clean) · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
   change every build). Rebuild, open the spot, read the warning's number in `dist/chunks.txt`, add the missing `LOAD`. With: the fluffy grass.
 - [ ] **The black-void sheet view doesn't show rig bodies** · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
   (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,

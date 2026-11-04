@@ -68,4 +68,23 @@ const lvRun=(key,c,r,H,where)=>{ r=r||lvNew(); if(!r.H)r.H=H-24; else if(H-r.H>4
 const lvMeet=(r,name)=>{ if(!name)return r; const k=String(name).slice(0,24); r.knows[k]=(r.knows[k]||0)+1; const ks=Object.keys(r.knows); if(ks.length>30)delete r.knows[ks.sort((a,b)=>r.knows[a]-r.knows[b])[0]]; return r; };
 // what players are sent: the needs, money and counts, the last few lines of the log, the players they know best
 const lvBrief=r=>({...r,log:r.log.slice(-4),knows:Object.fromEntries(Object.entries(r.knows||{}).sort((a,b)=>b[1]-a[1]).slice(0,10))});
-export {LV_DO, LV_HOUR, lvBrief, lvH, lvHash, lvMeet, lvNew, lvPlan, lvRun, lvSelf, lvStep};
+// where a habit is done, in the world's units: a place's inside (its door, then in), or out of doors in a hangout (HG: {band:[x0,z0,x1,z1], hd, areas:[[x,z,r]]}; doors: {place:{x,z}}; T the tile): a band to wander, an area, or a spot of their own to stay at, picked by who and when
+const lvSpot=(k,key,H,HG,doors,T)=>{ const D=LV_DO[k]; if(!D)return null; if(D.at)return {at:D.at,door:doors&&doors[D.at]||null};
+  const g=HG&&HG[D.out]; if(!g)return null; const pick=lvHash(key+'@'+Math.floor(H/3));
+  if(g.band){ const [x0,z0,x1,z1]=g.band, u=(pick%1000)/1000, c={x:x0+u*(x1-x0),z:(z0+z1)/2}; return g.hd!=null?{...c,r:0,hd:g.hd}:{...c,r:30*T,band:[g.band],fast:D.fast}; }
+  if(!g.areas||!g.areas.length)return null; const a=g.areas[pick%g.areas.length], c={x:a[0],z:a[1]};
+  if(D.still){ const u=(pick>>>8)%360*Math.PI/180, v=a[2]*(((pick>>>17)%100)/100); return {x:c.x+Math.cos(u)*v,z:c.z+Math.sin(u)*v,r:0,hd:g.hd!=null?g.hd:Math.atan2(-Math.cos(u),-Math.sin(u))}; }
+  return {...c,r:a[2],hd:g.hd}; };
+// what the hour asks of a cast member and where that is: c {job, life, hours:[open,close,bed,wake] (not a life: the job's hours, a little their own), work:{x,z,in} a door or {x,z,r} or {x,z,band:[rects]} out of doors, home:{x,z}}, X {hg, doors}, cur where they stand
+// -> {w: the goal's name (work, home, off, off:habit), at: where to go (null: stay), in: hidden inside on arriving, b: the range to wander there, hold: stand still, fast: at a jog}
+const lvGoal=(key,c,H,rec,X,T,cur)=>{ const h=((H%24)+24)%24; let w;
+  if(c.life){ const k=lvPlan(key,c,H,rec); w=k==='work'?'work':k==='sleep'||k==='home'||LV_DO[k]&&LV_DO[k].home?'home':'off:'+k; }
+  else { const [o,cl,bed,wake]=c.hours||[9,17,18,8]; w=lvIn(h,o,cl)?'work':lvIn(h,bed,wake)?'home':'off'; }
+  const W=c.work, off=()=>{ const d=W&&W.in?W:cur; return {w,at:null,in:0,b:{x:d.x,z:d.z,r:10*T},hold:0}; };
+  if(w==='work'){ if(!W||W.in)return {w,at:W?{x:W.x,z:W.z}:null,in:1,b:null,hold:1}; const b=W.band?{band:W.band}:W.r>0?{x:W.x,z:W.z,r:W.r}:null; return {w,at:{x:W.x,z:W.z},in:0,b,hold:b?0:1}; }
+  if(w==='home'){ const hm=c.home; return {w,at:hm?{x:hm.x,z:hm.z}:null,in:1,b:null,hold:1}; }
+  if(w==='off')return off();
+  const sp=lvSpot(w.slice(4),key,H,X&&X.hg,X&&X.doors,T); if(!sp)return off();
+  if(sp.at)return {w,at:sp.door?{x:sp.door.x,z:sp.door.z}:null,in:1,b:null,hold:1};
+  const b=sp.band?{band:sp.band}:sp.r>0?{x:sp.x,z:sp.z,r:sp.r}:null; return {w,at:{x:sp.x,z:sp.z},in:0,b,hold:b?0:1,hd:sp.hd,fast:sp.fast?1:0}; };
+export {LV_DO, LV_HOUR, lvBrief, lvGoal, lvH, lvHash, lvMeet, lvNew, lvPlan, lvRun, lvSelf, lvSpot, lvStep};

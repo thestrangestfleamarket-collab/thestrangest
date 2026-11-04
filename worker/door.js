@@ -3,7 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
-import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
+import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import LIVESDATA from "../data/lives.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -171,9 +171,14 @@ export class Block extends Server {
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
   async world() { if (!this.W) this.W = (await this.ctx.storage.get("world")) || {}; return this.W; }
   // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
-  async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }
+  async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }
+  // the cast's goals on the game hour (worker/lives.js lvGoal: to work, home, a habit's place), from the cast's table a page sent; after a gap of hours they are put there, not walked
+  castHour(F, H, jump) { const C = F.cast; if (!C || !C.keys) return; const recs = this.lives(), X = { hg: C.hg, doors: C.doors };
+    for (const k in C.keys) { const E = F.by[k], c = C.keys[k]; if (!E || !c) continue; const job = LIVESDATA[k];
+      try { const g = lvGoal(k, { job: job || {}, life: !!job, hours: c.hours, work: c.work, home: c.home }, H, recs[k], X, F.T, E); FOLKSIM.set(F, k, { goal: { gid: g.w + "@" + H, at: g.at, in: g.in, now: jump ? 1 : 0, b: g.b, hold: g.hold, fast: g.fast } }); } catch (e) {} } }
   async onAlarm() { const F = await this.folk(), now = Date.now(), n = [...this.getConnections()].length;
     FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+    { const H = lvH(now); if (F.cast && F.H !== H) { const jump = F.H == null || H - F.H > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
     if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
     if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); }
     await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }
@@ -182,7 +187,7 @@ export class Block extends Server {
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null }); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk();
-    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "" }));
+    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
@@ -271,6 +276,8 @@ export class Block extends Server {
     } else if (m.t === "folk") {
       this.folk().then(F => { let ch = false; if (m.grid && typeof m.grid === "object" && typeof m.grid.v === "string" && m.grid.v.length <= 64 && m.grid.v !== (F.g && F.g.v)) ch = FOLKSIM.grid(F, m.grid) || ch;
         if (Array.isArray(m.set)) for (const a of m.set.slice(0, 400)) if (Array.isArray(a) && FOLKSIM.set(F, a[0], a[1])) ch = true;
+        const C = m.cast; if (C && typeof C === "object" && typeof C.v === "string" && C.v.length <= 64 && C.keys && typeof C.keys === "object" && Object.keys(C.keys).length <= 600 && raw.length <= 400000) {
+          const old = F.cast; if (!old || old.v !== C.v || Object.keys(old.keys || {}).length < Object.keys(C.keys).length) { F.cast = { v: C.v, keys: C.keys, hg: C.hg && typeof C.hg === "object" ? C.hg : {}, doors: C.doors && typeof C.doors === "object" ? C.doors : {} }; F.H = null; this.ctx.storage.put("folkcast", F.cast); } }
         if (ch) this.folkDirty = true; });
     } else if (m.t === "lives") {
       const all = this.lives(), b = {}; for (const k in all) b[k] = lvBrief(all[k]); c.send(JSON.stringify({ t: "lives", all: b }));

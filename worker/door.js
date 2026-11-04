@@ -4,6 +4,7 @@ import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
 import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
 import LIVESDATA from "../data/lives.json";
+import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);

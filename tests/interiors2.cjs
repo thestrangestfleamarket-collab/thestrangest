@@ -18,9 +18,10 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       th('THE FOYER BAR').act(); const bar=!!SHOPS.cur&&SHOPS.cur.key==='showgirl'&&CHARS.trade({key:'showgirl'}).sells.includes('d_wine')&&ITEMS.prop('d_wine','edible');
       th('THE PROGRAMME').act(); const prog=MINI.on&&MINI.on.title==='THE PROGRAMME'; MINI.close(); const benches=__dbg.UI.things.filter(t=>t.name==='A VELVET BENCH').length; return {ticket,bar,prog,benches}; });
     rec('playhouse: the box office sells a ticket, the bar its drinks, the programme reads, two benches to sit on',r.ticket&&r.bar&&r.prog&&r.benches===2,JSON.stringify(r));
-    await shot('playhouse'); await pg.evaluate(()=>ROOMS.exit('playhouse')); await pg.waitForTimeout(4000); }
+    await shot('playhouse'); await pg.evaluate(()=>ROOMS.exit('playhouse')); await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),120000).catch(()=>{}); await pg.waitForTimeout(1000); }
   /* ---------- THE BANK ---------- */
-  { await pg.evaluate(()=>STORE.enter('bank',true)); await U(()=>STORE.inside.bank&&STORE.inside.bank.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('CAGE ONE')),180000);
+  { await U(()=>!!STORE.inside.bank,120000); for(let i=0;i<6;i++){ await pg.evaluate(()=>{ if(!(window.FADE&&FADE.busy))STORE.enter('bank',true); }); if(await U(()=>STORE.inside.bank.done,30000).then(()=>1,()=>0))break; }
+    await U(()=>STORE.inside.bank&&STORE.inside.bank.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('CAGE ONE')),180000);
     const p=await people('bank'); rec('bank: its staff at the cages, the door and the sides; customers queue at the cages',p.spots>=5&&p.seats>=4&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
     const wd=()=>{ const N=BODIES.by.w_rat&&BODIES.by.w_rat.npc, s=STORE.rooms.find(r=>r.id==='bank').spots.CAGES; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
     await pg.waitForFunction(`(${wd})()!=null&&(${wd})()<.2`,null,{timeout:90000}).catch(()=>{}); rec('bank: THE RAT keeps cage one',await pg.evaluate(`(${wd})()<.2`));

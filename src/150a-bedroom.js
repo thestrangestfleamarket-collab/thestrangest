@@ -280,7 +280,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.uniforms.uFill=FILL; sh.fragmentShader='uniform float uIn; uniform vec3 uFill;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };
       m.customProgramCacheKey=function(){ return (ck?ck.call(this):'')+'|dk2'; }; m.needsUpdate=true; } });   // your rooms take no sky fill (there is a ceiling, even when the view leaves it off); the sun only where it falls through a window (the walls and 059a's roof cast the rest)
     SYS.add('places',dt=>{ const inn=!!APTS.inReal;
-      if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFSoftShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFSoftShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
+      if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
       else if(!inn&&prevShadow!=null){ renderer.shadowMap.type=prevShadow; prevShadow=null; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
       if(!R)return; if(!R.apt.parent){ clear(R); R=null; ROOMK.api=null; return; }
       const k=Math.min(1,(dt||0)*5), e=CLOCK.elev(), day=cl((e+3)/12,0,1);

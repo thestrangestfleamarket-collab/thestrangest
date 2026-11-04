@@ -21,8 +21,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(800); await shot('home');
     await tap('#hh [data-app="set"]'); ok(await until(() => !HHDBG().up) && await menuOpen(), 'SET opens the settings');
     await pg.keyboard.press('Escape'); ok(await until(() => HHDBG().up) && !(await menuOpen()), 'ESC out of settings comes back to the handheld');
-    await pg.keyboard.press('ArrowRight'); await pg.keyboard.press('Enter'); ok(await until(() => !HHDBG().up && FORAGE.PACK && FORAGE.PACK.open), 'the arrows and RETURN open the PACK');
-    await pg.evaluate(() => FORAGE.PACK.toggle());
+    await pg.keyboard.press('ArrowRight'); await pg.keyboard.press('Enter'); ok(await until(() => !HHDBG().up && FORAGE.PACK && (FORAGE.PACK.open || (document.getElementById('bagp') && !document.getElementById('bagp').hidden))), 'the arrows and RETURN open the PACK (the bag since 4 Nov 2026)');
+    await pg.evaluate(() => { const b = document.getElementById('bagp'); if (b && !b.hidden && window.BAG) BAG.toggle(false); else FORAGE.PACK.toggle(); });
     await pg.keyboard.press('Escape'); await until(() => HHDBG().up);
     await tap('#hh [data-app="people"]'); ok(await until(() => HHDBG().page === 'people'), 'PEOPLE lists who is on');
     await pg.keyboard.press('Escape'); ok(await until(() => HHDBG().up && HHDBG().page === 'home'), 'ESC goes back to the icons');

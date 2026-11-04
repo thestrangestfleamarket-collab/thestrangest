@@ -256,14 +256,14 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const kind=(x,y)=>{ if(x<F.x0||x>F.x1||y<F.y0||y>F.y1)return 'void'; for(const q of FR)if(x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)return 'fair'; const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; if(FOUNT.lake(x-P.ox,y-P.oy)<0)return 'water'; if(FOUNT.ter(x-P.ox,y-P.oy)<0)return 'way'; return P.path&&P.path(x-P.ox,y-P.oy)?'way':P.brook&&(h=>h!=null&&h<P.brook.L(P.brook.q(x-P.ox,y-P.oy)[1]))(P.brook.h(x-P.ox,y-P.oy))?'water':'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
-    const im=new ImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=C[kind(F.x0+(i+.5)/S,F.y1-(j+.5)/S)], o=(j*W+i)*4; im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=255; }
+    const KN=Object.keys(C), KS=new Uint8Array(W*H), im=new ImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=kind(F.x0+(i+.5)/S,F.y1-(j+.5)/S), c=C[k], o=(j*W+i)*4; KS[j*W+i]=KN.indexOf(k); im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=255; }
     const NP=(LEVEL.places||[]).filter(p=>p.name&&p.kind!=='gate'), bare=n=>(n||'').toUpperCase().replace(/^THE /,''), NAMED=new Set(NP.map(p=>bare(p.name)));
-    const B=[], add=(a,b,col,n)=>B.push({x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1]),col,n});
+    const B=[], add=(a,b,col,n,k)=>B.push({x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1]),col,n,k:k||'bld'});
     for(const p of LEVEL.places||[])if(p.kind==='front'||p.kind==='gate')add([p.x0,p.y0!=null?p.y0:LEVEL.block.back],[p.x1,p.y1!=null?p.y1:SHARED.BOD.OY],[110,104,96],'');
     { const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],''); }
     if(MODS.apts&&MODS.apts.A){ const a=MODS.apts.A; add(bt(a.x0,a.y0),bt(a.x1,a.y1),[150,74,58],''); }
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)add(bt(g.x0,g.y0),bt(g.x1,g.y1),[112,78,48],''); }
-    if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],''); }
+    if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],'','lot'); }
     { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'THE CASTLE'); }
     for(const q of FR)if(q.kind==='fair')add([q.x0,q.y0],[q.x1,q.y1],[122,120,116],'');
     if(GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],"THE GOLEMS' CAVE"); }
@@ -285,7 +285,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const L2=[]; if(SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, my=(rd.y0+inn.y0)/2, ny=(rd.y1+inn.y1)/2, wx=(rd.x0+inn.x0)/2, ex=(rd.x1+inn.x1)/2;
       for(const b of SECTIONS.loaded){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; if(b.row===0){ if(b.id!==HOME)L2.push([ST.south,cx,my]); } else L2.push([ST.north,cx,ny]); if(b.col===0)L2.push([ST.west,wx,cy]); if(b.col===SECTIONS.grid.cols-1)L2.push([ST.east,ex,cy]); } }
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; cv.getContext('2d').putImageData(im,0,0);
-    Object.assign(PLAN,{F,S,W,H,cv,L,L2,sx:x=>(x-F.x0)*S,sy:y=>(F.y1-y)*S,tile:(i,j)=>[F.x0+i/S,F.y1-j/S]}); return PLAN; };
+    Object.assign(PLAN,{F,S,W,H,cv,L,L2,B,K:KS,KN,sx:x=>(x-F.x0)*S,sy:y=>(F.y1-y)*S,tile:(i,j)=>[F.x0+i/S,F.y1-j/S]}); return PLAN; };
   UI.mapPlan=plan;
   const V={z:1,cx:null,cy:null}, DW=1200, clv=(v,a,b)=>Math.max(a,Math.min(b,v));
   const view=()=>{ const Q=plan(); if(V.cx==null){ V.cx=Q.W/2; V.cy=Q.H/2; } const sw=Q.W/V.z, sh=Q.H/V.z; V.cx=clv(V.cx,sw/2,Q.W-sw/2); V.cy=clv(V.cy,sh/2,Q.H-sh/2); return {Q,sx:V.cx-sw/2,sy:V.cy-sh/2,sw,sh,k:DW/sw}; };

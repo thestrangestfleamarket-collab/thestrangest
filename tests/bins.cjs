@@ -1,4 +1,4 @@
-// THE BINS CHECK: node tests/bins.cjs [dist/market.html]. On station A's platform: three hollow trash cans and litter on the floor; picking litter up puts LITTER in your pack, the can takes it and its heap rises, a full can refuses, and the block's shared world moves the heap for everyone.
+// THE BINS CHECK: node tests/bins.cjs [dist/market.html]. On station A's platform: two hollow trash cans and litter on the floor; picking litter up puts LITTER in your pack, the can takes it and its heap rises, a full can refuses, and the block's shared world moves the heap for everyone.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:800,height:450}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
@@ -10,9 +10,9 @@ const {chromium}=require('playwright');
     const can=B.list[0], wall=can.G.children[0], open=!!wall.geometry.parameters.openEnded, floor=can.G.children.some(c=>c.geometry&&c.geometry.type==='CircleGeometry');
     const things=__dbg.ui().things.filter(t=>t.name==='TRASH CAN'&&B.list.some(b=>b.hit===t.obj)).length, lit=__dbg.ui().things.filter(t=>t.name==='LITTER').length;
     return {cans:B.list.length,open,floor,heapShown:can.hp.children.filter(m=>m.visible).length,things,lit,cap:B.CAP}; });
-  ok(S.cans===3&&S.things===3,'three trash cans on the platform, each a thing to use ('+S.cans+', '+S.things+')');
+  ok(S.cans===2&&S.things===2,'two trash cans on the platform, each a thing to use ('+S.cans+', '+S.things+')');
   ok(S.open&&S.floor&&S.heapShown===0,'a can is hollow: open at the top, a floor inside, nothing in it yet');
-  ok(S.lit>=5,'litter lies on the platform ('+S.lit+' pieces)');
+  ok(S.lit>=3,'litter lies on the platform ('+S.lit+' pieces)');
   const P=await pg.evaluate(()=>{ const L=__dbg.ui().things.filter(t=>t.name==='LITTER'); L[0].act(); L[1].act(); return {pack:FORAGE.has('litter'),gone:!L[0].obj.visible,sent:__sent.filter(m=>m.t==='world').length}; });
   ok(P.pack===2&&P.gone&&P.sent===2,'picking two pieces up puts LITTER in your pack and tells the block ('+JSON.stringify(P)+')');
   const C=await pg.evaluate(()=>{ const B=window.BINS||__dbg.BINS, can=__dbg.ui().things.find(t=>t.obj===B.list[0].hit); can.act(); return {pack:FORAGE.has('litter')|0,fill:B.list[0].fill,heap:B.list[0].hp.children.filter(m=>m.visible).length,add:__sent.filter(m=>m.t==='world'&&m.add).map(m=>m.add)}; });

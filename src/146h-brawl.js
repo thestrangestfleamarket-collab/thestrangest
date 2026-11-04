@@ -61,7 +61,7 @@ import {collide} from './075-main-13.js';
   let carry=null, thrown={id:'',until:0};
   const letGo=(toss,quiet)=>{ if(!carry)return; const id=carry.id; carry=null; try{ RIG.release(st,'carry'); }catch(e){} SYS.run('act','carry',0); if(quiet)return;
     if(toss){ thrown={id,until:performance.now()+900}; const h=SHARED.heading; ONLINE.send({t:'toss',to:id,v:[r2(Math.sin(h)*1.2),r2(-Math.cos(h)*1.2)]}); } else ONLINE.send({t:'drop',to:id}); };
-  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(FORAGE.say)FORAGE.say((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
+  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(ONLINE.useUp)return ONLINE.useUp(o); if(FORAGE.say)FORAGE.say((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
     if(carry)letGo(false); carry={id:o.id,t:0}; try{ RIG.act(st,'carry'); }catch(e){} SYS.run('act','carry',1); ONLINE.send({t:'grab',to:o.id}); };
   SYS.add('act',(k,on)=>{ if(carry&&k==='J'&&on)letGo(true); },'146h-brawl');
   const carrying=dt=>{ if(!carry)return; const o=ONLINE.others.get(carry.id);

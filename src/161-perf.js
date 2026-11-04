@@ -1,11 +1,10 @@
 // PERFORMANCE SWITCHES: hiding far rooms, props and water; shadow map size; what runs only when near.
 import {SHARED, THREE} from './003-shx.js';
-import {DRM, ED, LITE, MAPED, MUS, NPCS, PERFX, PNM, pos, ROOMS, SELFSH, SGM, UI, W3, WINDOWS} from './003b-systems.js';
+import {DRM, ED, LITE, MAPED, MUS, NPCS, PERFX, PNM, pos, ROOMS, SELFSH, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BF, FREE, QS, STORE, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {WATER} from './009-down.js';
-import {VIS} from './129a-vis.js';
 Object.assign(PERFX,{on:{}, inner:[], gen:0});
 { const q=QS.get('perfx'); for(const k of [1,2,4,5,6,7])PERFX.on[k]=q!=='0'&&!(q||'').split(',').includes('-'+k); if(FREE&&!(q||'').split(',').includes('+1'))PERFX.on[1]=false; }
 { const key=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();

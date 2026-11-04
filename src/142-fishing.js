@@ -1,6 +1,7 @@
 // THE FISHING: FISHING and BOAT let the player fish the river and the lakes with a rod (bait, cast, bite, fight, land) and row the river.
 import {SHARED, THREE} from './003-shx.js';
 import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
@@ -71,8 +72,8 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
       ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
       ['f_sturgeon','STURGEON STEAK','cooking',[65,110],{x_sturgeon:1},'fills most of you, quick on your feet 3 min']],
     does:{f_fishfry:()=>FORAGE.feed(.33),f_smokeeel:()=>{ FORAGE.feed(.4); FORAGE.buff('str',120); },f_grillbass:()=>{ FORAGE.feed(.5); FORAGE.buff('regen',60); },
-      f_chowder:()=>{ FORAGE.feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
-  const say=FORAGE.say, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
+      f_chowder:()=>{ FORAGE.feed(.6); VIT.heal(.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
+  const say=SAY, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
   // the tackle you own: the best CAST (m), LINE (strength) and REEL (speed) of what is in your pack; fish in hand up to 5 and what your coolers KEEP
   const BAITIDS=['bait','bait_cut','lure_worm','lure_spoon'], G0={cast:12,line:1,reel:1}, GC={t:-1e9,v:G0};
   FISHING.gear=()=>{ const now=performance.now(); if(now-GC.t>500){ GC.t=now; const v=Object.assign({},G0); for(const id of ITEMS.ids())if(FORAGE.has(id))for(const k in v){ const x=+IP(id,k)||0; if(x>v[k])v[k]=x; } GC.v=v; } return GC.v; };
@@ -148,7 +149,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   BOAT.carry=(st,pos)=>{ pos.x=BOAT.x; pos.z=BOAT.z; st.sit={z:Math.max(2,Y(.3)/(ZU*W3.SZ*(W3.BH||1)))}; if(RIVER.swim)RIVER.swim=false; if(st.water)st.water.in=false; };
   const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; { const c=document.createElement('style'); c.textContent='#boathud[hidden],#fishhud[hidden],#minehud[hidden],#fjour:empty{display:none!important}'; document.head.appendChild(c); } HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
   HUD.innerHTML='<span>ROWBOAT · W A S D</span><button style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">STEP ASHORE</button>'; document.body.appendChild(HUD);
-  HUD.querySelector('button').onclick=()=>BOAT.ashore(); setInterval(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400);
+  HUD.querySelector('button').onclick=()=>BOAT.ashore(); SYS.every(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400,'142-fishing ashore');
 
   /* ---------- the catch: who bites where, when and on what (the odds), and how hard they fight ---------- */
   const S=FORAGE.S; S.fishkg=S.fishkg||{};

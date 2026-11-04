@@ -1,6 +1,7 @@
 // THE BRAWL: fights between players (ONLINE): your moving fists, feet and blade against their body parts as drawn, and their blows on you through VIT.hurt.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, pos, RAG, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {ONLINE, pos, RAG, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {PPU} from './004-main.js';
 import {ASTEP, SYS, TILE, ZU} from './006-map-pre.js';
 import {P, PHYOU, TL} from './073-main-12.js';
@@ -43,14 +44,14 @@ import {collide} from './075-main-13.js';
     shove={x:dx/l*kb*.35*T/.2,z:dz/l*kb*.35*T/.2,t:.2,at:now}; if(!blocked)flinch(); };
   SYS.add('hurt',(d,from)=>{ if(!from||busy()||(WIELD.block&&facing(from)))return; const dx=pos.x-from.x, dz=pos.z-from.z, l=Math.hypot(dx,dz)||1;   // any blow from somewhere (a creature, a player) jolts you back a step
     shove={x:dx/l*.25*T/.2,z:dz/l*.25*T/.2,t:.2,at:performance.now()}; flinch(); },'146h-brawl');
-  ONLINE.hear.parried=()=>{ const now=performance.now(); if(now-parT<400)return; parT=now; flinch(); if(FORAGE.say)FORAGE.say('PARRIED!','#ffd27a'); };
+  ONLINE.hear.parried=()=>{ const now=performance.now(); if(now-parT<400)return; parT=now; flinch(); SAY('PARRIED!','#ffd27a'); };
 
   /* ---------- held down or carried: mash any key to break free ---------- */
   let mash=0, told=false;
   const pinned=()=>RAG.on&&!VIT.dead&&!(VIT.out>0)&&(RAG.held||RAG.ko>performance.now());
   addEventListener('keydown',e=>{ if(e.repeat||!pinned())return; if((mash+=1)<6)return; mash=0;
-    if(RAG.held){ ONLINE.send({t:'free',to:RAG.held.by}); RAG.held=null; RAG.toss=[(Math.random()-.5)*.6,(Math.random()-.5)*.6]; } RAG.ko=0; if(FORAGE.say)FORAGE.say('YOU BREAK FREE.','#7dffa4'); });
-  const struggle=dt=>{ mash=Math.max(0,mash-dt*1.5); const p=pinned(); if(p&&!told&&RAG.held&&FORAGE.say)FORAGE.say('MASH ANY KEY TO BREAK FREE.','#ffd27a'); told=p&&!!RAG.held; };
+    if(RAG.held){ ONLINE.send({t:'free',to:RAG.held.by}); RAG.held=null; RAG.toss=[(Math.random()-.5)*.6,(Math.random()-.5)*.6]; } RAG.ko=0; SAY('YOU BREAK FREE.','#7dffa4'); });
+  const struggle=dt=>{ mash=Math.max(0,mash-dt*1.5); const p=pinned(); if(p&&!told&&RAG.held&&SAY)SAY('MASH ANY KEY TO BREAK FREE.','#ffd27a'); told=p&&!!RAG.held; };
 
   /* ---------- your ragdoll for everyone: the bodies' joint offsets when you go down, then ten times a second their places and turns ---------- */
   let ragT=0, onT=0; const r2=v=>Math.round(v*100)/100, r3=v=>Math.round(v*1000)/1000;
@@ -61,7 +62,7 @@ import {collide} from './075-main-13.js';
   let carry=null, thrown={id:'',until:0};
   const letGo=(toss,quiet)=>{ if(!carry)return; const id=carry.id; carry=null; try{ RIG.release(st,'carry'); }catch(e){} SYS.run('act','carry',0); if(quiet)return;
     if(toss){ thrown={id,until:performance.now()+900}; const h=SHARED.heading; ONLINE.send({t:'toss',to:id,v:[r2(Math.sin(h)*1.2),r2(-Math.cos(h)*1.2)]}); } else ONLINE.send({t:'drop',to:id}); };
-  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(ONLINE.useUp)return ONLINE.useUp(o); if(FORAGE.say)FORAGE.say((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
+  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(ONLINE.useUp)return ONLINE.useUp(o); SAY((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
     if(carry)letGo(false); carry={id:o.id,t:0}; try{ RIG.act(st,'carry'); }catch(e){} SYS.run('act','carry',1); ONLINE.send({t:'grab',to:o.id}); };
   SYS.add('act',(k,on)=>{ if(carry&&k==='J'&&on)letGo(true); },'146h-brawl');
   const carrying=dt=>{ if(!carry)return; const o=ONLINE.others.get(carry.id);
@@ -69,7 +70,7 @@ import {collide} from './075-main-13.js';
     if((carry.t-=dt)<=0){ carry.t=1; ONLINE.send({t:'grab',to:carry.id}); } };
   ONLINE.hear.grab=m=>{ if(RAG.on&&ONLINE.others.has(m.id))RAG.held={by:m.id,at:performance.now()}; };
   ONLINE.hear.drop=m=>{ if(RAG.held&&RAG.held.by===m.id)RAG.held=null; };
-  ONLINE.hear.free=m=>{ if(carry&&carry.id===m.id){ const o=ONLINE.others.get(m.id); letGo(false,true); if(FORAGE.say)FORAGE.say((o&&o.name||'TENANT')+' BREAKS FREE.'); } };
+  ONLINE.hear.free=m=>{ if(carry&&carry.id===m.id){ const o=ONLINE.others.get(m.id); letGo(false,true); SAY((o&&o.name||'TENANT')+' BREAKS FREE.'); } };
   ONLINE.hear.toss=m=>{ if(!RAG.on||!RAG.held||RAG.held.by!==m.id)return; RAG.held=null; const v=Array.isArray(m.v)?m.v:[0,0]; RAG.toss=[Math.max(-2,Math.min(2,+v[0]||0)),Math.max(-2,Math.min(2,+v[1]||0))]; };
 
   SYS.add('life',dt=>{ swing(dt); ragSend(dt); carrying(dt); struggle(dt);

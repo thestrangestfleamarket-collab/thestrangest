@@ -1,6 +1,7 @@
 // THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: a prize counter and its wall run by TOKEN (a little robot of the Block's kind), skee-ball, air hockey and a claw machine (each a game, a token a go), the token changer, a soda machine, stools at the cabinets; tickets won at the games traded for prizes; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -8,7 +9,7 @@ import {MINI} from './038zd-mini.js';
 import {MERCH} from './111e-merch.js';
 const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_ticket:'A PRIZE TICKET',prize_bear:'A PLUSH BEAR',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});
-  const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
+  const say=(t,c)=>SAY(t,c||'#f2c14e');
   // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
   const tokenbot=()=>{ const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
     const BODY='plastic:#5a2a8a', TEAL='plastic:#2ad0c8', STEEL='metal:#8a8c90', DARK='plastic:#18181a';

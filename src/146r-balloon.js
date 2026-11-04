@@ -1,11 +1,12 @@
 // THE BALLOON WITCH: a tiny witch carried over Market St by her black balloon, who sells black balloons — hold one and click: it lifts you over fences, cars, water and the golems (not buildings), WASD drifts you along; click again to come down; a balloon has two minutes of air, then it sinks you gently and is gone.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const BALLOON={AIR:120}; window.BALLOON=BALLOON;
-{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined;
+{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined;
   FORAGE.add({names:{balloon:'BLACK BALLOON'}});
   // the air left in your balloon carries over between flights
   let air=null; const airGet=()=>{ if(air==null){ const v=OWNED.get('balloonair'); air=v==null?BALLOON.AIR:+v; if(!(air>=0))air=BALLOON.AIR; } return air; }, airSet=v=>{ air=v; try{ OWNED.set('balloonair',v.toFixed(1)); }catch(e){} };

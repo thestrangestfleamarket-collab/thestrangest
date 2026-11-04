@@ -1,14 +1,15 @@
 // THE CHARACTER PAGE: YOU on the handheld — your live avatar, SKILLS, PASSPORT, LOG OUT; and the one ADMIN window (owners): the bug queue, TENANTS, EDITORS, CITY, STATS, the render inspector, SUMMON and the game log.
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, CIVIC, EDITORS, FORAGE, HANDHELD, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, W3} from './003b-systems.js';
+import {BUGS, CHARP, CIVIC, EDITORS, FORAGE, HANDHELD, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, VIT, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
+import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=TEXT.esc;
   const CLOG=()=>{ '@log'; return __CHANGELOG__; };   // [date, summary] of every HISTORY update, newest first; baked by build.py into its own chunk
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
-  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,spin=0; const W=256,H=384,FACE=0, V=new THREE.Vector3();
+  let rt,cam,on=0,last=0,el=null,cv=null,g2=null,spin=0; const W=256,H=384,FACE=0, V=new THREE.Vector3();
   const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE+spin; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
@@ -19,10 +20,10 @@ import {DESIGN} from './102b-designer.js';
     const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,Math.min(H,300*(devicePixelRatio||1)/pxS()));   // the same pixel size as the game around it, at your RESOLUTION
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
-  const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); };
+  const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');
 
-  const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['LOG OUT','',logout]];
-    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
+  const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];
+    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
   let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
@@ -57,8 +58,8 @@ import {DESIGN} from './102b-designer.js';
     el.querySelector('#cpedit').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); LOOKS.open(); };
     el.addEventListener('click',e=>{ const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); }); };
 
-  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); if(!raf)raf=requestAnimationFrame(loop); },
-    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
+  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); on=1; },
+    hide:()=>{ on=0; }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
@@ -67,7 +68,7 @@ import {DESIGN} from './102b-designer.js';
   #dhome .cp-edit{position:absolute;right:6px;top:6px;font:9px var(--pixel);color:var(--key);border:1px solid #3a3f4e;padding:2px 6px;background:rgba(5,6,10,.7);cursor:pointer}
   #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
   #dhome .cp-right{display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1}
-  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px}
+  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px} #menu #dhome .cp-btn:disabled{opacity:.35;cursor:default;background:transparent;color:var(--fg)}
   #dhome .cp-btn,#cpadmin .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
   #dhome .cp-btn:hover,#cpadmin .cp-btn:hover{color:var(--key);border-color:#6b6f80}
   #cpadmin .cp-btn[aria-pressed="true"]{color:var(--key)}

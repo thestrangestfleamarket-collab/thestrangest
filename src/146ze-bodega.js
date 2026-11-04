@@ -1,11 +1,12 @@
 // THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay the Fox at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
-{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e'), BOD=SHARED.BOD, TM=.924;   // a bodega tile in metres
+{ const say=(t,c)=>SAY(t,c||'#f2c14e'), BOD=SHARED.BOD, TM=.924;   // a bodega tile in metres
   // each kind of good on the shelves is a thing you can buy: [item, what it is, $, what eating it does (none: not food)]
   const feed=f=>()=>FORAGE.feed(f), sta=k=>()=>{ VIT.sta=Math.min(1,VIT.sta+k); };
   const KIND={water:['g_water','A BOTTLE OF WATER',1,sta(.2)],can:['g_soda','A CAN OF SODA',1,sta(.3)],bottle:['g_juice','A BOTTLE OF JUICE',2,()=>{ FORAGE.feed(.05); VIT.sta=Math.min(1,VIT.sta+.3); }],
@@ -14,7 +15,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     oats:['g_oats','A TUB OF OATS',3],bag:['g_chips','A BAG OF CHIPS',1,feed(.1)],jar:['g_vaseline','A JAR OF VASELINE',2],soup:['g_soup','A CAN OF SOUP',2,feed(.3)],tuna:['g_tuna','A CAN OF TUNA',2,feed(.2)],pasta:['g_pasta','A BOX OF PASTA',2],
     noodle:['g_noodles','A CUP OF NOODLES',1,feed(.25)],candy:['g_candy','A CANDY BAR',1,feed(.08)],gum:['g_gum','A PACK OF GUM',1],tp:['g_tp','A PACK OF TOILET PAPER',2],towels:['g_towels','A ROLL OF PAPER TOWELS',2],dish:['g_dishsoap','DISH SOAP',2],
     jug:['g_bleach','A JUG OF BLEACH',3],sponge:['g_sponge','A SPONGE',1],tbags:['g_tea','A BOX OF TEA',2],bulbs:['g_bulb','A LIGHT BULB',2],batt:['g_batteries','A PACK OF BATTERIES',3],matches:['g_matches','A BOX OF MATCHES',1],lighter:['g_lighter','A LIGHTER',1],
-    soap:['g_soap','A BAR OF SOAP',1],paste:['g_toothpaste','TOOTHPASTE',2],brush:['g_toothbrush','A TOOTHBRUSH',1],shampoo:['g_shampoo','A BOTTLE OF SHAMPOO',3],deo:['g_deodorant','DEODORANT',3],pills:['g_aspirin','A BOTTLE OF ASPIRIN',4,()=>{ VIT.hp=Math.min(1,VIT.hp+.2); }],
+    soap:['g_soap','A BAR OF SOAP',1],paste:['g_toothpaste','TOOTHPASTE',2],brush:['g_toothbrush','A TOOTHBRUSH',1],shampoo:['g_shampoo','A BOTTLE OF SHAMPOO',3],deo:['g_deodorant','DEODORANT',3],pills:['g_aspirin','A BOTTLE OF ASPIRIN',4,()=>{ VIT.heal(.2); }],
     cotton:['g_qtips','A BOX OF COTTON SWABS',2],catfood:['g_catfood','A CAN OF CAT FOOD',1],dogfood:['g_dogfood','A BAG OF DOG FOOD',5],fishfood:['g_fishfood','A TUB OF FISH FOOD',3],bananas:['g_bananas','A BUNCH OF BANANAS',1,feed(.15)],
     goya:['g_beans','A CAN OF BEANS',2,feed(.25)],vienna:['g_vienna','A CAN OF VIENNA SAUSAGES',1,feed(.15)],spam:['g_spam','A CAN OF SPAM',3,feed(.3)],tide:['g_detergent','A BOX OF DETERGENT',5],ajax:['g_cleanser','A CAN OF CLEANSER',2],
     pampers:['g_diapers','A PACK OF DIAPERS',8],koolaid:['g_koolaid','A PACKET OF KOOL-AID',1],candle:['g_candle','A PRAYER CANDLE',2],sack:['g_rice','A SACK OF RICE',8],platano:['g_plantains','PLANTAINS',1,feed(.15)]};
@@ -22,7 +23,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
   const kindOf=(k,brand)=>BEER.has(brand)?beer:KIND[k];
   { const names={}, prices={}, does={}; for(const [id,nm,p,d] of [...Object.values(KIND),beer]){ names[id]=nm; prices[id]=p; if(d)does[id]=d; }
     FORAGE.add({names,prices,does}); FORAGE.add({names:{f_bec:'A BACON, EGG AND CHEESE',f_hero:'A TURKEY HERO',f_chopped:'A CHOPPED CHEESE',f_icepop:'AN ICE POP',lotto_ticket:'A SCRATCH-OFF TICKET'},
-      does:{f_bec:()=>{ FORAGE.feed(.5); VIT.sta=Math.min(1,VIT.sta+.3); },f_hero:()=>{ FORAGE.feed(.6); VIT.hp=Math.min(1,VIT.hp+.1); },f_chopped:()=>{ FORAGE.feed(.6); VIT.hp=Math.min(1,VIT.hp+.15); },f_icepop:()=>{ VIT.sta=Math.min(1,VIT.sta+.3); }}}); }
+      does:{f_bec:()=>{ FORAGE.feed(.5); VIT.sta=Math.min(1,VIT.sta+.3); },f_hero:()=>{ FORAGE.feed(.6); VIT.heal(.1); },f_chopped:()=>{ FORAGE.feed(.6); VIT.heal(.15); },f_icepop:()=>{ VIT.sta=Math.min(1,VIT.sta+.3); }}}); }
   // what a shelf holds, by its goods list (SHARED.BOD.GLAY, the goods drawn on it): one line a brand, its kind, its price
   const SHELF={fridge1:'fridge1',fridge2:'fridge2',fridge3:'fridge3',wl1:'aisle1a',wl2:'aisle1b',wr1:'aisle2a',wb3:'aisle2b',wl3:'aisle2a',wb1:'back1',wb2:'back2',wm1:'mid1',win1:'win1',win2:'win2'};
   const linesOf=rows=>{ const out=[], seen=new Set(); for(const [k,,...a] of rows.flat()){ let br=typeof a[a.length-1]==='string'?a[a.length-1]:({goya:'GOYA',vienna:'VIENNA',spam:'SPAM',tide:'TIDE',ajax:'AJAX',pampers:'PAMPERS',koolaid:'KOOL-AID',candle:'7 DIAS',sack:'CAROLINA',platano:'PLATANOS'}[k]||'');

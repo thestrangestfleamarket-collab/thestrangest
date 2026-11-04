@@ -7,7 +7,7 @@ import {MINI} from './038zd-mini.js';
 import {BODIES} from './111a-bodies.js';
 const BAR={places:[]}; window.BAR=BAR;
 { // the drinks the badger pours (items.json: edible), what each does
-  FORAGE.add({names:{d_ale:'A PINT OF ALE',d_stout:'A PINT OF STOUT',d_cola:'A GLASS OF COLA'},does:{d_ale:()=>{ VIT.sta=1; },d_stout:()=>{ VIT.sta=1; VIT.hp=Math.min(1,VIT.hp+.1); },d_cola:()=>{ VIT.sta=Math.min(1,VIT.sta+.5); }}});
+  FORAGE.add({names:{d_ale:'A PINT OF ALE',d_stout:'A PINT OF STOUT',d_cola:'A GLASS OF COLA'},does:{d_ale:()=>{ VIT.sta=1; },d_stout:()=>{ VIT.sta=1; VIT.heal(.1); },d_cola:()=>{ VIT.sta=Math.min(1,VIT.sta+.5); }}});
   // the room in metres: u from the west wall (the counter's side) east, v from the back (the stage) to the front door
   const frameOf=S=>{ const B=S.B; return IKIT.frame({x0:B.x0+.1,y0:B.y0+.1,x1:B.x1-.1,y1:B.y1-.1},(x,y)=>{ const q=S.at(x,y); return [q.x,q.z]; }); };
   BAR.board=[];   // the chalked scores: the last games of 301

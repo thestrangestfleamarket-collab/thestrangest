@@ -1,6 +1,7 @@
 // THE COAT RACK: the bear merchant's rack beside him by the Hudson — three plain coats (red, green, navy) you can buy and wear and the cloud coat, a coat of drifting clouds; use it to buy from the bear.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, SHOPS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {GLBTOONS} from './084b-npc-glbtoons.js';
@@ -20,6 +21,6 @@ FORAGE.add({names:{coat_red:'RED COAT',coat_green:'GREEN COAT',coat_navy:'NAVY C
     scene.add(g); SYS.add('life',()=>{ if(g.visible)drift(performance.now()/1000); },'159c-coatrack');
     SOL.up.push([x-.3*T,z-.3*T,x+.3*T,z+.3*T]); FIX.up.push([x-.3*T,z-.3*T,y,x+.3*T,z+.3*T,y+1.95*T]);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.9*T,2*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,y+T,z); scene.add(hb);
-    UI.thing({name:'THE BEAR MERCHANT\'S COAT RACK',obj:hb,reach:1.6*T,near:3*T,tall:2*T,act:()=>{ const N=GLBTOONS.coatbear; if(N&&SHOPS.open)SHOPS.open(N); else if(FORAGE.say)FORAGE.say('THE BEAR IS NOT HERE YET.','#c8a090'); }});
+    UI.thing({name:'THE BEAR MERCHANT\'S COAT RACK',obj:hb,reach:1.6*T,near:3*T,tall:2*T,act:()=>{ const N=GLBTOONS.coatbear; if(N&&SHOPS.open)SHOPS.open(N); else SAY('THE BEAR IS NOT HERE YET.','#c8a090'); }});
     RACK.g=g; RACK.at={x,z}; } }
 window.RACK=RACK;

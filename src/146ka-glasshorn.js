@@ -1,11 +1,12 @@
 // THE GLASS HORN: the busker of living glass outside the playhouse; her body (clear glass, a gold engraved cap under a white fur hood, a gold shoulder plate and collar, a tulle skirt), her gold trumpet with its glass bell, her fingers on its valves note by note, her songs (her own, or one the owner uploads: an audio file her fingers follow by ear, or a MIDI file), and the tips you drop in her cup.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, FORAGE, INV, NPCS, pos, ROOMS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,tips:0}; window.HORN=HORN;
-{ const T=TILE, K=MERCH.K, {mk,grp,BOX,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, K=MERCH.K, {mk,grp,BOX,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc');
   try{ const v=SAVE.get('hornvol'); if(v!=null)HORN.vol=Math.max(0,Math.min(1,+v)); HORN.mute=SAVE.get('hornmute')==='1'; }catch(e){}
 
   /* ---------- her body ---------- */
@@ -107,7 +108,7 @@ const HORN={on:false,vol:.6,mute:false,now:{m:0,v:0,valves:[0,0,0]},song:null,ti
     const B=P.beat, L=S.notes, now=P.t; let on=null; for(let i=Math.max(0,P.sent-3);i<L.length;i++){ const [b,l,m]=L[i]; if(b*B>now+.05)break; if(b*B<=now&&now<(b+l)*B){ on=L[i]; } }
     if(ctx&&bus)while(P.sent<L.length&&L[P.sent][0]*B<P.t+.3){ const [b,l,m,v]=L[P.sent++]; voice(m-2,P.start+b*B,Math.max(.06,l*B*.94),v||.8); }
     if(on){ HORN.now.m=on[2]-2; HORN.now.v+=(1-HORN.now.v)*Math.min(1,dt*20); HORN.now.valves=valvesOf(on[2]-2); } else HORN.now.v+=(0-HORN.now.v)*Math.min(1,dt*12);
-    const last=L[L.length-1]; if(!last||now>(last[0]+last[1])*B+.5){ P.cur=null; P.rest=6+Math.random()*5; } },'146k-glasshorn');
+    const last=L[L.length-1]; if(!last||now>(last[0]+last[1])*B+.5){ P.cur=null; P.rest=6+Math.random()*5; } },'146ka-glasshorn');
 
   /* ---------- her playing pose: the horn up to her lips, her fingers on the valves; she sways with the phrase and lifts the bell on the high notes; between songs she lowers it and listens ---------- */
   const H0={g:null}, V=new THREE.Vector3(), Vm=new THREE.Vector3(), Vh=new THREE.Vector3(), Q=new THREE.Quaternion(), M4=new THREE.Matrix4(), UP=new THREE.Vector3(0,1,0);

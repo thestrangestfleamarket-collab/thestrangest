@@ -5,7 +5,7 @@ import {LEVEL, MAPG, SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
 import {CREW} from './111fb-fleamarket.js';
-import {FOLK} from './146i-folk.js';
+import {FOLK} from './146ha-folk.js';
 { const C=LEVEL.chars||{};
   WORKERS.list=()=>Object.keys(C).filter(k=>C[k]&&(C[k].folk||WORKERS.models[k])&&C[k].job);
   WORKERS.of=at=>WORKERS.list().filter(k=>(CREW.alias[C[k].job.at]||C[k].job.at)===(CREW.alias[at]||at));

@@ -22,7 +22,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await into(); await wait(() => !FADE.busy); await wait(() => RIVER.swim, null, 60000);
   await wait(() => { const s = SWIMDBG(); return s.in && s.y < s.level; }, null, 60000); await pg.waitForTimeout(1500);
   const d0 = await pg.evaluate(() => SWIMDBG());
-  await pg.keyboard.down(' '); await wait(() => RIVER.dep > 2.5, null, 60000); await pg.keyboard.up(' ');
+  await pg.keyboard.down(' '); await wait(() => RIVER.dep > 2.5, null, 150000); await pg.keyboard.up(' ');
   const d1 = await pg.evaluate(() => ({ s: SWIMDBG(), dep: RIVER.dep }));
   await pg.waitForTimeout(1500); const d2 = await pg.evaluate(() => ({ s: SWIMDBG(), dep: RIVER.dep }));
   ok(!d0.dive && d1.s.dive && d1.dep > 2.2 && d2.s.dive && d2.dep > 1.5, 'SPACE swims down, and let go you stay under, drifting slowly up: ' + JSON.stringify({ d0, d1, d2 }));

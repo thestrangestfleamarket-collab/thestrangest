@@ -1,15 +1,16 @@
-// THE SAVE: SAVE keeps the player's saved settings and progress in one local storage key, moving old saves forward.
-const SAVE=(()=>{ const KEY='market-save', V=4;
+// THE SAVE: SAVE keeps the player's saved settings and progress in one local storage key, moving old saves forward (caches and the editors' drafts keep their own keys).
+const SAVE=(()=>{ const KEY='market-save', V=5;
   const migrate=o=>{
     if(+o.v<2){ for(const k of ['looks','walker','body','face'])delete o[k]; try{ for(const k of ['market-avatar','market-toe','market-wear','market-bodytype','market-avatarpick','market-speed'])localStorage.removeItem(k); }catch(e){} }
     if(+o.v<3){ for(const k of ['walker','body','face'])delete o[k]; try{ const m=JSON.parse(o.moves||'null'); if(m&&m.ov&&m.ov.stand){ delete m.ov.stand; o.moves=JSON.stringify(m); } }catch(e){}
       try{ for(const k of ['market-bodytype','market-avatar','market-toe'])localStorage.removeItem(k); }catch(e){} }
     if(+o.v<4){ o={}; try{ for(const k of Object.keys(localStorage))if(/^(market-|isowalk-)/.test(k)&&k!==KEY)localStorage.removeItem(k); }catch(e){} }
+    if(+o.v<5){ try{ for(const [k,n] of [['cinema-snd','cinema'],['market-grid','grid'],['market-shade','shade'],['market-self','self'],['market-home','home']]){ const v=localStorage.getItem(k); if(v!=null&&o[n]==null)o[n]=v; localStorage.removeItem(k); } }catch(e){} }
     o.v=V; return o; };
   const read=()=>{ try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(o&&typeof o==='object'&&!Array.isArray(o)&&+o.v<=V)return migrate(o); }catch(e){} return null; };
   const write=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); return true; }catch(e){ return false; } };
   let S=read(); if(S)write();
-  if(!S){ try{ for(const k of Object.keys(localStorage))if(/^(market-|isowalk-)/.test(k))localStorage.removeItem(k); }catch(e){} S={v:V}; write(); }
+  if(!S){ S={v:V}; write(); }
   const A={V,KEY,
     get:k=>{ const v=S[k]; return v==null?null:typeof v==='string'?v:String(v); },
     set:(k,v)=>{ S[k]=v==null?null:String(v); return write(); },

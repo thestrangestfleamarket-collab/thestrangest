@@ -44,9 +44,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(bd.hung && bd.thing && bd.down, 'a bird feeder hangs outdoors and a double click takes it down: ' + JSON.stringify(bd));
   ok(bd.reach >= 9, 'with binoculars a bird can be watched from 9 tiles: ' + bd.reach);
 
-  // at home: a mounted butterfly for the wall, a caged bird for the floor, each yours from your pack
-  const sp = await pg.evaluate(() => SPECDBG());
-  ok(sp.n === 13 && sp.wall === undefined && sp.own[0] === 'bd_2' && sp.meshes.every(n => n > 1), 'caged tame birds are things for your apartment, mounted butterflies no longer: ' + JSON.stringify(sp));
+  // at home: no caged birds and no mounted butterflies (owner, 4 Nov 2026)
+  const sp = await pg.evaluate(() => ({ spec: typeof window.SPECDBG, cage: (window.ROOMED && ROOMED._api && ROOMED._api() ? Object.keys(ROOMED._api().R.kinds).filter(k => k.startsWith('sp:')) : []).length }));
+  ok(sp.spec === 'undefined' && sp.cage === 0, 'no caged birds or mounted butterflies for your apartment: ' + JSON.stringify(sp));
 
   // another player's tame bird rides on their shoulder
   const op = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), at = [p[0] + 2 * T, p[2] + 1 * T, 0, 0, SHARED.LVL, '']; ONLINE.on = true;

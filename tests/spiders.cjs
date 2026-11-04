@@ -6,9 +6,10 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   const r=await pg.evaluate(async()=>{ const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(250))if(f())return true; return false; };
     let sp=null; for(let k=0;k<6&&!sp;k++){ await DUNGEON.go(5+(k%2)); await U(()=>window.DUNSPI&&DUNSPI().some(r=>r.on),60000); sp=window.DUNSPI&&DUNSPI().find(r=>r.on); }
-    if(!sp)return {err:'no spider came'}; const N=sp.N, A=n=>N.mixer._actions.find(a=>a.getClip().name===n), out={};
+    if(!sp)return {err:'no spider came'}; const N=sp.N, A=n=>N.mixer._actions.find(a=>a.getClip().name===n), out={}, T=__dbg.cv().TILE;
+    __dbg.UI.goTo(N.st.x+1.5*T,N.st.z,'down'); await wait(3000);
     let hits=0; sp.cool=99; sp.lunge={t:0,hit:()=>hits++}; await U(()=>N.clip==='Spider_Attack'&&A('Spider_Attack')&&A('Spider_Attack').getEffectiveWeight()>.5,20000);
-    out.attack={clip:N.clip,once:A('Spider_Attack').loop===2200}; await U(()=>!sp.lunge,20000); out.attack.hits=hits;
+    out.attack={clip:N.clip,once:!!A('Spider_Attack')&&A('Spider_Attack').loop===2200}; await U(()=>!sp.lunge,20000); out.attack.hits=hits;
     sp.jolt=.25; await U(()=>N.clip==='Spider_Hit',20000); out.hit=N.clip==='Spider_Hit';
     sp.dead=true; sp.t=0; await U(()=>N.clip==='Spider_Death',20000); out.death=N.clip==='Spider_Death'; await U(()=>!sp.on,30000); out.gone=!sp.on;
     await DUNGEON.go(0); return out; });

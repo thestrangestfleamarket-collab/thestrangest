@@ -146,6 +146,9 @@ starting: a newer owner decision wins over a line here.
   some walking frames.
 - [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
   branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.
+- [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
+  street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
+  Scanner's was pictured).
 - [ ] **Who stands on Market St, and why** (owner, 4 Nov 2026: "list all the characters and why im seeing each one on the street"; he has
   not said yes to fixing these). The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at work" (`CREW.spot` in
   `src/111fb-fleamarket.js`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`), so they walk main street.

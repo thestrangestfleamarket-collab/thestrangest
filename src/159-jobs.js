@@ -23,7 +23,7 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const roam=J=>{ const A=J.A, N=J.N; if(!A||!(A.r>0)||N.st.to)return; for(let k=0;k<10;k++){ const p=A.band?A.band():{x:A.x+(rnd()*2-1)*A.r,z:A.z+(rnd()*2-1)*A.r}; if(stfree(p.x,p.z,N.st.R)&&Math.hypot(p.x-N.st.x,p.z-N.st.z)<30*T){ N.st.to=p; return; } } };
   const toWork=(J,now)=>{ const N=J.N, out=J.job.r!=null; J.goal='work';
     if(out){ const A=area(J); go(J,A,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=A; if(!(A&&A.r>0)){ N.st.hold=true; if(A&&A.hd!=null)N.st.hd=A.hd; } },now); return; }
-    go(J,J.door,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=null; const p=CREW.inside(J.job.at,J.key); if(p){ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; } else hide(N,true); },now); };
+    go(J,J.door,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=null; const p=CREW.inside(J.job.at,J.key,J.job); if(p){ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; } else hide(N,true); },now); };
   const offWork=J=>{ const N=J.N; J.goal='off'; room(N,false); if(N.mode==='hidden'||N.st.pin){ N.st.pin=false; hide(N,false); put(N,J.door||N.st); }
     J.state='off'; J.A={x:(J.door||N.st).x,z:(J.door||N.st).z,r:10*T}; N.st.hold=true; };
   const goHome=J=>{ const N=J.N; J.goal='home'; room(N,false); if(N.st.pin){ N.st.pin=false; put(N,J.door||N.st); }

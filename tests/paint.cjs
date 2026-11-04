@@ -85,8 +85,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   ok(Vw.open&&Vw.src==='data:image/webp'&&Vw.t&&await pg.evaluate(()=>document.getElementById('artview').hidden),'VIEW shows it full screen with its title; Esc closes it');
 
   // the trader buys paintings at their worth
-  const Sh=await pg.evaluate(()=>{ const N=NPCS.all().find(n=>n.home==='trader'||n.key==='trader'); const tr=CHARS.trade&&N?CHARS.trade(N):null; return {sells:tr&&tr.sells.includes('canvas_m'),buys:tr&&(tr.buys||[]).includes('paintings'),k:FORAGE.BUYK.paintings}; });
-  ok(Sh.k&&Sh.k[0]==='pt_'&&(Sh.sells===null||Sh.sells!==false),'THE TRADER sells canvases and buys paintings ('+JSON.stringify(Sh)+')');
+  const Sh=await pg.evaluate(()=>{ const r=(CHARS.store&&CHARS.store.trader)||(CHARS.rec&&CHARS.rec('trader')), tr=r&&r.trade; return {sells:!!tr&&tr.sells.includes('canvas_m'),buys:!!tr&&(tr.buys||[]).includes('paintings'),k:FORAGE.BUYK.paintings}; });
+  ok(Sh.k&&Sh.k[0]==='pt_'&&Sh.sells&&Sh.buys,'THE TRADER sells canvases and buys paintings ('+JSON.stringify(Sh)+')');
 
   // trade through the block: ask, open, put the painting in, accept, done
   const T0=await pg.evaluate(()=>{ window.__sent=[]; ONLINE.on=true; ONLINE.send=m=>__sent.push(JSON.parse(JSON.stringify(m))); ONLINE.use({id:'a',name:'ROSA'}); return __sent.slice(); });

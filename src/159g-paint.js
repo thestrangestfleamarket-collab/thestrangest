@@ -165,19 +165,25 @@ const PAINTER={}; window.PAINTER=PAINTER;
 
   /* ---------- pointer and keys on the view ---------- */
   let pan=null, spaceDown=false, drawing=false;
-  view.addEventListener('pointerdown',e=>{ if(!P)return; e.preventDefault(); view.setPointerCapture(e.pointerId); const p=toC(e);
+  const inDlg=e=>e.target.closest&&e.target.closest('.pdlg');   // the FINISH window sits over the painting: its clicks are its own
+  const touch=new Map(); let pinch=null;
+  const pinchAt=()=>{ const [a,b]=[...touch.values()], r=view.getBoundingClientRect(); return {d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,x:(a[0]+b[0])/2-r.left,y:(a[1]+b[1])/2-r.top}; };
+  view.addEventListener('pointerdown',e=>{ if(!P||inDlg(e))return; e.preventDefault(); view.setPointerCapture(e.pointerId); const p=toC(e);
+    if(e.pointerType==='touch'){ touch.set(e.pointerId,[e.clientX,e.clientY]); if(touch.size===2){ if(drawing){ drawing=false; end(); undo(); P.redo.length=0; bar(); } const q=pinchAt(); pinch={...q,z:V.z,vx:V.x,vy:V.y}; return; } if(touch.size>2)return; }
     if(e.button===1||e.button===2||spaceDown||B.tool==='hand'){ pan=[e.clientX,e.clientY,V.x,V.y]; return; }
     if(e.button!==0)return;
     if(B.tool==='pick'||e.altKey){ pickAt(p[0],p[1]); return; }
     if(B.tool==='fill'){ fillAt(p[0],p[1]); return; }
     drawing=true; begin(e,p); });
-  view.addEventListener('pointermove',e=>{ if(!P)return; const p=toC(e); hover=p;
+  view.addEventListener('pointermove',e=>{ if(!P||inDlg(e))return; const p=toC(e); hover=e.pointerType==='touch'?null:p;
+    if(touch.has(e.pointerId))touch.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pinch&&touch.size===2){ const q=pinchAt(), z=cl(pinch.z*q.d/pinch.d,.1,32), cx=(pinch.x-pinch.vx)/pinch.z, cy=(pinch.y-pinch.vy)/pinch.z; V.z=z; V.x=q.x-cx*z; V.y=q.y-cy*z; bar(); redraw(); return; }
     if(pan){ V.x=pan[2]+e.clientX-pan[0]; V.y=pan[3]+e.clientY-pan[1]; redraw(); return; }
     if(drawing)move(e,p); else redraw(); });
-  const up=()=>{ if(pan){ pan=null; return; } if(drawing){ drawing=false; end(); } };
+  const up=e=>{ if(e&&touch.delete(e.pointerId)&&pinch){ if(touch.size<2)pinch=null; return; } if(pinch)return; if(pan){ pan=null; return; } if(drawing){ drawing=false; end(); } };
   view.addEventListener('pointerup',up); view.addEventListener('pointercancel',up); view.addEventListener('pointerleave',()=>{ hover=null; redraw(); });
   view.addEventListener('contextmenu',e=>e.preventDefault());
-  view.addEventListener('wheel',e=>{ if(!P)return; e.preventDefault(); const r=view.getBoundingClientRect(); if(e.ctrlKey||!e.shiftKey)zoomAt(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top); else { V.x-=e.deltaY; redraw(); } },{passive:false});
+  view.addEventListener('wheel',e=>{ if(!P||inDlg(e))return; e.preventDefault(); const r=view.getBoundingClientRect(); if(e.ctrlKey||!e.shiftKey)zoomAt(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top); else { V.x-=e.deltaY; redraw(); } },{passive:false});
   const KEYT=Object.fromEntries(TOOLS.map(t=>[t[2].toLowerCase(),t[0]]));
   const onKey=e=>{ e.stopPropagation(); const k=e.key.toLowerCase(), typing=e.target.tagName==='INPUT'&&e.target.type==='text';
     if(e.key==='Escape'){ const d=ui.querySelector('.pdlg'); if(d)d.remove(); else PAINTER.close(); e.preventDefault(); return; }

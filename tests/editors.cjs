@@ -88,15 +88,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(errs.length === before, 'LANDSCAPE: no errors driving the controls' + (errs.length > before ? ' (' + errs.slice(before).join('; ') + ')' : ''));
 
     // the world editor: editing a light on an item (brightness/colour/range) and fit-to-item controls
-    const we = await pg.evaluate(() => {
-      const WE = window.WE, r = {}, $ = s => document.querySelector(s); if (!WE.on) WE.toggle();
+    const we = await pg.evaluate(async () => {
+      const WE = window.WE, r = {}, $ = s => document.querySelector(s); if (!WE.on) await WE.toggle();
       r.lights = WE.dbgLights();
       const a = WE.dbgSelLight(0); r.picked = !!a; const base = a ? a.intensity : 0;
       r.lrows = !!$('[data-lrow]') && getComputedStyle($('[data-lrow]')).display !== 'none';
-      const bri = $('#wlbri'); bri.value = 2; bri.dispatchEvent(new Event('input', { bubbles: true }));
+      const bri = $('#wlbri'); bri.value = 2; bri.dispatchEvent(new Event('change', { bubbles: true }));
       const b2 = WE.dbgSelLight(0); r.brighter = b2 && b2.intensity > base + 0.001;
-      const col = $('#wlcol'); col.value = '#ff0000'; col.dispatchEvent(new Event('input', { bubbles: true })); r.col = true;
-      bri.value = 1; bri.dispatchEvent(new Event('input', { bubbles: true })); $('#wlcol0').click();
+      const col = $('#wlcol'); col.value = '#ff0000'; col.dispatchEvent(new Event('change', { bubbles: true })); r.col = true;
+      bri.value = 1; bri.dispatchEvent(new Event('change', { bubbles: true })); $('#wlcol0').click();
       const b3 = WE.dbgSelLight(0); r.reset = b3 && Math.abs(b3.intensity - base) < 0.01;
       if (WE.on) WE.toggle();
       return r;

@@ -69,3 +69,18 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **The park's edge ring and the rows past the north wall are still the old tree kinds** (left from the elms work, HISTORY 2 Nov "the Mall's
+  elms"; owner, 4 Nov 2026: "add these to TODO.md"). Only the park's inner trees and the entrance rows became elms; the ring (`row(...)` in
+  `src/061-park.js`, kinds `TK`, baked low so it hides the wall from outside) and `TREES.back` kept the pack's oaks, elders, giant, spruce and
+  willow. Ask the owner whether "shaped exactly the same" includes them; if so, give them elm summaries at the ring's height and check from
+  Market St that the wall still hides.
+- [ ] **Isometric view under the entrance canopy** (same work): you see the ground only in the peek disc round you; beyond it the underside of
+  the leaves (`PEEK` in `src/008-batch.js`, leaf meshes marked 4). Options for the owner: leave it, or hide every crown whose footprint covers
+  you in the iso and map views (`PARK.lod` in `src/061-park.js` can set a tree's batch instance invisible; the trunk would go with it unless
+  the cards and limbs are split into two batches).
+- [ ] **The build check on GitHub** (seen 2 Nov on #492): `tests/fishing.cjs` fails at random on the runner in two steps (the rod tip above
+  his head, "pulling against the run tires the fish faster"), and when the VR and brawl checks are selected too the `build-check` job runs past
+  its `timeout-minutes: 60` in `.github/workflows/site.yml` (the VR check alone took 40 min) and is cancelled. Either steady those two steps
+  (wait for the pose/the fight to settle) and raise the limit, or split the long checks into their own job.
+- [ ] **#501 (THE CATACOMB RUN in VR) was merged on a red build check** (2 Nov, 16:03 UTC, two minutes before the merge). Nobody has read
+  that log; do so before touching the catacomb run or VR, and fix what it names.

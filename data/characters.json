@@ -5309,5 +5309,67 @@
     }
    }
   }
+ },
+ "w_raccoon": {
+  "name": "THE RACCOON",
+  "folk": {
+   "sp": "raccoon",
+   "m": 0.95,
+   "f": "#6e6e74",
+   "f2": "#e8e4dc",
+   "coat": "tunic",
+   "cc": "#a81c28"
+  },
+  "job": {
+   "at": "theatre",
+   "title": "CONCESSIONS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "f_popcorn",
+    "f_nachos",
+    "f_candybox",
+    "d_cola"
+   ],
+   "line": "Popcorn's fresh. Nachos are... warm. Don't feed the screen."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Snacks for the show?",
+      "Butter on that? There's always butter."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S PLAYING?",
+       "go": "now"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "now": {
+     "say": "Whatever's on the board behind the fox. I only see the backs of heads.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  }
 }

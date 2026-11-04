@@ -1,4 +1,4 @@
-// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside (the bar, the arcade, the bodega): its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
+// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside (the bar, the arcade, the bodega, the movie theatre): its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -64,5 +64,16 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     if(OUT){ await pg.screenshot({path:OUT+'/bodega.png'}); }
     await pg.evaluate(()=>BODEGA.pick('g_soda')); await pg.evaluate(()=>ROOMS.exit('bodega')); await pg.waitForTimeout(4000);
     rec('bodega: an unpaid basket stays behind when you leave',await pg.evaluate(()=>!BODEGA.basket.size)); }
+  /* ---------- THE MOVIE THEATRE ---------- */
+  { await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('THE CONCESSION STAND')),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),60000).catch(()=>{});
+    const p=await people('theatre'); rec('theatre: staff spots and moviegoer places inside it (the twelve recliners)',p.spots>=3&&p.seats>=14&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
+    const rd=()=>{ const N=BODIES.by.w_raccoon&&BODIES.by.w_raccoon.npc, s=STORE.rooms.find(r=>r.id==='theatre').spots.CONCESSIONS; return N?{d:Math.hypot(N.st.x-s.x,N.st.z-s.z)}:null; };
+    await U(rd,60000).then(()=>pg.waitForFunction(`(${rd})().d<.2`,null,{timeout:60000})).catch(()=>{}); const w=await pg.evaluate(rd);
+    rec('theatre: THE RACCOON stands at the concession stand',!!w&&w.d<.2,JSON.stringify(w));
+    const c=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); th('THE CONCESSION STAND').act(); const shop=!!SHOPS.cur&&SHOPS.cur.key==='w_raccoon'&&['f_popcorn','f_nachos','f_candybox','d_cola'].every(k=>CHARS.trade({key:'w_raccoon'}).sells.includes(k)&&ITEMS.prop(k,'edible'));
+      INV.cash=5; const n0=INV.items.f_popcorn||0; th('THE POPCORN MACHINE').act(); const pop=INV.cash===2&&INV.items.f_popcorn===n0+1; th('THE MENU BOARD').act(); const menu=MINI.on&&MINI.on.title==='CONCESSIONS'; MINI.close(); return {shop,pop,menu}; });
+    rec('theatre: the stand sells popcorn, nachos, candy and soda; the machine a tub; the menu reads',c.shop&&c.pop&&c.menu,JSON.stringify(c));
+    if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
+    await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

@@ -1388,5 +1388,23 @@
   "stackable": true,
   "weight": 0.3,
   "edible": true
+ },
+ "f_popcorn": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_nachos": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_candybox": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
  }
 }

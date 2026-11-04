@@ -41,6 +41,9 @@ jobs:
           k riders  'src/117a|src/009c|riders\.cjs'
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
+          k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
+          k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k summon  'src/076b|src/162b|summon\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
@@ -133,6 +136,15 @@ jobs:
       - name: loopmap
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
+      - name: fauna rests
+        if: contains(steps.f.outputs.run, ' faunarest')
+        run: node tests/fauna-rest.cjs dist/market.html
+      - name: motion
+        if: contains(steps.f.outputs.run, ' motion')
+        run: node tests/motion.cjs dist/market.html
+      - name: spiders
+        if: contains(steps.f.outputs.run, ' spiders')
+        run: node tests/spiders.cjs dist/market.html
       - name: passport
         if: contains(steps.f.outputs.run, ' passport')
         run: node tests/passport.cjs dist/market.html

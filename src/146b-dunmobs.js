@@ -128,7 +128,12 @@ import {GEMS} from './101-gems.js';
       S.cool-=dt; if((S.wait-=dt)>0)continue;
       if(!S.to)S.to=near(S.x,S.z,1.2*T,3.2*T,.18*T); if(S.to){ S.air=1; S.ph=0; } else S.wait=1; }
     return ch; };
-  const pawnTick=(r,dt)=>{ const me=r.N.me; let x=0;
+  const pawnTick=(r,dt)=>{ const me=r.N.me, N=r.N; let x=0;
+    if(r.spider){ const c=r.dead?'Spider_Death':r.lunge?'Spider_Attack':r.jolt>0?'Spider_Hit':null; if(c){ if(N.clip!==c)N.clipN=(N.clipN||0)+1; N.clip=c; N.clipK=1; }   // its own clips: the strike, the flinch, curling up on its back
+      if(r.dead){ r.t+=dt; me.position.y=-Math.max(0,r.t-1.8)*.6; if(r.t>2.6)park(r); return; }
+      if(r.jolt>0)r.jolt-=dt;
+      if(r.lunge){ const l=r.lunge; l.t+=dt; if(!l.done&&l.t>=.3){ l.done=true; l.hit(); } if(l.t>.8)r.lunge=null; }
+      return; }
     if(r.dead){ r.t+=dt; x=Math.min(Math.PI/2,r.t*4); me.rotation.x=x; me.position.y=-Math.max(0,r.t-.5)*.6; if(r.t>1.3)park(r); return; }
     if(r.jolt>0){ r.jolt-=dt; x=-r.jolt*1.2; }
     if(r.lunge){ const l=r.lunge; l.t+=dt; x=l.t<.4?-l.t*.6:l.t<.55?-.24+(l.t-.4)*4.6:Math.max(0,.45-(l.t-.55)*1.5); if(!l.done&&l.t>=.5){ l.done=true; l.hit(); } if(l.t>.9)r.lunge=null; }
@@ -139,7 +144,7 @@ import {GEMS} from './101-gems.js';
     if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg,b.from); } else b.m.position.addScaledVector(d,stp/l); } };
   const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
     const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
-    if(r.spider){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
+    if(r.spider&&!r.lunge&&!(r.jolt>0)){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
     const sr=see()+(r.spider?.6:0), see_=alive&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
     if(!see_){ N.alert=false; st.face=null; if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
     N.alert=true; const busy=r.kk?!!N.an.once:!!r.lunge||r.jolt>0, ranged=!!r.style.bolt, R=(ranged?5.5:r.style.reach||.8)*T;
@@ -154,6 +159,7 @@ import {GEMS} from './101-gems.js';
       for(const r of [...(RES||[]),...SPI])if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); for(const r of SPI)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes([...(RES||[]),...SPI].filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
+  window.DUNSPI=()=>SPI;
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); return {onLevel,tick,arena,wave:(n,k)=>{ lvl=n; spawnSlimes(n,k); },alive:()=>slimes.filter(S=>!S.dead).length}; };
   const ensureInit=()=>Mp||(Mp=CREATURESREADY.then(()=>M||(M=init())));   // the slimes' mesh needs the creature data (lazy, loads just after the start), so init waits for it

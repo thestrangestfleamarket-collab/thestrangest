@@ -27,7 +27,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
     const arcs=P.filter(p=>p.k==='a').map(p=>[p.s0,p.s0+p.len]), wide=s=>{ s=mod(s,L); let d=1e9; for(const [a,b] of arcs)d=Math.min(d,s<a?a-s:s>b?Math.min(s-b,L-s+a):0); d=Math.min(d,arcs[0][0]+L-s); return d<=0?1:d>=12?0:(t=>t*t*(3-2*t))(1-d/12); };
     TRK[id]={id,L,P,pt,near,wide,hin:s=>2.2+3*wide(s),hout:s=>2.2+.4*wide(s),line:t}; }
 
-  // the stations: A's is the old one in 009-down; B to H are made here the same size as A's (58 along, 21.8 across: track, platform, track)
+  // the stations: A's is the old one in 009-down; B to H are made here the same size as A's (29 along, 21.8 across: track, platform, track)
   const LEN=M.SL.L, XW=21.8, P0=4.4, P1=17.4, MID=(P0+P1)/2, EX0=10.9, EX1=13.9, ED=3, COLX=[P0+1.5,P1-2.2], COLY=M.SL.COLY, STEPU=[[.6,1.8],[LEN-1.6,LEN-.4]];
   const STA=D.stations.filter(d=>SECTIONS.loaded.some(b=>b.id===d.id)).map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
     st.s={}; for(const k in TRK)st.s[k]=TRK[k].near(d.x,D.tracks[k][d.side]).s;
@@ -138,12 +138,12 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
         const back=new THREE.Mesh(new THREE.BoxGeometry(3.2*T,36*ZU,.16*T),woodM); back.position.set(...P(by+1.6,MID,18)); scene.add(back); sb(by,MID-.7,by+3.2,MID+.7); }
       const tube=new THREE.MeshBasicMaterial({color:0xeaffef,clippingPlanes:[PT]}); const FIXY=M.SL.FIXY; for(const fy of FIXY){ const b=new THREE.Mesh(new THREE.BoxGeometry(3*T,2*ZU,.3*T),tube); b.position.set(...P(fy,MID,150)); scene.add(b); }
       for(const fy of FIXY){ const L=new THREE.PointLight(new THREE.Color(.74,1,.8),LAMPI*1.9,17*T,LAMPD); L.position.set(...P(fy,MID,140)); L.userData.i0=L.intensity; scene.add(L); lamps.push(L); }
-      for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [7,21,37,51]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1],false,IN); }
+      for(const [a,s] of [[.04,1],[XW-.04,-1]])for(const u of [7,22]){ const w=6; sign((g,W,Hh)=>nameSign(g,W,Hh,st),[P(u-w/2,a,62),P(u+w/2,a,62),P(u+w/2,a,86),P(u-w/2,a,86)],420,64,[s>0?pw0:pw1],false,IN); }
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0],false,IN);
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,40),P(LEN-.05,MID+1,40),P(LEN-.05,MID+1,99),P(LEN-.05,MID-1,99)],512,512,[pe1],false,IN); }
     else { pe1=cutAt(LEN,-1); pw0=cutAt(0,1); pw1=cutAt(XW,-1);   // gone with their walls when a wall is cut away
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN); }
-    for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [11,LEN-18])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
+    for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [LEN/2-3.5])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
     const bz=st.old?100:108, bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN-.05,MID-3,bz),P(LEN-.05,MID+3,bz),P(LEN-.05,MID+3,bz+24),P(LEN-.05,MID-3,bz+24)],512,112,[pe1],false,IN); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};
       [['inner',P0,steps[0]],['outer',P1,steps[1]]].forEach(([k,e,stp])=>{ const L=st.edge[k]=[]; let u=0; const cut=(a,b)=>{ for(let p=a;p<b-1e-6;p+=1){ const q=Math.min(b,p+1), A=P(p,e-.05,0), B=P(q,e+.05,0), box=[Math.min(A[0],B[0]),Math.min(A[2],B[2]),Math.max(A[0],B[0]),Math.max(A[2],B[2])]; SOL.down.push(box); L.push({box,keep:box.slice(),u0:p,u1:q}); } };

@@ -1,11 +1,12 @@
 // FIREFLIES: blinking swarms by the park's pond and plants at night; double click one to cup a firefly and let it go, or fill an empty butterfly jar that glows while you carry it and lets them out at dawn.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, PARK, pos, UI, W3, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {WILD} from './144f-wild.js';
-{ const T=TILE, WU=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), KEY='fireflies', JARS=['jar_s','jar_m','jar_l'], N=10, rnd=(a,b)=>a+Math.random()*(b-a);
+{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), KEY='fireflies', JARS=['jar_s','jar_m','jar_l'], N=10, rnd=(a,b)=>a+Math.random()*(b-a);
   const S={v:1,jar:null}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
   WILD.add('firefly',['FIREFLY','Photinus pyralis','ento',10,0]);
   FORAGE.add({names:{jar_fly:'A JAR OF FIREFLIES'}});

@@ -85,3 +85,10 @@ starting: a newer owner decision wins over a line here.
   4 Nov 2026). They're on its far side; minor.
 - [ ] **The places tour no longer visits the skate park** (`tests/places.cjs` can't load Section B); `tests/skate.cjs` covers it but only
   runs when skate files change.
+- [ ] **The egg poacher's colours aren't tintable** (owner picked "Keep its colours, tintable", 2 Nov 2026): it keeps the file's own colours
+  exactly (`src/111fa-poacher.js`, re-baked colours); a small shade jitter like the palette bodies' was never added.
+- [ ] **The egg poacher was never looked at on the live site** after #511 went live (2 Nov 2026); seen only in the test build.
+- [ ] **The black-void sheet view doesn't show rig bodies**: `?sheet=poacher` showed only ground, the camera not on it (2 Nov 2026);
+  `tests/sheet.cjs` also crashes on `hud`/`stat`, which no longer exist as globals. Every new character's look-over goes through it.
+- [ ] **The cinema's video titles**: YouTube refuses `youtube.com/oembed` from CI since 2 Nov 2026 (`src/059f-cinema.js:201`); the places
+  check now ignores other sites' refusals, but whether players still get titles is unknown.

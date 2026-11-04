@@ -977,5 +977,101 @@
   "stackable": true,
   "weight": 0.4,
   "edible": true
+ },
+ "prize_ticket": {
+  "value": 0,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "prize_bear": {
+  "value": 12,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "prize_yoyo": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "prize_ring": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.02
+ },
+ "d_coffee": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "d_shake": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_eggs": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_pancake": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_hash": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "f_burger": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_blt": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_grilled": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_pie": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_cake": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_gumball": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01,
+  "edible": true
+ },
+ "news_paper": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "arc_token": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01
  }
 }

@@ -2,6 +2,8 @@
 
 Every interior done the way the diner was: what a real one has, a non-human worker, patrons who come and sit or stand somewhere sensible, something for the player to do, then shots from every angle and a logic pass. One pull request per interior.
 
+**Nothing just for show** (owner, 4 Nov 2026): every added thing is usable: a small game in the minigames' window (`MINI`, `GAMES`), a close-up (`MINI.look`), a counter or machine that sells (`IKIT.buy`, a worker's shop), a seat, a radio (`RADIO.src`).
+
 Not in this plan: the pub (shelved with the forest guardians, 30 Oct) and the six switched-off places.
 
 ## Step 0: groundwork (one pull request, before any interior)

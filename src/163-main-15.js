@@ -1,6 +1,6 @@
 // THE START: every system's init, the first ground patches, where you stand, and __started.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BINS, CLIP, CLOCK, CULL, DRONE, ED, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NPCS, PARK, PERFX, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
+import {AMB, BINS, CLIP, CLOCK, CULL, DRONE, ED, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NEWS, NPCS, PARK, PERFX, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
 import {PPU, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {applyTime, AWAY, CASTLE, cutWalls, DITH, FIX, FREE, lamps, LAY, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
@@ -8,7 +8,6 @@ import {OBJS} from './008-batch.js';
 import {OUTL} from './072-walker3d.js';
 import {collide, frame} from './075-main-13.js';
 import {BVH} from './137-bvh.js';
-import {NEWS} from './147-newsstand.js';
 import {ROOFS} from './148-rooftops.js';
 import {GATES} from './148a-gates.js';
 import {DRAINS} from './148b-drains.js';

@@ -71,8 +71,8 @@ jobs:
           k westst  'src/023|src/059-|src/059[e-h]|westst'
           k zones   'src/129a|src/066-river|src/065a|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
-          k interiors 'src/038zc|src/146z[b-z]|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
-          k diner   'src/146za|src/125-game-zzz-bar-octopus|src/127-drummer|src/059i|src/111fb|src/159-jobs|src/100-use|diner\.cjs'
+          k interiors 'src/038z[cd]|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
+          k diner   'src/146za|src/038z[cd]|src/146z5|src/147-newsstand|src/125-game-zzz-bar-octopus|src/127-drummer|src/059i|src/111fb|src/159-jobs|src/100-use|diner\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           k cast    'src/111a|src/111f[bc]|src/159-jobs|src/059i|data/cast/|data/characters|data/merchant|flea\.cjs|jobsim|merchant\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"

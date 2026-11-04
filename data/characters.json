@@ -4139,7 +4139,8 @@
     15
    ]
   },
-  "name": "THE DINER WAITRESS"
+  "name": "THE DINER WAITRESS",
+  "trade": {"sells": ["d_coffee", "d_shake", "d_cola", "f_eggs", "f_pancake", "f_hash", "f_burger", "f_blt", "f_grilled", "f_pie", "f_cake"], "line": "Coffee's bottomless. The pie is not."}
  },
  "carving_chef": {
   "pf": "carving-chef-102bf5",
@@ -5249,6 +5250,47 @@
     },
     "long": {
      "say": "Since before the stairs. I dug them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_tokenbot": {
+  "name": "TOKEN",
+  "job": {
+   "at": "arcade",
+   "title": "PRIZES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "BEEP. TICKETS IN, PRIZES OUT.",
+      "WIN AT SKEE-BALL. BRING ME TICKETS. BEEP."
+     ],
+     "opts": [
+      {
+       "t": "WHAT CAN I GET?",
+       "go": "what"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "what": {
+     "say": "A RING IS 4 TICKETS. A YO-YO IS 8. THE BEAR IS 20. DOUBLE-CLICK THE COUNTER.",
      "opts": [
       {
        "t": "BACK.",

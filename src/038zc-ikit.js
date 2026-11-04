@@ -1,6 +1,6 @@
 // THE INSIDES' KIT: IKIT.frame(R) gives a room's corner and axes in metres; IKIT.room(F,add) its makers (boxes, cylinders and balls merged into a few meshes, glowing parts, pictures, painted signs, seats you sit on). Every rebuilt inside furnishes with it.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, UI, USE} from './003b-systems.js';
+import {FORAGE, INV, pos, UI, USE} from './003b-systems.js';
 import {SOL, TILE} from './006-map-pre.js';
 const IKIT={}; window.IKIT=IKIT;
 { const T=TILE, MW=T/.84; IKIT.MW=MW;   // world units in a metre
@@ -35,7 +35,13 @@ const IKIT={}; window.IKIT=IKIT;
       UI.thing(th); return me; };
     // a spot or a seat for the room's lists (ROOMS.off[id] or STORE.rooms): y only for a seat
     const spot=(u,v,du,dv,h)=>{ const p=pw(u,v); return {x:p[0],z:p[1],hd:hd(du,dv),...(h!=null?{y:h*MW}:{})}; };
+    // a thing to double-click over a piece (u,v its middle, w its width, h its height): act(th) does what it is for
+    const use=(name,u,v,w,h,act,reach=1.5)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*MW,h*MW,w*MW),new THREE.MeshBasicMaterial({visible:false})), p=pw(u,v); hb.position.set(p[0],h/2*MW,p[1]); add(hb);
+      const th={name,obj:hb,reach:reach*T,near:(reach+1.1)*T,tall:h*MW,act:()=>act(th)}; UI.thing(th); return th; };
     const flush=()=>[MAIN.p.length?meshOf(MAIN,matL):null,GLOW.p.length?meshOf(GLOW,matB):null];
-    return {MW,box,cyl,ball,glow,own,meshOf,pic,words,seat,spot,sol,flush,matL,matB}; };
+    return {MW,box,cyl,ball,glow,own,meshOf,pic,words,seat,spot,sol,use,flush,matL,matB}; };
+  // buying a thing over a counter or from a machine: the price from your cash, the thing in your pack
+  IKIT.buy=(id,price,line)=>{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), nm=FORAGE.name?FORAGE.name(id):id.toUpperCase();
+    if(INV.cash<price){ say('THAT IS $'+price+'. YOU HAVE $'+INV.cash+'.','#c8a090'); return false; } INV.cash-=price; INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
 }
 export {IKIT};

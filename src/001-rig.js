@@ -530,13 +530,21 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
       P[n].ik=V(k*2.7,py+3.9,pz-1.4); P[n].foot=-8*D;
       P[n].ua=[58*D,9*D]; P[n].fa=[(R.brake?70:74)*D,4*D]; P[n].fist=1; } }
   else if(R.k==='skate'){
-    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?5.4:4.2; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=10*D;
+    const cr=Math.min(1.6,R.crouch||0), dk=RIDEG.deck+ANKLE, p=R.push, knee=(R.brake?5.4:4.2)+cr*4.5; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=(10+cr*8+(R.lean||0))*D;   // crouch: winding up or tucked; lean: a manual
     P.root=V(0,STAND-knee-(p>=0?2.2*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
     const f=R.goofy?'R':'L', b=R.goofy?'L':'R', s=R.goofy?-1:1;
     P[f].ik=V(0.6*s,dk+z,4.4); P[f].foot=0;
     if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P[b].ik=V(-3.4*s,dk-dn*RIDEG.deck+z*(1-dn),1.5-8*p); P[b].foot=-6*D*dn; }
     else { P[b].ik=V(-0.6*s,dk+z,-4.2); P[b].foot=0; }
-    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; } }
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; }
+    if(R.grab){ const g=R.grab==='nose'||R.grab==='melon'?f:b; P[g].ua=[-8*D,12*D]; P[g].fa=[6*D,8*D]; P[g].fist=1; } }   // a grab: the hand down to the board
+  else if(R.k==='scoot'){   // a kick scooter: facing forward, the front foot on the deck, the back one kicking, both hands on the bars
+    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?4.6:3.6; P.nod=-6*D; P.bend=14*D;
+    P.root=V(0,STAND-knee-(p>=0?1.6*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
+    P.L.ik=V(1.2,dk+z,1.4); P.L.foot=0;
+    if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P.R.ik=V(-1.4,dk-dn*RIDEG.deck+z*(1-dn),-1-7*p); P.R.foot=-6*D*dn; }
+    else { P.R.ik=V(-1.2,dk+z,-2.6); P.R.foot=0; }
+    for(const n of 'LR'){ P[n].ua=[40*D,8*D]; P[n].fa=[30*D,4*D]; P[n].fist=1; } }
   else if(R.k==='kart'){
     P.root=V(0,6+z,-1.5); P.bend=-16*D; P.nod=-6*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[82*D,5*D]; P[n].sh=[14*D,2*D]; P[n].foot=-12*D; P[n].ua=[50*D,12*D]; P[n].fa=[58*D,(4+(R.steer||0)*26*k)*D]; P[n].fist=1; } }

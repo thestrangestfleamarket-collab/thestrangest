@@ -4,7 +4,7 @@ import {AMB, CLOCK, GPH, pos, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {M, renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
-const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (the bedroom 150b, the kitchen 150c) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api
+const ROOMK={parts:[],wires:{},built:[],api:null,keep:[]};   // the room's other parts (the bedroom 150b, the kitchen 150c) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
     const col=c=>new THREE.Color('rgb('+c.join(',')+')');

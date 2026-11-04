@@ -13,8 +13,10 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const want=(J,h)=>inH(h,J.open,J.close)?'work':inH(h,J.bed,J.wake)?'home':'off';
   const near=(x,z)=>Math.hypot(pos.x-x,pos.z-z)<60*T&&SHARED.LVL==='up';
   const hide=(N,v)=>{ if(v){ N.mode='hidden'; N.g.visible=false; } else delete N.mode; };
-  const room=(N,inn)=>{ const to=inn?scene:(MAPG.bodega||scene); if(N.g.parent!==to)to.add(N.g); };
+  const room=(N,inn)=>{ if(!inn){ if(N.SR)N.SR.sit=null; CREW.out(N.key); } const to=inn?scene:(MAPG.bodega||scene); if(N.g.parent!==to)to.add(N.g); };
   const put=(N,p)=>{ N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.st.next=null; N.g.position.x=p.x; N.g.position.z=p.z; };
+  // in at a spot inside: pinned there, facing its way, sitting if it is a seat
+  const settle=(N,p)=>{ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; if(p.sit!=null&&N.SR)N.SR.sit={z:Math.max(2,p.sit/((N.g.scale.y||1)*((N.body&&N.body.KL)||1)))}; };   // (a body's hips go at its own leg length: KL)
   // walk there if anyone could see it, else be there; then()
   const go=(J,p,then,now)=>{ const N=J.N; CITY.stop(N); N.st.pin=false; N.st.hold=true; if(!p){ then(); return; }
     if(now){ hide(N,false); put(N,p); then(); return; }
@@ -24,7 +26,7 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const roam=J=>{ const A=J.A, N=J.N; if(!A||!(A.r>0)||N.st.to)return; for(let k=0;k<10;k++){ const p=A.band?A.band():{x:A.x+(rnd()*2-1)*A.r,z:A.z+(rnd()*2-1)*A.r}; if(stfree(p.x,p.z,N.st.R)&&Math.hypot(p.x-N.st.x,p.z-N.st.z)<30*T){ N.st.to=p; return; } } };
   const toWork=(J,now)=>{ const N=J.N, out=J.job.r!=null; J.goal='work';
     if(out){ const A=area(J); go(J,A,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=A; if(!(A&&A.r>0)){ N.st.hold=true; if(A&&A.hd!=null)N.st.hd=A.hd; } },now); return; }
-    go(J,J.door,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=null; const p=CREW.inside(J.job.at,J.key); if(p){ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; } else hide(N,true); },now); };
+    go(J,J.door,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=null; const p=CREW.inside(J.job.at,J.key,J.job); if(p)settle(N,p); else hide(N,true); },now); };
   const offWork=J=>{ const N=J.N; J.goal='off'; room(N,false); if(N.mode==='hidden'||N.st.pin){ N.st.pin=false; hide(N,false); put(N,J.door||N.st); }
     J.state='off'; J.A={x:(J.door||N.st).x,z:(J.door||N.st).z,r:10*T}; N.st.hold=true; };
   const goHome=J=>{ const N=J.N; J.goal='home'; room(N,false); if(N.st.pin){ N.st.pin=false; put(N,J.door||N.st); }
@@ -34,7 +36,7 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const pace=(J,f)=>{ const N=J.N; if(J.v0==null)J.v0=N.st.v; N.st.v=f?J.v0*2.2:J.v0; };
   const life=(J,w,now)=>{ const N=J.N, k=w.slice(4), H=LIVES.H(), sp=LIVES.spot(k,J.key,H); J.goal=w; J.kind=k; room(N,false); if(N.st.pin){ N.st.pin=false; put(N,J.door||N.st); } pace(J,sp&&sp.fast);
     if(!sp){ offWork(J); J.goal=w; return; }
-    if(sp.at){ go(J,sp.door,()=>{ if(J.goal!==w)return; J.state='off'; J.A=null; const p=CREW.inside(sp.at,J.key); if(p){ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; } else hide(N,true); },now); return; }
+    if(sp.at){ go(J,sp.door,()=>{ if(J.goal!==w)return; J.state='off'; J.A=null; const p=CREW.inside(sp.at,J.key); if(p)settle(N,p); else hide(N,true); },now); return; }
     go(J,sp,()=>{ if(J.goal!==w)return; J.state='off'; J.A=sp.r>0?sp:null; N.st.hold=true; if(sp.hd!=null)N.st.hd=sp.hd; },now); };
   const act=(J,w,now)=>w==='work'?(pace(J,0),toWork(J,now)):w==='home'?(pace(J,0),goHome(J)):w.startsWith('off:')?life(J,w,now):offWork(J);
   // a cast member joins: its hours a little its own, and it is where the hour says at once
@@ -54,6 +56,6 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   SYS.add('city',dt=>{ if((acc+=dt)<.5)return; acc=0; const h=CLOCK.h; if(JOBS.on)for(const c of CREW.list)if(!c.J)c.J=JOBS.add(c.N,c.job,c.key)||1;
     for(let i=0;i<2&&JOBS.q.length;i++)JOBS.q.shift()();
     for(const J of JOBS.list){ const w=wantOf(J); if(w!==J.goal)act(J,w); else if((J.state==='work'||J.state==='off')&&J.A&&(J.t-=.5)<=0){ J.t=4+rnd()*10; roam(J); } } },'159-jobs');
-  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
+  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,want:wantOf(J),home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
 }
 export {JOBS};

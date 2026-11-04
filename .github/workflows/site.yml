@@ -70,7 +70,7 @@ jobs:
           k swim    'src/146g-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k westst  'src/023|src/059-|src/059[e-h]|westst'
-          k zones   'src/129a|src/066-river|src/065a|zones\.cjs'
+          k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'

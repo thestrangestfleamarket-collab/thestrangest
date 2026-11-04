@@ -1,7 +1,8 @@
-// THE CULL: CULL splits big meshes into cells and draws only the cells near and in view; nothing wholly past the distance fog's end (DFOG.cut) is drawn.
+// THE CULL: CULL splits big meshes into cells and draws only the cells near and in view; nothing wholly past the distance fog's end (DFOG.cut) or the player's DRAW DISTANCE is drawn.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, FAR3, pos, ROOMS} from './003b-systems.js';
-import {scene} from './004-main.js';
+import {CULL, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 import {DFOG} from './134e-distfog.js';
 Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:[],D:[],R:0,hz:QS.get('hazecull')!=='0',PAD:2*TILE});
@@ -31,7 +32,15 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
     return L.some(S=>{ if(skip&&skip(S))return false; const x=S.center.x+ox, y=S.center.y+oy, z=S.center.z+oz; return Math.abs(e[0]*x+e[4]*y+e[8]*z+e[12])<=1+S.radius*rx&&Math.abs(e[1]*x+e[5]*y+e[9]*z+e[13])<=1+S.radius*ry; }); };
   CULL.past=(x,z,r)=>{ const L=FAR3.land; return CULL.R>0&&Math.hypot(x-pos.x,z-pos.z)-r>CULL.R&&(!L||x-r>L[0]&&x+r<L[2]&&z-r>L[1]&&z+r<L[3]); };
   const ball=o=>{ if(o.boundingSphere!==undefined){ if(!o.boundingSphere)o.computeBoundingSphere(); return o.boundingSphere; } const g=o.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); return g.boundingSphere; };
-  const hazeHide=()=>{ CULL.R=CULL.hz?DFOG.cut():0; if(!(CULL.R>0))return; CULL.R+=CULL.PAD;
+  // DRAW DISTANCE in GRAPHICS (owner, 4 Nov 2026: "add a draw distance for far buildings"): in first and third person nothing on the land wholly past it is drawn; 0 is ALL
+  const DD={v:120}; try{ const q=SAVE.get('drawd'); if(q!=null&&q!=='')DD.v=+q||0; }catch(e){}
+  CULL.drawD=()=>DD.v>0&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?DD.v*TILE:0;
+  CULL.setDraw=v=>{ DD.v=v>=300?0:Math.max(40,Math.round(v)); try{ SAVE.set('drawd',String(DD.v)); }catch(e){} }; CULL.getDraw=()=>DD.v;
+  { const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#ddist'))return;
+      const B=document.createElement('div'); B.innerHTML='<h3>DRAW DISTANCE</h3><div class="row"><span>NEAR</span><input type="range" id="ddist" min="40" max="300" step="10"><span>ALL</span><span id="ddistv"></span></div><div class="dim">how far the town is drawn round you in first and third person; nearer draws less and runs faster</div>';
+      P.appendChild(B); const R=B.querySelector('#ddist'), V=B.querySelector('#ddistv'), show=()=>{ R.value=DD.v||300; V.textContent=DD.v?DD.v+' TILES':'ALL'; }; R.oninput=e=>{ CULL.setDraw(+e.target.value); show(); }; show(); };
+    gfx(); }
+  const hazeHide=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(!(CULL.R>0))return; CULL.R+=CULL.PAD;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const S=ball(o), e=o.matrixWorld.elements, c=S.center, x=e[0]*c.x+e[4]*c.y+e[8]*c.z+e[12], z=e[2]*c.x+e[6]*c.y+e[10]*c.z+e[14];
       if(CULL.past(x,z,S.radius*Math.sqrt(Math.max(e[0]*e[0]+e[1]*e[1]+e[2]*e[2],e[4]*e[4]+e[5]*e[5]+e[6]*e[6],e[8]*e[8]+e[9]*e[9]+e[10]*e[10])))){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],ix:[],ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };

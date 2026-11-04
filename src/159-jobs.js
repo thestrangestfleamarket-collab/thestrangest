@@ -16,7 +16,7 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const room=(N,inn)=>{ if(!inn){ if(N.SR)N.SR.sit=null; CREW.out(N.key); } const to=inn?scene:(MAPG.bodega||scene); if(N.g.parent!==to)to.add(N.g); };
   const put=(N,p)=>{ N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.st.next=null; N.g.position.x=p.x; N.g.position.z=p.z; };
   // in at a spot inside: pinned there, facing its way, sitting if it is a seat
-  const settle=(N,p)=>{ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; if(p.sit!=null&&N.SR)N.SR.sit={z:Math.max(2,p.sit/(N.g.scale.y||1))}; };
+  const settle=(N,p)=>{ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; if(p.sit!=null&&N.SR)N.SR.sit={z:Math.max(2,p.sit/((N.g.scale.y||1)*((N.body&&N.body.KL)||1)))}; };   // (a body's hips go at its own leg length: KL)
   // walk there if anyone could see it, else be there; then()
   const go=(J,p,then,now)=>{ const N=J.N; CITY.stop(N); N.st.pin=false; N.st.hold=true; if(!p){ then(); return; }
     if(now){ hide(N,false); put(N,p); then(); return; }

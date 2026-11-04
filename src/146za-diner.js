@@ -137,7 +137,6 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     const condH=(u,v,h)=>{ box(u-.06,v-.05,u+.06,v+.05,h,h+.12,C.chrome); cyl(u+.1,v,.018,h,h+.08,C.white); cyl(u+.14,v,.018,h,h+.08,0x3a3a3a); cyl(u-.11,v,.025,h,h+.16,0xc01818); cyl(u-.16,v,.025,h,h+.16,0xe0b818); it('napkins, salt, pepper, ketchup and mustard'); };
     for(const u of [1.2,4.75,6.6])condH(u,6.8,1.06);
     const meal=(u,v,h,c)=>{ cyl(u,v,.12,h,h+.02,C.white); ball(u,v,h+.035,.07,c,.5); it('a plate of food'); }, mug=(u,v,h)=>{ cyl(u,v,.04,h,h+.09,C.white); box(u+.04,v-.01,u+.06,v+.01,h+.02,h+.07,C.white); it('a mug of coffee'); };
-    meal(1.6,7.1,1.06,0x8a5a2a); mug(1.85,7.15,1.06); meal(5.3,7.1,1.06,0xd8b048); mug(5.55,7.15,1.06); mug(6.95,7.1,1.06);
     const ST=SEATS(W,D); for(let i=0;i<8;i++){ const [u,v]=ST.st[i];
       seat('STOOL',own(()=>{ cyl(u,v,.18,0,.04,C.chrome); cyl(u,v,.035,.04,.68,C.chrome); cyl(u,v,.21,.66,.69,C.chrome); cyl(u,v,.2,.69,.78,C.vinyl,.19); }),[ST.st[i]],.8); it('a stool'); }
     /* ---------- the booths on the windows ---------- */
@@ -149,7 +148,9 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
       box((t0+t1)/2-.12,v1-.12,(t0+t1)/2+.12,v1,.76,1.02,C.chrome); glow(()=>box((t0+t1)/2-.09,v1-.125,(t0+t1)/2+.09,v1-.12,.84,.98,0xf0d070)); it('a tabletop jukebox');
       condH((t0+t1)/2,v1-.3,.76); return [t0,t1,v0]; };
     const B1=booth(.1), B2=booth(2.3), B3=booth(W-2.06);
-    meal(B1[0]+.18,B1[2]+.6,.76,0x8a5a2a); mug(B1[0]+.2,B1[2]+.35,.76); meal(B1[1]-.18,B1[2]+.6,.76,0x58a038); meal(B3[0]+.18,B3[2]+.55,.76,0xd8b048); mug(B3[1]-.2,B3[2]+.4,.76);
+    // a plate and a mug in front of each seat, shown while someone sits there
+    const FOOD=[0x8a5a2a,0xd8b048,0x58a038,0xc87a3a,0xe0d0a0]; DINER.set=[...ST.st,...ST.bo.flat()].map(([u,v,h,du,dv],i)=>{ const pu=u+(du?du*.42:0), pv=v+(dv?dv*.62:0), hh=dv?1.06:.76, mu=pu+(dv?.2:0), mv=pv+(du?.17:.05);
+      const me=meshOf(own(()=>{ meal(pu,pv,hh,FOOD[i%FOOD.length]); mug(mu,mv,hh); }),matL,true); me.visible=false; me.userData.noMerge=true; return me; });
     /* ---------- by the door and down the east wall: the host stand, the wait station, the jukebox, the bins ---------- */
     box(7.65,11.75,8.2,12.15,0,1.1,C.wood); box(7.62,11.72,8.23,12.18,1.1,1.14,0xd8d0c0); for(let i=0;i<4;i++)box(7.75,11.82,8.1,12.08,1.14+i*.012,1.15+i*.012,0x8a2a2a); sol(7.62,11.72,8.23,12.18); it('the host stand'); it('a pile of menus');
     pic(7.92,12.152,.6,.5,.4,0,1,words(40,32,'#1a1a1a',[['PLEASE',20,2,'#f0d070',8,'center'],['WAIT TO',20,11,'#f0d070',8,'center'],['BE SEATED',20,20,'#f0d070',7,'center']])); it('a PLEASE WAIT TO BE SEATED sign');
@@ -193,10 +194,11 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
         RF:P(4.1+.25*s(t*1.7),4.12,.97+.04*s(t*3)),LF:P(...lf)}; };
     meshOf(MAIN,matL,false); meshOf(GLOW,matB,false); const fm=meshOf(fan,matL,true);
     O.draw(octBody(DINER.chef(0))); plate.userData.noMerge=fm.userData.noMerge=true; DINER.plate=plate; DINER.fan=fm; DINER.oct=O; DINER.on=true; };
-  MSHOP.kit.diner.drop=()=>{ DINER.on=false; DINER.door=DINER.oct=DINER.fan=DINER.chef=DINER.plate=null; };
+  MSHOP.kit.diner.drop=()=>{ DINER.on=false; DINER.door=DINER.oct=DINER.fan=DINER.chef=DINER.plate=DINER.set=null; };
   SYS.add('life',dt=>{ if(!DINER.on)return; const t=performance.now()/1000;
     if(DINER.oct&&DINER.chef)DINER.oct.draw(octBody(DINER.chef(t)));
     if(DINER.fan)DINER.fan.rotation.y+=dt*2.2;
+    if(DINER.set&&room){ const T=new Set(room.taken?room.taken.values():[]); DINER.set.forEach((me,i)=>{ me.visible=T.has(i); }); }
     const d=DINER.door; if(d){ const dist=Math.hypot(pos.x-d.x,pos.z-d.z), side=Math.sign(d.z-pos.z)||1, want=Math.max(0,Math.min(1,(1.6*MW-dist)/(.6*MW)))*1.35;
       if(side!==d.side&&d.a>.05)d.a=Math.max(0,d.a-dt*4); else { d.side=side; d.a+=(want-d.a)*Math.min(1,dt*8); }
       for(const L of d.L)L.pv.rotation.y=-d.side*L.dx*d.a; } },'146za-diner');

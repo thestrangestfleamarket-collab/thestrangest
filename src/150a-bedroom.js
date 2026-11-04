@@ -196,7 +196,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null};   // the room's other parts (
       /* ---------- out of the windows and doors: the house's fire escapes (front and back, the landings above and below yours) and the sky beyond, seen only through the glass ---------- */
       R.tops=APTS.OUTP.tops; R.bot=APTS.OUTP.bot; R.bot.normal.set(0,1,0); R.edges={Wf:[W(0,0,0),W(Lx,0,0)],Wb:[W(0,0,Ly),W(Lx,0,Ly)],Ww:[W(0,0,0),W(0,0,Ly)]}; R.outs={Wf:[],Wb:[],Ww:[]}; R.backs=[];   // what is outside each windowed wall; the sky behind it (the isometric view only)
       { const AL=APTS.AL, lv=Math.min(APTS.my,APTS.floors-2), S0=APTS.S, RZ=APTS.RZ, cp=k=>[WPL[k],R.tops[k],R.bot,...APTS.OUTP.side[k]];
-        const outside=(F,k,face)=>{ if(!APTS.escapeMeshes)return; const G=new THREE.Group(); scene.add(G); R.outs[k].push(G);
+        const outside=(F,k,face)=>{ if(!APTS.escapeMeshes)return; const G=new THREE.Group(); G.userData.mergeStatic=true; scene.add(G); R.outs[k].push(G);
           for(const me of APTS.escapeMeshes(F,Array.from({length:Math.min(lv+1,APTS.ST-1)},(_,i)=>i+1),-RZ,(lv+2)*S0)){ for(const m of [].concat(me.material)){ m.clippingPlanes=cp(k); m.needsUpdate=true; } me.castShadow=me.receiveShadow=true; G.add(me); }
           const LW=X(1)-X(0), YH=h=>Yr(h)-Yr(0); for(const sp of APTS.escPlants||[]){ if(!APTS.plant3D)break; const o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Yr(sp.z),Z(sp.y));
             o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.clippingPlanes=cp(k); } }); G.add(o); }   // the escape's real pots, seen through your glass

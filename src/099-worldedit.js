@@ -54,7 +54,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const fromWED=key=>{ for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(keyOf(h)===key)return h; } return null; };
   const geoOf=h=>{ const me=h.me; let G;
     if(me.isInstancedMesh){ G=me.geometry.clone(); G.applyMatrix4(Bx.fromArray(h.en.base||me.instanceMatrix.array,h.id*16)); }
-    else { const R=me._reservedRanges&&me._reservedRanges[h.id]; if(!R)return null; G=new THREE.BufferGeometry();
+    else { let R=null; try{ R=me.getGeometryRangeAt(me.getGeometryIdAt(h.id)); }catch(e){} if(!R)return null; G=new THREE.BufferGeometry();
       for(const k in me.geometry.attributes){ if(k==='batchId')continue; const A=me.geometry.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(R.vertexStart*z,(R.vertexStart+R.vertexCount)*z),z,A.normalized)); } }
     G.translate(-h.pivot[0],-h.pivot[1],-h.pivot[2]); G.computeBoundingSphere(); return G; };
   // a painted object (OBJS) copied: its quads as first painted, one mesh per batch they sit in

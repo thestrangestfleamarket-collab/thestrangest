@@ -5,9 +5,10 @@
 *{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:12px/1.4 Silkscreen,ui-monospace,Menlo,monospace}
 button,input,select{font:inherit}
 .app{display:grid;grid-template-columns:62px 1fr 290px;grid-template-rows:44px 1fr 26px;height:100vh}
-header{grid-column:1/4;display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
-header b{color:var(--acc);letter-spacing:.06em}.sp{flex:1}
+header{grid-column:1/4;display:flex;align-items:center;gap:6px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+header b{color:var(--acc);letter-spacing:.06em}header .btn{padding:5px 7px}.sp{flex:1}
 .btn{background:#1e222d;color:var(--ink);border:1px solid var(--line);padding:5px 9px;border-radius:4px;cursor:pointer}
+.seg{display:inline-flex}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;border-left:0}
 .btn:hover{border-color:var(--acc)}.btn:disabled{opacity:.4;cursor:default}.btn.on{border-color:var(--acc);color:var(--acc)}.btn.pub{background:#3a2a10;border-color:var(--acc);color:var(--acc)}
 nav{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;padding:6px;overflow:auto}
 nav button{width:50px;min-height:46px;border:1px solid var(--line);background:#1b1f29;color:var(--ink);border-radius:5px;cursor:pointer;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:3px 0}
@@ -30,17 +31,16 @@ footer{grid-column:1/4;display:flex;gap:14px;align-items:center;padding:0 10px;b
 @media (max-width:800px){.app{grid-template-columns:56px 1fr;grid-template-rows:44px 1fr minmax(0,40vh) 26px}aside{grid-column:1/3;border-left:0;border-top:1px solid var(--line)}header,footer{grid-column:1/3}}
 </style></head><body>
 <div class="app">
-<header><b>MAP EDITOR</b><span class="note" id="sec"></span><span class="sp"></span>
- <button class="btn" id="undo" title="Ctrl+Z">↶ UNDO</button><button class="btn" id="redo" title="Ctrl+Y">↷ REDO</button><button class="btn" id="fit">WHOLE MAP</button>
+<header><b>MAP EDITOR</b><span class="note" id="sec"></span><span class="seg"><button class="btn" id="lvUp" title="Page Up">STREET</button><button class="btn" id="lvDown" title="Page Down">UNDERGROUND</button></span><span class="seg"><button class="btn" id="vTop" title="V">TOP</button><button class="btn" id="vIso" title="V">ISO</button></span><button class="btn" id="rotL" title="turn the view (Q)">⟲</button><button class="btn" id="rotR" title="turn the view (E)">⟳</button><span class="sp"></span>
+ <button class="btn" id="undo" title="Ctrl+Z">↶ UNDO</button><button class="btn" id="redo" title="Ctrl+Y">↷ REDO</button><button class="btn" id="fit" title="the whole map">FIT</button>
  <button class="btn" id="look" title="open the game at this spot (it shows what is live)">LOOK IN 3D</button>
- <button class="btn" id="exp">EXPORT</button><button class="btn" id="imp">IMPORT</button><input type="file" id="impf" accept=".json,application/json" hidden>
- <button class="btn" id="revert" title="throw the draft away and start again from what is live">BACK TO LIVE</button>
  <button class="btn pub" id="pub">PUBLISH LIVE</button></header>
 <nav id="tools"></nav>
 <main><canvas id="cv"></canvas><div class="pal" id="pal"></div></main>
 <aside><h3 id="selT">PICKED</h3><div id="sel" class="note">Click a building, a park place, a path, a car or a stall to pick it.</div>
  <hr><h3>SHOW</h3><div class="lay" id="lay"></div>
- <hr><h3>THIS DRAFT</h3><div id="draft" class="note"></div></aside>
+ <hr><h3>THIS DRAFT</h3><div id="draft" class="note"></div>
+ <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="exp">EXPORT</button><button class="btn" id="imp">IMPORT</button><input type="file" id="impf" accept=".json,application/json" hidden><button class="btn" id="revert" title="throw the draft away and start again from what is live">BACK TO LIVE</button></div></aside>
 <footer><span id="xy">tile –</span><span id="zm"></span><span id="cost"></span><span class="sp"></span><span id="msg"></span></footer>
 </div>
 <script type="module">
@@ -89,8 +89,14 @@ function things(){ const L=[], W=EFF;
   for(const c of W.cars||[])L.push({k:'car',id:c.id,n:'CAR · '+String(c.model||'').toUpperCase(),sh:'rect',x:c.x,y:c.y,w:4.2,d:1.9,rot:-(c.hd||0)+90,hd:c.hd||0,ly:'props'});
   (W.things||[]).forEach((t,i)=>L.push({k:'thing',id:i,n:'STALL · '+String(t.k).toUpperCase(),sh:'rect',x:t.x,y:t.y,w:2.6,d:2,rot:(t.rot||0)*180/Math.PI,ly:'props'}));
   for(const id in W.homes||{}){ const h=W.homes[id]; if(Array.isArray(h)&&isFinite(h[0]))L.push({k:'home',id,n:'HOME OF '+id.toUpperCase(),sh:'circle',x:h[0],y:h[1],r:Math.max(.6,+h[2]||0),ly:'people'}); }
-  for(const o of TOP.items)if(/^tree|^camp$|^gate$|^fountain$/.test(o.gid))L.push({k:'fixed',id:o.gid,n:o.n,sh:o.sh,x:o.x,y:o.y,w:o.w,d:o.d,r:o.r,rot:o.rot||0,ly:'fixed'});
+  for(const o of TOP.items)if(/^tree|^camp$|^gate$|^fountain$/.test(o.gid))L.push({k:'fixed',id:o.gid,n:o.n,sh:o.sh,x:o.x,y:o.y,w:o.w,d:o.d,r:o.r,rot:o.rot||0,h:o.h,ly:'fixed'});
+  const D=TOP.down||{}, bx=(b,o)=>({sh:'rect',x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,w:b[2]-b[0],d:b[3]-b[1],rot:0,h:0,...o});
+  for(const v of D.levels||[])L.push(bx(v.box,{k:'under',id:v.id,n:v.name,ly:'under',lv:'down'}));
+  for(const v of D.stations||[])L.push(bx(v.box,{k:'under',id:'st-'+v.id,n:'PLATFORM · '+v.name,ly:'under',lv:'down'}));
+  for(const w of D.ways||[])L.push(bx(w.box,{k:'stair',id:w.id,n:'⇅ '+w.id.toUpperCase(),ly:'stair'}));
+  for(const o of L)if(o.h==null)o.h=o.k==='place'?((BASE[o.id]&&BASE[o.id].h)||7):o.k==='park'?((BASE[o.id]&&BASE[o.id].h)||(/tower/.test(o.id)?6:0)):o.k==='car'?1:o.k==='thing'?1.6:0;
   return L; }
+const MOVES=new Set(['place','park','path','car','thing','home']);
 let ITEMS=[]; const items=()=>ITEMS=things();
 
 // writing a thing back into the draft (only what differs from the baked file is kept)
@@ -112,44 +118,68 @@ const turn=(o,deg)=>{ if(o.k==='place'&&!o.row){ const F=['n','w','s','e'], f=F[
   if(o.k==='path'){ write(o,o.x,o.y,{rot:o.rot+deg}); return true; } if(o.k==='car'){ write(o,o.x,o.y,{hd:((o.hd-deg)%360+360)%360}); return true; }
   if(o.k==='thing'){ write(o,o.x,o.y,{rot:(o.rot+deg)*Math.PI/180}); return true; } return false; };
 
-// the view
-const cv=$('#cv'), g=cv.getContext('2d'); let V={x:0,y:0,k:2}, DPR=1;
+// the view: top down or iso, turned a quarter at a time (Q / E); the street or what is under it, one at a time
+const cv=$('#cv'), g=cv.getContext('2d'); let V={x:0,y:0,k:2,rot:0,iso:0}, DPR=1, LV='up';
+try{ const v=JSON.parse(localStorage.getItem('mapeditor-view')||'{}'); V.rot=(+v.rot||0)%4; V.iso=v.iso?1:0; LV=v.lv==='down'?'down':'up'; }catch(e){}
+const keepView=()=>{ try{ localStorage.setItem('mapeditor-view',JSON.stringify({rot:V.rot,iso:V.iso,lv:LV})); }catch(e){} };
 const size=()=>{ const r=cv.getBoundingClientRect(); DPR=Math.min(2,devicePixelRatio||1); cv.width=Math.max(1,Math.round(r.width*DPR)); cv.height=Math.max(1,Math.round(r.height*DPR)); };
-const sx=x=>cv.width/2+(x-V.x)*V.k, sy=y=>cv.height/2+(y-V.y)*V.k, mx=px=>V.x+(px-cv.width/2)/V.k, my=py=>V.y+(py-cv.height/2)/V.k;
-const F=TOP.F, fit=()=>{ V.k=Math.min(cv.width/(F.x1-F.x0+6),cv.height/(F.y1-F.y0+6)); V.x=(F.x0+F.x1)/2; V.y=(F.y0+F.y1)/2; };
+const ang=()=>(V.rot*90+(V.iso?45:0))*Math.PI/180, TILT=()=>V.iso?.5:1, HZ=()=>V.iso?.82:0;
+const P=(x,y,h=0)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), dx=x-V.x, dy=y-V.y; return [cv.width/2+(dx*c-dy*s)*V.k,cv.height/2+(dx*s+dy*c)*V.k*TILT()-h*V.k*HZ()]; };
+const U=(px,py)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), u=(px-cv.width/2)/V.k, v=(py-cv.height/2)/(V.k*TILT()); return [V.x+c*u+s*v,V.y-s*u+c*v]; };
+const depth=(x,y)=>{ const a=ang(); return (x-V.x)*Math.sin(a)+(y-V.y)*Math.cos(a); };
+const plane=(h=0)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), k=V.k, t=TILT(); g.setTransform(k*c,k*t*s,-k*s,k*t*c,cv.width/2-k*(c*V.x-s*V.y),cv.height/2-k*t*(s*V.x+c*V.y)-h*k*HZ()); };
+const flat=()=>g.setTransform(1,0,0,1,0,0), LW=px=>px*DPR/V.k;
+const F=TOP.F, fit=()=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), t=TILT(); let u=0, v=0; for(const [x,y] of [[F.x0,F.y0],[F.x1,F.y0],[F.x0,F.y1],[F.x1,F.y1]]){ const dx=x-(F.x0+F.x1)/2, dy=y-(F.y0+F.y1)/2; u=Math.max(u,Math.abs(dx*c-dy*s)); v=Math.max(v,Math.abs((dx*s+dy*c)*t)); }
+  V.k=Math.min(cv.width/(2*u+6),cv.height/(2*v+6)); V.x=(F.x0+F.x1)/2; V.y=(F.y0+F.y1)/2; };
 const PIC=TOP.tiles.map(n=>{ const im=new Image(); im.onload=()=>draw(); im.src='edmap/'+n; return im; });
 const SHOW={pic:1,grid:1,ground:1,build:1,park:1,paths:1,props:1,people:0,fixed:0,names:1};
 const LAYN={pic:'GROUND PICTURE',grid:'GRID',ground:'PAINTED GROUND',build:'BUILDINGS',park:'PARK PLACES',paths:'PARK PATHS',props:'CARS & STALLS',people:'HOMES (WHERE PEOPLE ROAM)',fixed:'FIXED THINGS (TREES...)',names:'NAMES'};
 try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('mapeditor-show')||'{}')); }catch(e){}
-const LCOL={build:'#e0875a',park:'#d8c9a6',paths:'#e6d38a',props:'#7fc8e8',people:'#c88ae0',fixed:'#5f8a5f'};
+const LCOL={build:'#e0875a',park:'#d8c9a6',paths:'#e6d38a',props:'#7fc8e8',people:'#c88ae0',fixed:'#5f8a5f',under:'#8a8f9c',stair:'#f2c14e'};
 let sel=null, hover=null, tool='pick', gt='road', brush=3, drag=null, paintBox=null;
 const corners=o=>{ const a=o.rot*Math.PI/180, c=Math.cos(a), s=Math.sin(a), hw=o.w/2, hd=o.d/2; return [[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([u,v])=>[o.x+u*c-v*s,o.y+u*s+v*c]); };
 const hit=(o,x,y)=>{ if(o.sh==='circle')return Math.hypot(x-o.x,y-o.y)<=o.r; const a=-o.rot*Math.PI/180, dx=x-o.x, dy=y-o.y, u=dx*Math.cos(a)-dy*Math.sin(a), v=dx*Math.sin(a)+dy*Math.cos(a); return Math.abs(u)<=o.w/2&&Math.abs(v)<=o.d/2; };
 const area=o=>o.sh==='circle'?Math.PI*o.r*o.r:o.w*o.d;
-function draw(){ if(!cv.width)return; g.setTransform(1,0,0,1,0,0); g.fillStyle='#07090d'; g.fillRect(0,0,cv.width,cv.height);
-  if(SHOW.pic){ const P=TOP.C/TOP.T; g.imageSmoothingEnabled=V.k<6; TOP.tiles.forEach((n,i)=>{ const im=PIC[i]; if(!im.complete||!im.naturalWidth)return; const ci=i%TOP.NX, cj=Math.floor(i/TOP.NX), x0=TOP.O[0]+(TOP.B.x0+ci*TOP.C)/TOP.T, y0=TOP.O[1]+(TOP.B.z0+cj*TOP.C)/TOP.T; g.drawImage(im,sx(x0),sy(y0),P*V.k+.5,P*V.k+.5); }); }
-  g.strokeStyle='#46c8d2'; g.lineWidth=1; g.strokeRect(sx(F.x0),sy(F.y0),(F.x1-F.x0)*V.k,(F.y1-F.y0)*V.k);
-  if(SHOW.grid&&V.k>2.5){ const st=V.k>10?1:V.k>5?5:10; g.strokeStyle='rgba(255,255,255,.08)'; g.beginPath(); const x0=Math.max(F.x0,Math.floor(mx(0)/st)*st), x1=Math.min(F.x1,mx(cv.width)), y0=Math.max(F.y0,Math.floor(my(0)/st)*st), y1=Math.min(F.y1,my(cv.height));
-    for(let x=x0;x<=x1;x+=st){ g.moveTo(sx(x)+.5,sy(y0)); g.lineTo(sx(x)+.5,sy(y1)); } for(let y=y0;y<=y1;y+=st){ g.moveTo(sx(x0),sy(y)+.5); g.lineTo(sx(x1),sy(y)+.5); } g.stroke(); }
-  if(SHOW.ground){ g.globalAlpha=.85; for(const k in S.cells){ const [x,y]=k.split(',').map(Number); g.fillStyle=GCOL[S.cells[k]]||'#f0f'; g.fillRect(sx(x),sy(y),V.k+.5,V.k+.5); } g.globalAlpha=1; }
-  if(paintBox){ const a=paintBox; g.strokeStyle='#f2c14e'; g.setLineDash([5,4]); g.strokeRect(sx(Math.min(a.x0,a.x1)),sy(Math.min(a.y0,a.y1)),(Math.abs(a.x1-a.x0)+1)*V.k,(Math.abs(a.y1-a.y0)+1)*V.k); g.setLineDash([]); }
-  const fs=Math.round(10*DPR); g.font=fs+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
-  for(const o of ITEMS){ if(!SHOW[o.ly])continue; const on=o===sel||(sel&&o.k===sel.k&&o.id===sel.id), hv=hover&&o.k===hover.k&&o.id===hover.id, c=LCOL[o.ly];
-    g.lineWidth=(on?3:hv?2:1.2)*DPR; g.strokeStyle=on?'#f2c14e':c; g.fillStyle=o.ly==='fixed'?'rgba(40,70,40,.25)':c+'33'; if(o.k==='home')g.setLineDash([4*DPR,4*DPR]);
-    g.beginPath(); if(o.sh==='circle')g.arc(sx(o.x),sy(o.y),Math.max(1.5,o.r*V.k),0,Math.PI*2); else { const P=corners(o); g.moveTo(sx(P[0][0]),sy(P[0][1])); for(const p of P.slice(1))g.lineTo(sx(p[0]),sy(p[1])); g.closePath(); }
-    if(o.ly!=='people')g.fill(); g.stroke(); g.setLineDash([]);
-    if(o.face){ const d={n:[0,1],s:[0,-1],e:[1,0],w:[-1,0]}[o.face], ex=o.x+d[0]*o.w/2, ey=o.y+d[1]*o.d/2; g.fillStyle=on?'#f2c14e':c; g.beginPath(); g.arc(sx(ex),sy(ey),3*DPR,0,Math.PI*2); g.fill(); }
-    if(SHOW.names&&o.ly!=='fixed'&&o.k!=='home'&&(o.k==='place'||o.k==='park'||V.k>5)){ const t=o.n.length>22?o.n.slice(0,21)+'…':o.n, tw=g.measureText(t).width; if(tw<(o.sh==='circle'?o.r*2:Math.max(o.w,o.d))*V.k*1.6||on){ g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(sx(o.x)-tw/2-3,sy(o.y)-fs/2-2,tw+6,fs+4); g.fillStyle=on?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); } } }
-  $('#zm').textContent='zoom '+(V.k/2).toFixed(1)+'×'; }
+const onLevel=o=>LV==='down'?o.lv==='down'||o.k==='stair':o.lv!=='down';
+const shade=(hex,f)=>{ const n=parseInt(hex.slice(1),16); return `rgb(${Math.round((n>>16&255)*f)},${Math.round((n>>8&255)*f)},${Math.round((n&255)*f)})`; };
+const tracks=()=>{ const L=WORLD.loop; if(!L||!L.tracks)return; for(const [k,col] of [['outer','#c88a3a'],['inner','#3a8ac8']]){ const t=L.tracks[k], y0=Math.min(t.south,t.north), y1=Math.max(t.south,t.north);
+  g.strokeStyle=col; g.lineWidth=LW(3); g.beginPath(); g.roundRect(t.west,y0,t.east-t.west,y1-y0,L.r||0); g.stroke(); } };
+function draw(){ if(!cv.width)return; flat(); g.fillStyle=LV==='down'?'#040507':'#07090d'; g.fillRect(0,0,cv.width,cv.height);
+  plane(); const k=V.k;
+  if(LV==='up'&&SHOW.pic){ const Q=TOP.C/TOP.T; g.imageSmoothingEnabled=k<6; TOP.tiles.forEach((n,i)=>{ const im=PIC[i]; if(!im.complete||!im.naturalWidth)return; const ci=i%TOP.NX, cj=Math.floor(i/TOP.NX); g.drawImage(im,TOP.O[0]+(TOP.B.x0+ci*TOP.C)/TOP.T,TOP.O[1]+(TOP.B.z0+cj*TOP.C)/TOP.T,Q+.6/k,Q+.6/k); }); }
+  if(LV==='down'){ g.fillStyle='#0b0e14'; g.fillRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0); g.save(); g.beginPath(); g.rect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0); g.clip(); tracks(); g.restore(); }
+  g.strokeStyle='#46c8d2'; g.lineWidth=LW(1); g.strokeRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0);
+  if(SHOW.grid&&k>2.5){ const st=k>10?1:k>5?5:10, C=[U(0,0),U(cv.width,0),U(0,cv.height),U(cv.width,cv.height)], x0=Math.max(F.x0,Math.floor(Math.min(...C.map(c=>c[0]))/st)*st), x1=Math.min(F.x1,Math.max(...C.map(c=>c[0]))), y0=Math.max(F.y0,Math.floor(Math.min(...C.map(c=>c[1]))/st)*st), y1=Math.min(F.y1,Math.max(...C.map(c=>c[1])));
+    g.strokeStyle='rgba(255,255,255,.08)'; g.lineWidth=LW(1); g.beginPath(); for(let x=x0;x<=x1;x+=st){ g.moveTo(x,y0); g.lineTo(x,y1); } for(let y=y0;y<=y1;y+=st){ g.moveTo(x0,y); g.lineTo(x1,y); } g.stroke(); }
+  if(LV==='up'&&SHOW.ground){ g.globalAlpha=.85; for(const c in S.cells){ const [x,y]=c.split(',').map(Number); g.fillStyle=GCOL[S.cells[c]]||'#f0f'; g.fillRect(x,y,1+.6/k,1+.6/k); } g.globalAlpha=1; }
+  if(paintBox){ const a=paintBox; g.strokeStyle='#f2c14e'; g.lineWidth=LW(1.5); g.setLineDash([5/k,4/k]); g.strokeRect(Math.min(a.x0,a.x1),Math.min(a.y0,a.y1),Math.abs(a.x1-a.x0)+1,Math.abs(a.y1-a.y0)+1); g.setLineDash([]); }
+  const fs=Math.round(10*DPR), list=ITEMS.filter(o=>onLevel(o)&&(SHOW[o.ly]||o.ly==='under'||o.ly==='stair')).sort((a,b)=>depth(a.x,a.y)-depth(b.x,b.y)), tall=V.iso&&LV==='up';
+  for(const o of list){ const on=sel&&o.k===sel.k&&o.id===sel.id, hv=hover&&o.k===hover.k&&o.id===hover.id, c=LCOL[o.ly], h=tall?o.h||0:0, lw=(on?3:hv?2:1.2)*DPR, fix=o.ly==='fixed';
+    g.strokeStyle=on?'#f2c14e':c; if(o.k==='home'){ plane(); g.setLineDash([4/k,4/k]); }
+    if(o.sh==='circle'){ plane(); g.lineWidth=LW(lw/DPR); g.fillStyle=fix?'rgba(40,70,40,.35)':c+'33'; g.beginPath(); g.arc(o.x,o.y,Math.max(.4,o.r),0,Math.PI*2); if(o.ly!=='people')g.fill(); g.stroke();
+      if(h>0){ plane(h); g.fillStyle=fix?'rgba(46,90,46,.55)':shade(c,.75); g.beginPath(); g.arc(o.x,o.y,Math.max(.4,o.r),0,Math.PI*2); g.fill(); g.stroke(); } g.setLineDash([]); flat(); }
+    else { const B=corners(o); flat(); g.lineWidth=lw;
+      if(h>0){ const sides=B.map((p,i)=>[p,B[(i+1)%4]]).sort((a,b)=>depth((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2)-depth((b[0][0]+b[1][0])/2,(b[0][1]+b[1][1])/2));
+        for(const [a,b] of sides){ const q=[P(a[0],a[1]),P(b[0],b[1]),P(b[0],b[1],h),P(a[0],a[1],h)]; g.fillStyle=shade(c,.45); g.globalAlpha=.8; g.beginPath(); g.moveTo(...q[0]); for(const t of q.slice(1))g.lineTo(...t); g.closePath(); g.fill(); g.globalAlpha=1; g.stroke(); } }
+      const T=B.map(p=>P(p[0],p[1],h)); g.fillStyle=o.ly==='under'?'rgba(70,80,100,.16)':o.ly==='stair'?'rgba(242,193,78,.25)':h>0?shade(c,.8):fix?'rgba(40,70,40,.25)':c+'33'; if(h>0)g.globalAlpha=.75; g.beginPath(); g.moveTo(...T[0]); for(const t of T.slice(1))g.lineTo(...t); g.closePath(); if(o.ly!=='people')g.fill(); g.globalAlpha=1; g.stroke(); g.setLineDash([]); }
+    if(o.face){ const d={n:[0,1],s:[0,-1],e:[1,0],w:[-1,0]}[o.face], q=P(o.x+d[0]*o.w/2,o.y+d[1]*o.d/2,h); g.fillStyle=on?'#f2c14e':c; g.beginPath(); g.arc(q[0],q[1],3*DPR,0,Math.PI*2); g.fill(); }
+    if(SHOW.names&&!fix&&o.k!=='home'&&(o.k==='place'||o.k==='park'||o.ly==='under'||o.ly==='stair'||k>5)){ const t=o.n.length>24?o.n.slice(0,23)+'…':o.n, q=P(o.x,o.y,h); g.font=fs+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle'; const tw=g.measureText(t).width;
+      if(tw<(o.sh==='circle'?o.r*2:Math.max(o.w,o.d))*k*1.6||on){ g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(q[0]-tw/2-3,q[1]-fs/2-2,tw+6,fs+4); g.fillStyle=on?'#f2c14e':'#ece5d3'; g.fillText(t,q[0],q[1]); } } }
+  flat(); $('#zm').textContent=(V.iso?'ISO':'TOP')+' · turned '+V.rot*90+'° · zoom '+(k/2).toFixed(1)+'×'; }
 
 // the tools
-const TOOLS=[['pick','🖱','PICK','Pick and move'],['ground','🟩','GROUND','Paint ground'],['roads','🛣','ROADS','Paint roads'],
-  ['build','🏢','BUILD','New buildings'],['water','🌊','WATER','Water'],['nature','🌳','NATURE','Trees and plants'],['power','⚡','POWER','Poles, wires, lamps'],['under','🚇','UNDER','Underground'],['section','🗺','SECTION','The section itself']];
-const NEXT=new Set(['build','water','nature','power','under','section']);
-$('#tools').innerHTML=TOOLS.map(([k,i,n,t])=>`<button data-t="${k}" class="${NEXT.has(k)?'next':''}" title="${t}${NEXT.has(k)?' (a later step)':''}"><span>${i}</span>${n}</button>`).join('');
-$('#tools').onclick=e=>{ const b=e.target.closest('button'); if(!b||NEXT.has(b.dataset.t))return; tool=b.dataset.t; if(tool==='roads'&&!/road|alley|erase/.test(gt))gt='road'; if(tool==='ground'&&/road|alley/.test(gt))gt='sidewalk'; pal(); };
+const TOOLS={up:[['pick','🖱','PICK','Pick, move, turn'],['clear','🚜','CLEAR','Bulldoze: take things away'],['ground','🟩','GROUND','Paint ground'],['roads','🛣','ROADS','Paint roads'],['build','🏢','BUILD','Put down a building'],['nature','🌳','NATURE','Trees and plants'],['props','🪑','PROPS','Lamps, benches, stalls, cars'],['water','🌊','WATER','Water'],['power','⚡','POWER','Poles and wires'],['section','🗺','SECTION','The section itself']],
+  down:[['pick','🖱','PICK','Look at what is under the street'],['tracks','🚇','TRACKS','The Loop\'s tracks'],['stations','🚉','STATIONS','Stations and platforms'],['stairs','⇅','STAIRS','Stairs between levels'],['tunnels','🕳','TUNNELS','Tunnels and caves']]};
+const NOW=new Set(['pick','ground','roads']);
+const bar=()=>{ $('#tools').innerHTML=TOOLS[LV].map(([k,i,n,t])=>`<button data-t="${k}" class="${NOW.has(k)?'':'next'}" title="${t}${NOW.has(k)?'':' (a later step)'}"><span>${i}</span>${n}</button>`).join(''); if(!TOOLS[LV].some(t=>t[0]===tool))tool='pick'; pal(); };
+$('#tools').onclick=e=>{ const b=e.target.closest('button'); if(!b||!NOW.has(b.dataset.t))return; tool=b.dataset.t; if(tool==='roads'&&!/road|alley|erase/.test(gt))gt='road'; if(tool==='ground'&&/road|alley/.test(gt))gt='sidewalk'; pal(); };
+const seg=()=>{ $('#lvUp').classList.toggle('on',LV==='up'); $('#lvDown').classList.toggle('on',LV==='down'); $('#vTop').classList.toggle('on',!V.iso); $('#vIso').classList.toggle('on',!!V.iso); };
+const turnView=d=>{ V.rot=(V.rot+d+4)%4; keepView(); draw(); }, setIso=on=>{ V.iso=on?1:0; keepView(); seg(); draw(); };
+const setLevel=l=>{ if(l===LV)return; LV=l; if(sel&&!onLevel(sel))sel=null; $('#lay').innerHTML=''; keepView(); seg(); bar(); side(); draw(); };
+$('#lvUp').onclick=()=>setLevel('up'); $('#lvDown').onclick=()=>setLevel('down'); $('#vTop').onclick=()=>setIso(0); $('#vIso').onclick=()=>setIso(1); $('#rotL').onclick=()=>turnView(1); $('#rotR').onclick=()=>turnView(-1);
 function pal(){ document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t===tool)); const P=$('#pal');
-  if(tool==='pick'){ P.innerHTML='<h4>PICK AND MOVE</h4><p>Click a thing to pick it, drag it to move it (¼ tile; Shift: whole tiles). R / Shift+R turns it. Arrow keys nudge. Drag on nothing to look around; the wheel zooms.</p>'; return; }
+  if(LV==='down'){ P.innerHTML='<h4>UNDER THE STREET</h4><p>The Loop\'s tracks (orange outer, blue inner), its platform, the stairs up and down. Look only for now: tracks, stations, stairs and tunnels get their tools in a later step. Page Up: back to the street.</p>'; return; }
+  if(tool==='pick'){ P.innerHTML='<h4>PICK AND MOVE</h4><p>Click a thing to pick it, drag it to move it (¼ tile; Shift: whole tiles). R / Shift+R turns it. Arrow keys nudge. Drag on nothing to look around; the wheel zooms. Q / E turn the view, V: top or iso, Page Up / Down: street or underground.</p>'; return; }
   const kinds=tool==='roads'?['road','alley','sidewalk','erase']:['grass','grass2','grass3','grass4','sidewalk','cobble','slab','dirt','gravel','sand','erase'];
   P.innerHTML='<h4>'+(tool==='roads'?'ROADS':'GROUND')+'</h4><div class="opts">'+kinds.map(k=>`<button class="btn${k===gt?' on':''}" data-g="${k}"><i class="sw" style="background:${GCOL[k]||'transparent'}"></i>${GNAME[k]}</button>`).join('')+'</div>'
    +'<div class="opts" style="margin-top:6px">'+[1,2,3,5,8].map(b=>`<button class="btn${b===brush?' on':''}" data-b="${b}">${b}×${b}</button>`).join('')+'</div>'
@@ -162,14 +192,14 @@ const paintRect=(a,t)=>{ for(let y=Math.min(a.y0,a.y1);y<=Math.max(a.y0,a.y1);y+
 const num=(v,d=2)=>v==null?'':(+v).toFixed(d);
 function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel.id); sel=s||null; }
   const D=$('#sel'); if(!sel){ $('#selT').textContent='PICKED'; D.className='note'; D.innerHTML='Click a building, a park place, a path, a car or a stall to pick it.'; }
-  else { const o=sel, fixed=o.k==='fixed', inD=!fixed&&S.set[SETK[o.k]]&&S.set[SETK[o.k]][o.id]!=null; $('#selT').textContent='PICKED · '+o.n; D.className='';
-    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now'}[o.k]}</div></div>`;
+  else { const o=sel, fixed=!MOVES.has(o.k), inD=!fixed&&S.set[SETK[o.k]]&&S.set[SETK[o.k]][o.id]!=null; $('#selT').textContent='PICKED · '+o.n; D.className='';
+    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels'}[o.k]}</div></div>`;
     if(o.k==='place')h+=`<div class="row"><label>x0 · x1</label><div class="pair"><input data-f="x0" value="${num(o.x-o.w/2)}"><input data-f="x1" value="${num(o.x+o.w/2)}"></div></div>`+(o.row?`<div class="note">On the block's row: it moves along the street only.</div>`:`<div class="row"><label>y0 · y1</label><div class="pair"><input data-f="y0" value="${num(o.y-o.d/2)}"><input data-f="y1" value="${num(o.y+o.d/2)}"></div></div><div class="row"><label>door faces</label><select data-f="face">${['n','e','s','w'].map(f=>`<option value="${f}"${f===o.face?' selected':''}>${{n:'n · down the map',e:'e · right',s:'s · up, to the river',w:'w · left'}[f]}</option>`).join('')}</select></div>`);
     else if(!fixed)h+=`<div class="row"><label>x · y</label><div class="pair"><input data-f="x" value="${num(o.x)}"><input data-f="y" value="${num(o.y)}"></div></div>`;
     if((o.k==='park'&&o.sh==='circle'&&EFF.parkPlaces[o.id].r!=null)||o.k==='home')h+=`<div class="row"><label>size (r)</label><input data-f="r" value="${num(o.r)}"></div>`;
     if(o.k==='path')h+=`<div class="row"><label>length · turn</label><div class="pair"><input data-f="w" value="${num(o.w)}"><input data-f="rot" value="${num(o.rot,1)}"></div></div>`;
     if(o.k==='car')h+=`<div class="row"><label>heading °</label><input data-f="hd" value="${num(o.hd,0)}"></div>`;
-    if(fixed)h+=`<div class="note">Trees, the gate, the campfire and the fountain come from the game's own code: they get their own tools in a later step.</div>`;
+    if(fixed)h+=`<div class="note">${o.k==='fixed'?'Trees, the gate, the campfire and the fountain come from the game\'s own code: they get their own tools in a later step.':o.k==='stair'?'Stairs move with what they belong to; their own tool comes with the underground step.':'Under the street is look-only in this step.'}</div>`;
     else h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="sLook">LOOK IN 3D</button>${inD?'<button class="btn" id="sBack">BACK AS BUILT</button>':''}</div>`+(inD?'<div class="note good" style="margin-top:6px">changed in this draft</div>':'');
     D.innerHTML=h;
     D.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{ const f=el.dataset.f, v=f==='face'?el.value:+el.value; if(f!=='face'&&!isFinite(v))return side(); push(); const o2=sel;
@@ -177,7 +207,7 @@ function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel
       else if(f==='x')write(o2,v,o2.y); else if(f==='y')write(o2,o2.x,v); else if(f==='r'){ if(v<=0)return side(); write(o2,o2.x,o2.y,{r:v}); } else if(f==='w'){ if(v<1)return side(); write(o2,o2.x,o2.y,{w:v}); } else if(f==='rot')write(o2,o2.x,o2.y,{rot:v}); else if(f==='hd')write(o2,o2.x,o2.y,{hd:v});
       changed(); });
     const L=D.querySelector('#sLook'); if(L)L.onclick=()=>look(sel.x,sel.y); const B=D.querySelector('#sBack'); if(B)B.onclick=()=>{ push(); delete S.set[SETK[sel.k]][sel.id]; changed(); }; }
-  const lay=$('#lay'); if(!lay.childElementCount)lay.innerHTML=Object.keys(LAYN).map(k=>`<label><input type="checkbox" data-l="${k}"${SHOW[k]?' checked':''}>${LAYN[k]}</label>`).join('');
+  const lay=$('#lay'); if(!lay.childElementCount)lay.innerHTML=Object.keys(LAYN).filter(k=>LV==='up'||k==='grid'||k==='names').map(k=>`<label><input type="checkbox" data-l="${k}"${SHOW[k]?' checked':''}>${LAYN[k]}</label>`).join('');
   const P=patch(), n=Object.values(P.set).reduce((a,v)=>a+(Array.isArray(v)?0:Object.keys(v).length),0), cells=Object.keys(S.cells).length;
   const dirty=LIVEC?canon(S)!==LIVEC:(n||cells);
   $('#draft').innerHTML=`${n} thing${n===1?'':'s'} moved · ${cells} tile${cells===1?'':'s'} painted (${(P.set.ground||[]).length} patches)<br>`+(dirty?'<span class="warn">NOT LIVE YET: players see the last published map.</span>':'<span class="good">THIS IS WHAT IS LIVE.</span>')
@@ -188,29 +218,30 @@ $('#lay').onchange=e=>{ const k=e.target.dataset.l; if(!k)return; SHOW[k]=e.targ
 
 // the mouse and the keys
 const at=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR]; };
-const pickAt=(x,y)=>{ let best=null; for(const o of ITEMS)if(SHOW[o.ly]&&hit(o,x,y)&&(!best||area(o)<area(best)))best=o; return best; };
+const pickAt=(x,y)=>{ let best=null; for(const o of ITEMS)if(onLevel(o)&&(SHOW[o.ly]||o.ly==='under'||o.ly==='stair')&&hit(o,x,y)&&(!best||area(o)<area(best)))best=o; return best; };
 const snapv=(v,e)=>e.shiftKey?Math.round(v):Math.round(v*4)/4;
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); const [px,py]=at(e), x=mx(px), y=my(py);
+cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); const [px,py]=at(e), [x,y]=U(px,py);
   if(e.button!==0||e.altKey){ drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
-  if(tool==='pick'){ const o=pickAt(x,y); if(o&&o.k!=='fixed'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } if(o){ sel=o; side(); draw(); } else if(sel){ sel=null; side(); draw(); } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(tool==='pick'||LV==='down'){ const o=pickAt(x,y); if(o&&MOVES.has(o.k)){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } if(o){ sel=o; side(); draw(); } else if(sel){ sel=null; side(); draw(); } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   push(); if(e.shiftKey){ paintBox={x0:Math.floor(x),y0:Math.floor(y),x1:Math.floor(x),y1:Math.floor(y)}; drag={box:1}; draw(); return; }
   paintAt(x,y,brush,gt); drag={paint:1,lx:x,ly:y}; changed(); });
-cv.addEventListener('pointermove',e=>{ const [px,py]=at(e), x=mx(px), y=my(py); $('#xy').textContent=`tile ${x.toFixed(1)}, ${y.toFixed(1)}`;
-  if(!drag){ if(tool==='pick'){ const h=pickAt(x,y); if((h&&h.id)!==(hover&&hover.id)||(h&&h.k)!==(hover&&hover.k)){ hover=h; cv.style.cursor=h&&h.k!=='fixed'?'move':'grab'; draw(); } } else cv.style.cursor='crosshair'; return; }
-  if(drag.pan){ V.x=drag.vx-(px-drag.px)/V.k; V.y=drag.vy-(py-drag.py)/V.k; draw(); return; }
+cv.addEventListener('pointermove',e=>{ const [px,py]=at(e), [x,y]=U(px,py); $('#xy').textContent=`tile ${x.toFixed(1)}, ${y.toFixed(1)}`;
+  if(!drag){ if(tool==='pick'||LV==='down'){ const h=pickAt(x,y); if((h&&h.id)!==(hover&&hover.id)||(h&&h.k)!==(hover&&hover.k)){ hover=h; cv.style.cursor=h&&MOVES.has(h.k)?'move':'grab'; draw(); } } else cv.style.cursor='crosshair'; return; }
+  if(drag.pan){ const a=ang(), c=Math.cos(a), s2=Math.sin(a), du=(px-drag.px)/V.k, dv=(py-drag.py)/(V.k*TILT()); V.x=drag.vx-(c*du+s2*dv); V.y=drag.vy-(-s2*du+c*dv); draw(); return; }
   if(drag.move){ const o=drag.o, nx=snapv(x+drag.dx,e), ny=o.row?o.y:snapv(y+drag.dy,e); if(nx===o.x&&ny===o.y)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } write(o,nx,ny); recompute(); items(); drag.o=ITEMS.find(q=>q.k===o.k&&q.id===o.id)||o; sel=drag.o; draw(); return; }
   if(drag.box){ paintBox.x1=Math.floor(x); paintBox.y1=Math.floor(y); draw(); return; }
   if(drag.paint){ const d=Math.hypot(x-drag.lx,y-drag.ly), n=Math.max(1,Math.ceil(d/.5)); for(let i=1;i<=n;i++)paintAt(drag.lx+(x-drag.lx)*i/n,drag.ly+(y-drag.ly)*i/n,brush,gt); drag.lx=x; drag.ly=y; recompute(); keep(); draw(); } });
 const up=()=>{ if(!drag)return; if(drag.box&&paintBox){ paintRect(paintBox,gt); paintBox=null; } const d=drag; drag=null; if(d.move||d.paint||d.box)changed(); };
 cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
-cv.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=at(e), x=mx(px), y=my(py); V.k=Math.max(.5,Math.min(80,V.k*Math.pow(1.0015,-e.deltaY))); V.x=x-(px-cv.width/2)/V.k; V.y=y-(py-cv.height/2)/V.k; draw(); },{passive:false});
+cv.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=at(e), [x,y]=U(px,py); V.k=Math.max(.5,Math.min(80,V.k*Math.pow(1.0015,-e.deltaY))); const [x2,y2]=U(px,py); V.x+=x-x2; V.y+=y-y2; draw(); },{passive:false});
 const undo=()=>{ if(!UNDO.length)return; REDO.push(snap()); S=JSON.parse(UNDO.pop()); changed(); }, redo=()=>{ if(!REDO.length)return; UNDO.push(snap()); S=JSON.parse(REDO.pop()); changed(); };
 addEventListener('keydown',e=>{ if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return; const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; } if((e.ctrlKey||e.metaKey)&&k==='y'){ e.preventDefault(); redo(); return; }
   if(k==='escape'){ sel=null; side(); draw(); return; } if(k==='1')$('#tools [data-t=pick]').click(); if(k==='2')$('#tools [data-t=ground]').click(); if(k==='3')$('#tools [data-t=roads]').click();
-  if(!sel||sel.k==='fixed')return; if(k==='r'){ e.preventDefault(); push(); if(turn(sel,e.shiftKey?-15:15))changed(); else UNDO.pop(); return; }
-  const d={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,-1],arrowdown:[0,1]}[k]; if(d){ e.preventDefault(); push(); const st=e.shiftKey?1:.25; write(sel,sel.x+d[0]*st,sel.row?sel.y:sel.y+d[1]*st); changed(); } });
+  if(k==='q'||k==='e'){ e.preventDefault(); turnView(k==='q'?1:-1); return; } if(k==='v'){ setIso(!V.iso); return; } if(k==='pageup'||k==='pagedown'){ e.preventDefault(); setLevel(k==='pageup'?'up':'down'); return; }
+  if(!sel||!MOVES.has(sel.k))return; if(k==='r'){ e.preventDefault(); push(); if(turn(sel,e.shiftKey?-15:15))changed(); else UNDO.pop(); return; }
+  const d={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,-1],arrowdown:[0,1]}[k]; if(d){ e.preventDefault(); push(); const st=e.shiftKey?1:.25, a=ang(), c=Math.cos(a), s2=Math.sin(a); let dx=c*d[0]+s2*d[1], dy=-s2*d[0]+c*d[1]; if(Math.abs(dx)>=Math.abs(dy)){ dx=Math.sign(dx); dy=0; } else { dy=Math.sign(dy); dx=0; } write(sel,sel.x+dx*st,sel.row?sel.y:sel.y+dy*st); changed(); } });
 $('#undo').onclick=undo; $('#redo').onclick=redo; $('#fit').onclick=()=>{ fit(); draw(); };
 
 // going to the game, saving, publishing
@@ -232,7 +263,9 @@ $('#pub').onclick=async()=>{ const P=patch(); if(!WEB){ download(MAPFILE.slice(8
   if(WEB){ try{ const r=await fetch(MAPFILE,{credentials:'same-origin',cache:'no-store'}); if(r.status===200)setLive(await r.json()); }catch(e){} }
   let d=null; try{ d=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
   S=d&&d.set&&d.cells?d:fromPatch(LIVE); for(const k of ['places','parkPlaces','paths','cars','things','homes'])S.set[k]=S.set[k]||{};
-  recompute(); size(); fit(); pal(); side(); draw(); addEventListener('resize',()=>{ size(); draw(); });
+  recompute(); size(); fit(); seg(); bar(); side(); draw(); addEventListener('resize',()=>{ size(); draw(); });
   window.EDITOR={state:()=>S,patch,items:()=>ITEMS,write:(k,id,x,y,extra)=>{ const o=ITEMS.find(q=>q.k===k&&q.id===id); if(!o)return false; push(); write(o,x,y,extra); changed(); return true; },
-    paint:(x,y,n,t)=>{ push(); const k=paintAt(x,y,n,t); changed(); return k; },live:()=>LIVE,ready:true}; })();
+    paint:(x,y,n,t)=>{ push(); const k=paintAt(x,y,n,t); changed(); return k; },live:()=>LIVE,
+    view:o=>{ if(o.iso!=null)setIso(o.iso); if(o.rot!=null){ V.rot=o.rot; keepView(); } if(o.level)setLevel(o.level); draw(); return {rot:V.rot,iso:V.iso,level:LV}; },
+    project:(x,y,h)=>P(x,y,h||0).map(v=>v/DPR),sel:()=>sel&&{k:sel.k,id:sel.id},ready:true}; })();
 </script></body></html>

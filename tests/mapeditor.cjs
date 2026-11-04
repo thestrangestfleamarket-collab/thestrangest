@@ -20,7 +20,16 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; 
   ok(S.cars&&S.cars[car.id]&&S.cars[car.id].x===+(car.x-5).toFixed(2),'moving a car');
   ok(Array.isArray(S.ground)&&S.ground.some(g=>g.t==='road')&&S.ground.reduce((a,g)=>a+(g.x1-g.x0)*(g.y1-g.y0),0)===34,'painting: 25 tiles of road and 9 of cobble, merged into '+(S.ground||[]).length+' patches');
   await ed.keyboard.press('Control+z'); ok(await ed.evaluate(()=>Object.values(EDITOR.state().cells).filter(t=>t==='cobble').length===0),'undo takes the last paint back');
-  await ed.keyboard.press('Control+y'); ok(eerr.length===0,'the editor ran without errors '+JSON.stringify(eerr.slice(0,3)));
+  await ed.keyboard.press('Control+y');
+  { const box=await (await ed.$('#cv')).boundingBox(), at=async(k,id,h)=>{ const q=await ed.evaluate(([k,id,h])=>{ const o=EDITOR.items().find(o=>o.k===k&&o.id===id); return EDITOR.project(o.x,o.y,h); },[k,id,h]); return [box.x+q[0],box.y+q[1]]; };
+    await ed.evaluate(()=>EDITOR.view({iso:1,rot:1,level:'up'})); await ed.keyboard.press('Escape'); let p=await at('place','museum',0); await ed.mouse.click(p[0],p[1]);
+    ok(JSON.stringify(await ed.evaluate(()=>EDITOR.sel()))==='{"k":"place","id":"museum"}','turned to iso, a click on a building\'s ground picks it');
+    await ed.keyboard.press('q'); ok((await ed.evaluate(()=>EDITOR.view({})).then(v=>v.rot))===2,'Q turns the view a quarter');
+    await ed.evaluate(()=>EDITOR.view({iso:0,rot:0,level:'down'})); const under=await ed.evaluate(()=>EDITOR.items().filter(o=>o.lv==='down').map(o=>o.id));
+    p=await at('place','museum',0); await ed.mouse.click(p[0],p[1]); const s2=await ed.evaluate(()=>EDITOR.sel());
+    ok(under.length>0&&(!s2||s2.k!=='place'),'underground shows what is under the street ('+under.join(' ')+') and not the street\'s buildings');
+    await ed.evaluate(()=>EDITOR.view({level:'up'})); }
+  ok(eerr.length===0,'the editor ran without errors '+JSON.stringify(eerr.slice(0,3)));
   if(SHOT)await ed.screenshot({path:SHOT.replace(/\.png$/,'')+'-editor.png'});
   // the game with that file published
   const pg=await b.newPage({viewport:{width:1000,height:700}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message));

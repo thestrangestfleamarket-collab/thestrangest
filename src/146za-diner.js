@@ -11,8 +11,12 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
   // where the room's corner and axes are (u east, v toward the front door, in metres)
   const frame=R=>{ const {X,Z}=SHARED.BOD, EX=Math.sign(X(R.x1)-X(R.x0)), IN=Math.sign(Z(R.y1)-Z(R.y0));
     return {EX,IN,W:Math.abs(X(R.x1)-X(R.x0))/MW,D:Math.abs(Z(R.y1)-Z(R.y0))/MW,wx:u=>X(R.x0)+EX*u*MW,wz:v=>Z(R.y0)+IN*v*MW,hd:(du,dv)=>Math.atan2(EX*du,IN*dv)}; };
+  // the 20 seats [u,v,seat height,facing du,dv]: the counter's stools, then each booth bench's two places
+  const SEATS=(W,D)=>{ const st=[], bo=[]; for(let i=0;i<8;i++)st.push([.7+i*.92,7.85,.78,0,-1]);
+    for(const u0 of [.1,2.3,W-2.06])for(const [a,dir] of [[u0,1],[u0+1.96,-1]])bo.push([[a+dir*.36,D-1.05,.47,dir,0],[a+dir*.36,D-.4,.47,dir,0]]); return {st,bo}; };
   const at=MSHOP.at.diner, room=ROOMS.off.diner;
   if(at&&room){ const F=frame(at.R), sp=(u,v,du,dv)=>({x:F.wx(u),z:F.wz(v),hd:F.hd(du,dv)});
+    const S=SEATS(F.W,F.D); room.seats=[...S.st,...S.bo.flat()].map(([u,v,h,du,dv])=>({x:F.wx(u),z:F.wz(v),y:h*MW,hd:F.hd(du,dv)}));
     room.spots=DINER.spots={COOK:sp(7.4,2.6,-1,0),WAITRESS:sp(5.4,6.0,0,-1),COFFEE:sp(.8,6.0,0,-1),WAITER:sp(11.7,5.7,1,0),REGULAR:sp(7.65,7.85,0,-1)}; }
 
   MSHOP.kit.diner=A=>{ '@later'; const {R,hs,sh}=A, {EX,IN,W,D,wx,wz,hd}=frame(R), H=A.Y(A.WH)/MW, K=A.Y(1)/MW, CX=W/2;
@@ -134,13 +138,13 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     for(const u of [1.2,4.75,6.6])condH(u,6.8,1.06);
     const meal=(u,v,h,c)=>{ cyl(u,v,.12,h,h+.02,C.white); ball(u,v,h+.035,.07,c,.5); it('a plate of food'); }, mug=(u,v,h)=>{ cyl(u,v,.04,h,h+.09,C.white); box(u+.04,v-.01,u+.06,v+.01,h+.02,h+.07,C.white); it('a mug of coffee'); };
     meal(1.6,7.1,1.06,0x8a5a2a); mug(1.85,7.15,1.06); meal(5.3,7.1,1.06,0xd8b048); mug(5.55,7.15,1.06); mug(6.95,7.1,1.06);
-    for(let i=0;i<8;i++){ const u=.7+i*.92, v=7.85;
-      seat('STOOL',own(()=>{ cyl(u,v,.18,0,.04,C.chrome); cyl(u,v,.035,.04,.68,C.chrome); cyl(u,v,.21,.66,.69,C.chrome); cyl(u,v,.2,.69,.78,C.vinyl,.19); }),[[u,v,.78,0,-1]],.8); it('a stool'); }
+    const ST=SEATS(W,D); for(let i=0;i<8;i++){ const [u,v]=ST.st[i];
+      seat('STOOL',own(()=>{ cyl(u,v,.18,0,.04,C.chrome); cyl(u,v,.035,.04,.68,C.chrome); cyl(u,v,.21,.66,.69,C.chrome); cyl(u,v,.2,.69,.78,C.vinyl,.19); }),[ST.st[i]],.8); it('a stool'); }
     /* ---------- the booths on the windows ---------- */
-    const booth=u0=>{ const v0=D-1.45, v1=D;
-      for(const [a,dir] of [[u0,1],[u0+1.96,-1]]){ const b=a+dir*.6, lo=Math.min(a,b), hi=Math.max(a,b), back=dir>0?[lo,lo+.12]:[hi-.12,hi];
+    let nb=0; const booth=u0=>{ const v0=D-1.45, v1=D;
+      for(const [a,dir] of [[u0,1],[u0+1.96,-1]]){ const sp=ST.bo[nb++]; const b=a+dir*.6, lo=Math.min(a,b), hi=Math.max(a,b), back=dir>0?[lo,lo+.12]:[hi-.12,hi];
         seat('BOOTH',own(()=>{ box(lo,v0,hi,v1,0,.38,C.wood); box(lo+(dir>0?.1:0),v0,hi-(dir>0?0:.1),v1,.38,.47,C.vinyl); box(back[0],v0,back[1],v1,.38,1.1,C.vinyl); box(back[0],v0,back[1],v1,1.1,1.14,C.chrome); box(lo,v0-.01,hi,v0,.0,.4,C.chrome); }),
-          [[a+dir*.36,v0+.4,.47,dir,0],[a+dir*.36,v1-.4,.47,dir,0]],1.0); sol(lo,v0,hi,v1); it('a booth bench'); }
+          sp,1.0); sol(lo,v0,hi,v1); it('a booth bench'); }
       const t0=u0+.62, t1=u0+1.34; box(t0,v0+.18,t1,v1,.72,.76,C.formica); box(t0,v0+.16,t1,v0+.2,.72,.76,C.chrome); cyl((t0+t1)/2,v0+.85,.04,.05,.72,C.chrome); cyl((t0+t1)/2,v0+.85,.2,0,.05,C.dsteel); sol(t0,v0+.16,t1,v1); it('a booth table');
       box((t0+t1)/2-.12,v1-.12,(t0+t1)/2+.12,v1,.76,1.02,C.chrome); glow(()=>box((t0+t1)/2-.09,v1-.125,(t0+t1)/2+.09,v1-.12,.84,.98,0xf0d070)); it('a tabletop jukebox');
       condH((t0+t1)/2,v1-.3,.76); return [t0,t1,v0]; };
@@ -196,5 +200,5 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     const d=DINER.door; if(d){ const dist=Math.hypot(pos.x-d.x,pos.z-d.z), side=Math.sign(d.z-pos.z)||1, want=Math.max(0,Math.min(1,(1.6*MW-dist)/(.6*MW)))*1.35;
       if(side!==d.side&&d.a>.05)d.a=Math.max(0,d.a-dt*4); else { d.side=side; d.a+=(want-d.a)*Math.min(1,dt*8); }
       for(const L of d.L)L.pv.rotation.y=-d.side*L.dx*d.a; } },'146za-diner');
-  window.DINERDBG=()=>({built:DINER.on,seats:DINER.seats,things:DINER.items.length,spots:Object.keys(DINER.spots),oct:!!DINER.oct,door:DINER.door?+DINER.door.a.toFixed(2):null});
+  window.DINERDBG=()=>({seatList:room?room.seats.length:0,taken:room&&room.taken?room.taken.size:0,built:DINER.on,seats:DINER.seats,things:DINER.items.length,spots:Object.keys(DINER.spots),oct:!!DINER.oct,door:DINER.door?+DINER.door.a.toFixed(2):null});
 }

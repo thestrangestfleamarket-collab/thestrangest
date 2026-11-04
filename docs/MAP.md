@@ -162,7 +162,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `111e-merch.js` | 8.1 | top level | MERCH (146j 146k 146l 146m 146n 146o 146q 146r 146s 146t 146w 146x 146y 146z 147a 151h) | 003: THREE; 004: scene; 111a: BODIES |
 | `111f-rpgfolk.js` | 1.0 | top level |  | 006: SYS; 111a: BODIES |
 | `111fa-poacher.js` | 0.5 | top level |  | 006: SYS; 111a: BODIES |
-| `111fb-fleamarket.js` | 9.4 | top level | CREW (158 159) | 003: SHARED THREE; 003a: B64 F32; 003b: CITY PARK ROOMS SHOPS WED pos; 004: scene; 006: FIX LEVEL MAPG QS SOL SYS TILE; 076: stfree; 111a: BODIES |
+| `111fb-fleamarket.js` | 9.9 | top level | CREW (158 159) | 003: SHARED THREE; 003a: B64 F32; 003b: CITY PARK ROOMS SHOPS WED pos; 004: scene; 006: FIX LEVEL MAPG QS SOL SYS TILE; 076: stfree; 111a: BODIES |
 | `111fc-merchant.js` | 0.5 | top level |  | 006: SYS; 111a: BODIES |
 | `111fd-skatepark.js` | 10.9 | top level |  | 003: SHARED THREE; 003b: CLIP CLOCK FORAGE PARK RIDE ROOMS SHOPS W3; 004: scene; 006: BLDK LEVEL MAPG MODS OFFDX SOL STORE SYS TILE ZU; 111a: BODIES |
 | `111g-skelrig.js` | 1.6 | top level |  | 003: THREE; 003b: NPCS pos; 006: SYS TILE ZU; 111a: BODIES |
@@ -263,7 +263,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146y-operator.js` | 8.5 | top level | PHONE (146ya 150j) | 003: THREE; 003b: FORAGE NPCS SHOPS UI WIELD; 006: LEVEL SOL SYS TILE; 111e: MERCH |
 | `146ya-handheld.js` | 7.2 | top level |  | 003b: CHARP CINEMA CLOCK DRONE FORAGE HANDHELD INV ONLINE UI keys; 146y: PHONE |
 | `146z-visitors.js` | 12.6 | top level |  | 003: THREE; 006: TILE; 111e: MERCH |
-| `146za-diner.js` | 30.6 | top level |  | 003: SHARED THREE; 003b: ROOMS UI USE pos; 004: PPU; 006: SYS TILE ZU; 059i: MSHOP; 125: octBody; 127: octFig |
+| `146za-diner.js` | 31.2 | top level |  | 003: SHARED THREE; 003b: ROOMS UI USE pos; 004: PPU; 006: SYS TILE ZU; 059i: MSHOP; 125: octBody; 127: octFig |
 | `147-newsstand.js` | 16.2 | top level | NEWS (163) | 003: SHARED THREE; 003b: CITY CIVIC CLOCK DRONE LINES UI pos; 004: scene; 006: FIX MAPSTAIR QS SOL SYS TILE; 084: TOONS |
 | `147a-bees.js` | 14.7 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE NPCS ONLINE ROOMS SFX UI VIT WEEDS pos; 004: scene; 005: OWNED; 006: SOL SYS TILE; 111e: MERCH; 142a: FLORA; 144a: GARDEN; 146x: SMOKE |
 | `147b-requests.js` | 3.8 | top level |  | 003b: CITY FORAGE INV ITEMS MAIL SFX; 005: OWNED |
@@ -309,7 +309,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `155-civic.js` | 9.4 | top level |  | 003: SHARED THREE; 003b: BUGS CITY CIVIC CLOCK FAR3 MAIL UI; 006: AWAY FIX MAPG MODS RING SOL TILE ZU; 008: PEEK |
 | `156-duties.js` | 12.5 | top level |  | 003: SHARED THREE; 003a: B64 SKIN; 003b: CITY CIVIC CLOCK DRESS LITE NPCS VIT WX pos; 006: MAPG MODS SYS TILE ZU; 007: FLAME |
 | `158-lives.js` | 4.5 | top level | LIVES (159 159d) | 003: SHARED; 003b: CLOCK ONLINE; 006: LEVEL SYS TILE; 111fb: CREW |
-| `159-jobs.js` | 5.9 | top level | JOBS (159a 160) | 003: SHARED; 003b: CITY CLOCK pos; 004: scene; 006: MAPG QS SYS TILE; 076: stfree; 111fb: CREW; 158: LIVES |
+| `159-jobs.js` | 6.1 | top level | JOBS (159a 160) | 003: SHARED; 003b: CITY CLOCK pos; 004: scene; 006: MAPG QS SYS TILE; 076: stfree; 111fb: CREW; 158: LIVES |
 | `159a-habits.js` | 3.9 | top level |  | 003: THREE; 003b: LEVELS WIELD pos; 004: scene; 006: SYS TILE; 159: JOBS |
 | `159b-shops.js` | 6.6 | top level |  | 003: THREE; 003b: CHARS FORAGE INV ITEMS LINES NPCS SFX SHOPS TALK TEXT UI; 006: SYS TILE |
 | `159c-coatrack.js` | 3.2 | top level |  | 003: SHARED THREE; 003b: FORAGE SHOPS UI; 004: scene; 006: FIX LEVEL SOL SYS TILE; 084b: GLBTOONS |

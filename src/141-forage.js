@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, UI, VIT, VR, WE, WEEDS, WX} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, VR, WE, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -195,7 +195,7 @@ import {GEMS} from './101-gems.js';
   pk.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.tab){ PACK.tab=d.tab; } else if(d.page){ PACK.page=d.page; } else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.craft)FORAGE.craft(d.craft); else if(d.act&&FORAGE.ACT[d.act]){ FORAGE.ACT[d.act](d.aid); saveSoon(); } else if(d.lock){ S.lock[d.lock]={up:'down',down:'lock',lock:'up'}[S.lock[d.lock]]; saveSoon(); } PACK.draw(); });
   PACK.toggle=t=>{ pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
-  addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; PACK.toggle(); });
+  addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; if(TRICKS.takes&&TRICKS.takes('i'))return; PACK.toggle(); });
   const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>+ITEMS.prop(id,'value')||0;
   const sp=panel('shopp','left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw)');
   SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&ITEMS.prop(id,'sellable')).sort();

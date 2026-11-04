@@ -9,7 +9,7 @@ const SHAFTS={on:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   g.putImageData(img,0,0); const tex=new THREE.CanvasTexture(cv); tex.minFilter=tex.magFilter=THREE.LinearFilter;
   // the sun's light at a point of the air from its shadow maps (near, whole map, moving things): 0 behind solids, fading out over the last 2.5 tiles before where the sunlight lands (no hard line at the ground, a wall or a crown) and past the maps; full only where the air around is in shade (a gap), faint in open sun
   const LIT=`uniform sampler2D uShN,uShF,uShD; uniform mat4 uMN,uMF,uMD; uniform vec4 uPN,uPF; uniform float uOcc,uHasF,uHasD;
-    float dep(sampler2D m,vec2 uv){ return unpackRGBAToDepth(texture2D(m,uv)); }
+    float dep(sampler2D m,vec2 uv){ return texture2D(m,uv).r; }
     float edge(vec3 q,float w){ vec2 e=min(q.xy,1.-q.xy); return q.z>1.?0.:clamp(min(e.x,e.y)/w,0.,1.); }
     float look(sampler2D m,vec3 q,vec4 P){ float c=0.; for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)c+=clamp((dep(m,q.xy+vec2(float(i),float(j))*P.y)-q.z)/(2.5*P.x),0.,1.); c/=9.;
       if(c<.01)return 0.; float o=0.; for(int k=0;k<6;k++){ float a=float(k)*1.0472; o+=step(q.z-.3*P.x,dep(m,q.xy+vec2(cos(a),sin(a))*P.z)); } return c*mix(.15,1.,1.-o/6.); }
@@ -28,10 +28,10 @@ const SHAFTS={on:0,occ:0,list:[]}; window.SHAFTS=SHAFTS;
   const G=new THREE.Group(); G.visible=false; scene.add(G); OUT.add(G,'open'); const geo=new THREE.PlaneGeometry(1,1);
   for(let i=0;i<N;i++){ const m=new THREE.Mesh(geo,mat), m2=new THREE.Mesh(geo,mat); for(const q of [m,m2]){ q.frustumCulled=false; q.matrixAutoUpdate=false; q.renderOrder=850; G.add(q); } m.cross=m2; SHAFTS.list.push(m); }
   const sd=new THREE.Vector3(), rt=new THREE.Vector3(), nm=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0), M=new THREE.Matrix4(), c=new THREE.Vector3(), X=new THREE.Vector3(), Y=new THREE.Vector3(); let t=0; SHAFTS.at=[];
-  const put=(S,m,P,id)=>{ const has=!!(S&&S.map); if(has){ SU[m].value=S.map.texture; SU['uM'+id].value=S.matrix; if(P){ const c=S.camera, w=c.right-c.left; SU[P].value.set(T/(c.far-c.near),.15*T/w,4*T/w,0); } } return has?1:0; };   // one shadow map into the beams' uniforms
+  const put=(S,m,P,id)=>{ const has=!!(S&&S.map); if(has){ SU[m].value=S.map.depthTexture||S.map.texture; SU['uM'+id].value=S.matrix; if(P){ const c=S.camera, w=c.right-c.left; SU[P].value.set(T/(c.far-c.near),.15*T/w,4*T/w,0); } } return has?1:0; };   // one shadow map into the beams' uniforms
   SYS.add('sky',dt=>{ t+=dt; const P=DN.P?DN.P():null, e=CLOCK.elev(), W=WX.now||{cloud:0}, up=SHARED.LVL!=='down'&&OUT.open&&!(MODS.apts&&MODS.apts.inReal), cam=SHARED.cam;   // not in your apartment: its light is the real sun through the glass
     const sunK=up&&P?Math.max(0,Math.min(1,(e-4)/8))*(1-Math.max(0,Math.min(1,(W.cloud-.4)/.5))):0, k=P&&P.shaft?P.shaft*sunK*(1-.4*(SKY.sunCover||0)):0;
-    { const sh=CLOCK.sun&&CLOCK.sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type!==THREE.VSMShadowMap);   // VSM keeps moments, not depths: then the beams go unblocked
+    { const sh=CLOCK.sun&&CLOCK.sun.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type===THREE.BasicShadowMap);   // only hard shadows keep plain depths the beams can read (PCF's are compare-only, VSM's moments): else the beams go unblocked
       SU.uOcc.value=occ?1:0; SHAFTS.occ=occ?1:0;
       if(occ){ put(sh,'uShN','uPN','N'); const f=CLOCK.sunF&&CLOCK.sunF.shadow, d=CLOCK.sunD&&CLOCK.sunD.shadow; SU.uHasF.value=put(f,'uShF','uPF','F'); SU.uHasD.value=put(d,'uShD',null,'D'); } }
     SHAFTS.on=k; G.visible=k>.01; BU.uOp.value=(cam.isOrthographicCamera?.055:.11)*k; BU.uCol.value.copy(CLOCK.sun.color).lerp(WARM,.5);

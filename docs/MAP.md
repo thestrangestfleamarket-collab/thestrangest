@@ -125,7 +125,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `087b-feel.js` | 13.3 | top level |  | 003: SHARED THREE; 003b: BOAT ED FEEL NPCS RAG UI VIT W3 keys pos st; 005: SAVE; 006: QS TILE ZU |
 | `087c-feel-anim.js` | 4.2 | top level |  | 003: SHARED THREE; 003b: FEEL SFX pos |
 | `087d-feel-yard.js` | 4.7 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: M scene; 006: MISTB MISTB2 STORE |
-| `087e-feel-panel.js` | 10.8 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: renderer scene; 006: QS |
+| `087e-feel-panel.js` | 10.9 | top level |  | 003: SHARED THREE; 003b: FEEL UI pos; 004: renderer scene; 006: QS |
 | `088-npc-pawns.js` | 14.8 | top level |  | 003: SHARED THREE; 003a: BY F32 SKIN; 003b: UI pos; 004: PPU; 006: MODS QS SOL SYS TILE; 076: DUN STLANE makeNPC stfree; 087: PAWNS |
 | `089-pond.js` | 1.9 | top level |  | 003: SHARED THREE; 003b: PARK POND; 006: MODS TILE ZU |
 | `089a-brook.js` | 20.8 | top level |  | 003: SHARED THREE; 003b: BROOK CLOCK FLOW PARK SFX SKY WED; 004: scene; 006: FIX MAPG MODS SOL TILE ZU; 060a: FOUNT |

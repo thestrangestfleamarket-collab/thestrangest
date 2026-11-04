@@ -16,7 +16,7 @@ import {QS} from './006-map-pre.js';
 --tp-button-background-color:transparent;--tp-button-background-color-hover:#7dffa8;--tp-button-background-color-focus:#7dffa8;--tp-button-background-color-active:#7dffa8;--tp-button-foreground-color:#7dffa8;
 --tp-input-background-color:#031a0d;--tp-input-background-color-hover:#0a2a16;--tp-input-background-color-focus:#0a2a16;--tp-input-background-color-active:#0d3a1f;--tp-input-foreground-color:#7dffa8;
 --tp-label-foreground-color:#5fcf88;--tp-groove-foreground-color:#3aa866;--tp-monitor-background-color:#031a0d;--tp-monitor-foreground-color:#5fcf88}
-#feelp .tp-lblv_l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#feelp .tp-lblv_l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#feelp .tp-sldv_k::after{background-color:#7dffa8}#feelp .tp-sldv_k::before{background-color:#3aa866}
 #feelp textarea{width:100%;height:70px;font:9px ui-monospace,monospace;color:var(--fg);background:#0e1016;border:1px solid #3a3f4e;box-sizing:border-box;margin-top:4px}#feelp .msg{color:var(--dim);min-height:1.6em;padding:0 4px}
 #feeld{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:14;font:10px/1.5 var(--pixel);color:var(--fg);background:rgba(11,13,19,.86);border:2px solid var(--line);padding:6px 9px;white-space:pre;pointer-events:none;font-variant-numeric:tabular-nums}`;
   const st_=document.createElement('style'); st_.textContent=css; document.head.appendChild(st_);

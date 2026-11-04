@@ -138,8 +138,6 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     const flat=(x0,y0,x1,y1,z,col,kind)=>bq([X(x0),Y(z),Z(y1)],[X(x1),Y(z),Z(y1)],[X(x1),Y(z),Z(y0)],[X(x0),Y(z),Z(y0)],faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(col(x0+(i+.5)/24,y0+(j+.5)/24))),kind);
     flat(X0,Y0,X1,Y1,H+.5,(x,y)=>sh([92,62,48],.9+.1*hs(Math.floor(x*24/7),3,716)),'GDR');
     { const n=4, L=DOOR.a1-DOOR.a0, nz0=DH-38;
-      for(let i=0;i<n;i++){ const a0=DOOR.a0+i*L/n+.02, a1=DOOR.a0+(i+1)*L/n-.02;
-        gbox({x0:X0+a0,x1:X0+a1,y0:Y1-.12,y1:Y1-.09,z0:nz0,z1:DH,c:[38,52,96],fs:(nx,ny,x,y,z,k)=>{ const dx=((x-X0-DOOR.a0)/L-.5)*L*24, v=z+nz0-(DH-19), r=Math.hypot(dx,v+3), on=v<-2&&r>7.5&&r<10.5||v>-1&&v<13&&[-5,0,5].some(o=>Math.abs(dx-o-1.6*Math.sin(v*.45))<1.3); return sh(on?[226,222,210]:z<3?[30,40,74]:[38,52,96],k); },top:()=>[30,40,74]},'GDfront'); }
       BATCH.tag=OBJ('bodega','paper lantern');
       for(const a of [DOOR.a0-.5,DOOR.a1+.5]){ const x=X0+a, y=Y1+.55;
         gbox({x0:x-.01,x1:x+.01,y0:y-.01,y1:y+.01,z0:H-8,z1:H+18,c:[30,26,24]},'GDU');
@@ -169,13 +167,13 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     BATCH.cast=true;
     const MKG=(k,map,emap)=>{ const pl=PLN[k.slice(2)], cp=pl?{clippingPlanes:[pl]}:{};
       if(k==='B')return new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5});
+      if(k==='GDC')return new THREE.MeshLambertMaterial({map,side:THREE.FrontSide});
       if(k==='GDI')return new THREE.MeshLambertMaterial({map,side:THREE.BackSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
       return new THREE.MeshLambertMaterial({map,alphaTest:.5,side:k==='GDP'?THREE.FrontSide:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{}),...cp}); };
     BATCH.build(MKG);
     BATCH.cast=false; const KM=BATCH.meshes; BATCH.meshes={}; for(const me of BATCH.all(KM,'B'))me.castShadow=false;
-    const SX=2026, SZ=-12, ix0=X(xi0)+SX, ix1=X(xi1)+SX, iz0=Z(yi0)+SZ, iz1=Z(yi1)+SZ, inBox=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1), inside=()=>inBox()||!!(window.ROOMS&&ROOMS.cur&&ROOMS.cur.lz==='bath');
+    const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inBox=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1), inside=inBox;
     const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside}); }; cuts(KM);
-    { const ca=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+DOOR.a1)-X(X0+DOOR.a0),Y(DH)),new THREE.MeshBasicMaterial({color:0x07070a})); ca.position.set((X(X0+DOOR.a0)+X(X0+DOOR.a1))/2,Y(DH)/2,Z(Y1-T-.06)); ca.raycast=()=>{}; scene.add(ca); GK.card=ca; }
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
     { const pane=(h,yf,fn,glow)=>{ const W=Math.max(1,Math.round((h.a1-h.a0)*24)), Hh=Math.max(1,Math.round(h.z1-h.z0)), cv=document.createElement('canvas'), ce=document.createElement('canvas'); cv.width=ce.width=W; cv.height=ce.height=Hh;
         const g=cv.getContext('2d'), ge=ce.getContext('2d'), im=g.createImageData(W,Hh), ie=ge.createImageData(W,Hh);
@@ -184,22 +182,23 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
         const m=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+h.a1)-X(X0+h.a0),Y(h.z1)-Y(h.z0)),new THREE.MeshLambertMaterial({map:tex(cv),emissiveMap:tex(ce),emissive:0xffffff,emissiveIntensity:glow?1.2:0}));
         m.position.set((X(X0+h.a0)+X(X0+h.a1))/2,(Y(h.z0)+Y(h.z1))/2,Z(yf)); m.raycast=()=>{}; scene.add(m); HIDE.push(m); return m; };
       pane(BAY,Y1+BAY.out+.02,(a,z)=>lattice(a,BAY.a0,BAY.a1,z,BAY.z0,BAY.z1,PINK),1); pane(EW,Y1+.02,(a,z)=>lattice(a,EW.a0,EW.a1,z,EW.z0,EW.z1,WARM),1);
-      const DK=[46,28,22], DW=[104,66,44], NO=[34,40,70], BR=[212,176,84];
-      pane(DOOR,Y1+.02,(a,z)=>{ const u=(a-DOOR.a0)/(DOOR.a1-DOOR.a0); if(u<.04||u>.96||z>DOOR.z1-4)return DK; if(Math.abs(u-.5)<.012)return DK; if(z>DOOR.z1-40)return Math.floor(u*24)%3?NO:sh(NO,.8); if(Math.abs(u-.5)<.06&&Math.abs(z-48)<2)return BR; return sh(DW,(Math.floor(a*24/5)&1)?.9:1.04); },0); }
+    }
     if(SHARED.BOD.GHOSTST)SHARED.BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
     const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
     for(const b of WB)if(b.z0===0)sol(b.x0,b.y0,b.x1,b.y1,H);
-    sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0); sol(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,DH);
+    sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0);
     for(const [a,b,c_,d] of BEDS)sol(a,b,c_,d,8);
     for(const t of THINGS)if(t.solid)sol(Math.min(...t.boxes.map(b=>b.x0)),Math.min(...t.boxes.map(b=>b.y0)),Math.max(...t.boxes.map(b=>b.x1)),Math.max(...t.boxes.map(b=>b.y1)),Math.max(...t.boxes.map(b=>b.z1)));
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
-    const LT=[], STEAM={k:.05,c:new THREE.Color(),day:new THREE.Color(.86,.85,.82),fog:new THREE.Fog(0xdcdad2,0,9*TILE),was:null};
-    const light=(x,y,z,c,r,fl)=>{ '@later'; const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x)+SX,Y(z),Z(y)+SZ); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
-    let built=false, BG=null, BSL=[]; const build=()=>{ '@bath'; built=true; LT.length=0;   // the dojo hall, empty but for its steam (owner, 4 Nov 2026); off the map
+    const NEARB=30*TILE, LT=[], STEAM={k:.05,c:new THREE.Color(),day:new THREE.Color(.86,.85,.82),fog:new THREE.Fog(0xdcdad2,0,9*TILE),was:null};
+    const light=(x,y,z,c,r,fl)=>{ '@later'; const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    let built=false, BG=null, P=null, busy=false; const build=()=>{ '@bath'; built=true; LT.length=0;   // the dojo hall, empty but for its steam, built where it stands (owner, 4 Nov 2026)
       const RW={front:[],back:[cx-xi0-5.6,cx-xi0+5.6],west:[(yi1-yi0)/2],east:[(yi1-yi0)/2]};
-      for(const id in WALLS){ const w=WALLS[id], u0=w.s0||0, u1=w.s1||w.L;
-        gbox({...box3(w,u0,u1,0,H+2,w.at0,w.at1,(nx,ny,x,y,z)=>shoji(w.inA((w.ax==='x'?x:y)-w.o),z,w.inL,w.door,RW[id],null,[]),()=>wood(),id),skf:(nx,ny)=>!(nx===w.n[0]&&ny===w.n[1])},'GDI'); }
+      const OPEN=[[DOOR.a0-T,DOOR.a1-T,0,DH]];
+      for(const id in WALLS){ const w=WALLS[id], fr=id==='front';
+        for(const [u0,u1,z0,z1] of strips(w.L,fr?[{...DOOR,z1:DH}]:[],w.s0,w.s1))gbox({...box3(w,u0,u1,z0,z1===H?H+2:z1,w.at0,w.at1,(nx,ny,x,y,z)=>shoji(w.inA((w.ax==='x'?x:y)-w.o),z+z0,w.inL,null,RW[id],null,fr?OPEN:[]),()=>wood(),id),skf:(nx,ny)=>!(nx===w.n[0]&&ny===w.n[1])},'GDI'); }
+      flat(xi0,yi0,xi1,yi1,H+2,(x,y)=>{ const b=(x-xi0)%2.2; return b<.12?wood(.7):sh(J.DJBRD,.62+.06*hs(Math.floor(y*3),Math.floor(x/2.2),726)); },'GDC');
       const TAT=J.DJTAT, B0=.9;
       BATCH.tag=OBJ('bodega','bath house'); flat(xi0,yi0,xi1,yi1,.4,(x,y)=>{ const e=Math.min(x-xi0,xi1-x,y-yi0,yi1-y);
         if(e<B0){ const al=Math.min(x-xi0,xi1-x)<Math.min(y-yi0,yi1-y), a=al?y:x, bb=al?x:y, k=Math.floor(bb*5); return sh(J.DJBRD,(bb*5)%1<.1?.72:.9+.18*hs(k,Math.floor(a*1.3+k*.37),701)); }
@@ -230,22 +229,19 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     let was=null, hid=null, step=-1, wIn=false;
     const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+SHARED.BOD.OX, ty=z=>z/KT+SHARED.BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    SHARED.BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yi0+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,here:true,   // here: a ghost comes back where it stands, in the steam
+    SHARED.BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yi0+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
       tick(){ const t=performance.now()/1000, inn=inside(); if(inn){ PW.uT.value+=Math.min(.1,t-(PW.t||t)); } PW.t=t;
-      SHARED.steam=built&&inn?STEAM.v||(STEAM.v={b:[Math.min(ix0,ix1),0,Math.min(iz0,iz1),Math.max(ix0,ix1),Y(H+2),Math.max(iz0,iz1)],k:STEAM.k,c:STEAM.c}):null;   // half the steam it had (owner, 4 Nov 2026), drawn by the fog pass
+      near();
+      SHARED.steam=built?STEAM.v||(STEAM.v={b:[Math.min(ix0,ix1),0,Math.min(iz0,iz1),Math.max(ix0,ix1),Y(H+2),Math.max(iz0,iz1)],k:STEAM.k,c:STEAM.c}):null;   // half the steam it had (owner, 4 Nov 2026), drawn by the fog pass; seen through the open door too
       { const f=built&&inn&&renderer.xr.isPresenting; if(f)scene.fog=STEAM.fog; else if(STEAM.was&&scene.fog===STEAM.fog)scene.fog=null; STEAM.was=f; }   // the headset draws without that pass: plain fog there
-      for(const l of LT){ const k=l.fl?FLAME.flick(l.s,t):1; if(inn||was!==inn)l.L.intensity=inn?l.i*k:0; } was=inn;
+      for(const l of LT){ const k=l.fl?FLAME.flick(l.s,t):1; l.L.intensity=l.i*k; } was=inn;
       if(hid!==inn){ hid=inn; for(const me of HIDE)SEEN(me,!inn); }
       const e=CLOCK.elev?CLOCK.elev():0, n=Math.max(0,Math.min(1,(12-e)/22)), st=inn?-1:Math.round(n*3); STEAM.c.copy(STEAM.day).multiplyScalar(1-.5*n);
       if(st!==step){ step=st; for(const m of SHX){ m.visible=st>=0; m.material.opacity=[.05,.08,.12,.16][Math.max(0,st)]*(m.userData.k||1); } } }};
     VIT.mends.push(()=>built&&!VIT.dead&&SHARED.LVL==='up'&&inside()?1/45:0);   // the steam mends you slowly
-    SHARED.BOD.GD.shift=[SX,SZ];
-    { const dx=X0+W/2, wb=[X(xi0-T)+SX,X(xi1+T)+SX,Z(yi0-T)+SZ,Z(yi1+T)+SZ], fl=WB.filter(b=>b.z0===0).map(b=>[b.x0,b.y0,b.x1,b.y1]).concat([[X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1]]);
-      ROOMS.off.bath={name:'THE BATH HOUSE',box:{x0:Math.min(wb[0],wb[1]),z0:Math.min(wb[2],wb[3]),x1:Math.max(wb[0],wb[1]),z1:Math.max(wb[2],wb[3]),y0:-1,y1:Y(H+2)},need:()=>LOAD(build.chunk),
-        build:()=>{ BG=new THREE.Group(); BG.name='bath-in'; BG.position.set(SX,0,SZ); scene.add(BG); const P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh&&o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; });
-          for(const [a,b,c,d] of fl){ const r=[X(a)+SX,Z(b)+SZ,X(c)+SX,Z(d)+SZ]; SOL.up.push(r); BSL.push(r); } return P; },
-        unbuild:()=>{ for(const r of BSL){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } BSL=[]; if(BG)BG.removeFromParent(); BG=null; built=false; LT.length=0; SHARED.steam=null; if(scene.fog===STEAM.fog)scene.fog=null; STEAM.was=null; },
-        spawn:[X(dx)+SX,Z(Y1-1)+SZ,0,Math.PI],out:[X(dx),Z(Y1+1.4),0,0],door:[X(dx),0,Z(Y1+.35)],exit:[X(dx)+SX,0,Z(Y1-.6)+SZ],exitName:'OUT TO THE STREET'}; }
+    function near(){ const d=Math.hypot(pos.x-(ix0+ix1)/2,pos.z-(iz0+iz1)/2);   // the inside is built while you are near (it shows through the open door), dropped once you are far
+      if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'){ busy=true; LOAD(build.chunk).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
+      else if(built&&d>NEARB+12*TILE){ ROOMS.unpart(P); P=null; if(BG)BG.removeFromParent(); BG=null; built=false; LT.length=0; SHARED.steam=null; if(scene.fog===STEAM.fog)scene.fog=null; STEAM.was=null; } }
     window.GSDBG=()=>({X0,X1,Y0,Y1,door:SHARED.BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
     window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };

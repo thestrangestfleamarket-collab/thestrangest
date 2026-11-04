@@ -5435,3 +5435,7 @@ Owner: "lets build out an amusement park, rollercoasters, rides, etc."; of the s
 ## 4 Nov 2026: the air, from Nevaland
 
 Owner, of nevaland.day ("what can we learn"; of the five things offered: "lets take 1-5"): the distance fog gets the air Nevaland draws: a thin haze everywhere and a ground mist that thins with height, so towers and hill tops stand clear of it; the mist in the horizon's colour greyed, warm toward the sun; the sky's own colour only on a level sightline where the air is nearly opaque, so far buildings never turn into a slab of sky; the land's rim faded into what is seen just above it before the drawing stops, so a section's edge never shows; smooth, or in stepped dithered bands (STEPS). Supersedes 3 Nov's "haze gone for now". ATMOSPHERE's DISTANCE FOG: AIR, MIST, MIST HEIGHT, SUN GLOW, TINT, STEPS, RIM (RESET to the defaults). The fifth, far trees as pictures, already existed as the park's stand-ins (30 Oct); they now hand over across a dithered band instead of a swap. `tests/airshot.cjs`.
+## 4 Nov 2026: the rest from Nevaland
+
+Owner, of the ten more things Nevaland does ("add all 'Worth taking'"): each below as it lands, one pull request.
+- Sound provenance: every sound file the page plays has a record in `data/full/sounds.json` (where it came from, the licence, a snapshot of it); the car radio's four stations first; a template for the ElevenLabs voices to come. `tests/datacheck.cjs` checks it. The 19 Oct "no sound" rule stands.

@@ -9,6 +9,9 @@ const {chromium}=require('playwright'), fs=require('fs');
 const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), one=n=>fs.readFileSync('src/'+fs.readdirSync('src').find(f=>new RegExp('^\\d{3}-'+n+'\\.js$').test(f)),'utf8'), sfxSrc=one('sfx'), linesSrc=one('lines');
 const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
 const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
+// every sound file the page plays has a provenance record in data/full/sounds.json (runtime path, source, licence and its snapshot), and every record's files exist
+const SND=(()=>{ const out=[], ext=/\.(mp3|ogg|wav|m4a|opus|webm)$/i, walk=d=>{ for(const f of fs.readdirSync(d)){ const p=d+'/'+f; if(fs.statSync(p).isDirectory()){ if(p!=='data/full')walk(p); } else if(ext.test(f))out.push(p); } }; walk('data'); for(const [f,s] of SRC)for(const m of s.matchAll(/__FILE__\("(data\/[^"]+\.(?:mp3|ogg|wav|m4a|opus|webm))"\)/g))out.push(m[1]); return [...new Set(out)]; })();
+const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
   const errs={}; pg.on('pageerror',e=>{ const k=e.message+(process.env.STACK?' @ '+(e.stack||'').split('\n').slice(1,3).join(' '):''); errs[k]=(errs[k]||0)+1; });
   const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
@@ -20,6 +23,8 @@ const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(
   let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(RECIPES.length>=20&&POOLS.length>=5,'the tables read from the source: '+RECIPES.length+' recipes, '+POOLS.length+' pools');
   for(const [k,n,f] of refs)ok((k==='sound'?RECIPES:POOLS).includes(n),'the code\'s '+k+' '+n+' ('+f+') is in its table');
+  for(const p of SND){ const r=PROV.find(r=>r.runtime===p); ok(!!r&&r.licence&&r.licence.url&&fs.existsSync(r.licence.snapshot)&&(r.source||r.made),'the sound file '+p+' has a provenance record with a licence and its snapshot'); }
+  for(const r of PROV)ok(fs.existsSync(r.runtime),'the provenance record '+r.id+' names a file that exists');
   const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
     // the save: the old keys gathered, read back as they were, a write read back, the version
     const S=SAVE.all(); out.save={v:S.v,looks:SAVE.get('looks'),outline:SAVE.get('outline'),grain:SAVE.get('grain'),keys:SAVE.get('keys'),raw:JSON.parse(localStorage.getItem('market-save')||'{}')};

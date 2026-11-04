@@ -1,7 +1,7 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
+import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -179,7 +179,7 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.when=(key,fn)=>SYS.onStart(()=>{ const t=()=>{ const N=NPCS.all().find(q=>q.key===key); if(N&&N.g&&N.st)fn(N); else setTimeout(t,800); }; t(); },'npc '+key);   // run fn with a character once the start is done and its body stands
   NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
-      const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen);
+      const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen&&!WINDOWS.near(p.x,p.z));
       N.far=far; N.hid=!N.sheet&&(far||!seen||d>NPCS.DRAW||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };

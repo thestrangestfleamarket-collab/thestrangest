@@ -1,6 +1,6 @@
 // THE CHARACTER PAGE: the menu's home (ESC) — your live avatar and the menu buttons; ADMIN (owners) holds the bug queue, the stats box, the render inspector, SUMMON and the game log.
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, W3} from './003b-systems.js';
+import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, VIT, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=TEXT.esc;
@@ -21,9 +21,9 @@ import {DESIGN} from './102b-designer.js';
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); };
 
-  const btns=()=>{ const B=[['INVENTORY','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['SETTINGS','',()=>UI.menuTab('display')],['GUIDE','SHIFT+G',()=>UI.menuTab('guide')],['REPORT A BUG','F8',()=>UI.menuTab('bug')],['LOG OUT','',logout],['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }]];
+  const btns=()=>{ const B=[['INVENTORY','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['SETTINGS','',()=>UI.menuTab('display')],['GUIDE','SHIFT+G',()=>UI.menuTab('guide')],['REPORT A BUG','F8',()=>UI.menuTab('bug')],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout],['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }]];
     if(isAdmin)B.push(['ADMIN','',adminOpen,1]);
-    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
+    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   CHARP.admin=()=>adminOpen();   // the handheld's ADMIN page opens it too
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
@@ -68,7 +68,7 @@ import {DESIGN} from './102b-designer.js';
   #dhome .cp-edit{position:absolute;right:6px;top:6px;font:9px var(--pixel);color:var(--key);border:1px solid #3a3f4e;padding:2px 6px;background:rgba(5,6,10,.7);cursor:pointer}
   #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
   #dhome .cp-right{display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1}
-  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px}
+  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px} #menu #dhome .cp-btn:disabled{opacity:.35;cursor:default;background:transparent;color:var(--fg)}
   #dhome .cp-btn,#cpadmin .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
   #dhome .cp-btn:hover,#cpadmin .cp-btn:hover{color:var(--key);border-color:#6b6f80}
   #cpadmin .cp-btn[aria-pressed="true"]{color:var(--key)}

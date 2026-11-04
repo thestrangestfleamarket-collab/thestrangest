@@ -268,11 +268,14 @@ export class Block extends Server {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
     } else if (m.t === "tr") {
       this.trade(c, s, m);
+    } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
+      const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return;
+      this.world().then(W => { const v = k in W ? W[k] : ""; if (v !== "") { delete W[k]; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v: "" })); } c.send(JSON.stringify({ t: "took", k, v })); });
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return;
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
       this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
-        const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : 200);
+        const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : k.startsWith("drop:") ? 1200 : 200);
         W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
     }
   }

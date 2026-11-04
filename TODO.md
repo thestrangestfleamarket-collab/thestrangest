@@ -43,3 +43,11 @@ The owner's list of features to build, newest last. Each line is his ask; the no
 - Built the game's way: CEL light, the game's own painters and colours, no photo textures; it states its cost (triangles, lamps, ms).
 - **Done 19 Oct 2026** (his pick A, "no walkway to fountain yet, make it 20% smaller"): the terrace (46 tiles across, "like the mockup, -20%"),
   the fountain and the lake are in, the park's north edge pushed 36 tiles north for them (`src/060a-fount.js`, see docs/HISTORY.md). **Still to do**: the walkway to the terrace and the Mall gate entrance (the gate from his photo).
+
+## Open from chats (shared; any chat adds, takes and ticks lines here)
+
+Mark a line `[taking: <branch>]` before starting it and tick it `[x]` in the pull request that finishes it.
+
+- [ ] **Shop insides on the street** (owner, 3 Nov 2026: "when entering buildings like the bathhouse you dont go all the way in ... you can still see npcs players outside"). The bath is fixed (off the map, #521). Check the bar, museum, bank, theatre and playhouse; move any that show the same thing off the map the bath's way.
+- [ ] **Owner to try the bath house** in the game (in by its door, out by OUT TO THE STREET) and approve.
+- [ ] **Start freeze**: about 20 s after the start the page stalls while the bodega's window pictures are taken (`WINDOWS.first`). Not asked for yet; needs the owner's go.

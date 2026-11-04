@@ -14,6 +14,8 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+ok(L.places.some(p => p.kind === 'fair' && p.x1 < L.streets.west.x0 - 10 && p.door && p.gate) && L.places.some(p => p.kind === 'gate' && Math.abs(p.x1 - L.streets.west.x0) < .6), 'the level file has the fair behind the West St row, with its door and gate in the row (owner, 4 Nov 2026)');
+ok((p => p && p.face === 'e' && Math.abs(p.x1 - L.streets.west.x0) < .6 && p.y1 != null)(L.places.find(p => p.id === 'theatre')), 'the movie theatre stands on West St with the arcade and the playhouse (owner, 4 Nov 2026)');
 { const c = L.parkPlaces.castle, P = L.park, [n, e] = ['path0', 'path1'].map(id => L.paths.find(p => p.id === id)), x0 = c.x0 - 3.6, x1 = c.x0 + 21 + 3.6, y0 = c.y0 - 3.9, y1 = c.y0 + 17 + 3.6, gx = c.x0 + 12.5;
   ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
   ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
@@ -56,6 +58,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
       o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
+      o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.hud = (() => { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /\/ 100$/.test(document.getElementById('vhpn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].textContent); HUD.set(1, null);
@@ -141,6 +144,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     for (const p of ['dress', 'ring', 'water', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
     ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
+    ok(r.fair, 'the fair registers its rides, booths, staff posts and zone at the start, and builds only when you come near');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
     ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');

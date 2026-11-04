@@ -281,8 +281,8 @@ const GARB={};
     W.ms=performance.now()-t0; };
   // what a figure wears: everyone's shirt, trousers and shoes (bare feet take the shoes off) and the dyes ({shirt, pants} colours from what it wears); the hat and jacket pieces are kept for gear to wear
   const SPEC=new Map();
-  GARB.spec=(bare,dye,form)=>{ const ds=dye&&dye.shirt, dp=dye&&dye.pants, f=form==='F'?'F':'M', q=(bare?1:0)+'|'+(ds||'')+'|'+(dp||'')+'|'+f; let s=SPEC.get(q); if(s)return s;
-    s={k:q,form:f,shirt:true,pants:true,shoes:!bare,hat:false,jacket:false,col:{shirt:ds||COL.shirt,jacket:COL.jacket,pants:dp||COL.pants,shoes:COL.shoes,hat:COL.hat}};
+  GARB.spec=(bare,dye,form)=>{ const ds=dye&&dye.shirt, dp=dye&&dye.pants, dh=dye&&dye.shoes, f=form==='F'?'F':'M', q=(bare?1:0)+'|'+(ds||'')+'|'+(dp||'')+'|'+(dh||'')+'|'+f; let s=SPEC.get(q); if(s)return s;
+    s={k:q,form:f,shirt:true,pants:true,shoes:!bare,hat:false,jacket:false,col:{shirt:ds||COL.shirt,jacket:COL.jacket,pants:dp||COL.pants,shoes:dh||COL.shoes,hat:COL.hat}};
     SPEC.set(q,s); return s; };
   // the body's own clothing layers are all under real clothes; his feet are bare inside the shoes
   GARB.worn=()=>({shirt:false,pants:false,shoes:false,hair:true,beard:true});

@@ -67,12 +67,15 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
     if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return built('w00'); b={body}; BUILT.set(k,b); return b; }
     const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS, D=DESIGN.decode(k.split('.')[1]||'');
-    const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
+    const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, ec=EQUIP.colours?EQUIP.colours(by):{}, C=ST.col||{}, dc={shirt:ec.shirt||C.shirt,pants:ec.pants||C.pants,shoes:C.shoes};
+    // their colours: each body material they changed swapped for one in their colour (shared by everyone wearing it)
+    const RM=new Map(), mul=(h,f)=>'#'+new THREE.Color(h).multiplyScalar(f).getHexString(), sub=(n,h)=>{ const i=MI(n); if(i>=0&&h)RM.set(i,dyeMat(h)); };
+    sub('skin',C.skin); sub('lid',C.skin&&mul(C.skin,.78)); sub('hair',C.hair); sub('hairHi',C.hair&&mul(C.hair,1.2)); sub('hairLo',C.hair&&mul(C.hair,.78)); sub('eye',C.eye); sub('shirt',dc.shirt); sub('pants',dc.pants);
     for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
-      if(bare&&/^shoe/.test(p.n))p.recol=()=>SK;
-      if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
+      if(bare&&/^shoe/.test(p.n))p.recol=()=>RM.get(SK)??SK; else if(RM.size)p.recol=m=>RM.get(m); }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
     b={PCS,bh:D.h,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
+  ONLINE.built=k=>built(k);
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
@@ -176,14 +179,13 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };
   // the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
   { const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
-    const you=()=>{ const P=document.getElementById('looks'); if(!P)return setTimeout(you,1000); if(P.querySelector('#lsay'))return;
-      const B=document.createElement('div'); B.id='lsay'; B.innerHTML=`<h3>YOUR WORDS</h3><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
-        <div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
-        <div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
-      const nameRow=P.querySelector('#lname').closest('.row'); nameRow.after(B);
-      const show=()=>{ B.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===SP.f))); B.querySelectorAll('[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SP.c))); B.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===SP.s)));
-        const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
-      B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
+    const CN=['WHITE','GOLD','GREEN','SKY','PINK','ORANGE','RED','LILAC'];
+    const you=()=>{ if(!LOOKS.section||!document.getElementById('ldesign-at'))return setTimeout(you,1000); if(document.getElementById('lsay'))return;
+      const put=k=>v=>{ SP[k]=k==='c'?v:+v; saveSP(); ME.tagS=''; };
+      const S=LOOKS.section('YOUR WORDS',[{id:'lsayf',label:'FONT',list:FONTS.map((f,i)=>[i,f[1],f[0]]),get:()=>SP.f,set:put('f')},{id:'lsayc',label:'COLOUR',swatch:1,list:COLS.map((c,i)=>[c,CN[i]||c]),get:()=>SP.c,set:put('c')},
+        {id:'lsays',label:'SIZE',list:[[0,'SMALL'],[1,'MEDIUM'],[2,'LARGE']],get:()=>SP.s,set:put('s'),after:()=>show()}]);
+      S.id='lsay'; const pv=document.createElement('div'); pv.id='lsayp'; pv.textContent='hello there'; S.appendChild(pv);
+      const show=()=>{ pv.style.cssText='margin:6px 0 0 128px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); }; show(); };
     you();
     const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
       const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);

@@ -91,5 +91,5 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
       for(let k=0;k<worn.puffs.length;k++){ const p=worn.puffs[k], sd=p.userData.sd, a=k/worn.puffs.length*Math.PI*2, rad=w*(.55+.12*Math.sin(t*.5+sd));
         p.position.set(Math.cos(a)*rad, -w*.2-(k%3)*w*.34+Math.sin(t*.8+sd)*w*.08, -w*.28+Math.sin(a)*rad*.5+Math.sin(t*.6+sd)*w*.06);
         p.scale.setScalar(w*(.42+.12*Math.sin(t*.9+sd*1.3))); } } };
-  const MINE={}; EQUIP.post=B=>{ const L=LOOKS.L||{}; GARB.draw(W3.group,B,GARB.spec(L.bare,LOOKS.over,W3.style&&W3.style.form),MINE,W3.mesh,GARB.myE()); EQUIP.draw(W3.group,B,EQUIP.by,MINE); };
+  const MINE={}; EQUIP.post=B=>{ const L=LOOKS.L||{}; GARB.draw(W3.group,B,GARB.spec(L.bare,LOOKS.clothes?LOOKS.clothes():LOOKS.over,W3.style&&W3.style.form),MINE,W3.mesh,GARB.myE()); EQUIP.draw(W3.group,B,EQUIP.by,MINE); };
 }

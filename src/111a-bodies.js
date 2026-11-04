@@ -79,10 +79,10 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (always the Walker unless a playable body is set; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (BODIES.base() unless a playable body is set, the Walker until it loads; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
-  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
+  const curKey=()=>{ if(pick!=='walker'&&playable(BODIES.by[pick]))return pick; const b=BODIES.base&&BODIES.base(); return playable(BODIES.by[b])?b:'walker'; };
   let ME=null, MEK=null, hid=false;
   W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
     if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
@@ -95,7 +95,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row'; LP.insertBefore(h,at); LP.insertBefore(ROW,at); }
   function addButton(key,label){ if(!ROW||document.getElementById('lbody-'+key))return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
   function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
-  addButton('walker','WALKER');
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -170,7 +169,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     return {key,geo,height:b.height,hipY:b.hipY,off,binv,...more}; };
   BODIES.rebaked=(D,key,label,at,more)=>BODIES.add(rebakedObj(D,key,{label,at,...more}));
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
-  BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
+  BODIES.fit=body=>{ body.S=WALKER_H/body.height*(body.scale||1); body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
     walker(body); if(playable(body))addButton(body.key,body.label||body.key.toUpperCase()); };
 }

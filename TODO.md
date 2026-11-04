@@ -149,3 +149,15 @@ starting: a newer owner decision wins over a line here.
 - [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
   street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
   Scanner's was pictured).
+- [ ] **GitHub Actions stopped running checks** (4 Nov 2026, from about 15:05 UTC): every pull request's `site` run fails in about 2 seconds with
+  no runner and no steps, on every branch (#568, #574–#577). Likely the account's Actions minutes or spending limit; the owner to check
+  Actions billing on GitHub. #574 (the train's poles, straps, dark tunnels) went live without it, on local checks.
+- [ ] **The train: one car or shorter cars?** (owner, 4 Nov 2026: "the subway cart needs to be 50% shorter too, half as many carts"): built as
+  one car of the old size (`NCAR` in `src/009c-trains.js`), the train half as long, fitting the half-length platforms. If he meant each car
+  half as long as well, shrink `CARL` (the car's insides are laid out from it).
+- [ ] **Straps or lower bars** (owner, 4 Nov 2026: "you can grab on to it or the overhead bars"): the bars hang above a hand's reach, so hand
+  straps were added under them (HOLD A STRAP). The other way: lower the bars to head height and drop the straps. Owner to pick.
+- [ ] **A platform drone rides the train with you** (4 Nov 2026, seen in the ride pictures): a scanner drone follows you into the car and
+  keeps scanning in the tunnel (`src/159e-scanner.js`). Offered: drones stay on the platform when the train leaves. Owner to decide.
+- [ ] **The half-length subway and the train's holds not yet checked live** (4 Nov 2026, #547 and #574): look underground on the website
+  (the platform, a ride through the tunnel, holding a pole and a strap).

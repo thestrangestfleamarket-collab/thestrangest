@@ -40,7 +40,7 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
       return dining(s,z,side); };
     for(const s of ['b','w','e','f'])A.wall(s,wallP(s));
     /* ---------- the makers (IKIT): boxes, cylinders and balls in metres, merged into a few meshes ---------- */
-    const K_=IKIT.room({wx,wz,hd},o=>A.add(o)), {box,cyl,ball,glow,own,meshOf,pic,words,matL}=K_, seat=(n,b,sp,r)=>{ DINER.seats+=sp.length; return K_.seat(n,b,sp,r); };
+    const K_=IKIT.room(frame(R),o=>A.add(o),r=>null), {box,cyl,ball,glow,own,meshOf,pic,words,matL}=K_, seat=(n,b,sp,r)=>{ DINER.seats+=sp.length; return K_.seat(n,b,sp,r); };
     const C={red:0xb8262e,cream:0xeee2c4,chrome:0xc8ccd0,steel:0xa8acb0,dsteel:0x6e7276,black:0x1e1e22,wood:0x5a2a24,formica:0xe6dcc6,vinyl:0xc0303a,white:0xf2f2f0,porc:0xf4f6f6,tileK:0xe8ecea,tileR:0xd4e4ea};
     /* ---------- the partition (kitchen and restrooms behind it): a window to the pass, the kitchen's swing door, the restroom doors ---------- */
     const P0=KV, P1=KV+.15;

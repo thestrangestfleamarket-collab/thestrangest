@@ -959,5 +959,23 @@
   "speed": 7,
   "len": 1.25,
   "weight": 8
+ },
+ "d_ale": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "d_stout": {
+  "value": 7,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "d_cola": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
  }
 }

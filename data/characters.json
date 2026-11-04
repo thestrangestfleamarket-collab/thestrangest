@@ -2508,7 +2508,7 @@
   "group": "bar",
   "job": {
    "at": "bar",
-   "title": "SINGS FRI/SAT NIGHTS",
+   "title": "HOST",
    "hours": [
     20,
     24
@@ -5193,6 +5193,67 @@
      "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
      "opts": [
       {"t": "BACK.", "go": "hi"}
+     ]
+    }
+   }
+  }
+ },
+ "w_badger": {
+  "name": "THE BADGER",
+  "folk": {
+   "sp": "badger",
+   "m": 1.05,
+   "f": "#55555a",
+   "f2": "#ece8e2",
+   "coat": "tunic",
+   "cc": "#6a2a1e"
+  },
+  "job": {
+   "at": "bar",
+   "title": "TAPS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "d_ale",
+    "d_stout",
+    "d_cola"
+   ],
+   "line": "Ale, stout, or the cola. I don't do cocktails. I don't do umbrellas."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be?",
+      "Keep it down, the octopus is counting."
+     ],
+     "opts": [
+      {
+       "t": "WHAT'S ON TAP?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW LONG HAVE YOU WORKED HERE?",
+       "go": "long"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "long": {
+     "say": "Since before the stairs. I dug them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
      ]
     }
    }

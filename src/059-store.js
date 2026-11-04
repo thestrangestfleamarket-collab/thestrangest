@@ -95,7 +95,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   const STEPS=[];
   if(!AWAY.has('diner')){ const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
 
-  if(!AWAY.has('bar')){ const B=B_('lbodega2'), TB=TURN(B,WP.bar.face), BL={...B,...TB.L}, dp=TB.pt((BL.x0+BL.x1)/2,BL.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}; rec('bar','THE BAR',B,D,true); STEPS.push(()=>laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},D,(B0,l0)=>{ const n0=PROPS.length, B=BL, L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
+  if(!AWAY.has('bar')){ const B=B_('lbodega2'), TB=TURN(B,WP.bar.face), BL={...B,...TB.L}, dp=TB.pt((BL.x0+BL.x1)/2,BL.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}; rec('bar','THE BAR',B,D,true); STORE.barFrame={B:BL,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; }}; STEPS.push(()=>laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},D,(B0,l0)=>{ const n0=PROPS.length, B=BL, L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
       const mid=(Kb+F)/2;
       // THE BAR: counter, back-bar shelves and stools down the front-west wall
       put('back bar',L+.42,along(5.2),3); put('bar soffit',L+1.5,along(4.5),3); put('neon sign: BAR',L+.08,along(5.2),0);
@@ -110,7 +110,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       put('staircase',L+1.0,Kb+.15);
       // the pool table, mid-room; darts on the east wall with a throw lane in front
       put('pool table',m-.3,mid-1.2);
-      put('dartboard',R-.03,mid+3.0,2);
+      put('dartboard',R-.03,mid+4.2,2);
       // one table by the door
       put('red rug',R-1.9,F-2.1,1); put('bar table',R-1.6,F-2.1); put('red leather armchair',R-.7,F-2.1,2); put('red leather armchair',R-2.5,F-2.1);
       // posters (made in-house), a palm, the way out
@@ -123,7 +123,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       for(const l of LAMPS.slice(l0)){ const k=l.prop&&(l.prop.kind||l.prop.name)||''; if(k==='bar table'||k==='pool table'||k==='staircase')continue; if(l.sconce){ l.c=l.c.map(v=>v*.6); continue; } if(k==='exit sign, lit'){ l.c=l.c.map(v=>v*.45); continue; } l.off=1; }
       LAMPS.push({x:SX,y:SY,z:92,r:5,c:[1.2,.9,.55],room:true,own:true,day:true});   // a dim spot on the stage
       LAMPS.push({own:1,room:1,day:true,x:stools[1].x,y:stools[1].y,z:38,r:1.4,c:[.9,.36,.1]});
-      turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; }))); }
+      turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; if(STORE.furnish&&STORE.furnish.bar)STORE.furnish.bar(STORE.bar); }))); }
 
   if(!AWAY.has('museum')){ const MK=K.museum, M=MK.MUS, B=M.b, SX=B.x0+B.x1, SY=B.y0+B.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], D={w:'f',a:SX-M.mid,wd:2.5,h:76}, stone=[226,220,204];
     const look={floor:(x,y)=>MK.museumFloorCol(SX-x,SY-y),in:(b,nx,ny,x,y,z,f)=>MK.museumWall(b,-nx,-ny,SX-x,SY-y,z,f),out:(nx,ny,x,y,z,f,H)=>MK.museumOutside(B,-nx,-ny,SX-x,SY-y,z,f,H)||sh(stone,f),cope:stone};

@@ -1,5 +1,5 @@
-// THE BINS: a real trash can is hollow, you drop litter in it (double-click it with litter in your pack) and it fills up as the block's players feed it; the litter on the floor is picked up the same way. The station's three cans and its litter are made here; the fill is the block's shared world (ONLINE.add), so everyone sees the same heap.
-import {THREE} from './003-shx.js';
+// THE BINS: a real trash can is hollow, you drop litter in it (double-click it with litter in your pack) and it fills up as the block's players feed it; the litter on the floor is picked up the same way. The station's cans and its litter are made here; the fill is the block's shared world (ONLINE.add), so everyone sees the same heap.
+import {SHARED, THREE} from './003-shx.js';
 import {BINS, FORAGE, ONLINE, SFX, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
@@ -39,6 +39,6 @@ import {LOOP} from './009b-loop.js';
   SYS.add('world',(k,v)=>{ if(k.startsWith('bin:')){ const b=BINS.list.find(q=>key(q.id)===k); if(b)b.show(); } else if(k.startsWith('lit:')&&v){ const l=BINS.litter.find(q=>q.k===k); if(l)l.m.visible=false; } },'144d-bins');
   // the station's cans and litter (station A's platform; the props it used to paint are gone)
   BINS.station=()=>{ const st=LOOP.STA&&LOOP.STA.find(s=>s.old); if(!st||!MAPG.down)return; const MID=10.9;
-    [17.1,28.5,39.9].forEach((y,i)=>BINS.make({id:'A'+i,at:st.P(y,MID,0),grp:MAPG.down}));
-    [[8.1,26.1,'can'],[13.9,15.6,'cup'],[6.9,33.8,'canb'],[15.8,22.2,'can'],[9.2,9.6,'cup']].forEach(([x,y,k],i)=>BINS.drop({id:'A'+i,at:st.P(y,x,0),kind:k,grp:MAPG.down})); };
+    SHARED.METRO.SL.BINS.forEach((y,i)=>BINS.make({id:'A'+i,at:st.P(y,MID,0),grp:MAPG.down}));
+    [[8.1,26.1,'can'],[13.9,16.6,'cup'],[9.2,6.1,'canb']].forEach(([x,y,k],i)=>BINS.drop({id:'A'+i,at:st.P(y,x,0),kind:k,grp:MAPG.down})); };
 }

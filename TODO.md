@@ -146,3 +146,6 @@ starting: a newer owner decision wins over a line here.
   some walking frames.
 - [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
   branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.
+- [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
+  street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
+  Scanner's was pictured).

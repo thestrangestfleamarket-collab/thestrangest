@@ -16,12 +16,11 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
-    for(let i=0;i<=300;i++){ const a=Math.PI*(1+.85*i/300), cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
-    const poly=[]; let prev=null; for(const p of pts){ const ins=p[0]<L.cx&&p[1]<L.cy;
-      if(ins&&prev&&!(prev[0]<L.cx&&prev[1]<L.cy)){ const t=(L.cy-prev[1])/(p[1]-prev[1]); poly.push([prev[0]+(p[0]-prev[0])*t,L.cy]); }
-      if(ins)poly.push(p); else if(prev&&prev[0]<L.cx&&prev[1]<L.cy){ const t=(L.cx-prev[0])/(p[0]-prev[0]); poly.push([L.cx,prev[1]+(p[1]-prev[1])*t]); break; }
-      prev=p; }
-    poly.push([L.cx,L.cy]); S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
+    for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
+    // the whole shore, cut where the park ends (x past L.cx, y past L.cy)
+    const cut=(Q,k,v)=>{ const o=[]; for(let i=0;i<Q.length;i++){ const p=Q[i], q=Q[(i+1)%Q.length], ip=p[k]<=v, iq=q[k]<=v; if(ip)o.push(p); if(ip!==iq){ const t=(v-p[k])/(q[k]-p[k]); o.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]); } } return o; };
+    const poly=cut(cut(pts,0,L.cx),1,L.cy);
+    S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
     const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), strips=[];
     for(let x=Math.floor(S.x0);x<L.cx;x+=2){ const x2=Math.min(x+2,L.cx-.01), w=y=>lake(x,y)<0||lake(x+1,y)<0||lake(x2,y)<0; let y0=null; for(let y=S.y0-1;y<=L.cy+.5;y+=.5){ const i_=y<L.cy&&w(y); if(i_&&y0===null)y0=y; if(!i_&&y0!==null){ strips.push([X(x),Z(y0),X(x2),Z(Math.min(y,L.cy))]); y0=null; } } }
     S.strips=strips;

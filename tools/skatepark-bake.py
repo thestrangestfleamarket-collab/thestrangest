@@ -7,6 +7,7 @@
 #   solid  the cells a body can't pass (walls, rises over the knee, posts, trees, buildings), merged to rectangles
 #   lamps  the floodlights' heads (the park's lights after dark)
 #   board  the skaters' board (data/skateboard.json: the kit's cruiser, ridden by the board skaters)
+#   rides  the scooter and the BMX (data/skaterides.json: ridden by the scooter kid and the BMX rider)
 #   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
 # Run: python3 tools/skatepark-bake.py data/full/skatepark
@@ -209,6 +210,13 @@ json.dump(gate,open(os.path.join(os.path.dirname(OUT),'skategate.json'),'w'),sep
 bc=KIDS[1265]; IB=np.linalg.inv(WM[bc]); BP=[]; BC=[]   # the skaters' board (the kit's cruiser): its own frame, along z, wheels on y=0
 for P,C in prims(bc): BP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); BC.append(C.reshape(-1,3,3))
 BP=np.vstack(BP); BP[:,:,1]-=BP[:,:,1].min(); board=pack(BP,np.vstack(BC)); board['top']=round(float(BP[:,:,1].max()),3)
-json.dump(board,open(os.path.join(os.path.dirname(OUT),'skateboard.json'),'w'),separators=(',',':')); print('board',board['t'],'triangles, deck top',board['top'])
+json.dump(board,open(os.path.join(os.path.dirname(OUT),'skateboard.json'),'w'),separators=(',',':'));
+RIDES={}   # the scooter kid's scooter and the BMX rider's bike (the kit's own, parked in the park): each in metres, its front along +z, wheels on y=0
+for nm,ix in (('scooter',1187),('bmx',1189)):
+    c=KIDS[ix]; IB=np.linalg.inv(WM[c]); VP=[]; VC=[]
+    for P,C in prims(c): VP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); VC.append(C.reshape(-1,3,3))
+    VP=np.vstack(VP); VP[:,:,1]-=VP[:,:,1].min(); RIDES[nm]=pack(VP,np.vstack(VC))
+json.dump(RIDES,open(os.path.join(os.path.dirname(OUT),'skaterides.json'),'w'),separators=(',',':')); print('rides',{k:v['t'] for k,v in RIDES.items()})
+print('board',board['t'],'triangles, deck top',board['top'])
 json.dump(D,open(OUT,'w'),separators=(',',':'))
 print(OUT,round(os.path.getsize(OUT)/1e6,2),'MB,',sum(m['t'] for m in mesh),'still triangles in',len(mesh),'squares')

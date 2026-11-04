@@ -1,11 +1,11 @@
-// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json), the board skaters riding the kit's skateboard (data/skateboard.json); its decks, ramps and ledges are ground to walk and ride.
+// THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json), the board skaters riding the kit's skateboard (data/skateboard.json), the scooter kid and the BMX rider theirs (data/skaterides.json); its decks, ramps and ledges are ground to walk and ride.
 import {SHARED, THREE} from './003-shx.js';
 import {CLIP, CLOCK, FORAGE, PARK, RIDE, ROOMS, SHOPS, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, LEVEL, MAPG, MODS, OFFDX, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const SKATE={}; window.SKATE=SKATE;
-{ const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), GATE=__LAZY__("data/skategate.json"), BOARD=__LAZY__("data/skateboard.json");
+{ const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), GATE=__LAZY__("data/skategate.json"), BOARD=__LAZY__("data/skateboard.json"), RIDES=__LAZY__("data/skaterides.json");
   const MH=TILE/.84, MV=ZU*24/.84, I16=s=>{ const b=atob(s), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u.buffer; };
   const NAMES={'skate-filmer':'THE FILMER','street-skater':'A STREET SKATER','veteran-pool-skater':'THE POOL VETERAN','vert-skater':'A VERT SKATER','roller-skater':'THE ROLLER SKATER','skate-coach':'THE COACH',
     'beginner-kid-skater':'A KID ON A BOARD','scooter-kid':'A KID ON A SCOOTER','bmx-rider':'A BMX RIDER','graffiti-artist':'THE GRAFFITI ARTIST','longboarder':'A LONGBOARDER','skate-shop-owner':'THE SKATE SHOP OWNER'};
@@ -15,7 +15,7 @@ const SKATE={}; window.SKATE=SKATE;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3,true)); g.setIndex(new THREE.BufferAttribute(new Uint32Array(I16(M.i)),1)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const MAT=()=>new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
   // the skateboard (the kit's cruiser) as a RIDE kind: what the board skaters stand on, posed by the rig's skate stance and push
-  const RIDERS={'street-skater':3.2,'veteran-pool-skater':3,'vert-skater':3.4,'beginner-kid-skater':2,'longboarder':3.6};   // who rides, how fast (m/s)
+  const RIDERS={'street-skater':['skate',3.2],'veteran-pool-skater':['skate',3],'vert-skater':['skate',3.4],'beginner-kid-skater':['skate',2],'longboarder':['skate',3.6],'scooter-kid':['scoot',2.6],'bmx-rider':['bmx',4.2]};   // who rides what, how fast (m/s)
   let BD=null; const SPOSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
   const deckH=()=>RIG.RIDEG.deck*(W3.group&&W3.group.scale.y||.046);
   const SKATEK={name:'SKATEBOARD',hint:'A CLICK SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
@@ -24,6 +24,15 @@ const SKATE={}; window.SKATE=SKATE;
     pose:R=>{ let p=R.push; if(p==null){ const up=R.v>(R.pv||0)+1e-4&&R.v<4.5*TILE; R.pv=R.v; R.pt=up?(R.pt||0)+.022:0; p=up?R.pt%1:-1; } SPOSE.push=p; SPOSE.brake=!(R.v>.2*TILE); SPOSE.z=R.z||0; return SPOSE; },   // pushes off while it gathers speed
     place:(m,R)=>{ m.position.y-=m.userData.top||0; m.rotation.z=Math.max(-.25,Math.min(.25,-(R.lean||0)*.3)); }};
   SKATE.board=SKATEK;
+  // the scooter kid's scooter and the BMX rider's bike (the kit's own): drawn at their rider's scale, wheels on the ground; the BMX at .75 so its cranks, seat and bars meet the rig's bike pose
+  let RD=null; const VPOSE={k:'scoot',push:-1,brake:false,z:0}, BPOSE={k:'bike',c:0,brake:false,z:0};
+  const vehicle=(key,fit,ahead)=>({make:()=>{ const m=new THREE.Mesh(geo(RD[key],(x,y,z)=>[x,y,z]),MAT()); m.castShadow=true; return m; },
+    place:(m,R,t,c)=>{ if(!c)return; const u=c.g.scale.y, k=c.S*u*fit, a=m.rotation.y, f=ahead(u,k); m.scale.setScalar(k); m.position.y-=RIG.RIDEG.deck*u; m.position.x+=Math.sin(a)*f; m.position.z+=Math.cos(a)*f; }});
+  const SCOOTK={name:'SCOOTER',...vehicle('scooter',1,(u,k)=>-.12*k),
+    pose:R=>{ VPOSE.push=R.push==null?-1:R.push; VPOSE.brake=!(R.v>.2*TILE); VPOSE.z=0; return VPOSE; }};   // you stand toward its front, the bars a reach ahead
+  const BMXK={name:'BMX',...vehicle('bmx',.75,(u,k)=>RIG.RIDEG.bb[1]*u+.125*k),
+    pose:R=>{ BPOSE.c=(BPOSE.c||0)+(R.v/TILE)*.14; BPOSE.brake=!(R.v>.2*TILE); return BPOSE; }};   // its cranks under the rig's: they turn as it rolls
+  const KINDS={skate:SKATEK,scoot:SCOOTK,bmx:BMXK};
   // anyone can own one: the skate shop sells it (data/items.json skateboard, grants skate; the shop owner's trade in characters.json)
   SYS.onStart(()=>{ FORAGE.add({names:{skateboard:'SKATEBOARD'}}); BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); }).catch(e=>console.warn('SKATE board',e)); },'111fd-skateboard');
 
@@ -32,7 +41,7 @@ const SKATE={}; window.SKATE=SKATE;
   let D=null, G=null, SK=null, LIT=null, LAMPS=[], SOLS=[], GR=null, tick=null, Y0=0;
   const LAMPI=26, wx_=x=>WX+x*MH, wz_=z=>WZ+z*MH, wy_=y=>(y-Y0)*MV;
   SKATE.ground=(x,z)=>{ const g=D&&D.ground; if(!g)return 0; const i=Math.floor(((x-WX)/MH-g.x0)/g.cs), j=Math.floor(((z-WZ)/MH-g.z0)/g.cs); if(i<0||j<0||i>=g.nx||j>=g.nz)return 0; return wy_(g.y0+g.H[j*g.nx+i]*g.dy); };
-  const need=()=>Promise.all([LOAD('skatepark'),DATA().then(d=>{ D=d; if(!D.ground.H)D.ground.H=new Uint16Array(I16(D.ground.h)); Y0=D.gate.y; }),BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); })]);
+  const need=()=>Promise.all([LOAD('skatepark'),DATA().then(d=>{ D=d; if(!D.ground.H)D.ground.H=new Uint16Array(I16(D.ground.h)); Y0=D.gate.y; }),BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); }),RIDES().then(r=>{ RD=r; })]);
   const build=()=>{ '@skatepark';
     G=new THREE.Group(); G.name='skatepark'; scene.add(G); const f=(x,y,z)=>[wx_(x),wy_(y),wz_(z)];
     for(const M of D.mesh){ const m=new THREE.Mesh(geo(M,f),MAT()); m.castShadow=m.receiveShadow=true; G.add(m); }
@@ -50,7 +59,7 @@ const SKATE={}; window.SKATE=SKATE;
     GR={...B,ground:SKATE.ground}; ROOMS.grounds.push(GR);
     // the skaters, each where the kit stood them; they mill about near their spot
     if(SK)scene.add(SK.g); else BODS().then(J=>{ if(!G)return; SK={g:new THREE.Group(),list:[]}; SK.g.name='skaters'; scene.add(SK.g);
-      D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground,...(RIDERS[p.key]?{ride:SKATEK,rideSpeed:RIDERS[p.key]}:{})});
+      D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground,...(RIDERS[p.key]?{ride:KINDS[RIDERS[p.key][0]],rideSpeed:RIDERS[p.key][1]}:{})});
         const N=BODIES.by[k].npc, s=N.st; s.x=wx_(p.x); s.z=wz_(p.z); s.hd=p.hd; s.home={x:s.x,z:s.z,r:(RIDERS[p.key]?7:1.6)*TILE}; N.free=(x,z)=>x>B.x0&&x<B.x1&&z>B.z0&&z<B.z1&&!CLIP.hit(SOL.up,x,z,.25*TILE); N.on=true; SK.list.push(N); }); if(SHOPS.sync)SHOPS.sync(); }).catch(e=>console.warn('SKATE skaters',e));
     if(SK)for(const N of SK.list)N.on=true;
     tick=()=>{ const n=CLOCK.dark?CLOCK.dark():false; if(LIT&&LIT.on!==n){ LIT.on=n; LIT.m.geometry=n?LIT.night:LIT.day; LIT.m.material=n?LIT.nm:LIT.dm; for(const l of LAMPS)l.intensity=n?LAMPI:0; } sky.material.uniforms.n.value+=((n?1:0)-sky.material.uniforms.n.value)*.05; };

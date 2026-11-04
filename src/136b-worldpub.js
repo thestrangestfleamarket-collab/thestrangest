@@ -21,6 +21,6 @@ import {SYS} from './006-map-pre.js';
   let last=null; try{ last=SAVE.get('we-sent'); }catch(e){}
   const auto=()=>{ if(own){ clearTimeout(timer); push(); return; } const st=WE.getState&&WE.getState(); if(!st)return; const j=JSON.stringify(st); if(j===last||last==null&&!Object.keys(st).length)return; last=j; try{ SAVE.set('we-sent',j); }catch(e){}
     post(st,true).catch(()=>{ last=null; try{ SAVE.del('we-sent'); }catch(e){} }); };
-  { let was=false; setInterval(()=>{ const on=!!WE.on; if(was&&!on)auto(); was=on; },1000); addEventListener('pagehide',()=>{ if(WE.on||own&&(timer||sending))auto(); }); }
+  { let was=false; SYS.every(()=>{ const on=!!WE.on; if(was&&!on)auto(); was=on; },1000,'136b-worldpub'); addEventListener('pagehide',()=>{ if(WE.on||own&&(timer||sending))auto(); }); }
   const w=()=>{ if(!window.__started||!document.getElementById('wsend')){ setTimeout(w,500); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(wire).catch(()=>{}); }; w();
 }

@@ -1,7 +1,8 @@
 // THE DAILY REQUESTS: each day some merchants ask for things you can find (mushrooms, butterflies, birds, honey, flowers) and pay over the odds; the pack's ASKS tab lists them, and you hand them in at that merchant's shop.
 import {CITY, FORAGE, INV, ITEMS, MAIL, SFX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
-{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, N=3;
+{ const say=(t,c)=>SAY(t,c||'#e8e2cc'), day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, N=3;
   // who asks, and from what: [merchant key, their name, the things they might want, how many at most]
   const POOL=[['mushroom','THE MUSHROOM SELLER',()=>Object.keys(FORAGE.MU).map(k=>'m_'+k),4],['radish','THE RADISH',()=>['m_button','m_puffball','m_chanterelle','m_oyster','m_bolete','fl_daisy','fl_clover','fl_tulip','fl_sunflower','fl_rose'],3],
     ['origamifox','THE NATURE MERCHANT',()=>[...Array(12).keys()].map(k=>'b_'+k).concat(['bd_0','bd_1','bd_2','bd_3','bird_feather']),3],['beekeeper','THE BEEKEEPER',()=>['honey_wild','honey_clover','honey_lav','honey_sun','honey_rose','bee_wax'],3]];

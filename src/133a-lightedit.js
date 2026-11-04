@@ -4,7 +4,7 @@ import {LIGHTED, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {CEL} from './006-map-pre.js';
-{ const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
+{ const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
   const D=()=>({q:'lowest',shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
   const TIERS={ lowest:{shadows:true,shadowType:'basic',tone:'none',exposure:1},
@@ -45,7 +45,7 @@ import {CEL} from './006-map-pre.js';
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
     if(b.dataset.ps2!==undefined){ PS2.set(b.dataset.ps2==='1'); refresh(); return; }
-    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); return; }
+    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); SAVE.del('shade'); }catch(e){} location.reload(); return; }
     if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
     if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }

@@ -1,6 +1,7 @@
 // THE FAIRY RINGS: FAIRY grows rings of mushrooms in the park.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, PARK, pos, ROOMS, UI, WEEDS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 const FAIRY={list:[]}; window.FAIRY=FAIRY;
@@ -15,7 +16,7 @@ const FAIRY={list:[]}; window.FAIRY=FAIRY;
       const r={x,z,R,M,kind,t:0,life:240+Math.random()*120,th:null}, hb=new THREE.Mesh(new THREE.CylinderGeometry(R,R,.3*T,10),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,gy(x,z)+.15*T,z); g.add(hb);
       r.hb=hb; r.th={name:'A FAIRY RING',obj:hb,reach:1.6*T,near:2.4*T,tall:.4*T,act:()=>FAIRY.pick(r)}; UI.thing(r.th); FAIRY.list.push(r); return r; } return null; };
   const drop=r=>{ g.remove(r.hb); const j=UI.things.indexOf(r.th); if(j>=0)UI.things.splice(j,1); const i=FAIRY.list.indexOf(r); if(i>=0)FAIRY.list.splice(i,1); };
-  FAIRY.pick=r=>{ if(r.t<2)return; const id=r.kind===3?'m_moonglow':'m_morel', n=Math.max(2,Math.floor(r.M.length/3)); FORAGE.give(id,n); FORAGE.say(`YOU GATHER THE FAIRY RING: ${n} MUSHROOMS.`,'#9fe07f'); drop(r); };
+  FAIRY.pick=r=>{ if(r.t<2)return; const id=r.kind===3?'m_moonglow':'m_morel', n=Math.max(2,Math.floor(r.M.length/3)); FORAGE.give(id,n); SAY(`YOU GATHER THE FAIRY RING: ${n} MUSHROOMS.`,'#9fe07f'); drop(r); };
   FAIRY.spawn=spawn;
   const draw=()=>{ '@later'; let k=0; for(const r of FAIRY.list){ const up=Math.min(1,r.t/2.5), fade=Math.min(1,(r.life-r.t)/8), s=up*fade;
       for(const [x,z,h,ph] of r.M){ if(k>=N)break; const y=gy(x,z), w=Math.max(.001,s), bob=1+.05*Math.sin(r.t*1.3+ph*6);

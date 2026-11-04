@@ -1,6 +1,7 @@
 // THE MINING: MINING seeds each cavern's finds by the calendar day, shows the ones your prospecting can spot, and lets you work them free with the cutter; the golems buy them all.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INSPECT, INV, MAIL, pos, SFX, UI} from './003b-systems.js';
+import {CITY, FORAGE, INSPECT, INV, MAIL, MOTION, pos, SFX, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {CAVERNS} from './066a-caverns.js';
@@ -8,7 +9,7 @@ import {KIT} from './068-kit.js';
 import {GEMS} from './101-gems.js';
 const MINING={live:[]}; window.MINING=MINING;
 { const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0; CAVERNS.day=day;
-  const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); }, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
+  const hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); }, say=(t,c)=>{ SAY(t,c); };
   // each zone's finds: [id, NAME, price, weight, prospecting to spot it, colour]; the gem cave holds the golems' ten stones
   const FINDS={gemcave:GEMS.slice(0,10).map((g,i)=>[g[0],g[1],g[2],g[3],i*9,[0xb0c8ff,0xc080ff,0xd0b090,0xffb060,0xe0f0ff,0xff90d0,0x60ff90,0x6090ff,0xff5050,0xffffff][i]]),
     hudson:[['pearl','RIVER PEARL',12,30,0,0xf0ecff],['seaglass','SEA GLASS',6,34,0,0x8fe3d6],['coral','RED CORAL',22,18,15,0xff6a5a],['nacre','NACRE SHELL',30,12,30,0xe8d8ff],['aquamarine','AQUAMARINE',70,7,45,0x60d0ff],['blackpearl','BLACK PEARL',110,4,55,0x2a2a3a]],
@@ -47,7 +48,7 @@ const MINING={live:[]}; window.MINING=MINING;
       const R={cr,hb,f,key,seen,gone:false}; R.pick=()=>{ if(R.gone||!INV.ready(key))return false; R.gone=true; cr.visible=hb.visible=false;
         if(FORAGE.use&&!FORAGE.use('prosp',f[4]-20,f[4]+30)){ say('IT CRUMBLES AS YOU WORK IT FREE.','#c8a090'); return false; }
         INV.picked[key]=d; INV.add(f[0],1); LOG.got[f[0]]=(LOG.got[f[0]]||0)+1; saveLog(); SFX.play('chirp',{vol:.4}); say('YOU FIND '+(/^[AEIOU]/.test(f[1])?'AN ':'A ')+f[1]+' · THE GOLEMS PAY $'+f[2],'#f2c14e'); return true; };
-      R.th={name:'A GLINT',obj:hb,reach:.9*T,near:1.8*T,tall:Y(20),act:()=>{ if(!FORAGE.has('cutter')){ say('YOU NEED A CUTTER BEAM TO WORK IT FREE.','#c8a090'); return; } R.pick(); }};
+      R.th={name:'A GLINT',obj:hb,reach:.9*T,near:1.8*T,tall:Y(20),act:()=>{ if(!FORAGE.has('cutter')){ say('YOU NEED A CUTTER BEAM TO WORK IT FREE.','#c8a090'); return; } MOTION.play('mine'); R.pick(); }};
       UI.thing(R.th); m.things.push(R.th); MINING.live.push(R); } });
   MINING.scan=()=>{ let n=0; for(const R of MINING.live)if(!R.gone&&!R.hb.visible){ R.hb.visible=R.cr.visible=true; n++; } if(n)setTimeout(()=>{ for(const R of MINING.live)if(!R.gone&&!R.seen)R.hb.visible=R.cr.visible=false; },60000); return n; };
   MINING.extract=()=>{ let n=0; for(const R of MINING.live.slice())if(!R.gone&&R.hb.visible&&Math.hypot(R.hb.position.x-pos.x,R.hb.position.z-pos.z)<6*T&&R.pick())n++; return n; };

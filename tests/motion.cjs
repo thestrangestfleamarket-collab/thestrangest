@@ -1,0 +1,38 @@
+// THE MOTION CHECK: node tests/motion.cjs [dist/market.html]. The emote panel (H) opens; an emote plays on the Walker, loops, is sent to the
+// players near and stops when he walks; a one-off move (eating) ends by itself; another player's emote plays on their body; sitting down plays its move;
+// L kicks, O dodges (a blow misses).
+const {chromium}=require('playwright');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+  await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13&at=40,10'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
+  await pg.waitForTimeout(3000);
+  await pg.keyboard.press('h'); await pg.waitForTimeout(300);
+  const P=await pg.evaluate(()=>{ const el=document.getElementById('emotes'); return {open:!el.hidden,n:el.querySelectorAll('button').length}; });
+  ok(P.open&&P.n>=28,'H opens the emote panel with its emotes: '+JSON.stringify(P));
+  const r=await pg.evaluate(async()=>{ const wait=ms=>new Promise(r=>setTimeout(r,ms)), D=window.__dbg, st=D.ST, sent=[]; SYS.add('act',k=>{ if(k&&typeof k==='object')sent.push(k); },'test');
+    const out={}, S=()=>st.move&&st.move.name; [...document.querySelectorAll('#emotes button')].find(b=>b.textContent==='DANCE').click();
+    for(let i=0;i<80&&S()!=='mc_dance';i++)await wait(100); out.dance=S(); out.closed=document.getElementById('emotes').hidden; out.sent=JSON.stringify(sent[0]||null);
+    const T=()=>st.move?st.move.t:0; let t0=T(), wrapped=false; for(let i=0;i<300&&!wrapped;i++){ await wait(100); const t=T(); if(t<t0-.3&&S()==='mc_dance')wrapped=true; t0=t; } out.looped=wrapped&&MOTION.cur==='dance';
+    dispatchEvent(new KeyboardEvent('keydown',{key:'w'})); for(let i=0;i<40&&S()==='mc_dance';i++)await wait(100); dispatchEvent(new KeyboardEvent('keyup',{key:'w'}));
+    await wait(300); out.walked=S()!=='mc_dance'&&!MOTION.cur; out.stop=sent.some(k=>k.stop);
+    await MOTION.play('eat'); out.eat=S(); for(let i=0;i<600&&S()==='mc_eat';i++)await wait(100); out.eatEnded=S()!=='mc_eat';
+    const O=RIG.create(); MOTION.their(O,{m:'mc_clap',loop:1}); for(let i=0;i<40&&!(O.move&&O.move.name==='mc_clap');i++)await wait(100); out.their=O.move&&O.move.name;
+    for(let i=0;i<300&&st.move;i++)await wait(100);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'l'})); dispatchEvent(new KeyboardEvent('keyup',{key:'l'})); for(let i=0;i<60&&S()!=='mc_kickSide';i++)await wait(100); out.kick=S(); out.strike=window.STRIKES?STRIKES.strikes().length>=0:null;
+    for(let i=0;i<300&&st.move;i++)await wait(100);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'o'})); dispatchEvent(new KeyboardEvent('keyup',{key:'o'})); for(let i=0;i<60&&S()!=='mc_dodge';i++)await wait(100); out.dodge=S();
+    const h0=D.VIT.hp, me=D.pos(); D.VIT.hurt(.2,{x:me[0]+1,z:me[2]}); out.missed=D.VIT.hp===h0&&MOTION.dodging();
+    for(let i=0;i<300&&st.move;i++)await wait(100);
+    const p=D.pos(); USE.sitAt(p[0],p[2],p[1]+.5*D.cv().TILE,0); for(let i=0;i<40&&S()!=='mc_sitDown';i++)await wait(100); out.sit=S(); return out; });
+  ok(r.dance==='mc_dance'&&r.closed,'a click plays the emote on him and closes the panel: '+JSON.stringify(r));
+  ok(/"m":"mc_dance"/.test(r.sent)&&/"loop":1/.test(r.sent),'it is sent to the players near, looped');
+  ok(r.looped,'a looped emote starts again as it ends');
+  ok(r.walked&&r.stop,'walking stops it, and the stop is sent');
+  ok(r.eat==='mc_eat'&&r.eatEnded,'a one-off move (eating) plays and ends by itself');
+  ok(r.their==='mc_clap','another player\'s emote plays on their body');
+  ok(r.sit==='mc_sitDown','sitting down plays its move');
+  ok(r.kick==='mc_kickSide','L kicks (a side kick)');
+  ok(r.dodge==='mc_dodge'&&r.missed,'O dodges back, and a blow then misses');
+  ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
+  await b.close(); process.exit(bad?1:0); })();

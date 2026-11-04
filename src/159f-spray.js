@@ -1,11 +1,12 @@
 // SPRAY PAINT: a can from the bodega (ordered on your computer, the drone brings it) holds 256 colours; SPRAY it from the pack, pick a colour on the grid, hold the mouse on a wall or floor to paint; every tag is the block's shared world (kept for all), and the can runs out.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LEVELS, ONLINE, pos, SFX, SPRAY, W3} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SECTION, SYS, TILE} from './006-map-pre.js';
 {
-  const T=TILE, V3=THREE.Vector3, DOTS=20000, PER={spray_silver:900,spray_gold:900}, say=(t,c)=>FORAGE.say(t,c||'#c8c2b0');
+  const T=TILE, V3=THREE.Vector3, DOTS=20000, PER={spray_silver:900,spray_gold:900}, say=(t,c)=>SAY(t,c||'#c8c2b0');
   FORAGE.add({names:{spray_silver:'SPRAY PAINT, SILVER',spray_gold:'SPRAY PAINT, GOLD'},prices:{spray_silver:6,spray_gold:14}});
   const COL=[]; { const c=new THREE.Color(); for(let i=0;i<256;i++){ const r=i>>4, k=i&15; if(r===0)c.setHSL(0,0,k/15); else c.setHSL(k/16,.85,.18+(r-1)/14*.68); COL.push(c.getHex()); } }
   SPRAY.COL=COL; Object.assign(SPRAY,{on:false,id:'',c:0x25,w:.045*T});

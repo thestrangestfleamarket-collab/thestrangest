@@ -32,9 +32,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     await pg.waitForTimeout(6000);
     const r1 = await pg.evaluate(() => { const T = __dbg.MAPK.BOD.XS(1) - __dbg.MAPK.BOD.XS(0), D = WALKSDBG(), L = [...WALKS.by.values()]; window.__T = T;
-      const auto = L.filter(r => r.auto), near = L.filter(r => { const E = WALKS.S.by[r.k]; return E && Math.hypot(E.x - r.N.st.x, E.z - r.N.st.z) < 2.5 * T; });
+      const auto = L.filter(r => r.auto), out = L.filter(r => !r.N.st.pin && r.N.mode !== 'hidden'), near = out.filter(r => { const E = WALKS.S.by[r.k]; return E && Math.hypot(E.x - r.N.st.x, E.z - r.N.st.z) < 2.5 * T; });   // (one settled inside at a work spot stands off its door: the walks hold it at the door)
       window.__K = WALKS.by.has('tvcat') ? 'tvcat' : (auto.find(r => r.N.st.v != null) || auto[0] || {}).k;
-      return { n: D.n, remote: D.remote, auto: auto.length, near: near.length, all: L.length, keys: D.keys.slice(0, 8), one: !!WALKS.by.get(window.__K), hooked: L.every(r => r.N.st.folk === r) }; });
+      return { n: D.n, remote: D.remote, auto: auto.length, near: near.length, all: out.length, keys: D.keys.slice(0, 8), one: !!WALKS.by.get(window.__K), hooked: L.every(r => r.N.st.folk === r) }; });
     ok(r1.n > 10 && r1.auto > 10 && !r1.remote && r1.one && r1.hooked, 'the street\'s walkers join the walks, run here off the website (' + r1.n + ', ' + r1.auto + ' of their own: ' + r1.keys.join(' ') + ')');
     ok(r1.near === r1.all, 'every walker stands where the walks have it (' + r1.near + ' of ' + r1.all + ')');
     // the walks move them: a roamer the walks send somewhere is walking there itself after a while

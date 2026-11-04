@@ -146,3 +146,20 @@ starting: a newer owner decision wins over a line here.
   some walking frames.
 - [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
   branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.
+- [ ] **Who stands on Market St, and why** (owner, 4 Nov 2026: "list all the characters and why im seeing each one on the street"; he has
+  not said yes to fixing these). The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at work" (`CREW.spot` in
+  `src/111fb-fleamarket.js`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`), so they walk main street.
+  All seven visitor groups (43) come every day: ask him whether they should take turns.
+- [ ] **The castle at night** (owner's pick after the move, 2 Nov 2026): at the night gate it still looked dark. Ask him whether the torches
+  should be brighter, and whether the new spot, path and drawbridge height are right.
+- [ ] **THE GREENS: his answers** to `docs/holodeck/golf.md` §12 "Open for the owner" (the name; the screen swing: power bar or a mouse
+  swing like the sword; multiplayer next or more holes; and the rest there).
+- [ ] **The jeans in play** (#495): live, waiting for the owner's look and yes.
+- [ ] **The fair's fence** (4 Nov 2026, #570): its runs took their corners in the wrong order, so its posts, rails and walls stood in the wrong
+  places and one wall shoved you off the start of Market St. Now it stands where the lot is drawn; the owner hasn't seen it yet.
+- [ ] **The referee's habits** (4 Nov 2026, the merge of #567 and #570): the fair made the referee its kart-track marshal (drink, fish,
+  gamble); the interiors gave 56 people a "movies" habit, the referee among them. Check `data/lives.json` for what landed and ask the owner.
+- [ ] **`docs/MAP.md` conflicts on nearly every merge** (it is written by the build). Ask the owner whether to stop keeping it in git and
+  let the build and CI make it.
+- [ ] **The build check's 240-minute limit** was hit on 4 Nov (#526 cancelled; on #567, #568 and #570 the catacomb run and the headset check
+  hung for hours until #573 fixed ESC). Ask the owner whether to raise it or split the long checks into their own job.

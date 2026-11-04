@@ -97,8 +97,8 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     box(.65,4.0,1.0,4.35,0,.3,0xe8c030); box(.82,4.17,.85,4.2,.3,1.4,0xa07040); it('a mop and bucket');
     cyl(KU-.08,3.6,.075,.9,1.38,C.red); box(KU-.04,3.57,KU,3.63,1.2,1.3,C.black); it('a fire extinguisher');
     /* ---------- the swing door to the kitchen: two leaves that swing open as you come through ---------- */
-    const leaf=(u,dir)=>{ const L=own(()=>{ box(u,P0+.06,u+dir*.49,P0+.09,.05,2.05,C.steel); }), me=meshOf(L,matL,false), pv=new THREE.Group(); pv.position.set(wx(u),0,wz(P0+.075)); me.position.set(-wx(u),0,-wz(P0+.075)); pv.add(me);
-      const ph=new THREE.Mesh(new THREE.CircleGeometry(.12*MW,12),new THREE.MeshLambertMaterial({color:0x2a3440,side:THREE.DoubleSide})); for(const k of [-1,1]){ const q=k<0?ph:ph.clone(); q.position.set(EX*dir*.25*MW,1.55*MW,k*.017*MW); pv.add(q); } A.add(pv); return {pv,dx:EX*dir}; };
+    const leaf=(u,dir)=>{ const L=own(()=>{ box(u,P0+.06,u+dir*.49,P0+.09,.05,2.05,C.steel); }), me=meshOf(L,matL,false), pv=new THREE.Group(); pv.position.set(wx(u),0,wz(P0+.075)); me.position.set(-wx(u),0,-wz(P0+.075)); me.userData.noMerge=true; pv.add(me);
+      const ph=new THREE.Mesh(new THREE.CircleGeometry(.12*MW,12),new THREE.MeshLambertMaterial({color:0x2a3440,side:THREE.DoubleSide})); for(const k of [-1,1]){ const q=k<0?ph:ph.clone(); q.position.set(EX*dir*.25*MW,1.55*MW,k*.017*MW); q.userData.noMerge=true; pv.add(q); } A.add(pv); return {pv,dx:EX*dir}; };
     DINER.door={L:[leaf(KD[0],1),leaf(KD[1],-1)],x:wx((KD[0]+KD[1])/2),z:wz(P0+.075),a:0,side:1}; it('the kitchen\'s swing doors');
     /* ---------- the restrooms ---------- */
     for(const [u0,u1,men] of [[KU+.12,MU,true],[MU+.12,W,false]]){ const tc=u1-.55, d0=men?MD[0]:WD[0];
@@ -183,12 +183,12 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
       plate.visible=!!pl; if(pl){ plate.position.set(wx(pl[0]),pl[2]*MW,wz(pl[1])); }
       const fl=f(t*2.3+1)**2, ch=Math.abs(s(t*6)), ft=f(t*.8);
       return {toque:true,noCig:true,noGlass:true,nod:s(t*1.1)*.9,sway:t*.3,
-        XB:[P(3.75+.06*s(t*3),.55,.93+.08*f(t*3)),P(3.75,.25,.9)],XA:[P(4.3,.55,.93+.12*fl),P(4.3,.25,.9+.18*fl)],
+        XB:[P(3.75+.06*s(t*3),1.25,1.2+.08*f(t*3)),P(3.75,.55,.88)],XA:[P(4.3,1.25,1.2+.1*fl),P(4.3,.55,.88+.2*fl)],
         CG:P(4.85,.98,.98+.03*s(t*9)),CGA:[0,0,1],GL:P(2.98+.05*s(t*.5),.92,1.0+.18*ft),
-        LS:[P(6.55+.12*s(t*4),2.35,.97),P(6.7,2.35,.94)],RS:[P(2.62,2.95+.12*s(t*1.5),1.0+.1*ch),P(2.62,3.15+.12*s(t*1.5),.95)],
+        LS:[P(6.6+.08*s(t*4),1.95,.98),P(6.6+.08*s(t*4),2.5,.95)],RS:[P(2.75,2.15+.1*s(t*1.5),1.0+.1*ch),P(2.75,2.6+.1*s(t*1.5),.93)],
         RF:P(4.1+.25*s(t*1.7),4.12,.97+.04*s(t*3)),LF:P(...lf)}; };
     meshOf(MAIN,matL,false); meshOf(GLOW,matB,false); const fm=meshOf(fan,matL,true);
-    O.draw(octBody(DINER.chef(0))); DINER.plate=plate; DINER.fan=fm; DINER.oct=O; DINER.on=true; };
+    O.draw(octBody(DINER.chef(0))); plate.userData.noMerge=fm.userData.noMerge=true; DINER.plate=plate; DINER.fan=fm; DINER.oct=O; DINER.on=true; };
   MSHOP.kit.diner.drop=()=>{ DINER.on=false; DINER.door=DINER.oct=DINER.fan=DINER.chef=DINER.plate=null; };
   SYS.add('life',dt=>{ if(!DINER.on)return; const t=performance.now()/1000;
     if(DINER.oct&&DINER.chef)DINER.oct.draw(octBody(DINER.chef(t)));

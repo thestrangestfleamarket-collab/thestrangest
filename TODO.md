@@ -253,3 +253,21 @@ starting: a newer owner decision wins over a line here.
   game with skills and dealers the owner turned down ("not an easel subgame"). Update it to the painter as built, or leave it.
 - [ ] **The painter, not yet tried for real**: pinch to zoom and pen pressure (never on a phone, tablet or pen), in VR (never), and the
   easel showing your latest unfinished painting (never pictured).
+- [ ] **Mesh2Motion moves: the owner to try them live and approve** (#557, #561, 4 Nov 2026; owner: "everything else in game that is needed to
+  do like using a net, fishing, sitting, etc.", emotes, work moves, fight moves). Not seen in a picture in the game (only fit numbers, stick
+  figures and the checks): H emotes, L kick / O dodge, eating, crafting, planting, mining, sitting down, the fishing cast and pull, the
+  sword or net body swing, the dragons' fire breath and naps, the dungeon spiders, the park dogs, foxes, wolves and horses resting.
+- [ ] **Bow draw and shoot** (Mesh2Motion's `bow-pull`, `bow-pull-hold`, `bow-release`; owner picked fight moves incl. "bow draw and shoot",
+  4 Nov 2026): waits for a bow in the game. Fit with `tools/m2m-moves.cjs` (add to `tools/m2m-moves.json`), play through `MOTION`.
+- [ ] **Standing up from a seat** (Mesh2Motion's `sitting-exit`): `stand()` in `src/100-use.js` puts you off the seat at once, so the clip
+  would start in the air. Needs the stand-up to play first, then move you off.
+- [ ] **Fishing from the rowboat has no body move**: the rod and arm are hidden while seated (`free()` in `src/146a-wield.js`), so no cast or pull.
+- [ ] **Birds glide** (Mesh2Motion's `bird` rig: flap, glide): the crows and owls (`data/fauna.json`, 46 / 21 bones with feathers) need
+  their own map in `tools/m2m-bake.cjs`. Ask the owner first.
+- [ ] **More park animals rest** (owner's "Yes, idle variety", 4 Nov 2026; done: dog, fox, wolf, horse, wild horse, mule): the cat, black cat,
+  deer, cow, pig, lion, zebra and others share the fox's 26-bone rig (`fox` entry in `tools/m2m-bake.cjs`, `rest:` in `src/087-npc-creatures.js`).
+  Mesh2Motion's shark, kaiju and snake clips are unused too.
+- [ ] **The dragons' unused clips** (`data/full/dragon.json`): Land (in place of the hover at a perch), Roar, Walk. Glide stays unused (owner,
+  28 Oct: always flapping). Ask the owner which he wants.
+- [ ] **More of Mesh2Motion's 222 human clips** (`tools/m2m-human.cjs` reads them all): ladder and wall climbing in place of `climbPose`,
+  crouch-walk, sword combos, ground pound, death falls. Wood chopping, digging and lying in bed have no action in the game yet. Ask the owner.

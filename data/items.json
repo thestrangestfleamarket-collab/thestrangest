@@ -1485,5 +1485,73 @@
   "value": 6,
   "weight": 0.2,
   "heals": 0.22
+ },
+ "art_postcard": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "art_print": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "f_croissant": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.1,
+  "edible": true
+ },
+ "fix_parts": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "junk_walkman": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "junk_handheld": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "junk_pockettv": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.4
+ },
+ "walkman": {
+  "value": 25,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "handheld": {
+  "value": 35,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "pockettv": {
+  "value": 60,
+  "stackable": true,
+  "weight": 0.4
+ },
+ "play_ticket": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "d_wine": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_bonbons": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
  }
 }

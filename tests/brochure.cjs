@@ -1,4 +1,4 @@
-// THE BROCHURE MAP (owner, 4 Nov 2026): node tests/brochure.cjs <out>: MAP opened on the street (the unfolded sheet, <out>-front.png), flipped to THE LOOP (<out>-back.png),
+// THE BROCHURE MAP (owner, 4 Nov 2026): node tests/brochure.cjs <out>: MAP opened on the street (the unfolded sheet, <out>-front.png), flipped to THE SUBWAY (<out>-back.png),
 // a click on a numbered place (where it put him), ESC folds it away
 const {chromium}=require('playwright');
 (async()=>{ const [out]=process.argv.slice(2); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
   await pg.screenshot({path:out+'-front.png'});
   await pg.keyboard.press('f'); await pg.waitForTimeout(900); console.log('flipped',JSON.stringify(await pg.evaluate(()=>BRODBG())));
   await pg.screenshot({path:out+'-back.png'});
-  await pg.evaluate(()=>document.querySelector('#bro [data-flip]').dispatchEvent(new MouseEvent('click',{bubbles:true}))); await pg.waitForTimeout(1500); console.log('flipped back by the box',JSON.stringify(await pg.evaluate(()=>BRODBG().flipped)));
+  await pg.keyboard.press('f'); await pg.waitForTimeout(500); console.log('flipped back by F (no flip box on the map, 4 Nov 2026)',JSON.stringify(await pg.evaluate(()=>BRODBG().flipped)));
   const names=await pg.evaluate(()=>__UI.brochure.places()); console.log('places',names.join(' · '));
   await pg.evaluate(()=>document.querySelector('#bro .pn .fc:not(.bk) [data-go="CENTRAL PARK"]').dispatchEvent(new MouseEvent('click',{bubbles:true}))); await pg.waitForTimeout(4000);
   console.log('after the park click',JSON.stringify(await pg.evaluate(()=>({up:BRODBG().up,at:[STORE.pos.x.toFixed(1),STORE.pos.z.toFixed(1)],lvl:SHARED.LVL,room:!!ROOMS.cur}))));

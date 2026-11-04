@@ -1,11 +1,11 @@
-// THE PLAYHOUSE'S PLAY: A Midsummer Night's Dream, Act I, lightly cut: the lines and who says them, where each player goes, the light and set and curtain cues, timed into one show that starts at every hour and half hour for everyone at once; between shows the company waits in the dressing rooms.
+// THE PLAYHOUSE'S PLAY: A Midsummer Night's Dream, Act I, lightly cut: the lines and who says them, where each player goes, the light and set and curtain cues, timed into one show that starts at every hour and half hour for everyone at once; between shows the company is off, out of sight.
 import {PHX} from './151b-ph-kit.js';
 import {PHC} from './151h-ph-cast.js';
 const PHP={};
 // the marks on the stage (metres: x across, stage left +x; z up and down stage)
 PHP.MARK={DSL:[3,-1.9],DSC:[0,-1.9],DSR:[-3,-1.9],SL:[3.2,-3.4],C:[0,-3.4],SR:[-3.2,-3.4],USL:[3,-5],USC:[0,-5.2],USR:[-3,-5],DLC:[1.4,-2.3],DRC:[-1.4,-2.3],LC:[1.6,-3.6],RC:[-1.6,-3.6],
-  THRONE:[-.6,-7.45],HCHAIR:[.75,-7.45],STEPS:[0,-5.7],WSR:[-9.6,-3],WSL:[9.6,-3],WSR2:[-9.6,-5.2],WSL2:[9.6,-5.2],
-  BENCH:[1.2,-4.85],ST1:[-1.2,-4.7],ST2:[0,-4.6],ST3:[1.2,-4.5],ST4:[2.3,-4.65],ST5:[3.6,-4.75],ST6:[.6,-6.55],DOOR:[-3.3,-9]};
+  THRONE:[-.6,-6.45],HCHAIR:[.75,-6.45],STEPS:[0,-4.7],WSR:[-8.6,-3],WSL:[8.6,-3],WSR2:[-8.6,-5.2],WSL2:[8.6,-5.2],
+  BENCH:[1.2,-4.85],ST1:[-1.2,-4.7],ST2:[0,-4.6],ST3:[1.2,-4.5],ST4:[2.3,-4.65],ST5:[3.6,-4.75],ST6:[.6,-6.55],DOOR:[-3.3,-8.3]};
 // the script: [who, line, {go:{who:mark}, to:whom they speak, act, sit:{who:1|0}, big}] or a cue: ['@', what, ...]
 PHP.SCRIPT=[
   ['@','scene','I','ATHENS. THE PALACE OF THESEUS.'],['@','set','dusk'],['@','place',{theseus:'DRC',hippolyta:'DLC'}],['@','lx','out',3],['@','wait',3],['@','curtain',1],['@','lx','dusk',5],['@','wait',4],
@@ -105,8 +105,6 @@ PHP.make=K=>{ '@playhouse';
   const D=K.D, SY=D.SY, A=K.cast, MK=PHP.MARK, PI=Math.PI, mk=m=>typeof m==='string'?MK[m]:m;
   /* ---------- the show compiled into time: every line's start and length, every walk, every cue ---------- */
   const T=PHP.T={lines:[],cues:[],walk:{},sits:{},on:{},len:0,scenes:[]}, WALK=1.25;
-  const home={}; { const ct=['theseus','hippolyta','egeus','hermia','lysander','demetrius','helena'], mc=['quince','bottom','flute','snout','snug','starveling'];
-    ct.forEach((k,i)=>home[k]=[-12.5+i*1.4,-23.35]); mc.forEach((k,i)=>home[k]=[1.2+i*1.4,-23.35]); }
   const pos={}, seg=(w,t0,p0,p1)=>{ const d=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]), t1=t0+d/WALK; (T.walk[w]=T.walk[w]||[]).push([t0,t1,p0[0],p0[1],p1[0],p1[1]]); pos[w]=p1.slice(); return t1; };
   const onOff=(w,t,v)=>(T.on[w]=T.on[w]||[]).push([t,v]), sitAt=(w,t,v)=>(T.sits[w]=T.sits[w]||[]).push([t,v]);
   let t=0, id=0;
@@ -152,25 +150,24 @@ tick:(dt,K,now,inn)=>{ const T=PHP.T; if(!T||!K.cast)return; const S=PHX.show, c
     if(LX)LX.followAt=fol&&A[fol]?()=>{ const a=A[fol]; return [a.x,a.y+1.5,a.z]; }:[0,SY+1,-3];
     st.fol=fol; if(LX&&LX.ch.follow&&!fol&&LX.ch.follow.v>0&&!LX.ch.follow.from){ LX.ch.follow.from={v:LX.ch.follow.v,c:LX.ch.follow.c.clone()}; LX.ch.follow.to={v:0,c:LX.ch.follow.c.clone()}; LX.ch.follow.t0=LX.t; LX.ch.follow.dur=1.5; } }
   else if(st.set!=='idle'){ ST&&ST.go('strike',true); LX&&LX.cue('work',jump?.01:4); curOn&&curOn.set(0); st.set='idle'; st.lx='work'; st.cur=0; }
-  // the players: on stage where the blocking puts them, else waiting in the dressing rooms
+  // the players: on stage where the blocking puts them, else off and out of sight
   const ln=live?(()=>{ for(const l of T.lines)if(t>=l.t&&t<l.t+l.d)return l; return null; })():null;
-  const homes={}; Object.keys(A).forEach((k,i)=>{ homes[k]=i<7?[-12.5+i*1.4,-23.35]:[1.2+(i-7)*1.4,-23.35]; });
   for(const [k,a] of Object.entries(A)){ let on=false; for(const e of T.on[k]||[]){ if(e[0]<=t)on=e[1]; else break; }
     let p, mv=null, sit=false; if(live&&on){ const r=(()=>{ const L=T.walk[k]; let p=null, mv=null; for(const e of L||[]){ if(t<e[0])break; if(t>=e[1]){ p=[e[4],e[5]]; mv=null; continue; } const q=(t-e[0])/(e[1]-e[0]); p=[e[2]+(e[4]-e[2])*q,e[3]+(e[5]-e[3])*q]; mv=[e[4]-e[2],e[5]-e[3]]; } return p?{p,mv}:null; })(); if(r){ p=r.p; mv=r.mv; }
       for(const e of T.sits[k]||[]){ if(e[0]<=t)sit=!!e[1]; else break; } }
-    if(!p){ p=homes[k]; sit=true; }
+    const off=!p; if(off)p=MK.WSR;
     a.x=p[0]; a.z=p[1]; a.y=K.groundAt(a.x,a.z)??SY;
-    // facing: where they walk; else the one they speak to or the speaker, cheated out to the house; in the dressing room, the mirror
+    // facing: where they walk; else the one they speak to or the speaker, cheated out to the house
     let want=a.hd; if(mv)want=Math.atan2(mv[0],mv[1]); else if(!(live&&on))want=PI; else { const L=ln, tgt=L?(L.w===k?L.to:L.w):null, b=tgt&&A[tgt];
       want=b?Math.atan2(b.x-a.x,b.z-a.z):0; if(L&&L.w===k){ const out=0; const d=Math.atan2(Math.sin(out-want),Math.cos(out-want)); want+=d*.45; } if(sit&&(k==='theseus'||k==='hippolyta'))want=0; }
     const e=Math.atan2(Math.sin(want-a.hd),Math.cos(want-a.hd)); a.hd+=jump?e:Math.sign(e)*Math.min(Math.abs(e),dt*4);
-    a.g.position.set(a.x,a.y,a.z); a.g.rotation.y=a.hd; a.g.visible=inn;
-    if(!inn)continue; const near=Math.hypot((K.you?K.you().x:0)-a.x,(K.you?K.you().z:0)-a.z)<45; if(!near)continue;
+    a.g.position.set(a.x,a.y,a.z); a.g.rotation.y=a.hd; a.g.visible=inn&&!off;
+    if(!inn||off)continue; const near=Math.hypot((K.you?K.you().x:0)-a.x,(K.you?K.you().z:0)-a.z)<45; if(!near)continue;
     let act=null, at=0; if(ln&&ln.w===k&&ln.act){ act=ln.act; at=t-ln.t; }
     if(T.call&&live&&t>T.call[0]-1&&t<T.call[2]+3){ for(const b of T.call)if(t>=b&&t<b+2.2){ act='bow'; at=t-b; } }
     const talk=ln&&ln.w===k?Math.min(1,(t-ln.t)/.4)*Math.min(1,(ln.t+ln.d-t)/.3):0;
     K.posePlayer(a,dt,{walk:!!mv,sit,talk,big:ln&&ln.w===k&&ln.big,act,at,look:0},now/1000); }
   // the words and the scene's title
-  if(K.cap){ const you=K.you?K.you():null, inHouse=inn&&you&&you.z<29.6&&you.z>-16.5; const s=ln&&inHouse?PHC.CAST[ln.w].n+'.  '+ln.s:''; if(K.cap._s!==s){ K.cap._s=s; K.cap.textContent=s; K.cap.style.display=s?'block':'none'; }
+  if(K.cap){ const you=K.you?K.you():null, inHouse=inn&&you&&you.z<D.Z1&&you.z>D.STG; const s=ln&&inHouse?PHC.CAST[ln.w].n+'.  '+ln.s:''; if(K.cap._s!==s){ K.cap._s=s; K.cap.textContent=s; K.cap.style.display=s?'block':'none'; }
     let title=''; if(live&&inHouse)for(const q of T.scenes)if(t>=q.t+8&&t<q.t+14)title='ACT I · SCENE '+q.n+' · '+q.where; if(live&&inHouse&&c<0)title='CURTAIN IN '+Math.ceil(-c)+' S'; if(K.sc._s!==title){ K.sc._s=title; K.sc.textContent=title; K.sc.style.display=title?'block':'none'; } } }});
 export {PHP};

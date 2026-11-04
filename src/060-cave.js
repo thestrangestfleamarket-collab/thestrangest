@@ -75,6 +75,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!window.INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
     GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!window.INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
     GCAVE.regrow(); SYS.every(GCAVE.regrow,5000,'060-cave regrow');
+    if(STORE.furnish&&STORE.furnish.cave)STORE.furnish.cave({c:S.c,R,X,Z,T,grp});
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }

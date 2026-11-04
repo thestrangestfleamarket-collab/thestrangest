@@ -9,23 +9,22 @@ PHK.make=TX=>{ '@playhouse';
   const M=K.M={
     velvet:lam({map:TX.velvet.map,bumpMap:TX.velvet.bump,bumpScale:.8}), velvetDark:lam({map:TX.velvetDark.map,bumpMap:TX.velvetDark.bump,bumpScale:.8}),
     seat:lam({map:TX.velvetSeat.map,bumpMap:TX.velvetSeat.bump,bumpScale:.6}), blackVel:lam({map:TX.velvetBlack.map,bumpMap:TX.velvetBlack.bump,bumpScale:.6}),
-    blueVel:lam({map:TX.velvetBlue.map,bumpMap:TX.velvetBlue.bump,bumpScale:.6}),
     gold:std({map:TX.gold,roughnessMap:TX.goldRough,metalness:1,roughness:.55}), orn:std({map:TX.orn,bumpMap:TX.ornBump,bumpScale:4,metalness:.9,roughness:.45}),
-    boards:lam({map:TX.boards,bumpMap:TX.boardsBump,bumpScale:.5}), parquet:std({map:TX.parquet,roughness:.32,metalness:0,envMapIntensity:.35}),
-    carpet:lam({map:TX.carpet}), carpetBox:lam({map:TX.carpetBox}), damask:lam({map:TX.damask}), plaster:lam({map:TX.plaster}),
+    boards:lam({map:TX.boards,bumpMap:TX.boardsBump,bumpScale:.5}), parquet:std({map:TX.parquet,roughness:.8,metalness:0,envMapIntensity:.06}),
+    carpet:lam({map:TX.carpet}), damask:lam({map:TX.damask}), plaster:lam({map:TX.plaster}),
     marble:std({map:TX.marble,roughness:.18,metalness:0,envMapIntensity:.5}), marbleRed:std({map:TX.marbleRed,roughness:.2,metalness:0,envMapIntensity:.45}),
-    brickBlack:lam({map:TX.brickBlack,bumpMap:TX.brickBump,bumpScale:1}), brickWhite:lam({map:TX.brickWhite,bumpMap:TX.brickBump,bumpScale:1}),
+    brickBlack:lam({map:TX.brickBlack,bumpMap:TX.brickBump,bumpScale:1}),
     mahog:std({map:TX.mahogany,roughness:.38,metalness:0,envMapIntensity:.4}), pine:lam({map:TX.pine}), canvas:lam({map:TX.canvas,side:THREE.DoubleSide}),
     rope:lam({map:TX.rope}), iron:lam({color:C('#24221f')}), steel:std({color:C('#3a3c40'),metalness:.8,roughness:.5}), black:lam({color:C('#141214')}),
     matte:lam({color:C('#0c0b0c')}), brass:std({color:C('#d4a850'),metalness:1,roughness:.28}), chrome:std({color:C('#c8ccd0'),metalness:1,roughness:.12}),
     glass:std({color:C('#dfe8ec'),metalness:0,roughness:.03,transparent:true,opacity:.18,envMapIntensity:1.6,depthWrite:false,side:THREE.DoubleSide}),
     crystal:std({color:C('#f4fbff'),metalness:.2,roughness:0,transparent:true,opacity:.72,envMapIntensity:2.6}),
     bottle:std({color:C('#2e5a34'),metalness:0,roughness:.05,transparent:true,opacity:.7,envMapIntensity:1.4}),
-    ivory:lam({color:C('#ece0c4')}), cream:lam({color:C('#f2e6cc')}), white:lam({color:C('#e8e4dc')}), paper:lam({color:C('#efe6d0')}),
-    leather:lam({color:C('#3a1e14')}), skin:lam({color:C('#d8b090')}), sand:lam({color:C('#7a6448')}),
+    ivory:lam({color:C('#ece0c4')}), cream:lam({color:C('#f2e6cc')}), paper:lam({color:C('#efe6d0')}),
+    skin:lam({color:C('#d8b090')}),
     bulb:new THREE.MeshBasicMaterial({color:C('#fff2cc')}), bulbOff:lam({color:C('#d8d2c0')}), red:new THREE.MeshBasicMaterial({color:C('#ff3a2a')}), green:new THREE.MeshBasicMaterial({color:C('#3aff6a')}),
     exit:new THREE.MeshBasicMaterial({color:C('#30ff70')}) };
-  for(const k of ['velvet','velvetDark','seat','blackVel','blueVel'])M[k].side=THREE.DoubleSide;
+  for(const k of ['velvet','velvetDark','seat','blackVel'])M[k].side=THREE.DoubleSide;
   const CC={}; K.col=c=>CC[c]||(CC[c]=lam({color:C(c)})); K.std=std; K.lam=lam;
 
   // a box's faces get uvs in metres over s (so one texture tiles the same on every size)

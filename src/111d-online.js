@@ -78,7 +78,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
-    o.fig.th={name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
+    o.fig.th={player:o,name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(LEVELS.own(g,'*')); };
   const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
     if(!o.lab)o.lab=LABELS.add();

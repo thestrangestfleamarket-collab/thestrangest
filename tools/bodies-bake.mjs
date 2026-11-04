@@ -44,7 +44,7 @@ function slim(m, tris, err = .02) {
 const UAL = JSON.parse(fs.readFileSync('data/ual.json')).ual, RIG = UAL.rig, NAMES = RIG.names, PAR = RIG.parent, NB = NAMES.length, ix = n => NAMES.indexOf(n);
 const restW = (() => { const B = NAMES.map((n, i) => { const b = new THREE.Bone(); b.position.fromArray(RIG.t[i]); b.quaternion.fromArray(RIG.q[i]); return b; }); PAR.forEach((p, i) => { if (p >= 0) B[p].add(B[i]); }); B[0].updateMatrixWorld(true);
   return B.map(b => ({ p: b.getWorldPosition(new THREE.Vector3()), q: b.getWorldQuaternion(new THREE.Quaternion()) })); })();
-const UH = UAL.tall;
+const UH = UAL.tall, ARM = 48 * Math.PI / 180;
 
 function joints(p) {
   const H = p.H, hh = H / p.heads, s = H / UH, J = {};
@@ -54,6 +54,8 @@ function joints(p) {
     if (pa < 0) { J[n] = V(0, 0, 0); continue; }
     const P = J[NAMES[pa]], dir = restW[i].p.clone().sub(restW[pa].p), L0 = dir.length(); dir.normalize(); let L = L0 * s;
     const side = n.endsWith('_l') ? 1 : -1;
+    // arms built angled down (an A-pose), so the shoulders keep their shape when the arms hang
+    if (/^(lowerarm|hand|index|middle|ring|pinky|thumb)/.test(n)) dir.applyQuaternion(new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), -side * ARM));
     if (n === 'pelvis') { J[n] = V(0, pelY, restW[i].p.z * s); continue; }
     if (n === 'spine_01') J[n] = V(0, pelY + (neckBase - pelY) * .18, P.z);
     else if (n === 'spine_02') J[n] = V(0, pelY + (neckBase - pelY) * .45, P.z);
@@ -91,7 +93,7 @@ function bodyPrims(p, Lo) {
   for (const s of [1, -1]) add(cap(V(s * .02 * H, neckBase - .012 * H, cz - .012 * H), V(s * p.shW * H * .78, shY - .006 * H, cz - .008 * H), .026 * H, .02 * H), 'spine_03', .04, 'torso');
   if (p.bust) for (const s of [1, -1]) add(ell(V(s * .045 * H, J.spine_03.y - .03 * H, cz + p.chestD * H * .62), V(.042 * H, .04 * H, .035 * H).multiplyScalar(p.bust)), 'spine_03', .03, 'torso');
   for (const s of [1, -1]) { const L = s > 0 ? 'l' : 'r', ua = J['upperarm_' + L], el = J['lowerarm_' + L], wr = J['hand_' + L];
-    add(ell(ua.clone().add(V(-s * .008 * H, -.004 * H, 0)), V(p.uaR * H * 1.12, p.uaR * H * 1.05, p.uaR * H * 1.08)), 'clavicle_' + L, .045, 'shoulder');
+    add(ell(ua.clone().add(V(-s * .008 * H, -.004 * H, 0)), V(p.uaR * H * 1.12, p.uaR * H * 1.05, p.uaR * H * 1.08)), 'upperarm_' + L, .045, 'shoulder');
     add(cap(ua, el, p.uaR * H, p.uaR * H * .82), 'upperarm_' + L, .02, 'ua');
     add(cap(el, wr, p.uaR * H * .8, p.uaR * H * .6), 'lowerarm_' + L, .02, 'fa');
     add(ell(el.clone().lerp(wr, .28), V(p.uaR * H * .85, p.uaR * H * .85, p.uaR * H * .85).multiplyScalar(.8 + .3 * R)), 'lowerarm_' + L, .05, 'fa');
@@ -117,7 +119,7 @@ function weights(P, prims, J, rigid, Lo) {
     if (rigid) ws = [[rigid, 1]];
     else { let best = null, bd = 1e9; for (const pr of prims) { const d = pr.f(x, y, z); if (d < bd) { bd = d; best = pr; } }
       const b = best.bone, cand = new Set([b]), pa = PAR[ix(b)]; if (pa >= 0) cand.add(NAMES[pa]); for (const k of kids[ix(b)]) if (!/leaf/.test(k) && !(/^hand/.test(b))) cand.add(k);
-      ws = [...cand].map(c => [c, 1 / Math.pow(seg(c, x, y, z) + .01, 5)]);
+      ws = [...cand].map(c => [c, 1 / Math.pow(seg(c, x, y, z) + .015, 4)]);
       // round the hips the jeans' top and the shirt's hem go with the hips, not the thigh
       if (/^thigh/.test(b) && Lo && y > Lo.crotch - .03 * Lo.H) { const t = clamp((y - (Lo.crotch - .03 * Lo.H)) / (.07 * Lo.H), 0, 1), tot = ws.reduce((a, w) => a + w[1], 0), pw = ws.find(w => w[0] === 'pelvis'); ws.forEach(w => w[1] *= 1 - t); if (pw) pw[1] += tot * t; else ws.push(['pelvis', tot * t]); } }
     ws.sort((a, b) => b[1] - a[1]); ws = ws.slice(0, 4); const s = ws.reduce((a, b) => a + b[1], 0); let left = 255;

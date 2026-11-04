@@ -6,6 +6,7 @@ import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE,
 import {FLAME} from './007-fire.js';
 import {BATCH, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
+import {CREATS} from './087-npc-creatures.js';
 import {VIS} from './129a-vis.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
 // A room's inside built late (ROOMS.part) records all it adds (meshes, its lights, things to use, wall cuts), so ROOMS.unpart takes it all away again.

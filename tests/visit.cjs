@@ -1,4 +1,4 @@
-// THE VISIT CHECK: node tests/visit.cjs dist/market.html. Visiting another player's apartment: your rooms dressed in their layout (their caged bird, not your candle), DECORATE refused,
+// THE VISIT CHECK: node tests/visit.cjs dist/market.html. Visiting another player's apartment: your rooms dressed in their layout (their cactus, not your candle), DECORATE refused,
 // the room shared with them (the online room is theirs); leaving puts your own layout back.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=visit::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
@@ -17,19 +17,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(own.includes('bk:candle'), 'your apartment keeps the candle you placed: ' + JSON.stringify(own));
   await pg.evaluate(() => EXITAPT()); await wait(1500);
 
-  // ROSA's apartment: her caged blue jay, no candle; you can look but not decorate; the room is hers
-  await pg.evaluate(() => { const L = JSON.parse(JSON.stringify(window.__own)); window.__lay = ROOMED.HOME.layout; L.added = L.added.map(a => ({ ...a, id: 'r1', kind: 'sp:bd_5' })); return ROOMED.HOME.visit('rosa', 'Rosa', L); });
+  // ROSA's apartment: her little cactus, no candle; you can look but not decorate; the room is hers
+  await pg.evaluate(() => { const L = JSON.parse(JSON.stringify(window.__own)); window.__lay = ROOMED.HOME.layout; L.added = L.added.map(a => ({ ...a, id: 'r1', kind: 'pl:cactus' })); return ROOMED.HOME.visit('rosa', 'Rosa', L); });
   await wait(1500);
   const v = await pg.evaluate(() => { const o = { kinds: ROOMED._api().units().filter(u => u.added && !u.gone).map(u => u.kind), guest: ROOMED.HOME.guest && ROOMED.HOME.guest.name, rk: ONLINEDBG().me.rk };
     ROOMED.toggle(); o.decorating = ROOMED.on; return o; });
-  ok(v.kinds.includes('sp:bd_5') && !v.kinds.includes('bk:candle') && v.guest === 'ROSA', "in ROSA'S APARTMENT: her caged bird stands there, your candle doesn't: " + JSON.stringify(v));
+  ok(v.kinds.includes('pl:cactus') && !v.kinds.includes('bk:candle') && v.guest === 'ROSA', "in ROSA'S APARTMENT: her cactus stands there, your candle doesn't: " + JSON.stringify(v));
   ok(!v.decorating, 'a visitor cannot DECORATE');
   ok(v.rk === 'apt:rosa', 'you share her room with her (the online room is hers): ' + v.rk);
 
   // leaving puts your own apartment back
   await pg.evaluate(() => EXITAPT()); await wait(1500);
   const back = await pg.evaluate(() => ({ guest: ROOMED.HOME.guest, kinds: ROOMED._api() ? ROOMED._api().units().filter(u => u.added && !u.gone).map(u => u.kind) : null }));
-  ok(!back.guest && back.kinds && back.kinds.includes('bk:candle') && !back.kinds.includes('sp:bd_5'), 'leaving puts your own apartment back: ' + JSON.stringify(back));
+  ok(!back.guest && back.kinds && back.kinds.includes('bk:candle') && !back.kinds.includes('pl:cactus'), 'leaving puts your own apartment back: ' + JSON.stringify(back));
 
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all visit checks passed'); process.exit(fails.length ? 1 : 0);

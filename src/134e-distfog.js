@@ -6,7 +6,7 @@ import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 const DFOG={};
-{ const D0={on:false,start:10,end:45,blur:.5,haze:.22}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog6')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:.3}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog7')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -43,9 +43,9 @@ const DFOG={};
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   // a room's steam (SHARED.steam: {b:[x0,y0,z0,x1,y1,z1], k: thickness per unit, c: colour}): the same pass fogs each pixel by how far its view through the box runs, so it reads the same from every camera
   let stOn=false; SYS.add('rooms',()=>{ const on=!!SHARED.steam&&!renderer.xr.isPresenting; if(on!==stOn){ stOn=on; pass.enabled=C.on||on; } },'134e-steam');
-  const save=()=>{ try{ SAVE.set('dfog6',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
+  const save=()=>{ try{ SAVE.set('dfog7',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
-    cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
+    cut:()=>C.on&&C.cut&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;
   // the player's HAZE RANGE in GRAPHICS: where the haze takes everything (the fog's END; the band before it keeps its width)
   const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dhaze'))return;
@@ -56,9 +56,10 @@ const DFOG={};
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
     const S=[['dfs','START','start',4,60,1],['dfb','BLUR','blur',0,5,.1],['dfh','DARKER','haze',0,.8,.01]];
     const B=document.createElement('div'); B.id='dfog';
-    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to darken and blur (START, in tiles), how much it blurs (BLUR) and darkens (DARKER); where the drawing stops (its last stretch faded softly) is HAZE RANGE, in GRAPHICS</div>';
-    P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; }; DFOG.onchange.push(sync);
+    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfcut"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to darken and blur (START, in tiles), how much it blurs (BLUR) and darkens (DARKER); where the drawing stops (its last stretch faded softly) is HAZE RANGE, in GRAPHICS</div>';
+    P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; B.querySelector('#dfcut').textContent=C.cut?'DRAW TO RANGE':'DRAW ALL'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; }; DFOG.onchange.push(sync);
     B.querySelector('#dfon').onclick=()=>{ C.on=!C.on; save(); sync(); };
+    B.querySelector('#dfcut').onclick=()=>{ C.cut=!C.cut; save(); sync(); };
     B.querySelector('#dfrs').onclick=()=>{ Object.assign(C,D0); save(); sync(); };   // back to the owner's default haze
     for(const [id,,k] of S)B.querySelector('#'+id).oninput=e=>{ C[k]=+e.target.value; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); for(const f of DFOG.onchange)f(); };
     sync(); };

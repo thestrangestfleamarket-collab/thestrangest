@@ -211,11 +211,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(cm.min >= 1.5, 'the behind view never pulls the camera into his head as he starts walking beside a solid: ' + JSON.stringify(cm));
     const dg = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)); for (let i = 0; i < 600 && !window.DRAGONDBG; i++) await raf();
       const D = window.__dbg, TI = D.cv().TILE, you = D.pos(), n = D.npcs().find(q => q.key === 'dragon' && !q.D.p.sign); if (!n) return { err: 'no dragon' };
-      const fly = n.mixer._actions.find(x => x.getClip().name === 'Flying_loop'), out = {}; if (n.D.p) n.D.p.on = 0;
+      const fly = n.mixer._actions.find(x => x.getClip().name === 'Fly_Flap'), out = {}; if (n.D.p) n.D.p.on = 0;
       const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 2 * TI; n.st.z = you[2] + 2 * TI; n.D.y = n.D.cruise = you[1] + 4 * TI; };
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
-        out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
-    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
+        out['phase' + k] = { style: n.D.style, beats: +(fly.getEffectiveTimeScale() / fly.getClip().duration).toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
+    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.beats > .25 && dg.phase1.beats > .25, 'a flying dragon beats its wings through both halves of its flight (a beat every few seconds at least): ' + JSON.stringify(dg));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }

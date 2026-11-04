@@ -5166,5 +5166,36 @@
    "home": "subway"
   },
   "visit": "mountain"
+ },
+ "skateshop": {
+  "name": "THE SKATE SHOP OWNER",
+  "trade": {
+   "sells": [
+    "skateboard"
+   ],
+   "line": "Wood, wheels, bearings. Nothing that floats."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Need a board?",
+      "Back for another, {name}?"
+     ],
+     "opts": [
+      {"t": "WHAT DO YOU SELL?", "do": "shop"},
+      {"t": "HOW DO I RIDE ONE?", "go": "ride"},
+      {"t": "GOODBYE.", "go": ""}
+     ]
+    },
+    "ride": {
+     "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
+     "opts": [
+      {"t": "BACK.", "go": "hi"}
+     ]
+    }
+   }
+  }
  }
 }

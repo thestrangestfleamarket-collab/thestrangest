@@ -372,7 +372,7 @@
   }
  ],
  "shells": [],
- "cars": [{"id": "c1", "model": "muscle-car-60s", "x": 80, "y": -66.4, "hd": 90}, {"id": "c2", "model": "convertible-60s", "x": 93, "y": -66.4, "hd": 90}, {"id": "c3", "model": "station-wagon-70s", "x": 101, "y": -66.4, "hd": 90}, {"id": "c4", "model": "pickup-truck-70s", "x": 109, "y": -66.4, "hd": 90}, {"id": "c5", "model": "wedge-coupe-80s", "x": 122, "y": -66.4, "hd": 90}, {"id": "c6", "model": "camper-van", "x": 130, "y": -66.4, "hd": 90}], "parkPlaces": {
+ "cars": [{"id": "c1", "model": "muscle-car-60s", "x": 78.2, "y": -67.0, "hd": 90}, {"id": "c2", "model": "convertible-60s", "x": 87.3, "y": -67.0, "hd": 90}, {"id": "c3", "model": "station-wagon-70s", "x": 96.8, "y": -67.0, "hd": 90}, {"id": "c4", "model": "pickup-truck-70s", "x": 105.9, "y": -67.0, "hd": 90}, {"id": "c5", "model": "wedge-coupe-80s", "x": 123, "y": -67.0, "hd": 90}, {"id": "c6", "model": "camper-van", "x": 131.8, "y": -67.0, "hd": 90}], "parkPlaces": {
   "round": {
    "x": 112,
    "y": 59.5,

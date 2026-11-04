@@ -541,7 +541,7 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
     P.root=V(0,6+z,-1.5); P.bend=-16*D; P.nod=-6*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[82*D,5*D]; P[n].sh=[14*D,2*D]; P[n].foot=-12*D; P[n].ua=[50*D,12*D]; P[n].fa=[58*D,(4+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
   else if(R.k==='car'){
-    P.root=V(0,RIDEG.sit,0); P.bend=-24*D; P.nod=4*D;
+    P.root=V(0,RIDEG.sit,0); P.bend=-30*D; P.nod=4*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
   else if(R.k==='zip'){
     P.root=V(0,z+STAND,0); P.nod=-10*D; P.pitch=(R.sway||0); P.bend=6*D;

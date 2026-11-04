@@ -1,0 +1,436 @@
+{
+ "note": "Library of Congress National Jukebox recordings (public domain), via archive.org; tools/radio-bake.py",
+ "stations": [
+  {
+   "id": "jazz",
+   "call": "WJAZ",
+   "name": "DIXIELAND",
+   "len": 1642.63,
+   "tracks": [
+    {
+     "at": 0.0,
+     "len": 186.07,
+     "title": "Livery stable blues",
+     "by": [
+      "original dixieland jazz band",
+      "larocca, nick",
+      "sbarbaro, tony",
+      "shields, larry"
+     ],
+     "year": 1917,
+     "source": "https://archive.org/details/loc-jukebox-186254-livery-stable-blues"
+    },
+    {
+     "at": 188.07,
+     "len": 160.57,
+     "title": "At the Jazz Band Ball",
+     "by": [
+      "original dixieland jazz band",
+      "larocca, nick",
+      "sbarbaro, tony",
+      "shields, larry"
+     ],
+     "year": 1918,
+     "source": "https://archive.org/details/loc-jukebox-28219-at-the-jazz-band-ball"
+    },
+    {
+     "at": 350.64,
+     "len": 163.49,
+     "title": "Fidgety feet",
+     "by": [
+      "larocca, nick",
+      "shields, larry",
+      "sbarbaro, tony",
+      "ragas, henry"
+     ],
+     "year": 1918,
+     "source": "https://archive.org/details/loc-jukebox-185939-fidgety-feet"
+    },
+    {
+     "at": 516.13,
+     "len": 178.55,
+     "title": "Sensation rag",
+     "by": [
+      "original dixieland jazz band",
+      "larocca, nick",
+      "sbarbaro, tony",
+      "shields, larry"
+     ],
+     "year": 1918,
+     "source": "https://archive.org/details/loc-jukebox-185944-sensation-rag"
+    },
+    {
+     "at": 696.68,
+     "len": 200.35,
+     "title": "Bluin' the blues",
+     "by": [
+      "original dixieland jazz band",
+      "larocca, nick",
+      "sbarbaro, tony",
+      "shields, larry"
+     ],
+     "year": 1918,
+     "source": "https://archive.org/details/loc-jukebox-185940-bluin-the-blues"
+    },
+    {
+     "at": 899.03,
+     "len": 184.99,
+     "title": "Jazz me blues",
+     "by": [
+      "delaney, tom",
+      "original dixieland jazz band"
+     ],
+     "year": 1921,
+     "source": "https://archive.org/details/loc-jukebox-40212-jazz-me-blues"
+    },
+    {
+     "at": 1086.02,
+     "len": 175.23,
+     "title": "Home again blues",
+     "by": [
+      "krueger, benny",
+      "sbarbaro, tony",
+      "berlin, irving",
+      "original dixieland jazz band"
+     ],
+     "year": 1921,
+     "source": "https://archive.org/details/loc-jukebox-39384-home-again-blues"
+    },
+    {
+     "at": 1263.25,
+     "len": 193.08,
+     "title": "Tiger rag",
+     "by": [
+      "ted lewis jazz band",
+      "lewis, ted",
+      "larocca, nick"
+     ],
+     "year": 1923,
+     "source": "https://archive.org/details/loc-jukebox-669812-tiger-rag"
+    },
+    {
+     "at": 1458.33,
+     "len": 182.24,
+     "title": "Bugle call rag",
+     "by": [
+      "meyers, billy",
+      "schoebel, elmer",
+      "westphal, frank",
+      "frank westphal orchestra"
+     ],
+     "year": 1923,
+     "source": "https://archive.org/details/loc-jukebox-670424-bugle-call-rag"
+    }
+   ]
+  },
+  {
+   "id": "dance",
+   "call": "WRTZ",
+   "name": "ROARING TWENTIES",
+   "len": 1392.35,
+   "tracks": [
+    {
+     "at": 0.0,
+     "len": 198.92,
+     "title": "My mammy",
+     "by": [
+      "paul whiteman orchestra",
+      "grofé, ferde",
+      "berlin, irving",
+      "johnson, arnold"
+     ],
+     "year": 1921,
+     "source": "https://archive.org/details/loc-jukebox-39498-my-mammy"
+    },
+    {
+     "at": 200.92,
+     "len": 153.93,
+     "title": "Copenhagen",
+     "by": [
+      "davis, charlie",
+      "bestor, don",
+      "benson orchestra of chicago"
+     ],
+     "year": 1924,
+     "source": "https://archive.org/details/loc-jukebox-71182-copenhagen"
+    },
+    {
+     "at": 356.85,
+     "len": 167.2,
+     "title": "Hey! hey! and hee! hee! (I'm Charleston crazy)",
+     "by": [
+      "smalle, ed",
+      "shilkret, nathaniel",
+      "mills, irving",
+      "international novelty orchestra"
+     ],
+     "year": 1924,
+     "source": "https://archive.org/details/loc-jukebox-50556-hey-hey-and-hee-hee-i-m-charleston-crazy"
+    },
+    {
+     "at": 526.04,
+     "len": 164.46,
+     "title": "Saxophobia",
+     "by": [
+      "pasternack, josef",
+      "wiedoeft, rudy"
+     ],
+     "year": 1920,
+     "source": "https://archive.org/details/loc-jukebox-36395-saxophobia"
+    },
+    {
+     "at": 692.5,
+     "len": 197.62,
+     "title": "Yellow Dog blues",
+     "by": [
+      "handy, w. c.",
+      "joseph c. smith's orchestra",
+      "raderman, harry",
+      "smith, joseph c."
+     ],
+     "year": 1919,
+     "source": "https://archive.org/details/loc-jukebox-34022-yellow-dog-blues"
+    },
+    {
+     "at": 892.12,
+     "len": 176.86,
+     "title": "Struttin' at the strutter's ball",
+     "by": [
+      "williams, spencer",
+      "confrey, zez",
+      "zez confrey orchestra"
+     ],
+     "year": 1922,
+     "source": "https://archive.org/details/loc-jukebox-63051-struttin-at-the-strutter-s-ball"
+    },
+    {
+     "at": 1070.98,
+     "len": 185.52,
+     "title": "Toddle",
+     "by": [
+      "steiger, jimmy",
+      "carey, guy",
+      "baum, joe",
+      "thatcher, thomas"
+     ],
+     "year": 1921,
+     "source": "https://archive.org/details/loc-jukebox-40546-toddle"
+    },
+    {
+     "at": 1258.5,
+     "len": 131.78,
+     "title": "Pickles",
+     "by": [
+      "rosoff, charles",
+      "original memphis five, the"
+     ],
+     "year": 1923,
+     "source": "https://archive.org/details/loc-jukebox-670935-pickles"
+    }
+   ]
+  },
+  {
+   "id": "rag",
+   "call": "KRAG",
+   "name": "RAGTIME",
+   "len": 1484.56,
+   "tracks": [
+    {
+     "at": 0.0,
+     "len": 122.12,
+     "title": "The Buffalo rag",
+     "by": [
+      "ossman, vess l.",
+      "turpin, tom"
+     ],
+     "year": 1909,
+     "source": "https://archive.org/details/loc-jukebox-127251-the-buffalo-rag"
+    },
+    {
+     "at": 124.12,
+     "len": 136.01,
+     "title": "Persian lamb rag",
+     "by": [
+      "ossman, vess l.",
+      "wenrich, percy"
+     ],
+     "year": 1908,
+     "source": "https://archive.org/details/loc-jukebox-126829-persian-lamb-rag"
+    },
+    {
+     "at": 262.13,
+     "len": 137.36,
+     "title": "Black diamond rag",
+     "by": [
+      "lodge, henry",
+      "van eps, fred",
+      "levy, sol"
+     ],
+     "year": 1912,
+     "source": "https://archive.org/details/loc-jukebox-260316-black-diamond-rag"
+    },
+    {
+     "at": 401.49,
+     "len": 151.46,
+     "title": "Temptation rag",
+     "by": [
+      "lodge, henry",
+      "arthur pryor's band",
+      "o'hare, william christopher"
+     ],
+     "year": 1910,
+     "source": "https://archive.org/details/loc-jukebox-129052-temptation-rag"
+    },
+    {
+     "at": 554.94,
+     "len": 199.02,
+     "title": "12th Street rag",
+     "by": [
+      "bowman, euday l.",
+      "rector novelty orchestra",
+      "fuller, earl"
+     ],
+     "year": 1917,
+     "source": "https://archive.org/details/loc-jukebox-656699-12th-street-rag"
+    },
+    {
+     "at": 755.96,
+     "len": 174.95,
+     "title": "Down home rag",
+     "by": [
+      "fuller, earl",
+      "sweatman, wilbur c. s.",
+      "rector novelty orchestra"
+     ],
+     "year": 1918,
+     "source": "https://archive.org/details/loc-jukebox-658715-down-home-rag"
+    },
+    {
+     "at": 932.91,
+     "len": 223.52,
+     "title": "Old folks rag",
+     "by": [
+      "van eps, fred",
+      "van eps trio",
+      "arndt, felix",
+      "sweatman, wilbur c. s."
+     ],
+     "year": 1914,
+     "source": "https://archive.org/details/loc-jukebox-10836-old-folks-rag"
+    },
+    {
+     "at": 1158.43,
+     "len": 152.65,
+     "title": "Smiler rag",
+     "by": [
+      "rogers, walter b.",
+      "wenrich, percy",
+      "victor orchestra"
+     ],
+     "year": 1910,
+     "source": "https://archive.org/details/loc-jukebox-128575-smiler-rag"
+    },
+    {
+     "at": 1313.08,
+     "len": 169.43,
+     "title": "Ole Miss rag",
+     "by": [
+      "handy, w. c.",
+      "handy's orchestra"
+     ],
+     "year": 1917,
+     "source": "https://archive.org/details/loc-jukebox-657609-ole-miss-rag"
+    }
+   ]
+  },
+  {
+   "id": "opera",
+   "call": "WOPR",
+   "name": "OPERA",
+   "len": 1404.71,
+   "tracks": [
+    {
+     "at": 0.0,
+     "len": 128.36,
+     "title": "La donna è mobile",
+     "by": [
+      "caruso, enrico",
+      "verdi, giuseppe"
+     ],
+     "year": 1908,
+     "source": "https://archive.org/details/loc-jukebox-126158-la-donna-mobile"
+    },
+    {
+     "at": 130.36,
+     "len": 248.35,
+     "title": "Una furtiva lagrima",
+     "by": [
+      "donizetti, gaetano",
+      "caruso, enrico"
+     ],
+     "year": 1911,
+     "source": "https://archive.org/details/loc-jukebox-296220-una-furtiva-lagrima"
+    },
+    {
+     "at": 380.71,
+     "len": 133.61,
+     "title": "Recondita armonia",
+     "by": [
+      "victor orchestra",
+      "puccini, giacomo",
+      "caruso, enrico"
+     ],
+     "year": 1909,
+     "source": "https://archive.org/details/loc-jukebox-128044-recondita-armonia"
+    },
+    {
+     "at": 516.32,
+     "len": 244.06,
+     "title": "Salut demeure",
+     "by": [
+      "caruso, enrico",
+      "gounod, charles"
+     ],
+     "year": 1906,
+     "source": "https://archive.org/details/loc-jukebox-122533-salut-demeure"
+    },
+    {
+     "at": 762.38,
+     "len": 232.28,
+     "title": "Sextet (Chi mi frena)",
+     "by": [
+      "donizetti, gaetano",
+      "de luca, giuseppe",
+      "egener, minnie",
+      "journet, marcel"
+     ],
+     "year": 1917,
+     "source": "https://archive.org/details/loc-jukebox-21582-sextet-chi-mi-frena"
+    },
+    {
+     "at": 996.67,
+     "len": 144.7,
+     "title": "Brindisi",
+     "by": [
+      "mascagni, pietro",
+      "caruso, enrico"
+     ],
+     "year": 1905,
+     "source": "https://archive.org/details/loc-jukebox-121374-brindisi"
+    },
+    {
+     "at": 1143.36,
+     "len": 259.27,
+     "title": "Flores purisimas",
+     "by": [
+      "caruso, enrico",
+      "chapí, ruperto",
+      "scognamiglio, gaetano"
+     ],
+     "year": 1914,
+     "source": "https://archive.org/details/loc-jukebox-134890-flores-purisimas"
+    }
+   ]
+  }
+ ]
+}

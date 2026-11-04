@@ -53,12 +53,13 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/059-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
-          k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|worker/|cars\.cjs'
+          k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|worker/|cars\.cjs|radio\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k lives   'src/158|src/159-jobs|src/159d|worker/lives|data/lives|lives\.cjs'
+          k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159c|loop\.cjs'
@@ -152,6 +153,9 @@ jobs:
       - name: The room editor (decorate your apartment, saved and back after a reload)
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
+      - name: The shops' insides (built on the way in, dropped on the way out, nothing left behind)
+        if: contains(steps.f.outputs.run, ' insides')
+        run: node tests/insides.cjs dist/market.html
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
@@ -204,6 +208,9 @@ jobs:
       - name: The cars (parked on Market St, get in, drive, get out, someone else's car)
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
+      - name: The car radio (tune, the shared moment, off when you get out, heard near someone else's car)
+        if: contains(steps.f.outputs.run, ' cars')
+        run: node tests/radio.cjs dist/market.html
       - name: The cars' server (one driver a car, parking kept and heard)
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars-server.cjs

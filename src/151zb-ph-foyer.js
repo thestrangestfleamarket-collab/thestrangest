@@ -12,7 +12,7 @@ const PLAYF={}; window.PLAYF=PLAYF;
   FORAGE.add({names:{play_ticket:'A TICKET FOR THE PLAYHOUSE',d_wine:'A GLASS OF WINE',f_bonbons:'A BOX OF CHOCOLATES'},does:{d_wine:()=>{ VIT.sta=1; },f_bonbons:()=>{ FORAGE.feed(.1); VIT.sta=Math.min(1,VIT.sta+.3); }}});
   // where its people go, in the house's own metres (x across, z from the curtain line to the doors; the foyer floor 1.3 up)
   { const S=STORE.playFrame, R=ROOMS.off.playhouse; if(S&&R){ const at=(x,z,hd,y)=>{ const w=S.W(x,0,z); return {x:w[0],z:w[2],hd,off:true,...(y!=null?{y:y*S.MV}:{})}; }, PI=Math.PI;
-    R.spots={'STAGE MANAGER':at(-8.2,-1.4,-PI/2),'BOX OFFICE':at(-10.65,20.75,PI/2),BAR:at(8.75,21.2,-PI/2),'BAR, THE FAR END':at(8.75,23.2,-PI/2),'USHER, STALLS':at(-2.2,15.6,0),'USHER, CIRCLE':at(6.5,26.2,PI),PROGRAMMES:at(-1.8,22.6,0)};
+    R.spots={'STAGE MANAGER':at(-8.2,-1.4,-PI/2),'BOX OFFICE':at(-10.45,20.75,PI/2),BAR:at(8.75,21.2,-PI/2),'BAR, THE FAR END':at(8.75,23.2,-PI/2),'USHER, STALLS':at(-2.2,15.6,0),'USHER, CIRCLE':at(6.5,26.2,PI),PROGRAMMES:at(-1.8,22.6,0)};
     const seats=[], D=PHA.D; for(let r=1;r<6;r++){ const z=6.2+r; for(const s of [-1,1])for(let k=0;k<7;k++)seats.push(at(s*(1.6+k*.6),z,PI,D.rake(z)+.48)); }
     R.seats=PLAYF.places=seats; } }
   // a ticket: torn at the door to the house for the show on now (or the next one); seated for that show, it rests you

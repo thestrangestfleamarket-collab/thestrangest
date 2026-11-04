@@ -1,6 +1,7 @@
 // THE CAVERNS: CAVERNS makes the underground levels off the map (dry gem caves, flooded caverns), each its own level with its own way in and out.
 import {SHARED, THREE} from './003-shx.js';
-import {EQUIP, FORAGE, LEVELS, LITE, PARK, pos, st, SWIM, UI, VIT} from './003b-systems.js';
+import {EQUIP, LEVELS, LITE, PARK, pos, st, SWIM, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
@@ -54,7 +55,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
     out:()=>{ const S=GCAVE.S, L=GCAVE.lift||(S?{x:X(S.c.x+(PARK.ox||0)),z:Z(S.c.y+(PARK.oy||0)-3.4)}:{x:0,z:0}); UI.goTo(L.x,L.z+1.3*T,'up'); SHARED.heading=0; }});
   { let MO=null, said=0; const mouthAt=()=>RIVER.mouth||{x:X(117.5),z:(RIVER.box.z0+RIVER.box.z1)/2}, NEED=45;   // seconds of air the tunnel asks for: a plain breath (16) is not enough
     const gate=()=>{ if(SWIM.tank()>NEED||VIT.air>=NEED)return null; return 'THE TUNNEL GOES ON UNDER THE CITY. YOU NEED MORE AIR: AIRCAP MUSHROOMS (THE MUSHROOM SELLER) OR SCUBA (RENT IT FROM THE SHARK).'; };
-    const tryIn=api=>{ const m=gate(); if(m){ const now=performance.now(); if(now-said>5000){ said=now; if(window.FORAGE&&FORAGE.say)FORAGE.say(m,'#9fd8ff'); } return; } api.go(1); };
+    const tryIn=api=>{ const m=gate(); if(m){ const now=performance.now(); if(now-said>5000){ said=now; SAY(m,'#9fd8ff'); } return; } api.go(1); };
     CAVERNS.make({id:'hudson',name:'THE HUDSON CAVERN',leaving:'UP TO THE RIVER',lot:{x0:(1300+OFFDX),y0:-40,x1:(1344+OFFDX),y1:-26},H:110,wet:true,murk:0x1c4a3a,see:9,wall:[52,62,50],floor:[38,48,36],gem:0x4ae0c8,exitName:'UP TO THE RIVER',
       walls:[[(1311+OFFDX),-40,(1311.8+OFFDX),-30],[(1322+OFFDX),-36,(1322.8+OFFDX),-26],[(1333+OFFDX),-40,(1333.8+OFFDX),-30]],   // the tunnel winds under the city: three bends
       pocket:{x0:(1333.8+OFFDX),y0:-40,x1:(1344+OFFDX),y1:-26,lv:75}, exits:[[(1301.2+OFFDX),-33,'UP TO THE RIVER'],[(1342.6+OFFDX),-30,'THE OLD SHAFT UP TO THE RIVER']],
@@ -68,7 +69,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
         const ft=new THREE.CanvasTexture(fc); ft.colorSpace=THREE.SRGBColorSpace; const fl=new THREE.Group(), pole=new THREE.Mesh(new THREE.CylinderGeometry(.03*T,.03*T,1.1*T,4),new THREE.MeshLambertMaterial({color:0x222222})), fb=new THREE.Mesh(new THREE.CylinderGeometry(.3*T,.24*T,.3*T,8),new THREE.MeshLambertMaterial({color:0xe8e4da})), fg=new THREE.Mesh(new THREE.PlaneGeometry(.6*T,.45*T),new THREE.MeshLambertMaterial({map:ft,side:THREE.DoubleSide}));
         pole.position.y=.55*T; fg.position.set(.31*T,.85*T,0); fl.add(pole,fb,fg); fl.position.set(mx,RB.lv-.1*T,mz); g.add(fl);   // a diver-down flag on a float, right over the mouth
         const hb=new THREE.Mesh(new THREE.BoxGeometry(3.4*T,Y(40),3.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(20),mz); g.add(hb); scene.add(g); MO={x:mx,z:mz,y:by,fl};
-        UI.thing({name:'A CAVE MOUTH',obj:hb,reach:2.6*T,near:3.8*T,tall:Y(40),act:()=>{ if(!(st.water&&st.water.in&&RIVER.bot-RIVER.dep<4)){ if(window.FORAGE&&FORAGE.say)FORAGE.say('SWIM DOWN TO THE MOUTH.','#9fd8ff'); return; } tryIn(api); }}); });
+        UI.thing({name:'A CAVE MOUTH',obj:hb,reach:2.6*T,near:3.8*T,tall:Y(40),act:()=>{ if(!(st.water&&st.water.in&&RIVER.bot-RIVER.dep<4)){ SAY('SWIM DOWN TO THE MOUTH.','#9fd8ff'); return; } tryIn(api); }}); });
         SYS.add('places',()=>{ if(!MO||!RIVER.on||!RIVER.swim||SHARED.LVL!=='up'||FADE.busy||api.built)return; if(MO.fl)MO.fl.position.y=RIVER.box.lv+(RIVER.hAt?RIVER.hAt(MO.x,MO.z):0)-.1*T;
           if(Math.hypot(pos.x-MO.x,pos.z-MO.z)<1.5*T&&RIVER.bot-RIVER.dep<2.2)tryIn(api); },'066a-caverns mouth'); },   // swim down into the mouth and you go through
       out:()=>{ if(!RIVER.on)RIVER.build(); const m=MO||mouthAt(); UI.goTo(m.x,m.z+2.6*T,'up'); SHARED.heading=Math.PI; }}); }
@@ -77,7 +78,7 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
       for(let i=0;i<7;i++){ const a=i/7*Math.PI*2, r=new THREE.Mesh(new THREE.DodecahedronGeometry(.5,0),rk); r.position.set(mx+Math.cos(a)*1.5*T,by+.25*T,mz+Math.sin(a)*1.5*T); r.scale.set(T*(.7+.3*hs(i,1)),T*(.9+.5*hs(i,2)),T*(.7+.3*hs(i,3))); r.rotation.y=hs(i,4)*3; g.add(r); }
       const hole=new THREE.Mesh(new THREE.CircleGeometry(1.15*T,14),new THREE.MeshBasicMaterial({color:0x000000})); hole.rotation.x=-Math.PI/2; hole.position.set(mx,by+.04*T,mz); g.add(hole);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(2.4*T,Y(34),2.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(mx,by+Y(17),mz); g.add(hb);
-      UI.thing({name,obj:hb,reach:2*T,near:3.4*T,tall:Y(34),act:()=>{ const m=gate(); if(m){ if(window.FORAGE&&FORAGE.say)FORAGE.say(m,'#9fd8ff'); return; } api.go(1); }}); };
+      UI.thing({name,obj:hb,reach:2*T,near:3.4*T,tall:Y(34),act:()=>{ const m=gate(); if(m){ SAY(m,'#9fd8ff'); return; } api.go(1); }}); };
     { const LK={m:null}; CAVERNS.make({id:'lake',name:'THE LAKE CAVERN',leaving:'UP TO THE LAKE',lot:{x0:(1500+OFFDX),y0:-40,x1:(1518+OFFDX),y1:-26},H:70,wet:true,murk:0x1e5040,see:9,wall:[52,70,58],floor:[36,52,42],gem:0xffd060,exitName:'UP TO THE LAKE',
         lights:[[.5,.5,50,0x60c080,12,10],[.8,.3,30,0xd0e060,8,7]],
         enter:api=>{ PARK.later(()=>{ '@park'; const g=MAPG.park||scene, mx=PX(151), mz=PZ(10), by=(PARK.hill?PARK.hill(151,10):0)+.05*T; LK.m={x:mx,z:mz}; mouth(g,mx,by,mz,'A CAVE MOUTH',()=>st.water&&st.water.in?null:'SWIM DOWN TO THE MOUTH.',api); }); },

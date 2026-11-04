@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
 import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {SKELGO} from './077-npc-skel.js';
@@ -22,7 +23,7 @@ import {GEMS} from './101-gems.js';
     const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
     const strength=s=>1+(FORAGE.sk(s&&s.sk||'fight')||0)/100, landed=s=>{ if(s)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
     return {strikes,inCone,strength,landed}; })(); window.STRIKES=STRIKES;
-  const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=FORAGE.say, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
+  const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=SAY, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
   const MIX={1:{green:.7,blue:.3},2:{green:.3,blue:.5,purple:.2},3:{blue:.4,purple:.4,red:.2},4:{purple:.5,red:.5},5:{purple:.2,red:.8}};
   const tierAt=n=>{ const W=MIX[Math.min(5,Math.max(1,n))]; let r=Math.random(); for(const k in W)if((r-=W[k])<0)return k; return Object.keys(W).pop(); };
   const F=()=>1+.35*(lvl-1), see=()=>2.6+.5*lvl;   // deeper: tougher, harder hitting, quicker to notice you
@@ -81,7 +82,7 @@ import {GEMS} from './101-gems.js';
     sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(s&&s.heavy)r.cool=Math.max(r.cool,2.4); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=s&&s.heavy?.6:.25; } };
   const {strikes,inCone,strength}=STRIKES;
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
-      if(!lv.length||N.name==='TROUBLEMAKER'||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
+      if(!lv.length||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
       RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); } } return RES; };
   const park=r=>{ const N=r.N; PK.add(N.g); N.st.to=null; N.st.hold=true; N.alert=false; r.on=false; };
   const place=(r,used)=>{ const N=r.N, st=N.st, p=spot(st.R,[L.atUp,L.atDn,...used]); used.push(p); st.x=p.x; st.z=p.z; st.to=null; st.face=null; st.hold=true; st.sx=st.sz=0; N.free=(x,z,R)=>free(x,z,R)&&!slimes.some(o=>!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T); N.alert=false;
@@ -128,7 +129,12 @@ import {GEMS} from './101-gems.js';
       S.cool-=dt; if((S.wait-=dt)>0)continue;
       if(!S.to)S.to=near(S.x,S.z,1.2*T,3.2*T,.18*T); if(S.to){ S.air=1; S.ph=0; } else S.wait=1; }
     return ch; };
-  const pawnTick=(r,dt)=>{ const me=r.N.me; let x=0;
+  const pawnTick=(r,dt)=>{ const me=r.N.me, N=r.N; let x=0;
+    if(r.spider){ const c=r.dead?'Spider_Death':r.lunge?'Spider_Attack':r.jolt>0?'Spider_Hit':null; if(c){ if(N.clip!==c)N.clipN=(N.clipN||0)+1; N.clip=c; N.clipK=1; }   // its own clips: the strike, the flinch, curling up on its back
+      if(r.dead){ r.t+=dt; me.position.y=-Math.max(0,r.t-1.8)*.6; if(r.t>2.6)park(r); return; }
+      if(r.jolt>0)r.jolt-=dt;
+      if(r.lunge){ const l=r.lunge; l.t+=dt; if(!l.done&&l.t>=.3){ l.done=true; l.hit(); } if(l.t>.8)r.lunge=null; }
+      return; }
     if(r.dead){ r.t+=dt; x=Math.min(Math.PI/2,r.t*4); me.rotation.x=x; me.position.y=-Math.max(0,r.t-.5)*.6; if(r.t>1.3)park(r); return; }
     if(r.jolt>0){ r.jolt-=dt; x=-r.jolt*1.2; }
     if(r.lunge){ const l=r.lunge; l.t+=dt; x=l.t<.4?-l.t*.6:l.t<.55?-.24+(l.t-.4)*4.6:Math.max(0,.45-(l.t-.55)*1.5); if(!l.done&&l.t>=.5){ l.done=true; l.hit(); } if(l.t>.9)r.lunge=null; }
@@ -139,7 +145,7 @@ import {GEMS} from './101-gems.js';
     if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg,b.from); } else b.m.position.addScaledVector(d,stp/l); } };
   const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
     const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
-    if(r.spider){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
+    if(r.spider&&!r.lunge&&!(r.jolt>0)){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
     const sr=see()+(r.spider?.6:0), see_=alive&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
     if(!see_){ N.alert=false; st.face=null; if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
     N.alert=true; const busy=r.kk?!!N.an.once:!!r.lunge||r.jolt>0, ranged=!!r.style.bolt, R=(ranged?5.5:r.style.reach||.8)*T;
@@ -154,6 +160,7 @@ import {GEMS} from './101-gems.js';
       for(const r of [...(RES||[]),...SPI])if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
     if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); for(const r of SPI)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes([...(RES||[]),...SPI].filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
+  window.DUNSPI=()=>SPI;
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); return {onLevel,tick,arena,wave:(n,k)=>{ lvl=n; spawnSlimes(n,k); },alive:()=>slimes.filter(S=>!S.dead).length}; };
   const ensureInit=()=>Mp||(Mp=CREATURESREADY.then(()=>M||(M=init())));   // the slimes' mesh needs the creature data (lazy, loads just after the start), so init waits for it

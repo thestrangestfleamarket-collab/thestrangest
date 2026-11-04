@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 import {GUARD} from './003b-systems.js';
 import {BODIES} from './111a-bodies.js';
-import {FOLK} from './146i-folk.js';
+import {FOLK} from './146ha-folk.js';
 FOLK.body=R=>{ '@park'; const B=BODIES.BONES, b=R.bulk||1, PI=Math.PI, V=new THREE.Vector3();
   const R2={...R,_v2:1}, hp=FOLK.parts(R2), k=R2._k; const {K,f,f2,C,mix,dk,lt,vary,fur,shell,S,at,tube,lathe,quills,h3,BLACK,WHITE,PINK,WOOD,LEATH,GOLD,STEEL,BONE}=k;
   // the joints standing (height 1, facing +z, its left at +x), arms and legs straight down so each bone's rest frame is the world's

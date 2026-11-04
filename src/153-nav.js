@@ -1,6 +1,6 @@
 // THE NAV: NAV builds the walking navmesh the town's people find their way on.
 import {SHARED} from './003-shx.js';
-import {CITY, ROOMS} from './003b-systems.js';
+import {CITY, PONDS, ROOMS} from './003b-systems.js';
 import {MODS, QS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {CSB, CSHOLE, STHOLE} from './076-npc-map.js';
@@ -11,7 +11,7 @@ const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{na
   const inB=(lv,R)=>{ const B=CITY.bounds(lv), o=[]; for(const r of R){ const x0=Math.max(B[0],Math.min(r[0],r[2])), z0=Math.max(B[1],Math.min(r[1],r[3])), x1=Math.min(B[2],Math.max(r[0],r[2])), z1=Math.min(B[3],Math.max(r[1],r[3])); if(x1>x0&&z1>z0)o.push([x0,z0,x1,z1]); } return o; };   // only what lies in the mesh's own bounds: the insides off the map would stretch recast's grid until it runs out of memory
   const rects=(lv,street)=>inB(lv,rects0(lv,street));
   const rects0=(lv,street)=>{ const R=(SOL[lv]||[]).map(b=>[b[0],b[1],b[2],b[3]]); if(lv!=='up')return R;
-    R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); if(!street)return R;
+    R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); R.push(...PONDS.strips); if(!street)return R;
     R.push(CSHOLE.slice(0,4)); R.push(CSB.slice(0,4));
     for(const b of ROOMS.boxes())if(b.y0<1)R.push([b.x0,b.z0,b.x1,b.z1]);
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]); }

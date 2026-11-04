@@ -1,7 +1,7 @@
 // THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CLIP, CLOCK, CULL, DN, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, WED, WEEDS} from './003b-systems.js';
+import {CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, VIS, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, MODS, NORTHX, NORTHY, PARKGX, PARKLAKE, PARKRY, QS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -32,7 +32,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
     for(const b of HK){ const e=Math.max(b[0]-x,x-b[2],b[1]-y,y-b[3]); if(e<d)d=e; if(d<=0)return 0; }
     const n=cvn(x/12,y/12,501)*.7+cvn(x/5,y/5,503)*.3; return 1.6*TILE*ss(0,6,d)*Math.max(0,(n-.33)/.67); };
-  const BK=P.brook=(()=>{ const K=[[248,168],[230,150],[212,128],[200,114],[190,104],[203,90],[205,76],[187.5,68],[189,59],[190.5,50],[178,42],[165,34],[155,20],[LX,LY]], Q=[]; let bs=null;
+  const BK=P.brook=(()=>{ const K=[...((LEVEL.parkPlaces.brook&&LEVEL.parkPlaces.brook.pts)||[]).map(p=>[p[0],p[1]]),[LX,LY]], Q=[]; let bs=null;
     { const [ax,ay]=K[0], l=Math.hypot(ax-K[1][0],ay-K[1][1]), ux=(ax-K[1][0])/l, uy=(ay-K[1][1])/l; for(let a=-1.3;a<=1.3;a+=.05){ const dx=ux*Math.cos(a)-uy*Math.sin(a), dy=ux*Math.sin(a)+uy*Math.cos(a); let t=0; while(t<40&&FOUNT.lake(ax+dx*t,ay+dy*t)>=0)t+=.25; if(t>=40)continue; let ok=true; for(let u=0;u<=t+4;u+=.5)if(FOUNT.ter(ax+dx*u,ay+dy*u)<7)ok=false; if(ok&&(!bs||t<bs[0]))bs=[t,dx,dy]; } if(bs)K.unshift([ax+bs[1]*(bs[0]+4),ay+bs[2]*(bs[0]+4)]); }
     for(let i=0;i<K.length-1;i++){ const a=K[Math.max(0,i-1)], b=K[i], c=K[i+1], d=K[Math.min(K.length-1,i+2)]; for(let k=0;k<16;k++){ const t=k/16, f=j=>.5*(2*b[j]+(c[j]-a[j])*t+(2*a[j]-5*b[j]+4*c[j]-d[j])*t*t+(3*b[j]-a[j]-3*c[j]+d[j])*t*t*t); Q.push([f(0),f(1)]); } } Q.push(K[K.length-1]);
     const acc=[0]; for(let i=1;i<Q.length;i++)acc.push(acc[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1])); const SL=acc[acc.length-1], N=Math.round(SL/.5), C=[];
@@ -227,7 +227,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
-      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); setInterval(lit,2000); PARK.lampLit=lit; } }
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):2;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));
@@ -463,10 +463,10 @@ await grab('park',async()=>{});
   P.rect=()=>{ const a=SHARED.BOD.XS(P.x0+P.ox-2), b=SHARED.BOD.XS(P.x1+P.ox+2), c=SHARED.BOD.ZS(P.y0+P.oy-2), d=SHARED.BOD.ZS(P.y1+P.oy+2); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   P.steps=[]; P.load=async()=>{ await LOAD('park'); const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
-  P.show=on=>{ P.in=on; G.visible=on&&SHARED.LVL==='up'; if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
+  P.show=on=>{ P.in=on; VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
   let bg=false; const NEAR=14;   // the park is drawn (and loaded quietly first) from this many tiles outside its wall, so its gates show the real inside
-  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||py<-1||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
+  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
     if(!P.ready&&!bg&&P.within(p.x,p.z,-NEAR-6)){ bg=true; P.load().finally(()=>{ bg=false; }); }
     const w=P.within(p.x,p.z,P.in?-NEAR-.35:-NEAR+.35); if(w===P.in)return; if(w&&!P.ready&&!bg||jump)go(w,jump); else if(!w||P.ready)P.show(w); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

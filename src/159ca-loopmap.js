@@ -1,9 +1,10 @@
 // THE LOOP MAP: the square map sign on a platform's end wall is a thing: double-click it for the close-up window (all eight sections with the trains on the loop, this section, the next trains here, the schedule at every station, details).
 import {SHARED} from './003-shx.js';
-import {LOOPMAP, pos, TEXT, UI} from './003b-systems.js';
+import {pos, TEXT, UI} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {TRAINS} from './009c-trains.js';
+const LOOPMAP={};
 {
   const T=TILE, esc=TEXT.esc;
   const sp=document.createElement('div'); sp.id='loopmap'; sp.hidden=true;
@@ -38,7 +39,7 @@ import {TRAINS} from './009c-trains.js';
         <div style="width:300px"><div style="color:#3aa866">DETAILS</div><div style="line-height:1.9;margin-top:4px">TWO TRAINS, ONE EACH WAY ROUND<br>${dwell} S AT EVERY STATION<br>A LAP: ${lap?(lap/60).toFixed(1):'?'} MIN<br>EXIT ${esc(st.id)}1 ▲ ${esc(st.street||st.name)}<br>SECTIONS OPEN: ${LOOP.STA.map(s=>s.id).join(' ')}<br><span style="color:#d8ffe4">ESC CLOSES</span></div></div></div>`;
     body.querySelector('#lmap').appendChild(cv); drawAll(st); };
   LOOPMAP.open=st=>{ LOOPMAP.at=st||null; sp.hidden=false; draw(); }; LOOPMAP.close=()=>{ sp.hidden=true; };
-  let tick=0; SYS.add('places',dt=>{ if(sp.hidden)return; if((tick+=dt)<1)return; tick=0; draw(); },'159c-loopmap');
-  const seen=new Set(); SYS.add('places',()=>{ for(const st of LOOP.STA||[]){ if(seen.has(st)||!st.signs||!st.signs.map)continue; seen.add(st); for(const me of st.signs.map.me)UI.thing({name:'THE LOOP MAP',pick:true,obj:me,reach:1.2*T,near:2.4*T,tall:2*T,act:()=>LOOPMAP.open(st)}); } },'159c-loopmap-signs');
+  let tick=0; SYS.add('places',dt=>{ if(sp.hidden)return; if((tick+=dt)<1)return; tick=0; draw(); },'159ca-loopmap');
+  const seen=new Set(); SYS.add('places',()=>{ for(const st of LOOP.STA||[]){ if(seen.has(st)||!st.signs||!st.signs.map)continue; seen.add(st); for(const me of st.signs.map.me)UI.thing({name:'THE LOOP MAP',pick:true,obj:me,reach:1.2*T,near:2.4*T,tall:2*T,act:()=>LOOPMAP.open(st)}); } },'159ca-loopmap-signs');
   window.LOOPMAP=LOOPMAP;
 }

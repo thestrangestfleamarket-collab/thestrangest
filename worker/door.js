@@ -1,12 +1,14 @@
 import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
+import { MAPPATCH } from "./mappatch.js";
 import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
 import LIVESDATA from "../data/lives.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
-const ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3)$/;
+const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3)$/;
+const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
@@ -19,6 +21,12 @@ export default {
       const ok = await inside(env, request, dev);
       const out = ok ? await page(env, url, "/g/market", request, "private, no-cache") : await page(env, url, "/door", request, "no-cache");
       out.headers.set("vary", "Cookie"); return out; }
+    // the owners' map editor: its own light page (dist/editor.html) and its ground picture (dist/edmap/), only to a login in admins; anyone else is told nothing is there
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/editor" || EDMAP.test(p))) {
+      const id = await who(env, request, dev); if (!id || (await owner(env, id, dev)) !== true) return new Response("not found", { status: 404 });
+      if (p === "/editor") return page(env, url, "/editor", request, "private, no-cache");
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("cache-control", "private, max-age=3600"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if ((request.method === "GET" || request.method === "HEAD") && FILE.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const rg = request.headers.get("range"), r = await env.ASSETS.fetch(new Request(url.origin + p, rg ? { headers: { range: rg } } : undefined)); if (!(r.ok || r.status === 206)) return new Response("not found", { status: 404 });
@@ -55,6 +63,7 @@ export default {
       if (request.method === "POST") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
         const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
         const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);
+        if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
     if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores" || p === "/art")) {
@@ -337,7 +346,7 @@ async function admin(env, b) {
   const k = svc(env); if (!k && b.do !== "tell") return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
-  const room = ROOM.test(b.room || "") ? b.room : "s-a", id = String(b.id || ""), user = () => UUID.test(id);
+  const room = ROOM.test(b.room || "") ? b.room : SECROOMS[0], kick = id => Promise.all(SECROOMS.map(r => blockAsk(env, r, "kick", { id, out: 1 }).catch(() => {}))), id = String(b.id || ""), user = () => UUID.test(id);
   const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
   if (b.do === "list") {
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
@@ -370,9 +379,9 @@ async function admin(env, b) {
   }
   if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
   if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
-    if (r.ok && b.on) { forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); } return res(r); }
+    if (r.ok && b.on) { forget(id); await kick(id); } return res(r); }
   if (b.do === "delete") { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok) return res(r);
-    forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
+    forget(id); await kick(id); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;

@@ -1,12 +1,13 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, ITEMS, keys, LEVELS, ONLINE, RAG, SFX, st, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {BFLY} from './143-bfly.js';
 import {BIRDS} from './144b-birds.js';
 Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'}); Object.defineProperty(WIELD,'hand',{get:()=>st.hand==='L'?'L':'R'});
-{ const T=TILE, V3=THREE.Vector3, NM={sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=FORAGE.say;
+{ const T=TILE, V3=THREE.Vector3, NM={sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=SAY;
   const SWC={sword_wood:[0xa88a60,0x6a4a2a,0x4a3020],sword:[0xd8dce2,0x9a8450,0x4a3426],sword_steel:[0xeef2f8,0xb0b8c8,0x24242e],sword_ench:[0x9ad8ff,0xd8b060,0x3a2a5a]};
   const LIST=[...Object.keys(SWC).filter(id=>ITEMS.prop(id,'slot')==='hand'),'net','bnet']; WIELD.LIST=LIST;
   // other held tools register here: WIELD.kind(id,{name,make,aim(dt,aim,mouse) -> true when it moves the arm itself,use() -> true when a click is its own}); make() returns a group with .tipL (its tip, local) when something hangs off it
@@ -38,7 +39,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const WIELD_strike0=()=>{ if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
     if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
       VIT.spend(heavy?.12:.06); VIT.inFight(5); WIELD.swing={heavy,winded,t:now,ax:aim0.x,az:aim0.z}; sw={t:0,T:winded?.55:heavy?.42:.3,s:side,h:heavy}; ONLINE.send({t:'swing',s:side,h:heavy?1:0}); }
-    else sw={t:0,T:.3,s:side}; side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
+    else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
   WIELD.strike=(...a)=>{ const r=WIELD_strike0(...a); if(r)SYS.run('strike'); return r; };
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
   const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit||VIT.dead);

@@ -1,6 +1,6 @@
 // THE PLAYHOUSE'S LIGHTING: the rig (lanterns on the circle front, the box booms, four electrics that fly with their bars, the wing booms, the follow spot on the landing, the footlights, the cyclorama's floods), the few real lights they stand for, their beams in the haze, and the board: named states (cues) each channel fades to; a lighting board on the landing to play them when no show is on.
 import {THREE} from './003-shx.js';
-import {FORAGE} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {PHX} from './151b-ph-kit.js';
 PHX.parts.push({make:K=>{ '@playhouse';
   const D=K.D, M=K.M, PI=Math.PI, SY=D.SY, V3=THREE.Vector3, Q=new THREE.Quaternion(), E=new THREE.Euler(), M4=new THREE.Matrix4(), S1=new V3(1,1,1);
@@ -86,7 +86,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
   // the board itself: a desk of faders by the follow spot; double-click it for the next look
   { const x=-1.6, z=D.ZC+.6, y=D.LY; K.boxA(x-.6,y,z-.35,x+.6,y+.85,z+.35,M.mahog); K.box(1.15,.06,.6,M.black,x,y+.92,z,{rx:-.25}); const fd=[]; for(let i=0;i<16;i++)fd.push([x-.5+i*.066,y+.97,z+.02-(i%2)*.02]); K.inst(new THREE.BoxGeometry(.02,.03,.05),M.chrome,fd,{cast:false});
     const order=['work','preset','dusk','court','lovers','helena','wood','shop','shopNight','flats','call','out']; let k=0;
-    K.thing('THE LIGHTING BOARD',x,y+.9,z,1.3,.7,.8,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; k=(k+1)%order.length; LX.cue(order[k],2.5); if(FORAGE.say)FORAGE.say('LIGHTS: '+order[k].toUpperCase()); },{reach:1.8,near:3}); K.solid(x-.65,z-.4,x+.65,z+.4); }
+    K.thing('THE LIGHTING BOARD',x,y+.9,z,1.3,.7,.8,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; k=(k+1)%order.length; LX.cue(order[k],2.5); SAY('LIGHTS: '+order[k].toUpperCase()); },{reach:1.8,near:3}); K.solid(x-.65,z-.4,x+.65,z+.4); }
 },
 tick:(dt,K,now,inn)=>{ const LX=K.lx; if(!LX)return; LX.t+=dt; const ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
   for(const c of Object.values(LX.ch)){ if(!c.from)continue; const k=ease((LX.t-c.t0)/c.dur); c.v=c.from.v+(c.to.v-c.from.v)*k; c.c.copy(c.from.c).lerp(c.to.c,k); if(k>=1)c.from=null; }

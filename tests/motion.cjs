@@ -1,5 +1,6 @@
 // THE MOTION CHECK: node tests/motion.cjs [dist/market.html]. The emote panel (H) opens; an emote plays on the Walker, loops, is sent to the
-// players near and stops when he walks; a one-off move (eating) ends by itself; another player's emote plays on their body; sitting down plays its move.
+// players near and stops when he walks; a one-off move (eating) ends by itself; another player's emote plays on their body; sitting down plays its move;
+// L kicks, O dodges (a blow misses).
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
@@ -17,6 +18,12 @@ const {chromium}=require('playwright');
     await wait(300); out.walked=S()!=='mc_dance'&&!MOTION.cur; out.stop=sent.some(k=>k.stop);
     await MOTION.play('eat'); out.eat=S(); for(let i=0;i<600&&S()==='mc_eat';i++)await wait(100); out.eatEnded=S()!=='mc_eat';
     const O=RIG.create(); MOTION.their(O,{m:'mc_clap',loop:1}); for(let i=0;i<40&&!(O.move&&O.move.name==='mc_clap');i++)await wait(100); out.their=O.move&&O.move.name;
+    for(let i=0;i<300&&st.move;i++)await wait(100);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'l'})); dispatchEvent(new KeyboardEvent('keyup',{key:'l'})); for(let i=0;i<60&&S()!=='mc_kickSide';i++)await wait(100); out.kick=S(); out.strike=window.STRIKES?STRIKES.strikes().length>=0:null;
+    for(let i=0;i<300&&st.move;i++)await wait(100);
+    dispatchEvent(new KeyboardEvent('keydown',{key:'o'})); dispatchEvent(new KeyboardEvent('keyup',{key:'o'})); for(let i=0;i<60&&S()!=='mc_dodge';i++)await wait(100); out.dodge=S();
+    const h0=D.VIT.hp, me=D.pos(); D.VIT.hurt(.2,{x:me[0]+1,z:me[2]}); out.missed=D.VIT.hp===h0&&MOTION.dodging();
+    for(let i=0;i<300&&st.move;i++)await wait(100);
     const p=D.pos(); USE.sitAt(p[0],p[2],p[1]+.5*D.cv().TILE,0); for(let i=0;i<40&&S()!=='mc_sitDown';i++)await wait(100); out.sit=S(); return out; });
   ok(r.dance==='mc_dance'&&r.closed,'a click plays the emote on him and closes the panel: '+JSON.stringify(r));
   ok(/"m":"mc_dance"/.test(r.sent)&&/"loop":1/.test(r.sent),'it is sent to the players near, looped');
@@ -25,5 +32,7 @@ const {chromium}=require('playwright');
   ok(r.eat==='mc_eat'&&r.eatEnded,'a one-off move (eating) plays and ends by itself');
   ok(r.their==='mc_clap','another player\'s emote plays on their body');
   ok(r.sit==='mc_sitDown','sitting down plays its move');
+  ok(r.kick==='mc_kickSide','L kicks (a side kick)');
+  ok(r.dodge==='mc_dodge'&&r.missed,'O dodges back, and a blow then misses');
   ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
   await b.close(); process.exit(bad?1:0); })();

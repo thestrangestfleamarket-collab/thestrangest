@@ -2,7 +2,7 @@
 // meshopt-packed) retold on one of our baked characters, keeping its own skin and bones. Each mapped bone turns in the world as its
 // Mesh2Motion bone turns from its rest; a wing's arm first takes the Mesh2Motion rest's direction (our dragon rests wings up, theirs flat), its hand
 // kept whole (the fingers' fan holds the membrane), turning only as much more than the arm as the Mesh2Motion hand does.
-// node tools/m2m-bake.cjs <mesh2motion-app/static/assets> <dragon|spider>   (writes the clips into the character's data file and its data/full copy,
+// node tools/m2m-bake.cjs <mesh2motion-app/static/assets> <dragon|spider|fox|horse>   (writes the clips into the character's data file and its data/full copy,
 // read from the full one; then python3 tools/trim-clips.py)
 const fs=require('fs'), path=require('path');
 const R=path.join(__dirname,'..'), NM=path.join(R,'node_modules/three/');
@@ -21,17 +21,25 @@ const RIGS={
     base:{ clip:'Flying_loop', for:['Fly_Flap','Fly_Fire'] },
     wingOf:(s,k)=>'Body_002_'+s+k, lead:['', '_009'], trail:['_012','_015','_018','_020','_022'],
     tLead:['wing_1','wing_tip'], tTrail:['wing_feather_1_tip','wing_feather_2_tip','wing_feather_3_tip','wing_feather_4_tip','wing_feather_5_tip'] },
+  fox:{ files:['data/fauna.json'], keys:['Fox','Dog','Wolf'], fps:12, root:'Hips', hips:'hips', clips:{'sit':'Sit','bark':'Bark','howl':'Howl'},
+    map:{ Hips:'hips', Spine:'spine_2', Chest:'spine_3', Neck:'spine_4', Head:'head', Jaw:'mouth', LeftEar:'ear_1_l', RightEar:'ear_1_r', Tail:'tail_1', TailTip:'tail_3',
+      ...Object.fromEntries(['Left','Right'].flatMap(sd=>{ const s=sd==='Left'?'l':'r'; return [['FrontUpLeg','front_leg_upper'],['FrontElbow','front_leg_lower'],['FrontLeg','front_leg_ankle'],['FrontFoot','front_leg_foot'],
+        ['HindUpLeg','back_leg_upper'],['HindLeg','back_leg_lower'],['HindHock','back_leg_ankle'],['HindFoot','back_leg_foot']].map(([o,t])=>[sd+o,t+'_'+s]); })) } },
+  horse:{ files:['data/fauna.json'], keys:['Horse','WildHorse','Mule'], fps:12, root:'Hips', hips:'hips', clips:{'eating':'Graze','sleep':'Sleep'},
+    map:{ Hips:'hips', Spine:'spine_2', Chest:'spine_3', Neck:'spine_5', Head:'head', Jaw:'mouth', LeftEar:'ear_1_l', RightEar:'ear_1_r', Tail:'tail_1', TailTip:'tail_3',
+      ...Object.fromEntries(['Left','Right'].flatMap(sd=>{ const s=sd==='Left'?'l':'r'; return [['FrontUpLeg','front_leg_upper'],['FrontLeg','front_leg_lower'],['FrontFoot','front_leg_ankle'],
+        ['HindUpLeg','back_leg_upper'],['HindLeg','back_leg_lower'],['HindHock','back_leg_ankle'],['HindFoot','back_leg_foot']].map(([o,t])=>[sd+o,t+'_'+s]); })) } },
   spider:{ files:['data/creatures.json','data/full/creatures.json'], key:'Spider', fps:24, pose:true, clips:{'hit':'Spider_Hit'},
     map:{ Body:'hips', Thorax:'spine_1', Head:'head', Abdomen:'tail_1', ...Object.fromEntries(['L','R'].flatMap(sd=>[['Front','a'],['MidFront','b'],['MidBack','c'],['Back','d']]
       .flatMap(([o,t])=>['','2','3'].map((k,i)=>[o+'Leg'+k+'_'+sd,'leg_'+t+'_'+(i+1)+'_'+sd.toLowerCase()])))) } } };
-(async()=>{
+(async()=>{ for(const KEY of (RIGS[WHO].keys||[RIGS[WHO].key])){ const C={...RIGS[WHO],key:KEY,clips:RIGS[WHO].keys?Object.fromEntries(Object.entries(RIGS[WHO].clips).map(([f,n])=>[f,KEY+'_'+n])):RIGS[WHO].clips};
   const THREE=await import(NM+'build/three.module.js'), {GLTFLoader}=await import(NM+'examples/jsm/loaders/GLTFLoader.js'), {MeshoptDecoder}=await import(NM+'examples/jsm/libs/meshopt_decoder.module.js');
-  const C=RIGS[WHO], dir=path.join(ASSETS,WHO), L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
+  const dir=path.join(ASSETS,WHO), L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
   const load=f=>new Promise((ok,no)=>{ const b=fs.readFileSync(f); L.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',ok,no); });
   const of=d=>C.key?d[C.key]:d, D=of(JSON.parse(fs.readFileSync(path.join(R,C.files[C.files.length-1])))), RG=D.rig, BN=RG.names, NB=BN.length, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const V=a=>new THREE.Vector3(...a), Q=a=>new THREE.Quaternion(...a);
   // our rest is the bind pose (the skin's own; the rig's stored pose is another, used when `pose`), in the rig's space: the bind matrices carry the armature's uniform scale
-  const IB=new Float32Array(Buffer.from(RG.ibm,'base64').buffer.slice(0)), OW=[], OP=[], LQ=[], SC=[];
+  const IB=new Float32Array((u=>u.buffer.slice(u.byteOffset,u.byteOffset+u.length))(Buffer.from(RG.ibm,'base64'))), OW=[], OP=[], LQ=[], SC=[];
   BN.forEach((n,i)=>{ const m=new THREE.Matrix4().fromArray(IB,i*16).invert(), p=new THREE.Vector3(), q=new THREE.Quaternion(), s=new THREE.Vector3(); m.decompose(p,q,s); OW[i]=q; OP[i]=p; SC[i]=s.x; });
   const P0=OP[0].clone(); BN.forEach((n,i)=>{ OP[i].sub(P0).multiplyScalar(1/SC[i]).add(V(RG.t[0])); const p=RG.parent[i]; LQ[i]=p<0?OW[i].clone():OW[p].clone().invert().multiply(OW[i]);
     if(!C.pose&&p>=0&&Math.abs(OP[i].distanceTo(OP[p])-V(RG.t[i]).length())>1e-3)console.log(' (bind length differs: '+n+')'); });
@@ -39,9 +47,9 @@ const RIGS={
     if(p<0){ OW[i]=q; OP[i]=t; } else { OW[i]=OW[p].clone().multiply(q); OP[i]=t.multiply(V(RG.s[p]||[1,1,1])).applyQuaternion(OW[p]).add(OP[p]); } });
   // a base pose for some clips (flying: body level, legs tucked, from our own flight clip's first frame), the wings left out
   const isWing=n=>Object.keys(C.wings||{}).some(sd=>n.startsWith(C.wingOf(sd,''))), BASE={};
-  if(C.base){ const B=D.clips[C.base.clip], q=new Int16Array(Buffer.from(B.q,'base64').buffer.slice(0)), bq=[], bw=[];
+  if(C.base){ const B=D.clips[C.base.clip], q=new Int16Array((u=>u.buffer.slice(u.byteOffset,u.byteOffset+u.length))(Buffer.from(B.q,'base64'))), bq=[], bw=[];
     BN.forEach((n,i)=>{ const p=RG.parent[i]; bq[i]=isWing(n)?LQ[i]:new THREE.Quaternion(q[i*4],q[i*4+1],q[i*4+2],q[i*4+3]).normalize(); bw[i]=p<0?bq[i].clone():bw[p].clone().multiply(bq[i]); });
-    const bp=B.p&&B.p[C.root]?new Float32Array(Buffer.from(B.p[C.root],'base64').buffer.slice(0,12)):null; BASE.lq=bq; BASE.w=bw; BASE.root=bp?V([...bp]):null; }
+    const bp=B.p&&B.p[C.root]?new Float32Array((u=>u.buffer.slice(u.byteOffset,u.byteOffset+12))(Buffer.from(B.p[C.root],'base64'))):null; BASE.lq=bq; BASE.w=bw; BASE.root=bp?V([...bp]):null; }
   const T0=(await load(path.join(dir,'skeleton.glb'))).scene; T0.updateMatrixWorld(true);
   const wq=o=>o.getWorldQuaternion(new THREE.Quaternion()), wp=o=>o.getWorldPosition(new THREE.Vector3());
   const tb=(S,n)=>{ const o=S.getObjectByName(n); if(!o)throw 'no Mesh2Motion bone '+n; return o; };
@@ -79,5 +87,5 @@ const RIGS={
     out[name]={dur:+dur.toFixed(4),n,q:Buffer.from(q.buffer).toString('base64'),p:C.root?{[C.root]:Buffer.from(P.buffer).toString('base64')}:{}};
     console.log(' ',f,'->',name,dur.toFixed(2)+'s',n,'frames'); }
   for(const file of C.files){ const d0=JSON.parse(fs.readFileSync(path.join(R,file))), d=of(d0); if(d.rig.names.join()!==BN.join())throw file+': another rig';
-    Object.assign(d.clips,out); fs.writeFileSync(path.join(R,file),JSON.stringify(d0)); console.log(file,fs.statSync(path.join(R,file)).size,'bytes,',Object.keys(d.clips).length,'clips'); }
+    Object.assign(d.clips,out); fs.writeFileSync(path.join(R,file),JSON.stringify(d0)); console.log(file,fs.statSync(path.join(R,file)).size,'bytes,',Object.keys(d.clips).length,'clips'); } }
 })().catch(e=>{ console.error(e); process.exit(1); });

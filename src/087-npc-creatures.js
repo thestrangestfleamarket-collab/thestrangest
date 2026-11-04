@@ -53,7 +53,8 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
         const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===st2.hid){ st2.hid=!out; N.g.visible=out; st.hold=!out; if(!out)st.to=null; }
         if(!out)return;
         if(st2.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); st2.drink=false; }
-        const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
+        if(moving)st2.rest=undefined; else if(st2.rest===undefined){ st2.rest=null; let u=Math.random(); for(const [c,p,nt] of K.rest||[])if((!nt||dark)&&C[key].clips[c]&&(u-=p)<0){ st2.rest=c; st.wait=Math.max(st.wait||0,6+Math.random()*10); break; } }   // stopped: now and then it sits, grazes, barks, howls at night or sleeps a while
+        const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):st2.rest||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         if(K.hop){ const a=act(cur), ph=(a.time/a.getClip().duration)%1, air=moving&&ph>K.hop[0]&&ph<K.hop[1]; st.v=speed*TILE*(air?1/(K.hop[1]-K.hop[0]):.004); a.timeScale=1; }
         else act(cur).timeScale=moving?Math.max(.6,st.v/(K.pace*sc)):1; mixer.update(dt);
         if(K.fly){ N.g.position.y+=st2.fly*TILE/.84*.5+Math.sin(st2.t*2.1)*.15; N.body.rotation.z=moving?Math.sin(st2.t*1.3)*.15:0; } }});
@@ -66,9 +67,10 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
   { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
     const DRY=(x,z,R)=>FREE(x,z,R)&&!((window.FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
     const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
-    k('Fox',WOOD,3,{night:.5}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
-    k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3);
-    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARM,2.4); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
+    const RS=(n,...L)=>L.map(([c,p,nt])=>[n+'_'+c,p,nt]);   // what it does when it stops, now and then: [clip, chance, night only]
+    k('Fox',WOOD,3,{night:.5,rest:RS('Fox',['Sit',.35],['Howl',.2,1])}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1,rest:RS('Wolf',['Howl',.4,1],['Sit',.3])}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
+    k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3,{rest:RS('Dog',['Sit',.45],['Bark',.2])});
+    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARM,2.4,['Horse','WildHorse','Mule'].includes(n)?{rest:RS(n,['Graze',.5],['Sleep',.5,1])}:{}); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
     k('Raptor',DINO,3); k('Stego',DINO,2); k('Brachio',DINO,1.6,{run:null}); fly('Ptera',DINO,[8,14]);
     for(const n of ['AntQueen','WoodAnt','Aphid','Ladybird','Hopper','Beetle','Mantis'])k(n,WOOD,3); for(const n of ['Caterpillar','Slug','Snail'])k(n,WOOD,1.5,{walk:n+'_Crawl',run:null}); k('Crab',LAKE,2);
     fly('Bee',WOOD,[.6,1.6],{day:1}); fly('Bumblebee',WOOD,[.6,1.6],{day:1}); fly('Firefly',WOOD,[.5,1.8],{night:1});

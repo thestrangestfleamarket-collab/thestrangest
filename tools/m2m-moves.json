@@ -137,5 +137,16 @@
 "clip": "two-handed-horizontal-swing",
 "from": 0.2,
 "to": 1.1
+},
+"kickSide": {
+"clip": "kick-side",
+"to": 0.9
+},
+"kickSpin": {
+"clip": "kick-spin",
+"to": 1.2
+},
+"dodge": {
+"clip": "dodge-back"
 }
 }

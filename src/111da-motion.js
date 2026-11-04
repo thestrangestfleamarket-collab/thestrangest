@@ -1,4 +1,5 @@
 // THE MOTION: the Walker's recorded moves (Mesh2Motion's human clips fitted to his rig, data/moves2.json, fetched when first used): emotes from the H panel and the moves of things you do (eat, craft, plant, mine, sit down), once or looped, shared with the players near.
+import {SHARED} from './003-shx.js';
 import {MOTION, RAG, st, UI, VIT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
@@ -26,7 +27,13 @@ import {SYS} from './006-map-pre.js';
   const grid=document.createElement('div'); for(const [t,n] of EMOTES)grid.append(B(t,()=>{ play(n); MOTION.close(); }));
   const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS'; tip.style.cssText='margin-top:8px;opacity:.7';
   sp.append(closeB,head,grid,tip);
-  addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; if(UI.key(e)==='h'&&!UI.menuOpen){ MOTION.toggle(); e.preventDefault(); } });
-  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); Object.assign(MOTION,{EMOTES,ensure,play,stop,their,has,info,
+  // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss
+  const can=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!VIT.tired;
+  const fight=k=>{ if(!can())return; const m=st.move, t=m?m.t:0;
+    if(k==='l'){ if(m&&m.name==='mc_kickSide'){ if(t>.45)play('kickSpin'); return; } if(!m||m.name.startsWith('mc_')&&info[m.name.slice(3)]&&!/kick/.test(m.name))play('kickSide'); }
+    else if(k==='o'&&(!m||!/^mc_(dodge|kick)/.test(m.name))){ VIT.spend(.06); play('dodge'); } };
+  addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; const k=UI.key(e);
+    if(k==='h'&&!UI.menuOpen){ MOTION.toggle(); e.preventDefault(); } else if((k==='l'||k==='o')&&!UI.menuOpen)fight(k); });
+  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,ensure,play,stop,their,has,info,
     open:()=>{ sp.hidden=false; ensure(); }, close:()=>{ sp.hidden=true; }, toggle:()=>{ if(sp.hidden)MOTION.open(); else MOTION.close(); }});
 }

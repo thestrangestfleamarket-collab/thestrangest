@@ -54,6 +54,6 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   SYS.add('city',dt=>{ if((acc+=dt)<.5)return; acc=0; const h=CLOCK.h; if(JOBS.on)for(const c of CREW.list)if(!c.J)c.J=JOBS.add(c.N,c.job,c.key)||1;
     for(let i=0;i<2&&JOBS.q.length;i++)JOBS.q.shift()();
     for(const J of JOBS.list){ const w=wantOf(J); if(w!==J.goal)act(J,w); else if((J.state==='work'||J.state==='off')&&J.A&&(J.t-=.5)<=0){ J.t=4+rnd()*10; roam(J); } } },'159-jobs');
-  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
+  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,want:wantOf(J),home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
 }
 export {JOBS};

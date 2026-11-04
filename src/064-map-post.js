@@ -1,6 +1,6 @@
 // THE STAIRS AND GROUND: inStair and SHARED.groundY say how high the ground is everywhere; LITE and HEMI set the lamps and sky light.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, NPCS, PARK, pos, ROOMS} from './003b-systems.js';
+import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
@@ -30,6 +30,7 @@ const LITE_init0=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.paren
   scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
   for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
 LITE.init=(...a)=>{ const r=LITE_init0(...a); SYS.run('liteInit'); return r; };
+LITE.dim=p=>{ const c=SHARED.cam; if(!c||!UI.persp)return 1; const t=Math.min(1,Math.max(0,(c.position.distanceTo(p)/TILE-10)/30)); return 1-.85*t*t*(3-2*t); };   // far lamps light the ground less
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
     const inB=(b,p,m)=>p.x>b.x0-m&&p.x<b.x1+m&&p.z>b.z0-m&&p.z<b.z1+m&&p.y>b.y0-e&&p.y<b.y1+e;
@@ -41,7 +42,7 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     for(const L of want){ if(slots.includes(L))continue; const i=slots.indexOf(null,1); if(i<0)break; slots[i]=L; }
     LITE.slots=slots; LITE.sel=slots.filter(Boolean); }
   for(let i=0;i<P.length;i++){ const S=P[i], L=(LITE.slots||LITE.sel)[i]; if(!L||!(L.intensity>0)){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); if(S.castShadow){ const n=L.userData.near||.1, c=S.shadow.camera; if(c.near!==n){ c.near=n; c.updateProjectionMatrix(); } }   // a lamp inside its own post sees past the post's walls
-    S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
+    S.intensity=L.intensity*LITE.dim(L.position); S.distance=L.distance*1.3; S.decay=Math.max(L.decay,2.2); }
   const H0=(LITE.slots||LITE.sel)[0], H1=LITE.sel.filter(L=>L!==H0).sort((p,q)=>p.position.distanceToSquared(LITE.V.set(x,y,z))-q.position.distanceToSquared(LITE.V))[0]; LITE.w=1;
   if(H0&&H1&&P[0].intensity>0){ const dd=L=>Math.hypot(L.position.x-x,L.position.y-y,L.position.z-z); let w=Math.min(1,Math.max(0,(dd(H1)-dd(H0))/(1.5*TILE))); w=w*w*(3-2*w); LITE.w=w;
     if(w<1){ const S=P[0], E=P[P.length-1]; E.position.copy(S.position); E.color.copy(S.color); E.distance=S.distance; E.decay=S.decay; E.intensity=S.intensity*(1-w); S.intensity*=w; } }
@@ -50,7 +51,9 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   L0.shadow.autoUpdate=L0.intensity>0&&mv; };
 // far lamps: every outdoor lamp past the few lit in full still shows the pool of light it throws on the ground (one cheap glow each), fading out as its real light takes over
 { const F={me:null,n:-1,a:null,t:0}, M=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), C=new THREE.Color();
-  const tex=()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), r=g.createRadialGradient(32,32,0,32,32,32); r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(.45,'rgba(255,255,255,.45)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=r; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const tex=()=>{ const N=64, c=document.createElement('canvas'); c.width=c.height=N; const g=c.getContext('2d'), im=g.createImageData(N,N), B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];   // stepped and dithered, never a hard rim
+    for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const d=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), a=Math.max(0,1-d)**1.5*6, q=Math.floor(a)+(a-Math.floor(a)>(B[(j%4)*4+i%4]+.5)/16?1:0), k=(j*N+i)*4; im.data[k]=im.data[k+1]=im.data[k+2]=255; im.data[k+3]=Math.round(q/6*255); }
+    g.putImageData(im,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; };
   const out=L=>!L.userData.fire&&!L.userData.in&&!L.userData.both&&(L.userData.i0||0)>=20&&L.distance>=8*TILE&&L.position.y>-1&&!ROOMS.boxes().some(b=>L.position.x>b.x0&&L.position.x<b.x1&&L.position.z>b.z0&&L.position.z<b.z1);
   const build=()=>{ if(F.me){ F.me.removeFromParent(); F.me.geometry.dispose(); } F.L=LITE.recs.filter(out); F.n=LITE.recs.length; if(!F.L.length){ F.me=null; return; }
     const g=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2), m=new THREE.MeshBasicMaterial({map:F.tx||(F.tx=tex()),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
@@ -58,13 +61,13 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     F.L.forEach((L,i)=>{ const r=Math.min(L.distance*.38,4.6*TILE), gy=SHARED.groundY?SHARED.groundY(L.position.x,L.position.z):0; M.compose(V.set(L.position.x,(isFinite(gy)?gy:0)+.06,L.position.z),Q,S.set(2*r,1,2*r)); F.me.setMatrixAt(i,M); F.me.setColorAt(i,C.setRGB(0,0,0)); });
     scene.add(F.me); };
   LITE.farTick=dt=>{ if(LITE.recs.length!==F.n)build(); if(!F.me)return; const up=SHARED.LVL==='up'&&!(ROOMS.cur&&ROOMS.cur.off); F.me.visible=up; if(!up)return; const sel=new Set(LITE.sel.map(p=>p[1]||p));
-    F.L.forEach((L,i)=>{ const want=sel.has(L)?0:Math.min(1,(L.intensity||0)/(L.userData.i0||1)); F.a[i]+=(want-F.a[i])*Math.min(1,(dt||.016)*1.5); const k=.55*F.a[i]; F.me.setColorAt(i,C.copy(L.color).multiplyScalar(k)); });
+    F.L.forEach((L,i)=>{ const want=sel.has(L)?0:Math.min(1,(L.intensity||0)/(L.userData.i0||1)); F.a[i]+=(want-F.a[i])*Math.min(1,(dt||.016)*1.5); const k=.55*F.a[i]*LITE.dim(L.position); F.me.setColorAt(i,C.copy(L.color).multiplyScalar(k)); });
     F.me.instanceColor.needsUpdate=true; };
   LITE.far=F; SYS.add('life',dt=>LITE.farTick(dt),'064-farglow'); }
 scene.background=new THREE.Color(0x050507);
-SHARED.floor='up';
-const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?(py<-1.6?'down':'up'):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
-  if(MAPG.park)MAPG.park.visible=cur==='street'&&!!PARK.in;
+SHARED.floor='up'; let parkOff=null;
+const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?LEVELS.below(py):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
+  { const off=!(cur==='street'&&PARK.in); if(MAPG.park&&off!==parkOff){ parkOff=off; VIS.hide(MAPG.park,'level',off); } }
   for(const w of LEVELS.ways)if(w.cut)w.cut.constant=LEVELS.way?py+.25:cur===w.b&&LEVELS.of[w.b].ceil!=null?LEVELS.of[w.b].ceil:1e6;
   if(lv==='down'){ const o=LEVELS.of[cur]; HEMI.intensity=o&&o.amb!=null?o.amb:.1; }   // a down level may have no light but its own lamps
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); if(lv!=='down')HEMI.intensity=.3; return true; };

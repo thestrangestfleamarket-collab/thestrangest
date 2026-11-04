@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -108,9 +108,9 @@ await grab('down',async()=>{ const solids=SOL.down, fixed=FIX.down, SHL=[]; let 
   const mod=(a,n)=>((a%n)+n)%n, mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
   const vn=(x,y,c)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, su=u*u*(3-2*u), sv=v*v*(3-2*v), a=hash(i,j,c), b=hash(i+1,j,c), d=hash(i,j+1,c), e=hash(i+1,j+1,c); return (a+(b-a)*su)*(1-sv)+(d+(e-d)*su)*sv; };
   const fbm=(x,y,c)=>vn(x,y,c)*.55+vn(x*2.7,y*2.7,c+1)*.3+vn(x*7.3,y*7.3,c+2)*.15;
-const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:58,TE:0,H:196,XS:12.4,TR:[2.2,19.6],MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
-  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[6.65,17.65,28.65,39.65,50.65]; W.FIXY=[9.25,14.75,20.25,25.75,31.25,36.75,42.25,47.75];
-  W.BENCH=[11.2,22.4,33.6,44.8]; W.BINS=[17.1,28.5,39.9]; W.STEPS=[[[56.4,57.6]],[[.6,1.8],[56.4,57.6]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
+const SL=(()=>{ const W={TK:4.4,P0:4.4,P1:17.4,XW:21.8,L:29,TE:0,H:196,XS:12.4,TR:[2.2,19.6],MY0:-46.6,EAST:258,WN:-31.5,WS:-44.5,TOP:186};
+  W.MID=(W.P0+W.P1)/2; W.COLX=[W.P0+1.5,W.P1-2.2]; W.COLY=[3.15,14.15,25.15]; W.FIXY=[6.25,11.75,17.25,22.75];
+  W.BENCH=[7.7,18.7]; W.BINS=[13.6,24.9]; W.STEPS=[[[W.L-1.6,W.L-.4]],[[.6,1.8],[W.L-1.6,W.L-.4]]]; W.EX0=W.XS-1.5; W.EX1=W.XS+1.5; W.ED=3;
   W.fzAt=(x,y)=>{ const e=x<W.P0?W.P0-x:x-W.P1, s=W.STEPS[x<W.P0?0:1]; return e<.75&&s.some(([a,b])=>y>=a&&y<b)?-8*(1+Math.floor(e/.25)):-32; };
   return W; })();
 const GRAF=(()=>{ const P={yel:[246,208,44],ora:[246,132,38],red:[224,48,52],grn:[64,204,84],lim:[168,232,64],blu:[48,122,236],sky:[84,196,244],pur:[152,72,212],pnk:[246,100,180],wht:[242,242,234],blk:[18,18,22],cyn:[44,212,200]};
@@ -196,11 +196,11 @@ const SSUB=(()=>{ const W={};
     if(st>.74)g*=1-.3*(st-.74)/.26*Math.max(0,Math.min(1,(160-z)/110));
     return sh(c,g); };
   const hallWall=(len,seed,o={})=>{ const G=GRAF.mk(len*24,228,seed,(g,r,pick,w,h)=>{ GRAF.wall(g,r,pick,w,h,Math.round(len*(o.tags||.6)),196-(o.t1||80),196-(o.t0||8)); if(o.big)o.big(g,r,pick,w,h); });
-    const pl=(o.plates||[]).map(u0=>({u0,a:W.text('MARKET ST',2,[238,238,230],[24,24,28],[206,204,190],4)}));
+    const pl=(o.plates||[]).map(u0=>({u0,a:W.text(SECTIONS.station,2,[238,238,230],[24,24,28],[206,204,190],4)}));
     return (u,z)=>{ if(o.hole&&o.hole(u,z))return null;
       for(const p of pl){ const c=p.a.at(Math.floor((u-p.u0)*24),Math.floor(82-z)); if(c)return sh(c,.86+.14*hash(Math.floor(u*24),Math.floor(z),5)); }
       const b=tileWall(u,z,seed), gr=G(u*24,196-z); return gr?mix(gr,b,.12+.3*vn(u*6,z/6,seed+3)):b; }; };
-  const floorPaint=(()=>{ const D=[{k:'paper',x:7.4,y:23.3,w:1,h:.7,a:.35},{k:'paper',x:14.6,y:35.6,w:.8,h:.6,a:-.5},{k:'pud',x:13.6,y:19.2,w:1.2,h:.6},{k:'pud',x:7.9,y:31.4,w:.9,h:.5},{k:'pud',x:16.2,y:12.5,w:.6,h:.4},{k:'spill',x:8.3,y:26.2,w:.45,h:.3}];
+  const floorPaint=(()=>{ const D=[{k:'paper',x:7.4,y:23.3,w:1,h:.7,a:.35},{k:'pud',x:13.6,y:19.2,w:1.2,h:.6},{k:'pud',x:16.2,y:12.5,w:.6,h:.4}];
     const deco=(x,y,c)=>{ for(const d of D){ const dx=x-d.x, dy=y-d.y;
         if(d.k==='paper'){ const ca=Math.cos(d.a), sa=Math.sin(d.a), u=(dx*ca+dy*sa)/d.w+.5, v=(-dx*sa+dy*ca)/d.h+.5; if(u<0||u>1||v<0||v>1)continue;
           const px=Math.floor(u*24*d.w), py=Math.floor(v*24*d.h); if(Math.abs(u-.5)<.012)return [150,148,140];
@@ -256,7 +256,7 @@ const SSUB=(()=>{ const W={};
   for(const [x0,x1] of [[0,P0],[P1,XW]])flat(x0,0,x1,LEN,-32,trackPaint,16);
   wallY(P0,0,LEN,-32,0,edgePaint); wallY(P1,0,LEN,-32,0,edgePaint);
   const portal=(u,z,c)=>{ const d=Math.abs(u-c)/2.05; return d<1&&z<110+30*Math.sqrt(1-d*d); };
-  const lw=hallWall(LEN,401,{plates:[LEN-45.5,LEN-29.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,28.5,46.5],t0:-24,t1:60,tags:.4});
+  const lw=hallWall(LEN,401,{plates:[LEN-22.5,LEN-11.5],t0:-24,t1:60}), rw=hallWall(LEN,402,{plates:[8.5,20.5],t0:-24,t1:60,tags:.4});
   cutaway(wallY(0,0,LEN,-32,H2,(u,z)=>lw(LEN-u,z)),1,0,-24); cutaway(wallY(XW,0,LEN,-32,H2,(u,z)=>rw(u,z)),-1,0,-24);
   const exitHole=(u,z)=>u>SL.EX0&&u<SL.EX1&&z<72+14*Math.sqrt(Math.max(0,1-((u-SL.XS)/1.5)**2)), exSign=W.text('EXIT TO STREET',2,[255,250,236,1],[16,110,60,1],[200,230,210],4);
   const ew0=hallWall(XW,403,{tags:1.2,t0:4,t1:96,hole:(u,z)=>portal(u,z,LT)||portal(u,z,SL.TR[1])||exitHole(u,z)}), ew=(u,z)=>{ if(exitHole(u,z))return null; const c=exSign.at(Math.floor((u-(SL.XS-exSign.w/48))*24),Math.floor(118-z)); return c||ew0(u,z); };
@@ -314,10 +314,10 @@ const SSUB=(()=>{ const W={};
   M.GRAF=GRAF;
   M.plat=at(8.2,16); M.foot=at(SL.XS,1.1); M.street={x:XC,z:(SM.y1+77)*TILE+1.4*TILE};
   M.lane=box(P0+.6,7.5,P1-.6,LEN-.6); M.edge=box(P1-.75,7,P1-.15,LEN-.6); M.track=box(P1+.3,1,XW-.3,LEN-1);
-  M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],30]].map(([lane,x,y])=>({lane,...at(x,y)}));
+  M.rats=[[M.lane,8.6,27.2],[M.lane,13.8,19.6],[M.edge,P1-.4,25],[M.track,SL.TR[1],15]].map(([lane,x,y])=>({lane,...at(x,y)}));
   M.path=[{x:XC,z:(SM.y1-.3+77)*TILE},{x:XC,z:(SM.y0+.3+77)*TILE,lv:'down'}].concat([at(SL.XS,7.4),at(SL.XS-3.2,10.6),M.plat].map(p=>({...p,lv:'down'})));
   {
-    let ft=0, fon=1; const FL=FIXL[4]; M.flick=dt=>{ if(SHARED.LVL!=='down')return; ft-=dt; if(ft<=0){ fon=Math.random()<.82?1:Math.random()<.5?.25:0; ft=fon===1?.4+Math.random()*3.5:.04+Math.random()*.12; } FL.L.intensity=FL.L.userData.i0*fon; }; }
+    let ft=0, fon=1; const FL=FIXL[2]; M.flick=dt=>{ if(SHARED.LVL!=='down')return; ft-=dt; if(ft<=0){ fon=Math.random()<.82?1:Math.random()<.5?.25:0; ft=fon===1?.4+Math.random()*3.5:.04+Math.random()*.12; } FL.L.intensity=FL.L.userData.i0*fon; }; }
 // THE STATION'S END AND THE BODEGA'S START: closes grab('down') (the platform under the street) and sets up BOD, the bodega's bag of makers.
   M.exit=()=>{ const S=SM, X=x=>(x-72)*TILE, Z=y=>(y+77)*TILE, n=S.steps, rise=S.depth/n, run=(S.y1-S.y0)/n, c3=new THREE.Color(), TR=[[],[]], WL=[[],[]];
     const q4=(B,a,b,c,d,col)=>{ c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(const v of [a,b,c,a,c,d]){ B[0].push(...v); B[1].push(c3.r,c3.g,c3.b); } };
@@ -359,7 +359,7 @@ const SSUB=(()=>{ const W={};
           if(j===h-3&&i>=ox&&i<w-ox)return [200,200,196]; return j<1||j>=h-1||i<1||i>=w-1?[58,60,68]:[30,32,40]; }); };
       const sign=(ax,c,m,L,z0,z1,tx)=>{ for(const s of [-1,1]){ const o=c+s*.034, a=m+s*L/2*(ax==='y'?1:-1), b=m-s*L/2*(ax==='y'?1:-1), P=(u,z)=>ax==='y'?[X(o),z*ZU,Z(u)]:[X(u),z*ZU,Z(o)];
           const me=quad(P(a,z0),P(b,z0),P(b,z1),P(a,z1),tx,true); me.material.clippingPlanes=CL; } };
-      const SUB=tex('SUBWAY',57,17), STA=tex('MARKET ST',83,21,1), ym=(yb+S.y1-.08)/2;
+      const SUB=tex('SUBWAY',57,17), STA=tex(SECTIONS.station,83,21,1), ym=(yb+S.y1-.08)/2;
       sign('y',xl,ym,2.2,11,29,SUB); sign('y',xr,ym,2.2,11,29,SUB); sign('x',yb,(xl+xr)/2,3.2,11,29,STA);
       const gm=new THREE.MeshBasicMaterial({color:0xdcf3dc,clippingPlanes:CL}), gg=new THREE.SphereGeometry(.13*TILE,10,8);
       for(const [x,y] of LP){ const g=new THREE.Mesh(gg,gm); g.position.set(X(x),107*ZU,Z(y)); scene.add(g); } }

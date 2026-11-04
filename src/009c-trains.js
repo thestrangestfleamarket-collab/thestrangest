@@ -2,12 +2,12 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, pos, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {grab, LAMPD, LAMPI, lamps, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {grab, LAMPD, LAMPI, lamps, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
-await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
+await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, NCAR=1, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
   const mod=(a,n)=>((a%n)+n)%n, V=D.speed, A=D.accel, ta=V/A, da=V*V/(2*A);
   const runT=d=>d>=2*da?d/V+ta:2*Math.sqrt(d/A), runS=(d,t)=>{ const Tt=runT(d); if(t<=0)return 0; if(t>=Tt)return d; if(d>=2*da){ if(t<ta)return .5*A*t*t; if(t<Tt-ta)return da+V*(t-ta); return d-.5*A*(Tt-t)**2; } return t<Tt/2?.5*A*t*t:d-.5*A*(Tt-t)**2; };
   TRAINS.now=()=>Date.now()/1000+TRAINS.skew;
@@ -18,7 +18,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     seq.forEach((st,i)=>{ const nx=seq[(i+1)%seq.length], d=mod(t.dir*(nx.s[t.track]-st.s[t.track]),Lt), Tr=runT(d); tbl.push({st,nx,arr:tm,dep:tm+D.dwell,d,T:Tr}); tm+=D.dwell+Tr; });
     TRAINS.list.push({...t,i:ti,tr,tbl,lap:tm,off:ti*tm/4,cars:[]}); });
   // one station loaded: each train shuttles, the station, out to one tunnel end, back, the station, out to the other end, back; every leg takes the same time (a train waits longer in the dark at a nearer end), so the two trains take turns at the platform, one every half leg, for good
-  if(L.STA.length===1){ const st=L.STA[0], s0of=tn=>st.s[tn.track], MG=CARL+GAP+2;
+  if(L.STA.length===1){ const st=L.STA[0], s0of=tn=>st.s[tn.track], MG=NCAR*(CARL+GAP)/2+2;
     for(const tn of TRAINS.list){ const k=tn.track, s0=s0of(tn), Lt=tn.tr.L, E=L.ENDS[k]||[], fw=E.find(e=>e.dir>0), bk=E.find(e=>e.dir<0);
       tn.ends=[[tn.dir,Math.max(0,(tn.dir>0?(fw?mod(fw.s-s0,Lt):0):(bk?mod(s0-bk.s,Lt):0))-MG)],[-tn.dir,Math.max(0,(tn.dir>0?(bk?mod(s0-bk.s,Lt):0):(fw?mod(fw.s-s0,Lt):0))-MG)]]; }
     const P=D.dwell+12+2*Math.max(...TRAINS.list.flatMap(tn=>tn.ends.map(([,d])=>d>1?runT(d):0)));
@@ -74,7 +74,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     g.globalCompositeOperation='destination-out'; g.fillRect(6,18,20,44); g.globalCompositeOperation='source-over'; g.strokeStyle='#202224'; g.lineWidth=2; g.strokeRect(6,18,20,44);
     g.fillStyle='#d8392f'; g.fillRect(8,70,16,5); return ctex(cv); })();
   const floorTex=(()=>{ const cv=canvas(64,64), g=cv.getContext('2d'); g.fillStyle='#5d6167'; g.fillRect(0,0,64,64); const r=rng(5); for(let i=0;i<700;i++){ g.fillStyle=['#7d8188','#474a4f','#8f8576','#3a3c40'][Math.floor(r()*4)]; g.fillRect(r()*64,r()*64,1,1); } return ctex(cv,true); })();
-  const ADS=[['THE STRANGEST FLEA MARKET','EVERY WEEKEND · MARKET ST','#f0a72a'],['INJURED? CALL DR. MOTH','1-800-MOTH-LAW','#2f6bd8'],['LEARN TO SWIM','THE BATH HOUSE','#38b7a6'],['MUSEUM OF EARTH','ROCKS · BONES · GEMS','#c94a3a'],
+  const ADS=[['THE STRANGEST FLEA MARKET','EVERY WEEKEND · '+SECTIONS.streets.south,'#f0a72a'],['INJURED? CALL DR. MOTH','1-800-MOTH-LAW','#2f6bd8'],['LEARN TO SWIM','THE BATH HOUSE','#38b7a6'],['MUSEUM OF EARTH','ROCKS · BONES · GEMS','#c94a3a'],
     ['THE ARCADE','INSERT COIN','#9b4ad8'],['THE BODEGA','OPEN ALL NIGHT','#3fbf5a'],['SEE SOMETHING ODD?','SAY SOMETHING ODD','#e8c24a'],['RAG ST LAUNDRY','FOLD · PRESS · FORGET','#e07b9a']];
   const adPic=(seed)=>{ const cv=canvas(1024,40), g=cv.getContext('2d'), r=rng(seed+11); g.fillStyle='#e8e5dc'; g.fillRect(0,0,1024,40); let x=4;
     while(x<1020){ const a=ADS[Math.floor(r()*ADS.length)], w=150+Math.floor(r()*70); g.fillStyle=a[2]; g.fillRect(x,3,w-6,34); g.fillStyle='#fff'; font(g,11,900); g.fillText(a[0].slice(0,24),x+6,17); font(g,8,600); g.fillText(a[1],x+6,30); x+=w; } return ctex(cv); };
@@ -86,7 +86,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     // outside
     for(const s of [-1,1]){ const m=new THREE.MeshLambertMaterial({map:ctex(sidePic(tn.i*17+c*5+(s>0?3:0))),alphaTest:.5,side:THREE.DoubleSide}), zz=s*W0, a=s>0?-HL:HL, b=-a;
       quad(ext,[a,Y(Y0),zz],[b,Y(Y0),zz],[b,Y(FZ+TOP+12),zz],[a,Y(FZ+TOP+12),zz],m,s>0?[0,0,1,0,1,1,0,1]:[1,0,0,0,0,1,1,1]); }
-    for(const e of [-1,1]){ const front=(c===0&&e>0), back=(c===1&&e<0), m=new THREE.MeshLambertMaterial({map:ctex(endPic(front,tn)),alphaTest:.5,side:THREE.DoubleSide,...(front||back?{emissive:0x111111}:{})});
+    for(const e of [-1,1]){ const front=(c===0&&e>0), back=(c===NCAR-1&&e<0), m=new THREE.MeshLambertMaterial({map:ctex(endPic(front,tn)),alphaTest:.5,side:THREE.DoubleSide,...(front||back?{emissive:0x111111}:{})});
       quad(ext,[e*HL,Y(Y0),-e*W0],[e*HL,Y(Y0),e*W0],[e*HL,Y(FZ+TOP+12),e*W0],[e*HL,Y(FZ+TOP+12),-e*W0],m);
       if(front)for(const s of [-.38,.38]){ const L=box(ext,.06*T,z(5),.22*T,e*(HL+.03),Y(FZ+14),s*W0*2,new THREE.MeshBasicMaterial({color:0xfff2cc})); }
       if(back)for(const s of [-.38,.38])box(ext,.06*T,z(5),.22*T,e*(HL+.03),Y(FZ+14),s*W0*2,new THREE.MeshBasicMaterial({color:0xff3a28})); }
@@ -125,14 +125,14 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
     scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0}; };
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});
-    for(let c=0;c<2;c++)tn.cars.push(makeCar(tn,c)); }
+    for(let c=0;c<NCAR;c++)tn.cars.push(makeCar(tn,c)); }
   for(const tn of TRAINS.list)for(const car of tn.cars){ for(const g of [car.ext,car.upper['-1'],car.upper['1']])g.traverse(o=>{ if(o.isMesh&&!o.geometry.attributes.aWl)PEEK.mark(o.geometry); }); car.peek={me:car.G,b:new THREE.Box3()}; PEEK.boxes.push(car.peek); }
   LEVELS.of.station.groups.push('trains');
 
   // each frame: where the cars are (centre, along, across in world units), from where the train is on its track
   let clk=0;
   const place=(tn,now,dt)=>{ const S=state(tn,now), tr=tn.tr; tn.S=S; clk+=dt/TRAINS.list.length; const run=S.doors?0:Math.min(1,Math.abs(tn.v||0)/V);
-    tn.cars.forEach((car,c)=>{ const sc=S.s+tn.dir*(c?-1:1)*(CARL+GAP)/2, a=tr.pt(sc-tn.dir*CARL/2), b=tr.pt(sc+tn.dir*CARL/2), x=(L.WX(a.x)+L.WX(b.x))/2, zz=(L.WZ(a.y)+L.WZ(b.y))/2;
+    tn.cars.forEach((car,c)=>{ const sc=S.s+tn.dir*((NCAR-1)/2-c)*(CARL+GAP), a=tr.pt(sc-tn.dir*CARL/2), b=tr.pt(sc+tn.dir*CARL/2), x=(L.WX(a.x)+L.WX(b.x))/2, zz=(L.WZ(a.y)+L.WZ(b.y))/2;
       let ux=L.WX(b.x)-L.WX(a.x), uz=L.WZ(b.y)-L.WZ(a.y); const l=Math.hypot(ux,uz)||1; ux/=l; uz/=l;
       car.p0=car.p||null; car.p={x,z:zz,ux,uz}; car.G.position.set(x,L.H(-32),zz); car.G.rotation.set(0,Math.atan2(-uz,ux),0); car.G.updateMatrixWorld();
       if(car.peek){ const ex=Math.abs(ux)*HL0+Math.abs(uz)*W0, ez=Math.abs(uz)*HL0+Math.abs(ux)*W0, y0=car.G.position.y; car.peek.b.min.set(x-ex,y0,zz-ez); car.peek.b.max.set(x+ex,y0+z(FZ+TOP+25),zz+ez); }

@@ -18,6 +18,6 @@ const {chromium}=require('playwright');
   const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=[...window.BLK.blds,...window.BLK.lots];
     const west=B.filter(q=>Math.abs(q.x1-F)<.6).map(q=>[q.y0,q.y1]), mk=B.filter(q=>q.row===1).map(q=>[q.x0,q.x1]);
     return {west,mk}; });
-  ok(g.west.length>=5,'West St has its row of buildings ('+g.west.length+')'); ok(g.mk.length>=10,'Market St\'s front row is filled ('+g.mk.length+')');
+  ok(g.west.length>=5,'West St has its row of buildings ('+g.west.length+')'); ok(g.mk.length>=8,'Market St\'s front row is filled ('+g.mk.length+'; 8 since the Drive\'s buildings took gaps, 3 Nov 2026)');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));
   console.log(bad?bad+' failed':'all West St checks passed'); await b.close(); process.exit(bad?1:0); })();

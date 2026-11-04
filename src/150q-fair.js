@@ -1,12 +1,13 @@
 // THE FAIR: FAIR lays THE STRANGEST FAIR on its concrete lot behind the West St row (data/world.json's fair place): the fence, the gate on West St, the ticket booth, the lamps, and the one ride mechanic every ride runs on (a ride runs from the shared clock, so everyone sees the same wheel turn; its seats are boarded where they stand and carry you; a ticket a ride), and the work posts its staff stand at; the rides and the midway register themselves here (150r, 150s) and are built with it the first time you come near.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, INV, LITE, pos, RIDE, ROOMS, SFX, st, UI, VIT, WEEDS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {CREW} from './111fb-fleamarket.js';
 const FAIR={rides:{},list:[],posts:{},extra:[],ready:false,built:false,G:null,K:{}}; window.FAIR=FAIR;
-{ const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, V3=THREE.Vector3, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, V3=THREE.Vector3, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const P=(LEVEL.places||[]).find(p=>p.kind==='fair'), GT=(LEVEL.places||[]).find(p=>p.kind==='gate');
   if(P){
   const B=FAIR.B={x0:XS(P.x0),x1:XS(P.x1),z0:ZS(P.y0),z1:ZS(P.y1),cx:XS((P.x0+P.x1)/2),cz:ZS((P.y0+P.y1)/2)}, GATE=P.gate||[GT.y0,GT.y1];

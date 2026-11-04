@@ -1,15 +1,17 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
+import {CREATS} from './087-npc-creatures.js';
 import {MERCH} from './111e-merch.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 import {SMOKE} from './146x-bluehour.js';
 const BEES={list:[]}; window.BEES=BEES;
-{ const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
+{ const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
   // the honeys: what the flowers near a hive make of it (a rare moon honey by night, deep in the park)
   const HONEY={honey_wild:['WILDFLOWER HONEY',null],honey_clover:['CLOVER HONEY',['clover','dandelion','daisy']],honey_lav:['LAVENDER HONEY',['lavender','aster','chicory','iris']],
     honey_sun:['SUNFLOWER HONEY',['sunflower','marigold','goldenrod','zinnia']],honey_rose:['ROSE HONEY',['rose','tulip','foxglove','slipper']],honey_moon:['MOON HONEY',null]};
@@ -18,7 +20,7 @@ const BEES={list:[]}; window.BEES=BEES;
   FORAGE.add({names:NM,recipes:[['wax_candle','A BEESWAX CANDLE','bee',[0,45],{bee_wax:3},'a candle for your home; sells for $12'],
     ['f_hfish','HONEY-GLAZED BASS','cooking',[25,70],{honey_wild:1,x_bass:1},'mends you a minute, stamina back'],['f_hmush','HONEYED CHANTERELLES','cooking',[20,60],{honey_clover:1,chanterelle:2},'some health'],
     ['p_royal','ROYAL JELLY TONIC','alchemy',[50,100],{honey_moon:1,moonglow:1},'all your health, mending 2 min']],
-    does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.hp=Math.min(1,VIT.hp+.25); },p_royal:()=>{ VIT.hp=1; FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
+    does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.heal(.25); },p_royal:()=>{ VIT.heal(1); FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
   FORAGE.CK.bee={short:'BEES',made:nm=>`YOU ROLL AND WICK THE WAX: ${nm}.`,fail:'THE WAX CRACKS. TRY AGAIN.'};
   FORAGE.BUYK.honey=['honey_','bee_wax','wax_candle']; FORAGE.sell(...Object.keys(HONEY),'bee_wax','wax_candle');
   FORAGE.HELP.push('BEEKEEPING: set a hive on the lawn (from your pack) among flowers; come back to take its honey (empty jars, a smoker, a veil).');
@@ -62,12 +64,12 @@ const BEES={list:[]}; window.BEES=BEES;
   FORAGE.ROWB.push(id=>id==='bee_hive'?[['SET IT HERE','hiveset']]:[]); FORAGE.ACT.hiveset=()=>BEES.set();
 
   /* ---------- taking honey: smoke calms them (BEEKEEPING); a veil keeps the stings off ---------- */
-  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt?VIT.hurt(.06*n):VIT.hp=Math.max(.05,VIT.hp-.06*n); SFX.play('cough',{vol:.4,pitch:1.6}); say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
+  const sting=n=>{ if(FORAGE.has('bee_veil'))return say('THEY BUZZ AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); VIT.hurt(.06*n); SFX.play('cough',{vol:.4,pitch:1.6}); say(n>1?`YOU ARE STUNG ${n} TIMES!`:'YOU ARE STUNG!','#f09070'); };
   BEES.take=h=>{ const f=Math.floor(frames(h)); if(f<2)return say('THE FRAMES ARE NEARLY EMPTY. COME BACK LATER.','#c8a090'); const jars=FORAGE.has('jar_honey'); if(!jars)return say('YOU NEED EMPTY HONEY JARS. THE BEEKEEPER SELLS THEM.','#c8a090');
     const smoke=FORAGE.has('bee_smoker')&&use('bee',0,70); SFX.play('step',{vol:.3,pitch:.6}); if(!smoke){ const n=1+Math.floor(Math.random()*3*(1-Math.min(.8,FORAGE.sk('bee')/120))); sting(n); if(!FORAGE.has('bee_veil')&&Math.random()<.5){ say('YOU BACK OFF BEFORE YOU GET ANY HONEY.','#c8a090'); return; } }
     else say('A PUFF OF SMOKE AND THE BEES GO QUIET.','#9fe07f');
-    const id=kindOf(h,!!(window.CLOCK&&CLOCK.dark())), n0=Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
-    FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80);
+    const id=kindOf(h,!!(window.CLOCK&&CLOCK.dark())), nest=CREATS.nest, raid=nest&&Math.hypot(nest.x-h.x,nest.z-h.z)<30*WU?Math.max(0,.35-FORAGE.sk('bee')/300):0, n0=Math.max(1,Math.round((Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0))*(1-raid))), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
+    FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80); if(raid>.05)say('WASPS FROM THE PARK\'S NEST HAVE BEEN AT THIS HIVE: SOME HONEY IS GONE. A BETTER BEEKEEPER LOSES LESS.','#e0b070');
     h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
   BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); share(); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
@@ -86,7 +88,11 @@ const BEES={list:[]}; window.BEES=BEES;
     if((tt+=dt||0)<.05)return; tt=0; const now=performance.now()/1000, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur), day=!(window.CLOCK&&CLOCK.dark()); let n=0;
     const all=[...S.hives]; if(ONLINE.on)for(const L of THEIRS.values())all.push(...L); for(const L of THEIRS.values())for(const h of L)if(h.g&&!ONLINE.on)h.g.visible=false;
     for(const h of all){ if(!h.g)continue; if(n>=BEE.instanceMatrix.count-NB)break; const near=Math.hypot(h.x-pos.x,h.z-pos.z); h.g.visible=out&&near<60*T; if(!h.g.visible||near>20*T||!day)continue; const busy=Math.min(1,.3+(h.who?h.f:frames(h))/FULL);
-      for(let i=0;i<NB*busy;i++){ const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
+      if(!h.fl||now-h.flT>10){ h.flT=now; h.fl=[]; for(const [,fx,fz] of GARDEN.spots?GARDEN.spots():[])if(Math.hypot(fx-h.x,fz-h.z)<R)h.fl.push([fx,ground(fx,fz)+.35*WU,fz]); for(const p of GARDEN.plots?GARDEN.plots():[])if(Math.hypot(p.x-h.x,p.z-h.z)<R)h.fl.push([p.x,ground(p.x,p.z)+.35*WU,p.z]);
+        if(window.FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-h.x,b.z-h.z)<R)for(const q of b.p||[])h.fl.push(q); }
+      for(let i=0;i<NB*busy;i++){ if(i%3===0&&h.fl.length){ const q=h.fl[(i*7)%h.fl.length], u=(now*.09+i*.137)%1, w=u<.45?u/.45:u<.55?1:(1-u)/.45, hy=h.y+.7*WU;
+          m4.makeTranslation(h.x+(q[0]-h.x)*w+Math.sin(now*9+i)*.04*WU,hy+(q[1]-hy)*w+Math.sin(Math.PI*w)*.8*WU,h.z+(q[2]-h.z)*w+Math.cos(now*8+i)*.04*WU); BEE.setMatrixAt(n++,m4); continue; }
+        const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
     BEE.count=n; BEE.instanceMatrix.needsUpdate=true; },'147a-bees');
 
   /* ---------- the beekeeper: a round figure in a white suit and a veiled hat, a smoker in one gloved hand ---------- */

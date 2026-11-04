@@ -1,6 +1,7 @@
-// THE BINS: a real trash can is hollow, you drop litter in it (double-click it with litter in your pack) and it fills up as the block's players feed it; the litter on the floor is picked up the same way. The station's three cans and its litter are made here; the fill is the block's shared world (ONLINE.add), so everyone sees the same heap.
-import {THREE} from './003-shx.js';
+// THE BINS: a real trash can is hollow, you drop litter in it (double-click it with litter in your pack) and it fills up as the block's players feed it; the litter on the floor is picked up the same way. The station's cans and its litter are made here; the fill is the block's shared world (ONLINE.add), so everyone sees the same heap.
+import {SHARED, THREE} from './003-shx.js';
 import {BINS, FORAGE, ONLINE, SFX, SHAD, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
@@ -8,7 +9,7 @@ import {LOOP} from './009b-loop.js';
   const T=TILE, CAP=12, STEEL=new THREE.MeshLambertMaterial({color:0x3c4240,side:THREE.DoubleSide}), RIM=new THREE.MeshLambertMaterial({color:0x8a8f8c}), FLOOR=new THREE.MeshLambertMaterial({color:0x1a1c1c,side:THREE.DoubleSide});
   const HEAP=[0xd8d2c0,0xc84a40,0x3a74c8,0xe8e4d8,0x8a7a5a].map(c=>new THREE.MeshLambertMaterial({color:c}));
   FORAGE.add({names:{litter:'LITTER'},prices:{litter:0}});
-  const say=(t,c)=>FORAGE.say(t,c||'#c8c2b0'), day=()=>Math.floor(Date.now()/864e5);
+  const say=(t,c)=>SAY(t,c||'#c8c2b0'), day=()=>Math.floor(Date.now()/864e5);
   BINS.list=[]; BINS.litter=[]; BINS.CAP=CAP; window.BINS=BINS;
   const key=id=>'bin:'+id, fillOf=id=>Math.max(0,Math.min(CAP,+ONLINE.world[key(id)]||0));
   const heap=(r,n,seed)=>{ const g=new THREE.Group(); for(let i=0;i<n;i++){ const k=(seed*7+i*13)%97/97, a=k*6.28+i, d=r*.55*((seed*3+i*5)%7/7), m=new THREE.Mesh(i%3?new THREE.BoxGeometry(r*.5,r*.25,r*.3):new THREE.CylinderGeometry(r*.17,r*.17,r*.5,8),HEAP[(seed+i)%HEAP.length]);
@@ -39,6 +40,6 @@ import {LOOP} from './009b-loop.js';
   SYS.add('world',(k,v)=>{ if(k.startsWith('bin:')){ const b=BINS.list.find(q=>key(q.id)===k); if(b)b.show(); } else if(k.startsWith('lit:')&&v){ const l=BINS.litter.find(q=>q.k===k); if(l)l.m.visible=false; } },'144d-bins');
   // the station's cans and litter (station A's platform; the props it used to paint are gone)
   BINS.station=()=>{ const st=LOOP.STA&&LOOP.STA.find(s=>s.old); if(!st||!MAPG.down)return; const MID=10.9;
-    [17.1,28.5,39.9].forEach((y,i)=>BINS.make({id:'A'+i,at:st.P(y,MID,0),grp:MAPG.down}));
-    [[8.1,26.1,'can'],[13.9,15.6,'cup'],[6.9,33.8,'canb'],[15.8,22.2,'can'],[9.2,9.6,'cup']].forEach(([x,y,k],i)=>BINS.drop({id:'A'+i,at:st.P(y,x,0),kind:k,grp:MAPG.down})); };
+    SHARED.METRO.SL.BINS.forEach((y,i)=>BINS.make({id:'A'+i,at:st.P(y,MID,0),grp:MAPG.down}));
+    [[8.1,26.1,'can'],[13.9,16.6,'cup'],[9.2,6.1,'canb']].forEach(([x,y,k],i)=>BINS.drop({id:'A'+i,at:st.P(y,x,0),kind:k,grp:MAPG.down})); };
 }

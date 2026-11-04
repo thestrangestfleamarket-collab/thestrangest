@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTION, SECTIONS, STORE, TILE, WP, WROW} from './006-map-pre.js';
+import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTION, SECTIONS, STORE, SYS, TILE, WP, WROW} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
@@ -32,8 +32,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       +'<div style="position:absolute;left:12px;top:12px;color:#8a8f9c">DRAG: TURN ALL ROUND · WHEEL: CLOSER · ESC: BACK · <span id="vwN" style="color:#f2c14e"></span></div>'
       +'<div id="vwS" style="position:absolute;right:12px;top:12px;bottom:12px;width:316px;overflow:auto;padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;box-sizing:border-box"></div>';
     document.body.appendChild(R); const cv=R.querySelector('#vwC'), g=cv.getContext('2d'), im=g.createImageData(W,H), oc=document.createElement('canvas'); oc.width=W; oc.height=H;
-    let tgt=null, yaw=.8, pitch=.45, dist=1, drag=null, raf=0, M=null;
-    const frame=()=>{ raf=0; if(!VIEW.on||!tgt)return; raf=requestAnimationFrame(frame);
+    let tgt=null, yaw=.8, pitch=.45, dist=1, drag=null, M=null;
+    const frame=()=>{ if(!VIEW.on||!tgt)return;
       if(tgt.model&&tgt.dirty){ tgt.dirty=false; if(M){ vs.remove(M); M.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)[].concat(o.material).forEach(m=>{ if(m.map)m.map.dispose(); m.dispose(); }); }); } M=tgt.model(); if(M)vs.add(M); }
       const lent=tgt.lend?tgt.lend():[], back=lent.map(o=>[o,o.parent,o.visible,o.scale.clone()]), ls=tgt.lendScale?tgt.lendScale():1; for(const o of lent){ vs.attach(o); o.visible=true; o.scale.multiplyScalar(ls); o.updateMatrixWorld(true); }
       const b=new THREE.Box3(); for(const o of [...(M?[M]:[]),...lent])b.expandByObject(o); if(b.isEmpty())b.set(new THREE.Vector3(-1,0,-1),new THREE.Vector3(1,2,1));
@@ -48,7 +48,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,yaw,pitch}; cv.setPointerCapture(e.pointerId); });
     cv.addEventListener('pointermove',e=>{ if(!drag)return; yaw=drag.yaw-(e.clientX-drag.x)*.01; pitch=Math.max(-1.45,Math.min(1.45,drag.pitch+(e.clientY-drag.y)*.01)); });
     cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('wheel',e=>{ e.preventDefault(); dist=Math.max(.2,Math.min(4,dist*Math.pow(1.0015,e.deltaY))); },{passive:false});
-    VIEW.open=(t,side)=>{ tgt=t; t.dirty=true; VIEW.on=true; R.style.display='block'; R.querySelector('#vwN').textContent=t.name||''; const s=R.querySelector('#vwS'); s.innerHTML=''; s.appendChild(side); skin(s); yaw=.8; pitch=.35; dist=1; if(!raf)raf=requestAnimationFrame(frame); };
+    VIEW.open=(t,side)=>{ tgt=t; t.dirty=true; VIEW.on=true; R.style.display='block'; R.querySelector('#vwN').textContent=t.name||''; const s=R.querySelector('#vwS'); s.innerHTML=''; s.appendChild(side); skin(s); yaw=.8; pitch=.35; dist=1; };
+    SYS.add('win',frame,'096-mapedit view');
     VIEW.redo=()=>{ if(tgt)tgt.dirty=true; };
     VIEW.close=()=>{ VIEW.on=false; R.style.display='none'; tgt=null; if(M){ vs.remove(M); M=null; } const f=VIEW.onclose; VIEW.onclose=null; if(f)f(); };
     VIEW.root=R; }
@@ -118,7 +119,6 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     Cc('THE ROUND','path',P.round[0]+ox,P.round[1]+oy,P.round[2],0,'park slabs','round');
     Cc("THE GOLEMS' CAVE",'park',PARKCAVE[0]+ox,PARKCAVE[1]+oy,5,120,'cave rock','cave');
     R("THE SQUIRREL'S TOWER",'park',[PARKTOWER[0]-4+ox,PARKTOWER[1]-4+oy],[PARKTOWER[0]+4+ox,PARKTOWER[1]+4+oy],120,'castle stone','tower');
-    { const s=LEVEL.parkPlaces.skatepark, e=s&&(s.face==='e'||s.face==='w'); if(s)R('THE SKATE PARK GATE','park',[s.x-(e?1:4.8)+ox,s.y-(e?4.8:1)+oy],[s.x+(e?1:4.8)+ox,s.y+(e?4.8:1)+oy],60,'concrete pavement','skatepark'); }
     if(FOUNT.S&&FOUNT.on)Cc('THE FOUNTAIN','park',FOUNT.S.C.x+ox,FOUNT.S.C.y+oy,FOUNT.S.R,40,'park slabs','fountain');
     if(P.campAt){ const c=P.campAt(); Cc('THE CAMPFIRE','park',c.x+ox,c.y+oy,2.5,20,'wood','camp'); }
     R('THE PARK GATE','park',[P.gate[0]+ox,P.y0+oy-1],[P.gate[1]+ox,P.y0+oy+1],150,'iron','gate');
@@ -126,6 +126,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     if(PARK.oaks)PARK.oaks.forEach(([X,Z,m],i)=>{ const [x,y]=wt(X,Z); Cc('TREE','tree',x,y,Math.max(.8,m*.21),m*16,'tree bark and leaves','tree'+i); });
     for(const o of L)if(bld(o)){ const f=WP[o.gid].face||'n'; o.rot=FACEROT[f]; if(f==='e'||f==='w'){ const w=o.w; o.w=o.d; o.d=w; } }
     return L; };
+  MAPED.base=base;
 
   const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox','deer','wolf','bear','crow','owl','duck','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','penguin','raptor','stego','brachio','ptera','antqueen','woodant','aphid','ladybird','hopper','beetle','mantis','caterpillar','slug','snail','crab','bee','bumblebee','firefly'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>k==='you'?'you':MERCH.includes(k)?'merchant':MONST.test(k)?'monster':PEOPLE.test(k)?'people':ANIMALS.includes(k)?'animal':'toon';
@@ -135,7 +136,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const place=o=>{ if(o.lv==='down')return 'UNDERGROUND (THE STATION OR THE DUNGEON)'; const P=PARK, x=o.x, y=o.y;
     for(const m of (ST.map.items||[]))if((m.ly==='shop'||m.ly==='shell')&&hit(m,x,y))return 'INSIDE '+m.n;
     if(P&&x>P.x0+(P.ox||0)&&x<P.x1+(P.ox||0)&&y>P.y0+(P.oy||0)&&y<P.y1+(P.oy||0))return y>(P.y0+P.y1)/2+(P.oy||0)?'CENTRAL PARK':'SOUTH EAST CENTRAL PARK';
-    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>SHARED.BOD.FAR)return 'WEST ST'; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return 'MARKET ST'; };
+    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>SHARED.BOD.FAR)return SECTIONS.streets.west; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return SECTIONS.streets.south; };
   const chStart=()=>{ const L=[]; { const [x,y]=wt(pos.x,pos.z); L.push({id:'c0',gid:'you',key:'you',n:'YOU (THE AVATAR)',ly:'you',sh:'circle',x,y,r:.45,rot:SHARED.heading*180/Math.PI,z:SHARED.py,lv:SHARED.LVL,beh:'YOU',speed:1,hp:1,home:'',job:'',scale:1,color:KCOL.you,tint:'#ffffff',opacity:1}); }
     (typeof NPCS!=='undefined'?NPCS:[]).forEach((N,i)=>{ if(!N||!N.st)return; const [x,y]=wt(N.st.x,N.st.z), j=N.rig&&N.rig.job, k=kindOf(N.key);
       L.push({id:'c'+(i+1),gid:'npc'+i,key:N.key,n:String(N.name||N.key).toUpperCase(),ly:k,sh:'circle',x,y,r:Math.max(.25,(N.st.R||.3)/T),rot:(N.st.h||0)*180/Math.PI,z:0,lv:N.lv||'up',beh:behOf(N),speed:+((N.st.v||0)/T).toFixed(3),hp:N.hp==null?1:N.hp,home:N.home?(typeof N.home==='string'?N.home:'x '+(+wt(N.home.x||0,N.home.z||0)[0]).toFixed(1)+', y '+(+wt(N.home.x||0,N.home.z||0)[1]).toFixed(1)+(N.home.r>0?', within '+(N.home.r/T).toFixed(0)+' tiles':', stays here')):'',job:j?String(j.k||j.name||j.id||'A JOB').toUpperCase():'',scale:1,color:KCOL[k],tint:'#ffffff',opacity:1}); });
@@ -168,6 +169,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     +'<b style="color:#ece5d3">PICKED</b><div id="meSel" style="margin-top:6px;line-height:1.7;color:#8a8f9c"></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px"><button class="mb" id="meRA">START OVER (THE GAME AS IT IS)</button><button class="mb" id="meE" data-hot="1">EXPORT</button><button class="mb" id="meI">IMPORT</button><input id="meF" type="file" accept=".json,application/json" style="display:none"></div>'
     +'<div id="meN" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
+    +(/^https?:$/.test(location.protocol)?'<div style="margin-top:8px"><a href="/editor" target="_blank" rel="noopener" style="color:#f2c14e">OPEN THE NEW MAP EDITOR (OWNERS)</a></div>':'')
     +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. IMPORT LOADS IT BACK. THE DRAFT STAYS IN THIS BROWSER.</div></div>';
   document.body.appendChild(R); const q=s=>R.querySelector(s), cv=q('#meC'), g=cv.getContext('2d'); skin(R);
   const lyHTML=()=>{ q('#meLy').innerHTML=(MODE==='map'?LAYERS:LAYERS_CH).map(([k,n])=>'<label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" data-ly="'+k+'"'+(SHOW[k]?' checked':'')+'>'+n+'</label>').join(''); };
@@ -200,7 +202,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       g.beginPath(); g.arc(sx(H.rot[0]),sy(H.rot[1]),6*dpr,0,7); g.fill(); g.stroke(); g.fillRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); g.strokeRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); }
     if(SHOW.label){ g.font=Math.round(9*dpr)+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
       for(const o of ITEMS){ if(!SHOW[o.ly]||o.ly==='filler'||o.ly==='tree'||(o.ly==='path'&&o!==sel)||(o.ly==='shell'&&V.k<3)||(chars&&(!onMap(o)||(V.k<4&&o!==sel))))continue; const t=o.n.replace(/ \(.*\)/,''); g.fillStyle='rgba(0,0,0,.6)'; const w=g.measureText(t).width; g.fillRect(sx(o.x)-w/2-2,sy(o.y)-7*dpr,w+4,14*dpr); g.fillStyle=o===sel?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); }
-      g.fillStyle='rgba(236,229,211,.5)'; const LB=homeA?[['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]]:[];
+      g.fillStyle='rgba(236,229,211,.5)'; const LB=homeA?[[SECTIONS.streets.south,60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],[SECTIONS.streets.west,(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]]:[];
       if(!homeA&&SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, b=SECTIONS.home, cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; LB.push([b.row===0?ST.south:ST.north,cx,b.row===0?(rd.y0+inn.y0)/2:(rd.y1+inn.y1)/2]); if(b.col===0)LB.push([ST.west,(rd.x0+inn.x0)/2,cy]); if(b.col===SECTIONS.grid.cols-1)LB.push([ST.east,(rd.x1+inn.x1)/2,cy]);
         for(const st of LOOP.STA||[])if(!st.old)LB.push([st.id+'1 '+st.name,(st.kiosk.x0+st.kiosk.x1)/2,st.side==='south'?st.kiosk.y0-2.5:st.kiosk.y1+2.5]); }
       for(const [t,x,y] of LB)g.fillText(t,sx(x),sy(y)); } }
@@ -280,16 +282,16 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     const extB=o=>{ const f=faceOf(o.rot), [hw,hd]=sz(o), sw=f==='e'||f==='w'; return {x0:r2(o.x-(sw?hd:hw)),x1:r2(o.x+(sw?hd:hw)),y0:r2(o.y-(sw?hw:hd)),y1:r2(o.y+(sw?hw:hd)),f}; };
     W.places=W.places.filter(p=>by[p.id]).map(p=>{ const o=by[p.id], e=bld(o)?extB(o):ext(o), q={...p,name:o.n,x0:e.x0,x1:e.x1}; if(p.y1!=null){ q.y0=e.y0; q.y1=e.y1; if(bld(o))q.face=e.f; } return q; });
     W.shells=W.shells.filter(q=>by[q.id]).map(q=>({...q,...ext(by[q.id])}));
-    for(const k of ['round','lake','cave','tower','skatepark'])if(by[k]&&W.parkPlaces[k]){ const o=by[k]; W.parkPlaces[k]={...W.parkPlaces[k],x:r2(o.x),y:r2(o.y),...(W.parkPlaces[k].r!=null?{r:r2(o.r*(o.scale||1))}:{})}; }
+    for(const k of ['round','lake','cave','tower'])if(by[k]&&W.parkPlaces[k]){ const o=by[k]; W.parkPlaces[k]={...W.parkPlaces[k],x:r2(o.x),y:r2(o.y),...(W.parkPlaces[k].r!=null?{r:r2(o.r*(o.scale||1))}:{})}; }
     if(by.castle){ const e=ext(by.castle); W.parkPlaces.castle={x0:e.x0,y0:e.y0}; }
     W.paths=W.paths.filter(q=>by[q.id]).map(q=>{ const o=by[q.id], h=o.w*(o.scale||1)/2, a=(o.rot||0)*Math.PI/180; return {id:q.id,a:[r2(o.x-Math.cos(a)*h),r2(o.y-Math.sin(a)*h)],b:[r2(o.x+Math.cos(a)*h),r2(o.y+Math.sin(a)*h)]}; });
     W.homes={...(LEVEL.homes||{})}; for(const N of NPCS){ const h=N.home; if(!h||!h.id||!(h.r>0))continue; const [x,y]=wt(h.x,h.z); W.homes[h.id]=[r2(x),r2(y),r2(h.r/T)]; }
     W.editor={note:'the editor\'s own extras (added things, trees, looks); the game does not read these yet',items:ITEMS.filter(o=>!o.gid||o.ly==='tree'||o.ly==='filler'||o.tint!=='#ffffff'||o.opacity!==1||o.tex)}; return W; };
-  const fromWorld=j=>{ const L=base(), keep=new Set([...j.places.map(p=>p.id),...(j.shells||[]).map(q=>q.id),...(j.paths||[]).map(q=>q.id),'round','lake','cave','tower','skatepark','castle']), known=new Set([...LEVEL.places.map(p=>p.id),...LEVEL.shells.map(q=>q.id),...LEVEL.paths.map(q=>q.id)]);
+  const fromWorld=j=>{ const L=base(), keep=new Set([...j.places.map(p=>p.id),...(j.shells||[]).map(q=>q.id),...(j.paths||[]).map(q=>q.id),'round','lake','cave','tower','castle']), known=new Set([...LEVEL.places.map(p=>p.id),...LEVEL.shells.map(q=>q.id),...LEVEL.paths.map(q=>q.id)]);
     const out=L.filter(o=>!o.gid||!known.has(o.gid)||keep.has(o.gid)), by={}; for(const o of out)if(o.gid)by[o.gid]=o;
     const box=(o,e)=>{ if(!o||!e)return; if(e.x0!=null&&e.x1!=null){ o.x=(e.x0+e.x1)/2; o.w=e.x1-e.x0; } if(e.y0!=null&&e.y1!=null){ o.y=(e.y0+e.y1)/2; o.d=e.y1-e.y0; } };
     for(const p of j.places){ const o=by[p.id]; if(!o)continue; if(p.y1==null||!bld(o)){ box(o,{x0:p.x0,x1:p.x1}); continue; } const f=p.face||'n', sw=f==='e'||f==='w'; o.rot=FACEROT[f]; o.x=(p.x0+p.x1)/2; o.y=(p.y0+p.y1)/2; o.w=sw?p.y1-p.y0:p.x1-p.x0; o.d=sw?p.x1-p.x0:p.y1-p.y0; } for(const q of j.shells||[])box(by[q.id],q);
-    for(const k of ['round','lake','cave','tower','skatepark']){ const e=j.parkPlaces&&j.parkPlaces[k], o=by[k]; if(e&&o){ o.x=+e.x; o.y=+e.y; if(e.r!=null&&o.sh==='circle')o.r=+e.r; } }
+    for(const k of ['round','lake','cave','tower']){ const e=j.parkPlaces&&j.parkPlaces[k], o=by[k]; if(e&&o){ o.x=+e.x; o.y=+e.y; if(e.r!=null&&o.sh==='circle')o.r=+e.r; } }
     if(j.parkPlaces&&j.parkPlaces.castle&&by.castle){ const c=by.castle; c.x=j.parkPlaces.castle.x0+c.w/2; c.y=j.parkPlaces.castle.y0+c.d/2; }
     for(const q of j.paths||[]){ const o=by[q.id]; if(!o)continue; o.x=(q.a[0]+q.b[0])/2; o.y=(q.a[1]+q.b[1])/2; o.w=Math.hypot(q.b[0]-q.a[0],q.b[1]-q.a[1]); o.rot=Math.atan2(q.b[1]-q.a[1],q.b[0]-q.a[0])*180/Math.PI; }
     for(const e of (j.editor&&j.editor.items)||[]){ if(e.gid&&by[e.gid])Object.assign(by[e.gid],{tint:e.tint,opacity:e.opacity,tex:e.tex,color:e.color,scale:e.scale,h:e.h,z:e.z}); else if(!e.gid)out.push({...e,id:nid()}); }

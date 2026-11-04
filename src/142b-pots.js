@@ -1,6 +1,7 @@
 // THE CRAB POTS: POTS lets you drop a crab pot in fishable water and haul it up later (real time) for what crawled in; your pots are kept with your other owned things.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, ONLINE, pos, SFX, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -8,7 +9,7 @@ import {RIVER} from './066-river.js';
 import {FISHING} from './142-fishing.js';
 const POTS={list:[],hold:[]}; window.POTS=POTS;
 { const T=TILE, KEY='pots', MAX=3, SLOT=8, BAITED=4, CAP=4, JUNK=[['x_boot',.08],['x_can',.07]];   // a catch every SLOT minutes (BAITED with cut bait), up to CAP a pot
-  const say=(m,c)=>FORAGE.say&&FORAGE.say(m,c), IP=(id,k)=>ITEMS.prop(id,k);
+  const say=(m,c)=>SAY(m,c), IP=(id,k)=>ITEMS.prop(id,k);
   const load=()=>{ try{ const a=JSON.parse(OWNED.get(KEY)||'[]'); return Array.isArray(a)?a.filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.z)):[]; }catch(e){ return []; } };
   const save=()=>OWNED.set(KEY,JSON.stringify(POTS.list.map(p=>({x:+p.x.toFixed(3),z:+p.z.toFixed(3),t:p.t,b:p.b}))));
   const orange=new THREE.MeshLambertMaterial({color:0xe8702a,side:THREE.DoubleSide}), white=new THREE.MeshLambertMaterial({color:0xf0ece2}), pole=new THREE.MeshLambertMaterial({color:0x2a2c30});

@@ -1,12 +1,14 @@
 import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
+import { MAPPATCH } from "./mappatch.js";
 import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
 import LIVESDATA from "../data/lives.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
-const ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3)$/;
+const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3)$/;
+const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
@@ -19,6 +21,12 @@ export default {
       const ok = await inside(env, request, dev);
       const out = ok ? await page(env, url, "/g/market", request, "private, no-cache") : await page(env, url, "/door", request, "no-cache");
       out.headers.set("vary", "Cookie"); return out; }
+    // the owners' map editor: its own light page (dist/editor.html) and its ground picture (dist/edmap/), only to a login in admins; anyone else is told nothing is there
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/editor" || EDMAP.test(p))) {
+      const id = await who(env, request, dev); if (!id || (await owner(env, id, dev)) !== true) return new Response("not found", { status: 404 });
+      if (p === "/editor") return page(env, url, "/editor", request, "private, no-cache");
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("cache-control", "private, max-age=3600"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if ((request.method === "GET" || request.method === "HEAD") && FILE.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const rg = request.headers.get("range"), r = await env.ASSETS.fetch(new Request(url.origin + p, rg ? { headers: { range: rg } } : undefined)); if (!(r.ok || r.status === 206)) return new Response("not found", { status: 404 });
@@ -55,9 +63,10 @@ export default {
       if (request.method === "POST") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
         const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
         const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 8 << 20) return json({ why: "too big (8 MB at most)" }, 400);
+        if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores" || p === "/art")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -72,6 +81,14 @@ export default {
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return (await homeOf(env).ownedPut(id, put)) ? json({ ok: true }) : json({ why: "too much saved (2 MB a player)", full: true }, 413); }
+      // paintings (the painter): a picture a row (in 1 MB parts); finished ones never change and any player may look at them, unfinished ones only their painter
+      if (p === "/art") { const H = homeOf(env), aid = x => (typeof x === "string" && /^[a-z0-9]{6,40}$/.test(x) ? x : "");
+        if (body.get !== undefined) { const r = await H.artGet(aid(body.get), id); return r ? json(r) : json({ why: "no such picture" }, 404); }
+        if (body.del !== undefined) return json({ ok: await H.artDel(aid(body.del), id) });
+        const put = body.put && typeof body.put === "object" ? body.put : {}, k = aid(put.id);
+        if (!k || typeof put.d !== "string" || !/^data:image\/(png|webp|jpeg);base64,|^\{/.test(put.d) || put.d.length > 12 << 20) return json({ why: "bad picture" }, 400);
+        if (tooMany("art:" + id, 60)) return json({ why: "too many saves, wait a minute" }, 429);
+        const r = await H.artPut(k, id, put.d, put.fin ? 1 : 0); return r === true ? json({ ok: true }) : json({ why: r, full: r === "full" }, r === "full" ? 413 : 409); }
       // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
       if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
         if (body.put === undefined) return json({ top: await postOf(env).top(cab) });
@@ -177,7 +194,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -247,6 +264,8 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "lives", all: { [m.k]: lvBrief(r) } }));
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "tr") {
+      this.trade(c, s, m);
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return;
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
@@ -254,6 +273,31 @@ export class Block extends Server {
         const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : 200);
         W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
     }
+  }
+  // a trade between two players: one asks, the other says yes; each puts things in (an offer resets both ACCEPTs); when both accept, each is told what to give and what to get
+  trade(c, s, m) {
+    const T = this.trades || (this.trades = new Map()), A = this.asks || (this.asks = new Map()), conn = id => [...this.getConnections()].find(x => x.state && x.state.id === id), say = (o, x) => o && o.send(JSON.stringify({ t: "tr", ...x }));
+    const op = String(m.op || ""), to = String(m.to || ""), mine = T.get(s.id);
+    if (op === "ask") { if (!to || to === s.id || mine) return; const o = this.near(s, to, 12); if (!o) return say(c, { op: "far", with: to });
+      if (T.has(to)) return say(c, { op: "busy", with: to }); A.set(s.id, { to, at: Date.now() }); return say(o, { op: "ask", from: s.id, name: s.name || "" }); }
+    if (op === "yes" || op === "no") { const a = A.get(to); if (!a || a.to !== s.id || Date.now() - a.at > 60000) return; A.delete(to); const o = conn(to); if (!o) return;
+      if (op === "no") return say(o, { op: "no", from: s.id, name: s.name || "" });
+      if (T.has(to) || mine) return say(c, { op: "busy", with: to });
+      const t = { a: to, b: s.id, o: { [to]: null, [s.id]: null }, ok: {} }; T.set(to, t); T.set(s.id, t);
+      say(o, { op: "open", with: s.id, name: s.name || "" }); return say(c, { op: "open", with: to, name: o.state.name || "" }); }
+    if (!mine) return; const other = mine.a === s.id ? mine.b : mine.a, oc = conn(other);
+    const end = why => { T.delete(mine.a); T.delete(mine.b); say(c, { op: "x", why }); say(oc, { op: "x", why }); };
+    if (op === "x") return end("called off");
+    if (!oc || !this.near(s, other, 20)) return end("too far apart");
+    const st = () => { for (const [x, y] of [[c, other], [oc, s.id]]) { const me = x.state.id; say(x, { op: "st", mine: mine.o[me], theirs: mine.o[y], okMe: !!mine.ok[me], okThem: !!mine.ok[y] }); } };
+    if (op === "offer") { const o = m.o && typeof m.o === "object" ? m.o : {}, items = {}, art = {};
+      for (const k of Object.keys(o.items || {}).slice(0, 16)) { const n = Math.floor(+o.items[k]); if (/^[a-z0-9_]{1,48}$/.test(k) && n >= 1 && n <= 9999) items[k] = n; }
+      for (const k of Object.keys(o.art || {}).slice(0, 6)) { const a = o.art[k]; if (/^[a-z0-9]{6,40}$/.test(k) && a && typeof a === "object" && items["pt_" + k]) art[k] = { t: word(a.t, 40), by: word(a.by, 24), w: num(+a.w || 0, 1, 4096), h: num(+a.h || 0, 1, 4096), c: word(a.c, 16), fr: word(a.fr, 8), d: word(a.d, 16), e: num(+a.e || 0, 0, 1) }; }
+      mine.o[s.id] = { items, cash: Math.floor(num(+o.cash || 0, 0, 1e9)), art }; mine.ok = {}; return st(); }
+    if (op === "ok") { mine.ok[s.id] = !!m.v;
+      if (mine.ok[mine.a] && mine.ok[mine.b]) { T.delete(mine.a); T.delete(mine.b); const e = { items: {}, cash: 0, art: {} };
+        say(c, { op: "done", with: other, give: mine.o[s.id] || e, get: mine.o[other] || e }); return say(oc, { op: "done", with: s.id, give: mine.o[other] || e, get: mine.o[s.id] || e }); }
+      return st(); }
   }
   put(k, v) { this.world().then(W => { if (v === "") delete W[k]; else W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
   }
@@ -266,6 +310,8 @@ export class Block extends Server {
     return new Response("not found", { status: 404 }); }
   onClose(c) { if (this.dev) this.dev.delete(c.id); const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
       if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k);
+      if (this.asks) this.asks.delete(s.id);
+      const tr = this.trades && this.trades.get(s.id); if (tr) { this.trades.delete(tr.a); this.trades.delete(tr.b); const o = [...this.getConnections()].find(x => x.state && x.state.id === (tr.a === s.id ? tr.b : tr.a)); if (o) o.send(JSON.stringify({ t: "tr", op: "x", why: "they left" })); }
       if (this.cars) for (const [k, v] of this.cars) if (v === s.id) { this.cars.delete(k); const a = s.at, v2 = a ? [a[0], a[1], a[3]].map(x => +(+x || 0).toFixed(3)).join(",") : null;
         if (v2) this.world().then(W => { W["car:" + k] = v2; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v2 })); }); else this.broadcast(JSON.stringify({ t: "car", k, by: null })); } } }
 }
@@ -300,7 +346,7 @@ async function admin(env, b) {
   const k = svc(env); if (!k && b.do !== "tell") return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
-  const room = ROOM.test(b.room || "") ? b.room : "s-a", id = String(b.id || ""), user = () => UUID.test(id);
+  const room = ROOM.test(b.room || "") ? b.room : SECROOMS[0], kick = id => Promise.all(SECROOMS.map(r => blockAsk(env, r, "kick", { id, out: 1 }).catch(() => {}))), id = String(b.id || ""), user = () => UUID.test(id);
   const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
   if (b.do === "list") {
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
@@ -333,9 +379,9 @@ async function admin(env, b) {
   }
   if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
   if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
-    if (r.ok && b.on) { forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); } return res(r); }
+    if (r.ok && b.on) { forget(id); await kick(id); } return res(r); }
   if (b.do === "delete") { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok) return res(r);
-    forget(id); await blockAsk(env, room, "kick", { id, out: 1 }).catch(() => {}); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
+    forget(id); await kick(id); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
@@ -414,4 +460,14 @@ export class Home extends DurableObject {
     if (n > 2 << 20) return false;
     for (const k in put) { if (put[k] === null) this.sql.exec("delete from owned where who = ? and k = ?", id, k); else this.sql.exec("insert into owned(who, k, v, at) values(?, ?, ?, ?) on conflict(who, k) do update set v = excluded.v, at = excluded.at", id, k, put[k], now); }
     return true; }
+  // paintings: a picture in 1 MB parts; its painter alone writes it while it is unfinished, nobody once it is finished; 96 MB a painter
+  artT() { this.sql.exec("create table if not exists art(id text, part integer, who text, fin integer, d text, at integer, primary key(id, part))"); }
+  artGet(k, who) { this.artT(); if (!k) return null; const r = this.sql.exec("select who, fin, d from art where id = ? order by part", k).toArray(); if (!r.length || (!r[0].fin && r[0].who !== who)) return null;
+    return { d: r.map(x => x.d).join(""), fin: r[0].fin, by: r[0].who }; }
+  artPut(k, who, d, fin) { this.artT(); const had = this.sql.exec("select who, fin from art where id = ? limit 1", k).toArray()[0];
+    if (had && had.who !== who) return "not yours"; if (had && had.fin) return "finished";
+    const used = this.sql.exec("select coalesce(sum(length(d)), 0) as n from art where who = ? and id != ?", who, k).toArray()[0].n; if (used + d.length > 96 << 20) return "full";
+    this.ctx.storage.transactionSync(() => { this.sql.exec("delete from art where id = ?", k); for (let i = 0, n = 0; i < d.length; i += 1 << 20, n++) this.sql.exec("insert into art(id, part, who, fin, d, at) values(?, ?, ?, ?, ?, ?)", k, n, who, fin, d.slice(i, i + (1 << 20)), Date.now()); });
+    return true; }
+  artDel(k, who) { this.artT(); const r = this.sql.exec("select who, fin from art where id = ? limit 1", k).toArray()[0]; if (!r || r.who !== who || r.fin) return false; this.sql.exec("delete from art where id = ?", k); return true; }
 }

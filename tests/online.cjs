@@ -12,9 +12,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(2000);
     await pg.evaluate(() => { window.__sf = ONLINE.sayFor; ONLINE.sayFor = 600; const P = __dbg.you(); const a = (dx, dz) => [P.x + dx, P.z + dz, SHARED.py, 0, SHARED.LVL, ''];
       ONLINE.feed({ t: 'hi', you: 'me', all: [{ id: 'a', name: 'ROSA', look: 'w00', at: a(1.5, 0) }, { id: 'b', name: 'MILO', look: 'w1', at: a(-1.5, .5) }] });
+      window.__sayFor = ONLINE.sayFor; ONLINE.sayFor = 120;   // words stay up while a slow runner gets to read them; put back below
       ONLINE.feed({ t: 'say', id: 'a', name: 'ROSA', text: 'hello block', st: { f: 1, c: '#ff8ad8', s: 2 } }); ONLINE.said('over my head'); });
     await pg.waitForTimeout(1500);
-    const r1 = await pg.evaluate(() => { const L = [...ONLINE.others.values()];
+    const r1 = await pg.evaluate(() => { const L = [...ONLINE.others.values()]; setTimeout(() => { ONLINE.sayFor = window.__sayFor; }, 0);
       return { n: L.length, figs: L.filter(o => o.fig && o.fig.g.visible).length, lv: L.every(o => o.fig && Object.keys(LEVELS.of).every(id => LEVELS.drawn(o.fig.g, id))), tags: L.filter(o => o.lab && o.lab.on && o.lab.el.textContent).length, bare: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').key === 'w1'),
         who: (document.querySelector('#onlwho') || {}).textContent, log: (document.querySelector('#onllog') || {}).textContent, say: ONLINE.others.get('a').tagS, sayRec: ONLINE.others.get('a').say, sayOld: performance.now() - ONLINE.others.get('a').sayT >= ONLINE.sayFor * 1000, at: ONLINE.at(ONLINE.others.get('a'), performance.now()).every(Number.isFinite) }; });
     ok(r1.n === 2 && r1.figs === 2 && r1.tags === 2, 'two players near you are drawn with name tags (' + JSON.stringify(r1) + ')');

@@ -1,10 +1,11 @@
 // THE FAIR'S RIDES: the Ferris wheel, the carousel, the swings, the pirate ship, the teacups, the scrambler, the drop tower, the slingshot, the roller coaster, the log flume, the haunted dark ride, the miniature railway and the sky ride, each registered with FAIR.ride (its place, its seats, its motion from the clock) and built with the fair; the tracked rides share one spline-track maker.
 import {THREE} from './003-shx.js';
-import {FORAGE, SFX} from './003b-systems.js';
+import {SFX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {PHOTOS} from './146m-newsreel.js';
 import {FAIR} from './150q-fair.js';
-{ const T=TILE, M=T/.84, V3=THREE.Vector3, UP=new V3(0,1,0), PI=Math.PI, TAU=PI*2, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, M=T/.84, V3=THREE.Vector3, UP=new V3(0,1,0), PI=Math.PI, TAU=PI*2, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const seatAt=(parent,x,y,z,ry=0)=>{ const s=new THREE.Object3D(); s.position.set(x,y,z); s.rotation.y=ry; parent.add(s); return s; };
   // a seat you can see: a bench with a back, its seat object on the cushion

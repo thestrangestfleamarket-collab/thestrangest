@@ -1,10 +1,11 @@
 // THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or a vehicle knocks them over), VEH (Rapier's raycast vehicle for anything you drive) and the go-kart on it.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); the go-kart's here, the cars' in 150p-cars
-{ const T=TILE, M1=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, M1=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc');
   /* ---------- trigger zones: a sensor that notices a loose thing coming in; the dartboard scores a throw, an upright trash can swallows small things ---------- */
   const ZN=new Map(), boards=new Set(), cans=new Map(); let zt=0, nO=0;
   const zones=()=>{ '@later'; const P=GPH.phys(); if(!P)return; const {R,world,fb}=P;

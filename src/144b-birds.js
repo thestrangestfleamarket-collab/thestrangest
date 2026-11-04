@@ -1,6 +1,7 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DRESS, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -8,7 +9,7 @@ import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 const BIRDS={list:[]}; window.BIRDS=BIRDS;
-{ const T=TILE, WU=T/.84, say=FORAGE.say, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
+{ const T=TILE, WU=T/.84, say=SAY, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
     ['ROCK PIGEON','Columba livia',.32,5,4,3,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
     ['EUROPEAN STARLING','Sturnus vulgaris',.21,10,4,4,'walk',{body:0x1e2228,breast:0x26302a,head:0x1a1e24,wing:0x2a2a2a,bar:0xa89a6a,tail:0x1a1a1e,beak:0xe8c040,leg:0xb08a70}],
@@ -75,7 +76,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     for(const d of FLORA.near(pos.x,pos.z,30*T,'bed')){ if(nb>=16)return; if(!d.street&&!PARK.in)continue; if(d.bd===tn)continue; d.bd=tn; const r=hsh(d.x/T+tn,d.z/T,751); if(r>.14)continue; const k=[0,3,6,7,2,4][Math.floor(hsh(d.z/T,d.x/T+tn,753)*6)];
       const sp=d.p.slice(0,6).map(p=>{ const x=p[0]+(hsh(p[2],p[0],755)-.5)*.5*T, z=p[2]+(hsh(p[0],p[2],757)-.5)*.5*T; return [x,gy(x,z),z]; }); if(sp.length<2)continue;
       const n=Math.min(3,flockN(k,hsh(tn,d.z/T,759))); for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'bed',spots:sp,flw:1}); nb++; } } };
-  let tn0=-1; setInterval(()=>{ const tn=dayN(); if(tn!==tn0){ const first=tn0<0; tn0=tn; if(!first){ for(const b of [...BIRDS.list])if(b.st!=='pet')drop(b); CHK.clear(); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } } }
+  let tn0=-1; SYS.every(()=>{ const tn=dayN(); if(tn!==tn0){ const first=tn0<0; tn0=tn; if(!first){ for(const b of [...BIRDS.list])if(b.st!=='pet')drop(b); CHK.clear(); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } } }
     if(!BIRDS.out)return; street(); posts(); shrubs(); for(const b of [...BIRDS.list])if((b.src==='street'||b.src==='post'||b.src==='bush'||b.src==='bed')&&Math.hypot(b.x-pos.x,b.z-pos.z)>40*T)drop(b); },3000);
   PARK.onShow.push(on=>{ if(!on)for(const b of [...BIRDS.list])if((b.src==='bush'||b.src==='bed')&&WEEDS.inPark(b.x,b.z))drop(b); });
   const flyTo=(b,x,y,z,away,land)=>{ const d=Math.hypot(x-b.x,z-b.z); b.fly={a:[b.x,b.y,b.z],c:[x,y,z],t:0,dur:.7+d/(4.5*T)+(b.k===HAWK?1:0),h:Math.min(3.5,.4+d/T*.25)*WU*(land===2?.4:1),away,land}; b.st='fly'; b.yaw=Math.atan2(x-b.x,z-b.z); };
@@ -115,9 +116,21 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const WR=binoc()?WR1:WR0; if(!BIRDS.list.includes(b)||b.st==='fly'||d>WR){ say(d>WR?'YOU LOSE SIGHT OF IT.':'IT FLIES OFF.','#c8a090'); WS=null; return; }
     WS.t+=dt*(spd<.3*T?1:.4); if(WS.t>=8){ WS.t=0; use('bird',WS.d-25,WS.d+25,WS.bonus+(spd<.1*T?5:0)); } };
   BIRDS.watching=()=>WS&&{k:WS.b.k,t:+WS.t.toFixed(1)};
+  const hunt=dt=>{ for(const h of BIRDS.list){ if(h.k!==HAWK||h.st!=='perch'||!h.post||PANEL.b===h)continue; if((h.hunt=(h.hunt??20+Math.random()*40)-dt)>0)continue; h.hunt=25+Math.random()*50;
+      if(Math.hypot(h.x-pos.x,h.z-pos.z)>30*T)continue; const L=((window.DRESS&&DRESS.lampposts)||[]).filter(p=>p!==h.post&&Math.hypot(p.x-h.x,p.z-h.z)<25*T&&Math.hypot(p.x-h.x,p.z-h.z)>6*T&&!BIRDS.list.some(b=>b.post===p)); if(!L.length)continue;
+      const p=L[Math.floor(Math.random()*L.length)]; let n=0; for(const b of BIRDS.list)if(b!==h&&b.k!==HAWK&&b.st!=='pet'&&b.st!=='opet'&&Math.hypot(b.x-h.x,b.z-h.z)<15*T){ flush(b); n++; }
+      h.post=p; h.spots=[[p.x,p.y,p.z]]; flyTo(h,p.x,p.y,p.z,false,1); if(Math.hypot(h.x-pos.x,h.z-pos.z)<20*T)say(n?'A RED-TAILED HAWK TAKES OFF. THE SMALL BIRDS SCATTER FOR COVER.':'A RED-TAILED HAWK GLIDES TO ANOTHER LAMPPOST.','#e8d0a0'); } };
+  const FE=[]; let feT=10; const FG=new THREE.PlaneGeometry(.04*WU,.13*WU), FM=new THREE.MeshLambertMaterial({color:0xe4ddd0,side:THREE.DoubleSide});
+  const unfeather=f=>{ scene.remove(f.me); const i=FE.indexOf(f); if(i>=0)FE.splice(i,1); const j=UI.things.indexOf(f.th); if(j>=0)UI.things.splice(j,1); };
+  const shed=dt=>{ for(const f of [...FE])if(Math.hypot(f.me.position.x-pos.x,f.me.position.z-pos.z)>40*T)unfeather(f); if((feT-=dt)>0)return; feT=15+Math.random()*25; if(FE.length>=3)return;
+    const B=BIRDS.list.filter(b=>b.st==='ground'&&b.k!==HAWK&&Math.hypot(b.x-pos.x,b.z-pos.z)<15*T); if(!B.length)return; const b=B[Math.floor(Math.random()*B.length)], x=b.x+(Math.random()-.5)*.6*T, z=b.z+(Math.random()-.5)*.6*T;
+    const me=new THREE.Mesh(FG,FM); me.rotation.set(-Math.PI/2,0,Math.random()*6.3); me.position.set(x,SHARED.groundY(x,z)+.01*WU,z); scene.add(me);
+    const f={me}; f.th={name:'A FEATHER',obj:me,reach:1.6*T,near:2.5*T,tall:.2*T,act:()=>{ FORAGE.give('bird_feather',1); say('A FEATHER A BIRD LEFT BEHIND. YOU KEEP IT.','#e8e2cc'); unfeather(f); FORAGE.draw(); }}; UI.thing(f.th); FE.push(f); };
+  BIRDS.feathers=()=>FE.length;
   BIRDS.tick=dt=>{ if(!dt)return; wtick(dt); const mv=Math.hypot(pos.x-lx,pos.z-lz); spd=spd*.8+mv/dt*.2; lx=pos.x; lz=pos.z; still=spd<.1*T?still+dt:0;
     const W=window.WX&&WX.now, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur)&&!(window.CLOCK&&CLOCK.dark())&&!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); BIRDS.out=out;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
+    if(out){ hunt(dt); shed(dt); }
     const rch=binoc()?WR1:2*T; theirs(); for(const b of [...BIRDS.list]){ if(b.th)b.th.reach=b.st==='pet'?2*T:rch; const pet=b.st==='pet'||b.st==='opet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(b.st==='opet'&&!(b.o&&b.o.fig&&b.o.fig.g.visible))continue; if(!show)continue; if(!pet&&(Math.hypot(b.x-pos.x,b.z-pos.z)>20*T||!NPCS.seen(b.x,b.y,b.z,1.5*T)))continue; if(pet||NPCS.live(b.x,b.y,b.z,1.5*T))step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
     for(const p in ME){ const me=ME[p]; me.count=n[p]||0; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } BIRDS.shown=n.body||0; };
   { SYS.add('life',(dt)=>{ BIRDS.tick(dt); },'144b-birds'); }

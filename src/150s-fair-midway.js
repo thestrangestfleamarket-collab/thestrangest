@@ -1,12 +1,13 @@
 // THE FAIR'S MIDWAY: MIDWAY runs the game booths (one booth mechanic: a timing throw or a reaction round, prize tickets for how well you do, the MIDWAY GAMES skill), the prize counter, the food stalls, the arcade tent with the six cabinet games, the stage and its shows, the fireworks after dark, the photo booth, the fortune teller, the map board and the funhouse; all registered with FAIR and built with it.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, INV, pos, ROOMS, SFX, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {FIX, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {PHOTOS} from './146m-newsreel.js';
 import {FAIR} from './150q-fair.js';
 const MIDWAY={booths:{},list:[],on:null}; window.MIDWAY=MIDWAY;
-{ const T=TILE, M=FAIR.M||T/.84, V3=THREE.Vector3, PI=Math.PI, TAU=PI*2, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), rnd=Math.random, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+{ const T=TILE, M=FAIR.M||T/.84, V3=THREE.Vector3, PI=Math.PI, TAU=PI*2, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=Math.random, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   if(FAIR.B){
   const skill=()=>{ try{ return (FORAGE.S&&FORAGE.S.sk&&FORAGE.S.sk.games||100)/1000; }catch(e){ return .1; } };
   const train=n=>{ if(n>0&&FORAGE.train)FORAGE.train('games',800,0,n); };
@@ -146,7 +147,7 @@ const MIDWAY={booths:{},list:[],on:null}; window.MIDWAY=MIDWAY;
   MIDWAY.fireworks=()=>{ const b=FW.base; if(b)burst(b.x,20*M,b.z,0xffd36a); };
 
   /* ---------- the photo booth, the fortune teller, the map board, the funhouse ---------- */
-  const PHB={x:-76,y:164}, FORT={x:-76,y:158}, MAPB={x:-76,y:120}, FUN={x:-116,y:105}; FAIR.post('info',MAPB.x-1.5,MAPB.y,PI/2,0); FAIR.post('fun',FUN.x+6,FUN.y-4,PI/2,0);
+  const PHB={x:-76,y:164}, FORT={x:-76,y:158}, MAPB={x:-76,y:120}, FUN={x:-112,y:104}; FAIR.post('info',MAPB.x-1.5,MAPB.y,PI/2,0); FAIR.post('fun',FUN.x+6,FUN.y-4,PI/2,0);
   const buildPhoto=(G,K)=>{ const g=new THREE.Group(); g.position.copy(FAIR.at(PHB.x,PHB.y)); g.rotation.y=-PI/2; G.add(g); K.box(2*M,2.3*M,2*M,K.mat(0x3a4a8a),0,1.15*M,0,g); K.box(1.4*M,1.9*M,.08*M,K.mat(0xd84a3a),0,.95*M,1.02*M,g); const sg=K.sign('PHOTO BOOTH\n$3',2*M,.7*M,'#1a1418','#ffd36a',{glow:1}); sg.position.set(0,2.05*M,1.04*M); g.add(sg);
     wallBox(g.position.x-1*M,g.position.z-1*M,g.position.x+1*M,g.position.z+1*M,2.3*M); const hb=K.box(2.2*M,2.3*M,1*M,new THREE.MeshBasicMaterial({visible:false}),0,1.15*M,1.3*M,g);
     UI.thing({name:'PHOTO BOOTH ($3)',obj:hb,reach:2.5*M,near:6*M,tall:2*M,act:()=>{ if(!FAIR.cash(3,'A PHOTO'))return; try{ const hd=SHARED.heading, cx=pos.x+Math.sin(hd)*2.2*M, cz=pos.z+Math.cos(hd)*2.2*M, ph=PHOTOS.take(cx,SHARED.py+1.35*M,cz,hd+PI,-.05,'THE PHOTO BOOTH'); PHOTOS.mine.push(ph); if(PHOTOS.save)PHOTOS.save(); say('FLASH. YOUR PICTURE IS IN YOUR PHOTOS.'); if(SFX.play)SFX.play('click',{vol:.6,pitch:1.6}); }catch(e){ console.warn('photo booth',e); } }}); };
@@ -159,7 +160,7 @@ const MIDWAY={booths:{},list:[],on:null}; window.MIDWAY=MIDWAY;
   const drawMap=(g,W,H)=>{ const P=FAIR.P, sx=W/(P.x1-P.x0), sy=H/(P.y1-P.y0), X=x=>(x-P.x0)*sx, Y=y=>H-(y-P.y0)*sy; g.fillStyle='#8e8c86'; g.fillRect(0,0,W,H); g.fillStyle='#1a1418'; g.font='bold 10px Silkscreen,monospace'; g.textAlign='center';
     const R=(x,y,w,d,col,n)=>{ g.fillStyle=col; g.fillRect(X(x-w/2),Y(y+d/2),w*sx,d*sy); if(n){ g.fillStyle='#0a0808'; g.fillText(n,X(x),Y(y)+4); } };
     for(const r of FAIR.list){ const d=r.def, s=d.solid||[10,10]; R(d.x,d.y,s[0],s[1],['#d84a3a','#e9b53a','#3a8ad8','#4ab860','#d86ab0'][FAIR.list.indexOf(r)%5],d.name); }
-    R(-104,-35,34,42,'#4a4a52','KART TRACK'); R(-111,-2,20,18,'#3a3a44','BUMPER CARS'); for(const b of BOOTH)R(b.x,b.y,4,3,'#f0e6c8',''); R(TENT.x,TENT.y,10,12,'#d84a3a','ARCADE TENT'); R(STAGE.x,STAGE.y,4,10,'#3a2a44','STAGE'); R(FUN.x,FUN.y,10,10,'#e9b53a','FUNHOUSE'); for(const s of STALLS)R(s[4],s[5],3,2,'#f0e6c8','');
+    R(-104,-35,34,42,'#4a4a52','KART TRACK'); R(-111,-2,20,18,'#3a3a44','BUMPER CARS'); for(const b of BOOTH)R(b.x,b.y,4,3,'#f0e6c8',''); R(TENT.x,TENT.y,10,12,'#d84a3a','ARCADE TENT'); R(STAGE.x,STAGE.y,4,10,'#3a2a44','STAGE'); R(FUN.x,FUN.y,10,10,'#e9b53a','FUNHOUSE'); R(-98,101,4,2,'#d86ab0','PRIZES'); for(const s of STALLS)R(s[4],s[5],3,2,'#f0e6c8','');
     g.fillStyle='#ffd36a'; g.fillRect(X(P.x1)-4,Y(FAIR.P.gate[1]),4,(FAIR.P.gate[1]-FAIR.P.gate[0])*sy); g.fillStyle='#1a1418'; g.fillText('GATE',X(P.x1)-22,Y((FAIR.P.gate[0]+FAIR.P.gate[1])/2)+4); };
   const openMap=()=>{ const h=CLOCK.h, hm=t=>Math.floor(t)+':'+String(Math.round((t%1)*60)).padStart(2,'0'); const rows=FAIR.list.map(R=>`<tr style="border-bottom:1px solid #22252f"><td style="padding:3px 2px">${R.def.name}</td><td style="text-align:right">${(R.def.price==null?1:R.def.price)} TKT</td><td style="text-align:right">${R.def.anytime?'RUNNING':R.stopped?'LOADING · '+Math.max(0,Math.round(R.def.load-R.u))+' S':'BACK IN '+Math.max(0,Math.round(R.def.cycle-R.u))+' S'}</td></tr>`).join('');
     MW_.innerHTML='<h3 style="margin:0 0 8px">[ THE STRANGEST FAIR ]</h3><canvas width="520" height="'+Math.round(520*(FAIR.P.y1-FAIR.P.y0)/(FAIR.P.x1-FAIR.P.x0)*.5)+'" style="width:100%;image-rendering:pixelated;border:1px solid #3a3f4e"></canvas><div style="margin:8px 0">NOW '+hm(h)+' · SHOWS FROM '+SHOWS[0][0]+':00 TO '+SHOWS[0][1]+':00 · FIREWORKS AT 21:00'+(showOn()?' · <b>A SHOW IS ON</b>':'')+'</div><table style="border-collapse:collapse;width:100%">'+rows+'</table><div style="margin-top:10px;text-align:right"><button data-x style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">CLOSE</button></div>';
@@ -180,8 +181,8 @@ const MIDWAY={booths:{},list:[],on:null}; window.MIDWAY=MIDWAY;
     SYS.add('places',dt=>{ if(FAIR.G&&FAIR.G.visible)br.rotation.x+=(dt||0)*.9; },'150s-fun'); K.lamp(b.x,3*M,b.z,0xff9ae0,12,6); };
 
   FAIR.extra.push((G,K)=>{ for(const b of BOOTH)buildBooth(b,G,K); for(const s of STALLS)buildStall(s,G,K); buildTent(G,K); buildStage(G,K); buildFireworks(G,K); buildPhoto(G,K); buildFortune(G,K); buildMapBoard(G,K); buildFun(G,K);
-    const q=FAIR.at(-104,101), g=new THREE.Group(); g.position.copy(q); g.rotation.y=0; G.add(g); K.box(4*M,1*M,.6*M,K.mat(0xd86ab0),0,.5*M,.6*M,g); K.box(4.2*M,.08*M,.8*M,K.mat(0xf0e6c8),0,1.02*M,.6*M,g); K.box(4*M,2.6*M,1.4*M,K.mat(0x6a2a3a),0,1.3*M,-.6*M,g); for(let i=0;i<9;i++)K.mesh(new THREE.SphereGeometry(.16*M,8,6),[0xd84a3a,0xe9b53a,0x3a8ad8,0x4ab860][i%4],(i%5-2)*.7*M,1.5*M+Math.floor(i/5)*.5*M,.05*M,g);
-    const sg=K.sign('PRIZES',3*M,.8*M,'#1a1418','#ffd36a',{glow:1}); sg.position.set(0,2.3*M,.12*M); g.add(sg); const hb=K.box(4*M,1.2*M,.8*M,new THREE.MeshBasicMaterial({visible:false}),0,.6*M,1.1*M,g); UI.thing({name:'THE PRIZE COUNTER',obj:hb,reach:2.6*M,near:6*M,tall:1.5*M,act:MIDWAY.prizes}); wallBox(q.x-2*M,q.z-1.3*M,q.x+2*M,q.z+.9*M,1.2*M); FAIR.post('prize',-104,101-1,0,0); K.lamp(q.x,2.8*M,q.z,0xffe0a0,9,5); });
+    const q=FAIR.at(-98,101), g=new THREE.Group(); g.position.copy(q); g.rotation.y=0; G.add(g); K.box(4*M,1*M,.6*M,K.mat(0xd86ab0),0,.5*M,.6*M,g); K.box(4.2*M,.08*M,.8*M,K.mat(0xf0e6c8),0,1.02*M,.6*M,g); K.box(4*M,2.6*M,1.4*M,K.mat(0x6a2a3a),0,1.3*M,-.6*M,g); for(let i=0;i<9;i++)K.mesh(new THREE.SphereGeometry(.16*M,8,6),[0xd84a3a,0xe9b53a,0x3a8ad8,0x4ab860][i%4],(i%5-2)*.7*M,1.5*M+Math.floor(i/5)*.5*M,.05*M,g);
+    const sg=K.sign('PRIZES',3*M,.8*M,'#1a1418','#ffd36a',{glow:1}); sg.position.set(0,2.3*M,.12*M); g.add(sg); const hb=K.box(4*M,1.2*M,.8*M,new THREE.MeshBasicMaterial({visible:false}),0,.6*M,1.1*M,g); UI.thing({name:'THE PRIZE COUNTER',obj:hb,reach:2.6*M,near:6*M,tall:1.5*M,act:MIDWAY.prizes}); wallBox(q.x-2*M,q.z-1.3*M,q.x+2*M,q.z+.9*M,1.2*M); FAIR.post('prize',-98,101-1,0,0); K.lamp(q.x,2.8*M,q.z,0xffe0a0,9,5); });
   MIDWAY.play=play;
   window.MIDDBG=()=>({on:MIDWAY.on,booths:BOOTH.map(b=>b.id),bests:bests(),ptix:FAIR.have('ptix'),show:showOn(),fw:FW.live});
   } }

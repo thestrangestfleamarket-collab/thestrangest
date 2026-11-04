@@ -1,12 +1,13 @@
 // THE FAIR'S KART TRACK AND BUMPER CARS: KARTS lays the fenced go-kart course with its rental karts at the pit (each a kart kind on its own vehicle, boarded where it stands; laps timed over the start line, your best kept, the fair's record shared) and the bumper-car pen (small slow vehicles that knock the townsfolk and each other about).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, PB, pos, RIDE, SFX, UI} from './003b-systems.js';
+import {ONLINE, PB, pos, RIDE, SFX, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {VEH} from './150o-physmore.js';
 import {FAIR} from './150q-fair.js';
 const KARTS={karts:[],bumps:[],lap:null}; window.KARTS=KARTS;
-{ const T=TILE, M=FAIR.M||T/.84, M1=M*1.4, M0=M, PI=Math.PI, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), V3=THREE.Vector3;
+{ const T=TILE, M=FAIR.M||T/.84, M1=M*1.4, M0=M, PI=Math.PI, say=(t,c)=>SAY(t,c||'#e8e2cc'), V3=THREE.Vector3;
   if(FAIR.B){
   const TRK={x:-104,y:-35,w:34,d:42}, PEN={x:-111,y:-2,w:20,d:18};
   FAIR.post('karts',TRK.x+TRK.w/2+2.5,TRK.y+4,-PI/2,0); FAIR.post('bumpers',PEN.x,PEN.y-PEN.d/2-1.5,0,0);

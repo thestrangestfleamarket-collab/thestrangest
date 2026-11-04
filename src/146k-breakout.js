@@ -1,11 +1,12 @@
 // THE BREAKOUT: BREAK — some nights things crawl up the castle stair from the dungeon (slimes, radioactive spiders); the guardians close in and fight them with what they carry (blades and spears strike, bows shoot, staves cast), and your strikes land on them too.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, GUARD, INV, LINES, MAIL, PARK, pos, SFX, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 const BREAK={list:[]}; window.BREAK=BREAK;
 if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, MH=T/.84, MV=ZU*24/.84, grp=MAPG.park||scene, S=CASTLE.stair, gnd=(x,z)=>MODS.bodega.ground(x,z);
-  const h3=(a,b,c)=>{ const q=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return q-Math.floor(q); }, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+  const h3=(a,b,c)=>{ const q=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return q-Math.floor(q); }, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const TOP={x:X((S.x0+S.x1)/2),z:Z(S.y1+.4)};
   // the crawlers: a slime that hops (squashes as it lands, stretches as it leaves) and a spider that walks on eight legs in two sets of four
   const KIND={slime:{hp:3,v:.55,dmg:.03,r:.22,reach:.5},spider:{hp:4,v:.95,dmg:.045,r:.28,reach:.6}};

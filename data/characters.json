@@ -2252,7 +2252,15 @@
     "bottle",
     "wax_candle",
     "quill_pen",
-    "cigar"
+    "cigar",
+    "canvas_s",
+    "canvas_m",
+    "canvas_w",
+    "canvas_t",
+    "paper"
+   ],
+   "buys": [
+    "paintings"
    ],
    "line": "Odds and ends. Mostly ends."
   },

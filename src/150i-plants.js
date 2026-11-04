@@ -1,11 +1,12 @@
 // YOUR PLANTS: the watching cactus, the little cactus and the bonsai from the Market St plant stall (146v) are things for your apartment (DECORATE shows them as YOURS). The watching cactus's eye follows you round the room; the bonsai grows a little each real day you water it (a click), up to full size.
 import {THREE} from './003-shx.js';
-import {FORAGE, SFX} from './003b-systems.js';
+import {SFX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {PLANTS} from './146v-plants.js';
 import {ROOMK} from './150a-bedroom.js';
-{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), DAY=()=>Math.floor(Date.now()/864e5), STEP=.1;
+{ const say=(t,c)=>SAY(t,c||'#e8e2cc'), DAY=()=>Math.floor(Date.now()/864e5), STEP=.1;
   let S={}; try{ S=JSON.parse(OWNED.get('bonsai')||'{}')||{}; }catch(e){ S={}; } const save=()=>{ try{ OWNED.set('bonsai',JSON.stringify(S)); }catch(e){} };
   const K={cactus_eye:{name:'WATCHING CACTUS',make:()=>PLANTS.cactus(1),wire:'eye',sol:.16},cactus:{name:'LITTLE CACTUS',make:()=>PLANTS.cactus(.7,false),wire:null,sol:.12},bonsai:{name:'BONSAI',make:()=>{ const g=new THREE.Group(); g.name='bonsaiRoot'; g.add(PLANTS.bonsai(0)); return g; },wire:'bonsai',sol:.2}};
   ROOMK.parts.push(ctx=>{ const {R}=ctx; for(const id in K){ const k='pl:'+id; if(R.kinds[k])continue; const P=K[id], D={kind:k,name:P.name,own:id,loose:false,m:0,wire:P.wire,sol:[[-P.sol,-P.sol,P.sol,P.sol,.4]],shf:[],dept:'garden',deptName:'GARDEN'};

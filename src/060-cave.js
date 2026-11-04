@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, MAPG, MODS, PARKCAVE, PARKTOWER, SOL, STORE, TILE} from './006-map-pre.js';
+import {FIX, MAPG, MODS, PARKCAVE, PARKTOWER, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
@@ -74,7 +74,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.lift={x:CX,z:CZ-3.4*T}; hit(GCAVE.lift.x,GCAVE.lift.z,1.1*T,Y(6),{name:'A CRACK IN THE FLOOR',reach:1.2*T,near:2.2*T,tall:Y(14),act:()=>{ if(MODS.gemcave)MODS.gemcave.go(1); }});
     GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!window.INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
     GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!window.INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
-    GCAVE.regrow(); setInterval(GCAVE.regrow,5000);
+    GCAVE.regrow(); SYS.every(GCAVE.regrow,5000,'060-cave regrow');
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }

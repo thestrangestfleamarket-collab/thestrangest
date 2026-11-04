@@ -9,17 +9,21 @@ import {LABELS} from './104-labels.js';
   const T=TILE, V3=THREE.Vector3, BLUE=0x4fc3ff, N=2, rnd=(a,b)=>a+Math.random()*(b-a), flat=o=>new THREE.MeshBasicMaterial(Object.assign({transparent:true,depthWrite:false,side:THREE.DoubleSide,fog:false,toneMapped:false},o));
   SCANNER.DELAY=QS.get('scanin')?[+QS.get('scanin'),+QS.get('scanin')]:[10,20];   // (?scanin=S holds the wait for the tests)
   const grid=()=>{ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d'); g.strokeStyle='rgba(90,200,255,.6)'; g.lineWidth=2; for(let x=0;x<=256;x+=32){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,256); g.stroke(); g.beginPath(); g.moveTo(0,x); g.lineTo(256,x); g.stroke(); } const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
-  const gridMat=()=>{ const U={uY:{value:0},uC:{value:.11*T}}, m=new THREE.MeshBasicMaterial({color:0x4fc3ff,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const gridMat=(U0,PM)=>{ const U=U0||{uY:{value:0},uC:{value:.11*T}}, m=new THREE.MeshBasicMaterial({color:0x4fc3ff,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    const NP=PM?PM.value.length:0; if(PM)m.customProgramCacheKey=()=>'scanpm'+NP;
     m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
+      if(PM){ sh.uniforms.uPM=PM; sh.vertexShader=`attribute float pidx; uniform mat4 uPM[${NP}];\n`+sh.vertexShader.replace('#include <begin_vertex>','mat4 PM=uPM[int(pidx+0.5)]; vec3 transformed=(PM*vec4(position,1.)).xyz;'); }
       sh.vertexShader='varying vec3 vSW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n{ vec4 sw=vec4(transformed,1.0);\n#ifdef USE_INSTANCING\nsw=instanceMatrix*sw;\n#endif\nvSW=(modelMatrix*sw).xyz; }');
       sh.fragmentShader='uniform float uY; uniform float uC; varying vec3 vSW;\n'+sh.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\n{ float ly=step(fract(vSW.y/uC),.16), lx=step(fract((vSW.x+vSW.z)/uC),.12), g=max(lx,ly), b=exp(-pow((vSW.y-uY)/(uC*1.2),2.0)), row=step(.5,fract(vSW.y/(uC*.5)));\n gl_FragColor=vec4(diffuse*(g*.85+b*1.6+row*.08), clamp(g*.75+b*.6+row*.06,0.0,1.0)*opacity); }'); };
     m.userData.U=U; return m; };
-  const bodyOf=t=>{ if(!t)return null; if(t.id==='me')return W3.group; const o=ONLINE.others.get(t.id); return o&&o.fig?o.fig.g:null; };
-  const dress=d=>{ undress(d); const root=bodyOf(d.target); if(!root)return; const L=[];
+  const bodyOf=t=>{ if(!t)return null; if(t.id==='me')return {g:W3.group,PM:W3.PM}; const o=ONLINE.others.get(t.id); return o&&o.fig?o.fig:null; };
+  const dress=d=>{ undress(d); const B=bodyOf(d.target), root=B&&B.g; if(!root)return; const L=[];
+    if(B.PM&&(!d.GMP||d.GMP.userData.PM!==B.PM)){ d.GMP=gridMat(d.GM.userData.U,B.PM); d.GMP.userData.PM=B.PM; }
     root.traverse(m=>{ if(!m.isMesh||m.userData.scanOv)return; const mm=[].concat(m.material); if(mm.every(x=>!x||x.visible===false))return; let o;
-      if(m.isSkinnedMesh){ o=new THREE.SkinnedMesh(m.geometry,d.GM); o.bind(m.skeleton,m.bindMatrix); o.bindMode=m.bindMode; }
-      else if(m.isInstancedMesh){ o=new THREE.InstancedMesh(m.geometry,d.GM,m.instanceMatrix.count); o.instanceMatrix=m.instanceMatrix; o.count=m.count; }
-      else o=new THREE.Mesh(m.geometry,d.GM);
+      const GM=B.PM&&m.geometry.attributes.pidx?d.GMP:d.GM;
+      if(m.isSkinnedMesh){ o=new THREE.SkinnedMesh(m.geometry,GM); o.bind(m.skeleton,m.bindMatrix); o.bindMode=m.bindMode; }
+      else if(m.isInstancedMesh){ o=new THREE.InstancedMesh(m.geometry,GM,m.instanceMatrix.count); o.instanceMatrix=m.instanceMatrix; o.count=m.count; }
+      else o=new THREE.Mesh(m.geometry,GM);
       o.userData.scanOv=1; o.frustumCulled=false; o.renderOrder=6; o.castShadow=o.receiveShadow=false; L.push([m,o]); });
     for(const [m,o] of L)m.add(o); d.ov=L; };
   const undress=d=>{ for(const [,o] of d.ov||[])o.removeFromParent(); d.ov=null; };

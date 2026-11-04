@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FEEL, pos, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {QS} from './006-map-pre.js';
+import {TPANE} from './087dz-tpane.js';
 { const MH=FEEL.MH, MV=FEEL.MV;
   const ROWS=[['MOVE',[['walk','WALK m/s',.1],['run','RUN m/s',.1],['accel','ACCELERATION m/s²',1],['brake','BRAKING m/s²',1],['reverse','REVERSAL BRAKING m/s²',1],['grip','TURN GRIP m/s²',1]]],
     ['AIR',[['gravity','GRAVITY m/s²',.5],['jumpH','JUMP HEIGHT m',.05],['fallMax','MAX FALL m/s',.5],['airAccel','AIR CONTROL m/s²',.5],['airBrake','AIR DRAG m/s²',.5],['coyote','COYOTE TIME s',.01],['buffer','JUMP BUFFER s',.01],['variable','SHORT HOP ON RELEASE (0/1)',1],['jumpCut','SHORT HOP KEEPS',.05]]],
@@ -10,13 +11,7 @@ import {QS} from './006-map-pre.js';
     ['ANIMATION',[['fade','CROSSFADE s',.01],['animK','ANIMATION SPEED ×',.05],['walkRef','WALK CLIP m/s',.05],['jogRef','JOG CLIP m/s',.05],['sprintRef','SPRINT CLIP m/s',.05]]],
     ['CAMERA',[['camDist','DISTANCE m',.1],['camPitch','ANGLE rad',.01],['camH','TARGET HEIGHT m',.05],['camDamp','TURN DAMPING',.5],['camFollow','FOLLOW DAMPING',.5],['camClear','WALL CLEARANCE m',.05],['camBack','RECOVER SPEED',.5]]],
     ['COLLISION',[['radius','CAPSULE RADIUS m',.01],['height','CAPSULE HEIGHT m (0 = HIS)',.01],['slope','MAX SLOPE °',1],['step','STEP HEIGHT m',.01],['stepOn','STEPS (0/1)',1],['snap','GROUND SNAP m',.01]]]];
-  const css=`#feelp{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:52px;z-index:15;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 120px);overflow:auto;font:10px/1.6 var(--pixel);letter-spacing:.5px;color:var(--fg);background:rgba(11,13,19,.94);border:2px solid var(--line);padding:4px;box-sizing:border-box;
---tp-base-background-color:transparent;--tp-base-shadow-color:transparent;--tp-base-border-radius:0;--tp-blade-border-radius:0;--tp-base-font-family:inherit;--tp-blade-value-width:170px;--tp-container-unit-size:26px;
---tp-container-background-color:rgba(125,255,168,.06);--tp-container-background-color-hover:rgba(125,255,168,.12);--tp-container-background-color-focus:rgba(125,255,168,.16);--tp-container-background-color-active:rgba(125,255,168,.2);--tp-container-foreground-color:#7dffa8;
---tp-button-background-color:transparent;--tp-button-background-color-hover:#7dffa8;--tp-button-background-color-focus:#7dffa8;--tp-button-background-color-active:#7dffa8;--tp-button-foreground-color:#7dffa8;
---tp-input-background-color:#031a0d;--tp-input-background-color-hover:#0a2a16;--tp-input-background-color-focus:#0a2a16;--tp-input-background-color-active:#0d3a1f;--tp-input-foreground-color:#7dffa8;
---tp-label-foreground-color:#5fcf88;--tp-groove-foreground-color:#3aa866;--tp-monitor-background-color:#031a0d;--tp-monitor-foreground-color:#5fcf88}
-#feelp .tp-lblv_l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#feelp .tp-sldv_k::after{background-color:#7dffa8}#feelp .tp-sldv_k::before{background-color:#3aa866}
+  const css=`#feelp{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:52px;z-index:15;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 120px);overflow:auto;font:10px/1.6 var(--pixel);letter-spacing:.5px;color:var(--fg);background:rgba(11,13,19,.94);border:2px solid var(--line);padding:4px;box-sizing:border-box;}
 #feelp textarea{width:100%;height:70px;font:9px ui-monospace,monospace;color:var(--fg);background:#0e1016;border:1px solid #3a3f4e;box-sizing:border-box;margin-top:4px}#feelp .msg{color:var(--dim);min-height:1.6em;padding:0 4px}
 #feeld{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:14;font:10px/1.5 var(--pixel);color:var(--fg);background:rgba(11,13,19,.86);border:2px solid var(--line);padding:6px 9px;white-space:pre;pointer-events:none;font-variant-numeric:tabular-nums}`;
   const st_=document.createElement('style'); st_.textContent=css; document.head.appendChild(st_);
@@ -25,16 +20,12 @@ import {QS} from './006-map-pre.js';
   for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(e.key!=='Escape')e.stopPropagation(); });
   const TA=P.querySelector('textarea'), MSG=P.querySelector('.msg'), msg=t=>{ MSG.textContent=t; };
   const ONOFF=new Set(['variable','lean','stepOn']);
-  const V={}; for(const [,rows] of ROWS)for(const [k] of rows)Object.defineProperty(V,k,{enumerable:true,
-    get:()=>ONOFF.has(k)?!!FEEL.cfg[k]:FEEL.cfg[k],
-    set:v=>{ const err=FEEL.set({[k]:ONOFF.has(k)?(v?1:0):+(+v).toFixed(4)}); msg(err.length?err[0]:''); if(k==='camDist'||k==='camPitch')FEEL.applyCam(); }});
-  const F={}; Object.defineProperties(F,{on:{enumerable:true,get:()=>!!FEEL.on,set:v=>FEEL.setOn(v)},dbg:{enumerable:true,get:()=>!!FEEL.dbg,set:v=>FEEL.setDbg(v)},
-    shadow:{enumerable:true,get:()=>renderer.shadowMap.enabled,set:v=>{ renderer.shadowMap.enabled=v; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }}});
-  let pane=null, TP=null;
+  const V=TPANE.live(Object.fromEntries(ROWS.flatMap(([,rows])=>rows.map(([k])=>[k,[()=>ONOFF.has(k)?!!FEEL.cfg[k]:FEEL.cfg[k],v=>{ const err=FEEL.set({[k]:ONOFF.has(k)?(v?1:0):+(+v).toFixed(4)}); msg(err.length?err[0]:''); if(k==='camDist'||k==='camPitch')FEEL.applyCam(); }]]))));
+  const F=TPANE.live({on:[()=>!!FEEL.on,v=>FEEL.setOn(v)],dbg:[()=>!!FEEL.dbg,v=>FEEL.setDbg(v)],
+    shadow:[()=>renderer.shadowMap.enabled,v=>{ renderer.shadowMap.enabled=v; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }]});
+  let pane=null;
   const sync=()=>{ if(pane)pane.refresh(); };
-  const draw=async()=>{ '@later'; if(!TP)TP=await import('https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js');
-    const ex=pane?pane.expanded:true; if(pane)pane.dispose();
-    pane=new TP.Pane({container:P.querySelector('.tp'),title:'FEEL LAB',expanded:ex});
+  const draw=async()=>{ '@later'; pane=await TPANE.make(P.querySelector('.tp'),{title:'FEEL LAB'});
     pane.addBinding(F,'on',{label:'NEW CONTROLLER ON THE STREET'}); pane.addBinding(F,'dbg',{label:'DEBUG'}); pane.addBinding(F,'shadow',{label:'SHADOWS'});
     const yd=pane.addFolder({title:'THE YARD (T: BACK TO SPAWN)'});
     FEEL.yard.spots().forEach((s,i)=>yd.addButton({title:s.n}).on('click',()=>{ FEEL.load(); FEEL.yard.go(i); }));

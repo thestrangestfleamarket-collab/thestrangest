@@ -17,7 +17,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       try { if (window.GAMEED && window.GAMEED.open) window.GAMEED.toggle(); } catch (e) {}
       const mp = document.getElementById('maped'); if (mp) mp.style.display = 'none';
       try { if (window.CHARED && window.CHARED.on && window.CHARED.show) window.CHARED.show(false); } catch (e) {}
-      for (const id of ['lnd', 'led', 'ited']) { const p = document.getElementById(id); if (p && !p.hidden) { const d = p.querySelector('[id="ldone"]'); if (d) d.click(); else p.hidden = true; } }
+      try { if (window.__dbg.LAND.on) window.__dbg.LAND.toggle(); } catch (e) {}
+      for (const id of ['led', 'ited']) { const p = document.getElementById(id); if (p && !p.hidden) { const d = p.querySelector('[id="ldone"]'); if (d) d.click(); else p.hidden = true; } }
       const m = document.getElementById('menu'); if (m && !m.hidden) { try { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); } catch (e) {} m.hidden = true; }
     });
     const poll = async (test, ms) => { for (let i = 0; i < ms / 200; i++) { if (await pg.evaluate(test).catch(() => false)) return true; await pg.waitForTimeout(200); } return false; };
@@ -44,22 +45,25 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 
     // the landscape editor: all modes and their controls, the plant/rock dropdown
     const before = errs.length;
-    const land = await pg.evaluate(() => {
-      const r = {}, $ = s => document.querySelector(s), click = s => { const e = $(s); if (e) e.click(); return !!e; };
-      window.EDITORS.key(9);
-      r.panel = !!$('#lnd') && !$('#lnd').hidden;
-      // DRAW (free brush): size controls + ground palette
-      click('#lmdraw'); r.draw = !!$('#lbrsm') && !!$('#lbrbg') && !!$('.types');
-      const size0 = ($('#lbrsm') ? $('#lbrsm').parentNode.querySelector('.dim').textContent : '');
-      click('#lbrbg'); const size1 = ($('#lbrbg') ? $('#lbrbg').parentNode.querySelector('.dim').textContent : '');
-      r.brushSize = size0 !== size1;
+    const land = await pg.evaluate(async () => {
+      const r = {}, $ = s => document.querySelector(s), click = s => { const e = $(s); if (e) e.click(); return !!e; }, L = window.__dbg.LAND;
+      const row = k => { const e = $('#lnd [data-k="' + k + '"]'); return e && e.offsetParent ? e : null; };
+      const val = k => { const e = row(k), i = e && e.querySelector('input'); return i ? (i.type === 'checkbox' ? i.checked : i.value) : null; };
+      const set = (k, v) => { const i = row(k).querySelector('input'); i.value = v; i.dispatchEvent(new Event('change', { bubbles: true })); };
+      window.EDITORS.key(9); await L.ready;
+      r.panel = !!$('#lnd') && !$('#lnd').hidden && !!$('#lnd .tp .tp-rotv');
+      // DRAW (free brush): the brush size slider + ground palette
+      click('#lmdraw'); r.draw = !!row('brush') && !!$('.types');
+      const size0 = val('brush'); set('brush', '3'); click('#lmbox'); click('#lmdraw');
+      r.brushSize = size0 !== val('brush') && parseFloat(val('brush')) === 3;
       // BORDER
-      click('#lmbord'); r.border = !!$('#lfin') && !!$('#lcancel');
+      click('#lmbord'); r.border = !!$('#lfin') && !!$('#lfin').offsetParent && !!$('#lcancel') && !row('brush');
       // PLANTS: the dropdown of plants/rocks
       click('#lmplant'); const sel = $('#lsel');
       r.plantSel = !!sel && sel.querySelectorAll('optgroup').length >= 4 && sel.querySelectorAll('option').length >= 20;
-      r.plantSize = !!$('#lpsm') && !!$('#lpbg') && !!$('#lprot');
+      r.plantSize = !!row('size') && !!row('rot');
       if (sel && sel.options.length) { sel.value = sel.options[sel.options.length - 1].value; sel.dispatchEvent(new Event('change', { bubbles: true })); r.plantPick = true; }
+      const s0 = val('size'); set('size', '1.23'); r.plantPick = r.plantPick && val('size') !== s0 && parseFloat(val('size')) === 1.23;
       // ERASE
       click('#lmerase'); r.erase = /remove/i.test($('#lnd').textContent);
       // BOX + pick a ground type
@@ -68,30 +72,31 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       if (types[2]) { types[2].click(); r.typePick = document.querySelectorAll('#lnd .t[aria-pressed="true"]').length === 1; }
       // undo/clear/export buttons present
       r.actions = !!$('#lundo') && !!$('#lclear') && !!$('#lexp');
-      click('[id="ldone"]'); // close
+      click('[id="ldone"]'); r.closed = !L.on && $('#lnd').hidden; // close
       return r;
     }).catch(e => ({ err: e.message }));
-    ok(land.panel, 'LANDSCAPE: the panel opens');
-    ok(land.draw, 'LANDSCAPE: DRAW mode shows the free-brush size controls and ground palette');
-    ok(land.brushSize, 'LANDSCAPE: the brush size changes with SIZE +');
+    ok(land.panel, 'LANDSCAPE: the panel opens' + (land.err ? ' (' + land.err + ')' : ''));
+    ok(land.draw, 'LANDSCAPE: DRAW mode shows the brush size slider and ground palette');
+    ok(land.brushSize, 'LANDSCAPE: the brush size slider sets the brush');
     ok(land.border, 'LANDSCAPE: BORDER mode shows FINISH / CANCEL');
     ok(land.plantSel, 'LANDSCAPE: PLANTS mode lists plants & rocks in a grouped dropdown');
     ok(land.plantSize && land.plantPick, 'LANDSCAPE: a plant can be picked and sized');
     ok(land.erase, 'LANDSCAPE: ERASE mode is available');
     ok(land.box && land.typePick, 'LANDSCAPE: BOX mode offers the ground types and one selects');
     ok(land.actions, 'LANDSCAPE: UNDO / CLEAR / EXPORT are present');
+    ok(land.closed, 'LANDSCAPE: DONE closes it');
     ok(errs.length === before, 'LANDSCAPE: no errors driving the controls' + (errs.length > before ? ' (' + errs.slice(before).join('; ') + ')' : ''));
 
     // the world editor: editing a light on an item (brightness/colour/range) and fit-to-item controls
-    const we = await pg.evaluate(() => {
-      const WE = window.WE, r = {}, $ = s => document.querySelector(s); if (!WE.on) WE.toggle();
+    const we = await pg.evaluate(async () => {
+      const WE = window.WE, r = {}, $ = s => document.querySelector(s); if (!WE.on) await WE.toggle();
       r.lights = WE.dbgLights();
       const a = WE.dbgSelLight(0); r.picked = !!a; const base = a ? a.intensity : 0;
       r.lrows = !!$('[data-lrow]') && getComputedStyle($('[data-lrow]')).display !== 'none';
-      const bri = $('#wlbri'); bri.value = 2; bri.dispatchEvent(new Event('input', { bubbles: true }));
+      const bri = $('#wlbri'); bri.value = 2; bri.dispatchEvent(new Event('change', { bubbles: true }));
       const b2 = WE.dbgSelLight(0); r.brighter = b2 && b2.intensity > base + 0.001;
-      const col = $('#wlcol'); col.value = '#ff0000'; col.dispatchEvent(new Event('input', { bubbles: true })); r.col = true;
-      bri.value = 1; bri.dispatchEvent(new Event('input', { bubbles: true })); $('#wlcol0').click();
+      const col = $('#wlcol'); col.value = '#ff0000'; col.dispatchEvent(new Event('change', { bubbles: true })); r.col = true;
+      bri.value = 1; bri.dispatchEvent(new Event('change', { bubbles: true })); $('#wlcol0').click();
       const b3 = WE.dbgSelLight(0); r.reset = b3 && Math.abs(b3.intensity - base) < 0.01;
       if (WE.on) WE.toggle();
       return r;

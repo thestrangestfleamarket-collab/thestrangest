@@ -114,7 +114,7 @@ starting: a newer owner decision wins over a line here.
 - [ ] **Two draw-distance controls: keep both or make one?** (left from #549, 4 Nov 2026; owner: "add a draw distance for far buildings").
   DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE (the owner's
   global look, `src/134e-distfog.js`) both limit what's drawn; the nearer wins. Ask the owner which to keep.
-- [ ] **DRAW DISTANCE's default** is 120 tiles (picked by Claude, not the owner; far buildings vanish at that edge with no fog). Ask: keep,
+- [x] **DRAW DISTANCE's default** is 120 tiles (owner, 4 Nov 2026: 60 tiles, the far fading into the sky at it) (picked by Claude, not the owner; far buildings vanish at that edge with no fog). Ask: keep,
   change, or ALL.
 - [ ] **The bath ghosts are still inside the bath house** (owner, 4 Nov 2026: "empty except the fog"; owner, 2 Nov 2026: "the bath ghosts
   that lived inside stay inside"). Ask whether they go.

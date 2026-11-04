@@ -38,7 +38,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
     for(let k=0;k<8;k++){ const X=k&1?b.max.x:b.min.x, Y=k&2?b.max.y:b.min.y, Z=k&4?b.max.z:b.min.z, x=e[0]*X+e[4]*Y+e[8]*Z+e[12], z=e[2]*X+e[6]*Y+e[10]*Z+e[14]; if(x<x0)x0=x; if(x>x1)x1=x; if(z<z0)z0=z; if(z>z1)z1=z; }
     FT[0]=x0; FT[1]=z0; FT[2]=x1; FT[3]=z1; return FT; };
   // DRAW DISTANCE in GRAPHICS (owner, 4 Nov 2026: "add a draw distance for far buildings"): in first and third person nothing on the land wholly past it is drawn; 0 is ALL
-  const DD={v:120}; try{ const q=SAVE.get('drawd'); if(q!=null&&q!=='')DD.v=+q||0; }catch(e){}
+  const DD={v:60}; try{ const q=SAVE.get('drawd'); if(q!=null&&q!=='')DD.v=+q||0; }catch(e){}
   CULL.drawD=()=>DD.v>0&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?DD.v*TILE:0;
   CULL.setDraw=v=>{ DD.v=v>=300?0:Math.max(40,Math.round(v)); try{ SAVE.set('drawd',String(DD.v)); }catch(e){} }; CULL.getDraw=()=>DD.v;
   { const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#ddist'))return;

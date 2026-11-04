@@ -85,3 +85,19 @@ starting: a newer owner decision wins over a line here.
   4 Nov 2026). They're on its far side; minor.
 - [ ] **The places tour no longer visits the skate park** (`tests/places.cjs` can't load Section B); `tests/skate.cjs` covers it but only
   runs when skate files change.
+- [ ] **Two draw-distance controls: keep both or make one?** (left from #549, 4 Nov 2026; owner: "add a draw distance for far buildings").
+  DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE (the owner's
+  global look, `src/134e-distfog.js`) both limit what's drawn; the nearer wins. Ask the owner which to keep.
+- [ ] **DRAW DISTANCE's default** is 120 tiles (picked by Claude, not the owner; far buildings vanish at that edge with no fog). Ask: keep,
+  change, or ALL.
+- [ ] **The bath ghosts are still inside the bath house** (owner, 4 Nov 2026: "empty except the fog"; owner, 2 Nov 2026: "the bath ghosts
+  that lived inside stay inside"). Ask whether they go.
+- [ ] **Steam spilling out of the bath house's open door**: shown in the owner's picked mockup (B, 4 Nov 2026), not built. The steam stays in
+  the room (`SHARED.steam`, drawn by the fog pass).
+- [ ] **A ghost's revival at the end of the bath countdown**: the countdown and its reset on stepping out were seen working; the moment at
+  zero (`back()` in `src/103a-death.js`, alive where you stand) was not seen in a test. Die, walk in, wait 10 s on the live site.
+- [ ] **The HUD's 24px margin on the owner's own screen** (owner's pick A, 4 Nov 2026): checked locally only; his live shot sat tighter than
+  the local layout predicted (`--fx`/`--fy` in `src/004-main.js`).
+- [ ] **The road along the Hudson from Market St** (owner, 4 Nov 2026: "why isnt the hudson showing, missing road"): the water and quay now
+  show within 60 tiles; the road itself wasn't confirmed in a picture.
+- [ ] **A thin dark bar on the bath house's floor** near its front wall, seen from one overhead angle (4 Nov 2026); not looked into.

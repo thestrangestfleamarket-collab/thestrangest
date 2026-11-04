@@ -210,11 +210,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       C.end(); r.back = far.visible; far.removeFromParent(); near.removeFromParent(); return r; }).catch(e => ({ err: e.message }));
     ok(hz.cut === 45 && hz.farHid && hz.nearShown && hz.sky && hz.npc && hz.full && hz.back, 'the haze is whole at its end and nothing wholly past it is drawn (a mesh 80 tiles off hidden for the frame, one 10 tiles off drawn, the skyline kept, characters by the same test): ' + JSON.stringify(hz));
     { const dd = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, [x, , z] = D.pos(), was = window.DFOG.get().on, v0 = C.getDraw(); window.DFOG.set({ on: false }); C.setDraw(60);
-        const mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; }, far = mk(100), near = mk(30);
-        C.scan(); C.begin(); const r = { persp: !!D.UI.persp, farHid: !far.visible, nearShown: near.visible }; C.end(); r.back = far.visible;
+        const mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; }, far = mk(100), near = mk(30), tall = mk(75); tall.scale.set(.2 * T, 80 * T, .2 * T); tall.updateMatrixWorld();
+        C.scan(); C.begin(); const r = { persp: !!D.UI.persp, farHid: !far.visible, tallHid: !tall.visible, nearShown: near.visible }; C.end(); r.back = far.visible;
         const pv = D.UI.view; D.UI.setView('iso'); C.scan(); C.begin(); r.isoKept = far.visible; C.end(); D.UI.setView(pv);
-        far.removeFromParent(); near.removeFromParent(); C.setDraw(v0 || 300); window.DFOG.set({ on: was }); r.def = v0; return r; }).catch(e => ({ err: e.message }));
-      ok(dd.def === 120 && (!dd.persp || dd.farHid) && dd.nearShown && dd.back && dd.isoKept, 'DRAW DISTANCE (4 Nov 2026, default 120 tiles): in first and third person a mesh past it is hidden for the frame, one inside it drawn; the overhead view cuts nothing: ' + JSON.stringify(dd)); }
+        far.removeFromParent(); near.removeFromParent(); tall.removeFromParent(); C.setDraw(v0 || 300); window.DFOG.set({ on: was }); r.def = v0; return r; }).catch(e => ({ err: e.message }));
+      ok(dd.def === 120 && (!dd.persp || dd.farHid && dd.tallHid) && dd.nearShown && dd.back && dd.isoKept, 'DRAW DISTANCE (4 Nov 2026, default 120 tiles): in first and third person a mesh past it is hidden for the frame (a tall thin one too: measured over the ground), one inside it drawn; the overhead view cuts nothing: ' + JSON.stringify(dd)); }
     await pg.evaluate(() => window.DFOG.set({ cut: false, start: 12, end: 60, blur: 0 })).catch(() => {});
     { const iz = await pg.evaluate(() => { window.__dbg.UI.setView('iso'); return window.DFOG.cut(); }).catch(e => e.message); ok(iz === 0, 'no haze and nothing cut in the isometric view (27 Oct 2026): ' + iz); }
     const rg = await pg.evaluate(() => { const P = window.PARK, R = P.ring; if (!R) return { ring: false }; const A = R.userData.P; let out = 0;

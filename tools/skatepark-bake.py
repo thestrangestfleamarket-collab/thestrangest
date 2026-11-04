@@ -9,7 +9,7 @@
 #   lamps  the floodlights' heads (the park's lights after dark)
 #   board  the skaters' board (data/skateboard.json: the kit's cruiser, ridden by the board skaters)
 #   rides  the scooter and the BMX (data/skaterides.json: ridden by the scooter kid and the BMX rider)
-#   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
+#   gate   where the entrance gateway stands (the park's height is measured from it)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
 # Run: python3 tools/skatepark-bake.py data/full/skatepark
 import sys, os, json, struct, base64, numpy as np
@@ -233,12 +233,8 @@ pj=[{'key':p['key'],'b':p['b'],'x':p['x'],'z':p['z'],'y':p['y'],'hd':p['hd']} fo
 D={'v':1,'kit':KIT['kit'],'license':'Polyfork (polyfork.dev/licensing): use in games, no reselling the files','bounds':[round(float(x),3) for x in (*lo,*hi)],
    'mesh':mesh,'glow':glow,'ground':{'x0':float(X0),'z0':float(Z0),'cs':CS,'nx':NX,'nz':NZ,'y0':y0,'dy':.05,'h':b64(Q)},
    'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj,'lamps':LAMPS,'rails':RAILS}
-gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); IG=np.linalg.inv(GM); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
+gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
 D['gate']={'x':round(GM[0,3],3),'y':round(GM[1,3],3),'z':round(GM[2,3],3),'hd':round(float(np.arctan2(GM[0,2],GM[2,2])),4)}
-GP=[]; GC=[]
-for P,C in prims(gc): GP.append(((np.c_[P,np.ones(len(P))]@IG.T)[:,:3]).reshape(-1,3,3)); GC.append(C.reshape(-1,3,3))
-gate=pack(np.vstack(GP),np.vstack(GC)); gate.update(D['gate'])
-json.dump(gate,open(os.path.join(os.path.dirname(OUT),'skategate.json'),'w'),separators=(',',':')); print('gate',gate['t'],'triangles at',D['gate'])
 bc=KIDS[1265]; IB=np.linalg.inv(WM[bc]); BP=[]; BC=[]   # the skaters' board (the kit's cruiser): its own frame, along z, wheels on y=0
 for P,C in prims(bc): BP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); BC.append(C.reshape(-1,3,3))
 BP=np.vstack(BP); BP[:,:,1]-=BP[:,:,1].min(); board=pack(BP,np.vstack(BC)); board['top']=round(float(BP[:,:,1].max()),3)

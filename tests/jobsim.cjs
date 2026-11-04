@@ -10,7 +10,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('the whole cast has jobs',j.length>=190,j.length+' at work or home');
   const inH=(h,[a,c])=>{ a%=24; c%=24; return a<=c?h>=a+.4&&h<c-.4:h>=a+.4||h<c-.4; };
   const hrs=x=>x.hours.split('-').map(Number);
-  const waitAll=async(h,want,pred,ms)=>{ await pg.evaluate(h=>NEWSCLK(h,0),h); await pg.waitForTimeout(3000); const t=Date.now(); let k;   // (the goals follow the clock on the jobs' next half-second)
+  const waitAll=async(h,want,pred,ms)=>{ await pg.evaluate(h=>NEWSCLK(h,0),h); await pg.waitForFunction(()=>JOBDBG().every(x=>x.goal===x.want),null,{timeout:ms}); const t=Date.now(); let k;   // (the goals follow the clock on the jobs' next half-second: slow on a slow machine)
     while(Date.now()-t<ms){ k=await J(); if(k.filter(pred).every(x=>x.state===want))return [true,k]; await pg.waitForTimeout(3000); } return [false,k]; };
   // (a life of their own, src/158-lives.js, can take someone off for a meal or an errand in their hours: what their day asks is their goal)
   let [ok,k]=await waitAll(11,'work',x=>x.goal==='work',420000);

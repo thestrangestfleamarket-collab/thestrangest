@@ -38,6 +38,17 @@ const {chromium}=require('playwright');
   ok(r1.ride&&!r1.doors&&r1.d<2*1.13&&r1.lvl==='down','the train leaves and carries you ('+JSON.stringify(r1)+')');
   const r2=await pg.evaluate(()=>{ const p=__dbg.pos(); return Math.hypot(p[0],p[2]); });
   ok(Math.abs(r2-Math.hypot(r0.p[0],r0.p[2]))>3,'you went with it');
+  // in the car: the poles are solid, a pole and a strap can be held (the hand on it), and out in the tunnel it is dark
+  const H=await pg.evaluate(async()=>{ const car=TRAINS.ride.c, fr=()=>new Promise(r=>requestAnimationFrame(r)), wait=async n=>{ for(let i=0;i<n;i++)await fr(); }, at=(a,v)=>{ const c=car.p; return {x:c.x+a*c.ux-v*c.uz,z:c.z+a*c.uz+v*c.ux}; };
+    const hand=()=>{ const G=__dbg.ST.grip; if(!G)return 99; const w=RIG.pose(__dbg.ST).J[G.side>0?'wristL':'wristR']; return Math.hypot(w.x-G.x,w.y-G.y,w.z-G.z); }, mid=L=>L.reduce((b,p)=>Math.hypot(p.a,p.v)<Math.hypot(b.a,b.v)?p:b);
+    const P=mid(car.poles); let w=at(P.a,P.v); __dbg.UI.goTo(w.x+.01,w.z,'down'); await wait(4); w=at(P.a,P.v); const q=__dbg.pos(), solid=Math.hypot(q[0]-w.x,q[2]-w.z);
+    TRAINS.grab('pole'); await wait(4); const pole=TRAINS.hold.h&&TRAINS.hold.h.k==='pole'?hand():99; TRAINS.letGo();
+    const S=mid(car.straps), u=at(S.a,S.v*.6); __dbg.UI.goTo(u.x,u.z,'down'); await wait(4); TRAINS.grab('rail'); await wait(4); const strap=TRAINS.hold.h&&TRAINS.hold.h.k==='rail'?hand():99; TRAINS.letGo();
+    { const t=TRAINS.list[0], u=((TRAINS.now()-t.off)%t.lap+t.lap)%t.lap, g=t.legs.find(q=>q.d>1&&q.t0+q.dur>u)||t.legs.find(q=>q.d>1); TRAINS.skew+=((g.t0+g.dur*.5-u)%t.lap+t.lap)%t.lap; }   // halfway out along the tunnel
+    await wait(60); const p=__dbg.pos(); return {solid:+solid.toFixed(2),pole:+pole.toFixed(2),strap:+strap.toFixed(2),ride:!!TRAINS.ride.c,inSta:LOOP.inStation(p[0],p[2]),amb:+LEVELS.of.station.amb.toFixed(3)}; });
+  ok(H.solid>.35,'the middle pole is solid: standing on it puts you beside it ('+JSON.stringify(H)+')');
+  ok(H.pole<1.5&&H.strap<1.5&&H.ride,'you can hold a pole and a strap: the hand is on it ('+JSON.stringify(H)+')');
+  ok(!H.inSta&&H.amb<.05,'out in the tunnel it is dark ('+JSON.stringify(H)+')');
   const rd=await pg.evaluate(()=>({n:RIDERS.list.length,inCars:RIDERS.list.every(r=>TRAINS.list.some(t=>t.cars.some(c=>c.inner===r.g.parent))),kinds:new Set(RIDERS.list.map(r=>r.kind)).size,seats:RIDERS.list.every(r=>r.seat)}));
   ok(rd.n>=6&&rd.inCars&&rd.seats&&rd.kinds>=2,'riders sit in the trains\' seats, doing different things ('+JSON.stringify(rd)+')');
   // ride on: it waits in the dark at the tunnel's end and comes back to A with its doors open; get off there

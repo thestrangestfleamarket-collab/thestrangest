@@ -6,14 +6,14 @@ import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 Object.assign(DN,{lk:1,mode:'day',modes:['day','night'],names:{day:'DAY',night:'NIGHT'},FADE:60000});
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
-    D0={day:{h:17.2,sun:1.35,amb:1.3,sunc:'#fff0d6',ambc:'#e8eef8',zen:'#6f92d8',hor:'#c4d6ea',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#c0d2e6',skym:0,farb:1.05,grade:'#fffaf4',lift:'#c0d2e6',liftk:.05,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#f4c9a8',sunk:.2,shaft:0,glow:1.1,bands:0},
-      night:{h:23,sun:1.1,amb:1.05,sunc:'#ffffff',ambc:'#ffffff',zen:'#0e1322',hor:'#2c3350',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1f2640',skym:0,farb:.62,grade:'#ffffff',lift:'#1a2038',liftk:.1,lamp:1.25,star:1.3,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0}};
+    D0={day:{h:17.2,sun:1.35,amb:1.3,sunc:'#fff0d6',ambc:'#e8eef8',zen:'#6f92d8',hor:'#c4d6ea',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#c0d2e6',skym:0,farb:1.05,grade:'#fffaf4',lift:'#c0d2e6',liftk:.05,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#f4c9a8',sunk:.2,shaft:0,glow:1.1,bands:0,tun:.02},
+      night:{h:23,sun:1.1,amb:1.05,sunc:'#ffffff',ambc:'#ffffff',zen:'#0e1322',hor:'#2c3350',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1f2640',skym:0,farb:.62,grade:'#ffffff',lift:'#1a2038',liftk:.1,lamp:1.25,star:1.3,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0,tun:.02}};
   const F=[['h','SUN HEIGHT (THE HOUR)',7.5,18.5,.05,'dg'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dg'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dg'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['bands','SKY BANDS (0 = SMOOTH)',0,8,1],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','CLOUD COVER (LOWER = MORE, 1 = NONE)',.2,1,.01],['cl','CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dg'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
     ['cldc','CLOUD COLOUR','c','d'],['cldk','CLOUD COLOUR (HOW MUCH)',0,1,.01,'d'],['sunhz','MIST TOWARD THE SUN','c','d'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'d'],['shaft','SUN SHAFTS',0,1,.01,'d'],['glow','GLOW',0,2.5,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],
-    ['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
+    ['tun','LIGHT IN THE SUBWAY TUNNELS',0,.2,.005],['lamp','LAMPS',0,3,.01,'n'],['star','STARS',0,2,.01,'n'],['moon','MOON',0,1,.01,'n']];
   const S={}; for(const m of DN.modes)S[m]={...D0[m]};
   { const local=location.protocol==='file:'||/^(127\.|localhost)/.test(location.hostname), q=local?Q('look').toLowerCase():'', qh=local?+(Q('hour')||NaN):NaN; if(DN.modes.includes(q)){ DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.mode=qh<6||qh>19?'night':'day'; S[DN.mode].h=qh; DN.test=1; } }
   // the time: DAY or NIGHT, the owner's pick, the same for everyone (on the server); a change fades over a minute. The day's hour is the look's own

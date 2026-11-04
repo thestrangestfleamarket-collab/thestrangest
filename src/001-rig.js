@@ -601,7 +601,9 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
 function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
   const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),n=st.hand==='L'?'L':'R',a=Math.atan2(z,-y),b=Math.asin(clamp(n==='L'?x:-x,-1,1)),w=A.w,H=P[n];
   H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
-const rawPose=st=>aimLayer(st,upLayer(st,rawPose0(st)));
+function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame
+  const s=G.side>0?1:-1,n=s>0?'L':'R'; armIK(P,n,s,V(G.x,G.y,G.z)); P[n].fist=1; return P; }
+const rawPose=st=>gripLayer(st,aimLayer(st,upLayer(st,rawPose0(st))));
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -723,7 +725,7 @@ const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;
   const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;
-  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; aimLayer(st,upLayer(st,P)); if(st.sign)st.sign(P); }
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; gripLayer(st,aimLayer(st,upLayer(st,P))); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);
   const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy,st.smooth);

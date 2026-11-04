@@ -12,7 +12,7 @@ import {OWNED} from './005-save.js';
   ITEMS.reg=(id,props)=>{ const d=ITEMS.defs[id]||(ITEMS.defs[id]=DEF()), b=BAKED[id]||{}, o=OVER[id]||{}; for(const k in props)if(!(k in b)&&!(k in o))d[k]=props[k]; return d; };
   ITEMS.def=id=>ITEMS.defs[id];
   ITEMS.cls=[];   // item classes: ids made in play (a painting) take their class's properties ({is:id=>bool, as:classId, calc:{prop:(id,def)=>value}})
-  ITEMS.prop=(id,k)=>{ let d=ITEMS.defs[id]; if(!d){ const c=ITEMS.cls.find(c=>c.is(id)); if(c){ d=ITEMS.defs[c.as]; if(c.calc&&c.calc[k])return c.calc[k](id,d); } } return d?d[k]:undefined; };
+  ITEMS.prop=(id,k)=>{ let d=ITEMS.defs[id]; const c=ITEMS.cls.length&&ITEMS.cls.find(c=>c.is(id)); if(c){ d=ITEMS.defs[c.as]; if(c.calc&&c.calc[k])return c.calc[k](id,d); } return d?d[k]:undefined; };
   ITEMS.ids=()=>Object.keys(ITEMS.defs).sort();
   const save=()=>{ try{ OWNED.set('items',JSON.stringify(ITEMS.defs)); }catch(e){} };
   const css=document.createElement('style'); css.textContent=`

@@ -1,10 +1,11 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, MAIL, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
+import {CREATS} from './087-npc-creatures.js';
 import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
 { const T=TILE, KEY='garden', say=FORAGE.say, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
@@ -78,7 +79,10 @@ const GARDEN={}; window.GARDEN=GARDEN;
     FORAGE.take(id,1); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
   GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GROW); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
     const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4});
-    if(use('garden',d-25,d+25)){ const n=2+(sk('garden')>d+20?1:0), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); S.log[p.k]=(S.log[p.k]||0)+n; if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
+    const R=15*T, near=L=>L.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<R), cs=CREATS.filter(N=>N.wild&&N.body.visible).map(N=>({k:N.kind,x:N.web?N.web.x:N.st.x,z:N.web?N.web.z:N.st.z})), W=window.WX&&WX.now;
+    const help=near(cs.filter(c=>c.k==='Frog'||c.k==='Spider'))||!!(window.BIRDS&&near(window.BIRDS.list)), harm=near(cs.filter(c=>c.k==='Rat'))||!!(W&&W.rain>.3&&CLOCK.dark()), pm=help&&!harm?1:harm&&!help?-1:0;
+    if(pm>0)say('FROGS, SPIDERS AND BIRDS NEARBY HAVE KEPT THE PESTS OFF.','#9fe07f'); else if(pm<0)say(W&&W.rain>.3?'SLUGS HAVE BEEN AT IT IN THE WET NIGHT.':'RATS HAVE BEEN NIBBLING AT IT.','#c8a090');
+    if(use('garden',d-25,d+25)){ const n=Math.max(1,2+(sk('garden')>d+20?1:0)+pm), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); S.log[p.k]=(S.log[p.k]||0)+n; if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
     else { FORAGE.give('fl_'+p.k,1); say(`ONLY ONE ${nm} IS ANY GOOD.`,'#c8a090'); }
     save(); sync(); FORAGE.draw(); };
   const wait=()=>{ if(!VEG.add)return setTimeout(wait,500); VEG.add(Object.fromEntries(Object.keys(SEED).filter(k=>!WEEK[k]).map(k=>['sd_'+k,SEED[k][1]])),Object.assign({},PR,BP)); }; wait();

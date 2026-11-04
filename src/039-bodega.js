@@ -1,5 +1,6 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
 import {SHARED, THREE} from './003-shx.js';
+import {B64, U16} from './003a-skin.js';
 import {CLOCK, DRESS, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
@@ -1733,23 +1734,40 @@ SHARED.BODB={};
   const tex=(k,pose)=>{ const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);
     for(let i=0;i<Q.w*Q.h;i++){ const p=Q.px[i]; if(!p)continue; im.data[i*4]=p[0]; im.data[i*4+1]=p[1]; im.data[i*4+2]=p[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const T=new THREE.CanvasTexture(c); T.magFilter=T.minFilter=THREE.NearestFilter; T.generateMipmaps=false; T.colorSpace=THREE.SRGBColorSpace; t={T,w:Q.w,h:Q.h,oy:Q.oy}; PICS.set(key,t); return t; }; BF.pic=tex;
-  BF.add=(k,perches)=>{ const span=BF_KINDS[k][3]/1000*2/.84*TILE, s=span/16;
-    const mat=pose=>new THREE.MeshLambertMaterial({map:tex(k,pose).T,transparent:true,alphaTest:.5,side:THREE.DoubleSide}), M=[0,1,2].map(mat), g=new THREE.Group();
-    const flat=new THREE.Mesh(new THREE.PlaneGeometry(1,1),M[0]); flat.rotation.x=-Math.PI/2; const up=new THREE.Mesh(new THREE.PlaneGeometry(1,1),M[2]); up.rotation.y=Math.PI/2;
-    { const t=tex(k,2); up.scale.set(t.w*s,t.h*s,1); up.position.y=t.h*s/2; } g.add(flat,up); flat.visible=false;
-    const b={k,name:BF_KINDS[k][0],g,flat,up,M,perches,at:0,to:0,t0:0,dur:0,until:2+Math.random()*6,span:s,t:Math.random()*10,pose:2};
-    g.position.set(...perches[0]); scene.add(g); BF.list.push(b); return b; };
+  // the body and wings are the Drive's butterfly (data/bfly.json); each kind's own wing picture is painted over the wings, top and underside
+  const BD=__DATA__("data/bfly.json"), F32=s=>new Float32Array(B64(s).buffer), GEO={}, WT=new Map();
+  const geos=()=>{ if(GEO.body)return GEO; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(F32(BD.body.p),3)); g.setAttribute('color',new THREE.BufferAttribute(B64(BD.body.c),3,true)); g.setIndex(new THREE.BufferAttribute(U16(BD.body.i),1)); g.computeVertexNormals(); g.computeBoundingBox();
+    const w=new THREE.BufferGeometry(), P=F32(BD.wing.p), uv=new Float32Array(P.length/3*2); for(let i=0;i<P.length/3;i++){ uv[i*2]=Math.max(0,P[i*3+1])/BD.a; uv[i*2+1]=(P[i*3+2]-BD.f[0])/(BD.f[1]-BD.f[0]); }
+    w.setAttribute('position',new THREE.BufferAttribute(P,3)); w.setAttribute('uv',new THREE.BufferAttribute(uv,2)); w.setIndex(new THREE.BufferAttribute(U16(BD.wing.i),1)); w.computeVertexNormals();
+    let nx=0; const N=w.attributes.normal.array; for(let i=0;i<N.length;i+=3)nx+=N[i]; GEO.out=nx>0; GEO.body=g; GEO.wing=w; GEO.mat=new THREE.MeshLambertMaterial({vertexColors:true}); return GEO; };
+  const wingTex=k=>{ let t=WT.get(k); if(t)return t; const Q=bfPic(k,32,0), under=BF_KINDS[k][7], hs=Q.w/2, ys=.72, x0=Math.ceil(Q.w/2+.07*hs);
+    let y0=Q.h, y1=-1, x1=x0; for(let y=0;y<Q.h;y++)for(let x=x0;x<Q.w;x++)if(Q.px[y*Q.w+x]){ y0=Math.min(y0,y); y1=Math.max(y1,y); x1=Math.max(x1,x); }
+    const W=x1-x0+1, H=y1-y0+1, top=[], und=[];
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){ let p=Q.px[(y+y0)*Q.w+x+x0];
+      if(!p){ let best=1e9; for(let yy=0;yy<H;yy++)for(let xx=0;xx<W;xx++){ const q=Q.px[(yy+y0)*Q.w+xx+x0], d=(xx-x)**2+(yy-y)**2; if(q&&d<best){ best=d; p=q; } } }
+      top.push(p||[40,34,30]); const hind=(Q.oy-(y+y0+.5))/hs/ys<0; und.push(under.map(v=>v*(hind?.86:1)|0)); }
+    const mk=px=>{ const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'), im=g.createImageData(W,H); px.forEach((p,i)=>{ im.data[i*4]=p[0]; im.data[i*4+1]=p[1]; im.data[i*4+2]=p[2]; im.data[i*4+3]=255; }); g.putImageData(im,0,0);
+      const T=new THREE.CanvasTexture(c); T.magFilter=T.minFilter=THREE.NearestFilter; T.generateMipmaps=false; T.colorSpace=THREE.SRGBColorSpace; return T; };
+    const G=geos(), A=new THREE.MeshLambertMaterial({map:mk(top),side:G.out?THREE.BackSide:THREE.FrontSide}), U=new THREE.MeshLambertMaterial({map:mk(und),side:G.out?THREE.FrontSide:THREE.BackSide});
+    t=[A,U]; WT.set(k,t); return t; };
+  // one butterfly, its wings open by a (0 shut upright, about 1.45 flat), scaled so it spans w
+  BF.model=(k,w)=>{ const G=geos(), [A,U]=wingTex(k), g=new THREE.Group(), body=new THREE.Group(), s=w/BD.span; body.scale.setScalar(s); body.position.y=-G.body.boundingBox.min.y*s; g.add(body);
+    body.add(new THREE.Mesh(G.body,G.mat)); const wing=m=>{ const o=new THREE.Group(); o.add(new THREE.Mesh(G.wing,A),new THREE.Mesh(G.wing,U)); return o; }, L=wing(), R=wing(), RG=new THREE.Group(); RG.scale.x=-1; RG.add(R); body.add(L,RG);
+    g.traverse(o=>{ if(o.isMesh)o.userData.shared=true; }); g.userData.open=a=>{ L.rotation.z=-a; R.rotation.z=-a; }; g.userData.open(1.2); return g; };
+  BF.add=(k,perches)=>{ const span=BF_KINDS[k][3]/1000*2/.84*TILE, g=BF.model(k,span);
+    const b={k,name:BF_KINDS[k][0],g,open:g.userData.open,a:.1,perches,at:0,to:0,t0:0,dur:0,until:2+Math.random()*6,span,t:Math.random()*10,pose:2};
+    b.open(.1); g.position.set(...perches[0]); scene.add(g); BF.list.push(b); return b; };
+  const OPEN=[1.45,.75,.08];
   BF.tick=dt=>{ const dark=CLOCK.dark();
-    for(const b of BF.list){ b.t+=dt; const t=b.t; let pose=2, P;
+    for(const b of BF.list){ b.t+=dt; const t=b.t; let want=OPEN[2], P;
       if(b.dur&&t<b.t0+b.dur){ const u=(t-b.t0)/b.dur, A=b.perches[b.at], Cc=b.perches[b.to], dx=Cc[0]-A[0], dz=Cc[2]-A[2], L=Math.hypot(dx,dz)||1, hump=Math.sin(Math.PI*u)*.35*TILE*(b.hi||1), zig=Math.sin(u*Math.PI*5)*.06*TILE;
-        P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; pose=[0,1,2,1][Math.floor(t*12)%4]; b.g.rotation.y=Math.atan2(dx,dz); }
+        P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; b.a=.25+1.2*(.5+.5*Math.sin(t*19)); want=null; b.g.rotation.y=Math.atan2(dx,dz); }
       else{ if(b.dur){ b.at=b.to; b.dur=0; } P=b.perches[b.at];
         if(!dark&&t>b.until){ let n=Math.floor(hash(Math.floor(t*10),b.k,445)*b.perches.length); if(n===b.at)n=(n+1)%b.perches.length;
           const fl=b.away?2:1; if(b.away){ const [ax,az]=b.away; let f=-1; b.perches.forEach((q,i)=>{ const d=Math.hypot(q[0]-ax,q[2]-az); if(i!==b.at&&d>f){ f=d; n=i; } }); b.away=null; }
           const A=b.perches[b.at], Cc=b.perches[n]; b.to=n; b.t0=t; b.dur=(.9+Math.hypot(Cc[0]-A[0],Cc[2]-A[2])/TILE*2.4)/(b.fast||1)/fl; b.until=t+b.dur+4+hash(Math.floor(t),b.k,447)*9; }
-        else { const c=(t*.55+b.k*.37)%2; pose=dark?2:c<.75?0:c<1?1:c<1.75?2:1; } }
-      b.g.position.set(P[0],P[1],P[2]);
-      if(pose!==b.pose){ b.pose=pose; b.flat.visible=pose!==2; b.up.visible=pose===2; if(pose!==2){ b.flat.material=b.M[pose]; const tt=tex(b.k,pose); b.flat.scale.set(tt.w*b.span,tt.h*b.span,1); } } } }; }
+        else { const c=(t*.55+b.k*.37)%2; want=OPEN[dark?2:c<.75?0:c<1?1:c<1.75?2:1]; } }
+      if(want!=null)b.a+=(want-b.a)*Math.min(1,dt*6); b.open(b.a); b.g.position.set(P[0],P[1],P[2]); } }; }
 // THE BODEGA'S END: closes grab('bodega'); loads the forest and props data.
 
 MODS.bodega={BOUND,ground:groundY};

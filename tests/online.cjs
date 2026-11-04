@@ -16,10 +16,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ONLINE.feed({ t: 'say', id: 'a', name: 'ROSA', text: 'hello block', st: { f: 1, c: '#ff8ad8', s: 2 } }); ONLINE.said('over my head'); });
     await pg.waitForTimeout(1500);
     const r1 = await pg.evaluate(() => { const L = [...ONLINE.others.values()]; setTimeout(() => { ONLINE.sayFor = window.__sayFor; }, 0);
-      return { n: L.length, figs: L.filter(o => o.fig && o.fig.g.visible).length, tags: L.filter(o => o.lab && o.lab.on && o.lab.el.textContent).length, bare: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').key === 'w1'),
+      return { n: L.length, figs: L.filter(o => o.fig && o.fig.g.visible).length, lv: L.every(o => o.fig && Object.keys(LEVELS.of).every(id => LEVELS.drawn(o.fig.g, id))), tags: L.filter(o => o.lab && o.lab.on && o.lab.el.textContent).length, bare: !!(ONLINE.others.get('b').fig && ONLINE.others.get('b').key === 'w1'),
         who: (document.querySelector('#onlwho') || {}).textContent, log: (document.querySelector('#onllog') || {}).textContent, say: ONLINE.others.get('a').tagS, sayRec: ONLINE.others.get('a').say, sayOld: performance.now() - ONLINE.others.get('a').sayT >= ONLINE.sayFor * 1000, at: ONLINE.at(ONLINE.others.get('a'), performance.now()).every(Number.isFinite) }; });
     ok(r1.n === 2 && r1.figs === 2 && r1.tags === 2, 'two players near you are drawn with name tags (' + JSON.stringify(r1) + ')');
     ok(r1.bare, 'a barefoot player gets that look');
+    ok(r1.lv, 'other players are drawn on every level (the platform, the dungeon), not only the street');
+    const r1c = await pg.evaluate(async () => { const o = ONLINE.others.get('a'), s0 = o.say; o.say = 'word '.repeat(38) + 'END'; o.sayT = performance.now(); await new Promise(r => setTimeout(r, 400)); const t = o.lab.el.textContent; o.say = s0; return /END/.test(t) && !/\u2026/.test(t); });
+    ok(r1c, 'a long sentence over a head shows whole (wrapped and smaller, never cut)');
     ok(/ONLINE 3/.test(r1.who || ''), 'the list counts you and the two others (' + r1.who + ')');
     ok(/ROSA/.test(r1.log || '') && /hello block/.test(r1.log || '') && (/hello block/.test(r1.say || '') || r1.sayRec === 'hello block' && r1.sayOld), 'what ROSA said is in the chat and over her head (or was, and its seconds are up: a slow runner)');
     ok(r1.at, 'ONLINE.at gives the ragdoll a place to be carried to');

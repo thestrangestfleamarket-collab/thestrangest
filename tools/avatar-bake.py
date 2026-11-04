@@ -4,7 +4,7 @@
 # and beads taken off is the bald base every avatar wears. HAIR and BEARD: pieces cut from the other heads by colour and place (skin is warm
 # and mid-saturated; hair, hoods and beards are not; a beard sits low and in front), each fitted from its own skull's box onto the base skull
 # and kept in the Head bone's own space, so it rides any outfit's head. Every point carries its role (0 skin, 1 hair, 2 hood, 3 cloth) so the
-# game can recolour skin and hair. Each outfit is a BODIES body (src/111a-bodies.js), as tools/bases-bake.py makes the man and the woman: the
+# game can recolour skin and hair. Each outfit is a BODIES body (src/111a-bodies.js), as tools/hero-bake.py makes the hero: the
 # rig's 15 bones fitted to its skeleton at rest (each bone's origin and rest frame; limbs' frames along the bone), its 32 bones' weights folded
 # into those 15, two a point; its height to the top of the bald head (so hair never shrinks it) and the Head bone's rest matrix, which seats
 # the head pieces. Run (after tools/rpgchars-bake.py): python3 tools/avatar-bake.py

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Retarget-bake: take a clip-driven skinned character (its own skeleton + skin weights)
-# and bake it onto the player's 15-bone BODIES rig (same origin/rest convention as bases-bake.py),
+# and bake it onto the player's 15-bone BODIES rig (the same origin/rest convention as BODIES.skeleton),
 # remapping the existing skin weights by bone name. Output per-vertex colours (vcol).
 import json, base64, sys, numpy as np
 

@@ -2,6 +2,8 @@ import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import WORLD from "../data/world.json";
+import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
+import LIVESDATA from "../data/lives.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
@@ -160,13 +162,23 @@ export class Block extends Server {
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
   putT() { this.ctx.storage.sql.exec("create table if not exists puts(who text, k text, name text, list text, at integer, primary key(who, k))"); }
   puts() { this.putT(); return this.ctx.storage.sql.exec("select who as id, k, name, list from puts").toArray().map(r => { let list = []; try { list = JSON.parse(r.list); } catch (e) {} return { id: r.id, k: r.k, name: r.name, list }; }); }
+  // the townspeople's lives (worker/lives.js): one record each, kept by the section and brought up to the game hour when asked
+  livesT() { this.ctx.storage.sql.exec("create table if not exists lives(k text primary key, rec text)"); }
+  lives(only) {
+    this.livesT(); const H = lvH(Date.now()), out = {}, keys = only ? [only] : Object.keys(LIVESDATA);
+    if (!only && this.livesAt === H && this.livesMap) return this.livesMap;
+    const have = {}; for (const r of this.ctx.storage.sql.exec("select k, rec from lives").toArray()) { try { have[r.k] = JSON.parse(r.rec); } catch (e) {} }
+    for (const k of keys) { if (!LIVESDATA[k]) continue; const h0 = have[k] ? have[k].H : -1, r = lvRun(k, { job: LIVESDATA[k] }, have[k] || null, H, null); out[k] = r;
+      if (h0 !== r.H) this.ctx.storage.sql.exec("insert into lives(k, rec) values(?, ?) on conflict(k) do update set rec = excluded.rec", k, JSON.stringify(r)); }
+    if (!only) { this.livesAt = H; this.livesMap = out; } else if (this.livesMap) this.livesMap[only] = out[only];
+    return out; }
   // a player within reach of another: both placed, same level and room, a few tiles apart
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
       c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]);
@@ -229,6 +241,11 @@ export class Block extends Server {
       this.putT(); if (list.length) this.ctx.storage.sql.exec("insert into puts(who, k, name, list, at) values(?, ?, ?, ?, ?) on conflict(who, k) do update set name = excluded.name, list = excluded.list, at = excluded.at", s.id, m.k, s.name || "", JSON.stringify(list), now);
       else this.ctx.storage.sql.exec("delete from puts where who = ? and k = ?", s.id, m.k);
       this.broadcast(JSON.stringify({ t: "puts", id: s.id, k: m.k, name: s.name || "", list }), [c.id]);
+    } else if (m.t === "lives") {
+      const all = this.lives(), b = {}; for (const k in all) b[k] = lvBrief(all[k]); c.send(JSON.stringify({ t: "lives", all: b }));
+    } else if (m.t === "met" && typeof m.k === "string" && LIVESDATA[m.k] && s.name) {
+      const r = lvMeet(this.lives(m.k)[m.k], s.name); this.ctx.storage.sql.exec("update lives set rec = ? where k = ?", JSON.stringify(r), m.k); if (this.livesMap) this.livesMap[m.k] = r;
+      this.broadcast(JSON.stringify({ t: "lives", all: { [m.k]: lvBrief(r) } }));
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
     } else if (m.t === "world") {

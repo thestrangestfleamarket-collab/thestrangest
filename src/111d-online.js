@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LEVELS, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
@@ -78,22 +78,27 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
-    o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(g); };
+    o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(LEVELS.own(g,'*')); };
   const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
     if(!o.lab)o.lab=LABELS.add();
-    o.lab.set((say?'<div style="display:inline-block;max-width:250px;overflow:hidden;text-overflow:ellipsis;font:'+(SIZES[st.s]/2)+'px '+FONTS[st.f][0]+';color:'+st.c+';background:rgba(11,13,19,.88);padding:3px 6px;margin-bottom:3px">'+TEXT.esc(say)+'</div>':'')+(nm?'<div style="font:14px Silkscreen,monospace;color:'+(o.dead?'#cfe0ff':'#ffd27a')+';text-shadow:0 0 2px #0b0d13,1px 1px 0 #0b0d13,-1px -1px 0 #0b0d13,1px -1px 0 #0b0d13,-1px 1px 0 #0b0d13">'+TEXT.esc(nm)+'</div>':'')+(hp>=0?'<div style="width:80px;height:5px;margin:2px auto 0;background:#0b0d13;padding:1px"><div style="height:3px;width:'+Math.round(hp*100)+'%;background:#c84a3a"></div></div>':'')).show(!!(say||nm||hp>=0)); };
+    o.lab.set((say?'<div style="display:inline-block;max-width:min(320px,70vw);white-space:normal;overflow-wrap:anywhere;font:'+fitPx(SIZES[st.s]/2,say.length)+'px '+FONTS[st.f][0]+';color:'+st.c+';background:rgba(11,13,19,.88);padding:3px 6px;margin-bottom:3px">'+TEXT.esc(say)+'</div>':'')+(nm?'<div style="font:14px Silkscreen,monospace;color:'+(o.dead?'#cfe0ff':'#ffd27a')+';text-shadow:0 0 2px #0b0d13,1px 1px 0 #0b0d13,-1px -1px 0 #0b0d13,1px -1px 0 #0b0d13,-1px 1px 0 #0b0d13">'+TEXT.esc(nm)+'</div>':'')+(hp>=0?'<div style="width:80px;height:5px;margin:2px auto 0;background:#0b0d13;padding:1px"><div style="height:3px;width:'+Math.round(hp*100)+'%;background:#c84a3a"></div></div>':'')).show(!!(say||nm||hp>=0)); };
+  // the whole sentence always shows: it wraps, and a long one gets smaller (not under 8 px)
+  const fitPx=(px,n)=>n<=60?px:Math.max(8,Math.round(px*Math.sqrt(60/n)));
   const unfig=o=>{ if(o.fig){ const i=UI.things.indexOf(o.fig.th); if(i>=0)UI.things.splice(i,1); scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } if(o.lab){ o.lab.remove(); o.lab=null; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
   const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
     const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.textAlign='center'; x.textBaseline='middle';
-    if(say){ const px=SIZES[st.s]; x.font=px+'px '+FONTS[st.f][0]; let t=say; while(t.length>3&&x.measureText(t+'…').width>480)t=t.slice(0,-1); if(t!==say)t+='…'; const w=Math.min(504,x.measureText(t).width+20), h=px+16;
-      x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,50-h/2,w,h); x.fillStyle=st.c; x.fillText(t,256,51); }
+    if(say){ let px=SIZES[st.s], L;
+      const wrap=()=>{ x.font=px+'px '+FONTS[st.f][0]; const out=[]; let ln=''; for(const wd of say.split(/\s+/)){ const t=ln?ln+' '+wd:wd; if(ln&&x.measureText(t).width>480){ out.push(ln); ln=wd; } else ln=t; } if(ln)out.push(ln); return out; };
+      while((L=wrap(),L.length*(px+2)+12>84||L.some(l=>x.measureText(l).width>480))&&px>8)px--;
+      const lh=px+2, w=Math.min(504,Math.max(...L.map(l=>x.measureText(l).width))+20), h=L.length*lh+12, top=84-h;
+      x.fillStyle='rgba(11,13,19,.88)'; x.fillRect(256-w/2,top,w,h); x.fillStyle=st.c; L.forEach((l,i)=>x.fillText(l,256,top+6+lh*(i+.5)+1)); }
     x.font='28px Silkscreen, monospace'; if(nm){ x.lineWidth=6; x.strokeStyle='#0b0d13'; x.strokeText(nm,256,100); x.fillStyle=o.dead?'#cfe0ff':'#ffd27a'; x.fillText(nm,256,100); }
     if(hp>=0){ x.fillStyle='#0b0d13'; x.fillRect(176,116,160,10); x.fillStyle='#c84a3a'; x.fillRect(178,118,156*hp,6); }   // their health, while it's not full
     const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
-    if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; o.tag.userData.anyRoom=true; scene.add(o.tag); }
+    if(!o.tag){ o.tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false,toneMapped:false,fog:false})); o.tag.scale.set(5.2*TILE,1.3*TILE,1); o.tag.renderOrder=5; o.tag.userData.anyRoom=true; scene.add(LEVELS.own(o.tag,'*')); }
     else{ o.tag.material.map.dispose(); o.tag.material.map=tx; } };
 
   /* ---------- each frame: the nearest twenty on your level and in your room, walking where they were sent ---------- */

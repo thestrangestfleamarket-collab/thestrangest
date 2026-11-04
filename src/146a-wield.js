@@ -19,7 +19,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       b=new THREE.Mesh(new THREE.ConeGeometry(r*.95,r*1.6,8,1,true),new THREE.MeshBasicMaterial({color:bag,transparent:true,opacity:.4,side:THREE.DoubleSide,depthWrite:false}));
     p.position.y=.45; h.position.y=1+r; h.rotation.y=Math.PI/2; b.position.set(-r*.8,1+r,0); b.rotation.z=Math.PI/2; g.add(p,h,b); g.r=r; g.head=new V3(0,1+r,0); return g; };
   const sword=([bl,gd,gr])=>{ const g=new THREE.Group(), gold=lam(gd); g.add(bx(.035,.2,.035,lam(gr),-.02),bx(.22,.03,.05,gold,.09),bx(.075,.72,.014,lam(bl),.46),bx(.05,.05,.05,gold,-.14)); g.head=new V3(0,.8,0); return g; };
-  const MK={net:()=>net(.2,0xc8c2b0,0xf4f0e4), bnet:()=>net(.3,0x5a4a3a,0xb8b4a8)}, MESH={}, mk=id=>KIND[id]?KIND[id].make():MK[id]?MK[id]():sword(SWC[id]||SWC.sword);
+  const MK={net:()=>net(.2,0xc8c2b0,0xf4f0e4), bnet:()=>net(.3,0x5a4a3a,0xb8b4a8)}, MESH={}, mk=id=>KIND[id]?KIND[id].make():MK[id]?MK[id]():sword(SWC[id]||SWC.sword); WIELD.mk=mk;
   INSPECT.kinds.push({is:id=>!!(KIND[id]||MK[id]||SWC[id]),make:id=>{ const g=mk(id); g.traverse(c=>{ c.userData.ownMat=true; }); return g; }});
   const N=8, TP=new Float32Array(N*2*3), TG=new THREE.BufferGeometry(), TI=[]; for(let i=0;i<N-1;i++){ const a=i*2; TI.push(a,a+1,a+2,a+1,a+3,a+2); }
   TG.setAttribute('position',new THREE.BufferAttribute(TP,3)); TG.setIndex(TI);

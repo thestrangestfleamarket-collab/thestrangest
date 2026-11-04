@@ -78,7 +78,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (always the Walker unless a playable body is set; knight/man/woman stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (always the Walker unless a playable body is set; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
@@ -111,7 +111,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(uq.length>n*0.95)return; for(const nm of all){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const o=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[o+c]; } g.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
     g.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1)); g.boundingSphere=null; };
   function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; if(!playable(body)){ body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); } const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
-    const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
+    const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st; NPC.SR=SR;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
@@ -137,7 +137,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0); }
       if(!near||!seen(g)||NPC.hid)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
+      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
   // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
   const LIVEP=new Set(); let smT=0;
@@ -147,7 +147,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
-  /* ---------- a baked body (bases-bake, hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
+  /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
   BODIES.baked=(D,key,label,at,PAL,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
     const geo=()=>{ const P=b.pos, T=b.tri, nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3);

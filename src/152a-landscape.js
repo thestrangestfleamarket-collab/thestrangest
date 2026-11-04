@@ -1,10 +1,10 @@
 // THE LANDSCAPE EDITOR: paint ground (box, border, free brush; the nine grasses set what grows there), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {LAND, W3, WEEDS} from './003b-systems.js';
+import {LAND, pos, ROOMS, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {TUFTC, tuftCol} from './014-gamekit.js';
 import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
@@ -68,17 +68,41 @@ import {FOREST, PROPS} from './039-bodega.js';
     .map(([n,ks])=>[n,ks.filter(k=>MODELS[k])]).filter(g=>g[1].length);
   const dftScale=k=>{ for(const [p,s] of [['BigRock',2.2],['Rock',1],['pillar',3],['sunflower',.9],['hbush',.9],['bush',1.2],['pmushroom',.6],['mushroom',.35],['grass',.6],['stones',.3],['stone',.4],['log',.6],['sitlog',.5],['woodpile',.5],['fence',.8],['campfire',.13],['kayak',1],['fisherboat',1],['daisy',.4],['tulip',.4],['rose',.45],['lily',.4],['flower',.6]])if(k.indexOf(p)===0)return s; return 1; };
   const geoCache={}, pmat=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,shadowSide:THREE.BackSide});
-  const propGeo=k=>{ '@later'; if(geoCache[k])return geoCache[k]; const D=MODELS[k]; if(!D)return null; const p=F32(D.p), col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color();
+  // the Drive's models (owner, 3 Nov 2026): data/pfprops.json, real size in metres, kit-packed; loaded the first time a placed one needs it
+  const PFL=__LAZY__("data/pfprops.json"); let PFW=null; const pfReady=()=>PFW||(PFW=PFL().then(D=>{ Object.assign(MODELS,D); GROUPS.push(['Drive models',Object.keys(D)]); if(LAND.on)draw(); return D; }));
+  const kitGeo=D=>{ const q=new Int16Array(B64(D.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*D.sc+D.lo[i%3];
+    const col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color(); for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(D.i32?new Uint32Array(B64(D.i).buffer):new Uint16Array(B64(D.i).buffer),1)); g.computeVertexNormals(); g.computeBoundingSphere(); g.computeBoundingBox(); return g; };
+  const propGeo=k=>{ '@later'; if(geoCache[k])return geoCache[k]; const D=MODELS[k]; if(!D)return null; if(D.sc)return geoCache[k]=kitGeo(D); const p=F32(D.p), col=B64(D.c), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(Array.from(p),3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); geoCache[k]=g; return g; };
   let gard=null; const gardGroup=()=>{ if(!gard){ gard=new THREE.Group(); gard.userData.landProp=1; scene.add(gard); } return gard; };
-  const makeProp=o=>{ '@later'; const g=propGeo(o.k); if(!g)return; const me=new THREE.Mesh(g,pmat); me.scale.setScalar(o.s/.84*T); me.rotation.y=o.rot||0;
-    me.position.set(o.x,groundYAt(o.x,o.z,o.y||0),o.z); me.castShadow=true; me.receiveShadow=true; me.userData.landProp=o; o.mesh=me; gardGroup().add(me); };
-  const unprop=o=>{ if(o.mesh){ gardGroup().remove(o.mesh); o.mesh=null; } };
+  const makeProp=o=>{ '@later'; if(!MODELS[o.k]&&/^pf_/.test(o.k)){ pfReady().then(()=>{ if(MODELS[o.k]&&!o.mesh&&gprops.includes(o))makeProp(o); }); return; } const g=propGeo(o.k); if(!g)return; const me=new THREE.Mesh(g,pmat); me.scale.setScalar(o.s/.84*T); me.rotation.y=o.rot||0;
+    me.position.set(o.x,groundYAt(o.x,o.z,o.y||0),o.z); me.castShadow=true; me.receiveShadow=true; me.userData.landProp=o; o.mesh=me; gardGroup().add(me);
+    if(MODELS[o.k].sc&&o.solid!==false){ const bb=g.boundingBox, k=o.s/.84*T, w=(bb.max.x-bb.min.x)*k/2, d=(bb.max.z-bb.min.z)*k/2, h=(bb.max.y-bb.min.y)*k, cx=(bb.max.x+bb.min.x)/2*k, cz=(bb.max.z+bb.min.z)/2*k, cs=Math.cos(me.rotation.y), sn=Math.sin(me.rotation.y);
+      if(Math.min(w,d)>.25*T&&h>.5*T){ const x=o.x+cx*cs+cz*sn, z=o.z-cx*sn+cz*cs, ex=Math.abs(cs)*w+Math.abs(sn)*d, ez=Math.abs(sn)*w+Math.abs(cs)*d, y=me.position.y; o.sol=[x-ex,z-ez,x+ex,z+ez]; o.fix=[x-ex,z-ez,y,x+ex,z+ez,y+h]; SOL.up.push(o.sol); FIX.up.push(o.fix); } } };
+  const unprop=o=>{ if(o.mesh){ gardGroup().remove(o.mesh); o.mesh=null; } for(const [L,b] of [[SOL.up,o.sol],[FIX.up,o.fix]]){ const i=b?L.indexOf(b):-1; if(i>=0)L.splice(i,1); } o.sol=o.fix=null; };
   let gprops; try{ const B=__DATA__("data/garden.json")||[]; const G=JSON.parse(SAVE.get('land-props')||'null'); gprops=Array.isArray(G)?G:B.slice(); }catch(e){ gprops=[]; }
-  const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot});
+  const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot,...(o.solid===false?{solid:false}:{})});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
+  // the Drive's placed models drawn only near you (a few metres past their own size)
+  // the Drive's models drawn a patch of ground at a time: each patch's models merged into one mesh (one draw, one shadow draw a pass, not one each);
+  // the models one by one only while the landscape editor is open, to pick and move
+  const CELL=40, cells=new Map(), V=new THREE.Vector3(), NM=new THREE.Matrix3();
+  const merge=L=>{ let nv=0, ni=0; for(const m of L){ nv+=m.geometry.attributes.position.count; ni+=m.geometry.index.count; } const P=new Float32Array(nv*3), N=new Float32Array(nv*3), C=new Float32Array(nv*3), I=nv>65535?new Uint32Array(ni):new Uint16Array(ni);
+    let v=0, i=0; for(const m of L){ m.updateMatrixWorld(true); NM.getNormalMatrix(m.matrixWorld); const g=m.geometry, gp=g.attributes.position, gn=g.attributes.normal, gc=g.attributes.color, gi=g.index;
+      for(let k=0;k<gp.count;k++){ V.fromBufferAttribute(gp,k).applyMatrix4(m.matrixWorld); P.set([V.x,V.y,V.z],(v+k)*3); V.fromBufferAttribute(gn,k).applyMatrix3(NM).normalize(); N.set([V.x,V.y,V.z],(v+k)*3); C.set([gc.getX(k),gc.getY(k),gc.getZ(k)],(v+k)*3); }
+      for(let k=0;k<gi.count;k++)I[i+k]=gi.getX(k)+v; v+=gp.count; i+=gi.count; }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(N,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeBoundingSphere(); return g; };
+  const patch=(key,L)=>{ let c=cells.get(key); const sig=L.map(m=>m.id+':'+m.position.x.toFixed(2)+':'+m.position.z.toFixed(2)+':'+m.rotation.y.toFixed(3)+':'+m.scale.x.toFixed(3)).join(); if(c&&c.sig===sig)return c; if(c){ c.me.removeFromParent(); c.me.geometry.dispose(); }
+    const me=new THREE.Mesh(merge(L),pmat); me.receiveShadow=true; me.matrixAutoUpdate=false; me.userData.landProp=1; gardGroup().add(me); c={me,sig,x:me.geometry.boundingSphere.center.x,z:me.geometry.boundingSphere.center.z,r:me.geometry.boundingSphere.radius}; cells.set(key,c); return c; };
+  let cullT=0, wasUp=true, wasEd=false; SYS.add('places',dt=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur, ed=!!LAND.on; if(up===wasUp&&ed===wasEd&&(cullT-=dt)>0)return; wasUp=up; wasEd=ed; cullT=.5;
+    const by=new Map(); for(const o of gprops){ const m=o.mesh; if(!m||!MODELS[o.k]||!MODELS[o.k].sc)continue;
+      if(ed){ const r=m.geometry.boundingSphere.radius*m.scale.x, d=Math.hypot(o.x-pos.x,o.z-pos.z); m.visible=up&&d<45+r; m.castShadow=m.visible&&r>2.5; continue; }
+      m.visible=false; const k=Math.floor(o.x/CELL)+','+Math.floor(o.z/CELL); (by.get(k)||by.set(k,[]).get(k)).push(m); }
+    for(const [k,c] of cells)if(ed||!by.has(k)){ c.me.visible=false; if(!by.has(k)&&!ed){ c.me.removeFromParent(); c.me.geometry.dispose(); cells.delete(k); } }
+    if(!ed)for(const [k,L] of by){ const c=patch(k,L), d=Math.hypot(c.x-pos.x,c.z-pos.z); c.me.visible=up&&d<45+c.r; c.me.castShadow=c.me.visible&&d<22+c.r; } },'152a-landscape cull');   // (above ground and out of the off-map rooms only; a patch near you casts shadows)
   if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;

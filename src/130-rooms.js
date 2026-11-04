@@ -13,9 +13,9 @@ ROOMS.part=(group,fn,make,cast=true)=>{ '@later'; const n0=scene.children.length
   const P={group,objs:scene.children.slice(n0),things:UI.things.slice(t0),cuts:cutWalls.slice(c0),lights:[]};
   for(const o of P.objs)group.add(o);
   const L=[]; for(const o of P.objs)o.traverse(c=>{ if(c.isPointLight&&!c.userData.pool)L.push(c); });
-  for(const l of L){ l.userData.grp=group; l.castShadow=false; l.removeFromParent(); LITE.recs.push(l); P.lights.push(l); } LITE.t=0; return P; };
+  for(const l of L){ l.userData.grp=group; l.castShadow=false; l.removeFromParent(); LITE.recs.push(l); P.lights.push(l); } LITE.t=0; (ROOMS.built||(ROOMS.built=[])).push(P); return P; };   // (built: what src/161c-merge.js may merge)
 ROOMS.unpart=P=>{ '@later'; if(!P)return; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
-  out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0;
+  out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0; if(ROOMS.built)out(ROOMS.built,[P]); if(ROOMS.unmerge)ROOMS.unmerge(P);
   for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); } };
 ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; if(!LEVELS.drawn(i.object))return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
 { const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE, OPEN={r:null,m:[]}; let RL=null;

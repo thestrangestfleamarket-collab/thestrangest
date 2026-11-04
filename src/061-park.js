@@ -134,7 +134,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     while(u<len){ const w=1.2+hash(k,Math.floor(u*7),443)*2.6; if(hash(k,Math.floor(u*3),447)<.7)L.push({a0:u,a1:u+w,hf:.65+.35*hash(k,Math.floor(u),449),seed:(k*13+Math.floor(u*5))%997,fall:.6}); u+=w+.6+hash(k,Math.floor(u*11),451)*2.2; }
     IVP.set(k,L); return L; };
   const ivy=F=>(i,j,k,W,H)=>{ const u=i/BLOCKS.PX, z=H-1-j; for(const Q of ivyOf(k,W)){ if(u<Q.a0||u>Q.a1)continue; Q.h=H*Q.hf; const c=BLOCKS.ivy(u,z,Q); if(c)return speck(c,i/24,j/24,k+29); } return F(i,j,k,W,H); }, wallI=ivy(wallF), rusI=ivy(rusF);
-  const WQ=BATCH.queue({make:(k,m,e)=>BM(k,m,e),cast:true,group:()=>MAPG.parkwall||scene});
+  const WQ=BATCH.queue({make:(k,m,e)=>BM(k,m,e),cast:true,group:()=>MAPG.parkwall||scene,tile:24*TILE});   // (in 24-tile pieces: only those in view drawn)
   const wall=(x0,y0,x1,y1,k)=>{ if(x1-x0<=.05||y1-y0<=.05)return; const ax=x1-x0>=y1-y0, L=ax?x1-x0:y1-y0, n=Math.ceil(L/36);
     for(let p=0;p<n;p++){ const a=(ax?x0:y0)+L*p/n, b=(ax?x0:y0)+L*(p+1)/n, [qx0,qy0,qx1,qy1]=ax?[a,y0,b,y1]:[x0,a,x1,b], kp=k*7+p*5, W=(qx1-qx0)*24, D=(qy1-qy0)*24;
       RUNS.push([qx0,qy0,qx1,qy1,kp]); const wx=v=>SHARED.BOD.XS(v+PO.x), wz=v=>SHARED.BOD.ZS(v+PO.y); WQ.add(wx(qx0),wz(qy0),wx(qx1),wz(qy1),()=>block(qx0,qy0,qx1,qy1,0,WH,kp,undefined,0,WH,wallI)); } };

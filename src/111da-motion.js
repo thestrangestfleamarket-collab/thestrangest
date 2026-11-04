@@ -6,14 +6,14 @@ import {SYS} from './006-map-pre.js';
     ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['SHIVER','shiver'],['ZOMBIE','zombie']];
   const ensure=()=>ready||(ready=DATA().then(J=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; } return info; }));
   const has=n=>!!R.MOVES['mc_'+n];
-  // play one on a rig state: a whole-body move from his current pose; a looped one starts again as it ends, until he walks or another move takes over
+  // play one on a rig state: a whole-body move from his current pose (a held tool's arm still goes where the game aims it); a looped one starts again as it ends, until he walks, another move takes over or its `while` fails
   const start=(S,n,loop)=>{ R.begin(S,'mc_'+n); return {S,n,loop}; };
   const play=async(n,o={})=>{ await ensure(); if(!has(n)||RAG.on||VIT.dead)return false; const loop=o.loop??info[n].loop;
-    cur=start(st,n,loop); if(o.share!==false)SYS.run('act',{m:'mc_'+n,loop:loop?1:0}); return true; };
+    cur=start(st,n,loop); cur.while=o.while; if(o.share!==false)SYS.run('act',{m:'mc_'+n,loop:loop?1:0}); return true; };
   const stop=()=>{ if(!cur)return; const was=cur; cur=null; if(st.move&&st.move.name==='mc_'+was.n)st.move.t=st.move.def.dur; SYS.run('act',{stop:1}); };
   const theirs=new Map();
-  const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(m&&m.name==='mc_'+c.n)return true; if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };
-  SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const walked=st.target>0; cur=null; if(walked)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
+  const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(c.while&&!c.while()){ if(m&&m.name==='mc_'+c.n)m.t=m.def.dur; return false; } if(m&&m.name==='mc_'+c.n)return true; if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };
+  SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here
   const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } ensure().then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
   // the emote panel (H): a button an emote; a looped one runs until you walk

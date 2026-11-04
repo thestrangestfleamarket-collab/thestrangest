@@ -119,5 +119,23 @@
 },
 "water": {
 "clip": "farm-watering"
+},
+"cast": {
+"clip": "overhandthrow"
+},
+"pull": {
+"clip": "rope-pull",
+"loop": true
+},
+"swingA": {
+"clip": "sword-regular-a"
+},
+"swingB": {
+"clip": "sword-regular-b"
+},
+"swingHeavy": {
+"clip": "two-handed-horizontal-swing",
+"from": 0.2,
+"to": 1.1
 }
 }

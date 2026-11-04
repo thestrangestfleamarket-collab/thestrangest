@@ -84,6 +84,7 @@ import {FOREST, PROPS} from './039-bodega.js';
       if(Math.min(w,d)>.25*T&&h>.5*T){ const x=o.x+cx*cs+cz*sn, z=o.z-cx*sn+cz*cs, ex=Math.abs(cs)*w+Math.abs(sn)*d, ez=Math.abs(sn)*w+Math.abs(cs)*d, y=me.position.y; o.sol=[x-ex,z-ez,x+ex,z+ez]; o.fix=[x-ex,z-ez,y,x+ex,z+ez,y+h]; SOL.up.push(o.sol); FIX.up.push(o.fix); } } };
   const unprop=o=>{ if(o.mesh){ gardGroup().remove(o.mesh); o.mesh=null; } for(const [L,b] of [[SOL.up,o.sol],[FIX.up,o.fix]]){ const i=b?L.indexOf(b):-1; if(i>=0)L.splice(i,1); } o.sol=o.fix=null; };
   let gprops; try{ const B=__DATA__("data/garden.json")||[]; const G=JSON.parse(SAVE.get('land-props')||'null'); gprops=Array.isArray(G)?G:B.slice(); }catch(e){ gprops=[]; }
+  try{ if(SHARED.MAPLIVE&&SHARED.MAPLIVE.gardenOf)gprops=SHARED.MAPLIVE.gardenOf(gprops); }catch(e){}
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot,...(o.solid===false?{solid:false}:{})});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
@@ -119,6 +120,8 @@ import {FOREST, PROPS} from './039-bodega.js';
     if(G.length)SYS.onStart(()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(build).catch(e=>console.warn('map ground',e)); },'152a-mapground'); }
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;
+  LAND.props=()=>gprops; LAND.kinds=()=>Object.keys(MODELS); LAND.groups=()=>GROUPS; LAND.dft=k=>dftScale(k); LAND.pfReady=()=>pfReady();
+  LAND.size=k=>{ '@later'; const g=propGeo(k); if(!g)return null; if(!g.boundingBox)g.computeBoundingBox(); const b=g.boundingBox, m=1/.84; return [(b.max.x-b.min.x)*m,(b.max.z-b.min.z)*m,(b.max.y-b.min.y)*m]; };
   let type='grass', drag=null, prev=null, mode='box', poly=null, polyY=0, polyLine=null;
   let brushR=1.5*T, painting=null, paintY=0, paintPrev=null, prop='bush1', propS=null, rot=true;
   const ray=new THREE.Raycaster(), V2=THREE.Vector2, V3=THREE.Vector3;

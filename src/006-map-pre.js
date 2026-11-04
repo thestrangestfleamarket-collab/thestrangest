@@ -74,7 +74,7 @@ const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g
 __CODE__("worker/mappatch.js")
 const LEVEL0=__DATA__("data/world.json"), MAPFILE=MAPPATCH.file(LEVEL0);
 const MAPLIVE=window.__MAPLIVE||(/^https?:$/.test(location.protocol)&&QS.get('map')!=='base'?await (async()=>{ try{ const c=new AbortController(), t=setTimeout(()=>c.abort(),4000), r=await fetch(MAPFILE,{credentials:'same-origin',signal:c.signal}); clearTimeout(t); return r.status===200?await r.json():null; }catch(e){ return null; } })():null);
-const MAPAPP=MAPPATCH.apply(LEVEL0,MAPLIVE); SHARED.MAPLIVE={used:MAPAPP.used,ground:MAPAPP.ground,at:MAPLIVE&&MAPLIVE.at||null};
+const MAPAPP=MAPPATCH.apply(LEVEL0,MAPLIVE); SHARED.MAPLIVE={used:MAPAPP.used,ground:MAPAPP.ground,at:MAPLIVE&&MAPLIVE.at||null,gardenOf:list=>MAPPATCH.gardenOf(list,MAPLIVE)};
 const LEVEL=MAPAPP.W, WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, ORIGIN=LEVEL.block.origin||[72,LEVEL.block.front], LOTX=m=>ORIGIN[0]+(m-ORIGIN[0])/BLDK, LOTY=m=>ORIGIN[1]+(m-ORIGIN[1])/BLDK;   // the map origin: world 0,0 in map tiles
 const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c][r],col:c,row:r,x0:G.x0+c*G.w,x1:G.x0+(c+1)*G.w,y0:G.y0+r*G.h,y1:G.y0+(r+1)*G.h});

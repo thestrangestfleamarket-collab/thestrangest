@@ -409,6 +409,7 @@
    "x": 255,
    "y": 59.5
   },
+  "brook": {"note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it", "pts": [[248, 168], [230, 150], [212, 128], [200, 114], [190, 104], [203, 90], [205, 76], [187.5, 68], [189, 59], [190.5, 50], [178, 42], [165, 34], [155, 20]]},
   "shelvedSites": [
    {
     "id": "pub",

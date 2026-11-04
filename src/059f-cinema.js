@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
 { const ROW='theatre';
@@ -43,8 +44,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const offset=()=>{ const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
 
   // sound is each viewer's own (browsers only let it on after a tap)
-  let snd={on:false,vol:80}; try{ const s=JSON.parse(localStorage.getItem('cinema-snd')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
-  const saveSnd=()=>{ try{ localStorage.setItem('cinema-snd',JSON.stringify(snd)); }catch(e){} };
+  let snd={on:false,vol:80}; try{ const s=JSON.parse(SAVE.get('cinema')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
+  const saveSnd=()=>{ SAVE.set('cinema',JSON.stringify(snd)); };
   let vf=1, fv=null; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(snd.vol*vf)); } else player.mute(); } }catch(e){} if(fv){ fv.muted=!snd.on; fv.volume=Math.min(1,snd.vol*vf/100); } };
   CINEMA.sound=(on,vol)=>{ if(on!=null)snd.on=!!on; if(vol!=null)snd.vol=Math.max(0,Math.min(100,+vol)); saveSnd(); applySnd(); };
 
@@ -329,10 +330,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const $=s=>dlg.querySelector(s), say=t=>{ $('#cmsay').textContent=t; };
     $('#cmsnd').onchange=e=>CINEMA.sound(e.target.checked,null); $('#cmv').oninput=e=>{ $('#cmvv').textContent=e.target.value+'%'; CINEMA.sound(null,+e.target.value); };
     $('#cmfull').onclick=()=>{ $('#cmclose').onclick(); CINEMA.fullscreen(true); };
-    $('#cmclose').onclick=()=>{ dlg.style.display='none'; if(tlT){ clearInterval(tlT); tlT=0; } };
+    $('#cmclose').onclick=()=>{ dlg.style.display='none'; };
     const fmt=s=>{ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }, F_=()=>!ytOn()&&film(), dur=()=>{ const f=F_(); if(f)return f.f.len; try{ return player&&player.getDuration?player.getDuration()||0:0; }catch(e){ return 0; } }; let drag=false;
-    if(tlT)clearInterval(tlT); tlT=setInterval(()=>{ if(dlg.style.display==='none'){ clearInterval(tlT); tlT=0; return; } const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
-      if(!drag&&d)$('#cmt').value=Math.round(t/d*1000); $('#cmtv').textContent=fmt(t)+' / '+fmt(d); },500);
+    if(!tlT){ tlT=1; SYS.every(()=>{ if(!dlg||dlg.style.display==='none')return; const d=dur(); let t=0; const f=F_(); if(f)t=f.off; else try{ t=player&&player.getCurrentTime?player.getCurrentTime()||0:0; }catch(e){}
+      if(!drag&&d)$('#cmt').value=Math.round(t/d*1000); $('#cmtv').textContent=fmt(t)+' / '+fmt(d); },500,'059f-cinema timeline'); }
     $('#cmt').oninput=e=>{ drag=true; const d=dur(); $('#cmtv').textContent=fmt(+e.target.value/1000*d)+' / '+fmt(d); };
     $('#cmt').onchange=async e=>{ drag=false; if(!a||F_())return; const sec=+e.target.value/1000*dur(); try{ player.seekTo(sec,true); }catch(x){} say('...'); say(await push({started_at:new Date(Date.now()-sec*1000).toISOString()})?'moved for everyone':'could not'); };
     if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
@@ -375,5 +376,5 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     buildSigns(m); buildHole(m); };
 
   window.CINEMA=CINEMA; SYS.add('places',()=>{ mkCut(); attach(); tick(); },'059f-cinema');
-  SYS.onStart(async()=>{ await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); setInterval(()=>{ if(document.visibilityState!=='hidden')pull(); },5000); },'059f-cinema');   // after the start, so the later chunk is not pulled in early
+  SYS.onStart(async()=>{ await LOAD('later'); isAdmin().then(a=>{ CINEMA.admin=!!a; }); pull(); SYS.every(pull,5000,'059f-cinema pull'); },'059f-cinema');   // after the start, so the later chunk is not pulled in early
 }

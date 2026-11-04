@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,11 +36,15 @@ jobs:
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
+          k mapeditor 'src/editor/|src/006-map-pre|src/089c-ponds|src/153-nav|src/076-npc-map|src/069-dress|src/096-mapedit|src/152a|worker/mappatch|worker/door|data/topmap|data/world\.json|build\.py|mapeditor\.cjs'
           k vr      'src/162[a-c]|vr\.cjs'
           k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
+          k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
+          k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k summon  'src/076b|src/162b|summon\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
@@ -52,7 +56,7 @@ jobs:
           k editors 'src/09[4-9]|src/13[34]|src/140b|src/136|editors'
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
-          k bank    'src/059h|src/059-store|src/161-perf|bank'
+          k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
           k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|worker/|cars\.cjs|radio\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
@@ -63,13 +67,13 @@ jobs:
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
-          k train   'src/009b|src/009c|src/066c|src/159c|loop\.cjs'
+          k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146bc|holodeck'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
           k kite    'src/146g-kite|src/093|kite\.cjs'
-          k swim    'src/146g-swim|src/066-river|src/065a|swim\.cjs'
+          k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
-          k westst  'src/023|src/059-|src/059[e-h]|westst'
+          k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k diner   'src/146za|src/125-game-zzz-bar-octopus|src/127-drummer|src/059i|src/111fb|src/159-jobs|src/100-use|diner\.cjs'
@@ -100,6 +104,9 @@ jobs:
         run: python3 build.py
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         run: node tests/core.cjs dist/market.html
+      - name: The map editor (its page, the published map, the game laying it)
+        if: contains(steps.f.outputs.run, ' mapeditor')
+        run: node tests/mapeditor.cjs dist/market.html
       - name: The lawn (knee-high tufts, painted ground)
         if: contains(steps.f.outputs.run, ' lawn')
         run: node tests/lawn.cjs dist/market.html
@@ -133,6 +140,15 @@ jobs:
       - name: loopmap
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
+      - name: fauna rests
+        if: contains(steps.f.outputs.run, ' faunarest')
+        run: node tests/fauna-rest.cjs dist/market.html
+      - name: motion
+        if: contains(steps.f.outputs.run, ' motion')
+        run: node tests/motion.cjs dist/market.html
+      - name: spiders
+        if: contains(steps.f.outputs.run, ' spiders')
+        run: node tests/spiders.cjs dist/market.html
       - name: passport
         if: contains(steps.f.outputs.run, ' passport')
         run: node tests/passport.cjs dist/market.html

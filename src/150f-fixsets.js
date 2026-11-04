@@ -1,6 +1,7 @@
 // THE FIXER'S SETS AT HOME: each TV, computer and modem bought from the Fixer (146l) is a thing for your apartment — DECORATE shows it as YOURS once you own one; a click works it: the TVs change channel, the computer dials the market's board when a modem sits in the same room.
 import {THREE} from './003-shx.js';
-import {DRONE, FORAGE} from './003b-systems.js';
+import {DRONE} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {FIXIT} from './146l-fixer.js';
 import {ROOMK} from './150a-bedroom.js';
 { const SETS=FIXIT.SETS, draw=FIXIT.draw, SCR=FIXIT.SCR, SMAP=FIXIT.SMAP;
@@ -13,8 +14,8 @@ import {ROOMK} from './150a-bedroom.js';
     c.hit(un,()=>un.name+': '+(scr[0]&&scr[0].on?['STATIC','CH 7','THE CINEMA','THE NEWS'][scr[0].ch]:'OFF'),()=>{ const S=scr[0]; if(!S)return; if(!S.on){ S.on=true; S.ch=1; } else if(S.ch<3)S.ch++; else S.on=false; L.intensity=S.on?.6:0; draw(S,Date.now()/1000); }); };
   // the computer reaches the market's board only through a modem in the same room
   FIXIT.dial=pc=>{ const A=ROOMK.api, U=A?A.units():[], has=n=>U.some(u=>u.kind==='fx:'+n&&!u.gone);
-    if(pc&&!has('modem'))return FORAGE.say&&FORAGE.say('NO DIAL TONE. THE COMPUTER NEEDS A MODEM BESIDE IT.','#c8a090');
-    if(!pc&&!has('pc_home'))return FORAGE.say&&FORAGE.say('THE MODEM SQUEALS AT NOTHING. IT NEEDS A COMPUTER.','#c8a090');
-    FIXIT.dialed=true; FORAGE.say&&FORAGE.say('EEEE-KSSHHH-BWONG. CONNECTED TO THE MARKET BOARD.','#9fe0a0'); if(window.DRONE&&DRONE.open)DRONE.open(); };
+    if(pc&&!has('modem'))return SAY('NO DIAL TONE. THE COMPUTER NEEDS A MODEM BESIDE IT.','#c8a090');
+    if(!pc&&!has('pc_home'))return SAY('THE MODEM SQUEALS AT NOTHING. IT NEEDS A COMPUTER.','#c8a090');
+    FIXIT.dialed=true; SAY('EEEE-KSSHHH-BWONG. CONNECTED TO THE MARKET BOARD.','#9fe0a0'); if(window.DRONE&&DRONE.open)DRONE.open(); };
 
 }

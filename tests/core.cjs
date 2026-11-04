@@ -9,6 +9,7 @@ catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || 
 
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
+{ const T = JSON.parse(fs.readFileSync(ROOT + '/data/topmap.json', 'utf8')); ok(T.tiles.length === T.NX * T.NZ && T.tiles.every(t => fs.existsSync(ROOT + '/data/topmap/' + t)), 'the map editor\'s ground picture has all its ' + T.tiles.length + ' pieces (node tools/topmap.cjs)'); }
 const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block.back, -77], into = (a, b) => a.kind === 'stairs' && b.kind === 'passage';
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
@@ -58,7 +59,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.hud = (() => { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /\/ 100$/.test(document.getElementById('vhpn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].textContent); HUD.set(1, null);
-        __dbg.ui().log('a test line', null, 'MEL'); FORAGE.say('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
+        __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
         { const R = document.querySelector('#menu [data-p="graphics"] #dhaze'), e0 = DFOG.get().end, b0 = e0 - DFOG.get().start; DFOG.range(100); ok.haze = !!R && +R.value === 100 && DFOG.get().end === 100 && DFOG.get().end - DFOG.get().start === b0 && document.getElementById('dhazev').textContent === '100 TILES'; DFOG.range(e0); } return ok; } catch (e) { return { err: String(e) }; } })();
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
@@ -68,6 +69,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const T = __dbg.THREE, m = new T.Object3D();
       VIS.hide(m, 'a'); VIS.hide(m, 'b'); const h2 = !m.visible; VIS.hide(m, 'a', false); const h1 = !m.visible; VIS.hide(m, 'b', false);
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
+      { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
+        o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
+      { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
@@ -144,6 +149,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
+    ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
+    ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
@@ -181,6 +189,12 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
+    { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
+      const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
+        U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));
+        U.toggleMenu(); const b = btn(), dead = !!b && !b.disabled; if (b) b.click(); const t1 = performance.now(); while (VIT.dead && performance.now() - t1 < 90000) await new Promise(r => setTimeout(r, 200));
+        const P1 = window.__dbg.you(); return { alive, dead, back: !VIT.dead && VIT.hp === 1, here: Math.hypot(P1.x - P0.x, P1.z - P0.z) < 3, shown: W3.mesh.visible, menu: U.menuOpen }; }).catch(e => ({ err: e.message }));
+      ok(r0.alive && r0.dead && r0.back && r0.here && r0.shown && !r0.menu, 'RESURRECT in the menu: greyed while alive, and once dead it brings you back where you stand (full health, your body back): ' + JSON.stringify(r0)); }
     const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 12 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.geometry && P.standFar && P.standFar.geometry) }; }).catch(e => ({ err: e.message }));
     ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (10 to 45 tiles from you): ' + JSON.stringify(pk));
     await pg.evaluate(() => window.__dbg.UI.setView('follow')).catch(() => {}); await pg.waitForTimeout(800);
@@ -223,6 +237,17 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
         out['phase' + k] = { style: n.D.style, beats: +(fly.getEffectiveTimeScale() / fly.getClip().duration).toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
     ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.beats > .25 && dg.phase1.beats > .25, 'a flying dragon beats its wings through both halves of its flight (a beat every few seconds at least): ' + JSON.stringify(dg));
+    const db = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, TI = D.cv().TILE, you = D.pos(), ds = D.npcs().filter(q => q.key === 'dragon' && !q.D.p.sign), out = {};
+      const n = ds[0], w = name => { const a = n.mixer._actions.find(x => x.getClip().name === name); return a ? a.getEffectiveWeight() : -1; }, s0 = n.D.shots || 0; let seen = 0, wt = 0;
+      const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 10 * TI; n.st.z = you[2]; n.st.h = Math.PI / 2; n.D.y = n.D.cruise = you[1] + 4 * TI; };
+      put(); n.D.breath = 0; for (let i = 0; i < 300 && (n.D.shots || 0) === s0; i++) { await raf(); put(); if (n.D.fx) { seen = n.D.fx.a.getClip().name; wt = Math.max(wt, w(seen)); } }
+      out.breath = { clip: seen, weight: +wt.toFixed(2), shots: (n.D.shots || 0) - s0 };
+      const m = ds.find(q => q !== n && q.D.home && q.D.home.tree); if (!m) return { ...out, err: 'no dragon with a home tree' };
+      const H0 = m.D.home, H = m.D.home = { x: you[0] + 7 * TI, z: you[2], y: you[1] + 3 * TI, h: 0, tree: { x: you[0] + 7 * TI, z: you[2], r: .5 * TI, y: you[1], top: you[1] + 4 * TI } }, perch = () => { m.D.mode = 'perch'; m.D.p = H; m.st.x = H.x; m.st.z = H.z; m.D.y = H.y; }; perch(); m.D.t = 999; m.D.pw = 0; m.D.peek = false; m.D.pk = 99; m.D.zz = 0;
+      const sw = () => { const a = m.mixer._actions.find(x => x.getClip().name === 'Sleep'); return a.getEffectiveWeight(); };
+      for (let i = 0; i < 400 && !(m.D.asleep && sw() > .5); i++) { await raf(); perch(); }
+      out.nap = { asleep: m.D.asleep, sleep: +sw().toFixed(2) }; m.D.t = 3; for (let i = 0; i < 3; i++) { await raf(); perch(); } out.woke = !m.D.asleep; m.D.home = m.D.p = H0; m.D.t = 1; return out; }).catch(e => ({ err: e.message }));
+    ok(db.breath && db.breath.clip === 'Fly_Fire' && db.breath.weight > .5 && db.breath.shots === 1 && db.nap && db.nap.asleep && db.nap.sleep > .5 && db.woke, 'a flying dragon breathes its fireball on its fire-breath clip; one resting on its home tree falls asleep on its sleep clip and wakes before it leaves: ' + JSON.stringify(db));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }

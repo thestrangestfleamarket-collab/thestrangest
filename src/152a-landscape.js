@@ -10,7 +10,7 @@ import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
 import {TPANE} from './087dz-tpane.js';
 { const T=TILE;
-  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
+  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],['road','ROAD','#34363c'],['alley','ALLEY','#46474c'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
   const rnd=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
   const texCache={};
   function tex(t){ if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
@@ -24,6 +24,7 @@ import {TPANE} from './087dz-tpane.js';
     else if(t==='cobble'||t==='slab'){ const cell=t==='cobble'?12:16; for(let cy=0;cy<N;cy+=cell)for(let cx=0;cx<N;cx+=cell){ const off=t==='cobble'?(rnd(cx*cy+1)-.5)*3:0, s=rnd(cx+cy*7); g.fillStyle=t==='cobble'?(s<.33?'#5f5f64':s<.66?'#74747a':'#656569'):(s<.5?'#8f8a7f':'#827d72'); g.fillRect(cx+1+off,cy+1+off,cell-2,cell-2); } g.fillStyle='rgba(30,30,34,.5)'; for(let p=0;p<=N;p+=cell){ g.fillRect(p,0,1,N); g.fillRect(0,p,N,1); } }
     else if(t==='dirt'){ for(let i=0;i<300;i++){ const x=rnd(i*1.7)*N,y=rnd(i*3.1+2)*N,v=rnd(i*4.3); dot(x,y,1,v<.5?'#5a4028':'#7a5c3c'); } }
     else if(t==='gravel'){ for(let i=0;i<220;i++){ const x=rnd(i*2.1)*N,y=rnd(i*1.9+5)*N,v=rnd(i*6.7); dot(x,y,rnd(i)>.6?2:1,v<.4?'#5e5a54':v<.75?'#8a867e':'#9c988f'); } }
+    else if(t==='road'||t==='alley'){ for(let i=0;i<260;i++){ const x=rnd(i*1.3+t.length)*N,y=rnd(i*2.7+9)*N,v=rnd(i*5.1); dot(x,y,1,v<.5?(t==='road'?'#2c2e33':'#3c3d42'):(t==='road'?'#3f4147':'#55565b')); } if(t==='alley'){ g.fillStyle='rgba(20,20,24,.55)'; for(let i=0;i<4;i++){ let x=rnd(i*7.7)*N, y=rnd(i*3.1)*N; for(let k=0;k<8;k++){ g.fillRect(x,y,1,1); x+=rnd(i+k)*4-1; y+=1; } } } }
     else if(t==='sand'){ for(let i=0;i<240;i++){ const x=rnd(i*1.1)*N,y=rnd(i*2.3+1)*N; dot(x,y,1,rnd(i*3.3)<.5?'#bcaf78':'#d6c898'); } }
     const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.colorSpace=THREE.SRGBColorSpace; texCache[t]=tx; return tx; }
   const mat=t=>{ const m=new THREE.MeshToonMaterial({map:tex(t),side:THREE.DoubleSide}); if(W3.GP)m.gradientMap=W3.GP; return m; };
@@ -84,6 +85,7 @@ import {TPANE} from './087dz-tpane.js';
       if(Math.min(w,d)>.25*T&&h>.5*T){ const x=o.x+cx*cs+cz*sn, z=o.z-cx*sn+cz*cs, ex=Math.abs(cs)*w+Math.abs(sn)*d, ez=Math.abs(sn)*w+Math.abs(cs)*d, y=me.position.y; o.sol=[x-ex,z-ez,x+ex,z+ez]; o.fix=[x-ex,z-ez,y,x+ex,z+ez,y+h]; SOL.up.push(o.sol); FIX.up.push(o.fix); } } };
   const unprop=o=>{ if(o.mesh){ gardGroup().remove(o.mesh); o.mesh=null; } for(const [L,b] of [[SOL.up,o.sol],[FIX.up,o.fix]]){ const i=b?L.indexOf(b):-1; if(i>=0)L.splice(i,1); } o.sol=o.fix=null; };
   let gprops; try{ const B=__DATA__("data/garden.json")||[]; const G=JSON.parse(SAVE.get('land-props')||'null'); gprops=Array.isArray(G)?G:B.slice(); }catch(e){ gprops=[]; }
+  try{ if(SHARED.MAPLIVE&&SHARED.MAPLIVE.gardenOf)gprops=SHARED.MAPLIVE.gardenOf(gprops); }catch(e){}
   const serP=o=>({k:o.k,x:o.x,z:o.z,y:o.y,s:o.s,rot:o.rot,...(o.solid===false?{solid:false}:{})});
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
@@ -105,8 +107,22 @@ import {TPANE} from './087dz-tpane.js';
     for(const [k,c] of cells)if(ed||!by.has(k)){ c.me.visible=false; if(!by.has(k)&&!ed){ c.me.removeFromParent(); c.me.geometry.dispose(); cells.delete(k); } }
     if(!ed)for(const [k,L] of by){ const c=patch(k,L), d=Math.hypot(c.x-pos.x,c.z-pos.z); c.me.visible=up&&d<45+c.r; c.me.castShadow=c.me.visible&&d<22+c.r; } },'152a-landscape cull');   // (above ground and out of the off-map rooms only; a patch near you casts shadows)
   if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
+  // the map editor's published ground (worker/mappatch.js, SHARED.MAPLIVE.ground, in map tiles): one mesh a kind, a vertex a tile, laid on the ground
+  { const G=(SHARED.MAPLIVE&&SHARED.MAPLIVE.ground)||[]; LAND.pub=[];
+    const build=()=>{ const B=SHARED.BOD, gy=(x,z)=>{ try{ return typeof SHARED.groundY==='function'?SHARED.groundY(x,z)||0:0; }catch(e){ return 0; } }, by={};
+      for(const g of G)(by[g.t]=by[g.t]||[]).push(g);
+      for(const t in by){ const P=[],UV=[],IX=[];
+        for(const g of by[t]){ const xa=B.XS(g.x0), xb=B.XS(g.x1), za=B.ZS(g.y0), zb=B.ZS(g.y1), x0=Math.min(xa,xb), x1=Math.max(xa,xb), z0=Math.min(za,zb), z1=Math.max(za,zb);
+          const nx=Math.max(1,Math.min(64,Math.round((x1-x0)/T))), nz=Math.max(1,Math.min(64,Math.round((z1-z0)/T))), b=P.length/3;
+          for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){ const x=x0+(x1-x0)*i/nx, z=z0+(z1-z0)*j/nz; P.push(x,gy(x,z)+.06,z); UV.push(x/T,z/T); }
+          for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){ const a=b+j*(nx+1)+i, c=a+nx+1; IX.push(a,c,a+1,a+1,c,c+1); } }
+        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IX); geo.computeVertexNormals(); geo.computeBoundingSphere();
+        const me=new THREE.Mesh(geo,mat(t)); me.receiveShadow=true; me.renderOrder=1; me.userData.landPatch=t; me.userData.mapPub=1; scene.add(me); LAND.pub.push(me); } };
+    if(G.length)SYS.onStart(()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(build).catch(e=>console.warn('map ground',e)); },'152a-mapground'); }
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;
+  LAND.props=()=>gprops; LAND.kinds=()=>Object.keys(MODELS); LAND.groups=()=>GROUPS; LAND.dft=k=>dftScale(k); LAND.pfReady=()=>pfReady();
+  LAND.size=k=>{ '@later'; const g=propGeo(k); if(!g)return null; if(!g.boundingBox)g.computeBoundingBox(); const b=g.boundingBox, m=1/.84; return [(b.max.x-b.min.x)*m,(b.max.z-b.min.z)*m,(b.max.y-b.min.y)*m]; };
   let type='grass', drag=null, prev=null, mode='box', poly=null, polyY=0, polyLine=null;
   let brushR=1.5*T, painting=null, paintY=0, paintPrev=null, prop='bush1', propS=null, rot=true;
   const ray=new THREE.Raycaster(), V2=THREE.Vector2, V3=THREE.Vector3;

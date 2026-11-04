@@ -1,5 +1,5 @@
 # THE MEGAKIT WALLS: shrinks the Downtown City MegaKit's wall textures into one small atlas and pulls its add-ons (the AC unit, the planter) out of their glTF.
-# Run: python3 tools/megakit-walls.py <folder with T_*_BaseColor.png, Prop_ACUnit.gltf/.bin, Prop_Planter_Single.gltf/.bin>  → data/megakit.png, data/megakit.json
+# Run: python3 tools/megakit-walls.py <folder with T_*_BaseColor.png, Prop_ACUnit.gltf/.bin, Prop_Planter_Single.gltf/.bin>  → data/full/megakit.png, data/full/megakit.json
 import json, struct, sys, os
 from PIL import Image
 
@@ -23,7 +23,7 @@ put('stone', im('Trim'), (0, 0, 2048, 940), 384, 64, 128, 56)
 put('wood', im('Trim'), (0, 950, 2048, 1176), 384, 120, 128, 8)
 put('metal', im('MetalConcrete'), (0, 0, 2048, 830), 384, 128, 128, 52)
 A = A.quantize(colors=96, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGB')
-A.save(os.path.join(R, 'data/megakit.png'), optimize=True)
+A.save(os.path.join(R, 'data/full/megakit.png'), optimize=True)
 
 def mesh(name):
     g = json.load(open(os.path.join(D, name + '.gltf'))); b = open(os.path.join(D, g['buffers'][0]['uri']), 'rb').read()
@@ -37,5 +37,5 @@ def mesh(name):
                     'uv': [round(v, 4) for v in acc(p['attributes']['TEXCOORD_0'])], 'i': acc(p['indices'])})
     return out
 B = {'small': {'w': 12, 'd': 12, 'h': 17}, 'medium': {'w': 14, 'd': 12, 'h': 25}, 'large': {'w': 20, 'd': 16, 'h': 28}}   # the kit's three buildings' sizes in metres: the fronts keep their heights
-json.dump({'aw': 512, 'ah': 256, 't': T, 'b': B, 'ac': mesh('Prop_ACUnit'), 'planter': mesh('Prop_Planter_Single')}, open(os.path.join(R, 'data/megakit.json'), 'w'), separators=(',', ':'))
-print('data/megakit.png', os.path.getsize(os.path.join(R, 'data/megakit.png')), 'data/megakit.json', os.path.getsize(os.path.join(R, 'data/megakit.json')))
+json.dump({'aw': 512, 'ah': 256, 't': T, 'b': B, 'ac': mesh('Prop_ACUnit'), 'planter': mesh('Prop_Planter_Single')}, open(os.path.join(R, 'data/full/megakit.json'), 'w'), separators=(',', ':'))
+print('data/full/megakit.png', os.path.getsize(os.path.join(R, 'data/full/megakit.png')), 'data/full/megakit.json', os.path.getsize(os.path.join(R, 'data/full/megakit.json')))

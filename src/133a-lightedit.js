@@ -34,7 +34,7 @@ import {TPANE} from './087dz-tpane.js';
       ps2:[()=>!!PS2.on,v=>{ if(v!==!!PS2.on)PS2.set(v); }],
       shadows:[()=>!!st.shadows,set('shadows',true)],shadowType:[()=>st.shadowType,set('shadowType',true)],tone:[()=>st.tone,set('tone',false)],
       exposure:[()=>+st.exposure,v=>set('exposure',false)(+(+v).toFixed(2))],
-      bands:[()=>CEL,v=>{ if(v===CEL)return; try{ SAVE.set('bands',String(v)); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); }]});
+      bands:[()=>CEL,v=>{ if(v===CEL)return; try{ SAVE.set('bands',String(v)); SAVE.del('shade'); }catch(e){} location.reload(); }]});
     pane=await TPANE.make(P.querySelector('.tp'),{title:'LIGHTING — GLOBAL'});
     pane.addBinding(V,'q',{label:'QUALITY',options:{...Object.fromEntries(Object.keys(TIERS).map(k=>[k.toUpperCase(),k])),CUSTOM:'custom'}});
     pane.addBinding(V,'ps2',{label:'PS2 FILTER'}); pane.addBinding(V,'shadows',{label:'SHADOWS'});

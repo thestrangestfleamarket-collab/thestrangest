@@ -69,3 +69,80 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **Section B's skate park in the map editor** (left from the skate park's move, 4 Nov 2026; owner: "option 1, open air, remove the gate in A").
+  It is placed by `sections.places` in `data/world.json`; the owners' map editor (`/editor`, `src/editor/editor.html`, and the in-game one in
+  `src/096-mapedit.js`, whose old Section A gate row was removed) can't see or move it yet.
+- [ ] **Re-run the editor's ground picture** (`tools/topmap.cjs`, about 40 minutes): it still shows the skate park's old gate in Section A's
+  park and nothing at its new spot in Section B.
+- [ ] **The minimap doesn't draw the skate park** in Section B (plain grass where it stands).
+- [ ] **Look at the skate park's bowl from above** in Section B (`?sec=B`): the checks prove the section's ground is cut round it, but no
+  picture has confirmed the grass doesn't show over the bowl.
+- [ ] **Cast check fails at 11:00 and 2:30** (`tests/jobsim.cjs`, seen 4 Nov 2026 on clean `main`, not from the skate park's work): some
+  people on shift aren't at work, some off shift aren't home.
+- [ ] **The skate park's tricks went live without a finished CI build check** (#552, 4 Nov 2026: other chats' merges kept restarting it);
+  checked locally only (`tests/skate.cjs`, `tests/core.cjs`). Run the workflow with `full` once to be sure.
+- [ ] **The apartment house's two thin pipes hide a few steps before the house** when you walk away (the far cut, `src/161a-cull.js`,
+  4 Nov 2026). They're on its far side; minor.
+- [ ] **The places tour no longer visits the skate park** (`tests/places.cjs` can't load Section B); `tests/skate.cjs` covers it but only
+  runs when skate files change.
+- [ ] **The physics extras (#512, 2 Nov 2026): never tried in a real game**: the bar's dartboard scoring a throw, an upright trash can
+  taking small things (the street has no pushable trash cans now), hanging plants, lanterns and bulbs swaying, glass breaking.
+  `src/150-loose.js`, `src/150o-physmore.js`; `tests/physx.cjs` doesn't cover them.
+- [ ] **STAND ON THINGS only rose halfway in the test** (0.10 of a 0.20 block; the test's bar was lowered to pass). Try it at full speed.
+- [ ] **Ragdolls only on the townsfolk** (`BODIES`, `NPC.rag` in `src/111a-bodies.js`), not the street characters (`076-npc-map`); they
+  stand up where they were, not where they fell.
+- [ ] **The go-kart**: gets in where you stand, not where you set it down; held, it shows as a little kart in your hands; not on the
+  Boardwright's wall; a wall at speed just stops it (nothing throws you out).
+- [ ] **Physics is only on your own screen**: other players don't see karts, ragdolls, flying loose things or broken glass; broken and binned
+  things come back on reload (not saved).
+- [ ] **Walls and ground are still boxes to the physics** (only loose things got real shapes). Rapier's deterministic build, to keep
+  physics the same between players, waits for shared physics.
+- [ ] **`tests/loosecheck.cjs` fails on `main`**: its start spot (`at=-2.2,3.2`) has no loose things near it any more.
+- [ ] **The navigation wasm sometimes aborts** (`Aborted()` from `@recast-navigation`, "NAV: the mesh for down failed"), seen 2 Nov 2026 on
+  clean `main` too; it once failed `tests/places.cjs` at the playhouse.
+- [ ] **Fluffy crown + real leaves: owner to pick** (2 Nov 2026; options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov). A fluffy crown
+  (now), B single leaves, C ball-lit leaves, D fluffy core with a leaf edge, E leafy cards, F leaves on the sunny top. Suggested: D for close
+  trees, C for showpieces (the cherry, the Mall elms). Nothing built.
+- [ ] **Trees by distance: owner to pick** (2 Nov 2026; the nine looks at https://claude.ai/artifact/TQ1obJhoEbEzv3cquPxwfC). Suggested:
+  leaf dabs at middle distance, a picture that faces you past the haze. Nothing built.
+- [ ] **Look at the fluffy grass in game** (#508): the tufts' dark root, light tip and tip patches were never seen; the standing grass
+  didn't show in the test browser.
+- [ ] **Does the wind bring the lag back?** (#508 turned wind on again for trees, plants and grass; the owner turned it off on 30 Oct for lag).
+  Not measured; `PARK.windK` (131-weather) and `TUFTS.wind` (140a) set it.
+- [ ] **"chunk later was not loaded before use" (#371, #372)** seen on the lawn (`?at=40,150`) on 2 Nov; not known whether it was there
+  before #508. Find the functions in `dist/chunks.txt` and add the missing `LOAD`.
+- [ ] **Two draw-distance controls: keep both or make one?** (left from #549, 4 Nov 2026; owner: "add a draw distance for far buildings").
+  DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE (the owner's
+  global look, `src/134e-distfog.js`) both limit what's drawn; the nearer wins. Ask the owner which to keep.
+- [ ] **DRAW DISTANCE's default** is 120 tiles (picked by Claude, not the owner; far buildings vanish at that edge with no fog). Ask: keep,
+  change, or ALL.
+- [ ] **The bath ghosts are still inside the bath house** (owner, 4 Nov 2026: "empty except the fog"; owner, 2 Nov 2026: "the bath ghosts
+  that lived inside stay inside"). Ask whether they go.
+- [ ] **Steam spilling out of the bath house's open door**: shown in the owner's picked mockup (B, 4 Nov 2026), not built. The steam stays in
+  the room (`SHARED.steam`, drawn by the fog pass).
+- [ ] **A ghost's revival at the end of the bath countdown**: the countdown and its reset on stepping out were seen working; the moment at
+  zero (`back()` in `src/103a-death.js`, alive where you stand) was not seen in a test. Die, walk in, wait 10 s on the live site.
+- [ ] **The HUD's 24px margin on the owner's own screen** (owner's pick A, 4 Nov 2026): checked locally only; his live shot sat tighter than
+  the local layout predicted (`--fx`/`--fy` in `src/004-main.js`).
+- [ ] **The road along the Hudson from Market St** (owner, 4 Nov 2026: "why isnt the hudson showing, missing road"): the water and quay now
+  show within 60 tiles; the road itself wasn't confirmed in a picture.
+- [ ] **A thin dark bar on the bath house's floor** near its front wall, seen from one overhead angle (4 Nov 2026); not looked into.
+- [ ] **Tree shadows: the lag in the owner's render-inspector shot** (owner, 2 Nov 2026: "extremely laggy.", on Market St near 32,25 at
+  night, 10 FPS). Measured 2 Nov: the park's leaf-card trees (about 148k triangles in 3 meshes) and the street oaks (about 23k) cast shadows,
+  and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps; all `autoUpdate=false`, redrawn when needed) draws
+  them again: about 1,000 calls and 750k triangles in that frame, felt as stutter. Since 1 Nov a quarter of the trees use the fine-leaf look
+  (1.8 times the cards, `TREEGEN.cards` in `src/060b-trees.js`). Options given, owner to pick: 1 the shadow cast from the trees' lite card set
+  (recommended: looks nearly the same for about a third of the cost; a shadow-only caster on its own layer), 2 no tree shadows from street
+  lamps (sun and moon kept), 3 fewer cards on the fine-leaf trees. Check with the render inspector at `?at=32.5,25.2&hour=21` and
+  `tests/startprof.cjs` + `tests/budget.cjs`. The lag work since (the Drive's models and the insides, 4 Nov) didn't touch the trees.
+- [ ] **The shoes key M sits next to the map (Shift+M)** (2 Nov 2026: the owner's feet went bare, likely from pressing M for the map).
+  `shoes:'m'` in the key table in `src/094-ui.js`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; the owner to choose a key.
+- [ ] **The tee in one piece, like the jeans** (owner's pick, 2 Nov 2026: "1", one continuous garment; the jeans were done in #495, the tee
+  left a body tube with separate set-in sleeves that overlap at the shoulder, `MAKE.shirt` in `src/072b-garb.js`). Only if the owner wants
+  it: its seams didn't show as layers in any portrait.
+- [ ] **Clothes leftovers** (2 Nov 2026, seen in the portraits `node tests/clothes.cjs dist/market.html <dir>` saves): crouching, seen from the
+  side, a patch of her grey briefs at the back of the thigh (the jeans' seat back stays with the hips, `ks` in `MAKE.pants`); his forearm
+  passes through the jeans at the hip when his arm swings behind him (his arms hang against the hips); a few stray pixels near the hips on
+  some walking frames.
+- [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
+  branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.

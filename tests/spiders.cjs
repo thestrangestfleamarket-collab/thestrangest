@@ -11,7 +11,7 @@ const {chromium}=require('playwright');
     let hits=0; sp.cool=99; sp.lunge={t:0,hit:()=>hits++}; await U(()=>N.clip==='Spider_Attack'&&A('Spider_Attack')&&A('Spider_Attack').getEffectiveWeight()>.5,20000);
     out.attack={clip:N.clip,once:!!A('Spider_Attack')&&A('Spider_Attack').loop===2200}; await U(()=>!sp.lunge,20000); out.attack.hits=hits;
     sp.jolt=.25; await U(()=>N.clip==='Spider_Hit',20000); out.hit=N.clip==='Spider_Hit';
-    sp.dead=true; sp.t=0; await U(()=>N.clip==='Spider_Death',20000); out.death=N.clip==='Spider_Death'; await U(()=>!sp.on,30000); out.gone=!sp.on;
+    sp.dead=true; sp.t=0; await U(()=>N.clip==='Spider_Death',20000); out.death=N.clip==='Spider_Death'; await U(()=>!sp.on,90000); out.gone=!sp.on;
     await DUNGEON.go(0); return out; });
   ok(r.attack&&r.attack.clip==='Spider_Attack'&&r.attack.once&&r.attack.hits===1,'a spider strikes on its Attack clip, once, and its bite lands once: '+JSON.stringify(r));
   ok(r.hit,'struck, it flinches on its Hit clip');

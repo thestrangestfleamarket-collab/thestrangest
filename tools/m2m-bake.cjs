@@ -64,7 +64,7 @@ const RIGS={
   console.log(WHO,NB,'bones;',Object.keys(MAP).length,'follow Mesh2Motion; hips ratio',KY.toFixed(3));
   const out={};
   for(const [f,name] of Object.entries(C.clips)){
-    const g=await load(path.join(dir,'animations',f+'.glb')), S=g.scene, A=g.animations[0], mx=new THREE.AnimationMixer(S); mx.clipAction(A).play();
+    const g=await load(path.join(dir,'animations',f+'.glb')), S=g.scene, A=g.animations[0], mx=new THREE.AnimationMixer(S), ac=mx.clipAction(A); ac.setLoop(THREE.LoopOnce); ac.clampWhenFinished=true; ac.play();   // (once: its last frame, not its first again)
     const dur=A.duration, n=Math.max(2,Math.round(dur*C.fps)+1), q=new Int16Array(n*NB*4), P=new Float32Array(n*3), TB={}; for(const t in TQ0)TB[t]=tb(S,t); const dR=t=>wq(TB[t]).multiply(TQ0[t].clone().invert()); const HB=C.root?tb(S,C.hips):null;
     const b=C.base&&C.base.for.includes(name)?BASE:null, RW=b?b.w:OW, RL=b?b.lq:LQ, R0=b&&b.root?b.root:C.root&&OP[JI[C.root]];
     for(let k=0;k<n;k++){ mx.setTime(k/(n-1)*dur); S.updateMatrixWorld(true); const W=[];

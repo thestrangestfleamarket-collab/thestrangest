@@ -1,6 +1,6 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, TEXT, UI, WE, WIELD, ZONES} from './003b-systems.js';
+import {BAG, ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, TEXT, UI, WE, WIELD, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SECTION, SYS, TILE} from './006-map-pre.js';
@@ -40,7 +40,7 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;
   const save=()=>{ try{ OWNED.set('quick',JSON.stringify(S)); }catch(e){} };
   const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(window.INV&&INV.items&&INV.items[id])||0;
-  const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?esc(FORAGE.name(id)):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; };
+  const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; }; HUD.qdraw=draw;
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
   HUD.use=i=>{ const id=S[i]; if(!id)return false; return HUD.useItem(id); };
   HUD.useItem=id=>{ const say=SAY, nm=FORAGE.name(id);

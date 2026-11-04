@@ -175,7 +175,7 @@ PHA.make=K=>{ '@playhouse';
 
   /* ---------- the foyer: parquet, damask over a dado, marble columns, coffered ceiling, the grand stairs, the box office and the bar, the doors ---------- */
   { const FY=D.FY, FT=12.3, z0=D.ZL, z1=D.ZF;
-    boxA(-12,0,z0,12,FY,z1,M.black,{cast:false}); boxA(-12,FY-.02,z0+.2,12,FY,z1,M.parquet,{s:1.4});
+    boxA(-12,0,z0,12,FY-.02,z1,M.black,{cast:false}); boxA(-12,FY-.02,z0+.2,12,FY,z1,M.parquet,{s:1.4});
     for(const s of [-1,1]){ plane(z1-z0,FT-FY,M.damask,s*12,(FY+FT)/2,(z0+z1)/2,{ry:-s*PI/2,s:.9}); boxA(s*11.95,FY,z0,s*12,FY+1.1,z1,M.mahog,{s:.6}); boxA(s*11.93,FY+1.1,z0,s*12,FY+1.16,z1,M.gold); }
     plane(24,FT-FY,M.damask,0,(FY+FT)/2,z1,{ry:PI,s:.9}); boxA(-12,FY,z1-.05,12,FY+1.1,z1,M.mahog,{s:.6});
     plane(24,FT-D.LY-.9,M.damask,0,(D.LY+.9+FT)/2,z0-.02,{s:.9});
@@ -222,8 +222,8 @@ PHA.make=K=>{ '@playhouse';
     // the posters in gilt frames, the programme on its easel, two velvet benches
     for(const [x,z,ry] of [[-11.9,38.5,PI/2],[11.9,38.5,-PI/2],[-11.9,26,PI/2],[11.9,26,-PI/2]]){ const m=new THREE.MeshLambertMaterial({map:TX.poster}); const fx=x-Math.sign(x)*.02;
       plane(1.1,1.65,m,fx,FY+1.9,z,{ry}); K.box(1.3,1.85,.06,M.gold,x,FY+1.9,z,{ry}); }
-    { const x=-2.5,z=40.4; for(const q of [-.4,.4])rod([x+q,FY,z+.25],[x+q*.6,FY+1.9,z],.025,M.mahog); rod([x,FY,z-.35],[x,FY+1.8,z],.02,M.mahog);
-      K.box(1,1,.03,new THREE.MeshLambertMaterial({map:TX.bill}),x,FY+1.5,z+.04,{rx:-.12}); }
+    { const x=0,z=35.6, B=1.6; for(const q of [-1,1])rod([x+q*(B/2+.12),FY,z+.18],[x+q*(B/2+.06),FY+2.45,z-.12],.03,M.mahog); rod([x,FY,z-.75],[x,FY+2.3,z-.16],.025,M.mahog);
+      K.box(B+.3,.05,.14,M.mahog,x,FY+.72,z+.1); K.box(B,B,.03,new THREE.MeshLambertMaterial({map:TX.bill}),x,FY+.75+B/2,z,{rx:-.12}); }
     for(const x of [-2.6,2.6]){ boxA(x-1.1,FY+.42,35.3,x+1.1,FY+.55,35.9,M.velvet); for(const q of [-1,1])for(const r of [-1,1])lathe([[0,0],[.04,0],[.03,.42]],M.gold,x+q*1,FY,35.6+r*.22,{seg:6}); }
     // the two foyer chandeliers: smaller, on chains from the coffers
     for(const z of [33,38.6]){ const cy=FT-2.2; rod([0,FT,z],[0,cy+.8,z],.02,M.brass); lathe([[0,.8],[.08,.7],[.12,.3],[.05,0],[0,0]],M.brass,0,cy,z); tor(.7,.03,M.brass,0,cy+.25,z,{rx:PI/2,seg:32}); const dr=[], bl=[];

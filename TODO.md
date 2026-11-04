@@ -43,3 +43,10 @@ The owner's list of features to build, newest last. Each line is his ask; the no
 - Built the game's way: CEL light, the game's own painters and colours, no photo textures; it states its cost (triangles, lamps, ms).
 - **Done 19 Oct 2026** (his pick A, "no walkway to fountain yet, make it 20% smaller"): the terrace (46 tiles across, "like the mockup, -20%"),
   the fountain and the lake are in, the park's north edge pushed 36 tiles north for them (`src/060a-fount.js`, see docs/HISTORY.md). **Still to do**: the walkway to the terrace and the Mall gate entrance (the gate from his photo).
+
+## Round drones: checks left (4 Nov 2026)
+
+The round sphere drones are merged (2 Nov 2026, see docs/HISTORY.md). Still to do:
+- Check the live site (thestrangestfleamarket.com) shows them.
+- Look at the delivery, newspaper and fire drones close up in the game, flying (only the models alone and a distant scanner drone were seen).
+- Turn on GitHub auto-merge (Settings → General → Pull Requests → Allow auto-merge) so pull requests merge themselves when the check is green.

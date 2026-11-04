@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLIP, CLOCK, FORAGE, RIDE, ROOMS, SHOPS, TRICKS, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SECTIONS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {SECTIONS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const SKATE={rails:[]}; window.SKATE=SKATE;
 { const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), BOARD=__LAZY__("data/skateboard.json"), RIDES=__LAZY__("data/skaterides.json");
@@ -73,6 +73,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
   SYS.add('dress',()=>tick&&tick(),'111fd-skatepark');   // the lamps follow the clock
   // in its section, it is built as the start ends
   if(S&&SECTIONS.home.id===S.section){ WX=SHARED.BOD.XS(S.x); WZ=SHARED.BOD.ZS(S.y); const a=at(-24,-34), c=at(24,34); B={x0:Math.min(a[0],c[0]),z0:Math.min(a[1],c[1]),x1:Math.max(a[0],c[0]),z1:Math.max(a[1],c[1])};
+    STORE.places.push(['THE SKATE PARK',...at(GX,GZ+3),'up','see',null,null,[S.x,S.y]]);   // GO TO: outside its gate; the map names it at its middle
     SYS.onStart(()=>need().then(()=>{ build(); SKATE.ready=true; }).catch(e=>console.warn('SKATE park',e)),'111fd-skatepark'); }
 }
 export {SKATE};

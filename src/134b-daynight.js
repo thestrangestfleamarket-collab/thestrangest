@@ -4,6 +4,7 @@ import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, SKY, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
+import {TPANE} from './087dz-tpane.js';
 Object.assign(DN,{lk:1,mode:'day',modes:['day','night'],names:{day:'DAY',night:'NIGHT'},FADE:60000});
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
     D0={day:{h:17.2,sun:1.35,amb:1.3,sunc:'#fff0d6',ambc:'#e8eef8',zen:'#6f92d8',hor:'#c4d6ea',cld:0,cov:.45,cl:1.3,m0:4,m1:140,hz:1,mist:'#c0d2e6',skym:0,farb:1.05,grade:'#fffaf4',lift:'#c0d2e6',liftk:.05,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#f4c9a8',sunk:.2,shaft:0,glow:1.1,bands:0,tun:.02},
@@ -32,21 +33,25 @@ Object.assign(DN,{lk:1,mode:'day',modes:['day','night'],names:{day:'DAY',night:'
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
-  const box=document.getElementById('adn'), fl=v=>(+v).toFixed(2), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
+  const box=document.getElementById('adn'), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
   DN.dayText=()=>'the same for everyone, set by the owner'+'; the day at '+fmt(CLOCK.h);
-  DN.draw=()=>{ if(!box)return; const m=DN.mode, P=S[m], k=m==='night'?'n':'d';
+  const msg=t=>{ const e=box&&box.querySelector('#dnmsg'); if(e)e.textContent=t; };
+  const V=TPANE.live({mode:[()=>DN.mode,m=>{ if(!DN.owner||m===DN.mode)return; DN.set(m,true); msg('setting the time...'); DN.pushTime(m).then(()=>msg(DN.names[m]+' for everyone')).catch(e=>msg('not set: '+(e.message||'try again'))); }],
+    ...Object.fromEntries([...new Set(F.map(f=>f[0]))].map(k=>[k,[()=>DN.E()[k]??'#000000',v=>{ const P=DN.E(); if(typeof v==='number')v=+v.toFixed(4); if(P[k]===v)return; P[k]=v; if(k==='cld'||k==='lamp')fix(); dirty=true; msg('not saved'); }]]))});
+  let pm=null, pk='', open=true, busy=Promise.resolve();
+  const build=async()=>{ '@later'; const m=DN.mode, k=m==='night'?'n':'d'; if(pm&&pk===m)return pm.refresh(); const p=await TPANE.make(box.querySelector('.dntp'));
+    p.addBinding(V,'mode',{label:'THE TIME FOR EVERYONE',options:Object.fromEntries(DN.modes.map(x=>[DN.names[x],x]))});
+    const fd=p.addFolder({title:DN.names[m]+': ITS DETAILS',expanded:open}); fd.on('fold',e=>{ open=e.expanded; });
+    for(const [key,l,a,b,st,w] of F){ const c=a==='c', wh=c?b:w; if(wh&&!wh.includes(k))continue; fd.addBinding(V,key,c?{label:l,view:'color'}:{label:l,min:a,max:b,step:st}); }
+    p.addButton({title:'SAVE'}).on('click',()=>{ msg('saving...'); DN.push().then(()=>{ dirty=false; msg('live for everyone'); }).catch(e=>msg('not saved: '+(e.message||'try again'))); });
+    p.addButton({title:'RESET'}).on('click',()=>{ S[DN.mode]={...D0[DN.mode]}; fix(); DN.draw(); msg('resetting...'); DN.push().then(()=>{ dirty=false; msg('back to the game\'s own, for everyone'); }).catch(e=>{ dirty=true; msg('not reset on the server: '+(e.message||'try again')); }); });
+    p.addButton({title:'EXPORT'}).on('click',()=>{ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.E()); o.select(); msg('copy this and send it to Claude'); });
+    pm=p; pk=m; };
+  DN.draw=()=>{ if(!box)return; const m=DN.mode;
     if(!DN.owner){ box.innerHTML=`<h3>THE HOURS</h3><div class="row"><span class="dim" id="dnday">${DN.names[m]}: ${DN.dayText()}</span></div>`; return; }
-    box.innerHTML=`<h3>THE HOURS</h3><div class="row" id="dnm">${DN.modes.map(x=>`<button class="btn" data-dn="${x}" aria-pressed="${m===x}">${DN.names[x]}</button>`).join('')}<span class="dim" id="dnday">the time for everyone: click to change it (it fades over a minute)</span></div>
-      <h3>${DN.names[m]}: ITS DETAILS</h3>`+F.filter(f=>{ const w=f[2]==='c'?f[3]:f[5]; return !w||w.includes(k==='n'?'n':'d'); }).map(([key,l,a,b,st])=>a==='c'?`<div class="row"><span style="width:250px">${l}</span><input type="color" data-k="${key}" value="${P[key]||'#000000'}"></div>`
-        :`<div class="row"><span style="width:250px">${l}</span><input type="range" data-k="${key}" min="${a}" max="${b}" step="${st}" value="${P[key]}" style="flex:1"><span style="width:44px;text-align:right">${fl(P[key])}</span></div>`).join('')
-      +`<div class="row"><button class="btn" id="dnsave">SAVE</button><button class="btn" id="dnreset">RESET</button>${DN.owner?'<button class="btn" id="dnexp">EXPORT</button>':''}<span class="dim" id="dnmsg">${dirty?'not saved':''}</span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>`; };
-  if(box){ for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
-    box.addEventListener('input',e=>{ '@later'; const k=e.target.dataset.k; if(!k)return; const P=DN.E(); P[k]=e.target.type==='color'?e.target.value:+e.target.value; if(e.target.type==='range')e.target.nextElementSibling.textContent=fl(P[k]); if(k==='cld'||k==='lamp')fix(); dirty=true; box.querySelector('#dnmsg').textContent='not saved'; });
-    box.addEventListener('click',e=>{ '@later'; const t=e.target, m=t.dataset.dn, msg=()=>box.querySelector('#dnmsg');
-      if(!DN.owner)return; if(m&&m!==DN.mode){ DN.set(m,true); msg().textContent='setting the time...'; DN.pushTime(m).then(()=>{ msg().textContent=DN.names[m]+' for everyone'; }).catch(e=>{ msg().textContent='not set: '+(e.message||'try again'); }); }
-      if(t.id==='dnsave'){ msg().textContent='saving...'; DN.push().then(()=>{ dirty=false; msg().textContent='live for everyone'; }).catch(e=>{ msg().textContent='not saved: '+(e.message||'try again'); }); }
-      if(t.id==='dnreset'){ S[DN.mode]={...D0[DN.mode]}; fix(); DN.draw(); msg().textContent='resetting...'; DN.push().then(()=>{ dirty=false; msg().textContent='back to the game\'s own, for everyone'; }).catch(e=>{ dirty=true; msg().textContent='not reset on the server: '+(e.message||'try again'); }); }
-      if(t.id==='dnexp'){ const o=box.querySelector('#dnout'); o.hidden=false; o.value=DN.names[DN.mode]+' '+JSON.stringify(DN.E()); o.select(); msg().textContent='copy this and send it to Claude'; } }); }
+    if(!box.querySelector('.dntp')){ box.innerHTML='<h3>THE HOURS</h3><div class="dntp"></div><div class="row"><span class="dim" id="dnday">the time for everyone: pick it (it fades over a minute)</span><span class="dim" id="dnmsg"></span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>'; pm=null; }
+    msg(dirty?'not saved':''); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
+  if(box)for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
   { const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };
     const get=()=>fetch(FILE,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(take).catch(()=>{});

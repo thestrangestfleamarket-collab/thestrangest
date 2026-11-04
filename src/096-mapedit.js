@@ -5,6 +5,7 @@ import {renderer} from './004-main.js';
 import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTION, SECTIONS, STORE, SYS, TILE, WP, WROW} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
+import {TPANE} from './087dz-tpane.js';
 Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
 { const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
     house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]:null; },
@@ -210,28 +211,34 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const f2=v=>(+v||0).toFixed(2), KINDS={shop:'BUILDING',filler:'GARAGE OR LOT',park:'PARK PLACE',tree:'TREE',path:'PATH'};
   const fld=(lab,k,v,step=.25,type='number')=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">'+lab+(type==='number'?'<input data-f="'+k+'" type="number" step="'+step+'" value="'+f2(v)+'"':'<input data-f="'+k+'" type="'+type+'" value="'+String(v).replace(/"/g,'&quot;')+'"')+' style="width:'+(type==='color'?'60px':'110px')+';font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e;padding:2px 4px"></label>';
   const texSel=(k,v)=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">TEXTURE<select data-f="'+k+'" style="width:170px;font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e">'+[...new Set([v,...TEX])].map(t=>'<option'+(t===v?' selected':'')+'>'+t+'</option>').join('')+'</select></label>';
-  const fields=(o,view)=>(view?fld('TURN (°)','rot',o.rot||0,1)+fld('Z (UP)','z',o.z||0):fld('X (EAST)','x',o.x)+fld('Y (NORTH)','y',o.y)+fld('Z (UP)','z',o.z||0)+fld('TURN (°)','rot',o.rot||0,1))
-      +(o.sh==='circle'?fld('RADIUS','r',o.r,.25):fld('WIDTH','w',o.w)+fld('DEPTH','d',o.d))+fld('HEIGHT (PX)','h',o.h||0,1)+fld('SCALE','scale',o.scale||1,.05)
-      +texSel('tex',o.tex||TEX[0])+fld('COLOR','color',o.color||'#888888',0,'color')+fld('TINT','tint',o.tint||'#ffffff',0,'color')+fld('OPACITY','opacity',o.opacity==null?1:o.opacity,.05);
-  const sel2=(k,v,list)=>'<label style="display:flex;justify-content:space-between;align-items:center;gap:6px">'+k.toUpperCase().replace('BEH','BEHAVIOR').replace('LY','KIND').replace('LV','LEVEL')+'<select data-f="'+k+'" style="width:150px;font:10px monospace;background:#000;color:#f2c14e;border:1px solid #3a3f4e">'+[...new Set([v,...list])].map(t=>'<option'+(t===v?' selected':'')+'>'+t+'</option>').join('')+'</select></label>';
-  const chFields=(o,view)=>(view?'':fld('X (EAST)','x',o.x)+fld('Y (NORTH)','y',o.y)+fld('Z (UP)','z',o.z||0))+fld('FACING (°)','rot',o.rot||0,1)+sel2('lv',o.lv||'up',['up','down'])
-      +'<div>LOCATION: <span style="color:#c9ccd6">'+place(o)+'</span></div>'+sel2('ly',o.ly,Object.keys(KCOL).filter(k=>k!=='you'||o.ly==='you'))+sel2('beh',o.beh||'STAND',BEH)
-      +fld('SPEED','speed',o.speed||0,.05)+fld('HEALTH','hp',o.hp==null?1:o.hp,.1)+fld('HOME','home',o.home||'',0,'text')+fld('JOB','job',o.job||'',0,'text')
-      +fld('SIZE (RADIUS)','r',o.r,.05)+fld('SCALE','scale',o.scale||1,.05)+fld('COLOR (ON THE MAP)','color',o.color||'#e0e0e0',0,'color')+fld('TINT','tint',o.tint||'#ffffff',0,'color')+fld('OPACITY','opacity',o.opacity==null?1:o.opacity,.05);
+  const DEF={z:0,rot:0,h:0,scale:1,tex:TEX[0],tint:'#ffffff',opacity:1,lv:'up',beh:'STAND',speed:0,hp:1,home:'',job:''};
+  const val=(o,k)=>{ const v=o[k], d=k==='color'?(MODE==='chars'?'#e0e0e0':'#888888'):DEF[k], r=k==='hp'||k==='opacity'?(v==null?d:v):v||d; return NUM.includes(k)?+r||0:String(r==null?'':r); };
+  const spec=(o,view)=>MODE==='chars'?[...(view?[]:[['NAME','n',''],['X (EAST)','x',.25],['Y (NORTH)','y',.25],['Z (UP)','z',.25]]),['FACING (°)','rot',1],['LEVEL','lv',['up','down']],['KIND','ly',Object.keys(KCOL).filter(k=>k!=='you'||o.ly==='you')],['BEHAVIOR','beh',BEH],
+      ['SPEED','speed',.05],['HEALTH','hp',.1],['HOME','home',''],['JOB','job',''],['SIZE (RADIUS)','r',.05],['SCALE','scale',.05],['COLOR (ON THE MAP)','color','#'],['TINT','tint','#'],['OPACITY','opacity',0]]
+    :[...(view?[['TURN (°)','rot',1],['Z (UP)','z',.25]]:[['NAME','n',''],['X (EAST)','x',.25],['Y (NORTH)','y',.25],['Z (UP)','z',.25],['TURN (°)','rot',1]]),...(o.sh==='circle'?[['RADIUS','r',.25]]:[['WIDTH','w',.25],['DEPTH','d',.25]]),
+      ['HEIGHT (PX)','h',1],['SCALE','scale',.05],['TEXTURE','tex',TEX],['COLOR','color','#'],['TINT','tint','#'],['OPACITY','opacity',0]];
+  let SY=false, G=false, pane=null, PK='';
+  const quiet=p=>{ SY=true; try{ p.refresh(); }finally{ SY=false; } };
+  const props=async(el,get,view,live,after)=>{ const p=await TPANE.make(el), o=get(), S=spec(o,view); G=false;
+    const V=TPANE.live(Object.fromEntries(S.map(([,k])=>[k,[()=>val(get()||o,k),v=>{ const t=get(); if(SY||!t)return; if(!G){ push(); G=true; } if(setF(t,k,typeof v==='number'?+v.toFixed(4):v))live(); }]])));
+    for(const [label,k,t] of S)p.addBinding(V,k,Array.isArray(t)?{label,options:[...new Set([val(o,k),...t])].map(x=>({text:x,value:x}))}:t==='#'?{label}:t===''?{label,view:'text'}:k==='opacity'?{label,min:0,max:1,step:.01}:{label,keyScale:t,pointerScale:t/4,format:v=>v.toFixed(2)});
+    p.on('change',e=>{ if(SY||!e.last)return; G=false; save(); after(p); });
+    return p; };
+  const esc=s=>String(s).replace(/[&<]/g,c=>c==='&'?'&amp;':'&lt;');
+  const head=o=>'<div style="color:#f2c14e;font-size:11px">'+esc(o.n)+'</div>'+(MODE==='chars'?'<div>WHO: '+esc(o.key||'')+(o.gid?'':' · ADDED HERE')+'</div><div>LOCATION: <span style="color:#c9ccd6">'+place(o)+'</span></div>':'<div>KIND: '+(KINDS[o.ly]||o.ly)+(o.gid?'':' · ADDED HERE')+'</div>');
+  const BTNS='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+[['◀',-1,0],['▲',0,1],['▼',0,-1],['▶',1,0]].map(([t,a,b])=>'<button class="mb" data-n="'+a+','+b+'">'+t+'</button>').join('')+'<button class="mb" data-t="-15">⟲ 15°</button><button class="mb" data-t="15">15° ⟳</button></div>'
+    +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="mb" id="meV" data-hot="1">VIEW 360</button><button class="mb" id="meCp">COPY</button><button class="mb" id="meDl">DELETE</button></div>';
   const offList=()=>{ const L=ITEMS.filter(o=>!onMap(o)); return L.length?'<div style="margin-top:10px;color:#ece5d3">NOT ON THE MAP ('+L.length+')</div><div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">'+L.map(o=>'<button class="mb" data-pick="'+o.id+'">'+o.n+'</button>').join('')+'</div>':''; };
-  const panel=()=>{ const el=q('#meSel'); dirty(); if(MODE==='chars'&&!sel){ el.innerHTML='DOUBLE CLICK A CHARACTER ON THE MAP.'+offList(); skin(el); return; } if(!sel){ el.innerHTML='DOUBLE CLICK A THING ON THE MAP.'; return; } const o=sel;
-    if(MODE==='chars'){ el.innerHTML='<div style="color:#f2c14e;font-size:11px">'+o.n+'</div><div>WHO: '+(o.key||'')+(o.gid?'':' · ADDED HERE')+'</div>'+fld('NAME','n',o.n,0,'text')+chFields(o)
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+[['◀',-1,0],['▲',0,1],['▼',0,-1],['▶',1,0]].map(([t,a,b])=>'<button class="mb" data-n="'+a+','+b+'">'+t+'</button>').join('')+'<button class="mb" data-t="-15">⟲ 15°</button><button class="mb" data-t="15">15° ⟳</button></div>'
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="mb" id="meV" data-hot="1">VIEW 360</button><button class="mb" id="meCp">COPY</button><button class="mb" id="meDl">DELETE</button></div>'+offList(); skin(el); return; }
-    el.innerHTML='<div style="color:#f2c14e;font-size:11px">'+o.n+'</div><div>KIND: '+(KINDS[o.ly]||o.ly)+(o.gid?'':' · ADDED HERE')+'</div>'+fld('NAME','n',o.n,0,'text')+fields(o)
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+[['◀',-1,0],['▲',0,1],['▼',0,-1],['▶',1,0]].map(([t,a,b])=>'<button class="mb" data-n="'+a+','+b+'">'+t+'</button>').join('')+'<button class="mb" data-t="-15">⟲ 15°</button><button class="mb" data-t="15">15° ⟳</button></div>'
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="mb" id="meV" data-hot="1">VIEW 360</button><button class="mb" id="meCp">COPY</button><button class="mb" id="meDl">DELETE</button></div>';
-    skin(el); };
+  const panel=()=>{ const el=q('#meSel'); dirty(); const o=sel, k=o?MODE+o.id+o.sh:'';
+    if(!o){ PK=''; if(pane){ pane.dispose(); pane=null; } el.innerHTML=MODE==='chars'?'DOUBLE CLICK A CHARACTER ON THE MAP.'+offList():'DOUBLE CLICK A THING ON THE MAP.'; skin(el); return; }
+    if(k!==PK){ PK=k; if(pane){ pane.dispose(); pane=null; } el.innerHTML='<div class="hd"></div><div class="tp" style="margin-top:6px"></div>'+BTNS+'<div class="off"></div>'; skin(el);
+      props(el.querySelector('.tp'),()=>sel,false,draw,()=>{ panel(); draw(); }).then(p=>{ if(PK===k)pane=p; else p.dispose(); }); }
+    else if(pane)quiet(pane);
+    el.querySelector('.hd').innerHTML=head(o); const off=el.querySelector('.off'); if(MODE==='chars'){ off.innerHTML=offList(); skin(off); } };
   const NUM=['x','y','z','rot','r','w','d','h','scale','opacity','speed','hp'];
   const setF=(o,f,raw)=>{ if(NUM.includes(f)){ let v=+raw; if(!isFinite(v))return false; if(['r','w','d'].includes(f))v=Math.max(.25,v); if(f==='scale')v=Math.max(.05,v); if(f==='opacity')v=Math.max(0,Math.min(1,v)); if(f==='rot'){ if(bld(o)&&!turns(o))return false; if(bld(o))v=Math.round(v/90)*90; v=((v%360)+540)%360-180; } if(f==='speed'||f==='hp')v=Math.max(0,v); o[f]=v; }
     else if(f==='ly'){ o.ly=String(raw); if(MODE==='chars'&&KCOL[o.ly]&&o.color===KCOL[o.key===undefined?'toon':kindOf(o.key)])o.color=KCOL[o.ly]; }
     else o[f]=f==='n'?String(raw).slice(0,60).toUpperCase():String(raw).slice(0,80); return true; };
-  q('#meSel').addEventListener('change',e=>{ const f=e.target.dataset.f; if(!f||!sel)return; push(); if(setF(sel,f,e.target.value)){ save(); panel(); draw(); } });
   const nudge=(dx,dy)=>{ if(!sel)return; push(); sel.x=Math.round((sel.x+dx)*4)/4; sel.y=Math.round((sel.y+dy)*4)/4; save(); panel(); draw(); };
   const turn=a=>{ if(!sel||bld(sel)&&!turns(sel))return; if(bld(sel))a=Math.sign(a)*90; push(); sel.rot=((((sel.rot||0)+a)%360)+540)%360-180; save(); panel(); draw(); };
   const copy=()=>{ if(!sel)return; push(); const c=JSON.parse(JSON.stringify(sel)); c.id=nid(); c.gid=null; c.x+=2; c.y-=2; ITEMS.push(c); sel=c; save(); panel(); draw(); };
@@ -239,20 +246,15 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   q('#meSel').addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return; const st=e.shiftKey?1:.25;
     if(b.dataset.n){ const [a,c]=b.dataset.n.split(',').map(Number); nudge(a*st,c*st); } else if(b.dataset.t)turn(+b.dataset.t*(e.shiftKey?1/15:1)); else if(b.id==='meCp')copy(); else if(b.id==='meDl')del(); else if(b.id==='meV')view(sel); else if(b.dataset.pick){ sel=ITEMS.find(o=>o.id===b.dataset.pick)||null; panel(); draw(); } });
 
-  const chView=o=>{ const side=document.createElement('div'), N=npcOf(o), body=o.gid==='you'?W3.group:N&&N.g;
-    side.innerHTML='<div style="color:#f2c14e;font-size:11px;margin-bottom:6px">'+o.n+'</div>'+chFields(o,true)+'<div style="color:#8a8f9c;margin-top:8px;line-height:1.6">'+(body?'ITS OWN BODY, LENT TO THE VOID FOR THIS VIEW. ':'ADDED HERE: A STAND-IN. ')+'SCALE, TINT AND OPACITY SHOW HERE; EVERYTHING GOES INTO THE CHARACTERS FILE.</div><div style="margin-top:8px"><button class="mb" id="vwX" data-hot="1">BACK TO THE MAP</button></div>';
-    side.addEventListener('input',e=>{ const f=e.target.dataset.f; if(!f)return; if(setF(o,f,e.target.value)){ save(); VIEW.redo(); } });
-    side.addEventListener('focusin',e=>{ if(e.target.dataset&&e.target.dataset.f)push(); });
-    side.addEventListener('click',e=>{ if(e.target.id==='vwX')VIEW.close(); });
-    VIEW.onclose=()=>{ panel(); draw(); };
-    VIEW.open({name:o.n,lend:body?()=>[body]:null,lendScale:()=>o.scale||1,opacity:()=>o.opacity,model:body?null:()=>{ const G=new THREE.Group(), m=new THREE.Mesh(new THREE.CapsuleGeometry(o.r*(o.scale||1),o.r*3*(o.scale||1),4,12),new THREE.MeshLambertMaterial({color:o.color})); m.position.y=o.r*2.5*(o.scale||1); G.add(m); return G; },look:()=>({tint:o.tint})},side); };
-  const view=o=>{ if(!o)return; if(MODE==='chars')return chView(o); const side=document.createElement('div');
-    side.innerHTML='<div style="color:#f2c14e;font-size:11px;margin-bottom:6px">'+o.n+'</div>'+fields(o,true)+'<div style="color:#8a8f9c;margin-top:8px;line-height:1.6">A MOCKUP MODEL OF THIS THING FROM ITS NUMBERS: EVERY CHANGE HERE SHOWS AT ONCE AND GOES INTO THE MAP FILE. TINT IS LAID OVER THE WHOLE VIEW.</div><div style="margin-top:8px"><button class="mb" id="vwX" data-hot="1">BACK TO THE MAP</button></div>';
-    side.addEventListener('input',e=>{ const f=e.target.dataset.f; if(!f)return; if(setF(o,f,e.target.value)){ save(); VIEW.redo(); } });
-    side.addEventListener('focusin',e=>{ if(e.target.dataset&&e.target.dataset.f)push(); });
-    side.addEventListener('click',e=>{ if(e.target.id==='vwX')VIEW.close(); });
-    VIEW.onclose=()=>{ panel(); draw(); };
-    VIEW.open({name:o.n,model:()=>mockup(o),look:()=>({tint:o.tint})},side); };
+  const side=(o,txt)=>{ const s=document.createElement('div'); s.innerHTML='<div class="hd" style="margin-bottom:6px"></div><div class="tp"></div><div style="color:#8a8f9c;margin-top:8px;line-height:1.6">'+txt+'</div><div style="margin-top:8px"><button class="mb" id="vwX" data-hot="1">BACK TO THE MAP</button></div>';
+    const hd=()=>{ s.querySelector('.hd').innerHTML='<div style="color:#f2c14e;font-size:11px">'+esc(o.n)+'</div>'+(MODE==='chars'?'<div>LOCATION: <span style="color:#c9ccd6">'+place(o)+'</span></div>':''); }; hd();
+    const P=props(s.querySelector('.tp'),()=>o,true,()=>VIEW.redo(),p=>{ quiet(p); hd(); });
+    s.addEventListener('click',e=>{ if(e.target.id==='vwX')VIEW.close(); });
+    VIEW.onclose=()=>{ P.then(p=>p.dispose()); panel(); draw(); }; return s; };
+  const chView=o=>{ const N=npcOf(o), body=o.gid==='you'?W3.group:N&&N.g, s=side(o,(body?'ITS OWN BODY, LENT TO THE VOID FOR THIS VIEW. ':'ADDED HERE: A STAND-IN. ')+'SCALE, TINT AND OPACITY SHOW HERE; EVERYTHING GOES INTO THE CHARACTERS FILE.');
+    VIEW.open({name:o.n,lend:body?()=>[body]:null,lendScale:()=>o.scale||1,opacity:()=>o.opacity,model:body?null:()=>{ const G=new THREE.Group(), m=new THREE.Mesh(new THREE.CapsuleGeometry(o.r*(o.scale||1),o.r*3*(o.scale||1),4,12),new THREE.MeshLambertMaterial({color:o.color})); m.position.y=o.r*2.5*(o.scale||1); G.add(m); return G; },look:()=>({tint:o.tint})},s); };
+  const view=o=>{ if(!o)return; if(MODE==='chars')return chView(o);
+    VIEW.open({name:o.n,model:()=>mockup(o),look:()=>({tint:o.tint})},side(o,'A MOCKUP MODEL OF THIS THING FROM ITS NUMBERS: EVERY CHANGE HERE SHOWS AT ONCE AND GOES INTO THE MAP FILE. TINT IS LAID OVER THE WHOLE VIEW.')); };
 
   const pt=e=>{ const r=cv.getBoundingClientRect(), d=cv.width/r.width; return [(e.clientX-r.left)*d,(e.clientY-r.top)*d]; };
   cv.addEventListener('pointerdown',e=>{ if(e.button!==0&&e.button!==1)return; const [px,py]=pt(e), x=mx(px), y=my(py), dpr=Math.min(2,devicePixelRatio||1); cv.setPointerCapture(e.pointerId); drag=null;

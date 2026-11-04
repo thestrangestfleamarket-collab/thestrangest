@@ -16,7 +16,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
 
   STORE.open=Object.assign(STORE.open||{},{theatre:[...['f','b','e'].map(sd=>TURN(lot('theatre'),WP.theatre.face).side(sd)),'lobby']});   // in the theatre only its screen wall stays (its local west, turned to its street)
   // the theatre is built in its own frame (the front at the local y1) and turned onto its street like the bar: props and lamps by turnIn, the painters by loc
-  STEPS.push(()=>{ const BW=lot('theatre',300), TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, door=B.x0+4.4, prop=SK.prop, sided=SK.sided;
+  STEPS.push(()=>{ const BW=lot('theatre',300), TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, door=B.x0+4.4, prop=SK.prop, sided=SK.sided; STORE.theatreFrame={B,TB};   // the theatre's own layout and its turn, for what furnishes it
     const loc=(nx,ny,x,y)=>{ const l=TB.back(x,y); for(let i=0;i<TB.q;i++){ const t=nx; nx=ny; ny=-t; } return [nx,ny,l[0],l[1]]; }, solL=(x0,y0,x1,y1,h)=>{ const a=TB.pt(x0,y0), b=TB.pt(x1,y1); K.sol(Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1]),h); };
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
     const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
@@ -73,7 +73,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
       SHARED.PNAME='downlight'; for(const y of DL){ prop([{x0:B.x1-T-.1,y0:y-.07,x1:B.x1-T,y1:y+.07,z0:262,z1:268,em:1,c:[255,236,200],top:()=>[255,236,200],fi:()=>[255,236,200],fj:()=>[255,236,200]}],null,{high:true}); }
       for(const y of [B.y0+2,cy,B.y1-2])LAMPS.push({x:B.x1-1.4,y,z:262,r:6,c:[.34,.3,.28]});
       LAMPS.push({x:B.x0+3,y:cy,z:250,r:6,c:[.3,.3,.36]});
-      STORE.turnIn(TB,n0,l0);
+      STORE.turnIn(TB,n0,l0); if(STORE.furnish&&STORE.furnish.theatre)STORE.furnish.theatre(B,TB);
     },{holes:(()=>{ const a=TB.pt(door-3.71,B.y1), b=TB.pt(door-1.69,B.y1), k=dw==='f'||dw==='b'?0:1; return {[dw]:[{a0:Math.min(a[k],b[k]),a1:Math.max(a[k],b[k]),z0:36,z1:92,open:true}]}; })()});
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(Z(S.y1)-Z(S.y0)),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); const fp=TB.pt(S.x+.075,cy); fm.rotation.y=Math.PI/2+TB.hd(0); fm.position.set(X(fp[0]),Y((S.z0+S.z1)/2),Z(fp[1])); fm.visible=false; scene.add(fm); fm.updateMatrixWorld();

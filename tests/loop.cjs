@@ -44,8 +44,8 @@ const {chromium}=require('playwright');
     const P=mid(car.poles); let w=at(P.a,P.v); __dbg.UI.goTo(w.x+.01,w.z,'down'); await wait(4); w=at(P.a,P.v); const q=__dbg.pos(), solid=Math.hypot(q[0]-w.x,q[2]-w.z);
     TRAINS.grab('pole'); await wait(4); const pole=TRAINS.hold.h&&TRAINS.hold.h.k==='pole'?hand():99; TRAINS.letGo();
     const S=mid(car.straps), u=at(S.a,S.v*.6); __dbg.UI.goTo(u.x,u.z,'down'); await wait(4); TRAINS.grab('rail'); await wait(4); const strap=TRAINS.hold.h&&TRAINS.hold.h.k==='rail'?hand():99; TRAINS.letGo();
-    { const t=TRAINS.list[0], u=((TRAINS.now()-t.off)%t.lap+t.lap)%t.lap, g=t.legs.filter(q=>q.d>1).reduce((a,b)=>b.d>a.d?b:a); TRAINS.skew+=((g.t0+g.dur*.6-u)%t.lap+t.lap)%t.lap; }   // well out along the longer tunnel
-    await wait(60); const p=__dbg.pos(); return {solid:+solid.toFixed(2),pole:+pole.toFixed(2),strap:+strap.toFixed(2),ride:!!TRAINS.ride.c,inSta:LOOP.inStation(p[0],p[2]),amb:+LEVELS.of.station.amb.toFixed(3)}; });
+    { const t=TRAINS.list[0], u=((TRAINS.now()-t.off)%t.lap+t.lap)%t.lap, g=t.legs.filter(q=>q.d>1).reduce((a,b)=>b.d>a.d?b:a); TRAINS.skew+=((g.t0+g.dur*.6-u)%t.lap+t.lap)%t.lap; }   // well out along the longer tunnel, the train held there (a slow runner's 60 frames are a minute of its clock)
+    { const clock=TRAINS.now, t0=clock(); TRAINS.now=()=>t0; try{ await wait(60); } finally{ TRAINS.now=clock; } } const p=__dbg.pos(); return {solid:+solid.toFixed(2),pole:+pole.toFixed(2),strap:+strap.toFixed(2),ride:!!TRAINS.ride.c,inSta:LOOP.inStation(p[0],p[2]),amb:+LEVELS.of.station.amb.toFixed(3)}; });
   ok(H.solid>.35,'the middle pole is solid: standing on it puts you beside it ('+JSON.stringify(H)+')');
   ok(H.pole<1.5&&H.strap<1.5&&H.ride,'you can hold a pole and a strap: the hand is on it ('+JSON.stringify(H)+')');
   ok(!H.inSta&&H.amb<.05,'out in the tunnel it is dark ('+JSON.stringify(H)+')');

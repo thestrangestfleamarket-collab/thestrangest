@@ -282,6 +282,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   { const m = await pg.evaluate(async () => { const ST = window.STORE; if (!ST || !ST.inside) return { none: true }; await ST.ensure(); const R = ST.inside.museum; if (!R) return { noMuseum: true };
       const o = { before: !!R.done }; await ST.enter('museum', true); o.built = !!R.done && !!R.P && R.P.objs.length > 0; await ST.exit('museum'); for (const t = Date.now(); Date.now() - t < 20000 && (R.done || R.P);) await new Promise(r => setTimeout(r, 250)); o.dropped = !R.done && !R.P; await ST.enter('museum', true); o.again = !!R.done && !!R.P; await ST.exit('museum'); return o; });
     ok(m.before === false && m.built && m.dropped && m.again, 'the museum\'s inside is built only when you go in and dropped when you leave (built again next time): ' + JSON.stringify(m)); }
+  { const q = await pg.evaluate(() => { const R = STORE.rooms.find(r => r.id === 'bar'), keep = [R.spots, R.seats];
+      R.spots = { BARKEEP: { x: 1, z: 2, hd: 0 } }; R.seats = [{ x: 3, z: 4, hd: 0, y: .5 }]; const s = CREW.inside('bar', 'k', { title: 'BARKEEP' }), p = CREW.inside('bar', 'p1'), full = CREW.inside('bar', 'p2'); CREW.out('p1'); const again = CREW.inside('bar', 'p2'); CREW.out('p2'); R.spots = keep[0]; R.seats = keep[1];
+      return { spot: !!s && s.x === 1 && s.off === false, seat: !!p && p.sit === .5, full: full === null, again: !!again }; });
+    ok(q.spot && q.seat && q.full && q.again, 'insides list where people go: a street inside (the bar) gives its work spots and seats like an off-map one, none when full, freed when they leave: ' + JSON.stringify(q)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

@@ -1,7 +1,7 @@
 // THE CREATURES: the park's wild things at their real sizes, each living as its kind does (wasps from a nest to the flowers, spiders in webs, bats at dusk, frogs by the pond, a basking snake, rats along walls at night); CREATS lists them.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {BINS, CLOCK, FLOW, PARK, POND, SFX, WX} from './003b-systems.js';
+import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, VIS, WX} from './003b-systems.js';
 import {MAPG, MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
@@ -9,12 +9,12 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
 const CREATS=[]; window.CREATS=CREATS;
 { const C=CREATURES, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R), clipsOf=D=>SKIN.clips(D.clips,D.rig.names);
   const M=SHARED.BOD.MAP, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2.2),x1:X(PARK.x1+PARK.ox-2.2),z0:Z(PARK.y0+PARK.oy+2.2),z1:Z(PARK.y1+PARK.oy-2.2)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},
-    HOLE=STHOLE, FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
+    HOLE=STHOLE, FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
   const FL=()=>window.FLORA&&window.FLORA.cover?window.FLORA:{bushes:[],beds:[],cover:()=>null}, WU=TILE/.84, rnd=(a,b)=>a+Math.random()*(b-a), WXN=()=>window.WX&&WX.now||{}, inL=(L,x,z)=>x>L.x0&&x<L.x1&&z>L.z0&&z<L.z1;
   const OUT={always:()=>true,night:()=>CLOCK.dark(),bat:()=>CLOCK.dark()&&!(WXN().rain>.4||WXN().wind>.8),
     wasp:()=>!CLOCK.dark()&&!(WXN().rain>.2||WXN().snow>.1||WXN().wind>.7),snake:()=>!CLOCK.dark()&&!(WXN().rain>.1||WXN().snow>.05)};
   const KIND={Rat:{walk:'Rat_Walk',run:'Rat_Run',idle:'Rat_Idle',pace:3,lane:ALL,beh:'rat',out:OUT.night,flee:3,dart:2},Frog:{walk:'Frog_Jump',idle:'Frog_Idle',pace:2.4,lane:PARKL,hop:[.33,.78],beh:'frog',flee:1.6},Slime:{walk:'Slime_Walk',idle:'Slime_Idle',pace:1.2,lane:PARKL,turn:-Math.PI/2,big:1},
-    Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL,beh:'snake',out:OUT.snake,flee:2.5},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL,beh:'spider'},
+    Snake:{walk:'Snake_Walk',idle:'Snake_Idle',pace:2,lane:PARKL,beh:'snake',out:OUT.snake,flee:2.5},Spider:{walk:'Spider_Walk',idle:'Spider_Idle',pace:3,lane:PARKL,beh:'spider',once:['Spider_Attack','Spider_Hit','Spider_Death']},
     Bat:{walk:'Bat_Flying',idle:'Bat_Flying',pace:3,lane:PARKL,beh:'bat',fly:1,out:OUT.bat,v:5},Wasp:{walk:'Wasp_Flying',idle:'Wasp_Flying',pace:3,lane:PARKL,beh:'wasp',fly:1,out:OUT.wasp,v:2.5}};
   const PAINT=(()=>{ const hh=(x,y,z)=>{ const v=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453; return v-Math.floor(v); }, vn=(x,y,z)=>{ const i=Math.floor(x), j=Math.floor(y), k=Math.floor(z), f=x-i, g=y-j, e=z-k, s=t=>t*t*(3-2*t), u=s(f), v=s(g), w=s(e), L=(a,b,t)=>a+(b-a)*t;
       return L(L(L(hh(i,j,k),hh(i+1,j,k),u),L(hh(i,j+1,k),hh(i+1,j+1,k),u),v),L(L(hh(i,j,k+1),hh(i+1,j,k+1),u),L(hh(i,j+1,k+1),hh(i+1,j+1,k+1),u),v),w); };
@@ -109,9 +109,10 @@ const CREATS=[]; window.CREATS=CREATS;
       brain:beh&&((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }),
       pick:st=>{ '@later'; if(pk)return pk(st,N,S); if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
           for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
-      anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; N.body.visible=out; st.hold=!out; if(!out)st.to=null; } } if(!N.body.visible)return;
+      anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; VIS.hide(N.g,'away',!out); st.hold=!out; if(!out)st.to=null; } if(!out)return; } if(!N.body.visible)return;
         if(S.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); S.drink=false; }
-        const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
+        if(moving)S.rest=undefined; else if(S.rest===undefined){ S.rest=null; let u=Math.random(); for(const [c,p,nt] of K.rest||[])if((!nt||CLOCK.dark())&&C[key].clips[c]&&(u-=p)<0){ S.rest=c; st.wait=Math.max(st.wait||0,6+Math.random()*10); break; } }   // stopped: now and then it sits, grazes, barks, howls at night or sleeps a while
+        const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):S.rest||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         if(K.hop){ const a=act(cur), ph=(a.time/a.getClip().duration)%1, air=moving&&ph>K.hop[0]&&ph<K.hop[1]; st.v=speed*TILE*(S.fled?3:1)*(air?1/(K.hop[1]-K.hop[0]):.004); a.timeScale=S.fled?2:1; }
         else act(cur).timeScale=K.fly&&K.beh?1.6:moving?Math.min(4,Math.max(.6,st.v/(K.pace*sc))):1; mixer.update(dt);
         S.y+=(S.hy-S.y)*Math.min(1,dt*(K.beh==='bat'?3:2)); if(S.fly)N.g.position.y+=S.fly*WU*.5+Math.sin(S.t*2.1)*.15; if(S.hy||S.y)N.g.position.y+=S.y+(K.fly?Math.sin(S.t*(K.beh==='wasp'?9:2.1))*(K.beh==='wasp'?.01:.15)*WU:0);
@@ -126,9 +127,10 @@ const CREATS=[]; window.CREATS=CREATS;
   { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
     const DRY=(x,z,R)=>FREE(x,z,R)&&!((window.FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
     const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
-    k('Fox',WOOD,3,{night:.5}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
-    k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3);
-    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARM,2.4); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
+    const RS=(n,...L)=>L.map(([c,p,nt])=>[n+'_'+c,p,nt]);   // what it does when it stops, now and then: [clip, chance, night only]
+    k('Fox',WOOD,3,{night:.5,rest:RS('Fox',['Sit',.35],['Howl',.2,1])}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1,rest:RS('Wolf',['Howl',.4,1],['Sit',.3])}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
+    k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3,{rest:RS('Dog',['Sit',.45],['Bark',.2])});
+    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARM,2.4,['Horse','WildHorse','Mule'].includes(n)?{rest:RS(n,['Graze',.5],['Sleep',.5,1])}:{}); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
     k('Raptor',DINO,3); k('Stego',DINO,2); k('Brachio',DINO,1.6,{run:null}); fly('Ptera',DINO,[8,14]);
     for(const n of ['AntQueen','WoodAnt','Aphid','Ladybird','Hopper','Beetle','Mantis'])k(n,WOOD,3); for(const n of ['Caterpillar','Slug','Snail'])k(n,WOOD,1.5,{walk:n+'_Crawl',run:null}); k('Crab',LAKE,2);
     fly('Bee',WOOD,[.6,1.6],{day:1}); fly('Bumblebee',WOOD,[.6,1.6],{day:1}); fly('Firefly',WOOD,[.5,1.8],{night:1});
@@ -141,9 +143,9 @@ const CREATS=[]; window.CREATS=CREATS;
       ['Caterpillar','CATERPILLAR',.01,3,.01],['Slug','LEOPARD SLUG',.02,3,.01],['Snail','SNAIL',.025,3,.01],['Crab','HERMIT CRAB',.04,3,.1],['Bee','HONEYBEE',.015,6,.8],['Bumblebee','BUMBLEBEE',.02,3,.7],['Firefly','FIREFLY',.012,5,.4]];
     const FL=__LAZY__("data/fauna.json"), hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
     CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key])return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
-  window.CREATNEW=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null;
+  window.CREATNEW=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, cn;
     const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
-      anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.15).play(); if(cur)act(cur).fadeOut(.15); cur=want; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});
+      anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur||N.clipN!==cn){ const a=act(want), one=!!(K.once&&K.once.includes(want)); a.reset().setLoop(one?THREE.LoopOnce:THREE.LoopRepeat,Infinity).fadeIn(.15).play(); a.clampWhenFinished=one; if(cur&&cur!==want)act(cur).fadeOut(.15); cur=want; cn=N.clipN; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});
     N.g.rotation.order='YXZ'; N.me.rotation.y=K.turn||0; N.me.position.set(0,0,0); N.mixer=mixer; return N; };
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.body.visible})); }
 

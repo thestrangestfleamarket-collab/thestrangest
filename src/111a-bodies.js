@@ -1,7 +1,7 @@
 // THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are the Walker or a body.playable one, picked on YOU's BODY row (BODIES.set); one of each walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CHARS, NPCS, pos, W3, WINDOWS} from './003b-systems.js';
+import {CHARS, NPCS, pos, VIS, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
@@ -101,9 +101,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
   BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
-  BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; N.g.visible=false; } };
+  BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; VIS.hide(N.g,'away'); } };
   // a borrowed body (one a place conjures for a while) goes back where it was: its group, spot, home and roaming
-  BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; N.g.visible=!!P.on; delete N.prev; };
+  BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; VIS.hide(N.g,'away',!P.on); delete N.prev; };
   // weld a townsperson body's duplicate vertices (one that building it a face at a time left). A smooth body uses its normals, so they must match to merge; a flat body takes its normal from the screen (dFdx), so that attribute is free to differ — dropping it from the key merges more. The index keeps the original length and triangle order, so material groups stay valid. Never a playable body (the Walker shares and reshapes its geometry).
   const weldBody=(g,smooth)=>{ if(g.index)return; const A=g.attributes, all=Object.keys(A), key=smooth?all:['position','color','bi','bw'].filter(k=>A[k]), KA=key.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
     const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;
@@ -116,7 +116,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
     NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
-    if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
+    if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; NPC.board.userData.anyRoom=true; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
     NPC.tick=dt=>{ if((!NPC.on||NPC.mode==='hidden')&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
@@ -135,9 +135,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.SZ/PPU*.85; }
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
-      if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0); }
+      if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }
       const eye=!near&&WINDOWS.near(st.x,st.z); if(!(near||eye)||!seen(g)||NPC.hid&&!eye)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
+      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy&&!SR.sit?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
   // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
   const LIVEP=new Set(); let smT=0;

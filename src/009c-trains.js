@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, pos, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {grab, LAMPD, LAMPI, lamps, QS, SYS, TILE, ZU} from './006-map-pre.js';
+import {grab, LAMPD, LAMPI, lamps, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
@@ -74,7 +74,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     g.globalCompositeOperation='destination-out'; g.fillRect(6,18,20,44); g.globalCompositeOperation='source-over'; g.strokeStyle='#202224'; g.lineWidth=2; g.strokeRect(6,18,20,44);
     g.fillStyle='#d8392f'; g.fillRect(8,70,16,5); return ctex(cv); })();
   const floorTex=(()=>{ const cv=canvas(64,64), g=cv.getContext('2d'); g.fillStyle='#5d6167'; g.fillRect(0,0,64,64); const r=rng(5); for(let i=0;i<700;i++){ g.fillStyle=['#7d8188','#474a4f','#8f8576','#3a3c40'][Math.floor(r()*4)]; g.fillRect(r()*64,r()*64,1,1); } return ctex(cv,true); })();
-  const ADS=[['THE STRANGEST FLEA MARKET','EVERY WEEKEND · MARKET ST','#f0a72a'],['INJURED? CALL DR. MOTH','1-800-MOTH-LAW','#2f6bd8'],['LEARN TO SWIM','THE BATH HOUSE','#38b7a6'],['MUSEUM OF EARTH','ROCKS · BONES · GEMS','#c94a3a'],
+  const ADS=[['THE STRANGEST FLEA MARKET','EVERY WEEKEND · '+SECTIONS.streets.south,'#f0a72a'],['INJURED? CALL DR. MOTH','1-800-MOTH-LAW','#2f6bd8'],['LEARN TO SWIM','THE BATH HOUSE','#38b7a6'],['MUSEUM OF EARTH','ROCKS · BONES · GEMS','#c94a3a'],
     ['THE ARCADE','INSERT COIN','#9b4ad8'],['THE BODEGA','OPEN ALL NIGHT','#3fbf5a'],['SEE SOMETHING ODD?','SAY SOMETHING ODD','#e8c24a'],['RAG ST LAUNDRY','FOLD · PRESS · FORGET','#e07b9a']];
   const adPic=(seed)=>{ const cv=canvas(1024,40), g=cv.getContext('2d'), r=rng(seed+11); g.fillStyle='#e8e5dc'; g.fillRect(0,0,1024,40); let x=4;
     while(x<1020){ const a=ADS[Math.floor(r()*ADS.length)], w=150+Math.floor(r()*70); g.fillStyle=a[2]; g.fillRect(x,3,w-6,34); g.fillStyle='#fff'; font(g,11,900); g.fillText(a[0].slice(0,24),x+6,17); font(g,8,600); g.fillText(a[1],x+6,30); x+=w; } return ctex(cv); };

@@ -1,11 +1,10 @@
 // THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
+import {CLOCK, CULL, FAR3, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
-import {VIS} from './129a-vis.js';
 
 { const q=QS.get('far'); let on=q!=='0'; if(q==null&&SAVE.get('haze2')==='0')on=false;
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
@@ -110,7 +109,7 @@ import {VIS} from './129a-vis.js';
     const geo=new THREE.IcosahedronGeometry(1,0), mt=new THREE.MeshLambertMaterial({color:0x2e4a2a,flatShading:true}); TM=new THREE.InstancedMesh(geo,mt,P.length*2); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
     P.forEach(([x,z,r,h,g],i)=>{ m4.compose(new THREE.Vector3(x,h-r*.7,z),q.setFromEuler(new THREE.Euler(0,g*6,0)),new THREE.Vector3(r,r*1.1,r)); TM.setMatrixAt(i*2,m4); TM.setColorAt(i*2,c.setHSL(.27+g*.06,.32,.2+g*.08));
       m4.compose(new THREE.Vector3(x+(g-.5)*r,h*.55,z+(g-.4)*r),q,new THREE.Vector3(r*.8,r*.9,r*.8)); TM.setMatrixAt(i*2+1,m4); TM.setColorAt(i*2+1,c.setHSL(.25+g*.05,.3,.17+g*.06)); });
-    TM.frustumCulled=false; TM.receiveShadow=false; (MAPG.bodega||scene).add(TM); FAR3.trees=TM; FAR3.treeN=P.length; }
+    TM.computeBoundingSphere(); TM.receiveShadow=false; (MAPG.bodega||scene).add(TM); FAR3.trees=TM; FAR3.treeN=P.length; }
   SYS.add('sky',(dt)=>{
     const up=SHARED.LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(TM){ TM.visible=up; TM.material.color.setRGB(1,1,1).lerp(FU.uMC.value,FU.uMK.value>0?.45:0); } if(pan){ pan.visible=me.visible; } if(me.visible&&!CULL.seen(FSP))me.visible=false; if(pan){ FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
     FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }

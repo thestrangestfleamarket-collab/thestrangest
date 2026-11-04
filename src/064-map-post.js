@@ -1,6 +1,6 @@
 // THE STAIRS AND GROUND: inStair and SHARED.groundY say how high the ground is everywhere; LITE and HEMI set the lamps and sky light.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI} from './003b-systems.js';
+import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
@@ -65,9 +65,9 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     F.me.instanceColor.needsUpdate=true; };
   LITE.far=F; SYS.add('life',dt=>LITE.farTick(dt),'064-farglow'); }
 scene.background=new THREE.Color(0x050507);
-SHARED.floor='up';
-const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?(py<-1.6?'down':'up'):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
-  if(MAPG.park)MAPG.park.visible=cur==='street'&&!!PARK.in;
+SHARED.floor='up'; let parkOff=null;
+const MAPLV=(py,pos,cam)=>{ SHARED.METRO.door(py,pos); if(MODS.dunDoor)MODS.dunDoor(py,pos); PARK.door(py,pos); const si=inStair(pos.x,pos.z), lv=cam?LEVELS.below(py):(SHARED.floor=LEVELS.floor(SHARED.floor,py,si)), cur=LEVELS.set(lv,pos.x,pos.z,si);
+  { const off=!(cur==='street'&&PARK.in); if(MAPG.park&&off!==parkOff){ parkOff=off; VIS.hide(MAPG.park,'level',off); } }
   for(const w of LEVELS.ways)if(w.cut)w.cut.constant=LEVELS.way?py+.25:cur===w.b&&LEVELS.of[w.b].ceil!=null?LEVELS.of[w.b].ceil:1e6;
   if(lv==='down'){ const o=LEVELS.of[cur]; HEMI.intensity=o&&o.amb!=null?o.amb:.1; }   // a down level may have no light but its own lamps
   if(lv===SHARED.LVL)return false; SHARED.LVL=lv; SHARED.solids=SOL[lv]; SHARED.fixed=FIX[lv]; HEMI.color.set(lv==='down'?0x8a93a8:0x55607a); HEMI.groundColor.set(lv==='down'?0x1a1814:0x14110e); if(lv!=='down')HEMI.intensity=.3; return true; };

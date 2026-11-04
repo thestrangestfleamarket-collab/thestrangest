@@ -76,9 +76,9 @@ run('data/pawns.json', pawns)
 run('data/skel.json', flat)
 run('data/dragon.json', flat)
 run('data/creatures.json', creatures)
-run('data/rpgchars.json', creatures)
+run('data/full/rpgchars.json', creatures)
 
 def ual(d):
     yield 'ual', lambda: d['ual']['clips'], lambda v: d['ual'].__setitem__('clips', v)
 
-run('data/ual.json', ual)
+run('data/full/ual.json', ual)

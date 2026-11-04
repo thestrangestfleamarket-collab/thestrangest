@@ -40,6 +40,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r8.p && r8.p[0] > 120 && r8.p[1] > 60 && r8.mortar === 1, 'dragging a thing about the mouth moves it there ' + JSON.stringify(r8));
 
   await start(false);   // the same browser, its save kept
+  await pg.waitForFunction(() => BAG.ground.length > 0, null, { timeout: 20000 }).catch(() => {});   // the ground comes back on the first frame of play
   const r9 = await pg.evaluate(() => ({ ground: BAG.ground.map(g => g.id), thing: BAGDBG().loose.includes('A LOOSE EMPTY BOTTLE') }));
   ok(r9.ground.length === 1 && r9.ground[0] === 'bottle' && r9.thing, 'after a reload the dropped bottle still lies there ' + JSON.stringify(r9));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));

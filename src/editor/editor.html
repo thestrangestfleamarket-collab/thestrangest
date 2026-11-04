@@ -1,0 +1,362 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><meta name="market-build" content="__BUILDV__"><title>Map Editor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+:root{--bg:#0b0d12;--panel:#151821;--line:#2a2f3c;--ink:#ece5d3;--dim:#8a8f9c;--acc:#f2c14e;--ok:#6fbf73;--bad:#e06a5a}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:12px/1.4 Silkscreen,ui-monospace,Menlo,monospace}
+button,input,select{font:inherit}
+.app{display:grid;grid-template-columns:62px 1fr 290px;grid-template-rows:44px 1fr 26px;height:100vh}
+header{grid-column:1/4;display:flex;align-items:center;gap:6px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+header b{color:var(--acc);letter-spacing:.06em}header .btn{padding:5px 7px}.sp{flex:1}
+.btn{background:#1e222d;color:var(--ink);border:1px solid var(--line);padding:5px 9px;border-radius:4px;cursor:pointer}
+.seg{display:inline-flex}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;border-left:0}
+.btn:hover{border-color:var(--acc)}.btn:disabled{opacity:.4;cursor:default}.btn.on{border-color:var(--acc);color:var(--acc)}.btn.pub{background:#3a2a10;border-color:var(--acc);color:var(--acc)}
+nav{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;padding:6px;overflow:auto}
+nav button{width:50px;min-height:46px;border:1px solid var(--line);background:#1b1f29;color:var(--ink);border-radius:5px;cursor:pointer;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:3px 0}
+nav button span{font-size:17px}nav button.on{border-color:var(--acc);background:#2a2412;color:var(--acc)}nav button.next{opacity:.35;cursor:default}
+main{position:relative;overflow:hidden;background:#07090d}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.pal{position:absolute;left:8px;top:8px;background:rgba(21,24,33,.95);border:1px solid var(--line);border-radius:6px;padding:8px;max-width:min(440px,calc(100% - 16px))}
+.pal h4{margin:0 0 6px;color:var(--acc);font-size:11px;font-weight:normal}.pal .opts{display:flex;flex-wrap:wrap;gap:4px}.pal .list{max-height:190px;overflow:auto;margin-top:6px}.pal p{margin:6px 0 0;color:var(--dim);font-size:10px}
+.sw{display:inline-block;width:10px;height:10px;border:1px solid #0006;vertical-align:-1px;margin-right:4px}
+aside{background:var(--panel);border-left:1px solid var(--line);padding:10px;overflow:auto}
+aside h3{margin:0 0 8px;font-size:11px;color:var(--acc);font-weight:normal}
+.row{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:center;margin:4px 0}.row label{color:var(--dim)}
+.row input,.row select{width:100%;background:#0f1218;color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:3px 5px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+.lay label{display:flex;gap:6px;align-items:center;margin:2px 0;cursor:pointer}
+.note{color:var(--dim);font-size:10px}.warn{color:var(--bad)}.good{color:var(--ok)}
+footer{grid-column:1/4;display:flex;gap:14px;align-items:center;padding:0 10px;background:var(--panel);border-top:1px solid var(--line);color:var(--dim);font-size:10px;overflow:hidden;white-space:nowrap}
+#msg{color:var(--acc)}
+@media (max-width:800px){.app{grid-template-columns:56px 1fr;grid-template-rows:44px 1fr minmax(0,40vh) 26px}aside{grid-column:1/3;border-left:0;border-top:1px solid var(--line)}header,footer{grid-column:1/3}}
+</style></head><body>
+<div class="app">
+<header><b>MAP EDITOR</b><span class="note" id="sec"></span><span class="seg"><button class="btn" id="lvUp" title="Page Up">STREET</button><button class="btn" id="lvDown" title="Page Down">UNDERGROUND</button></span><span class="seg"><button class="btn" id="vTop" title="V">TOP</button><button class="btn" id="vIso" title="V">ISO</button></span><button class="btn" id="rotL" title="turn the view (Q)">⟲</button><button class="btn" id="rotR" title="turn the view (E)">⟳</button><span class="sp"></span>
+ <button class="btn" id="undo" title="Ctrl+Z">↶ UNDO</button><button class="btn" id="redo" title="Ctrl+Y">↷ REDO</button><button class="btn" id="fit" title="the whole map">FIT</button>
+ <button class="btn" id="look" title="open the game at this spot (it shows what is live)">LOOK IN 3D</button>
+ <button class="btn pub" id="pub">PUBLISH LIVE</button></header>
+<nav id="tools"></nav>
+<main><canvas id="cv"></canvas><div class="pal" id="pal"></div></main>
+<aside><h3 id="selT">PICKED</h3><div id="sel" class="note">Click a building, a park place, a path, a car or a stall to pick it.</div>
+ <hr><h3>SHOW</h3><div class="lay" id="lay"></div>
+ <hr><h3>THIS DRAFT</h3><div id="draft" class="note"></div>
+ <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="exp">EXPORT</button><button class="btn" id="imp">IMPORT</button><input type="file" id="impf" accept=".json,application/json" hidden><button class="btn" id="revert" title="throw the draft away and start again from what is live">BACK TO LIVE</button></div></aside>
+<footer><span id="xy">tile –</span><span id="zm"></span><span id="cost"></span><span class="sp"></span><span id="msg"></span></footer>
+</div>
+<script type="module">
+// THE MAP EDITOR (owners; its own light page at /editor, no game loaded): the real ground picture (tools/topmap.cjs) with every placed thing over it; move buildings, park places, paths, cars and stalls, paint ground and roads; the draft stays in this browser until PUBLISH LIVE sends it to /shared/map-<section>.json, which every player's game lays over data/world.json at start (worker/mappatch.js).
+const WORLD=__DATA__("data/world.json"), TOP=__DATA__("data/topmap.json");
+__CODE__("worker/mappatch.js")
+const MAPFILE=MAPPATCH.file(WORLD), $=s=>document.querySelector(s), WEB=/^https?:$/.test(location.protocol), KEY='mapeditor-draft', r2=v=>Math.round(v*100)/100, clone=o=>JSON.parse(JSON.stringify(o));
+const GCOL={grass:'#4a7a3a',grass2:'#6f863a',grass3:'#2f6b2c',grass4:'#8fa05a',sidewalk:'#9a968e',cobble:'#6b6b70',dirt:'#6b4f33',gravel:'#7a766f',slab:'#8a857a',sand:'#c9b885',road:'#34363c',alley:'#46474c'};
+const GNAME={grass:'GRASS',grass2:'DRY GRASS',grass3:'LUSH GRASS',grass4:'PALE GRASS',sidewalk:'SIDEWALK',cobble:'COBBLE',dirt:'DIRT',gravel:'GRAVEL',slab:'STONE SLAB',sand:'SAND',road:'ROAD',alley:'ALLEY',erase:'ERASE'};
+const BASE={}; for(const o of TOP.items)BASE[o.gid]=o;
+const PARKK=['round','lake','cave','tower','tower2','tower3','skatepark','castle'];
+// what can be put down: the game's placed models (the landscape editor's kits and the drive models; sizes baked by tools/topmap.cjs) and its drivable cars
+const GARDEN=__DATA__("data/garden.json")||[], KIT=TOP.kit||{models:{},groups:[],cars:[]}, MOD=KIT.models;
+const nm=k=>k.startsWith('car:')?((KIT.cars.find(c=>'car:'+c[0]===k)||[0,k])[1]+' (DRIVABLE)'):k.replace(/^pf_/,'').replace(/_/g,' ').replace(/([a-z])([A-Z0-9])/g,'$1 $2').toUpperCase();
+const TREES=['OakTree1','OakTree2','OakTree3','Elder1','Elder2','Spruce1','Willow1','Giant1','pf_twisted_dead_oak'];
+const LG=n=>((KIT.groups||[]).find(g=>g[0]===n)||[0,[]])[1];
+const CAT={build:[['HOMES',['pf_corner_tenement','pf_brownstone_row_house','pf_narrow_walk_up','pf_cast_iron_loft','pf_haunted_victorian_house','pf_porch_log_cabin','pf_mushroom_cottage','pf_hare_paenga_boat_house','pf_orongo_house_run']],
+    ['SHOPS',['pf_corner_shop','pf_corner_shophouse','pf_two_storey_shophouse','pf_three_storey_shophouse','pf_wide_shophouse','pf_one_storey_shop_row','pf_convenience_store','pf_street_diner','pf_motel_office','pf_motel_room_run','pf_auto_repair_garage']],
+    ['CIVIC',['pf_office_tower','pf_fire_station','pf_brick_church','pf_public_school','pf_village_hall','pf_parking_garage','pf_small_shrine_hall','pf_old_lighthouse','pf_family_mausoleum','pf_glass_conservatory','pf_promenade_bandstand','pf_press_box','pf_subway_entrance']]],
+  nature:[['TREES',TREES],['BUSHES',LG('Bushes')],['GRASS',LG('Grass')],['FLOWERS',[...LG('Flowers'),'pf_common_daisy','pf_dandelion','pf_taro_plant','pf_dragonsbane_thistle']],['MUSHROOMS',[...LG('Mushrooms'),'pf_miasma_bladder_fungus']],['ROCKS',LG('Rocks')],['WOOD',LG('Wood')]],
+  props:[['STREET',['pf_cemetery_lantern_post','pf_pay_phone_booth','pf_roadside_billboard','pf_doorman_canopy','pf_ticket_booth','pf_ice_cream_kiosk_on','pf_elote_cart','pf_food_truck','pf_platform_bookstall','pf_turnstile_bank','fence1','fence2','pf_wrought_iron_cemetery_fence','pillar1','pillar2','pillar3','pf_coiled_dragon_pillar','pf_moai_kavakava','pf_arched_cemetery_gate','pf_main_entrance_gate','pf_camp_tent','campfire']],
+    ['DRIVABLE CARS',(KIT.cars||[]).map(c=>'car:'+c[0])],
+    ['VEHICLES TO LOOK AT',['pf_compact_hatchback','pf_wheeled_city_coupe','pf_stretch_limousine','pf_patrol_cruiser','pf_security_patrol_cruiser','pf_vintage_hearse','pf_fire_engine','pf_semi_tractor','pf_box_trailer','pf_camper_trailer','pf_pop_top_camper_van','pf_team_minibus','pf_campus_shuttle_bus','pf_capital_cruiser','pf_freestyle_bmx']],
+    ['WATER',['kayak','fisherboat','pf_lake_rowing_skiff','pf_hanga_roa_fishing_boat','pf_japanese_koi_pond','pf_kidney_pool','pf_wetland_boardwalk_run','pf_stone_viaduct_span','pf_pier_head_platform','pf_moat_bridge','pf_station_footbridge']]]};
+for(const t in CAT)CAT[t]=CAT[t].map(([n,ks])=>[n,ks.filter(k=>k.startsWith('car:')||MOD[k])]).filter(g=>g[1].length);
+{ const seen=new Set(Object.values(CAT).flatMap(g=>g.flatMap(x=>x[1]))), rest=Object.keys(MOD).filter(k=>!seen.has(k)); if(rest.length)CAT.props.push(['OTHER',rest]); }
+const LYOF={}; for(const [t,ly] of [['build','build'],['nature','nature'],['props','props']])for(const [,ks] of CAT[t])for(const k of ks)LYOF[k]=ly;
+const scaleFor=k=>TREES.includes(k)&&MOD[k]?Math.max(.3,Math.min(30,12/MOD[k][2])):MOD[k]?MOD[k][3]||1:1;
+
+// the draft: the same shape as the published file's set, ground kept as cells (map tiles) until it is sent
+const EMPTY=()=>({places:{},parkPlaces:{},paths:{},cars:{},things:{},homes:{},garden:{},add:[],del:[],newcars:[],names:{}});
+let S={set:EMPTY(),cells:{}}, LIVE=null, EFF=WORLD, UNDO=[], REDO=[];
+const cellsOf=G=>{ const c={}; for(const g of G||[])for(let y=Math.floor(g.y0);y<g.y1;y++)for(let x=Math.floor(g.x0);x<g.x1;x++)c[x+','+y]=g.t; return c; };
+const rects=cells=>{ const by={}; for(const k in cells){ const [x,y]=k.split(',').map(Number); (by[cells[k]]=by[cells[k]]||[]).push([x,y]); } const out=[];
+  for(const t in by){ const rows={}; for(const [x,y] of by[t])(rows[y]=rows[y]||[]).push(x); const runs=[];
+    for(const y of Object.keys(rows).map(Number).sort((a,b)=>a-b)){ const xs=rows[y].sort((a,b)=>a-b); let a=xs[0], p=a; for(let i=1;i<=xs.length;i++){ if(i<xs.length&&xs[i]===p+1){ p=xs[i]; continue; } runs.push({y,x0:a,x1:p+1}); if(i<xs.length){ a=p=xs[i]; } } }
+    const open=new Map(); for(const r of runs){ const k=r.x0+':'+r.x1, o=open.get(k); if(o&&o.y1===r.y)o.y1=r.y+1; else { if(o)out.push({x0:o.x0,x1:o.x1,y0:o.y0,y1:o.y1,t}); open.set(k,{x0:r.x0,x1:r.x1,y0:r.y,y1:r.y+1}); } }
+    for(const o of open.values())out.push({x0:o.x0,x1:o.x1,y0:o.y0,y1:o.y1,t}); }
+  return out; };
+const patch=()=>{ const set=clone(S.set); for(const k in set)if(k!=='lamps'&&k!=='ponds'&&!Object.keys(set[k]).length)delete set[k]; const g=rects(S.cells); if(g.length)set.ground=g; return {v:MAPPATCH.v,at:new Date().toISOString(),set}; };
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+const sortK=o=>Array.isArray(o)?o.map(sortK):o&&typeof o==='object'?Object.fromEntries(Object.keys(o).sort().map(k=>[k,sortK(o[k])])):o;
+const canon=s=>JSON.stringify({set:sortK(s.set),cells:Object.keys(s.cells).sort().map(k=>k+'='+s.cells[k])});
+let LIVEC=null; const setLive=P=>{ LIVE=P; LIVEC=P?canon(fromPatch(P)):null; };
+const recompute=()=>{ EFF=MAPPATCH.apply(WORLD,{v:1,set:S.set}).W; };
+const keep=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} };
+const snap=()=>JSON.stringify(S), push=()=>{ UNDO.push(snap()); if(UNDO.length>300)UNDO.shift(); REDO.length=0; };
+const changed=()=>{ recompute(); keep(); side(); draw(); };
+const fromPatch=P=>{ const s={set:EMPTY(),cells:{}}; if(P&&P.set){ for(const k in s.set)if(P.set[k]&&typeof P.set[k]==='object'&&Array.isArray(P.set[k])===Array.isArray(s.set[k]))s.set[k]=clone(P.set[k]); if(Array.isArray(P.set.lamps))s.set.lamps=clone(P.set.lamps); if(Array.isArray(P.set.ponds))s.set.ponds=clone(P.set.ponds); s.cells=cellsOf(MAPPATCH.apply(WORLD,P).ground); } return s; };
+
+// what is on the map: built from the draft's world each time
+const wpx=x=>(x-TOP.O[0])*TOP.T, wpz=y=>(y-TOP.O[1])*TOP.T;
+const BLK=WORLD.block, PW=WORLD.pathWidth||7.2;
+function things(){ const L=[], W=EFF;
+  for(const p of W.places){ const b=BASE[p.id]; let y0=p.y0, y1=p.y1; if(y1==null){ if(b){ y0=b.y-b.d/2; y1=b.y+b.d/2; } else { y0=BLK.back; y1=BLK.front; } }
+    L.push({k:'place',id:p.id,n:(p.name||(b&&b.n)||p.id).toUpperCase(),sh:'rect',x:(p.x0+p.x1)/2,y:(y0+y1)/2,w:p.x1-p.x0,d:y1-y0,rot:0,face:p.y1!=null?(p.face||'n'):null,row:p.y1==null,ly:'build'}); }
+  for(const k of PARKK){ const p=W.parkPlaces[k]; if(!p)continue; const b=BASE[k]||BASE.tower, ox=(b&&b.ox)||0, oy=(b&&b.oy)||0;
+    if(k==='castle'){ const c=BASE.castle; L.push({k:'park',id:k,n:'THE CASTLE',sh:'rect',x:p.x0+c.w/2,y:p.y0+c.d/2,w:c.w,d:c.d,rot:0,ly:'park'}); continue; }
+    const n=(BASE[k]&&BASE[k].n)||(k==='tower2'||k==='tower3'?'A TOWER':k.toUpperCase());
+    if(b&&b.sh==='circle')L.push({k:'park',id:k,n,sh:'circle',x:p.x+ox,y:p.y+oy,r:p.r!=null?p.r:b.r,rot:0,ly:'park',ox,oy});
+    else { const w=b?b.w:8, d=b?b.d:8, sw=p.face==='e'||p.face==='w'; L.push({k:'park',id:k,n,sh:'rect',x:p.x+ox,y:p.y+oy,w:sw?d:w,d:sw?w:d,rot:0,ly:'park',ox,oy}); } }
+  for(const p of W.paths){ const ox=(BASE[p.id]&&BASE[p.id].ox)||0, oy=(BASE[p.id]&&BASE[p.id].oy)||0, ax=p.a[0]+ox, ay=p.a[1]+oy, bx=p.b[0]+ox, by=p.b[1]+oy;
+    L.push({k:'path',id:p.id,n:(BASE[p.id]&&BASE[p.id].n)||'PARK PATH',sh:'rect',x:(ax+bx)/2,y:(ay+by)/2,w:Math.hypot(bx-ax,by-ay),d:PW,rot:Math.atan2(by-ay,bx-ax)*180/Math.PI,ly:'paths',ox,oy}); }
+  for(const c of W.cars||[])L.push({k:'car',id:c.id,n:(/^m\d/.test(c.id)?'NEW ':'')+'CAR · '+String(c.model||'').toUpperCase(),sh:'rect',x:c.x,y:c.y,w:4.2,d:1.9,rot:-(c.hd||0)+90,hd:c.hd||0,ly:'props'});
+  (W.things||[]).forEach((t,i)=>L.push({k:'thing',id:i,n:'STALL · '+String(t.k).toUpperCase(),sh:'rect',x:t.x,y:t.y,w:2.6,d:2,rot:(t.rot||0)*180/Math.PI,ly:'props'}));
+  for(const id in W.homes||{}){ const h=W.homes[id]; if(Array.isArray(h)&&isFinite(h[0]))L.push({k:'home',id,n:'HOME OF '+id.toUpperCase(),sh:'circle',x:h[0],y:h[1],r:Math.max(.6,+h[2]||0),ly:'people'}); }
+  for(const o of TOP.items)if(/^tree|^camp$|^gate$|^fountain$/.test(o.gid))L.push({k:'fixed',id:o.gid,n:o.n,sh:o.sh,x:o.x,y:o.y,w:o.w,d:o.d,r:o.r,rot:o.rot||0,h:o.h,ly:'fixed'});
+  const gi=(o,k,id)=>{ const m=MOD[o.k]||[1,1,1,1], sc=o.s||1; const ly=LYOF[o.k]||'props', w=Math.max(.4,m[0]*sc), d=Math.max(.4,m[1]*sc); return {k,id,model:o.k,n:nm(o.k),sh:ly==='nature'?'circle':'rect',r:Math.max(w,d)/2,x:TOP.O[0]+o.x/TOP.T,y:TOP.O[1]+o.z/TOP.T,w,d,h:m[2]*sc,rot:-(o.rot||0)*180/Math.PI,s:sc,wr:o.rot||0,ly}; };
+  for(const o of GARDEN){ const key=MAPPATCH.gkey(o), e=S.set.garden[key]; if(e===null)continue; L.push(gi(e?{...o,...e}:o,'garden',key)); }
+  S.set.add.forEach((o,i)=>L.push(gi(o,'added',i)));
+  (EFF.ponds||[]).forEach((q,i)=>L.push({k:'pond',id:i,n:'POND',sh:'circle',x:q.x,y:q.y,r:q.r,h:0,ly:'water'}));
+  lampsOf().forEach((l,i)=>L.push({k:'lamp',id:i,n:'LAMP POST',sh:'circle',x:l.x,y:l.y,r:.7,h:4.4,ly:'power'}));
+  const D=TOP.down||{}, bx=(b,o)=>({sh:'rect',x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,w:b[2]-b[0],d:b[3]-b[1],rot:0,h:0,...o}), dX=stationShift(), SID=(WORLD.section&&WORLD.section.id)||'A';
+  for(const v of D.levels||[])L.push(bx(v.box,{k:'under',id:v.id,n:v.name,ly:'under',lv:'down'}));
+  for(const v of D.stations||[]){ const mine=v.id===SID, b=mine?[v.box[0]+dX,v.box[1],v.box[2]+dX,v.box[3]]:v.box; L.push(bx(b,{k:mine?'station':'under',id:'st-'+v.id,n:'PLATFORM · '+(mine?stationName():v.name),ly:'under',lv:'down'})); }
+  for(const w of D.ways||[]){ const sub=w.b==='station', b=sub?[w.box[0]+dX,w.box[1],w.box[2]+dX,w.box[3]]:w.box; L.push(bx(b,{k:'stair',id:w.id,n:'⇅ '+w.id.toUpperCase(),ly:'stair',station:sub})); }
+  for(const o of L)if(o.h==null)o.h=o.k==='place'?((BASE[o.id]&&BASE[o.id].h)||7):o.k==='park'?((BASE[o.id]&&BASE[o.id].h)||(/tower/.test(o.id)?6:0)):o.k==='car'?1:o.k==='thing'?1.6:0;
+  return L; }
+const stairsBase=()=>WORLD.places.find(p=>p.kind==='stairs'), stationShift=()=>{ const b=stairsBase(), e=b&&EFF.places.find(p=>p.id===b.id); return b&&e?((e.x0+e.x1)-(b.x0+b.x1))/2:0; };
+const stationName=()=>((EFF.loop&&EFF.loop.stations||[]).find(q=>q.id===((WORLD.section&&WORLD.section.id)||'A'))||{}).name||'';
+const MOVES=new Set(['place','park','path','car','thing','home','garden','added','lamp','pond']), CLEARS=new Set(['garden','added','car','lamp','pond']);
+const ownPonds=()=>{ if(!S.set.ponds)S.set.ponds=clone(EFF.ponds||[]); return S.set.ponds; };
+const lampsOf=()=>S.set.lamps||(KIT.lamps||[]), ownLamps=()=>{ if(!S.set.lamps)S.set.lamps=clone(KIT.lamps||[]); return S.set.lamps; };
+const brookOf=()=>((EFF.parkPlaces.brook||{}).pts||[]), setBrook=pts=>{ const B=(WORLD.parkPlaces.brook||{}).pts; if(same(pts,B))delete S.set.parkPlaces.brook; else S.set.parkPlaces.brook={pts}; };
+let ITEMS=[]; const items=()=>ITEMS=things();
+
+// writing a thing back into the draft (only what differs from the baked file is kept)
+const base=(k,id)=>k==='place'?WORLD.places.find(p=>p.id===id):k==='park'?WORLD.parkPlaces[id]:k==='path'?WORLD.paths.find(p=>p.id===id):k==='car'?(WORLD.cars||[]).find(c=>c.id===id):k==='thing'?WORLD.things[id]:WORLD.homes[id];
+const SETK={place:'places',park:'parkPlaces',path:'paths',car:'cars',thing:'things',home:'homes',garden:'garden'};
+function put(k,id,v){ const B=base(k,id), T=S.set[SETK[k]]; let cmp=B;
+  if(k==='place'){ cmp={x0:B.x0,x1:B.x1,...(B.y1!=null?{y0:B.y0,y1:B.y1,face:B.face||'n'}:{})}; }
+  else if(k==='path')cmp={a:B.a,b:B.b}; else if(k==='car')cmp={x:B.x,y:B.y,hd:B.hd}; else if(k==='thing')cmp={k:B.k,x:B.x,y:B.y,...(v.rot!=null?{rot:B.rot||0}:{})}; else if(k==='park'){ cmp={}; for(const f in v)cmp[f]=B[f]; } else if(k==='home')cmp=B.slice(0,3);
+  if(same(v,cmp))delete T[id]; else T[id]=v; }
+function write(o,x,y,extra){ const W=EFF; extra=extra||{};
+  if(o.k==='place'){ const p=W.places.find(q=>q.id===o.id), hw=(extra.w!=null?extra.w:o.w)/2, hd=(extra.d!=null?extra.d:o.d)/2;
+    put('place',o.id,p.y1!=null?{x0:r2(x-hw),x1:r2(x+hw),y0:r2(y-hd),y1:r2(y+hd),face:extra.face||p.face||'n'}:{x0:r2(x-hw),x1:r2(x+hw)}); }
+  else if(o.k==='park'){ const p=W.parkPlaces[o.id]; if(o.id==='castle')put('park','castle',{x0:r2(x-o.w/2),y0:r2(y-o.d/2)}); else put('park',o.id,{x:r2(x-(o.ox||0)),y:r2(y-(o.oy||0)),...(p.r!=null?{r:r2(extra.r!=null?extra.r:p.r)}:{})}); }
+  else if(o.k==='path'){ const a=(extra.rot!=null?extra.rot:o.rot)*Math.PI/180, h=(extra.w!=null?extra.w:o.w)/2; put('path',o.id,{a:[r2(x-Math.cos(a)*h-(o.ox||0)),r2(y-Math.sin(a)*h-(o.oy||0))],b:[r2(x+Math.cos(a)*h-(o.ox||0)),r2(y+Math.sin(a)*h-(o.oy||0))]}); }
+  else if(o.k==='car'){ const nc=S.set.newcars.find(c=>c.id===o.id); if(nc){ nc.x=r2(x); nc.y=r2(y); nc.hd=extra.hd!=null?extra.hd:o.hd; } else put('car',o.id,{x:r2(x),y:r2(y),hd:extra.hd!=null?extra.hd:o.hd}); }
+  else if(o.k==='lamp'){ const L=ownLamps(); L[o.id]={x:r2(x),y:r2(y)}; }
+  else if(o.k==='pond'){ const L=ownPonds(); L[o.id]={x:r2(x),y:r2(y),r:r2(extra.r!=null?extra.r:o.r)}; }
+  else if(o.k==='garden'||o.k==='added'){ const v={x:r2((x-TOP.O[0])*TOP.T),z:r2((y-TOP.O[1])*TOP.T),rot:+(extra.wr!=null?extra.wr:o.wr).toFixed(4),s:+(extra.s!=null?extra.s:o.s).toFixed(3)};
+    if(o.k==='added'){ S.set.add[o.id]={...S.set.add[o.id],...v}; return; } const b=GARDEN.find(q=>MAPPATCH.gkey(q)===o.id);
+    if(b&&Math.abs(v.x-b.x)<.02&&Math.abs(v.z-b.z)<.02&&Math.abs(v.rot-(b.rot||0))<1e-3&&Math.abs(v.s-(b.s||1))<1e-3)delete S.set.garden[o.id]; else S.set.garden[o.id]=v; }
+  else if(o.k==='thing'){ const t=W.things[o.id]; put('thing',o.id,{k:t.k,x:r2(x),y:r2(y),...(extra.rot!=null?{rot:r2(extra.rot)}:t.rot!=null&&S.set.things[o.id]&&S.set.things[o.id].rot!=null?{rot:S.set.things[o.id].rot}:{})}); }
+  else if(o.k==='home'){ const h=W.homes[o.id]; put('home',o.id,[r2(x),r2(y),extra.r!=null?r2(extra.r):h[2]]); } }
+const turn=(o,deg)=>{ if(o.k==='place'&&!o.row){ const F=['n','w','s','e'], f=F[(F.indexOf(o.face||'n')+(deg>0?1:3))%4]; write(o,o.x,o.y,{w:o.d,d:o.w,face:f}); return true; }
+  if(o.k==='path'){ write(o,o.x,o.y,{rot:o.rot+deg}); return true; } if(o.k==='car'){ write(o,o.x,o.y,{hd:((o.hd-deg)%360+360)%360}); return true; }
+  if(o.k==='thing'){ write(o,o.x,o.y,{rot:(o.rot+deg)*Math.PI/180}); return true; } if(o.k==='garden'||o.k==='added'){ write(o,o.x,o.y,{wr:o.wr-deg*Math.PI/180}); return true; } return false; };
+const remove=o=>{ if(o.k==='garden')S.set.garden[o.id]=null; else if(o.k==='added')S.set.add.splice(o.id,1);
+  else if(o.k==='lamp')ownLamps().splice(o.id,1);
+  else if(o.k==='pond')ownPonds().splice(o.id,1);
+  else if(o.k==='car'){ const i=S.set.newcars.findIndex(c=>c.id===o.id); if(i>=0)S.set.newcars.splice(i,1); else { if(!S.set.del.includes('car:'+o.id))S.set.del.push('car:'+o.id); delete S.set.cars[o.id]; } } else return false; return true; };
+const WHYNOT={place:'it is built by the game\'s code (its inside, its people)',park:'the park\'s places are part of the park',path:'paths are part of the park',thing:'it is a merchant\'s stall',home:'it is where someone lives',fixed:'it comes from the game\'s code',under:'it is under the street',stair:'stairs belong to their place'};
+let wmode='lake', pk={build:null,nature:null,props:null}, pg={build:0,nature:0,props:0}, gdeg=0, ghost=null;
+const PLACE=new Set(['build','nature','props']);
+const footOf=k=>k.startsWith('car:')?{w:4.2,d:1.9,h:1}:(m=>({w:m[0]*scaleFor(k),d:m[1]*scaleFor(k),h:m[2]*scaleFor(k)}))(MOD[k]||[1,1,1]);
+const placeAt=(k,x,y)=>{ if(k.startsWith('car:')){ const ids=new Set([...(WORLD.cars||[]).map(c=>c.id),...S.set.newcars.map(c=>c.id)]); let n=1; while(ids.has('m'+n))n++; S.set.newcars.push({id:'m'+n,model:k.slice(4),x:r2(x),y:r2(y),hd:((90-gdeg)%360+360)%360}); return 'm'+n; }
+  S.set.add.push({k,x:r2((x-TOP.O[0])*TOP.T),z:r2((y-TOP.O[1])*TOP.T),s:+scaleFor(k).toFixed(3),rot:+(-gdeg*Math.PI/180).toFixed(4)}); return S.set.add.length-1; };
+
+// the view: top down or iso, turned a quarter at a time (Q / E); the street or what is under it, one at a time
+const cv=$('#cv'), g=cv.getContext('2d'); let V={x:0,y:0,k:2,rot:0,iso:0}, DPR=1, LV='up';
+try{ const v=JSON.parse(localStorage.getItem('mapeditor-view')||'{}'); V.rot=(+v.rot||0)%4; V.iso=v.iso?1:0; LV=v.lv==='down'?'down':'up'; }catch(e){}
+const keepView=()=>{ try{ localStorage.setItem('mapeditor-view',JSON.stringify({rot:V.rot,iso:V.iso,lv:LV})); }catch(e){} };
+const size=()=>{ const r=cv.getBoundingClientRect(); DPR=Math.min(2,devicePixelRatio||1); cv.width=Math.max(1,Math.round(r.width*DPR)); cv.height=Math.max(1,Math.round(r.height*DPR)); };
+const ang=()=>(V.rot*90+(V.iso?45:0))*Math.PI/180, TILT=()=>V.iso?.5:1, HZ=()=>V.iso?.82:0;
+const P=(x,y,h=0)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), dx=x-V.x, dy=y-V.y; return [cv.width/2+(dx*c-dy*s)*V.k,cv.height/2+(dx*s+dy*c)*V.k*TILT()-h*V.k*HZ()]; };
+const U=(px,py)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), u=(px-cv.width/2)/V.k, v=(py-cv.height/2)/(V.k*TILT()); return [V.x+c*u+s*v,V.y-s*u+c*v]; };
+const depth=(x,y)=>{ const a=ang(); return (x-V.x)*Math.sin(a)+(y-V.y)*Math.cos(a); };
+const plane=(h=0)=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), k=V.k, t=TILT(); g.setTransform(k*c,k*t*s,-k*s,k*t*c,cv.width/2-k*(c*V.x-s*V.y),cv.height/2-k*t*(s*V.x+c*V.y)-h*k*HZ()); };
+const flat=()=>g.setTransform(1,0,0,1,0,0), LW=px=>px*DPR/V.k;
+const F=TOP.F, fit=()=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), t=TILT(); let u=0, v=0; for(const [x,y] of [[F.x0,F.y0],[F.x1,F.y0],[F.x0,F.y1],[F.x1,F.y1]]){ const dx=x-(F.x0+F.x1)/2, dy=y-(F.y0+F.y1)/2; u=Math.max(u,Math.abs(dx*c-dy*s)); v=Math.max(v,Math.abs((dx*s+dy*c)*t)); }
+  V.k=Math.min(cv.width/(2*u+6),cv.height/(2*v+6)); V.x=(F.x0+F.x1)/2; V.y=(F.y0+F.y1)/2; };
+const PIC=TOP.tiles.map(n=>{ const im=new Image(); im.onload=()=>draw(); im.src='edmap/'+n; return im; });
+const SHOW={pic:1,grid:1,ground:1,build:1,nature:1,power:1,water:1,park:1,paths:1,props:1,people:0,fixed:0,names:1};
+const LAYN={pic:'GROUND PICTURE',grid:'GRID',ground:'PAINTED GROUND',build:'BUILDINGS',nature:'TREES & PLANTS (PLACED)',power:'LAMP POSTS',water:'PONDS',park:'PARK PLACES',paths:'PARK PATHS',props:'CARS, STALLS & PROPS',people:'HOMES (WHERE PEOPLE ROAM)',fixed:'FIXED THINGS (TREES...)',names:'NAMES'};
+try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('mapeditor-show')||'{}')); }catch(e){}
+const LCOL={build:'#e0875a',nature:'#7ccf6a',power:'#ffd36b',water:'#4fa3d9',park:'#d8c9a6',paths:'#e6d38a',props:'#7fc8e8',people:'#c88ae0',fixed:'#5f8a5f',under:'#8a8f9c',stair:'#f2c14e'};
+let sel=null, hover=null, tool='pick', gt='road', brush=3, drag=null, paintBox=null;
+const corners=o=>{ const a=o.rot*Math.PI/180, c=Math.cos(a), s=Math.sin(a), hw=o.w/2, hd=o.d/2; return [[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([u,v])=>[o.x+u*c-v*s,o.y+u*s+v*c]); };
+const hit=(o,x,y)=>{ if(o.sh==='circle')return Math.hypot(x-o.x,y-o.y)<=o.r; const a=-o.rot*Math.PI/180, dx=x-o.x, dy=y-o.y, u=dx*Math.cos(a)-dy*Math.sin(a), v=dx*Math.sin(a)+dy*Math.cos(a); return Math.abs(u)<=o.w/2&&Math.abs(v)<=o.d/2; };
+const area=o=>o.sh==='circle'?Math.PI*o.r*o.r:o.w*o.d;
+const onLevel=o=>LV==='down'?o.lv==='down'||o.k==='stair':o.lv!=='down';
+const shade=(hex,f)=>{ const n=parseInt(hex.slice(1),16); return `rgb(${Math.round((n>>16&255)*f)},${Math.round((n>>8&255)*f)},${Math.round((n&255)*f)})`; };
+const tracks=()=>{ const L=WORLD.loop; if(!L||!L.tracks)return; for(const [k,col] of [['outer','#c88a3a'],['inner','#3a8ac8']]){ const t=L.tracks[k], y0=Math.min(t.south,t.north), y1=Math.max(t.south,t.north);
+  g.strokeStyle=col; g.lineWidth=LW(3); g.beginPath(); g.roundRect(t.west,y0,t.east-t.west,y1-y0,L.r||0); g.stroke(); } };
+function draw(){ if(!cv.width)return; flat(); g.fillStyle=LV==='down'?'#040507':'#07090d'; g.fillRect(0,0,cv.width,cv.height);
+  plane(); const k=V.k;
+  if(LV==='up'&&SHOW.pic){ const Q=TOP.C/TOP.T; g.imageSmoothingEnabled=k<6; TOP.tiles.forEach((n,i)=>{ const im=PIC[i]; if(!im.complete||!im.naturalWidth)return; const ci=i%TOP.NX, cj=Math.floor(i/TOP.NX); g.drawImage(im,TOP.O[0]+(TOP.B.x0+ci*TOP.C)/TOP.T,TOP.O[1]+(TOP.B.z0+cj*TOP.C)/TOP.T,Q+.6/k,Q+.6/k); }); }
+  if(LV==='down'){ g.fillStyle='#0b0e14'; g.fillRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0); g.save(); g.beginPath(); g.rect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0); g.clip(); tracks(); g.restore(); }
+  g.strokeStyle='#46c8d2'; g.lineWidth=LW(1); g.strokeRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0);
+  if(SHOW.grid&&k>2.5){ const st=k>10?1:k>5?5:10, C=[U(0,0),U(cv.width,0),U(0,cv.height),U(cv.width,cv.height)], x0=Math.max(F.x0,Math.floor(Math.min(...C.map(c=>c[0]))/st)*st), x1=Math.min(F.x1,Math.max(...C.map(c=>c[0]))), y0=Math.max(F.y0,Math.floor(Math.min(...C.map(c=>c[1]))/st)*st), y1=Math.min(F.y1,Math.max(...C.map(c=>c[1])));
+    g.strokeStyle='rgba(255,255,255,.08)'; g.lineWidth=LW(1); g.beginPath(); for(let x=x0;x<=x1;x+=st){ g.moveTo(x,y0); g.lineTo(x,y1); } for(let y=y0;y<=y1;y+=st){ g.moveTo(x0,y); g.lineTo(x1,y); } g.stroke(); }
+  if(LV==='up'&&SHOW.ground){ g.globalAlpha=.85; for(const c in S.cells){ const [x,y]=c.split(',').map(Number); g.fillStyle=GCOL[S.cells[c]]||'#f0f'; g.fillRect(x,y,1+.6/k,1+.6/k); } g.globalAlpha=1; }
+  if(LV==='up'&&(SHOW.park||tool==='water')){ const B=brookOf(), lk=EFF.parkPlaces.lake; if(B.length){ g.strokeStyle='rgba(58,134,200,.75)'; g.lineWidth=2.6; g.lineJoin=g.lineCap='round'; g.beginPath(); g.moveTo(B[0][0],B[0][1]); for(const q of B.slice(1))g.lineTo(q[0],q[1]); if(lk)g.lineTo(lk.x,lk.y); g.stroke(); } }
+  if(paintBox){ const a=paintBox; g.strokeStyle='#f2c14e'; g.lineWidth=LW(1.5); g.setLineDash([5/k,4/k]); g.strokeRect(Math.min(a.x0,a.x1),Math.min(a.y0,a.y1),Math.abs(a.x1-a.x0)+1,Math.abs(a.y1-a.y0)+1); g.setLineDash([]); }
+  const fs=Math.round(10*DPR), list=ITEMS.filter(o=>onLevel(o)&&(SHOW[o.ly]||o.ly==='under'||o.ly==='stair')).sort((a,b)=>depth(a.x,a.y)-depth(b.x,b.y)), tall=V.iso&&LV==='up';
+  for(const o of list){ const on=sel&&o.k===sel.k&&o.id===sel.id, hv=hover&&o.k===hover.k&&o.id===hover.id, c=LCOL[o.ly], h=tall?o.h||0:0, lw=(on?3:hv?2:1.2)*DPR, fix=o.ly==='fixed';
+    g.strokeStyle=on?'#f2c14e':c; if(o.k==='home'){ plane(); g.setLineDash([4/k,4/k]); }
+    if(o.sh==='circle'){ plane(); g.lineWidth=LW(lw/DPR); g.fillStyle=fix?'rgba(40,70,40,.35)':c+'33'; g.beginPath(); g.arc(o.x,o.y,Math.max(.4,o.r),0,Math.PI*2); if(o.ly!=='people')g.fill(); g.stroke();
+      if(h>0){ plane(h); g.fillStyle=fix?'rgba(46,90,46,.55)':shade(c,.75); g.beginPath(); g.arc(o.x,o.y,Math.max(.4,o.r),0,Math.PI*2); g.fill(); g.stroke(); } g.setLineDash([]); flat(); }
+    else { const B=corners(o); flat(); g.lineWidth=lw;
+      if(h>0){ const sides=B.map((p,i)=>[p,B[(i+1)%4]]).sort((a,b)=>depth((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2)-depth((b[0][0]+b[1][0])/2,(b[0][1]+b[1][1])/2));
+        for(const [a,b] of sides){ const q=[P(a[0],a[1]),P(b[0],b[1]),P(b[0],b[1],h),P(a[0],a[1],h)]; g.fillStyle=shade(c,.45); g.globalAlpha=.8; g.beginPath(); g.moveTo(...q[0]); for(const t of q.slice(1))g.lineTo(...t); g.closePath(); g.fill(); g.globalAlpha=1; g.stroke(); } }
+      const T=B.map(p=>P(p[0],p[1],h)); g.fillStyle=o.ly==='under'?'rgba(70,80,100,.16)':o.ly==='stair'?'rgba(242,193,78,.25)':h>0?shade(c,.8):fix?'rgba(40,70,40,.25)':c+'33'; if(h>0)g.globalAlpha=.75; g.beginPath(); g.moveTo(...T[0]); for(const t of T.slice(1))g.lineTo(...t); g.closePath(); if(o.ly!=='people')g.fill(); g.globalAlpha=1; g.stroke(); g.setLineDash([]); }
+    if(o.k==='lamp'){ const b=P(o.x,o.y,h); g.fillStyle='#fff3c0'; g.beginPath(); g.arc(b[0],b[1],2.5*DPR,0,Math.PI*2); g.fill(); }
+    if(o.face){ const d={n:[0,1],s:[0,-1],e:[1,0],w:[-1,0]}[o.face], q=P(o.x+d[0]*o.w/2,o.y+d[1]*o.d/2,h); g.fillStyle=on?'#f2c14e':c; g.beginPath(); g.arc(q[0],q[1],3*DPR,0,Math.PI*2); g.fill(); }
+    if(SHOW.names&&!fix&&o.k!=='home'&&(o.k==='place'||o.k==='park'||o.ly==='under'||o.ly==='stair'||k>5)){ const t=o.n.length>24?o.n.slice(0,23)+'…':o.n, q=P(o.x,o.y,h); g.font=fs+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle'; const tw=g.measureText(t).width;
+      if(tw<(o.sh==='circle'?o.r*2:Math.max(o.w,o.d))*k*1.6||on){ g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(q[0]-tw/2-3,q[1]-fs/2-2,tw+6,fs+4); g.fillStyle=on?'#f2c14e':'#ece5d3'; g.fillText(t,q[0],q[1]); } } }
+  if(LV==='up'&&tool==='water'&&wmode==='lake'){ flat(); for(const q of brookOf()){ const t=P(q[0],q[1]); g.fillStyle='#bfe3ff'; g.strokeStyle='#0b2a44'; g.lineWidth=2*DPR; g.beginPath(); g.arc(t[0],t[1],6*DPR,0,Math.PI*2); g.fill(); g.stroke(); } }
+  if(ghost&&LV==='up'&&PLACE.has(tool)&&pk[tool]){ const f=footOf(pk[tool]), h=V.iso?f.h:0, B=corners({x:ghost.x,y:ghost.y,w:f.w,d:f.d,rot:gdeg}); flat(); g.strokeStyle='#f2c14e'; g.lineWidth=2*DPR; g.setLineDash([6*DPR,4*DPR]);
+    for(const hh of h>0?[0,h]:[0]){ const T=B.map(p=>P(p[0],p[1],hh)); g.beginPath(); g.moveTo(...T[0]); for(const t of T.slice(1))g.lineTo(...t); g.closePath(); g.stroke(); }
+    if(h>0)for(const p of B){ g.beginPath(); g.moveTo(...P(p[0],p[1])); g.lineTo(...P(p[0],p[1],h)); g.stroke(); } g.setLineDash([]); }
+  flat(); $('#zm').textContent=(V.iso?'ISO':'TOP')+' · turned '+V.rot*90+'° · zoom '+(k/2).toFixed(1)+'×'; }
+
+// the tools
+const TOOLS={up:[['pick','🖱','PICK','Pick, move, turn'],['clear','🚜','CLEAR','Bulldoze: take things away'],['ground','🟩','GROUND','Paint ground'],['roads','🛣','ROADS','Paint roads'],['build','🏢','BUILD','Put down a building'],['nature','🌳','NATURE','Trees and plants'],['props','🪑','PROPS','Lamps, benches, stalls, cars'],['water','🌊','WATER','Water'],['power','⚡','POWER','Poles and wires'],['section','🗺','SECTION','The section itself']],
+  down:[['pick','🖱','PICK','Look at what is under the street'],['stations','🚉','STATIONS','Move the station along the street (its stairs, platform and stop together)']]};
+const NOW=new Set(['pick','clear','ground','roads','build','nature','props','water','power','section','stations']);
+const bar=()=>{ $('#tools').innerHTML=TOOLS[LV].map(([k,i,n,t])=>`<button data-t="${k}" class="${NOW.has(k)?'':'next'}" title="${t}${NOW.has(k)?'':' (a later step)'}"><span>${i}</span>${n}</button>`).join(''); if(!TOOLS[LV].some(t=>t[0]===tool))tool='pick'; pal(); };
+$('#tools').onclick=e=>{ const b=e.target.closest('button'); if(!b||!NOW.has(b.dataset.t))return; tool=b.dataset.t; if(tool==='roads'&&!/road|alley|erase/.test(gt))gt='road'; if(tool==='ground'&&/road|alley/.test(gt))gt='sidewalk'; ghost=null; pal(); draw(); };
+const seg=()=>{ $('#lvUp').classList.toggle('on',LV==='up'); $('#lvDown').classList.toggle('on',LV==='down'); $('#vTop').classList.toggle('on',!V.iso); $('#vIso').classList.toggle('on',!!V.iso); };
+const turnView=d=>{ V.rot=(V.rot+d+4)%4; keepView(); draw(); }, setIso=on=>{ V.iso=on?1:0; keepView(); seg(); draw(); };
+const setLevel=l=>{ if(l===LV)return; LV=l; if(sel&&!onLevel(sel))sel=null; $('#lay').innerHTML=''; keepView(); seg(); bar(); side(); draw(); };
+$('#lvUp').onclick=()=>setLevel('up'); $('#lvDown').onclick=()=>setLevel('down'); $('#vTop').onclick=()=>setIso(0); $('#vIso').onclick=()=>setIso(1); $('#rotL').onclick=()=>turnView(1); $('#rotR').onclick=()=>turnView(-1);
+function pal(){ document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t===tool)); const P=$('#pal');
+  if(LV==='down'&&tool==='stations'){ P.innerHTML='<h4>STATIONS</h4><p>Drag the platform or its stairs along Market St: the stairs on the street, the platform under them and the trains\' stop move together. The Loop\'s tracks stay; the caverns and the dungeon are places of their own, reached by their ways in.</p>'; return; }
+  if(LV==='down'){ P.innerHTML='<h4>UNDER THE STREET</h4><p>The Loop\'s tracks (orange outer, blue inner), the platform, the stairs up and down. STATIONS moves the station. Page Up: back to the street.</p>'; return; }
+  if(tool==='clear'){ P.innerHTML='<h4>CLEAR</h4><p>Click a thing to take it away, or Shift+drag a box over many. Placed models and cars can go; buildings from the game\'s code, park places and merchants\' stalls stay. Undo brings anything back.</p>'; return; }
+  if(PLACE.has(tool)){ const G=CAT[tool], gi=Math.min(pg[tool],G.length-1), ks=G[gi][1]; if(!pk[tool]||!ks.includes(pk[tool]))pk[tool]=ks[0];
+    P.innerHTML='<h4>'+{build:'BUILD',nature:'NATURE',props:'PROPS'}[tool]+'</h4><div class="opts">'+G.map(([n],i)=>`<button class="btn${i===gi?' on':''}" data-pg="${i}">${n}</button>`).join('')+'</div><div class="opts list">'+ks.map(k=>`<button class="btn${k===pk[tool]?' on':''}" data-pk="${k}">${nm(k)}</button>`).join('')+'</div><p>Click the map to put it down (¼ tile; Shift: whole tiles). R turns it first (now '+gdeg+'°). Esc: back to PICK. Its size and turn are in the panel once it is down.</p>';
+    P.querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>{ pg[tool]=+b.dataset.pg; pk[tool]=null; pal(); }); P.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{ pk[tool]=b.dataset.pk; pal(); }); return; }
+  if(tool==='water'){ const n=(EFF.ponds||[]).length; P.innerHTML='<h4>WATER</h4><div class="opts"><button class="btn'+(wmode==='lake'?' on':'')+'" data-wm="lake">LAKE &amp; BROOK</button><button class="btn'+(wmode==='pond'?' on':'')+'" data-wm="pond">PONDS ('+n+')</button></div>'
+    +(wmode==='lake'?'<p>Drag the lake to move it (its size is in the panel). Drag the brook\'s points to change its course; it always runs into the lake.</p><div class="opts"><button class="btn" id="brBack">BROOK AS BUILT</button></div>'
+      :'<p>Click the ground to dig a pond you can swim and dive in; drag one to move it; its size is in the panel (1.5 to 30 tiles); CLEAR or Delete fills it in. 20 at most.</p>');
+    P.querySelectorAll('[data-wm]').forEach(b=>b.onclick=()=>{ wmode=b.dataset.wm; pal(); draw(); }); const bb=P.querySelector('#brBack'); if(bb)bb.onclick=()=>{ push(); delete S.set.parkPlaces.brook; changed(); }; return; }
+  if(tool==='power'){ const n=lampsOf().length; P.innerHTML='<h4>POWER · LAMP POSTS</h4><p>Click to put a lamp post down; drag one to move it; CLEAR or Delete takes it away. They light up at dusk. '+n+' lamps, each a light'+(n>120?' <span class="warn">(many: each costs drawing)</span>':'')+'.</p><div class="opts"><button class="btn" id="lmBack">THE GAME\'S OWN LAMPS</button></div>';
+    P.querySelector('#lmBack').onclick=()=>{ push(); delete S.set.lamps; changed(); pal(); }; return; }
+  if(tool==='section'){ const W=WORLD.sections.streets, N=S.set.names||{}, NS=N.streets||{}, st=((WORLD.loop.stations||[]).find(q=>q.id===WORLD.section.id)||{}).name||'';
+    P.innerHTML='<h4>SECTION '+WORLD.section.id+' · NAMES</h4>'+['south','west','north','east'].map(k=>`<div class="row"><label>${k} street</label><input data-nm="${k}" value="${NS[k]||W[k]}"></div>`).join('')+`<div class="row"><label>its station</label><input data-nm="station" value="${N.station||st}"></div><p>Names show on the game’s street signs, station signs, maps and places. Capitals, numbers and . ’ & - only, 24 at most. The section’s place in the grid and its neighbours stay.</p>`;
+    P.querySelectorAll('[data-nm]').forEach(el=>el.onchange=()=>{ const k=el.dataset.nm, v=el.value.trim().toUpperCase(); if(!MAPPATCH.NAMEOK.test(v)){ msg('NOT A NAME: '+v); pal(); return; } push(); const nm2=S.set.names=S.set.names||{};
+      if(k==='station'){ if(v===st)delete nm2.station; else nm2.station=v; } else { nm2.streets=nm2.streets||{}; if(v===W[k])delete nm2.streets[k]; else nm2.streets[k]=v; if(!Object.keys(nm2.streets).length)delete nm2.streets; } changed(); pal(); }); return; }
+  if(tool==='pick'){ P.innerHTML='<h4>PICK AND MOVE</h4><p>Click a thing to pick it, drag it to move it (¼ tile; Shift: whole tiles). R / Shift+R turns it. Arrow keys nudge. Drag on nothing to look around; the wheel zooms. Q / E turn the view, V: top or iso, Page Up / Down: street or underground.</p>'; return; }
+  const kinds=tool==='roads'?['road','alley','sidewalk','erase']:['grass','grass2','grass3','grass4','sidewalk','cobble','slab','dirt','gravel','sand','erase'];
+  P.innerHTML='<h4>'+(tool==='roads'?'ROADS':'GROUND')+'</h4><div class="opts">'+kinds.map(k=>`<button class="btn${k===gt?' on':''}" data-g="${k}"><i class="sw" style="background:${GCOL[k]||'transparent'}"></i>${GNAME[k]}</button>`).join('')+'</div>'
+   +'<div class="opts" style="margin-top:6px">'+[1,2,3,5,8].map(b=>`<button class="btn${b===brush?' on':''}" data-b="${b}">${b}×${b}</button>`).join('')+'</div>'
+   +'<p>Drag to paint tiles. Shift+drag paints a box. ERASE takes your paint off (what the game already has stays). Right-drag looks around.'+(tool==='roads'?' A painted road is the road\'s look; cars keep their lanes for now.':'')+'</p>';
+  P.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ gt=b.dataset.g; pal(); }); P.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{ brush=+b.dataset.b; pal(); }); }
+const paintAt=(x,y,n,t)=>{ const h=Math.floor(n/2); let k=0; for(let j=0;j<n;j++)for(let i=0;i<n;i++){ const cx=Math.floor(x)-h+i, cy=Math.floor(y)-h+j; if(cx<F.x0||cx>=F.x1||cy<F.y0||cy>=F.y1)continue; const key=cx+','+cy; if(t==='erase'){ if(key in S.cells){ delete S.cells[key]; k++; } } else if(S.cells[key]!==t){ S.cells[key]=t; k++; } } return k; };
+const paintRect=(a,t)=>{ for(let y=Math.min(a.y0,a.y1);y<=Math.max(a.y0,a.y1);y++)for(let x=Math.min(a.x0,a.x1);x<=Math.max(a.x0,a.x1);x++)paintAt(x+.5,y+.5,1,t); };
+
+// the picked thing's panel
+const num=(v,d=2)=>v==null?'':(+v).toFixed(d);
+function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel.id); sel=s||null; }
+  const D=$('#sel'); if(!sel){ $('#selT').textContent='PICKED'; D.className='note'; D.innerHTML='Click a building, a park place, a path, a car or a stall to pick it.'; }
+  else { const o=sel, fixed=!MOVES.has(o.k), inD=!fixed&&S.set[SETK[o.k]]&&S.set[SETK[o.k]][o.id]!=null; $('#selT').textContent='PICKED · '+o.n; D.className='';
+    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels',garden:'placed model',added:'placed model, new in this draft',lamp:'lamp post (a light)',pond:'pond you can swim in',station:'the station: its stairs, platform and stop move together'}[o.k]}</div></div>`;
+    if(o.k==='place')h+=`<div class="row"><label>x0 · x1</label><div class="pair"><input data-f="x0" value="${num(o.x-o.w/2)}"><input data-f="x1" value="${num(o.x+o.w/2)}"></div></div>`+(o.row?`<div class="note">On the block's row: it moves along the street only.</div>`:`<div class="row"><label>y0 · y1</label><div class="pair"><input data-f="y0" value="${num(o.y-o.d/2)}"><input data-f="y1" value="${num(o.y+o.d/2)}"></div></div><div class="row"><label>door faces</label><select data-f="face">${['n','e','s','w'].map(f=>`<option value="${f}"${f===o.face?' selected':''}>${{n:'n · down the map',e:'e · right',s:'s · up, to the river',w:'w · left'}[f]}</option>`).join('')}</select></div>`);
+    else if(!fixed)h+=`<div class="row"><label>x · y</label><div class="pair"><input data-f="x" value="${num(o.x)}"><input data-f="y" value="${num(o.y)}"></div></div>`;
+    if((o.k==='park'&&o.sh==='circle'&&EFF.parkPlaces[o.id].r!=null)||o.k==='home'||o.k==='pond')h+=`<div class="row"><label>size (r)</label><input data-f="r" value="${num(o.r)}"></div>`;
+    if(o.k==='path')h+=`<div class="row"><label>length · turn</label><div class="pair"><input data-f="w" value="${num(o.w)}"><input data-f="rot" value="${num(o.rot,1)}"></div></div>`;
+    if(o.k==='car')h+=`<div class="row"><label>heading °</label><input data-f="hd" value="${num(o.hd,0)}"></div>`;
+    if(o.k==='garden'||o.k==='added')h+=`<div class="row"><label>turn ° · size</label><div class="pair"><input data-f="turn" value="${num(o.rot,0)}"><input data-f="s" value="${num(o.s,2)}"></div></div>`;
+    const isNew=o.k==='added'||(o.k==='car'&&S.set.newcars.some(c=>c.id===o.id));
+    if(fixed)h+=`<div class="note">${o.k==='fixed'?'Trees, the gate, the campfire and the fountain come from the game\'s own code: they get their own tools in a later step.':o.k==='station'||o.station?'STATIONS drags it along the street; the stairs on the street move with it.':o.k==='stair'?'These stairs move with the castle.':'Look only.'}</div>`;
+    else h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="sLook">LOOK IN 3D</button>${inD&&!isNew?'<button class="btn" id="sBack">BACK AS BUILT</button>':''}${CLEARS.has(o.k)?'<button class="btn" id="sClr">CLEAR</button>':''}</div>`+(isNew?'<div class="note good" style="margin-top:6px">new in this draft</div>':inD?'<div class="note good" style="margin-top:6px">changed in this draft</div>':'');
+    D.innerHTML=h;
+    D.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{ const f=el.dataset.f, v=f==='face'?el.value:+el.value; if(f!=='face'&&!isFinite(v))return side(); push(); const o2=sel;
+      if(o.k==='place'){ let x0=o2.x-o2.w/2, x1=o2.x+o2.w/2, y0=o2.y-o2.d/2, y1=o2.y+o2.d/2; ({x0:()=>x0=v,x1:()=>x1=v,y0:()=>y0=v,y1:()=>y1=v,face:()=>0})[f](); if(x1-x0<1||y1-y0<1)return side(); write(o2,(x0+x1)/2,(y0+y1)/2,{w:x1-x0,d:y1-y0,face:f==='face'?v:o2.face}); }
+      else if(f==='x')write(o2,v,o2.y); else if(f==='y')write(o2,o2.x,v); else if(f==='r'){ if(v<=0||(o2.k==='pond'&&(v<1.5||v>30)))return side(); write(o2,o2.x,o2.y,{r:v}); } else if(f==='w'){ if(v<1)return side(); write(o2,o2.x,o2.y,{w:v}); } else if(f==='rot')write(o2,o2.x,o2.y,{rot:v}); else if(f==='hd')write(o2,o2.x,o2.y,{hd:v}); else if(f==='turn')write(o2,o2.x,o2.y,{wr:-v*Math.PI/180}); else if(f==='s'){ if(!(v>0&&v<50))return side(); write(o2,o2.x,o2.y,{s:v}); }
+      changed(); });
+    const L=D.querySelector('#sLook'); if(L)L.onclick=()=>look(sel.x,sel.y); const B=D.querySelector('#sBack'); if(B)B.onclick=()=>{ push(); delete S.set[SETK[sel.k]][sel.id]; changed(); }; const Cl=D.querySelector('#sClr'); if(Cl)Cl.onclick=()=>{ push(); remove(sel); sel=null; changed(); }; }
+  const lay=$('#lay'); if(!lay.childElementCount)lay.innerHTML=Object.keys(LAYN).filter(k=>LV==='up'||k==='grid'||k==='names').map(k=>`<label><input type="checkbox" data-l="${k}"${SHOW[k]?' checked':''}>${LAYN[k]}</label>`).join('');
+  const P=patch(), n=Object.entries(P.set).reduce((a,[k,v])=>a+(k==='ground'?0:Array.isArray(v)?v.length:Object.keys(v).length),0), cells=Object.keys(S.cells).length;
+  const dirty=LIVEC?canon(S)!==LIVEC:(n||cells);
+  $('#draft').innerHTML=`${n} change${n===1?'':'s'} · ${cells} tile${cells===1?'':'s'} painted (${(P.set.ground||[]).length} patches)<br>`+(dirty?'<span class="warn">NOT LIVE YET: players see the last published map.</span>':'<span class="good">THIS IS WHAT IS LIVE.</span>')
+    +`<br>Players get a published map the next time they come in.${LIVE&&LIVE.at?'<br>live since '+LIVE.at.slice(0,16).replace('T',' '):''}<br>Picture of the ground from ${TOP.at}: what you move shows as outlines over it.`;
+  const kinds=new Set(Object.values(S.cells)).size; $('#cost').textContent=cells?`cost: ${kinds} ground mesh${kinds===1?'':'es'} (one a kind), ${(P.set.ground||[]).length} patches`:'';
+  $('#undo').disabled=!UNDO.length; $('#redo').disabled=!REDO.length; }
+$('#lay').onchange=e=>{ const k=e.target.dataset.l; if(!k)return; SHOW[k]=e.target.checked?1:0; try{ localStorage.setItem('mapeditor-show',JSON.stringify(SHOW)); }catch(_){} draw(); };
+
+// the mouse and the keys
+const at=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR]; };
+const pickAt=(x,y)=>{ let best=null; for(const o of ITEMS)if(onLevel(o)&&(SHOW[o.ly]||o.ly==='under'||o.ly==='stair')&&hit(o,x,y)&&(!best||area(o)<area(best)))best=o; return best; };
+const snapv=(v,e)=>e.shiftKey?Math.round(v):Math.round(v*4)/4;
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); const [px,py]=at(e), [x,y]=U(px,py);
+  if(e.button!==0||e.altKey){ drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(LV==='up'&&tool==='clear'){ if(e.shiftKey){ paintBox={x0:Math.floor(x),y0:Math.floor(y),x1:Math.floor(x),y1:Math.floor(y)}; drag={clearbox:1}; draw(); return; }
+    const o=pickAt(x,y); if(o&&CLEARS.has(o.k)){ push(); remove(o); if(sel&&sel.k===o.k&&sel.id===o.id)sel=null; changed(); msg('CLEARED '+o.n); return; } if(o){ msg("CAN'T CLEAR "+o.n+': '+(WHYNOT[o.k]||'')); return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(LV==='up'&&tool==='water'&&wmode==='pond'){ const o=pickAt(x,y); if(o&&o.k==='pond'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; }
+    if((EFF.ponds||[]).length>=20){ msg('20 PONDS AT MOST'); return; } push(); ownPonds().push({x:snapv(x,e),y:snapv(y,e),r:6}); changed(); pal(); msg('A POND DUG'); return; }
+  if(LV==='up'&&tool==='water'){ const B=brookOf(); for(let i=0;i<B.length;i++){ const q=P(B[i][0],B[i][1]); if(Math.hypot(q[0]-px,q[1]-py)<12*DPR){ drag={bp:i,snap:snap(),moved:0}; return; } }
+    const o=pickAt(x,y); if(o&&o.k==='park'&&o.id==='lake'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(LV==='up'&&tool==='power'){ const o=pickAt(x,y); if(o&&o.k==='lamp'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; }
+    push(); ownLamps().push({x:snapv(x,e),y:snapv(y,e)}); changed(); pal(); msg('A LAMP POST PUT DOWN'); return; }
+  if(LV==='up'&&tool==='section'){ drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(LV==='up'&&PLACE.has(tool)){ const k=pk[tool]; if(!k)return; push(); placeAt(k,snapv(x,e),snapv(y,e)); changed(); msg('PUT DOWN '+nm(k)); return; }
+  if(LV==='down'&&tool==='stations'){ const o=pickAt(x,y); if(o&&(o.k==='station'||o.station)){ sel=o; side(); draw(); const b=stairsBase(), e=EFF.places.find(p=>p.id===b.id); drag={stn:1,x0:x,a:e.x0,b:e.x1,moved:0,snap:snap()}; return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(tool==='pick'||LV==='down'){ const o=pickAt(x,y); if(o&&MOVES.has(o.k)){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } if(o){ sel=o; side(); draw(); } else if(sel){ sel=null; side(); draw(); } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  push(); if(e.shiftKey){ paintBox={x0:Math.floor(x),y0:Math.floor(y),x1:Math.floor(x),y1:Math.floor(y)}; drag={box:1}; draw(); return; }
+  paintAt(x,y,brush,gt); drag={paint:1,lx:x,ly:y}; changed(); });
+cv.addEventListener('pointermove',e=>{ const [px,py]=at(e), [x,y]=U(px,py); $('#xy').textContent=`tile ${x.toFixed(1)}, ${y.toFixed(1)}`;
+  if(!drag){ if(LV==='up'&&PLACE.has(tool)){ ghost={x:snapv(x,e),y:snapv(y,e)}; cv.style.cursor='crosshair'; draw(); return; } if(tool==='pick'||tool==='clear'||tool==='water'||tool==='power'||tool==='stations'||LV==='down'){ const h=pickAt(x,y); if((h&&h.id)!==(hover&&hover.id)||(h&&h.k)!==(hover&&hover.k)){ hover=h; cv.style.cursor=h&&MOVES.has(h.k)?'move':'grab'; draw(); } } else cv.style.cursor='crosshair'; return; }
+  if(drag.pan){ const a=ang(), c=Math.cos(a), s2=Math.sin(a), du=(px-drag.px)/V.k, dv=(py-drag.py)/(V.k*TILT()); V.x=drag.vx-(c*du+s2*dv); V.y=drag.vy-(-s2*du+c*dv); draw(); return; }
+  if(drag.move){ const o=drag.o, nx=snapv(x+drag.dx,e), ny=o.row?o.y:snapv(y+drag.dy,e); if(nx===o.x&&ny===o.y)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } write(o,nx,ny); recompute(); items(); drag.o=ITEMS.find(q=>q.k===o.k&&q.id===o.id)||o; sel=drag.o; draw(); return; }
+  if(drag.stn){ const d=snapv(x-drag.x0,e), b=stairsBase(); if(!drag.moved&&!d)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } put('place',b.id,{x0:r2(drag.a+d),x1:r2(drag.b+d)}); recompute(); items(); sel=ITEMS.find(q=>q.k==='station')||sel; draw(); return; }
+  if(drag.bp!=null){ const B=brookOf().map(q=>q.slice()), nx=snapv(x,e), ny=snapv(y,e); if(B[drag.bp][0]===nx&&B[drag.bp][1]===ny)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } B[drag.bp]=[nx,ny]; setBrook(B); recompute(); draw(); return; }
+  if(drag.box||drag.clearbox){ paintBox.x1=Math.floor(x); paintBox.y1=Math.floor(y); draw(); return; }
+  if(drag.paint){ const d=Math.hypot(x-drag.lx,y-drag.ly), n=Math.max(1,Math.ceil(d/.5)); for(let i=1;i<=n;i++)paintAt(drag.lx+(x-drag.lx)*i/n,drag.ly+(y-drag.ly)*i/n,brush,gt); drag.lx=x; drag.ly=y; recompute(); keep(); draw(); } });
+const up=()=>{ if(!drag)return; if(drag.box&&paintBox){ paintRect(paintBox,gt); paintBox=null; }
+  if(drag.clearbox&&paintBox){ const a=paintBox, x0=Math.min(a.x0,a.x1), x1=Math.max(a.x0,a.x1)+1, y0=Math.min(a.y0,a.y1), y1=Math.max(a.y0,a.y1)+1, hits=ITEMS.filter(o=>CLEARS.has(o.k)&&onLevel(o)&&SHOW[o.ly]&&o.x>=x0&&o.x<=x1&&o.y>=y0&&o.y<=y1);
+    if(hits.length){ push(); for(const o of hits.filter(o=>o.k!=='added'))remove(o); for(const o of hits.filter(o=>o.k==='added').sort((a,b)=>b.id-a.id))remove(o); sel=null; msg('CLEARED '+hits.length); } paintBox=null; }
+  const d=drag; drag=null; if(d.move||d.paint||d.box||d.clearbox||d.bp!=null||d.stn)changed(); };
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=at(e), [x,y]=U(px,py); V.k=Math.max(.5,Math.min(80,V.k*Math.pow(1.0015,-e.deltaY))); const [x2,y2]=U(px,py); V.x+=x-x2; V.y+=y-y2; draw(); },{passive:false});
+const undo=()=>{ if(!UNDO.length)return; REDO.push(snap()); S=JSON.parse(UNDO.pop()); changed(); }, redo=()=>{ if(!REDO.length)return; UNDO.push(snap()); S=JSON.parse(REDO.pop()); changed(); };
+addEventListener('keydown',e=>{ if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return; const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; } if((e.ctrlKey||e.metaKey)&&k==='y'){ e.preventDefault(); redo(); return; }
+  if(k==='escape'&&tool!=='pick'){ tool='pick'; ghost=null; pal(); draw(); return; } if(k==='escape'){ sel=null; side(); draw(); return; } if(k==='1')$('#tools [data-t=pick]').click(); if(k==='2')$('#tools [data-t=ground]').click(); if(k==='3')$('#tools [data-t=roads]').click();
+  if(k==='q'||k==='e'){ e.preventDefault(); turnView(k==='q'?1:-1); return; } if(k==='v'){ setIso(!V.iso); return; } if(k==='pageup'||k==='pagedown'){ e.preventDefault(); setLevel(k==='pageup'?'up':'down'); return; }
+  if(PLACE.has(tool)&&k==='r'){ e.preventDefault(); gdeg=((gdeg+(e.shiftKey?-1:1)*(tool==='build'?90:15))%360+360)%360; pal(); draw(); return; }
+  if((k==='delete'||k==='backspace')&&sel&&CLEARS.has(sel.k)){ e.preventDefault(); push(); remove(sel); sel=null; changed(); return; }
+  if(!sel||!MOVES.has(sel.k))return; if(k==='r'){ e.preventDefault(); push(); if(turn(sel,e.shiftKey?-15:15))changed(); else UNDO.pop(); return; }
+  const d={arrowleft:[-1,0],arrowright:[1,0],arrowup:[0,-1],arrowdown:[0,1]}[k]; if(d){ e.preventDefault(); push(); const st=e.shiftKey?1:.25, a=ang(), c=Math.cos(a), s2=Math.sin(a); let dx=c*d[0]+s2*d[1], dy=-s2*d[0]+c*d[1]; if(Math.abs(dx)>=Math.abs(dy)){ dx=Math.sign(dx); dy=0; } else { dy=Math.sign(dy); dx=0; } write(sel,sel.x+dx*st,sel.row?sel.y:sel.y+dy*st); changed(); } });
+$('#undo').onclick=undo; $('#redo').onclick=redo; $('#fit').onclick=()=>{ fit(); draw(); };
+
+// going to the game, saving, publishing
+const look=(x,y)=>{ const u='/?at='+r2(wpx(x))+','+r2(wpz(y)); if(WEB)window.open(u,'_blank','noopener'); else msg('LOOK IN 3D opens the game on the website at '+u); };
+$('#look').onclick=()=>look(sel?sel.x:V.x,sel?sel.y:V.y);
+let mt=0; const msg=t=>{ $('#msg').textContent=t; clearTimeout(mt); mt=setTimeout(()=>$('#msg').textContent='',6000); };
+const download=(name,obj)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,1)],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
+$('#exp').onclick=()=>{ download('map-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.json',patch()); msg('EXPORTED'); };
+$('#imp').onclick=()=>$('#impf').click();
+$('#impf').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); if(!j||j.v!==MAPPATCH.v||!j.set)throw 0; push(); S=fromPatch(j); changed(); msg('IMPORTED '+f.name); }catch(err){ msg('NOT A MAP EDITOR FILE'); } };
+$('#revert').onclick=()=>{ if(!confirm('Throw this draft away and start again from what is live?'))return; push(); S=fromPatch(LIVE); changed(); msg('BACK TO WHAT IS LIVE'); };
+$('#pub').onclick=async()=>{ const P=patch(); if(!WEB){ download(MAPFILE.slice(8),P); msg('NOT ON THE WEBSITE: DOWNLOADED '+MAPFILE.slice(8)+' INSTEAD'); return; }
+  if(!confirm('Publish this map for every player? They get it the next time they come in.'))return; $('#pub').disabled=true; msg('PUBLISHING...');
+  try{ const r=await fetch(MAPFILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(P)}), o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); setLive(P); side(); msg('LIVE FOR EVERYONE'); }
+  catch(err){ msg('NOT PUBLISHED: '+(err.message||err)); } $('#pub').disabled=false; };
+
+// start: what is live, then this browser's draft over it
+(async()=>{ $('#sec').textContent='section '+((WORLD.section&&WORLD.section.id)||'A')+' · build __BUILDV__';
+  if(WEB){ try{ const r=await fetch(MAPFILE,{credentials:'same-origin',cache:'no-store'}); if(r.status===200)setLive(await r.json()); }catch(e){} }
+  let d=null; try{ d=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){}
+  S=d&&d.set&&d.cells?d:fromPatch(LIVE); { const E=EMPTY(); for(const k in E)if(!S.set[k]||Array.isArray(S.set[k])!==Array.isArray(E[k]))S.set[k]=E[k]; }
+  recompute(); size(); fit(); seg(); bar(); side(); draw(); addEventListener('resize',()=>{ size(); draw(); });
+  window.EDITOR={state:()=>S,patch,items:()=>ITEMS,write:(k,id,x,y,extra)=>{ const o=ITEMS.find(q=>q.k===k&&q.id===id); if(!o)return false; push(); write(o,x,y,extra); changed(); return true; },
+    paint:(x,y,n,t)=>{ push(); const k=paintAt(x,y,n,t); changed(); return k; },live:()=>LIVE,
+    view:o=>{ if(o.iso!=null)setIso(o.iso); if(o.rot!=null){ V.rot=o.rot; keepView(); } if(o.level)setLevel(o.level); draw(); return {rot:V.rot,iso:V.iso,level:LV}; },
+    project:(x,y,h)=>P(x,y,h||0).map(v=>v/DPR),cat:()=>CAT,
+    place:(k,x,y,deg)=>{ if(deg!=null)gdeg=deg; push(); const id=placeAt(k,x,y); changed(); return id; },
+    clear:(k,id)=>{ const o=ITEMS.find(q=>q.k===k&&q.id===id); if(!o||!CLEARS.has(o.k))return false; push(); remove(o); changed(); return true; },
+    tool:t=>{ tool=t; pal(); },
+    lamp:(x,y)=>{ push(); const L=ownLamps(); L.push({x,y}); changed(); return L.length; },
+    brook:(i,x,y)=>{ push(); const B=brookOf().map(q=>q.slice()); B[i]=[x,y]; setBrook(B); changed(); return B.length; },
+    names:o=>{ push(); S.set.names=o; changed(); return true; },
+    pond:(x,y,r)=>{ push(); const L=ownPonds(); L.push({x,y,r:r||6}); changed(); return L.length; },sel:()=>sel&&{k:sel.k,id:sel.id},ready:true}; })();
+</script></body></html>

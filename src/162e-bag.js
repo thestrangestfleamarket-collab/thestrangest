@@ -1,12 +1,13 @@
 // THE BAG: BAG draws THE PACK Ultima's way — a leather bag whose mouth is a free area of item pictures you drag about, out onto the ground (a loose thing at your feet, picked up by a double click) or onto the paperdoll beside it (worn through EQUIP, held through WIELD); a pixel picture for every item family (the item model's PICTURE).
 import {SHARED, THREE} from './003-shx.js';
 import {BAG, CHARP, EQUIP, FORAGE, HUD, INV, ITEMS, LEVELS, pos, ROOMS, SFX, st, TEXT, UI, VIT, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
 window.BAG=BAG;
-{ const T=TILE, esc=TEXT.esc, say=(t,c)=>FORAGE.say(t,c), name=id=>FORAGE.name(id), prop=(id,k)=>ITEMS.prop(id,k);
+{ const T=TILE, esc=TEXT.esc, say=SAY, name=id=>FORAGE.name(id), prop=(id,k)=>ITEMS.prop(id,k);
   const PAL={k:'#1b1410',w:'#f4efe4',y:'#d8a52a',s:'#5e6270',S:'#a8adb8',t:'#d9c39a',n:'#6b4425',N:'#a4713f',d:'#222a33'};
   // 10x10 pictures: A the thing's own colour, a its shade, B a second colour, the rest the palette
   const ART={

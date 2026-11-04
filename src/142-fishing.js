@@ -1,6 +1,7 @@
 // THE FISHING: FISHING and BOAT let the player fish the river and the lakes with a rod (bait, cast, bite, fight, land) and row the river.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
@@ -71,8 +72,8 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
       ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
       ['f_sturgeon','STURGEON STEAK','cooking',[65,110],{x_sturgeon:1},'fills most of you, quick on your feet 3 min']],
     does:{f_fishfry:()=>FORAGE.feed(.33),f_smokeeel:()=>{ FORAGE.feed(.4); FORAGE.buff('str',120); },f_grillbass:()=>{ FORAGE.feed(.5); FORAGE.buff('regen',60); },
-      f_chowder:()=>{ FORAGE.feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
-  const say=FORAGE.say, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
+      f_chowder:()=>{ FORAGE.feed(.6); VIT.heal(.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
+  const say=SAY, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
   // the tackle you own: the best CAST (m), LINE (strength) and REEL (speed) of what is in your pack; fish in hand up to 5 and what your coolers KEEP
   const BAITIDS=['bait','bait_cut','lure_worm','lure_spoon'], G0={cast:12,line:1,reel:1}, GC={t:-1e9,v:G0};
   FISHING.gear=()=>{ const now=performance.now(); if(now-GC.t>500){ GC.t=now; const v=Object.assign({},G0); for(const id of ITEMS.ids())if(FORAGE.has(id))for(const k in v){ const x=+IP(id,k)||0; if(x>v[k])v[k]=x; } GC.v=v; } return GC.v; };
@@ -148,7 +149,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   BOAT.carry=(st,pos)=>{ pos.x=BOAT.x; pos.z=BOAT.z; st.sit={z:Math.max(2,Y(.3)/(ZU*W3.SZ*(W3.BH||1)))}; if(RIVER.swim)RIVER.swim=false; if(st.water)st.water.in=false; };
   const HUD=document.createElement('div'); HUD.id='boathud'; HUD.hidden=true; { const c=document.createElement('style'); c.textContent='#boathud[hidden],#fishhud[hidden],#minehud[hidden],#fjour:empty{display:none!important}'; document.head.appendChild(c); } HUD.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:7;font:11px Silkscreen,monospace;color:#e8e2cc;background:#0b0d13e0;border:2px solid #3a3f4e;padding:6px 10px;display:flex;gap:10px;align-items:center;zoom:var(--uiz,1)';
   HUD.innerHTML='<span>ROWBOAT · W A S D</span><button style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">STEP ASHORE</button>'; document.body.appendChild(HUD);
-  HUD.querySelector('button').onclick=()=>BOAT.ashore(); setInterval(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400);
+  HUD.querySelector('button').onclick=()=>BOAT.ashore(); SYS.every(()=>{ if(BOAT.on)HUD.querySelector('button').style.opacity=atShore()?1:.45; },400,'142-fishing ashore');
 
   /* ---------- the catch: who bites where, when and on what (the odds), and how hard they fight ---------- */
   const S=FORAGE.S; S.fishkg=S.fishkg||{};
@@ -196,7 +197,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   FISHING.cast=(x,z)=>{ if(!FORAGE.has('rod'))return say('YOU NEED A ROD. BAIT & BOATS BY THE PIER SELLS THEM.','#c8a090'); const w=FISHING.at(x,z); if(!w)return say('THAT IS NOT WATER YOU CAN FISH.','#c8a090');
     if(!S.hook){ const b=BAITIDS.find(id=>FORAGE.has(id)); if(!b)return say('YOU NEED BAIT. BAIT & BOATS BY THE PIER SELLS IT.','#c8a090'); hookOn(b); }
     if(!BOAT.on&&WIELD.on!=='rod')WIELD.set('rod'); if(!BOAT.on)SHARED.heading=Math.atan2(x-pos.x,z-pos.z);
-    S_={st:'wind',t:0,x,z,w,ax:pos.x,az:pos.z,tx:x,tz:z,nib:0,near:-1}; SFX.play('step',{vol:.25,pitch:1.8}); hud(); };
+    S_={st:'wind',t:0,x,z,w,ax:pos.x,az:pos.z,tx:x,tz:z,nib:0,near:-1}; if(!st.sit)MOTION.play('cast'); SFX.play('step',{vol:.25,pitch:1.8}); hud(); };
   FISHING.click=()=>{ const s=S_;
     if(!s){ const r=WIELD.ray; if(!r)return; const ok=v=>v&&FISHING.at(v.x,v.z); let hit=null; for(const lv of [RB.lv,FOUNT.LV,-.25*T].filter(v=>v!=null)){ const h=new THREE.Vector3(); if(r.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-lv),h)&&ok(h)){ hit=h; break; } }
       if(!hit)return say('CLICK ON OPEN WATER TO CAST.','#c8a090'); let dx=hit.x-pos.x, dz=hit.z-pos.z, d=Math.hypot(dx,dz); const mx=FISHING.gear().cast*WU*1.1; if(d>mx){ hit.x=pos.x+dx/d*mx; hit.z=pos.z+dz/d*mx; } if(d<1.5*T)return say('CAST FURTHER OUT.','#c8a090'); return FISHING.cast(hit.x,hit.z); }
@@ -204,7 +205,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
     if(s.st==='wait'||s.st==='fly'){ FISHING.reel(); say('YOU REEL IN YOUR LINE.'); } };
   const strike=()=>{ const s=S_, id=s.f.id, fi=IP(id,'fight')||1, quick=s.t<.45?10:0; const ok=FISHING.force===id||FORAGE.use('fish',fi*5-40,fi*5+50,quick);
     if(!ok){ S.hook=Math.random()<.5||IP(S.hook,'reuse')?S.hook:null; shout(S.hook?'YOU STRIKE, BUT THE HOOK DOES NOT SET.':'YOU STRIKE TOO LATE. THE BAIT IS GONE.','#e0a888'); s.st='wait'; s.t=SOAK+1; s.bare=!S.hook; FISHES.free(s.fish); s.fish=null; return; }
-    s.st='fight'; s.t=0; s.D=Math.hypot(s.x-pos.x,s.z-pos.z); s.ten=.4; s.over=0; s.slack=0; s.surge=0; s.run=0; s.runT=1; s.lat=0; SFX.play('step',{vol:.4,pitch:1.2}); shout('FISH ON!','#b8f0a0'); RIVER.drop&&RIVER.drop(s.x,s.z,.4*T,.05*WU); };
+    s.st='fight'; if(!st.sit)MOTION.play('pull',{loop:true,while:()=>S_===s&&s.st==='fight'}); s.t=0; s.D=Math.hypot(s.x-pos.x,s.z-pos.z); s.ten=.4; s.over=0; s.slack=0; s.surge=0; s.run=0; s.runT=1; s.lat=0; SFX.play('step',{vol:.4,pitch:1.2}); shout('FISH ON!','#b8f0a0'); RIVER.drop&&RIVER.drop(s.x,s.z,.4*T,.05*WU); };
   const unhook=()=>{ const s=S_, f=s.f, r=S.fishkg[f.id]||[0,0]; S.fishkg[f.id]=[+f.kg.toFixed(2),Math.max(r[1],+f.kg.toFixed(2))]; if(!IP(S.hook,'reuse'))S.hook=null;
     if(NAMES[f.id]&&FISHING.held()>=FISHING.room()){ FORAGE.save(); shout(`NO ROOM: YOU CAN CARRY ${FISHING.room()} FISH. A COOLER FROM BAIT & BOATS HOLDS MORE. YOU LET THE ${NAMES[f.id]} GO.`,'#e0a888'); SFX.play('drip',{vol:.5,pitch:.7}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2),freed:true}; FISHING.reel(); FORAGE.draw(); return; }
     FORAGE.give(f.id); if(s.fish){ FISHES.gone(s.fish); s.landed=true; } FORAGE.save();

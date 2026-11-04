@@ -1,12 +1,13 @@
 // THE BLUE HOUR: a pale skull-faced being in a deep cobalt hood, leaning by the theatre on Market St, a cigar in his teeth; he sells cigars — hold one and click to puff (smoke from your mouth; six puffs a cigar). Others see your smoke.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, NPCS, ONLINE, pos, W3, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const SMOKE={}; window.SMOKE=SMOKE;
-{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const CIG={cigar:{name:'A CIGAR',puffs:6},cigar_blue:{name:'A BLUE HOUR CIGAR',puffs:10,col:0x9ab8e8}};
   FORAGE.add({names:Object.fromEntries(Object.entries(CIG).map(([k,v])=>[k,v.name]))});
 

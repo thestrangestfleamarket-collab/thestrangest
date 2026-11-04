@@ -1,14 +1,15 @@
-// THE CHARACTER PAGE: the menu's home (ESC) — your live avatar and the menu buttons; ADMIN (owners) holds the bug queue, the stats box, the render inspector, SUMMON and the game log.
+// THE CHARACTER PAGE: YOU on the handheld — your live avatar, SKILLS, PASSPORT, LOG OUT; and the one ADMIN window (owners): the bug queue, TENANTS, EDITORS, CITY, STATS, the render inspector, SUMMON and the game log.
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, CINEMA, FORAGE, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, W3} from './003b-systems.js';
+import {BUGS, CHARP, CIVIC, EDITORS, FORAGE, HANDHELD, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
+import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
 { const esc=TEXT.esc;
   const CLOG=()=>{ '@log'; return __CHANGELOG__; };   // [date, summary] of every HISTORY update, newest first; baked by build.py into its own chunk
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
-  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,spin=0,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=0, V=new THREE.Vector3();
+  let rt,cam,on=0,last=0,el=null,cv=null,g2=null,spin=0; const W=256,H=384,FACE=0, V=new THREE.Vector3();
   const shot=(c=cv,ctx=g2)=>{ const g=W3&&W3.group; if(!g||!c||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE+spin; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
@@ -20,18 +21,16 @@ import {DESIGN} from './102b-designer.js';
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
     const im=ctx.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); ctx.putImageData(im,0,0); };
   CHARP.portrait=c=>{ if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } shot(c,c.getContext('2d')); };   // the same live picture of you on any canvas (the bag's doll)
-  const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); };
+  const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');
 
-  const btns=()=>{ const B=[['INVENTORY','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['SETTINGS','',()=>UI.menuTab('display')],['GUIDE','SHIFT+G',()=>UI.menuTab('guide')],['REPORT A BUG','F8',()=>UI.menuTab('bug')],['LOG OUT','',logout],['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }]];
-    if(isAdmin)B.push(['ADMIN','',adminOpen,1]);
+  const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['LOG OUT','',logout]];
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
-  CHARP.admin=()=>adminOpen();   // the handheld's ADMIN page opens it too
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
   let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
       ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
-        <button class="cp-btn cp-adm" id="cpaq" style="width:100%;margin-bottom:8px">BUG / REPORT QUEUE</button>
-        <div style="display:flex;gap:8px;margin-bottom:14px"><button class="cp-btn" id="cpstat" style="flex:1">STATS</button><button class="cp-btn" id="cprin" style="flex:1">RENDER INSPECTOR</button></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"><button class="cp-btn cp-adm" data-pane="bug">BUG QUEUE</button><button class="cp-btn cp-adm" data-pane="tenants">TENANTS</button>
+          <button class="cp-btn" id="cped">EDITORS<span style="color:#9b9584">SHIFT+0</span></button><button class="cp-btn" data-pane="city" id="cpcity">CITY</button><button class="cp-btn" id="cpstat">STATS</button><button class="cp-btn" id="cprin">RENDER INSPECTOR</button></div>
         <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">SUMMON</div>
         <div style="color:#9b9584;margin-bottom:6px">bring anyone to stand in front of you; everyone here sees them until SEND BACK</div>
         <input id="cpsq" placeholder="find a character" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px;font:11px Silkscreen,monospace;color:#d8dae2;background:#0e1016;border:2px solid #3a3f4e;padding:6px 8px">
@@ -39,8 +38,9 @@ import {DESIGN} from './102b-designer.js';
         <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
         <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${L.length}</div>
         <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
-      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); };
-      const tools=()=>{ const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
+      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelectorAll('[data-pane]').forEach(b=>b.onclick=()=>{ ap.hidden=true; UI.menuTab(b.dataset.pane); if(b.dataset.pane==='city'&&CIVIC.draw)CIVIC.draw(); });
+      ap.querySelector('#cped').onclick=()=>{ ap.hidden=true; EDITORS.menu(); };
+      const tools=()=>{ ap.querySelector('#cpcity').style.display=document.querySelector('#menu [data-p="city"]')?'':'none'; const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
       ap.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(); };
       const sl=ap.querySelector('#cpsl'), sq=ap.querySelector('#cpsq');
       const sum=()=>{ const f=sq.value.trim().toLowerCase(), here=new Set(SUMMON.here()), A=SUMMON.list(), R=A.map(N=>{ const id=SUMMON.id(N,A), n=id.split('#')[1]; return {N,id,nm:(N.name||N.key)+(n?' '+n:'')}; }), L=R.filter(r=>!f||r.nm.toLowerCase().includes(f)||r.id.toLowerCase().includes(f)).sort((a,b)=>(here.has(b.id)-here.has(a.id))||a.nm.localeCompare(b.nm,undefined,{numeric:true})).slice(0,150);
@@ -49,6 +49,7 @@ import {DESIGN} from './102b-designer.js';
         if(b.dataset.sb)SUMMON.back(k); else if(N)SUMMON.go(N); sum(); }); ap._sum=sum;
       ap.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); tools(); if(RINSP.on)ap.hidden=true; }; ap._tools=tools; }
     ap._tools(); ap._sum(); ap.hidden=false; };
+  addEventListener('keydown',e=>{ if(e.key!=='Escape'||!ap||ap.hidden||UI.menuOpen||HANDHELD.up())return; ap.hidden=true; HANDHELD.back(); e.preventDefault(); e.stopImmediatePropagation(); },true);   // ESC: back to the handheld, like its other pages
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;
     el.innerHTML=`<div class="cp-wrap"><div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span><button class="cp-edit" id="cpedit" title="change your body, hair and shape">EDIT</button></div>
@@ -58,9 +59,8 @@ import {DESIGN} from './102b-designer.js';
     el.querySelector('#cpedit').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); LOOKS.open(); };
     el.addEventListener('click',e=>{ const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); }); };
 
-  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); if(!raf)raf=requestAnimationFrame(loop);
-      if(!isAdmin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a){ isAdmin=true; if(el&&UI.menuOpen)btns(); } }); },
-    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
+  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); on=1; },
+    hide:()=>{ on=0; }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}

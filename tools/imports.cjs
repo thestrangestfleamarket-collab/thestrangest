@@ -7,6 +7,8 @@ const LOCAL = /^(?:import \{[^}\n]*\} from '\.\/[^'\n]+';|export \{[^}\n]*\};)[ 
 const blank = t => t.replace(LOCAL, m => ' '.repeat(m.length));
 module.exports = { blank, LOCAL };
 if (require.main !== module) return;
+// --join FILE...: the files joined as the build puts them in the page, their import and export lines blanked
+if (process.argv[2] === '--join') { process.stdout.write(process.argv.slice(3).map(f => blank(fs.readFileSync(f, 'utf8'))).join('')); return; }
 
 const check = process.argv.includes('--check');
 const files = fs.readdirSync(SRC).filter(f => /^\d{3}[a-z]*-.+\.(js|html)$/.test(f)).sort();

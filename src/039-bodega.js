@@ -1,9 +1,10 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, U16} from './003a-skin.js';
-import {CLOCK, DRESS, FORAGE, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
+import {CLOCK, DRESS, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, ORIGIN, OVERHEAD, PARKGX, RING, SOL, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
+import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, ORIGIN, OVERHEAD, PARKGX, RING, SECTIONS, SOL, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
 import {BATCH, OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
@@ -1349,7 +1350,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { const C=(x,y)=>CORN.find(c=>c.x===x&&c.y===y), M=MAP;
     SHARED.BOD.roadPolys=[[[M.x0,CURB],[M.x1,CURB],[M.x1,FAR],...arc(C(RG.wr1,FAR)),[RG.wr1,WEND],[RG.wr0,WEND],...arc(C(RG.wr0,FAR),1),[M.x0,FAR]]]; }
   const PATCH=CORN.map(c=>({id:'corner',x0:Math.min(c.x,c.cx),y0:Math.min(c.y,c.cy),x1:Math.max(c.x,c.cx),y1:Math.max(c.y,c.cy),z:c.cv?RD:0,col:c.cv?RW:SW(slabCol),tex:null,rep:2}));
-  const SG=[], NM={main:'MARKET ST',west:'WEST ST'}, CN=[['main','west'],['main','west']];
+  const SG=[], NM={main:SECTIONS.streets.south,west:SECTIONS.streets.west}, CN=[['main','west'],['main','west']];
   const TLC=[0], TK=(KR-.45)/Math.SQRT2;
   CORN.forEach((c,i)=>{ const k=c.cv?KR-1.2:KR+1.2, t=TLC.includes(i); SG.push({kind:'name',x:t?c.cx-c.sx*TK:c.cx-c.sx*k/Math.SQRT2,y:t?c.cy-c.sy*TK:c.cy-c.sy*k/Math.SQRT2,ax:NM[CN[i][0]],ay:NM[CN[i][1]],np:t}); });
   SG.push({kind:'name',x:RG.wr1+1,y:CURB-.75,ax:NM.main,ay:NM.west});
@@ -1713,9 +1714,9 @@ SHARED.BODB={};
     const g=SHARED.BOD.grounds.find(q=>q.id==='shop'), O=Object.values(SHARED.BOD.O);
     const P=ROOMS.part(SG,()=>{ for(const w of SHARED.BOD.WALLS){ wallF(w,true); wallR(w); }
       if(g)flat(g.x0,BODOFF,g.x1,g.y1,g.z,g.col,'G',!g.bld);
-      SHARED.BODB.glow=[]; SHARED.BOD.paintProps(O.filter(p=>!backOf(p))); goods(); lampsOf(true,false); moodLights();
+      SHARED.BODB.glow=[]; SHARED.BOD.paintProps(O.filter(p=>!backOf(p))); goods(); lampsOf(true,false); moodLights(); if(STORE.furnish&&STORE.furnish.bodega)STORE.furnish.bodega();
       const L=SHARED.BOD.WALLS.find(w=>w.id==='office'), dh=L.holes.find(h=>h.locked), hb=new THREE.Mesh(new THREE.BoxGeometry((dh.a1-dh.a0)*TILE,Y(dh.z1),.3*TILE),new THREE.MeshBasicMaterial({visible:false}));
-      hb.position.set(X((dh.a0+dh.a1)/2),Y(dh.z1)/2,Z(BODOFF)); scene.add(hb); UI.thing({name:'A LOCKED DOOR',obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(dh.z1),act:()=>{ SFX.play('latch',{vol:.5}); if(window.FORAGE)FORAGE.say('IT IS LOCKED. ONLY THE FOX HAS THE KEY.','#c8a090'); }}); },MK);
+      hb.position.set(X((dh.a0+dh.a1)/2),Y(dh.z1)/2,Z(BODOFF)); scene.add(hb); UI.thing({name:'A LOCKED DOOR',obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(dh.z1),act:()=>{ SFX.play('latch',{vol:.5}); if(window.FORAGE)SAY('IT IS LOCKED. ONLY THE FOX HAS THE KEY.','#c8a090'); }}); },MK);
     const P2=ROOMS.part(BG,()=>{ if(g)flat(g.x0,g.y0,g.x1,BODOFF,g.z,g.col,'G',!g.bld); SHARED.BOD.paintProps(O.filter(backOf)); lampsOf(true,true); },MK);
     const cap=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(SB.x1)-X(SB.x0)),Math.abs(Z(BODOFF)-Z(SB.y0))),new THREE.MeshBasicMaterial({color:0x0b0c10})); cap.rotation.x=-Math.PI/2;
     cap.position.set((X(SB.x0)+X(SB.x1))/2,Y(SB.h-4)+.01,(Z(SB.y0)+Z(BODOFF))/2); SG.add(cap); SHARED.BODB.cap=cap;

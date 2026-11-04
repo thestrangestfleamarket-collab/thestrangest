@@ -1,11 +1,12 @@
 // THE CARS: the racing-cars kit's six cars (data/cars.json, CC0) parked on Market St (their spots in data/world.json's cars); double-click one to get in and drive it (a RIDE kind boarded where it stands, on VEH: W goes, S brakes and backs, A and D steer); GET OUT (or F) parks it where it stands. The section's server keeps where each car is parked and who drives it, so everyone sees the same cars, one driver a car.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, PB, pos, RIDE, ROOMS, st, UI} from './003b-systems.js';
+import {ONLINE, PB, pos, RADIO, RIDE, ROOMS, st, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {VEH} from './150o-physmore.js';
 const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={jazz:__FILE__("data/radio/jazz.mp3"),dance:__FILE__("data/radio/dance.mp3"),rag:__FILE__("data/radio/rag.mp3"),opera:__FILE__("data/radio/opera.mp3")};
-{ const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
+{ const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
   const CARS=new Map(), KINDS={}; let DATA=null, mine=null, want=null;
   const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=CAR;
   for(const c of LEVEL.cars||[])CARS.set(c.id,{id:c.id,model:c.model,x:X(c.x),z:Z(c.y),hd:(c.hd||0)*Math.PI/180,by:null,mesh:null,sol:null});
@@ -122,13 +123,18 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
     lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(x.destination); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
   const NOW=()=>performance.now()/1000;
   const P3=new THREE.Vector3(); let rT=0, fT=0;
-  SYS.add('life',dt=>{ if(!DATA||(rT-=dt||0)>0)return; rT=.1; const on=[...CARS.values()].filter(C=>stOf(C)&&(C===mine||C.by));
-    if(on.length&&!RAD.data&&!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; for(const C of CARS.values())showRadio(C); }).catch(()=>{}); }
+  // a room's source (a jukebox): heard whole by whoever is in its room
+  const inRoom=s=>!!s.room&&((ROOMS.offIn&&ROOMS.offIn()===s.room)||!!(ROOMS.cur&&ROOMS.cur.id===s.room));
+  RADIO.now=id=>{ const s=RADIO.src.get(id), S=s&&station(stOf(s)); if(!S)return null; const n=nowAt(S).k; return {call:S.call,name:S.name,title:n?n.title:''}; };
+  RADIO.next=id=>{ const s=RADIO.src.get(id); if(!s)return 0; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RADIO.next(id); }).catch(()=>{}); } return 0; }
+    const n=(stOf(s)+1)%(RAD.data.stations.length+1); ONLINE.put('radio:'+id,n); const S=station(n); say(S?'THE JUKEBOX: '+S.call+', '+S.name+'.':'THE JUKEBOX IS OFF.'); return n; };
+  SYS.add('life',dt=>{ if(!DATA||(rT-=dt||0)>0)return; rT=.1; const on=[...CARS.values()].filter(C=>stOf(C)&&(C===mine||C.by)), rooms=[...RADIO.src.values()].filter(s=>stOf(s)&&inRoom(s));
+    if((on.length||rooms.length)&&!RAD.data&&!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; for(const C of CARS.values())showRadio(C); }).catch(()=>{}); }
     if(!RAD.data)return; if((fT-=.1)<=0){ fT=2; for(const C of CARS.values())if(stOf(C)||C===mine)showRadio(C); }
     const up=SHARED.LVL==='up'&&!ROOMS.cur, best={};
     for(const C of on){ const S=station(stOf(C)); if(!S)continue; let x=C.x, z=C.z, inside=C===mine;
       if(!inside){ const o=ONLINE.others&&ONLINE.others.get(C.by), g=o&&o.fig&&o.fig.g; if(g){ x=g.position.x; z=g.position.z; } }
-      const d=inside?0:Math.hypot(pos.x-x,pos.z-z)/T, k=inside?1:up?.55*Math.max(0,1-d/25)**1.5:0; if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside,x,z}; } RAD.best=best;
+      const d=inside?0:Math.hypot(pos.x-x,pos.z-z)/T, k=inside?1:up?.55*Math.max(0,1-d/25)**1.5:0; if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside,x,z}; } for(const s of rooms){ const S=station(stOf(s)); if(S&&.7>((best[S.id]||{}).k||0))best[S.id]={k:.7,inside:true,x:pos.x,z:pos.z}; } RAD.best=best;
     for(const S of RAD.data.stations){ const b=best[S.id], c=b&&b.k>0?chan(S):RAD.ch[S.id]; if(!c)continue; const x=RAD.ctx, t=x.currentTime;
       if(b&&b.k>0){ c.quiet=0; const nw=NOW(); c.g.gain.setTargetAtTime(b.k*RAD.vol,t,.25); c.lp.frequency.setTargetAtTime(b.inside?16000:900,t,.2);
         if(!b.inside&&SHARED.cam){ P3.set(b.x,SHARED.py+1,b.z).project(SHARED.cam); c.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,P3.x*.8)),t,.1); } else c.pan.pan.setTargetAtTime(0,t,.1);

@@ -1,5 +1,6 @@
-// THE HANDHELD: ESC pops up a bulky 1980s pager-organiser (a red message light, a green LCD, a little keyboard); every menu opens from its grid of icons, and owners see ADMIN.
+// THE HANDHELD: ESC pops up a bulky 1980s pager-organiser (a red message light, a green LCD, a little keyboard); every menu opens from its grid of icons, and owners see ADMIN (the one admin window).
 import {CHARP, CINEMA, CLOCK, DRONE, FORAGE, HANDHELD, INV, keys, ONLINE, UI} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
 import {PHONE} from './146y-operator.js';
 { const ID='tablet';
   const css=document.createElement('style'); css.textContent=`#hh{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:29;width:min(480px,94vw);zoom:var(--uiz,1);background:linear-gradient(#2b2d33,#1b1c20);border-radius:20px;padding:14px 18px 18px;box-shadow:inset 0 2px 0 #4a4d55,inset 0 -6px 0 #101114,0 14px 40px #000c;font:11px Silkscreen,monospace;letter-spacing:1px;color:#9aa0a8;user-select:none}
@@ -18,20 +19,18 @@ import {PHONE} from './146y-operator.js';
   const tab=t=>()=>{ back=true; UI.menuTab(t); };
   const APPS=[['you','YOU','☺',()=>true,tab('home')],['pack','PACK','▤',()=>!!FORAGE.PACK,()=>FORAGE.PACK.toggle('pack')],['map','MAP','✦',()=>!!UI.mapWindow,()=>{ back=true; UI.mapWindow(); }],['call','CALL','☏',()=>!!PHONE.dial,()=>PHONE.dial('handheld')],
     ['bbs','BBS','▣',()=>!!DRONE.openAt,()=>DRONE.openAt('menu')],['chat','CHAT','✎',()=>!!(ONLINE.on&&ONLINE.open),()=>setTimeout(()=>ONLINE.open(),0)],['people','PEOPLE','♟',()=>!!ONLINE.others,null],['set','SET','⚙',()=>true,tab('display')],
-    ['guide','GUIDE','◉',()=>true,tab('guide')],['help','HELP','?',()=>!!UI.moves,()=>UI.moves()],['bug','BUG','✱',()=>true,tab('bug')],['admin','ADMIN','★',()=>admin,null]];
+    ['guide','GUIDE','◉',()=>true,tab('guide')],['help','HELP','?',()=>!!UI.moves,()=>UI.moves()],['bug','BUG','✱',()=>true,tab('bug')],['admin','ADMIN','★',()=>admin&&!!CHARP.admin,()=>{ back=true; CHARP.admin(); }]];
   const KB='<div class="kb">'+'QWERTYUIOPASDFGHJK'.split('').map(c=>'<i>'+c+'</i>').join('')+'<i class="w">ENTER</i></div>';
   const time=()=>{ const h=CLOCK.h??12, hh=Math.floor(h), mm=Math.floor((h-hh)*60); return ((hh+11)%12+1)+':'+String(mm).padStart(2,'0')+(hh<12?' AM':' PM'); };
   const draw=()=>{ let body;
     if(page==='people'){ const all=ONLINE.others?[...ONLINE.others.values()]:[];
       body='<div class="bar"><span>♟ PEOPLE · '+(all.length+1)+'</span></div>'+(all.length?all.map(o=>'<div class="ln"><span>'+esc(o.name||'TENANT')+'</span>'+(ONLINE.visit?'<button data-visit="'+esc(o.id)+'">VISIT</button>':'')+'</div>').join(''):'<div class="ln">NOBODY ELSE IS ON.</div>')+'<div class="hint">ESC BACK</div>'; }
-    else if(page==='admin')body='<div class="bar"><span>★ ADMIN</span></div><div class="ln"><button data-go="panel" style="flex:1;text-align:left">▸ BUG QUEUE · STATS · LOG</button></div><div class="ln"><button data-go="tenants" style="flex:1;text-align:left">▸ TENANTS · CODES · LETTERS</button></div><div class="hint">ESC BACK</div>';
     else body='<div class="bar"><span data-t>'+time()+'</span><span data-c>$'+(INV.cash|0)+'</span></div><div class="grid">'+APPS.filter(a=>a[0]!=='admin'||admin).map(([k,n,ic,ok],i)=>'<button data-app="'+k+'"'+(k==='admin'?' class="adm"':'')+(ok()?'':' disabled')+'><b>'+ic+'</b>'+n+'</button>').join('')+'</div>';
     W.innerHTML='<div class="top"><span>PAGEMASTER 64</span><span class="led"></span></div><div class="lcd">'+body+'</div>'+KB;
     if(page==='home'){ const L=W.querySelectorAll('.grid button'); sel=Math.min(sel,L.length-1); if(L[sel])L[sel].classList.add('on'); } };
   const go=k=>{ const a=APPS.find(q=>q[0]===k); if(!a||!a[3]())return; if(!a[4]){ page=k; return draw(); } close(); a[4](); };
   W.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled)return;
     if(b.dataset.visit){ const o=ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ close(); ONLINE.visit(o.id,o.name); } return; }
-    if(b.dataset.go){ close(); if(b.dataset.go==='panel'){ if(CHARP.admin)CHARP.admin(); } else tab('tenants')(); return; }
     if(b.dataset.app)go(b.dataset.app); });
   let fresh=false;   // a key sent to the window itself (the headset's) reaches this after the menu key opened it: not again
   addEventListener('keydown',e=>{ if(W.hidden||fresh)return; const k=e.key; if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
@@ -41,9 +40,10 @@ import {PHONE} from './146y-operator.js';
     else if(k==='Enter'&&page==='home'){ const b=W.querySelectorAll('.grid button')[sel]; if(b&&!b.disabled)go(b.dataset.app); }
     else return;
     e.preventDefault(); e.stopImmediatePropagation(); },true);
-  let tick=0; const open=()=>{ page='home'; back=false; draw(); W.hidden=false; keys.clear(); clearInterval(tick); tick=setInterval(()=>{ if(W.hidden)return clearInterval(tick); const t=W.querySelector('[data-t]'); if(t){ t.textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); } },5000);
+  SYS.every(()=>{ if(W.hidden)return; const t=W.querySelector('[data-t]'); if(t){ t.textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); } },5000,'146ya-handheld clock');
+  const open=()=>{ page='home'; back=false; draw(); W.hidden=false; keys.clear();
     if(!admin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a&&!admin){ admin=true; if(!W.hidden&&page==='home')draw(); } }).catch(()=>{}); };
-  const close=()=>{ W.hidden=true; clearInterval(tick); };
+  const close=()=>{ W.hidden=true; };
   admin=!!CINEMA.admin;
   HANDHELD.toggle=()=>{ if(W.hidden){ open(); fresh=true; setTimeout(()=>{ fresh=false; },0); } else close(); };
   HANDHELD.back=()=>{ if(back)open(); };   // ESC out of a menu page the handheld opened comes back to it

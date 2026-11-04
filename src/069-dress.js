@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DN, DRESS, PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, CEL, FIX, MAINROW, MAPSTAIR, MODS, OUT, RING, SMOOTH, SOL, STORE, TILE} from './006-map-pre.js';
+import {AWAY, CEL, FIX, LEVEL, MAINROW, MAPSTAIR, MODS, OUT, RING, SMOOTH, SOL, STORE, TILE} from './006-map-pre.js';
 import {KIT} from './068-kit.js';
 const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }});
 { const G=MODS.bodega.ground, xm=(SHARED.BOUND.x0+SHARED.BOUND.x1)/2; let zc=null, zf=null; for(let z=SHARED.BOUND.z0;z<SHARED.BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
@@ -36,6 +36,8 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     { const A=MODS.apts&&MODS.apts.A, dz=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=SHARED.BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
+    if(Array.isArray(LEVEL.lamps)){ pts.length=0; for(const l of LEVEL.lamps)pts.push([SHARED.BOD.XS(l.x),SHARED.BOD.ZS(l.y)]); }   // the map editor's lamp posts (world.json lamps, map tiles), in place of the spaced ones
+    DRESS.own=pts.length;
     pts.push(...(DRESS.extra||[]));   // the other sections' posts (066c)
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),

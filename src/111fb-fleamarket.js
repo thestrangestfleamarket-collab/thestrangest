@@ -1,10 +1,9 @@
-// THE CREW AND THE FLEA MARKET: polyfork.dev's stalls, street furniture and diner fittings (data/polyfork.json) put where data/world.json's things say; the cast (every character in characters.json with a pf body, data/cast/<group>.json) loaded a place at a time as you come near, on your rig, handed to JOBS; CREW.door/inside/spot say where each place's door, inside and work spot are.
+// THE CREW AND THE FLEA MARKET: polyfork.dev's stalls, street furniture and diner fittings (data/polyfork.json) put where data/world.json's things say; the cast (every character in characters.json with a pf body, data/cast/<group>.json) loaded a place at a time as you come near, on your rig, handed to JOBS; CREW.door/inside/spot say where each place's door, inside and work spot are (an inside's own spots by job title: ROOMS.off[id].spots; its seats for anyone else: ROOMS.off[id].seats).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
 import {CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, QS, SOL, SYS, TILE} from './006-map-pre.js';
-import {MSHOP} from './059i-mshops.js';
+import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
 const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
@@ -22,6 +21,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
   CREW.door=at=>{ if(!at)return null; const a=CREW.alias[at]||at, R=ROOMS.off[a];
     if(R&&R.out)return {x:R.out[0],z:R.out[1]};
     const P=(LEVEL.places||[]).find(p=>p.id===at);
+    if(P&&P.door)return W(P.door[0],P.door[1]);   // a place that names its door (the fair's gate)
     if(P){ const cx=(P.x0+P.x1)/2; if(P.y1==null)return W(cx,LEVEL.block.front+.9); const cy=(P.y0+P.y1)/2, f=P.face||'n';
       return f==='e'?W(P.x1+.9,cy):f==='w'?W(P.x0-.9,cy):f==='s'?W(cx,P.y0-.9):W(cx,P.y1+.9); }
     if(at==='flea'){ const t=(LEVEL.things||[]).find(o=>o.k==='ftable'); return t?W(t.x,LEVEL.block.front+.9):null; }
@@ -31,14 +31,22 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
-  CREW.inside=(at,key)=>{ const a=CREW.alias[at]||at, R=ROOMS.off[a], h=hsh(key||at), u=.25+.5*((h%97)/96), v=.25+.5*(((h>>7)%97)/96);
+  { const d=CREW.door('flea'); if(d)STORE.places.push(['THE FLEA MARKET',d.x,d.z,'up','see']); }   // GO TO: at its tables on the street side
+  // an inside's own list of where people go: ROOMS.off[id] (rooms off the map) or STORE.rooms (the street's insides), each with spots (by job title) and seats ({x,z,hd,y}: y the seat's height, none to stand) and whether it lies off the map
+  const insideOf=a=>ROOMS.off[a]||(STORE.rooms||[]).find(r=>r.id===a)||null, offOf=a=>!!ROOMS.off[a]||!!(insideOf(a)||{}).offmap;
+  CREW.out=key=>{ for(const R of [...Object.values(ROOMS.off),...(STORE.rooms||[])]){ const t=R.taken; if(t)t.delete(key); } };   // their seat is free again
+  CREW.inside=(at,key,job)=>{ const a=CREW.alias[at]||at, R=insideOf(a), h=hsh(key||at), u=.25+.5*((h%97)/96), v=.25+.5*(((h>>7)%97)/96), off=offOf(a);
+    const S=R&&R.spots&&job&&R.spots[job.title]; if(S)return {x:S.x,z:S.z,hd:S.hd,sit:S.y,off:S.off??off};   // a place's work spots, by job title
+    if(R&&R.seats){ const T=R.taken||(R.taken=new Map()); let i=T.get(key); if(i==null){ const used=new Set(T.values()), n=R.seats.length; for(let k=0;k<n&&i==null;k++)if(!used.has((h+k)%n))i=(h+k)%n; if(i==null)return null; T.set(key,i); }   // a patron takes a free seat or place (none free: not in sight)
+      const s=R.seats[i]; return {x:s.x,z:s.z,hd:s.hd,sit:s.y,off:s.off??off}; }
     if(R&&R.box){ const b=R.box; return {x:b.x0+u*(b.x1-b.x0),z:b.z0+v*(b.z1-b.z0),off:true}; }
     const P=['bar','museum','bank','art','theatre'].includes(at)&&(LEVEL.places||[]).find(p=>p.id===at);
     if(P){ const y0=P.y1==null?LEVEL.block.back:P.y0, y1=P.y1==null?LEVEL.block.front:P.y1; return W(P.x0+u*(P.x1-P.x0),y0+v*(y1-y0)); }
     return null; };
   const band=(x0,x1,rows)=>()=>{ const r=rows[Math.floor(Math.random()*rows.length)]; return W(x0+Math.random()*(x1-x0),r[0]+Math.random()*(r[1]-r[0])); };
   const MKT=LEVEL.streets.market, WST=LEVEL.streets.west;
-  CREW.spot=J=>{ const j=J.job, k=J.key;
+  CREW.spots={};   // a place's own work spots: spots[at](J) -> {x,z,hd,r} (the fair registers its posts)
+  CREW.spot=J=>{ const j=J.job, k=J.key, own=CREW.spots[j.at]&&CREW.spots[j.at](J); if(own)return own;
     if(j.spot==='street'||j.at==='street'){ const c=W(72,-72.5); c.band=band(MKT.x0+10,MKT.x1-10,[[-76,-69.5],[-46,-39.5]]); return c; }
     if(j.spot==='west'){ const c=W((WST.x0+WST.x1)/2,0); c.band=band(WST.x0+1,WST.x1-1,[[-30,170]]); return c; }
     if(j.spot==='round')return CREW.door('round');
@@ -78,17 +86,5 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
   CREW.all=()=>{ for(const g in members)CREW.loaded[g]||(CREW.loaded[g]=false); return Object.keys(members); };
   CREW.bring=async()=>{ for(const g in members)if(!CREW.loaded[g]){ CREW.loaded[g]=true; const D=await G[g](); for(const k of members[g]){ const b=D.bodies[k], r=REC[k]; if(!b)continue; BODIES.rebaked(D,k,r.name||'SOMEONE',0,{size:b.height/1.8,hd:CREW.hd[k]}); const N=BODIES.by[k]&&BODIES.by[k].npc; if(N)CREW.list.push({key:k,N,job:r.job,rec:r}); } } if(SHOPS.sync)SHOPS.sync(); };
   SYS.onStart(()=>LOAD('later').then(()=>PF()).then(build).catch(e=>console.warn('FLEA',e)).finally(()=>{ CREW.ready=true; if(QS.get('cast')!=='0'){ setInterval(tick,1500); tick(); } }),'111fb-cast');
-  /* ---------- the diner's inside: a checkered floor, a long counter with stools, booths along the wall, the pie case ---------- */
-  MSHOP.kit.diner=A=>{ '@later'; const {R,X,Z,hs,sh}=A, Y=h=>A.Y(h*24), IN=Math.sign(Z(R.y1)-Z(R.y0)), face=IN>0?0:Math.PI;
-    A.floor((x,y)=>((Math.floor(x*2)+Math.floor(y*2))&1)?sh([226,222,214],.95+.05*hs(Math.floor(x*8),Math.floor(y*8),3)):sh([40,38,44],1));
-    const wall=(u,z)=>z<30?sh([196,58,64],.9+.1*hs(Math.floor(u*8),2,5)):z<33?sh([210,210,214],1.1):sh([236,226,196],.92+.08*hs(Math.floor(u*4),Math.floor(z/8),9));
-    for(const s of ['b','w','e','f'])A.wall(s,wall);
-    const put=(k,x,y,rot=face,h=0)=>{ const me=FM.mesh(k); if(!me)return null; me.position.set(X(x),Y(h),Z(y)); me.rotation.y=rot; A.add(me); return me; };
-    const cy=R.y0+3.2, n=Math.max(2,Math.floor((R.x1-R.x0-4)/2.6));
-    for(let i=0;i<n;i++){ const x=R.x0+2+(i+.5)*(R.x1-R.x0-4)/n; put('dcounter',x,cy); put('dstool',x,cy+1.4); }
-    A.sol(R.x0+1.6,cy-.6,R.x1-1.6,cy+.6);
-    for(const y of [R.y0+4.6,R.y0+6.8]){ put('dbooth',R.x1-2.2,y+1,face-Math.PI/2); A.sol(R.x1-3.2,y+.2,R.x1-1.1,y+1.8); }
-    put('piecase',R.x0+2,R.y0+1.8); put('shake',R.x0+2.4,cy,face,1.05);
-    for(const f of [.3,.7])A.lamp(R.x0+f*(R.x1-R.x0),(R.y0+R.y1)/2,3,0xffe8c8,9,12); };
 }
 export {CREW};

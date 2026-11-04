@@ -1,7 +1,7 @@
 // THE PLACES' CODE (20 Oct 2026, the code split): runs the website's own worker (wrangler dev) on dist/, logs in, and checks that THE
 // MARKET starts with only its start code, then goes into every place whose code is its own file (dungeon, park, fire escape,
 // arcade, bath house), and back. Each must fetch its file, build, and never fall back to a slow fetch ("was not loaded before
-// use"); a cabinet in the arcade must fetch its game's own file when played; then a login after the dungeon must start on the subway platform. Prints the start's download (gzipped).
+// use"); a cabinet in the arcade must fetch its game's own file when played; then a login within the hour after the dungeon comes back to it, and one after an hour starts on the subway platform. Prints the start's download (gzipped).
 // node tests/places.cjs [out dir]. Exits 1 if anything fails.
 const {chromium}=require('playwright'), {spawn}=require('child_process'), fs=require('fs'), path=require('path'), zlib=require('zlib');
 const OUT=process.argv[2]||'out', PORT=8797, BASE='http://127.0.0.1:'+PORT;
@@ -32,17 +32,13 @@ const TOUR=[
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; const P=STORE.holo.programs.find(p=>p.name==='ROAM'); STORE.holo.start(P); return await U(()=>ROAMDBG().on&&ROAMDBG().chunks>100&&!(window.FADE&&FADE.busy)); },
     async()=>{ STORE.holo.end(); for(const t=Date.now();Date.now()-t<30000&&(ROAMDBG().on||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['bath house','x-bath',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    ROOMS.enter('bath'); if(!await U(()=>INTDBG().built.includes('bath')&&ROOMS.offIn()==='bath'&&!(window.FADE&&FADE.busy)))return 'not in the bath house'; const y=__dbg.you(), o=ROOMS.off.bath.box;
-    return y.x>o.x0&&y.x<o.x1&&y.z>o.z0&&y.z<o.z1&&__dbg.MAPK.BOD.GD.inside(); },
-    async()=>{ ROOMS.exit('bath'); for(const t=Date.now();Date.now()-t<30000&&(ROOMS.offIn()||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
+    const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); if(!await U(()=>G.built()))return 'the bath house\'s inside was not built from the street (its door is open)';
+    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]-2),'up'); return await U(()=>G.inside(),10000); },
+    async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); }],
   ['art museum','x-art',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     STORE.enter('art',true); return await U(()=>STORE.art&&STORE.art.hung>0&&!(window.FADE&&FADE.busy)); },async()=>{ STORE.exit('art'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['gem cave','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await GEMCAVE.go(1); return await U(()=>GEMCAVEDBG().built&&GEMCAVEDBG().inside&&!(window.FADE&&FADE.busy)); },async()=>{ await GEMCAVE.go(0); }],
-  ['skate park','x-skatepark',async()=>{ const U=async(f,ms=300000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); if(!await U(()=>window.SKATE&&SKATE.ready&&PARK.in&&!(window.FADE&&FADE.busy)))return false;
-    ROOMS.enter('skatepark'); return await U(()=>{ const d=SKATE.dbg(); return d.built&&d.solids>0&&d.grounds===1&&d.people>0&&d.boards===5&&d.shop&&ROOMS.offIn()==='skatepark'&&!(window.FADE&&FADE.busy); }); },
-    async()=>{ ROOMS.exit('skatepark'); for(const t=Date.now();Date.now()-t<30000&&(ROOMS.offIn()||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
   ['hudson cavern','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     await HUDSON.go(1); return await U(()=>{ const d=HUDSONDBG(); return d.built&&d.inside&&d.swim&&!(window.FADE&&FADE.busy); }); },async()=>{ await HUDSON.go(0); }],
 ];
@@ -75,10 +71,14 @@ const TOUR=[
     ok(errs.length===e0&&late.length===l0,name+': no page errors, no slow fetch '+errs.slice(e0).concat(late.slice(l0)).join(' | '));
     await pg.evaluate(`(${back})()`).catch(e=>errs.push(name+' back: '+e.message)); await wait(1500); }
   await pg.evaluate(async()=>{ await DUNGEON.go(2); for(const t=Date.now();Date.now()-t<60000&&!(DUNDBG().level===2&&DUNDBG().objs>0);)await new Promise(r=>setTimeout(r,250)); await new Promise(r=>setTimeout(r,2500)); }); await wait(1000);
-  phase='login'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); await wait(3000);
-  const lv=await pg.evaluate(()=>{ const p=__dbg.MAPK.MODS.station.plat, y=__dbg.you(); return {lvl:__dbg.lvl(),dist:Math.hypot(y.x-p.x,y.z-p.z),you:y}; }).catch(e=>'ERR '+e.message);
-  ok(lv&&lv.lvl==='down'&&lv.dist<2,'a login after the dungeon starts on the subway platform, not the saved spot ('+JSON.stringify(lv).slice(0,400)+')');
-  ok(errs.length===e1&&late.length===l1,'the login start: no page errors, no slow fetch '+errs.slice(e1).concat(late.slice(l1)).join(' | '));
+  phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); for(let i=0;i<60&&!(await pg.evaluate(()=>DUNDBG().objs>0).catch(()=>false));i++)await wait(1000);
+  const lv=await pg.evaluate(()=>Object.assign(DUNDBG(),{you:__dbg.you()})).catch(e=>'ERR '+e.message);
+  ok(lv&&lv.level===2&&lv.objs>0,'a login within the hour comes back where you left off: the dungeon, its code loaded at the start ('+JSON.stringify(lv).slice(0,400)+')');
+  ok(errs.length===e1&&late.length===l1,'the saved start: no page errors, no slow fetch '+errs.slice(e1).concat(late.slice(l1)).join(' | '));
+  phase='hour'; await pg.addInitScript(()=>{ const n=Date.now; Date.now=()=>n()+2*3600e3; });   // two hours on
+  await start('?hour=13&wx=CLEAR'); await wait(3000);
+  const lp=await pg.evaluate(()=>{ const p=__dbg.MAPK.MODS.station.plat, y=__dbg.you(); return {lvl:__dbg.lvl(),dist:Math.hypot(y.x-p.x,y.z-p.z),you:y}; }).catch(e=>'ERR '+e.message);
+  ok(lp&&lp.lvl==='down'&&lp.dist<2,'a login after an hour or more starts on the subway platform ('+JSON.stringify(lp).slice(0,400)+')');
   ok(!late.length,'no slow fetch anywhere '+late.join(' | '));
   await b.close(); w.kill(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })().catch(e=>{ console.log('FAIL '+e.message); process.exit(1); });

@@ -1,6 +1,7 @@
 // THE PLANT STALL on Market St: THE ALL-SEEING CACTUS (one great green eye on a crate; it follows whoever is near, you most) and THE BONSAI (a little mossy being growing out of her own glazed pot, arms of leafy branches); each sells its kind for your home (150i).
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ONLINE, pos, SHOPS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 const PLANTS={}; window.PLANTS=PLANTS;
 { const T=TILE, std=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.7,...o});
@@ -47,7 +48,7 @@ const PLANTS={}; window.PLANTS=PLANTS;
     const lid=eye.getObjectByName('cactusLid'); if(lid){ const bl=(t+seed)%5<.12; lid.scale.y=bl?2.6:1; lid.rotation.x=bl?.3:-.15; } };
   { const go=()=>{ const B=SHARED.BOD; if(!window.__started||!B||!B.XS)return setTimeout(go,800); const H=LEVEL.homes&&LEVEL.homes.plantstall; if(!H)return;
       const G=PLANTS.stall=stall(); G.scale.setScalar(T); const x=B.XS(H[0]), z=B.ZS(H[1]); G.position.set(x,SHARED.groundY?SHARED.groundY(x,z):0,z); G.rotation.y=H[3]||0; (MAPG.bodega||MAPG.street).add(G);
-      const mk=(name,key,ox,w)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,.9,.9),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(ox,1.2,0); G.add(hb); UI.thing({name,obj:hb,reach:2*T,near:3*T,tall:1.2*T,act:()=>{ if(SHOPS.open)SHOPS.open({key,name}); if(key==='cactus')FORAGE.say&&FORAGE.say('IT STARES AT YOU. A CARD SAYS: THE CACTUS SEES.','#9ad8a0'); }}); };
+      const mk=(name,key,ox,w)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,.9,.9),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(ox,1.2,0); G.add(hb); UI.thing({name,obj:hb,reach:2*T,near:3*T,tall:1.2*T,act:()=>{ if(SHOPS.open)SHOPS.open({key,name}); if(key==='cactus')SAY('IT STARES AT YOU. A CARD SAYS: THE CACTUS SEES.','#9ad8a0'); }}); };
       mk('THE ALL-SEEING CACTUS','cactus',-.6,1); mk('THE BONSAI','bonsai',.6,1);
       const c=Math.cos(G.rotation.y), s=Math.sin(G.rotation.y), hw=1.15*T, hd=.5*T; SOL.up.push([x-Math.abs(c*hw)-Math.abs(s*hd),z-Math.abs(s*hw)-Math.abs(c*hd),x+Math.abs(c*hw)+Math.abs(s*hd),z+Math.abs(s*hw)+Math.abs(c*hd)]); };
     go(); }

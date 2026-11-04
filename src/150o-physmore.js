@@ -1,10 +1,11 @@
 // THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or a vehicle knocks them over), VEH (Rapier's raycast vehicle for anything you drive) and the go-kart on it.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); the go-kart's here, the cars' in 150p-cars
-{ const T=TILE, M1=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, M1=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc');
   /* ---------- trigger zones: a sensor that notices a loose thing coming in; the dartboard scores a throw, an upright trash can swallows small things ---------- */
   const ZN=new Map(), boards=new Set(), cans=new Map(); let zt=0, nO=0;
   const zones=()=>{ '@later'; const P=GPH.phys(); if(!P)return; const {R,world,fb}=P;
@@ -103,13 +104,16 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
     G.scale.setScalar(T); return G; };
   const s0=M1*.84, KR=VEH.make({half:[.31*s0,.1*s0,.62*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
     engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,knockR:.55*M1,down:.31*T,wy:WH,unit:T});
-  RIDE.kind('kart',{name:'GO-KART',hint:'A CLICK SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, A CLICK GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
-    make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false,
-    on:()=>{ if(!PB.R)PB.load(); }, off:()=>KR.drop(),
-    pose:R=>{ POSE.steer=KR.on?KR.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },
-    step:(R,dt)=>{ if(!KR.step(R))return false; st.ride=POSE; return true; },
-    place:(m,R,t)=>{ const w=m.userData.wh; if(!KR.place(m,w)){ m.position.y=SHARED.py; for(let i=0;i<4;i++)w[i].rotation.x+=R.v*.02; }
-      if(m.userData.sw)m.userData.sw.rotation.z=-(KR.on?KR.steer:R.lean)*2; } });
+  // a kart as a RIDE kind on its vehicle V: the item you carry (KR), or one boarded where it stands (the fair's rentals, VEH.kartKind)
+  const kartKind=(V,o={})=>({name:'GO-KART',hint:'A CLICK SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, A CLICK GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
+    make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false, V,
+    on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
+    pose:R=>{ POSE.steer=V.on?V.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },
+    step:(R,dt)=>{ if(!V.step(R))return false; st.ride=POSE; return true; },
+    place:(m,R,t)=>{ const w=m.userData.wh; if(!(R===RIDE&&V.place(m,w))){ if(R===RIDE)m.position.y=SHARED.py; for(let i=0;i<4;i++)w[i].rotation.x+=R.v*.02; }
+      if(m.userData.sw)m.userData.sw.rotation.z=-(R===RIDE&&V.on?V.steer:R.lean)*2; },...o});
+  VEH.kartKind=kartKind; VEH.kart={make,spec:()=>KR.S};
+  RIDE.kind('kart',kartKind(KR));
 
   // each frame: zones kept up to date, a flying loose thing knocks over who it hits
   SYS.add('life',dt=>{ if(!GPH.phys())return; if((zt-=dt)<=0){ zt=1; if(PHYS.on('zones'))zones(); }

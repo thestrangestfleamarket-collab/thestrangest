@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LEVELS, LOOKS, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
@@ -29,7 +29,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
   ONLINE.push=p=>{ for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; const dx=p.x-o.p.x, dz=p.z-o.p.z, d=Math.hypot(dx,dz), R=.55; if(d<R&&d>1e-4){ p.x=o.p.x+dx/d*R; p.z=o.p.z+dz/d*R; } } };
-  SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:{t:'act',k,on:on?1:0}),'111d-online');
+  SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:k&&typeof k==='object'?{t:'act',...k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
   const place=(o,now)=>{ const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
@@ -52,7 +52,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
-    else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ try{ if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
+    else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ try{ if(m.stop||m.m&&/^mc_/.test(m.m))MOTION.their(o.S,m); else if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
     else if(m.t==='ragon'&&m.id&&Array.isArray(m.n)&&Array.isArray(m.jl)){ const o=up(m.id); o.rag={n:m.n,jl:m.n.map((_,i)=>Object.fromEntries((m.jl[i]||[]).map(j=>[j[0],[+j[1],+j[2],+j[3]]]))),b:null,t:0}; return; }
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
@@ -155,6 +155,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(e.code===4002){ BUGS.logout(); return; }   // sent out (banned or removed): to the door
       if(e.code===4000||e.code===4001){ sock.close(); line('THE MARKET',e.code===4000?'you came in from another window; this one is alone now':'log in again to see the others'); } list(); });
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
+  addEventListener('pagehide',()=>{ if(sock){ send({t:'bye'}); sock.close(1000,'bye'); } });   // logging out or closing the page: gone for everyone at once (owner, 4 Nov 2026)
+  addEventListener('pageshow',e=>{ if(e.persisted&&sock&&sock.reconnect)sock.reconnect(); });
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
       if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
@@ -164,7 +166,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
   ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
-  const PS=['sit','climb','hang','water'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
+  const PS=['sit','climb','hang','water','grip'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;
   SYS.add('life',dt=>{ if(!ONLINE.on)return; psT+=dt||0; psKeep+=dt||0; if(psT<.2)return; psT=0; const s=snap(), j=JSON.stringify(s); if(j!==psSent||(j!=='{}'&&psKeep>3)){ const was=psSent; psSent=j; psKeep=0; if(j!=='{}'||was!=='{}')send({t:'ps',s}); } },'111d-online-ps');

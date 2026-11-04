@@ -23,12 +23,12 @@ const {chromium}=require('playwright');
   ok(A.doors&&A.at==='A'&&A.inSta,'train 1 stands in A with its doors open ('+JSON.stringify(A)+')');
   ok(/NOW/.test(A.board),'A\'s board says train 1 is in ('+A.board+')');
   // ride it: walk off the platform through a door, out again, back in; carried when it leaves
-  // the train's clock is held while you walk through the door: on a slow runner a hundred frames outlast its 60 s stop and the doors would shut on you
-  const step=dir=>pg.evaluate(async dir=>{ const t=TRAINS.list[0], c=t.cars[0].p, T=LOOP.WX(1)-LOOP.WX(0), px=-c.uz, pz=c.ux, fr=()=>new Promise(r=>requestAnimationFrame(r)), clock=TRAINS.now, t0=clock(); TRAINS.now=()=>t0;
+  // the train's clock is held while you walk through the door and goes on from there after (no jump): on a slow runner a hundred frames outlast its 60 s stop and the doors would shut on you
+  const step=dir=>pg.evaluate(async dir=>{ const t=TRAINS.list[0], c=t.cars[0].p, T=LOOP.WX(1)-LOOP.WX(0), px=-c.uz, pz=c.ux, fr=()=>new Promise(r=>requestAnimationFrame(r)), clock=TRAINS.now, t0=clock(), r0=Date.now()/1000; TRAINS.now=()=>t0;
       try{ const side=[1,-1].find(sg=>METRO.ground(c.x+px*sg*3*T,c.z+pz*sg*3*T)>LOOP.H(-2)); if(dir<0)__dbg.UI.goTo(c.x+px*side*3.4*T,c.z+pz*side*3.4*T,'down'); await fr(); await fr();
         for(let i=0;i<50&&(dir<0?!TRAINS.ride.c:!!TRAINS.ride.c);i++){ const q=__dbg.pos(), r=__dbg.collide(q[0]+px*side*dir*.12*T,q[2]+pz*side*dir*.12*T); __dbg.UI.goTo(r[0],r[1],'down'); await fr(); await fr(); }
         const q=__dbg.pos(); return {ride:!!TRAINS.ride.c,side,y:+q[1].toFixed(2),plat:+LOOP.H(0).toFixed(2),z:ZONES.cur&&ZONES.cur.name}; }
-      finally{ TRAINS.now=clock; } },dir);
+      finally{ TRAINS.now=clock; TRAINS.skew-=Date.now()/1000-r0; } },dir);
   const on=await step(-1); ok(on.ride,'you walk through a door onto train 1 ('+JSON.stringify(on)+')');
   const off=await step(1); ok(!off.ride&&Math.abs(off.y-off.plat)<.05,'and back out onto the platform ('+JSON.stringify(off)+')');
   const on2=await step(-1); const r0=await pg.evaluate(()=>({ride:!!TRAINS.ride.c,z:ZONES.cur&&ZONES.cur.name,p:__dbg.pos()}));
@@ -38,6 +38,17 @@ const {chromium}=require('playwright');
   ok(r1.ride&&!r1.doors&&r1.d<2*1.13&&r1.lvl==='down','the train leaves and carries you ('+JSON.stringify(r1)+')');
   const r2=await pg.evaluate(()=>{ const p=__dbg.pos(); return Math.hypot(p[0],p[2]); });
   ok(Math.abs(r2-Math.hypot(r0.p[0],r0.p[2]))>3,'you went with it');
+  // in the car: the poles are solid, a pole and a strap can be held (the hand on it), and out in the tunnel it is dark
+  const H=await pg.evaluate(async()=>{ const car=TRAINS.ride.c, fr=()=>new Promise(r=>requestAnimationFrame(r)), wait=async n=>{ for(let i=0;i<n;i++)await fr(); }, at=(a,v)=>{ const c=car.p; return {x:c.x+a*c.ux-v*c.uz,z:c.z+a*c.uz+v*c.ux}; };
+    const hand=()=>{ const G=__dbg.ST.grip; if(!G)return 99; const w=RIG.pose(__dbg.ST).J[G.side>0?'wristL':'wristR']; return Math.hypot(w.x-G.x,w.y-G.y,w.z-G.z); }, mid=L=>L.reduce((b,p)=>Math.hypot(p.a,p.v)<Math.hypot(b.a,b.v)?p:b);
+    const P=mid(car.poles); let w=at(P.a,P.v); __dbg.UI.goTo(w.x+.01,w.z,'down'); await wait(4); w=at(P.a,P.v); const q=__dbg.pos(), solid=Math.hypot(q[0]-w.x,q[2]-w.z);
+    TRAINS.grab('pole'); await wait(4); const pole=TRAINS.hold.h&&TRAINS.hold.h.k==='pole'?hand():99; TRAINS.letGo();
+    const S=mid(car.straps), u=at(S.a,S.v*.6); __dbg.UI.goTo(u.x,u.z,'down'); await wait(4); TRAINS.grab('rail'); await wait(4); const strap=TRAINS.hold.h&&TRAINS.hold.h.k==='rail'?hand():99; TRAINS.letGo();
+    { const t=TRAINS.list[0], u=((TRAINS.now()-t.off)%t.lap+t.lap)%t.lap, g=t.legs.filter(q=>q.d>1).reduce((a,b)=>b.d>a.d?b:a); TRAINS.skew+=((g.t0+g.dur*.6-u)%t.lap+t.lap)%t.lap; }   // well out along the longer tunnel, the train held there (a slow runner's 60 frames are a minute of its clock)
+    { const clock=TRAINS.now, t0=clock(); TRAINS.now=()=>t0; try{ await wait(60); } finally{ TRAINS.now=clock; } } const p=__dbg.pos(); return {solid:+solid.toFixed(2),pole:+pole.toFixed(2),strap:+strap.toFixed(2),ride:!!TRAINS.ride.c,inSta:LOOP.inStation(p[0],p[2]),amb:+LEVELS.of.station.amb.toFixed(3)}; });
+  ok(H.solid>.35,'the middle pole is solid: standing on it puts you beside it ('+JSON.stringify(H)+')');
+  ok(H.pole<1.5&&H.strap<1.5&&H.ride,'you can hold a pole and a strap: the hand is on it ('+JSON.stringify(H)+')');
+  ok(!H.inSta&&H.amb<.05,'out in the tunnel it is dark ('+JSON.stringify(H)+')');
   const rd=await pg.evaluate(()=>({n:RIDERS.list.length,inCars:RIDERS.list.every(r=>TRAINS.list.some(t=>t.cars.some(c=>c.inner===r.g.parent))),kinds:new Set(RIDERS.list.map(r=>r.kind)).size,seats:RIDERS.list.every(r=>r.seat)}));
   ok(rd.n>=6&&rd.inCars&&rd.seats&&rd.kinds>=2,'riders sit in the trains\' seats, doing different things ('+JSON.stringify(rd)+')');
   // ride on: it waits in the dark at the tunnel's end and comes back to A with its doors open; get off there

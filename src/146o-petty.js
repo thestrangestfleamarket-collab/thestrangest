@@ -1,12 +1,13 @@
 // SISTER PETTY: her table under a red parasol in Central Park, near the golems' cave; she sells petty curses (nothing magic: little transmitters and drones; legal, only annoying) — CURSE puts one on the nearest character or player: rats that follow them, a cloud that rains on them, a stink; a golem with rats at its feet fights the rats and forgets the cave.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, NPCS, ONLINE, pos, SFX, SHOPS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 import {GOLEMS} from './146e-golems.js';
 const CURSE={list:[],T:60}; window.CURSE=CURSE;
-{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), now=()=>performance.now()/1000;
+{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc'), now=()=>performance.now()/1000;
   const KINDS={curse_rats:{name:'RATS ON A STRING',what:'rats'},curse_cloud:{name:'A RAIN CLOUD',what:'cloud'},curse_stink:{name:'A STINK',what:'stink'}};
   FORAGE.add({names:Object.fromEntries(Object.entries(KINDS).map(([k,v])=>[k,v.name]))});
 

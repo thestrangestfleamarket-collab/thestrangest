@@ -1,9 +1,9 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, CHARP, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, HANDHELD, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BLK, BUGS, CHARP, CIVIC, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, HANDHELD, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, FADE, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
@@ -17,7 +17,7 @@ for(const [k,d] of Object.entries({'map.train1':'TRAIN 1 · TO {next}','map.trai
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3()});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · swim up, and faster · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · swim down'],
-    ['view','change the view (map, isometric, third person, behind, first person)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, isometric, third person, behind, first person)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops)'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)']];
   const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+N','THE NEXT LOOK'],['SHIFT+E','EDIT THE WORLD'],['SHIFT+0','THE EDITORS'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
@@ -39,6 +39,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','iso','third','follow','first']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };
+  { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
   { const P=document.createElement('div'); P.id='movesp'; P.style.cssText='position:fixed;inset:6% 10%;z-index:20;display:none;overflow:auto;padding:16px 20px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.9';
     document.body.appendChild(P);
     UI.moves=()=>{ '@later'; if(P.style.display!=='none'){ P.style.display='none'; return; }
@@ -49,6 +50,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('A D','IN A FIGHT: PULL THE ROD LEFT / RIGHT, AGAINST THE FISH\'S RUN')+row('W S','DRAG UP / DOWN')+row('P','DROP A CRAB POT')+row('V','CHANGE THE VIEW');
+      o+=h('ON A SKATEBOARD (HOLD IT, CLICK TO STEP ON, CLICK TO STEP OFF)')+row('W A S D','PUSH, CARVE, BRAKE · IN THE AIR: A D SPIN')+row('SPACE','HOLD TO CROUCH, LET GO TO OLLIE (LONGER, HIGHER) · ON A RAIL: OLLIE OFF')+row('J','IN THE AIR: A FLIP TRICK · NONE OR A KICKFLIP · D HEELFLIP · W HARDFLIP · S POP SHOVE-IT')
+        +row('K','IN THE AIR, HOLD: A GRAB · NONE INDY · A MELON · D STALEFISH · W NOSEGRAB · S TAILGRAB')+row('L','BY A RAIL, LEDGE OR COPING: GRIND · NONE 50-50 · W NOSEGRIND · S 5-0 · A BOARDSLIDE · D LIPSLIDE · A D KEEP YOUR BALANCE · AS YOU LAND: REVERT')
+        +row('I','MANUAL (W WITH IT: NOSE MANUAL) · W S KEEP YOUR BALANCE · I AGAIN ENDS IT')+row('QUARTER PIPES','RIDE UP ONE FAST: STRAIGHT UP INTO THE AIR, DOWN AGAIN BACKWARDS')+row('COMBOS','EVERY TRICK ADDS ITS POINTS AND ONE TO THE MULTIPLIER; LAND CLEAN AND ROLL AWAY (OR MANUAL, OR REVERT) TO KEEP IT GOING · LAND SIDEWAYS OR MID-FLIP AND YOU BAIL')
+        +row('GAMEPAD','A OLLIE · X FLIP · Y GRAB · RB GRIND · LB MANUAL · STICK STEERS AND SPINS');
       o+=h('TALKING TO SOMEONE')+row('W S, ARROWS','PICK AN ANSWER')+row('E, SPACE, ENTER','SAY IT')+row('1 TO 9','SAY THAT ONE')+row('ESC','WALK AWAY');
       o+=h('SITTING')+row('ANY MOVE KEY','STAND UP');
       o+=h('YOUR APARTMENT: DECORATING ('+NAME(keyOf('t'))+')')+row('DRAG','MOVE A THING')+row('Q E','TURN IT (ALT: A LITTLE)')+row('[ ]','LOWER / RAISE IT')+row('X, DELETE','PUT IT AWAY')+row('G','GRID ON / OFF')+row('CTRL + Z','UNDO')+row('ESC','DONE');
@@ -186,7 +191,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
     <div class="ttl frame"><span id="mttl">THE STRANGEST FLEA MARKET</span></div>
-    <div class="tabs" role="tablist"><button role="tab" data-t="home">◀ CHARACTER</button><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button><button role="tab" data-t="guide">GUIDE</button><button role="tab" data-t="bug">REPORT A BUG</button><button role="tab" data-t="tenants" hidden>TENANTS</button></div>
+    <div class="tabs" role="tablist"><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button></div>
     <div class="pane" data-p="home" id="dhome"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <div class="row" id="mapz"></div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div></div>
@@ -202,7 +207,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row"><button class="btn" id="dreset">RESET THE VIEW</button></div></div>
     <div class="pane" data-p="atmo">
       <div id="adn"></div>
-      <h3>WEATHER</h3><div class="row" id="awx"></div>
+      <h3>WEATHER</h3><div id="awx"></div>
       <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button></div>
       <h3>HAZE</h3><div class="row" id="atmhaze"></div><div class="dim">the mist round the town's edge (MIST), the old far haze and sky (FAR), or none; its every number is in the editors' DISTANCE LOOK</div></div>
     <div class="pane" data-p="graphics">
@@ -220,7 +225,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="tenants" id="dten"></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home'; M.querySelector('.tabs').style.display=home?'none':''; M.querySelector('.box').classList.toggle('home',home); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
+  const show=t=>{ tab=t; const home=t==='home', solo=!M.querySelector('.tabs [data-t="'+t+'"]'); M.querySelector('.tabs').style.display=solo?'none':''; M.querySelector('.box').classList.toggle('home',solo); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
   M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
   M.querySelectorAll('.row.pick').forEach(r=>{ const o=()=>[...r.querySelectorAll('.btn:not(.arr)')], arr=(t,d)=>{ const b=document.createElement('button'); b.className='btn arr'; b.textContent=t; b.setAttribute('aria-label',d<0?'previous':'next');
     b.onclick=()=>{ const L=o(), i=L.findIndex(x=>x.getAttribute('aria-pressed')==='true'); L[(i+d+L.length)%L.length].click(); }; return b; }; r.insertBefore(arr('<',-1),o()[0]); r.appendChild(arr('>',1)); });   // a row of choices shows only the one picked, stepped with < >
@@ -246,29 +251,37 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const bt=(x,y)=>[OX+(x-OX)*K,OY+(y-OY)*K], wt=(x,z)=>[OX+x/TILE,OY+z/TILE];
     const P=PARK, px0=P.x0+P.ox, px1=P.x1+P.ox, py0=P.y0+P.oy, py1=P.y1+P.oy, RV=RING.river, G=SHARED.BOD.grounds.filter(g=>!g.bld), RA=SHARED.BOD.road.at;
     const HOME=SECTION.id, SM=MODS.sections;
-    const C={void:[11,13,18],lot:[70,66,60],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46]};
-    const kind=(x,y)=>{ if(x<F.x0||x>F.x1||y<F.y0||y>F.y1)return 'void'; const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
+    const C={void:[11,13,18],lot:[70,66,60],water:[40,86,128],quay:[104,104,98],road:[52,54,60],alley:[70,71,76],walk:[142,138,128],land:[60,104,54],lawn:[74,134,60],way:[186,170,128],wall:[48,52,46],fair:[122,120,116]};
+    const FR=(LEVEL.places||[]).filter(p=>p.kind==='fair'||p.kind==='gate');
+    const kind=(x,y)=>{ if(x<F.x0||x>F.x1||y<F.y0||y>F.y1)return 'void'; for(const q of FR)if(x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)return 'fair'; const sk=SM&&SM.kindAt(x,y); if(sk)return sk; if(y<RV.y1)return y>RV.y1-1?'quay':'water'; if(RA(x,y))return 'road';
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; if(FOUNT.lake(x-P.ox,y-P.oy)<0)return 'water'; if(FOUNT.ter(x-P.ox,y-P.oy)<0)return 'way'; return P.path&&P.path(x-P.ox,y-P.oy)?'way':P.brook&&(h=>h!=null&&h<P.brook.L(P.brook.q(x-P.ox,y-P.oy)[1]))(P.brook.h(x-P.ox,y-P.oy))?'water':'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
     const KN=Object.keys(C), KS=new Uint8Array(W*H), im=new ImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=kind(F.x0+(i+.5)/S,F.y1-(j+.5)/S), c=C[k], o=(j*W+i)*4; KS[j*W+i]=KN.indexOf(k); im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=255; }
+    const NP=(LEVEL.places||[]).filter(p=>p.name&&p.kind!=='gate'), bare=n=>(n||'').toUpperCase().replace(/^THE /,''), NAMED=new Set(NP.map(p=>bare(p.name)));
     const B=[], add=(a,b,col,n,k)=>B.push({x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1]),col,n,k:k||'bld'});
-    { const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],'BODEGA'); }
-    if(MODS.apts&&MODS.apts.A){ const a=MODS.apts.A; add(bt(a.x0,a.y0),bt(a.x1,a.y1),[150,74,58],'APARTMENTS'); }
-    { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)add(bt(g.x0,g.y0),bt(g.x1,g.y1),[112,78,48],'GHOST ST'); }
+    for(const p of LEVEL.places||[])if(p.kind==='front'||p.kind==='gate')add([p.x0,p.y0!=null?p.y0:LEVEL.block.back],[p.x1,p.y1!=null?p.y1:SHARED.BOD.OY],[110,104,96],'');
+    { const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],''); }
+    if(MODS.apts&&MODS.apts.A){ const a=MODS.apts.A; add(bt(a.x0,a.y0),bt(a.x1,a.y1),[150,74,58],''); }
+    { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)add(bt(g.x0,g.y0),bt(g.x1,g.y1),[112,78,48],''); }
     if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],'','lot'); }
-    { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'CASTLE'); }
-    if(GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],'CAVE'); }
-    if(GTOWER.site){ const t=GTOWER.site(); if(t)add(wt(t.x-t.w/2,t.z-t.d/2),wt(t.x+t.w/2,t.z+t.d/2),[130,126,116],'TOWER'); }
+    { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'THE CASTLE'); }
+    for(const q of FR)if(q.kind==='fair')add([q.x0,q.y0],[q.x1,q.y1],[122,120,116],'');
+    if(GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],"THE GOLEMS' CAVE"); }
+    if(GTOWER.site){ const t=GTOWER.site(); if(t)add(wt(t.x-t.w/2,t.z-t.d/2),wt(t.x+t.w/2,t.z+t.d/2),[130,126,116],"THE SQUIRREL'S TOWER"); }
     if(SM)for(const R of SM.rows)add([R.lot.x0,R.lot.y0],[R.lot.x1,R.lot.y1],R.col||[120,110,100],'');
     for(const st of LOOP.STA||[])if(!st.old)add([st.kiosk.x0,st.kiosk.y0],[st.kiosk.x1,st.kiosk.y1],[30,30,34],st.id+'1 '+st.name);
-    add([MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],[30,30,34],'SUBWAY'); { const n=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6; add([n-1.4,-76.35],[n+1.4,-74.85],[46,110,64],''); }
-    for(const R of STORE.rooms||[]){ const a=wt(R.x0,R.z0), b=wt(R.x1,R.z1); if(a[0]>F.x0&&b[0]<F.x1&&Math.max(a[1],b[1])>RV.y1&&Math.min(a[1],b[1])<F.y1&&!B.some(q=>Math.abs(q.x0-Math.min(a[0],b[0]))<1&&Math.abs(q.y0-Math.min(a[1],b[1]))<1))add(a,b,[110,104,96],(R.name||'').toUpperCase()); }
+    add([MAPSTAIR.x0,MAPSTAIR.y0],[MAPSTAIR.x1,MAPSTAIR.y1],[30,30,34],''); { const n=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6; add([n-1.4,-76.35],[n+1.4,-74.85],[46,110,64],''); }
+    if(CIVIC.tower){ const c=CIVIC.tower; add(wt(c.x0,c.z0),wt(c.x1,c.z1),[150,142,128],'THE CIVIC TOWER'); }
+    for(const R of STORE.rooms||[]){ const a=wt(R.x0,R.z0), b=wt(R.x1,R.z1); if(a[0]>F.x0&&b[0]<F.x1&&Math.max(a[1],b[1])>RV.y1&&Math.min(a[1],b[1])<F.y1&&!NAMED.has(bare(R.name))&&!B.some(q=>Math.abs(q.x0-Math.min(a[0],b[0]))<1&&Math.abs(q.y0-Math.min(a[1],b[1]))<1))add(a,b,[110,104,96],(R.name||'').toUpperCase()); }
     for(const q of B){ const i0=Math.round((q.x0-F.x0)*S), i1=Math.round((q.x1-F.x0)*S), j0=Math.round((F.y1-q.y1)*S), j1=Math.round((F.y1-q.y0)*S);
       for(let j=Math.max(0,j0);j<Math.min(H,j1);j++)for(let i=Math.max(0,i0);i<Math.min(W,i1);i++){ const e=i===i0||i===i1-1||j===j0||j===j1-1, o=(j*W+i)*4; for(let k=0;k<3;k++)im.data[o+k]=e?q.col[k]*.55:q.col[k]; } }
     for(let i=0;i<W;i++)for(const j of [0,H-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
     for(let j=0;j<H;j++)for(const i of [0,W-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
-    const L=[]; for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,q.y1<SHARED.BOD.road.CORN[0].y?q.y0-2.5:q.y1+1.5]);
-    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+RING.ff.x1)/2-40,(SHARED.BOD.road.CORN[0]?SHARED.BOD.road.CORN[0].y:-60)]);
+    const L=[], row=(y0,y1)=>y1<SHARED.BOD.road.CORN[0].y?y0-2.5:y1+1.5;
+    for(const p of NP){ const y0=p.y0!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:SHARED.BOD.OY; L.push(p.kind==='fair'?[p.name,(p.x0+p.x1)/2,(y0+y1)/2]:p.face==='e'&&p.y1!=null?[p.name,p.x1+3,(y0+y1)/2]:[p.name,(p.x0+p.x1)/2,row(y0,y1)]); }
+    for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,row(q.y0,q.y1)]);
+    for(const p of STORE.places||[])if(p[4]==='see'&&p[7])L.push([p[0],...p[7]]);
+    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],[SECTIONS.streets.south,(RING.wr1+RING.ff.x1)/2-40,(SHARED.BOD.road.CORN[0]?SHARED.BOD.road.CORN[0].y:-60)]);
     const L2=[]; if(SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, my=(rd.y0+inn.y0)/2, ny=(rd.y1+inn.y1)/2, wx=(rd.x0+inn.x0)/2, ex=(rd.x1+inn.x1)/2;
       for(const b of SECTIONS.loaded){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; if(b.row===0){ if(b.id!==HOME)L2.push([ST.south,cx,my]); } else L2.push([ST.north,cx,ny]); if(b.col===0)L2.push([ST.west,wx,cy]); if(b.col===SECTIONS.grid.cols-1)L2.push([ST.east,ex,cy]); } }
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; cv.getContext('2d').putImageData(im,0,0);
@@ -305,7 +318,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(SHARED.LVL===mapLv){ const a=Math.round(X_(SHARED.BOD.OX+pos.x/TILE)), b=Math.round(Y_(SHARED.BOD.OY+pos.z/TILE)); mg.fillStyle='#000'; mg.fillRect(a-5,b-5,11,11); mg.fillStyle='#f2c14e'; mg.fillRect(a-4,b-4,9,9); } }
   STORE.goTo=(x,z,lv,hd,fl)=>goTo(x,z,lv,hd,fl);
   window.__UI=UI;
-  const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?(lv<-1.6?'down':'up'):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
+  const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?LEVELS.below(lv):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
   UI.goTo=goTo;
   const toPlace=(x,z,lv,hd)=>{ const id=(lv==null||lv==='up')&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]); else goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
   { let dr=null, moved=false; mcv.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy}; moved=false; mcv.setPointerCapture(e.pointerId); });
@@ -319,17 +332,19 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(MODS.apts&&MODS.apts.enterReal)MODS.apts.enterReal(); };
   const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[d[0],d[1],d[2],'up',null,d[5]]):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
-  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(window.FIREV&&n===FIREV.name&&FIREV.out)return FIREV.out(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
+  const goPlace=async n=>{ if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(window.FIREV&&n===FIREV.name&&FIREV.out)return FIREV.out(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P&&P[6])return P[6](); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); if(q)SYS.onStart(()=>setTimeout(()=>goPlace(q.toUpperCase()),300),'094-ui place'); }
   const PLACEN=PLACES.map(p=>p[0]), ROOMN=[];
   { const add=(n,x,z,lv)=>{ ROOMN.push(n); PLACES.push([n,x,z,lv]); }, mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=SHARED.BOD.SB;
     add('THE SHOP',...mid(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,SHARED.BOD.BODOFF,B.x1,B.y1]),'up');
     if(SHARED.BOD.GD){ const s=SHARED.BOD.GD.shift||[0,0], m=mid(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.floor||SHARED.BOD.GD.r); add('THE BATHS',m[0]+s[0],m[1]+s[1],'up'); }
-    add('THE SUBWAY STAIRS',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1+1.2),'up'); }
-  { const sel=$('#placesel'), grp=(label,list,go)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list){ const o=document.createElement('option'); o.value=n; o.textContent=n; o.dataset.go=go; g.appendChild(o); } sel.appendChild(g); };
-    const first=document.createElement('option'); first.value=''; first.textContent='CHOOSE A PLACE...'; sel.appendChild(first);
-    grp('PLACES',PLACEN,'p'); grp('ROOMS',ROOMN,'p'); grp('MORE PLACES',(STORE.places||[]).map(p=>p[0]),'s');
-    sel.onchange=()=>{ const o=sel.selectedOptions[0]; if(!o||!o.value)return; const n=o.value; sel.value=''; if(o.dataset.go==='s')goPlace(n); else { const P=PLACES.find(p=>p[0]===n); if(P)toPlace(P[1],P[2],P[3],P[5]); } };
+    PLACES.push(['THE SUBWAY STAIRS',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1+1.2),'up']); PLACEN.push('THE SUBWAY STAIRS'); }
+  { const sel=$('#placesel'), grp=(label,list)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list){ const o=document.createElement('option'); o.value=n; o.textContent=n; g.appendChild(o); } sel.appendChild(g); };
+    const fill=()=>{ const seen=new Set(), G={OUTSIDE:[],INSIDE:[],UNDERGROUND:[]}, inn=new Set([...ROOMN,...(STORE.rooms||[]).map(R=>(R.name||'').toUpperCase()),...Object.keys(STORE.off||{})]);   // every place the game has registered, once, made when the list opens
+      for(const p of UI.places()){ const n=p[0]; if(seen.has(n))continue; seen.add(n); (p[3]==='down'?G.UNDERGROUND:p[4]==='off'||typeof p[3]==='number'||inn.has(n)?G.INSIDE:G.OUTSIDE).push(n); }
+      sel.textContent=''; const first=document.createElement('option'); first.value=''; first.textContent='CHOOSE A PLACE...'; sel.appendChild(first); for(const k in G)grp(k,G[k]); };
+    const fresh=()=>{ if(sel.options.length!==1+new Set(UI.places().map(p=>p[0])).size)fill(); }; UI.fillPlaces=fill; fill(); SYS.onStart(fill,'094-ui places'); sel.addEventListener('focus',fresh); sel.addEventListener('mousedown',fresh);
+    sel.onchange=()=>{ const n=sel.value; sel.value=''; if(!n)return; const P=PLACEN.includes(n)||ROOMN.includes(n)?PLACES.find(p=>p[0]===n):null; if(P)toPlace(P[1],P[2],P[3],P[5]); else goPlace(n); };
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
@@ -368,7 +383,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   document.getElementById('stat').hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['cpadmin',el=>{ el.hidden=true; }],['rinsp',()=>RINSP.toggle(false)]];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>WE.toggle()],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['bagp',el=>{ el.hidden=true; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['cpadmin',el=>{ el.hidden=true; }],['rinsp',()=>RINSP.toggle(false)]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   { const ML=document.createElement('style'), C='color:#7dffa8!important', DIM='color:#3aa866!important', HI='color:#d8ffe4!important', sel=(k,cs)=>cs.map(c=>`.ml [style*="${k}:${c}"]`).join(',');   // every menu in the ESC menu's look (owner, 30 Oct 2026)
     ML.textContent=`.ml{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:18px!important;line-height:1.45;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important}
@@ -394,7 +409,7 @@ ${sel('color',['#d8a845'])}{${HI}}
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
-  const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';
+  const NOPE='button,input,select,textarea,a,label,canvas,option,.pX,.tpg,.bgi,.bgr';
   const zoomOf=el=>{ let z=1; for(let q=el;q;q=q.parentElement){ const v=parseFloat(getComputedStyle(q).zoom); if(v>0)z*=v; } return z; };
   const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
       const r=box.getBoundingClientRect(), z=zoomOf(box), dx=e.clientX-r.left, dy=e.clientY-r.top, px=v=>(v/z)+'px'; Object.assign(box.style,{position:'fixed',left:px(r.left),top:px(r.top),right:'auto',bottom:'auto',transform:'none',margin:'0',width:px(r.width),height:box.id==='ed'?px(r.height):box.style.height}); const fit=t=>{ box.style.maxHeight=px(Math.max(120,innerHeight-t-8)); if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=px(r.left); box.style.top=px(r.top);
@@ -408,4 +423,4 @@ ${sel('color',['#d8a845'])}{${HI}}
       if(!el.dataset.pan){ el.dataset.pan=1; drag(el); }
       const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');
       if(!el.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); const b=own(el); if(b)b.click(); else hide(el); }; el.appendChild(x); } } };
-  look(); setInterval(()=>{ look(); UI.menuLook(); frame(); },400); }
+  look(); SYS.every(()=>{ look(); UI.menuLook(); frame(); },400,'094-ui look'); }

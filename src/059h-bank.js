@@ -1,6 +1,7 @@
 // THE BANK: the bank on the block, between the playhouse and the bar (its own builder): a stone front with a big vault door, and inside a dragon's hoard, a dungeon where a sleeping dragon's head comes out of the back wall over piles of gold.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, PERFX, pos, SFX, UI, VIT} from './003b-systems.js';
+import {PERFX, pos, SFX, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, BLOCK, FIX, grab, SOL, STORE, SYS} from './006-map-pre.js';
 import {dgnRoom} from './038z-dungeon.js';
@@ -31,7 +32,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
     mp('museum portico steps',M.mid,(py+MB.y0)/2); for(const d of [-4,-2.8,2.8,4])mp('museum column',M.mid+d,py+.7); mp('bank entablature',M.mid,py+.7,2);
     for(const [x,y,k] of [[mx-5.4,B.y0+3.2,'bone pile'],[mx+6.2,B.y0+5,'skull'],[mx-8,B.y1-4,'bones'],[mx+9,B.y1-3,'bones'],[mx+3.4,B.y0+2.4,'skull']])mp(k,...at(x,y));
     for(const [x,y,c,r] of [[B.x0+1,B.y0+4,[1.9,1.15,.55],12],[B.x1-1,B.y0+4,[1.9,1.15,.55],12],[B.x0+1,B.y1-4,[1.8,1.1,.5],11],[B.x1-1,B.y1-4,[1.8,1.1,.5],11],[mx,B.y0+5,[1.6,1.1,.5],10],[mx,B.y1-2,[1.4,1.1,.7],10]])
-      LAMPS.push({own:1,room:1,day:true,x,y,z:120,r,c}); });
+      LAMPS.push({own:1,room:1,day:true,x,y,z:120,r,c}); },{noWins:1});
     const S=STORE.inside.bank; if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); lair(); }; } });
   // the hoard: what is drawn in 3D, made the first time you go in
   const lair=()=>{ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y, TU=X(1)-X(0), wallZ=Z(B.y0+T), HH=Y(B.h), clip=[new THREE.Plane(new THREE.Vector3(0,0,1),-wallZ)], g=new THREE.Group(); g.name='bank hoard';
@@ -81,7 +82,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
     // take its gold and it breathes fire: you burn up where you stand (the handful falls back on the heap)
     const ft=document.createElement('canvas'); ft.width=ft.height=32; { const c=ft.getContext('2d'), q=c.createRadialGradient(16,16,0,16,16,16); q.addColorStop(0,'rgba(255,250,210,1)'); q.addColorStop(.35,'rgba(255,190,60,.9)'); q.addColorStop(1,'rgba(220,60,10,0)'); c.fillStyle=q; c.fillRect(0,0,32,32); }
     const FT=new THREE.CanvasTexture(ft), FC=[new THREE.Color(0xfff2b0),new THREE.Color(0xffa030),new THREE.Color(0xd83a10)], flames=[...Array(110)].map(()=>{ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:FT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0})); s.visible=false; g.add(s); return {s,t:9,a:new THREE.Vector3(),b:new THREE.Vector3(),j:new THREE.Vector3()}; });
-    let fire=-1, fi=0, burnt=false, f0=0; const MOUTH=new THREE.Vector3(0,1.15*k,5.4*k), steal=()=>{ if(fire>=0||VIT.dead)return; fire=0; f0=performance.now(); burnt=false; awake=true; W=Math.max(W,.8); SFX.play('boom',{vol:.7,pitch:.6}); FORAGE.say('YOU REACH INTO THE GOLD. THE DRAGON WAKES.','#f2a35e'); };
+    let fire=-1, fi=0, burnt=false, f0=0; const MOUTH=new THREE.Vector3(0,1.15*k,5.4*k), steal=()=>{ if(fire>=0||VIT.dead)return; fire=0; f0=performance.now(); burnt=false; awake=true; W=Math.max(W,.8); SFX.play('boom',{vol:.7,pitch:.6}); SAY('YOU REACH INTO THE GOLD. THE DRAGON WAKES.','#f2a35e'); };
     STORE.bank.steal=steal;
     STORE.bank.dragon=()=>({awake,W:+W.toFixed(2),d:+(Math.hypot(pos.x-X(mx),pos.z-HZ)/TU).toFixed(1),fire:+fire.toFixed(2)});
     SYS.add('places',dt=>{ if(!g.parent||!inB()){ awake=false; W=0; return; } dt=Math.min(dt||0,.1); const d=Math.hypot(pos.x-X(mx),pos.z-HZ);
@@ -93,7 +94,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
       if(ph>=.62&&!out){ out=true; snort(6); } else if(ph<.62)out=false;
       if(fire>=0){ fire+=dt; jaw.rotation.x=Math.min(1,fire*6)*.32*(fire<1.4?1:Math.max(0,1-(fire-1.4)*3)); head.updateMatrixWorld(true); const m=head.localToWorld(MOUTH.clone()), tg=new THREE.Vector3(pos.x,SHARED.py+.9*TU,pos.z);
         if(fire<1.4)for(let n=0;n<Math.max(3,Math.round(dt*240));n++){ const f=flames[fi++%flames.length]; f.t=-Math.random()*dt; f.a.copy(m); f.b.copy(tg); f.j.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(.9*TU); }
-        if(performance.now()-f0>350&&!burnt){ burnt=true; SFX.play('boom',{vol:.5,pitch:.9}); VIT.die(); FORAGE.say('THE DRAGON BURNS YOU TO ASHES. THE GOLD FALLS BACK ON THE HEAP.','#ff7a40'); }
+        if(performance.now()-f0>350&&!burnt){ burnt=true; SFX.play('boom',{vol:.5,pitch:.9}); VIT.die(); SAY('THE DRAGON BURNS YOU TO ASHES. THE GOLD FALLS BACK ON THE HEAP.','#ff7a40'); }
         if(fire>2.4)fire=-1; }
       for(const f of flames){ if(f.t>.45){ f.s.visible=false; continue; } f.t+=dt; if(f.t<0)continue; const u=f.t/.45; f.s.visible=true; f.s.position.lerpVectors(f.a,f.b,Math.min(1,u*1.15)).addScaledVector(f.j,u);
         f.s.scale.setScalar((.35+u*1.5)*k); f.s.material.color.copy(u<.35?FC[0]:u<.7?FC[1]:FC[2]); f.s.material.opacity=.95*(1-u); }

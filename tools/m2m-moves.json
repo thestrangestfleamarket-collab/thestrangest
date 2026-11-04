@@ -1,0 +1,152 @@
+{
+"greet": {
+"clip": "greeting"
+},
+"clap": {
+"clip": "clapping",
+"loop": true
+},
+"cheer": {
+"clip": "victory"
+},
+"fistPump": {
+"clip": "victory-fist-pump"
+},
+"dab": {
+"clip": "dab"
+},
+"yes": {
+"clip": "yes"
+},
+"nod": {
+"clip": "head-nod"
+},
+"no": {
+"clip": "reject"
+},
+"angry": {
+"clip": "angry"
+},
+"confused": {
+"clip": "confused"
+},
+"flex": {
+"clip": "chest-open"
+},
+"knock": {
+"clip": "knock"
+},
+"powerUp": {
+"clip": "power-up"
+},
+"talk": {
+"clip": "idle-talking",
+"loop": true
+},
+"foldArms": {
+"clip": "idle-foldarms",
+"loop": true
+},
+"dance": {
+"clip": "dance-simple",
+"loop": true
+},
+"armPump": {
+"clip": "dance-arm-pump",
+"loop": true
+},
+"bodyRoll": {
+"clip": "dance-body-roll",
+"loop": true
+},
+"charleston": {
+"clip": "dance-charleston",
+"loop": true
+},
+"hipReach": {
+"clip": "dance-reach-hip",
+"loop": true
+},
+"moonwalk": {
+"clip": "moonwalk",
+"loop": true
+},
+"jacks": {
+"clip": "jumping-jacks",
+"loop": true
+},
+"pushups": {
+"clip": "pushup",
+"loop": true
+},
+"sitGround": {
+"clip": "sit-ground-idle",
+"loop": true
+},
+"meditate": {
+"clip": "meditate",
+"loop": true
+},
+"sleep": {
+"clip": "sleeping",
+"loop": true
+},
+"shiver": {
+"clip": "shiver",
+"loop": true
+},
+"zombie": {
+"clip": "zombie-idle",
+"loop": true
+},
+"eat": {
+"clip": "consume"
+},
+"craft": {
+"clip": "hammering"
+},
+"plant": {
+"clip": "farm-plantseed"
+},
+"harvest": {
+"clip": "farm-harvest"
+},
+"mine": {
+"clip": "mining"
+},
+"sitDown": {
+"clip": "sitting-enter"
+},
+"water": {
+"clip": "farm-watering"
+},
+"cast": {
+"clip": "overhandthrow"
+},
+"pull": {
+"clip": "rope-pull",
+"loop": true
+},
+"swingA": {
+"clip": "sword-regular-a"
+},
+"swingB": {
+"clip": "sword-regular-b"
+},
+"swingHeavy": {
+"clip": "two-handed-horizontal-swing",
+"from": 0.2,
+"to": 1.1
+},
+"kickSide": {
+"clip": "kick-side",
+"to": 0.9
+},
+"kickSpin": {
+"clip": "kick-spin",
+"to": 1.2
+},
+"dodge": {
+"clip": "dodge-back"
+}
+}

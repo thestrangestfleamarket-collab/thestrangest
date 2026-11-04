@@ -2252,7 +2252,15 @@
     "bottle",
     "wax_candle",
     "quill_pen",
-    "cigar"
+    "cigar",
+    "canvas_s",
+    "canvas_m",
+    "canvas_w",
+    "canvas_t",
+    "paper"
+   ],
+   "buys": [
+    "paintings"
    ],
    "line": "Odds and ends. Mostly ends."
   },
@@ -2508,7 +2516,7 @@
   "group": "bar",
   "job": {
    "at": "bar",
-   "title": "SINGS FRI/SAT NIGHTS",
+   "title": "HOST",
    "hours": [
     20,
     24
@@ -2826,7 +2834,8 @@
     15
    ]
   },
-  "name": "THE GAS STATION ATTENDANT"
+  "name": "THE GAS STATION ATTENDANT",
+  "trade": {"sells": ["f_bec", "f_hero", "f_chopped", "d_coffee"], "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."}
  },
  "motel_clerk": {
   "pf": "motel-clerk-950c39",
@@ -4139,7 +4148,8 @@
     15
    ]
   },
-  "name": "THE DINER WAITRESS"
+  "name": "THE DINER WAITRESS",
+  "trade": {"sells": ["d_coffee", "d_shake", "d_cola", "f_eggs", "f_pancake", "f_hash", "f_burger", "f_blt", "f_grilled", "f_pie", "f_cake"], "line": "Coffee's bottomless. The pie is not."}
  },
  "carving_chef": {
   "pf": "carving-chef-102bf5",
@@ -4197,13 +4207,14 @@
   "pf": "suburban-resident-a9db9c",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:cups",
+   "title": "RUNS THE TEACUPS",
    "hours": [
-    8,
-    21
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE SUBURBAN RESIDENT"
@@ -4212,13 +4223,14 @@
   "pf": "townswoman-5aa87f",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "food:funnel",
+   "title": "THE FUNNEL CAKE STAND",
    "hours": [
-    8,
-    21
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE TOWNSWOMAN"
@@ -4227,13 +4239,14 @@
   "pf": "villager-40255c",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:swings",
+   "title": "RUNS THE SWING RIDE",
    "hours": [
-    8,
-    21
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE MALE VILLAGER"
@@ -4242,13 +4255,14 @@
   "pf": "family-road-tripper-247570",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:flume",
+   "title": "RUNS THE LOG FLUME",
    "hours": [
-    8,
-    21
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE FAMILY ROAD-TRIPPER"
@@ -4257,13 +4271,14 @@
   "pf": "slot-tourist-08b37d",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:pusher",
+   "title": "THE COIN PUSHER",
    "hours": [
-    8,
-    21
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE SLOT TOURIST"
@@ -4407,13 +4422,14 @@
   "pf": "school-caretaker-b49fae",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:coaster",
+   "title": "RUNS THE ROLLER COASTER",
    "hours": [
-    8,
-    21
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE SCHOOL CARETAKER"
@@ -4422,13 +4438,14 @@
   "pf": "parent-chaperone-79e535",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:carousel",
+   "title": "RUNS THE CAROUSEL",
    "hours": [
-    8,
-    21
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE PARENT CHAPERONE"
@@ -4437,13 +4454,14 @@
   "pf": "neighbour-handing-out-candy-2c1159",
   "group": "town",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "food:candy",
+   "title": "SPINS COTTON CANDY",
    "hours": [
-    8,
-    21
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "house"
   },
   "name": "THE NEIGHBOUR HANDING OUT CANDY"
@@ -4468,29 +4486,37 @@
   "pf": "bellhop-053c4d",
   "group": "v-casino",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "tickets",
+   "title": "SELLS FAIR TICKETS",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
-  "visit": "casino"
+  "visit": "casino",
+  "trade": {
+   "sells": [
+    "fairticket"
+   ],
+   "line": "Tickets for the rides and the games. A strip of five is cheaper at the booth window."
+  }
  },
  "blackjack_dealer": {
   "name": "THE BLACKJACK DEALER",
   "pf": "blackjack-dealer-fc0ab1",
   "group": "v-casino",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:skee",
+   "title": "THE SKEE-BALL",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "casino"
@@ -4500,13 +4526,14 @@
   "pf": "casino-security-officer-adca27",
   "group": "v-casino",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "gate",
+   "title": "KEEPS THE FAIR GATE",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "casino"
@@ -4516,13 +4543,14 @@
   "pf": "pit-boss-234a94",
   "group": "v-casino",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "prize",
+   "title": "THE PRIZE COUNTER",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "casino"
@@ -4532,13 +4560,14 @@
   "pf": "poker-pro-da0258",
   "group": "v-casino",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "stage3",
+   "title": "THE CARD TRICKS",
    "hours": [
-    9,
-    20
+    14,
+    21
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "casino"
@@ -4548,13 +4577,14 @@
   "pf": "outlaw-e0fd6a",
   "group": "v-frontier",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:gallery",
+   "title": "THE SHOOTING GALLERY",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "frontier"
@@ -4564,13 +4594,14 @@
   "pf": "prospector-69a481",
   "group": "v-frontier",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:ship",
+   "title": "RUNS THE PIRATE SHIP",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "frontier"
@@ -4580,13 +4611,14 @@
   "pf": "sheriff-986181",
   "group": "v-frontier",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "bumpers",
+   "title": "RUNS THE BUMPER CARS",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "frontier"
@@ -4596,13 +4628,14 @@
   "pf": "ashigaru-foot-soldier-806707",
   "group": "v-japan",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "arcade",
+   "title": "MINDS THE ARCADE TENT",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "japan"
@@ -4644,13 +4677,14 @@
   "pf": "farmer-363820",
   "group": "v-japan",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "food:corndog",
+   "title": "THE CORN DOG STAND",
    "hours": [
-    9,
-    20
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "japan"
@@ -4660,13 +4694,14 @@
   "pf": "samurai-warrior-f2ebbe",
   "group": "v-japan",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "stage2",
+   "title": "THE SWORD ACT",
    "hours": [
-    9,
-    20
+    14,
+    21
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "japan"
@@ -4676,13 +4711,14 @@
   "pf": "townswoman-5ca8b5",
   "group": "v-japan",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "food:lemonade",
+   "title": "THE LEMONADE STAND",
    "hours": [
-    9,
-    20
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "japan"
@@ -4692,13 +4728,14 @@
   "pf": "astronaut-engineer-20b738",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "skyS",
+   "title": "THE SKY RIDE, SOUTH END",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4708,13 +4745,14 @@
   "pf": "astronaut-explorer-323482",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "fun",
+   "title": "THE FUNHOUSE DOOR",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4724,13 +4762,14 @@
   "pf": "astronaut-scientist-47d733",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:claw",
+   "title": "THE CLAW MACHINE",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4740,13 +4779,14 @@
   "pf": "base-commander-0ec028",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:sling",
+   "title": "RUNS THE SLINGSHOT",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4756,13 +4796,14 @@
   "pf": "service-robot-93f82e",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:drop",
+   "title": "RUNS THE DROP TOWER",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4772,13 +4813,14 @@
   "pf": "shuttle-pilot-067166",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:scrambler",
+   "title": "RUNS THE SCRAMBLER",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4788,13 +4830,14 @@
   "pf": "aircrew-pilot-e6b732",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "skyN",
+   "title": "THE SKY RIDE, NORTH END",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4804,13 +4847,14 @@
   "pf": "flight-attendant-befaf4",
   "group": "v-space",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "info",
+   "title": "FAIR INFORMATION",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "space"
@@ -4820,13 +4864,14 @@
   "pf": "cheerleader-90875e",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "stage1",
+   "title": "PERFORMS ON THE FAIR STAGE",
    "hours": [
-    9,
-    20
+    14,
+    21
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4836,13 +4881,14 @@
   "pf": "goalkeeper-10017a",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:hoops",
+   "title": "THE BASKETBALL TOSS",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4852,13 +4898,14 @@
   "pf": "gridiron-player-9d4168",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:bottles",
+   "title": "THE MILK BOTTLES",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4868,13 +4915,14 @@
   "pf": "outfield-player-2b742a",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:rings",
+   "title": "THE RING TOSS",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4884,13 +4932,14 @@
   "pf": "referee-9e9e73",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "karts",
+   "title": "MARSHALS THE KART TRACK",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4900,13 +4949,14 @@
   "pf": "team-mascot-abf426",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "mascot",
+   "title": "THE FAIR'S MASCOT",
    "hours": [
-    9,
-    20
+    11,
+    21
    ],
-   "r": 40,
+   "r": 5,
    "home": "subway"
   },
   "visit": "stadium"
@@ -4916,13 +4966,14 @@
   "pf": "touchline-manager-13a94b",
   "group": "v-stadium",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:mole",
+   "title": "THE WHACK-A-MOLE",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "stadium"
@@ -5044,13 +5095,14 @@
   "pf": "teen-zombie-b5bb27",
   "group": "v-halloween",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:dark",
+   "title": "RUNS THE HAUNTED RIDE",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "halloween"
@@ -5060,13 +5112,14 @@
   "pf": "pumpkin-stand-keeper-77ced9",
   "group": "v-halloween",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "food:popcorn",
+   "title": "THE POPCORN STAND",
    "hours": [
-    9,
-    20
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "halloween"
@@ -5076,13 +5129,14 @@
   "pf": "skier-e7ad44",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:rail",
+   "title": "DRIVES THE MINIATURE RAILWAY",
    "hours": [
-    9,
-    20
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5092,13 +5146,14 @@
   "pf": "mountaineer-13df29",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:striker",
+   "title": "THE HIGH STRIKER",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5108,13 +5163,14 @@
   "pf": "lift-operator-899cf8",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "op:wheel",
+   "title": "RUNS THE FERRIS WHEEL",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5124,13 +5180,14 @@
   "pf": "piste-patroller-cef4c2",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:darts",
+   "title": "THE BALLOON DARTS",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5140,13 +5197,14 @@
   "pf": "farmer-304a43",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:ducks",
+   "title": "THE DUCK POND",
    "hours": [
-    9,
-    20
+    11,
+    22
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5156,13 +5214,14 @@
   "pf": "infantry-rifleman-c1c0a5",
   "group": "v-mountain",
   "job": {
-   "at": "street",
-   "title": "",
+   "at": "fair",
+   "spot": "b:water",
+   "title": "THE WATER-GUN RACE",
    "hours": [
-    9,
-    20
+    11,
+    23
    ],
-   "r": 40,
+   "r": 0,
    "home": "subway"
   },
   "visit": "mountain"
@@ -5193,6 +5252,281 @@
      "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
      "opts": [
       {"t": "BACK.", "go": "hi"}
+     ]
+    }
+   }
+  }
+ },
+ "w_badger": {
+  "name": "THE BADGER",
+  "folk": {
+   "sp": "badger",
+   "m": 1.05,
+   "f": "#55555a",
+   "f2": "#ece8e2",
+   "coat": "tunic",
+   "cc": "#6a2a1e"
+  },
+  "job": {
+   "at": "bar",
+   "title": "TAPS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "d_ale",
+    "d_stout",
+    "d_cola"
+   ],
+   "line": "Ale, stout, or the cola. I don't do cocktails. I don't do umbrellas."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be?",
+      "Keep it down, the octopus is counting."
+     ],
+     "opts": [
+      {
+       "t": "WHAT'S ON TAP?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW LONG HAVE YOU WORKED HERE?",
+       "go": "long"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "long": {
+     "say": "Since before the stairs. I dug them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_tokenbot": {
+  "name": "TOKEN",
+  "job": {
+   "at": "arcade",
+   "title": "PRIZES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "BEEP. TICKETS IN, PRIZES OUT.",
+      "WIN AT SKEE-BALL. BRING ME TICKETS. BEEP."
+     ],
+     "opts": [
+      {
+       "t": "WHAT CAN I GET?",
+       "go": "what"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "what": {
+     "say": "A RING IS 4 TICKETS. A YO-YO IS 8. THE BEAR IS 20. DOUBLE-CLICK THE COUNTER.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_raccoon": {
+  "name": "THE RACCOON",
+  "folk": {
+   "sp": "raccoon",
+   "m": 0.95,
+   "f": "#6e6e74",
+   "f2": "#e8e4dc",
+   "coat": "tunic",
+   "cc": "#a81c28"
+  },
+  "job": {
+   "at": "theatre",
+   "title": "CONCESSIONS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "f_popcorn",
+    "f_nachos",
+    "f_candybox",
+    "d_cola"
+   ],
+   "line": "Popcorn's fresh. Nachos are... warm. Don't feed the screen."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Snacks for the show?",
+      "Butter on that? There's always butter."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S PLAYING?",
+       "go": "now"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "now": {
+     "say": "Whatever's on the board behind the fox. I only see the backs of heads.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_owl": {
+  "name": "THE OWL",
+  "folk": {
+   "sp": "owl",
+   "m": 0.9,
+   "f": "#7a6248",
+   "f2": "#e8dcc4",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "GUARD",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hoo goes there? Oh. A visitor.",
+      "No flash. No touching. No climbing the mammoth."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS THERE TO DO HERE?",
+       "go": "do"
+      },
+      {
+       "t": "DO YOU EVER SLEEP?",
+       "go": "sleep"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "do": {
+     "say": "Read the plaques. Then the curator at the desk will quiz you, a dollar a right answer. The fish tank's in the Earth gallery; bring fish food.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "sleep": {
+     "say": "In the day, with one eye open. The meteorite has tried to leave twice.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_pangolin": {
+  "name": "THE PANGOLIN",
+  "folk": {
+   "sp": "pangolin",
+   "m": 0.9,
+   "f": "#8a7050",
+   "f2": "#d8c8a8",
+   "coat": "tunic",
+   "cc": "#3a6a4a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "KEEPER",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "mus_postcard",
+    "mus_plush",
+    "mus_replica",
+    "mus_guidebook"
+   ],
+   "line": "Every sale keeps the mammoth dusted."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Something to remember us by?",
+      "The plush mammoth is very soft. Softer than the real one."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
      ]
     }
    }

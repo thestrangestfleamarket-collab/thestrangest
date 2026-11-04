@@ -530,13 +530,21 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
       P[n].ik=V(k*2.7,py+3.9,pz-1.4); P[n].foot=-8*D;
       P[n].ua=[58*D,9*D]; P[n].fa=[(R.brake?70:74)*D,4*D]; P[n].fist=1; } }
   else if(R.k==='skate'){
-    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?5.4:4.2; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=10*D;
+    const cr=Math.min(1.6,R.crouch||0), dk=RIDEG.deck+ANKLE, p=R.push, knee=(R.brake?5.4:4.2)+cr*4.5; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=(10+cr*8+(R.lean||0))*D;   // crouch: winding up or tucked; lean: a manual
     P.root=V(0,STAND-knee-(p>=0?2.2*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
     const f=R.goofy?'R':'L', b=R.goofy?'L':'R', s=R.goofy?-1:1;
     P[f].ik=V(0.6*s,dk+z,4.4); P[f].foot=0;
     if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P[b].ik=V(-3.4*s,dk-dn*RIDEG.deck+z*(1-dn),1.5-8*p); P[b].foot=-6*D*dn; }
     else { P[b].ik=V(-0.6*s,dk+z,-4.2); P[b].foot=0; }
-    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; } }
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; }
+    if(R.grab){ const g=R.grab==='nose'||R.grab==='melon'?f:b; P[g].ua=[-8*D,12*D]; P[g].fa=[6*D,8*D]; P[g].fist=1; } }   // a grab: the hand down to the board
+  else if(R.k==='scoot'){   // a kick scooter: facing forward, the front foot on the deck, the back one kicking, both hands on the bars
+    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?4.6:3.6; P.nod=-6*D; P.bend=14*D;
+    P.root=V(0,STAND-knee-(p>=0?1.6*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
+    P.L.ik=V(1.2,dk+z,1.4); P.L.foot=0;
+    if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P.R.ik=V(-1.4,dk-dn*RIDEG.deck+z*(1-dn),-1-7*p); P.R.foot=-6*D*dn; }
+    else { P.R.ik=V(-1.2,dk+z,-2.6); P.R.foot=0; }
+    for(const n of 'LR'){ P[n].ua=[40*D,8*D]; P[n].fa=[30*D,4*D]; P[n].fist=1; } }
   else if(R.k==='kart'){
     P.root=V(0,6+z,-1.5); P.bend=-16*D; P.nod=-6*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[82*D,5*D]; P[n].sh=[14*D,2*D]; P[n].foot=-12*D; P[n].ua=[50*D,12*D]; P[n].fa=[58*D,(4+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
@@ -593,7 +601,9 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
 function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
   const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),n=st.hand==='L'?'L':'R',a=Math.atan2(z,-y),b=Math.asin(clamp(n==='L'?x:-x,-1,1)),w=A.w,H=P[n];
   H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
-const rawPose=st=>aimLayer(st,upLayer(st,rawPose0(st)));
+function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame
+  const s=G.side>0?1:-1,n=s>0?'L':'R'; armIK(P,n,s,V(G.x,G.y,G.z)); P[n].fist=1; return P; }
+const rawPose=st=>gripLayer(st,aimLayer(st,upLayer(st,rawPose0(st))));
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -715,7 +725,7 @@ const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;
   const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;
-  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; aimLayer(st,upLayer(st,P)); if(st.sign)st.sign(P); }
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; gripLayer(st,aimLayer(st,upLayer(st,P))); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);
   const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy,st.smooth);

@@ -1,13 +1,13 @@
 // THE USE: USE lets the player sit on, switch, open and pick up the things around them.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, VIT, W3} from './003b-systems.js';
+import {LEVELS, LITE, MOTION, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, VIT, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {KIT} from './068-kit.js';
 import {SOUND} from './091-sfx.js';
 Object.assign(USE,{seat:null}); window.USE=USE;
-{ const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
+{ const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|recliner|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
   const kindOf=o=>{ if(o.useK!==undefined)return o.useK; const k=KINDS.find(([r])=>r.test(o.name||'')); return o.useK=k?k[1]:null; };
   const tris=(o,near)=>{ '@later'; const out=[];
     if(o.parts){ for(const p of o.parts){ const a=p.me.geometry.attributes.position.array; for(const t0 of [p.v0,p.v0+3])out.push(a.slice(t0*3,t0*3+9)); } return out; }
@@ -29,7 +29,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   VIT.mends.push(()=>USE.seat&&st.sit?1/150:0);   // resting on a seat or a bed mends you slowly
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
   USE.sitAt=(x,z,y,hd,more)=>{ SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
-    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; };
+    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; MOTION.play('sitDown'); };
   const sitOn=(se,th)=>{ '@later'; const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };

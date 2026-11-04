@@ -1,6 +1,7 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, NPCS, pos, SFX, st, TALK, TEXT, UI, VIT, VR, WE, WEEDS, WX} from './003b-systems.js';
+import {BAG, CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -10,7 +11,7 @@ import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
  window.FORAGE=FORAGE;
-{ const PACK={tab:'pack'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
+{ const PACK={tab:'skills'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
   const MU={button:['MEADOW BUTTON',0,2,.06,0,0xe8dcc0,0xeee6d2,[1,.6,1,1]],puffball:['PUFFBALL',5,3,.05,0,0xf2efe6,0xf2efe6,[1,1.15,.15,1]],
     chanterelle:['CHANTERELLE',20,8,.1,0,0xe08a2a,0xe8a24a,[1.15,.4,1,.9]],redcap:['RED CAP',30,10,0,1,0xc0321e,0xeee6d2,[1.2,.7,1.2,1]],
     inkcap:['SHAGGY INK CAP',35,10,.04,0,0xd8d4cc,0xe8e4dc,[.6,1.7,.8,.8]],bolete:['KING BOLETE',45,16,.15,0,0x7a4a2a,0xd8c49a,[1.25,.8,1,1.6]],
@@ -41,22 +42,21 @@ import {GEMS} from './101-gems.js';
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
     if(id==='f_skewer'){ const g=new THREE.Group(); g.add(P('cyl',0xc8a878,0,0,0,.006,.32,.006,0,Math.PI/2)); for(let i=0;i<4;i++)g.add(P('cap',i%2?0xe08a2a:0xe8dcc0,-.09+i*.06,0,0,.026,.022,.026,0,Math.PI/2)); return g; }
     return INSPECT.shape('bowl',{f_roast:0x9a6a3a,f_fritter:0xd8b060,f_soup:0x7a4a2a,f_morel:0x8a6a4a,f_oyster:0xc8a070,f_chicken:0xe8a030}[id]||0x9a6a3a); }});
-  const iid=m=>MU[m]?'m_'+m:m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
-    p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.hp=Math.min(1,VIT.hp+.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
+  const iid=m=>MU[m]?'m_'+m:m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.heal(.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
+    p_gheal:()=>{ VIT.heal(1); buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.heal(.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.heal(.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
   const PRICE={f_morel:56,f_oyster:14,f_chicken:44,p_ghost:150};   // the rest are in data/items.json
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING','FAN-SHAPED','PURPLE','BLACK','SPOTTED','YELLOW','GHOSTLY'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
-  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['golf','GOLF'],['climb','CLIMBING']], CAP=6000;
-  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100,fight:100,bee:100,golf:100,climb:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up',golf:'up',climb:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{}};
+  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['golf','GOLF'],['climb','CLIMBING'],['games','MIDWAY GAMES']], CAP=6000;
+  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100,fight:100,bee:100,golf:100,climb:100,games:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up',golf:'up',climb:'up',games:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; S.log=S.log||{}; S.made=S.made||{}; S.gave=S.gave||{}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; INV.save(); saveSoon(); }   // the starter kit saves itself at the start (the MAP gift used to; not INV.add: its trade window is later code)
-  FORAGE.S=S; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  FORAGE.S=S; FORAGE.MU=MU; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   INV.count=()=>GEMS.reduce((a,g)=>a+(g[0].startsWith('m_')?0:INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
-  const J=document.createElement('div'); J.id='fjour'; J.style.cssText='position:fixed;left:50%;top:40%;transform:translateX(-50%);max-width:70vw;text-align:center;z-index:6;pointer-events:none;font:11px Silkscreen,monospace;letter-spacing:.3px;display:grid;gap:2px;zoom:var(--uiz,1)'; document.body.appendChild(J);
-  const say=(t,c='#e8e2cc',o)=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>3)J.firstChild.remove(); setTimeout(()=>d.remove(),5000); if(UI.log)UI.log(t,c); if(VR.note)VR.note(t,c,o); };
-  FORAGE.say=say; FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
+  const say=SAY;
+  FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>{ PACK.draw(); if(BAG.draw)BAG.draw(); };
   // a family's items join the model: a price is its VALUE; m_/u_/p_/f_ things and raw foods are EDIBLE and SELLABLE, as is anything added with sellable:true
   const FOOD=/^(m_|u_|p_|f_)/, reg=o=>{ const ids=new Set([...Object.keys(o.names||{}),...Object.keys(o.prices||{}),...Object.keys(o.does||{}),...Object.keys(o.raw||{}),...(o.recipes||[]).map(r=>r[0])]);
     for(const id of ids){ const p={}; if(o.prices&&o.prices[id]!=null)p.value=o.prices[id]; if(FOOD.test(id)||o.raw&&o.raw[id]||o.edible)p.edible=true; if(FOOD.test(id)||o.sellable)p.sellable=true; ITEMS.reg(id,p); } };
@@ -92,7 +92,7 @@ import {GEMS} from './101-gems.js';
   let base=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
   FORAGE.keen=()=>S.fx.keen?20:0;
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
-      if(S.fx.poison)VIT.hp=Math.max(.05,VIT.hp-dt/50); if(S.fx.regen)VIT.hp=Math.min(1,VIT.hp+dt/30);
+      if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
       S.food=1; if(window.WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
       for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }
@@ -120,7 +120,7 @@ import {GEMS} from './101-gems.js';
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
-  setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
+  SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
       for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };
@@ -139,13 +139,13 @@ import {GEMS} from './101-gems.js';
       give((known?'m_':'u_')+m.k,n); if(known)S.log[m.k]=(S.log[m.k]||0)+n; say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');
     saveSoon(); FORAGE.sync(); PACK.draw(); };
-  FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); let k=id.slice(2);
+  FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); MOTION.play('eat'); let k=id.slice(2);
     if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT THE '+NAME(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
     if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
     else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
-    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK THE '+NAME(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.hp=Math.min(1,VIT.hp+h); say('YOU EAT THE '+NAME(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT.'); }
+    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK THE '+NAME(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.heal(h); say('YOU EAT THE '+NAME(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT.'); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); S.log[k]=(S.log[k]||0)+n; say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-SHARED.py)<3*T)return s; } return null; };
@@ -155,7 +155,7 @@ import {GEMS} from './101-gems.js';
     if(k==='alchemy'){ if(!have('mortar'))return say('YOU NEED A MORTAR AND PESTLE.','#c8a090'); if(!have('bottle'))return say('YOU NEED AN EMPTY BOTTLE.','#c8a090'); }
     if(k==='cooking'&&!fire())return say('YOU NEED A FLAME TO COOK OVER: A FIRE, A CANDLE, A TORCH.','#c8a090');
     const ck=FORAGE.CK[k]; if(ck&&ck.need){ const m=ck.need(); if(m)return say(m,'#c8a090'); }
-    for(const m in ins)take(iid(m),ins[m]); SFX.play(k==='alchemy'?'clunk':'drip',{vol:.5});
+    for(const m in ins)take(iid(m),ins[m]); SFX.play(k==='alchemy'?'clunk':'drip',{vol:.5}); MOTION.play('craft');
     if(use(k,mn,mx,ck&&ck.bonus?ck.bonus():0)){ if(k==='alchemy')take('bottle',1); give(id,1); S.made[id]=(S.made[id]||0)+1; say(ck?ck.made(nm):k==='alchemy'?`YOU POUR THE POTION INTO A BOTTLE: ${nm}.`:`YOU COOK ${nm}.`,'#b8f0a0'); }
     else { if(ck&&ck.keep)for(const m in ins)if(ck.keep(iid(m)))give(iid(m),ins[m]); say(ck?ck.fail:k==='alchemy'?'YOU TOSS THE FAILED MIXTURE FROM THE MORTAR.':'YOU BURN IT TO A CRISP.','#c8a090'); }
     saveSoon(); PACK.draw(); };
@@ -168,7 +168,7 @@ import {GEMS} from './101-gems.js';
   const bars=()=>''+
     (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING'}[k]||k)+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
   PACK.draw=()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const tab=t=>`<button ${B} data-tab="${t}" style="${PACK.tab===t?'color:#f2c14e;':''}margin-right:4px;font:inherit;background:#0e1016;border:2px solid ${PACK.tab===t?'#f2c14e':'#3a3f4e'};padding:3px 9px;cursor:pointer">${t.toUpperCase()}</button>`;
-    let o=`<div style="margin-bottom:10px">${tab('pack')}${tab('skills')}${tab('craft')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
+    let o=`<div style="margin-bottom:10px">${BAG.toggle?'':tab('pack')}${tab('skills')}${tab('craft')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
     if(xt)o+=xt.draw(); else if(PACK.tab==='book')o+=book(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
       const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&!GEMS.some(g=>g[0]===id&&!id.startsWith('m_'))).sort();
       if(!ids.length)o+='<tr><td style="color:#7d7a70">NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.</td></tr>';
@@ -194,8 +194,8 @@ import {GEMS} from './101-gems.js';
   pk.addEventListener('dragstart',e=>{ const r=e.target.closest&&e.target.closest('tr[data-drag]'); if(r)e.dataTransfer.setData('text/plain','item:'+r.dataset.drag); });
   pk.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.tab){ PACK.tab=d.tab; } else if(d.page){ PACK.page=d.page; } else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.craft)FORAGE.craft(d.craft); else if(d.act&&FORAGE.ACT[d.act]){ FORAGE.ACT[d.act](d.aid); saveSoon(); } else if(d.lock){ S.lock[d.lock]={up:'down',down:'lock',lock:'up'}[S.lock[d.lock]]; saveSoon(); } PACK.draw(); });
-  PACK.toggle=t=>{ pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
-  addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; PACK.toggle(); });
+  PACK.toggle=t=>{ if(t==='pack'&&BAG.toggle){ BAG.toggle(true); return; } if(PACK.tab==='pack'&&BAG.toggle)PACK.tab='skills'; pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
+  addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; if(TRICKS.takes&&TRICKS.takes('i'))return; if(BAG.toggle)BAG.toggle(); else PACK.toggle(); });
   const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>+ITEMS.prop(id,'value')||0;
   const sp=panel('shopp','left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw)');
   SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&ITEMS.prop(id,'sellable')).sort();

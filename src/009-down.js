@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SOL, STN, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -196,7 +196,7 @@ const SSUB=(()=>{ const W={};
     if(st>.74)g*=1-.3*(st-.74)/.26*Math.max(0,Math.min(1,(160-z)/110));
     return sh(c,g); };
   const hallWall=(len,seed,o={})=>{ const G=GRAF.mk(len*24,228,seed,(g,r,pick,w,h)=>{ GRAF.wall(g,r,pick,w,h,Math.round(len*(o.tags||.6)),196-(o.t1||80),196-(o.t0||8)); if(o.big)o.big(g,r,pick,w,h); });
-    const pl=(o.plates||[]).map(u0=>({u0,a:W.text('MARKET ST',2,[238,238,230],[24,24,28],[206,204,190],4)}));
+    const pl=(o.plates||[]).map(u0=>({u0,a:W.text(SECTIONS.station,2,[238,238,230],[24,24,28],[206,204,190],4)}));
     return (u,z)=>{ if(o.hole&&o.hole(u,z))return null;
       for(const p of pl){ const c=p.a.at(Math.floor((u-p.u0)*24),Math.floor(82-z)); if(c)return sh(c,.86+.14*hash(Math.floor(u*24),Math.floor(z),5)); }
       const b=tileWall(u,z,seed), gr=G(u*24,196-z); return gr?mix(gr,b,.12+.3*vn(u*6,z/6,seed+3)):b; }; };
@@ -359,7 +359,7 @@ const SSUB=(()=>{ const W={};
           if(j===h-3&&i>=ox&&i<w-ox)return [200,200,196]; return j<1||j>=h-1||i<1||i>=w-1?[58,60,68]:[30,32,40]; }); };
       const sign=(ax,c,m,L,z0,z1,tx)=>{ for(const s of [-1,1]){ const o=c+s*.034, a=m+s*L/2*(ax==='y'?1:-1), b=m-s*L/2*(ax==='y'?1:-1), P=(u,z)=>ax==='y'?[X(o),z*ZU,Z(u)]:[X(u),z*ZU,Z(o)];
           const me=quad(P(a,z0),P(b,z0),P(b,z1),P(a,z1),tx,true); me.material.clippingPlanes=CL; } };
-      const SUB=tex('SUBWAY',57,17), STA=tex('MARKET ST',83,21,1), ym=(yb+S.y1-.08)/2;
+      const SUB=tex('SUBWAY',57,17), STA=tex(SECTIONS.station,83,21,1), ym=(yb+S.y1-.08)/2;
       sign('y',xl,ym,2.2,11,29,SUB); sign('y',xr,ym,2.2,11,29,SUB); sign('x',yb,(xl+xr)/2,3.2,11,29,STA);
       const gm=new THREE.MeshBasicMaterial({color:0xdcf3dc,clippingPlanes:CL}), gg=new THREE.SphereGeometry(.13*TILE,10,8);
       for(const [x,y] of LP){ const g=new THREE.Mesh(gg,gm); g.position.set(X(x),107*ZU,Z(y)); scene.add(g); } }

@@ -111,7 +111,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(uq.length>n*0.95)return; for(const nm of all){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const o=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[o+c]; } g.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
     g.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1)); g.boundingSphere=null; };
   function walker(body){ const SHEET=QS.get('sheet')===body.key, NPC=body.npc={}; if(!playable(body)){ body.GEO||(body.GEO=body.geo()); weldBody(body.GEO,body.smooth); } const g=new THREE.Group(), FIG=mesh(body); g.add(FIG.me); (body.root||MAPG.bodega).add(g); NPC.g=g;
-    const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st;
+    const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st; NPC.SR=SR;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
@@ -137,7 +137,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0); }
       const eye=!near&&WINDOWS.near(st.x,st.z); if(!(near||eye)||!seen(g)||NPC.hid&&!eye)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=body.idle&&!st.to?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
+      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
   }
   // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
   const LIVEP=new Set(); let smT=0;

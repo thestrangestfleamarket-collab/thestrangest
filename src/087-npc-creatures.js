@@ -1,7 +1,7 @@
 // THE CREATURES: PAWNS sets the rats, frogs, snakes, spiders and bats loose in their lanes, painted and animated.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {CLOCK, PARK, POND} from './003b-systems.js';
+import {CLOCK, FLOW, PARK, POND} from './003b-systems.js';
 import {MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
@@ -43,7 +43,7 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
     ['Slime','SLIME',.45,[62,-17],.25,0],['Snake','SNAKE',.42,[90,-24],.3,0],['Spider','SPIDER',.4,[57,-29],.45,0],['Spider','SPIDER',.36,[99,-18],.45,0],
     ['Bat','BAT',.55,[72,-22],1.1,0],['Bat','BAT',.5,[85,-27],1.1,0],['Bat','BAT',.6,[60,-17],1.1,0],['Wasp','WASP',.22,[64,-32],.8,0],['Wasp','WASP',.2,[80,-34],.8,0],['Wasp','WASP',.2,[102,-21],.8,0]];
   for(const r of SHARED.METRO.rats){ const L=r.lane; CH.push(['Rat','RAT',.22,null,.9,0,{lv:'down',group:'down',lane:L,free:(x,z,R)=>x>L.x0&&x<L.x1&&z>L.z0&&z<L.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R),ground:(x,z)=>MODS.station.ground(x,z),x:r.x,z:r.z}]); }
-  CREATURESREADY.then(()=>{ for(const [key,name,metres,tp,speed,turn,ex] of CH){ const D=C[key], K=Object.assign({},KIND[key],ex&&{lane:ex.lane}), rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])), free=ex?ex.free:FREE, [tx,tz]=tp||[0,0];
+  const spawn=([key,name,metres,tp,speed,turn,ex])=>{ const D=C[key], K=Object.assign({},KIND[key],ex&&{lane:ex.lane}), rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])), free=ex?ex.free:(K.free||FREE), [tx,tz]=tp||[0,0];
     const st2={fly:K.fly?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false,t:Math.random()*10}; let cur=null;
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:K.lane===PARKL?'park':'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:X(tx),z:ex?ex.z:Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:.12,speed,stride:0,rock:0,bob:0,
       pick:K.fly?st=>{ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; st2.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); }
@@ -60,7 +60,27 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
     N.g.rotation.order='YXZ'; N.me.rotation.y=turn+(K.turn||0); N.me.position.set(0,0,0);
     if(K.fly){ N.blocks=()=>false; N.push=()=>{}; N.st.v=speed*TILE; }
     if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);
-    N.mixer=mixer; N.restless=()=>!!K.fly; if(!ex&&K.lane===PARKL)N.park=true; N.pack(); CREATS.push(N); } });
+    N.mixer=mixer; N.restless=()=>!!K.fly; if(!ex&&(K.lane===PARKL||K.park))N.park=true; N.pack(); CREATS.push(N); };
+  CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); });
+  // the Drive's animals (owner, 3 Nov 2026): the park's woods, its farm, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
+  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
+    const DRY=(x,z,R)=>FREE(x,z,R)&&!((window.FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
+    const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
+    k('Fox',WOOD,3,{night:.5}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
+    k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3);
+    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARM,2.4); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
+    k('Raptor',DINO,3); k('Stego',DINO,2); k('Brachio',DINO,1.6,{run:null}); fly('Ptera',DINO,[8,14]);
+    for(const n of ['AntQueen','WoodAnt','Aphid','Ladybird','Hopper','Beetle','Mantis'])k(n,WOOD,3); for(const n of ['Caterpillar','Slug','Snail'])k(n,WOOD,1.5,{walk:n+'_Crawl',run:null}); k('Crab',LAKE,2);
+    fly('Bee',WOOD,[.6,1.6],{day:1}); fly('Bumblebee',WOOD,[.6,1.6],{day:1}); fly('Firefly',WOOD,[.5,1.8],{night:1});
+    // [key, NAME, metres tall, how many, speed]
+    const FA=[['Fox','FOX',.45,2,1],['Deer','DEER',1.2,3,1],['Wolf','WOLF',.8,2,1.1],['Bear','BLACK BEAR',1,1,.8],['Crow','CROW',.3,4,.8],['Owl','OWL',.32,2,1.2],['Duck','DUCK',.45,4,.6],
+      ['Cat','CAT',.28,2,.9],['BlackCat','BLACK CAT',.3,1,.9],['Dog','DOG',.6,1,1.1],['Cow','COW',1.4,3,.6],['Pig','PIG',.9,3,.6],['Horse','HORSE',1.6,2,1],['WildHorse','WILD HORSE',1.5,2,1],['Mule','MULE',1.4,1,.7],['Ibex','IBEX',1,2,.9],
+      ['Lion','LION',1.1,2,.9],['Elephant','ELEPHANT',3,2,.6],['Giraffe','GIRAFFE',5,2,.6],['Zebra','ZEBRA',1.4,3,.9],['Camel','CAMEL',2,2,.6],['Penguin','PENGUIN',.6,4,.4],
+      ['Raptor','VELOCIRAPTOR',.9,3,1.4],['Stego','STEGOSAURUS',3.5,2,.5],['Brachio','BRACHIOSAURUS',11,1,.4],['Ptera','PTERANODON',1.6,2,1.4],
+      ['AntQueen','ANT QUEEN',.08,2,.4],['WoodAnt','WOOD ANT',.05,4,.5],['Aphid','APHID',.04,3,.2],['Ladybird','LADYBIRD',.06,4,.3],['Hopper','GRASSHOPPER',.1,3,.5],['Beetle','STAG BEETLE',.1,2,.3],['Mantis','PRAYING MANTIS',.16,2,.3],
+      ['Caterpillar','CATERPILLAR',.06,3,.1],['Slug','LEOPARD SLUG',.06,2,.08],['Snail','SNAIL',.08,3,.06],['Crab','HERMIT CRAB',.12,3,.3],['Bee','HONEYBEE',.1,4,.8],['Bumblebee','BUMBLEBEE',.12,3,.7],['Firefly','FIREFLY',.08,5,.6]];
+    const FL=__LAZY__("data/fauna.json"), hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
+    CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key])return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
   window.CREATNEW=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null;
     const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
       anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.15).play(); if(cur)act(cur).fadeOut(.15); cur=want; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});

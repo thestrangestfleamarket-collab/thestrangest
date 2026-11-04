@@ -72,7 +72,7 @@ for key in KEYS:
         Jn=j['skins'][n['skin']]['joints']; ibm0=acc(j,b,j['skins'][n['skin']]['inverseBindMatrices']).reshape(-1,4,4).transpose(0,2,1)
         JM=np.stack([glob_(Jn[k])@ibm0[k] for k in range(len(Jn))]); rm=np.array([remap[JI[clean(j['nodes'][Jn[k]]['name'])]] for k in range(len(Jn))])
         for p in j['meshes'][n['mesh']]['primitives']:
-            A=p['attributes']; mat=j['materials'][p['material']] if 'material' in p else {}; mn=mat.get('name') or n.get('name') or 'body'; pos=acc(j,b,A['POSITION']).astype(float); jn=acc(j,b,A['JOINTS_0']).astype(int); w=acc(j,b,A['WEIGHTS_0']).astype(float); idx=acc(j,b,p['indices']).reshape(-1).astype(int)
+            A=p['attributes']; mat=j['materials'][p['material']] if 'material' in p else {}; mn=mat.get('name') or n.get('name') or 'body'; pos=acc(j,b,A['POSITION']).astype(float); jn=acc(j,b,A['JOINTS_0']).astype(int); w=acc(j,b,A['WEIGHTS_0']).astype(float); idx=acc(j,b,p['indices']).reshape(-1).astype(int) if 'indices' in p else np.arange(len(pos))
             w=w/np.maximum(1e-9,w.sum(1,keepdims=True)); Ph=np.c_[pos,np.ones(len(pos))]; out=np.zeros((len(pos),3))
             for k in range(4): out+=w[:,k:k+1]*np.einsum('nij,nj->ni',JM[jn[:,k]][:,:3,:],Ph)
             bad=~np.isfinite(out).all(1); out[bad]=pos[bad]; w[bad]=[1,0,0,0]; jn[bad]=0   # (a corner no bone holds: left where it is, on the root)

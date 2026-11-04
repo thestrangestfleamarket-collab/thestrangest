@@ -1,1 +1,1184 @@
-[]
+[
+{
+"k": "pf_corner_tenement",
+"x": 97.886,
+"z": -8.879,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_brownstone_row_house",
+"x": 110.414,
+"z": -5.381,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_narrow_walk_up",
+"x": 119.842,
+"z": -6.302,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_office_tower",
+"x": 129.269,
+"z": -5.381,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_cast_iron_loft",
+"x": 154.632,
+"z": -6.02,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_fire_station",
+"x": 17.528,
+"z": -5.381,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_corner_shop",
+"x": -156.315,
+"z": -5.953,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_brick_church",
+"x": -144.191,
+"z": -8.071,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_public_school",
+"x": -124.566,
+"z": -8.071,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_village_hall",
+"x": -99.87,
+"z": -8.465,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_parking_garage",
+"x": -80.556,
+"z": -8.071,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_auto_repair_garage",
+"x": -78.374,
+"z": -29.536,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_motel_office",
+"x": -64.356,
+"z": -29.536,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_motel_room_run",
+"x": -44.958,
+"z": -29.536,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_corner_shophouse",
+"x": -28.25,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_two_storey_shophouse",
+"x": -22.304,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_street_diner",
+"x": -13.668,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_three_storey_shophouse",
+"x": -5.031,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wide_shophouse",
+"x": 3.605,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_convenience_store",
+"x": 14.932,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_small_shrine_hall",
+"x": 23.569,
+"z": -32.227,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_one_storey_shop_row",
+"x": 34.895,
+"z": -28.917,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_subway_entrance",
+"x": -36.16,
+"z": 170.63,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_escalator_flight",
+"x": -28.25,
+"z": 166.11,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_fire_engine",
+"x": -87.373,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_vintage_hearse",
+"x": -74.6,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_patrol_cruiser",
+"x": -63.688,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_security_patrol_cruiser",
+"x": -53.172,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_stretch_limousine",
+"x": -18.013,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_compact_hatchback",
+"x": -6.215,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_wheeled_city_coupe",
+"x": 2.892,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_team_minibus",
+"x": 13.008,
+"z": 179.105,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_campus_shuttle_bus",
+"x": -87.279,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_pop_top_camper_van",
+"x": -75.628,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_camper_trailer",
+"x": -66.263,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_food_truck",
+"x": -55.387,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_semi_tractor",
+"x": -43.223,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_box_trailer",
+"x": -14.236,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_commuter_hover_pod",
+"x": 1.685,
+"z": 187.015,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_roadside_billboard",
+"x": 38.42,
+"z": 181.93,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_kidney_pool",
+"x": 106.22,
+"z": 172.89,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_old_lighthouse",
+"x": 105.09,
+"z": 100.57,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_mainline_diesel_locomotive",
+"x": 69.522,
+"z": 247.47,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_passenger_carriage",
+"x": 68.607,
+"z": 259.9,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_railbus",
+"x": 64.571,
+"z": 272.33,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_tender_steam_locomotive",
+"x": 82.409,
+"z": 272.33,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_guideway_rail_shuttle",
+"x": 65.675,
+"z": 280.24,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_station_footbridge",
+"x": 81.36,
+"z": 254.25,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_platform_bookstall",
+"x": 77.97,
+"z": 280.24,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_stone_viaduct_span",
+"x": 76.84,
+"z": 127.69,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_stone_viaduct_span",
+"x": 109.126,
+"z": 127.69,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_heavy_bomber",
+"x": -61.02,
+"z": 135.6,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_single_engine_fighter",
+"x": -36.16,
+"z": 136.73,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_capital_cruiser",
+"x": 110.74,
+"z": -77.97,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_hanga_roa_fishing_boat",
+"x": -85.88,
+"z": -56.5,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_wooden_wreck_stern_section",
+"x": 51.98,
+"z": -93.79,
+"y": 0,
+"s": 1,
+"rot": -1.1708,
+"solid": false
+},
+{
+"k": "pf_pay_phone_booth",
+"x": -56.5,
+"z": -38.985,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_elote_cart",
+"x": -36.16,
+"z": -40.68,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_food_truck",
+"x": -0.0,
+"z": -41.81,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_taca_taca",
+"x": -20.34,
+"z": -40.68,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_arcade_console",
+"x": -15.82,
+"z": -37.968,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_diner_booth",
+"x": 18.08,
+"z": -40.68,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_freestyle_bmx",
+"x": -47.46,
+"z": -38.646,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_doorman_canopy",
+"x": 31.64,
+"z": -36.386,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_zen_sand_garden",
+"x": 88.14,
+"z": -41.81,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_japanese_koi_pond",
+"x": 101.7,
+"z": -41.81,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_haunted_victorian_house",
+"x": -79.1,
+"z": 274.59,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_family_mausoleum",
+"x": -65.54,
+"z": 256.51,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_arched_cemetery_gate",
+"x": -79.1,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -95.243,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -89.862,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -84.481,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -73.719,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -68.338,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wrought_iron_cemetery_fence",
+"x": -62.957,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_cemetery_lantern_post",
+"x": -88.14,
+"z": 246.34,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_cemetery_lantern_post",
+"x": -70.06,
+"z": 246.34,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_twisted_dead_oak",
+"x": -94.92,
+"z": 263.29,
+"y": 0,
+"s": 1,
+"rot": 1.5708
+},
+{
+"k": "pf_twisted_dead_oak",
+"x": -58.76,
+"z": 267.81,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_porch_log_cabin",
+"x": -36.16,
+"z": 256.51,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_wetland_boardwalk_run",
+"x": 100.57,
+"z": 89.27,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_wetland_boardwalk_run",
+"x": 103.26,
+"z": 89.27,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_wetland_boardwalk_run",
+"x": 105.951,
+"z": 89.27,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_wetland_boardwalk_run",
+"x": 108.641,
+"z": 89.27,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_lake_rowing_skiff",
+"x": 85.88,
+"z": 100.57,
+"y": 0,
+"s": 1,
+"rot": 2.0708,
+"solid": false
+},
+{
+"k": "pf_moai_kavakava",
+"x": 178.54,
+"z": 136.73,
+"y": 0,
+"s": 9,
+"rot": 3.1416
+},
+{
+"k": "pf_moai_kavakava",
+"x": 185.32,
+"z": 136.73,
+"y": 0,
+"s": 9,
+"rot": 3.1416
+},
+{
+"k": "pf_moai_kavakava",
+"x": 192.1,
+"z": 136.73,
+"y": 0,
+"s": 9,
+"rot": 3.1416
+},
+{
+"k": "pf_moai_kavakava",
+"x": 198.88,
+"z": 136.73,
+"y": 0,
+"s": 9,
+"rot": 3.1416
+},
+{
+"k": "pf_orongo_house_run",
+"x": 185.32,
+"z": 125.43,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_hare_paenga_boat_house",
+"x": 185.32,
+"z": 114.13,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_taheta_stone_basin",
+"x": 196.62,
+"z": 120.91,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_mata_a_obsidian_blade",
+"x": 196.62,
+"z": 121.362,
+"y": 0,
+"s": 2,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_taro_plant",
+"x": 174.02,
+"z": 120.91,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_taro_plant",
+"x": 176.28,
+"z": 116.39,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_taro_plant",
+"x": 201.14,
+"z": 116.39,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_coiled_dragon_pillar",
+"x": -41.245,
+"z": 231.085,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_coiled_dragon_pillar",
+"x": -29.38,
+"z": 231.085,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_ember_dragon_egg",
+"x": -35.03,
+"z": 228.26,
+"y": 0,
+"s": 2,
+"rot": 0
+},
+{
+"k": "pf_looted_gilded_throne",
+"x": -38.42,
+"z": 219.22,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_gilded_harp",
+"x": -41.81,
+"z": 219.22,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_samurai_naginata",
+"x": -44.07,
+"z": 222.61,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_common_chest",
+"x": -38.985,
+"z": 224.87,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_chest_key",
+"x": -38.081,
+"z": 223.74,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_chest_padlock",
+"x": -40.002,
+"z": 223.74,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_coin_hoard_heap",
+"x": -42.94,
+"z": 226.0,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_guitar",
+"x": 46.33,
+"z": 152.55,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_miasma_bladder_fungus",
+"x": 160.46,
+"z": 105.09,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_coal_seam_deposit",
+"x": 169.5,
+"z": 105.09,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_emerald_ore_deposit",
+"x": 171.76,
+"z": 97.18,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_coal_lump",
+"x": 167.24,
+"z": 102.83,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_dandelion",
+"x": 13.56,
+"z": 132.21,
+"y": 0,
+"s": 0.1662,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_common_daisy",
+"x": 20.34,
+"z": 136.73,
+"y": 0,
+"s": 0.3748,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_dandelion_seed",
+"x": 16.95,
+"z": 128.82,
+"y": 0,
+"s": 0.4958,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_orb_web",
+"x": 25.99,
+"z": 132.21,
+"y": 0,
+"s": 0.1188,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_wasp_paper_nest",
+"x": 30.51,
+"z": 138.99,
+"y": 0,
+"s": 0.0667,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_ant_nest_entrance_mound",
+"x": 22.6,
+"z": 125.43,
+"y": 0,
+"s": 0.9709,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_wild_honeycomb_panel",
+"x": 9.04,
+"z": 138.99,
+"y": 0,
+"s": 0.2947,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_swallowtail_chrysalis",
+"x": 28.25,
+"z": 127.69,
+"y": 0,
+"s": 0.2843,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_sycamore_seed",
+"x": 15.82,
+"z": 141.25,
+"y": 0,
+"s": 0.9932,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_fallen_blackberry",
+"x": 11.3,
+"z": 127.69,
+"y": 0,
+"s": 0.3016,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_dragonsbane_thistle",
+"x": 24.86,
+"z": 142.38,
+"y": 0,
+"s": 1.4875,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_wall_vine_curtain",
+"x": -107.576,
+"z": 154.81,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_promenade_bandstand",
+"x": 195.49,
+"z": 96.05,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_ice_cream_kiosk_on",
+"x": 54.24,
+"z": -40.68,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_pier_head_platform",
+"x": -72.32,
+"z": -49.72,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_main_entrance_gate",
+"x": -76.84,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_ticket_booth",
+"x": -88.14,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_turnstile_bank",
+"x": -66.67,
+"z": 203.4,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+},
+{
+"k": "pf_press_box",
+"x": -24.86,
+"z": 127.69,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_rooftop_helipad_deck",
+"x": -94.92,
+"z": 118.65,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_moat_bridge",
+"x": -37.29,
+"z": 207.355,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_revolving_entrance_bay",
+"x": 129.269,
+"z": 1.345,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_school_door_set",
+"x": -124.566,
+"z": 0.269,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_fire_door_set",
+"x": 22.371,
+"z": -2.018,
+"y": 0,
+"s": 1,
+"rot": 1.5708,
+"solid": false
+},
+{
+"k": "pf_lift_landing_door",
+"x": -31.64,
+"z": 168.37,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_grand_marble_staircase",
+"x": -79.1,
+"z": 261.138,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_straight_stair_flight",
+"x": 81.36,
+"z": 242.95,
+"y": 0,
+"s": 1,
+"rot": 0,
+"solid": false
+},
+{
+"k": "pf_stair_core_flight",
+"x": 81.36,
+"z": 265.55,
+"y": 0,
+"s": 1,
+"rot": 0
+},
+{
+"k": "pf_camp_tent",
+"x": -27.12,
+"z": 251.99,
+"y": 0,
+"s": 1,
+"rot": -1.5708
+},
+{
+"k": "pf_mushroom_cottage",
+"x": 21.47,
+"z": 129.95,
+"y": 0,
+"s": 1,
+"rot": 3.1416,
+"solid": false
+},
+{
+"k": "pf_glass_conservatory",
+"x": -47.46,
+"z": 276.85,
+"y": 0,
+"s": 1,
+"rot": 3.1416
+}
+]

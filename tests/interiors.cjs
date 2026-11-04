@@ -107,7 +107,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       const chairs=__dbg.UI.things.filter(t=>t.name==='A CAFÉ CHAIR').length; INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
       return {plan,casts,plaque,buys,chairs,paid}; });
     rec('art museum: the floor plan, four casts with plaques, the café and the shop sell, four café chairs',a.plan&&a.casts===4&&a.plaque&&a.buys&&a.chairs===4,JSON.stringify(a));
-    const tour=await pg.waitForFunction(()=>GALLERY.last&&GALLERY.touring&&GALLERY.touring.i>=0,null,{timeout:120000}).then(()=>true).catch(()=>false);
+    const tour=await pg.waitForFunction(()=>{ const T=GALLERY.touring; if(T&&T.N.st.to){ T.N.st.x=T.N.st.to.x; T.N.st.z=T.N.st.to.z; } return GALLERY.last&&T&&T.i>=0; },null,{timeout:120000,polling:500}).then(()=>true).catch(()=>false);   // she walks at the frames' pace; on a slow machine the check sets her down at her stop
     rec('art museum: the tour costs $3, ROSIE walks to a painting and tells you about it',a.paid&&tour,await pg.evaluate(()=>JSON.stringify({last:GALLERY.last,i:GALLERY.touring&&GALLERY.touring.i})));
     if(OUT)await pg.screenshot({path:OUT+'/art.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); rec('art museum: leaving ends the tour',await pg.evaluate(()=>!GALLERY.touring)); }

@@ -49,11 +49,11 @@ import {DRAGON} from './077-npc-skel.js';
   const GLC=new THREE.Color(), UP=new THREE.Vector3(0,1,0), qa=new THREE.Quaternion(), wq=new THREE.Quaternion(), ax=new THREE.Vector3();
   const bend=(b,axis,ang)=>{ if(!b||!ang)return; wq.copy(b.quaternion); for(let p=b.parent;p;p=p.parent)wq.premultiply(p.quaternion); ax.copy(axis).applyQuaternion(wq.invert()).normalize(); b.quaternion.multiply(qa.setFromAxisAngle(ax,ang)); };
   const make=(i,o={})=>{ const rig=rigOf(), mixer=new THREE.AnimationMixer(rig.bones[0]), act=n=>mixer.clipAction(CLIPS[n]);
-    const idle=act('Idle_loop'), fly=act('Flying_loop'), lift=act('GroundToFly'), attack=act('Attack');
-    idle.play(); fly.play(); fly.time=Math.random()*CLIPS.Flying_loop.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
+    const idle=act('Idle'), fly=act('Fly_Flap'), hover=act('Hover'), lift=act('Take_Off'), attack=act('Attack');
+    idle.play(); fly.play(); hover.play(); fly.time=Math.random()*CLIPS.Fly_Flap.duration; lift.setLoop(THREE.LoopOnce); lift.clampWhenFinished=true;
     const D={mode:'fly',p:PER[i%PER.length],t:0,y:0,bank:0,pitch:0,v:.8*TI,to:sky(),fly:60+Math.random()*100,cruise:SHARED.BOD.Y(240+Math.random()*420),breath:40+Math.random()*200,pw:0,peek:false,pk:5,next:null,snap:0,style:'climb',bt:Math.random()*3,turn:0,climb:0,tw:0}; D.y=D.cruise;
     const BN_=n=>rig.bones.find(b=>b.name===n), TAIL=['Tail','Tail_001','Tail_002','Tail_003','Tail_004'].map(BN_), NECK=['Head','Head_001','Head_002'].map(BN_), FW=new THREE.Vector3(), RT=new THREE.Vector3();
-    let wI=0, wF=1, wL=0; const s0=sky(), HT0=HOMES.length?HOMES[i%HOMES.length]:null, ha=i*2.4+1;
+    let wI=0, wF=1, wL=0, wH=0; const s0=sky(), HT0=HOMES.length?HOMES[i%HOMES.length]:null, ha=i*2.4+1;
     if(HT0){ D.home=spot(HT0,ha,.42); D.p=D.home; }
     const nearTree=o=>{ const c=TREES.filter(q=>q!==o&&Math.hypot(q.x-o.x,q.z-o.z)<40*TI); return c.length?c[Math.floor(Math.random()*c.length)]:null; };
     const nextOf=()=>{ '@later'; const P=D.p, r=Math.random();
@@ -65,8 +65,9 @@ import {DRAGON} from './077-npc-skel.js';
       if(SHARED.LVL==='up'&&Math.hypot(lx-pos.x,lz-pos.z)<4*TI)return false; D.snap=.6; fire(hp,v); return true; };
     const N=makeNPC(null,{key:'dragon',name:'A DRAGON',names:M.parts,lv:'up',group:'bodega',geo:greenGeo(),skin:rig,tall:M.tall,eye:-1,rank:[0],metres:o.m||.64,x:s0.x,z:s0.z,lane:{x0:s0.x,x1:s0.x,z0:s0.z,z1:s0.z},ground:()=>0,radius:.3,speed:0,stride:0,rock:0,bob:0,noSelf:true,
       anim:(dt)=>{ const k=Math.min(1,dt*3); wI=ease(wI,D.mode==='perch'?1:0,k); wF=ease(wF,D.mode==='fly'||D.mode==='come'?1:0,k); wL=ease(wL,D.mode==='lift'?1:0,Math.min(1,dt*8));
-        idle.setEffectiveWeight(wI); fly.setEffectiveWeight(wF); lift.setEffectiveWeight(wL); attack.setEffectiveWeight(D.snap>0?1:0);
-        fly.timeScale=D.mode==='come'?.5:.62;
+        wH=ease(wH,D.mode==='come'&&Math.hypot(D.p.x-st.x,D.p.z-st.z)<3*TI?1:0,Math.min(1,dt*2));
+        idle.setEffectiveWeight(wI); fly.setEffectiveWeight(wF*(1-wH)); hover.setEffectiveWeight(wF*wH); lift.setEffectiveWeight(wL); attack.setEffectiveWeight(D.snap>0?1:0);
+        fly.timeScale=D.mode==='come'?.21:.26; hover.timeScale=.36; idle.timeScale=.6;
         mixer.update(dt);
         if(D.mode==='perch'&&D.p.tree){ const c=1-D.pw; RT.set(Math.cos(st.h),0,-Math.sin(st.h)); TAIL.forEach(b=>bend(b,UP,.34*c)); NECK.forEach(b=>bend(b,RT,.2*c)); }
         if(D.mode!=='perch'){ FW.set(Math.sin(st.h),0,Math.cos(st.h)); RT.set(Math.cos(st.h),0,-Math.sin(st.h)); D.tw+=dt;
@@ -88,7 +89,7 @@ import {DRAGON} from './077-npc-skel.js';
         else D.pw=0;
         st.x=ease(st.x,x,Math.min(1,dt*3)); st.z=ease(st.z,z,Math.min(1,dt*3)); st.h=turnTo(st.h,h,dt*1.5)[0]; D.y=ease(D.y,y,Math.min(1,dt*4)); D.v=0;
         if((D.t-=dt)<=0&&D.pw<.3){ P.on=0; D.next=nextOf(); D.mode='lift'; lift.reset(); lift.play(); D.t=0; } }
-      else if(D.mode==='lift'){ D.t+=dt; D.y+=dt*.6*TI; D.v=ease(D.v,.5*TI,dt); if(D.t>CLIPS.GroundToFly.duration){ lift.stop(); if(D.next){ D.p=D.next; D.next=null; D.mode='come'; } else{ D.mode='fly'; D.to=sky(); D.fly=40+Math.random()*60; } } }
+      else if(D.mode==='lift'){ D.t+=dt; D.y+=dt*.6*TI; D.v=ease(D.v,.5*TI,dt); if(D.t>CLIPS.Take_Off.duration){ lift.stop(); if(D.next){ D.p=D.next; D.next=null; D.mode='come'; } else{ D.mode='fly'; D.to=sky(); D.fly=40+Math.random()*60; } } }
       else if(D.mode==='fly'){ D.fly-=dt; D.v=ease(D.v,(D.style==='sink'?.95:.8)*TI,dt*.5); const want=Math.atan2(D.to.x-st.x,D.to.z-st.z), r=turnTo(st.h,want,.28*dt); st.h=r[0]; turn=r[1]/Math.max(dt,1e-3);
         if((D.bt-=dt)<=0||D.style==='sink'&&D.y<D.cruise-1.6*TI){ D.style=D.style==='climb'?'sink':'climb'; D.bt=D.style==='sink'?4+Math.random()*7:2.5+Math.random()*3; }
         D.y+=(D.style==='climb'?.22:-.16)*TI*dt; D.y=ease(D.y,Math.max(D.cruise-1.8*TI,Math.min(D.cruise+1.8*TI,D.y)),dt); if(Math.hypot(D.to.x-st.x,D.to.z-st.z)<3*TI)D.to=sky();

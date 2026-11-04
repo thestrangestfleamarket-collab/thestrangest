@@ -10,7 +10,7 @@ import {DESIGN} from './102b-designer.js';
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
   let rt,cam,on=0,last=0,el=null,cv=null,g2=null,spin=0; const W=256,H=384,FACE=0, V=new THREE.Vector3();
-  const shot=(c=cv,ctx=g2)=>{ const g=W3&&W3.group; if(!g||!c||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
+  const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE+spin; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
     const topY=(head?head.y:gp.y+2.2)+.18, botY=gp.y-.05, hh=Math.max(.6,topY-botY)*1.06, ww=hh*(W/H), cy=(topY+botY)/2, d=hh*3+6;
@@ -19,8 +19,7 @@ import {DESIGN} from './102b-designer.js';
     DESIGN.portrait(rt,cam);
     const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,Math.min(H,300*(devicePixelRatio||1)/pxS()));   // the same pixel size as the game around it, at your RESOLUTION
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
-    const im=ctx.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); ctx.putImageData(im,0,0); };
-  CHARP.portrait=c=>{ if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } shot(c,c.getContext('2d')); };   // the same live picture of you on any canvas (the bag's doll)
+    const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');
 
   const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];

@@ -1,0 +1,58 @@
+<title>Six Bags</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+:root{--bg:#0b0d13;--fg:#d8dae2;--dim:#9b9584;--key:#f2c14e;--line:#3a3f4e;--pixel:'Silkscreen',monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:11px var(--pixel);letter-spacing:.4px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px}
+h1{font:11px var(--pixel);color:var(--key);margin:0 0 4px;letter-spacing:1px}
+.note{color:var(--dim);line-height:1.6;margin-bottom:14px;max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.win{background:#0b0d13f2;border:2px solid var(--line);padding:12px 14px 12px;position:relative}
+.win .x{position:absolute;right:8px;top:8px;font:inherit;color:var(--dim);background:#0e1016;border:2px solid var(--line);padding:1px 6px}
+.ttl{color:var(--key);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px}
+.ttl b{color:#fff;font-weight:400}
+.bagk{position:relative;width:300px;height:375px;margin:0 auto}
+.bagk svg{display:block;shape-rendering:crispEdges;width:300px;height:375px}
+.mouth{position:absolute}
+.it{position:absolute;width:34px;height:34px}
+.it img{width:100%;height:100%;image-rendering:pixelated;display:block;filter:drop-shadow(1px 1px 0 #0008)}
+.it span{position:absolute;right:-2px;bottom:-4px;color:var(--key);font-size:9px;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+.strip{margin-top:8px;line-height:2}
+.strip button{font:inherit;color:#ece5d3;background:#0e1016;border:2px solid var(--line);padding:2px 7px;margin-left:4px}
+.lbl{color:var(--dim);margin-top:4px}
+.lbl b{color:var(--fg);font-weight:400}
+</style>
+<h1>SIX BAGS · YOUR INVENTORY'S WINDOW</h1>
+<div class="note">The same window, the same pictures, six bags to hold them: pick one (or say which parts of which). Each is drawn in the game's pixel style and the mouth is where your things lie.</div>
+<div class="grid" id="grid"></div>
+<script>
+const PAL={k:'#1b1410',w:'#f4efe4',y:'#d8a52a',s:'#5e6270',S:'#a8adb8',t:'#d9c39a',n:'#6b4425',N:'#a4713f',d:'#222a33'};
+const ART={
+mush:['...kkkk...','..kAAAAk..','.kAaAAaAk.','kAAAAAAAAk','kkkkkkkkkk','...kttk...','...kttk...','...kttk...','..kttttk..','..kkkkkk..'],
+potion:['...kkkk...','...kwwk...','...kwwk...','..kkAAkk..','.kAAAAAAk.','.kAaAAAak.','.kAAAAAAk.','.kAAaaAAk.','..kAAAAk..','...kkkk...'],
+fish:['..........','..kkkk....','.kAAAAk..k','kAwAAAAkkk','kAAAAAAAAk','.kAAAAk.kk','..kkkk...k','..........','..........','..........'],
+fruit:['....kk....','...kBBk...','..kkAAkk..','.kAAAAAAk.','kAwAAAAAAk','kAAAAAAAak','kAAAAAAaak','.kAAAAaak.','..kAAaak..','...kkkk...'],
+gem:['....kk....','..kkAAkk..','.kAAAAAAk.','kAAaAAaAAk','kAaAAAAaAk','.kAaAAaAk.','..kAaaAk..','...kAAk...','....kk....','..........'],
+mortar:['....kk....','...kttk...','...kttk...','kkkkttkkkk','kSSSSSSSSk','kSssssssSk','.kSSSSSSk.','..kSSSSk..','..kssssk..','..kkkkkk..'],
+goggles:['..........','..........','kkkkkkkkkk','kSSkkkkSSk','kSAAkkSAAk','kSAAk.kAAk','kkkk...kkk','..........','..........','..........'],
+rod:['.........k','........kk','.......kNk','......kNk.','.....kNk..','....kNk...','...kNk....','..kNk..k..','.kNk..kyk.','kkk....k..'],
+coat:['..kkkkkk..','.kAAkkAAk.','kAAkAAkAAk','kAAkAAkAAk','kkkAAAAAkk','..kAaAAAk.','..kAaAAAk.','..kAaAAAk.','..kAaAAAk.','..kkkkkk..'],
+jar:['..kkkkkk..','..knnnnk..','.kkkkkkkk.','.kwAAAAAk.','.kwAAAAAk.','.kAAAAAAk.','.kAAAAAAk.','.kAAAAAAk.','.kkkkkkkk.','..........'],
+book:['.kkkkkkkk.','kAAAAAAAk.','kAAAAAAAkk','kAaAAAAAwk','kAAAAAAAwk','kAAAAAAAwk','kAaAAAAAwk','kAAAAAAAwk','kkkkkkkkk.','..........'],
+net:['....kk....','...kNNk...','..kNkkNk..','.kSkSkSkS.','kSkSkSkSk.','.kSkSkSk..','..kSkSk...','...kkk....','....k.....','....k.....']};
+const shade=c=>{ const n=parseInt(c.slice(1),16); return '#'+((((n>>16)*.62)<<16|((n>>8&255)*.62)<<8|(n&255)*.62)>>>0).toString(16).padStart(6,'0'); };
+const icon=(k,A)=>{ const c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); const a=shade(A); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?'#3f8a3a':PAL[ch]; g.fillRect(x,y,1,1); } }); return c.toDataURL(); };
+const THINGS=[['mush','#7fe0d8',3],['mush','#a4713f',2],['potion','#ef6d5a',1],['potion','#7fb2f0',2],['potion','#a8adb8',3],['mortar','#a8adb8',1],['gem','#c49cf0',1],['gem','#f4efe4',2],['fish','#7fb2f0',1],['fruit','#c8342c',1],['goggles','#7fb2f0',1],['rod','#a4713f',1],['coat','#3f8a3a',1],['jar','#d8a52a',1],['book','#7a3fb0',1],['net','#a8adb8',1]];
+const K='#1b1410';
+const BAGS=[
+ {name:'A · BACKPACK',sub:'leather, flap and straps (today\'s)',mouth:[60,180,280,260],svg:`<rect x="4" y="30" width="5" height="50" fill="#4a2f17" stroke="${K}"/><rect x="71" y="30" width="5" height="50" fill="#4a2f17" stroke="${K}"/><path d="M8 24h64v66q0 6-6 6H14q-6 0-6-6z" fill="#6b4425" stroke="${K}"/><rect x="12" y="30" width="56" height="58" fill="#2a1a10" stroke="#3f2816"/><path d="M8 22h64v7q-8 6-32 6T8 29z" fill="#7d5230" stroke="${K}"/><rect x="37" y="27" width="6" height="7" fill="#d8a52a" stroke="${K}"/><rect x="36" y="91" width="8" height="3" fill="#d8a52a" stroke="${K}"/><path d="M8 24q-2-10 6-12h52q8 2 6 12" fill="none" stroke="${K}"/>`},
+ {name:'B · SATCHEL',sub:'a messenger bag, its flap thrown back',mouth:[60,165,280,230],svg:`<path d="M20 30q20-26 40 0" fill="none" stroke="${K}" stroke-width="2"/><path d="M6 30h68v56q0 6-6 6H12q-6 0-6-6z" fill="#8a5a33" stroke="${K}"/><rect x="12" y="34" width="56" height="46" fill="#2a1a10" stroke="#3f2816"/><path d="M6 30h68v-12q0-6-6-6H12q-6 0-6 6z" fill="#a4713f" stroke="${K}"/><rect x="22" y="80" width="6" height="10" fill="#4a2f17" stroke="${K}"/><rect x="52" y="80" width="6" height="10" fill="#4a2f17" stroke="${K}"/><rect x="21" y="86" width="8" height="3" fill="#d8a52a" stroke="${K}"/><rect x="51" y="86" width="8" height="3" fill="#d8a52a" stroke="${K}"/><line x1="6" y1="40" x2="74" y2="40" stroke="#4a2f17"/>`},
+ {name:'C · SACK',sub:'burlap, a rope at the neck',mouth:[70,170,260,240],svg:`<path d="M30 20h20v8q22 6 22 34v26q0 8-8 8H16q-8 0-8-8V62q0-28 22-34z" fill="#b8995a" stroke="${K}"/><path d="M14 34v44q0 4 4 4h44q4 0 4-4V34z" fill="#2a1a10" stroke="#5a4a2a"/><rect x="28" y="24" width="24" height="5" fill="#8a7a4a" stroke="${K}"/><path d="M26 26q-6 6 0 12M54 26q6 6 0 12" fill="none" stroke="#5a4a2a"/><path d="M10 70l6 6M64 70l-6 6M12 56h6M62 56h6" stroke="#8a7a4a"/><path d="M8 90q36 6 64 0" fill="none" stroke="${K}"/>`},
+ {name:'D · CHEST',sub:'a wooden chest, iron bands, lid open',mouth:[60,150,280,240],svg:`<path d="M8 46h64v44q0 4-4 4H12q-4 0-4-4z" fill="#6b4425" stroke="${K}"/><path d="M8 46l6-30h52l6 30z" fill="#4a2f17" stroke="${K}"/><path d="M12 30h56v52H12z" fill="#2a1a10" stroke="#3f2816"/><rect x="8" y="46" width="64" height="4" fill="#5e6270" stroke="${K}"/><rect x="18" y="46" width="5" height="48" fill="#5e6270" stroke="${K}"/><rect x="57" y="46" width="5" height="48" fill="#5e6270" stroke="${K}"/><rect x="36" y="48" width="8" height="8" fill="#d8a52a" stroke="${K}"/><path d="M14 16h52l6 30" fill="none" stroke="${K}"/><rect x="8" y="88" width="64" height="2" fill="#4a2f17"/>`},
+ {name:'E · TOTE',sub:'the market\'s canvas tote',mouth:[70,170,260,230],svg:`<path d="M22 34q0-14 10-14t10 14M38 34q0-14 10-14t10 14" fill="none" stroke="${K}" stroke-width="2"/><path d="M10 34h60l-4 58H14z" fill="#e8dcc0" stroke="${K}"/><path d="M14 38h52l-3 50H17z" fill="#2a1a10" stroke="#8a7a5a"/><rect x="10" y="34" width="60" height="4" fill="#c8342c" stroke="${K}"/><rect x="14" y="88" width="52" height="4" fill="#c8342c" stroke="${K}"/><path d="M30 60h20M30 66h20" stroke="#c8342c" stroke-width="2"/>`},
+ {name:'F · BASKET',sub:'wicker, a handle over the top',mouth:[60,190,280,210],svg:`<path d="M12 44q28-36 56 0" fill="none" stroke="#a4713f" stroke-width="3"/><path d="M12 44q28-36 56 0" fill="none" stroke="${K}" stroke-width="1"/><path d="M6 44h68l-6 46H12z" fill="#c8a060" stroke="${K}"/><path d="M12 48h56l-5 38H17z" fill="#2a1a10" stroke="#7a5a2a"/><path d="M6 54h68M8 64h64M10 74h60M12 84h56" stroke="#8a6a3a"/><path d="M16 44v46M26 44v46M36 44v46M46 44v46M56 44v46M66 44v46" stroke="#8a6a3a" stroke-dasharray="4 4"/><rect x="6" y="42" width="68" height="4" fill="#a4713f" stroke="${K}"/>`}];
+const grid=document.getElementById('grid');
+for(const B of BAGS){ const [mx,my,mw,mh]=B.mouth.map(v=>v*.75); let items=''; THINGS.forEach(([k,c,n],i)=>{ const cols=Math.floor(mw/40), x=(i%cols)*((mw-34)/(cols-1)), y=Math.floor(i/cols)*42; if(y+34>mh)return; items+=`<div class="it" style="left:${x}px;top:${y}px"><img alt="" src="${icon(k,c)}">${n>1?`<span>x${n}</span>`:''}</div>`; });
+  const d=document.createElement('div'); d.className='win'; d.innerHTML=`<button class="x">X</button><div class="ttl">YOUR BAG <b>· $998074 · 16 THINGS</b></div><div class="bagk"><svg viewBox="0 0 80 100">${B.svg}</svg><div class="mouth" style="left:${mx}px;top:${my}px;width:${mw}px;height:${mh}px">${items}</div></div><div class="strip">GLOWCAP <span style="color:var(--dim)">x3</span><button>EAT</button><button>LOOK</button><button>DROP</button><button>DROP ALL</button></div><div class="lbl"><b>${B.name}</b> · ${B.sub}</div>`; grid.appendChild(d); }
+</script>

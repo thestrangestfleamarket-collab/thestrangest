@@ -1,0 +1,69 @@
+<title>Bag Lists</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+:root{--bg:#0b0d13;--fg:#d8dae2;--dim:#9b9584;--key:#f2c14e;--line:#3a3f4e;--pixel:'Silkscreen',monospace;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:11px var(--pixel);letter-spacing:.4px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px}
+h1{font:11px var(--pixel);color:var(--key);margin:0 0 4px;letter-spacing:1px}
+.note{color:var(--dim);line-height:1.6;margin-bottom:14px;max-width:80ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:18px}
+.card{position:relative;background:radial-gradient(ellipse 60% 40% at 50% 60%,#2f4d2a 0,#1f3420 60%,#172618 100%);padding:14px 10px 10px;border:2px solid var(--line)}
+.bagk{position:relative;width:400px;height:500px;margin:0 auto}
+.bagk svg{display:block;shape-rendering:crispEdges;width:400px;height:500px;filter:drop-shadow(0 6px 0 #0006)}
+.ttl{position:absolute;left:60px;right:60px;top:122px;text-align:center;color:var(--key);font-size:10px;text-shadow:0 1px 0 #000}
+.sw{position:absolute;left:62px;top:138px;display:flex;gap:4px}
+.sw span{font-size:9px;color:var(--fg);background:#1b1410cc;border:1px solid #3f2816;padding:2px 6px}
+.sw span.on{color:var(--key);border-color:var(--key)}
+.x{position:absolute;right:52px;top:150px;font:inherit;color:var(--dim);background:#0e1016;border:2px solid var(--line);padding:1px 6px}
+.mouth{position:absolute;left:60px;top:180px;width:280px;height:260px;overflow:hidden}
+.grip{position:absolute;right:52px;bottom:28px;width:14px;height:14px;border-right:4px solid #d8a52a;border-bottom:4px solid #d8a52a;box-shadow:2px 2px 0 #1b1410}
+.row{display:flex;align-items:center;gap:6px;height:24px;padding:0 4px;border-bottom:1px solid #3f2816;white-space:nowrap}
+.row img{width:18px;height:18px;image-rendering:pixelated;flex:none}
+.row b{font-weight:400;flex:1;overflow:hidden;text-overflow:ellipsis;color:#ece5d3}
+.row i{font-style:normal;color:var(--key);font-size:10px}
+.row u{text-decoration:none;color:#9fe07f;font-size:8px}
+.row.sel{background:#f2c14e22;outline:1px solid var(--key)}
+.hd{color:var(--dim);font-size:9px;padding:6px 4px 2px;letter-spacing:1px}
+.ledger .row{height:22px;border-bottom:1px dotted #5a3a1e}
+.ledger .row b{color:#e8dcc0}
+.strip{margin:8px 0 0;line-height:2;text-shadow:1px 1px 0 #000,0 0 3px #000;text-align:center}
+.strip button{font:inherit;color:#ece5d3;background:#0e1016;border:2px solid var(--line);padding:2px 7px;margin-left:4px}
+.lbl{color:var(--dim);margin-top:6px;text-align:center}
+.lbl b{color:var(--fg);font-weight:400}
+.icons .it{position:absolute;width:44px;height:44px}
+.icons .it img{width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(1px 1px 0 #0008)}
+.icons .it span{position:absolute;right:-3px;bottom:-4px;color:var(--key);font-size:9px;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+</style>
+<h1>ICONS OR LIST · A SWITCH ON THE FLAP</h1>
+<div class="note">The same bare bag. Beside LOOSE / TILED a second switch, ICONS / LIST, turns the mouth into a list of what you carry. Three list looks to pick from (A, B, C); the first card shows ICONS for comparison. A click on a row picks it (its buttons below), a double click uses it, a row drags out onto the ground like a picture does.</div>
+<div class="grid" id="grid"></div>
+<script>
+const PAL={k:'#1b1410',w:'#f4efe4',y:'#d8a52a',s:'#5e6270',S:'#a8adb8',t:'#d9c39a',n:'#6b4425',N:'#a4713f',d:'#222a33'};
+const ART={
+mush:['...kkkk...','..kAAAAk..','.kAaAAaAk.','kAAAAAAAAk','kkkkkkkkkk','...kttk...','...kttk...','...kttk...','..kttttk..','..kkkkkk..'],
+potion:['...kkkk...','...kwwk...','...kwwk...','..kkAAkk..','.kAAAAAAk.','.kAaAAAak.','.kAAAAAAk.','.kAAaaAAk.','..kAAAAk..','...kkkk...'],
+fish:['..........','..kkkk....','.kAAAAk..k','kAwAAAAkkk','kAAAAAAAAk','.kAAAAk.kk','..kkkk...k','..........','..........','..........'],
+fruit:['....kk....','...kBBk...','..kkAAkk..','.kAAAAAAk.','kAwAAAAAAk','kAAAAAAAak','kAAAAAAaak','.kAAAAaak.','..kAAaak..','...kkkk...'],
+gem:['....kk....','..kkAAkk..','.kAAAAAAk.','kAAaAAaAAk','kAaAAAAaAk','.kAaAAaAk.','..kAaaAk..','...kAAk...','....kk....','..........'],
+mortar:['....kk....','...kttk...','...kttk...','kkkkttkkkk','kSSSSSSSSk','kSssssssSk','.kSSSSSSk.','..kSSSSk..','..kssssk..','..kkkkkk..'],
+goggles:['..........','..........','kkkkkkkkkk','kSSkkkkSSk','kSAAkkSAAk','kSAAk.kAAk','kkkk...kkk','..........','..........','..........'],
+coat:['..kkkkkk..','.kAAkkAAk.','kAAkAAkAAk','kAAkAAkAAk','kkkAAAAAkk','..kAaAAAk.','..kAaAAAk.','..kAaAAAk.','..kAaAAAk.','..kkkkkk..'],
+jar:['..kkkkkk..','..knnnnk..','.kkkkkkkk.','.kwAAAAAk.','.kwAAAAAk.','.kAAAAAAk.','.kAAAAAAk.','.kAAAAAAk.','.kkkkkkkk.','..........'],
+book:['.kkkkkkkk.','kAAAAAAAk.','kAAAAAAAkk','kAaAAAAAwk','kAAAAAAAwk','kAAAAAAAwk','kAaAAAAAwk','kAAAAAAAwk','kkkkkkkkk.','..........'],
+net:['....kk....','...kNNk...','..kNkkNk..','.kSkSkSkS.','kSkSkSkSk.','.kSkSkSk..','..kSkSk...','...kkk....','....k.....','....k.....']};
+const shade=c=>{ const n=parseInt(c.slice(1),16); return '#'+((((n>>16)*.62)<<16|((n>>8&255)*.62)<<8|(n&255)*.62)>>>0).toString(16).padStart(6,'0'); };
+const icon=(k,A)=>{ const c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); const a=shade(A); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?'#3f8a3a':PAL[ch]; g.fillRect(x,y,1,1); } }); return c.toDataURL(); };
+const THINGS=[['mush','#7fe0d8',3,'GLOWCAP MUSHROOM','MUSHROOMS'],['mush','#a4713f',2,'MOREL','MUSHROOMS'],['potion','#ef6d5a',1,'HEAL POTION','POTIONS'],['potion','#7fb2f0',2,'REFRESH POTION','POTIONS'],['potion','#a8adb8',3,'EMPTY BOTTLE','TOOLS'],['mortar','#a8adb8',1,'MORTAR AND PESTLE','TOOLS'],['gem','#c49cf0',1,'AMETHYST','GEMS'],['gem','#f4efe4',2,'QUARTZ CRYSTAL','GEMS'],['fish','#7fb2f0',1,'PERCH','FOOD'],['fruit','#c8342c',1,'APPLE','FOOD'],['goggles','#7fb2f0',1,'DIVING GOGGLES','GEAR','WORN'],['net','#a8adb8',1,'BUTTERFLY NET','GEAR','HELD'],['coat','#3f8a3a',1,'GREEN COAT','GEAR'],['jar','#d8a52a',1,'CLOVER HONEY','FOOD'],['book','#7a3fb0',1,'A BOOK OF BIRDS','BOOKS']];
+const K='#1b1410';
+const SVG=`<svg viewBox="0 0 80 100"><rect x="4" y="30" width="5" height="50" fill="#4a2f17" stroke="${K}"/><rect x="71" y="30" width="5" height="50" fill="#4a2f17" stroke="${K}"/><path d="M8 24h64v66q0 6-6 6H14q-6 0-6-6z" fill="#6b4425" stroke="${K}"/><rect x="12" y="30" width="56" height="58" fill="#2a1a10" stroke="#3f2816"/><path d="M8 22h64v7q-8 6-32 6T8 29z" fill="#7d5230" stroke="${K}"/><rect x="37" y="27" width="6" height="7" fill="#d8a52a" stroke="${K}"/><rect x="36" y="91" width="8" height="3" fill="#d8a52a" stroke="${K}"/><path d="M8 24q-2-10 6-12h52q8 2 6 12" fill="none" stroke="${K}"/></svg>`;
+const row=(t,i,sel)=>`<div class="row${sel?' sel':''}"><img alt="" src="${icon(t[0],t[1])}"><b>${t[3]}</b>${t[5]?`<u>${t[5]}</u>`:''}${t[2]>1?`<i>x${t[2]}</i>`:''}</div>`;
+const CARDS=[
+ {name:'ICONS (as now)',sub:'LOOSE or TILED pictures',sw:['ICONS','LIST'],on:0,sw2:['LOOSE','TILED'],on2:1,cls:'icons',body:()=>THINGS.slice(0,15).map((t,i)=>`<div class="it" style="left:${(i%5)*52}px;top:${Math.floor(i/5)*52}px"><img alt="" src="${icon(t[0],t[1])}">${t[2]>1?`<span>x${t[2]}</span>`:''}</div>`).join('')},
+ {name:'A · LIST WITH PICTURES',sub:'a little picture, the name, the count, WORN or HELD; one row a thing, the picked row lit',sw:['ICONS','LIST'],on:1,cls:'list',body:()=>THINGS.map((t,i)=>row(t,i,i===1)).join('')},
+ {name:'B · LEDGER',sub:'names and counts only, like a shopkeeper\'s book; the most rows fit',sw:['ICONS','LIST'],on:1,cls:'list ledger',body:()=>THINGS.map((t,i)=>`<div class="row${i===1?' sel':''}"><b>${t[3]}</b>${t[5]?`<u>${t[5]}</u>`:''}<i>${t[2]>1?'x'+t[2]:''}</i></div>`).join('')},
+ {name:'C · GROUPED',sub:'the list under headings by kind: MUSHROOMS, POTIONS, GEAR, GEMS, FOOD…',sw:['ICONS','LIST'],on:1,cls:'list',body:()=>{ const G={}; for(const t of THINGS)(G[t[4]]=G[t[4]]||[]).push(t); return Object.entries(G).map(([h,L])=>`<div class="hd">${h}</div>`+L.map(t=>row(t,0,t[3]==='MOREL')).join('')).join(''); }}];
+const grid=document.getElementById('grid');
+for(const C of CARDS){ const d=document.createElement('div'); d.className='card';
+  d.innerHTML=`<div class="bagk">${SVG}<div class="ttl">$998074 · 15 THINGS · GEMS ×3</div><div class="sw">${C.sw.map((s,i)=>`<span class="${i===C.on?'on':''}">${s}</span>`).join('')}${C.sw2?'<span style="opacity:.4">·</span>'+C.sw2.map((s,i)=>`<span class="${i===C.on2?'on':''}">${s}</span>`).join(''):''}</div><button class="x">X</button><div class="mouth ${C.cls}">${C.body()}</div><div class="grip"></div></div><div class="strip">MOREL <span style="color:var(--dim)">x2</span><button>EAT</button><button>LOOK</button><button>DROP</button><button>DROP ALL</button></div><div class="lbl"><b>${C.name}</b> · ${C.sub}</div>`; grid.appendChild(d); }
+</script>

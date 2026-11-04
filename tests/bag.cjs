@@ -59,10 +59,22 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const r14 = await pg.evaluate(() => ({ tiled: BAGDBG().tiled, size: BAGDBG().size, pos: BAGDBG().pos.mortar }));
   ok(!r14.tiled && r14.size === 1 && r14.pos && r14.pos[0] > 180, 'back to LOOSE, the mortar where it was left ' + JSON.stringify(r14));
 
+  // LIST: the same things as rows with their pictures, in name order; a row picks, drags out onto the world
+  { const b = await at('#bagp .bgview'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(200);
+  const r15 = await pg.evaluate(() => { const P = document.getElementById('bagp'), rows = [...P.querySelectorAll('.bgr')]; return { list: BAGDBG().list, label: P.querySelector('.bgview').textContent, sort: !!P.querySelector('.bgsort'), n: rows.length, things: BAGDBG().inBag.length, names: rows.map(r => r.querySelector('b').textContent), pics: rows.every(r => /^data:image/.test(r.querySelector('img').src)), saved: JSON.parse(localStorage.getItem('market-save')).bagview }; });
+  ok(r15.list && r15.label === 'LIST' && !r15.sort && r15.n === r15.things && r15.pics && r15.names.join() === r15.names.slice().sort((a, b) => a.localeCompare(b)).join() && r15.saved === 'list', 'LIST shows every thing as a row with its picture, in name order, saved ' + JSON.stringify(r15));
+  { const b = await at('#bagp .bgr[data-id="mortar"]'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(150);
+  const b0 = await pg.evaluate(() => INV.items.bottle);
+  await dragTo('#bagp .bgr[data-id="bottle"]', 260, 560);
+  const r16 = await pg.evaluate(() => ({ sel: BAGDBG().sel, b: INV.items.bottle, ground: BAG.ground.length }));
+  ok(r16.sel === 'bottle' || r16.sel === 'mortar', 'a click on a row picks it ' + JSON.stringify(r16));
+  ok(r16.b === b0 - 1 && r16.ground === 2, 'a row dragged out onto the world drops it ' + JSON.stringify(r16));
+  await pg.evaluate(() => BAG.list(false));
+
   await start(false);   // the same browser, its save kept
   await pg.waitForFunction(() => BAG.ground.length > 0, null, { timeout: 20000 }).catch(() => {});
   const r10 = await pg.evaluate(() => ({ ground: BAG.ground.map(g => g.id), thing: BAGDBG().loose.includes('A LOOSE EMPTY BOTTLE') }));
-  ok(r10.ground.length === 1 && r10.ground[0] === 'bottle' && r10.thing, 'after a reload the dropped bottle still lies there ' + JSON.stringify(r10));
+  ok(r10.ground.length === 2 && r10.ground.every(id => id === 'bottle') && r10.thing, 'after a reload the dropped bottles still lie there ' + JSON.stringify(r10));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); } console.log('bag: all ok');
 })().catch(e => { console.log('bag: ' + e); process.exit(1); });

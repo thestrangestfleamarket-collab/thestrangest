@@ -5404,3 +5404,4 @@ Owner: "lets build out an amusement park, rollercoasters, rides, etc."; of the s
 - 4 Nov 2026, the bank's teller hall (the owner's call A): two teller cages at the front, one kept by THE RAT; an account at either cage keeps your cash on the server and pays 1% a day (at most $50); the dragon's hoard stays behind. The staff have spots.
 - 4 Nov 2026, the squirrel's tower has an inside (the owner's call: his own tower): a door at its foot into a round guardroom, his bunk, the lookout's chart (the golems and travellers now), a ladder up to the roof, where a spyglass narrows your view and a hatch leads back down.
 - 4 Nov 2026, your hall: a bank of mailboxes by the elevator (yours opens the letters waiting for you) and a notice board.
+- 4 Nov 2026, the fair's staff (owner: "keep them as fair workers for now"): the themed visitors held for sections B to H stay the fair's workers until their own sections exist.

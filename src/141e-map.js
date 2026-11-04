@@ -99,9 +99,9 @@ import {LOOP} from './009b-loop.js';
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
   const open=()=>{ if(up)return close(); if(busy)return; up=true; busy=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(0,0); anim(1100,t=>pose(t,0),()=>{ busy=false; }); };
-  const close=()=>{ if(!up)return; busy=true; const a0=flipped?180:0, c=cur; anim(a0?500:0,t=>pose(c,a0*(1-t)),()=>anim(700*c,t=>pose(c*(1-t),0),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; })); };   // ESC mid-unfold folds from where it is
+  const close=()=>{ if(!up)return; busy=true; const a0=flipped?180:0, c=cur; anim(300+500*c,t=>pose(c*(1-t),a0*(1-t)),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; }); };   // one motion: turned back and folded together, from wherever it is
   const flip=()=>{ if(!up||busy)return; busy=true; const a0=flipped?180:0, a1=flipped?0:180; anim(600,t=>pose(1,a0+(a1-a0)*t),()=>{ flipped=!flipped; busy=false; }); };
-  const go=f=>{ if(busy)return; busy=true; anim(350,t=>pose(1-t,flipped?180:0),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; f(); }); };   // a quick fold, then there
+  const go=f=>{ if(busy)return; busy=true; const a0=flipped?180:0; anim(350,t=>pose(1-t,a0*(1-t)),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; f(); }); };   // a quick fold, then there
   { let dr=null, moved=false; W.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,px,py}; moved=false; });
     W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1&&!busy){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
     W.addEventListener('pointerup',()=>{ dr=null; });

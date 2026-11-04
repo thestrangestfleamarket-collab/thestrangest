@@ -14,6 +14,6 @@ const {chromium}=require('playwright');
   const names=await pg.evaluate(()=>__UI.brochure.places()); console.log('places',names.join(' · '));
   await pg.evaluate(()=>document.querySelector('#bro .pn .fc:not(.bk) [data-go="CENTRAL PARK"]').dispatchEvent(new MouseEvent('click',{bubbles:true}))); await pg.waitForTimeout(4000);
   console.log('after the park click',JSON.stringify(await pg.evaluate(()=>({up:BRODBG().up,at:[STORE.pos.x.toFixed(1),STORE.pos.z.toFixed(1)],lvl:SHARED.LVL,room:!!ROOMS.cur}))));
-  await pg.evaluate(()=>__UI.mapWindow()); await pg.waitForTimeout(2500); await pg.keyboard.press('Escape'); await pg.waitForTimeout(2500);
+  await pg.evaluate(()=>__UI.mapWindow()); await pg.waitForTimeout(2500); await pg.keyboard.press('Escape'); for(let i=0;i<40&&(await pg.evaluate(()=>BRODBG().up));i++)await pg.waitForTimeout(250);
   console.log('after esc',JSON.stringify(await pg.evaluate(()=>BRODBG())));
   console.log('errors',Object.keys(errs)); await b.close(); })();

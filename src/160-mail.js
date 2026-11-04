@@ -212,7 +212,7 @@ if(MAIL.on){ const T=TILE, M=1/.84*T, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, G=(x,z)=
     for(const l of MAIL.L)if(l.state==='out')l.state='sorted'; refresh(); };
   SYS.every(save,30000,'160-mail save'); addEventListener('beforeunload',save); MAIL.save=save;
 
-  const wait=()=>{ const ok=(STORE.places||[]).every(p=>p[1]||p[2]||p[4]==='off')||performance.now()-(MAIL.t0||(MAIL.t0=performance.now()))>90000; if(ok)MAIL.build(); else setTimeout(wait,1500); };
+  const wait=()=>{ const ok=(STORE.places||[]).every(p=>p[1]||p[2]||p[4]==='off'||p[4]==='see')||performance.now()-(MAIL.t0||(MAIL.t0=performance.now()))>90000; if(ok)MAIL.build(); else setTimeout(wait,1500); };
   setTimeout(wait,1500);
   window.MAILDBG=()=>({ready:MAIL.ready,addr:MAIL.addr.length,boxes:MAIL.cboxes.length,states:MAIL.L.reduce((a,l)=>(a[l.state]=(a[l.state]||0)+1,a),{}),carrier:S_()&&S_().state,day:MAIL.day()});
 }

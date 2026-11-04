@@ -19,7 +19,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const r2 = await pg.evaluate(() => ({ ...CARS.radio(), w: ONLINE.world['radio:c3'] }));
   ok(r2.w === 0 && r2.ch.jazz && r2.ch.jazz.paused, 'getting out turns it off: ' + JSON.stringify({ w: r2.w, jazz: r2.ch.jazz }));
   await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c3', by: 'a' }); ONLINE.feed({ t: 'world', k: 'radio:c3', v: 3 }); });
-  await pg.waitForTimeout(4000); const r3 = await pg.evaluate(() => CARS.radio());
+  await pg.waitForFunction(() => { const c = CARS.radio().ch.rag; return c && !c.paused && c.g > .05; }, null, { timeout: 20000, polling: 250 }).catch(() => {});   // (the station's file is still loading on a slow runner: wait for it to play, not a fixed time)
+  const r3 = await pg.evaluate(() => CARS.radio());
   ok(r3.ch.rag && !r3.ch.rag.paused && r3.ch.rag.g > .05 && r3.ch.rag.g < .56, 'another player\'s car with its radio on is heard beside it, muffled: ' + JSON.stringify(r3.ch.rag));
   await pg.evaluate(() => ONLINE.feed({ t: 'car', k: 'c3', by: null })); await pg.waitForFunction(() => { const c = CARS.radio().ch.rag; return c && c.paused; }, null, { timeout: 20000, polling: 500 }).catch(() => {}); const r4 = await pg.evaluate(() => CARS.radio());
   ok(r4.ch.rag && r4.ch.rag.paused, 'once they leave it, it is quiet: ' + JSON.stringify(r4.ch.rag));

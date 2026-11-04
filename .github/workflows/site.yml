@@ -34,6 +34,7 @@ jobs:
           k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
+          k folk    'src/111db|worker/folk|src/159-jobs|src/076-npc-map|src/111a|folk\.cjs'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k mapeditor 'src/editor/|src/006-map-pre|src/089c-ponds|src/153-nav|src/076-npc-map|src/069-dress|src/096-mapedit|src/152a|worker/mappatch|worker/door|data/topmap|data/world\.json|build\.py|mapeditor\.cjs'
@@ -128,6 +129,9 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: The folk's walks (the walks alone, the page following them, the walk grid)
+        if: contains(steps.f.outputs.run, ' folk')
+        run: node tests/folk.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')

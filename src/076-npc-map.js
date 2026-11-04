@@ -1,7 +1,7 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WINDOWS} from './003b-systems.js';
+import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -88,7 +88,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?SHARED.BOUND.x1-.5*TILE:SHARED.BOD.XS(SHARED.BOD.MAP.x1+14); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); } else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
-  Object.defineProperty(N,'home',{get:()=>st.home,set:v=>{ st.home=v&&{r:0,...v}; },enumerable:true}); HOMES.assign(st,N.key,o,free);
+  Object.defineProperty(N,'home',{get:()=>st.home,set:v=>{ st.home=v&&{r:0,...v}; },enumerable:true}); HOMES.assign(st,N.key,o,free); N.walk={auto:!o.pick&&!o.brain,roam:!!o.roam,lane:LN,v:st.v};
   N.pick=()=>pick();
   const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(!o.roam&&HOMES.pick(st,free,LN))return; if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
@@ -162,7 +162,7 @@ HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); i
   if(h.shop===undefined){ let b=null, bd=h.r+HOMES.NEAR*TILE; for(const d of L){ const k=Math.hypot(d.x-h.x,d.z-h.z); if(k<bd){ bd=k; b=d; } } h.shop=b?b.id:null; return b; }
   return L.find(d=>d.id===h.shop)||null; };
 HOMES.goIn=st=>{ const h=st.home; st.goIn=null; if(!h||!(h.r>0)||Math.random()>=HOMES.IN)return false; const d=HOMES.door(h); if(!d)return false; st.to={x:d.x,z:d.z}; st.next=null; st.goIn=d.id; return true; };
-HOMES.pick=(st,free,lane)=>{ '@later'; const h=st.home; if(!h||!(h.r>0))return false; if(HOMES.goIn(st))return true;
+HOMES.pick=(st,free,lane)=>{ '@later'; const h=st.home; if(!h||!(h.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; if(HOMES.goIn(st))return true;
   for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)){ st.to=to; st.next=null; return true; } } return false; };
 window.HOMES=HOMES; window.STFREE=stfree;
 window.HOMESDBG=wake=>NPCS.filter(N=>{ if(wake&&N.st)N.st.wait=0; return true; }).filter(N=>N.st&&N.st.home&&N.st.home.r>0).map(N=>[N.key,N.st.home.shop===undefined?'?':N.st.home.shop,N.st.goIn||'',N.st.inT!=null?+N.st.inT.toFixed(0):'',N.far?'far':'near']);
@@ -170,7 +170,7 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.B
     free=(x,z,R)=>x>lane.x0&&x<lane.x1&&z>lane.z0&&z<lane.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R);
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
-ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE, to={x:st.x+Math.sin(a)*r,z:st.z+Math.cos(a)*r};
+ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE, to={x:st.x+Math.sin(a)*r,z:st.z+Math.cos(a)*r};
     if(!free(to.x,to.z,st.R))continue;
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };

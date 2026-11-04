@@ -264,9 +264,12 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // leaves by moonlight: darker and greyer as the day goes, so a crown never glows at night
     const leafN=sh=>{ sh.uniforms.uLeafN=PARK.leafN; sh.fragmentShader='uniform float uLeafN;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','{ float l=dot(outgoingLight,vec3(.3,.59,.11)); outgoingLight=mix(outgoingLight,vec3(l)*vec3(.85,.95,1.08),.5*uLeafN)*(1.-.5*uLeafN); }\n#include <opaque_fragment>'); };
     if(sway||TL||leafy){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); if(leafy)leafN(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL+'lf'+!!leafy; }
-    if(leafy)PEEK.mark(g,new Uint8Array(g.attributes.position.count).fill(4)); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy||opt.cards)me.userData.tall=1; if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
+    if(leafy&&!opt.caster)PEEK.mark(g,new Uint8Array(g.attributes.position.count).fill(4)); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy||opt.cards)me.userData.tall=1; if(leafy&&!opt.caster)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
     if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafd'+sway; } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
+    // a shadow-only stand-in: drawn into the shadow maps by its own depth materials, never into the picture (its own material fails every depth test)
+    if(opt.caster){ me.material=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false,depthFunc:THREE.NeverDepth}); me.receiveShadow=false;
+      for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5})],['customDistanceMaterial',new THREE.MeshDistanceMaterial({map:opt.map,alphaTest:.5})]]){ if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafsh'+sway+k; } me[k]=M; } }
     if(me.isBatchedMesh&&!opt.far){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
     if(!me.isBatchedMesh)me.userData.cull=1;
     scene.add(me); return me; };
@@ -366,7 +369,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       inst(sg,new THREE.MeshLambertMaterial(),M1.length,(im,i)=>{ const [wx,wz,x,y,,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y),wz),Q.identity(),S.set(k,k,k))); im.setColorAt(i,c.setRGB(.9,.86,.76,THREE.SRGBColorSpace)); });
       inst(cg,new THREE.MeshLambertMaterial({flatShading:true}),M1.length,(im,i)=>{ const [wx,wz,x,y,col,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y)+.11*TILE*k,wz),Q.setFromAxisAngle(up,i),S.set(k,k,k))); im.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); }); }
     grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
-  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1}); PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
+  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ PARK.trees=QS.get('trees')==='0'?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1});
+    // the near trees' shadows cast by their own lite cards (owner, 4 Nov 2026: "fix 1"), the full trees casting none; a moved tree's shadow moves with it
+    if(PARK.trees&&PARK.trees.isBatchedMesh&&QS.get('treeshadow')!=='full'){ const C=mesh(TREES.slice(0,NI),true,false,true,{noTrunk:1,cards:2,far:1,caster:1}); if(C.isBatchedMesh){ PARK.treeShadow=C; PARK.trees.castShadow=false; (PARK.trees.userData.twins||(PARK.trees.userData.twins=[])).push(C); } else C.removeFromParent(); } PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2}); PARK.ringTrunks=trunks(TREES.slice(NI));
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
@@ -376,10 +381,10 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   // far trees simple (owner, 30 Oct 2026): a park tree is drawn whole within 25 tiles of you and as its leaf-card stand-in further off; none past the haze; a tree moved in the world editor stays whole
   { const NEAR=25*TILE; let lx=1e9, lz=1e9, lr=-1, li=null;
     const set=(me,id,on)=>{ if(id>=0&&!(me.userData.gone&&me.userData.gone.has(id)))me.setVisibleAt(id,on); };
-    PARK.lod=()=>{ const A=PARK.trees, B=P.stand, R=PARK.ring, inn=!!P.in; if(!A||!A.isBatchedMesh||!B||!B.isBatchedMesh)return; B.visible=true;
+    PARK.lod=()=>{ const A=PARK.trees, B=P.stand, R=PARK.ring, C=PARK.treeShadow, inn=!!P.in; if(!A||!A.isBatchedMesh||!B||!B.isBatchedMesh)return; B.visible=true; if(C)C.visible=A.visible;
       if(Math.hypot(pos.x-lx,pos.z-lz)<TILE&&CULL.R===lr&&inn===li)return; lx=pos.x; lz=pos.z; lr=CULL.R; li=inn; const far=CULL.R>0?CULL.R:1e9, ed=A.userData.edited;
       A.userData.items.forEach((it,i)=>{ const d=Math.hypot(it.x-pos.x,it.z-pos.z)-it.r, keep=!!(ed&&ed.has(A.userData.ids[i])), past=d>far&&!keep, near=keep||inn&&d<NEAR;
-        set(A,A.userData.ids[i],near&&!past); set(B,B.userData.ids[i],!near&&!past); });
+        set(A,A.userData.ids[i],near&&!past); set(B,B.userData.ids[i],!near&&!past); if(C)set(C,C.userData.ids[i],near&&!past&&!(A.userData.gone&&A.userData.gone.has(A.userData.ids[i]))); });
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };
     PARK.lodReset=()=>{ lx=1e9; }; SYS.add('life',()=>PARK.lod(),'061-treelod'); }

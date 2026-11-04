@@ -127,7 +127,7 @@ starting: a newer owner decision wins over a line here.
 - [ ] **The road along the Hudson from Market St** (owner, 4 Nov 2026: "why isnt the hudson showing, missing road"): the water and quay now
   show within 60 tiles; the road itself wasn't confirmed in a picture.
 - [ ] **A thin dark bar on the bath house's floor** near its front wall, seen from one overhead angle (4 Nov 2026); not looked into.
-- [ ] **Tree shadows: the lag in the owner's render-inspector shot** (owner, 2 Nov 2026: "extremely laggy.", on Market St near 32,25 at
+- [ ] **Tree shadows: the lag in the owner's render-inspector shot** [taking: claude/peaceful-ritchie-3z6mxa, 4 Nov 2026] (owner, 2 Nov 2026: "extremely laggy.", on Market St near 32,25 at
   night, 10 FPS). Measured 2 Nov: the park's leaf-card trees (about 148k triangles in 3 meshes) and the street oaks (about 23k) cast shadows,
   and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps; all `autoUpdate=false`, redrawn when needed) draws
   them again: about 1,000 calls and 750k triangles in that frame, felt as stutter. Since 1 Nov a quarter of the trees use the fine-leaf look

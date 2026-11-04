@@ -35,13 +35,15 @@ Object.assign(WE,{on:false}); window.WE=WE;
   function applyProp(o){ '@later'; const e=stOf(o), me=o.me, id=o.id, pv=o.pivot, en=o.en, inst=!!(me&&me.isInstancedMesh); if(!me||!me.setMatrixAt)return;
     foot(o.it,e); follow(o.it,e,pv);
     if(inst&&!en.base){ en.base=me.instanceMatrix.array.slice(); if(me.instanceColor)en.col0=me.instanceColor.array.slice(); }
-    if(e.del){ if(inst){ me.setMatrixAt(id,Mx.makeScale(0,0,0).setPosition(pv[0],pv[1],pv[2])); me.instanceMatrix.needsUpdate=true; me.computeBoundingSphere(); } else if(me.setVisibleAt){ me.setVisibleAt(id,false); (me.userData.gone||(me.userData.gone=new Set())).add(id); } return; }
+    // a tree's shadow stand-in (061-park) is the same tree in another batch: what is done to one is done to the other
+    const twin=(f)=>{ const T=me.userData.twins; if(!T||!me.userData.ids)return; const i=me.userData.ids.indexOf(id); for(const t of T){ const j=t.userData.ids&&t.userData.ids[i]; if(j>=0)f(t,j); } };
+    if(e.del){ if(inst){ me.setMatrixAt(id,Mx.makeScale(0,0,0).setPosition(pv[0],pv[1],pv[2])); me.instanceMatrix.needsUpdate=true; me.computeBoundingSphere(); } else if(me.setVisibleAt){ me.setVisibleAt(id,false); (me.userData.gone||(me.userData.gone=new Set())).add(id); twin((t,j)=>t.setVisibleAt(j,false)); } return; }
     if(me.setVisibleAt){ me.setVisibleAt(id,true); if(me.userData.gone)me.userData.gone.delete(id); (me.userData.edited||(me.userData.edited=new Set())).add(id); if(PARK.lodReset)PARK.lodReset(); }
     Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ'); Mx.makeRotationFromEuler(Ex); Mx.multiply(Tx.makeScale(e.s[0],e.s[1],e.s[2]));
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2]));
     if(inst){ Mx.multiply(Bx.fromArray(en.base,id*16)); me.instanceMatrix.needsUpdate=true;
       if(en.col0){ col.set(e.col).multiplyScalar(e.bri==null?1:e.bri); me.setColorAt(id,cx.fromArray(en.col0,id*3).multiply(col)); me.instanceColor.needsUpdate=true; } }
-    me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); }
+    me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); twin((t,j)=>{ t.setMatrixAt(j,Mx); t.setVisibleAt(j,true); if(t.computeBoundingSphere)t.computeBoundingSphere(); }); }
   const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z],it,en,tint:!!(en.me.isInstancedMesh&&en.me.instanceColor)}; };
   // WED.meshes: {place, me (a BatchedMesh or InstancedMesh), items [{k:name, x,y,z:pivot, sol?, fix?, follow?}], ids? (batch or instance id to item; one item per instance when left out)}
   const ents=()=>{ for(const en of WED.meshes)if(!en.ids)en.ids=en.items.map((_,i)=>i); return WED.meshes; };

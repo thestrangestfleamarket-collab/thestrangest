@@ -35,7 +35,7 @@ PHA.make=K=>{ '@playhouse';
   S(-6,D.ZL,6,D.ZL+.2); both(8.6,D.ZL,9.6,D.ZL+.2); both(5.8,D.ZL,6,39); both(8.6,D.ZL+.2,8.8,39);   // the landing's balustrade, the grand stairs' balustrades
   S(-12.3,D.ZF,12.3,D.ZF+.4);                                                        // the front wall and its doors
   both(4.2,32.7,4.8,33.3); both(4.2,38.2,4.8,38.8);                                  // the foyer's columns
-  S(-11.9,31.5,-9.2,36); S(9.2,31.5,11.9,37);                                        // the box office and the bar
+  S(-11.9,31.5,-9.2,36); S(9.2,31.5,9.98,37); S(11.5,31.5,11.9,37);                                        // the box office; the bar's counter and back bar (the barkeep stands between)
 
   /* ---------- the stalls: the raked floor, carpet, the pit and the apron ---------- */
   { const L=D.Z1-D.ZP, ang=Math.atan2(1.3,L), len=Math.hypot(L,1.3);

@@ -10,6 +10,7 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   const drag=async(pts,o={})=>{ const s=await pg.evaluate(p=>p.map(([x,y])=>PAINTER.screen(x,y)),pts); if(o.alt)await pg.keyboard.down('Alt'); await pg.mouse.move(s[0][0],s[0][1]); await pg.mouse.down(); for(const q of s.slice(1))await pg.mouse.move(q[0],q[1],{steps:6}); await pg.mouse.up(); if(o.alt)await pg.keyboard.up('Alt'); await pg.waitForTimeout(60); };
   const near=(a,c,t=40)=>a&&Math.abs(a[0]-c[0])+Math.abs(a[1]-c[1])+Math.abs(a[2]-c[2])<=t;
 
+  ok(await pg.evaluate(()=>['paintp','artview','tradep','tradeq'].every(id=>{ const e=document.getElementById(id); return e&&getComputedStyle(e).display==='none'; })),'the painter, the viewer and the trade windows are not on screen until opened');
   // a canvas from the pack opens the painter, and the game stops taking your keys
   const A=await pg.evaluate(async()=>{ FORAGE.give('canvas_m',2); const r={rows:JSON.stringify(FORAGE.ROWB.map(f=>f('canvas_m')))}; await FORAGE.ACT.paint('canvas_m'); await new Promise(r=>setTimeout(r,400));
     return {...r,open:PAINTER.state().open,size:[PAINTER.state().w,PAINTER.state().h],layers:PAINTER.state().layers,gw:PAINTDBG().gamewin,left:INV.items.canvas_m,wip:PAINTDBG().wip,bg:PAINTER.pixel(5,5)}; });
@@ -82,7 +83,7 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   const Vw=await pg.evaluate(async id=>{ FORAGE.ACT.artview('pt_'+id); await new Promise(r=>setTimeout(r,500)); const v=document.getElementById('artview'), im=v.querySelector('img'); return {open:!v.hidden,src:im&&im.src.slice(0,15),t:v.textContent.includes('RED OVER BLUE')}; },F.id);
   if(SHOTS)await pg.screenshot({path:SHOTS+'/view.png'});
   await pg.keyboard.press('Escape');
-  ok(Vw.open&&Vw.src==='data:image/webp'&&Vw.t&&await pg.evaluate(()=>document.getElementById('artview').hidden),'VIEW shows it full screen with its title; Esc closes it');
+  ok(Vw.open&&Vw.src==='data:image/webp'&&Vw.t&&await pg.evaluate(()=>getComputedStyle(document.getElementById('artview')).display==='none'),'VIEW shows it full screen with its title; Esc closes it');
 
   // the trader buys paintings at their worth
   const Sh=await pg.evaluate(()=>{ const r=(CHARS.store&&CHARS.store.trader)||(CHARS.rec&&CHARS.rec('trader')), tr=r&&r.trade; return {sells:!!tr&&tr.sells.includes('canvas_m'),buys:!!tr&&(tr.buys||[]).includes('paintings'),k:FORAGE.BUYK.paintings}; });

@@ -72,6 +72,7 @@ jobs:
           k zones   'src/129a|src/066-river|src/065a|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
+          k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           k cast    'src/111a|src/111f[bc]|src/159-jobs|src/059i|data/cast/|data/characters|data/merchant|flea\.cjs|jobsim|merchant\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -193,6 +194,9 @@ jobs:
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
         if: contains(steps.f.outputs.run, ' skate')
         run: node tests/skate.cjs
+      - name: The park's creatures (real sizes, how each lives, the wildlife journal)
+        if: contains(steps.f.outputs.run, ' wild')
+        run: node tests/wild.cjs
       - name: Check the site opens (door, then THE MARKET)
         run: node tests/site.cjs
       - name: Every place's code comes when you go there

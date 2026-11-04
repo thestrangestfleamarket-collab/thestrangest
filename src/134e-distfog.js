@@ -4,6 +4,7 @@ import {ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 const DFOG={};
 { const D0={on:true,cut:false,start:12,end:60,blur:0,haze:.3}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog7')||'{}')); }catch(e){ C=Object.assign({},D0); }
@@ -47,6 +48,7 @@ const DFOG={};
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&C.cut&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;
+  BATCH.reach=()=>{ if(UI.view==='iso')return [48*TILE,64*TILE]; const c=DFOG.cut(); return c?[c+4*TILE,c+20*TILE]:[Infinity,Infinity]; };   // painted ground follows the HAZE RANGE: up to just past the haze, everything when nothing is cut; the isometric view (30 tiles across at most) keeps the near ring
   // the player's HAZE RANGE in GRAPHICS: where the haze takes everything (the fog's END; the band before it keeps its width)
   const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dhaze'))return;
     const B=document.createElement('div'); B.innerHTML='<h3>HAZE RANGE</h3><div class="row"><span>NEAR</span><input type="range" id="dhaze" min="20" max="120" step="5"><span>FAR</span><span id="dhazev"></span></div><div class="dim">how far you see before the haze takes everything; further draws more and costs more</div>';

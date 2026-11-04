@@ -16,7 +16,7 @@ const arg=k=>{ const i=process.argv.indexOf(k); return i>0?process.argv[i+1]:nul
       D.scene.traverse(o=>{ if(o.castShadow){ cast.push(o); o.castShadow=false; } if(!o.visible||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return; let off=o.isSkinnedMesh||o.isPoints||o.isLine||o.isSprite;
         if(!off&&o.geometry){ const G=o.geometry; if(!G.boundingBox)G.computeBoundingBox(); b.copy(G.boundingBox).applyMatrix4(o.matrixWorld); const h=b.max.y-b.min.y, w=Math.max(b.max.x-b.min.x,b.max.z-b.min.z), cx=(b.min.x+b.max.x)/2, cz=(b.min.z+b.max.z)/2;
           if(o.isInstancedMesh){ const i=b.copy(G.boundingBox), s=new TH.Vector3().setFromMatrixScale(o.matrixWorld), ih=(i.max.y-i.min.y)*s.y, iw=Math.max(i.max.x-i.min.x,i.max.z-i.min.z)*Math.max(s.x,s.z); off=ih>.9&&ih>.12*iw; }
-          else off=(h>.9&&h>.12*w)||b.min.y>gy(cx,cz)+1||(w<200&&b.max.y>gy(cx,cz)+3.5)||(h>1.2&&h>.04*w&&w<200)||(w<6&&h>.5); }
+          else { const G=Math.max(gy(cx,cz),gy(b.min.x,b.min.z),gy(b.max.x,b.min.z),gy(b.min.x,b.max.z),gy(b.max.x,b.max.z)); off=b.max.y>G+(w>20?2.5:1)||b.min.y>G+.6||(w<6&&h>.5); } }
         if(off){ hid.push(o); o.visible=false; } });
       R.shadowMap.needsUpdate=true;
       const fog=D.scene.fog; D.scene.fog=null; R.setPixelRatio(1); R.setSize(PX,PX,false); R.setRenderTarget(null); R.render(D.scene,cam);

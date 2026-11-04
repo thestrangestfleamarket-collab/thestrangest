@@ -17,7 +17,8 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
 
   /* ---------- asking and being asked ---------- */
   ONLINE.useUp=o=>SWAP.ask(o);
-  SWAP.ask=o=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090');
+  let pre=null;   // a thing dragged onto them goes in as soon as the trade opens
+  SWAP.ask=(o,put)=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090'); pre=put&&put.id?put:null;
     ONLINE.send({t:'tr',op:'ask',to:o.id}); say('YOU ASK '+(o.name||'THEM')+' TO TRADE.'); };
   const asked=()=>{ if(!ask){ Q.hidden=true; return; } Q.innerHTML=`<h3 style="margin:0 0 8px;color:#f2c14e;font:12px Silkscreen,monospace">TRADE</h3><div>${esc(ask.name||'A TENANT')} WANTS TO TRADE WITH YOU.</div>
       <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end"><button data-a="no" style="${B}">NO</button><button data-a="yes" style="${B}">YES</button></div>`; Q.hidden=false; };
@@ -30,7 +31,7 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
     if(op==='no')return say((m.name||'THEY')+' DOES NOT WANT TO TRADE.','#c8a090');
     if(op==='far')return say('TOO FAR AWAY TO TRADE: WALK UP TO THEM.','#c8a090');
     if(op==='busy')return say('THEY ARE IN ANOTHER TRADE.','#c8a090');
-    if(op==='open'){ ask=null; asked(); T={with:String(m.with),name:String(m.name||'A TENANT'),mine:{items:{},cash:0},theirs:null,okMe:false,okThem:false,done:false}; P.hidden=false; draw(); return; }
+    if(op==='open'){ ask=null; asked(); T={with:String(m.with),name:String(m.name||'A TENANT'),mine:{items:{},cash:0},theirs:null,okMe:false,okThem:false,done:false}; if(pre&&can(pre.id)){ T.mine.items[pre.id]=Math.min(pre.n||1,INV.items[pre.id]); offer(); } pre=null; P.hidden=false; draw(); return; }
     if(!T)return;
     if(op==='st'){ T.theirs=m.theirs||null; T.okMe=!!m.okMe; T.okThem=!!m.okThem; draw(); return; }
     if(op==='done'){ done(m); return; }
@@ -75,3 +76,4 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
   P.addEventListener('change',e=>{ if(!T||e.target.id!=='trcash')return; T.mine.cash=Math.max(0,Math.min(cash(),Math.floor(+e.target.value||0))); T.okMe=T.okThem=false; offer(); draw(); });
   SWAP.state=()=>({open:!P.hidden,with:T&&T.with,mine:T&&T.mine,theirs:T&&T.theirs,okMe:T&&T.okMe,okThem:T&&T.okThem,asked:!!ask});
 }
+export {SWAP};

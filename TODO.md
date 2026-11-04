@@ -30,7 +30,6 @@ Risk is noted only when it isn't low.
 **To try on the live site** (one sitting; each line is in its area below):
 the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-the cinema's titles ·
 VR on the Quest 3 (and the painter in it).
 
 **To pick** (one batch; each line is in its area below):
@@ -40,7 +39,7 @@ piece · the egg poacher's tint (confirm he said "tintable") · who stands on Ma
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
-the physics extras (darts now twice at the bar) · the long checks' time limits · `docs/MAP.md` out of git · NPC voices (lifts the
+the physics extras (darts now twice at the bar) · NPC voices (lifts the
 19 Oct "no sound" rule) · the easel mockup (update or leave).
 
 ## CI, checks and tools
@@ -55,23 +54,27 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
     back to A* anyway; no places failure since;
   - `tests/fishing.cjs` at random: steadied in ef15d2f1 (3 Nov), passed three times since;
   - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
-- [ ] **Restore #512's lost HISTORY entry** · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
+- [x] **Restore #512's lost HISTORY entry** (done 4 Nov) · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
   "lets add them all, add them as toggles in graphics…") was added in 6b3c9deb and dropped in the merges caee19fb/116b27da. Put it back.
-- [ ] **The long checks need their own time limits** · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
+- [x] **The long checks need their own time limits** (done 4 Nov: his pick, 15 minutes a check; core, places, fights 20; headset 45) · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
   was still hit: the headset (VR) step hung 08:29–13:43 UTC in run 41795287054. Steps have no limits of their own, and a hang burns
   Actions minutes (they ran out on 20 and 28 Oct). Add `timeout-minutes` to the long steps (VR, catacomb run, room editor) or split them
   into their own job; the owner says yes to 350 or a new number.
-- [ ] **`docs/MAP.md` conflicts on nearly every merge** · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
+- [x] **`docs/MAP.md` conflicts on nearly every merge** (done 4 Nov: his pick, out of git) · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
   open pull requests keep editing it. Options: stop keeping it in git (CLAUDE.md tells chats to grep it, so that line changes too), or the
   cheap one, `docs/MAP.md merge=ours` in `.gitattributes` and let the build rewrite it. `TODO.md merge=union` would help this file the same way.
-- [ ] **"chunk later was not loaded before use" on the lawn** · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
+- [x] **"chunk later was not loaded before use" on the lawn** (done 4 Nov: the parts builder's shape helpers in `src/080-npc-parts.js` run at the start; `?at=40,150` clean) · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
   change every build). Rebuild, open the spot, read the warning's number in `dist/chunks.txt`, add the missing `LOAD`. With: the fluffy grass.
-- [ ] **The black-void sheet view doesn't show rig bodies** · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
+- [x] **The black-void sheet view doesn't show rig bodies** (done 4 Nov: `tests/sheet.cjs poacher` shows him front, side and back; the crash on `hud`/`stat` was the cause; the minimap still shows in a corner) · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
   (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,
   no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
-- [ ] **`tests/loosecheck.cjs` fails on `main`** · P3 · S · check. Its start spot (`at=-2.2,3.2`, lines 17 and 52) has no loose things near
-  it any more; nothing runs it (not in `site.yml`). Fix the spot and add it to the physx step. With: the physics extras and STAND ON THINGS.
-- [ ] **The cinema's video titles** · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
+- [ ] **`tests/loosecheck.cjs`: two street failures, and the bodega part** · P3 · M · find. Brought up to date on 4 Nov (#607: the nearest
+  light thing on the ground, since no trash can is loose any more; the bodega entered by its door). Now: the milk crates fly when shoved, land,
+  sleep and can be picked up, but **walking into them doesn't push them** (moved 0.00) and **a shoved thing's old place still blocks you a
+  little** (pushed out 0.12): find out whether those are the game or the test. The bodega part enters and has 216 loose goods, but looks for an
+  office chair that isn't there now (pick one of radio, lottery machine, candy jar, paper bags, newspaper rack). The apartment and dungeon
+  parts weren't reached. Not run by CI (add it to the physx step once it passes). With: the physics extras and STAND ON THINGS.
+- [x] **The cinema's video titles** (checked 4 Nov: YouTube answers the site's own origin, `access-control-allow-origin: https://thestrangestfleamarket.com`, so players get titles; only CI's machines are refused) · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
   fails quietly: no title, nothing breaks); from elsewhere it answers, so players likely get titles. Check on the live site; if not, fetch
   the title through the worker.
 - [x] **#501 (THE CATACOMB RUN in VR) was merged on a red build check**: read 4 Nov. Run 41477704509 failed only in places (the dungeon's
@@ -105,7 +108,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   buildings"). DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js:56`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE
   (the owner's global look, `src/134e-distfog.js:65`) both limit what's drawn; the nearer wins. Ask with the default below; keep both
   editors in sync.
-- [ ] **DRAW DISTANCE's default** · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
+- [x] **DRAW DISTANCE's default** (owner, 4 Nov 2026: 60 tiles, the far fading into the sky at it) · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
   (the haze is off by default since 3 Nov). Ask: keep, change, or ALL. Sets the baseline for the tree-by-distance and shadow lines.
 
 ## Server, security and money

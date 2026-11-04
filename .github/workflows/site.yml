@@ -66,6 +66,7 @@ jobs:
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k lives   'src/158|src/159-jobs|src/159d|worker/lives|data/lives|lives\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
+          k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
@@ -77,7 +78,8 @@ jobs:
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
-          k interiors 'src/038z[cd]|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
+          k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
+          k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k diner   'src/146za|src/038z[cd]|src/146z5|src/147-newsstand|src/125-game-zzz-bar-octopus|src/127-drummer|src/059i|src/111fb|src/159-jobs|src/100-use|diner\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
@@ -105,174 +107,237 @@ jobs:
       - name: Build
         run: python3 build.py
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
+        timeout-minutes: 20
         run: node tests/core.cjs dist/market.html
       - name: The map editor (its page, the published map, the game laying it)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' mapeditor')
         run: node tests/mapeditor.cjs dist/market.html
       - name: The lawn (knee-high tufts, painted ground)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' lawn')
         run: node tests/lawn.cjs dist/market.html
       - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
         run: node tests/grasskinds.cjs dist/market.html
       - name: The townspeople's lives (homes, days, records)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' lives')
         run: node tests/lives.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
       - name: The folk's walks (the walks alone, the page following them, the walk grid)
         if: contains(steps.f.outputs.run, ' folk')
         run: node tests/folk.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
+        timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')
         run: node tests/brawl.cjs dist/market.html
       - name: The physics extras (shapes, stepping up, ragdolls, the go-kart)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' physx')
         run: node tests/physx.cjs dist/market.html
       - name: The headset (VR on an emulated Quest 3)
+        timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
       - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
+        timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' catrun')
         run: node tests/catrun.cjs dist/market.html
       - name: riders
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' riders')
         run: node tests/riders.cjs dist/market.html
       - name: bins
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bins')
         run: node tests/bins.cjs dist/market.html
       - name: loopmap
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
       - name: fauna rests
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')
         run: node tests/fauna-rest.cjs dist/market.html
       - name: motion
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' motion')
         run: node tests/motion.cjs dist/market.html
       - name: spiders
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' spiders')
         run: node tests/spiders.cjs dist/market.html
       - name: passport
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' passport')
         run: node tests/passport.cjs dist/market.html
       - name: The interiors (each rebuilt inside's staff spots, patron places, non-human worker and mechanic)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' interiors')
         run: node tests/interiors.cjs
+      - name: The interiors, part two (the playhouse's foyer, the golems' cave, the bath house, your hall, the bank, the squirrel's tower)
+        if: contains(steps.f.outputs.run, ' interiors2')
+        run: node tests/interiors2.cjs
       - name: The diner (its seats, the octopus chef, the swing doors, the staff's spots)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' diner')
         run: node tests/diner.cjs
       - name: The cast (the flea market, a day at work, the playable Merchant)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cast')
         run: node tests/flea.cjs && node tests/merchant.cjs && node tests/jobsim.cjs
       - name: Summoning a character (the owner's ADMIN window)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' summon')
         run: node tests/summon.cjs dist/market.html
       - name: scanner
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scanner')
         run: node tests/scanner.cjs dist/market.html
       - name: spray
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' spray')
         run: node tests/spray.cjs dist/market.html
       - name: bodega80
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bodega80')
         run: node tests/bodega80s.cjs dist/market.html
       - name: Your bedroom (the owner's picture, real bodies, iso walls)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
       - name: The room editor (decorate your apartment, saved and back after a reload)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
       - name: The shops' insides (built on the way in, dropped on the way out, nothing left behind)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' insides')
         run: node tests/insides.cjs dist/market.html
+      - name: The street let go while you are in a room off the map (pictures back as they were on the way out)
+        if: contains(steps.f.outputs.run, ' stow')
+        run: node tests/stow.cjs dist/market.html
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
       - name: The handheld (ESC pops it up, its icons open the menus)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' handheld')
         run: node tests/handheld.cjs dist/market.html
       - name: The loop (two trains shuttle from A, you ride one out and back)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' train')
         run: node tests/loop.cjs dist/market.html
       - name: Your hall (the elevator, the stairs, the roof)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' hall')
         run: node tests/hall.cjs
       - name: The holodeck (its panel, the adventures menu)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
         run: node tests/holodeck.cjs dist/market.html
       - name: The kite (held, launched, climbing in the wind)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')
         run: node tests/kite.cjs dist/market.html
       - name: Swimming in the Hudson (down, up, the depths, the tunnel)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' swim')
         run: node tests/swim.cjs dist/market.html
       - name: Visiting another player's apartment
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' visit')
         run: node tests/visit.cjs dist/market.html
       - name: West St faces its street (every door and way out)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' westst')
         run: node tests/westst.cjs
       - name: The Hudson loads when you go in
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
         run: node tests/zones.cjs
       - name: The bees (the Beekeeper, hives on the lawn, honey)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bees')
         run: node tests/bees.cjs dist/market.html
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')
         run: node tests/skate.cjs
       - name: The park's creatures (real sizes, how each lives, the wildlife journal)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
       - name: Check the site opens (door, then THE MARKET)
+        timeout-minutes: 15
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
+        timeout-minutes: 20
         run: node tests/places.cjs out
       - name: Fishing on the Hudson's pier (the pier, the rod, a bite, the fight)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' fishing')
         run: node tests/fishing.cjs dist/market.html
       - name: The bank (its door, the hoard, the dragon waking)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bank')
         run: node tests/bank.cjs dist/market.html
       - name: The playhouse (its hall, the cloth curtain, the bars, the show at a moment)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' playhouse')
         run: node tests/playhouse.cjs
       - name: The art museum (the lot, the paintings hung when you go in, the plaques, out again)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' art')
         run: node tests/art.cjs dist/market.html
       - name: The cars (parked on Market St, get in, drive, get out, someone else's car)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
       - name: The car radio (tune, the shared moment, off when you get out, heard near someone else's car)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/radio.cjs dist/market.html
       - name: The cars' server (one driver a car, parking kept and heard)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars-server.cjs
       - name: The painter (tools, layers, undo, finish, view, trade, hang at home, the easel)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/paint.cjs dist/market.html
       - name: The paintings' and trades' server (pictures kept, finished ones fixed; a trade asked, offered, accepted, called off)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
       - name: The guide book (Shift+G, every chapter's steps and pictures)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guide')
         run: node tests/guide.cjs dist/market.html
       - name: One water and its fish (the shared simulation, still water still, the fish, the deep)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' water')
         run: node tests/water.cjs dist/market.html
       - name: Every editor opens and its controls work
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' editors')
         run: node tests/editors.cjs dist/market.html
       - name: The arcade's high-score table (a run that makes the top ten, the initials, the table)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scores')
         run: node tests/arcade-scores.cjs dist/market.html
       - name: TORCHBEARER (the dungeon, floor by floor) and PETRI (the dish)
+        timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' arcade')
         run: node tests/arcade-torch.cjs dist/market.html && node tests/arcade-petri.cjs dist/market.html
       - name: The page's errors, when it did not open
+        timeout-minutes: 15
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:

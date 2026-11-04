@@ -32,7 +32,8 @@ Look there before changing how something looks or behaves, and add a dated entry
   `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
-- **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
+- **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, 9 s, and by the build; not kept in git since 4 Nov 2026,
+  so run it first in a fresh checkout): what it needs, what it gives,
   and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`058-store` to
   `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`038z`) and the bodega (`039-bodega`, its kits, layout and build)
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from

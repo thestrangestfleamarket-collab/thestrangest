@@ -69,3 +69,25 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **The cast and flea market: confirm on GitHub and on screen** (from the cast chat, 3 Nov). #527 and #533 were merged at the owner's
+  word before their build check finished, and the workflow does not run on `main`: start it by hand on `main` once
+  (`gh api -X POST repos/<owner>/<repo>/actions/workflows/site.yml/dispatches -f ref=main`, tick `full`). Not yet seen on screen: the 8
+  nearest walkers posed every frame (`LIVEP` in `src/111a-bodies.js`), the diner's counter and booths (`MSHOP.kit.diner` in
+  `src/111fb-fleamarket.js`), the street furniture (`data/world.json` `things`). The owner has not yet looked over the cast, diner or flea
+  market (his approval is what makes them done).
+- [ ] **Softer cast bodies (option B, the owner's pick pending)**: re-baked bodies take two bones a point (`tools/rig-rebake.py`), so chests and
+  shoulders move as a block. Four bones a point needs the re-bake and the shared body code (`rebakedObj` in `src/111a-bodies.js`), and changes
+  every re-baked body (the egg poacher too).
+- [ ] **The Kid in a Cardboard Robot Costume**: polyfork.dev does not publish his model yet (404). His record is in `data/characters.json`;
+  re-run `python3 tools/polyfork-cast-bake.py` once they do.
+- [ ] **Staff out of sight at work**: the civic row (firehouse, clinic, precinct, post office, depot, city hall), the bath house, the feel lab
+  and the castle have no inside to stand in, so their staff vanish on shift (`CREW.inside` in `src/111fb-fleamarket.js`); the Loop's crew go
+  down the subway stairs instead of standing on the platform (BODIES walkers are street level only). Fold into `docs/INTERIORS.md`'s staff
+  spots.
+- [ ] **The night market has no way in**: its four sellers keep night stalls at the flea market (`group: night` in `data/characters.json`).
+- [ ] **Only the 5 flea vendors trade**: the other 187 cast have a job and hours (`job`) but no `trade` or `talk`; ask the owner which
+  should sell or talk first.
+- [ ] **The Merchant twins THE TRADER**: the playable Merchant and the flea market's TRADER are the same model; ask the owner if the TRADER
+  should get another body.
+- [ ] **Ask polyfork.dev**: their licence lets the game ship models inside it but not host the files; whether serving the baked data from
+  our own site (`dist/g/*.json`) counts is not said ("Ask us before you ship"). The owner's call to write to them.

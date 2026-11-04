@@ -26,6 +26,7 @@ def habits(key,title):
     hs=habits0(key,title)
     if H(key+'movies')%6==0: hs=hs[:2]+['movies']   # one in six go to the movies (the theatre has its recliners, 4 Nov 2026)
     if H(key+'museum')%8==0: hs=hs[:1]+['museum']+hs[2:]   # one in eight to the Museum of Earth (its galleries have places, 4 Nov 2026)
+    if H(key+'art')%8==0: hs=['art']+hs[1:]   # one in eight to the art museum (its lobby has places, 4 Nov 2026)
     return hs
 def habits0(key,title):
     for ks,hs in HABITS:

@@ -1,4 +1,4 @@
-// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, power, the rings), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), a scratch-off lottery ticket. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
+// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, power, the rings), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), a scratch-off lottery ticket, soldering a repair, waxing a deck. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
 const GAMES={}; window.GAMES=GAMES;
 { const PI=Math.PI, rnd=Math.random, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), font=(g,s,c,al='center')=>{ g.font=s+'px monospace'; g.fillStyle=c; g.textAlign=al; g.textBaseline='middle'; };
   /* ---------- DARTS: 301, three darts a turn; the aim sways, you click to throw ---------- */
@@ -129,6 +129,25 @@ const GAMES={}; window.GAMES=GAMES;
     draw:(S,g)=>{ g.fillStyle='#f4e8c0'; g.fillRect(0,0,320,400); g.fillStyle='#c02838'; g.fillRect(0,0,320,90); font(g,22,'#fff4d0'); g.fillText('LUCKY 7 STREET',160,34); font(g,12,'#ffe080'); g.fillText('MATCH 3 AMOUNTS · WIN THAT AMOUNT · $2',160,66);
       for(let i=0;i<9;i++){ const x=30+(i%3)*90, y=110+Math.floor(i/3)*90, v=S.cells[i], w=S.over&&S.win&&v===S.win; g.fillStyle=w?'#ffe080':'#fffaf0'; g.fillRect(x,y,80,80); g.strokeStyle='#c02838'; g.lineWidth=2; g.strokeRect(x,y,80,80); font(g,v>=100?20:24,v>=50?'#c02838':'#2a2a32'); g.fillText('$'+v,x+40,y+42); }
       g.drawImage(S.cov,0,0); font(g,10,'#8a7a5a'); g.fillText('PLAY RESPONSIBLY · ASK THE FOX',160,388); },
+    end:S=>o.end&&o.end(S)});
+  /* ---------- SOLDERING: five joints on a board; hold the iron on each until the heat is in the green, then let go; too long and it burns ---------- */
+  GAMES.solder=(o={})=>({title:o.title||'THE REPAIR BENCH',w:400,h:360,again:false,help:'Hold the mouse on a joint to heat it; let go while the bar is green. Five good joints mend it; three burns and it is scrap.',
+    can:o.can,start:S=>{ if(o.pay)o.pay(); S.J=Array.from({length:5},(_,i)=>({x:70+i*65+(rnd()-.5)*20,y:150+(rnd()-.5)*90,h:0,ok:false})); S.burn=0; S.cur=-1; S.lo=.55+rnd()*.1; S.hi=S.lo+.22; },
+    tick:(S,dt)=>{ if(S.down){ if(S.cur<0)S.cur=S.J.findIndex(j=>!j.ok&&Math.hypot(S.mx-j.x,S.my-j.y)<18); const j=S.J[S.cur]; if(j){ j.h+=dt*.55; if(j.h>1){ S.burn++; j.h=0; S.cur=-1; S.line=`A BURNT JOINT (${S.burn} OF 3).`; } } }
+      else if(S.cur>=0){ const j=S.J[S.cur]; if(j.h>=S.lo&&j.h<=S.hi){ j.ok=true; S.line='A CLEAN JOINT.'; } else { S.line=j.h<S.lo?'NOT HOT ENOUGH: TRY AGAIN.':'TOO HOT: IT GOES DULL.'; if(j.h>S.hi)S.burn++; } j.h=0; S.cur=-1; }
+      const n=S.J.filter(j=>j.ok).length; if(n===5){ S.score=1; S.over='ALL FIVE JOINTS SHINE: IT WORKS!'; } else if(S.burn>=3){ S.score=0; S.over='THREE BURNS: THE BOARD IS SCRAP.'; } },
+    draw:(S,g)=>{ g.fillStyle='#1a1612'; g.fillRect(0,0,400,360); g.fillStyle='#2a6a3a'; g.fillRect(30,70,340,170); g.strokeStyle='#c8a048'; g.lineWidth=2; for(let i=0;i<4;i++){ g.beginPath(); g.moveTo(S.J[i].x,S.J[i].y); g.lineTo(S.J[i+1].x,S.J[i+1].y); g.stroke(); }
+      for(const [i,j] of S.J.entries()){ g.fillStyle=j.ok?'#e8eef0':'#8a8a80'; g.beginPath(); g.arc(j.x,j.y,12,0,7); g.fill(); if(i===S.cur){ g.fillStyle='rgba(255,140,40,'+(.3+j.h*.6)+')'; g.beginPath(); g.arc(j.x,j.y,16,0,7); g.fill(); } }
+      g.fillStyle='#333'; g.fillRect(40,270,320,18); g.fillStyle='#2a8a3a'; g.fillRect(40+S.lo*320,270,(S.hi-S.lo)*320,18); const j=S.J[S.cur]; if(j){ g.fillStyle='#ffb040'; g.fillRect(40,274,Math.min(1,j.h)*320,10); }
+      font(g,12,'#f4ecd8'); g.fillText(`JOINTS ${S.J.filter(j=>j.ok).length}/5 · BURNS ${S.burn}/3`,200,30); },
+    end:S=>o.end&&o.end(S)});
+  /* ---------- WAXING A DECK: rub the wax over the whole deck before the time runs out ---------- */
+  GAMES.wax=(o={})=>({title:o.title||'WAX AND GRIP',w:360,h:300,again:false,help:'Hold the mouse down and rub the wax over the deck. Cover it all in 20 seconds.',
+    can:o.can,start:S=>{ if(o.pay)o.pay(); S.left=20; S.c=new Set(); S.in=new Set(); for(let x=0;x<24;x++)for(let y=0;y<7;y++){ const px=40+x*12+6, py=110+y*12+6; if(((px-184)/150)**2+((py-152)/46)**2<1)S.in.add(x+','+y); } },
+    tick:(S,dt)=>{ S.left-=dt; if(S.down)for(let a=-2;a<=2;a++)for(let b=-1;b<=1;b++){ const cx=Math.floor((S.mx-40)/12)+a, cy=Math.floor((S.my-110)/12)+b; if(S.in.has(cx+','+cy))S.c.add(cx+','+cy); }
+      const k=S.c.size/S.in.size; S.line=`${Math.round(k*100)}% WAXED · ${Math.max(0,Math.ceil(S.left))} s`; if(k>=.92){ S.score=1; S.over='THE DECK SHINES, THE GRIP BITES.'; } else if(S.left<=0){ S.score=0; S.over=`ONLY ${Math.round(k*100)}%: PATCHY. TRY AGAIN.`; } },
+    draw:(S,g)=>{ g.fillStyle='#2a2018'; g.fillRect(0,0,360,300); g.fillStyle='#b08850'; g.beginPath(); g.ellipse(184,152,150,46,0,0,7); g.fill(); g.strokeStyle='#8a6a3a'; for(let i=0;i<6;i++){ g.beginPath(); g.moveTo(44,128+i*8); g.bezierCurveTo(140,120+i*9,230,140+i*7,324,130+i*8); g.stroke(); }
+      g.fillStyle='rgba(255,250,230,.45)'; for(const k of S.c){ const [x,y]=k.split(',').map(Number); g.fillRect(40+x*12,110+y*12,12,12); } },
     end:S=>o.end&&o.end(S)});
 }
 export {GAMES};

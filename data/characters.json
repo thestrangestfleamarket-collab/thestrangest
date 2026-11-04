@@ -447,18 +447,7 @@
  },
  "fixer": {
   "name": "THE FIXER",
-  "trade": {
-   "sells": [
-    "tv_console",
-    "tv_small",
-    "pc_home",
-    "modem"
-   ],
-   "line": "(the little one) He fixed them. They work. Mostly.",
-   "buys": [
-    "ore"
-   ]
-  },
+  "trade": {"sells": ["tv_console", "tv_small", "pc_home", "modem", "walkman", "handheld", "pockettv"], "line": "(the little one) He fixed them. They work. Mostly.", "buys": ["ore", "electronics"]},
   "talk": {
    "start": "hi",
    "lines": {
@@ -5526,6 +5515,68 @@
       {
        "t": "GOODBYE.",
        "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_redpanda": {
+  "name": "ROSIE THE RED PANDA",
+  "folk": {
+   "sp": "redpanda",
+   "m": 0.7,
+   "f": "#c45a28",
+   "f2": "#f2ede6",
+   "coat": "robe",
+   "cc": "#22262e"
+  },
+  "job": {
+   "at": "art",
+   "title": "DOCENT TOURS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Welcome to the art museum!",
+      "My tours take the ground floor: a painting at a time."
+     ],
+     "opts": [
+      {
+       "t": "HOW DOES THE TOUR WORK?",
+       "go": "how"
+      },
+      {
+       "t": "WHAT'S YOUR FAVOURITE?",
+       "go": "fav"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Three dollars at my sign, then follow me. I stop at each painting and tell you about it. Double-click one to see it up close.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "fav": {
+     "say": "The Van Gogh upstairs. It has its own tour: open it and press GUIDED TOUR.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
       }
      ]
     }

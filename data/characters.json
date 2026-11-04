@@ -447,18 +447,7 @@
  },
  "fixer": {
   "name": "THE FIXER",
-  "trade": {
-   "sells": [
-    "tv_console",
-    "tv_small",
-    "pc_home",
-    "modem"
-   ],
-   "line": "(the little one) He fixed them. They work. Mostly.",
-   "buys": [
-    "ore"
-   ]
-  },
+  "trade": {"sells": ["tv_console", "tv_small", "pc_home", "modem", "walkman", "handheld", "pockettv"], "line": "(the little one) He fixed them. They work. Mostly.", "buys": ["ore", "electronics"]},
   "talk": {
    "start": "hi",
    "lines": {
@@ -2555,7 +2544,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "HEADLINER",
+   "title": "BOX OFFICE",
    "hours": [
     18,
     23
@@ -2568,20 +2557,21 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "BAR",
    "hours": [
     18,
     23
    ]
   },
-  "name": "THE SHOWGIRL"
+  "name": "THE SHOWGIRL",
+  "trade": {"sells": ["d_wine", "d_ale", "d_cola", "f_bonbons"], "line": "Wine, chocolates, or something with bubbles. Quick, the bell's about to go."}
  },
  "la_catrina": {
   "pf": "la-catrina-b427ca",
   "group": "play",
   "job": {
    "at": "play",
-   "title": "PERFORMER",
+   "title": "BAR, THE FAR END",
    "hours": [
     18,
     23
@@ -2594,7 +2584,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "PERFORMER",
+   "title": "USHER, STALLS",
    "hours": [
     18,
     23
@@ -2607,7 +2597,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "BAND",
+   "title": "STAGE MANAGER",
    "hours": [
     18,
     23
@@ -2620,7 +2610,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "USHER, CIRCLE",
    "hours": [
     18,
     23
@@ -2633,7 +2623,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "PROGRAMMES",
    "hours": [
     18,
     23
@@ -2815,7 +2805,7 @@
   "group": "bath",
   "job": {
    "at": "bath",
-   "title": "POOL LIFEGUARD",
+   "title": "KEEPS THE STEAM",
    "hours": [
     9,
     21
@@ -5526,6 +5516,117 @@
       {
        "t": "GOODBYE.",
        "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_redpanda": {
+  "name": "ROSIE THE RED PANDA",
+  "folk": {
+   "sp": "redpanda",
+   "m": 0.7,
+   "f": "#c45a28",
+   "f2": "#f2ede6",
+   "coat": "robe",
+   "cc": "#22262e"
+  },
+  "job": {
+   "at": "art",
+   "title": "DOCENT TOURS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Welcome to the art museum!",
+      "My tours take the ground floor: a painting at a time."
+     ],
+     "opts": [
+      {
+       "t": "HOW DOES THE TOUR WORK?",
+       "go": "how"
+      },
+      {
+       "t": "WHAT'S YOUR FAVOURITE?",
+       "go": "fav"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Three dollars at my sign, then follow me. I stop at each painting and tell you about it. Double-click one to see it up close.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "fav": {
+     "say": "The Van Gogh upstairs. It has its own tour: open it and press GUIDED TOUR.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_rat": {
+  "name": "THE RAT",
+  "folk": {
+   "sp": "rat",
+   "m": 0.8,
+   "f": "#7a7068",
+   "f2": "#d8ccc0",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "bank",
+   "title": "CAGES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Next, please. Deposits, withdrawals, no dragons.",
+      "The account pays a little every day. Don't ask about the gold at the back."
+     ],
+     "opts": [
+      {
+       "t": "HOW DOES THE ACCOUNT WORK?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Put money in at either cage. It earns one in a hundred a day, up to fifty dollars, and it's kept for you.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
       }
      ]
     }

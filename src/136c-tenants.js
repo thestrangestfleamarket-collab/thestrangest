@@ -51,7 +51,8 @@ import {SYS} from './006-map-pre.js';
     const P=document.createElement('div'); P.id='tletter'; P.setAttribute('role','dialog'); P.setAttribute('aria-label','A letter');
     P.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));max-height:80vh;overflow:auto;z-index:42;background:#f4efe0;color:#2a2620;border:3px solid #2a2620;padding:18px 20px;font:13px/1.6 Silkscreen,monospace;letter-spacing:.5px;box-shadow:6px 6px 0 #0008';
     P.innerHTML=L.map(l=>`<div style="margin-bottom:16px"><div style="font-size:11px;color:#6a6255">${esc(day(l.at))} · FROM THE MARKET</div><div style="font-size:15px;margin:4px 0 8px">${esc(l.subject)}</div><div style="white-space:pre-wrap">${esc(l.body)}</div></div>`).join('<hr style="border:0;border-top:2px dashed #2a262055">')+'<button id="tletok" style="font:inherit;padding:6px 12px;cursor:pointer;background:#2a2620;color:#f4efe0;border:2px solid #2a2620">PUT IT AWAY</button>';
-    document.body.appendChild(P); P.querySelector('#tletok').onclick=()=>{ P.remove(); api('/post',{seen:L.map(l=>l.id)}); }; };
+    document.body.appendChild(P); P.querySelector('#tletok').onclick=()=>{ P.remove(); api('/post',{seen:L.map(l=>l.id)}); }; return L.length; };
+  TENANTS.letters=letters;   // the letters waiting for you (also your hall's mailbox)
 
   const go=async()=>{ await LOAD('later');
     if(!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return;

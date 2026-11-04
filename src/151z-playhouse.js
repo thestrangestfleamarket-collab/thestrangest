@@ -13,6 +13,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   const LW=MS.lot('play',190), TP=TURN(LW,WP.play.face), L=TP.L, m=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TP.pt(u,v); return [X(p[0]),Z(p[1])]; };
   const OX=SHARED.BOD.XS(-2400), OZ=SHARED.BOD.ZS(0), W=(x,y,z)=>[OX+x*MH,y*MV,OZ+z*MH], lx=x=>(x-OX)/MH, lz=z=>(z-OZ)/MH;
   const PD=PHA.D, B={x0:-PD.W-.6,x1:PD.W+.6,z0:PD.STG-.6,z1:PD.ZF+.6};
+  STORE.playFrame={OX,OZ,MH,MV,B,FY:PD.FY,SY:PD.SY,W};   // the inside in its own metres (x across, z from the curtain line to the doors) and to the world, for what furnishes it
   let G=null, K=null, P=null, SO=[], DS=[], ENV=null, MIR=[], LT={}, t0=0;
   const build=()=>{ '@playhouse';
     G=new THREE.Group(); G.name='playhouse-in'; G.position.set(OX,0,OZ); G.scale.set(MH,MV,MH); scene.add(G);
@@ -40,7 +41,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     // pull a line at the lock rail: its bar flies out to the grid, or back in to its trim
     for(const s of K.fly.sets){ if(s.kind==='curtain')continue; const trim=s.y; K.thing('FLY LINE '+(s.i+1)+' · '+s.id.toUpperCase(),K.fly.rail,D.SY+1.05,s.z,.4,.6,.35,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; K.flyTo(s.id,s.y<15?20.5:trim); if(SFX)SFX.play('creak',{vol:.5,vary:.3}); },{reach:1.6,near:2.6}); }
     // things: world sizes from metres
-    const P2=ROOMS.part(G,()=>{ for(const t of K.things)UI.thing({...t,reach:t.reach*MH,near:t.near*MH,tall:t.tall*MV}); });
+    const P2=ROOMS.part(G,()=>{ for(const t of K.things)UI.thing({...t,reach:t.reach*MH,near:t.near*MH,tall:t.tall*MV}); if(STORE.furnish&&STORE.furnish.playhouse)STORE.furnish.playhouse(STORE.playFrame); });
     SO=K.sol.map(([a,b,c,d])=>[OX+a*MH,OZ+b*MH,OX+c*MH,OZ+d*MH]); SOL.up.push(...SO);
     t0=performance.now(); P=P2; return P2; };
   const D={SY:1.1};

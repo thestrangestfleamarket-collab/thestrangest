@@ -20,7 +20,7 @@ PHA.make=K=>{ '@playhouse';
   for(let x=-7.75;x<7.7;x+=.5)S(x,D.edge(x+.25)-.02,x+.5,D.edge(x+.25)+.08);          // the apron's front edge (up by the steps)
   both(7.75,1.45,8.25,1.95); both(7.7,2.8,7.8,4.6);                                   // the columns' plinths; the steps' inner cheeks
   both(W,1.25,W+.3,D.ZF+.4); both(D.DOOR,D.Z1,W+.3,D.Z1+.25); S(-W-.3,D.ZF,W+.3,D.ZF+.4);   // the side walls, the wall between the stalls and the foyer, the front wall and its doors
-  S(-9.95,18.5,-7.2,23); S(7.2,18.5,9.95,24); S(-1,D.ZB-.8,1,D.ZB+.25);                // the box office, the bar, the bill
+  S(-9.95,18.5,-7.2,23); S(7.2,18.5,7.98,24); S(9.55,18.5,9.95,24); S(-1,D.ZB-.8,1,D.ZB+.25); both(3.5,16.6,5.5,17.2);   // the box office; the bar's counter and back bar (the barkeep stands between); the bill; the benches
 
   /* ---------- the stalls' floor: carpet, flat at the front, raked, flat at the back; the apron and its steps ---------- */
   { const L=D.ZR-D.ZP, ang=Math.atan2(FY,L), len=Math.hypot(L,FY);
@@ -138,6 +138,8 @@ PHA.make=K=>{ '@playhouse';
       inst(new THREE.LatheGeometry([[0,0],[.04,0],[.045,.02],[.045,.18],[.015,.24],[.014,.32],[0,.32]].map(p=>new THREE.Vector2(p[0],p[1])),8),M.bottle,bt);
       K.mirrors.push({w:zb-za-.4,h:1.5,at:[x1-.02,FY+2.2,(za+zb)/2],ry:-PI/2,zone:'foyer'});
       inst(new THREE.CylinderGeometry(.035,.03,.1,10),M.glass,Array.from({length:12},(_,i)=>[x0+.4,FY+1.21,za+.4+i*.12])); }
+    // two velvet benches against the wall to the stalls, either side of the opening
+    for(const x of [-4.5,4.5]){ boxA(x-1,FY+.42,16.6,x+1,FY+.55,17.2,M.velvet); for(const q of [-.9,.9])for(const r of [-.22,.22])lathe([[0,0],[.04,0],[.03,.42]],M.gold,x+q,FY,16.9+r,{seg:6}); }
     // the doors to the street: three pairs, glazed, brass push bars, a fanlight over each; the big mirrors between them
     for(const x of [-3.2,0,3.2]){ for(const q of [-1,1]){ const dx=x+q*.55; boxA(dx-.55,FY,z1-.12,dx+.55,FY+2.6,z1-.04,M.mahog); plane(.8,1.9,M.glass,dx,FY+1.45,z1-.13,{ry:PI}); rod([dx-.3,FY+1.1,z1-.2],[dx+.3,FY+1.1,z1-.2],.025,M.brass); }
       K.ext(Array.from({length:17},(_,i)=>{ const a=PI*i/16; return [Math.cos(a)*1.1,Math.sin(a)*.6]; }),.08,M.gold,x,FY+2.62,z1-.12,{}); }

@@ -10,7 +10,7 @@ const JOINTS={pelvis:'pelvis',hipL:'thigh_l',hipR:'thigh_r',kneeL:'calf_l',kneeR
   const L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
   const load=f=>new Promise((ok,no)=>{ const b=fs.readFileSync(f); L.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',ok,no); });
   fs.mkdirSync(OUT,{recursive:true}); const files=(ONLY.length?ONLY.map(n=>n+'.glb'):fs.readdirSync(path.join(DIR,'animations')).filter(f=>f.endsWith('.glb'))).sort(), fps=+FPS, list=[];
-  for(const f of files){ const g=await load(path.join(DIR,'animations',f)), S=g.scene, A=g.animations[0], mx=new THREE.AnimationMixer(S); mx.clipAction(A).play();
+  for(const f of files){ const g=await load(path.join(DIR,'animations',f)), S=g.scene, A=g.animations[0], mx=new THREE.AnimationMixer(S), ac=mx.clipAction(A); ac.setLoop(THREE.LoopOnce); ac.clampWhenFinished=true; ac.play();   // (once: its last frame, not its first again)
     const B=Object.fromEntries(Object.entries(JOINTS).map(([k,n])=>[k,S.getObjectByName(n)])); for(const k in B)if(!B[k])throw f+': no bone '+JOINTS[k];
     const n=Math.max(2,Math.round(A.duration*fps)+1), frames=[], p=new THREE.Vector3();
     for(let i=0;i<n;i++){ mx.setTime(Math.min(A.duration,i/fps)); S.updateMatrixWorld(true); const fr={}; for(const k in B)fr[k]=B[k].getWorldPosition(p).toArray().map(v=>+v.toFixed(4)); frames.push(fr); }

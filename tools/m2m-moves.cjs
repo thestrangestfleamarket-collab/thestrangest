@@ -32,10 +32,10 @@ const fit=(M,o)=>{ const F=M.frames, fps=M.fps, i0=Math.round((o.from||0)*fps), 
       g.ua=limbOf(inU(nrm(sub(J['elbow'+n],J['shoulder'+n]))),s).map(r1); g.fa=limbOf(inU(nrm(sub(J['wrist'+n],J['elbow'+n]))),s).map(r1);
       const ft=inB(nrm(sub(J['ball'+n],J['ankle'+n]))); g.foot=r1(Math.atan2(ft.y,ft.z)/D+12);
       g.th=limbOf(inB(nrm(sub(J['knee'+n],J['hip'+n]))),s).map(r1); g.sh=limbOf(inB(nrm(sub(J['ankle'+n],J['knee'+n]))),s).map(r1); c[n]=g; }
-    // a foot on the ground: its ankle where the leg puts it, handed to the leg solver (ik), the hips moved so the lower planted ankle is on the floor
+    // a foot on the ground: its ankle where the leg puts it, handed to the leg solver (ik) with the recording's knee as its pole (kp), the hips moved so the lower planted ankle is on the floor
     const down=n=>J['ankle'+n].y<R.ANKLE+3;
     const Pz=R.mkMove({keys:[[0,{}],[0.1,c,'lin']]}).k.slice(-1)[0].P, B=R.build(Pz,null).J, gl=['L','R'].filter(down);
-    if(gl.length){ const dy=R.ANKLE-Math.min(...gl.map(n=>B['ankle'+n].y)); c.root[1]=r2(c.root[1]+dy); for(const n of gl){ const A=B['ankle'+n]; c[n].ik=[A.x,A.y+dy,A.z].map(r2); delete c[n].th; delete c[n].sh; } }
+    if(gl.length){ const dy=R.ANKLE-Math.min(...gl.map(n=>B['ankle'+n].y)); c.root[1]=r2(c.root[1]+dy); for(const n of gl){ const A=B['ankle'+n], k=inB(nrm(sub(J['knee'+n],J['hip'+n]))); c[n].ik=[A.x,A.y+dy,A.z].map(r2); c[n].kp={x:r2(k.x),y:r2(k.y),z:r2(k.z)}; delete c[n].th; delete c[n].sh; } }
     if(f===F[i0]||f.__err){ const B2=R.build(R.mkMove({keys:[[0,{}],[0.1,c,'lin']]}).k.slice(-1)[0].P,null).J; for(const [x,y] of [['pelvis','chest'],['chest','head'],['hipL','kneeL'],['kneeL','ankleL'],['hipR','kneeR'],['kneeR','ankleR'],['shoulderL','elbowL'],['elbowL','wristL'],['shoulderR','elbowR'],['elbowR','wristR']]){ const e=Math.acos(Math.max(-1,Math.min(1,dot(nrm(sub(B2[y],B2[x])),nrm(sub(J[y],J[x]))))))/D; if(process.env.DIAG)console.log('   ',(x+'>'+y).padEnd(18),e.toFixed(0)); ER.s+=e; ER.n++; ER.w=Math.max(ER.w,e); } }
     return c; };
   const ER={s:0,n:0,w:0}; for(let i=i0;i<=i1;i+=Math.max(1,Math.round((i1-i0)/6)))F[i].__err=1;
@@ -43,6 +43,6 @@ const fit=(M,o)=>{ const F=M.frames, fps=M.fps, i0=Math.round((o.from||0)*fps), 
   for(let i=i0;i<=i1;i+=step) keys.push([+((i-i0)/fps).toFixed(3),keyOf(F[i]),'lin']);
   if((i1-i0)%step) keys.push([+dur.toFixed(3),keyOf(F[i1]),'lin']);
   console.log('  fit: bones off by',(ER.s/ER.n).toFixed(0),'deg on average, worst',ER.w.toFixed(0)); return {src:M.src,dur:+dur.toFixed(3),loop:!!o.loop,keys}; };
-const OUT=path.join(__dirname,'../data/moves2.json'), all=fs.existsSync(OUT)?JSON.parse(fs.readFileSync(OUT)):{};
+const OUT=path.join(__dirname,'../data/moves2.json'), all={};   // (the spec is the whole list)
 for(const [name,o] of Object.entries(SPECS)){ const M=JSON.parse(fs.readFileSync(path.join(DIR,o.clip+'.json'))); all[name]={...fit(M,o),...(o.opts?{opts:o.opts}:{})}; console.log(name,'<-',o.clip,all[name].dur+'s',all[name].keys.length,'keys',JSON.stringify(all[name]).length,'bytes'); }
 fs.writeFileSync(OUT,JSON.stringify(all)); console.log(OUT,fs.statSync(OUT).size,'bytes,',Object.keys(all).length,'moves');

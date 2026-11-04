@@ -36,7 +36,7 @@ jobs:
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
-          k mapeditor 'src/editor/|src/006-map-pre|src/089b-ponds|src/069-dress|src/096-mapedit|src/152a|worker/mappatch|worker/door|data/topmap|data/world\.json|build\.py|mapeditor\.cjs'
+          k mapeditor 'src/editor/|src/006-map-pre|src/089b-ponds|src/153-nav|src/076-npc-map|src/069-dress|src/096-mapedit|src/152a|worker/mappatch|worker/door|data/topmap|data/world\.json|build\.py|mapeditor\.cjs'
           k vr      'src/162[a-c]|vr\.cjs'
           k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'

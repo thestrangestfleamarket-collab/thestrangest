@@ -4,7 +4,7 @@ import {LIGHTED, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {CEL} from './006-map-pre.js';
-{ const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFSoftShadowMap,vsm:THREE.VSMShadowMap};
+{ const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
   const D=()=>({q:'lowest',shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
   const TIERS={ lowest:{shadows:true,shadowType:'basic',tone:'none',exposure:1},

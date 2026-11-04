@@ -19,6 +19,10 @@ Look there before changing how something looks or behaves, and add a dated entry
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
+  `src/editor/editor.html` is the owners' map editor, its own light page at `/editor` (no game): it edits a patch over `data/world.json`
+  that PUBLISH LIVE sends to `/shared/map-<section>.json`, which the game lays over the level at start (`worker/mappatch.js`, one path for both).
+  Its ground picture (`data/topmap/`, `data/topmap.json`) comes from `PW_CHROMIUM=/opt/pw-browsers/chromium node tools/topmap.cjs`
+  (about 40 minutes; `--json` only the things): re-run it when the map changes. `tests/mapeditor.cjs`.
 - **Comments (owner, 20 Oct 2026)**: every file in `src/` starts with one comment line saying what it is; add that line when you
   touch a file that lacks it. Otherwise keep comments rare and short: a line where the code would mislead without it. The minifier
   strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never

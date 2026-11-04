@@ -5,9 +5,11 @@
 #   ground a height grid (0.25 m cells, 5 cm steps) of what you can stand on: the terrain, the tiles, decks, ledges under knee height, and the ramps and bowl
 #          up their curves however steep (no step wall on or beside a ramp: they are ridden)
 #   solid  the cells a body can't pass (walls, rises over the knee, posts, trees, buildings), merged to rectangles
+#   rails  the grind lines [x0,y0,z0,x1,y1,z1,kind 0 rail 1 ledge 2 coping]
 #   lamps  the floodlights' heads (the park's lights after dark)
 #   board  the skaters' board (data/skateboard.json: the kit's cruiser, ridden by the board skaters)
-#   gate   the entrance gateway in its own frame (data/skategate.json: it stands in Central Park as the door)
+#   rides  the scooter and the BMX (data/skaterides.json: ridden by the scooter kid and the BMX rider)
+#   gate   where the entrance gateway stands (the park's height is measured from it)
 #   people the 22 skaters' spots (key, x, z, heading); their bodies are rebaked onto your rig by rig-rebake.py skaters
 # Run: python3 tools/skatepark-bake.py data/full/skatepark
 import sys, os, json, struct, base64, numpy as np
@@ -50,6 +52,8 @@ def prims(i):   # every primitive under node i in world metres (skinned ones at 
     return out
 part=lambda nm:nm if nm in KIT['classes'] or nm=='skatepark-terrain' else nm.rsplit('-',1)[0]
 TILES={'skate-slab-tile','composite-deck-tile'}
+GRIND={'steel-skate-rail':'rail','concrete-skate-ledge':'ledge','plywood-grind-box':'ledge','granite-plaza-block':'ledge','concrete-seat-wall-run':'ledge','skated-jersey-barrier':'ledge',
+  'concrete-transition-module':'coping','plywood-ramp-module':'coping','galvanised-prefab-ramp':'coping','red-brick-bank':'coping','concrete-stair-set':'coping'}   # what you can grind or slide
 RAMPS={'concrete-transition-module','plywood-ramp-module','galvanised-prefab-ramp','asphalt-pump-track-section','red-brick-bank','concrete-skate-bump'}   # ridden up their curves: ground however steep
 LOOSE={'energy-drink-can','spray-paint-can','roller-skate','protective-pad','skate-helmet','wheel-scuff-decal','graffiti-wall-decal','pavement-crack-weed','fisheye-camcorder','cruiser-and-longboard'}
 GLOW={}
@@ -82,7 +86,7 @@ NOFLOOR={'concrete-transition-module','asphalt-pump-track-section','plywood-ramp
   'overpass-pier','concrete-full-pipe','red-brick-bank','concrete-stair-set','galvanised-prefab-ramp','concrete-skate-bump','wallride-wall'}
 FOOT=(-24,-34,24,34)   # the new footprint, x0 z0 x1 z1
 TP,TC,TG,TK,TN=[],[],[],[],[]   # triangle corners, colours, glow night colour (or nan), part kind (0 terrain, 1 solid part, 2 loose), night strength
-people=[]; ITEMS=[]; COVER={}   # floor cells a part covers from above: True when the part is sunk (no tile there)
+people=[]; ITEMS=[]; RAILS=[]; COVER={}   # floor cells a part covers from above: True when the part is sunk (no tile there)
 SLAB=prims(KIDS[TILE0]); S0=WM[KIDS[TILE0]][:3,3]; boxes=[]; ci=0; chars=0
 def placed():   # the kept placements with their moves, then the new floor's tiles (copies of one slab tile)
     global chars
@@ -94,6 +98,25 @@ for c,nm,k,(dx,dz,dy),bi in list(placed()):
     if bi is not None:
         M=WM[c]; people.append({'key':k,'b':bi,'x':round(M[0,3]+dx,3),'y':round(M[1,3]+dy,3),'z':round(M[2,3]+dz,3),'hd':round(float(np.arctan2(M[0,2],M[2,2])),3)}); continue
     pr=[(P+np.array([dx,dy,dz]),C) for P,C in prims(c)]
+    if k in GRIND:   # its grind lines: a rail's top centre, a ledge's or box's two long top edges, a ramp's coping (the top edge over its high side)
+        IW=np.linalg.inv(WM[c]); L=np.vstack([(np.c_[P-np.array([dx,dy,dz]),np.ones(len(P))]@IW.T)[:,:3] for P,C in pr]); lo_,hi_=L.min(0),L.max(0); top=hi_[1]
+        ax=0 if hi_[0]-lo_[0]>=hi_[2]-lo_[2] else 2; ox=2-ax; segs=[]
+        def side(a,v): m=np.abs(L[:,a]-v)<.15; return L[m,1].max() if m.any() else 0
+        if GRIND[k]=='rail': segs=[(lo_[ox]+hi_[ox])/2]
+        elif GRIND[k]=='ledge': segs=[lo_[ox],hi_[ox]]
+        else:
+            T_=L[L[:,1]>top-.03]
+            for a in (0,2):   # a coping is where the flat top stops short of a side whose face stays low: the lip over the curve
+                t0,t1=T_[:,a].min(),T_[:,a].max()
+                if t1<hi_[a]-.3 and side(a,hi_[a])<top*.5 and hi_[2-a]-lo_[2-a]>=.9: segs.append((a,t1))
+                if t0>lo_[a]+.3 and side(a,lo_[a])<top*.5 and hi_[2-a]-lo_[2-a]>=.9: segs.append((a,t0))
+        for sg in segs:
+            a_,v=(ax,sg) if not isinstance(sg,tuple) else (2-sg[0],sg[1])
+            o=2-a_; e0=np.zeros(3); e1=np.zeros(3); e0[1]=e1[1]=top; e0[a_]=lo_[a_]; e1[a_]=hi_[a_]; e0[o]=e1[o]=v
+            if not isinstance(sg,tuple): pass
+            else: e0[2-a_]=e1[2-a_]=v; e0[a_]=lo_[a_]; e1[a_]=hi_[a_]
+            W0=(WM[c]@np.r_[e0,1])[:3]+[dx,dy,dz]; W1=(WM[c]@np.r_[e1,1])[:3]+[dx,dy,dz]
+            if np.linalg.norm(W1-W0)>=.9: RAILS.append([round(float(q),3) for q in (*W0,*W1)]+[{'rail':0,'ledge':1,'coping':2}[GRIND[k]]])
     if k in NOFLOOR:
         Q=np.vstack([P for P,C in pr]); boxes.append((Q[:,0].min(),Q[:,2].min(),Q[:,0].max(),Q[:,2].max(),Q[:,1].min(),(dx,dz,dy)))
         for P,C in pr:
@@ -194,21 +217,34 @@ def rects(B):   # greedy: the widest runs, grown down while the run stays whole
             while k+1<B.shape[0] and B[k+1,i:e+1].all(): k+=1
             B[j:k+1,i:e+1]=False; out.append([i,j,e+1,k+1]); i=e+1
     return out
+def lip(r):   # a coping has its deck on one side (at its height) and a drop on the other
+    x0,y0,z0,x1,y1,z1=r[:6]; dx,dz=x1-x0,z1-z0; l=np.hypot(dx,dz); nx,nz=-dz/l,dx/l; hs=[]
+    for sg in (-1,1):
+        v=[]
+        for t in (.25,.5,.75):
+            px,pz=x0+dx*t+nx*sg*.45,z0+dz*t+nz*sg*.45; i,j=int((px-X0)/CS),int((pz-Z0)/CS)
+            if 0<=i<NX and 0<=j<NZ and not np.isnan(H[j,i]): v.append(H[j,i])
+        hs.append(np.median(v) if v else -99)
+    return max(hs)>y0-.15 and min(hs)<y0-.3
+RAILS=[r for r in RAILS if r[6]!=2 or lip(r)]
 SR=rects(BL); print('ground cells',NX,'x',NZ,'walls',len(SR))
 Hq=np.nan_to_num(H,nan=float(np.nanmin(H))); y0=float(np.floor(Hq.min()*20)/20); Q=np.clip(np.round((Hq-y0)/.05),0,65535).astype(np.uint16)
 pj=[{'key':p['key'],'b':p['b'],'x':p['x'],'z':p['z'],'y':p['y'],'hd':p['hd']} for p in people]
 D={'v':1,'kit':KIT['kit'],'license':'Polyfork (polyfork.dev/licensing): use in games, no reselling the files','bounds':[round(float(x),3) for x in (*lo,*hi)],
    'mesh':mesh,'glow':glow,'ground':{'x0':float(X0),'z0':float(Z0),'cs':CS,'nx':NX,'nz':NZ,'y0':y0,'dy':.05,'h':b64(Q)},
-   'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj,'lamps':LAMPS}
-gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); IG=np.linalg.inv(GM); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
+   'solid':b64(np.array(SR,np.uint16).reshape(-1)),'people':pj,'lamps':LAMPS,'rails':RAILS}
+gc=[c for c in root['children'] if N[c]['name']=='skatepark-entrance-gateway'][0]; GM=WM[gc].copy(); GM[0,3]+=KEEP[KIDS.index(gc)][0]; GM[2,3]+=KEEP[KIDS.index(gc)][1]
 D['gate']={'x':round(GM[0,3],3),'y':round(GM[1,3],3),'z':round(GM[2,3],3),'hd':round(float(np.arctan2(GM[0,2],GM[2,2])),4)}
-GP=[]; GC=[]
-for P,C in prims(gc): GP.append(((np.c_[P,np.ones(len(P))]@IG.T)[:,:3]).reshape(-1,3,3)); GC.append(C.reshape(-1,3,3))
-gate=pack(np.vstack(GP),np.vstack(GC)); gate.update(D['gate'])
-json.dump(gate,open(os.path.join(os.path.dirname(OUT),'skategate.json'),'w'),separators=(',',':')); print('gate',gate['t'],'triangles at',D['gate'])
 bc=KIDS[1265]; IB=np.linalg.inv(WM[bc]); BP=[]; BC=[]   # the skaters' board (the kit's cruiser): its own frame, along z, wheels on y=0
 for P,C in prims(bc): BP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); BC.append(C.reshape(-1,3,3))
 BP=np.vstack(BP); BP[:,:,1]-=BP[:,:,1].min(); board=pack(BP,np.vstack(BC)); board['top']=round(float(BP[:,:,1].max()),3)
-json.dump(board,open(os.path.join(os.path.dirname(OUT),'skateboard.json'),'w'),separators=(',',':')); print('board',board['t'],'triangles, deck top',board['top'])
+json.dump(board,open(os.path.join(os.path.dirname(OUT),'skateboard.json'),'w'),separators=(',',':'));
+RIDES={}   # the scooter kid's scooter and the BMX rider's bike (the kit's own, parked in the park): each in metres, its front along +z, wheels on y=0
+for nm,ix in (('scooter',1187),('bmx',1189)):
+    c=KIDS[ix]; IB=np.linalg.inv(WM[c]); VP=[]; VC=[]
+    for P,C in prims(c): VP.append((np.c_[P,np.ones(len(P))]@IB.T)[:,:3].reshape(-1,3,3)); VC.append(C.reshape(-1,3,3))
+    VP=np.vstack(VP); VP[:,:,1]-=VP[:,:,1].min(); RIDES[nm]=pack(VP,np.vstack(VC))
+json.dump(RIDES,open(os.path.join(os.path.dirname(OUT),'skaterides.json'),'w'),separators=(',',':')); print('rides',{k:v['t'] for k,v in RIDES.items()})
+print('board',board['t'],'triangles, deck top',board['top'])
 json.dump(D,open(OUT,'w'),separators=(',',':'))
 print(OUT,round(os.path.getsize(OUT)/1e6,2),'MB,',sum(m['t'] for m in mesh),'still triangles in',len(mesh),'squares')

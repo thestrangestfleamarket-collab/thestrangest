@@ -10,7 +10,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   let el=null, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
   const esc=TEXT.esc, kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';
   const mats=o=>Array.isArray(o.material)?o.material:o.material?[o.material]:[];
-  const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; if(o.isBatchedMesh&&o._drawRanges){ let n=0; o._drawRanges.forEach((r,i)=>{ if(o._visibility[i]&&o._active[i])n+=r.count; }); return Math.round(n/3); } const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
+  const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; if(o.isBatchedMesh&&o._instanceInfo){ let n=0; o._instanceInfo.forEach(r=>{ if(r.visible&&r.active)n+=o._geometryInfo[r.geometryIndex].count; }); return Math.round(n/3); } const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
     return Math.round((o.isMesh?k/3:o.isPoints?k:o.isLineSegments?k/2:Math.max(0,k-1))*(o.isInstancedMesh?o.count:1)); };
   const calls=o=>Array.isArray(o.material)?(o.geometry.groups.length||1):1;
   const gb=g=>{ if(!g||!g.attributes)return 0; let b=g.index?g.index.array.byteLength:0; for(const k in g.attributes){ const a=g.attributes[k]; b+=(a.isInterleavedBufferAttribute?a.data.array:a.array).byteLength; } return b; };

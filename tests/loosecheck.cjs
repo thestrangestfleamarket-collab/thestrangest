@@ -1,6 +1,6 @@
 // LOOSE THINGS (src/150-loose.js, owner 19 Oct 2026 "push and throw things"): on the street, in the bodega, in an apartment and in the
 // dungeon the loose things near you become bodies; a shove moves one, it falls and sleeps; one is picked up and thrown; walking into a
-// light one pushes it and its old place no longer blocks; a heavy one barely moves; ms a frame with many awake. No page errors.
+// light one pushes it and its old place no longer blocks (the street's nearest light loose thing on the ground: no trash can is loose any more; the bodega entered by its door, off the map; 4 Nov 2026); a heavy one barely moves; ms a frame with many awake. No page errors.
 // node tests/loosecheck.cjs   (software rendering: a few minutes; ?physics=1 loads the physics at the start, as it waits for a first push otherwise)
 const {chromium}=require('playwright');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
@@ -14,24 +14,27 @@ const settle=async(pg,n,ms=40000)=>{ for(let t=0;t<ms;t+=500){ await wait(pg,500
 const beside=(pg,n,k=1)=>pg.evaluate(([n,k])=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest(n), [x,y,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz)||1, r=Math.max(...LOOSE.list().find(q=>q.name===a.name&&Math.abs(q.at[0]-a.at[0])<1e-3).h); __dbg.UI.goTo(a.at[0]-dx/d*(r+k*T),a.at[2]-dz/d*(r+k*T),y); return a; },[n,k]);
 const walkInto=(pg,n,k=2.5)=>pg.evaluate(([n,k])=>{ const T=__dbg.cv().TILE, a=LOOSE.nearest(n), [x,,z]=__dbg.pos(), dx=a.at[0]-x, dz=a.at[2]-z, d=Math.hypot(dx,dz); __dbg.go(a.at[0]+dx/d*k*T,a.at[2]+dz/d*k*T); return a; },[n,k]);
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
-  { const pg=await open(b,'at=-2.2,3.2');
+  { const pg=await open(b,'');
+    const N=await pg.evaluate(()=>{ const L=LOOSE.list(true).filter(q=>q.k!=='v'&&!q.heavy&&q.m<=30&&q.c[1]-q.h[1]<.3), [x,,z]=__dbg.pos(), q=L.sort((p,r)=>Math.hypot(p.c[0]-x,p.c[2]-z)-Math.hypot(r.c[0]-x,r.c[2]-z))[0]; if(!q)return null; __dbg.UI.goTo(q.c[0]+1.2*__dbg.cv().TILE,q.c[2],'up'); return q.name; });
+    for(let i=0;i<40&&N&&!await pg.evaluate(n=>LOOSE.list().some(q=>q.name===n),N);i++)await wait(pg,500); await wait(pg,1500);
     const s=await pg.evaluate(()=>{ const L=LOOSE.list(true), by={}; for(const q of L){ const k=q.k==='v'?'goods':q.heavy?'heavy':q.m<=30?'light':'other'; by[k]=(by[k]||0)+1; } return {n:L.length,by,dbg:GOODSDBG(),act:LOOSE.list().filter(q=>q.k!=='v').map(q=>q.name)}; });
     console.log('loose things:',s.n,JSON.stringify(s.by),'· near the start:',s.dbg.active,'bodies,',s.dbg.statics,'fixed colliders ·',s.act.join(', '));
-    ok(s.dbg.active>0&&s.act.includes('trash can'),'the street: things near the start are bodies (a trash can among them)');
-    await beside(pg,'trash can',.7); await wait(pg,1500); const r0=await walkInto(pg,'trash can'); await wait(pg,12000); const r1=await pg.evaluate(()=>LOOSE.nearest('trash can'));
-    ok(Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2])>.05,`walking into a trash can pushes it (moved ${Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2]).toFixed(2)})`);
-    await settle(pg,'trash can');
-    const a0=await pg.evaluate(()=>{ const a=LOOSE.nearest('trash can'); LOOSE.push('trash can',2.5,3,1.5); return a; }); await wait(pg,400);
-    const mid=await pg.evaluate(()=>LOOSE.nearest('trash can')); const {a:a1,t}=await settle(pg,'trash can');
-    ok(mid.awake&&Math.hypot(a1.at[0]-a0.at[0],a1.at[2]-a0.at[2])>.3,`a shoved trash can flies (moved ${Math.hypot(a1.at[0]-a0.at[0],a1.at[2]-a0.at[2]).toFixed(2)}) and sleeps (${(t/1000).toFixed(1)} s)`);
+    ok(s.dbg.active>0&&!!N&&s.act.includes(N),'the street: things near the start are bodies (a light one among them: '+N+')');
+    await beside(pg,N,.7); await wait(pg,1500); const r0=await walkInto(pg,N); await wait(pg,12000); const r1=await pg.evaluate(n=>LOOSE.nearest(n),N);
+    ok(Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2])>.05,`walking into ${N} pushes it (moved ${Math.hypot(r1.at[0]-r0.at[0],r1.at[2]-r0.at[2]).toFixed(2)})`);
+    await settle(pg,N);
+    const a0=await pg.evaluate(n=>{ const a=LOOSE.nearest(n); LOOSE.push(n,2.5,3,1.5); return a; },N); await wait(pg,400);
+    const mid=await pg.evaluate(n=>LOOSE.nearest(n),N); const {a:a1,t}=await settle(pg,N);
+    ok(mid.awake&&Math.hypot(a1.at[0]-a0.at[0],a1.at[2]-a0.at[2])>.3,`a shoved ${N} flies (moved ${Math.hypot(a1.at[0]-a0.at[0],a1.at[2]-a0.at[2]).toFixed(2)}) and sleeps (${(t/1000).toFixed(1)} s)`);
     ok(!a1.awake&&a1.at[1]<a0.at[1]+.3&&a1.at[1]>a0.at[1]-1.2,`it lands (y ${a0.at[1].toFixed(2)} -> ${a1.at[1].toFixed(2)})`);
     const blk=await pg.evaluate(([x,z])=>{ const p=__dbg.collide(x,z); return Math.hypot(p[0]-x,p[1]-z); },[a0.at[0],a0.at[2]]);
     ok(blk<.01,`its old place no longer blocks walking (pushed out ${blk.toFixed(3)})`);
-    const st=await pg.evaluate(()=>LOOSE.nearest('trash can')); await wait(pg,2500); const st2=await pg.evaluate(()=>LOOSE.nearest('trash can'));
+    const st=await pg.evaluate(n=>LOOSE.nearest(n),N); await wait(pg,2500); const st2=await pg.evaluate(n=>LOOSE.nearest(n),N);
     ok(Math.hypot(st2.at[0]-st.at[0],st2.at[1]-st.at[1],st2.at[2]-st.at[2])<1e-4,'at rest it stays still');
-    const pk=await pg.evaluate(()=>LOOSE.pickAt('trash can')); ok(pk==='TRASH CAN','clicking the trash can offers to pick it up ('+pk+')');
+    const pk=await pg.evaluate(n=>LOOSE.pickAt(n),N); ok(pk===N.toUpperCase(),'clicking it offers to pick it up ('+pk+')');
     ok(!pg.errs.length,'the street: no page errors '+pg.errs.join(' | ')); await pg.close(); }
-  { const pg=await open(b,'at=9.9,-3.4');
+  { const pg=await open(b,''); await pg.evaluate(()=>ROOMS.enter('bodega')); await pg.waitForFunction(()=>ROOMS.offIn&&ROOMS.offIn()==='bodega'&&!(window.FADE&&FADE.busy),null,{timeout:180000}).catch(()=>{});
+    for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().active>100).catch(()=>false);i++)await wait(pg,1000);
     const d0=await pg.evaluate(()=>({dbg:GOODSDBG(),act:LOOSE.list().filter(q=>q.k!=='v').map(q=>q.name)})); console.log('the bodega:',d0.dbg.active,'bodies ·',d0.act.join(', '));
     ok(d0.dbg.active>100,'the bodega: its goods and things are bodies');
         await beside(pg,'office chair',.6); await wait(pg,1500);

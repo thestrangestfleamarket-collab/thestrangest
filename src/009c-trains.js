@@ -7,7 +7,7 @@ import {PEEK} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
-await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, NCAR=1, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
+await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, NCAR=1, SY0=50, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
   const mod=(a,n)=>((a%n)+n)%n, V=D.speed, A=D.accel, ta=V/A, da=V*V/(2*A);
   const runT=d=>d>=2*da?d/V+ta:2*Math.sqrt(d/A), runS=(d,t)=>{ const Tt=runT(d); if(t<=0)return 0; if(t>=Tt)return d; if(d>=2*da){ if(t<ta)return .5*A*t*t; if(t<Tt-ta)return da+V*(t-ta); return d-.5*A*(Tt-t)**2; } return t<Tt/2?.5*A*t*t:d-.5*A*(Tt-t)**2; };
   TRAINS.now=()=>Date.now()/1000+TRAINS.skew;
@@ -121,9 +121,12 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     im(new THREE.BoxGeometry(.05*T,z(48),1.05*T),MSTEEL,part,(o,[x,s])=>{ o.position.set(x*T,Y(FZ+24),s*(CWI-.55)*T); });
     im(new THREE.CylinderGeometry(.045*T,.045*T,1,8),MPOLE,poles,(o,[x,zz,y0,y1])=>{ o.position.set(x*T,Y((y0+y1)/2),zz*T); o.scale.set(1,Y(y1)-Y(y0),1); });
     for(const s of [-1,1])box(inner,CARL*T-2,.06*T,.06*T,0,Y(FZ+74),s*(CWI-1.05)*T,MPOLE);
+    const straps=[]; for(const s of [-1,1])for(let a=-(CARL/2-1.5);a<=CARL/2-1.5+1e-6;a+=1.5)straps.push([a,s*(CWI-1.05)]);   // hand straps from the rails, down to where a hand reaches
+    im(new THREE.BoxGeometry(.03*T,z(74-SY0-3),.012*T),MDARK,straps,(o,[x,zz])=>{ o.position.set(x*T,Y(FZ+(SY0+3+74)/2),zz*T); });
+    im(new THREE.TorusGeometry(.08*T,.016*T,5,10),MPOLE,straps,(o,[x,zz])=>{ o.position.set(x*T,Y(FZ+SY0+1.5),zz*T); o.rotation.set(0,Math.PI/2,0); });
     for(const e of [-1,1]){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2.6*T,z(10)),tn.signM); me.position.set(e*(HL-.1),Y(FZ+DOORH+2),0); me.rotation.y=e>0?-Math.PI/2:Math.PI/2; inner.add(me); }
     for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
-    scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0}; };
+    scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0,poles:poles.map(([x,zz])=>({a:x*T,v:zz*T})),straps:straps.map(([x,zz])=>({a:x*T,v:zz*T}))}; };
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});
     for(let c=0;c<NCAR;c++)tn.cars.push(makeCar(tn,c)); }
   for(const tn of TRAINS.list)for(const car of tn.cars){ for(const g of [car.ext,car.upper['-1'],car.upper['1']])g.traverse(o=>{ if(o.isMesh&&!o.geometry.attributes.aWl)PEEK.mark(o.geometry); }); car.peek={me:car.G,b:new THREE.Box3()}; PEEK.boxes.push(car.peek); }
@@ -169,15 +172,37 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   const seatAt=()=>{ const c=ride.c; if(!c||USE.seat)return null; const q=loc(c.p,pos.x,pos.z); let best=null, bd=1e9; for(const se of c.seats){ if(se.taken)continue; const d=Math.hypot(se.x-q.a,se.z-q.v); if(d<bd){ bd=d; best=se; } } return best; };
   const sitDown=()=>{ const c=ride.c, se=seatAt(); if(!se)return; const q=loc(c.p,pos.x,pos.z), v=se.z+se.s*.18*T, w=wrl(c.p,se.x,v), hl=se.s*Math.PI/2;   // a seat in the car: you sit and ride in it
     USE.sitAt(w.x,w.z,c.G.position.y+se.y,ang(c.p)+hl,{car:c,a:se.x,v,hl,ba:q.a,bv:q.v}); };
+  // holding on: double-click a pole or a strap under the overhead rails and one hand takes it (st.grip, in the body's own frame); walking along the rail the hand moves to the nearest strap; step away and you let go
+  const PR=.045*T, HOLDR=1.3*T, POLEY=38, inv=new THREE.MeshBasicMaterial({visible:false}), POLEH=new THREE.Mesh(new THREE.BoxGeometry(.35*T,1.6*T,.35*T),inv), RAILH=new THREE.Mesh(new THREE.BoxGeometry(.5*T,.4*T,.35*T),inv), hold={h:null};
+  for(const m of [POLEH,RAILH]){ m.position.set(0,-1e4,0); scene.add(m); }
+  const nearHold=()=>{ const c=ride.c; if(!c||!c.p||USE.seat)return {}; const q=loc(c.p,pos.x,pos.z); let pole=null, pd=HOLDR, rail=null, rd=HOLDR;
+    for(const p of c.poles){ const d=Math.hypot(p.a-q.a,p.v-q.v); if(d<pd){ pd=d; pole=p; } }
+    for(const p of c.straps){ const d=Math.hypot(p.a-q.a,p.v-q.v); if(d<rd){ rd=d; rail=p; } } return {pole,rail}; };
+  const grab=k=>{ const h=nearHold()[k]; if(h)hold.h={car:ride.c,k,a:h.a,v:h.v}; };
+  const letGo=()=>{ hold.h=null; st.grip=null; };
+  const holding=()=>{ const h=hold.h, c=ride.c, W=st.world; if(!h)return; if(c!==h.car||USE.seat||!W||!c.p)return letGo(); const q=loc(c.p,pos.x,pos.z);
+    if(h.k==='rail'){ let b=null, bd=1e9; for(const p of c.straps)if(p.v===h.v){ const d=Math.abs(p.a-q.a); if(d<bd){ bd=d; b=p; } } if(b)h.a=b.a; } const dA=h.a-q.a, dV=h.v-q.v; if(Math.hypot(dA,dV)>HOLDR)return letGo();
+    const hd=SHARED.heading-Math.atan2(c.p.ux,c.p.uz), cs=Math.cos(hd), sn=Math.sin(hd), dx=-dV*W.kx, dz=dA*W.kx; let lx=dx*cs-dz*sn, lz=dx*sn+dz*cs, ly;
+    if(h.k==='pole'){ const l=Math.hypot(lx,lz)||1, k=Math.max(0,l-1.3)/l; lx*=k; lz*=k; ly=POLEY; } else ly=(c.G.position.y+z(FZ+SY0+1.5)-SHARED.py)*W.ky-.8;
+    st.grip={side:lx>0?1:-1,x:lx,y:ly,z:lz}; };
+  TRAINS.hold=hold; TRAINS.grab=grab; TRAINS.letGo=letGo;
+  let holdTh=null;
   SYS.add('places',dt=>{ const now=TRAINS.now(), down=SHARED.LVL==='down';
     if(!seatTh&&UI.thing){ seatTh={name:'SEAT',obj:SEATH,reach:1.1*T,near:2.4*T,tall:.5*T,act:sitDown}; UI.thing(seatTh); }
+    if(!holdTh&&UI.thing){ holdTh=[{name:'HOLD THE POLE',obj:POLEH,reach:HOLDR,near:2.4*T,tall:1.6*T,act:()=>grab('pole')},{name:'HOLD A STRAP',obj:RAILH,reach:HOLDR,near:2.4*T,tall:.4*T,act:()=>grab('rail')}]; holdTh.forEach(t=>UI.thing(t)); }
+    { const n=down?nearHold():{}, c=ride.c; POLEH.position.set(0,-1e4,0); RAILH.position.set(0,-1e4,0);
+      if(n.pole){ const w=wrl(c.p,n.pole.a,n.pole.v); POLEH.position.set(w.x,c.G.position.y+z(FZ+44),w.z); }
+      if(n.rail){ const w=wrl(c.p,n.rail.a,n.rail.v); RAILH.position.set(w.x,c.G.position.y+z(FZ+SY0+1.5),w.z); RAILH.rotation.y=c.G.rotation.y; }
+      if(down)holding(); else if(hold.h)letGo(); }
     { const se=down&&seatAt(); if(se){ const w=wrl(ride.c.p,se.x,se.z); SEATH.position.set(w.x,ride.c.G.position.y+se.y,w.z); } else SEATH.position.set(0,-1e4,0); }
     if(down){
       if(ride.c&&!(USE.seat&&USE.seat.car)){ const q=loc(ride.c.p,pos.x,pos.z), S=ride.tn.S;
         if(Math.abs(q.a)>HL+2||Math.abs(q.v)>HW+2)ride.c=ride.tn=null;
         else { let out=null; if(S.doors&&atDoor(q.a)&&Math.abs(q.v)>HWI-R-.02){ const w=wrl(ride.c.p,q.a,Math.sign(q.v)*(STEP+R+.15)); if(M.ground(w.x,w.z)>L.H(-2))out=w; }
           if(out){ pos.x=out.x; pos.z=out.z; ride.c=ride.tn=null; }
-          else { const a=Math.max(-HL+.6,Math.min(HL-.6,q.a)), wv=atDoor(q.a)?HWI-R:AISLE, v=Math.max(-wv,Math.min(wv,q.v)); if(a!==q.a||v!==q.v){ const w=wrl(ride.c.p,a,v); pos.x=w.x; pos.z=w.z; } } } }
+          else { let a=Math.max(-HL+.6,Math.min(HL-.6,q.a)), wv=atDoor(q.a)?HWI-R:AISLE, v=Math.max(-wv,Math.min(wv,q.v));
+            for(const p of ride.c.poles){ const da=a-p.a, dv=v-p.v, d=Math.hypot(da,dv), m=R+PR; if(d<m){ if(d>1e-4){ a=p.a+da*m/d; v=p.v+dv*m/d; } else v=p.v+m; } }   // the poles are solid
+            if(a!==q.a||v!==q.v){ const w=wrl(ride.c.p,a,v); pos.x=w.x; pos.z=w.z; } } } }
       if(!ride.c)for(const {tn,c} of cars()){ if(!c.p)continue; const q=loc(c.p,pos.x,pos.z); if(Math.abs(q.a)>=HL+R)continue;
         const door=tn.S.doors&&atDoor(q.a), low=SHARED.py<L.H(-16);
         if((door&&Math.abs(q.v)<Math.max(STEP,HW)+R+.1)||(low&&Math.abs(q.v)<HW+R)){ ride.c=c; ride.tn=tn; const w=wrl(c.p,q.a,Math.max(-HWI+R+.3,Math.min(HWI-R-.3,q.v))); pos.x=w.x; pos.z=w.z; break; }

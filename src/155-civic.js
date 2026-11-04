@@ -1,7 +1,7 @@
 // THE CIVIC: CIVIC builds the firehouse, clinic and precinct and keeps the town's staff, ledger and log.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CITY, CIVIC, CLOCK, FAR3, MAIL, UI} from './003b-systems.js';
-import {AWAY, FIX, MAPG, MODS, RING, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {AWAY, FIX, MAPG, MODS, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}); window.CIVIC=CIVIC;
 { const T=TILE, M=1/.84*T, YS=ZU*24/TILE, G=(x,z)=>MODS.bodega.ground(x,z);
@@ -12,7 +12,7 @@ Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wa
   if(AWAY.has('civic')){ const B=SHARED.BOD.B0, bx=SHARED.BOD.X(B.x1)+2*T, bz=SHARED.BOD.Z(B.y1)+2.4*T;
     HOUSES.forEach(([id,name,col],i)=>{ const sx=bx+i*1.1*T; CIVIC.row.push({id,name,x:sx,z:bz,col,floor:i,at:{x:sx,z:bz},door:{x:sx,z:bz},inside:{x:sx,z:bz},kerb:{x:sx,z:SHARED.BOD.ZS(SHARED.BOD.CURB)-.6*T}}); }); }
   else {
-  CIVIC.tower={x0:cx-Wd/2,x1:cx+Wd/2,z0:zf,z1:zb,y,H,FH};
+  CIVIC.tower={x0:cx-Wd/2,x1:cx+Wd/2,z0:zf,z1:zb,y,H,FH}; STORE.places.push(['THE CIVIC TOWER',cx,zf-1.2*T,'up','see']);   // GO TO: at its door
   blk(cx-Wd/2+TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx+Wd/2-TK/2,y+H/2,zf+D/2,TK,H,D,STONE); blk(cx,y+H/2,zb-TK/2,Wd,H,TK,STONE);
   blk(cx-Wd/2+pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx+Wd/2-pw/2,y+DH/2,zf+TK/2,pw,DH,TK,STONE); blk(cx,y+(DH+H)/2,zf+TK/2,Wd,H-DH,TK,STONE);
   blk(cx,y+H+.08*M,zf+D/2,Wd+.2*T,.16*M,D+.2*T,0x4a4844); for(const [a,b,sx,sz] of [[0,-D/2,Wd,.14*T],[0,D/2,Wd,.14*T],[-Wd/2,0,.14*T,D],[Wd/2,0,.14*T,D]])blk(cx+a,y+H+.45*M,zf+D/2+b,sx,.6*M,sz,STONE);

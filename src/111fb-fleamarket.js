@@ -31,6 +31,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
+  { const d=CREW.door('flea'); if(d)STORE.places.push(['THE FLEA MARKET',d.x,d.z,'up','see']); }   // GO TO: at its tables on the street side
   // an inside's own list of where people go: ROOMS.off[id] (rooms off the map) or STORE.rooms (the street's insides), each with spots (by job title) and seats ({x,z,hd,y}: y the seat's height, none to stand) and whether it lies off the map
   const insideOf=a=>ROOMS.off[a]||(STORE.rooms||[]).find(r=>r.id===a)||null, offOf=a=>!!ROOMS.off[a]||!!(insideOf(a)||{}).offmap;
   CREW.out=key=>{ for(const R of [...Object.values(ROOMS.off),...(STORE.rooms||[])]){ const t=R.taken; if(t)t.delete(key); } };   // their seat is free again

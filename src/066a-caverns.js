@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {EQUIP, LEVELS, LITE, PARK, pos, st, SWIM, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
+import {FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, STORE, SYS, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
 import {RIVER} from './066-river.js';
 await grab('gemcave',async()=>{}); await grab('hudson',async()=>{}); await grab('lake',async()=>{}); await grab('falls',async()=>{});
@@ -49,7 +49,8 @@ const CAVERNS={hooks:[],day:()=>0}; window.CAVERNS=CAVERNS; MODS.waters=MODS.wat
         post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); uw=false; }}); }
     SYS.add('places',()=>{ if(!window.__started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1,'load'); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
     const K=C.id.toUpperCase(); window[K]={go,get built(){ return !!M; }}; window[K+'DBG']=()=>({built:!!M,lv:SHARED.LVL,inside:inside(pos.x,pos.z),objs:M?M.objs.length:0,swim:!!(st.water&&st.water.in)});
-    if(C.enter)C.enter(api); return api; };
+    if(C.enter)C.enter(api); if(C.out)STORE.places.push([C.name,0,0,'down','see',null,()=>C.out()]);   // GO TO: up at its way in (its out spot), the way in still its own
+    return api; };
   CAVERNS.make({id:'gemcave',name:'THE GEM CAVE',leaving:'UP THE STONE LIFT',lot:{x0:(1200+OFFDX),y0:-40,x1:(1216+OFFDX),y1:-28},H:70,wall:[96,92,86],floor:[70,66,60],gem:0xb070ff,exitName:'THE STONE LIFT UP',
     lights:[[.5,.5,55,0x9fb8ff,18,10],[.8,.2,30,0xffb070,10,7]],
     out:()=>{ const S=GCAVE.S, L=GCAVE.lift||(S?{x:X(S.c.x+(PARK.ox||0)),z:Z(S.c.y+(PARK.oy||0)-3.4)}:{x:0,z:0}); UI.goTo(L.x,L.z+1.3*T,'up'); SHARED.heading=0; }});

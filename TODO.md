@@ -206,18 +206,30 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **Archive the places** · P1 · XL · code · risk high · queued with the character archive, owner says when to start (4 Nov). Owner, 4 Nov:
+  "remove 100% from game and archive all locations except" these.
+  - Stay: the Bodega, the Apartments (with the fire escape), the Art Museum, the Bank, the Bar, the Playhouse, the Movie Theatre, the Bath
+    House, the Arcade (its Holodeck offers only the Greens and Roam), the Subway Stairs and platform and the loop, To the Hudson, the river,
+    the Fishing Pier, Central Park's gate, paths, lamps, grass, benches, the lake and brook, the Round and the campfire, the Castle and the
+    dungeon under it, the Squirrel's Tower, every home, the Skate Park, and the six sections beyond.
+  - Archived (not loaded unless the owner names one): the Museum of Earth, the Boardwright, Fix-It Electronics, the Scanner, the Diner,
+    the Civic Tower (firehouse, clinic, precinct, post office, depot, city hall), Feel Lab, the Fountain, the Night Market, the Flea Market,
+    the Fair and its gate, the shrine, the park's trees, the Golems' Cave, the Gem, Hudson and Lake caverns, the Catacomb Run, the
+    Holodeck's other programs. An archived street building leaves an empty lot.
+  - Fires stay but each burns out by itself (no firehouse).
+
 - [ ] **Archive the characters** · P1 · XL · code · risk high · queued, owner says when to start (4 Nov). Owner, 4 Nov: "archive all the
   characters and remove them 100% from game (do not load unless pulled from archive specifically told)".
   - Stay: the Tomato, the Mushroom Seller, the Teddy Bear, the dragons, the dungeon (ogres, skeletons, its creatures), all animals, every
-    skater (skate shop crew, park skaters, skatepark), the Diner Waitress, the Cart Man, the Scuba Diver, the Samurai Warrior, and the
+    skater (skate shop crew, park skaters, skatepark), the Scuba Diver, the Samurai Warrior, and the
     buyers below. Everyone else goes to an archive folder the build never reads (castle cast, pawns, woodland folk, the Fox, the Gas
     Station Attendant, the castle guardians included); one comes back only when the owner names it.
   - Remove the Museum of Earth, building included (not the art museum; its gift shop goes with it), and the cinema snack stand, the bar's
     taps and register, the playhouse drinks.
   - Sellers: the Radish's goods and teaching go to the Tomato; the Shark's to the Scuba Diver at the same spot; the Swordsmith's swords and
     teaching to the Samurai Warrior at the Swordsmith's spot; the Boardwright's boards and kart to the Skate Shop Owner.
-  - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), Lake Angler
-    (fish), the Tomato (mushrooms).
+  - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), the Scuba
+    Diver (fish), the Tomato (mushrooms). The diner's and the Cart Man's food go to the bodega (owner, 4 Nov: they go with the places).
   - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
     staff, pay at the register yourself; take off the groceries that do nothing (toilet paper, soap, and the like).
 

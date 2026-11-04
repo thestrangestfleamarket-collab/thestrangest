@@ -171,17 +171,18 @@ export class Block extends Server {
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
   async world() { if (!this.W) this.W = (await this.ctx.storage.get("world")) || {}; return this.W; }
   // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
-  async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }
+  async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; const a = await this.ctx.storage.getAlarm(); if (a == null || a < Date.now()) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }   // (an alarm left in the past, a stale record on disk, is set afresh)
   // the cast's goals on the game hour (worker/lives.js lvGoal: to work, home, a habit's place), from the cast's table a page sent; after a gap of hours they are put there, not walked
   castHour(F, H, jump) { const C = F.cast; if (!C || !C.keys) return; const recs = this.lives(), X = { hg: C.hg, doors: C.doors };
     for (const k in C.keys) { const E = F.by[k], c = C.keys[k]; if (!E || !c) continue; const job = LIVESDATA[k];
       try { const g = lvGoal(k, { job: job || {}, life: !!job, hours: c.hours, work: c.work, home: c.home }, H, recs[k], X, F.T, E); FOLKSIM.set(F, k, { goal: { gid: g.w + "@" + H, at: g.at, in: g.in, now: jump ? 1 : 0, b: g.b, hold: g.hold, fast: g.fast } }); } catch (e) {} } }
-  async onAlarm() { const F = await this.folk(), now = Date.now(), n = [...this.getConnections()].length;
-    FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
-    { const H = lvH(now); if (F.cast && F.H !== H) { const jump = F.H == null || H - F.H > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
-    if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
-    if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); }
-    await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }
+  async onAlarm() { const now = Date.now(), n = [...this.getConnections()].length;
+    try { const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+      { const H = lvH(now); if (F.cast && F.H !== H) { const jump = F.H == null || H - F.H > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
+      if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
+      if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); } }
+    catch (e) { console.error("folk alarm", e); }
+    await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }   // (set again whatever happened: the walks never stop)
   async onConnect(c, ctx) {
     const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");

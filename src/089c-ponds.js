@@ -20,4 +20,4 @@ import {LEVEL, MODS, SYS, TILE, ZU} from './006-map-pre.js';
         const s=new THREE.Mesh(new THREE.RingGeometry(r,r+.35*T,40).rotateX(-Math.PI/2),rim); s.position.y=.1; s.receiveShadow=true;
         g.add(w,s); g.position.set(x,y,z); g.userData.pond=q; scene.add(g); p.g=g;
         if(WEEDS.lawnDrop)WEEDS.lawnDrop([x-r-T,z-r-T,x+r+T,z+r+T]); }
-      SHARED.ponds=built; },'089b-ponds'); } }
+      SHARED.ponds=built; },'089c-ponds'); } }

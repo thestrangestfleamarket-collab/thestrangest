@@ -36,18 +36,22 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; 
     await ed.evaluate(()=>EDITOR.view({iso:0,rot:0,level:'down'})); const under=await ed.evaluate(()=>EDITOR.items().filter(o=>o.lv==='down').map(o=>o.id));
     p=await at('place','museum',0); await ed.mouse.click(p[0],p[1]); const s2=await ed.evaluate(()=>EDITOR.sel());
     ok(under.length>0&&(!s2||s2.k!=='place'),'underground shows what is under the street ('+under.join(' ')+') and not the street\'s buildings');
-    await ed.evaluate(()=>EDITOR.view({level:'up'})); }
+    await ed.evaluate(()=>EDITOR.tool('stations')); const pf=await at('station','st-A',0), sx=await ed.evaluate(()=>EDITOR.items().find(o=>o.k==='station').x);
+    await ed.mouse.move(pf[0],pf[1]); await ed.mouse.down(); const k=await ed.evaluate(()=>{ const a=EDITOR.project(0,0,0), b=EDITOR.project(1,0,0); return b[0]-a[0]; }); await ed.mouse.move(pf[0]+3*k,pf[1],{steps:4}); await ed.mouse.up();
+    const sp=await ed.evaluate(()=>({sub:EDITOR.patch().set.places.subway,x:EDITOR.items().find(o=>o.k==='station').x})); ok(sp.sub&&Math.abs(sp.sub.x0-117)<.01&&Math.abs(sp.x-sx-3)<.01,'STATIONS drags the platform 3 tiles along the street, its stairs with it');
+    await ed.evaluate(()=>{ EDITOR.tool('pick'); EDITOR.view({level:'up'}); }); P.P=await ed.evaluate(()=>EDITOR.patch()); }
   ok(eerr.length===0,'the editor ran without errors '+JSON.stringify(eerr.slice(0,3)));
   if(SHOT)await ed.screenshot({path:SHOT.replace(/\.png$/,'')+'-editor.png'});
   // the game with that file published
   const pg=await b.newPage({viewport:{width:1000,height:700}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message));
   await pg.addInitScript(p=>{ window.__MAPLIVE=p; },P.P);
   await pg.goto('file://'+path.resolve(GAME)+'?at=35,25&hour=12',{timeout:240000}); await pg.waitForFunction(()=>window.__started,{timeout:400000}); await pg.waitForTimeout(6000);
-  const G=await pg.evaluate(()=>{ const L=SHARED.MAPLIVE, m=[], props=__dbg.LAND.props(); __dbg.scene.traverse(o=>{ if(o.userData&&o.userData.mapPub)m.push(o.userData.landPatch); }); const PD=(SHARED.ponds||[])[0], inPond=PD?__dbg.npcs().filter(N=>N&&N.st&&(N.lv||'up')==='up'&&Math.hypot(N.st.x-PD.x,N.st.z-PD.z)<PD.r).map(N=>N.key):['no pond']; return {inPond,wet:PD?PONDS.wet(PD.x,PD.z):false,strips:PONDS.strips.length,ponds:(SHARED.ponds||[]).length,swim:!!(__dbg.ST.water&&__dbg.ST.water.in),lamps:window.DRESS.own,street:window.LEVELS.of.street.name,used:L.used,meshes:m,props:props.length,shop:props.some(o=>o.k==='pf_corner_shop'),oak:props.some(o=>o.k==='OakTree1')}; });
+  const G=await pg.evaluate(()=>{ const L=SHARED.MAPLIVE, m=[], props=__dbg.LAND.props(); __dbg.scene.traverse(o=>{ if(o.userData&&o.userData.mapPub)m.push(o.userData.landPatch); }); const PD=(SHARED.ponds||[])[0], inPond=PD?__dbg.npcs().filter(N=>N&&N.st&&(N.lv||'up')==='up'&&Math.hypot(N.st.x-PD.x,N.st.z-PD.z)<PD.r).map(N=>N.key):['no pond']; return {stop:(window.LOOP.STA||[]).find(t=>t.id==='A'),inPond,wet:PD?PONDS.wet(PD.x,PD.z):false,strips:PONDS.strips.length,ponds:(SHARED.ponds||[]).length,swim:!!(__dbg.ST.water&&__dbg.ST.water.in),lamps:window.DRESS.own,street:window.LEVELS.of.street.name,used:L.used,meshes:m,props:props.length,shop:props.some(o=>o.k==='pf_corner_shop'),oak:props.some(o=>o.k==='OakTree1')}; });
   ok(['place:bar','park:lake','car:'+car.id].every(k=>G.used.includes(k)),'the game lays the published file over its level ('+G.used.join(' ')+')');
   const GN=require(path.resolve('data/garden.json')).length; ok(G.props===GN+1&&G.shop&&G.oak&&G.used.includes('cars-gone:1')&&G.used.includes('car-new:m1'),'the game puts the new things down and takes the cleared ones away ('+G.props+' placed models, was '+GN+')');
   ok(G.used.includes('brook')&&G.lamps===P.lamps&&G.street==='GRAND ST'&&G.used.includes('station'),'the game takes the new lamp posts ('+G.lamps+'), the brook\'s course and the names ('+G.street+')');
   ok(G.wet&&G.strips===6&&!G.inPond.length,'the town\'s people walk round the pond (none in it: '+JSON.stringify(G.inPond)+'; on the walking mesh as '+G.strips+' strips)');
+  ok(G.stop&&Math.abs(G.stop.x-119)<.01,'the game moves the trains\' stop with the stairs ('+(G.stop&&G.stop.x)+')');
   ok(G.ponds===1&&G.swim,'the game digs the pond and the player, standing in it, swims ('+G.ponds+' pond, swimming '+G.swim+')');
   ok(G.meshes.includes('road')&&G.meshes.includes('cobble')&&G.meshes.length===2,'the painted ground is one mesh a kind ('+G.meshes.join(' ')+')');
   ok(errs.length===0,'the game ran without errors '+JSON.stringify(errs.slice(0,3)));

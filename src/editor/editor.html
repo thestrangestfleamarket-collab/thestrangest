@@ -113,12 +113,14 @@ function things(){ const L=[], W=EFF;
   S.set.add.forEach((o,i)=>L.push(gi(o,'added',i)));
   (EFF.ponds||[]).forEach((q,i)=>L.push({k:'pond',id:i,n:'POND',sh:'circle',x:q.x,y:q.y,r:q.r,h:0,ly:'water'}));
   lampsOf().forEach((l,i)=>L.push({k:'lamp',id:i,n:'LAMP POST',sh:'circle',x:l.x,y:l.y,r:.7,h:4.4,ly:'power'}));
-  const D=TOP.down||{}, bx=(b,o)=>({sh:'rect',x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,w:b[2]-b[0],d:b[3]-b[1],rot:0,h:0,...o});
+  const D=TOP.down||{}, bx=(b,o)=>({sh:'rect',x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,w:b[2]-b[0],d:b[3]-b[1],rot:0,h:0,...o}), dX=stationShift(), SID=(WORLD.section&&WORLD.section.id)||'A';
   for(const v of D.levels||[])L.push(bx(v.box,{k:'under',id:v.id,n:v.name,ly:'under',lv:'down'}));
-  for(const v of D.stations||[])L.push(bx(v.box,{k:'under',id:'st-'+v.id,n:'PLATFORM · '+v.name,ly:'under',lv:'down'}));
-  for(const w of D.ways||[])L.push(bx(w.box,{k:'stair',id:w.id,n:'⇅ '+w.id.toUpperCase(),ly:'stair'}));
+  for(const v of D.stations||[]){ const mine=v.id===SID, b=mine?[v.box[0]+dX,v.box[1],v.box[2]+dX,v.box[3]]:v.box; L.push(bx(b,{k:mine?'station':'under',id:'st-'+v.id,n:'PLATFORM · '+(mine?stationName():v.name),ly:'under',lv:'down'})); }
+  for(const w of D.ways||[]){ const sub=w.b==='station', b=sub?[w.box[0]+dX,w.box[1],w.box[2]+dX,w.box[3]]:w.box; L.push(bx(b,{k:'stair',id:w.id,n:'⇅ '+w.id.toUpperCase(),ly:'stair',station:sub})); }
   for(const o of L)if(o.h==null)o.h=o.k==='place'?((BASE[o.id]&&BASE[o.id].h)||7):o.k==='park'?((BASE[o.id]&&BASE[o.id].h)||(/tower/.test(o.id)?6:0)):o.k==='car'?1:o.k==='thing'?1.6:0;
   return L; }
+const stairsBase=()=>WORLD.places.find(p=>p.kind==='stairs'), stationShift=()=>{ const b=stairsBase(), e=b&&EFF.places.find(p=>p.id===b.id); return b&&e?((e.x0+e.x1)-(b.x0+b.x1))/2:0; };
+const stationName=()=>((EFF.loop&&EFF.loop.stations||[]).find(q=>q.id===((WORLD.section&&WORLD.section.id)||'A'))||{}).name||'';
 const MOVES=new Set(['place','park','path','car','thing','home','garden','added','lamp','pond']), CLEARS=new Set(['garden','added','car','lamp','pond']);
 const ownPonds=()=>{ if(!S.set.ponds)S.set.ponds=clone(EFF.ponds||[]); return S.set.ponds; };
 const lampsOf=()=>S.set.lamps||(KIT.lamps||[]), ownLamps=()=>{ if(!S.set.lamps)S.set.lamps=clone(KIT.lamps||[]); return S.set.lamps; };
@@ -216,8 +218,8 @@ function draw(){ if(!cv.width)return; flat(); g.fillStyle=LV==='down'?'#040507':
 
 // the tools
 const TOOLS={up:[['pick','🖱','PICK','Pick, move, turn'],['clear','🚜','CLEAR','Bulldoze: take things away'],['ground','🟩','GROUND','Paint ground'],['roads','🛣','ROADS','Paint roads'],['build','🏢','BUILD','Put down a building'],['nature','🌳','NATURE','Trees and plants'],['props','🪑','PROPS','Lamps, benches, stalls, cars'],['water','🌊','WATER','Water'],['power','⚡','POWER','Poles and wires'],['section','🗺','SECTION','The section itself']],
-  down:[['pick','🖱','PICK','Look at what is under the street'],['tracks','🚇','TRACKS','The Loop\'s tracks'],['stations','🚉','STATIONS','Stations and platforms'],['stairs','⇅','STAIRS','Stairs between levels'],['tunnels','🕳','TUNNELS','Tunnels and caves']]};
-const NOW=new Set(['pick','clear','ground','roads','build','nature','props','water','power','section']);
+  down:[['pick','🖱','PICK','Look at what is under the street'],['stations','🚉','STATIONS','Move the station along the street (its stairs, platform and stop together)']]};
+const NOW=new Set(['pick','clear','ground','roads','build','nature','props','water','power','section','stations']);
 const bar=()=>{ $('#tools').innerHTML=TOOLS[LV].map(([k,i,n,t])=>`<button data-t="${k}" class="${NOW.has(k)?'':'next'}" title="${t}${NOW.has(k)?'':' (a later step)'}"><span>${i}</span>${n}</button>`).join(''); if(!TOOLS[LV].some(t=>t[0]===tool))tool='pick'; pal(); };
 $('#tools').onclick=e=>{ const b=e.target.closest('button'); if(!b||!NOW.has(b.dataset.t))return; tool=b.dataset.t; if(tool==='roads'&&!/road|alley|erase/.test(gt))gt='road'; if(tool==='ground'&&/road|alley/.test(gt))gt='sidewalk'; ghost=null; pal(); draw(); };
 const seg=()=>{ $('#lvUp').classList.toggle('on',LV==='up'); $('#lvDown').classList.toggle('on',LV==='down'); $('#vTop').classList.toggle('on',!V.iso); $('#vIso').classList.toggle('on',!!V.iso); };
@@ -225,7 +227,8 @@ const turnView=d=>{ V.rot=(V.rot+d+4)%4; keepView(); draw(); }, setIso=on=>{ V.i
 const setLevel=l=>{ if(l===LV)return; LV=l; if(sel&&!onLevel(sel))sel=null; $('#lay').innerHTML=''; keepView(); seg(); bar(); side(); draw(); };
 $('#lvUp').onclick=()=>setLevel('up'); $('#lvDown').onclick=()=>setLevel('down'); $('#vTop').onclick=()=>setIso(0); $('#vIso').onclick=()=>setIso(1); $('#rotL').onclick=()=>turnView(1); $('#rotR').onclick=()=>turnView(-1);
 function pal(){ document.querySelectorAll('#tools button').forEach(b=>b.classList.toggle('on',b.dataset.t===tool)); const P=$('#pal');
-  if(LV==='down'){ P.innerHTML='<h4>UNDER THE STREET</h4><p>The Loop\'s tracks (orange outer, blue inner), its platform, the stairs up and down. Look only for now: tracks, stations, stairs and tunnels get their tools in a later step. Page Up: back to the street.</p>'; return; }
+  if(LV==='down'&&tool==='stations'){ P.innerHTML='<h4>STATIONS</h4><p>Drag the platform or its stairs along Market St: the stairs on the street, the platform under them and the trains\' stop move together. The Loop\'s tracks stay; the caverns and the dungeon are places of their own, reached by their ways in.</p>'; return; }
+  if(LV==='down'){ P.innerHTML='<h4>UNDER THE STREET</h4><p>The Loop\'s tracks (orange outer, blue inner), the platform, the stairs up and down. STATIONS moves the station. Page Up: back to the street.</p>'; return; }
   if(tool==='clear'){ P.innerHTML='<h4>CLEAR</h4><p>Click a thing to take it away, or Shift+drag a box over many. Placed models and cars can go; buildings from the game\'s code, park places and merchants\' stalls stay. Undo brings anything back.</p>'; return; }
   if(PLACE.has(tool)){ const G=CAT[tool], gi=Math.min(pg[tool],G.length-1), ks=G[gi][1]; if(!pk[tool]||!ks.includes(pk[tool]))pk[tool]=ks[0];
     P.innerHTML='<h4>'+{build:'BUILD',nature:'NATURE',props:'PROPS'}[tool]+'</h4><div class="opts">'+G.map(([n],i)=>`<button class="btn${i===gi?' on':''}" data-pg="${i}">${n}</button>`).join('')+'</div><div class="opts list">'+ks.map(k=>`<button class="btn${k===pk[tool]?' on':''}" data-pk="${k}">${nm(k)}</button>`).join('')+'</div><p>Click the map to put it down (¼ tile; Shift: whole tiles). R turns it first (now '+gdeg+'°). Esc: back to PICK. Its size and turn are in the panel once it is down.</p>';
@@ -254,7 +257,7 @@ const num=(v,d=2)=>v==null?'':(+v).toFixed(d);
 function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel.id); sel=s||null; }
   const D=$('#sel'); if(!sel){ $('#selT').textContent='PICKED'; D.className='note'; D.innerHTML='Click a building, a park place, a path, a car or a stall to pick it.'; }
   else { const o=sel, fixed=!MOVES.has(o.k), inD=!fixed&&S.set[SETK[o.k]]&&S.set[SETK[o.k]][o.id]!=null; $('#selT').textContent='PICKED · '+o.n; D.className='';
-    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels',garden:'placed model',added:'placed model, new in this draft',lamp:'lamp post (a light)',pond:'pond you can swim in'}[o.k]}</div></div>`;
+    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels',garden:'placed model',added:'placed model, new in this draft',lamp:'lamp post (a light)',pond:'pond you can swim in',station:'the station: its stairs, platform and stop move together'}[o.k]}</div></div>`;
     if(o.k==='place')h+=`<div class="row"><label>x0 · x1</label><div class="pair"><input data-f="x0" value="${num(o.x-o.w/2)}"><input data-f="x1" value="${num(o.x+o.w/2)}"></div></div>`+(o.row?`<div class="note">On the block's row: it moves along the street only.</div>`:`<div class="row"><label>y0 · y1</label><div class="pair"><input data-f="y0" value="${num(o.y-o.d/2)}"><input data-f="y1" value="${num(o.y+o.d/2)}"></div></div><div class="row"><label>door faces</label><select data-f="face">${['n','e','s','w'].map(f=>`<option value="${f}"${f===o.face?' selected':''}>${{n:'n · down the map',e:'e · right',s:'s · up, to the river',w:'w · left'}[f]}</option>`).join('')}</select></div>`);
     else if(!fixed)h+=`<div class="row"><label>x · y</label><div class="pair"><input data-f="x" value="${num(o.x)}"><input data-f="y" value="${num(o.y)}"></div></div>`;
     if((o.k==='park'&&o.sh==='circle'&&EFF.parkPlaces[o.id].r!=null)||o.k==='home'||o.k==='pond')h+=`<div class="row"><label>size (r)</label><input data-f="r" value="${num(o.r)}"></div>`;
@@ -262,7 +265,7 @@ function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel
     if(o.k==='car')h+=`<div class="row"><label>heading °</label><input data-f="hd" value="${num(o.hd,0)}"></div>`;
     if(o.k==='garden'||o.k==='added')h+=`<div class="row"><label>turn ° · size</label><div class="pair"><input data-f="turn" value="${num(o.rot,0)}"><input data-f="s" value="${num(o.s,2)}"></div></div>`;
     const isNew=o.k==='added'||(o.k==='car'&&S.set.newcars.some(c=>c.id===o.id));
-    if(fixed)h+=`<div class="note">${o.k==='fixed'?'Trees, the gate, the campfire and the fountain come from the game\'s own code: they get their own tools in a later step.':o.k==='stair'?'Stairs move with what they belong to; their own tool comes with the underground step.':'Under the street is look-only in this step.'}</div>`;
+    if(fixed)h+=`<div class="note">${o.k==='fixed'?'Trees, the gate, the campfire and the fountain come from the game\'s own code: they get their own tools in a later step.':o.k==='station'||o.station?'STATIONS drags it along the street; the stairs on the street move with it.':o.k==='stair'?'These stairs move with the castle.':'Look only.'}</div>`;
     else h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="sLook">LOOK IN 3D</button>${inD&&!isNew?'<button class="btn" id="sBack">BACK AS BUILT</button>':''}${CLEARS.has(o.k)?'<button class="btn" id="sClr">CLEAR</button>':''}</div>`+(isNew?'<div class="note good" style="margin-top:6px">new in this draft</div>':inD?'<div class="note good" style="margin-top:6px">changed in this draft</div>':'');
     D.innerHTML=h;
     D.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{ const f=el.dataset.f, v=f==='face'?el.value:+el.value; if(f!=='face'&&!isFinite(v))return side(); push(); const o2=sel;
@@ -296,20 +299,22 @@ cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); const 
     push(); ownLamps().push({x:snapv(x,e),y:snapv(y,e)}); changed(); pal(); msg('A LAMP POST PUT DOWN'); return; }
   if(LV==='up'&&tool==='section'){ drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   if(LV==='up'&&PLACE.has(tool)){ const k=pk[tool]; if(!k)return; push(); placeAt(k,snapv(x,e),snapv(y,e)); changed(); msg('PUT DOWN '+nm(k)); return; }
+  if(LV==='down'&&tool==='stations'){ const o=pickAt(x,y); if(o&&(o.k==='station'||o.station)){ sel=o; side(); draw(); const b=stairsBase(), e=EFF.places.find(p=>p.id===b.id); drag={stn:1,x0:x,a:e.x0,b:e.x1,moved:0,snap:snap()}; return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   if(tool==='pick'||LV==='down'){ const o=pickAt(x,y); if(o&&MOVES.has(o.k)){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } if(o){ sel=o; side(); draw(); } else if(sel){ sel=null; side(); draw(); } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   push(); if(e.shiftKey){ paintBox={x0:Math.floor(x),y0:Math.floor(y),x1:Math.floor(x),y1:Math.floor(y)}; drag={box:1}; draw(); return; }
   paintAt(x,y,brush,gt); drag={paint:1,lx:x,ly:y}; changed(); });
 cv.addEventListener('pointermove',e=>{ const [px,py]=at(e), [x,y]=U(px,py); $('#xy').textContent=`tile ${x.toFixed(1)}, ${y.toFixed(1)}`;
-  if(!drag){ if(LV==='up'&&PLACE.has(tool)){ ghost={x:snapv(x,e),y:snapv(y,e)}; cv.style.cursor='crosshair'; draw(); return; } if(tool==='pick'||tool==='clear'||tool==='water'||tool==='power'||LV==='down'){ const h=pickAt(x,y); if((h&&h.id)!==(hover&&hover.id)||(h&&h.k)!==(hover&&hover.k)){ hover=h; cv.style.cursor=h&&MOVES.has(h.k)?'move':'grab'; draw(); } } else cv.style.cursor='crosshair'; return; }
+  if(!drag){ if(LV==='up'&&PLACE.has(tool)){ ghost={x:snapv(x,e),y:snapv(y,e)}; cv.style.cursor='crosshair'; draw(); return; } if(tool==='pick'||tool==='clear'||tool==='water'||tool==='power'||tool==='stations'||LV==='down'){ const h=pickAt(x,y); if((h&&h.id)!==(hover&&hover.id)||(h&&h.k)!==(hover&&hover.k)){ hover=h; cv.style.cursor=h&&MOVES.has(h.k)?'move':'grab'; draw(); } } else cv.style.cursor='crosshair'; return; }
   if(drag.pan){ const a=ang(), c=Math.cos(a), s2=Math.sin(a), du=(px-drag.px)/V.k, dv=(py-drag.py)/(V.k*TILT()); V.x=drag.vx-(c*du+s2*dv); V.y=drag.vy-(-s2*du+c*dv); draw(); return; }
   if(drag.move){ const o=drag.o, nx=snapv(x+drag.dx,e), ny=o.row?o.y:snapv(y+drag.dy,e); if(nx===o.x&&ny===o.y)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } write(o,nx,ny); recompute(); items(); drag.o=ITEMS.find(q=>q.k===o.k&&q.id===o.id)||o; sel=drag.o; draw(); return; }
+  if(drag.stn){ const d=snapv(x-drag.x0,e), b=stairsBase(); if(!drag.moved&&!d)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } put('place',b.id,{x0:r2(drag.a+d),x1:r2(drag.b+d)}); recompute(); items(); sel=ITEMS.find(q=>q.k==='station')||sel; draw(); return; }
   if(drag.bp!=null){ const B=brookOf().map(q=>q.slice()), nx=snapv(x,e), ny=snapv(y,e); if(B[drag.bp][0]===nx&&B[drag.bp][1]===ny)return; if(!drag.moved){ UNDO.push(drag.snap); REDO.length=0; drag.moved=1; } B[drag.bp]=[nx,ny]; setBrook(B); recompute(); draw(); return; }
   if(drag.box||drag.clearbox){ paintBox.x1=Math.floor(x); paintBox.y1=Math.floor(y); draw(); return; }
   if(drag.paint){ const d=Math.hypot(x-drag.lx,y-drag.ly), n=Math.max(1,Math.ceil(d/.5)); for(let i=1;i<=n;i++)paintAt(drag.lx+(x-drag.lx)*i/n,drag.ly+(y-drag.ly)*i/n,brush,gt); drag.lx=x; drag.ly=y; recompute(); keep(); draw(); } });
 const up=()=>{ if(!drag)return; if(drag.box&&paintBox){ paintRect(paintBox,gt); paintBox=null; }
   if(drag.clearbox&&paintBox){ const a=paintBox, x0=Math.min(a.x0,a.x1), x1=Math.max(a.x0,a.x1)+1, y0=Math.min(a.y0,a.y1), y1=Math.max(a.y0,a.y1)+1, hits=ITEMS.filter(o=>CLEARS.has(o.k)&&onLevel(o)&&SHOW[o.ly]&&o.x>=x0&&o.x<=x1&&o.y>=y0&&o.y<=y1);
     if(hits.length){ push(); for(const o of hits.filter(o=>o.k!=='added'))remove(o); for(const o of hits.filter(o=>o.k==='added').sort((a,b)=>b.id-a.id))remove(o); sel=null; msg('CLEARED '+hits.length); } paintBox=null; }
-  const d=drag; drag=null; if(d.move||d.paint||d.box||d.clearbox||d.bp!=null)changed(); };
+  const d=drag; drag=null; if(d.move||d.paint||d.box||d.clearbox||d.bp!=null||d.stn)changed(); };
 cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{ e.preventDefault(); const [px,py]=at(e), [x,y]=U(px,py); V.k=Math.max(.5,Math.min(80,V.k*Math.pow(1.0015,-e.deltaY))); const [x2,y2]=U(px,py); V.x+=x-x2; V.y+=y-y2; draw(); },{passive:false});
 const undo=()=>{ if(!UNDO.length)return; REDO.push(snap()); S=JSON.parse(UNDO.pop()); changed(); }, redo=()=>{ if(!REDO.length)return; UNDO.push(snap()); S=JSON.parse(REDO.pop()); changed(); };

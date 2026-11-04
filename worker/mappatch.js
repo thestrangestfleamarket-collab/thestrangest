@@ -10,6 +10,9 @@ const MAPPATCH={v:1,
     if(obj(S.places))for(const p of out.places||[]){ const e=S.places[p.id]; if(!obj(e))continue; const q={...p};
       take(q,e,['x0','x1','y0','y1']); if(q.y1!=null&&/^[nesw]$/.test(e.face))q.face=e.face;
       if(q.x1>q.x0&&(q.y1==null||q.y1>q.y0)){ Object.assign(p,q); used.push('place:'+p.id); } }
+    // the section's station follows its stairs: the Loop's stop moves along the street with them
+    { const b=(W.places||[]).find(p=>p.kind==='stairs'), q=b&&out.places.find(p=>p.id===b.id), st=q&&out.loop&&out.section&&(out.loop.stations||[]).find(t=>t.id===out.section.id);
+      if(st){ const d=(q.x0+q.x1)/2-(b.x0+b.x1)/2; if(Math.abs(d)>.001){ st.x=Math.round((st.x+d)*100)/100; used.push('station-moved'); } } }
     if(obj(S.parkPlaces)&&obj(out.parkPlaces))for(const k in out.parkPlaces){ const e=S.parkPlaces[k], p=out.parkPlaces[k]; if(!obj(e)||!obj(p))continue;
       const q={...p}; if(take(q,e,['x','y','r','x0','y0'])&&!(q.r<=0)){ out.parkPlaces[k]=q; used.push('park:'+k); } }
     if(obj(S.parkPlaces)&&obj(S.parkPlaces.brook)&&Array.isArray(S.parkPlaces.brook.pts)&&out.parkPlaces&&out.parkPlaces.brook){ const P=S.parkPlaces.brook.pts; if(P.length>=3&&P.length<=60&&P.every(pt)){ out.parkPlaces.brook={...out.parkPlaces.brook,pts:P.map(q=>[q[0],q[1]])}; used.push('brook'); } }

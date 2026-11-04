@@ -10,6 +10,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     await pg.evaluate(async () => { await STORE.ensure(); for (const id in STORE.gate) STORE.gate[id] = () => true; });
+    await pg.evaluate(() => { window.__home = __dbg.pos(); });
     const ids = await pg.evaluate(() => Object.keys(STORE.inside));
     ok(ids.length > 0, 'the street has shops with insides: ' + ids.join(', '));
     const until = async (f, a, ms = 30000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
@@ -19,10 +20,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       for (const id of ids) {
         await pg.evaluate(id => { STORE.gate[id] = () => true; return STORE.enter(id, true); }, id);   // (the theatre asks for a ticket: let the check in)
         const built = await until(id => STORE.inside[id].done && !!STORE.inside[id].P, id, 60000);
-        await pg.evaluate(id => { window.__P = STORE.inside[id].P; return STORE.exit(id); }, id);
+        await pg.evaluate(async id => { window.__P = STORE.inside[id].P; await STORE.exit(id); const h = window.__home; __dbg.ui().goTo(h[0], h[2], h[1]); }, id);   // then back to where you started: a shop whose glass shows its inside keeps it built while you stand near (owner, 4 Nov 2026)
         const dropped = await until(id => !STORE.inside[id].done && !STORE.inside[id].P, id, 60000);
         const left = await pg.evaluate(() => { const P = window.__P; if (!P) return 'nothing recorded'; const objs = P.objs.filter(o => o.parent).length, regs = P.regs.reduce((n, [A, L]) => n + L.filter(x => A.includes(x)).length, 0); return objs + regs ? objs + ' objects and ' + regs + ' list entries still there' : ''; });
-        const why = built && dropped ? '' : ' (' + await pg.evaluate(id => { const R = STORE.inside[id], Rm = STORE.rooms.find(r => r.id === id), g = __dbg.W3.group.position; return JSON.stringify({ done: R.done, P: !!R.P, busy: R.busy, fade: FADE.busy, inside: Rm && Rm.inside(g.x, g.z), cur: window.ROOMS && ROOMS.cur && ROOMS.cur.id }); }, id) + ')';
+        const why = built && dropped ? '' : ' (' + await pg.evaluate(id => { const R = STORE.inside[id], Rm = STORE.rooms.find(r => r.id === id), g = __dbg.W3.group.position; return JSON.stringify({ held: [...WINDOWS.held], done: R.done, P: !!R.P, busy: R.busy, fade: FADE.busy, inside: Rm && Rm.inside(g.x, g.z), cur: window.ROOMS && ROOMS.cur && ROOMS.cur.id }); }, id) + ')';
         ok(built && dropped && !left, 'round ' + round + ': ' + id + ' is built when you go in and dropped when you leave, nothing of it left' + why + (left ? ' (' + left + ')' : ''));
       }
     }

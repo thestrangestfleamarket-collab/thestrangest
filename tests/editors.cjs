@@ -18,7 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const mp = document.getElementById('maped'); if (mp) mp.style.display = 'none';
       try { if (window.CHARED && window.CHARED.on && window.CHARED.show) window.CHARED.show(false); } catch (e) {}
       try { if (window.__dbg.LAND.on) window.__dbg.LAND.toggle(); } catch (e) {}
-      for (const id of ['led', 'ited']) { const p = document.getElementById(id); if (p && !p.hidden) { const d = p.querySelector('[id="ldone"]'); if (d) d.click(); else p.hidden = true; } }
+      for (const id of ['led', 'ited']) { const p = document.getElementById(id); if (p && !p.hidden) { const d = p.querySelector('[id="lgdone"],[id="ldone"]'); if (d) d.click(); else p.hidden = true; } }
       const m = document.getElementById('menu'); if (m && !m.hidden) { try { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); } catch (e) {} m.hidden = true; }
     });
     const poll = async (test, ms) => { for (let i = 0; i < ms / 200; i++) { if (await pg.evaluate(test).catch(() => false)) return true; await pg.waitForTimeout(200); } return false; };

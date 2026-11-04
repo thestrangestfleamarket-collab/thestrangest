@@ -62,14 +62,15 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.ceilOf=id=>{ if(!RL)build(); ceil(ROOMS.off[id]); };   // an inside's ceiling made without going in (seen through its windows from the street)
   ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
     scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
-  ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); };
+  ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); return ROOMS.unstow&&ROOMS.unstow(); };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
   ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
   ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||null;
-  BATCH.away=()=>!!ROOMS.offIn();   // in a room off the map the street's painted ground and walls are dropped, painted again on the way out
+  ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
+  BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
   ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();

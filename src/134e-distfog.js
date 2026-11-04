@@ -1,6 +1,6 @@
 // THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly, and the air between takes it: a thin haze everywhere and a ground mist that thins with height, in the horizon's colour greyed, warm toward the sun, the sky's own colour only on a level sightline where the air is nearly opaque, smooth or in stepped dithered bands (STEPS); the last stretch before its end and the land's rim fade into what is seen just above them, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; in a steamy room (SHARED.steam) the steam; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
+import {CLOCK, CULL, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -31,7 +31,7 @@ const DFOG={};
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg)); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
               float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); ins=mix(uMC+uSC*pow(max(0.,dot(ray,uSun.xyz)),uSun.w),uC,sb); c.rgb=mix(c.rgb,ins,a); }
-            m=uF*land*smoothstep(mix(uS,uE,.82),uE,dd);
+            m=uF>0.?land*smoothstep(uF*.85,uF,dd):0.;
             if(uRm.x>0.){ float ri=min(min(w.x-uK.x,uK.z-w.x),min(w.z-uK.y,uK.w-w.z)); rf=land*(1.-smoothstep(0.,uRm.x,ri))*smoothstep(uRm.y,uRm.z,L); m=max(m,rf); }
             if(m>.001){ float hit=0., L0=lin(d); for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.99999){ to=texture2D(tDiffuse,q).rgb; hit=1.; break; } if(rf>.001&&lin(dq)>L0*1.25){ to=mix(texture2D(tDiffuse,q).rgb,ins,a); hit=1.; break; } } m*=hit; } } }
         c.rgb=mix(c.rgb,to,m); }
@@ -42,7 +42,7 @@ const DFOG={};
         gl_FragColor=c; }`});
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85), HV=new THREE.Vector3();
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
-    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
+    u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; { const f=DFOG.cut(), g=CULL.drawD?CULL.drawD():0; u.uF.value=dn?0:f>0&&g>0?Math.min(f,g):f||g; }   // where the drawing stops, the far fades into the sky above it
     u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); u.uW.value=window.RIVER&&RIVER.box&&!dn?RIVER.box.lv+.2*TILE:-1e9; u.uV.value=1; u.uD.value=1;   // the Hudson's water fades softer and further than land, so from high up it has no hard ring
     { const c=cam.position, d=HV.set(0,0,-1).applyQuaternion(cam.quaternion); d.y=0; d.normalize(); HV.copy(c).addScaledVector(d,400*TILE).setY(0).project(cam); const hz=(HV.y+1)/2; u.uY.value.set(hz+.08,hz+.5); }   // the skyline: whole haze at the horizon, clearing up the screen
     if(FAR3.land)u.uK.value.set(...FAR3.land);

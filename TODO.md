@@ -108,7 +108,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   buildings"). DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js:56`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE
   (the owner's global look, `src/134e-distfog.js:65`) both limit what's drawn; the nearer wins. Ask with the default below; keep both
   editors in sync.
-- [ ] **DRAW DISTANCE's default** · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
+- [x] **DRAW DISTANCE's default** (owner, 4 Nov 2026: 60 tiles, the far fading into the sky at it) · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
   (the haze is off by default since 3 Nov). Ask: keep, change, or ALL. Sets the baseline for the tree-by-distance and shadow lines.
 
 ## Server, security and money

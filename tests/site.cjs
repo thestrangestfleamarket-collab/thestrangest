@@ -63,6 +63,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(mv&&mv.at[0]===12.5&&mv.at[1]===-3&&mv.at[4]==='up','a move goes across to the other player ('+JSON.stringify(mv&&mv.at)+')');
       p.w.send(JSON.stringify({t:'me',name:'ADA',look:'w00',hp:1,x:{}})); const inn=await wait(q,g=>g.find(m=>m.t==='in'&&m.p&&m.p.id==='dev-blk-a'));
       ok(inn&&inn.p.name==='ADA','a player\'s name and look reach the others');
+      { const k='drop:t'+Date.now().toString(36); p.w.send(JSON.stringify({t:'world',k,v:'{"id":"fr_apple","n":1}'})); const wd=await wait(q,g=>g.find(m=>m.t==='world'&&m.k===k&&m.v));
+        q.w.send(JSON.stringify({t:'take',k})); const tk=await wait(q,g=>g.find(m=>m.t==='took'&&m.k===k)), gone=await wait(p,g=>g.find(m=>m.t==='world'&&m.k===k&&m.v===''));
+        p.w.send(JSON.stringify({t:'take',k})); const tk2=await wait(p,g=>g.find(m=>m.t==='took'&&m.k===k));
+        ok(!!wd&&tk&&typeof tk.v==='string'&&tk.v.includes('fr_apple')&&!!gone&&tk2&&tk2.v==='','a thing one player drops reaches the other; the first to take it gets it and the rest see it go; a second take gets nothing'); }
       const t0=Date.now(); p.w.send(JSON.stringify({t:'bye'})); const out=await wait(q,g=>g.find(m=>m.t==='out'&&m.id==='dev-blk-a'));
       ok(!!out,'a player who logs out (bye) is gone for the others at once ('+(Date.now()-t0)+' ms)');
       p.w.close(); q.w.close(); }

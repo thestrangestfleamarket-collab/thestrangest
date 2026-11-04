@@ -244,6 +244,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const o = { before: !!R.done }; await ST.enter('museum', true); o.built = !!R.done && !!R.P && R.P.objs.length > 0; await ST.exit('museum'); for (const t = Date.now(); Date.now() - t < 20000 && (R.done || R.P);) await new Promise(r => setTimeout(r, 250)); o.dropped = !R.done && !R.P; await ST.enter('museum', true); o.again = !!R.done && !!R.P; await ST.exit('museum'); return o; });
     ok(m.before === false && m.built && m.dropped && m.again, 'the museum\'s inside is built only when you go in and dropped when you leave (built again next time): ' + JSON.stringify(m)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
+  { const r = await pg.evaluate(async () => { const U = window.__UI, w = ms => new Promise(r => setTimeout(r, ms)); U.mapWindow(); await w(3000); const a = BRODBG(); U.brochure.flip(); await w(2000); const f = BRODBG().flipped; const names = U.brochure.places(); U.brochure.close(); await w(2500); return { ...a, f, names, after: BRODBG().up }; }).catch(e => ({ err: e.message }));
+    ok(r.up && !r.busy && r.places >= 20 && r.go > r.places && r.st >= 1 && r.f && r.names.includes('THE BODEGA') && !r.names.includes('THE STREET') && r.after === false, 'MAP is the folded brochure (owner, 4 Nov 2026): it unfolds, every GO TO place numbered, F flips it to THE LOOP, it folds away: ' + JSON.stringify({ ...r, names: r.names && r.names.length })); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

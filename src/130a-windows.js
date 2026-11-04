@@ -70,8 +70,18 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const KEY=id=>'winpic:'+id+':'+(((document.querySelector('meta[name=market-build]')||{}).content)||'local'), buf=new Uint8Array(256*256*4);
   const shot=p=>{ const w=p.rt.width, h=p.rt.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), im=g.createImageData(w,h); renderer.readRenderTargetPixels(p.rt,0,0,w,h,buf);
     for(let y=0;y<h;y++)im.data.set(buf.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4); g.putImageData(im,0,0); return cv.toDataURL('image/png'); };
-  WINDOWS.first=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null||WINDOWS.busy)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
+  // taken in small steps, each when the page is idle with a frame drawn between (the build, each pane's picture, each pane's saving), never one long stall
+  const idle=()=>new Promise(r=>requestAnimationFrame(()=>(window.requestIdleCallback?requestIdleCallback(()=>r(),{timeout:1500}):setTimeout(r,30))));
+  const bakeOne=p=>{ const sb=renderer.shadowMap.autoUpdate, others=WINDOWS.panes.filter(q=>q.off===p.off&&!q.only&&q.me.visible), vis=others.map(q=>q.me.visible);
+    for(const q of others)q.me.visible=false; renderer.shadowMap.autoUpdate=false; try{ bake(p); } finally{ renderer.shadowMap.autoUpdate=sb; others.forEach((q,i)=>{ q.me.visible=q.rt?true:vis[i]; }); } };
+  let chain=Promise.resolve();
+  const firstOne=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
     if(S&&S.length===L.length){ await Promise.all(L.map((p,i)=>new Promise(res=>{ const im=new Image(); im.onload=()=>{ const t=new THREE.Texture(im); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; p.me.material=glass(t,1.7); p.me.visible=true; p.kept=t; res(); }; im.onerror=()=>res(); im.src=S[i]; }))); if(L.every(p=>p.kept))return; }
-    const o=ROOMS.off[id]; if(!o||!ROOMS.offBuild)return; WINDOWS.busy=true; try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await ROOMS.offBuild(id); WINDOWS.bake(id); done[id]=null; try{ localStorage.setItem(KEY(id),JSON.stringify(L.map(shot))); }catch(e){} if(!was&&!WINDOWS.held.has(id))ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } WINDOWS.busy=false; };
+    const o=ROOMS.off[id], P=place(id); if(!o||!ROOMS.offBuild||!P||!P.sh)return;
+    try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await idle(); await ROOMS.offBuild(id);
+      for(const p of L){ await idle(); if(ROOMS.offIn()===id)return; while(WINDOWS.busy)await idle(); WINDOWS.busy=true; try{ bakeOne(p); } finally{ WINDOWS.busy=false; } }
+      const pics=[]; for(const p of L){ await idle(); pics.push(p.rt?shot(p):''); } if(pics.every(Boolean))try{ localStorage.setItem(KEY(id),JSON.stringify(pics)); }catch(e){}
+      await idle(); if(!was&&!WINDOWS.held.has(id)&&ROOMS.offIn()!==id)ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } };
+  WINDOWS.first=id=>chain=chain.then(()=>firstOne(id));
   let firstAt=0; SYS.add('places',()=>{ if(!window.__started||FADE.busy||WINDOWS.firstDone)return; if(!firstAt)firstAt=performance.now(); if(performance.now()-firstAt<4000)return; WINDOWS.firstDone=true; for(const id in ROOMS.off)if(!ROOMS.offIn()&&WINDOWS.panes.some(p=>p.off===id&&p.look==='in'&&!p.only))WINDOWS.first(id); },'130a-windows-first');
   window.WINDOWS=WINDOWS; }

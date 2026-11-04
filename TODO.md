@@ -85,6 +85,21 @@ starting: a newer owner decision wins over a line here.
   4 Nov 2026). They're on its far side; minor.
 - [ ] **The places tour no longer visits the skate park** (`tests/places.cjs` can't load Section B); `tests/skate.cjs` covers it but only
   runs when skate files change.
+- [ ] **The physics extras (#512, 2 Nov 2026): never tried in a real game**: the bar's dartboard scoring a throw, an upright trash can
+  taking small things (the street has no pushable trash cans now), hanging plants, lanterns and bulbs swaying, glass breaking.
+  `src/150-loose.js`, `src/150o-physmore.js`; `tests/physx.cjs` doesn't cover them.
+- [ ] **STAND ON THINGS only rose halfway in the test** (0.10 of a 0.20 block; the test's bar was lowered to pass). Try it at full speed.
+- [ ] **Ragdolls only on the townsfolk** (`BODIES`, `NPC.rag` in `src/111a-bodies.js`), not the street characters (`076-npc-map`); they
+  stand up where they were, not where they fell.
+- [ ] **The go-kart**: gets in where you stand, not where you set it down; held, it shows as a little kart in your hands; not on the
+  Boardwright's wall; a wall at speed just stops it (nothing throws you out).
+- [ ] **Physics is only on your own screen**: other players don't see karts, ragdolls, flying loose things or broken glass; broken and binned
+  things come back on reload (not saved).
+- [ ] **Walls and ground are still boxes to the physics** (only loose things got real shapes). Rapier's deterministic build, to keep
+  physics the same between players, waits for shared physics.
+- [ ] **`tests/loosecheck.cjs` fails on `main`**: its start spot (`at=-2.2,3.2`) has no loose things near it any more.
+- [ ] **The navigation wasm sometimes aborts** (`Aborted()` from `@recast-navigation`, "NAV: the mesh for down failed"), seen 2 Nov 2026 on
+  clean `main` too; it once failed `tests/places.cjs` at the playhouse.
 - [ ] **Fluffy crown + real leaves: owner to pick** (2 Nov 2026; options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov). A fluffy crown
   (now), B single leaves, C ball-lit leaves, D fluffy core with a leaf edge, E leafy cards, F leaves on the sunny top. Suggested: D for close
   trees, C for showpieces (the cherry, the Mall elms). Nothing built.

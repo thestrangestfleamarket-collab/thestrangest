@@ -6,7 +6,7 @@ import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
-const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',feel:'store:feel-lab'}};
+const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
 { const PF=__LAZY__("data/polyfork.json"), FM=window.FLEA={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
   const G={arcade:__LAZY__("data/cast/arcade.json"),art:__LAZY__("data/cast/art.json"),bank:__LAZY__("data/cast/bank.json"),bar:__LAZY__("data/cast/bar.json"),bath:__LAZY__("data/cast/bath.json"),
     boards:__LAZY__("data/cast/boards.json"),bodega:__LAZY__("data/cast/bodega.json"),castle:__LAZY__("data/cast/castle.json"),clinic:__LAZY__("data/cast/clinic.json"),commute:__LAZY__("data/cast/commute.json"),

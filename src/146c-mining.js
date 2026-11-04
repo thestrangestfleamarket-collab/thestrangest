@@ -1,6 +1,6 @@
 // THE MINING: MINING seeds each cavern's finds by the calendar day, shows the ones your prospecting can spot, and lets you work them free with the cutter; the golems buy them all.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INSPECT, INV, MAIL, pos, SFX, UI} from './003b-systems.js';
+import {CITY, FORAGE, INSPECT, INV, MAIL, MOTION, pos, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {CAVERNS} from './066a-caverns.js';
@@ -47,7 +47,7 @@ const MINING={live:[]}; window.MINING=MINING;
       const R={cr,hb,f,key,seen,gone:false}; R.pick=()=>{ if(R.gone||!INV.ready(key))return false; R.gone=true; cr.visible=hb.visible=false;
         if(FORAGE.use&&!FORAGE.use('prosp',f[4]-20,f[4]+30)){ say('IT CRUMBLES AS YOU WORK IT FREE.','#c8a090'); return false; }
         INV.picked[key]=d; INV.add(f[0],1); LOG.got[f[0]]=(LOG.got[f[0]]||0)+1; saveLog(); SFX.play('chirp',{vol:.4}); say('YOU FIND '+(/^[AEIOU]/.test(f[1])?'AN ':'A ')+f[1]+' · THE GOLEMS PAY $'+f[2],'#f2c14e'); return true; };
-      R.th={name:'A GLINT',obj:hb,reach:.9*T,near:1.8*T,tall:Y(20),act:()=>{ if(!FORAGE.has('cutter')){ say('YOU NEED A CUTTER BEAM TO WORK IT FREE.','#c8a090'); return; } R.pick(); }};
+      R.th={name:'A GLINT',obj:hb,reach:.9*T,near:1.8*T,tall:Y(20),act:()=>{ if(!FORAGE.has('cutter')){ say('YOU NEED A CUTTER BEAM TO WORK IT FREE.','#c8a090'); return; } MOTION.play('mine'); R.pick(); }};
       UI.thing(R.th); m.things.push(R.th); MINING.live.push(R); } });
   MINING.scan=()=>{ let n=0; for(const R of MINING.live)if(!R.gone&&!R.hb.visible){ R.hb.visible=R.cr.visible=true; n++; } if(n)setTimeout(()=>{ for(const R of MINING.live)if(!R.gone&&!R.seen)R.hb.visible=R.cr.visible=false; },60000); return n; };
   MINING.extract=()=>{ let n=0; for(const R of MINING.live.slice())if(!R.gone&&R.hb.visible&&Math.hypot(R.hb.position.x-pos.x,R.hb.position.z-pos.z)<6*T&&R.pick())n++; return n; };

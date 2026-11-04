@@ -17,6 +17,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   CLOCK={},
   NEWS={},
   DRESS={},
+  PONDS={wet:()=>false,strips:[]},
   LITE={},
   SHAD={},
   CLIP={},
@@ -49,7 +50,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   GUIDE={},
   VR={on:false},
   BINS={},
-  LOOPMAP={}, PASSPORT={}, SUMMON={}, SCANNER={}, SPRAY={},
+  LOOPMAP={}, MOTION={}, PASSPORT={}, SUMMON={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
   HANDHELD={},   // the handheld (146ya): ESC pops it up, every menu opens from it
@@ -57,6 +58,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   EQUIP={},
   BOAT={},
   RIDE={on:null,lift:0},   // what you are riding (146i-ride): a hoverboard, a balloon
+  TRICKS={},   // the skateboard's tricks (146ib-tricks): its kind asks them how to move, stand and score
   PB={},
   FIGFX={},
   MUS={},
@@ -106,4 +108,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
   RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
   WORKERS=window.WORKERS={idle:{},made:{},models:{},make:()=>Promise.resolve()};   // the insides' non-human workers (146zb-workers): WORKERS.make(place) the first time you go in; idle[key] how one moves at its spot; models[key] a body made by code (MERCH's way) for one with no folk recipe
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};
+export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, LOOPMAP, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

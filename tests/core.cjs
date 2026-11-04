@@ -14,6 +14,8 @@ const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+ok(L.places.some(p => p.kind === 'fair' && p.x1 < L.streets.west.x0 - 10 && p.door && p.gate) && L.places.some(p => p.kind === 'gate' && Math.abs(p.x1 - L.streets.west.x0) < .6), 'the level file has the fair behind the West St row, with its door and gate in the row (owner, 4 Nov 2026)');
+ok((p => p && p.face === 'e' && Math.abs(p.x1 - L.streets.west.x0) < .6 && p.y1 != null)(L.places.find(p => p.id === 'theatre')), 'the movie theatre stands on West St with the arcade and the playhouse (owner, 4 Nov 2026)');
 { const c = L.parkPlaces.castle, P = L.park, [n, e] = ['path0', 'path1'].map(id => L.paths.find(p => p.id === id)), x0 = c.x0 - 3.6, x1 = c.x0 + 21 + 3.6, y0 = c.y0 - 3.9, y1 = c.y0 + 17 + 3.6, gx = c.x0 + 12.5;
   ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
   ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
@@ -56,10 +58,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
       o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
+      o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
       o.hud = (() => { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /\/ 100$/.test(document.getElementById('vhpn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].textContent); HUD.set(1, null);
-        __dbg.ui().log('a test line', null, 'MEL'); FORAGE.say('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
+        __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
         { const R = document.querySelector('#menu [data-p="graphics"] #dhaze'), e0 = DFOG.get().end, b0 = e0 - DFOG.get().start; DFOG.range(100); ok.haze = !!R && +R.value === 100 && DFOG.get().end === 100 && DFOG.get().end - DFOG.get().start === b0 && document.getElementById('dhazev').textContent === '100 TILES'; DFOG.range(e0); } return ok; } catch (e) { return { err: String(e) }; } })();
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
@@ -69,6 +72,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const T = __dbg.THREE, m = new T.Object3D();
       VIS.hide(m, 'a'); VIS.hide(m, 'b'); const h2 = !m.visible; VIS.hide(m, 'a', false); const h1 = !m.visible; VIS.hide(m, 'b', false);
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
+      { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
+        o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
+      { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
@@ -137,6 +144,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     for (const p of ['dress', 'ring', 'water', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
     ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
+    ok(r.fair, 'the fair registers its rides, booths, staff posts and zone at the start, and builds only when you come near');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
     ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
@@ -145,6 +153,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
+    ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
+    ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
@@ -182,6 +193,12 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
+    { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
+      const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
+        U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));
+        U.toggleMenu(); const b = btn(), dead = !!b && !b.disabled; if (b) b.click(); const RG = window.__dbg.RAG, t1 = performance.now(); let lk = null, lt = t1; while (VIT.dead && performance.now() - lt < 60000 && performance.now() - t1 < 900000) { const k = RG.on + ':' + RG.t; if (k !== lk) { lk = k; lt = performance.now(); } await new Promise(r => setTimeout(r, 200)); }   // the ragdoll settles first (RAG.t, game time): on a slow runner that is minutes, so wait while it moves
+        const P1 = window.__dbg.you(); return { alive, dead, rag: RG.on + ':' + (+RG.t).toFixed(2), back: !VIT.dead && VIT.hp === 1, here: Math.hypot(P1.x - P0.x, P1.z - P0.z) < 3, shown: W3.mesh.visible, menu: U.menuOpen }; }).catch(e => ({ err: e.message }));
+      ok(r0.alive && r0.dead && r0.back && r0.here && r0.shown && !r0.menu, 'RESURRECT in the menu: greyed while alive, and once dead it brings you back where you stand (full health, your body back): ' + JSON.stringify(r0)); }
     const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 12 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.geometry && P.standFar && P.standFar.geometry) }; }).catch(e => ({ err: e.message }));
     ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (10 to 45 tiles from you): ' + JSON.stringify(pk));
     await pg.evaluate(() => window.__dbg.UI.setView('follow')).catch(() => {}); await pg.waitForTimeout(800);
@@ -256,6 +273,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
   { const p = await pg.evaluate(() => { const b = document.getElementById('dps2'); if (!b) return null; const was = PS2.on; b.click(); const flip = PS2.on !== was; b.click(); return { flip, back: PS2.on === was, label: b.textContent }; });
     ok(p && p.flip && p.back && /PS2 FILTER (ON|OFF)/.test(p.label), 'GRAPHICS has a PS2 FILTER switch that turns the filter on and off: ' + JSON.stringify(p)); }
+  { const hk = await pg.evaluate(async () => { const esc = () => dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })), w = () => new Promise(r => setTimeout(r, 50)), was = HHDBG().up; esc(); await w(); const up = HHDBG().up; esc(); await w(); return { was, up, down: !HHDBG().up }; }).catch(e => ({ err: e.message }));
+    ok(!hk.was && hk.up && hk.down, 'one ESC opens the handheld and the next puts it away (every listener that reads a key gets the same one press): ' + JSON.stringify(hk)); }
   { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
       const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => { const seen = new Set(); let B = 0; for (const q of BATCH.queues) for (const G of q.groups) for (const me of G.ms) for (const k of ['map', 'emissiveMap']) { const t = me.material[k]; if (t && t.image && !seen.has(t)) { seen.add(t); B += t.image.width * t.image.height * 4; } } return B; };
       const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.away; BATCH.away = () => true; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.away = a0; await fr(6); o.g2 = groups(); return o; });

@@ -1,5 +1,6 @@
 // THE HANDHELD: ESC pops up a bulky 1980s pager-organiser (a red message light, a green LCD, a little keyboard); every menu opens from its grid of icons, and owners see ADMIN (the one admin window).
 import {CHARP, CINEMA, CLOCK, DRONE, FORAGE, HANDHELD, INV, keys, ONLINE, UI} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
 import {PHONE} from './146y-operator.js';
 { const ID='tablet';
   const css=document.createElement('style'); css.textContent=`#hh{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:29;width:min(480px,94vw);zoom:var(--uiz,1);background:linear-gradient(#2b2d33,#1b1c20);border-radius:20px;padding:14px 18px 18px;box-shadow:inset 0 2px 0 #4a4d55,inset 0 -6px 0 #101114,0 14px 40px #000c;font:11px Silkscreen,monospace;letter-spacing:1px;color:#9aa0a8;user-select:none}
@@ -39,9 +40,10 @@ import {PHONE} from './146y-operator.js';
     else if(k==='Enter'&&page==='home'){ const b=W.querySelectorAll('.grid button')[sel]; if(b&&!b.disabled)go(b.dataset.app); }
     else return;
     e.preventDefault(); e.stopImmediatePropagation(); },true);
-  let tick=0; const open=()=>{ page='home'; back=false; draw(); W.hidden=false; keys.clear(); clearInterval(tick); tick=setInterval(()=>{ if(W.hidden)return clearInterval(tick); const t=W.querySelector('[data-t]'); if(t){ t.textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); } },5000);
+  SYS.every(()=>{ if(W.hidden)return; const t=W.querySelector('[data-t]'); if(t){ t.textContent=time(); W.querySelector('[data-c]').textContent='$'+(INV.cash|0); } },5000,'146ya-handheld clock');
+  const open=()=>{ page='home'; back=false; draw(); W.hidden=false; keys.clear();
     if(!admin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a&&!admin){ admin=true; if(!W.hidden&&page==='home')draw(); } }).catch(()=>{}); };
-  const close=()=>{ W.hidden=true; clearInterval(tick); };
+  const close=()=>{ W.hidden=true; };
   admin=!!CINEMA.admin;
   HANDHELD.toggle=()=>{ if(W.hidden){ open(); fresh=true; setTimeout(()=>{ fresh=false; },0); } else close(); };
   HANDHELD.back=()=>{ if(back)open(); };   // ESC out of a menu page the handheld opened comes back to it

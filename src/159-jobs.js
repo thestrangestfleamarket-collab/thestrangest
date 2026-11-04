@@ -1,6 +1,6 @@
 // THE JOBS: JOBS runs the cast's days by the shared clock (data/characters.json's job: where, the hours, out or in): to work, at work (in their building, or out at a spot or over an area), on their own time, home at night (over their work, the apartment house, or down the subway).
 import {SHARED} from './003-shx.js';
-import {CITY, CLOCK, pos} from './003b-systems.js';
+import {CITY, CLOCK, pos, VIS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
@@ -12,7 +12,7 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const inH=(h,a,b)=>{ a=((a%24)+24)%24; b=((b%24)+24)%24; return a<=b?h>=a&&h<b:h>=a||h<b; };
   const want=(J,h)=>inH(h,J.open,J.close)?'work':inH(h,J.bed,J.wake)?'home':'off';
   const near=(x,z)=>Math.hypot(pos.x-x,pos.z-z)<60*T&&SHARED.LVL==='up';
-  const hide=(N,v)=>{ if(v){ N.mode='hidden'; N.g.visible=false; } else delete N.mode; };
+  const hide=(N,v)=>{ if(v){ N.mode='hidden'; VIS.hide(N.g,'away'); } else { delete N.mode; VIS.hide(N.g,'away',false); } };
   const room=(N,inn)=>{ if(!inn){ if(N.SR)N.SR.sit=null; CREW.out(N.key); } const to=inn?scene:(MAPG.bodega||scene); if(N.g.parent!==to)to.add(N.g); };
   const put=(N,p)=>{ N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.st.next=null; N.g.position.x=p.x; N.g.position.z=p.z; };
   // in at a spot inside: pinned there, facing its way, sitting if it is a seat

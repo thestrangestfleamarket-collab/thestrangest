@@ -1,12 +1,13 @@
 // THE TRICKS: what you do on a skateboard (its RIDE kind asks TRICKS how to move, stand and draw): push and carve; ollie (hold SPACE, let go); in the air flip tricks (J), grabs (K) and spins (A D); grinds and slides on rails, ledges and coping (L); manuals (I); quarter pipes throw you up; reverts (L as you land); bails; each trick's name, the combo's score and multiplier, your best combo kept with your things and the section's top skaters.
 import {SHARED} from './003-shx.js';
-import {FORAGE, ITEMS, keys, ONLINE, pos, RIDE, st, TRICKS, UI} from './003b-systems.js';
+import {ITEMS, keys, ONLINE, pos, RIDE, st, TRICKS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SECTION, SYS, TILE, ZU} from './006-map-pre.js';
 import {collide} from './075-main-13.js';
 import {SKATE} from './111fd-skatepark.js';
 Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
-{ const T=TILE, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), say=(t,c)=>SAY(t,c||'#e8e2cc');
   const ON=()=>!!(RIDE.on&&RIDE.kind&&RIDE.kind===SKATE.board);
   // the trick keys (J flip, K grab, L grind, I manual; the gamepad's X, Y, RB, LB): taken from the walk while you ride, so they never punch, kick or open your pack
   const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'||k==='e'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();

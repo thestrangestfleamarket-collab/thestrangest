@@ -100,7 +100,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.screenshot({ path: process.env.SHOT || '/tmp/roomedit.png' });
     const n = (await db()).added, tbx = await T(bed);
     await pg.keyboard.press('t'); await pg.waitForTimeout(600);
-    const saved = await pg.evaluate(() => JSON.parse(localStorage.getItem('market-home') || 'null'));
+    const saved = await pg.evaluate(() => JSON.parse(__dbg.SAVE.get('home') || 'null'));
     ok(saved && saved.wall === 'brick' && saved.added.length === n && saved.added.every(a => a.paid > 0) && !(await db()).on, 'DONE closes the editor and saves the room (' + n + ' things)');
     await start('');
     const back = await pg.evaluate(id => { const A = ROOMED._api(), un = A.units().find(u => u.id === id); return { wall: A.R.wall, floor: A.R.floor, kfloor: A.R.kfloorK, added: A.units().filter(u => u.added).length, all: A.units().length, t: un && A.getT(un) }; }, bed);

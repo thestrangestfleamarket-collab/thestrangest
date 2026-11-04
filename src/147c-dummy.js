@@ -1,10 +1,11 @@
 // THE SPARRING DUMMY: a straw dummy on a post on the park lawn by the Stump; double-click it to spar — with a blade in hand it teaches SWORDSMANSHIP, bare-handed MARTIAL ARTS — but only the basics (to 40), and each bout tires you.
 import {THREE} from './003-shx.js';
 import {FORAGE, ITEMS, NPCS, SFX, UI, VIT, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SOL, TILE} from './006-map-pre.js';
 const DUMMY={}; window.DUMMY=DUMMY;
-{ const T=TILE, CAP=40, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, CAP=40, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const make=()=>{ const G=new THREE.Group(), std=c=>new THREE.MeshStandardMaterial({color:c,roughness:.9}), add=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=o.receiveShadow=true; G.add(o); return o; };
     add(new THREE.CylinderGeometry(.05,.06,1.6,8),std(0x5a4434),0,.8,0); add(new THREE.CylinderGeometry(.2,.17,.6,12),std(0xd8c078),0,1.2,0); add(new THREE.SphereGeometry(.14,12,10),std(0xd8c078),0,1.66,0);
     const arm=add(new THREE.CylinderGeometry(.04,.04,.8,8),std(0x5a4434),0,1.35,0); arm.rotation.z=Math.PI/2; add(new THREE.BoxGeometry(.32,.06,.32),std(0x4a3a2a),0,.03,0); G.scale.setScalar(T/1.19); return G; };

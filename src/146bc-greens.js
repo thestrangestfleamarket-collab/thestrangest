@@ -1,11 +1,12 @@
 // THE GREENS: the holodeck's mini golf adventure, one hole in a zen garden off the map, deep in a foggy jungle valley walled by hills (raked gravel, a koi pond under a waterfall, maples, bamboo, stone lanterns under an overcast sky). The putter is a held tool: in the headset it hangs from your controller and the ball takes your real swing; on screen the mouse aims and the held button draws the stroke back. Stroke play against par, Walkabout's rules.
 import {SHARED, THREE} from './003-shx.js';
 import {FEEL, FORAGE, INV, pos, ROOMS, SFX, st, UI, VR, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
-{ const H=STORE.holo, T=TILE, M=FEEL.MH, V3=THREE.Vector3, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c), m=v=>v*M;
+{ const H=STORE.holo, T=TILE, M=FEEL.MH, V3=THREE.Vector3, say=(t,c)=>SAY(t,c), m=v=>v*M;
   const WX=4200, WZ=0, PAR=2, COST=6, BALLR=.021, CUPR=.054, LANEW=.9, HEADR=.055;
   let D=null, W=null, savedGY=null, savedView=null, keyoff=null, amb=null; const FG=new THREE.Fog(0x4b5852,1,60), FV=new V3();
   const rnd=(s=>()=>{ s=(s*16807)%2147483647; return s/2147483647; })(4242);

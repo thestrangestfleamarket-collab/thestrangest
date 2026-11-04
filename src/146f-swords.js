@@ -1,8 +1,9 @@
 // THE SWORDPLAY: FIGHT guards every blow you take while a sword is up (P held: a block halves it, a block on the beat parries it and staggers them).
 import {SHARED} from './003-shx.js';
 import {FORAGE, MOTION, pos, SFX, VIT, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 const FIGHT={PARRY:.28,parries:0,blocks:0}; window.FIGHT=FIGHT;
-{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c);
+{ const say=(t,c)=>SAY(t,c);
   const front=from=>{ if(!from||from.x==null)return false; const dx=from.x-pos.x, dz=from.z-pos.z, l=Math.hypot(dx,dz)||1; return (dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/l>.2; };
   const onBeat=()=>performance.now()-WIELD.blockT<FIGHT.PARRY*1000;
   VIT.guard=(d,from)=>{ if(MOTION.dodging())return {d:0}; if(!WIELD.block||!front(from))return {d};

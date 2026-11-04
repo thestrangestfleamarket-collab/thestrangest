@@ -7,9 +7,7 @@ import {TILE} from './006-map-pre.js';
 Object.assign(LINES,{log:[]});
 { const POOL={
     greet:['Hello, {{name}}.','You again. Good.','Welcome to the market.','Watch your step out here.','Quiet tonight, isn\'t it?','Looking for something?','Hm? Oh. Hello.','Don\'t mind me.','The dragons are out again.','Mind the stairs down there.','Nice to see a face.','Hey there, {{name}}.'],
-    cheer:['And stay down!','That\'s the last of him.','All clear.','Back to the beat.','They never learn.','Ha! Off he goes.','Street\'s safe, {{name}}.','Nothing to see.'],
     report:['Unit reporting. Threat down.','All clear on the street.','Logged. Resuming patrol.','Intruder neutralised.','Sector quiet.','Back on the beat.'],
-    trouble:['Move it!','Out of my way!','Hah!','Gimme that!','Boo!'],
     fox:['Welcome, welcome.','Everything\'s fresh. Mostly.','Cash only, friend.','Don\'t touch the top shelf.','Back again, {{name}}?','The radio\'s free. The rest isn\'t.'],
     golem:['Stones? We buy stones.','Show us what glitters, {{name}}.','Rare ones, rarer coin.','Crystals sing in the dark. We listen.','The cave keeps us. We keep the cave.','Fair price. Always fair.','Hmm. Grind. Hmm.'],
     mushroom:['Mushrooms. Fresh picked.','These ones glow a little.','Try one. Or don\'t.','Found them under the bridge.','Only the red ones bite.','For you, {{name}}, half price.'],

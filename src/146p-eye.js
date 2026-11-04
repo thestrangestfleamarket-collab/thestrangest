@@ -1,6 +1,7 @@
 // THE EYE: a visitor who never speaks — a great eye in a bubble of its own air (Bible: visitors who carry their own atmosphere), drifting over Market St above the crowd, its rust-red fronds swaying like an anemone's; when you are near it turns to watch you.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, pos, ROOMS, UI} from './003b-systems.js';
+import {pos, ROOMS, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 const EYE={}; window.EYE=EYE;
 { const T=TILE, B=SHARED.BOD, M=LEVEL.streets.market;
@@ -22,7 +23,7 @@ const EYE={}; window.EYE=EYE;
   const pick=()=>({x:B.XS(M.x0+20+Math.random()*(M.x1-M.x0-40)),z:B.ZS(-72+Math.random()*28)});
   const Q=new THREE.Quaternion(), F0=new THREE.Vector3(0,0,1), D=new THREE.Vector3();
   SYS.add('life',dt=>{ dt=dt||0; if(!B||!B.XS)return; if(!S.g){ const p=pick(); S.x=p.x; S.z=p.z; S.g=make(); S.g.name='the eye'; MAPG.bodega.add(S.g);
-      const hb=new THREE.Mesh(new THREE.SphereGeometry(1.3,8,6),new THREE.MeshBasicMaterial({visible:false})); S.g.add(hb); if(UI.thing)UI.thing({name:'A VISITOR',obj:hb,reach:5*T,near:7*T,tall:5*T,act:()=>{ if(window.FORAGE&&FORAGE.say)FORAGE.say('IT LOOKS AT YOU. IT SAYS NOTHING.','#c8d8e8'); }}); }
+      const hb=new THREE.Mesh(new THREE.SphereGeometry(1.3,8,6),new THREE.MeshBasicMaterial({visible:false})); S.g.add(hb); if(UI.thing)UI.thing({name:'A VISITOR',obj:hb,reach:5*T,near:7*T,tall:5*T,act:()=>{ SAY('IT LOOKS AT YOU. IT SAYS NOTHING.','#c8d8e8'); }}); }
     const far=Math.hypot(pos.x-S.x,pos.z-S.z)>70*T||ROOMS.cur||SHARED.LVL!=='up'; S.g.visible=!far; S.t+=dt;
     if(!S.to||Math.hypot(S.to.x-S.x,S.to.z-S.z)<1*T)S.to=pick(); const dx=S.to.x-S.x, dz=S.to.z-S.z, d=Math.hypot(dx,dz)||1; S.x+=dx/d*S.v*dt; S.z+=dz/d*S.v*dt;
     if(far)return; const gy=SHARED.groundY?SHARED.groundY(S.x,S.z):0; S.g.position.set(S.x,gy+S.y+Math.sin(S.t*.9)*.25*T,S.z);

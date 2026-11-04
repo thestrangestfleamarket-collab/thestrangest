@@ -4,7 +4,7 @@ import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
   const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
-    const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
+    let r; try{ r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
 

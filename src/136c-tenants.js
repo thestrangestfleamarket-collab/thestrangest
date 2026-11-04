@@ -1,4 +1,4 @@
-// THE TENANTS: the owner's panel in the menu (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
 import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
@@ -55,6 +55,5 @@ import {SYS} from './006-map-pre.js';
 
   const go=async()=>{ await LOAD('later');
     if(!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return;
-    letters().catch(()=>{});
-    if(BUGS.owner&&await BUGS.owner().catch(()=>false)){ const b=document.querySelector('[data-t="tenants"]'); if(b)b.hidden=false; } };
+    letters().catch(()=>{}); };
   SYS.onStart(go,'136c-tenants'); }

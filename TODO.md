@@ -40,7 +40,7 @@ piece · the egg poacher's tint (confirm he said "tintable") · who stands on Ma
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
-the physics extras (darts now twice at the bar) · the long checks' time limits · `docs/MAP.md` out of git · NPC voices (lifts the
+the physics extras (darts now twice at the bar) · NPC voices (lifts the
 19 Oct "no sound" rule) · the easel mockup (update or leave).
 
 ## CI, checks and tools
@@ -55,13 +55,13 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
     back to A* anyway; no places failure since;
   - `tests/fishing.cjs` at random: steadied in ef15d2f1 (3 Nov), passed three times since;
   - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
-- [ ] **Restore #512's lost HISTORY entry** · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
+- [x] **Restore #512's lost HISTORY entry** (done 4 Nov) · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
   "lets add them all, add them as toggles in graphics…") was added in 6b3c9deb and dropped in the merges caee19fb/116b27da. Put it back.
-- [ ] **The long checks need their own time limits** · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
+- [x] **The long checks need their own time limits** (done 4 Nov: his pick, 15 minutes a check; core, places, fights 20; headset 45) · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
   was still hit: the headset (VR) step hung 08:29–13:43 UTC in run 41795287054. Steps have no limits of their own, and a hang burns
   Actions minutes (they ran out on 20 and 28 Oct). Add `timeout-minutes` to the long steps (VR, catacomb run, room editor) or split them
   into their own job; the owner says yes to 350 or a new number.
-- [ ] **`docs/MAP.md` conflicts on nearly every merge** · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
+- [x] **`docs/MAP.md` conflicts on nearly every merge** (done 4 Nov: his pick, out of git) · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
   open pull requests keep editing it. Options: stop keeping it in git (CLAUDE.md tells chats to grep it, so that line changes too), or the
   cheap one, `docs/MAP.md merge=ours` in `.gitattributes` and let the build rewrite it. `TODO.md merge=union` would help this file the same way.
 - [ ] **"chunk later was not loaded before use" on the lawn** · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers

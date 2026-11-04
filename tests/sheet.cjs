@@ -6,5 +6,5 @@ const {chromium}=require('playwright');
   for(const [k,turn] of [['front',45],['side',135],['back',225]]){ const pg=await b.newPage({viewport:{width:900,height:620}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; });
     await pg.goto('file://'+process.cwd()+'/dist/market.html?at=0,3&hour=13&sheet='+key+'&fullres=8&npcwait=99',{timeout:180000}); await pg.waitForTimeout(30000);
     await pg.evaluate(d=>SHEETTURN(d),turn);
-    await pg.waitForTimeout(3000); await pg.evaluate(()=>{ hud.hidden=true; stat.hidden=true; }); await pg.waitForTimeout(400); await pg.screenshot({path:out+'/sheet-'+key+'-'+k+'.png'}); console.log(k,await pg.textContent('#stat'),'errors',JSON.stringify(errs)); await pg.close(); }
+    await pg.waitForTimeout(3000); await pg.evaluate(()=>{ for(const el of document.body.children)if(el.tagName!=='CANVAS')el.style.visibility='hidden'; }); await pg.waitForTimeout(400); await pg.screenshot({path:out+'/sheet-'+key+'-'+k+'.png'}); console.log(k,'errors',JSON.stringify(errs)); await pg.close(); }
   await b.close(); })();

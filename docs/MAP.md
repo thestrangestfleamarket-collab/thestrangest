@@ -111,7 +111,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `076a-chars.js` | 3.1 | top level |  | 003: SHARED; 003b: CHARS NPCS; 005: SAVE; 006: LEVEL SYS TILE |
 | `076b-summon.js` | 2.7 | top level |  | 003: SHARED; 003b: CHARS LEVELS NPCS ONLINE SUMMON pos; 004: scene; 006: SYS TILE |
 | `077-npc-skel.js` | 11.6 | top level | DRAGON (078), SKELGO (146b) | 003: SHARED THREE; 003a: SKIN; 003b: CLOCK LINES NPCS VIT pos; 006: MAPG MAPSTAIR MODS QS SOL TILE; 075: SKEL collide; 076: DUN STHOLE makeNPC stfree |
-| `078-npc-dragon.js` | 13.9 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: BLAZE CLOCK DRESS NPCS PARK SFX VIT WEEDS pos; 006: MAPG MODS SYS TILE; 007: FLAME; 069b: WIRES; 076: makeNPC; 077: DRAGON |
+| `078-npc-dragon.js` | 14.1 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: BLAZE CLOCK DRESS NPCS PARK SFX VIT WEEDS pos; 006: MAPG MODS SYS TILE; 007: FLAME; 069b: WIRES; 076: makeNPC; 077: DRAGON |
 | `079-fx.js` | 2.8 | top level |  | 003: THREE; 003b: FIGFX PARK; 006: MAPG TILE |
 | `080-npc-parts.js` | 8.1 | top level | PARTSNPC (083a 084 084b 085 086 089b 144b 146i) | 003: SHARED THREE; 003b: NPCS; 006: MODS SOL; 060a: FOUNT; 076: STHOLE STLANE makeNPC stfree |
 | `081-stalls.js` | 15.0 | top level | STALL (083a 084 141 142a 144) | 003: THREE; 003b: CLOCK NPCS WEEDS; 004: scene; 006: FIX MAPG SOL TILE ZU |

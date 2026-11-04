@@ -220,11 +220,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 10 * TI; n.st.z = you[2]; n.st.h = Math.PI / 2; n.D.y = n.D.cruise = you[1] + 4 * TI; };
       put(); n.D.breath = 0; for (let i = 0; i < 300 && (n.D.shots || 0) === s0; i++) { await raf(); put(); if (n.D.fx) { seen = n.D.fx.a.getClip().name; wt = Math.max(wt, w(seen)); } }
       out.breath = { clip: seen, weight: +wt.toFixed(2), shots: (n.D.shots || 0) - s0 };
-      const m = ds.find(q => q.D.home && q.D.home.tree && Math.hypot(q.D.home.x - you[0], q.D.home.z - you[2]) > 6 * TI); if (!m) return { ...out, err: 'no home dragon away from you' };
-      const H = m.D.home, perch = () => { m.D.mode = 'perch'; m.D.p = H; m.st.x = H.x; m.st.z = H.z; m.D.y = H.y; }; perch(); m.D.t = 999; m.D.pw = 0; m.D.peek = false; m.D.pk = 99; m.D.zz = 0;
+      const m = ds.find(q => q !== n && q.D.home && q.D.home.tree); if (!m) return { ...out, err: 'no dragon with a home tree' };
+      const H0 = m.D.home, H = m.D.home = { x: you[0] + 7 * TI, z: you[2], y: you[1] + 3 * TI, h: 0, tree: { x: you[0] + 7 * TI, z: you[2], r: .5 * TI, y: you[1], top: you[1] + 4 * TI } }, perch = () => { m.D.mode = 'perch'; m.D.p = H; m.st.x = H.x; m.st.z = H.z; m.D.y = H.y; }; perch(); m.D.t = 999; m.D.pw = 0; m.D.peek = false; m.D.pk = 99; m.D.zz = 0;
       const sw = () => { const a = m.mixer._actions.find(x => x.getClip().name === 'Sleep'); return a.getEffectiveWeight(); };
       for (let i = 0; i < 400 && !(m.D.asleep && sw() > .5); i++) { await raf(); perch(); }
-      out.nap = { asleep: m.D.asleep, sleep: +sw().toFixed(2) }; m.D.t = 3; for (let i = 0; i < 3; i++) await raf(); out.woke = !m.D.asleep; m.D.t = 60; return out; }).catch(e => ({ err: e.message }));
+      out.nap = { asleep: m.D.asleep, sleep: +sw().toFixed(2) }; m.D.t = 3; for (let i = 0; i < 3; i++) { await raf(); perch(); } out.woke = !m.D.asleep; m.D.home = m.D.p = H0; m.D.t = 1; return out; }).catch(e => ({ err: e.message }));
     ok(db.breath && db.breath.clip === 'Fly_Fire' && db.breath.weight > .5 && db.breath.shots === 1 && db.nap && db.nap.asleep && db.nap.sleep > .5 && db.woke, 'a flying dragon breathes its fireball on its fire-breath clip; one resting on its home tree falls asleep on its sleep clip and wakes before it leaves: ' + JSON.stringify(db));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));

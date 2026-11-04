@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {BAG, CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -51,7 +51,7 @@ import {GEMS} from './101-gems.js';
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; S.log=S.log||{}; S.made=S.made||{}; S.gave=S.gave||{}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; INV.save(); saveSoon(); }   // the starter kit saves itself at the start (the MAP gift used to; not INV.add: its trade window is later code)
-  FORAGE.S=S; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  FORAGE.S=S; FORAGE.MU=MU; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   INV.count=()=>GEMS.reduce((a,g)=>a+(g[0].startsWith('m_')?0:INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
@@ -169,7 +169,7 @@ import {GEMS} from './101-gems.js';
     (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING'}[k]||k)+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
   PACK.draw=()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const tab=t=>`<button ${B} data-tab="${t}" style="${PACK.tab===t?'color:#f2c14e;':''}margin-right:4px;font:inherit;background:#0e1016;border:2px solid ${PACK.tab===t?'#f2c14e':'#3a3f4e'};padding:3px 9px;cursor:pointer">${t.toUpperCase()}</button>`;
     let o=`<div style="margin-bottom:10px">${tab('pack')}${tab('skills')}${tab('craft')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
-    if(xt)o+=xt.draw(); else if(PACK.tab==='book')o+=book(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
+    if(xt)o+=xt.draw(); else if(PACK.tab==='book')o+=book(); else if(PACK.tab==='pack'&&BAG.draw)o+=BAG.draw(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
       const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&!GEMS.some(g=>g[0]===id&&!id.startsWith('m_'))).sort();
       if(!ids.length)o+='<tr><td style="color:#7d7a70">NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.</td></tr>';
       for(const id of ids){ const eat=FORAGE.eats(id);
@@ -182,7 +182,7 @@ import {GEMS} from './101-gems.js';
       for(const [id,nm,k,[mn,mx],ins,txt] of RC){ const can=Object.entries(ins).every(([m,n])=>have(iid(m))>=n), c=Math.max(0,Math.min(1,(sk(k)-mn)/(mx-mn)));
         o+=`<tr style="border-bottom:1px solid #22252f;${can?'':'color:#7d7a70'}"><td style="padding:4px 2px">${nm}<div style="color:#8a8676;font-size:10px">${Object.entries(ins).map(([m,n])=>n+' '+NAME(iid(m))).join(', ')} · ${txt}</div></td><td style="text-align:right;padding:4px 6px;white-space:nowrap">${FORAGE.CK[k]?FORAGE.CK[k].short:k==='alchemy'?'ALCH':'COOK'} ${Math.round(c*100)}%</td><td style="text-align:right">${can?`<button ${B} data-craft="${id}">MAKE</button>`:''}</td></tr>`; }
       o+='</table>'; }
-    const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
+    const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); P.style.width=PACK.tab==='pack'&&BAG.width||'min(420px,92vw)'; };
   // the collection book: each thing you collect (mushrooms, butterflies, birds, fish, ...) registers a page {id, title, rows:()=>[[name, got, note, rare]], foot}
   const book=()=>{ const B0=FORAGE.BOOK; if(!B0.length)return ''; const pg=B0.find(b=>b.id===PACK.page)||B0[0]; let o=`<div style="margin-bottom:8px">${B0.map(b=>{ const r=b.rows(), n=r.filter(x=>x[1]).length; return `<button ${B} data-page="${b.id}" style="${b===pg?'color:#f2c14e;':''}margin:0 4px 4px 0;font:inherit;background:#0e1016;border:2px solid ${b===pg?'#f2c14e':'#3a3f4e'};padding:2px 7px;cursor:pointer">${b.title} ${n}/${r.length}</button>`; }).join('')}</div>`;
     const R0=pg.rows(); o+=`<div style="margin-bottom:6px">${pg.title} · ${R0.filter(x=>x[1]).length} OF ${R0.length}</div><table style="border-collapse:collapse;width:100%">`;

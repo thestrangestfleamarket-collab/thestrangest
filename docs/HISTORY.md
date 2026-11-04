@@ -5248,6 +5248,18 @@ Owner: "1-5 go". Every polyfork character is in, with a job, hours and a home (`
 - 2 Nov 2026, the art museum as an atrium, mockup first (owner: "the interior shouldnt haev ceilings, each floor should just have a walk around around the edge in order to see the paintings. it goes up as many floors as it needs. do a mockup. (like a large hotel that has the elevator inside glass and all the floors can look down all thew ay to bottom)"): `mockups/art-atrium.html` (https://claude.ai/artifact/5eALwiQ2RsWxekQjaA8Jtm), the glass elevator A in the middle on a bridge from each back walkway or B against the back walkway. Waiting on his pick.
 - 2 Nov 2026, the art museum's atrium built (owner, of the mockup: "B, build it"). No ceilings: the lobby, then a walkway round an open void on each floor up to a skylight; three paintings on each outer wall of each floor, as many floors as needed; the glass elevator against the back walkway (option B), a ride you see, no fade. Rule: you can't step off a walkway into the void; the camera stays under the walkway above you.
 
+## 2 Nov 2026: the audit's open questions (owner: "fix the still open ones")
+- The main loop's last inline blocks, every timer (`SYS.every`) and every open window's own picture (the `win` phase) run through SYS. Where height still decides (a stairway, the free camera) it is one rule, `LEVELS.below`.
+- One purse (`INV.cash`); every message is `SAY`; every mend is `VIT.heal`. Characters hide through VIS (`away`), so the performance switch cannot show one its own system hid; the park's group too.
+- The owner's panel sends a banned player out of every section's room.
+- Every file has its own number (058-store, 146bd-roam, 146ca-mining, 146ga-swim, 146ha-folk, 146ja-guardians, 146ka-glasshorn, 159ca-loopmap, 159da-talk).
+- Removed: the bearded Walker (`?bwk`), the troublemakers (`?trouble`) with the guards' street fight and the police call that answered them. The body picker stays (the Merchant is playable, 3 Nov).
+- `data/` holds only what the page loads; the bakes' inputs (rpgchars, ual, humanoid, megakit, far) are in `data/full/`.
+- The small settings and your apartment's local layout are in the one save; a missing save no longer wipes the editors' drafts.
+- Gone: the fire escape's empty group, LOOPMAP's early declaration, build.py's copy of the import pattern.
+- Left for the owner: the two character systems (`makeNPC` and the walker bodies). Merging them changes how the townsfolk walk.
+- Left for the owner: the outline and the glow stay in DISPLAY, not the LIGHTING editor (his PHOSPHOR decision the same day keeps GLOW in the menu's LIGHT row).
+- Rule: a timer is `SYS.every`, a window's picture a `win` entry, a mend `VIT.heal`, a message `SAY`; a thing another system may hide is hidden through VIS.
 ## 2 Nov 2026: PHOSPHOR, a screen-trail toggle
 
 Owner: "add 2 as toggle" (an old screen's phosphor persistence, with the glow on it). PHOSPHOR ON/OFF in the menu's LIGHT row beside GLOW, off by default; moving things leave a short fading trail, and the glow runs on it. Never in the headset. An exception, by his ask, to "no screen effects" and "no blur".

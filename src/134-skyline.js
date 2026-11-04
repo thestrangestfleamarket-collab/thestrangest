@@ -1,11 +1,10 @@
 // THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, pos, SKY, WX} from './003b-systems.js';
+import {CLOCK, CULL, FAR3, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
-import {VIS} from './129a-vis.js';
 
 { const q=QS.get('far'); let on=q!=='0'; if(q==null&&SAVE.get('haze2')==='0')on=false;
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;

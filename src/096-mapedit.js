@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, GAMEED, keys, MAPED, NPCS, PARK, pos, W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTION, SECTIONS, STORE, TILE, WP, WROW} from './006-map-pre.js';
+import {BLDK, BLOCK, CASTLE, FADE, LEVEL, MAPSTAIR, MODS, PARKCAVE, PARKTOWER, RING, SECTION, SECTIONS, STORE, SYS, TILE, WP, WROW} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 Object.assign(MAPED,{on:false,open:false,dragging:false,down:()=>false,move:()=>{},up:()=>{}});
@@ -32,8 +32,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       +'<div style="position:absolute;left:12px;top:12px;color:#8a8f9c">DRAG: TURN ALL ROUND · WHEEL: CLOSER · ESC: BACK · <span id="vwN" style="color:#f2c14e"></span></div>'
       +'<div id="vwS" style="position:absolute;right:12px;top:12px;bottom:12px;width:316px;overflow:auto;padding:10px 12px;background:#0b0d13f2;border:2px solid #2a3040;box-sizing:border-box"></div>';
     document.body.appendChild(R); const cv=R.querySelector('#vwC'), g=cv.getContext('2d'), im=g.createImageData(W,H), oc=document.createElement('canvas'); oc.width=W; oc.height=H;
-    let tgt=null, yaw=.8, pitch=.45, dist=1, drag=null, raf=0, M=null;
-    const frame=()=>{ raf=0; if(!VIEW.on||!tgt)return; raf=requestAnimationFrame(frame);
+    let tgt=null, yaw=.8, pitch=.45, dist=1, drag=null, M=null;
+    const frame=()=>{ if(!VIEW.on||!tgt)return;
       if(tgt.model&&tgt.dirty){ tgt.dirty=false; if(M){ vs.remove(M); M.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)[].concat(o.material).forEach(m=>{ if(m.map)m.map.dispose(); m.dispose(); }); }); } M=tgt.model(); if(M)vs.add(M); }
       const lent=tgt.lend?tgt.lend():[], back=lent.map(o=>[o,o.parent,o.visible,o.scale.clone()]), ls=tgt.lendScale?tgt.lendScale():1; for(const o of lent){ vs.attach(o); o.visible=true; o.scale.multiplyScalar(ls); o.updateMatrixWorld(true); }
       const b=new THREE.Box3(); for(const o of [...(M?[M]:[]),...lent])b.expandByObject(o); if(b.isEmpty())b.set(new THREE.Vector3(-1,0,-1),new THREE.Vector3(1,2,1));
@@ -48,7 +48,8 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,yaw,pitch}; cv.setPointerCapture(e.pointerId); });
     cv.addEventListener('pointermove',e=>{ if(!drag)return; yaw=drag.yaw-(e.clientX-drag.x)*.01; pitch=Math.max(-1.45,Math.min(1.45,drag.pitch+(e.clientY-drag.y)*.01)); });
     cv.addEventListener('pointerup',()=>drag=null); cv.addEventListener('wheel',e=>{ e.preventDefault(); dist=Math.max(.2,Math.min(4,dist*Math.pow(1.0015,e.deltaY))); },{passive:false});
-    VIEW.open=(t,side)=>{ tgt=t; t.dirty=true; VIEW.on=true; R.style.display='block'; R.querySelector('#vwN').textContent=t.name||''; const s=R.querySelector('#vwS'); s.innerHTML=''; s.appendChild(side); skin(s); yaw=.8; pitch=.35; dist=1; if(!raf)raf=requestAnimationFrame(frame); };
+    VIEW.open=(t,side)=>{ tgt=t; t.dirty=true; VIEW.on=true; R.style.display='block'; R.querySelector('#vwN').textContent=t.name||''; const s=R.querySelector('#vwS'); s.innerHTML=''; s.appendChild(side); skin(s); yaw=.8; pitch=.35; dist=1; };
+    SYS.add('win',frame,'096-mapedit view');
     VIEW.redo=()=>{ if(tgt)tgt.dirty=true; };
     VIEW.close=()=>{ VIEW.on=false; R.style.display='none'; tgt=null; if(M){ vs.remove(M); M=null; } const f=VIEW.onclose; VIEW.onclose=null; if(f)f(); };
     VIEW.root=R; }

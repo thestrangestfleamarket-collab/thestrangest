@@ -1,11 +1,12 @@
 // THE PASSPORT: every player is issued one at first login (a number, the home section, the date; the name and look are yours; the login and the day it was made from the server; your hand, LEFT or RIGHT, chosen here: it holds, swings, punches and picks up), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out, unseen until you walk into it without showing your passport, that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, st, TEXT, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SECTION, SOL, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 {
-  const T=TILE, OPEN=6, V3=THREE.Vector3, esc=TEXT.esc, say=(t,c)=>FORAGE.say(t,c||'#c8c2b0');
+  const T=TILE, OPEN=6, V3=THREE.Vector3, esc=TEXT.esc, say=(t,c)=>SAY(t,c||'#c8c2b0');
   FORAGE.add({names:{passport:'PASSPORT'},prices:{passport:0}});
   let P=null; try{ P=JSON.parse(OWNED.get('passport')||'null'); }catch(e){}
   const sno=OWNED.me&&OWNED.me.no!=null?String(OWNED.me.no):null;   // the server numbers citizens in order; the single-file page draws one

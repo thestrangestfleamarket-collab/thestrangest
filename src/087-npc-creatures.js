@@ -1,7 +1,7 @@
 // THE CREATURES: the park's wild things at their real sizes, each living as its kind does (wasps from a nest to the flowers, spiders in webs, bats at dusk, frogs by the pond, a basking snake, rats along walls at night); CREATS lists them.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, WX} from './003b-systems.js';
+import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, VIS, WX} from './003b-systems.js';
 import {MAPG, MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
@@ -109,7 +109,7 @@ const CREATS=[]; window.CREATS=CREATS;
       brain:beh&&((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }),
       pick:st=>{ '@later'; if(pk)return pk(st,N,S); if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
           for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
-      anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; N.body.visible=out; st.hold=!out; if(!out)st.to=null; } } if(!N.body.visible)return;
+      anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; VIS.hide(N.g,'away',!out); st.hold=!out; if(!out)st.to=null; } if(!out)return; } if(!N.body.visible)return;
         if(S.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); S.drink=false; }
         if(moving)S.rest=undefined; else if(S.rest===undefined){ S.rest=null; let u=Math.random(); for(const [c,p,nt] of K.rest||[])if((!nt||CLOCK.dark())&&C[key].clips[c]&&(u-=p)<0){ S.rest=c; st.wait=Math.max(st.wait||0,6+Math.random()*10); break; } }   // stopped: now and then it sits, grazes, barks, howls at night or sleeps a while
         const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):S.rest||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }

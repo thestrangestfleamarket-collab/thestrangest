@@ -1,13 +1,14 @@
 // SWIMMING: SWIM steers you in any water (SPACE down, SHIFT up, or look and swim in first person; still, you drift slowly up), draws your arms swimming in first person, the motes and the dark edge under water, and the rented scuba set's tank.
 import {SHARED, THREE} from './003-shx.js';
 import {EQUIP, FAR3, FORAGE, ITEMS, LEVELS, LOOKS, st, SWIM, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {DFOG} from './134e-distfog.js';
 Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
-{ const T=TILE, WM=T/.84, MS=T/(.84*ZU), V=THREE.Vector3, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c||'#9fd8ff'); };   // WM: world units a metre; MS: the rig's units a metre
+{ const T=TILE, WM=T/.84, MS=T/(.84*ZU), V=THREE.Vector3, say=(t,c)=>{ SAY(t,c||'#9fd8ff'); };   // WM: world units a metre; MS: the rig's units a metre
   let told=false;
   SYS.add('swim',(st,dt,keys,go)=>{ const W=st.water; if(!W||!W.in||W.level==null){ SWIM.d=null; if(W)W.dive=false; return; }
     const lvl=W.level, now=lvl-W.y, max=Math.max(30,lvl-W.floor-8), sp=(W.fast?2.8:1.8)*MS, back=keys.has('s')||keys.has('arrowdown');
@@ -16,7 +17,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
     if(SWIM.d==null&&v>0){ SWIM.d=Math.max(30,now); if(!told){ told=true; say('SPACE SWIMS DOWN, SHIFT UP; IN FIRST PERSON YOU SWIM WHERE YOU LOOK.'); } }
     if(SWIM.d!=null){ if(!v&&!(EQUIP.breathe&&SWIM.tankS>0))v=-.3*MS;   // still, you drift slowly up; a diver's set holds you level
       SWIM.d=Math.max(now-15,Math.min(max,now+30,SWIM.d+v*dt)); if(SWIM.d<28&&v<0)SWIM.d=null; }
-    W.dive=SWIM.d!=null; W.deep=SWIM.d||0; },'146g-swim');
+    W.dive=SWIM.d!=null; W.deep=SWIM.d||0; },'146ga-swim');
 
   // your arms in first person: two arms in the camera's space, a breaststroke under, a crawl on top, treading or sculling when still
   const skin=new THREE.MeshLambertMaterial({color:0xe6c4b0}), seg=()=>new THREE.Mesh(new THREE.CapsuleGeometry(1,4,3,8),skin), root=LEVELS.own(new THREE.Group(),'*'); root.name='swimarms'; root.visible=false; scene.add(root);
@@ -38,7 +39,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
       const S=e.set(.19*s,-.27,.04), Lr=.3, Lf=.29, D=Dv.subVectors(hC,S), L=Math.min(D.length(),Lr+Lf-.005); D.normalize(); hC.copy(S).addScaledVector(D,L);
       const x=(Lr*Lr-Lf*Lf+L*L)/(2*L), h=Math.sqrt(Math.max(0,Lr*Lr-x*x)); pl.set(s,-.7,.25); pl.addScaledVector(D,-pl.dot(D)).normalize();   // the elbow out and down
       const El=hD.copy(S).addScaledVector(D,x).addScaledVector(pl,h);
-      place(A.up,S,El,.042); place(A.fo,El,hC,.035); A.hd.position.copy(hC).addScaledVector(D,.06); A.hd.quaternion.copy(A.fo.quaternion); A.hd.scale.set(.042,.08,.02); } },'146g-swim arms');
+      place(A.up,S,El,.042); place(A.fo,El,hC,.035); A.hd.position.copy(hC).addScaledVector(D,.06); A.hd.quaternion.copy(A.fo.quaternion); A.hd.scale.set(.042,.08,.02); } },'146ga-swim arms');
 
   // under water: motes drifting in the murk round your eyes, and the edges of the view darker
   const NM=500, R=3*WM, mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), m0=new Float32Array(NM*3); for(let i=0;i<NM*3;i++)m0[i]=(Math.random()*2-1)*R;
@@ -61,5 +62,5 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
     if(SWIM.tankS<=0){ SWIM.tankS=0; const id=EQUIP.by.back; if(id){ EQUIP.off('back'); if(ITEMS.prop(id,'rental'))FORAGE.take(id,1); } save(); say('YOUR TANK IS EMPTY. THE RENTED SET GOES BACK TO THE SHARK.','#c8a090'); if(FORAGE.draw)FORAGE.draw(); return false; } return true; };
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);
-    say('THE SHARK STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146g-swim');
+    say('THE SHARK STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146ga-swim');
   window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }

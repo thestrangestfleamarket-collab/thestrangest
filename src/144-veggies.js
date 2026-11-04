@@ -1,6 +1,7 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
 import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
@@ -20,14 +21,14 @@ const VEG={}; window.VEG=VEG;
     prices:Object.assign({f_corn:7,f_vstew:14,f_stuffpep:16,f_psoup:28},BUY),
     recipes:[['f_corn','ROAST CORN','cooking',[0,40],{v_corn:1},'fills a fifth'],['f_vstew','VEGETABLE STEW','cooking',[15,60],{v_potato:1,v_carrot:1,v_onion:1},'fills two fifths, some health'],
       ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
-    does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.hp=Math.min(1,VIT.hp+.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
+    does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.heal(.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
   const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
     VEG.stand=STALL.build({X,Z,x0:g1+3,x1:g1+7.8,y:P.y0,veg:true,seed:11,gate:-1});
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet)STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
     TALK.shops.set(N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>TALK.open(N); th.reach=2.2*T; th.near=3*T; }
   };
   { const wait=()=>{ if(typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }
-  const SHOP={}; VEG.SHOP=SHOP; const say=FORAGE.say, B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
+  const SHOP={}; VEG.SHOP=SHOP; const say=SAY, B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const sp=document.createElement('div'); sp.id='vegp'; sp.hidden=true; sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation()); sp.addEventListener('keyup',e=>e.stopPropagation());
   const row=(a,b,c,d)=>`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${a}</td><td style="text-align:right;padding:4px 6px">${b}</td><td style="text-align:right">${c}</td><td style="text-align:right;white-space:nowrap">${d}</td></tr>`;

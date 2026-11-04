@@ -1,9 +1,10 @@
 // THE MINING TOOLS: the scanner and extractor as pack actions (they work underwater too), and the headlight that lights the caverns and deep water while you wear it.
 import {SHARED, THREE} from './003-shx.js';
 import {EQUIP, FORAGE, INSPECT, ITEMS, LITE, ONLINE, pos} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
-import {MINING} from './146c-mining.js';
-{ const T=TILE, say=(t,c)=>{ if(FORAGE.say)FORAGE.say(t,c); };
+import {MINING} from './146ca-mining.js';
+{ const T=TILE, say=(t,c)=>{ SAY(t,c); };
   FORAGE.add({names:{goggles:'DIVING GOGGLES',headlight:'HEADLIGHT',scanner:'RESONANCE SCANNER',cutter:'CUTTER BEAM',extractor:'SONIC EXTRACTOR'}});
   const LOOKG={goggles:()=>INSPECT.shape('goggles',0x2a2a2e,0x9ad0e8),headlight:()=>INSPECT.shape('lamp',0xd8d8d0,0xfff2c0),armor:()=>INSPECT.shape('plate',0xa8acb4,0x8a8e96),cloudcoat:()=>INSPECT.shape('coat',0xf2f4fa),
     scanner:()=>INSPECT.shape('gadget',0x3a5a7a,0x9fd8ff),cutter:()=>INSPECT.shape('gadget',0x7a3a2a,0xff8a5a),extractor:()=>INSPECT.shape('gadget',0x4a4a5a,0xc8a0ff)};

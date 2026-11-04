@@ -1,7 +1,7 @@
 // THE CIVIC: CIVIC builds the firehouse, clinic and precinct and keeps the town's staff, ledger and log.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CITY, CIVIC, CLOCK, FAR3, MAIL, UI} from './003b-systems.js';
-import {AWAY, FIX, MAPG, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
+import {AWAY, FIX, MAPG, MODS, RING, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wage:20,curfew:[23,5]},shops:{},mail:{bag:[],boxes:{}},fires:[],cans:[]}); window.CIVIC=CIVIC;
 { const T=TILE, M=1/.84*T, YS=ZU*24/TILE, G=(x,z)=>MODS.bodega.ground(x,z);
@@ -55,7 +55,7 @@ Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wa
       if(window.MAIL&&MAIL.ready){ const st=MAIL.L.reduce((a,l)=>(a[l.state]=(a[l.state]||0)+1,a),{}); o+='<h3>THE POST</h3>'+row(MAIL.addr.length+' addresses · '+MAIL.cboxes.length+' collection boxes','sort 8:00 · round 9:30 · collection 16:00')+row('in the boxes to go '+(st.posted||0)+' · collected '+(st.collected||0)+' · sorted '+(st.sorted||0)+' · out '+(st.out||0)+' · held '+(st.held||0),'delivered '+(st.delivered||0)+' · read '+(st.read||0)+' · dead '+(st.dead||0))+row('YOUR MONEY','$'+MAIL.you.cash); }
       o+='<h3>THE LOG</h3>'+CIVIC.log.slice(0,14).map(e=>row('DAY '+e.day+' '+fmt(e.t),esc(e.what))).join('');
       pane.querySelector('#civ').innerHTML=o; };
-    setInterval(()=>{ if(UI.menuOpen)CIVIC.draw(); },1000);
+    SYS.every(()=>{ if(UI.menuOpen)CIVIC.draw(); },1000,'155-civic');
     pane.querySelector('#cvfire').onclick=()=>CIVIC.tryFire&&CIVIC.tryFire(); pane.querySelector('#cvout').onclick=()=>CIVIC.tryOutage&&CIVIC.tryOutage(); pane.querySelector('#cvcan').onclick=()=>CIVIC.tryCan&&CIVIC.tryCan(); pane.querySelector('#cvfaint').onclick=()=>{ CIVIC.tryFaint&&CIVIC.tryFaint(); UI.toggleMenu(); }; };
   if(CITY.on)setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(ok=>{ if(ok)cityTab(); }).catch(()=>{}); },2000);   // the CITY tab is the owner's readout (2 Nov 2026)
   CIVIC.note('the city opened','hall');

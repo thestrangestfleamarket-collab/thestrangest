@@ -31,6 +31,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await sh('dev:site-check',{method:'POST',body:'{"x":1}'})).status===403,'a player cannot write the shared world edits');
     const put=await (await sh('dev:owner-check',{method:'POST',body:JSON.stringify({'park|rock|1,2,3':{t:[0,1,0],del:false}})})).json(), got=await (await sh('dev:site-check')).json().catch(()=>null);
     ok(put.ok===true&&got&&got['park|rock|1,2,3']&&got['park|rock|1,2,3'].t[1]===1,'the owner\'s world edits are kept and every player reads them ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const g=(p,who)=>fetch(BASE+p,who?{headers:{cookie:'tsfm-pass='+who}}:{}), mp=(who,body)=>fetch(BASE+'/shared/map-a.json',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body});
+    ok((await g('/editor')).status===404&&(await g('/editor','dev:site-check')).status===404&&(await g('/edmap/t0_0.jpg','dev:site-check')).status===404,'the map editor and its picture are not there for a player or anyone without a login');
+    const page=await g('/editor','dev:owner-ed'); ok(page.status===200&&/MAP EDITOR/.test(await page.text())&&(await g('/edmap/t0_0.jpg','dev:owner-ed')).status===200,'the owner gets the map editor and its ground picture');
+    ok((await mp('dev:owner-ed','{"x":1}')).status===400&&(await mp('dev:site-check','{"v":1,"set":{}}')).status===403,'/shared/map-a.json takes only a map editor file, only from the owner');
+    ok((await (await mp('dev:owner-ed','{"v":1,"set":{}}')).json()).ok===true,'the owner publishes a map'); }
   { const CAB='CHECK '+String(Date.now()%1e6), sc=(body,who='dev:score-check')=>fetch(BASE+'/scores',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/scores',{method:'POST',headers:{origin:BASE},body:'{"cab":"MAZE"}'})).status===401,'/scores without a login is refused');
     const p1=await sc({cab:CAB,put:{ini:'ABC',score:5000,sub:'ROUND 4'}}), p2=await sc({cab:CAB,put:{ini:'XYZ',score:9000,sub:'ROUND 7'}},'dev:score-two'), bad=await sc({cab:CAB,put:{ini:'a!',score:10}}), got=await sc({cab:CAB}), all=await sc({cab:'*'});

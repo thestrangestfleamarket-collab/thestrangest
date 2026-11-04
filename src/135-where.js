@@ -1,6 +1,6 @@
 // THE WHERE: WHERE saves where the player is (with the time) and puts them back there on a login within the hour (071); BUILDV is the build stamp.
 import {SHARED} from './003-shx.js';
-import {CLIP, PH, pos, RAG, ROOMS, WHERE} from './003b-systems.js';
+import {CLIP, LEVELS, PH, pos, RAG, ROOMS, WHERE} from './003b-systems.js';
 import {OWNED, SAVE} from './005-save.js';
 import {MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {SAVED} from './071-main-11.js';
@@ -13,7 +13,7 @@ import {SAVED} from './071-main-11.js';
   WHERE.tick=dt=>{ if(!window.__started)return; t+=dt; if(t>2){ t=0; save(); if(STORE.offAt)STORE.offAt(pos.x,pos.z); } };
   addEventListener('pagehide',()=>save(true)); addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')save(true); });
   // put you back where you left off (071 set a spot on the street before the first frame): rebuild the inside you were in, or the platform if the spot is not sound
-  WHERE.restore=async()=>{ let w=SAVED; if(!w)return false; await LOAD('later'); const lv=w.lv||(w.y<-1.6?'down':'up');
+  WHERE.restore=async()=>{ let w=SAVED; if(!w)return false; await LOAD('later'); const lv=w.lv||LEVELS.below(w.y);
     if(lv==='down'&&!(MODS.dungeon&&MODS.dungeon.inside(w.x,w.z))&&(Math.abs(MODS.station.ground(w.x,w.z)-w.y)>.5||CLIP.hit(SOL.down,w.x,w.z,.3*TILE))){ const p=MODS.station.plat; w={x:p.x,z:p.z,y:MODS.station.ground(p.x,p.z),hd:w.hd,lv:'down'}; }
     const ap=MODS.apts&&MODS.apts.offAt?await MODS.apts.offAt(w.x,w.z,lv):false; if(ap){ STORE.goTo(ap[0],ap[1],ap[2],null,'up'); SHARED.heading=w.hd; PH.hd=w.hd; return true; }
     const room=lv==='up'&&ROOMS.boxAt?ROOMS.boxAt(w.x,w.z):null; if(room){ ROOMS.enterAt(room,[w.x,w.z,0,w.hd]); return true; }

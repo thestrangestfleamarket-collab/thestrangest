@@ -18,7 +18,7 @@ const SPOTS=[['bodega','()=>{ const B=__dbg.MAPK.BOD; return [B.X((B.B0.x0+B.B0.
       const P=[]; for(let q=o;q&&q!==scene;q=q.parent){ const n=q.name||(q.userData&&(q.userData.key||q.userData.kind)); if(n)P.push(n); if(P.length>=2)break; } let r=o; while(r.parent&&r.parent!==scene)r=r.parent; const mk=Object.entries(D.MAPG).find(([k,g])=>g===r||g===r.parent);
       return (mk?mk[0]+':':'')+(P.length?P.reverse().join('/'):o.type+':'+(o.material&&o.material.type))+(o.isInstancedMesh?' (inst)':'')+(o.isBatchedMesh?' (batched)':''); };
     T.retag=()=>{ own.clear(); for(const N of (window.CREATS||[]))tag(N.g,'creature:'+String(N.key).replace(/\d+$/,'')); for(const N of (window.PAWNL||[]))tag(N.g,'pawn'); for(const N of D.NPCS)tag(N.g,'npc:'+String(N.key).replace(/\d+$/,''));
-      tag(D.W3.group,'walker (you)'); for(const k of ['MUS','PNM','SGM','DRM','BWK'])if(window[k]&&window[k].g)tag(window[k].g,'musician:'+k); };
+      tag(D.W3.group,'walker (you)'); for(const k of ['MUS','PNM','SGM','DRM'])if(window[k]&&window[k].g)tag(window[k].g,'musician:'+k); };
     const lights=[]; scene.traverse(o=>{ if(o.isLight)lights.push(o); }); T.camL=new Map(); lights.forEach((L,i)=>{ if(L.shadow&&L.shadow.camera)T.camL.set(L.shadow.camera,(L.isPointLight?'lamp':L.isDirectionalLight?'sun':L.type)+'#'+i); });
     const rtl=t=>t?('rt '+t.width+'x'+t.height):'screen';
     const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ const p0=T.pass; T.pass=rtl(renderer.getRenderTarget())+' <- '+(s===scene?(c===cam?(new Error().stack.includes('RenderPass')?'MAIN':'river pre-pass (main camera)'):'world/other cam'):(s.isScene?'scene:'+(s.name||s.children.length+'ch'):s.type)); r0(s,c); T.pass=p0; };

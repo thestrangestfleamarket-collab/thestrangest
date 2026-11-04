@@ -153,7 +153,7 @@ def bake_shared(src, keys, role, wmap, outpath):
 if __name__=='__main__':
     import sys; which=sys.argv[1] if len(sys.argv)>1 else 'all'
     if which in ('all','rpg'):
-        d=json.load(open('data/rpgchars.json')); out={'bones':BONES,'bodies':{}}
+        d=json.load(open('data/full/rpgchars.json')); out={'bones':BONES,'bodies':{}}
         for key in ['warrior','cleric','monk','ranger','rogue','wizard']:
             body,J=rebake(d[key],RPG_ROLE,RPG_W); out['bodies'][key]=body; print(key,'height',body['height'],'tris',len(body['tri'])//3)
         json.dump(out,open('data/rpgbodies.json','w'),separators=(',',':'))

@@ -1,10 +1,10 @@
 // THE SKATE PARK: the Polyfork skatepark kit at full size, a place off the map you go into by its gateway in Central Park (parkPlaces.skatepark in data/world.json): the kit's own park (data/skatepark.json, tools/skatepark-bake.py) under its own sky, its floodlights lighting it after dark, one of each of its skaters on your rig (data/skaters.json), the board skaters riding the kit's skateboard (data/skateboard.json), the scooter kid and the BMX rider theirs (data/skaterides.json); its decks, ramps and ledges are ground to walk and ride.
 import {SHARED, THREE} from './003-shx.js';
-import {CLIP, CLOCK, FORAGE, PARK, RIDE, ROOMS, SHOPS, W3} from './003b-systems.js';
+import {CLIP, CLOCK, FORAGE, PARK, RIDE, ROOMS, SHOPS, TRICKS, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, LEVEL, MAPG, MODS, OFFDX, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
-const SKATE={}; window.SKATE=SKATE;
+const SKATE={rails:[]}; window.SKATE=SKATE;
 { const DATA=__LAZY__("data/skatepark.json"), BODS=__LAZY__("data/skaters.json"), GATE=__LAZY__("data/skategate.json"), BOARD=__LAZY__("data/skateboard.json"), RIDES=__LAZY__("data/skaterides.json");
   const MH=TILE/.84, MV=ZU*24/.84, I16=s=>{ const b=atob(s), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return u.buffer; };
   const NAMES={'skate-filmer':'THE FILMER','street-skater':'A STREET SKATER','veteran-pool-skater':'THE POOL VETERAN','vert-skater':'A VERT SKATER','roller-skater':'THE ROLLER SKATER','skate-coach':'THE COACH',
@@ -18,11 +18,12 @@ const SKATE={}; window.SKATE=SKATE;
   const RIDERS={'street-skater':['skate',3.2],'veteran-pool-skater':['skate',3],'vert-skater':['skate',3.4],'beginner-kid-skater':['skate',2],'longboarder':['skate',3.6],'scooter-kid':['scoot',2.6],'bmx-rider':['bmx',4.2]};   // who rides what, how fast (m/s)
   let BD=null; const SPOSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
   const deckH=()=>RIG.RIDEG.deck*(W3.group&&W3.group.scale.y||.046);
-  const SKATEK={name:'SKATEBOARD',hint:'A CLICK SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
+  const SKATEK={name:'SKATEBOARD',hint:'A CLICK SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, J FLIPS, K GRABS, L GRINDS, I MANUALS (? FOR ALL OF IT), A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
     make:()=>{ const m=new THREE.Mesh(geo(BD,(x,y,z)=>[x*MH,y*MV,z*MH]),MAT()); m.castShadow=true; m.userData.top=BD.top*MV; return m; },
-    floor:(g,R)=>g+BD.top*MV-deckH()+(R.z||0),   // you stand on the deck, its wheels on the ground
-    pose:R=>{ let p=R.push; if(p==null){ const up=R.v>(R.pv||0)+1e-4&&R.v<4.5*TILE; R.pv=R.v; R.pt=up?(R.pt||0)+.022:0; p=up?R.pt%1:-1; } SPOSE.push=p; SPOSE.brake=!(R.v>.2*TILE); SPOSE.z=R.z||0; return SPOSE; },   // pushes off while it gathers speed
-    place:(m,R)=>{ m.position.y-=m.userData.top||0; m.rotation.z=Math.max(-.25,Math.min(.25,-(R.lean||0)*.3)); }};
+    floor:(g,R)=>TRICKS.floor?TRICKS.floor(g,R,BD.top*MV-deckH()):g+BD.top*MV-deckH()+(R.z||0),   // you stand on the deck, its wheels on the ground (or a rail's top)
+    step:(R,dt,inp)=>TRICKS.step?TRICKS.step(R,dt,inp):false,   // ridden by you: the tricks move it
+    pose:R=>{ let p=R.push; if(p==null){ const up=R.v>(R.pv||0)+1e-4&&R.v<4.5*TILE; R.pv=R.v; R.pt=up?(R.pt||0)+.022:0; p=up?R.pt%1:-1; } SPOSE.push=p; SPOSE.brake=!(R.v>.2*TILE); SPOSE.z=R.z||0; if(TRICKS.pose)TRICKS.pose(R,SPOSE); return SPOSE; },   // pushes off while it gathers speed
+    place:(m,R)=>{ m.position.y-=m.userData.top||0; m.rotation.z=Math.max(-.25,Math.min(.25,-(R.lean||0)*.3)); if(TRICKS.place)TRICKS.place(m,R); }};
   SKATE.board=SKATEK;
   // the scooter kid's scooter and the BMX rider's bike (the kit's own): drawn at their rider's scale, wheels on the ground; the BMX at .75 so its cranks, seat and bars meet the rig's bike pose
   let RD=null; const VPOSE={k:'scoot',push:-1,brake:false,z:0}, BPOSE={k:'bike',c:0,brake:false,z:0};
@@ -57,6 +58,16 @@ const SKATE={}; window.SKATE=SKATE;
     // walls: the cells a body can't pass, as solids while you are in
     { const g=D.ground, S=new Uint16Array(I16(D.solid)); SOLS=[]; for(let k=0;k<S.length;k+=4){ const a=wx_(g.x0+S[k]*g.cs), b=wz_(g.z0+S[k+1]*g.cs), c=wx_(g.x0+S[k+2]*g.cs), d=wz_(g.z0+S[k+3]*g.cs); SOLS.push([a,b,c,d]); } SOL.up.push(...SOLS); }
     GR={...B,ground:SKATE.ground}; ROOMS.grounds.push(GR);
+    // the top skaters: a board by the gate with the section's ten best combos (the shared score table), read each time you come in
+    { const cv=document.createElement('canvas'); cv.width=256; cv.height=192; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace;
+      const draw=L=>{ const c=cv.getContext('2d'); c.fillStyle='#14161c'; c.fillRect(0,0,256,192); c.strokeStyle='#f2c14e'; c.lineWidth=4; c.strokeRect(4,4,248,184); c.textAlign='center'; c.fillStyle='#f2c14e'; c.font='bold 15px monospace'; c.fillText('TOP SKATERS',128,26);
+        c.font='12px monospace'; (L&&L.length?L:[]).slice(0,10).forEach((e,i)=>{ c.textAlign='left'; c.fillStyle=i?'#d8dae2':'#7dffa4'; c.fillText((i+1+'.').padEnd(4)+e.ini,22,48+i*14); c.textAlign='right'; c.fillText(String(e.score),234,48+i*14); });
+        if(!L||!L.length){ c.fillStyle='#8a8f9c'; c.fillText('NO COMBOS YET. BE THE FIRST.',128,100); } tx.needsUpdate=true; };
+      draw(null); if(TRICKS.top)TRICKS.top().then(draw).catch(()=>{});
+      const sign=new THREE.Mesh(new THREE.BoxGeometry(2*MH,1.5*MV,.06*MH),[MAT(),MAT(),MAT(),MAT(),new THREE.MeshBasicMaterial({map:tx}),new THREE.MeshBasicMaterial({map:tx})]);
+      sign.geometry.deleteAttribute('color'); sign.material.forEach((m,i)=>{ if(i<4){ m.vertexColors=false; m.color.set(0x2a2d36); } }); sign.position.set(wx_(GX+4.2),wy_(1.6),wz_(GZ-2.6)); sign.rotation.y=Math.PI; G.add(sign);
+      const post=new THREE.Mesh(new THREE.BoxGeometry(.1*MH,.9*MV,.1*MH),new THREE.MeshLambertMaterial({color:0x2a2d36})); post.position.set(wx_(GX+4.2),wy_(.45),wz_(GZ-2.6)); G.add(post); }
+    SKATE.rails=(D.rails||[]).map(r=>({a:[wx_(r[0]),wy_(r[1]),wz_(r[2])],b:[wx_(r[3]),wy_(r[4]),wz_(r[5])],kind:r[6]}));   // the grind lines, in the world, while it is built
     // the skaters, each where the kit stood them; they mill about near their spot
     if(SK)scene.add(SK.g); else BODS().then(J=>{ if(!G)return; SK={g:new THREE.Group(),list:[]}; SK.g.name='skaters'; scene.add(SK.g);
       D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd,ground:SKATE.ground,...(RIDERS[p.key]?{ride:KINDS[RIDERS[p.key][0]],rideSpeed:RIDERS[p.key][1]}:{})});
@@ -64,7 +75,7 @@ const SKATE={}; window.SKATE=SKATE;
     if(SK)for(const N of SK.list)N.on=true;
     tick=()=>{ const n=CLOCK.dark?CLOCK.dark():false; if(LIT&&LIT.on!==n){ LIT.on=n; LIT.m.geometry=n?LIT.night:LIT.day; LIT.m.material=n?LIT.nm:LIT.dm; for(const l of LAMPS)l.intensity=n?LAMPI:0; } sky.material.uniforms.n.value+=((n?1:0)-sky.material.uniforms.n.value)*.05; };
     return ROOMS.part(G,()=>{ LAMPS=(D.lamps||[]).map(([x,y,z])=>{ const l=new THREE.PointLight(0xffe2b0,0,52*MH,1); l.position.set(wx_(x),wy_(y),wz_(z)); scene.add(l); return l; }); },null); };   // the floodlights: part records them into the lights you get the nearest of
-  const unbuild=()=>{ LAMPS=[]; for(const b of SOLS){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } SOLS=[]; const gi=ROOMS.grounds.indexOf(GR); if(gi>=0)ROOMS.grounds.splice(gi,1); GR=null; tick=null;
+  const unbuild=()=>{ LAMPS=[]; SKATE.rails=[]; for(const b of SOLS){ const i=SOL.up.indexOf(b); if(i>=0)SOL.up.splice(i,1); } SOLS=[]; const gi=ROOMS.grounds.indexOf(GR); if(gi>=0)ROOMS.grounds.splice(gi,1); GR=null; tick=null;
     if(SK){ for(const N of SK.list)N.on=false; SK.g.removeFromParent(); }
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material)c.material.dispose(); }); if(LIT){ LIT.day.dispose(); LIT.night.dispose(); LIT.nm.dispose(); LIT.dm.dispose(); } G.removeFromParent(); G=null; LIT=null; } };
   SKATE.LAMPI=LAMPI; SKATE.dbg=()=>({shop:!!(SHOPS.bound&&SHOPS.bound.has('skateshop')),lamps:LAMPS.filter(l=>l.intensity>0).length,built:!!G,solids:SOLS.length,grounds:ROOMS.grounds.length,skaters:SK?SK.list.filter(N=>N.on).length:0,riding:SK?SK.list.filter(N=>N.board&&N.RS&&N.RS.v>0).length:0,boards:SK?SK.list.filter(N=>N.board).length:0,people:D?D.people.length:0,lit:LIT&&LIT.on,door:SKATE.door,at:(x,z)=>[wx_(x),wz_(z)]});
@@ -83,3 +94,4 @@ const SKATE={}; window.SKATE=SKATE;
     if(STORE.places)STORE.places.push(['THE SKATE PARK',door[0],door[1]+.8*TILE,'up']);
     ROOMS.reset&&ROOMS.reset(); SKATE.ready=true; });
 }
+export {SKATE};

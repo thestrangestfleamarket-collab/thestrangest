@@ -1,6 +1,6 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, GPH, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, pos, RAG, RIDE, ROOMS, SFX, SGM, st, STAGE, UI, VIT, VR, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
+import {AMB, BOAT, BROOK, BWK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, GPH, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, pos, RAG, RIDE, ROOMS, SFX, SGM, st, STAGE, TRICKS, UI, VIT, VR, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
 import {EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, resize, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX} from './004-main.js';
 import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -28,7 +28,7 @@ renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbi
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
 renderer.domElement.addEventListener('wheel',e=>{ '@later'; e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } if(e.deltaY>0&&!UI.persp&&RW/rppu()>=UI.MAXW*.995)return; SHARED.ppuTo=Math.max(3,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
-addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
+addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(TRICKS.takes&&TRICKS.takes(k))return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='shift'&&!VIT.tired)st.runTarget=1; if(st.water&&st.water.in&&(k===' '||k==='j')){ e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!ED.on&&!(UI.fly&&k===' ')&&!(FT&&k===' ')){ RIG.act(st,MOVEK[k]); SYS.run('act',MOVEK[k],1); } });
 const MOVEK={' ':' ',j:'J',k:'K',r:'R',v:'V',u:'U',n:'N',i:'C','2':'X','3':'Q','4':'E'};

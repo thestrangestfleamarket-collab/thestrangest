@@ -1,6 +1,6 @@
 // PERFORMANCE SWITCHES: hiding far rooms, props and water; shadow map size; what runs only when near.
 import {SHARED, THREE} from './003-shx.js';
-import {DRM, ED, LITE, MAPED, MUS, NPCS, PERFX, PNM, pos, ROOMS, SELFSH, SGM, UI, W3} from './003b-systems.js';
+import {DRM, ED, LITE, MAPED, MUS, NPCS, PERFX, PNM, pos, ROOMS, SELFSH, SGM, UI, W3, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BF, FREE, QS, STORE, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -48,7 +48,7 @@ Object.assign(PERFX,{on:{}, inner:[], gen:0});
       for(const p of byMe.get(me)||[]){ const f=p.v0/6; p.me=into[f]; p.v0=where[f]*6; } g.dispose(); } };
   SYS.add('roomsReset',()=>PERFX.split(),'161-perf');
   PERFX.rooms=()=>{ if(!PERFX.inner.length)return; const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE;
-    for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&SHARED.py>B.y0-.3&&SHARED.py<B.y1))); }
+    for(const me of PERFX.inner){ const B=me.userData.box; VIS.hide(me,'far',!(all||WINDOWS.open((B.x0+B.x1)/2,(B.z0+B.z1)/2)||(ck?me.userData.inner===ck:pos.x>B.x0-d&&pos.x<B.x1+d&&pos.z>B.z0-d&&pos.z<B.z1+d&&SHARED.py>B.y0-.3&&SHARED.py<B.y1))); }
   };
   // the rest of what is inside a room, not painted with it (unless marked userData.seenOut: seen through a window from the street): the people and players' bodies there, the band, and what a place adds (PERFX.own): drawn only while you are in that room
   const OWN=PERFX.owned=new Set(), V=new THREE.Vector3(), BX=new THREE.Box3(); let st=0; PERFX.own=o=>{ if(o)OWN.add(o); };
@@ -60,7 +60,7 @@ Object.assign(PERFX,{on:{}, inner:[], gen:0});
   SYS.add('roomsReset',()=>PERFX.claim(),'161-perf-claim'); SYS.onStart(()=>setTimeout(()=>PERFX.claim(),4000),'161-perf');
   let ct=0; PERFX.shut=()=>{ const now=performance.now(); if(now-st<300)return; st=now; if(now-ct>5000&&window.__started){ ct=now; PERFX.claim(); } const cur=ROOMS.cur, ck=cur?key(cur):null, all=UI.freeCam||ED.on||MAPED.on||SHARED.LVL!=='up', d=1.6*TILE, RB=boxes(), inR=(B,x,y,z,m)=>x>B.x0-m&&x<B.x1+m&&z>B.z0-m&&z<B.z1+m&&y>B.y0-.3&&y<B.y1;
     const list=[...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(X=>X&&X.g),...[MUS,PNM,SGM,DRM].map(M=>M&&M.g),...OWN];
-    for(const g of list){ if(!g||!g.parent||g.userData.seenOut)continue; if(OWN.has(g)){ if(!g.userData.mid)g.userData.mid=new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()); V.copy(g.userData.mid); } else g.getWorldPosition(V); const B=RB.find(b=>inR(b,V.x,V.y,V.z,-.15*TILE)); VIS.hide(g,'shut',!!B&&!(all||(ck?key(B)===ck:inR(B,pos.x,SHARED.py,pos.z,d)))); } }; }
+    for(const g of list){ if(!g||!g.parent||g.userData.seenOut)continue; if(OWN.has(g)){ if(!g.userData.mid)g.userData.mid=new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3()); V.copy(g.userData.mid); } else g.getWorldPosition(V); const B=RB.find(b=>inR(b,V.x,V.y,V.z,-.15*TILE)); VIS.hide(g,'shut',!!B&&!(all||WINDOWS.open(V.x,V.z)||(ck?key(B)===ck:inR(B,pos.x,SHARED.py,pos.z,d)))); } }; }
 Object.assign(SELFSH,{set:new Set(), off:new THREE.Matrix4().set(0,0,0,-9, 0,0,0,-9, 0,0,0,-9, 0,0,0,1)});
 SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c=[];
   for(const N of NPCS){ if(N.far||!N.g.visible||!N.g.parent||!N.g.parent.visible||!N.shadowPass)continue; const d=Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z); if(d<R)c.push([d,N]); }

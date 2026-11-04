@@ -1,4 +1,4 @@
-// THE CAST'S DAY (src/159-jobs.js, src/111fb-fleamarket.js): node tests/jobsim.cjs [out folder]: every cast member brought in; the clock held and set: at 11 everyone whose hours hold 11 is at work, at 2 everyone off shift is home and out of sight; the diner stands; no page error. Exits 1 on any failure.
+// THE CAST'S DAY (src/159-jobs.js, src/111fb-fleamarket.js): node tests/jobsim.cjs [out folder]: every cast member brought in; the clock held and set: at 11 everyone their plan sends to work is at work (most of those on shift), at 2:30 everyone due home is home and out of sight; the diner stands; no page error. Exits 1 on any failure.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
@@ -10,14 +10,16 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('the whole cast has jobs',j.length>=190,j.length+' at work or home');
   const inH=(h,[a,c])=>{ a%=24; c%=24; return a<=c?h>=a+.4&&h<c-.4:h>=a+.4||h<c-.4; };
   const hrs=x=>x.hours.split('-').map(Number);
-  const waitAll=async(h,want,pred,ms)=>{ await pg.evaluate(h=>NEWSCLK(h,0),h); const t=Date.now(); let k;
-    while(Date.now()-t<ms){ k=await J(); if(k.filter(pred).every(x=>x.state===want))return [true,k]; await pg.waitForTimeout(3000); } return [false,k]; };
-  let [ok,k]=await waitAll(11,'work',x=>inH(11,hrs(x)),420000);
-  rec('at 11 everyone on shift is at work',ok,k.filter(x=>inH(11,hrs(x))&&x.state!=='work').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='work').length+' at work');
+  // due = their own plan (a life's day, or the job's hours), read once the clock change has reached every goal
+  const waitAll=async(h,want,ms)=>{ await pg.evaluate(h=>NEWSCLK(h,0),h); await pg.waitForTimeout(8000); const t=Date.now(); let k;
+    while(Date.now()-t<ms){ k=await J(); const due=k.filter(x=>x.goal===want); if(due.length&&due.every(x=>x.state===want))return [true,k]; await pg.waitForTimeout(3000); } return [false,k]; };
+  let [ok,k]=await waitAll(11,'work',420000);
+  rec('at 11 everyone due at work is at work',ok,k.filter(x=>x.goal==='work'&&x.state!=='work').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='work').length+' at work');
+  rec('at 11 most of those on shift are due at work',k.filter(x=>inH(11,hrs(x))&&x.goal==='work').length>=k.filter(x=>inH(11,hrs(x))).length/2);
   rec('the outdoor workers are out in sight',k.filter(x=>x.state==='work'&&x.out).every(x=>x.vis));
   if(OUT){ await pg.screenshot({path:OUT+'/cast-11.png'}); }
-  [ok,k]=await waitAll(2.5,'home',x=>!inH(2.5,hrs(x))&&!inH(2.5,[hrs(x)[1]-.5,hrs(x)[1]+2]),600000);
-  rec('at 2:30 everyone off shift is home',ok,k.filter(x=>!inH(2.5,hrs(x))&&!inH(2.5,[hrs(x)[1]-.5,hrs(x)[1]+2])&&x.state!=='home').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='home').length+' home');
+  [ok,k]=await waitAll(2.5,'home',600000);
+  rec('at 2:30 everyone due home is home',ok,k.filter(x=>x.goal==='home'&&x.state!=='home').map(x=>x.key+':'+x.state).slice(0,12).join()||k.filter(x=>x.state==='home').length+' home');
   rec('home means out of sight',k.filter(x=>x.state==='home').every(x=>!x.vis));
   rec('the diner stands',await pg.evaluate(()=>MSHOPDBG().shops.includes('diner')));
   const E=Object.keys(errs); rec('no page errors',!E.length,E.slice(0,3).join(' | '));

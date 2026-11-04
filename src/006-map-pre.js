@@ -87,7 +87,7 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
     // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground and the hand-built section's insides off the map stay
     fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.py<-1.6)return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
       if(home.id===SECTION.id&&ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
-    at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS;
+    at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS; SECTIONS.station=(((LEVEL.loop&&LEVEL.loop.stations)||[]).find(s=>s.id===SECTION.id)||{}).name||SECTIONS.streets.south;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }

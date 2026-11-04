@@ -37,6 +37,8 @@ const arg=k=>{ const i=process.argv.indexOf(k); return i>0?process.argv[i+1]:nul
     return {levels,ways,stations}; });
   // what can be put down: every placed model's size at scale 1 (map tiles: across, deep, high) and its usual scale; the drivable cars
   const kit=await pg.evaluate(async()=>{ const L=__dbg.LAND; await L.pfReady(); const r=v=>Math.round(v*100)/100, models={}; for(const k of L.kinds()){ const z=L.size(k); if(z)models[k]=[r(z[0]),r(z[1]),r(z[2]),r(L.dft(k))]; } return {models,groups:L.groups()}; });
+  // this section's lamp posts as the game spaces them (map tiles)
+  kit.lamps=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, r=v=>Math.round(v*100)/100, D=window.DRESS; return (D.lampposts||[]).slice(0,D.own||0).map(p=>({x:r(B.OX+p.x/T),y:r(B.OY+p.z/T)})); });
   { const C=require(path.resolve('data/cars.json')).cars; kit.cars=Object.keys(C).map(k=>[k,String(C[k].name||k)]); }
   const at=new Date().toISOString().slice(0,10);
   if(ONLY){ console.log('pieces only, to',OUT); await b.close(); return; }

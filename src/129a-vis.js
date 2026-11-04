@@ -14,7 +14,7 @@ const VIS={all:false};
   VIS.count=()=>M.size;
   window.VIS=VIS; }
 Object.assign(LEVELS,{cur:'street',way:null});
-LEVELS.of.street={name:'MARKET ST',floor:'up',base:true};
+LEVELS.of.street={name:SECTIONS.streets.south,floor:'up',base:true};
 { let map=null, n=-1;
   const groups=()=>{ const k=Object.keys(LEVELS.of).length*1000+LEVELS.ways.length; if(map&&k===n)return map; n=k; map=new Map();
     for(const id in LEVELS.of)for(const g of LEVELS.of[id].groups||[])map.set(g,id); for(const w of LEVELS.ways)for(const g of w.groups||[])map.set(g,w); return map; };
@@ -28,14 +28,14 @@ LEVELS.of.street={name:'MARKET ST',floor:'up',base:true};
   LEVELS.hide=(cur=LEVELS.cur)=>{ const H=[]; for(const o of scene.children)if(o.visible&&!on(owner(o),cur)){ o.visible=false; H.push(o); } return H; };
   LEVELS.show=H=>{ if(H)for(const o of H)o.visible=true; };
   window.LEVELS=LEVELS; }
-Object.assign(ZONES,{cur:null,list:[['market','MARKET ST'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
+Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
 { const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); };
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down'){ const id=LEVELS.at(x,z,'down'), L=LEVELS.of[id]; return {id,name:L.label?L.label():L.name}; }
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};
     { const mx=SHARED.BOD.MX(x), my=SHARED.BOD.MY(z), id=SECTIONS.at(mx,my), H=SECTION.id;
       if(id&&id!==H){ const P=SECTIONS.ring.park, N=SECTIONS.streets, st=mx<P.x0?N.west:mx>P.x1?N.east:my<P.y0?N.south:my>P.y1?N.north:'CENTRAL PARK'; return {id:'sec-'+id,name:st+' \u00b7 '+id}; } }
     if(PARK.within&&PARK.within(x,z)){ const y=z/TILE+SHARED.BOD.OY; return y>mid()?{id:'cp',name:'CENTRAL PARK'}:{id:'secp',name:'SOUTH EAST CENTRAL PARK'}; }
-    return {id:'market',name:'MARKET ST'}; };
+    return {id:'market',name:SECTIONS.streets.south}; };
   ZONES.on=f=>ZONES.fns.push(f);
   ZONES.tick=()=>{ if(!window.__started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;
     if(!ZONES.cur||ZONES.cur.k!==k){ const was=ZONES.cur; ZONES.cur={...z,k}; for(const f of ZONES.fns)try{ f(ZONES.cur,was); }catch(e){ console.warn('ZONES',e); } } };

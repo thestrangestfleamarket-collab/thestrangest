@@ -268,7 +268,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     for(let i=0;i<W;i++)for(const j of [0,H-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
     for(let j=0;j<H;j++)for(const i of [0,W-1]){ const o=(j*W+i)*4; im.data[o]=70; im.data[o+1]=200; im.data[o+2]=210; }
     const L=[]; for(const q of B)if(q.n)L.push([q.n,(q.x0+q.x1)/2,q.y1<SHARED.BOD.road.CORN[0].y?q.y0-2.5:q.y1+1.5]);
-    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],['MARKET ST',(RING.wr1+RING.ff.x1)/2-40,(SHARED.BOD.road.CORN[0]?SHARED.BOD.road.CORN[0].y:-60)]);
+    L.push(['CENTRAL PARK',(px0+px1)/2,(py0+py1)/2+12],['HUDSON RIVER',(F.x0+F.x1)/2,(RV.y0+RV.y1)/2],[SECTIONS.streets.south,(RING.wr1+RING.ff.x1)/2-40,(SHARED.BOD.road.CORN[0]?SHARED.BOD.road.CORN[0].y:-60)]);
     const L2=[]; if(SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, my=(rd.y0+inn.y0)/2, ny=(rd.y1+inn.y1)/2, wx=(rd.x0+inn.x0)/2, ex=(rd.x1+inn.x1)/2;
       for(const b of SECTIONS.loaded){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; if(b.row===0){ if(b.id!==HOME)L2.push([ST.south,cx,my]); } else L2.push([ST.north,cx,ny]); if(b.col===0)L2.push([ST.west,wx,cy]); if(b.col===SECTIONS.grid.cols-1)L2.push([ST.east,ex,cy]); } }
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; cv.getContext('2d').putImageData(im,0,0);

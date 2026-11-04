@@ -1,7 +1,7 @@
 // THE MAP'S LIVE EDITS: what the map editor publishes (/shared/map-<section>.json) laid over data/world.json; one path for the game and the editor page (put in by the build, __CODE__). Changes are keyed by id, so the baked file still wins wherever the editor never touched; anything malformed is skipped.
 const MAPPATCH={v:1,
   file:W=>'/shared/map-'+String((W&&W.section&&W.section.id)||'a').toLowerCase().replace(/[^a-z0-9]/g,'')+'.json', NAME:/^map-[a-z0-9]{1,8}\.json$/,
-  gkey:o=>o.k+'@'+(+o.x).toFixed(1)+','+(+o.z).toFixed(1), MODEL:/^[A-Za-z0-9_]{1,60}$/, MAXADD:2000,
+  gkey:o=>o.k+'@'+(+o.x).toFixed(1)+','+(+o.z).toFixed(1), MODEL:/^[A-Za-z0-9_]{1,60}$/, MAXADD:2000, MAXLAMPS:150, NAMEOK:/^[A-Z0-9][A-Z0-9 .'&-]{0,23}$/,
   GROUND:['grass','grass2','grass3','grass4','sidewalk','cobble','dirt','gravel','slab','sand','road','alley'], MAXGROUND:4000,
   apply(W,P){ const out=JSON.parse(JSON.stringify(W)), used=[], ground=[];
     if(!P||typeof P!=='object'||P.v!==1||!P.set||typeof P.set!=='object')return {W:out,used,ground};
@@ -12,6 +12,10 @@ const MAPPATCH={v:1,
       if(q.x1>q.x0&&(q.y1==null||q.y1>q.y0)){ Object.assign(p,q); used.push('place:'+p.id); } }
     if(obj(S.parkPlaces)&&obj(out.parkPlaces))for(const k in out.parkPlaces){ const e=S.parkPlaces[k], p=out.parkPlaces[k]; if(!obj(e)||!obj(p))continue;
       const q={...p}; if(take(q,e,['x','y','r','x0','y0'])&&!(q.r<=0)){ out.parkPlaces[k]=q; used.push('park:'+k); } }
+    if(obj(S.parkPlaces)&&obj(S.parkPlaces.brook)&&Array.isArray(S.parkPlaces.brook.pts)&&out.parkPlaces&&out.parkPlaces.brook){ const P=S.parkPlaces.brook.pts; if(P.length>=3&&P.length<=60&&P.every(pt)){ out.parkPlaces.brook={...out.parkPlaces.brook,pts:P.map(q=>[q[0],q[1]])}; used.push('brook'); } }
+    if(Array.isArray(S.lamps)&&S.lamps.length<=MAPPATCH.MAXLAMPS){ const L=S.lamps.filter(l=>obj(l)&&n(l.x)&&n(l.y)).map(l=>({x:l.x,y:l.y})); if(L.length===S.lamps.length){ out.lamps=L; used.push('lamps:'+L.length); } }
+    if(obj(S.names)){ const ok=v=>typeof v==='string'&&MAPPATCH.NAMEOK.test(v), N=S.names; if(obj(N.streets)&&out.sections&&out.sections.streets)for(const k of ['south','west','north','east'])if(ok(N.streets[k])){ out.sections.streets[k]=N.streets[k]; used.push('street:'+k); }
+      const st=ok(N.station)&&out.loop&&out.section&&(out.loop.stations||[]).find(q=>q.id===out.section.id); if(st){ st.name=N.station; used.push('station'); } }
     if(obj(S.paths))for(const p of out.paths||[]){ const e=S.paths[p.id]; if(obj(e)&&pt(e.a)&&pt(e.b)){ p.a=[e.a[0],e.a[1]]; p.b=[e.b[0],e.b[1]]; used.push('path:'+p.id); } }
     if(obj(S.cars))for(const c of out.cars||[]){ const e=S.cars[c.id]; if(obj(e)&&take(c,e,['x','y','hd']))used.push('car:'+c.id); }
     if(obj(S.things))(out.things||[]).forEach((t,i)=>{ const e=S.things[i]; if(obj(e)&&e.k===t.k){ const q={...t}; if(n(e.rot))q.rot=e.rot; if(take(q,e,['x','y'])){ out.things[i]=q; used.push('thing:'+i); } } });

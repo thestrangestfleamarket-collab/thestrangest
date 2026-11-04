@@ -65,7 +65,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   cheap one, `docs/MAP.md merge=ours` in `.gitattributes` and let the build rewrite it. `TODO.md merge=union` would help this file the same way.
 - [x] **"chunk later was not loaded before use" on the lawn** (done 4 Nov: the parts builder's shape helpers in `src/080-npc-parts.js` run at the start; `?at=40,150` clean) · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
   change every build). Rebuild, open the spot, read the warning's number in `dist/chunks.txt`, add the missing `LOAD`. With: the fluffy grass.
-- [ ] **The black-void sheet view doesn't show rig bodies** · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
+- [x] **The black-void sheet view doesn't show rig bodies** (done 4 Nov: `tests/sheet.cjs poacher` shows him front, side and back; the crash on `hud`/`stat` was the cause; the minimap still shows in a corner) · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
   (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,
   no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
 - [ ] **`tests/loosecheck.cjs` fails on `main`** · P3 · S · check. Its start spot (`at=-2.2,3.2`, lines 17 and 52) has no loose things near

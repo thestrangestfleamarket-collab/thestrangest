@@ -42,7 +42,8 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
   const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(window.INV&&INV.items&&INV.items[id])||0;
   const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?esc(FORAGE.name(id)):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; };
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
-  HUD.use=i=>{ const id=S[i]; if(!id)return false; const say=SAY, nm=FORAGE.name(id);
+  HUD.use=i=>{ const id=S[i]; if(!id)return false; return HUD.useItem(id); };
+  HUD.useItem=id=>{ const say=SAY, nm=FORAGE.name(id);
     if(!has(id)){ say('YOU HAVE NO '+nm+'.','#c8a090'); return true; }
     if(WIELD.LIST&&WIELD.LIST.includes(id)){ WIELD.set(WIELD.on===id?null:id); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); }
     else if(FORAGE.eats(id))FORAGE.eat(id);

@@ -40,7 +40,7 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;
   const save=()=>{ try{ OWNED.set('quick',JSON.stringify(S)); }catch(e){} };
   const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(window.INV&&INV.items&&INV.items[id])||0;
-  const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="">`:'')+`<span>${esc(FORAGE.name(id).replace(/^(A|AN|THE|SOME) /,''))}</span>`:''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; };
+  const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; }; HUD.qdraw=draw;
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
   HUD.use=i=>{ const id=S[i]; if(!id)return false; return HUD.useItem(id); };
   HUD.useItem=id=>{ const say=SAY, nm=FORAGE.name(id);

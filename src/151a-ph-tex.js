@@ -20,7 +20,7 @@ PHT.make=()=>{ '@playhouse';
   const velvet=(base,s)=>{ const N=256;
     return {map:px(N,N,(x,y)=>{ const crush=fbm(x/N*3,y/N*12,3,s,3), nap=h2(x,y,s+9), v=.82+.3*crush+.08*(nap-.5); return base.map(c=>c*v); }),
       bump:px(N,N,(x,y)=>{ const v=128+60*(fbm(x/N*3,y/N*12,3,s,3)-.5)+30*(h2(x,y,s+9)-.5); return [v,v,v]; },false)}; };
-  T.velvet=velvet([150,18,36],1); T.velvetDark=velvet([92,10,22],2); T.velvetSeat=velvet([140,22,38],3); T.velvetBlack=velvet([24,20,24],4); T.velvetBlue=velvet([26,30,72],5);
+  T.velvet=velvet([150,18,36],1); T.velvetDark=velvet([92,10,22],2); T.velvetSeat=velvet([140,22,38],3); T.velvetBlack=velvet([24,20,24],4);
 
   // GOLD LEAF: laid in squares, each a touch apart in tone, the seams between them, burnished high and dull in the hollows (colour and roughness)
   { const N=256, Q=32;
@@ -64,7 +64,7 @@ PHT.make=()=>{ '@playhouse';
     const r=Math.hypot((x%128)-64,(y%128)-64), a=Math.atan2((y%128)-64,(x%128)-64), pet=r<22+6*Math.cos(a*8);
     let c=ground; if(tr<4)c=line; else if(pet)c=r<8?line:rose; else if(d<20&&d>16)c=line;
     return c.map(q=>q*(.86+.22*h2(x,y,s))); });
-  T.carpet=carpet([128,20,30],[200,156,70],[70,84,40],13); T.carpetBox=carpet([36,40,78],[196,150,70],[128,22,34],14);
+  T.carpet=carpet([128,20,30],[200,156,70],[70,84,40],13);
 
   // DAMASK: the foyer and corridor paper: a mirrored flower in old gold on deep green, a faint print shift
   { const W=256, H=384, c=cv(W,H), g=c.getContext('2d'); g.fillStyle='#22382c'; g.fillRect(0,0,W,H); g.fillStyle='#8c7a44';
@@ -82,7 +82,7 @@ PHT.make=()=>{ '@playhouse';
   // BRICK: the stage house is bare brick painted black; the scene dock and corridor whitewashed
   const brick=(face,mortar,s)=>px(256,256,(x,y)=>{ const r=Math.floor(y/16), o=r%2?32:0, i=Math.floor((x+o)/64), m=y%16<2||((x+o)%64)<2, t=h2(i,r,s);
     return (m?mortar:face.map(q=>q*(.85+.25*t)*(.92+.1*fbm(x/32,y/32,8,s+1,2)))); });
-  T.brickBlack=brick([40,36,36],[22,20,20],21); T.brickWhite=brick([214,206,192],[170,162,150],22);
+  T.brickBlack=brick([40,36,36],[22,20,20],21);
   T.brickBump=px(256,256,(x,y)=>{ const r=Math.floor(y/16), o=r%2?32:0, m=y%16<2||((x+o)%64)<2; const v=m?30:170+30*h2(x>>2,y>>2,23); return [v,v,v]; },false);
   // MAHOGANY: the rails, doors, box fronts' panels, the bar; a long grain and its figure
   T.mahogany=px(256,512,(x,y)=>{ const f=fbm(x/256*2,y/512*1,2,24,4), g=Math.sin((x+f*60)*.35)*.5+.5, fig=fbm(x/256*8,y/512*2,8,25,3); return mix([92,38,24],[58,22,14],g*.6+fig*.4); });
@@ -94,20 +94,6 @@ PHT.make=()=>{ '@playhouse';
   T.fringe=px(256,64,(x,y)=>{ const head=y<14, th=(x%4)<3, len=40+14*h2(x>>2,0,28), on=head||(th&&y<len), k=head?(y%5<1?.7:1):.75+.25*Math.sin(x*1.3); return [228*k,180*k,84*k,on?255:0]; });
   T.tassel=px(64,128,(x,y)=>{ const r=y<40?10+y*.2:y<52?18:(y-52)*.16+12, on=Math.abs(x-32)<r&&y<124, k=(x%3?1:.75)*(y<40?1.05:.95); return [226*k,176*k,80*k,on?255:0]; });
 
-  // THE PAINTED CEILING: a round sky over the house, clouds and a laurel ring, the four muses' lyres in gilt cartouches at the edge
-  { const N=1024, c=cv(N,N), g=c.getContext('2d'), R=N/2, sky=g.createRadialGradient(R,R,0,R,R,R);
-    sky.addColorStop(0,'#f4e8c8'); sky.addColorStop(.35,'#9ec0d8'); sky.addColorStop(.8,'#5a7ea8'); sky.addColorStop(1,'#3a4c78'); g.fillStyle=sky; g.fillRect(0,0,N,N);
-    for(let i=0;i<70;i++){ const a=h2(i,1,29)*6.283, r=R*(.25+.55*h2(i,2,29)), x=R+Math.cos(a)*r, y=R+Math.sin(a)*r, s=30+60*h2(i,3,29);
-      const cg=g.createRadialGradient(x,y,0,x,y,s); cg.addColorStop(0,'rgba(255,248,236,.85)'); cg.addColorStop(.6,'rgba(250,236,220,.45)'); cg.addColorStop(1,'rgba(250,236,220,0)'); g.fillStyle=cg; g.beginPath(); g.arc(x,y,s,0,7); g.fill(); }
-    g.lineWidth=26; g.strokeStyle='#b88a3a'; g.beginPath(); g.arc(R,R,R-40,0,7); g.stroke(); g.lineWidth=6; g.strokeStyle='#f0d080'; g.beginPath(); g.arc(R,R,R-52,0,7); g.stroke();
-    for(let i=0;i<96;i++){ const a=i/96*6.283; g.save(); g.translate(R+Math.cos(a)*(R-40),R+Math.sin(a)*(R-40)); g.rotate(a+(i%2?.5:-.5)); g.fillStyle=i%2?'#6a7a3a':'#7a8a44'; g.beginPath(); g.ellipse(0,0,16,6,0,0,7); g.fill(); g.restore(); }
-    for(let k=0;k<4;k++){ const a=k*Math.PI/2+Math.PI/4, x=R+Math.cos(a)*(R-130), y=R+Math.sin(a)*(R-130);
-      g.save(); g.translate(x,y); g.rotate(a+Math.PI/2); g.fillStyle='#c8a050'; g.beginPath(); g.ellipse(0,0,58,70,0,0,7); g.fill(); g.fillStyle='#7a2a2a'; g.beginPath(); g.ellipse(0,0,46,58,0,0,7); g.fill();
-      g.strokeStyle='#f0d080'; g.lineWidth=7; g.beginPath(); g.moveTo(-20,30); g.quadraticCurveTo(-34,-20,-12,-36); g.moveTo(20,30); g.quadraticCurveTo(34,-20,12,-36); g.moveTo(-22,28); g.lineTo(22,28); g.stroke();
-      g.lineWidth=2; for(let s=-8;s<=8;s+=4){ g.beginPath(); g.moveTo(s,26); g.lineTo(s*1.2,-24); g.stroke(); } g.restore(); }
-    const rr=g.createRadialGradient(R,R,0,R,R,90); rr.addColorStop(0,'#fff6dc'); rr.addColorStop(1,'rgba(255,246,220,0)'); g.fillStyle=rr; g.beginPath(); g.arc(R,R,90,0,7); g.fill();
-    T.ceiling=tex(c); T.ceiling.wrapS=T.ceiling.wrapT=THREE.ClampToEdgeWrapping; }
-
   // PRINTED THINGS: the foyer's posters and the programme board, set in the playhouse's own type
   T.print=(w,h,draw)=>{ const c=cv(w,h), g=c.getContext('2d'); draw(g,w,h); const t=tex(c); t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping; return t; };
   T.poster=T.print(512,768,(g,w,h)=>{ const bg=g.createLinearGradient(0,0,0,h); bg.addColorStop(0,'#0e1838'); bg.addColorStop(.6,'#24305a'); bg.addColorStop(1,'#0a0a14'); g.fillStyle=bg; g.fillRect(0,0,w,h);
@@ -118,7 +104,7 @@ PHT.make=()=>{ '@playhouse';
     g.textAlign='center'; g.fillStyle='#c9a24a'; g.font='italic 34px Georgia,serif'; g.fillText('The Playhouse presents',w/2,90);
     g.fillStyle='#f4ecd0'; g.font='bold 60px Georgia,serif'; g.fillText('A MIDSUMMER',w/2,170); g.fillText("NIGHT'S DREAM",w/2,236);
     g.font='28px Georgia,serif'; g.fillStyle='#c9a24a'; g.fillText('by William Shakespeare',w/2,280);
-    g.fillStyle='#f4ecd0'; g.font='bold 30px Georgia,serif'; g.fillText('ACT THE FIRST',w/2,h-150); g.font='24px Georgia,serif'; g.fillText('Nightly · every hour and half hour',w/2,h-110); g.fillText('Stalls · Circle · Boxes',w/2,h-78); });
+    g.fillStyle='#f4ecd0'; g.font='bold 30px Georgia,serif'; g.fillText('ACT THE FIRST',w/2,h-150); g.font='24px Georgia,serif'; g.fillText('Nightly · every hour and half hour',w/2,h-110); g.fillText('Stalls',w/2,h-78); });
   T.bill=T.print(512,512,(g,w,h)=>{ g.fillStyle='#efe2c4'; g.fillRect(0,0,w,h); g.fillStyle='#2a1810'; g.textAlign='center';
     g.font='bold 36px Georgia,serif'; g.fillText('TONIGHT',w/2,60); g.font='italic 26px Georgia,serif'; g.fillText("A Midsummer Night's Dream · Act I",w/2,100);
     g.font='20px Georgia,serif'; const L=['Scene I · Athens. The palace of Theseus','Scene II · Athens. Quince’s house','','THESEUS · HIPPOLYTA · EGEUS · HERMIA','LYSANDER · DEMETRIUS · HELENA','QUINCE · BOTTOM · FLUTE','SNOUT · SNUG · STARVELING','','Curtain at the hour and the half hour','Latecomers seated at the scene change'];

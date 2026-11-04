@@ -115,7 +115,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
     if(NPCS.extra)NPCS.extra.push(NPC);
-    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
+    NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.walk={auto:true,roam:true,v:BODIES.V}; NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
     if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; NPC.board.userData.anyRoom=true; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
     NPC.tick=dt=>{ if((!NPC.on||NPC.mode==='hidden')&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
@@ -143,7 +143,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const LIVEP=new Set(); let smT=0;
   const liveP=dt=>{ if((smT-=dt)>0)return; smT=.25; LIVEP.clear(); const L=[]; for(const b of BODIES.list){ const N=b.npc; if(N&&N.on&&N.mode!=='hidden'&&N.st&&N.st.to)L.push([Math.hypot(N.st.x-pos.x,N.st.z-pos.z),N]); }
     L.sort((a,b)=>a[0]-b[0]); for(let i=0;i<Math.min(BODIES.SMOOTH,L.length);i++)LIVEP.add(L[i][1]); };
-  BODIES.SMOOTH=8;
+  BODIES.SMOOTH=8; BODIES.V=.3*TILE;
   SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */

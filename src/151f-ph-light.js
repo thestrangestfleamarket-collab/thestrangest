@@ -1,4 +1,4 @@
-// THE PLAYHOUSE'S LIGHTING: the rig (lanterns on the circle front, the box booms, four electrics that fly with their bars, the wing booms, the follow spot on the landing, the footlights, the cyclorama's floods), the few real lights they stand for, their beams in the haze, and the board: named states (cues) each channel fades to; a lighting board on the landing to play them when no show is on.
+// THE PLAYHOUSE'S LIGHTING: the rig (lanterns on a bar over the stalls, the wall booms, four electrics that fly with their bars, the wing booms, the follow spot at the back of the stalls, the footlights, the cyclorama's floods), the few real lights they stand for, their beams in the haze, and the board: named states (cues) each channel fades to; a lighting board beside the follow spot to play them when no show is on.
 import {THREE} from './003-shx.js';
 import {SAY} from './003d-say.js';
 import {PHX} from './151b-ph-kit.js';
@@ -17,48 +17,48 @@ PHX.parts.push({make:K=>{ '@playhouse';
       const lp=new V3(0,0,-.231).applyQuaternion(dummy.quaternion).add(dummy.position); dummy.position.copy(lp); dummy.updateMatrix(); const m2=dummy.matrix.clone(); Ln.setMatrixAt(i,m2.multiply(new THREE.Matrix4().makeRotationY(PI)));
       Ln.setColorAt(i,new THREE.Color(0,0,0)); LX.fix.push({ln:Ln,i,ch}); });
     B.castShadow=true; B.receiveShadow=true; Ln.castShadow=false; parent.add(B); parent.add(Ln); B.instanceMatrix.needsUpdate=true; Ln.instanceMatrix.needsUpdate=true; return B; };
-  const T=[0,SY,-3.5];
-  // the front of house: twelve on a bar under the circle's lip; the box booms each side
-  { const g=new THREE.Group(); K.G.add(g); const L=[]; for(let i=0;i<12;i++){ const x=-8.25+i*1.5; L.push([x,D.CY-.75,D.Z1-.45,[x*.35,SY+1.2,-2.5],i<6?'fohL':'fohR']); }
-    K.rod([-9.2,D.CY-.45,D.Z1-.45],[9.2,D.CY-.45,D.Z1-.45],.024,M.steel); hang(g,L,0);
-    const B=[]; for(const s of [-1,1]){ K.rod([s*11.6,5.8,2.2],[s*11.6,8.4,2.2],.024,M.steel); for(let k=0;k<3;k++)B.push([s*11.6,6.1+k*.75,2.2,[-s*2,SY+1.2,-3],'side']); } hang(g,B,0); }
+  const FB=[8.2,10.4], FS=[-8.4,D.FY,13.9], CZ=K.fly.byId.cyc.z, E3=K.fly.byId.e3.z;
+  // the front of house: twelve on a bar hung from the stalls' ceiling; a boom on each side wall
+  { const g=new THREE.Group(); K.G.add(g); const L=[]; for(let i=0;i<12;i++){ const x=-8.25+i*1.5; L.push([x,FB[0]-.3,FB[1],[x*.35,SY+1.2,-2.5],i<6?'fohL':'fohR']); }
+    K.rod([-8.6,FB[0],FB[1]],[8.6,FB[0],FB[1]],.024,M.steel); for(const x of [-6,6])K.rod([x,FB[0],FB[1]],[x,D.HOUSE,FB[1]],.012,M.steel); hang(g,L,0);
+    const B=[]; for(const s of [-1,1]){ K.rod([s*9.6,5.8,3],[s*9.6,8.4,3],.024,M.steel); for(let k=0;k<3;k++)B.push([s*9.6,6.1+k*.75,3,[-s*2,SY+1.2,-3],'side']); } hang(g,B,0); }
   // the electrics: eight lanterns on each, hung from the bar (they fly with it)
-  for(const s of K.fly.sets.filter(s=>s.kind==='elec')){ const L=[], id=s.id; for(let i=0;i<8;i++){ const x=-7+i*2; const ch=id==='e1'?'wash':id==='e2'?(i%2?'washC':'wash'):id==='e3'?'back':'cyc'; const aim=id==='e4'?[x,SY+4,-14.6-s.z]:id==='e3'?[x*.6,SY,-3-s.z+4.5]:[x*.6,SY,-2.5-s.z];
+  for(const s of K.fly.sets.filter(s=>s.kind==='elec')){ const L=[], id=s.id; for(let i=0;i<8;i++){ const x=-7+i*2; const ch=id==='e1'?'wash':id==='e2'?(i%2?'washC':'wash'):id==='e3'?'back':'cyc'; const aim=id==='e4'?[x,SY+4,CZ-.1-s.z]:id==='e3'?[x*.6,SY,-3-s.z+4.5]:[x*.6,SY,-2.5-s.z];
       L.push([x,-.32,0,[aim[0],aim[1]-s.y,aim[2]],ch]); } hang(s.g,L,id!=='e4');
     K.tube([[-9.6,.02,.04],[-4,.06,.04],[0,.02,.04],[4,.06,.04],[9.6,.02,.04]].map(p=>p),.03,M.matte,{p:s.g}); }
-  // the wing booms: pipes on bases, three lanterns each, low and from the side
-  for(const s of [-1,1])for(const z of [-2.1,-5.9,-9.9]){ const g=new THREE.Group(); K.G.add(g); K.rod([s*9.4,SY,z],[s*9.4,SY+4.2,z],.03,M.steel); K.cyl(.32,.32,.05,M.iron,s*9.4,SY+.03,z,{seg:16});
-    hang(g,[[s*9.4,SY+1.1,z,[-s*3,SY+1,z],'side'],[s*9.4,SY+2.3,z,[-s*3,SY+1.3,z],'side'],[s*9.4,SY+3.6,z,[-s*4,SY+.8,z],'side']],0); K.solid(s*9.4-.35,z-.35,s*9.4+.35,z+.35); }
-  // the follow spot on its stand on the landing, behind the circle; its operator's stool
-  { const x=0, z=D.ZC+.6, y=D.LY; K.lathe([[0,0],[.35,0],[.35,.04],[.05,.08],[.05,1.25],[0,1.25]],M.iron,x,y,z,{seg:12});
+  // the wing booms, stage right behind the legs (stage left is the lock rail's): pipes on bases, three lanterns each, low and from the side
+  for(const s of [-1])for(const z of [-2.0,-4.2,-6.6]){ const g=new THREE.Group(); K.G.add(g); K.rod([s*7.4,SY,z],[s*7.4,SY+4.2,z],.03,M.steel); K.cyl(.2,.2,.05,M.iron,s*7.4,SY+.03,z,{seg:16});
+    hang(g,[[s*7.4,SY+1.1,z,[-s*3,SY+1,z],'side'],[s*7.4,SY+2.3,z,[-s*3,SY+1.3,z],'side'],[s*7.4,SY+3.6,z,[-s*4,SY+.8,z],'side']],0); K.solid(s*7.4-.2,z-.2,s*7.4+.2,z+.2); }
+  // the follow spot on its stand at the back of the stalls; its operator's stool
+  { const [x,y,z]=FS; K.lathe([[0,0],[.35,0],[.35,.04],[.05,.08],[.05,1.25],[0,1.25]],M.iron,x,y,z,{seg:12});
     const g=new THREE.Group(); g.position.set(x,y+1.45,z); K.G.add(g); const bar=new THREE.Mesh(new THREE.CylinderGeometry(.2,.24,1.3,16),M.black); bar.rotation.x=PI/2; g.add(bar);
     const lens=new THREE.Mesh(new THREE.CircleGeometry(.18,16),lensM.clone()); lens.position.z=-.66; lens.rotation.y=PI; g.add(lens); LX.followHead={g,lens};
     K.lathe([[0,0],[.18,0],[.03,.05],[.03,.65],[.2,.68],[.2,.72],[0,.72]],M.iron,x+.8,y,z+.4,{seg:10}); K.solid(x-.45,z-.45,x+.45,z+.45); }
   // the footlights along the apron: their bulbs behind the brass hood
   { const P=K.foot.filter((_,i)=>i%2===0).map(p=>[p[0],p[1]-.02,p[2]+.05]); LX.footI=K.inst(new THREE.SphereGeometry(.04,8,6),lensM.clone(),P,{cast:false}); LX.footI.material=new THREE.MeshBasicMaterial({color:0}); }
   // the cyclorama's ground row: a trough of floods along the foot of the cyc
-  { const g=new THREE.Group(); K.G.add(g); const L=[]; for(let i=0;i<10;i++){ const x=-9+i*2; L.push([x,SY+.2,-14.1,[x,SY+6,-14.7],'cyc']); } hang(g,L,0); K.boxA(-10,SY,-14.3,10,SY+.4,-13.9,M.black); }
+  { const g=new THREE.Group(); K.G.add(g); const L=[]; for(let i=0;i<10;i++){ const x=-8.55+i*1.9; L.push([x,SY+.2,CZ+.5,[x,SY+6,CZ-.1],'cyc']); } hang(g,L,0); K.boxA(-9.4,SY,CZ+.3,9.4,SY+.4,CZ+.7,M.black); }
 
   /* ---------- the real lights the rig stands for ---------- */
   const spot=(p,t,ang,pen,i,dist,shadow)=>{ const l=new THREE.SpotLight(0xffffff,0,dist*K.MH,ang,pen,1.2); l.position.set(...p); l.target.position.set(...t); K.G.add(l); K.G.add(l.target);
     if(shadow){ l.castShadow=true; l.shadow.mapSize.set(1024,1024); l.shadow.bias=-.0008; l.shadow.normalBias=.04; l.shadow.camera.near=1; l.shadow.camera.far=60*K.MH; } return {l,i}; };
   const ch=(k,o)=>{ LX.ch[k]={v:0,c:new THREE.Color(0),to:{v:0,c:new THREE.Color(0)},from:null,t0:0,dur:0,...o}; };
-  ch('fohL',{L:[spot([-6,D.CY-.7,D.Z1-.6],[-.5,SY+1,-3],.32,.55,0,0,true)],I:560,dist:45});
-  ch('fohR',{L:[spot([6,D.CY-.7,D.Z1-.6],[.5,SY+1,-3],.32,.55,0,0)],I:440,dist:45});
+  ch('fohL',{L:[spot([-6,FB[0]-.3,FB[1]-.2],[-.5,SY+1,-3],.32,.55,0,0,true)],I:560,dist:45});
+  ch('fohR',{L:[spot([6,FB[0]-.3,FB[1]-.2],[.5,SY+1,-3],.32,.55,0,0)],I:440,dist:45});
   ch('wash',{L:[spot([0,11,-1.7],[0,SY,-4],.75,.7,0,0)],I:320,dist:30});
   ch('washC',{L:[]});
-  ch('back',{L:[spot([0,11,-8.8],[0,SY,-3],.7,.6,0,0)],I:300,dist:30});
-  ch('side',{L:[spot([9.4,SY+2.3,-5.9],[-3,SY+1.2,-4],.55,.6,0,0)],I:260,dist:24});
-  ch('follow',{L:[spot([0,D.LY+1.45,D.ZC+.6],[0,SY+1,-3],.055,.35,0,0,true)],I:2600,dist:60});
-  ch('cyc',{L:[],pt:[]}); { const l=new THREE.PointLight(0,0,16*K.MH,1.2); l.userData.pool=true; l.position.set(0,SY+5,-12.8); K.G.add(l); LX.ch.cyc.pt.push({l,i:60}); }
+  ch('back',{L:[spot([0,11,E3],[0,SY,-3],.7,.6,0,0)],I:300,dist:30});
+  ch('side',{L:[spot([-7.4,SY+2.3,-4.2],[3,SY+1.2,-4],.55,.6,0,0)],I:260,dist:24});
+  ch('follow',{L:[spot([FS[0],FS[1]+1.45,FS[2]],[0,SY+1,-3],.055,.35,0,0,true)],I:2600,dist:60});
+  ch('cyc',{L:[],pt:[]}); { const l=new THREE.PointLight(0,0,16*K.MH,1.2); l.userData.pool=true; l.position.set(0,SY+5,CZ+1.8); K.G.add(l); LX.ch.cyc.pt.push({l,i:60}); }
   ch('foot',{L:[]}); ch('house',{}); ch('prac',{L:[]});
   for(const k of ['fohL','fohR','wash','back','side','follow'])for(const e of LX.ch[k].L)e.l.userData.ch=k;
   // the beams in the haze: a soft cone from each big lantern to where it lands
   const beam=(from,to,r0,r1,k,op)=>{ const A=new V3(...from), B=new V3(...to), L=A.distanceTo(B), g=new THREE.CylinderGeometry(r1,r0,L,20,1,true), m=new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
     { const p=g.attributes.position, c=new Float32Array(p.count*3); for(let i=0;i<p.count;i++){ const f=.5-p.getY(i)/L; c.set([.35+.65*f,.35+.65*f,.35+.65*f],i*3); } g.setAttribute('color',new THREE.BufferAttribute(c,3)); m.vertexColors=true; }
     const me=new THREE.Mesh(g,m); me.position.copy(A).add(B).multiplyScalar(.5); me.quaternion.setFromUnitVectors(new V3(0,1,0),B.clone().sub(A).normalize()); me.renderOrder=5; me.castShadow=false; me.receiveShadow=false; K.G.add(me); LX.beams.push({me,k,op}); return me; };
-  for(let i=0;i<8;i++){ const x=-7+i*2; beam([x,10.3,-1.75],[x*.6,SY,-2.6],.06,1.4,i%2?'washC':'wash',.022); beam([x,10.3,-8.85],[x*.6,SY,-4.2],.06,1.2,'back',.028); }
-  LX.fbeam=beam([0,D.LY+1.45,D.ZC],[0,SY,-3],.1,.5,'follow',.03);
+  for(let i=0;i<8;i++){ const x=-7+i*2; beam([x,10.3,-1.75],[x*.6,SY,-2.6],.06,1.4,i%2?'washC':'wash',.022); beam([x,10.3,E3-.05],[x*.6,SY,-4.2],.06,1.2,'back',.028); }
+  LX.fbeam=beam([FS[0],FS[1]+1.45,FS[2]-.6],[0,SY,-3],.1,.5,'follow',.03);
 
   /* ---------- the board: named looks, each channel's level and colour; a cue fades from where things are to its look ---------- */
   const W='#ffd9a0', CO='#a8c4ff', MO='#6c86ff', DU='#ff9a50', VI='#a070ff', GR='#5cd88a', CA='#ffae50', WH='#fff4e4', AM='#ffb870';
@@ -84,7 +84,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
   LX.followAt=[0,SY+1,-3];   // the follow spot's pick: a point on stage (metres), or a function giving one
   LX.cue('work',.01);
   // the board itself: a desk of faders by the follow spot; double-click it for the next look
-  { const x=-1.6, z=D.ZC+.6, y=D.LY; K.boxA(x-.6,y,z-.35,x+.6,y+.85,z+.35,M.mahog); K.box(1.15,.06,.6,M.black,x,y+.92,z,{rx:-.25}); const fd=[]; for(let i=0;i<16;i++)fd.push([x-.5+i*.066,y+.97,z+.02-(i%2)*.02]); K.inst(new THREE.BoxGeometry(.02,.03,.05),M.chrome,fd,{cast:false});
+  { const x=-6, z=14, y=D.FY; K.boxA(x-.6,y,z-.35,x+.6,y+.85,z+.35,M.mahog); K.box(1.15,.06,.6,M.black,x,y+.92,z,{rx:-.25}); const fd=[]; for(let i=0;i<16;i++)fd.push([x-.5+i*.066,y+.97,z+.02-(i%2)*.02]); K.inst(new THREE.BoxGeometry(.02,.03,.05),M.chrome,fd,{cast:false});
     const order=['work','preset','dusk','court','lovers','helena','wood','shop','shopNight','flats','call','out']; let k=0;
     K.thing('THE LIGHTING BOARD',x,y+.9,z,1.3,.7,.8,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; k=(k+1)%order.length; LX.cue(order[k],2.5); SAY('LIGHTS: '+order[k].toUpperCase()); },{reach:1.8,near:3}); K.solid(x-.65,z-.4,x+.65,z+.4); }
 },

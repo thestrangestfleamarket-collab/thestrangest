@@ -102,7 +102,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
     flyP('flats','s1',{in:SY+5.5},g=>{ flat(g,cot,-1.6,4.2,4.2,.05); flat(g,tre,-5.2,1.6,3.4,.08); flat(g,tre,4.2,1.8,3.8,.08); K.rod([6.2,-5.5,0],[6.2,-.6,0],.03,M.pine,{p:g}); const sm=lam({map:sun,alphaTest:.5,side:THREE.DoubleSide}); K.plane(1.6,1.6,sm,6.2,-1.0,.05,at(g,{cast:true})); }); }
 
   /* ---------- the throne truck: a carpeted dais on castors with three steps, Theseus's chair of state and Hippolyta's, footstools ---------- */
-  wagP('throne',0,-11.6,-7.4,g=>{ const w=4.4, d=2.4, h=.45; K.boxA(-w/2,.08,-d/2,w/2,h,d/2,M.mahog,at(g,{s:.8})); K.boxA(-w/2+.02,h,-d/2+.02,w/2-.02,h+.01,d/2-.02,M.carpet,at(g,{s:1.4}));
+  wagP('throne',0,-7.75,-6.4,g=>{ const w=4.4, d=2.4, h=.45; K.boxA(-w/2,.08,-d/2,w/2,h,d/2,M.mahog,at(g,{s:.8})); K.boxA(-w/2+.02,h,-d/2+.02,w/2-.02,h+.01,d/2-.02,M.carpet,at(g,{s:1.4}));
     for(let i=0;i<3;i++)K.boxA(-1.4,0,d/2+i*.3,1.4,h-(i+1)*h/3+.01+0.0,d/2+(i+1)*.3,PM,at(g,{s:1}));
     for(const [x,z] of [[-w/2+.3,-d/2+.3],[w/2-.3,-d/2+.3],[-w/2+.3,d/2-.3],[w/2-.3,d/2-.3],[0,0]]){ K.cyl(.07,.07,.05,M.iron,x,.07,z,at(g,{rz:PI/2,seg:10})); K.boxA(x-.05,.1,z-.05,x+.05,.12,z+.05,M.iron,at(g,{})); }
     const chair=(x,big)=>{ const s=big?1:.82; K.boxA(x-.4*s,h,-.4*s,x+.4*s,h+.5*s,.35*s,M.gold,at(g,{})); K.boxA(x-.36*s,h+.5*s,-.36*s,x+.36*s,h+.62*s,.3*s,M.velvet,at(g,{})); K.boxA(x-.4*s,h+.5*s,-.48*s,x+.4*s,h+(big?2.0:1.4)*s,-.36*s,M.gold,at(g,{}));
@@ -111,26 +111,26 @@ PHX.parts.push({make:K=>{ '@playhouse';
     chair(-.6,1); chair(.75,0); for(const x of [-.6,.75])K.boxA(x-.25,h,.45,x+.25,h+.2,.75,M.velvet,at(g,{})); },{spd:1.4,sol:[-2.2,-1.2,2.2,2.1],top:.46});
 
   /* ---------- the braziers: bronze bowls on lion-footed tripods, fire in them (their light a practical) ---------- */
-  const fires=[]; for(const s of [-1,1])wagP('brz'+(s<0?'L':'R'),s*5.6,s*12.5,-4.6,g=>{ for(let k=0;k<3;k++){ const a=k/3*PI*2+.4; K.rod([Math.cos(a)*.42,0,Math.sin(a)*.42],[Math.cos(a)*.12,1.1,Math.sin(a)*.12],.03,M.brass,{p:g}); K.sph(.06,M.brass,Math.cos(a)*.44,.05,Math.sin(a)*.44,at(g,{})); }
+  const fires=[]; for(const s of [-1,1])wagP('brz'+(s<0?'L':'R'),s*5.6,s*9.3,-4.6,g=>{ for(let k=0;k<3;k++){ const a=k/3*PI*2+.4; K.rod([Math.cos(a)*.42,0,Math.sin(a)*.42],[Math.cos(a)*.12,1.1,Math.sin(a)*.12],.03,M.brass,{p:g}); K.sph(.06,M.brass,Math.cos(a)*.44,.05,Math.sin(a)*.44,at(g,{})); }
       K.lathe([[0,0],[.18,.02],[.42,.18],[.5,.34],[.46,.36],[0,.36]],M.brass,0,1.06,0,at(g,{seg:20})); K.tor(.48,.03,M.brass,0,1.42,0,at(g,{rx:PI/2,seg:24}));
       const fl=[]; for(let k=0;k<7;k++){ const a=k/7*PI*2, r=k?.2:0, m=new THREE.Mesh(new THREE.ConeGeometry(.12+.05*h2(k,s,70),.55+.3*h2(k,2,70),6),new THREE.MeshBasicMaterial({color:k%2?0xffb040:0xff6a20,transparent:true,opacity:.92})); m.position.set(Math.cos(a)*r,1.6,Math.sin(a)*r); g.add(m); fl.push(m); }
       K.sph(.32,new THREE.MeshBasicMaterial({color:0xff5010}),0,1.38,0,at(g,{cast:false,phi:PI/2})); fires.push({g,fl,s}); ST.lights.push({k:'fire'+s,p:[0,1.7,0],g}); },{spd:1.5,sol:[-.5,-.5,.5,.5]});
   ST.fires=fires;
 
   /* ---------- the trees that walk in: cut-out trunks with real depth and heaped foliage, on wagons from each wing ---------- */
-  for(const s of [-1,1])wagP('tree'+(s<0?'L':'R'),s*6.2,s*13.4,s<0?-6.4:-7.8,g=>{ const bk=lam({color:0x3a2a1e}), lv=[lam({color:0x1e3a1e}),lam({color:0x2a4a24}),lam({color:0x183018})];
+  for(const s of [-1,1])wagP('tree'+(s<0?'L':'R'),s*6.2,s*8.4,s<0?-5.6:-6.6,g=>{ const bk=lam({color:0x3a2a1e}), lv=[lam({color:0x1e3a1e}),lam({color:0x2a4a24}),lam({color:0x183018})];
       K.boxA(-1,0,-.6,1,.18,.6,M.black,at(g,{})); K.ext([[-.35,0],[.35,0],[.26,2.4],[.6,3.4],[.5,3.5],[.12,2.8],[.1,4.4],[-.1,4.4],[-.2,3.1],[-.7,3.8],[-.8,3.7],[-.28,2.6]],.32,bk,0,.18,-.16,at(g,{bevel:.04}));
       for(let k=0;k<26;k++){ const a=h2(k,s,71)*PI*2, r=.4+h2(k,2,71)*1.6, y=3.6+h2(k,3,71)*2.2-r*.4, m=new THREE.Mesh(new THREE.IcosahedronGeometry(.45+h2(k,4,71)*.45,0),lv[k%3]); m.position.set(Math.cos(a)*r,y,Math.sin(a)*r*.5); m.rotation.set(k,k*2,0); m.castShadow=true; g.add(m); } },{spd:1.0,sol:[-1,-.6,1,.6]});
 
   /* ---------- the workshop's side walls: plaster and timber flats canted in, on wagons ---------- */
-  for(const s of [-1,1])wagP('side'+(s<0?'L':'R'),s*5.5,s*12.8,-6.6,g=>{ const wt=lam({color:0xd8c8a4}), tb=lam({color:0x4a3020}); const f=new THREE.Group(); f.rotation.y=s*.42; g.add(f);
+  for(const s of [-1,1])wagP('side'+(s<0?'L':'R'),s*5.5,s*8.6,-6.6,g=>{ const wt=lam({color:0xd8c8a4}), tb=lam({color:0x4a3020}); const f=new THREE.Group(); f.rotation.y=s*.42; g.add(f);
       K.boxA(-.06,0,-1.4,.06,5.8,1.4,wt,at(f,{})); for(const z of [-1.35,0,1.35])K.boxA(s*-.08,0,z-.1,s*-.18,5.8,z+.1,tb,at(f,{})); K.boxA(s*-.08,2.9,-1.4,s*-.2,3.1,1.4,tb,at(f,{})); K.boxA(s*-.08,5.6,-1.4,s*-.2,5.8,1.4,tb,at(f,{}));
       for(const z of [-.6,.6])K.rod([s*.3,0,z],[0,4,z],.03,M.pine,{p:f}); K.boxA(-.4,0,-1.5,.4,.12,1.5,M.black,at(g,{}));
       if(s>0){ for(const y of [1.5,2.1])K.boxA(s*-.08,y,-1,s*-.4,y+.04,.4,M.pine,at(f,{})); for(let z=-.9;z<.3;z+=.22)K.cyl(.04,.05,.18,K.col('#8a6a4a'),s*-.25,1.63,z,at(f,{seg:8})); }
       else{ K.boxA(s*-.08,1.2,-.8,s*-.5,1.24,.8,M.pine,at(f,{})); for(let z=-.6;z<.7;z+=.3)K.boxA(s*-.25,1.24,z-.06,s*-.3,1.5,z+.06,K.col('#6a4a2a'),at(f,{})); } },{spd:1.6,sol:[-.5,-1.4,.5,1.4]});
 
   /* ---------- the bench truck: the carpenter's bench (vice, plane, mallet, shavings), sawhorses and a plank, six stools and a keg, candles ---------- */
-  wagP('bench',1.2,12.8,-5.6,g=>{ K.boxA(-3,0,-1.3,3,.12,1.3,K.col('#5a4a3a'),at(g,{s:1}));
+  wagP('bench',1.2,7,-5.6,g=>{ K.boxA(-3,0,-1.3,3,.12,1.3,K.col('#5a4a3a'),at(g,{s:1}));
     K.boxA(-1.3,.95,-.45,1.3,1.05,.45,M.pine,at(g,{s:.8})); for(const [x,z] of [[-1.15,-.35],[1.15,-.35],[-1.15,.35],[1.15,.35]])K.boxA(x-.06,.12,z-.06,x+.06,.95,z+.06,M.pine,at(g,{})); K.boxA(-1.2,.3,-.4,1.2,.36,.4,M.pine,at(g,{}));
     K.boxA(1.2,.78,.38,1.45,1.1,.5,M.pine,at(g,{})); K.rod([1.32,.95,.5],[1.32,.95,.75],.02,M.iron,{p:g});
     K.boxA(-.6,1.05,-.1,-.28,1.15,0,M.pine,at(g,{})); K.cyl(.035,.035,.08,M.pine,-.44,1.18,-.05,at(g,{rz:PI/2})); K.boxA(.3,1.05,.1,.42,1.13,.18,K.col('#3a2a1a'),at(g,{})); K.rod([.36,1.13,.14],[.36,1.13,.5],.015,M.pine,{p:g});
@@ -146,14 +146,14 @@ PHX.parts.push({make:K=>{ '@playhouse';
   { const n=60, m=new THREE.InstancedMesh(new THREE.SphereGeometry(.035,6,4),new THREE.MeshBasicMaterial({color:0xd8ff70,transparent:true,opacity:0}),n); m.castShadow=false; K.G.add(m); ST.flies={m,n,ph:Array.from({length:n},(_,i)=>[h2(i,1,73)*6,h2(i,2,73)*6,h2(i,3,73)])};
     fadeP('flies',v=>{ m.material.opacity=v; m.visible=v>.01; });
     const ft=paint(256,128,(g,w,h)=>{ for(let i=0;i<30;i++){ const x=h2(i,1,74)*w, y=h*.4+h2(i,2,74)*h*.4, r=30+h2(i,3,74)*50, gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(210,235,230,.35)'); gr.addColorStop(1,'rgba(210,235,230,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h); } });
-    const fm=new THREE.MeshBasicMaterial({map:ft,color:0x2a3c40,transparent:true,opacity:0,depthWrite:false}), fog=[]; for(let k=0;k<5;k++){ const me=K.plane(22,1.2,fm,0,SY+.3,-3-k*2.1,{cast:false}); me.renderOrder=4; fog.push(me); } ST.fog=fog;
+    const fm=new THREE.MeshBasicMaterial({map:ft,color:0x2a3c40,transparent:true,opacity:0,depthWrite:false}), fog=[]; for(let k=0;k<5;k++){ const me=K.plane(19,1.2,fm,0,SY+.3,-3-k*1.5,{cast:false}); me.renderOrder=4; fog.push(me); } ST.fog=fog;
     fadeP('fog',v=>{ fm.opacity=v*.35; for(const f of fog)f.visible=v>.01; }); }
   // the moonlight's shaft through the workshop window
   { const b=new THREE.Mesh(new THREE.CylinderGeometry(1.1,.5,7,4,1,true),new THREE.MeshBasicMaterial({color:0x8090ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-    b.position.set(-.2,SY+2.0,-6.4); b.rotation.set(1.1,0,.25); b.renderOrder=5; K.G.add(b); fadeP('shaft',v=>{ b.material.opacity=v*.09; b.visible=v>.01; }); }
+    b.position.set(-.2,SY+2.0,F.s4.z+3.2); b.rotation.set(1.1,0,.25); b.renderOrder=5; K.G.add(b); fadeP('shaft',v=>{ b.material.opacity=v*.09; b.visible=v>.01; }); }
 
   /* ---------- the cyclorama: a seamless cloth across the back, lit from above and below (its colour is the lighting's) ---------- */
-  { const s=F.cyc; s.y=SY+12.2; s.put(); const W=22, H=12, ge=new THREE.PlaneGeometry(W,H,1,8), c=new Float32Array(ge.attributes.position.count*3); for(let i=0;i<ge.attributes.position.count;i++){ const v=.5+ge.attributes.position.getY(i)/H; const k=1-.45*v+.35*Math.max(0,.15-v)/.15; c.set([k,k,k],i*3); }
+  { const s=F.cyc; s.y=SY+12.2; s.put(); const W=19.2, H=12, ge=new THREE.PlaneGeometry(W,H,1,8), c=new Float32Array(ge.attributes.position.count*3); for(let i=0;i<ge.attributes.position.count;i++){ const v=.5+ge.attributes.position.getY(i)/H; const k=1-.45*v+.35*Math.max(0,.15-v)/.15; c.set([k,k,k],i*3); }
     ge.setAttribute('color',new THREE.BufferAttribute(c,3)); K.cycMat=new THREE.MeshBasicMaterial({color:0x101018,vertexColors:true}); const m=new THREE.Mesh(ge,K.cycMat); m.position.set(0,-H/2-.05,0); s.g.add(m); K.rod([-W/2,-H-.05,.02],[W/2,-H-.05,.02],.04,M.steel,{p:s.g}); }
 
   /* ---------- the looks: which pieces are in for each (the rest go out) ---------- */
@@ -187,7 +187,7 @@ tick:(dt,K,now,inn)=>{ const ST=K.sets; if(!ST)return; const t=now/1000, ease=k=
     const e=(L.n-1)*3; L.lan.position.set(X[e],X[e+1]-.02,X[e+2]); L.lan.rotation.z=Math.atan2(X[e]-X[e-3],X[e-2]-X[e+1])*.6; L.fl.scale.setScalar(.9+.2*Math.sin(t*17)*Math.sin(t*5)); }
   for(const f of ST.fires||[])f.fl.forEach((m,k)=>{ m.scale.set(1,.75+.4*Math.abs(Math.sin(t*9+k*1.7)*Math.sin(t*4.3+k)),1); m.rotation.y=t*2+k; });
   for(const f of ST.candles||[])f.scale.set(1,1.5+.4*Math.sin(t*13+f.position.x*7),1);
-  if(ST.flies&&ST.flies.m.visible){ const F=ST.flies, q=new THREE.Matrix4(); for(let i=0;i<F.n;i++){ const [a,b,c]=F.ph[i]; q.makeTranslation(Math.sin(t*.21+a)*8+Math.sin(t*.53+b)*1.2,K.D.SY+1+c*5+Math.sin(t*.4+b)*.6,-3-c*7+Math.sin(t*.33+a)*1.5); F.m.setMatrixAt(i,q); } F.m.instanceMatrix.needsUpdate=true; }
+  if(ST.flies&&ST.flies.m.visible){ const F=ST.flies, q=new THREE.Matrix4(); for(let i=0;i<F.n;i++){ const [a,b,c]=F.ph[i]; q.makeTranslation(Math.sin(t*.21+a)*8+Math.sin(t*.53+b)*1.2,K.D.SY+1+c*5+Math.sin(t*.4+b)*.6,-3-c*5.5+Math.sin(t*.33+a)*1); F.m.setMatrixAt(i,q); } F.m.instanceMatrix.needsUpdate=true; }
   for(const [k,f] of (ST.fog||[]).entries())f.position.x=Math.sin(t*.05+k)*2;
   // the practical lamps: by the fires in scene one, the lantern and the candles in scene two
   const lv=K.lx?K.lx.ch.prac.v:1, flick=.85+.15*Math.sin(t*11)*Math.sin(t*4.7), wp=new THREE.Vector3(), pts=[];

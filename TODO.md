@@ -108,7 +108,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   buildings"). DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js:56`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE
   (the owner's global look, `src/134e-distfog.js:65`) both limit what's drawn; the nearer wins. Ask with the default below; keep both
   editors in sync.
-- [ ] **DRAW DISTANCE's default** · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
+- [x] **DRAW DISTANCE's default** (owner, 4 Nov 2026: 60 tiles, the far fading into the sky at it) · P2 · S · pick. 120 tiles, picked by Claude, not the owner; far buildings vanish at that edge with no fog
   (the haze is off by default since 3 Nov). Ask: keep, change, or ALL. Sets the baseline for the tree-by-distance and shadow lines.
 
 ## Server, security and money
@@ -211,6 +211,11 @@ One pass, one pull request.
   work" (`CREW.spot`, `src/111fb-fleamarket.js:30,49`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`),
   so they walk main street. All seven visitor groups (43) come every day: should they take turns? JOBS also run on the server
   (`worker/lives.js`). With: the cast check, the referee, the fair's staff (4 Nov: "keep them as fair workers for now").
+- [ ] **The cast's hour changes on the server too** · P2 · M · code. Since the folk's walks (4 Nov, `worker/folk.js`) every walker on the
+  street is walked by the section's server, but the cast's goals on the hour (to work, home, a habit's spot) are still sent by a page
+  (`src/159-jobs.js`: `sync` and errands through `WALKS`); with nobody in they wander where they were until a player logs in, whose page
+  sends the hour's goals (walked there, or put there at a login). Next: the worker reads `lvPlan` itself, with the places' doors and
+  spots sent along with the walk grid, and sets the goals on the hour.
 - [ ] **The referee's habits** · P3 · S · pick. The merge of #567 and #570: `data/lives.json` `referee` is the fair's kart-track marshal with
   habits `drink, fish, movies` (the fair's `gamble` lost to the interiors' `movies`). Ask the owner.
 - [ ] **The egg poacher** · P3 · S · look + code. Never looked at on the live site since #511 (2 Nov). His colours aren't tintable: HISTORY

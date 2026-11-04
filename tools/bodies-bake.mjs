@@ -76,15 +76,17 @@ function joints(p) {
   return { J, H, hh, chinY, neckBase, shY, pelY, ankY, crotch: p.leg * H };
 }
 
+const headR = (p, hh) => V(hh * .39 * p.headW, hh * .5 * p.headL, hh * .45);
 function bodyPrims(p, Lo) {
   const { J, H, hh, chinY, neckBase, shY, pelY } = Lo, P = [], add = (f, bone, k, tag) => P.push({ f, bone, k, tag }), R = p.r;
   const hc = V(0, H - hh * .5, J.Head.z);
-  add(ell(hc, V(hh * .39 * p.headW, hh * .5, hh * .45)), 'Head', 0, 'head');
+  add(ell(hc, headR(p, hh)), 'Head', 0, 'head');
   add(ell(V(0, chinY + hh * .3, hc.z + hh * .04), V(hh * .31 * p.headW * p.jaw, hh * .3, hh * .37)), 'Head', .05, 'head');
-  const nz = 1 + .7 * R; add(ell(V(0, H - hh * (.57 + .03 * R), hc.z + hh * (.43 + .02 * R)), V(hh * .05 * nz, hh * .08 * nz, hh * .065 * nz)), 'Head', .02, 'nose');
-  if (R > .25) { add(cap(V(0, H - hh * .45, hc.z + hh * .43), V(0, H - hh * .57, hc.z + hh * (.44 + .03 * R)), hh * .03 * R, hh * .04 * R), 'Head', .02, 'nose');
-    add(ell(V(0, chinY + hh * .05, hc.z + hh * .25), V(hh * .13, hh * .09, hh * .12).multiplyScalar(.6 + .5 * R)), 'Head', .04, 'head'); }
-  for (const s of [1, -1]) add(ell(V(s * hh * .38 * p.headW, H - hh * .52, hc.z - .01), V(hh * .05, hh * .12, hh * .08)), 'Head', .015, 'ear');
+  const nz = 1 + .7 * R, nL = hh * .08 * nz * p.noseL; add(ell(V(0, H - hh * (.57 + .03 * R) - (nL - hh * .08 * nz) * .5, hc.z + hh * (.43 + .02 * R + .05 * p.noseP)), V(hh * .05 * nz * p.noseW, nL, hh * .065 * nz)), 'Head', .02, 'nose');
+  if (R > .25) { add(cap(V(0, H - hh * .45, hc.z + hh * .43), V(0, H - hh * .57 - (nL - hh * .08 * nz) * .7, hc.z + hh * (.44 + .03 * R + .045 * p.noseP)), hh * .03 * R * Math.sqrt(p.noseW), hh * .04 * R * Math.sqrt(p.noseW)), 'Head', .02, 'nose');
+    add(ell(V(0, chinY + hh * .05, hc.z + hh * (.25 + .09 * p.chin)), V(hh * .13, hh * .09, hh * .12).multiplyScalar((.6 + .5 * R) * (1 + .3 * p.chin))), 'Head', .04, 'head'); }
+  for (const s of [1, -1]) add(ell(V(s * hh * .2 * p.headW, H - hh * .66, hc.z + hh * (.255 + .065 * p.cheek)), V(hh * .11, hh * .085, hh * .08).multiplyScalar(1 + .13 * p.cheek)), 'Head', .012, 'head');
+  for (const s of [1, -1]) add(ell(V(s * hh * (.38 * p.headW + .07 * p.earOut), H - hh * .52, hc.z - .01), V(hh * .05, hh * .12, hh * .08).multiplyScalar(p.ear)), 'Head', .015, 'ear');
   add(cap(V(0, neckBase - .02, J.neck_01.z), V(0, chinY + hh * .2, hc.z - .01), p.neckR * H, p.neckR * H * .92), 'neck_01', .03, 'neck');
   const tH = shY - pelY, cz = J.spine_03.z;
   add(ell(V(0, J.spine_03.y - .01, cz), V(p.shW * H * .88, tH * .33, p.chestD * H + .006 * H * p.mus)), 'spine_03', 0, 'torso');
@@ -150,14 +152,15 @@ function faceParts(p, Lo, headF) {
   const nrm = (x, y, z) => { const e = .002; return V(headF(x + e, y, z) - headF(x - e, y, z), headF(x, y + e, z) - headF(x, y - e, z), headF(x, y, z + e) - headF(x, y, z - e)).normalize(); };
   const stick = (g, col, x, y, lift, rz = 0) => { const z = surf(x, y), n = nrm(x, y, z), m = new THREE.Matrix4().compose(V(x, y, z).addScaledVector(n, lift), new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), n).multiply(new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), rz)), V(1, 1, 1)); g.applyMatrix4(m); out.push({ g, col }); };
   const disc = (rx, ry) => { const g = new THREE.CircleGeometry(1, 14); g.scale(rx, ry, 1); return g; }, bar = (w, h) => new THREE.PlaneGeometry(w, h);
-  const ey = H - hh * p.eyeY, ex = hh * .15 * p.headW, brow = new THREE.Color(p.hairC).multiplyScalar(.7).getHex();
-  for (const s of [1, -1]) { const x = s * ex;
-    stick(disc(hh * .065 * p.eye, hh * .048 * p.eye), 0xf3efe8, x, ey, .0008);
+  const ey = H - hh * p.eyeY, ex = hh * .15 * p.headW * p.eyeX, brow = new THREE.Color(p.hairC).multiplyScalar(.7).getHex(), lipC = new THREE.Color(p.skin).lerp(new THREE.Color(0xa05a50), .45).getHex();
+  for (const s of [1, -1]) { const x = s * ex, t = s * p.eyeT * .35;
+    stick(disc(hh * .065 * p.eye, hh * .048 * p.eye), 0xf3efe8, x, ey, .0008, t);
     stick(disc(hh * .036 * p.eye, hh * .042 * p.eye), p.eyeC, x, ey - .001, .0016);
-    stick(bar(hh * .14 * p.eye, hh * .014), 0x3a2a24, x, ey + hh * .042 * p.eye, .0018);
-    stick(bar(hh * .15, hh * .026 * p.brow), brow, x + s * .002, ey + hh * .13, .0016, s * -.08); }
-  const my = H - hh * .8; stick(bar(hh * .12, hh * .012), 0x8a4c44, 0, my, .0012);
-  stick(disc(hh * .058, hh * .019), new THREE.Color(p.skin).lerp(new THREE.Color(0xa05a50), .45).getHex(), 0, my - hh * .022, .001);
+    stick(bar(hh * .14 * p.eye, hh * .014), 0x3a2a24, x - Math.sin(t) * hh * .042 * p.eye, ey + Math.cos(t) * hh * .042 * p.eye, .0018, t);
+    stick(bar(hh * .15, hh * .026 * p.brow), brow, x + s * .002, ey + hh * (.13 + .07 * p.browY), .0016, s * (-.08 + .4 * p.browT)); }
+  const my = H - hh * (.8 - .05 * p.mouthY); stick(bar(hh * .12 * p.mouthW, hh * .012), 0x8a4c44, 0, my, .0012);
+  stick(disc(hh * .052 * p.mouthW, hh * .009 * p.lip), lipC, 0, my + hh * .011 * p.lip, .001);
+  stick(disc(hh * .058 * p.mouthW, hh * .019 * p.lip), lipC, 0, my - hh * .022 * p.lip, .001);
   return out;
 }
 
@@ -178,7 +181,7 @@ function shapes(p) {
   const neckCut = ell(V(0, neckBase + .012 * H, J.spine_03.z + .022 * H), V(.046 * H, .026 * H, .05 * H));
   const shirtF = (x, y, z) => { let d = smin(torso(x, y, z), Math.min(sl[0](x, y, z), sl[1](x, y, z)), .035); if (y < waist + .03 * H) d = Math.min(d, pantsRaw(x, y, z)); d -= C.loose * H + .004 * H; d = smax(d, hemY - y, .006); d = Math.max(d, -neckCut(x, y, z)); return Math.max(d, y - (neckBase + .03 * H)); };
   const shoeF = s => { const a = J['foot_' + s], bl = J['ball_leaf_' + s]; return (x, y, z) => smin(rbox(V(a.x, .024 * H, (a.z + bl.z) / 2 - .005 * H), V(.038 * H * p.foot, .024 * H, (bl.z - a.z) / 2 + .03 * H), .02 * H)(x, y, z), cap(V(a.x, .03 * H, a.z), V(a.x, ankY + .025 * H, a.z), .034 * H, .03 * H)(x, y, z), .03); };
-  const hc = V(0, H - hh * .5, J.Head.z), hr = V(hh * .39 * p.headW, hh * .5, hh * .45), hairF = HAIR[p.hair](hc, hr, hh);
+  const hc = V(0, H - hh * .5, J.Head.z), hr = headR(p, hh), hairF = HAIR[p.hair](hc, hr, hh);
   const headF = (x, y, z) => { let d = 1e9; for (const pr of B.P) if (pr.tag === 'head' || pr.tag === 'nose') d = smin(d, pr.f(x, y, z), pr.k); return d; };
   return { Lo, B, F: { body: B.f, shirt: shirtF, pants: pantsF, shoe_l: shoeF('l'), shoe_r: shoeF('r'), hair: hairF, face: headF }, pantsRaw, hemY, hemL, waist };
 }
@@ -218,7 +221,7 @@ function pack(b) {
 
 // the six (owner, 4 Nov 2026: realism "2-3 but real hands")
 const base = { H: 1.76, heads: 6.2, neck: .035, neckR: .031, shW: .115, waistW: .085, hipW: .095, chestD: .064, belly: 0, bust: 0, uaR: .028, thR: .046, ua: .165, fa: .15, hand: 1, leg: .465, mus: 0, thF: 1, calfF: 1, foot: 1, glute: .6,
-  headW: 1, jaw: 1, eye: 1, eyeY: .52, brow: 1, eyeC: 0x4a3428, skin: 0xd9a988, hairC: 0x5b4636, hair: 'part',
+  headW: 1, headL: 1, jaw: 1, chin: 0, cheek: 0, noseW: 1, noseL: 1, noseP: 0, eyeX: 1, eyeT: 0, browY: 0, browT: 0, mouthW: 1, mouthY: 0, lip: 1, ear: 1, earOut: 0, eye: 1, eyeY: .52, brow: 1, eyeC: 0x4a3428, skin: 0xd9a988, hairC: 0x5b4636, hair: 'part',
   clothes: { shirt: 0xd8d4c8, pants: 0x2c4258, shoes: 0x6b4630, sole: 0x2a1d16, sleeve: .55, loose: .006 }, tris: { body: 7000, shirt: 2600, pants: 2200, shoe: 500, hair: 1400 } };
 const mk = o => ({ ...base, ...o, clothes: { ...base.clothes, ...(o.clothes || {}) } });
 const PROTOS = {
@@ -240,7 +243,14 @@ const SLIDERS = [
   ['ARM LENGTH', p => ({ ua: p.ua * 1.08, fa: p.fa * 1.08 })], ['LEG LENGTH', p => ({ leg: p.leg + .025 })],
   ['CHEST', p => p.bust ? { bust: p.bust * 1.5, chestD: p.chestD + .004 } : { chestD: p.chestD + .014 }], ['WAIST', p => ({ waistW: p.waistW + .026 })], ['BELLY', p => ({ belly: p.belly + .06 })],
   ['HIPS', p => ({ hipW: p.hipW + .02 })], ['BOTTOM', p => ({ glute: p.glute * 2.4 })], ['UPPER ARMS', p => ({ uaR: p.uaR * 1.3 })], ['THIGHS', p => ({ thF: p.thF * 1.3 })],
-  ['CALVES', p => ({ calfF: p.calfF * 1.5 })], ['HANDS', p => ({ hand: p.hand * 1.15 })], ['FEET', p => ({ foot: p.foot * 1.15 })]];
+  ['CALVES', p => ({ calfF: p.calfF * 1.5 })], ['HANDS', p => ({ hand: p.hand * 1.15 })], ['FEET', p => ({ foot: p.foot * 1.15 })],
+  // the FACE sliders (owner, 4 Nov 2026), after the BODY ones so older designs keep their values
+  ['HEAD WIDTH', p => ({ headW: p.headW * 1.18 })], ['HEAD HEIGHT', p => ({ headL: p.headL * 1.14 })], ['JAW', p => ({ jaw: p.jaw * 1.4 })], ['CHIN', p => ({ chin: p.chin + 1 })], ['CHEEKS', p => ({ cheek: p.cheek + 1 })],
+  ['EYE SIZE', p => ({ eye: p.eye * 1.45 })], ['EYE SPACING', p => ({ eyeX: p.eyeX * 1.25 })], ['EYE HEIGHT', p => ({ eyeY: p.eyeY - .06 })], ['EYE TILT', p => ({ eyeT: p.eyeT + 1 })],
+  ['BROW HEIGHT', p => ({ browY: p.browY + 1 })], ['BROW TILT', p => ({ browT: p.browT + 1 })], ['BROW THICKNESS', p => ({ brow: p.brow * 2 })],
+  ['NOSE WIDTH', p => ({ noseW: p.noseW * 1.6 })], ['NOSE LENGTH', p => ({ noseL: p.noseL * 1.5 })], ['NOSE TIP', p => ({ noseP: p.noseP + 1 })],
+  ['MOUTH WIDTH', p => ({ mouthW: p.mouthW * 1.45 })], ['LIPS', p => ({ lip: p.lip * 2.2 })], ['MOUTH HEIGHT', p => ({ mouthY: p.mouthY + 1 })],
+  ['EAR SIZE', p => ({ ear: p.ear * 1.45 })], ['EARS OUT', p => ({ earOut: p.earOut + 1 })]];
 // the joints BODIES moves (rig-rebake.py's 15 bones), where each starts
 const B15 = [['hips', 'pelvis'], ['torso', 'spine_01'], ['head', 'neck_01'], ['upperArmL', 'upperarm_l'], ['forearmL', 'lowerarm_l'], ['handL', 'hand_l'], ['upperArmR', 'upperarm_r'], ['forearmR', 'lowerarm_r'], ['handR', 'hand_r'],
   ['thighL', 'thigh_l'], ['shinL', 'calf_l'], ['shoeL', 'foot_l'], ['thighR', 'thigh_r'], ['shinR', 'calf_r'], ['shoeR', 'foot_r']];
@@ -259,10 +269,10 @@ function targets(p, b) {
   const S0 = b.S, P0 = b.P, n = P0.length / 3, near = new Int32Array(n), lvl = new Float32Array(n), partOf = new Array(n);
   for (const [name, st, cnt] of b.ranges) for (let v = st; v < st + cnt; v++) { partOf[v] = name; const x = P0[3 * v], y = P0[3 * v + 1], z = P0[3 * v + 2]; let bi = 0, bd = 1e9;
     S0.B.P.forEach((pr, i) => { if (name === 'face' && pr.tag !== 'head' && pr.tag !== 'nose') return; const d = pr.f(x, y, z); if (d < bd) { bd = d; bi = i; } }); near[v] = bi; lvl[v] = S0.F[name](x, y, z); }
-  const o0 = B15.map(([, u]) => S0.Lo.J[u]), out = [];
+  const o0 = B15.map(([, u]) => S0.Lo.J[u]), out = [], f0 = b.ranges.find(r => r[0] === 'face')[1];
   for (const [nm, ch] of SLIDERS) { const p1 = { ...p, ...ch(p) }, S1 = shapes(p1); if (S1.B.P.length !== S0.B.P.length) throw new Error(nm + ': the shapes differ in number');
-    const D = new Float32Array(n * 3);
-    for (let v = 0; v < n; v++) { const x = P0[3 * v], y = P0[3 * v + 1], z = P0[3 * v + 2], w = settle(S1.F[partOf[v]], carry(S0.B.P[near[v]].f.d, S1.B.P[near[v]].f.d, x, y, z), lvl[v]); D[3 * v] = w.x - x; D[3 * v + 1] = w.y - y; D[3 * v + 2] = w.z - z; }
+    const D = new Float32Array(n * 3), F1 = []; for (const fp of faceParts(p1, S1.Lo, S1.F.face)) F1.push(...fp.g.attributes.position.array);
+    for (let v = 0; v < n; v++) { if (partOf[v] === 'face') { const j = v - f0; for (let k = 0; k < 3; k++) D[3 * v + k] = F1[3 * j + k] - P0[3 * v + k]; continue; } const x = P0[3 * v], y = P0[3 * v + 1], z = P0[3 * v + 2], w = settle(S1.F[partOf[v]], carry(S0.B.P[near[v]].f.d, S1.B.P[near[v]].f.d, x, y, z), lvl[v]); D[3 * v] = w.x - x; D[3 * v + 1] = w.y - y; D[3 * v + 2] = w.z - z; }
     // a few points can be pulled onto the wrong surface: none moves much further than its neighbours along the part
     out.push({ name: nm, D, o: B15.map(([, u], i) => S1.Lo.J[u].clone().sub(o0[i]).toArray()) }); }
   return out;

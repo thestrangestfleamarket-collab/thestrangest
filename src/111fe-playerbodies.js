@@ -1,4 +1,4 @@
-// THE PLAYER BODIES: the six bodies A–F (data/bodies.json: tools/bodies-bake.mjs, then tools/rig-rebake.py players) on your rig, smooth and cel-lit, each its own height; everyone is one of them (BODIES.base), not the Walker (owner, 4 Nov 2026). SHAPES: the BODY sliders (data/shapes-X.json), a design's code (its start and 18 values) kept in OWNED and sent with your look.
+// THE PLAYER BODIES: the six bodies A–F (data/bodies.json: tools/bodies-bake.mjs, then tools/rig-rebake.py players) on your rig, smooth and cel-lit, each its own height; everyone is one of them (BODIES.base), not the Walker (owner, 4 Nov 2026). SHAPES: the BODY and FACE sliders (data/shapes-X.json), a design's code (its start and its sliders' values) kept in OWNED and sent with your look.
 import {THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {LOOKS} from './003b-systems.js';
@@ -8,7 +8,7 @@ import {BODIES} from './111a-bodies.js';
 const SHAPES={names:[],mine:null}; window.SHAPES=SHAPES;
 { const DATA=__LAZY__("data/bodies.json"), KEYS='ABCDEF';
   const SH={A:__LAZY__("data/shapes-A.json"),B:__LAZY__("data/shapes-B.json"),C:__LAZY__("data/shapes-C.json"),D:__LAZY__("data/shapes-D.json"),E:__LAZY__("data/shapes-E.json"),F:__LAZY__("data/shapes-F.json")};
-  const NS=18, base=k=>BODIES.by['p'+k];
+  const NS=64, base=k=>BODIES.by['p'+k];
   // a design's code: its start (A–F) and the sliders' values, a signed byte each (-100…100), url-safe
   const enc=(k,v)=>{ const b=Array.from(v,x=>Math.max(-100,Math.min(100,Math.round(x*100)))&255); while(b.length&&!b[b.length-1])b.pop(); return k+(b.length?btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''):''); };
   const dec=c=>{ const v=new Float32Array(NS); let k=(c||'')[0]; if(!KEYS.includes(k))k=null; try{ const s=atob((c||'').slice(1).replace(/-/g,'+').replace(/_/g,'/')); for(let i=0;i<Math.min(NS,s.length);i++){ const b=s.charCodeAt(i); v[i]=(b>127?b-256:b)/100; } }catch(e){} return {k,v}; };
@@ -40,7 +40,7 @@ const SHAPES={names:[],mine:null}; window.SHAPES=SHAPES;
   const saved=dec(OWNED.get('shape')||''); if(saved.k)SHAPES.mine=saved;
   Object.assign(SHAPES,{enc,dec,load,
     // the design you wear: its start and values, worn, shaped and kept (on the server)
-    set:(k,v)=>{ SHAPES.mine={k,v:Float32Array.from(v)}; BODIES.set('p'+k); const b=base(k); try{ OWNED.set('shape',enc(k,v)); }catch(e){} return b?b.reshape(SHAPES.mine.v):Promise.resolve(); }});
+    NS,set:(k,v)=>{ SHAPES.mine={k,v:Float32Array.from(v)}; BODIES.set('p'+k); const b=base(k); try{ OWNED.set('shape',enc(k,v)); }catch(e){} return b?b.reshape(SHAPES.mine.v):Promise.resolve(); }});
   SYS.onStart(()=>DATA().then(D=>{ for(const k of Object.keys(D.bodies))add(D,k); BODIES.base=()=>SHAPES.mine?'p'+SHAPES.mine.k:(LOOKS.L&&LOOKS.L.form==='F')?'pB':'pA';
     if(SHAPES.mine){ const b=base(SHAPES.mine.k); if(b&&SHAPES.mine.v.some(x=>x))b.reshape(SHAPES.mine.v); } }).catch(e=>console.warn('PLAYER BODIES',e)),'111fe-playerbodies'); }
 export {SHAPES};

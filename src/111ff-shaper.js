@@ -1,4 +1,4 @@
-// THE DESIGNER (owner, 4 Nov 2026: "a fully fleshed out featured character designer", the Sims' options): DESIGN YOURSELF, your new body in the studio — BODY (start A–F and its 18 sliders) now; FACE, SKIN, HAIR, CLOTHES and YOU next.
+// THE DESIGNER (owner, 4 Nov 2026: "a fully fleshed out featured character designer", the Sims' options): DESIGN YOURSELF, your new body in the studio — BODY (start A–F and its 18 sliders) and FACE (20) now; SKIN, HAIR, CLOTHES and YOU next.
 import {THREE} from './003-shx.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
@@ -7,6 +7,7 @@ import {BODIES} from './111a-bodies.js';
 import {SHAPES} from './111fe-playerbodies.js';
 const SHAPER={on:false}; window.SHAPER=SHAPER;
 { const TABS=['BODY','FACE','SKIN','HAIR','CLOTHES','YOU'], FRAME=['HEIGHT','WEIGHT','MUSCLE','HEAD SIZE','NECK','SHOULDERS','ARM LENGTH','LEG LENGTH'];
+  const FACE=[['HEAD',['HEAD WIDTH','HEAD HEIGHT','JAW','CHIN','CHEEKS']],['EYES',['EYE SIZE','EYE SPACING','EYE HEIGHT','EYE TILT']],['BROWS',['BROW HEIGHT','BROW TILT','BROW THICKNESS']],['NOSE',['NOSE WIDTH','NOSE LENGTH','NOSE TIP']],['MOUTH',['MOUTH WIDTH','LIPS','MOUTH HEIGHT']],['EARS',['EAR SIZE','EARS OUT']]];
   SHAPER.open=()=>{ '@later';
     if(!SHAPER.el)build(); SHAPER.el.hidden=false; SHAPER.on=true; SHAPER.redraw(); requestAnimationFrame(SHAPER.loop); };
   function build(){ '@later';
@@ -17,7 +18,7 @@ const SHAPER={on:false}; window.SHAPER=SHAPER;
       #shaper button{font:inherit;color:inherit;background:#1a1f2b;border:2px solid #2a3040;padding:3px 7px;cursor:pointer} #shaper button[aria-pressed=true]{border-color:#ffd27a;color:#ffd27a}
       #shaper .sz-main{display:flex;gap:14px;min-height:0} #shaper canvas{display:block;height:min(${SH}px,74vh);aspect-ratio:${SW}/${SH};background:#a7adb2;cursor:grab;touch-action:none;image-rendering:pixelated}
       #shaper .sz-side{width:560px;display:flex;flex-direction:column;gap:6px;overflow:auto} #shaper h3{margin:6px 0 2px;font-size:11px;color:#cfe9d4;letter-spacing:2px;border-bottom:2px solid #2a3040;padding-bottom:3px;font-weight:normal}
-      #shaper .sz-cols{display:flex;gap:18px} #shaper .sz-col{flex:1;display:flex;flex-direction:column;gap:4px} #shaper .sz-sl{display:grid;grid-template-columns:96px 1fr 44px;gap:6px;align-items:center}
+      #shaper .sz-cols{display:flex;gap:18px} #shaper .sz-col{flex:1;display:flex;flex-direction:column;gap:4px} #shaper .sz-sl{display:grid;grid-template-columns:112px 1fr 44px;gap:6px;align-items:center}
       #shaper input[type=range]{width:100%;accent-color:#ffd27a} #shaper .sz-v{text-align:right;color:#8a8f9c} #shaper .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center} #shaper .sz-note{color:#8a8f9c;font-size:10px;line-height:1.6}`;
     document.head.appendChild(css);
     const el=document.createElement('div'); el.id='shaper'; el.hidden=true; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Design yourself');
@@ -32,34 +33,38 @@ const SHAPER={on:false}; window.SHAPER=SHAPER;
     ['pointerdown','pointermove','pointerup','wheel','click','contextmenu','keydown','keyup'].forEach(t=>el.addEventListener(t,e=>e.stopPropagation()));
     addEventListener('keydown',e=>{ if(!SHAPER.on)return; e.stopPropagation(); if(e.key==='Escape'){ e.preventDefault(); close(); } },true);
     // the design you're shaping: its start and values; each finished change kept, undone and redone whole
-    const cur=()=>SHAPES.mine||{k:(BODIES.pick()||'pA').slice(1,2),v:new Float32Array(18)};
+    const cur=()=>SHAPES.mine||{k:(BODIES.pick()||'pA').slice(1,2),v:new Float32Array(SHAPES.NS)};
     const save=()=>{ const s=JSON.stringify({k:cur().k,v:[...cur().v]}); if(s===snap)return; if(snap){ undo.push(snap); if(undo.length>100)undo.shift(); redo.length=0; } snap=s; };
     const put=(k,v,keep)=>{ SHAPES.set(k,v).then(()=>SHAPER.redraw(false)); if(keep)save(); SHAPER.redraw(false); };
     const loadS=s=>{ const d=JSON.parse(s); snap=s; put(d.k,d.v,false); SHAPER.redraw(); };
     const tabs={
       BODY:()=>`<h3>START FROM</h3><div class="row">${'ABCDEF'.split('').map(k=>{ const b=BODIES.by['p'+k]; return `<button data-start="${k}" title="${b?b.label:''}">${k} ${b?b.label.replace(/^THE /,''):''}</button>`; }).join('')}</div>
-        <div class="sz-cols"><div class="sz-col"><h3>FRAME</h3>${names().slice(0,8).map((n,i)=>sl(n,i)).join('')}</div><div class="sz-col"><h3>SHAPE</h3>${names().slice(8).map((n,i)=>sl(n,i+8)).join('')}</div></div>
-        <div class="sz-note">EACH START IS WHERE THE SLIDERS BEGIN: ITS FACE, HAIR AND CLOTHES COME WITH IT FOR NOW. YOUR DESIGN IS KEPT ON THE SERVER AND OTHER PLAYERS SEE IT.</div>`,
+        <div class="sz-cols"><div class="sz-col"><h3>FRAME</h3>${names().slice(0,8).map((n,i)=>sl(n,i)).join('')}</div><div class="sz-col"><h3>SHAPE</h3>${names().slice(8,18).map((n,i)=>sl(n,i+8)).join('')}</div></div>
+        <div class="sz-note">EACH START IS WHERE THE SLIDERS BEGIN: ITS HAIR AND CLOTHES COME WITH IT FOR NOW. YOUR DESIGN IS KEPT ON THE SERVER AND OTHER PLAYERS SEE IT.</div>`,
+      FACE:()=>{ const col=gs=>`<div class="sz-col">${gs.map(([h,ns])=>`<h3>${h}</h3>`+ns.map(n=>sl(n,SHAPES.names.indexOf(n))).join('')).join('')}</div>`;
+        return SHAPES.names.includes('HEAD WIDTH')?`<div class="sz-cols">${col(FACE.slice(0,3))}${col(FACE.slice(3))}</div><div class="sz-note">THE FACE SHAPES COME FROM YOUR START; SKIN, EYE AND HAIR COLOURS ARE NEXT.</div>`:`<h3>FACE</h3><div class="sz-note">LOADING…</div>`; },
       other:t=>`<h3>${t}</h3><div class="sz-note">COMING NEXT.</div>`};
     SHAPER.redraw=(full=true)=>{ const c=cur();
-      if(full){ side.innerHTML=tab==='BODY'?tabs.BODY():tabs.other(tab);
+      if(full){ side.innerHTML=tabs[tab]?tabs[tab]():tabs.other(tab);
         side.querySelectorAll('input[type=range]').forEach(inp=>{ const i=+inp.dataset.i; inp.oninput=()=>{ const d=cur(), v=Float32Array.from(d.v); v[i]=+inp.value; put(d.k,v,false); }; inp.onchange=()=>save(); }); }
       el.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tab===tab)));
       el.querySelectorAll('[data-start]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.start===c.k)));
       side.querySelectorAll('input[type=range]').forEach(inp=>{ const v=c.v[+inp.dataset.i]||0; if(document.activeElement!==inp)inp.value=v; inp.nextElementSibling.textContent=(v>0?'+':'')+Math.round(v*100); }); };
     el.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const c=cur();
-      if(b.dataset.tab){ tab=b.dataset.tab; SHAPER.redraw(); } else if(b.dataset.view)view(b.dataset.view);
+      if(b.dataset.tab){ setTab(b.dataset.tab); } else if(b.dataset.view)view(b.dataset.view);
       else if(b.dataset.start){ put(b.dataset.start,c.v,true); }
       else if(b.id==='szun'){ save(); if(undo.length){ redo.push(snap); loadS(undo.pop()); } } else if(b.id==='szre'){ if(redo.length){ undo.push(snap); loadS(redo.pop()); } }
-      else if(b.id==='szra'){ put(c.k,Float32Array.from({length:18},()=>Math.round((Math.random()*2-1)*Math.random()*70)/100),true); }
-      else if(b.id==='szrs'){ put(c.k,new Float32Array(18),true); } else if(b.id==='szok'||b.id==='szx')close(); });
+      else if(b.id==='szra'||b.id==='szrs'){ const v=Float32Array.from(c.v); for(const i of mine())v[i]=b.id==='szrs'?0:Math.round((Math.random()*2-1)*Math.random()*70)/100; put(c.k,v,true); } else if(b.id==='szok'||b.id==='szx')close(); });
+    // the sliders RANDOM and RESET change: the open tab's (BODY's first 18, FACE's after)
+    const mine=()=>tab==='FACE'?FACE.flatMap(g=>g[1]).map(n=>SHAPES.names.indexOf(n)).filter(i=>i>=0):[...Array(18).keys()];
+    const setTab=t=>{ if(t==='FACE'&&tab!=='FACE'){ zoom=3.8; view('front'); } else if(t!=='FACE'&&tab==='FACE')zoom=1; tab=t; SHAPER.redraw(); };
     const close=()=>{ save(); el.hidden=true; SHAPER.on=false; };
     // the view: you in the studio's light, turned and zoomed, drawn at the game's pixel size
     const view=v=>{ az={front:0,side:Math.PI/2,back:Math.PI,three:Math.PI/4}[v]||0; el.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===v))); };
     const TOPV=new WeakMap(), crown=()=>{ const me=W3.group.children.find(m=>m.isMesh&&m.visible&&m.userData.PM); if(!me)return null; const g=me.geometry, P=g.attributes.position, bi=g.attributes.bi; let t=TOPV.get(g);
       if(t==null||P.version!==g.userData.tv){ t=0; for(let i=1;i<P.count;i++)if(P.getY(i)>P.getY(t))t=i; TOPV.set(g,t); g.userData.tv=P.version; } const v=new THREE.Vector3().fromBufferAttribute(P,t); return v.applyMatrix4(me.userData.PM.value[Math.round(bi.getX(t))]).applyMatrix4(me.matrixWorld); };
     const frame=()=>{ const g=W3.group, gp=g.getWorldPosition(new THREE.Vector3()), c0=crown(), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3()), top=c0?c0.y+(c0.y-gp.y)*.04:(head?head.y:gp.y+2.2)+.35*(head?head.y-gp.y:2)/7, bot=gp.y-.06, h0=(top-bot)*1.1;
-      const hh=h0/2/zoom, hw=hh*SW/SH, c=new THREE.Vector3(gp.x,(top+bot)/2+(1-1/zoom)*(top-bot)*.42,gp.z), d=h0*3+8, a=az+(g.rotation?g.rotation.y:0);
+      const hh=h0/2/zoom, hw=hh*SW/SH, c=new THREE.Vector3(gp.x,(top+bot)/2+(1-1/zoom)*(top-bot)*.5,gp.z), d=h0*3+8, a=az+(g.rotation?g.rotation.y:0);
       cam.left=-hw; cam.right=hw; cam.top=hh; cam.bottom=-hh; cam.near=.01; cam.far=d*2+40; cam.updateProjectionMatrix();
       cam.position.set(c.x+Math.sin(a)*Math.cos(elv)*d,c.y+Math.sin(elv)*d,c.z+Math.cos(a)*Math.cos(elv)*d); cam.up.copy(Y); cam.lookAt(c); cam.updateMatrixWorld(true); };
     const small=document.createElement('canvas'), gs=small.getContext('2d');
@@ -70,9 +75,9 @@ const SHAPER={on:false}; window.SHAPER=SHAPER;
     cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); drag={x:e.clientX,y:e.clientY}; cv.style.cursor='grabbing'; });
     cv.addEventListener('pointermove',e=>{ if(!drag)return; az-=(e.clientX-drag.x)*.012; elv=Math.max(-.5,Math.min(.8,elv+(e.clientY-drag.y)*.006)); drag={x:e.clientX,y:e.clientY}; });
     cv.addEventListener('pointerup',()=>{ drag=null; cv.style.cursor='grab'; });
-    cv.addEventListener('wheel',e=>{ e.preventDefault(); zoom=Math.max(1,Math.min(4,zoom*Math.exp(-e.deltaY*.0015))); },{passive:false});
+    cv.addEventListener('wheel',e=>{ e.preventDefault(); zoom=Math.max(1,Math.min(6,zoom*Math.exp(-e.deltaY*.0015))); },{passive:false});
     view('front'); snap=JSON.stringify({k:cur().k,v:[...cur().v]}); SHAPES.load(cur().k).then(()=>SHAPER.redraw());
-    SHAPER.test={view,set:(i,v)=>{ const d=cur(), w=Float32Array.from(d.v); w[i]=v; put(d.k,w,true); },tab:t=>{ tab=t; SHAPER.redraw(); }};
+    SHAPER.test={view,set:(i,v)=>{ const d=cur(), w=Float32Array.from(d.v); w[i]=v; put(d.k,w,true); },tab:t=>setTab(t)};
   }
   // YOU's button opens it while you wear one of the new bodies
   const b=document.getElementById('ldesign'); if(b){ b.textContent='DESIGN YOURSELF'; const old=b.onclick; b.onclick=e=>{ if(/^p[A-F]$/.test(BODIES.pick())){ const lp=document.getElementById('looks'); if(lp)lp.hidden=true; SHAPER.open(); } else if(old)old(e); }; }

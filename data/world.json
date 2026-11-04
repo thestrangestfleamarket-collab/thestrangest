@@ -182,7 +182,10 @@
   "y0": -38,
   "y1": 181
  },
+ "hangouts": {"pier":{"band":[30,100,-117.6,-116.6],"hd":3.1416},"meadow":{"areas":[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},"path":{"band":[-15,250,57,60]},"bench":{"areas":[[113,52,6],[30,140,5]]},"river":{"band":[0,200,-115,-111]},"flea":{"areas":[[223,-84,5]]},"shrine":{"band":[90.86,94.86,-110.6,-109.8],"hd":0}},
+ "residences": [{"id":"corner_tenement","name":"THE CORNER TENEMENT","door":[158.62,-76.1],"beds":53},{"id":"brownstone_row_house","name":"THE BROWNSTONE","door":[169.71,-76.1],"beds":26},{"id":"narrow_walk_up","name":"THE WALK-UP","door":[178.05,-76.1],"beds":10},{"id":"cast_iron_loft","name":"THE CAST-IRON LOFT","door":[208.84,-76.1],"beds":50},{"id":"motel_room_run","name":"THE RIVER MOTEL","door":[32.21,-108.8],"beds":8},{"id":"corner_shophouse","name":"THE CORNER SHOPHOUSE","door":[47.0,-108.8],"beds":2},{"id":"two_storey_shophouse","name":"THE TWO-STOREY SHOPHOUSE","door":[52.26,-108.8],"beds":2},{"id":"three_storey_shophouse","name":"THE THREE-STOREY SHOPHOUSE","door":[67.55,-108.8],"beds":2},{"id":"wide_shophouse","name":"THE WIDE SHOPHOUSE","door":[75.19,-108.8],"beds":4},{"id":"haunted_victorian_house","name":"THE HAUNTED HOUSE","door":[2.0,157.96],"beds":1},{"id":"porch_log_cabin","name":"THE LOG CABIN","door":[40.0,144.34],"beds":2}],
  "block": {
+  "pf": {"1":[[-71.9,-60.76],[-60.66,-50.54],[-50.44,-26.03],[-25.93,-6.83],[-6.73,8.15],[82.45,92.57],[153.2,164.05],[164.65,174.77],[175.37,180.74],[181.34,191.46],[201.4,216.29]],"2":[[-4.8,10.09],[9.99,20.11],[20.01,44.42],[44.32,49.68],[49.58,54.94],[54.84,64.97],[64.87,70.23],[70.13,80.25],[80.15,90.28],[90.18,95.54],[95.44,110.32]]},
   "x0": -100,
   "x1": 245,
   "front": -77,

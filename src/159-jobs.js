@@ -5,6 +5,7 @@ import {scene} from './004-main.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {CREW} from './111fb-fleamarket.js';
+import {LIVES} from './158-lives.js';
 const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.list,q:[]}; window.JOBS=JOBS;
 { const T=TILE, rnd=Math.random;
   const hsh=s=>{ let h=7; for(const c of s)h=(h*31+c.charCodeAt(0))>>>0; return h; };
@@ -29,20 +30,30 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const goHome=J=>{ const N=J.N; J.goal='home'; room(N,false); if(N.st.pin){ N.st.pin=false; put(N,J.door||N.st); }
     if(J.home===J.door&&N.mode==='hidden'){ J.state='home'; return; }
     go(J,J.home,()=>{ if(J.goal!=='home')return; J.state='home'; J.A=null; hide(N,true); }); };
-  const act=(J,w)=>w==='work'?toWork(J):w==='home'?goHome(J):offWork(J);
+  // their own time (src/158-lives.js): a habit's place, inside it or out of doors; a jogger goes at a jog
+  const pace=(J,f)=>{ const N=J.N; if(J.v0==null)J.v0=N.st.v; N.st.v=f?J.v0*2.2:J.v0; };
+  const life=(J,w,now)=>{ const N=J.N, k=w.slice(4), H=LIVES.H(), sp=LIVES.spot(k,J.key,H); J.goal=w; J.kind=k; room(N,false); if(N.st.pin){ N.st.pin=false; put(N,J.door||N.st); } pace(J,sp&&sp.fast);
+    if(!sp){ offWork(J); J.goal=w; return; }
+    if(sp.at){ go(J,sp.door,()=>{ if(J.goal!==w)return; J.state='off'; J.A=null; const p=CREW.inside(sp.at,J.key); if(p){ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; } else hide(N,true); },now); return; }
+    go(J,sp,()=>{ if(J.goal!==w)return; J.state='off'; J.A=sp.r>0?sp:null; N.st.hold=true; if(sp.hd!=null)N.st.hd=sp.hd; },now); };
+  const act=(J,w,now)=>w==='work'?(pace(J,0),toWork(J,now)):w==='home'?(pace(J,0),goHome(J)):w.startsWith('off:')?life(J,w,now):offWork(J);
   // a cast member joins: its hours a little its own, and it is where the hour says at once
   JOBS.add=(N,job,key)=>{ if(!JOBS.on||!job||!job.hours)return null; const h=hsh(key), j1=((h%9)-4)*.08, j2=(((h>>4)%5))*.15;
     const J={N,key,job,open:job.hours[0]+j1,close:job.hours[1]+j1,state:'',goal:'',t:rnd()*5}; J.bed=J.close+1+j2; J.wake=J.open-1-j2;
     J.door=CREW.door(job.at); const hm=job.home||(job.r!=null?'house':job.at); J.home=hm===job.at?J.door:CREW.door(hm);
-    JOBS.list.push(J); N.st.hold=true; const w=want(J,CLOCK.h); J.goal=w;
+    if(LIVES.data[key]){ J.life=true; J.home=LIVES.home(key)||J.home; }   // a life of their own: their home, hours and habits from data/lives.json
+    JOBS.list.push(J); N.st.hold=true; const w=wantOf(J); J.goal=w;
     if(w==='home'){ if(J.home)put(N,J.home); J.state='home'; hide(N,true); }
     else if(w==='work')toWork(J,true);
+    else if(J.life)life(J,w,true);
     else { if(J.door)put(N,J.door); offWork(J); }
     return J; };
+  // what the hour asks of them: their life's plan (work, home, or off: and the habit), else the job's hours
+  const wantOf=J=>{ if(!J.life)return want(J,CLOCK.h); const k=LIVES.plan(J.key); return k==='work'?'work':k==='sleep'||k==='home'||LIVES.LV_DO[k]&&LIVES.LV_DO[k].home?'home':'off:'+k; };
   let acc=0;
   SYS.add('city',dt=>{ if((acc+=dt)<.5)return; acc=0; const h=CLOCK.h; if(JOBS.on)for(const c of CREW.list)if(!c.J)c.J=JOBS.add(c.N,c.job,c.key)||1;
     for(let i=0;i<2&&JOBS.q.length;i++)JOBS.q.shift()();
-    for(const J of JOBS.list){ const w=want(J,h); if(w!==J.goal)act(J,w); else if((J.state==='work'||J.state==='off')&&J.A&&(J.t-=.5)<=0){ J.t=4+rnd()*10; roam(J); } } },'159-jobs');
-  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
+    for(const J of JOBS.list){ const w=wantOf(J); if(w!==J.goal)act(J,w); else if((J.state==='work'||J.state==='off')&&J.A&&(J.t-=.5)<=0){ J.t=4+rnd()*10; roam(J); } } },'159-jobs');
+  window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
 }
 export {JOBS};

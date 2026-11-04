@@ -117,7 +117,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { await LOAD('log'); CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
-        const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
+        const inGame = !!B.by.knight && !B.by.man && !B.by.woman, none = !B.by.knight.playable;
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns[0] === 'walker' && btns.every(k => k === 'walker' || k === 'merchant');
         const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set('poacher'); const poacher = B.pick() === 'walker' && !!B.by.poacher && B.by.poacher.tris() > 0 && B.by.poacher.npc.on; B.set(saved || 'walker');
         return { ok: true, inGame, none, noRow, stays, hero, poacher, btns: btns.join(',') }; })();
@@ -171,7 +171,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are the Walker or the Merchant (3 Nov 2026): knight/man/woman/hero/egg poacher stay in the game, off YOU\'s BODY row (WALKER, MERCHANT), and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are the Walker or the Merchant (3 Nov 2026): knight/hero/egg poacher stay in the game (the man and the woman are gone, 4 Nov 2026), off YOU\'s BODY row (WALKER, MERCHANT), and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
     ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
     ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));
@@ -210,11 +210,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(cm.min >= 1.5, 'the behind view never pulls the camera into his head as he starts walking beside a solid: ' + JSON.stringify(cm));
     const dg = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)); for (let i = 0; i < 600 && !window.DRAGONDBG; i++) await raf();
       const D = window.__dbg, TI = D.cv().TILE, you = D.pos(), n = D.npcs().find(q => q.key === 'dragon' && !q.D.p.sign); if (!n) return { err: 'no dragon' };
-      const fly = n.mixer._actions.find(x => x.getClip().name === 'Flying_loop'), out = {}; if (n.D.p) n.D.p.on = 0;
+      const fly = n.mixer._actions.find(x => x.getClip().name === 'Fly_Flap'), out = {}; if (n.D.p) n.D.p.on = 0;
       const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 2 * TI; n.st.z = you[2] + 2 * TI; n.D.y = n.D.cruise = you[1] + 4 * TI; };
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
-        out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
-    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
+        out['phase' + k] = { style: n.D.style, beats: +(fly.getEffectiveTimeScale() / fly.getClip().duration).toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
+    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.beats > .25 && dg.phase1.beats > .25, 'a flying dragon beats its wings through both halves of its flight (a beat every few seconds at least): ' + JSON.stringify(dg));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }

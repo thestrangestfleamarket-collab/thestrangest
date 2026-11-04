@@ -78,7 +78,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (always the Walker unless a playable body is set; knight/man/woman stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you (always the Walker unless a playable body is set; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
   const playable=b=>!!(b&&b.playable);
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
@@ -147,7 +147,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
-  /* ---------- a baked body (bases-bake, hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
+  /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
   BODIES.baked=(D,key,label,at,PAL,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
     const geo=()=>{ const P=b.pos, T=b.tri, nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3);

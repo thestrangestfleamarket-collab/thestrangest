@@ -155,6 +155,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(e.code===4002){ BUGS.logout(); return; }   // sent out (banned or removed): to the door
       if(e.code===4000||e.code===4001){ sock.close(); line('THE MARKET',e.code===4000?'you came in from another window; this one is alone now':'log in again to see the others'); } list(); });
     sock.addEventListener('message',e=>{ let m=null; try{ m=JSON.parse(e.data); }catch(x){} if(m)ONLINE.feed(m); }); };
+  addEventListener('pagehide',()=>{ if(sock){ send({t:'bye'}); sock.close(1000,'bye'); } });   // logging out or closing the page: gone for everyone at once (owner, 4 Nov 2026)
+  addEventListener('pageshow',e=>{ if(e.persisted&&sock&&sock.reconnect)sock.reconnect(); });
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
       if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }

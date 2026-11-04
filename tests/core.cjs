@@ -94,7 +94,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.windows = !!(window.WINDOWS && typeof WINDOWS.bake === 'function' && WINDOWS.panes.some(p => p.off === 'bodega' && p.look === 'in') && SYS.P.places.some(s => s.name === '130a-windows') && ROOMS.off.bodega.shift);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
-      o.tenants = document.querySelector('[data-t="tenants"]').hidden === true && !!document.getElementById('dten');
+      o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.equip = (() => { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -166,7 +166,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.hours, 'the hours: only DAY and NIGHT, the owner\'s pick for everyone (shared on the server), the day\'s hour the look\'s own; puffball clouds by day, none at night; the distance fog gentle when chosen');
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered, retaken while you are in)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
-    ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
+    ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
@@ -243,9 +243,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   { const p = await pg.evaluate(() => { const b = document.getElementById('dps2'); if (!b) return null; const was = PS2.on; b.click(); const flip = PS2.on !== was; b.click(); return { flip, back: PS2.on === was, label: b.textContent }; });
     ok(p && p.flip && p.back && /PS2 FILTER (ON|OFF)/.test(p.label), 'GRAPHICS has a PS2 FILTER switch that turns the filter on and off: ' + JSON.stringify(p)); }
   { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
-      const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => BATCH.queues.reduce((s, q) => s + q.groups.reduce((t, G) => t + G.ms.reduce((u, me) => u + ['map', 'emissiveMap'].reduce((v, k) => v + (me.material[k] && me.material[k].image ? me.material[k].image.width * me.material[k].image.height * 4 : 0), 0), 0), 0), 0);
+      const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => { const seen = new Set(); let B = 0; for (const q of BATCH.queues) for (const G of q.groups) for (const me of G.ms) for (const k of ['map', 'emissiveMap']) { const t = me.material[k]; if (t && t.image && !seen.has(t)) { seen.add(t); B += t.image.width * t.image.height * 4; } } return B; };
       const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.away; BATCH.away = () => true; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.away = a0; await fr(6); o.g2 = groups(); return o; });
-    ok(g.g0 > 0 && g.kept && g.g1 === 0 && g.mb1 === 0 && g.g2 > 0, 'the painted ground and walls are only kept near you, all dropped while you are in a room off the map, painted again near you on the way out: ' + JSON.stringify(g)); }
+    ok(g.g0 > 0 && g.kept && g.g1 === 0 && g.mb1 === 0 && g.g2 > 0, 'the painted ground and walls are kept within the haze range (all of it with the fog off), all dropped while you are in a room off the map, painted again near you on the way out: ' + JSON.stringify(g)); }
   { const m = await pg.evaluate(async () => { const ST = window.STORE; if (!ST || !ST.inside) return { none: true }; await ST.ensure(); const R = ST.inside.museum; if (!R) return { noMuseum: true };
       const o = { before: !!R.done }; await ST.enter('museum', true); o.built = !!R.done && !!R.P && R.P.objs.length > 0; await ST.exit('museum'); for (const t = Date.now(); Date.now() - t < 20000 && (R.done || R.P);) await new Promise(r => setTimeout(r, 250)); o.dropped = !R.done && !R.P; await ST.enter('museum', true); o.again = !!R.done && !!R.P; await ST.exit('museum'); return o; });
     ok(m.before === false && m.built && m.dropped && m.again, 'the museum\'s inside is built only when you go in and dropped when you leave (built again next time): ' + JSON.stringify(m)); }

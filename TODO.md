@@ -149,3 +149,17 @@ starting: a newer owner decision wins over a line here.
 - [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
   street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
   Scanner's was pictured).
+- [ ] **Painting: a way to take a painting down** (from #564, 4 Nov 2026). The owner's TENANTS panel can't hide or remove a player's painting
+  (an offensive one). Needs an ART tab in `src/136c-tenants.js` and an owner-only call in `worker/door.js` (the `art` table in `Home`).
+- [ ] **Trade: the server trusts each game's offer** (#564). The block's server doesn't check a player has the items or cash they put in
+  (`trade()` in `worker/door.js`); each game applies the swap itself (`src/159i-trade.js`). Same trust as the rest of the economy today.
+- [ ] **Trade: photos can't be traded** (#564). A photo's picture lives in its owner's own save (`OWNED 'photos'`), so the other player
+  would get an empty item; they're kept out (`SWAP.no`). Moving photos to the `/art` store would let them go.
+- [ ] **Paintings in the item editor**: each painting shows as its own entry there; editing one does nothing (the class `painting` sets
+  them all, `ITEMS.cls` in `src/140b-items.js`). Hide `pt_`/`wip_` ids from its list.
+- [ ] **A painting sold to THE TRADER leaves its title and thumbnail in your save** (`OWNED 'paint'`, a few KB each; nothing shows).
+  Drop them when the pack no longer has it and it isn't hung.
+- [ ] **The easel mockup is out of date** (`mockups/easel.html`, https://claude.ai/artifact/MzbB331ZcnwQf6P2H6b92P): it shows the easel
+  game with skills and dealers the owner turned down ("not an easel subgame"). Update it to the painter as built, or leave it.
+- [ ] **The painter, not yet tried for real**: pinch to zoom and pen pressure (never on a phone, tablet or pen), in VR (never), and the
+  easel showing your latest unfinished painting (never pictured).

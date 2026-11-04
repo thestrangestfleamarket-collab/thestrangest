@@ -70,7 +70,11 @@ const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const grab=async(name,fn)=>{ const n0=scene.children.length; await fn(); const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
-const LEVEL=__DATA__("data/world.json"), WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, ORIGIN=LEVEL.block.origin||[72,LEVEL.block.front], LOTX=m=>ORIGIN[0]+(m-ORIGIN[0])/BLDK, LOTY=m=>ORIGIN[1]+(m-ORIGIN[1])/BLDK;   // the map origin: world 0,0 in map tiles
+__CODE__("worker/mappatch.js")
+const LEVEL0=__DATA__("data/world.json"), MAPFILE=MAPPATCH.file(LEVEL0);
+const MAPLIVE=window.__MAPLIVE||(/^https?:$/.test(location.protocol)&&QS.get('map')!=='base'?await (async()=>{ try{ const c=new AbortController(), t=setTimeout(()=>c.abort(),4000), r=await fetch(MAPFILE,{credentials:'same-origin',signal:c.signal}); clearTimeout(t); return r.status===200?await r.json():null; }catch(e){ return null; } })():null);
+const MAPAPP=MAPPATCH.apply(LEVEL0,MAPLIVE); SHARED.MAPLIVE={used:MAPAPP.used,ground:MAPAPP.ground,at:MAPLIVE&&MAPLIVE.at||null,gardenOf:list=>MAPPATCH.gardenOf(list,MAPLIVE)};
+const LEVEL=MAPAPP.W, WP=Object.fromEntries(LEVEL.places.map(p=>[p.id,p])), WPP=LEVEL.parkPlaces, BLDK=1.1, ORIGIN=LEVEL.block.origin||[72,LEVEL.block.front], LOTX=m=>ORIGIN[0]+(m-ORIGIN[0])/BLDK, LOTY=m=>ORIGIN[1]+(m-ORIGIN[1])/BLDK;   // the map origin: world 0,0 in map tiles
 const SECTION=LEVEL.section||{id:'A'}; SHARED.SECTION=SECTION;
 const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c][r],col:c,row:r,x0:G.x0+c*G.w,x1:G.x0+(c+1)*G.w,y0:G.y0+r*G.h,y1:G.y0+(r+1)*G.h});
   const list=[]; for(let c=0;c<G.cols;c++)for(let r=0;r<G.rows;r++)list.push(box(c,r));
@@ -82,7 +86,7 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
     // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground and the hand-built section's insides off the map stay
     fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.py<-1.6)return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
       if(home.id===SECTION.id&&ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
-    at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS;
+    at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS; SECTIONS.station=(((LEVEL.loop&&LEVEL.loop.stations)||[]).find(s=>s.id===SECTION.id)||{}).name||SECTIONS.streets.south;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }

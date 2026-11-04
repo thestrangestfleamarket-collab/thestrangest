@@ -1,6 +1,6 @@
 // CHARACTERS IN PARTS: the shape kit (boxes, blobs, curves traced from a photo, lathes, tubes, skin weights) and PARTSNPC.street for the street's walkers.
 import {SHARED, THREE} from './003-shx.js';
-import {NPCS} from './003b-systems.js';
+import {NPCS, PONDS} from './003b-systems.js';
 import {MODS, SOL} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, stfree, STHOLE, STLANE} from './076-npc-map.js';
@@ -56,6 +56,6 @@ const PARTSNPC={};
   window.RESHAPE=(key,part,scale,move)=>{ const N=NPCS.find(q=>q.key===key); if(N&&N.reshape)N.reshape(part,{scale,move}); };
   PARTSNPC.LANE=STLANE;
   { const HOLE=STHOLE;
-    PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R); }
+    PARTSNPC.free=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R); }
   PARTSNPC.street=(x,y)=>({lv:'up',group:'bodega',x:SHARED.BOD.XS(x),z:SHARED.BOD.ZS(y),lane:PARTSNPC.LANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z)}); }
 export {PARTSNPC};

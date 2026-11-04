@@ -1,7 +1,7 @@
 // THE CREATURES: the park's wild things at their real sizes, each living as its kind does (wasps from a nest to the flowers, spiders in webs, bats at dusk, frogs by the pond, a basking snake, rats along walls at night); CREATS lists them.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {BINS, CLOCK, FLOW, PARK, POND, SFX, WX} from './003b-systems.js';
+import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, WX} from './003b-systems.js';
 import {MAPG, MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
@@ -9,7 +9,7 @@ import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
 const CREATS=[]; window.CREATS=CREATS;
 { const C=CREATURES, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R), clipsOf=D=>SKIN.clips(D.clips,D.rig.names);
   const M=SHARED.BOD.MAP, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2.2),x1:X(PARK.x1+PARK.ox-2.2),z0:Z(PARK.y0+PARK.oy+2.2),z1:Z(PARK.y1+PARK.oy-2.2)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},
-    HOLE=STHOLE, FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
+    HOLE=STHOLE, FREE=(x,z,R)=>!(x>HOLE[0]-R&&x<HOLE[2]+R&&z>HOLE[1]-R&&z<HOLE[3]+R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
   const FL=()=>window.FLORA&&window.FLORA.cover?window.FLORA:{bushes:[],beds:[],cover:()=>null}, WU=TILE/.84, rnd=(a,b)=>a+Math.random()*(b-a), WXN=()=>window.WX&&WX.now||{}, inL=(L,x,z)=>x>L.x0&&x<L.x1&&z>L.z0&&z<L.z1;
   const OUT={always:()=>true,night:()=>CLOCK.dark(),bat:()=>CLOCK.dark()&&!(WXN().rain>.4||WXN().wind>.8),
     wasp:()=>!CLOCK.dark()&&!(WXN().rain>.2||WXN().snow>.1||WXN().wind>.7),snake:()=>!CLOCK.dark()&&!(WXN().rain>.1||WXN().snow>.05)};

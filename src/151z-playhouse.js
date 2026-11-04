@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {pos, ROOMS, SFX, UI, USE} from './003b-systems.js';
 import {Reflector, renderer, scene} from './004-main.js';
-import {grab, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
+import {grab, SECTIONS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {PHT} from './151a-ph-tex.js';
 import {PHK, PHX} from './151b-ph-kit.js';
 import {PHA} from './151c-ph-house.js';
@@ -51,7 +51,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(K&&x>OX+B.x0*MH&&x<OX+B.x1*MH&&z>OZ+B.z0*MH&&z<OZ+B.z1*MH){ const y=K.groundAt(lx(x),lz(z)); return (y==null?1.3:y)*MV; } return sg0?sg0(x,z):null; };
   const door=at(m,L.y1+.25), out=at(m,L.y1+.9);
   ROOMS.off.playhouse={name:'THE PLAYHOUSE',box:{x0:OX+B.x0*MH,z0:OZ+B.z0*MH,x1:OX+B.x1*MH,z1:OZ+B.z1*MH,y0:-3*MV,y1:26*MV},noCeil:true,clearAir:true,need:()=>LOAD('playhouse'),build,unbuild,
-    spawn:[...(p=>[p[0],p[2]])(W(0,0,40.6)),0,PI],out:[...out,0,TP.hd(0)],door:[door[0],0,door[1]],exit:W(0,1.3,41.9),exitName:'OUT TO WEST ST'};
+    spawn:[...(p=>[p[0],p[2]])(W(0,0,40.6)),0,PI],out:[...out,0,TP.hd(0)],door:[door[0],0,door[1]],exit:W(0,1.3,41.9),exitName:'OUT TO '+SECTIONS.streets.west};
   STORE.places.push(['THE PLAYHOUSE',...(p=>[p[0],p[2]])(W(0,0,40.6)),'up','off',PI]);
   ROOMS.reset&&ROOMS.reset();
   // each frame while you are inside: the bars that are flying, the parts' own work, the mirrors of the room you are in, the reflection when it is due

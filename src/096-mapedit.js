@@ -124,6 +124,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     if(PARK.oaks)PARK.oaks.forEach(([X,Z,m],i)=>{ const [x,y]=wt(X,Z); Cc('TREE','tree',x,y,Math.max(.8,m*.21),m*16,'tree bark and leaves','tree'+i); });
     for(const o of L)if(bld(o)){ const f=WP[o.gid].face||'n'; o.rot=FACEROT[f]; if(f==='e'||f==='w'){ const w=o.w; o.w=o.d; o.d=w; } }
     return L; };
+  MAPED.base=base;
 
   const ANIMALS=['squirrel','fox','rat','frog','snake','spider','bat','wasp','slime','dragon','raincat','tvcat','scooterfrog','shark','manatee','rainfish','coatbear','origamifox','teddy','ticketfox','deer','wolf','bear','crow','owl','duck','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','penguin','raptor','stego','brachio','ptera','antqueen','woodant','aphid','ladybird','hopper','beetle','mantis','caterpillar','slug','snail','crab','bee','bumblebee','firefly'], MONST=/^(ogre|skeleton|slime|golem)/, PEOPLE=/^(hero|villager)/, MERCH=['tomato'];
   const kindOf=k=>k==='you'?'you':MERCH.includes(k)?'merchant':MONST.test(k)?'monster':PEOPLE.test(k)?'people':ANIMALS.includes(k)?'animal':'toon';
@@ -133,7 +134,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
   const place=o=>{ if(o.lv==='down')return 'UNDERGROUND (THE STATION OR THE DUNGEON)'; const P=PARK, x=o.x, y=o.y;
     for(const m of (ST.map.items||[]))if((m.ly==='shop'||m.ly==='shell')&&hit(m,x,y))return 'INSIDE '+m.n;
     if(P&&x>P.x0+(P.ox||0)&&x<P.x1+(P.ox||0)&&y>P.y0+(P.oy||0)&&y<P.y1+(P.oy||0))return y>(P.y0+P.y1)/2+(P.oy||0)?'CENTRAL PARK':'SOUTH EAST CENTRAL PARK';
-    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>SHARED.BOD.FAR)return 'WEST ST'; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return 'MARKET ST'; };
+    if(y<RING.river.y1)return 'THE HUDSON'; if(y<BLOCK.back)return 'THE ALLEY AND THE HUDSON WALK'; if(x>RING.wx0-20&&x<RING.wx1&&y>SHARED.BOD.FAR)return SECTIONS.streets.west; if(F&&(x<F.x0||x>F.x1||y<F.y0||y>F.y1))return 'OFF THE MAP'; return SECTIONS.streets.south; };
   const chStart=()=>{ const L=[]; { const [x,y]=wt(pos.x,pos.z); L.push({id:'c0',gid:'you',key:'you',n:'YOU (THE AVATAR)',ly:'you',sh:'circle',x,y,r:.45,rot:SHARED.heading*180/Math.PI,z:SHARED.py,lv:SHARED.LVL,beh:'YOU',speed:1,hp:1,home:'',job:'',scale:1,color:KCOL.you,tint:'#ffffff',opacity:1}); }
     (typeof NPCS!=='undefined'?NPCS:[]).forEach((N,i)=>{ if(!N||!N.st)return; const [x,y]=wt(N.st.x,N.st.z), j=N.rig&&N.rig.job, k=kindOf(N.key);
       L.push({id:'c'+(i+1),gid:'npc'+i,key:N.key,n:String(N.name||N.key).toUpperCase(),ly:k,sh:'circle',x,y,r:Math.max(.25,(N.st.R||.3)/T),rot:(N.st.h||0)*180/Math.PI,z:0,lv:N.lv||'up',beh:behOf(N),speed:+((N.st.v||0)/T).toFixed(3),hp:N.hp==null?1:N.hp,home:N.home?(typeof N.home==='string'?N.home:'x '+(+wt(N.home.x||0,N.home.z||0)[0]).toFixed(1)+', y '+(+wt(N.home.x||0,N.home.z||0)[1]).toFixed(1)+(N.home.r>0?', within '+(N.home.r/T).toFixed(0)+' tiles':', stays here')):'',job:j?String(j.k||j.name||j.id||'A JOB').toUpperCase():'',scale:1,color:KCOL[k],tint:'#ffffff',opacity:1}); });
@@ -166,6 +167,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     +'<b style="color:#ece5d3">PICKED</b><div id="meSel" style="margin-top:6px;line-height:1.7;color:#8a8f9c"></div>'
     +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px"><button class="mb" id="meRA">START OVER (THE GAME AS IT IS)</button><button class="mb" id="meE" data-hot="1">EXPORT</button><button class="mb" id="meI">IMPORT</button><input id="meF" type="file" accept=".json,application/json" style="display:none"></div>'
     +'<div id="meN" style="margin-top:6px;color:#f2c14e;min-height:12px"></div>'
+    +(/^https?:$/.test(location.protocol)?'<div style="margin-top:8px"><a href="/editor" target="_blank" rel="noopener" style="color:#f2c14e">OPEN THE NEW MAP EDITOR (OWNERS)</a></div>':'')
     +'<div style="margin-top:8px;color:#8a8f9c;line-height:1.6">EDITS CHANGE THIS MOCKUP ONLY, NEVER THE RUNNING GAME. THE MAP EDITOR EXPORTS world.json, THE GAME\'S OWN LEVEL FILE: PUT IT IN data/ AND THE GAME IS BUILT FROM IT. IMPORT LOADS IT BACK. THE DRAFT STAYS IN THIS BROWSER.</div></div>';
   document.body.appendChild(R); const q=s=>R.querySelector(s), cv=q('#meC'), g=cv.getContext('2d'); skin(R);
   const lyHTML=()=>{ q('#meLy').innerHTML=(MODE==='map'?LAYERS:LAYERS_CH).map(([k,n])=>'<label style="display:flex;gap:5px;align-items:center;cursor:pointer"><input type="checkbox" data-ly="'+k+'"'+(SHOW[k]?' checked':'')+'>'+n+'</label>').join(''); };
@@ -198,7 +200,7 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
       g.beginPath(); g.arc(sx(H.rot[0]),sy(H.rot[1]),6*dpr,0,7); g.fill(); g.stroke(); g.fillRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); g.strokeRect(sx(H.size[0])-5*dpr,sy(H.size[1])-5*dpr,10*dpr,10*dpr); }
     if(SHOW.label){ g.font=Math.round(9*dpr)+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle';
       for(const o of ITEMS){ if(!SHOW[o.ly]||o.ly==='filler'||o.ly==='tree'||(o.ly==='path'&&o!==sel)||(o.ly==='shell'&&V.k<3)||(chars&&(!onMap(o)||(V.k<4&&o!==sel))))continue; const t=o.n.replace(/ \(.*\)/,''); g.fillStyle='rgba(0,0,0,.6)'; const w=g.measureText(t).width; g.fillRect(sx(o.x)-w/2-2,sy(o.y)-7*dpr,w+4,14*dpr); g.fillStyle=o===sel?'#f2c14e':'#ece5d3'; g.fillText(t,sx(o.x),sy(o.y)); }
-      g.fillStyle='rgba(236,229,211,.5)'; const LB=homeA?[['MARKET ST',60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],['WEST ST',(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]]:[];
+      g.fillStyle='rgba(236,229,211,.5)'; const LB=homeA?[[SECTIONS.streets.south,60,(SHARED.BOD.CURB+SHARED.BOD.FAR)/2],[SECTIONS.streets.west,(RING.wr0+RING.wr1)/2,90],['CENTRAL PARK',(PARK.x0+PARK.x1)/2+(PARK.ox||0),165],['THE HUDSON',60,(RING.river.y0+RING.river.y1)/2]]:[];
       if(!homeA&&SM){ const ST=SECTIONS.streets, rd=SM.road, inn=SM.inner, b=SECTIONS.home, cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2; LB.push([b.row===0?ST.south:ST.north,cx,b.row===0?(rd.y0+inn.y0)/2:(rd.y1+inn.y1)/2]); if(b.col===0)LB.push([ST.west,(rd.x0+inn.x0)/2,cy]); if(b.col===SECTIONS.grid.cols-1)LB.push([ST.east,(rd.x1+inn.x1)/2,cy]);
         for(const st of LOOP.STA||[])if(!st.old)LB.push([st.id+'1 '+st.name,(st.kiosk.x0+st.kiosk.x1)/2,st.side==='south'?st.kiosk.y0-2.5:st.kiosk.y1+2.5]); }
       for(const [t,x,y] of LB)g.fillText(t,sx(x),sy(y)); } }

@@ -84,7 +84,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
   const curKey=()=>{ if(pick!=='walker'&&playable(BODIES.by[pick]))return pick; const b=BODIES.base&&BODIES.base(); return playable(BODIES.by[b])?b:'walker'; };
   let ME=null, MEK=null, hid=false;
-  W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
+  W3.body={on:false,place:B=>{ const key=curKey(), b0=BODIES.by[key], body=b0&&b0.mine&&b0.mine()||b0; W3.body.on=!!body;   // (mine: the design you wear on that body: 111fe)
+      // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
     if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
     hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)

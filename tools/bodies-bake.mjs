@@ -7,9 +7,10 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const smin = (a, b, k) => { if (k <= 0) return Math.min(a, b); const h = clamp(.5 + .5 * (b - a) / k, 0, 1); return b * (1 - h) + a * h - k * h * (1 - h); };
 const smax = (a, b, k) => -smin(-a, -b, k);
-const ell = (c, r) => (x, y, z) => { const px = (x - c.x) / r.x, py = (y - c.y) / r.y, pz = (z - c.z) / r.z, k0 = Math.hypot(px, py, pz), k1 = Math.hypot(px / r.x, py / r.y, pz / r.z); return k1 < 1e-9 ? -Math.min(r.x, r.y, r.z) : k0 * (k0 - 1) / k1; };
-const cap = (a, b, ra, rb) => { const ab = b.clone().sub(a), L2 = ab.lengthSq() || 1e-12; return (x, y, z) => { const px = x - a.x, py = y - a.y, pz = z - a.z, t = clamp((px * ab.x + py * ab.y + pz * ab.z) / L2, 0, 1); return Math.hypot(px - ab.x * t, py - ab.y * t, pz - ab.z * t) - (ra + (rb - ra) * t); }; };
-const rbox = (c, h, r) => (x, y, z) => { const qx = Math.abs(x - c.x) - h.x + r, qy = Math.abs(y - c.y) - h.y + r, qz = Math.abs(z - c.z) - h.z + r; return Math.hypot(Math.max(qx, 0), Math.max(qy, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qy, qz), 0) - r; };
+const tag = (d, f) => { f.d = d; return f; };
+const ell = (c, r) => tag({ t: 'e', c: c.clone(), r: r.clone() }, (x, y, z) => { const px = (x - c.x) / r.x, py = (y - c.y) / r.y, pz = (z - c.z) / r.z, k0 = Math.hypot(px, py, pz), k1 = Math.hypot(px / r.x, py / r.y, pz / r.z); return k1 < 1e-9 ? -Math.min(r.x, r.y, r.z) : k0 * (k0 - 1) / k1; });
+const cap = (a, b, ra, rb) => { const ab = b.clone().sub(a), L2 = ab.lengthSq() || 1e-12; return tag({ t: 'c', a: a.clone(), b: b.clone(), ra, rb }, (x, y, z) => { const px = x - a.x, py = y - a.y, pz = z - a.z, t = clamp((px * ab.x + py * ab.y + pz * ab.z) / L2, 0, 1); return Math.hypot(px - ab.x * t, py - ab.y * t, pz - ab.z * t) - (ra + (rb - ra) * t); }); };
+const rbox = (c, h, r) => tag({ t: 'b', c: c.clone(), r: h.clone() }, (x, y, z) => { const qx = Math.abs(x - c.x) - h.x + r, qy = Math.abs(y - c.y) - h.y + r, qz = Math.abs(z - c.z) - h.z + r; return Math.hypot(Math.max(qx, 0), Math.max(qy, 0), Math.max(qz, 0)) + Math.min(Math.max(qx, qy, qz), 0) - r; });
 const plane = (p, n) => { n = n.clone().normalize(); return (x, y, z) => (x - p.x) * n.x + (y - p.y) * n.y + (z - p.z) * n.z; };
 
 // surface nets: a smooth closed surface where f = 0, its points pulled onto it
@@ -70,7 +71,7 @@ function joints(p) {
     else if (/^thigh/.test(n)) J[n] = V(side * p.hipW * H * .5, pelY - .05 * H, restW[i].p.z * s);
     else if (/^calf/.test(n)) J[n] = V(P.x, ankY + (P.y - ankY) * .5, P.z);
     else if (/^foot/.test(n)) J[n] = V(P.x, ankY, P.z - .01 * H);
-    else J[n] = P.clone().addScaledVector(dir, L);
+    else J[n] = P.clone().addScaledVector(dir, /^ball/.test(n) ? L * p.foot : L);
   }
   return { J, H, hh, chinY, neckBase, shY, pelY, ankY, crotch: p.leg * H };
 }
@@ -86,15 +87,15 @@ function bodyPrims(p, Lo) {
   for (const s of [1, -1]) add(ell(V(s * hh * .38 * p.headW, H - hh * .52, hc.z - .01), V(hh * .05, hh * .12, hh * .08)), 'Head', .015, 'ear');
   add(cap(V(0, neckBase - .02, J.neck_01.z), V(0, chinY + hh * .2, hc.z - .01), p.neckR * H, p.neckR * H * .92), 'neck_01', .03, 'neck');
   const tH = shY - pelY, cz = J.spine_03.z;
-  add(ell(V(0, J.spine_03.y - .01, cz), V(p.shW * H * .88, tH * .33, p.chestD * H)), 'spine_03', 0, 'torso');
+  add(ell(V(0, J.spine_03.y - .01, cz), V(p.shW * H * .88, tH * .33, p.chestD * H + .006 * H * p.mus)), 'spine_03', 0, 'torso');
   add(ell(V(0, J.spine_02.y, J.spine_02.z + p.belly * H * .3), V(p.waistW * H, tH * .33, p.chestD * H * .92 + p.belly * H * .6)), 'spine_02', .07, 'torso');
   add(ell(V(0, J.spine_01.y - .01, J.spine_01.z), V(p.hipW * H * .95, tH * .3, p.chestD * H * .95)), 'spine_01', .07, 'torso');
   add(ell(V(0, pelY - .03 * H, J.pelvis.z - .005), V(p.hipW * H * .98, .075 * H, p.chestD * H * .95)), 'pelvis', .06, 'hips');
   for (const s of [1, -1]) add(cap(V(s * .02 * H, neckBase - .012 * H, cz - .012 * H), V(s * p.shW * H * .78, shY - .006 * H, cz - .008 * H), .026 * H, .02 * H), 'spine_03', .04, 'torso');
   if (p.bust) for (const s of [1, -1]) add(ell(V(s * .045 * H, J.spine_03.y - .03 * H, cz + p.chestD * H * .62), V(.042 * H, .04 * H, .035 * H).multiplyScalar(p.bust)), 'spine_03', .03, 'torso');
   for (const s of [1, -1]) { const L = s > 0 ? 'l' : 'r', ua = J['upperarm_' + L], el = J['lowerarm_' + L], wr = J['hand_' + L];
-    add(ell(ua.clone().add(V(-s * .008 * H, -.004 * H, 0)), V(p.uaR * H * 1.12, p.uaR * H * 1.05, p.uaR * H * 1.08)), 'upperarm_' + L, .045, 'shoulder');
-    add(cap(ua, el, p.uaR * H, p.uaR * H * .82), 'upperarm_' + L, .02, 'ua');
+    const mu = 1 + .14 * p.mus; add(ell(ua.clone().add(V(-s * .008 * H, -.004 * H, 0)), V(p.uaR * H * 1.12, p.uaR * H * 1.05, p.uaR * H * 1.08).multiplyScalar(mu)), 'upperarm_' + L, .045, 'shoulder');
+    add(cap(ua, el, p.uaR * H * mu, p.uaR * H * .82 * mu), 'upperarm_' + L, .02, 'ua');
     add(cap(el, wr, p.uaR * H * .8, p.uaR * H * .6), 'lowerarm_' + L, .02, 'fa');
     add(ell(el.clone().lerp(wr, .28), V(p.uaR * H * .85, p.uaR * H * .85, p.uaR * H * .85).multiplyScalar(.8 + .3 * R)), 'lowerarm_' + L, .05, 'fa');
     // the hand: a palm to the knuckles, then each finger's three joints
@@ -103,10 +104,11 @@ function bodyPrims(p, Lo) {
     for (const f of ['index', 'middle', 'ring', 'pinky', 'thumb']) { const r0 = (f === 'thumb' ? .0072 : f === 'pinky' ? .0052 : .0062) * H * p.hand;
       for (let k = 1; k <= 3; k++) { const a = J[`${f}_0${k}_${L}`], b = J[k < 3 ? `${f}_0${k + 1}_${L}` : `${f}_04_leaf_${L}`]; add(cap(a, b, r0 * (1 - .08 * k), r0 * (1 - .08 * (k + 1))), `${f}_0${k}_${L}`, .004, 'hand'); } }
     const th = J['thigh_' + L], kn2 = J['calf_' + L], an = J['foot_' + L];
-    add(cap(th, kn2, p.thR * H, p.thR * H * .72), 'thigh_' + L, .05, 'th');
+    add(cap(th, kn2, p.thR * H * p.thF * (1 + .1 * p.mus), p.thR * H * .72 * p.thF), 'thigh_' + L, .05, 'th');
     add(cap(kn2, an, p.thR * H * .68, p.thR * H * .42), 'calf_' + L, .02, 'calf');
-    add(ell(kn2.clone().lerp(an, .3).add(V(0, 0, -.012 * H)), V(p.thR * H * .6, p.thR * H * 1.3, p.thR * H * .62).multiplyScalar(.85 + .2 * R)), 'calf_' + L, .05, 'calf');
-    add(rbox(V(an.x, .02 * H, an.z + .04 * H), V(.032 * H, .02 * H, .072 * H), .016 * H), 'foot_' + L, .02, 'foot'); }
+    add(ell(kn2.clone().lerp(an, .3).add(V(0, 0, -.012 * H)), V(p.thR * H * .6, p.thR * H * 1.3, p.thR * H * .62).multiplyScalar((.85 + .2 * R) * p.calfF)), 'calf_' + L, .05, 'calf');
+    add(rbox(V(an.x, .02 * H, an.z + .04 * H * p.foot), V(.032 * H * p.foot, .02 * H, .072 * H * p.foot), .016 * H), 'foot_' + L, .02, 'foot'); }
+  for (const s of [1, -1]) add(ell(V(s * p.hipW * H * .42, pelY - .045 * H, J.pelvis.z - .045), V(.05 * H, .055 * H, .045 * H).multiplyScalar(p.glute)), 'pelvis', .02, 'hips');
   return { P, f: (x, y, z) => { let d = 1e9; for (const pr of P) d = smin(d, pr.f(x, y, z), pr.k); return d; } };
 }
 
@@ -159,8 +161,8 @@ function faceParts(p, Lo, headF) {
   return out;
 }
 
-function build(p) {
-  const Lo = joints(p), { J, H, hh, chinY, neckBase, pelY, ankY } = Lo, B = bodyPrims(p, Lo), C = p.clothes, res = .0075;
+function shapes(p) {
+  const Lo = joints(p), { J, H, hh, chinY, neckBase, pelY, ankY } = Lo, B = bodyPrims(p, Lo), C = p.clothes;
   const box = (x0, y0, z0, x1, y1, z1) => [V(x0, y0, z0), V(x1, y1, z1)];
   const fullX = J.middle_04_leaf_l.x + .03, zb = -.2 * H, zf = .25 * H;
   // the clothes' shapes
@@ -175,9 +177,16 @@ function build(p) {
   const pantsF = (x, y, z) => smax(pantsRaw(x, y, z) - .004 * H, Math.max(hemL - y, y - waist), .005);
   const neckCut = ell(V(0, neckBase + .012 * H, J.spine_03.z + .022 * H), V(.046 * H, .026 * H, .05 * H));
   const shirtF = (x, y, z) => { let d = smin(torso(x, y, z), Math.min(sl[0](x, y, z), sl[1](x, y, z)), .035); if (y < waist + .03 * H) d = Math.min(d, pantsRaw(x, y, z)); d -= C.loose * H + .004 * H; d = smax(d, hemY - y, .006); d = Math.max(d, -neckCut(x, y, z)); return Math.max(d, y - (neckBase + .03 * H)); };
-  const shoeF = s => { const a = J['foot_' + s], bl = J['ball_leaf_' + s]; return (x, y, z) => smin(rbox(V(a.x, .024 * H, (a.z + bl.z) / 2 - .005 * H), V(.038 * H, .024 * H, (bl.z - a.z) / 2 + .03 * H), .02 * H)(x, y, z), cap(V(a.x, .03 * H, a.z), V(a.x, ankY + .025 * H, a.z), .034 * H, .03 * H)(x, y, z), .03); };
+  const shoeF = s => { const a = J['foot_' + s], bl = J['ball_leaf_' + s]; return (x, y, z) => smin(rbox(V(a.x, .024 * H, (a.z + bl.z) / 2 - .005 * H), V(.038 * H * p.foot, .024 * H, (bl.z - a.z) / 2 + .03 * H), .02 * H)(x, y, z), cap(V(a.x, .03 * H, a.z), V(a.x, ankY + .025 * H, a.z), .034 * H, .03 * H)(x, y, z), .03); };
   const hc = V(0, H - hh * .5, J.Head.z), hr = V(hh * .39 * p.headW, hh * .5, hh * .45), hairF = HAIR[p.hair](hc, hr, hh);
   const headF = (x, y, z) => { let d = 1e9; for (const pr of B.P) if (pr.tag === 'head' || pr.tag === 'nose') d = smin(d, pr.f(x, y, z), pr.k); return d; };
+  return { Lo, B, F: { body: B.f, shirt: shirtF, pants: pantsF, shoe_l: shoeF('l'), shoe_r: shoeF('r'), hair: hairF, face: headF }, pantsRaw, hemY, hemL, waist };
+}
+
+function build(p) {
+  const S = shapes(p), { Lo, B, pantsRaw, hemY, hemL, waist } = S, { J, H, chinY, neckBase, ankY } = Lo, { shirt: shirtF, pants: pantsF, hair: hairF, face: headF } = S.F, C = p.clothes, res = .0075;
+  const box = (x0, y0, z0, x1, y1, z1) => [V(x0, y0, z0), V(x1, y1, z1)];
+  const fullX = J.middle_04_leaf_l.x + .03, zb = -.2 * H, zf = .25 * H;
   // the parts, each meshed, cut down and coloured
   const parts = [];
   const part = (name, f, bb, h, tris, col, rigid, keep) => { let m = nets(f, bb[0], bb[1], h); if (keep) { const I = []; for (let i = 0; i < m.I.length; i += 3) if (keep(m, m.I[i], m.I[i + 1], m.I[i + 2])) I.push(m.I[i], m.I[i + 1], m.I[i + 2]); m.I = new Uint32Array(I); }
@@ -186,18 +195,18 @@ function build(p) {
   part('body', B.f, box(-fullX, -.01, zb, fullX, H + .02, zf), res, p.tris.body, p.skin, null, under);
   part('shirt', shirtF, box(-fullX, hemY - .02, zb, fullX, neckBase + .05 * H, zf), res, p.tris.shirt, C.shirt);
   part('pants', pantsF, box(-.4 * H, hemL - .02, zb, .4 * H, waist + .02, zf), res, p.tris.pants, C.pants);
-  for (const s of ['l', 'r']) { const a = J['foot_' + s]; part('shoe_' + s, shoeF(s), box(a.x - .06 * H, -.005, a.z - .07 * H, a.x + .06 * H, ankY + .06 * H, J['ball_leaf_' + s].z + .06 * H), res * .8, p.tris.shoe, C.shoes, 'foot_' + s); }
+  for (const s of ['l', 'r']) { const a = J['foot_' + s]; part('shoe_' + s, S.F['shoe_' + s], box(a.x - .06 * H, -.005, a.z - .07 * H, a.x + .06 * H, ankY + .06 * H, J['ball_leaf_' + s].z + .06 * H), res * .8, p.tris.shoe, C.shoes, 'foot_' + s); }
   part('hair', hairF, box(-.3 * H, chinY - .25 * H, J.Head.z - .3 * H, .3 * H, H + .06 * H, J.Head.z + .2 * H), res * .75, p.tris.hair, p.hairC, 'Head');
   // into one mesh: points, colours, joints, weights
-  const Pall = [], Call = [], Iall = [], Jall = [], Wall = []; let base = 0;
+  const Pall = [], Call = [], Iall = [], Jall = [], Wall = [], ranges = []; let base = 0;
   const put = (P, I, col, jw, colAt) => { const n = P.length / 3; for (let v = 0; v < n; v++) { Pall.push(P[3 * v], P[3 * v + 1], P[3 * v + 2]); const c = new THREE.Color(colAt ? colAt(P[3 * v + 1]) : col); Call.push(Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)); for (let k = 0; k < 4; k++) { Jall.push(jw.jj[4 * v + k]); Wall.push(jw.ww[4 * v + k]); } } for (const i of I) Iall.push(i + base); base += n; };
-  for (const pt of parts) { const jw = weights(pt.m.P, B.P, J, pt.rigid, Lo); const sole = new THREE.Color(C.sole).getHex(); put(pt.m.P, pt.m.I, pt.col, jw, /^shoe/.test(pt.name) ? y => y < .012 * H ? sole : pt.col : null); }
-  for (const fp of faceParts(p, Lo, headF)) { const g = fp.g.index ? fp.g : fp.g, P = g.attributes.position.array, I = g.index ? Array.from(g.index.array) : [...Array(P.length / 3).keys()]; const n = P.length / 3, jw = { jj: new Uint8Array(n * 4).fill(0), ww: new Uint8Array(n * 4) }; for (let v = 0; v < n; v++) { jw.jj[4 * v] = ix('Head'); jw.ww[4 * v] = 255; } put(P, I, fp.col, jw); }
+  for (const pt of parts) { const jw = weights(pt.m.P, B.P, J, pt.rigid, Lo); const sole = new THREE.Color(C.sole).getHex(); ranges.push([pt.name, base, pt.m.P.length / 3]); put(pt.m.P, pt.m.I, pt.col, jw, /^shoe/.test(pt.name) ? y => y < .012 * H ? sole : pt.col : null); }
+  for (const fp of faceParts(p, Lo, headF)) { const g = fp.g.index ? fp.g : fp.g, P = g.attributes.position.array, I = g.index ? Array.from(g.index.array) : [...Array(P.length / 3).keys()]; const n = P.length / 3; ranges.push(['face', base, n]); const jw = { jj: new Uint8Array(n * 4).fill(0), ww: new Uint8Array(n * 4) }; for (let v = 0; v < n; v++) { jw.jj[4 * v] = ix('Head'); jw.ww[4 * v] = 255; } put(P, I, fp.col, jw); }
   // the rig: the UAL rig's turns, this body's joint places
   const t = [], q = [], ibm = new Float32Array(NB * 16);
   for (let i = 0; i < NB; i++) { const pa = PAR[i], wq = restW[i].q, d = J[NAMES[i]].clone().sub(pa >= 0 ? J[NAMES[pa]] : V(0, 0, 0)); if (pa >= 0) d.applyQuaternion(restW[pa].q.clone().invert()); t.push(d.toArray().map(v => +v.toFixed(5))); q.push(RIG.q[i]);
     new THREE.Matrix4().compose(J[NAMES[i]], wq, V(1, 1, 1)).invert().toArray(ibm, i * 16); }
-  return { P: Pall, C: Call, I: Iall, J: Jall, W: Wall, rig: { names: NAMES, parent: PAR, t, q, ibm }, H, pelY, tris: Iall.length / 3, parts: Object.fromEntries(parts.map(x => [x.name, x.m.I.length / 3])) };
+  return { S, ranges, P: Pall, C: Call, I: Iall, J: Jall, W: Wall, rig: { names: NAMES, parent: PAR, t, q, ibm }, H, pelY: Lo.pelY, tris: Iall.length / 3, parts: Object.fromEntries(parts.map(x => [x.name, x.m.I.length / 3])) };
 }
 
 const b64 = a => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString('base64');
@@ -208,7 +217,7 @@ function pack(b) {
 }
 
 // the six (owner, 4 Nov 2026: realism "2-3 but real hands")
-const base = { H: 1.76, heads: 6.2, neck: .035, neckR: .031, shW: .115, waistW: .085, hipW: .095, chestD: .064, belly: 0, bust: 0, uaR: .028, thR: .046, ua: .165, fa: .15, hand: 1, leg: .465,
+const base = { H: 1.76, heads: 6.2, neck: .035, neckR: .031, shW: .115, waistW: .085, hipW: .095, chestD: .064, belly: 0, bust: 0, uaR: .028, thR: .046, ua: .165, fa: .15, hand: 1, leg: .465, mus: 0, thF: 1, calfF: 1, foot: 1, glute: .6,
   headW: 1, jaw: 1, eye: 1, eyeY: .52, brow: 1, eyeC: 0x4a3428, skin: 0xd9a988, hairC: 0x5b4636, hair: 'part',
   clothes: { shirt: 0xd8d4c8, pants: 0x2c4258, shoes: 0x6b4630, sole: 0x2a1d16, sleeve: .55, loose: .006 }, tris: { body: 7000, shirt: 2600, pants: 2200, shoe: 500, hair: 1400 } };
 const mk = o => ({ ...base, ...o, clothes: { ...base.clothes, ...(o.clothes || {}) } });
@@ -224,11 +233,51 @@ const RR = .3, lerp = (a, b, t) => a + (b - a) * t;
 const realize = p => ({ ...p, r: RR, heads: lerp(p.heads, p.heads + 1.35, RR), neck: lerp(p.neck, p.neck * 1.5, RR), neckR: p.neckR * lerp(1, .9, RR), shDrop: lerp(.032, .05, RR),
   eye: p.eye * lerp(1, .78, RR), eyeY: lerp(p.eyeY, .5, RR), headW: p.headW * lerp(1, .9, RR), jaw: p.jaw * lerp(1, .95, RR), brow: p.brow * lerp(1, .8, RR), hand: p.hand * lerp(1, .92, RR), waistW: p.waistW * lerp(1, .94, RR), uaR: p.uaR * lerp(1, .94, RR) });
 
+// the BODY sliders (owner, 4 Nov 2026: the designer's BODY tab): each one's change at +1 from a body's own sizes; -1 is the same change the other way
+const SLIDERS = [
+  ['HEIGHT', p => ({ H: p.H * 1.08 })], ['WEIGHT', p => ({ waistW: p.waistW * 1.35, hipW: p.hipW * 1.15, chestD: p.chestD * 1.2, belly: p.belly + .035, uaR: p.uaR * 1.3, thR: p.thR * 1.22, neckR: p.neckR * 1.18, shW: p.shW + .005 })],
+  ['MUSCLE', p => ({ mus: p.mus + 2.6 })], ['HEAD SIZE', p => ({ heads: p.heads - .55 })], ['NECK', p => ({ neck: p.neck * 1.4 })], ['SHOULDERS', p => ({ shW: p.shW + .015 })],
+  ['ARM LENGTH', p => ({ ua: p.ua * 1.08, fa: p.fa * 1.08 })], ['LEG LENGTH', p => ({ leg: p.leg + .025 })],
+  ['CHEST', p => p.bust ? { bust: p.bust * 1.5, chestD: p.chestD + .004 } : { chestD: p.chestD + .014 }], ['WAIST', p => ({ waistW: p.waistW + .026 })], ['BELLY', p => ({ belly: p.belly + .06 })],
+  ['HIPS', p => ({ hipW: p.hipW + .02 })], ['BOTTOM', p => ({ glute: p.glute * 2.4 })], ['UPPER ARMS', p => ({ uaR: p.uaR * 1.3 })], ['THIGHS', p => ({ thF: p.thF * 1.3 })],
+  ['CALVES', p => ({ calfF: p.calfF * 1.5 })], ['HANDS', p => ({ hand: p.hand * 1.15 })], ['FEET', p => ({ foot: p.foot * 1.15 })]];
+// the joints BODIES moves (rig-rebake.py's 15 bones), where each starts
+const B15 = [['hips', 'pelvis'], ['torso', 'spine_01'], ['head', 'neck_01'], ['upperArmL', 'upperarm_l'], ['forearmL', 'lowerarm_l'], ['handL', 'hand_l'], ['upperArmR', 'upperarm_r'], ['forearmR', 'lowerarm_r'], ['handR', 'hand_r'],
+  ['thighL', 'thigh_l'], ['shinL', 'calf_l'], ['shoeL', 'foot_l'], ['thighR', 'thigh_r'], ['shinR', 'calf_r'], ['shoeR', 'foot_r']];
+// a point on one shape carried to the same place on that shape at other sizes
+function carry(d0, d1, x, y, z) {
+  const v = V(x, y, z);
+  if (d0.t !== 'c') { const u = V((x - d0.c.x) / d0.r.x, (y - d0.c.y) / d0.r.y, (z - d0.c.z) / d0.r.z), l = u.length() || 1; u.divideScalar(l);   // moved as its shape's surface under it moves; its height above that surface kept
+    const s0 = V(d0.c.x + u.x * d0.r.x, d0.c.y + u.y * d0.r.y, d0.c.z + u.z * d0.r.z), s1 = V(d1.c.x + u.x * d1.r.x, d1.c.y + u.y * d1.r.y, d1.c.z + u.z * d1.r.z); return v.add(s1.sub(s0)); }
+  const ab0 = d0.b.clone().sub(d0.a), ab1 = d1.b.clone().sub(d1.a), L0 = ab0.lengthSq() || 1e-12, t = v.clone().sub(d0.a).dot(ab0) / L0, tc = clamp(t, 0, 1);
+  const u = v.clone().sub(d0.a.clone().addScaledVector(ab0, t)), ul = u.length(), r0 = d0.ra + (d0.rb - d0.ra) * tc, r1 = d1.ra + (d1.rb - d1.ra) * tc, q = new THREE.Quaternion().setFromUnitVectors(ab0.clone().normalize(), ab1.clone().normalize());
+  const dir = ul > 1e-9 ? u.divideScalar(ul).applyQuaternion(q) : V(0, 0, 0); return d1.a.clone().addScaledVector(ab1, t).addScaledVector(dir, ul - r0 + r1); }
+// a point pulled onto f at the level it had on the base's own part
+function settle(f, v, lvl) { const e = .0006; for (let k = 0; k < 5; k++) { const d = f(v.x, v.y, v.z) - lvl; if (Math.abs(d) < 1e-5) break;
+  const g = V(f(v.x + e, v.y, v.z) - f(v.x - e, v.y, v.z), f(v.x, v.y + e, v.z) - f(v.x, v.y - e, v.z), f(v.x, v.y, v.z + e) - f(v.x, v.y, v.z - e)).divideScalar(2 * e), g2 = g.lengthSq(); if (g2 < 1e-8) break; v.addScaledVector(g, -clamp(d, -.03, .03) / g2); } return v; }
+function targets(p, b) {
+  const S0 = b.S, P0 = b.P, n = P0.length / 3, near = new Int32Array(n), lvl = new Float32Array(n), partOf = new Array(n);
+  for (const [name, st, cnt] of b.ranges) for (let v = st; v < st + cnt; v++) { partOf[v] = name; const x = P0[3 * v], y = P0[3 * v + 1], z = P0[3 * v + 2]; let bi = 0, bd = 1e9;
+    S0.B.P.forEach((pr, i) => { if (name === 'face' && pr.tag !== 'head' && pr.tag !== 'nose') return; const d = pr.f(x, y, z); if (d < bd) { bd = d; bi = i; } }); near[v] = bi; lvl[v] = S0.F[name](x, y, z); }
+  const o0 = B15.map(([, u]) => S0.Lo.J[u]), out = [];
+  for (const [nm, ch] of SLIDERS) { const p1 = { ...p, ...ch(p) }, S1 = shapes(p1); if (S1.B.P.length !== S0.B.P.length) throw new Error(nm + ': the shapes differ in number');
+    const D = new Float32Array(n * 3);
+    for (let v = 0; v < n; v++) { const x = P0[3 * v], y = P0[3 * v + 1], z = P0[3 * v + 2], w = settle(S1.F[partOf[v]], carry(S0.B.P[near[v]].f.d, S1.B.P[near[v]].f.d, x, y, z), lvl[v]); D[3 * v] = w.x - x; D[3 * v + 1] = w.y - y; D[3 * v + 2] = w.z - z; }
+    // a few points can be pulled onto the wrong surface: none moves much further than its neighbours along the part
+    out.push({ name: nm, D, o: B15.map(([, u], i) => S1.Lo.J[u].clone().sub(o0[i]).toArray()) }); }
+  return out;
+}
+const packT = (T, n) => T.map(t => { const used = new Uint8Array(Math.ceil(n / 8)), vals = []; let mx = 0; for (let v = 0; v < n; v++) for (let k = 0; k < 3; k++) mx = Math.max(mx, Math.abs(t.D[3 * v + k]));
+  const sc = mx / 127 || 1e-6; for (let v = 0; v < n; v++) { const a = [0, 1, 2].map(k => Math.round(t.D[3 * v + k] / sc)); if (a.some(q => Math.abs(q) > 0)) { used[v >> 3] |= 1 << (v & 7); vals.push(...a); } }
+  return { name: t.name, sc: +sc.toPrecision(5), m: b64(used), d: b64(Int8Array.from(vals)), o: t.o.map(a => a.map(x => +x.toFixed(4))) }; });
+
 await MS.ready;
 const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(PROTOS), out = { bodies: {} };
-for (const k of only) { const t0 = Date.now(), b = build(realize(PROTOS[k]));
+for (const k of only) { const t0 = Date.now(), p = realize(PROTOS[k]), b = build(p);
   out.bodies[k] = { name: PROTOS[k].name, H: +b.H.toFixed(3), pelvis: +b.pelY.toFixed(4), rig: { ...b.rig, ibm: b64(b.rig.ibm) }, mesh: pack(b) };
-  console.log(k, PROTOS[k].name, 'triangles', b.tris, JSON.stringify(b.parts), ((Date.now() - t0) / 1000).toFixed(1) + 's'); }
+  console.log(k, PROTOS[k].name, 'triangles', b.tris, JSON.stringify(b.parts), ((Date.now() - t0) / 1000).toFixed(1) + 's');
+  if (process.env.SLIDERS !== '0') { const t1 = Date.now(), T = packT(targets(p, b), b.P.length / 3), f = `data/shapes-${k}.json`; fs.writeFileSync(f, JSON.stringify({ n: b.P.length / 3, bones: B15.map(x => x[0]), sliders: T }));
+    console.log('  ', f, (fs.statSync(f).size / 1024).toFixed(0) + ' KB', ((Date.now() - t1) / 1000).toFixed(1) + 's'); } }
 out.ualPelvis = +restW[ix('pelvis')].p.y.toFixed(4);
 fs.writeFileSync(process.env.OUT || 'data/full/bodies-ual.json', JSON.stringify(out));
 console.log('wrote', process.env.OUT || 'data/full/bodies-ual.json', (fs.statSync(process.env.OUT || 'data/full/bodies-ual.json').size / 1024).toFixed(0) + ' KB');

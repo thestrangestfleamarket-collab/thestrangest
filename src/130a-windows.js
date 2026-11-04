@@ -9,7 +9,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   // a pane (WINDOWS.pane: its mesh, the inside it belongs to: ROOMS.off[id] with shift, inside to street; and which way it looks: 'out' from inside at the street, 'in' from the street at the inside)
   // the place a pane belongs to: an inside off the map (its box, shift: inside to street) or a street shop built in place (its own box, no shift)
   // M: street to inside, Mi: inside to street (an off-map inside with xf, a merchant's shop, is turned as well as moved; with shift only moved)
-  const XF=new Map(), I4=new THREE.Matrix4();
+  const XF=new Map(), I4=new THREE.Matrix4(), BLACK=new THREE.Color(0);   // an inside seen from the street is closed: nothing but black past its walls
   const place=k=>{ const o=ROOMS.off[k]; if(o){ if(!o.shift&&!o.xf)return null; let x=XF.get(o); if(!x){ const M=o.xf?o.xf.clone():new THREE.Matrix4().makeTranslation(-o.shift[0],0,-o.shift[1]); x={M,Mi:M.clone().invert()}; XF.set(o,x); } return {b:o.box,sh:o.shift||null,M:x.M,Mi:x.Mi,eps:o.xf?.1:.02,in:()=>ROOMS.offIn()===k}; }
     const R=STORE.inside&&STORE.inside[k]&&ROOMS.boxes().find(b=>b.id===k); return R?{b:R,sh:[0,0],M:I4,Mi:I4,eps:null,in:()=>!!ROOMS.cur&&ROOMS.cur.id===k}:null; };
   // until its first picture a pane is plain dark glass under the same sheen
@@ -50,7 +50,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     try{ renderer.shadowMap.autoUpdate=false; for(const p of hid)p.me.visible=false; let lc=LC.get(cam); if(!lc)LC.set(cam,lc=cam.clone()); lc.copy(cam); lc.matrixWorld.multiplyMatrices(T,cam.matrixWorld); lc.matrixWorld.decompose(lc.position,lc.quaternion,lc.scale); lc.updateMatrixWorld(true);
       const draw=()=>{ const clip=renderer.clippingPlanes; for(const [k,g] of todo){ let rt=LV.rt.get(k); if(!rt){ rt=new THREE.WebGLRenderTarget(W,H,{type:THREE.HalfFloatType}); rt.m=liveM(rt.texture); LV.rt.set(k,rt); } if(rt.width!==W||rt.height!==H)rt.setSize(W,H);
           renderer.clippingPlanes=[new THREE.Plane(g.n,g.c-eps)]; renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,lc); for(const p of g.L)if(p.me.material!==rt.m){ if(!p.live)p.pic=p.me.material; p.me.material=rt.m; p.me.visible=true; p.live=1; } } renderer.clippingPlanes=clip; };
-      const back=fit?relight(fit,todo[0][1].at.x,todo[0][1].at.z):null; try{ if(peek)ROOMS.peek(draw); else draw(); } finally{ if(back)back(); } }
+      const back=fit?relight(fit,todo[0][1].at.x,todo[0][1].at.z):null, bg=scene.background; if(inward)scene.background=BLACK; try{ if(peek)ROOMS.peek(draw); else draw(); } finally{ if(back)back(); scene.background=bg; } }
     catch(e){ console.warn('WINDOWS live',e); } finally{ renderer.setRenderTarget(null); for(const p of hid)p.me.visible=true; renderer.shadowMap.autoUpdate=sb; WINDOWS.busy=false; } };
   // from the street: a shop near you (NEAR) whose glass looks in has its inside built and held (WINDOWS.held: not dropped) while you are near; let go further off (FAR), dropped as before
   const NEAR=14*TILE, FAR=18*TILE, building=new Set(), built=id=>{ const o=ROOMS.off[id]; return o?!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done):!!(STORE.inside&&STORE.inside[id]&&STORE.inside[id].done); };

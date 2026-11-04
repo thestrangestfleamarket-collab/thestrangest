@@ -10,7 +10,7 @@ PHK.make=TX=>{ '@playhouse';
     velvet:lam({map:TX.velvet.map,bumpMap:TX.velvet.bump,bumpScale:.8}), velvetDark:lam({map:TX.velvetDark.map,bumpMap:TX.velvetDark.bump,bumpScale:.8}),
     seat:lam({map:TX.velvetSeat.map,bumpMap:TX.velvetSeat.bump,bumpScale:.6}), blackVel:lam({map:TX.velvetBlack.map,bumpMap:TX.velvetBlack.bump,bumpScale:.6}),
     gold:std({map:TX.gold,roughnessMap:TX.goldRough,metalness:1,roughness:.55}), orn:std({map:TX.orn,bumpMap:TX.ornBump,bumpScale:4,metalness:.9,roughness:.45}),
-    boards:lam({map:TX.boards,bumpMap:TX.boardsBump,bumpScale:.5}), parquet:std({map:TX.parquet,roughness:.32,metalness:0,envMapIntensity:.35}),
+    boards:lam({map:TX.boards,bumpMap:TX.boardsBump,bumpScale:.5}), parquet:std({map:TX.parquet,roughness:.8,metalness:0,envMapIntensity:.06}),
     carpet:lam({map:TX.carpet}), damask:lam({map:TX.damask}), plaster:lam({map:TX.plaster}),
     marble:std({map:TX.marble,roughness:.18,metalness:0,envMapIntensity:.5}), marbleRed:std({map:TX.marbleRed,roughness:.2,metalness:0,envMapIntensity:.45}),
     brickBlack:lam({map:TX.brickBlack,bumpMap:TX.brickBump,bumpScale:1}),

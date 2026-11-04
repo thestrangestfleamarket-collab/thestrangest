@@ -1,8 +1,9 @@
 // THE PLAYHOUSE: its inside, off the map and built only when you go in (double-click its door on West St): the foyer, the stalls and the stage (151a-d) with their cloths, lighting, sets and play (151e on), its seats to sit in, the foyer's mirrors, its house lights; the bars fly, the ghost light burns when the stage is dark.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, ROOMS, SFX, UI, USE} from './003b-systems.js';
+import {CLOCK, pos, ROOMS, SFX, UI, USE} from './003b-systems.js';
 import {Reflector, renderer, scene} from './004-main.js';
 import {grab, SECTIONS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
+import {HEMI} from './064-map-post.js';
 import {PHT} from './151a-ph-tex.js';
 import {PHK, PHX} from './151b-ph-kit.js';
 import {PHA} from './151c-ph-house.js';
@@ -18,10 +19,10 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     const TX=PHT.make(); K=PHK.make(TX); K.you=()=>({x:lx(pos.x),y:SHARED.py/MV,z:lz(pos.z)}); K.MH=MH; K.MV=MV; G.add(K.G); try{ PHA.make(K); PHS.make(K); for(const p of PHX.parts)if(p.make)p.make(K); }catch(e){ console.error('playhouse build',e); }
     // the house lights: the great chandelier, the sconces down the walls, the foyer's two (each a lamp of its own, dimmed by the show)
     const lamp=(k,p,c,i,r)=>{ const l=new THREE.PointLight(c,i,r*MH,1.4); l.userData.pool=true; l.position.set(...p); K.G.add(l); (LT[k]=LT[k]||[]).push({l,i}); return l; };
-    lamp('house',[K.chandelier[0],K.chandelier[1]-.2,K.chandelier[2]],0xffe2b0,140,45); for(const s of [-1,1])lamp('house',[s*8,6,8.3],0xffc890,25,25);
-    for(const p of K.fch)lamp('foyer',p,0xffdcaa,45,22);
+    lamp('house',[K.chandelier[0],K.chandelier[1]-.2,K.chandelier[2]],0xffcf90,50,40); for(const s of [-1,1])lamp('house',[s*8,6,8.3],0xffb070,9,20);
+    for(const p of K.fch)lamp('foyer',p,0xffc888,15,16);
     lamp('ghost',K.ghost.at,0xfff0d0,10,16);
-    const hemi=new THREE.HemisphereLight(0xffe8d0,0x3a2016,.5); K.G.add(hemi); (LT.hemi=[]).push({l:hemi,i:.5});
+    const hemi=new THREE.HemisphereLight(0xe8c8a0,0x24120c,.12); K.G.add(hemi); (LT.hemi=[]).push({l:hemi,i:.12});
     for(const l of Object.values(LT).flat())l.l.castShadow=false;
     // the shiny things take the hall's reflection: a cube taken once from over the stalls (again when the house lights change)
     ENV={rt:new THREE.WebGLCubeRenderTarget(128,{generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter}),cam:null,due:2,lvl:-1}; ENV.cam=new THREE.CubeCamera(.1*MH,80*MH,ENV.rt); ENV.cam.position.set(...W(0,6,8)); scene.add(ENV.cam);
@@ -58,6 +59,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
   SYS.add('places',dt=>{ if(!K)return; const now=performance.now(), inn=inside(); if(G&&G.visible!==inn)G.visible=inn; K.flyStep(dt); for(const p of PHX.parts)if(p.tick)p.tick(dt,K,now,inn); if(K.shadowDue){ K.shadowDue=false; renderer.shadowMap.needsUpdate=true; }
     if(K.solDirty&&K.sets){ K.solDirty=false; for(const r of DS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } DS=K.sets.solids().map(([a,b,c,d])=>[OX+a*MH,OZ+b*MH,OX+c*MH,OZ+d*MH]); SOL.up.push(...DS); }
     if(!inn){ for(const o of MIR)o.r.visible=false; return; }
+    HEMI.intensity*=.2; if(CLOCK.sun)CLOCK.sun.intensity*=.1;   // inside, the sky's light and the sun come in dim: the house is lit by its own lamps
     const px=lx(pos.x), pz=lz(pos.z), zone=pz>PD.Z1&&Math.abs(px)<PD.W+.2?'foyer':'';
     for(const o of MIR)o.r.visible=o.zone===zone;
     const hl=PHX.houseLevel!=null?PHX.houseLevel:1; for(const k of ['house','foyer','hemi'])for(const e of LT[k]||[])e.l.intensity=e.i*(k==='house'?hl:k==='hemi'?.12+.88*hl:.4+.6*hl);

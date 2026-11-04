@@ -1,7 +1,9 @@
 // THE INSPECT WINDOW: INSPECT turns a thing over in a little studio window (drag to turn, wheel to zoom): what you hold or point at (the inspect key, 5), or anything in your pack (LOOK); each family of items says how it looks with INSPECT.kinds.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, GPH, INSPECT, INV, ITEMS, TEXT, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
+import {SYS} from './006-map-pre.js';
 { const W=320, H=320, esc=TEXT.esc;
   const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xfff4e2,1.9), FILL=new THREE.DirectionalLight(0xbcd0ff,.6), RIM=new THREE.DirectionalLight(0xffffff,.55), PIV=new THREE.Group();
   KEY.position.set(-3,4,4); FILL.position.set(4,1,-3); RIM.position.set(0,2,-5); ROOM.add(new THREE.AmbientLight(0xffffff,.18),KEY,FILL,RIM,PIV);
@@ -12,7 +14,7 @@ import {renderer} from './004-main.js';
     try{ ENV=pm.fromScene(s,.04).texture; ROOM.environment=ENV; }catch(e){ console.warn('INSPECT env',e); }
     pm.dispose(); s.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); };
   const cam=new THREE.PerspectiveCamera(30,W/H,.01,100), CC=new THREE.Color(), BX=new THREE.Box3(), SP=new THREE.Sphere();
-  let rt=null, P=null, cv=null, g2=null, px=null, im=null, obj=null, own=false, raf=0, last=0, yaw=0, pitch=.35, zoom=1, R=1, drag=null, spin=true;
+  let rt=null, P=null, cv=null, g2=null, px=null, im=null, obj=null, own=false, last=0, yaw=0, pitch=.35, zoom=1, R=1, drag=null, spin=true;
   const make=()=>{ P=document.createElement('div'); P.id='inspp'; P.hidden=true;
     P.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;width:min(360px,92vw);padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     P.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b id="inspn" style="color:#f2c14e"></b><button id="inspx" style="font:inherit;color:#d8dae2;background:none;border:0;cursor:pointer">X</button></div>'+
@@ -37,14 +39,14 @@ import {renderer} from './004-main.js';
     PIV.rotation.set(pitch,yaw,0,'XYZ'); const d=R/Math.sin(cam.fov*Math.PI/360)*1.08/zoom; cam.position.set(0,0,d); cam.near=Math.max(.001,d-R*3); cam.far=d+R*3; cam.lookAt(0,0,0); cam.updateProjectionMatrix();
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(), tm=renderer.toneMapping, te=renderer.toneMappingExposure; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15; renderer.setRenderTarget(rt); renderer.setClearColor(0x14161d,1); renderer.clear(); renderer.render(ROOM,cam); renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); renderer.toneMapping=tm; renderer.toneMappingExposure=te;
     renderer.readRenderTargetPixels(rt,0,0,W,H,px); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
-  const loop=t=>{ if(!INSPECT.on){ raf=0; return; } raf=requestAnimationFrame(loop); const dt=Math.min(.1,(t-(last||t))/1000); if(t-last<33)return; last=t; if(spin)yaw+=dt*.7; shot(); };
+  const loop=t=>{ if(!INSPECT.on)return; const dt=Math.min(.1,(t-(last||t))/1000); if(t-last<33)return; last=t; if(spin)yaw+=dt*.7; shot(); }; SYS.add('win',loop,'150cy-inspect');
   // o: the thing to show; mine: INSPECT made it (dropped when closed), else it is shared with the world and only cloned
   INSPECT.open=(o,{name='',id=null,info=null,mine=false}={})=>{ if(!o)return false; if(!P)make(); drop();
     if(mine){ obj=o; own=true; } else { const s=new THREE.Vector3(); o.updateMatrixWorld(true); o.getWorldScale(s); obj=o.clone(); obj.position.set(0,0,0); obj.quaternion.identity(); obj.scale.copy(s); own=false; }
     obj.visible=true; obj.traverse(c=>{ c.visible=true; c.frustumCulled=false; }); PIV.add(obj); PIV.rotation.set(0,0,0); obj.updateMatrixWorld(true);
     BX.setFromObject(obj); if(BX.isEmpty())BX.set(new THREE.Vector3(-.5,-.5,-.5),new THREE.Vector3(.5,.5,.5)); BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(1e-3,SP.radius);
     yaw=-.6; pitch=.35; zoom=1; spin=true; P.querySelector('#inspn').textContent=(name||(id&&FORAGE.NM&&FORAGE.NM[id])||id||'').toUpperCase(); P.querySelector('#inspi').innerHTML=chips(id,info);
-    P.hidden=false; INSPECT.on=true; INSPECT.id=id; if(!raf){ last=0; raf=requestAnimationFrame(loop); } return true; };
+    P.hidden=false; INSPECT.on=true; INSPECT.id=id; last=0; return true; };
   INSPECT.close=()=>{ if(!P)return; P.hidden=true; INSPECT.on=false; INSPECT.id=null; drop(); };
     // for the families' makers: one material per colour, kept; a STALL-style recipe (MUSH, VEG) as meshes; simple shapes for the things with no model of their own
   const MATS=new Map(), KINDS={ metal:{m:1,r:.32}, steel:{m:1,r:.14}, chrome:{m:1,r:.08}, iron:{m:1,r:.45}, gold:{m:1,r:.28}, brass:{m:1,r:.3}, copper:{m:1,r:.34}, tin:{m:1,r:.22}, wood:{r:.72}, bark:{r:.92,flat:1}, stone:{r:.9}, rock:{r:.95,flat:1}, ceramic:{r:.35,cc:.4}, clay:{r:.8}, food:{r:.58}, bread:{r:.72}, meat:{r:.5,cc:.25,ccr:.4}, fruit:{r:.45,cc:.3,ccr:.5}, cloth:{r:.96,sh:.5}, leather:{r:.68}, paper:{r:.85}, plastic:{r:.4,cc:.45,ccr:.2}, rubber:{r:.9}, wax:{r:.4,cc:.5,ccr:.3}, skin:{r:.55,cc:.15}, wet:{r:.18,cc:.6,ccr:.1}, leaf:{r:.5,sh:.6}, bone:{r:.6}, default:{r:.55} };
@@ -88,5 +90,5 @@ import {renderer} from './004-main.js';
   const ray=new THREE.Raycaster(), NDC=new THREE.Vector2(); let mx=-1, my=-1; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; },{passive:true});
   INSPECT.key=()=>{ if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }
     const h=GPH.inspectable&&GPH.inspectable(r); if(h)return INSPECT.open(h.obj,h);
-    if(FORAGE.say)FORAGE.say('PICK SOMETHING UP OR POINT AT IT, THEN PRESS '+String(UI.keyOf?UI.keyOf('inspect'):'5').toUpperCase()+' TO LOOK IT OVER. YOUR PACK HAS A LOOK BUTTON TOO.','#9b9584'); };
+    SAY('PICK SOMETHING UP OR POINT AT IT, THEN PRESS '+String(UI.keyOf?UI.keyOf('inspect'):'5').toUpperCase()+' TO LOOK IT OVER. YOUR PACK HAS A LOOK BUTTON TOO.','#9b9584'); };
   if(FORAGE.ROWB)FORAGE.ROWB.push(()=>[['LOOK','inspect']]); FORAGE.ACT&&(FORAGE.ACT.inspect=id=>INSPECT.item(id)); }

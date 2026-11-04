@@ -1,7 +1,7 @@
 // BAKE THE FAR CITY (owner, 18 Oct 2026: "bake the distance into the smallest perm files to use over and over"): the page in ?farbake=1 photographs
 // the far blocks from the town's middle the four ways (FAR3.bake, skyline.js) at 5 pixels a degree, by day (the game's held 5:24 pm) and at night
 // (21:00, its lit windows), and how deep into the distance each pixel is; written as data/far-day.png (alpha: the buildings), data/far-night.png
-// (alpha: the distance, for the mist) and data/far.json. Run again only when the far rows change. node tests/farbake.cjs [dens=5]
+// (alpha: the distance, for the mist) and data/full/far.json. Run again only when the far rows change. node tests/farbake.cjs [dens=5]
 const {chromium}=require('playwright'), fs=require('fs'), dens=+(process.argv[2]||5);
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:400,height:300}});
   const errs=[]; pg.on('pageerror',e=>errs.push(e.message));
@@ -17,5 +17,5 @@ const {chromium}=require('playwright'), fs=require('fs'), dens=+(process.argv[2]
   const night=half(await grab(false)), pk=half(await grab(true));
   const save=(f,u)=>fs.writeFileSync('data/'+f,Buffer.from(u.split(',')[1],'base64'));
   save('far-day.png',await toPng(day,null)); save('far-night.png',await toPng(night,pk));
-  const m=day.meta; fs.writeFileSync('data/far.json',JSON.stringify({CX:+m.CX.toFixed(2),CZ:+m.CZ.toFixed(2),EYE:m.EYE,V0:+m.V0.toFixed(5),V1:+m.V1.toFixed(5),N:m.N,dens:m.dens,W:day.W,H:day.H,faces:2}));
+  const m=day.meta; fs.writeFileSync('data/full/far.json',JSON.stringify({CX:+m.CX.toFixed(2),CZ:+m.CZ.toFixed(2),EYE:m.EYE,V0:+m.V0.toFixed(5),V1:+m.V1.toFixed(5),N:m.N,dens:m.dens,W:day.W,H:day.H,faces:2}));
   console.log('baked',day.W,'x',day.H,'| day',fs.statSync('data/far-day.png').size,'bytes, night',fs.statSync('data/far-night.png').size,'| errors',errs.slice(0,3)); await b.close(); })();

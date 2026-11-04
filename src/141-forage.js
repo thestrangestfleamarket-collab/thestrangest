@@ -1,6 +1,7 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, VR, WE, WEEDS, WX} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, QS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -41,8 +42,8 @@ import {GEMS} from './101-gems.js';
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
     if(id==='f_skewer'){ const g=new THREE.Group(); g.add(P('cyl',0xc8a878,0,0,0,.006,.32,.006,0,Math.PI/2)); for(let i=0;i<4;i++)g.add(P('cap',i%2?0xe08a2a:0xe8dcc0,-.09+i*.06,0,0,.026,.022,.026,0,Math.PI/2)); return g; }
     return INSPECT.shape('bowl',{f_roast:0x9a6a3a,f_fritter:0xd8b060,f_soup:0x7a4a2a,f_morel:0x8a6a4a,f_oyster:0xc8a070,f_chicken:0xe8a030}[id]||0x9a6a3a); }});
-  const iid=m=>MU[m]?'m_'+m:m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.hp=Math.min(1,VIT.hp+.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
-    p_gheal:()=>{ VIT.hp=1; buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.hp=Math.min(1,VIT.hp+.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
+  const iid=m=>MU[m]?'m_'+m:m; FORAGE.RC=RC; const DO={p_refresh:()=>{ VIT.sta=1; VIT.tired=false; },p_heal:()=>{ VIT.heal(.5); },p_str:()=>buff('str',180),p_keen:()=>buff('keen',300),p_cure:()=>{ delete S.fx.poison; },
+    p_gheal:()=>{ VIT.heal(1); buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.heal(.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.heal(.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
   const PRICE={f_morel:56,f_oyster:14,f_chicken:44,p_ghost:150};   // the rest are in data/items.json
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING','FAN-SHAPED','PURPLE','BLACK','SPOTTED','YELLOW','GHOSTLY'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
   const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['golf','GOLF'],['climb','CLIMBING']], CAP=6000;
@@ -54,9 +55,8 @@ import {GEMS} from './101-gems.js';
   INV.count=()=>GEMS.reduce((a,g)=>a+(g[0].startsWith('m_')?0:INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
-  const J=document.createElement('div'); J.id='fjour'; J.style.cssText='position:fixed;left:50%;top:40%;transform:translateX(-50%);max-width:70vw;text-align:center;z-index:6;pointer-events:none;font:11px Silkscreen,monospace;letter-spacing:.3px;display:grid;gap:2px;zoom:var(--uiz,1)'; document.body.appendChild(J);
-  const say=(t,c='#e8e2cc',o)=>{ const d=document.createElement('div'); d.textContent=t; d.style.cssText=`color:${c};text-shadow:1px 1px 0 #000,-1px 0 0 #000`; J.appendChild(d); while(J.children.length>3)J.firstChild.remove(); setTimeout(()=>d.remove(),5000); if(UI.log)UI.log(t,c); if(VR.note)VR.note(t,c,o); };
-  FORAGE.say=say; FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
+  const say=SAY;
+  FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>PACK.draw();
   // a family's items join the model: a price is its VALUE; m_/u_/p_/f_ things and raw foods are EDIBLE and SELLABLE, as is anything added with sellable:true
   const FOOD=/^(m_|u_|p_|f_)/, reg=o=>{ const ids=new Set([...Object.keys(o.names||{}),...Object.keys(o.prices||{}),...Object.keys(o.does||{}),...Object.keys(o.raw||{}),...(o.recipes||[]).map(r=>r[0])]);
     for(const id of ids){ const p={}; if(o.prices&&o.prices[id]!=null)p.value=o.prices[id]; if(FOOD.test(id)||o.raw&&o.raw[id]||o.edible)p.edible=true; if(FOOD.test(id)||o.sellable)p.sellable=true; ITEMS.reg(id,p); } };
@@ -92,7 +92,7 @@ import {GEMS} from './101-gems.js';
   let base=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
   FORAGE.keen=()=>S.fx.keen?20:0;
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
-      if(S.fx.poison)VIT.hp=Math.max(.05,VIT.hp-dt/50); if(S.fx.regen)VIT.hp=Math.min(1,VIT.hp+dt/30);
+      if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
       S.food=1; if(window.WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
       for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }
@@ -120,7 +120,7 @@ import {GEMS} from './101-gems.js';
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
-  setInterval(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
+  SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
       for(const N of NPCS)if(N.lv==='up'&&!N.far&&N.st&&Math.abs(N.st.x-x)<R&&Math.hypot(N.st.x-x,N.st.z-z)<R)return 1; return 0; };
@@ -145,7 +145,7 @@ import {GEMS} from './101-gems.js';
     else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
-    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK THE '+NAME(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.hp=Math.min(1,VIT.hp+h); say('YOU EAT THE '+NAME(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT.'); }
+    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK THE '+NAME(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.heal(h); say('YOU EAT THE '+NAME(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT.'); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); S.log[k]=(S.log[k]||0)+n; say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-SHARED.py)<3*T)return s; } return null; };

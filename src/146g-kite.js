@@ -1,10 +1,11 @@
 // THE KITE: KITE flies any item that grants 'fly' from the winder in your hand: a diamond sail on its bridle in the day's wind (stronger and steadier with height, gusty low down), its tail, and a line that sags under its own weight and the wind's drag.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, VIT, WIELD, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OUT, SYS, TILE} from './006-map-pre.js';
 const KITE={on:false,reeling:false}; window.KITE=KITE;
-{ const T=TILE, M=T/.84, V3=THREE.Vector3, say=FORAGE.say, cl=(v,a,b)=>v<a?a:v>b?b:v, RHO=1.225, G=9.81, AREA=.34, BRIDLE=.28, LINE_KG=.0005, LINE_D=.0012, MAXL=60, NL=24, NT=10, TSEG=.26;
+{ const T=TILE, M=T/.84, V3=THREE.Vector3, say=SAY, cl=(v,a,b)=>v<a?a:v>b?b:v, RHO=1.225, G=9.81, AREA=.34, BRIDLE=.28, LINE_KG=.0005, LINE_D=.0012, MAXL=60, NL=24, NT=10, TSEG=.26;
   const ids=()=>Object.keys(ITEMS.defs).filter(id=>ITEMS.prop(id,'grants')==='fly'), NM={kite:'KITE'};
   FORAGE.add({names:NM});
   const lam=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));

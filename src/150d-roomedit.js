@@ -1,12 +1,14 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ONLINE, pos} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
-{ const HOME={layout:null,loaded:false}, LS='market-home', web=/^https?:$/.test(location.protocol);
-  const getLocal=()=>{ try{ return JSON.parse(localStorage.getItem(LS)||'null'); }catch(e){ return null; } };
-  const setLocal=L=>{ try{ localStorage.setItem(LS,JSON.stringify(L)); }catch(e){} };
+{ const HOME={layout:null,loaded:false}, web=/^https?:$/.test(location.protocol);
+  const getLocal=()=>{ try{ return JSON.parse(SAVE.get('home')||'null'); }catch(e){ return null; } };
+  const setLocal=L=>{ SAVE.set('home',JSON.stringify(L)); };
   const ask=async body=>{ const r=await fetch('/home',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}); if(!r.ok)throw new Error(r.status); return r.json(); };
   HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
   HOME.save=async L=>{ HOME.layout=L; setLocal(L); if(web){ try{ await ask({put:L}); HOME.saved=Date.now(); }catch(e){ HOME.err=String(e); } } };
@@ -77,10 +79,10 @@ import {ROOMK} from './150a-bedroom.js';
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
-  const SAY=document.createElement('div'); SAY.id='roomsay'; SAY.hidden=true; document.body.appendChild(SAY);
+  const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
   const B=document.createElement('button'); B.id='roomedbtn'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
-  const say=m=>{ SAY.textContent=m; SAY.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAY.hidden=true; },2200); ED.said=m; };
+  const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };
   const hexs=c=>'#'+c.map(x=>x.toString(16).padStart(2,'0')).join('');
   const name=un=>un.name+(un.added?' (NEW)':'');
@@ -220,7 +222,7 @@ import {ROOMK} from './150a-bedroom.js';
     ED.undo.length=0; dirty(); ED.panel(); };
 
   /* ---------- the camera over the room while you decorate (back as it was when you're done) ---------- */
-  ED.toggle=()=>{ if(!ED.on&&HOME.guest){ FORAGE.say&&FORAGE.say("THIS IS "+HOME.guest.name+"'S APARTMENT. YOU CAN LOOK, NOT DECORATE.",'#c8a090'); return; } if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
+  ED.toggle=()=>{ if(!ED.on&&HOME.guest){ SAY("THIS IS "+HOME.guest.name+"'S APARTMENT. YOU CAN LOOK, NOT DECORATE.",'#c8a090'); return; } if(!ED.on&&!inHome())return; ED.on=!ED.on; if(!ED.on){ if(ED.carry)placeCarry(true); select(null); setHover(null); showGrid(false); const A=A_(); clearTimeout(saveT); if(A)HOME.save(snapshot(A)); } ED.panel(); B.textContent=ED.on?'DONE · T':'DECORATE · T'; };
 
   /* ---------- the mouse and the keys while you decorate ---------- */
   const rc=new THREE.Raycaster(), ndc=new THREE.Vector2(), plane=new THREE.Plane(), hitP=new THREE.Vector3(), UP=new THREE.Vector3(0,1,0);

@@ -1,9 +1,8 @@
 // VIS, LEVELS and ZONES: the one place that hides things (each system gives its reason; a thing shows when no reason is left), which level is drawn, and the one answer to "which zone am I in".
 import {SHARED} from './003-shx.js';
-import {LEVELS, PARK, pos, ROOMS, ZONES} from './003b-systems.js';
+import {LEVELS, PARK, pos, ROOMS, VIS, ZONES} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SECTION, SECTIONS, TILE} from './006-map-pre.js';
-const VIS={all:false};
 { const M=new Map();
   const apply=(o,r)=>{ const h=r.why.size>0&&!VIS.all; if(r.self)o.layers.mask=h?0:r.mask; else o.visible=!h; };
   VIS.hide=(o,why,on=true,self=false)=>{ if(!o)return; let r=M.get(o); if(!r){ if(!on)return; r={why:new Set(),self,mask:self?(o.layers.mask||1):0}; M.set(o,r); }
@@ -22,7 +21,7 @@ LEVELS.of.street={name:SECTIONS.streets.south,floor:'up',base:true};
   const on=(id,cur)=>id==='*'||id===cur||typeof id==='object'&&(id===LEVELS.way||(id.at||[id.a,id.b]).includes(cur));
   const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o.parent===scene?o:null; };
   LEVELS.at=(x,z,floor)=>{ let b=null; for(const id in LEVELS.of){ const L=LEVELS.of[id]; if(L.floor!==floor)continue; if(L.has){ if(L.has(x,z))return id; } else if(L.base&&!b)b=id; } return b; };
-  LEVELS.floor=(cur,y,si)=>si?(y<-1.6?'down':'up'):cur;
+  LEVELS.floor=(cur,y,si)=>si?LEVELS.below(y):cur;
   LEVELS.set=(lv,x,z,si)=>{ const w=si&&LEVELS.ways.find(w=>w.stair===si.S)||null; LEVELS.way=w; return LEVELS.cur=w?(lv==='down'?w.b:w.a):LEVELS.at(x,z,lv); };
   LEVELS.drawn=(o,cur=LEVELS.cur)=>{ const t=top(o); return !t||on(owner(t),cur); };
   LEVELS.hide=(cur=LEVELS.cur)=>{ const H=[]; for(const o of scene.children)if(o.visible&&!on(owner(o),cur)){ o.visible=false; H.push(o); } return H; };
@@ -40,4 +39,3 @@ Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['cp','CEN
   ZONES.tick=()=>{ if(!window.__started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;
     if(!ZONES.cur||ZONES.cur.k!==k){ const was=ZONES.cur; ZONES.cur={...z,k}; for(const f of ZONES.fns)try{ f(ZONES.cur,was); }catch(e){ console.warn('ZONES',e); } } };
   window.ZONES=ZONES; }
-export {VIS};

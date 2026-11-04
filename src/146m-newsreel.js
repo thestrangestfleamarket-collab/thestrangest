@@ -1,12 +1,13 @@
 // THE NEWSREEL: a living camera (his kind see through lenses grown from their heads, so he is allowed: no static cameras at the market) who walks Central Park and Market St taking real photographs — the world drawn from his lens as it is that moment — and sells them; bought, a photo is yours to frame in your apartment (150g).
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, NPCS, pos, ROOMS, UI, ZONES} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const PHOTOS={stock:[],mine:[],price:10,sitting:15}; window.PHOTOS=PHOTOS;
-{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+{ const T=TILE, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc');
   try{ PHOTOS.mine=JSON.parse(OWNED.get('photos')||'[]')||[]; }catch(e){ PHOTOS.mine=[]; }
   const nameOf=p=>'PHOTO: '+p.cap; const reg=()=>FORAGE.add({names:Object.fromEntries(PHOTOS.mine.map(p=>[p.id,nameOf(p)]))}); reg();
   PHOTOS.save=()=>{ try{ OWNED.set('photos',JSON.stringify(PHOTOS.mine.slice(-40))); }catch(e){} };

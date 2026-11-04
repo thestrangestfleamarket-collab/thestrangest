@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {LOOKS, PS2, W3} from './003b-systems.js';
 import {renderer, RH, ShaderPass} from './004-main.js';
 import {OWNED} from './005-save.js';
+import {SYS} from './006-map-pre.js';
 const DESIGN={}; window.DESIGN=DESIGN;
 { const R=RIG, D2R=Math.PI/180;
   // his studio light: a key over your left shoulder and a soft fill, no shadows from the street; the designer and the character page draw him in it
@@ -57,7 +58,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
 
   /* ---------- THE STUDIO: you alone in a dark room, turned and zoomed with the mouse; click a part, drag its handles or its sliders ---------- */
   DESIGN.open=()=>{ '@later';
-    if(!DESIGN.el)studio(); DESIGN.el.hidden=false; DESIGN.on=true; DESIGN.view('front'); DESIGN.redraw(); requestAnimationFrame(DESIGN.loop); };
+    if(!DESIGN.el)studio(); DESIGN.el.hidden=false; DESIGN.on=true; DESIGN.view('front'); DESIGN.redraw(); };
   function studio(){ '@later';
     const SW=560, SH=700, Y=new THREE.Vector3(0,1,0), V=new THREE.Vector3(), V2=new THREE.Vector3();
     const cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,500); let rt=null, prt=null, az=0, elv=.12, zoom=1, h0=2, ty=0, sel='head', mode='size', mirror=true, last=0, drag=null;
@@ -140,7 +141,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
       if(gp){ if(!psP)psP=new ShaderPass(PS2.shader); psP.uniforms.uL.value.set(gp.uniforms.uL.value.x*sh/RH,gp.uniforms.uL.value.y*sh/RH); psP.uniforms.uA.value=gp.uniforms.uA.value; psP.uniforms.uT.value=gp.uniforms.uT.value; psP.render(renderer,frt,lrt); out=frt; renderer.setRenderTarget(null); }
       const px=new Uint8Array(sw*sh*4); renderer.readRenderTargetPixels(out,0,0,sw,sh,px); const im=gs.createImageData(sw,sh); for(let y=0;y<sh;y++)im.data.set(px.subarray((sh-1-y)*sw*4,(sh-y)*sw*4),y*sw*4); gs.putImageData(im,0,0);
       g2.imageSmoothingEnabled=false; g2.clearRect(0,0,SW,SH); g2.drawImage(small,0,0,SW,SH); handles(); };
-    DESIGN.loop=t=>{ if(!DESIGN.on)return; requestAnimationFrame(DESIGN.loop); if(t-last<33)return; last=t; shot(); };
+    DESIGN.loop=t=>{ if(!DESIGN.on)return; if(t-last<33)return; last=t; shot(); }; SYS.add('win',DESIGN.loop,'102b-designer');
 
     // a click on him picks the part under the mouse (each piece drawn as its number)
     const PICK=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uPM:W3.PM},vertexShader:`attribute float pidx; uniform mat4 uPM[${W3.pcs.length}]; varying float vp; void main(){ mat4 PM=uPM[int(pidx+0.5)]; vp=pidx; gl_Position=projectionMatrix*modelViewMatrix*(PM*vec4(position,1.)); }`,

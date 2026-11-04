@@ -1,7 +1,7 @@
 // EVERY CHARACTER STANDING STILL (owner, 18 Oct 2026, after the mushroom seller's crawling shadow: "now check other characters"): one of each kind
 // brought beside you on the street and held still there, close in the map view; 12 frames a quarter second apart, and how many of the pixels in his
 // box change from frame to frame. A still character changes none (his idle look round or a flame's flicker aside). node tests/stillcheck.cjs <out> [keys] [query]
-const {chromium}=require('playwright'), out=process.argv[2]||'.', KEYS=(process.argv[3]||'fox,tomato,raincat,tvcat,scooterfrog,shark,squirrel,mushroom,hero_m,villager_f,ogre,ogre_mage,rat,frog,slime,snake,spider,wasp,dragon,BWK').split(','), q=process.argv[4]||'';
+const {chromium}=require('playwright'), out=process.argv[2]||'.', KEYS=(process.argv[3]||'fox,tomato,raincat,tvcat,scooterfrog,shark,squirrel,mushroom,hero_m,villager_f,ogre,ogre_mage,rat,frog,slime,snake,spider,wasp,dragon').split(','), q=process.argv[4]||'';
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:800,height:560}});
   pg.on('pageerror',e=>console.log('pageerror:',e.message));
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&wx=clear&hideme=1&hour=15.5&at=-2.2,3.2&view=map'+q,{waitUntil:'commit',timeout:180000});
@@ -10,7 +10,7 @@ const {chromium}=require('playwright'), out=process.argv[2]||'.', KEYS=(process.
     __dbg.cam(0.6,0.5,__dbg.cv().PPU*3); });
   const rows=[];
   for(const key of KEYS){
-    const ok=await pg.evaluate(k=>{ const T=__dbg.cv().TILE, p=__dbg.pos(); const N=k==='BWK'?window.BWK:[...__dbg.NPCS].find(n=>n&&n.key===k&&n.lv===__dbg.lvl()); if(!N||!N.st)return false;
+    const ok=await pg.evaluate(k=>{ const T=__dbg.cv().TILE, p=__dbg.pos(); const N=[...__dbg.NPCS].find(n=>n&&n.key===k&&n.lv===__dbg.lvl()); if(!N||!N.st)return false;
       for(const n of [...__dbg.NPCS])if(n&&n!==N&&n.g&&n.lv===__dbg.lvl()&&n.st&&Math.hypot(n.g.position.x-p[0],n.g.position.z-p[2])<12*T){ n.st.x+=40*T; if(window.CITY&&CITY.stop)CITY.stop(n); }   // (everyone else sent off the picture)
       const W=(window.WALKERS&&WALKERS.list||[]).find(w=>w.N===N); if(window.CITY&&CITY.stop)CITY.stop(N); if(N.errand)N.errand=null; N.life=null;
       const x=p[0]+1.2*T, z=p[2]+.6*T; N.st.x=x; N.st.z=z; N.st.to=null; if(N.g){ N.g.position.x=x; N.g.position.z=z; } if(W){ W.state='stay'; W.t=1e9; N.dwell=null; } N.st.face=null;

@@ -1,6 +1,7 @@
 // THE GUARDIANS: GUARD — the woodland folk who keep the castle over the dungeon (data/guardians.json): every body from one maker (a species head, a coat, a weapon), their posts and rounds round the castle, the welcome up the stair, and the keep's bounties on what you slay below.
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, CLOCK, FORAGE, GUARD, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIT} from './003b-systems.js';
+import {CHARS, CLOCK, FORAGE, GUARD, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIS, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
@@ -8,13 +9,13 @@ import {RIGNPC} from './083-npc-rig.js';
 import {SITES} from './089b-parksites.js';
 import {GEMS} from './101-gems.js';
 import {BODIES} from './111a-bodies.js';
-import {FOLK} from './146i-folk.js';
+import {FOLK} from './146ha-folk.js';
 GUARD.list=[];
-{ const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
+{ const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>SAY(t,c||'#f2c14e');
   // the bounty you hold: {id, n, got}, kept with your things; the dungeon's kills count toward it (SYS 'slain')
   let B=null; try{ B=JSON.parse(OWNED.get('bounty')||'null'); }catch(e){ B=null; }
   const keep=()=>{ try{ OWNED.set('bounty',JSON.stringify(B)); }catch(e){} }, def=id=>D.bounties.find(b=>b.id===id), done=()=>!!B&&B.got>=B.n;
-  SYS.add('slain',e=>{ const d=B&&def(B.id); if(!d||done()||e.sim)return; if((d.kind==='any'||d.kind===e.kind)&&(e.lvl||1)>=(d.lvl||1)){ B.got++; keep(); if(done())say('BOUNTY DONE: '+d.t+'. OLD EMBER WILL PAY.'); } },'146j-guardians');
+  SYS.add('slain',e=>{ const d=B&&def(B.id); if(!d||done()||e.sim)return; if((d.kind==='any'||d.kind===e.kind)&&(e.lvl||1)>=(d.lvl||1)){ B.got++; keep(); if(done())say('BOUNTY DONE: '+d.t+'. OLD EMBER WILL PAY.'); } },'146ja-guardians');
   TALK.ops.bounty=a=>{ const [w,id]=String(a).split(/\s+/), d=def(id||(B&&B.id));
     if(w==='take'&&d){ B={id:d.id,n:d.n,got:0}; keep(); say('BOUNTY: '+d.t+' ($'+d.pay+').'); }
     else if(w==='pay'&&d&&done()){ INV.cash+=d.pay; say('OLD EMBER PAYS YOU $'+d.pay+'.'); B=null; keep(); FORAGE.draw&&FORAGE.draw(); }
@@ -22,7 +23,7 @@ GUARD.list=[];
   TALK.tests.bounty=a=>a==='on'?!!B:a==='done'?done():false;
   TALK.vars.bounty=()=>{ const d=B&&def(B.id); return d?d.t+': '+B.got+' OF '+B.n:'NOTHING'; };
   TALK.tests.vit=a=>a==='hurt'?VIT.hp<.99:true;
-  TALK.ops.heal=a=>{ const c=+a||0; if(INV.cash<c)return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.cash-=c; VIT.hp=1; say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
+  TALK.ops.heal=a=>{ const c=+a||0; if(INV.cash<c)return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.cash-=c; VIT.heal(1); say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
   FORAGE.BUYK.slime=['slime_']; FORAGE.BUYK.gems=GEMS.map(g=>g[0]); FORAGE.BUYK.fish=['x_'];
   LINES.add('gd_pub',['Long watch. Good ale.','Sit down, sit down. Old Gristle won\'t bite.','To the keep!','Another round before the stair calls.','You were down there? Tell us everything.']);
   LINES.add('gd_up',['Back up! Good.','You made it out. Most do.','Anything follow you? No? Good.','Welcome back to the light.','Up the stair and still standing.']);
@@ -58,7 +59,7 @@ GUARD.list=[];
       for(let i=arrows.length-1;i>=0;i--)if(arrows[i].t>30){ arrows[i].m.removeFromParent(); arrows.splice(i,1); }
       for(let i=chips.length-1;i>=0;i--){ const c=chips[i]; c.t+=dt; c.v.y-=G*h; c.m.position.x+=c.v.x*h*MH; c.m.position.y+=c.v.y*h*MV; c.m.position.z+=c.v.z*h*MH; c.m.rotation.x+=c.w.x*h; c.m.rotation.y+=c.w.y*h;
         const gy=MODS.bodega.ground(c.m.position.x,c.m.position.z); if(c.m.position.y<gy){ c.m.position.y=gy; c.v.y*=-.3; c.v.x*=.5; c.v.z*=.5; c.w.multiplyScalar(.4); }
-        if(c.t>4){ c.m.removeFromParent(); c.m.geometry.dispose(); chips.splice(i,1); } } },'146j-guardians arrows');
+        if(c.t>4){ c.m.removeFromParent(); c.m.geometry.dispose(); chips.splice(i,1); } } },'146ja-guardians arrows');
     // the practice yard: blades and spears on the pells (wind up, strike, follow through, recover), bows at the butts
     Object.assign(GUARD,{MOVE,loose,chipsAt,MH,MV,LODR:9});
     const drill=(N,R,A,s,dt)=>{ const Y=SITES.at.yard; if(!Y)return; const bow=N.grip==='bow', L=bow?Y.butts:Y.pells; if(!L||!L.length)return; const i=R.k.length%L.length, tg=L[i];
@@ -107,13 +108,13 @@ GUARD.list=[];
           const PUB=SITES.inside.pub, door=SITES.homes.pub, hh=CLOCK.h??12, evening=hh>=19.5&&hh<23.5, goPub=!on&&!night&&!!PUB&&!!door&&R.home!=='pub'&&evening&&((R.k.length*7+(window.MAIL&&MAIL.ready?MAIL.day():0))%5<2);
           if(N.mode==='pub'&&!goPub){ PUB.taken.delete(N.seat); N.seat=null; A.sit=false; (MAPG.park||scene).add(N.g); N.park=true; s.x=door[0]; s.z=door[2]; s.to=null; N.mode=''; }
           if(goPub&&N.mode!=='pub'){ PUB.taken=PUB.taken||new Set(); const seat=PUB.seats.find(q=>!PUB.taken.has(q));
-            if(seat){ if(gap||!N.g.visible||Math.hypot(s.x-door[0],s.z-door[2])<.7*T){ PUB.taken.add(seat); N.seat=seat; N.mode='pub'; N.going=false; N.g.visible=true; scene.add(N.g); N.park=false; A.sit=true; A.mv=null; s.x=seat.x; s.z=seat.z; s.to=null; s.hold=true; s.face={x:seat.tx,z:seat.tz}; s.home={x:seat.x,z:seat.z,r:0,id:s.home.id}; }
-              else{ N.g.visible=true; s.hold=false; s.to={x:door[0],z:door[2]}; s.next=null; } return; } }
+            if(seat){ if(gap||!N.g.visible||Math.hypot(s.x-door[0],s.z-door[2])<.7*T){ PUB.taken.add(seat); N.seat=seat; N.mode='pub'; N.going=false; VIS.hide(N.g,'away',false); scene.add(N.g); N.park=false; A.sit=true; A.mv=null; s.x=seat.x; s.z=seat.z; s.to=null; s.hold=true; s.face={x:seat.tx,z:seat.tz}; s.home={x:seat.x,z:seat.z,r:0,id:s.home.id}; }
+              else{ VIS.hide(N.g,'away',false); s.hold=false; s.to={x:door[0],z:door[2]}; s.next=null; } return; } }
           if(N.mode==='pub'){ s.hold=true; s.to=null; s.x=N.seat.x; s.z=N.seat.z; s.face={x:N.seat.tx,z:N.seat.tz}; if(!A.act&&Math.random()<dt*.08){ A.act='raise'; A.t=0; N.aT=2.4; }
             if(Math.hypot(you.x-s.x,you.z-s.z)<2.4*T&&!((N.greet=(N.greet||Math.random()*20)-dt)>0)){ N.greet=50+Math.random()*60; LINES.say(N,'gd_pub'); } if((N.aT=(N.aT??3)-dt)<=0){ A.act=''; N.aT=4+Math.random()*6; } return; }
-          if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; N.g.visible=false; return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
-              if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; N.g.visible=false; s.to=null; } } return; }
-          if(on&&N.mode==='home'){ N.mode=''; N.g.visible=true; if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
+          if(!on&&H){ if(N.mode!=='home'){ if(gap||N.g.visible===false){ N.mode='home'; s.x=H.x; s.z=H.z; s.to=null; VIS.hide(N.g,'away'); return; } s.hold=false; s.home={x:H.x,z:H.z,r:0,id:s.home.id}; if(!s.to||Math.hypot(s.to.x-H.x,s.to.z-H.z)>.1)s.to={x:H.x,z:H.z}; s.next=null; A.mv=null;
+              if(Math.hypot(s.x-H.x,s.z-H.z)<.7*T){ N.mode='home'; VIS.hide(N.g,'away'); s.to=null; } } return; }
+          if(on&&N.mode==='home'){ N.mode=''; VIS.hide(N.g,'away',false); if(H){ s.x=H.x; s.z=H.z; } s.home={x:wx,z:wz,r:(post?0:at[2])*T,id:s.home.id}; s.to={x:wx,z:wz}; s.hold=false; N.going=true; }
           if(N.geoLo){ const far=Math.hypot(you.x-s.x,you.z-s.z)>GUARD.LODR*T, M=N.FIG?N.FIG.me:N.me;
             const g=far?N.geoLo:N.geoHi; if(M.geometry!==g){ if(!N.FIG&&!far&&!N.shaded)N.shade(); M.geometry=g; } }
           if(N.ctl&&N.ctl(dt,s,A,N))return;
@@ -138,5 +139,5 @@ GUARD.list=[];
     let was=SHARED.LVL; const [sx0,sx1,sy0,sy1]=[CASTLE.stair.x0,CASTLE.stair.x1,CASTLE.stair.y0,CASTLE.stair.y1];
     SYS.add('life',()=>{ const lv=SHARED.LVL; if(lv===was)return; const up=was==='down'&&lv==='up'; was=lv; if(!up)return;
       const cx=X((sx0+sx1)/2), cz=Z((sy0+sy1)/2); if(Math.hypot(pos.x-cx,pos.z-cz)>8*T)return;
-      let best=null, bd=1e9; for(const N of GUARD.list){ const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<bd&&N.gd.role==='post'){ bd=d; best=N; } } if(best&&bd<10*T)LINES.say(best,'gd_up'); },'146j-guardians');
+      let best=null, bd=1e9; for(const N of GUARD.list){ const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<bd&&N.gd.role==='post'){ bd=d; best=N; } } if(best&&bd<10*T)LINES.say(best,'gd_up'); },'146ja-guardians');
     window.GUARDDBG=()=>GUARD.list.map(N=>({k:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,far:!!N.far,tris:N.tris,lo:N.trisLo||0,hi:N.me.geometry===N.geoHi})); }); }

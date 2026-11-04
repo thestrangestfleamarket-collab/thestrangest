@@ -3,6 +3,7 @@ import {SHARED} from './003-shx.js';
 import {FORAGE, HANDHELD, keys, UI, VR} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {SAVE} from './005-save.js';
+import {SYS} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
 {
   const css=document.createElement('style'); css.textContent='.padon{outline:2px solid #f2c14e!important;outline-offset:2px}.padgrab{outline-color:#5cc337!important}body.padcur,body.padcur *{cursor:none!important}#keytab img.padi,#movesp img.padi{width:18px;height:18px;image-rendering:pixelated;vertical-align:middle}';
@@ -82,8 +83,8 @@ import {PAD} from './075-main-13.js';
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }
     if(hit(b('back'))&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(hit(b('menu')))tap('Escape'); };
-  const tick=now=>{ '@later'; if(!PAD.n){ letGo(); return; } requestAnimationFrame(tick); if(!VR.on)pump(now,pick()); };
-  addEventListener('gamepadconnected',()=>{ if(!PAD.n++){ PAD.t=0; requestAnimationFrame(tick); } if(UI.menuOpen)UI.padKeys(); });
+  const tick=now=>{ '@later'; if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n)tick(now); },'162a-pad');
+  addEventListener('gamepadconnected',()=>{ if(!PAD.n++)PAD.t=0; if(UI.menuOpen)UI.padKeys(); });
   addEventListener('gamepaddisconnected',()=>{ PAD.n=Math.max(0,PAD.n-1); if(!PAD.n){ letGo(); mark(null); } });
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);
   addEventListener('pointermove',e=>{ if(PAD.cur&&e.isTrusted&&(e.movementX||e.movementY)){ PAD.cur=false; document.body.classList.remove('padcur'); } },true);

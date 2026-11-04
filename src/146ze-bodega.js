@@ -1,11 +1,12 @@
 // THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay the Fox at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
-{ const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e'), BOD=SHARED.BOD, TM=.924;   // a bodega tile in metres
+{ const say=(t,c)=>SAY(t,c||'#f2c14e'), BOD=SHARED.BOD, TM=.924;   // a bodega tile in metres
   // each kind of good on the shelves is a thing you can buy: [item, what it is, $, what eating it does (none: not food)]
   const feed=f=>()=>FORAGE.feed(f), sta=k=>()=>{ VIT.sta=Math.min(1,VIT.sta+k); };
   const KIND={water:['g_water','A BOTTLE OF WATER',1,sta(.2)],can:['g_soda','A CAN OF SODA',1,sta(.3)],bottle:['g_juice','A BOTTLE OF JUICE',2,()=>{ FORAGE.feed(.05); VIT.sta=Math.min(1,VIT.sta+.3); }],

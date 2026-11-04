@@ -1,11 +1,12 @@
 // THE CARS: the racing-cars kit's six cars (data/cars.json, CC0) parked on Market St (their spots in data/world.json's cars); double-click one to get in and drive it (a RIDE kind boarded where it stands, on VEH: W goes, S brakes and backs, A and D steer); GET OUT (or F) parks it where it stands. The section's server keeps where each car is parked and who drives it, so everyone sees the same cars, one driver a car.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, PB, pos, RADIO, RIDE, ROOMS, st, UI} from './003b-systems.js';
+import {ONLINE, PB, pos, RADIO, RIDE, ROOMS, st, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {VEH} from './150o-physmore.js';
 const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={jazz:__FILE__("data/radio/jazz.mp3"),dance:__FILE__("data/radio/dance.mp3"),rag:__FILE__("data/radio/rag.mp3"),opera:__FILE__("data/radio/opera.mp3")};
-{ const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
+{ const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
   const CARS=new Map(), KINDS={}; let DATA=null, mine=null, want=null;
   const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=CAR;
   for(const c of LEVEL.cars||[])CARS.set(c.id,{id:c.id,model:c.model,x:X(c.x),z:Z(c.y),hd:(c.hd||0)*Math.PI/180,by:null,mesh:null,sol:null});

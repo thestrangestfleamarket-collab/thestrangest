@@ -1,6 +1,7 @@
 // THE DINER: its inside off the map, laid out as a real diner: the dining room (a counter of eight stools, three booths of four on the windows: 20 seats), the back counter and the pass window, the kitchen behind it, built round its chef (the octopus, twice the drummer's size, all eight arms at the line, the prep fridge, the bread table and the pass, handing plates out the window to the waitress), the walk-in and the dish pit, two restrooms; its staff's work spots by job title.
 import {THREE} from './003-shx.js';
 import {CLOCK, FORAGE, INV, NEWS, pos, RADIO, ROOMS, SHOPS, UI, USE, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {PPU} from './004-main.js';
 import {SYS, TILE, ZU} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -159,7 +160,7 @@ DINER.order=()=>SHOPS.open({key:'diner_waitress',name:'THE DINER'});
     for(const [v,i] of [[8.6,0],[10.3,1]]){ box(.005,v-.4,.035,v+.4,1.4,2.05,0x3a2a1a); pic(.037,v,1.45,.7,.55,1,0,A.tex(40,32,(g,w,h)=>{ const sky=i?['#f0a050','#e05a40']:['#7ab0d8','#d8e8f0']; const gr=g.createLinearGradient(0,0,0,h); gr.addColorStop(0,sky[0]); gr.addColorStop(1,sky[1]); g.fillStyle=gr; g.fillRect(0,0,w,h);
       g.fillStyle=i?'#2a1a2a':'#3a4a3a'; for(let x=0;x<w;x+=6)g.fillRect(x,h-8-((x*7)%11),5,20); g.fillStyle=i?'#c02020':'#3060c0'; g.fillRect(8,h-9,16,5); g.fillStyle='#1a1a1a'; g.fillRect(10,h-5,3,3); g.fillRect(19,h-5,3,3); })); it('a framed picture'); }
     /* ---------- what you use: the counter's machines and cases sell, the boards read close up, the jukeboxes play the radio, the restrooms work, a shift at the pass pays tips ---------- */
-    const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#f2c14e');
+    const say=(t,c)=>SAY(t,c||'#f2c14e');
     use('THE COFFEE BREWER (COFFEE $1)',.55,BB[0]+.25,.7,1.55,()=>IKIT.buy('d_coffee',1,'A MUG OF COFFEE, BLACK. $1.'),1.8);
     use('THE MILKSHAKE MIXER (SHAKE $2)',1.3,BB[0]+.3,.45,1.46,()=>IKIT.buy('d_shake',2,'A MILKSHAKE, THICK ENOUGH TO STAND A STRAW IN. $2.'),1.8);
     use('THE SODA FOUNTAIN (COLA $3)',2.05,BB[0]+.3,.7,1.45,()=>IKIT.buy('d_cola',3,'A GLASS OF COLA FROM THE FOUNTAIN. $3.'),1.8);

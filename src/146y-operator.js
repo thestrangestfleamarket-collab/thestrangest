@@ -1,6 +1,7 @@
 // THE OPERATOR: a pale blue horned demon in dusty white robes, always on his light blue phone, at a switchboard stand on Market St; he sells a telephone for your home (150j) and a bulky cell phone you carry. Either one calls any shopkeeper in the city and buys from them where you stand.
 import {THREE} from './003-shx.js';
 import {FORAGE, NPCS, SHOPS, UI, WIELD} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {MERCH} from './111e-merch.js';
 const PHONE={}; window.PHONE=PHONE;
@@ -14,7 +15,7 @@ const PHONE={}; window.PHONE=PHONE;
   PHONE.dial=how=>{ const L=PHONE.list(); W.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:8px"><b style="color:#9ac8f0">${how==='home'?'THE HOME TELEPHONE':how==='handheld'?'THE HANDHELD':'THE CELL PHONE'}: WHO ARE WE CALLING?</b><button data-x style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;cursor:pointer">HANG UP</button></div>`+
       L.map(c=>`<button data-c="${c.id}" style="display:block;width:100%;text-align:left;margin:2px 0;font:inherit;color:#ece5d3;background:#141822;border:2px solid #2a3040;padding:4px 6px;cursor:pointer">${c.name}</button>`).join(''); W.hidden=false; };
   W.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x!==undefined){ W.hidden=true; return; }
-    const id=b.dataset.c; if(!id)return; W.hidden=true; const r=(LEVEL.chars||{})[id]; FORAGE.say&&FORAGE.say('RING... RING... '+((r&&r.name)||'THEY')+' PICKS UP. "DELIVERY? SURE."','#9ac8f0'); if(SHOPS.open)SHOPS.open(NPCS.extra&&NPCS.extra.find(q=>q.key===id)||{key:id,name:r&&r.name}); });
+    const id=b.dataset.c; if(!id)return; W.hidden=true; const r=(LEVEL.chars||{})[id]; SAY('RING... RING... '+((r&&r.name)||'THEY')+' PICKS UP. "DELIVERY? SURE."','#9ac8f0'); if(SHOPS.open)SHOPS.open(NPCS.extra&&NPCS.extra.find(q=>q.key===id)||{key:id,name:r&&r.name}); });
   // the cell phone: held, a click dials
   const cell=()=>{ const G=new THREE.Group(), std=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.5,...o}); const b=new THREE.Mesh(new THREE.BoxGeometry(.06,.2,.035),std(0x2a2c30)); G.add(b);
     const ant=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.09,8),std(0x141416)); ant.position.set(.02,.14,0); G.add(ant); const sc=new THREE.Mesh(new THREE.PlaneGeometry(.045,.035),std(0x8ab070,{emissive:0x203818})); sc.position.set(0,.05,.018); G.add(sc);

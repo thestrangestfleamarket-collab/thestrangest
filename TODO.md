@@ -146,3 +146,4 @@ starting: a newer owner decision wins over a line here.
   some walking frames.
 - [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
   branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.
+- [x] **The folk's walks on the server.** Owner, 4 Nov 2026: "i want the server to be running 24x7 with life happening no matter who is logged in"; "do option 2, build it". Done (`worker/folk.js`, `src/111db-walks.js`); next: the lives' hour changes on the server too, so the cast go to work and home while nobody is in.

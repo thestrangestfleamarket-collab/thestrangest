@@ -106,6 +106,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.windows = !!(window.WINDOWS && typeof WINDOWS.bake === 'function' && WINDOWS.panes.some(p => p.off === 'bodega' && p.look === 'in') && SYS.P.places.some(s => s.name === '130a-windows') && ROOMS.off.bodega.shift);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
+      o.walks = !!(window.WALKS && WALKS.by instanceof Map && typeof WALKS.reg === 'function' && typeof WALKS.pick === 'function' && SYS.P.city.some(s => s.name === '111db-walks') && SYS.P.hi.some(s => s.name === '111db-walks') && WALKS.S && typeof WALKS.S.freeFn === 'function' && WALKS.remote === false);
       o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.equip = (() => { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
@@ -187,6 +188,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
+    ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
     ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
     ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));

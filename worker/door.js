@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
+import { FOLKSIM } from "./folk.js";
 import { lvBrief, lvH, lvMeet, lvRun } from "./lives.js";
 import LIVESDATA from "../data/lives.json";
 import WORLD from "../data/world.json";
@@ -169,11 +170,19 @@ export class Block extends Server {
   roster(skip) { const by = new Map(); for (const c of this.getConnections()) if (c.id !== skip && c.state && c.state.id) by.set(c.state.id, c.state); return [...by.values()]; }
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
   async world() { if (!this.W) this.W = (await this.ctx.storage.get("world")) || {}; return this.W; }
+  // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
+  async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); if ((await this.ctx.storage.getAlarm()) == null) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }
+  async onAlarm() { const F = await this.folk(), now = Date.now(), n = [...this.getConnections()].length;
+    FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+    if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
+    if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); }
+    await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }
   async onConnect(c, ctx) {
     const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null }); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
-    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []) }));
+    const F = await this.folk();
+    c.send(JSON.stringify({ t: "hi", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "" }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
@@ -193,7 +202,7 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > 2500) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
     const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
@@ -259,6 +268,10 @@ export class Block extends Server {
       this.putT(); if (list.length) this.ctx.storage.sql.exec("insert into puts(who, k, name, list, at) values(?, ?, ?, ?, ?) on conflict(who, k) do update set name = excluded.name, list = excluded.list, at = excluded.at", s.id, m.k, s.name || "", JSON.stringify(list), now);
       else this.ctx.storage.sql.exec("delete from puts where who = ? and k = ?", s.id, m.k);
       this.broadcast(JSON.stringify({ t: "puts", id: s.id, k: m.k, name: s.name || "", list }), [c.id]);
+    } else if (m.t === "folk") {
+      this.folk().then(F => { let ch = false; if (m.grid && typeof m.grid === "object" && typeof m.grid.v === "string" && m.grid.v.length <= 64 && m.grid.v !== (F.g && F.g.v)) ch = FOLKSIM.grid(F, m.grid) || ch;
+        if (Array.isArray(m.set)) for (const a of m.set.slice(0, 400)) if (Array.isArray(a) && FOLKSIM.set(F, a[0], a[1])) ch = true;
+        if (ch) this.folkDirty = true; });
     } else if (m.t === "lives") {
       const all = this.lives(), b = {}; for (const k in all) b[k] = lvBrief(all[k]); c.send(JSON.stringify({ t: "lives", all: b }));
     } else if (m.t === "met" && typeof m.k === "string" && LIVESDATA[m.k] && s.name) {

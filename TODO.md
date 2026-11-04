@@ -100,6 +100,17 @@ starting: a newer owner decision wins over a line here.
 - [ ] **`tests/loosecheck.cjs` fails on `main`**: its start spot (`at=-2.2,3.2`) has no loose things near it any more.
 - [ ] **The navigation wasm sometimes aborts** (`Aborted()` from `@recast-navigation`, "NAV: the mesh for down failed"), seen 2 Nov 2026 on
   clean `main` too; it once failed `tests/places.cjs` at the playhouse.
+- [ ] **Fluffy crown + real leaves: owner to pick** (2 Nov 2026; options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov). A fluffy crown
+  (now), B single leaves, C ball-lit leaves, D fluffy core with a leaf edge, E leafy cards, F leaves on the sunny top. Suggested: D for close
+  trees, C for showpieces (the cherry, the Mall elms). Nothing built.
+- [ ] **Trees by distance: owner to pick** (2 Nov 2026; the nine looks at https://claude.ai/artifact/TQ1obJhoEbEzv3cquPxwfC). Suggested:
+  leaf dabs at middle distance, a picture that faces you past the haze. Nothing built.
+- [ ] **Look at the fluffy grass in game** (#508): the tufts' dark root, light tip and tip patches were never seen; the standing grass
+  didn't show in the test browser.
+- [ ] **Does the wind bring the lag back?** (#508 turned wind on again for trees, plants and grass; the owner turned it off on 30 Oct for lag).
+  Not measured; `PARK.windK` (131-weather) and `TUFTS.wind` (140a) set it.
+- [ ] **"chunk later was not loaded before use" (#371, #372)** seen on the lawn (`?at=40,150`) on 2 Nov; not known whether it was there
+  before #508. Find the functions in `dist/chunks.txt` and add the missing `LOAD`.
 - [ ] **Two draw-distance controls: keep both or make one?** (left from #549, 4 Nov 2026; owner: "add a draw distance for far buildings").
   DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE (the owner's
   global look, `src/134e-distfog.js`) both limit what's drawn; the nearer wins. Ask the owner which to keep.

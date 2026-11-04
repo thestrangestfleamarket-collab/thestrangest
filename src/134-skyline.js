@@ -5,6 +5,7 @@ import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
+import {TPANE} from './087dz-tpane.js';
 
 { const q=QS.get('far'); let on=q!=='0'; if(q==null&&SAVE.get('haze2')==='0')on=false;
   const HAZE0=26, HAZE1=q&&+q>0?+q:560;
@@ -143,20 +144,19 @@ import {RINGX} from './065-ring.js';
     const D=[['m0','MIST STARTS (tiles past town)',-10,60,1],['m1','MIST DEPTH (tiles)',4,160,1],['md','MIST DARKER FAR',0,1,.01],['hn','BUILDINGS: HAZE NEAR',0,1,.01],['hf','BUILDINGS: HAZE FAR',0,1,.01],
       ['hd','HAZE REACHES FULL (tiles)',30,500,5],['hs','HAZE STEPS',2,16,1],['dt','WINDOWS SHOW UNTIL',0,1,.01],['wn','LIT WINDOWS AT NIGHT',0,.6,.01],['wd','LIT WINDOWS BY DAY',0,.3,.01],
       ['bl','BLUR',0,3,.05],['br','BLUR COARSENESS',1,4,.5],['zk','SKY OVERHEAD',.2,1.4,.01],['hk','SKY AT HORIZON',.1,1.2,.01]];
-    let P=null; const draw=()=>{ if(!P)return; for(const [k] of D){ const r=P.querySelector('[data-k="'+k+'"]'); if(r){ r.value=FL[k]; r.nextSibling.textContent=(+FL[k]).toFixed(2); } } };
-    FAR3.panel=()=>{ '@later'; if(P){ P.hidden=!P.hidden; draw(); return; } P=document.createElement('div'); P.id='farlook';
-      P.style.cssText='position:fixed;right:12px;top:8%;width:min(380px,92vw);max-height:84vh;overflow:auto;z-index:21;padding:12px 14px;font:10px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
-      P.innerHTML='<div style="color:#f2c14e;font-size:12px;margin-bottom:8px">DISTANCE LOOK</div><div id="flst" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">'+Object.keys(ST).map(n=>'<button class="btn" data-st="'+n+'">'+n+'</button>').join('')+'</div>'
-        +D.map(([k,l,a,b,st])=>'<div style="margin:5px 0"><div>'+l+'</div><input type="range" data-k="'+k+'" min="'+a+'" max="'+b+'" step="'+st+'" style="width:76%;vertical-align:middle"><span style="display:inline-block;width:20%;text-align:right"></span></div>').join('')
-        +'<div style="display:flex;gap:4px;margin-top:8px"><button class="btn" id="flsave">SAVE</button><button class="btn" id="flreset">RESET</button><button class="btn" id="flexp">EXPORT</button></div><div id="flmsg" style="margin-top:6px;color:#9aa"></div><textarea id="flout" hidden style="width:100%;height:60px;margin-top:6px;font:10px monospace"></textarea>';
+    let P=null, pane=null; const draw=()=>{ if(pane)pane.refresh(); };
+    FAR3.panel=async()=>{ '@later'; if(P){ P.hidden=!P.hidden; draw(); return; } P=document.createElement('div'); P.id='farlook';
+      P.style.cssText='position:fixed;right:12px;top:8%;width:min(470px,92vw);max-height:84vh;overflow:auto;z-index:21;padding:4px;box-sizing:border-box;font:10px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
+      P.innerHTML='<div class="tp"></div><div id="flmsg" style="margin:4px 6px;color:#9aa"></div><textarea id="flout" hidden style="width:100%;height:60px;margin-top:6px;font:10px monospace;box-sizing:border-box"></textarea>';
       document.body.appendChild(P); for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>e.stopPropagation());
-      P.addEventListener('input',e=>{ const k=e.target.dataset&&e.target.dataset.k; if(!k)return; FL[k]=+e.target.value; e.target.nextSibling.textContent=FL[k].toFixed(2); P.querySelector('#flmsg').textContent='not saved'; });
-      P.addEventListener('click',e=>{ const t=e.target, n=t.dataset&&t.dataset.st, msg=P.querySelector('#flmsg');
-        if(n){ Object.assign(FL,FL0,ST[n]); draw(); msg.textContent=n+' (not saved)'; }
-        if(t.id==='flsave'){ SAVE.set('farlook',JSON.stringify(FL)); msg.textContent='saved'; }
-        if(t.id==='flreset'){ Object.assign(FL,FL0); SAVE.del?SAVE.del('farlook'):SAVE.set('farlook','{}'); draw(); msg.textContent='back to the game\'s own'; }
-        if(t.id==='flexp'){ const o=P.querySelector('#flout'); o.hidden=false; o.value='FARLOOK '+JSON.stringify(Object.fromEntries(Object.entries(FL).map(([k,v])=>[k,+(+v).toFixed(3)]))); o.select(); msg.textContent='copy this and send it to Claude'; } });
-      draw(); };
+      const msg=P.querySelector('#flmsg'), say=t=>{ msg.textContent=t; };
+      try{ pane=await TPANE.make(P.querySelector('.tp'),{title:'DISTANCE LOOK'}); }catch(e){ say('PANEL DID NOT LOAD: '+e.message); return; }
+      const pr=pane.addFolder({title:'PRESETS'}); for(const n of Object.keys(ST))pr.addButton({title:n}).on('click',()=>{ Object.assign(FL,FL0,ST[n]); draw(); say(n+' (not saved)'); });
+      const V=TPANE.live(Object.fromEntries(D.map(([k])=>[k,[()=>+FL[k],v=>{ v=+(+v).toFixed(3); if(v!==+FL[k]){ FL[k]=v; say('not saved'); } }]])));
+      for(const [k,label,min,max,step] of D)pane.addBinding(V,k,{label,min,max,step});
+      pane.addButton({title:'SAVE'}).on('click',()=>{ SAVE.set('farlook',JSON.stringify(FL)); say('saved'); });
+      pane.addButton({title:'RESET'}).on('click',()=>{ Object.assign(FL,FL0); SAVE.del?SAVE.del('farlook'):SAVE.set('farlook','{}'); draw(); say('back to the game\'s own'); });
+      pane.addButton({title:'EXPORT'}).on('click',()=>{ const o=P.querySelector('#flout'); o.hidden=false; o.value='FARLOOK '+JSON.stringify(Object.fromEntries(Object.entries(FL).map(([k,v])=>[k,+(+v).toFixed(3)]))); o.select(); say('copy this and send it to Claude'); }); };
     if(QS.get('farlook')==='1')setTimeout(()=>FAR3.panel(),500); }
   // inside a street shop the sections round the park stand between the camera and the room: not drawn
   SYS.add('places',()=>{ if(MAPG.sections)VIS.hide(MAPG.sections,'inside',SHARED.LVL==='up'&&!!STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z))); },'134-sections');

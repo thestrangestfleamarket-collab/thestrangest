@@ -7,7 +7,7 @@ import {OBJS} from './008-batch.js';
 import {KIT} from './068-kit.js';
 import {SOUND} from './091-sfx.js';
 Object.assign(USE,{seat:null}); window.USE=USE;
-{ const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
+{ const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|recliner|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
   const kindOf=o=>{ if(o.useK!==undefined)return o.useK; const k=KINDS.find(([r])=>r.test(o.name||'')); return o.useK=k?k[1]:null; };
   const tris=(o,near)=>{ '@later'; const out=[];
     if(o.parts){ for(const p of o.parts){ const a=p.me.geometry.attributes.position.array; for(const t0 of [p.v0,p.v0+3])out.push(a.slice(t0*3,t0*3+9)); } return out; }

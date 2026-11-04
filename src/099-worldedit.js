@@ -4,6 +4,7 @@ import {LEVELS, LITE, PARK, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
+import {TPANE} from './087dz-tpane.js';
 Object.assign(WE,{on:false}); window.WE=WE;
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
   const base=o=>{ '@later'; if(o.base)return o.base; const B=o.parts.map(p=>p.me.geometry.attributes.position.array.slice(p.v0*3,p.v0*3+18)); const c=new THREE.Vector3(); let n=0, y0=1e9;
@@ -53,7 +54,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const fromWED=key=>{ for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(keyOf(h)===key)return h; } return null; };
   const geoOf=h=>{ const me=h.me; let G;
     if(me.isInstancedMesh){ G=me.geometry.clone(); G.applyMatrix4(Bx.fromArray(h.en.base||me.instanceMatrix.array,h.id*16)); }
-    else { const R=me._reservedRanges&&me._reservedRanges[h.id]; if(!R)return null; G=new THREE.BufferGeometry();
+    else { let R=null; try{ R=me.getGeometryRangeAt(me.getGeometryIdAt(h.id)); }catch(e){} if(!R)return null; G=new THREE.BufferGeometry();
       for(const k in me.geometry.attributes){ if(k==='batchId')continue; const A=me.geometry.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(R.vertexStart*z,(R.vertexStart+R.vertexCount)*z),z,A.normalized)); } }
     G.translate(-h.pivot[0],-h.pivot[1],-h.pivot[2]); G.computeBoundingSphere(); return G; };
   // a painted object (OBJS) copied: its quads as first painted, one mesh per batch they sit in
@@ -107,51 +108,38 @@ Object.assign(WE,{on:false}); window.WE=WE;
   SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(()=>{ if(Object.keys(ST).length)WE.applyAll(); }),'099-worldedit');
   WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`
-  #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
+  #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:min(400px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20;box-sizing:border-box}
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
   #we .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0} #we .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer}
-  #we .dim{color:var(--dim)} #we .lab{width:84px} #we input[type=range]{width:140px} #we textarea{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;width:100%;box-sizing:border-box;min-height:56px;padding:6px}
-  #we input[type=color]{width:44px;height:26px;border:2px solid #3a3f4e;background:#0e1016;padding:0}`;
+  #we .dim{color:var(--dim)} #we .lab{width:84px} #we textarea{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;width:100%;box-sizing:border-box;min-height:56px;padding:6px} #we .tp{margin:6px 0}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='we'; P.hidden=true; P.innerHTML=`<h2>EDIT THE WORLD</h2><div class="pane">
     <div class="dim" id="wname">double-click a thing to pick it</div>
     <div id="wtools" hidden>
-      <div class="row"><span class="lab">MOVE</span><button class="btn" data-mv="-1,0">◀</button><button class="btn" data-mv="1,0">▶</button><button class="btn" data-mv="0,-1">▲</button><button class="btn" data-mv="0,1">▼</button><button class="btn" data-up="1">UP</button><button class="btn" data-up="-1">DOWN</button></div>
-      <div class="dim">or drag it along the ground</div>
-      <div class="row"><span class="lab">TURN</span><button class="btn" data-turn="-15">⟲ 15°</button><button class="btn" data-turn="15">⟳ 15°</button><button class="btn" data-turn="90">90°</button></div>
-      <div class="row"><span class="lab">PITCH</span><input type="range" id="wrx" min="-180" max="180" step="1"></div>
-      <div class="row"><span class="lab">ROLL</span><input type="range" id="wrz" min="-180" max="180" step="1"></div>
-      <div class="row"><span class="lab">SIZE</span><input type="range" id="wsz" min="0.2" max="3" step="0.01"></div>
-      <div class="row"><span class="lab">WIDTH</span><input type="range" data-ax="0" min="0.2" max="3" step="0.01"></div>
-      <div class="row"><span class="lab">HEIGHT</span><input type="range" data-ax="1" min="0.2" max="3" step="0.01"></div>
-      <div class="row"><span class="lab">DEPTH</span><input type="range" data-ax="2" min="0.2" max="3" step="0.01"></div>
-      <div class="row" data-prow><span class="lab">COLOUR</span><input type="color" id="wcol"><button class="btn" id="wcol0">NONE</button></div>
-      <div class="row" data-prow><span class="lab">BRIGHTNESS</span><input type="range" id="wbri" min="0.2" max="2" step="0.01"></div>
-      <div class="row" data-prow><span class="lab">SEE-THROUGH</span><input type="range" id="wop" min="0" max="0.9" step="0.01"></div>
-      <div class="row" data-lrow><span class="lab">LIGHT</span><span class="dim" id="wlinfo"></span></div>
-      <div class="row" data-lrow><span class="lab">BRIGHTNESS</span><input type="range" id="wlbri" min="0" max="3" step="0.01"></div>
-      <div class="row" data-lrow><span class="lab">LIGHT COLOUR</span><input type="color" id="wlcol"><button class="btn" id="wlcol0">NONE</button></div>
-      <div class="row" data-lrow><span class="lab">RANGE</span><input type="range" id="wldist" min="1" max="40" step="0.5"></div>
+      <div class="row" data-orow><span class="lab">MOVE</span><button class="btn" data-mv="-1,0">◀</button><button class="btn" data-mv="1,0">▶</button><button class="btn" data-mv="0,-1">▲</button><button class="btn" data-mv="0,1">▼</button><button class="btn" data-up="1">UP</button><button class="btn" data-up="-1">DOWN</button></div>
+      <div class="dim" data-orow>or drag it along the ground</div>
+      <div class="row" data-orow><span class="lab">TURN</span><button class="btn" data-turn="-15">⟲ 15°</button><button class="btn" data-turn="15">⟳ 15°</button><button class="btn" data-turn="90">90°</button></div>
       <div class="row" data-srow><span class="lab">SIGN TEXT</span></div>
       <div class="row" data-srow><textarea id="wstext" placeholder="(blank = the live title)"></textarea></div>
-      <div class="row" data-srow><span class="lab">GLOW</span><input type="range" id="wsbri" min="0.2" max="2.5" step="0.01"></div>
-      <div class="row" data-srow><span class="lab">GLOW COLOUR</span><input type="color" id="wscol"><button class="btn" id="wscol0">NONE</button></div>
-      <div class="row" data-srow><button class="btn" id="wsback">BACK AS IT WAS</button></div>
-      <div class="row"><button class="btn" id="wcopy">COPY</button><button class="btn" id="wdel">DELETE</button><button class="btn" id="wback">BACK AS IT WAS</button></div>
-</div>
-    <div class="row" style="margin-top:10px"><button class="btn" id="wall">EVERYTHING BACK</button><button class="btn" id="wexp">EXPORT</button><button class="btn" id="wimp">IMPORT</button><input type="file" id="wimpf" accept="application/json" style="display:none"><button class="btn" id="wsend" hidden>SEND TO SERVER</button><button class="btn" id="wout">DONE (SHIFT+E)</button></div>
+    </div>
+    <div class="tp"></div><div class="dim" id="wmsg"></div>
+    <input type="file" id="wimpf" accept="application/json" style="display:none"><div class="row"><button class="btn" id="wsend" hidden>SEND TO SERVER</button></div>
     <div class="dim">what he bumps into stays where it was, for now</div></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
-  P.querySelectorAll('#wtools .row').forEach(r=>{ if(!r.hasAttribute('data-srow'))r.setAttribute('data-orow',''); });
-  ['keydown','keyup','keypress'].forEach(ev=>$('#wstext').addEventListener(ev,e=>e.stopPropagation()));
-  function draw(){ '@later'; $('#wtools').hidden=!sel; $('#wname').textContent=sel?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it'; if(!sel)return;
-    const isSign=!!sel.sign; P.querySelectorAll('#wtools [data-orow]').forEach(r=>r.style.display=isSign?'none':''); P.querySelectorAll('#wtools [data-srow]').forEach(r=>r.style.display=isSign?'':'none');
-    if(isSign){ const st=ST[signKey(sel)]||{}; $('#wstext').value=st.text!=null?st.text:''; $('#wsbri').value=st.sbri==null?1:st.sbri; $('#wscol').value=st.scol||'#ffd98a'; return; }
-    const e=stOf(sel);
-    P.querySelectorAll('[data-prow]').forEach(r=>r.style.display=sel.prop&&!(sel.tint&&!r.querySelector('#wop'))?'none':'');
-    const hasL=!!sel.lite; P.querySelectorAll('[data-lrow]').forEach(r=>r.style.display=hasL?'':'none');
-    if(hasL){ const u=litOrig(sel.lite), s=ST[sel.liteKey]||E0L(); $('#wlbri').value=s.li==null?1:s.li; $('#wlcol').value=hexOf(s.lcol!=null?parseInt(s.lcol.slice(1),16):u.colOrig); $('#wldist').value=((s.ldist!=null?s.ldist:u.distOrig)/T).toFixed(1); $('#wlinfo').textContent='on this '+sel.name.toUpperCase(); }
-    $('#wsz').value=Math.cbrt(e.s[0]*e.s[1]*e.s[2]); P.querySelectorAll('[data-ax]').forEach(i=>i.value=e.s[+i.dataset.ax]); $('#wcol').value=e.col; $('#wop').value=1-e.op; $('#wrx').value=e.rx||0; $('#wrz').value=e.rz||0; $('#wbri').value=e.bri==null?1:e.bri; }
+  ['keydown','keyup','keypress'].forEach(ev=>P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); }));
+  $('.tp').addEventListener('mousedown',e=>e.stopPropagation());
+  let pane=null, quiet=false; const BL={};
+  const shown=(b,on)=>{ if(b)b.element.style.display=on?'':'none'; };
+  const E=()=>sel&&!sel.sign?stOf(sel):E0(), LS=()=>sel&&sel.lite?ST[sel.liteKey]||E0L():E0L(), SS=()=>sel&&sel.sign?ST[signKey(sel)]||{}:{};
+  function draw(){ '@later'; const on=!!sel, isSign=on&&!!sel.sign;
+    $('#wtools').hidden=!on; $('#wname').textContent=on?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it';
+    P.querySelectorAll('#wtools [data-orow]').forEach(r=>r.style.display=isSign?'none':''); P.querySelectorAll('#wtools [data-srow]').forEach(r=>r.style.display=isSign?'':'none');
+    if(isSign){ const st=SS(); $('#wstext').value=st.text!=null?st.text:''; }
+    if(!pane)return; const obj=on&&!isSign, pr=k=>obj&&!(sel.prop&&!(sel.tint&&k!=='op'));
+    for(const k of ['shape','acts'])shown(BL[k],obj); shown(BL.sign,isSign);
+    for(const k of ['col','col0','bri','op'])shown(BL[k],pr(k)); shown(BL.colour,pr('col'));
+    shown(BL.lite,obj&&!!sel.lite); if(obj&&sel.lite)BL.lite.title='LIGHT ON THIS '+sel.name.toUpperCase();
+    quiet=true; try{ pane.refresh(); }finally{ quiet=false; } }
   function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||(!sel.sign&&stOf(sel).del))return; const b=new THREE.Box3();
     if(sel.sign){ if(sel.me&&sel.me.geometry){ sel.me.geometry.computeBoundingBox(); b.copy(sel.me.geometry.boundingBox).applyMatrix4(sel.me.matrixWorld); } }
     else if(sel.copy){ const me=CP.get(sel.key); if(me)b.setFromObject(me); }
@@ -160,41 +148,57 @@ Object.assign(WE,{on:false}); window.WE=WE;
     if(b.isEmpty())return; box=new THREE.Box3Helper(b,0xf2c14e); scene.add(LEVELS.own(box,'*')); }
   const change=f=>{ if(!sel)return; f(stOf(sel)); applySel(sel); settle(); save(); frame(); draw(); };
   const changeLite=f=>{ if(!sel||!sel.lite)return; const k=sel.liteKey, s=ST[k]||(ST[k]=E0L()); f(s); applyLight(sel.lite,s); if((s.li==null||s.li===1)&&s.lcol==null&&s.ldist==null)delete ST[k]; settle(); save(); draw(); };
+  const changeSign=f=>{ if(!sel||!sel.sign)return; const k=signKey(sel), st=ST[k]||(ST[k]={text:null,sbri:null,scol:null}); f(st); sel.ref.set&&sel.ref.set({text:st.text,bri:st.sbri,col:st.scol}); if(st.text==null&&(st.sbri==null||st.sbri===1)&&st.scol==null)delete ST[k]; save(); };
   const ground=()=>{ const r=new THREE.Vector3().setFromMatrixColumn(SHARED.cam.matrixWorld,0); r.y=0; r.normalize(); const f=new THREE.Vector3(-r.z,0,r.x); return [r,f]; };
   P.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{ const [dx,dz]=b.dataset.mv.split(',').map(Number), [r,f]=ground(); change(e=>{ e.t[0]+=(r.x*dx+f.x*dz)*.25*T; e.t[2]+=(r.z*dx+f.z*dz)*.25*T; }); });
   P.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>change(e=>{ e.t[1]+=+b.dataset.up*.1*T; }));
   P.querySelectorAll('[data-turn]').forEach(b=>b.onclick=()=>change(e=>{ e.r=(e.r+ +b.dataset.turn)%360; }));
-  $('#wsz').oninput=ev=>change(e=>{ const k=+ev.target.value/Math.cbrt(e.s[0]*e.s[1]*e.s[2]); e.s=e.s.map(x=>x*k); });
-  P.querySelectorAll('[data-ax]').forEach(i=>i.oninput=()=>change(e=>{ e.s[+i.dataset.ax]=+i.value; }));
-  $('#wcol').oninput=ev=>change(e=>{ e.col=ev.target.value; }); $('#wcol0').onclick=()=>change(e=>{ e.col='#ffffff'; });
-  $('#wop').oninput=ev=>change(e=>{ e.op=1-+ev.target.value; });
-  $('#wrx').oninput=ev=>change(e=>{ e.rx=+ev.target.value; }); $('#wrz').oninput=ev=>change(e=>{ e.rz=+ev.target.value; });
-  $('#wbri').oninput=ev=>change(e=>{ e.bri=+ev.target.value; });
-  $('#wlbri').oninput=ev=>changeLite(s=>{ s.li=+ev.target.value; }); $('#wldist').oninput=ev=>changeLite(s=>{ s.ldist=+ev.target.value*T; });
-  $('#wlcol').oninput=ev=>changeLite(s=>{ s.lcol=ev.target.value; }); $('#wlcol0').onclick=()=>changeLite(s=>{ s.lcol=null; });
-  const changeSign=f=>{ if(!sel||!sel.sign)return; const k=signKey(sel), st=ST[k]||(ST[k]={text:null,sbri:null,scol:null}); f(st); sel.ref.set&&sel.ref.set({text:st.text,bri:st.sbri,col:st.scol}); if(st.text==null&&(st.sbri==null||st.sbri===1)&&st.scol==null)delete ST[k]; save(); };
   $('#wstext').oninput=ev=>changeSign(st=>{ st.text=ev.target.value||null; });
-  $('#wsbri').oninput=ev=>changeSign(st=>{ st.sbri=+ev.target.value; }); $('#wscol').oninput=ev=>changeSign(st=>{ st.scol=ev.target.value; }); $('#wscol0').onclick=()=>{ changeSign(st=>{ st.scol=null; }); draw(); };
-  $('#wsback').onclick=()=>{ if(!sel||!sel.sign)return; delete ST[signKey(sel)]; sel.ref.set&&sel.ref.set({text:null,bri:null,col:null}); save(); draw(); };
-  $('#wexp').onclick=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
-  $('#wimp').onclick=()=>$('#wimpf').click();
+  const ed=(get,set,via=change)=>[get,v=>{ if(!quiet)via(e=>set(e,v)); }];
+  const V=TPANE.live({
+    rx:ed(()=>E().rx||0,(e,v)=>{ e.rx=v; }), rz:ed(()=>E().rz||0,(e,v)=>{ e.rz=v; }),
+    sz:ed(()=>{ const s=E().s; return Math.cbrt(s[0]*s[1]*s[2]); },(e,v)=>{ const k=v/Math.cbrt(e.s[0]*e.s[1]*e.s[2]); e.s=e.s.map(x=>x*k); }),
+    s0:ed(()=>E().s[0],(e,v)=>{ e.s[0]=v; }), s1:ed(()=>E().s[1],(e,v)=>{ e.s[1]=v; }), s2:ed(()=>E().s[2],(e,v)=>{ e.s[2]=v; }),
+    col:ed(()=>E().col,(e,v)=>{ e.col=v; }), bri:ed(()=>E().bri==null?1:E().bri,(e,v)=>{ e.bri=v; }), op:ed(()=>1-E().op,(e,v)=>{ e.op=1-v; }),
+    li:ed(()=>LS().li==null?1:LS().li,(s,v)=>{ s.li=v; },changeLite),
+    lcol:ed(()=>{ const s=LS(); return hexOf(s.lcol!=null?parseInt(s.lcol.slice(1),16):sel&&sel.lite?litOrig(sel.lite).colOrig:0xffffff); },(s,v)=>{ s.lcol=v; },changeLite),
+    ldist:ed(()=>{ const s=LS(); return +((s.ldist!=null?s.ldist:sel&&sel.lite?litOrig(sel.lite).distOrig:T)/T).toFixed(1); },(s,v)=>{ s.ldist=v*T; },changeLite),
+    sbri:ed(()=>SS().sbri==null?1:SS().sbri,(st,v)=>{ st.sbri=v; },changeSign), scol:ed(()=>SS().scol||'#ffd98a',(st,v)=>{ st.scol=v; },changeSign)});
+  const hook=(b,id,a,q='input')=>{ const el=b.element.querySelector(q); if(el&&id)el.id=id; if(a)b.element.setAttribute(a,''); return b; };
+  const build=async()=>{ '@later'; pane=await TPANE.make($('.tp')); const sl=(f,k,label,min,max,step,id,a)=>BL[k]=hook(f.addBinding(V,k,{label,min,max,step}),id,a);
+    const bt=(f,title,id,fn,a,k)=>{ const b=hook(f.addButton({title}),id,a,'button'); b.on('click',fn); if(k)BL[k]=b; return b; };
+    const sh=BL.shape=pane.addFolder({title:'TURN AND SIZE'});
+    sl(sh,'rx','PITCH',-180,180,1,'wrx'); sl(sh,'rz','ROLL',-180,180,1,'wrz'); sl(sh,'sz','SIZE',.2,3,.01,'wsz');
+    sl(sh,'s0','WIDTH',.2,3,.01); sl(sh,'s1','HEIGHT',.2,3,.01); sl(sh,'s2','DEPTH',.2,3,.01);
+    const co=BL.colour=pane.addFolder({title:'COLOUR'});
+    BL.col=hook(co.addBinding(V,'col',{label:'COLOUR'}),'wcol','data-prow'); bt(co,'NO COLOUR','wcol0',()=>change(e=>{ e.col='#ffffff'; }),'data-prow','col0');
+    sl(co,'bri','BRIGHTNESS',.2,2,.01,'wbri','data-prow'); sl(co,'op','SEE-THROUGH',0,.9,.01,'wop','data-prow');
+    const li=BL.lite=hook(pane.addFolder({title:'LIGHT'}),null,'data-lrow');
+    sl(li,'li','BRIGHTNESS',0,3,.01,'wlbri'); hook(li.addBinding(V,'lcol',{label:'LIGHT COLOUR'}),'wlcol'); bt(li,'NO LIGHT COLOUR','wlcol0',()=>changeLite(s=>{ s.lcol=null; })); sl(li,'ldist','RANGE',1,40,.5,'wldist');
+    const sg=BL.sign=hook(pane.addFolder({title:'SIGN'}),null,'data-srow');
+    sl(sg,'sbri','GLOW',.2,2.5,.01,'wsbri'); hook(sg.addBinding(V,'scol',{label:'GLOW COLOUR'}),'wscol'); bt(sg,'NO GLOW COLOUR','wscol0',()=>{ changeSign(st=>{ st.scol=null; }); draw(); });
+    bt(sg,'BACK AS IT WAS','wsback',()=>{ if(!sel||!sel.sign)return; delete ST[signKey(sel)]; sel.ref.set&&sel.ref.set({text:null,bri:null,col:null}); save(); draw(); });
+    const ac=BL.acts=pane.addFolder({title:'THIS THING'}); bt(ac,'COPY','wcopy',copy); bt(ac,'DELETE','wdel',()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); });
+    bt(ac,'BACK AS IT WAS','wback',()=>{ change(e=>{ Object.assign(e,E0()); }); if(sel&&sel.lite){ const k=sel.liteKey; ST[k]=E0L(); applyLight(sel.lite,ST[k]); delete ST[k]; settle(); save(); draw(); } });
+    const al=pane.addFolder({title:'EVERY EDIT'}); bt(al,'EVERYTHING BACK','wall',allBack); bt(al,'EXPORT','wexp',exp); bt(al,'IMPORT','wimp',()=>$('#wimpf').click());
+    bt(pane,'DONE (SHIFT+E)','wout',()=>WE.toggle()); draw(); };
+  const exp=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
   $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); save(); frame(); draw(); }catch(e){} };
-  $('#wdel').onclick=()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); };
-  $('#wcopy').onclick=()=>{ if(!sel||sel.sign)return; const src=stOf(sel), [r]=ground(); let at, of, rad=0;
+  const copy=()=>{ if(!sel||sel.sign)return; const src=stOf(sel), [r]=ground(); let at, of, rad=0;
     if(sel.copy){ const e=ST[sel.key]; at=[e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]]; of=e.of; } else if(sel.prop){ at=[sel.pivot[0]+src.t[0],sel.pivot[1]+src.t[1],sel.pivot[2]+src.t[2]]; of=keyOf(sel); }
     else { const B=base(sel), c=sel.c; at=[c.x+src.t[0],c.y+src.t[1],c.z+src.t[2]]; of=kid(sel); for(const a of B)for(let i=0;i<18;i+=3)rad=Math.max(rad,Math.hypot(a[i]-c.x,a[i+2]-c.z)); }
     const h=fromWED(of), it=h&&h.it; if(it&&it.r)rad=it.r; const w=Math.max(.6*T,rad*2+.3*T);
     let n=1; while(ST['C|'+n])n++; const k='C|'+n; ST[k]=Object.assign(E0(),{copy:sel.name,of,place:sel.place,at:[at[0]+r.x*w,at[1],at[2]+r.z*w],r:src.r||0,rx:src.rx||0,rz:src.rz||0,s:src.s.slice()});
     if(!copyMesh(k)){ delete ST[k]; return; } sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); };
-  $('#wback').onclick=()=>{ change(e=>{ Object.assign(e,E0()); }); if(sel&&sel.lite){ const k=sel.liteKey; ST[k]=E0L(); applyLight(sel.lite,ST[k]); delete ST[k]; settle(); save(); draw(); } };
-  $('#wall').onclick=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
+  const allBack=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
     for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); if(ST[k]){ ST[k]=E0(); applyProp(h); } }
     for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const k=keyOf(propHandle(en,bid)); if(ST[k])delete ST[k]; }
     for(const L of sceneLights()){ const k=litKey(L); if(ST[k]){ ST[k]=E0L(); applyLight(L,ST[k]); delete ST[k]; } }
     for(const sg of SIGNS.list){ const k='S|'+sg.place+'|'+sg.name; if(ST[k]){ sg.set&&sg.set({text:null,bri:null,col:null}); delete ST[k]; } } settle(); save(); frame(); draw(); };
-  $('#wout').onclick=()=>WE.toggle();
+  let busy=null;
   WE.copies=()=>[...CP.keys()];
-  WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge(); };
+  WE.toggle=()=>{ WE.on=!WE.on; P.hidden=!WE.on; if(!WE.on){ sel=null; frame(); } draw(); UI.badge&&UI.badge();
+    if(WE.on&&!busy)busy=build().catch(e=>{ busy=null; $('#wmsg').textContent='PANEL DID NOT LOAD: '+e.message; }); return WE.on?busy:Promise.resolve(); };
   const vis=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(vis);
   const wedOf=o=>{ for(const en of WED.meshes)if(en.me===o)return en; return null; };

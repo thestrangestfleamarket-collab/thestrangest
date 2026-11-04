@@ -394,7 +394,7 @@ ${sel('color',['#d8a845'])}{${HI}}
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
-  const NOPE='button,input,select,textarea,a,label,canvas,option,.pX';
+  const NOPE='button,input,select,textarea,a,label,canvas,option,.pX,.tpg';
   const zoomOf=el=>{ let z=1; for(let q=el;q;q=q.parentElement){ const v=parseFloat(getComputedStyle(q).zoom); if(v>0)z*=v; } return z; };
   const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
       const r=box.getBoundingClientRect(), z=zoomOf(box), dx=e.clientX-r.left, dy=e.clientY-r.top, px=v=>(v/z)+'px'; Object.assign(box.style,{position:'fixed',left:px(r.left),top:px(r.top),right:'auto',bottom:'auto',transform:'none',margin:'0',width:px(r.width),height:box.id==='ed'?px(r.height):box.style.height}); const fit=t=>{ box.style.maxHeight=px(Math.max(120,innerHeight-t-8)); if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=px(r.left); box.style.top=px(r.top);

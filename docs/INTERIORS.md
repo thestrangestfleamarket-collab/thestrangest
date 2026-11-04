@@ -1,4 +1,4 @@
-# Interiors plan (draft for the owner, 4 Nov 2026)
+# Interiors plan (owner, 4 Nov 2026: "go with your recommendations, start the groundwork, finish through")
 
 Every interior done the way the diner was: what a real one has, a non-human worker, patrons who come and sit or stand somewhere sensible, something for the player to do, then shots from every angle and a logic pass. One pull request per interior.
 
@@ -31,7 +31,7 @@ Not in this plan: the pub (shelved with the forest guardians, 30 Oct) and the si
 | 14 | **Golems' Cave** | one golem as appraiser at the trading stone | sleeping alcoves, sorting table, assay scale, ore cart on rails, crystal lanterns, a cutting wheel | golems sit round the fire at night | cut and polish gems for a better price; carrying gems keeps the guards calm (fixes "they trade and attack") |
 | 15 | **Squirrel's Tower** | the squirrel knight (already there) | needs your call: it has no inside today | none | a spyglass on the roof; his lookout marks things on your map |
 
-## Your calls
+## Your calls (taken as recommended, 4 Nov: the first option each; Squirrel's Tower: yes, his own tower; Playhouse: they run the foyer and bar; Bar: the crooner becomes the host; sound: none; workers as listed)
 
 1. **Bank.** You asked on 30 Oct for a dungeon with the dragon's head and gold. (A) a teller hall at the front, the hoard behind a vault door; (B) keep it as it is, only fix the staff.
 2. **Bath House.** You ruled on 28 Oct it stays empty and full of steam. (A) keep it empty: fix the staff, add the ghost's front desk and a few benches; (B) a full bathhouse (shoe lockers, washing row, soaking tub). The "pool lifeguard" job needs a new title either way.

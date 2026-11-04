@@ -1,16 +1,15 @@
 // THE DINER: its inside off the map, laid out as a real diner: the dining room (a counter of eight stools, three booths of four on the windows: 20 seats), the back counter and the pass window, the kitchen behind it, built round its chef (the octopus, twice the drummer's size, all eight arms at the line, the prep fridge, the bread table and the pass, handing plates out the window to the waitress), the walk-in and the dish pit, two restrooms; its staff's work spots by job title.
-import {SHARED, THREE} from './003-shx.js';
-import {pos, ROOMS, UI, USE} from './003b-systems.js';
+import {THREE} from './003-shx.js';
+import {pos, ROOMS, UI} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {SYS, TILE, ZU} from './006-map-pre.js';
+import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {octBody} from './125-game-zzz-bar-octopus-1-body.js';
 import {octFig} from './127-drummer.js';
 const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
 { const T=TILE, MW=T/.84;   // world units in a metre
-  // where the room's corner and axes are (u east, v toward the front door, in metres)
-  const frame=R=>{ const {X,Z}=SHARED.BOD, EX=Math.sign(X(R.x1)-X(R.x0)), IN=Math.sign(Z(R.y1)-Z(R.y0));
-    return {EX,IN,W:Math.abs(X(R.x1)-X(R.x0))/MW,D:Math.abs(Z(R.y1)-Z(R.y0))/MW,wx:u=>X(R.x0)+EX*u*MW,wz:v=>Z(R.y0)+IN*v*MW,hd:(du,dv)=>Math.atan2(EX*du,IN*dv)}; };
+  const frame=R=>IKIT.frame(R);
   // the 20 seats [u,v,seat height,facing du,dv]: the counter's stools, then each booth bench's two places
   const SEATS=(W,D)=>{ const st=[], bo=[]; for(let i=0;i<8;i++)st.push([.7+i*.92,7.85,.78,0,-1]);
     for(const u0 of [.1,2.3,W-2.06])for(const [a,dir] of [[u0,1],[u0+1.96,-1]])bo.push([[a+dir*.36,D-1.05,.47,dir,0],[a+dir*.36,D-.4,.47,dir,0]]); return {st,bo}; };
@@ -40,24 +39,8 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
       if(side==='w'&&s<KV)return tile(s,z,[236,238,234],[226,224,214],2); if(side==='e'&&s<KV)return tile(s,z,[196,214,222],[232,230,222],1.4);
       return dining(s,z,side); };
     for(const s of ['b','w','e','f'])A.wall(s,wallP(s));
-    /* ---------- the makers: boxes, cylinders and balls in metres, merged into a few meshes ---------- */
-    const V3=THREE.Vector3, COL=new THREE.Color(), bag=()=>({p:[],n:[],c:[]}), MAIN=bag(), GLOW=bag(); let CUR=MAIN;
-    const addG=g=>{ const q=g.index?g.toNonIndexed():g, p=q.attributes.position.array, n=q.attributes.normal.array; for(let i=0;i<p.length;i+=3){ CUR.p.push(p[i],p[i+1],p[i+2]); CUR.n.push(n[i],n[i+1],n[i+2]); CUR.c.push(COL.r,COL.g,COL.b); } g.dispose(); if(q!==g)q.dispose(); };
-    const box=(u0,v0,u1,v1,h0,h1,c)=>{ COL.set(c); const g=new THREE.BoxGeometry(Math.abs(u1-u0)*MW,(h1-h0)*MW,Math.abs(v1-v0)*MW); g.translate((wx(u0)+wx(u1))/2,(h0+h1)/2*MW,(wz(v0)+wz(v1))/2); addG(g); };
-    const cyl=(u,v,r,h0,h1,c,rt=r,seg=12)=>{ COL.set(c); const g=new THREE.CylinderGeometry(rt*MW,r*MW,(h1-h0)*MW,seg); g.translate(wx(u),(h0+h1)/2*MW,wz(v)); addG(g); };
-    const ball=(u,v,h,r,c,sy=1)=>{ COL.set(c); const g=new THREE.SphereGeometry(r*MW,10,7); g.scale(1,sy,1); g.translate(wx(u),h*MW,wz(v)); addG(g); };
-    const glow=f=>{ const c=CUR; CUR=GLOW; f(); CUR=c; };
-    const matL=new THREE.MeshLambertMaterial({vertexColors:true}), matB=new THREE.MeshBasicMaterial({vertexColors:true});
-    const meshOf=(b,mat,own)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(b.p,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(b.n,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(b.c,3));
-      const me=new THREE.Mesh(g,mat); if(own){ g.computeBoundingBox(); const c=g.boundingBox.getCenter(new V3()); c.y=g.boundingBox.min.y; g.translate(-c.x,-c.y,-c.z); me.position.copy(c); }
-      me.castShadow=mat===matL; me.receiveShadow=true; A.add(me); return me; };
-    const own=f=>{ const c=CUR, b=bag(); CUR=b; f(); CUR=c; return b; };
-    // a flat picture facing (du,dv), its bottom middle at u,v,h (metres)
-    const pic=(u,v,h,w,hh,du,dv,tex,lit)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*MW,hh*MW),lit?new THREE.MeshBasicMaterial({map:tex}):new THREE.MeshLambertMaterial({map:tex})); m.position.set(wx(u),(h+hh/2)*MW,wz(v)); m.rotation.y=hd(du,dv); A.add(m); return m; };
-    const words=(w,h,bg,lines,fg='#f0e8d0')=>A.tex(w,h,(g,W_,H_)=>{ g.fillStyle=bg; g.fillRect(0,0,W_,H_); g.textBaseline='top'; for(const [t,x,y,c,sz,al] of lines){ g.fillStyle=c||fg; g.font=(sz||8)+'px monospace'; g.textAlign=al||'left'; g.fillText(t,x,y); } });
-    const seat=(name,b,spots,reach)=>{ const me=meshOf(b,matL,true); me.name=name; DINER.seats+=spots.length;
-      const th={name,obj:me,reach:reach*T,near:(reach+1.2)*T,tall:1.2*T,act:()=>{ let best=spots[0], bd=1e9; for(const s of spots){ const d=Math.hypot(wx(s[0])-pos.x,wz(s[1])-pos.z); if(d<bd){ bd=d; best=s; } } USE.sitAt(wx(best[0]),wz(best[1]),best[2]*MW,hd(best[3],best[4])); }};
-      UI.thing(th); return me; };
+    /* ---------- the makers (IKIT): boxes, cylinders and balls in metres, merged into a few meshes ---------- */
+    const K_=IKIT.room({wx,wz,hd},o=>A.add(o)), {box,cyl,ball,glow,own,meshOf,pic,words,matL}=K_, seat=(n,b,sp,r)=>{ DINER.seats+=sp.length; return K_.seat(n,b,sp,r); };
     const C={red:0xb8262e,cream:0xeee2c4,chrome:0xc8ccd0,steel:0xa8acb0,dsteel:0x6e7276,black:0x1e1e22,wood:0x5a2a24,formica:0xe6dcc6,vinyl:0xc0303a,white:0xf2f2f0,porc:0xf4f6f6,tileK:0xe8ecea,tileR:0xd4e4ea};
     /* ---------- the partition (kitchen and restrooms behind it): a window to the pass, the kitchen's swing door, the restroom doors ---------- */
     const P0=KV, P1=KV+.15;
@@ -192,7 +175,7 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
         CG:P(4.85,.98,.98+.03*s(t*9)),CGA:[0,0,1],GL:P(2.98+.05*s(t*.5),.92,1.0+.18*ft),
         LS:[P(6.6+.08*s(t*4),1.95,.98),P(6.6+.08*s(t*4),2.5,.95)],RS:[P(2.75,2.15+.1*s(t*1.5),1.0+.1*ch),P(2.75,2.6+.1*s(t*1.5),.93)],
         RF:P(4.1+.25*s(t*1.7),4.12,.97+.04*s(t*3)),LF:P(...lf)}; };
-    meshOf(MAIN,matL,false); meshOf(GLOW,matB,false); const fm=meshOf(fan,matL,true);
+    K_.flush(); const fm=meshOf(fan,matL,true);
     O.draw(octBody(DINER.chef(0))); plate.userData.noMerge=fm.userData.noMerge=true; DINER.plate=plate; DINER.fan=fm; DINER.oct=O; DINER.on=true; };
   MSHOP.kit.diner.drop=()=>{ DINER.on=false; DINER.door=DINER.oct=DINER.fan=DINER.chef=DINER.plate=DINER.set=null; };
   SYS.add('life',dt=>{ if(!DINER.on)return; const t=performance.now()/1000;

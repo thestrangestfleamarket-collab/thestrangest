@@ -3,10 +3,10 @@ import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
 import {CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, QS, SOL, SYS, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
-const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
+const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',feel:'store:feel-lab'}};
 { const PF=__LAZY__("data/polyfork.json"), FM=window.FLEA={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
   const G={arcade:__LAZY__("data/cast/arcade.json"),art:__LAZY__("data/cast/art.json"),bank:__LAZY__("data/cast/bank.json"),bar:__LAZY__("data/cast/bar.json"),bath:__LAZY__("data/cast/bath.json"),
     boards:__LAZY__("data/cast/boards.json"),bodega:__LAZY__("data/cast/bodega.json"),castle:__LAZY__("data/cast/castle.json"),clinic:__LAZY__("data/cast/clinic.json"),commute:__LAZY__("data/cast/commute.json"),
@@ -30,11 +30,13 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
-  CREW.out=key=>{ for(const id in ROOMS.off){ const t=ROOMS.off[id].taken; if(t)t.delete(key); } };   // their seat is free again
-  CREW.inside=(at,key,job)=>{ const a=CREW.alias[at]||at, R=ROOMS.off[a], h=hsh(key||at), u=.25+.5*((h%97)/96), v=.25+.5*(((h>>7)%97)/96);
-    const S=R&&R.spots&&job&&R.spots[job.title]; if(S)return {x:S.x,z:S.z,hd:S.hd,off:true};   // a place's work spots, by job title
-    if(R&&R.seats){ const T=R.taken||(R.taken=new Map()); let i=T.get(key); if(i==null){ const used=new Set(T.values()), n=R.seats.length; for(let k=0;k<n&&i==null;k++)if(!used.has((h+k)%n))i=(h+k)%n; if(i==null)return null; T.set(key,i); }   // a patron takes a free seat (none free: not in sight)
-      const s=R.seats[i]; return {x:s.x,z:s.z,hd:s.hd,sit:s.y,off:true}; }
+  // an inside's own list of where people go: ROOMS.off[id] (rooms off the map) or STORE.rooms (the street's insides), each with spots (by job title) and seats ({x,z,hd,y}: y the seat's height, none to stand) and whether it lies off the map
+  const insideOf=a=>ROOMS.off[a]||(STORE.rooms||[]).find(r=>r.id===a)||null, offOf=a=>!!ROOMS.off[a]||!!(insideOf(a)||{}).offmap;
+  CREW.out=key=>{ for(const R of [...Object.values(ROOMS.off),...(STORE.rooms||[])]){ const t=R.taken; if(t)t.delete(key); } };   // their seat is free again
+  CREW.inside=(at,key,job)=>{ const a=CREW.alias[at]||at, R=insideOf(a), h=hsh(key||at), u=.25+.5*((h%97)/96), v=.25+.5*(((h>>7)%97)/96), off=offOf(a);
+    const S=R&&R.spots&&job&&R.spots[job.title]; if(S)return {x:S.x,z:S.z,hd:S.hd,sit:S.y,off:S.off??off};   // a place's work spots, by job title
+    if(R&&R.seats){ const T=R.taken||(R.taken=new Map()); let i=T.get(key); if(i==null){ const used=new Set(T.values()), n=R.seats.length; for(let k=0;k<n&&i==null;k++)if(!used.has((h+k)%n))i=(h+k)%n; if(i==null)return null; T.set(key,i); }   // a patron takes a free seat or place (none free: not in sight)
+      const s=R.seats[i]; return {x:s.x,z:s.z,hd:s.hd,sit:s.y,off:s.off??off}; }
     if(R&&R.box){ const b=R.box; return {x:b.x0+u*(b.x1-b.x0),z:b.z0+v*(b.z1-b.z0),off:true}; }
     const P=['bar','museum','bank','art','theatre'].includes(at)&&(LEVEL.places||[]).find(p=>p.id===at);
     if(P){ const y0=P.y1==null?LEVEL.block.back:P.y0, y1=P.y1==null?LEVEL.block.front:P.y1; return W(P.x0+u*(P.x1-P.x0),y0+v*(y1-y0)); }

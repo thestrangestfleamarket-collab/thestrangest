@@ -42,7 +42,8 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     for(let i=1;i<P.length;i++){ const S=P[i], L=sel[i-1]&&sel[i-1][1]; if(!L){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
     return ()=>P.forEach((S,i)=>{ const v=sv[i]; S.position.copy(v[0]); S.color.copy(v[1]); S.intensity=v[2]; S.distance=v[3]; S.decay=v[4]; }); };
   const FROM=new Map(); WINDOWS.from=id=>{ if(FROM.has(id))return FROM.get(id); const P=place(id), b=P&&P.b; let r=null; if(b&&WINDOWS.panes.some(p=>p.off===id&&p.look==='out')){ const c=new THREE.Vector3((b.x0+b.x1)/2,0,(b.z0+b.z1)/2).applyMatrix4(P.Mi); r={x:c.x,z:c.z}; } FROM.set(id,r); return r; };   // where an inside off the map stands on the street, if its glass looks out at it
-  WINDOWS.open=(x,z)=>{ for(const k of WINDOWS.held){ const P=place(k), b=P&&P.b; if(b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true; } return false; };   // inside a room seen live through its glass from the street: drawn though you are not in
+  WINDOWS.taking=new Set();   // insides being pictured for their glass, kept drawn and built meanwhile
+  WINDOWS.open=(x,z)=>{ for(const k of [...WINDOWS.held,...WINDOWS.taking]){ const P=place(k), b=P&&P.b; if(b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true; } return false; };   // inside a room seen live through its glass from the street: drawn though you are not in
   const view=(L,T,Cx,Cz,inward,eps,eyes,peek,hide,fit,off)=>{ const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const G=new Map(), Vr=new THREE.Vector3();
     for(const p of L){ const me=p.me; me.updateWorldMatrix(true,false); me.getWorldPosition(V); N.set(0,0,1).applyQuaternion(me.getWorldQuaternion(Q)); N.y=0; N.normalize(); if((N.x*(Cx-V.x)+N.z*(Cz-V.z)>0)!==inward)N.negate();
       Vr.copy(V).applyMatrix4(T); N.transformDirection(T); N.y=0; N.normalize(); if(eyes)WINDOWS.eyes.push({x:Vr.x,z:Vr.z}); const c=-(N.x*Vr.x+N.z*Vr.z), k=p.look+':'+Math.round(N.x*8)+','+Math.round(N.z*8)+','+Math.round(c/(.5*TILE)); let g=G.get(k); if(!g)G.set(k,g={n:N.clone(),c,L:[],seen:false,at:Vr.clone()}); g.L.push(p);
@@ -78,10 +79,10 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const firstOne=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
     if(S&&S.length===L.length){ await Promise.all(L.map((p,i)=>new Promise(res=>{ const im=new Image(); im.onload=()=>{ const t=new THREE.Texture(im); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; p.me.material=glass(t,1.7); p.me.visible=true; p.kept=t; res(); }; im.onerror=()=>res(); im.src=S[i]; }))); if(L.every(p=>p.kept))return; }
     const o=ROOMS.off[id], P=place(id); if(!o||!ROOMS.offBuild||!P||!P.sh)return;
-    try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await idle(); await ROOMS.offBuild(id);
+    WINDOWS.taking.add(id); try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await idle(); await ROOMS.offBuild(id);
       for(const p of L){ await idle(); if(ROOMS.offIn()===id)return; while(WINDOWS.busy)await idle(); WINDOWS.busy=true; try{ bakeOne(p); } finally{ WINDOWS.busy=false; } }
       const pics=[]; for(const p of L){ await idle(); pics.push(p.rt?shot(p):''); } if(pics.every(Boolean))try{ localStorage.setItem(KEY(id),JSON.stringify(pics)); }catch(e){}
-      await idle(); if(!was&&!WINDOWS.held.has(id)&&ROOMS.offIn()!==id)ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } };
+      await idle(); WINDOWS.taking.delete(id); if(!was&&!WINDOWS.held.has(id)&&ROOMS.offIn()!==id)ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } finally{ WINDOWS.taking.delete(id); } };
   WINDOWS.first=id=>chain=chain.then(()=>firstOne(id));
   let firstAt=0; SYS.add('places',()=>{ if(!window.__started||FADE.busy||WINDOWS.firstDone)return; if(!firstAt)firstAt=performance.now(); if(performance.now()-firstAt<4000)return; WINDOWS.firstDone=true; for(const id in ROOMS.off)if(!ROOMS.offIn()&&WINDOWS.panes.some(p=>p.off===id&&p.look==='in'&&!p.only))WINDOWS.first(id); },'130a-windows-first');
   window.WINDOWS=WINDOWS; }

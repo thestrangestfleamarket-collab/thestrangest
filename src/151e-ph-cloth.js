@@ -1,4 +1,4 @@
-// THE PLAYHOUSE'S CLOTHS: the house curtain (two halves of velvet that hang, swing and are drawn up on their lift lines into swags), the festooned valance over it, the black legs and borders that mask the wings and the grid (hung from their bars, flying with them), the boxes' drapes tied back; all cloth (DRAPE), settled by their weight.
+// THE PLAYHOUSE'S CLOTHS: the house curtain (two halves of velvet that hang, swing and are drawn up on their lift lines into swags), the festooned valance over it, the black legs and borders that mask the wings and the grid (hung from their bars, flying with them); all cloth (DRAPE), settled by their weight.
 import {THREE} from './003-shx.js';
 import {DRAPE} from './072a-cloth.js';
 import {PHX} from './151b-ph-kit.js';
@@ -75,15 +75,9 @@ PHX.parts.push({make:K=>{ '@playhouse';
         settle(c,150); C.hung.push({c,s,dy:s.y}); } }
     if(s.kind==='border'){ const nx=40, ny=6, L=2.2; const c=sheet(nx,ny,(u,v)=>{ const x=-9.6+19.2*u; return [x,s.y-L*v,s.z+.05*Math.sin(u*PI*24)]; },M.blackVel,{pins:[...Array(nx).keys()],it:4,uv:[12,1.4]});
       settle(c,150); C.hung.push({c,s,dy:s.y}); }
-    if(s.kind==='black'){ const nx=30, ny=24, L=s.y-SY+9.2; s.y=SY+9.2+.0; s.put(); const c=sheet(nx,ny,(u,v)=>{ const x=-11+22*u; return [x,s.y-(s.y-SY-.02)*v,s.z+.08*Math.sin(u*PI*30)]; },M.blackVel,{pins:[...Array(nx).keys()],it:5,uv:[14,6]});
+    if(s.kind==='black'){ const nx=30, ny=24, L=s.y-SY+9.2; s.y=SY+9.2+.0; s.put(); const c=sheet(nx,ny,(u,v)=>{ const x=-9.6+19.2*u; return [x,s.y-(s.y-SY-.02)*v,s.z+.08*Math.sin(u*PI*30)]; },M.blackVel,{pins:[...Array(nx).keys()],it:5,uv:[14,6]});
       settle(c,150); C.hung.push({c,s,dy:s.y}); } }
 
-  /* ---------- the boxes' drapes: a pair at each opening, hung from a gilt rod and tied back with a gold cord ---------- */
-  for(const sx of [-1,1])for(const y0 of [2.8,5.8])for(const zc of [2.6,5.6])for(const q of [-1,1]){ const x=sx*11.85, top=y0+2.55, z0=zc+q*1.42, z1=zc+q*.75, nx=8, ny=14, L=2.5, tie=Math.round((ny-1)*.55)*nx+(q<0?nx-1:0);
-    const c=sheet(nx,ny,(u,v)=>{ const z=z0+(z1-z0)*u; return [x+.05*Math.sin(u*PI*5),top-L*v,z]; },M.velvet,{pins:[...Array(nx).keys(),tie],it:5,uv:[1,2.4]});
-    const a=tie*3; c.X[a+2]=z0+(z1-z0)*.25; c.Xp[a+2]=c.X[a+2]; settle(c,200); c.frozen=1;
-    K.tor(.05,.012,M.gold,c.X[a],c.X[a+1],c.X[a+2],{ry:PI/2,seg:10}); K.plane(.1,.22,new THREE.MeshLambertMaterial({map:TX.tassel,alphaTest:.5,side:THREE.DoubleSide}),c.X[a]-sx*.02,c.X[a+1]-.16,c.X[a+2],{ry:PI/2}); }
-  for(const sx of [-1,1])for(const y0 of [2.8,5.8])K.rod([sx*11.85,y0+2.58,1.15],[sx*11.85,y0+2.58,7.05],.025,M.gold);
 },
 tick:(dt,K,now,inn)=>{ const C=K.cloth; if(!C)return; const h=Math.min(dt,1/20);
   // the player near the curtain pushes it; the hung cloths follow their bars when they fly

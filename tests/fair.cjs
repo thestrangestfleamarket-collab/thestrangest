@@ -21,7 +21,7 @@ const {chromium}=require('playwright'), path=require('path');
     ok(g.row===0,'the gate\'s gap in the West St row is open (no filler in it)');
     ok(g.door&&Math.abs(g.door[0]-g.F)<3&&g.door[1]>91&&g.door[1]<106,'the movie theatre\'s door is on West St beside the gate ('+JSON.stringify(g.door)+')');
     const sp=await pg.evaluate(()=>{ const c=CREW.spots.fair({job:{at:'fair',spot:'op:wheel'},key:'x'}); return c&&[c.x/1.13+72,c.z/1.13-77].map(v=>+v.toFixed(1)); });
-    ok(sp&&Math.abs(sp[0]+82.5)<3&&sp[1]<186&&sp[1]>170,'a job at the fair resolves to its post (the wheel\'s operator stands by the wheel: '+JSON.stringify(sp)+')');
+    ok(sp&&Math.abs(sp[0]+90)<3&&sp[1]<186&&sp[1]>170,'a job at the fair resolves to its post (the wheel\'s operator stands by the wheel: '+JSON.stringify(sp)+')');
     // the staff: the cast groups with fair jobs load near the gate and go to work (13:00 is inside their hours)
     let J=[]; for(let i=0;i<30;i++){ await pg.waitForTimeout(2000); J=await pg.evaluate(()=>window.JOBDBG?JOBDBG().filter(j=>j.at==='fair'):[]); if(J.length>=30)break; }
     const atWork=J.filter(j=>j.state==='work'||j.goal==='work'); ok(J.length>=30&&atWork.length>=J.length*.7,J.length+' fair workers loaded, '+atWork.length+' at work');

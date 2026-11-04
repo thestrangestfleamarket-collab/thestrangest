@@ -30,7 +30,7 @@ import {FAIR} from './150q-fair.js';
   const loop=pts=>{ const c=new THREE.CatmullRomCurve3(pts.map(p=>new V3(p[0]*M,p[1]*M,p[2]*M)),true,'catmullrom',.5); c.arcLengthDivisions=600; return c; };
 
   /* ---------- THE FERRIS WHEEL: 16 gondolas on a 16 m wheel; two turns a ride; board the three lowest ---------- */
-  FAIR.ride({id:'wheel',name:'FERRIS WHEEL',x:-82.5,y:186,hd:0,cycle:150,load:40,seats:16,price:2,solid:[6,3],reach:5*T,say:'YOU STEP INTO THE GONDOLA.',can:(R,i)=>R.seats[i].getWorldPosition(new V3()).y<3.2*M,
+  FAIR.ride({id:'wheel',name:'FERRIS WHEEL',x:-90,y:186,hd:0,cycle:150,load:40,seats:16,price:2,solid:[6,3],reach:5*T,say:'YOU STEP INTO THE GONDOLA.',can:(R,i)=>R.seats[i].getWorldPosition(new V3()).y<3.2*M,
     make:(g,K)=>{ const Rw=8*M, hub=9.2*M, N=16, steel=K.mat(0x8a2a2a), white=K.mat(0xe8e4dc), seats=[]; const wheel=new THREE.Group(); wheel.position.y=hub; g.add(wheel);
       for(const s of [-1,1]){ for(const e of [-1,1]){ const h=Math.hypot(2.8*M,hub), leg=K.box(.3*M,h,.3*M,steel,e*1.4*M,hub/2,s*1.2*M,g); leg.rotation.z=e*Math.asin(2.8*M/h); } K.cyl(.9*M,.9*M,.3*M,steel,0,hub,s*1.2*M,g).rotation.x=PI/2; } K.box(.4*M,.3*M,2.6*M,steel,0,hub,0,g);
       for(const s of [-1,1]){ const rim=K.mesh(new THREE.TorusGeometry(Rw,.12*M,8,48),white,0,0,s*1.2*M,wheel); for(let i=0;i<N;i++){ const sp=K.box(.08*M,Rw,.08*M,steel,0,0,s*1.2*M,wheel); sp.rotation.z=i*TAU/N; sp.position.set(Math.sin(i*TAU/N)*Rw/2,Math.cos(i*TAU/N)*Rw/2,s*1.2*M); } }
@@ -56,8 +56,8 @@ import {FAIR} from './150q-fair.js';
       return {seats,tick:(run,u)=>{ turn.rotation.y=TAU*3*ease(run); for(const q of horses)q.h.position.y=1.1*M+(run>0?Math.sin(u*3+q.i*1.3)*.35*M:0); }}; }});
 
   /* ---------- THE SWINGS: a chair-o-plane; twelve chairs on chains fly out as the crown spins ---------- */
-  FAIR.ride({id:'swings',name:'SWING RIDE',x:-114,y:196,hd:0,cycle:80,load:28,seats:12,price:1,solid:[4,4],reach:7*T,pose:'car',say:'YOU SIT IN THE CHAIR AND THE BAR DROPS.',
-    make:(g,K)=>{ const Hm=8.5*M, Rc=3*M, L=4.5*M, seats=[], chairs=[]; K.cyl(.35*M,.5*M,Hm,K.mat(0x3a4a8a),0,Hm/2,0,g,12); const crown=new THREE.Group(); crown.position.y=Hm; g.add(crown);
+  FAIR.ride({id:'swings',name:'SWING RIDE',x:-120,y:197,hd:0,cycle:80,load:28,seats:12,price:1,solid:[4,4],reach:7*T,pose:'car',say:'YOU SIT IN THE CHAIR AND THE BAR DROPS.',
+    make:(g,K)=>{ const Hm=8.5*M, Rc=2.4*M, L=3.8*M, seats=[], chairs=[]; K.cyl(.35*M,.5*M,Hm,K.mat(0x3a4a8a),0,Hm/2,0,g,12); const crown=new THREE.Group(); crown.position.y=Hm; g.add(crown);
       K.cyl(Rc+.4*M,Rc+.4*M,.35*M,K.mat(0xe9b53a),0,0,0,crown,24); K.mesh(new THREE.ConeGeometry(Rc+.6*M,1.4*M,24),K.mat(0xd84a3a),0,.9*M,0,crown);
       for(let i=0;i<12;i++){ const a=i*TAU/12, piv=new THREE.Object3D(); piv.position.set(Math.sin(a)*Rc,-.1*M,Math.cos(a)*Rc); crown.add(piv); const ch=new THREE.Group(); piv.add(ch);
         for(const s of [-1,1])K.cyl(.012*M,.012*M,L,K.mat(0x9aa0a8),s*.28*M,-L/2,0,ch,4); const c=K.mat([0xd84a3a,0x3a8ad8,0xe9b53a,0x4ab860][i%4]); K.box(.6*M,.08*M,.5*M,c,0,-L,0,ch); K.box(.6*M,.5*M,.06*M,c,0,-L+.25*M,-.24*M,ch); K.box(.5*M,.05*M,.05*M,K.mat(0x202428),0,-L+.4*M,.2*M,ch);
@@ -84,7 +84,7 @@ import {FAIR} from './150q-fair.js';
       return {seats,tick:(run)=>{ const w=ease(Math.min(1,run*3))*ease(Math.min(1,(1-run)*3)); big.rotation.y=TAU*2.5*run; for(const q of cups){ if(q.tt)q.tt.rotation.y=-TAU*4*run*q.dir; else q.cup.rotation.y=TAU*7*run*q.s*q.dir*w; } }}; }});
 
   /* ---------- THE SCRAMBLER: three arms, four cars each, the cars spun the other way ---------- */
-  FAIR.ride({id:'scrambler',name:'SCRAMBLER',x:-100,y:195,hd:0,cycle:70,load:24,seats:12,price:1,solid:[11,11],reach:7*T,say:'YOU SLIDE IN. THE BAR CLICKS DOWN.',
+  FAIR.ride({id:'scrambler',name:'SCRAMBLER',x:-106,y:197,hd:0,cycle:70,load:24,seats:12,price:1,solid:[11,11],reach:7*T,say:'YOU SLIDE IN. THE BAR CLICKS DOWN.',
     make:(g,K)=>{ const seats=[], hub=new THREE.Group(); hub.position.y=1.2*M; g.add(hub); K.cyl(.6*M,.8*M,1.2*M,K.mat(0x3a4a8a),0,.6*M,0,g,12); const arms=[];
       for(let a=0;a<3;a++){ const aa=a*TAU/3, arm=new THREE.Group(); arm.rotation.y=aa; hub.add(arm); K.box(3.2*M,.2*M,.3*M,K.mat(0xe9b53a),1.6*M,.8*M,0,arm); const sub=new THREE.Group(); sub.position.set(3.2*M,0,0); arm.add(sub); K.cyl(.2*M,.2*M,1*M,K.mat(0x3a4a8a),0,.4*M,0,sub,8);
         for(let c=0;c<4;c++){ const ca=c*TAU/4, car=new THREE.Group(); car.position.set(Math.sin(ca)*1.5*M,0,Math.cos(ca)*1.5*M); car.rotation.y=ca; sub.add(car); K.box(1.4*M,.1*M,.3*M,K.mat(0x8a8f98),-.75*M,.6*M,0,car);
@@ -92,24 +92,24 @@ import {FAIR} from './150q-fair.js';
       return {seats,tick:(run)=>{ const w=ease(Math.min(1,run*3))*ease(Math.min(1,(1-run)*3)); hub.rotation.y=TAU*6*run*w; for(const s of arms)s.rotation.y=-TAU*9*run*w; }}; }});
 
   /* ---------- THE DROP TOWER: eight seats ride a 22 m mast, hang at the top, fall and catch ---------- */
-  FAIR.ride({id:'drop',name:'DROP TOWER',x:-80,y:80,hd:0,cycle:70,load:28,seats:8,price:2,solid:[5,5],reach:5*T,say:'THE HARNESS LOCKS. LOOK DOWN.',
+  FAIR.ride({id:'drop',name:'DROP TOWER',x:-83.5,y:80,hd:0,cycle:70,load:28,seats:8,price:2,solid:[5,5],reach:5*T,say:'THE HARNESS LOCKS. LOOK DOWN.',
     make:(g,K)=>{ const Hm=22*M, seats=[], steel=K.mat(0xb0b4bc); K.box(1*M,Hm,1*M,steel,0,Hm/2,0,g); for(let y=2*M;y<Hm;y+=2*M)K.box(1.4*M,.1*M,1.4*M,K.mat(0xd84a3a),0,y,0,g); K.box(2*M,.6*M,2*M,steel,0,Hm+.3*M,0,g);
       const car=new THREE.Group(); car.position.y=1.2*M; g.add(car); K.mesh(new THREE.TorusGeometry(1.6*M,.2*M,8,24),K.mat(0xe9b53a),0,0,0,car).rotation.x=PI/2; K.box(1.3*M,.6*M,1.3*M,steel,0,.3*M,0,car);
       for(let i=0;i<8;i++){ const a=i*TAU/8, s=new THREE.Group(); s.position.set(Math.sin(a)*1.9*M,0,Math.cos(a)*1.9*M); s.rotation.y=a; car.add(s); K.box(.6*M,.1*M,.5*M,K.mat(0x3a3a44),0,0,0,s); K.box(.6*M,.7*M,.1*M,K.mat(0x3a3a44),0,.35*M,-.25*M,s); K.box(.5*M,.08*M,.3*M,K.mat(0xd84a3a),0,.5*M,.1*M,s); seats.push(seatAt(s,0,.05*M,-.05*M,0)); }
       return {seats,tick:(run)=>{ let y; const top=Hm-2*M; if(run<.45)y=1.2*M+(top-1.2*M)*ease(run/.45); else if(run<.62)y=top; else if(run<.72){ const f=(run-.62)/.1; y=top-(top-2.2*M)*f*f; } else if(run<.82){ const f=(run-.72)/.1; y=2.2*M+Math.sin(f*PI)*5*M*(1-f); } else y=2.2*M-(2.2*M-1.2*M)*ease((run-.82)/.18); car.position.y=y; }}; }});
 
   /* ---------- THE SLINGSHOT: a two-seat pod fired up between two towers on its cords ---------- */
-  FAIR.ride({id:'sling',name:'SLINGSHOT',x:-80,y:94,hd:0,cycle:60,load:30,seats:2,price:3,solid:[8,3],reach:5*T,say:'YOU STRAP INTO THE POD. BREATHE.',
-    make:(g,K)=>{ const Hm=13*M, seats=[], steel=K.mat(0xd8d8e0); for(const s of [-1,1]){ K.box(.5*M,Hm,.5*M,steel,s*3.4*M,Hm/2,0,g); K.box(.9*M,.3*M,.9*M,K.mat(0xd84a3a),s*3.4*M,Hm,0,g); }
+  FAIR.ride({id:'sling',name:'SLINGSHOT',x:-83.5,y:97,hd:0,cycle:60,load:30,seats:2,price:3,solid:[7,3],reach:5*T,say:'YOU STRAP INTO THE POD. BREATHE.',
+    make:(g,K)=>{ const Hm=13*M, seats=[], steel=K.mat(0xd8d8e0); for(const s of [-1,1]){ K.box(.5*M,Hm,.5*M,steel,s*2.8*M,Hm/2,0,g); K.box(.9*M,.3*M,.9*M,K.mat(0xd84a3a),s*2.8*M,Hm,0,g); }
       const pod=new THREE.Group(); pod.position.y=1.1*M; g.add(pod); K.mesh(new THREE.SphereGeometry(.9*M,12,8,0,TAU,0,PI*.6),K.mat(0x3a8ad8,{side:THREE.DoubleSide}),0,.6*M,0,pod); K.cyl(.8*M,.8*M,.15*M,K.mat(0x202428),0,0,0,pod,12);
       for(const s of [-1,1]){ bench(K,pod,.6*M,0x3a3a44,s*.35*M,.1*M,0,0); seats.push(seatAt(pod,s*.35*M,.15*M,0,0)); }
       const cords=[]; for(const s of [-1,1]){ const c=K.cyl(.025*M,.025*M,1,K.mat(0xe9b53a),0,0,0,g,4); cords.push({c,s}); }
       const A=new V3(), B=new V3(), D=new V3();
       return {seats,tick:(run)=>{ let y=1.1*M; if(run>.2&&run<.9){ const f=(run-.2)/.7; y=1.1*M+Math.abs(Math.sin(f*PI*3))*Math.exp(-f*2.2)*24*M; } pod.position.y=y;
-        for(const q of cords){ A.set(q.s*3.4*M,Hm,0); B.set(0,y+.4*M,0); D.subVectors(B,A); const L=D.length(); q.c.position.copy(A).addScaledVector(D,.5); q.c.scale.y=L; q.c.quaternion.setFromUnitVectors(UP,D.normalize()); } }}; }});
+        for(const q of cords){ A.set(q.s*2.8*M,Hm,0); B.set(0,y+.4*M,0); D.subVectors(B,A); const L=D.length(); q.c.position.copy(A).addScaledVector(D,.5); q.c.scale.y=L; q.c.quaternion.setFromUnitVectors(UP,D.normalize()); } }}; }});
 
   /* ---------- THE ROLLER COASTER: a chain lift up the west side, the big drop, a helix and the hills home; a train of three cars ---------- */
-  const COASTER=[[18,.6,-26],[10,.6,-26],[-2,.6,-25],[-12,1,-24],[-18,4,-20],[-21,9,-12],[-22,14,-2],[-22,16.5,6],[-21,15.5,12],[-17,6,18],[-12,1.2,22],[-6,2.5,24],[0,6,24],[6,9,22],[10,8,16],[9,4,10],[4,2,8],[-2,3.5,6],[-7,6,2],[-6,8.5,-4],[0,8,-8],[6,5,-10],[10,2.5,-12],[14,1.5,-16],[17,2.5,-20],[18,1.2,-24]].map(p=>[p[0]*.8,p[1],p[2]*.96]);
+  const COASTER=[[18,.6,-26],[10,.6,-26],[-2,.6,-25],[-12,1,-24],[-18,4,-20],[-21,9,-12],[-22,14,-2],[-22,16.5,6],[-21,15.5,12],[-17,6,18],[-12,1.2,22],[-6,2.5,24],[0,6,24],[6,9,22],[10,8,16],[9,4,10],[4,2,8],[-2,3.5,6],[-7,6,2],[-6,8.5,-4],[0,8,-8],[6,5,-10],[10,2.5,-12],[14,1.5,-16],[17,2.5,-20],[18,1.2,-24]].map(p=>[p[0]*.8,p[1],p[2]*.88]);
   FAIR.ride({id:'coaster',name:'ROLLER COASTER',x:-102,y:41,hd:0,cycle:120,load:30,seats:6,price:3,reach:5*T,near:12,say:'THE BAR LOCKS OVER YOUR LAP. THE CHAIN CATCHES.',photoAt:.33,
     make:(g,K,R)=>{ const curve=loop(COASTER), L=curve.getLength(), seats=[], n=360; rails(K,g,curve,n,1*M,0xc83a2a,.07*M); ties(K,g,curve,n,1.4*M,0x4a4a52); supports(K,g,curve,90,0x6a6f78);
       K.mesh(extrude(curve,SQ(.1*M).map(([x,y])=>[x,y-.25*M]),n),0x7a7f88,0,0,0,g);
@@ -154,10 +154,10 @@ import {FAIR} from './150q-fair.js';
         for(const q of spooks){ const d=Math.hypot(cars[0].position.x-q.x,cars[0].position.z-q.z); const on=!stopped&&d<2.4*M; if(on&&!q.on){ q.on=1; if(R.me!=null&&SFX.play)SFX.play('boom',{vol:.25,pitch:1.8}); } if(!on)q.on=0; q.m.visible=on; q.l.intensity=on?8:0; } }}; }});
 
   /* ---------- THE MINIATURE RAILWAY: a little steam train round the coaster's field, six seats behind the engine ---------- */
-  const RAIL=[[19,.3,0],[19,.3,10],[17,.3,26],[0,.3,27],[-17,.3,26],[-19,.3,10],[-19,.3,-10],[-17,.3,-26],[0,.3,-27],[17,.3,-26],[19,.3,-10]];
+  const RAIL=[[0,.3,25],[-10,.3,25],[-16,.3,23],[-17.5,.3,10],[-17.5,.3,-10],[-16,.3,-23],[0,.3,-25],[16,.3,-23],[17.5,.3,-10],[17.5,.3,10],[16,.3,23],[10,.3,25]];
   FAIR.ride({id:'rail',name:'MINIATURE RAILWAY',x:-102,y:41,hd:0,cycle:110,load:30,seats:6,price:1,reach:5*T,near:12,say:'ALL ABOARD. TOOT TOOT.',
     make:(g,K,R)=>{ const curve=loop(RAIL), L=curve.getLength(), n=300, seats=[]; rails(K,g,curve,n,.6*M,0x6a6f78,.04*M); ties(K,g,curve,220,.9*M,0x5a4634);
-      const st=new THREE.Group(); st.position.set(19.6*M,0,0); g.add(st); K.box(1.6*M,.35*M,7*M,K.mat(0x8a8478),1.3*M,.17*M,0,st); K.box(3.4*M,.15*M,7.4*M,K.mat(0x4ab860),1.2*M,3*M,0,st); for(const z of [-1,1])K.box(.15*M,3*M,.15*M,K.mat(0x3a3a44),2.6*M,1.5*M,z*3.4*M,st); const sg=K.sign('FAIR HALT',2.4*M,.6*M); sg.position.set(2.65*M,2.4*M,0); sg.rotation.y=-PI/2; st.add(sg);
+      const st=new THREE.Group(); st.position.set(0,0,25.6*M); g.add(st); K.box(7*M,.35*M,1.6*M,K.mat(0x8a8478),0,.17*M,1.3*M,st); K.box(7.4*M,.15*M,3.4*M,K.mat(0x4ab860),0,3*M,1.2*M,st); for(const x of [-1,1])K.box(.15*M,3*M,.15*M,K.mat(0x3a3a44),x*3.4*M,1.5*M,2.6*M,st); const sg=K.sign('FAIR HALT',2.4*M,.6*M); sg.position.set(0,2.4*M,2.65*M); st.add(sg);
       const train=[], P=new V3(), Rr=new V3(), U=new V3(), Tg=new V3(), B=new THREE.Matrix4();
       { const loco=new THREE.Group(); g.add(loco); const grn=K.mat(0x2a6a3a), blk=K.mat(0x202428); K.box(.9*M,.5*M,2.2*M,blk,0,.4*M,0,loco); K.cyl(.4*M,.4*M,1.4*M,grn,0,.9*M,.3*M,loco,12).rotation.x=PI/2; K.box(.9*M,.9*M,.7*M,grn,0,1*M,-.7*M,loco); K.cyl(.14*M,.18*M,.5*M,blk,0,1.55*M,.8*M,loco,8); K.box(.8*M,.08*M,.8*M,grn,0,1.5*M,-.7*M,loco); for(const s of [-1,1])for(const z of [-.6,.6])K.cyl(.22*M,.22*M,.1*M,blk,s*.48*M,.22*M,z*M,loco,10).rotation.z=PI/2; train.push(loco); }
       for(let c=0;c<3;c++){ const car=new THREE.Group(); g.add(car); const col=K.mat([0xd84a3a,0xe9b53a,0x3a8ad8][c]); K.box(.9*M,.3*M,1.8*M,col,0,.4*M,0,car); for(const s of [-1,1])for(const z of [-.6,.6])K.cyl(.18*M,.18*M,.08*M,K.mat(0x202428),s*.48*M,.18*M,z*M,car,10).rotation.z=PI/2; for(const z of [.35,-.5]){ bench(K,car,.8*M,0x3a3a44,0,.56*M,z*M,0); seats.push(seatAt(car,0,.6*M,z*M,0)); } train.push(car); }

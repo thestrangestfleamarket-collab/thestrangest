@@ -1,4 +1,4 @@
-// THE HANDHELD CHECK: node tests/handheld.cjs dist/market.html [folder for screenshots]. ESC pops up the handheld; its icons open the menus; ESC out of a menu it opened comes back to it; ESC again puts it away; SET is only settings; YOU is about you; ADMIN (owners) opens the one admin window.
+// THE HANDHELD CHECK: node tests/handheld.cjs dist/market.html [folder for screenshots]. ESC pops up the handheld; its icons open the menus; ESC out of a menu it opened comes back to it; ESC again puts it away; SET is only settings; YOU is about you (SKILLS, PASSPORT, RESURRECT, LOG OUT); ADMIN (owners) opens the one admin window.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=handheld::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -34,7 +34,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.keyboard.press('Escape'); await until(() => HHDBG().up);
     await tap('#hh [data-app="guide"]'); ok(await until(() => !document.querySelector('[data-p="guide"]').hidden) && await pg.evaluate(() => document.querySelector('#menu .tabs').style.display === 'none'), 'GUIDE opens on its own, no settings tabs');
     await pg.keyboard.press('Escape'); await until(() => HHDBG().up);
-    await tap('#hh [data-app="you"]'); ok(await until(() => document.querySelectorAll('#cpbtns button').length > 0) && await pg.evaluate(() => [...document.querySelectorAll('#cpbtns button')].map(x => x.textContent).join() === 'SKILLS,PASSPORT,LOG OUT'), 'YOU is about you: SKILLS, PASSPORT, LOG OUT');
+    await tap('#hh [data-app="you"]'); ok(await until(() => document.querySelectorAll('#cpbtns button').length > 0) && await pg.evaluate(() => [...document.querySelectorAll('#cpbtns button')].map(x => x.textContent).join() === 'SKILLS,PASSPORT,RESURRECT,LOG OUT'), 'YOU is about you: SKILLS, PASSPORT, RESURRECT (4 Nov 2026), LOG OUT');
     await pg.keyboard.press('Escape'); await until(() => HHDBG().up);
     await pg.keyboard.press('Escape'); await until(() => !HHDBG().up);
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner

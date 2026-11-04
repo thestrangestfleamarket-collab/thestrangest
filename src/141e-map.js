@@ -1,13 +1,13 @@
-// THE MAP: a folded 1986 visitor's brochure. MAP on the pager (or Shift+M, or a click on the minimap) brings it up folded and it unfolds over the screen: the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE LOOP on the back; a click on a place or a station goes there; ESC folds it away.
+// THE MAP: a folded 1986 visitor's brochure. MAP on the pager (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
 import {FORAGE, HANDHELD, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
-  for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST','bro.flip':'FLIP FOR THE LOOP','bro.flip2':'the subway is on the back of this map · F',
-    'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'SUNRISE · DAY · SUNSET · NIGHT, one real hour each','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE LOOP','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
-    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC FOLDS IT AWAY',
-    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE LOOP ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON'}))TEXT.t(k,d);
+  for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
+    'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'SUNRISE · DAY · SUNSET · NIGHT, one real hour each','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
+    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
+    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON'}))TEXT.t(k,d);
   const css=document.createElement('style'); css.textContent=`#bro{position:fixed;inset:0;z-index:30;perspective:1600px;background:rgba(6,8,14,.55);overflow:hidden;user-select:none;touch-action:none} #bro[hidden]{display:none}
     #bro .sh{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 0;will-change:transform}
     #bro .pn{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 50%} #bro .pn .pn{left:100%}
@@ -59,10 +59,9 @@ import {LOOP} from './009b-loop.js';
     S.push(`<line x1="${gx}" y1="148" x2="${gx+gw}" y2="148" stroke="${INK}" stroke-width="2"/>`+txt(TEXT.t('bro.poi'),gx,168,11,{ls:2}));
     const cols=gw>=420?2:1, per=Math.ceil(PL.length/cols), cw=gw/cols, rh=Math.min(13.6,400/per);
     PL.forEach((p,i)=>{ const c=Math.floor(i/per), x=gx+c*cw, y=188+(i%per)*rh; S.push(`<g data-go="${esc(p.name)}">`+bullet(p.n,x+9,y-3.5,6,p.col,7.5)+`<text x="${x+21}" y="${y}" font-size="9">${esc(p.name)}${p.lv==='down'?`<tspan font-weight="400" opacity=".8"> · ${esc(TEXT.t('bro.under'))}</tspan>`:''}</text></g>`); });
-    S.push(`<g data-flip="1" style="cursor:pointer"><rect x="${gx}" y="578" width="${gw}" height="56" fill="${INK}"/><polygon points="${gx+gw-24},590 ${gx+gw-12},606 ${gx+gw-24},622" fill="${PAPER}"/>${txt(TEXT.t('bro.flip'),gx+12,602,15,{f:PAPER})}${txt(TEXT.t('bro.flip2'),gx+12,620,8.5,{f:PAPER,w:'600'})}</g>`);
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };
-  /* ---------- the back: the cover on the left panel, THE LOOP across the other three ---------- */
+  /* ---------- the back: the cover on the left panel, THE SUBWAY across the other three ---------- */
   const back=()=>{ const S=[]; S.push(`<rect width="1280" height="720" fill="${PAPER}"/>`);
     // the cover
     S.push(`<g fill="${INK}"><rect x="0" y="238" width="320" height="50"/>${[[18,198,26,40],[50,178,18,60],[74,210,30,28],[110,158,22,80],[138,190,34,48],[180,170,16,68],[202,204,40,34],[248,184,20,54],[274,214,30,24]].map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}<rect x="121" y="136" width="2" height="22"/></g><g fill="${PAPER}">${[[22,208],[30,208],[22,222],[54,188],[60,200],[116,170],[122,184],[116,198],[142,200],[158,212],[184,178],[184,192],[252,194],[258,210]].map(([a,b])=>`<rect x="${a}" y="${b}" width="4" height="5"/>`).join('')}</g>`);
@@ -70,7 +69,7 @@ import {LOOP} from './009b-loop.js';
     TEXT.t('bro.cover3').split('\n').forEach((l,i)=>S.push(txt(l,22,486+i*19,13,{w:'600',ls:3})));
     S.push(`<rect x="22" y="540" width="276" height="46" fill="none" stroke="${INK}" stroke-width="2"/>`); TEXT.t('bro.cover4').split('\n').forEach((l,i)=>S.push(txt(l,32,559+i*15,10,{w:'600',ls:2})));
     S.push(`<rect x="22" y="658" width="166" height="28" fill="${RED}"/>`+txt(TEXT.t('bro.free'),105,677,12,{a:'middle',f:PAPER,ls:3}));
-    // THE LOOP: the section grid, the park, the two tracks, every station
+    // THE SUBWAY: the section grid, the park, the two tracks, every station
     const D=LOOP.D, SE=SECTIONS, gr=SE.grid, cols=gr.cols, rows=gr.rows, x0=400, y0=122, gw=800, gh=476, tw=gw/cols, th=gh/rows, loaded=new Set(SE.loaded.map(b=>b.id)), home=SECTION.id;
     S.push(`<rect x="${x0}" y="96" width="${gw}" height="26" fill="#1e88e5"/><rect x="${x0}" y="${y0+gh}" width="${gw}" height="26" fill="#1e88e5"/>`+txt(TEXT.t('bro.water'),x0+gw/2,y0+gh+18,9,{a:'middle',f:'#fff',ls:3}));
     for(let c=0;c<cols;c++)for(let r=0;r<rows;r++){ const id=SE.ids[c][r], x=x0+c*tw, y=y0+(rows-1-r)*th; S.push(`<rect x="${x}" y="${y}" width="${tw}" height="${th}" fill="${id===home?'#ffe9e9':loaded.has(id)?'#eceae2':'#f1efe8'}" stroke="${INK}" stroke-width="2"/>`+txt(id,x+tw/2,r?y+60:y+th-32,44,{a:'middle',op:id===home?.5:.18})); }
@@ -88,25 +87,24 @@ import {LOOP} from './009b-loop.js';
     S.push(txt(next?TEXT.t('bro.train',null,{n:1,next:next[0]}):TEXT.t('bro.track1'),450,666,9.5)+txt(next?TEXT.t('bro.train',null,{n:2,next:next[1]}):TEXT.t('bro.track2'),450,694,9.5));
     S.push(txt(TEXT.t('bro.stop'),800,666,9.5)+txt(TEXT.t('bro.quiet'),800,682,8.5,{w:'600'})+txt(TEXT.t('bro.back'),1200,712,8,{a:'end',ls:2}));
     return S.join(''); };
-  /* ---------- the sheet: four panels on a zigzag fold; the fold, the flip, the zoom ---------- */
-  let SH=null, up=false, flipped=false, busy=false, k=1, ox=0, oy=0, z=1, px=0, py=0, raf=0, cur=0;   // cur: how far unfolded, 0 to 1
+  /* ---------- the sheet: four panels on a zigzag fold, shown open; the flip, the zoom (no motion: it appears and disappears, owner 4 Nov 2026) ---------- */
+  let SH=null, up=false, flipped=false, k=1, ox=0, oy=0, z=1, px=0, py=0;
   const fit=()=>{ k=Math.min(innerWidth/1280,innerHeight/720); ox=(innerWidth-1280*k)/2; oy=(innerHeight-720*k)/2; };
-  const pose=(t,a)=>{ cur=t; const th=180*(1-t), s0=.36*k, sc=s0+(k-s0)*t, x=(innerWidth-330*s0)*(1-t)+ox*t, y=(innerHeight-730*s0)*(1-t)+oy*t, rz=-6*(1-t), rx=8*(1-t);
+  const pose=(t,a)=>{ const th=180*(1-t), s0=.36*k, sc=s0+(k-s0)*t, x=(innerWidth-330*s0)*(1-t)+ox*t, y=(innerHeight-730*s0)*(1-t)+oy*t, rz=-6*(1-t), rx=8*(1-t);
     SH.style.transform=`translate(${px}px,${py}px) scale(${z}) translate(${x}px,${y}px) scale(${sc}) rotateZ(${rz}deg) rotateX(${rx}deg) translate(640px,360px) rotateY(${a}deg) translate(-640px,-360px)`;
     SH.querySelectorAll('.pn').forEach((p,i)=>{ if(i)p.style.transform=`rotateY(${(i%2?-1:1)*th}deg)`; }); };
-  const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2, anim=(ms,f,done)=>{ cancelAnimationFrame(raf); const t0=performance.now(); const step=()=>{ const t=Math.min(1,(performance.now()-t0)/ms); f(ease(t)); if(t<1)raf=requestAnimationFrame(step); else done&&done(); }; step(); };
   const build=()=>{ const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
-  const open=()=>{ if(up)return close(); if(busy)return; up=true; busy=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(0,0); anim(1100,t=>pose(t,0),()=>{ busy=false; }); };
-  const close=()=>{ if(!up)return; busy=true; const a0=flipped?180:0, c=cur; anim(300+500*c,t=>pose(c*(1-t),a0*(1-t)),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; }); };   // one motion: turned back and folded together, from wherever it is
-  const flip=()=>{ if(!up||busy)return; busy=true; const a0=flipped?180:0, a1=flipped?0:180; anim(600,t=>pose(1,a0+(a1-a0)*t),()=>{ flipped=!flipped; busy=false; }); };
-  const go=f=>{ if(busy)return; busy=true; const a0=flipped?180:0; anim(350,t=>pose(1-t,a0*(1-t)),()=>{ W.hidden=true; W.innerHTML=''; SH=null; up=false; busy=false; f(); }); };   // a quick fold, then there
+  const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
+  const close=()=>{ if(!up)return; W.hidden=true; W.innerHTML=''; SH=null; up=false; };
+  const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); };
+  const go=f=>{ close(); f(); };
   { let dr=null, moved=false; W.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,px,py}; moved=false; });
-    W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1&&!busy){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
+    W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
     W.addEventListener('pointerup',()=>{ dr=null; });
-    W.addEventListener('wheel',e=>{ e.preventDefault(); if(!up||busy)return; const z0=z; z=Math.min(3,Math.max(1,z*(e.deltaY<0?1.25:.8))); if(z===1){ px=py=0; } else { px=e.clientX-(e.clientX-px)*z/z0; py=e.clientY-(e.clientY-py)*z/z0; } pose(1,flipped?180:0); },{passive:false});
-    W.addEventListener('click',e=>{ if(moved||busy||!up)return; const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-flip]'):null;
+    W.addEventListener('wheel',e=>{ e.preventDefault(); if(!up)return; const z0=z; z=Math.min(3,Math.max(1,z*(e.deltaY<0?1.25:.8))); if(z===1){ px=py=0; } else { px=e.clientX-(e.clientX-px)*z/z0; py=e.clientY-(e.clientY-py)*z/z0; } pose(1,flipped?180:0); },{passive:false});
+    W.addEventListener('click',e=>{ if(moved||!up)return; const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-flip]'):null;
       if(el&&el.dataset.flip)return flip();
       if(el&&el.dataset.go){ const n=el.dataset.go; return go(()=>UI.goPlace(n)); }
       if(el&&el.dataset.st){ const st=(LOOP.STA||[]).find(q=>q.id===el.dataset.st); if(!st)return; return go(()=>{ if(st.old)return UI.goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st.P(LOOP.LEN/2,LOOP.MID,0); UI.goTo(p[0],p[2],'down'); }); }
@@ -118,7 +116,7 @@ import {LOOP} from './009b-loop.js';
     if(!up)return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
     if(key==='escape'){ close(); if(HANDHELD.back)HANDHELD.back(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
-  addEventListener('resize',()=>{ if(up&&!busy){ fit(); pose(1,flipped?180:0); } });
+  addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
   UI.mapWindow=()=>{ if(!up)open(); };
   UI.brochure={open,close,flip,up:()=>up,flipped:()=>flipped,places:()=>PL.map(p=>p.name)};
-  window.BRODBG=()=>({up,flipped,busy,places:PL.length,go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }
+  window.BRODBG=()=>({up,flipped,places:PL.length,go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }

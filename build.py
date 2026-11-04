@@ -49,6 +49,16 @@ raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
+# the owners' map editor: its own light page (no game), the ground picture beside it (tools/topmap.cjs)
+EDITOR = os.path.exists('data/topmap.json')
+shutil.rmtree('dist/edmap', ignore_errors=True)
+if EDITOR:
+    open('dist/editor.html', 'w').write(code(data(read('src/editor/editor.html'))).replace('__BUILDV__', bv))
+    os.makedirs('dist/edmap')
+    for t in json.load(open('data/topmap.json'))['tiles']:
+        if os.path.exists('data/topmap/' + t): shutil.copy('data/topmap/' + t, 'dist/edmap/' + t)
+else:
+    print('no data/topmap.json, so no dist/editor.html (node tools/topmap.cjs makes it)')
 
 shutil.rmtree('dist/g', ignore_errors=True)
 os.makedirs('dist/g')
@@ -88,7 +98,7 @@ pages = ['dist/market.html', 'dist/door.html', 'dist/g/rig.js', 'dist/g/page.htm
 if os.environ.get('MIN', '1') != '0':
     if not os.path.exists('node_modules/esbuild'):
         subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
-    subprocess.run(['node', 'tools/minify.cjs'] + pages, check=True)
+    subprocess.run(['node', 'tools/minify.cjs'] + pages + (['dist/editor.html'] if EDITOR else []), check=True)
 if 'g' in os.environ.get('SKIP', '').split(','):
     sys.exit(print('built', pages[0], 'and', pages[1], 'only (SKIP=g: no dist/g, no npm packages needed)'))
 elif not os.path.exists('node_modules/three'):
@@ -124,7 +134,7 @@ m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['
 for f in os.listdir('dist/g'):
     if f.endswith('.js') and 'https://cdn.jsdelivr.net/npm/' in read('dist/g/' + f): sys.exit('dist/g/' + f + ' still asks cdn.jsdelivr.net for a package: the website bundles them')
 open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
-pages = pages[:2] + ['dist/g/market.html']
+pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):

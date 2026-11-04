@@ -9,7 +9,7 @@ import {TUFTC, tuftCol} from './014-gamekit.js';
 import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
 { const T=TILE;
-  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
+  const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],['road','ROAD','#34363c'],['alley','ALLEY','#46474c'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
   const rnd=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
   const texCache={};
   function tex(t){ '@later'; if(texCache[t])return texCache[t]; const N=64, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d');
@@ -23,6 +23,7 @@ import {FOREST, PROPS} from './039-bodega.js';
     else if(t==='cobble'||t==='slab'){ const cell=t==='cobble'?12:16; for(let cy=0;cy<N;cy+=cell)for(let cx=0;cx<N;cx+=cell){ const off=t==='cobble'?(rnd(cx*cy+1)-.5)*3:0, s=rnd(cx+cy*7); g.fillStyle=t==='cobble'?(s<.33?'#5f5f64':s<.66?'#74747a':'#656569'):(s<.5?'#8f8a7f':'#827d72'); g.fillRect(cx+1+off,cy+1+off,cell-2,cell-2); } g.fillStyle='rgba(30,30,34,.5)'; for(let p=0;p<=N;p+=cell){ g.fillRect(p,0,1,N); g.fillRect(0,p,N,1); } }
     else if(t==='dirt'){ for(let i=0;i<300;i++){ const x=rnd(i*1.7)*N,y=rnd(i*3.1+2)*N,v=rnd(i*4.3); dot(x,y,1,v<.5?'#5a4028':'#7a5c3c'); } }
     else if(t==='gravel'){ for(let i=0;i<220;i++){ const x=rnd(i*2.1)*N,y=rnd(i*1.9+5)*N,v=rnd(i*6.7); dot(x,y,rnd(i)>.6?2:1,v<.4?'#5e5a54':v<.75?'#8a867e':'#9c988f'); } }
+    else if(t==='road'||t==='alley'){ for(let i=0;i<260;i++){ const x=rnd(i*1.3+t.length)*N,y=rnd(i*2.7+9)*N,v=rnd(i*5.1); dot(x,y,1,v<.5?(t==='road'?'#2c2e33':'#3c3d42'):(t==='road'?'#3f4147':'#55565b')); } if(t==='alley'){ g.fillStyle='rgba(20,20,24,.55)'; for(let i=0;i<4;i++){ let x=rnd(i*7.7)*N, y=rnd(i*3.1)*N; for(let k=0;k<8;k++){ g.fillRect(x,y,1,1); x+=rnd(i+k)*4-1; y+=1; } } } }
     else if(t==='sand'){ for(let i=0;i<240;i++){ const x=rnd(i*1.1)*N,y=rnd(i*2.3+1)*N; dot(x,y,1,rnd(i*3.3)<.5?'#bcaf78':'#d6c898'); } }
     const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.colorSpace=THREE.SRGBColorSpace; texCache[t]=tx; return tx; }
   const mat=t=>{ const m=new THREE.MeshToonMaterial({map:tex(t),side:THREE.DoubleSide}); if(W3.GP)m.gradientMap=W3.GP; return m; };
@@ -80,6 +81,18 @@ import {FOREST, PROPS} from './039-bodega.js';
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
   if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
+  // the map editor's published ground (worker/mappatch.js, SHARED.MAPLIVE.ground, in map tiles): one mesh a kind, a vertex a tile, laid on the ground
+  { const G=(SHARED.MAPLIVE&&SHARED.MAPLIVE.ground)||[]; LAND.pub=[];
+    const build=()=>{ const B=SHARED.BOD, gy=(x,z)=>{ try{ return typeof SHARED.groundY==='function'?SHARED.groundY(x,z)||0:0; }catch(e){ return 0; } }, by={};
+      for(const g of G)(by[g.t]=by[g.t]||[]).push(g);
+      for(const t in by){ const P=[],UV=[],IX=[];
+        for(const g of by[t]){ const xa=B.XS(g.x0), xb=B.XS(g.x1), za=B.ZS(g.y0), zb=B.ZS(g.y1), x0=Math.min(xa,xb), x1=Math.max(xa,xb), z0=Math.min(za,zb), z1=Math.max(za,zb);
+          const nx=Math.max(1,Math.min(64,Math.round((x1-x0)/T))), nz=Math.max(1,Math.min(64,Math.round((z1-z0)/T))), b=P.length/3;
+          for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){ const x=x0+(x1-x0)*i/nx, z=z0+(z1-z0)*j/nz; P.push(x,gy(x,z)+.06,z); UV.push(x/T,z/T); }
+          for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){ const a=b+j*(nx+1)+i, c=a+nx+1; IX.push(a,c,a+1,a+1,c,c+1); } }
+        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(UV,2)); geo.setIndex(IX); geo.computeVertexNormals(); geo.computeBoundingSphere();
+        const me=new THREE.Mesh(geo,mat(t)); me.receiveShadow=true; me.renderOrder=1; me.userData.landPatch=t; me.userData.mapPub=1; scene.add(me); LAND.pub.push(me); } };
+    if(G.length)SYS.onStart(()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(build).catch(e=>console.warn('map ground',e)); },'152a-mapground'); }
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;
   let type='grass', drag=null, prev=null, mode='box', poly=null, polyY=0, polyLine=null;

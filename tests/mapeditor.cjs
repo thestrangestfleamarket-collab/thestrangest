@@ -1,0 +1,34 @@
+// THE MAP EDITOR CHECK: node tests/mapeditor.cjs [dist/market.html] [shot.png] — the editor page (dist/editor.html) opens and moves a building, the lake and a car and paints a road; the shared patch code drops what is malformed; the game started with that published file moves them and lays the road.
+const {chromium}=require('playwright'); const path=require('path');
+const GAME=process.argv[2]||'dist/market.html', SHOT=process.argv[3];
+let bad=0; const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
+(async()=>{ const {MAPPATCH}=await import(path.resolve('worker/mappatch.js')), W=require(path.resolve('data/world.json'));
+  { const r=MAPPATCH.apply(W,{v:1,set:{places:{bar:{x0:5,x1:1},nope:{x0:0,x1:1}},parkPlaces:{lake:{r:-2},round:{x:'a'}},paths:{path0:{a:[1],b:[2,3]}},ground:[{x0:0,x1:1,y0:0,y1:1,t:'lava'},{x0:0,x1:1,y0:0,y1:1,t:'road'}]}});
+    ok(r.used.join()==='ground:1','a malformed file changes nothing but its good ground ('+r.used.join()+')'); ok(JSON.stringify(r.W)===JSON.stringify(W),'the baked level is left as it was');
+    ok(MAPPATCH.apply(W,null).used.length===0&&MAPPATCH.apply(W,{v:2,set:{}}).used.length===0,'no file or another version: the baked level'); }
+  const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  // the editor
+  const ed=await b.newPage({viewport:{width:1280,height:800}}), eerr=[]; ed.on('pageerror',e=>eerr.push(e.message));
+  await ed.goto('file://'+path.resolve('dist/editor.html')); await ed.waitForFunction(()=>window.EDITOR&&EDITOR.ready,{timeout:30000});
+  const bar=W.places.find(p=>p.id==='bar'), lake=W.parkPlaces.lake, car=W.cars[0];
+  const P=await ed.evaluate(([bar,lake,car])=>{ const n=EDITOR.items().length; const it=k=>EDITOR.items().find(o=>o.k===k[0]&&o.id===k[1]);
+    const o=it(['place','bar']); EDITOR.write('place','bar',o.x+3,o.y); EDITOR.write('park','lake',lake.x+4,lake.y-2,{r:11}); EDITOR.write('car',car.id,car.x-5,car.y);
+    EDITOR.paint(103,-55,5,'road'); EDITOR.paint(110,-55,3,'cobble'); return {n,P:EDITOR.patch()}; },[bar,lake,car]);
+  ok(P.n>150,'the editor shows the map\'s things ('+P.n+')');
+  const S=P.P.set; ok(S.places&&S.places.bar&&Math.abs(S.places.bar.x0-(bar.x0+3))<.01&&S.places.bar.face===(bar.face||'n'),'moving THE BAR writes its new place');
+  ok(S.parkPlaces&&S.parkPlaces.lake&&S.parkPlaces.lake.x===lake.x+4&&S.parkPlaces.lake.r===11,'moving and sizing the lake');
+  ok(S.cars&&S.cars[car.id]&&S.cars[car.id].x===+(car.x-5).toFixed(2),'moving a car');
+  ok(Array.isArray(S.ground)&&S.ground.some(g=>g.t==='road')&&S.ground.reduce((a,g)=>a+(g.x1-g.x0)*(g.y1-g.y0),0)===34,'painting: 25 tiles of road and 9 of cobble, merged into '+(S.ground||[]).length+' patches');
+  await ed.keyboard.press('Control+z'); ok(await ed.evaluate(()=>Object.values(EDITOR.state().cells).filter(t=>t==='cobble').length===0),'undo takes the last paint back');
+  await ed.keyboard.press('Control+y'); ok(eerr.length===0,'the editor ran without errors '+JSON.stringify(eerr.slice(0,3)));
+  if(SHOT)await ed.screenshot({path:SHOT.replace(/\.png$/,'')+'-editor.png'});
+  // the game with that file published
+  const pg=await b.newPage({viewport:{width:1000,height:700}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message));
+  await pg.addInitScript(p=>{ window.__MAPLIVE=p; },P.P);
+  await pg.goto('file://'+path.resolve(GAME)+'?at=35,25&hour=12',{timeout:240000}); await pg.waitForFunction(()=>window.__started,{timeout:400000}); await pg.waitForTimeout(6000);
+  const G=await pg.evaluate(()=>{ const L=SHARED.MAPLIVE, m=[]; __dbg.scene.traverse(o=>{ if(o.userData&&o.userData.mapPub)m.push(o.userData.landPatch); }); return {used:L.used,meshes:m}; });
+  ok(['place:bar','park:lake','car:'+car.id].every(k=>G.used.includes(k)),'the game lays the published file over its level ('+G.used.join(' ')+')');
+  ok(G.meshes.includes('road')&&G.meshes.includes('cobble')&&G.meshes.length===2,'the painted ground is one mesh a kind ('+G.meshes.join(' ')+')');
+  ok(errs.length===0,'the game ran without errors '+JSON.stringify(errs.slice(0,3)));
+  if(SHOT){ await pg.screenshot({path:SHOT}); }
+  await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0); })().catch(e=>{ console.log('FAIL',e.message); process.exit(1); });

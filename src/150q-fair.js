@@ -3,13 +3,14 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, INV, LITE, pos, RIDE, ROOMS, SFX, st, UI, VIT, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {CREW} from './111fb-fleamarket.js';
 const FAIR={rides:{},list:[],posts:{},extra:[],ready:false,built:false,G:null,K:{}}; window.FAIR=FAIR;
 { const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, V3=THREE.Vector3, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const P=(LEVEL.places||[]).find(p=>p.kind==='fair'), GT=(LEVEL.places||[]).find(p=>p.kind==='gate');
   if(P){
+  if(GT)STORE.places.push(['THE STRANGEST FAIR',XS(GT.x1+1.6),ZS((GT.y0+GT.y1)/2),'up','see']);   // GO TO: outside its gate on West St
   const B=FAIR.B={x0:XS(P.x0),x1:XS(P.x1),z0:ZS(P.y0),z1:ZS(P.y1),cx:XS((P.x0+P.x1)/2),cz:ZS((P.y0+P.y1)/2)}, GATE=P.gate||[GT.y0,GT.y1];
   FAIR.at=(x,y)=>new V3(XS(x),0,ZS(y)); FAIR.tile=(x,z)=>[x/T+SHARED.BOD.OX,z/T+SHARED.BOD.OY]; FAIR.M=M; FAIR.P=P;
   FAIR.inside=(x,z,m=0)=>x>B.x0-m&&x<B.x1+m&&z>B.z0-m&&z<B.z1+m;

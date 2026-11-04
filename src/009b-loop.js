@@ -1,6 +1,6 @@
 // THE LOOP: the subway under the ring street round all eight sections (grab('loop')): both tracks' tunnels, the stations B to H, every station's signs and board, and each station's exit up to its street.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, pos, RAG, ROOMS, TEXT, UI} from './003b-systems.js';
+import {DN, LEVELS, pos, RAG, ROOMS, TEXT, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, LEVEL, MODS, ORIGIN, SECTIONS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
@@ -157,6 +157,9 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   LOOP.inStation=inStation; LOOP.tunHid=false;
   SYS.add('places',()=>{ const hid=SHARED.LVL==='down'&&inStation(pos.x,pos.z); if(hid===LOOP.tunHid)return; LOOP.tunHid=hid; TG.visible=!hid; for(const m of MOUTH)m.visible=hid; },'009b-tunnels');
   for(const m of MOUTH)m.visible=false;
+  // the tunnels are dark: out of a station the level's fill light falls away, leaving the tunnel lamps and the cars' own lights
+  { let amb=.1; Object.defineProperty(LEVELS.of.station,'amb',{get:()=>amb,configurable:true});   // how dark: ATMOSPHERE's LIGHT IN THE SUBWAY TUNNELS
+    SYS.add('places',dt=>{ const P=DN.P&&DN.P(), want=SHARED.LVL==='down'&&!inStation(pos.x,pos.z)?(P&&P.tun!=null?P.tun:.02):.1; amb+=(want-amb)*Math.min(1,(dt||.016)*1.5); },'009b-dark'); }
 
   // the board: rows of [train, where to, when], drawn only when they change
   LOOP.board=(st,rows)=>{ const k=JSON.stringify(rows); if(st.board.last===k)return; st.board.last=k; const cv=st.board.t.image, g=cv.getContext('2d'), w=cv.width, h=cv.height;

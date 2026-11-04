@@ -1,0 +1,215 @@
+<title>The Bag</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+:root{--bg:#0b0d13;--fg:#d8dae2;--dim:#9b9584;--key:#f2c14e;--line:#3a3f4e;--ok:#9fe07f;--warn:#c8a090;--lawn:#4a7a3a;--lawn2:#426d34;--lawn3:#3b6230;--pixel:'Silkscreen',monospace;color-scheme:dark}
+html,body{height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:11px var(--pixel);letter-spacing:.4px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;display:flex;flex-direction:column;gap:10px;min-height:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+h1{font:11px var(--pixel);color:var(--key);margin:0;letter-spacing:1px}
+.tabs{display:flex;gap:4px}
+.tabs button,.x{font:inherit;color:var(--fg);background:#0e1016;border:2px solid var(--line);padding:4px 10px;cursor:pointer;letter-spacing:.4px}
+.tabs button[aria-pressed=true]{color:var(--key);border-color:var(--key)}
+.tabs button:focus-visible,.x:focus-visible{outline:2px solid var(--ok)}
+.note{color:var(--dim);line-height:1.6;flex:1 1 100%;min-width:0}
+.scene{position:relative;flex:1;min-height:600px;overflow:hidden;background:
+ radial-gradient(ellipse 40% 30% at 50% 62%,#5a8c44 0,transparent 70%),
+ repeating-linear-gradient(172deg,var(--lawn) 0 46px,var(--lawn2) 46px 92px,var(--lawn3) 92px 118px);
+ border:2px solid var(--line);user-select:none;-webkit-user-select:none;touch-action:none}
+.ground{position:absolute;inset:0}
+.hud{position:absolute;left:12px;top:10px;line-height:1.7;pointer-events:none;text-shadow:0 1px 0 #0008}
+.hud i{display:inline-block;width:110px;height:6px;background:#0b0d13aa;vertical-align:middle;margin:0 8px}
+.hud i b{display:block;height:100%}
+.log{position:absolute;left:12px;bottom:10px;line-height:1.7;pointer-events:none;text-shadow:0 1px 0 #000a;max-width:60%}
+.you{position:absolute;left:38%;top:64%;width:0;height:0}
+.you .sh{position:absolute;left:-18px;top:-4px;width:36px;height:12px;border-radius:50%;background:#0006}
+.you .h{position:absolute;left:-7px;top:-58px;width:14px;height:14px;background:#e2b893;border:2px solid #1b1410}
+.you .b{position:absolute;left:-9px;top:-44px;width:18px;height:24px;background:#3a6fb0;border:2px solid #1b1410}
+.you .l1,.you .l2{position:absolute;top:-20px;width:8px;height:20px;background:#2d3340;border:2px solid #1b1410}
+.you .l1{left:-9px}.you .l2{left:1px}
+.you .nm{position:absolute;left:-40px;top:-76px;width:80px;text-align:center;color:#fff;text-shadow:0 1px 0 #000a}
+.win{position:absolute;touch-action:none}
+.ttl{display:flex;align-items:center;gap:8px;color:var(--key);text-shadow:0 1px 0 #000a;cursor:grab;padding:2px 0 4px;white-space:nowrap}
+.ttl span{color:var(--fg)}
+.x{padding:1px 6px;margin-left:auto;color:var(--dim)}
+.bagart{display:block;image-rendering:pixelated;shape-rendering:crispEdges;filter:drop-shadow(0 4px 0 #0005)}
+.mouth{position:absolute}
+.it{position:absolute;width:40px;height:40px;cursor:grab;touch-action:none}
+.it img{width:100%;height:100%;image-rendering:pixelated;display:block;filter:drop-shadow(1px 1px 0 #0008)}
+.it.held{opacity:.3}
+.it .n{position:absolute;right:-2px;bottom:-4px;color:var(--key);font-size:10px;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+.it .lb{position:absolute;left:50%;top:100%;transform:translateX(-50%);white-space:nowrap;color:#fff;font-size:10px;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000;display:none;pointer-events:none}
+.it:hover .lb{display:block}
+.g .it{width:32px;height:32px}
+.g .it .lb{display:block;color:#f0ead8}
+.g .it::before{content:"";position:absolute;left:2px;right:2px;bottom:-2px;height:8px;border-radius:50%;background:#0005}
+.ghost{position:fixed;width:40px;height:40px;pointer-events:none;z-index:50;image-rendering:pixelated;filter:drop-shadow(2px 4px 0 #0008)}
+.doll{position:relative;width:176px;height:296px;background:#2b2e36;border:3px solid #5a5e6e;box-shadow:inset 0 0 0 3px #1c1e25,0 4px 0 #0005}
+.dollfig{position:absolute;left:58px;top:40px;width:60px;height:200px}
+.dollfig .h{position:absolute;left:19px;top:8px;width:22px;height:22px;background:#e2b893;border:2px solid #1b1410}
+.dollfig .b{position:absolute;left:14px;top:30px;width:32px;height:44px;background:#3a6fb0;border:2px solid #1b1410}
+.dollfig .l1,.dollfig .l2{position:absolute;top:74px;width:13px;height:38px;background:#2d3340;border:2px solid #1b1410}
+.dollfig .l1{left:15px}.dollfig .l2{left:32px}
+.dollfig .a1,.dollfig .a2{position:absolute;top:32px;width:9px;height:36px;background:#3a6fb0;border:2px solid #1b1410}
+.dollfig .a1{left:4px}.dollfig .a2{left:47px}
+.dollfig .ey{position:absolute;left:23px;top:16px;width:14px;height:4px;background:#1b1410;display:none}
+.dollfig .hat{position:absolute;left:16px;top:2px;width:28px;height:9px;background:#2f5fb8;border:2px solid #1b1410;display:none}
+.dollfig .bk{position:absolute;left:52px;top:34px;width:12px;height:30px;background:#a8adb8;border:2px solid #1b1410;display:none}
+.dollfig .rd{position:absolute;left:-8px;top:14px;width:3px;height:70px;background:#a4713f;border:1px solid #1b1410;transform:rotate(14deg);display:none}
+.slot{position:absolute;width:44px;height:44px;border:2px solid #4a4e5c;background:#15171d}
+.slot .lb{position:absolute;left:0;right:0;top:100%;text-align:center;color:var(--dim);font-size:8px;letter-spacing:0}
+.slot .it{left:0;top:0}
+.slot.over{border-color:var(--key)}
+.doll .nm{position:absolute;left:0;right:0;bottom:8px;text-align:center;color:var(--fg)}
+.wt{color:var(--dim)}
+.wt.heavy{color:var(--warn)}
+@media (prefers-reduced-motion:no-preference){.it{transition:opacity .1s}}
+</style>
+<header>
+  <h1>THE BAG · THREE WAYS</h1>
+  <div class="tabs" role="tablist">
+    <button id="tA" aria-pressed="true">A · FREE</button>
+    <button id="tB" aria-pressed="false">B · TIDY</button>
+    <button id="tC" aria-pressed="false">C · WORN</button>
+  </div>
+  <div class="note" id="note"></div>
+</header>
+<div class="scene" id="scene">
+  <div class="ground" id="ground"></div>
+  <div class="hud">YOU<br>HP 100<i><b style="width:100%;background:#e0584a"></b></i>100<br>STA 92<i><b style="width:92%;background:#f2c14e"></b></i>100</div>
+  <div class="you"><div class="sh"></div><div class="l1"></div><div class="l2"></div><div class="b"></div><div class="h"></div><div class="nm">YOU</div></div>
+  <div class="win" id="dollwin" hidden>
+    <div class="ttl" data-win="dollwin">YOU <span id="dollsub">· NOTHING WORN</span><button class="x" data-close="dollwin">X</button></div>
+    <div class="doll" id="doll">
+      <div class="dollfig" id="fig"><div class="rd"></div><div class="bk"></div><div class="a1"></div><div class="a2"></div><div class="l1"></div><div class="l2"></div><div class="b"></div><div class="h"></div><div class="ey"></div><div class="hat"></div></div>
+      <div class="slot" data-slot="head" style="left:8px;top:14px"><span class="lb">HEAD</span></div>
+      <div class="slot" data-slot="eyes" style="left:8px;top:84px"><span class="lb">EYES</span></div>
+      <div class="slot" data-slot="body" style="left:8px;top:154px"><span class="lb">BODY</span></div>
+      <div class="slot" data-slot="back" style="left:118px;top:14px"><span class="lb">BACK</span></div>
+      <div class="slot" data-slot="hand" style="left:118px;top:84px"><span class="lb">HAND</span></div>
+      <div class="slot" data-slot="legs" style="left:118px;top:154px"><span class="lb">LEGS</span></div>
+      <div class="nm">YOU · THE MARKET</div>
+    </div>
+  </div>
+  <div class="win" id="bagwin">
+    <div class="ttl" data-win="bagwin">YOUR BAG <span class="wt" id="bagwt"></span><span>· $124</span><button class="x" data-close="bagwin">X</button></div>
+    <div style="position:relative;width:320px;height:300px">
+      <svg class="bagart" width="320" height="300" viewBox="0 0 80 75"><rect x="4" y="26" width="5" height="36" fill="#4a2f17" stroke="#1b1410" stroke-width="1"/><rect x="71" y="26" width="5" height="36" fill="#4a2f17" stroke="#1b1410" stroke-width="1"/><path d="M8 20h64v46q0 6-6 6H14q-6 0-6-6z" fill="#6b4425" stroke="#1b1410" stroke-width="1"/><rect x="12" y="25" width="56" height="40" fill="#2a1a10" stroke="#3f2816" stroke-width="1"/><path d="M8 18h64v6q-8 6-32 6T8 24z" fill="#7d5230" stroke="#1b1410" stroke-width="1"/><rect x="37" y="23" width="6" height="7" fill="#d8a52a" stroke="#1b1410" stroke-width="1"/><rect x="36" y="67" width="8" height="3" fill="#d8a52a" stroke="#1b1410" stroke-width="1"/><path d="M8 20q-2-8 6-10h52q8 2 6 10" fill="none" stroke="#1b1410" stroke-width="1"/></svg>
+      <div class="mouth" data-where="bag" id="mbag" style="left:48px;top:100px;width:224px;height:160px"></div>
+    </div>
+  </div>
+  <div class="win" id="pouchwin" hidden>
+    <div class="ttl" data-win="pouchwin">LEATHER POUCH <span class="wt" id="pouchwt"></span><button class="x" data-close="pouchwin">X</button></div>
+    <div style="position:relative;width:240px;height:225px">
+      <svg class="bagart" width="240" height="225" viewBox="0 0 80 75"><path d="M8 20h64v46q0 6-6 6H14q-6 0-6-6z" fill="#8a5a33" stroke="#1b1410" stroke-width="1"/><rect x="12" y="25" width="56" height="40" fill="#2a1a10" stroke="#3f2816" stroke-width="1"/><path d="M8 18h64v6q-8 6-32 6T8 24z" fill="#9c6a3e" stroke="#1b1410" stroke-width="1"/><path d="M8 20q-2-8 6-10h52q8 2 6 10" fill="none" stroke="#1b1410" stroke-width="1"/></svg>
+      <div class="mouth" data-where="pouch" id="mpouch" style="left:36px;top:75px;width:168px;height:120px"></div>
+    </div>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+<script>
+const PAL={k:'#1b1410',r:'#c8342c',R:'#ef6d5a',g:'#3f8a3a',G:'#8fd36a',b:'#2f5fb8',B:'#7fb2f0',y:'#d8a52a',Y:'#f6e27a',w:'#f4efe4',n:'#6b4425',N:'#a4713f',p:'#7a3fb0',P:'#c49cf0',s:'#5e6270',S:'#a8adb8',o:'#e07a2a',t:'#d9c39a',c:'#2a8f8f',C:'#7fe0d8',d:'#222a33'};
+const ART={
+mush:['...kkkk...','..kGGGGk..','.kGgGGgGk.','kGGGGGGGGk','kkkkkkkkkk','...kttk...','...kttk...','...kttk...','..kttttk..','..kkkkkk..'],
+pot:['...kkkk...','...kwwk...','...kwwk...','..kkRRkk..','.kRRRRRRk.','.kRrRRRrk.','.kRRRRRRk.','.kRRrrRRk.','..kRRRRk..','...kkkk...'],
+mortar:['....kk....','...kttk...','...kttk...','kkkkttkkkk','kSSSSSSSSk','kSssssssSk','.kSSSSSSk.','..kSSSSk..','..kssssk..','..kkkkkk..'],
+gem:['....kk....','..kkPPkk..','.kPPPPPPk.','kPPpPPpPPk','kPpPPPPpPk','.kPpPPpPk.','..kPppPk..','...kPPk...','....kk....','..........'],
+fish:['..........','..kkkk....','.kBBBBk..k','kBwBBBBkkk','kBBBBBBBBk','.kBBBBk.kk','..kkkk...k','..........','..........','..........'],
+apple:['....kk....','...kggk...','..kkRRkk..','.kRRRRRRk.','kRwRRRRRRk','kRRRRRRRrk','kRRRRRRrrk','.kRRRRrrk.','..kRRrrk..','...kkkk...'],
+goggles:['..........','..........','kkkkkkkkkk','kSSkkkkSSk','kSBBkkSBBk','kSBBk.kBBk','kkkk...kkk','..........','..........','..........'],
+rod:['.........k','........kk','.......kNk','......kNk.','.....kNk..','....kNk...','...kNk....','..kNk..k..','.kNk..kyk.','kkk....k..'],
+pouch:['...kkkk...','..kNttNk..','.kNkkkkNk.','.kNNNNNNk.','kNnNNNNnNk','kNNNNNNNNk','kNNnNNnNNk','kNNNNNNNNk','.kNNNNNNk.','..kkkkkk..'],
+jar:['..kkkkkk..','..knnnnk..','.kkkkkkkk.','.kYyyyyYk.','.kYyyyyYk.','.kyyyyyyk.','.kyyyyyyk.','.kyyyyyyk.','.kkkkkkkk.','..........'],
+cigar:['..........','..........','..........','..........','kkkkkkkkkk','kNnnnnnnRk','kNnnnnnnrk','kkkkkkkkkk','..........','..........'],
+shades:['..........','..........','..........','kkkkkkkkkk','kddkkkkddk','kdddkkdddk','.kkk..kkk.','..........','..........','..........'],
+cap:['..........','..kkkkk...','.kbbbbbk..','kbbbbbbbk.','kbbbbbbbkk','kkkkkkkkkk','..........','..........','..........','..........'],
+coat:['..kkkkkk..','.kggkkggk.','kggkggkggk','kggkggkggk','kkkgggggkk','..kggggk..','..kggggk..','..kggggk..','..kggggk..','..kkkkkk..'],
+jeans:['..........','.kkkkkkkk.','.kbbbbbbk.','.kbbbbbbk.','.kbbkkbbk.','.kbbk.kbbk','.kbbk.kbbk','.kbbk.kbbk','.kkkk.kkkk','..........'],
+tank:['...kkkk...','...kssk...','..kkkkkk..','.kSSSSSSk.','.kSSSSSSk.','.kSSsSSSk.','.kSSSSSSk.','.kSSSSSSk.','..kkkkkk..','..........'],
+net:['....kk....','...kNNk...','..kNkkNk..','.kSkSkSkS.','kSkSkSkSk.','.kSkSkSk..','..kSkSk...','...kkk....','....k.....','....k.....']};
+const src=(art,sub)=>{ const c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[art].forEach((row,y)=>{ for(let x=0;x<10;x++){ let ch=row[x]||'.'; if(sub&&sub[ch])ch=sub[ch]; if(ch==='.')continue; g.fillStyle=PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); return c.toDataURL(); };
+const ITEMS=[
+ {id:'glowcap',name:'GLOWCAP',art:'mush',sub:{G:'C',g:'c'},n:3,w:.1,eat:'EAT',x:16,y:14},
+ {id:'morel',name:'MOREL',art:'mush',sub:{G:'N',g:'n'},n:2,w:.1,eat:'EAT',x:58,y:6},
+ {id:'p_heal',name:'HEAL POTION',art:'pot',n:1,w:.5,eat:'DRINK',x:112,y:6},
+ {id:'p_refresh',name:'REFRESH POTION',art:'pot',sub:{R:'B',r:'b'},n:2,w:.5,eat:'DRINK',x:140,y:28},
+ {id:'bottle',name:'EMPTY BOTTLE',art:'pot',sub:{R:'S',r:'s'},n:3,w:.4,x:178,y:2},
+ {id:'mortar',name:'MORTAR AND PESTLE',art:'mortar',n:1,w:2,x:8,y:64},
+ {id:'amethyst',name:'AMETHYST',art:'gem',n:1,w:.2,x:66,y:56},
+ {id:'quartz',name:'QUARTZ CRYSTAL',art:'gem',sub:{P:'w',p:'S'},n:2,w:.2,x:96,y:48},
+ {id:'x_perch',name:'PERCH',art:'fish',n:1,w:.35,eat:'EAT',x:128,y:84},
+ {id:'fr_apple',name:'APPLE',art:'apple',n:1,w:.2,eat:'EAT',x:176,y:70},
+ {id:'goggles',name:'GOGGLES',art:'goggles',n:1,w:.3,slot:'eyes',x:36,y:108},
+ {id:'rod',name:'FISHING ROD',art:'rod',n:1,w:1.2,slot:'hand',x:86,y:112},
+ {id:'cap',name:'BLUE CAP',art:'cap',n:1,w:.2,slot:'head',x:138,y:118},
+ {id:'scuba',name:'SCUBA TANK',art:'tank',n:1,w:9,slot:'back',x:4,y:30},
+ {id:'pouch',name:'LEATHER POUCH',art:'pouch',n:1,w:.3,bag:true,x:182,y:114},
+ {id:'jar_honey',name:'CLOVER HONEY',art:'jar',n:1,w:.6,where:'pouch',eat:'EAT',x:14,y:10},
+ {id:'cigar',name:'CIGAR',art:'cigar',n:2,w:.05,where:'pouch',x:66,y:18},
+ {id:'shades',name:'SHADES',art:'shades',n:1,w:.1,slot:'eyes',where:'pouch',x:112,y:36},
+ {id:'coat_green',name:'GREEN COAT',art:'coat',n:1,w:1.5,slot:'body',where:'pouch',x:26,y:62},
+ {id:'jeans',name:'JEANS',art:'jeans',n:1,w:.8,slot:'legs',where:'pouch',x:86,y:70},
+ {id:'net',name:'BUTTERFLY NET',art:'net',n:1,w:.4,slot:'hand',where:'pouch',x:126,y:74}];
+for(const it of ITEMS){ it.where=it.where||'bag'; it.src=src(it.art,it.sub); }
+const CAP=40, CELL=44, NOTES={
+ A:"Ultima's way. Put a thing anywhere in the bag, pile things up, open the pouch inside. DRAG a thing to move it; drag it OUT onto the grass to drop it; DOUBLE CLICK eats, drinks, opens the pouch, picks up what's on the ground. Drop a thing on the pouch to put it in.",
+ B:"The same bag, but a thing you let go settles into the nearest free pocket, so nothing hides under anything. Same drags and double clicks.",
+ C:"A's bag and the paperdoll beside it. Drag a hat, goggles, coat, jeans, rod or tank onto YOU (or its slot) to wear or hold it; a double click on a worn thing puts it back in the bag."};
+let mode='A';
+const $=id=>document.getElementById(id), byId=id=>ITEMS.find(i=>i.id===id);
+const log=[], say=(t,c)=>{ log.push([t,c||'#d8dae2']); while(log.length>6)log.shift(); $('log').innerHTML=log.map(([t,c])=>`<div style="color:${c}">${t}</div>`).join(''); };
+const weight=where=>ITEMS.filter(i=>i.where===where||(where==='bag'&&i.where==='pouch')).reduce((a,i)=>a+i.w*i.n,0);
+const el=(it,px)=>{ const d=document.createElement('div'); d.className='it'; d.dataset.id=it.id; d.innerHTML=`<img alt="${it.name}" src="${it.src}">${it.n>1?`<span class="n">x${it.n}</span>`:''}<span class="lb">${it.name}</span>`; return d; };
+function render(){
+  for(const where of ['bag','pouch']){ const m=$('m'+where); m.innerHTML=''; for(const it of ITEMS)if(it.where===where){ const d=el(it); d.style.left=it.x+'px'; d.style.top=it.y+'px'; m.appendChild(d); } }
+  const g=$('ground'); g.innerHTML=''; for(const it of ITEMS)if(it.where==='ground'){ const w=document.createElement('div'); w.className='g'; w.style.cssText=`position:absolute;left:${it.gx-16}px;top:${it.gy-28}px;width:32px;height:32px`; w.appendChild(el(it)); g.appendChild(w); }
+  for(const s of document.querySelectorAll('.slot')){ s.querySelectorAll('.it').forEach(x=>x.remove()); const it=ITEMS.find(i=>i.where==='worn'&&i.slot===s.dataset.slot); if(it)s.appendChild(el(it)); }
+  const fig=$('fig'), worn=k=>ITEMS.find(i=>i.where==='worn'&&i.slot===k);
+  fig.querySelector('.hat').style.display=worn('head')?'block':'none'; fig.querySelector('.ey').style.display=worn('eyes')?'block':'none'; fig.querySelector('.bk').style.display=worn('back')?'block':'none'; fig.querySelector('.rd').style.display=worn('hand')?'block':'none';
+  const body=worn('body'), legs=worn('legs'); for(const q of ['.b','.a1','.a2'])fig.querySelector(q).style.background=body?'#3f8a3a':'#3a6fb0'; for(const q of ['.l1','.l2'])fig.querySelector(q).style.background=legs?'#2f5fb8':'#2d3340';
+  const wl=ITEMS.filter(i=>i.where==='worn').map(i=>i.name); $('dollsub').textContent='· '+(wl.length?wl.length+' WORN':'NOTHING WORN');
+  const wb=weight('bag'); const bw=$('bagwt'); bw.textContent=`· ${wb.toFixed(1)} / ${CAP} KG`; bw.className='wt'+(wb>CAP*.8?' heavy':''); $('pouchwt').textContent=`· ${weight('pouch').toFixed(1)} KG`;
+}
+const mouthOf=where=>$('m'+where), cells=where=>{ const m=mouthOf(where); return [Math.floor(m.clientWidth/CELL),Math.floor(m.clientHeight/CELL)]; };
+function snap(it,where,x,y){ const [cx,cy]=cells(where); const taken=new Set(ITEMS.filter(i=>i.where===where&&i!==it).map(i=>Math.round(i.x/CELL)+','+Math.round(i.y/CELL))); let best=null,bd=1e9; for(let j=0;j<cy;j++)for(let i=0;i<cx;i++){ if(taken.has(i+','+j))continue; const d=(i*CELL+2-x)**2+(j*CELL+2-y)**2; if(d<bd){ bd=d; best=[i*CELL+2,j*CELL+2]; } } return best; }
+function freeSpot(it,where){ if(mode==='B')return snap(it,where,0,0); const m=mouthOf(where); for(let y=0;y+40<=m.clientHeight;y+=22)for(let x=0;x+40<=m.clientWidth;x+=24){ if(!ITEMS.some(i=>i.where===where&&i!==it&&Math.abs(i.x-x)<30&&Math.abs(i.y-y)<30))return [x,y]; } return [Math.random()*(m.clientWidth-40),Math.random()*(m.clientHeight-40)]; }
+function put(it,where,x,y){ const m=mouthOf(where); x=Math.max(0,Math.min(m.clientWidth-40,x)); y=Math.max(0,Math.min(m.clientHeight-40,y)); if(mode==='B'){ const s=snap(it,where,x,y); if(!s){ say('NO ROOM IN THE '+(where==='bag'?'BAG':'POUCH')+'.','#c8a090'); return false; } [x,y]=s; } it.where=where; it.x=x; it.y=y; return true; }
+function toBag(it,where='bag'){ const s=freeSpot(it,where); if(!s){ say('NO ROOM.','#c8a090'); return false; } it.where=where; it.x=s[0]; it.y=s[1]; return true; }
+function use(it){
+  if(it.where==='ground'){ if(toBag(it))say('YOU PICK UP THE '+it.name+'.','#f2c14e'); }
+  else if(it.where==='worn'){ if(toBag(it))say('YOU TAKE OFF THE '+it.name+'.'); }
+  else if(it.bag){ const w=$('pouchwin'); w.hidden=!w.hidden; if(!w.hidden)place(w,$('bagwin').offsetLeft-250,$('bagwin').offsetTop); say(w.hidden?'YOU CLOSE THE POUCH.':'YOU OPEN THE POUCH.'); }
+  else if(it.eat){ it.n--; say(`YOU ${it.eat} THE ${it.name}.`,it.eat==='DRINK'?'#9fe07f':'#d8dae2'); if(it.n<=0)ITEMS.splice(ITEMS.indexOf(it),1); }
+  else if(it.slot&&mode==='C'){ wear(it); }
+  else say('YOU LOOK AT THE '+it.name+'.','#9b9584');
+  render();
+}
+function wear(it,slot){ slot=slot||it.slot; if(!it.slot){ say("YOU CAN'T WEAR THAT.",'#c8a090'); return; } if(slot!==it.slot){ say('THAT GOES ON YOUR '+it.slot.toUpperCase()+'.','#c8a090'); return; } const old=ITEMS.find(i=>i.where==='worn'&&i.slot===slot&&i!==it); if(old)toBag(old); it.where='worn'; say(slot==='hand'?'YOU HOLD THE '+it.name+'.':'YOU PUT ON THE '+it.name+'.','#9fe07f'); }
+const place=(w,x,y)=>{ const S=$('scene'); w.style.left=Math.max(0,Math.min(S.clientWidth-w.offsetWidth,x))+'px'; w.style.top=Math.max(0,Math.min(S.clientHeight-40,y))+'px'; };
+function layout(){ const S=$('scene'), W=S.clientWidth; place($('bagwin'),Math.min(W-340,W*.56),28); place($('dollwin'),12,96); }
+function setMode(m){ mode=m; for(const k of 'ABC')$('t'+k).setAttribute('aria-pressed',k===m); $('note').textContent=NOTES[m]; $('dollwin').hidden=m!=='C'; if(m!=='C')for(const it of ITEMS)if(it.where==='worn')toBag(it); if(m==='B')for(const where of ['bag','pouch'])for(const it of ITEMS)if(it.where===where){ const s=snap(it,where,it.x,it.y); if(s){ it.x=s[0]; it.y=s[1]; } } render(); }
+for(const k of 'ABC')$('t'+k).addEventListener('click',()=>setMode(k));
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-close]'); if(b){ $(b.dataset.close).hidden=true; } });
+let drag=null, lastTap={id:null,t:0};
+document.addEventListener('pointerdown',e=>{ if(e.button)return; const t=e.target.closest('.ttl'); if(t&&!e.target.closest('.x')){ const w=$(t.dataset.win); drag={win:w,ox:e.clientX-w.offsetLeft,oy:e.clientY-w.offsetTop}; e.preventDefault(); return; }
+  const d=e.target.closest('.it'); if(!d)return; e.preventDefault(); const it=byId(d.dataset.id); const r=d.getBoundingClientRect(); drag={it,d,sx:e.clientX,sy:e.clientY,dx:e.clientX-r.left,dy:e.clientY-r.top,moved:false}; });
+document.addEventListener('pointermove',e=>{ if(!drag)return; if(drag.win){ place(drag.win,e.clientX-drag.ox,e.clientY-drag.oy); return; }
+  if(!drag.moved){ if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<4)return; drag.moved=true; drag.d.classList.add('held'); const g=document.createElement('img'); g.className='ghost'; g.src=drag.it.src; document.body.appendChild(g); drag.ghost=g; }
+  drag.ghost.style.left=(e.clientX-drag.dx)+'px'; drag.ghost.style.top=(e.clientY-drag.dy)+'px';
+  document.querySelectorAll('.slot.over').forEach(s=>s.classList.remove('over')); const u=document.elementFromPoint(e.clientX,e.clientY), s=u&&u.closest('.slot'); if(s)s.classList.add('over'); });
+document.addEventListener('pointerup',e=>{ if(!drag)return; const D=drag; drag=null; if(D.win)return;
+  if(!D.moved){ const now=Date.now(); if(lastTap.id===D.it.id&&now-lastTap.t<400){ lastTap={id:null,t:0}; use(D.it); } else lastTap={id:D.it.id,t:now}; return; }
+  D.ghost.remove(); D.d.classList.remove('held'); document.querySelectorAll('.slot.over').forEach(s=>s.classList.remove('over'));
+  const it=D.it, u=document.elementFromPoint(e.clientX,e.clientY); if(!u){ render(); return; }
+  const onIt=u.closest('.it'), onItem=onIt&&byId(onIt.dataset.id);
+  const mouth=u.closest('.mouth'), slot=u.closest('.slot'), doll=u.closest('.doll'), S=$('scene').getBoundingClientRect();
+  if(onItem&&onItem.bag&&onItem!==it&&onItem.where!=='ground'){ if(it.bag)say("THE POUCH WON'T GO INTO ITSELF.",'#c8a090'); else if(toBag(it,'pouch'))say('YOU PUT THE '+it.name+' IN THE POUCH.'); }
+  else if(mouth){ const where=mouth.dataset.where; if(where==='pouch'&&it.bag)say("THE POUCH WON'T GO INTO ITSELF.",'#c8a090'); else{ const m=mouth.getBoundingClientRect(); const was=it.where; if(put(it,where,e.clientX-D.dx-m.left,e.clientY-D.dy-m.top)&&was==='ground')say('YOU PICK UP THE '+it.name+'.','#f2c14e'); else if(was==='worn')say('YOU TAKE OFF THE '+it.name+'.'); } }
+  else if(slot||doll){ wear(it,slot?slot.dataset.slot:it.slot); }
+  else if(u.closest('#scene')&&!u.closest('.win')){ it.where='ground'; it.gx=e.clientX-S.left; it.gy=e.clientY-S.top; if(it.bag)$('pouchwin').hidden=true; say('YOU DROP THE '+it.name+'.'); }
+  render(); });
+document.addEventListener('pointercancel',()=>{ if(drag&&drag.ghost)drag.ghost.remove(); drag=null; render(); });
+addEventListener('resize',layout);
+layout(); setMode('A'); say('YOUR BAG IS OPEN. (I)','#9b9584');
+</script>

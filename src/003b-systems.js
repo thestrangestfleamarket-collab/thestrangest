@@ -5,6 +5,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   LEVELS={of:{},ways:[],below:y=>y<-1.6?'down':'up',own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
+  BAG={},   // the bag: THE PACK drawn as a bag of item pictures, the ground drops and the paperdoll (162e-bag)
   HUD={},   // the heads-up display (162d-hud): the minimap, the message log and the quick bar
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),
@@ -16,6 +17,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   vwV=(x,y)=>[(x-y)*Math.SQRT1_2,-(x+y)*Math.SQRT1_2],
   wvV=(u,v)=>[(u-v)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2],
   CLOCK={},
+  NEWS={},
   DRESS={},
   PONDS={wet:()=>false,strips:[]},
   LITE={},
@@ -104,5 +106,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   IMK={},
   BOOKS={},
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
-  INSPECT=window.INSPECT={kinds:[],on:false};   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-export {AMB, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, wvV, WX, ZONES};
+  INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
+  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
+  WORKERS=window.WORKERS={idle:{},made:{},models:{},make:()=>Promise.resolve()};   // the insides' non-human workers (146zb-workers): WORKERS.make(place) the first time you go in; idle[key] how one moves at its spot; models[key] a body made by code (MERCH's way) for one with no folk recipe
+export {AMB, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

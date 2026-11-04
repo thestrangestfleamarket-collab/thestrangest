@@ -16,5 +16,7 @@ const {chromium}=require('playwright');
   ok(G.map&&G.uv,'the goods carry their labels from the atlas');
   ok(G.kinds.includes('sack')&&G.kinds.includes('goya')&&G.kinds.includes('candle')&&G.kinds.includes('platano'),'rice sacks, Goya cans, candles and platanos are in ('+G.kinds.length+' kinds)');
   ok(G.keys.includes('wm1')&&G.keys.includes('win1')&&G.keys.includes('win2'),'a middle shelf and two window displays stand with the old shelves ('+G.keys.join(' ')+')');
+  const LV=await pg.evaluate(()=>({rt:WINDOWS.live.rt.size,live:WINDOWS.panes.filter(p=>p.off==='bodega'&&p.look==='out'&&p.live).length,eyes:WINDOWS.eyes.length}));
+  ok(LV.rt>=1&&LV.live>=1&&LV.eyes>=1,'from inside, the front glass shows the real street live in 3D ('+JSON.stringify(LV)+')');
   ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
   await b.close(); process.exit(bad?1:0); })();

@@ -30,6 +30,8 @@ const fails=[], ok=(c,m)=>{ if(!c){ fails.push(m); console.log((process.env.GITH
   ok(inD,'the dungeon is its own level ('+JSON.stringify(await here())+')');
   if(inD){ const DB=await pg.evaluate(()=>{ const B=__dbg.MAPK.MODS.dungeon.bound(__dbg.pos()[0],__dbg.pos()[2]), m=1.13*3; return {x0:B.x0-m,x1:B.x1+m,z0:B.z0-m,z1:B.z1+m,y0:-60,y1:60}; });
     const ld=await leaks(DB); ok(!ld.length,'nothing outside the dungeon level is drawn there'+(ld.length?': '+ld.slice(0,12).join(' | '):''));
+    const lk=await pg.evaluate(()=>{ const T=DUNGEON.traps(), L=T.filter(h=>h.t==='lava'), D=__dbg.MAPK.MODS.dungeon; return {pools:L.length,shaped:L.every(h=>h.rx>0&&h.ry>0&&D.inLava(h,h.cx,h.cy)&&!D.inLava(h,h.cx+h.rx*1.4,h.cy)),ceil:L.some(h=>h.src==='ceil'),fog:!!__dbg.scene.fog}; });
+    ok(lk.pools&&lk.shaped&&lk.ceil&&lk.fog,'the dungeon has shaped lava pools, one fed from the ceiling, and its fog: '+JSON.stringify(lk));
     await pg.screenshot({path:out+'/levels-dungeon.png'}); }
 
   await pg.evaluate(()=>__dbg.UI.goTo(-2.2,3.2,'up')); await until(()=>LEVELS.cur==='street'); ok((await here()).cur==='street','back on the street level');

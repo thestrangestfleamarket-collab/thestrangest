@@ -5,24 +5,46 @@ const ROOT = path.resolve(__dirname, '..');
 
 try { execFileSync('node', ['--stack-size=8000', ROOT + '/tools/imports.cjs', '--check'], { stdio: 'pipe' }); ok(true, 'every file\'s imports are up to date and point back only'); }
 catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || '')); }
+{ const fs = require('fs'), bad = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f) && /CLOCKWISE/.test(fs.readFileSync(ROOT + '/src/' + f, 'utf8'))); ok(!bad.length, 'the Loop\'s signs name streets, not directions (no CLOCKWISE in src' + (bad.length ? ': ' + bad.join(', ') : '') + ')'); }
 
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
+{ const T = JSON.parse(fs.readFileSync(ROOT + '/data/topmap.json', 'utf8')); ok(T.tiles.length === T.NX * T.NZ && T.tiles.every(t => fs.existsSync(ROOT + '/data/topmap/' + t)), 'the map editor\'s ground picture has all its ' + T.tiles.length + ' pieces (node tools/topmap.cjs)'); }
 const rect = p => p.y1 != null ? [p.x0, p.x1, p.y0, p.y1] : [p.x0, p.x1, L.block.back, -77], into = (a, b) => a.kind === 'stairs' && b.kind === 'passage';
 const pl = L.places.filter(p => p.kind !== 'park'), lap = pl.find((p, i) => pl.some((q, j) => j !== i && !into(p, q) && !into(q, p) && (([a0, a1, b0, b1], [c0, c1, d0, d1]) => a0 < c1 - .01 && c0 < a1 - .01 && b0 < d1 - .01 && d0 < b1 - .01)(rect(p), rect(q))));
 ok(!lap, 'no two places overlap (stairs may stand in a passage)' + (lap ? ' (' + lap.id + ')' : ''));
 ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
+ok(L.places.some(p => p.kind === 'fair' && p.x1 < L.streets.west.x0 - 10 && p.door && p.gate) && L.places.some(p => p.kind === 'gate' && Math.abs(p.x1 - L.streets.west.x0) < .6), 'the level file has the fair behind the West St row, with its door and gate in the row (owner, 4 Nov 2026)');
+ok((p => p && p.face === 'e' && Math.abs(p.x1 - L.streets.west.x0) < .6 && p.y1 != null)(L.places.find(p => p.id === 'theatre')), 'the movie theatre stands on West St with the arcade and the playhouse (owner, 4 Nov 2026)');
+{ const c = L.parkPlaces.castle, P = L.park, [n, e] = ['path0', 'path1'].map(id => L.paths.find(p => p.id === id)), x0 = c.x0 - 3.6, x1 = c.x0 + 21 + 3.6, y0 = c.y0 - 3.9, y1 = c.y0 + 17 + 3.6, gx = c.x0 + 12.5;
+  ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
+  ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
+{ const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
+  ok(P.length && P.every(c => C[c.model] && c.x > L.streets.market.x0 && c.x < L.streets.market.x1 && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St between its kerbs, its id its own (' + P.length + ')'); }
+{ const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
+  ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
+{ const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
+  ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
+  ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }
 ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x1), 'every place sits on Market St');
 { const S = fs.readFileSync(ROOT + '/src/001-rig.js', 'utf8'), src = S.slice(S.indexOf('const WDRAWN='), S.indexOf('\n})();') + 6);
   const R = new Function('location', 'localStorage', 'document', '__DATA__', src + '\nreturn RIG;')({ search: '' }, { getItem: () => null, setItem() {} }, { createElement: () => ({ getContext: () => ({}) }) }, p => JSON.parse(fs.readFileSync(ROOT + '/' + p, 'utf8')));
   let bad = 0; for (const hold of [1, 3, 6, 10]) { const st = R.create(); st.snap = st.smooth = true; let z = 0, t = 0;
     for (let f = 0; f < 70; f++) { st.target = f >= 30 && f < 30 + hold ? 1 : 0; const b = st.dist; R.step(st, 1 / 60); z += st.dist - b; t += 1 / 60; st.world = { x: 0, z, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t };
       const J = R.pose(st).J; if (!['ankleL', 'ankleR', 'kneeL', 'kneeR'].every(n => isFinite(J[n].x + J[n].y + J[n].z))) bad++; } }
-  ok(!bad, 'a one-tap step and stop keeps both legs finite (world foot lock)' + (bad ? ' (' + bad + ' bad frames)' : '')); }
+  ok(!bad, 'a one-tap step and stop keeps both legs finite (world foot lock)' + (bad ? ' (' + bad + ' bad frames)' : ''));
+  // the held thing's arm is the passport's hand: an aim moves the right wrist for a right-hander, the left for a left-hander, and an arm pointing up or back still poses
+  const wr = (hand, v) => { const st = R.create(); st.hand = hand; if (v) st.aim = { v: R.V(...v), w: 1 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), o = wr('R'), aR = wr('R', [0, -.3, 1]), aL = wr('L', [0, -.3, 1]), up = wr('L', [0, 1, 0]), back = wr('R', [0, 0, -1]);
+  ok(dist(o.R, aR.R) > 3 && dist(o.L, aR.L) < .01 && dist(o.L, aL.L) > 3 && dist(o.R, aL.R) < .01 && [up.L, back.R].every(w => w.every(isFinite)), 'the aim poses the right arm for a right-hander and the left for a left-hander, up and back included');
+  // hanging from a branch: with holds given in the world the wrists go to them (the hands over the branch), without them the arms just hang up
+  { const hg = grip => { const st = R.create(); st.hang = { z: 0, t: 0, side: 0, grip }; st.world = { x: 0, z: 0, y: 0, hd: 0, kx: 1, ky: 1, gnd: () => 0, t: 0 }; const J = R.pose(st).J; return { L: [J.wristL.x, J.wristL.y, J.wristL.z], R: [J.wristR.x, J.wristR.y, J.wristR.z] }; };
+    const H = { L: { h: { x: 4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } }, R: { h: { x: -4, y: 46, z: 5, nx: 0, ny: 1, nz: 0 } } }, g = hg(H), o = hg(null), tgt = h => [h.x, h.y - .3, h.z];
+    ok(dist(g.L, tgt(H.L.h)) < 2 && dist(g.R, tgt(H.R.h)) < 2 && dist(o.L, g.L) > 2 && [g.L, g.R, o.L, o.R].every(w => w.every(isFinite)), 'hanging, the wrists go onto the branch\'s holds: ' + JSON.stringify({ g, o })); } }
 
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const pg = await b.newPage(), errs = [];
+  const pg = await b.newPage({ viewport: { width: 640, height: 360 } }), errs = [];   // small: software drawing is the check's time
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=53,10', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
@@ -30,10 +52,18 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   if (st) {
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
-    await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
-    const r = await pg.evaluate(() => {
+    await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
+    const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
+      o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');
+      o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
+      o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
+      o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
       o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
+      o.hud = (() => { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /\/ 100$/.test(document.getElementById('vhpn').textContent);
+        ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].textContent); HUD.set(1, null);
+        __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
+        { const R = document.querySelector('#menu [data-p="graphics"] #dhaze'), e0 = DFOG.get().end, b0 = e0 - DFOG.get().start; DFOG.range(100); ok.haze = !!R && +R.value === 100 && DFOG.get().end === 100 && DFOG.get().end - DFOG.get().start === b0 && document.getElementById('dhazev').textContent === '100 TILES'; DFOG.range(e0); } return ok; } catch (e) { return { err: String(e) }; } })();
       o.zoneHere = ZONES.cur && ZONES.cur.id;
       o.zoneDown = ZONES.at(0, 0, 'down', null).id;
       o.zoneRoom = ZONES.at(0, 0, 'up', { name: 'test room' }).id;
@@ -42,6 +72,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const T = __dbg.THREE, m = new T.Object3D();
       VIS.hide(m, 'a'); VIS.hide(m, 'b'); const h2 = !m.visible; VIS.hide(m, 'a', false); const h1 = !m.visible; VIS.hide(m, 'b', false);
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
+      { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
+        o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
+      { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
@@ -50,54 +84,71 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P]);
       o.doors = HOMES.doors().map(d => d.id); o.shops = HOMESDBG().filter(r => r[1] && r[1] !== '?').length;
       o.offAPI = ['enter', 'enterAt', 'exit', 'goIn', 'goOut', 'offIn', 'boxAt'].every(k => typeof ROOMS[k] === 'function');
+      o.offGround = (() => { const g = { x0: 1e7, x1: 1e7 + 10, z0: 1e7, z1: 1e7 + 10, ground: () => 42 }; ROOMS.grounds.push(g); const v = SHARED.groundY(1e7 + 5, 1e7 + 5), w = SHARED.groundY(1e7 + 50, 1e7 + 5); ROOMS.grounds.splice(ROOMS.grounds.indexOf(g), 1); return v === 42 && w !== 42; })();
       o.offSpawn = Object.keys(ROOMS.off).every(k => { const s = ROOMS.off[k].spawn; return !!(s && ROOMS.boxAt(s[0], s[1]) === k); });
+      { const s = document.getElementById('placesel'); s.dispatchEvent(new Event('focus')); const L = [...s.options].map(x => x.value).filter(Boolean), all = [...new Set(window.__UI.places().map(p => p[0]))], Q = window.__UI.mapPlan(), M = new Set(Q.L.map(l => l[0]));
+        o.goto = { listed: L.length === all.length && all.every(n => L.includes(n)), once: new Set(L).size === L.length, more: ['THE STRANGEST FAIR', 'THE FLEA MARKET', 'THE GEM CAVE', 'THE HUDSON CAVERN'].every(n => L.includes(n)), groups: [...s.querySelectorAll('optgroup')].map(g => g.label).join(),
+          map: [...M], twice: Q.L.map(l => l[0]).filter((n, i, a) => a.indexOf(n) !== i) }; }
+      o.offPlaces = window.__UI.places().filter(p => ROOMS.boxAt(p[1], p[2])).map(p => p[0] + ':' + (p[3] == null || p[3] === 'up') + ':' + !(window.RIVER && RIVER.inZone && RIVER.inZone(p[1], p[2]))).filter(t => /false/.test(t));
       o.chars = (() => { const C = window.CHARS; if (!C || ['apply', 'put', 'live', 'applyAll', 'id'].some(k => typeof C[k] !== 'function')) return { fns: false }; const F = { name: 'x', hp: 1, sta: 1, st: { v: 1, R: 1, home: { id: 'z' } }, g: { scale: { setScalar(v) { F.g.scale._v = v; } } } }; C.put(F, { name: 'NN', hp: 9, stamina: 4, scale: 3 }); return { fns: true, levelChars: C.rec('___none') === null, applied: F.name === 'NN' && F.hp === 9 && F.sta === 4 && F.g.scale._v === 3 }; })();
       o.shops = (() => { const S = window.SHOPS, C = window.CHARS; if (!S || !C) return { ok: false }; const fns = ['open', 'close', 'sync'].every(k => typeof S[k] === 'function') && typeof C.trade === 'function'; const N = (window.__dbg.NPCS || [])[0]; return { ok: fns, noTrade: N ? C.trade(N) === null : true }; })();
+      o.itemcls = (() => { const I = window.ITEMS; if (!I || !I.cls) return { ok: false }; return { ok: I.prop('pt_corecheck', 'burnable') === true && I.prop('pt_corecheck', 'value') >= 1 && I.prop('nosuchthing_x', 'value') === undefined, painter: typeof (window.PAINTER || {}).open === 'function', swap: typeof (window.SWAP || {}).ask === 'function' }; })();
       o.edges = (() => { const C = __dbg.THREE.ShaderChunk, f = C.shadowmap_pars_fragment, L = C.lights_fragment_begin; return [(f.match(/texture2DCompare\(/g) || []).length, L.includes('if ( sh > 0. )'), window.SUNDBG ? SUNDBG().patch : false]; })();
-      o.shafts = window.SHAFTS ? [SHAFTS.on > 0, SHAFTS.occ === 1, SHAFTS.list[0].material.depthTest === true] : null;
+      o.shafts = window.SHAFTS ? [SHAFTS.on === 0, SHAFTS.occ === 1, SHAFTS.list[0].material.depthTest === true] : null;
       o.lawn = (() => { const lc = SHARED.BOD.g.lawnCol(3.3, 7.1), map = __dbg.MAPK.MODS.land && __dbg.MAPK.MODS.land.material.map; return { painted: !!(map && map.image && map.image.width > 0), col: Array.isArray(lc) && lc.length === 3 && lc.every(v => v >= 0 && v <= 255), top: typeof WEEDS.top === 'function' }; })();
-      o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, typeof SKY.cloudAt === 'function' && SKY.cloudAt(0, 1, 0, 0, .5) >= 0 && SKY.cloudAt(0, 1, 0, 0, .5) <= 1, typeof SKY.GLSL === 'string' && SKY.GLSL.includes('cloudAt')];
+      o.sky = [typeof SKY.sunCover === 'number' && SKY.sunCover >= 0 && SKY.sunCover <= 1, SKY.CU && SKY.CU.cover(0, 1, 0, 0) >= 0 && SKY.CU.cover(0, 1, 0, 0) <= 1, SKY.CU && SKY.CU.n > 0 && typeof SKY.cumulus === 'function'];
       o.breath = [typeof __dbg.VIT.air === 'number', typeof __dbg.VIT.breathe === 'function', (window.ITEMS && ITEMS.prop ? +ITEMS.prop('airshroom', 'breath') : 0) || 0];
       o.downs = ['dungeon', 'gemcave', 'hudson'].map(k => { const L = LEVELS.of[k]; return !!(L && L.floor === 'down' && typeof L.has === 'function' && typeof L.ground === 'function' && typeof L.bound === 'function'); });
       o.swords = (() => { const I = window.ITEMS, W = window.WIELD, F = window.FIGHT, S = window.STRIKES, V = __dbg.VIT; if (!I || !W || !F || !S) return { ok: false };
         const h0 = V.hp, took = V.hurt(.01, { x: 0, z: 0 }); V.hp = h0; return { ok: true, dmg: ['sword_wood', 'sword', 'sword_steel', 'sword_ench'].map(k => +I.prop(k, 'damage')).join(), hand: I.prop('sword_steel', 'slot') === 'hand' && I.prop('sword_steel', 'grants') === 'fight', api: 'block' in W && typeof S.landed === 'function' && typeof V.guard === 'function', took }; })();
-      o.soft = !!(DN.modes.includes('soft') && DN.D0.soft && DN.D0.soft.shaft > 0 && window.SHAFTS && SHAFTS.list.length && SKY.U.uCldC && SKY.U.uCldK);
+      o.lookdiff = (() => { const c0 = DN.S.day.cld; DN.S.day.cld = .5; const d1 = DN.diff(); DN.S.day.cld = DN.D0.day.cld; const d2 = DN.diff(); DN.S.day.cld = c0; return !!(d1.day && d1.day.cld === .5 && !('cld' in (d2.day || {})) && !d2.night && !('bands' in (d2.day || {}))); })();
+      o.hours = (() => !!(DN.modes.join() === 'day,night' && !CLOCK.run && DN.modes.every(m => DN.D0[m].bands === 0 && (m === 'night' ? DN.D0[m].cov >= 1 : DN.D0[m].cov < 1) && DN.D0[m].skym === 0 && DN.D0[m].shaft === 0) && DN.mode === 'day' && CLOCK.sunH === 13 && CLOCK.h === 13 && typeof DN.pushTime === 'function' && typeof DN.push === 'function' && !('cycleAt' in DN) && window.DFOG && DFOG.get().blur < 1 && DFOG.get().start === 12))();
+      o.windows = !!(window.WINDOWS && typeof WINDOWS.bake === 'function' && WINDOWS.panes.some(p => p.off === 'bodega' && p.look === 'in') && SYS.P.places.some(s => s.name === '130a-windows') && ROOMS.off.bodega.shift);
       o.cinema = !!(CINEMA && typeof CINEMA.tick === 'function' && typeof CINEMA.push === 'function' && typeof CINEMA.isAdmin === 'function' && typeof CINEMA.now === 'function' && CINEMA.on === false);
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
-      o.tenants = document.querySelector('[data-t="tenants"]').hidden === true && !!document.getElementById('dten');
+      o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.equip = (() => { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
         F.give('cloudcoat', 1); E.wear('cloudcoat'); const float = E.float === true && V.def === 0; E.wear('cloudcoat'); const off = E.float === false && !E.worn;
         return { ok: true, slots, d0, guard, float, off }; })();
-      o.rack = (() => { const R = window.RACK, G = window.GLBTOONS, bear = G && G.coatbear, fox = G && G.origamifox; if (!R || !R.at || !bear || !fox) return { ok: false };
-        const h = bear.st.home, f = fox.st.home, near = Math.hypot(h.x - f.x, h.z - f.z) < 5 * __dbg.MAPK.BOD.XS(1) - 5 * __dbg.MAPK.BOD.XS(0), c = __dbg.collide(h.x, h.z), free = Math.hypot(c[0] - h.x, c[1] - h.z) < 1e-6;
-        return { ok: true, pinned: h.r === 0 && Math.hypot(bear.st.x - h.x, bear.st.z - h.z) < 1, near, free, thing: __dbg.ui().things.some(t => /COAT RACK/.test(t.name)), drawn: window.LEVELS.drawn(R.g), rackBy: Math.hypot(R.at.x - h.x, R.at.z - h.z) < 4 }; })();
+      o.rack = (() => { const R = window.RACK, G = window.GLBTOONS, bear = G && G.coatbear, B = __dbg.MAPK.BOD; if (!R || !R.at || !bear) return { ok: false };
+        const h = bear.st.home, hudson = h.z > B.ZS(-119) && h.z < B.ZS(-107.9), c = __dbg.collide(h.x, h.z), free = Math.hypot(c[0] - h.x, c[1] - h.z) < 1e-6;   // his home sits on the Hudson promenade (the block's walk zone)
+        return { ok: true, pinned: h.r === 0 && Math.hypot(bear.st.x - h.x, bear.st.z - h.z) < 1, hudson, free, thing: __dbg.ui().things.some(t => /COAT RACK/.test(t.name)), drawn: window.LEVELS.drawn(R.g), rackBy: Math.hypot(R.at.x - h.x, R.at.z - h.z) < 4 }; })();
       o.rpg = (() => { const R = window.RPGNPC; if (!R || !Array.isArray(R.list)) return { ok: false }; const L = R.list;
-        return { ok: true, n: L.length, keys: L.map(N => N.key).sort().join(','), skinned: L.every(N => N.me && N.me.isSkinnedMesh), mixer: L.every(N => !!N.mixer), street: L.every(N => N.lv === 'up'), clips: L.every(N => N.mixer && N.mixer._actions !== undefined) }; })();
+        return { ok: true, n: L.length, keys: L.map(N => N.key).sort().join(','), rig: L.every(N => N.PM && N.body), onStreet: L.every(N => N.g && N.g.parent) }; })();
       o.knight = (() => { const B = window.BODIES, K = B && B.by && B.by.knight && B.by.knight.npc; if (!K) return { ok: false }; const T = __dbg.THREE, g0 = K.g.parent, G = new T.Group();
         const street = K.on === true && K.st.home.id === 'knight' && K.name === 'THE ARMOURER', bound = SHOPDBG().bound.includes('knight');
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;
         return { ok: true, street, bound, borrowed, back }; })();
-      o.charp = (() => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
+      o.charp = await (async () => { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), tabs = document.querySelector('#menu .tabs');
         const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = !!(tabs && tabs.style.display === 'none'), open = U.menuOpen === true;
-        const hs = home && home.querySelector('#cpslots [data-slot="head"]'), pk = home && home.querySelector('#cppick'); if (hs && !hs.classList.contains('on')) hs.click(); const pick = !!(pk && !pk.hidden && /HEAD/.test(pk.textContent));
+        const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
-        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
+        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { await LOAD('log'); CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; })();
       o.bodies = (() => { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
-        const inGame = ['knight', 'man', 'woman'].every(k => B.by[k]), none = ['knight', 'man', 'woman'].every(k => !B.by[k].playable);
-        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), onlyWalker = btns.length === 1 && btns[0] === 'walker';
-        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set(saved || 'walker');
-        return { ok: true, inGame, none, onlyWalker, stays, btns: btns.join(',') }; })();
-      o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, sh = W.HIDE[W.idx('bodyTorso')];
-        W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', true);
-        return { ok: true, hid: sh, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
+        const inGame = !!B.by.knight && !B.by.man && !B.by.woman, none = !B.by.knight.playable;
+        const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns[0] === 'walker' && btns.every(k => k === 'walker' || k === 'merchant');
+        const saved = B.pick(); B.set('knight'); const stays = B.pick() === 'walker'; B.set('hero'); const hero = B.pick() === 'walker' && B.by.hero.tris() > 0 && B.by.hero.npc.on; B.set('poacher'); const poacher = B.pick() === 'walker' && !!B.by.poacher && B.by.poacher.tris() > 0 && B.by.poacher.npc.on; B.set(saved || 'walker');
+        return { ok: true, inGame, none, noRow, stays, hero, poacher, btns: btns.join(',') }; })();
+      o.layers = (() => { const W = window.W3; if (!W || !W.wear) return { ok: false }; const t0 = W.trisWorn, was = !!W.worn.shirt;
+        W.wear('shirt', true); const hid = W.HIDE[W.idx('bodyTorso')] && !W.HIDE[W.idx('torso')];
+        W.wear('shirt', false); const off = !W.HIDE[W.idx('bodyTorso')] && W.HIDE[W.idx('torso')]; W.wear('shirt', was);
+        return { ok: true, hid, off, back: W.trisWorn === t0, briefs: W.idx('briefs') >= 0 }; })();
+      o.garb = (() => { const d = window.GARBDBG && GARBDBG(); if (!d) return { ok: false };
+        const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.free > 0 && p.free < p.points), sp = GARBDBG.spec(true), menu = document.querySelector('#looks').innerText;
+        return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], bare: sp.shirt && sp.pants && !sp.shoes && !sp.hat && !sp.jacket, lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(menu), ms: d.ms }; })();
       o.wsmooth = (() => { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; })();
+      o.hatcut = (() => { const W = window.W3, G = window.GARB && GARB.mine && GARB.mine.garb; return { hat: !!(G && G.rg && G.rg.some(r => r.head)), cut: W && W.uHatCut ? W.uHatCut.value : null }; })();
       return o;
     });
-    for (const p of ['dress', 'ring', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
+    for (const p of ['dress', 'ring', 'water', 'sky', 'life', 'vitals', 'rooms', 'shadow', 'weedsAdd', 'roomsReset']) ok(r.phases.includes(p), 'SYS step "' + p + '" has systems');
+    ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
+    ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
+    ok(r.fair, 'the fair registers its rides, booths, staff posts and zone at the start, and builds only when you come near');
+    ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
     ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
     ok(r.zoneDown === 'station', 'down at 0,0 is the subway station (' + r.zoneDown + ')');
@@ -105,41 +156,84 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
+    ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
+    ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
     ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
+    ok(r.offGround, 'an off-map place in ROOMS.grounds says the ground inside its box, and only there (SHARED.groundY)');
     ok(r.offSpawn, 'every off-map inside has enterAt/boxAt and its spawn falls inside its own box (GO TO enters it, never teleports onto its footprint)');
+    if (r.goto) { r.goto.unnamed = L.places.filter(p => p.name && p.kind !== 'gate' && !r.goto.map.includes(p.name)).map(p => p.name); delete r.goto.map; }
+    ok(r.goto && r.goto.listed && r.goto.once && r.goto.more && !r.goto.unnamed.length && !r.goto.twice.length, 'GO TO lists every place the game registers, once (outside, inside, underground: the fair, the flea market, the caves), and the map names every place in the level file, none twice: ' + JSON.stringify(r.goto));
+    ok(!r.offPlaces.length, 'every GO TO place inside an off-map inside enters it (level up) and is not the river\'s side' + (r.offPlaces.length ? ' (' + r.offPlaces.join() + ')' : ''));
     ok(r.doors.length >= 3 && !r.doors.includes('apt'), 'characters can go into the buildings but your apartment (' + r.doors.join(',') + ')');
     ok(r.shared >= 26, 'SHARED holds the shared state (' + r.shared + ' names)');
     ok(r.chars.fns && r.chars.levelChars && r.chars.applied, 'CHARS applies character overrides (name, stats, scale) and reads characters.json: ' + JSON.stringify(r.chars));
     ok(r.shops.ok && r.shops.noTrade, 'SHOPS is wired and a character with no shop config sells nothing: ' + JSON.stringify(r.shops));
+    ok(r.itemcls.ok && r.itemcls.painter && r.itemcls.swap, 'an id made in play takes its class\'s properties on the item model (a painting); the painter and trade are there: ' + JSON.stringify(r.itemcls));
     ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (the grass itself: tests/lawn.cjs) (' + JSON.stringify(r.lawn) + ')');
     ok(r.edges && r.edges[0] <= 16 && r.edges[1] && r.edges[2], 'cheaper shadow edges: PCF and SOFT read 4 texels (not 17/16), the point light 4 (not 9), the sun reads its near or far map and the moving map only where lit (' + JSON.stringify(r.edges) + ')');
-    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts are up in the day, lit by the sun\'s shadow map so solids block them, and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
-    ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the CPU cloud mirror answers in 0..1 (' + JSON.stringify(r.sky) + ')');
+    ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts: every hour\'s look keeps them off (owner, 2 Nov 2026: no rays), still lit by the sun\'s shadow map and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');
+    ok(r.sky && r.sky.every(Boolean), 'the sky knows its clouds: the sun\'s cover is a number in 0..1, the cumulus field answers in 0..1 and is baked with the puffball clouds (none at night) (owner 3 Nov 2026; SKY.cumulus) (' + JSON.stringify(r.sky) + ')');
     ok(r.breath[0] && r.breath[1] && r.breath[2] > 0, 'breath: VIT.air + VIT.breathe exist and the AIRCAP mushroom grants air (' + r.breath.join(',') + ')');
     ok(r.downs.every(Boolean), 'every down level (dungeon, gem cave, hudson cavern) gives its own has/ground/bound through LEVELS.of (' + r.downs.join(',') + ')');
     ok(r.swords.ok && r.swords.dmg === '1,2,3,5' && r.swords.hand && r.swords.api && r.swords.took === 1, 'swords: four blades carry DAMAGE on the item model, every blow passes the guard, landed strikes feed SWORDSMANSHIP: ' + JSON.stringify(r.swords));
-    ok(r.soft, 'the SOFT DAY look: a fourth look with its clouds, sun-side mist and sun shafts');
+    ok(r.lookdiff, 'the saved looks keep only what differs from the game\'s own, so RESET clears a look from the server (3 Nov 2026)');
+    ok(r.hours, 'the hours: only DAY and NIGHT, the owner\'s pick for everyone (shared on the server), the day\'s hour the look\'s own; puffball clouds by day, none at night; the distance fog gentle when chosen');
+    ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered, retaken while you are in)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
-    ok(r.tenants, 'the owner\'s TENANTS tab is there and hidden (only the owner sees it)');
+    ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
-    ok(r.rack.ok && r.rack.pinned && r.rack.near && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground beside the nature merchant, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
-    ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after the holodeck borrows him: ' + JSON.stringify(r.knight));
-    ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.skinned && r.rpg.mixer && r.rpg.street, 'the six RPG townsfolk walk the street, each a rigged skinned body with its own clips: ' + JSON.stringify(r.rpg));
-    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.onlyWalker && r.bodies.stays, 'YOU can only be the Walker: knight/man/woman stay in the game but are off the BODY row, and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
+    ok(r.rack.ok && r.rack.pinned && r.rack.hudson && r.rack.free && r.rack.thing && r.rack.drawn && r.rack.rackBy, 'the bear merchant is pinned on free ground by the Hudson, his coat rack beside him and usable: ' + JSON.stringify(r.rack));
+    ok(r.knight.ok && r.knight.street && r.knight.bound && r.knight.borrowed && r.knight.back, 'the plate knight walks the street as THE ARMOURER, is a shop, and comes back after a place borrows him: ' + JSON.stringify(r.knight));
+    ok(r.rpg.ok && r.rpg.n === 6 && r.rpg.keys === 'cleric,monk,ranger,rogue,warrior,wizard' && r.rpg.rig && r.rpg.onStreet, 'the six RPG townsfolk walk the street on the player rig: ' + JSON.stringify(r.rpg));
+    ok(r.bodies.ok && r.bodies.inGame && r.bodies.none && r.bodies.noRow && r.bodies.stays && r.bodies.hero && r.bodies.poacher, 'you are the Walker or the Merchant (3 Nov 2026): knight/hero/egg poacher stay in the game (the man and the woman are gone, 4 Nov 2026), off YOU\'s BODY row (WALKER, MERCHANT), and picking one makes you the Walker: ' + JSON.stringify(r.bodies));
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
-    ok(r.wsmooth.on && r.wsmooth.tris > 20000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count: ' + JSON.stringify(r.wsmooth));
+    ok(r.garb.ok && r.garb.parts === 'pants,shirt' && r.garb.free && r.garb.held === 2 && r.garb.shown && r.garb.under && r.garb.bare && r.garb.lean, 'everyone wears a shirt, trousers and shoes (shirt and trousers on cloth at their loose edges, shoes held; barefoot drops the shoes), the body\'s own layers hidden under them; YOU has no bathrobe, WEARING or STATS: ' + JSON.stringify(r.garb));
+    ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));
+    ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
+    ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
     ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
-    const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 20 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.children.length) }; }).catch(e => ({ err: e.message }));
-    ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (20 to 60 tiles from you): ' + JSON.stringify(pk));
+    { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
+      const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
+        U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));
+        U.toggleMenu(); const b = btn(), dead = !!b && !b.disabled; if (b) b.click(); const RG = window.__dbg.RAG, t1 = performance.now(); let lk = null, lt = t1; while (VIT.dead && performance.now() - lt < 60000 && performance.now() - t1 < 900000) { const k = RG.on + ':' + RG.t; if (k !== lk) { lk = k; lt = performance.now(); } await new Promise(r => setTimeout(r, 200)); }   // the ragdoll settles first (RAG.t, game time): on a slow runner that is minutes, so wait while it moves
+        const P1 = window.__dbg.you(); return { alive, dead, rag: RG.on + ':' + (+RG.t).toFixed(2), back: !VIT.dead && VIT.hp === 1, here: Math.hypot(P1.x - P0.x, P1.z - P0.z) < 3, shown: W3.mesh.visible, menu: U.menuOpen }; }).catch(e => ({ err: e.message }));
+      ok(r0.alive && r0.dead && r0.back && r0.here && r0.shown && !r0.menu, 'RESURRECT in the menu: greyed while alive, and once dead it brings you back where you stand (full health, your body back): ' + JSON.stringify(r0)); }
+    const pk = await pg.evaluate(() => { const P = window.PARK, D = window.DFOG, c = window.SHARED && window.SHARED.composer; return { sign: !!(P.sign && P.sign.top > P.sign.y), fog: !!D && D.get().start === 12 && D.get().end === 60, pass: !!c && c.passes.some(q => q.uniforms && q.uniforms.tDepth), stand: !!(P.stand && P.stand.geometry && P.standFar && P.standFar.geometry) }; }).catch(e => ({ err: e.message }));
+    ok(pk.sign && pk.fog && pk.pass && pk.stand, 'the park: its sign has a top for the dragon, the street stand-ins are built, the distance fog pass reads depth (10 to 45 tiles from you): ' + JSON.stringify(pk));
+    await pg.evaluate(() => window.__dbg.UI.setView('follow')).catch(() => {}); await pg.waitForTimeout(800);
+    { const d0 = await pg.evaluate(() => ({ on: window.DFOG.get().on, cut: window.DFOG.cut(), pass: window.DFOG.pass.enabled, mist: window.FAR3.mist, blur: window.DFOG.get().blur, lit: (() => { const c = window.SHARED.cam.position, T = window.__dbg.cv().TILE; return +window.LITE.dim(c.clone().add({ x: 30 * T, y: 0, z: 0 })).toFixed(2); })() })).catch(e => ({ err: e.message })); ok(d0.on === true && d0.cut === 0 && d0.pass && d0.mist === false && d0.blur === 0 && d0.lit < 1 && d0.lit > 0, 'by default the far is only slightly darker (4 Nov 2026): the whole map drawn, no blur, no mist; far lamps light less: ' + JSON.stringify(d0)); }
+    await pg.evaluate(() => window.DFOG.set({ on: true, cut: true, start: 10, end: 45, blur: .6 })).catch(() => {}); await pg.waitForTimeout(800);   // the fog, when chosen in ATMOSPHERE
+    const hz = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, [x, , z] = D.pos(), mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; };
+      const far = mk(80), near = mk(10), sky = window.FAR3.mesh, skyV = sky && sky.visible, pass = window.SHARED.composer.passes.find(q => q.uniforms && q.uniforms.uF);
+      C.scan(); C.begin(); const r = { cut: +(window.DFOG.cut() / T).toFixed(1), farHid: !far.visible, nearShown: near.visible, sky: !!sky && sky.visible === skyV && !C.FL.includes(sky), npc: C.past(x + 80 * T, z, T) && !C.past(x + 30 * T, z, T), full: !!pass && pass.uniforms.uF.value === 1 };
+      C.end(); r.back = far.visible; far.removeFromParent(); near.removeFromParent(); return r; }).catch(e => ({ err: e.message }));
+    ok(hz.cut === 45 && hz.farHid && hz.nearShown && hz.sky && hz.npc && hz.full && hz.back, 'the haze is whole at its end and nothing wholly past it is drawn (a mesh 80 tiles off hidden for the frame, one 10 tiles off drawn, the skyline kept, characters by the same test): ' + JSON.stringify(hz));
+    { const dd = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, [x, , z] = D.pos(), was = window.DFOG.get().on, v0 = C.getDraw(); window.DFOG.set({ on: false }); C.setDraw(60);
+        const mk = d => { const m = new D.THREE.Mesh(new D.THREE.BoxGeometry(1, 1, 1)); m.position.set(x + d * T, 0, z); m.updateMatrixWorld(); D.scene.add(m); return m; }, far = mk(100), near = mk(30), tall = mk(75); tall.scale.set(.2 * T, 80 * T, .2 * T); tall.updateMatrixWorld();
+        C.scan(); C.begin(); const r = { persp: !!D.UI.persp, farHid: !far.visible, tallHid: !tall.visible, nearShown: near.visible }; C.end(); r.back = far.visible;
+        const pv = D.UI.view; D.UI.setView('iso'); C.scan(); C.begin(); r.isoKept = far.visible; C.end(); D.UI.setView(pv);
+        far.removeFromParent(); near.removeFromParent(); tall.removeFromParent(); C.setDraw(v0 || 300); window.DFOG.set({ on: was }); r.def = v0; return r; }).catch(e => ({ err: e.message }));
+      ok(dd.def === 120 && (!dd.persp || dd.farHid && dd.tallHid) && dd.nearShown && dd.back && dd.isoKept, 'DRAW DISTANCE (4 Nov 2026, default 120 tiles): in first and third person a mesh past it is hidden for the frame (a tall thin one too: measured over the ground), one inside it drawn; the overhead view cuts nothing: ' + JSON.stringify(dd)); }
+    await pg.evaluate(() => window.DFOG.set({ cut: false, start: 12, end: 60, blur: 0 })).catch(() => {});
+    { const iz = await pg.evaluate(() => { window.__dbg.UI.setView('iso'); return window.DFOG.cut(); }).catch(e => e.message); ok(iz === 0, 'no haze and nothing cut in the isometric view (27 Oct 2026): ' + iz); }
     const rg = await pg.evaluate(() => { const P = window.PARK, R = P.ring; if (!R) return { ring: false }; const A = R.userData.P; let out = 0;
       for (let v = 0; v < A.length; v += 3) { const [x, y] = P.at(A[v], A[v + 2]); if (x < P.x0 + 1.5 || x > P.x1 - 1.5 || y < P.y0 + 1.5 || y > P.y1 - 1.5) out++; }
       return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
     ok(rg.ring && rg.n > 40 && rg.still && rg.low && rg.out === 0 && rg.climb, "the park's edge ring is one still low bake, every crown inside the wall, its trees climbable: " + JSON.stringify(rg));
+    const ck = await pg.evaluate(() => ({ k: window.FORAGE && FORAGE.climbK ? FORAGE.climbK() : null, grow: !!(window.FORAGE && FORAGE.climbed), lad: !!(window.__dbg.MAPK && window.__dbg.MAPK.MODS.apts.lad), sk: !!(window.FORAGE && FORAGE.SK.some(s => s[0] === 'climb')) })).catch(e => ({ err: e.message }));
+    ok(ck.sk && ck.k >= .7 && ck.k <= 1.5 && ck.grow && ck.lad, 'CLIMBING is one skill for every climb: its pace and growth live on the skills system, the fire escape ladder is there to read it: ' + JSON.stringify(ck));
+    const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
+    ok(rf && rf.blockProps > 20 && rf.blockBoxes > 200 && rf.tris < 160000 && rf.propRows.length === 1 && rf.propRows[0] === 1, 'the Market St row garages wear a busy roof of units, dishes, ducts, planters and debris (within budget); the Hudson row is bare (30 Oct 2026): ' + JSON.stringify(rf));
+    const mk = await pg.evaluate(() => { const all = [...BLK.blds.map(q => ({ ...q, kind: 'garage' })), ...BLK.lots], a = q => q.row === 5 ? [q.y0, q.y1] : [q.x0, q.x1]; let same = 0;
+      for (const r of [1, 5]) { const L = all.filter(q => q.row === r).sort((p, q) => a(p)[0] - a(q)[0]); for (let i = 1; i < L.length; i++) if (L[i].kind === L[i - 1].kind && a(L[i])[0] - a(L[i - 1])[1] < .05) same++; }
+      const n = k => all.filter(q => q.kind === k).length; return { n: all.length, garage: n('garage'), park: n('park'), empty: n('empty'), wide: all.filter(q => a(q)[1] - a(q)[0] > 13.1).length, same, signs: BLK.signs.length, hud2lots: BLK.lots.filter(q => q.row === 2).length, hud2g: BLK.blds.filter(q => q.row === 2).length }; }).catch(e => ({ err: e.message }));
+    ok(mk.n > 40 && mk.garage > 15 && mk.park >= 3 && mk.empty >= 6 && !mk.wide && !mk.same && !mk.signs && !mk.hud2lots && mk.hud2g > 5, "fillers: rows 1 and 5 stay a mix of closed garages, empty parking lots and dirt lots (no two alike side by side); the Hudson row (row 2) is all closed garages (30 Oct 2026; fewer since the Drive's buildings took gaps, 3 Nov 2026): " + JSON.stringify(mk));
     const cm = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, W = D.W3, T = D.cv().TILE, hi = W.idx('head');
       D.UI.goTo(-2.2, 3.2, 'up', .8); D.UI.setView('follow'); for (let i = 0; i < 12; i++) await raf(); let min = 1e9;
       dispatchEvent(new KeyboardEvent('keydown', { key: 'w' })); for (let i = 0; i < 3; i++) { await raf(); const h = new D.THREE.Vector3().setFromMatrixPosition(W.PM.value[hi]).applyMatrix4(W.mesh.matrixWorld); min = Math.min(min, D.camO().position.distanceTo(h) / T); }
@@ -147,16 +241,56 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(cm.min >= 1.5, 'the behind view never pulls the camera into his head as he starts walking beside a solid: ' + JSON.stringify(cm));
     const dg = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)); for (let i = 0; i < 600 && !window.DRAGONDBG; i++) await raf();
       const D = window.__dbg, TI = D.cv().TILE, you = D.pos(), n = D.npcs().find(q => q.key === 'dragon' && !q.D.p.sign); if (!n) return { err: 'no dragon' };
-      const fly = n.mixer._actions.find(x => x.getClip().name === 'Flying_loop'), out = {}; if (n.D.p) n.D.p.on = 0;
+      const fly = n.mixer._actions.find(x => x.getClip().name === 'Fly_Flap'), out = {}; if (n.D.p) n.D.p.on = 0;
       const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 2 * TI; n.st.z = you[2] + 2 * TI; n.D.y = n.D.cruise = you[1] + 4 * TI; };
       for (let k = 0; k < 2; k++) { n.D.bt = k ? 0 : 99; for (let i = 0; i < (k ? 12 : 2); i++) { await raf(); put(); }
-        out['phase' + k] = { style: n.D.style, speed: +fly.getEffectiveTimeScale().toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
-    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.speed > .4 && dg.phase1.speed > .4, 'a flying dragon beats its wings through both halves of its flight: ' + JSON.stringify(dg));
+        out['phase' + k] = { style: n.D.style, beats: +(fly.getEffectiveTimeScale() / fly.getClip().duration).toFixed(2), weight: +fly.getEffectiveWeight().toFixed(2) }; } return out; }).catch(e => ({ err: e.message }));
+    ok(dg.phase0 && dg.phase1 && dg.phase0.style !== dg.phase1.style && dg.phase0.beats > .25 && dg.phase1.beats > .25, 'a flying dragon beats its wings through both halves of its flight (a beat every few seconds at least): ' + JSON.stringify(dg));
+    const db = await pg.evaluate(async () => { const raf = () => new Promise(r => requestAnimationFrame(r)), D = window.__dbg, TI = D.cv().TILE, you = D.pos(), ds = D.npcs().filter(q => q.key === 'dragon' && !q.D.p.sign), out = {};
+      const n = ds[0], w = name => { const a = n.mixer._actions.find(x => x.getClip().name === name); return a ? a.getEffectiveWeight() : -1; }, s0 = n.D.shots || 0; let seen = 0, wt = 0;
+      const put = () => { n.D.mode = 'fly'; n.D.fly = 99; n.st.x = you[0] + 10 * TI; n.st.z = you[2]; n.st.h = Math.PI / 2; n.D.y = n.D.cruise = you[1] + 4 * TI; };
+      put(); n.D.breath = 0; for (let i = 0; i < 300 && (n.D.shots || 0) === s0; i++) { await raf(); put(); if (n.D.fx) { seen = n.D.fx.a.getClip().name; wt = Math.max(wt, w(seen)); } }
+      out.breath = { clip: seen, weight: +wt.toFixed(2), shots: (n.D.shots || 0) - s0 };
+      const m = ds.find(q => q !== n && q.D.home && q.D.home.tree); if (!m) return { ...out, err: 'no dragon with a home tree' };
+      const H0 = m.D.home, H = m.D.home = { x: you[0] + 7 * TI, z: you[2], y: you[1] + 3 * TI, h: 0, tree: { x: you[0] + 7 * TI, z: you[2], r: .5 * TI, y: you[1], top: you[1] + 4 * TI } }, perch = () => { m.D.mode = 'perch'; m.D.p = H; m.st.x = H.x; m.st.z = H.z; m.D.y = H.y; }; perch(); m.D.t = 999; m.D.pw = 0; m.D.peek = false; m.D.pk = 99; m.D.zz = 0;
+      const sw = () => { const a = m.mixer._actions.find(x => x.getClip().name === 'Sleep'); return a.getEffectiveWeight(); };
+      for (let i = 0; i < 400 && !(m.D.asleep && sw() > .5); i++) { await raf(); perch(); }
+      out.nap = { asleep: m.D.asleep, sleep: +sw().toFixed(2) }; m.D.t = 3; for (let i = 0; i < 3; i++) { await raf(); perch(); } out.woke = !m.D.asleep; m.D.home = m.D.p = H0; m.D.t = 1; return out; }).catch(e => ({ err: e.message }));
+    ok(db.breath && db.breath.clip === 'Fly_Fire' && db.breath.weight > .5 && db.breath.shots === 1 && db.nap && db.nap.asleep && db.nap.sleep > .5 && db.woke, 'a flying dragon breathes its fireball on its fire-breath clip; one resting on its home tree falls asleep on its sleep clip and wakes before it leaves: ' + JSON.stringify(db));
   }
   { const ps = await pg.evaluate(() => { const C = SHARED.composer.passes, i = C.findIndex(q => q.uniforms && q.uniforms.uL && q.uniforms.uT), on = C.filter(q => q.enabled); return { found: i >= 0, on: i >= 0 && C[i].enabled, last: on[on.length - 1] === C[i], lines: i >= 0 && C[i].uniforms.uL.value.y }; }).catch(e => ({ err: e.message }));
     ok(ps.found && ps.on && ps.last && ps.lines === 240, 'the PS2 filter is on by default and is the last pass (240 lines): ' + JSON.stringify(ps)); }
-  { const rs = await pg.evaluate(async () => { const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)); for (const i of [0, 2, 4]) { document.querySelector('[data-res="' + i + '"]').click(); await raf(); out[i] = c.height; } return out; }).catch(e => ({ err: e.message }));
-    ok(rs[0] > 0 && rs[0] < rs[2] && rs[2] < rs[4], 'RESOLUTION: LOWEST, MED and HIGHEST draw fewer to more lines: ' + JSON.stringify(rs)); }
+  await pg.setViewportSize({ width: 1280, height: 720 });   // the RESOLUTION steps differ only on a tall enough window
+  { const rs = await pg.evaluate(async () => { const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)), at = async i => { document.querySelector('[data-res="' + i + '"]').click(); await raf(); return c.height; }; for (const i of [0, 2, 4]) out[i] = await at(i); PS2.set(false); out.off = await at(4); PS2.set(true); return out; }).catch(e => ({ err: e.message }));
+    ok(rs[0] > 0 && rs[0] < rs[2] && rs[2] === 480 && rs[4] === 480 && rs.off > 480, 'RESOLUTION: LOWEST under MED; MED and HIGHEST both 480 lines while the PS2 filter is on, HIGHEST the screen\'s own with it off: ' + JSON.stringify(rs)); }
+  { const av = await pg.evaluate(() => { const c = (k, v) => document.querySelector(`#looks [data-${k}="${v}"]`).click(), on = n => !W3.HIDE[W3.idx(n)], out = {};
+      out.start = on('hair') && !on('hairWavy') && !on('bustF'); c('hair', 'hairWavy'); out.wavy = on('hairWavy') && on('hairWavyA') && !on('hair');
+      c('hair', ''); out.bald = !W3.pcs.some((P, i) => P.layer === 'hair' && !W3.HIDE[i]); c('beard', 'beardGoatee'); out.beard = on('beardGoatee');
+      c('form', 'F'); out.female = on('bodyBustF') && !on('beardGoatee') && document.querySelector('#lbeard').hidden; out.code = LOOKS.code(); out.back = JSON.stringify(LOOKS.decode(out.code));
+      c('form', 'M'); c('hair', 'hair'); c('beard', ''); out.reset = on('hair') && !on('bustF') && LOOKS.code() === 'M00'; return out; }).catch(e => ({ err: e.message }));
+    ok(av.start && av.wavy && av.bald && av.beard && av.female && av.code === 'F60' && av.back === '{"form":"F","hair":"","beard":""}' && av.reset, 'YOU: a hairstyle, bald, a beard and FEMALE each show only their pieces, and the look\'s code for the other players reads back: ' + JSON.stringify(av)); }
+  { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
+      return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
+    ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
+  { const tx = await pg.evaluate(() => { const a = TEXT.t('core.x', 'A {b}', { b: 'C' }); TEXT.set('core.x', 'Z {b}'); const z = TEXT.t('core.x', null, { b: 'C' }); TEXT.set('core.x', ''); return { a, z, back: TEXT.t('core.x'), loop: TEXT.list().some(t => t.id === 'loop.track'), n: TEXT.list().length }; }).catch(e => ({ err: e.message }));
+    ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
+  { const r = await pg.evaluate(() => { const o = { was: PASSPORT.hand }; PASSPORT.open(); o.shown = document.querySelector('#passportw').textContent.includes('HAND'); PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; PASSPORT.close(); return o; });
+    ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
+  { const p = await pg.evaluate(() => { const b = document.getElementById('dps2'); if (!b) return null; const was = PS2.on; b.click(); const flip = PS2.on !== was; b.click(); return { flip, back: PS2.on === was, label: b.textContent }; });
+    ok(p && p.flip && p.back && /PS2 FILTER (ON|OFF)/.test(p.label), 'GRAPHICS has a PS2 FILTER switch that turns the filter on and off: ' + JSON.stringify(p)); }
+  { const hk = await pg.evaluate(async () => { const esc = () => dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })), w = () => new Promise(r => setTimeout(r, 50)), was = HHDBG().up; esc(); await w(); const up = HHDBG().up; esc(); await w(); return { was, up, down: !HHDBG().up }; }).catch(e => ({ err: e.message }));
+    ok(!hk.was && hk.up && hk.down, 'one ESC opens the handheld and the next puts it away (every listener that reads a key gets the same one press): ' + JSON.stringify(hk)); }
+  { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
+      const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => { const seen = new Set(); let B = 0; for (const q of BATCH.queues) for (const G of q.groups) for (const me of G.ms) for (const k of ['map', 'emissiveMap']) { const t = me.material[k]; if (t && t.image && !seen.has(t)) { seen.add(t); B += t.image.width * t.image.height * 4; } } return B; };
+      const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.away; BATCH.away = () => true; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.away = a0; await fr(6); o.g2 = groups(); return o; });
+    ok(g.g0 > 0 && g.kept && g.g1 === 0 && g.mb1 === 0 && g.g2 > 0, 'the painted ground and walls are kept within the haze range (all of it with the fog off), all dropped while you are in a room off the map, painted again near you on the way out: ' + JSON.stringify(g)); }
+  { const m = await pg.evaluate(async () => { const ST = window.STORE; if (!ST || !ST.inside) return { none: true }; await ST.ensure(); const R = ST.inside.museum; if (!R) return { noMuseum: true };
+      const o = { before: !!R.done }; await ST.enter('museum', true); o.built = !!R.done && !!R.P && R.P.objs.length > 0; await ST.exit('museum'); for (const t = Date.now(); Date.now() - t < 20000 && (R.done || R.P);) await new Promise(r => setTimeout(r, 250)); o.dropped = !R.done && !R.P; await ST.enter('museum', true); o.again = !!R.done && !!R.P; await ST.exit('museum'); return o; });
+    ok(m.before === false && m.built && m.dropped && m.again, 'the museum\'s inside is built only when you go in and dropped when you leave (built again next time): ' + JSON.stringify(m)); }
+  { const q = await pg.evaluate(() => { const R = STORE.rooms.find(r => r.id === 'bar'), keep = [R.spots, R.seats];
+      R.spots = { BARKEEP: { x: 1, z: 2, hd: 0 } }; R.seats = [{ x: 3, z: 4, hd: 0, y: .5 }]; const s = CREW.inside('bar', 'k', { title: 'BARKEEP' }), p = CREW.inside('bar', 'p1'), full = CREW.inside('bar', 'p2'); CREW.out('p1'); const again = CREW.inside('bar', 'p2'); CREW.out('p2'); R.spots = keep[0]; R.seats = keep[1];
+      return { spot: !!s && s.x === 1 && s.off === false, seat: !!p && p.sit === .5, full: full === null, again: !!again }; });
+    ok(q.spot && q.seat && q.full && q.again, 'insides list where people go: a street inside (the bar) gives its work spots and seats like an off-map one, none when full, freed when they leave: ' + JSON.stringify(q)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');

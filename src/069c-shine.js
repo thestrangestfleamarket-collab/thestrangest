@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, CLOCK, DRESS, LITE, pos, WED, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {lamps, LFX, MODS, NEONS, OUT, STORE, SYS, TILE, TURN, WP, WROW} from './006-map-pre.js';
+import {AWAY, lamps, LFX, MODS, NEONS, OUT, STORE, SYS, TILE, TURN, WP, WROW} from './006-map-pre.js';
 import {TLX} from './069-dress.js';
 const SHINE=window.SHINE={src:[],porch:[]};
 { const MS=[], M=1/.84*TILE, G=(x,z)=>SHARED.groundY(x,z), V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y1=V(0,1,0), cc=new THREE.Color();
@@ -15,32 +15,32 @@ const SHINE=window.SHINE={src:[],porch:[]};
   const inst=(geo,n,col,basic)=>{ const me=new THREE.InstancedMesh(geo,basic||new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),Math.max(1,n)); me.count=0; me.col=new THREE.Color(col); me.castShadow=!basic; me.receiveShadow=!basic; scene.add(me); MS.push(me); return me; };
   const put=(me,x,y,z,a,o=0,k=1)=>{ q.setFromAxisAngle(Y1,a); me.setMatrixAt(me.count,m4.compose(V(x+Math.cos(a)*o,y,z-Math.sin(a)*o),q,V(k,k,k))); me.setColorAt(me.count,me.col); return me.count++; };
   // CH(geo,col,name): put(x,y,z,a,o,k,{the world editor's pivot, sol, fix, follow}) — each put one thing in the world editor
-  const CH=(geo,col,name)=>{ const L=[]; return {put:(...p)=>L.push(p),done(){ const by=new Map(); for(const p of L){ const k=Math.floor(p[0]/36)+','+Math.floor(p[2]/36); if(!by.has(k))by.set(k,[]); by.get(k).push(p); }
-    for(const ps of by.values()){ const me=inst(geo,ps.length,col); for(const p of ps)put(me,...p); me.computeBoundingSphere(); if(name)WED.meshes.push({place:'street',me,items:ps.map(p=>Object.assign({k:name,x:p[0],y:p[1],z:p[2]},p[6]))}); } }}; };
+  const CH=(geo,col,name)=>{ const L=[]; return {put:(...p)=>L.push(p),done(){ const by=new Map(), out=[]; for(const p of L){ const k=Math.floor(p[0]/36)+','+Math.floor(p[2]/36); if(!by.has(k))by.set(k,[]); by.get(k).push(p); }
+    for(const ps of by.values()){ const me=inst(geo,ps.length,col); for(const p of ps)put(me,...p); me.computeBoundingSphere(); out.push(me); if(name)WED.meshes.push({place:'street',me,items:ps.map(p=>Object.assign({k:name,x:p[0],y:p[1],z:p[2]},p[6]))}); } return out; }}; };
   const arm=(L,y)=>[tube([[.05,y-.76],[.1,y+.04],[L*.35,y+.26],[L-.3,y+.12]],.055),tube([[.08,y-1.26],[.12,y-.46],[L*.27,y-.11],[L*.58,y+.12]],.025)];
   const HOUS=mrg([lat([[0,.2],[.14,.18],[.25,.12],[.3,.04],[.31,0]],8),lat([[.31,0],[.335,-.03],[.335,-.055],[.25,-.055]],8),box(0,.2,0,.5,.04,.05),...[-.14,.14].map(d=>box(d/1.45,.16,0,.035,.06,.28))].map(g=>g.scale(1.45,1,1)));
   const LENS=lat([[0,-.17],[.14,-.15],[.22,-.08],[.25,-.02],[.25,0],[0,0]],8).scale(1.4,1,1);
   const SLB=mrg([lat([[0,0],[.3,0],[.3,.05],[.26,.08],[.26,.13],[.21,.17],[.2,.48],[.23,.53],[.23,.58],[.16,.64],[.15,.9],[.18,.94],[.18,.98],[0,1.02]],8),
     flu(lat([[.105,1],[.07,5.3]],16)),lat([[.09,2.4],[.13,2.45],[.13,2.52],[.09,2.56]],8),lat([[.06,5.3],[.095,5.33],[.095,5.42],[0,5.47]],8),...arm(1.3,5.86)]);
   const D=DRESS, PO=D.poles||[], hd=D.heads, LAMP=new THREE.Color(1,.86,.62), PORCH=new THREE.Color(1,.78,.5);
-  hd.material.color.setRGB(1,1,1); hd.geometry=LENS; D.lant.geometry=lat([[0,-.27],[.15,-.24],[.22,-.1],[.21,.06],[.15,.2],[0,.28]],8);
+  hd.material.color.setRGB(1,1,1); hd.geometry=LENS; D.lant.geometry=lat([[0,-.2],[.16,-.2],[.16,-.18],[0,-.17]],10);
   const body=CH(SLB,0x2c3631,'street lamp'), hous=CH(HOUS,0x8a9296,'street lamp'), HI=[], pl=L=>{ const e=L&&D.pools&&D.pools.find(e=>e[0]===L); return e&&e[4]?[L,e[4]]:L?[L]:[]; };
   const halo=(c,s,col,L,o={})=>SHINE.src.push(Object.assign({c,s,col,L,gy:G(c.x,c.z),k:-1},o));
   for(const P of PO){ if(P.corner)continue; const y0=P.y-5.45*M, a=P.ax==='x'?(P.d>0?0:Math.PI):-P.d*Math.PI/2, hx=P.x+Math.cos(a)*1.3*M, hz=P.z-Math.sin(a)*1.3*M;
     body.put(P.x,y0,P.z,a,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); hous.put(P.x,y0+5.86*M,P.z,a,1.3*M,1,{y:y0}); HI[P.h]={k:'street lamp',x:P.x,y:y0,z:P.z}; q.setFromAxisAngle(Y1,a); hd.setMatrixAt(P.h,m4.compose(V(hx,y0+5.82*M,hz),q,V(1,1,1)));
     if(P.L){ P.L.position.set(hx,y0+5.76*M,hz); const e=D.pools.find(e=>e[0]===P.L); if(e){ e[1]=hx; e[2]=hz; e[4].position.x=hx; e[4].position.z=hz; } }
-    halo(V(hx,y0+5.7*M,hz),.62*M,LAMP,P.L,{beam:[.22*M,2*M]}); }
+    }
   if(D.corner){ const {x,z,y}=D.corner, ay=8.05, P=PO.find(p=>p.corner), cor=CH(mrg([lat([[0,0],[.4,0],[.4,.07],[.34,.1],[.34,.17],[.28,.22],[.26,.6],[.3,.65],[.3,.72],[.21,.8],[.19,1.1],[.23,1.15],[.23,1.2],[0,1.25]],8),
       flu(lat([[.13,1.2],[.085,8.1]],16)),lat([[.11,3],[.16,3.06],[.16,3.14],[.11,3.2]],8),lat([[.08,8.1],[.13,8.14],[.13,8.26],[.06,8.3],[0,8.5]],8),
       ...[0,1].flatMap(k=>arm(2.7,ay).map(g=>g.rotateY(k?0:Math.PI/2)))]),0x2c3631,'street lamp');
     cor.put(x,y,z,0,0,1,{sol:P.sol,fix:P.fix,follow:[...pl(P.L),...pl(P.L2)]}); cor.done(); [[Math.PI/2,P.h,P.L],[0,P.h2,P.L2]].forEach(([a,h,L])=>{ const hx=x+Math.cos(a)*2.7*M, hz=z-Math.sin(a)*2.7*M; hous.put(x,y+ay*M,z,a,2.7*M,1,{y}); HI[h]={k:'street lamp',x,y,z};
-      hd.setMatrixAt(h,m4.compose(V(hx,y+(ay-.04)*M,hz),q.setFromAxisAngle(Y1,a),V(1,1,1))); if(L)L.position.set(hx,y+(ay-.1)*M,hz); halo(V(hx,y+(ay-.14)*M,hz),.85*M,LAMP,L,{beam:[.22*M,2.4*M]}); }); }
+      hd.setMatrixAt(h,m4.compose(V(hx,y+(ay-.04)*M,hz),q.setFromAxisAngle(Y1,a),V(1,1,1))); if(L)L.position.set(hx,y+(ay-.1)*M,hz); }); }
   body.done(); hous.done(); hd.instanceMatrix.needsUpdate=true;
   if(hd.count)WED.meshes.push({place:'street',me:hd,items:Array.from({length:hd.count},(_,i)=>{ if(HI[i])return HI[i]; hd.getMatrixAt(i,m4); const E=m4.elements; return {k:'lamp head',x:E[12],y:E[13],z:E[14]}; })});
   if(D.pole){ D.pole.visible=false; const pm=CH(mrg([lat([[0,0],[.2,0],[.2,.04],[.17,.07],[.17,.12],[.14,.15],[.12,.45],[.15,.5],[.15,.55],[.09,.62],[.09,.85],[.11,.88],[.11,.92],[0,.95]],8),
       flu(lat([[.07,.95],[.05,3.85]],16)),lat([[.05,3.85],[.09,3.88],[.09,3.95],[.06,3.98],[.12,4.02],[.12,4.06],[.05,4.1],[.15,4.2],[.16,4.24],[.13,4.24]],8),
-      lat([[0,4.72],[.085,4.73],[.05,4.79],[.02,4.9],[0,4.95]],8)]),0x23292a,'lamp post'), LI=[];
-    for(const P of D.lampposts){ const y=P.y-4.2*M-.5*M; pm.put(P.x,y,P.z,.4,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); LI[P.i]={k:'lamp post',x:P.x,y,z:P.z}; halo(V(P.x,y+4.45*M,P.z),.6*M,LAMP,P.L,{beam:[.2*M,1.5*M]}); } pm.done();
+      lat([[0,4.25],[.33,4.25],[.36,4.28],[.3,4.42],[.12,4.6],[0,4.62]],12),lat([[0,4.6],[.06,4.61],[.04,4.66],[.02,4.74],[0,4.78]],8)]),0x23292a,'lamp post'), LI=[];
+    for(const P of D.lampposts){ const y=P.y-4.2*M-.5*M; pm.put(P.x,y,P.z,.4,0,1,{sol:P.sol,fix:P.fix,follow:pl(P.L)}); LI[P.i]={k:'lamp post',x:P.x,y,z:P.z}; } for(const me of pm.done())me.castShadow=false;
     if(D.lant&&D.lant.count)WED.meshes.push({place:'street',me:D.lant,items:Array.from({length:D.lant.count},(_,i)=>{ if(LI[i])return LI[i]; D.lant.getMatrixAt(i,m4); const E=m4.elements; return {k:'lantern',x:E[12],y:E[13],z:E[14]}; })}); }
   const SC=mrg([new THREE.CylinderGeometry(.07*M,.08*M,.025*M,8).rotateX(Math.PI/2).translate(0,0,.012*M),box(0,0,.08,.03,.03,.14),lat([[0,.07],[.065,.07],[.08,.05],[.07,.03],[.06,.03]],8).translate(0,0,.17*M),
       ...[0,1,2,3].map(k=>box(.075*Math.cos(k*Math.PI/2+.785),-.06,.17+.075*Math.sin(k*Math.PI/2+.785),.012,.18,.012)),lat([[.078,-.155],[.078,-.14]],8).translate(0,0,.17*M),lat([[.078,-.07],[.078,-.06]],8).translate(0,0,.17*M),
@@ -56,7 +56,8 @@ const SHINE=window.SHINE={src:[],porch:[]};
   { const B=SHARED.BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(MODS.apts.doorAt[0],MODS.apts.doorAt[1],MODS.apts.doorHd,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[3],d[4],d[5]);
-    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5); }
+    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5);
+      if(WP.art&&!AWAY.has('art')&&STORE.main){ const TA=TURN(STORE.main.lot('art',1),WP.art.face), ap=TA.pt((TA.L.x0+TA.L.x1)/2,TA.L.y1), ax=B.X(ap[0]), az=B.Z(ap[1]); porch(ax,az,TA.hd(0),1.6,1.5); porch(ax,az,TA.hd(0),-1.6,1.5); } }
     sconce.computeBoundingSphere(); jar.computeBoundingSphere(); WED.meshes.push({place:'street',me:sconce,items:PI.slice(0,sconce.count)},{place:'street',me:jar,items:PI.slice(0,jar.count).map(o=>({k:o.k,x:o.x,y:o.y,z:o.z}))}); }
   if(TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }
   if(pool){ const N=160, cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N), f=r=>{ const d=Math.hypot(.5,r); return .5/d*d**-1.6*Math.max(0,1-d**4)**2; }, f0=f(0);

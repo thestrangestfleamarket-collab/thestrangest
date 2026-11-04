@@ -1,11 +1,11 @@
 // THE NEWSSTAND: NEWS builds the newsstand by the subway stairs, kept by the cat.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, DRONE, LINES, pos, UI} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, DRONE, LINES, NEWS, pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {TOONS} from './084-npc-toons.js';
-const NEWS=window.NEWS={};
-NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return;
+window.NEWS=NEWS;
+NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; const N=TOONS.cat; if(!N){ setTimeout(NEWS.init,600); return; } NEWS._d=1;   // the cat (data/raincat.json) loads just after the start; wait for it, build once
   const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
   const BX=[]; const box=(a,b,c,d,z0,z1,col,L=BX,r=0)=>{ L.push([(X(a)+X(b))/2,(Y(z0)+Y(z1))/2,(Z(c)+Z(d))/2,Math.abs(X(b)-X(a)),Y(z1)-Y(z0),Math.abs(Z(d)-Z(c)),col,r]); };
@@ -49,10 +49,9 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
     BU.count=n; if(n){ BU.instanceMatrix.needsUpdate=true; BU.instanceColor.needsUpdate=true; } };
   const sol=(a,b,c,d,h)=>{ const r=[Math.min(X(a),X(b)),Math.min(Z(c),Z(d)),Math.max(X(a),X(b)),Math.max(Z(c),Z(d))]; SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(h)]); };
   sol(x0-.95,x1+.56,y0,y1+.66,26);
-  const DR=[0,1].map(i=>{ const g=new THREE.Group(), m=c=>new THREE.MeshLambertMaterial({color:c}); const bx=(w,h,d,mm)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm);
-    g.add(bx(.36,.1,.36,m(0x30343a))); for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]){ const arm=bx(.3,.03,.04,m(0x50565e)); arm.position.set(a*.15,.02,b*.15); arm.rotation.y=Math.atan2(b,a); g.add(arm); const r=bx(.26,.01,.03,m(0x9aa0a8)); r.position.set(a*.24,.07,b*.24); r.userData.rot=1; g.add(r); }
+  const DR=[0,1].map(i=>{ const {D:g}=DRONE.mk({s:1,parcel:false}), m=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,mm)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mm);
     const line=bx(.01,.5,.01,m(0x9a7040)); line.position.y=-.3; g.add(line); const load=bx(.5*T*.9,Y(10)-Y(0),.36*T*.9,m(PAPER)); load.position.y=-.6; g.add(load); g.userData.load=load;
-    const dot=bx(.05,.04,.05,new THREE.MeshBasicMaterial({color:0xff4040})); dot.position.set(0,-.06,.18); g.add(dot); g.visible=false; scene.add(g); return {g,legs:[],carry:0,spin:0}; });
+    g.visible=false; scene.add(g); return {g,legs:[],carry:0}; });
   const fly=(d,k)=>{ const s=[bspot(k*2),bspot(k*2+1)], home=new V(X(x1+60),Y(420),Z(y1+2+k*2)); d.g.position.copy(home); d.g.visible=true; d.carry=2; d.legs=[];
     for(let j=0;j<2;j++){ const [bx,by,bz]=s[j], over=new V(X(bx),Y(260),Z(by)), down=new V(X(bx),Y(bz+10)+.75,Z(by)); d.legs.push([over,6],[down,2],['drop',[bx,by,bz]],['wait',.6],[over,2.5]); }
     d.legs.push([home,6],['gone']); };
@@ -61,7 +60,7 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
     if(L[0]==='drop'){ bundles.push({at:L[1],t:CLOCK.h}); drawB(); d.carry--; d.g.userData.load.visible=d.carry>0; d.legs.shift(); continue; }
     if(L[0]==='wait'){ if((L[1]-=dt)<=0)d.legs.shift(); }
     else { const v=new V().subVectors(L[0],d.g.position), l=v.length(), s=L[1]*dt; if(l<=s){ d.g.position.copy(L[0]); d.legs.shift(); } else d.g.position.addScaledVector(v,s/l); d.g.rotation.x=v.y>-.1&&Math.hypot(v.x,v.z)>.1?.15:0; d.g.rotation.y=Math.atan2(v.x,v.z); }
-    d.spin+=dt*40; for(const c of d.g.children)if(c.userData.rot)c.rotation.y=d.spin; } };
+    } };
   const ACT={serve:1.6,change:2,wave:2,stack:2.6,cut:1.8,arrange:3,stretch:3,open:2.6,close:2.6,doze:1e9,yawn:2.2};
   let sold=0, act=null, queue=[], idleT=12, waved=false, napT=0;
   const doAct=(n,then)=>queue.push({n,d:ACT[n],t:0,then});
@@ -104,6 +103,7 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
   const left=it=>it.k==='papers'?stock.papers[it.i]:stock[it.k];
   const HEAD=[['FIREBALL SCORCHES PARK BENCH','dragons blamed; the city shrugs'],['BODEGA FOX DENIES PRICE HIKE','"a dollar is a dollar," he says'],['SKELETON GUARDS SEE OFF TROUBLEMAKERS','three hooded figures flee down the subway stairs'],
     ['MUSHROOM STALL A HIT AT THE PARK GATE','the seller is said to be "very calm"'],['METRO RUNS ON TIME, MOSTLY','riders surprised'],['CASTLE FOUND TO BE HALF SIZE','built for the woodland folk, the mayor explains']];
+  NEWS.heads=i=>{ const d=(window.CITY&&CITY.day)||0; return {title:TITLES[i%TITLES.length][0],day:d+1,a:HEAD[(d*3+i)%HEAD.length],b:HEAD[(d*3+i+2)%HEAD.length]}; };   // today's front page of a paper, for a box or a reader elsewhere
   const front=i=>{ '@later'; const d=(window.CITY&&CITY.day)||0, w=null, a=HEAD[(d*3+i)%HEAD.length], b=HEAD[(d*3+i+2)%HEAD.length];
     return `<div class="np"><div class="nh" style="border-color:#${TITLES[i][1].toString(16).padStart(6,'0')}">${TITLES[i][0]}</div><div class="nd">DAY ${d+1} · 25¢ MORE THAN YESTERDAY${w?' · '+String(w).toUpperCase():''}</div><b>${a[0]}</b><p>${a[1]}</p><b class="s">${b[0]}</b><p>${b[1]}</p></div>`; };
   const css=document.createElement('style'); css.textContent='#nsp{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel,monospace);color:#e8e2c8;background:#18241c;border:2px solid #4c7a58;padding:14px 16px 12px;z-index:16;user-select:none}#nsp h3{margin:0 0 6px;font-size:13px}#nsp .row{display:flex;gap:8px;align-items:center;margin:3px 0}#nsp .it{flex:1}#nsp .sec{margin:8px 0 2px;color:#9cc8a4}#nsp .st{margin-top:8px;color:#f0d890;min-height:1em}#nsp .np{background:#eee8d8;color:#222;padding:8px 10px;margin-top:8px}#nsp .nh{font-size:15px;border-bottom:3px solid;margin-bottom:4px}#nsp .nd{font-size:10px;margin-bottom:6px}#nsp .np p{margin:2px 0 6px}#nsp .s{font-size:11px}';
@@ -122,4 +122,3 @@ NEWS.init=()=>{ const N=TOONS.cat; if(!N||typeof SHARED.BOD==='undefined')return
   UI.thing({name:'NEWSSTAND',obj:hb,reach:1.6*T,near:3*T,tall:1.2*T,act:NEWS.open});
   NEWS.stock=stock; NEWS.bundles=bundles; NEWS.deliver=()=>DR.forEach((d,k)=>fly(d,k));
   window.NEWSCLK=(h,s)=>{ if(h!=null)CLOCK.h=h; if(s!=null){ CLOCK.run=true; CLOCK.speed=s; } return CLOCK.h; }; window.NEWSDBG=()=>({h:+CLOCK.h.toFixed(2),sold,act:act&&act.n,queue:queue.map(a=>a.n),shut:+shut.toFixed(2),bundles:bundles.length,stock:JSON.parse(JSON.stringify(stock)),drones:DR.map(d=>d.g.visible?d.g.position.toArray().map(v=>+v.toFixed(1)):null),at:[+X(xm).toFixed(2),+Z(y1+2).toFixed(2)]}); };
-export {NEWS};

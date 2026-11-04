@@ -1,15 +1,16 @@
 // THE RENDER INSPECTOR: RINSP, the panel showing what is drawn, its triangles, materials and cost.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, LEVELS, NPCS, pos, RINSP, ROOMS, UI, W3} from './003b-systems.js';
+import {CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {MAPG, STORE, TILE} from './006-map-pre.js';
+import {MAPG, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
+import {OUTL} from './072-walker3d.js';
 Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 { const T=TILE, V=new THREE.Vector3(), P3=new THREE.Vector3(), V2=new THREE.Vector3(), M4=new THREE.Matrix4(), F=new THREE.Frustum(), BX=new THREE.Box3(), BU=new THREE.Box3();
-  let el=null, iv=0, raf=0, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
-  const esc=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';
+  let el=null, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
+  const esc=TEXT.esc, kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';
   const mats=o=>Array.isArray(o.material)?o.material:o.material?[o.material]:[];
-  const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
+  const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; if(o.isBatchedMesh&&o._instanceInfo){ let n=0; o._instanceInfo.forEach(r=>{ if(r.visible&&r.active)n+=o._geometryInfo[r.geometryIndex].count; }); return Math.round(n/3); } const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
     return Math.round((o.isMesh?k/3:o.isPoints?k:o.isLineSegments?k/2:Math.max(0,k-1))*(o.isInstancedMesh?o.count:1)); };
   const calls=o=>Array.isArray(o.material)?(o.geometry.groups.length||1):1;
   const gb=g=>{ if(!g||!g.attributes)return 0; let b=g.index?g.index.array.byteLength:0; for(const k in g.attributes){ const a=g.attributes[k]; b+=(a.isInterleavedBufferAttribute?a.data.array:a.array).byteLength; } return b; };
@@ -28,10 +29,10 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     if(o.userData.inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
   const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&SHARED.py>b.y0-.3&&SHARED.py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
-  const collect=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
-    const RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
+  const collect0=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
+    const HG=new Set([...NPCS,...(NPCS.extra||[])].filter(N=>N.hid&&N.g).map(N=>N.g)), npcHid=o=>{ for(let q=o;q;q=q.parent)if(HG.has(q))return true; return false; }, RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
-    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||o.userData.cullOf||!(o.isMesh||o.isPoints||o.isLine||o.isSprite))return;
+    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||!(o.isMesh||o.isPoints||o.isLine||o.isSprite)||HG.size&&npcHid(o))return;
       const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ inV=false; for(const p of R.px)if(F.intersectsObject(p)){ inV=true; tr+=tris(p); } } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
       if(o.frustumCulled&&!inV)return; drawn.add(o); for(const m of ms)progs.add(prog(m));
@@ -50,11 +51,13 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     let hid=lastH; if(full){ const H=new Map(), gs=new Set(), ts=new Set(); let all=0, gB=0, tB=0;
       scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; return; } if(!(o.isMesh||o.isPoints||o.isLine)||o.userData.rin||o.userData.cullOf)return; const ms=mats(o), t=tris(o); all+=t;
         let g0=0, t0=0; if(o.geometry&&!gs.has(o.geometry)){ gs.add(o.geometry); g0=gb(o.geometry); gB+=g0; } for(const m of ms)for(const x of texs(m))if(!ts.has(x)){ ts.add(x); t0+=tsz(x)[2]; } tB+=t0;
-        if(drawn.has(o)||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(SHARED.cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
+        const CR=CULL.M&&CULL.M.get(o); if(drawn.has(o)||CR&&!CR.off&&CR.px.some(p=>drawn.has(p))||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(SHARED.cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
         const k=label(o); let w=H.get(k); if(!w)H.set(k,w={name:k,tris:0,n:0,geoB:0,texB:0,why:new Set(),objs:[]}); w.tris+=t; w.n++; if(w.objs.length<40)w.objs.push(o); w.geoB+=g0; w.texB+=t0; w.why.add(why); });
       hid=lastH=[...H.values()].map(w=>({...w,why:[...w.why]})).sort((a,b)=>b.geoB+b.texB+b.tris*30-(a.geoB+a.texB+a.tris*30)); head.loadedTris=all; head.geoBytes=gB; head.texBytes=tB; RINSP.tot={all,gB,tB,L:head.lightsInScene}; }
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
     return last={head,drawn:out,hidden:hid}; };
+  // counted as the frame draws it: the same hiding the main loop does round its render (NPCs, interiors, other levels, the cull and the haze)
+  const collect=full=>{ '@later'; NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
   const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
       return '<div class="o">'+esc(o.type+(o.name?' "'+o.name+'"':'')+' · '+tris(o)+' tris'+(o.isInstancedMesh?' ('+o.count+' copies)':'')+' · shadow '+(o.castShadow?'CAST':'-')+'/'+(o.receiveShadow?'RECV':'-')+(o.frustumCulled?'':' · NEVER CULLED')+' · layers '+o.layers.mask+' · geo '+kb(gb(o.geometry)))+
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
@@ -66,7 +69,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);
     el.querySelector('.h').innerHTML=esc(h.fps+' FPS · '+h.ms+' MS · '+h.calls+' CALLS · '+h.tris.toLocaleString()+' TRIS'+(h.points?' · '+h.points+' PTS':'')+' (all passes)')+'<br>'+
       esc('PROGRAMS '+h.programs+' ('+h.progsOnScreen+' on screen) · GEOMETRIES '+h.geometries+' · TEXTURES '+h.textures)+'<br>'+
-      esc('LIGHTS '+h.lightsInScene+' in scene, '+h.lightsLit+' lighting · SHADOWS '+(h.shadows.join(', ')||'none'))+'<br>'+
+      esc(GT.line())+'<br>'+esc('LIGHTS '+h.lightsInScene+' in scene, '+h.lightsLit+' lighting · SHADOWS '+(h.shadows.join(', ')||'none'))+'<br>'+
       esc('MAIN VIEW '+h.drawnObjs+' objects, '+h.drawnTris.toLocaleString()+' tris · LOADED '+(h.loadedTris||0).toLocaleString()+' tris, geo '+kb(h.geoBytes||0)+', tex '+kb(h.texBytes||0))+'<br>'+
       esc((h.lvl==='up'?'STREET':String(h.lvl).toUpperCase())+(h.place?' · '+h.place:'')+' · at '+h.at.join(',')+(h.fog!=null?' · fog '+h.fog+' tiles':''));
     el.querySelector('.t1').innerHTML='<tr><th>DRAWN</th><th>TRIS</th><th>CALLS</th><th>SHD</th><th>DIST</th><th>VIEW</th><th>NOTES</th></tr>'+dr.map(w=>row(w,D.drawn.indexOf(w),0)).join('');
@@ -82,7 +85,21 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 #rinsp .dt{margin:6px 0;padding:6px;border:1px solid var(--line);word-break:break-word}#rinsp .o{margin-top:4px;color:var(--dim)}`; document.head.appendChild(css);
     el=document.createElement('div'); el.id='rinsp'; el.hidden=true; el.innerHTML='<h3>RENDER INSPECTOR</h3><div class="h"></div><h3>FIND</h3><input placeholder="name or note (FAR, SHUT IN, FOG...)"><div class="dt"></div><table class="t1"></table><h3>LOADED BUT NOT DRAWN</h3><table class="t2"></table>';
     document.body.appendChild(el); const inp=el.querySelector('input'); inp.oninput=()=>{ RINSP.f=inp.value; draw(); }; el.querySelector('.t1').onclick=pick(0); el.querySelector('.t2').onclick=pick(1); };
-  const loop=now=>{ raf=requestAnimationFrame(loop); fc++; if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
+  const loop=now=>{ if(!RINSP.on)return; fc++; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
+  // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
+  const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
+  const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':window.PS2&&p===PS2.sp?'PS2':window.LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
+  const gtWrap=(o,k,nm)=>{ const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
+      try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
+  GT.poll=()=>{ const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
+    while(GT.q.length&&gl.getQueryParameter(GT.q[0][0],gl.QUERY_RESULT_AVAILABLE)){ const [q,nm]=GT.q.shift(); if(!bad)frame[nm]=(frame[nm]||0)+gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6; gl.deleteQuery(q); }
+    for(const k in frame)GT.ms[k]=GT.ms[k]==null?frame[k]:GT.ms[k]*.9+frame[k]*.1; };
+  GT.start=()=>{ const gl=renderer.getContext(); GT.X=GT.X||(gl.getExtension&&gl.getExtension('EXT_disjoint_timer_query_webgl2')); if(!GT.X)return; GT.on=true;
+    const C=SHARED.composer; if(C)C.passes.forEach((p,i)=>gtWrap(p,'render',gtName(p,i)));
+    gtWrap(renderer,'render',(sc,cam)=>sc===scene?(cam===SHARED.cam?'SCENE (extra)':'SCENE from another camera'):'OTHER ('+(sc.name||sc.type)+')'); };
+  GT.stop=()=>{ GT.on=false; };
+  GT.line=()=>{ if(!GT.X)return 'GPU TIME: this browser does not say'; const e=Object.entries(GT.ms).sort((a,b)=>b[1]-a[1]); return 'GPU MS: '+(e.length?e.map(([k,v])=>k+' '+v.toFixed(1)).join(' · '):'measuring...'); };
   RINSP.toggle=v=>{ const on=v===undefined?!RINSP.on:!!v; if(on===RINSP.on)return; RINSP.on=on; if(!el)make(); el.hidden=!on;
-    if(on){ n=0; fc=0; f0=0; raf=requestAnimationFrame(loop); draw(); iv=setInterval(draw,500); } else { clearInterval(iv); cancelAnimationFrame(raf); mark(null); RINSP.sel=null; } };
+    if(on){ n=0; fc=0; f0=0; GT.start(); draw(); } else { GT.stop(); mark(null); RINSP.sel=null; } };
+  SYS.add('win',loop,'161b-rinsp fps'); SYS.every(()=>{ if(RINSP.on)draw(); },500,'161b-rinsp');
   window.RENDERLIST=()=>{ const D=collect(true), strip=w=>{ const {objs,...r}=w; return r; }; return JSON.parse(JSON.stringify({head:D.head,drawn:D.drawn.map(strip),hidden:D.hidden.map(strip)})); }; }

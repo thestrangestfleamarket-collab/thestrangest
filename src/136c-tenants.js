@@ -1,11 +1,11 @@
-// THE TENANTS: the owner's panel in the menu (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
-import {SHARED} from './003-shx.js';
-import {BUGS, TENANTS} from './003b-systems.js';
-{ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
+{ const esc=TEXT.esc;
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
   const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
-    const r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
-  const room=()=>'s-'+String((SHARED.SECTION&&SHARED.SECTION.id)||'a').toLowerCase().replace(/[^a-z0-9-]/g,'');
+    let r; try{ r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
+  const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
 
   /* ---------- the panel ---------- */
@@ -24,8 +24,13 @@ import {BUGS, TENANTS} from './003b-systems.js';
         ${open===u.id?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(Object.entries({id:u.id,phone:u.phone,confirmed:u.confirmed,provider:u.provider,...p}).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join('\n'))}</div>
           <div class="row"><span>EMAIL</span><input data-f="email" type="text" value="${esc(u.email)}" style="width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>APT</span><input data-f="apt" type="number" value="${esc(p.apt??'')}" style="width:70px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>NEW PASSWORD</span><input data-f="password" type="text" placeholder="8 or more" style="width:120px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" data-a="save">SAVE</button></div>
           <div class="row"><button class="btn" data-a="admin">${u.admin?'NOT AN OWNER':'MAKE AN OWNER'}</button><button class="btn" data-a="ban">${u.banned?'UNBAN':'BAN'}</button><button class="btn" data-a="delete">DELETE</button></div>`:''}</div>`; }).join('')}
-      <h3>LETTERS SENT</h3>${D.letters.length?D.letters.slice(0,20).map(l=>`<div class="dim">${esc(day(l.at))} · to ${esc(l.too==='*'?'EVERYONE':((U.find(u=>u.id===l.too)||{}).email||l.too))} · ${esc(l.subject)} · read ${esc(l.read)}</div>`).join(''):'<div class="dim">none yet</div>'}`;
+      <h3>LETTERS SENT</h3>${D.letters.length?D.letters.slice(0,20).map(l=>`<div class="dim">${esc(day(l.at))} · to ${esc(l.too==='*'?'EVERYONE':((U.find(u=>u.id===l.too)||{}).email||l.too))} · ${esc(l.subject)} · read ${esc(l.read)}</div>`).join(''):'<div class="dim">none yet</div>'}
+      <h3>TEXT</h3><div class="dim">The game's text boxes. Change the words and everyone sees them, on the signs at once. A {part} fills itself in. Empty puts the game's own words back.</div>
+      ${TEXT.list().map(t=>`<div class="row" data-txt="${esc(t.id)}"><code style="min-width:130px">${esc(t.id)}</code><input type="text" maxlength="200" value="${esc(t.cur??t.def)}" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${t.cur!=null?`<span class="dim">was: ${esc(t.def)}</span>`:''}</div>`).join('')}
+      ${SIGNS.list.map(sg=>`<div class="row" data-sign="${esc(sg.name)}"><code style="min-width:130px">${esc(sg.name)}</code><input type="text" maxlength="200" value="${esc((sg.get&&sg.get().text)||'')}" placeholder="the sign's own words" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"></div>`).join('')}`;
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
+    el.querySelectorAll('[data-txt] input').forEach(i=>i.onchange=()=>{ const id=i.closest('[data-txt]').dataset.txt; TEXT.set(id,i.value.trim()); act(null,{do:'text',key:id,text:TEXT.cur[id]||''},()=>'text saved'); });
+    el.querySelectorAll('[data-sign] input').forEach(i=>i.onchange=()=>{ const n=i.closest('[data-sign]').dataset.sign, sg=SIGNS.list.find(q=>q.name===n), v=i.value.trim(); if(sg&&sg.set)sg.set({...(sg.get?sg.get():{}),text:v||null}); TEXT.set('sign.'+n,v); act(null,{do:'text',key:'sign.'+n,text:v},()=>'sign saved'); });
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
     el.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>act(b,{do:'codeoff',code:b.dataset.off},()=>'code turned off'));
@@ -48,8 +53,7 @@ import {BUGS, TENANTS} from './003b-systems.js';
     P.innerHTML=L.map(l=>`<div style="margin-bottom:16px"><div style="font-size:11px;color:#6a6255">${esc(day(l.at))} · FROM THE MARKET</div><div style="font-size:15px;margin:4px 0 8px">${esc(l.subject)}</div><div style="white-space:pre-wrap">${esc(l.body)}</div></div>`).join('<hr style="border:0;border-top:2px dashed #2a262055">')+'<button id="tletok" style="font:inherit;padding:6px 12px;cursor:pointer;background:#2a2620;color:#f4efe0;border:2px solid #2a2620">PUT IT AWAY</button>';
     document.body.appendChild(P); P.querySelector('#tletok').onclick=()=>{ P.remove(); api('/post',{seen:L.map(l=>l.id)}); }; };
 
-  const go=async()=>{ while(!window.__started)await new Promise(r=>setTimeout(r,500)); await LOAD('later');
+  const go=async()=>{ await LOAD('later');
     if(!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return;
-    letters().catch(()=>{});
-    if(BUGS.owner&&await BUGS.owner().catch(()=>false)){ const b=document.querySelector('[data-t="tenants"]'); if(b)b.hidden=false; } };
-  go(); }
+    letters().catch(()=>{}); };
+  SYS.onStart(go,'136c-tenants'); }

@@ -1,8 +1,8 @@
 // THE GOLEMS' CAVE: GCAVE builds the golems' cave in the park (a great boulder mountain, moss on its shoulders and grass on top, a wide arched mouth) and sets out the squirrel's tower site.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI} from './003b-systems.js';
+import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, MAPG, MODS, PARKCAVE, PARKTOWER, SOL, STORE, TILE} from './006-map-pre.js';
+import {FIX, MAPG, MODS, PARKCAVE, PARKTOWER, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 const GCAVE={ready:false}; window.GCAVE=GCAVE;
 {
@@ -54,7 +54,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     const glint=(i,on)=>{ const [dx,dy]=GL[i], s=on?.22*T:0; cry.setMatrixAt(NC+i,m4.compose(new V3(CX+dx*T,Y(4),CZ+dy*T),q.setFromEuler(e.set(.3,i,.2)),new V3(s,s*1.3,s))); cry.setColorAt(NC+i,cl.setRGB(1,.95,.7)); cry.instanceMatrix.needsUpdate=true; if(cry.instanceColor)cry.instanceColor.needsUpdate=true; };
     GL.forEach((g,i)=>glint(i,true)); grp.add(cry);
     { const L=new THREE.PointLight(new THREE.Color(.7,.68,1),20,9*T,1.6); L.position.set(CX-.6*T,Y(H*.7),CZ); L.userData.i0=L.intensity; L.userData.both=true; L.userData.grp=null; L.userData.cave=1; if(LITE.recs)LITE.recs.push(L); GCAVE.L=L; }
-    { const FX=CX+2.2*T, cm=P.mesh([['campfire',S.c.x+2.2,S.c.y,.13,0]],false,true); if(grp!==scene)grp.add(cm);
+    { const FX=CX+2.2*T, cm=P.mesh([['campfire',S.c.x+2.2,S.c.y,.13,0]],false,true); if(WEEDS.keepOff)WEEDS.keepOff([[FX,CZ,1.1*T]]); if(grp!==scene)grp.add(cm);
       const L=new THREE.PointLight(new THREE.Color(1,.6,.25),22,7*T,1.6); L.position.set(FX,.5*T,CZ); L.userData.fire=1; L.userData.both=true; L.userData.grp=grp===scene?null:grp; if(LITE.recs)LITE.recs.push(L); GCAVE.fireL=L;
       GCAVE.flame=FLAME.add({kind:'bed',name:'campfire',x:FX,y:.12*T,z:CZ,w:.72*T,h:.88*T,embers:3,smoke:1.2,sk:1.1,light:L,seed:11,parent:grp}); GCAVE.fire={x:FX,z:CZ,y:.3}; }
     const sol=(x0,z0,x1,z1,h)=>{ SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,h]); };
@@ -74,7 +74,7 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     GCAVE.lift={x:CX,z:CZ-3.4*T}; hit(GCAVE.lift.x,GCAVE.lift.z,1.1*T,Y(6),{name:'A CRACK IN THE FLOOR',reach:1.2*T,near:2.2*T,tall:Y(14),act:()=>{ if(MODS.gemcave)MODS.gemcave.go(1); }});
     GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!window.INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
     GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!window.INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
-    GCAVE.regrow(); setInterval(GCAVE.regrow,5000);
+    GCAVE.regrow(); SYS.every(GCAVE.regrow,5000,'060-cave regrow');
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }

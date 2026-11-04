@@ -4,6 +4,7 @@ import {CLOCK, PARK, pos, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OUT, QS, SYS, TILE} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
+import {TPANE} from './087dz-tpane.js';
 Object.assign(WX,{hold:null,now:null});
 { const hsh=(i,s)=>{ let h=(Math.imul(i|0,374761393)+Math.imul(s|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   const noise=(t,s,oct=2)=>{ let v=0,a=1,n=0; for(let o=0;o<oct;o++){ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f); v+=a*(hsh(i,s+o*7)*(1-u)+hsh(i+1,s+o*7)*u); n+=a; a*=.5; t=t*2.1+11.7; } return v/n; };
@@ -33,7 +34,7 @@ Object.assign(WX,{hold:null,now:null});
     if(up){ scene.background.lerp(cA.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day),cl(W.cloud*W.cloud*.85)); if(W.storm)scene.background.multiplyScalar(1-.45*W.storm);
       CLOCK.sun.intensity*=1-.72*cl((W.cloud-.2)/.8); }
     if(W.flash&&flashT<=0)flashT=.14; if(flashT>0){ flashT-=dt; if(up){ const f=WX.hold==='RAIN'?.3:1; scene.background.lerp(cA.setRGB(.85,.88,.95),f); HEMI.intensity+=2.5*f; } }
-    if(PARK.windK)PARK.windK.value=.35+1.6*W.wind;
+    if(PARK.windK)PARK.windK.value=.25+W.wind;
     if(up&&!inside&&W.fog>.02){ scene.fog=FOG; FOG.color.setRGB(.7,.72,.74).multiplyScalar(.15+.85*day).lerp(scene.background,.25); FOG.near=2*TILE; FOG.far=(11+70*Math.pow(1-W.fog,2))*TILE; scene.background.lerp(FOG.color,cl(W.fog*1.3)); } else if(scene.fog===FOG)scene.fog=null;
     const wx=Math.cos(W.dir)*W.wind*5*TILE, wz=Math.sin(W.dir)*W.wind*5*TILE;
     const nr=inside?0:Math.round(NR*W.rain); RAIN.visible=nr>0; if(nr){ const v=14*TILE, L=.45*TILE, sx=wx/v*L, sz=wz/v*L; for(let i=0;i<nr;i++){ let y=rs[i*3+1]-v*dt; if(y<0)y+=RH; rs[i*3+1]=y;
@@ -42,7 +43,9 @@ Object.assign(WX,{hold:null,now:null});
     const ns=inside?0:Math.round(NS*W.snow); SNOW.visible=ns>0; if(ns){ for(let i=0;i<ns;i++){ let y=ss[i*4+1]-1.1*TILE*dt; if(y<0)y+=RH; ss[i*4+1]=y; const a=ss[i*4+3]+t*.8;
         const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,SHARED.py+y,z],i*3); }
       sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } },'131-weather');
-  { const box=document.getElementById('awx'); if(box){ const L=[['LOOK','AS THE LOOK'],['NATURAL','NATURAL'],...Object.keys(HOLDS).map(k=>[k,k])], cur=()=>WX.hold||(WX.nat?'NATURAL':'LOOK');
-      const draw=()=>{ box.innerHTML=L.map(([k,n])=>`<button class="btn" data-wx="${k}" aria-pressed="${cur()===k}">${n}</button>`).join(''); };
-      box.addEventListener('click',e=>{ const k=e.target.dataset.wx; if(!k)return; WX.hold=HOLDS[k]?k:null; WX.nat=k==='NATURAL'?1:0; ft=0; draw(); }); draw(); } }
+  { const box=document.getElementById('awx'), P=box&&box.closest('[data-p]'); if(box){ const L={'AS THE LOOK':'LOOK',NATURAL:'NATURAL',...Object.fromEntries(Object.keys(HOLDS).map(k=>[k,k]))}, cur=()=>WX.hold||(WX.nat?'NATURAL':'LOOK');
+      const V=TPANE.live({wx:[cur,k=>{ if(k===cur())return; WX.hold=HOLDS[k]?k:null; WX.nat=k==='NATURAL'?1:0; ft=0; }]}); let mk=null;
+      const draw=()=>{ '@later'; mk=mk||TPANE.make(box).then(p=>{ p.addBinding(V,'wx',{label:'WEATHER',options:L}); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };
+      for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
+      new MutationObserver(()=>{ if(!P.hidden&&P.offsetParent)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); } }
   window.WX=WX; window.WXDBG=()=>WX.now; }

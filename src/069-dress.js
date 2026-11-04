@@ -2,19 +2,17 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, DN, DRESS, PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, CEL, FIX, MAINROW, MAPSTAIR, MODS, OUT, RING, SMOOTH, SOL, STORE, TILE} from './006-map-pre.js';
+import {AWAY, CEL, FIX, LEVEL, MAINROW, MAPSTAIR, MODS, OUT, RING, SMOOTH, SOL, STORE, TILE} from './006-map-pre.js';
+import {KIT} from './068-kit.js';
 const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }});
 { const G=MODS.bodega.ground, xm=(SHARED.BOUND.x0+SHARED.BOUND.x1)/2; let zc=null, zf=null; for(let z=SHARED.BOUND.z0;z<SHARED.BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=SHARED.BOD.X(MODS.apts.A.x1), AX0=SHARED.BOD.X(MODS.apts.A.x0), BX0=SHARED.BOD.X(SHARED.BOD.B0.x0);
   DRESS.kerb={sw,far}; DRESS.cans=[];
   const CY=[], cyl=(x,y,z,r,h,c)=>CY.push([x,y,z,r*2,h,r*2,c]);
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ const s=[x-r,z-r,x+r,z+r], f=[x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]; SOL.up.push(s); FIX.up.push(f); return {sol:s,fix:f}; };
-  { const M=1/.84*TILE, CN=[], hs=(a,b)=>{ const v=Math.sin(a*12.9898+b*78.233)*43758.5453; return v-Math.floor(v); }; for(const x of [BX0-1.2,AX0-1.5]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
-    const tex=(W,H,f)=>{ const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const c=f(i,j), q=(j*W+i)*4; im.data[q]=c[0]; im.data[q+1]=c[1]; im.data[q+2]=c[2]; im.data[q+3]=255; } g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
-    const LIT=[[226,222,210],[196,48,40],[150,120,80],[60,110,170],[40,40,44]], wire=tex(48,24,(i,j)=>{ const r=hs(i,j); if(j<2)return r<.1?[120,80,50]:[44,84,52]; if(j>21)return [38,70,44]; if(i%3===0||j%3===0)return r<.06?[126,84,52]:r<.2?[64,104,66]:[48,88,56];
-      return j<9&&hs(Math.floor(i/4),Math.floor(j/3)+9)<.35?LIT[Math.floor(hs(Math.floor(i/4),j>>2)*5)]:[18,22,18]; }), top=tex(16,16,(i,j)=>{ const r=hs(Math.floor(i/3),Math.floor(j/3)); return r<.3?LIT[0]:r<.42?LIT[1]:r<.6?LIT[2]:r<.72?[30,30,32]:r<.8?LIT[3]:[200,196,184]; });
-    const prof=[[.2,0],[.215,.02],[.235,.3],[.255,.6],[.27,.86],[.28,.9]].map(([r,h])=>new THREE.Vector2(r*M,h*M)), parts=[[new THREE.LatheGeometry(prof,12),new THREE.MeshLambertMaterial({map:wire,side:THREE.DoubleSide})],[new THREE.TorusGeometry(.285*M,.025*M,4,12).rotateX(Math.PI/2).translate(0,.9*M,0),new THREE.MeshLambertMaterial({color:0x26402c})],[new THREE.CircleGeometry(.26*M,10).rotateX(-Math.PI/2).translate(0,.8*M,0),new THREE.MeshLambertMaterial({map:top})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
-    for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } }
+  { const M=1/.84*TILE, CN=[]; for(const x of [BX0-1.2,AX0-1.5]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
+    const g0=KIT.geo('trashcan'), bb=g0.boundingBox, k=.9*M/(bb.max.y-bb.min.y), g=g0.clone().translate(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2).scale(k,k,k), m4=new THREE.Matrix4(), q=new THREE.Quaternion();
+    const me=new THREE.InstancedMesh(g,KIT.mat,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); }
   { const M=1/.84*TILE, SP=46*M, SX0=SHARED.BOD.XS(SHARED.BOD.MAP.x0), SX1=SHARED.BOD.XS(SHARED.BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
       const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length,...solid(x,z,.18*M,6*M)}; POLES.push(P); return P; };
@@ -38,17 +36,20 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     { const A=MODS.apts&&MODS.apts.A, dz=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
       for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=SHARED.BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
     { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
+    if(Array.isArray(LEVEL.lamps)){ pts.length=0; for(const l of LEVEL.lamps)pts.push([SHARED.BOD.XS(l.x),SHARED.BOD.ZS(l.y)]); }   // the map editor's lamp posts (world.json lamps, map tiles), in place of the spaced ones
+    DRESS.own=pts.length;
+    pts.push(...(DRESS.extra||[]));   // the other sections' posts (066c)
     const xs=pts.map(p=>p[0]);
     const H=4.2*M, pole=new THREE.InstancedMesh(new THREE.CylinderGeometry(.055*M,.07*M,H,8).translate(0,H/2,0),new THREE.MeshLambertMaterial({color:0x22262b,flatShading:true}),xs.length*2),
       lant=new THREE.InstancedMesh(new THREE.BoxGeometry(.34*M,.5*M,.34*M),new THREE.MeshBasicMaterial({color:0xffe4b0}),xs.length), m4=new THREE.Matrix4(), y0=G(xs[0],pz);
     pts.forEach(([x,pz],i)=>{ const y=G(x,pz); pole.setMatrixAt(i*2,m4.makeTranslation(x,y,pz)); pole.setMatrixAt(i*2+1,m4.makeScale(2.4,.06,2.4).setPosition(x,y,pz));
-      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.2*M,pz,28,12*TILE),sol,fix});
+      lant.setMatrixAt(i,m4.makeTranslation(x,y+H+.25*M,pz)); const sol=[x-.12*M,pz-.12*M,x+.12*M,pz+.12*M], fix=[x-.12*M,pz-.12*M,y,x+.12*M,pz+.12*M,y+H]; POSTS.push({x,z:pz,y:y+H+.5*M,i,L:light(x,y+H+.25*M,pz,50,12*TILE),sol,fix});
       SOL.up.push(sol); FIX.up.push(fix); });
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }
     DRESS.pools=pools;
     const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
-    DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.elev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=OUT.world; poolMat.opacity=k;
+    DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.dayElev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=OUT.world; poolMat.opacity=k;
       pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } } if(on)L.intensity=L.userData.i0*(window.DN?DN.lk:1);
         me.visible=up&&k>0&&on&&!L.userData.off; }); };
     { const RD=SHARED.BOD.road, CK=(RD.KR-.45)/Math.SQRT2, HS=0x2b3036, GR=0x5d6266, TL=[], SIG=[], sq=(f,cx,cy,cz,w,h,d)=>f[0]?[cx,cy,cz,d,h,w]:[cx,cy,cz,w,h,d];
@@ -111,7 +112,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
           const pr=[[0,0],[.15,0],[.15,.05],[.12,.06],[.1,.1],[.1,.48],[.13,.5],[.13,.54],[.11,.56],[.1,.64],[.07,.7],[.04,.72],[.04,.76],[0,.77]].map(([r,h])=>new THREE.Vector2(r*M,h*M));
           const parts=[[new THREE.LatheGeometry(pr,10),new THREE.MeshLambertMaterial({map:tx})],[new THREE.CylinderGeometry(.055*M,.06*M,.32*M,8).rotateZ(Math.PI/2).translate(0,.4*M,0),new THREE.MeshLambertMaterial({color:0xa8acaa})],[new THREE.CylinderGeometry(.075*M,.075*M,.1*M,6).rotateX(Math.PI/2).translate(0,.38*M,.13*M),new THREE.MeshLambertMaterial({color:0x2a2c2e})],[new THREE.BoxGeometry(.012*M,.12*M,.012*M).translate(.17*M,.33*M,.03*M),new THREE.MeshLambertMaterial({color:0x4a4846})]], m4=new THREE.Matrix4(), q=new THREE.Quaternion();
           for(const [g,mt] of parts){ const me=new THREE.InstancedMesh(g,mt,HY.length); HY.forEach(([x,y,z,sd],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),(sd>0?0:Math.PI)+i*.4),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } } }
-      if(PARK.mesh){ if(OAK.length)DRESS.trees=PARK.mesh(OAK,true,true,true); if(PL.length)DRESS.plants=PARK.mesh(PL,false,false,2); }
+      if(PARK.mesh){ if(OAK.length)DRESS.trees=PARK.mesh(OAK,true,true,true,{cards:1}); if(PL.length)DRESS.plants=PARK.mesh(PL,false,false,2); }
       if(PITS.length){ const N=40, cv=document.createElement('canvas'); cv.width=cv.height=N; const gx=cv.getContext('2d'), im=gx.createImageData(N,N), SO=[[58,44,34],[70,54,40],[48,36,28],[96,72,48]], LF=[[44,74,36],[60,98,46],[84,124,58],[36,58,30]];
         for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const n=hsh(Math.floor(i/5),Math.floor(j/5))*.6+hsh(Math.floor(i/3)+40,Math.floor(j/3))*.4, d=hsh(i,j), e=Math.min(i,j,N-1-i,N-1-j);
           let c=n>.52-.04*Math.max(0,4-e)?LF[d<.18?3:d<.55?0:d<.88?1:2]:SO[d<.5?0:d<.8?1:d<.96?2:3]; if(hsh(i+3,j*7)<.012)c=[150,112,52]; if(hsh(i*5,j+1)<.004)c=[226,220,206];

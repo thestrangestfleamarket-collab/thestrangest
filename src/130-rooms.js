@@ -1,12 +1,12 @@
-// ROOMS: which room you are in, roofs hidden when inside, and roofAt.
+// ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, PNM, pos, ROOMS, SGM, UI, W3} from './003b-systems.js';
+import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH} from './008-batch.js';
+import {BATCH, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
-import {VIS} from './129a-vis.js';
+import {CREATS} from './087-npc-creatures.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
 // A room's inside built late (ROOMS.part) records all it adds (meshes, its lights, things to use, wall cuts), so ROOMS.unpart takes it all away again.
 ROOMS.part=(group,fn,make,cast=true)=>{ '@later'; const n0=scene.children.length, t0=UI.things.length, c0=cutWalls.length, keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag; BATCH.meshes={}; BATCH.tag=null;
@@ -14,12 +14,12 @@ ROOMS.part=(group,fn,make,cast=true)=>{ '@later'; const n0=scene.children.length
   const P={group,objs:scene.children.slice(n0),things:UI.things.slice(t0),cuts:cutWalls.slice(c0),lights:[]};
   for(const o of P.objs)group.add(o);
   const L=[]; for(const o of P.objs)o.traverse(c=>{ if(c.isPointLight&&!c.userData.pool)L.push(c); });
-  for(const l of L){ l.userData.grp=group; l.castShadow=false; l.removeFromParent(); LITE.recs.push(l); P.lights.push(l); } LITE.t=0; return P; };
+  for(const l of L){ l.userData.grp=group; l.castShadow=false; l.removeFromParent(); LITE.recs.push(l); P.lights.push(l); } LITE.t=0; (ROOMS.built||(ROOMS.built=[])).push(P); return P; };   // (built: what src/161c-merge.js may merge)
 ROOMS.unpart=P=>{ '@later'; if(!P)return; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
-  out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0;
+  out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0; if(ROOMS.built)out(ROOMS.built,[P]); if(ROOMS.unmerge)ROOMS.unmerge(P);
   for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); } };
 ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; if(!LEVELS.drawn(i.object))return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
-{ const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE; let RL=null;
+{ const V=THREE.Vector3, PL=[0,1,2,3,4,5].map(()=>new THREE.Plane()), m=.14*TILE, OPEN={r:null,m:[]}; let RL=null;
   const NEAR=[new THREE.Plane(new V(0,-1,0),1e6),new THREE.Plane(new V(1,0,0),1e6),new THREE.Plane(new V(0,0,1),1e6)]; let NEARON=false, NEARIN=false;
   { const C=THREE.ShaderChunk, k='clipping_planes_fragment', a0='clipped = ( dot( vClipPosition, plane.xyz ) > plane.w ) && clipped;', a1='if ( clipped ) discard;';
     if(C[k].includes(a0)&&C[k].includes(a1))C[k]=C[k].replace('bool clipped = true;','bool clipped = true; bool cfirst = true; bool cany = ( NUM_CLIPPING_PLANES - UNION_CLIPPING_PLANES ) < 2;')
@@ -28,11 +28,14 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const box=(X,Z,t,y0,y1)=>{ const a=X(t[0]), b=X(t[2]), c=Z(t[1]), d=Z(t[3]); return {x0:Math.min(a,b),x1:Math.max(a,b),z0:Math.min(c,d),z1:Math.max(c,d),y0,y1}; };
   const sband=R=>{ const d=R.dw, B=R.B, h=d.wd/2+.2; return box(SHARED.BOD.X,SHARED.BOD.Z,d.w==='f'?[d.a-h,B.y1-.05,d.a+h,B.y1+.55]:d.w==='b'?[d.a-h,B.y0-.55,d.a+h,B.y0+.05]:d.w==='w'?[B.x0-.55,d.a-h,B.x0+.05,d.a+h]:[B.x1-.05,d.a-h,B.x1+.55,d.a+h],-1,0); };
   const build=()=>{ RL=[];
-    if(SHARED.BOD.GD){ const G=SHARED.BOD.GD, h=(G.dw||2.4)/2+.2, gb=box(SHARED.BOD.X,SHARED.BOD.Z,G.r,G.y0||-1,SHARED.BOD.Y(G.H)); gb.lz='bath'; gb.band=box(SHARED.BOD.X,SHARED.BOD.Z,[G.door[0]-h,G.door[1]-.3,G.door[0]+h,G.door[1]+.55],-1,0); RL.push(gb); }
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
     for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
+  // inside a room the third person's camera stays within its walls and under its ceiling, pulled in along the line to you
+  UI.camKeeps.push((c,t)=>{ const B=ROOMS.cur; if(!B||!(B.x1>B.x0)||!UI.persp)return; const e=.3*TILE; let k=1;
+    for(const [a,lo,hi] of [['x',B.x0+e,B.x1-e],['y',(B.y0??-1e9)+e,(B.y1??1e9)-e],['z',B.z0+e,B.z1-e]]){ const d=c[a]-t[a]; if(c[a]>hi&&d>1e-6)k=Math.min(k,Math.max(0,(hi-t[a])/d)); else if(c[a]<lo&&d<-1e-6)k=Math.min(k,Math.max(0,(lo-t[a])/d)); }
+    if(k<1)c.lerpVectors(t,c,k); });
   ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [MUS.g,PNM.g,SGM.g,DRM.g])if(o)skip.add(o);
@@ -40,17 +43,25 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
         const walk=o=>{ if(skip.has(o)||o.isSkinnedMesh)return; const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const mt of ms){ if(own.has(mt)||mt.clippingPlanes===NEAR||(mt.isShaderMaterial&&!mt.clipping)||(mt.clippingPlanes&&mt.clippingPlanes.length))continue; mt.clippingPlanes=NEAR; mt.clipIntersection=true; mt.needsUpdate=true; } for(const c of o.children)walk(c); };
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
-  Object.assign(ROOMS.lazy,{bath:{name:'THE BATH HOUSE',go:()=>SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build(),need:()=>LOAD(SHARED.BOD.GD&&SHARED.BOD.GD.build&&SHARED.BOD.GD.build.chunk),done:false}});
-  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], rooms [{x0,z0,x1,z1}] when the inside is several rooms, keep): gone in and out of only by double-clicking the door's thing (door outside, exit inside; doors never move, walking into one does nothing), built on the way in, the street not drawn while you are in, dropped on the way out unless keep.
+  // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], rooms [{x0,z0,x1,z1}] when the inside is several rooms, keep, outdoor when it is open air (you can ride there); a place with ground of its own puts {x0,z0,x1,z1,ground} in ROOMS.grounds while built): gone in and out of only by double-clicking the door's thing (door outside, exit inside; doors never move, walking into one does nothing), built on the way in, the street not drawn while you are in, dropped on the way out unless keep.
   const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); L.done=true; },done:false};
     if(!o.keep)L.drop=()=>{ ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); }; return L; };
   for(const id in ROOMS.off)offL(id);
   const offThings=id=>{ const o=ROOMS.off[id]; if(o.th||!UI.thing)return; o.th=1; const hb=(p,name,act)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       m.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(m); UI.thing({name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
-  const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); };
-  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]);
-    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); };
+  const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); }; ROOMS.offHide=offHide;
+  // run fn with the world as it is outside the inside you are in (nothing hidden for the room, no clipping): a window's picture of the street
+  ROOMS.peek=fn=>{ const H=IV.H.slice(), L=IV.L.slice(), S=IV.S.slice(), ix=S.map(([g])=>g.index), off=IV.b&&IV.b.off, clip=renderer.clippingPlanes;
+    for(const [o] of H)VIS.hide(o,'room',false); for(const [o] of L)VIS.hide(o,'room',false); for(const [g,i] of S)g.setIndex(i); if(off)offHide(false); renderer.clippingPlanes=[];
+    try{ fn(); } finally{ renderer.clippingPlanes=clip; if(off)offHide(true); S.forEach(([g],k)=>g.setIndex(ix[k])); for(const [o] of H)VIS.hide(o,'room'); for(const [o] of L)VIS.hide(o,'room',true,true); } };
+  // an inside's ceiling faces down only: seen when you look up from inside, gone from above
+  const ceil=o=>{ if(o.ceilG||o.noCeil)return; o.ceilG=new THREE.Group(); o.ceilG.name='ceiling'; const M=new THREE.MeshLambertMaterial({color:0x2e2f35});
+    for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }
+    scene.add(o.ceilG); };
+  ROOMS.ceilOf=id=>{ if(!RL)build(); ceil(ROOMS.off[id]); };   // an inside's ceiling made without going in (seen through its windows from the street)
+  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
+    scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
   ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
@@ -58,9 +69,12 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||null;
+  BATCH.away=()=>!!ROOMS.offIn();   // in a room off the map the street's painted ground and walls are dropped, painted again on the way out
+  ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
+  ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
-    return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:()=>STORE.need&&STORE.need()}:null; };
+    return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:async()=>{ if(STORE.need)await STORE.need(); if(STORE.pre&&STORE.pre[b.id])await STORE.pre[b.id](); }}:null; };
   const BX=new THREE.Box3(), V3=new V();
   const ovl=(a,r)=>a.max.x>r.x0&&a.min.x<r.x1&&a.max.z>r.z0&&a.min.z<r.z1&&a.max.y>r.y0&&a.min.y<r.y1, con=(a,r)=>a.min.x>=r.x0&&a.max.x<=r.x1&&a.min.z>=r.z0&&a.max.z<=r.z1&&a.min.y>=r.y0&&a.max.y<=r.y1;
   const pin=(r,x,y,z)=>x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1&&y>r.y0&&y<r.y1;
@@ -83,9 +97,8 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const put=T=>{ for(const o of T.H){ IV.H.push([o]); VIS.hide(o,'room'); } for(const o of T.L){ IV.L.push([o]); VIS.hide(o,'room',true,true); } for(const q of T.S)if(q.o.geometry===q.g){ IV.S.push([q.g,q.g.index]); q.g.setIndex(q.ix); } };
   const leave=()=>{ '@later'; if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; if(IV.b&&IV.b.off)offHide(false); IV.key=null; IV.b=null;
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
-  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop){ L.drop(); L.done=false; IV.C.clear(); } } };
+  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)){ L.drop(); L.done=false; IV.C.clear(); } } };
   const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
-  const frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; try{ await FADE.run(lz?'ENTERING '+lz.name:'',async()=>{ if(lz){ if(lz.S)lz.S.busy=true; await lz.need(); lz.go(); }
@@ -100,10 +113,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
       hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&!b.id&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
     ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
-    if(SHARED.BOD.GDK&&SHARED.BOD.GDK.card)VIS.hide(SHARED.BOD.GDK.card,'room',!!(IV.b&&IV.b.lz==='bath')); if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
+    if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(SHARED.BOD.GD)SHARED.BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,SHARED.cam.position.y<h.y);
-    const cutOn=hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map');
+    const cutOn=false;   // insides never cut their walls (owner, 28 Oct 2026): the see-through circle shows you behind them
     if(cutOn){ if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true;
       const cx=SHARED.cam.position.x-pos.x, cz=SHARED.cam.position.z-pos.z, l=Math.hypot(cx,cz)||1, ux=cx/l, uz=cz/l, BAND=1.1*TILE;
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=SHARED.py+.45*ZU*24/.84;
@@ -116,8 +129,14 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(hit&&!FREE){ PL[0].set(new V(1,0,0),-(hit.x0-m)); PL[1].set(new V(-1,0,0),hit.x1+m); PL[2].set(new V(0,0,1),-(hit.z0-m)); PL[3].set(new V(0,0,-1),hit.z1+m); PL[4].set(new V(0,1,0),-hit.y0); PL[5].set(new V(0,-1,0),hit.y1+.05);
       renderer.clippingPlanes=PL; scene.background.setRGB(0,0,0); }
     else if(renderer.clippingPlanes.length)renderer.clippingPlanes=[];
+    // a room's walls that vanish while you are in it (STORE.open[id]: the theatre keeps only its screen wall), with what of its front would show (STORE.openHide) and the see-through circle
+    { const o=hit&&STORE.open&&STORE.open[hit.id]?hit:null; if(o!==OPEN.r){ for(const me of OPEN.m)VIS.hide(me,'open',false); OPEN.m=[]; OPEN.r=o;
+        if(o){ for(const w of STORE.open[o.id])for(const me of BATCH.all(STORE.meshes,'W'+o.id+':'+w)){ VIS.hide(me,'open'); OPEN.m.push(me); }
+          for(const me of (STORE.openHide&&STORE.openHide[o.id])||[]){ VIS.hide(me,'open'); OPEN.m.push(me); } } PEEK.off=!!o; } }
     const HB=IV.key?IV.b:FREE?null:hit, show=(g,x,z,o,y)=>{ const sh=!HB||within(HB,x,z,.4*TILE)&&(y==null||y>HB.y0-.3&&y<HB.y1); VIS.hide(g,'roof',!sh); };
     for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y); }
+    if(ONLINE.others)for(const o of ONLINE.others.values()){ const g=o.fig&&o.fig.g; if(g&&g.parent)show(g,g.position.x,g.position.z,o,g.position.y); }
+    if(window.CREATS)for(const N of CREATS)if(N.g)show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y);
     if(MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);
     if(WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };
 }

@@ -6,6 +6,7 @@ live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.
 
 Every decision the owner has made, with his words and dates, is in `docs/HISTORY.md` (large: search it, don't read it whole).
+What is still to do, shared by every chat, is in `TODO.md` (take a line before starting it, tick it when done).
 Look there before changing how something looks or behaves, and add a dated entry there for each new decision. **Keep entries lean (owner, 22 Oct 2026: "i dont want anything verbose")**: the decision, the owner's words, the date, and any rule — no engineering detail, measurements or how-it-works; those go in the commit message. This applies everywhere: commit messages, pull requests, comments and replies stay short too.
 
 ## Layout (owner, 18 Oct 2026: "smallest download"; the "minimal files" and "no comments" rules were relaxed on 20 Oct 2026)
@@ -19,16 +20,20 @@ Look there before changing how something looks or behaves, and add a dated entry
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
+  `src/editor/editor.html` is the owners' map editor, its own light page at `/editor` (no game): it edits a patch over `data/world.json`
+  that PUBLISH LIVE sends to `/shared/map-<section>.json`, which the game lays over the level at start (`worker/mappatch.js`, one path for both).
+  Its ground picture (`data/topmap/`, `data/topmap.json`) comes from `PW_CHROMIUM=/opt/pw-browsers/chromium node tools/topmap.cjs`
+  (about 40 minutes; `--json` only the things): re-run it when the map changes. `tests/mapeditor.cjs`.
 - **Comments (owner, 20 Oct 2026)**: every file in `src/` starts with one comment line saying what it is; add that line when you
   touch a file that lacks it. Otherwise keep comments rare and short: a line where the code would mislead without it. The minifier
   strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never
   in the source. No comments in HTML or CSS (the build checks pages for an unclosed `<!--`).
-- `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`.
-  `data/full/` keeps the unsimplified originals (never shipped). `tools/`: bake and trim scripts.
+- `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`. `__FILE__("data/radio/x.mp3")` is a file fetched as it is (the car radio's stations, `tools/radio-bake.py`).
+  `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, refreshed by the build): what it needs, what it gives,
-  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`059-store` to
+  and which builder it sits inside. Each place is its own builder, `await grab(name, async()=>{...})`, one file each (`058-store` to
   `059h-bank` on the street; the park, castle, dungeon, stairs and station after). The kits (`014`–`038z`) and the bodega (`039-bodega`, its kits, layout and build)
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
   main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the imports cannot see that (they are property reads); the build check's error step can. Prove a move with the scope proof, then run the build check.
@@ -43,8 +48,8 @@ no holes, no clipping planes; `BLOCKS.facade` paints brick, windows, flower boxe
 sticks out (fire escapes, stoops). Its inside is registered in `ROOMS.off[id]` (`{name, box, need, build, unbuild, spawn, out, door, exit,
 rooms, keep}`, 130-rooms) away from the map: built behind the fade only when you go in (`ROOMS.enter(id)`: double-clicking the door's thing,
 the menu, a saved spot; doors never move and walking into one does nothing, owner 21 Oct 2026), the street not drawn while you are in, dropped when you leave (`ROOMS.exit(id)`). The apartment house
-(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) and the bodega are blocks off the map. The street's shops (bar, museum, bank, theatre, playhouse; 059-store) have solid painted outsides (no cuts)
-and build their insides in place behind the fade when you double-click the door (`STORE.enter`; out by the inside door, `STORE.exit`); the bath is a lazy room in `ROOMS.lazy`. Build any inside with `ROOMS.part(group, fn, make)` (it records the meshes, lights, things to
+(059a) and the arcade (059b; an inside of several rooms lists them in `rooms`) and the bodega are blocks off the map. The street's shops (bar, museum, bank, theatre, playhouse; 058-store) have solid painted outsides (no cuts)
+and build their insides in place behind the fade when you double-click the door (`STORE.enter`; out by the inside door, `STORE.exit`), dropped once you are out (`STORE.unGo`: what the build added to the shared lists is recorded and taken back; an async part registers `R.un`; `tests/insides.cjs`); the bath is a lazy room in `ROOMS.lazy`. Build any inside with `ROOMS.part(group, fn, make)` (it records the meshes, lights, things to
 use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs in your apartment joins it with `MODS.apts.furnish(lv, fn)`.
 
 ## Build
@@ -52,7 +57,7 @@ use and wall cuts) so `ROOMS.unpart` can drop it; something that belongs in your
 `python3 build.py`: joins `src/`, puts in the data and the build stamp (`__BUILDV__`), adds the loading breaths
 (`tools/yields.cjs`, read with acorn), minifies with esbuild (`tools/minify.cjs`; `npm install` once) and writes `dist/market.html` and
 `dist/door.html`; it stops if a page has an unclosed `<!--`. For the website it also writes `dist/g/`: THE MARKET
-split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `game.<hash>.js`, each `data/*.json` as `<name>.<hash>.json`
+split like the old game (`market.html` a 4 KB shell, `rig.<hash>.js`, `m.<hash>.js` (the game, with esbuild's shared `c-<hash>.js`), each `data/*.json` as `<name>.<hash>.json`
 fetched at start); the worker hands `dist/g/` only to a login, cached for good (a new build, new names). `dist/market.html` is the single-file page the tests drive. `MIN=0 python3 build.py` keeps them readable for debugging. `SKIP=g python3 build.py` writes only `dist/market.html` and `dist/door.html` (no `dist/g/`, so no npm packages beyond esbuild: for a workspace that cannot reach the registry).
 
 **Code in its own file (chunks, 20 Oct 2026)**: a function whose body starts with `'@name';` (e.g. `()=>{ '@park'; ... }`) is cut out
@@ -61,7 +66,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places: `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places (`dist/chunks.txt` lists every chunk and its functions; today also `caverns`, `blocks`, `nightmkt`, `editor`, `guide`, `log`, `greens`, `art`, `fair` (THE STRANGEST FAIR behind the West St row, 150q–150t: the lot, its rides, the midway, the karts; `tests/fair.cjs`) and the arcade games): `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts`, `playhouse` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails
@@ -78,12 +83,12 @@ Several chats work at once, each on its own branch. Every time:
 
 Moving here from `bralynnb/tsfm` (owner, 18 Oct 2026). This repo is the whole site: `worker/door.js` serves `/` (THE MARKET to a
 checked login, the door to anyone else) from `dist/`. `.github/workflows/site.yml` builds and runs `tests/site.cjs` (the real worker
-under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every push and pull request.
+under `wrangler dev`: the door shows, THE MARKET starts) and `tests/places.cjs` on every pull request (not again on `main`).
 **Multiplayer (23 Oct 2026)**: `src/111d-online.js` (`ONLINE`: the other players' bodies, name tags, the list, chat) talks to the `Block` Durable Object in `worker/door.js` (partyserver; one per section, `/parties/block/s-<id>`, the login cookie checked); `tests/online.cjs` checks it without a network. Fights between players: `src/146h-brawl.js` (hits judged by the attacker on the target's body parts, applied by the target through `VIT.hurt`; moves shared as `act`), `tests/brawl.cjs`.
 **VR (26 Oct 2026)**: `src/162c-vr.js` (`VR`: WebXR, a Quest 3 in its browser; the controllers become one gamepad driven by `PAD.step` from the headset's frames; the main loop's `xr` SYS phase and `VR.draw` replace the composer in the headset; open windows (`PAD.panels()`) are pictured with `html-to-image` onto a panel you point at with a controller or a tracked hand); `tests/vr.cjs` drives it on an emulated Quest 3 (IWER) with the website's ONLINE box up.
 **The owner's panel (23 Oct 2026)**: the TENANTS menu tab (`src/136c-tenants.js`, owners only) calls `/admin` in `worker/door.js` (players, invite codes, bans, messages; the worker checks `admins`, then uses the service key); letters live in the `Post` Durable Object and show at login (`/post`); email needs the `RESEND_API_KEY` secret on the worker. Never copy `market.html` anywhere by hand.
 **Checks are light by default** (owner, 20 Oct 2026: "lets try to not be as check heavy, only check when errors or really need to to be
-safe"): a pull request gets the build check only. The measuring checks (budget, same picture, same pixels: four machines, 8–10 minutes)
+safe"): a pull request gets the build check only: build, core, site, places, plus the other checks whose files it changes (all of them with the `full` label or the full box when started by hand). The measuring checks (budget, same picture, same pixels: three machines, 8–10 minutes)
 run only when asked: put the `measure` label on the pull request (`gh api -X POST repos/<owner>/<repo>/issues/<n>/labels -f 'labels[]=measure'`,
 then start the workflow by hand or push), or start the workflow by hand with `measure` ticked. Don't ask for them (owner, 21 Oct 2026: "forget about speed checks just check for major conflicts and go"): merge on the build
 check when the pull request has no conflicts. If GitHub drops a pull request's
@@ -131,7 +136,10 @@ Set 22 Oct 2026. Every change to the game goes by these.
 
 ## Tests
 
+**Screenshots (owner, 4 Nov 2026)**: take them in an open field or an empty void (a thing on its own against a plain ground or
+background), never where trees, buildings or the street hide it, unless the shot needs that place, and in the third-person or first-person view (`UI.setView('third'|'first')`), never the overhead or a free camera.
+
 `tests/core.cjs` is the fast check of the core's logic (imports, the level file, SYS, ZONES, VIS, FADE, collision), run on every
 pull request: add a line there when you add to the core. `tests/*.cjs` drive `dist/market.html` in headless Chromium (Playwright; software rendering here, slow: run in the
-background). The page takes `?at=x,z`, `?place=NAME`, `?hour=H`, `?fresh=1` for tests.
+background). The page takes `?at=x,z`, `?place=NAME`, `?hour=H`, `?fresh=1`, `?furnished=1` (your apartment as built, not empty) for tests.
 `tools/mocap-rig.cjs` and `tests/jumpcheck.cjs` read the rig out of the built page: build with `MIN=0` first.

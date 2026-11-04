@@ -19,7 +19,8 @@
  },
  "scanner": {
   "offworld": true,
-  "value": 40
+  "value": 40,
+  "grants": "prospect"
  },
  "cutter": {
   "offworld": true,
@@ -27,14 +28,21 @@
  },
  "extractor": {
   "offworld": true,
-  "value": 90
+  "value": 90,
+  "grants": "extract"
  },
  "rod": {
-  "value": 15
+  "value": 15,
+  "slot": "hand",
+  "grants": "fish",
+  "cast": 12,
+  "line": 1,
+  "reel": 1
  },
  "bait": {
   "stackable": true,
-  "value": 1
+  "value": 1,
+  "bait": "worm"
  },
  "fr_apple": {
   "edible": true,
@@ -66,6 +74,12 @@
   "slot": "hand",
   "grants": "catch",
   "value": 8
+ },
+ "kite": {
+  "slot": "hand",
+  "grants": "fly",
+  "value": 10,
+  "weight": 0.05
  },
  "bnet": {
   "slot": "hand",
@@ -99,5 +113,1377 @@
   "grants": "fight",
   "value": 120,
   "damage": 5
+ },
+ "bait_cut": {
+  "stackable": true,
+  "value": 1,
+  "bait": "cut"
+ },
+ "x_perch": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 1,
+  "fight": 2,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 0.35,
+  "value": 5,
+  "common": 8
+ },
+ "x_tomcod": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 2,
+  "fight": 2,
+  "bites": "night",
+  "bait": "worm",
+  "weight": 0.25,
+  "value": 4,
+  "common": 5,
+  "potted": true
+ },
+ "x_eel": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 2,
+  "fight": 4,
+  "bites": "night",
+  "bait": "worm",
+  "weight": 0.9,
+  "value": 9,
+  "common": 4,
+  "potted": true
+ },
+ "x_crab": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 1,
+  "fight": 1,
+  "bites": "any",
+  "bait": "cut",
+  "weight": 0.25,
+  "value": 8,
+  "common": 3,
+  "potted": true
+ },
+ "x_catfish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 3,
+  "fight": 5,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 2.5,
+  "value": 10,
+  "common": 4,
+  "potted": true
+ },
+ "x_shad": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 3,
+  "fight": 5,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 1.6,
+  "value": 11,
+  "common": 3
+ },
+ "x_flounder": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 4,
+  "bites": "day",
+  "bait": "cut",
+  "weight": 1.8,
+  "value": 12,
+  "common": 3
+ },
+ "x_bluefish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 7,
+  "bites": "day",
+  "bait": "cut",
+  "weight": 3.5,
+  "value": 16,
+  "common": 2
+ },
+ "x_bass": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 4,
+  "fight": 8,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 6,
+  "value": 20,
+  "common": 2
+ },
+ "x_sturgeon": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "river",
+  "depth": 6,
+  "fight": 10,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 40,
+  "value": 75,
+  "common": 0.3
+ },
+ "x_sunfish": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 2,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 0.2,
+  "value": 3,
+  "common": 6
+ },
+ "x_bluegill": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 2,
+  "bites": "day",
+  "bait": "worm",
+  "weight": 0.25,
+  "value": 3,
+  "common": 7,
+  "potted": true
+ },
+ "x_yperch": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 3,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 0.3,
+  "value": 5,
+  "common": 6,
+  "potted": true
+ },
+ "x_trout": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 5,
+  "bites": "dusk",
+  "bait": "worm",
+  "weight": 1.2,
+  "value": 9,
+  "common": 3
+ },
+ "x_carp": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 6,
+  "bites": "any",
+  "bait": "worm",
+  "weight": 4,
+  "value": 8,
+  "common": 3,
+  "potted": true
+ },
+ "x_lbass": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 7,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 2.2,
+  "value": 15,
+  "common": 2
+ },
+ "x_pike": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "water": "lake",
+  "depth": 0,
+  "fight": 8,
+  "bites": "dusk",
+  "bait": "cut",
+  "weight": 4,
+  "value": 25,
+  "common": 1
+ },
+ "jar_s": {
+  "stackable": true,
+  "sellable": true,
+  "value": 6,
+  "holds": 20
+ },
+ "jar_m": {
+  "stackable": true,
+  "sellable": true,
+  "value": 14,
+  "holds": 50
+ },
+ "jar_l": {
+  "stackable": true,
+  "sellable": true,
+  "value": 25,
+  "holds": 100
+ },
+ "scuba": {
+  "offworld": true,
+  "value": 40,
+  "slot": "back",
+  "grants": "breathe",
+  "tank": 300,
+  "rental": true
+ },
+ "ticket": {
+  "stackable": true,
+  "value": 5
+ },
+ "board_pine": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 40,
+  "speed": 4.5,
+  "len": 0.72,
+  "weight": 2.5
+ },
+ "board_moss": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 65,
+  "speed": 5.5,
+  "len": 0.62,
+  "weight": 2.5
+ },
+ "board_ember": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 95,
+  "speed": 6.5,
+  "len": 0.82,
+  "weight": 2.5
+ },
+ "board_moth": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 130,
+  "speed": 7.2,
+  "len": 0.86,
+  "weight": 2.5
+ },
+ "board_bone": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 170,
+  "speed": 8,
+  "len": 0.92,
+  "weight": 2.5
+ },
+ "board_teal": {
+  "slot": "hand",
+  "grants": "ride",
+  "offworld": true,
+  "value": 260,
+  "speed": 9.5,
+  "len": 1.05,
+  "weight": 2.5
+ },
+ "skateboard": {
+  "slot": "hand",
+  "grants": "skate",
+  "value": 30,
+  "speed": 5,
+  "len": 0.8,
+  "weight": 3
+ },
+ "tv_console": {
+  "value": 140,
+  "weight": 30,
+  "sellable": true
+ },
+ "tv_small": {
+  "value": 70,
+  "weight": 6,
+  "sellable": true
+ },
+ "pc_home": {
+  "value": 180,
+  "weight": 12,
+  "sellable": true
+ },
+ "modem": {
+  "value": 60,
+  "weight": 1.5,
+  "sellable": true
+ },
+ "radio_scanner": {
+  "slot": "hand",
+  "grants": "scan",
+  "value": 70,
+  "weight": 0.5
+ },
+ "nv_goggles": {
+  "slot": "eyes",
+  "grants": "night",
+  "value": 95,
+  "weight": 0.6,
+  "offworld": true
+ },
+ "curse_rats": {
+  "value": 15,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_cloud": {
+  "value": 12,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "curse_stink": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "cube2": {
+  "value": 6,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "cube3": {
+  "value": 12,
+  "weight": 0.15,
+  "sellable": true
+ },
+ "cube4": {
+  "value": 25,
+  "weight": 0.2,
+  "sellable": true
+ },
+ "balloon": {
+  "slot": "hand",
+  "grants": "lift",
+  "value": 15,
+  "weight": 0.05,
+  "speed": 5
+ },
+ "seed_star": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_sun": {
+  "value": 9,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "seed_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.02,
+  "offworld": true
+ },
+ "pot": {
+  "value": 8,
+  "weight": 2
+ },
+ "dirt": {
+  "value": 3,
+  "stackable": true,
+  "weight": 3
+ },
+ "water": {
+  "value": 1,
+  "stackable": true,
+  "weight": 1
+ },
+ "fr_star": {
+  "value": 10,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.25
+ },
+ "fr_sun": {
+  "value": 16,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.45
+ },
+ "fr_hum": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true,
+  "sellable": true,
+  "offworld": true,
+  "heals": 0.12
+ },
+ "p_refresh": {
+  "stackable": true,
+  "value": 12
+ },
+ "p_heal": {
+  "stackable": true,
+  "value": 20
+ },
+ "p_str": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_keen": {
+  "stackable": true,
+  "value": 28
+ },
+ "p_cure": {
+  "stackable": true,
+  "value": 40
+ },
+ "p_gheal": {
+  "stackable": true,
+  "value": 110
+ },
+ "bottle": {
+  "stackable": true,
+  "value": 2
+ },
+ "quartz": {
+  "stackable": true,
+  "value": 6
+ },
+ "amethyst": {
+  "stackable": true,
+  "value": 14
+ },
+ "geode": {
+  "stackable": true,
+  "value": 18
+ },
+ "amber": {
+  "stackable": true,
+  "value": 24
+ },
+ "moonstone": {
+  "stackable": true,
+  "value": 30
+ },
+ "opal": {
+  "stackable": true,
+  "value": 45
+ },
+ "emerald": {
+  "stackable": true,
+  "value": 70
+ },
+ "sapphire": {
+  "stackable": true,
+  "value": 85
+ },
+ "ruby": {
+  "stackable": true,
+  "value": 100
+ },
+ "meteor": {
+  "stackable": true,
+  "value": 150
+ },
+ "f_roast": {
+  "stackable": true,
+  "edible": true,
+  "value": 8
+ },
+ "f_fritter": {
+  "stackable": true,
+  "edible": true,
+  "value": 10
+ },
+ "f_skewer": {
+  "stackable": true,
+  "edible": true,
+  "value": 16
+ },
+ "f_soup": {
+  "stackable": true,
+  "edible": true,
+  "value": 30
+ },
+ "f_fishfry": {
+  "stackable": true,
+  "edible": true,
+  "value": 12
+ },
+ "f_chowder": {
+  "stackable": true,
+  "edible": true,
+  "value": 30
+ },
+ "jacket_denim": {
+  "slot": "body",
+  "color": "#2a4a7a",
+  "value": 35,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "jacket_stud": {
+  "slot": "body",
+  "color": "#1c1c20",
+  "value": 60,
+  "weight": 1.6,
+  "sellable": true
+ },
+ "jeans": {
+  "slot": "legs",
+  "color": "#34507e",
+  "value": 30,
+  "weight": 0.8,
+  "sellable": true
+ },
+ "shades": {
+  "slot": "eyes",
+  "color": "#1e6a3a",
+  "value": 20,
+  "weight": 0.1,
+  "sellable": true
+ },
+ "soda_pink": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "swift",
+  "boostS": 90
+ },
+ "soda_white": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "str",
+  "boostS": 120
+ },
+ "soda_teal": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true,
+  "offworld": true,
+  "boost": "regen",
+  "boostS": 60
+ },
+ "cactus_eye": {
+  "value": 35,
+  "weight": 1.5,
+  "offworld": true
+ },
+ "cactus": {
+  "value": 5,
+  "weight": 1
+ },
+ "bonsai": {
+  "value": 20,
+  "weight": 1.5
+ },
+ "cigar": {
+  "slot": "hand",
+  "value": 6,
+  "weight": 0.05,
+  "stackable": true
+ },
+ "cigar_blue": {
+  "slot": "hand",
+  "value": 15,
+  "weight": 0.05,
+  "stackable": true,
+  "offworld": true
+ },
+ "phone_home": {
+  "value": 40,
+  "weight": 2
+ },
+ "phone_cell": {
+  "slot": "hand",
+  "value": 120,
+  "weight": 1
+ },
+ "glowcap": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "darksight": 240
+ },
+ "rod_carbon": {
+  "value": 60,
+  "cast": 16,
+  "line": 1.3,
+  "sellable": true
+ },
+ "rod_surf": {
+  "value": 180,
+  "cast": 22,
+  "line": 1.6,
+  "sellable": true
+ },
+ "reel_fast": {
+  "value": 40,
+  "reel": 1.35,
+  "sellable": true
+ },
+ "reel_pro": {
+  "value": 120,
+  "reel": 1.7,
+  "sellable": true
+ },
+ "lure_worm": {
+  "stackable": true,
+  "value": 10,
+  "bait": "worm",
+  "reuse": true,
+  "sellable": true
+ },
+ "lure_spoon": {
+  "stackable": true,
+  "value": 14,
+  "bait": "cut",
+  "reuse": true,
+  "sellable": true
+ },
+ "cooler_s": {
+  "stackable": true,
+  "value": 20,
+  "holds": 15,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "cooler_m": {
+  "stackable": true,
+  "value": 50,
+  "holds": 40,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "cooler_l": {
+  "stackable": true,
+  "value": 120,
+  "holds": 100,
+  "keeps": "fish",
+  "sellable": true
+ },
+ "crabpot": {
+  "stackable": true,
+  "value": 25,
+  "sellable": true
+ },
+ "cage": {
+  "stackable": true,
+  "value": 5
+ },
+ "bseed": {
+  "stackable": true,
+  "value": 1
+ },
+ "feeder": {
+  "value": 14
+ },
+ "binoc": {
+  "value": 30
+ },
+ "bird_feather": {
+  "stackable": true,
+  "sellable": true,
+  "value": 2
+ },
+ "quill_pen": {
+  "sellable": true,
+  "value": 9
+ },
+ "bee_hive": {
+  "value": 40
+ },
+ "bee_smoker": {
+  "value": 12
+ },
+ "bee_veil": {
+  "slot": "head",
+  "value": 15
+ },
+ "jar_honey": {
+  "stackable": true,
+  "value": 1
+ },
+ "bee_wax": {
+  "stackable": true,
+  "sellable": true,
+  "value": 3
+ },
+ "wax_candle": {
+  "stackable": true,
+  "sellable": true,
+  "value": 12
+ },
+ "honey_wild": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.15,
+  "value": 8
+ },
+ "honey_clover": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.15,
+  "value": 10
+ },
+ "honey_lav": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.2,
+  "value": 16
+ },
+ "honey_sun": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.2,
+  "value": 14
+ },
+ "honey_rose": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.25,
+  "value": 22
+ },
+ "honey_moon": {
+  "stackable": true,
+  "sellable": true,
+  "edible": true,
+  "heals": 0.6,
+  "value": 80
+ },
+ "gem_wheel": {
+  "value": 35
+ },
+ "coat_red": {
+  "slot": "body",
+  "color": "#7a2e2a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "coat_green": {
+  "slot": "body",
+  "color": "#2e4a3a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "coat_navy": {
+  "slot": "body",
+  "color": "#2e3a5a",
+  "value": 28,
+  "weight": 1.2,
+  "sellable": true
+ },
+ "spray_silver": {
+  "value": 6
+ },
+ "spray_gold": {
+  "value": 14
+ },
+ "passport": {
+  "value": 0
+ },
+ "putter": {
+  "slot": "hand",
+  "grants": "golf",
+  "value": 20
+ },
+ "kart": {
+  "slot": "hand",
+  "grants": "kart",
+  "offworld": true,
+  "value": 120,
+  "speed": 7,
+  "len": 1.25,
+  "weight": 8
+ },
+ "d_ale": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "d_stout": {
+  "value": 7,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "d_cola": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "prize_yoyo": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "prize_ring": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.02
+ },
+ "d_coffee": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "d_shake": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_eggs": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_pancake": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_hash": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "f_burger": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_blt": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_grilled": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_pie": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_cake": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_gumball": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01,
+  "edible": true
+ },
+ "news_paper": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.1
+ },
+ "arc_token": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "f_bec": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_hero": {
+  "value": 6,
+  "stackable": true,
+  "weight": 0.5,
+  "edible": true
+ },
+ "f_chopped": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.4,
+  "edible": true
+ },
+ "f_icepop": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.1,
+  "edible": true
+ },
+ "lotto_ticket": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "g_water": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_soda": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_juice": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_milk": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_eggs": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_butter": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_cheese": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_yogurt": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_cereal": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_bread": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_bagels": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_coffee": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_oats": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_chips": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_vaseline": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_soup": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_tuna": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_pasta": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_noodles": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_candy": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_gum": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_tp": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_towels": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_dishsoap": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bleach": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_sponge": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_tea": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bulb": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_batteries": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_matches": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_lighter": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_soap": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_toothpaste": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_toothbrush": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_shampoo": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_deodorant": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_aspirin": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_qtips": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_catfood": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_dogfood": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_fishfood": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_bananas": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_beans": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_vienna": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_spam": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_detergent": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_cleanser": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_diapers": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_koolaid": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_candle": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_rice": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "g_plantains": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "g_beer": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_popcorn": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_nachos": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "f_candybox": {
+  "value": 2,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
+ },
+ "mus_postcard": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "mus_plush": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "mus_replica": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.5
+ },
+ "mus_guidebook": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "fairticket": {
+  "stackable": true,
+  "value": 2
+ },
+ "ptix": {
+  "stackable": true,
+  "value": 0,
+  "weight": 0
+ },
+ "plush_bear": {
+  "value": 12,
+  "weight": 0.4,
+  "sellable": true
+ },
+ "plush_duck": {
+  "value": 8,
+  "weight": 0.3,
+  "sellable": true
+ },
+ "plush_giant": {
+  "value": 40,
+  "weight": 1.5,
+  "sellable": true
+ },
+ "kazoo": {
+  "value": 3,
+  "weight": 0.05,
+  "sellable": true
+ },
+ "fair_pennant": {
+  "value": 4,
+  "weight": 0.05,
+  "sellable": true
+ },
+ "fairphoto": {
+  "value": 6,
+  "weight": 0.02,
+  "sellable": true
+ },
+ "cotton_candy": {
+  "edible": true,
+  "value": 4,
+  "weight": 0.05,
+  "heals": 0.12
+ },
+ "popcorn": {
+  "edible": true,
+  "value": 3,
+  "weight": 0.1,
+  "heals": 0.1
+ },
+ "corndog": {
+  "edible": true,
+  "value": 5,
+  "weight": 0.15,
+  "heals": 0.2
+ },
+ "lemonade": {
+  "edible": true,
+  "value": 3,
+  "weight": 0.3,
+  "heals": 0.08
+ },
+ "funnelcake": {
+  "edible": true,
+  "value": 6,
+  "weight": 0.2,
+  "heals": 0.22
  }
 }

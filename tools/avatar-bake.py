@@ -1,16 +1,16 @@
 # THE AVATAR KIT (owner, 24 Oct 2026: "make them just the base and they can choose hairstyles, clothes, skin color ... facial hair, hair color,
-# height ... use what you have"): cut from the six RPG townsfolk already baked in data/rpgchars.json (one rig, 32 bones, same names) into
+# height ... use what you have"): cut from the six RPG townsfolk already baked in data/full/rpgchars.json (one rig, 32 bones, same names) into
 # data/avatar.json. OUTFITS: each townsperson below the neck, on its own skeleton, its weapon left out. HEAD: the monk's head with its beard
 # and beads taken off is the bald base every avatar wears. HAIR and BEARD: pieces cut from the other heads by colour and place (skin is warm
 # and mid-saturated; hair, hoods and beards are not; a beard sits low and in front), each fitted from its own skull's box onto the base skull
 # and kept in the Head bone's own space, so it rides any outfit's head. Every point carries its role (0 skin, 1 hair, 2 hood, 3 cloth) so the
-# game can recolour skin and hair. Each outfit is a BODIES body (src/111a-bodies.js), as tools/bases-bake.py makes the man and the woman: the
+# game can recolour skin and hair. Each outfit is a BODIES body (src/111a-bodies.js), as tools/hero-bake.py makes the hero: the
 # rig's 15 bones fitted to its skeleton at rest (each bone's origin and rest frame; limbs' frames along the bone), its 32 bones' weights folded
 # into those 15, two a point; its height to the top of the bald head (so hair never shrinks it) and the Head bone's rest matrix, which seats
 # the head pieces. Run (after tools/rpgchars-bake.py): python3 tools/avatar-bake.py
 import json, base64, colorsys, numpy as np
 B=lambda s,t:np.frombuffer(base64.b64decode(s),t); b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
-D=json.load(open('data/rpgchars.json')); HEADB={'Head','Neck'}; WEAPON=('Sword','Staff','Bow','Dagger')
+D=json.load(open('data/full/rpgchars.json')); HEADB={'Head','Neck'}; WEAPON=('Sword','Staff','Bow','Dagger')
 def load(k):
     v=D[k]; M=v['mesh']; R=v['rig']
     P=(B(M['p'],np.int16).reshape(-1,3).astype(float)+32500)*M['sc']+np.array(M['lo'])

@@ -1,6 +1,6 @@
 // THE FOUNTAIN LAKE: FOUNT shapes the lake and its fountain in the park: its shore, bed, water and swimming.
 import {SHARED, THREE} from './003-shx.js';
-import {BROOK, CLOCK, PARK, ROOMS, SKY, WED} from './003b-systems.js';
+import {BROOK, CLOCK, FLOW, PARK, ROOMS, SKY, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
@@ -11,15 +11,16 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
   const ter=FOUNT.ter=(x,y)=>FOUNT.S&&FOUNT.on?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
+  // the running track round the lake (owner, 2 Nov 2026, his picture of the reservoir's path and rail): a band TRACK[1] either side of TRACK[0] tiles off the water, along the whole shore inside the park
+  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(lake(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
-    for(let i=0;i<=300;i++){ const a=Math.PI*(1+.85*i/300), cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
-    const poly=[]; let prev=null; for(const p of pts){ const ins=p[0]<L.cx&&p[1]<L.cy;
-      if(ins&&prev&&!(prev[0]<L.cx&&prev[1]<L.cy)){ const t=(L.cy-prev[1])/(p[1]-prev[1]); poly.push([prev[0]+(p[0]-prev[0])*t,L.cy]); }
-      if(ins)poly.push(p); else if(prev&&prev[0]<L.cx&&prev[1]<L.cy){ const t=(L.cx-prev[0])/(p[0]-prev[0]); poly.push([L.cx,prev[1]+(p[1]-prev[1])*t]); break; }
-      prev=p; }
-    poly.push([L.cx,L.cy]); S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
+    for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
+    // the whole shore, cut where the park ends (x past L.cx, y past L.cy)
+    const cut=(Q,k,v)=>{ const o=[]; for(let i=0;i<Q.length;i++){ const p=Q[i], q=Q[(i+1)%Q.length], ip=p[k]<=v, iq=q[k]<=v; if(ip)o.push(p); if(ip!==iq){ const t=(v-p[k])/(q[k]-p[k]); o.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]); } } return o; };
+    const poly=cut(cut(pts,0,L.cx),1,L.cy);
+    S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
     const X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), strips=[];
     for(let x=Math.floor(S.x0);x<L.cx;x+=2){ const x2=Math.min(x+2,L.cx-.01), w=y=>lake(x,y)<0||lake(x+1,y)<0||lake(x2,y)<0; let y0=null; for(let y=S.y0-1;y<=L.cy+.5;y+=.5){ const i_=y<L.cy&&w(y); if(i_&&y0===null)y0=y; if(!i_&&y0!==null){ strips.push([X(x),Z(y0),X(x2),Z(Math.min(y,L.cy))]); y0=null; } } }
     S.strips=strips;
@@ -28,8 +29,10 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     const rocks=[]; let acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; const gap=1.3+.8*hs(i,3,1); if(acc<gap)continue; acc=0; const [x,y]=shore[i], n=nrm(x,y), k=.15+.5*hs(i,5,2), s=.24+.5*Math.pow(hs(i,7,3),1.5);
       const rx=x-n[0]*k, ry=y-n[1]*k; if(ter(rx,ry)<.25)continue; rocks.push([rx,ry,s,hs(i,9,4)]); }
     S.rocks=rocks;
-    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<9+3*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=1.6+2.2*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
-      if(ter(ox,oy)<r+.5||P.pd(ox,oy)<r||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
+    S.shore=shore; S.nrm=nrm;
+    // the shore's trees stand past the running track (owner, 2 Nov 2026), their crowns over it and the water
+    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
+      if(ter(ox,oy)<r+.5||P.pd(ox,oy)<2.2||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
     S.oaks=oaks; S.lamps=!FOUNT.on?[]:[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
     if(FOUNT.on&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
     return S; };
@@ -53,8 +56,13 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     for(const r of S.rocks)if(r[2]>.56)solR(r,r[0],r[1],r[2]*.42,r[2]*24);
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
   const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
-    const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY=d=>-bedM(d)*WU-.04; FOUNT.LV=LV; FOUNT.bedY=bedY;
-    FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); return d>-1?bedY(d):null; };
+    const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY0=d=>-bedM(d)*WU-.04; FOUNT.LV=LV;
+    // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light
+    const HOLE=[[L.x-L.rx*.45,L.y-L.ry*.15,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]], pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
+    const bedY=(d,x,y)=>bedY0(d)-(x!=null&&d>1.5?pit(x,y)*Math.min(1,(d-1.5)/3)*WU:0); FOUNT.bedY=bedY;
+    FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); const px=x/T+SHARED.BOD.OX-(P.ox||0), py=z/T+SHARED.BOD.OY-(P.oy||0); return d>-1?bedY(d,px,py):null; };
+    { const mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0), a=[X(S.x0-3),X(L.cx+3)], b=[Z(S.y0-3),Z(L.cy+3)];   // the big lake in the one water (065a): its bed, a bank that rises past the shore
+      FLOW.add({name:'lake',kind:'lake',shown:()=>grp.visible,box:[Math.min(...a),Math.min(...b),Math.max(...a),Math.max(...b)],has:(x,z)=>SHARED.LVL==='up'&&lake(mx(x),mz(z))<.4,bed:(x,z)=>{ const d=-lake(mx(x),mz(z)); return d>0?bedY(d,mx(x),mz(z)):LV-.04+(-d)*.5*WU; },rest:()=>LV}); }
     const uT=FOUNT.uT={value:0}, uGl={value:1}, uP=FOUNT.uP={value:new THREE.Vector4()}, uO={value:new THREE.Vector4()}, uOw={value:new THREE.Vector2()}; FOUNT.uGl=uGl;
     if(BK&&BK.kM!=null){ const k=BK.kM, c=BK.C[k], a=BK.C[Math.max(0,k-1)], b=BK.C[Math.min(BK.N,k+1)], tx=X(b[0])-X(a[0]), tz=Z(b[1])-Z(a[1]), l=Math.hypot(tx,tz); uO.value.set(X(c[0]),Z(c[1]),tx/l,tz/l); uOw.value.set((BK.W(c[2])+BK.B+.3)*T,10*T); }
     const wmat=(deep,shal,ring)=>{ const m=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,side:THREE.DoubleSide}), uC={value:new THREE.Vector4(...ring)}, uD={value:new THREE.Color().setRGB(...deep,THREE.SRGBColorSpace)}, uS={value:new THREE.Color().setRGB(...shal,THREE.SRGBColorSpace)};
@@ -77,13 +85,35 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();
-    const bedTris=chunks(1,(d,a,b)=>Math.max(...d)>-1.4&&!(lake(a,b)>0&&BK&&BK.wet(a,b)),(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),Math.min(bedY(d[k]),bk(a,b)),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
-      const c=lin.setRGB(...BD[dm<.25?0:dm<.7?1:dm<1.6?2:3].map(v=>v*(.88+.24*h)),THREE.SRGBColorSpace).toArray(); for(const k of t){ pos.push(...v[k]); col.push(...c); } } });
-    const bedM_=new THREE.MeshLambertMaterial({vertexColors:true}); for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
-    const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(1,(bedM(d[k])-.22)/2.4))); } });
+    const bedTris=chunks(1,(d,a,b)=>Math.max(...d)>-1.4&&!(lake(a,b)>0&&BK&&BK.wet(a,b)),(q,d,pos,col)=>{ const v=q.map(([a,b],k)=>[X(a),Math.min(bedY(d[k],a,b),bk(a,b)),Z(b)]); for(const t of [[0,2,1],[0,3,2]]){ const m=(d[t[0]]+d[t[1]]+d[t[2]])/3, dm=bedM(m), h=hs(Math.floor(q[0][0]*3+t[1]),Math.floor(q[0][1]*3),21);
+      const g=Math.min(2.999,dm/.6), i=Math.floor(g), f=g-i, c=lin.setRGB(...BD[i].map((v,j)=>(v+(BD[i+1][j]-v)*f)*.8*(.92+.16*h)),THREE.SRGBColorSpace).toArray(); for(const k of t){ pos.push(...v[k]); col.push(...c); } } });
+    // the bed seen through clear water (owner, 29 Oct 2026, of the lake from above: "fix it"): sand at the edge, mud deeper, patches of weed, pebbles,
+    // dark down the holes, the sun's light dancing on it in the shallows; worked out where it is drawn, so it needs no more triangles; lit as one smooth floor
+    const bedM_=new THREE.MeshLambertMaterial({color:0xffffff}); bedM_.onBeforeCompile=sh=>{ sh.uniforms.uLV={value:LV}; sh.uniforms.uT=FOUNT.uT;
+      sh.vertexShader='varying vec3 vWb;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWb=(modelMatrix*vec4(transformed,1.)).xyz;');
+      sh.fragmentShader=`uniform float uLV,uT; varying vec3 vWb;
+        float bh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
+        float bn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(bh(i),bh(i+vec2(1.,0.)),f.x),mix(bh(i+vec2(0.,1.)),bh(i+vec2(1.,1.)),f.x),f.y); }
+        float cau(vec2 p,float t){ vec2 i=p; float c=1.; for(int n=0;n<3;n++){ float tt=t*(1.-(3.5/float(n+1))); i=p+vec2(cos(tt-i.x)+sin(tt+i.y),sin(tt-i.y)+cos(tt+i.x)); vec2 q=vec2(sin(i.x+tt),cos(i.y+tt)); q=sign(q)*max(abs(q),vec2(1e-3)); c+=1./max(length(vec2(p.x/(q.x/.005),p.y/(q.y/.005))),1e-4); } c/=3.; c=1.17-pow(max(c,0.),1.4); return min(pow(abs(c),8.),3.); }
+        `+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+        { float d=max(0.,uLV-vWb.y)*${(.84/T).toFixed(5)}; vec2 p=vWb.xz*${(.84/T).toFixed(5)}; float n=bn(p*.7)*.6+bn(p*2.6+3.)*.4;
+          vec3 c=mix(vec3(.62,.56,.42),vec3(.34,.3,.22),smoothstep(.3,1.8,d+(n-.5)*.9)); c=mix(c,vec3(.17,.24,.11),smoothstep(.56,.74,n)*smoothstep(.8,2.4,d));
+          float pb=bn(p*13.); if(pb>.8&&d<2.5)c*=.72+.4*bh(floor(p*13.)); c*=.86+.22*bn(p*6.); c=mix(c,vec3(.06,.09,.07),smoothstep(4.,14.,d));
+          float k=d>.05?cau(mod(p*.9,6.2831),uT*.5)*exp(-d*.35):0.; c+=vec3(.22,.28,.24)*min(k,1.2)*.5;
+          diffuseColor.rgb=pow(c,vec3(2.2)); }`); };
+    bedM_.customProgramCacheKey=()=>'lakebed';
+    for(const [pos,col] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((_,i)=>i%3===1?1:0),3)); g.computeBoundingSphere(); const me=new THREE.Mesh(g,bedM_); me.receiveShadow=true; grp.add(me); }
+    const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(25,(bedM(d[k])+pit(q[k][0],q[k][1])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
+    // the lake's water is the Hudson's (owner, 2 Nov 2026: "calm, real water, clear, like hudson same options"): the river's surface shader over the lake's own depth picture, no swell; the river's panel (a double click on the water) sets it
+    const RV=window.RIVER; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
+      for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const px=mx(ax+wx*(i+.5)/N), py=mz(az+wz*(j+.5)/N), d=-lake(px,py), m=d>0?bedM(d)+pit(px,py)*Math.min(1,Math.max(0,(d-1.5)/3)):0, k=(j*N+i)*4; img[k]=Math.min(255,Math.round(m*20)); img[k+3]=255; }
+      const bt=new THREE.DataTexture(img,N,N); bt.magFilter=bt.minFilter=THREE.LinearFilter; bt.needsUpdate=true;
+      swap=()=>{ if(!RV||!RV.surface)return; const m=RV.surface({bed:bt,bedR:new THREE.Vector4(ax,az,wx,wz),lv:LV}); for(const me of FOUNT.waters||[])me.material=m; FOUNT.lakeM=m; };
+      if(RV&&RV.surface)swap(); else if(RV)RV.onBuild.push(swap);
+      if(RV&&RV.pickers){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-LV), ph=new THREE.Vector3(); RV.pickers.push((ray,pos)=>SHARED.LVL==='up'&&grp.visible&&!!ray.intersectPlane(pl,ph)&&FOUNT.bedAt(ph.x,ph.z)!=null&&Math.hypot(ph.x-pos.x,ph.z-pos.z)<40*T); } }
     { const N=S.rocks.length, me=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),N), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), c=new THREE.Color();
-      S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });
+      S.rocks.forEach(([x,y,s,h],i)=>{ const w=s*T*.5, d=-lake(x,y); me.setMatrixAt(i,m4.compose(new V3(X(x),bedY(d,x,y)+w*.25,Z(y)),q.setFromEuler(e.set(h*3,h*9,h*2)),new V3(w*(1+.3*h),w*(.55+.3*hs(i,2)),w*(.9-.2*h)))); const g=.4+.16*hs(i,4); me.setColorAt(i,c.setRGB(g,g*.99,g*.95)); });
       me.castShadow=me.receiveShadow=true; grp.add(me); FOUNT.rockN=N;
       WED.meshes.push({place:'park',me,items:S.rocks.map((r,i)=>{ me.getMatrixAt(i,m4); const E=m4.elements; return {k:'lake rock',x:E[12],y:E[13],z:E[14],sol:r.sol,fix:r.fix}; })}); }
     let drops=null, flow=()=>{}, discT=0; if(FOUNT.on){
@@ -137,16 +167,16 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
     let wasIn=false;
     FOUNT.feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='up'||pos.x<X(S.x0-1)||pos.z<Z(S.y0-1)){ if(FOUNT.swim||wasIn){ FOUNT.swim=false; wasIn=false; uP.value.z=0; } return false; }
       const d=-lake(pos.x/T+SHARED.BOD.OX-(P.ox||0),pos.z/T+SHARED.BOD.OY-(P.oy||0)); if(d<=0){ FOUNT.swim=false; uP.value.z=0; return false; }
-      const W=RIG.water(st,{level:LV/ZU,floor:bedY(d)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      const W=RIG.water(st,{level:(LV+(FOUNT.swim?FLOW.carry(pos,dt):0))/ZU,floor:bedY(d,pos.x/T+SHARED.BOD.OX-(P.ox||0),pos.z/T+SHARED.BOD.OY-(P.oy||0))/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
       if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
       let kick=0; for(const e of W.events)if(e.k==='splash')kick=Math.max(kick,Math.min(1.6,.4+e.v*.01)); W.events.length=0; if(W.in&&!wasIn)kick=1.4; wasIn=W.in; FOUNT.swim=W.in;
       const wet=W.in||W.floor<W.level, z=wet?Math.max(kick,W.in?(go?.9:.35):(go?.55:0)):0; uP.value.set(pos.x,pos.z,uP.value.z+(z-uP.value.z)*Math.min(1,dt*(z>uP.value.z?12:2)),0); return true; };
-    FOUNT.tick=(dt,pos)=>{ if(SHARED.LVL!=='up'||!grp.visible)return; const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; uT.value+=dt;
-      try{ uGl.value=Math.max(0,Math.min(1,(CLOCK.elev()+2)/10)); }catch(e){} if(drops){ drops.visible=fn; if(fn)flow(uT.value); } };
+    let ft=0; FOUNT.tick=(dt,pos)=>{ if(SHARED.LVL!=='up'||!grp.visible)return; if(RV&&!RV.on&&RV.shade)RV.shade(); const fn=near(pos,80), ln=pos.x>X(S.x0-50)&&pos.z>Z(S.y0-50); if(!fn&&!ln)return; ft+=dt;
+      try{ uGl.value=Math.max(0,Math.min(1,(CLOCK.elev()+2)/10)); }catch(e){} if(drops){ drops.visible=fn; if(fn)flow(ft); } };
     const UF=new THREE.Fog(0,0,1), bg0=new THREE.Color(); let fog0=null, uw=false, dome=true;
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;
       let k=1; try{ k=.3+.7*Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)); }catch(e){}
-      UF.color.setRGB(.16,.28,.22,THREE.SRGBColorSpace).multiplyScalar(k); UF.near=.4*T; UF.far=6*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
+      const see=FLOW.see(Math.max(0,(LV-c.y)*.84/T),9); UF.color.setRGB(.2,.4,.36,THREE.SRGBColorSpace).multiplyScalar(k*see.k); UF.near=0; UF.far=see.far/.84*T; UF.uw=true; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
       if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
     FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
     if(window.BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);

@@ -10,14 +10,14 @@ const {chromium}=require('playwright');
   const at=()=>pg.evaluate(()=>{ const p=__dbg.pos(); return {x:p[0]/1.13+72,y:p[2]/1.13-77,hd:__dbg.hd()}; });
   const W=await pg.evaluate(()=>({x0:__dbg.MAPK.RING.wx0}));
   const east=h=>Math.abs(Math.sin(h)-1)<.05;
-  for(const id of ['bar','playhouse','museum']){ const d=await pg.evaluate(id=>{ const o=STORE.inside[id].th.obj.position; return o.x/1.13+72; },id);
+  for(const id of ['bar','museum']){ const d=await pg.evaluate(id=>{ const o=STORE.inside[id].th.obj.position; return o.x/1.13+72; },id);
     await pg.evaluate(id=>STORE.enter(id,true),id); await idle(); await pg.waitForTimeout(800); await pg.evaluate(id=>STORE.exit(id),id); await idle(); await pg.waitForTimeout(500); const o=await at();
     ok(d>W.x0-1&&o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': its door is on West St and its way out leaves you on West St facing the street ('+d.toFixed(1)+' → '+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
-  for(const id of ['arcade','apt']){ await pg.evaluate(id=>ROOMS.enter(id),id); await idle(); await pg.waitForTimeout(800); await pg.evaluate(id=>ROOMS.exit(id),id); await idle(); await pg.waitForTimeout(500); const o=await at();
+  for(const id of ['arcade','playhouse','apt']){ await pg.evaluate(id=>id==='apt'?__dbg.MAPK.MODS.apts.enterReal():ROOMS.enter(id),id); await idle(); await pg.waitForTimeout(800); await pg.evaluate(id=>id==='apt'?__dbg.MAPK.MODS.apts.exitReal():ROOMS.exit(id),id); await idle(); await pg.waitForTimeout(500); const o=await at();
     ok(o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': out onto West St facing the street ('+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
-  const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=window.BLK.blds;
+  const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=[...window.BLK.blds,...window.BLK.lots];
     const west=B.filter(q=>Math.abs(q.x1-F)<.6).map(q=>[q.y0,q.y1]), mk=B.filter(q=>q.row===1).map(q=>[q.x0,q.x1]);
     return {west,mk}; });
-  ok(g.west.length>=5,'West St has its row of buildings ('+g.west.length+')'); ok(g.mk.length>=10,'Market St\'s front row is filled ('+g.mk.length+')');
+  ok(g.west.length>=5,'West St has its row of buildings ('+g.west.length+')'); ok(g.mk.length>=8,'Market St\'s front row is filled ('+g.mk.length+'; 8 since the Drive\'s buildings took gaps, 3 Nov 2026)');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));
   console.log(bad?bad+' failed':'all West St checks passed'); await b.close(); process.exit(bad?1:0); })();

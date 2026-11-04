@@ -1,25 +1,15 @@
-// THE CHARACTER PAGE: the menu's home (ESC) — your live avatar, drag-drop gear, and the menu buttons.
+// THE CHARACTER PAGE: YOU on the handheld — your live avatar, SKILLS, PASSPORT, LOG OUT; and the one ADMIN window (owners): the bug queue, TENANTS, EDITORS, CITY, STATS, the render inspector, SUMMON and the game log.
 import {THREE} from './003-shx.js';
-import {CHARP, CINEMA, EQUIP, FORAGE, INV, ITEMS, LOOKS, UI, VIT, W3, WE, WIELD} from './003b-systems.js';
-import {renderer} from './004-main.js';
+import {BUGS, CHARP, CIVIC, EDITORS, FORAGE, HANDHELD, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, VIT, W3} from './003b-systems.js';
+import {pxS, renderer} from './004-main.js';
+import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
-{ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const CLOG=__CHANGELOG__;   // [date, summary] of every HISTORY update, newest first; baked by build.py
-  const SLOTS=[['head','HEAD'],['eyes','EYES'],['body','BODY'],['hand','HAND']];
-  const name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, short=id=>{ const n=name(id); return n.length>11?n.slice(0,10)+'…':n; };
-  const slotOf=id=>ITEMS&&ITEMS.prop?ITEMS.prop(id,'slot'):null, holdable=id=>slotOf(id)==='hand'||(WIELD.LIST&&WIELD.LIST.includes(id));
-  const carried=()=>Object.keys(INV.items||{}).filter(id=>INV.items[id]>0&&(['head','eyes','body'].includes(slotOf(id))||holdable(id))).sort();
-  const wornIn=s=>s==='hand'?WIELD.on:(EQUIP.by&&EQUIP.by[s]);
-  const wear=id=>{ if(holdable(id))WIELD.set(WIELD.on===id?null:id); else EQUIP.wear(id); refresh(); };
-  const unwear=s=>{ const id=wornIn(s); if(!id)return; if(s==='hand')WIELD.set(null); else EQUIP.wear(id); refresh(); };
-  const fits=(id,s)=>s==='hand'?holdable(id):slotOf(id)===s;
-  const pick=(s,at)=>{ const P=el.querySelector('#cppick'), ids=carried().filter(id=>fits(id,s)), lab=(SLOTS.find(x=>x[0]===s)||[0,s])[1];
-    P.innerHTML=`<div class="cp-trayh">${lab}</div>`+(ids.length?ids.map(id=>`<div class="cp-chip" data-id="${id}">${esc(short(id))}</div>`).join(''):`<span class="cp-dim">nothing for your ${s} yet — gear turns up in your pack</span>`);
-    P.dataset.slot=s; P.style.top=at.offsetTop+'px'; P.hidden=false; };
+{ const esc=TEXT.esc;
+  const CLOG=()=>{ '@log'; return __CHANGELOG__; };   // [date, summary] of every HISTORY update, newest first; baked by build.py into its own chunk
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
-  let rt,cam,raf=0,last=0,el=null,cv=null,g2=null,spin=0,isAdmin=!!CINEMA.admin; const W=256,H=384,FACE=0, V=new THREE.Vector3();
+  let rt,cam,on=0,last=0,el=null,cv=null,g2=null,spin=0; const W=256,H=384,FACE=0, V=new THREE.Vector3();
   const shot=()=>{ const g=W3&&W3.group; if(!g||!cv||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
     const sv={ry:g.rotation.y,vis:g.visible,am:g.matrixAutoUpdate}; g.visible=true; g.matrixAutoUpdate=true; g.rotation.y=FACE+spin; g.updateMatrixWorld(true);
     const gp=g.getWorldPosition(V.clone()), head=W3.eyeAt&&W3.eyeAt(new THREE.Vector3());
@@ -27,76 +17,61 @@ import {DESIGN} from './102b-designer.js';
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
     cam.position.set(gp.x,cy,gp.z+d); cam.up.set(0,1,0); cam.lookAt(gp.x,cy,gp.z); cam.updateMatrixWorld(true);
     DESIGN.portrait(rt,cam);
-    const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px);
+    const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,Math.min(H,300*(devicePixelRatio||1)/pxS()));   // the same pixel size as the game around it, at your RESOLUTION
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
-  const loop=t=>{ if(!UI.menuOpen||!el){ raf=0; return; } raf=requestAnimationFrame(loop); if(t-last<55)return; last=t; shot(); bars(); };
+  const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');
 
-  const bars=()=>{ if(!el)return; const hp=el.querySelector('#cphp'), sta=el.querySelector('#cpst'); if(hp)hp.style.width=Math.round((VIT.hp||0)*100)+'%'; if(sta)sta.style.width=Math.round((VIT.sta||0)*100)+'%'; };
-  const drawSlots=()=>{ el.querySelector('#cpslots').innerHTML=SLOTS.map(([s,lab])=>{ const id=wornIn(s); return `<div class="cp-slot${id?' on':''}" data-slot="${s}"${id?' draggable="true"':''} title="${id?esc(name(id)):lab} — ${id?'click or drag off to remove':'click to pick gear, or drag it here'}">${id?esc(short(id)):'<span class="cp-dim">'+lab+'</span>'}</div>`; }).join(''); };
-  const drawTray=()=>{ const ids=carried(); el.querySelector('#cptray').innerHTML='<div class="cp-trayh">CARRIED GEAR — drag onto your body, or click to wear</div>'+(ids.length?ids.map(id=>`<div class="cp-chip" draggable="true" data-id="${id}">${esc(short(id))}</div>`).join(''):'<span class="cp-dim">nothing to wear — gear turns up in your pack</span>'); };
-  const btns=()=>{ const B=[['HELP','?',()=>{ UI.toggleMenu(); UI.moves(); }],['MAP','',()=>UI.menuTab('map')],['PACK','I',()=>openPack('pack')],['SKILLS','',()=>openPack('skills')],['CRAFT','',()=>openPack('craft')],['SETTINGS','',()=>UI.menuTab('display')],['EDIT WORLD','⇧E',()=>{ UI.toggleMenu(); WE.toggle(); }],['REPORT A BUG','F8',()=>UI.menuTab('bug')]];
-    if(isAdmin)B.push(['ADMIN','',adminOpen,1]); B.push(['LOG OUT','',logout]);
-    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}">${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
+  const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];
+    el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
-  const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem('sb-jvcetttmqseoteidfggn-auth-token'); }catch(e){} location.replace('/'); };
-  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
+  const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
+  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
       ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
-        <button class="cp-btn cp-adm" id="cpaq" style="width:100%;margin-bottom:14px">BUG / REPORT QUEUE</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"><button class="cp-btn cp-adm" data-pane="bug">BUG QUEUE</button><button class="cp-btn cp-adm" data-pane="tenants">TENANTS</button>
+          <button class="cp-btn" id="cped">EDITORS<span style="color:#9b9584">SHIFT+0</span></button><button class="cp-btn" data-pane="city" id="cpcity">CITY</button><button class="cp-btn" id="cpstat">STATS</button><button class="cp-btn" id="cprin">RENDER INSPECTOR</button></div>
+        <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">SUMMON</div>
+        <div style="color:#9b9584;margin-bottom:6px">bring anyone to stand in front of you; everyone here sees them until SEND BACK</div>
+        <input id="cpsq" placeholder="find a character" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px;font:11px Silkscreen,monospace;color:#d8dae2;background:#0e1016;border:2px solid #3a3f4e;padding:6px 8px">
+        <div id="cpsl" style="max-height:30vh;overflow:auto;margin-bottom:14px"></div>
         <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
-        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${CLOG.length}</div>
-        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${CLOG.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
-      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelector('#cpaq').onclick=()=>{ ap.hidden=true; UI.menuTab('bug'); }; }
-    ap.hidden=false; };
-
-  const refresh=()=>{ if(!el)return; el.querySelector('#cppick').hidden=true; drawSlots(); drawTray(); bars(); el.querySelector('#cpname').textContent=((LOOKS.L&&LOOKS.L.name)||'YOU').toUpperCase(); shot(); };
+        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${L.length}</div>
+        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
+      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelectorAll('[data-pane]').forEach(b=>b.onclick=()=>{ ap.hidden=true; UI.menuTab(b.dataset.pane); if(b.dataset.pane==='city'&&CIVIC.draw)CIVIC.draw(); });
+      ap.querySelector('#cped').onclick=()=>{ ap.hidden=true; EDITORS.menu(); };
+      const tools=()=>{ ap.querySelector('#cpcity').style.display=document.querySelector('#menu [data-p="city"]')?'':'none'; const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
+      ap.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(); };
+      const sl=ap.querySelector('#cpsl'), sq=ap.querySelector('#cpsq');
+      const sum=()=>{ const f=sq.value.trim().toLowerCase(), here=new Set(SUMMON.here()), A=SUMMON.list(), R=A.map(N=>{ const id=SUMMON.id(N,A), n=id.split('#')[1]; return {N,id,nm:(N.name||N.key)+(n?' '+n:'')}; }), L=R.filter(r=>!f||r.nm.toLowerCase().includes(f)||r.id.toLowerCase().includes(f)).sort((a,b)=>(here.has(b.id)-here.has(a.id))||a.nm.localeCompare(b.nm,undefined,{numeric:true})).slice(0,150);
+        sl.innerHTML=L.length?L.map(r=>'<div style="display:flex;gap:6px;margin-bottom:4px"><button class="cp-btn" data-sk="'+esc(r.id)+'" style="flex:1;padding:6px 10px">'+esc(r.nm)+'</button>'+(here.has(r.id)?'<button class="cp-btn cp-adm" data-sb="'+esc(r.id)+'" style="padding:6px 10px">SEND BACK</button>':'')+'</div>').join(''):'<div style="color:#9b9584">no one by that name</div>'; };
+      sq.addEventListener('input',sum); sl.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const k=b.dataset.sk||b.dataset.sb, A=SUMMON.list(), N=A.find(q=>SUMMON.id(q,A)===k);
+        if(b.dataset.sb)SUMMON.back(k); else if(N)SUMMON.go(N); sum(); }); ap._sum=sum;
+      ap.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); tools(); if(RINSP.on)ap.hidden=true; }; ap._tools=tools; }
+    ap._tools(); ap._sum(); ap.hidden=false; };
+  addEventListener('keydown',e=>{ if(e.key!=='Escape'||!ap||ap.hidden||UI.menuOpen||HANDHELD.up())return; ap.hidden=true; HANDHELD.back(); e.preventDefault(); e.stopImmediatePropagation(); },true);   // ESC: back to the handheld, like its other pages
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;
-    el.innerHTML=`<div class="cp-wrap"><div class="cp-doll"><div class="cp-slots" id="cpslots"></div><div class="cp-pick" id="cppick" hidden></div>
-      <div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span>
-        <div class="cp-vit"><div>HP <span class="cp-bar"><i id="cphp" style="background:#c84a3a"></i></span></div><div>ST <span class="cp-bar"><i id="cpst" style="background:#d8b84a"></i></span></div></div></div></div>
-      <div class="cp-right"><div class="cp-name" id="cpname">YOU</div><div class="cp-btns" id="cpbtns"></div></div></div>
-      <div class="cp-tray" id="cptray"></div>`;
+    el.innerHTML=`<div class="cp-wrap"><div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span><button class="cp-edit" id="cpedit" title="change your body, hair and shape">EDIT</button></div>
+      <div class="cp-right"><div class="cp-btns" id="cpbtns"></div></div></div>`;
     cv=el.querySelector('#cpav'); g2=cv.getContext('2d');
     { let dx=null; cv.style.cursor='grab'; cv.addEventListener('pointerdown',e=>{ dx=e.clientX; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; spin+=(e.clientX-dx)*.025; dx=e.clientX; }); const up=()=>{ dx=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }   // drag to turn yourself; facing you again each time the menu opens
-    el.addEventListener('mousedown',e=>{ if(e.target.closest('.cp-slot,.cp-chip'))e.stopPropagation(); },true);
-    el.addEventListener('click',e=>{ const P=el.querySelector('#cppick'), sl=e.target.closest('.cp-slot');
-      if(sl){ const s=sl.dataset.slot; if(wornIn(s))unwear(s); else if(!P.hidden&&P.dataset.slot===s)P.hidden=true; else pick(s,sl); return; }
-      if(!e.target.closest('#cppick'))P.hidden=true; const ch=e.target.closest('.cp-chip'); if(ch){ wear(ch.dataset.id); return; } const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); });
-    el.addEventListener('dragstart',e=>{ const ch=e.target.closest('.cp-chip'), sl=e.target.closest('.cp-slot.on'); if(ch)e.dataTransfer.setData('text/plain','wear:'+ch.dataset.id); else if(sl)e.dataTransfer.setData('text/plain','off:'+sl.dataset.slot); else return; e.dataTransfer.effectAllowed='move'; });
-    el.addEventListener('dragover',e=>{ if(e.target.closest('.cp-slot,.cp-tray'))e.preventDefault(); });
-    el.addEventListener('drop',e=>{ const d=e.dataTransfer.getData('text/plain')||''; const sl=e.target.closest('.cp-slot'); e.preventDefault();
-      if(d.startsWith('wear:')){ if(sl)wear(d.slice(5)); } else if(d.startsWith('off:')&&e.target.closest('.cp-tray'))unwear(d.slice(4)); }); };
+    el.querySelector('#cpedit').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); LOOKS.open(); };
+    el.addEventListener('click',e=>{ const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); }); };
 
-  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); refresh(); if(!raf)raf=requestAnimationFrame(loop);
-      if(!isAdmin&&CINEMA.isAdmin)CINEMA.isAdmin().then(a=>{ if(a){ isAdmin=true; if(el&&UI.menuOpen)btns(); } }); },
-    hide:()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
+  Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); on=1; },
+    hide:()=>{ on=0; }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
-  #dhome .cp-doll{display:flex;gap:10px;align-items:stretch;position:relative}
-  #dhome .cp-pick{position:absolute;left:58px;z-index:2;width:190px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0b0d12;border:2px solid var(--key);padding:8px;font:10px var(--pixel)}
-  #dhome .cp-pick[hidden]{display:none}
-  #dhome .cp-slots{display:flex;flex-direction:column;gap:8px;justify-content:center}
-  #dhome .cp-slot{width:48px;height:48px;background:#0b0d12;border:2px solid #3a3f4e;display:flex;align-items:center;justify-content:center;text-align:center;font:9px var(--pixel);color:var(--key);cursor:pointer;padding:2px;line-height:1.15;overflow:hidden;word-break:break-word}
-  #dhome .cp-slot.on{border-color:#6b6f80}
-  #dhome .cp-slot.cp-over{border-color:var(--key);border-style:dashed}
   #dhome .cp-stage{position:relative;background:radial-gradient(120% 90% at 50% 6%,#22242c,#0b0c11);border:2px solid var(--line)}
   #dhome .cp-stage canvas{display:block;width:200px;height:300px}
+  #dhome .cp-edit{position:absolute;right:6px;top:6px;font:9px var(--pixel);color:var(--key);border:1px solid #3a3f4e;padding:2px 6px;background:rgba(5,6,10,.7);cursor:pointer}
   #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
-  #dhome .cp-vit{position:absolute;left:6px;right:6px;bottom:6px;display:grid;gap:3px;font:9px var(--pixel);color:var(--dim)}
-  #dhome .cp-bar{display:inline-block;width:86px;height:7px;background:#0b0d13;border:1px solid #2a3040;vertical-align:middle}
-  #dhome .cp-bar i{display:block;height:100%;width:0}
   #dhome .cp-right{display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1}
-  #dhome .cp-name{color:var(--key);letter-spacing:.08em;border-bottom:2px solid var(--line);padding-bottom:7px}
-  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px}
-  #dhome .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
-  #dhome .cp-btn:hover{color:var(--key);border-color:#6b6f80}
+  #dhome .cp-btns{display:flex;flex-direction:column;gap:7px} #menu #dhome .cp-btn:disabled{opacity:.35;cursor:default;background:transparent;color:var(--fg)}
+  #dhome .cp-btn,#cpadmin .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
+  #dhome .cp-btn:hover,#cpadmin .cp-btn:hover{color:var(--key);border-color:#6b6f80}
+  #cpadmin .cp-btn[aria-pressed="true"]{color:var(--key)}
   #dhome .cp-btn .cp-tag{color:var(--dim);font-size:9px}
-  #dhome .cp-btn.cp-adm{color:#e0633f;border-color:#7a3524}
-  #dhome .cp-btn.cp-adm:hover{border-color:#e0633f}
-  #dhome .cp-tray{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:2px solid var(--line);padding-top:10px}
-  #dhome .cp-trayh{width:100%;color:var(--dim);font-size:10px;margin-bottom:2px}
-  #dhome .cp-chip{background:#0e1016;border:2px solid #3a3f4e;color:var(--key);padding:5px 8px;cursor:grab;font:10px var(--pixel)}
-  #dhome .cp-chip:hover{border-color:#6b6f80}
-  #dhome .cp-dim{color:var(--dim)}`; document.head.appendChild(css); }
+  #dhome .cp-btn.cp-adm,#cpadmin .cp-btn.cp-adm{color:#e0633f;border-color:#7a3524}
+  #dhome .cp-btn.cp-adm:hover,#cpadmin .cp-btn.cp-adm:hover{border-color:#e0633f}`; document.head.appendChild(css); }

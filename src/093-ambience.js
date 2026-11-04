@@ -23,7 +23,7 @@ Object.assign(AMB,{on:true});
     if(!loops||loops.hum.s.context!==c)loops={hum:mk(c,'hum',500),rain:mk(c,'rain',3200),wind:mk(c,'wind',600),fount:mk(c,'rain',1400)};
     const w=where(), W=WX.now, out=w==='day'||w==='night', ins=w==='inside';
     const LM=k=>SFX.mix.loops[k]==null?1:+SFX.mix.loops[k]; tgt(loops.hum.G.gain,(w==='down'?.05:ins?.02:.035)*LM('hum'),c); tgt(loops.hum.F.frequency,w==='down'?160:ins?260:500,c);
-    const rain=W&&w!=='down'?(W.rain+W.snow*.15)*WX_RAIN.vol*(ins?WX_RAIN.inside:1):0, wind=W&&w!=='down'?W.wind*WX_WIND.vol*(ins?WX_WIND.inside:1):0;
+    const rain=W&&w!=='down'?(W.rain+W.snow*.15)*WX_RAIN.vol*(ins?WX_RAIN.inside:1):0, wind=(W&&w!=='down'?W.wind*WX_WIND.vol*(ins?WX_WIND.inside:1):0)+(AMB.breeze||0)*.035;   // AMB.breeze: an open window at home (150a)
     tgt(loops.rain.G.gain,rain*LM('rain'),c); tgt(loops.rain.F.frequency,ins?900:3200,c); tgt(loops.wind.G.gain,wind*LM('wind'),c); tgt(loops.fount.G.gain,FOUNT.hear?FOUNT.hear(pos)*.07:0,c);
     if(W&&W.flash&&out&&!AMB.thun){ AMB.thun=true; SFX.play('thunder',{vol:.5,delay:.6+Math.random()*1.6,pan:Math.random()*1.2-.6,bus:B}); setTimeout(()=>AMB.thun=false,4000); }
     const now=c.currentTime; if(now<next)return;

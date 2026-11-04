@@ -17,6 +17,158 @@
    }
   }
  },
+ "sections": {
+  "note": "the eight sections round Central Park, 4 across and 2 up, each A's size; ids[col][row]; ring: the park inside the ring street, the street's outer edge, its sidewalks' width, the depth of the row of buildings on its outer side, then the water and its shore walk past the top and bottom rows",
+  "grid": {
+   "cols": 4,
+   "rows": 2,
+   "x0": -130,
+   "y0": -166.5,
+   "w": 392,
+   "h": 375.5
+  },
+  "ids": [
+   [
+    "A",
+    "B"
+   ],
+   [
+    "C",
+    "D"
+   ],
+   [
+    "E",
+    "F"
+   ],
+   [
+    "G",
+    "H"
+   ]
+  ],
+  "streets": {
+   "south": "MARKET ST",
+   "west": "WEST ST",
+   "north": "LANTERN ST",
+   "east": "CURIO AVE"
+  },
+  "places": [
+   {"id": "skatepark", "section": "B", "x": 24.5, "y": 328.5, "face": "w", "w": 81, "d": 57, "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"}
+  ],
+  "ring": {
+   "park": {
+    "x0": -24,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 456
+   },
+   "outer": {
+    "x0": -52.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 495
+   },
+   "walk": 4.5,
+   "sides": {
+    "note": "sidewalk widths, outer then park side: ns the south and north streets (Market St), we the west and east (West St)",
+    "ns": [
+     7,
+     12
+    ],
+    "we": [
+     3.2,
+     3
+    ]
+   },
+   "row": 15.4,
+   "water": 47.5,
+   "shore": 11.1
+  }
+ },
+ "loop": {
+  "note": "THE LOOP: the subway under the ring streets. tracks are the rails' lines (map tiles) round the ring, r the corners' radius; trains run the timetable from the clock, stopping dwell seconds at every station; speed tiles/s, accel tiles/s/s",
+  "tracks": {
+   "inner": {
+    "south": -48.8,
+    "west": -31.5,
+    "north": 466.8,
+    "east": 1339.5
+   },
+   "outer": {
+    "south": -66.2,
+    "west": -44.5,
+    "north": 484.2,
+    "east": 1352.5
+   }
+  },
+  "r": 40,
+  "dwell": 60,
+  "speed": 5,
+  "accel": 0.6,
+  "trains": [
+   {
+    "id": 1,
+    "track": "outer",
+    "dir": 1,
+    "way": "CLOCKWISE"
+   },
+   {
+    "id": 2,
+    "track": "inner",
+    "dir": -1,
+    "way": "COUNTERCLOCKWISE"
+   }
+  ],
+  "stations": [
+   {
+    "id": "A",
+    "name": "MARKET ST",
+    "side": "south",
+    "x": 116
+   },
+   {
+    "id": "C",
+    "name": "TINKER ST",
+    "side": "south",
+    "x": 508
+   },
+   {
+    "id": "E",
+    "name": "RAG ST",
+    "side": "south",
+    "x": 900
+   },
+   {
+    "id": "G",
+    "name": "BRASS ST",
+    "side": "south",
+    "x": 1240
+   },
+   {
+    "id": "B",
+    "name": "MOTH ST",
+    "side": "north",
+    "x": 116
+   },
+   {
+    "id": "D",
+    "name": "KETTLE ST",
+    "side": "north",
+    "x": 508
+   },
+   {
+    "id": "F",
+    "name": "BUTTON ST",
+    "side": "north",
+    "x": 900
+   },
+   {
+    "id": "H",
+    "name": "CLOCK ST",
+    "side": "north",
+    "x": 1240
+   }
+  ]
+ },
  "streets": {
   "market": {
    "x0": -130,
@@ -33,7 +185,10 @@
   "y0": -38,
   "y1": 181
  },
+ "hangouts": {"pier":{"band":[30,100,-117.6,-116.6],"hd":3.1416},"meadow":{"areas":[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},"path":{"band":[-15,250,57,60]},"bench":{"areas":[[113,52,6],[30,140,5]]},"river":{"band":[0,200,-115,-111]},"flea":{"areas":[[223,-84,5]]},"shrine":{"band":[90.86,94.86,-110.6,-109.8],"hd":0}},
+ "residences": [{"id":"corner_tenement","name":"THE CORNER TENEMENT","door":[158.62,-76.1],"beds":53},{"id":"brownstone_row_house","name":"THE BROWNSTONE","door":[169.71,-76.1],"beds":26},{"id":"narrow_walk_up","name":"THE WALK-UP","door":[178.05,-76.1],"beds":10},{"id":"cast_iron_loft","name":"THE CAST-IRON LOFT","door":[208.84,-76.1],"beds":50},{"id":"motel_room_run","name":"THE RIVER MOTEL","door":[32.21,-108.8],"beds":8},{"id":"corner_shophouse","name":"THE CORNER SHOPHOUSE","door":[47.0,-108.8],"beds":2},{"id":"two_storey_shophouse","name":"THE TWO-STOREY SHOPHOUSE","door":[52.26,-108.8],"beds":2},{"id":"three_storey_shophouse","name":"THE THREE-STOREY SHOPHOUSE","door":[67.55,-108.8],"beds":2},{"id":"wide_shophouse","name":"THE WIDE SHOPHOUSE","door":[75.19,-108.8],"beds":4},{"id":"haunted_victorian_house","name":"THE HAUNTED HOUSE","door":[2.0,157.96],"beds":1},{"id":"porch_log_cabin","name":"THE LOG CABIN","door":[40.0,144.34],"beds":2}],
  "block": {
+  "pf": {"1":[[-71.9,-60.76],[-60.66,-50.54],[-50.44,-26.03],[-25.93,-6.83],[-6.73,8.15],[82.45,92.57],[153.2,164.05],[164.65,174.77],[175.37,180.74],[181.34,191.46],[201.4,216.29]],"2":[[-4.8,10.09],[9.99,20.11],[20.01,44.42],[44.32,49.68],[49.58,54.94],[54.84,64.97],[64.87,70.23],[70.13,80.25],[80.15,90.28],[90.18,95.54],[95.44,110.32]]},
   "x0": -100,
   "x1": 245,
   "front": -77,
@@ -50,14 +205,18 @@
    -119,
    -107.9
   ],
-  "river": -165
+  "river": -165,
+  "origin": [
+   72,
+   -77
+  ]
  },
  "places": [
   {
    "id": "apts",
    "name": "APARTMENTS",
    "kind": "front",
-   "x0": -67.9,
+   "x0": -70.925,
    "x1": -52.5,
    "y0": -37.5,
    "y1": -23.2,
@@ -99,10 +258,18 @@
    "x1": 82.55
   },
   {
+   "id": "art",
+   "name": "THE ART MUSEUM",
+   "kind": "front",
+   "x0": 10,
+   "x1": 50,
+   "lot": true
+  },
+  {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -66.26,
+   "x0": -80.02,
    "x1": -52.5,
    "y0": -22.2,
    "y1": -11.2,
@@ -133,8 +300,11 @@
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": 229.75,
-   "x1": 242.68
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 91.2,
+   "y1": 105.2,
+   "face": "e"
   },
   {
    "id": "arcade",
@@ -145,32 +315,95 @@
    "y0": 32.5,
    "y1": 46.5,
    "face": "e"
-  }
- ],
- "shells": [
+  },
   {
-   "id": "shell1",
+   "id": "boards",
+   "name": "THE BOARDWRIGHT",
+   "kind": "front",
    "x0": -65.5,
    "x1": -52.5,
    "y0": 8,
-   "y1": 27
+   "y1": 27,
+   "face": "e",
+   "merchant": "boardwright",
+   "at": [
+    4.1,
+    3.4
+   ]
   },
   {
-   "id": "shell3",
+   "id": "fixit",
+   "name": "FIX-IT ELECTRONICS",
+   "kind": "front",
    "x0": -65.5,
    "x1": -52.5,
    "y0": 52,
-   "y1": 71
+   "y1": 71,
+   "face": "e",
+   "merchant": "fixer",
+   "at": [
+    1.1,
+    3.2
+   ],
+   "more": {
+    "fixkid": [
+     1.7,
+     2.0
+    ]
+   }
   },
   {
-   "id": "shell5",
-   "x0": -65.5,
+   "id": "scanner",
+   "name": "THE SCANNER",
+   "kind": "front",
+   "x0": 143.2,
+   "x1": 153.2,
+   "lot": true,
+   "merchant": "scanner"
+  },
+  {
+   "id": "diner",
+   "name": "THE DINER",
+   "kind": "front",
+   "x0": 193.3,
+   "x1": 201.5,
+   "lot": true,
+   "inW": 14,
+   "inD": 14,
+   "inH": 112
+  },
+  {
+   "id": "flea",
+   "name": "THE FLEA MARKET",
+   "kind": "lot",
+   "x0": 216.6,
+   "x1": 229.65
+  },
+  {
+   "id": "fairgate",
+   "name": "THE FAIR GATE",
+   "kind": "gate",
+   "x0": -67.9,
    "x1": -52.5,
-   "y0": 96,
-   "y1": 115
+   "y0": 105.3,
+   "y1": 116.1,
+   "face": "e"
+  },
+  {
+   "id": "fair",
+   "name": "THE STRANGEST FAIR",
+   "kind": "fair",
+   "x0": -128.0,
+   "x1": -80.5,
+   "y0": -58.0,
+   "y1": 205.0,
+   "face": "e",
+   "door": [-79, 110.7],
+   "gate": [105.3, 116.1]
   }
  ],
- "parkPlaces": {
+ "shells": [],
+ "cars": [{"id": "c1", "model": "muscle-car-60s", "x": 78.2, "y": -67.0, "hd": 90}, {"id": "c2", "model": "convertible-60s", "x": 87.3, "y": -67.0, "hd": 90}, {"id": "c3", "model": "station-wagon-70s", "x": 96.8, "y": -67.0, "hd": 90}, {"id": "c4", "model": "pickup-truck-70s", "x": 105.9, "y": -67.0, "hd": 90}, {"id": "c5", "model": "wedge-coupe-80s", "x": 123, "y": -67.0, "hd": 90}, {"id": "c6", "model": "camper-van", "x": 131.8, "y": -67.0, "hd": 90}], "parkPlaces": {
   "round": {
    "x": 112,
    "y": 59.5,
@@ -190,8 +423,8 @@
    "y": -28
   },
   "castle": {
-   "x0": 24.5,
-   "y0": 131.25
+   "x0": 30.5,
+   "y0": 114.5
   },
   "tower2": {
    "x": 112,
@@ -200,7 +433,80 @@
   "tower3": {
    "x": 255,
    "y": 59.5
-  }
+  },
+  "brook": {"note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it", "pts": [[248, 168], [230, 150], [212, 128], [200, 114], [190, 104], [203, 90], [205, 76], [187.5, 68], [189, 59], [190.5, 50], [178, 42], [165, 34], [155, 20]]},
+  "shelvedSites": [
+   {
+    "id": "pub",
+    "kind": "pub",
+    "name": "THE MOSSY FLAGON",
+    "x": 76,
+    "y": 44,
+    "w": 13,
+    "d": 9,
+    "face": "s"
+   },
+   {
+    "id": "bridge",
+    "kind": "bridge",
+    "name": "THE BROKEN BRIDGE",
+    "x": 165,
+    "y": 34,
+    "w": 16,
+    "d": 4,
+    "face": "e"
+   },
+   {
+    "id": "ruins",
+    "kind": "ruins",
+    "name": "THE RUINS",
+    "x": 200,
+    "y": 34,
+    "w": 18,
+    "d": 14,
+    "face": "w"
+   },
+   {
+    "id": "hut1",
+    "kind": "hut",
+    "name": "BADGER'S HOLLOW",
+    "x": 40,
+    "y": 88,
+    "w": 6,
+    "d": 6,
+    "face": "e"
+   },
+   {
+    "id": "hut2",
+    "kind": "hut",
+    "name": "THE FISHER'S HUT",
+    "x": 232,
+    "y": 90,
+    "w": 6,
+    "d": 6,
+    "face": "w"
+   },
+   {
+    "id": "hut3",
+    "kind": "hut",
+    "name": "THE HERMITAGE",
+    "x": 90,
+    "y": 128,
+    "w": 6,
+    "d": 6,
+    "face": "n"
+   },
+   {
+    "id": "yard",
+    "kind": "yard",
+    "name": "THE PRACTICE YARD",
+    "x": 128,
+    "y": 128,
+    "w": 10,
+    "d": 8,
+    "face": "e"
+   }
+  ]
  },
  "paths": [
   {
@@ -235,6 +541,176 @@
     140.5,
     12.0
    ]
+  },
+  {
+   "id": "path6",
+   "a": [
+    43.0,
+    59.5
+   ],
+   "b": [
+    43.0,
+    110.6
+   ]
+  }
+ ],
+ "things": [
+  {
+   "k": "fruitstand",
+   "x": 221.3,
+   "y": -88.6,
+   "who": "fruitseller"
+  },
+  {
+   "k": "bookstall",
+   "x": 226.7,
+   "y": -88.6,
+   "who": "junkman"
+  },
+  {
+   "k": "mstall",
+   "x": 219.6,
+   "y": -83,
+   "rot": 1.5708,
+   "who": "trader"
+  },
+  {
+   "k": "mercado",
+   "x": 228.5,
+   "y": -83,
+   "rot": -1.5708,
+   "who": "flowerlady"
+  },
+  {
+   "k": "ftable",
+   "x": 224,
+   "y": -82.6
+  },
+  {
+   "k": "scrate",
+   "x": 222.2,
+   "y": -80.4,
+   "rot": 0.4
+  },
+  {
+   "k": "sacks",
+   "x": 226,
+   "y": -80.2,
+   "rot": -0.3
+  },
+  {
+   "k": "aboard",
+   "x": 224,
+   "y": -76.3
+  },
+  {
+   "k": "hotdog",
+   "x": 216.5,
+   "y": -72.6,
+   "who": "hotdogman"
+  },
+  {
+   "k": "meter",
+   "x": 156,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": 159,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": 162,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": 207,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": 210,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": 213,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": -18,
+   "y": -69.2
+  },
+  {
+   "k": "meter",
+   "x": -15,
+   "y": -69.2
+  },
+  {
+   "k": "signpole",
+   "x": 153.8,
+   "y": -69
+  },
+  {
+   "k": "bench",
+   "x": 165,
+   "y": -40.4,
+   "rot": 3.1416
+  },
+  {
+   "k": "bench",
+   "x": 205,
+   "y": -40.4,
+   "rot": 3.1416
+  },
+  {
+   "k": "bench",
+   "x": -10,
+   "y": -40.4,
+   "rot": 3.1416
+  },
+  {
+   "k": "bench",
+   "x": 190,
+   "y": -75.8
+  },
+  {
+   "k": "basket",
+   "x": 170,
+   "y": -40.6
+  },
+  {
+   "k": "basket",
+   "x": 183.5,
+   "y": -69.3
+  },
+  {
+   "k": "basket",
+   "x": 215.5,
+   "y": -69.3
+  },
+  {
+   "k": "basket",
+   "x": 2,
+   "y": -69.3
+  },
+  {
+   "k": "shelter",
+   "x": 180,
+   "y": -70.2
+  },
+  {
+   "k": "bikerack",
+   "x": 198,
+   "y": -69.4
+  },
+  {
+   "k": "payphone",
+   "x": 212.5,
+   "y": -76.2
   }
  ],
  "pathWidth": 7.2,
@@ -284,7 +760,7 @@
    6
   ],
   "fox": [
-   1472.99,
+   -527.01,
    -82.4,
    6
   ],
@@ -349,42 +825,42 @@
    6
   ],
   "ogre": [
-   911.35,
+   -1088.65,
    -12.81,
    6
   ],
   "ogre_mage": [
-   904.01,
+   -1095.99,
    -18.12,
    6
   ],
   "ogre_guard_light": [
-   904.65,
+   -1095.35,
    -15.29,
    6
   ],
   "ogre_guard_heavy": [
-   910.68,
+   -1089.32,
    -12.46,
    6
   ],
   "skeleton_mage": [
-   905.81,
+   -1094.19,
    -17.97,
    6
   ],
   "skeleton_reaper": [
-   902.42,
+   -1097.58,
    -8.93,
    6
   ],
   "skeleton_guard_light": [
-   909.4,
+   -1090.6,
    -9.03,
    6
   ],
   "skeleton_guard_heavy": [
-   908.5,
+   -1091.5,
    -12.51,
    6
   ],
@@ -467,6 +943,107 @@
    30,
    -47,
    6
+  ],
+  "glasshorn": [
+   -50.6,
+   81,
+   0
+  ],
+  "newsreel": [
+   60,
+   -42,
+   22
+  ],
+  "petty": [
+   218,
+   53.8,
+   0
+  ],
+  "block": [
+   100,
+   -71.5,
+   0
+  ],
+  "balloonwitch": [
+   40,
+   -58,
+   0
+  ],
+  "radish": [
+   130,
+   -117.4,
+   0
+  ],
+  "tiger": [
+   151,
+   27,
+   0
+  ],
+  "plantstall": [
+   172,
+   -71.2,
+   0,
+   0
+  ],
+  "stump": [
+   112,
+   49,
+   0
+  ],
+  "bluehour": [
+   226,
+   -71.6,
+   0
+  ],
+  "operator": [
+   30,
+   -71.6,
+   0
+  ],
+  "broadcast": [
+   112,
+   59.5,
+   8
+  ],
+  "otter": [
+   116,
+   -71,
+   6
+  ],
+  "reelkid": [
+   138,
+   -114,
+   5
+  ],
+  "bagger": [
+   60,
+   -58,
+   25
+  ],
+  "ghost2": [
+   180,
+   -58,
+   20
+  ],
+  "jellycap": [
+   236,
+   -71,
+   4
+  ],
+  "wandercap": [
+   150,
+   60,
+   30
+  ],
+  "watchmaker": [
+   68,
+   -71.6,
+   0
+  ],
+  "beekeeper": [
+   118,
+   44,
+   0
   ]
  },
  "editor": {
@@ -478,10 +1055,10 @@
     "n": "APARTMENTS",
     "ly": "shop",
     "sh": "rect",
-    "x": -60.5,
+    "x": -62.0125,
     "y": -41.25,
     "w": 14.300000000000011,
-    "d": 15.400000000000006,
+    "d": 18.425,
     "rot": 0,
     "z": 0,
     "h": 390,
@@ -573,10 +1150,10 @@
     "n": "THE BAR",
     "ly": "shop",
     "sh": "rect",
-    "x": -59.5,
-    "y": -26.25,
+    "x": -66.26,
+    "y": -16.7,
     "w": 11,
-    "d": 13.75,
+    "d": 27.52,
     "rot": 0,
     "z": 0,
     "h": 130,
@@ -1029,8 +1606,8 @@
     "n": "THE CASTLE",
     "ly": "park",
     "sh": "rect",
-    "x": 35,
-    "y": 139.75,
+    "x": 41,
+    "y": 123,
     "w": 21,
     "d": 17,
     "rot": 0,
@@ -1182,6 +1759,25 @@
     "w": 284,
     "d": 7.2,
     "rot": 0,
+    "z": 0,
+    "h": 0,
+    "scale": 1,
+    "tex": "park slabs",
+    "color": "#baaa80",
+    "tint": "#ffffff",
+    "opacity": 1
+   },
+   {
+    "id": "t102",
+    "gid": "path6",
+    "n": "THE CASTLE PATH",
+    "ly": "path",
+    "sh": "rect",
+    "x": 43,
+    "y": 85.05,
+    "w": 51.1,
+    "d": 7.2,
+    "rot": 90,
     "z": 0,
     "h": 0,
     "scale": 1,

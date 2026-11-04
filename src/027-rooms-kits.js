@@ -464,6 +464,54 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const d of [-.045,0,.045])bs.push(fb(x+d-.014,y-.12,x+d+.014,y-.04,Z(1.5),Z(2.5),[200,160,70],()=>[168,128,52],[226,190,96]));
     return prop(bs,null,{}); }
 
+  function poolTable(x,y){ SHARED.PNAME='pool table'; const hx=1.08, hy=.62, x0=x-hx, x1=x+hx, y0=y-hy, y1=y+hy, bs=[];
+    const FE=[26,90,56], FED=[16,60,40], FEL=[40,112,72], WD=[88,56,32], WK=[52,34,20], WL=[150,104,64], RL=[26,20,18];
+    const ZL=15, ZA=19, ZB=19.6, ZR=22;
+    for(const lx of [x0+.15,x1-.15])for(const ly of [y0+.15,y1-.15])bs.push(fb(lx-.075,ly-.075,lx+.075,ly+.075,0,ZL,WK,(s,a,row,L,h)=>row<2?WD:row>h-2?RL:a%6<1?WK:WD,WD,{foot:1}));
+    for(const [ax0,ay0,ax1,ay1] of [[x0,y0,x1,y0+.15],[x0,y1-.15,x1,y1],[x0,y0,x0+.15,y1],[x1-.15,y0,x1,y1]])
+      bs.push(fb(ax0,ay0,ax1,ay1,ZL,ZA,WD,(s,a,row,L,h)=>row<1?WL:row>h-2?WK:hash(a,row,311)<.06?WK:[96,62,36],WD,{foot:0}));
+    const bx0=x0+.15, by0=y0+.15, bx1=x1-.15, by1=y1-.15;
+    bs.push(fb(bx0,by0,bx1,by1,ZA,ZB,FE,()=>FED,(X,Y)=>{ const e=edge(X,Y,bx0,by0,bx1,by1); if(e<.03)return FED; const n=pcVn(X*8,Y*8,312); return n<.25?FED:n>.86?FEL:FE; },{foot:0}));
+    const pk=.11, pockets=[[bx0,by0],[bx1,by0],[bx0,by1],[bx1,by1],[x,by0],[x,by1]];
+    const railSeg=(rx0,ry0,rx1,ry1)=>{ if(rx1-rx0<.02||ry1-ry0<.02)return; bs.push(fb(rx0,ry0,rx1,ry1,ZA,ZR,WD,(s,a,row,L,h)=>row<1?FE:row<2?FED:row>h-2?WK:a%5<1?WK:WD,(X,Y)=>edge(X,Y,rx0,ry0,rx1,ry1)<.025?WL:WD)); };
+    for(const ry of [[by0-.07,by0],[by1,by1+.07]]){ railSeg(bx0+pk,ry[0],x-pk,ry[1]); railSeg(x+pk,ry[0],bx1-pk,ry[1]); }
+    for(const rx of [[bx0-.07,bx0],[bx1,bx1+.07]])railSeg(rx[0],by0+pk,rx[1],by1-pk);
+    for(const [px,py] of pockets)bs.push(...round(px,py,ZA-1,ZR,()=>pk*.92,(dx,dy,z,top)=>top?(Math.hypot(dx,dy)<pk*.6?[8,6,6]:RL):RL,3,.04));
+    const BALL=[[230,60,50],[60,110,220],[240,200,60],[120,60,160],[230,120,40],[40,140,80],[160,30,40],[32,30,36],[120,160,230],[230,170,40]];
+    const ballAt=(bx,by,cc)=>bs.push(...round(bx,by,ZB,ZB+1.4,z=>.028*Math.sqrt(Math.max(.06,1-((z-.7)/.72)**2)),()=>cc,2,.022));
+    let bi=0; const ax=x+hx*.42;
+    for(let r=0;r<4;r++)for(let c=0;c<=r;c++)ballAt(ax+r*.06,y+(c-r/2)*.06,BALL[bi++%BALL.length]);
+    ballAt(x-hx*.5,y+.1,[240,240,236]);
+    let px0=x-.78, py0=y-hy-.05; for(let i=1;i<=16;i++){ const t=i/16, cx=x-.78+t*1.68, cy=y-hy-.05+t*.1, w=.013+.011*(1-t);
+      bs.push(pb(Math.min(px0,cx)-w,Math.min(py0,cy)-w,Math.max(px0,cx)+w,Math.max(py0,cy)+w,ZR+.3,ZR+.3+w*2,t<.1?[30,24,20]:t>.88?[60,40,28]:[196,166,108],{nb:1})); px0=cx; py0=cy; }
+    const PZ=52; bs.push(pb(x-.02,y-.02,x+.02,y+.02,PZ+9,106,[30,30,32],{nb:1,foot:0}));
+    bs.push(fb(x-.52,y-.13,x+.52,y+.13,PZ+7,PZ+9,[36,42,36],()=>[26,32,26],[52,58,52],{nb:1}));
+    bs.push(fb(x-.52,y-.12,x+.52,y+.12,PZ,PZ+7,[32,38,32],(s,a,row,L,h)=>row>h-2?[16,20,16]:[44,52,44],()=>null,{nb:1}));
+    bs.push(fb(x-.5,y-.1,x+.5,y+.1,PZ-.6,PZ,lt([255,218,150]),()=>lt([255,224,160]),lt([255,214,146]),{nb:1,em:1}));
+    const p=prop(bs,null,{solids:[{x0,y0,x1,y1}]}); LAMPS.push({own:1,room:1,day:true,x,y,z:PZ,r:4.6,c:[1,.84,.5],prop:p}); return p; }
+  function dartboard(x,y){ SHARED.PNAME='dartboard'; const D=.44, Z=10.6, w=Math.round(D*S), h=Math.round(Z*H);
+    const CAB=[40,30,24], BL=[224,212,176], BK=[28,24,22], RE=[182,42,40], GR=[38,120,70], WI=[158,158,164];
+    const A=pic(w,h,put=>{ const cx=w/2, cy=h/2, R=Math.min(cx,cy)-1;
+      for(let Y=0;Y<h;Y++)for(let X=0;X<w;X++){ const dx=X-cx+.5, dy=Y-cy+.5, r=Math.hypot(dx,dy); if(r>R){ if(r<R+2)put(X,Y,BK); continue; }
+        const a=(Math.atan2(dy,dx)+Math.PI)/(Math.PI*2), seg=Math.floor(a*20+.5)%20, light=seg&1, rr=r/R; let c;
+        if(rr<.07)c=RE; else if(rr<.13)c=GR; else if(rr>.9)c=light?RE:GR; else if(rr>.55&&rr<.62)c=light?RE:GR; else c=light?BL:BK;
+        if(Math.abs((a*20+.5)%1-.5)<.035&&rr>.13)c=WI; put(X,Y,c); } });
+    const bs=[fb(x,y-.03,x+.05,y+D+.03,-.03,Z+.03,CAB,(s,a,row,L,hh)=>s!=='px'?CAB:(a<2||a>=L-2||row<2||row>=hh-2?[54,42,34]:A(a-1,hh-1-row)||CAB),[56,44,36],{foot:1})];
+    for(const [fy,fz,fc] of [[.5,.6,[220,60,60]],[.44,.52,[240,220,70]],[.56,.5,[70,160,220]]]){ const cy=y+fy*D, cz=fz*Z;
+      bs.push(pb(x+.04,cy-.006,x+.14,cy+.006,cz,cz+.012,[182,182,188],{nb:1}),fb(x+.13,cy-.022,x+.2,cy+.022,cz-.018,cz+.018,fc,()=>sh(fc,.75),fc,{nb:1})); }
+    return prop(bs,null,{hang:0,walk:true,high:true}); }
+  function staircase(x,y){ SHARED.PNAME='staircase'; const W=1.6, steps=13, run=.26, rise=5.2, top=steps*rise, x1=x+W, bs=[];
+    const WD=[104,66,38], WK=[60,38,22], WL=[150,104,64], RUN=[84,52,30];
+    for(let i=0;i<steps;i++){ const sy=y+i*run, z=top-(i+1)*rise;
+      bs.push(fb(x,sy,x1,sy+run+.05,z,z+rise,WD,(s,a,row,L,h)=>row>h-2?WL:row<1?WK:(s==='py'?RUN:a%7<1?WK:WD),(X,Y)=>edge(X,Y,x,sy,x1,sy+run+.05)<.03?WL:hash(Math.floor(X*40),Math.floor(Y*40),331)<.1?WK:WD,{foot:i===steps-1?1:0})); }
+    for(const sx of [x-.07,x1])bs.push(fb(sx,y,sx+.07,y+steps*run,0,top,WK,(s,a,row)=>row<1?WD:WK,WD,{foot:1}));
+    for(let i=0;i<steps;i+=2){ const sy=y+i*run, z=top-(i+1)*rise; bs.push(pb(x1+.01,sy+.08,x1+.07,sy+.15,z+rise,z+rise+13,WD,{nb:1,top:()=>WL})); }
+    for(let i=0;i<steps;i++){ const sy=y+i*run, z=top-(i+1)*rise; bs.push(fb(x1,sy,x1+.08,sy+run+.05,z+rise+13,z+rise+15,WD,()=>WK,WL,{nb:1})); }
+    bs.push(fb(x,y-.72,x1,y,top-rise,top,WD,(s,a,row,L,h)=>row>h-2?WL:row<1?WK:WD,WL,{foot:0}));
+    bs.push(fb(x+.32,y-.74,x1-.32,y-.68,top,top+30,[72,46,28],(s,a,row,L,h)=>a<2||a>L-2||row<2||row>h-2?WK:Math.abs(a-L/2)<2?WK:[94,60,36],[58,38,22]));
+    const p=prop(bs,null,{solids:[{x0:x-.07,y0:y,x1:x1+.08,y1:y+steps*run}]});
+    LAMPS.push({own:1,room:1,day:true,x:x+W/2,y:y-.3,z:top+12,r:4.4,c:[.52,.62,.9],prop:p}); return p; }
+
   var barFloorCol=(x,y)=>{ const c=woodCol(x,y); return [c[0]*.5|0,c[1]*.4|0,c[2]*.34|0]; };
   var barWall=(q,nx,ny,X,Y,z,f)=>{ const u=nx?Y:X, zz=z%STORY; if(zz<4)return sh([30,18,16],f); if(zz<38)return sh((u*24|0)%16<1?[68,22,20]:zz>35?[112,40,34]:[88,30,26],f);
     if(zz<40)return sh([150,112,58],f); if(zz>112)return sh([26,20,26],f); return sh(speck([74,46,60],u,z/24,97),f); };
@@ -480,6 +528,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     'bar soffit':(x,y)=>soffit(x-4.4,y-1.4,8.8,2.8),'ceiling fan':(x,y)=>fan(x,y),'small stage':(x,y)=>stage(x-1.6,y-1.1,3.2,2.2),'stage cloth':(x,y)=>stageCloth(x-1.8,y-.03,3.6),
     'stage':(x,y)=>stage(x-2.2,y-1.3,4.4,2.6),'wide stage cloth':(x,y)=>stageCloth(x-2.4,y-.03,4.8),'grand piano':(x,y)=>grand(x,y,0),'grand piano on a stage':(x,y)=>grand(x,y,14),
     'candle on the bar':(x,y)=>barCandle(x,y),'console TV':(x,y)=>consoleTV(x,y),
+    'pool table':(x,y)=>poolTable(x,y),'dartboard':(x,y)=>up(dartboard(x-.025,y-.22),48),'staircase':(x,y)=>staircase(x-.8,y),
     'microphone stand on a stage':(x,y)=>micStand(x,y,14,1.6),'microphone cord on a stage':(x,y)=>micStand(x,y,14,1.6,true),'microphone stand':(x,y)=>micStand(x,y,0,1.2),'open guitar case':(x,y)=>guitarCase(x,y,0)};
   for(const n of Object.keys(POSTERS))C['poster: '+n]=(x,y)=>{ const [L,h]=n==='moon shrine'?[.62,40]:n==='night painting'?[.5,30]:n==='190 street'?[.5,30]:[.55,34]; return up(poster(x-.02,y-L/2,n,L,h),n==='190 street'?42:n==='ghost sale'?50:46); };
   Object.assign(CATALOG,C);
@@ -517,6 +566,9 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     'microphone stand':info(40,'Microphone Stand',160,'A chrome stand, a microphone at a singer\'s mouth, its cord over the floor.','steel, chrome'),'microphone stand on a stage':info(41,'Microphone Stand (on a stage)',160,'The stand, on a stage.','steel, chrome'),'microphone cord on a stage':info(43,'Microphone Cord (on a stage)',20,'A black cord over the stage to the wall.','rubber, copper'),
     'open guitar case':info(42,'Open Guitar Case',120,'A hard case lying open, red plush, a few coins in it.','wood, vinyl, plush'),
     'candle on the bar':info(43,'Candle on the Bar',12,'A candle in red glass, standing on the counter.','wax, glass'),'console TV':info(44,'Console TV',380,'A walnut set on four legs, rabbit ears on top, a late show on in black and white.','walnut, glass, cloth'),
+    'pool table':info(45,'Pool Table',3200,'A slate bed under green felt, six pockets, a rack of balls and a cue, a low light over it.','slate, oak, felt'),
+    'dartboard':info(46,'Dartboard',70,'A board in twenty beds with a red bull, three darts in it.','sisal, wire'),
+    'staircase':info(47,'Staircase',1800,'A wooden flight up to a door, the street light spilling down it.','oak'),
     'poster: koi night':info(28,'Poster, Koi Night',15,'The koi pond on the moon shrine\'s roof, by night.','paper'),
     'poster: ghost sale':info(29,'Poster, Ghost Shop',15,'The ghost shop\'s sale.','paper'),
     'poster: hover taxi':info(30,'Poster, Hover Taxi',15,'Every 30 seconds, down the street.','paper'),

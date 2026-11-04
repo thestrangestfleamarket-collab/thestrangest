@@ -1,6 +1,6 @@
 // THE BUG REPORTS: BUGS, the REPORT A BUG form and the owner's queue, sent to the reports database.
 import {SHARED} from './003-shx.js';
-import {BUGS, CLOCK, pos, UI} from './003b-systems.js';
+import {BUGS, CLOCK, pos, TEXT, UI} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {STORE} from './006-map-pre.js';
 import {BUILDV} from './135-where.js';
@@ -8,7 +8,7 @@ import {BUILDV} from './135-where.js';
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token';
   const errs=[], err=m=>{ errs.push(String(m||'').slice(0,240)); if(errs.length>8)errs.shift(); };
   addEventListener('error',e=>err(e.message)); addEventListener('unhandledrejection',e=>err(e.reason&&e.reason.message||e.reason));
-  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+  const esc=TEXT.esc;
   const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
   const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };
   const renew=async()=>{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(!s||!s.refresh_token)return '';
@@ -26,28 +26,20 @@ import {BUILDV} from './135-where.js';
     shot:async r=>{ const a=await (await sb('/rest/v1/bug_shots?select=jpg&report=eq.'+r.id)).json(); if(a.length)return a[0].jpg; if(!r.shots)return '';
       const b=await (await sb('/storage/v1/object/authenticated/bugs/'+r.player+'/'+r.id+'/000.jpg')).blob(); return URL.createObjectURL(b); },
     mark:(id,status)=>sb('/rest/v1/bug_reports?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status})}) };
-  const ART=(db,user)=>({
-    send:async(body,context,jpg)=>{ const id=crypto.randomUUID(); await db.doc('bugs/'+id).set({body,context,status:'new',at:Date.now(),shots:jpg?1:0}); if(jpg)await db.doc('bugshots/'+id).set({jpg}); },
-    owner:async()=>!!(user&&await user.isOwner()),
-    list:async()=>(await db.collection('bugs').orderBy('at','desc').limit(300).get()).docs.map(d=>({id:d.id,...d.data()})),
-    shot:async r=>{ const s=await db.doc('bugshots/'+r.id).get(); return s.exists?s.data().jpg:''; },
-    mark:(id,status)=>db.doc('bugs/'+id).update({status}) });
-  let BE=null; const backend=async()=>{ if(BE)return BE; const c=window.claude;
-    if(c&&c.use){ const db=await c.use('db').catch(()=>null); if(db){ const u=await c.use('user').catch(()=>null); return BE=ART(db,u); } }
-    if(ck()||localStorage.getItem(LS))return BE=SITE; return null; };
+  let BE=null; const backend=async()=>BE||(ck()||localStorage.getItem(LS)?(BE=SITE):null);
   const grab=()=>new Promise(res=>requestAnimationFrame(()=>{ try{ const s=renderer.domElement, k=s.width>=1280?1280/s.width:Math.min(3,Math.floor(1280/s.width)), c=document.createElement('canvas');
     c.width=Math.round(s.width*k); c.height=Math.round(s.height*k); const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.drawImage(s,0,0,c.width,c.height);
     let q=.85, u; do{ u=c.toDataURL('image/jpeg',q); q-=.15; }while(u.length>300000&&q>.2); res(u.length>300000?null:u); }catch(e){ res(null); } }));
   const where=()=>{ '@later'; let near='', d=1e9; try{ for(const p of UI.places()){ const q=Math.hypot(p[1]-pos.x,p[2]-pos.z); if(q<d){ d=q; near=p[0]; } } }catch(e){}
     return {build:BUILDV, at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2)], hd:+SHARED.heading.toFixed(2), lvl:SHARED.LVL, near, far:Math.round(d), hour:+CLOCK.h.toFixed(2), view:UI.view,
-      screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:window.claude?'artifact':'site'}; };
+      screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:'site'}; };
   const ST=[['new','NEW'],['approved','APPROVED'],['later','LATER'],['fixed','FIXED'],['no','NO']];
   let shot=null, ctx=null, filt='new', rows=[], el=null;
   const draw=async()=>{ '@later'; const be=await backend(), own=be?await be.owner().catch(()=>false):false;
-    el.innerHTML=`<h3>REPORT A BUG</h3><div class="dim">what went wrong? what did you expect? the picture is the screen behind this menu, taken when you opened it (F8 opens this anywhere)</div>
+    el.innerHTML=`<h3>REPORT A BUG</h3><div class="dim">what went wrong, and what did you expect? the screen behind this menu goes with it · F8 opens this anywhere</div>
       <div class="row"><textarea id="bugtx" rows="4" maxlength="2000" style="flex:1;min-width:240px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:6px"></textarea></div>
       <div class="row"><img id="bugim" alt="the screen" style="max-width:min(320px,80vw);border:2px solid var(--line);image-rendering:pixelated"><label class="dim"><input type="checkbox" id="bugwith" checked> send the picture</label></div>
-      <div class="row"><button class="btn" id="bugsend">SEND</button><span class="dim" id="bugsay">${be?'':'reports send from the game on thestrangestfleamarket.com or the claude.ai link'}</span></div>
+      <div class="row"><button class="btn" id="bugsend">SEND</button><span class="dim" id="bugsay">${be?'':'reports send from thestrangestfleamarket.com'}</span></div>
       ${own?'<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>':''}`;
     const $=s=>el.querySelector(s); if(shot)$('#bugim').src=shot; else $('#bugim').hidden=true; $('#bugsend').disabled=!be;
     for(const ev of ['keydown','keyup'])$('#bugtx').addEventListener(ev,e=>e.stopPropagation());
@@ -70,6 +62,7 @@ import {BUILDV} from './135-where.js';
       if(b.dataset.s){ b.disabled=true; try{ await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
-  Object.assign(BUGS,{sb,tok,owner:SITE.owner});
+  const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };
+  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout});
   BUGS.open=async e=>{ el=e; ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

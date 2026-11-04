@@ -51,9 +51,19 @@ function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S
   return mt('road',speck(n<.34?sh(c,.92):n>.68?sh(c,w?1.08:1.06):c,x,y,41)); }
 const DTBRICK=[118,50,44];
 
-const LAWN=[66,116,50];   // the lawns: one flat green
-function lawnCol(){ return LAWN; }
-function grassCol(){ return mt('grass',LAWN); }
+// the lawns: the edge-ring tree crowns' greens (with how often each shows); tuftCol paints them as faceted tufts seen from above, lit from one side
+const TUFTC=[[65,103,55,1528],[81,123,53,2924],[95,127,55,1761],[89,141,57,3121],[105,140,60,1844],[99,156,63,2692],[116,154,66,1357],[115,172,70,1093]], TUFTW=TUFTC.reduce((a,c)=>a+c[3],0);
+const tuftPick=r=>{ r*=TUFTW; for(const c of TUFTC)if((r-=c[3])<0)return c; return TUFTC[0]; };
+const TQ=new Int32Array(128*128*2).fill(-1e9), TP=new Float32Array(128*128*6);   // each tuft's spot, turn and colour, kept while the painter is near it
+function tuftCol(x,y){ const u=x/.5, v=y/.5, i0=Math.floor(u), j0=Math.floor(v); let d1=9, d2=9, bq=0, bi=0, bj=0;
+  for(let j=j0-1;j<=j0+1;j++)for(let i=i0-1;i<=i0+1;i++){ const q=((j&127)<<7|(i&127)), t=q*6; if(TQ[q*2]!==i||TQ[q*2+1]!==j){ TQ[q*2]=i; TQ[q*2+1]=j; const px=i+.1+.8*hash(i,j,601), py=j+.1+.8*hash(i,j,603), c=tuftPick(hash(i,j,609)*.35+cvNoise(px/4.4,py/4.4,611)*.65), m=.55+.3*cvNoise(px/9,py/9,613);
+      TP[t]=px; TP[t+1]=py; TP[t+2]=hash(i,j,605)*6.2832; TP[t+3]=c[0]*m; TP[t+4]=c[1]*m; TP[t+5]=c[2]*m; }   // in clumps of light and dark that still show far off; darker than the colours, as the standing tufts read
+    const d=(u-TP[t])*(u-TP[t])+(v-TP[t+1])*(v-TP[t+1]); if(d<d1){ d2=d1; d1=d; bq=t; bi=i; bj=j; } else if(d<d2)d2=d; }
+  const r=Math.sqrt(d1), e=Math.sqrt(d2)-r, rot=TP[bq+2], a=Math.atan2(v-TP[bq+1],u-TP[bq])-rot, k=Math.floor((a/6.2832-Math.floor(a/6.2832))*5), out=r>.32, ca=(k+.5+(out?.5:0))/5*6.2832+rot, t=out?.9:.4;
+  const nx=Math.cos(ca)*t, ny=Math.sin(ca)*t, s=(.62+.5*Math.max(0,(-.45*nx-.55*ny+.7)/Math.sqrt(nx*nx+ny*ny+1))+.1*(hash(bi*5+k+(out?7:0),bj,607)-.5))*(e<.07?.72:r>.62?.82:1);
+  return [Math.min(255,TP[bq+3]*s),Math.min(255,TP[bq+4]*s),Math.min(255,TP[bq+5]*s)]; }
+function lawnCol(x,y){ return tuftCol(x,y); }
+function grassCol(x,y){ return mt('grass',tuftCol(x,y)); }
 
 const BRICKS=window.BRICKS={};
 BRICKS.TINT=[[1,1,1],[1.05,1,.93],[.95,.98,1.05],[1.07,1.02,.88],[.99,.96,.95],[1.02,1.03,.98]];
@@ -70,4 +80,4 @@ BRICKS.one=sd=>{ const n=hash(sd,7,3), tn=BRICKS.TINT[Math.floor(hash(sd,9,5)*BR
 BRICKS.quoins=(x0,y0,x1,y1,z0,z1,k,box)=>{ '@later'; for(let r=0;r*6<z1-z0;r++){ const zt=z1-r*6, zb=Math.max(z0,zt-5); if(zt-zb<2)continue;
   for(const [cx,sx] of [[x0,-1],[x1,1]])for(const [cy,sy] of [[y0,-1],[y1,1]]){ const sd=k*977+r*31+(sx+1)*5+(sy+1), lx=(r+(sx>0)+(sy>0))&1, L=.38+.08*hash(sd,1,1), S=.2+.06*hash(sd,2,1), pr=.012+.04*hash(sd,3,1), ex=lx?L:S, ey=lx?S:L;
     box(sx<0?cx-pr:cx-ex,sy<0?cy-pr:cy-ey,sx<0?cx+ex:cx+pr,sy<0?cy+ey:cy+pr,zb,zt,BRICKS.one(sd)); } } };
-export {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, crack, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, ROT, sh, sided, slabCol, speck, spot, SQB, STORY, T, woodCol, zShift};
+export {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, crack, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, ROT, sh, sided, slabCol, speck, spot, SQB, STORY, T, TUFTC, tuftCol, woodCol, zShift};

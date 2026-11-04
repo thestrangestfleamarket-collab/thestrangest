@@ -67,19 +67,29 @@ const lerp=(a,b,u)=>a+(b-a)*u,lerp2=(a,b,u)=>[lerp(a[0],b[0],u),lerp(a[1],b[1],u
 function mix(A,B,u){ const P={root:lerpV(A.root,B.root,u)};
   for(const k of ['yaw','roll','pitch','pv','pyaw','cyaw','bend','side','nod','look']) P[k]=lerp(A[k],B[k],u);
   for(const n of 'LR'){ const a=A[n],b=B[n]; P[n]={ua:lerp2(a.ua,b.ua,u),fa:lerp2(a.fa,b.fa,u),fist:lerp(a.fist,b.fist,u),th:lerp2(a.th,b.th,u),sh:lerp2(a.sh,b.sh,u),foot:lerp(a.foot,b.foot,u)};
-    if(a.ik&&b.ik) P[n].ik=lerpV(a.ik,b.ik,u);
+    if(a.ik&&b.ik){ P[n].ik=lerpV(a.ik,b.ik,u); P[n].kp=a.kp||b.kp; }
     if(a.fg||b.fg){ const fa=fgOf(a),fb=fgOf(b); P[n].fg=fa.map((d,i)=>d.map((v,j)=>lerp(v,fb[i][j],u))); }
     if(a.hf||b.hf){ const wa=a.hf?(a.hfw==null?1:a.hfw):0,wb=b.hf?(b.hfw==null?1:b.hfw):0; P[n].hfw=lerp(wa,wb,u);
       P[n].hf=a.hf&&b.hf?{y:a.hf.y.map((v,j)=>lerp(v,b.hf.y[j],u)),z:a.hf.z.map((v,j)=>lerp(v,b.hf.z[j],u))}:(b.hf||a.hf); } }
-  for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik);
+  for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp);
   return P; }
 const hipAt=(P,s)=>{ const Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv,0); return [add(add(P.root,pv),app(Rb,sub(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),pv))),Rb]; };
-function legIK(P,n,s,A){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),THIGH+SHIN-1e-6),u=nrm(d);
-  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),fwd=app(Rb,yaw(V(0,0,1),P.pyaw)),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
+function legIK(P,n,s,A,kp){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),THIGH+SHIN-1e-6),u=nrm(d);
+  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),fwd=kp?app(Rb,kp):app(Rb,yaw(V(0,0,1),P.pyaw)),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
   const Kn=add(H,add(mul(u,THIGH*ca),mul(pole,THIGH*Math.sqrt(1-ca*ca)))),A2=add(H,mul(u,dl));
   const ang=v=>{ const l=nrm(v),x=dot(l,Rb.x),y=dot(l,Rb.y),z=dot(l,Rb.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
   P[n].th=ang(sub(Kn,H)); P[n].sh=ang(sub(A2,Kn)); }
 
+function armIK(P,n,s,A){ const {J,m}=build(P),S=J['shoulder'+n],d=sub(A,S),dl=Math.min(len(d),UPPER+FORE-1e-6),u=nrm(d);
+  const ca=clamp((UPPER*UPPER+dl*dl-FORE*FORE)/(2*UPPER*dl),-1,1),out=app(m.Ru,V(s,-0.5,-0.3)),pole=nrm(sub(out,mul(u,dot(out,u))));
+  const E=add(S,add(mul(u,UPPER*ca),mul(pole,UPPER*Math.sqrt(1-ca*ca)))),A2=add(S,mul(u,dl));
+  const ang=v=>{ const l=nrm(v),x=dot(l,m.Ru.x),y=dot(l,m.Ru.y),z=dot(l,m.Ru.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
+  P[n].ua=ang(sub(E,S)); P[n].fa=ang(sub(A2,E)); }
+function gripIK(st,P,G=st.climb.grip){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd);   // hands and feet onto holds given in the world
+  const toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,(p.y-W.y)*W.ky,dx*s+dz*c); }, nL=p=>nrm(V(p.nx*c-p.nz*s,p.ny,p.nx*s+p.nz*c));
+  for(const n of 'LR'){ const g=G[n],sd=n=='L'?1:-1; if(!g) continue;
+    if(g.f){ const A=add(add(toL(g.f),mul(nL(g.f),2.6)),V(0,1.2,0)); P[n].ik=A; P[n].kp=V(sd*.8,.3,1); legIK(P,n,sd,A,P[n].kp); P[n].foot=-35*D; }   // knees out round the trunk, soles flat on the bark
+    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=1; } } }
 function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
     toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
     up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },
@@ -213,9 +223,9 @@ const mouthPaint=(p,H,M)=>{ if(!M||M.o<=0.05) return box(p,add(H,V(0,-5.95,5.2))
   const h=Math.max(M.o/2,0.35),cy=-5.95-M.o/2+0.35; if(box(p,add(H,V(0,cy,5.2)),V(M.w,h,3.2))<0) return M.o>0.5&&p.y-H.y>cy+h-0.5?'teeth':'mouth';
   return box(p,add(H,V(0,cy,5.2)),V(M.w+0.6,h+0.6,3.2))<0?'skin':null; };
 function headPieces(H,lift,mouth){ const P=[];
-  P.push({n:'head',m:'skin',d:p=>Math.min(rbox(p,H,V(6.0,7.8,6.3),4.6),rcone(p,add(H,V(0,-6,1.6)),add(H,V(0,-10.5,0.2)),2.4,2.2),ell(p,add(H,V(6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),ell(p,add(H,V(-6.7,-1.8,-1.0)),V(1.3,1.9,1.3)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});
+  const nape=p=>1.7*Math.max(0,Math.min(1,(H.y-2.0-p.y)/4.5))*Math.max(0,Math.min(1,(H.z-0.5-p.z)/4.5));
+  P.push({n:'head',m:'skin',d:p=>Math.min(rbox(p,H,V(6.0,7.8,6.3),4.6)+nape(p),rcone(p,add(H,V(0,-6,1.6)),add(H,V(0,-10.5,0.2)),2.4,2.2),ell(p,add(H,V(6.3,-1.8,-0.8)),V(0.8,1.45,0.95)),ell(p,add(H,V(-6.3,-1.8,-0.8)),V(0.8,1.45,0.95)),rbox(p,add(H,V(0,-2.6,6.35)),V(0.95,1.75,1.25),0.45))});
   P.push({n:'hair',m:'hair',d:p=>Math.min(Math.max(rbox(p,add(H,V(0,0.3+lift/2,-1.0)),V(6.65,8.2+lift/2,7.6),5.0),-box(p,add(H,V(0,-2.8,5.5)),V(4.8,6.0,3.4)),-box(p,add(H,V(0,-3.8,6.2)),V(10,8,5)),H.y-3.0-p.y),
-    Math.max(rbox(p,H,V(6.35,8.1,6.6),4.95),4.4-Math.abs(p.x-H.x),p.z-H.z-2.9,Math.abs(p.y-H.y-0.8)-3.4),
     Math.max(rbox(p,add(H,V(0,0.3+lift/2,-1.0)),V(6.65,8.2+lift/2,7.6),5.0),ell(p,add(H,V(0,-3.6,-4.4)),V(3.4,3.8,3.2))))});
   P.push({n:'beard',m:'hair',d:p=>Math.max(H.z-1.2-p.z,Math.min(rbox(p,add(H,V(0,-0.9,0.2)),V(6.4,8.1,6.6),4.8),rcone(p,add(H,V(-2.8,-6.6,0.9)),add(H,V(2.8,-6.6,0.9)),2.3,2.3)),p.y-(H.y-4.1)),
     paint:p=>mouthPaint(p,H,mouth)||(box(V(Math.abs(p.x-H.x)+H.x,p.y,p.z),add(H,V(3.1,-4.35,7.3)),V(1.0,0.3,1.4))<0?'skin':null) });
@@ -233,7 +243,7 @@ function shoeBox(p,J,n,r){ const H=J['heel'+n],T=J['toe'+n],f=nrm(sub(T,H)),u=nr
   const q=[Math.abs(a-(a0+a1)/2)-((a1-a0)/2-r),Math.abs(b)-(hw-r),Math.abs(c-(c0+top)/2)-((top-c0)/2-r)];
   return Math.hypot(Math.max(q[0],0),Math.max(q[1],0),Math.max(q[2],0))+Math.min(Math.max(q[0],q[1],q[2]),0)-r; }
 function shell(J,lift,mouth,suit){ const fine=FINEHAND, P=headPieces(J.head,lift||0,mouth).concat(bodyPieces(J,suit));
-  P.push({n:'neck',m:'skin',d:p=>rcone(p,J.neck,J.headBase,2.9,2.2)});
+  P.push({n:'neck',m:'skin',d:p=>rcone(p,J.neck,J.headBase,2.7,2.0)});
   for(const n of 'LR'){ const S=J['shoulder'+n],E=J['elbow'+n],W=J['wrist'+n];
     P.push({n:'sleeve'+n,m:'shirt',d:p=>rcone(p,S,add(S,mul(sub(E,S),0.3)),BODY.slv[0],BODY.slv[1])});
     P.push({n:'upperArm'+n,m:suit?'shirt':'skin',d:p=>rcone(p,S,E,2.58,2.4)});
@@ -317,7 +327,7 @@ const EASE={io:smooth,lin:t=>t,in:t=>t*t,out:t=>1-(1-t)*(1-t)};
 function apply(P,c){ P=JSON.parse(JSON.stringify(P));
   for(const k in c){ if(k=='L'||k=='R'){ const g=P[k],x=c[k]; for(const j in x){ if(j=='ik'){ g.ik=V(...x.ik); } else if(j=='th'||j=='sh'){ g[j]=x[j].map(a=>a*D); delete g.ik; } else if(j=='ua'||j=='fa') g[j]=x[j].map(a=>a*D); else if(j=='foot') g.foot=x.foot*D; else g[j]=x[j]; } }
     else if(k=='root') P.root=V(...c.root); else if(ANG.includes(k)) P[k]=c[k]*D; else P[k]=c[k]; }
-  for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik);
+  for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp);
   return P; }
 const START=(()=>{ const P=neutral(); P.L.ik=V(...SL); P.R.ik=V(...SR); legIK(P,'L',1,P.L.ik); legIK(P,'R',-1,P.R.ik); return P; })();
 function move(def){ let P=START; def.k=def.keys.map(([t,c,e])=>({t,P:(P=apply(P,c||{})),e:EASE[e||'io']})); def.dur=def.dur||def.k[def.k.length-1].t; return def; }
@@ -449,17 +459,17 @@ const grabMove=n=>{ const s=n=='R'?1:-1; return move({keys:[[0,{}],[0.24,{bend:5
 MOVES.grab=grabMove('R'); MOVES.grabL=grabMove('L');
 MOVES.carry=move({hold:0.24,keys:[[0,{}],[0.24,{R:{ua:[104,6],fa:[108,2],fist:1}},'out'],[0.5,{R:{ua:[9,8],fa:[19,8],fist:0}}]]});
 MOVES.mantle=(()=>{ const m=climbOut(); m.deck=false; return m; })();
-function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/28),P=neutral(),Q=neutral();
+function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/(st.climb.per||28)),P=neutral(),Q=neutral();
   for(const [A,hi,lo] of [[P,'L','R'],[Q,'R','L']]){ A.root=V(0,z+STAND-1,-1.5); A.bend=8*D; A.nod=-18*D;
     A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
     A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }
-  return mix(P,Q,u); }
+  const M=mix(P,Q,u), k=st.climb.slide?0:Math.sin(Math.PI*u); M.root=V(M.root.x+1.2*(u-.5),M.root.y-2.2*k,M.root.z-.8*k); M.bend=(8+6*k)*D; if(st.climb.grip&&st.world){ M.bend=-3*D; M.nod=-34*D; M.root=V(M.root.x,M.root.y,M.root.z-1.5); gripIK(st,M); } return M; }   // on bark: hang back from it, looking up the trunk   // each pull: sag on the arms, then heave up close to the trunk
 const PICKS={};
 function pickMove(h,z){ const k=clamp(Math.round(h/2)*2,0,50),q=clamp(Math.round(z/2)*2,4,16),key=k+','+q; if(PICKS[key]) return PICKS[key];
   const G=(d,a)=>({root:[0,STAND-7*d,-1.5*d],bend:44*d,nod:12*d,L:{ik:[FOOTX,ANKLE,2.5*d],ua:[9+30*d,14],fa:[19+60*d,10]},R:{ik:[-FOOTX,ANKLE,-2.5*d],ua:[a,-6],fa:[a+8,-8],fist:0}});
   let best=null;
   for(let d=0;d<=1.001&&!(best&&best.e<2);d+=.25) for(let a=-40;a<=170;a+=5){ const J=build(apply(START,G(d,a))).J,f=J.fingersR,e=Math.abs(f.y-k-1)+Math.abs(f.z-q)*.6+d; if(!best||e<best.e) best={e,d,a}; }
-  return PICKS[key]=move({keep:.1,ex:.5,keys:[[0,{}],[.3,G(best.d,best.a)],[.36,{R:{fist:1}}],
+  return PICKS[key]=move({lead:'R',keep:.1,ex:.5,keys:[[0,{}],[.3,G(best.d,best.a)],[.36,{R:{fist:1}}],
     [.62,{root:[0,STAND,0],bend:0,nod:0,L:{ik:SL,ua:[9,8],fa:[19,8]},R:{ik:SR,ua:[9,8],fa:[19,8],fist:0}}]]}); }
 const UPS={},DOWNS={},LEAPS={};
 function upMove(h){ const k=Math.round(h); if(UPS[k]) return UPS[k]; const lo=STAND-k, R=(ua,fa)=>({ua:[ua,12],fa:[fa,10]});
@@ -505,13 +515,14 @@ function hangPose(st){ const H=st.hang,a=2*Math.PI*H.t/24,s=Math.sin(a),P=neutra
   for(const [n,k] of [['L',1],['R',-1]]){ const r=H.side?0:k*s;
     P[n].ua=[(176-24*Math.max(0,r))*D,(H.side?18+8*Math.max(0,k*s):18)*D]; P[n].fa=[(178-16*Math.max(0,r))*D,6*D]; P[n].fist=1;
     P[n].th=[(10+6*k*s)*D,6*D]; P[n].sh=[(2+4*k*s)*D,6*D]; P[n].foot=-20*D; }
+  if(H.grip&&st.world){ P.nod=-26*D; gripIK(st,P,H.grip); }   // hands onto the branch's holds
   return P; }
 
 function sitPose(st){ const P=neutral(); P.root=V(0,st.sit.z+2,0); P.bend=-5*D; P.nod=-4*D;
   for(const n of "LR"){ P[n].th=[88*D,6*D]; P[n].sh=[6*D,4*D]; P[n].foot=4*D; P[n].ua=[22*D,16*D]; P[n].fa=[74*D,6*D]; P[n].fist=0; }
   return P; }
 
-const RIDEG={bb:[5.6,0.4],crank:3.1,seat:[16.6,-3.6],bar:[19.4,9.6],deck:4.2};
+const RIDEG={bb:[5.6,0.4],crank:3.1,seat:[16.6,-3.6],bar:[19.4,9.6],deck:4.2,sit:4.5};
 function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   if(R.k==='bike'){
     P.root=V(0,RIDEG.seat[0]+1.4,RIDEG.seat[1]); P.bend=(R.brake?20:26)*D; P.nod=-12*D; P.pitch=0;
@@ -519,13 +530,27 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
       P[n].ik=V(k*2.7,py+3.9,pz-1.4); P[n].foot=-8*D;
       P[n].ua=[58*D,9*D]; P[n].fa=[(R.brake?70:74)*D,4*D]; P[n].fist=1; } }
   else if(R.k==='skate'){
-    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?5.4:4.2; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=10*D;
+    const cr=Math.min(1.6,R.crouch||0), dk=RIDEG.deck+ANKLE, p=R.push, knee=(R.brake?5.4:4.2)+cr*4.5; P.yaw=(R.goofy?-78:78)*D; P.pyaw=0; P.cyaw=-10*D*(R.goofy?-1:1); P.nod=-4*D; P.bend=(10+cr*8+(R.lean||0))*D;   // crouch: winding up or tucked; lean: a manual
     P.root=V(0,STAND-knee-(p>=0?2.2*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
     const f=R.goofy?'R':'L', b=R.goofy?'L':'R', s=R.goofy?-1:1;
     P[f].ik=V(0.6*s,dk+z,4.4); P[f].foot=0;
     if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P[b].ik=V(-3.4*s,dk-dn*RIDEG.deck+z*(1-dn),1.5-8*p); P[b].foot=-6*D*dn; }
     else { P[b].ik=V(-0.6*s,dk+z,-4.2); P[b].foot=0; }
-    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; } }
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].ua=[(28+(p>=0?10:0))*D,(34+(R.brake?6:0))*D]; P[n].fa=[44*D,30*D]; P[n].fist=0; }
+    if(R.grab){ const g=R.grab==='nose'||R.grab==='melon'?f:b; P[g].ua=[-8*D,12*D]; P[g].fa=[6*D,8*D]; P[g].fist=1; } }   // a grab: the hand down to the board
+  else if(R.k==='scoot'){   // a kick scooter: facing forward, the front foot on the deck, the back one kicking, both hands on the bars
+    const dk=RIDEG.deck+ANKLE, p=R.push, knee=R.brake?4.6:3.6; P.nod=-6*D; P.bend=14*D;
+    P.root=V(0,STAND-knee-(p>=0?1.6*Math.sin(Math.PI*p):0)+dk-ANKLE+z,0);
+    P.L.ik=V(1.2,dk+z,1.4); P.L.foot=0;
+    if(p>=0){ const dn=Math.min(1,Math.sin(Math.PI*p)*1.6); P.R.ik=V(-1.4,dk-dn*RIDEG.deck+z*(1-dn),-1-7*p); P.R.foot=-6*D*dn; }
+    else { P.R.ik=V(-1.2,dk+z,-2.6); P.R.foot=0; }
+    for(const n of 'LR'){ P[n].ua=[40*D,8*D]; P[n].fa=[30*D,4*D]; P[n].fist=1; } }
+  else if(R.k==='kart'){
+    P.root=V(0,6+z,-1.5); P.bend=-16*D; P.nod=-6*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[82*D,5*D]; P[n].sh=[14*D,2*D]; P[n].foot=-12*D; P[n].ua=[50*D,12*D]; P[n].fa=[58*D,(4+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
+  else if(R.k==='car'){
+    P.root=V(0,RIDEG.sit,0); P.bend=-30*D; P.nod=4*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
   else if(R.k==='zip'){
     P.root=V(0,z+STAND,0); P.nod=-10*D; P.pitch=(R.sway||0); P.bend=6*D;
     for(const n of 'LR'){ P[n].ua=[174*D,14*D]; P[n].fa=[178*D,6*D]; P[n].fist=1; P[n].th=[26*D,4*D]; P[n].sh=[18*D,4*D]; P[n].foot=-14*D; } }
@@ -561,7 +586,7 @@ function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>de
     P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
     for(const n of 'LR') delete P[n].ik; }
-  const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik); }
+  const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp); }
   for(const k of ['yaw','roll','pitch']) P[k]=wrap(P[k]);
   return P; }
 const mirror=P=>{ const Q=JSON.parse(JSON.stringify(P)); Q.root=V(-P.root.x,P.root.y,P.root.z); for(const k of ['yaw','roll','pyaw','cyaw','side','look']) Q[k]=-P[k];
@@ -574,9 +599,11 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
 function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
-  const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),a=Math.atan2(z,-y),b=Math.asin(clamp(-x,-1,1)),w=A.w;
-  P.R.ua=lerp2(P.R.ua,[a,b],w); P.R.fa=lerp2(P.R.fa,[a+.2,b],w); P.R.fist=lerp(P.R.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
-const rawPose=st=>aimLayer(st,upLayer(st,rawPose0(st)));
+  const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),n=st.hand==='L'?'L':'R',a=Math.atan2(z,-y),b=Math.asin(clamp(n==='L'?x:-x,-1,1)),w=A.w,H=P[n];
+  H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
+function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame
+  const s=G.side>0?1:-1,n=s>0?'L':'R'; armIK(P,n,s,V(G.x,G.y,G.z)); P[n].fist=1; return P; }
+const rawPose=st=>gripLayer(st,aimLayer(st,upLayer(st,rawPose0(st))));
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -698,7 +725,7 @@ const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;
   const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;
-  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; aimLayer(st,upLayer(st,P)); if(st.sign)st.sign(P); }
+  if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; gripLayer(st,aimLayer(st,upLayer(st,P))); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);
   const B=settle(busy||st.up||(st.water&&st.water.in)?clearPose(P,dev):build(P,dev),st.move&&st.move.base!=null?st.move.base:floorOf(st)+(busy?0:st.fdn||0),busy,st.smooth);
@@ -741,7 +768,7 @@ function cam(yawA){ if(VPITCH!=null){ const uy=Math.cos(PITCH)*Math.cos(VPITCH)/
   const n=Math.hypot(Math.cos(PITCH),TILT); return {r:yaw(V(ACROSS,0,0),-yawA),u:yaw(V(0,Math.cos(PITCH),-TILT),-yawA),f:yaw(V(0,-TILT/n,-Math.cos(PITCH)/n),-yawA)}; }
 function project(p,yawA){ const c=cam(yawA); return [dot(p,c.r)*K,-dot(p,c.u)*K,dot(p,c.f)]; }
 const LIGHT=nrm(V(-0.55,0.75,0.5)),hex=c=>0xff000000|parseInt(c.slice(5,7),16)<<16|parseInt(c.slice(3,5),16)<<8|parseInt(c.slice(1,3),16);
-RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; RAMP.under=['#b9c3d0','#a8b2c0','#86909e','#525a66']; const MATS=Object.keys(RAMP),RAMP32=MATS.map(k=>RAMP[k].map(hex));
+RAMP.lips=['#d4948a','#c4827a','#a26660','#5e3a36']; RAMP.hairHi=['#8a7674','#7c6967','#625150','#463837']; RAMP.hairLo=['#4e403f','#443736','#352a29','#251c1b']; RAMP.sole=['#3a2c22','#30241b','#251b14','#140e0a']; RAMP.eye=['#5a3a26','#4c311f','#3c2618','#24160d']; RAMP.eyeW=['#f4f0e8','#e8e2d6','#c8c0b0','#8a8274']; RAMP.pupil=['#2a1c18','#241814','#1c120f','#100a08']; RAMP.lid=['#b4896e','#a67c62','#8e6650','#5e4232']; RAMP.under=['#b9c3d0','#a8b2c0','#86909e','#525a66']; const MATS=Object.keys(RAMP),RAMP32=MATS.map(k=>RAMP[k].map(hex));
 const BUF={};
 function ramp32(look){ return MATS.map(m=>{ const t=look&&look[m], o=RAMP[m], c=h=>[1,3,5].map(j=>parseInt(h.slice(j,j+2),16)), b=c(o[1]);
   return (/^#[0-9a-f]{6}$/i.test(t||'')?o.map(h=>'#'+c(h).map((v,j)=>Math.min(255,Math.round(c(t)[j]*v/(b[j]||1))).toString(16).padStart(2,'0')).join('')):o).map(hex); }); }

@@ -1,7 +1,7 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {CHARS, CLIP, LEVELS, NPCS, PARK, pos, ROOMS, SELFSH, UI, VIT, W3} from './003b-systems.js';
+import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -32,6 +32,15 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const tall=o.tall||geo.boundingBox.max.y-geo.boundingBox.min.y;
   N.renorm();
   { const n0=geo.attributes.position.count; geo.setAttribute('sh',new THREE.BufferAttribute(new Float32Array(n0),1)); if(!geo.attributes.fab)geo.setAttribute('fab',new THREE.BufferAttribute(new Float32Array(n0),1)); }
+  // weld bit-identical vertices (toNonIndexed left many), keeping every attribute: no visual change, less memory. Returns the kept original indices (ascending), or null if not worth it. Safe only when nothing reshapes the body by its original vertex ranges after this.
+  N.pack=ranges=>{ if(geo.index)return null; const A=geo.attributes, keys=Object.keys(A), KA=keys.map(nm=>({a:A[nm].array,sz:A[nm].itemSize})), n=A.position.count, buckets=new Map(), idx=new Uint32Array(n), uq=[];
+    const eq=(i,j)=>{ for(const {a,sz} of KA)for(let c=0;c<sz;c++)if(a[i*sz+c]!==a[j*sz+c])return false; return true; }, PA=A.position.array;   // a spatial hash on position buckets likely-equal vertices; the exact compare keeps the weld lossless
+    for(let i=0;i<n;i++){ const o=i*3, h=(Math.imul(PA[o]*4096|0,73856093)^Math.imul(PA[o+1]*4096|0,19349663)^Math.imul(PA[o+2]*4096|0,83492791))>>>0; let bk=buckets.get(h), u=-1; if(bk){ for(let x=0;x<bk.length;x++)if(eq(i,uq[bk[x]])){ u=bk[x]; break; } } else buckets.set(h,bk=[]); if(u<0){ u=uq.length; uq.push(i); bk.push(u); } idx[i]=u; }
+    if(uq.length>n*0.95)return null;
+    for(const nm of keys){ const a=A[nm], sz=a.itemSize, src=a.array, dst=new src.constructor(uq.length*sz); for(let j=0;j<uq.length;j++){ const s=uq[j]*sz, d=j*sz; for(let c=0;c<sz;c++)dst[d+c]=src[s+c]; } geo.setAttribute(nm,new THREE.BufferAttribute(dst,sz,a.normalized)); }
+    geo.setIndex(new THREE.BufferAttribute(uq.length>65535?idx:Uint16Array.from(idx),1));
+    if(ranges){ const lb=x=>{ let lo=0,hi=uq.length; while(lo<hi){ const m=(lo+hi)>>1; if(uq[m]<x)lo=m+1; else hi=m; } return lo; }; for(const nm in ranges){ const r=ranges[nm], s=lb(r.start); r.count=lb(r.start+r.count)-s; r.start=s; } }   // the per-part vertex ranges, remapped into the welded layout (parts stay contiguous: reg is in the weld key, so parts never share a vertex)
+    return uq; };
   N.shade=()=>{ if(N.shaded)return; N.shaded=true; const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, n=P.length/3, rk=o.rank, SH=geo.attributes.sh.array, w=tall*.07, grid=new Map(),
       CI=new Int32Array(n*3); let cm=0; for(let i=0;i<n*3;i++){ CI[i]=Math.floor(P[i]/w); cm=Math.max(cm,Math.abs(CI[i])); }
     const ck=cm<500?(x,y,z)=>((x+512)*1024+y+512)*1024+z+512:(x,y,z)=>x+','+y+','+z, RK=new Float64Array(n), w2=w*w*1.000001;
@@ -42,10 +51,11 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
           if(dy<-w*.25||dx*nx+dy*ny+dz*nz<-w*.15||dx*dx+dy*dy+dz*dz>=w2)continue; const d=Math.hypot(dx,dy,dz); if(d>=w)continue; best=Math.max(best,1-d/w); } }
       SH[i]=best; }
     geo.attributes.sh.needsUpdate=true; };
-  N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()};
+  N.smCam=new THREE.OrthographicCamera(-1.8,1.8,1.8,-1.8,.1,14); N.LVP={value:new THREE.Matrix4()}; N.smU={value:W3.sm.depthTexture};   // its own shadow map only once its shadow pass runs (most characters never get one)
+  const smOf=()=>{ if(!N.sm){ N.sm=new THREE.WebGLRenderTarget(256,256); N.sm.depthTexture=new THREE.DepthTexture(256,256); N.smU.value=N.sm.depthTexture; } return N.sm; };
   const EYEC=new THREE.Vector3(...(o.eyeC||'1.,.9,.3').split(',').map(Number));
   N.ct=new THREE.Color(1,1,1);
-  const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL:{value:W3.Lw},uTint:{value:W3.tint},uCTint:{value:N.ct},uLv:W3.lv,uSM:{value:N.sm.depthTexture},uLVP:N.LVP,uEye:{value:o.eye??-1},uEyeC:{value:EYEC}},
+  const mat=new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uL:{value:W3.Lw},uTint:{value:W3.tint},uCTint:{value:N.ct},uLv:W3.lv,uSM:N.smU,uLVP:N.LVP,uEye:{value:o.eye??-1},uEyeC:{value:EYEC}},
     vertexShader:`attribute vec3 color; attribute float sh; attribute float reg; attribute float fab; varying vec3 vC,vN,vW,vO; varying float vS,vR,vF;
       #include <skinning_pars_vertex>
       void main(){ vS=sh; vR=reg; vF=fab; vO=position; vC=pow(color,vec3(2.2)); vec3 transformed=position, objectNormal=normal;
@@ -64,8 +74,8 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
         gl_FragColor=vec4(c*uTint*uCTint,1.); }`});
   N.depthMat=new THREE.MeshDepthMaterial({side:THREE.DoubleSide});
   const toon=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide}); toon.color=N.ct;
-  toon.onBeforeCompile=s=>{ s.uniforms.uEye={value:o.eye??-1}; s.uniforms.uEyeC={value:EYEC}; s.vertexShader='attribute float sh; attribute float reg; attribute float fab; varying float vS,vR,vF; varying vec3 vO;\n'+s.vertexShader.replace('#include <color_vertex>','vColor=pow(color,vec3(2.2)); vS=sh; vR=reg; vF=fab; vO=position;');
-    s.uniforms.uLv=W3.lv; s.uniforms.uLVP=N.LVP; s.uniforms.uSM={value:N.sm.depthTexture}; s.uniforms.uSelf=W3.uSelf; s.uniforms.uMine={value:o.noSelf?0:1};
+  toon.onBeforeCompile=s=>{ s.uniforms.uEye={value:o.eye??-1}; s.uniforms.uEyeC={value:EYEC}; s.vertexShader='attribute float sh; attribute float reg; attribute float fab; varying float vS,vR,vF; varying vec3 vO;\n'+s.vertexShader.replace('#include <color_vertex>','vColor=vec4(pow(color,vec3(2.2)),1.); vS=sh; vR=reg; vF=fab; vO=position;');
+    s.uniforms.uLv=W3.lv; s.uniforms.uLVP=N.LVP; s.uniforms.uSM=N.smU; s.uniforms.uSelf=W3.uSelf; s.uniforms.uMine={value:o.noSelf?0:1};
     s.vertexShader='varying vec3 vWW;\n'+s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
     s.fragmentShader='uniform float uLv,uSelf,uMine; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+s.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5&&uMine>.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }');
     s.fragmentShader='uniform float uEye; uniform vec3 uEyeC; varying float vS,vR,vF; varying vec3 vO;\n'+DENIM_GLSL+'\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vF>1.5)diffuseColor.rgb=rock(diffuseColor.rgb,vO,fract(vF)); else if(vF>.5)diffuseColor.rgb=denim(diffuseColor.rgb,vO); diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
@@ -112,7 +122,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } if(sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } p.x=st.x+ux*R; p.z=st.z+uz*R; };
   N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||st.inT!=null||!g.visible||!g.parent.visible)return; if(!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
-    renderer.setRenderTarget(N.sm); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
+    renderer.setRenderTarget(smOf()); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   N.selfSh=!o.noSelf;
   N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); NPCS.push(N); return N; }
 SYS.add('shadow',r=>{ for(const N of NPCS)if(N.selfSh)try{ N.shadowPass(r); }catch(e){ if(!N.shErr){ N.shErr=1; console.warn('NPC shadow',N.key,e); } } },'npc shadows');
@@ -120,7 +130,7 @@ const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SH
   CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
-  stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R);
+  stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
 // HOME RANGES: every character has a home, a circle it is usually found in (st.home, also N.home: {x, z, r, id, shop}; r 0 stays put). A home near a building's door (HOMES.doors: every inside but your apartment) has that building as its shop: now and then the character walks to the door and goes in for a while, hidden, its work skipped.
@@ -165,14 +175,15 @@ ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; for(le
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
 SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
-{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[];
+{ const FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), V=new THREE.Vector3(); NPCS.extra=[]; NPCS.all=()=>NPCS.concat(NPCS.extra);
+  NPCS.when=(key,fn)=>SYS.onStart(()=>{ const t=()=>{ const N=NPCS.all().find(q=>q.key===key); if(N&&N.g&&N.st)fn(N); else setTimeout(t,800); }; t(); },'npc '+key);   // run fn with a character once the start is done and its body stands
   NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
-      const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen);
-      N.far=far; N.hid=!N.sheet&&(far||!seen); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
-      if(!far)N.tick(dt,you); else if(N.farMove)N.farMove(dt); }
-    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE)); } };
-  NPCS.R=25*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
+      const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen&&!WINDOWS.near(p.x,p.z));
+      N.far=far; N.hid=!N.sheet&&(far||!seen||d>NPCS.DRAW||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
+      if(!far)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; } } }   // a body not ticked still stands where its character is
+    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
+  NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
 export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};

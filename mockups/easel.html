@@ -1,0 +1,444 @@
+<title>The Easel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:wght@400;700&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: the apartment in 3D on the left, the game's own window (the Codec menu's green on black) on the right; the steps of the system across the top, the rules under them. One look: a painter's room after dark. */
+:root{
+  --bg:#12100d; --surface:#1b1814; --line:#3a332a; --fg:#ece5d8; --muted:#a69c8c; --ochre:#d9a441; --ok:#7dffa8; --bad:#ff8a7a;
+  --g:#7dffa8; --g2:#3aa866; --gk:#020a06; --gb:#031a0d; --go:#d8ffe4;
+  --display:"Young Serif",Georgia,"Times New Roman",serif; --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"Share Tech Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1320px;margin:0 auto;display:grid;gap:16px}
+header{display:grid;gap:12px}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{font:400 34px/1.05 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:70ch}
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.steps button{font:13px var(--mono);letter-spacing:1.5px;color:var(--fg);background:var(--surface);border:1px solid var(--line);padding:8px 12px;cursor:pointer}
+.steps button b{color:var(--ochre);font-weight:400;margin-right:6px}
+.steps button[aria-selected="true"]{border-color:var(--ochre);color:var(--ochre)}
+.steps button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+.stage{position:relative;height:clamp(340px,64vh,660px);background:#0b0a08;border:1px solid var(--line);overflow:hidden}
+#three{position:absolute;inset:0}
+#three canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;left:12px;top:10px;font:13px var(--mono);letter-spacing:1px;color:var(--go);text-shadow:0 1px 2px #000;display:grid;gap:2px;pointer-events:none}
+.hud .k{color:var(--g)}
+.log{position:absolute;left:12px;bottom:10px;right:12px;font:13px var(--mono);letter-spacing:1px;color:var(--go);text-shadow:0 1px 2px #000;display:grid;gap:2px;pointer-events:none}
+.log div{animation:fade 6s forwards}
+@keyframes fade{0%,70%{opacity:1}100%{opacity:.35}}
+.stagehint{position:absolute;right:12px;top:10px;font:12px var(--mono);color:var(--muted);text-align:right;max-width:46%;pointer-events:none}
+/* the game's window */
+.win{background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),var(--gk);box-shadow:0 0 0 2px var(--g2);color:var(--g);font:14px/1.45 var(--mono);letter-spacing:1px;text-transform:uppercase;padding:12px;max-height:clamp(340px,64vh,660px);overflow:auto;display:grid;gap:10px;align-content:start}
+.win .ttl{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--g);font-size:18px;letter-spacing:3px}
+.win .ttl span+span{color:var(--g2);font-size:13px;letter-spacing:1px}
+.pane{background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--g2);padding:10px;display:grid;gap:8px;min-width:0}
+.win h3{font:inherit;font-size:12px;color:var(--g2);margin:0;padding-bottom:4px;border-bottom:2px solid var(--g2);letter-spacing:2px}
+.win .b{font:inherit;color:var(--g);background:transparent;border:0;padding:4px 7px;cursor:pointer;text-transform:uppercase;letter-spacing:1px}
+.win .b:hover,.win .b[aria-pressed="true"]{color:var(--gk);background:var(--g)}
+.win .b:disabled{color:#245c3a;cursor:not-allowed;background:transparent}
+.win .b.hot{box-shadow:inset 0 0 0 2px var(--g)}
+.row{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.dim{color:var(--g2)}
+.go{color:var(--go)}
+.warn{color:#ffd27a}
+.red{color:var(--bad)}
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl td{padding:3px 4px;border-bottom:1px solid #0d3a1f;vertical-align:middle}
+.tbl td.n{text-align:right;white-space:nowrap}
+.win input[type=text],.win input[type=number]{font:inherit;color:var(--go);background:var(--gb);border:0;box-shadow:inset 0 0 0 2px var(--g2);padding:6px 8px;width:100%;text-transform:uppercase;letter-spacing:1px}
+.win input[type=range]{accent-color:var(--g);width:100%}
+.ed-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+#ed{width:100%;image-rendering:pixelated;cursor:crosshair;background:#000;touch-action:none;box-shadow:0 0 0 2px var(--g2)}
+.pal{display:grid;grid-template-columns:repeat(16,1fr);gap:1px;background:#000;padding:1px}
+.pal button{aspect-ratio:1;border:0;padding:0;cursor:pointer;min-width:0}
+.pal button.on{outline:2px solid #fff;outline-offset:-1px;position:relative;z-index:1}
+.pal button:disabled{opacity:.12;cursor:not-allowed}
+.sw{display:inline-block;width:16px;height:16px;vertical-align:-3px;box-shadow:0 0 0 1px var(--g2)}
+.meter{height:8px;background:#0d3a1f;position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--g)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.card{background:var(--gb);box-shadow:inset 0 0 0 2px #0d3a1f;padding:8px;display:grid;gap:6px;align-content:start;min-width:0}
+.card canvas{width:100%;image-rendering:pixelated;background:#000}
+.card .t{color:var(--go);font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.card .a{color:var(--g2);font-size:11px}
+.card.sel{box-shadow:inset 0 0 0 2px var(--g)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tick{color:var(--gk);background:var(--g);padding:0 6px}
+.untick{color:var(--g2);box-shadow:inset 0 0 0 1px var(--g2);padding:0 6px}
+.prov{display:grid;gap:3px;font-size:12px}
+.prov div::before{content:'· ';color:var(--g2)}
+/* the notes under it */
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.note{background:var(--surface);border:1px solid var(--line);padding:14px 16px;display:grid;gap:8px;align-content:start;min-width:0}
+.note h2{font:400 19px/1.2 var(--display);margin:0;text-wrap:balance}
+.note ul{margin:0;padding-left:18px;display:grid;gap:5px;color:var(--fg)}
+.note p{margin:0;color:var(--muted)}
+.note code{font:13px var(--mono);color:var(--ochre)}
+.note .lab{font:12px var(--mono);letter-spacing:2px;color:var(--ochre);text-transform:uppercase}
+.choice{display:grid;gap:4px}
+.choice b{color:var(--fg)}
+.choice span{color:var(--muted)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.stage{height:min(58vh,420px)}.win{max-height:none}.stagehint{display:none}}
+@media (max-width:480px){h1{font-size:27px}.two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.log div{animation:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><h1>The Easel</h1><p class="lede">A mockup of painting and drawing in THE MARKET: buy supplies, paint at an easel, sign it, frame and hang it in your apartment, give it, trade it or sell it. Everything here works; the numbers are examples.</p></div>
+    <nav class="steps" role="tablist" aria-label="Steps of the system" id="steps"></nav>
+  </header>
+  <main class="grid">
+    <section class="stage" aria-label="Your apartment in 3D">
+      <div id="three"></div>
+      <div class="hud" id="hud"></div>
+      <p class="stagehint" id="hint">DRAG TO LOOK ROUND</p>
+      <div class="log" id="log" aria-live="polite"></div>
+    </section>
+    <section class="win" id="win" aria-live="polite"></section>
+  </main>
+  <section class="notes" id="notes"></section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>'$'+Math.round(n).toLocaleString('en-US');
+
+/* ---------- the palette: the spray can's 256 colours (159f-spray), one palette for all player art ---------- */
+const hsl=(h,s,l)=>{ const f=n=>{ const k=(n+h*12)%12, a=s*Math.min(l,1-l); return l-a*Math.max(-1,Math.min(k-3,9-k,1)); }; return [f(0),f(8),f(4)].map(v=>Math.round(v*255)); };
+const PAL=[]; for(let i=0;i<256;i++){ const r=i>>4,k=i&15; PAL.push(r===0?[Math.round(k/15*255),Math.round(k/15*255),Math.round(k/15*255)]:hsl(k/16,.85,.18+(r-1)/14*.68)); }
+const GREY=i=>i<16, PRIMER=14;
+const near=(r,g,b,greys)=>{ let bi=0,bd=1e9; for(let i=0;i<(greys?16:256);i++){ const p=PAL[i], d=(p[0]-r)**2*.3+(p[1]-g)**2*.59+(p[2]-b)**2*.11; if(d<bd){bd=d;bi=i;} } return bi; };
+const css=i=>`rgb(${PAL[i].join(',')})`;
+const mixIdx=(a,b,t)=>{ const A=PAL[a],B=PAL[b]; return near(A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t); };
+
+/* ---------- seeded noise for the example paintings ---------- */
+const rng=s=>()=>{ s|=0; s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+const lerp=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+function make(w,h,seed,fn){ const px=new Uint8Array(w*h).fill(PRIMER), R=rng(seed); const put=(x,y,c,j=10)=>{ x=Math.round(x); y=Math.round(y); if(x<0||y<0||x>=w||y>=h)return; px[y*w+x]=near(c[0]+(R()-.5)*j,c[1]+(R()-.5)*j,c[2]+(R()-.5)*j); }; fn(put,w,h,R); return px; }
+const GEN={
+  moon:(put,w,h,R)=>{ const hz=Math.round(h*.56); for(let y=0;y<hz;y++)for(let x=0;x<w;x++)put(x,y,lerp([12,16,44],[52,62,104],y/hz),5);
+    for(let i=0;i<w*.5;i++)put(R()*w,R()*hz*.8,[230,230,210],0);
+    const mx=w*.7,my=h*.22,mr=w*.085; for(let y=0;y<hz;y++)for(let x=0;x<w;x++){ const d=Math.hypot(x-mx,y-my); if(d<mr)put(x,y,[244,232,186],6); else if(d<mr*1.9&&R()<.5)put(x,y,[80,86,130],10); }
+    for(let y=hz;y<hz+3;y++)for(let x=0;x<w;x++)put(x,y,[22,24,32],6);
+    for(let i=0;i<w*.35;i++)put(R()*w,hz+R()*2,[250,210,110],0);
+    for(let y=hz+3;y<h;y++)for(let x=0;x<w;x++)put(x,y,lerp([20,34,60],[6,12,26],(y-hz)/(h-hz)),5);
+    for(let y=hz+3;y<h;y++){ const sp=1+(y-hz)*.22; for(let k=0;k<3;k++)if(R()<.7)put(mx+(R()-.5)*sp*2,y,[226,210,150],10); }
+    for(let x=2;x<w*.32;x+=4){ for(let y=h*.62;y<h;y++)put(x,y,[30,24,20],4); } for(let x=0;x<w*.34;x++)put(x,h*.64,[40,30,24],4); },
+  pigeon:(put,w,h,R)=>{ for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(x,y,lerp([150,170,214],[252,186,140],y/(h*.7)),16);
+    for(let y=Math.round(h*.72);y<h;y++)for(let x=0;x<w;x++)put(x,y,[96,70,60],12); for(let x=0;x<w;x++)put(x,h*.72,[60,44,40],4);
+    const cx=w*.48,cy=h*.58; for(let y=0;y<h;y++)for(let x=0;x<w;x++){ if(((x-cx)/(w*.2))**2+((y-cy)/(h*.12))**2<1)put(x,y,[120,124,140],14); if(Math.hypot(x-(cx+w*.15),y-(cy-h*.13))<w*.07)put(x,y,[110,116,134],10); }
+    put(cx+w*.17,cy-h*.15,[250,140,40],0); put(cx+w*.23,cy-h*.12,[230,190,120],0); for(let x=cx-w*.06;x<cx+w*.12;x++)put(x,cy-h*.02,[90,140,120],8); },
+  castle:(put,w,h,R)=>{ for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(x,y,lerp([120,136,130],[176,186,176],y/h),14);
+    const sil=x=>{ const t=x/w; let top=h*.5; if(t>.15&&t<.3)top=h*.28; if(t>.68&&t<.84)top=h*.24; if(t>.42&&t<.58)top=h*.36; if((Math.floor(x)%3)===0)top+=2; return top; };
+    for(let x=0;x<w;x++)for(let y=Math.round(sil(x));y<h*.86;y++)put(x,y,[62,70,72],10);
+    for(let y=Math.round(h*.86);y<h;y++)for(let x=0;x<w;x++)put(x,y,[70,92,62],12);
+    for(let i=0;i<w*h*.08;i++)put(R()*w,h*.45+R()*h*.4,[190,198,190],8); put(w*.22,h*.36,[250,200,90],0); put(w*.76,h*.32,[250,200,90],0); },
+  mush:(put,w,h,R)=>{ for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(x,y,lerp([20,48,30],[40,80,44],y/h),16);
+    const cx=w/2,cy=h*.48,r=w*.34; for(let y=0;y<h;y++)for(let x=0;x<w;x++){ if(y<cy&&Math.hypot((x-cx)/r,(y-cy)/(r*.8))<1)put(x,y,[200,40,36],16); if(y>=cy&&y<h*.86&&Math.abs(x-cx)<w*.09+(y-cy)*.05)put(x,y,[236,224,196],10); }
+    for(let i=0;i<9;i++){ const a=Math.PI*(.1+.8*R()), d=r*(.3+.55*R()); const x=cx+Math.cos(a)*d, y=cy-Math.sin(a)*d*.8; put(x,y,[250,250,240],0); put(x+1,y,[250,250,240],0); }
+    for(let x=0;x<w;x++)for(let y=Math.round(h*.86);y<h;y++)put(x,y,[60,46,30],12); },
+  lamp:(put,w,h,R)=>{ for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const d=Math.hypot(x-w*.36,y-h*.22); put(x,y,lerp([250,206,110],[18,20,36],Math.min(1,d/(w*.45))),12); }
+    for(let y=Math.round(h*.2);y<h*.8;y++){ put(w*.36,y,[16,16,20],2); put(w*.36+1,y,[30,30,34],2); } for(let x=-2;x<=2;x++)put(w*.36+x,h*.2,[255,236,170],0);
+    for(let y=Math.round(h*.8);y<h;y++)for(let x=0;x<w;x++)put(x,y,[28,30,40],10);
+    for(let y=Math.round(h*.8);y<h;y+=2)for(let k=0;k<2;k++)put(w*.36+(R()-.5)*8,y,[220,180,100],10); for(let x=w*.6;x<w*.95;x++)for(let y=h*.5;y<h*.8;y++)put(x,y,[40,34,46],8); },
+  pears:(put,w,h,R)=>{ for(let y=0;y<h;y++)for(let x=0;x<w;x++)put(x,y,[70,52,42],14); for(let y=Math.round(h*.68);y<h;y++)for(let x=0;x<w;x++)put(x,y,[150,104,64],14);
+    [[.3,.55],[.52,.5],[.72,.58]].forEach(([fx,fy],k)=>{ const cx=w*fx,cy=h*fy; for(let y=0;y<h;y++)for(let x=0;x<w;x++){ if(Math.hypot(x-cx,(y-cy)*1.1)<w*.1||Math.hypot(x-cx,y-(cy-h*.1))<w*.06)put(x,y,k===1?[196,170,60]:[160,184,70],18); } put(cx,cy-h*.19,[70,50,30],0); put(cx,cy-h*.2,[70,50,30],0); put(cx-w*.03,cy-h*.06,[240,236,170],0); }); }
+};
+let uid=1;
+const art=(o)=>Object.assign({id:'art-'+(uid++),w:48,h:48,medium:'OIL',kind:'PAINTING',frame:'',signed:true,admirers:0,prov:[]},o);
+
+/* ---------- the player, the pack, the world (examples) ---------- */
+const S={ step:'paint', cash:1240, skill:34.2, me:'BRALYNN', apt:201,
+  supply:{oil:3412,water:2650,pencil:2800,charcoal:1600},
+  pack:{canvasS:1,canvasM:2,canvasL:0,canvasXL:0,sketch:1,pine:1,oak:1,gilt:0},
+  easel:null, works:[], hung:[], undo:[], redo:[], trade:null, sellTab:'dealer', hangSel:null, hangFrame:'oak', sold:[] };
+const RANKS=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']], rank=v=>RANKS.find(r=>v>=r[0])[1];
+const SIZES={S:[32,32,'SMALL CANVAS',4,0],M:[48,48,'MEDIUM CANVAS',8,0],L:[64,48,'LARGE CANVAS',14,50],XL:[96,64,'GRAND CANVAS',30,80],SK:[32,32,'SKETCHBOOK PAGE',0,0]};
+const FRAMES={'':['NO FRAME',0,null],pine:['PINE FRAME',3,0xc89a5a],oak:['OAK FRAME',10,0x6e4224],gilt:['GILT FRAME',40,0xc9a250]};
+const MEDIA={oil:['OIL','opaque: covers what is under it'],water:['WATERCOLOUR','see-through: each wash mixes with what is under it'],pencil:['PENCIL','greys, one pixel, a drawing'],charcoal:['CHARCOAL','greys, soft and broken, a drawing']};
+
+const pigeon=art({title:'PIGEON AT DAWN',artist:'MOTHGIRL',px:make(48,48,7,GEN.pigeon),frame:'pine',admirers:17,prov:['PAINTED BY MOTHGIRL (APT 214) · 29 OCT 2026','GIVEN TO BRALYNN · 1 NOV 2026']});
+const castle=art({title:'THE CASTLE IN FOG',artist:'OLD KETTLE',w:64,h:48,px:make(64,48,11,GEN.castle),medium:'WATERCOLOUR',frame:'gilt',admirers:88,prov:['PAINTED BY OLD KETTLE (APT 230) · 27 OCT 2026','CONSIGNED AT THE GALLERY · $600','BOUGHT BY BRALYNN · $600 · 2 NOV 2026']});
+S.works=[pigeon,castle];
+S.hung=[{a:pigeon,x:-2.3,y:1.75},{a:castle,x:-0.6,y:1.95}];
+const wip={id:'wip',w:48,h:48,px:make(48,48,3,GEN.moon),title:'',artist:S.me,medium:'OIL',kind:'PAINTING',frame:'',signed:false,admirers:0,prov:[],strokes:212};
+for(let y=34;y<48;y++)for(let x=27;x<48;x++)wip.px[y*48+x]=PRIMER;
+S.easel=wip;
+const GALLERY=[
+  art({title:'LAMP ON MARKET ST',artist:'BUTTONS',px:make(48,48,21,GEN.lamp),admirers:41,price:320,frame:'oak'}),
+  art({title:'THE MUSHROOM SELLER',artist:'RAGPICKER',w:32,h:32,px:make(32,32,5,GEN.mush),admirers:12,price:95,medium:'WATERCOLOUR'}),
+  art({title:'THREE PEARS',artist:'OLD KETTLE',w:64,h:48,px:make(64,48,9,GEN.pears),admirers:203,price:1800,frame:'gilt'}),
+  art({title:'PIGEON II',artist:'MOTHGIRL',px:make(48,48,8,GEN.pigeon),admirers:9,price:140,frame:'pine'})];
+GALLERY.forEach(g=>g.prov=[`PAINTED BY ${g.artist} · 3 NOV 2026`,`CONSIGNED AT THE GALLERY · ${money(g.price)}`]);
+
+/* ---------- a painting as pixels ---------- */
+function pic(p){ if(!p._cv){ p._cv=document.createElement('canvas'); } const c=p._cv; if(c.width!==p.w||c.height!==p.h){ c.width=p.w; c.height=p.h; } const x=c.getContext('2d'), im=x.createImageData(p.w,p.h); for(let i=0;i<p.w*p.h;i++){ const q=PAL[p.px[i]]; im.data[i*4]=q[0]; im.data[i*4+1]=q[1]; im.data[i*4+2]=q[2]; im.data[i*4+3]=255; } x.putImageData(im,0,0); if(p._tex)p._tex.needsUpdate=true; return c; }
+const cover=p=>{ let n=0; for(const v of p.px)if(v!==PRIMER)n++; return n/p.px.length; };
+const colours=p=>new Set(p.px).size-(p.px.includes(PRIMER)?1:0);
+function thumb(p){ const c=document.createElement('canvas'); c.width=p.w; c.height=p.h; c.getContext('2d').drawImage(pic(p),0,0); c.setAttribute('role','img'); c.setAttribute('aria-label',p.title||'painting'); return c; }
+
+/* ---------- the log and the hud ---------- */
+function say(t,cls){ const d=document.createElement('div'); d.textContent=t; if(cls)d.className=cls; const L=$('#log'); L.appendChild(d); while(L.children.length>4)L.firstChild.remove(); }
+function hud(){ $('#hud').innerHTML=`<div><span class="k">CASH</span> ${money(S.cash)}</div><div><span class="k">PAINTING</span> ${S.skill.toFixed(1)} · ${rank(S.skill)}</div><div><span class="k">PACK</span> ${S.works.length} WORKS · ${S.pack.canvasS+S.pack.canvasM+S.pack.canvasL+S.pack.canvasXL} CANVASES</div>`; }
+
+/* ---------- 3D: the apartment's corner, the easel, the wall ---------- */
+const host=$('#three'), R3=new THREE.WebGLRenderer({antialias:true}); R3.setPixelRatio(Math.min(devicePixelRatio||1,2)); host.appendChild(R3.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0a08);
+const cam=new THREE.PerspectiveCamera(42,1,.05,60); cam.position.set(3.4,2.1,4.2);
+const orbit=new THREE.OrbitControls(cam,R3.domElement); orbit.target.set(0,1.3,-1.4); orbit.enableDamping=true; orbit.maxPolarAngle=1.55; orbit.minDistance=1; orbit.maxDistance=8; orbit.enablePan=false;
+const gm=(()=>{ const d=new Uint8Array([90,90,90,255,170,170,170,255,255,255,255,255]); const t=new THREE.DataTexture(d,3,1,THREE.RGBAFormat); t.minFilter=t.magFilter=THREE.NearestFilter; t.needsUpdate=true; return t; })();
+const toon=c=>new THREE.MeshToonMaterial({color:c,gradientMap:gm});
+const box=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==='object'?c:toon(c));
+scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a2c20,.32));
+const sun=new THREE.DirectionalLight(0xffe2b8,.45); sun.position.set(-3,5,4); scene.add(sun);
+const lamp=new THREE.PointLight(0xffc477,.6,9,1.6); lamp.position.set(2.6,2.4,0.4); scene.add(lamp);
+const planks=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'), R=rng(4); for(let r=0;r<8;r++){ const off=r%2?20:0; for(let s=-1;s<3;s++){ const v=150+R()*40; x.fillStyle=`rgb(${v+40|0},${v*.62|0},${v*.32|0})`; x.fillRect(off+s*32,r*8,32,8); x.fillStyle='rgba(40,20,8,.7)'; x.fillRect(off+s*32,r*8,1,8); } x.fillStyle='rgba(40,20,8,.75)'; x.fillRect(0,r*8+7,64,1); } const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,3); t.magFilter=THREE.NearestFilter; return t; })();
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshToonMaterial({map:planks,gradientMap:gm})); floor.rotation.x=-Math.PI/2; floor.position.set(0,0,0); scene.add(floor);
+const WALLC=0xdccfb9, wallMat=toon(WALLC);
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(8,3.2),wallMat); wall.position.set(0,1.6,-3); scene.add(wall);
+const lwall=new THREE.Mesh(new THREE.PlaneGeometry(6,3.2),wallMat); lwall.rotation.y=Math.PI/2; lwall.position.set(-4,1.6,0); scene.add(lwall);
+const skirt=box(8,.14,.04,0x3b2a1e); skirt.position.set(0,.07,-2.98); scene.add(skirt); const skirt2=box(.04,.14,6,0x3b2a1e); skirt2.position.set(-3.98,.07,0); scene.add(skirt2);
+const win3=new THREE.Group(); { const f=box(.06,1.5,1.2,0xefe8da); win3.add(f); const g=new THREE.Mesh(new THREE.PlaneGeometry(1.08,1.38),new THREE.MeshBasicMaterial({color:0x1d2c4a})); g.rotation.y=Math.PI/2; g.position.x=.035; win3.add(g); const m=box(.07,.05,1.1,0xefe8da); m.position.x=.01; win3.add(m); const mm=new THREE.Mesh(new THREE.CircleGeometry(.06,12),new THREE.MeshBasicMaterial({color:0xf4e8ba})); mm.rotation.y=Math.PI/2; mm.position.set(.04,.45,.3); win3.add(mm); } win3.position.set(-3.96,1.7,0.2); scene.add(win3);
+const lampPost=new THREE.Group(); { const p=box(.04,1.9,.04,0x2a2622); p.position.y=.95; lampPost.add(p); const b=box(.3,.03,.3,0x2a2622); b.position.y=.015; lampPost.add(b); const sh=new THREE.Mesh(new THREE.CylinderGeometry(.14,.22,.26,12,1,true),new THREE.MeshBasicMaterial({color:0xffd59a,side:THREE.DoubleSide})); sh.position.y=1.95; lampPost.add(sh); } lampPost.position.set(2.6,0,0.3); scene.add(lampPost);
+const rug=new THREE.Mesh(new THREE.PlaneGeometry(2.4,1.6),toon(0x6b2f2a)); rug.rotation.x=-Math.PI/2; rug.position.set(1.2,.005,-.6); scene.add(rug);
+
+const PXM=.015; // a painting's pixel in metres: 48 px is 72 cm
+const easel=new THREE.Group(); { const W=0x8a5a32; const L=(x,z,rx,rz)=>{ const m=box(.05,2.05,.05,W); m.position.set(x,1.0,z); m.rotation.set(rx,0,rz); easel.add(m); }; L(-.36,.1,-.06,-.12); L(.36,.1,-.06,.12); const bl=box(.05,2.0,.05,W); bl.position.set(0,.93,-.36); bl.rotation.x=.32; easel.add(bl);
+  const top=box(.32,.06,.07,W); top.position.set(0,1.98,.0); easel.add(top); const led=box(1.0,.05,.14,W); led.position.set(0,.8,.14); easel.add(led); const lip=box(1.0,.05,.02,W); lip.position.set(0,.84,.21); easel.add(lip); }
+easel.position.set(1.15,0,-1.15); easel.rotation.y=-.38; scene.add(easel);
+const stool=new THREE.Group(); { const s=box(.42,.05,.42,0x3d2b20); s.position.y=.62; stool.add(s); for(const [x,z] of [[-.17,-.17],[.17,-.17],[-.17,.17],[.17,.17]]){ const l=box(.04,.62,.04,0x3d2b20); l.position.set(x,.31,z); stool.add(l); } } stool.position.set(1.75,0,-.2); scene.add(stool);
+const pbox=new THREE.Group(); { const b=box(.42,.08,.3,0x5a3b22); b.position.y=.04; pbox.add(b); const R=rng(2); for(let i=0;i<8;i++){ const t=box(.035,.025,.12,toon(new THREE.Color().setHSL(i/8,.7,.5))); t.position.set(-.16+i*.045,.09,0); pbox.add(t); } } pbox.position.set(.35,0,-.55); pbox.rotation.y=.4; scene.add(pbox);
+let easelCanvas=null;
+function texOf(p){ if(!p._tex){ const t=new THREE.CanvasTexture(pic(p)); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; p._tex=t; } else pic(p); return p._tex; }
+function framed(p,frameKey,ghost){ const g=new THREE.Group(), w=p.w*PXM, h=p.h*PXM; const back=box(w,h,.03,0xf2ece0); back.position.z=-.016; g.add(back);
+  const face=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:texOf(p),color:0xeeeeee,transparent:!!ghost,opacity:ghost?.75:1})); face.position.z=.001; g.add(face);
+  const f=FRAMES[frameKey||''][2]; if(f!=null){ const t=.07, d=.06, m=toon(f); const add=(ww,hh,x,y)=>{ const b=box(ww,hh,d,m); b.position.set(x,y,.012); g.add(b); }; add(w+2*t,t,0,h/2+t/2); add(w+2*t,t,0,-h/2-t/2); add(t,h,-w/2-t/2,0); add(t,h,w/2+t/2,0); }
+  return g; }
+function putOnEasel(){ if(easelCanvas){ easel.remove(easelCanvas); easelCanvas=null; } if(!S.easel)return; const p=S.easel, g=framed(p,''); g.position.set(0,.84+p.h*PXM/2+.02,.16); g.rotation.x=-.1; easel.add(g); easelCanvas=g; }
+const wallGroup=new THREE.Group(); scene.add(wallGroup);
+function hangAll(){ wallGroup.clear(); for(const h of S.hung){ const g=framed(h.a,h.a.frame); g.position.set(h.x,h.y,-2.985); g.userData.h=h; wallGroup.add(g); } }
+let ghost=null, ghostOk=false, ghostEdge=null;
+function setGhost(p,frame){ if(ghost){ scene.remove(ghost); ghost=null; } if(!p)return; ghost=framed(p,frame,true); const fw=p.w*PXM+(frame?.14:0), fh=p.h*PXM+(frame?.14:0); ghostEdge=new THREE.Mesh(new THREE.PlaneGeometry(fw+.08,fh+.08),new THREE.MeshBasicMaterial({color:0x7dffa8,transparent:true,opacity:.45})); ghostEdge.position.z=-.03; ghost.add(ghostEdge); ghost.visible=false; scene.add(ghost); }
+const extent=(p,frame)=>[p.w*PXM/2+(frame?.07:0),p.h*PXM/2+(frame?.07:0)];
+function fits(p,frame,x,y,skip){ const [ex,ey]=extent(p,frame); if(x-ex<-3.9||x+ex>3.9||y-ey<.45||y+ey>3.1)return false; for(const h of S.hung){ if(h===skip)continue; const [hx,hy]=extent(h.a,h.a.frame); if(Math.abs(h.x-x)<hx+ex+.08&&Math.abs(h.y-y)<hy+ey+.08)return false; } return true; }
+const ray=new THREE.Raycaster(), mv=new THREE.Vector2();
+function wallHit(e){ const r=R3.domElement.getBoundingClientRect(); mv.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(mv,cam); const hit=ray.intersectObject(wall)[0]; return hit&&hit.point; }
+let downAt=null;
+R3.domElement.addEventListener('pointerdown',e=>{ downAt=[e.clientX,e.clientY]; });
+R3.domElement.addEventListener('pointermove',e=>{ if(S.step!=='hang'||!ghost)return; const p=wallHit(e); if(!p){ ghost.visible=false; return; } const sel=S.hangSel; const x=Math.round(p.x*10)/10, y=Math.round(p.y*10)/10; ghost.position.set(x,y,-2.95); ghost.visible=true; ghostOk=fits(sel,S.hangFrame,x,y); ghostEdge.material.color.set(ghostOk?0x7dffa8:0xff5a4a); });
+R3.domElement.addEventListener('pointerup',e=>{ if(!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>6)return; downAt=null; if(S.step!=='hang'||!ghost||!ghost.visible)return; if(!ghostOk)return say('IT DOES NOT FIT THERE.','red'); hangIt(ghost.position.x,ghost.position.y); });
+function resize(){ const w=host.clientWidth,h=host.clientHeight; R3.setSize(w,h,false); cam.aspect=w/Math.max(1,h); cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(host); resize();
+const VIEWS={ wide:[[3.4,2.1,4.2],[0,1.3,-1.4]], easel:[[2.15,1.55,.55],[1.15,1.25,-1.15]], wall:[[-.5,1.7,1.5],[-.5,1.7,-3]], room:[[2.6,1.9,3.2],[-.4,1.4,-1.6]] };
+let fly=null; function view(k){ const [p,t]=VIEWS[k]; fly={p:new THREE.Vector3(...p),t:new THREE.Vector3(...t),k:0}; }
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function loop(){ requestAnimationFrame(loop); if(fly){ fly.k=reduce?1:Math.min(1,fly.k+.05); cam.position.lerp(fly.p,fly.k); orbit.target.lerp(fly.t,fly.k); if(fly.k>=1)fly=null; } orbit.update(); R3.render(scene,cam); })();
+
+/* ---------- the steps ---------- */
+const STEPS=[['supplies','1','SUPPLIES'],['paint','2','PAINT'],['sign','3','SIGN'],['hang','4','FRAME & HANG'],['trade','5','GIVE & TRADE'],['sell','6','SELL'],['skill','','THE SKILL'],['plan','','THE PLAN']];
+function nav(){ $('#steps').innerHTML=STEPS.map(([k,n,t])=>`<button role="tab" id="tab-${k}" aria-selected="${S.step===k}" data-k="${k}">${n?`<b>${n}</b>`:''}${t}</button>`).join(''); }
+$('#steps').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b)go(b.dataset.k); });
+function go(k){ S.step=k; nav(); setGhost(null); const v={supplies:'wide',paint:'easel',sign:'easel',hang:'wall',trade:'room',sell:'room',skill:'wide',plan:'wide'}[k]; view(v); $('#hint').textContent=k==='hang'?'POINT AT THE WALL · CLICK TO HANG':k==='paint'?'PAINT IN THE WINDOW · THE EASEL FOLLOWS':'DRAG TO LOOK ROUND'; ({supplies:wSupplies,paint:wPaint,sign:wSign,hang:wHang,trade:wTrade,sell:wSell,skill:wSkill,plan:wPlan})[k](); notes(k); hud(); }
+const W=()=>$('#win');
+const ttl=(a,b)=>`<div class="ttl"><span>[ ${a} ]</span><span>${b||''}</span></div>`;
+
+/* 1 SUPPLIES */
+const SHOP=[['oils','OILS (A BOX OF 256)',16,'+4,000 DABS OF OIL'],['water','WATERCOLOURS (A TIN OF 256)',10,'+3,000 DABS'],['pencil','PENCIL',1,'+3,000 STROKES, GREYS'],['charcoal','CHARCOAL STICKS',2,'+2,000 STROKES, GREYS'],['canvasS','SMALL CANVAS 32×32',4,''],['canvasM','MEDIUM CANVAS 48×48',8,''],['canvasL','LARGE CANVAS 64×48',14,'JOURNEYMAN'],['canvasXL','GRAND CANVAS 96×64',30,'ADEPT'],['sketch','SKETCHBOOK (12 PAGES 32×32)',5,''],['pine','PINE FRAME',3,''],['oak','OAK FRAME',10,''],['gilt','GILT FRAME',40,''],['easel','EASEL',40,'YOU HAVE ONE'],['field','FIELD EASEL',25,'CARRY IT, PAINT OUTDOORS']];
+function wSupplies(){ const need={canvasL:50,canvasXL:80}; W().innerHTML=ttl('THE ART SHOP','THE MUSEUM SHOP · '+money(S.cash))+
+  `<div class="pane"><h3>BUY</h3><table class="tbl">${SHOP.map(([k,n,p,t])=>{ const locked=need[k]&&S.skill<need[k]; const have=S.pack[k]!=null?S.pack[k]:k==='oils'?S.supply.oil+' DABS':k==='water'?S.supply.water+' DABS':k==='pencil'?S.supply.pencil:k==='charcoal'?S.supply.charcoal:k==='easel'?1:0; return `<tr><td>${n}<div class="dim" style="font-size:11px">${locked?'<span class="warn">NEEDS '+t+' PAINTING</span>':t}</div></td><td class="n dim">${have}</td><td class="n">${money(p)}</td><td class="n"><button class="b" data-buy="${k}" ${locked||k==='easel'?'disabled':''}>BUY</button></td></tr>`; }).join('')}</table></div>`+
+  `<div class="pane"><h3>PUT A CANVAS ON THE EASEL</h3><div class="row">${['S','M','L','XL','SK'].map(z=>{ const key=z==='SK'?'sketch':'canvas'+z, n=S.pack[key]; return `<button class="b" data-put="${z}" ${n>0?'':'disabled'}>${SIZES[z][2]} (${n})</button>`; }).join('')}</div>
+  <div class="dim" style="font-size:12px">${S.easel&&!S.easel.signed?'THE UNFINISHED ONE GOES BACK TO YOUR PACK (YOU CAN PUT IT BACK UP LATER).':'THE EASEL IS EMPTY.'}</div></div>`;
+  W().querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buy(b.dataset.buy)); W().querySelectorAll('[data-put]').forEach(b=>b.onclick=()=>putCanvas(b.dataset.put)); }
+function buy(k){ const it=SHOP.find(s=>s[0]===k); if(S.cash<it[2])return say('YOU CANNOT AFFORD THAT.','red'); S.cash-=it[2];
+  if(k==='oils')S.supply.oil+=4000; else if(k==='water')S.supply.water+=3000; else if(k==='pencil')S.supply.pencil+=3000; else if(k==='charcoal')S.supply.charcoal+=2000; else if(k==='field')say('THE FIELD EASEL: SET IT UP ANYWHERE OUTSIDE (IN YOUR PACK).'); else S.pack[k]=(S.pack[k]||0)+1;
+  say('BOUGHT '+it[1]+' · '+money(it[2])); wSupplies(); hud(); }
+function putCanvas(z){ const key=z==='SK'?'sketch':'canvas'+z; if(!(S.pack[key]>0))return; if(S.easel&&!S.easel.signed){ S.works.push(S.easel); say('THE UNFINISHED CANVAS IS IN YOUR PACK.'); } S.pack[key]--; const [w,h]=SIZES[z]; S.easel={id:'art-'+(uid++),w,h,px:new Uint8Array(w*h).fill(PRIMER),title:'',artist:S.me,medium:z==='SK'?'PENCIL':'OIL',kind:z==='SK'?'DRAWING':'PAINTING',frame:'',signed:false,admirers:0,prov:[],strokes:0,sketch:z==='SK'}; if(z==='SK')ED.medium='pencil'; S.undo=[]; S.redo=[]; putOnEasel(); say('A '+SIZES[z][2]+' IS ON THE EASEL.'); go('paint'); }
+
+/* 2 PAINT */
+const ED={tool:'brush',size:2,medium:'oil',c:near(244,232,186),recent:[],grid:false,ref:false};
+const REFV=make(48,48,3,GEN.moon);
+function wPaint(){ const p=S.easel;
+  if(!p||p.signed){ W().innerHTML=ttl('THE EASEL','')+`<div class="pane"><div>THERE IS NO CANVAS ON THE EASEL.</div><div class="row"><button class="b hot" id="toShop">PUT ONE ON (SUPPLIES)</button></div></div>`; $('#toShop').onclick=()=>go('supplies'); return; }
+  const greysOnly=ED.medium==='pencil'||ED.medium==='charcoal', sk=p.sketch;
+  W().innerHTML=ttl('THE EASEL',`${p.w}×${p.h} · ${MEDIA[ED.medium][0]}`)+
+  `<div class="pane"><div class="row"><span class="dim">MEDIUM</span>${Object.keys(MEDIA).map(m=>`<button class="b" data-m="${m}" aria-pressed="${ED.medium===m}" ${sk&&(m==='oil'||m==='water')?'disabled':''}>${MEDIA[m][0]}</button>`).join('')}</div>
+   <div class="row"><span class="dim">TOOL</span>${[['brush','BRUSH'],['line','LINE'],['fill','FILL'],['smudge','SMUDGE'],['pick','PICK'],['erase','SCRAPE']].map(([k,n])=>`<button class="b" data-t="${k}" aria-pressed="${ED.tool===k}" ${k==='smudge'&&S.skill<30?'disabled title="APPRENTICE"':''}>${n}</button>`).join('')}</div>
+   <div class="row"><span class="dim">SIZE</span>${[1,2,3,4].map(n=>`<button class="b" data-s="${n}" aria-pressed="${ED.size===n}" ${(ED.medium==='pencil'&&n>1)||(n===3&&S.skill<30)||(n===4&&S.skill<50)?'disabled':''}>${n}</button>`).join('')}<span class="dim" style="margin-left:auto">${ED.medium==='pencil'?'PENCIL IS ONE PIXEL':''}</span></div></div>
+  <div class="ed-wrap"><canvas id="ed" aria-label="The canvas: draw on it"></canvas>
+   <div class="row"><button class="b" id="undo" ${S.undo.length?'':'disabled'}>UNDO</button><button class="b" id="redo" ${S.redo.length?'':'disabled'}>REDO</button><button class="b" id="grid" aria-pressed="${ED.grid}">GRID</button><button class="b" id="ref" aria-pressed="${ED.ref}">THE VIEW</button><button class="b hot" id="toSign" style="margin-left:auto">SIGN IT →</button></div></div>
+  <div class="pane"><div class="row"><span class="dim">COLOUR</span><span class="sw" style="background:${css(ED.c)}"></span><span class="go">#${ED.c}</span><span class="dim">RECENT</span>${ED.recent.map(i=>`<button class="b" data-rc="${i}" aria-label="colour ${i}" style="padding:0"><span class="sw" style="background:${css(i)}"></span></button>`).join('')}</div>
+   <div class="pal" id="pal">${PAL.map((c,i)=>`<button style="background:${css(i)}" data-c="${i}" aria-label="colour ${i}" class="${i===ED.c?'on':''}" ${greysOnly&&!GREY(i)?'disabled':''}></button>`).join('')}</div>
+   <div class="dim" style="font-size:11px">THE SPRAY CAN'S 256: ONE PALETTE FOR ALL PLAYER ART. ${greysOnly?'PENCIL AND CHARCOAL HAVE THE 16 GREYS.':''}</div></div>
+  <div class="pane" id="stats"></div>`;
+  W().querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ ED.medium=b.dataset.m; if(ED.medium==='pencil')ED.size=1; if((ED.medium==='pencil'||ED.medium==='charcoal')&&!GREY(ED.c)){ const q=PAL[ED.c]; ED.c=near(q[0],q[1],q[2],true); } wPaint(); notes('paint'); });
+  W().querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ ED.tool=b.dataset.t; wPaint(); });
+  W().querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{ ED.size=+b.dataset.s; wPaint(); });
+  W().querySelectorAll('[data-c],[data-rc]').forEach(b=>b.onclick=()=>{ ED.c=+(b.dataset.c||b.dataset.rc); if(ED.tool==='pick'||ED.tool==='erase')ED.tool='brush'; wPaint(); });
+  $('#undo').onclick=()=>{ if(!S.undo.length)return; S.redo.push(p.px.slice()); p.px=S.undo.pop(); drawEd(); after(); wPaint(); };
+  $('#redo').onclick=()=>{ if(!S.redo.length)return; S.undo.push(p.px.slice()); p.px=S.redo.pop(); drawEd(); after(); wPaint(); };
+  $('#grid').onclick=()=>{ ED.grid=!ED.grid; wPaint(); }; $('#ref').onclick=()=>{ ED.ref=!ED.ref; wPaint(); };
+  $('#toSign').onclick=()=>go('sign');
+  setupEd(); stats(); }
+const SC=8; let edCtx=null;
+function setupEd(){ const p=S.easel, cv=$('#ed'); cv.width=p.w*SC; cv.height=p.h*SC; edCtx=cv.getContext('2d'); drawEd();
+  let down=false, last=null, start=null, snap=null; const at=e=>{ const r=cv.getBoundingClientRect(); return [Math.floor((e.clientX-r.left)/r.width*p.w),Math.floor((e.clientY-r.top)/r.height*p.h)]; };
+  cv.onpointerdown=e=>{ e.preventDefault(); cv.setPointerCapture(e.pointerId); const q=at(e);
+    if(ED.tool==='pick'){ ED.c=p.px[q[1]*p.w+q[0]]; ED.tool='brush'; return wPaint(); }
+    S.undo.push(p.px.slice()); if(S.undo.length>40)S.undo.shift(); S.redo=[]; T.touched=new Set(); T.changed=0; T.empty=false; T.r=rng(Date.now()&0xffff);
+    if(ED.tool==='fill'){ fill(q[0],q[1]); return end(); }
+    down=true; last=q; start=q; snap=p.px.slice(); if(ED.tool!=='line')dab(q[0],q[1]); drawEd(); };
+  cv.onpointermove=e=>{ if(!down)return; const q=at(e); if(ED.tool==='line'){ p.px.set(snap); T.touched=new Set(); T.changed=0; seg(start,q); } else seg(last,q); last=q; drawEd(); };
+  const end=()=>{ down=false; if(!T.changed){ S.undo.pop(); } else { p.strokes=(p.strokes||0)+1; if(!ED.recent.includes(ED.c)&&ED.tool!=='erase'&&ED.tool!=='smudge'){ ED.recent.unshift(ED.c); ED.recent=ED.recent.slice(0,8); } } if(T.empty)say(`YOUR ${MEDIA[ED.medium][0]} HAS RUN OUT. BUY MORE AT THE ART SHOP.`,'red'); drawEd(); after(); wPaint(); };
+  cv.onpointerup=()=>{ if(down)end(); }; cv.onpointercancel=()=>{ if(down)end(); }; }
+const T={touched:new Set(),changed:0,empty:false,r:Math.random};
+const SUP={oil:'oil',water:'water',pencil:'pencil',charcoal:'charcoal'};
+function px(i){ const p=S.easel; if(T.touched.has(i))return; T.touched.add(i); const old=p.px[i]; let n;
+  if(ED.tool==='erase')n=PRIMER;
+  else if(ED.tool==='smudge'){ const x=i%p.w,y=(i/p.w)|0; let r=0,g=0,b=0,k=0; for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=p.w||yy>=p.h)continue; const q=PAL[p.px[yy*p.w+xx]]; r+=q[0];g+=q[1];b+=q[2];k++; } n=near(r/k,g/k,b/k); }
+  else if(ED.medium==='water')n=mixIdx(old,ED.c,old===PRIMER?.75:.5);
+  else if(ED.medium==='charcoal'){ if(T.r()<.35)return; n=ED.c; }
+  else n=ED.c;
+  if(n===old)return; const use=ED.tool!=='erase'&&ED.tool!=='smudge'; if(use){ const s=SUP[ED.medium]; if(S.supply[s]<=0){ T.empty=true; return; } S.supply[s]--; } p.px[i]=n; T.changed++; }
+const RAD=[0,.5,1.2,2.3,4.2];
+function dab(x,y){ const p=S.easel, r=ED.medium==='pencil'?.5:RAD[ED.size], k=Math.ceil(r); for(let dy=-k;dy<=k;dy++)for(let dx=-k;dx<=k;dx++){ if(dx*dx+dy*dy>r*r+.01&&!(dx===0&&dy===0))continue; const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=p.w||yy>=p.h)continue; px(yy*p.w+xx); } }
+function seg(a,b){ let [x0,y0]=a; const [x1,y1]=b, dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1; let e=dx+dy; for(let n=0;n<400;n++){ dab(x0,y0); if(x0===x1&&y0===y1)break; const e2=2*e; if(e2>=dy){ e+=dy; x0+=sx; } if(e2<=dx){ e+=dx; y0+=sy; } } }
+function fill(x,y){ const p=S.easel, from=p.px[y*p.w+x], st=[[x,y]], seen=new Uint8Array(p.w*p.h); while(st.length){ const [a,b]=st.pop(); if(a<0||b<0||a>=p.w||b>=p.h)continue; const i=b*p.w+a; if(seen[i]||p.px[i]!==from)continue; seen[i]=1; px(i); st.push([a+1,b],[a-1,b],[a,b+1],[a,b-1]); } }
+function drawEd(){ const p=S.easel; if(!edCtx||!p)return; edCtx.imageSmoothingEnabled=false; edCtx.drawImage(pic(p),0,0,p.w*SC,p.h*SC);
+  if(ED.ref){ const rp={w:48,h:48,px:REFV}; edCtx.globalAlpha=.32; edCtx.drawImage(pic(rp),0,0,p.w*SC,p.h*SC); edCtx.globalAlpha=1; }
+  if(ED.grid){ edCtx.strokeStyle='rgba(0,0,0,.25)'; edCtx.lineWidth=1; edCtx.beginPath(); for(let x=0;x<=p.w;x++){ edCtx.moveTo(x*SC+.5,0); edCtx.lineTo(x*SC+.5,p.h*SC); } for(let y=0;y<=p.h;y++){ edCtx.moveTo(0,y*SC+.5); edCtx.lineTo(p.w*SC,y*SC+.5); } edCtx.stroke(); } }
+function after(){ texOf(S.easel); stats(); hud(); }
+function stats(){ const p=S.easel, el=$('#stats'); if(!el||!p)return; const s=SUP[ED.medium], full={oil:4000,water:3000,pencil:3000,charcoal:2000}[s];
+  el.innerHTML=`<h3>THIS ${p.kind}</h3><table class="tbl"><tr><td>${MEDIA[ED.medium][0]} LEFT</td><td class="n">${S.supply[s].toLocaleString('en-US')}</td><td style="width:40%"><div class="meter"><i style="width:${Math.min(100,S.supply[s]/full*100)}%"></i></div></td></tr><tr><td>COVERED</td><td class="n">${Math.round(cover(p)*100)}%</td><td class="dim">UNDER 15%: NOBODY BUYS IT</td></tr><tr><td>COLOURS</td><td class="n">${colours(p)}</td><td></td></tr><tr><td>STROKES</td><td class="n">${p.strokes||0}</td><td></td></tr></table>
+  <div class="dim" style="font-size:12px">MOTHGIRL IS WATCHING (3 M AWAY): SHE SEES THE CANVAS FILL IN AS YOU PAINT.</div>`; }
+
+/* 3 SIGN */
+let signTitle='MOON OVER THE HUDSON', signCol=near(200,40,36);
+function wSign(){ const p=S.easel;
+  if(!p||p.signed){ W().innerHTML=ttl('SIGN IT','')+`<div class="pane"><div>NOTHING ON THE EASEL TO SIGN.</div><div class="row"><button class="b hot" id="toShop">PUT A CANVAS ON</button></div></div>`; $('#toShop').onclick=()=>go('supplies'); return; }
+  const cv=cover(p), ok=cv>=.15;
+  W().innerHTML=ttl('SIGN IT',`${p.w}×${p.h} · ${p.kind}`)+
+  `<div class="pane"><h3>TITLE</h3><input type="text" id="title" maxlength="28" value="${esc(signTitle)}" aria-label="Title">
+   <div class="row"><span class="dim">SIGNED</span><span class="go">${S.me}</span><span class="dim">IN</span>${[near(200,40,36),near(20,20,20),near(240,240,240),near(230,190,60)].map(c=>`<button class="b" data-sc="${c}" aria-pressed="${signCol===c}" style="padding:2px 4px"><span class="sw" style="background:${css(c)}"></span></button>`).join('')}<span class="dim">(BOTTOM RIGHT)</span></div></div>
+  <div class="pane"><h3>WHAT IT BECOMES</h3><div id="prev" style="display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:start"></div></div>
+  <div class="pane"><div class="${ok?'warn':'red'}" style="font-size:12px">${ok?'ONCE SIGNED IT CAN NEVER BE PAINTED OVER. IT IS ONE OF A KIND: THERE IS ONLY EVER ONE.':'ONLY '+Math.round(cv*100)+'% IS PAINTED. YOU CAN SIGN IT, BUT NO DEALER WILL BUY IT AND IT TEACHES YOU NOTHING.'}</div>
+   <div class="row"><button class="b" id="back">← KEEP PAINTING</button><button class="b hot" id="sign" style="margin-left:auto">SIGN</button></div></div>`;
+  const prev=()=>{ const d=$('#prev'); d.innerHTML=''; const c=thumb(p); c.style.cssText='width:110px;image-rendering:pixelated'; d.appendChild(c); const t=document.createElement('div'); t.innerHTML=`<div class="go">${p.kind}: “${esc(signTitle||'UNTITLED')}”</div><div class="dim">BY ${S.me} · ${p.medium||MEDIA[ED.medium][0]} · ${p.w}×${p.h} · 4 NOV 2026</div><div class="dim">ORIGINAL · UNFRAMED · BURNS</div><div style="margin-top:6px">IN YOUR PACK; HANG IT, GIVE IT, SELL IT.</div>`; d.appendChild(t); };
+  prev(); $('#title').oninput=e=>{ signTitle=e.target.value.toUpperCase(); prev(); };
+  W().querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ signCol=+b.dataset.sc; wSign(); });
+  $('#back').onclick=()=>go('paint'); $('#sign').onclick=signIt; }
+function signIt(){ const p=S.easel; p.title=(signTitle||'UNTITLED').trim()||'UNTITLED'; p.medium=p.sketch?MEDIA[ED.medium][0]:MEDIA[ED.medium][0]; if(p.sketch)p.kind='DRAWING';
+  const sx=p.w-7, sy=p.h-3; [[0,1],[1,0],[2,1],[3,0],[4,1],[5,1]].forEach(([dx,dy])=>{ p.px[(sy+dy)*p.w+sx+dx]=signCol; });
+  p.signed=true; p.date='4 NOV 2026'; p.prov=[`PAINTED BY ${S.me} (APT ${S.apt}) · 4 NOV 2026`]; p.id='art-'+(uid++); texOf(p);
+  const cv=cover(p), gain=cv<.15?0:Math.min(2.5,.2+cv*1.2+Math.min(colours(p),30)/30*.6+(p.strokes||0)/400); S.skill=Math.min(100,S.skill+gain);
+  S.works.unshift(p); S.easel=null; putOnEasel(); S.hangSel=p; say(`SIGNED: “${p.title}”. IT IS IN YOUR PACK.`); if(gain)say(`PAINTING +${gain.toFixed(1)} (${S.skill.toFixed(1)} ${rank(S.skill)})`,'go');
+  go('hang'); }
+
+/* 4 FRAME & HANG */
+function wHang(){ const loose=S.works.filter(w=>!S.hung.some(h=>h.a===w));
+  if(S.hangSel&&!loose.includes(S.hangSel))S.hangSel=null; if(!S.hangSel&&loose.length)S.hangSel=loose[0];
+  const sel=S.hangSel; if(sel&&sel.frame)S.hangFrame=sel.frame;
+  W().innerHTML=ttl('FRAME & HANG','DECORATE (T) · APT '+S.apt)+
+  `<div class="pane"><h3>FROM YOUR PACK</h3>${loose.length?'<div class="cards" id="loose"></div>':'<div class="dim">EVERYTHING YOU OWN IS ON THE WALL.</div>'}</div>
+  ${sel?`<div class="pane"><h3>FRAME</h3><div class="row">${Object.keys(FRAMES).map(k=>{ const have=k===''||S.pack[k]>0||sel.frame===k; return `<button class="b" data-f="${k}" aria-pressed="${S.hangFrame===k}" ${have?'':'disabled'}>${FRAMES[k][0]}${k&&sel.frame!==k?' ('+(S.pack[k]||0)+')':''}</button>`; }).join('')}</div>
+   <div class="dim" style="font-size:12px">${sel.frame?'IT IS FRAMED IN '+FRAMES[sel.frame][0]+'. A NEW FRAME SWAPS IT; THE OLD ONE GOES TO YOUR PACK.':'FRAMES COME FROM THE ART SHOP. A FRAME ADDS ITS PRICE TO WHAT IT IS WORTH.'}</div>
+   <div class="go">POINT AT THE WALL ON THE LEFT: GREEN FITS, RED DOES NOT. CLICK TO HANG.</div></div>`:''}
+  <div class="pane"><h3>ON YOUR WALL</h3><table class="tbl">${S.hung.map((h,i)=>`<tr><td class="go">“${esc(h.a.title)}”<div class="dim" style="font-size:11px">${h.a.artist} · ${FRAMES[h.a.frame||''][0]} · ♥ ${h.a.admirers}</div></td><td class="n"><button class="b" data-ins="${i}">LOOK</button><button class="b" data-down="${i}">TAKE DOWN</button></td></tr>`).join('')||'<tr><td class="dim">NOTHING YET.</td></tr>'}</table>
+   <div class="dim" style="font-size:12px">VISITORS TO YOUR APARTMENT SEE THEM AND CAN ADMIRE (♥) ONE ONCE A DAY.</div></div><div id="insp"></div>`;
+  const L=$('#loose'); if(L)loose.forEach(w=>L.appendChild(cardOf(w,w===sel,()=>{ S.hangSel=w; wHang(); })));
+  W().querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ S.hangFrame=b.dataset.f; wHang(); });
+  W().querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>{ const h=S.hung.splice(+b.dataset.down,1)[0]; hangAll(); S.hangSel=h.a; say(`TOOK DOWN “${h.a.title}”.`); wHang(); });
+  W().querySelectorAll('[data-ins]').forEach(b=>b.onclick=()=>inspect(S.hung[+b.dataset.ins].a,'#insp'));
+  setGhost(sel,S.hangFrame); }
+function hangIt(x,y){ const p=S.hangSel; if(!p)return; const f=S.hangFrame; if(f!==(p.frame||'')){ if(f&&!(S.pack[f]>0))return say('YOU HAVE NO '+FRAMES[f][0]+'.','red'); if(f)S.pack[f]--; if(p.frame)S.pack[p.frame]=(S.pack[p.frame]||0)+1; p.frame=f; }
+  S.hung.push({a:p,x,y}); hangAll(); say(`HUNG “${p.title}”${f?' IN '+FRAMES[f][0]:''}.`); S.hangSel=null; wHang(); }
+function cardOf(w,sel,on,extra){ const d=document.createElement('div'); d.className='card'+(sel?' sel':''); d.appendChild(thumb(w)); const t=document.createElement('div'); t.innerHTML=`<div class="t">“${esc(w.title||'UNFINISHED')}”</div><div class="a">${w.signed?w.artist+' · '+w.w+'×'+w.h:'UNSIGNED · '+w.w+'×'+w.h}</div>${extra||''}`; d.appendChild(t); if(on){ d.tabIndex=0; d.style.cursor='pointer'; d.onclick=on; d.onkeydown=e=>{ if(e.key==='Enter')on(); }; } return d; }
+function inspect(p,where){ const el=$(where); if(!el)return; el.className='pane'; el.innerHTML=`<h3>INSPECT</h3><div style="display:grid;grid-template-columns:96px 1fr;gap:10px"><div id="ib"></div><div><div class="go">${p.kind}: “${esc(p.title)}”</div><div class="dim">${p.artist} · ${p.medium} · ${p.w}×${p.h} · ${FRAMES[p.frame||''][0]}</div><div>♥ ${p.admirers} ADMIRERS · WORTH ABOUT ${money(appraise(p).value)}</div></div></div><h3>WHERE IT HAS BEEN</h3><div class="prov">${p.prov.map(l=>`<div>${esc(l)}</div>`).join('')}</div><div class="row"><button class="b" id="rep">REPORT THIS PICTURE</button></div>`; const c=thumb(p); c.style.cssText='width:96px;image-rendering:pixelated'; $('#ib').appendChild(c); $('#rep').onclick=()=>say('REPORTED. THE OWNER SEES IT IN TENANTS → ART.'); }
+
+/* 5 GIVE & TRADE */
+function wTrade(){ if(!S.trade)S.trade={mine:[],theirs:[],cashMine:0,cashTheirs:0,okMe:false,okThem:false,give:false,done:false};
+  const t=S.trade, avail=S.works.filter(w=>w.signed&&!S.hung.some(h=>h.a===w)&&!t.mine.includes(w));
+  W().innerHTML=ttl('TRADE','WITH MOTHGIRL · APT 214')+
+  `<div class="pane"><div class="row"><button class="b" id="mTrade" aria-pressed="${!t.give}">TRADE</button><button class="b" id="mGive" aria-pressed="${t.give}">GIVE (NOTHING BACK)</button></div><div class="dim" style="font-size:12px">DOUBLE-CLICK ANOTHER PLAYER → TRADE. BOTH SIDES TICK ACCEPT; ANY CHANGE UNTICKS BOTH. THE SERVER SWAPS THEM IN ONE GO.</div></div>
+  <div class="two"><div class="pane"><h3>YOU OFFER</h3><div class="cards" id="tm"></div><div class="row"><span class="dim">CASH</span><input type="number" id="cm" min="0" step="10" value="${t.cashMine}" style="width:100px" aria-label="Cash you offer"></div><div class="${t.okMe?'tick':'untick'}">${t.okMe?'✓ ACCEPTED':'NOT ACCEPTED'}</div></div>
+   <div class="pane"><h3>MOTHGIRL OFFERS</h3><div class="cards" id="tt"></div><div class="row"><span class="dim">CASH</span><span class="go">${money(t.cashTheirs)}</span></div><div class="${t.okThem?'tick':'untick'}">${t.okThem?'✓ ACCEPTED':'NOT ACCEPTED'}</div></div></div>
+  <div class="pane"><h3>YOUR PACK (CLICK TO OFFER)</h3>${avail.length?'<div class="cards" id="ta"></div>':'<div class="dim">NOTHING LOOSE TO OFFER. TAKE SOMETHING OFF THE WALL, OR PAINT ONE.</div>'}</div>
+  <div class="pane"><div class="row"><button class="b" id="cancel">CANCEL</button><button class="b hot" id="accept" style="margin-left:auto" ${t.done?'disabled':''}>${t.okMe?'UNTICK':'ACCEPT'}</button></div>${t.done?'<div class="go">TRADE DONE. THE SERVER MOVED BOTH SIDES AT ONCE AND WROTE IT INTO EACH PAINTING\'S HISTORY.</div>':''}</div><div id="insp"></div>`;
+  const A=$('#ta'); if(A)avail.forEach(w=>A.appendChild(cardOf(w,false,()=>{ t.mine.push(w); changed(); })));
+  const M=$('#tm'); t.mine.forEach(w=>M.appendChild(cardOf(w,false,()=>{ t.mine=t.mine.filter(x=>x!==w); changed(); },'<div class="a">CLICK TO TAKE BACK</div>')));
+  const TT=$('#tt'); t.theirs.forEach(w=>TT.appendChild(cardOf(w,false,()=>inspect(w,'#insp'))));
+  if(!t.theirs.length&&!t.cashTheirs)TT.innerHTML='<div class="dim">'+(t.give?'NOTHING: A GIFT.':'NOTHING YET.')+'</div>';
+  if(!t.mine.length)M.innerHTML='<div class="dim">NOTHING YET.</div>';
+  $('#mTrade').onclick=()=>{ t.give=false; changed(); }; $('#mGive').onclick=()=>{ t.give=true; t.theirs=[]; t.cashTheirs=0; changed(); };
+  $('#cm').onchange=e=>{ t.cashMine=Math.max(0,Math.min(S.cash,+e.target.value||0)); changed(); };
+  $('#cancel').onclick=()=>{ S.trade=null; say('TRADE CANCELLED.'); wTrade(); };
+  $('#accept').onclick=()=>{ t.okMe=!t.okMe; wTrade(); if(t.okMe)setTimeout(themAccept,900); }; }
+let themTimer=0;
+function changed(){ const t=S.trade; t.okMe=false; t.okThem=false; t.done=false; wTrade(); clearTimeout(themTimer); if(!t.give&&t.mine.length)themTimer=setTimeout(()=>{ if(S.trade!==t||t.give)return; const best=t.mine.reduce((s,w)=>s+appraise(w).value,0); if(!t.cashTheirs&&!t.theirs.length){ t.cashTheirs=Math.round(best*.9/10)*10; say(`MOTHGIRL PUT ${money(t.cashTheirs)} IN THE TRADE.`); if(S.step==='trade')wTrade(); } },1100); }
+function themAccept(){ const t=S.trade; if(!t||!t.okMe||t.done)return; if(!t.mine.length&&!t.cashMine)return say('MOTHGIRL: "THERE IS NOTHING IN IT."'); t.okThem=true; say(t.give?'MOTHGIRL ACCEPTED THE GIFT.':'MOTHGIRL ACCEPTED.');
+  t.done=true; S.cash+=t.cashTheirs-t.cashMine; for(const w of t.mine){ w.prov.push(t.give?`GIVEN TO MOTHGIRL · 4 NOV 2026`:`TRADED TO MOTHGIRL${t.cashTheirs?' FOR '+money(t.cashTheirs):''} · 4 NOV 2026`); S.works=S.works.filter(x=>x!==w); S.sold.push(w); } for(const w of t.theirs){ w.prov.push('TRADED TO '+S.me+' · 4 NOV 2026'); S.works.push(w); }
+  if(t.mine.length)S.skill=Math.min(100,S.skill+.3*t.mine.length); hud(); if(S.step==='trade')wTrade(); setTimeout(()=>{ if(S.trade===t){ S.trade=null; if(S.step==='trade')wTrade(); } },4000); }
+
+/* 6 SELL */
+const MED_K={OIL:1.3,WATERCOLOUR:1,PENCIL:.5,CHARCOAL:.6};
+const RANK_K={NOVICE:1,APPRENTICE:1.2,JOURNEYMAN:1.5,EXPERT:2,ADEPT:2.5,MASTER:3.5,GRANDMASTER:5};
+function appraise(p){ const base={1024:20,2304:40,3072:80,6144:160}[p.w*p.h]||40, cv=cover(p), cols=colours(p), artistSkill=p.artist===S.me?S.skill:p.artist==='OLD KETTLE'?92:p.artist==='MOTHGIRL'?58:40;
+  const rows=[['SIZE '+p.w+'×'+p.h,base,'+'],[p.medium,MED_K[p.medium]||1,'×'],['COVERED '+Math.round(cv*100)+'%',+(.2+.8*Math.min(1,cv/.85)).toFixed(2),'×'],[cols+' COLOURS',Math.min(cols,40),'+'],['ARTIST '+rank(artistSkill),RANK_K[rank(artistSkill)],'×'],['♥ '+p.admirers+' ADMIRERS',+Math.min(4,1+p.admirers/50).toFixed(2),'×'],[FRAMES[p.frame||''][0],FRAMES[p.frame||''][1],'+']];
+  let v=0; rows.forEach(([,n,o])=>{ v=o==='+'?v+n:v*n; }); return {rows,value:cv<.15?0:Math.round(v),blank:cv<.15}; }
+function wSell(){ const tab=S.sellTab;
+  W().innerHTML=ttl('THE GALLERY','THE DEALER · BY THE MUSEUM')+`<div class="row">${[['dealer','SELL TO THE DEALER'],['consign','CONSIGN'],['gallery','BUY']].map(([k,n])=>`<button class="b" data-st="${k}" aria-pressed="${tab===k}">${n}</button>`).join('')}</div><div id="sellBody" style="display:grid;gap:10px"></div><div id="insp"></div>`;
+  W().querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ S.sellTab=b.dataset.st; wSell(); });
+  const B=$('#sellBody'), mine=S.works.filter(w=>w.signed&&!S.hung.some(h=>h.a===w));
+  if(tab==='dealer'||tab==='consign'){ if(!S.sellSel||!mine.includes(S.sellSel))S.sellSel=mine[0]; const sel=S.sellSel;
+    const pk=document.createElement('div'); pk.className='pane'; pk.innerHTML='<h3>YOUR WORK (NOT ON THE WALL)</h3>'; if(mine.length){ const cs=document.createElement('div'); cs.className='cards'; mine.forEach(w=>cs.appendChild(cardOf(w,w===sel,()=>{ S.sellSel=w; wSell(); }))); pk.appendChild(cs); } else pk.insertAdjacentHTML('beforeend','<div class="dim">NOTHING LOOSE. TAKE ONE OFF YOUR WALL OR PAINT ONE.</div>'); B.appendChild(pk);
+    if(sel){ const a=appraise(sel), offer=Math.round(a.value*.6), d=document.createElement('div'); d.className='pane';
+      if(tab==='dealer')d.innerHTML=`<h3>THE DEALER LOOKS IT OVER</h3><table class="tbl">${a.rows.map(([n,v,o])=>`<tr><td>${n}</td><td class="n dim">${o}</td><td class="n">${o==='+'?money(v):v}</td></tr>`).join('')}<tr><td class="go">WORTH</td><td></td><td class="n go">${money(a.value)}</td></tr><tr><td class="go">HE PAYS (60%)</td><td></td><td class="n go">${money(offer)}</td></tr></table>${a.blank?'<div class="red">"THAT\'S A BLANK CANVAS, FRIEND."</div>':''}<div class="dim" style="font-size:12px">HE HANGS WHAT HE BUYS IN HIS GALLERY AT FULL PRICE, WHERE ANY PLAYER CAN BUY IT.</div><div class="row"><button class="b hot" id="sellNow" ${a.blank?'disabled':''}>SELL FOR ${money(offer)}</button></div>`;
+      else d.innerHTML=`<h3>HANG IT IN HIS GALLERY AT YOUR PRICE</h3><div class="row"><span class="dim">PRICE</span><input type="range" id="cp" min="10" max="${Math.max(200,a.value*4)}" step="5" value="${S.cprice||Math.max(10,a.value)}" aria-label="Your price"><span class="go" id="cpv"></span></div><div id="cpn" class="dim" style="font-size:12px"></div><div class="row"><button class="b hot" id="consign" ${a.blank?'disabled':''}>CONSIGN</button></div><div class="dim" style="font-size:12px">PAID BY MAIL WHEN IT SELLS; TAKE IT BACK ANY TIME. ${S.skill<70?'<span class="warn">FROM EXPERT (70) ONLY. SHOWN AS A PREVIEW.</span>':''}</div>`;
+      B.appendChild(d);
+      if(tab==='dealer'&&!a.blank)$('#sellNow').onclick=()=>{ S.cash+=offer; sel.prov.push(`SOLD TO THE DEALER · ${money(offer)} · 4 NOV 2026`); S.works=S.works.filter(x=>x!==sel); const g=Object.assign(sel,{price:a.value}); g.prov.push('ON SALE AT THE GALLERY · '+money(a.value)); GALLERY.unshift(g); S.skill=Math.min(100,S.skill+.4); say(`THE DEALER PAID ${money(offer)} FOR “${sel.title}”.`); hud(); wSell(); };
+      if(tab==='consign'){ const r=$('#cp'), upd=()=>{ S.cprice=+r.value; $('#cpv').textContent=money(+r.value); $('#cpn').textContent=`YOU GET ${money(r.value*.9)} WHEN IT SELLS (HE KEEPS 10%). HE THINKS IT IS WORTH ${money(a.value)}.`; }; r.oninput=upd; upd();
+        $('#consign').onclick=()=>{ if(a.blank)return; const price=+r.value; sel.price=price; sel.consigned=true; sel.prov.push(`CONSIGNED AT THE GALLERY · ${money(price)} · 4 NOV 2026`); S.works=S.works.filter(x=>x!==sel); GALLERY.unshift(sel); say(`“${sel.title}” HANGS IN THE GALLERY AT ${money(price)}.`); setTimeout(()=>{ if(!GALLERY.includes(sel))return; GALLERY.splice(GALLERY.indexOf(sel),1); sel.prov.push(`BOUGHT BY BUTTONS · ${money(price)}`); S.cash+=price*.9; say(`LETTER: “${sel.title}” SOLD TO BUTTONS. ${money(price*.9)} IS IN YOUR MAILBOX.`,'go'); hud(); if(S.step==='sell')wSell(); },6000); wSell(); }; } } }
+  else { const d=document.createElement('div'); d.className='pane'; d.innerHTML='<h3>ON THE GALLERY\'S WALLS</h3>'; const cs=document.createElement('div'); cs.className='cards'; GALLERY.forEach(g=>{ const mineC=g.artist===S.me; const c=cardOf(g,false,()=>inspect(g,'#insp'),`<div class="a">♥ ${g.admirers} · ${money(g.price)}</div><div class="row"><button class="b" data-buyg="${g.id}" ${mineC?'disabled':''}>${mineC?'YOURS':'BUY'}</button><button class="b" data-adm="${g.id}">♥</button></div>`); cs.appendChild(c); }); d.appendChild(cs); B.appendChild(d);
+    B.querySelectorAll('[data-buyg]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const g=GALLERY.find(x=>x.id===b.dataset.buyg); if(S.cash<g.price)return say('YOU CANNOT AFFORD THAT.','red'); S.cash-=g.price; GALLERY.splice(GALLERY.indexOf(g),1); g.prov.push(`BOUGHT BY ${S.me} · ${money(g.price)} · 4 NOV 2026`); S.works.push(g); say(`BOUGHT “${g.title}” BY ${g.artist}. IT IS IN YOUR PACK.`); hud(); wSell(); });
+    B.querySelectorAll('[data-adm]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const g=GALLERY.find(x=>x.id===b.dataset.adm); if(g._adm)return say('ONCE A DAY FOR EACH PICTURE.'); g._adm=1; g.admirers++; say(`YOU ADMIRE “${g.title}”. ${g.artist} GAINS A LITTLE FAME.`); wSell(); }); } }
+
+/* THE SKILL */
+const UNLOCK=[[0,'NOVICE','SMALL AND MEDIUM CANVASES, THE SKETCHBOOK; OIL, WATERCOLOUR, PENCIL, CHARCOAL; BRUSH 1–2, LINE, FILL, PICK, SCRAPE.'],[30,'APPRENTICE','SMUDGE; BRUSH 3.'],[50,'JOURNEYMAN','LARGE CANVAS 64×48; BRUSH 4.'],[70,'EXPERT','CONSIGN AT THE GALLERY AT YOUR OWN PRICE.'],[80,'ADEPT','GRAND CANVAS 96×64; COMMISSIONS: A PLAYER ORDERS A PICTURE FROM YOU, PAYS ON DELIVERY.'],[90,'MASTER','PRINTS: A NUMBERED EDITION OF 10 FROM A SIGNED ORIGINAL.'],[100,'GRANDMASTER','THE MUSEUM HANGS ONE OF YOUR WORKS ON ITS PLAYERS\' FLOOR.']];
+function wSkill(){ W().innerHTML=ttl('SKILLS','PAINTING · '+S.skill.toFixed(1))+
+  `<div class="pane"><h3>PAINTING · ${rank(S.skill)}</h3><div class="meter"><i style="width:${S.skill}%"></i></div><table class="tbl">${UNLOCK.map(([v,n,t])=>`<tr><td class="${S.skill>=v?'go':'dim'}" style="white-space:nowrap">${v} ${n}</td><td class="${S.skill>=v?'':'dim'}" style="font-size:12px">${t}</td></tr>`).join('')}</table></div>
+  <div class="pane"><h3>HOW IT RISES</h3><table class="tbl"><tr><td>SIGNING A WORK</td><td class="n">+0.2 TO 2.5</td></tr><tr><td class="dim" colspan="2" style="font-size:12px">MORE FOR MORE OF THE CANVAS COVERED, MORE COLOURS, MORE STROKES. A BLANK ONE TEACHES NOTHING.</td></tr><tr><td>PAINTING OUTDOORS (FIELD EASEL)</td><td class="n">× 1.5</td></tr><tr><td>A SALE OR A TRADE</td><td class="n">+0.3 TO 0.4</td></tr><tr><td>SOMEONE ADMIRES YOUR WORK</td><td class="n">+0.05</td></tr></table></div>
+  <div class="pane"><h3>THE BOOK: YOUR WORKS</h3><div class="cards" id="bk"></div></div>`;
+  const bk=$('#bk'); [...S.works,...S.sold].filter(w=>w.artist===S.me).forEach(w=>bk.appendChild(cardOf(w,false,null))); if(!bk.children.length)bk.innerHTML='<div class="dim">YOU HAVE NOT SIGNED ANYTHING YET. FINISH THE MOON ON THE EASEL.</div>'; }
+
+/* THE PLAN */
+function wPlan(){ W().innerHTML=ttl('THE PLAN','FOR THE OWNER')+
+  `<div class="pane"><h3>NEW THINGS ON THE ITEM MODEL (SHIFT+7)</h3><table class="tbl">${[['EASEL','$40','FURNITURE, DECORATE'],['FIELD EASEL','$25','CARRIED, SET UP OUTDOORS'],['OILS / WATERCOLOURS','$16 / $10','4,000 / 3,000 DABS'],['PENCIL / CHARCOAL','$1 / $2','GREYS'],['SKETCHBOOK','$5','12 PAGES 32×32'],['CANVAS S M L XL','$4 $8 $14 $30','32² 48² 64×48 96×64'],['FRAME PINE OAK GILT','$3 $10 $40','WORN BY A PAINTING'],['PAINTING / DRAWING','APPRAISED','MADE BY PLAYERS']].map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="dim" style="font-size:12px">${r[2]}</td></tr>`).join('')}</table>
+  <div class="dim" style="font-size:12px">SHARED FIELDS: ART (A MADE THING CARRIES ITS PICTURE'S ID), WALL (HANGS IN DECORATE), BURNABLE (CANVAS, PAPER, FRAMES: FIRE TAKES THEM).</div></div>
+  <div class="pane"><h3>ONE PAINTING</h3><div style="font-size:13px">ITS PIXELS ARE BYTES IN THE SPRAY'S 256 COLOURS: 48×48 IS 2.3 KB, 96×64 IS 6 KB. KEPT ONCE ON THE SERVER BY ITS ID; YOUR PACK HOLDS ONLY THE ID, SO YOUR 2 MB SAVE NEVER FILLS WITH PICTURES. SIGNED = NEVER CHANGED. ONLY THE SERVER ADDS TO ITS HISTORY.</div></div>`; }
+
+/* ---------- the notes under each step ---------- */
+const NOTES={
+ supplies:[['WHERE THEY COME FROM',['A shop counter in the art museum sells supplies: an existing character given the JOB (shopkeeper) in the character editor.','The bodega\'s BBS catalogue can sell the easel and canvases too; the drone brings them, as it does today.','Paints run out like the spray can: every pixel you lay down is a dab.']],['WHAT A PLAYER GETS TO DO',['A reason to spend money and come back: supplies wear out.','Bigger canvases open up with the skill, so there is something to work toward.','An unfinished canvas is a thing in your pack. Take it off the easel, put it back up tomorrow.']]],
+ paint:[['THE EASEL',['Double-click an easel (yours in the apartment, or a field easel set up outside) with a canvas in your pack. You stand at it and paint; your arm moves.','The window is a flat 2D canvas. In 3D only the easel\'s picture changes, once a stroke ends.','THE VIEW: at a field easel, a faint copy of what is in front of you sits under the canvas to paint from (on the website, read once from the frame).']],['FOUR MEDIUMS',['OIL covers what is under it.','WATERCOLOUR mixes with what is under it: a second wash goes darker.','PENCIL is one grey pixel; CHARCOAL leaves a broken grey line. Both make a DRAWING, and work in the sketchbook anywhere, no easel needed.']],['OTHERS SEE IT',['Players near you see the canvas fill in: strokes go out through ONLINE about four times a second, only to players in sight.','Nobody else can paint on your canvas.']]],
+ sign:[['ONE OF A KIND',['Signing makes it a PAINTING or DRAWING item with a title, your name, the date and the medium; your mark goes in the corner.','It can never be painted over, and there is only ever one. Its history starts with you.','It burns: a fire in your apartment can take it.']],['THE SKILL',['Signing teaches PAINTING by how much you put in: canvas covered, colours, strokes.','Under 15% covered teaches nothing and no dealer buys it, so blank canvases are worthless.']]],
+ hang:[['DECORATE, AS IT IS',['A painting is a wall thing in DECORATE (T): point at a wall, green fits, red does not, the grid you already have.','Frames are bought, then put on: the frame is part of the painting from then on and adds its price to its worth.','Hung paintings are in your apartment\'s save, on the server, like the rest of your things.']],['OTHER PLAYERS',['Visitors to your apartment see your walls and can admire (♥) each picture once a day.','Admirers are the painter\'s fame: they raise what all that painter\'s work is worth.','REPORT on any picture sends it to the owner\'s TENANTS panel.']]],
+ trade:[['TRADE IS FOR EVERYTHING',['This is the player trade you said yes to on 20 Oct: double-click a player → TRADE. Any item and cash, both sides tick ACCEPT, any change unticks both.','The block\'s server checks both still have what they offer and swaps both sides at once, so nothing is lost or copied.','Paintings are its first use; anything in a pack can go through it.']],['GIVE',['GIVE is a trade with nothing back. The other player still has to accept, so nobody gets things pushed on them.','Every trade or gift is written into the painting\'s history: who painted it, who owned it, what it went for.']]],
+ sell:[['THREE WAYS TO SELL',['THE DEALER buys now at 60% of worth and hangs it in his gallery at full price, where any player can buy it.','CONSIGN (EXPERT): hang it in his gallery at your own price; he keeps 10% and the rest comes by mail.','To another player through TRADE, for cash.']],['WHAT IT IS WORTH',['Size, medium, how much is painted, colours, the painter\'s rank, admirers, the frame. The dealer shows his sums.','Money comes from the dealer, so it ties into the economy you already have.']]],
+ skill:[['PAINTING, A NEW SKILL',['Next to MYCOLOGY, FISHING and the rest, with the same ranks, NOVICE to GRANDMASTER, and the same cap.','Each rank opens a tool, a size or a way to sell, so there is always a next thing.','Your works go into THE BOOK, like recipes and finds.']]],
+ plan:[['WHAT IT TOUCHES',['Items (new kinds and fields, the item editor), the pack, DECORATE, skills, shops (the dealer\'s JOB), ONLINE (live strokes), player trade (new, for all items), the worker (the painting store, trade), fire (burnable), the owner\'s TENANTS panel (ART: hide, ban from public walls).','Editors kept in sync: item, character (the dealer buys paintings), text (the windows\' words).']],['COST',['A hung painting: one tiny texture (48×48 is 9 KB on the graphics card), 2 triangles and about 60 for a frame; drawn only when seen, dropped when you leave the room.','The painting window: nothing in 3D a frame. Live strokes: a few bytes, four times a second, only while painting near someone.','The server: 2–6 KB a painting, in a new Studio store beside Block, Post, Home and Dish.']],['IN FOUR PULL REQUESTS',['1 · easel, supplies, paint, sign, frame, hang, the dealer, the skill.','2 · player trade and give (for every item), live strokes for watchers.','3 · consign, the gallery to buy from, admiring and fame, history on INSPECT.','4 · prints, commissions, the museum\'s players\' floor.','Each ships with its test: tests/easel.cjs paints, signs and hangs; trade runs two pages through the ONLINE box.']],['YOUR CALLS',null]]
+};
+const CHOICES=[['Mediums','A · four (oil, watercolour, pencil, charcoal), as shown','B · one paint box and a pencil'],['Canvas sizes','A · pixel sizes 32 to 96, matching the game\'s art, as shown','B · bigger, 128 to 256 (smoother, 4–16× the storage)'],['Who sells and buys','A · a dealer and an art shop in the art museum','B · the flea market\'s TRADER buys art; the BBS sells supplies'],['Public walls (gallery, museum)','A · you approve a picture before it goes up','B · anyone hangs; you take down what is reported'],['The museum\'s players\' floor','A · yes, at GRANDMASTER','B · no, the museum keeps to its 53'],['Skill gates','A · bigger canvases and tools open with rank, as shown','B · everything open from the start; rank only sets worth']];
+function notes(k){ $('#notes').innerHTML=(NOTES[k]||[]).map(([h,l])=>l?`<article class="note"><h2>${h}</h2><ul>${l.map(x=>`<li>${esc(x).replace(/(tests\/easel\.cjs)/,'<code>$1</code>')}</li>`).join('')}</ul></article>`:`<article class="note"><h2>${h}</h2><p>Six things to pick before building. Reply with a letter for each, like “A B A A A A”.</p>${CHOICES.map(([q,a,b],i)=>`<div class="choice"><span class="lab">${i+1} · ${q}</span><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join('')}</article>`).join(''); }
+
+/* ---------- start: half-way through a painting of the Hudson ---------- */
+putOnEasel(); hangAll(); nav(); go('paint'); say('YOU STAND AT THE EASEL. THE MOON IS HALF DONE.');
+})();
+</script>

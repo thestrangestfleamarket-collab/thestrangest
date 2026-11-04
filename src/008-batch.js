@@ -1,6 +1,6 @@
 // THE BATCH: BATCH packs painted pictures into atlases and merges them into few meshes; BATCH.queue paints far things later, near ones first; OBJ and OBJS name the objects made.
 import {SHARED, THREE} from './003-shx.js';
-import {ED, LEVELS, pos, ROOMS, UI} from './003b-systems.js';
+import {ED, LEVELS, pos, UI} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const BATCH=window.BATCH={items:[],tag:null};
@@ -26,11 +26,15 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const map=tex(atlas), emap=eat?tex(eat):null;
   const kinds={}; for(const o of ip)(kinds[o.kind]||(kinds[o.kind]=[])).push(o);
-  for(const k in kinds){ const L=kinds[k], P=new Float32Array(L.length*18), U=new Float32Array(L.length*12);
+  // (BATCH.tile: a kind's faces cut by map tile, a mesh each, so the far ones go unseen and undrawn; opted into by a queue's tile)
+  const parts={}; for(const k in kinds){ if(!(BATCH.tile>0)){ parts[k]=[k,kinds[k]]; continue; } const by={};
+    for(const o of kinds[k]){ const q=o.pos, cx=(q[0]+q[3]+q[6]+q[9]+q[12]+q[15])/6, cz=(q[2]+q[5]+q[8]+q[11]+q[14]+q[17])/6, t=Math.floor(cx/BATCH.tile)+','+Math.floor(cz/BATCH.tile); (by[t]||(by[t]=[])).push(o); }
+    const ts=Object.keys(by); for(const t of ts)parts[ts.length>1?k+'~t'+t:k]=[k,by[t]]; }
+  for(const pk in parts){ const [k,L]=parts[pk], P=new Float32Array(L.length*18), U=new Float32Array(L.length*12);
     L.forEach((o,n)=>{ P.set(o.pos,n*18); const w=o.cv.width, h=o.cv.height; for(let q=0;q<6;q++){ const u=o.uv[q*2], v=o.uv[q*2+1]; U[n*12+q*2]=(o.ax+1+u*w)/AW; U[n*12+q*2+1]=1-(o.ay+1+(1-v)*h)/AH; } });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.BufferAttribute(U,2)); geo.computeVertexNormals();
     geo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(L.length*18).fill(1),3)); geo.setAttribute('aOp',new THREE.BufferAttribute(new Float32Array(L.length*6).fill(1),1));
-    const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?k+'~'+p:k]=me; } }
+    const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?pk+'~'+p:pk]=me; } }
   BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>it[i].pg)).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
 
 BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r);
@@ -42,8 +46,9 @@ const PEEK=window.PEEK={uDP:{x:0,y:0,z:-2,w:.1},uDK:{x:0,y:1,z:1e9,w:0},boxes:[]
 if(PEEK.on)for(const k of ['lambert','basic']){ const S=THREE.ShaderLib[k]; S.uniforms.uDP={value:PEEK.uDP}; S.uniforms.uDK={value:PEEK.uDK};
   S.vertexShader='attribute float aWl; varying vec4 vDc; varying float vWl, vWy;\n'+S.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vDc=gl_Position; vWl=aWl; vWy=(modelMatrix*vec4(transformed,1.)).y;');
   S.fragmentShader='uniform vec4 uDP, uDK; varying vec4 vDc; varying float vWl, vWy;\nfloat dB2(vec2 a){ a=floor(a); return fract(dot(a,vec2(.5,a.y*.75))); }\n'+S.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
-  if(uDK.x>0.&&vWl>1.5&&(vWl<2.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<uDK.x*(dr<.7?.8:.4))discard; }`); }
+  if(uDK.x>0.&&vWl>1.5&&(vWl<2.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w, th=uDK.x*(dr<.7?.8:.4); if(vWl>3.5&&dr<.8)th=uDK.x*1.5; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<th)discard; }`); }
 PEEK.box=(me,x0,y0,z0,x1,y1,z1)=>{ const e=.7*TILE/.84; PEEK.boxes.push({me,b:new THREE.Box3(new THREE.Vector3(Math.min(x0,x1)-e,Math.min(y0,y1)-e,Math.min(z0,z1)-e),new THREE.Vector3(Math.max(x0,x1)+e,Math.max(y0,y1)+e,Math.max(z0,z1)+e))}); };
+// aWl: 2 a wall (dithered open round you), 3 a roof, 4 leaves (open fully round you: many layers of cards never dither through, 2 Nov 2026)
 PEEK.mark=(g,A)=>{ g.setAttribute('aWl',new THREE.BufferAttribute(A||new Uint8Array(g.attributes.position.count).fill(2),1)); return g; };
 PEEK.whole=me=>{ PEEK.mark(me.geometry); me.updateMatrixWorld(); const b=new THREE.Box3().setFromObject(me); if(!b.isEmpty())PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); };
 PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, C=6*M, G={}, K=[], V=PEEK.V, grp=(k,v,nx,nz)=>G[k]||(G[k]={v,nx,nz,b:new THREE.Box3(),t0:1e9,t1:-1e9});
@@ -55,23 +60,32 @@ PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, C=6*M, G={}, K=[], V=PEEK.V, 
     const k='r'+Math.floor(x/C)+','+Math.floor(z/C), g=grp(k,0); K[n]=k; for(let i=0;i<18;i+=3)g.b.expandByPoint(V.set(p[i],p[i+1],p[i+2])); });
   let any=false; for(const k in G){ const g=G[k], b=g.b; if(!g.v)g.w=Math.max(b.max.x-b.min.x,b.max.z-b.min.z)>=2*M?3:0; if(g.w){ any=true; PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); } }
   if(!any)return; const A=new Uint8Array(L.length*6); K.forEach((k,n)=>{ if(k)A.fill(G[k].w,n*6,n*6+6); }); PEEK.mark(me.geometry,A); };
-PEEK.tick=dt=>{ const on=PEEK.on&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!ROOMS.cur&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,SHARED.py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
+PEEK.tick=dt=>{ const on=PEEK.on&&!PEEK.off&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,SHARED.py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
   R.origin.copy(c); if(UI.persp)R.direction.copy(SHARED.cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(SHARED.cam.quaternion);
   let cov=false; if(on){ const far=UI.persp?c.distanceTo(SHARED.cam.position):1e5; W.copy(c).project(SHARED.cam); if(far>1.5*M&&Math.abs(W.x)<1.1&&Math.abs(W.y)<1.1&&W.z<1)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible)||!LEVELS.drawn(me))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
   PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=SHARED.py+2.6*TILE; if(!PEEK.k)return;
   W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar(1.6*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };
 PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});
-BATCH.queues=[]; BATCH.VIEW=20*TILE;
-BATCH.queue=({make,cast=false,group,post,R,done})=>{ const q={jobs:[],R:R||BATCH.VIEW,hold:[],hn:0,gt:0}, gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
-  const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ q.jobs.splice(q.jobs.indexOf(j),1); j.go(); q.hn++; } q.hold.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; };
+BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.away=()=>false;   // painted within reach()[0] of you, dropped past reach()[1] (the haze range sets them, 134e), all dropped while BATCH.away() (in a room off the map)
+BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||BATCH.VIEW,hold:[],hn:0,gt:0,dt:0,pend:[],groups:[],settled:false}, gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
+  const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ q.jobs.splice(q.jobs.indexOf(j),1); j.go(); q.pend.push(j); q.hn++; } q.hold.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; q.settled=false; };
   const flush=()=>{ if(!q.hold.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes, c0=BATCH.cast; BATCH.meshes={}; BATCH.items=q.hold; q.hold=[]; q.hn=0;
-    BATCH.cast=cast; BATCH.build(make); BATCH.cast=c0; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; const g=group(); for(const k in M)g.add(M[k]); if(post)post(M); };
+    BATCH.cast=cast; const t0=BATCH.tile; BATCH.tile=tile||0; try{ BATCH.build(make); } finally{ BATCH.tile=t0; } BATCH.cast=c0; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; const g=group(); for(const k in M)g.add(M[k]); if(post)post(M); q.groups.push({ms:Object.values(M),jobs:q.pend.splice(0)}); };
+  // a dropped group frees its meshes and pictures; its patches go back on the list, painted again when you come near
+  const drop=G=>{ for(const me of G.ms){ me.removeFromParent(); PEEK.boxes=PEEK.boxes.filter(b=>b.me!==me); me.geometry.dispose(); for(const m of [].concat(me.material)){ for(const k of ['map','emissiveMap'])if(m[k]){ m[k].dispose(); m[k].image=null; } m.dispose(); } }
+    q.groups.splice(q.groups.indexOf(G),1); q.jobs.push(...G.jobs); q.dropped=true; };
   q.add=(x0,z0,x1,z1,go)=>q.jobs.push({x0:Math.min(x0,x1),x1:Math.max(x0,x1),z0:Math.min(z0,z1),z1:Math.max(z0,z1),go});
-  q.near=(x,z,r=q.R)=>{ const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };
-  q.tick=dt=>{ if(!q.jobs.length&&!q.hold.length)return; q.near(pos.x,pos.z); if((q.gt+=dt)<.05)return; q.gt=0;
-    const t0=performance.now(); while(q.jobs.length&&performance.now()-t0<6){ let b=null, bd=1e9; for(const j of q.jobs){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } paint([b]); } if(q.hn>=24||!q.jobs.length){ flush(); if(!q.jobs.length&&done)done(); } };
+  q.near=(x,z,r=q.R)=>{ if(BATCH.away())return; const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };
+  q.tick=dt=>{ if(q.dropped){ q.dropped=false; SYS.run('perfBounds'); }   // the culling lists forget what was dropped
+    if(BATCH.away()){ flush(); while(q.groups.length)drop(q.groups[0]); return; }
+    if((q.dt+=dt||0)>1){ q.dt=0; const K=BATCH.reach()[1]; for(const G of [...q.groups])if(G.jobs.every(j=>gd(j,pos.x,pos.z)>K))drop(G); }
+    if(!q.jobs.length&&!q.hold.length)return; q.near(pos.x,pos.z); if((q.gt+=dt)<.05)return; q.gt=0;
+    const t0=performance.now(); while(performance.now()-t0<6){ let b=null, bd=BATCH.reach()[0]; for(const j of q.jobs){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } if(!b)break; paint([b]); }
+    const P=BATCH.reach()[0], more=q.jobs.some(j=>gd(j,pos.x,pos.z)<P); if(q.hn>=24||!more){ flush(); if(!more&&!q.settled){ q.settled=true; if(done)done(); } } };
+  q.kept=()=>{ const K=BATCH.reach()[1]; return q.groups.every(G=>G.jobs.some(j=>gd(j,pos.x,pos.z)<=K+1)); };
   BATCH.queues.push(q); return q; };
+BATCH.kept=()=>BATCH.queues.every(q=>q.kept());   // (for the checks: nothing kept past reach)
 BATCH.near=(x,z)=>{ for(const q of BATCH.queues)q.near(x,z); };
 BATCH.tick=dt=>{ for(const q of BATCH.queues)q.tick(dt); };
 SYS.add('near',(x,z)=>BATCH.near(x,z),'008-batch');

@@ -1,9 +1,12 @@
 // THE GAME'S SYSTEMS, DECLARED FIRST: every system another file uses before its own file runs is made here (empty, or its first value) and filled in its own file, so each file only reads names from files before it.
 import {THREE} from './003-shx.js';
-const ROOMS={lazy:{},off:{}},
-  LEVELS={of:{},ways:[],own:(o,id)=>{ o.userData.level=id; return o; }},
-  UI={},
+const ROOMS={lazy:{},off:{},grounds:[]},
+  VIS={all:false},
+  LEVELS={of:{},ways:[],below:y=>y<-1.6?'down':'up',own:(o,id)=>{ o.userData.level=id; return o; }},
+  UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
+  BAG={},   // the bag: THE PACK drawn as a bag of item pictures, the ground drops and the paperdoll (162e-bag)
+  HUD={},   // the heads-up display (162d-hud): the minimap, the message log and the quick bar
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),
   keys=new Set(),
@@ -14,7 +17,9 @@ const ROOMS={lazy:{},off:{}},
   vwV=(x,y)=>[(x-y)*Math.SQRT1_2,-(x+y)*Math.SQRT1_2],
   wvV=(u,v)=>[(u-v)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2],
   CLOCK={},
+  NEWS={},
   DRESS={},
+  PONDS={wet:()=>false,strips:[]},
   LITE={},
   SHAD={},
   CLIP={},
@@ -25,7 +30,9 @@ const ROOMS={lazy:{},off:{}},
   st=RIG.create(),
   WX={},
   FAR3={},
-  VIT={},
+  VIT={mends:[]},   // mends: what is healing you now (rest, the bath's steam): each a function giving health a second
+  SWIM={tank:()=>0},
+  FLOW={},   // one water (065a-flow): every water's shared simulation
   PARK={},
   MAIL={},
   TRADE={},
@@ -40,23 +47,29 @@ const ROOMS={lazy:{},off:{}},
   PH={},
   W3={},
   BROOK={},
-  ONLINE={},
+  ONLINE={mine:{}},
   TENANTS={},
+  GUIDE={},
   VR={on:false},
+  BINS={},
+  MOTION={}, PASSPORT={}, SUMMON={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
+  HANDHELD={},   // the handheld (146ya): ESC pops it up, every menu opens from it
+  WINDOWS={panes:[],held:new Set(),pane(me,off,look,dark,only){ this.panes.push({me,off,look,dark,only}); if(only)me.visible=false; if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
   EQUIP={},
   BOAT={},
+  RIDE={on:null,lift:0},   // what you are riding (146i-ride): a hoverboard, a balloon
+  TRICKS={},   // the skateboard's tricks (146ib-tricks): its kind asks them how to move, stand and score
   PB={},
   FIGFX={},
   MUS={},
-  BWK={},
   PNM={},
   SGM={},
   DRM={},
   STAGE={},
   LOOK={},
-  PS2={},
+  PS2=window.PS2={},
   WHERE={},
   AMB={},
   ZONES={},
@@ -68,6 +81,7 @@ const ROOMS={lazy:{},off:{}},
   GAMEED={},
   WE={},
   SIGNS={list:[]},
+  TEXT={def:{},cur:{},on:[]},
   WED={meshes:[]},
   MAPED={},
   SNDED={},
@@ -84,9 +98,15 @@ const ROOMS={lazy:{},off:{}},
   FORAGE={},
   CIVIC={},
   GHOSTS=window.GHOSTS={list:[]},
+  PHYS={},   // the physics extras' settings (090a-physx) and what they share
+  GUARD=window.GUARD={list:[]},   // the castle's guardians (146j fills it; the folk's bodies read its moves)
   GPH=window.GPH={ms:0,n:0},   // the loose things' physics (150-loose fills it); declared here so the places before it can add their things
   GTRH={},
   GTSAMP=[],
   IMK={},
-  BOOKS={};
-export {AMB, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, BWK, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, IMK, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, POND, pos, PS2, RAG, RINSP, ROOMS, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, st, STAGE, TENANTS, TRADE, UI, USE, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, wvV, WX, ZONES};
+  BOOKS={},
+  TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
+  INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
+  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
+  WORKERS=window.WORKERS={idle:{},made:{},models:{},make:()=>Promise.resolve()};   // the insides' non-human workers (146zb-workers): WORKERS.make(place) the first time you go in; idle[key] how one moves at its spot; models[key] a body made by code (MERCH's way) for one with no folk recipe
+export {AMB, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARED, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EDITORS, EQUIP, FAR3, FEEL, FIGFX, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GTRH, GTSAMP, GUARD, GUIDE, HANDHELD, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LIGHTED, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SUMMON, SWIM, TALK, TENANTS, TEXT, TRADE, TRICKS, UI, USE, VIS, VIT, VR, vwV, W3, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

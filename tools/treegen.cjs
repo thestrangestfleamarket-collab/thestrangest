@@ -47,6 +47,39 @@ module.exports = THREE => {
     if (low) for (let i = 0, n = clumps ? 5 : 7; i < n; i++) { const a = i / n * 6.283 + R() * .5; leaf(c.x + Math.cos(a) * rh * (.55 + R() * .3), y0 + R() * .6, c.z + Math.sin(a) * rh * (.55 + R() * .3), S()); }
     return { pr, c: [r3(c.x), r3(c.y), r3(c.z), r3(rad + .6)], kN: clumps ? .35 : .6, tr: r3(2 * o.r), CL, LB, bc, K: clumps ? 10 : 9 };
   };
+  // a vase tree (owner, 2 Nov 2026, his picture of the Mall's elms): a bare trunk forking into a few leaders that climb steeply and arch out, each
+  // sprouting arcs that bend further over, the leaves an umbrella along the outer arcs; 'cherry' forks low, spreads wider than it is tall, pink, leaning to +x
+  const PINKS = [[214,118,160],[232,150,186],[244,176,206]];
+  const vase = (style, seed) => {
+    const R = mul(seed), cherry = style === 'cherry', h = 10, pal = cherry ? PINKS : PALS[Math.floor(R() * PALS.length)], bc = cherry ? [64,48,42] : BARK[Math.floor(R() * BARK.length)];
+    const r0 = cherry ? .3 : .36 + R() * .05, fy = h * (cherry ? .13 + R() * .05 : .24 + R() * .06), segs = [], tips = [], arcs = [];
+    const lean = new V((R() - .5) * .12, 1, (R() - .5) * .12).normalize(), p1 = new V().addScaledVector(lean, fy * .55), fork = new V().addScaledVector(lean, fy);
+    segs.push([new V(0, 0, 0), p1, r0, r0 * .93, 3], [p1, fork, r0 * .93, r0 * .86, 3]);
+    const arc = (p, az, th0, th1, len, rad, depth) => { const k = 4; let cur = p.clone(), a = az, dir = null;
+      for (let s = 0; s < k; s++) { const th = th0 + (th1 - th0) * Math.pow((s + .5) / k, 1.25); a += (R() - .5) * .25; dir = new V(Math.sin(th) * Math.cos(a), Math.cos(th), Math.sin(th) * Math.sin(a));
+        const end = cur.clone().addScaledVector(dir, len / k), ra = rad * (1 - .62 * s / k), rb = rad * (1 - .62 * (s + 1) / k); segs.push([cur, end, ra, rb, depth]); arcs.push([cur, end, depth, s]);
+        if (s >= 1 && depth > 0) for (let i = 0, m = 1 + Math.floor(R() * 2); i < m; i++) { const az2 = a + (R() < .5 ? -1 : 1) * (.5 + R() * .6), th2 = Math.min(1.4, th + .05 + R() * .25);
+          arc(cur.clone().lerp(end, .4 + R() * .6), az2, th2, Math.min(cherry ? 1.5 : 1.65, th2 + .4 + R() * .3), len * (.3 + R() * .15) * (1 - .12 * s), rb * .62, depth - 1); }
+        cur = end; }
+      tips.push({ p: cur, d: dir, len: len / k }); };
+    const n = cherry ? 4 + Math.floor(R() * 2) : 3 + Math.floor(R() * 3), az0 = R() * 6.283;
+    for (let i = 0; i < n; i++) { const az = cherry ? (i < n - 1 ? -1.15 + 2.3 * i / (n - 2) + (R() - .5) * .3 : 3.14 + (R() - .5) * .8) : az0 + i / n * 6.283 + (R() - .5) * .6;
+      const th0 = cherry ? .5 + R() * .25 : .22 + R() * .12, th1 = cherry ? 1.1 + R() * .2 : 1 + R() * .2, len = h * (cherry ? .75 + R() * .15 : .95 + R() * .15);
+      arc(fork, az, th0, th1, len, r0 * (cherry ? .6 : .55), 2); }
+    const pr = [], LB = [], CL = [];
+    for (const [a, b, q0, q1, dp] of segs) { const j = .9 + R() * .2; pr.push([0, r3(a.x), r3(a.y), r3(a.z), r3(b.x), r3(b.y), r3(b.z), r3(Math.max(.03, q0)), r3(Math.max(.02, q1)), dp === 3 ? 7 : 4, ri(bc[0] * j), ri(bc[1] * j), ri(bc[2] * j)]); if (dp >= 1) LB.push([a, b, q0]); }
+    const leaf = (x, y, z, s) => { y = Math.max(y, fy * 1.35 + s * .5); const base = pal[Math.floor(R() * 3)], j = .88 + R() * .28, sx = s * (1 + R() * .3), sy = s * (.72 + R() * .22), sz = s * (1 + R() * .3);
+      pr.push([1, r3(x), r3(y), r3(z), r3(sx), r3(sy), r3(sz), r3(R() * 6.283), ri(base[0] * j), ri(base[1] * j), ri(base[2] * j)]); CL.push([x, y, z, (sx + sy + sz) / 3, base[0] * j * .92, base[1] * j * .92, base[2] * j * .92]); };
+    const S = () => (cherry ? 1.15 : 1.25) + R() * .55;
+    for (const t of tips) leaf(t.p.x + (R() - .5) * .4, t.p.y + (R() - .3) * .4, t.p.z + (R() - .5) * .4, S());
+    // along the outer arcs (the leaders' last two steps, every side arc), so the leaves follow the arches
+    for (const [a, b, dp, s] of arcs) { if (dp === 2 && s < 2) continue; const L = a.distanceTo(b), step = 1.5; for (let u = step * .5; u < L; u += step) if (R() < (dp === 2 ? .7 : .55)) { const p = a.clone().lerp(b, u / L); leaf(p.x + (R() - .5) * .6, p.y + (R() - .35) * .5, p.z + (R() - .5) * .6, S()); } }
+    // the canopy's roof between the leaders' ends, hollow underneath
+    const c = new V(); for (const t of tips) c.add(t.p); c.divideScalar(tips.length || 1); let rad = 1.5, rh = 1, y0 = 1e9, y1 = -1e9;
+    for (const t of tips) { rad = Math.max(rad, t.p.distanceTo(c)); rh = Math.max(rh, Math.hypot(t.p.x - c.x, t.p.z - c.z)); y0 = Math.min(y0, t.p.y); y1 = Math.max(y1, t.p.y); }
+    for (let i = 0, nf = cherry ? 10 : 8; i < nf; i++) { const a = R() * 6.283, u = .3 + Math.sqrt(R()) * .6; leaf(c.x + Math.cos(a) * rh * u, y1 - (y1 - y0) * .35 * u * u + (R() - .5) * .8, c.z + Math.sin(a) * rh * u, S() * 1.1); }
+    return { pr, c: [r3(c.x), r3(c.y), r3(c.z), r3(rad + .8)], kN: .4, tr: r3(2 * r0), CL, LB, bc, K: cherry ? 14 : 22, vase: 1, card: cherry ? .45 : .8, hollow: cherry ? 0 : 1 };
+  };
   // a bush: a few stems from one root, a low dome of leaf bunches on crossed cards, full to the ground
   const bush = seed => { const R = mul(seed), H = 1.2 + R() * .5, W = 1.7 + R() * .9, D = W * (.8 + R() * .3), pal = PALS[Math.floor(R() * PALS.length)], bc = BARK[Math.floor(R() * BARK.length)], cy = H * .42, pr = [];
     for (let i = 0, ns = 4 + Math.floor(R() * 3); i < ns; i++) { const az = i / ns * 6.283 + R() * .8, sp = .35 + R() * .45;
@@ -56,5 +89,5 @@ module.exports = THREE => {
       for (let k = 0, nc = 3 + Math.floor(R() * 3); k < nc; k++) { const k2 = .9 + R() * .2;
         pr.push([3, r3(x + (R() - .5) * .35), r3(Math.max(.12, yy + (R() - .4) * .3)), r3(z + (R() - .5) * .35), r3(.45 + R() * .3), r3(R() * 6.283), r3(R() * 6.283), r3(R() * 6.283), ri(base[0] * j * k2), ri(base[1] * j * k2), ri(base[2] * j * k2)]); } }
     return { pr, c: [0, r3(cy), 0, r3(Math.max(W, H) * .5)], kN: .85, tr: r3(.7 * W) }; };
-  return { tree, bush, cluster };
+  return { tree, vase, bush, cluster };
 };

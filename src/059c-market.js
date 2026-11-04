@@ -2,11 +2,11 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FAR3, pos, ROOMS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {grab, MISTE, STORE, SYS, TILE} from './006-map-pre.js';
+import {BLDK, grab, MISTE, OFFDX, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
 await grab('nightmkt',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=SHARED.BOD, {hash:hs,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, {PROPS,LAMPS}=SHARED.BOD.STOREK;
-  const B={id:'lnmkt',x0:424,y0:-104,x1:456,y1:-81.6,h:152}, S=1.6, ZM=38, mx=m=>B.x0+m*S, my=m=>B.y0+m*S;
-  STORE.bound.x1=Math.max(STORE.bound.x1,X(470));
-  K.offmap('THE NIGHT MARKET',[418,-110,462,-70],()=>{ '@nightmkt';
+  const B={id:'lnmkt',x0:424+OFFDX/BLDK,y0:-104,x1:456+OFFDX/BLDK,y1:-81.6,h:152}, S=1.6, ZM=38, mx=m=>B.x0+m*S, my=m=>B.y0+m*S;
+  STORE.bound.x1=Math.max(STORE.bound.x1,X(470+OFFDX/BLDK));
+  K.offmap('THE NIGHT MARKET',[418+OFFDX/BLDK,-110,462+OFFDX/BLDK,-70],()=>{ '@nightmkt';
     const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1}), hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
     const pic=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const d=g.getImageData(0,0,w,h).data;
       return (u,v)=>{ const i=Math.min(w-1,Math.max(0,Math.floor(u*w))), j=Math.min(h-1,Math.max(0,Math.floor(v*h))), k=(j*w+i)*4; return d[k+3]<128?null:[d[k],d[k+1],d[k+2]]; }; };
@@ -101,7 +101,7 @@ await grab('nightmkt',async()=>{ const K=STORE.kit, {room,flat}=K, {X,Y,Z}=SHARE
           if(i%3===0)bs.push(mb(u-.03,z-.03,u+.03,z+.03,h-.14,h-.08,lit([255,210,150]))); } thing('string lights',bs,{high:1}); }
 
       // ---- the yard's far "sky" above: a very dark gradient so the roof reads as night, plus a faint skyline strip ----
-      sign('neon MARKET ST','f',14.5,2.6,'MARKET ST','#3cf0ff','#d8ffff',2,.018);
+      sign('neon MARKET ST','f',14.5,2.6,SECTIONS.streets.south,'#3cf0ff','#d8ffff',2,.018);
     },{});
 
     // ---- atmosphere: when you're in the lot, dark night fog + hide the far world ----

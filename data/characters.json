@@ -3,29 +3,162 @@
   "name": "THE SHARK",
   "trade": {
    "sells": [
+    "scuba",
     "goggles",
     "headlight",
     "scanner",
     "cutter",
     "extractor",
     "rod",
-    "bait"
+    "bait",
+    "gem_wheel"
    ],
-   "line": "Going down? You'll want the kit."
+   "line": "Going down? Rent a tank, grab the kit."
   },
   "home": [
    117.5,
    -113,
    3
-  ]
+  ],
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Going down? You'll want the kit.",
+      "Back from the deep, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS DOWN THERE?",
+       "go": "deep"
+      },
+      {
+       "t": "GOT ANY WORK?",
+       "go": "job",
+       "if": "!glass"
+      },
+      {
+       "t": "I BROUGHT YOUR SEA GLASS.",
+       "do": "take",
+       "arg": "seaglass 1",
+       "go": "paid",
+       "if": "asked !glass"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "deep": {
+     "say": "Caves under the river. Glints in the walls. Wear the goggles or you'll see nothing.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "job": {
+     "say": "Bring me one piece of sea glass from the river caves. I'll make it worth your while.",
+     "set": "asked",
+     "opts": [
+      {
+       "t": "I'LL LOOK.",
+       "go": ""
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "paid": {
+     "say": "Beautiful. Here, bait for your trouble.",
+     "opts": [
+      {
+       "t": "THANKS.",
+       "do": "give",
+       "arg": "bait 5",
+       "set": "glass",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  },
  "origamifox": {
   "name": "THE NATURE MERCHANT",
   "trade": {
    "sells": [
     "net",
-    "bnet"
+    "bnet",
+    "cage",
+    "bseed",
+    "feeder",
+    "binoc",
+    "jar_s",
+    "jar_m",
+    "jar_l",
+    "kite"
+   ],
+   "buys": [
+    "butterflies",
+    "birds"
+   ],
+   "line": "Nets, jars, cages and glasses. I buy every butterfly and bird you bring me, and I teach what I know.",
+   "teaches": [
+    "ento",
+    "bird"
    ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Wings and feathers, that's my trade.",
+      "Ah, a fellow watcher of small things."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I CATCH A BIRD?",
+       "go": "birds"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "birds": {
+     "say": "Patience and seed. Scatter it, stand still, and they come to you. Take a handful, first one's free.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "do": "give",
+       "arg": "bseed 3",
+       "set": "seed",
+       "go": "",
+       "if": "!seed"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
   }
  },
  "mrblocks": {
@@ -41,22 +174,92 @@
     "sword"
    ],
    "line": "A blade for every purse. Hold P to block; catch the blow on the beat and they stagger."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "A blade for every purse.",
+     "opts": [
+      {
+       "t": "SHOW ME YOUR BLADES.",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I FIGHT?",
+       "go": "fight"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "fight": {
+     "say": "Hold P to block. Catch the blow on the beat and they stagger. Then strike.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
   }
  },
  "coatbear": {
   "name": "THE BEAR MERCHANT",
   "trade": {
    "sells": [
+    "coat_red",
+    "coat_green",
+    "coat_navy",
     "cloudcoat"
    ]
   },
   "scale": 0.5,
-  "tint": "#a86e3c",
+  "tint": "#ffffff",
   "home": [
-   -66.75,
-   49.2,
+   138,
+   -116.5,
    0
-  ]
+  ],
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Cloud coats. Light as weather.",
+      "Still cold out there, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "IS IT REALLY MADE OF CLOUDS?",
+       "go": "cloud",
+       "if": "!cloud"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "cloud": {
+     "say": "Of course. Caught them myself, on the high roofs. Wear it and you'll float a little.",
+     "set": "cloud",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
  },
  "knight": {
   "name": "THE ARMOURER",
@@ -65,6 +268,5268 @@
     "armor"
    ],
    "line": "Plate for the road. Catch me in the holodeck if you want to train."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "Plate for the road.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WILL YOU TRAIN ME?",
+       "go": "train"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "train": {
+     "say": "Find me in the holodeck, at the back of the arcade. I do not go easy.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "teddy": {
+  "tint": "#b4b8c2",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": "Oh! Hello there.",
+     "opts": [
+      {
+       "t": "WHO ARE YOU?",
+       "go": "who",
+       "if": "!met"
+      },
+      {
+       "t": "HELLO AGAIN, TEDDY.",
+       "go": "again",
+       "if": "met"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "who": {
+     "say": "Just Teddy. I sit here and watch the market go by. Nobody ever asks.",
+     "set": "met",
+     "opts": [
+      {
+       "t": "NICE TO MEET YOU.",
+       "go": ""
+      }
+     ]
+    },
+    "again": {
+     "say": "You remembered! Nobody remembers.",
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "fox": {
+  "trade": {
+   "sells": [
+    "jar_s",
+    "jar_m",
+    "jar_l"
+   ],
+   "line": "Jars by the register. A dollar is a dollar."
+  }
+ },
+ "ticketfox": {
+  "name": "THE TICKET FOX",
+  "trade": {
+   "sells": [
+    "ticket"
+   ],
+   "line": "One for the next showing? The times are on the screen behind me."
+  },
+  "scale": 1.5
+ },
+ "boardwright": {
+  "name": "THE BOARDWRIGHT",
+  "trade": {
+   "sells": [
+    "board_pine",
+    "board_moss",
+    "board_ember",
+    "board_moth",
+    "board_bone",
+    "board_teal",
+    "kart"
+   ],
+   "line": "Grown, not made. She wants to rise; you only have to stand on her."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "She wants to rise.",
+      "Back for another, {name}?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE IS THE WOOD FROM?",
+       "go": "wood"
+      },
+      {
+       "t": "WHY THE MASK?",
+       "go": "mask"
+      },
+      {
+       "t": "HOW DO I RIDE ONE?",
+       "go": "ride"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "wood": {
+     "say": "Somewhere light. It grew reaching up. It still is.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "mask": {
+     "say": "Shavings.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "ride": {
+     "say": "Hold her, click, step on. Lean where you want to go. Space to hop. Don't meet a wall fast.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "glasshorn": {
+  "name": "THE GLASS HORN"
+ },
+ "fixer": {
+  "name": "THE FIXER",
+  "trade": {
+   "sells": [
+    "tv_console",
+    "tv_small",
+    "pc_home",
+    "modem"
+   ],
+   "line": "(the little one) He fixed them. They work. Mostly.",
+   "buys": [
+    "ore"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "(the little one) He says hi. He doesn't, but he would.",
+      "(the little one) Careful, that one's live."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DOES THE MODEM DO?",
+       "go": "modem"
+      },
+      {
+       "t": "WHO'S IN THERE?",
+       "go": "who"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "modem": {
+     "say": "(the little one) Put it by a computer at home. It calls the market board. You can order things. Things come.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "who": {
+     "say": "(the little one) Rude.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "fixkid": {
+  "name": "THE LITTLE ONE"
+ },
+ "newsreel": {
+  "name": "THE NEWSREEL"
+ },
+ "scanner": {
+  "name": "THE SCANNER",
+  "trade": {
+   "sells": [
+    "radio_scanner",
+    "nv_goggles"
+   ],
+   "line": "Shh. Shh. ...Okay. What."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Shh. Shh. ...Okay. What.",
+      "You're loud. Everybody's loud."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DO YOU HEAR?",
+       "go": "hear"
+      },
+      {
+       "t": "WHY THE BOX?",
+       "go": "box"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "hear": {
+     "say": "Two from the precinct walk the street. Guards downstairs. Hold a scanner and you'll hear them too. What you do with that is your business.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "box": {
+     "say": "You hear better when you don't look.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "petty": {
+  "name": "SISTER PETTY",
+  "trade": {
+   "sells": [
+    "curse_rats",
+    "curse_cloud",
+    "curse_stink"
+   ],
+   "line": "Nothing illegal, dear. Just inconvenient."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Someone's wronged you. I can tell.",
+      "Back again. Who is it this time?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "IS IT LEGAL?",
+       "go": "legal"
+      },
+      {
+       "t": "THE GOLEMS?",
+       "go": "golem"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "legal": {
+     "say": "Annoying is legal. Ask anyone.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "golem": {
+     "say": "Big, slow, very tidy minds. Give one rats and it forgets everything else. Walk on by, dear.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "block": {
+  "name": "THE BLOCK",
+  "trade": {
+   "sells": [
+    "cube2",
+    "cube3",
+    "cube4"
+   ],
+   "line": "Every side one colour. Simple. Go on."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hold still. You'd look better in teal.",
+      "Click. Click. Click. Oh, you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I SOLVE ONE?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Drag a face to turn its row. Drag the dark to look round. Every side one colour and you're done. I'm fast. You won't be.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "balloonwitch": {
+  "name": "THE BALLOON WITCH",
+  "trade": {
+   "sells": [
+    "balloon"
+   ],
+   "line": "Up is easy. Down is the trick."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Up is easy. Down is the trick.",
+      "You again. Still walking? Tsk."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO THEY WORK?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Hold it and it lifts you. Over the fence, over the river, over anything that bites. Not over houses, dear, houses are tall. Two minutes of air, then down you go, gently.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "radish": {
+  "name": "THE RADISH",
+  "trade": {
+   "sells": [
+    "seed_star",
+    "seed_sun",
+    "seed_hum",
+    "pot",
+    "dirt",
+    "water"
+   ],
+   "line": "Fresh from far away!",
+   "buys": [
+    "mushrooms"
+   ],
+   "teaches": [
+    "forage",
+    "garden"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Fresh from far away!",
+      "Ooh, a customer. Mind the umbrella."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I GROW THEM?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "A pot, a bag of dirt, a seed, and rain. Set the pot down at home, fill it, plant it, water it. It only grows while it's wet. Eat what it gives you and you'll mend.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_goggles": {
+  "name": "OLD MOSSWICK",
+  "trade": {
+   "sells": [
+    "headlight",
+    "p_refresh",
+    "p_heal",
+    "armor"
+   ],
+   "line": "Lamps, tonics, plate. All you need for down below."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Lamps, tonics, plate. All you need for down below.",
+      "Goggles on, wick trimmed. What'll it be?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHY THE GOGGLES?",
+       "go": "why"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "why": {
+     "say": "Down there the dust gets in your eyes. Up here the sun does. Can't win.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_blueowl": {
+  "name": "THE WARDEN OF WARDS",
+  "trade": {
+   "sells": [
+    "p_heal",
+    "p_gheal",
+    "p_str",
+    "p_keen",
+    "p_cure"
+   ],
+   "line": "A tonic for every worry."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Tonics brewed under a full moon. Mostly.",
+      "A ward for every worry."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME YOUR TONICS.",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS A WARD?",
+       "go": "ward"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "ward": {
+     "say": "A promise the dark has to keep. Strength, sharp eyes, a cure for the spiders' bite.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_redpanda": {
+  "name": "RUMMAGE",
+  "trade": {
+   "sells": [
+    "bottle"
+   ],
+   "buys": [
+    "slime"
+   ],
+   "line": "Slime in a bottle? I'll take it."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Slime in a bottle? I'll take it. Don't ask what for.",
+      "Everything from down there is worth something to someone."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU BUY?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS THE SKULL FOR?",
+       "go": "skull"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "skull": {
+     "say": "He was a skeleton guard. Now he's a conversation piece.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_shaman": {
+  "name": "THORNCROWN",
+  "trade": {
+   "sells": [
+    "sword_steel",
+    "sword_ench"
+   ],
+   "line": "Steel remembers what you teach it."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Steel remembers what you teach it.",
+      "The orb hums. It likes you. Or it's hungry."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME THE BLADES.",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DOES THE ORB DO?",
+       "go": "orb"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "orb": {
+     "say": "It sings into the steel until the steel sings back. An enchanted blade bites deeper.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_shark": {
+  "name": "BROTHER FIN",
+  "trade": {
+   "sells": [
+    "p_refresh"
+   ],
+   "teaches": [
+    "fight"
+   ],
+   "line": "Breathe. Then strike."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Breathe. Then strike.",
+      "Even a shark must learn to walk."
+     ],
+     "opts": [
+      {
+       "t": "TEACH ME TO FIGHT.",
+       "do": "shop"
+      },
+      {
+       "t": "A SHARK? ON LAND?",
+       "go": "land"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "land": {
+     "say": "The lake was too small for me. The keep was not.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_panda": {
+  "name": "LITTLE BAO",
+  "trade": {
+   "sells": [
+    "sword_wood",
+    "sword"
+   ],
+   "teaches": [
+    "sword"
+   ],
+   "line": "Spar with me! Please?"
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Spar with me! Please? Nobody spars with me.",
+      "I'm going to be captain one day."
+     ],
+     "opts": [
+      {
+       "t": "TEACH ME THE SWORD.",
+       "do": "shop"
+      },
+      {
+       "t": "CAPTAIN?",
+       "go": "cap"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "cap": {
+     "say": "Captain Voss says I need to grow first. I'm growing. Slowly.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_toucan": {
+  "name": "THE HERBALIST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hurt? Come here. Hold still.",
+      "Leaf and root. It mends what the dark breaks."
+     ],
+     "opts": [
+      {
+       "t": "MEND ME ($8).",
+       "do": "heal",
+       "arg": "8",
+       "go": "mended",
+       "if": "vit:hurt cash:8"
+      },
+      {
+       "t": "WHAT IS IN THE BUNDLE?",
+       "go": "herbs"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "mended": {
+     "say": "There. Good as new. Mostly.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": ""
+      }
+     ]
+    },
+    "herbs": {
+     "say": "Things that grow in the park and nowhere else. Bring me back alive and I'll use them on you.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_beardpanda": {
+  "name": "OLD EMBER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Ash and ember, {name}. The keep pays for what you put down below.",
+      "Sit a while. Or take some work."
+     ],
+     "opts": [
+      {
+       "t": "WHAT WORK IS THERE?",
+       "go": "board",
+       "if": "!bounty:on"
+      },
+      {
+       "t": "HOW GOES MY HUNT?",
+       "go": "hunt",
+       "if": "bounty:on !bounty:done"
+      },
+      {
+       "t": "IT IS DONE.",
+       "do": "bounty",
+       "arg": "pay",
+       "go": "paid",
+       "if": "bounty:done"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "board": {
+     "say": "Pick one. The keep keeps count; I pay on the count.",
+     "opts": [
+      {
+       "t": "BURST 6 SLIMES ($30)",
+       "do": "bounty",
+       "arg": "take slimes",
+       "go": "took"
+      },
+      {
+       "t": "KILL 3 SPIDERS ($45)",
+       "do": "bounty",
+       "arg": "take spiders",
+       "go": "took"
+      },
+      {
+       "t": "PUT DOWN 2 GUARDS ($70)",
+       "do": "bounty",
+       "arg": "take guards",
+       "go": "took"
+      },
+      {
+       "t": "4 KILLS, LEVEL 3 OR DEEPER ($90)",
+       "do": "bounty",
+       "arg": "take deep",
+       "go": "took"
+      },
+      {
+       "t": "FELL THE GOLDEN ONE ($150)",
+       "do": "bounty",
+       "arg": "take gold",
+       "go": "took"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "took": {
+     "say": "Then go. The stair is that way. Come back up when it's done.",
+     "opts": [
+      {
+       "t": "I WILL.",
+       "go": ""
+      }
+     ]
+    },
+    "hunt": {
+     "say": "{bounty}.",
+     "opts": [
+      {
+       "t": "I GIVE IT UP.",
+       "do": "bounty",
+       "arg": "drop",
+       "go": "hi"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "paid": {
+     "say": "Well struck. Here, as promised.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lynx": {
+  "name": "THE ELDER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Sit, if you like. The fire's for everyone.",
+      "I have watched that stair longer than the park has had a wall."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS UNDER THE CASTLE?",
+       "go": "under"
+      },
+      {
+       "t": "WHO ARE YOU ALL?",
+       "go": "who"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "under": {
+     "say": "Halls that go down further than anyone has counted. Slime, spiders, the bones of old guards. Each level worse than the last.",
+     "opts": [
+      {
+       "t": "AND YOU KEEP IT SHUT?",
+       "go": "shut"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "shut": {
+     "say": "We keep it watched. Shut is not something a stair can be.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "who": {
+     "say": "The keep. Mice, owls, frogs, whoever comes. The park is ours to guard. Every section has its stair; this one is ours.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_caterpillar": {
+  "name": "THE BLUE ONE",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Whoooo... are you?",
+      "Ask me something. I may even answer."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS DOWN THE STAIR?",
+       "go": "a1"
+      },
+      {
+       "t": "HOW DO I LIVE LONGER DOWN THERE?",
+       "go": "a2"
+      },
+      {
+       "t": "WHERE IS THE GOLD?",
+       "go": "a3"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "a1": {
+     "say": "Deeper is darker, darker is meaner. The stairs down are always at the far end.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "a2": {
+     "say": "Webs hold. Lava burns. Spikes come up in turns: count, then step.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "a3": {
+     "say": "The golden one walks the deep halls. Fell it and Old Ember will make you rich.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_purpleowl": {
+  "name": "THE CARTOGRAPHER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Every level drawn. Every trap marked. Mostly.",
+      "Lost? No. Just not yet found."
+     ],
+     "opts": [
+      {
+       "t": "SHOW ME THE MAP.",
+       "go": "map"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "map": {
+     "say": "One hall per level, longer every time. Up stair at your back, down stair at the far end. Torches the only light.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_skullmouse": {
+  "name": "THE SCOUT",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Been down to the third. Wouldn't go further without a friend.",
+      "The spiders are thicker deeper. So are the webs."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DID YOU SEE?",
+       "go": "saw"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "saw": {
+     "say": "Three to five of them each level, never the same. Slimes up top, spiders and guards below. They notice you sooner the deeper you go.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_captain": {
+  "name": "CAPTAIN VOSS",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "The keep stands. As long as I do, it stands.",
+      "Report anything that crawls. Anything."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU NEED?",
+       "go": "need"
+      },
+      {
+       "t": "WHO RUNS THE KEEP?",
+       "go": "run"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "need": {
+     "say": "Hands. Swords. Old Ember pays bounties by the fire outside the gate.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "run": {
+     "say": "The Elder decides. I enforce. The rest of them do as they like, mostly.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_tiger": {
+  "name": "THE GEM PEDDLER",
+  "trade": {
+   "sells": [
+    "p_keen"
+   ],
+   "line": "Bring me gems. I pay fair.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Stones from every corner of the park. And under it.",
+      "Bring me gems. I pay better than the golems. Mostly."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DO GEMS COME FROM?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The golems' cave, the deep halls, the Hudson's bed. Bring me what you find.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_gemturtle": {
+  "name": "PEBBLESHELL",
+  "trade": {
+   "sells": [
+    "goggles",
+    "headlight"
+   ],
+   "line": "Rocks are just slow gems.",
+   "buys": [
+    "gems"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Rocks are just slow gems.",
+      "Seen anything sparkle? Tell me first."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lizkeeper": {
+  "name": "OLD GRISTLE",
+  "trade": {
+   "sells": [
+    "f_roast",
+    "f_fritter",
+    "f_soup",
+    "f_fishfry",
+    "f_chowder"
+   ],
+   "line": "Moss ale's fresh. Food's hot."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be? Moss ale's fresh.",
+      "Sit. Eat. Don't start anything."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT IS THIS PLACE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The Mossy Flagon. Every guard in the keep drinks here after the night watch.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_fisher": {
+  "name": "OLD WETWHISKER",
+  "trade": {
+   "sells": [
+    "bait",
+    "rod"
+   ],
+   "line": "Bait's a dollar. Patience is free.",
+   "buys": [
+    "fish"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "The lake gives. You just have to wait.",
+      "Bait's a dollar. Patience is free."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE ARE THE BIG ONES?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Out past the reeds, where the brook runs in. At dusk.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_lion": {
+  "name": "MASTER OF ARMS",
+  "trade": {
+   "sells": [
+    "sword_steel"
+   ],
+   "line": "Feet first. Then the blade.",
+   "teaches": [
+    "sword",
+    "fight"
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Feet first. Then the blade.",
+      "Again. Until you don't think."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT DO THEY PRACTISE?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Cuts on the pells, arrows at the butts. Real steel, real wood. Watch them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "gd_spirit": {
+  "name": "THE LANTERN SPIRIT",
+  "trade": {
+   "sells": [
+    "p_heal",
+    "p_cure",
+    "p_gheal"
+   ],
+   "line": "Light for the lost."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "...the dead sleep easier when I pass.",
+      "Light for the lost. Even you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "tiger": {
+  "name": "THE TIGER",
+  "trade": {
+   "sells": [
+    "jacket_denim",
+    "jacket_stud",
+    "jeans",
+    "shades"
+   ],
+   "line": "Nice. No. Let me fix that."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Nice. No. Let me fix that.",
+      "You again. Better. Not there yet."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE'S IT FROM?",
+       "go": "from"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "from": {
+     "say": "Earth makes the best clothes in the galaxy. Nobody out there knows how to fade denim. I buy it by the crate.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "soniee": {
+  "name": "SONIEE",
+  "trade": {
+   "sells": [
+    "soda_pink",
+    "soda_white",
+    "soda_teal"
+   ],
+   "line": "\"PICK ME.\" \"NO, ME.\" \"GET US OUT OF HERE.\""
+  }
+ },
+ "cactus": {
+  "name": "THE ALL-SEEING CACTUS",
+  "trade": {
+   "sells": [
+    "cactus_eye",
+    "cactus"
+   ],
+   "line": "..."
+  }
+ },
+ "bonsai": {
+  "name": "THE BONSAI",
+  "trade": {
+   "sells": [
+    "bonsai",
+    "water"
+   ],
+   "line": "Patience. And water."
+  }
+ },
+ "stump": {
+  "name": "THE STUMP",
+  "trade": {
+   "sells": [
+    "map"
+   ],
+   "line": "A map. Folded the way the roots run."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Sit. Once, before the city...",
+      "Ah. Lost again? Sit."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "TELL ME A STORY.",
+       "go": "story"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "story": {
+     "say": [
+      "Once, before the city, this was all one tree. The streets are where its roots ran. That's why they bend.",
+      "Once, a man tried to map the market without me. He's still in the park somewhere. Wave if you see him.",
+      "Once, the lake was a puddle a giant stepped in. He said sorry. Nobody heard him.",
+      "Once, the subway was a rabbit hole. The rabbits moved out when the trains came. They live under the bodega now."
+     ],
+     "opts": [
+      {
+       "t": "ANOTHER.",
+       "go": "story"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "bluehour": {
+  "name": "THE BLUE HOUR",
+  "trade": {
+   "sells": [
+    "cigar",
+    "cigar_blue"
+   ],
+   "line": "Bad day? Smoke it off."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Bad day? Smoke it off.",
+      "Evening. It's always evening somewhere."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "THE BLUE ONE?",
+       "go": "blue"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "blue": {
+     "say": "Rolled where the sky stays that colour all day. Smoke's blue too. Lasts longer.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "operator": {
+  "name": "THE OPERATOR",
+  "trade": {
+   "sells": [
+    "phone_home",
+    "phone_cell"
+   ],
+   "line": "Who are we calling? Not her. I won't."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Who are we calling? Not her. I won't.",
+      "Hold, please. ...Yes? You."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT CAN A PHONE DO?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Call any shop in the city. They'll bring it round. The big one goes in your pocket. Well. A big pocket.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "broadcast": {
+  "name": "THE BROADCAST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Wanna be someone else for a minute?",
+      "I've got a pigeon's whole morning on here. Don't ask how."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "otter": {
+  "name": "THE OTTER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Got a run if you've got legs.",
+      "Every drain in this city goes somewhere. Most go somewhere worse."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "reelkid": {
+  "name": "THE REEL KID",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "This one comes out in '94. Good ending.",
+      "Some films get made everywhere. Same film, every planet. Weird, right?"
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "bagger": {
+  "name": "THE BAGGER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Heavy? Let it walk.",
+      "My bag's been following me for years. I think it likes me."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "ghost2": {
+  "name": "THE SECONDHAND GHOST",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Oh! You can see me. How embarrassing.",
+      "I can't carry anything, you know. I just like to look."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "jellycap": {
+  "name": "THE JELLYCAP",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "...blub.",
+      "It's warm in here. You should try a bubble."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "wandercap": {
+  "name": "THE WANDERING CAP",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Soil's different up by the lake. Sweeter.",
+      "Been walking since the spores were young."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "watchmaker": {
+  "name": "THE WATCHMAKER",
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Time? I've got some. Not much.",
+      "Tick. Tock. Sorry. Habit."
+     ],
+     "opts": [
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "beekeeper": {
+  "name": "THE BEEKEEPER",
+  "trade": {
+   "sells": [
+    "bee_hive",
+    "bee_smoker",
+    "bee_veil",
+    "jar_honey"
+   ],
+   "buys": [
+    "honey"
+   ],
+   "teaches": [
+    "bee"
+   ],
+   "line": "Hives, smoke and jars. I buy honey and wax, and I'll teach you to keep them."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Slow hands, calm bees.",
+      "Mind the smoke. It's for them, not you."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I KEEP BEES?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Set a hive on the lawn where the flowers are thick. Come back in an hour or so with empty jars. Smoke them first, and wear a veil. The flowers near the hive make the honey: clover, lavender, sunflower, rose. And by night, deep in the park, once in a while... moon honey.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "hotdogman": {
+  "name": "THE CART MAN",
+  "trade": {
+   "sells": [
+    "f_skewer",
+    "f_roast",
+    "f_fritter",
+    "soda_pink",
+    "soda_white",
+    "soda_teal"
+   ],
+   "line": "Hot off the cart. Cold out of the box."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hot off the cart. Cold out of the box.",
+      "Back again, {name}? Usual?"
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S IN THE SKEWER?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Meat. Probably. It's a market, friend.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  },
+  "pf": "street-vendor-139de3",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE CART MAN, HOT DOG CART",
+   "hours": [
+    10,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  }
+ },
+ "fruitseller": {
+  "name": "THE FRUIT SELLER",
+  "trade": {
+   "sells": [
+    "fr_apple",
+    "fr_pear",
+    "fr_plum",
+    "fr_fig"
+   ],
+   "line": "Picked this morning. Somewhere."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Picked this morning. Somewhere.",
+      "Squeeze it, you bought it."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DOES IT GROW?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "The park's trees, mostly. Don't tell the squirrel.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  },
+  "pf": "shopkeeper-be5547",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE FRUIT SELLER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 0,
+   "home": "house"
+  }
+ },
+ "trader": {
+  "name": "THE TRADER",
+  "trade": {
+   "sells": [
+    "jar_s",
+    "jar_m",
+    "bottle",
+    "wax_candle",
+    "quill_pen",
+    "cigar",
+    "canvas_s",
+    "canvas_m",
+    "canvas_w",
+    "canvas_t",
+    "paper"
+   ],
+   "buys": [
+    "paintings"
+   ],
+   "line": "Odds and ends. Mostly ends."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Odds and ends. Mostly ends.",
+      "Everything here was somebody's once."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHERE DO YOU GET IT ALL?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Attics, alleys, the river at low tide. Don't ask which.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  },
+  "pf": "merchant-6f606b",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE TRADER, ODDS AND ENDS",
+   "hours": [
+    9,
+    18
+   ],
+   "r": 0,
+   "home": "house"
+  }
+ },
+ "junkman": {
+  "name": "THE JUNK DEALER",
+  "trade": {
+   "sells": [
+    "tv_small",
+    "phone_home",
+    "modem",
+    "binoc",
+    "shades"
+   ],
+   "line": "It all works. Some of it on purpose."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "It all works. Some of it on purpose.",
+      "No refunds. No questions. No warranty."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "DOES IT REALLY WORK?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Plug it in and find out. That's the fun.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  },
+  "pf": "cove-trader-0f94a6",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE JUNK DEALER",
+   "hours": [
+    10,
+    19
+   ],
+   "r": 0,
+   "home": "house"
+  }
+ },
+ "flowerlady": {
+  "name": "THE FLOWER LADY",
+  "trade": {
+   "sells": [
+    "seed_star",
+    "seed_sun",
+    "seed_hum",
+    "pot",
+    "dirt",
+    "honey_clover"
+   ],
+   "line": "Seeds, pots, a little dirt. Grow something."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Seeds, pots, a little dirt. Grow something.",
+      "Your windowsill looks lonely, {name}."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT GROWS BEST?",
+       "go": "q"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "q": {
+     "say": "Hum seeds. They grow anywhere and they sing a little.",
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  },
+  "pf": "flower-vendor-bc708b",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "THE FLOWER LADY, SEEDS AND POTS",
+   "hours": [
+    8,
+    17
+   ],
+   "r": 0,
+   "home": "house"
+  }
+ },
+ "tradesman": {
+  "pf": "tradesman-1707b9",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "TOOL STALL (NEW STALL)",
+   "hours": [
+    9,
+    17
+   ],
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE TRADESMAN"
+ },
+ "organillero": {
+  "pf": "organillero-67b687",
+  "group": "flea",
+  "job": {
+   "at": "flea",
+   "title": "BARREL-ORGAN BUSKER AT THE GATE",
+   "hours": [
+    12,
+    20
+   ],
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE ORGANILLERO"
+ },
+ "saloon_keeper": {
+  "pf": "saloon-keeper-5eed40",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "OWNER",
+   "hours": [
+    16,
+    24
+   ]
+  },
+  "name": "THE SALOON KEEPER"
+ },
+ "lounge_bartender": {
+  "pf": "lounge-bartender-9d425a",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "BARKEEP",
+   "hours": [
+    16,
+    24
+   ]
+  },
+  "name": "THE LOUNGE BARTENDER"
+ },
+ "cocktail_server": {
+  "pf": "cocktail-server-eb211b",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "SERVER",
+   "hours": [
+    17,
+    24
+   ]
+  },
+  "name": "THE COCKTAIL SERVER"
+ },
+ "lounge_crooner": {
+  "pf": "lounge-crooner-ad77ec",
+  "group": "bar",
+  "job": {
+   "at": "bar",
+   "title": "HOST",
+   "hours": [
+    20,
+    24
+   ]
+  },
+  "name": "THE LOUNGE CROONER"
+ },
+ "doorman": {
+  "pf": "doorman-3f2e09",
+  "group": "theatre",
+  "job": {
+   "at": "theatre",
+   "title": "DOORMAN, TICKETS WITH THE TICKET FOX",
+   "hours": [
+    13,
+    23
+   ]
+  },
+  "name": "THE DOORMAN"
+ },
+ "valet_attendant": {
+  "pf": "valet-attendant-c351e6",
+  "group": "theatre",
+  "job": {
+   "at": "theatre",
+   "title": "USHER",
+   "hours": [
+    13,
+    23
+   ]
+  },
+  "name": "THE VALET ATTENDANT"
+ },
+ "stage_magician": {
+  "pf": "stage-magician-2ecd48",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "HEADLINER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE STAGE MAGICIAN"
+ },
+ "showgirl": {
+  "pf": "showgirl-5bfa7a",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE SHOWGIRL"
+ },
+ "la_catrina": {
+  "pf": "la-catrina-b427ca",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "PERFORMER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE LA CATRINA"
+ },
+ "el_catr_n": {
+  "pf": "el-catr-n-be48ea",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "PERFORMER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE EL CATRÍN"
+ },
+ "skeleton_mariachi": {
+  "pf": "skeleton-mariachi-c1b4d5",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "BAND",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE SKELETON MARIACHI"
+ },
+ "china_cueca_dancer": {
+  "pf": "china-cueca-dancer-c1707a",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE CHINA, CUECA DANCER"
+ },
+ "tapati_dancer": {
+  "pf": "tapati-dancer-5557aa",
+  "group": "play",
+  "job": {
+   "at": "play",
+   "title": "DANCER",
+   "hours": [
+    18,
+    23
+   ]
+  },
+  "name": "THE TAPATI DANCER"
+ },
+ "cage_cashier": {
+  "pf": "cage-cashier-f76725",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "TELLER",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE CAGE CASHIER"
+ },
+ "front_desk_clerk": {
+  "pf": "front-desk-clerk-99f0c2",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE FRONT DESK CLERK"
+ },
+ "uniformed_floor_guard": {
+  "pf": "uniformed-floor-guard-d06c03",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "GUARD",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE UNIFORMED FLOOR GUARD"
+ },
+ "high_roller": {
+  "pf": "high-roller-9d0aa1",
+  "group": "bank",
+  "job": {
+   "at": "bank",
+   "title": "MANAGER",
+   "hours": [
+    10,
+    16
+   ]
+  },
+  "name": "THE HIGH ROLLER"
+ },
+ "professor": {
+  "pf": "professor-14dc4d",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "CURATOR",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE PROFESSOR"
+ },
+ "tour_guide": {
+  "pf": "tour-guide-1b0428",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "TOURS OF THE GALLERIES",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE TOUR GUIDE"
+ },
+ "graduate_in_gown": {
+  "pf": "graduate-in-gown-c72050",
+  "group": "art",
+  "job": {
+   "at": "art",
+   "title": "DOCENT",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE GRADUATE IN GOWN"
+ },
+ "senior_scientist": {
+  "pf": "senior-scientist-631736",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "CURATOR",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE SENIOR SCIENTIST"
+ },
+ "bench_researcher": {
+  "pf": "bench-researcher-d0f1b9",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "COLLECTIONS",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE BENCH RESEARCHER"
+ },
+ "graduate_student": {
+  "pf": "graduate-student-945ef0",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "ASSISTANT",
+   "hours": [
+    10,
+    17
+   ]
+  },
+  "name": "THE GRADUATE STUDENT"
+ },
+ "aquarium_service_technician": {
+  "pf": "aquarium-service-technician-b1fc4f",
+  "group": "museum",
+  "job": {
+   "at": "museum",
+   "title": "KEEPS THE TANKS",
+   "hours": [
+    8,
+    16
+   ]
+  },
+  "name": "THE AQUARIUM SERVICE TECHNICIAN"
+ },
+ "clean_room_technician": {
+  "pf": "clean-room-technician-da290a",
+  "group": "feel",
+  "job": {
+   "at": "feel",
+   "title": "LAB TECH",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE CLEAN-ROOM TECHNICIAN"
+ },
+ "room_attendant": {
+  "pf": "room-attendant-a5a309",
+  "group": "bath",
+  "job": {
+   "at": "bath",
+   "title": "ATTENDANT",
+   "hours": [
+    9,
+    21
+   ]
+  },
+  "name": "THE ROOM ATTENDANT"
+ },
+ "lifeguard": {
+  "pf": "lifeguard-321302",
+  "group": "bath",
+  "job": {
+   "at": "bath",
+   "title": "POOL LIFEGUARD",
+   "hours": [
+    9,
+    21
+   ]
+  },
+  "name": "THE LIFEGUARD"
+ },
+ "gas_station_attendant": {
+  "pf": "gas-station-attendant-38bd86",
+  "group": "bodega",
+  "job": {
+   "at": "bodega",
+   "title": "STOCK CLERK WITH THE FOX",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE GAS STATION ATTENDANT",
+  "trade": {"sells": ["f_bec", "f_hero", "f_chopped", "d_coffee"], "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."}
+ },
+ "motel_clerk": {
+  "pf": "motel-clerk-950c39",
+  "group": "bodega",
+  "job": {
+   "at": "bodega",
+   "title": "NIGHT COUNTER",
+   "hours": [
+    22,
+    7
+   ]
+  },
+  "name": "THE MOTEL CLERK"
+ },
+ "game_master": {
+  "pf": "game-master-2b8912",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "RUNS THE FLOOR",
+   "hours": [
+    12,
+    24
+   ]
+  },
+  "name": "THE GAME MASTER"
+ },
+ "teen_player": {
+  "pf": "teen-player-37865e",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE TEEN PLAYER"
+ },
+ "player_in_flannel": {
+  "pf": "player-in-flannel-d0bae4",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE PLAYER IN FLANNEL"
+ },
+ "player_in_a_cardigan": {
+  "pf": "player-in-a-cardigan-b558c9",
+  "group": "arcade",
+  "job": {
+   "at": "arcade",
+   "title": "REGULAR",
+   "hours": [
+    15,
+    22
+   ]
+  },
+  "name": "THE PLAYER IN A CARDIGAN"
+ },
+ "skate_shop_owner": {
+  "pf": "skate-shop-owner-137ca9",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "HELPS BEHIND THE COUNTER",
+   "hours": [
+    10,
+    19
+   ]
+  },
+  "name": "THE SKATE SHOP OWNER"
+ },
+ "street_skater": {
+  "pf": "street-skater-4ee28b",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR OUT FRONT",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE STREET SKATER"
+ },
+ "longboarder": {
+  "pf": "longboarder-0ea806",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE LONGBOARDER"
+ },
+ "vert_skater": {
+  "pf": "vert-skater-972639",
+  "group": "boards",
+  "job": {
+   "at": "boards",
+   "title": "REGULAR",
+   "hours": [
+    14,
+    20
+   ],
+   "r": 4,
+   "home": "house"
+  },
+  "name": "THE VERT SKATER"
+ },
+ "maintenance_technician": {
+  "pf": "maintenance-technician-4bcfb8",
+  "group": "fixit",
+  "job": {
+   "at": "fixit",
+   "title": "REPAIRS",
+   "hours": [
+    9,
+    18
+   ]
+  },
+  "name": "THE MAINTENANCE TECHNICIAN"
+ },
+ "village_mechanic": {
+  "pf": "village-mechanic-508a0a",
+  "group": "fixit",
+  "job": {
+   "at": "fixit",
+   "title": "MECHANIC",
+   "hours": [
+    9,
+    18
+   ]
+  },
+  "name": "THE VILLAGE MECHANIC"
+ },
+ "commuter": {
+  "pf": "commuter-381e7f",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP TO WORK",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE COMMUTER"
+ },
+ "city_commuter": {
+  "pf": "city-commuter-52a53f",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE CITY COMMUTER"
+ },
+ "salaryman_commuter": {
+  "pf": "salaryman-commuter-4170c1",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    9,
+    17
+   ],
+   "home": "house"
+  },
+  "name": "THE SALARYMAN COMMUTER"
+ },
+ "passenger": {
+  "pf": "passenger-ac425a",
+  "group": "commute",
+  "job": {
+   "at": "subway",
+   "title": "RIDES THE LOOP",
+   "hours": [
+    11,
+    15
+   ],
+   "home": "house"
+  },
+  "name": "THE PASSENGER"
+ },
+ "station_master": {
+  "pf": "station-master-1d6a0a",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "STATION MASTER",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE STATION MASTER"
+ },
+ "guard": {
+  "pf": "guard-bfa819",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "PLATFORM GUARD",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE GUARD"
+ },
+ "porter": {
+  "pf": "porter-e4e566",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "PORTER",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE PORTER"
+ },
+ "engine_driver": {
+  "pf": "engine-driver-1ba1e2",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "DRIVES THE TRAIN",
+   "hours": [
+    6,
+    24
+   ]
+  },
+  "name": "THE ENGINE DRIVER"
+ },
+ "fireman": {
+  "pf": "fireman-96bf23",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "RIDES WITH THE DRIVER",
+   "hours": [
+    6,
+    24
+   ]
+  },
+  "name": "THE FIREMAN"
+ },
+ "signalman": {
+  "pf": "signalman-c561d7",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "SIGNALS",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE SIGNALMAN"
+ },
+ "shunter": {
+  "pf": "shunter-f25d24",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "YARD",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE SHUNTER"
+ },
+ "platelayer": {
+  "pf": "platelayer-47dbe6",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "TRACK WORK",
+   "hours": [
+    22,
+    6
+   ]
+  },
+  "name": "THE PLATELAYER"
+ },
+ "crossing_keeper": {
+  "pf": "crossing-keeper-e13207",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "CROSSING",
+   "hours": [
+    6,
+    22
+   ]
+  },
+  "name": "THE CROSSING KEEPER"
+ },
+ "railway_carter": {
+  "pf": "railway-carter-971897",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "FREIGHT",
+   "hours": [
+    6,
+    14
+   ]
+  },
+  "name": "THE RAILWAY CARTER"
+ },
+ "trainspotter": {
+  "pf": "trainspotter-ffd141",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "WATCHES THE TRAINS",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE TRAINSPOTTER"
+ },
+ "waving_child": {
+  "pf": "waving-child-dfada0",
+  "group": "loop",
+  "job": {
+   "at": "subway",
+   "title": "WAVES AT TRAINS",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE WAVING CHILD"
+ },
+ "firefighter": {
+  "pf": "firefighter-b13b36",
+  "group": "firehouse",
+  "job": {
+   "at": "firehouse",
+   "title": "FIREFIGHTER",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE FIREFIGHTER"
+ },
+ "doctor": {
+  "pf": "doctor-d49de0",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "DOCTOR",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE DOCTOR"
+ },
+ "ward_nurse": {
+  "pf": "ward-nurse-84b61d",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "NURSE",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE WARD NURSE"
+ },
+ "surgeon_in_scrubs": {
+  "pf": "surgeon-in-scrubs-4f1360",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "SURGEON",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE SURGEON IN SCRUBS"
+ },
+ "paramedic": {
+  "pf": "paramedic-b0f358",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "AMBULANCE",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE PARAMEDIC"
+ },
+ "field_medic": {
+  "pf": "field-medic-fd8919",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "PARAMEDIC",
+   "hours": [
+    8,
+    20
+   ]
+  },
+  "name": "THE FIELD MEDIC"
+ },
+ "patient_in_gown": {
+  "pf": "patient-in-gown-fdab75",
+  "group": "clinic",
+  "job": {
+   "at": "clinic",
+   "title": "PATIENT (STAYS)",
+   "hours": [
+    10,
+    16
+   ],
+   "r": 3,
+   "home": "house"
+  },
+  "name": "THE PATIENT IN GOWN"
+ },
+ "police_officer": {
+  "pf": "police-officer-1cc379",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "PATROLS MARKET ST",
+   "hours": [
+    8,
+    20
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE POLICE OFFICER"
+ },
+ "highway_patrol_officer": {
+  "pf": "highway-patrol-officer-e81282",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "PATROLS THE RING",
+   "hours": [
+    8,
+    20
+   ],
+   "spot": "west",
+   "r": 30,
+   "home": "house"
+  },
+  "name": "THE HIGHWAY PATROL OFFICER"
+ },
+ "civic_security_officer": {
+  "pf": "civic-security-officer-30b6fb",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "DESK",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE CIVIC SECURITY OFFICER"
+ },
+ "squad_officer": {
+  "pf": "squad-officer-e5c52b",
+  "group": "precinct",
+  "job": {
+   "at": "precinct",
+   "title": "SERGEANT",
+   "hours": [
+    8,
+    18
+   ]
+  },
+  "name": "THE SQUAD OFFICER"
+ },
+ "delivery_courier": {
+  "pf": "delivery-courier-327e30",
+  "group": "post",
+  "job": {
+   "at": "post",
+   "title": "DELIVERS THE MAIL",
+   "hours": [
+    8,
+    16
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE DELIVERY COURIER"
+ },
+ "site_manager": {
+  "pf": "site-manager-d60b95",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "BOSS",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE SITE MANAGER"
+ },
+ "construction_worker": {
+  "pf": "construction-worker-c1ad8c",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE CONSTRUCTION WORKER"
+ },
+ "groundworker": {
+  "pf": "groundworker-083f5c",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE GROUNDWORKER"
+ },
+ "steel_erector": {
+  "pf": "steel-erector-124bef",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE STEEL ERECTOR"
+ },
+ "crane_banksman": {
+  "pf": "crane-banksman-3994e0",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE CRANE BANKSMAN"
+ },
+ "surveyor": {
+  "pf": "surveyor-82e5c7",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "STREET WORKS",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 6,
+   "home": "house"
+  },
+  "name": "THE SURVEYOR"
+ },
+ "trucker": {
+  "pf": "trucker-9266a8",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "DRIVES THE TRUCK",
+   "hours": [
+    6,
+    14
+   ]
+  },
+  "name": "THE TRUCKER"
+ },
+ "village_engineer": {
+  "pf": "village-engineer-a44949",
+  "group": "depot",
+  "job": {
+   "at": "depot",
+   "title": "ENGINEER",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE VILLAGE ENGINEER"
+ },
+ "seated_office_worker": {
+  "pf": "seated-office-worker-854671",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE SEATED OFFICE WORKER"
+ },
+ "standing_worker_on_a_call": {
+  "pf": "standing-worker-on-a-8a0f9a",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "CLERK",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE STANDING WORKER ON A CALL"
+ },
+ "visitor_with_badge": {
+  "pf": "visitor-with-badge-1005a3",
+  "group": "hall",
+  "job": {
+   "at": "hall",
+   "title": "VISITOR",
+   "hours": [
+    10,
+    16
+   ]
+  },
+  "name": "THE VISITOR WITH BADGE"
+ },
+ "park_ranger": {
+  "pf": "park-ranger-c1697e",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RANGER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE PARK RANGER"
+ },
+ "forest_ranger": {
+  "pf": "forest-ranger-6906b0",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RANGER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE FOREST RANGER"
+ },
+ "groundskeeper_university": {
+  "pf": "groundskeeper-3e5578",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GROUNDSKEEPER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE GROUNDSKEEPER"
+ },
+ "groundskeeper_stadium": {
+  "pf": "groundskeeper-71be56",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GROUNDSKEEPER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE GROUNDSKEEPER"
+ },
+ "hiker": {
+  "pf": "hiker-3d1a41",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE HIKER"
+ },
+ "hiker_visitor": {
+  "pf": "hiker-visitor-d10aa5",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE HIKER VISITOR"
+ },
+ "backpacker": {
+  "pf": "backpacker-f56207",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "WALKS THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BACKPACKER"
+ },
+ "kite_kid": {
+  "pf": "kite-kid-0a7d70",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "FLIES A KITE ON THE LAWN",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE KITE KID"
+ },
+ "neighborhood_child": {
+  "pf": "neighborhood-child-8cc5ac",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE NEIGHBORHOOD CHILD"
+ },
+ "scooter_kid": {
+  "pf": "scooter-kid-28cff9",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RIDES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SCOOTER KID"
+ },
+ "beginner_kid_skater": {
+  "pf": "beginner-kid-skater-1ad8ab",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BEGINNER KID SKATER"
+ },
+ "roller_skater": {
+  "pf": "roller-skater-841ec1",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES THE PATHS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE ROLLER SKATER"
+ },
+ "bmx_rider": {
+  "pf": "bmx-rider-91f1b0",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "RIDES",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE BMX RIDER"
+ },
+ "graffiti_artist": {
+  "pf": "graffiti-artist-2deb3d",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PAINTS WALLS AT NIGHT",
+   "hours": [
+    20,
+    2
+   ],
+   "spot": "street",
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE GRAFFITI ARTIST"
+ },
+ "skate_filmer": {
+  "pf": "skate-filmer-b9d393",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "FILMS THE SKATERS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SKATE FILMER"
+ },
+ "skate_coach": {
+  "pf": "skate-coach-53be7d",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "COACHES KIDS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE SKATE COACH"
+ },
+ "veteran_pool_skater": {
+  "pf": "veteran-pool-skater-2c63ab",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "SKATES",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VETERAN POOL SKATER"
+ },
+ "campfire_parent": {
+  "pf": "campfire-parent-b1c0d5",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PICNICS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE CAMPFIRE PARENT"
+ },
+ "kid_with_a_flashlight": {
+  "pf": "kid-with-a-flashlight-1a9e4c",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS AT DUSK",
+   "hours": [
+    17,
+    21
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE KID WITH A FLASHLIGHT"
+ },
+ "chinchinero": {
+  "pf": "chinchinero-2cc296",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "ONE-MAN BAND AT THE BANDSTAND",
+   "hours": [
+    12,
+    19
+   ],
+   "spot": "round",
+   "r": 1,
+   "home": "house"
+  },
+  "name": "THE CHINCHINERO"
+ },
+ "village_gardener": {
+  "pf": "village-gardener-9f7af6",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "GARDENER",
+   "hours": [
+    7,
+    15
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VILLAGE GARDENER"
+ },
+ "village_child": {
+  "pf": "village-child-bef09e",
+  "group": "park",
+  "job": {
+   "at": "park",
+   "title": "PLAYS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 25,
+   "home": "house"
+  },
+  "name": "THE VILLAGE CHILD"
+ },
+ "lake_angler": {
+  "pf": "lake-angler-1c4740",
+  "group": "lake",
+  "job": {
+   "at": "lake",
+   "title": "FISHES (FISHING)",
+   "hours": [
+    6,
+    12
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE LAKE ANGLER"
+ },
+ "fisherman_in_waders": {
+  "pf": "fisherman-in-waders-6dc25e",
+  "group": "lake",
+  "job": {
+   "at": "lake",
+   "title": "FISHES (FISHING)",
+   "hours": [
+    6,
+    12
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE FISHERMAN IN WADERS"
+ },
+ "armoured_knight_hero": {
+  "pf": "armoured-knight-hero-07121f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "CASTLE KEEPER",
+   "hours": [
+    9,
+    17
+   ]
+  },
+  "name": "THE ARMOURED KNIGHT HERO"
+ },
+ "village_guard": {
+  "pf": "village-guard-5f0f6f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "GATE GUARD",
+   "hours": [
+    8,
+    20
+   ],
+   "r": 3,
+   "home": "house"
+  },
+  "name": "THE VILLAGE GUARD"
+ },
+ "goblin": {
+  "pf": "goblin-2461c8",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE GOBLIN"
+ },
+ "orc_brute": {
+  "pf": "orc-brute-08c6ca",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE ORC BRUTE"
+ },
+ "hooded_cultist": {
+  "pf": "hooded-cultist-8a488f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HOODED CULTIST"
+ },
+ "shambling_ghoul": {
+  "pf": "shambling-ghoul-256f2f",
+  "group": "castle",
+  "job": {
+   "at": "castle",
+   "title": "DUNGEON",
+   "hours": [
+    21,
+    4
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SHAMBLING GHOUL"
+ },
+ "hanga_roa_fisherman": {
+  "pf": "hanga-roa-fisherman-e56812",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "FISHES OFF THE PIER",
+   "hours": [
+    6,
+    14
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HANGA ROA FISHERMAN"
+ },
+ "scuba_diver": {
+  "pf": "scuba-diver-bdd1c8",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "DIVES WITH THE SHARK",
+   "hours": [
+    10,
+    18
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SCUBA DIVER"
+ },
+ "swimmer_in_a_wetsuit": {
+  "pf": "swimmer-in-a-wetsuit-9fca8f",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "SWIMS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE SWIMMER IN A WETSUIT"
+ },
+ "holidaymaker_in_a_sun_hat": {
+  "pf": "holidaymaker-in-a-sun-2ba5e5",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "STROLLS",
+   "hours": [
+    9,
+    19
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE HOLIDAYMAKER IN A SUN HAT"
+ },
+ "naval_officer": {
+  "pf": "naval-officer-93027f",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "HARBOUR MASTER",
+   "hours": [
+    8,
+    18
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE NAVAL OFFICER"
+ },
+ "pirate_captain": {
+  "pf": "pirate-captain-91f545",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "RUNS THE HARBOUR BOAT RIDE",
+   "hours": [
+    10,
+    20
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE PIRATE CAPTAIN"
+ },
+ "pirate_deckhand": {
+  "pf": "pirate-deckhand-98a6e7",
+  "group": "hudson",
+  "job": {
+   "at": "hudson",
+   "title": "CREW",
+   "hours": [
+    10,
+    20
+   ],
+   "r": 8,
+   "home": "house"
+  },
+  "name": "THE PIRATE DECKHAND"
+ },
+ "parrilla_cook": {
+  "pf": "parrilla-cook-255918",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "GRILL STALL",
+   "hours": [
+    18,
+    2
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE PARRILLA COOK"
+ },
+ "huaso": {
+  "pf": "huaso-c4847f",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "STALL",
+   "hours": [
+    18,
+    2
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE HUASO"
+ },
+ "grandmother_in_a_rebozo": {
+  "pf": "grandmother-in-a-rebozo-4d5190",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "TAMALES STALL",
+   "hours": [
+    18,
+    24
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE GRANDMOTHER IN A REBOZO"
+ },
+ "child_with_a_painted_face": {
+  "pf": "child-with-a-painted-b8a19f",
+  "group": "night",
+  "job": {
+   "at": "flea",
+   "title": "HELPS HER",
+   "hours": [
+    18,
+    22
+   ],
+   "r": 2,
+   "home": "house"
+  },
+  "name": "THE CHILD WITH A PAINTED FACE"
+ },
+ "diner_waitress": {
+  "pf": "diner-waitress-60f6a1",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "WAITRESS",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE DINER WAITRESS",
+  "trade": {"sells": ["d_coffee", "d_shake", "d_cola", "f_eggs", "f_pancake", "f_hash", "f_burger", "f_blt", "f_grilled", "f_pie", "f_cake"], "line": "Coffee's bottomless. The pie is not."}
+ },
+ "carving_chef": {
+  "pf": "carving-chef-102bf5",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "COOK",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE CARVING CHEF"
+ },
+ "waiter": {
+  "pf": "waiter-73dab1",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "WAITER",
+   "hours": [
+    11,
+    22
+   ]
+  },
+  "name": "THE WAITER"
+ },
+ "barista": {
+  "pf": "barista-505240",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "COFFEE",
+   "hours": [
+    7,
+    15
+   ]
+  },
+  "name": "THE BARISTA"
+ },
+ "cafe_customer": {
+  "pf": "cafe-customer-ca7e8e",
+  "group": "diner",
+  "job": {
+   "at": "diner",
+   "title": "REGULAR",
+   "hours": [
+    8,
+    10
+   ]
+  },
+  "name": "THE CAFE CUSTOMER"
+ },
+ "suburban_resident": {
+  "pf": "suburban-resident-a9db9c",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "op:cups",
+   "title": "RUNS THE TEACUPS",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE SUBURBAN RESIDENT"
+ },
+ "townswoman_frontier_town": {
+  "pf": "townswoman-5aa87f",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "food:funnel",
+   "title": "THE FUNNEL CAKE STAND",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE TOWNSWOMAN"
+ },
+ "male_villager": {
+  "pf": "villager-40255c",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "op:swings",
+   "title": "RUNS THE SWING RIDE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE MALE VILLAGER"
+ },
+ "family_road_tripper": {
+  "pf": "family-road-tripper-247570",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "op:flume",
+   "title": "RUNS THE LOG FLUME",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE FAMILY ROAD-TRIPPER"
+ },
+ "slot_tourist": {
+  "pf": "slot-tourist-08b37d",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "b:pusher",
+   "title": "THE COIN PUSHER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE SLOT TOURIST"
+ },
+ "arriving_hotel_guest": {
+  "pf": "arriving-hotel-guest-b03353",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE ARRIVING HOTEL GUEST"
+ },
+ "pool_guest": {
+  "pf": "pool-guest-78b655",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE POOL GUEST"
+ },
+ "spectator": {
+  "pf": "spectator-d086fe",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SPECTATOR"
+ },
+ "school_student": {
+  "pf": "school-student-385134",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SCHOOL STUDENT"
+ },
+ "student_with_backpack": {
+  "pf": "student-with-backpack-65d2b4",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE STUDENT WITH BACKPACK"
+ },
+ "student_in_a_hoodie": {
+  "pf": "student-in-a-hoodie-7c8223",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE STUDENT IN A HOODIE"
+ },
+ "pupil_girl": {
+  "pf": "pupil-seated-597f54",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PUPIL GIRL"
+ },
+ "pupil_standing": {
+  "pf": "pupil-standing-0bd6d5",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PUPIL STANDING"
+ },
+ "school_teacher": {
+  "pf": "school-teacher-8b8bfc",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE SCHOOL TEACHER"
+ },
+ "school_caretaker": {
+  "pf": "school-caretaker-b49fae",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "op:coaster",
+   "title": "RUNS THE ROLLER COASTER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE SCHOOL CARETAKER"
+ },
+ "parent_chaperone": {
+  "pf": "parent-chaperone-79e535",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "op:carousel",
+   "title": "RUNS THE CAROUSEL",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE PARENT CHAPERONE"
+ },
+ "neighbour_handing_out_candy": {
+  "pf": "neighbour-handing-out-candy-2c1159",
+  "group": "town",
+  "job": {
+   "at": "fair",
+   "spot": "food:candy",
+   "title": "SPINS COTTON CANDY",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "house"
+  },
+  "name": "THE NEIGHBOUR HANDING OUT CANDY"
+ },
+ "preacher": {
+  "pf": "preacher-a49199",
+  "group": "town",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    8,
+    21
+   ],
+   "r": 40,
+   "home": "house"
+  },
+  "name": "THE PREACHER"
+ },
+ "bellhop": {
+  "name": "THE BELLHOP",
+  "pf": "bellhop-053c4d",
+  "group": "v-casino",
+  "job": {
+   "at": "fair",
+   "spot": "tickets",
+   "title": "SELLS FAIR TICKETS",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "casino",
+  "trade": {
+   "sells": [
+    "fairticket"
+   ],
+   "line": "Tickets for the rides and the games. A strip of five is cheaper at the booth window."
+  }
+ },
+ "blackjack_dealer": {
+  "name": "THE BLACKJACK DEALER",
+  "pf": "blackjack-dealer-fc0ab1",
+  "group": "v-casino",
+  "job": {
+   "at": "fair",
+   "spot": "b:skee",
+   "title": "THE SKEE-BALL",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "casino_security_officer": {
+  "name": "THE CASINO SECURITY OFFICER",
+  "pf": "casino-security-officer-adca27",
+  "group": "v-casino",
+  "job": {
+   "at": "fair",
+   "spot": "gate",
+   "title": "KEEPS THE FAIR GATE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "pit_boss": {
+  "name": "THE PIT BOSS",
+  "pf": "pit-boss-234a94",
+  "group": "v-casino",
+  "job": {
+   "at": "fair",
+   "spot": "prize",
+   "title": "THE PRIZE COUNTER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "poker_pro": {
+  "name": "THE POKER PRO",
+  "pf": "poker-pro-da0258",
+  "group": "v-casino",
+  "job": {
+   "at": "fair",
+   "spot": "stage3",
+   "title": "THE CARD TRICKS",
+   "hours": [
+    14,
+    21
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "casino"
+ },
+ "outlaw": {
+  "name": "THE OUTLAW",
+  "pf": "outlaw-e0fd6a",
+  "group": "v-frontier",
+  "job": {
+   "at": "fair",
+   "spot": "b:gallery",
+   "title": "THE SHOOTING GALLERY",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "prospector": {
+  "name": "THE PROSPECTOR",
+  "pf": "prospector-69a481",
+  "group": "v-frontier",
+  "job": {
+   "at": "fair",
+   "spot": "op:ship",
+   "title": "RUNS THE PIRATE SHIP",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "sheriff": {
+  "name": "THE SHERIFF",
+  "pf": "sheriff-986181",
+  "group": "v-frontier",
+  "job": {
+   "at": "fair",
+   "spot": "bumpers",
+   "title": "RUNS THE BUMPER CARS",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "frontier"
+ },
+ "ashigaru_foot_soldier": {
+  "name": "THE ASHIGARU FOOT SOLDIER",
+  "pf": "ashigaru-foot-soldier-806707",
+  "group": "v-japan",
+  "job": {
+   "at": "fair",
+   "spot": "arcade",
+   "title": "MINDS THE ARCADE TENT",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "buddhist_monk": {
+  "name": "THE BUDDHIST MONK",
+  "pf": "buddhist-monk-39f498",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "daimyo_lord": {
+  "name": "THE DAIMYO LORD",
+  "pf": "daimyo-lord-78364a",
+  "group": "v-japan",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "farmer_medieval_japan": {
+  "name": "THE FARMER",
+  "pf": "farmer-363820",
+  "group": "v-japan",
+  "job": {
+   "at": "fair",
+   "spot": "food:corndog",
+   "title": "THE CORN DOG STAND",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "samurai_warrior": {
+  "name": "THE SAMURAI WARRIOR",
+  "pf": "samurai-warrior-f2ebbe",
+  "group": "v-japan",
+  "job": {
+   "at": "fair",
+   "spot": "stage2",
+   "title": "THE SWORD ACT",
+   "hours": [
+    14,
+    21
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "townswoman_medieval_japan": {
+  "name": "THE TOWNSWOMAN",
+  "pf": "townswoman-5ca8b5",
+  "group": "v-japan",
+  "job": {
+   "at": "fair",
+   "spot": "food:lemonade",
+   "title": "THE LEMONADE STAND",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "japan"
+ },
+ "astronaut_engineer": {
+  "name": "THE ASTRONAUT ENGINEER",
+  "pf": "astronaut-engineer-20b738",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "skyS",
+   "title": "THE SKY RIDE, SOUTH END",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "astronaut_explorer": {
+  "name": "THE ASTRONAUT EXPLORER",
+  "pf": "astronaut-explorer-323482",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "fun",
+   "title": "THE FUNHOUSE DOOR",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "astronaut_scientist": {
+  "name": "THE ASTRONAUT SCIENTIST",
+  "pf": "astronaut-scientist-47d733",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "b:claw",
+   "title": "THE CLAW MACHINE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "base_commander": {
+  "name": "THE BASE COMMANDER",
+  "pf": "base-commander-0ec028",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "op:sling",
+   "title": "RUNS THE SLINGSHOT",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "service_robot": {
+  "name": "THE SERVICE ROBOT",
+  "pf": "service-robot-93f82e",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "op:drop",
+   "title": "RUNS THE DROP TOWER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "shuttle_pilot": {
+  "name": "THE SHUTTLE PILOT",
+  "pf": "shuttle-pilot-067166",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "op:scrambler",
+   "title": "RUNS THE SCRAMBLER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "aircrew_pilot": {
+  "name": "THE AIRCREW PILOT",
+  "pf": "aircrew-pilot-e6b732",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "skyN",
+   "title": "THE SKY RIDE, NORTH END",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "flight_attendant": {
+  "name": "THE FLIGHT ATTENDANT",
+  "pf": "flight-attendant-befaf4",
+  "group": "v-space",
+  "job": {
+   "at": "fair",
+   "spot": "info",
+   "title": "FAIR INFORMATION",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "space"
+ },
+ "cheerleader": {
+  "name": "THE CHEERLEADER",
+  "pf": "cheerleader-90875e",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "stage1",
+   "title": "PERFORMS ON THE FAIR STAGE",
+   "hours": [
+    14,
+    21
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "goalkeeper": {
+  "name": "THE GOALKEEPER",
+  "pf": "goalkeeper-10017a",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "b:hoops",
+   "title": "THE BASKETBALL TOSS",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "gridiron_player": {
+  "name": "THE GRIDIRON PLAYER",
+  "pf": "gridiron-player-9d4168",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "b:bottles",
+   "title": "THE MILK BOTTLES",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "outfield_player": {
+  "name": "THE OUTFIELD PLAYER",
+  "pf": "outfield-player-2b742a",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "b:rings",
+   "title": "THE RING TOSS",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "referee": {
+  "name": "THE REFEREE",
+  "pf": "referee-9e9e73",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "karts",
+   "title": "MARSHALS THE KART TRACK",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "team_mascot": {
+  "name": "THE TEAM MASCOT",
+  "pf": "team-mascot-abf426",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "mascot",
+   "title": "THE FAIR'S MASCOT",
+   "hours": [
+    11,
+    21
+   ],
+   "r": 5,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "touchline_manager": {
+  "name": "THE TOUCHLINE MANAGER",
+  "pf": "touchline-manager-13a94b",
+  "group": "v-stadium",
+  "job": {
+   "at": "fair",
+   "spot": "b:mole",
+   "title": "THE WHACK-A-MOLE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "stadium"
+ },
+ "kid_witch": {
+  "name": "THE KID WITCH",
+  "pf": "kid-witch-01c770",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_bedsheet_ghost_costume": {
+  "name": "THE KID IN A BEDSHEET GHOST COSTUME",
+  "pf": "kid-in-a-bedsheet-f9c403",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_black_cat_costume": {
+  "name": "THE KID IN A BLACK CAT COSTUME",
+  "pf": "kid-in-a-black-2e5f87",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_caped_hero_costume": {
+  "name": "THE KID IN A CAPED HERO COSTUME",
+  "pf": "kid-in-a-caped-663f11",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_cardboard_robot_costume": {
+  "name": "THE KID IN A CARDBOARD ROBOT COSTUME",
+  "pf": "kid-in-a-cardboard-670f7d",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_pumpkin_costume": {
+  "name": "THE KID IN A PUMPKIN COSTUME",
+  "pf": "kid-in-a-pumpkin-169f79",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "kid_in_a_skeleton_suit": {
+  "name": "THE KID IN A SKELETON SUIT",
+  "pf": "kid-in-a-skeleton-6bb49d",
+  "group": "v-halloween",
+  "job": {
+   "at": "street",
+   "title": "",
+   "hours": [
+    9,
+    20
+   ],
+   "r": 40,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "teen_zombie": {
+  "name": "THE TEEN ZOMBIE",
+  "pf": "teen-zombie-b5bb27",
+  "group": "v-halloween",
+  "job": {
+   "at": "fair",
+   "spot": "op:dark",
+   "title": "RUNS THE HAUNTED RIDE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "pumpkin_stand_keeper": {
+  "name": "THE PUMPKIN STAND KEEPER",
+  "pf": "pumpkin-stand-keeper-77ced9",
+  "group": "v-halloween",
+  "job": {
+   "at": "fair",
+   "spot": "food:popcorn",
+   "title": "THE POPCORN STAND",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "halloween"
+ },
+ "skier": {
+  "name": "THE SKIER",
+  "pf": "skier-e7ad44",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "op:rail",
+   "title": "DRIVES THE MINIATURE RAILWAY",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "mountaineer": {
+  "name": "THE MOUNTAINEER",
+  "pf": "mountaineer-13df29",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "b:striker",
+   "title": "THE HIGH STRIKER",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "lift_operator": {
+  "name": "THE LIFT OPERATOR",
+  "pf": "lift-operator-899cf8",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "op:wheel",
+   "title": "RUNS THE FERRIS WHEEL",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "piste_patroller": {
+  "name": "THE PISTE PATROLLER",
+  "pf": "piste-patroller-cef4c2",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "b:darts",
+   "title": "THE BALLOON DARTS",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "farmer_cozy_farm": {
+  "name": "THE FARMER",
+  "pf": "farmer-304a43",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "b:ducks",
+   "title": "THE DUCK POND",
+   "hours": [
+    11,
+    22
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "infantry_rifleman": {
+  "name": "THE INFANTRY RIFLEMAN",
+  "pf": "infantry-rifleman-c1c0a5",
+  "group": "v-mountain",
+  "job": {
+   "at": "fair",
+   "spot": "b:water",
+   "title": "THE WATER-GUN RACE",
+   "hours": [
+    11,
+    23
+   ],
+   "r": 0,
+   "home": "subway"
+  },
+  "visit": "mountain"
+ },
+ "skateshop": {
+  "name": "THE SKATE SHOP OWNER",
+  "trade": {
+   "sells": [
+    "skateboard"
+   ],
+   "line": "Wood, wheels, bearings. Nothing that floats."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Need a board?",
+      "Back for another, {name}?"
+     ],
+     "opts": [
+      {"t": "WHAT DO YOU SELL?", "do": "shop"},
+      {"t": "HOW DO I RIDE ONE?", "go": "ride"},
+      {"t": "GOODBYE.", "go": ""}
+     ]
+    },
+    "ride": {
+     "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
+     "opts": [
+      {"t": "BACK.", "go": "hi"}
+     ]
+    }
+   }
+  }
+ },
+ "w_badger": {
+  "name": "THE BADGER",
+  "folk": {
+   "sp": "badger",
+   "m": 1.05,
+   "f": "#55555a",
+   "f2": "#ece8e2",
+   "coat": "tunic",
+   "cc": "#6a2a1e"
+  },
+  "job": {
+   "at": "bar",
+   "title": "TAPS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "d_ale",
+    "d_stout",
+    "d_cola"
+   ],
+   "line": "Ale, stout, or the cola. I don't do cocktails. I don't do umbrellas."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be?",
+      "Keep it down, the octopus is counting."
+     ],
+     "opts": [
+      {
+       "t": "WHAT'S ON TAP?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW LONG HAVE YOU WORKED HERE?",
+       "go": "long"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "long": {
+     "say": "Since before the stairs. I dug them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_tokenbot": {
+  "name": "TOKEN",
+  "job": {
+   "at": "arcade",
+   "title": "PRIZES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "BEEP. TICKETS IN, PRIZES OUT.",
+      "WIN AT SKEE-BALL. BRING ME TICKETS. BEEP."
+     ],
+     "opts": [
+      {
+       "t": "WHAT CAN I GET?",
+       "go": "what"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "what": {
+     "say": "A RING IS 4 TICKETS. A YO-YO IS 8. THE BEAR IS 20. DOUBLE-CLICK THE COUNTER.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_raccoon": {
+  "name": "THE RACCOON",
+  "folk": {
+   "sp": "raccoon",
+   "m": 0.95,
+   "f": "#6e6e74",
+   "f2": "#e8e4dc",
+   "coat": "tunic",
+   "cc": "#a81c28"
+  },
+  "job": {
+   "at": "theatre",
+   "title": "CONCESSIONS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "f_popcorn",
+    "f_nachos",
+    "f_candybox",
+    "d_cola"
+   ],
+   "line": "Popcorn's fresh. Nachos are... warm. Don't feed the screen."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Snacks for the show?",
+      "Butter on that? There's always butter."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S PLAYING?",
+       "go": "now"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "now": {
+     "say": "Whatever's on the board behind the fox. I only see the backs of heads.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_owl": {
+  "name": "THE OWL",
+  "folk": {
+   "sp": "owl",
+   "m": 0.9,
+   "f": "#7a6248",
+   "f2": "#e8dcc4",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "GUARD",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hoo goes there? Oh. A visitor.",
+      "No flash. No touching. No climbing the mammoth."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS THERE TO DO HERE?",
+       "go": "do"
+      },
+      {
+       "t": "DO YOU EVER SLEEP?",
+       "go": "sleep"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "do": {
+     "say": "Read the plaques. Then the curator at the desk will quiz you, a dollar a right answer. The fish tank's in the Earth gallery; bring fish food.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "sleep": {
+     "say": "In the day, with one eye open. The meteorite has tried to leave twice.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_pangolin": {
+  "name": "THE PANGOLIN",
+  "folk": {
+   "sp": "pangolin",
+   "m": 0.9,
+   "f": "#8a7050",
+   "f2": "#d8c8a8",
+   "coat": "tunic",
+   "cc": "#3a6a4a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "KEEPER",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "mus_postcard",
+    "mus_plush",
+    "mus_replica",
+    "mus_guidebook"
+   ],
+   "line": "Every sale keeps the mammoth dusted."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Something to remember us by?",
+      "The plush mammoth is very soft. Softer than the real one."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
   }
  }
 }

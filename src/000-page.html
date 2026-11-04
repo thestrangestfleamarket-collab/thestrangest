@@ -1,37 +1,19 @@
+<!doctype html>
 <meta charset="utf-8">
 <title>The Market</title>
 <meta name="market-build" content="__BUILDV__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Silkscreen&display=swap">
 <style>
 :root{ --bg:#0d0f14; --panel:rgba(16,18,26,.82); --fg:#ece5d3; --dim:#9b9584; --key:#f2c14e; --line:#2a2e3a; --pixel:'Silkscreen',ui-monospace,Menlo,monospace; color-scheme:dark }
 html,body{height:100%;margin:0;background:var(--bg);overflow:hidden}
 #stage{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
 #stage canvas{position:absolute;display:block;cursor:crosshair}
-#hud{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));font:12px/1.7 var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:10px 12px;max-width:calc(100vw - 48px);user-select:none}
-#hud h1{font:inherit;font-size:14px;margin:0 0 6px;color:var(--key);letter-spacing:.04em}
-#hud div{white-space:nowrap}
-#hud b{color:var(--key);font-weight:400}
-#hud .dim{color:var(--dim)}
-#shd{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;align-items:center;font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:8px 10px}
-#shd .k{margin-right:6px}#shd button{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 9px;cursor:pointer}#shd button[aria-pressed="true"]{color:var(--key);border-color:#6b6f80}
 #stat{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--dim);background:var(--panel);border:2px solid var(--line);padding:6px 10px;font-variant-numeric:tabular-nums}
 </style>
 
 <div id="stage"></div>
 <div id="loading" style="position:fixed;inset:0;display:grid;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:50"></div>
-<div id="hud" hidden>
-  <h1>THE MARKET</h1>
-  <div><b>WASD</b> / arrows walk · <b>Shift</b> run</div>
-  <div><b>Double-click</b> a thing to go to it and use it</div>
-  <div><b>Drag</b> move the map (look round in the close views) · <b>Right-drag</b> (or <b>Shift</b> + drag), <b>Q</b> / <b>E</b>, <b>Z</b> / <b>X</b> turn and tilt · <b>0</b> back on him</div>
-  <div><b>C</b> free camera · <b>G</b> fly through walls (<b>Space</b> up, <b>Shift</b> down)</div>
-  <div><b>Wheel</b> zoom · <b>0</b> reset the view</div>
-  <div>The bodega, Ghost Street, the apartment house and the subway · jump into the Hudson to swim · <b>Space</b> (held) under</div>
-  <div><b>Space</b> jump · <b>J</b> punch · <b>K</b> kick · <b>R</b> roll · <b>B</b> wave · <b>V</b> change the view · <b>F</b> fall</div>
-  <div class="dim"><b>Esc</b> menu: map, display, keys · <b>H</b> hide this</div>
-</div>
 <div id="stat" hidden>--</div>
-<div id="shd" hidden><span class="k">SHADOWS</span><button type="button" data-s="on">ON</button><button type="button" data-l="1">SHADED</button><button type="button" data-l="2">SELF</button><button type="button" data-l="3">FULL</button></div>
 
 <script>

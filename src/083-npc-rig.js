@@ -11,7 +11,7 @@ const RIGNPC={};
       B.userData.rest=B.position.clone(); by[n]=B; bones.push(B); }
     bones[0].updateMatrixWorld(true); const skeleton=new THREE.Skeleton(bones);
     let n=0, P, C, R, SI, SW, ranges={}, top=0;
-    if(def.mesh){ const m=def.mesh; n=m.P.length/3; P=m.P; C=m.C; SI=m.SI; SW=m.SW; R=new Float32Array(n); def.parts=[{name:'body',rank:0}]; ranges.body={start:0,count:n}; for(let i=0;i<n;i++)top=Math.max(top,P[i*3+1]); }
+    if(def.mesh){ const m=def.mesh; n=m.P.length/3; P=m.P; C=m.C; SI=m.SI; SW=m.SW; R=new Float32Array(n); const L=m.parts||[['body',0,n]]; def.parts=L.map(q=>({name:q[0],rank:q[3]||0})); L.forEach((q,k)=>{ ranges[q[0]]={start:q[1],count:q[2]}; R.fill(k,q[1],q[1]+q[2]); }); for(let i=0;i<n;i++)top=Math.max(top,P[i*3+1]); }
     else{ for(const p of def.parts)for(const s of p.of)n+=s.P.length/3;
       P=new Float32Array(n*3); C=new Float32Array(n*3); R=new Float32Array(n); SI=new Uint16Array(n*4); SW=new Float32Array(n*4); let at=0;
     def.parts.forEach((p,pi)=>{ const start=at, bi=bones.indexOf(by[p.bone]); for(const s of p.of){ P.set(s.P,at*3); C.set(s.C,at*3); at+=s.P.length/3; }
@@ -48,29 +48,37 @@ const RIGNPC={};
       const g2=new THREE.BufferGeometry(); g2.setAttribute('position',new THREE.Float32BufferAttribute(P2,3)); g2.setAttribute('color',new THREE.Float32BufferAttribute(C2,4)); g2.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(S2,4)); g2.setAttribute('skinWeight',new THREE.Float32BufferAttribute(W2,4));
       const gm=new THREE.SkinnedMesh(g2,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,side:THREE.DoubleSide})); gm.frustumCulled=false; N.me.parent.add(gm); gm.bind(skeleton,N.me.bindMatrix); N.glass=gm; N.tris+=P2.length/9; }
     const p0=N.push; let bumped=false; N.push=p=>{ const d=Math.hypot(p.x-N.st.x,p.z-N.st.z); if(d<N.st.R+.3){ if(!bumped){ bumped=true; for(const q of SP){ q.vx+=(Math.random()-.5)*6; q.vz+=(Math.random()-.5)*6; } } } else if(d>N.st.R+.45)bumped=false; p0(p); };
-    const base=Float32Array.from(P), baseC=Float32Array.from(C);
+    let base=Float32Array.from(P), baseC=Float32Array.from(C);
     N.reshape=(name,{scale=[1,1,1],move=[0,0,0]}={})=>{ '@later'; const r=ranges[name]; if(!r)return; const A=geo.attributes.position.array; let cx=0, cy=0, cz=0;
       for(let i=r.start;i<r.start+r.count;i++){ cx+=base[i*3]; cy+=base[i*3+1]; cz+=base[i*3+2]; } cx/=r.count; cy/=r.count; cz/=r.count;
       for(let i=r.start;i<r.start+r.count;i++){ A[i*3]=cx+(base[i*3]-cx)*scale[0]+move[0]; A[i*3+1]=cy+(base[i*3+1]-cy)*scale[1]+move[1]; A[i*3+2]=cz+(base[i*3+2]-cz)*scale[2]+move[2]; }
       geo.attributes.position.needsUpdate=true; N.renorm(); };
     N.recolour=(name,col)=>{ const r=ranges[name]; if(!r)return; const A=geo.attributes.color.array; for(let i=r.start;i<r.start+r.count;i++)for(let j=0;j<3;j++)A[i*3+j]=col?col[j]:baseC[i*3+j]; geo.attributes.color.needsUpdate=true; };
+    if(N.pack(ranges)){ base=Float32Array.from(geo.attributes.position.array); baseC=Float32Array.from(geo.attributes.color.array); }   // weld the body's duplicate vertices from building it in parts (a baked .glb mesh is already indexed, so pack no-ops)
     return N; };
-  RIGNPC.walk=(c,{legs=['legL','legR'],arms=['armL','armR'],body='hips',leg=.5,arm=.45,bob=.025,rock=.04}={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
-    if(c.sheet){ if(arms[0])B[arms[0]].rotation.z=-1.25; if(arms[1])B[arms[1]].rotation.z=1.25; if(legs[0]){ B[legs[0]].rotation.z=-.22; B[legs[1]].rotation.z=.22; } return; }
-    if(legs[0]){ B[legs[0]].rotation.x=-sw*leg; B[legs[1]].rotation.x=sw*leg; }
-    if(arms[0]){ B[arms[0]].rotation.x=sw*arm; B[arms[1]].rotation.x=-sw*arm; B[arms[0]].rotation.z=-.08; B[arms[1]].rotation.z=.08; }
-    B[body].position.y+=Math.abs(Math.cos(ph))*bob*m; B[body].rotation.z=Math.sin(ph)*rock*m; B[body].rotation.y=sw*.06;
+  // the walk: legs swing, arms counter-swing with a bent elbow (where a fore bone exists), hips sway and twist, chest counter-rotates. every joint drive is guarded so a body lacking it is unchanged.
+  RIGNPC.walk=(c,{legs=['legL','legR'],arms=['armL','armR'],body='hips',leg=.5,arm=.45,bob=.025,rock=.04,twist=.05,bend=1,energy=1.45}={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, E=energy, sw=Math.sin(ph)*m;
+    if(c.sheet){ for(const [s,k,n] of [['L',1,arms[0]],['R',-1,arms[1]]]){ const a=B[n]; if(a)a.rotation.set(-.1,0,-1.2*k); const f=B['fore'+s]; if(f)f.rotation.set(-.35,0,0); }
+      if(legs[0]&&B[legs[0]]){ B[legs[0]].rotation.set(0,0,-.22); B[legs[1]].rotation.set(0,0,.22); } return; }
+    if(legs[0]&&B[legs[0]]){ B[legs[0]].rotation.x=-sw*leg*E; B[legs[1]].rotation.x=sw*leg*E; }
+    for(const [s,k,n] of [['L',1,arms[0]],['R',-1,arms[1]]]){ const a=B[n]; if(!a)continue; const asw=sw*k, f=B['fore'+s];
+      a.rotation.z=-.1*k; a.rotation.x=f?asw*arm*E-.1*bend:asw*arm*E;
+      if(f){ f.rotation.x=-(.38+Math.max(0,asw)*.85)*bend*(.5+.5*m)-.3*bend*(1-m); f.rotation.z=-.04*k; } }
+    B[body].position.y+=Math.abs(Math.cos(ph))*bob*1.9*m; B[body].rotation.z=Math.sin(ph)*rock*1.3*m; B[body].rotation.y=sw*twist*1.25;
+    if(B.chest)B.chest.rotation.y=-sw*twist*1.6; if(B.head)B.head.rotation.y=(c.look||0)+sw*twist*.6;
     if(m<1)B[body].position.y+=Math.sin(c.t*1.7)*.003*(1-m); };
   const pts=M=>{ const q=new Int16Array(B64(M.p).buffer), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3]; return P; };
   RIGNPC.glb=D=>{ const c=B64(D.c), C=new Float32Array(c.length); for(let i=0;i<c.length;i++)C[i]=c[i]/255; const w=B64(D.w), SW=new Float32Array(w.length); for(let i=0;i<w.length;i++)SW[i]=w[i]/255;
-    return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
+    return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW,parts:D.parts}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
+  // the jointed walk: the walk plus a knee that lifts in swing, a foot that rolls off and plants, and an elbow that keeps a rest flex (for rigs whose arm bones are named elbow, not fore).
   RIGNPC.limbs=(c,o={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
     RIGNPC.walk(c,Object.assign({body:'hips'},o));
     if(c.sheet)return;
-    for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s];
-      if(kn)kn.rotation.x=Math.max(0,Math.sin(ph+(k>0?0:Math.PI)+.9))*.75*m; if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45;
-      if(el)el.rotation.x=-.18-Math.max(0,-sw*k)*.35; }
-    if(B.chest)B.chest.rotation.y=-sw*.08; if(B.head)B.head.rotation.y=c.look; };
+    for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s], p=ph+(k>0?0:Math.PI);
+      if(kn)kn.rotation.x=Math.max(0,Math.sin(p+.9))*1.05*m;
+      if(ft&&kn)ft.rotation.x=-kn.rotation.x*.45+Math.max(0,-Math.sin(p))*.2*m;
+      if(el)el.rotation.x=-.2-Math.max(0,-sw*k)*.55-.15*(1-m); }
+    if(B.chest)B.chest.rotation.y=-sw*.11; if(B.head)B.head.rotation.y=c.look; };
   RIGNPC.hold=i=>QS.get('toonhold')?{brain:(dt,you,st)=>{ const cx=SHARED.cam.position.x-you.x, cz=SHARED.cam.position.z-you.z, d=Math.hypot(cx,cz)||1, k=(i-2)*1.25*TILE;
     st.to=null; st.hold=true; st.x=you.x-cz/d*k; st.z=you.z+cx/d*k; st.face={x:SHARED.cam.position.x,z:SHARED.cam.position.z}; }}:{}; }
 export {RIGNPC};

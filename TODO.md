@@ -149,6 +149,23 @@ starting: a newer owner decision wins over a line here.
 - [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
   street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
   Scanner's was pictured).
+- [ ] **Who stands on Market St, and why** (owner, 4 Nov 2026: "list all the characters and why im seeing each one on the street"; he has
+  not said yes to fixing these). The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at work" (`CREW.spot` in
+  `src/111fb-fleamarket.js`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`), so they walk main street.
+  All seven visitor groups (43) come every day: ask him whether they should take turns.
+- [ ] **The castle at night** (owner's pick after the move, 2 Nov 2026): at the night gate it still looked dark. Ask him whether the torches
+  should be brighter, and whether the new spot, path and drawbridge height are right.
+- [ ] **THE GREENS: his answers** to `docs/holodeck/golf.md` §12 "Open for the owner" (the name; the screen swing: power bar or a mouse
+  swing like the sword; multiplayer next or more holes; and the rest there).
+- [ ] **The jeans in play** (#495): live, waiting for the owner's look and yes.
+- [ ] **The fair's fence** (4 Nov 2026, #570): its runs took their corners in the wrong order, so its posts, rails and walls stood in the wrong
+  places and one wall shoved you off the start of Market St. Now it stands where the lot is drawn; the owner hasn't seen it yet.
+- [ ] **The referee's habits** (4 Nov 2026, the merge of #567 and #570): the fair made the referee its kart-track marshal (drink, fish,
+  gamble); the interiors gave 56 people a "movies" habit, the referee among them. Check `data/lives.json` for what landed and ask the owner.
+- [ ] **`docs/MAP.md` conflicts on nearly every merge** (it is written by the build). Ask the owner whether to stop keeping it in git and
+  let the build and CI make it.
+- [ ] **The build check's 240-minute limit** was hit on 4 Nov (#526 cancelled; on #567, #568 and #570 the catacomb run and the headset check
+  hung for hours until #573 fixed ESC). Ask the owner whether to raise it or split the long checks into their own job.
 - [ ] **VR: try it on the Quest 3; the owner to approve** (owner, 27 Oct 2026: "make sure that the controls in game match the quest 3
   controllers, also add hand tracking in game so i can use my hands to use the menus"). Only tested on an emulated Quest 3 (`tests/vr.cjs`,
   IWER). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the hands look. `src/162c-vr.js`.
@@ -178,3 +195,79 @@ starting: a newer owner decision wins over a line here.
   `tests/sheet.cjs` also crashes on `hud`/`stat`, which no longer exist as globals. Every new character's look-over goes through it.
 - [ ] **The cinema's video titles**: YouTube refuses `youtube.com/oembed` from CI since 2 Nov 2026 (`src/059f-cinema.js:201`); the places
   check now ignores other sites' refusals, but whether players still get titles is unknown.
+- [ ] **The cars, in game, for the owner** (3 Nov; only seen in test pictures so far): the insides (too dark or bright? seats, belts, dash up
+  close), the cars 40% bigger next to the buildings, the driver a little smaller in the muscle car and wedge coupe, and the radio by ear
+  (loudness, the muffle outside the car, the four stations).
+- [ ] **Cars parked before they got bigger** (3 Nov): a car a player parked keeps its spot in the block's world (`car:<id>`); at the new size it
+  may touch the kerb or another car, and Rapier shoves it onto the pavement. Fix: clear the saved `car:*` spots once on the server (ask the
+  owner first), so they start from `data/world.json`'s new spots.
+- [ ] **`tests/cars.cjs` flaky under load** (3 Nov): run beside another check, the muscle car got shoved sideways and "W drives it" failed;
+  alone it passes every time. Physics at a low frame rate; make the check (or VEH's start) robust to slow frames.
+- [ ] **The radio on the live site** (3 Nov): the stations (`/g/<station>.<hash>.mp3`, with Range) have only been streamed by the pull
+  request's checks; play one on thestrangestfleamarket.com and check it starts at the shared moment.
+- [ ] **The park's edge ring and the rows past the north wall are still the old tree kinds** (left from the elms work, HISTORY 2 Nov "the Mall's
+  elms"; owner, 4 Nov 2026: "add these to TODO.md"). Only the park's inner trees and the entrance rows became elms; the ring (`row(...)` in
+  `src/061-park.js`, kinds `TK`, baked low so it hides the wall from outside) and `TREES.back` kept the pack's oaks, elders, giant, spruce and
+  willow. Ask the owner whether "shaped exactly the same" includes them; if so, give them elm summaries at the ring's height and check from
+  Market St that the wall still hides.
+- [ ] **Isometric view under the entrance canopy** (same work): you see the ground only in the peek disc round you; beyond it the underside of
+  the leaves (`PEEK` in `src/008-batch.js`, leaf meshes marked 4). Options for the owner: leave it, or hide every crown whose footprint covers
+  you in the iso and map views (`PARK.lod` in `src/061-park.js` can set a tree's batch instance invisible; the trunk would go with it unless
+  the cards and limbs are split into two batches).
+- [ ] **The build check on GitHub** (seen 2 Nov on #492): `tests/fishing.cjs` fails at random on the runner in two steps (the rod tip above
+  his head, "pulling against the run tires the fish faster"), and when the VR and brawl checks are selected too the `build-check` job runs past
+  its `timeout-minutes: 60` in `.github/workflows/site.yml` (the VR check alone took 40 min) and is cancelled. Either steady those two steps
+  (wait for the pose/the fight to settle) and raise the limit, or split the long checks into their own job.
+- [ ] **#501 (THE CATACOMB RUN in VR) was merged on a red build check** (2 Nov, 16:03 UTC, two minutes before the merge). Nobody has read
+  that log; do so before touching the catacomb run or VR, and fix what it names.
+
+- [ ] **Server-side money** (from the 1 Nov review, its #1; owner: add to TODO, 4 Nov 2026). Cash is a client-held opaque string in
+  `/owned`, so any logged-in player can set their balance and the server never notices — and shops + the apartment BBS now spend it. Fix:
+  a `buy`/`sell` ledger in a Durable Object, priced from `data/items.json` (already in the worker's `dist/`); `/owned` stops taking a cash
+  field; migrate each player's current cash once. Touches `worker/door.js` and the few client spend sites. **Owner decides first**: which DO
+  and how to migrate live balances. (`docs/REVIEW-2026-11-01.md` §B6.)
+- [ ] **Login cookie HttpOnly** (1 Nov review §B8). `src/door/door.html` sets the Supabase token as a JS-readable cookie (`document.cookie`),
+  so any script on the page (an XSS) can lift the session. Fix: the worker sets it `HttpOnly` on `/enter` instead of door.html's JS. Live
+  auth — test login on the site before merge.
+- [ ] **Shard the global `Home` Durable Object** (fresh audit, 2 Nov 2026). `homeOf` is one DO named `homes` that holds every player's owned
+  state, apartment and passport — one single-threaded object for the whole game (a bottleneck and a single point of failure, against "build
+  for many, cheap per player"). Fix: a DO per player (`idFromName(id)`) plus a small passport-counter DO; migrate live data. Do it before
+  access widens; the migration is the risk.
+- [ ] **Self-host the CDN libs** (1 Nov review §B8, supply chain). `@supabase/supabase-js`, `partysocket` and `html-to-image` load from
+  jsdelivr via dynamic `import()`, where integrity hashes don't apply, so a bad CDN response runs on a logged-in page. Fix: bundle and serve
+  them from the site (not three.js — that's deliberately CDN). Needs a build step (the `+esm` bundles chain-import more CDN modules).
+- [ ] **Commit the Supabase RLS SQL** (1 Nov review §B9). `players`, `admins`, `invite_codes`, `bug_reports` and their row-level security live
+  only in the dashboard, so they can't be reviewed or rebuilt from the repo. Add them under `supabase/` beside `apartments.sql` / `cinema.sql`.
+  Needs the owner to paste the current policies, or to review drafted ones before applying.
+- [ ] **Painting: a way to take a painting down** (from #564, 4 Nov 2026). The owner's TENANTS panel can't hide or remove a player's painting
+  (an offensive one). Needs an ART tab in `src/136c-tenants.js` and an owner-only call in `worker/door.js` (the `art` table in `Home`).
+- [ ] **Trade: the server trusts each game's offer** (#564). The block's server doesn't check a player has the items or cash they put in
+  (`trade()` in `worker/door.js`); each game applies the swap itself (`src/159i-trade.js`). Same trust as the rest of the economy today.
+- [ ] **Trade: photos can't be traded** (#564). A photo's picture lives in its owner's own save (`OWNED 'photos'`), so the other player
+  would get an empty item; they're kept out (`SWAP.no`). Moving photos to the `/art` store would let them go.
+- [ ] **Paintings in the item editor**: each painting shows as its own entry there; editing one does nothing (the class `painting` sets
+  them all, `ITEMS.cls` in `src/140b-items.js`). Hide `pt_`/`wip_` ids from its list.
+- [ ] **A painting sold to THE TRADER leaves its title and thumbnail in your save** (`OWNED 'paint'`, a few KB each; nothing shows).
+  Drop them when the pack no longer has it and it isn't hung.
+- [ ] **The easel mockup is out of date** (`mockups/easel.html`, https://claude.ai/artifact/MzbB331ZcnwQf6P2H6b92P): it shows the easel
+  game with skills and dealers the owner turned down ("not an easel subgame"). Update it to the painter as built, or leave it.
+- [ ] **The painter, not yet tried for real**: pinch to zoom and pen pressure (never on a phone, tablet or pen), in VR (never), and the
+  easel showing your latest unfinished painting (never pictured).
+- [ ] **Mesh2Motion moves: the owner to try them live and approve** (#557, #561, 4 Nov 2026; owner: "everything else in game that is needed to
+  do like using a net, fishing, sitting, etc.", emotes, work moves, fight moves). Not seen in a picture in the game (only fit numbers, stick
+  figures and the checks): H emotes, L kick / O dodge, eating, crafting, planting, mining, sitting down, the fishing cast and pull, the
+  sword or net body swing, the dragons' fire breath and naps, the dungeon spiders, the park dogs, foxes, wolves and horses resting.
+- [ ] **Bow draw and shoot** (Mesh2Motion's `bow-pull`, `bow-pull-hold`, `bow-release`; owner picked fight moves incl. "bow draw and shoot",
+  4 Nov 2026): waits for a bow in the game. Fit with `tools/m2m-moves.cjs` (add to `tools/m2m-moves.json`), play through `MOTION`.
+- [ ] **Standing up from a seat** (Mesh2Motion's `sitting-exit`): `stand()` in `src/100-use.js` puts you off the seat at once, so the clip
+  would start in the air. Needs the stand-up to play first, then move you off.
+- [ ] **Fishing from the rowboat has no body move**: the rod and arm are hidden while seated (`free()` in `src/146a-wield.js`), so no cast or pull.
+- [ ] **Birds glide** (Mesh2Motion's `bird` rig: flap, glide): the crows and owls (`data/fauna.json`, 46 / 21 bones with feathers) need
+  their own map in `tools/m2m-bake.cjs`. Ask the owner first.
+- [ ] **More park animals rest** (owner's "Yes, idle variety", 4 Nov 2026; done: dog, fox, wolf, horse, wild horse, mule): the cat, black cat,
+  deer, cow, pig, lion, zebra and others share the fox's 26-bone rig (`fox` entry in `tools/m2m-bake.cjs`, `rest:` in `src/087-npc-creatures.js`).
+  Mesh2Motion's shark, kaiju and snake clips are unused too.
+- [ ] **The dragons' unused clips** (`data/full/dragon.json`): Land (in place of the hover at a perch), Roar, Walk. Glide stays unused (owner,
+  28 Oct: always flapping). Ask the owner which he wants.
+- [ ] **More of Mesh2Motion's 222 human clips** (`tools/m2m-human.cjs` reads them all): ladder and wall climbing in place of `climbPose`,
+  crouch-walk, sword combos, ground pound, death falls. Wood chopping, digging and lying in bed have no action in the game yet. Ask the owner.

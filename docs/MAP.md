@@ -360,7 +360,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `159i-trade.js` | 8.9 | top level |  | 003b: FORAGE INV ONLINE TEXT; 003d: SAY; 159h: PAINTINGS |
 | `160-mail.js` | 28.8 | top level |  | 003: SHARED THREE; 003b: CITY CIVIC CLOCK MAIL PARK UI; 005: OWNED; 006: FIX MAPG MODS QS RING SOL STORE SYS TILE; 159: JOBS |
 | `161-perf.js` | 11.5 | top level |  | 003: SHARED THREE; 003b: DRM ED LITE MAPED MUS NPCS PERFX PNM ROOMS SELFSH SGM UI VIS W3 WINDOWS pos; 004: scene; 006: BF FREE QS STORE SYS TILE; 008: OBJS; 009: WATER |
-| `161a-cull.js` | 9.1 | top level |  | 003: SHARED THREE; 003b: CULL ED FAR3 MAPED ROOMS UI pos; 004: renderer scene; 005: SAVE; 006: QS SYS TILE; 134e: DFOG |
+| `161a-cull.js` | 12.3 | top level |  | 003: SHARED THREE; 003b: CULL ED FAR3 MAPED ROOMS UI pos; 004: renderer scene; 005: SAVE; 006: QS SYS TILE; 134e: DFOG |
 | `161b-rinsp.js` | 17.7 | top level |  | 003: SHARED THREE; 003b: CULL INTERIORS LEVELS LOOK NPCS PS2 RINSP ROOMS TEXT UI W3 pos; 004: renderer scene; 006: MAPG STORE SYS TILE; 008: BATCH; 072: OUTL |
 | `161c-merge.js` | 6.1 | top level |  | 003: THREE; 003b: ROOMS USE; 004: scene; 006: SYS |
 | `162-interiors.js` | 3.8 | top level |  | 003: SHARED THREE; 003b: INTERIORS MAPED VIS pos; 004: scene; 006: FREE QS STORE TILE; 009: WATER |

@@ -53,7 +53,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   FEEL={},
   WIELD={},
   HANDHELD={},   // the handheld (146ya): ESC pops it up, every menu opens from it
-  WINDOWS={panes:[],pane(me,off,look,dark){ this.panes.push({me,off,look,dark}); if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
+  WINDOWS={panes:[],held:new Set(),pane(me,off,look,dark,only){ this.panes.push({me,off,look,dark,only}); if(only)me.visible=false; if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
   EQUIP={},
   BOAT={},
   RIDE={on:null,lift:0},   // what you are riding (146i-ride): a hoverboard, a balloon

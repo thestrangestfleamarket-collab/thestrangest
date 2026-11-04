@@ -161,3 +161,13 @@ starting: a newer owner decision wins over a line here.
   straight to the headset). Per-eye passes would cost on the Quest: measure before building.
 - [ ] **VR: the menu panel's picture can lag a moment behind the window** after it changes (`html-to-image`, a few hundred ms); a press
   goes to what the picture showed.
+- [ ] **GitHub's checks get no machine** (4 Nov 2026, from about 15:08 UTC): every pull request's `site` jobs fail in ~3 s with no runner
+  assigned (no steps, no log; a re-run fails the same). Likely the account's Actions minutes or spending limit: the owner to look in
+  GitHub's billing settings. #576 was merged on local checks only (build and core on the final merge; places just before main's last two
+  changes): once checks run again, run them on `main`.
+- [ ] **The arcade's games in GO TO? Owner to pick** (4 Nov 2026, #576): the Catacomb Run, the Greens and Roam are left out (you reach them
+  through the arcade).
+- [ ] **The civic tower is in GO TO only when it stands on the map** (#576): today it is away, stacked behind the bodega, so it isn't listed.
+  Nothing to do unless the owner wants it back on the street.
+- [ ] **Try live, once deployed** (4 Nov 2026): the menus (#563: one ADMIN window), where you start (#571: back where you left off within
+  the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576).

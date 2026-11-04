@@ -46,8 +46,5 @@ The owner's list of features to build, newest last. Each line is his ask; the no
 
 ## Open from the windows and shops work (4 Nov 2026)
 
-- **The lake's north end** (owner: "fix this part of the lake", his pictures at tile x 160, z 250): there the game counts you as in the water
-  (air bar, blue minimap) but you stand on grass, and the water shows as a flat pale sheet with straight edges. The lake's shape says deep
-  water but the ground there is not dug out. Being looked into.
 - **Not yet checked in a picture**: the bar's windows from inside still showing the street and its people (after "no one outside drawn
   inside a shop"); the Boardwright's, Fix-It's and Diner's windows (only the Scanner's was pictured).

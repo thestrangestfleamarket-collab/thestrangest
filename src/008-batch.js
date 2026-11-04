@@ -67,7 +67,7 @@ PEEK.tick=dt=>{ const on=PEEK.on&&!PEEK.off&&UI.view!=='first'&&!UI.freeCam&&!ED
   W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar(1.6*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };
 PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});
-BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.away=()=>false;   // painted within reach()[0] of you, dropped past reach()[1] (the haze range sets them, 134e), all dropped while BATCH.away() (in a room off the map)
+BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.at=()=>pos;   // painted within reach()[0] of BATCH.at() (you; in a room off the map where its windows look out, 130), dropped past reach()[1] (the haze range sets them, 134e), all dropped while it is null (a room with no window out)
 BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||BATCH.VIEW,hold:[],hn:0,gt:0,dt:0,pend:[],groups:[],settled:false}, gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
   const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ q.jobs.splice(q.jobs.indexOf(j),1); j.go(); q.pend.push(j); q.hn++; } q.hold.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; q.settled=false; };
   const flush=()=>{ if(!q.hold.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes, c0=BATCH.cast; BATCH.meshes={}; BATCH.items=q.hold; q.hold=[]; q.hn=0;
@@ -76,14 +76,14 @@ BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||
   const drop=G=>{ for(const me of G.ms){ me.removeFromParent(); PEEK.boxes=PEEK.boxes.filter(b=>b.me!==me); me.geometry.dispose(); for(const m of [].concat(me.material)){ for(const k of ['map','emissiveMap'])if(m[k]){ m[k].dispose(); m[k].image=null; } m.dispose(); } }
     q.groups.splice(q.groups.indexOf(G),1); q.jobs.push(...G.jobs); q.dropped=true; };
   q.add=(x0,z0,x1,z1,go)=>q.jobs.push({x0:Math.min(x0,x1),x1:Math.max(x0,x1),z0:Math.min(z0,z1),z1:Math.max(z0,z1),go});
-  q.near=(x,z,r=q.R)=>{ if(BATCH.away())return; const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };
+  q.near=(x,z,r=q.R)=>{ if(!BATCH.at())return; const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };
   q.tick=dt=>{ if(q.dropped){ q.dropped=false; SYS.run('perfBounds'); }   // the culling lists forget what was dropped
-    if(BATCH.away()){ flush(); while(q.groups.length)drop(q.groups[0]); return; }
-    if((q.dt+=dt||0)>1){ q.dt=0; const K=BATCH.reach()[1]; for(const G of [...q.groups])if(G.jobs.every(j=>gd(j,pos.x,pos.z)>K))drop(G); }
-    if(!q.jobs.length&&!q.hold.length)return; q.near(pos.x,pos.z); if((q.gt+=dt)<.05)return; q.gt=0;
-    const t0=performance.now(); while(performance.now()-t0<6){ let b=null, bd=BATCH.reach()[0]; for(const j of q.jobs){ const d=gd(j,pos.x,pos.z); if(d<bd){ bd=d; b=j; } } if(!b)break; paint([b]); }
-    const P=BATCH.reach()[0], more=q.jobs.some(j=>gd(j,pos.x,pos.z)<P); if(q.hn>=24||!more){ flush(); if(!more&&!q.settled){ q.settled=true; if(done)done(); } } };
-  q.kept=()=>{ const K=BATCH.reach()[1]; return q.groups.every(G=>G.jobs.some(j=>gd(j,pos.x,pos.z)<=K+1)); };
+    const A=BATCH.at(); if(!A){ flush(); while(q.groups.length)drop(q.groups[0]); return; }
+    if((q.dt+=dt||0)>1){ q.dt=0; const K=BATCH.reach()[1]; for(const G of [...q.groups])if(G.jobs.every(j=>gd(j,A.x,A.z)>K))drop(G); }
+    if(!q.jobs.length&&!q.hold.length)return; q.near(A.x,A.z); if((q.gt+=dt)<.05)return; q.gt=0;
+    const t0=performance.now(); while(performance.now()-t0<6){ let b=null, bd=BATCH.reach()[0]; for(const j of q.jobs){ const d=gd(j,A.x,A.z); if(d<bd){ bd=d; b=j; } } if(!b)break; paint([b]); }
+    const P=BATCH.reach()[0], more=q.jobs.some(j=>gd(j,A.x,A.z)<P); if(q.hn>=24||!more){ flush(); if(!more&&!q.settled){ q.settled=true; if(done)done(); } } };
+  q.kept=()=>{ const A=BATCH.at()||pos, K=BATCH.reach()[1]; return q.groups.every(G=>G.jobs.some(j=>gd(j,A.x,A.z)<=K+1)); };
   BATCH.queues.push(q); return q; };
 BATCH.kept=()=>BATCH.queues.every(q=>q.kept());   // (for the checks: nothing kept past reach)
 BATCH.near=(x,z)=>{ for(const q of BATCH.queues)q.near(x,z); };

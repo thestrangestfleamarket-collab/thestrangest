@@ -1,7 +1,7 @@
 // THE CREATURES: the park's wild things at their real sizes, each living as its kind does (wasps from a nest to the flowers, spiders in webs, bats at dusk, frogs by the pond, a basking snake, rats along walls at night); CREATS lists them.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {CLOCK, PARK, POND, SFX, WX} from './003b-systems.js';
+import {BINS, CLOCK, PARK, POND, SFX, WX} from './003b-systems.js';
 import {MAPG, MODS, SOL, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
@@ -98,7 +98,8 @@ const CREATS=[]; window.CREATS=CREATS;
   const PICK={
     frog:(st,N,S)=>{ const P=window.POND; if(!P||!P.c||Math.random()<.65){ st.to=null; st.wait=rnd(6,22); return; } const a=Math.atan2(st.z-P.c.z,st.x-P.c.x)+rnd(-.12,.12), r=P.r+rnd(.25,1.1)*WU; st.to={x:P.c.x+Math.cos(a)*r,z:P.c.z+Math.sin(a)*r}; if(!N.free(st.to.x,st.to.z,st.R)){ st.to=null; st.wait=2; } },
     snake:(st,N,S)=>{ if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(40,120); return; } st.v=.3*WU; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=rnd(1.5,6)*WU, p={x:st.x+Math.cos(a)*r,z:st.z+Math.sin(a)*r}; if(inL(PARKL,p.x,p.z)&&N.free(p.x,p.z,st.R)){ st.to=p; S.moved=1; return; } } st.wait=3; },
-    rat:(st,N,S)=>{ if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(.4,2.5); return; } const sol=SOL[N.lv]||SOL.up; let best=null, bs=1e9;
+    rat:(st,N,S)=>{ if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(.4,2.5); if(S.bin){ st.face={x:S.bin.x,z:S.bin.z}; st.wait=rnd(4,10); S.bin=null; } return; } st.face=null; const sol=SOL[N.lv]||SOL.up; let best=null, bs=1e9;
+      if(Math.random()<.35)for(const b of (window.BINS&&BINS.list)||[]){ const p=b.G.position; if(b.G.parent&&Math.hypot(p.x-st.x,p.z-st.z)<15*WU){ const a=Math.random()*Math.PI*2, x=p.x+Math.cos(a)*.45*WU, z=p.z+Math.sin(a)*.45*WU; if(inL(N.lane,x,z)&&N.free(x,z,st.R)){ st.to={x,z}; S.moved=1; S.bin={x:p.x,z:p.z}; return; } } }
       for(let k=0;k<10;k++){ const a=Math.random()*Math.PI*2, r=rnd(1.5,5)*WU, x=st.x+Math.cos(a)*r, z=st.z+Math.sin(a)*r; if(!inL(N.lane,x,z)||!N.free(x,z,st.R))continue;
         let w=1e9; for(const b of sol){ const dx=Math.max(b[0]-x,0,x-b[2]), dz=Math.max(b[1]-z,0,z-b[3]); if(dx<3*WU&&dz<3*WU)w=Math.min(w,Math.hypot(dx,dz)); } const s=w+Math.random()*.3*WU; if(s<bs){ bs=s; best={x,z}; } }
       if(best){ st.to=best; S.moved=1; } else st.wait=1; } };

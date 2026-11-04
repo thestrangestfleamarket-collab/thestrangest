@@ -18,12 +18,13 @@ const BFLY={}; window.BFLY=BFLY;
   const NM={net:'BUTTERFLY NET',jar_s:'SMALL BUTTERFLY JAR',jar_m:'MEDIUM BUTTERFLY JAR',jar_l:'LARGE BUTTERFLY JAR'}, PRICES={}, size=k=>BF_KINDS[k][3]<45?'SMALL':BF_KINDS[k][3]<90?'':'LARGE';
   for(let k=0;k<NK;k++){ const n=BF_KINDS[k][0].toUpperCase(); NM['b_'+k]=n+(k>=12?' (RARE)':''); NM['bu_'+k]=('UNKNOWN '+size(k)+' BUTTERFLY').replace('  ',' ');
     PRICES['b_'+k]=PR(k); PRICES['bu_'+k]=Math.max(1,Math.floor(PR(k)/2)); }
-  FORAGE.add({names:NM,prices:PRICES}); FORAGE.sell(...Object.keys(PRICES)); FORAGE.BUYK.butterflies=['b_','bu_'];   // the butterflies sell, not the net and jars FORAGE.SELLS.push(['net',+ITEMS.prop('net','value')||8,()=>!FORAGE.has('net')]);
+  FORAGE.add({names:NM,prices:PRICES}); FORAGE.SELLS.push(['net',+ITEMS.prop('net','value')||8,()=>!FORAGE.has('net')]);
   // mounting is gone (owner, 2 Nov 2026: "no harming animals at all"): a mounted butterfly or a frame still in a pack goes, the frame's price back
   { let n=FORAGE.has('frame'); if(n>0){ FORAGE.take('frame',n); INV.cash+=n*4; } for(let k=0;k<NK;k++){ n=FORAGE.has('s_'+k); if(n>0)FORAGE.take('s_'+k,n); } }
+  { let c=0; for(const id of Object.keys(INV.items))if(/^bu?_\d+$/.test(id)){ const n=FORAGE.has(id); c+=n*(PRICES[id]||0); FORAGE.take(id,n); } if(c)INV.cash+=c; }
   // your log of what you caught
   const L={v:1,got:{}}; try{ const D=JSON.parse(OWNED.get('bflylog')||'null'); if(D&&D.v===1)Object.assign(L,D); }catch(e){} const saveL=()=>{ try{ OWNED.set('bflylog',JSON.stringify(L)); }catch(e){} }, got=k=>{ L.got[k]=(L.got[k]||0)+1; saveL(); };
-  FORAGE.BOOK.push({id:'bfly',title:'BUTTERFLIES',rows:()=>BF_KINDS.map((b,k)=>[b[0].toUpperCase(),!!L.got[k],L.got[k]?'CAUGHT '+L.got[k]:'',k>=12]),foot:'Each grass has its own butterflies and one rare, found only deep in the park. Keep them in jars, sell them, or let them go.'});
+  FORAGE.BOOK.push({id:'bfly',title:'BUTTERFLIES',rows:()=>BF_KINDS.map((b,k)=>[b[0].toUpperCase(),!!L.got[k],L.got[k]?'CAUGHT '+L.got[k]:'',k>=12]),foot:'Each grass has its own butterflies and one rare, found only deep in the park. Catch one, look closely, and let it go: the first of each kind pays.'});
   BFLY.L=L;
   const CH=new Map(), DEEP=10, pickC=r=>{ r*=CS; for(let i=0;i<12;i++)if((r-=COMMON[i])<0)return i; return 0; };
   // each grass kind's own butterflies and its one rare (GRASS), by name
@@ -55,11 +56,11 @@ const BFLY={}; window.BFLY=BFLY;
   // sw: a net's swing that swept its hoop through the butterfly ({spd: the swing's speed, air: you were off the ground})
   BFLY.catch=(b,sw)=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(!sw&&Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
     const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE NATURE MERCHANT HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
-    if(held()>=room()){ b.until=0; b.away=[p.x,p.z]; return say(room()>5?'YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.':'YOUR HANDS HOLD ONLY 5 BUTTERFLIES. A JAR HOLDS MORE: THE FOX AT THE BODEGA OR THE NATURE MERCHANT.','#c8a090'); }
     const d=DIFF(b.k)+(fly?Math.round(8*SPD(b.k)):0)-(net?10:0), bonus=sw?Math.max(0,Math.min(8,(sw.spd-5)*.8))+(fly&&sw.air?5:0):0; SFX.play('step',{vol:.4});
-    if(use('ento',d-25,d+25,bonus)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1); if(known)got(b.k);
-      say(known?`YOU CATCH A ${BF_KINDS[b.k][0].toUpperCase()}${b.k>=12?'. A RARE ONE!':'.'}`:'YOU CATCH A BUTTERFLY YOU DO NOT KNOW.',b.k>=12?'#f2c14e':known?'#e8e2cc':'#c8b0ff');
-      const L=CH.get(b.chunk); if(L){ const i=L.indexOf(b); if(i>=0)L.splice(i,1); } drop(b); }
+    if(use('ento',d-25,d+25,bonus)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20), first=known&&!L.got[b.k]; if(known)got(b.k);
+      say(known?`YOU CATCH A ${BF_KINDS[b.k][0].toUpperCase()}${b.k>=12?', A RARE ONE,':''} AND LET IT GO.`:'YOU CATCH A BUTTERFLY YOU DO NOT KNOW, AND LET IT GO.',b.k>=12?'#f2c14e':known?'#e8e2cc':'#c8b0ff');
+      if(first){ INV.cash+=PR(b.k); say(`THE PARK'S BUTTERFLY COUNT PAYS $${PR(b.k)} FOR THE FIRST ONE.`,'#f2c14e'); }
+      const CL=CH.get(b.chunk); if(CL){ const i=CL.indexOf(b); if(i>=0)CL.splice(i,1); } drop(b); flit(b.k); }
     else { say(net?(fly?'IT JINKS AWAY FROM YOUR NET.':'YOUR NET SWISHES THROUGH EMPTY AIR.'):'IT SLIPS BETWEEN YOUR FINGERS.','#c8a090'); b.until=0; b.away=[p.x,p.z]; }
     FORAGE.draw(); };
   const BM=new Map(), wings=k=>{ const t=BF.pic&&BF.pic(k,0); if(!t)return null; let m=BM.get(k); if(!m){ m=new THREE.MeshLambertMaterial({map:t.T,transparent:true,alphaTest:.5,side:THREE.DoubleSide}); BM.set(k,m); }
@@ -67,7 +68,8 @@ const BFLY={}; window.BFLY=BFLY;
   INSPECT.kinds.push({is:id=>/^(b|bu)_\d+$/.test(id)||/^jar_[sml]$/.test(id),make:id=>/^jar_/.test(id)?INSPECT.shape('jar',0xcfe8e0,0xc8b48a):wings(+id.split('_')[1])});
   FORAGE.ROWB.push(id=>id.startsWith('bu_')?[['IDENTIFY','bident']]:id.startsWith('b_')?[['RELEASE','bfree']]:[]);
   FORAGE.ACT.bident=id=>{ const k=+id.slice(3), d=DIFF(k); if(use('ento',d-30,d+20)){ const n=FORAGE.has(id); FORAGE.take(id,n); FORAGE.give('b_'+k,n); for(let i=0;i<n;i++)got(k); say(`IT IS A ${BF_KINDS[k][0].toUpperCase()} (${BF_KINDS[k][1]}).`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); };
-  FORAGE.ACT.bfree=id=>{ '@later'; const k=+id.slice(2); FORAGE.take(id,1); const p=W3.group.position, P=[[p.x,p.y+1.2*WU,p.z]]; for(let i=0;i<4;i++){ const a=i*1.7; P.push([p.x+Math.cos(a)*(3+i)*T,p.y+(1+i*.4)*WU,p.z+Math.sin(a)*(3+i)*T]); }
-    const b=BF.add(k,P); b.until=0; setTimeout(()=>drop(b),20000); const d=DIFF(k); use('ento',d-25,d+25,10); say('YOU LET IT GO. YOU WATCH HOW IT FLIES, AND LEARN A LITTLE.','#9fe07f'); };
+  const flit=k=>{ const p=W3.group.position, P=[[p.x,p.y+1.2*WU,p.z]]; for(let i=0;i<4;i++){ const a=i*1.7; P.push([p.x+Math.cos(a)*(3+i)*T,p.y+(1+i*.4)*WU,p.z+Math.sin(a)*(3+i)*T]); }
+    const b=BF.add(k,P); b.until=0; setTimeout(()=>drop(b),20000); };
+  FORAGE.ACT.bfree=id=>{ '@later'; const k=+id.slice(2); FORAGE.take(id,1); flit(k); const d=DIFF(k); use('ento',d-25,d+25,10); say('YOU LET IT GO. YOU WATCH HOW IT FLIES, AND LEARN A LITTLE.','#9fe07f'); };
   BFLY.list=()=>BF.list; BFLY.spots=()=>[...CH.values()].flat().filter(b=>b.home).map(b=>[BF_KINDS[b.k][0],...b.home]); window.BFLYDBG=()=>({near:[...CH.values()].reduce((a,L)=>a+L.length,0),chunks:CH.size,out:BFLY.out,kinds:[...CH.values()].flat().map(b=>BF_KINDS[b.k][0]),ento:FORAGE.sk('ento')}); }
 export {BFLY};

@@ -24,10 +24,16 @@ const {chromium}=require('playwright');
   ok(dived,'a frog dives when you come near');
   const watched=await E(async()=>{ const T=__dbg.cv().TILE, N=CREATS.find(N=>N.key.startsWith('spider')&&N.web); STORE.goTo(N.st.x+2.5*T,N.st.z,'up'); for(let t=0;t<60&&WILDDBG().spd>.05;t++)await new Promise(r=>setTimeout(r,500)); WILD.watch(N); for(let t=0;t<12;t++){ WILD.ff(1); if(WILDDBG().seen.spider)return true; await new Promise(r=>setTimeout(r,1000)); } return JSON.stringify(WILDDBG()); });
   ok(watched===true,'watching a spider logs it in the journal ('+watched+')');
+  const sq=await E(()=>SQDBG2()); ok(sq.built&&sq.n===6&&sq.shown,'six grey squirrels about the park trees by day: '+JSON.stringify(sq));
   const day=await E(()=>CREATS.filter(N=>N.key.startsWith('bat')).filter(N=>N.body.visible&&!N.far).length); ok(day===0,'no bats by day');
   await E(()=>{ DN.set('night'); }); const hub=await E(()=>({x:POND.c.x,z:POND.c.z})); await go(hub.x,hub.z+4);
   let bats=[]; for(let i=0;i<20&&!bats.some(b=>b[0]&&b[1]>2);i++){ await pg.waitForTimeout(1000); bats=await E(()=>{ const WU=__dbg.cv().TILE/.84; return CREATS.filter(N=>N.key.startsWith('bat')&&!N.far).map(N=>[N.body.visible,N.wild.hy/WU]); }); }
   console.log('bats',JSON.stringify(bats)); ok(bats.some(b=>b[0]&&b[1]>2),'bats hunt high at night');
   const wn=await E(()=>CREATS.filter(N=>N.key.startsWith('wasp')&&!N.far&&!/home|in/.test(N.wild.mode)).length); ok(wn===0,'wasps go home at night');
+  const ff=await E(async()=>{ for(let t=0;t<30&&!(FFLYDBG().built&&FFLYDBG().shown);t++)await new Promise(r=>setTimeout(r,500)); const o={d:FFLYDBG()}; FORAGE.S.sk.ento=1000; FORAGE.give('jar_s',1);
+    const th=__dbg.UI.things.find(t=>t.name==='FIREFLIES'); STORE.goTo(th.obj.position.x+T0(),th.obj.position.z,'up'); await new Promise(r=>setTimeout(r,2500)); th.act(); o.jar=FORAGE.has('jar_fly'); o.seen=WILD.seen('firefly');
+    for(let t=0;t<20&&!FFLYDBG().lamp;t++)await new Promise(r=>setTimeout(r,500)); o.lamp=FFLYDBG().lamp; DN.set('day'); for(let t=0;t<30&&FORAGE.has('jar_fly');t++)await new Promise(r=>setTimeout(r,500)); o.after=FORAGE.has('jar_fly'); o.back=FORAGE.has('jar_s'); return o;
+    function T0(){ return __dbg.cv().TILE; } });
+  console.log('fireflies',JSON.stringify(ff)); ok(ff.d.built&&ff.d.shown&&ff.jar===1&&ff.seen>0&&ff.lamp&&ff.after===0&&ff.back>=1,'fireflies blink at night; a jar of them glows while you carry it and lets them go at dawn');
   ok(!Object.keys(errs).length,'no page errors '+JSON.stringify(errs));
   await b.close(); process.exit(bad?1:0); })();

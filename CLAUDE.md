@@ -6,6 +6,7 @@ live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.
 
 Every decision the owner has made, with his words and dates, is in `docs/HISTORY.md` (large: search it, don't read it whole).
+What is still to do, shared by every chat, is in `TODO.md` (take a line before starting it, tick it when done).
 Look there before changing how something looks or behaves, and add a dated entry there for each new decision. **Keep entries lean (owner, 22 Oct 2026: "i dont want anything verbose")**: the decision, the owner's words, the date, and any rule — no engineering detail, measurements or how-it-works; those go in the commit message. This applies everywhere: commit messages, pull requests, comments and replies stay short too.
 
 ## Layout (owner, 18 Oct 2026: "smallest download"; the "minimal files" and "no comments" rules were relaxed on 20 Oct 2026)

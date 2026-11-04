@@ -149,6 +149,18 @@ starting: a newer owner decision wins over a line here.
 - [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
   street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
   Scanner's was pictured).
+- [ ] **VR: try it on the Quest 3; the owner to approve** (owner, 27 Oct 2026: "make sure that the controls in game match the quest 3
+  controllers, also add hand tracking in game so i can use my hands to use the menus"). Only tested on an emulated Quest 3 (`tests/vr.cjs`,
+  IWER). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the hands look. `src/162c-vr.js`.
+- [ ] **VR: no walking with hands only** (controllers down): the hands point and pinch at menus, but walking needs the sticks. Owner to pick
+  a way (point-and-pinch to teleport, pinch-and-pull, a wrist button) before building.
+- [ ] **VR: no typing in chat in the headset** (no keyboard in an immersive WebXR session); would need a keyboard drawn on the menu panel.
+- [ ] **VR: the hands are plain joint dots** (`JM` in `src/162c-vr.js`). A real hand model (three's XRHandModelFactory, models from
+  `@webxr-input-profiles`) is a reuse: ask the owner first.
+- [ ] **VR: the PS2 filter, distance fog and colour grade are not drawn in the headset** (they are screen passes; `VR.draw` renders the scene
+  straight to the headset). Per-eye passes would cost on the Quest: measure before building.
+- [ ] **VR: the menu panel's picture can lag a moment behind the window** after it changes (`html-to-image`, a few hundred ms); a press
+  goes to what the picture showed.
 - [ ] **GitHub's checks get no machine** (4 Nov 2026, from about 15:08 UTC): every pull request's `site` jobs fail in ~3 s with no runner
   assigned (no steps, no log; a re-run fails the same). Likely the account's Actions minutes or spending limit: the owner to look in
   GitHub's billing settings. #576 was merged on local checks only (build and core on the final merge; places just before main's last two

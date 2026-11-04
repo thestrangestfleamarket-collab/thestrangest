@@ -8,6 +8,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?hour=12&at=32,25';
   const start = async fresh => { await pg.goto(url + (fresh ? '&fresh=1' : ''), { waitUntil: 'commit' }); await pg.waitForFunction(() => window.__started, null, { timeout: 300000 }); await pg.waitForTimeout(500); };
   const at = async sel => { const r = await pg.evaluate(sel => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height }; }, sel); if (!r || !r.w) throw new Error('not on screen: ' + sel); return r; };
+  const answer = async n => { await pg.waitForTimeout(150); await pg.evaluate(n => { const A = document.getElementById('bagask'); if (A.hidden) return; const i = A.querySelector('[type=number]'); i.value = n; i.dispatchEvent(new Event('input')); A.querySelector('.ak-go').click(); }, n); await pg.waitForTimeout(150); };
   const dragTo = async (sel, x, y) => { const a = await at(sel); await pg.mouse.move(a.x, a.y); await pg.mouse.down(); for (let i = 1; i <= 8; i++) await pg.mouse.move(a.x + (x - a.x) * i / 8, a.y + (y - a.y) * i / 8); await pg.mouse.up(); await pg.waitForTimeout(250); };
   await start(true);
   await pg.keyboard.press('i'); await pg.waitForFunction(() => !!document.querySelector('#bagp>.pX'), null, { timeout: 120000 }).catch(() => {});   // the X comes with the next frame; frames are slow here
@@ -36,17 +37,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const q = await at('#hqb .qs[data-i="0"]'); await dragTo('#bagp .bgi[data-id="mortar"]', q.x, q.y);
   const r7 = await pg.evaluate(() => ({ slot: HUD.slots[0], mortar: INV.items.mortar }));
   ok(r7.slot === 'mortar' && r7.mortar === 1, 'dragging the mortar onto the quick bar fills its first slot, the mortar still in the bag ' + JSON.stringify(r7));
-  await dragTo('#bagp .bgi[data-id="bottle"]', 260, 560);
+  await dragTo('#bagp .bgi[data-id="bottle"]', 260, 560); await answer(1);
   const r8 = await pg.evaluate(() => ({ b: INV.items.bottle, ground: BAG.ground.length, lines: HUD.lines().slice(-1) }));
-  ok(r8.b === r2.b0 - 1 && r8.ground === 1, 'dragging a bottle out of the bag onto the world drops it ' + JSON.stringify(r8));
+  ok(r8.b === r2.b0 - 1 && r8.ground === 1, 'dragging a bottle out of the bag onto the world asks how many and drops one ' + JSON.stringify(r8));
   const t = await at('#bagp .bgt'); await pg.mouse.move(t.x, t.y); await pg.mouse.down(); await pg.mouse.move(t.x - 300, t.y + 100, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
-  const r9 = await pg.evaluate(() => { const r = document.getElementById('bagp').getBoundingClientRect(); return { left: Math.round(r.left), open: BAG.open }; });
+  const r9 = await pg.evaluate(() => { const r = document.getElementById('bagp').getBoundingClientRect(); return { left: Math.round(r.left), open: BAGDBG().open }; });
   ok(r9.open && r9.left < 500, 'the window drags about the screen by its title ' + JSON.stringify(r9));
 
   // the corner makes it bigger; TILED lays the things in a grid; a drag still lands where it should at that size
   const g = await at('#bagp .bggrip'); await pg.mouse.move(g.x, g.y); await pg.mouse.down(); await pg.mouse.move(g.x + 200, g.y + 250, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
-  const r11 = await pg.evaluate(() => ({ size: +BAGDBG().size.toFixed(2), w: document.getElementById('bagp').getBoundingClientRect().width, saved: JSON.parse(localStorage.getItem('market-save')).bagsize }));
-  ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 520 && +r11.saved === r11.size, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
+  const r11 = await pg.evaluate(() => ({ size: +BAGDBG().size.toFixed(2), w: document.getElementById('bagp').getBoundingClientRect().width, saved: JSON.parse(JSON.parse(localStorage.getItem('market-save')).bagsize || '{}').bag }));
+  ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 520 && Math.abs(+r11.saved - r11.size) < .01, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
   await pg.evaluate(() => BAG.size(1)); await pg.waitForTimeout(200);   // back to a size that fits this screen for the drags
   { const b = await at('#bagp .bgsort'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(200);
   const r12 = await pg.evaluate(() => { const D = BAGDBG(), P = document.getElementById('bagp'), xs = [...P.querySelectorAll('.bgi')].map(e => [parseInt(e.style.left), parseInt(e.style.top)]); return { tiled: D.tiled, order: D.order, cells: xs, label: P.querySelector('.bgsort').textContent, saved: JSON.parse(localStorage.getItem('market-save')).bagsort }; });
@@ -65,16 +66,35 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r15.list && r15.label === 'LIST' && !r15.sort && r15.n === r15.things && r15.pics && r15.names.join() === r15.names.slice().sort((a, b) => a.localeCompare(b)).join() && r15.saved === 'list', 'LIST shows every thing as a row with its picture, in name order, saved ' + JSON.stringify(r15));
   { const b = await at('#bagp .bgr[data-id="mortar"]'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(150);
   const b0 = await pg.evaluate(() => INV.items.bottle);
-  await dragTo('#bagp .bgr[data-id="bottle"]', 260, 560);
+  await dragTo('#bagp .bgr[data-id="bottle"]', 260, 560); await answer(1);
   const r16 = await pg.evaluate(() => ({ sel: BAGDBG().sel, b: INV.items.bottle, ground: BAG.ground.length }));
   ok(r16.sel === 'bottle' || r16.sel === 'mortar', 'a click on a row picks it ' + JSON.stringify(r16));
   ok(r16.b === b0 - 1 && r16.ground === 2, 'a row dragged out onto the world drops it ' + JSON.stringify(r16));
   await pg.evaluate(() => BAG.list(false));
 
+  // containers: a pouch is one thing of its own, opens as a bag, holds things; dropped, it goes with them and comes back whole
+  const r17 = await pg.evaluate(() => { FORAGE.give('pouch', 1); FORAGE.give('bottle', 5); FORAGE.draw(); const p = BAGDBG().inBag.find(id => id.startsWith('pouch~')); const t0 = INV.items.bottle, ok1 = BAG.move('bottle', 2, 'bag', p), self = BAG.move(p, 1, 'bag', p); BAG.open(p); const D = BAGDBG();
+    return { p, ok1, self, loose: BAG.have('bottle', 'bag'), inP: BAG.have('bottle', p), total: INV.items.bottle, t0, wins: D.wins, icons: document.querySelectorAll('.bagw[data-cont] .bgi').length, name: FORAGE.name(p), cont: !!document.querySelector('#bagp .bgi.cont'), saved: Object.values(JSON.parse(localStorage.getItem('market-save'))).some(v => typeof v === 'string' && v.includes('"inside"')) }; });
+  ok(r17.p && r17.ok1 && !r17.self && r17.total === r17.t0 && r17.loose === r17.t0 - 2 && r17.inP === 2 && r17.wins.includes(r17.p) && r17.icons === 1 && r17.name === 'LEATHER POUCH' && r17.cont && r17.saved, 'a pouch holds two bottles, opens as its own bag showing them, not itself; the bag shows the rest; saved ' + JSON.stringify(r17));
+  const r18 = await pg.evaluate(() => { const p = BAGDBG().inBag.find(id => id.startsWith('pouch~')); const t0 = INV.items.bottle; BAG.drop(p, 1); const g = BAGDBG().ground.find(q => q.id === 'pouch'); const gone = !Object.keys(INV.items).some(id => id.startsWith('pouch~')); const t1 = INV.items.bottle;
+    BAG.ground.find(q => q.id === 'pouch').th.act(); const p2 = BAGDBG().inBag.find(id => id.startsWith('pouch~')); return { g: g && g.in, gone, t0, t1, t2: INV.items.bottle, p2, inP2: p2 && BAG.have('bottle', p2), back: !BAGDBG().ground.some(q => q.id === 'pouch'), loose: BAGDBG().loose }; });
+  ok(r18.g && r18.g.bottle === 2 && r18.gone && r18.t1 === r18.t0 - 2 && r18.p2 && r18.inP2 === 2 && r18.t2 === r18.t0 && r18.back, 'a dropped pouch lies there with its bottles (THINGS INSIDE) and comes back whole, a fresh pouch ' + JSON.stringify(r18));
+  // how many: the picker answers a drag of a stack
+  const r19 = await pg.evaluate(() => { window.__askP = BAG.ask(5, 300, 300); const A = document.getElementById('bagask'); return { shown: !A.hidden, max: A.querySelector('[type=range]').max }; });
+  await pg.evaluate(() => { const A = document.getElementById('bagask'), n = A.querySelector('[type=number]'); n.value = 3; n.dispatchEvent(new Event('input')); A.querySelector('.ak-go').click(); });
+  const r20 = await pg.evaluate(async () => ({ v: await window.__askP, hidden: document.getElementById('bagask').hidden }));
+  ok(r19.shown && r19.max === '5' && r20.v === 3 && r20.hidden, 'HOW MANY? asks up to the stack and answers what you typed ' + JSON.stringify({ ...r19, ...r20 }));
+  // the shared ground: what the section's room says lies there appears; a take is answered by the room
+  const r21 = await pg.evaluate(() => { const g0 = BAGDBG().ground[0] || { x: 0, z: 0 }; const a0 = INV.items.fr_apple || 0; ONLINE.feed({ t: 'world', k: 'drop:t1', v: JSON.stringify({ id: 'fr_apple', n: 2, x: g0.x, y: 0, z: g0.z, lv: 'street', t: Date.now() }) }); const D = BAGDBG(), g = D.ground.find(q => q.key === 'drop:t1');
+    BAG.pickUp(BAG.ground.find(q => q.key === 'drop:t1')); const off = BAGDBG().ground.some(q => q.key === 'drop:t1'); ONLINE.on = true; ONLINE.me = 'me'; BAG.pickUp(BAG.ground.find(q => q.key === 'drop:t1')); const taking = BAGDBG().ground.find(q => q.key === 'drop:t1').taking;
+    ONLINE.feed({ t: 'took', k: 'drop:t1', v: JSON.stringify({ id: 'fr_apple', n: 2 }) }); const a1 = INV.items.fr_apple || 0; ONLINE.feed({ t: 'world', k: 'drop:t2', v: JSON.stringify({ id: 'quartz', n: 1, x: g0.x, y: 0, z: g0.z, lv: 'street', t: Date.now() }) }); const two = BAGDBG().ground.some(q => q.key === 'drop:t2'); ONLINE.feed({ t: 'world', k: 'drop:t2', v: '' }); const gone2 = !BAGDBG().ground.some(q => q.key === 'drop:t2'); ONLINE.on = false; ONLINE.me = '';
+    return { placed: !!g && g.n === 2, loose: D.loose.includes('A LOOSE APPLE ×2'), off, taking, a0, a1, gone: !BAGDBG().ground.some(q => q.key === 'drop:t1'), two, gone2 }; });
+  ok(r21.placed && r21.loose && r21.off && r21.taking && r21.a1 === r21.a0 + 2 && r21.gone && r21.two && r21.gone2, 'a drop the room tells of lies there for you; offline you cannot take it; online a take waits for the room and its answer gives you the thing; a drop the room clears goes ' + JSON.stringify(r21));
+
   await start(false);   // the same browser, its save kept
   await pg.waitForFunction(() => BAG.ground.length > 0, null, { timeout: 20000 }).catch(() => {});
   const r10 = await pg.evaluate(() => ({ ground: BAG.ground.map(g => g.id), thing: BAGDBG().loose.includes('A LOOSE EMPTY BOTTLE') }));
-  ok(r10.ground.length === 2 && r10.ground.every(id => id === 'bottle') && r10.thing, 'after a reload the dropped bottles still lie there ' + JSON.stringify(r10));
+  ok(r10.ground.length === 2 && r10.ground.every(id => id === 'bottle') && r10.thing, 'after a reload the bottles dropped offline still lie there ' + JSON.stringify(r10));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); } console.log('bag: all ok');
 })().catch(e => { console.log('bag: ' + e); process.exit(1); });

@@ -59,6 +59,7 @@ jobs:
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
+          k lives   'src/158|src/159-jobs|src/159d|worker/lives|data/lives|lives\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
@@ -105,6 +106,9 @@ jobs:
       - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
         if: contains(steps.f.outputs.run, ' grass')
         run: node tests/grasskinds.cjs dist/market.html
+      - name: The townspeople's lives (homes, days, records)
+        if: contains(steps.f.outputs.run, ' lives')
+        run: node tests/lives.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html

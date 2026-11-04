@@ -10,7 +10,7 @@ import {BLOCKS} from './038zb-blocks.js';
   const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x1-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v<FY+.4&&v>V(DO+.4); }, outL=(x,z)=>onL(x,z)&&iy(z)<AR.y0-.13; F.onL=onL;
   const sol2=(u0,d0,u1,d1,h)=>STORE.kit.sol(Math.min(U(u0),U(u1)),Math.min(V(d0),V(d1)),Math.max(U(u0),U(u1)),Math.max(V(d0),V(d1)),h);
-  const G=new THREE.Group(); G.visible=false; scene.add(G); let light=null;
+  const G=new THREE.Group(); G.visible=false; G.userData.mergeStatic=true; scene.add(G); let light=null;
   F.on=false; F.G=G;
   F.spot=d=>({x:X(DX),y:Y(HZ),z:Z(V(d))});
   F.out=()=>APTS.enterReal([X(DX),Z(V(.9)),Y(HZ),Math.PI]);
@@ -54,7 +54,7 @@ import {BLOCKS} from './038zb-blocks.js';
       const door3D=(w,h)=>{ const g=new THREE.Group(), cw=.11, cd=.18;
         for(const sx of [-1,1])bx(g,cw,h+.08,cd,trim,sx*(w/2+cw/2),h/2+.04,cd/2); bx(g,w+2*cw,.14,cd,trim,0,h+.07,cd/2); bx(g,w+2*cw+.14,.16,.12,stoneM,0,h+.22,.06);
         bx(g,w+.2,.05,.24,stoneM,0,.025,.12);   // the threshold
-        const lz=.05, L=new THREE.Group(); g.add(L);   // the leaf, set back in its frame: rails, stiles, two raised panels below, six panes above
+        const lz=.05, L=new THREE.Group(); L.userData.noMerge=true; g.add(L);   // the leaf, set back in its frame: rails, stiles, two raised panels below, six panes above
         for(const sx of [-1,1])bx(L,.1,h,.05,wood,sx*(w/2-.05),h/2,lz); bx(L,w,.14,.05,wood,0,.07,lz); bx(L,w,.1,.05,wood,0,h*.42,lz); bx(L,w,.1,.05,wood,0,h-.05,lz);
         for(const sx of [-1,1])bx(L,w/2-.14,h*.42-.22,.07,mt('panel',[110,64,42],{sh:30}),sx*(w/4-.01),(h*.42+.07)/2+.02,lz);
         const g0=h*.42+.05, g1=h-.1; bx(L,.035,g1-g0,.04,wood,0,(g0+g1)/2,lz); bx(L,w-.2,.035,.04,wood,0,g0+(g1-g0)/3,lz); bx(L,w-.2,.035,.04,wood,0,g0+(g1-g0)*2/3,lz); pane(L,w-.2,g1-g0,0,(g0+g1)/2,lz-.01);

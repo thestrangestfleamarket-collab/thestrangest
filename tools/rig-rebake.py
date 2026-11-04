@@ -116,6 +116,17 @@ for n in 'LR':
     MIXAMO_W.update({s+'Shoulder':'torso',s+'Arm':'upperArm'+n,s+'ForeArm':'forearm'+n,s+'Hand':'hand'+n,'attach-'+s.lower()+'hand':'hand'+n,
       s+'UpLeg':'thigh'+n,s+'Leg':'shin'+n,s+'Foot':'shoe'+n,s+'ToeBase':'shoe'+n})
 
+# --- the player bodies (tools/bodies-bake.mjs: UAL-named bones) ---
+UAL_ROLE={'pelvis':'pelvis','waist':'spine_01','neck':'neck_01',
+  'shoulderL':'upperarm_l','elbowL':'lowerarm_l','wristL':'hand_l','shoulderR':'upperarm_r','elbowR':'lowerarm_r','wristR':'hand_r',
+  'hipL':'thigh_l','kneeL':'calf_l','ankleL':'foot_l','hipR':'thigh_r','kneeR':'calf_r','ankleR':'foot_r'}
+UAL_W={'root':'hips','pelvis':'hips','spine_01':'torso','spine_02':'torso','spine_03':'torso','neck_01':'head','Head':'head'}
+for n in 'LR':
+    s=n.lower()
+    UAL_W.update({'clavicle_'+s:'torso','upperarm_'+s:'upperArm'+n,'lowerarm_'+s:'forearm'+n,'hand_'+s:'hand'+n,'thigh_'+s:'thigh'+n,'calf_'+s:'shin'+n,'foot_'+s:'shoe'+n,'ball_'+s:'shoe'+n,'ball_leaf_'+s:'shoe'+n})
+    for f in ('index','middle','ring','pinky','thumb'):
+        for k in ('01','02','03','04_leaf'): UAL_W['%s_%s_%s'%(f,k,s)]='hand'+n
+
 def read_glb(path,under=None,J=None,BF=None):   # under: only the meshes below that node (one person in a composed scene)
     import struct
     if J is None: b=open(path,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
@@ -164,6 +175,12 @@ if __name__=='__main__':
         body,J=rebake(read_glb('data/full/egg-poacher.glb'),MIXAMO_ROLE,MIXAMO_W); print('poacher','height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
         json.dump({'bones':BONES,'bodies':{'poacher':body}},open('data/poacher.json','w'),separators=(',',':'))
         import os; print('data/poacher.json',round(os.path.getsize('data/poacher.json')/1e3),'KB')
+    if which in ('all','players'):   # the six player bodies: node tools/bodies-bake.mjs first (data/full/bodies-ual.json)
+        d=json.load(open('data/full/bodies-ual.json')); out={'bones':BONES,'bodies':{}}
+        for key,b in d['bodies'].items():
+            body,_=rebake({'rig':b['rig'],'mesh':b['mesh']},UAL_ROLE,UAL_W); body['name']=b['name']; body['metres']=b['H']; out['bodies'][key]=body; print(key,b['name'],'height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
+        json.dump(out,open('data/bodies.json','w'),separators=(',',':'))
+        import os; print('data/bodies.json',round(os.path.getsize('data/bodies.json')/1e6,2),'MB')
     if which in ('all','skaters'):   # the skate park's 22 people, each from its own spot in the kit's composed scene (its own colours), keyed by spot
         import struct; f='data/full/skatepark/scene.glb'; b=open(f,'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BF=b[28+n:]
         root=J['nodes'][J['scenes'][0]['nodes'][0]]; out={'bones':BONES,'bodies':{}}; k=0

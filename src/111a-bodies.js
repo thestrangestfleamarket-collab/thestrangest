@@ -30,8 +30,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
-      sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
-    mat.customProgramCacheKey=()=>'body'+NB;
+      if(!body.soft)sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;');
+      sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
+    mat.customProgramCacheKey=()=>'body'+NB+(body.soft?'s':'');
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
@@ -146,7 +147,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.SMOOTH=8;
   SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
-  /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
+  /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot); soft: its own smooth normals, not flat faces ---------- */
   /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
   BODIES.baked=(D,key,label,at,PAL,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);

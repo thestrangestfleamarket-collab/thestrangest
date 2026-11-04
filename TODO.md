@@ -69,3 +69,19 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **Section B's skate park in the map editor** (left from the skate park's move, 4 Nov 2026; owner: "option 1, open air, remove the gate in A").
+  It is placed by `sections.places` in `data/world.json`; the owners' map editor (`/editor`, `src/editor/editor.html`, and the in-game one in
+  `src/096-mapedit.js`, whose old Section A gate row was removed) can't see or move it yet.
+- [ ] **Re-run the editor's ground picture** (`tools/topmap.cjs`, about 40 minutes): it still shows the skate park's old gate in Section A's
+  park and nothing at its new spot in Section B.
+- [ ] **The minimap doesn't draw the skate park** in Section B (plain grass where it stands).
+- [ ] **Look at the skate park's bowl from above** in Section B (`?sec=B`): the checks prove the section's ground is cut round it, but no
+  picture has confirmed the grass doesn't show over the bowl.
+- [ ] **Cast check fails at 11:00 and 2:30** (`tests/jobsim.cjs`, seen 4 Nov 2026 on clean `main`, not from the skate park's work): some
+  people on shift aren't at work, some off shift aren't home.
+- [ ] **The skate park's tricks went live without a finished CI build check** (#552, 4 Nov 2026: other chats' merges kept restarting it);
+  checked locally only (`tests/skate.cjs`, `tests/core.cjs`). Run the workflow with `full` once to be sure.
+- [ ] **The apartment house's two thin pipes hide a few steps before the house** when you walk away (the far cut, `src/161a-cull.js`,
+  4 Nov 2026). They're on its far side; minor.
+- [ ] **The places tour no longer visits the skate park** (`tests/places.cjs` can't load Section B); `tests/skate.cjs` covers it but only
+  runs when skate files change.

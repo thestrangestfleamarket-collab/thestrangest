@@ -61,6 +61,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(hiP&&hiQ&&hiP.you==='dev-blk-a'&&hiQ.you==='dev-blk-b'&&hiQ.all.some(o=>o.id==='dev-blk-a')&&hiP.world&&typeof hiP.world==='object','two players reach the block and the second is told the first is there');
       p.w.send(JSON.stringify({t:'mv',at:[12.5,-3,0,1.2,'up','']})); const mv=await wait(q,g=>g.find(m=>m.t==='mv'&&m.id==='dev-blk-a'));
       ok(mv&&mv.at[0]===12.5&&mv.at[1]===-3&&mv.at[4]==='up','a move goes across to the other player ('+JSON.stringify(mv&&mv.at)+')');
+      p.w.send(JSON.stringify({t:'folk',set:[['tomato',{x:1,z:2,v:.4,R:.3,auto:1,mode:{roam:1}}]]})); const fk=await wait(q,g=>g.find(m=>m.t==='folk'&&Array.isArray(m.n)&&m.n.some(a=>a[0]==='tomato')),12000);
+      ok(!!fk&&hiP.folk&&Array.isArray(hiP.folk.n)&&'fv' in hiP,'the folk\'s walks: the block runs them and tells both players where the tomato is ('+JSON.stringify(fk&&fk.n.find(a=>a[0]==='tomato'))+')');
       p.w.send(JSON.stringify({t:'me',name:'ADA',look:'w00',hp:1,x:{}})); const inn=await wait(q,g=>g.find(m=>m.t==='in'&&m.p&&m.p.id==='dev-blk-a'));
       ok(inn&&inn.p.name==='ADA','a player\'s name and look reach the others');
       { const k='drop:t'+Date.now().toString(36); p.w.send(JSON.stringify({t:'world',k,v:'{"id":"fr_apple","n":1}'})); const wd=await wait(q,g=>g.find(m=>m.t==='world'&&m.k===k&&m.v));

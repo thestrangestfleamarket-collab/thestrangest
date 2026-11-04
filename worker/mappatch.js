@@ -14,6 +14,7 @@ const MAPPATCH={v:1,
       const q={...p}; if(take(q,e,['x','y','r','x0','y0'])&&!(q.r<=0)){ out.parkPlaces[k]=q; used.push('park:'+k); } }
     if(obj(S.parkPlaces)&&obj(S.parkPlaces.brook)&&Array.isArray(S.parkPlaces.brook.pts)&&out.parkPlaces&&out.parkPlaces.brook){ const P=S.parkPlaces.brook.pts; if(P.length>=3&&P.length<=60&&P.every(pt)){ out.parkPlaces.brook={...out.parkPlaces.brook,pts:P.map(q=>[q[0],q[1]])}; used.push('brook'); } }
     if(Array.isArray(S.lamps)&&S.lamps.length<=MAPPATCH.MAXLAMPS){ const L=S.lamps.filter(l=>obj(l)&&n(l.x)&&n(l.y)).map(l=>({x:l.x,y:l.y})); if(L.length===S.lamps.length){ out.lamps=L; used.push('lamps:'+L.length); } }
+    if(Array.isArray(S.ponds)&&S.ponds.length<=20){ const L=S.ponds.filter(q=>obj(q)&&n(q.x)&&n(q.y)&&n(q.r)&&q.r>=1.5&&q.r<=30).map(q=>({x:q.x,y:q.y,r:q.r})); if(L.length===S.ponds.length){ out.ponds=L; if(L.length)used.push('ponds:'+L.length); } }
     if(obj(S.names)){ const ok=v=>typeof v==='string'&&MAPPATCH.NAMEOK.test(v), N=S.names; if(obj(N.streets)&&out.sections&&out.sections.streets)for(const k of ['south','west','north','east'])if(ok(N.streets[k])){ out.sections.streets[k]=N.streets[k]; used.push('street:'+k); }
       const st=ok(N.station)&&out.loop&&out.section&&(out.loop.stations||[]).find(q=>q.id===out.section.id); if(st){ st.name=N.station; used.push('station'); } }
     if(obj(S.paths))for(const p of out.paths||[]){ const e=S.paths[p.id]; if(obj(e)&&pt(e.a)&&pt(e.b)){ p.a=[e.a[0],e.a[1]]; p.b=[e.b[0],e.b[1]]; used.push('path:'+p.id); } }

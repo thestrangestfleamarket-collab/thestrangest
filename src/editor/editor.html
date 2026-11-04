@@ -80,7 +80,7 @@ const rects=cells=>{ const by={}; for(const k in cells){ const [x,y]=k.split(','
     const open=new Map(); for(const r of runs){ const k=r.x0+':'+r.x1, o=open.get(k); if(o&&o.y1===r.y)o.y1=r.y+1; else { if(o)out.push({x0:o.x0,x1:o.x1,y0:o.y0,y1:o.y1,t}); open.set(k,{x0:r.x0,x1:r.x1,y0:r.y,y1:r.y+1}); } }
     for(const o of open.values())out.push({x0:o.x0,x1:o.x1,y0:o.y0,y1:o.y1,t}); }
   return out; };
-const patch=()=>{ const set=clone(S.set); for(const k in set)if(k!=='lamps'&&!Object.keys(set[k]).length)delete set[k]; const g=rects(S.cells); if(g.length)set.ground=g; return {v:MAPPATCH.v,at:new Date().toISOString(),set}; };
+const patch=()=>{ const set=clone(S.set); for(const k in set)if(k!=='lamps'&&k!=='ponds'&&!Object.keys(set[k]).length)delete set[k]; const g=rects(S.cells); if(g.length)set.ground=g; return {v:MAPPATCH.v,at:new Date().toISOString(),set}; };
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const sortK=o=>Array.isArray(o)?o.map(sortK):o&&typeof o==='object'?Object.fromEntries(Object.keys(o).sort().map(k=>[k,sortK(o[k])])):o;
 const canon=s=>JSON.stringify({set:sortK(s.set),cells:Object.keys(s.cells).sort().map(k=>k+'='+s.cells[k])});
@@ -89,7 +89,7 @@ const recompute=()=>{ EFF=MAPPATCH.apply(WORLD,{v:1,set:S.set}).W; };
 const keep=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} };
 const snap=()=>JSON.stringify(S), push=()=>{ UNDO.push(snap()); if(UNDO.length>300)UNDO.shift(); REDO.length=0; };
 const changed=()=>{ recompute(); keep(); side(); draw(); };
-const fromPatch=P=>{ const s={set:EMPTY(),cells:{}}; if(P&&P.set){ for(const k in s.set)if(P.set[k]&&typeof P.set[k]==='object'&&Array.isArray(P.set[k])===Array.isArray(s.set[k]))s.set[k]=clone(P.set[k]); if(Array.isArray(P.set.lamps))s.set.lamps=clone(P.set.lamps); s.cells=cellsOf(MAPPATCH.apply(WORLD,P).ground); } return s; };
+const fromPatch=P=>{ const s={set:EMPTY(),cells:{}}; if(P&&P.set){ for(const k in s.set)if(P.set[k]&&typeof P.set[k]==='object'&&Array.isArray(P.set[k])===Array.isArray(s.set[k]))s.set[k]=clone(P.set[k]); if(Array.isArray(P.set.lamps))s.set.lamps=clone(P.set.lamps); if(Array.isArray(P.set.ponds))s.set.ponds=clone(P.set.ponds); s.cells=cellsOf(MAPPATCH.apply(WORLD,P).ground); } return s; };
 
 // what is on the map: built from the draft's world each time
 const wpx=x=>(x-TOP.O[0])*TOP.T, wpz=y=>(y-TOP.O[1])*TOP.T;
@@ -111,6 +111,7 @@ function things(){ const L=[], W=EFF;
   const gi=(o,k,id)=>{ const m=MOD[o.k]||[1,1,1,1], sc=o.s||1; const ly=LYOF[o.k]||'props', w=Math.max(.4,m[0]*sc), d=Math.max(.4,m[1]*sc); return {k,id,model:o.k,n:nm(o.k),sh:ly==='nature'?'circle':'rect',r:Math.max(w,d)/2,x:TOP.O[0]+o.x/TOP.T,y:TOP.O[1]+o.z/TOP.T,w,d,h:m[2]*sc,rot:-(o.rot||0)*180/Math.PI,s:sc,wr:o.rot||0,ly}; };
   for(const o of GARDEN){ const key=MAPPATCH.gkey(o), e=S.set.garden[key]; if(e===null)continue; L.push(gi(e?{...o,...e}:o,'garden',key)); }
   S.set.add.forEach((o,i)=>L.push(gi(o,'added',i)));
+  (EFF.ponds||[]).forEach((q,i)=>L.push({k:'pond',id:i,n:'POND',sh:'circle',x:q.x,y:q.y,r:q.r,h:0,ly:'water'}));
   lampsOf().forEach((l,i)=>L.push({k:'lamp',id:i,n:'LAMP POST',sh:'circle',x:l.x,y:l.y,r:.7,h:4.4,ly:'power'}));
   const D=TOP.down||{}, bx=(b,o)=>({sh:'rect',x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,w:b[2]-b[0],d:b[3]-b[1],rot:0,h:0,...o});
   for(const v of D.levels||[])L.push(bx(v.box,{k:'under',id:v.id,n:v.name,ly:'under',lv:'down'}));
@@ -118,7 +119,8 @@ function things(){ const L=[], W=EFF;
   for(const w of D.ways||[])L.push(bx(w.box,{k:'stair',id:w.id,n:'⇅ '+w.id.toUpperCase(),ly:'stair'}));
   for(const o of L)if(o.h==null)o.h=o.k==='place'?((BASE[o.id]&&BASE[o.id].h)||7):o.k==='park'?((BASE[o.id]&&BASE[o.id].h)||(/tower/.test(o.id)?6:0)):o.k==='car'?1:o.k==='thing'?1.6:0;
   return L; }
-const MOVES=new Set(['place','park','path','car','thing','home','garden','added','lamp']), CLEARS=new Set(['garden','added','car','lamp']);
+const MOVES=new Set(['place','park','path','car','thing','home','garden','added','lamp','pond']), CLEARS=new Set(['garden','added','car','lamp','pond']);
+const ownPonds=()=>{ if(!S.set.ponds)S.set.ponds=clone(EFF.ponds||[]); return S.set.ponds; };
 const lampsOf=()=>S.set.lamps||(KIT.lamps||[]), ownLamps=()=>{ if(!S.set.lamps)S.set.lamps=clone(KIT.lamps||[]); return S.set.lamps; };
 const brookOf=()=>((EFF.parkPlaces.brook||{}).pts||[]), setBrook=pts=>{ const B=(WORLD.parkPlaces.brook||{}).pts; if(same(pts,B))delete S.set.parkPlaces.brook; else S.set.parkPlaces.brook={pts}; };
 let ITEMS=[]; const items=()=>ITEMS=things();
@@ -137,6 +139,7 @@ function write(o,x,y,extra){ const W=EFF; extra=extra||{};
   else if(o.k==='path'){ const a=(extra.rot!=null?extra.rot:o.rot)*Math.PI/180, h=(extra.w!=null?extra.w:o.w)/2; put('path',o.id,{a:[r2(x-Math.cos(a)*h-(o.ox||0)),r2(y-Math.sin(a)*h-(o.oy||0))],b:[r2(x+Math.cos(a)*h-(o.ox||0)),r2(y+Math.sin(a)*h-(o.oy||0))]}); }
   else if(o.k==='car'){ const nc=S.set.newcars.find(c=>c.id===o.id); if(nc){ nc.x=r2(x); nc.y=r2(y); nc.hd=extra.hd!=null?extra.hd:o.hd; } else put('car',o.id,{x:r2(x),y:r2(y),hd:extra.hd!=null?extra.hd:o.hd}); }
   else if(o.k==='lamp'){ const L=ownLamps(); L[o.id]={x:r2(x),y:r2(y)}; }
+  else if(o.k==='pond'){ const L=ownPonds(); L[o.id]={x:r2(x),y:r2(y),r:r2(extra.r!=null?extra.r:o.r)}; }
   else if(o.k==='garden'||o.k==='added'){ const v={x:r2((x-TOP.O[0])*TOP.T),z:r2((y-TOP.O[1])*TOP.T),rot:+(extra.wr!=null?extra.wr:o.wr).toFixed(4),s:+(extra.s!=null?extra.s:o.s).toFixed(3)};
     if(o.k==='added'){ S.set.add[o.id]={...S.set.add[o.id],...v}; return; } const b=GARDEN.find(q=>MAPPATCH.gkey(q)===o.id);
     if(b&&Math.abs(v.x-b.x)<.02&&Math.abs(v.z-b.z)<.02&&Math.abs(v.rot-(b.rot||0))<1e-3&&Math.abs(v.s-(b.s||1))<1e-3)delete S.set.garden[o.id]; else S.set.garden[o.id]=v; }
@@ -147,9 +150,10 @@ const turn=(o,deg)=>{ if(o.k==='place'&&!o.row){ const F=['n','w','s','e'], f=F[
   if(o.k==='thing'){ write(o,o.x,o.y,{rot:(o.rot+deg)*Math.PI/180}); return true; } if(o.k==='garden'||o.k==='added'){ write(o,o.x,o.y,{wr:o.wr-deg*Math.PI/180}); return true; } return false; };
 const remove=o=>{ if(o.k==='garden')S.set.garden[o.id]=null; else if(o.k==='added')S.set.add.splice(o.id,1);
   else if(o.k==='lamp')ownLamps().splice(o.id,1);
+  else if(o.k==='pond')ownPonds().splice(o.id,1);
   else if(o.k==='car'){ const i=S.set.newcars.findIndex(c=>c.id===o.id); if(i>=0)S.set.newcars.splice(i,1); else { if(!S.set.del.includes('car:'+o.id))S.set.del.push('car:'+o.id); delete S.set.cars[o.id]; } } else return false; return true; };
 const WHYNOT={place:'it is built by the game\'s code (its inside, its people)',park:'the park\'s places are part of the park',path:'paths are part of the park',thing:'it is a merchant\'s stall',home:'it is where someone lives',fixed:'it comes from the game\'s code',under:'it is under the street',stair:'stairs belong to their place'};
-let pk={build:null,nature:null,props:null}, pg={build:0,nature:0,props:0}, gdeg=0, ghost=null;
+let wmode='lake', pk={build:null,nature:null,props:null}, pg={build:0,nature:0,props:0}, gdeg=0, ghost=null;
 const PLACE=new Set(['build','nature','props']);
 const footOf=k=>k.startsWith('car:')?{w:4.2,d:1.9,h:1}:(m=>({w:m[0]*scaleFor(k),d:m[1]*scaleFor(k),h:m[2]*scaleFor(k)}))(MOD[k]||[1,1,1]);
 const placeAt=(k,x,y)=>{ if(k.startsWith('car:')){ const ids=new Set([...(WORLD.cars||[]).map(c=>c.id),...S.set.newcars.map(c=>c.id)]); let n=1; while(ids.has('m'+n))n++; S.set.newcars.push({id:'m'+n,model:k.slice(4),x:r2(x),y:r2(y),hd:((90-gdeg)%360+360)%360}); return 'm'+n; }
@@ -169,10 +173,10 @@ const flat=()=>g.setTransform(1,0,0,1,0,0), LW=px=>px*DPR/V.k;
 const F=TOP.F, fit=()=>{ const a=ang(), c=Math.cos(a), s=Math.sin(a), t=TILT(); let u=0, v=0; for(const [x,y] of [[F.x0,F.y0],[F.x1,F.y0],[F.x0,F.y1],[F.x1,F.y1]]){ const dx=x-(F.x0+F.x1)/2, dy=y-(F.y0+F.y1)/2; u=Math.max(u,Math.abs(dx*c-dy*s)); v=Math.max(v,Math.abs((dx*s+dy*c)*t)); }
   V.k=Math.min(cv.width/(2*u+6),cv.height/(2*v+6)); V.x=(F.x0+F.x1)/2; V.y=(F.y0+F.y1)/2; };
 const PIC=TOP.tiles.map(n=>{ const im=new Image(); im.onload=()=>draw(); im.src='edmap/'+n; return im; });
-const SHOW={pic:1,grid:1,ground:1,build:1,nature:1,power:1,park:1,paths:1,props:1,people:0,fixed:0,names:1};
-const LAYN={pic:'GROUND PICTURE',grid:'GRID',ground:'PAINTED GROUND',build:'BUILDINGS',nature:'TREES & PLANTS (PLACED)',power:'LAMP POSTS',park:'PARK PLACES',paths:'PARK PATHS',props:'CARS, STALLS & PROPS',people:'HOMES (WHERE PEOPLE ROAM)',fixed:'FIXED THINGS (TREES...)',names:'NAMES'};
+const SHOW={pic:1,grid:1,ground:1,build:1,nature:1,power:1,water:1,park:1,paths:1,props:1,people:0,fixed:0,names:1};
+const LAYN={pic:'GROUND PICTURE',grid:'GRID',ground:'PAINTED GROUND',build:'BUILDINGS',nature:'TREES & PLANTS (PLACED)',power:'LAMP POSTS',water:'PONDS',park:'PARK PLACES',paths:'PARK PATHS',props:'CARS, STALLS & PROPS',people:'HOMES (WHERE PEOPLE ROAM)',fixed:'FIXED THINGS (TREES...)',names:'NAMES'};
 try{ Object.assign(SHOW,JSON.parse(localStorage.getItem('mapeditor-show')||'{}')); }catch(e){}
-const LCOL={build:'#e0875a',nature:'#7ccf6a',power:'#ffd36b',park:'#d8c9a6',paths:'#e6d38a',props:'#7fc8e8',people:'#c88ae0',fixed:'#5f8a5f',under:'#8a8f9c',stair:'#f2c14e'};
+const LCOL={build:'#e0875a',nature:'#7ccf6a',power:'#ffd36b',water:'#4fa3d9',park:'#d8c9a6',paths:'#e6d38a',props:'#7fc8e8',people:'#c88ae0',fixed:'#5f8a5f',under:'#8a8f9c',stair:'#f2c14e'};
 let sel=null, hover=null, tool='pick', gt='road', brush=3, drag=null, paintBox=null;
 const corners=o=>{ const a=o.rot*Math.PI/180, c=Math.cos(a), s=Math.sin(a), hw=o.w/2, hd=o.d/2; return [[-hw,-hd],[hw,-hd],[hw,hd],[-hw,hd]].map(([u,v])=>[o.x+u*c-v*s,o.y+u*s+v*c]); };
 const hit=(o,x,y)=>{ if(o.sh==='circle')return Math.hypot(x-o.x,y-o.y)<=o.r; const a=-o.rot*Math.PI/180, dx=x-o.x, dy=y-o.y, u=dx*Math.cos(a)-dy*Math.sin(a), v=dx*Math.sin(a)+dy*Math.cos(a); return Math.abs(u)<=o.w/2&&Math.abs(v)<=o.d/2; };
@@ -204,7 +208,7 @@ function draw(){ if(!cv.width)return; flat(); g.fillStyle=LV==='down'?'#040507':
     if(o.face){ const d={n:[0,1],s:[0,-1],e:[1,0],w:[-1,0]}[o.face], q=P(o.x+d[0]*o.w/2,o.y+d[1]*o.d/2,h); g.fillStyle=on?'#f2c14e':c; g.beginPath(); g.arc(q[0],q[1],3*DPR,0,Math.PI*2); g.fill(); }
     if(SHOW.names&&!fix&&o.k!=='home'&&(o.k==='place'||o.k==='park'||o.ly==='under'||o.ly==='stair'||k>5)){ const t=o.n.length>24?o.n.slice(0,23)+'…':o.n, q=P(o.x,o.y,h); g.font=fs+'px Silkscreen,monospace'; g.textAlign='center'; g.textBaseline='middle'; const tw=g.measureText(t).width;
       if(tw<(o.sh==='circle'?o.r*2:Math.max(o.w,o.d))*k*1.6||on){ g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(q[0]-tw/2-3,q[1]-fs/2-2,tw+6,fs+4); g.fillStyle=on?'#f2c14e':'#ece5d3'; g.fillText(t,q[0],q[1]); } } }
-  if(LV==='up'&&tool==='water'){ flat(); for(const q of brookOf()){ const t=P(q[0],q[1]); g.fillStyle='#bfe3ff'; g.strokeStyle='#0b2a44'; g.lineWidth=2*DPR; g.beginPath(); g.arc(t[0],t[1],6*DPR,0,Math.PI*2); g.fill(); g.stroke(); } }
+  if(LV==='up'&&tool==='water'&&wmode==='lake'){ flat(); for(const q of brookOf()){ const t=P(q[0],q[1]); g.fillStyle='#bfe3ff'; g.strokeStyle='#0b2a44'; g.lineWidth=2*DPR; g.beginPath(); g.arc(t[0],t[1],6*DPR,0,Math.PI*2); g.fill(); g.stroke(); } }
   if(ghost&&LV==='up'&&PLACE.has(tool)&&pk[tool]){ const f=footOf(pk[tool]), h=V.iso?f.h:0, B=corners({x:ghost.x,y:ghost.y,w:f.w,d:f.d,rot:gdeg}); flat(); g.strokeStyle='#f2c14e'; g.lineWidth=2*DPR; g.setLineDash([6*DPR,4*DPR]);
     for(const hh of h>0?[0,h]:[0]){ const T=B.map(p=>P(p[0],p[1],hh)); g.beginPath(); g.moveTo(...T[0]); for(const t of T.slice(1))g.lineTo(...t); g.closePath(); g.stroke(); }
     if(h>0)for(const p of B){ g.beginPath(); g.moveTo(...P(p[0],p[1])); g.lineTo(...P(p[0],p[1],h)); g.stroke(); } g.setLineDash([]); }
@@ -226,7 +230,10 @@ function pal(){ document.querySelectorAll('#tools button').forEach(b=>b.classLis
   if(PLACE.has(tool)){ const G=CAT[tool], gi=Math.min(pg[tool],G.length-1), ks=G[gi][1]; if(!pk[tool]||!ks.includes(pk[tool]))pk[tool]=ks[0];
     P.innerHTML='<h4>'+{build:'BUILD',nature:'NATURE',props:'PROPS'}[tool]+'</h4><div class="opts">'+G.map(([n],i)=>`<button class="btn${i===gi?' on':''}" data-pg="${i}">${n}</button>`).join('')+'</div><div class="opts list">'+ks.map(k=>`<button class="btn${k===pk[tool]?' on':''}" data-pk="${k}">${nm(k)}</button>`).join('')+'</div><p>Click the map to put it down (¼ tile; Shift: whole tiles). R turns it first (now '+gdeg+'°). Esc: back to PICK. Its size and turn are in the panel once it is down.</p>';
     P.querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>{ pg[tool]=+b.dataset.pg; pk[tool]=null; pal(); }); P.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{ pk[tool]=b.dataset.pk; pal(); }); return; }
-  if(tool==='water'){ P.innerHTML='<h4>WATER</h4><p>Drag the lake to move it (its size is in the panel). Drag the brook\'s points to change its course; it always runs into the lake. Ponds you can swim in, anywhere, are a later step.</p><div class="opts"><button class="btn" id="brBack">BROOK AS BUILT</button></div>'; P.querySelector('#brBack').onclick=()=>{ push(); delete S.set.parkPlaces.brook; changed(); }; return; }
+  if(tool==='water'){ const n=(EFF.ponds||[]).length; P.innerHTML='<h4>WATER</h4><div class="opts"><button class="btn'+(wmode==='lake'?' on':'')+'" data-wm="lake">LAKE &amp; BROOK</button><button class="btn'+(wmode==='pond'?' on':'')+'" data-wm="pond">PONDS ('+n+')</button></div>'
+    +(wmode==='lake'?'<p>Drag the lake to move it (its size is in the panel). Drag the brook\'s points to change its course; it always runs into the lake.</p><div class="opts"><button class="btn" id="brBack">BROOK AS BUILT</button></div>'
+      :'<p>Click the ground to dig a pond you can swim and dive in; drag one to move it; its size is in the panel (1.5 to 30 tiles); CLEAR or Delete fills it in. 20 at most.</p>');
+    P.querySelectorAll('[data-wm]').forEach(b=>b.onclick=()=>{ wmode=b.dataset.wm; pal(); draw(); }); const bb=P.querySelector('#brBack'); if(bb)bb.onclick=()=>{ push(); delete S.set.parkPlaces.brook; changed(); }; return; }
   if(tool==='power'){ const n=lampsOf().length; P.innerHTML='<h4>POWER · LAMP POSTS</h4><p>Click to put a lamp post down; drag one to move it; CLEAR or Delete takes it away. They light up at dusk. '+n+' lamps, each a light'+(n>120?' <span class="warn">(many: each costs drawing)</span>':'')+'.</p><div class="opts"><button class="btn" id="lmBack">THE GAME\'S OWN LAMPS</button></div>';
     P.querySelector('#lmBack').onclick=()=>{ push(); delete S.set.lamps; changed(); pal(); }; return; }
   if(tool==='section'){ const W=WORLD.sections.streets, N=S.set.names||{}, NS=N.streets||{}, st=((WORLD.loop.stations||[]).find(q=>q.id===WORLD.section.id)||{}).name||'';
@@ -247,10 +254,10 @@ const num=(v,d=2)=>v==null?'':(+v).toFixed(d);
 function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel.id); sel=s||null; }
   const D=$('#sel'); if(!sel){ $('#selT').textContent='PICKED'; D.className='note'; D.innerHTML='Click a building, a park place, a path, a car or a stall to pick it.'; }
   else { const o=sel, fixed=!MOVES.has(o.k), inD=!fixed&&S.set[SETK[o.k]]&&S.set[SETK[o.k]][o.id]!=null; $('#selT').textContent='PICKED · '+o.n; D.className='';
-    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels',garden:'placed model',added:'placed model, new in this draft',lamp:'lamp post (a light)'}[o.k]}</div></div>`;
+    let h=`<div class="row"><label>kind</label><div>${{place:o.row?'building on the row':'building',park:'park place',path:'park path',car:'parked car',thing:'flea stall',home:'where someone roams',fixed:'fixed for now',under:'under the street',stair:'stairs between levels',garden:'placed model',added:'placed model, new in this draft',lamp:'lamp post (a light)',pond:'pond you can swim in'}[o.k]}</div></div>`;
     if(o.k==='place')h+=`<div class="row"><label>x0 · x1</label><div class="pair"><input data-f="x0" value="${num(o.x-o.w/2)}"><input data-f="x1" value="${num(o.x+o.w/2)}"></div></div>`+(o.row?`<div class="note">On the block's row: it moves along the street only.</div>`:`<div class="row"><label>y0 · y1</label><div class="pair"><input data-f="y0" value="${num(o.y-o.d/2)}"><input data-f="y1" value="${num(o.y+o.d/2)}"></div></div><div class="row"><label>door faces</label><select data-f="face">${['n','e','s','w'].map(f=>`<option value="${f}"${f===o.face?' selected':''}>${{n:'n · down the map',e:'e · right',s:'s · up, to the river',w:'w · left'}[f]}</option>`).join('')}</select></div>`);
     else if(!fixed)h+=`<div class="row"><label>x · y</label><div class="pair"><input data-f="x" value="${num(o.x)}"><input data-f="y" value="${num(o.y)}"></div></div>`;
-    if((o.k==='park'&&o.sh==='circle'&&EFF.parkPlaces[o.id].r!=null)||o.k==='home')h+=`<div class="row"><label>size (r)</label><input data-f="r" value="${num(o.r)}"></div>`;
+    if((o.k==='park'&&o.sh==='circle'&&EFF.parkPlaces[o.id].r!=null)||o.k==='home'||o.k==='pond')h+=`<div class="row"><label>size (r)</label><input data-f="r" value="${num(o.r)}"></div>`;
     if(o.k==='path')h+=`<div class="row"><label>length · turn</label><div class="pair"><input data-f="w" value="${num(o.w)}"><input data-f="rot" value="${num(o.rot,1)}"></div></div>`;
     if(o.k==='car')h+=`<div class="row"><label>heading °</label><input data-f="hd" value="${num(o.hd,0)}"></div>`;
     if(o.k==='garden'||o.k==='added')h+=`<div class="row"><label>turn ° · size</label><div class="pair"><input data-f="turn" value="${num(o.rot,0)}"><input data-f="s" value="${num(o.s,2)}"></div></div>`;
@@ -260,7 +267,7 @@ function side(){ items(); if(sel){ const s=ITEMS.find(o=>o.k===sel.k&&o.id===sel
     D.innerHTML=h;
     D.querySelectorAll('[data-f]').forEach(el=>el.onchange=()=>{ const f=el.dataset.f, v=f==='face'?el.value:+el.value; if(f!=='face'&&!isFinite(v))return side(); push(); const o2=sel;
       if(o.k==='place'){ let x0=o2.x-o2.w/2, x1=o2.x+o2.w/2, y0=o2.y-o2.d/2, y1=o2.y+o2.d/2; ({x0:()=>x0=v,x1:()=>x1=v,y0:()=>y0=v,y1:()=>y1=v,face:()=>0})[f](); if(x1-x0<1||y1-y0<1)return side(); write(o2,(x0+x1)/2,(y0+y1)/2,{w:x1-x0,d:y1-y0,face:f==='face'?v:o2.face}); }
-      else if(f==='x')write(o2,v,o2.y); else if(f==='y')write(o2,o2.x,v); else if(f==='r'){ if(v<=0)return side(); write(o2,o2.x,o2.y,{r:v}); } else if(f==='w'){ if(v<1)return side(); write(o2,o2.x,o2.y,{w:v}); } else if(f==='rot')write(o2,o2.x,o2.y,{rot:v}); else if(f==='hd')write(o2,o2.x,o2.y,{hd:v}); else if(f==='turn')write(o2,o2.x,o2.y,{wr:-v*Math.PI/180}); else if(f==='s'){ if(!(v>0&&v<50))return side(); write(o2,o2.x,o2.y,{s:v}); }
+      else if(f==='x')write(o2,v,o2.y); else if(f==='y')write(o2,o2.x,v); else if(f==='r'){ if(v<=0||(o2.k==='pond'&&(v<1.5||v>30)))return side(); write(o2,o2.x,o2.y,{r:v}); } else if(f==='w'){ if(v<1)return side(); write(o2,o2.x,o2.y,{w:v}); } else if(f==='rot')write(o2,o2.x,o2.y,{rot:v}); else if(f==='hd')write(o2,o2.x,o2.y,{hd:v}); else if(f==='turn')write(o2,o2.x,o2.y,{wr:-v*Math.PI/180}); else if(f==='s'){ if(!(v>0&&v<50))return side(); write(o2,o2.x,o2.y,{s:v}); }
       changed(); });
     const L=D.querySelector('#sLook'); if(L)L.onclick=()=>look(sel.x,sel.y); const B=D.querySelector('#sBack'); if(B)B.onclick=()=>{ push(); delete S.set[SETK[sel.k]][sel.id]; changed(); }; const Cl=D.querySelector('#sClr'); if(Cl)Cl.onclick=()=>{ push(); remove(sel); sel=null; changed(); }; }
   const lay=$('#lay'); if(!lay.childElementCount)lay.innerHTML=Object.keys(LAYN).filter(k=>LV==='up'||k==='grid'||k==='names').map(k=>`<label><input type="checkbox" data-l="${k}"${SHOW[k]?' checked':''}>${LAYN[k]}</label>`).join('');
@@ -281,6 +288,8 @@ cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); const 
   if(e.button!==0||e.altKey){ drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   if(LV==='up'&&tool==='clear'){ if(e.shiftKey){ paintBox={x0:Math.floor(x),y0:Math.floor(y),x1:Math.floor(x),y1:Math.floor(y)}; drag={clearbox:1}; draw(); return; }
     const o=pickAt(x,y); if(o&&CLEARS.has(o.k)){ push(); remove(o); if(sel&&sel.k===o.k&&sel.id===o.id)sel=null; changed(); msg('CLEARED '+o.n); return; } if(o){ msg("CAN'T CLEAR "+o.n+': '+(WHYNOT[o.k]||'')); return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
+  if(LV==='up'&&tool==='water'&&wmode==='pond'){ const o=pickAt(x,y); if(o&&o.k==='pond'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; }
+    if((EFF.ponds||[]).length>=20){ msg('20 PONDS AT MOST'); return; } push(); ownPonds().push({x:snapv(x,e),y:snapv(y,e),r:6}); changed(); pal(); msg('A POND DUG'); return; }
   if(LV==='up'&&tool==='water'){ const B=brookOf(); for(let i=0;i<B.length;i++){ const q=P(B[i][0],B[i][1]); if(Math.hypot(q[0]-px,q[1]-py)<12*DPR){ drag={bp:i,snap:snap(),moved:0}; return; } }
     const o=pickAt(x,y); if(o&&o.k==='park'&&o.id==='lake'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; } drag={pan:1,px,py,vx:V.x,vy:V.y}; return; }
   if(LV==='up'&&tool==='power'){ const o=pickAt(x,y); if(o&&o.k==='lamp'){ sel=o; side(); draw(); drag={move:1,o,dx:o.x-x,dy:o.y-y,moved:0,snap:snap()}; return; }
@@ -343,5 +352,6 @@ $('#pub').onclick=async()=>{ const P=patch(); if(!WEB){ download(MAPFILE.slice(8
     tool:t=>{ tool=t; pal(); },
     lamp:(x,y)=>{ push(); const L=ownLamps(); L.push({x,y}); changed(); return L.length; },
     brook:(i,x,y)=>{ push(); const B=brookOf().map(q=>q.slice()); B[i]=[x,y]; setBrook(B); changed(); return B.length; },
-    names:o=>{ push(); S.set.names=o; changed(); return true; },sel:()=>sel&&{k:sel.k,id:sel.id},ready:true}; })();
+    names:o=>{ push(); S.set.names=o; changed(); return true; },
+    pond:(x,y,r)=>{ push(); const L=ownPonds(); L.push({x,y,r:r||6}); changed(); return L.length; },sel:()=>sel&&{k:sel.k,id:sel.id},ready:true}; })();
 </script></body></html>

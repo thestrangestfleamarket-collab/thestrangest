@@ -69,3 +69,12 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **A bare base body (shorts only), on hold.** Owner, 3 Nov 2026: "make a new character based on those, just use the parts of the body to
+  make a body with nothing on but shorts (as a base playable)"; then "bald, no sunglasses, base model"; "more rounded"; "they need feet,
+  white + pupil eyes"; then "cancel". Mockups only, nothing built. Left to decide with him:
+  - the body: A the Slot Tourist (`slot-tourist-08b37d`, his choice so far in the mockups), B the Hanga Roa Fisherman, C the Trainspotter
+    (shorter, a teen). Most polyfork bodies have no skin under their clothes; these three are whole. A has no feet: borrow the
+    Fisherman's (same build), in A's skin colour;
+  - how rounded: smoothed once (about 4x the triangles, ~16k) or twice (16x, ~65k, too heavy for many players);
+  - tidy the seam across the cheek and jaw and the ridge at the back of the head that smoothing shows up;
+  - put it on YOU's BODY row as BASE beside WALKER and MERCHANT (`body.playable`, like `src/111fc-merchant.js`).

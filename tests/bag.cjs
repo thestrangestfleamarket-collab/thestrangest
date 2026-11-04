@@ -1,4 +1,4 @@
-// THE BAG CHECK: node tests/bag.cjs dist/market.html. The bag is its own window (owner, 4 Nov 2026): I opens it, every item has a picture, a thing dropped lies at your feet as a loose thing and comes back by a double click, a picture dragged with the pointer moves about the mouth, onto the quick bar fills a slot, out onto the world drops it; worn and held things stay in the bag, tagged; the ground is saved and comes back after a reload.
+// THE BAG CHECK: node tests/bag.cjs dist/market.html. The bag is its own window with no box, any size by its corner, LOOSE or TILED (owner, 4 Nov 2026): I opens it, every item has a picture, a thing dropped lies at your feet as a loose thing and comes back by a double click, a picture dragged with the pointer moves about the mouth, onto the quick bar fills a slot, out onto the world drops it; worn and held things stay in the bag, tagged; the ground is saved and comes back after a reload.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bag::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -12,8 +12,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await start(true);
   await pg.keyboard.press('i'); await pg.waitForFunction(() => !!document.querySelector('#bagp>.pX'), null, { timeout: 120000 }).catch(() => {});   // the X comes with the next frame; frames are slow here
   const r1 = await pg.evaluate(() => { const P = document.getElementById('bagp'), K = document.getElementById('packp'), ids = FORAGE.ids(), kinds = new Set(ids.map(id => BAG.kind(id))); let bad = 0; for (const id of ids) if (!/^data:image\/png/.test(BAG.icon(id))) bad++;
-    return { open: !P.hidden, pack: !!K && !K.hidden, icons: P.querySelectorAll('.bgi').length, x: !!P.querySelector('.pX'), w: P.querySelector('.bgk').offsetWidth, h: P.querySelector('.bgk').offsetHeight, n: ids.length, bad, kinds: kinds.size, mortar: BAG.kind('mortar'), gem: BAG.kind('ruby'), mush: BAG.kind('m_morel'), potion: BAG.kind('p_heal') }; });
-  ok(r1.open && !r1.pack && r1.icons >= 2 && r1.x && r1.w === 400 && r1.h === 500, 'I opens the bag as its own window (the pack panel stays shut), a backpack 400 by 500 with the starter kit in its mouth and an X ' + JSON.stringify(r1));
+    return { open: !P.hidden, pack: !!K && !K.hidden, icons: P.querySelectorAll('.bgi').length, x: !!P.querySelector('.pX'), w: P.querySelector('.bgk').offsetWidth, h: P.querySelector('.bgk').offsetHeight, bare: getComputedStyle(P).borderStyle === 'none' && getComputedStyle(P).backgroundColor === 'rgba(0, 0, 0, 0)', grip: !!P.querySelector('.bggrip'), sort: (P.querySelector('.bgsort') || {}).textContent, n: ids.length, bad, kinds: kinds.size, mortar: BAG.kind('mortar'), gem: BAG.kind('ruby'), mush: BAG.kind('m_morel'), potion: BAG.kind('p_heal') }; });
+  ok(r1.open && !r1.pack && r1.icons >= 2 && r1.x && r1.w === 400 && r1.h === 500 && r1.bare && r1.grip && r1.sort === 'LOOSE', 'I opens the bag as its own window with no box (the pack panel stays shut), a backpack 400 by 500 with the starter kit in its mouth, an X, a corner grip and LOOSE ' + JSON.stringify(r1));
   ok(r1.bad === 0 && r1.kinds >= 15 && r1.mortar === 'mortar' && r1.gem === 'gem' && r1.mush === 'mush' && r1.potion === 'potion', 'every one of ' + r1.n + ' items has a picture, by its family (' + r1.kinds + ' kinds)');
 
   const r2 = await pg.evaluate(() => { const b0 = INV.items.bottle; BAG.drop('bottle', 1); const D = BAGDBG(), g = D.ground[0] || {};
@@ -42,6 +42,21 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const t = await at('#bagp .bgt'); await pg.mouse.move(t.x, t.y); await pg.mouse.down(); await pg.mouse.move(t.x - 300, t.y + 100, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
   const r9 = await pg.evaluate(() => { const r = document.getElementById('bagp').getBoundingClientRect(); return { left: Math.round(r.left), open: BAG.open }; });
   ok(r9.open && r9.left < 500, 'the window drags about the screen by its title ' + JSON.stringify(r9));
+
+  // the corner makes it bigger; TILED lays the things in a grid; a drag still lands where it should at that size
+  const g = await at('#bagp .bggrip'); await pg.mouse.move(g.x, g.y); await pg.mouse.down(); await pg.mouse.move(g.x + 200, g.y + 250, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
+  const r11 = await pg.evaluate(() => ({ size: +BAGDBG().size.toFixed(2), w: document.getElementById('bagp').getBoundingClientRect().width, saved: JSON.parse(localStorage.getItem('market-save')).bagsize }));
+  ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 520 && +r11.saved === r11.size, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
+  { const b = await at('#bagp .bgsort'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(200);
+  const r12 = await pg.evaluate(() => { const D = BAGDBG(), P = document.getElementById('bagp'), xs = [...P.querySelectorAll('.bgi')].map(e => [parseInt(e.style.left), parseInt(e.style.top)]); return { tiled: D.tiled, order: D.order, cells: xs, label: P.querySelector('.bgsort').textContent, saved: JSON.parse(localStorage.getItem('market-save')).bagsort }; });
+  ok(r12.tiled && r12.label === 'TILED' && r12.saved === 'tiled' && r12.cells.length >= 2 && r12.cells.every(([x, y]) => x % 50 === 0 && y % 50 === 0) && r12.cells[0][0] === 0 && r12.cells[0][1] === 0, 'TILED lays the things in a grid from the top left, saved ' + JSON.stringify(r12));
+  const first = r12.order[0], last = r12.order[r12.order.length - 1], m2 = await at('#bagp .bgm');
+  await dragTo('#bagp .bgi[data-id="' + first + '"]', m2.x + m2.w / 2 - 20, m2.y + m2.h / 2 - 20);
+  const r13 = await pg.evaluate(() => BAGDBG().order);
+  ok(r13[r13.length - 1] === first && r13[0] !== first, 'in TILED, dragging the first thing to the last cell puts it last ' + JSON.stringify(r13));
+  { const b = await at('#bagp .bgsort'); await pg.mouse.click(b.x, b.y); } await pg.evaluate(() => BAG.size(1)); await pg.waitForTimeout(200);
+  const r14 = await pg.evaluate(() => ({ tiled: BAGDBG().tiled, size: BAGDBG().size, pos: BAGDBG().pos.mortar }));
+  ok(!r14.tiled && r14.size === 1 && r14.pos && r14.pos[0] > 180, 'back to LOOSE at the old size, the mortar where it was left ' + JSON.stringify(r14));
 
   await start(false);   // the same browser, its save kept
   await pg.waitForFunction(() => BAG.ground.length > 0, null, { timeout: 20000 }).catch(() => {});

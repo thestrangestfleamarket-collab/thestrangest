@@ -1,4 +1,4 @@
-// THE BAG: BAG is your inventory, its own window (I): a leather backpack whose mouth is a free area of item pictures you drag about, onto the quick bar, or out onto the ground (a loose thing at your feet, picked up by a double click); a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged.
+// THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, dragged about by its leather and made any size by its corner; its mouth holds item pictures LOOSE (anywhere, like desktop icons) or TILED (a sorted grid), dragged onto the quick bar or out onto the ground (a loose thing at your feet, picked up by a double click); a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged.
 import {SHARED, THREE} from './003-shx.js';
 import {BAG, EQUIP, FORAGE, HUD, INV, ITEMS, LEVELS, pos, ROOMS, SFX, st, TEXT, UI, VIT, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -54,7 +54,11 @@ window.BAG=BAG;
   const URL=new Map(); BAG.icon=id=>{ let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; };
 
   /* ---------- the window and the mouth: where each thing lies ---------- */
-  const MW=280, MH=260, IC=44; let POS={}; try{ POS=JSON.parse(OWNED.get('bagpos')||'{}')||{}; }catch(e){ POS={}; }
+  const MW=280, MH=260, IC=44, BW=400, BH=500; let POS={}, ORDER=[], S=1, TILED=false; try{ POS=JSON.parse(OWNED.get('bagpos')||'{}')||{}; ORDER=JSON.parse(OWNED.get('bagorder')||'[]')||[]; S=Math.max(.5,Math.min(3,+OWNED.get('bagsize')||1)); TILED=OWNED.get('bagsort')==='tiled'; }catch(e){ POS={}; }
+  const saveSet=()=>{ try{ OWNED.set('bagsize',String(+S.toFixed(2))); OWNED.set('bagsort',TILED?'tiled':'loose'); OWNED.set('bagorder',JSON.stringify(ORDER)); }catch(e){} };
+  // TILED: a sorted grid, every cell the same, the cell shrinking so all fit; dragging a thing moves it to that cell in the order
+  const cell=n=>Math.max(22,Math.min(IC+6,Math.floor(Math.sqrt(MW*MH/Math.max(1,n)))));
+  const tiles=ids=>{ const c=cell(ids.length), cols=Math.max(1,Math.floor(MW/c)); ORDER=ORDER.filter(id=>ids.includes(id)); for(const id of ids)if(!ORDER.includes(id))ORDER.push(id); return {c,cols,at:id=>{ const i=ORDER.indexOf(id); return [(i%cols)*c,Math.floor(i/cols)*c]; }}; };
   const savePos=()=>{ try{ OWNED.set('bagpos',JSON.stringify(POS)); }catch(e){} };
   const wornAs=id=>WIELD.on===id?'HELD':Object.values(EQUIP.by).includes(id)?'WORN':'';
   const inBag=()=>Object.keys(INV.items).filter(id=>INV.items[id]>0).sort();
@@ -62,19 +66,23 @@ window.BAG=BAG;
   let sel=null;
   const SVG=`<svg class="bgart" width="400" height="500" viewBox="0 0 80 100"><rect x="4" y="30" width="5" height="50" fill="#4a2f17" stroke="#1b1410" stroke-width="1"/><rect x="71" y="30" width="5" height="50" fill="#4a2f17" stroke="#1b1410" stroke-width="1"/><path d="M8 24h64v66q0 6-6 6H14q-6 0-6-6z" fill="#6b4425" stroke="#1b1410" stroke-width="1"/><rect x="12" y="30" width="56" height="58" fill="#2a1a10" stroke="#3f2816" stroke-width="1"/><path d="M8 22h64v7q-8 6-32 6T8 29z" fill="#7d5230" stroke="#1b1410" stroke-width="1"/><rect x="37" y="27" width="6" height="7" fill="#d8a52a" stroke="#1b1410" stroke-width="1"/><rect x="36" y="91" width="8" height="3" fill="#d8a52a" stroke="#1b1410" stroke-width="1"/><path d="M8 24q-2-10 6-12h52q8 2 6 12" fill="none" stroke="#1b1410" stroke-width="1"/></svg>`;
   const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
-  const icon=(id,n,x,y)=>{ const w=wornAs(id); return `<div class="bgi${sel===id?' sel':''}" data-id="${esc(id)}" title="${esc(name(id))}" style="left:${x}px;top:${y}px"><img alt="" draggable="false" src="${BAG.icon(id)}">${n>1?`<span>x${n}</span>`:''}${w?`<i>${w}</i>`:''}</div>`; };
+  const icon=(id,n,x,y,sz=IC)=>{ const w=wornAs(id); return `<div class="bgi${sel===id?' sel':''}" data-id="${esc(id)}" title="${esc(name(id))}" style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px"><img alt="" draggable="false" src="${BAG.icon(id)}">${n>1?`<span>x${n}</span>`:''}${w?`<i>${w}</i>`:''}</div>`; };
   const strip=()=>{ const id=sel; if(!id||!INV.items[id])return `<div class="bgf" style="color:#7d7a70">${inBag().length?'CLICK A THING · DOUBLE CLICK USES IT · DRAG IT ABOUT, ONTO THE QUICK BAR, OR OUT ONTO THE GROUND':'NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.'}</div>`;
     const n=INV.items[id], eat=FORAGE.eats(id), w=wornAs(id), notes=FORAGE.NOTE.map(f=>f(id)).filter(Boolean).map(t=>` <span style="color:#9b9584">${esc(t)}</span>`).join(''), hand=!!(WIELD.LIST&&WIELD.LIST.includes(id));
     return `<div class="bgf"><span style="${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(name(id))}</span>${n>1?' <span style="color:#9b9584">x'+n+'</span>':''}${w?' <span style="color:#f2c14e">'+w+'</span>':''}${notes}<span class="bgb">${eat?`<button ${B} data-eat="${id}">${id.startsWith('p_')?'DRINK':'EAT'}</button>`:''}${id.startsWith('u_')?`<button ${B} data-id="${id}">IDENTIFY</button>`:''}${hand?`<button ${B} data-hold="${id}">${WIELD.on===id?'LET GO':'HOLD'}</button>`:''}${FORAGE.ROWB.flatMap(f=>f(id)).map(([l,a])=>`<button ${B} data-act="${a}" data-aid="${id}">${l}</button>`).join('')}<button ${B} data-bagdrop="${id}">DROP</button>${n>1?`<button ${B} data-bagdrop="${id}" data-n="all">DROP ALL</button>`:''}</span></div>`; };
-  const pk=document.createElement('div'); pk.id='bagp'; pk.hidden=true; pk.style.cssText='position:fixed;z-index:21;right:16px;top:6%;width:436px;max-width:96vw;padding:12px 16px 14px;max-height:88vh;overflow:auto;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
+  const pk=document.createElement('div'); pk.id='bagp'; pk.hidden=true; pk.style.cssText='position:fixed;z-index:21;right:16px;top:6%;width:400px;padding:0;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:none;border:0;zoom:var(--uiz,1)';
   document.body.appendChild(pk); pk.addEventListener('keydown',e=>e.stopPropagation()); pk.addEventListener('keyup',e=>e.stopPropagation());
-  const css=document.createElement('style'); css.textContent=`#bagp .bgt{color:#f2c14e;margin:0 24px 8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #bagp .bgk{position:relative;width:400px;height:500px} #bagp .bgart{display:block;shape-rendering:crispEdges}
+  const css=document.createElement('style'); css.textContent=`#bagp>.pX{right:4px;top:4px} #bagp .bgo{position:relative} #bagp .bgk{position:absolute;left:0;top:0;width:${BW}px;height:${BH}px;transform-origin:0 0} #bagp .bgart{display:block;shape-rendering:crispEdges;filter:drop-shadow(0 6px 0 #0006)}
+    #bagp .bgt{position:absolute;left:60px;right:60px;top:122px;text-align:center;color:#f2c14e;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 #000;pointer-events:none} #bagp .bgsort{position:absolute;left:62px;top:138px;font:9px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#1b1410cc;border:1px solid #3f2816;padding:2px 6px;cursor:pointer} #bagp .bgsort:hover{color:#f2c14e}
+    #bagp .bggrip{position:absolute;right:16px;bottom:14px;width:26px;height:26px;background:none;border:0;padding:0;cursor:nwse-resize;touch-action:none} #bagp .bggrip::before{content:'';position:absolute;right:4px;bottom:4px;width:14px;height:14px;border-right:4px solid #d8a52a;border-bottom:4px solid #d8a52a;box-shadow:2px 2px 0 #1b1410}
     #bagp .bgm{position:absolute;left:60px;top:180px;width:${MW}px;height:${MH}px} #bagp .bgi{position:absolute;width:${IC}px;height:${IC}px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none} #bagp .bgi img{width:100%;height:100%;image-rendering:pixelated;display:block;filter:drop-shadow(1px 1px 0 #0008);pointer-events:none} #bagp .bgi.sel img{filter:drop-shadow(0 0 0 #f2c14e) drop-shadow(1px 1px 0 #f2c14e) drop-shadow(-1px -1px 0 #f2c14e)} #bagp .bgi.held{opacity:.3}
     #bagp .bgi span,#bagp .bgi i{position:absolute;font-size:9px;font-style:normal;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000;pointer-events:none} #bagp .bgi span{right:-3px;bottom:-4px;color:#f2c14e} #bagp .bgi i{left:-2px;top:-5px;color:#9fe07f;letter-spacing:0}
-    #bagp .bgf{margin-top:6px;line-height:2} #bagp .bgb{margin-left:2px} .bgghost{position:fixed;pointer-events:none;z-index:60;image-rendering:pixelated;filter:drop-shadow(2px 4px 0 #0008)}`; document.head.appendChild(css);
+    #bagp .bgf{margin-top:4px;line-height:2;text-shadow:1px 1px 0 #000,0 0 3px #000} #bagp .bgb{margin-left:2px} .bgghost{position:fixed;pointer-events:none;z-index:60;image-rendering:pixelated;filter:drop-shadow(2px 4px 0 #0008)}`; document.head.appendChild(css);
   const uz=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--uiz'))||1;
   BAG.draw=()=>{ '@later'; if(pk.hidden)return; const ids=inBag(); if(sel&&!INV.items[sel])sel=null;
-    const x=pk.querySelector(':scope>.pX'); pk.innerHTML=`<div class="bgt">YOUR BAG · $${Math.round(INV.cash)} · ${ids.length} ${ids.length===1?'THING':'THINGS'}${INV.count()?' · GEMS ×'+INV.count():''}</div><div class="bgk">${SVG}<div class="bgm">${ids.map(id=>{ const [x,y]=spot(id,ids); return icon(id,INV.items[id],x,y); }).join('')}</div></div>${strip()}`; if(x)pk.appendChild(x); };
+    const x=pk.querySelector(':scope>.pX'), tl=TILED?tiles(ids):null;
+    pk.innerHTML=`<div class="bgo"><div class="bgk">${SVG}<div class="bgt">$${Math.round(INV.cash)} · ${ids.length} ${ids.length===1?'THING':'THINGS'}${INV.count()?' · GEMS ×'+INV.count():''}</div><button class="bgsort" type="button" title="how the things lie">${TILED?'TILED':'LOOSE'}</button><div class="bgm">${ids.map(id=>{ const [x,y]=tl?tl.at(id):spot(id,ids); return icon(id,INV.items[id],x,y,tl?Math.min(IC,tl.c-2):IC); }).join('')}</div><button class="bggrip" type="button" title="drag to make the bag bigger or smaller"></button></div></div>${strip()}`; if(x)pk.appendChild(x); sized(); };
+  const sized=()=>{ const o=pk.querySelector('.bgo'), k=pk.querySelector('.bgk'); if(!o||!k)return; pk.style.width=o.style.width=Math.round(BW*S)+'px'; o.style.height=Math.round(BH*S)+'px'; k.style.transform='scale('+S+')'; };
   BAG.toggle=on=>{ pk.hidden=on===undefined?!pk.hidden:!on; BAG.draw(); };
   Object.defineProperty(BAG,'open',{get:()=>!pk.hidden});
   const redraw=()=>FORAGE.draw();
@@ -115,13 +123,22 @@ window.BAG=BAG;
   pk.addEventListener('pointerup',e=>{ '@later'; if(!drag)return; const D=drag; endDrag(); const id=D.id;
     if(!D.moved){ const now=performance.now(); if(lastTap.id===id&&now-lastTap.t<400){ lastTap={id:null,t:0}; if(HUD.useItem)HUD.useItem(id); } else { lastTap={id,t:now}; sel=id; } redraw(); return; }
     const u=document.elementFromPoint(e.clientX,e.clientY); if(!u||!FORAGE.has(id))return;
-    const m=u.closest('.bgm'); if(m){ const r=m.getBoundingClientRect(), z=uz(); POS[id]=[Math.round(Math.max(0,Math.min(MW-IC,(e.clientX-r.left)/z-D.ox/z))),Math.round(Math.max(0,Math.min(MH-IC,(e.clientY-r.top)/z-D.oy/z)))]; savePos(); sel=id; redraw(); return; }
+    const m=u.closest('.bgm'); if(m){ const r=m.getBoundingClientRect(), z=uz()*S, x=(e.clientX-r.left-D.ox)/z, y=(e.clientY-r.top-D.oy)/z;
+      if(TILED){ const tl=tiles(inBag()), k=Math.max(0,Math.min(ORDER.length-1,Math.floor((y+tl.c/2)/tl.c)*tl.cols+Math.floor((x+tl.c/2)/tl.c))); ORDER.splice(ORDER.indexOf(id),1); ORDER.splice(k,0,id); saveSet(); }
+      else { POS[id]=[Math.round(Math.max(0,Math.min(MW-IC,x))),Math.round(Math.max(0,Math.min(MH-IC,y)))]; savePos(); } sel=id; redraw(); return; }
     const q=u.closest('#hqb .qs'); if(q){ HUD.set(+q.dataset.i,id); return; }
     if(u===cv||u.closest('#stage')){ BAG.drop(id,1,groundAt(e.clientX,e.clientY)); return; }
     redraw(); });
   pk.addEventListener('pointercancel',endDrag);
+  // the corner: drag it and the whole bag grows or shrinks (half to three times)
+  let grip=null; pk.addEventListener('pointerdown',e=>{ const g=e.target.closest('.bggrip'); if(!g||e.button)return; e.preventDefault(); e.stopPropagation(); const r=pk.getBoundingClientRect(); grip={x0:r.left,y0:r.top,z:uz()}; try{ g.setPointerCapture(e.pointerId); }catch(x){} },true);
+  pk.addEventListener('pointermove',e=>{ if(!grip)return; S=Math.max(.5,Math.min(3,Math.max((e.clientX-grip.x0)/grip.z/BW,(e.clientY-grip.y0)/grip.z/BH))); sized(); });
+  const gripUp=()=>{ if(!grip)return; grip=null; saveSet(); }; pk.addEventListener('pointerup',gripUp); pk.addEventListener('pointercancel',gripUp); pk.addEventListener('lostpointercapture',gripUp);
+  BAG.size=v=>{ if(v!=null){ S=Math.max(.5,Math.min(3,+v||1)); saveSet(); BAG.draw(); } return S; };
+  BAG.tiled=v=>{ if(v!=null){ TILED=!!v; saveSet(); BAG.draw(); } return TILED; };
   pk.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
+    if(b.classList.contains('bgsort')){ BAG.tiled(!TILED); return; } if(b.classList.contains('bggrip'))return;
     if(d.bagdrop)BAG.drop(d.bagdrop,d.n==='all'?FORAGE.has(d.bagdrop):1); else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.hold){ if(WIELD.on===d.hold)BAG.off('hand'); else BAG.wear(d.hold,'hand'); } else if(d.act&&FORAGE.ACT[d.act])FORAGE.ACT[d.act](d.aid);
     redraw(); });
   BAG.sel=()=>sel; BAG.select=id=>{ sel=id; redraw(); };
-  window.BAGDBG=()=>({open:!pk.hidden,sel,pos:{...POS},ground:GRD.map(g=>({id:g.id,n:g.n,x:+g.x.toFixed(1),z:+g.z.toFixed(1),lv:g.lv,d:+(Math.hypot(g.x-pos.x,g.z-pos.z)/T).toFixed(2),drawn:!!(g.sp&&g.sp.parent),thing:UI.things.includes(g.th),pick:!!(g.th&&g.th.pick)})),loose:UI.things.filter(t=>t.name.startsWith('A LOOSE ')).map(t=>t.name),inBag:inBag(),worn:{...EQUIP.by,hand:WIELD.on}}); }
+  window.BAGDBG=()=>({open:!pk.hidden,sel,size:S,tiled:TILED,order:[...ORDER],pos:{...POS},ground:GRD.map(g=>({id:g.id,n:g.n,x:+g.x.toFixed(1),z:+g.z.toFixed(1),lv:g.lv,d:+(Math.hypot(g.x-pos.x,g.z-pos.z)/T).toFixed(2),drawn:!!(g.sp&&g.sp.parent),thing:UI.things.includes(g.th),pick:!!(g.th&&g.th.pick)})),loose:UI.things.filter(t=>t.name.startsWith('A LOOSE ')).map(t=>t.name),inBag:inBag(),worn:{...EQUIP.by,hand:WIELD.on}}); }

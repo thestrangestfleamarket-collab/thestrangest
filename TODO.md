@@ -46,8 +46,26 @@ The owner's list of features to build, newest last. Each line is his ask; the no
 
 ## Open from chats (shared; any chat adds, takes and ticks lines here)
 
-Mark a line `[taking: <branch>]` before starting it and tick it `[x]` in the pull request that finishes it.
+How to use: before starting a line, write `[taking: <your branch>, <date>]` after it and get that onto `main` with your work (or on its own);
+tick it `[x]` in the pull request that finishes it. Add new lines at the end with the owner's words and date. Grep `docs/HISTORY.md` before
+starting: a newer owner decision wins over a line here.
 
-- [ ] **Shop insides on the street** (owner, 3 Nov 2026: "when entering buildings like the bathhouse you dont go all the way in ... you can still see npcs players outside"). The bath is fixed (off the map, #521). Check the bar, museum, bank, theatre and playhouse; move any that show the same thing off the map the bath's way.
-- [ ] **Owner to try the bath house** in the game (in by its door, out by OUT TO THE STREET) and approve.
-- [ ] **Start freeze**: about 20 s after the start the page stalls while the bodega's window pictures are taken (`WINDOWS.first`). Not asked for yet; needs the owner's go.
+- [ ] **Shop insides on the street: same problem as the old bath house?** Owner, 3 Nov 2026 (his shot of the bath house): "when entering
+  buildings like the bathhouse you dont go all the way in, you get sent to a middle area where you cant walk in or out, and you can still
+  see npcs players outside area, makes no sense."
+  - What happened since: the bath was first moved off the map (#521, 2 Nov), then on 4 Nov the owner asked for an open door you walk
+    through, its inside built in place when near (`src/059e-ghostdojo.js`, HISTORY 4 Nov "the bath house's door open"). So the bath is done.
+  - Still to check: the bar, Museum of Earth, Art Museum, bank, theatre and playhouse. They build their insides in place behind the fade
+    on a double-click of the door (`STORE.enter` / `STORE.exit` in `src/058-store.js`, `STORE.inside[id]`). Go in each one (`?at=x,z` near its
+    door, double-click it) and look for: landing short of the inside (between the door and the room), not able to walk further in or back
+    out, the street's NPCs and players still visible through it.
+  - If one is broken, ask the owner which fix he wants before building it (a request that could mean more than one thing): the open walk-in
+    door like the bath's, or off the map like the arcade and apartments (`ROOMS.off[id]` in `src/130-rooms.js`: `box`, `build` via
+    `ROOMS.part`, `spawn`, `out`, `door`, `exit`; the street is hidden while you are in). Prove it in `tests/places.cjs`.
+  - `docs/INTERIORS.md` (4 Nov) is the plan for those same insides (seats, staff spots, things to do): work with it, not around it.
+- [ ] **Freeze about 20 s after the start** (seen 3 Nov, not asked for by the owner: get his go first). `WINDOWS.first` in
+  `src/130a-windows.js` (lines ~72–75) runs 4 s after the start and, for each off-map inside with windows looking in, builds the whole inside
+  (`ROOMS.offBuild`), takes its window pictures (`WINDOWS.bake`), saves them in `localStorage` and drops the inside again, all in one go on
+  the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
+  for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
+  when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.

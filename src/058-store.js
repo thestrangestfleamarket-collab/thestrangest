@@ -95,7 +95,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   const STEPS=[];
   if(!AWAY.has('diner')){ const B=B_('ldiner'), sc=B.s||1; laid('diner',()=>room('diner','THE DINER',B,{floor:K.diner.dinerFloorCol,in:K.diner.dinerWall},{w:'f',a:B.x0+9.5*sc,wd:1.56,h:94},B=>{ PRESETS['Preset Diner 1'].forEach(([k,dx,dy,r])=>put(k,B.x0+dx*sc,B.y0+dy*sc,r)); })); }
 
-  if(!AWAY.has('bar')){ const B=B_('lbodega2'), TB=TURN(B,WP.bar.face), BL={...B,...TB.L}, dp=TB.pt((BL.x0+BL.x1)/2,BL.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}; rec('bar','THE BAR',B,D,true); STEPS.push(()=>laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},D,(B0,l0)=>{ const n0=PROPS.length, B=BL, L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
+  if(!AWAY.has('bar')){ const B=B_('lbodega2'), TB=TURN(B,WP.bar.face), BL={...B,...TB.L}, dp=TB.pt((BL.x0+BL.x1)/2,BL.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}; rec('bar','THE BAR',B,D,true); STORE.barFrame={B:BL,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; }}; STEPS.push(()=>laid('bar',()=>room('bar','THE BAR',B,{floor:K.bar.barFloorCol,in:K.bar.barWall},D,(B0,l0)=>{ const n0=PROPS.length, B=BL, L=B.x0+T, R=B.x1-T, Kb=B.y0+T, F=B.y1-T, m=(B.x0+B.x1)/2, yE=F-1.35, along=x=>yE-(x-1.84);
       const mid=(Kb+F)/2;
       // THE BAR: counter, back-bar shelves and stools down the front-west wall
       put('back bar',L+.42,along(5.2),3); put('bar soffit',L+1.5,along(4.5),3); put('neon sign: BAR',L+.08,along(5.2),0);
@@ -110,7 +110,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       put('staircase',L+1.0,Kb+.15);
       // the pool table, mid-room; darts on the east wall with a throw lane in front
       put('pool table',m-.3,mid-1.2);
-      put('dartboard',R-.03,mid+3.0,2);
+      put('dartboard',R-.03,mid+4.2,2);
       // one table by the door
       put('red rug',R-1.9,F-2.1,1); put('bar table',R-1.6,F-2.1); put('red leather armchair',R-.7,F-2.1,2); put('red leather armchair',R-2.5,F-2.1);
       // posters (made in-house), a palm, the way out
@@ -123,7 +123,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       for(const l of LAMPS.slice(l0)){ const k=l.prop&&(l.prop.kind||l.prop.name)||''; if(k==='bar table'||k==='pool table'||k==='staircase')continue; if(l.sconce){ l.c=l.c.map(v=>v*.6); continue; } if(k==='exit sign, lit'){ l.c=l.c.map(v=>v*.45); continue; } l.off=1; }
       LAMPS.push({x:SX,y:SY,z:92,r:5,c:[1.2,.9,.55],room:true,own:true,day:true});   // a dim spot on the stage
       LAMPS.push({own:1,room:1,day:true,x:stools[1].x,y:stools[1].y,z:38,r:1.4,c:[.9,.36,.1]});
-      turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; }))); }
+      turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; if(STORE.furnish&&STORE.furnish.bar)STORE.furnish.bar(STORE.bar); }))); }
 
   if(!AWAY.has('museum')){ const MK=K.museum, M=MK.MUS, B=M.b, SX=B.x0+B.x1, SY=B.y0+B.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], D={w:'f',a:SX-M.mid,wd:2.5,h:76}, stone=[226,220,204];
     const look={floor:(x,y)=>MK.museumFloorCol(SX-x,SY-y),in:(b,nx,ny,x,y,z,f)=>MK.museumWall(b,-nx,-ny,SX-x,SY-y,z,f),out:(nx,ny,x,y,z,f,H)=>MK.museumOutside(B,-nx,-ny,SX-x,SY-y,z,f,H)||sh(stone,f),cope:stone};
@@ -137,6 +137,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
         STORE.bound.x1=Math.max(STORE.bound.x1,X(B.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(B.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(B.y1+6)); }); }
     const mr=(lk,set,o)=>()=>room('museum','MUSEUM OF EARTH',B,lk,D,set,o);
     rec('museum','MUSEUM OF EARTH',B,D,true);
+    STORE.museumFrame={B,M,at:(x,y)=>({x:X(SX-x),z:Z(SY-y)})};   // the inside's own layout (its door side first) to the world
     const ym=(B.y0+B.y1)/2, lw={...look,floor:null};
     const inWalls=mr({in:look.in},()=>{},{xo:1,xw:[...[M.hx0,M.hx1].map((x,i)=>['s'+i,'y',SX-x,SY-M.by,B.y1-T,i?1:-1,[{a0:SY-M.side[1],a1:SY-M.side[0],z0:0,z1:M.archZ}],true]),
         ['k','x',SY-M.by,B.x0+T,B.x1-T,1,[M.earth,M.humans,M.closed].map(([a,b])=>({a0:SX-b,a1:SX-a,z0:0,z1:M.archZ})),true],
@@ -153,7 +154,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       mr({in:look.in},()=>{ const C=M.closedR; mp('woolly mammoth',M.mid,(M.humansR.y0+M.humansR.y1)/2+.4); mp('Gibeon meteorite',M.earthR.x0+1.6,M.earthR.y1-1.9);
         mp('terracotta warriors',(C.x0+C.x1)/2,C.y1-.9,2); mp('jade burial suit',C.x1-.55,C.y0+2.4,1); mp('the Sutton Hoo helmet',C.x0+.6,C.y0+1,3); mp('clay tablets',C.x0+.35,C.y0+3.4,3); mp('the Antikythera mechanism',(C.x0+C.x1)/2,C.y0+2.9,2);
         L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); },{xo:1}),
-      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); }; }); }   // nothing of its inside until you go in, dropped when you leave
+      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); if(STORE.furnish&&STORE.furnish.museum)STORE.furnish.museum(STORE.museumFrame); }; }); }   // nothing of its inside until you go in, dropped when you leave
 
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);

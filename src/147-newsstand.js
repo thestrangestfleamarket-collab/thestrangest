@@ -1,10 +1,10 @@
 // THE NEWSSTAND: NEWS builds the newsstand by the subway stairs, kept by the cat.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CIVIC, CLOCK, DRONE, LINES, pos, UI} from './003b-systems.js';
+import {CITY, CIVIC, CLOCK, DRONE, LINES, NEWS, pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPSTAIR, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {TOONS} from './084-npc-toons.js';
-const NEWS=window.NEWS={};
+window.NEWS=NEWS;
 NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; const N=TOONS.cat; if(!N){ setTimeout(NEWS.init,600); return; } NEWS._d=1;   // the cat (data/raincat.json) loads just after the start; wait for it, build once
   const X=SHARED.BOD.XS, Y=z=>SHARED.BOD.YS(z*.64), Z=SHARED.BOD.ZS, T=TILE, xm=(MAPSTAIR.x0+MAPSTAIR.x1)/2-6, x0=xm-1.4, x1=xm+1.4, y1=-74.85, y0=y1-1.5;
   const STEEL=0x5c6268, DARK=0x22262a, WOOD=0x8a6440, PAPER=0xe6e2d6, TW=0xa8844e;
@@ -103,6 +103,7 @@ NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; co
   const left=it=>it.k==='papers'?stock.papers[it.i]:stock[it.k];
   const HEAD=[['FIREBALL SCORCHES PARK BENCH','dragons blamed; the city shrugs'],['BODEGA FOX DENIES PRICE HIKE','"a dollar is a dollar," he says'],['SKELETON GUARDS SEE OFF TROUBLEMAKERS','three hooded figures flee down the subway stairs'],
     ['MUSHROOM STALL A HIT AT THE PARK GATE','the seller is said to be "very calm"'],['METRO RUNS ON TIME, MOSTLY','riders surprised'],['CASTLE FOUND TO BE HALF SIZE','built for the woodland folk, the mayor explains']];
+  NEWS.heads=i=>{ const d=(window.CITY&&CITY.day)||0; return {title:TITLES[i%TITLES.length][0],day:d+1,a:HEAD[(d*3+i)%HEAD.length],b:HEAD[(d*3+i+2)%HEAD.length]}; };   // today's front page of a paper, for a box or a reader elsewhere
   const front=i=>{ '@later'; const d=(window.CITY&&CITY.day)||0, w=null, a=HEAD[(d*3+i)%HEAD.length], b=HEAD[(d*3+i+2)%HEAD.length];
     return `<div class="np"><div class="nh" style="border-color:#${TITLES[i][1].toString(16).padStart(6,'0')}">${TITLES[i][0]}</div><div class="nd">DAY ${d+1} · 25¢ MORE THAN YESTERDAY${w?' · '+String(w).toUpperCase():''}</div><b>${a[0]}</b><p>${a[1]}</p><b class="s">${b[0]}</b><p>${b[1]}</p></div>`; };
   const css=document.createElement('style'); css.textContent='#nsp{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel,monospace);color:#e8e2c8;background:#18241c;border:2px solid #4c7a58;padding:14px 16px 12px;z-index:16;user-select:none}#nsp h3{margin:0 0 6px;font-size:13px}#nsp .row{display:flex;gap:8px;align-items:center;margin:3px 0}#nsp .it{flex:1}#nsp .sec{margin:8px 0 2px;color:#9cc8a4}#nsp .st{margin-top:8px;color:#f0d890;min-height:1em}#nsp .np{background:#eee8d8;color:#222;padding:8px 10px;margin-top:8px}#nsp .nh{font-size:15px;border-bottom:3px solid;margin-bottom:4px}#nsp .nd{font-size:10px;margin-bottom:6px}#nsp .np p{margin:2px 0 6px}#nsp .s{font-size:11px}';
@@ -121,4 +122,3 @@ NEWS.init=()=>{ if(NEWS._d)return; if(typeof SHARED.BOD==='undefined')return; co
   UI.thing({name:'NEWSSTAND',obj:hb,reach:1.6*T,near:3*T,tall:1.2*T,act:NEWS.open});
   NEWS.stock=stock; NEWS.bundles=bundles; NEWS.deliver=()=>DR.forEach((d,k)=>fly(d,k));
   window.NEWSCLK=(h,s)=>{ if(h!=null)CLOCK.h=h; if(s!=null){ CLOCK.run=true; CLOCK.speed=s; } return CLOCK.h; }; window.NEWSDBG=()=>({h:+CLOCK.h.toFixed(2),sold,act:act&&act.n,queue:queue.map(a=>a.n),shut:+shut.toFixed(2),bundles:bundles.length,stock:JSON.parse(JSON.stringify(stock)),drones:DR.map(d=>d.g.visible?d.g.position.toArray().map(v=>+v.toFixed(1)):null),at:[+X(xm).toFixed(2),+Z(y1+2).toFixed(2)]}); };
-export {NEWS};

@@ -1,16 +1,23 @@
 // THE DINER: its inside off the map, laid out as a real diner: the dining room (a counter of eight stools, three booths of four on the windows: 20 seats), the back counter and the pass window, the kitchen behind it, built round its chef (the octopus, twice the drummer's size, all eight arms at the line, the prep fridge, the bread table and the pass, handing plates out the window to the waitress), the walk-in and the dish pit, two restrooms; its staff's work spots by job title.
-import {SHARED, THREE} from './003-shx.js';
-import {pos, ROOMS, UI, USE} from './003b-systems.js';
+import {THREE} from './003-shx.js';
+import {CLOCK, FORAGE, INV, NEWS, pos, RADIO, ROOMS, SHOPS, UI, USE, VIT} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {PPU} from './004-main.js';
 import {SYS, TILE, ZU} from './006-map-pre.js';
+import {IKIT} from './038zc-ikit.js';
+import {MINI} from './038zd-mini.js';
 import {MSHOP} from './059i-mshops.js';
 import {octBody} from './125-game-zzz-bar-octopus-1-body.js';
 import {octFig} from './127-drummer.js';
 const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
+// what it serves (the waitress's menu, the register, the octopus), and what each does for you
+FORAGE.add({names:{d_coffee:'A MUG OF COFFEE',d_shake:'A MILKSHAKE',f_eggs:'TWO EGGS ANY STYLE',f_pancake:'A PANCAKE STACK',f_hash:'HASH AND EGGS',f_burger:'A CHEESEBURGER',f_blt:'A BLT ON TOAST',f_grilled:'A GRILLED CHEESE',f_pie:'A SLICE OF PIE',f_cake:'A SLICE OF CAKE',f_gumball:'A GUMBALL',news_paper:'TODAY\'S PAPER'},
+  does:{d_coffee:()=>{ VIT.sta=1; },d_shake:()=>{ FORAGE.feed(.2); VIT.sta=Math.min(1,VIT.sta+.4); },f_eggs:()=>FORAGE.feed(.4),f_pancake:()=>{ FORAGE.feed(.4); VIT.sta=Math.min(1,VIT.sta+.3); },f_hash:()=>{ FORAGE.feed(.55); VIT.heal(.1); },
+    f_burger:()=>{ FORAGE.feed(.6); VIT.heal(.15); },f_blt:()=>FORAGE.feed(.45),f_grilled:()=>FORAGE.feed(.4),f_pie:()=>{ FORAGE.feed(.25); FORAGE.buff('regen',60); },f_cake:()=>{ FORAGE.feed(.25); VIT.sta=1; },f_gumball:()=>{ VIT.sta=Math.min(1,VIT.sta+.1); }}});
+// ordering: the waitress's menu, wherever you order (the register, the octopus, her)
+DINER.order=()=>SHOPS.open({key:'diner_waitress',name:'THE DINER'});
 { const T=TILE, MW=T/.84;   // world units in a metre
-  // where the room's corner and axes are (u east, v toward the front door, in metres)
-  const frame=R=>{ const {X,Z}=SHARED.BOD, EX=Math.sign(X(R.x1)-X(R.x0)), IN=Math.sign(Z(R.y1)-Z(R.y0));
-    return {EX,IN,W:Math.abs(X(R.x1)-X(R.x0))/MW,D:Math.abs(Z(R.y1)-Z(R.y0))/MW,wx:u=>X(R.x0)+EX*u*MW,wz:v=>Z(R.y0)+IN*v*MW,hd:(du,dv)=>Math.atan2(EX*du,IN*dv)}; };
+  const frame=R=>IKIT.frame(R);
   // the 20 seats [u,v,seat height,facing du,dv]: the counter's stools, then each booth bench's two places
   const SEATS=(W,D)=>{ const st=[], bo=[]; for(let i=0;i<8;i++)st.push([.7+i*.92,7.85,.78,0,-1]);
     for(const u0 of [.1,2.3,W-2.06])for(const [a,dir] of [[u0,1],[u0+1.96,-1]])bo.push([[a+dir*.36,D-1.05,.47,dir,0],[a+dir*.36,D-.4,.47,dir,0]]); return {st,bo}; };
@@ -19,7 +26,7 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     const S=SEATS(F.W,F.D); room.seats=[...S.st,...S.bo.flat()].map(([u,v,h,du,dv])=>({x:F.wx(u),z:F.wz(v),y:h*MW,hd:F.hd(du,dv)}));
     room.spots=DINER.spots={COOK:sp(7.4,2.6,-1,0),WAITRESS:sp(5.4,6.0,0,-1),COFFEE:sp(.8,6.0,0,-1),WAITER:sp(11.7,5.7,1,0),REGULAR:sp(7.65,7.85,0,-1)}; }
 
-  MSHOP.kit.diner=A=>{ '@later'; const {R,hs,sh}=A, {EX,IN,W,D,wx,wz,hd}=frame(R), H=A.Y(A.WH)/MW, K=A.Y(1)/MW, CX=W/2;
+  MSHOP.kit.diner=A=>{ '@later'; const {R,hs,sh}=A, {EX,IN,W,D,wx,wz,hd,pw:PW}=frame(R), H=A.Y(A.WH)/MW, K=A.Y(1)/MW, CX=W/2;
     const tu=u=>R.x0+u/W*(R.x1-R.x0), tv=v=>R.y0+v/D*(R.y1-R.y0), sol=(u0,v0,u1,v1)=>A.sol(tu(u0),tv(v0),tu(u1),tv(v1));
     const IT=DINER.items=[], it=n=>IT.push(n); DINER.seats=0;
     /* ---------- the floor and the outer walls, painted ---------- */
@@ -40,24 +47,8 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
       if(side==='w'&&s<KV)return tile(s,z,[236,238,234],[226,224,214],2); if(side==='e'&&s<KV)return tile(s,z,[196,214,222],[232,230,222],1.4);
       return dining(s,z,side); };
     for(const s of ['b','w','e','f'])A.wall(s,wallP(s));
-    /* ---------- the makers: boxes, cylinders and balls in metres, merged into a few meshes ---------- */
-    const V3=THREE.Vector3, COL=new THREE.Color(), bag=()=>({p:[],n:[],c:[]}), MAIN=bag(), GLOW=bag(); let CUR=MAIN;
-    const addG=g=>{ const q=g.index?g.toNonIndexed():g, p=q.attributes.position.array, n=q.attributes.normal.array; for(let i=0;i<p.length;i+=3){ CUR.p.push(p[i],p[i+1],p[i+2]); CUR.n.push(n[i],n[i+1],n[i+2]); CUR.c.push(COL.r,COL.g,COL.b); } g.dispose(); if(q!==g)q.dispose(); };
-    const box=(u0,v0,u1,v1,h0,h1,c)=>{ COL.set(c); const g=new THREE.BoxGeometry(Math.abs(u1-u0)*MW,(h1-h0)*MW,Math.abs(v1-v0)*MW); g.translate((wx(u0)+wx(u1))/2,(h0+h1)/2*MW,(wz(v0)+wz(v1))/2); addG(g); };
-    const cyl=(u,v,r,h0,h1,c,rt=r,seg=12)=>{ COL.set(c); const g=new THREE.CylinderGeometry(rt*MW,r*MW,(h1-h0)*MW,seg); g.translate(wx(u),(h0+h1)/2*MW,wz(v)); addG(g); };
-    const ball=(u,v,h,r,c,sy=1)=>{ COL.set(c); const g=new THREE.SphereGeometry(r*MW,10,7); g.scale(1,sy,1); g.translate(wx(u),h*MW,wz(v)); addG(g); };
-    const glow=f=>{ const c=CUR; CUR=GLOW; f(); CUR=c; };
-    const matL=new THREE.MeshLambertMaterial({vertexColors:true}), matB=new THREE.MeshBasicMaterial({vertexColors:true});
-    const meshOf=(b,mat,own)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(b.p,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(b.n,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(b.c,3));
-      const me=new THREE.Mesh(g,mat); if(own){ g.computeBoundingBox(); const c=g.boundingBox.getCenter(new V3()); c.y=g.boundingBox.min.y; g.translate(-c.x,-c.y,-c.z); me.position.copy(c); }
-      me.castShadow=mat===matL; me.receiveShadow=true; A.add(me); return me; };
-    const own=f=>{ const c=CUR, b=bag(); CUR=b; f(); CUR=c; return b; };
-    // a flat picture facing (du,dv), its bottom middle at u,v,h (metres)
-    const pic=(u,v,h,w,hh,du,dv,tex,lit)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*MW,hh*MW),lit?new THREE.MeshBasicMaterial({map:tex}):new THREE.MeshLambertMaterial({map:tex})); m.position.set(wx(u),(h+hh/2)*MW,wz(v)); m.rotation.y=hd(du,dv); A.add(m); return m; };
-    const words=(w,h,bg,lines,fg='#f0e8d0')=>A.tex(w,h,(g,W_,H_)=>{ g.fillStyle=bg; g.fillRect(0,0,W_,H_); g.textBaseline='top'; for(const [t,x,y,c,sz,al] of lines){ g.fillStyle=c||fg; g.font=(sz||8)+'px monospace'; g.textAlign=al||'left'; g.fillText(t,x,y); } });
-    const seat=(name,b,spots,reach)=>{ const me=meshOf(b,matL,true); me.name=name; DINER.seats+=spots.length;
-      const th={name,obj:me,reach:reach*T,near:(reach+1.2)*T,tall:1.2*T,act:()=>{ let best=spots[0], bd=1e9; for(const s of spots){ const d=Math.hypot(wx(s[0])-pos.x,wz(s[1])-pos.z); if(d<bd){ bd=d; best=s; } } USE.sitAt(wx(best[0]),wz(best[1]),best[2]*MW,hd(best[3],best[4])); }};
-      UI.thing(th); return me; };
+    /* ---------- the makers (IKIT): boxes, cylinders and balls in metres, merged into a few meshes ---------- */
+    const K_=IKIT.room(frame(R),o=>A.add(o),r=>null), {box,cyl,ball,glow,own,meshOf,pic,words,matL,use}=K_, seat=(n,b,sp,r)=>{ DINER.seats+=sp.length; return K_.seat(n,b,sp,r); };
     const C={red:0xb8262e,cream:0xeee2c4,chrome:0xc8ccd0,steel:0xa8acb0,dsteel:0x6e7276,black:0x1e1e22,wood:0x5a2a24,formica:0xe6dcc6,vinyl:0xc0303a,white:0xf2f2f0,porc:0xf4f6f6,tileK:0xe8ecea,tileR:0xd4e4ea};
     /* ---------- the partition (kitchen and restrooms behind it): a window to the pass, the kitchen's swing door, the restroom doors ---------- */
     const P0=KV, P1=KV+.15;
@@ -121,9 +112,9 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     for(let i=0;i<4;i++)cyl(2.65,BB[0]+.35,.05,.92+i*.09,1.0+i*.09,C.white,.055); it('a stack of mugs');
     box(6.4,BB[0]+.05,7.0,BB[1]-.05,.92,1.0,C.steel); it('the ice bin');
     box(.2,P1,2.9,P1+.2,1.45,1.48,C.chrome); for(let i=0;i<9;i++)cyl(.35+i*.29,P1+.1,.035,1.48,1.6,0xcfe3ea); it('a glass shelf');
-    pic(1.55,P1+.012,1.62,2.6,1.0,0,1,A.tex(208,80,(g,w,h)=>{ g.fillStyle='#16140f'; g.fillRect(0,0,w,h); g.fillStyle='#c9a24a'; g.fillRect(0,0,w,2); g.fillRect(0,h-2,w,2); g.textBaseline='top'; g.font='8px monospace';
-      const L=[['BREAKFAST',''],['2 EGGS ANY STYLE','3.50'],['PANCAKE STACK','3.25'],['HASH & EGGS','4.00'],['',''],['COFFEE  BOTTOMLESS','.75']], R2=[['LUNCH',''],['CHEESEBURGER','4.75'],['BLT ON TOAST','3.75'],['GRILLED CHEESE','3.00'],['PIE  THE SLICE','2.50'],['MILKSHAKE','2.25']];
-      [L,R2].forEach((col,k)=>col.forEach(([a,b],i)=>{ g.fillStyle=i===0?'#f0c040':'#f4ecd8'; g.textAlign='left'; g.fillText(a,6+k*104,6+i*12); g.textAlign='right'; g.fillText(b,98+k*104,6+i*12); })); }),true); it('the menu board');
+    const MENU=A.tex(208,80,(g,w,h)=>{ g.fillStyle='#16140f'; g.fillRect(0,0,w,h); g.fillStyle='#c9a24a'; g.fillRect(0,0,w,2); g.fillRect(0,h-2,w,2); g.textBaseline='top'; g.font='8px monospace';
+      const L=[['BREAKFAST',''],['2 EGGS ANY STYLE','$4'],['PANCAKE STACK','$3'],['HASH & EGGS','$4'],['CAKE  THE SLICE','$3'],['COFFEE  BOTTOMLESS','$1']], R2=[['LUNCH',''],['CHEESEBURGER','$5'],['BLT ON TOAST','$4'],['GRILLED CHEESE','$3'],['PIE  THE SLICE','$3'],['MILKSHAKE','$2']];
+      [L,R2].forEach((col,k)=>col.forEach(([a,b],i)=>{ g.fillStyle=i===0?'#f0c040':'#f4ecd8'; g.textAlign='left'; g.fillText(a,6+k*104,6+i*12); g.textAlign='right'; g.fillText(b,98+k*104,6+i*12); })); }); pic(1.55,P1+.012,1.62,2.6,1.0,0,1,MENU,true); it('the menu board');
     pic((KD[0]+KD[1])/2,P1+.012,2.22,.38,.38,0,1,A.tex(32,32,(g,w,h)=>{ g.fillStyle='#c02028'; g.beginPath(); g.arc(16,16,15,0,7); g.fill(); g.fillStyle='#f4f0e4'; g.beginPath(); g.arc(16,16,12,0,7); g.fill(); g.strokeStyle='#1a1a1a'; g.lineWidth=2; g.beginPath(); g.moveTo(16,16); g.lineTo(16,7); g.moveTo(16,16); g.lineTo(22,19); g.stroke(); for(let i=0;i<12;i++){ const a=i/12*Math.PI*2; g.fillStyle='#1a1a1a'; g.fillRect(16+Math.sin(a)*10-.5,16-Math.cos(a)*10-.5,1.5,1.5); } })); it('the clock');
     /* ---------- the counter and its eight stools ---------- */
     const CV=[6.55,7.42], CU=7.95; box(0,7.15,CU-.05,7.25,0,1.0,0xb0b4b8); box(CU-.05,6.6,CU,7.25,0,1.0,0xb0b4b8); box(0,7.24,CU,7.26,.55,.65,C.red); box(0,7.2,CU,7.27,0,.12,C.black);
@@ -168,6 +159,34 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     pic(W-.012,9.6,1.75,1.1,.4,-1,0,A.tex(88,32,(g,w,h)=>{ g.fillStyle='#000'; g.fillRect(0,0,w,h); g.font='bold 13px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.shadowColor='#ff3a8a'; g.shadowBlur=6; g.fillStyle='#ffd0e8'; g.fillText('PIE & JOE',w/2,h/2); }),true); it('a neon sign');
     for(const [v,i] of [[8.6,0],[10.3,1]]){ box(.005,v-.4,.035,v+.4,1.4,2.05,0x3a2a1a); pic(.037,v,1.45,.7,.55,1,0,A.tex(40,32,(g,w,h)=>{ const sky=i?['#f0a050','#e05a40']:['#7ab0d8','#d8e8f0']; const gr=g.createLinearGradient(0,0,0,h); gr.addColorStop(0,sky[0]); gr.addColorStop(1,sky[1]); g.fillStyle=gr; g.fillRect(0,0,w,h);
       g.fillStyle=i?'#2a1a2a':'#3a4a3a'; for(let x=0;x<w;x+=6)g.fillRect(x,h-8-((x*7)%11),5,20); g.fillStyle=i?'#c02020':'#3060c0'; g.fillRect(8,h-9,16,5); g.fillStyle='#1a1a1a'; g.fillRect(10,h-5,3,3); g.fillRect(19,h-5,3,3); })); it('a framed picture'); }
+    /* ---------- what you use: the counter's machines and cases sell, the boards read close up, the jukeboxes play the radio, the restrooms work, a shift at the pass pays tips ---------- */
+    const say=(t,c)=>SAY(t,c||'#f2c14e');
+    use('THE COFFEE BREWER (COFFEE $1)',.55,BB[0]+.25,.7,1.55,()=>IKIT.buy('d_coffee',1,'A MUG OF COFFEE, BLACK. $1.'),1.8);
+    use('THE MILKSHAKE MIXER (SHAKE $2)',1.3,BB[0]+.3,.45,1.46,()=>IKIT.buy('d_shake',2,'A MILKSHAKE, THICK ENOUGH TO STAND A STRAW IN. $2.'),1.8);
+    use('THE SODA FOUNTAIN (COLA $3)',2.05,BB[0]+.3,.7,1.45,()=>IKIT.buy('d_cola',3,'A GLASS OF COLA FROM THE FOUNTAIN. $3.'),1.8);
+    use('THE PIE CASE (A SLICE $3)',3.7,6.98,.5,1.5,()=>IKIT.buy('f_pie',3,'A SLICE OF PIE, CUT FROM THE CASE. $3.'));
+    use('THE CAKE STAND (A SLICE $3)',2.0,6.95,.36,1.4,()=>IKIT.buy('f_cake',3,'A SLICE OF CAKE. $3.'));
+    use('THE CASH REGISTER (ORDER)',7.65,6.97,.45,1.4,()=>DINER.order());
+    use('THE HOST STAND (A MENU)',7.92,11.95,.6,1.2,()=>MINI.look('THE MENU',MENU,'Order at the register, from the waitress, or from the octopus himself.'));
+    use('THE MENU BOARD',1.55,P1+.35,.7,2.62,()=>MINI.look('THE MENU BOARD',MENU),2.6);
+    use('THE CLOCK',(KD[0]+KD[1])/2,P1+.3,.4,2.6,()=>MINI.look('THE CLOCK',(g,w,h)=>{ const t=CLOCK.h||0, cx=w/2, cy=h/2-8, r=Math.min(w,h)/2-30; g.fillStyle='#2a1a16'; g.fillRect(0,0,w,h); g.fillStyle='#c02028'; g.beginPath(); g.arc(cx,cy,r+10,0,7); g.fill(); g.fillStyle='#f4f0e4'; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
+      g.fillStyle='#1a1a1a'; g.font='14px monospace'; g.textAlign='center'; g.textBaseline='middle'; for(let i=1;i<=12;i++){ const a=i/12*Math.PI*2; g.fillText(i,cx+Math.sin(a)*(r-16),cy-Math.cos(a)*(r-16)); }
+      const hand=(a,l,wd)=>{ g.lineWidth=wd; g.strokeStyle='#1a1a1a'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(a)*l,cy-Math.cos(a)*l); g.stroke(); }; hand((t%12)/12*Math.PI*2,r*.5,5); hand((t%1)*Math.PI*2,r*.8,3);
+      const hh=Math.floor(t), mm=Math.floor(t%1*60); g.fillStyle='#f0d070'; g.fillText(`${(hh+11)%12+1}:${String(mm).padStart(2,'0')} ${hh<12?'AM':'PM'}`,cx,h-16); }),2.6);
+    RADIO.src.set('jukebox-diner',{id:'jukebox-diner',room:'diner'});
+    const juke=()=>{ RADIO.next('jukebox-diner'); setTimeout(()=>{ const n=RADIO.now('jukebox-diner'); say(n?`THE JUKEBOX: ${n.name}${n.title?' · '+n.title:''}`:'THE JUKEBOX WARMS UP.'); },300); };
+    use('THE JUKEBOX (NEXT STATION)',W-.3,7.7,.6,1.3,juke);
+    for(const B of [B1,B2,B3])use('A TABLETOP JUKEBOX',(B[0]+B[1])/2,D-.06,.3,1.02,juke,1.2);
+    use('THE GUMBALL MACHINE ($1)',8.75,12.5,.36,1.4,()=>IKIT.buy('f_gumball',1,'A GUMBALL ROLLS DOWN THE CHUTE. $1.'));
+    use("THE NEWSPAPER BOX (TODAY'S PAPER $1)",9.42,12.55,.45,1.05,()=>{ if(!IKIT.buy('news_paper',1,"TODAY'S PAPER. $1."))return; const N=NEWS.heads(2);
+      MINI.look(N.title,(g,w,h)=>{ g.fillStyle='#ece6d6'; g.fillRect(0,0,w,h); g.fillStyle='#1a1a1a'; g.textAlign='center'; g.textBaseline='top'; g.font='bold 20px serif'; g.fillText(N.title,w/2,12); g.font='11px monospace'; g.fillText('DAY '+N.day,w/2,38); g.fillRect(16,54,w-32,2);
+        const wrap=(t,y,sz)=>{ g.font='bold '+sz+'px serif'; const ws=String(t).split(' '); let l='', yy=y; for(const x of ws){ if(g.measureText(l+x).width>w-40){ g.fillText(l.trim(),w/2,yy); l=''; yy+=sz+4; } l+=x+' '; } g.fillText(l.trim(),w/2,yy); return yy+sz+10; };
+        const part=t=>Array.isArray(t)?[t[0],t[1]||'']:[String(t),''], story=(t,y,sz)=>{ const [hd,dk]=part(t); let yy=wrap(hd,y,sz); if(dk){ g.font='italic '+(sz-6)+'px serif'; const d=dk[0].toUpperCase()+dk.slice(1)+'.'; g.fillText(d,w/2,yy-4); yy+=sz; } return yy; };
+        const y=story(N.a,66,18); g.fillRect(40,y,w-80,1); story(N.b,y+10,14); }); });
+    for(const [u1,men] of [[MU,true],[W,false]]){ const tc=u1-.55; use(men?"THE MEN'S TOILET":"THE WOMEN'S TOILET",tc,.42,.5,.9,()=>{ const p=PW(tc,.5); USE.sitAt(p[0],p[1],.43*MW,hd(0,1)); },1.2);
+      use('A WASHBASIN',u1-.21,2.62,.45,1.0,()=>say('YOU WASH YOUR HANDS. A PAPER TOWEL FROM THE DISPENSER.'),1.2); }
+    use('THE PASS (WORK A SHIFT)',4.7,KV+.3,1.0,1.3,()=>MINI.open(GAMES.orders({can:()=>Date.now()-(DINER.shiftAt||0)<90e3?'THE OCTOPUS WAVES A TENTACLE: TAKE A BREAK FIRST.':'',
+      end:S=>{ DINER.shiftAt=Date.now(); DINER.last={tips:S.tips,served:S.served}; if(S.tips>0){ INV.cash+=S.tips; say(`$${S.tips} IN TIPS.`); } }})),1.8);
     /* ---------- the lights: pendants over the counter and the booths, a fan, the kitchen's tubes ---------- */
     const pend=(u,v,c)=>{ box(u-.005,v-.005,u+.005,v+.005,1.95,H,C.black); cyl(u,v,.17,1.82,1.95,c,.04); glow(()=>ball(u,v,1.8,.07,0xfff0c8)); it('a pendant light'); };
     for(const u of [1.2,3.0,4.8,6.6])pend(u,6.95,C.red); for(const B of [B1,B2,B3])pend((B[0]+B[1])/2,B[2]+.75,C.chrome);
@@ -178,7 +197,7 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
     /* ---------- the octopus chef, twice the drummer's size, on his stool: all eight arms at work, the plates out through the pass ---------- */
     const OS=2, GY=-.32, O=octFig(); O.g.position.set(wx(OU),GY*MW,wz(OV)); O.g.rotation.y=hd(0,1); O.g.scale.multiplyScalar(OS); A.add(O.g); it('the octopus chef');
     const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*MW,2.8*MW,1.2*MW),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(wx(OU),1.4*MW,wz(OV)); A.add(hb);
-    UI.thing({name:'THE OCTOPUS CHEF',obj:hb,reach:1.9*T,near:3.2*T,tall:3.1*T,act:()=>{}});
+    UI.thing({name:'THE OCTOPUS CHEF (ORDER)',obj:hb,reach:1.9*T,near:3.2*T,tall:3.1*T,act:()=>DINER.order()});
     const loc=(u,v,h)=>[(v-OV)*MW*PPU/OS,(u-OU)*EX*IN*MW*PPU/OS,(h-GY)*MW/(ZU*OS)];
     const plate=meshOf(own(()=>{ cyl(0,0,.12,0,.02,C.white); ball(0,0,.035,.07,0xc87a3a,.5); ball(.04,.03,.04,.03,0x58a038); }),matL,true);
     const PA=[5.4,4.05,.93], PB=[5.4,KV+.12,1.19], lerp=(p,q,k)=>p.map((x,i)=>x+(q[i]-x)*k);
@@ -192,7 +211,7 @@ const DINER={on:false,seats:0,items:[],spots:{}}; window.DINER=DINER;
         CG:P(4.85,.98,.98+.03*s(t*9)),CGA:[0,0,1],GL:P(2.98+.05*s(t*.5),.92,1.0+.18*ft),
         LS:[P(6.6+.08*s(t*4),1.95,.98),P(6.6+.08*s(t*4),2.5,.95)],RS:[P(2.75,2.15+.1*s(t*1.5),1.0+.1*ch),P(2.75,2.6+.1*s(t*1.5),.93)],
         RF:P(4.1+.25*s(t*1.7),4.12,.97+.04*s(t*3)),LF:P(...lf)}; };
-    meshOf(MAIN,matL,false); meshOf(GLOW,matB,false); const fm=meshOf(fan,matL,true);
+    K_.flush(); const fm=meshOf(fan,matL,true);
     O.draw(octBody(DINER.chef(0))); plate.userData.noMerge=fm.userData.noMerge=true; DINER.plate=plate; DINER.fan=fm; DINER.oct=O; DINER.on=true; };
   MSHOP.kit.diner.drop=()=>{ DINER.on=false; DINER.door=DINER.oct=DINER.fan=DINER.chef=DINER.plate=DINER.set=null; };
   SYS.add('life',dt=>{ if(!DINER.on)return; const t=performance.now()/1000;

@@ -18,6 +18,11 @@ const LV_DO={   // (hrs: the hours it can be done: butterflies by daylight, the 
   eat:{verb:'eating at the diner',at:'diner',meal:1,cost:9,hrs:[6,23]},
   bodega:{verb:'grabbing lunch at the bodega',at:'bodega',meal:1,cost:5,hrs:[6,23]},
   cart:{verb:'eating from a cart at the flea market',out:'flea',meal:1,cost:4,hrs:[10,22]},
+  museum:{verb:'at the Museum of Earth',at:'museum',fun:1.5,cost:3,hrs:[10,17]},
+  art:{verb:'looking at paintings at the art museum',at:'art',fun:1.5,hrs:[10,17]},
+  movies:{verb:'at the movies',at:'theatre',fun:2,cost:5,hrs:[13,23]},
+  show:{verb:'at a show at the playhouse',at:'playhouse',fun:2.5,cost:8,hrs:[18,23]},
+  bathe:{verb:'soaking at the bath house',at:'bath',fun:1,cost:4,hrs:[9,21]},
   breakfast:{verb:'having breakfast at home',home:1,meal:1,cost:2,hrs:[0,24]},
   supper:{verb:'cooking supper at home',home:1,meal:1,cost:3,hrs:[0,24]},
   work:{verb:'at work'}, sleep:{verb:'asleep at home'}, home:{verb:'at home'}};

@@ -22,6 +22,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
   CREW.door=at=>{ if(!at)return null; const a=CREW.alias[at]||at, R=ROOMS.off[a];
     if(R&&R.out)return {x:R.out[0],z:R.out[1]};
     const P=(LEVEL.places||[]).find(p=>p.id===at);
+    if(P&&P.door)return W(P.door[0],P.door[1]);   // a place that names its door (the fair's gate)
     if(P){ const cx=(P.x0+P.x1)/2; if(P.y1==null)return W(cx,LEVEL.block.front+.9); const cy=(P.y0+P.y1)/2, f=P.face||'n';
       return f==='e'?W(P.x1+.9,cy):f==='w'?W(P.x0-.9,cy):f==='s'?W(cx,P.y0-.9):W(cx,P.y1+.9); }
     if(at==='flea'){ const t=(LEVEL.things||[]).find(o=>o.k==='ftable'); return t?W(t.x,LEVEL.block.front+.9):null; }
@@ -38,7 +39,8 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     return null; };
   const band=(x0,x1,rows)=>()=>{ const r=rows[Math.floor(Math.random()*rows.length)]; return W(x0+Math.random()*(x1-x0),r[0]+Math.random()*(r[1]-r[0])); };
   const MKT=LEVEL.streets.market, WST=LEVEL.streets.west;
-  CREW.spot=J=>{ const j=J.job, k=J.key;
+  CREW.spots={};   // a place's own work spots: spots[at](J) -> {x,z,hd,r} (the fair registers its posts)
+  CREW.spot=J=>{ const j=J.job, k=J.key, own=CREW.spots[j.at]&&CREW.spots[j.at](J); if(own)return own;
     if(j.spot==='street'||j.at==='street'){ const c=W(72,-72.5); c.band=band(MKT.x0+10,MKT.x1-10,[[-76,-69.5],[-46,-39.5]]); return c; }
     if(j.spot==='west'){ const c=W((WST.x0+WST.x1)/2,0); c.band=band(WST.x0+1,WST.x1-1,[[-30,170]]); return c; }
     if(j.spot==='round')return CREW.door('round');

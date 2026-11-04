@@ -323,6 +323,56 @@
 | Neighbour Handing Out Candy |  |  |
 | Preacher | preaches on the corner |  |
 
+
+### THE STRANGEST FAIR (the lot behind the West St row, 4 Nov 2026)
+*West St* · 43
+
+| Character | Job | Hours |
+|---|---|---|
+| The Skier | drives the miniature railway | 11-22 |
+| The Flight Attendant | fair information | 11-23 |
+| The Casino Security Officer | keeps the fair gate | 11-23 |
+| The Referee | marshals the kart track | 11-23 |
+| The Ashigaru Foot Soldier | minds the arcade tent | 11-23 |
+| The Cheerleader | performs on the fair stage | 14-21 |
+| The Sheriff | runs the bumper cars | 11-23 |
+| The Parent Chaperone | runs the carousel | 11-22 |
+| The Service Robot | runs the drop tower | 11-23 |
+| The Lift Operator | runs the ferris wheel | 11-23 |
+| The Teen Zombie | runs the haunted ride | 11-23 |
+| The Family Road-Tripper | runs the log flume | 11-22 |
+| The Prospector | runs the pirate ship | 11-23 |
+| The School Caretaker | runs the roller coaster | 11-23 |
+| The Shuttle Pilot | runs the scrambler | 11-23 |
+| The Base Commander | runs the slingshot | 11-23 |
+| The Male Villager | runs the swing ride | 11-23 |
+| The Suburban Resident | runs the teacups | 11-22 |
+| The Bellhop | sells fair tickets | 11-23 |
+| The Neighbour Handing Out Candy | spins cotton candy | 11-22 |
+| The Piste Patroller | the balloon darts | 11-23 |
+| The Goalkeeper | the basketball toss | 11-23 |
+| The Poker Pro | the card tricks | 14-21 |
+| The Astronaut Scientist | the claw machine | 11-23 |
+| The Slot Tourist | the coin pusher | 11-23 |
+| The Farmer | the corn dog stand | 11-22 |
+| The Farmer | the duck pond | 11-22 |
+| The Team Mascot | the fair's mascot | 11-21 |
+| The Astronaut Explorer | the funhouse door | 11-23 |
+| The Townswoman | the funnel cake stand | 11-22 |
+| The Mountaineer | the high striker | 11-23 |
+| The Townswoman | the lemonade stand | 11-22 |
+| The Gridiron Player | the milk bottles | 11-23 |
+| The Pumpkin Stand Keeper | the popcorn stand | 11-22 |
+| The Pit Boss | the prize counter | 11-23 |
+| The Outfield Player | the ring toss | 11-23 |
+| The Outlaw | the shooting gallery | 11-23 |
+| The Blackjack Dealer | the skee-ball | 11-23 |
+| The Aircrew Pilot | the sky ride, north end | 11-23 |
+| The Astronaut Engineer | the sky ride, south end | 11-23 |
+| The Samurai Warrior | the sword act | 14-21 |
+| The Infantry Rifleman | the water-gun race | 11-23 |
+| The Touchline Manager | the whack-a-mole | 11-23 |
+
 ## Visitors (no job; by theme, so each set can later be its own section's people)
 
 - **B: THE CASINO STRIP** (5): Bellhop, Blackjack Dealer, Casino Security Officer, Pit Boss, Poker Pro

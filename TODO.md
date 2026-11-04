@@ -69,3 +69,13 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **The cars, in game, for the owner** (3 Nov; only seen in test pictures so far): the insides (too dark or bright? seats, belts, dash up
+  close), the cars 40% bigger next to the buildings, the driver a little smaller in the muscle car and wedge coupe, and the radio by ear
+  (loudness, the muffle outside the car, the four stations).
+- [ ] **Cars parked before they got bigger** (3 Nov): a car a player parked keeps its spot in the block's world (`car:<id>`); at the new size it
+  may touch the kerb or another car, and Rapier shoves it onto the pavement. Fix: clear the saved `car:*` spots once on the server (ask the
+  owner first), so they start from `data/world.json`'s new spots.
+- [ ] **`tests/cars.cjs` flaky under load** (3 Nov): run beside another check, the muscle car got shoved sideways and "W drives it" failed;
+  alone it passes every time. Physics at a low frame rate; make the check (or VEH's start) robust to slow frames.
+- [ ] **The radio on the live site** (3 Nov): the stations (`/g/<station>.<hash>.mp3`, with Range) have only been streamed by the pull
+  request's checks; play one on thestrangestfleamarket.com and check it starts at the shared moment.

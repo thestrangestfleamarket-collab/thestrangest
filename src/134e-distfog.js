@@ -1,19 +1,22 @@
-// THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly; only the last stretch before its end fades into the sky seen just above it, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; ATMOSPHERE sets it.
+// THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly; only the last stretch before its end fades into the sky seen just above it, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; in a steamy room (SHARED.steam) the steam; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
 import {ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {TILE} from './006-map-pre.js';
+import {SYS, TILE} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 const DFOG={};
 { const D0={on:false,start:10,end:45,blur:.5,haze:.22}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog6')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
-      uS:{value:0},uE:{value:1},uD:{value:1},uW:{value:-1e9},uV:{value:1},uB:{value:0},uH:{value:0},uF:{value:0},uR:{value:new THREE.Vector2(1,1)},uY:{value:new THREE.Vector2(0,1)},uK:{value:new THREE.Vector4(-1e9,-1e9,1e9,1e9)}},
+      uS:{value:0},uE:{value:1},uD:{value:1},uW:{value:-1e9},uV:{value:1},uB:{value:0},uH:{value:0},uF:{value:0},uR:{value:new THREE.Vector2(1,1)},uY:{value:new THREE.Vector2(0,1)},uK:{value:new THREE.Vector4(-1e9,-1e9,1e9,1e9)},uO:{value:1},uQ0:{value:new THREE.Vector3()},uQ1:{value:new THREE.Vector3()},uQK:{value:new THREE.Vector2()},uQC:{value:new THREE.Color()}},
     vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-    fragmentShader:`uniform sampler2D tDiffuse,tDepth; uniform mat4 uPInv,uCamW; uniform vec3 uP,uC; uniform float uS,uE,uB,uH,uF,uW,uV,uD; uniform vec2 uR,uY; uniform vec4 uK; varying vec2 vUv;
+    fragmentShader:`uniform sampler2D tDiffuse,tDepth; uniform mat4 uPInv,uCamW; uniform vec3 uP,uC; uniform float uS,uE,uB,uH,uF,uW,uV,uD; uniform vec2 uR,uY; uniform vec4 uK; uniform float uO; uniform vec3 uQ0,uQ1,uQC; uniform vec2 uQK; varying vec2 vUv;
+      float qh(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5); }
+      float qn(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(qh(i),qh(i+vec3(1,0,0)),f.x),mix(qh(i+vec3(0,1,0)),qh(i+vec3(1,1,0)),f.x),f.y),mix(mix(qh(i+vec3(0,0,1)),qh(i+vec3(1,0,1)),f.x),mix(qh(i+vec3(0,1,1)),qh(i+vec3(1,1,1)),f.x),f.y),f.z); }
       void main(){ float d=texture2D(tDepth,vUv).x, f=0., m=0., dd=0., land=0.; vec4 c=texture2D(tDiffuse,vUv);
+        if(uO>.5){
         if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
           f=g*land; m=land>.5?mix(uF>0.?ge:g*uH,gw,wet):uH>0.?mix(mix(mix(min(.85,g),g,uF),gw,wet),min(.85,g),smoothstep(uY.x,uY.y,vUv.y)):0.; }
         else if(uH>0.&&uV>0.){ vec4 v=uPInv*vec4(vUv*2.-1.,1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; m=smoothstep(0.,-.03,(w.y-cp.y)/length(w-cp)); }
@@ -21,7 +24,12 @@ const DFOG={};
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
         vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*(land>.5?smoothstep(uS,uE,dd):1.); m=uF*land*smoothstep(mix(uS,uE,.82),uE,dd);
             if(m>.001){ float hit=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; if(texture2D(tDepth,q).x>=.99999){ to=texture2D(tDiffuse,q).rgb; hit=1.; break; } } m*=hit; } } }
-        c.rgb=mix(c.rgb,to,m); gl_FragColor=c; }`});
+        c.rgb=mix(c.rgb,to,m); }
+        if(uQK.x>0.){ vec4 a=uPInv*vec4(vUv*2.-1.,-1.,1.), b=uPInv*vec4(vUv*2.-1.,min(d,.99999)*2.-1.,1.); vec3 ro=(uCamW*vec4(a.xyz/a.w,1.)).xyz, rd=(uCamW*vec4(b.xyz/b.w,1.)).xyz-ro;
+          vec3 iv=1./(rd+step(abs(rd),vec3(1e-7))*1e-7), t0=(uQ0-ro)*iv, t1=(uQ1-ro)*iv, lo=min(t0,t1), hi=max(t0,t1); float tn=max(max(max(lo.x,lo.y),lo.z),0.), tf=min(min(min(hi.x,hi.y),hi.z),1.);
+          if(tf>tn){ float k=0.; for(int i=0;i<6;i++){ vec3 p=ro+rd*mix(tn,tf,(float(i)+.5)/6.), q=p*.35+vec3(uQK.y*.09,-uQK.y*.06,uQK.y*.05); k+=.7+.4*qn(q)+.2*qn(q*2.3-vec3(uQK.y*.08)); }
+            c.rgb=mix(c.rgb,uQC,1.-exp(-uQK.x*(tf-tn)*length(rd)*k/6.)); } }
+        gl_FragColor=c; }`});
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85), HV=new THREE.Vector3();
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; u.uF.value=DFOG.cut()>0&&!dn?1:0;
@@ -30,9 +38,12 @@ const DFOG={};
     if(FAR3.land)u.uK.value.set(...FAR3.land);
     // under water (owner, 29 Oct 2026: "needs a fog filter but for water so you cant see too far"): the same pass is the water's fog, every pixel by its distance, a little blur
     const W=DFOG.under; if(W){ u.uS.value=W.s; u.uE.value=Math.max(W.s+1,W.e); u.uB.value=1.4; u.uH.value=1; u.uF.value=0; u.uD.value=0; u.uW.value=-1e9; u.uV.value=0; u.uC.value.copy(W.c); u.uK.value.set(-1e9,-1e9,1e9,1e9); u.uP.value.copy((SHARED.RPASS&&SHARED.RPASS.camera||SHARED.cam).position); }
+    u.uO.value=C.on||W?1:0; const S=SHARED.steam; if(S){ u.uQ0.value.set(S.b[0],S.b[1],S.b[2]); u.uQ1.value.set(S.b[3],S.b[4],S.b[5]); u.uQK.value.set(S.k,performance.now()/1000); u.uQC.value.copy(S.c); } else u.uQK.value.x=0;
     draw(r,w,rb,dt,mask); };
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
-  const save=()=>{ try{ SAVE.set('dfog6',JSON.stringify(C)); }catch(e){} pass.enabled=C.on; };
+  // a room's steam (SHARED.steam: {b:[x0,y0,z0,x1,y1,z1], k: thickness per unit, c: colour}): the same pass fogs each pixel by how far its view through the box runs, so it reads the same from every camera
+  let stOn=false; SYS.add('rooms',()=>{ const on=!!SHARED.steam&&!renderer.xr.isPresenting; if(on!==stOn){ stOn=on; pass.enabled=C.on||on; } },'134e-steam');
+  const save=()=>{ try{ SAVE.set('dfog6',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;

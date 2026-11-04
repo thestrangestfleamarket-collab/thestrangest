@@ -68,8 +68,12 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **The black-void sheet view doesn't show rig bodies** (done 4 Nov: `tests/sheet.cjs poacher` shows him front, side and back; the crash on `hud`/`stat` was the cause; the minimap still shows in a corner) · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
   (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,
   no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
-- [ ] **`tests/loosecheck.cjs` fails on `main`** · P3 · S · check. Its start spot (`at=-2.2,3.2`, lines 17 and 52) has no loose things near
-  it any more; nothing runs it (not in `site.yml`). Fix the spot and add it to the physx step. With: the physics extras and STAND ON THINGS.
+- [ ] **`tests/loosecheck.cjs`: two street failures, and the bodega part** · P3 · M · find. Brought up to date on 4 Nov (#607: the nearest
+  light thing on the ground, since no trash can is loose any more; the bodega entered by its door). Now: the milk crates fly when shoved, land,
+  sleep and can be picked up, but **walking into them doesn't push them** (moved 0.00) and **a shoved thing's old place still blocks you a
+  little** (pushed out 0.12): find out whether those are the game or the test. The bodega part enters and has 216 loose goods, but looks for an
+  office chair that isn't there now (pick one of radio, lottery machine, candy jar, paper bags, newspaper rack). The apartment and dungeon
+  parts weren't reached. Not run by CI (add it to the physx step once it passes). With: the physics extras and STAND ON THINGS.
 - [x] **The cinema's video titles** (checked 4 Nov: YouTube answers the site's own origin, `access-control-allow-origin: https://thestrangestfleamarket.com`, so players get titles; only CI's machines are refused) · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
   fails quietly: no title, nothing breaks); from elsewhere it answers, so players likely get titles. Check on the live site; if not, fetch
   the title through the worker.

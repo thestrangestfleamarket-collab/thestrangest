@@ -1,4 +1,4 @@
-// THE CRAB POTS: POTS lets you drop a crab pot in fishable water and haul it up later (real time) to see what crawled in, letting the live ones go; your pots are kept with your other owned things.
+// THE CRAB POTS: POTS lets you drop a crab pot in fishable water and haul it up later (real time) for what crawled in; your pots are kept with your other owned things.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, ONLINE, pos, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -36,11 +36,10 @@ const POTS={list:[],hold:[]}; window.POTS=POTS;
     if(w.kind==='river')for(const j of JUNK)L.push([j[0],j[1]*(L.reduce((a,q)=>a+q[1],0)||1)]);
     const sum=L.reduce((a,q)=>a+q[1],0); for(let i=0;i<n&&sum>0;i++){ if(Math.random()>.75)continue; let r=Math.random()*sum; for(const [id,c] of L)if((r-=c)<0){ out.push(id); break; } } return out; };
   POTS.haul=p=>{ if(Math.hypot(p.x-pos.x,p.z-pos.z)>6*T)return say('GET CLOSER TO HAUL THE POT.','#c8a090'); const w=FISHING.at&&FISHING.at(p.x,p.z)||{kind:'river',depth:3,lv:0};
-    const got=POTS.roll(p,w), kept={}, freed=[]; for(const id of got){ if(IP(id,'water')){ freed.push(id); continue; } FORAGE.give(id); kept[id]=(kept[id]||0)+1; }
-    const seen={}; for(const id of freed)seen[id]=(seen[id]||0)+1; const ftxt=Object.entries(seen).map(([id,n])=>n+' '+(FORAGE.NM[id]||id)).join(', ');
+    const got=POTS.roll(p,w), kept={}, freed=[]; for(const id of got){ const fish=!!IP(id,'water'); if(fish&&FISHING.held&&FISHING.held()>=FISHING.room()){ freed.push(id); continue; } FORAGE.give(id); kept[id]=(kept[id]||0)+1; }
     POTS.list.splice(POTS.list.indexOf(p),1); unbuoy(p); FORAGE.give('crabpot'); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.6,pitch:.9});
     const txt=Object.entries(kept).map(([id,n])=>n+' '+(FORAGE.NM[id]||id)).join(', '); POTS.last={got,kept,freed};
-    say(got.length?`YOU HAUL UP THE POT: ${[ftxt,txt].filter(Boolean).join(', ')}.${freed.length?' YOU LOOK THEM OVER AND LET THE LIVE ONES GO.':''}`:(Date.now()-p.t<60000*(p.b?BAITED:SLOT)?'YOU HAUL UP THE POT. TOO SOON: NOTHING HAS CRAWLED IN YET.':'YOU HAUL UP THE POT. EMPTY.'),got.length?'#b8f0a0':'#c8c2b0'); };
+    say(got.length?`YOU HAUL UP THE POT: ${txt||'NOTHING YOU CAN CARRY'}.${freed.length?' NO ROOM FOR '+freed.length+' MORE, SO THEY GO BACK.':''}`:(Date.now()-p.t<60000*(p.b?BAITED:SLOT)?'YOU HAUL UP THE POT. TOO SOON: NOTHING HAS CRAWLED IN YET.':'YOU HAUL UP THE POT. EMPTY.'),got.length?'#b8f0a0':'#c8c2b0'); };
   FORAGE.ROWB.push(id=>id==='crabpot'?[['DROP IN THE WATER','potdrop']]:[]); FORAGE.ACT.potdrop=()=>POTS.drop();
   // your pots float where you left them once the water there is built; each buoy bobs on the swell while you are near
   let tt=0;

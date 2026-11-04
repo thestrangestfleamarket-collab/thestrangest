@@ -122,7 +122,7 @@
     "Choose WHAT DO YOU SELL? to open the shop.",
     "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
     "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
-    "Who buys what: the Nature Merchant buys feathers; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller and the Radish buy mushrooms, potions and food; animals are caught, looked at and let go, never sold.",
+    "Who buys what: the Nature Merchant buys butterflies, birds and feathers; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller and the Radish buy mushrooms, potions and food; the mushroom seller also buys butterflies and birds.",
     "Merchants teach what they know: LESSON raises a skill for a fee.",
     "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
    ]
@@ -228,7 +228,7 @@
      "steps": [
       "Worms for perch, eels, shad and sturgeon. Cut bait for bass, bluefish, catfish, fluke and crabs.",
       "Deeper water off the pier's end, bigger fish. Bass bite at dusk, eels at night.",
-      "Every fish is weighed, logged in your BOOK and let go. The first of each kind pays."
+      "Sell your catch at BAIT & BOATS or to Old Wetwhisker."
      ]
     }
    ],
@@ -238,35 +238,38 @@
   },
   {
    "id": "pots",
-   "title": "CRAB POTS",
-   "what": "See what crawls into a pot while you are away.",
+   "title": "CRAB POTS AND COOLERS",
+   "what": "Catch crabs while you are away, and carry more fish.",
    "steps": [
     "Buy a CRAB POT ($25) at BAIT & BOATS. You can have three out.",
     "Face the water and press [P] in fishing mode (or DROP IN THE WATER in your pack). If you carry cut bait, the pot is baited and catches twice as fast.",
-    "Leave it. Come back later and double-click its orange buoy to haul it up. You look the catch over and let the live ones go; junk you keep. Other players see your buoys, and you see theirs (only you can haul yours)."
+    "Leave it. Come back later and double-click its orange buoy to haul it up. Other players see your buoys, and you see theirs (only you can haul yours).",
+    "You can carry 5 fish in your hands. A cooler (small, medium or big) holds 15, 40 or 100 more. With no room, a new fish goes back in the water."
    ]
   },
   {
    "id": "nature",
    "title": "BUTTERFLIES AND BIRDS",
-   "what": "Catch butterflies with a net, band birds, tame them, and let them all go.",
+   "what": "Catch butterflies with a net, tame birds, collect them or sell them.",
    "sections": [
     {
      "head": "BUTTERFLIES",
      "steps": [
       "Buy a BUTTERFLY NET ($8) from the Nature Merchant (the paper fox by the arcade).",
       "Press [1] until you hold the net. Aim with the mouse and click to swing. Swinging fast or jumping helps.",
-      "A caught butterfly goes in your BOOK and flies off again. The first of each kind pays.",
-      "A jar holds fireflies at night: it glows while you carry it and lets them go at dawn.",
+      "You can carry 5. Jars hold 20, 50 or 100 more.",
+      "In your pack: IDENTIFY, MOUNT (needs a SPECIMEN FRAME, $4, Nature Merchant) or RELEASE (you learn a little).",
+      "Hang a mounted one on your wall: DECORATE, then SPECIMENS.",
+      "In the MUSEUM OF EARTH, press DONATE on a mounted one. The museum pays for the first of each kind.",
       "Butterflies hide at night and in bad weather."
      ]
     },
     {
      "head": "BIRDS",
      "steps": [
-      "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or NET AND BAND (needs a bird net): you band its leg and let it go.",
+      "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
       "A tamed bird follows you, and other players see it on your shoulder. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed.",
-      "The Nature Merchant sells seed, nets, a BIRD FEEDER, BINOCULARS and jars, buys feathers and teaches BIRDING and ENTOMOLOGY.",
+      "The Nature Merchant sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
       "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down. Other players see your feeder, and birds come to theirs for you too.",
       "Birds sometimes leave a FEATHER. Three make a QUILL (CRAFT, BIND), which helps you mend books."
      ]

@@ -24,12 +24,11 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     ['RED-TAILED HAWK','Buteo jamaicensis',.55,85,0,0,'walk',{body:0x6a4a30,breast:0xe8dcc8,head:0x5a4028,wing:0x5a3e28,bar:0xd8c8b0,tail:0xb8562a,beak:0x2a2622,leg:0xe8c040}]];
   const NK=K.length, HAWK=12, BOUNTY={10:40,11:60,12:80}, DIFF=k=>K[k][3], RARE=k=>k>=10;
   const NM={bseed:'BIRDSEED (A HANDFUL)',bnet:'BIRD NET',cage:'EMPTY BIRD CAGE',feeder:'BIRD FEEDER',binoc:'BINOCULARS',bird_feather:'A FEATHER',quill_pen:'A FEATHER QUILL'}, PR={bird_feather:2,quill_pen:9}; for(let k=0;k<NK;k++){ NM['bd_'+k]=K[k][0]+' (IN A CAGE)'; NM['pet_'+k]='YOUR TAME '+K[k][0]; PR['bd_'+k]=K[k][4]; }
-  FORAGE.add({names:NM,prices:PR}); FORAGE.sell('bird_feather','quill_pen'); const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.BUYK.birds=['bird_feather','quill_pen'];
-  { let c=0; for(const id of Object.keys(INV.items))if(/^bd_\d+$/.test(id)){ const n=FORAGE.has(id); c+=n*(PR[id]||0); FORAGE.take(id,n); FORAGE.give('cage',n); } if(c)INV.cash+=c; }
-  FORAGE.SELLS.push(['bseed',IV('bseed',1),()=>true],['bnet',IV('bnet',12),()=>!FORAGE.has('bnet')]);
+  FORAGE.add({names:NM,prices:PR}); FORAGE.sell(...Object.keys(NM).filter(k=>/^bd_/.test(k)),'bird_feather','quill_pen'); FORAGE.BUYK.birds=['bd_']; const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.BUYK.birds.push('bird_feather','quill_pen');
+  FORAGE.SELLS.push(['bseed',IV('bseed',1),()=>true],['bnet',IV('bnet',12),()=>!FORAGE.has('bnet')],['cage',IV('cage',5),()=>true]);
   // a quill from feathers: mending books goes better while you carry one
   FORAGE.add({recipes:[['quill_pen','A FEATHER QUILL','bind',[0,40],{bird_feather:3},'mending books goes better while you carry it']]});
-  FORAGE.HELP.push('BIRDING: double click a bird to watch it (your book), tame it with birdseed, or net it to band and let go (a bird net). Binoculars watch from afar; a feeder you hang brings them in; caught birds sometimes leave a feather.');
+  FORAGE.HELP.push('BIRDING: double click a bird to watch it (your book), tame it with birdseed, or catch it (a bird net and a cage). Binoculars watch from afar; a feeder you hang brings them in; caught birds sometimes leave a feather.');
   const S={v:1,seen:{},feed:null}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const PART=[['body',[shape(blob(.2,.19,.4,8,5),[1,1,1],[0,.36,-.02])]],['breast',[shape(blob(.17,.17,.24,6,4),[1,1,1],[0,.31,.12])]],['head',[shape(blob(.15,.15,.16,6,4),[1,1,1],[0,.55,.3])]],
     ['cap',[shape(blob(.135,.07,.13,6,3),[1,1,1],[0,.64,.29])]],['crest',[shape(cyl(0,.07,.22,4),[1,1,1],[0,.72,.21],null,[-35,0,0])]],['mask',[shape(blob(.155,.09,.08,6,3),[1,1,1],[0,.5,.37])]],
@@ -141,8 +140,8 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const known=k=>!!S.seen[k], nmOf=b=>known(b.k)?K[b.k][0]:'A BIRD YOU DO NOT KNOW';
   const draw=()=>{ '@later'; const b=PANEL.b; if(!b)return close(); const k=b.k, pet=b.st==='pet';
     let o=`<div style="color:#f2c14e;margin-bottom:4px">${pet?'YOUR TAME '+K[k][0]:nmOf(b)}</div><div style="color:#9b9584;margin-bottom:8px">${known(k)?`<i>${K[k][1]}</i> · SEEN ${S.seen[k]} TIME${S.seen[k]===1?'':'S'}`:'NOT IN YOUR JOURNAL YET'}</div><div>`;
-    if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':' (NO SEED)'}</button><button ${B} data-a="catch">NET AND BAND${FORAGE.has('bnet')?'':' (NO NET)'}</button>`;
-    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, feeders, binoculars: the Nature Merchant.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
+    if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':' (NO SEED)'}</button><button ${B} data-a="catch">CATCH${FORAGE.has('bnet')?' (CAGES x'+FORAGE.has('cage')+')':' (NO NET)'}</button>`;
+    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Nature Merchant.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   BIRDS.menu=b=>{ if(!BIRDS.list.includes(b))return; PANEL.b=b; P.hidden=false; draw(); };
   const gone=b=>!BIRDS.list.includes(b)||b.st==='fly';
   const log=b=>{ '@later'; const k=b.k, first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; save();
@@ -155,8 +154,8 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     tame:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE NATURE MERCHANT HAS IT).','#c8a090');
       FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
     catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE NATURE MERCHANT HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
-      const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
-      if(use('bird',d-25,d+25)){ if(!S.seen[b.k])log(b); feather(b.k,.5); say(`YOU NET THE ${K[b.k][0]}, BAND ITS LEG, AND LET IT GO.`,'#b8f0a0'); flush(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
+      if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
+      if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); feather(b.k,.5); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
     free:b=>{ freePet(); }};
   BIRDS.net=b=>{ ACT.catch(b); FORAGE.draw(); };
   P.addEventListener('click',ev=>{ '@later'; const t=ev.target.closest('button[data-a]'); if(!t)return; const b=PANEL.b; if(!b||(gone(b)&&b.st!=='pet')){ say('IT HAS FLOWN.','#c8a090'); return close(); }
@@ -169,7 +168,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const makePet=(k,b)=>{ '@later'; const old=petOf(); if(old){ freePet(true); } for(const id of Object.keys(INV.items))if(id.startsWith('pet_'))delete INV.items[id]; FORAGE.give('pet_'+k,1);
     const p=b&&BIRDS.list.includes(b)?b:add(k,pos.x,SHARED.py+1.2*WU,pos.z); p.st='pet'; p.src='pet'; p.fly=null; p.hop=null; p.side=Math.random()<.5?-1:1; p.th.name='YOUR TAME '+K[k][0]; say(`THE ${K[k][0]} IS TAME. IT WILL FOLLOW YOU.`,'#9fe07f'); };
   const freePet=quiet=>{ const b=petOf(); for(const id of Object.keys(INV.items))if(id.startsWith('pet_'))delete INV.items[id]; if(!b)return; if(!quiet)say(`YOU LET THE ${K[b.k][0]} GO. IT FLIES OFF.`,'#9fe07f'); b.st='ground'; b.src='free'; flyTo(b,b.x+20*T,b.y+8*WU,b.z+12*T,true); };
-  FORAGE.ROWB.push(id=>id.startsWith('bd_')?[['TAME','btame'],['RELEASE','bfree2']]:id==='bseed'?[['SCATTER','bscatter']]:id==='feeder'?[['HANG IT HERE','bhang']]:id.startsWith('pet_')?[['LET GO','bletgo']]:[]);
+  FORAGE.ROWB.push(id=>id.startsWith('bd_')?[['TAME','btame'],['RELEASE','bfree2']]:id==='bseed'?[['SCATTER','bscatter']]:id==='feeder'?[['HANG IT HERE','bhang']]:id.startsWith('pet_')?[['CAGE IT','bcage'],['LET GO','bletgo']]:[]);
   FORAGE.ACT.bfree2=id=>{ const k=+id.slice(3); FORAGE.take(id,1); FORAGE.give('cage',1); const b=add(k,pos.x,SHARED.py+1*WU,pos.z,{src:'free'}); flyTo(b,pos.x+18*T,b.y+7*WU,pos.z-14*T,true); say(`YOU OPEN THE CAGE. THE ${K[k][0]} FLIES OFF.`,'#9fe07f'); };
   FORAGE.ACT.btame=id=>{ const k=+id.slice(3), d=DIFF(k); if(use('bird',d-10,d+40)){ FORAGE.take(id,1); FORAGE.give('cage',1); makePet(k); } else say('IT PECKS YOUR FINGER AND WILL NOT COME OUT.','#c8a090'); };
   FORAGE.ACT.bscatter=()=>{ '@later'; if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('SCATTER IT OUTDOORS.','#c8a090'); FORAGE.take('bseed',1); S.seed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:90};

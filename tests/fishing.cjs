@@ -45,9 +45,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const t0 = performance.now(); while (performance.now() - t0 < 400000) { const s = FISHING.state(); if (s) seen.add(s.st); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     const bob = FISHDBG().state; FISHING.click(); const hooked = FISHING.state() && FISHING.state().st; FISHING.auto = true;
     while (performance.now() - t0 < 900000) { const s = FISHING.state(); if (s) seen.add(s.st); if (!s) break; await new Promise(r => setTimeout(r, 50)); } FISHING.auto = false; FISHING.force = null; FISHING.tick = tk;
-    return { seen: [...seen], bob, hooked, bass: INV.items.x_bass || 0, cash: INV.cash, kg: FORAGE.S.fishkg.x_bass, last: FISHING.last, hook: FORAGE.S.hook || null }; });
+    return { seen: [...seen], bob, hooked, bass: INV.items.x_bass || 0, kg: FORAGE.S.fishkg.x_bass, last: FISHING.last, hook: FORAGE.S.hook || null }; });
   ok(['wind', 'fly', 'wait', 'bite', 'fight', 'land'].every(s => r3.seen.includes(s)) && r3.hooked === 'fight', 'a cast goes back and through, the float sits, a bite, the strike sets the hook, the fight, the lift out: ' + r3.seen.join(','));
-  ok(r3.bass === 0 && r3.kg && r3.kg[0] > 0 && r3.last && r3.last.id === 'x_bass' && r3.last.freed && !r3.hook, 'the striped bass is weighed and logged, then let go, the bait eaten: ' + JSON.stringify({ kg: r3.kg, last: r3.last, hook: r3.hook }));
+  ok(r3.bass === 1 && r3.kg && r3.kg[0] > 0 && r3.last && r3.last.id === 'x_bass' && !r3.hook, 'the striped bass comes off the hook into the pack with its weight, the bait eaten: ' + JSON.stringify({ kg: r3.kg, last: r3.last, hook: r3.hook }));
   // the fish shows at the bait as it bites; a strike on a nibble spooks it (big words in the middle), the bait stays and another may come
   // the nibble is started by hand: on a slow machine one frame can jump the whole 1.2 s nibble
   const r4 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, out = {}; FISHING.speed = 1; FISHING.force = 'x_shad'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
@@ -84,7 +84,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     FORAGE.ACT.fhook('lure_spoon'); await land(); const lure = FORAGE.S.hook, room0 = FISHING.room();
     FORAGE.take('cooler_s', 1); for (const id of ['x_perch', 'x_eel', 'x_shad', 'x_bass']) FORAGE.take(id, FORAGE.has(id) || 0); FORAGE.give('x_perch', 5); const n0 = FISHING.held(); await land(); const n1 = FISHING.held(), freed = !!(FISHING.last && FISHING.last.freed);
     FORAGE.give('cooler_s'); return { lure, room0, n0, n1, freed, room1: FISHING.room() }; });
-  ok(cl.lure === 'lure_spoon' && cl.n0 === 5 && cl.n1 === 5 && cl.freed && cl.room1 === 20, 'the spoon lure stays on the hook; every fish goes back (none join the five in the pack): ' + JSON.stringify(cl));
+  ok(cl.lure === 'lure_spoon' && cl.n0 === 5 && cl.n1 === 5 && cl.freed && cl.room1 === 20, 'the spoon lure stays on the hook; without a cooler a sixth fish goes back, a small cooler holds 15 more: ' + JSON.stringify(cl));
   // crab pots: drop one ahead, it is kept, haul it later for what crawled in
   const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
   ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));

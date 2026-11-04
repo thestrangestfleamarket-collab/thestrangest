@@ -65,8 +65,11 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
   const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['bk_novel','WATER-STAINED NOVEL',.1,1],['chest','SUNKEN CHEST',.05,0]];
-  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),
+  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]])),
     prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
+    recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
+      ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
+      ['f_sturgeon','STURGEON STEAK','cooking',[65,110],{x_sturgeon:1},'fills most of you, quick on your feet 3 min']],
     does:{f_fishfry:()=>FORAGE.feed(.33),f_smokeeel:()=>{ FORAGE.feed(.4); FORAGE.buff('str',120); },f_grillbass:()=>{ FORAGE.feed(.5); FORAGE.buff('regen',60); },
       f_chowder:()=>{ FORAGE.feed(.6); VIT.hp=Math.min(1,VIT.hp+.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
   const say=FORAGE.say, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
@@ -202,10 +205,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   const strike=()=>{ const s=S_, id=s.f.id, fi=IP(id,'fight')||1, quick=s.t<.45?10:0; const ok=FISHING.force===id||FORAGE.use('fish',fi*5-40,fi*5+50,quick);
     if(!ok){ S.hook=Math.random()<.5||IP(S.hook,'reuse')?S.hook:null; shout(S.hook?'YOU STRIKE, BUT THE HOOK DOES NOT SET.':'YOU STRIKE TOO LATE. THE BAIT IS GONE.','#e0a888'); s.st='wait'; s.t=SOAK+1; s.bare=!S.hook; FISHES.free(s.fish); s.fish=null; return; }
     s.st='fight'; s.t=0; s.D=Math.hypot(s.x-pos.x,s.z-pos.z); s.ten=.4; s.over=0; s.slack=0; s.surge=0; s.run=0; s.runT=1; s.lat=0; SFX.play('step',{vol:.4,pitch:1.2}); shout('FISH ON!','#b8f0a0'); RIVER.drop&&RIVER.drop(s.x,s.z,.4*T,.05*WU); };
-  const unhook=()=>{ const s=S_, f=s.f, first=!S.fishkg[f.id], r=S.fishkg[f.id]||[0,0]; S.fishkg[f.id]=[+f.kg.toFixed(2),Math.max(r[1],+f.kg.toFixed(2))]; if(!IP(S.hook,'reuse'))S.hook=null;
-    if(NAMES[f.id]){ FORAGE.save(); if(s.fish)FISHES.free(s.fish); s.fish=null; shout(`A ${f.kg.toFixed(2)} KG ${NAMES[f.id]}${r[1]&&f.kg>r[1]?', YOUR BEST':''}. YOU WEIGH IT AND LET IT GO.`,'#b8f0a0');
-      if(first){ const v=Math.max(2,Math.round(+IP(f.id,'value')||5)); INV.cash+=v; say(`THE ANGLERS' LOG PAYS $${v} FOR YOUR FIRST ${NAMES[f.id]}.`,'#f2c14e'); }
-      SFX.play('splash',{vol:.5}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2),freed:true}; FISHING.reel(); FORAGE.draw(); return; }
+  const unhook=()=>{ const s=S_, f=s.f, r=S.fishkg[f.id]||[0,0]; S.fishkg[f.id]=[+f.kg.toFixed(2),Math.max(r[1],+f.kg.toFixed(2))]; if(!IP(S.hook,'reuse'))S.hook=null;
     if(NAMES[f.id]&&FISHING.held()>=FISHING.room()){ FORAGE.save(); shout(`NO ROOM: YOU CAN CARRY ${FISHING.room()} FISH. A COOLER FROM BAIT & BOATS HOLDS MORE. YOU LET THE ${NAMES[f.id]} GO.`,'#e0a888'); SFX.play('drip',{vol:.5,pitch:.7}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2),freed:true}; FISHING.reel(); FORAGE.draw(); return; }
     FORAGE.give(f.id); if(s.fish){ FISHES.gone(s.fish); s.landed=true; } FORAGE.save();
     if(f.id==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; FORAGE.take('chest',1); say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e'); if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }

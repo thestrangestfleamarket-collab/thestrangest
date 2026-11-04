@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
 import {CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, QS, SOL, SYS, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
 const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
@@ -31,6 +31,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
+  { const d=CREW.door('flea'); if(d)STORE.places.push(['THE FLEA MARKET',d.x,d.z,'up','see']); }   // GO TO: at its tables on the street side
   CREW.out=key=>{ for(const id in ROOMS.off){ const t=ROOMS.off[id].taken; if(t)t.delete(key); } };   // their seat is free again
   CREW.inside=(at,key,job)=>{ const a=CREW.alias[at]||at, R=ROOMS.off[a], h=hsh(key||at), u=.25+.5*((h%97)/96), v=.25+.5*(((h>>7)%97)/96);
     const S=R&&R.spots&&job&&R.spots[job.title]; if(S)return {x:S.x,z:S.z,hd:S.hd,off:true};   // a place's work spots, by job title

@@ -39,6 +39,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','iso','third','follow','first']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };
+  { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
   { const P=document.createElement('div'); P.id='movesp'; P.style.cssText='position:fixed;inset:6% 10%;z-index:20;display:none;overflow:auto;padding:16px 20px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.9';
     document.body.appendChild(P);
     UI.moves=()=>{ '@later'; if(P.style.display!=='none'){ P.style.display='none'; return; }

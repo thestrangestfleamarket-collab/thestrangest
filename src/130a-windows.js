@@ -1,6 +1,6 @@
 // THE WINDOWS: a glass pane shows the real view through it, drawn live in 3D through your own camera: from inside, the real street where the building stands; from the street, the real inside (built and held while you are near; further off, a picture of it taken while you were in).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos, ROOMS, VR, WINDOWS} from './003b-systems.js';
+import {CLOCK, LITE, pos, ROOMS, VR, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 { const cam=new THREE.PerspectiveCamera(62,1,.05,400*TILE), V=new THREE.Vector3(), N=new THREE.Vector3(), C=new THREE.Vector3(), Q=new THREE.Quaternion(), done={};
@@ -34,7 +34,12 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   WINDOWS.near=(x,z,r=20*TILE)=>{ for(const e of WINDOWS.eyes)if(Math.abs(x-e.x)<r&&Math.abs(z-e.z)<r)return true; return false; };
   // one live view: these panes, the world moved by d (pane to what lies behind it), the side kept (out: away from the inside's middle C; in: towards it), eps past the glass
   const RES=()=>{ const R=SHARED.composer&&SHARED.composer.renderTarget1, sz=renderer.getDrawingBufferSize(new THREE.Vector2()); LV.res.set(Math.max(1,R?R.width:sz.x),Math.max(1,R?R.height:sz.y)); };
-  const view=(L,d,Cx,Cz,inward,eps,eyes,peek,hide)=>{ const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const G=new Map();
+  // the lamps for one view: the pool's lights (not the shadow one) moved to the lamps that light what lies behind the glass, nearest first; put back after
+  const relight=(fit,px,pz)=>{ const P=LITE.pool, sv=P.map(S=>[S.position.clone(),S.color.clone(),S.intensity,S.distance,S.decay]); const sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&fit(L.position)).map(L=>[(L.position.x-px)**2+(L.position.z-pz)**2,L]).sort((a,b)=>a[0]-b[0]);
+    for(let i=1;i<P.length;i++){ const S=P[i], L=sel[i-1]&&sel[i-1][1]; if(!L){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
+    return ()=>P.forEach((S,i)=>{ const v=sv[i]; S.position.copy(v[0]); S.color.copy(v[1]); S.intensity=v[2]; S.distance=v[3]; S.decay=v[4]; }); };
+  WINDOWS.open=(x,z)=>{ for(const k of WINDOWS.held){ const P=place(k), b=P&&P.b; if(b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true; } return false; };   // inside a room seen live through its glass from the street: drawn though you are not in
+  const view=(L,d,Cx,Cz,inward,eps,eyes,peek,hide,fit)=>{ const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const G=new Map();
     for(const p of L){ const me=p.me; me.updateWorldMatrix(true,false); me.getWorldPosition(V); N.set(0,0,1).applyQuaternion(me.getWorldQuaternion(Q)); N.y=0; N.normalize(); if((N.x*(Cx-V.x)+N.z*(Cz-V.z)>0)!==inward)N.negate();
       if(eyes)WINDOWS.eyes.push({x:V.x+d[0],z:V.z+d[1]}); const c=-(N.x*(V.x+d[0])+N.z*(V.z+d[1])), k=p.look+':'+Math.round(N.x*8)+','+Math.round(N.z*8)+','+Math.round(c/(.5*TILE)); let g=G.get(k); if(!g)G.set(k,g={n:N.clone(),c,L:[],seen:false}); g.L.push(p);
       me.geometry.boundingSphere||me.geometry.computeBoundingSphere(); SP.copy(me.geometry.boundingSphere).applyMatrix4(me.matrixWorld); if(FR.intersectsSphere(SP))g.seen=true; }
@@ -42,19 +47,19 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     try{ renderer.shadowMap.autoUpdate=false; for(const p of hid)p.me.visible=false; let lc=LC.get(cam); if(!lc)LC.set(cam,lc=cam.clone()); lc.copy(cam); lc.position.x+=d[0]; lc.position.z+=d[1]; lc.updateMatrixWorld();
       const draw=()=>{ const clip=renderer.clippingPlanes; for(const [k,g] of todo){ let rt=LV.rt.get(k); if(!rt){ rt=new THREE.WebGLRenderTarget(W,H,{type:THREE.HalfFloatType}); rt.m=liveM(rt.texture); LV.rt.set(k,rt); } if(rt.width!==W||rt.height!==H)rt.setSize(W,H);
           renderer.clippingPlanes=[new THREE.Plane(g.n,g.c-eps)]; renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,lc); for(const p of g.L)if(p.me.material!==rt.m){ if(!p.live)p.pic=p.me.material; p.me.material=rt.m; p.me.visible=true; p.live=1; } } renderer.clippingPlanes=clip; };
-      if(peek)ROOMS.peek(draw); else draw(); }
+      const back=fit?relight(fit,V.x+d[0],V.z+d[1]):null; try{ if(peek)ROOMS.peek(draw); else draw(); } finally{ if(back)back(); } }
     catch(e){ console.warn('WINDOWS live',e); } finally{ renderer.setRenderTarget(null); for(const p of hid)p.me.visible=true; renderer.shadowMap.autoUpdate=sb; WINDOWS.busy=false; } };
   // from the street: a shop near you (NEAR) whose glass looks in has its inside built and held (WINDOWS.held: not dropped) while you are near; let go further off (FAR), dropped as before
   const NEAR=14*TILE, FAR=18*TILE, building=new Set(), built=id=>{ const o=ROOMS.off[id]; return o?!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done):!!(STORE.inside&&STORE.inside[id]&&STORE.inside[id].done); };
-  const build=id=>{ if(building.has(id))return; building.add(id); (async()=>{ if(ROOMS.off[id])await ROOMS.offBuild(id); else{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); if(!built(id))STORE.inGo(id); } })().catch(e=>console.warn('WINDOWS build',e)).finally(()=>building.delete(id)); };
+  const build=id=>{ if(building.has(id))return; building.add(id); (async()=>{ if(ROOMS.off[id]){ await ROOMS.offBuild(id); ROOMS.ceilOf(id); } else{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); if(!built(id))STORE.inGo(id); } })().catch(e=>console.warn('WINDOWS build',e)).finally(()=>building.delete(id)); };
   const unlive=p=>{ if(p.live){ p.me.material=p.pic||p.me.material; p.live=0; } };
   SYS.add('rooms',()=>{ WINDOWS.eyes.length=0; if(WINDOWS.busy||VR.on||FADE.busy)return; const id=(ROOMS.offIn&&ROOMS.offIn())||(ROOMS.cur&&ROOMS.cur.id&&STORE.inside&&STORE.inside[ROOMS.cur.id]?ROOMS.cur.id:null);
     if(id){ const P=place(id), L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='out'&&p.me.parent); for(const p of WINDOWS.panes)if(p.look==='in')unlive(p); if(!P||!L.length)return; const b=P.b;
-      return view(L,P.sh,(b.x0+b.x1)/2,(b.z0+b.z1)/2,false,.02*TILE,true,true,WINDOWS.panes.filter(p=>p.off===id)); }
+      const RB=ROOMS.boxes(); return view(L,P.sh,(b.x0+b.x1)/2,(b.z0+b.z1)/2,false,.02*TILE,true,true,WINDOWS.panes.filter(p=>p.off===id),q=>!RB.some(r=>q.x>r.x0&&q.x<r.x1&&q.z>r.z0&&q.z<r.z1)); }
     if(ROOMS.cur)return; const by={}; for(const p of WINDOWS.panes)if(p.look==='in'&&p.me.parent)(by[p.off]=by[p.off]||[]).push(p);
     for(const k in by){ const L=by[k]; let dm=1e9; for(const p of L){ p.me.getWorldPosition(V); dm=Math.min(dm,Math.hypot(V.x-pos.x,V.z-pos.z)); }
-      if(dm>FAR||(dm>NEAR&&!WINDOWS.held.has(k))){ if(WINDOWS.held.delete(k)||L.some(p=>p.live))L.forEach(unlive); continue; } WINDOWS.held.add(k); if(!built(k)){ build(k); continue; }
-      const P=place(k); if(!P)continue; const b=P.b, off=!!ROOMS.off[k]; view(L,[-P.sh[0],-P.sh[1]],(b.x0+b.x1)/2+P.sh[0],(b.z0+b.z1)/2+P.sh[1],true,(off?.02:.3)*TILE,false,false,WINDOWS.panes.filter(p=>p.off===k)); } },'130a-windows-live');
+      if(dm>FAR||(dm>NEAR&&!WINDOWS.held.has(k))){ if(WINDOWS.held.delete(k)||L.some(p=>p.live))L.forEach(unlive); continue; } WINDOWS.held.add(k); if(!built(k)){ build(k); continue; } if(ROOMS.off[k])ROOMS.ceilOf(k);
+      const P=place(k); if(!P)continue; const b=P.b, off=!!ROOMS.off[k]; view(L,[-P.sh[0],-P.sh[1]],(b.x0+b.x1)/2+P.sh[0],(b.z0+b.z1)/2+P.sh[1],true,(off?.02:.3)*TILE,false,false,WINDOWS.panes.filter(p=>p.off===k),q=>q.x>b.x0&&q.x<b.x1&&q.z>b.z0&&q.z<b.z1); } },'130a-windows-live');
   // the first picture without a visit: an inside off the map with panes looking in (the bodega) is built a moment after the start, pictured from the street and dropped again; the pictures are kept in the browser for this build, so the next start needs no build
   const KEY=id=>'winpic:'+id+':'+(((document.querySelector('meta[name=market-build]')||{}).content)||'local'), buf=new Uint8Array(256*256*4);
   const shot=p=>{ const w=p.rt.width, h=p.rt.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), im=g.createImageData(w,h); renderer.readRenderTargetPixels(p.rt,0,0,w,h,buf);

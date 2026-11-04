@@ -127,14 +127,12 @@ starting: a newer owner decision wins over a line here.
 - [ ] **The road along the Hudson from Market St** (owner, 4 Nov 2026: "why isnt the hudson showing, missing road"): the water and quay now
   show within 60 tiles; the road itself wasn't confirmed in a picture.
 - [ ] **A thin dark bar on the bath house's floor** near its front wall, seen from one overhead angle (4 Nov 2026); not looked into.
-- [ ] **Tree shadows: the lag in the owner's render-inspector shot** [taking: claude/peaceful-ritchie-3z6mxa, 4 Nov 2026] (owner, 2 Nov 2026: "extremely laggy.", on Market St near 32,25 at
-  night, 10 FPS). Measured 2 Nov: the park's leaf-card trees (about 148k triangles in 3 meshes) and the street oaks (about 23k) cast shadows,
-  and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps; all `autoUpdate=false`, redrawn when needed) draws
-  them again: about 1,000 calls and 750k triangles in that frame, felt as stutter. Since 1 Nov a quarter of the trees use the fine-leaf look
-  (1.8 times the cards, `TREEGEN.cards` in `src/060b-trees.js`). Options given, owner to pick: 1 the shadow cast from the trees' lite card set
-  (recommended: looks nearly the same for about a third of the cost; a shadow-only caster on its own layer), 2 no tree shadows from street
-  lamps (sun and moon kept), 3 fewer cards on the fine-leaf trees. Check with the render inspector at `?at=32.5,25.2&hour=21` and
-  `tests/startprof.cjs` + `tests/budget.cjs`. The lag work since (the Drive's models and the insides, 4 Nov) didn't touch the trees.
+- [x] **Tree shadows: the lag in the owner's render-inspector shot** (owner, 2 Nov 2026: "extremely laggy."; his pick, 4 Nov 2026: "fix 1").
+  Done 4 Nov: the near park trees cast their shadow from their own lite cards (about 57% less tree shadow work in the park), and a dark
+  street lamp's shadow is no longer redrawn. On Market St itself the shadow work is mostly clothes and bodies, not trees: still open below.
+- [ ] **Shadow work on Market St at night: clothes and bodies** (4 Nov 2026): the lamp's shadow cube draws about 175k triangles of clothes
+  and 151k of bodies per refresh. Options to put to the owner: clothes cast no shadow (the body under them does), or people's shadows from
+  a simpler body.
 - [ ] **The shoes key M sits next to the map (Shift+M)** (2 Nov 2026: the owner's feet went bare, likely from pressing M for the map).
   `shoes:'m'` in the key table in `src/094-ui.js`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; the owner to choose a key.
 - [ ] **The tee in one piece, like the jeans** (owner's pick, 2 Nov 2026: "1", one continuous garment; the jeans were done in #495, the tee

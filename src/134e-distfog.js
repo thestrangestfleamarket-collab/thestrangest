@@ -6,6 +6,7 @@ import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
+import {TPANE} from './087dz-tpane.js';
 const DFOG={};
 { const D0={on:true,cut:false,start:12,end:60,blur:0,haze:.3}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog7')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
@@ -56,15 +57,16 @@ const DFOG={};
   gfx();
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
-    const S=[['dfs','START','start',4,60,1],['dfb','BLUR','blur',0,5,.1],['dfh','DARKER','haze',0,.8,.01]];
     const B=document.createElement('div'); B.id='dfog';
-    B.innerHTML='<h3>DISTANCE FOG</h3><div class="row"><button class="btn" id="dfon"></button><button class="btn" id="dfcut"></button><button class="btn" id="dfrs">RESET</button>'+S.map(([id,n,,a,b,st])=>`<span style="width:56px">${n}</span><input type="range" id="${id}" min="${a}" max="${b}" step="${st}">`).join('')+'</div><div class="dim">how far from you the world starts to darken and blur (START, in tiles), how much it blurs (BLUR) and darkens (DARKER); where the drawing stops (its last stretch faded softly) is HAZE RANGE, in GRAPHICS</div>';
-    P.appendChild(B); const sync=()=>{ B.querySelector('#dfon').textContent=C.on?'ON':'OFF'; B.querySelector('#dfcut').textContent=C.cut?'DRAW TO RANGE':'DRAW ALL'; for(const [id,,k] of S)B.querySelector('#'+id).value=C[k]; }; DFOG.onchange.push(sync);
-    B.querySelector('#dfon').onclick=()=>{ C.on=!C.on; save(); sync(); };
-    B.querySelector('#dfcut').onclick=()=>{ C.cut=!C.cut; save(); sync(); };
-    B.querySelector('#dfrs').onclick=()=>{ Object.assign(C,D0); save(); sync(); };   // back to the owner's default haze
-    for(const [id,,k] of S)B.querySelector('#'+id).oninput=e=>{ C[k]=+e.target.value; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); for(const f of DFOG.onchange)f(); };
-    sync(); };
+    B.innerHTML='<h3>DISTANCE FOG</h3><div class="dftp"></div><div class="dim">how far from you the world starts to darken and blur (START, in tiles), how much it blurs (BLUR) and darkens (DARKER); where the drawing stops (its last stretch faded softly) is HAZE RANGE, in GRAPHICS</div>';
+    P.appendChild(B); const el=B.querySelector('.dftp'), tell=()=>{ for(const f of DFOG.onchange)f(); };
+    const num=k=>[()=>C[k],v=>{ v=+(+v).toFixed(4); if(v===C[k])return; C[k]=v; if(k==='start'&&C.end<C.start+1)C.end=C.start+1; save(); tell(); }];
+    const V=TPANE.live({on:[()=>C.on,v=>{ if(v===C.on)return; C.on=v; save(); tell(); }],cut:[()=>C.cut,v=>{ if(v===C.cut)return; C.cut=v; save(); tell(); }],start:num('start'),blur:num('blur'),haze:num('haze')}); let mk=null;
+    const draw=()=>{ '@later'; mk=mk||TPANE.make(el).then(p=>{ p.addBinding(V,'on',{label:'ON'}); p.addBinding(V,'cut',{label:'DRAW TO RANGE'}); p.addBinding(V,'start',{label:'START',min:4,max:60,step:1}); p.addBinding(V,'blur',{label:'BLUR',min:0,max:5,step:.1}); p.addBinding(V,'haze',{label:'DARKER',min:0,max:.8,step:.01});
+        p.addButton({title:'RESET'}).on('click',()=>{ Object.assign(C,D0); save(); tell(); }); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };   // RESET: back to the owner's default haze
+    DFOG.onchange.push(()=>{ if(mk)draw(); });
+    for(const ev of ['keydown','keyup'])B.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
+    new MutationObserver(()=>{ if(!P.hidden&&P.offsetParent)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); };
   ui();
 }
 export {DFOG};

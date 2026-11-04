@@ -29,7 +29,7 @@ const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(
     const c=SFX.ctx(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
     out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.recipe(k));
-    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .r input[type=range]').length; __dbg.SNDED.close();
+    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); await __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .tp-sldv').length; __dbg.SNDED.close();
     out.playing=!!SFX.play('click'); out.blipped=(SFX.blip(SFX.voiceOf('tester')),true);
     // the lines: pools, blanks, freshness, a line shown and logged
     out.pools={}; for(const k in LINES.pools){ const P=LINES.pools[k]; out.pools[k]={n:P.length,blanks:[...new Set(P.flatMap(s=>(s.match(/\{\{(\w+)\}\}/g)||[])))]}; }

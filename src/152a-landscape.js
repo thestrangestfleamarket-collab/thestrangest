@@ -8,6 +8,7 @@ import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {TUFTC, tuftCol} from './014-gamekit.js';
 import {GRASS} from './014a-grass.js';
 import {FOREST, PROPS} from './039-bodega.js';
+import {TPANE} from './087dz-tpane.js';
 { const T=TILE;
   const TYPES=[['grass','GRASS','#4a7a3a'],['grass2','DRY GRASS','#6f863a'],['grass3','LUSH GRASS','#2f6b2c'],['grass4','PALE GRASS','#8fa05a'],['sidewalk','SIDEWALK','#9a968e'],['cobble','COBBLE','#6b6b70'],['dirt','DIRT','#6b4f33'],['gravel','GRAVEL','#7a766f'],['slab','STONE SLAB','#8a857a'],['sand','SAND','#c9b885'],['road','ROAD','#34363c'],['alley','ALLEY','#46474c'],...GRASS.K.map(k=>['gk:'+k.id,k.name,k.sw])];   // the nine grass kinds last: a patch of one sets what grows there (GRASS)
   const rnd=(s)=>{ let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
@@ -152,51 +153,41 @@ import {FOREST, PROPS} from './039-bodega.js';
   Object.defineProperty(LAND,'dragging',{get:()=>!!drag||!!painting});
 
   const css=document.createElement('style'); css.textContent=`
-  #lnd{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;width:236px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
+  #lnd{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;width:300px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20;box-sizing:border-box}
   #lnd[hidden]{display:none} #lnd h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #lnd .pane{padding:10px 14px}
   #lnd .dim{color:var(--dim);font-size:10px;line-height:1.5} #lnd .types{display:flex;flex-direction:column;gap:4px;margin:8px 0}
   #lnd .t{display:flex;align-items:center;gap:8px;background:#0e1016;border:2px solid #3a3f4e;color:var(--fg);font:inherit;padding:5px 8px;cursor:pointer;text-align:left} #lnd .t[aria-pressed=true]{border-color:var(--key);color:var(--key)}
   #lnd .sw{width:16px;height:16px;border:1px solid #000;flex:0 0 auto} #lnd .row{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap} #lnd .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer} #lnd .btn[aria-pressed=true]{border-color:var(--key);color:var(--key)}
-  #lnd select{width:100%;font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 6px;margin:6px 0} #lnd .mini{flex:1;min-width:0}`;
+  #lnd select{width:100%;font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 6px;margin:6px 0} #lnd .mini{flex:1;min-width:0} #lnd .tp{margin:8px -6px}`;
   document.head.appendChild(css);
-  const P=document.createElement('div'); P.id='lnd'; P.hidden=true; document.body.appendChild(P);
-  function draw(){ '@later'; const ground=mode==='box'||mode==='border'||mode==='draw';
-    P.innerHTML=`<h2>LANDSCAPE</h2><div class="pane">
-    <div class="row"><button class="btn mini" id="lmbox" aria-pressed="${mode==='box'}">BOX</button><button class="btn mini" id="lmbord" aria-pressed="${mode==='border'}">BORDER</button><button class="btn mini" id="lmdraw" aria-pressed="${mode==='draw'}">DRAW</button></div>
-    <div class="row"><button class="btn mini" id="lmplant" aria-pressed="${mode==='plant'}">PLANTS</button><button class="btn mini" id="lmerase" aria-pressed="${mode==='erase'}">ERASE</button></div>
-    ${ground?`<div class="types">${TYPES.map(([k,n,c])=>`<button class="t" data-t="${k}" aria-pressed="${type===k}"><span class="sw" style="background:${c}"></span>${n}</button>`).join('')}</div>`:''}
-    ${mode==='draw'?`<div class="row"><button class="btn" id="lbrsm">SIZE -</button><span class="dim" style="align-self:center">${(brushR/T).toFixed(1)} tiles</span><button class="btn" id="lbrbg">SIZE +</button></div><div class="dim">Hold and drag on the ground to paint.</div>`:''}
-    ${mode==='border'?`<div class="dim">Click points on the ground, then FINISH.</div><div class="row"><button class="btn" id="lfin">FINISH (${poly?poly.length:0})</button><button class="btn" id="lcancel">CANCEL</button></div>`:''}
-    ${mode==='box'?'<div class="dim">Drag a box on the ground to paint it.</div>':''}
-    ${mode==='plant'?`<select id="lsel">${GROUPS.map(([n,ks])=>`<optgroup label="${n}">${ks.map(k=>`<option value="${k}"${prop===k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('')}</select>
-      <div class="row"><button class="btn" id="lpsm">SIZE -</button><span class="dim" style="align-self:center">${(propS!=null?propS:dftScale(prop)).toFixed(2)}</span><button class="btn" id="lpbg">SIZE +</button><button class="btn" id="lprot" aria-pressed="${rot}">RAND ROT</button></div>
-      <div class="dim">Click the ground to place one.</div>`:''}
-    ${mode==='erase'?'<div class="dim">Click a plant or rock to remove it.</div>':''}
-    <div class="dim">${regions.length} patch${regions.length===1?'':'es'} · ${gprops.length} plant${gprops.length===1?'':'s'}</div>
-    <div class="row"><button class="btn" id="lundo">UNDO LAST</button><button class="btn" id="lclear">CLEAR ${ground||mode==='erase'?'PATCHES':''}</button></div>
-    ${mode==='plant'||mode==='erase'?'<div class="row"><button class="btn" id="lclrp">CLEAR PLANTS</button></div>':''}
-    <div class="row"><button class="btn" id="lexp">EXPORT ${mode==='plant'||mode==='erase'?'PLANTS':'LAND'}</button><button class="btn" id="ldone">DONE</button></div>
-    <div class="dim">Walk with WASD while editing. EXPORT writes ${mode==='plant'||mode==='erase'?'garden.json':'landscape.json'}; drop it in data/ to ship.</div></div>`; }
+  const MB=[['lmbox','box','BOX'],['lmbord','border','BORDER'],['lmdraw','draw','DRAW'],['lmplant','plant','PLANTS'],['lmerase','erase','ERASE']], mb=([id,,n])=>`<button class="btn mini" id="${id}">${n}</button>`;
+  const P=document.createElement('div'); P.id='lnd'; P.hidden=true; P.innerHTML=`<h2>LANDSCAPE</h2><div class="pane"><div class="row">${MB.slice(0,3).map(mb).join('')}</div><div class="row">${MB.slice(3).map(mb).join('')}</div><div class="pick"></div><div class="dim hint"></div><div class="tp"></div><div class="dim note"></div></div>`; document.body.appendChild(P);
+  const PICK=P.querySelector('.pick'), HINT=P.querySelector('.hint'), NOTE=P.querySelector('.note');
+  const LV=TPANE.live({brush:[()=>brushR/T,v=>{ brushR=v*T; }],size:[()=>propS!=null?propS:dftScale(prop),v=>{ propS=v; }],rot:[()=>rot,v=>{ rot=v; }]});
+  let bl=null, busy=null;
+  const exp=()=>{ const plant=mode==='plant'||mode==='erase', data=plant?gprops.map(serP):regions.map(ser); const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=plant?'garden.json':'landscape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
+  const build=async()=>{ '@later'; const pane=await TPANE.make(P.querySelector('.tp')); const bn=(t,id,f)=>{ const b=pane.addButton({title:t}); b.element.querySelector('button').id=id; b.on('click',f); return b; }, bd=(k,o)=>{ const b=pane.addBinding(LV,k,o); b.element.dataset.k=k; return b; };
+    bl={pane,brush:bd('brush',{label:'BRUSH (TILES)',min:.5,max:6,step:.5}),size:bd('size',{label:'SIZE',min:.05,max:8,step:.01}),rot:bd('rot',{label:'RAND ROT'}),
+      fin:bn('FINISH','lfin',()=>{ if(poly&&poly.length>=3){ const r={poly:poly.slice(),y:polyY,t:type}; add(r); } poly=null; hidePoly(); draw(); }),
+      cancel:bn('CANCEL','lcancel',()=>{ poly=null; hidePoly(); draw(); }),
+      undo:bn('UNDO LAST','lundo',()=>{ if(mode==='plant'||mode==='erase'){ const o=gprops.pop(); if(o){ unprop(o); saveP(); } } else { const r=regions.pop(); if(r)unmake(r); save(); } draw(); }),
+      clear:bn('CLEAR','lclear',()=>{ if(!confirm('Remove all ground patches?'))return; const old=regions.slice(); regions.length=0; for(const r of old)unmake(r); save(); draw(); }),
+      clrp:bn('CLEAR PLANTS','lclrp',()=>{ if(!confirm('Remove all placed plants and rocks?'))return; for(const o of gprops)unprop(o); gprops.length=0; saveP(); draw(); }),
+      exp:bn('EXPORT','lexp',exp), done:bn('DONE','ldone',()=>LAND.toggle())}; show(); };
+  const show=()=>{ const plant=mode==='plant'||mode==='erase';
+    bl.brush.hidden=mode!=='draw'; bl.size.hidden=bl.rot.hidden=mode!=='plant'; bl.fin.hidden=bl.cancel.hidden=mode!=='border'; bl.clrp.hidden=!plant;
+    bl.fin.title=`FINISH (${poly?poly.length:0})`; bl.clear.title=mode==='plant'?'CLEAR':'CLEAR PATCHES'; bl.exp.title=`EXPORT ${plant?'PLANTS':'LAND'}`; bl.pane.refresh(); };
+  function draw(){ '@later'; const ground=mode==='box'||mode==='border'||mode==='draw', plant=mode==='plant'||mode==='erase';
+    for(const [id,m] of MB)P.querySelector('#'+id).setAttribute('aria-pressed',mode===m);
+    PICK.innerHTML=ground?`<div class="types">${TYPES.map(([k,n,c])=>`<button class="t" data-t="${k}" aria-pressed="${type===k}"><span class="sw" style="background:${c}"></span>${n}</button>`).join('')}</div>`
+      :mode==='plant'?`<select id="lsel">${GROUPS.map(([n,ks])=>`<optgroup label="${n}">${ks.map(k=>`<option value="${k}"${prop===k?' selected':''}>${k}</option>`).join('')}</optgroup>`).join('')}</select>`:'';
+    HINT.innerHTML=`<div>${{box:'Drag a box on the ground to paint it.',border:'Click points on the ground, then FINISH.',draw:'Hold and drag on the ground to paint.',plant:'Click the ground to place one.',erase:'Click a plant or rock to remove it.'}[mode]}</div><div>${regions.length} patch${regions.length===1?'':'es'} · ${gprops.length} plant${gprops.length===1?'':'s'}</div>`;
+    NOTE.textContent=`Walk with WASD while editing. EXPORT writes ${plant?'garden.json':'landscape.json'}; drop it in data/ to ship.`;
+    if(bl)show(); else if(!busy)busy=LAND.ready=build().catch(e=>{ busy=null; NOTE.textContent='PANEL DID NOT LOAD: '+e.message; }); }
   const setMode=m=>{ mode=m; drag=null; hidePrev(); painting=null; clearPaintPrev(); if(m!=='border'){ poly=null; hidePoly(); } draw(); };
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.dataset.t){ type=b.dataset.t; draw(); return; }
-    if(b.id==='lmbox'){ setMode('box'); return; }
-    if(b.id==='lmbord'){ setMode('border'); return; }
-    if(b.id==='lmdraw'){ setMode('draw'); return; }
-    if(b.id==='lmplant'){ setMode('plant'); return; }
-    if(b.id==='lmerase'){ setMode('erase'); return; }
-    if(b.id==='lbrsm'){ brushR=Math.max(.5*T,brushR-.5*T); draw(); return; }
-    if(b.id==='lbrbg'){ brushR=Math.min(6*T,brushR+.5*T); draw(); return; }
-    if(b.id==='lpsm'){ propS=Math.max(.05,(propS!=null?propS:dftScale(prop))-.1); draw(); return; }
-    if(b.id==='lpbg'){ propS=Math.min(8,(propS!=null?propS:dftScale(prop))+.1); draw(); return; }
-    if(b.id==='lprot'){ rot=!rot; draw(); return; }
-    if(b.id==='lfin'){ if(poly&&poly.length>=3){ const r={poly:poly.slice(),y:polyY,t:type}; add(r); } poly=null; hidePoly(); draw(); return; }
-    if(b.id==='lcancel'){ poly=null; hidePoly(); draw(); return; }
-    if(b.id==='lundo'){ if(mode==='plant'||mode==='erase'){ const o=gprops.pop(); if(o){ unprop(o); saveP(); } } else { const r=regions.pop(); if(r)unmake(r); save(); } draw(); return; }
-    if(b.id==='lclear'){ if(!confirm('Remove all ground patches?'))return; const old=regions.slice(); regions.length=0; for(const r of old)unmake(r); save(); draw(); return; }
-    if(b.id==='lclrp'){ if(!confirm('Remove all placed plants and rocks?'))return; for(const o of gprops)unprop(o); gprops.length=0; saveP(); draw(); return; }
-    if(b.id==='lexp'){ const plant=mode==='plant'||mode==='erase', data=plant?gprops.map(serP):regions.map(ser); const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=plant?'garden.json':'landscape.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); return; }
-    if(b.id==='ldone'){ LAND.toggle(); return; } });
+    const m=MB.find(x=>x[0]===b.id); if(m)setMode(m[1]); });
   P.addEventListener('change',e=>{ if(e.target.id==='lsel'){ prop=e.target.value; propS=null; draw(); } });
   LAND.toggle=()=>{ LAND.on=!LAND.on; if(LAND.on)draw(); else { drag=null; hidePrev(); poly=null; hidePoly(); painting=null; clearPaintPrev(); } P.hidden=!LAND.on; };
 }

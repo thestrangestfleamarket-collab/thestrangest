@@ -46,6 +46,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage({ viewport: { width: 640, height: 360 } }), errs = [];   // small: software drawing is the check's time
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
+  pg.on('console', m => { if (m.type() === 'error' && /Shader Error|WebGLProgram|BatchedMesh/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); });   // a shader that fails to compile is a page error too
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=53,10', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
@@ -222,6 +223,16 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const pv = D.UI.view; D.UI.setView('iso'); C.scan(); C.begin(); r.isoKept = far.visible; C.end(); D.UI.setView(pv);
         far.removeFromParent(); near.removeFromParent(); tall.removeFromParent(); C.setDraw(v0 || 300); window.DFOG.set({ on: was }); r.def = v0; return r; }).catch(e => ({ err: e.message }));
       ok(dd.def === 120 && (!dd.persp || dd.farHid && dd.tallHid) && dd.nearShown && dd.back && dd.isoKept, 'DRAW DISTANCE (4 Nov 2026, default 120 tiles): in first and third person a mesh past it is hidden for the frame (a tall thin one too: measured over the ground), one inside it drawn; the overhead view cuts nothing: ' + JSON.stringify(dd)); }
+    { const bm = await pg.evaluate(() => { const D = window.__dbg, C = D.CULL, T = D.cv().TILE, THREE = D.THREE, [x, , z] = D.pos(), n = 60, M = new THREE.Matrix4();
+        const mat = new THREE.MeshLambertMaterial(); mat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed.y += instanceMatrix[3].x * 0.0;'); };   // a hook written for an instanced mesh
+        const im = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat, n); for (let i = 0; i < n; i++) { im.setMatrixAt(i, M.makeTranslation(x + (i - n / 2) * 1.6 * T, 1, z)); im.setColorAt(i, new THREE.Color(1, 0, 0)); } im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true; D.scene.add(im); im.updateMatrixWorld();
+        const pm = new THREE.Mesh(new THREE.PlaneGeometry(100 * T, 2 * T, 50, 1).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial()); pm.position.set(x, .1, z + 3 * T); pm.userData.cull = 1; D.scene.add(pm); pm.updateMatrixWorld();
+        const was = window.DFOG.get().on, v0 = C.getDraw(); window.DFOG.set({ on: false }); C.setDraw(40); C.scan(); C.begin();
+        const R = C.M.get(im), Q = C.M.get(pm), b = R && R.px[0], q = Q && Q.px[0], F = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(window.SHARED.cam.projectionMatrix, window.SHARED.cam.matrixWorldInverse));
+        const r = { culled: !!R && !R.off, one: !!b && b.isBatchedMesh && R.px.length === 1, copies: R && R.n, shown: b ? b._instanceInfo.filter(o => o.visible).length : -1, hid: !im.visible, parent: !!b && b.parent === im.parent, color: !!b && !!b._colorsTexture, cells: Q && !Q.off && q.isBatchedMesh ? Q.n : -1, cellTris: q ? q._geometryInfo.reduce((a, g) => a + g.count / 3, 0) : -1, view: C.view(R, F), persp: !!D.UI.persp };
+        const sh = {}; mat.onBeforeCompile(Object.assign(sh, { batching: true, vertexShader: 'void main() {\n#include <batching_vertex>\n#include <begin_vertex>\n transformed.y += instanceMatrix[3].x * 0.0;\n}' })); r.hook = !/instanceMatrix/.test(sh.vertexShader) && /batchingMatrix\[3\]/.test(sh.vertexShader) && sh.vertexShader.indexOf('<batching_vertex>') < sh.vertexShader.indexOf('<begin_vertex>');
+        C.end(); r.back = im.visible && !b.visible; const h1 = mat.onBeforeCompile; C.begin(); C.end(); C.begin(); C.end(); r.stable = mat.onBeforeCompile === h1; im.removeFromParent(); pm.removeFromParent(); C.setDraw(v0 || 300); window.DFOG.set({ on: was }); return r; }).catch(e => ({ err: e.message }));
+      ok(bm.culled && bm.one && bm.copies === 60 && bm.shown > 0 && (!bm.persp || bm.shown < 60) && bm.hid && bm.parent && bm.color && bm.cells >= 5 && bm.cellTris === 100 && bm.view >= 0 && bm.hook && bm.stable && bm.back, 'a wide instanced mesh is drawn as one BatchedMesh, a copy a piece in its own colour, the pieces past the draw distance left out, its shader hook reading the batch\'s matrix, wrapped once; a plain mesh marked for the cull as pieces of 10 tiles (4 Nov 2026): ' + JSON.stringify(bm)); }
     await pg.evaluate(() => window.DFOG.set({ cut: false, start: 12, end: 60, blur: 0 })).catch(() => {});
     { const iz = await pg.evaluate(() => { window.__dbg.UI.setView('iso'); return window.DFOG.cut(); }).catch(e => e.message); ok(iz === 0, 'no haze and nothing cut in the isometric view (27 Oct 2026): ' + iz); }
     const rg = await pg.evaluate(() => { const P = window.PARK, R = P.ring; if (!R) return { ring: false }; const A = R.userData.P; let out = 0;
@@ -294,6 +305,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       return { spot: !!s && s.x === 1 && s.off === false, seat: !!p && p.sit === .5, full: full === null, again: !!again }; });
     ok(q.spot && q.seat && q.full && q.again, 'insides list where people go: a street inside (the bar) gives its work spots and seats like an off-map one, none when full, freed when they leave: ' + JSON.stringify(q)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
+  { const r = await pg.evaluate(async () => { const U = window.__UI, w = ms => new Promise(r => setTimeout(r, ms)); U.mapWindow(); await w(3000); const a = BRODBG(); U.brochure.flip(); await w(2000); const f = BRODBG().flipped; const names = U.brochure.places(); U.brochure.close(); for (let i = 0; i < 40 && BRODBG().up; i++) await w(250); return { ...a, f, names, after: BRODBG().up }; }).catch(e => ({ err: e.message }));
+    ok(r.up && !r.busy && r.places >= 20 && r.go > r.places && r.st >= 1 && r.f && r.names.includes('THE BODEGA') && !r.names.includes('THE STREET') && r.after === false, 'MAP is the folded brochure (owner, 4 Nov 2026): it unfolds, every GO TO place numbered, F flips it to THE LOOP, it folds away: ' + JSON.stringify({ ...r, names: r.names && r.names.length })); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

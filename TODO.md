@@ -195,3 +195,13 @@ starting: a newer owner decision wins over a line here.
   `tests/sheet.cjs` also crashes on `hud`/`stat`, which no longer exist as globals. Every new character's look-over goes through it.
 - [ ] **The cinema's video titles**: YouTube refuses `youtube.com/oembed` from CI since 2 Nov 2026 (`src/059f-cinema.js:201`); the places
   check now ignores other sites' refusals, but whether players still get titles is unknown.
+- [ ] **The cars, in game, for the owner** (3 Nov; only seen in test pictures so far): the insides (too dark or bright? seats, belts, dash up
+  close), the cars 40% bigger next to the buildings, the driver a little smaller in the muscle car and wedge coupe, and the radio by ear
+  (loudness, the muffle outside the car, the four stations).
+- [ ] **Cars parked before they got bigger** (3 Nov): a car a player parked keeps its spot in the block's world (`car:<id>`); at the new size it
+  may touch the kerb or another car, and Rapier shoves it onto the pavement. Fix: clear the saved `car:*` spots once on the server (ask the
+  owner first), so they start from `data/world.json`'s new spots.
+- [ ] **`tests/cars.cjs` flaky under load** (3 Nov): run beside another check, the muscle car got shoved sideways and "W drives it" failed;
+  alone it passes every time. Physics at a low frame rate; make the check (or VEH's start) robust to slow frames.
+- [ ] **The radio on the live site** (3 Nov): the stations (`/g/<station>.<hash>.mp3`, with Range) have only been streamed by the pull
+  request's checks; play one on thestrangestfleamarket.com and check it starts at the shared moment.

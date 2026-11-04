@@ -14,8 +14,8 @@ Risk is noted only when it isn't low.
 
 ## The order of work
 
-1. **Keep the checks honest** (CI area): run the full checks on `main` once; read #501's red log; restore the lost HISTORY entry. Everything
-   else merges on these checks.
+1. **Keep the checks honest** (CI area): run the full checks on `main` once (it settles six lines); restore the lost HISTORY entry; give
+   the long checks their own time limits. Everything else merges on these checks.
 2. **The owner's look session** (one sitting on the live site): every **look** line, listed under "For the owner" below.
 3. **The owner's picks** (one batch of questions): every **pick** line, listed under "For the owner" below.
 4. **Performance, measured first**: the start-up and frame-time comparison, then the freeze after the start, the tree shadows, the wind,
@@ -30,6 +30,7 @@ Risk is noted only when it isn't low.
 **To try on the live site** (one sitting; each line is in its area below):
 the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
+the cinema's titles ·
 VR on the Quest 3 (and the painter in it).
 
 **To pick** (one batch; each line is in its area below):
@@ -39,40 +40,42 @@ piece · the egg poacher's tint (confirm he said "tintable") · who stands on Ma
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
-the physics extras (darts now twice at the bar) · the build check's time limit · `docs/MAP.md` out of git · NPC voices (lifts the
+the physics extras (darts now twice at the bar) · the long checks' time limits · `docs/MAP.md` out of git · NPC voices (lifts the
 19 Oct "no sound" rule) · the easel mockup (update or leave).
 
 ## CI, checks and tools
 
-- [ ] **Run the full checks on `main` once** · P1 · S · check. Checks get machines again (seen 4 Nov evening); #576 and other merges of
-  4 Nov went in on local checks only, and the skate park's tricks (#552) never had a finished CI run. Start the workflow on `main` with
-  `full`. (Was "GitHub's checks get no machine" and "The skate park's tricks went live without a finished CI build check".)
+CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Run the full checks on `main` once** · P1 · S · check. Start the workflow on `main` with `full`. No full run exists since 4 Nov:
+  #576 and other merges went in after the last `main` run (6dfc80f5, 16:05 UTC), and the skate park's tricks (#552) passed CI only on
+  their pull request. The run also confirms lines that look fixed (close each if it passes):
+  - "GitHub's checks get no machine": over (failed 15:05–15:34 UTC on 4 Nov; runs pass again since 16:05);
+  - the cast check at 11:00 and 2:30 (`tests/jobsim.cjs`): rewritten in a7268617 to compare each person with their day; passed 11 times since;
+  - the navigation wasm aborts: the playhouse `Aborted()` was recast out of memory, fixed in 95795b7f (#518); `src/153-nav.js:36-42` falls
+    back to A* anyway; no places failure since;
+  - `tests/fishing.cjs` at random: steadied in ef15d2f1 (3 Nov), passed three times since;
+  - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
 - [ ] **Restore #512's lost HISTORY entry** · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
   "lets add them all, add them as toggles in graphics…") was added in 6b3c9deb and dropped in the merges caee19fb/116b27da. Put it back.
-- [ ] **#501 (THE CATACOMB RUN in VR) was merged on a red build check** · P1 · S · find. 2 Nov, 16:03 UTC, two minutes before the merge.
-  Read that log before touching the catacomb run or VR, and fix what it names.
-- [ ] **The build check's time limits** · P2 · S · pick + check. 4 Nov: the 240-minute limit was hit (#526 cancelled; on #567, #568, #570
-  the catacomb run and the headset check hung until #573 fixed ESC). Earlier (2 Nov, #492) the VR check alone took 40 min. Owner: raise
-  the limit, or split the long checks (VR, brawl, catacomb) into their own job (recommended).
-- [ ] **`tests/fishing.cjs` fails at random on the runner** · P2 · S · check. Two steps (the rod tip above his head; "pulling against the
-  run tires the fish faster"): wait for the pose and the fight to settle. With: "Fishing from the rowboat".
-- [ ] **`tests/cars.cjs` flaky under load** · P3 · S · check. Run beside another check, the muscle car is shoved sideways and "W drives it"
-  fails; alone it passes. Physics at a low frame rate: make the check (or VEH's start) robust to slow frames. With: the physics checks.
-- [ ] **`tests/loosecheck.cjs` fails on `main`** · P2 · S · check. Its start spot (`at=-2.2,3.2`) has no loose things near it any more.
-  With: "STAND ON THINGS" (same loose system and tests).
-- [ ] **Cast check fails at 11:00 and 2:30** · P2 · M · find. `tests/jobsim.cjs` on clean `main` (4 Nov): some people on shift aren't at
-  work, some off shift aren't home. With: "Who stands on Market St" and "The referee's habits" (same `data/lives.json`, JOBS, `worker/lives.js`).
-- [ ] **The navigation wasm sometimes aborts** · P2 · M · find · risk med. `Aborted()` from `@recast-navigation` ("NAV: the mesh for down
-  failed"), seen 2 Nov on clean `main`; once failed `tests/places.cjs` at the playhouse. With: "Self-host the CDN libs" (pin and serve one build).
-- [ ] **"chunk later was not loaded before use" on the lawn** · P2 · S · code. Seen at `?at=40,150` on 2 Nov (#371, #372). Find the
-  functions in `dist/chunks.txt`, add the missing `LOAD`. With: the fluffy grass look (same area, same PR #508).
-- [ ] **The black-void sheet view doesn't show rig bodies** · P2 · S · code. `?sheet=poacher` showed only ground, the camera not on it;
-  `tests/sheet.cjs` crashes on `hud`/`stat`, no longer globals. Every new character's look-over goes through it: do before the egg
-  poacher's look and any in-game pictures of the moves.
-- [ ] **`docs/MAP.md` conflicts on nearly every merge** · P2 · S · pick. It is written by the build. Ask the owner whether to stop keeping
-  it in git and let the build and CI make it.
-- [ ] **The cinema's video titles** · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:201`);
-  the places check ignores other sites' refusals. Do players still get titles? Check on the live site.
+- [ ] **The long checks need their own time limits** · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
+  was still hit: the headset (VR) step hung 08:29–13:43 UTC in run 41795287054. Steps have no limits of their own, and a hang burns
+  Actions minutes (they ran out on 20 and 28 Oct). Add `timeout-minutes` to the long steps (VR, catacomb run, room editor) or split them
+  into their own job; the owner says yes to 350 or a new number.
+- [ ] **`docs/MAP.md` conflicts on nearly every merge** · P2 · S · pick. It is written by the build; 58 commits since 3 Nov touch it, and
+  open pull requests keep editing it. Options: stop keeping it in git (CLAUDE.md tells chats to grep it, so that line changes too), or the
+  cheap one, `docs/MAP.md merge=ours` in `.gitattributes` and let the build rewrite it. `TODO.md merge=union` would help this file the same way.
+- [ ] **"chunk later was not loaded before use" on the lawn** · P2 · S · code. Seen at `?at=40,150` on 2 Nov (as #371, #372; the numbers
+  change every build). Rebuild, open the spot, read the warning's number in `dist/chunks.txt`, add the missing `LOAD`. With: the fluffy grass.
+- [ ] **The black-void sheet view doesn't show rig bodies** · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
+  (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,
+  no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
+- [ ] **`tests/loosecheck.cjs` fails on `main`** · P3 · S · check. Its start spot (`at=-2.2,3.2`, lines 17 and 52) has no loose things near
+  it any more; nothing runs it (not in `site.yml`). Fix the spot and add it to the physx step. With: the physics extras and STAND ON THINGS.
+- [ ] **The cinema's video titles** · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
+  fails quietly: no title, nothing breaks); from elsewhere it answers, so players likely get titles. Check on the live site; if not, fetch
+  the title through the worker.
+- [x] **#501 (THE CATACOMB RUN in VR) was merged on a red build check**: read 4 Nov. Run 41477704509 failed only in places (the dungeon's
+  page error was YouTube's 403); the VR and catacomb steps passed; 97ceb8aa (2 Nov) made places ignore other sites' refusals.
 
 ## Performance
 
@@ -124,7 +127,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   integrity: `@supabase/supabase-js` (door.html:39), `partysocket` (111d:152, 059o:18), `html-to-image` (162c:74; HISTORY says the website
   build bundles it: verify), and also three-mesh-bvh (087b, 137), rapier (090), tweakpane (087dz), @recast-navigation (153). Bundle them into
   `dist/g/` as hashed files (the `+esm` bundles chain more CDN imports; recast and rapier carry wasm). three.js stays on the CDN on purpose.
-  With: the login cookie, the navigation wasm aborts, VR hand models.
+  With: the login cookie, VR hand models.
 - [ ] **Painting: a way to take a painting down** · P2 · S-M · code. From #564. The TENANTS panel can't hide or remove a player's
   painting. An ART tab in `src/136c-tenants.js` and an owner-only `/admin` `do:"artoff"` in `worker/door.js` (`artDel` at :477 lets only the
   painter remove unfinished work). Decide what a hung or packed painting shows once removed (a blank frame, or the item goes). Ships on
@@ -184,17 +187,19 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 
 ## Skate park (Section B)
 
-One pass, one pull request; check from above with the map tools.
-- [ ] **In the map editor** · P3 · M · code. Placed by `sections.places` in `data/world.json`; the owners' map editor (`/editor`,
-  `src/editor/editor.html`) and the in-game one (`src/096-mapedit.js`) can't see or move it. (Owner, 4 Nov: "option 1, open air, remove the
-  gate in A".)
-- [ ] **Re-run the editor's ground picture** · P3 · S (40 min run) · check. `tools/topmap.cjs` still shows the old gate in Section A's park
-  and nothing at the new spot. After the editor line.
-- [ ] **The minimap doesn't draw it** · P3 · S · code. Plain grass where it stands.
-- [ ] **Look at the bowl from above** · P3 · S · check. `?sec=B`: the checks prove the ground is cut round it; no picture confirms the grass
-  doesn't show over the bowl.
-- [ ] **The places tour no longer visits it** · P3 · S · check. `tests/places.cjs` can't load Section B; `tests/skate.cjs` covers it but runs
-  only when skate files change.
+One pass, one pull request.
+- [ ] **The map editor and its ground picture for Section B** · P3 · L · code · risk med. Placed by `sections.places` in `data/world.json`
+  (owner, 4 Nov: "option 1, open air, remove the gate in A"). The owners' editor (`src/editor/editor.html:54`) still reads the old
+  `parkPlaces.skatepark`; nothing in it or in `src/096-mapedit.js` reads `sections.places`; it edits one section (`SID`, editor.html:116);
+  `tools/topmap.cjs` has no section option and its picture stops at y 209 (the skate park is at 328). Also stale in the ground picture since
+  its last run (7e53fae6): the skate park's move, the fair, the caverns' removal, the lake corner. Re-run it (40 minutes) in a pull
+  request of its own (the tiles conflict), after other map changes land.
+- [ ] **The minimap doesn't draw it** · P3 · S · code. `UI.mapPlan` (`src/094-ui.js` ~250–289) only labels it; nothing draws its outline;
+  the plan is built once and cached. After open PR #596 (the brochure map, same file).
+- [ ] **Look into the bowl** · P3 · S · check. `?sec=B`: the checks prove the ground is cut round it; no picture confirms the grass doesn't
+  show in the bowl. A third-person shot (the 4 Nov screenshot rule: never overhead).
+- [ ] **The places tour no longer visits it** · P3 · S-M · check. `tests/places.cjs` can't load Section B (why is unknown); `tests/skate.cjs`
+  covers it but runs only when skate files change. Cheaper: add `data/world.json|src/006-map-pre` to the skate trigger in `site.yml`.
 
 ## Characters and the street
 
@@ -331,7 +336,7 @@ One session on the owner's Quest 3 settles most of these.
 - [ ] **Try it on the Quest 3; the owner to approve** · P2 · S (him) · look · risk med (real hardware). Owner, 27 Oct: "make sure that the
   controls in game match the quest 3 controllers, also add hand tracking in game so i can use my hands to use the menus". Only tested on an
   emulated Quest 3 (`tests/vr.cjs`). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the
-  hands look. Collect his picks for the lines below in the same session. Read #501's log first.
+  hands look. Collect his picks for the lines below in the same session.
 - [ ] **No walking with hands only** · P3 · M · pick + code. Hands point and pinch at menus; walking needs the sticks (teleport is
   controller-only, `src/162c-vr.js:136`). He picks: point-and-pinch to teleport, pinch-and-pull, or a wrist button.
 - [ ] **The menu panel's picture can lag behind the window** · P3 · S-M · code. `html-to-image`, a few hundred ms; a press goes to what the

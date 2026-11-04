@@ -47,6 +47,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const g = await at('#bagp .bggrip'); await pg.mouse.move(g.x, g.y); await pg.mouse.down(); await pg.mouse.move(g.x + 200, g.y + 250, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
   const r11 = await pg.evaluate(() => ({ size: +BAGDBG().size.toFixed(2), w: document.getElementById('bagp').getBoundingClientRect().width, saved: JSON.parse(localStorage.getItem('market-save')).bagsize }));
   ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 520 && +r11.saved === r11.size, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
+  await pg.evaluate(() => BAG.size(1)); await pg.waitForTimeout(200);   // back to a size that fits this screen for the drags
   { const b = await at('#bagp .bgsort'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(200);
   const r12 = await pg.evaluate(() => { const D = BAGDBG(), P = document.getElementById('bagp'), xs = [...P.querySelectorAll('.bgi')].map(e => [parseInt(e.style.left), parseInt(e.style.top)]); return { tiled: D.tiled, order: D.order, cells: xs, label: P.querySelector('.bgsort').textContent, saved: JSON.parse(localStorage.getItem('market-save')).bagsort }; });
   ok(r12.tiled && r12.label === 'TILED' && r12.saved === 'tiled' && r12.cells.length >= 2 && r12.cells.every(([x, y]) => x % 50 === 0 && y % 50 === 0) && r12.cells[0][0] === 0 && r12.cells[0][1] === 0, 'TILED lays the things in a grid from the top left, saved ' + JSON.stringify(r12));
@@ -56,7 +57,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r13[r13.length - 1] === first && r13[0] !== first, 'in TILED, dragging the first thing to the last cell puts it last ' + JSON.stringify(r13));
   { const b = await at('#bagp .bgsort'); await pg.mouse.click(b.x, b.y); } await pg.evaluate(() => BAG.size(1)); await pg.waitForTimeout(200);
   const r14 = await pg.evaluate(() => ({ tiled: BAGDBG().tiled, size: BAGDBG().size, pos: BAGDBG().pos.mortar }));
-  ok(!r14.tiled && r14.size === 1 && r14.pos && r14.pos[0] > 180, 'back to LOOSE at the old size, the mortar where it was left ' + JSON.stringify(r14));
+  ok(!r14.tiled && r14.size === 1 && r14.pos && r14.pos[0] > 180, 'back to LOOSE, the mortar where it was left ' + JSON.stringify(r14));
 
   await start(false);   // the same browser, its save kept
   await pg.waitForFunction(() => BAG.ground.length > 0, null, { timeout: 20000 }).catch(() => {});

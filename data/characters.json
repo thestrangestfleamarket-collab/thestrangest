@@ -5371,5 +5371,116 @@
     }
    }
   }
+ },
+ "w_owl": {
+  "name": "THE OWL",
+  "folk": {
+   "sp": "owl",
+   "m": 0.9,
+   "f": "#7a6248",
+   "f2": "#e8dcc4",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "GUARD",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hoo goes there? Oh. A visitor.",
+      "No flash. No touching. No climbing the mammoth."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS THERE TO DO HERE?",
+       "go": "do"
+      },
+      {
+       "t": "DO YOU EVER SLEEP?",
+       "go": "sleep"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "do": {
+     "say": "Read the plaques. Then the curator at the desk will quiz you, a dollar a right answer. The fish tank's in the Earth gallery; bring fish food.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "sleep": {
+     "say": "In the day, with one eye open. The meteorite has tried to leave twice.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_pangolin": {
+  "name": "THE PANGOLIN",
+  "folk": {
+   "sp": "pangolin",
+   "m": 0.9,
+   "f": "#8a7050",
+   "f2": "#d8c8a8",
+   "coat": "tunic",
+   "cc": "#3a6a4a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "KEEPER",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "mus_postcard",
+    "mus_plush",
+    "mus_replica",
+    "mus_guidebook"
+   ],
+   "line": "Every sale keeps the mammoth dusted."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Something to remember us by?",
+      "The plush mammoth is very soft. Softer than the real one."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
  }
 }

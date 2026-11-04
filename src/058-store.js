@@ -137,6 +137,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
         STORE.bound.x1=Math.max(STORE.bound.x1,X(B.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(B.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(B.y1+6)); }); }
     const mr=(lk,set,o)=>()=>room('museum','MUSEUM OF EARTH',B,lk,D,set,o);
     rec('museum','MUSEUM OF EARTH',B,D,true);
+    STORE.museumFrame={B,M,at:(x,y)=>({x:X(SX-x),z:Z(SY-y)})};   // the inside's own layout (its door side first) to the world
     const ym=(B.y0+B.y1)/2, lw={...look,floor:null};
     const inWalls=mr({in:look.in},()=>{},{xo:1,xw:[...[M.hx0,M.hx1].map((x,i)=>['s'+i,'y',SX-x,SY-M.by,B.y1-T,i?1:-1,[{a0:SY-M.side[1],a1:SY-M.side[0],z0:0,z1:M.archZ}],true]),
         ['k','x',SY-M.by,B.x0+T,B.x1-T,1,[M.earth,M.humans,M.closed].map(([a,b])=>({a0:SX-b,a1:SX-a,z0:0,z1:M.archZ})),true],
@@ -153,7 +154,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       mr({in:look.in},()=>{ const C=M.closedR; mp('woolly mammoth',M.mid,(M.humansR.y0+M.humansR.y1)/2+.4); mp('Gibeon meteorite',M.earthR.x0+1.6,M.earthR.y1-1.9);
         mp('terracotta warriors',(C.x0+C.x1)/2,C.y1-.9,2); mp('jade burial suit',C.x1-.55,C.y0+2.4,1); mp('the Sutton Hoo helmet',C.x0+.6,C.y0+1,3); mp('clay tablets',C.x0+.35,C.y0+3.4,3); mp('the Antikythera mechanism',(C.x0+C.x1)/2,C.y0+2.9,2);
         L(M.humansR,2,[1.5,1.08,.7],90,9); L(M.earthR,1,sp,96,9); L(M.closedR,1,sp,96,9); },{xo:1}),
-      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); }; }); }   // nothing of its inside until you go in, dropped when you leave
+      ()=>{ const R=STORE.inside.museum; if(!R)return; const g0=R.go; R.go=()=>{ g0(); flat(B.x0,ym,B.x1,B.y1,.15,look.floor,'L'); flat(B.x0,B.y0,B.x1,ym,.15,look.floor,'L'); inWalls(); if(STORE.furnish&&STORE.furnish.museum)STORE.furnish.museum(STORE.museumFrame); }; }); }   // nothing of its inside until you go in, dropped when you leave
 
 
   const OFF=STORE.off={}, offmap=(name,lot,fn)=>{ OFF[name]={lot,fn}; STORE.places.push([name,0,0,'up','off']); }; STORE.kit={room,rec,flat,put,sol,STEPS,PLATE,offmap,planes}; for(const [n,k] of [['THE HERB COTTAGE','garden'],['THE AQUARIUM','aquarium'],['THE KEEP','keep'],['THE BUTTERFLIES','garden']])if(!AWAY.has(k))STORE.places.push([n,0,0,'up']);

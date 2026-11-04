@@ -1406,5 +1406,25 @@
   "stackable": true,
   "weight": 0.2,
   "edible": true
+ },
+ "mus_postcard": {
+  "value": 1,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "mus_plush": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.3
+ },
+ "mus_replica": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.5
+ },
+ "mus_guidebook": {
+  "value": 4,
+  "stackable": true,
+  "weight": 0.3
  }
 }

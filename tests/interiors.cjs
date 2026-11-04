@@ -1,4 +1,4 @@
-// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside (the bar, the arcade, the bodega, the movie theatre): its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
+// THE INTERIORS (docs/INTERIORS.md): node tests/interiors.cjs [out folder]. Each rebuilt inside (the bar, the arcade, the bodega, the movie theatre, the Museum of Earth): its staff have spots inside it, its patrons have seats or places, its non-human worker is made and stands at its spot, its own mechanic works; no page error. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -75,5 +75,25 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     rec('theatre: the stand sells popcorn, nachos, candy and soda; the machine a tub; the menu reads',c.shop&&c.pop&&c.menu,JSON.stringify(c));
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
+  /* ---------- THE MUSEUM OF EARTH ---------- */
+  { await pg.evaluate(()=>STORE.enter('museum',true)); await U(()=>STORE.inside.museum&&STORE.inside.museum.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE DONATION BOX ($1)'),180000);
+    const p=await people('museum'); rec('museum: staff spots and visitor places inside it, standing places clear of the exhibits',p.spots>=6&&p.seats>=15&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
+    const wd=k=>{ const N=BODIES.by[k]&&BODIES.by[k].npc, s=STORE.rooms.find(r=>r.id==='museum').spots[k==='w_owl'?'GUARD':'KEEPER']; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
+    await pg.waitForFunction(`(${wd})('w_owl')<.2&&(${wd})('w_pangolin')<.2`,null,{timeout:90000}).catch(()=>{});
+    rec('museum: THE OWL on guard and THE PANGOLIN at the gift shop',await pg.evaluate(`[(${wd})('w_owl'),(${wd})('w_pangolin')].every(d=>d!=null&&d<.2)`));
+    const m=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), wait=ms=>new Promise(r=>setTimeout(r,ms));
+      const plaques=__dbg.UI.things.filter(t=>/\(THE PLAQUE\)$/.test(t.name)).length; th('THE ROSETTA STONE (THE PLAQUE)').act(); const read=MINI.on&&MINI.on.title==='THE ROSETTA STONE'&&MUSEUM.read.has('THE ROSETTA STONE'); MINI.close();
+      MUSEUM.quizDay=-1; INV.cash=0; th('THE INFORMATION DESK').act(); const S=MINI.state(); for(let n=0;n<400&&!S.over;n++){ if(S.wait<=0&&S.pick<0){ const Q=S.qs[S.i], k=Q.o.indexOf(Q.a); S.mx=210; S.my=170+k*52+20; S.press=true; } await wait(150); } await wait(300); const quiz=!!S.over&&INV.cash===5; MINI.close();
+      th('THE INFORMATION DESK').act(); const once=!MINI.state(); MINI.close();
+      INV.cash=2; th('THE DONATION BOX').act(); const donate=INV.cash===1&&MUSEUM.fund>=1;
+      INV.add('g_fishfood',1); const ff=INV.items.g_fishfood; th('THE REEF TANK').act(); const fed=(INV.items.g_fishfood||0)===ff-1&&MUSEUM.fed>0&&MUSEUM.fish.length===9;
+      th('THE GIFT SHOP').act(); const shop=!!SHOPS.cur&&SHOPS.cur.key==='w_pangolin'&&CHARS.trade({key:'w_pangolin'}).sells.includes('mus_plush');
+      const benches=__dbg.UI.things.filter(t=>t.name==='A MUSEUM BENCH').length;
+      return {plaques,read,quiz,once,donate,fed,shop,benches}; });
+    rec('museum: every exhibit has a plaque you can read',m.plaques===15&&m.read,JSON.stringify(m));
+    rec("museum: the curator's quiz pays a dollar a right answer, once a day",m.quiz&&m.once);
+    rec('museum: the donation box, the fish tank (fish food), the gift shop, two benches',m.donate&&m.fed&&m.shop&&m.benches===2);
+    if(OUT)await pg.screenshot({path:OUT+'/museum.png'}).catch(()=>{});
+    await pg.evaluate(()=>STORE.exit('museum')); await pg.waitForTimeout(3000); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

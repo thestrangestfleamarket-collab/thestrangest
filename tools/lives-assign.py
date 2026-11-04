@@ -24,7 +24,9 @@ POOL=['walk','read','shop','fish','bfly','jog','drink','gamble','pray']
 WAGE={'DOCTOR':40,'SURGEON':45,'BOSS':35,'MANAGER':30,'OWNER':30,'SERGEANT':28,'ENGINEER':26,'FIREFIGHTER':25,'NURSE':24}
 def habits(key,title):
     hs=habits0(key,title)
-    return hs[:2]+['movies'] if H(key+'movies')%6==0 else hs   # one in six go to the movies (the theatre has its recliners, 4 Nov 2026)
+    if H(key+'movies')%6==0: hs=hs[:2]+['movies']   # one in six go to the movies (the theatre has its recliners, 4 Nov 2026)
+    if H(key+'museum')%8==0: hs=hs[:1]+['museum']+hs[2:]   # one in eight to the Museum of Earth (its galleries have places, 4 Nov 2026)
+    return hs
 def habits0(key,title):
     for ks,hs in HABITS:
         if any(k in title for k in ks): return hs

@@ -7,3 +7,4 @@ mod.mjs
 .wrangler/
 *.gif
 .polyfork/
+docs/MAP.md

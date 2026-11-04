@@ -33,7 +33,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
     for(const [x,y,k] of [[mx-5.4,B.y0+3.2,'bone pile'],[mx+6.2,B.y0+5,'skull'],[mx-8,B.y1-4,'bones'],[mx+9,B.y1-3,'bones'],[mx+3.4,B.y0+2.4,'skull']])mp(k,...at(x,y));
     for(const [x,y,c,r] of [[B.x0+1,B.y0+4,[1.9,1.15,.55],12],[B.x1-1,B.y0+4,[1.9,1.15,.55],12],[B.x0+1,B.y1-4,[1.8,1.1,.5],11],[B.x1-1,B.y1-4,[1.8,1.1,.5],11],[mx,B.y0+5,[1.6,1.1,.5],10],[mx,B.y1-2,[1.4,1.1,.7],10]])
       LAMPS.push({own:1,room:1,day:true,x,y,z:120,r,c}); },{noWins:1});
-    const S=STORE.inside.bank; if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); lair(); }; } });
+    const S=STORE.inside.bank; if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); lair(); if(STORE.furnish&&STORE.furnish.bank)STORE.furnish.bank(STORE.bank); }; } });
   // the hoard: what is drawn in 3D, made the first time you go in
   const lair=()=>{ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y, TU=X(1)-X(0), wallZ=Z(B.y0+T), HH=Y(B.h), clip=[new THREE.Plane(new THREE.Vector3(0,0,1),-wallZ)], g=new THREE.Group(); g.name='bank hoard';
     const lam=(c,o={})=>new THREE.MeshLambertMaterial({color:c,flatShading:true,clippingPlanes:clip,...o});

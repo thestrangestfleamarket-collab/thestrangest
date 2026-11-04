@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, SEEN, SOL, TILE} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, SEEN, SOL, STORE, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 
@@ -206,6 +206,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
         return pm<.035||pm>.965?[64,58,40]:q<.02||q>1.98?sh(TAT,.8):sh(TAT,(Math.floor(pm*30)&1?.94:1)*(.96+.06*w)); },'GDL');
       BATCH.tag=null;
       for(const [x,y] of [[cx-4,cy],[cx+4,cy]])light(x,y,H-30,[1,.84,.62],9,0);
+      if(STORE.furnish&&STORE.furnish.bath)STORE.furnish.bath({r:[xi0,yi0,xi1,yi1]});
       was=null; };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.74,.5],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.5],7],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
     for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }

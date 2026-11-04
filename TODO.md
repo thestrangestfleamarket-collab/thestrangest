@@ -69,3 +69,13 @@ starting: a newer owner decision wins over a line here.
   the main thread: the page stalls for seconds (worst on a fresh visit, with nothing saved). It made `tests/online.cjs` flaky (it now waits
   for 3 s of calm frames). Likely fix: take the pictures a piece per frame, nearest first, the way `BATCH.tick` paints far things, or only
   when you first come near the building. Check: frame gaps in the first 30 s with `?fresh=1`.
+- [ ] **Park animals: what's left** (from the 4 Nov 2026 chat, owner: "lets work on making animals that live in park behave like the real
+  animals and realistic sizes and amounts"; HISTORY 4 Nov):
+  - The slime's size: asked, no answer yet; it stays the fantasy size until the owner says.
+  - Checks still missing: the hawk scattering the small birds, feathers on the ground, rats at the bins, garden pests and slugs, bees flying
+    from a hive to its flowers (`src/144b-birds.js`, `087-npc-creatures.js`, `144a-garden.js`, `141-forage.js`, `147a-bees.js`; add to
+    `tests/wild.cjs`).
+  - `tests/bnet.cjs` times out waiting for butterflies at the start (on `main` too): find why none show up near the start, then run it to
+    the end.
+  - Owner's approval of how they look: screenshots of the spiders in their webs, frogs, bats, fireflies and squirrels (third- or
+    first-person, open ground) for him to see. Only the wasp has been shown.

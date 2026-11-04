@@ -16,7 +16,8 @@ const {chromium}=require('playwright');
   ok(onFloor,'every rider\'s feet rest on the floor (ankle heights '+S.legs.map(l=>l.foot).join(' ')+', standing '+S.ankle+')');
   ok(onSeat,'every rider\'s hips sit just above the cushion ('+S.legs.slice(0,4).map(l=>l.hip+' over '+l.top).join(', ')+')');
   const snap=()=>pg.evaluate(()=>{ const P=__dbg.you(); return RIDERS.list.map(rd=>{ const w=rd.g.localToWorld(rd.g.position.clone().set(0,0,0)); return {near:Math.hypot(w.x-P.x,w.z-P.z)<30,v:+rd.FM.PM.value.reduce((a,m)=>a+m.elements[13]+m.elements[12]*.37,0).toFixed(4)}; }); });
-  const m0=await snap(); await pg.waitForTimeout(2500); const m1=await snap();
-  const near=m0.filter(q=>q.near).length, moved=m0.filter((q,i)=>q.near&&q.v!==m1[i].v).length; ok(near>=3&&moved===near,'every rider near you keeps moving in their seat ('+moved+' of '+near+' near, over 2.5 s; the far ones rest)');
+  const frames=n=>pg.evaluate(n=>new Promise(r=>{ let k=0; SYS.add('places',()=>{ if(++k===n)r(); },'riders-test'); }),n);   // game time, not wall time: software GL can draw 3 frames a second
+  await frames(16); const m0=await snap(); await frames(50); const m1=await snap();
+  const near=m0.filter(q=>q.near).length, moved=m0.filter((q,i)=>q.near&&q.v!==m1[i].v).length; ok(near>=3&&moved===near,'every rider near you keeps moving in their seat ('+moved+' of '+near+' near, over 2.5 s of game time; the far ones rest)');
   ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
   await b.close(); process.exit(bad?1:0); })();

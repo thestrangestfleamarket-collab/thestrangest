@@ -17,7 +17,7 @@ const KARTS={karts:[],bumps:[],lap:null}; window.KARTS=KARTS;
   const rental=(i,x,z,hd)=>{ const spec={...VEH.kart.spec()}, V=VEH.make(spec), id='fair:kart:'+i, R={id,i,x,z,hd,mesh:null,V,by:false,sol:null};
     const K=VEH.kartKind(V,{world:true,name:'RENTAL KART',hint:'',onSay:'YOU SQUEEZE INTO THE KART. W GOES, A AND D STEER, F GETS OUT.',
       on:()=>{ if(!PB.R)PB.load(); R.by=true; if(R.mesh)R.mesh.visible=false; KARTS.lap={start:0,laps:0,best:0,was:false,R}; hud(true); },
-      off:()=>{ V.drop(); R.by=false; if(R.mesh){ R.mesh.visible=true; R.mesh.position.set(R.x,SHARED.groundY(R.x,R.z),R.z); R.mesh.rotation.set(0,R.hd,0); } KARTS.lap=null; hud(false); const q=FAIR.at(TRK.x+TRK.w/2+3.5,TRK.y+(i-2.5)*1.6); pos.x=q.x; pos.z=q.z; SHARED.py=SHARED.groundY(pos.x,pos.z); }});
+      off:()=>{ V.drop(); R.by=false; if(R.mesh){ R.mesh.visible=true; R.mesh.position.set(R.x,SHARED.groundY(R.x,R.z),R.z); R.mesh.rotation.set(0,R.hd,0); } KARTS.lap=null; hud(false); SHARED.py=SHARED.groundY(pos.x,pos.z); }});   // you step out where you stopped; the kart itself goes back to its slot
     RIDE.kind(id,K); KARTS.karts.push(R); return R; };
   const HUD=document.createElement('div'); HUD.id='karthud'; HUD.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:12;display:none;gap:10px;align-items:center;padding:6px 10px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#ece5d3;background:#0e1016e0;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   HUD.innerHTML='<span></span><button data-o style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer">GET OUT (F)</button>'; document.body.appendChild(HUD);

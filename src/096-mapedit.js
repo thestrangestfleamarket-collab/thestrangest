@@ -117,7 +117,6 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     Cc('THE ROUND','path',P.round[0]+ox,P.round[1]+oy,P.round[2],0,'park slabs','round');
     Cc("THE GOLEMS' CAVE",'park',PARKCAVE[0]+ox,PARKCAVE[1]+oy,5,120,'cave rock','cave');
     R("THE SQUIRREL'S TOWER",'park',[PARKTOWER[0]-4+ox,PARKTOWER[1]-4+oy],[PARKTOWER[0]+4+ox,PARKTOWER[1]+4+oy],120,'castle stone','tower');
-    { const s=LEVEL.parkPlaces.skatepark, e=s&&(s.face==='e'||s.face==='w'); if(s)R('THE SKATE PARK GATE','park',[s.x-(e?1:4.8)+ox,s.y-(e?4.8:1)+oy],[s.x+(e?1:4.8)+ox,s.y+(e?4.8:1)+oy],60,'concrete pavement','skatepark'); }
     if(FOUNT.S&&FOUNT.on)Cc('THE FOUNTAIN','park',FOUNT.S.C.x+ox,FOUNT.S.C.y+oy,FOUNT.S.R,40,'park slabs','fountain');
     if(P.campAt){ const c=P.campAt(); Cc('THE CAMPFIRE','park',c.x+ox,c.y+oy,2.5,20,'wood','camp'); }
     R('THE PARK GATE','park',[P.gate[0]+ox,P.y0+oy-1],[P.gate[1]+ox,P.y0+oy+1],150,'iron','gate');
@@ -279,16 +278,16 @@ GAMEED.build=()=>{ '@editor'; const T=TILE;
     const extB=o=>{ const f=faceOf(o.rot), [hw,hd]=sz(o), sw=f==='e'||f==='w'; return {x0:r2(o.x-(sw?hd:hw)),x1:r2(o.x+(sw?hd:hw)),y0:r2(o.y-(sw?hw:hd)),y1:r2(o.y+(sw?hw:hd)),f}; };
     W.places=W.places.filter(p=>by[p.id]).map(p=>{ const o=by[p.id], e=bld(o)?extB(o):ext(o), q={...p,name:o.n,x0:e.x0,x1:e.x1}; if(p.y1!=null){ q.y0=e.y0; q.y1=e.y1; if(bld(o))q.face=e.f; } return q; });
     W.shells=W.shells.filter(q=>by[q.id]).map(q=>({...q,...ext(by[q.id])}));
-    for(const k of ['round','lake','cave','tower','skatepark'])if(by[k]&&W.parkPlaces[k]){ const o=by[k]; W.parkPlaces[k]={...W.parkPlaces[k],x:r2(o.x),y:r2(o.y),...(W.parkPlaces[k].r!=null?{r:r2(o.r*(o.scale||1))}:{})}; }
+    for(const k of ['round','lake','cave','tower'])if(by[k]&&W.parkPlaces[k]){ const o=by[k]; W.parkPlaces[k]={...W.parkPlaces[k],x:r2(o.x),y:r2(o.y),...(W.parkPlaces[k].r!=null?{r:r2(o.r*(o.scale||1))}:{})}; }
     if(by.castle){ const e=ext(by.castle); W.parkPlaces.castle={x0:e.x0,y0:e.y0}; }
     W.paths=W.paths.filter(q=>by[q.id]).map(q=>{ const o=by[q.id], h=o.w*(o.scale||1)/2, a=(o.rot||0)*Math.PI/180; return {id:q.id,a:[r2(o.x-Math.cos(a)*h),r2(o.y-Math.sin(a)*h)],b:[r2(o.x+Math.cos(a)*h),r2(o.y+Math.sin(a)*h)]}; });
     W.homes={...(LEVEL.homes||{})}; for(const N of NPCS){ const h=N.home; if(!h||!h.id||!(h.r>0))continue; const [x,y]=wt(h.x,h.z); W.homes[h.id]=[r2(x),r2(y),r2(h.r/T)]; }
     W.editor={note:'the editor\'s own extras (added things, trees, looks); the game does not read these yet',items:ITEMS.filter(o=>!o.gid||o.ly==='tree'||o.ly==='filler'||o.tint!=='#ffffff'||o.opacity!==1||o.tex)}; return W; };
-  const fromWorld=j=>{ const L=base(), keep=new Set([...j.places.map(p=>p.id),...(j.shells||[]).map(q=>q.id),...(j.paths||[]).map(q=>q.id),'round','lake','cave','tower','skatepark','castle']), known=new Set([...LEVEL.places.map(p=>p.id),...LEVEL.shells.map(q=>q.id),...LEVEL.paths.map(q=>q.id)]);
+  const fromWorld=j=>{ const L=base(), keep=new Set([...j.places.map(p=>p.id),...(j.shells||[]).map(q=>q.id),...(j.paths||[]).map(q=>q.id),'round','lake','cave','tower','castle']), known=new Set([...LEVEL.places.map(p=>p.id),...LEVEL.shells.map(q=>q.id),...LEVEL.paths.map(q=>q.id)]);
     const out=L.filter(o=>!o.gid||!known.has(o.gid)||keep.has(o.gid)), by={}; for(const o of out)if(o.gid)by[o.gid]=o;
     const box=(o,e)=>{ if(!o||!e)return; if(e.x0!=null&&e.x1!=null){ o.x=(e.x0+e.x1)/2; o.w=e.x1-e.x0; } if(e.y0!=null&&e.y1!=null){ o.y=(e.y0+e.y1)/2; o.d=e.y1-e.y0; } };
     for(const p of j.places){ const o=by[p.id]; if(!o)continue; if(p.y1==null||!bld(o)){ box(o,{x0:p.x0,x1:p.x1}); continue; } const f=p.face||'n', sw=f==='e'||f==='w'; o.rot=FACEROT[f]; o.x=(p.x0+p.x1)/2; o.y=(p.y0+p.y1)/2; o.w=sw?p.y1-p.y0:p.x1-p.x0; o.d=sw?p.x1-p.x0:p.y1-p.y0; } for(const q of j.shells||[])box(by[q.id],q);
-    for(const k of ['round','lake','cave','tower','skatepark']){ const e=j.parkPlaces&&j.parkPlaces[k], o=by[k]; if(e&&o){ o.x=+e.x; o.y=+e.y; if(e.r!=null&&o.sh==='circle')o.r=+e.r; } }
+    for(const k of ['round','lake','cave','tower']){ const e=j.parkPlaces&&j.parkPlaces[k], o=by[k]; if(e&&o){ o.x=+e.x; o.y=+e.y; if(e.r!=null&&o.sh==='circle')o.r=+e.r; } }
     if(j.parkPlaces&&j.parkPlaces.castle&&by.castle){ const c=by.castle; c.x=j.parkPlaces.castle.x0+c.w/2; c.y=j.parkPlaces.castle.y0+c.d/2; }
     for(const q of j.paths||[]){ const o=by[q.id]; if(!o)continue; o.x=(q.a[0]+q.b[0])/2; o.y=(q.a[1]+q.b[1])/2; o.w=Math.hypot(q.b[0]-q.a[0],q.b[1]-q.a[1]); o.rot=Math.atan2(q.b[1]-q.a[1],q.b[0]-q.a[0])*180/Math.PI; }
     for(const e of (j.editor&&j.editor.items)||[]){ if(e.gid&&by[e.gid])Object.assign(by[e.gid],{tint:e.tint,opacity:e.opacity,tex:e.tex,color:e.color,scale:e.scale,h:e.h,z:e.z}); else if(!e.gid)out.push({...e,id:nid()}); }

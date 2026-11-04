@@ -1,7 +1,7 @@
 // THE LANDSCAPE EDITOR: paint ground (box, border, free brush; the nine grasses set what grows there), place plants & rocks from a dropdown, erase; shift+9, edit while you walk.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {LAND, pos, W3, WEEDS} from './003b-systems.js';
+import {LAND, pos, ROOMS, W3, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
@@ -87,7 +87,22 @@ import {FOREST, PROPS} from './039-bodega.js';
   const saveP=()=>{ try{ SAVE.set('land-props',JSON.stringify(gprops.map(serP))); }catch(e){} };
 
   // the Drive's placed models drawn only near you (a few metres past their own size)
-  let cullT=0; SYS.add('places',dt=>{ if((cullT-=dt)>0)return; cullT=.5; for(const o of gprops){ const m=o.mesh; if(!m||!MODELS[o.k]||!MODELS[o.k].sc)continue; const r=m.geometry.boundingSphere.radius*m.scale.x; m.visible=Math.hypot(o.x-pos.x,o.z-pos.z)<70+r; } },'152a-landscape cull');
+  // the Drive's models drawn a patch of ground at a time: each patch's models merged into one mesh (one draw, one shadow draw a pass, not one each);
+  // the models one by one only while the landscape editor is open, to pick and move
+  const CELL=40, cells=new Map(), V=new THREE.Vector3(), NM=new THREE.Matrix3();
+  const merge=L=>{ let nv=0, ni=0; for(const m of L){ nv+=m.geometry.attributes.position.count; ni+=m.geometry.index.count; } const P=new Float32Array(nv*3), N=new Float32Array(nv*3), C=new Float32Array(nv*3), I=nv>65535?new Uint32Array(ni):new Uint16Array(ni);
+    let v=0, i=0; for(const m of L){ m.updateMatrixWorld(true); NM.getNormalMatrix(m.matrixWorld); const g=m.geometry, gp=g.attributes.position, gn=g.attributes.normal, gc=g.attributes.color, gi=g.index;
+      for(let k=0;k<gp.count;k++){ V.fromBufferAttribute(gp,k).applyMatrix4(m.matrixWorld); P.set([V.x,V.y,V.z],(v+k)*3); V.fromBufferAttribute(gn,k).applyMatrix3(NM).normalize(); N.set([V.x,V.y,V.z],(v+k)*3); C.set([gc.getX(k),gc.getY(k),gc.getZ(k)],(v+k)*3); }
+      for(let k=0;k<gi.count;k++)I[i+k]=gi.getX(k)+v; v+=gp.count; i+=gi.count; }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(N,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeBoundingSphere(); return g; };
+  const patch=(key,L)=>{ let c=cells.get(key); const sig=L.map(m=>m.id+':'+m.position.x.toFixed(2)+':'+m.position.z.toFixed(2)+':'+m.rotation.y.toFixed(3)+':'+m.scale.x.toFixed(3)).join(); if(c&&c.sig===sig)return c; if(c){ c.me.removeFromParent(); c.me.geometry.dispose(); }
+    const me=new THREE.Mesh(merge(L),pmat); me.receiveShadow=true; me.matrixAutoUpdate=false; me.userData.landProp=1; gardGroup().add(me); c={me,sig,x:me.geometry.boundingSphere.center.x,z:me.geometry.boundingSphere.center.z,r:me.geometry.boundingSphere.radius}; cells.set(key,c); return c; };
+  let cullT=0, wasUp=true, wasEd=false; SYS.add('places',dt=>{ const up=SHARED.LVL==='up'&&!ROOMS.cur, ed=!!LAND.on; if(up===wasUp&&ed===wasEd&&(cullT-=dt)>0)return; wasUp=up; wasEd=ed; cullT=.5;
+    const by=new Map(); for(const o of gprops){ const m=o.mesh; if(!m||!MODELS[o.k]||!MODELS[o.k].sc)continue;
+      if(ed){ const r=m.geometry.boundingSphere.radius*m.scale.x, d=Math.hypot(o.x-pos.x,o.z-pos.z); m.visible=up&&d<45+r; m.castShadow=m.visible&&r>2.5; continue; }
+      m.visible=false; const k=Math.floor(o.x/CELL)+','+Math.floor(o.z/CELL); (by.get(k)||by.set(k,[]).get(k)).push(m); }
+    for(const [k,c] of cells)if(ed||!by.has(k)){ c.me.visible=false; if(!by.has(k)&&!ed){ c.me.removeFromParent(); c.me.geometry.dispose(); cells.delete(k); } }
+    if(!ed)for(const [k,L] of by){ const c=patch(k,L), d=Math.hypot(c.x-pos.x,c.z-pos.z); c.me.visible=up&&d<45+c.r; c.me.castShadow=c.me.visible&&d<22+c.r; } },'152a-landscape cull');   // (above ground and out of the off-map rooms only; a patch near you casts shadows)
   if(regions.length||gprops.length)SYS.onStart(()=>{ for(const r of regions)if(!/^gk:/.test(r.t))make(r); for(const o of gprops)makeProp(o); },'152a-landscape');
 
   const add=r=>{ regions.push(r); make(r); save(); draw(); }; LAND.paint=add;

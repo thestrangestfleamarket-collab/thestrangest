@@ -1,25 +1,27 @@
 // THE SOUND EDITOR: SNDED, the panel for setting each sound's level and trying it out.
 import {SFX, SNDED} from './003b-systems.js';
+import {TPANE} from './087dz-tpane.js';
 
 { const P=document.createElement('div'); P.id='snded'; P.className='sndx'; P.hidden=true; document.body.appendChild(P);
-  const css=document.createElement('style'); css.textContent='#snded{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:14px 16px 12px;z-index:16;user-select:none}'
-    +'#snded[hidden]{display:none} .sndx h2{font:inherit;font-size:14px;color:var(--key);margin:0 0 8px;letter-spacing:.04em} .sndx h3{font:inherit;color:var(--key);margin:12px 0 4px} .sndx .r{display:flex;align-items:center;gap:8px;margin:3px 0}'
-    +'.sndx .r span.n{width:120px;color:var(--fg)} .sndx .r span.v{width:48px;text-align:right;color:var(--dim);font-variant-numeric:tabular-nums} .sndx input[type=range]{flex:1;min-width:120px} .sndx .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:4px 8px;cursor:pointer}'
-    +'.sndx .btn:hover{color:var(--key)} .sndx .dim{color:var(--dim);margin:4px 0} .sndx textarea{width:100%;height:70px;font:11px ui-monospace,monospace;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;margin-top:6px}'; document.head.appendChild(css);
+  const css=document.createElement('style'); css.textContent='#snded{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 40px);overflow:auto;font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:6px;box-sizing:border-box;z-index:16;user-select:none}'
+    +'#snded[hidden]{display:none} .sndx .dim{color:var(--dim);margin:4px 6px} .sndx textarea{width:100%;height:70px;font:11px ui-monospace,monospace;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;margin-top:6px;box-sizing:border-box}'; document.head.appendChild(css);
   const LOOPN={hum:'THE HUSH',rain:'THE RAIN',wind:'THE WIND'}, FXN={click:'A SWITCH',thud:'A BLOW',page:'A PAGE',latch:'A LATCH',door:'A DOOR',heart:'A HEARTBEAT',cough:'A COUGH',step:'HIS STEPS',clunk:'THE CAN',boom:'A FIREBALL',creak:'A CREAK',drip:'A DRIP',chirp:'A BIRD',cricket:'CRICKETS',bark:'A DOG',car:'A CAR PASSING',horn:'A HORN',rumble:'THE SUBWAY',train:'A TRAIN',siren:'A SIREN',thunder:'THUNDER'};
   const pct=v=>Math.round(v*100)+'%';
-  const row=(name,val,min,max,step,on,play)=>{ '@later'; const r=document.createElement('div'); r.className='r'; r.innerHTML='<span class="n">'+name+'</span><input type="range" min="'+min+'" max="'+max+'" step="'+step+'"><span class="v"></span>'+(play?'<button class="btn" type="button">PLAY</button>':'');
-    const i=r.querySelector('input'), v=r.querySelector('.v'); i.value=val; v.textContent=pct(val); i.oninput=()=>{ v.textContent=pct(+i.value); on(+i.value); }; if(play)r.querySelector('button').onclick=play; r.set=x=>{ i.value=x; v.textContent=pct(x); }; return r; };
-  let rows={}, playing=null;
+  let playing=null;
   const loopDemo=k=>{ const c=SFX.live(); if(!c)return; if(playing){ try{ playing.s.stop(); }catch(e){} playing=null; } const o=SFX.play(k,{vol:{hum:.08,rain:.25,wind:.2}[k]*(SFX.mix.loops[k]??1)}); if(o){ playing=o; setTimeout(()=>{ try{ o.s.stop(); }catch(e){} if(playing===o)playing=null; },2500); } };
-  const build=(T=P)=>{ '@later'; T.innerHTML=(T===P?'<h2>SOUND EDITOR</h2>':'')+'<div class="dim">each level kept for good; PLAY to hear it as you are</div>'; rows={};
-    const M=SFX.mix; const h=t=>{ const e=document.createElement('h3'); e.textContent=t; T.appendChild(e); };
-    h('EFFECTS'); for(const k of SFX.names()){ if(SFX.recipe(k).loop)continue; const r=row(FXN[k]||k.toUpperCase(),M.fx[k]??1,0,2,.05,v=>{ M.fx[k]=v; SFX.saveMix(); },()=>SFX.play(k,{vol:1})); rows['fx.'+k]=r; T.appendChild(r); }
-    h('THE AMBIENCE'); for(const k of ['hum','rain','wind']){ const r=row(LOOPN[k],M.loops[k]??1,0,2,.05,v=>{ M.loops[k]=v; SFX.saveMix(); },()=>loopDemo(k)); rows['loops.'+k]=r; T.appendChild(r); }
-    { const r=row('GAP BETWEEN',M.gap??1,.5,2,.05,v=>{ M.gap=v; SFX.saveMix(); }); rows.gap=r; T.appendChild(r); }
-    h('VOICES'); { const r=row('THEIR BLIPS',M.blip??1,0,2,.05,v=>{ M.blip=v; SFX.saveMix(); },()=>{ const v=SFX.voiceOf('tester'); for(let i=0;i<4;i++)setTimeout(()=>SFX.blip(v),i*60); }); rows.blip=r; T.appendChild(r); }
-    const foot=document.createElement('div'); foot.className='r'; foot.style.marginTop='10px'; foot.innerHTML='<button class="btn" type="button" id="sndReset">RESET ALL</button><button class="btn" type="button" id="sndExport">EXPORT</button>'; T.appendChild(foot);
-    foot.querySelector('#sndReset').onclick=()=>{ SFX.resetMix(); build(T); };
-    foot.querySelector('#sndExport').onclick=()=>{ let t=T.querySelector('textarea'); if(!t){ t=document.createElement('textarea'); t.readOnly=true; T.appendChild(t); } t.value='SNDMIX0='+JSON.stringify(SFX.mix)+';'; t.select(); }; };
-  SNDED.open=()=>{ build(); P.hidden=false; }; SNDED.close=()=>{ P.hidden=true; if(playing){ try{ playing.s.stop(); }catch(e){} playing=null; } }; SNDED.toggle=()=>P.hidden?SNDED.open():SNDED.close(); SNDED.isOpen=()=>!P.hidden; SNDED.el=P; SNDED.into=el=>{ el.classList.add('sndx'); build(el); };
+  const lvl=(g,k)=>{ const get=()=>+(g?SFX.mix[g][k]??1:SFX.mix[k]??1); return [get,v=>{ v=+(+v).toFixed(2); if(v===get())return; if(g)SFX.mix[g][k]=v; else SFX.mix[k]=v; SFX.saveMix(); }]; };
+  const build=async(T=P)=>{ '@later'; if(!T.__k){ T.__k=1; for(const ev of ['keydown','keyup'])T.addEventListener(ev,e=>{ if(e.key!=='Escape'&&e.target.matches('input'))e.stopPropagation(); }); }
+    if(!T.querySelector(':scope>.tp'))T.innerHTML='<div class="tp"></div><div class="dim">each level kept for good; PLAY to hear it as you are</div>';
+    const FX=SFX.names().filter(k=>!SFX.recipe(k).loop);
+    const V=TPANE.live({...Object.fromEntries(FX.map(k=>['fx.'+k,lvl('fx',k)])),...Object.fromEntries(['hum','rain','wind'].map(k=>['loops.'+k,lvl('loops',k)])),gap:lvl(null,'gap'),blip:lvl(null,'blip')});
+    const pane=await TPANE.make(T.querySelector(':scope>.tp'),T===P?{title:'SOUND EDITOR'}:{});
+    const row=(f,k,lab,min,play)=>{ f.addBinding(V,k,{label:lab,min,max:2,step:.05,format:pct}); if(play)f.addButton({title:'PLAY',label:''}).on('click',play); };
+    const fx=pane.addFolder({title:'EFFECTS'}); for(const k of FX)row(fx,'fx.'+k,FXN[k]||k.toUpperCase(),0,()=>SFX.play(k,{vol:1}));
+    const am=pane.addFolder({title:'THE AMBIENCE'}); for(const k of ['hum','rain','wind'])row(am,'loops.'+k,LOOPN[k],0,()=>loopDemo(k)); row(am,'gap','GAP BETWEEN',.5);
+    const vo=pane.addFolder({title:'VOICES'}); row(vo,'blip','THEIR BLIPS',0,()=>{ const v=SFX.voiceOf('tester'); for(let i=0;i<4;i++)setTimeout(()=>SFX.blip(v),i*60); });
+    pane.addButton({title:'RESET ALL'}).on('click',()=>{ SFX.resetMix(); pane.refresh(); });
+    pane.addButton({title:'EXPORT'}).on('click',()=>{ let t=T.querySelector('textarea'); if(!t){ t=document.createElement('textarea'); t.readOnly=true; T.appendChild(t); } t.value='SNDMIX0='+JSON.stringify(SFX.mix)+';'; t.select(); }); };
+  let busy=Promise.resolve();
+  const later=T=>busy=busy.then(()=>build(T)).catch(e=>{ const d=T.querySelector('.dim'); if(d)d.textContent='PANEL DID NOT LOAD: '+e.message; });
+  SNDED.open=()=>{ P.hidden=false; return later(P); }; SNDED.close=()=>{ P.hidden=true; if(playing){ try{ playing.s.stop(); }catch(e){} playing=null; } }; SNDED.toggle=()=>P.hidden?SNDED.open():SNDED.close(); SNDED.isOpen=()=>!P.hidden; SNDED.el=P; SNDED.into=el=>{ el.classList.add('sndx'); return later(el); };
 }

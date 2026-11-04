@@ -4,6 +4,7 @@ import {LIGHTED, PS2} from './003b-systems.js';
 import {renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {CEL} from './006-map-pre.js';
+import {TPANE} from './087dz-tpane.js';
 { const SHAD={basic:THREE.BasicShadowMap,pcf:THREE.PCFShadowMap,soft:THREE.PCFShadowMap,vsm:THREE.VSMShadowMap};
   const TONE={none:THREE.NoToneMapping,linear:THREE.LinearToneMapping,reinhard:THREE.ReinhardToneMapping,cineon:THREE.CineonToneMapping,aces:THREE.ACESFilmicToneMapping};
   const D=()=>({q:'lowest',shadows:renderer.shadowMap.enabled,shadowType:'basic',tone:'none',exposure:1});
@@ -21,38 +22,30 @@ import {CEL} from './006-map-pre.js';
   const save=()=>{ try{ SAVE.set('lighting',JSON.stringify(st)); }catch(e){} };
   apply(st.shadowType!=='basic'||!st.shadows||st.tone!=='none');
   const css=document.createElement('style'); css.textContent=`
-  #led{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
-  #led[hidden]{display:none} #led h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #led .pane{padding:10px 14px}
-  #led .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0} #led .lab{width:92px;color:var(--dim)}
-  #led .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer} #led .btn[aria-pressed=true]{border-color:var(--key);color:var(--key)}
-  #led input[type=range]{flex:1;min-width:90px} #led .dim{color:var(--dim);font-size:10px;line-height:1.5}`;
+  #led{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:340px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20;padding:4px;box-sizing:border-box}
+  #led[hidden]{display:none} #led .dim{color:var(--dim);font-size:10px;line-height:1.5;padding:4px 6px}`;
   document.head.appendChild(css);
-  const P=document.createElement('div'); P.id='led'; P.hidden=true; document.body.appendChild(P);
-  const tierBtns=o=>Object.keys(TIERS).map(k=>`<button class="btn" data-q="${k}" aria-pressed="${st.q===k}">${k.toUpperCase()}</button>`).join('');
-  const sel=(k,opts)=>opts.map(([v,n])=>`<button class="btn" data-${k}="${v}" aria-pressed="${st[k==='sh'?'shadowType':k==='tn'?'tone':k]===v}">${n}</button>`).join('');
-  function draw(){ '@later'; P.innerHTML=`<h2>LIGHTING — GLOBAL</h2><div class="pane">
-    <div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after.</div>
-    <div class="row"><span class="lab">QUALITY</span>${tierBtns()}</div>
-    <div class="row"><span class="lab">PS2 FILTER</span><button class="btn" data-ps2="1" aria-pressed="${!!PS2.on}">ON</button><button class="btn" data-ps2="0" aria-pressed="${!PS2.on}">OFF</button></div>
-    <div class="row"><span class="lab">SHADOWS</span><button class="btn" data-shadows="1" aria-pressed="${!!st.shadows}">ON</button><button class="btn" data-shadows="0" aria-pressed="${!st.shadows}">OFF</button></div>
-    <div class="row"><span class="lab">SHADOW EDGE</span>${sel('sh',[['basic','HARD'],['pcf','PCF'],['soft','SOFT'],['vsm','VSM']])}</div>
-    <div class="row"><span class="lab">TONE MAP</span>${sel('tn',[['none','NONE'],['linear','LINEAR'],['reinhard','REINHARD'],['cineon','CINEON'],['aces','ACES']])}</div>
-    <div class="row"><span class="lab">EXPOSURE</span><input type="range" id="lexp" min="0.3" max="2" step="0.01" value="${st.exposure}"><span id="lexpv">${(+st.exposure).toFixed(2)}</span></div>
-    <div class="row"><span class="lab">LIGHT BANDS</span>${[3,4,5].map(n=>`<button class="btn" data-bands="${n}" aria-pressed="${CEL===n}">${n}</button>`).join('')}<span class="dim">the cel shading's steps; reloads the page</span></div>
-    <div class="row"><button class="btn" id="lreset">RESET TO CEL</button><button class="btn" id="lexport">EXPORT</button><button class="btn" id="ldone">DONE</button></div>
-    <div class="dim" id="lmsg"></div></div>`; }
-  const refresh=()=>{ draw(); };
-  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
-    if(b.dataset.q){ st.q=b.dataset.q; Object.assign(st,TIERS[st.q]); apply(true); save(); refresh(); return; }
-    if(b.dataset.ps2!==undefined){ PS2.set(b.dataset.ps2==='1'); refresh(); return; }
-    if(b.dataset.bands){ try{ SAVE.set('bands',b.dataset.bands); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); return; }
-    if(b.dataset.shadows!==undefined){ st.shadows=b.dataset.shadows==='1'; st.q='custom'; apply(true); save(); refresh(); return; }
-    if(b.dataset.sh){ st.shadowType=b.dataset.sh; st.q='custom'; apply(true); save(); refresh(); return; }
-    if(b.dataset.tn){ st.tone=b.dataset.tn; st.q='custom'; apply(false); save(); refresh(); return; }
-    if(b.id==='lreset'){ Object.assign(st,D(),{q:'lowest',shadowType:'basic',tone:'none',exposure:1,shadows:true}); apply(true); save(); refresh(); return; }
-    if(b.id==='ldone'){ LIGHTED.toggle(); return; }
-    if(b.id==='lexport'){ const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lighting.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); P.querySelector('#lmsg').textContent='exported lighting.json'; return; } });
-  P.addEventListener('input',e=>{ '@later'; if(e.target.id==='lexp'){ st.exposure=+e.target.value; st.q='custom'; P.querySelector('#lexpv').textContent=st.exposure.toFixed(2); apply(false); save(); } });
+  const P=document.createElement('div'); P.id='led'; P.hidden=true; P.innerHTML='<div class="tp"></div><div class="dim">Cel is the floor. High tiers are for finding a look; take the top ones out after. LIGHT BANDS: the cel shading\'s steps; reloads the page.</div><div class="dim" id="lmsg"></div>'; document.body.appendChild(P);
+  let pane=null;
+  const sync=()=>queueMicrotask(()=>pane&&pane.refresh());
+  const set=(k,heavy)=>v=>{ if(st[k]===v)return; st[k]=v; st.q='custom'; apply(heavy); save(); sync(); };
+  const draw=async()=>{ '@later'; if(pane){ pane.refresh(); return; }
+    const V=TPANE.live({q:[()=>st.q,v=>{ if(v===st.q||!TIERS[v])return; st.q=v; Object.assign(st,TIERS[v]); apply(true); save(); sync(); }],
+      ps2:[()=>!!PS2.on,v=>{ if(v!==!!PS2.on)PS2.set(v); }],
+      shadows:[()=>!!st.shadows,set('shadows',true)],shadowType:[()=>st.shadowType,set('shadowType',true)],tone:[()=>st.tone,set('tone',false)],
+      exposure:[()=>+st.exposure,v=>set('exposure',false)(+(+v).toFixed(2))],
+      bands:[()=>CEL,v=>{ if(v===CEL)return; try{ SAVE.set('bands',String(v)); localStorage.removeItem('market-shade'); }catch(e){} location.reload(); }]});
+    pane=await TPANE.make(P.querySelector('.tp'),{title:'LIGHTING — GLOBAL'});
+    pane.addBinding(V,'q',{label:'QUALITY',options:{...Object.fromEntries(Object.keys(TIERS).map(k=>[k.toUpperCase(),k])),CUSTOM:'custom'}});
+    pane.addBinding(V,'ps2',{label:'PS2 FILTER'}); pane.addBinding(V,'shadows',{label:'SHADOWS'});
+    pane.addBinding(V,'shadowType',{label:'SHADOW EDGE',options:{HARD:'basic',PCF:'pcf',SOFT:'soft',VSM:'vsm'}});
+    pane.addBinding(V,'tone',{label:'TONE MAP',options:{NONE:'none',LINEAR:'linear',REINHARD:'reinhard',CINEON:'cineon',ACES:'aces'}});
+    pane.addBinding(V,'exposure',{label:'EXPOSURE',min:.3,max:2,step:.01});
+    pane.addBinding(V,'bands',{label:'LIGHT BANDS',options:{3:3,4:4,5:5}});
+    pane.addButton({title:'RESET TO CEL'}).on('click',()=>{ Object.assign(st,D(),{q:'lowest',shadowType:'basic',tone:'none',exposure:1,shadows:true}); apply(true); save(); sync(); });
+    pane.addButton({title:'EXPORT'}).on('click',()=>{ const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lighting.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); P.querySelector('#lmsg').textContent='exported lighting.json'; });
+    const dn=pane.addButton({title:'DONE'}); dn.on('click',()=>LIGHTED.toggle()); dn.element.querySelector('button').id='ldone'; };
   for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
-  LIGHTED.toggle=()=>{ LIGHTED.on=!LIGHTED.on; if(LIGHTED.on)draw(); P.hidden=!LIGHTED.on; };
+  let busy=Promise.resolve();
+  LIGHTED.toggle=()=>{ LIGHTED.on=!LIGHTED.on; P.hidden=!LIGHTED.on; if(LIGHTED.on)return busy=busy.then(draw).catch(e=>{ P.querySelector('#lmsg').textContent='PANEL DID NOT LOAD: '+e.message; }); };
 }

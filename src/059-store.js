@@ -236,7 +236,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       for(const k in STORE.meshes)if(P.objs.includes(STORE.meshes[k]))delete STORE.meshes[k];
       for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
-    { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P)continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
+    { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P||WINDOWS.held.has(id))continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in
     STORE.pre={};   // a door that fetches something first (the art museum: its paintings): id -> async () => done, run behind the fade before the inside is built

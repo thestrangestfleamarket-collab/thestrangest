@@ -44,7 +44,7 @@ import {TPANE} from './087dz-tpane.js';
     pane.addBinding(V,'bands',{label:'LIGHT BANDS',options:{3:3,4:4,5:5}});
     pane.addButton({title:'RESET TO CEL'}).on('click',()=>{ Object.assign(st,D(),{q:'lowest',shadowType:'basic',tone:'none',exposure:1,shadows:true}); apply(true); save(); sync(); });
     pane.addButton({title:'EXPORT'}).on('click',()=>{ const blob=new Blob([JSON.stringify(st,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lighting.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); P.querySelector('#lmsg').textContent='exported lighting.json'; });
-    const dn=pane.addButton({title:'DONE'}); dn.on('click',()=>LIGHTED.toggle()); dn.element.querySelector('button').id='ldone'; };
+    const dn=pane.addButton({title:'DONE'}); dn.on('click',()=>LIGHTED.toggle()); dn.element.querySelector('button').id='lgdone'; };
   for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   let busy=Promise.resolve();
   LIGHTED.toggle=()=>{ LIGHTED.on=!LIGHTED.on; P.hidden=!LIGHTED.on; if(LIGHTED.on)return busy=busy.then(draw).catch(e=>{ P.querySelector('#lmsg').textContent='PANEL DID NOT LOAD: '+e.message; }); };

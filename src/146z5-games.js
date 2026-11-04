@@ -1,4 +1,4 @@
-// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, power, the rings), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), a scratch-off lottery ticket, soldering a repair, waxing a deck. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
+// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, power, the rings), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), a scratch-off lottery ticket, soldering a repair, waxing a deck, cutting a gem. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
 const GAMES={}; window.GAMES=GAMES;
 { const PI=Math.PI, rnd=Math.random, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), font=(g,s,c,al='center')=>{ g.font=s+'px monospace'; g.fillStyle=c; g.textAlign=al; g.textBaseline='middle'; };
   /* ---------- DARTS: 301, three darts a turn; the aim sways, you click to throw ---------- */
@@ -148,6 +148,16 @@ const GAMES={}; window.GAMES=GAMES;
       const k=S.c.size/S.in.size; S.line=`${Math.round(k*100)}% WAXED · ${Math.max(0,Math.ceil(S.left))} s`; if(k>=.92){ S.score=1; S.over='THE DECK SHINES, THE GRIP BITES.'; } else if(S.left<=0){ S.score=0; S.over=`ONLY ${Math.round(k*100)}%: PATCHY. TRY AGAIN.`; } },
     draw:(S,g)=>{ g.fillStyle='#2a2018'; g.fillRect(0,0,360,300); g.fillStyle='#b08850'; g.beginPath(); g.ellipse(184,152,150,46,0,0,7); g.fill(); g.strokeStyle='#8a6a3a'; for(let i=0;i<6;i++){ g.beginPath(); g.moveTo(44,128+i*8); g.bezierCurveTo(140,120+i*9,230,140+i*7,324,130+i*8); g.stroke(); }
       g.fillStyle='rgba(255,250,230,.45)'; for(const k of S.c){ const [x,y]=k.split(',').map(Number); g.fillRect(40+x*12,110+y*12,12,12); } },
+    end:S=>o.end&&o.end(S)});
+  /* ---------- CUTTING A GEM: the wheel's edge swings; click when it lies on the marked facet; six facets cut it, three slips and the stone is left rough ---------- */
+  GAMES.facet=(o={})=>({title:o.title||'THE CUTTING WHEEL',w:360,h:360,again:false,help:'The wheel swings over the stone. Click when it lies along the gold mark. Six clean facets cut it; three slips and you stop.',
+    can:o.can,start:S=>{ if(o.pay)o.pay(); S.n=0; S.miss=0; S.a=0; S.sp=1.6; S.tg=rnd()*Math.PI; },
+    tick:(S,dt)=>{ S.t+=dt; S.a=Math.PI/2+Math.sin(S.t*S.sp)*1.4; if(S.press){ let d=Math.abs(((S.a-S.tg)%Math.PI+Math.PI*1.5)%Math.PI-Math.PI/2); if(d<.09){ S.n++; S.sp+=.25; S.tg=rnd()*Math.PI; S.line=`A CLEAN FACET (${S.n} OF 6).`; } else { S.miss++; S.line=`THE WHEEL SLIPS (${S.miss} OF 3).`; } }
+      if(S.n>=6){ S.score=1; S.over='SIX FACETS: THE STONE IS CUT.'; } else if(S.miss>=3){ S.score=0; S.over='THREE SLIPS: YOU STOP BEFORE YOU CRACK IT. TRY AGAIN.'; } },
+    draw:(S,g)=>{ g.fillStyle='#1a1614'; g.fillRect(0,0,360,360); const cx=180, cy=180; g.fillStyle=o.color||'#a050c0'; g.beginPath(); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, r=i<S.n+2?70:80; g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r); } g.closePath(); g.fill();
+      g.strokeStyle='#f0c040'; g.lineWidth=3; g.beginPath(); g.moveTo(cx-Math.cos(S.tg)*110,cy-Math.sin(S.tg)*110); g.lineTo(cx+Math.cos(S.tg)*110,cy+Math.sin(S.tg)*110); g.stroke();
+      g.strokeStyle='#c8ccd0'; g.lineWidth=2; g.beginPath(); g.moveTo(cx-Math.cos(S.a)*130,cy-Math.sin(S.a)*130); g.lineTo(cx+Math.cos(S.a)*130,cy+Math.sin(S.a)*130); g.stroke();
+      font(g,12,'#f4ecd8'); g.fillText(`FACETS ${S.n}/6 · SLIPS ${S.miss}/3`,180,24); },
     end:S=>o.end&&o.end(S)});
 }
 export {GAMES};

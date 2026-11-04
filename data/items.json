@@ -1536,5 +1536,22 @@
   "value": 60,
   "stackable": true,
   "weight": 0.4
+ },
+ "play_ticket": {
+  "value": 8,
+  "stackable": true,
+  "weight": 0.01
+ },
+ "d_wine": {
+  "value": 5,
+  "stackable": true,
+  "weight": 0.3,
+  "edible": true
+ },
+ "f_bonbons": {
+  "value": 3,
+  "stackable": true,
+  "weight": 0.2,
+  "edible": true
  }
 }

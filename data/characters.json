@@ -2544,7 +2544,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "HEADLINER",
+   "title": "BOX OFFICE",
    "hours": [
     18,
     23
@@ -2557,20 +2557,21 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "BAR",
    "hours": [
     18,
     23
    ]
   },
-  "name": "THE SHOWGIRL"
+  "name": "THE SHOWGIRL",
+  "trade": {"sells": ["d_wine", "d_ale", "d_cola", "f_bonbons"], "line": "Wine, chocolates, or something with bubbles. Quick, the bell's about to go."}
  },
  "la_catrina": {
   "pf": "la-catrina-b427ca",
   "group": "play",
   "job": {
    "at": "play",
-   "title": "PERFORMER",
+   "title": "BAR, THE FAR END",
    "hours": [
     18,
     23
@@ -2583,7 +2584,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "PERFORMER",
+   "title": "USHER, STALLS",
    "hours": [
     18,
     23
@@ -2596,7 +2597,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "BAND",
+   "title": "STAGE MANAGER",
    "hours": [
     18,
     23
@@ -2609,7 +2610,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "USHER, CIRCLE",
    "hours": [
     18,
     23
@@ -2622,7 +2623,7 @@
   "group": "play",
   "job": {
    "at": "play",
-   "title": "DANCER",
+   "title": "PROGRAMMES",
    "hours": [
     18,
     23
@@ -2804,7 +2805,7 @@
   "group": "bath",
   "job": {
    "at": "bath",
-   "title": "POOL LIFEGUARD",
+   "title": "KEEPS THE STEAM",
    "hours": [
     9,
     21
@@ -5573,6 +5574,55 @@
     },
     "fav": {
      "say": "The Van Gogh upstairs. It has its own tour: open it and press GUIDED TOUR.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_rat": {
+  "name": "THE RAT",
+  "folk": {
+   "sp": "rat",
+   "m": 0.8,
+   "f": "#7a7068",
+   "f2": "#d8ccc0",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "bank",
+   "title": "CAGES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Next, please. Deposits, withdrawals, no dragons.",
+      "The account pays a little every day. Don't ask about the gold at the back."
+     ],
+     "opts": [
+      {
+       "t": "HOW DOES THE ACCOUNT WORK?",
+       "go": "how"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "how": {
+     "say": "Put money in at either cage. It earns one in a hundred a day, up to fifty dollars, and it's kept for you.",
      "opts": [
       {
        "t": "BACK.",

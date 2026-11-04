@@ -1,9 +1,10 @@
 // SQUIRRELS: grey squirrels by day in the park, each about its home tree: they bound over the grass, stop, bury acorns and run up the trunk when you come near; double click one to watch it for your journal, and dig up a cache they left for a few acorns.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, PARK, pos, UI, WX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {WILD} from './144f-wild.js';
-{ const T=TILE, WU=T/.84, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=6, MAXC=6;
+{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=6, MAXC=6;
   WILD.add('squirrel',['EASTERN GREY SQUIRREL','Sciurus carolinensis','forage',15,0]);
   FORAGE.add({names:{nut_acorn:'ACORNS (A HANDFUL)'},prices:{nut_acorn:2}}); FORAGE.sell('nut_acorn');
   const geo=(()=>{ let G=null; return ()=>{ if(G)return G; const P=[], C=[], put=(g,m,c)=>{ g=g.toNonIndexed(); g.applyMatrix4(m); const a=g.attributes.position.array; for(let i=0;i<a.length;i++)P.push(a[i]); for(let i=0;i<a.length/3;i++)C.push(...c); };

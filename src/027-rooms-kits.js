@@ -528,7 +528,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     'bar soffit':(x,y)=>soffit(x-4.4,y-1.4,8.8,2.8),'ceiling fan':(x,y)=>fan(x,y),'small stage':(x,y)=>stage(x-1.6,y-1.1,3.2,2.2),'stage cloth':(x,y)=>stageCloth(x-1.8,y-.03,3.6),
     'stage':(x,y)=>stage(x-2.2,y-1.3,4.4,2.6),'wide stage cloth':(x,y)=>stageCloth(x-2.4,y-.03,4.8),'grand piano':(x,y)=>grand(x,y,0),'grand piano on a stage':(x,y)=>grand(x,y,14),
     'candle on the bar':(x,y)=>barCandle(x,y),'console TV':(x,y)=>consoleTV(x,y),
-    'pool table':(x,y)=>poolTable(x,y),'dartboard':(x,y)=>up(dartboard(x-.025,y-.22),34),'staircase':(x,y)=>staircase(x-.8,y),
+    'pool table':(x,y)=>poolTable(x,y),'dartboard':(x,y)=>up(dartboard(x-.025,y-.22),48),'staircase':(x,y)=>staircase(x-.8,y),
     'microphone stand on a stage':(x,y)=>micStand(x,y,14,1.6),'microphone cord on a stage':(x,y)=>micStand(x,y,14,1.6,true),'microphone stand':(x,y)=>micStand(x,y,0,1.2),'open guitar case':(x,y)=>guitarCase(x,y,0)};
   for(const n of Object.keys(POSTERS))C['poster: '+n]=(x,y)=>{ const [L,h]=n==='moon shrine'?[.62,40]:n==='night painting'?[.5,30]:n==='190 street'?[.5,30]:[.55,34]; return up(poster(x-.02,y-L/2,n,L,h),n==='190 street'?42:n==='ghost sale'?50:46); };
   Object.assign(CATALOG,C);

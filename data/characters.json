@@ -2516,7 +2516,7 @@
   "group": "bar",
   "job": {
    "at": "bar",
-   "title": "SINGS FRI/SAT NIGHTS",
+   "title": "HOST",
    "hours": [
     20,
     24
@@ -2834,7 +2834,8 @@
     15
    ]
   },
-  "name": "THE GAS STATION ATTENDANT"
+  "name": "THE GAS STATION ATTENDANT",
+  "trade": {"sells": ["f_bec", "f_hero", "f_chopped", "d_coffee"], "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."}
  },
  "motel_clerk": {
   "pf": "motel-clerk-950c39",
@@ -4147,7 +4148,8 @@
     15
    ]
   },
-  "name": "THE DINER WAITRESS"
+  "name": "THE DINER WAITRESS",
+  "trade": {"sells": ["d_coffee", "d_shake", "d_cola", "f_eggs", "f_pancake", "f_hash", "f_burger", "f_blt", "f_grilled", "f_pie", "f_cake"], "line": "Coffee's bottomless. The pie is not."}
  },
  "carving_chef": {
   "pf": "carving-chef-102bf5",
@@ -5250,6 +5252,281 @@
      "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
      "opts": [
       {"t": "BACK.", "go": "hi"}
+     ]
+    }
+   }
+  }
+ },
+ "w_badger": {
+  "name": "THE BADGER",
+  "folk": {
+   "sp": "badger",
+   "m": 1.05,
+   "f": "#55555a",
+   "f2": "#ece8e2",
+   "coat": "tunic",
+   "cc": "#6a2a1e"
+  },
+  "job": {
+   "at": "bar",
+   "title": "TAPS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "d_ale",
+    "d_stout",
+    "d_cola"
+   ],
+   "line": "Ale, stout, or the cola. I don't do cocktails. I don't do umbrellas."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "What'll it be?",
+      "Keep it down, the octopus is counting."
+     ],
+     "opts": [
+      {
+       "t": "WHAT'S ON TAP?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW LONG HAVE YOU WORKED HERE?",
+       "go": "long"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "long": {
+     "say": "Since before the stairs. I dug them.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_tokenbot": {
+  "name": "TOKEN",
+  "job": {
+   "at": "arcade",
+   "title": "PRIZES",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "BEEP. TICKETS IN, PRIZES OUT.",
+      "WIN AT SKEE-BALL. BRING ME TICKETS. BEEP."
+     ],
+     "opts": [
+      {
+       "t": "WHAT CAN I GET?",
+       "go": "what"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "what": {
+     "say": "A RING IS 4 TICKETS. A YO-YO IS 8. THE BEAR IS 20. DOUBLE-CLICK THE COUNTER.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_raccoon": {
+  "name": "THE RACCOON",
+  "folk": {
+   "sp": "raccoon",
+   "m": 0.95,
+   "f": "#6e6e74",
+   "f2": "#e8e4dc",
+   "coat": "tunic",
+   "cc": "#a81c28"
+  },
+  "job": {
+   "at": "theatre",
+   "title": "CONCESSIONS",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "f_popcorn",
+    "f_nachos",
+    "f_candybox",
+    "d_cola"
+   ],
+   "line": "Popcorn's fresh. Nachos are... warm. Don't feed the screen."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Snacks for the show?",
+      "Butter on that? There's always butter."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU HAVE?",
+       "do": "shop"
+      },
+      {
+       "t": "WHAT'S PLAYING?",
+       "go": "now"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "now": {
+     "say": "Whatever's on the board behind the fox. I only see the backs of heads.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_owl": {
+  "name": "THE OWL",
+  "folk": {
+   "sp": "owl",
+   "m": 0.9,
+   "f": "#7a6248",
+   "f2": "#e8dcc4",
+   "coat": "tunic",
+   "cc": "#2a3a5a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "GUARD",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Hoo goes there? Oh. A visitor.",
+      "No flash. No touching. No climbing the mammoth."
+     ],
+     "opts": [
+      {
+       "t": "WHAT IS THERE TO DO HERE?",
+       "go": "do"
+      },
+      {
+       "t": "DO YOU EVER SLEEP?",
+       "go": "sleep"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "do": {
+     "say": "Read the plaques. Then the curator at the desk will quiz you, a dollar a right answer. The fish tank's in the Earth gallery; bring fish food.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "sleep": {
+     "say": "In the day, with one eye open. The meteorite has tried to leave twice.",
+     "opts": [
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "w_pangolin": {
+  "name": "THE PANGOLIN",
+  "folk": {
+   "sp": "pangolin",
+   "m": 0.9,
+   "f": "#8a7050",
+   "f2": "#d8c8a8",
+   "coat": "tunic",
+   "cc": "#3a6a4a"
+  },
+  "job": {
+   "at": "museum",
+   "title": "KEEPER",
+   "hours": [
+    0,
+    24
+   ]
+  },
+  "trade": {
+   "sells": [
+    "mus_postcard",
+    "mus_plush",
+    "mus_replica",
+    "mus_guidebook"
+   ],
+   "line": "Every sale keeps the mammoth dusted."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Something to remember us by?",
+      "The plush mammoth is very soft. Softer than the real one."
+     ],
+     "opts": [
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
      ]
     }
    }

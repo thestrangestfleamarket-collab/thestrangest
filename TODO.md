@@ -30,7 +30,6 @@ Risk is noted only when it isn't low.
 **To try on the live site** (one sitting; each line is in its area below):
 the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-the cinema's titles ·
 VR on the Quest 3 (and the painter in it).
 
 **To pick** (one batch; each line is in its area below):
@@ -71,7 +70,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
 - [ ] **`tests/loosecheck.cjs` fails on `main`** · P3 · S · check. Its start spot (`at=-2.2,3.2`, lines 17 and 52) has no loose things near
   it any more; nothing runs it (not in `site.yml`). Fix the spot and add it to the physx step. With: the physics extras and STAND ON THINGS.
-- [ ] **The cinema's video titles** · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
+- [x] **The cinema's video titles** (checked 4 Nov: YouTube answers the site's own origin, `access-control-allow-origin: https://thestrangestfleamarket.com`, so players get titles; only CI's machines are refused) · P3 · S · find. YouTube refuses `youtube.com/oembed` from CI since 2 Nov (`src/059f-cinema.js:202`,
   fails quietly: no title, nothing breaks); from elsewhere it answers, so players likely get titles. Check on the live site; if not, fetch
   the title through the worker.
 - [x] **#501 (THE CATACOMB RUN in VR) was merged on a red build check**: read 4 Nov. Run 41477704509 failed only in places (the dungeon's

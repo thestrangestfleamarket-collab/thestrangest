@@ -29,7 +29,7 @@ const PARTSNPC={};
     for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){ if(keep&&!keep((i+.5)/nu,(j+.5)/nv))continue; const a=j*(nu+1)+i, b=a+1, c=a+nu+1, d=c+1; I.push(a,c,b, b,c,d); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setIndex(I); return g; };
   const lathe=(pf,nu,nv,{sx=1,sz=1,d,keep}={})=>{ const S=spl(pf.S||pf,nv); return surf(nu,nv,(u,v)=>{ const q=S[Math.round(v*nv)], a=u*Math.PI*2, p=[q[0]*sx*Math.sin(a),q[1],q[0]*sz*Math.cos(a)]; return d?d(p,u,v):p; },keep); };
-  const tube=(path,rad,nu,nv,{up=[0,1,0],sx=1,sz=1,d}={})=>{ '@later'; const C=spl(path,nv), R=spl(rad.map(r=>[r]),nv), T=new THREE.Vector3(), U=new THREE.Vector3(), Bv=new THREE.Vector3(), Nv=new THREE.Vector3();
+  const tube=(path,rad,nu,nv,{up=[0,1,0],sx=1,sz=1,d}={})=>{ const C=spl(path,nv), R=spl(rad.map(r=>[r]),nv), T=new THREE.Vector3(), U=new THREE.Vector3(), Bv=new THREE.Vector3(), Nv=new THREE.Vector3();
     return surf(nu,nv,(u,v)=>{ const j=Math.round(v*nv), a=C[Math.max(0,j-1)], b=C[Math.min(nv,j+1)]; T.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]).normalize(); U.set(...up);
       Bv.copy(U).addScaledVector(T,-U.dot(T)).normalize(); Nv.crossVectors(Bv,T); const t=u*Math.PI*2, r=Math.max(0,R[j][0]), c=C[j];
       const p=[0,1,2].map(k=>c[k]+(Nv.getComponent(k)*Math.cos(t)*sx+Bv.getComponent(k)*Math.sin(t)*sz)*r); return d?d(p,u,v):p; }); };

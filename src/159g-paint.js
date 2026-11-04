@@ -1,4 +1,5 @@
 // THE PAINTER: paint and draw on a canvas from your pack, with brushes, pencil, airbrush, eraser, smudge, fill, shapes, an eyedropper, a colour picker, layers, undo and zoom; finished, it is a painting to hang (DECORATE), give or sell.
+import {SHARED} from './003-shx.js';
 const PAINTER={}; window.PAINTER=PAINTER;
 {
   const cl=(v,a,b)=>Math.max(a,Math.min(b,v)), mk=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
@@ -178,7 +179,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
   view.addEventListener('contextmenu',e=>e.preventDefault());
   view.addEventListener('wheel',e=>{ if(!P)return; e.preventDefault(); const r=view.getBoundingClientRect(); if(e.ctrlKey||!e.shiftKey)zoomAt(V.z*(e.deltaY<0?1.15:1/1.15),e.clientX-r.left,e.clientY-r.top); else { V.x-=e.deltaY; redraw(); } },{passive:false});
   const KEYT=Object.fromEntries(TOOLS.map(t=>[t[2].toLowerCase(),t[0]]));
-  ui.addEventListener('keydown',e=>{ e.stopPropagation(); const k=e.key.toLowerCase(), typing=e.target.tagName==='INPUT'&&e.target.type==='text';
+  const onKey=e=>{ e.stopPropagation(); const k=e.key.toLowerCase(), typing=e.target.tagName==='INPUT'&&e.target.type==='text';
     if(e.key==='Escape'){ const d=ui.querySelector('.pdlg'); if(d)d.remove(); else PAINTER.close(); e.preventDefault(); return; }
     if(typing)return;
     if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
@@ -187,7 +188,12 @@ const PAINTER={}; window.PAINTER=PAINTER;
     if(k===' '){ spaceDown=true; e.preventDefault(); return; }
     if(KEYT[k]){ setTool(KEYT[k]); return; }
     if(k==='['){ B.size=cl(Math.round(B.size/1.2),1,300); brushBox(); redraw(); } else if(k===']'){ B.size=cl(Math.round(B.size*1.2+1),1,300); brushBox(); redraw(); }
-    else if(k==='x')swap(); else if(k==='m')toggleMirror(); else if(k==='0')fit(); else if(k==='1'){ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); } });
+    else if(k==='x')swap(); else if(k==='m')toggleMirror(); else if(k==='0')fit(); else if(k==='1'){ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); } };
+  ui.addEventListener('keydown',onKey);
+  // a click on a layer or the painting can take the keys' focus off the window: while it is open, the painter keeps them
+  ui.tabIndex=-1; ui.addEventListener('pointerdown',e=>{ if(!e.target.closest('input,button,select'))ui.focus({preventScroll:true}); });
+  addEventListener('keydown',e=>{ if(ui.hidden||ui.contains(e.target))return; e.stopImmediatePropagation(); e.preventDefault(); ui.focus({preventScroll:true}); onKey(e); },true);
+  addEventListener('keyup',e=>{ if(ui.hidden||ui.contains(e.target))return; e.stopImmediatePropagation(); if(e.key===' ')spaceDown=false; },true);
   ui.addEventListener('keyup',e=>{ e.stopPropagation(); if(e.key===' ')spaceDown=false; });
   ui.addEventListener('keypress',e=>e.stopPropagation());
 
@@ -260,9 +266,9 @@ const PAINTER={}; window.PAINTER=PAINTER;
     P={w:o.w,h:o.h,title:o.title||'',layers:[],cur:0,undo:[],redo:[],ln:1,changed:false,o};
     if(o.layers&&o.layers.length){ for(const s of o.layers){ const L=layer(s.n||'LAYER',o.w,o.h); L.vis=s.vis!==false; L.op=s.op==null?1:s.op; if(s.src){ const im=new Image(); im.src=s.src; try{ await im.decode(); L.cx.drawImage(im,0,0); }catch(e){} } P.layers.push(L); } P.ln=P.layers.length; P.cur=P.layers.length-1; }
     else { const bg=layer('BACKGROUND',o.w,o.h); bg.cx.fillStyle=o.bg||'#f4efe4'; bg.cx.fillRect(0,0,o.w,o.h); P.layers.push(bg, layer('LAYER 1',o.w,o.h)); P.cur=1; }
-    ui.hidden=false; V.W=0; panels(); requestAnimationFrame(()=>{ fit(); redraw(); }); ui.querySelector('#pp-tools button').focus(); PAINTER.isOpen=true; };
+    ui.hidden=false; V.W=0; panels(); requestAnimationFrame(()=>{ fit(); redraw(); }); ui.querySelector('#pp-tools button').focus(); PAINTER.isOpen=true; SHARED.covered=true; };   // the painter covers the game: its picture is not drawn behind it
   const pack=()=>P.layers.map(L=>({n:L.n,vis:L.vis,op:L.op,src:L.cv.toDataURL('image/png')}));
-  PAINTER.close=()=>{ if(!P)return; if(drawing){ drawing=false; end(); } const o=P.o; try{ if(o.onSave&&P.changed)o.onSave(pack(),flat()); }catch(e){ console.warn('painter save',e); } ui.hidden=true; P=null; PAINTER.isOpen=false; try{ o.onClose&&o.onClose(); }catch(e){} };
+  PAINTER.close=()=>{ if(!P)return; if(drawing){ drawing=false; end(); } const o=P.o; try{ if(o.onSave&&P.changed)o.onSave(pack(),flat()); }catch(e){ console.warn('painter save',e); } ui.hidden=true; P=null; PAINTER.isOpen=false; SHARED.covered=false; try{ o.onClose&&o.onClose(); }catch(e){} };
   $('close').onclick=()=>PAINTER.close();
   $('done').onclick=()=>{ if(!P)return; const o=P.o, dlg=document.createElement('div'); dlg.className='pdlg'; const F=o.frames||[['','NO FRAME']]; let fr=F[1]?F[1][0]:'';
     dlg.innerHTML=`<div><h4>FINISH AND SIGN</h4><div class="prow"><label for="pp-title">TITLE</label><input type="text" id="pp-title" maxlength="40" style="flex:1" value="${String(P.title||'').replace(/"/g,'')}"></div>
@@ -272,7 +278,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
     view.appendChild(dlg); const ti=dlg.querySelector('#pp-title'); ti.focus(); ti.select();
     dlg.querySelectorAll('[data-fr]').forEach(b=>b.onclick=()=>{ fr=b.dataset.fr; dlg.querySelectorAll('[data-fr]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.fr===fr)); });
     dlg.querySelector('#pp-back').onclick=()=>dlg.remove();
-    dlg.querySelector('#pp-sign').onclick=()=>{ const title=(ti.value||'').trim().toUpperCase()||'UNTITLED'; P.title=title; const img=flat(); const oo=P.o; dlg.remove(); ui.hidden=true; P=null; PAINTER.isOpen=false; try{ oo.onClose&&oo.onClose(); }catch(e){} try{ oo.onFinish&&oo.onFinish({title,frame:fr,img}); }catch(e){ console.warn('painter finish',e); } }; };
+    dlg.querySelector('#pp-sign').onclick=()=>{ const title=(ti.value||'').trim().toUpperCase()||'UNTITLED'; P.title=title; const img=flat(); const oo=P.o; dlg.remove(); ui.hidden=true; P=null; PAINTER.isOpen=false; SHARED.covered=false; try{ oo.onClose&&oo.onClose(); }catch(e){} try{ oo.onFinish&&oo.onFinish({title,frame:fr,img}); }catch(e){ console.warn('painter finish',e); } }; };
   PAINTER.state=()=>P?{w:P.w,h:P.h,layers:P.layers.length,cur:P.cur,tool:B.tool,size:B.size,op:B.op,col:hex2(B.col),undo:P.undo.length,redo:P.redo.length,zoom:V.z,open:!ui.hidden}:{open:false};
   PAINTER.B=B; PAINTER.setTool=setTool; PAINTER.setCol=c=>setCol(rgbOf(c)||c); PAINTER.flat=()=>P&&flat(); PAINTER.undo=undo; PAINTER.redo=redo;
   PAINTER.screen=(x,y)=>{ const r=view.getBoundingClientRect(); return [r.left+V.x+x*V.z,r.top+V.y+y*V.z]; };   // a painting's pixel on the screen (the tests)

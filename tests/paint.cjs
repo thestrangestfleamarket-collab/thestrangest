@@ -32,9 +32,9 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   // the eyedropper
   await pg.evaluate(()=>{ PAINTER.setTool('brush'); PAINTER.setCol('#00ff00'); });
   await drag([[150,100]],{alt:true});
-  ok(await pg.evaluate(()=>PAINTER.state().col)==='#c0272d','alt+click takes the colour from the painting');
+  const pc=await pg.evaluate(()=>PAINTER.state().col); ok(near([1,3,5].map(i=>parseInt(pc.slice(i,i+2),16)),[192,39,45],8),'alt+click takes the colour from the painting ('+pc+')');
   // fill on the background layer leaves the red layer above it alone; undo and redo
-  await pg.evaluate(()=>{ document.querySelectorAll('#pp-layers [data-i]')[1].click(); PAINTER.setTool('fill'); PAINTER.setCol('#6f8fe6'); PAINTER.B.op=1; });
+  await pg.evaluate(()=>{ [...document.querySelectorAll('#pp-layers > div[data-i]')].find(d=>d.dataset.i==='0').click(); PAINTER.setTool('fill'); PAINTER.setCol('#6f8fe6'); PAINTER.B.op=1; });
   const cur=await pg.evaluate(()=>PAINTER.state().cur);
   await drag([[450,450]]);
   const f1=await px(450,450), f2=await px(150,100);

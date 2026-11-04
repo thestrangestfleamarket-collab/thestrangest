@@ -1,5 +1,5 @@
 // THE PAINTINGS: canvases to paint on (the painter, 159g), your unfinished and finished paintings in the pack, their pictures kept on the server (/art), an easel and every painting as a thing for your wall (DECORATE) that visitors see too.
-import {THREE} from './003-shx.js';
+import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ITEMS, ONLINE, TEXT, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {ROOMK} from './150a-bedroom.js';
@@ -81,12 +81,12 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const V=document.createElement('div'); V.id='artview'; V.hidden=true; V.setAttribute('role','dialog');
   V.style.cssText='position:fixed;inset:0;z-index:44;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:24px;box-sizing:border-box;background:rgba(4,5,8,.94);font:12px Silkscreen,monospace;letter-spacing:1px;color:#ece5d3;text-align:center';
   document.body.appendChild(V);
-  const closeV=()=>{ if(V.hidden)return; V.hidden=true; V.innerHTML=''; if(UI.gamewin==='paintv')UI.gamewin=null; };
+  const closeV=()=>{ if(V.hidden)return; V.hidden=true; V.innerHTML=''; if(UI.gamewin==='paintv')UI.gamewin=null; SHARED.covered=PAINTER.isOpen; };
   V.addEventListener('click',e=>{ if(e.target===V||e.target.dataset.x)closeV(); });
   addEventListener('keydown',e=>{ if(!V.hidden&&e.key==='Escape'){ e.stopImmediatePropagation(); closeV(); } },true);
   PAINTINGS.view=async(id,a)=>{ a=a||M.art[id]; if(!a)return; V.innerHTML=`<div style="display:grid;place-items:center;min-height:0"><img alt="" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 0 ${a.fr?10:2}px #${(FR[a.fr||'']&&FR[a.fr][1]!=null?FR[a.fr][1]:0x3a3f4e).toString(16).padStart(6,'0')},0 8px 30px #000;image-rendering:auto"></div>
       <div><div style="color:#f2c14e;font-size:14px">“${TEXT.esc(a.t)}”</div><div style="color:#9b9584;margin-top:4px">BY ${TEXT.esc(a.by)} · ${TEXT.esc(a.d||'')} · ${a.w}×${a.h}</div><button data-x="1" style="margin-top:10px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:4px 10px;cursor:pointer">CLOSE</button></div>`;
-    V.hidden=false; if(!UI.gamewin)UI.gamewin='paintv'; const im=V.querySelector('img'); if(a.th)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
+    V.hidden=false; if(!UI.gamewin)UI.gamewin='paintv'; SHARED.covered=true; const im=V.querySelector('img'); if(a.th)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
 
   /* ---------- on the wall: a painting is a DECORATE thing of its own (as a photo is), framed; its picture loads from ART ---------- */
   const tex=new Map();

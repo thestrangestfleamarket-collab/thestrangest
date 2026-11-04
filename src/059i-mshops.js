@@ -1,6 +1,6 @@
 // THE MERCHANTS' SHOPS: MSHOP, the one way a merchant gets a small shop: its outside one painted block on its lot in the level file (shopfront, window, door, sign), its inside off the map (about half the bodega), built behind the fade when you go in and furnished by the merchant's own kit (MSHOP.kit[id]).
 import {SHARED, THREE} from './003-shx.js';
-import {ROOMS} from './003b-systems.js';
+import {ROOMS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
@@ -62,6 +62,12 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2);
     ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>LOAD('later'),build,unbuild,
       spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUT TO THE STREET'};
+    { // its window, real both ways (130a): the street front and the inside's front wall are matched at the door (M: street to inside, turned and moved), the glass the part of the painted window that lies along the inside's wall
+      const V3=THREE.Vector3, P2=(q,y=0)=>new V3(q[0],y,q[1]), S0=P2(at(lcx,L.y1)), us=P2(at(lcx+1,L.y1)).sub(S0).normalize(), ns=P2(at(lcx,L.y1+1)).sub(S0).normalize(), I0=new V3(X(cx),0,Z(R.y1)), ui=new V3(Math.sign(X(cx+1)-X(cx)),0,0), ni=new V3(0,0,Math.sign(Z(R.y1+1)-Z(R.y1))), up=new V3(0,1,0);
+      const Bs=new THREE.Matrix4().makeBasis(us,up,ns).setPosition(S0), Bi=new THREE.Matrix4().makeBasis(ui,up,ni).setPosition(I0), M=Bi.multiply(Bs.invert()); ROOMS.off[id].xf=M;
+      const du=D.door*W, a0=du>W/2?.35:du+1, a1=du>W/2?du-1:W-.35, o0=Math.max(a0-du,R.x0+.3-cx), o1=Math.min(a1-du,R.x1-.3-cx), z1=Math.min(92,WH-6), h=Y(z1)-Y(16), yc=(Y(16)+Y(z1))/2, tl=Math.abs(X(1)-X(0));
+      if(o1-o0>.5){ const mid=(o0+o1)/2, w=(o1-o0)*tl, ry=Math.atan2(ns.x,ns.z), sp=P2(at(lcx+mid,L.y1+.04),yc), pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(sp); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
+        const ip=new V3(X(cx+mid),yc,Z(R.y1-.04)), pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(ip); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); } }
     MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);
     // its merchant stands inside, behind the counter, unless the level file or the character editor put them elsewhere

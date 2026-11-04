@@ -1,8 +1,8 @@
 // THE HOURS: DN holds the two looks, DAY and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything); which one it is the owner picks for everyone (/shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, SKY, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, ROOMS, SKY, VIS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {MISTE, MISTS, MISTSC, QS, SYS} from './006-map-pre.js';
+import {MISTE, MISTS, MISTSC, QS, STORE, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 import {TPANE} from './087dz-tpane.js';
 Object.assign(DN,{lk:1,mode:'day',modes:['day','night'],names:{day:'DAY',night:'NIGHT'},FADE:60000});
@@ -32,6 +32,7 @@ Object.assign(DN,{lk:1,mode:'day',modes:['day','night'],names:{day:'DAY',night:'
       U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); }
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
+    { const shop=!!(ROOMS.cur&&!ROOMS.cur.off&&STORE.inside&&STORE.inside[ROOMS.cur.id]); if(shop!==DN.shop){ DN.shop=shop; VIS.hide(SKY.dome,'room',shop); } if(shop&&scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); }   // inside a street shop: a black void past its walls
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
   const box=document.getElementById('adn'), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
   DN.dayText=()=>'the same for everyone, set by the owner'+'; the day at '+fmt(CLOCK.h);

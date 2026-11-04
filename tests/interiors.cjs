@@ -25,7 +25,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     if(OUT){ fs.mkdirSync(OUT,{recursive:true}); await pg.screenshot({path:OUT+'/bar.png'}); }
     await pg.evaluate(()=>STORE.exit('bar')); await pg.waitForTimeout(3000); }
   /* ---------- THE ARCADE ---------- */
-  { await pg.evaluate(()=>ROOMS.enter('arcade')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='arcade'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE PRIZE COUNTER'),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made),60000).catch(()=>{});
+  { await pg.evaluate(()=>ROOMS.enter('arcade')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='arcade'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==="TOKEN'S PRIZE COUNTER"),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made),60000).catch(()=>{});
     const p=await people('arcade'); rec('arcade: staff spots and patron places inside it, standing places clear of furniture',p.spots>=2&&p.seats>=15&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
     rec('arcade: TOKEN is made and stands at the prize counter',await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)));
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.items.arc_token=0; INV.cash=0; th('THE TOKEN CHANGER').act(); const broke=!(INV.items.arc_token>0);
@@ -34,7 +34,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       th('SKEE-BALL').act(); const S=MINI.state(), skee=!!S&&MINI.on.title==='SKEE-BALL'&&INV.items.arc_token===3; MINI.close();
       th('THE CLAW').act(); const claw=MINI.on&&MINI.on.title==='THE CLAW'&&INV.items.arc_token===2; MINI.close();
       th('AIR HOCKEY').act(); const hockey=MINI.on&&MINI.on.title==='AIR HOCKEY'&&INV.items.arc_token===1; MINI.close();
-      INV.items.prize_ticket=5; th('THE PRIZE COUNTER').act(); const prize=INV.items.prize_ring>=1&&INV.items.prize_ticket===1;
+      INV.items.ptix=5; th("TOKEN'S PRIZE COUNTER").act(); const prize=INV.items.prize_ring>=1&&INV.items.ptix===1;
       INV.cash=2; th('THE SODA MACHINE').act(); const soda=INV.cash===0&&INV.items.d_cola>=1;
       return {broke,refused,bought,skee,claw,hockey,prize,soda}; });
     rec('arcade: the changer sells four tokens for $1, not when broke',a.broke&&a.bought,JSON.stringify(a));

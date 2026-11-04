@@ -8,7 +8,7 @@ import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 import {MERCH} from './111e-merch.js';
 const ARCADE={}; window.ARCADE=ARCADE;
-{ FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_ticket:'A PRIZE TICKET',prize_bear:'A PLUSH BEAR',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});
+{ FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
   // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
   const tokenbot=()=>{ const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
@@ -24,15 +24,15 @@ const ARCADE={}; window.ARCADE=ARCADE;
     return sk; };
   WORKERS.models.w_tokenbot={label:'TOKEN',height:1.2,model:tokenbot,size:6,idle:t=>{ const hand=(t%6)<1.4; return MERCH.pose({nod:Math.sin(t*1.6)*6,yaw:Math.sin(t*.5)*16,L:{ua:[20,10],fa:[40,0]},R:{ua:[hand?100:22,-10],fa:[hand?30:40,0]}}); }};
   // the prizes and what they cost in tickets, the best you can have first
-  const PRIZES=[['prize_bear',20],['prize_yoyo',8],['prize_ring',4]];
+  const PRIZES=[['plush_bear',30],['plush_duck',12],['prize_yoyo',8],['kazoo',6],['prize_ring',4]];
   // a token a go (the changer by the door sells them); tickets come out of the games, prizes off the counter
   const tok=()=>INV.items.arc_token||0, needTok=()=>tok()<1?'YOU NEED A TOKEN. THE CHANGER BY THE DOOR SELLS THEM.':'', payTok=()=>FORAGE.take('arc_token',1);
-  const win=n=>{ if(n>0){ INV.add('prize_ticket',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
+  const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
   ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
-  ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('prize_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
+  ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
   ARCADE.hockey=()=>MINI.open(GAMES.hockey({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'hockey',won:!!S.won,score:S.score}; win(S.won?5:S.score); }}));
   ARCADE.change=()=>{ if(INV.cash<1)return say('THE CHANGER TAKES A DOLLAR.','#c8a090'); INV.cash-=1; INV.add('arc_token',4); say(`FOUR TOKENS CLATTER OUT. YOU HAVE ${tok()}.`); };
-  ARCADE.prize=()=>{ const have=INV.items.prize_ticket||0, p=PRIZES.find(([,c])=>have>=c); if(!p)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. A RING IS 4.`,'#c8a090'); FORAGE.take('prize_ticket',p[1]); INV.add(p[0],1); say(`TOKEN HANDS YOU ${FORAGE.name(p[0])} FOR ${p[1]} TICKETS.`); return p[0]; };
+  ARCADE.prize=()=>{ const have=INV.items.ptix||0, p=PRIZES.find(([,c])=>have>=c); if(!p)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. A RING IS 4.`,'#c8a090'); FORAGE.take('ptix',p[1]); INV.add(p[0],1); say(`TOKEN HANDS YOU ${FORAGE.name(p[0])} FOR ${p[1]} TICKETS.`); return p[0]; };
   // where its people go: the floor man by the middle, TOKEN behind the prize counter; the crowd on stools at the side cabinets, at PETRI, the lanes, the hockey table, the claw
   { const o=ROOMS.off.arcade; if(o&&o.ar){ const F=IKIT.frame(o.ar), W=F.W, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, YS=[2.03,4.34,6.66,8.97];
     o.spots={'RUNS THE FLOOR':sp(8.6,8.2,-1,0),PRIZES:sp(2.0,11.5,0,-1)};
@@ -45,7 +45,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
     box(.4,10.5,3.6,11.1,0,.18,C.black); box(.4,10.5,3.6,11.1,.18,.9,C.glass); box(.38,10.48,3.62,11.12,.9,.95,C.chrome); glow(()=>{ box(.42,10.49,3.58,10.5,.2,.26,0x40e0ff); box(.45,10.55,3.55,11.05,.86,.87,0xfff4e0); }); for(let i=0;i<10;i++)ball(.6+i*.3,10.8,.4+(i%2)*.25,.05,[0xf2c14e,0xff4fa0,0x60c0ff,0x60ff90][i%4]); sol(.4,10.5,3.6,11.1);
     for(let r=0;r<4;r++){ box(.35,11.75,3.65,12.0,.95+r*.42,.98+r*.42,C.wood); for(let i=0;i<7;i++){ const u=.6+i*.47, c=[0xc87a4a,0xe8a0c8,0x80c8f0,0xf0e080,0xa0e0a0,0xd06060,0xffffff][(i+r)%7]; if(r===3)ball(u,11.87,.98+r*.42+.16,.15,c,1.1); else if(r===2)cyl(u,11.87,.08,.98+r*.42,.98+r*.42+.06,c); else box(u-.1,11.8,u+.1,11.95,.98+r*.42,.98+r*.42+.22,c); } }
     glow(()=>{ box(.8,11.97,3.2,11.99,2.85,2.9,0xff4fa0); }); pic(2.0,11.97,2.6,2.0,.42,0,-1,words(64,14,'#120818',[['PRIZES',32,2,'#ff7ac0',10,'center']]),true);
-    thing('THE PRIZE COUNTER',2.0,10.8,3.2,1.0,ARCADE.prize);
+    thing("TOKEN'S PRIZE COUNTER",2.0,10.8,3.2,1.0,ARCADE.prize);
     // the claw machine by the door
     box(11.2,10.9,12.1,11.8,0,.85,C.red); box(11.2,10.9,12.1,11.8,.85,1.75,C.glass); box(11.2,10.9,12.1,11.8,1.75,1.95,C.red); glow(()=>{ box(11.25,10.89,12.05,10.9,1.8,1.9,0xfff0b0); box(11.25,10.95,12.05,11.75,1.74,1.745,0xfff0e0); }); for(let i=0;i<9;i++)ball(11.35+(i%3)*.3,11.05+Math.floor(i/3)*.3,.98,.1,[0xc87a4a,0xe8a0c8,0x80c8f0][i%3]); cyl(11.65,11.35,.01,1.45,1.75,C.chrome); box(11.58,11.28,11.72,11.42,1.38,1.45,C.chrome); sol(11.2,10.9,12.1,11.8);
     thing('THE CLAW (1 TOKEN)',11.65,11.35,.9,1.95,ARCADE.claw);

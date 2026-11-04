@@ -9,20 +9,21 @@ const THEATRE={}; window.THEATRE=THEATRE;
 { FORAGE.add({names:{f_popcorn:'A TUB OF POPCORN',f_nachos:'A TRAY OF NACHOS',f_candybox:'A BOX OF CANDY'},does:{f_popcorn:()=>FORAGE.feed(.15),f_nachos:()=>FORAGE.feed(.3),f_candybox:()=>{ FORAGE.feed(.1); VIT.sta=Math.min(1,VIT.sta+.2); }}});
   const BOD=SHARED.BOD, TM=.924;   // a theatre tile in metres
   const room=()=>(STORE.rooms||[]).find(r=>r.id==='theatre');
-  // the room in metres: u east from the screen wall, v south from the back wall to the street front
-  const frameOf=B=>IKIT.frame({x0:B.x0+.1,y0:B.y0+.1,x1:B.x1-.1,y1:B.y1-.1});
+  // the room in metres, in the theatre's own layout (u from the screen wall, v from the back wall to its front), turned to where it stands (TB)
+  const at0=(TB,x,y)=>{ const q=TB?TB.pt(x,y):[x,y]; return [BOD.X(q[0]),BOD.Z(q[1])]; };
+  const frameOf=(B,TB)=>IKIT.frame({x0:B.x0+.1,y0:B.y0+.1,x1:B.x1-.1,y1:B.y1-.1},(x,y)=>at0(TB,x,y));
   const geo=B=>{ const cy=(B.y0+B.y1)/2, FX=B.x0+5.35, P=1.45, NR=Math.min(4,Math.floor((B.x1-.1-FX-1.2)/P)); return {cy,FX,P,NR,RISE:19,BN:[B.y0+1.2,cy-.55],BS:[cy+.55,B.y1-1.75],TX:FX+NR*P}; };   // the tiers as 059-street lays them
   // where its people go: the doorman by the door, the usher on the landing, the raccoon behind the stand; the moviegoers in the recliners (facing the screen), two waiting at the stand
-  const place=R=>{ const B=R.B; { const G=geo(B), W=(x,y)=>({x:BOD.X(x),z:BOD.Z(y)}), at=(x,y,hd,h)=>({...W(x,y),hd,...(h!=null?{y:h}:{})});
+  const place=R=>{ const {B,TB}=STORE.theatreFrame; { const G=geo(B), W=(x,y)=>{ const p=at0(TB,x,y); return {x:p[0],z:p[1]}; }, at=(x,y,hd,h)=>({...W(x,y),hd:TB?TB.hd(hd):hd,...(h!=null?{y:h}:{})});
     R.spots={'DOORMAN, TICKETS WITH THE TICKET FOX':at(B.x0+3.3,B.y1-2.2,Math.PI/2),USHER:at(G.TX+.8,G.cy,-Math.PI/2),CONCESSIONS:at(B.x0+2.6,B.y0+.5,0)};
     const S=[]; for(let i=0;i<G.NR;i++){ const xb=G.FX+(i+1)*G.P, h=(i+1)*G.RISE; for(const [a,b] of [G.BN,G.BS]){ const w=(b-a)/2; for(let s=0;s<2;s++)S.push(at(xb-.72,a+(s+.5)*w,-Math.PI/2,BOD.Y(14))); } }
     R.seats=THEATRE.places=[...S,at(B.x0+2.0,B.y0+2.2,Math.PI),at(B.x0+3.2,B.y0+2.2,Math.PI)]; } };
   // the street lays the theatre out after this file: its lists go in as soon as it is there
-  { let done=false; const go=()=>{ if(done)return; const R=room(); if(R&&R.B){ place(R); done=true; } }; go(); SYS.add('life',go,'146zf-theatre'); }
+  { let done=false; const go=()=>{ if(done)return; const R=room(); if(R&&STORE.theatreFrame){ place(R); done=true; } }; go(); SYS.add('life',go,'146zf-theatre'); }
   // a film watched from a recliner rests you
   VIT.mends.push(()=>USE.seat&&st.sit&&STORE.here&&STORE.here('theatre')&&CINEMA.playing&&CINEMA.playing()?1/40:0);
   STORE.furnish=STORE.furnish||{};
-  STORE.furnish.theatre=B=>{ '@later'; const F=frameOf(B), K=IKIT.room(F,o=>scene.add(o)), {box,cyl,ball,glow,pic,words,sol,use,MW}=K, G=geo(B);
+  STORE.furnish.theatre=(B,TB)=>{ '@later'; const F=frameOf(B,TB), K=IKIT.room(F,o=>scene.add(o)), {box,cyl,ball,glow,pic,words,sol,use,MW}=K, G=geo(B);
     const U=x=>(x-B.x0-.1)*TM, V=y=>(y-B.y0-.1)*TM, PX=px=>BOD.Y(px)/MW, C={steel:0xa8acb0,red:0xa81c28,dark:0x1c1a20,glass:0xcfe3ea,gold:0xc8a040,white:0xf2f2f0};
     // the stand: a long counter on the back wall's west end, the raccoon between it and the wall
     const u0=U(B.x0+1.3), u1=U(B.x0+4.1), v0=V(B.y0+.75), v1=V(B.y0+1.35);
@@ -44,5 +45,5 @@ const THEATRE={}; window.THEATRE=THEATRE;
     for(let i=0;i<G.NR;i++){ const xf=G.FX+i*G.P, xm=xf+G.P/2, h=(i+1)*G.RISE; for(const [x,hp] of [[xf,h-G.RISE/2],[xm,h]])glow(()=>{ for(const y of [G.cy-.5,G.cy+.5])box(U(x)-.04,V(y)-.05,U(x),V(y)+.05,PX(hp)-.05,PX(hp)-.02,0xffd890); }); }
     K.flush();
     // the raccoon goes to its spot once the street has put the theatre on its list (this build can come first)
-    const mk=(n=0)=>{ const R=room(); if(R&&R.B){ if(!R.spots)place(R); WORKERS.make('theatre'); } else if(n<120)setTimeout(()=>mk(n+1),500); }; mk(); };
+    const mk=(n=0)=>{ const R=room(); if(R&&STORE.theatreFrame){ if(!R.spots)place(R); WORKERS.make('theatre'); } else if(n<120)setTimeout(()=>mk(n+1),500); }; mk(); };
 }

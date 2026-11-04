@@ -2,7 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {LEVELS, PARK, pos, ROOMS, VIS, ZONES} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SECTION, SECTIONS, TILE} from './006-map-pre.js';
+import {LEVEL, SECTION, SECTIONS, TILE} from './006-map-pre.js';
 { const M=new Map();
   const apply=(o,r)=>{ const h=r.why.size>0&&!VIS.all; if(r.self)o.layers.mask=h?0:r.mask; else o.visible=!h; };
   VIS.hide=(o,why,on=true,self=false)=>{ if(!o)return; let r=M.get(o); if(!r){ if(!on)return; r={why:new Set(),self,mask:self?(o.layers.mask||1):0}; M.set(o,r); }
@@ -27,13 +27,14 @@ LEVELS.of.street={name:SECTIONS.streets.south,floor:'up',base:true};
   LEVELS.hide=(cur=LEVELS.cur)=>{ const H=[]; for(const o of scene.children)if(o.visible&&!on(owner(o),cur)){ o.visible=false; H.push(o); } return H; };
   LEVELS.show=H=>{ if(H)for(const o of H)o.visible=true; };
   window.LEVELS=LEVELS; }
-Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
-{ const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); };
+Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['fair','THE STRANGEST FAIR'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
+{ const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); }, FAIRP=(LEVEL.places||[]).find(p=>p.kind==='fair');
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down'){ const id=LEVELS.at(x,z,'down'), L=LEVELS.of[id]; return {id,name:L.label?L.label():L.name}; }
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};
     { const mx=SHARED.BOD.MX(x), my=SHARED.BOD.MY(z), id=SECTIONS.at(mx,my), H=SECTION.id;
       if(id&&id!==H){ const P=SECTIONS.ring.park, N=SECTIONS.streets, st=mx<P.x0?N.west:mx>P.x1?N.east:my<P.y0?N.south:my>P.y1?N.north:'CENTRAL PARK'; return {id:'sec-'+id,name:st+' \u00b7 '+id}; } }
     if(PARK.within&&PARK.within(x,z)){ const y=z/TILE+SHARED.BOD.OY; return y>mid()?{id:'cp',name:'CENTRAL PARK'}:{id:'secp',name:'SOUTH EAST CENTRAL PARK'}; }
+    { const F=FAIRP, mx=SHARED.BOD.MX(x), my=SHARED.BOD.MY(z); if(F&&mx>=F.x0&&mx<F.x1&&my>=F.y0&&my<F.y1)return {id:'fair',name:F.name}; }
     return {id:'market',name:SECTIONS.streets.south}; };
   ZONES.on=f=>ZONES.fns.push(f);
   ZONES.tick=()=>{ if(!window.__started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;

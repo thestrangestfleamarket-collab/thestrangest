@@ -7,7 +7,9 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&sec=B',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
   rec('in Section B the skate park stands in the open, its skaters and shop with it',await U(()=>{ const d=window.SKATE&&SKATE.ready&&SKATE.dbg(); return d&&d.built&&d.solids>0&&d.people>0&&d.boards===7&&d.shop; }));
   rec('no way in from a room: it is not off the map',await pg.evaluate(()=>!ROOMS.off.skatepark));
-  d0=await pg.evaluate(()=>{ const [x,z]=SKATE.dbg().gate; __dbg.UI.goTo(x,z,0,0); return {sec:SHARED.SECTIONS.home.id,g:SHARED.groundY(x,z)}; });
+  await pg.evaluate(()=>{ const [x,z]=SKATE.dbg().gate; __dbg.UI.goTo(x,z,0,0); });
+  await U(()=>SHARED.LVL==='up',60000);   // you may start below (Section B's way in); the ground is read once you are up at the gate
+  d0=await pg.evaluate(()=>{ const [x,z]=SKATE.dbg().gate; return {sec:SHARED.SECTIONS.home.id,lvl:SHARED.LVL,g:SHARED.groundY(x,z)}; });
   rec('its gate opens onto flat ground in Section B',d0.sec==='B'&&Math.abs(d0.g)<.05,JSON.stringify(d0));
   // the page's own steps: set the keys, step the ride as the game's loop does (forward = where the board heads)
   await pg.evaluate(()=>{ const D=SKATE.dbg(), [x,z]=D.at(0,4); __dbg.UI.goTo(x,z,0,0); SHARED.heading=0; FORAGE.give('skateboard',1); WIELD.set('skateboard'); RIDE.mount('skateboard');

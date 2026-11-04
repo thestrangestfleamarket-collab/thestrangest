@@ -43,10 +43,9 @@ Object.assign(CIVIC,{row:[],staff:{},log:[],ledger:{treasury:500,day:0,tax:10,wa
   CIVIC.go=(S,to,then,v=2)=>{ S.N.st.hold=false; CITY.send(S.N,to,{v,then}); };
   CIVIC.home=S=>{ S.state='returning'; S.job=null; CIVIC.go(S,S.N.home,()=>{ S.state='free'; S.N.st.hold=true; S.N.st.h=Math.PI; S.N.st.to=null; S.N.st.face=null; },1.4); };
   CIVIC.carry=(S,col)=>{ if(S.item){ S.N.g.remove(S.item); S.item=null; } if(col==null)return; const m=new THREE.Mesh(new THREE.BoxGeometry(.28*T,.22*T,.28*T),new THREE.MeshLambertMaterial({color:col})); m.position.set(.18*T,S.N.H*.75,.1*T); m.castShadow=true; S.N.g.add(m); S.item=m; };
-  const cityTab=()=>{ const Mn=document.getElementById('menu'), tabs=Mn.querySelector('.tabs'), bt=document.createElement('button'); bt.setAttribute('role','tab'); bt.dataset.t='city'; bt.textContent='CITY'; tabs.insertBefore(bt,tabs.querySelector('[data-t="keys"]'));
+  const cityTab=()=>{ const Mn=document.getElementById('menu');   // opened from ADMIN (UI.menuTab('city'))
     const pane=document.createElement('div'); pane.className='pane'; pane.dataset.p='city'; pane.hidden=true; pane.innerHTML='<div id="civ" style="font:11px Silkscreen,monospace;letter-spacing:.4px;max-height:60vh;overflow:auto"></div><h3>TRY</h3><div class="row"><button class="btn" id="cvfire">A FIRE</button><button class="btn" id="cvout">AN OUTAGE</button><button class="btn" id="cvcan">A FULL CAN</button><button class="btn" id="cvfaint">YOU FAINT</button></div>';
-    Mn.querySelector('.box').appendChild(pane); const show=t=>{ Mn.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); Mn.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(t==='city')CIVIC.draw(); };
-    bt.onclick=()=>show('city'); Mn.querySelectorAll('[data-t]').forEach(b=>{ if(b!==bt){ const f=b.onclick; b.onclick=e=>{ f&&f(e); show(b.dataset.t); }; } });
+    Mn.querySelector('.box').appendChild(pane);
     const fmt=h=>{ const m=Math.floor(h*60)%60, hh=Math.floor(h)%24; return hh+':'+(m<10?'0':'')+m; }, esc=s=>String(s).replace(/</g,'&lt;');
     CIVIC.draw=()=>{ '@later'; if(!pane.offsetParent)return; const L=CIVIC.ledger, row=(a,b)=>`<div style="display:flex;justify-content:space-between;gap:12px"><span>${a}</span><span style="color:#c9ccd6">${b}</span></div>`;
       let o=`<h3>THE LEDGER</h3>${row('DAY '+CITY.day+' · '+fmt(CLOCK.h),'TREASURY $'+L.treasury)}${row('LAWS','tax $'+L.tax+' a shop · curfew '+L.curfew[0]+':00-'+L.curfew[1]+':00')}`;

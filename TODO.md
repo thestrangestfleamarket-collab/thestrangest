@@ -111,6 +111,66 @@ starting: a newer owner decision wins over a line here.
   Not measured; `PARK.windK` (131-weather) and `TUFTS.wind` (140a) set it.
 - [ ] **"chunk later was not loaded before use" (#371, #372)** seen on the lawn (`?at=40,150`) on 2 Nov; not known whether it was there
   before #508. Find the functions in `dist/chunks.txt` and add the missing `LOAD`.
+- [ ] **Two draw-distance controls: keep both or make one?** (left from #549, 4 Nov 2026; owner: "add a draw distance for far buildings").
+  DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE (the owner's
+  global look, `src/134e-distfog.js`) both limit what's drawn; the nearer wins. Ask the owner which to keep.
+- [ ] **DRAW DISTANCE's default** is 120 tiles (picked by Claude, not the owner; far buildings vanish at that edge with no fog). Ask: keep,
+  change, or ALL.
+- [ ] **The bath ghosts are still inside the bath house** (owner, 4 Nov 2026: "empty except the fog"; owner, 2 Nov 2026: "the bath ghosts
+  that lived inside stay inside"). Ask whether they go.
+- [ ] **Steam spilling out of the bath house's open door**: shown in the owner's picked mockup (B, 4 Nov 2026), not built. The steam stays in
+  the room (`SHARED.steam`, drawn by the fog pass).
+- [ ] **A ghost's revival at the end of the bath countdown**: the countdown and its reset on stepping out were seen working; the moment at
+  zero (`back()` in `src/103a-death.js`, alive where you stand) was not seen in a test. Die, walk in, wait 10 s on the live site.
+- [ ] **The HUD's 24px margin on the owner's own screen** (owner's pick A, 4 Nov 2026): checked locally only; his live shot sat tighter than
+  the local layout predicted (`--fx`/`--fy` in `src/004-main.js`).
+- [ ] **The road along the Hudson from Market St** (owner, 4 Nov 2026: "why isnt the hudson showing, missing road"): the water and quay now
+  show within 60 tiles; the road itself wasn't confirmed in a picture.
+- [ ] **A thin dark bar on the bath house's floor** near its front wall, seen from one overhead angle (4 Nov 2026); not looked into.
+- [ ] **Tree shadows: the lag in the owner's render-inspector shot** (owner, 2 Nov 2026: "extremely laggy.", on Market St near 32,25 at
+  night, 10 FPS). Measured 2 Nov: the park's leaf-card trees (about 148k triangles in 3 meshes) and the street oaks (about 23k) cast shadows,
+  and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps; all `autoUpdate=false`, redrawn when needed) draws
+  them again: about 1,000 calls and 750k triangles in that frame, felt as stutter. Since 1 Nov a quarter of the trees use the fine-leaf look
+  (1.8 times the cards, `TREEGEN.cards` in `src/060b-trees.js`). Options given, owner to pick: 1 the shadow cast from the trees' lite card set
+  (recommended: looks nearly the same for about a third of the cost; a shadow-only caster on its own layer), 2 no tree shadows from street
+  lamps (sun and moon kept), 3 fewer cards on the fine-leaf trees. Check with the render inspector at `?at=32.5,25.2&hour=21` and
+  `tests/startprof.cjs` + `tests/budget.cjs`. The lag work since (the Drive's models and the insides, 4 Nov) didn't touch the trees.
+- [ ] **The shoes key M sits next to the map (Shift+M)** (2 Nov 2026: the owner's feet went bare, likely from pressing M for the map).
+  `shoes:'m'` in the key table in `src/094-ui.js`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; the owner to choose a key.
+- [ ] **The tee in one piece, like the jeans** (owner's pick, 2 Nov 2026: "1", one continuous garment; the jeans were done in #495, the tee
+  left a body tube with separate set-in sleeves that overlap at the shoulder, `MAKE.shirt` in `src/072b-garb.js`). Only if the owner wants
+  it: its seams didn't show as layers in any portrait.
+- [ ] **Clothes leftovers** (2 Nov 2026, seen in the portraits `node tests/clothes.cjs dist/market.html <dir>` saves): crouching, seen from the
+  side, a patch of her grey briefs at the back of the thigh (the jeans' seat back stays with the hips, `ks` in `MAKE.pants`); his forearm
+  passes through the jeans at the hip when his arm swings behind him (his arms hang against the hips); a few stray pixels near the hips on
+  some walking frames.
+- [ ] **The start-up and frame-time comparison was never finished** (2 Nov 2026: `tests/startprof.cjs` on the base, main and the clothes
+  branch, stopped part way). Redo it against today's main with `tests/budget.cjs` when working the tree-shadow line.
+- [ ] **Live windows not yet checked in a picture** (4 Nov 2026, from the windows work): the bar's windows from inside still showing the
+  street and its people (after "no one outside drawn inside a shop", #577); the Boardwright's, Fix-It's and Diner's windows (only the
+  Scanner's was pictured).
+- [ ] **VR: try it on the Quest 3; the owner to approve** (owner, 27 Oct 2026: "make sure that the controls in game match the quest 3
+  controllers, also add hand tracking in game so i can use my hands to use the menus"). Only tested on an emulated Quest 3 (`tests/vr.cjs`,
+  IWER). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the hands look. `src/162c-vr.js`.
+- [ ] **VR: no walking with hands only** (controllers down): the hands point and pinch at menus, but walking needs the sticks. Owner to pick
+  a way (point-and-pinch to teleport, pinch-and-pull, a wrist button) before building.
+- [ ] **VR: no typing in chat in the headset** (no keyboard in an immersive WebXR session); would need a keyboard drawn on the menu panel.
+- [ ] **VR: the hands are plain joint dots** (`JM` in `src/162c-vr.js`). A real hand model (three's XRHandModelFactory, models from
+  `@webxr-input-profiles`) is a reuse: ask the owner first.
+- [ ] **VR: the PS2 filter, distance fog and colour grade are not drawn in the headset** (they are screen passes; `VR.draw` renders the scene
+  straight to the headset). Per-eye passes would cost on the Quest: measure before building.
+- [ ] **VR: the menu panel's picture can lag a moment behind the window** after it changes (`html-to-image`, a few hundred ms); a press
+  goes to what the picture showed.
+- [ ] **GitHub's checks get no machine** (4 Nov 2026, from about 15:08 UTC): every pull request's `site` jobs fail in ~3 s with no runner
+  assigned (no steps, no log; a re-run fails the same). Likely the account's Actions minutes or spending limit: the owner to look in
+  GitHub's billing settings. #576 was merged on local checks only (build and core on the final merge; places just before main's last two
+  changes): once checks run again, run them on `main`.
+- [ ] **The arcade's games in GO TO? Owner to pick** (4 Nov 2026, #576): the Catacomb Run, the Greens and Roam are left out (you reach them
+  through the arcade).
+- [ ] **The civic tower is in GO TO only when it stands on the map** (#576): today it is away, stacked behind the bodega, so it isn't listed.
+  Nothing to do unless the owner wants it back on the street.
+- [ ] **Try live, once deployed** (4 Nov 2026): the menus (#563: one ADMIN window), where you start (#571: back where you left off within
+  the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576).
 - [ ] **The egg poacher's colours aren't tintable** (owner picked "Keep its colours, tintable", 2 Nov 2026): it keeps the file's own colours
   exactly (`src/111fa-poacher.js`, re-baked colours); a small shade jitter like the palette bodies' was never added.
 - [ ] **The egg poacher was never looked at on the live site** after #511 went live (2 Nov 2026); seen only in the test build.

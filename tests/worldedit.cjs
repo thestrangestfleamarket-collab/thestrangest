@@ -14,10 +14,10 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); });
   let built=false; for(let i=0;i<180&&!built;i++){ await wait(1000); built=await pg.evaluate(()=>!!(window.WE&&WE.dbgProps&&WE.dbgProps().length)&&PARK.in&&!(window.FADE&&FADE.busy)).catch(()=>false); }
   ok(built,'the park\'s editable props registered in WED');
-  const R=await pg.evaluate(()=>{ const out={}; const metas=WE.dbgProps(); out.meshes=metas.length; out.props=metas.reduce((a,e)=>a+e.ids.length,0);
+  const R=await pg.evaluate(async()=>{ const out={}; const metas=WE.dbgProps(); out.meshes=metas.length; out.props=metas.reduce((a,e)=>a+e.ids.length,0);
     const mi=metas.findIndex(e=>e.me.isBatchedMesh&&e.ids.length); if(mi<0)return {...out,err:'no batched mesh'};
     const en=metas[mi], me=en.me, m=me.matrixWorld.clone();
-    if(!WE.on)WE.toggle(); out.key=WE.dbgPick(mi,0); out.name=en.items[en.ids[0]].k;
+    if(!WE.on)await WE.toggle(); out.key=WE.dbgPick(mi,0); out.name=en.items[en.ids[0]].k;
     me.getMatrixAt(0,m); const y0=m.elements[13];
     const up=document.querySelector('#we [data-up="1"]'); up.click(); up.click();
     me.getMatrixAt(0,m); out.movedUp=m.elements[13]-y0;
@@ -39,10 +39,10 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ok(R.copyUp>0,'the copy is picked and moves on its own');
   ok(R.copiesAfterDel===0,'DELETE takes the copy away');
   // every kind of thing: a park lamp (painted quads, its light goes with it), a river rock, a lake rock, a kerb brick, a gate lantern (instances), an oak (crown and trunk together)
-  const Q=await pg.evaluate(()=>{ const out={}, metas=WE.dbgProps(), M=metas[0].me.matrixWorld.clone(), Y=(me,i)=>{ me.getMatrixAt(i,M); return M.elements[13]; };
-    if(!WE.on)WE.toggle(); const $=s=>document.querySelector('#we '+s), up=()=>{ $('[data-up="1"]').click(); $('[data-up="1"]').click(); };
+  const Q=await pg.evaluate(async()=>{ const out={}, metas=WE.dbgProps(), M=metas[0].me.matrixWorld.clone(), Y=(me,i)=>{ me.getMatrixAt(i,M); return M.elements[13]; };
+    if(!WE.on)await WE.toggle(); const $=s=>document.querySelector('#we '+s), up=()=>{ $('[data-up="1"]').click(); $('[data-up="1"]').click(); };
     const inst=name=>{ const mi=metas.findIndex(e=>e.me.isInstancedMesh&&e.items.some(it=>it.k===name)); if(mi<0)return {err:'none'}; const en=metas[mi], bid=en.ids.findIndex(j=>en.items[j].k===name), y0=Y(en.me,bid);
-      const key=WE.dbgPick(mi,bid), parts=WE.dbgLinked(), tint=$('#wcol').closest('.row').style.display!=='none'; up(); const dy=Y(en.me,bid)-y0; $('#wdel').click(); en.me.getMatrixAt(bid,M); const gone=M.elements[0]===0&&M.elements[5]===0;
+      const key=WE.dbgPick(mi,bid), parts=WE.dbgLinked(), tint=$('#wcol').closest('[data-prow]').style.display!=='none'; up(); const dy=Y(en.me,bid)-y0; $('#wdel').click(); en.me.getMatrixAt(bid,M); const gone=M.elements[0]===0&&M.elements[5]===0;
       WE.dbgPick(mi,bid); $('#wback').click(); return {key,parts,tint,dy:+dy.toFixed(3),gone,back:Math.abs(Y(en.me,bid)-y0)<1e-4}; };
     for(const k of ['river rock','lake rock','kerb brick','gate lantern'])out[k]=inst(k);
     { const ti=metas.findIndex(e=>e.me.isInstancedMesh&&/^OakTree/.test(e.items[0].k)), te=metas[ti], it=te&&te.items[te.ids[0]];

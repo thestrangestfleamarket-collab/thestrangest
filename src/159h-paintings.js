@@ -1,12 +1,13 @@
 // THE PAINTINGS: canvases to paint on (the painter, 159g), your unfinished and finished paintings in the pack, their pictures kept on the server (/art), an easel and every painting as a thing for your wall (DECORATE) that visitors see too.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ITEMS, ONLINE, TEXT, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {ROOMK} from './150a-bedroom.js';
 import {PAINTER} from './159g-paint.js';
 const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
 {
-  const say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc');
+  const say=(t,c)=>SAY(t,c||'#e8e2cc');
   PAINTER.say=t=>say(t,'#c8a090');
   const CAN={canvas_s:{n:'CANVAS, SMALL',w:384,h:384,p:4,bg:'#f4efe4'},canvas_m:{n:'CANVAS',w:512,h:512,p:8,bg:'#f4efe4'},canvas_w:{n:'CANVAS, WIDE',w:768,h:512,p:12,bg:'#f4efe4'},
     canvas_t:{n:'CANVAS, TALL',w:512,h:768,p:12,bg:'#f4efe4'},paper:{n:'DRAWING PAPER',w:512,h:384,p:1,bg:'#ffffff'}};

@@ -1,11 +1,12 @@
 // WILD: the park's creatures in your journal: double click one to watch it (binoculars from afar); a few quiet seconds log it on the WILDLIFE page and train its skill; the first of each kind and the full page pay.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, pos, UI} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {CREATS} from './087-npc-creatures.js';
 const WILD={}; window.WILD=WILD;
-{ const T=TILE, say=(t,c)=>FORAGE.say&&FORAGE.say(t,c||'#e8e2cc'), KEY='wild';
+{ const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), KEY='wild';
   const SP={rat:['BROWN RAT','Rattus norvegicus','forage',5,0],frog:['GREEN FROG','Lithobates clamitans','forage',20,0],snake:['EASTERN GARTER SNAKE','Thamnophis sirtalis','forage',40,15],
     spider:['GARDEN SPIDER','Araneus diadematus','ento',15,0],wasp:['COMMON WASP','Vespula vulgaris','ento',10,0],bat:['LITTLE BROWN BAT','Myotis lucifugus','bird',35,15],slime:['THE PARK SLIME','unknown to science','myco',30,10],
     fox:['RED FOX','Vulpes vulpes','forage',35,10],deer:['WHITE-TAILED DEER','Odocoileus virginianus','forage',25,0],wolf:['GREY WOLF','Canis lupus','forage',50,15],bear:['AMERICAN BLACK BEAR','Ursus americanus','forage',55,20],

@@ -63,6 +63,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(mv&&mv.at[0]===12.5&&mv.at[1]===-3&&mv.at[4]==='up','a move goes across to the other player ('+JSON.stringify(mv&&mv.at)+')');
       p.w.send(JSON.stringify({t:'me',name:'ADA',look:'w00',hp:1,x:{}})); const inn=await wait(q,g=>g.find(m=>m.t==='in'&&m.p&&m.p.id==='dev-blk-a'));
       ok(inn&&inn.p.name==='ADA','a player\'s name and look reach the others');
+      const t0=Date.now(); p.w.send(JSON.stringify({t:'bye'})); const out=await wait(q,g=>g.find(m=>m.t==='out'&&m.id==='dev-blk-a'));
+      ok(!!out,'a player who logs out (bye) is gone for the others at once ('+(Date.now()-t0)+' ms)');
       p.w.close(); q.w.close(); }
   }
   { const WS=require('ws'), U=BASE.replace(/^http/,'ws')+'/parties/block/s-sumcheck';

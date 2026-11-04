@@ -2,7 +2,7 @@
 // Joins src/ as build.py does, parses the module script, and writes a table of every file: its size, the function it sits inside
 // (the page's top level, or one of the places' builders, `await grab(name, async()=>{...})`, which can span many files), the names it
 // defines that other files use (what it gives), and the names it uses from other files (what it needs), with where each comes from.
-// A chat reads this instead of the neighbours. build.py refreshes docs/MAP.md when it can. Not shipped.
+// A chat reads this instead of the neighbours. build.py refreshes docs/MAP.md when it can. Not shipped, not kept in git (4 Nov 2026).
 const fs=require('fs'), path=require('path'), {analyse}=require('./scope.cjs');
 const ROOT=path.resolve(__dirname,'..');
 const files=fs.readdirSync(ROOT+'/src').filter(f=>/^\d{3}[a-z]*-.+\.(js|html)$/.test(f)).sort();

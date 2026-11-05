@@ -5,7 +5,7 @@ import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {QS} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
-import {FRESH} from './140c-fresh.js';
+import {WORTH} from './140c-worth.js';
 import {BIRDS} from './144b-birds.js';
 import {QUESTS} from './160a-quests.js';
 { const D=__DATA__("data/trainers.json")||{ranks:[],open:3,titles:{},trainers:{},ladders:{}}, KEY='trainers', {BF_KINDS}=SHARED.BOD.STOREK.bf; let S={v:1,rung:{}}; try{ const o=JSON.parse(OWNED.get(KEY)||'null'); if(o&&o.v===1)S=Object.assign(S,o); }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1')S={v:1,rung:{}};
@@ -19,7 +19,7 @@ import {QUESTS} from './160a-quests.js';
   TRAINERS.ask=sk=>(D.ladders[sk]||[])[TRAINERS.rank(sk)]||null; TRAINERS.ladder=sk=>D.ladders[sk]||[]; TRAINERS.skills=()=>Object.keys(D.ladders); TRAINERS.of=who=>D.trainers[who]||null;
   TRAINERS.isMaster=sk=>TRAINERS.rank(sk)>=TRAINERS.ladder(sk).length&&TRAINERS.ladder(sk).length>0; TRAINERS.title=()=>{ for(const sk of TRAINERS.skills())if(TRAINERS.isMaster(sk)&&D.titles[sk])return D.titles[sk]; return null; };
   TRAINERS.set=(sk,r)=>{ S.rung[sk]=Math.max(0,Math.min(TRAINERS.ladder(sk).length,r|0)); save(); };
-  TRAINERS.pay=sk=>{ const a=TRAINERS.ask(sk); if(!a)return 0; const id=idOf(a.item); return id?FRESH.worth(id,a.n,unitOf(id)*a.pay):0; };
+  TRAINERS.pay=sk=>{ const a=TRAINERS.ask(sk); if(!a)return 0; const id=idOf(a.item); return id?WORTH.of(id,a.n,unitOf(id)*a.pay):0; };
   const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])), B='style="font:inherit;background:#2a2f3e;color:#e8e2cc;border:1px solid #3a3f4e;padding:2px 6px;cursor:pointer"';
   // the shop's rows: the trainer's ask for each skill it trains, and HAND IN once you carry it
   TRAINERS.rows=who=>{ const T=D.trainers[who]; if(!T)return ''; return T.skills.map(sk=>{ const a=TRAINERS.ask(sk), rn=TRAINERS.rankName(sk);

@@ -98,7 +98,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const put=T=>{ for(const o of T.H){ IV.H.push([o]); VIS.hide(o,'room'); } for(const o of T.L){ IV.L.push([o]); VIS.hide(o,'room',true,true); } for(const q of T.S)if(q.o.geometry===q.g){ IV.S.push([q.g,q.g.index]); q.g.setIndex(q.ix); } };
   const leave=()=>{ '@later'; if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; if(IV.b&&IV.b.off)offHide(false); IV.key=null; IV.b=null;
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
-  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)){ L.drop(); L.done=false; IV.C.clear(); } } };
+  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)&&!(WINDOWS.taking&&WINDOWS.taking.has(n))){ L.drop(); L.done=false; IV.C.clear(); } } };
   const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }

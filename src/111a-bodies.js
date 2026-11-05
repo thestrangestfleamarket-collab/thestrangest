@@ -103,7 +103,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,t);
     p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
   const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead;
-  const clamp1=x=>x<0?0:x>1?1:x;
+  const clamp1=x=>x<0?0:x>1?1:x, GAIT=QS.get('gait');   // (?gait=walker: the rig's own walk while moving, the clips standing; to compare)
   function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
     const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
     const stride=C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
@@ -131,6 +131,21 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const K2=jointAt(PM,body,si,IKV[1]), A2=jointAt(PM,body,fi,IKV[2]); IKQ.setFromUnitVectors(IKV[5].subVectors(A2,K2).normalize(),IKV[6].subVectors(At,K2).normalize()); turnAbout(PM.value[si],K2,IKQ);
       const A3=jointAt(PM,body,fi,IKV[5]); PM.value[fi].elements[12]+=At.x-A3.x; PM.value[fi].elements[13]+=At.y-A3.y; PM.value[fi].elements[14]+=At.z-A3.z; } }
   BODIES.feetOnGround=feetOnGround;
+  // momentum (owner, 5 Nov 2026: "the running and stopping, etc ... like it used to (realistic)"): your avatar on its clips leans with what its speed does: into a start and a run,
+  // into a turn, and on a stop its upper body carries on and rocks back (the rig's own stop sway); a damped spring each, about the feet (whole body) and the waist (the upper body)
+  const MO={v:0,a:0,yaw:null,pit:0,pv:0,rol:0,rv:0}, MQ=new THREE.Quaternion(), MA=new V3(), MP=new V3(), MM=new THREE.Matrix4();
+  const spin=(PM,ids,pv,axis,ang)=>{ if(Math.abs(ang)<1e-4)return; MQ.setFromAxisAngle(MA.copy(axis),ang); for(const i of ids)turnAbout(PM.value[i],pv,MQ); };
+  const ALL=[...Array(NB).keys()], UPPER=[1,2,3,4,5,6,7,8], XA=new V3(1,0,0), ZA=new V3(0,0,1);
+  function momentum(PM,body,S,G,dt){ if(!dt)return; const k=body.S, wd=S.wd||0; const d=MO.wd==null?0:Math.max(0,wd-MO.wd); MO.wd=wd; const v=Math.min(12,d/k/dt);
+    const a=(v-MO.v)/dt; MO.v+=(v-MO.v)*Math.min(1,dt*12); MO.a+=(a-MO.a)*Math.min(1,dt*8);
+    const yaw=G.rotation.y; let w=0; if(MO.yaw!=null){ w=Math.atan2(Math.sin(yaw-MO.yaw),Math.cos(yaw-MO.yaw))/dt; } MO.yaw=yaw;
+    const pt=Math.max(-.12,Math.min(.22,.018*MO.v+.035*Math.max(0,MO.a))), rt=Math.max(-.3,Math.min(.3,-Math.atan(MO.v*w/9.8)));
+    MO.pv+=((pt-MO.pit)*60-MO.pv*9)*dt; MO.pit+=MO.pv*dt; MO.rv+=((rt-MO.rol)*50-MO.rv*10)*dt; MO.rol+=MO.rv*dt;
+    const so=S.stop, ks=so?so.a*Math.exp(-so.t/.3)*Math.cos(2*Math.PI*so.t/.8):0, m=S._mw||0;
+    const fL=jointAt(PM,body,11,IKV[0]), fR=jointAt(PM,body,14,IKV[1]); MP.copy(fL).add(fR).multiplyScalar(.5); MP.y=Math.min(fL.y,fR.y);
+    spin(PM,ALL,MP,XA,MO.pit*m); spin(PM,ALL,MP,ZA,MO.rol*m);
+    if(ks){ const W=jointAt(PM,body,1,IKV[2]); spin(PM,UPPER,W,XA,.3*ks*m); } }
+  BODIES.momentum=momentum;
   // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down)
   const LOWV=new V3();
   function aboveGround(PM,body,G,ground){ const g=body.GEO; if(!ground||!G||!g||!g.attributes.position.count)return; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity, li=-1;
@@ -145,7 +160,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
       const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
-    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)?1:0;
+    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)&&!(GAIT==='walker'&&(S.w||0)>.05)?1:0;
       S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want;
       if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
@@ -165,7 +180,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on)feetOnGround(ME.PM,body,W3.group,SHARED.groundY); if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

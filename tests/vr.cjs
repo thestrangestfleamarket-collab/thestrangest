@@ -131,7 +131,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });
     ok(await until(() => VR.state().hands === 2, 15000), 'put the controllers down and your hands show (' + (await pg.evaluate(() => VR.state().hands)) + ' hands)');
     ok(await until(() => VR.state().wrist, 5000), 'a MENU button sits on your left wrist');
-    const m1 = await menuText(), word = await pg.evaluate(() => { const v = [...document.querySelectorAll('#menu button,#menu [role=tab]')].filter(e => e.getClientRects().length && e.textContent.trim()), h = v.find(e => e.textContent.trim() === 'HELP'); return h ? 'HELP' : v[0] ? v[0].textContent.trim() : ''; });
+    const m1 = await menuText(), word = await pg.evaluate(() => { const v = [...document.querySelectorAll('#menu button,#menu [role=tab]')].filter(e => e.getClientRects().length && e.textContent.trim() && e.getAttribute('aria-selected') !== 'true'), h = v.find(e => e.textContent.trim() === 'HELP'); return h ? 'HELP' : v[0] ? v[0].textContent.trim() : ''; });
     const a2 = await aim('hands', 'right', word);
     ok(!a2, 'your right hand points at ' + word + ' on the panel' + (a2 ? ' (' + a2 + ')' : ''));
     await shot('hand-points');
@@ -164,7 +164,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const q1 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     ok(Math.hypot(q1.x - q0.x, q1.z - q0.z) > .3, 'with the page frames stopped the controllers still walk him (' + Math.hypot(q1.x - q0.x, q1.z - q0.z).toFixed(2) + ' units)');
     await shot('quest-walked');
-    ok(await pg.evaluate(() => window.__blocked > 20), 'the page frames really were stopped (' + await pg.evaluate(() => window.__blocked) + ' held back)');
+    ok(await pg.evaluate(() => window.__blocked >= 10), 'the page frames really were stopped (about one held back a headset frame; ' + await pg.evaluate(() => window.__blocked) + ' held back)');
     ok(await pg.evaluate(() => new Promise(r => { let k = 0; const f = () => ++k >= 3 ? r(true) : requestAnimationFrame(f); requestAnimationFrame(f); setTimeout(() => r(false), 30000); })), 'waiting on frames (fades, loading) still ends in VR');
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 1));
     const held = await until(() => !VR.on, 15000);

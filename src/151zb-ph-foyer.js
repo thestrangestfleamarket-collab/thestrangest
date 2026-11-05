@@ -19,7 +19,7 @@ const PLAYF={}; window.PLAYF=PLAYF;
   const slot=()=>{ const now=Date.now()/1000; return Math.floor((now+60)/1800); };
   PLAYF.buy=()=>{ if(IKIT.buy('play_ticket',8,'A TICKET FOR THE NEXT SHOW. $8. (EVERY HOUR AND HALF HOUR.)'))PLAYF.bought=slot(); };
   VIT.mends.push(()=>{ const on=USE.seat&&st.sit&&ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&PHX.show&&PHX.show.running&&PHX.show.running(); if(!on)return 0;
-    if(PLAYF.torn!==slot()){ if(!(INV.items.play_ticket>0))return 0; FORAGE.take('play_ticket',1); PLAYF.torn=slot(); say('AN USHER TEARS YOUR TICKET. ENJOY THE SHOW.'); } return 1/30; });
+    if(PLAYF.torn!==slot()){ PLAYF.torn=slot(); } if(0){ if(!(INV.items.play_ticket>0))return 0; FORAGE.take('play_ticket',1); PLAYF.torn=slot(); say('AN USHER TEARS YOUR TICKET. ENJOY THE SHOW.'); } return 1/30; });
   const PROG=[['A MIDSUMMER NIGHT\'S DREAM','ACT ONE · EVERY HOUR AND HALF HOUR'],['THESEUS','DUKE OF ATHENS'],['HIPPOLYTA','QUEEN OF THE AMAZONS'],['EGEUS','FATHER TO HERMIA'],['HERMIA','IN LOVE WITH LYSANDER'],['LYSANDER · DEMETRIUS','IN LOVE WITH HERMIA'],['HELENA','IN LOVE WITH DEMETRIUS'],
     ['QUINCE, BOTTOM, FLUTE','THE MECHANICALS'],['SNOUT, SNUG, STARVELING','THE MECHANICALS']];
   PLAYF.programme=()=>MINI.look('THE PROGRAMME',(g,w,h)=>{ g.fillStyle='#1a0e08'; g.fillRect(0,0,w,h); g.fillStyle='#efe2c0'; g.fillRect(16,16,w-32,h-32); g.textAlign='center'; g.textBaseline='top'; g.fillStyle='#6a1a1a'; g.font='bold 18px Georgia,serif'; g.fillText(PROG[0][0],w/2,28);

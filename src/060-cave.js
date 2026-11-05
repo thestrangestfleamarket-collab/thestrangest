@@ -78,5 +78,5 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
     if(STORE.furnish&&STORE.furnish.cave)STORE.furnish.cave({c:S.c,R,X,Z,T,grp});
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
     for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
-  GCAVE.build=()=>{ try{ build(); }catch(e){ console.warn('CAVE: not built',e); } }; }
+  GCAVE.build=()=>{}; }   // the cave is archived (owner, 4 Nov 2026); its build stays for a restore
 export {GCAVE};

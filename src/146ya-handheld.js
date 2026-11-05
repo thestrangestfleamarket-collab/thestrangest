@@ -16,7 +16,7 @@ import {SYS} from './006-map-pre.js';
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   let page='home', admin=false, back=false, sel=0;
   const tab=t=>()=>{ back=true; UI.menuTab(t); };
-  const APPS=[['you','YOU','☺',()=>true,tab('home')],['pack','PACK','▤',()=>!!FORAGE.PACK,()=>FORAGE.PACK.toggle('pack')],['map','MAP','✦',()=>!!UI.mapWindow,()=>{ back=true; UI.mapWindow(); }],['call','CALL','☏',()=>!!PHONE.dial,()=>PHONE.dial('handheld')],
+  const APPS=[['you','YOU','☺',()=>true,tab('home')],['pack','PACK','▤',()=>!!FORAGE.PACK,()=>FORAGE.PACK.toggle('pack')],['map','MAP','✦',()=>!!UI.mapWindow,()=>{ back=true; UI.mapWindow(); }],
     ['bbs','BBS','▣',()=>!!DRONE.openAt,()=>DRONE.openAt('menu')],['chat','CHAT','✎',()=>!!(ONLINE.on&&ONLINE.open),()=>setTimeout(()=>ONLINE.open(),0)],['people','PEOPLE','♟',()=>!!ONLINE.others,null],['set','SET','⚙',()=>true,tab('display')],
     ['guide','GUIDE','◉',()=>true,tab('guide')],['help','HELP','?',()=>!!UI.moves,()=>UI.moves()],['bug','BUG','✱',()=>true,tab('bug')],['admin','ADMIN','★',()=>admin&&!!CHARP.admin,()=>{ back=true; CHARP.admin(); }]];
   const KB='<div class="kb">'+'QWERTYUIOPASDFGHJK'.split('').map(c=>'<i>'+c+'</i>').join('')+'<i class="w">ENTER</i></div>';

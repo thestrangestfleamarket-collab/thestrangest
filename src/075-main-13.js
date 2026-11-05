@@ -20,6 +20,9 @@ let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:
 
 const PAD={mv:null,n:0}; SHARED.target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
+// the overhead view moves in whole pixels of the picture (the PS2 filter's chunky ones when it is on), so what stands still on the ground never shimmers from step to step
+const SNR=new THREE.Vector3(), SNU=new THREE.Vector3(), snapCam=()=>{ const c=SHARED.cam; if(!c.isOrthographicCamera||UI.persp)return; const L=SHARED.cellLines||RH, w=(c.top-c.bottom)/c.zoom/Math.max(1,L); if(!(w>0))return;
+  SNR.set(1,0,0).applyQuaternion(c.quaternion); SNU.set(0,1,0).applyQuaternion(c.quaternion); const a=c.position.dot(SNR), b=c.position.dot(SNU); c.position.addScaledVector(SNR,Math.round(a/w)*w-a).addScaledVector(SNU,Math.round(b/w)*w-b); };
 const PMIN=Math.PI/12, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 let drag=null;
@@ -95,7 +98,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   SYS.go(()=>{ for(const sg of shopGroups)sg.scale.y+=(cut-sg.scale.y)*Math.min(1,dt*8); },'shopcut');
   SYS.go(()=>{ if(SHARED.night!==nightTo){ SHARED.night+=(nightTo-SHARED.night)*Math.min(1,dt*2.5); if(Math.abs(nightTo-SHARED.night)<0.002)SHARED.night=nightTo; applyTime(SHARED.night); } },'night');
   if(UI.freeCam)disp.copy(UI.camT); else{ UI.follow&&UI.follow(); disp.set(pos.x,SHARED.py+(ED.on?0.85:0),pos.z); disp.add(UI.off); } F.set(Math.sin(a)*Math.cos(SHARED.pitch),Math.sin(SHARED.pitch),Math.cos(a)*Math.cos(SHARED.pitch));
-  UI.view3(a); SHARED.cam.quaternion.setFromEuler(UI.eul.set(-SHARED.pitch,a,0,'YXZ')); SHARED.cam.position.copy(disp).addScaledVector(F,300); { const n=SHARED.pitch<0.05?300-1.5*TILE:.1; if(Math.abs(OCAM.near-n)>.01){ OCAM.near=n; OCAM.updateProjectionMatrix(); } } UI.view3b(a,dt); SYS.run('cam',dt); SHARED.cam.updateMatrixWorld();
+  UI.view3(a); SHARED.cam.quaternion.setFromEuler(UI.eul.set(-SHARED.pitch,a,0,'YXZ')); SHARED.cam.position.copy(disp).addScaledVector(F,300); { const n=SHARED.pitch<0.05?300-1.5*TILE:.1; if(Math.abs(OCAM.near-n)>.01){ OCAM.near=n; OCAM.updateProjectionMatrix(); } } UI.view3b(a,dt); SYS.run('cam',dt); snapCam(); SHARED.cam.updateMatrixWorld();
   you.quaternion.copy(SHARED.cam.quaternion); you.position.copy(disp).addScaledVector(F,0.35);
   SYS.go(()=>{ for(const w of cutWalls)w.pl.constant=(!UI.persp&&(w.always||Math.sin(a)*w.nx+Math.cos(a)*w.nz<-0.05)&&SHARED.pitch<1.45&&SHARED.pitch>=0.05&&!ROOMS.cur&&(!w.when||w.when()))?w.foot:1e6; },'cutwalls');
   SYS.go(()=>{ const bi=SHARED.BODB.inside(), cy=SHARED.cam.position.y; for(const r of SHARED.BODB.roof){ if(r.userData.y0==null){ r.geometry.computeBoundingBox(); r.updateMatrixWorld(); r.userData.y0=r.geometry.boundingBox.min.y+r.matrixWorld.elements[13]; } SEEN(r,!bi||cy<r.userData.y0); } },'roofs');

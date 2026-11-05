@@ -30,7 +30,7 @@ const PLANTS={}; window.PLANTS=PLANTS;
 
   // who the cactus looks at: you if you are near, else the nearest other player, else it glances about
   const V=new THREE.Vector3(), W=new THREE.Vector3(), Q=new THREE.Quaternion(), F0=new THREE.Vector3(0,0,1), M4=new THREE.Matrix4();
-  PLANTS.look=(eye,dt,t,seed=0)=>{ eye.getWorldPosition(W); let tx=null, d=6*T; const me=Math.hypot(pos.x-W.x,pos.z-W.z); if(me<d){ tx=[pos.x,SHARED.py+1.5*T,pos.z]; d=me; }
+  PLANTS.look=(eye,dt,t,seed=0)=>{ '@later'; eye.getWorldPosition(W); let tx=null, d=6*T; const me=Math.hypot(pos.x-W.x,pos.z-W.z); if(me<d){ tx=[pos.x,SHARED.py+1.5*T,pos.z]; d=me; }
     if(!tx)for(const [,o] of ONLINE.others||[]){ if(!o.p)continue; const q=Math.hypot(o.p.x-W.x,o.p.z-W.z); if(q<d){ d=q; tx=[o.p.x,(o.p.y||0)+1.5*T,o.p.z]; } }
     if(!tx){ const a=Math.sin(t*.4+seed)*1.2; tx=[W.x+Math.sin(a)*3*T,W.y,W.z+Math.cos(a)*3*T]; }
     V.set(tx[0],tx[1],tx[2]); M4.copy(eye.parent.matrixWorld).invert(); V.applyMatrix4(M4).sub(eye.position).normalize(); Q.setFromUnitVectors(F0,V); eye.quaternion.slerp(Q,Math.min(1,dt*4));

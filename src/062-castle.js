@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FIX, grab, lamps, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
-const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
+const gboxS=(b,kind='L',dy=0,ys=1)=>{ '@later'; const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys, H=Math.max(1,Math.round((z1-z0)*k));
   if(b.em&&kind==='L')kind='B';
   const side=(nx,ny,P,Q,z)=>C(b.fs?b.fs(nx,ny,P,Q,z-z0,nx?.68:.84):nx&&b.fi?b.fi(Q,z):ny&&b.fj?b.fj(P,z):b.c);
   if(z1-z0>=.5){
@@ -16,7 +16,7 @@ const gboxS=(b,kind='L',dy=0,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=
   if(x1-x0>.004&&y1-y0>.004)bq([X(x0),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y1)],[X(x1),Y(z1),Z(y0)],[X(x0),Y(z1),Z(y0)],
     faceTex((x1-x0)*24,(y1-y0)*24,(i,j)=>C(b.top?b.top(x0+(i+.5)/24,y0+(j+.5)/24):b.c)),kind); };
 const castleMat=(k,map,emap,pl)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide,clippingPlanes:pl?[pl]:[]});
-const castleSolid=(lv,p,base,ys=1)=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys); if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
+const castleSolid=(lv,p,base,ys=1)=>{ '@later'; const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys); if(p.walk)return; const h=Math.max(...p.boxes.map(b=>b.z1));
   for(const s of p.solids||[p]){ SOL[lv].push([X(s.x0),Z(s.y0),X(s.x1),Z(s.y1)]); FIX[lv].push([X(s.x0),Z(s.y0),base,X(s.x1),Z(s.y1),base+Math.max(.05,Y(h))]); } };
 const CYS=.5;
 PARK.later(()=>{ '@park'; const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, [bx0,bx1,by0,by1]=CASTLE.b, H=200, r=1.4, gx=CASTLE.gate, wy=by0, S=CASTLE.stair, n0=KP.length;

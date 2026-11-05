@@ -15,24 +15,24 @@ import {ROOMK} from './150a-bedroom.js';
 
   /* ---------- the pot: terracotta with a rolled rim; the dirt (darker when wet); the plant — a stem, leaves, and its fruit ---------- */
   const std=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.75,...o});
-  const pot=()=>{ const G=new THREE.Group(), clay=std(0xb8683e,{roughness:.85});
+  const pot=()=>{ '@later'; const G=new THREE.Group(), clay=std(0xb8683e,{roughness:.85});
     const body=new THREE.Mesh(new THREE.LatheGeometry([[.1,0],[.13,.02],[.15,.2],[.17,.22],[.17,.26],[.15,.26]].map(p=>new THREE.Vector2(p[0],p[1])),28),clay); body.material.side=THREE.DoubleSide; G.add(body);
     const base=new THREE.Mesh(new THREE.CircleGeometry(.1,20),clay); base.rotation.x=-Math.PI/2; base.position.y=.005; G.add(base);
     const dirt=new THREE.Mesh(new THREE.CircleGeometry(.148,24),std(0x5a4030,{roughness:1})); dirt.rotation.x=-Math.PI/2; dirt.position.y=.22; dirt.visible=false; dirt.name='potdirt'; G.add(dirt);
     const plant=new THREE.Group(); plant.name='potplant'; plant.position.y=.22; G.add(plant); return G; };
-  const fruit=(p,m)=>{ let g; if(p.shape==='star'){ g=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.11,5),m); }
+  const fruit=(p,m)=>{ '@later'; let g; if(p.shape==='star'){ g=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.11,5),m); }
     else if(p.shape==='pepper'){ g=new THREE.Mesh(new THREE.LatheGeometry([[0,-.06],[.025,-.04],[.035,0],[.03,.03],[0,.04]].map(q=>new THREE.Vector2(q[0],q[1])),14),m); }
     else { g=new THREE.Mesh(new THREE.CapsuleGeometry(.014,.08,4,8),m); g.rotation.z=.4; } return g; };
-  const draw=(G,s)=>{ const dirt=G.getObjectByName('potdirt'), plant=G.getObjectByName('potplant'), p=P[s.k], wet=s.wet>hour(); dirt.visible=!!s.dirt; dirt.material.color.setHex(wet?0x2e2018:0x6a5038); plant.clear(); if(!p)return;
+  const draw=(G,s)=>{ '@later'; const dirt=G.getObjectByName('potdirt'), plant=G.getObjectByName('potplant'), p=P[s.k], wet=s.wet>hour(); dirt.visible=!!s.dirt; dirt.material.color.setHex(wet?0x2e2018:0x6a5038); plant.clear(); if(!p)return;
     const u=Math.min(1,s.g/p.first), h=.04+u*.3, leaf=std(p.leaf,{side:THREE.DoubleSide});
     const stem=new THREE.Mesh(new THREE.CylinderGeometry(.006,.009,h,6),leaf); stem.position.y=h/2; plant.add(stem);
     const nl=1+Math.floor(u*6); for(let i=0;i<nl;i++){ const l=new THREE.Mesh(new THREE.SphereGeometry(.035+u*.025,10,6),leaf); l.scale.set(1,.2,.55); const a=i*2.4; l.position.set(Math.cos(a)*.04,h*(.25+i/nl*.7),Math.sin(a)*.04); l.rotation.y=-a; l.rotation.z=.4; plant.add(l); }
     const fm=std(p.fr,{roughness:.4,emissive:p.glow?0x603000:0}); for(let i=0;i<(s.fr||0);i++){ const f=fruit(p,fm), a=i*2.1+.5; f.position.set(Math.cos(a)*.06,h*.55+i*.04,Math.sin(a)*.06); plant.add(f); } };
 
-  ROOMK.parts.push(ctx=>{ const {R}=ctx, k='rd:pot'; if(R.kinds[k])return; const D={kind:k,name:'CLAY POT',own:'pot',loose:false,m:0,wire:'pot',sol:[[-.17,-.17,.17,.17,.26]],shf:[],dept:'garden',deptName:'GARDEN'};
+  ROOMK.parts.push(ctx=>{ '@later'; const {R}=ctx, k='rd:pot'; if(R.kinds[k])return; const D={kind:k,name:'CLAY POT',own:'pot',loose:false,m:0,wire:'pot',sol:[[-.17,-.17,.17,.17,.26]],shf:[],dept:'garden',deptName:'GARDEN'};
     Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const t=pot(); Object.defineProperty(D,'tpl',{value:t,enumerable:true}); return t; }}); R.kinds[k]=D; });
   const LIVE=new Set();
-  ROOMK.wires.pot=(un,c)=>{ const G=un.obj, d=G.getObjectByName('potdirt'); if(!d)return; d.material=d.material.clone();
+  ROOMK.wires.pot=(un,c)=>{ '@later'; const G=un.obj, d=G.getObjectByName('potdirt'); if(!d)return; d.material=d.material.clone();
     const id=String(un.id), L={G,id,un,th:null}; LIVE.add(L); draw(G,RADISH.pot(id));
     const name=()=>{ const s=RADISH.pot(id), p=P[s.k]; if(!s.dirt)return 'CLAY POT: EMPTY'; if(!p)return 'CLAY POT: DIRT, NO SEED'; const wet=s.wet>hour();
       return p.name+': '+(s.fr?s.fr+' RIPE':s.g>=p.first?'FLOWERING':s.g>p.first*.4?'GROWING':'A SPROUT')+(wet?' · WET':' · DRY'); };

@@ -12,7 +12,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
   let air=null; const airGet=()=>{ if(air==null){ const v=OWNED.get('balloonair'); air=v==null?BALLOON.AIR:+v; if(!(air>=0))air=BALLOON.AIR; } return air; }, airSet=v=>{ air=v; try{ OWNED.set('balloonair',v.toFixed(1)); }catch(e){} };
 
   /* ---------- the balloon: glossy black, a knot, a white ribbon curling down to your hands ---------- */
-  const balloon=(s=1)=>{ const G=new THREE.Group(), blk=new THREE.MeshStandardMaterial({color:0x0c0c10,roughness:.18,metalness:.1}), rib=new THREE.MeshStandardMaterial({color:0xf2f0ea,roughness:.6});
+  const balloon=(s=1)=>{ '@later'; const G=new THREE.Group(), blk=new THREE.MeshStandardMaterial({color:0x0c0c10,roughness:.18,metalness:.1}), rib=new THREE.MeshStandardMaterial({color:0xf2f0ea,roughness:.6});
     const b=new THREE.Mesh(new THREE.SphereGeometry(.42,32,24),blk); b.scale.set(1,1.18,1); b.position.y=2.75; G.add(b); const kn=new THREE.Mesh(new THREE.ConeGeometry(.05,.08,12),blk); kn.position.y=2.25; kn.rotation.x=Math.PI; G.add(kn);
     const pts=[]; for(let i=0;i<=24;i++){ const u=i/24; pts.push(new THREE.Vector3(Math.sin(u*14)*.05*(1-u),2.22-u*.62,Math.cos(u*14)*.05*(1-u))); }
     G.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),48,.008,6),rib)); G.userData.b=b; G.scale.setScalar(T*s); return G; };
@@ -20,7 +20,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
 
   /* ---------- riding it: you rise, then drift; a wall of a building stops you, a bench or a car does not ---------- */
   const TOP=3.2;
-  const fly=p=>{ const B=SHARED.BOUND, r=.36; p.x=Math.max(B.x0,Math.min(B.x1,p.x)); p.z=Math.max(B.z0,Math.min(B.z1,p.z));
+  const fly=p=>{ '@later'; const B=SHARED.BOUND, r=.36; p.x=Math.max(B.x0,Math.min(B.x1,p.x)); p.z=Math.max(B.z0,Math.min(B.z1,p.z));
     for(const [x0,z0,x1,z1] of SHARED.solids){ const w=x1-x0, d=z1-z0; if(Math.min(w,d)<2.5*T&&w*d<12*T*T)continue; const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
       if(d2>=r*r)continue; if(d2>1e-8){ const q=Math.sqrt(d2); p.x=cx+dx/q*r; p.z=cz+dz/q*r; } else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } };
   const POSE={k:'zip',z:0,sway:0};
@@ -28,7 +28,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
     make:()=>balloon(),
     on:R=>{ R.h=0; R.down=SHARED.LVL!=='up'; R.vx=0; R.vz2=0; R.warned=false; const a=airGet(); say('THE BALLOON HAS AIR FOR '+Math.ceil(a)+' S.','#d8d8e8'); },
     leave:R=>{ if(!R.down){ R.down=true; say('YOU LET A LITTLE AIR OUT. YOU SINK.','#d8d8e8'); } },
-    step:(R,dt,I)=>{ const id=R.on; let a=airGet(); if(R.h>.05*T)a=Math.max(0,a-dt); air=a; if((R.saveT=(R.saveT||0)-dt)<=0){ R.saveT=3; airSet(a); }
+    step:(R,dt,I)=>{ '@later'; const id=R.on; let a=airGet(); if(R.h>.05*T)a=Math.max(0,a-dt); air=a; if((R.saveT=(R.saveT||0)-dt)<=0){ R.saveT=3; airSet(a); }
       if(a<15&&!R.warned){ R.warned=true; say('THE BALLOON IS GOING SOFT.','#c8a090'); }
       const sinking=R.down||a<=0, want=sinking?0:TOP*T; R.h=Math.max(0,R.h+Math.max(-(a<=0?.6:1.1)*T*dt,Math.min(1.4*T*dt,want-R.h)));
       if(sinking&&R.h<=0){ if(a<=0){ FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw(); airSet(BALLOON.AIR); RIDE.off('THE BALLOON WRINKLES AND IS DONE.'); if(SFX.play)SFX.play('click',{vol:.5,pitch:.4}); } else { airSet(a); RIDE.off('YOUR FEET FIND THE GROUND.'); } return true; }

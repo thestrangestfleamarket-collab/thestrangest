@@ -13,7 +13,7 @@ const BANKK={}; window.BANKK=BANKK;
   const write=o=>{ try{ OWNED.set('bank',JSON.stringify(o)); }catch(e){} };
   BANKK.account=()=>{ const o=read(), d=day(); if(d>o.day){ let gain=0; for(let i=0;i<Math.min(7,d-o.day);i++){ const g=Math.min(50,Math.floor(o.bal*.01)); o.bal+=g; gain+=g; } o.day=d; write(o); if(gain)say(`THE BANK PAID $${gain} IN INTEREST.`); } return o; };
   BANKK.age=n=>{ const o=read(); o.day-=n; write(o); };   // a day or more since it last earned (for the check)
-  BANKK.move=n=>{ const o=BANKK.account(); n=Math.trunc(n); if(n>0){ n=Math.min(n,INV.cash); if(!n)return 'YOU HAVE NO CASH ON YOU.'; INV.cash-=n; o.bal+=n; } else if(n<0){ const m=Math.min(-n,o.bal); if(!m)return 'THE ACCOUNT IS EMPTY.'; o.bal-=m; INV.cash+=m; n=-m; }
+  BANKK.move=n=>{ '@later'; const o=BANKK.account(); n=Math.trunc(n); if(n>0){ n=Math.min(n,INV.cash); if(!n)return 'YOU HAVE NO CASH ON YOU.'; INV.cash-=n; o.bal+=n; } else if(n<0){ const m=Math.min(-n,o.bal); if(!m)return 'THE ACCOUNT IS EMPTY.'; o.bal-=m; INV.cash+=m; n=-m; }
     write(o); if(INV.save)INV.save(); return ''; };
   // the cage's window: your cash, the balance, buttons to put in and take out
   const B=[['IN $10',10],['IN $100',100],['IN ALL',1e12],['OUT $10',-10],['OUT $100',-100],['OUT ALL',-1e12]];

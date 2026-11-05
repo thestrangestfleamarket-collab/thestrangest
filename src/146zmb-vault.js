@@ -18,13 +18,13 @@ import {BANKK} from './146zm-bank.js';
   const B='style="font:inherit;color:#e8e2cc;background:#1a1816;border:2px solid #4a4038;padding:3px 8px;cursor:pointer"';
   const row=(id,n,side)=>`<button ${B} data-m="${side}" data-id="${id}" style="display:flex;gap:8px;align-items:center;width:100%;text-align:left;margin:2px 0;font:inherit;color:#e8e2cc;background:#1a1816;border:1px solid #3a3430;padding:3px 6px;cursor:pointer">`
     +`<img src="${BAG.icon?BAG.icon(id):''}" alt="" style="width:22px;height:22px;image-rendering:pixelated"><span style="flex:1">${name(id)}</span><span>x${n}</span></button>`;
-  const draw=()=>{ if(W.hidden)return; const V=read(), mine=(BAG.contents?BAG.contents('bag'):Object.keys(INV.items)).filter(movable), acct=BANKK.account?BANKK.account():{bal:0};
+  const draw=()=>{ '@later'; if(W.hidden)return; const V=read(), mine=(BAG.contents?BAG.contents('bag'):Object.keys(INV.items)).filter(movable), acct=BANKK.account?BANKK.account():{bal:0};
     let o='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="color:#f2c14e;font-size:12px">YOUR VAULT · THE BANK</b><button '+B+' data-x="1">X</button></div>';
     o+=`<div style="margin-bottom:10px">CASH ON YOU $${Math.round(INV.cash)} · IN THE ACCOUNT $${acct.bal} <button ${B} data-c="100">PUT IN $100</button> <button ${B} data-c="-100">TAKE OUT $100</button> <button ${B} data-c="all">PUT IN ALL</button></div>`;
     o+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="color:#9b9584;margin-bottom:4px">YOUR BAG (CLICK: INTO THE VAULT)</div>'+(mine.map(id=>row(id,BAG.have?BAG.have(id,'bag'):INV.items[id],'in')).join('')||'<div style="color:#7d7a70">EMPTY.</div>')+'</div>';
     o+='<div><div style="color:#9b9584;margin-bottom:4px">THE VAULT (CLICK: INTO YOUR BAG)</div>'+(Object.keys(V.items).filter(id=>V.items[id]>0).sort().map(id=>row(id,V.items[id],'out')).join('')||'<div style="color:#7d7a70">EMPTY.</div>')+'</div></div>';
     o+='<div style="color:#7d7a70;margin-top:8px">SHIFT-CLICK MOVES THEM ALL.</div>'; W.innerHTML=o; };
-  W.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset;
+  W.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b)return; const d=b.dataset;
     if(d.x){ W.hidden=true; return; }
     if(d.c){ const n=d.c==='all'?INV.cash:+d.c, r=BANKK.move?BANKK.move(Math.trunc(n)):null; if(typeof r==='string')say(r,'#c8a090'); draw(); return; }
     if(d.m){ const id=d.id, V=read(); if(d.m==='in'){ const have=BAG.have?BAG.have(id,'bag'):INV.items[id]||0, n=e.shiftKey?have:Math.min(1,have); if(n<1)return; FORAGE.take(id,n); V.items[id]=(V.items[id]||0)+n; }

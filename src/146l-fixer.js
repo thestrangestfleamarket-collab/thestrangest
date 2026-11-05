@@ -21,13 +21,13 @@ const FIXIT={}; window.FIXIT=FIXIT;
     else { const d=new Date(); g.fillStyle='#04203a'; g.fillRect(0,0,W,H); g.fillStyle='#f2c14e'; g.font='bold 8px monospace'; g.fillText('MARKET',4,10); g.fillStyle='#e8e8e8'; g.fillText(d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),4,24); g.fillStyle='#8ac'; g.font='6px monospace'; g.fillText('TRACK 1: ON TIME',4,36); g.fillText(['FAIR','CLOUDY','RAIN'][(tm/60|0)%3],4,44); }
     S.t.needsUpdate=true; };
   const SETS={
-    tv_console:{name:'THE CONSOLE TV',value:140,make:()=>{ const G=new THREE.Group(), wd=std(0xffffff,{map:wood(),roughness:.5}); G.add(PO(new THREE.Mesh(round(RB(.92,.62,.5),.03),wd),0,.42,0));
+    tv_console:{name:'THE CONSOLE TV',value:140,make:()=>{ '@later'; const G=new THREE.Group(), wd=std(0xffffff,{map:wood(),roughness:.5}); G.add(PO(new THREE.Mesh(round(RB(.92,.62,.5),.03),wd),0,.42,0));
       for(const s of [-1,1])G.add(PO(new THREE.Mesh(new THREE.CylinderGeometry(.025,.02,.12,10),std(0x2a1a10)),s*.38,.06,0));
       const f=new THREE.Mesh(round(RB(.56,.44,.04),.04),std(0x1a1a1c,{roughness:.4})); f.position.set(-.13,.44,.25); G.add(f); const sc=screen(.46,.34); sc.position.set(-.13,.44,.3); G.add(sc);
       const gr=new THREE.Mesh(RB(.24,.36,.01),std(0x3a2a20,{roughness:.9})); gr.position.set(.3,.42,.252); G.add(gr); for(let i=0;i<3;i++){ const k=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.025,12),std(0xb8b0a0,{metalness:.6,roughness:.3})); k.rotation.x=Math.PI/2; k.position.set(.3,.65-i*.05,.265); G.add(k); }
       for(const s of [-1,1]){ const a=new THREE.Mesh(new THREE.CylinderGeometry(.004,.004,.5,6),std(0xc0c0c0,{metalness:.8,roughness:.25})); a.position.set(-.1+s*.12,.93,0); a.rotation.z=s*.5; G.add(a); }
       return G; },sol:[.46,.25,.95]},
-    tv_small:{name:'THE PORTABLE TV',value:70,make:()=>{ const G=new THREE.Group(); G.add(PO(new THREE.Mesh(round(RB(.34,.28,.28),.03),std(0xc8c2b4,{roughness:.45})),0,.14,0));
+    tv_small:{name:'THE PORTABLE TV',value:70,make:()=>{ '@later'; const G=new THREE.Group(); G.add(PO(new THREE.Mesh(round(RB(.34,.28,.28),.03),std(0xc8c2b4,{roughness:.45})),0,.14,0));
       const sc=screen(.22,.17); sc.position.set(-.03,.15,.14); G.add(sc); const h=new THREE.Mesh(new THREE.TorusGeometry(.1,.012,8,20,Math.PI),std(0x303030)); h.position.set(0,.28,0); G.add(h);
       for(let i=0;i<2;i++){ const k=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.02,10),std(0x202020)); k.rotation.x=Math.PI/2; k.position.set(.13,.2-i*.05,.142); G.add(k); } return G; },loose:3},
     pc_home:{name:'THE HOME COMPUTER',value:180,make:()=>{ const G=new THREE.Group(), beige=std(0xd8ceb4,{roughness:.55});

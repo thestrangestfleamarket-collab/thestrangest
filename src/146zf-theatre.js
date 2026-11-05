@@ -14,7 +14,7 @@ const THEATRE={}; window.THEATRE=THEATRE;
   const frameOf=(B,TB)=>IKIT.frame({x0:B.x0+.1,y0:B.y0+.1,x1:B.x1-.1,y1:B.y1-.1},(x,y)=>at0(TB,x,y));
   const geo=B=>{ const cy=(B.y0+B.y1)/2, FX=B.x0+5.35, P=1.45, NR=Math.min(4,Math.floor((B.x1-.1-FX-1.2)/P)); return {cy,FX,P,NR,RISE:19,BN:[B.y0+1.2,cy-.55],BS:[cy+.55,B.y1-1.75],TX:FX+NR*P}; };   // the tiers as 059-street lays them
   // where its people go: the doorman by the door, the usher on the landing, the raccoon behind the stand; the moviegoers in the recliners (facing the screen), two waiting at the stand
-  const place=R=>{ const {B,TB}=STORE.theatreFrame; { const G=geo(B), W=(x,y)=>{ const p=at0(TB,x,y); return {x:p[0],z:p[1]}; }, at=(x,y,hd,h)=>({...W(x,y),hd:TB?TB.hd(hd):hd,...(h!=null?{y:h}:{})});
+  const place=R=>{ '@later'; const {B,TB}=STORE.theatreFrame; { const G=geo(B), W=(x,y)=>{ const p=at0(TB,x,y); return {x:p[0],z:p[1]}; }, at=(x,y,hd,h)=>({...W(x,y),hd:TB?TB.hd(hd):hd,...(h!=null?{y:h}:{})});
     R.spots={'DOORMAN, TICKETS WITH THE TICKET FOX':at(B.x0+3.3,B.y1-2.2,Math.PI/2),USHER:at(G.TX+.8,G.cy,-Math.PI/2),CONCESSIONS:at(B.x0+2.6,B.y0+.5,0)};
     const S=[]; for(let i=0;i<G.NR;i++){ const xb=G.FX+(i+1)*G.P, h=(i+1)*G.RISE; for(const [a,b] of [G.BN,G.BS]){ const w=(b-a)/2; for(let s=0;s<2;s++)S.push(at(xb-.72,a+(s+.5)*w,-Math.PI/2,BOD.Y(14))); } }
     R.seats=THEATRE.places=[...S,at(B.x0+2.0,B.y0+2.2,Math.PI),at(B.x0+3.2,B.y0+2.2,Math.PI)]; } };

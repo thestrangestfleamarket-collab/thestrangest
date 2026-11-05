@@ -77,16 +77,16 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
       V.on=true; LIVE.add(V); return true; };
     V.drop=()=>{ const P=GPH.phys(); if(P&&V.vc){ try{ P.world.removeVehicleController(V.vc); }catch(e){} try{ P.world.removeRigidBody(V.rb); }catch(e){} } V.vc=V.rb=null; V.on=false; LIVE.delete(V); };
     // each frame while ridden: you go where it is; false hands the ride back to the board's own glide (VEHICLE PHYSICS off, or no physics yet)
-    V.step=R=>{ if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(V.on)V.drop(); return false; } if(!V.on&&!V.build())return false;
+    V.step=R=>{ '@later'; if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(V.on)V.drop(); return false; } if(!V.on&&!V.build())return false;
       const p=V.rb.translation(), r=V.rb.rotation(), g=SHARED.groundY(p.x,p.z); if(!isFinite(g)||p.y<g-2*T){ V.drop(); return false; }
       pos.x=p.x; pos.z=p.z; VQ.set(r.x,r.y,r.z,r.w); VV.set(0,0,1).applyQuaternion(VQ); R.hd=SHARED.heading=Math.atan2(VV.x,VV.z); V.sp=V.vc.currentVehicleSpeed(); R.v=Math.abs(V.sp); R.lift=0;
       if(R.v>2*T){ const v=V.rb.linvel(); if(knockNear(p.x,p.y,p.z,v.x,v.z,Math.hypot(v.x,v.z)||1,S.knockR,Math.min(1.6,R.v/(4*T))))V.rb.setLinvel({x:v.x*.6,y:v.y,z:v.z*.6},true); }
       return true; };
-    V.place=(m,w)=>{ if(!V.on)return false; const r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
+    V.place=(m,w)=>{ '@later'; if(!V.on)return false; const r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
       for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(V.vc.wheelRotation(i)||0,i<2?V.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=V.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=S.wy+(S.rest-L)/S.unit; } return true; };
     return V; };
   GPH.ext.push(()=>LIVE.size>0);
-  GPH.pre.push(h=>{ for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
+  GPH.pre.push(h=>{ '@later'; for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
     V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax||f<0&&sp<-S.vback?0:f*(f>0?S.engine:S.reverse);
     for(const i of [0,1])vc.setWheelSteering(i,V.steer); for(const i of [2,3])vc.setWheelEngineForce(i,eng); for(let i=0;i<4;i++)vc.setWheelBrake(i,back?S.brake:f?0:S.idle); vc.updateVehicle(h,undefined,0x00010005); } });
 
@@ -94,7 +94,7 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   FORAGE.add({names:{kart:'THE GO-KART'}});
   const POSE={k:'kart',steer:0,z:0};
   const mat=c=>new THREE.MeshLambertMaterial({color:c}), WH=.15, WX=.36, WZ=.5;
-  const make=()=>{ const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
+  const make=()=>{ '@later'; const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
     const M=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; G.add(o); return o; };
     M(new THREE.BoxGeometry(.62,.07,1.25),gr,0,.12,0); M(new THREE.BoxGeometry(.5,.12,.34),red,0,.2,.5); M(new THREE.BoxGeometry(.66,.1,.22),red,0,.17,-.55);
     M(new THREE.BoxGeometry(.4,.06,.36),seat,0,.2,-.18); M(new THREE.BoxGeometry(.4,.32,.06),seat,0,.36,-.36);

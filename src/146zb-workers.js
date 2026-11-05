@@ -10,7 +10,7 @@ import {FOLK} from './146ha-folk.js';
   WORKERS.list=()=>Object.keys(C).filter(k=>C[k]&&(C[k].folk||WORKERS.models[k])&&C[k].job);
   WORKERS.of=at=>WORKERS.list().filter(k=>(CREW.alias[C[k].job.at]||C[k].job.at)===(CREW.alias[at]||at));
   const still=t=>MERCH.pose({nod:Math.sin(t*.7)*4,yaw:Math.sin(t*.31)*8,L:{ua:[14,8],fa:[24,0]},R:{ua:[14,-8],fa:[24,0]}});
-  const stand=k=>{ const N=BODIES.by[k]&&BODIES.by[k].npc, c=C[k]; if(!N){ later.add(k); return; } const p=CREW.inside(c.job.at,k,c.job); if(!p)return;
+  const stand=k=>{ '@later'; const N=BODIES.by[k]&&BODIES.by[k].npc, c=C[k]; if(!N){ later.add(k); return; } const p=CREW.inside(c.job.at,k,c.job); if(!p)return;
     const s=N.st; s.x=p.x; s.z=p.z; s.to=s.next=null; if(p.hd!=null)s.hd=p.hd; s.pin=true; s.hold=true; N.free=()=>true; N.on=true;
     const root=p.off?scene:(MAPG.bodega||scene); if(N.g.parent!==root)root.add(N.g); };
   WORKERS.make=async at=>{ const ks=WORKERS.of(at).filter(k=>!WORKERS.made[k]); if(!ks.length){ for(const k of WORKERS.of(at))stand(k); return; }

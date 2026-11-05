@@ -75,7 +75,7 @@ LOOKS.over={};
   const line=(id,html)=>{ const d=document.createElement('div'); d.className='row'; d.id=id; if(html)d.innerHTML=html; return d; };
   // (the Walker's own build, hair and beard are gone from YOU: the avatar is the only body you play, owner 5 Nov 2026; barefoot stays, it matters for foraging)
   LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{order:7});
-  const draw=()=>{ '@later'; $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
+  const draw=()=>{ $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());

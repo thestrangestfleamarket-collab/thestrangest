@@ -25,7 +25,7 @@ const QUESTS={};
   // the JOURNAL in your PACK
   const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   QUESTS.sections=[];   // other systems put their own part in the journal (the trainers' rungs)
-  FORAGE.TABS.push({id:'journal',draw:()=>{ const head=QUESTS.sections.map(f=>f()).join(''); const on=QUESTS.on(), done=Q.filter(q=>S.done[q.id]); if(!on.length&&!done.length)return head+'<div class="dim">NOTHING ELSE IN YOUR JOURNAL YET. TALK TO PEOPLE.</div>';
+  FORAGE.TABS.push({id:'journal',draw:()=>{ '@later'; const head=QUESTS.sections.map(f=>f()).join(''); const on=QUESTS.on(), done=Q.filter(q=>S.done[q.id]); if(!on.length&&!done.length)return head+'<div class="dim">NOTHING ELSE IN YOUR JOURNAL YET. TALK TO PEOPLE.</div>';
     return head+'<div style="margin:4px 0;color:#9b9584">QUESTS</div>'+
     (()=>on.map(q=>{ const i=stepOf(q); return `<div style="margin-bottom:8px"><div style="color:#f2c14e">${esc(q.title)}</div>`+q.steps.map((s,k)=>`<div style="padding-left:8px;${k<i?'opacity:.5;text-decoration:line-through':k===i?'':'opacity:.35'}">${k<i?'✓':'·'} ${esc(s.text)}</div>`).join('')+'</div>'; }).join('')
       +(done.length?'<div class="dim" style="margin-top:6px">DONE: '+done.map(q=>esc(q.title)).join(', ')+'</div>':''))(); }});

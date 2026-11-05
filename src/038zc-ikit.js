@@ -13,7 +13,7 @@ const IKIT={}; window.IKIT=IKIT;
       box:(u0,v0,u1,v1)=>{ const p=pw(u0,v0), q=pw(u1,v1); return [Math.min(p[0],q[0]),Math.min(p[1],q[1]),Math.max(p[0],q[0]),Math.max(p[1],q[1])]; }}; };
   IKIT.tex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.imageSmoothingEnabled=false; f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; };
   // the makers for one room: add(o) puts a mesh in the scene; flush() makes the merged meshes once everything is laid
-  IKIT.room=(F,add,solid=r=>SOL.up.push(r))=>{ '@later'; const {pw,hd}=F, V3=THREE.Vector3, COL=new THREE.Color(), bag=()=>({p:[],n:[],c:[]}), MAIN=bag(), GLOW=bag(); let CUR=MAIN;
+  IKIT.room=(F,add,solid=r=>SOL.up.push(r))=>{ const {pw,hd}=F, V3=THREE.Vector3, COL=new THREE.Color(), bag=()=>({p:[],n:[],c:[]}), MAIN=bag(), GLOW=bag(); let CUR=MAIN;
     const addG=g=>{ const q=g.index?g.toNonIndexed():g, p=q.attributes.position.array, n=q.attributes.normal.array; for(let i=0;i<p.length;i+=3){ CUR.p.push(p[i],p[i+1],p[i+2]); CUR.n.push(n[i],n[i+1],n[i+2]); CUR.c.push(COL.r,COL.g,COL.b); } g.dispose(); if(q!==g)q.dispose(); };
     const box=(u0,v0,u1,v1,h0,h1,c)=>{ COL.set(c); const [x0,z0,x1,z1]=F.box(u0,v0,u1,v1), g=new THREE.BoxGeometry(x1-x0,(h1-h0)*MW,z1-z0); g.translate((x0+x1)/2,(h0+h1)/2*MW,(z0+z1)/2); addG(g); };
     const cyl=(u,v,r,h0,h1,c,rt=r,seg=12)=>{ COL.set(c); const p=pw(u,v), g=new THREE.CylinderGeometry(rt*MW,r*MW,(h1-h0)*MW,seg); g.translate(p[0],(h0+h1)/2*MW,p[1]); addG(g); };
@@ -42,7 +42,7 @@ const IKIT={}; window.IKIT=IKIT;
     const flush=()=>[MAIN.p.length?meshOf(MAIN,matL):null,GLOW.p.length?meshOf(GLOW,matB):null];
     return {MW,box,cyl,ball,glow,own,meshOf,pic,words,seat,spot,sol,use,flush,matL,matB}; };
   // buying a thing over a counter or from a machine: the price from your cash, the thing in your pack
-  IKIT.buy=(id,price,line)=>{ const say=(t,c)=>SAY(t,c), nm=FORAGE.name?FORAGE.name(id):id.toUpperCase();
+  IKIT.buy=(id,price,line)=>{ '@later'; const say=(t,c)=>SAY(t,c), nm=FORAGE.name?FORAGE.name(id):id.toUpperCase();
     if(INV.cash<price){ say('THAT IS $'+price+'. YOU HAVE $'+INV.cash+'.','#c8a090'); return false; } INV.cash-=price; INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
 }
 export {IKIT};

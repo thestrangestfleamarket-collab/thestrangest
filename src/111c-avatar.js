@@ -15,7 +15,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   /* ---------- a look as a short code for the other players: figure.build.height.skin.hair, then each slot (piece number in base 36, ~colour) ---------- */
   const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.map(([s])=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; }),L.bare?'1':''].join('.');   // (last: barefoot)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null;
-  const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
+  const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
     if(a[5+SLOTS.length]==='1')L.bare=true;
     SLOTS.forEach(([s],i)=>{ const v=a[5+i]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,hex(col)||'']; });
@@ -56,7 +56,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
   const VAR=new Map();
   const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
-    variant:c=>{ const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
+    variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!J){ load(M.f).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
       b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null},M); VAR.set(k,b); return b; }};
   AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>!!D[L.f];

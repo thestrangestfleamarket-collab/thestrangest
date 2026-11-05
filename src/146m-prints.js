@@ -11,7 +11,7 @@ const PHOTOS={mine:[]}; window.PHOTOS=PHOTOS;
   PHOTOS.save=()=>{ try{ OWNED.set('photos',JSON.stringify(PHOTOS.mine.slice(-40))); }catch(e){} };
   // a photograph of the world: o.from (a camera), fov, W/H, gain (exposure), fx(g,cv) (blur after developing)
   const RTS={}; let cam=null;
-  PHOTOS.take=(x,y,z,hd,pitch=-.12,cap,o)=>{ o=o||{}; const W=o.W||192, H=o.H||144, k=W+'x'+H, R=RTS[k]||(RTS[k]={rt:new THREE.WebGLRenderTarget(W,H),buf:new Uint8Array(W*H*4)}), rt=R.rt, buf=R.buf; if(!cam)cam=new THREE.PerspectiveCamera(48,4/3,.05,400);
+  PHOTOS.take=(x,y,z,hd,pitch=-.12,cap,o)=>{ '@later'; o=o||{}; const W=o.W||192, H=o.H||144, k=W+'x'+H, R=RTS[k]||(RTS[k]={rt:new THREE.WebGLRenderTarget(W,H),buf:new Uint8Array(W*H*4)}), rt=R.rt, buf=R.buf; if(!cam)cam=new THREE.PerspectiveCamera(48,4/3,.05,400);
     cam.fov=o.fov||48; cam.aspect=W/H; cam.updateProjectionMatrix();
     if(o.from){ cam.position.copy(o.from.position); cam.quaternion.copy(o.from.quaternion); } else { cam.position.set(x+Math.sin(hd)*.45*T,y,z+Math.cos(hd)*.45*T); cam.rotation.set(pitch,hd+Math.PI,0,'YXZ'); } cam.updateMatrixWorld(); const prev=renderer.getRenderTarget(), pc=renderer.localClippingEnabled, ps=renderer.shadowMap.autoUpdate;
     try{ renderer.localClippingEnabled=false; renderer.shadowMap.autoUpdate=false; renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,cam); renderer.readRenderTargetPixels(rt,0,0,W,H,buf); }

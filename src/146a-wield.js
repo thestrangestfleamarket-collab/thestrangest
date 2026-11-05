@@ -37,7 +37,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
-  const WIELD_strike0=()=>{ if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
+  const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
     if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
       VIT.spend(heavy?.12:.06); VIT.inFight(5); WIELD.swing={heavy,winded,t:now,ax:aim0.x,az:aim0.z}; sw={t:0,T:winded?.55:heavy?.42:.3,s:side,h:heavy}; ONLINE.send({t:'swing',s:side,h:heavy?1:0}); }
     else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
@@ -83,12 +83,12 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     if(!id){ if(shS){ shS=''; ONLINE.send({t:'aim',w:''}); } return; }
     const v=st.aim.v, a=[r2(v.x),r2(v.y),r2(v.z)], h=WIELD.hand, k=id+h+a.join(); if(shT>-1&&(shT>0||k===shS))return; shT=1/6; shS=k; ONLINE.send(h==='L'?{t:'aim',w:id,v:a,h}:{t:'aim',w:id,v:a}); };
   const gone=id=>{ const t=theirs.get(id); if(!t)return; t.m.removeFromParent(); t.m.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); theirs.delete(id); const o=ONLINE.others.get(id); if(o&&o.S)o.S.aim=null; };
-  ONLINE.hear.aim=m=>{ const w=typeof m.w==='string'&&(MK[m.w]||SWC[m.w]||KIND[m.w])?m.w:''; let t=theirs.get(m.id); if(!w||!ONLINE.others.has(m.id))return gone(m.id);
+  ONLINE.hear.aim=m=>{ '@later'; const w=typeof m.w==='string'&&(MK[m.w]||SWC[m.w]||KIND[m.w])?m.w:''; let t=theirs.get(m.id); if(!w||!ONLINE.others.has(m.id))return gone(m.id);
     if(!t||t.w!==w){ gone(m.id); t={w,h:'R',m:mk(w),v:new V3(0,-.3,1).normalize(),cur:new V3(0,-.3,1).normalize(),sw:null}; t.m.matrixAutoUpdate=false; t.m.userData.anyRoom=true; scene.add(LEVELS.own(t.m,'*')); theirs.set(m.id,t); }
     t.h=m.h==='L'?'L':'R'; { const o=ONLINE.others.get(m.id); if(o&&o.S)o.S.hand=t.h; }
     if(Array.isArray(m.v)){ t.v.set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||0); if(t.v.lengthSq()<1e-6)t.v.set(0,-.3,1); t.v.normalize(); } t.at=performance.now(); };
   ONLINE.hear.swing=m=>{ const t=theirs.get(m.id); if(t)t.sw={t:0,T:m.h?.42:.3,s:m.s<0?-1:1,h:!!m.h}; };
-  const draw=dt=>{ const now=performance.now();
+  const draw=dt=>{ '@later'; const now=performance.now();
     for(const [id,t] of theirs){ const o=ONLINE.others.get(id); if(!o||now-t.at>4000){ gone(id); continue; }
       const F=o.fig, ok=!!(F&&F.g.visible&&o.B&&o.B.J&&o.B.J['palm'+t.h]&&!(o.rag&&o.rag.b)&&!o.dead); t.m.visible=ok; if(!ok){ if(o.S)o.S.aim=null; continue; }
       A.copy(t.v); if(t.sw&&slash(A,t.sw,dt))t.sw=null;

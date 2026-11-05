@@ -15,7 +15,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   // how each swims: the body's wave across (most fish), up and down (the flounder lying flat), the eel's long wave, the crab not at all
   const STYLE={x_flounder:1,x_eel:2,x_crab:3,stingray:1,moray:2,jellyfish:3,octopus:3,seaturtle:3,shrimp:3}, CAP=12;
   const M={}, mats={}; let loading=null, packIds=[];
-  const swimMat=(map,vc)=>{ const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
+  const swimMat=(map,vc)=>{ '@later'; const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.3;');   // light of its own: under water the sun comes only from above
       sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
       { float w=clamp(.5-position.x,0.,1.), ph=aSw.x, a=aSw.y; int k=int(aSw.z+.5);
@@ -23,7 +23,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
         else if(k==1)transformed.y+=a*(.03+w*w*.12)*sin(ph+position.x*8.);
         else if(k==2)transformed.z+=a*.07*(.3+w)*sin(ph+position.x*16.); }`); };
     m.customProgramCacheKey=()=>'fishswim'+(map?1:0)+(vc?1:0); return m; };
-  const geoOf=(id,d)=>{ const g=new THREE.BufferGeometry(); if(d.u){ g.setAttribute('position',new THREE.BufferAttribute(F(d.p),3)); g.setAttribute('uv',new THREE.BufferAttribute(U16(d.u),2,true)); g.setIndex(new THREE.BufferAttribute(U16(d.i),1)); }
+  const geoOf=(id,d)=>{ '@later'; const g=new THREE.BufferGeometry(); if(d.u){ g.setAttribute('position',new THREE.BufferAttribute(F(d.p),3)); g.setAttribute('uv',new THREE.BufferAttribute(U16(d.u),2,true)); g.setIndex(new THREE.BufferAttribute(U16(d.i),1)); }
       else { const p=F(d.p), c=B(d.c), n=c.length/3, C=new Float32Array(n*3), q=new THREE.Color(); for(let i=0;i<n;i++){ q.setRGB(c[i*3]/255,c[i*3+1]/255,c[i*3+2]/255,THREE.SRGBColorSpace); C[i*3]=q.r; C[i*3+1]=q.g; C[i*3+2]=q.b; }
         g.setAttribute('position',new THREE.BufferAttribute(p,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); }
     g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
@@ -50,19 +50,19 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   const pick=ids=>{ let s=0; const c=ids.map(id=>{ const v=Math.max(.2,IP(id,'common')||1); s+=v; return v; }); let r=Math.random()*s; for(let i=0;i<ids.length;i++)if((r-=c[i])<0)return ids[i]; return ids[0]; };
   // sizes (owner, 28 Oct 2026: "do smaller and larger fish too"): most young and small, now and then an old giant three times the size
   const sizeK=()=>{ const r=Math.random(); return r<.35?.35+r:r<.93?.7+(r-.35)*.9:1.6+(r-.93)*20; };
-  const spawnIn=(w,id,x,z)=>{ const w0=IP(id,'weight')||.4, sk=sizeK(), kg=PACKL[id]?1:Math.min(w0*6,w0*sk**3*1.1), rs=w.rest(x,z), bs=w.bed(x,z), r=rs, b=Math.max(bs,rs-14*WU), L=lenM(id,kg)*WU*(PACKL[id]?sk:1);
+  const spawnIn=(w,id,x,z)=>{ '@later'; const w0=IP(id,'weight')||.4, sk=sizeK(), kg=PACKL[id]?1:Math.min(w0*6,w0*sk**3*1.1), rs=w.rest(x,z), bs=w.bed(x,z), r=rs, b=Math.max(bs,rs-14*WU), L=lenM(id,kg)*WU*(PACKL[id]?sk:1);
     const f={id,kg,w,x,z,y:b+(r-b)*(.25+.5*Math.random()),h:Math.random()*6.28,v:0,tx:x,tz:z,ty:0,t:0,ph:Math.random()*6.28,L,lure:null}; f.ty=f.y; list.push(f); return f; };
   const spot=(w,minD,id)=>{ for(let k=0;k<12;k++){ const a=Math.random()*6.28, d=minD+Math.random()*(R1-minD), x=pos.x+Math.cos(a)*d, z=pos.z+Math.sin(a)*d; if(!w.has(x,z))continue; const dp=depth(w,x,z); if(dp<.5||id&&dp<(IP(id,'depth')||0))continue; return [x,z]; } return null; };
   const near=()=>FLOW.waters.filter(w=>w.kind&&(!w.shown||w.shown())&&w.box[0]<pos.x+R1&&w.box[2]>pos.x-R1&&w.box[1]<pos.z+R1&&w.box[3]>pos.z-R1);
   let wait=0;
-  const populate=dt=>{ if((wait-=dt)>0)return; wait=.4; const ws=near();
+  const populate=dt=>{ '@later'; if((wait-=dt)>0)return; wait=.4; const ws=near();
     for(let i=list.length-1;i>=0;i--){ const f=list[i]; if(f.lure||f.hooked)continue; if(Math.hypot(f.x-pos.x,f.z-pos.z)>R1*1.3||!ws.includes(f.w))list.splice(i,1); }
     for(let rep=0;rep<3;rep++)for(const w of ws){ const ids=catchOf(w.kind); if(!ids.length)continue; const have=list.filter(f=>f.w===w&&!f.deco).length; if(have>=WANT[w.kind])continue;
       const id=pick(ids), p=spot(w,have<4?R0:R0*2,id); if(p)spawnIn(w,id,p[0],p[1],null);
       const deco=DECO[w.kind].filter(k=>M[k]), dn=list.filter(f=>f.w===w&&f.deco).length; if(deco.length&&dn<WANTD[w.kind]){ const q=spot(w,dn<4?R0:R0*2,null); if(q)spawnIn(w,deco[Math.floor(Math.random()*deco.length)],q[0],q[1],null).deco=true; } } };
   // the swim: each wanders its water between the bed and the surface, turns smoothly, flees a swimmer, beats its tail as fast as it goes; a lured one heads for the hook
   const Mx=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Pv=new THREE.Vector3(), Sv=new THREE.Vector3();
-  const swim=dt=>{ const sw=window.RIVER&&RIVER.swim||window.FOUNT&&FOUNT.swim||window.BROOK&&BROOK.swim;
+  const swim=dt=>{ '@later'; const sw=window.RIVER&&RIVER.swim||window.FOUNT&&FOUNT.swim||window.BROOK&&BROOK.swim;
     for(const f of list){ if(f.hooked)continue; const w=f.w; f.t-=dt; let sp=(.25+.25*Math.min(1,f.kg/3))*WU;
       if(f.lure){ const l=f.lure, d=Math.hypot(l.x-f.x,l.z-f.z); f.tx=l.x; f.tz=l.z; f.ty=w.rest(l.x,l.z)-.3*WU; sp=Math.max(.2*WU,d/Math.max(.4,l.at-performance.now()/1000)); }
       else if(f.t<=0||Math.hypot(f.tx-f.x,f.tz-f.z)<.4*T){ f.t=3+Math.random()*6; for(let k=0;k<6;k++){ const a=Math.random()*6.28, d=(1+Math.random()*6)*T, x=f.x+Math.cos(a)*d, z=f.z+Math.sin(a)*d; if(!w.has(x,z)||depth(w,x,z)<.4)continue; f.tx=x; f.tz=z; const r=w.rest(x,z), b=Math.max(w.bed(x,z),r-14*WU); f.ty=f.id==='x_flounder'||f.id==='x_crab'?b+.05*WU:b+(r-b)*(.2+.6*Math.random()); break; } }
@@ -72,13 +72,13 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
       const nx=f.x+Math.cos(f.h)*f.v*dt, nz=f.z-Math.sin(f.h)*f.v*dt; if(w.has(nx,nz)&&depth(w,nx,nz)>.3){ f.x=nx; f.z=nz; } else { f.h+=Math.PI*.6; f.t=0; }
       const r=w.rest(f.x,f.z), b=w.bed(f.x,f.z); f.y+=(f.ty-f.y)*Math.min(1,dt*.6); f.y=Math.min(r-Math.min(.25*WU,(r-b)*.3),Math.max(b+(f.id==='x_crab'?f.L*.15:f.L*.25),f.y));
       f.ph+=dt*(3+12*f.v/WU); } };
-  const draw=()=>{ for(const id in M)M[id].im.count=0;
+  const draw=()=>{ '@later'; for(const id in M)M[id].im.count=0;
     for(const f of list){ if(f.hooked)continue; const m=M[f.id]; if(!m||m.im.count>=CAP)continue; const i=m.im.count++; E.set(0,f.h,0); Q.setFromEuler(E); Mx.compose(Pv.set(f.x,f.y,f.z),Q,Sv.set(f.L,f.L,f.L)); m.im.setMatrixAt(i,Mx);
       m.sw.setXYZ(i,f.ph,.6+Math.min(1.4,f.v/WU*2),STYLE[f.id]||0); }
     for(const id in M){ const m=M[id]; if(m.im.count){ m.im.instanceMatrix.needsUpdate=true; m.sw.needsUpdate=true; } m.im.visible=m.im.count>0; } };
 
   // the hook: the fish that will bite swims to the float, to arrive when the bite is due; a fish of that kind joins the water if none is near
-  FISHES.lure=(id,x,z,inS)=>{ if(!FISHES.ready)return null; const ws=FLOW.waters.filter(w=>w.kind&&w.has(x,z)); const w=ws[0]; if(!w)return null;
+  FISHES.lure=(id,x,z,inS)=>{ '@later'; if(!FISHES.ready)return null; const ws=FLOW.waters.filter(w=>w.kind&&w.has(x,z)); const w=ws[0]; if(!w)return null;
     let f=list.filter(q=>q.id===id&&!q.lure&&!q.hooked&&!q.deco&&q.w===w).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];
     if(!f){ let p=null; for(let k=0;k<16&&!p;k++){ const a=Math.random()*6.28, d=(3+Math.random()*4)*T, px=x+Math.cos(a)*d, pz=z+Math.sin(a)*d; if(w.has(px,pz)&&depth(w,px,pz)>.4)p=[px,pz]; } f=spawnIn(w,id,...(p||[x,z]),null); }
     f.lure={x,z,at:performance.now()/1000+inS}; return f; };

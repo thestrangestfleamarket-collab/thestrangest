@@ -49,7 +49,7 @@ import {PAD} from './075-main-13.js';
   const way=(on,ax)=>{ const x=ax[0]||0, y=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(x)>.5&&Math.abs(x)>Math.abs(y)?Math.sign(x):0, dy=dx?0:on(12)?-1:on(13)?1:Math.abs(y)>.5?Math.sign(y):0; return [dx,dy]; };
   const fire=el=>{ el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); };
   const closeBtn=p=>p&&[...p.querySelectorAll('button')].find(b=>b.classList.contains('pX')||/close/i.test(b.getAttribute('aria-label')||'')||/close$|x$/i.test(b.id)||/^(X|×|✕|CLOSE|DONE|LEAVE)$/i.test(b.textContent.trim()));
-  const back=()=>{ '@later'; if(PAD.grab){ grab(null); return; } if(UI.menuOpen||document.getElementById('movesp')?.style.display==='block'){ tap('Escape'); return; }
+  const back=()=>{ if(PAD.grab){ grab(null); return; } if(UI.menuOpen||document.getElementById('movesp')?.style.display==='block'){ tap('Escape'); return; }
     const p=(PAD.ui&&PAD.ui.closest('body>*'))||panels().slice(-1)[0], x=closeBtn(p); if(x){ x.click(); return; } };
   const menus=(on,hit,ax,act)=>{ '@later'; if(PAD.mouse){ if(!act)return; PAD.mouse=false; } const [dx,dy]=way(on,ax), a=PAD.ui, cs=ctls();
     if(!a||!cs.includes(a))mark(nearest(cs));
@@ -83,7 +83,7 @@ import {PAD} from './075-main-13.js';
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }
     if(hit(b('back'))&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(hit(b('menu')))tap('Escape'); };
-  const tick=now=>{ '@later'; if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n)tick(now); },'162a-pad');
+  const tick=now=>{ if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n)tick(now); },'162a-pad');
   addEventListener('gamepadconnected',()=>{ if(!PAD.n++)PAD.t=0; if(UI.menuOpen)UI.padKeys(); });
   addEventListener('gamepaddisconnected',()=>{ PAD.n=Math.max(0,PAD.n-1); if(!PAD.n){ letGo(); mark(null); } });
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);

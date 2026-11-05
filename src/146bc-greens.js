@@ -16,7 +16,7 @@ import {PAD} from './075-main-13.js';
 
   /* ---------- the putter: a held tool; its head is the tip WIELD tracks ---------- */
   const std=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:0},o));
-  const putter=()=>{ const g=new THREE.Group(), arm=new THREE.Group(); g.add(arm); g.arm=arm;
+  const putter=()=>{ '@later'; const g=new THREE.Group(), arm=new THREE.Group(); g.add(arm); g.arm=arm;
     const grip=new THREE.Mesh(new THREE.CylinderGeometry(.016,.014,.26,8),std(0x1c1a1a,{roughness:.95})); grip.position.y=.13;
     const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.007,.009,.74,8),std(0xc9ccd2,{roughness:.35,metalness:.9})); shaft.position.y=.26+.37;
     const head=new THREE.Mesh(new THREE.BoxGeometry(.11,.028,.034),std(0x8e949c,{roughness:.4,metalness:.85})); head.position.set(0,1.0,.02);
@@ -33,14 +33,14 @@ import {PAD} from './075-main-13.js';
   for(let i=1;i<CP.length;i++)SL[i]=SL[i-1]+CP[i].distanceTo(CP[i-1]); const LEN=SL[CP.length-1];
   const hOf=s=>{ const a=LEN-3.0, b=LEN-1.7; return s<a?0:s>b?.11:.11*(1-Math.cos((s-a)/(b-a)*Math.PI))/2; };   // flat, then a soft rise onto the green
   const dhOf=s=>{ const a=LEN-3.0, b=LEN-1.7; return s<a||s>b?0:.11*Math.PI/(b-a)*Math.sin((s-a)/(b-a)*Math.PI)/2; };
-  const near=(x,z)=>{ let best=null; for(let i=0;i<CP.length-1;i++){ const a=CP[i], b=CP[i+1], dx=b.x-a.x, dz=b.z-a.z, L=dx*dx+dz*dz, u=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/L)), px=a.x+dx*u, pz=a.z+dz*u, d=Math.hypot(x-px,z-pz);
+  const near=(x,z)=>{ '@later'; let best=null; for(let i=0;i<CP.length-1;i++){ const a=CP[i], b=CP[i+1], dx=b.x-a.x, dz=b.z-a.z, L=dx*dx+dz*dz, u=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/L)), px=a.x+dx*u, pz=a.z+dz*u, d=Math.hypot(x-px,z-pz);
       if(!best||d<best.d)best={d,px,pz,s:SL[i]+(SL[i+1]-SL[i])*u,tx:dx/Math.sqrt(L),tz:dz/Math.sqrt(L)}; } return best; };
   const atS=s=>{ s=Math.max(0,Math.min(LEN,s)); let i=1; while(i<CP.length-1&&SL[i]<s)i++; const u=(s-SL[i-1])/(SL[i]-SL[i-1]||1); return {x:CP[i-1].x+(CP[i].x-CP[i-1].x)*u,z:CP[i-1].z+(CP[i].z-CP[i-1].z)*u,tx:CP[i].x-CP[i-1].x,tz:CP[i].z-CP[i-1].z}; };
   const CUP=atS(LEN+CUP_S), TEE=atS(TEE_S); { const l=Math.hypot(CUP.tx,CUP.tz); CUP.tx/=l; CUP.tz/=l; }
 
   /* ---------- the ball ---------- */
   const B={x:TEE.x,z:TEE.z,vx:0,vz:0,y:0,rest:true,restT:0,lie:[TEE.x,TEE.z],inCup:false,sink:0,spin:new THREE.Quaternion()};
-  const stepBall=dt=>{ if(B.inCup){ B.sink=Math.min(1,B.sink+dt*2.5); return; } if(B.rest)return; const n=Math.ceil(dt/(1/240)); dt/=n;
+  const stepBall=dt=>{ '@later'; if(B.inCup){ B.sink=Math.min(1,B.sink+dt*2.5); return; } if(B.rest)return; const n=Math.ceil(dt/(1/240)); dt/=n;
     for(let k=0;k<n;k++){ const q=near(B.x,B.z), sp=Math.hypot(B.vx,B.vz);
       // down the slope (a rolling ball: 5/7 g), rolling friction on felt, the air
       const g=dhOf(q.s)*9.81*5/7; B.vx-=q.tx*g*dt; B.vz-=q.tz*g*dt;
@@ -53,18 +53,18 @@ import {PAD} from './075-main-13.js';
       if(dc<CUPR+BALLR&&s2>=2.1){ const nx=(B.x-CUP.x)/dc, nz=(B.z-CUP.z)/dc; B.vx+=nx*.3*dt*60; B.vz+=nz*.3*dt*60; }   // the lip kicks a hot ball
     }
     const sp=Math.hypot(B.vx,B.vz); if(sp<.045){ B.restT+=dt*n; if(B.restT>.4){ B.vx=B.vz=0; B.rest=true; B.lie=[B.x,B.z]; onRest(); } } else B.restT=0; };
-  const hit=(dx,dz,speed)=>{ if(!D||D.done||B.inCup||!B.rest)return false; D.prev={x:B.x,z:B.z,s:D.strokes}; const l=Math.hypot(dx,dz)||1; speed=Math.max(.15,Math.min(4.6,speed)); B.vx=dx/l*speed; B.vz=dz/l*speed; B.rest=false; B.restT=0; D.strokes++; D.addr=false; D.charge=null;
+  const hit=(dx,dz,speed)=>{ '@later'; if(!D||D.done||B.inCup||!B.rest)return false; D.prev={x:B.x,z:B.z,s:D.strokes}; const l=Math.hypot(dx,dz)||1; speed=Math.max(.15,Math.min(4.6,speed)); B.vx=dx/l*speed; B.vz=dz/l*speed; B.rest=false; B.restT=0; D.strokes++; D.addr=false; D.charge=null;
     SFX.play('clunk',{vol:.25+speed*.08,pitch:2.6-speed*.15}); card(); return true; };
   const place=(x,z)=>{ B.x=x; B.z=z; B.vx=B.vz=0; B.rest=true; B.restT=0; B.lie=[x,z]; B.inCup=false; B.sink=0; };
   const onRest=()=>{ if(!D)return; if(D.strokes>=PAR+3){ say('PICK UP. '+(PAR+4)+' WRITTEN FOR THE HOLE.','#c8a090'); finishHole(PAR+4); } else card(); };
   const holed=()=>{ if(!D)return; const n=D.strokes, w=n===1?'A HOLE IN ONE!':n===PAR-1?'A BIRDIE.':n===PAR?'PAR.':n===PAR+1?'A BOGEY.':n+' STROKES.'; SFX.play('clunk',{vol:.6,pitch:3.2}); setTimeout(()=>SFX.play('blip',{vol:.4,pitch:1.4}),160);
     say('IN. '+w,n<=PAR?'#7dffa4':'#e8e2cc'); finishHole(n); };
-  const finishHole=n=>{ if(!D)return; D.done=true; D.rounds++; const K=OWNED.get('greens'); let S={}; try{ S=JSON.parse(K||'{}')||{}; }catch(e){} S.best=S.best||{}; const b=S.best.zen; if(b==null||n<b){ S.best.zen=n; if(b!=null)say('A NEW BEST ON THE HOLE: '+n+'.','#f2c14e'); } S.rounds=(S.rounds||0)+1; OWNED.set('greens',JSON.stringify(S)); D.best=S.best.zen;
+  const finishHole=n=>{ '@later'; if(!D)return; D.done=true; D.rounds++; const K=OWNED.get('greens'); let S={}; try{ S=JSON.parse(K||'{}')||{}; }catch(e){} S.best=S.best||{}; const b=S.best.zen; if(b==null||n<b){ S.best.zen=n; if(b!=null)say('A NEW BEST ON THE HOLE: '+n+'.','#f2c14e'); } S.rounds=(S.rounds||0)+1; OWNED.set('greens',JSON.stringify(S)); D.best=S.best.zen;
     if(n<=PAR){ FORAGE.use('golf',-10,610); if(n<PAR){ FORAGE.use('golf',-10,610); INV.cash+=5; say('THE HOLODECK PAYS $5 FOR GOING UNDER PAR.','#f2c14e'); } }
     card(); setTimeout(()=>{ if(!D)return; place(TEE.x,TEE.z); D.strokes=0; D.done=false; say('THE BALL IS BACK ON THE TEE.','#9b9584'); card(); },2600); };
 
   /* ---------- addressing the ball on screen: F or the ball itself walks you behind it; the mouse aims, the held button draws back ---------- */
-  const warp=()=>{ if(!D||!W)return; const dx=CUP.x-B.x, dz=CUP.z-B.z, l=Math.hypot(dx,dz)||1, ux=dx/l, uz=dz/l;
+  const warp=()=>{ '@later'; if(!D||!W)return; const dx=CUP.x-B.x, dz=CUP.z-B.z, l=Math.hypot(dx,dz)||1, ux=dx/l, uz=dz/l;
     const side=WIELD.hand==='L'?-1:1; pos.x=wx(B.x-ux*.3+uz*side*.38); pos.z=wz(B.z-uz*.3-ux*side*.38); SHARED.target=null; SHARED.heading=Math.atan2(ux,uz); D.aimA=SHARED.heading; D.addr=true; if(WIELD.on!=='putter')WIELD.set('putter'); };
   const nearBall=()=>Math.hypot(lx()-B.x,lz()-B.z)<1.5;
   const aimDir=()=>[Math.sin(D.aimA),Math.cos(D.aimA)];
@@ -75,7 +75,7 @@ import {PAD} from './075-main-13.js';
   const undo=()=>{ if(!D||!D.prev||!B.rest||D.done)return; place(D.prev.x,D.prev.z); D.strokes=D.prev.s; D.prev=null; D.addr=false; D.charge=null; say('THE PUTT IS TAKEN BACK.','#9b9584'); card(); };
   const padNow=()=>{ if(VR.on)return PAD.xr||null; const L=navigator.getGamepads?[...navigator.getGamepads()]:[]; return L.find(g=>g&&g.connected&&g.mapping==='standard')||L.find(g=>g&&g.connected)||null; };
   // a pad on screen: d-pad left walks you to the ball, the right stick aims, RT held and let go putts, d-pad down takes the putt back; in the headset the putter hand's trigger walks you to the ball and B takes it back
-  const padStep=dt=>{ const g=padNow(); if(!g){ D.pb=null; return; } const pr=D.pb||[], bv=i=>(g.buttons[i]&&g.buttons[i].value)||0, edge=i=>bv(i)>.5&&!((pr[i]||0)>.5);
+  const padStep=dt=>{ '@later'; const g=padNow(); if(!g){ D.pb=null; return; } const pr=D.pb||[], bv=i=>(g.buttons[i]&&g.buttons[i].value)||0, edge=i=>bv(i)>.5&&!((pr[i]||0)>.5);
     if(!VR.on){ if(edge(14)&&B.rest&&!D.done)warp(); if(edge(13))undo();
       if(D.addr&&B.rest&&!D.done){ const rx=g.axes[2]||0; if(Math.abs(rx)>.2){ D.aimA+=rx*dt*1.2; ms.x=-1; }
         if(bv(7)>.5){ if(!D.charge)D.charge={t:0,pad:1}; } else if(D.charge&&D.charge.pad){ const p=power(D.charge.t); D.charge=null; const [ux,uz]=aimDir(); D.swing={t:0}; hit(ux,uz,.45+p*3.9); } } }
@@ -98,28 +98,28 @@ import {PAD} from './075-main-13.js';
   const petalTex=()=>cvs(32,(g,w,h)=>{ g.clearRect(0,0,w,h); const grd=g.createRadialGradient(16,16,2,16,16,14); grd.addColorStop(0,'rgba(255,214,228,1)'); grd.addColorStop(.7,'rgba(255,170,200,.9)'); grd.addColorStop(1,'rgba(255,170,200,0)'); g.fillStyle=grd; g.beginPath(); g.ellipse(16,16,14,10,.6,0,7); g.fill(); });
   const softTex=()=>cvs(64,(g,w,h)=>{ g.clearRect(0,0,w,h); const grd=g.createRadialGradient(32,32,2,32,32,30); grd.addColorStop(0,'rgba(255,255,255,.9)'); grd.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=grd; g.fillRect(0,0,w,h); });
 
-  const boulder=(sz,seed)=>{ const g=new THREE.IcosahedronGeometry(1,2), P=g.attributes.position, v=new V3(); for(let i=0;i<P.count;i++){ v.fromBufferAttribute(P,i); const n=1+(hashN(v.x*7+seed,v.y*5+v.z*3)-.5)*.42; v.multiplyScalar(n); v.y*=.72; P.setXYZ(i,v.x,v.y,v.z); } g.computeVertexNormals();
+  const boulder=(sz,seed)=>{ '@later'; const g=new THREE.IcosahedronGeometry(1,2), P=g.attributes.position, v=new V3(); for(let i=0;i<P.count;i++){ v.fromBufferAttribute(P,i); const n=1+(hashN(v.x*7+seed,v.y*5+v.z*3)-.5)*.42; v.multiplyScalar(n); v.y*=.72; P.setXYZ(i,v.x,v.y,v.z); } g.computeVertexNormals();
     const me=new THREE.Mesh(g,W.M.stone); me.scale.setScalar(m(sz)); me.castShadow=me.receiveShadow=true; return me; };
-  const lantern=(x,z)=>{ const G=new THREE.Group(), s=W.M.granite, add=(geo,y,mat)=>{ const q=new THREE.Mesh(geo,mat||s); q.position.y=m(y); q.castShadow=q.receiveShadow=true; G.add(q); return q; };
+  const lantern=(x,z)=>{ '@later'; const G=new THREE.Group(), s=W.M.granite, add=(geo,y,mat)=>{ const q=new THREE.Mesh(geo,mat||s); q.position.y=m(y); q.castShadow=q.receiveShadow=true; G.add(q); return q; };
     add(new THREE.CylinderGeometry(m(.3),m(.36),m(.14),8),.07); add(new THREE.CylinderGeometry(m(.1),m(.13),m(.9),8),.6); add(new THREE.CylinderGeometry(m(.34),m(.22),m(.1),8),1.1);
     const box=add(new THREE.BoxGeometry(m(.36),m(.34),m(.36)),1.33); for(const [a,b] of [[0,1],[0,-1],[1,0],[-1,0]]){ const win=new THREE.Mesh(new THREE.PlaneGeometry(m(.16),m(.18)),W.M.glow); win.position.set(m(a*.181),m(1.33),m(b*.181)); win.rotation.y=Math.atan2(a,b); G.add(win); }
     const roof=add(new THREE.ConeGeometry(m(.5),m(.26),4),1.63); roof.rotation.y=Math.PI/4; add(new THREE.SphereGeometry(m(.07),8,6),1.84);
     const L=new THREE.PointLight(0xffb86a,8,m(9),2); L.position.y=m(1.33); G.add(L); G.position.set(wx(x),0,wz(z)); return G; };
-  const maple=(x,z,sz,seed)=>{ const G=new THREE.Group(), wood=W.M.bark, Q=new THREE.Quaternion(), UP=new V3(0,1,0);
+  const maple=(x,z,sz,seed)=>{ '@later'; const G=new THREE.Group(), wood=W.M.bark, Q=new THREE.Quaternion(), UP=new V3(0,1,0);
     const limb=(a,b,ra,rb)=>{ const d=new V3().subVectors(b,a), L=d.length(), q=new THREE.Mesh(new THREE.CylinderGeometry(rb,ra,L,7,1),wood); q.position.copy(a).addScaledVector(d,.5); q.quaternion.copy(Q.setFromUnitVectors(UP,d.clone().normalize())); q.castShadow=true; G.add(q); };
     const top=new V3(m(.25*sz),m(1.7*sz),m(.1*sz)); limb(new V3(0,0,0),top,m(.14*sz),m(.09*sz)); const ends=[];
     for(let i=0;i<5;i++){ const a=i/5*Math.PI*2+seed, e=new V3(top.x+Math.cos(a)*m(1.3*sz),top.y+m(.5*sz+hashN(i,seed)*.7*sz),top.z+Math.sin(a)*m(1.3*sz)); limb(top,e,m(.07*sz),m(.025*sz)); ends.push(e); const e2=new V3(e.x+Math.cos(a+.9)*m(.7*sz),e.y+m(.3*sz),e.z+Math.sin(a+.9)*m(.7*sz)); limb(e,e2,m(.025*sz),m(.01*sz)); ends.push(e2); }
     const n=150, geo=new THREE.PlaneGeometry(m(.34*sz),m(.34*sz)), cards=new THREE.InstancedMesh(geo,W.M.maple,n), MM=new THREE.Matrix4(), p=new V3(), e=new THREE.Euler(), sc=new V3(1,1,1);
     for(let i=0;i<n;i++){ const c=ends[i%ends.length], r=m((.35+hashN(i,3)*.9)*sz); p.set(c.x+(hashN(i,1)-.5)*2*r,c.y+(hashN(i,2)-.5)*1.4*r,c.z+(hashN(i,4)-.5)*2*r); e.set(hashN(i,5)*Math.PI,hashN(i,6)*Math.PI,hashN(i,7)*Math.PI); MM.compose(p,Q.setFromEuler(e),sc); cards.setMatrixAt(i,MM); }
     cards.castShadow=true; G.add(cards); G.position.set(wx(x),0,wz(z)); return G; };
-  const bamboo=(x,z,n)=>{ const G=new THREE.Group(), blade=new THREE.PlaneGeometry(m(.05),m(.3)); for(let i=0;i<n;i++){ const bx=x+(hashN(i,11)-.5)*2.2, bz=z+(hashN(i,12)-.5)*2.2, hgt=3+hashN(i,13)*1.6, lean=(hashN(i,14)-.5)*.12, segs=Math.round(hgt/.42);
+  const bamboo=(x,z,n)=>{ '@later'; const G=new THREE.Group(), blade=new THREE.PlaneGeometry(m(.05),m(.3)); for(let i=0;i<n;i++){ const bx=x+(hashN(i,11)-.5)*2.2, bz=z+(hashN(i,12)-.5)*2.2, hgt=3+hashN(i,13)*1.6, lean=(hashN(i,14)-.5)*.12, segs=Math.round(hgt/.42);
       const stalk=new THREE.Group(); for(let k=0;k<segs;k++){ const q=new THREE.Mesh(new THREE.CylinderGeometry(m(.028),m(.03),m(.42),7),W.M.bamboo); q.position.y=m(.21+k*.42); stalk.add(q); const ring=new THREE.Mesh(new THREE.TorusGeometry(m(.031),m(.006),5,10),W.M.node); ring.rotation.x=Math.PI/2; ring.position.y=m(k*.42); stalk.add(ring); }
       for(let k=0;k<7;k++){ const lf=new THREE.Mesh(blade,W.M.blade); lf.position.set(m((hashN(k,i)-.5)*.5),m(hgt-.2-hashN(k,i+1)*1.4),m((hashN(k,i+2)-.5)*.5)); lf.rotation.set(hashN(k,i+3)*1.2-.6,hashN(k,i+4)*6.28,hashN(k,i+5)*1.2-.6); stalk.add(lf); }
       stalk.rotation.z=lean; stalk.rotation.x=(hashN(i,15)-.5)*.1; stalk.position.set(wx(bx),0,wz(bz)); stalk.traverse(q=>{ if(q.isMesh)q.castShadow=true; }); G.add(stalk); } return G; };
-  const bridge=(x,z,ang)=>{ const G=new THREE.Group(), wood=W.M.plank; for(let i=0;i<11;i++){ const u=(i-5)/5, p=new THREE.Mesh(new THREE.BoxGeometry(m(1.2),m(.05),m(.26)),wood); p.position.set(0,m(.42-.42*u*u),m(u*1.5)); p.rotation.x=-u*.5; p.castShadow=p.receiveShadow=true; G.add(p); }
+  const bridge=(x,z,ang)=>{ '@later'; const G=new THREE.Group(), wood=W.M.plank; for(let i=0;i<11;i++){ const u=(i-5)/5, p=new THREE.Mesh(new THREE.BoxGeometry(m(1.2),m(.05),m(.26)),wood); p.position.set(0,m(.42-.42*u*u),m(u*1.5)); p.rotation.x=-u*.5; p.castShadow=p.receiveShadow=true; G.add(p); }
     for(const sx of [-1,1])for(let i=0;i<5;i++){ const u=(i-2)/2, post=new THREE.Mesh(new THREE.BoxGeometry(m(.07),m(.5),m(.07)),wood); post.position.set(m(sx*.6),m(.42-.42*u*u+.25),m(u*1.5)); G.add(post); const rail=new THREE.Mesh(new THREE.BoxGeometry(m(.06),m(.06),m(3.2)),wood); rail.position.set(m(sx*.6),m(.42-.42*.5*.5+.5),0); G.add(rail); }
     G.position.set(wx(x),0,wz(z)); G.rotation.y=ang; return G; };
-  const koi=()=>{ const G=new THREE.Group(), body=new THREE.Mesh(new THREE.SphereGeometry(m(.09),10,7),W.M.koi[Math.floor(rnd()*3)]); body.scale.set(1,.7,2.4); const tail=new THREE.Mesh(new THREE.ConeGeometry(m(.07),m(.18),6),body.material); tail.rotation.x=Math.PI/2; tail.position.z=-m(.3); G.add(body,tail); G.tail=tail; return G; };
+  const koi=()=>{ '@later'; const G=new THREE.Group(), body=new THREE.Mesh(new THREE.SphereGeometry(m(.09),10,7),W.M.koi[Math.floor(rnd()*3)]); body.scale.set(1,.7,2.4); const tail=new THREE.Mesh(new THREE.ConeGeometry(m(.07),m(.18),6),body.material); tail.rotation.x=Math.PI/2; tail.position.z=-m(.3); G.add(body,tail); G.tail=tail; return G; };
 
   const build=()=>{ '@greens';
     const G=new THREE.Group(); G.name='greens'; scene.add(G); W={G,t:0,anim:[]};
@@ -190,19 +190,19 @@ import {PAD} from './075-main-13.js';
     G.traverse(q=>{ if(q.isMesh&&q.material&&q.material.map&&!q.material.map.anisotropy)q.material.map.anisotropy=4; });
     return ROOMS.part(G,()=>{},null); };
 
-  const unbuild=()=>{ if(W&&W.thing){ const i=UI.things.indexOf(W.thing); if(i>=0)UI.things.splice(i,1); } const G=W&&W.G; if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material){ for(const mt of [].concat(c.material)){ for(const k of ['map','bumpMap','normalMap'])if(mt[k])mt[k].dispose(); mt.dispose(); } } }); G.removeFromParent(); }
+  const unbuild=()=>{ '@later'; if(W&&W.thing){ const i=UI.things.indexOf(W.thing); if(i>=0)UI.things.splice(i,1); } const G=W&&W.G; if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material){ for(const mt of [].concat(c.material)){ for(const k of ['map','bumpMap','normalMap'])if(mt[k])mt[k].dispose(); mt.dispose(); } } }); G.removeFromParent(); }
     if(scene.fog===FG)scene.fog=null; if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; } if(amb){ try{ amb.s.stop(); }catch(e){} amb=null; } W=null; };
   ROOMS.off.greens={name:'THE GREENS',noCeil:1,box:{x0:WX-m(150),z0:WZ-m(150),x1:WX+m(150),z1:WZ+m(150),y0:-3,y1:m(150)},spawn:[wx(TEE.x),wz(TEE.z-1.2),0,0],out:[wx(TEE.x),wz(TEE.z-1.2),0,0],need:()=>window.LOAD?LOAD('greens'):Promise.resolve(),build,unbuild};
 
   /* ---------- the card: hole, par, strokes, your best; the power bar while you draw back ---------- */
-  const card=()=>{ if(!D)return; let c=document.getElementById('greensc'); if(!c){ c=document.createElement('div'); c.id='greensc'; c.style.cssText='position:fixed;right:16px;bottom:16px;z-index:20;padding:8px 12px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;min-width:150px;zoom:var(--uiz,1)'; document.body.appendChild(c); }
+  const card=()=>{ '@later'; if(!D)return; let c=document.getElementById('greensc'); if(!c){ c=document.createElement('div'); c.id='greensc'; c.style.cssText='position:fixed;right:16px;bottom:16px;z-index:20;padding:8px 12px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;min-width:150px;zoom:var(--uiz,1)'; document.body.appendChild(c); }
     c.hidden=false; const b=D.best; c.innerHTML='<div style="color:#f2c14e">THE GREENS · THE ZEN GARDEN</div><div>HOLE 1 · PAR '+PAR+' · STROKES <b>'+D.strokes+'</b></div><div style="color:#9b9584">BEST '+(b==null?'—':b)+' · ROUNDS '+D.rounds+'</div><div id="greenspw" style="margin-top:6px;height:6px;background:#1a1d26;border:1px solid #3a3f4e;display:none"><div style="height:100%;width:0;background:#7dffa4"></div></div>'; if(UI.menuLook)UI.menuLook(); };
   const cardOff=()=>{ const c=document.getElementById('greensc'); if(c)c.hidden=true; };
 
   /* ---------- the program ---------- */
   H.programs.push({ name:'THE GREENS', skill:'golf', cost:COST, offWorld:true, room:'greens', tool:'putter',
     intro:'THE GREENS. A ZEN GARDEN DEEP IN A FOGGY VALLEY, ONE HOLE, PAR '+PAR+'. WALK TO YOUR BALL (OR PRESS F). THE MOUSE AIMS, HOLD THE BUTTON TO DRAW BACK, LET GO TO PUTT. ON A PAD: D-PAD LEFT WALKS TO THE BALL, THE RIGHT STICK AIMS, HOLD RT AND LET GO, D-PAD DOWN TAKES IT BACK. IN THE HEADSET, SWING; YOUR PUTTER HAND\'S TRIGGER WALKS TO THE BALL, B TAKES IT BACK.',
-    go:R=>{ const d=D=Object.assign(R,{strokes:0,rounds:0,done:false,addr:false,aimA:0,charge:null,swing:null,best:null,ready:false,prevTip:null,cool:0}); try{ const S=JSON.parse(OWNED.get('greens')||'{}'); D.best=S&&S.best?S.best.zen:null; }catch(e){}
+    go:R=>{ '@later'; const d=D=Object.assign(R,{strokes:0,rounds:0,done:false,addr:false,aimA:0,charge:null,swing:null,best:null,ready:false,prevTip:null,cool:0}); try{ const S=JSON.parse(OWNED.get('greens')||'{}'); D.best=S&&S.best?S.best.zen:null; }catch(e){}
       if(!ROOMS.enterAt)return; place(TEE.x,TEE.z);
       ROOMS.enterAt('greens',[wx(TEE.x),wz(TEE.z-1.2),0,0]).then(()=>{ if(D!==d)return;
         savedView=UI.view; if(UI.setView&&UI.view==='iso')UI.setView('follow'); savedGY=SHARED.groundY; SHARED.groundY=(x,z)=>{ const q=near((x-WX)/M,(z-WZ)/M); return q.d<LANEW/2?m(hOf(q.s)):0; };
@@ -211,7 +211,7 @@ import {PAD} from './075-main-13.js';
         addEventListener('keydown',onkey,true); const cv=renderer.domElement; cv.addEventListener('pointermove',onMove); cv.addEventListener('pointerdown',onDown,true); addEventListener('pointerup',onUp,true);
         keyoff=()=>{ removeEventListener('keydown',onkey,true); cv.removeEventListener('pointermove',onMove); cv.removeEventListener('pointerdown',onDown,true); removeEventListener('pointerup',onUp,true); };
         amb=SFX.play('rain',{vol:.05}); d.ready=true; card(); }); },
-    run:(R,dt)=>{ if(!D||!D.ready||!W)return; dt=Math.min(dt||1/60,.1); W.t+=dt;
+    run:(R,dt)=>{ '@later'; if(!D||!D.ready||!W)return; dt=Math.min(dt||1/60,.1); W.t+=dt;
       // the garden breathes: water, fall, mist, koi, petals, the knocking bamboo, the flag
       if(W.rip){ W.rip.offset.x+=dt*.012; W.rip.offset.y+=dt*.008; } if(W.fall)W.fall.offset.y-=dt*.9;
       if(W.mist){ const a=W.mist.geometry.attributes.position; for(let i=0;i<a.count;i++){ let y=a.getY(i)+dt*m(.25); if(y>m(1.1))y=0; a.setY(i,y); } a.needsUpdate=true; }
@@ -235,7 +235,7 @@ import {PAD} from './075-main-13.js';
       else { W.guide.visible=false; D.cool-=dt; if(WIELD.on==='putter'&&WIELD.tip.lengthSq()>0&&B.rest&&!D.done){ const tip=WIELD.tip, p=new V3((tip.x-WX)/M,tip.y/M,(tip.z-WZ)/M), pv=D.prevTip; D.prevTip=p;
           if(pv&&D.cool<=0){ const v=new V3().subVectors(p,pv).divideScalar(dt), sp=Math.hypot(v.x,v.z), bh=hOf(near(B.x,B.z).s)+BALLR, d=new V3().subVectors(p,pv), L=d.lengthSq(), bp=new V3(B.x,bh,B.z), u=L>1e-9?Math.max(0,Math.min(1,bp.clone().sub(pv).dot(d)/L)):0, cl=pv.clone().addScaledVector(d,u);
             if(cl.distanceTo(bp)<HEADR+BALLR&&sp>.35){ D.cool=.5; hit(v.x,v.z,sp*1.25); } } } else D.prevTip=null; } },
-    hide:()=>{ if(!D)return; D=null; cardOff(); if(scene.fog===FG)scene.fog=null; const off=ROOMS.offIn&&ROOMS.offIn()==='greens', Hl=H.hall;
+    hide:()=>{ '@later'; if(!D)return; D=null; cardOff(); if(scene.fog===FG)scene.fog=null; const off=ROOMS.offIn&&ROOMS.offIn()==='greens', Hl=H.hall;
       if(savedGY){ SHARED.groundY=savedGY; savedGY=null; } if(savedView&&UI.setView){ UI.setView(savedView); savedView=null; } if(keyoff){ keyoff(); keyoff=null; } if(amb){ try{ amb.s.stop(); }catch(e){} amb=null; }
       if(off&&Hl&&ROOMS.enterAt)ROOMS.enterAt('arcade',[Hl.x,Hl.z,0,Math.PI]); else if(ROOMS.lazy&&ROOMS.lazy.greens&&ROOMS.lazy.greens.drop)ROOMS.lazy.greens.drop(); } });
   window.GREENS={putt:(ang,speed)=>hit(Math.sin(ang),Math.cos(ang),speed),toCup:()=>{ const q=near(B.x,B.z); return {ang:Math.atan2(CUP.x-B.x,CUP.z-B.z),d:Math.hypot(CUP.x-B.x,CUP.z-B.z),s:q.s,len:LEN}; },warp,place:(x,z)=>place(x,z),cup:CUP,tee:TEE};

@@ -19,7 +19,7 @@ import {TILE} from './006-map-pre.js';
   FORAGE.GIFTS.push({is:id=>/^br_/.test(id),place:'museum',pay:id=>(PR[id]||10)*2,thanks:(id,p)=>`THE MUSEUM'S LIBRARY SHELVES YOUR ${NM[id]} AND PAYS $${p}.`});
   FORAGE.BOOK.push({id:'books',title:'BOOKS',rows:()=>BK.map(b=>[b[2],FORAGE.has('br_'+b[0])>0||FORAGE.gave('museum','br_'+b[0])||!!(FORAGE.S.made&&FORAGE.S.made['br_'+b[0]]),FORAGE.gave('museum','br_'+b[0])?'IN THE MUSEUM':'',b[3]>=60]),foot:'Old books turn up in the trash cans. Mend them with a binder\'s kit; give the museum\'s library the first of each.'});
   const BC={atlas:0x2a5a8a,first:0x6a1a1a,herbal:0x3a6a2a,hymnal:0x2a2a2a,ledger:0x5a3a1a,novel:0x7a4a6a,paper:0xc8a040};
-  INSPECT.kinds.push({is:id=>/^(bk|br)_/.test(id)&&!!BC[id.slice(3)]||/^bs_/.test(id),make:id=>{ const P=INSPECT.part;
+  INSPECT.kinds.push({is:id=>/^(bk|br)_/.test(id)&&!!BC[id.slice(3)]||/^bs_/.test(id),make:id=>{ '@later'; const P=INSPECT.part;
     if(id==='bs_glue')return INSPECT.shape('jar',0xe8e0c0,0xb08a5a); if(id==='bs_kit')return INSPECT.shape('parcel',0x5a4030,0x2a2018);
     if(id==='bs_thread'){ const g=new THREE.Group(); g.add(P('cyl',0xe8e0cc,0,0,0,.04,.07,.04),P('cyl',0x8a6a44,0,0,0,.05,.012,.05),P('cyl',0x8a6a44,0,.04,0,.05,.012,.05)); g.children[2].position.y=-.04; g.children[1].position.y=.04; return g; }
     if(/^bs_/.test(id))return INSPECT.shape('book',id==='bs_leather'?0x8a5a32:0x6a7a9a,id==='bs_leather'?0x7a4a28:0x5a6a8a);

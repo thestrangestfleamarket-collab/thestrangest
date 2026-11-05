@@ -105,7 +105,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
       brow=(p,fh,arch,sc,k,ph)=>Math.max(p.y-line(p,fh,arch,sc,k,ph),H.z+1.2+.07*sq(p.y-H.y-1)-p.z),
       ears=p=>Math.min(ell(p,ad(H,Vv(6.9,-2.6,-1.1)),Vv(2.4,3.3,2.9)),ell(p,ad(H,Vv(-6.9,-2.6,-1.1)),Vv(2.4,3.3,2.9))),
       nape=(p,y,a,k)=>H.y+y+a*Math.cos(th(p)*k)-p.y,
-      cap=o=>p=>{ const fr=p.z>H.z?.4+.6*cl((p.y-line(p,o.fh??3.4,o.arch??.7,0,1))/2.5,0,1):1;
+      cap=o=>p=>{ '@later'; const fr=p.z>H.z?.4+.6*cl((p.y-line(p,o.fh??3.4,o.arch??.7,0,1))/2.5,0,1):1;
         let d=skull(p)-fr*(o.t+(o.crown||0)*Math.max(0,up(p))+(o.bell||0)*Math.max(0,-up(p)))-fr*grain(p,o.N||24,o.g||.18);
         d=Math.max(d,-brow(p,o.fh??3.4,o.arch??.7,o.sc??.5,o.k??.9,o.ph)); if(!o.ears)d=Math.max(d,-ears(p),-Math.max(4.6-Math.abs(p.x-H.x),H.z-2.0-p.z,p.y-H.y-.3)); return Math.max(d,nape(p,o.ny??-3.4,o.na??.6,o.nk??5)); },
       tube=(pts,rs,p)=>{ let d=1e9; for(let i=0;i+1<pts.length;i++)d=sm(d,R.rcone(p,ad(H,pts[i]),ad(H,pts[i+1]),rs[i],rs[i+1]),1.0); return d; },
@@ -137,7 +137,7 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
              V('hairSlick','hair','hair',p=>sm(cap({t:.55,crown:1.5,g:.3,N:14,fh:4.3,arch:1.1,sc:.1,k:.6,ny:-3.4,na:.4,nk:3})(p)-.25*Math.cos((p.x-H.x)*2.2)*cl(up(p)+.3,0,1),
                Math.max(ell(p,ad(H,Vv(0,6.6,3.0)),Vv(5.2,2.6,3.6)),-brow(p,4.3,1.1,.1,.6)),1.4)),
              V('hairSpiky','hair','hair',p=>{ let d=cap({t:.7,crown:.4,g:.25,N:18,fh:3.6,arch:.6,sc:.6,k:1.5,ny:-3.4,na:.6,nk:6})(p); for(const f of SPK)d=sm(d,f(p),.9); return d; }),
-             V('hairMohawk','hair','hair',p=>{ const side=cap({t:.14,g:.05,N:70,fh:4.0,arch:.9,sc:0,k:1,ny:-3.4,na:.4,nk:3})(p), z=p.z-H.z, a=cl((z+6.2)/12.8,0,1);
+             V('hairMohawk','hair','hair',p=>{ '@later'; const side=cap({t:.14,g:.05,N:70,fh:4.0,arch:.9,sc:0,k:1,ny:-3.4,na:.4,nk:3})(p), z=p.z-H.z, a=cl((z+6.2)/12.8,0,1);
                const crest=Math.max(Math.hypot((p.x-H.x)/(1.25-.25*a),(p.y-H.y-7.0-1.4*Math.sin(a*Math.PI)-.6*sq(Math.sin(z*1.3)))/2.8)-1,Math.abs(z-.2)-6.4,H.y+3-p.y); return sm(side,crest,1.2); }),
              V('hairCurly','hair','hair',p=>Math.max(sm(cap({t:.8,crown:.4,g:.2,N:20,fh:3.6,arch:.7,sc:.7,k:1.3,ny:-3.2,na:.8,nk:7})(p),curls(p),.8),-brow(p,3.0,.7,.6,1.3))),
              V('hairPixie','hair','hair',p=>sm(cap({t:.7,crown:.7,g:.3,N:26,fh:4.2,arch:.6,sc:.4,k:1.2,ny:-4.4,na:1.0,nk:6})(p),Math.max(tube([Vv(-4.0,6.4,3.4),Vv(.5,5.4,5.9),Vv(4.6,3.0,6.2)],[1.9,1.4,.3],p),-skull(p)-.1),.8)),

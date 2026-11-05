@@ -74,14 +74,14 @@ const WATERS=[
 RIVER.WATERS=WATERS;
 try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s&&s.v===2){ RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){}
 const setWater=U=>{ const Wt=WATERS[RIVER.wi]; U.uSig.value.set(...Wt.sig); U.uScat.value.set(...Wt.scat); U.uFoam.value=Wt.foam; U.uRefr.value=Wt.refr; U.uRefl.value=Wt.refl||.45; U.uHi.value.setRGB(...(Wt.hi||[.05,.22,.22])); };
-const SURFS=[]; RIVER.surface=o=>{ const U={uUW:SH.uUW,uUWF:SH.uUWF,uUWC:SH.uUWC,uT:SH.uT,uWA:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4(1,0,0,0))},uWB:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4())},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4(-1e7,1e7,0,0)},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:SH.uRipOn,uRT:{value:1/FLOW.G},uScene:{value:null},uDepth:{value:null},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:1},uBed:{value:o.bed},uBedR:{value:o.bedR},
+const SURFS=[]; RIVER.surface=o=>{ '@later'; const U={uUW:SH.uUW,uUWF:SH.uUWF,uUWC:SH.uUWC,uT:SH.uT,uWA:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4(1,0,0,0))},uWB:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4())},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4(-1e7,1e7,0,0)},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:SH.uRipOn,uRT:{value:1/FLOW.G},uScene:{value:null},uDepth:{value:null},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:1},uBed:{value:o.bed},uBedR:{value:o.bedR},
     uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:o.lv},uBank:{value:new THREE.Vector2(-1e7,1e7)},uSunD:SH.uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,uLP:SH.uLP,uLC:SH.uLC,uStep:SH.uStep,uRefl:{value:.45},uHi:{value:new THREE.Color()}};
   const m=new THREE.ShaderMaterial({uniforms:U,side:THREE.DoubleSide,fog:false,transparent:true,depthWrite:false,vertexShader:SURF.vertexShader,fragmentShader:SURF.fragmentShader}); SURFS.push(U); setWater(U); return m; };
 // once a frame (the river's tick, or the lake's while the river is not built): the shared uniforms from the clock, the sky and the lamps
 RIVER.shade=()=>{ if(!CLOCK.sun)return; if(!RIVER.on){ SH.uT.value=RIVER.t; SH.uRipOn.value=FLOW.on.value?1:0; SHARED.cam.getWorldDirection(SH.uCamD.value); }
   const S=CLOCK.sun; SH.uSunD.value.copy(CLOCK.sunV); SH.uSunC.value.copy(S.color).multiplyScalar(Math.min(1.4,S.intensity)); if(window.SKY&&SKY.U){ SH.uSkyH.value.copy(SKY.U.uH.value); SH.uSkyZ.value.copy(SKY.U.uZ.value); }
   SH.uAmb.value.copy(SH.uSkyZ.value).multiplyScalar(.55).addScalar(.03); LITE.pool.forEach((Lp,i)=>{ if(i>=8)return; SH.uLP.value[i].copy(Lp.position); SH.uLC.value[i].set(Lp.color.r,Lp.color.g,Lp.color.b).multiplyScalar(Math.min(1,Lp.intensity/3)); }); SH.uStep.value=RIVER.step?1:0; };
-RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
+RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RING, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, QSr=new URLSearchParams(location.search);
   const MPU=0.84/T, WU=1/MPU;
   const L=MODS.landR, lx0=L.x0*T, lx1=L.x1*T, rz0=Math.min(ZS(R.river.y0),ZS(R.river.y1)), rz1=Math.max(ZS(R.river.y0),ZS(R.river.y1));
   RIVER.mouth={x:XS(117.5),z:(rz0+rz1)/2};
@@ -220,7 +220,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   const spray=dt=>{ const g=9.81*WU; let k=0; for(let i=0;i<SP.n;i++){ const p=SP.p, v=SP.v; v[i*3+1]-=g*dt; for(let q=0;q<3;q++)p[i*3+q]+=v[i*3+q]*dt; const x=p[i*3], y=p[i*3+1], z=p[i*3+2];
       if(y<LV+hAt(x,z)&&v[i*3+1]<0){ RIVER.drop(x,z,.12*T,.004*WU); continue; } if(k!==i)for(let q=0;q<3;q++){ p[k*3+q]=p[i*3+q]; v[k*3+q]=v[i*3+q]; } k++; }
     SP.n=k; spg.attributes.position.array.set(SP.p.subarray(0,k*3)); spg.attributes.position.needsUpdate=true; spg.setDrawRange(0,k); };
-  const sound=(s,muff)=>{ try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Math.floor(c.sampleRate*.8), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=(l+.05*(Math.random()*2-1))/1.05; d[i]=l*4*Math.exp(-i/n*(5-s*2)); }
+  const sound=(s,muff)=>{ '@later'; try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Math.floor(c.sampleRate*.8), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=(l+.05*(Math.random()*2-1))/1.05; d[i]=l*4*Math.exp(-i/n*(5-s*2)); }
     const src=c.createBufferSource(); src.buffer=b; const f=c.createBiquadFilter(); f.type=muff?'lowpass':'bandpass'; f.frequency.value=muff?300:1300; f.Q.value=.6; const G=c.createGain(); G.gain.value=(.25+s*.5)*SFX.vol; src.connect(f).connect(G).connect(c.destination); src.start(); }catch(e){} };
 
   RIVER.deep=false; let dbusy=false;
@@ -321,7 +321,7 @@ RIVER.build=()=>{ '@later'; if(RIVER.on)return; const n0=scene.children.length; 
   if(window.CLIP)window.CLIP.run(); };
 { const zA=()=>Math.min(SHARED.BOD.ZS(BLOCK.alley[0]),SHARED.BOD.ZS(BLOCK.alley[1])), zN=()=>Math.max(SHARED.BOD.ZS(BLOCK.alley[0]),SHARED.BOD.ZS(BLOCK.alley[1])); let busy=false;
   // the river's side of the map, but not the places built off the map there (your fire escape, the night market) nor your apartment
-  const offMap=(x,z)=>{ if(MODS.apts&&MODS.apts.inReal||ROOMS.boxAt&&ROOMS.boxAt(x,z))return true; const X=SHARED.BOD.X, Z=SHARED.BOD.Z; for(const n in STORE.off||{}){ const [a,b,c,d]=STORE.off[n].lot, x0=Math.min(X(a),X(c)), x1=Math.max(X(a),X(c)), z0=Math.min(Z(b),Z(d)), z1=Math.max(Z(b),Z(d)); if(x>x0&&x<x1&&z>z0&&z<z1)return true; } return false; };
+  const offMap=(x,z)=>{ '@later'; if(MODS.apts&&MODS.apts.inReal||ROOMS.boxAt&&ROOMS.boxAt(x,z))return true; const X=SHARED.BOD.X, Z=SHARED.BOD.Z; for(const n in STORE.off||{}){ const [a,b,c,d]=STORE.off[n].lot, x0=Math.min(X(a),X(c)), x1=Math.max(X(a),X(c)), z0=Math.min(Z(b),Z(d)), z1=Math.max(Z(b),Z(d)); if(x>x0&&x<x1&&z>z0&&z<z1)return true; } return false; };
   RIVER.inZone=(x,z)=>SHARED.LVL==='up'&&z<Math.min(zA(),SHARED.BOD.ZS(BLOCK.row2[0]))&&!offMap(x,z);
   // seen from near too (owner, 4 Nov 2026: "why isnt the hudson showing"): within NEAR of its side it is built quietly and drawn
   RIVER.zLine=()=>Math.min(zA(),SHARED.BOD.ZS(BLOCK.row2[0])); const NEAR=60*TILE;

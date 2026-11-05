@@ -14,7 +14,7 @@ const TOWERK={}; window.TOWERK=TOWERK;
   // the room's frame: an 8 m square off the map, its middle the room's
   const frame=()=>{ const o=[OX(),OZ()], h=4*MW; return IKIT.frame({x0:0,y0:0,x1:1,y1:1},(x,y)=>[o[0]-h+x*2*h,o[1]-h+y*2*h]); };
   // the lookout's chart: the park round the tower, the golems and the other players where they are now
-  TOWERK.chart=()=>{ const s=GTOWER.site&&GTOWER.site(); MINI.look("THE LOOKOUT'S CHART",(g,w,h)=>{ g.fillStyle='#e8dcb8'; g.fillRect(0,0,w,h); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.strokeRect(10,10,w-20,h-20); if(!s){ g.fillStyle='#2a2420'; g.fillText('THE CHART IS BLANK.',20,30); return; }
+  TOWERK.chart=()=>{ '@later'; const s=GTOWER.site&&GTOWER.site(); MINI.look("THE LOOKOUT'S CHART",(g,w,h)=>{ g.fillStyle='#e8dcb8'; g.fillRect(0,0,w,h); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.strokeRect(10,10,w-20,h-20); if(!s){ g.fillStyle='#2a2420'; g.fillText('THE CHART IS BLANK.',20,30); return; }
     const K=40*T, P=(x,z)=>[w/2+(x-s.x)/K*(w/2-20),h/2+(z-s.z)/K*(h/2-20)], dot=(x,z,c,r,lab)=>{ const [a,b]=P(x,z); if(a<12||a>w-12||b<12||b>h-12)return; g.fillStyle=c; g.beginPath(); g.arc(a,b,r,0,7); g.fill(); if(lab){ g.font='9px monospace'; g.fillText(lab,a+r+2,b-3); } };
     dot(s.x,s.z,'#8a3a2a',6,'THE TOWER');
     for(const r of (window.GOLEMS&&GOLEMS.list)||[])if(!r.dead)dot(r.N.st.x,r.N.st.z,'#5a5650',3);
@@ -26,7 +26,7 @@ const TOWERK={}; window.TOWERK=TOWERK;
   const unlook=()=>{ const S=TOWERK.spy; if(!S)return; TOWERK.spy=null; PCAM.fov=S.fov; PCAM.updateProjectionMatrix(); if(S.view&&S.view!=='first')UI.setView(S.view); };
   SYS.add('life',()=>{ const S=TOWERK.spy; if(S&&Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T)unlook(); },'146zn-spyglass');
   // the roof: up the ladder you stand by the spyglass; the hatch takes you back down into the guardroom
-  TOWERK.roof=()=>{ const s=GTOWER.site&&GTOWER.site(); if(!s)return; ROOMS.exit('sqtower'); let n=0; const up=()=>{ if((ROOMS.offIn&&ROOMS.offIn()==='sqtower'||window.FADE&&FADE.busy)&&n++<60)return setTimeout(up,250); onRoof(s); UI.goTo(s.x+.3*T,s.z+.2*T,s.top); say('YOU CLIMB OUT ONTO THE ROOF. THE SQUIRREL SALUTES.'); }; setTimeout(up,250); };
+  TOWERK.roof=()=>{ '@later'; const s=GTOWER.site&&GTOWER.site(); if(!s)return; ROOMS.exit('sqtower'); let n=0; const up=()=>{ if((ROOMS.offIn&&ROOMS.offIn()==='sqtower'||window.FADE&&FADE.busy)&&n++<60)return setTimeout(up,250); onRoof(s); UI.goTo(s.x+.3*T,s.z+.2*T,s.top); say('YOU CLIMB OUT ONTO THE ROOF. THE SQUIRREL SALUTES.'); }; setTimeout(up,250); };
   // on the roof the tower's own solids are lifted (they know no height) and its top is your ground; both come back once you are off it (down the hatch, or stepping off the edge)
   const onRoof=s=>{ if(TOWERK.lifted)return; const L=TOWERK.lifted=[]; for(let i=SOL.up.length-1;i>=0;i--){ const b=SOL.up[i]; if(b[0]<s.x&&b[2]>s.x&&b[1]<s.z&&b[3]>s.z){ L.push(b); SOL.up.splice(i,1); } } TOWERK.roofAt=s; };
   const offRoof=()=>{ const L=TOWERK.lifted; if(!L)return; TOWERK.lifted=null; TOWERK.roofAt=null; SOL.up.push(...L); };

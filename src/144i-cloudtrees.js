@@ -8,14 +8,14 @@ const CLOUDTREES={list:[]}; window.CLOUDTREES=CLOUDTREES;
   const GREEN=[[.37,.6,.32],[.43,.67,.36],[.5,.72,.4],[.31,.54,.28]];
   const puffMat=()=>new THREE.MeshLambertMaterial({color:0xffffff});   // the game's own look shades it, as it does the clouds
   // a tree's puffs in metres about its foot: [x,y,z,r,flow,colour]
-  const OAK=seed=>{ const P=[]; for(let i=0;i<46;i++){ const u=hs(seed+i,1)*6.28, v=Math.acos(2*hs(seed+i,2)-1), r=.75+hs(seed+i,3)*.4;
+  const OAK=seed=>{ '@later'; const P=[]; for(let i=0;i<46;i++){ const u=hs(seed+i,1)*6.28, v=Math.acos(2*hs(seed+i,2)-1), r=.75+hs(seed+i,3)*.4;
       P.push([Math.sin(v)*Math.cos(u)*2.5*r,4.6+Math.cos(v)*1.7*r,Math.sin(v)*Math.sin(u)*2.5*r,.55+hs(seed+i,4)*.6,1,Math.floor(hs(seed,i)*4)]); } return {P,trunk:[3.4,.28,.45]}; };
-  const PINE=seed=>{ const P=[]; for(let t=0;t<5;t++){ const y=2.2+t*1.15, rad=2.2-t*.42, n=10-t; for(let k=0;k<n;k++){ const u=k/n*6.28+t;
+  const PINE=seed=>{ '@later'; const P=[]; for(let t=0;t<5;t++){ const y=2.2+t*1.15, rad=2.2-t*.42, n=10-t; for(let k=0;k<n;k++){ const u=k/n*6.28+t;
       P.push([Math.cos(u)*rad,y+hs(seed+t,k)*.3,Math.sin(u)*rad,.55-t*.05,.6+t*.25,Math.floor(hs(seed,t*10+k)*4)]); } P.push([0,y+.2,0,.7-t*.08,.5,t%4]); } return {P,trunk:[2.2,.2,.35]}; };
   const KINDS={oak:OAK,pine:PINE};
   let LEAF=null, BARK=null; const M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), SC=new THREE.Vector3(), C=new THREE.Color();
   const build=list=>{ if(LEAF){ scene.remove(LEAF,BARK); LEAF.dispose(); BARK.dispose(); LEAF=BARK=null; } CLOUDTREES.list=[]; if(!list.length)return;
-    const trees=list.map((o,i)=>{ const K=(KINDS[o.kind]||OAK)(i*17+3), s=(o.s||1)*WU, x=o.wx??SHARED.BOD.XS(o.x), z=o.wz??SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0;
+    const trees=list.map((o,i)=>{ '@later'; const K=(KINDS[o.kind]||OAK)(i*17+3), s=(o.s||1)*WU, x=o.wx??SHARED.BOD.XS(o.x), z=o.wz??SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0;
       return {x,y,z,s,trunk:K.trunk,puffs:K.P.map(p=>({b:[p[0],p[1],p[2]],r:p[3],flow:p[4],c:p[5],off:[0,0,0],vel:[0,0,0],ph:hs(i,p[0]*7+p[2])*6.28}))}; });
     const n=trees.reduce((a,t)=>a+t.puffs.length,0);
     LEAF=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,3),puffMat(),n); LEAF.castShadow=LEAF.receiveShadow=true; LEAF.instanceMatrix.setUsage(THREE.DynamicDrawUsage); LEAF.frustumCulled=false;
@@ -23,7 +23,7 @@ const CLOUDTREES={list:[]}; window.CLOUDTREES=CLOUDTREES;
     let k=0; trees.forEach((t,i)=>{ const [h,r0,r1]=t.trunk; M4.compose(V.set(t.x,t.y,t.z),Q.identity(),SC.set((r0+r1)*.5*t.s,h*t.s,(r0+r1)*.5*t.s)); BARK.setMatrixAt(i,M4);
       for(const p of t.puffs){ p.i=k++; const g=GREEN[p.c]; LEAF.setColorAt(p.i,C.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); place(t,p,0); } });
     LEAF.instanceMatrix.needsUpdate=true; if(LEAF.instanceColor)LEAF.instanceColor.needsUpdate=true; scene.add(LEAF,BARK); CLOUDTREES.list=trees; };
-  const place=(t,p,time)=>{ const f=p.flow, wx=Math.sin(time*.7+p.ph)*.18*f, wy=Math.sin(time*1.1+p.ph*1.3)*.06*f, wz=Math.cos(time*.5+p.ph)*.12*f;
+  const place=(t,p,time)=>{ '@later'; const f=p.flow, wx=Math.sin(time*.7+p.ph)*.18*f, wy=Math.sin(time*1.1+p.ph*1.3)*.06*f, wz=Math.cos(time*.5+p.ph)*.12*f;
     M4.compose(V.set(t.x+(p.b[0]+p.off[0]+wx)*t.s,t.y+(p.b[1]+p.off[1]+wy)*t.s,t.z+(p.b[2]+p.off[2]+wz)*t.s),Q.identity(),SC.setScalar(p.r*t.s)); LEAF.setMatrixAt(p.i,M4); };
   // each frame, the trees near you flow in the wind; you push the puffs you walk into, and they spring back
   let time=0; SYS.add('life',dt=>{ if(!LEAF||!LEAF.visible||SHARED.LVL!=='up')return; time+=dt; dt=Math.min(dt,.05); let any=false;

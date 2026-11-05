@@ -112,7 +112,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
   // a held tool's arm: the rig's, moved so its shoulder is where the walking body's is
   const ARM={L:[3,4,5],R:[6,7,8]};
-  const keepArms=(PM,PR,body)=>{ for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
+  const keepArms=(PM,PR,body)=>{ '@later'; for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
       for(const j of ARM[side]){ PM.value[j].copy(PR.value[j]); PM.value[j].elements[12]+=O2.x; PM.value[j].elements[13]+=O2.y; PM.value[j].elements[14]+=O2.z; } } };
   const blend=(PM,PA,t)=>{ for(let i=0;i<NB;i++){ PM.value[i].decompose(P1,Q1,SC); PA.value[i].decompose(P2,Q2,O); Q1.slerp(Q2,t); P1.lerp(P2,t); PM.value[i].compose(P1,Q1,SC); } };
   // the feet on the actual ground (your avatar walking by its clips): each foot's ground under it, the hips lowered to the lower one, each leg bent (two bones) to put its foot there
@@ -167,7 +167,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
   const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};
-  BODIES.hand=(side,PM,body,B)=>{ if(!PM){ if(!ME||!W3.body.on)return null; PM=ME.PM; body=BODIES.by[MEK]; B=W3.lastB; } if(!body||!body.binv||!PM)return null; const [u,f,h]=ARMI[side==='L'?'L':'R'];
+  BODIES.hand=(side,PM,body,B)=>{ '@later'; if(!PM){ if(!ME||!W3.body.on)return null; PM=ME.PM; body=BODIES.by[MEK]; B=W3.lastB; } if(!body||!body.binv||!PM)return null; const [u,f,h]=ARMI[side==='L'?'L':'R'];
     jointAt(PM,body,u,HJ.shoulder); jointAt(PM,body,f,HJ.elbow); jointAt(PM,body,h,HJ.wrist); const J=B&&B.J, a=J&&J['palm'+side], b=J&&J['wrist'+side], d=a&&b?Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)*(body.KL||1):0;
     HJ.palm.subVectors(HJ.wrist,HJ.elbow).normalize().multiplyScalar(d).add(HJ.wrist); return HJ; };
 
@@ -192,7 +192,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
-  BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
+  BODIES.place=(key,x,z,hd,group)=>{ '@later'; const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
   BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; VIS.hide(N.g,'away'); } };
   // a borrowed body (one a place conjures for a while) goes back where it was: its group, spot, home and roaming
   BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; VIS.hide(N.g,'away',!P.on); delete N.prev; };
@@ -242,7 +242,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
-  BODIES.baked=(D,key,label,at,PAL,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
+  BODIES.baked=(D,key,label,at,PAL,more)=>{ '@later'; const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
     const geo=()=>{ const P=b.pos, T=b.tri, nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3);
       const C=D.colors.map(c=>new THREE.Color(PAL[c][0])), va=new V3(),vb=new V3(),vc=new V3(),n=new V3(),e=new V3();
       for(let f=0;f<nf;f++){ const ix=[T[f*3],T[f*3+1],T[f*3+2]]; va.fromArray(P,ix[0]*3); vb.fromArray(P,ix[1]*3); vc.fromArray(P,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();

@@ -100,8 +100,8 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   /* ---------- a bookcase: four shelves of ten real books, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:.62,H:2.05,D:.32,SH:[.08,.55,1.02,1.49],IN:.56,BW:.02};   // metres: the case, its shelves' tops, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
-  const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.2+hsh(b.id)*.1,d:.19+hsh(b.t)*.05});
-  LIB.shelfOf=C=>{ const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=Math.min(1,(BC.IN-.01)/sum); let x=-BC.IN/2+(BC.IN-sum*k)/2;
+  const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.33+hsh(b.id)*.08,d:.23+hsh(b.t)*.05});
+  LIB.shelfOf=C=>{ const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
     return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); }); };
   // one spine on a canvas: w x h px, x/y its corner
   const paintSpine=(g,x,y,w,h,b,im)=>{ g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);
@@ -195,7 +195,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     put(G,'clock',W/2,D-.02,0,-1,{h:2.25}); put(G,'plant',W-.45,D-.45,0,-1); put(G,'globe',W*.2+.45,D-.85,0,1,{h:1.0,s:1.3,shadow:false});
     sitIn('ARMCHAIR: SIT AND READ',W*.36,D*.5,.45,1,.2,.9); sitIn('VELVET CHAIR: SIT AND READ',W*.64,D*.5,.45,-1,.2,.8); sitIn('VELVET CHAIR: SIT AND READ',W/2,D*.7,.45,0,-1,.8);
     // the light: two glass pendants and the lamps, warm and low; a warm fill off the wood
-    for(const [u,v] of [[W*.35,D*.36],[W*.65,D*.36]]){ box(u-.005,v-.005,u+.005,v+.005,HT-.75,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,HT-.85,.14,0xfff0d0)); warm(u,v,HT-1.0,1.3,6,0xffd29a); }
+    for(const [u,v] of [[W*.35,D*.36],[W*.65,D*.36]]){ box(u-.005,v-.005,u+.005,v+.005,HT-.75,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,HT-.85,.09,0xfff0d0)); warm(u,v,HT-1.0,1.3,6,0xffd29a); }
     warm(W/2,D*.47,.95,1.2,4,0xffc070); warm(W*.26,D*.38,1.7,1.1,5,0xffc27a); warm(W*.2-.1,D-.97,1.3,.8,4,0xffd090);
     A.add(new THREE.HemisphereLight(0xffd6a0,0x4a2414,1.1));
     K.glow(()=>{ for(const [u,v,h,r] of [[W/2,D*.47,.9,.07],[W*.26,D*.38,1.62,.1]])K.cyl(u,v,r*.6,h-.02,h+.04,0xfff0c0); });

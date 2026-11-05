@@ -135,11 +135,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         B.place('knight', K.st.x + 1, K.st.z + 1, 0, G); const borrowed = K.g.parent === G && K.st.home.r === 0; B.restore('knight'); const back = K.g.parent === g0 && K.on === true && K.st.home.id === 'knight' && K.st.home.r > 0 && !K.prev;
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
-        U.toggleMenu(); const home = document.querySelector('#dhome'), tabs = document.querySelector('#menu .tabs');
-        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = !!(tabs && tabs.style.display === 'none'), open = U.menuOpen === true;
+        U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
+        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = secs === 'you,pack,map,people,bbs,guide,set' && U.menuNow()[0] === 'you', open = U.menuOpen === true;
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
-        let log = 0; if (window.CHARP && typeof CHARP.admin === 'function') { await LOAD('log'); CHARP.admin(); const ap = document.querySelector('#cpadmin'); log = ap ? ap.querySelectorAll('ul li').length : 0; if (ap) ap.hidden = true; }
+        let log = 0; if (window.CHARP && typeof CHARP.tools === 'function') { await LOAD('log'); const ap = document.createElement('div'); CHARP.tools(ap); log = ap.querySelectorAll('ul li').length; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.bodies = (() => { try { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = !!B.by.knight && !B.by.man && !B.by.woman, none = !B.by.knight.playable;
@@ -204,7 +204,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
-    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the character page is the menu home (ESC): avatar + buttons built, the old tabs hidden, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
+    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log >= 50, 'the menu opens (ESC) at YOU, its sections down the left: avatar + buttons built, an empty slot opens its gear list, opens and closes, and the admin menu game log is baked from HISTORY: ' + JSON.stringify(r.charp));
     { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
       const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
         U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));
@@ -327,8 +327,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.shown && r.was === 'R' && r.hand === 'L' && r.wield === 'L' && r.saved && r.back === 'R', 'the passport shows your hand and keeps it with what you own: ' + JSON.stringify(r)); }
   { const p = await pg.evaluate(() => { const b = document.getElementById('dps2'); if (!b) return null; const was = PS2.on; b.click(); const flip = PS2.on !== was; b.click(); return { flip, back: PS2.on === was, label: b.textContent }; });
     ok(p && p.flip && p.back && /PS2 FILTER (ON|OFF)/.test(p.label), 'GRAPHICS has a PS2 FILTER switch that turns the filter on and off: ' + JSON.stringify(p)); }
-  { const hk = await pg.evaluate(async () => { const esc = () => dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })), w = () => new Promise(r => setTimeout(r, 50)), was = HHDBG().up; esc(); await w(); const up = HHDBG().up; esc(); await w(); return { was, up, down: !HHDBG().up }; }).catch(e => ({ err: e.message }));
-    ok(!hk.was && hk.up && hk.down, 'one ESC opens the handheld and the next puts it away (every listener that reads a key gets the same one press): ' + JSON.stringify(hk)); }
+  { const hk = await pg.evaluate(async () => { const esc = () => dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })), w = () => new Promise(r => setTimeout(r, 50)), was = __UI.menuOpen; esc(); await w(); const up = __UI.menuOpen; esc(); await w(); return { was, up, down: !__UI.menuOpen }; }).catch(e => ({ err: e.message }));
+    ok(!hk.was && hk.up && hk.down, 'one ESC opens the menu and the next shuts it (every listener that reads a key gets the same one press): ' + JSON.stringify(hk)); }
   { const g = await pg.evaluate(async () => { const fr = n => new Promise(r => { let k = 0; const f = () => ++k >= n ? r() : requestAnimationFrame(f); f(); });
       const groups = () => BATCH.queues.reduce((s, q) => s + q.groups.length, 0), tex = () => { const seen = new Set(); let B = 0; for (const q of BATCH.queues) for (const G of q.groups) for (const me of G.ms) for (const k of ['map', 'emissiveMap']) { const t = me.material[k]; if (t && t.image && !seen.has(t)) { seen.add(t); B += t.image.width * t.image.height * 4; } } return B; };
       const o = { g0: groups(), mb0: +(tex() / 1e6).toFixed(1), kept: BATCH.kept() }; const a0 = BATCH.at; BATCH.at = () => null; await fr(4); o.g1 = groups(); o.mb1 = tex(); BATCH.at = a0; await fr(6); o.g2 = groups(); return o; });

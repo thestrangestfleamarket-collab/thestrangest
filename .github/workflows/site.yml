@@ -62,7 +62,7 @@ jobs:
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
+          k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
@@ -76,7 +76,7 @@ jobs:
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
-          k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|data/pfavatar|avatar\.cjs'
+          k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|avatar\.cjs|avatarmoves\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
@@ -223,10 +223,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
-      - name: The handheld (ESC pops it up, its icons open the menus)
+      - name: The menu (ESC opens it; sections down the left, parts along the top)
         timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' handheld')
-        run: node tests/handheld.cjs dist/market.html
+        if: contains(steps.f.outputs.run, ' menus')
+        run: node tests/menus.cjs dist/market.html
       - name: The loop (two trains shuttle from A, you ride one out and back)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' train')
@@ -271,6 +271,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/avatar.cjs
+      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 71 moves in software rendering, so past the usual 15 minutes)
+        timeout-minutes: 25
+        if: contains(steps.f.outputs.run, ' avatar')
+        run: node tests/avatarmoves.cjs
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')

@@ -1,6 +1,6 @@
-// THE MAP: a folded 1986 visitor's brochure. MAP on the pager (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
+// THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
-import {FORAGE, HANDHELD, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
+import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
@@ -114,7 +114,7 @@ import {LOOP} from './009b-loop.js';
   addEventListener('keydown',e=>{ const key=(e.key||'').toLowerCase(), sm=e.shiftKey&&key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
     if(sm){ if(e.repeat||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return; e.preventDefault(); e.stopImmediatePropagation(); if(up)return close(); if(UI.menuOpen)UI.toggleMenu(); return open(); }
     if(!up)return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
-    if(key==='escape'){ close(); if(HANDHELD.back)HANDHELD.back(); } else if(key==='f')flip(); },true);
+    if(key==='escape'){ close(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
   UI.mapWindow=()=>{ if(!up)open(); };

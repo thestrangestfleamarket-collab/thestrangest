@@ -1,6 +1,6 @@
 // THE CARS: the racing-cars kit's six cars (data/cars.json, CC0) parked on Market St (their spots in data/world.json's cars); double-click one to get in and drive it (a RIDE kind boarded where it stands, on VEH: W goes, S brakes and backs, A and D steer); GET OUT (or F) parks it where it stands. The section's server keeps where each car is parked and who drives it, so everyone sees the same cars, one driver a car.
 import {SHARED, THREE} from './003-shx.js';
-import {ONLINE, PB, pos, RADIO, RIDE, ROOMS, st, UI} from './003b-systems.js';
+import {ONLINE, PB, pos, RADIO, RIDE, ROOMS, SKY, st, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
@@ -33,7 +33,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
     draw('',''); return {t,draw}; };
   let DIAL=null;
   // the inside, fitted to the cabin the bake cut open (cab: its half width, window line, ends and roof): carpet, headliner, door panels with armrests and handles, the dashboard (two lit gauges, the radio), the steering wheel on its column, pedals, mirror, visors, the seats with their seat belts, the cabin's back wall
-  const cabin=(model,K,width)=>{ const C=TRIM[model]; if(!C||!K)return null; const g=new THREE.Group(), L=o=>new THREE.MeshLambertMaterial({...o,emissive:new THREE.Color(o.color).multiplyScalar(.28)}), mSeat=L({color:C[0]}), mTrim=L({color:C[1]}), mCarpet=L({color:C[2]}), mHead=L({color:C[3],side:THREE.DoubleSide}), mDark=L({color:0x1a1b1e}), mBelt=L({color:0x4a4e56}), mChrome=new THREE.MeshStandardMaterial({color:0xd0d4d8,metalness:.8,roughness:.25});
+  const cabin=(model,K,width)=>{ const C=TRIM[model]; if(!C||!K)return null; const g=new THREE.Group(), L=o=>new THREE.MeshLambertMaterial({...o,emissive:new THREE.Color(o.color).multiplyScalar(.28)}), mSeat=L({color:C[0]}), mTrim=L({color:C[1]}), mCarpet=L({color:C[2]}), mHead=L({color:C[3],side:THREE.DoubleSide}), mDark=L({color:0x1a1b1e}), mBelt=L({color:0x4a4e56}), mChrome=new THREE.MeshStandardMaterial({color:0xd0d4d8,metalness:.8,roughness:.25,envMap:SKY.probe||null,envMapIntensity:.65});
     const bx=(w,h,d,m,x,y,z,rx=0)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.rotation.x=rx; me.castShadow=me.receiveShadow=true; g.add(me); return me; };
     const UP=new THREE.Vector3(0,1,0), strap=(a,b)=>{ const d=new THREE.Vector3().subVectors(b,a), me=new THREE.Mesh(new THREE.BoxGeometry(.055,d.length(),.01),mBelt); me.position.copy(a).addScaledVector(d,.5); me.quaternion.setFromUnitVectors(UP,d.normalize()); g.add(me); };
     const hw=Math.min(K.hw,width/2-.16), belt=K.belt, roof=K.roof-.06, zf=K.z1, zr=K.z0, fl=.32, DD=Math.max(.36,Math.min(.62,(zf-zr)*.28)), dashB=zf-DD, drv=Math.min(.4,hw-.32), V=(x,y,z)=>new THREE.Vector3(x,y,z);

@@ -1,4 +1,4 @@
-// THE BOOKSTORE: a lending library on West St kept by the Professor: 100 public-domain books (data/books.json) on its shelves with their first editions' covers; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
+// THE BOOKSTORE: a cozy lending library on West St kept by the Professor: 16 bookcases, one genre each, of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INSPECT, pos, ROOMS, SFX, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';

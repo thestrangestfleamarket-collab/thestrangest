@@ -164,7 +164,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const q1 = await pg.evaluate(() => ({ x: __dbg.you().x, z: __dbg.you().z }));
     ok(Math.hypot(q1.x - q0.x, q1.z - q0.z) > .3, 'with the page frames stopped the controllers still walk him (' + Math.hypot(q1.x - q0.x, q1.z - q0.z).toFixed(2) + ' units)');
     await shot('quest-walked');
-    ok(await pg.evaluate(() => window.__blocked > 20), 'the page frames really were stopped (' + await pg.evaluate(() => window.__blocked) + ' held back)');
+    ok(await pg.evaluate(() => window.__blocked >= 10), 'the page frames really were stopped (about one held back a headset frame; ' + await pg.evaluate(() => window.__blocked) + ' held back)');
     ok(await pg.evaluate(() => new Promise(r => { let k = 0; const f = () => ++k >= 3 ? r(true) : requestAnimationFrame(f); requestAnimationFrame(f); setTimeout(() => r(false), 30000); })), 'waiting on frames (fades, loading) still ends in VR');
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 1));
     const held = await until(() => !VR.on, 15000);

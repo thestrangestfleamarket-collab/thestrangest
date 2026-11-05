@@ -5535,3 +5535,4 @@ Owner, of the menus listed with what works ("lets reorganize all the menus"), of
 - 5 Nov 2026, the ogre's skull tried and dropped (owner: "lets use the ogre head ... on the main avatar body", then of new hair, beards, brows and eyes made for it: "lets cancel all this work"; his pick: drop the ogre head too): the avatar keeps its own head.
 - 5 Nov 2026, the underwear (owner: "why does the underwear look like that"): it no longer flickers with the skin under it.
 - 5 Nov 2026, the render inspector back (owner: "add render inspector back in game"): out of the archive, opened from the menu's TOOLS as before.
+- 5 Nov 2026, the render inspector times a frame (owner, of the inspector at 19 FPS with the GPU near idle: "yes"): TIME A FRAME lists each system's milliseconds a frame while it is open; its draw totals read the frame just drawn (they read 0). The river's "below ground" note was only its bed: left as is.

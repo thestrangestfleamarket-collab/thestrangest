@@ -86,6 +86,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
       { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
         o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      { SYS.timing = true; SYS.T.clear(); SYS.go(() => { for (let i = 0; i < 1e4; i++); }, 'core-timed'); const r0 = SYS.T.get('core-timed'); SYS.timing = false; SYS.T.clear(); SYS.go(() => {}, 'core-untimed'); o.timing = !!(r0 && r0.n === 1 && r0.ms >= 0) && !SYS.T.has('core-untimed'); }
       o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
       { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
@@ -168,6 +169,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.timing === true, 'SYS times each system only while asked (the render inspector open): ' + r.timing);
     ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
     ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
     ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');

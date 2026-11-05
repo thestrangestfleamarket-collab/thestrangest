@@ -169,7 +169,7 @@ import {FRESH} from './140c-fresh.js';
   const bars=()=>''+
     (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING'}[k]||k)+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
   PACK.draw=()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const tab=t=>`<button ${B} data-tab="${t}" style="${PACK.tab===t?'color:#f2c14e;':''}margin-right:4px;font:inherit;background:#0e1016;border:2px solid ${PACK.tab===t?'#f2c14e':'#3a3f4e'};padding:3px 9px;cursor:pointer">${t.toUpperCase()}</button>`;
-    let o=`<div style="margin-bottom:10px">${BAG.toggle?'':tab('pack')}${tab('skills')}${tab('craft')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
+    let o=`<div style="margin-bottom:10px">${BAG.toggle?'':tab('pack')}${tab('skills')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
     if(xt)o+=xt.draw(); else if(PACK.tab==='book')o+=book(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;
       const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&!GEMS.some(g=>g[0]===id&&!id.startsWith('m_'))).sort();
       if(!ids.length)o+='<tr><td style="color:#7d7a70">NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.</td></tr>';
@@ -189,13 +189,12 @@ import {FRESH} from './140c-fresh.js';
     const R0=pg.rows(); o+=`<div style="margin-bottom:6px">${pg.title} · ${R0.filter(x=>x[1]).length} OF ${R0.length}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [nm,got,note,rare] of R0)o+=`<tr style="border-bottom:1px solid #22252f;${got?'':'color:#5d5a52'}"><td style="padding:4px 2px">${got?esc(nm)+(rare?' <span style="color:#f2c14e">RARE</span>':''):'? ? ?'}</td><td style="text-align:right;padding:4px 6px;color:#9b9584">${got?esc(note||''):''}</td></tr>`;
     return o+`</table>${pg.foot?`<div style="color:#9b9584;margin-top:8px;line-height:1.5">${pg.foot}</div>`:''}`; };
-  FORAGE.BOOK.push({id:'recipes',title:'RECIPES',rows:()=>RC.map(r=>[r[1],!!S.made[r[0]],S.made[r[0]]?'MADE '+S.made[r[0]]+' · '+(FORAGE.CK[r[2]]?FORAGE.CK[r[2]].short:r[2].toUpperCase()):'',r[3][0]>=50]),foot:'A recipe fills in the first time you make it. The CRAFT tab shows what each one needs.'});
   FORAGE.BOOK.push({id:'mush',title:'MUSHROOMS',rows:()=>MK.map(k=>[MU[k][0],!!S.log[k],S.log[k]?'PICKED '+S.log[k]+(WHEN[k]?' · '+{rain:'AFTER RAIN',dawn:'AT DAWN',night:'BY NIGHT'}[WHEN[k]]:''):'',MU[k][1]>=55]),foot:'Each grass grows its own kinds. Some come up only after rain, at dawn or by night; the rarest only deep in the park.'});
   const pk=panel('packp','right:16px;top:12%;width:min(420px,92vw)');
   pk.addEventListener('dragstart',e=>{ const r=e.target.closest&&e.target.closest('tr[data-drag]'); if(r)e.dataTransfer.setData('text/plain','item:'+r.dataset.drag); });
   pk.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.tab){ PACK.tab=d.tab; } else if(d.page){ PACK.page=d.page; } else if(d.eat)FORAGE.eat(d.eat); else if(d.id)FORAGE.ident(d.id); else if(d.craft)FORAGE.craft(d.craft); else if(d.act&&FORAGE.ACT[d.act]){ FORAGE.ACT[d.act](d.aid); saveSoon(); } else if(d.lock){ S.lock[d.lock]={up:'down',down:'lock',lock:'up'}[S.lock[d.lock]]; saveSoon(); } PACK.draw(); });
-  PACK.toggle=t=>{ if(t==='pack'&&BAG.toggle){ BAG.toggle(true); return; } if(PACK.tab==='pack'&&BAG.toggle)PACK.tab='skills'; pk.hidden=!pk.hidden; if(t)PACK.tab=t; PACK.open=!pk.hidden; PACK.draw(); };
+  PACK.toggle=t=>{ if((t==='pack'||!t)&&BAG.toggle){ BAG.toggle(true); return; } const n=UI.menuNow&&UI.menuNow(); if(n&&n[0]==='pack'&&(!t||n[1]===t))UI.toggleMenu(); else UI.menuTab('pack',t&&t!=='pack'&&t!=='craft'?t:'skills'); };   // its tabs are in the menu's PACK
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.key.toLowerCase()!=='i')return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select'))return; if(UI.menuOpen||ED.on||WE.on)return; if(TRICKS.takes&&TRICKS.takes('i'))return; if(BAG.toggle)BAG.toggle(); else PACK.toggle(); });
   const SHOP={}; FORAGE.SHOP=SHOP; const val=id=>+ITEMS.prop(id,'value')||0;
   const sp=panel('shopp','left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw)');

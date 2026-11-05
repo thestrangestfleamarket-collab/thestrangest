@@ -217,6 +217,7 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
   planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
 - [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).

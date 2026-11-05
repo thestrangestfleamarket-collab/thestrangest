@@ -1,0 +1,60 @@
+{
+ "note": "The contract every baked asset keeps (4 Nov 2026, from Nevaland's per-model manifest): for each data file, the keys every record must have and their kind (number: finite; string: not empty; array3: three numbers; any: present), and the references between files. tests/core.cjs checks it before the page runs; a bake that drops a piece fails there, not as a hole in the game.",
+ "files": {
+  "kit.json": {
+   "each": {
+    "n": "number",
+    "lo": "array3",
+    "sc": "number",
+    "p": "string",
+    "c": "string",
+    "i": "string",
+    "tris": "number",
+    "size": "array3"
+   }
+  },
+  "props.json": {
+   "each": {
+    "p": "string",
+    "c": "string",
+    "k": "string",
+    "tris": "number",
+    "metres": "number",
+    "wide": "number",
+    "trunk": "number"
+   }
+  },
+  "polyfork.json": {
+   "each": {
+    "p": "string",
+    "c": "string",
+    "k": "string",
+    "tris": "number",
+    "metres": "number",
+    "wide": "number",
+    "trunk": "number"
+   }
+  },
+  "trees.json": {
+   "sets": [
+    "A",
+    "C",
+    "AL",
+    "CL",
+    "E",
+    "K"
+   ],
+   "each": {
+    "sum": "any",
+    "tr": "any"
+   }
+  }
+ },
+ "refs": [
+  {
+   "from": "world.json",
+   "path": "things[].k",
+   "to": "polyfork.json"
+  }
+ ]
+}

@@ -9,6 +9,7 @@ import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {KIT} from './068-kit.js';
 import {GEMS} from './101-gems.js';
+import {FRESH} from './140c-fresh.js';
 import {FISHES} from './141f-fishes.js';
 const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
 // the rod is held through WIELD (146a): its blank bends with the line's pull; the cast and the fight drive the arm
@@ -126,7 +127,7 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
       if(one&&!FORAGE.has('rod'))say('YOU NEED A ROD FIRST.','#c8a090'); else if(id==='crabpot'&&(FORAGE.has('crabpot')||0)+potsOut()>=3)say('THREE POTS IS THE LIMIT.','#c8a090'); else if(INV.cash<v)say('YOU CANNOT AFFORD THAT.','#c8a090');
       else { INV.cash-=v; FORAGE.give(id); say(`YOU TAKE THE ${FORAGE.NM[id]} AND DROP $${v} IN THE BOX.`); } }
     if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=PRICE[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=FRESH.worth(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
   STAND.open=()=>{ sp.hidden=false; STAND.draw(); };
   const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.1*T, BLn=2.6*T, Y=v=>v*T/.84;

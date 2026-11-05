@@ -1,0 +1,4 @@
+The car radio's recordings (data/radio/*.mp3): Library of Congress National Jukebox items, fetched from archive.org's loc-jukebox
+collection by tools/radio-bake.py, each marked public domain there. US sound recordings published before 1923 entered the public
+domain on 1 January 2022 under the Music Modernization Act; the station lists (data/radio.json) give each track's year and source.
+Rights page checked 4 Nov 2026: https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/

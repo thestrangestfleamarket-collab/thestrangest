@@ -1,12 +1,17 @@
 // THE CLOCK: CLOCK keeps the day's hour (CLOCK.h: shops, lamps, the NPCs' routines) and the sun's own hour (CLOCK.sunH, the look's, when set), and moves the sun and moon, their light and their shadows.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, NPCS, pos, ROOMS, W3} from './003b-systems.js';
+import {CLOCK, NPCS, PARK, pos, ROOMS, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
 import {CREATS} from './087-npc-creatures.js';
-Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0)});
+Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
+  // the calendar: the day (the same for everyone), its season (north; ?season= or the owner's SEASON pick in ATMOSPHERE to preview one) and the moon's phase on an 8-day cycle (0 new, .5 full)
+  day:()=>Math.floor(Date.now()/86400000),seasonOf:day=>{ const m=new Date(day*86400000).getUTCMonth(); return m<2||m===11?'winter':m<5?'spring':m<8?'summer':'autumn'; },
+  SEASONS:{spring:{tint:0x9fd08a,mix:0,desat:0,amb:0,snow:0,temp:14},summer:{tint:0xd9b35a,mix:.1,desat:.02,amb:.03,snow:0,temp:26},autumn:{tint:0xc8763a,mix:.26,desat:.08,amb:.05,snow:0,temp:12},winter:{tint:0xcfe0f0,mix:.24,desat:.5,amb:.08,snow:.6,temp:1}},
+  seasonPick:'',season:()=>CLOCK.SEASONS[CLOCK.seasonPick]?CLOCK.seasonPick:CLOCK.seasonOf(CLOCK.day()),seasonLook:()=>CLOCK.SEASONS[CLOCK.season()],
+  moonPhase:()=>(((CLOCK.day()+(CLOCK.h??12)/24)/8+.125)%1+1)%1,moonLit:()=>(1-Math.cos(CLOCK.moonPhase()*Math.PI*2))/2});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
@@ -25,7 +30,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   CLOCK.tick=dt=>{ if(CLOCK.run)CLOCK.h=(CLOCK.h+dt*CLOCK.speed/60)%24;
     const H=CLOCK.sunH??CLOCK.h, e=elev(H); let i=0; while(i<K.length-2&&e>K[i+1][0])i++; const A=K[i], B=K[i+1], t=Math.max(0,Math.min(1,(e-A[0])/(B[0]-A[0])));
     const up=SHARED.LVL!=='down';
-    if(up){ mixC(A[1],B[1],t,scene.background); mixC(A[2],B[2],t,HEMI.color); mixC(A[3],B[3],t,HEMI.groundColor); HEMI.intensity=A[4]+(B[4]-A[4])*t; }
+    if(up){ mixC(A[1],B[1],t,scene.background); mixC(A[2],B[2],t,HEMI.color); mixC(A[3],B[3],t,HEMI.groundColor); HEMI.intensity=A[4]+(B[4]-A[4])*t; const SL=CLOCK.seasonLook(); if(SL.amb)HEMI.color.lerp(ca.setHex(SL.tint),SL.amb); if(e<-4)HEMI.intensity*=.75+.25*CLOCK.moonLit(); if(PARK.season){ const c=ca.setHex(SL.tint); PARK.season.value.set(c.r,c.g,c.b,SL.mix); PARK.seasonD.value=SL.desat; } }
     const sun=e>-1, hd=CLOCK.run?(sun?CLOCK.shadeH:1):H, az=sun?azim(hd):azim(hd+12)*.5+.6, el=sun?Math.max(3,elev(hd))*D:48*D;   // while the clock runs the light comes from one held hour, so the shadows stay put (baked)
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;

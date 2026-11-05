@@ -85,5 +85,6 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   FISHES.free=f=>{ if(!f)return; f.lure=null; f.hooked=false; f.t=0; f.tx=f.x+(Math.random()-.5)*8*T; f.tz=f.z+(Math.random()-.5)*8*T; };
   FISHES.hook=f=>{ if(f)f.hooked=true; };
   FISHES.gone=f=>{ const i=list.indexOf(f); if(i>=0)list.splice(i,1); };
-  SYS.add('life',dt=>{ const up=SHARED.LVL==='up'; if(!up||!near().length){ if(FISHES.ready)for(const id in M)M[id].im.visible=false; return; } if(!FISHES.ready){ FISHES.load(); return; } populate(dt); swim(dt); draw(); },'141f-fishes'); }
+  SYS.add('life',dt=>{ const up=SHARED.LVL==='up', act=SHARED.fishing||(window.RIVER&&RIVER.swim)||(window.FOUNT&&FOUNT.swim)||(window.BROOK&&BROOK.swim);   // fish exist only while you swim or fish (owner, 5 Nov 2026)
+    if(!up||!act||!near().length){ if(FISHES.ready)for(const id in M)M[id].im.visible=false; if(!act)list.length=0; return; } if(!FISHES.ready){ FISHES.load(); return; } populate(dt); swim(dt); draw(); },'141f-fishes'); }
 export {FISHES};

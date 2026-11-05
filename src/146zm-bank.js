@@ -36,3 +36,4 @@ const BANKK={}; window.BANKK=BANKK;
       use((s<0?'CAGE ONE':'CAGE TWO')+' (YOUR ACCOUNT)',c,v+.4,1.6,1.4,()=>BANKK.open(who),1.8); }
     K.flush(); setTimeout(()=>WORKERS.make('bank'),0); };
 }
+export {BANKK};

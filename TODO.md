@@ -210,10 +210,9 @@ One pass, one pull request.
 
 ## Characters and the street
 
-- [ ] **After the archive (5 Nov)** · P1 · code. Left from the archive lines below: the bank vault (say BANK), the bodega's fish tank and the
-  archived sellers' goods on its shelves as the items themselves, the golems in the dungeon, the teachers' own spots (the Fisherman at the
-  pier) and the self-serve shed and book stall folded into them, the go-karts placed, the archived characters' code moved out of src/
-  (today hidden by ARCH), the playhouse as an empty hall, the owner's map layout from the planner.
+- [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
+  planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
+- [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).
 - [x] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
   - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
     town mail and its carrier, the newsstand, the daily requests, the town

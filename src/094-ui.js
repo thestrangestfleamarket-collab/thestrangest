@@ -5,7 +5,6 @@ import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from
 import {OWNED, SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
-import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
 import {HEMI} from './064-map-post.js';
@@ -267,7 +266,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],'','lot'); }
     { const c=CASTLE.b; add([c[0],c[2]],[c[1],c[3]],[120,118,110],'THE CASTLE'); }
     for(const q of FR)if(q.kind==='fair')add([q.x0,q.y0],[q.x1,q.y1],[122,120,116],'');
-    if(GCAVE.box){ const b=GCAVE.box; add(wt(b[0],b[1]),wt(b[2],b[3]),[96,96,100],"THE GOLEMS' CAVE"); }
     if(GTOWER.site){ const t=GTOWER.site(); if(t)add(wt(t.x-t.w/2,t.z-t.d/2),wt(t.x+t.w/2,t.z+t.d/2),[130,126,116],"THE SQUIRREL'S TOWER"); }
     if(SM)for(const R of SM.rows)add([R.lot.x0,R.lot.y0],[R.lot.x1,R.lot.y1],R.col||[120,110,100],'');
     for(const st of LOOP.STA||[])if(!st.old)add([st.kiosk.x0,st.kiosk.y0],[st.kiosk.x1,st.kiosk.y1],[30,30,34],st.id+'1 '+st.name);

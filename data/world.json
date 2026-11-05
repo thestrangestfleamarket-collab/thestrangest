@@ -855,60 +855,6 @@
  ],
  "things": [
   {
-   "k": "fruitstand",
-   "x": 221.3,
-   "y": -88.6,
-   "who": "fruitseller"
-  },
-  {
-   "k": "bookstall",
-   "x": 226.7,
-   "y": -88.6,
-   "who": "junkman"
-  },
-  {
-   "k": "mstall",
-   "x": 219.6,
-   "y": -83,
-   "rot": 1.5708,
-   "who": "trader"
-  },
-  {
-   "k": "mercado",
-   "x": 228.5,
-   "y": -83,
-   "rot": -1.5708,
-   "who": "flowerlady"
-  },
-  {
-   "k": "ftable",
-   "x": 224,
-   "y": -82.6
-  },
-  {
-   "k": "scrate",
-   "x": 222.2,
-   "y": -80.4,
-   "rot": 0.4
-  },
-  {
-   "k": "sacks",
-   "x": 226,
-   "y": -80.2,
-   "rot": -0.3
-  },
-  {
-   "k": "aboard",
-   "x": 224,
-   "y": -76.3
-  },
-  {
-   "k": "hotdog",
-   "x": 216.5,
-   "y": -72.6,
-   "who": "hotdogman"
-  },
-  {
    "k": "meter",
    "x": 156,
    "y": -69.2
@@ -1342,6 +1288,46 @@
   "beekeeper": [
    118,
    44,
+   0
+  ],
+  "fisherman_in_waders": [
+   61.8,
+   -120.5,
+   0
+  ],
+  "scuba_diver": [
+   117.5,
+   -113,
+   0
+  ],
+  "samurai_warrior": [
+   -68,
+   -73.5,
+   0
+  ],
+  "park_ranger": [
+   106,
+   -30,
+   0
+  ],
+  "forest_ranger": [
+   118,
+   -30,
+   0
+  ],
+  "village_gardener": [
+   96,
+   -24,
+   0
+  ],
+  "professor": [
+   30,
+   -73.5,
+   0
+  ],
+  "game_master": [
+   -50.5,
+   39.5,
    0
   ]
  },

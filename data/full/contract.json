@@ -48,6 +48,45 @@
     "sum": "any",
     "tr": "any"
    }
+  },
+  "pfavatar-m.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "figs": "string"
+   }
   }
  },
  "refs": [

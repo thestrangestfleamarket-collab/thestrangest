@@ -24,4 +24,3 @@ DRM.make=()=>{ if(!STORE.bar)return; const S=STORE.bar, AT={...S.at(S.drums.x,S.
     octStep(dt,now); octHabits(now); const p=octPose(now), A=octArms(p), B=octBody(A);
     F.draw(B);
     const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(SHARED.cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; };
-export {octFig};

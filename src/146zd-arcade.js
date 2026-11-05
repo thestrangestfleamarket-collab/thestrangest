@@ -26,7 +26,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   // the prizes and what they cost in tickets, the best you can have first
   const PRIZES=[['plush_bear',30],['plush_duck',12],['prize_yoyo',8],['kazoo',6],['prize_ring',4]];
   // a token a go (the changer by the door sells them); tickets come out of the games, prizes off the counter
-  const tok=()=>INV.items.arc_token||0, needTok=()=>tok()<1?'YOU NEED A TOKEN. THE CHANGER BY THE DOOR SELLS THEM.':'', payTok=()=>FORAGE.take('arc_token',1);
+  const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
   ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));

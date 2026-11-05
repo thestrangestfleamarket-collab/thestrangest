@@ -1,6 +1,6 @@
 // THE SHOPS: any character the character editor marks a shopkeeper (trade.sells in characters.json) sells those item types to the player, priced by each item's shared VALUE, teaches the skills in trade.teaches and buys the groups of goods in trade.buys. Walk up or double-click to buy; goods go into your pack and behave by their item properties (edible → eat, sellable → resell). The mushroom and tomato sellers keep their own hand-built shops.
 import {THREE} from './003-shx.js';
-import {CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, TEXT, UI} from './003b-systems.js';
+import {ARCHI, CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TALK, TEXT, UI} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {FRESH} from './140c-fresh.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
@@ -25,7 +25,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
 
   const draw=()=>{ const N=SHOPS.cur; if(!N||sp.hidden)return; const tr=CHARS.trade&&CHARS.trade(N); if(!tr){ SHOPS.close(); return; }
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">${esc(N.name||'A MERCHANT')}</h3><div style="color:#9b9584;margin-bottom:8px">${esc(tr.line||'Take your pick.')}</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(cash())}</b></div><table style="border-collapse:collapse;width:100%">`;
-    for(const id of tr.sells){ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(name(id))}</td><td style="text-align:right;padding:4px 6px">$${p}</td><td style="text-align:right;white-space:nowrap">${rent?`<button ${B} data-buy="${esc(id)}" data-rent="1">${window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</button>`:`<button ${B} data-buy="${esc(id)}">BUY</button><button ${B} data-buy="${esc(id)}" data-n="5">5 · $${p*5}</button>`}</td></tr>`; }
+    for(const id of tr.sells.filter(id=>!ARCHI(id))){ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(name(id))}</td><td style="text-align:right;padding:4px 6px">$${p}</td><td style="text-align:right;white-space:nowrap">${rent?`<button ${B} data-buy="${esc(id)}" data-rent="1">${window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</button>`:`<button ${B} data-buy="${esc(id)}">BUY</button><button ${B} data-buy="${esc(id)}" data-n="5">5 · $${p*5}</button>`}</td></tr>`; }
     const F=window.FORAGE; if(tr.teaches&&tr.teaches.length&&F&&F.trainRows)o+=F.trainRows(tr.teaches); if(F&&F.askRows)o+=F.askRows(CHARS.id(N));
     const bid=buying(tr); if(bid.length)o+=`</table><div style="margin:8px 0 4px;color:#9b9584">BUYS</div><table style="border-collapse:collapse;width:100%">`+bid.map(id=>{ const v=worth(id), n=INV.items[id]; return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${esc(name(id))}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sold="${esc(id)}">SELL</button>${n>1?`<button ${B} data-sold="${esc(id)}" data-n="all">ALL · $${v*n}</button>`:''}</td></tr>`; }).join('');
     o+=`</table>`; const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };

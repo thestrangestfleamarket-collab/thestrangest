@@ -1,8 +1,17 @@
 // THE GATES: GATES puts gates and fences in the gaps between the block's buildings.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, MAPED} from './003b-systems.js';
+import {BLK, MAPED, PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLDK, BLOCK, FIX, MAPSTAIR, MODS, SOL, TILE, WROW} from './006-map-pre.js';
+import {BLDK, BLOCK, CASTLE, FIX, MAPSTAIR, MODS, SOL, STORE, TILE, WROW} from './006-map-pre.js';
+// where the places stand (the map editor's, kept when it was archived)
+{ const BOX={bodega:()=>{ const B=SHARED.BOD.B0; return [SHARED.BOD.X(B.x0),SHARED.BOD.Z(B.y0),SHARED.BOD.X(B.x1),SHARED.BOD.Z(B.y1)]; },
+    house:()=>{ const A=MODS.apts&&MODS.apts.A; return A?[SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]:null; },
+    ghost:()=>{ const g=SHARED.BOD.grounds.find(g=>g.id==='ghostst'); return g?[SHARED.BOD.X(g.x0),SHARED.BOD.Z(g.y0),SHARED.BOD.X(g.x1),SHARED.BOD.Z(g.y1)]:null; },
+    bar:()=>{ const R=STORE.rooms.find(r=>r.id==='bar'); return R?[R.x0,R.z0,R.x1,R.z1]:null; },
+    park:()=>[SHARED.BOD.XS(PARK.x0+PARK.ox),SHARED.BOD.ZS(PARK.y0+PARK.oy),SHARED.BOD.XS(PARK.x1+PARK.ox),SHARED.BOD.ZS(PARK.y1+PARK.oy)],
+    castle:()=>{ const b=CASTLE.b; return [SHARED.BOD.XS(b[0]),SHARED.BOD.ZS(b[2]),SHARED.BOD.XS(b[1]),SHARED.BOD.ZS(b[3])]; },
+    subway:()=>{ const S=MAPSTAIR; return [SHARED.BOD.XS(S.x0),SHARED.BOD.ZS(S.y0),SHARED.BOD.XS(S.x1),SHARED.BOD.ZS(S.y1)]; }};
+  MAPED.box=k=>BOX[k]?BOX[k]():null; }
 const GATES=window.GATES={list:[]};
 GATES.init=()=>{ if(typeof SHARED.BOD==='undefined'||typeof BLOCK==='undefined')return;
   const T=TILE, M=T/.84, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, G=(x,z)=>MODS.bodega.ground(x,z), yF=SHARED.BOD.K.LSEED.walk-.12, yB=BLOCK.back+.15, za=Math.min(ZS(yF),ZS(yB)), zb=Math.max(ZS(yF),ZS(yB));

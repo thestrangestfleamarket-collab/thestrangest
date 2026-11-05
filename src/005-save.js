@@ -15,7 +15,7 @@ const SAVE=(()=>{ const KEY='market-save', V=5;
     get:k=>{ const v=S[k]; return v==null?null:typeof v==='string'?v:String(v); },
     set:(k,v)=>{ S[k]=v==null?null:String(v); return write(); },
     del:k=>{ delete S[k]; return write(); },
-    all:()=>Object.assign({},S),
+    V, all:()=>Object.assign({},S),
     clear:()=>{ S={v:V}; try{ localStorage.removeItem(KEY); }catch(e){} }};
   return A; })();
 // THE OWNED STORE: player-owned state — cash, inventory, items, mail, forage. The one seam between the game and where that state lives.

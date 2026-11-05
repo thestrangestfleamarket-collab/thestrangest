@@ -10,9 +10,10 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
   DRESS.kerb={sw,far}; DRESS.cans=[];
   const CY=[], cyl=(x,y,z,r,h,c)=>CY.push([x,y,z,r*2,h,r*2,c]);
   const BL=[], blk=(x,y,z,sx,sy,sz,c)=>BL.push([x,y,z,sx,sy,sz,c]), solid=(x,z,r,h)=>{ const s=[x-r,z-r,x+r,z+r], f=[x-r,z-r,G(x,z),x+r,z+r,G(x,z)+h]; SOL.up.push(s); FIX.up.push(f); return {sol:s,fix:f}; };
-  { const M=1/.84*TILE, CN=[]; for(const x of [BX0-1.2,AX0-1.5]){ const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
+  { const M=1/.84*TILE, CN=[]; for(const x of []){   // no trash cans (owner, 5 Nov 2026)
+    const z=sw-.25*M, y=G(x,z); DRESS.cans.push({x,z}); CN.push([x,y,z]); solid(x,z,.28*M,.9*M); }
     const g0=KIT.geo('trashcan'), bb=g0.boundingBox, k=.9*M/(bb.max.y-bb.min.y), g=g0.clone().translate(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2).scale(k,k,k), m4=new THREE.Matrix4(), q=new THREE.Quaternion();
-    const me=new THREE.InstancedMesh(g,KIT.mat,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); }
+    if(CN.length){ const me=new THREE.InstancedMesh(g,KIT.mat,CN.length); CN.forEach(([x,y,z],i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(new THREE.Vector3(0,1,0),i*2.1),new THREE.Vector3(1,1,1)))); me.castShadow=me.receiveShadow=true; scene.add(me); } }
   { const M=1/.84*TILE, SP=46*M, SX0=SHARED.BOD.XS(SHARED.BOD.MAP.x0), SX1=SHARED.BOD.XS(SHARED.BOD.MAP.x1), n=Math.floor((SX1-SX0-8)/SP)+1, x0=(SX0+SX1)/2-(n-1)*SP/2, warm=new THREE.Color(1,.88,.68);
     const sl=(x,z,d,ax='z',ring)=>{ const y=G(x,z);
       const P={x,z,d,ax,ring:ring||(d>0?'outer':'inner'),y:y+5.45*M,h:heads.length,...solid(x,z,.18*M,6*M)}; POLES.push(P); return P; };

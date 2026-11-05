@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {LAY, MODS, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const FOX={};
-{ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
+if(0){ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
   const WHITE=[.95,.93,.88], CREAM=[.93,.85,.7], TAN=[.89,.73,.45], ORANGE=[.84,.42,.24], ORANGE2=[.67,.35,.2], BLUE=[.27,.45,.59], BLUE2=[.36,.53,.67], NAVY=[.15,.17,.27], PANT=[.84,.8,.68], PANT2=[.69,.64,.52], RED=[.53,.24,.18], BLACK=[0,0,0];
   const part=(name,rank,of)=>({name,rank,of});
   const fleck=(x,y,z)=>{ const v=noise(x,y,z,34), w=noise(x+3.1,y,z,14); return v>.72?BLUE:v<.18?CREAM:w>.68?ORANGE2:ORANGE; };

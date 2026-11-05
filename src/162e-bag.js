@@ -1,6 +1,6 @@
 // THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, dragged about by its leather and made any size by its corner; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground are loose things everyone in the section sees (the Block's world), picked up by a double click; a stack asks how many.
 import {SHARED, THREE} from './003-shx.js';
-import {BAG, CHARS, EQUIP, FORAGE, HUD, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WIELD} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, EQUIP, FORAGE, HUD, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -64,7 +64,7 @@ window.BAG=BAG;
     for(const c in INV.inside){ if(!INV.items[c]){ delete INV.inside[c]; ch=true; continue; } for(const id in INV.inside[c]){ const n=Math.min(INV.inside[c][id],INV.items[id]||0); if(n<=0){ delete INV.inside[c][id]; ch=true; } else if(n!==INV.inside[c][id]){ INV.inside[c][id]=n; ch=true; } } } if(ch&&INV.save)INV.save(); };
   const held=id=>{ let n=0; for(const c in INV.inside)n+=INV.inside[c][id]||0; return n; };
   const have=(id,where='bag')=>where==='bag'?(INV.items[id]||0)-held(id):(INV.inside[where]||{})[id]||0;
-  const contents=where=>where==='bag'?Object.keys(INV.items).filter(id=>have(id,'bag')>0).sort():Object.keys(INV.inside[where]||{}).filter(id=>have(id,where)>0).sort();
+  const contents=where=>(where==='bag'?Object.keys(INV.items).filter(id=>have(id,'bag')>0):Object.keys(INV.inside[where]||{}).filter(id=>have(id,where)>0)).filter(id=>!ARCHI(id)).sort();
   const holdsOf=c=>+prop(c,'holds')||12, within=(c,x)=>{ if(c===x)return true; for(const id in INV.inside[c]||{})if(isCont(id)&&within(id,x))return true; return false; };
   BAG.move=(id,n,from,to)=>{ '@later'; n=Math.min(n,have(id,from)); if(n<1||from===to)return false;
     if(to!=='bag'){ if(!isCont(to)||!INV.items[to])return false; if(isCont(id)&&within(id,to))return say("IT WON'T GO INTO ITSELF.",'#c8a090'),false; const I=INV.inside[to]||(INV.inside[to]={}); if(!I[id]&&Object.keys(I).length>=holdsOf(to))return say('THE '+name(to)+' IS FULL.','#c8a090'),false; I[id]=(I[id]||0)+n; }

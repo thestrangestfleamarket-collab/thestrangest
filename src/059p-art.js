@@ -1,4 +1,4 @@
-// THE ART MUSEUM: on Market St, a stone front like the MUSEUM OF EARTH's (portico, ART MUSEUM over the door, two banners); its inside, built off the map behind the fade when you go in: an atrium with no ceilings, the lobby and a walkway round an open void on each floor up to a skylight, three paintings on each outer wall of each floor (as many floors as the paintings of data/art.json need), a glass elevator against the back walkway; double-click a painting to see it full screen on its wall, its full-resolution file fetched from its museum only then, with a guided tour where one is written (data/art-tours.json).
+// THE ART MUSEUM: on Market St, a stone front like the MUSEUM OF EARTH's (portico, ART MUSEUM over the door, two banners); its inside, built off the map behind the fade when you go in: an atrium with no ceilings, a walkway round an open void on each floor above the first up to a skylight, three paintings on each outer wall of each floor (as many floors as the paintings of data/art.json need), a glass elevator against the back walkway that you call, walk into and ride, its doors sliding open on each floor; double-click a painting to see it full screen on its wall, its full-resolution file fetched from its museum only then, with a guided tour where one is written (data/art-tours.json).
 import {SHARED, THREE} from './003-shx.js';
 import {PERFX, pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -9,7 +9,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const K=STORE.kit, {room,rec,STEPS,sol,put}=K, SK=SHARED.BOD.STOREK, {CATALOG,LAMPS,T,sh,hash}=SK, MK=SK.museum, MB=MK.MUS.b, MUF=MK.font, {X,Y,Z,faceTex,bq,C}=SHARED.BOD, MS=STORE.main, U=TILE*BLDK;
   const H=196, IW=30, DEP=22, WALK=4.4, FL=6, ZC=52, ZPU=1/(SHARED.BOD.Y(1)/U), FZ=FL*ZPU, PER=3, MAXF=8;   // H: the street block's height; FL: a floor's height (map units), FZ the same in z units; PER: paintings on each wall
   const LW=MS.lot('art',H), TP=TURN(LW,WP.art.face||'n'), L=TP.L, OX=1060+OFFDX/BLDK-TP.cx, cxL=(L.x0+L.x1)/2, cx=cxL+OX, EX=cx;
-  // one tall room off the map, no ceilings: the lobby, then a walkway round an open void on each floor up, the paintings on the outer walls, a skylight over it all; the glass elevator against the back walkway's edge
+  // one tall room off the map, no ceilings: the first floor, then a walkway round an open void on each floor up, the paintings on the outer walls, a skylight over it all; the glass elevator against the back walkway's edge
   const B={id:'lart',x0:cx-IW/2,x1:cx+IW/2,y0:L.y1-DEP,y1:L.y1,h:MAXF*FZ+40}, VD={x0:B.x0+WALK,x1:B.x1-WALK,y0:B.y0+WALK,y1:B.y1-WALK}, ES=1.5, EY=VD.y0+ES+.1, DOORY=VD.y0-1.3;
   let NF=1, RS=[];
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=cx-(MB.x0+MB.x1)/2, dy=B.y1-MB.y1, OB={...MB,plain:1,id:'lmusfront'}, mus=(x,y)=>[SX-x+dx,SY-y+dy];
@@ -44,7 +44,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const FW=[[0,1],[-1,0],[0,-1],[1,0]], mpS=(k,x,y,rot=0)=>{ const fn=CATALOG[k]; SHARED.BOD.K.STUDIO.face(FW[rot]); let p; try{ p=fn(+x.toFixed(3),+y.toFixed(3)); }finally{ SHARED.BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k;
     const px=(p.x0+p.x1)/2, py=(p.y0+p.y1)/2, q=TP.pt(SX-px+dx-OX,SY-py+dy); SHARED.BOD.placeAt(p,(2+TP.q)%4,px,py,q[0],q[1],true); return p; };
   const lamp=(x,y,z,r,c)=>LAMPS.push({own:1,room:1,day:true,x,y,z,r,c});
-  // the lobby's desk and benches, and lamps over every floor's walkway (those over floors not built light nothing near you)
+  // the first floor's desk and benches, and lamps over every floor's walkway (those over floors not built light nothing near you)
   const set0=()=>{ const M=MK.MUS, py=MB.y0-3;
     mpS('museum portico steps',M.mid,(py+MB.y0)/2); for(const d of [-3.7,-1.2,1.2,3.7])mpS('museum column',M.mid+d,py+.7); mpS('art entablature',M.mid,py+.7,2);
     put('information desk',cx+6,B.y1-3.2); for(const x of [cx-5,cx+5])put('museum bench',x,(VD.y0+VD.y1)/2+2,1); put('dust in the air',cx-3,B.y1-7);
@@ -52,22 +52,37 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     lamp(cx,(VD.y0+VD.y1)/2,90,16,[1.3,1.28,1.22]);
     const T0=.1; for(const [a,b,c,d] of [[B.x0,B.y0,B.x1,B.y0+T0],[B.x0,B.y0,B.x0+T0,B.y1],[B.x1-T0,B.y0,B.x1,B.y1],[B.x0,B.y1-T0,cx-D.wd/2,B.y1],[cx+D.wd/2,B.y1-T0,B.x1,B.y1]])sol(a,b,c,d,FZ); };
   const A_=STORE.art={B,VD,PER,FZ,hung:0,groups:[],built:false,busy:false,lv:0,RS:[],pics:()=>A_.groups.flatMap(g=>g.children.filter(c=>c.userData.at))};
-  // where you stand: your floor's walkway (the lobby is the ground), the cab while it rides; the void and the shaft are solid on the walkways, the shaft in the lobby
+  // where you stand: your floor's walkway (the first floor is the ground), the cab's floor in the shaft; the void is solid on the walkways, the shaft's glass everywhere, its doors while shut
   const inB=(x,z)=>{ const u=x/U+SHARED.BOD.OX, v=z/U+SHARED.BOD.OY; return u>B.x0&&u<B.x1&&v>B.y0&&v<B.y1; };
-  let ride=null;
-  { const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(A_.built&&SHARED.LVL==='up'&&inB(x,z)){ if(ride)return Y(ride.z); if(A_.lv>0)return Y(A_.lv*FZ); } return sg0?sg0(x,z):null; }; }
+  const DW=1, DH=84, CAB={z:0,at:0,door:0,open:false,to:null,ride:null,pz:0,was:false};   // DW: half the doorway; DH: its height; at: the floor the cab stands at (null while it moves)
+  const mu=(x,z)=>[x/U+SHARED.BOD.OX,z/U+SHARED.BOD.OY], inShaft=(x,z,m=0)=>{ const [u,v]=mu(x,z); return u>EX-ES+m&&u<EX+ES-m&&v>EY-ES+m&&v<EY+ES-m; };
+  const inCab=()=>A_.built&&inB(pos.x,pos.z)&&inShaft(pos.x,pos.z,.36/U+.06), inDoor=()=>A_.built&&inShaft(pos.x,pos.z)&&!inCab();
+  { const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(A_.built&&SHARED.LVL==='up'&&inB(x,z)){ if(inShaft(x,z))return Y(CAB.z); if(A_.lv>0)return Y(A_.lv*FZ); } return sg0?sg0(x,z):null; }; }
   const rect=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  const VOID=rect(VD.x0,VD.y0,VD.x1,VD.y1), SHAFT=rect(EX-ES,EY-ES,EX+ES,EY+ES);
-  { const t0=STORE.stackTick; let was=''; STORE.stackTick=()=>{ const on=A_.built&&SHARED.LVL==='up'&&inB(pos.x,pos.z), key=on?A_.lv+(ride?'r':''):'';
-      if(key!==was){ was=key; if(!on)return SOL[SHARED.LVL]||SOL.up; return SOL.up.concat(ride?[]:[SHAFT],A_.lv>0&&!ride?[VOID]:[]); } return t0?t0():null; }; }
-  SYS.add('places',()=>{ if(A_.lv&&!ride&&!inB(pos.x,pos.z))A_.lv=0; },'059p-art');
+  const T1=.05, F0=EY-ES, WALLS=[rect(EX-ES-T1,F0,EX-ES+T1,EY+ES),rect(EX+ES-T1,F0,EX+ES+T1,EY+ES),rect(EX-ES,EY+ES-T1,EX+ES,EY+ES+T1),rect(EX-ES,F0-T1,EX-DW,F0+T1),rect(EX+DW,F0-T1,EX+ES,F0+T1)], SHUT=rect(EX-DW,F0-T1,EX+DW,F0+T1);
+  const VOID=[rect(VD.x0,VD.y0,EX-ES,VD.y1),rect(EX+ES,VD.y0,VD.x1,VD.y1),rect(EX-ES,EY+ES,EX+ES,VD.y1)];
+  const passable=()=>CAB.at!=null&&CAB.door>.85&&(inShaft(pos.x,pos.z)||CAB.at===A_.lv);
+  { const t0=STORE.stackTick; let was=''; STORE.stackTick=()=>{ const on=A_.built&&SHARED.LVL==='up'&&inB(pos.x,pos.z), cab=on&&inShaft(pos.x,pos.z), op=on&&passable(), key=on?A_.lv+(cab?'c':'')+(op?'o':''):'';
+      if(key!==was){ was=key; if(!on)return SOL[SHARED.LVL]||SOL.up; return SOL.up.concat(WALLS,op?[]:[SHUT],A_.lv>0&&!cab?VOID:[]); } return t0?t0():null; }; }
+  SYS.add('places',()=>{ if(A_.lv&&!CAB.ride&&!inB(pos.x,pos.z))A_.lv=0; },'059p-art');
   A_.floor=()=>inB(pos.x,pos.z)?A_.lv:-1;
-  // the ride: you step into the cab and it carries you, the doors on the back walkway; you step out on the new floor
-  A_.go=(k,label,how)=>{ if(A_.busy||FADE.busy||!RS[k]||k===A_.lv)return; A_.busy=true; const from=A_.lv*FZ, to=k*FZ, t0=performance.now(), dur=900+Math.abs(k-A_.lv)*1100;
-    pos.x=X(EX); pos.z=Z(EY); SHARED.heading=Math.PI; SHARED.drive=true; ride={z:from,from,to,t0,dur,k}; };
-  SYS.add('places',()=>{ if(!ride)return; const t=Math.min(1,(performance.now()-ride.t0)/ride.dur), e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; ride.z=ride.from+(ride.to-ride.from)*e; pos.x=X(EX); pos.z=Z(EY);
-    if(A_.cab)A_.cab.position.y=Y(ride.z);
-    if(t>=1){ const k=ride.k; A_.lv=k; ride=null; SHARED.drive=false; A_.busy=false; STORE.goTo(X(EX),Z(DOORY),'up',Math.PI); } },'059p-art');
+  // the ride: call the cab to your floor at its doors (double-click), its doors slide open, you walk in and pick a floor, the doors shut and it carries you (you stand on its floor all the way), they open and you walk out
+  A_.go=k=>{ if(!RS[k]||FADE.busy)return; if(CAB.at===k&&!CAB.to){ CAB.open=true; return; } if(CAB.ride)return; CAB.to=k; A_.busy=true; };
+  A_.call=()=>A_.go(A_.lv);
+  A_.lift=()=>({z:+(CAB.z/FZ).toFixed(3),at:CAB.at,door:+CAB.door.toFixed(2),to:CAB.to,riding:!!CAB.ride,inCab:inCab(),menu:!!(LM&&!LM.hidden),y:Y(CAB.z),cab:[X(EX),Z(EY)],out:[X(EX),Z(F0-1.4)]});
+  SYS.add('places',dt=>{ if(!A_.built){ CAB.was=false; return; } const d=Math.min(.1,dt||0);
+    CAB.door=Math.max(0,Math.min(1,CAB.door+(CAB.open?1:-1)*d/.7));
+    if(CAB.to!=null&&!CAB.ride){ if(CAB.open&&!inDoor())CAB.open=false;
+      if(!CAB.open&&CAB.door===0){ const k=CAB.to; if(k===CAB.at){ CAB.to=null; CAB.open=true; A_.busy=false; } else { CAB.ride={from:CAB.z,to:k*FZ,t0:performance.now(),dur:1400+Math.abs(k*FZ-CAB.z)/FZ*1300,k}; CAB.at=null; } } }
+    const me=inCab(); CAB.pz=CAB.z;
+    if(CAB.ride){ const R=CAB.ride, t=Math.min(1,(performance.now()-R.t0)/R.dur), e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; CAB.z=R.from+(R.to-R.from)*e;
+      if(me)SHARED.py=Y(CAB.z);
+      if(t>=1){ CAB.z=R.to; CAB.at=R.k; CAB.ride=null; CAB.to=null; CAB.open=true; A_.busy=false; if(me){ A_.lv=R.k; if(LM)LM.hidden=true; } } }
+    else if(CAB.at!=null&&inShaft(pos.x,pos.z)&&inB(pos.x,pos.z))A_.lv=CAB.at;
+    if(me&&!CAB.was&&CAB.at!=null&&!CAB.to)liftMenu(); if(!me&&CAB.was&&LM&&!CAB.ride)LM.hidden=true; CAB.was=me;
+    if(A_.cab)A_.cab.position.y=Y(CAB.pz);
+    const s=CAB.door*(DW-.08); for(const [m,sg] of A_.cabDoors||[])m.position.x=sg*s*m.userData.u;
+    for(const [m,sg,k] of A_.landDoors||[])m.position.x=CAB.at===k?sg*s*m.userData.u:0; },'059p-art');
   // the paintings: each a framed canvas (its picture a small JPEG from data/art.json) on its wall, a plaque beside it, a thing to read
   const plaque=t=>{ const cv=document.createElement('canvas'); cv.width=256; cv.height=112; const g=cv.getContext('2d'); g.fillStyle='#ebe6d8'; g.fillRect(0,0,256,112); g.fillStyle='#2a2622'; g.font='bold 20px Georgia,serif';
     const fit=(s,w)=>{ while(g.measureText(s).width>w&&s.length>3)s=s.slice(0,-2)+'…'; return s; }; g.fillText(fit(t.t,236),12,34); g.font='17px Georgia,serif'; g.fillText(fit(t.a+', '+t.d,236),12,62); g.fillStyle='#6a645c'; g.font='14px Georgia,serif'; g.fillText(fit(t.m,236),12,90);
@@ -106,15 +121,24 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     // the skylight over the void: glass on a brass grid
     box(VD.x0,VD.y0,VD.x1,VD.y1,NF*FZ-2,NF*FZ-1,new THREE.MeshStandardMaterial({color:0xd8eef2,transparent:true,opacity:.16,depthWrite:false}),false);
     for(let i=1;i<7;i++){ const x=VD.x0+(VD.x1-VD.x0)*i/7; box(x-.05,VD.y0,x+.05,VD.y1,NF*FZ-1,NF*FZ+2,brass,false); } for(let i=1;i<3;i++){ const y=VD.y0+(VD.y1-VD.y0)*i/3; box(VD.x0,y-.05,VD.x1,y+.05,NF*FZ-1,NF*FZ+2,brass,false); }
-    // the shaft: glass on four brass posts from the lobby to the skylight, against the back walkway's edge; the cab a glass box with a brass floor and roof and its own light
-    for(const [x0,y0,x1,y1] of [[EX-ES,EY+ES-.03,EX+ES,EY+ES+.03],[EX-ES-.03,EY-ES,EX-ES+.03,EY+ES],[EX+ES-.03,EY-ES,EX+ES+.03,EY+ES],[EX-ES,EY-ES-.03,EX+ES,EY-ES+.03]])box(x0,y0,x1,y1,0,NF*FZ,glass,false);
-    for(const [x,y] of [[EX-ES,EY-ES],[EX+ES,EY-ES],[EX-ES,EY+ES],[EX+ES,EY+ES]])box(x-.07,y-.07,x+.07,y+.07,0,NF*FZ,brass);
-    const cab=new THREE.Group(); const cb=(x0,y0,x1,y1,z0,z1,m)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),Math.max(.001,Y(z1)-Y(z0)),Math.abs(Z(y1)-Z(y0))),m); me.position.set((X(x0)+X(x1))/2,(Y(z0)+Y(z1))/2,(Z(y0)+Z(y1))/2); cab.add(me); };
-    cb(EX-ES+.1,EY-ES+.1,EX+ES-.1,EY+ES-.1,0,3,brass); cb(EX-ES+.1,EY-ES+.1,EX+ES-.1,EY+ES-.1,84,87,brass); for(const [x,y] of [[EX-ES+.15,EY-ES+.15],[EX+ES-.15,EY-ES+.15],[EX-ES+.15,EY+ES-.15],[EX+ES-.15,EY+ES-.15]])cb(x-.04,y-.04,x+.04,y+.04,3,84,brass);
-    const cl=new THREE.PointLight(0xffe2b0,1.2,4*U); cl.position.set(X(EX),Y(80),Z(EY)); cab.add(cl); cab.position.y=Y(A_.lv*FZ); G.add(cab); A_.cab=cab;
-    // the elevator's call on each floor: double-click its doors
-    for(let k=0;k<NF;k++){ const hb=new THREE.Mesh(new THREE.BoxGeometry(2.6*U,Y(84),.6*U),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(EX),Y(k*FZ+42),Z(VD.y0-.2)); G.add(hb);
-      UI.thing({name:'ELEVATOR',ghost:1,obj:hb,reach:1.8*U,near:3*U,tall:Y(84),act:()=>liftMenu()}); }
+    // the shaft: glass on four brass posts from the first floor to the skylight, against the back walkway's edge, a doorway on each floor; the cab a glass box with a brass floor and roof and its own light
+    for(const [x0,y0,x1,y1] of [[EX-ES,EY+ES-.03,EX+ES,EY+ES+.03],[EX-ES-.03,EY-ES,EX-ES+.03,EY+ES],[EX+ES-.03,EY-ES,EX+ES+.03,EY+ES],[EX-ES,F0-.03,EX-DW,F0+.03],[EX+DW,F0-.03,EX+ES,F0+.03]])box(x0,y0,x1,y1,0,NF*FZ,glass,false);
+    for(let k=0;k<NF;k++)box(EX-DW,F0-.03,EX+DW,F0+.03,k*FZ+DH,(k+1)*FZ,glass,false);
+    for(const [x,y] of [[EX-ES,EY-ES],[EX+ES,EY-ES],[EX-ES,EY+ES],[EX+ES,EY+ES],[EX-DW,F0],[EX+DW,F0]])box(x-.07,y-.07,x+.07,y+.07,0,NF*FZ,brass);
+    const cab=new THREE.Group(); const cb=(x0,y0,x1,y1,z0,z1,m,to=cab)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),Math.max(.001,Y(z1)-Y(z0)),Math.abs(Z(y1)-Z(y0))),m); me.position.set((X(x0)+X(x1))/2,(Y(z0)+Y(z1))/2,(Z(y0)+Z(y1))/2); to.add(me); return me; };
+    cb(EX-ES+.1,EY-ES+.1,EX+ES-.1,EY+ES-.1,-3,0,brass); cb(EX-ES+.1,EY-ES+.1,EX+ES-.1,EY+ES-.1,DH,DH+3,brass); for(const [x,y] of [[EX-ES+.15,EY-ES+.15],[EX+ES-.15,EY-ES+.15],[EX-ES+.15,EY+ES-.15],[EX+ES-.15,EY+ES-.15]])cb(x-.04,y-.04,x+.04,y+.04,0,DH,brass);
+    const cl=new THREE.PointLight(0xffe2b0,1.2,4*U); cl.position.set(X(EX),Y(80),Z(EY)); cab.add(cl); cab.position.y=Y(CAB.z); G.add(cab); A_.cab=cab;
+    // the doors: a pair on the cab and a pair on each floor's doorway, glass in brass, sliding apart together when the cab stands at that floor
+    const dglass=new THREE.MeshStandardMaterial({color:0xb8dde4,transparent:true,opacity:.32,roughness:.05,metalness:.1,depthWrite:false});
+    const leaf=(sg,y,z0,to)=>{ const g=new THREE.Group(), a=sg<0?EX-DW:EX, b=sg<0?EX:EX+DW; cb(a,y-.02,b,y+.02,z0+1,z0+DH-1,dglass,g);
+      for(const [p,q,r,s] of [[a,a+.06,z0,z0+DH],[b-.06,b,z0,z0+DH],[a,b,z0,z0+2],[a,b,z0+DH-2,z0+DH]])cb(p,y-.03,q,y+.03,r,s,brass,g); to.add(g); return g; };
+    A_.cabDoors=[-1,1].map(sg=>[leaf(sg,F0+.09,0,cab),sg]); A_.landDoors=[]; for(let k=0;k<NF;k++)for(const sg of [-1,1])A_.landDoors.push([leaf(sg,F0-.09,k*FZ,G),sg,k]);
+    for(const L of [...A_.cabDoors,...A_.landDoors])L[0].userData.u=X(EX+1)-X(EX);
+    // the buttons inside the cab, and the call at each floor's doors: double-click them
+    const pnl=cb(EX+ES-.16,EY-.3,EX+ES-.12,EY+.3,36,60,brass); const pt=new THREE.Mesh(new THREE.BoxGeometry(.3*U,Y(30),.6*U),new THREE.MeshBasicMaterial({visible:false})); pt.position.copy(pnl.position); cab.add(pt);
+    UI.thing({name:'THE ELEVATOR BUTTONS',ghost:1,obj:pt,reach:1.6*U,near:2.4*U,tall:Y(30),act:()=>liftMenu()});
+    for(let k=0;k<NF;k++){ const hb=new THREE.Mesh(new THREE.BoxGeometry(2.6*U,Y(DH),.6*U),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(EX),Y(k*FZ+42),Z(VD.y0-.2)); G.add(hb);
+      UI.thing({name:'ELEVATOR',ghost:1,obj:hb,reach:1.8*U,near:3*U,tall:Y(DH),act:()=>inCab()?liftMenu():A_.call()}); }
     // the paintings: each a framed canvas (its picture a small JPEG from data/art.json) on its floor's wall, a plaque beside it, a thing to look at
     const TL=new THREE.TextureLoader(), gilt=M({color:0x9a7a34}), dark=M({color:0x2a1c14});
     for(const p of LAY){ const t=DATA[p.i], f=p.f, g=new THREE.Group(), w=p.w*U, h=p.h*U, k=f.rm.k, old=[0,1,5].includes(f.rm.g)||/Stuart|Cole|Church|Leutze/.test(t.a);
@@ -126,7 +150,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     if(gen!==A_.gen){ for(let i=UI.things.length-1;i>=0;i--){ let q=UI.things[i].obj; while(q&&q!==G)q=q.parent; if(q)UI.things.splice(i,1); } return; }   // left before it was hung: nothing kept
     scene.add(G); PERFX.own(G); A_.groups=[G]; A_.hung=LAY.length; A_.built=true;
     // the third person's camera stays under the walkway above you, pulled in along the line to you
-    if(!A_.cam&&UI.camKeeps){ A_.cam=1; UI.camKeeps.push((c,t)=>{ if(!A_.built||!UI.persp||!inB(t.x,t.z))return; const lv=ride?ride.z/FZ:A_.lv, u=t.x/U+SHARED.BOD.OX, v=t.z/U+SHARED.BOD.OY, open=u>VD.x0&&u<VD.x1&&v>VD.y0&&v<VD.y1, top=Y((open?NF:Math.min(NF,Math.floor(lv)+1))*FZ-14); if(c.y>top&&c.y>t.y+1e-6){ const k=Math.max(0,(top-t.y)/(c.y-t.y)); c.lerpVectors(t,c,k); } }); } };
+    if(!A_.cam&&UI.camKeeps){ A_.cam=1; UI.camKeeps.push((c,t)=>{ if(!A_.built||!UI.persp||!inB(t.x,t.z))return; const lv=inShaft(t.x,t.z)?CAB.z/FZ:A_.lv, u=t.x/U+SHARED.BOD.OX, v=t.z/U+SHARED.BOD.OY, open=u>VD.x0&&u<VD.x1&&v>VD.y0&&v<VD.y1, top=Y((open?NF:Math.min(NF,Math.floor(lv)+1))*FZ-14); if(c.y>top&&c.y>t.y+1e-6){ const k=Math.max(0,(top-t.y)/(c.y-t.y)); c.lerpVectors(t,c,k); } }); } };
   let LM=null; const liftMenu=()=>{ '@art'; if(!LM){ LM=document.createElement('div'); LM.id='artlift'; LM.hidden=true; LM.style.cssText='position:fixed;left:50%;top:22%;transform:translateX(-50%);width:min(440px,92vw);z-index:22;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#e8e2cc;background:#121110f2;border:2px solid #5a5248;zoom:var(--uiz,1)';
       document.body.appendChild(LM); LM.addEventListener('keydown',e=>{ if(e.key==='Escape')LM.hidden=true; e.stopPropagation(); }); LM.addEventListener('keyup',e=>e.stopPropagation()); }
     const k=A_.lv; LM.innerHTML='<div style="margin-bottom:10px;color:#c8b98a">THE ELEVATOR</div>'+RS.map(r=>r.name).map((n,i)=>'<button data-f="'+i+'" style="display:block;width:100%;text-align:left;margin:0 0 6px;font:inherit;color:#e8e2cc;background:'+(i===k?'#3a3428':'#1c1a18')+';border:1px solid #5a5248;padding:8px 10px;cursor:pointer">'+(i+1)+(i===k?' · YOU ARE HERE':'')+'<br><span style="color:#a89c84">'+n+'</span></button>').join('')+'<button data-f="x" style="font:inherit;color:#e8e2cc;background:#1c1a18;border:1px solid #5a5248;padding:6px 10px;cursor:pointer">CLOSE</button>';
@@ -217,7 +241,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   STEPS.push(()=>{ room('art','THE ART MUSEUM',B,{floor:null,in:()=>STONE,out:front,cope:STONEL},D,set0,{xo:1,noCeil:1,noWins:1}); const S=STORE.inside.art;
     if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); for(const [a,c] of [[B.x0,cx-5],[cx-5,cx+5],[cx+5,B.x1]])K.flat(a,B.y0,c,B.y1,.15,marble,'L'); build(); if(STORE.furnish&&STORE.furnish.art)STORE.furnish.art(STORE.artFrame); }; }
     if(S)S.un=()=>{ A_.gen=(A_.gen||0)+1; for(const G of A_.groups){ const inG=o=>{ for(let q=o;q;q=q.parent)if(q===G)return true; return false; }; for(let i=UI.things.length-1;i>=0;i--)if(UI.things[i].obj&&inG(UI.things[i].obj))UI.things.splice(i,1);
-      PERFX.owned.delete(G); G.removeFromParent(); G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.map)q.map.dispose(); q.dispose(); } }); } A_.groups=[]; A_.built=false; A_.hung=0; A_.cab=null; };   // dropped when you leave (the paintings come back next time)
+      PERFX.owned.delete(G); G.removeFromParent(); G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.map)q.map.dispose(); q.dispose(); } }); } A_.groups=[]; A_.built=false; A_.hung=0; A_.cab=null; A_.cabDoors=A_.landDoors=null; Object.assign(CAB,{z:0,pz:0,at:0,door:0,open:false,to:null,ride:null,was:false}); A_.busy=false; if(LM)LM.hidden=true; };   // dropped when you leave (the paintings come back next time)
     const NRM={f:[0,1],b:[0,-1],w:[-1,0],e:[1,0]}; BLOCKS.make({...LW,z0:0,z1:H,kind:'Rart',turn:TP,roof:(x,y)=>sh([58,57,57],.92+.12*hash(Math.floor(x*4),Math.floor(y*4),1769)),
       paint:(sd,u,z,f)=>{ const n=NRM[sd], P=sd==='f'?[u+OX,L.y1]:sd==='b'?[u+OX,L.y0]:sd==='w'?[L.x0+OX,u]:[L.x1+OX,u]; return front(n[0],n[1],P[0],P[1],z,f,H); }});
     sol(LW.x0,LW.y0,LW.x1,LW.y1,H); STORE.streetDoor.art={door:TP.pt(cxL,L.y1+.35),out:[...TP.pt(cxL,L.y1+1.4),TP.hd(0)]};

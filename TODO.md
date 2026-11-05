@@ -206,6 +206,13 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
+  - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
+    town mail and its carrier, the newsstand, the Market BBS and the bodega drone that delivers its orders, the daily requests, the town
+    staff's duties, Summon.
+  - The characters who stay stand at their own spots all day (the teachers at theirs). The owner's letters from the tenants panel stay.
+  - Reuse the existing put-away list (`AWAY` in 006-map-pre, `?bring=`) for every archive, not a second system.
+
 - [ ] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.
   - Kept after all: climbing (trees stay in the game, none placed yet), skateboards and tricks, clothes (on a bodega rack; armour stays
     archived), spray paint, cat food and fish food (Mango and a fish tank by the bodega register), gem cutting (the gem wheel), the golems

@@ -210,7 +210,7 @@ One pass, one pull request.
 
 ## Characters and the street
 
-- [ ] **After the archive (5 Nov)** · P1 · code. Left: the archived characters' code moved out of src/ (today hidden by ARCH), the playhouse as an empty hall. Dropped (owner, 5 Nov): the map
+- [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
   planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
 - [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).
 - [x] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".

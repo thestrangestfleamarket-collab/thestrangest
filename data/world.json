@@ -494,11 +494,11 @@
    "merchant": "professor",
    "at": [
     -2.4,
-    4.62
+    9.62
    ],
    "inW": 8,
-   "inD": 5,
-   "inH": 86,
+   "inD": 10,
+   "inH": 200,
    "lot": true
   },
   {

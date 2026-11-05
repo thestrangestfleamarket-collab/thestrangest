@@ -43,7 +43,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     const P=['bar','museum','bank','art','theatre'].includes(at)&&(LEVEL.places||[]).find(p=>p.id===at);
     if(P){ const y0=P.y1==null?LEVEL.block.back:P.y0, y1=P.y1==null?LEVEL.block.front:P.y1; return W(P.x0+u*(P.x1-P.x0),y0+v*(y1-y0)); }
     return null; };
-  const band=(x0,x1,rows)=>()=>{ const r=rows[Math.floor(Math.random()*rows.length)]; return W(x0+Math.random()*(x1-x0),r[0]+Math.random()*(r[1]-r[0])); };
+  const band=(x0,x1,rows)=>{ const f=()=>{ const r=rows[Math.floor(Math.random()*rows.length)]; return W(x0+Math.random()*(x1-x0),r[0]+Math.random()*(r[1]-r[0])); }; f.rects=rows.map(r=>{ const a=W(x0,r[0]), b=W(x1,r[1]); return [a.x,a.z,b.x,b.z]; }); return f; };
   const MKT=LEVEL.streets.market, WST=LEVEL.streets.west;
   CREW.spots={};   // a place's own work spots: spots[at](J) -> {x,z,hd,r} (the fair registers its posts)
   CREW.spot=J=>{ const j=J.job, k=J.key, own=CREW.spots[j.at]&&CREW.spots[j.at](J); if(own)return own;

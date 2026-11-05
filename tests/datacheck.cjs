@@ -14,7 +14,7 @@ const SND=(()=>{ const out=[], ext=/\.(mp3|ogg|wav|m4a|opus|webm)$/i, walk=d=>{ 
 const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
   const errs={}; pg.on('pageerror',e=>{ const k=e.message+(process.env.STACK?' @ '+(e.stack||'').split('\n').slice(1,3).join(' '):''); errs[k]=(errs[k]||0)+1; });
-  const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
+  const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1&sound=1';   // the recipes need the page's audio context, off since the 19 Oct no-sound rule unless asked
   // the old keys planted before the page runs (a browser that played before this save existed)
   await pg.addInitScript(()=>{ if(!localStorage.getItem('market-save')&&!localStorage.getItem('planted')){ localStorage.setItem('planted','1'); localStorage.setItem('market-looks',JSON.stringify({name:'TESTER',sex:'M'})); localStorage.setItem('market-outline','1'); localStorage.setItem('market-grain','12'); localStorage.setItem('market-keys',JSON.stringify({v:'p'})); } });
   await pg.goto(url,{waitUntil:'commit',timeout:180000});

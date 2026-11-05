@@ -18,12 +18,12 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
   const settle=(N,p)=>{ hide(N,false); put(N,p); room(N,p.off); N.st.pin=true; N.st.hold=true; if(p.hd!=null)N.st.hd=p.hd; if(p.sit!=null&&N.SR)N.SR.sit={z:Math.max(2,p.sit/((N.g.scale.y||1)*((N.body&&N.body.KL)||1)))}; };   // (a body's hips go at its own leg length: KL)
   // walk there (the walks, 111db-walks: the section's server walks them, every player sees the same), now: be there; then()
   const go=(J,p,then,now)=>{ const N=J.N; CITY.stop(N); N.st.pin=false; N.st.hold=true; if(!p){ then(); return; }
-    if(WALKS.has(N)){ hide(N,false); const gid=J.goal+'@'+(J.life?LIVES.H():Math.floor(CLOCK.h)); if(now){ put(N,p); WALKS.errand(N,p,{gid,now:1}); then(); return; }
+    if(WALKS.has(N)){ hide(N,false); const gid=J.goal+'@'+LIVES.H(); if(now){ put(N,p); WALKS.errand(N,p,{gid,now:1}); then(); return; }
       J.state='go'; WALKS.errand(N,p,{gid,then:ok=>{ if(J.state!=='go')return; if(!ok)put(N,p); then(); }}); return; }
     if(now){ hide(N,false); put(N,p); then(); return; }
     if(!near(N.st.x,N.st.z)&&!near(p.x,p.z)){ hide(N,false); put(N,p); then(); return; }
     hide(N,false); J.state='go'; JOBS.q.push(()=>{ if(J.state==='go')CITY.send(N,p,{then:ok=>{ if(!ok)put(N,p); then(); }}); }); };
-  const area=J=>{ const j=J.job; if(j.r==null)return null; const c=CREW.spot(J); return c&&{...c,r:(j.r||0)*T}; };
+  const area=J=>{ const j=J.job; if(j.r==null)return null; const c=CREW.spot(J); return c&&{...c,r:(j.r||0)*T,rect:c.band&&c.band.rects||c.rect||null}; };
   const roam=J=>{ const A=J.A, N=J.N; if(!A||!(A.r>0)||N.st.to||WALKS.has(N))return; for(let k=0;k<10;k++){ const p=A.band?A.band():{x:A.x+(rnd()*2-1)*A.r,z:A.z+(rnd()*2-1)*A.r}; if(stfree(p.x,p.z,N.st.R)&&Math.hypot(p.x-N.st.x,p.z-N.st.z)<30*T){ N.st.to=p; return; } } };
   const toWork=(J,now)=>{ const N=J.N, out=J.job.r!=null; J.goal='work';
     if(out){ const A=area(J); go(J,A,()=>{ if(J.goal!=='work')return; J.state='work'; J.A=A; if(!(A&&A.r>0)){ N.st.hold=true; if(A&&A.hd!=null)N.st.hd=A.hd; } },now); return; }
@@ -54,6 +54,10 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
     else if(J.life)life(J,w,true);
     else { if(J.door)put(N,J.door); offWork(J); }
     return J; };
+  // the cast as the server needs it to set their goals on the hour itself (worker/lives.js lvGoal): each one's hours, where work is (a door, or a range out of doors), where home is; the hangouts and doors
+  const table=()=>{ const keys={}; for(const J of JOBS.list){ const j=J.job, out=j.r!=null; let work=null; if(out){ const A=area(J); if(A)work={x:A.x,z:A.z,r:A.r||0,...(A.rect?{band:A.rect}:{})}; } else if(J.door)work={x:J.door.x,z:J.door.z,in:1};
+      keys[WALKS.key(J.N)]={life:J.life?1:0,hours:[J.open,J.close,J.bed,J.wake].map(v=>+v.toFixed(2)),work,home:J.home?{x:J.home.x,z:J.home.z}:null}; } return {keys,hg:LIVES.HGW(),doors:LIVES.doors()}; };
+  Object.assign(WALKS,{cast:table,castN:()=>JOBS.list.length});
   // what the hour asks of them: their life's plan (work, home, or off: and the habit), else the job's hours
   const wantOf=J=>{ if(!J.life)return want(J,CLOCK.h); const k=LIVES.plan(J.key); return k==='work'?'work':k==='sleep'||k==='home'||LIVES.LV_DO[k]&&LIVES.LV_DO[k].home?'home':'off:'+k; };
   let acc=0;

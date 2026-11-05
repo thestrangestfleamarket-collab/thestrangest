@@ -17,13 +17,11 @@ const LIVES={data:__DATA__("data/lives.json"),rec:{},local:{},server:false,LV_DO
   // where they live: a home's door (data/world.json residences), the apartment house, or down the subway
   LIVES.home=key=>{ const L=LIVES.data[key], h=L&&L.home; if(!h)return null; const R=RES[h]; if(R)return {...W(R.door[0],R.door[1]),name:R.name}; return CREW.door(h); };
   LIVES.homeName=key=>{ const L=LIVES.data[key], h=L&&L.home; return RES[h]?RES[h].name:h==='house'?'THE APARTMENT HOUSE':h==='subway'?'ANOTHER PART OF TOWN':''; };
-  // where a habit is done: a place's inside (its door, then in), or an area out of doors (a spot picked by who and when, a band to wander, which way to face)
-  LIVES.spot=(k,key,H)=>{ const D=LV_DO[k]; if(!D)return null; if(D.at)return {at:D.at,door:CREW.door(D.at)};
-    const g=HG[D.out]; if(!g)return null; const pick=lvHash(key+'@'+Math.floor(H/3));
-    if(g.band){ const [x0,x1,y0,y1]=g.band, u=(pick%1000)/1000, c=W(x0+u*(x1-x0),(y0+y1)/2); const p=W(x0,y0), q=W(x1,y1); return g.hd!=null?{...c,r:0,hd:g.hd}:{...c,r:30*TILE,band:()=>W(x0+Math.random()*(x1-x0),y0+Math.random()*(y1-y0)),rect:[Math.min(p.x,q.x),Math.min(p.z,q.z),Math.max(p.x,q.x),Math.max(p.z,q.z)],fast:D.fast}; }
-    const a=g.areas[pick%g.areas.length], c=W(a[0],a[1]);
-    if(D.still){ const u=(pick>>>8)%360*Math.PI/180, v=a[2]*TILE*(((pick>>>17)%100)/100); return {x:c.x+Math.cos(u)*v,z:c.z+Math.sin(u)*v,r:0,hd:g.hd!=null?g.hd:Math.atan2(-Math.cos(u),-Math.sin(u))}; }   // (a spot of their own in it, to stay at, facing its middle)
-    return {...c,r:a[2]*TILE,hd:g.hd}; };
+  // where a habit is done, by the rules shared with the server (lvSpot): the hangouts and the places' doors in the world's units (sent to the server with the cast)
+  let HGW=null, DOORS=null;
+  LIVES.HGW=()=>{ if(HGW)return HGW; HGW={}; for(const id in HG){ const g=HG[id], o={}; if(g.band){ const [x0,x1,y0,y1]=g.band, p=W(x0,y0), q=W(x1,y1); o.band=[p.x,p.z,q.x,q.z]; } if(g.areas)o.areas=g.areas.map(a=>{ const c=W(a[0],a[1]); return [c.x,c.z,a[2]*TILE]; }); if(g.hd!=null)o.hd=g.hd; HGW[id]=o; } return HGW; };
+  LIVES.doors=()=>{ if(DOORS)return DOORS; const d={}; let all=true; for(const k in LV_DO){ const at=LV_DO[k].at; if(!at||d[at])continue; const p=CREW.door(at); if(p)d[at]={x:p.x,z:p.z}; else all=false; } if(all)DOORS=d; return d; };
+  LIVES.spot=(k,key,H)=>{ const sp=lvSpot(k,key,H,LIVES.HGW(),LIVES.doors(),TILE); if(sp&&sp.band){ const R=sp.rect=sp.band; sp.band=()=>{ const r=R[Math.floor(Math.random()*R.length)]; return {x:r[0]+Math.random()*(r[2]-r[0]),z:r[1]+Math.random()*(r[3]-r[1])}; }; } return sp; };
   // the section's server keeps the records: asked when you come online and each game hour after
   ONLINE.hear.lives=m=>{ if(!m.all||typeof m.all!=='object')return; LIVES.server=true; for(const k in m.all)if(LIVES.data[k])LIVES.rec[k]=m.all[k]; };
   let lastH=-1; SYS.add('hi',()=>{ lastH=-1; },'158-lives');

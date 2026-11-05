@@ -7,7 +7,7 @@ __CODE__("worker/folk.js")
 Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,sim:FOLKSIM,sent:0}); window.WALKS=WALKS;
 { const T=TILE, R0=.3*T, TELE=2.5*T, NUDGE=.6*T, S=WALKS.S=FOLKSIM.make(); S.T=T; S.freeFn=(x,z)=>stfree(x,z,R0); S.routeFn=(a,b)=>{ const r=CITY.route&&CITY.route('up',a,b,stfree); return r?r.pts:null; };
   const stamp=()=>String(__BUILDV__)+':'+((SHARED.MAPLIVE&&SHARED.MAPLIVE.at)||''); WALKS.stamp=stamp;
-  let batch=[], gateSet=false, bake=null, scanT=0, ready=false;
+  let batch=[], gateSet=false, bake=null, scanT=0, ready=false, castHave='', castSent='';
   SYS.onStart(()=>{ (typeof LOAD==='function'?LOAD('later'):Promise.resolve()).then(()=>{ ready=true; },()=>{ ready=true; }); },'111db-walks');   // the scan reads the homes' doors (in the later chunk)
   const gate=()=>{ if(gateSet||!ROAM.gate)return; gateSet=true; S.gate={z:ROAM.wallZ,x0:ROAM.gate[0],x1:ROAM.gate[1]}; };
   const send=(k,m)=>{ FOLKSIM.set(S,k,m); if(WALKS.remote)batch.push([k,m]); };
@@ -49,7 +49,9 @@ Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,si
       const L=S.by[k]; if(L){ L.x=e.x; L.z=e.z; L.hd=e.hd; L.to=e.tx!=null?{x:e.tx,z:e.tz}:null; L.next=null; L.path=null; if(e.st===2){ if(!L.in)L.in=e.in||-1; } else L.in=0; } } };
   // on the website the section's server runs the walks: it is told of every walker here (it keeps those it has), and asked for nothing else; off it, or cut off, they run here from where the server last had them
   SYS.add('hi',m=>{ if(!WALKS.on)return; WALKS.remote=true; batch=[]; for(const r of WALKS.by.values()){ const st=r.N.st; batch.push([r.k,{x:st.x,z:st.z,hd:st.hd??st.h??0,v:r.v,R:st.R||R0,auto:r.auto,mode:JSON.parse(r.mode)}]); if(r.goal)batch.push([r.k,r.goal]); } flush();
-    if(m.folk)ONLINE.hear.folk(m.folk); if(m.fv!=null&&m.fv!==stamp()&&!bake)bake=WALKS.bake(); },'111db-walks');
-  SYS.add('city',dt=>{ if(!WALKS.on)return; dt=dt||0; gate(); if(WALKS.remote&&!ONLINE.on)WALKS.remote=false; if(ready&&(scanT-=dt)<=0){ scanT=2; scan(); } if(!WALKS.remote)FOLKSIM.step(S,dt); for(const r of WALKS.by.values())drive(r,dt); if(bake)bakeSome(); flush(); },'111db-walks');
+    if(m.folk)ONLINE.hear.folk(m.folk); if(m.fv!=null&&m.fv!==stamp()&&!bake)bake=WALKS.bake(); castHave=String(m.fc||''); castSent=''; },'111db-walks');
+  // the cast's table (159-jobs) goes up when the server's is from another build or has fewer of them
+  const castUp=()=>{ if(!WALKS.remote||!ONLINE.on||!WALKS.cast)return; const n=WALKS.castN(); if(!n)return; const fc=stamp()+':'+n; if(fc===castHave||fc===castSent)return; const [hv,hn]=castHave.split(':'); if(hv===stamp()&&+hn>=n){ castSent=fc; return; } castSent=fc; const t=WALKS.cast(); ONLINE.send({t:'folk',cast:{v:stamp(),...t}}); };
+  SYS.add('city',dt=>{ if(!WALKS.on)return; dt=dt||0; gate(); if(WALKS.remote&&!ONLINE.on)WALKS.remote=false; if(ready&&(scanT-=dt)<=0){ scanT=2; scan(); castUp(); } if(!WALKS.remote)FOLKSIM.step(S,dt); for(const r of WALKS.by.values())drive(r,dt); if(bake)bakeSome(); flush(); },'111db-walks');
   window.WALKSDBG=k=>k?{r:WALKS.by.get(k)&&{mode:WALKS.by.get(k).mode,E:WALKS.by.get(k).E,goal:WALKS.by.get(k).goal},S:S.by[k]}:{n:WALKS.by.size,remote:WALKS.remote,sent:WALKS.sent,grid:!!WALKS.grid,keys:[...WALKS.by.keys()]};
 }

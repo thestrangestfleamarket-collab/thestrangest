@@ -208,7 +208,7 @@ One pass, one pull request.
 
 - [ ] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
   - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
-    town mail and its carrier, the newsstand, the Market BBS and the bodega drone that delivers its orders, the daily requests, the town
+    town mail and its carrier, the newsstand, the daily requests, the town
     staff's duties, Summon.
   - The Market BBS and the bodega drone that delivers its orders stay (owner, 5 Nov). The owner's letters from the tenants panel stay.
   - Owner, 5 Nov: "i dont want anyone walking around town. only characters in game now are charactes who stay put to buysellteach".

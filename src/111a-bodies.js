@@ -119,8 +119,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
   const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
-  function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=G.position.y, h={};
-    for(const s of ['L','R']){ const A=jointAt(PM,body,LEG[s][2],IKV[0]).applyMatrix4(Mw); h[s]=(ground(A.x,A.z)-gy)/sy; if(!isFinite(h[s])||Math.abs(h[s])>20)h[s]=0; }
+  function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)
+    for(const s of ['L','R']){ const A=jointAt(PM,body,LEG[s][2],IKV[0]).applyMatrix4(Mw); h[s]=(ground(A.x,A.z)-gy)/sy; if(!isFinite(h[s])||!isFinite(gy)||Math.abs(h[s])>20)h[s]=0; }
     const low=Math.min(0,h.L,h.R); if(Math.abs(h.L)<.05&&Math.abs(h.R)<.05)return;
     for(let i=0;i<NB;i++)PM.value[i].elements[13]+=low;
     for(const s of ['L','R']){ const dy=h[s]-low; if(dy<.05)continue; const [ti,si,fi]=LEG[s], H=jointAt(PM,body,ti,IKV[1]), K=jointAt(PM,body,si,IKV[2]), A=jointAt(PM,body,fi,IKV[3]);

@@ -118,4 +118,3 @@ function gtSound(a,t){ '@later'; if(PLAY221.seeking)return; const ok=GTPHYS.mode
     if(e.n)gtPlay(e.n.s,e.n.at,when(e.t),e.n.amp,e.n.tone,e.n.r); else gtMute(e.s,when(e.t),0.04); } }
 function gtSlung(a,B){ const {V,nrm,cross,sub,mul,dot}=RIG, y=nrm(V(0.75,0.62,0.1)), z0=V(-0.2,0.1,1), z=nrm(sub(z0,mul(y,dot(z0,y)))); B.props.guitar={o:GTSLUNG.o,x:cross(y,z),y,z}; }
 window.__gtStep=gtStep; window.__guitar={GTA,GTS,get GTTUNE(){ return GTTUNE; },get GTLH(){ return GTLH; },get GTSTRUM(){ return GTSTRUM; },GTBOOK,get song(){ return GTSONG; },set:gtSet,next:gtNext,PLAY221,PLAYA,get SND(){ return SND; },pre:()=>PLAY221.pre,hz:gtHz,get pm(){ return GTPM; }};
-export {gtArm, GTF, gtFing, GTH, gtMix, GTPOLE, gtPose, gtReach, gtSm, NPCARMS, NPCFING, npcSpring};

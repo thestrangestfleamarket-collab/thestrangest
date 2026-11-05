@@ -1,8 +1,6 @@
 // THE PIANO HANDS: PK sets out the keyboard; pnPose and pnFing put the pianist's hands on the keys.
 import {gtArm, gtMix, gtReach, gtSm} from './109-game-play-3-guitar-3-hands.js';
 import {castPose, POSES} from './112-main-14.js';
-import {PNA} from './114-game-play-5-piano-1-sound.js';
-import {pnBlack, PNBOOK, pnCompile, pnWhite} from './115-game-play-5-piano-2-music.js';
 const PK={W:0.698,Y:21.4,Z:10,LW:4.46,LB:2.8,PIV:9};
 const pkX=m=>(25.5-pnWhite(m))*PK.W;
 const PKEYS=[]; for(let m=21;m<=108;m++)PKEYS.push(m);

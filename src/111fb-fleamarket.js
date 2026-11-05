@@ -1,7 +1,7 @@
 // THE CREW AND THE FLEA MARKET: polyfork.dev's stalls, street furniture and diner fittings (data/polyfork.json) put where data/world.json's things say; the cast (every character in characters.json with a pf body, data/cast/<group>.json) loaded a place at a time as you come near, on your rig, handed to JOBS; CREW.door/inside/spot say where each place's door, inside and work spot are (an inside's own spots by job title: ROOMS.off[id].spots; its seats for anyone else: ROOMS.off[id].seats).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
+import {ARCH, CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
@@ -73,8 +73,9 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
       LEVEL.homes[w]=[(t.x+Math.sin(a)*bz-B.XS(0))/T,(t.z+Math.cos(a)*bz-B.ZS(0))/T,0,null]; CREW.hd[w]=a; } };
   /* ---------- the cast: a group's bodies when you come near its place ---------- */
   const REC=LEVEL.chars||{}, members={};
-  for(const k in REC){ const r=REC[k]; if(r&&r.pf&&r.group&&G[r.group])(members[r.group]=members[r.group]||[]).push(k); }
-  const anchor=g=>{ const k=members[g][0], at=REC[k].job&&REC[k].job.at; return at==='street'||!at?null:CREW.door(at); };
+  for(const k in REC){ const r=REC[k]; if(r&&r.pf&&r.group&&G[r.group]&&!ARCH.has(k))(members[r.group]=members[r.group]||[]).push(k); }
+  const anchor=g=>{ const H=members[g].map(k=>LEVEL.homes&&LEVEL.homes[k]).find(h=>h&&h[2]===0); if(H)return {x:SHARED.BOD.XS(H[0]),z:SHARED.BOD.ZS(H[1])};   // a teacher's own spot (owner, 5 Nov 2026)
+    const k=members[g][0], at=REC[k].job&&REC[k].job.at; return at==='street'||!at?null:CREW.door(at); };
   let busy=false;
   const tick=()=>{ if(busy||SHARED.LVL!=='up')return; let best=null, bd=90*T;
     for(const g in members){ if(CREW.loaded[g])continue; const a=anchor(g), d=a?Math.hypot(a.x-pos.x,a.z-pos.z):0; if(d<bd){ bd=d; best=g; } }

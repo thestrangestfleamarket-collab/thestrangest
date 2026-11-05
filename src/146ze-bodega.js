@@ -65,6 +65,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
       const hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),BOD.Y?BOD.Y(z1):z1,Math.abs(Z(y1)-Z(y0))),new THREE.MeshBasicMaterial({visible:false})); hb.position.set((X(x0)+X(x1))/2,(BOD.Y?BOD.Y(z1):z1)/2,(Z(y0)+Z(y1))/2); SHARED.BODB.SG.add(hb);
       UI.thing({name,obj:hb,reach:reach*T,near:(reach+1.1)*T,tall:BOD.Y?BOD.Y(z1):z1,act}); };
     for(const k in SHELF)over(/^fridge/.test(k)?'THE DRINKS FRIDGE (TAKE)':'THE SHELF (TAKE)',O[k],()=>BODEGA.openShelf(k));
+    if(BODEGA.goods)BODEGA.goods({X,Z,O,T,K,G:SHARED.BODB.SG});   // the goods whose sellers are archived, on the shelves (146zea)
     over('THE REGISTER (PAY)',O.counter,BODEGA.register,1.8); over('THE LOTTERY MACHINE (SCRATCH-OFF $2)',O.lotto,BODEGA.scratch,1.6);
     const WF=t(.12);   // the back wall's inside face
     // the deli on the back wall: a prep counter with the slicer against the wall, the glass case in front, the stock clerk between
@@ -103,3 +104,4 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     K.flush(); };
   SYS.add('life',()=>{ const c=BODEGA.cat; if(!c||!c.parent||!SHARED.BODB.SG||!SHARED.BODB.SG.parent)return; const t=performance.now()/1000, B=c.userData.body; B.scale.y=.75*(1+.04*Math.sin(t*1.6)); c.userData.tail.rotation.y=.3*Math.sin(t*.9)+(Math.sin(t*.23)>.8?.6*Math.sin(t*7):0); c.userData.head.rotation.z=.08*Math.sin(t*.4); },'146ze-cat');
 }
+export {BODEGA};

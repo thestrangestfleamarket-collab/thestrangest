@@ -1,6 +1,6 @@
 // THE BOOKSTORE: a cozy lending library on West St kept by the Professor: 16 bookcases, one genre each, of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, pos, ROOMS, SFX, USE} from './003b-systems.js';
+import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -36,7 +36,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   /* ---------- the windows: the catalogue (every cover, by kind or a search) and one book's card ---------- */
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const P=document.createElement('div'); P.id='libp'; P.hidden=true;
-  P.style.cssText='position:fixed;left:50%;top:6%;transform:translateX(-50%);width:min(760px,94vw);max-height:84vh;overflow:auto;z-index:22;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
+  P.style.cssText='position:fixed;left:50%;top:6%;transform:translateX(-50%);width:min(760px,94vw);max-height:84vh;overflow:auto;z-index:24;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
   const css=document.createElement('style'); css.textContent='#libr[hidden],#libp[hidden]{display:none!important} #libp .btn,#libr .btn{font:inherit;padding:4px 8px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libp .btn.on{background:#3b2a1e;color:#ece5d3} #libp .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-top:10px} #libp .bk{cursor:pointer;text-align:center} #libp .bk img{width:88px;height:128px;object-fit:cover;border:1px solid #3b2a1e;background:#cfc4ae;box-shadow:2px 2px 0 #3b2a1e55} #libp .bk div{font-size:9px;margin-top:3px;line-height:1.2} #libp input{font:inherit;padding:4px;border:2px solid #3b2a1e;background:#f6f0e2;width:180px} #libp .mine{outline:3px solid #b8862a}';
   document.head.appendChild(css); document.body.appendChild(P);
   let tab='ALL', q='';
@@ -64,34 +64,83 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   P.addEventListener('input',e=>{ if(e.target.dataset.q==null)return; q=e.target.value; const c=e.target.selectionStart; drawCat(); const i=P.querySelector('[data-q]'); i.focus(); i.setSelectionRange(c,c); });
   for(const ev of ['keydown','keyup','keypress'])P.addEventListener(ev,e=>{ if(e.key==='Escape'&&ev==='keydown')LIB.close(); e.stopPropagation(); });
 
-  /* ---------- the reader: two pages, the lines laid out once with the page's own font, turned with the arrows or a click; your place kept ---------- */
-  const TX={}, R=document.createElement('div'); R.id='libr'; R.hidden=true; R.tabIndex=-1;
-  R.style.cssText='position:fixed;inset:0;z-index:23;background:rgba(10,8,6,.82);display:flex;align-items:center;justify-content:center;outline:none';
-  document.body.appendChild(R);
-  const FONT='17px Georgia, "Times New Roman", serif', LH=24, PW=380, PH=560, PAD=34, LPP=Math.floor((PH-PAD*2-20)/LH);
+  /* ---------- the reader (after the old game's: a chapter at a time on a page you scroll, owner 5 Nov 2026 "very easy to read the whole book ... fully featured"): its contents, a slider through the whole book,
+     search, bookmarks, the type's size, face, spacing and width, paper, sepia or night; your place and your settings kept with what you own ---------- */
+  const TX={}, R=document.createElement('div'); R.id='libr'; R.hidden=true; R.tabIndex=-1; document.body.appendChild(R);
+  { const st=document.createElement('style'); st.textContent=`#libr{position:fixed;inset:0;z-index:25;display:flex;flex-direction:column;outline:none;background:var(--rb);color:var(--rf);font:14px Georgia,serif}
+    #libr[hidden]{display:none!important} #libr *{box-sizing:border-box} #libr .bar{display:flex;gap:6px;align-items:center;padding:8px max(12px,env(safe-area-inset-left,0px));background:var(--rbar);color:var(--rf);font:11px Silkscreen,monospace;letter-spacing:.3px;flex-wrap:wrap}
+    #libr .bar .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #libr button{font:11px Silkscreen,monospace;padding:6px 9px;background:var(--rbtn);color:var(--rf);border:2px solid var(--rline);cursor:pointer} #libr button.on{background:var(--rf);color:var(--rb)}
+    #libr .scroll{flex:1;overflow-y:auto;overscroll-behavior:contain} #libr .pg{margin:0 auto;padding:28px 22px 60px;white-space:normal;color:var(--rf)} #libr .pg h2{font-weight:600;text-align:center;margin:10px 0 28px;color:var(--rf)} #libr .pg p{margin:0 0 .9em;text-indent:1.4em;color:var(--rf);text-align:justify;hyphens:auto}
+    #libr .pg p.hit{background:var(--rhit)} #libr .end{text-align:center;margin:30px 0} #libr input[type=range]{flex:1;min-width:120px} #libr .side{position:absolute;top:44px;right:0;bottom:48px;width:min(380px,92vw);overflow-y:auto;background:var(--rbar);border-left:2px solid var(--rline);padding:12px;font:13px Georgia,serif;color:var(--rf)}
+    #libr .side .it{padding:7px 6px;border-bottom:1px solid var(--rline);cursor:pointer} #libr .side .it:hover,#libr .side .it.cur{background:var(--rhit)} #libr .side input[type=text]{width:100%;font:14px Georgia,serif;padding:6px;background:var(--rb);color:var(--rf);border:2px solid var(--rline)} #libr .row{display:flex;gap:6px;align-items:center;margin:10px 0;flex-wrap:wrap} #libr .row>span{width:80px;font:11px Silkscreen,monospace}`;
+    document.head.appendChild(st); }
+  const THEMES={paper:{rb:'#f4ecd8',rf:'#2a2018',rbar:'#e6dcc4',rbtn:'#f4ecd8',rline:'#8a7a60',rhit:'rgba(216,170,60,.35)'},sepia:{rb:'#e8d6b0',rf:'#3a2a18',rbar:'#d8c49a',rbtn:'#e8d6b0',rline:'#7a6040',rhit:'rgba(180,120,40,.35)'},night:{rb:'#16130f',rf:'#d8ccb4',rbar:'#221d17',rbtn:'#16130f',rline:'#5a4c38',rhit:'rgba(216,170,60,.25)'}};
+  const FACES={serif:'Georgia,"Times New Roman",serif',sans:'"Helvetica Neue",Arial,sans-serif',mono:'"Courier New",monospace'};
+  const SET=()=>S.set||(S.set={fs:19,face:'serif',lh:1.6,w:38,theme:'paper'});
   const url=b=>location.protocol==='file:'?'https://www.gutenberg.org/cache/epub/'+b.pg+'/pg'+b.pg+'.txt':'/book/'+b.pg+'.txt';
   LIB.url=url;
   // the book's own words: without Project Gutenberg's header and licence, its paragraphs joined back from the hard-wrapped lines
   const clean=txt=>{ txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
-  const mc=document.createElement('canvas').getContext('2d');
-  const lay=paras=>{ mc.font=FONT; const W=PW-PAD*2, L=[]; for(const p of paras){ const words=p.split(' '); let line='';
-      for(const w of words){ const t=line?line+' '+w:w; if(mc.measureText(t).width>W&&line){ L.push(line); line=w; } else line=t; } if(line)L.push(line); L.push(''); } return L; };
-  let cur=null;
-  const page=(i,side)=>{ const B=cur, lines=B.L.slice(i*LPP,(i+1)*LPP); return `<div style="width:${PW}px;height:${PH}px;box-sizing:border-box;padding:${PAD}px;background:#f4ecd8;${side?'border-left:1px solid #d8cdb2;box-shadow:inset 8px 0 14px -10px #0006':'box-shadow:inset -8px 0 14px -10px #0006'};position:relative;font:${FONT};line-height:${LH}px;color:#2a2018;white-space:pre">${lines.map(l=>esc(l)||' ').join('\n')}<div style="position:absolute;bottom:14px;${side?'right':'left'}:${PAD}px;font:11px Georgia,serif;color:#8a7a60">${i+1}</div></div>`; };
-  const draw=()=>{ const B=cur, n=Math.ceil(B.L.length/LPP), i=Math.max(0,Math.min(B.i,n-1))&~1; B.i=i; S.p[B.b.id]=i; save();
-    R.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:8px;zoom:var(--uiz,1)"><div style="font:11px Silkscreen,monospace;color:#ece5d3">${esc(B.b.t)} · ${esc(B.b.a)} <button class="btn" data-a="x" style="margin-left:10px">CLOSE</button></div>
-      <div style="display:flex;box-shadow:0 10px 40px #000a" data-a="turn">${page(i,0)}${i+1<n?page(i+1,1):`<div style="width:${PW}px;height:${PH}px;background:#f4ecd8"></div>`}</div>
-      <div style="font:11px Silkscreen,monospace;color:#cfc4ae"><button class="btn" data-a="prev">&lt;</button> PAGES ${i+1}–${Math.min(i+2,n)} OF ${n} <button class="btn" data-a="next">&gt;</button></div></div>`; };
-  const turn=d=>{ if(!cur)return; const n=Math.ceil(cur.L.length/LPP), j=cur.i+d*2; if(j<0||j>=n)return; cur.i=j; draw(); if(SFX)SFX.play('page',{vol:.35,vary:.2}); };
-  LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; R.hidden=false; R.innerHTML='<div style="font:12px Silkscreen,monospace;color:#ece5d3">OPENING '+esc(b.t)+'...</div>'; R.focus();
-    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); TX[id]=lay(clean(await r.text())); }
-      cur={b,L:TX[id],i:S.p[id]||0}; draw(); R.focus(); }
-    catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div style="font:12px Silkscreen,monospace;color:#ece5d3;text-align:center">THE PAGES WILL NOT OPEN RIGHT NOW.<br><br><button class="btn" data-a="x">CLOSE</button></div>'; } });
-  LIB.closeBook=()=>{ R.hidden=true; R.innerHTML=''; cur=null; };
-  R.addEventListener('click',e=>{ const t=e.target.closest('[data-a]'); if(!t)return; const a=t.dataset.a; if(a==='x')return LIB.closeBook(); if(a==='prev')return turn(-1); if(a==='next')return turn(1);
-    if(a==='turn'){ const r=t.getBoundingClientRect(); turn(e.clientX<r.left+r.width/2?-1:1); } });
-  for(const ev of ['keydown','keyup','keypress'])R.addEventListener(ev,e=>{ if(ev==='keydown'){ if(e.key==='Escape')LIB.closeBook(); else if(e.key==='ArrowRight'||e.key===' ')turn(1); else if(e.key==='ArrowLeft')turn(-1); } e.stopPropagation(); e.preventDefault(); });
+  // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
+  const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, ROMAN=/^[ivxlcdm]+\.?$/i;
+  const chapters=P=>{ const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&(HEAD.test(p)||ROMAN.test(p)))c.push(i); });
+    const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
+    let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
+    for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
+    if(out.length<2){ out.length=0; for(let i=0;i<P.length;i+=60)out.push({t:'PART '+(out.length+1),i,sk:0}); }
+    if(out[0].i>0)out.unshift({t:'THE BEGINNING',i:0,sk:0}); return out; };   // sk: how many of its first paragraphs are its own heading
+  let cur=null, side=null;   // the book open: {b, P paragraphs, ch chapters, c chapter}
+  const posOf=()=>S.p[cur.b.id]&&typeof S.p[cur.b.id]==='object'?S.p[cur.b.id]:{c:0,p:0,m:[]};
+  const keep=()=>{ const Q=posOf(), sc=R.querySelector('.scroll'); let p=cur.ch[cur.c].i; if(sc){ for(const el of sc.querySelectorAll('.pg p[data-i]')){ if(el.offsetTop>=sc.scrollTop){ p=+el.dataset.i; break; } } }
+    S.p[cur.b.id]={c:cur.c,p,m:Q.m||[]}; save(); };
+  let keepT=0; const keepSoon=()=>{ clearTimeout(keepT); keepT=setTimeout(()=>cur&&keep(),600); };
+  const theme=()=>{ const T=THEMES[SET().theme]||THEMES.paper; for(const k in T)R.style.setProperty('--'+k,T[k]); };
+  const pct=()=>{ const sc=R.querySelector('.scroll'), C=cur.ch[cur.c], end=(cur.ch[cur.c+1]||{i:cur.P.length}).i, f=sc&&sc.scrollHeight>sc.clientHeight?sc.scrollTop/(sc.scrollHeight-sc.clientHeight):0; return Math.round(((C.i+(end-C.i)*f)/cur.P.length)*1000)/10; };
+  const bars=()=>{ const n=cur.ch.length, p=pct(); const lab=R.querySelector('[data-pos]'); if(lab)lab.textContent=`CH ${cur.c+1} OF ${n} · ${p}%`; const sl=R.querySelector('[data-k=go]'); if(sl&&document.activeElement!==sl)sl.value=p; };
+  const show=(c,toPara)=>{ cur.c=Math.max(0,Math.min(cur.ch.length-1,c)); const C=cur.ch[cur.c], end=(cur.ch[cur.c+1]||{i:cur.P.length}).i, Z=SET();
+    const body=`<h2 style="font-size:${Z.fs*1.25}px">${esc(C.t)}</h2>`+cur.P.slice(C.i+(C.sk||0),end).map((p,k)=>`<p data-i="${C.i+(C.sk||0)+k}">${esc(p)}</p>`).join('');
+    const sc=R.querySelector('.scroll'); sc.innerHTML=`<div class="pg" style="max-width:${Z.w}em;font-size:${Z.fs}px;line-height:${Z.lh};font-family:${FACES[Z.face]}">${body}<div class="end">${cur.c<cur.ch.length-1?`<button data-a="nextch">NEXT: ${esc(cur.ch[cur.c+1].t.slice(0,40))} &gt;</button>`:'<b>THE END</b>'}</div></div>`;
+    sc.scrollTop=0; if(toPara!=null){ const el=sc.querySelector(`p[data-i="${toPara}"]`); if(el){ sc.scrollTop=el.offsetTop-20; } }
+    bars(); keep(); };
+  const frame=()=>{ const Q=posOf();
+    R.innerHTML=`<div class="bar"><span class="t">${esc(cur.b.t)} · ${esc(cur.b.a)}</span><button data-a="toc">CONTENTS</button><button data-a="find">SEARCH</button><button data-a="mark">★ MARK</button><button data-a="set">Aa</button><button data-a="x">CLOSE</button></div>
+      <div class="scroll" tabindex="0"></div>
+      <div class="bar"><button data-a="prevch">&lt; CH</button><input type="range" min="0" max="100" step=".1" value="0" data-k="go" aria-label="Where in the book"><span data-pos style="min-width:140px;text-align:center"></span><button data-a="nextch">CH &gt;</button></div>`;
+    R.querySelector('.scroll').addEventListener('scroll',()=>{ if(!cur)return; bars(); keepSoon(); }); show(Q.c||0,Q.p); };
+  const sideDraw=()=>{ const old=R.querySelector('.side'); if(old)old.remove(); if(!side)return; const d=document.createElement('div'); d.className='side'; const Q=posOf(), Z=SET();
+    if(side==='toc')d.innerHTML=`<div style="font:11px Silkscreen,monospace;margin-bottom:8px">CONTENTS</div>`+cur.ch.map((c,k)=>`<div class="it ${k===cur.c?'cur':''}" data-ch="${k}">${esc(c.t)}</div>`).join('')+(Q.m&&Q.m.length?`<div style="font:11px Silkscreen,monospace;margin:14px 0 6px">BOOKMARKS</div>`+Q.m.map((m,k)=>`<div class="it" data-bm="${k}">★ ${esc(cur.ch[m.c]?cur.ch[m.c].t:'')} — ${esc((cur.P[m.p]||'').slice(0,60))}…</div>`).join(''):'');
+    if(side==='find')d.innerHTML=`<div style="font:11px Silkscreen,monospace;margin-bottom:8px">SEARCH THE BOOK</div><input type="text" data-k="q" placeholder="a word or phrase"><div data-res></div>`;
+    if(side==='set')d.innerHTML=`<div style="font:11px Silkscreen,monospace">THE PAGE</div>
+      <div class="row"><span>SIZE</span><button data-s="fs" data-v="-1">A−</button><b>${Z.fs}</b><button data-s="fs" data-v="1">A+</button></div>
+      <div class="row"><span>TYPE</span>${Object.keys(FACES).map(f=>`<button class="${Z.face===f?'on':''}" data-s="face" data-v="${f}">${f.toUpperCase()}</button>`).join('')}</div>
+      <div class="row"><span>SPACING</span>${[1.4,1.6,1.9].map(v=>`<button class="${Z.lh===v?'on':''}" data-s="lh" data-v="${v}">${v}</button>`).join('')}</div>
+      <div class="row"><span>WIDTH</span>${[30,38,48].map(v=>`<button class="${Z.w===v?'on':''}" data-s="w" data-v="${v}">${v===30?'NARROW':v===38?'MEDIUM':'WIDE'}</button>`).join('')}</div>
+      <div class="row"><span>LIGHT</span>${Object.keys(THEMES).map(t=>`<button class="${Z.theme===t?'on':''}" data-s="theme" data-v="${t}">${t.toUpperCase()}</button>`).join('')}</div>`;
+    R.appendChild(d); const q=d.querySelector('[data-k=q]'); if(q){ q.focus(); q.addEventListener('input',()=>{ const w=q.value.trim().toLowerCase(), out=[]; if(w.length>=3)for(let i=0;i<cur.P.length&&out.length<80;i++){ const p=cur.P[i], j=p.toLowerCase().indexOf(w); if(j>=0)out.push([i,p.slice(Math.max(0,j-40),j+60)]); }
+      d.querySelector('[data-res]').innerHTML=w.length<3?'':out.length?out.map(([i,t])=>`<div class="it" data-hit="${i}">…${esc(t)}…</div>`).join(''):'<div class="it">NOTHING FOUND.</div>'; }); } };
+  const goPara=i=>{ let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=i)c=k; show(c,i); const el=R.querySelector(`p[data-i="${i}"]`); if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),2400); } };
+  LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; theme(); R.hidden=false; side=null; R.innerHTML='<div class="bar"><span class="t">OPENING '+esc(b.t)+'…</span><button data-a="x">CLOSE</button></div>'; R.focus();
+    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(await r.text()); TX[id]={P,ch:chapters(P)}; }
+      cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
+    catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
+  LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };
+  R.addEventListener('click',e=>{ const t=e.target.closest('[data-a],[data-ch],[data-bm],[data-hit],[data-s]'); if(!t)return; const a=t.dataset.a;
+    if(a==='x')return LIB.closeBook(); if(!cur)return;
+    if(a==='prevch')return show(cur.c-1); if(a==='nextch'){ if(SFX)SFX.play('page',{vol:.35,vary:.2}); return show(cur.c+1); }
+    if(a==='toc'||a==='find'||a==='set'){ side=side===a?null:a; return sideDraw(); }
+    if(a==='mark'){ keep(); const Q=posOf(); Q.m=(Q.m||[]).filter(m=>m.p!==Q.p); Q.m.push({c:Q.c,p:Q.p}); S.p[cur.b.id]=Q; save(); say('BOOKMARKED.'); if(side==='toc')sideDraw(); return; }
+    if(t.dataset.ch!=null){ show(+t.dataset.ch); side=null; return sideDraw(); }
+    if(t.dataset.bm!=null){ const m=posOf().m[+t.dataset.bm]; if(m)goPara(m.p); side=null; return sideDraw(); }
+    if(t.dataset.hit!=null){ goPara(+t.dataset.hit); return; }
+    if(t.dataset.s){ const Z=SET(), k=t.dataset.s, v=t.dataset.v; if(k==='fs')Z.fs=Math.max(13,Math.min(32,Z.fs+ +v)); else if(k==='lh'||k==='w')Z[k]=+v; else Z[k]=v; save(); keep(); theme(); const Q=posOf(); show(cur.c,Q.p); sideDraw(); } });
+  R.addEventListener('input',e=>{ if(!cur||e.target.dataset.k!=='go')return; const want=+e.target.value/100*cur.P.length; let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=want)c=k; const i=Math.max(cur.ch[c].i,Math.floor(want)); show(c,i); e.target.value=pct(); });
+  for(const ev of ['keydown','keyup','keypress'])R.addEventListener(ev,e=>{ const typing=e.target&&e.target.tagName==='INPUT'&&e.target.type==='text';
+    if(ev==='keydown'&&cur&&!typing){ const sc=R.querySelector('.scroll'), k=e.key;
+      if(k==='Escape'){ if(side){ side=null; sideDraw(); } else LIB.closeBook(); } else if(k==='ArrowRight')show(cur.c+1); else if(k==='ArrowLeft')show(cur.c-1);
+      else if(k===' '||k==='PageDown'){ sc.scrollTop+=sc.clientHeight*.9; e.preventDefault(); } else if(k==='PageUp'){ sc.scrollTop-=sc.clientHeight*.9; e.preventDefault(); } else if(k==='ArrowDown')sc.scrollTop+=60; else if(k==='ArrowUp')sc.scrollTop-=60; }
+    else if(ev==='keydown'&&!cur&&e.key==='Escape')LIB.closeBook();
+    e.stopPropagation(); });
 
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
@@ -109,9 +158,14 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     for(let i=0;i<w*h/30;i++){ g.fillStyle=`rgba(${Math.random()<.5?0:255},${Math.random()<.5?0:255},${Math.random()<.5?0:255},.05)`; g.fillRect(x+Math.random()*w,y+Math.random()*h,1,1); }
     g.fillStyle='rgba(0,0,0,.22)'; g.fillRect(x,y,w*.08,h); g.fillRect(x+w*.92,y,w*.08,h); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(x+w*.12,y,w*.08,h);
     const gold='#e2c272'; g.fillStyle=gold; for(const yy of [y+h*.05,y+h*.09,y+h*.91,y+h*.95])g.fillRect(x+w*.12,yy,w*.76,Math.max(1,h*.006));
-    g.translate(x+w/2,y+h*.13); g.rotate(Math.PI/2); g.fillStyle=gold; g.textBaseline='middle';
-    const fs=Math.max(6,Math.min(w*.42,h*.07)); g.font=`600 ${fs}px Georgia,serif`; let t=String(b.t).toUpperCase(); const max=h*.56; while(t.length>3&&g.measureText(t).width>max)t=t.slice(0,-2)+'…'; g.fillText(t,0,0);
-    g.font=`${fs*.72}px Georgia,serif`; let a=String(b.a).split(' ').pop().toUpperCase(); g.fillText(a,h*.6,0); g.restore(); };
+    // the title down the spine between the bands, whole: one line if it fits, else two, the type shrunk until it does; the author's name below it, clear of the bands
+    const T=String(b.t).toUpperCase(), t0=y+h*.12, t1=y+h*.72, len=t1-t0, mid=(t0+t1)/2; g.fillStyle=gold; g.textBaseline='middle'; g.textAlign='center';
+    const fit=(lines,max)=>{ let fs=max; g.font=`600 ${fs}px Georgia,serif`; const wd=Math.max(...lines.map(l=>g.measureText(l).width)); if(wd>len)fs=fs*len/wd; return fs; };
+    let lines=[T], fs=fit(lines,Math.min(w*.58,h*.075));
+    if(fs<Math.min(w*.58,h*.075)*.7&&T.includes(' ')){ const ws=T.split(' '); let best=null; for(let k=1;k<ws.length;k++){ const L=[ws.slice(0,k).join(' '),ws.slice(k).join(' ')], f=fit(L,Math.min(w*.36,h*.075)); if(!best||f>best[1])best=[L,f]; } if(best[1]>fs){ lines=best[0]; fs=best[1]; } }
+    g.save(); g.translate(x+w/2,mid); g.rotate(Math.PI/2); g.font=`600 ${fs}px Georgia,serif`; lines.forEach((l,i)=>g.fillText(l,0,(i-(lines.length-1)/2)*fs*1.08)); g.restore();
+    const A=String(b.a).split(' ').pop().toUpperCase(), a0=y+h*.75, a1=y+h*.885; let afs=Math.min(w*.4,h*.045); g.font=`${afs}px Georgia,serif`; const aw=g.measureText(A).width; if(aw>a1-a0){ afs*= (a1-a0)/aw; }
+    g.save(); g.translate(x+w/2,(a0+a1)/2); g.rotate(Math.PI/2); g.font=`${afs}px Georgia,serif`; g.fillText(A,0,0); g.restore(); g.restore(); };
   const IMS={}, spineIm=id=>{ const f=spineF(id); if(!f)return null; if(!IMS[id]){ const im=new Image(); im.src=f; IMS[id]=im; } return IMS[id].complete&&IMS[id].naturalWidth?IMS[id]:null; };
   // the case's mesh, in metres (x across, y up, z out toward the room)
   const caseMesh=C=>{ const G=new THREE.Group(), wood=new THREE.MeshLambertMaterial({color:0x4a2e1c}), boards=[];
@@ -132,7 +186,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     const bm=mg(books,new THREE.MeshLambertMaterial({map:tex})); G.add(bm);
     for(const id of C.books.map(b=>b.id))if(spineF(id)){ const im=new Image(); im.onload=()=>{ rows.forEach((row,r)=>row.forEach((q,i)=>{ if(q.b.id===id){ paintSpine(g,i*CW,r*CH,CW,CH,q.b,im); tex.needsUpdate=true; } })); }; im.src=spineF(id); }
     // its brass plate: the genre
-    const pc=document.createElement('canvas'); pc.width=256; pc.height=40; const pg=pc.getContext('2d'); pg.fillStyle='#b8923a'; pg.fillRect(0,0,256,40); pg.fillStyle='#2a1a10'; pg.font='600 19px Georgia,serif'; pg.textAlign='center'; pg.textBaseline='middle'; pg.fillText(C.name.slice(0,24),128,21);
+    const pc=document.createElement('canvas'); pc.width=256; pc.height=40; const pg=pc.getContext('2d'); pg.fillStyle='#b8923a'; pg.fillRect(0,0,256,40); pg.fillStyle='#2a1a10'; let pfs=19; pg.font=`600 ${pfs}px Georgia,serif`; const pww=pg.measureText(C.name).width; if(pww>240){ pfs*=240/pww; pg.font=`600 ${pfs}px Georgia,serif`; } pg.textAlign='center'; pg.textBaseline='middle'; pg.fillText(C.name,128,21);
     const pt=new THREE.CanvasTexture(pc); pt.colorSpace=THREE.SRGBColorSpace; const plate=new THREE.Mesh(new THREE.PlaneGeometry(.46,.072),new THREE.MeshLambertMaterial({map:pt})); plate.position.set(0,BC.H-.05,BC.D/2+.004); G.add(plate);
     return G; };
 
@@ -143,15 +197,17 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="x">CLOSE</button>';
   VW.appendChild(VB); { const st=document.createElement('style'); st.textContent='#libv .btn{font:inherit;padding:6px 10px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libv[hidden]{display:none!important}'; document.head.appendChild(st); }
   const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[]};
-  const vdraw=()=>{ const C=LIB.data.cases[V.ci], dpr=Math.min(2,window.devicePixelRatio||1), w=VC.clientWidth, h=VC.clientHeight; if(VC.width!==w*dpr||VC.height!==h*dpr){ VC.width=w*dpr; VC.height=h*dpr; }
+  let vpend=false; const vdraw=()=>{ if(vpend)return; vpend=true; requestAnimationFrame(()=>{ vpend=false; if(!VW.hidden)vpaint(); }); };   // one redraw a frame: the filter is a pass over every pixel
+  const vpaint=()=>{ const C=LIB.data.cases[V.ci], dpr=Math.min(2,window.devicePixelRatio||1), w=VC.clientWidth, h=VC.clientHeight; if(VC.width!==w*dpr||VC.height!==h*dpr){ VC.width=w*dpr; VC.height=h*dpr; }
     const g=VC.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.fillStyle='#2a1810'; g.fillRect(0,0,w,h);
     const k=V.s, X=m=>w/2+V.x+m*k, Y=m=>h/2+V.y-(m-BC.H/2)*k;   // metres to the screen
     // the wall, the case, its plate, its books
     g.fillStyle='#3a2416'; g.fillRect(X(-BC.W/2-.02),Y(BC.H+.05),(BC.W+.04)*k,(BC.H+.05)*k); g.fillStyle='#1c120c'; g.fillRect(X(-BC.W/2+BC.BW),Y(BC.H-.05),(BC.W-2*BC.BW)*k,(BC.H-.13)*k);
-    g.fillStyle='#b8923a'; g.fillRect(X(-.23),Y(BC.H-.014),.46*k,.072*k); g.fillStyle='#2a1a10'; g.font=`600 ${Math.max(6,.04*k)}px Georgia,serif`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(C.name,X(0),Y(BC.H-.05)); g.textAlign='left';
+    g.fillStyle='#b8923a'; g.fillRect(X(-.23),Y(BC.H-.014),.46*k,.072*k); g.fillStyle='#2a1a10'; let pf=Math.max(6,.04*k); g.font=`600 ${pf}px Georgia,serif`; const pw_=g.measureText(C.name).width; if(pw_>.42*k){ pf*=.42*k/pw_; g.font=`600 ${pf}px Georgia,serif`; } g.textAlign='center'; g.textBaseline='middle'; g.fillText(C.name,X(0),Y(BC.H-.05)); g.textAlign='left';
     V.hit=[]; V.rows.forEach((row,r)=>{ g.fillStyle='#5a3a22'; g.fillRect(X(-BC.W/2+BC.BW),Y(BC.SH[r]),(BC.W-2*BC.BW)*k,Math.max(2,BC.BW*k));
       for(const q of row){ const x=X(q.x-q.th/2), y=Y(BC.SH[r]+q.h), bw=q.th*k, bh=q.h*k; paintSpine(g,x,y,bw,bh,q.b,spineIm(q.b.id)); V.hit.push([q.b.id,x,y,bw,bh]); } });
-    g.fillStyle='rgba(236,229,211,.9)'; g.font='12px Silkscreen,monospace'; g.fillText(`${C.name} · CASE ${V.ci+1} OF ${LIB.data.cases.length} · CLICK A BOOK`,16,24); };
+    if(PS2.on&&PS2.img){ const W_=VC.width, H_=VC.height, im=g.getImageData(0,0,W_,H_); PS2.img(im.data,W_,H_,480); g.putImageData(im,0,0); }   // the game's own look, at MED's 480 lines
+    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle='rgba(236,229,211,.9)'; g.font='12px Silkscreen,monospace'; g.fillText(`${C.name} · CASE ${V.ci+1} OF ${LIB.data.cases.length} · CLICK A BOOK`,16,24); };
   const vfit=()=>{ V.fit=Math.min(VC.clientWidth/(BC.W+.2),VC.clientHeight/(BC.H+.3))*.92; V.s=V.fit; V.x=0; V.y=0; };
   const vopen=ci=>{ V.ci=(ci+LIB.data.cases.length)%LIB.data.cases.length; V.rows=LIB.shelfOf(LIB.data.cases[V.ci]); VW.hidden=false; vfit(); vdraw(); };
   LIB.look=ci=>load().then(()=>vopen(ci)).catch(()=>say('THE SHELF IS TOO DARK TO READ. TRY AGAIN.','#c8a090')); LIB.closeLook=()=>{ VW.hidden=true; };
@@ -220,6 +276,6 @@ const LIB={data:null,max:5}; window.LIB=LIB;
         const put=(k,a,b,h,ry=0)=>{ const g=KIT.decode(Dd[k]); g.computeBoundingBox(); const bb=g.boundingBox, me=new THREE.Mesh(g,KIT.mat), grp=new THREE.Group(); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); me.castShadow=me.receiveShadow=true; grp.add(me);
           const x=d[0]+n[0]*a*MW+tg[0]*b*MW, z=d[1]+n[1]*a*MW+tg[1]*b*MW; grp.scale.setScalar(MW); grp.position.set(x,(SHARED.groundY?SHARED.groundY(x,z):0)+h*MW,z); grp.rotation.y=Math.atan2(n[0],n[1])+ry; G.add(grp); return grp; };
         put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
-  window.LIBDBG=()=>({data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,i:cur.i,lines:cur.L.length,pages:Math.ceil(cur.L.length/LPP)}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
+  window.LIBDBG=()=>({data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,c:cur.c,chapters:cur.ch.length,paras:cur.P.length,p:(posOf()||{}).p,marks:((posOf()||{}).m||[]).length,set:SET()}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
 }
 export {LIB};

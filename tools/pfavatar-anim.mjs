@@ -15,8 +15,12 @@ const out={bones:BONES,clips:{}};
 for(const [f,fig] of [['m','masculine'],['f','feminine']]){
   globalThis.__pfHook=(fn,c)=>fn({...c,wear:{}}); const g=M.createAsset({figure:fig,build:1.02,expression:'neutral'}); globalThis.__pfHook=null; g.updateMatrixWorld(true);
   const by={}; g.traverse(n=>{ if(n.isBone&&!by[n.name])by[n.name]=n; });
+  const hv=new THREE.Vector3(); by.Head.getWorldPosition(hv); const s=1.52/hv.y;   // (metres as the pieces: sized before the legs shorten)
+  // the same legs as the pieces (tools/pfavatar-pack.py LEG): knees and ankles 15% nearer along the leg, the hips lowered as much, the feet where they were
+  { const LEG=0.85, H=new THREE.Vector3(), F=new THREE.Vector3(); by.LeftUpLeg.getWorldPosition(H); by.LeftFoot.getWorldPosition(F);
+    for(const s of ['Left','Right']){ by[s+'Leg'].position.multiplyScalar(LEG); by[s+'Foot'].position.multiplyScalar(LEG); }
+    by.Hips.position.y-=(1-LEG)*(H.y-F.y); g.updateMatrixWorld(true); }
   const rest={}; for(const n in by)rest[n]={q:by[n].quaternion.clone(),p:by[n].position.clone()};
-  const hv=new THREE.Vector3(); by.Head.getWorldPosition(hv); const s=1.52/hv.y;
   // the bind: arms down, as the pieces were baked
   for(const [nm,deg] of ARMS){ const b=by[nm], pq=new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); b.quaternion.premultiply(pq.clone().invert().multiply(new THREE.Quaternion().setFromAxisAngle(ZA,deg*Math.PI/180)).multiply(pq)); b.updateMatrixWorld(true); }
   g.updateMatrixWorld(true); const BIND=BONES.map(k=>by[MAP[k]].matrixWorld.clone().invert());

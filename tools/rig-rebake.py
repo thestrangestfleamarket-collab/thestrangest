@@ -59,15 +59,19 @@ def rebake(char, name2role, w_map, J=None):   # J: another body's joints, so a p
     F=frames(J)
     # remap per-vertex weights (src bone idx -> 15-bone bucket)
     srcmap=np.full(len(names),-1,int)
+    split={}   # a source bone shared by two (a list of (role, share) in w_map: the avatar's collarbone, half chest, half arm)
     for i,nm in enumerate(names):
         r=w_map.get(nm)
-        if r is not None: srcmap[i]=BONES.index(r)
+        if isinstance(r,(list,tuple)): split[i]=[(BONES.index(a),f) for a,f in r]
+        elif r is not None: srcmap[i]=BONES.index(r)
     nV=len(P); bone=np.zeros((nV,2),int); wout=np.ones(nV)
     for v in range(nV):
         acc={}
         for k in range(4):
             bi=srcmap[ji[v,k]]; wv=wt[v,k]
-            if bi>=0 and wv>0: acc[bi]=acc.get(bi,0)+wv
+            if ji[v,k] in split and wv>0:
+                for b2,f in split[ji[v,k]]: acc[b2]=acc.get(b2,0)+wv*f
+            elif bi>=0 and wv>0: acc[bi]=acc.get(bi,0)+wv
         if not acc: acc={0:1.0}
         top=sorted(acc.items(),key=lambda x:-x[1])
         a=top[0][0]; c=top[1][0] if len(top)>1 else a

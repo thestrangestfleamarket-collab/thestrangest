@@ -4,6 +4,7 @@ import {FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, VIT,
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
+import {BODIES} from './111a-bodies.js';
 import {BFLY} from './143-bfly.js';
 import {BIRDS} from './144b-birds.js';
 Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'}); Object.defineProperty(WIELD,'hand',{get:()=>st.hand==='L'?'L':'R'});
@@ -62,7 +63,8 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
   WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J, P=(p,o)=>o.set(p.x,p.y,p.z).applyMatrix4(G);
-    P(J_(J,'shoulder'),sh); P(J.pelvis,hip); P(J_(J,'elbow'),ax); P(J_(J,'palm'),base); ax.subVectors(P(J_(J,'wrist'),tip),ax).normalize();
+    const AH=BODIES.hand(WIELD.hand);   // (in your avatar's own hand)
+    P(AH?AH.shoulder:J_(J,'shoulder'),sh); P(J.pelvis,hip); P(AH?AH.elbow:J_(J,'elbow'),ax); P(AH?AH.palm:J_(J,'palm'),base); ax.subVectors(P(AH?AH.wrist:J_(J,'wrist'),tip),ax).normalize();
     const HV=VR.on&&VR.hand&&VR.hand(WIELD.hand==='L'?'left':'right'); WIELD.vel=HV?HV.v:null;   // in the headset the tool hangs from the controller: its forward is the shaft, its roll the face
     if(HV){ base.copy(HV.wp); ax.set(0,0,-1).applyQuaternion(HV.wq); bx2.set(1,0,0).applyQuaternion(HV.wq); } else { bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); } bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); if(m.tipL){ WIELD.tip.copy(m.tipL).applyMatrix4(M); if(m.bend)m.bend(); } head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
@@ -92,7 +94,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       A.copy(t.v); if(t.sw&&slash(A,t.sw,dt))t.sw=null;
       t.cur.lerp(A,1-Math.exp(-dt*(t.sw?40:20))).normalize(); o.S.aim={v:RIG.V(t.cur.x,t.cur.y,t.cur.z),w:1}; o.wantPose=true;
       F.g.updateMatrixWorld(true); const G=F.g.matrixWorld, J=o.B.J, P=(p,q)=>q.set(p.x,p.y,p.z).applyMatrix4(G), b=new V3(), e=new V3(), w=new V3(), x=new V3(), z=new V3();
-      P(J['elbow'+t.h],e); P(J['palm'+t.h],b); w.subVectors(P(J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
+      const AH=F.PM&&F.body&&BODIES.hand(t.h,F.PM,F.body,o.B); P(AH?AH.elbow:J['elbow'+t.h],e); P(AH?AH.palm:J['palm'+t.h],b); w.subVectors(P(AH?AH.wrist:J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
       t.m.matrix.makeBasis(x,w,z).setPosition(b); t.m.matrixWorld.copy(t.m.matrix); if(t.m.tipL)(t.tip||(t.tip=new V3())).copy(t.m.tipL).applyMatrix4(t.m.matrix); } };
   WIELD.theirTip=id=>{ const t=theirs.get(id); return t&&t.m.visible&&t.tip||null; };   // another player's held rod or kite: where its line starts
   WIELD.head=head; window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));

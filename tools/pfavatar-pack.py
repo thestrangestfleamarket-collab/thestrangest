@@ -6,6 +6,8 @@
 import json, os, importlib.util, numpy as np
 sp=importlib.util.spec_from_file_location('rr','tools/rig-rebake.py'); rr=importlib.util.module_from_spec(sp); sp.loader.exec_module(rr)
 RAW=json.load(open('.polyfork/avatar-raw.json'))
+# the collarbone (the rig has none) half the chest's, half the upper arm's, so a raised arm takes its shoulder with it (owner, 5 Nov 2026: "my shoulder vanishes when i raise my arm too high")
+PFW=dict(rr.MIXAMO_W); PFW.update({s+'Shoulder':[('torso',.55),('upperArm'+n,.45)] for n,s in (('L','Left'),('R','Right'))})
 
 def weld(v,extra=None):
     P=np.array(v['P'],float).reshape(-1,3); J=np.array(v['J'],int).reshape(-1,4); W=np.array(v['W'],float).reshape(-1,4); Z=np.array(v['Z'],int); F=np.array(v['F'],int).reshape(-1,3)
@@ -14,13 +16,39 @@ def weld(v,extra=None):
     return P[first],J[first],W[first],Z[first],F[ok],(np.array(extra)[ok] if extra is not None else None)
 
 def pack(v,rig,Jb,zmap,extra=None):
-    P,J,W,Z,F,X=weld(v,extra)
-    out,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,rr.MIXAMO_W,J=Jb)
+    P,J,W,Z,F,X=weld(v,extra); P=reshape(P,J,W,rig['names'],*rig['prop'])
+    out,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
     Zg=np.array([zmap[v['zones'][z]] for z in Z],np.uint8)
     o={k:out[k] for k in ('lo','sc','pos','tri','bone','w')}; o['zone']=rr.enc(Zg)
     if X is not None: o['reg']=rr.enc(X.astype(np.uint8))
     assert len(P)<65536
     return o
+
+# the proportions (owner, 5 Nov 2026: "legs should be 15% shorter, head should be 10% bigger, make sure all hair + hats head dressings grow too"): in the bind (arms down, legs
+# straight), a thigh's points close toward its hip, a shin's toward its knee, a foot moves up whole (shoes keep their shape); whatever rides the head (face, hair, hats, glasses,
+# beards) grows about the head; then all of it drops so the feet stand on the ground. tools/pfavatar-anim.mjs bakes the clips on the same shortened legs (LEG, its hips).
+LEG=0.85; HEAD=1.10
+def proportions(names,world):
+    W=np.array(world,float); ix={n:i for i,n in enumerate(names)}; out=W.copy(); legs={}
+    for s in ('Left','Right'):
+        H,K,A=W[ix[s+'UpLeg']],W[ix[s+'Leg']],W[ix[s+'Foot']]; Ky=H[1]-(H[1]-K[1])*LEG; Ay=Ky-(K[1]-A[1])*LEG
+        legs[s]=(H[1],K[1],Ky,A[1],Ay); out[ix[s+'Leg']][1]=Ky; out[ix[s+'Foot']][1]=Ay
+        if s+'ToeBase' in ix: out[ix[s+'ToeBase']][1]+=Ay-A[1]
+    drop=legs['Left'][4]-legs['Left'][3]; out[:,1]-=drop
+    return out,legs,drop,W[ix['Head']]
+def reshape(P,J,Wt,names,legs,drop,head):
+    P=P.copy(); dy=np.zeros(len(P)); dh=np.zeros(len(P))
+    for b,nm in enumerate(names):
+        w=(Wt*(J==b)).sum(1)
+        if not w.any(): continue
+        for s in ('Left','Right'):
+            Hy,Ky,Ky2,Ay,Ay2=legs[s]
+            if nm==s+'UpLeg': dy+=w*(Hy-P[:,1])*(1-LEG)
+            elif nm==s+'Leg': dy+=w*(Ky2-Ky+(Ky-P[:,1])*(1-LEG))
+            elif nm in (s+'Foot',s+'ToeBase'): dy+=w*(Ay2-Ay)
+        if nm=='Head' or nm.startswith('Face_'): dh+=w
+    P=P+(P-head)*((HEAD-1)*dh)[:,None]; P[:,1]+=dy-drop
+    return P
 
 def joints(rig,P):
     W=np.array(rig['world']); nidx={n:i for i,n in enumerate(rig['names'])}; R=rr.MIXAMO_ROLE; jp=lambda nm:W[nidx[R[nm]]]; top=P[:,1].max(); J={}
@@ -32,10 +60,12 @@ def joints(rig,P):
 
 IDX={'skel':{},'builds':RAW['builds'],'pieces':[{'n':n,'slot':p['slot'],'label':p['label'],'figs':''.join(f for f in 'mf' if any(p['v'][f]))} for n,p in enumerate(RAW['pieces'])]}
 for f in ('m','f'):
-    FG=RAW['figs'][f]; rig={'names':FG['bones']['names'],'world':np.array(FG['bones']['world'])}
-    b0=FG['bodies'][1]; Jb=joints(rig,np.array(b0['P']).reshape(-1,3))
-    P,J,W,Z,F,_=weld(b0); sk,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,rr.MIXAMO_W,J=Jb)
+    FG=RAW['figs'][f]; W0=np.array(FG['bones']['world']); W1,legs,drop,head=proportions(FG['bones']['names'],W0)
+    rig={'names':FG['bones']['names'],'world':W1,'prop':(legs,drop,head)}
+    b0=FG['bodies'][1]
+    P,J,W,Z,F,_=weld(b0); H0=float(P[:,1].max()); P=reshape(P,J,W,rig['names'],legs,drop,head); Jb=joints(rig,P); sk,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
     bz=b0['zones']; bmap={z:i for i,z in enumerate(bz)}
+    sk['height']=round(H0,4)   # (sized as before the proportions: the torso keeps its size, you are shorter)
     D={'bones':rr.BONES,'builds':RAW['builds'],'regions':RAW['regions'],'skel':{k:sk[k] for k in ('height','hipY','origin','rest')},
        'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region']) for b in FG['bodies']]},'pieces':[]}
     IDX['skel'][f]=D['skel']

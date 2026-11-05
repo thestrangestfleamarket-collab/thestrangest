@@ -24,15 +24,27 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       let r=0; for(const p of P)r=Math.max(r,p.distanceTo(c)); Sp.radius=r*2.2+1e-3;
       // and the body at rest carried by its hips (all a body is before it is first posed)
       const g=me.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); const H=PM.value[0]; G.copy(g.boundingSphere).applyMatrix4(H); return Sp.union(G); },set(){}}); me.userData.PM=PM; me.frustumCulled=true; };
+  // body.dq (your avatar): its two bones blended as dual quaternions, not matrices, so a limb turned far from its rest keeps its thickness (owner, 5 Nov 2026: "my shoulder vanishes when i raise my arm too high")
+  const DQ=`
+  vec4 mq(mat3 m){ float t=m[0][0]+m[1][1]+m[2][2], s;
+    if(t>0.){ s=sqrt(t+1.)*2.; return vec4((m[1][2]-m[2][1])/s,(m[2][0]-m[0][2])/s,(m[0][1]-m[1][0])/s,.25*s); }
+    if(m[0][0]>m[1][1]&&m[0][0]>m[2][2]){ s=sqrt(1.+m[0][0]-m[1][1]-m[2][2])*2.; return vec4(.25*s,(m[1][0]+m[0][1])/s,(m[2][0]+m[0][2])/s,(m[1][2]-m[2][1])/s); }
+    if(m[1][1]>m[2][2]){ s=sqrt(1.+m[1][1]-m[0][0]-m[2][2])*2.; return vec4((m[1][0]+m[0][1])/s,.25*s,(m[2][1]+m[1][2])/s,(m[2][0]-m[0][2])/s); }
+    s=sqrt(1.+m[2][2]-m[0][0]-m[1][1])*2.; return vec4((m[2][0]+m[0][2])/s,(m[2][1]+m[1][2])/s,.25*s,(m[0][1]-m[1][0])/s); }
+  vec4 qm(vec4 a,vec4 b){ return vec4(a.w*b.xyz+b.w*a.xyz+cross(a.xyz,b.xyz),a.w*b.w-dot(a.xyz,b.xyz)); }
+  mat4 dqm(mat4 A,mat4 B,float w){ float sa=length(A[0].xyz), sb=length(B[0].xyz); vec4 qa=mq(mat3(A)/sa), qb=mq(mat3(B)/sb); if(dot(qa,qb)<0.)qb=-qb;
+    vec4 da=.5*qm(vec4(A[3].xyz,0.),qa), db=.5*qm(vec4(B[3].xyz,0.),qb), q=qa*w+qb*(1.-w), d=da*w+db*(1.-w); float l=length(q); q/=l; d/=l;
+    float x=q.x,y=q.y,z=q.z,c=q.w, s=sa*w+sb*(1.-w); vec3 t=2.*(c*d.xyz-d.w*q.xyz+cross(q.xyz,d.xyz));
+    return mat4(vec4(1.-2.*(y*y+z*z),2.*(x*y+c*z),2.*(x*z-c*y),0.)*s,vec4(2.*(x*y-c*z),1.-2.*(x*x+z*z),2.*(y*z+c*x),0.)*s,vec4(2.*(x*z+c*y),2.*(y*z-c*x),1.-2.*(x*x+y*y),0.)*s,vec4(t,1.)); }`;
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
-    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`, AT_=`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`;
+    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
       sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
-    mat.customProgramCacheKey=()=>'body'+NB;
-    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
-    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
+    mat.customProgramCacheKey=()=>'body'+NB+CK;
+    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
+    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
     return {me,PM}; }
 
@@ -129,6 +141,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
   BODIES.pose=pose; BODIES.mesh=mesh;
+  // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
+  const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};
+  BODIES.hand=(side,PM,body,B)=>{ if(!PM){ if(!ME||!W3.body.on)return null; PM=ME.PM; body=BODIES.by[MEK]; B=W3.lastB; } if(!body||!body.binv||!PM)return null; const [u,f,h]=ARMI[side==='L'?'L':'R'];
+    jointAt(PM,body,u,HJ.shoulder); jointAt(PM,body,f,HJ.elbow); jointAt(PM,body,h,HJ.wrist); const J=B&&B.J, a=J&&J['palm'+side], b=J&&J['wrist'+side], d=a&&b?Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)*(body.KL||1):0;
+    HJ.palm.subVectors(HJ.wrist,HJ.elbow).normalize().multiplyScalar(d).add(HJ.wrist); return HJ; };
 
   /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */
   const playable=b=>!!(b&&b.playable);

@@ -5530,3 +5530,4 @@ Owner, of the menus listed with what works ("lets reorganize all the menus"), of
 - 5 Nov 2026, standing still (owner: "the character slides around in same spot when idle"): standing, the hips sway over feet that stay put.
 - 5 Nov 2026, running and stopping (owner: "it doesnt seem like the running and stopping, etc works like it used to (realistic)"; of the side-by-side, his pick: clips + momentum): on its clips the avatar leans into a start and a run, into turns, and on a stop its upper body carries on and rocks back.
 - 5 Nov 2026, the ogre's skull tried and dropped (owner: "lets use the ogre head ... on the main avatar body", then of new hair, beards, brows and eyes made for it: "lets cancel all this work"; his pick: drop the ogre head too): the avatar keeps its own head.
+- 5 Nov 2026, the underwear (owner: "why does the underwear look like that"): it no longer flickers with the skin under it.

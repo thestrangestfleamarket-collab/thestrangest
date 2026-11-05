@@ -150,7 +150,7 @@ const HAIR = {
 function faceParts(p, Lo, headF) {
   const { H, hh, J } = Lo, out = [], hcz = J.Head.z, surf = (x, y) => { let z = hcz + hh * .6; while (z > hcz && headF(x, y, z) > 0) z -= .0005; return z; };
   const nrm = (x, y, z) => { const e = .002; return V(headF(x + e, y, z) - headF(x - e, y, z), headF(x, y + e, z) - headF(x, y - e, z), headF(x, y, z + e) - headF(x, y, z - e)).normalize(); };
-  const stick = (g, col, x, y, lift, rz = 0) => { const z = surf(x, y), n = nrm(x, y, z), m = new THREE.Matrix4().compose(V(x, y, z).addScaledVector(n, lift), new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), n).multiply(new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), rz)), V(1, 1, 1)); g.applyMatrix4(m); out.push({ g, col }); };
+  const stick = (g, col, x, y, lift, rz = 0) => { const z = surf(x, y), n = nrm(x, y, z), m = new THREE.Matrix4().compose(V(x, y, z).addScaledVector(n, lift), new THREE.Quaternion().setFromUnitVectors(V(0, 0, 1), n).multiply(new THREE.Quaternion().setFromAxisAngle(V(0, 0, 1), rz)), V(1, 1, 1)); g.applyMatrix4(m); out.push({ g, col, role: col === p.eyeC ? 'iris' : col === brow ? 'brow' : col === lipC ? 'lip' : 'face' }); };
   const disc = (rx, ry) => { const g = new THREE.CircleGeometry(1, 14); g.scale(rx, ry, 1); return g; }, bar = (w, h) => new THREE.PlaneGeometry(w, h);
   const ey = H - hh * p.eyeY, ex = hh * .15 * p.headW * p.eyeX, brow = new THREE.Color(p.hairC).multiplyScalar(.7).getHex(), lipC = new THREE.Color(p.skin).lerp(new THREE.Color(0xa05a50), .45).getHex();
   for (const s of [1, -1]) { const x = s * ex, t = s * p.eyeT * .35;
@@ -201,17 +201,24 @@ function build(p) {
   for (const s of ['l', 'r']) { const a = J['foot_' + s]; part('shoe_' + s, S.F['shoe_' + s], box(a.x - .06 * H, -.005, a.z - .07 * H, a.x + .06 * H, ankY + .06 * H, J['ball_leaf_' + s].z + .06 * H), res * .8, p.tris.shoe, C.shoes, 'foot_' + s); }
   part('hair', hairF, box(-.3 * H, chinY - .25 * H, J.Head.z - .3 * H, .3 * H, H + .06 * H, J.Head.z + .2 * H), res * .75, p.tris.hair, p.hairC, 'Head');
   // into one mesh: points, colours, joints, weights
-  const Pall = [], Call = [], Iall = [], Jall = [], Wall = [], ranges = []; let base = 0;
+  const Pall = [], Call = [], Iall = [], Jall = [], Wall = [], ranges = [], looks = []; let base = 0;
   const put = (P, I, col, jw, colAt) => { const n = P.length / 3; for (let v = 0; v < n; v++) { Pall.push(P[3 * v], P[3 * v + 1], P[3 * v + 2]); const c = new THREE.Color(colAt ? colAt(P[3 * v + 1]) : col); Call.push(Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)); for (let k = 0; k < 4; k++) { Jall.push(jw.jj[4 * v + k]); Wall.push(jw.ww[4 * v + k]); } } for (const i of I) Iall.push(i + base); base += n; };
   for (const pt of parts) { const jw = weights(pt.m.P, B.P, J, pt.rigid, Lo); const sole = new THREE.Color(C.sole).getHex(); ranges.push([pt.name, base, pt.m.P.length / 3]); put(pt.m.P, pt.m.I, pt.col, jw, /^shoe/.test(pt.name) ? y => y < .012 * H ? sole : pt.col : null); }
-  for (const fp of faceParts(p, Lo, headF)) { const g = fp.g.index ? fp.g : fp.g, P = g.attributes.position.array, I = g.index ? Array.from(g.index.array) : [...Array(P.length / 3).keys()]; const n = P.length / 3; ranges.push(['face', base, n]); const jw = { jj: new Uint8Array(n * 4).fill(0), ww: new Uint8Array(n * 4) }; for (let v = 0; v < n; v++) { jw.jj[4 * v] = ix('Head'); jw.ww[4 * v] = 255; } put(P, I, fp.col, jw); }
+  for (const fp of faceParts(p, Lo, headF)) { const g = fp.g.index ? fp.g : fp.g, P = g.attributes.position.array, I = g.index ? Array.from(g.index.array) : [...Array(P.length / 3).keys()]; const n = P.length / 3; ranges.push(['face', base, n]); looks.push([fp.role, base, n]); const jw = { jj: new Uint8Array(n * 4).fill(0), ww: new Uint8Array(n * 4) }; for (let v = 0; v < n; v++) { jw.jj[4 * v] = ix('Head'); jw.ww[4 * v] = 255; } put(P, I, fp.col, jw); }
   // the rig: the UAL rig's turns, this body's joint places
   const t = [], q = [], ibm = new Float32Array(NB * 16);
   for (let i = 0; i < NB; i++) { const pa = PAR[i], wq = restW[i].q, d = J[NAMES[i]].clone().sub(pa >= 0 ? J[NAMES[pa]] : V(0, 0, 0)); if (pa >= 0) d.applyQuaternion(restW[pa].q.clone().invert()); t.push(d.toArray().map(v => +v.toFixed(5))); q.push(RIG.q[i]);
     new THREE.Matrix4().compose(J[NAMES[i]], wq, V(1, 1, 1)).invert().toArray(ibm, i * 16); }
-  return { S, ranges, P: Pall, C: Call, I: Iall, J: Jall, W: Wall, rig: { names: NAMES, parent: PAR, t, q, ibm }, H, pelY: Lo.pelY, tris: Iall.length / 3, parts: Object.fromEntries(parts.map(x => [x.name, x.m.I.length / 3])) };
+  return { S, ranges, looks, hairs: hairs(p, S, res), P: Pall, C: Call, I: Iall, J: Jall, W: Wall, rig: { names: NAMES, parent: PAR, t, q, ibm }, H, pelY: Lo.pelY, tris: Iall.length / 3, parts: Object.fromEntries(parts.map(x => [x.name, x.m.I.length / 3])) };
 }
 
+// every hair style on this body (the HAIR tab): meshed as its own hair is, kept apart (data/hair-X.json)
+function hairs(p, S, res) { const { J, H, hh, chinY } = S.Lo, hc = V(0, H - hh * .5, J.Head.z), hr = headR(p, hh), out = {};
+  for (const st of Object.keys(HAIR)) { if (st === p.hair) continue; const m = slim(nets(HAIR[st](hc, hr, hh), V(-.3 * H, chinY - .25 * H, J.Head.z - .3 * H), V(.3 * H, H + .06 * H, J.Head.z + .2 * H), res * .75), p.tris.hair);
+    const P = Array.from(m.P), lo = [0, 1, 2].map(k => Math.min(...P.filter((_, i) => i % 3 === k))), hi = [0, 1, 2].map(k => Math.max(...P.filter((_, i) => i % 3 === k))), sc = Math.max(...hi.map((h, k) => h - lo[k])) / 65000;
+    const q = new Int16Array(P.length); for (let i = 0; i < P.length; i++) q[i] = Math.round((P[i] - lo[i % 3]) / sc) - 32500;
+    out[st] = { n: P.length / 3, sc, lo, p: b64(q), i: b64(Uint16Array.from(m.I)) }; }
+  return out; }
 const b64 = a => Buffer.from(a.buffer, a.byteOffset, a.byteLength).toString('base64');
 function pack(b) {
   const lo = [0, 1, 2].map(k => Math.min(...b.P.filter((_, i) => i % 3 === k))), hi = [0, 1, 2].map(k => Math.max(...b.P.filter((_, i) => i % 3 === k))), sc = Math.max(...hi.map((h, k) => h - lo[k])) / 65000;
@@ -282,12 +289,13 @@ const packT = (T, n) => T.map(t => { const used = new Uint8Array(Math.ceil(n / 8
   return { name: t.name, sc: +sc.toPrecision(5), m: b64(used), d: b64(Int8Array.from(vals)), o: t.o.map(a => a.map(x => +x.toFixed(4))) }; });
 
 await MS.ready;
-const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(PROTOS), out = { bodies: {} };
+const only = process.argv[2] ? process.argv[2].split(',') : Object.keys(PROTOS), out = { bodies: {} }, hairOut = {};
 for (const k of only) { const t0 = Date.now(), p = realize(PROTOS[k]), b = build(p);
-  out.bodies[k] = { name: PROTOS[k].name, H: +b.H.toFixed(3), pelvis: +b.pelY.toFixed(4), rig: { ...b.rig, ibm: b64(b.rig.ibm) }, mesh: pack(b) };
+  hairOut[k] = { own: p.hair, styles: b.hairs }; out.bodies[k] = { name: PROTOS[k].name, ranges: [...b.ranges.filter(r => r[0] !== 'face'), ...b.looks], colors: { skin: p.skin, hair: p.hairC, eye: p.eyeC, style: p.hair }, H: +b.H.toFixed(3), pelvis: +b.pelY.toFixed(4), rig: { ...b.rig, ibm: b64(b.rig.ibm) }, mesh: pack(b) };
   console.log(k, PROTOS[k].name, 'triangles', b.tris, JSON.stringify(b.parts), ((Date.now() - t0) / 1000).toFixed(1) + 's');
   if (process.env.SLIDERS !== '0') { const t1 = Date.now(), T = packT(targets(p, b), b.P.length / 3), f = `data/shapes-${k}.json`; fs.writeFileSync(f, JSON.stringify({ n: b.P.length / 3, bones: B15.map(x => x[0]), sliders: T }));
     console.log('  ', f, (fs.statSync(f).size / 1024).toFixed(0) + ' KB', ((Date.now() - t1) / 1000).toFixed(1) + 's'); } }
+for (const k of Object.keys(hairOut)) { const f = `data/hair-${k}.json`; fs.writeFileSync(f, JSON.stringify(hairOut[k])); console.log('  ', f, (fs.statSync(f).size / 1024).toFixed(0) + ' KB'); }
 out.ualPelvis = +restW[ix('pelvis')].p.y.toFixed(4);
 fs.writeFileSync(process.env.OUT || 'data/full/bodies-ual.json', JSON.stringify(out));
 console.log('wrote', process.env.OUT || 'data/full/bodies-ual.json', (fs.statSync(process.env.OUT || 'data/full/bodies-ual.json').size / 1024).toFixed(0) + ' KB');

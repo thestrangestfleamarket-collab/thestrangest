@@ -178,7 +178,7 @@ if __name__=='__main__':
     if which in ('all','players'):   # the six player bodies: node tools/bodies-bake.mjs first (data/full/bodies-ual.json)
         d=json.load(open('data/full/bodies-ual.json')); out={'bones':BONES,'bodies':{}}
         for key,b in d['bodies'].items():
-            body,_=rebake({'rig':b['rig'],'mesh':b['mesh']},UAL_ROLE,UAL_W); body['name']=b['name']; body['metres']=b['H']; out['bodies'][key]=body; print(key,b['name'],'height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
+            body,_=rebake({'rig':b['rig'],'mesh':b['mesh']},UAL_ROLE,UAL_W); body['name']=b['name']; body['metres']=b['H']; body['ranges']=b.get('ranges'); body['colors']=b.get('colors'); out['bodies'][key]=body; print(key,b['name'],'height',body['height'],'tris',len(base64.b64decode(body['tri']))//6)
         json.dump(out,open('data/bodies.json','w'),separators=(',',':'))
         import os; print('data/bodies.json',round(os.path.getsize('data/bodies.json')/1e6,2),'MB')
     if which in ('all','skaters'):   # the skate park's 22 people, each from its own spot in the kit's composed scene (its own colours), keyed by spot

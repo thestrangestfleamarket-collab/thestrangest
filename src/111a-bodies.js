@@ -84,7 +84,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   function pose(B,PM,body){ const S=body.S; chain(B,body); place(PM,body,S);
     if(body.contact){ const g=body.GEO;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,S); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,S); }
-      const lo=body._cal==null?null:lowOf(PM,body); if(lo!=null){ const dy=rigLow(B)+body._cal-lo; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; } } }
+      // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
+      const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
   /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */

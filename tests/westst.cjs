@@ -17,7 +17,7 @@ const {chromium}=require('playwright');
   for(const id of ['apt']){ await pg.evaluate(()=>__dbg.MAPK.MODS.apts.enterReal()); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>__dbg.MAPK.MODS.apts.exitReal()); await idle(); await pg.waitForTimeout(500); const o=await at();
     ok(o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': out onto West St facing the street ('+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
   const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=[...window.BLK.blds,...window.BLK.lots], P=L.LEVEL?L.LEVEL.places:[];
-    const west=B.filter(q=>Math.abs(q.x1-F)<.6).map(q=>[q.y0,q.y1]), mk=B.filter(q=>q.row===1).map(q=>[q.x0,q.x1]), pf=window.PFROWDBG?PFROWDBG():null;
+    const west=B.filter(q=>q.row===5).map(q=>[q.y0,q.y1]), mk=B.filter(q=>q.row===1).map(q=>[q.x0,q.x1]), pf=window.PFROWDBG?PFROWDBG():null;   // row 5 is West St's filler row; Market St's last garage ends at the corner
     return {west,mk,pf}; });
   ok(g.west.length===0&&g.pf&&g.pf.solids>=8,'West St is apartment houses only, no filler lots ('+(g.pf&&g.pf.solids)+' houses; owner, 5 Nov 2026)'); ok(g.mk.length>=15,'Market St\'s row has a shut garage in every gap ('+g.mk.length+')');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));

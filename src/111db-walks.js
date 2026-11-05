@@ -32,7 +32,7 @@ Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,si
   const view=r=>{ if(WALKS.remote){ const e=r.E; if(!e)return null; let x=e.x, z=e.z; if(e.st===1&&e.tx!=null){ const s=Math.min(Math.hypot(e.tx-x,e.tz-z),r.v*(performance.now()-r.t)/1000), d=Math.hypot(e.tx-x,e.tz-z); if(d>1e-6){ x+=(e.tx-x)/d*s; z+=(e.tz-z)/d*s; } } V.x=x; V.z=z; V.tx=e.tx; V.tz=e.tz; V.st=e.st; V.done=e.done; return V; }
     const E=S.by[r.k]; if(!E)return null; V.x=E.x; V.z=E.z; V.tx=E.to?E.to.x:null; V.tz=E.to?E.to.z:null; V.st=E.in?2:E.to?1:E.mode.hold?3:0; V.done=E.done; return V; };
   // the character follows: it walks to the walks' next point itself (turning, stepping, pushed by you as ever), is eased over when a little off, put there when far off or out of sight, hidden while in a shop
-  const drive=(r,dt)=>{ const N=r.N, st=N.st, e=view(r); if(!e)return;
+  const drive=(r,dt)=>{ const N=r.N, st=N.st; if(N.rag)return; const e=view(r); if(!e)return;
     if(r.then&&(e.done===r.gid||performance.now()-r.t0>180000)){ const f=r.then; r.then=null; r.goal=null; f(e.done===r.gid); }
     if(r.auto){ if(e.st===2){ if(!r.hid){ r.hid=true; hide(N,true); } st.x=e.x; st.z=e.z; st.to=null; st.next=null; return; } if(r.hid){ r.hid=false; hide(N,false); st.x=e.x; st.z=e.z; } }
     if(st.pin)return;

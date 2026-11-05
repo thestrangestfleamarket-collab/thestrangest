@@ -6,6 +6,7 @@ import {TILE} from './006-map-pre.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {TOONS} from './084-npc-toons.js';
+import {FRESH} from './140c-fresh.js';
 const VEG={}; window.VEG=VEG;
 { const T=TILE;
   const V=[['v_tomato','TOMATO',3,2,.06,0xc8321e,[.07,.07],1],['v_pepper','BELL PEPPER',4,2,.06,0x2f8a2a,[.07,.08],1],['v_carrot','CARROT',2,1,.05,0xe0742a,[.035,.16],0],
@@ -40,7 +41,7 @@ const VEG={}; window.VEG=VEG;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.train){ FORAGE.train(d.train,+d.cap); SHOP.draw(); return; } if(d.buy){ const n=+d.n||1, c=SELL[d.buy]*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); say(`YOU BUY ${n} ${NMV(d.buy)} FOR $${c}.`); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NMV(d.buy).toLowerCase()+' from the tomato','park'); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=BUY[d.sell]*n; FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=FRESH.worth(d.sell,n,BUY[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     INV.add('x',0); delete INV.items.x; SHOP.draw(); FORAGE.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(TOONS.tomato)LINES.say(TOONS.tomato,'greet'); };
   window.VEGDBG=()=>({stand:!!VEG.stand,wx:TOONS.tomato&&TOONS.tomato.st.x,wz:TOONS.tomato&&TOONS.tomato.st.z,x:TOONS.tomato&&+(TOONS.tomato.st.x/T).toFixed(1),z:TOONS.tomato&&+(TOONS.tomato.st.z/T).toFixed(1),held:TOONS.tomato&&TOONS.tomato.st.hold,mine:V.map(v=>[v[0],FORAGE.has(v[0])]).filter(a=>a[1])}); }

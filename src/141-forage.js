@@ -10,6 +10,7 @@ import {GRASS} from './014a-grass.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
+import {FRESH} from './140c-fresh.js';
  window.FORAGE=FORAGE;
 { const PACK={tab:'skills'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
   const MU={button:['MEADOW BUTTON',0,2,.06,0,0xe8dcc0,0xeee6d2,[1,.6,1,1]],puffball:['PUFFBALL',5,3,.05,0,0xf2efe6,0xf2efe6,[1,1.15,.15,1]],
@@ -64,7 +65,7 @@ import {GEMS} from './101-gems.js';
   FORAGE.sell=(...ids)=>{ for(const id of ids)ITEMS.reg(id,{sellable:true}); };
   reg({does:DO,prices:PRICE}); for(const k in MU)reg({prices:{['m_'+k]:MU[k][2],['u_'+k]:Math.floor(MU[k][2]/2)}});
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k of ITEMS.ids())s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
-  FORAGE.BUYK={mushrooms:['m_','u_','p_','f_'],fish:['x_'],swords:['sword'],books:['br_'],veg:['v_','fr_'],flowers:['fl_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.BUYK={mushrooms:['m_','u_','p_','f_'],fish:['x_'],swords:['sword'],books:['br_'],veg:['v_','fr_'],flowers:['fl_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.NOTE.push(id=>{ const t=FRESH.tag(id); return t&&t!=='FRESH'?t:''; }); FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM',glowcap:'GLOWCAP MUSHROOM'},prices:{airshroom:8,glowcap:10}}); FORAGE.SELLS.push(['airshroom',8,()=>true],['glowcap',10,()=>true]);   // glowcap: you see in the dark deep water a while (its DARKSIGHT)   // off-world: the seller's one wares, lets you hold your breath longer underwater
   // a gift: a place (STORE.here) takes the first of each kind you bring it and pays for it ({is, place, pay, key, thanks})
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
@@ -207,7 +208,7 @@ import {GEMS} from './101-gems.js';
     o+=`</table>${ids.length?'':'<div style="color:#7d7a70;margin-top:8px">Nothing of mine to buy on you. The lawns grow them: each grass its own kinds.</div>'}`; const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.train){ FORAGE.train(d.train,+d.cap); SHOP.draw(); return; } if(d.ask){ FORAGE.hand(+d.ask); SHOP.draw(); return; } if(d.buy){ const n=+d.n||1, xs=FORAGE.SELLS.find(s=>s[0]===d.buy), c=(xs?xs[1]:d.buy==='mortar'?10:2)*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; give(d.buy,n); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NAME(d.buy).toLowerCase()+' from the mushroom seller','park'); } }
-    if(d.sell){ const n=d.n==='all'?have(d.sell):1, v=val(d.sell)*n; take(d.sell,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${NAME(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?have(d.sell):1, v=FRESH.worth(d.sell,n,val(d.sell)); take(d.sell,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${NAME(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     SHOP.draw(); PACK.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(MUSH.N)LINES.say(MUSH.N,'greet'); };
   TALK.shops.set(MUSH.N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===MUSH.N){ th.act=()=>TALK.open(MUSH.N); th.reach=2.2*T; th.near=3*T; }

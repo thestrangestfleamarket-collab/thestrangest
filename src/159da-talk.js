@@ -11,6 +11,7 @@ import {SYS, TILE} from './006-map-pre.js';
   LINES.add('bye',['See you around.','Take care out there.','Mind how you go.','Come back soon.','Later, {{name}}.']);
   let M={}; try{ M=JSON.parse(OWNED.get('talk')||'{}')||{}; }catch(e){ M={}; }
   const mem=id=>M[id]||(M[id]={}), save=()=>{ try{ OWNED.set('talk',JSON.stringify(M)); }catch(e){} };
+  TALK.flags=id=>Object.assign({},mem(id)); TALK.remember=(id,k,v=1)=>{ if(v==null||v===false)delete mem(id)[k]; else mem(id)[k]=v; save(); };   // what a character remembers, by id (quests read it; a check sets it)
   const recOf=N=>{ const id=CHARS.id(N); return (CHARS.store&&CHARS.store[id])||(CHARS.rec&&CHARS.rec(id))||{}; };
   const nm=id=>(FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
   const have=id=>(INV.items&&INV.items[id])||0, you=()=>(LOOKS.L&&LOOKS.L.name)||'friend';

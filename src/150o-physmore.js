@@ -26,7 +26,7 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   /* ---------- ragdolls: a townsperson knocked over falls as a body of eleven parts on Rapier joints, lies a moment, then gets up ---------- */
   const RAGS=new Set(), Q=new THREE.Quaternion(), M4=new THREE.Matrix4(), V=new THREE.Vector3(), V2=new THREE.Vector3();
   const v3=p=>new THREE.Vector3(p.x,p.y,p.z);
-  PHYS.knock=(N,dir,k=1)=>{ '@later'; if(!PHYS.on('rag')||!PB.R||N.rag||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
+  PHYS.knock=(N,dir,k=1)=>{ '@later'; if(!PHYS.on('rag')||!PB.R||N.rag||N.mode==='hidden'||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
     const world=new R.World({x:0,y:-(RG.G?RG.G():280),z:0}); world.timestep=1/120; const gy=Math.min(...['toeL','toeR','heelL','heelR'].map(n=>J[n]?J[n].y:0));
     world.createCollider(R.ColliderDesc.cuboid(400,5,400).setTranslation(0,gy-5,0).setFriction(1.1).setCollisionGroups(0x00010002));
     const W=n=>v3(J[n]), bs={}, list=[], hd=N.st.hd||0, ch=Math.cos(hd), sn=Math.sin(hd), push={x:(dir.x*ch-dir.z*sn)*90*k,y:30*k,z:(dir.x*sn+dir.z*ch)*90*k};
@@ -120,6 +120,6 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
     if(PHYS.on('rag'))for(const it of GPH.active()){ if(!it.rb||it.rb.isSleeping()||it===GPH.heldNow())continue; const v=it.rb.linvel(), sp=Math.hypot(v.x,v.z); if(sp<3*T)continue;
       const p=it.rb.translation(); if(knockNear(p.x,p.y,p.z,v.x,v.z,sp,.4*M1+Math.max(it.h[0],it.h[2]),Math.min(1.4,sp*it.m/(40*T))))it.rb.setLinvel({x:-v.x*.25,y:v.y,z:-v.z*.25},true); } },'150o-physmore');
   window.PHYSDBG=()=>({zones:[...ZN.values()].map(z=>z.kind),boards:[...ZN.values()].filter(z=>z.kind==='dart').map(z=>z.c.map(v=>+v.toFixed(2))),rags:RAGS.size,ragt:[...RAGS].map(r=>+r.t().toFixed(2)),kart:KR.on&&{sp:+KR.sp.toFixed(2),at:(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(2)))(KR.rb.translation())},cfg:PHYS.cfg});
-  window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
+  window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.mode!=='hidden'&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
 }
 export {VEH};

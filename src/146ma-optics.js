@@ -6,7 +6,7 @@ import {PCAM, renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {BIRDS} from './144b-birds.js';
-import {PHOTOS} from './146m-newsreel.js';
+import {PHOTOS} from './146m-prints.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, say=SAY, cl=(v,a,b)=>v<a?a:v>b?b:v, D2R=Math.PI/180;
   const OPTIC={up:null,fov0:60,view0:null,dist:null,what:'',sharp:1}; window.OPTIC=OPTIC;
   FORAGE.add({names:{binoc:'BINOCULARS (8X42)',camera:'CAMERA (35 MM)'}});

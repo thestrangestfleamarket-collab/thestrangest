@@ -211,7 +211,7 @@ One pass, one pull request.
     town mail and its carrier, the newsstand, the daily requests, the town
     staff's duties, Summon.
   - The Market BBS and the bodega drone that delivers its orders stay (owner, 5 Nov). The owner's letters from the tenants panel stay.
-  - Owner, 5 Nov: "i dont want anyone walking around town. only characters in game now are charactes who stay put to buysellteach".
+  - Nobody walks around town (owner, 5 Nov: "i dont want anyone walking around town"); the characters kept stand at their own spots.
   - Reuse the existing put-away list (`AWAY` in 006-map-pre, `?bring=`) for every archive, not a second system.
 
 - [ ] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.
@@ -226,7 +226,7 @@ One pass, one pull request.
     Holodeck. The Scuba Diver sells diving gear and the gem wheel. Cooking, alchemy, prospecting and midway games are archived.
   - The bank: near it, say BANK in chat and your vault opens (a container window like the bag); no tellers.
   - Every vehicle of every type stays (owner, 5 Nov: "keep all vehicles in game too of all types"): the go-kart, every hover board, the
-    skateboard, the parked cars, the showcase vehicles, trains, boats, the warship, the planes, the rowboat.
+    skateboard, the parked cars, the showcase vehicles, trains, boats, the warship, the planes, the rowboat, and the fair's rental go-karts (where they go: the owner's map; the bumper cars go with the fair).
   - Remove every owner editor from the game, the /editor page too ("i will add back from scratch later"); players keep Decorate, the
     Designer and the Painter.
 

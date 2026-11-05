@@ -16,7 +16,7 @@ const TOWERK={}; window.TOWERK=TOWERK;
   // the lookout's chart: the park round the tower, the golems and the other players where they are now
   TOWERK.chart=()=>{ const s=GTOWER.site&&GTOWER.site(); MINI.look("THE LOOKOUT'S CHART",(g,w,h)=>{ g.fillStyle='#e8dcb8'; g.fillRect(0,0,w,h); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.strokeRect(10,10,w-20,h-20); if(!s){ g.fillStyle='#2a2420'; g.fillText('THE CHART IS BLANK.',20,30); return; }
     const K=40*T, P=(x,z)=>[w/2+(x-s.x)/K*(w/2-20),h/2+(z-s.z)/K*(h/2-20)], dot=(x,z,c,r,lab)=>{ const [a,b]=P(x,z); if(a<12||a>w-12||b<12||b>h-12)return; g.fillStyle=c; g.beginPath(); g.arc(a,b,r,0,7); g.fill(); if(lab){ g.font='9px monospace'; g.fillText(lab,a+r+2,b-3); } };
-    if(window.GCAVE&&GCAVE.c)dot(GCAVE.c.x,GCAVE.c.z,'#6a5a4a',10,"THE GOLEMS' CAVE"); dot(s.x,s.z,'#8a3a2a',6,'THE TOWER');
+    dot(s.x,s.z,'#8a3a2a',6,'THE TOWER');
     for(const r of (window.GOLEMS&&GOLEMS.list)||[])if(!r.dead)dot(r.N.st.x,r.N.st.z,'#5a5650',3);
     const OT=window.ONLINE&&ONLINE.others; for(const p of OT&&OT.values?OT.values():[]){ const q=p&&(p.g&&p.g.position||p); if(q&&q.x!=null)dot(q.x,q.z,'#2050c0',3,p.name||p.n||''); }
     dot(pos.x,pos.z,'#c02028',3,'YOU'); g.fillStyle='#2a2420'; g.font='10px monospace'; g.textAlign='center'; g.fillText('GREY: GOLEMS · BLUE: TRAVELLERS · RED: YOU',w/2,h-24); },'Kept by the squirrel, who watches from the roof.'); };

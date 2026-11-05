@@ -34,20 +34,20 @@ import {BUILDV} from './135-where.js';
     return {build:BUILDV, at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2)], hd:+SHARED.heading.toFixed(2), lvl:SHARED.LVL, near, far:Math.round(d), hour:+CLOCK.h.toFixed(2), view:UI.view,
       screen:[innerWidth,innerHeight,devicePixelRatio], ua:navigator.userAgent.slice(0,200), errs:errs.slice(), url:location.search.slice(0,200), from:'site'}; };
   const ST=[['new','NEW'],['approved','APPROVED'],['later','LATER'],['fixed','FIXED'],['no','NO']];
-  let shot=null, ctx=null, filt='new', rows=[], el=null;
+  let shot=null, ctx=null, filt='new', rows=[], el=null, mode='report';
   const draw=async()=>{ '@later'; const be=await backend(), own=be?await be.owner().catch(()=>false):false;
     el.innerHTML=`<h3>REPORT A BUG</h3><div class="dim">what went wrong, and what did you expect? the screen behind this menu goes with it · F8 opens this anywhere</div>
       <div class="row"><textarea id="bugtx" rows="4" maxlength="2000" style="flex:1;min-width:240px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:6px"></textarea></div>
       <div class="row"><img id="bugim" alt="the screen" style="max-width:min(320px,80vw);border:2px solid var(--line);image-rendering:pixelated"><label class="dim"><input type="checkbox" id="bugwith" checked> send the picture</label></div>
       <div class="row"><button class="btn" id="bugsend">SEND</button><span class="dim" id="bugsay">${be?'':'reports send from thestrangestfleamarket.com'}</span></div>
-      ${own?'<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>':''}`;
+`;
     const $=s=>el.querySelector(s); if(shot)$('#bugim').src=shot; else $('#bugim').hidden=true; $('#bugsend').disabled=!be;
     for(const ev of ['keydown','keyup'])$('#bugtx').addEventListener(ev,e=>e.stopPropagation());
     $('#bugsend').onclick=async()=>{ const b=$('#bugtx').value.trim(); if(!b){ $('#bugsay').textContent='say what went wrong first'; return; }
       $('#bugsend').disabled=true; $('#bugsay').textContent='sending...';
-      try{ await be.send(b,ctx,$('#bugwith').checked?shot:null); $('#bugtx').value=''; $('#bugsay').textContent='SENT. THANK YOU'; if(own)queue(); }
+      try{ await be.send(b,ctx,$('#bugwith').checked?shot:null); $('#bugtx').value=''; $('#bugsay').textContent='SENT. THANK YOU'; }
       catch(e){ $('#bugsay').textContent='not sent: '+(e.message||e); } $('#bugsend').disabled=false; };
-    if(own)queue(); };
+    };
   const queue=async()=>{ '@later'; const be=await backend(), $=s=>el.querySelector(s); if(!$('#bugq'))return;
     try{ rows=await be.list(); }catch(e){ $('#bugq').textContent='the queue would not load: '+(e.message||e); return; }
     $('#bugst').innerHTML=ST.map(([k,n])=>`<button class="btn" data-f="${k}" aria-pressed="${k===filt}">${n} ${rows.filter(r=>(r.status||'new')===k).length}</button>`).join('');
@@ -64,5 +64,5 @@ import {BUILDV} from './135-where.js';
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
   const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };
   Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout});
-  BUGS.open=async e=>{ el=e; ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };
+  BUGS.open=async(e,m)=>{ el=e; mode=m||'report'; if(mode==='queue'){ el.innerHTML='<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>'; queue(); return; } ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };   // the queue is ADMIN's own tab
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

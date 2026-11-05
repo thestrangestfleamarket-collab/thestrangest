@@ -62,7 +62,7 @@ jobs:
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
+          k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
@@ -222,10 +222,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
-      - name: The handheld (ESC pops it up, its icons open the menus)
+      - name: The menu (ESC opens it; sections down the left, parts along the top)
         timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' handheld')
-        run: node tests/handheld.cjs dist/market.html
+        if: contains(steps.f.outputs.run, ' menus')
+        run: node tests/menus.cjs dist/market.html
       - name: The loop (two trains shuttle from A, you ride one out and back)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' train')

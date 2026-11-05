@@ -184,6 +184,11 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 - [ ] **A ghost's revival at the end of the bath countdown** · P3 · S · look. The countdown and its reset on stepping out work; the moment at
   zero (`back()` in `src/103a-death.js:30`, alive where you stand) was never seen. Die, walk in, wait 10 s on the live site; or add the
   step to `tests/places.cjs`, which enters the bath.
+- [ ] **THE BOOKSTORE: 100 public-domain books** · P2 · L · pick + code. Owner, 5 Nov 2026: "i want to add a bookstore in game that has 100
+  of the most popular public books. each book will have the real cover and spine of the real book. the book content doesnt download until
+  the player opens the book. - add this to a queue of things we will add". Picks first: where it stands, the 100 titles, and which covers
+  (first-edition covers are free; most modern ones are not). The text (Project Gutenberg) hosted with the game, fetched only on opening;
+  the books through the existing book system (`144c-books`, `150m-bookshelf`), not a second one.
 - [ ] **The road along the Hudson from Market St** · P3 · S (check) / M (lay it) · find. Owner, 4 Nov: "why isnt the hudson showing,
   missing road". The water and quay show within 60 tiles now (9ec872d3); no road code exists there. Picture it; if a road is missing, lay it.
 - [ ] **The apartment house's two thin pipes hide early** · P4 · S · code. On its far side, they're cut a few steps before the house when

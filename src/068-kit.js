@@ -5,8 +5,9 @@ import {KITD} from './004-main.js';
 import {CLIPX, FIX, MAPG, MODS, SOL, TILE, ZU} from './006-map-pre.js';
 const KIT={data:KITD,geos:{},things:[]};
 { const b=B64, i16=I16, u16=U16, u32=s=>new Uint32Array(b(s).buffer), YS=ZU*24/TILE;
+  // (the bake stores sRGB; vertex colours are linear, so every kit piece came out washed out until 5 Nov 2026)
   KIT.decode=M=>{ const q=i16(M.p), P=new Float32Array(q.length); for(let i=0;i<q.length;i++)P[i]=(q[i]+32500)*M.sc+M.lo[i%3];
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(b(M.c),3,true)); g.setIndex(new THREE.BufferAttribute(M.i32?u32(M.i):u16(M.i),1));
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const c8=b(M.c), C=new Float32Array(c8.length), col=new THREE.Color(); for(let i=0;i<c8.length;i+=3){ col.setRGB(c8[i]/255,c8[i+1]/255,c8[i+2]/255,THREE.SRGBColorSpace); C[i]=col.r; C[i+1]=col.g; C[i+2]=col.b; } g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(M.i32?u32(M.i):u16(M.i),1));
     g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); return g; };
   KIT.geo=name=>{ if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; } return KIT.geos[name]=KIT.decode(M); };
   KIT.mat=new THREE.MeshLambertMaterial({vertexColors:true});

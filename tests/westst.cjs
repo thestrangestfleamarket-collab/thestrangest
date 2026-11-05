@@ -10,10 +10,10 @@ const {chromium}=require('playwright');
   const at=()=>pg.evaluate(()=>{ const p=__dbg.pos(); return {x:p[0]/1.13+72,y:p[2]/1.13-77,hd:__dbg.hd()}; });
   const W=await pg.evaluate(()=>({x0:__dbg.MAPK.RING.wx0}));
   const east=h=>Math.abs(Math.sin(h)-1)<.05;
-  // the bar sits on Market St's row now (owner, 5 Nov 2026): its door on Market St, its way out onto Market St facing north
-  for(const id of ['bar']){ const d=await pg.evaluate(id=>{ const o=STORE.inside[id].th.obj.position; return {x:o.x/1.13+72,y:o.z/1.13-77}; },id);
+  // the bar keeps the corner of West St (its deep inside, 30 Oct 2026); the rest of the shops are on Market St (5 Nov 2026)
+  for(const id of ['bar']){ const d=await pg.evaluate(id=>{ const o=STORE.inside[id].th.obj.position; return o.x/1.13+72; },id);
     await pg.evaluate(id=>STORE.enter(id,true),id); await idle(); await pg.waitForTimeout(800); await pg.evaluate(id=>STORE.exit(id),id); await idle(); await pg.waitForTimeout(500); const o=await at();
-    ok(d.y>-80&&d.y<-74&&o.y>-80&&o.y<-72&&Math.abs(Math.cos(o.hd)-1)<.1,id+': its door is on Market St and its way out leaves you on Market St facing the street ('+d.x.toFixed(1)+','+d.y.toFixed(1)+' → '+o.y.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
+    ok(d>W.x0-1&&o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': its door is on West St and its way out leaves you on West St facing the street ('+d.toFixed(1)+' → '+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
   for(const id of ['apt']){ await pg.evaluate(()=>__dbg.MAPK.MODS.apts.enterReal()); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>__dbg.MAPK.MODS.apts.exitReal()); await idle(); await pg.waitForTimeout(500); const o=await at();
     ok(o.x>W.x0-.5&&o.x<W.x0+3&&east(o.hd),id+': out onto West St facing the street ('+o.x.toFixed(1)+', '+o.hd.toFixed(2)+')'); }
   const g=await pg.evaluate(()=>{ const L=__dbg.MAPK, F=L.RING.wx0, B=[...window.BLK.blds,...window.BLK.lots], P=L.LEVEL?L.LEVEL.places:[];

@@ -1,9 +1,8 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are the Walker or a body.playable one, picked on YOU's BODY row (BODIES.set); one of each walks main street.
+// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {ARCH, CHARS, LOOKS, NPCS, pos, VIS, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, NPCS, pos, VIS, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
-import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -78,24 +77,22 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
-  /* ---------- you (always the Walker unless a playable body is set; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */
   const playable=b=>!!(b&&b.playable);
-  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
-  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
-  let ME=null, MEK=null, hid=false;
+  let pick='avatar'; if(QS.get('avatar')&&QS.get('avatar')!=='walker')pick=QS.get('avatar');
+  const curKey=()=>playable(BODIES.by[pick])?pick:'avatar';
+  let ME=null, MEK=null;
   W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
-    if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
+    for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
+    if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); },
+    // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
+    phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
+  for(const m of W3.meshes)m.visible=false;
   BODIES.pick=()=>curKey();
-  BODIES.onPick=[];   // told the body you now play as (the avatar shows its own options)
-  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); for(const f of BODIES.onPick)f(curKey()); };
-  // YOU's BODY row: the Walker and every playable body, added as it loads
-  const LP=document.getElementById('looks'); let ROW=null;
-  if(LP&&LOOKS.add){ ROW=document.createElement('div'); ROW.className='row'; LOOKS.add('body','BODY',ROW,{order:0}); }
-  function addButton(key,label){ if(!ROW||document.getElementById('lbody-'+key))return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
-  function drawRow(){ if(ROW)for(const b of ROW.children){ const v=String(b.id==='lbody-'+curKey()); b.setAttribute('aria-pressed',v); b.setAttribute('aria-selected',v); } }
-  addButton('walker','WALKER');
+  BODIES.onPick=[];   // told the body you now play as
+  BODIES.set=key=>{ pick=playable(BODIES.by[key])?key:'avatar'; for(const f of BODIES.onPick)f(curKey()); };
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -173,6 +170,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); if(playable(body))addButton(body.key,body.label||body.key.toUpperCase()); };
+    walker(body); };
 }
 export {BODIES};

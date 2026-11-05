@@ -1,4 +1,4 @@
-// THE LOOKS: LOOKS keeps the player's name, colours, hair and body shape and puts them on the Walker.
+// THE LOOKS: LOOKS keeps the player's name and shoes, and YOU, the window you change your look in (the avatar's lines join it: 111c).
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -37,7 +37,7 @@ LOOKS.over={};
   const feet=()=>{ if(!L.bare)return; const A=W3.mesh.geometry.attributes, n=A.mat.count, SK=W3.ramp[MATS.indexOf('skin')]; if(!SK)return;
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0]; if(P&&/^shoe/.test(P.n))put(A,i,SK); } for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
-    setTimeout(()=>{ LOOKS.refresh(); draw(); },320); SAY(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
+    setTimeout(()=>{ LOOKS.refresh(); draw(); if(LOOKS.onChange)LOOKS.onChange(); },320); SAY(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,LOOKS.over[k]||COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } { const h=new THREE.Color(COL.hair); for(const [m,k] of [['hairHi',1.2],['hairLo',.78]]){ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones('#'+h.clone().multiplyScalar(k).getHexString()); } } recolor();
     for(let k=0;k<7;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==6; } layers(); if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
   // YOU (owner, 5 Nov 2026: "redo the character menu to fit this new avatar, make sure has all options and fits on screen"): your name and three tabs, LOOK, WEAR (the avatar's clothes) and WORDS;
@@ -60,7 +60,7 @@ LOOKS.over={};
     <div class="ltab" data-t="look" role="tabpanel"></div><div class="ltab" data-t="wear" role="tabpanel"></div><div class="ltab" data-t="words" role="tabpanel"></div>`;
   document.body.appendChild(P);
   // a line of the window: key, its name (none: the whole width), what you set it with; o.tab (look, wear, words), o.who (walker or avatar: shown only while you wear that body), o.order
-  let tab='look'; LOOKS.who=()=>'walker';
+  let tab='look'; LOOKS.who=()=>'avatar';
   LOOKS.add=(key,label,el,o={})=>{ const T=P.querySelector(`.ltab[data-t="${o.tab||'look'}"]`), r=document.createElement('div'); r.className='lr'+(label?'':' full'); r.dataset.k=key; r.dataset.o=o.order??50; if(o.who)r.dataset.who=o.who;
     r.innerHTML=label?`<span class="lk">${label}</span>`:''; const v=document.createElement('div'); v.className='lv'; v.appendChild(el); r.appendChild(v);
     const after=[...T.children].find(x=>+x.dataset.o>+r.dataset.o); T.insertBefore(r,after||null); LOOKS.layout(); return r; };
@@ -73,19 +73,15 @@ LOOKS.over={};
   LOOKS.tab=t=>{ tab=t; LOOKS.layout(); };
   P.querySelector('.ltabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b)LOOKS.tab(b.dataset.t); };
   const line=(id,html)=>{ const d=document.createElement('div'); d.className='row'; d.id=id; if(html)d.innerHTML=html; return d; };
-  LOOKS.add('form','BUILD',line('lform'),{who:'walker',order:20}); LOOKS.add('hair','HAIR',line('lhair'),{who:'walker',order:21}); LOOKS.add('beard','BEARD',line('lbeard'),{who:'walker',order:22});
-  LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{who:'walker',order:23});
-  const rows=[['#lform','form',[['M','MALE'],['F','FEMALE']]],['#lhair','hair',HAIRS],['#lbeard','beard',BEARDS]];
-  for(const [id,k,list] of rows)$(id).innerHTML=list.map(([v,t])=>`<button data-${k}="${v}">${t}</button>`).join('');
-  LOOKS.style=(k,v)=>{ '@later'; L[k]=v; if(L.form==='F')L.beard=''; save(); W3.style={form:L.form,hair:L.hair,beard:L.beard}; W3.dress(); if(k==='form')LOOKS.refresh(); draw(); };
-  for(const [id,k] of rows)$(id).onclick=e=>{ const b=e.target.closest('button'); if(b)LOOKS.style(k,b.dataset[k]); };
-  const draw=()=>{ '@later'; $('#lname').value=L.name; for(const [id,k] of rows)for(const b of $(id).children)b.setAttribute('aria-pressed',String(b.dataset[k]===L[k])); $('#lbeard').hidden=L.form==='F'; const br=$('#lbeard').closest('.lr'); br.dataset.off=L.form==='F'?'1':''; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
+  // (the Walker's own build, hair and beard are gone from YOU: the avatar is the only body you play, owner 5 Nov 2026; barefoot stays, it matters for foraging)
+  LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{order:7});
+  const draw=()=>{ '@later'; $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };
   // worn clothes dye your shirt or trousers (EQUIP sets LOOKS.over from the item's colour)
-  LOOKS.dye=()=>{ apply(); recolor(); };
+  LOOKS.dye=()=>{ apply(); recolor(); if(LOOKS.onChange)LOOKS.onChange(); };   // (onChange: the avatar takes the dyes and bare feet)
   LOOKS.open=()=>{ draw(); LOOKS.layout(); P.hidden=false; }; LOOKS.L=L; LOOKS.COL=COL;
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(LEVELS.own(hit,'*'));
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);

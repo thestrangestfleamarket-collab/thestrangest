@@ -1,14 +1,18 @@
-// THE POLYFORK AVATAR (src/111c-avatar.js, data/pfavatar*.json): node tests/avatar.cjs [out folder]. YOU's BODY row has AVATAR; worn, its figure's wardrobe loads and you are
+// THE POLYFORK AVATAR (src/111c-avatar.js, data/pfavatar*.json): node tests/avatar.cjs [out folder]. You are the avatar, the only body you play (the Walker is never drawn); its figure's wardrobe loads and you are
 // Polyfork's man or woman on your rig, dressed as chosen; clothes hide the body under them (Polyfork's own regions), a hat that covers the hair hides it, the look's code
 // round-trips and another player's copy is the same body; with an out folder, third-person shots in an open field.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
+  // the physics engine from this checkout (the page fetches it from jsDelivr; a runner may not reach it)
+  { const DIR=require('path').join(process.cwd(),'node_modules/@dimforge/rapier3d-compat'), fs=require('fs');
+    await pg.route(/\/@dimforge\/rapier3d-compat@[^/]+\/(.+)$/,r=>{ const f=require('path').join(DIR,new URL(r.request().url()).pathname.split(/rapier3d-compat@[^/]+\//)[1]||''); if(!fs.existsSync(f))return r.continue();
+      r.fulfill({path:f,contentType:/\.wasm$/.test(f)?'application/wasm':'text/javascript'}); }); }
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(400))if(await pg.evaluate(f))return true; return false; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
-  rec('YOU\'s BODY row has AVATAR',await pg.evaluate(()=>!!document.getElementById('lbody-avatar')&&!!BODIES.by.avatar));
-  await pg.evaluate(()=>BODIES.set('avatar')); rec('worn, its wardrobe loads',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'));
+  rec('you are the avatar from the start, its wardrobe loaded; no other body to pick',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'&&!document.querySelector('#looks [data-k=body]')));
+  rec('the Walker is never drawn; YOU has none of its options',await pg.evaluate(()=>W3.meshes.every(m=>!m.visible)&&!document.querySelector('#lform,#lhair,#lbeard,#ldesign')));
   const tris=()=>pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g?g.attributes.position.count/3:0; });
   await wait(500); const t0=await tris(); rec('you are the avatar, dressed (hair, tee, trousers, sneakers)',t0>2000&&await pg.evaluate(()=>W3.body.on),'tris '+t0);
   const id=(slot,label)=>pg.evaluate(([s,l])=>{ const o=[...document.querySelectorAll('#lav-'+s+' option')].find(x=>x.textContent===l); return o?+o.value:null; },[slot,label]);
@@ -22,6 +26,15 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const hh=await pg.evaluate(async([h,l])=>{ await AVATAR.wear('hair',l); const a=BODIES.by.avatar.GEO.attributes.position.count/3; await AVATAR.wear('hat',h); const b=BODIES.by.avatar.GEO.attributes.position.count/3; await AVATAR.wear('hat',null); return [a,b]; },[hood,long]);
   rec('a hood hides the hair (and ears) under it',hh[1]>0&&hh[1]<hh[0]+600,JSON.stringify(hh));
   await pg.evaluate(async k=>{ const L=AVATAR.L(); L.w=JSON.parse(k); await AVATAR.set({}); },none);
+  const bf=await pg.evaluate(async()=>{ const a=BODIES.by.avatar.GEO.attributes.position.count/3; LOOKS.L.bare=true; await LOOKS.onChange(); const b=BODIES.by.avatar.GEO.attributes.position.count/3, c=BODIES.by.avatar.look(); LOOKS.L.bare=false; await LOOKS.onChange(); return {a,b,c}; });
+  rec('barefoot takes your shoes off, and other players see it',bf.b<bf.a&&/\.1$/.test(bf.c),JSON.stringify(bf));
+  const dy=await pg.evaluate(async()=>{ LOOKS.over.pants='#34507e'; await LOOKS.onChange(); const c=BODIES.by.avatar.look(); delete LOOKS.over.pants; await LOOKS.onChange(); return c; });
+  rec('worn clothes from the rack dye the avatar (jeans: your bottoms), and other players see it',/~34507e/.test(dy),dy);
+  // the same moves and physics as the Walker had: the rig poses the avatar, and the physics body (DISPLAY's BODY: Rapier, the rig's 15 parts) moves its bones
+  const ph=await pg.evaluate(async()=>{ const PB=__dbg.PB||window.PB; if(PB)PB.set(true,true); const t0=performance.now(); while(PB&&!PB.ready&&performance.now()-t0<60000)await new Promise(r=>setTimeout(r,300));
+    const n0=W3.body.physN||0; dispatchEvent(new KeyboardEvent('keydown',{key:'w',bubbles:true})); await new Promise(r=>setTimeout(r,2500)); dispatchEvent(new KeyboardEvent('keyup',{key:'w',bubbles:true})); await new Promise(r=>setTimeout(r,800));
+    const g=BODIES.by.avatar.GEO, me=W3.group.children.find(m=>m.geometry===g); return {ready:!!(PB&&PB.ready),steps:(W3.body.physN||0)-n0,shown:!!(me&&me.visible)}; });
+  rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>10&&ph.shown,JSON.stringify(ph));
   const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
   const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
   await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&document.querySelector('#looks .lr[data-k="w-face"]').hidden));

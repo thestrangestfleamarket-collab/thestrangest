@@ -13,10 +13,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const DEF=()=>({f:'m',b:1,h:100,skin:'d9a984',hair:'4b2519',w:{hair:[nOf('hair','SHORT'),''],top:[nOf('top','T-SHIRT'),''],bottom:[nOf('bottom','TROUSERS'),''],feet:[nOf('feet','SNEAKERS'),'']}});
 
   /* ---------- a look as a short code for the other players: figure.build.height.skin.hair, then each slot (piece number in base 36, ~colour) ---------- */
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.map(([s])=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; })].join('.');
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.map(([s])=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; }),L.bare?'1':''].join('.');   // (last: barefoot)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null;
   const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
+    if(a[5+SLOTS.length]==='1')L.bare=true;
     SLOTS.forEach(([s],i)=>{ const v=a[5+i]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,hex(col)||'']; });
     return L; };
 
@@ -27,7 +28,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const culled=has=>{ const A=has('arms')&&has('hands'); return [has('trunk')&&has('waist'),has('waist')&&has('seat'),has('briefs'),has('legs')&&(!has('shins')||has('feet')),has('feet'),A,
     has('upperArms')&&has('hands')&&!A,has('upperArms')&&has('armCut')&&!has('hands')&&!has('arms'),has('ears'),has('eyes')]; };
   const lin=h=>new THREE.Color('#'+h);
-  function geoFor(J,L){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p)worn.push([s,p,w[1]]); }
+  function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
     const parts=[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
@@ -50,15 +51,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}
-  const save=()=>{ try{ OWNED.set('pfav',code(L)); }catch(e){} };
+  const save=()=>{ try{ OWNED.set('pfav',code({...L,bare:false})); }catch(e){} };
+  // what you wear on top of your choice: bare feet (LOOKS.shoes), and worn clothes' dyes (EQUIP: a shirt, jacket or coat colours your jacket, or your top without one; trousers your bottoms)
+  const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
   const VAR=new Map();
-  const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(L),
+  const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
     variant:c=>{ const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!J){ load(M.f).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
-      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M)},M); VAR.set(k,b); return b; }};
+      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare)},M); VAR.set(k,b); return b; }};
   AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>!!D[L.f];
   let gen=0;
-  const refresh=()=>{ const my=++gen; return load(L.f).then(J=>{ if(my!==gen)return; fitTo(body,L); body.GEO=geoFor(J,L); draw(); }).catch(e=>console.warn('AVATAR',e)); };
+  const refresh=()=>{ const my=++gen; return load(L.f).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
   AVATAR.wear=(slot,n,c)=>{ if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 
@@ -98,6 +101,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       sel.closest('.lr').dataset.off=list.length?'':'1'; sel.innerHTML='<option value="">NONE</option>'+list.map(p=>`<option value="${p.n}">${p.label}</option>`).join(''); sel.value=w?String(w[0]):'';
       const p=w&&J&&J.byN.get(w[0]); k.style.visibility=!p||s==='hair'||s==='face'?'hidden':''; if(p&&s!=='hair'&&s!=='face')k.value='#'+(w[1]||String(p.pal[p.main[0]]).slice(1)); }
     LOOKS.layout(); }
-  AVATAR.draw=draw;
+  AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
+  load(L.f).catch(()=>{});   // (your figure's wardrobe starts coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();
     const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); },'111c-avatar'); }

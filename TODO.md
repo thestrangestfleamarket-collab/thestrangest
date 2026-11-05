@@ -214,9 +214,7 @@ One pass, one pull request.
   items themselves, the teachers' own spots (the Fisherman at the pier) with the self-serve shed and book stall folded into them, the
   archived characters' code moved out of src/ (today hidden by ARCH), the playhouse as an empty hall. Dropped (owner, 5 Nov): the map
   planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
-- [ ] **Cloud-style trees; the fishing close-up** · P2 · pick. Owner, 5 Nov: trees "this same style" as the clouds, "flowing and if you
-  touch it moves"; when a fish nears the hook, a close-up of "your dangling line, hook, bait and the fish in realtime". Mockups:
-  https://claude.ai/artifact/N8V5vDyVMwQFVW3WNZYhKS (trees A–C, fishing A–B); waiting on his pick.
+- [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).
 - [x] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
   - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
     town mail and its carrier, the newsstand, the daily requests, the town

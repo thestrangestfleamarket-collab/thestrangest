@@ -1,6 +1,6 @@
 // THE DATA CHECK (17 Oct 2026, after the physician game's validate_data: a headless run that checks the game's tables against each other):
-// node tests/datacheck.cjs loads THE MARKET with the old scattered browser keys planted, and checks: the one save (src/save.js) gathered them
-// and reads them back; every sound recipe (src/sfx.js) makes a finite buffer that isn't silent, and every sound the ambience names
+// node tests/datacheck.cjs loads THE MARKET with the old scattered browser keys planted, and checks: the one save (src/save.js) wiped them (since v4)
+// and reads back what it writes; every sound recipe (src/sfx.js) makes a finite buffer that isn't silent, and every sound the ambience names
 // (src/ambience.js) is a recipe; every pool of lines (src/lines.js) has lines and every blank in them is one the game can fill, a pick
 // never repeats the last fourteen while others fit, and a line said shows over the character and is logged; every place and room the menu
 // jumps to stands on ground (UI.places); a lamp clicked, a seat sat on and a wave make no page error. Exits 1 if anything fails.
@@ -27,7 +27,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   for(const r of PROV)ok(fs.existsSync(r.runtime),'the provenance record '+r.id+' names a file that exists');
   const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
     // the save: the old keys gathered, read back as they were, a write read back, the version
-    const S=SAVE.all(); out.save={v:S.v,looks:SAVE.get('looks'),outline:SAVE.get('outline'),grain:SAVE.get('grain'),keys:SAVE.get('keys'),raw:JSON.parse(localStorage.getItem('market-save')||'{}')};
+    const S=SAVE.all(); out.save={v:S.v,V:SAVE.V,raw:JSON.parse(localStorage.getItem('market-save')||'{}'),left:Object.keys(localStorage).filter(k=>/^(market-|isowalk-)/.test(k)&&k!=='market-save')};
     SAVE.set('probe','x'); out.save.probe=JSON.parse(localStorage.getItem('market-save')).probe; SAVE.del('probe'); out.save.gone=SAVE.get('probe');
     out.name=LOOKS.L.name; out.dith=DITH; out.outl=OUTL.on;
     // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
@@ -45,11 +45,8 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
     // using things: a lamp, a seat, the wave (their sounds and the lines ran, no error)
     try{ const th=UI.things.find(t=>t.npc); if(th){ th.act(); LINES.say(th.npc,'greet'); } out.waved=!!th; }catch(e){ out.waveErr=e.message; }
     return out; });
-  ok(r.save.v===1&&r.save.raw.v===1,'the save is version 1 under market-save');
-  ok(r.save.looks&&JSON.parse(r.save.looks).name==='TESTER'&&r.name==='TESTER','the old looks key was gathered and read (name TESTER)');
-  ok(r.save.outline==='1'&&r.outl===true,'the old outline key was gathered and read (outline on)');
-  ok(r.save.grain==='12'&&(r.dith===12||r.dith===0),'the old grain key was gathered (grain 12; the light SMOOTH by default leaves the grain off)');
-  ok(r.save.keys&&JSON.parse(r.save.keys).v==='p','the old keys were gathered');
+  ok(r.save.v===r.save.V&&r.save.raw.v===r.save.V&&r.save.V>=5,'the save is the current version ('+r.save.V+') under market-save');
+  ok(!r.save.raw.looks&&!r.save.raw.outline&&!r.save.raw.grain&&!r.save.raw.keys&&r.name!=='TESTER','the old scattered keys planted before the start are not read (not gathered since v4; a save from before v4 wipes them): left '+r.save.left.join(' '));
   ok(r.save.probe==='x'&&r.save.gone===null,'a write goes to the one key at once and a delete takes it out');
   console.log('audio context: '+r.ctx);
   for(const k in r.sfx){ const s=r.sfx[k]; ok(s.fin&&s.mx>.02&&s.mx<=1.01&&s.n>0,'sound '+k+': '+s.len+' s, peak '+s.mx); }
@@ -57,7 +54,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   ok(r.playing||r.ctx!=='running','a sound plays when the context runs');
   ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound editor\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
   ok(r.edRows>=24,'the sound editor shows a row for every sound ('+r.edRows+')');
-  for(const k in r.pools){ const p=r.pools[k]; ok(p.n>=5&&p.blanks.every(b=>b==='{{name}}'),'lines '+k+': '+p.n+' lines, blanks '+(p.blanks.join(' ')||'none')); }
+  for(const k in r.pools){ const p=r.pools[k], min=/^gd:/.test(k)?2:5; ok(p.n>=min&&p.blanks.every(b=>b==='{{name}}'),'lines '+k+': '+p.n+' lines (at least '+min+'), blanks '+(p.blanks.join(' ')||'none')); }   // a guardian's own two lines (data/guardians.json) are a pool too; the shared pools keep five
   ok(r.repeats===0&&r.unfilled===0,'ten picks from greet: no repeat, no blank left ('+r.repeats+' repeats, '+r.unfilled+' unfilled)');
   ok(r.recentN<=14,'the recent list holds at most 14 ('+r.recentN+')');
   ok(r.said&&r.spk>=1&&r.logN>=1&&r.logWho,'a line said shows over '+r.logWho+' and is logged: "'+r.said+'"');

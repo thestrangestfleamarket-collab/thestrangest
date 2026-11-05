@@ -225,6 +225,8 @@ One pass, one pull request.
     swordsmanship the Samurai Warrior; martial arts the Squirrel Knight; climbing the Forest Ranger; golf the Game Master by the
     Holodeck. The Scuba Diver sells diving gear and the gem wheel. Cooking, alchemy, prospecting and midway games are archived.
   - The bank: near it, say BANK in chat and your vault opens (a container window like the bag); no tellers.
+  - Every vehicle of every type stays (owner, 5 Nov: "keep all vehicles in game too of all types"): the go-kart, every hover board, the
+    skateboard, the parked cars, the showcase vehicles, trains, boats, the warship, the planes, the rowboat.
   - Remove every owner editor from the game, the /editor page too ("i will add back from scratch later"); players keep Decorate, the
     Designer and the Painter.
 

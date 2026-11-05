@@ -131,6 +131,15 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const K2=jointAt(PM,body,si,IKV[1]), A2=jointAt(PM,body,fi,IKV[2]); IKQ.setFromUnitVectors(IKV[5].subVectors(A2,K2).normalize(),IKV[6].subVectors(At,K2).normalize()); turnAbout(PM.value[si],K2,IKQ);
       const A3=jointAt(PM,body,fi,IKV[5]); PM.value[fi].elements[12]+=At.x-A3.x; PM.value[fi].elements[13]+=At.y-A3.y; PM.value[fi].elements[14]+=At.z-A3.z; } }
   BODIES.feetOnGround=feetOnGround;
+  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down)
+  const LOWV=new V3();
+  function aboveGround(PM,body,G,ground){ const g=body.GEO; if(!ground||!G||!g||!g.attributes.position.count)return; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity, li=-1;
+    for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
+      const yy=(a[1]*w+c[1]*(1-w))*x+(a[5]*w+c[5]*(1-w))*y+(a[9]*w+c[9]*(1-w))*z+(a[13]*w+c[13]*(1-w)); if(yy<lo){ lo=yy; li=i; } }
+    if(li<0)return; const a=P[bi[li*2]|0].elements, c=P[bi[li*2+1]|0].elements, w=bw[li], x=p[li*3], y=p[li*3+1], z=p[li*3+2];
+    LOWV.set((a[0]*w+c[0]*(1-w))*x+(a[4]*w+c[4]*(1-w))*y+(a[8]*w+c[8]*(1-w))*z+(a[12]*w+c[12]*(1-w)),lo,(a[2]*w+c[2]*(1-w))*x+(a[6]*w+c[6]*(1-w))*y+(a[10]*w+c[10]*(1-w))*z+(a[14]*w+c[14]*(1-w)));
+    G.updateMatrixWorld(true); LOWV.applyMatrix4(G.matrixWorld); const sy=G.scale.y||1, f=(ground(LOWV.x,LOWV.z)-LOWV.y)/sy; if(!isFinite(f)||f<.3||f>80)return;
+    for(let i=0;i<NB;i++)P[i].elements[13]+=f; }
   function pose(B,PM,body,S){ const k=body.S; chain(B,body); place(PM,body,k);
     if(body.contact){ const g=body.GEO;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
@@ -156,7 +165,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on)feetOnGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on)feetOnGround(ME.PM,body,W3.group,SHARED.groundY); if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

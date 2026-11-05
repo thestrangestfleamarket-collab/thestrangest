@@ -1,6 +1,6 @@
 // THE AVATAR'S MOVES (owner, 5 Nov 2026: "redo all the moves and make sure they look right and function correctly in game"): node tests/avatarmoves.cjs [out folder].
 // Every move the rig has (its own and the recorded ones) played on you, the avatar: through each, the avatar's lowest point stays with the rig's (a cartwheel on its
-// hands, a roll, a sit, a jump in the air), measured from standing. With an out folder, a sheet of every move at the frame furthest off, to look at.
+// hands, a roll, a sit, a jump in the air), measured from standing, and never under the ground where the rig sinks into it. With an out folder, a sheet of every move at the frame furthest off, to look at.
 const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process.env.TOL||2.5);
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
@@ -15,7 +15,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
     // the avatar's lowest point and the rig's, in the rig's space (its ground at 0)
     window.__low=()=>{ const m=me(); if(!m)return null; const P=m.userData.PM.value, A=m.geometry.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array; let lo=1e9;
       for(let i=0;i<A.position.count;i+=3){ const a=P[bi[i*2]|0], c=P[bi[i*2+1]|0], w=bw[i]; for(let k=0;k<16;k++)M.elements[k]=a.elements[k]*w+c.elements[k]*(1-w); V.set(p[i*3],p[i*3+1],p[i*3+2]).applyMatrix4(M); if(V.y<lo)lo=V.y; }
-      const B=W3.lastB; if(!B)return null; let rl=1e9; for(const k in B.J)rl=Math.min(rl,B.J[k].y); return {av:lo,rig:rl,off:lo-rl}; };
+      const B=W3.lastB; if(!B)return null; let rl=1e9; for(const k in B.J)rl=Math.min(rl,B.J[k].y); const g=W3.group; return {av:lo,rig:rl,off:lo-rl,floor:(SHARED.groundY(g.position.x,g.position.z)-g.position.y)/g.scale.y}; };
     // a tile of the sheet: the avatar from its side, the ground under its standing feet a green line
     window.__tile=n=>{ const THREE=__dbg.THREE, renderer=__dbg.renderer, g=W3.group, W=150, H=210, cols=8, rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; const cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,200), ry=g.rotation.y;
       g.updateMatrixWorld(true); const gp=g.getWorldPosition(new THREE.Vector3()), hh=window.__hh, ww=hh*W/H; cam.left=-ww/2; cam.right=ww/2; cam.top=hh*.72; cam.bottom=-hh*.28; cam.updateProjectionMatrix();
@@ -25,9 +25,9 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
       const c=cv.getContext('2d'), im=c.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); const k=window.__k++, x0=(k%cols)*W, y0=Math.floor(k/cols)*H; c.putImageData(im,x0,y0);
       c.fillStyle='#ff0'; c.font='11px monospace'; c.fillText(n,x0+3,y0+12); c.fillStyle='#3f3'; c.fillRect(x0,y0+Math.round(H*.72),W,1); };
     window.__moves=()=>Object.keys(R.MOVES);
-    window.__play=async name=>{ for(let i=0;i<20;i++)await raf(); const s0=__low(); R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
+    window.__play=async name=>{ for(let i=0;i<20;i++)await raf(); const s0=__low(); if(window.__c==null)window.__c=s0.off; R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
       let shot=!window.__nm;
-      while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l)continue; out.n++; const e=Math.abs(l.off-s0.off); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
+      while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l)continue; out.n++; const e=Math.abs(l.av-Math.max(l.rig+__c,l.floor-.3)); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
       if(st.move&&st.move.name===name)st.move.t=st.move.def.dur; for(let i=0;i<30;i++)await raf(); out.max=+out.max.toFixed(2); return out; }; });
   const moves=await pg.evaluate(()=>__moves()); console.log(moves.length+' moves');
   if(OUT)await pg.evaluate(n=>{ window.__nm=n; const THREE=__dbg.THREE, g=W3.group; g.updateMatrixWorld(true); window.__hh=(W3.eyeAt(new THREE.Vector3()).y-g.getWorldPosition(new THREE.Vector3()).y)*1.5; },moves.length);

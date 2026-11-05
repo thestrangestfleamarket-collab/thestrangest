@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:.3,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog7')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:0,mist:0,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:0}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog8')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -31,7 +31,7 @@ const DFOG={};
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
               float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); ins=mix(uMC+uSC*pow(max(0.,dot(ray,uSun.xyz)),uSun.w),uC,sb); c.rgb=mix(c.rgb,ins,a); }
-            m=uF>0.?land*smoothstep(uF*.67,uF,dd):0.;
+            m=uF>0.?land*smoothstep(uF*.67,uF,dd)*step(dd,uF*1.05):0.;
             if(uRm.x>0.){ float ri=min(min(w.x-uK.x,uK.z-w.x),min(w.z-uK.y,uK.w-w.z)); rf=land*(1.-smoothstep(0.,uRm.x,ri))*smoothstep(uRm.y,uRm.z,L); m=max(m,rf); }
             if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.99999||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=.99999){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; m*=hit; } } }
         c.rgb=mix(c.rgb,to,m); }
@@ -57,7 +57,7 @@ const DFOG={};
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   // a room's steam (SHARED.steam: {b:[x0,y0,z0,x1,y1,z1], k: thickness per unit, c: colour}): the same pass fogs each pixel by how far its view through the box runs, so it reads the same from every camera
   let stOn=false; SYS.add('rooms',()=>{ const on=!!SHARED.steam&&!renderer.xr.isPresenting; if(on!==stOn){ stOn=on; pass.enabled=C.on||on; } },'134e-steam');
-  const save=()=>{ try{ SAVE.set('dfog7',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
+  const save=()=>{ try{ SAVE.set('dfog8',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&C.cut&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;

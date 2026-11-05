@@ -15,8 +15,11 @@ def weld(v,extra=None):
     ok=(F[:,0]!=F[:,1])&(F[:,1]!=F[:,2])&(F[:,0]!=F[:,2])
     return P[first],J[first],W[first],Z[first],F[ok],(np.array(extra)[ok] if extra is not None else None)
 
-def pack(v,rig,Jb,zmap,extra=None):
+def pack(v,rig,Jb,zmap,extra=None,body=False):
     P,J,W,Z,F,X=weld(v,extra); P=reshape(P,J,W,rig['names'],*rig['prop'])
+    if rig.get('ogre'):
+        P=rig['ogre'].morph(P,J,W)
+        if body: P,J,W,Z,F,X=rig['ogre'].body(P,J,W,Z,F,X,v['zones'])
     out,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
     Zg=np.array([zmap[v['zones'][z]] for z in Z],np.uint8)
     o={k:out[k] for k in ('lo','sc','pos','tri','bone','w')}; o['zone']=rr.enc(Zg)
@@ -50,6 +53,60 @@ def reshape(P,J,Wt,names,legs,drop,head):
     P=P+(P-head)*((HEAD-1)*dh)[:,None]; P[:,1]+=dy-drop
     return P
 
+# the ogre's skull (owner, 5 Nov 2026: "lets use the ogre head (not ears and teeth tho) on the main avatar body"; "all were changing is the shape of the head"; 10% smaller than first shown):
+# the head's skin is the skull of the dungeon's ogre (data/pawns.json, no ears, teeth or eyes), as wide as the head x1.035; the face (eyes, brows, mouth), the ears and all a head
+# wears (hair, hats, glasses, beards) move out to it, each point along its direction from the head's middle by the gap between the old head and the skull there
+def skull_mesh():
+    import base64
+    O=json.load(open('data/pawns.json'))['ogre']; M=O['mesh']; b=lambda k:np.frombuffer(base64.b64decode(M[k]),np.uint8)
+    pos=(np.frombuffer(base64.b64decode(M['p']),np.int16).astype(float).reshape(-1,3)+32500)*M['sc']+np.array(M['lo'])
+    j=b('j').reshape(-1,4); w=b('w').reshape(-1,4); idx=np.frombuffer(base64.b64decode(M['i']),np.uint16).reshape(-1,3)
+    H=j[np.arange(len(j)),w.argmax(1)]==O['rig']['names'].index('DEF_head'); par=np.arange(len(pos))
+    def f(a):
+        while par[a]!=a: par[a]=par[par[a]]; a=par[a]
+        return a
+    for t in idx[H[idx].all(1)]:
+        par[f(t[0])]=f(t[1]); par[f(t[1])]=f(t[2])
+    seen={}
+    for v in np.where(H)[0]:
+        k=tuple(np.round(pos[v],4))
+        if k in seen: par[f(v)]=f(seen[k])
+        else: seen[k]=v
+    roots=np.array([f(v) if H[v] else -1 for v in range(len(pos))]); u,c=np.unique(roots[roots>=0],return_counts=True); keep=roots==u[c.argmax()]   # the largest piece: the skull
+    T=idx[keep[idx].all(1)]; k=np.where(keep)[0]; m=-np.ones(len(pos),int); m[k]=np.arange(len(k)); V=pos[k]; V[:,2]-=(V[:,2].min()+V[:,2].max())/2; V[:,1]-=V[:,1].min()
+    return V,m[T]
+def far_hits(O,D,V,T):   # each ray from O along D: the furthest hit on the triangles (Moller-Trumbore), nan if none
+    a,b,c=V[T[:,0]],V[T[:,1]],V[T[:,2]]; e1,e2=b-a,c-a; out=np.full(len(D),np.nan)
+    for s in range(0,len(D),256):
+        d=D[s:s+256,None,:]; pv=np.cross(d,e2[None]); det=(e1[None]*pv).sum(-1); ok=np.abs(det)>1e-12; inv=np.where(ok,1/np.where(ok,det,1),0); tv=O-a
+        u=(tv[None]*pv).sum(-1)*inv; qv=np.cross(tv,e1); v=(d*qv[None]).sum(-1)*inv; t=(e2[None]*qv[None]).sum(-1)*inv
+        hit=ok&(u>=0)&(v>=0)&(u+v<=1)&(t>0); t=np.where(hit,t,-np.inf); r=t.max(1); out[s:s+256]=np.where(np.isfinite(r),r,np.nan)
+    return out
+class Ogre:
+    NA,NE=96,48
+    def __init__(self,P,J,W,Z,F,X,names,zones,regions):
+        self.hid=[i for i,n in enumerate(names) if n=='Head' or n.startswith('Face_')]; hw=self.hw(J,W); skin=zones.index('skin'); ears=regions.index('ears')
+        self.skin,self.ears=skin,ears; H=(hw>=.5)&(Z==skin); lo,hi=P[H].min(0),P[H].max(0); sz=hi-lo; c=(lo+hi)/2; self.C=c
+        V,T=skull_mesh(); k=sz[0]*1.035/np.ptp(V[:,0]); V=V*k+np.array([c[0],lo[1]-sz[1]*.02,c[2]+sz[2]*.05]); self.V,self.T=V,T
+        HT=F[(H[F]).all(1)&(X!=ears)]   # the old head's skin (not its ears) as the surface the gap is measured from
+        az=(np.arange(self.NA)+.5)/self.NA*2*np.pi-np.pi; el=(np.arange(self.NE)+.5)/self.NE*np.pi-np.pi/2; A,E=np.meshgrid(az,el,indexing='ij'); D=np.stack([np.cos(E)*np.sin(A),np.sin(E),np.cos(E)*np.cos(A)],-1).reshape(-1,3)
+        ro=far_hits(c,D,P,HT); rs=far_hits(c,D,V,T); g=np.where(np.isnan(ro)|np.isnan(rs),0,rs-ro).reshape(self.NA,self.NE)
+        for _ in range(2): g=(2*g+np.roll(g,1,0)+np.roll(g,-1,0))/4   # (a little smoothing round)
+        self.G=g
+    def hw(self,J,W): return sum((W*(J==i)).sum(1) for i in self.hid)
+    def morph(self,P,J,W):
+        w=self.hw(J,W); m=w>0
+        if not m.any(): return P
+        d=P[m]-self.C; L=np.linalg.norm(d,axis=1); L[L<1e-9]=1e-9; u=d/L[:,None]; az=np.arctan2(u[:,0],u[:,2]); el=np.arcsin(np.clip(u[:,1],-1,1))
+        fa=(az+np.pi)/(2*np.pi)*self.NA-.5; fe=np.clip((el+np.pi/2)/np.pi*self.NE-.5,0,self.NE-1); a0=np.floor(fa).astype(int); e0=np.floor(fe).astype(int); ta=fa-a0; te=fe-e0; e1=np.minimum(e0+1,self.NE-1)
+        G=self.G; gv=lambda a,e:G[a%self.NA,e]; g=(gv(a0,e0)*(1-ta)+gv(a0+1,e0)*ta)*(1-te)+(gv(a0,e1)*(1-ta)+gv(a0+1,e1)*ta)*te
+        P=P.copy(); P[m]+=u*(g*w[m])[:,None]; return P
+    def body(self,P,J,W,Z,F,X,zones):
+        hw=self.hw(J,W); skin=zones.index('skin'); drop=((hw[F]>=.5)&(Z[F]==skin)).all(1)&(X!=self.ears)
+        rg=np.bincount(X[drop]).argmax() if drop.any() else 0; n=len(P); h=self.hid[0]
+        P=np.vstack([P,self.V]); J=np.vstack([J,np.tile([h,0,0,0],(len(self.V),1))]); W=np.vstack([W,np.tile([1.,0,0,0],(len(self.V),1))]); Z=np.concatenate([Z,np.full(len(self.V),skin)])
+        F=np.vstack([F[~drop],self.T+n]); X=np.concatenate([X[~drop],np.full(len(self.T),rg)]); return P,J,W,Z,F,X
+
 def joints(rig,P):
     W=np.array(rig['world']); nidx={n:i for i,n in enumerate(rig['names'])}; R=rr.MIXAMO_ROLE; jp=lambda nm:W[nidx[R[nm]]]; top=P[:,1].max(); J={}
     J['pelvis']=jp('pelvis'); J['waist']=jp('waist'); J['neck']=jp('neck'); J['headTop']=jp('neck')+np.array([0,top-jp('neck')[1],0])
@@ -63,11 +120,12 @@ for f in ('m','f'):
     FG=RAW['figs'][f]; W0=np.array(FG['bones']['world']); W1,legs,drop,head=proportions(FG['bones']['names'],W0)
     rig={'names':FG['bones']['names'],'world':W1,'prop':(legs,drop,head)}
     b0=FG['bodies'][1]
-    P,J,W,Z,F,_=weld(b0); H0=float(P[:,1].max()); P=reshape(P,J,W,rig['names'],legs,drop,head); Jb=joints(rig,P); sk,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
+    P,J,W,Z,F,X0=weld(b0,b0['region']); H0=float(P[:,1].max()); P=reshape(P,J,W,rig['names'],legs,drop,head)
+    rig['ogre']=Ogre(P,J,W,Z,F,X0,rig['names'],b0['zones'],RAW['regions']); P=rig['ogre'].morph(P,J,W); P,J,W,Z,F,_=rig['ogre'].body(P,J,W,Z,F,X0,b0['zones']); Jb=joints(rig,P); sk,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
     bz=b0['zones']; bmap={z:i for i,z in enumerate(bz)}
     sk['height']=round(H0,4)   # (sized as before the proportions: the torso keeps its size, you are shorter)
     D={'bones':rr.BONES,'builds':RAW['builds'],'regions':RAW['regions'],'skel':{k:sk[k] for k in ('height','hipY','origin','rest')},
-       'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region']) for b in FG['bodies']]},'pieces':[]}
+       'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region'],body=True) for b in FG['bodies']]},'pieces':[]}
     IDX['skel'][f]=D['skel']
     for n,p in enumerate(RAW['pieces']):
         V=p['v'][f]

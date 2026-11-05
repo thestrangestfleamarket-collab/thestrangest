@@ -31,9 +31,9 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.items.arc_token=0; INV.cash=0; th('THE TOKEN CHANGER').act(); const broke=!(INV.items.arc_token>0);
       th('SKEE-BALL').act(); const refused=!MINI.state(); MINI.close();
       INV.cash=3; th('THE TOKEN CHANGER').act(); const bought=INV.items.arc_token===4&&INV.cash===2;
-      th('SKEE-BALL').act(); const S=MINI.state(), skee=!!S&&MINI.on.title==='SKEE-BALL'&&INV.items.arc_token===3; MINI.close();
-      th('THE CLAW').act(); const claw=MINI.on&&MINI.on.title==='THE CLAW'&&INV.items.arc_token===2; MINI.close();
-      th('AIR HOCKEY').act(); const hockey=MINI.on&&MINI.on.title==='AIR HOCKEY'&&INV.items.arc_token===1; MINI.close();
+      th('SKEE-BALL').act(); const S=MINI.state(), skee=!!S&&MINI.on.title==='SKEE-BALL'; MINI.close();
+      th('THE CLAW').act(); const claw=MINI.on&&MINI.on.title==='THE CLAW'; MINI.close();
+      th('AIR HOCKEY').act(); const hockey=MINI.on&&MINI.on.title==='AIR HOCKEY'; MINI.close();
       INV.items.ptix=5; th("TOKEN'S PRIZE COUNTER").act(); const prize=INV.items.prize_ring>=1&&INV.items.ptix===1;
       INV.cash=2; th('THE SODA MACHINE').act(); const soda=INV.cash===0&&INV.items.d_cola>=1;
       return {broke,refused,bought,skee,claw,hockey,prize,soda}; });

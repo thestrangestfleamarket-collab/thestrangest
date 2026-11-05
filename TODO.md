@@ -56,7 +56,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
   - Run 41925479673 (4 Nov): stopped at `tests/physx.cjs` (a hidden character knocked over never got up; fixed in #615).
   - Run 41947525626 (5 Nov, after #615): steps 1–20 pass (physics too); the headset step fails and hangs to its 45-minute limit, so the rest did not run (see the VR line below).
-- [ ] **The headset check fails on `main`** · P1 · M · code. `tests/vr.cjs` in run 41947525626 (5 Nov): the headset draws almost black (lit 0.07), the left stick does not walk, the right stick does not turn, then it hangs until its limit. It also hung on 4 Nov (runs 41795287054, 41909140759). Find what broke it, fix, then run the full checks again.
+  - Run 41975584372 (5 Nov, after #623): every step up to the interiors passes (headset too); `tests/interiors.cjs` fails (the arcade's games, the bodega's shelves, then a timeout), most likely the archive's leftovers (see "After the archive"); the rest did not run.
+- [x] **The headset check fails on `main`** (done 5 Nov, #623) · P1 · M · code. The stalled-frame fallback nested headset frames until the stack ran out; two stale lines in `tests/vr.cjs` and the map editor line in `tests/site.cjs` (archived) fixed with it.
 - [x] **Restore #512's lost HISTORY entry** (done 4 Nov) · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
   "lets add them all, add them as toggles in graphics…") was added in 6b3c9deb and dropped in the merges caee19fb/116b27da. Put it back.
 - [x] **The long checks need their own time limits** (done 4 Nov: his pick, 15 minutes a check; core, places, fights 20; headset 45) · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and

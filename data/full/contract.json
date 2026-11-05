@@ -87,6 +87,18 @@
     "label": "string",
     "figs": "string"
    }
+  },
+  "street.json": {
+   "each": {
+    "n": "number",
+    "lo": "array3",
+    "sc": "number",
+    "p": "string",
+    "c": "string",
+    "i": "string",
+    "tris": "number",
+    "size": "array3"
+   }
   }
  },
  "refs": [

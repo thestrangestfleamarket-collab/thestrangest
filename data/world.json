@@ -327,7 +327,7 @@
    "id": "corner_shophouse",
    "name": "THE CORNER SHOPHOUSE",
    "door": [
-    47.0,
+    47,
     -108.8
    ],
    "beds": 2
@@ -363,7 +363,7 @@
    "id": "haunted_victorian_house",
    "name": "THE HAUNTED HOUSE",
    "door": [
-    2.0,
+    2,
     157.96
    ],
    "beds": 1
@@ -372,109 +372,16 @@
    "id": "porch_log_cabin",
    "name": "THE LOG CABIN",
    "door": [
-    40.0,
+    40,
     144.34
    ],
    "beds": 2
   }
  ],
  "block": {
-  "pf": {
-   "1": [
-    [
-     -71.9,
-     -60.76
-    ],
-    [
-     -60.66,
-     -50.54
-    ],
-    [
-     -50.44,
-     -26.03
-    ],
-    [
-     -25.93,
-     -6.83
-    ],
-    [
-     -6.73,
-     8.15
-    ],
-    [
-     82.45,
-     92.57
-    ],
-    [
-     153.2,
-     164.05
-    ],
-    [
-     164.65,
-     174.77
-    ],
-    [
-     175.37,
-     180.74
-    ],
-    [
-     181.34,
-     191.46
-    ],
-    [
-     201.4,
-     216.29
-    ]
-   ],
-   "2": [
-    [
-     -4.8,
-     10.09
-    ],
-    [
-     9.99,
-     20.11
-    ],
-    [
-     20.01,
-     44.42
-    ],
-    [
-     44.32,
-     49.68
-    ],
-    [
-     49.58,
-     54.94
-    ],
-    [
-     54.84,
-     64.97
-    ],
-    [
-     64.87,
-     70.23
-    ],
-    [
-     70.13,
-     80.25
-    ],
-    [
-     80.15,
-     90.28
-    ],
-    [
-     90.18,
-     95.54
-    ],
-    [
-     95.44,
-     110.32
-    ]
-   ]
-  },
+  "pf": {},
   "x0": -100,
-  "x1": 245,
+  "x1": 252,
   "front": -77,
   "back": -92.4,
   "alley": [
@@ -514,50 +421,34 @@
    "x1": 142.05
   },
   {
-   "id": "museum",
-   "name": "MUSEUM OF EARTH",
-   "kind": "front",
-   "x0": -75.6,
-   "x1": -52.5,
-   "y0": 116.2,
-   "back": true,
-   "y1": 144.8,
-   "face": "e"
-  },
-  {
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 77.0,
-   "y1": 91.0,
-   "face": "e"
+   "x0": 59.94,
+   "x1": 73.94
   },
   {
    "id": "bank",
    "name": "THE BANK",
    "kind": "front",
-   "x0": 53.95,
-   "x1": 82.55
+   "x0": 11.18,
+   "x1": 39.78
   },
   {
    "id": "art",
    "name": "THE ART MUSEUM",
    "kind": "front",
-   "x0": 10,
-   "x1": 50,
+   "x0": -21.9,
+   "x1": 8.1,
    "lot": true
   },
   {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -80.02,
-   "x1": -52.5,
-   "y0": -22.2,
-   "y1": -11.2,
-   "face": "e"
+   "x0": -52.5,
+   "x1": -24.98,
+   "lot": true
   },
   {
    "id": "subway",
@@ -584,21 +475,206 @@
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 91.2,
-   "y1": 105.2,
-   "face": "e"
+   "x0": 42.86,
+   "x1": 56.86
   },
   {
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": -67.9,
+   "x0": 77.02,
+   "x1": 91.02
+  },
+  {
+   "id": "florist",
+   "name": "THE FLORIST",
+   "kind": "front",
+   "x0": 145.13,
+   "x1": 154.65,
+   "lot": true,
+   "pf": "florist"
+  },
+  {
+   "id": "tailor",
+   "name": "THE TAILOR",
+   "kind": "front",
+   "x0": 157.73,
+   "x1": 162.49,
+   "lot": true,
+   "pf": "tailor"
+  },
+  {
+   "id": "barber",
+   "name": "THE BARBER",
+   "kind": "front",
+   "x0": 165.57,
+   "x1": 170.33,
+   "lot": true,
+   "pf": "barber"
+  },
+  {
+   "id": "outfitter",
+   "name": "THE OUTFITTER",
+   "kind": "front",
+   "x0": 173.41,
+   "x1": 185.31,
+   "lot": true,
+   "pf": "outfitter"
+  },
+  {
+   "id": "fishmarket",
+   "name": "THE FISH MARKET",
+   "kind": "front",
+   "x0": 188.39,
+   "x1": 198.93,
+   "lot": true,
+   "pf": "fishmarket"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOK STORE",
+   "kind": "front",
+   "x0": 202.01,
+   "x1": 211.53,
+   "lot": true,
+   "pf": "books"
+  },
+  {
+   "id": "pets",
+   "name": "THE PET STORE",
+   "kind": "front",
+   "x0": 214.61,
+   "x1": 225.15,
+   "lot": true,
+   "pf": "pets"
+  },
+  {
+   "id": "antiques",
+   "name": "ANTIQUES & PAWN",
+   "kind": "front",
+   "x0": 228.23,
+   "x1": 237.75,
+   "lot": true,
+   "pf": "antiques"
+  },
+  {
+   "id": "hotel",
+   "name": "THE HOTEL",
+   "kind": "front",
+   "x0": 240.83,
+   "x1": 250.35,
+   "lot": true,
+   "pf": "hotel"
+  },
+  {
+   "id": "house1",
+   "name": "APARTMENTS 2",
+   "kind": "front",
+   "x0": -66.79,
    "x1": -52.5,
-   "y0": 32.5,
-   "y1": 46.5,
-   "face": "e"
+   "y0": -22,
+   "y1": -2.95,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house2",
+   "name": "APARTMENTS 3",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": -1.75,
+   "y1": 17.3,
+   "face": "e",
+   "pf": "apt_sand"
+  },
+  {
+   "id": "house3",
+   "name": "APARTMENTS 4",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 18.5,
+   "y1": 37.55,
+   "face": "e",
+   "pf": "apt_grey"
+  },
+  {
+   "id": "house4",
+   "name": "APARTMENTS 5",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 38.75,
+   "y1": 57.8,
+   "face": "e",
+   "pf": "apt_red"
+  },
+  {
+   "id": "house5",
+   "name": "APARTMENTS 6",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 59,
+   "y1": 78.05,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house6",
+   "name": "APARTMENTS 7",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 79.25,
+   "y1": 98.3,
+   "face": "e",
+   "pf": "apt_sand"
+  },
+  {
+   "id": "house7",
+   "name": "APARTMENTS 8",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 99.5,
+   "y1": 118.55,
+   "face": "e",
+   "pf": "apt_grey"
+  },
+  {
+   "id": "house8",
+   "name": "APARTMENTS 9",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 119.75,
+   "y1": 138.8,
+   "face": "e",
+   "pf": "apt_red"
+  },
+  {
+   "id": "house9",
+   "name": "APARTMENTS 10",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 140,
+   "y1": 159.05,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house10",
+   "name": "APARTMENTS 11",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 160.25,
+   "y1": 179.3,
+   "face": "e",
+   "pf": "apt_sand"
   }
  ],
  "shells": [],
@@ -607,42 +683,42 @@
    "id": "c1",
    "model": "muscle-car-60s",
    "x": 78.2,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   },
   {
    "id": "c2",
    "model": "convertible-60s",
    "x": 87.3,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   },
   {
    "id": "c3",
    "model": "station-wagon-70s",
    "x": 96.8,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   },
   {
    "id": "c4",
    "model": "pickup-truck-70s",
    "x": 105.9,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   },
   {
    "id": "c5",
    "model": "wedge-coupe-80s",
    "x": 123,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   },
   {
    "id": "c6",
    "model": "camper-van",
    "x": 131.8,
-   "y": -67.0,
+   "y": -67,
    "hd": 90
   }
  ],
@@ -811,44 +887,44 @@
   {
    "id": "path0",
    "a": [
-    112.0,
-    -37.0
+    112,
+    -37
    ],
    "b": [
-    112.0,
-    180.0
+    112,
+    180
    ]
   },
   {
    "id": "path1",
    "a": [
-    -23.0,
+    -23,
     59.5
    ],
    "b": [
-    261.0,
+    261,
     59.5
    ]
   },
   {
    "id": "path5",
    "a": [
-    112.0,
-    25.0
+    112,
+    25
    ],
    "b": [
     140.5,
-    12.0
+    12
    ]
   },
   {
    "id": "path6",
    "a": [
-    43.0,
+    43,
     59.5
    ],
    "b": [
-    43.0,
+    43,
     110.6
    ]
   }
@@ -962,25 +1038,25 @@
  "homes": {
   "donut": [
    133.25,
-   -74.2,
+   -74.6,
    5,
    "bodega"
   ],
   "number80": [
-   -59.5,
-   -17.5,
+   -38.74,
+   -74.6,
    5,
    "bar"
   ],
   "origamifox": [
-   -64.25,
-   49.2,
+   84.02,
+   -74.6,
    5,
    "arcade"
   ],
   "manatee": [
-   236.75,
-   -74.1,
+   49.86,
+   -74.6,
    5,
    "theatre"
   ],

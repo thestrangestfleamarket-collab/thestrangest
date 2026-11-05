@@ -1,10 +1,10 @@
-// THE BOOKSTORE: a cozy lending library on West St kept by the Professor: 16 bookcases, one genre each, of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
+// THE BOOKSTORE: a tall lending library on West St kept by the Professor: 16 bookcases on its back wall, three floors (six, six and four) with galleries and a spiral stair, one genre each, of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {SYS} from './006-map-pre.js';
+import {SOL, SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
@@ -145,7 +145,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
   { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null)]); },'144ca-library'); }
-  let DUST=null;
+  let DUST=null; const STACK=window.LIBSTACK={ST:2.45,ROWS:[6,6,4],k:0,on:false,s:0,dyn:[],loc:null,ground:null};
   /* ---------- a bookcase: four shelves of ten real books, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:.62,H:2.05,D:.32,SH:[.08,.55,1.02,1.49],IN:.56,BW:.02};   // metres: the case, its shelves' tops, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
@@ -231,7 +231,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   addEventListener('keydown',e=>{ if(VW.hidden||!LIB.data)return; const m={ArrowUp:()=>vshelf(1),ArrowDown:()=>vshelf(-1),ArrowLeft:()=>vopen(V.ci-1),ArrowRight:()=>vopen(V.ci+1)}[e.key]; if(m){ m(); e.preventDefault(); e.stopPropagation(); } },true);
   window.addEventListener('resize',()=>{ if(!VW.hidden){ vfit(); vdraw(); } });
 
-  /* ---------- the shop: one cozy room, its walls lined with the sixteen cases (one genre each), the door and window to West St; in the middle only a rug, chairs and lamps; the Professor's counter by the door ---------- */
+  /* ---------- the shop: a tall room, its back wall a stack of three floors of cases (six, six, four) (one genre each) with galleries and a spiral stair; the door and window to West St; in the middle only a rug, chairs and lamps; the Professor's counter by the door ---------- */
   MSHOP.kit.books=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, K=IKIT.room(F,o=>A.add(o),()=>{}), t=d=>d*TM, sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/TM,R.y0+Math.min(v0,v1)/TM,R.x0+Math.max(u0,u1)/TM,R.y0+Math.max(v0,v1)/TM), {box,use}=K, W=t(R.x1-R.x0), D=t(R.y1-R.y0);
     const tx=u=>R.x0+u/TM, ty=v=>R.y0+v/TM, HT=A.WH/24*TM;
     // dark oak boards; plaster walls the colour of old paper over a dark wainscot; a cornice
@@ -243,12 +243,36 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     const sitIn=(name,u,v,h,du,dv,w)=>use(name,u,v,w,1.1,()=>{ const p=F.pw(u,v); USE.sitAt(p[0],p[1],h*MW,F.hd(du,dv)); setTimeout(()=>LIB.open(),600); },1.2);
     const warm=(u,v,h,i,r,c=0xffc887)=>A.lamp(tx(u),ty(v),h/TM,c,i*3.2,r*1.6);
     const G=GEO, d=LIB.data; if(!d)return;
-    // the cases round the walls: the back wall's run, then the left wall, then the right, in the order of the list
-    const slots=[], gap=.04, step=BC.W+gap; { const nb=Math.min(7,d.cases.length), x0=W/2-(nb*step-gap)/2; for(let i=0;i<nb;i++)slots.push([x0+step*(i+.5),BC.D/2,0,1]);
-      const left=Math.ceil((d.cases.length-nb)/2), right=d.cases.length-nb-left; for(let i=0;i<right;i++)slots.push([W-BC.D/2,.75+step*(i+.5),-1,0]); for(let i=0;i<left;i++)slots.push([BC.D/2,.75+step*(i+.5),1,0]); }
-    d.cases.forEach((C,i)=>{ const s=slots[i]; if(!s)return; const [u,v,du,dv]=s, M=caseMesh(C), p=F.pw(u,v); M.scale.setScalar(MW); M.position.set(p[0],0,p[1]); M.rotation.y=F.hd(du,dv); A.add(M);
-      const ax=Math.abs(du)>0; sol(u-(ax?BC.D/2:BC.W/2),v-(ax?BC.W/2:BC.D/2),u+(ax?BC.D/2:BC.W/2),v+(ax?BC.W/2:BC.D/2));
-      ['BOTTOM','LOW','HIGH','TOP'].forEach((nm,r)=>{ const hh=rowTop(r)-BC.SH[r], th=use(C.name+': '+nm+' SHELF',u+du*.45,v+dv*.45,.62,hh,()=>LIB.look(i,r),1.4); th.obj.position.y=(BC.SH[r]+hh/2)*MW; th.tall=(BC.SH[r]+hh)*MW; }); });
+    // the stack: three floors of cases on the back wall (six, six, four), a gallery with a brass rail before each upper floor, a spiral stair beside it to every gallery
+    const LV=STACK, ST=LV.ST, NF=LV.ROWS.length, TOP=NF-1, run=6*BC.W+5*.04, x0s=.45, sf=x0s+run+.6, SR=1.0, cu=sf+SR, cv=SR, GV=BC.D+.9, g0=x0s-.15, A0=-7*Math.PI/8, TW=2*Math.PI;
+    LV.k=0; LV.on=false; LV.s=0; LV.dyn=[]; LV.geo={cu,cv,SR,sf,g0,GV,x0s,run}; LV.pw=F.pw;
+    d.cases.slice(0,16).forEach((C,i)=>{ let k=0, j=i; while(k<TOP&&j>=LV.ROWS[k])j-=LV.ROWS[k++]; const u=x0s+((6-LV.ROWS[k])/2+j)*(BC.W+.04)+BC.W/2, v=BC.D/2, M=caseMesh(C), p=F.pw(u,v); M.scale.setScalar(MW); M.position.set(p[0],k*ST*MW,p[1]); M.rotation.y=F.hd(0,1); A.add(M);
+      if(!k)sol(u-BC.W/2,0,u+BC.W/2,BC.D);
+      ['BOTTOM','LOW','HIGH','TOP'].forEach((nm,r)=>{ const hh=rowTop(r)-BC.SH[r], th=use(C.name+': '+nm+' SHELF',u,v+.45,.62,hh,()=>{ if(LV.on||LV.k!==k)return say(k>LV.k?'THAT CASE IS UP ON FLOOR '+(k+1)+'. TAKE THE SPIRAL STAIR.':'THAT CASE IS DOWN ON FLOOR '+(k+1)+'.'); LIB.look(i,r); },1.4); th.obj.position.y=(k*ST+BC.SH[r]+hh/2)*MW; th.tall=(k*ST+BC.SH[r]+hh)*MW; }); });
+    sol(sf,cv,sf+.06,2*SR); sol(sf,2*SR-.06,sf+2*SR,2*SR); sol(sf+2*SR-.06,0,sf+2*SR,2*SR); sol(cu-.1,cv-.1,cu+.1,cv+.1);   // the stair's cage, open on its west side by the wall (the landings)
+    { const w=(u0,v0,u1,v1)=>{ const a=F.pw(u0,v0), b=F.pw(u1,v1); return [Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1])]; };
+      LV.walls={bot:w(cu-.03,0,cu+.03,cv-.1),top:w(sf,cv-.03,cu-.1,cv+.03),rail:[w(g0,GV,sf,GV+.06),w(g0-.06,0,g0,GV+.06)]}; }
+    { const p0=F.pw(0,0), pu=F.pw(1,0), pv=F.pw(0,1), a=pu[0]-p0[0], b=pv[0]-p0[0], c=pu[1]-p0[1], e=pv[1]-p0[1], det=a*e-b*c; LV.loc=(x,z)=>{ const dx=x-p0[0], dz=z-p0[1]; return [(e*dx-b*dz)/det,(a*dz-c*dx)/det]; }; }
+    LV.inSt=(u,v)=>u>sf&&u<sf+2*SR&&v>0&&v<2*SR; LV.inG=(u,v)=>u>g0&&u<sf+.02&&v>0&&v<GV+.02; LV.ang=(u,v)=>Math.atan2(v-cv,u-cu); LV.A0=A0;
+    { const c0=F.pw(0,0), c1=F.pw(W,D), y0=SHARED.groundY(c0[0],c0[1]); LV.y0=y0;
+      LV.ground={x0:Math.min(c0[0],c1[0]),x1:Math.max(c0[0],c1[0]),z0:Math.min(c0[1],c1[1]),z1:Math.max(c0[1],c1[1]),ground:(x,z)=>{ const [u,v]=LV.loc(x,z);
+        if(LV.on&&LV.inSt(u,v))return y0+LV.s*MW; if(LV.k&&LV.inG(u,v))return y0+LV.k*ST*MW; return y0; }}; ROOMS.grounds.push(LV.ground); }
+    { const grate=(()=>{ const cv_=document.createElement('canvas'); cv_.width=cv_.height=32; const g=cv_.getContext('2d'); g.fillStyle='#2a2420'; g.fillRect(0,0,32,32); g.clearRect(3,3,12,12); g.clearRect(17,3,12,12); g.clearRect(3,17,12,12); g.clearRect(17,17,12,12);
+        const T_=new THREE.CanvasTexture(cv_); T_.wrapS=T_.wrapT=THREE.RepeatWrapping; T_.magFilter=THREE.NearestFilter; T_.colorSpace=THREE.SRGBColorSpace; return T_; })();
+      const deck=(u0,v0,u1,v1,h)=>{ const tx_=grate.clone(); tx_.needsUpdate=true; tx_.repeat.set((u1-u0)/.2,(v1-v0)/.2); const m=new THREE.Mesh(new THREE.BoxGeometry((u1-u0)*MW,.05*MW,(v1-v0)*MW),new THREE.MeshLambertMaterial({map:tx_,alphaTest:.5,side:THREE.DoubleSide})), p=F.pw((u0+u1)/2,(v0+v1)/2);
+        m.position.set(p[0],(h-.025)*MW,p[1]); m.rotation.y=F.hd(0,1); m.receiveShadow=true; A.add(m); };
+      for(let k=1;k<NF;k++){ const h=k*ST; deck(g0,BC.D,x0s+run,GV,h); deck(x0s+run,0,sf,GV,h); box(g0,GV-.04,sf,GV,h-.14,h,0x3a2618);
+        box(g0,GV-.03,sf,GV+.03,h+.98,h+1.03,0xb8923a); box(g0-.03,0,g0+.03,GV+.03,h+.98,h+1.03,0xb8923a); box(g0,GV-.02,sf,GV+.02,h+.1,h+.13,0x8a6a2a);
+        for(let u=g0;u<=sf+.001;u+=(sf-g0)/18)box(u-.012,GV-.012,u+.012,GV+.012,h,h+.98,0x9a7a30); for(let v=.1;v<GV;v+=.22)box(g0-.012,v-.012,g0+.012,v+.012,h,h+.98,0x9a7a30);
+        for(const u of [g0+.05,x0s+run/2,sf-.05])box(u-.03,BC.D,u+.03,BC.D+.5,h-.4,h-.05,0x2a2420); }
+      for(const u of [g0,sf])box(u-.04,GV-.04,u+.04,GV+.04,0,TOP*ST+1.03,0x2a2420); }
+    { const NT=16, n=TOP*NT, tr=new THREE.InstancedMesh(new THREE.BoxGeometry((SR-.12)*MW,.05*MW,.34*MW),new THREE.MeshLambertMaterial({color:0x6a4426}),n), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V=new THREE.Vector3(), Sc=new THREE.Vector3(1,1,1), Y_=new THREE.Vector3(0,1,0), hd0=F.hd(1,0);
+      for(let i=1;i<=n;i++){ const a=A0-i/NT*TW, rr=(SR+.1)/2, p=F.pw(cu+Math.cos(a)*rr,cv+Math.sin(a)*rr); q.setFromAxisAngle(Y_,hd0-Math.PI/2-a); m4.compose(V.set(p[0],(i*ST/NT-.025)*MW,p[1]),q,Sc); tr.setMatrixAt(i-1,m4); }
+      tr.castShadow=tr.receiveShadow=true; A.add(tr); K.cyl(cu,cv,.07,0,TOP*ST+1.1,0x2a2420);
+      const pts=[]; for(let i=0;i<=n*2;i++){ const a=A0-i/(2*NT)*TW, p=F.pw(cu+Math.cos(a)*(SR-.06),cv+Math.sin(a)*(SR-.06)); pts.push(new THREE.Vector3(p[0],(i*ST/(2*NT)+.95)*MW,p[1])); }
+      const rail=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),n*4,.022*MW,6,false),new THREE.MeshLambertMaterial({color:0xb8923a})); A.add(rail);
+      for(let i=2;i<=n;i+=2){ const a=A0-i/NT*TW, uu=cu+Math.cos(a)*(SR-.06), vv=cv+Math.sin(a)*(SR-.06), h=i*ST/NT; box(uu-.01,vv-.01,uu+.01,vv+.01,h,h+.95,0x9a7a30); } }
+    for(let k=1;k<NF;k++)warm(x0s+run/2,GV+.5,k*ST+2.0,.9,5,0xffcf8a);
     // the middle: a rug, two armchairs and a velvet chair round a small table with its lamp, a floor lamp; the window's radiator and curtains; the counter by the door
     put(G,'rug2',W/2,D*.54,1,0,{s:.95,shadow:false}); put(G,'armchair',W*.36,D*.5,1,.2); put(G,'tubchair',W*.64,D*.5,-1,.2); put(G,'tubchair',W/2,D*.7,0,-1);
     put(G,'sidetable',W/2,D*.47,0,1); put(G,'tablelamp',W/2,D*.47,0,1,{h:.51,shadow:false}); put(G,'bookstack',W/2+.08,D*.47+.08,0,1,{h:.51,shadow:false}); put(G,'floorlamp',W*.26,D*.38,1,0); put(G,'blanket',W*.36,D*.5,1,.2,{h:.42,shadow:false});
@@ -262,20 +286,28 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       frame(-hf+.08,-1.25-.28,19,89); frame(1.25+.28,hf-.08,19,89); frame(-1.25+.12,-.06,12,86); frame(.06,1.25-.12,12,86);
       for(const sgn of [-1,1])box(cxm+sgn*.32-.15,D-.11,cxm+sgn*.32+.15,D-.08,1.05,1.09,0xb8923a);
       box(tm(-hf+.08)-.05,D-.2,tm(-1.25-.28)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); box(tm(1.25+.28)-.05,D-.2,tm(hf-.08)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); }   // the window sills
-    for(const [u,v] of [[W*.12,D-.55],[W*.88,D-.55],[W/2,D*.18],[W*.25,D*.62],[W*.75,D*.62]]){ put(G,'hangplant',u,v,0,1,{h:HT-1.35,s:1.2,shadow:false}); box(u-.004,v-.004,u+.004,v+.004,HT-.1,HT,0x3a2a1a); }
+    for(const [u,v] of [[W*.12,D-.55],[W*.88,D-.55],[W/2,D*.3],[W*.25,D*.62],[W*.75,D*.62]]){ put(G,'hangplant',u,v,0,1,{h:2.3,s:1.2,shadow:false}); box(u-.004,v-.004,u+.004,v+.004,3.2,HT,0x3a2a1a); }
     put(G,'clock',W*.85,D-.02,0,-1,{h:2.25}); put(G,'plant',W-.45,D-.45,0,-1); put(G,'globe',W*.2+.45,D-.85,0,1,{h:1.0,s:1.3,shadow:false});
     sitIn('ARMCHAIR: SIT AND READ',W*.36,D*.5,.45,1,.2,.9); sitIn('VELVET CHAIR: SIT AND READ',W*.64,D*.5,.45,-1,.2,.8); sitIn('VELVET CHAIR: SIT AND READ',W/2,D*.7,.45,0,-1,.8);
     // the light: two glass pendants and the lamps, warm and low; a warm fill off the wood
-    for(const [u,v] of [[W*.35,D*.36],[W*.65,D*.36]]){ box(u-.005,v-.005,u+.005,v+.005,HT-.75,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,HT-.85,.09,0xfff0d0)); warm(u,v,HT-1.0,1.3,6,0xffd29a); }
+    for(const [u,v] of [[W*.35,D*.4],[W*.65,D*.4]]){ box(u-.005,v-.005,u+.005,v+.005,3.4,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,3.3,.09,0xfff0d0)); warm(u,v,3.1,1.3,6,0xffd29a); }
     warm(W/2,D*.47,.95,1.2,4,0xffc070); warm(W*.26,D*.38,1.7,1.1,5,0xffc27a); warm(W*.2-.1,D-.97,1.3,.8,4,0xffd090);
-    A.add(new THREE.HemisphereLight(0xffd6a0,0x4a2414,1.1));
+    A.add(new THREE.HemisphereLight(0xffd6a0,0x4a2414,1.5));
+    { const u=W/2-.3, v=D*.42, h=4.6; box(u-.006,v-.006,u+.006,v+.006,h+.4,HT,0x1c1c1c); K.cyl(u,v,.5,h+.36,h+.42,0xb8923a); K.cyl(u,v,.04,h-.1,h+.4,0xb8923a); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, uu=u+Math.cos(a)*.48, vv=v+Math.sin(a)*.48; K.cyl(uu,vv,.012,h+.05,h+.36,0xb8923a); K.glow(()=>K.ball(uu,vv,h+.12,.06,0xfff0d0)); } warm(u,v,h,1.6,9,0xffd29a); }   // a brass ring of lamps high over the room
     K.glow(()=>{ for(const [u,v,h,r] of [[W/2,D*.47,.9,.07],[W*.26,D*.38,1.62,.1]])K.cyl(u,v,r*.6,h-.02,h+.04,0xfff0c0); });
     { const N=90, P=new Float32Array(N*3), Vv=[]; for(let i=0;i<N;i++){ const p=F.pw(W*.2+Math.random()*W*.6,D*.2+Math.random()*D*.6); P[i*3]=p[0]; P[i*3+1]=(.3+Math.random()*(HT-.6))*MW; P[i*3+2]=p[1]; Vv.push([(Math.random()-.5)*.02,(Math.random()-.4)*.01,(Math.random()-.5)*.02]); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
     K.flush(); };
-  MSHOP.kit.books.drop=()=>{ DUST=null; };
+  MSHOP.kit.books.drop=()=>{ DUST=null; const L=STACK; if(L.ground){ const i=ROOMS.grounds.indexOf(L.ground); if(i>=0)ROOMS.grounds.splice(i,1); L.ground=null; } for(const r of L.dyn){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } L.dyn=[]; L.on=false; L.k=0; L.loc=null; };
   SYS.add('places',dt=>{ if(!DUST||!DUST.pts.parent)return; const {P,V}=DUST, MW=IKIT.MW, k=(dt||0)*MW*.5; DUST.t+=dt||0; for(let i=0;i<V.length;i++){ const j=i*3; P[j]+=V[i][0]*k+Math.sin(DUST.t*.3+i)*.0006*MW; P[j+1]+=V[i][1]*k; P[j+2]+=V[i][2]*k; if(P[j+1]>DUST.y1||P[j+1]<DUST.y0)V[i][1]*=-1; } DUST.pts.geometry.attributes.position.needsUpdate=true; },'144ca-library');
+  // the stack's floors: you are on the floor, on a gallery (k) or on the spiral stair (its height s, one turn a floor, wound as you walk round); the rails and the stair's ends stand only for the floor you are on
+  SYS.add('places',()=>{ const L=STACK; if(!L.loc||!L.ground)return; const ST=L.ST, TW=2*Math.PI, wr=a=>Math.atan2(Math.sin(a),Math.cos(a)), [u,v]=L.loc(pos.x,pos.z), inn=L.inSt(u,v);
+    if(!L.on&&inn){ L.on=true; L.a=L.ang(u,v); L.s=Math.max(0,L.k*ST+wr(L.A0-L.a)/TW*ST); }
+    else if(L.on&&!inn){ L.on=false; L.k=Math.max(0,Math.min(L.ROWS.length-1,Math.round(L.s/ST))); }
+    else if(L.on){ const a=L.ang(u,v); L.s=Math.max(0,Math.min((L.ROWS.length-1)*ST,L.s-wr(a-L.a)/TW*ST)); L.a=a; }
+    const want=[...(L.on&&L.s<.5*ST?[L.walls.bot]:[]),...(L.on&&L.s>(L.ROWS.length-1.5)*ST?[L.walls.top]:[]),...(!L.on&&L.k?L.walls.rail:[])];
+    for(const r of L.dyn)if(!want.includes(r)){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } for(const r of want)if(!SOL.up.includes(r))SOL.up.push(r); L.dyn=want; },'144ca-stack');
   /* ---------- outside: polyfork's hanging sign, a cart of books, hanging baskets by the doors and flower planters under the windows (data/bookfront.json, loaded when you come near) ---------- */
   { const FJ=__LAZY__("data/bookfront.json"); let done=false, chk=0;
     SYS.add('places',dt=>{ if(done||(chk-=dt||0)>0)return; chk=1; const at=MSHOP.at&&MSHOP.at.books, o=ROOMS.off&&ROOMS.off.books; if(!at||!o)return;
@@ -284,6 +316,6 @@ const LIB={data:null,max:5}; window.LIB=LIB;
         const put=(k,a,b,h,ry=0)=>{ const g=KIT.decode(Dd[k]); g.computeBoundingBox(); const bb=g.boundingBox, me=new THREE.Mesh(g,KIT.mat), grp=new THREE.Group(); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); me.castShadow=me.receiveShadow=true; grp.add(me);
           const x=d[0]+n[0]*a*MW+tg[0]*b*MW, z=d[1]+n[1]*a*MW+tg[1]*b*MW; grp.scale.setScalar(MW); grp.position.set(x,(SHARED.groundY?SHARED.groundY(x,z):0)+h*MW,z); grp.rotation.y=Math.atan2(n[0],n[1])+ry; G.add(grp); return grp; };
         put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
-  window.LIBDBG=()=>({look:VW.hidden?null:{ci:V.ci,row:V.row,rot:V.rot,s:+V.s.toFixed(1),caseFit:+(Math.min(VC.clientWidth/(BC.W+.2),VC.clientHeight/(BC.H+.3))*.92).toFixed(1)},data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,c:cur.c,chapters:cur.ch.length,paras:cur.P.length,p:(posOf()||{}).p,marks:((posOf()||{}).m||[]).length,set:SET()}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
+  window.LIBDBG=()=>({look:VW.hidden?null:{ci:V.ci,row:V.row,rot:V.rot,s:+V.s.toFixed(1),caseFit:+(Math.min(VC.clientWidth/(BC.W+.2),VC.clientHeight/(BC.H+.3))*.92).toFixed(1)},data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,c:cur.c,chapters:cur.ch.length,paras:cur.P.length,p:(posOf()||{}).p,marks:((posOf()||{}).m||[]).length,set:SET()}:null,shop:!!(MSHOP.at&&MSHOP.at.books),stack:{k:STACK.k,on:STACK.on,s:STACK.s}});
 }
 export {LIB};

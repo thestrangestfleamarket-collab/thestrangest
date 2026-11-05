@@ -16,8 +16,8 @@ const TEXT = 'The Project Gutenberg eBook\n\n*** START OF THE PROJECT GUTENBERG 
     ok(!d0.data && !got.length && d0.shop, 'the bookstore stands on West St and nothing of its books is fetched at start (' + got.length + ' requests)');
     await pg.evaluate(() => ROOMS.enter('books')); for (let i = 0; i < 40 && !(await pg.evaluate(() => __dbg.UI.things.some(t => / SHELF$/.test(t.name)))); i++) await pg.waitForTimeout(1000);
     await pg.waitForTimeout(2000);
-    const prof = await pg.evaluate(() => { return { th: __dbg.UI.things.filter(t => / SHELF$|RETURNS|SIT AND READ/.test(t.name)).map(t => t.name) }; }).catch(e => ({ err: String(e) }));
-    ok(prof.th && prof.th.filter(n => / SHELF$/.test(n)).length === 64 && prof.th.some(n => /SIT AND READ/.test(n)) && prof.th.includes('RETURNS'), 'inside: sixteen cases, four shelves each to look closer at, chairs to sit and read in, the returns (' + prof.th.filter(n => / SHELF$/.test(n)).length + ' shelves; ' + JSON.stringify(prof.th) + ')');
+    let prof = {}; for (let i = 0; i < 20; i++) { prof = await pg.evaluate(() => { return { th: __dbg.UI.things.filter(t => / SHELF$|RETURNS|SIT AND READ/.test(t.name)).map(t => t.name) }; }).catch(e => ({ err: String(e) })); if (prof.th && prof.th.length >= 68) break; await pg.waitForTimeout(1000); }
+    ok(prof.th && prof.th.filter(n => / SHELF$/.test(n)).length === 64 && prof.th.some(n => /SIT AND READ/.test(n)) && prof.th.includes('RETURNS'), 'inside: sixteen cases (three floors: six, six, four), four shelves each to look closer at, chairs to sit and read in, the returns (' + prof.th.filter(n => / SHELF$/.test(n)).length + ' shelves; ' + JSON.stringify(prof.th) + ')');
     { const W = JSON.parse(require('fs').readFileSync('data/world.json', 'utf8')), P = W.places.find(p => p.id === 'books'); ok(P && P.merchant === 'professor' && !W.homes.professor, 'the Professor keeps the counter in the bookstore (no street spot of his own)'); }
     const c = await pg.evaluate(async () => { await LIB.open(); const n = document.querySelectorAll('#libp .bk').length, img = document.querySelector('#libp .bk img').getAttribute('src'); return { n, img, d: LIBDBG() }; });
     ok(c.n === c.d.n && c.n === 640 && c.img, 'the shelves open the catalogue: every book with its cover (' + c.n + ' books, ' + c.img + ')');
@@ -27,6 +27,19 @@ const TEXT = 'The Project Gutenberg eBook\n\n*** START OF THE PROJECT GUTENBERG 
     const sh = await pg.evaluate(async () => { const t = __dbg.UI.things.find(t => / LOW SHELF$/.test(t.name)); t.act(); await new Promise(r => setTimeout(r, 600)); const a = LIBDBG().look;
       document.querySelector('#libv [data-v=up]').click(); const b = LIBDBG().look; document.querySelector('#libv [data-v=rot]').click(); document.querySelector('#libv [data-v=rot]').click(); const c = LIBDBG().look; LIB.closeLook(); return { a, b, c }; });
     ok(sh.a && sh.a.row === 1 && sh.b.row === 2 && sh.c.rot === 90 && sh.c.s > sh.a.s * 0 && sh.a.s > sh.a.caseFit, 'a shelf clicked in the shop opens close on that shelf; ▲ goes up the same case; ROTATE turns it to read across (' + JSON.stringify(sh) + ')');
+    const sk = await pg.evaluate(async () => { const L = LIBSTACK, g = L.geo, ST = L.ST, MW = IKIT.MW, A0 = L.A0, wait = ms => new Promise(r => setTimeout(r, ms)), lc = () => L.loc(__dbg.you().x, __dbg.you().z);
+      const walk = async (u, v, T = 9000) => { const p = L.pw(u, v); __dbg.go(p[0], p[1]); for (let t = 0; t < T; t += 100) { await wait(100); const q = lc(); if (Math.hypot(q[0] - u, q[1] - v) < .12) return true; } return false; };
+      const round = async (dir, turns) => { for (let i = 1; i <= turns * 12; i++) { const a = A0 - dir * i / 12 * 2 * Math.PI; await walk(g.cu + Math.cos(a) * .55, g.cv + Math.sin(a) * .55, 5000); } };
+      const out = { y0: L.y0 }; await walk(g.sf - .4, 2.6); await walk(g.sf - .25, .5); await walk(g.sf + .3, .5); out.onStair = L.on;
+      await round(1, 1); await walk(g.sf - .35, .5); await wait(600); out.up = { k: L.k, on: L.on, dy: (__dbg.you().y - L.y0) / MW };
+      await walk(g.x0s + g.run / 2, g.GV + 1.2, 4000); out.railV = lc()[1];
+      const th = n => __dbg.UI.things.find(t => t.name === LIB.data.cases[n].name + ': LOW SHELF'); th(13).act(); out.refused = document.querySelector("#libv").hidden; th(9).act(); await wait(300); out.opened = !document.querySelector('#libv').hidden; LIB.closeLook();
+      await walk(g.sf - .4, 2.6); await walk(g.sf - .25, .5); await walk(g.sf + .3, .5); await round(-1, 1); await walk(g.sf - .35, .5); await wait(600); out.down = { k: L.k, on: L.on, dy: (__dbg.you().y - L.y0) / MW };
+      await walk(g.sf + .3, .5); await round(-1, .5); out.floorWall = L.s; await walk(g.sf - .35, .5); return out; });
+    ok(sk.onStair && sk.up.k === 1 && !sk.up.on && Math.abs(sk.up.dy - 2.45) < .15, 'the spiral stair: one turn round climbs to the first gallery (' + JSON.stringify(sk.up) + ')');
+    ok(sk.railV < 1.3, 'the gallery\'s rail holds you on it (' + sk.railV.toFixed(2) + ')');
+    ok(sk.refused && sk.opened, 'on a gallery you look closer at its own floor\'s cases, not another floor\'s');
+    ok(sk.down.k === 0 && Math.abs(sk.down.dy) < .1 && sk.floorWall < .3, 'and back down to the floor; below the first step the stair goes no lower (' + JSON.stringify(sk.down) + ', ' + sk.floorWall + ')');
     const id = await pg.evaluate(() => LIB.data.books[0].id);
     const br = await pg.evaluate(id => { document.querySelector(`#libp .bk[data-b="${id}"]`).click(); document.querySelector('#libp [data-a=bor]').click(); return { d: LIBDBG(), has: FORAGE.has('lb_' + id) }; }, id);
     ok(br.d.borrowed.includes(id) && br.has === 1, 'BORROW puts it in your pack, free (' + id + ')');

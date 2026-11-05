@@ -26,7 +26,49 @@ const WARDROBE=[
  ['feet','cafe-customer-ca7e8e','TALL BOOTS'],['feet','lifeguard-321302','FLIP-FLOPS'],['feet','pool-guest-78b655','SLIDES'],['feet','flower-vendor-bc708b','HUARACHES'],['feet','daimyo-lord-78364a','GETA'],
  ['belt','hiker-visitor-d10aa5','BELT'],['belt','flower-vendor-bc708b','SASH'],['belt','samurai-warrior-f2ebbe','OBI'],['belt','astronaut-scientist-47d733','UTILITY BELT'],
  ['neck','commuter-381e7f','SCARF'],['neck','tapati-dancer-5557aa','PEARLS'],['neck','groundskeeper-3e5578','LANYARD'],['neck','guard-bfa819','WHISTLE'],['neck','ward-nurse-84b61d','FOB WATCH'],['neck','hooded-cultist-8a488f','MANTLE'],
- ['hands','astronaut-explorer-323482','WORK GLOVES'],['hands','referee-9e9e73','WRISTWATCH']];
+ ['hands','astronaut-explorer-323482','WORK GLOVES'],['hands','referee-9e9e73','WRISTWATCH'],
+ // every other garment the cast wears, one each, and the back and both hands (owner, 5 Nov 2026: "lets add all possible clothing from all models")
+ ['face','slot-tourist-08b37d','BLUSH'],['face','la-catrina-b427ca','CALAVERA PAINT'],['face','kid-in-a-black-2e5f87','CAT PAINT'],['face','porter-e4e566','FRECKLES'],
+ ['face','goblin-2461c8','JAW LINE'],['face','samurai-warrior-f2ebbe','MENPO'],['face','dragon-slayer-91ab39','SOOT'],['face','clean-room-technician-da290a','SURGICAL MASK'],
+ ['face','tapati-dancer-5557aa','TAKONA'],['eyes','scuba-diver-bdd1c8','DIVE MASK'],['eyes','kid-in-a-caped-663f11','DOMINO MASK'],['eyes','el-catr-n-be48ea','MONOCLE'],
+ ['eyes','graffiti-artist-2deb3d','RAISED RESPIRATOR'],['hat','armoured-knight-hero-07121f','BASCINET'],['hat','townswoman-5aa87f','BONNET'],['hat','astronaut-engineer-20b738','BUBBLE HELMET'],
+ ['hat','kid-in-a-black-2e5f87','CAT EARS'],['hat','clean-room-technician-da290a','DIVE HOOD'],['hat','aircrew-pilot-e6b732','FLIGHT CAP'],['hat','gridiron-player-9d4168','FOOTBALL HELMET'],
+ ['hat','tapati-dancer-5557aa','HEADDRESS'],['hat','standing-worker-on-a-8a0f9a','HEADSET'],['hat','civic-security-officer-30b6fb','HELMET'],['hat','ashigaru-foot-soldier-806707','JINGASA'],
+ ['hat','samurai-warrior-f2ebbe','KABUTO'],['hat','diner-waitress-60f6a1','PAPER CAP'],['hat','kid-in-a-pumpkin-169f79','PUMPKIN CAP'],['hat','city-commuter-52a53f','RAIN HOOD'],
+ ['hat','service-robot-93f82e','SENSOR HEAD'],['hat','graduate-in-gown-c72050','SURGICAL CAP'],['hat','carving-chef-102bf5','TOQUE'],['hat','astronaut-scientist-47d733','WINDOW HELMET'],
+ ['top','astronaut-engineer-20b738','EVA SUIT'],['top','shuttle-pilot-067166','FLIGHT SUIT'],['top','crane-banksman-3994e0','HI VIS SUIT'],['top','kid-in-a-skeleton-6bb49d','SKELETON SUIT'],
+ ['top','fisherman-in-waders-6dc25e','WORKSHIRT'],['coat','ashigaru-foot-soldier-806707','DO MARU'],['coat','school-student-385134','JUMPER'],['coat','armoured-knight-hero-07121f','PLATE ARMOUR'],
+ ['coat','kid-in-a-pumpkin-169f79','PUMPKIN COSTUME'],['coat','village-guard-5f0f6f','TABARD'],['coat','guard-bfa819','UNIFORM TUNIC'],['bottom','kid-witch-01c770','TIGHTS'],
+ ['bottom','fisherman-in-waders-6dc25e','WADERS'],['feet','scuba-diver-bdd1c8','FINS'],['feet','ashigaru-foot-soldier-806707','WARAJI'],['belt','highway-patrol-officer-e81282','DUTY BELT'],
+ ['belt','kid-in-a-black-2e5f87','TAIL'],['belt','astronaut-engineer-20b738','TOOL HARNESS'],['neck','family-road-tripper-247570','CAMERA'],['neck','huaso-c4847f','CHAMANTO'],
+ ['neck','casino-security-officer-adca27','EAR PIECE'],['neck','dragon-slayer-91ab39','FUR CLOAK'],['neck','kid-in-a-caped-663f11','HERO CAPE'],['neck','graffiti-artist-2deb3d','HOOP EARRINGS'],
+ ['neck','daimyo-lord-78364a','JINBAORI'],['neck','buddhist-monk-39f498','KESA'],['neck','farmer-363820','MINO'],['neck','grandmother-in-a-rebozo-4d5190','REBOZO'],
+ ['neck','groundworker-083f5c','RESPIRATOR'],['neck','mountaineer-13df29','ROPE COIL'],['neck','crossing-keeper-e13207','SHAWL'],['neck','village-guard-5f0f6f','SPAULDERS'],
+ ['neck','doctor-d49de0','STETHOSCOPE'],['neck','high-roller-9d0aa1','STOLE'],['neck','kid-witch-01c770','WITCH CAPE'],['hands','high-roller-9d0aa1','BANGLES'],
+ ['hands','patient-in-gown-fdab75','IV LINE'],['hands','buddhist-monk-39f498','MALA'],['hands','bmx-rider-91f1b0','SKATE PADS'],['hands','shambling-ghoul-256f2f','TATTOOS'],
+ ['back','scuba-diver-bdd1c8','AIR TANK'],['back','backpacker-f56207','BACKPACK'],['back','chinchinero-2cc296','BASS DRUM'],['back','shuttle-pilot-067166','FLIGHT RIG'],
+ ['back','groundskeeper-3e5578','LEAF BLOWER'],['back','astronaut-engineer-20b738','LIFE SUPPORT'],['back','delivery-courier-327e30','PACK'],['back','samurai-warrior-f2ebbe','SASHIMONO'],
+ ['back','cafe-customer-ca7e8e','SHOULDER BAG'],['back','skier-e7ad44','SKIS'],['back','teen-zombie-b5bb27','SLUNG SACK'],['back','holidaymaker-in-a-sun-2ba5e5','TOTE BAG'],
+ ['righthand','groundskeeper-3e5578','BLOWER WAND'],['righthand','swimmer-in-a-wetsuit-9fca8f','BODYBOARD'],['righthand','commuter-381e7f','BRIEFCASE'],['righthand','kid-witch-01c770','BROOM'],
+ ['righthand','el-catr-n-be48ea','CANE'],['righthand','team-mascot-abf426','CARRIED MASCOT HEAD'],['righthand','carving-chef-102bf5','CARVING KNIFE'],['righthand','diner-waitress-60f6a1','COFFEE POT'],
+ ['righthand','merchant-6f606b','COIN POUCH'],['righthand','shunter-f25d24','COUPLING SHACKLE'],['righthand','chinchinero-2cc296','DRUMSTICK'],['righthand','la-catrina-b427ca','FAN'],
+ ['righthand','firefighter-b13b36','FIRE AXE'],['righthand','fisherman-in-waders-6dc25e','FISHING ROD'],['righthand','parent-chaperone-79e535','FLASHLIGHT'],['righthand','dragon-slayer-91ab39','GLAIVE'],
+ ['righthand','porter-e4e566','HAND TRUCK'],['righthand','china-cueca-dancer-c1707a','HANDKERCHIEF'],['righthand','hanga-roa-fisherman-e56812','HANDLINE REEL'],['righthand','standing-worker-on-a-8a0f9a','HANDSET'],
+ ['righthand','motel-clerk-950c39','KEY FOB'],['righthand','platelayer-47dbe6','KEYING HAMMER'],['righthand','kite-kid-0a7d70','KITE SPOOL'],['righthand','trainspotter-ffd141','MARKER PEN'],
+ ['righthand','armoured-knight-hero-07121f','MARSHALLING BATON'],['righthand','campfire-parent-b1c0d5','MARSHMALLOW STICK'],['righthand','buddhist-monk-39f498','MONK STAFF'],['righthand','engine-driver-1ba1e2','OIL FEEDER'],
+ ['righthand','astronaut-engineer-20b738','OPEN SPANNER'],['righthand','referee-9e9e73','ORDER PAD'],['righthand','student-in-a-hoodie-7c8223','PAPER CUP'],['righthand','railway-carter-971897','PARCEL'],
+ ['righthand','prospector-69a481','PICK'],['righthand','kid-in-a-black-2e5f87','PILLOWCASE'],['righthand','bench-researcher-d0f1b9','PIPETTE'],['righthand','station-master-1d6a0a','POCKET WATCH'],
+ ['righthand','cheerleader-90875e','POM POM'],['righthand','village-gardener-9f7af6','PRODUCE BASKET'],['righthand','kid-in-a-bedsheet-f9c403','PUMPKIN PAIL'],['righthand','crossing-keeper-e13207','ROLLED FLAG'],
+ ['righthand','flight-attendant-befaf4','ROLLER CASE'],['righthand','astronaut-scientist-47d733','SAMPLE TUBE'],['righthand','infantry-rifleman-c1c0a5','SERVICE RIFLE'],['righthand','street-vendor-139de3','SERVING TONGS'],
+ ['righthand','guard-bfa819','SIGNAL FLAG'],['righthand','street-skater-4ee28b','SKATEBOARD'],['righthand','graffiti-artist-2deb3d','SPRAY CAN'],['righthand','field-medic-fd8919','STRETCHER'],
+ ['righthand','astronaut-explorer-323482','SURVEY SCANNER'],['righthand','base-commander-0ec028','TABLET'],['righthand','surveyor-82e5c7','TOTAL STATION'],['righthand','tour-guide-1b0428','TOUR FLAG'],
+ ['righthand','hiker-3d1a41','TREKKING POLE'],['righthand','ward-nurse-84b61d','TROLLEY'],['lefthand','squad-officer-e5c52b','BINOCULARS'],['lefthand','preacher-a49199','BOOK'],
+ ['lefthand','skate-filmer-b9d393','CAMCORDER'],['lefthand','neighbour-handing-out-candy-2c1159','CANDY BOWL'],['lefthand','holidaymaker-in-a-sun-2ba5e5','CARRIED SANDALS'],['lefthand','chinchinero-2cc296','DRUMSTICK'],
+ ['lefthand','signalman-c561d7','DUSTER'],['lefthand','shuttle-pilot-067166','FLIGHT HELMET'],['lefthand','village-gardener-9f7af6','GARDEN TROWEL'],['lefthand','parrilla-cook-255918','GRILL FORK'],
+ ['lefthand','guard-bfa819','HAND LAMP'],['lefthand','flower-vendor-bc708b','MARIGOLD ARMFUL'],['lefthand','crane-banksman-3994e0','MARSHALLING BATON'],['lefthand','lounge-crooner-ad77ec','MICROPHONE'],
+ ['lefthand','trainspotter-ffd141','NOTEBOOK'],['lefthand','commuter-381e7f','PAPER CUP'],['lefthand','kid-witch-01c770','PILLOWCASE'],['lefthand','construction-worker-c1ad8c','PLAN ROLL'],
+ ['lefthand','cheerleader-90875e','POM POM'],['lefthand','fireman-96bf23','SHOVEL'],['lefthand','senior-scientist-631736','TABLET'],['lefthand','bench-researcher-d0f1b9','TEST TUBE'],
+ ['lefthand','delivery-courier-327e30','TOOL CASE'],['lefthand','el-catr-n-be48ea','VELADORA']];
 // Polyfork's own body regions (its culled()): which covers hide which part of the body
 const REGIONS=[['trunk',['trunk','waist']],['pelvis',['waist','seat']],['briefs',['briefs']],['legs',['legs']],['feet',['feet']],['arms',['arms','hands']],['forearm',['upperArms','hands']],['upperArm',['upperArms','armCut']],['ears',['ears']],['eyes',['eyes']]];
 
@@ -56,7 +98,7 @@ function armsDown(g){ g.updateMatrixWorld(true); const done=new Set();
 function make(id,M,o,wear,force){ const P=params(id), keys=Object.keys(M.palette||{}), ZC=zoneCols(keys), opts={...o}, base={...o};
   keys.forEach((k,i)=>opts[k]='#'+[ZC[i][0],ZC[i][1],0].map(x=>x.toString(16).padStart(2,'0')).join(''));
   if(P.expression||M.params&&M.params.expression){ opts.expression=base.expression='neutral'; }
-  const run=q=>{ let seen=null; globalThis.__pfHook=wear?((f,c)=>f({...c,wear})):null; globalThis.__pfForce=force||null; globalThis.__pfSeen=w=>{ if(w&&w.covers)seen=[...w.covers].sort(); };
+  const run=q=>{ let seen=null; globalThis.__pfHook=wear?((f,c)=>f({...c,age:'adult',species:'human',wear})):null;   // (a kid's, an old one's or a goblin's garment made for the grown body) globalThis.__pfForce=force||null; globalThis.__pfSeen=w=>{ if(w&&w.covers)seen=[...w.covers].sort(); };
     const g=M.createAsset(q); globalThis.__pfHook=globalThis.__pfForce=globalThis.__pfSeen=null; armsDown(g); return {g,seen}; };
   const {g,seen}=run(opts), real=run(base).g;   // (real: the same build in its own colours, for the parts no palette key paints)
   const ref=ZC.map(([r,gg])=>[lin(r),lin(gg)]), pal=keys.map(k=>hex(M.palette[k]));

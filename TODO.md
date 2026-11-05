@@ -210,7 +210,8 @@ One pass, one pull request.
   - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
     town mail and its carrier, the newsstand, the Market BBS and the bodega drone that delivers its orders, the daily requests, the town
     staff's duties, Summon.
-  - The characters who stay stand at their own spots all day (the teachers at theirs). The owner's letters from the tenants panel stay.
+  - The Market BBS and the bodega drone that delivers its orders stay (owner, 5 Nov). The owner's letters from the tenants panel stay.
+  - Owner, 5 Nov: "i dont want anyone walking around town. only characters in game now are charactes who stay put to buysellteach".
   - Reuse the existing put-away list (`AWAY` in 006-map-pre, `?bring=`) for every archive, not a second system.
 
 - [ ] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.

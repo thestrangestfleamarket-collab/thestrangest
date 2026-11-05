@@ -7,23 +7,23 @@ const BATCH=window.BATCH={items:[],tag:null};
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
-BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
-  for(const o of it)if(o.cv.width+2>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');
+BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048, P=4;   // P: each picture's border of its own edge pixels, so its smaller copies (seen far) keep its colours
+  for(const o of it)if(o.cv.width+2*P>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');
   const MAXH=BATCH.MAXH||8192, KS={}; it.forEach((o,i)=>(KS[o.kind]||(KS[o.kind]=[])).push(i)); let x=0, y=0, sh=0, pg=0; const PH=[];
-  const fit=(L,x,y,sh)=>{ for(const i of L){ const w=it[i].cv.width+2, h=it[i].cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH)return false; x+=w; sh=Math.max(sh,h); } return true; };
+  const fit=(L,x,y,sh)=>{ for(const i of L){ const w=it[i].cv.width+2*P, h=it[i].cv.height+2*P; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH)return false; x+=w; sh=Math.max(sh,h); } return true; };
   for(const k in KS){ const L=KS[k].sort((a,b)=>it[b].cv.height-it[a].cv.height); if(y+sh>0&&!fit(L,x,y,sh)&&fit(L,0,0,0)){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; }
-    for(const i of L){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH&&y>0){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; } o.ax=x; o.ay=y; o.pg=pg; x+=w; sh=Math.max(sh,h); } }
+    for(const i of L){ const o=it[i], w=o.cv.width+2*P, h=o.cv.height+2*P; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH&&y>0){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; } o.ax=x; o.ay=y; o.pg=pg; x+=w; sh=Math.max(sh,h); } }
   PH[pg]=y+sh; let AHs=[];
   for(let p=0;p<=pg;p++){ const ip=it.filter(o=>o.pg===p); if(!ip.length)continue;
   const AH=PH[p], atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const AD=new ImageData(AW,AH); AHs.push(AH);
   const anyE=ip.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, ED=anyE?new ImageData(AW,AH):null; if(eat){ eat.width=AW; eat.height=AH; for(let q=3;q<ED.data.length;q+=4)ED.data[q]=255; }
   const px=cv=>cv instanceof ImageData?cv.data:cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;
   const put=(D,cv,ax,ay)=>{ const w=cv.width, h=cv.height, s=px(cv), A=D.data, ln=(r,c)=>((ay+r)*AW+ax+c)*4;
-    for(let r=0;r<h;r++){ const row=s.subarray(r*w*4,(r+1)*w*4); A.set(row,ln(r+1,1)); if(r===0)A.set(row,ln(0,1)); if(r===h-1)A.set(row,ln(h+1,1));
-      A.set(s.subarray(r*w*4,r*w*4+4),ln(r+1,0)); A.set(s.subarray((r+1)*w*4-4,(r+1)*w*4),ln(r+1,w+1)); } };
+    for(let r=-P;r<h+P;r++){ const sr=Math.min(h-1,Math.max(0,r)), at=ln(r+P,P), L=s.subarray(sr*w*4,sr*w*4+4), R=s.subarray((sr+1)*w*4-4,(sr+1)*w*4); A.set(s.subarray(sr*w*4,(sr+1)*w*4),at);
+      for(let c=1;c<=P;c++){ A.set(L,at-c*4); A.set(R,at+(w-1+c)*4); } } };
   for(const o of ip){ put(AD,o.cv,o.ax,o.ay); if(o.ecv)put(ED,o.ecv,o.ax,o.ay); }
   atlas.getContext('2d').putImageData(AD,0,0); if(eat)eat.getContext('2d').putImageData(ED,0,0);
-  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true; t.colorSpace=THREE.SRGBColorSpace; return t; };   // chunky up close; far, a smaller copy instead of a crawl of picked pixels
   const map=tex(atlas), emap=eat?tex(eat):null;
   const kinds={}; for(const o of ip)(kinds[o.kind]||(kinds[o.kind]=[])).push(o);
   // (BATCH.tile: a kind's faces cut by map tile, a mesh each, so the far ones go unseen and undrawn; opted into by a queue's tile)
@@ -31,7 +31,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
     for(const o of kinds[k]){ const q=o.pos, cx=(q[0]+q[3]+q[6]+q[9]+q[12]+q[15])/6, cz=(q[2]+q[5]+q[8]+q[11]+q[14]+q[17])/6, t=Math.floor(cx/BATCH.tile)+','+Math.floor(cz/BATCH.tile); (by[t]||(by[t]=[])).push(o); }
     const ts=Object.keys(by); for(const t of ts)parts[ts.length>1?k+'~t'+t:k]=[k,by[t]]; }
   for(const pk in parts){ const [k,L]=parts[pk], P=new Float32Array(L.length*18), U=new Float32Array(L.length*12);
-    L.forEach((o,n)=>{ P.set(o.pos,n*18); const w=o.cv.width, h=o.cv.height; for(let q=0;q<6;q++){ const u=o.uv[q*2], v=o.uv[q*2+1]; U[n*12+q*2]=(o.ax+1+u*w)/AW; U[n*12+q*2+1]=1-(o.ay+1+(1-v)*h)/AH; } });
+    L.forEach((o,n)=>{ P.set(o.pos,n*18); const w=o.cv.width, h=o.cv.height; for(let q=0;q<6;q++){ const u=o.uv[q*2], v=o.uv[q*2+1]; U[n*12+q*2]=(o.ax+P+u*w)/AW; U[n*12+q*2+1]=1-(o.ay+P+(1-v)*h)/AH; } });
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.BufferAttribute(U,2)); geo.computeVertexNormals();
     geo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(L.length*18).fill(1),3)); geo.setAttribute('aOp',new THREE.BufferAttribute(new Float32Array(L.length*6).fill(1),1));
     const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?pk+'~'+p:pk]=me; } }

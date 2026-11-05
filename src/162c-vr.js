@@ -43,7 +43,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const shim=on=>{ beat=on; if(!on){ window.requestAnimationFrame=RAF; window.cancelAnimationFrame=CAF; for(const [id,q] of Q)RAF.call(window,t=>{ if(Q.delete(id))q.f(t); }); return; } nat=performance.now(); RAF.call(window,pulse);
     window.requestAnimationFrame=f=>{ const id=++qid; Q.set(id,{f,n:RAF.call(window,t=>{ if(Q.delete(id))f(t); })}); return id; };
     window.cancelAnimationFrame=id=>{ const q=Q.get(id); if(q){ Q.delete(id); CAF.call(window,q.n); } else CAF.call(window,id); }; };
-  const flush=t=>{ if(!Q.size||performance.now()-nat<250)return; const L=[...Q.values()]; Q.clear(); for(const q of L){ CAF.call(window,q.n); try{ q.f(t); }catch(e){ console.warn('VR: a frame callback',e); } } };
+  const flush=t=>{ if(!Q.size||performance.now()-nat<250)return; nat=performance.now(); const L=[...Q.values()]; Q.clear(); for(const q of L){ CAF.call(window,q.n); try{ q.f(t); }catch(e){ console.warn('VR: a frame callback',e); } } };   // (nat first: a callback that is itself a headset frame must not flush again inside it)
 
   const [pcv,ptex]=label(2,2);
   const panel=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial(flat({map:ptex,transparent:true,side:THREE.DoubleSide}))); panel.visible=false; TRK.add(panel);

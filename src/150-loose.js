@@ -194,7 +194,7 @@ import {BVH} from './137-bvh.js';
   const itemOf=(h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
     if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
     const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of A){ if(it.o!==o||it.dm)continue; const t=at(it), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
-  GPH.pick=ray=>{ '@later'; if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.hang||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
+  GPH.pick=ray=>{ if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.hang||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
       const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
       return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-SHARED.py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);

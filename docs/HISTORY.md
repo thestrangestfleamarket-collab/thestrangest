@@ -5498,3 +5498,7 @@ Owner: "i want to create a playable avatar based on the polyfork base character"
 ## 5 Nov 2026: no shimmer from a distance
 
 Owner: "when im walking from a distance the pixels ... constantly flickering". The overhead view moves in whole pixels of the picture (the PS2 filter's chunky ones when it is on).
+
+## 5 Nov 2026: a soft far edge
+
+Owner: "some things are still rendering even though super far away"; "some sort of glitch repeating happens at the top of screen when i have distance and haze on"; of the options, "Longer fade". Everything fades into the sky over the last third of the draw distance, into a smooth sky colour, with no copied cloud scraps.

@@ -1,5 +1,5 @@
 {
- "note": "One record per file in data/books/. Covers resized to 300 px wide (JPEG q80); spines to 50 px wide.",
+ "note": "One record per file in data/books/. Covers resized to 300 px wide (JPEG q80); spines to 50 px wide. Owner, 5 Nov 2026: public domain only; covers from dealers, auction houses, fan sites or with later artists' jackets were removed (those books get a drawn binding).",
  "files": [
   {
    "file": "data/books/covers/pride.jpg",
@@ -9,33 +9,6 @@
    "licence": "Public domain (work published 1813, pre-1931)",
    "licence_url": "https://archive.org/details/prideprejudiceno00aust_1",
    "edition": "1st ed., T. Egerton, London, 1813 (vol. 1, contemporary boards)"
-  },
-  {
-   "file": "data/books/covers/frankenstein.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AChristie%27s_auction_scan_of_Frankenstein_1818.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/5/53/Christie%27s_auction_scan_of_Frankenstein_1818.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Mary Shelley; Cropped and slightly rotated from https://www.christies.com/lot/lot-6332204",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AChristie%27s_auction_scan_of_Frankenstein_1818.jpg",
-   "edition": "1st ed., Lackington, Hughes, Harding, Mavor & Jones, London, 1818 (title page of vol. 1; no binding scan found)"
-  },
-  {
-   "file": "data/books/covers/alice.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AAlice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Alice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Lewis Carroll; https://alice.fandom.com/wiki/Alice%27s_Adventures_in_Wonderland?file=Alice_in_Wonderland.jpg http://web.archive.org/web/20130205073644/http://unews.utah.edu/news_releases/lewis-carrolls-childrens-classics-acquired-by-marriott-library/",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AAlice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg",
-   "edition": "1st ed., Macmillan & Co., London, 1865 (red cloth with gilt)"
-  },
-  {
-   "file": "data/books/covers/dracula.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3ADracula-First-Edition-1897.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Dracula-First-Edition-1897.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "British Library Board; https://www.apollo-magazine.com/content/uploads/2014/10/Dracula-%E2%80%93-First-Edition-1897.-Photography-c-British-Library-Board.jpg",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3ADracula-First-Edition-1897.jpg",
-   "edition": "1st ed., Archibald Constable & Co., London, 1897 (yellow cloth)"
   },
   {
    "file": "data/books/covers/holmes.jpg",
@@ -54,24 +27,6 @@
    "licence": "Public domain (as marked on Wikimedia Commons)",
    "licence_url": "https://commons.wikimedia.org/wiki/File%3AMoby-Dick_FE_title_page.jpg",
    "edition": "1st American ed., Harper & Brothers, New York, 1851 (title page; no binding scan found)"
-  },
-  {
-   "file": "data/books/covers/gatsby.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/7/7a/The_Great_Gatsby_Cover_1925_Retouched.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Original cover illustration by Francis Cugat (1893–1981) and published by Charles Scribner's Sons. Digital restoration and enhancement by User:Flask.; Mechanical scan/photocopy of the 1925 original cover",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg",
-   "edition": "1st ed., Charles Scribner's Sons, New York, 1925 (dust jacket by Francis Cugat; digitally restored scan)"
-  },
-  {
-   "file": "data/books/covers/twocities.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3ATales_serial.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Tales_serial.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Chapman &amp; Hall; Christies Auction House",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3ATales_serial.jpg",
-   "edition": "1st ed. in monthly parts, Chapman & Hall, London, 1859 (part wrapper by Phiz)"
   },
   {
    "file": "data/books/covers/dorian.jpg",
@@ -200,15 +155,6 @@
    "edition": "1st English ed., William Heinemann, London, 1895"
   },
   {
-   "file": "data/books/covers/worlds.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_first_edition.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/3/30/The_War_of_the_Worlds_first_edition.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "H. G. Wells; drzeus.best.vhw.net",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_first_edition.jpg",
-   "edition": "1st ed., William Heinemann, London, 1898"
-  },
-  {
    "file": "data/books/covers/leagues.jpg",
    "source": "https://archive.org/details/twentythousandle1875vern",
    "original": "https://archive.org/download/twentythousandle1875vern/page/cover_w800.jpg",
@@ -326,15 +272,6 @@
    "edition": "2nd ed., Richard Bentley, London, 1839 (vol. 1, half-calf; 1st ed. 1838 has no cover scan)"
   },
   {
-   "file": "data/books/covers/carol.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3ACharles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Charles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Charles Dickens, Photographer: Heritage Auctions, Inc. Dallas, Texas; http://historical.ha.com/common/view_item.php?Sale_No=683&amp;Lot_No=57424&amp;type=&amp;ic=",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3ACharles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg",
-   "edition": "1st ed., Chapman & Hall, London, 1843 (cinnamon cloth with gilt)"
-  },
-  {
    "file": "data/books/covers/copperfield.jpg",
    "source": "https://commons.wikimedia.org/wiki/File%3ACopperfield_cover_serial.jpg",
    "original": "https://upload.wikimedia.org/wikipedia/commons/5/50/Copperfield_cover_serial.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
@@ -378,15 +315,6 @@
    "licence": "Public domain (work published 1850, pre-1931)",
    "licence_url": "https://archive.org/details/scarletletterrom1850hawt",
    "edition": "2nd ed., Ticknor, Reed & Fields, Boston, 1850 (same year as the 1st)"
-  },
-  {
-   "file": "data/books/covers/callwild.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AJackLondoncallwild.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/2/26/JackLondoncallwild.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "The novel is by Jack London. According to web sources, the cover art seems to be by Paul Bransom (1885-1979) or possibly Charles Bull (1874-1932); Huntington.org",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJackLondoncallwild.jpg",
-   "edition": "1st ed., Macmillan Co., New York, 1903"
   },
   {
    "file": "data/books/covers/whitefang.jpg",
@@ -533,15 +461,6 @@
    "edition": "1st ed., Frederick A. Stokes Co., New York, 1911 (Houghton Library copy)"
   },
   {
-   "file": "data/books/covers/anne.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AMontgomery_Anne_of_Green_Gables.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Montgomery_Anne_of_Green_Gables.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "George Fort Gibbs (1870–1942) (Note: M. A. &amp; W. A. J. Claus did not illustrate the cover); https://books0977.tumblr.com/post/31686270543/anne-of-green-gables-lucy-maud-montgomery",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMontgomery_Anne_of_Green_Gables.jpg",
-   "edition": "1st ed., L. C. Page & Co., Boston, 1908"
-  },
-  {
    "file": "data/books/covers/blackbeauty.jpg",
    "source": "https://commons.wikimedia.org/wiki/File%3ABlackBeautyCoverFirstEd1877.jpeg",
    "original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/BlackBeautyCoverFirstEd1877.jpeg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
@@ -558,15 +477,6 @@
    "licence": "Public domain (as marked on Wikimedia Commons)",
    "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Wind_in_the_Willows_cover.jpg",
    "edition": "1st ed., Methuen & Co., London, 1908"
-  },
-  {
-   "file": "data/books/covers/pooh.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AWinnie-the-Pooh_%28book%29.png",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Winnie-the-Pooh_%28book%29.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "w:A. A. Milne, illustrated by w:E. H. Shepard, published by w:Methuen &amp; Co. Ltd.; Original: File:WinnieThePooh.JPG",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AWinnie-the-Pooh_%28book%29.png",
-   "edition": "1st ed., Methuen, London, 1926"
   },
   {
    "file": "data/books/covers/pinocchio.jpg",
@@ -668,33 +578,6 @@
    "edition": "1st ed., Shakespeare and Company, Paris, 1922 (blue wrappers)"
   },
   {
-   "file": "data/books/covers/dalloway.jpg",
-   "source": "https://en.wikipedia.org/wiki/File%3AMrs._Dalloway_cover.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/en/6/67/Mrs._Dalloway_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "see source page",
-   "licence": "PD-US (en.wikipedia local file)",
-   "licence_url": "https://en.wikipedia.org/wiki/File%3AMrs._Dalloway_cover.jpg",
-   "edition": "1st ed., Hogarth Press, London, 1925 (dust jacket by Vanessa Bell)"
-  },
-  {
-   "file": "data/books/covers/sunrises.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Sun_Also_Rises_%281st_ed._cover%29.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/8/8b/The_Sun_Also_Rises_%281st_ed._cover%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Cleo Damianakes; Heritage Auctions. Cropped by uploader.",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Sun_Also_Rises_%281st_ed._cover%29.jpg",
-   "edition": "1st ed., Charles Scribner's Sons, New York, 1926 (dust jacket)"
-  },
-  {
-   "file": "data/books/covers/ackroyd.jpg",
-   "source": "https://en.wikipedia.org/wiki/File%3AThe_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/en/5/57/The_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "see source page",
-   "licence": "PD-US (en.wikipedia local file)",
-   "licence_url": "https://en.wikipedia.org/wiki/File%3AThe_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg",
-   "edition": "1st ed., William Collins, London, 1926 (dust jacket)"
-  },
-  {
    "file": "data/books/covers/styles.jpg",
    "source": "https://commons.wikimedia.org/wiki/File%3AAmerican_cover_of_%C2%ABThe_Mysterious_Affair_at_Styles%C2%BB.png",
    "original": "https://upload.wikimedia.org/wikipedia/commons/1/1b/American_cover_of_%C2%ABThe_Mysterious_Affair_at_Styles%C2%BB.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
@@ -722,15 +605,6 @@
    "edition": "1st ed., D. Appleton & Co., New York, 1920 (dust jacket)"
   },
   {
-   "file": "data/books/covers/ethan.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AEthan_Frome_first_edition_cover.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Ethan_Frome_first_edition_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Dargate auctioneers, book by Edith Wharton (1862-1937); http://www.dargate.com/cat/246_auction/246_images/246catalog.htm Lot 3080 (direct image)",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AEthan_Frome_first_edition_cover.jpg",
-   "edition": "1st ed., Charles Scribner's Sons, New York, 1911"
-  },
-  {
    "file": "data/books/covers/wallpaper.jpg",
    "source": "https://commons.wikimedia.org/wiki/File%3AThe_Yellow_Wall_Paper_pg_1.jpg",
    "original": "https://upload.wikimedia.org/wikipedia/commons/4/40/The_Yellow_Wall_Paper_pg_1.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
@@ -738,15 +612,6 @@
    "licence": "Public domain (as marked on Wikimedia Commons)",
    "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Yellow_Wall_Paper_pg_1.jpg",
    "edition": "Small, Maynard & Co., Boston, 1901 (cover; 1st book ed. 1899, 1st publ. New England Magazine, 1892)"
-  },
-  {
-   "file": "data/books/covers/awakening.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Awakening_%28Chopin_novel%29_cover.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/d/df/The_Awakening_%28Chopin_novel%29_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "https://pinterest.com/pin/328129522827711453/",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Awakening_%28Chopin_novel%29_cover.jpg",
-   "edition": "1st ed., Herbert S. Stone & Co., Chicago, 1899"
   },
   {
    "file": "data/books/covers/middlemarch.jpg",
@@ -821,24 +686,6 @@
    "edition": "1st ed., John Murray, London, 1859 (green cloth)"
   },
   {
-   "file": "data/books/covers/invisible.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AWells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Wells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Unknown authorUnknown author; https://www.abebooks.co.uk/servlet/BookDetailsPL?bi=30289720550",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AWells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg",
-   "edition": "1st ed., C. Arthur Pearson, London, 1897"
-  },
-  {
-   "file": "data/books/covers/moreau.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AIslandOfDrMoreau.JPG",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/7/73/IslandOfDrMoreau.JPG?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Unknown authorUnknown author; Here",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AIslandOfDrMoreau.JPG",
-   "edition": "1st ed., William Heinemann, London, 1896"
-  },
-  {
    "file": "data/books/covers/phantom.jpg",
    "source": "https://archive.org/details/phantomofopera00lero",
    "original": "https://archive.org/download/phantomofopera00lero/page/cover_w800.jpg",
@@ -900,15 +747,6 @@
    "licence": "Public domain (work published 1898, pre-1931)",
    "licence_url": "https://archive.org/details/cu31924105726255",
    "edition": "1st ed. ('The Two Magics'), Macmillan Co., New York, 1898"
-  },
-  {
-   "file": "data/books/covers/farewell.jpg",
-   "source": "https://commons.wikimedia.org/wiki/File%3AA_Farewell_to_Arms_%281929%29_cover.jpg",
-   "original": "https://upload.wikimedia.org/wikipedia/commons/3/36/A_Farewell_to_Arms_%281929%29_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
-   "credit": "Cleo Damianakes; HA.com",
-   "licence": "Public domain (as marked on Wikimedia Commons)",
-   "licence_url": "https://commons.wikimedia.org/wiki/File%3AA_Farewell_to_Arms_%281929%29_cover.jpg",
-   "edition": "1st ed., Charles Scribner's Sons, New York, 1929 (dust jacket by Cleonike Damianakes)"
   },
   {
    "file": "data/books/covers/kinginyellow.jpg",

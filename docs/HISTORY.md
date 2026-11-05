@@ -5438,3 +5438,11 @@ Owner: "lets build out an amusement park, rollercoasters, rides, etc."; of the s
 ## 4 Nov 2026: the air, from Nevaland
 
 Owner, of nevaland.day ("what can we learn"; of the five things offered: "lets take 1-5"): the distance fog gets the air Nevaland draws: a thin haze everywhere and a ground mist that thins with height, so towers and hill tops stand clear of it; the mist in the horizon's colour greyed, warm toward the sun; the sky's own colour only on a level sightline where the air is nearly opaque, so far buildings never turn into a slab of sky; the land's rim faded into what is seen just above it before the drawing stops, so a section's edge never shows; smooth, or in stepped dithered bands (STEPS). Supersedes 3 Nov's "haze gone for now". ATMOSPHERE's DISTANCE FOG: AIR, MIST, MIST HEIGHT, SUN GLOW, TINT, STEPS, RIM (RESET to the defaults). The fifth, far trees as pictures, already existed as the park's stand-ins (30 Oct); they now hand over across a dithered band instead of a swap. `tests/airshot.cjs`.
+
+## 5 Nov 2026: the archive
+
+Owner, 4–5 Nov ("archive all the characters and remove them 100% from game", "remove 100% from game and archive all locations except", "remove all items except", "remove all Town life", "remove all editors for now", "go with your recommendations"): most of the game goes to `archive/` (never built), done fast ("get done fast and dirty"). Rule: nothing archived loads; one thing comes back only when the owner names it. What stays and who teaches what is the 5 Nov archive lines in TODO.md.
+- Characters: archived ones are made hidden and never ticked (`ARCH` in 003b) until their code moves out too.
+- Items: archived ones stay in saves but are never shown or sold (`ARCHI` in 003b).
+- Editors: all removed (the map editor page too); the map edits already published stay (the game still lays them).
+- Trash cans removed; the park has no trees until the owner places some (`?trees=1` shows the old ones); nobody walks the town (`?folk=1` brings the walks back); the cinema, the playhouse and the arcade are free.

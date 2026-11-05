@@ -1,6 +1,5 @@
 // YOUR PHOTOS ON THE WALL: every photo bought from the Newsreel (146m) is a framed print for your apartment — DECORATE shows it as YOURS; it hangs on the wall you point at.
 import {THREE} from './003-shx.js';
-import {PHOTOS} from './146m-newsreel.js';
 import {ROOMK} from './150a-bedroom.js';
 { const tex=src=>{ const t=new THREE.TextureLoader().load(src); t.colorSpace=THREE.SRGBColorSpace; return t; };
   const frame=p=>{ const G=new THREE.Group(), wood=new THREE.MeshStandardMaterial({color:0x2a1c14,roughness:.5}), mat=new THREE.MeshStandardMaterial({color:0xece6d8,roughness:.9});

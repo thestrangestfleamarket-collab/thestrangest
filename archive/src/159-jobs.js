@@ -5,7 +5,6 @@ import {scene} from './004-main.js';
 import {MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {CREW} from './111fb-fleamarket.js';
-import {LIVES} from './158-lives.js';
 const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.list,q:[]}; window.JOBS=JOBS;
 { const T=TILE, rnd=Math.random;
   const hsh=s=>{ let h=7; for(const c of s)h=(h*31+c.charCodeAt(0))>>>0; return h; };
@@ -63,4 +62,3 @@ const JOBS={on:QS.has('jobs')?QS.get('jobs')!=='0':true,list:[],plan:()=>JOBS.li
     for(const J of JOBS.list){ const w=wantOf(J); if(w!==J.goal)act(J,w); else if((J.state==='work'||J.state==='off')&&J.A&&(J.t-=.5)<=0){ J.t=4+rnd()*10; roam(J); } sync(J); } },'159-jobs');
   window.JOBDBG=()=>JOBS.list.map(J=>({key:J.key,who:J.N.name,at:J.job.at,title:J.job.title,hours:J.job.hours.join('-'),out:J.job.r!=null,state:J.state,goal:J.goal,want:wantOf(J),home:J.life?LIVES.homeName(J.key):'',vis:J.N.mode!=='hidden',x:+J.N.st.x.toFixed(1),z:+J.N.st.z.toFixed(1)}));
 }
-export {JOBS};

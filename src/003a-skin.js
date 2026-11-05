@@ -16,4 +16,4 @@ const SKIN=(()=>{ const GC=new WeakMap(), IC=new WeakMap(), CC=new WeakMap();
       for(const bn of Object.keys(C.p))if(root||bn!=='root')tracks.push(new THREE.VectorKeyframeTrack(pn(bn)+'.position',T,F32(BY(C.p,bn))));
       out[name]=new THREE.AnimationClip(name,C.dur,tracks); } return out; };
   return {pts,dec,geom,rig,clips}; })();
-export {B64, BY, F32, I16, SKIN, U16};
+export {B64, F32, I16, SKIN, U16};

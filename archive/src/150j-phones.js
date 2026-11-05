@@ -1,6 +1,5 @@
 // YOUR TELEPHONE: the home telephone bought from the Operator (146y) is a thing for your apartment (DECORATE shows it as YOURS); a click picks it up and dials any shopkeeper (PHONE.dial).
 import {THREE} from './003-shx.js';
-import {PHONE} from './146y-operator.js';
 import {ROOMK} from './150a-bedroom.js';
 { const std=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.45,...o});
   const phone=()=>{ const G=new THREE.Group(), body=std(0x9ac8e8); const b=new THREE.Mesh(new THREE.BoxGeometry(.2,.08,.22),body); b.position.y=.04; G.add(b);

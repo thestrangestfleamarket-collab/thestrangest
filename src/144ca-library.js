@@ -194,33 +194,41 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const VW=document.createElement('div'); VW.id='libv'; VW.hidden=true; VW.style.cssText='position:fixed;inset:0;z-index:22;background:#120c08;touch-action:none';
   document.body.appendChild(VW); const VC=document.createElement('canvas'); VC.style.cssText='position:absolute;inset:0;width:100%;height:100%;cursor:grab'; VW.appendChild(VC);
   const VB=document.createElement('div'); VB.style.cssText='position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;font:11px Silkscreen,monospace;zoom:var(--uiz,1)';
-  VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="x">CLOSE</button>';
+  VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="up">▲ SHELF</button><button class="btn" data-v="down">▼ SHELF</button><button class="btn" data-v="rot">ROTATE</button><button class="btn" data-v="x">CLOSE</button>';
   VW.appendChild(VB); { const st=document.createElement('style'); st.textContent='#libv .btn{font:inherit;padding:6px 10px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libv[hidden]{display:none!important}'; document.head.appendChild(st); }
-  const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[]};
+  const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[],row:null,rot:0};
   let vpend=false; const vdraw=()=>{ if(vpend)return; vpend=true; requestAnimationFrame(()=>{ vpend=false; if(!VW.hidden)vpaint(); }); };   // one redraw a frame: the filter is a pass over every pixel
   const vpaint=()=>{ const C=LIB.data.cases[V.ci], dpr=Math.min(2,window.devicePixelRatio||1), w=VC.clientWidth, h=VC.clientHeight; if(VC.width!==w*dpr||VC.height!==h*dpr){ VC.width=w*dpr; VC.height=h*dpr; }
     const g=VC.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.fillStyle='#2a1810'; g.fillRect(0,0,w,h);
     const k=V.s, X=m=>w/2+V.x+m*k, Y=m=>h/2+V.y-(m-BC.H/2)*k;   // metres to the screen
+    g.save(); g.translate(w/2,h/2); g.rotate(-V.rot*Math.PI/180); g.translate(-w/2,-h/2);   // ROTATE turns the case so the spines read across
     // the wall, the case, its plate, its books
     g.fillStyle='#3a2416'; g.fillRect(X(-BC.W/2-.02),Y(BC.H+.05),(BC.W+.04)*k,(BC.H+.05)*k); g.fillStyle='#1c120c'; g.fillRect(X(-BC.W/2+BC.BW),Y(BC.H-.05),(BC.W-2*BC.BW)*k,(BC.H-.13)*k);
     g.fillStyle='#b8923a'; g.fillRect(X(-.23),Y(BC.H-.014),.46*k,.072*k); g.fillStyle='#2a1a10'; let pf=Math.max(6,.04*k); g.font=`600 ${pf}px Georgia,serif`; const pw_=g.measureText(C.name).width; if(pw_>.42*k){ pf*=.42*k/pw_; g.font=`600 ${pf}px Georgia,serif`; } g.textAlign='center'; g.textBaseline='middle'; g.fillText(C.name,X(0),Y(BC.H-.05)); g.textAlign='left';
     V.hit=[]; V.rows.forEach((row,r)=>{ g.fillStyle='#5a3a22'; g.fillRect(X(-BC.W/2+BC.BW),Y(BC.SH[r]),(BC.W-2*BC.BW)*k,Math.max(2,BC.BW*k));
       for(const q of row){ const x=X(q.x-q.th/2), y=Y(BC.SH[r]+q.h), bw=q.th*k, bh=q.h*k; paintSpine(g,x,y,bw,bh,q.b,spineIm(q.b.id)); V.hit.push([q.b.id,x,y,bw,bh]); } });
+    g.restore();
     if(PS2.on&&PS2.img){ const W_=VC.width, H_=VC.height, im=g.getImageData(0,0,W_,H_); PS2.img(im.data,W_,H_,480); g.putImageData(im,0,0); }   // the game's own look, at MED's 480 lines
-    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle='rgba(236,229,211,.9)'; g.font='12px Silkscreen,monospace'; g.fillText(`${C.name} · CASE ${V.ci+1} OF ${LIB.data.cases.length} · CLICK A BOOK`,16,24); };
-  const vfit=()=>{ V.fit=Math.min(VC.clientWidth/(BC.W+.2),VC.clientHeight/(BC.H+.3))*.92; V.s=V.fit; V.x=0; V.y=0; };
-  const vopen=ci=>{ V.ci=(ci+LIB.data.cases.length)%LIB.data.cases.length; V.rows=LIB.shelfOf(LIB.data.cases[V.ci]); VW.hidden=false; vfit(); vdraw(); };
-  LIB.look=ci=>load().then(()=>vopen(ci)).catch(()=>say('THE SHELF IS TOO DARK TO READ. TRY AGAIN.','#c8a090')); LIB.closeLook=()=>{ VW.hidden=true; };
+    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle='rgba(236,229,211,.9)'; g.font='12px Silkscreen,monospace'; g.fillText(`${C.name} · CASE ${V.ci+1} OF ${LIB.data.cases.length}${V.row!=null?' · SHELF '+(4-V.row)+' FROM THE TOP':''} · CLICK A BOOK`,16,24); };
+  const rowTop=r=>r<3?BC.SH[r+1]:BC.H-.05;
+  const vfit=()=>{ const a=V.rot*Math.PI/180, c=Math.abs(Math.cos(a)), sn=Math.abs(Math.sin(a)), cw=VC.clientWidth, ch=VC.clientHeight;
+    const bw=BC.W+.2, bh=V.row==null?BC.H+.3:rowTop(V.row)-BC.SH[V.row]+.12, ew=bw*c+bh*sn, eh=bw*sn+bh*c;   // the box to show, turned
+    V.fit=Math.min(cw/ew,ch/eh)*.92; V.s=V.fit; V.x=0; V.y=V.row==null?0:((BC.SH[V.row]+rowTop(V.row))/2-BC.H/2)*V.s; };
+  const vopen=(ci,row)=>{ if(row!==undefined)V.row=row; V.ci=(ci+LIB.data.cases.length)%LIB.data.cases.length; V.rows=LIB.shelfOf(LIB.data.cases[V.ci]); VW.hidden=false; vfit(); vdraw(); };
+  LIB.look=(ci,row=null)=>load().then(()=>vopen(ci,row)).catch(()=>say('THE SHELF IS TOO DARK TO READ. TRY AGAIN.','#c8a090')); LIB.closeLook=()=>{ VW.hidden=true; };
   const vzoom=(f,cx=VC.clientWidth/2,cy=VC.clientHeight/2)=>{ const s=Math.max(V.fit,Math.min(V.fit*9,V.s*f)), r=s/V.s; V.x=(V.x+VC.clientWidth/2-cx)*r-VC.clientWidth/2+cx; V.y=(V.y+VC.clientHeight/2-cy)*r-VC.clientHeight/2+cy; V.s=s; vdraw(); };
   VC.addEventListener('wheel',e=>{ e.preventDefault(); vzoom(e.deltaY<0?1.15:1/1.15,e.offsetX,e.offsetY); },{passive:false});
   let drag=null, moved=0; const pts=new Map();
+  const unturn=(x,y)=>{ const a=V.rot*Math.PI/180, cx=VC.clientWidth/2, cy=VC.clientHeight/2, dx=x-cx, dy=y-cy; return [cx+dx*Math.cos(a)-dy*Math.sin(a),cy+dx*Math.sin(a)+dy*Math.cos(a)]; };
   VC.addEventListener('pointerdown',e=>{ VC.setPointerCapture(e.pointerId); pts.set(e.pointerId,[e.offsetX,e.offsetY]); drag=[e.offsetX,e.offsetY,V.x,V.y,pts.size===2?Math.hypot(...[...pts.values()].reduce((a,p)=>[a[0]-p[0],a[1]-p[1]],[0,0])):0]; moved=0; VC.style.cursor='grabbing'; });
   VC.addEventListener('pointermove',e=>{ if(!drag)return; const prev=pts.get(e.pointerId); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(pts.size===2){ const [a,b]=[...pts.values()], d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(prev&&drag.pd)vzoom(d/drag.pd,(a[0]+b[0])/2,(a[1]+b[1])/2); drag.pd=d; moved=99; return; }
-    moved+=Math.abs(e.movementX||0)+Math.abs(e.movementY||0); V.x=drag[2]+(e.offsetX-drag[0]); V.y=drag[3]+(e.offsetY-drag[1]); vdraw(); });
-  VC.addEventListener('pointerup',e=>{ pts.delete(e.pointerId); VC.style.cursor='grab'; if(drag&&moved<6&&!pts.size){ const h=V.hit.find(([,x,y,w,hh])=>e.offsetX>=x&&e.offsetX<=x+w&&e.offsetY>=y&&e.offsetY<=y+hh); if(h){ if(SFX)SFX.play('page',{vol:.4}); LIB.open(h[0]); } } if(!pts.size)drag=null; });
-  VB.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b)return; const a=b.dataset.v; if(a==='x')LIB.closeLook(); else if(a==='in')vzoom(1.5); else if(a==='out')vzoom(1/1.5); else if(a==='fit'){ vfit(); vdraw(); } else if(a==='prev')vopen(V.ci-1); else if(a==='next')vopen(V.ci+1); });
+    moved+=Math.abs(e.movementX||0)+Math.abs(e.movementY||0); { const a=V.rot*Math.PI/180, dx=e.offsetX-drag[0], dy=e.offsetY-drag[1]; V.x=drag[2]+dx*Math.cos(a)-dy*Math.sin(a); V.y=drag[3]+dx*Math.sin(a)+dy*Math.cos(a); } vdraw(); });
+  VC.addEventListener('pointerup',e=>{ pts.delete(e.pointerId); VC.style.cursor='grab'; if(drag&&moved<6&&!pts.size){ const [px,py]=unturn(e.offsetX,e.offsetY), h=V.hit.find(([,x,y,w,hh])=>px>=x&&px<=x+w&&py>=y&&py<=y+hh); if(h){ if(SFX)SFX.play('page',{vol:.4}); LIB.open(h[0]); } } if(!pts.size)drag=null; });
+  VB.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b)return; const a=b.dataset.v; if(a==='x')LIB.closeLook(); else if(a==='in')vzoom(1.5); else if(a==='out')vzoom(1/1.5); else if(a==='fit'){ vfit(); vdraw(); } else if(a==='prev')vopen(V.ci-1); else if(a==='next')vopen(V.ci+1); else if(a==='up')vshelf(1); else if(a==='down')vshelf(-1); else if(a==='rot'){ V.rot=(V.rot+45)%135; vfit(); vdraw(); } });
+  const vshelf=d=>{ V.row=V.row==null?(d>0?3:0):Math.max(0,Math.min(3,V.row+d)); vfit(); vdraw(); };   // up and down the same case, a shelf at a time
   for(const ev of ['keydown','keyup'])VW.addEventListener(ev,e=>{ if(ev==='keydown'&&e.key==='Escape')LIB.closeLook(); e.stopPropagation(); });
+  addEventListener('keydown',e=>{ if(VW.hidden||!LIB.data)return; const m={ArrowUp:()=>vshelf(1),ArrowDown:()=>vshelf(-1),ArrowLeft:()=>vopen(V.ci-1),ArrowRight:()=>vopen(V.ci+1)}[e.key]; if(m){ m(); e.preventDefault(); e.stopPropagation(); } },true);
   window.addEventListener('resize',()=>{ if(!VW.hidden){ vfit(); vdraw(); } });
 
   /* ---------- the shop: one cozy room, its walls lined with the sixteen cases (one genre each), the door and window to West St; in the middle only a rug, chairs and lamps; the Professor's counter by the door ---------- */
@@ -240,7 +248,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       const left=Math.ceil((d.cases.length-nb)/2), right=d.cases.length-nb-left; for(let i=0;i<right;i++)slots.push([W-BC.D/2,.75+step*(i+.5),-1,0]); for(let i=0;i<left;i++)slots.push([BC.D/2,.75+step*(i+.5),1,0]); }
     d.cases.forEach((C,i)=>{ const s=slots[i]; if(!s)return; const [u,v,du,dv]=s, M=caseMesh(C), p=F.pw(u,v); M.scale.setScalar(MW); M.position.set(p[0],0,p[1]); M.rotation.y=F.hd(du,dv); A.add(M);
       const ax=Math.abs(du)>0; sol(u-(ax?BC.D/2:BC.W/2),v-(ax?BC.W/2:BC.D/2),u+(ax?BC.D/2:BC.W/2),v+(ax?BC.W/2:BC.D/2));
-      use(C.name+': LOOK CLOSER',u+du*.45,v+dv*.45,.62,2.0,()=>LIB.look(i),1.4); });
+      ['BOTTOM','LOW','HIGH','TOP'].forEach((nm,r)=>{ const hh=rowTop(r)-BC.SH[r], th=use(C.name+': '+nm+' SHELF',u+du*.45,v+dv*.45,.62,hh,()=>LIB.look(i,r),1.4); th.obj.position.y=(BC.SH[r]+hh/2)*MW; th.tall=(BC.SH[r]+hh)*MW; }); });
     // the middle: a rug, two armchairs and a velvet chair round a small table with its lamp, a floor lamp; the window's radiator and curtains; the counter by the door
     put(G,'rug2',W/2,D*.54,1,0,{s:.95,shadow:false}); put(G,'armchair',W*.36,D*.5,1,.2); put(G,'tubchair',W*.64,D*.5,-1,.2); put(G,'tubchair',W/2,D*.7,0,-1);
     put(G,'sidetable',W/2,D*.47,0,1); put(G,'tablelamp',W/2,D*.47,0,1,{h:.51,shadow:false}); put(G,'bookstack',W/2+.08,D*.47+.08,0,1,{h:.51,shadow:false}); put(G,'floorlamp',W*.26,D*.38,1,0); put(G,'blanket',W*.36,D*.5,1,.2,{h:.42,shadow:false});
@@ -276,6 +284,6 @@ const LIB={data:null,max:5}; window.LIB=LIB;
         const put=(k,a,b,h,ry=0)=>{ const g=KIT.decode(Dd[k]); g.computeBoundingBox(); const bb=g.boundingBox, me=new THREE.Mesh(g,KIT.mat), grp=new THREE.Group(); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); me.castShadow=me.receiveShadow=true; grp.add(me);
           const x=d[0]+n[0]*a*MW+tg[0]*b*MW, z=d[1]+n[1]*a*MW+tg[1]*b*MW; grp.scale.setScalar(MW); grp.position.set(x,(SHARED.groundY?SHARED.groundY(x,z):0)+h*MW,z); grp.rotation.y=Math.atan2(n[0],n[1])+ry; G.add(grp); return grp; };
         put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
-  window.LIBDBG=()=>({data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,c:cur.c,chapters:cur.ch.length,paras:cur.P.length,p:(posOf()||{}).p,marks:((posOf()||{}).m||[]).length,set:SET()}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
+  window.LIBDBG=()=>({look:VW.hidden?null:{ci:V.ci,row:V.row,rot:V.rot,s:+V.s.toFixed(1),caseFit:+(Math.min(VC.clientWidth/(BC.W+.2),VC.clientHeight/(BC.H+.3))*.92).toFixed(1)},data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,c:cur.c,chapters:cur.ch.length,paras:cur.P.length,p:(posOf()||{}).p,marks:((posOf()||{}).m||[]).length,set:SET()}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
 }
 export {LIB};

@@ -32,4 +32,3 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     GLBTOONS.list.push(N); GLBTOONS[key]=N; if(CINEMA.toon)CINEMA.toon(key,N); return N; };
   GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)); if(SH&&KIND[SH])go(); else SYS.onStart(go,'084b-npc-glbtoons'); }
-export {GLBTOONS};

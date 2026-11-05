@@ -1,6 +1,6 @@
 // THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay the Fox at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
+import {ARCHI, FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -27,7 +27,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
   // what a shelf holds, by its goods list (SHARED.BOD.GLAY, the goods drawn on it): one line a brand, its kind, its price
   const SHELF={fridge1:'fridge1',fridge2:'fridge2',fridge3:'fridge3',wl1:'aisle1a',wl2:'aisle1b',wr1:'aisle2a',wb3:'aisle2b',wl3:'aisle2a',wb1:'back1',wb2:'back2',wm1:'mid1',win1:'win1',win2:'win2'};
   const linesOf=rows=>{ const out=[], seen=new Set(); for(const [k,,...a] of rows.flat()){ let br=typeof a[a.length-1]==='string'?a[a.length-1]:({goya:'GOYA',vienna:'VIENNA',spam:'SPAM',tide:'TIDE',ajax:'AJAX',pampers:'PAMPERS',koolaid:'KOOL-AID',candle:'7 DIAS',sack:'CAROLINA',platano:'PLATANOS'}[k]||'');
-      const K=kindOf(k,br); if(!K)continue; const key=br+'|'+K[0]; if(seen.has(key))continue; seen.add(key); out.push({brand:br,id:K[0],name:K[1],price:K[2]}); } return out; };
+      const K=kindOf(k,br); if(!K||ARCHI(K[0]))continue; const key=br+'|'+K[0]; if(seen.has(key))continue; seen.add(key); out.push({brand:br,id:K[0],name:K[1],price:K[2]}); } return out; };
   BODEGA.shelf=key=>{ const L=BOD.GLAY&&BOD.GLAY[SHELF[key]]; return L?linesOf(L):[]; };
   BODEGA.counterLines=()=>BOD.GLAY?linesOf([BOD.GLAY.counter]):[];
   const total=()=>{ let t=0; for(const [id,n] of BODEGA.basket)t+=ITEMS.prop(id,'value')*n; return t; }, count=()=>{ let c=0; for(const n of BODEGA.basket.values())c+=n; return c; };

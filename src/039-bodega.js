@@ -1645,7 +1645,7 @@ SHARED.BODB={};
   { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
   const goods=()=>{ '@later'; const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
-      for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;
+      for(const [k,n,...args] of items){ if(k!=='catfood'&&k!=='fishfood')continue; if(last&&last!==k)a+=.04; last=k;   // only the cat's and the fish's food stay (owner, 5 Nov 2026)
         for(let i=0;i<n;i++){ const g=GOOD[k](...args), e=g.parts.map(q=>q.t==='box'?[q.h[0],q.h[1]]:[q.r,q.r]), w=Math.max(...e.map(v=>v[0])), d=Math.max(...e.map(v=>v[1]));
           if(a+2*w>a1-.06)return; const fr=f[0]+f[1]>0?(along?p.x1:p.y1)-.04-d:(along?p.x0:p.y0)+.04+d;
           list.push({g,k,x:along?fr:a+w,y:along?a+w:fr,z:zpx+.05,yaw:yaw+(hash(list.length,k.length,5)-.5)*.12}); a+=2*w+.015; } } };
@@ -1655,9 +1655,9 @@ SHARED.BODB={};
     lay('wl1',[1,0],SZ,GLAY.aisle1a); lay('wl2',[1,0],SZ,GLAY.aisle1b); lay('wr1',[-1,0],SZ,GLAY.aisle2a); lay('wb3',[0,1],SZ,GLAY.aisle2b); lay('wl3',[1,0],SZ,GLAY.aisle2a);
     lay('wb1',[0,1],SZ,GLAY.back1); lay('wb2',[0,1],SZ,GLAY.back2); lay('wm1',[1,0],SZ,GLAY.mid1); lay('win1',[0,1],SZ,GLAY.win1); lay('win2',[0,1],SZ,GLAY.win2);
     { const c=O.counter, F=SHARED.BOD.food, z=30; for(let i=0;i<3;i++)list.push({g:GOOD.fishfood(),k:'fishfood',x:F.x-.08+i*.16*(i%2?1:.5),y:F.y+(i===2?.15:0),z,yaw:0});
-      list.push({g:GOOD.sack(),k:'sack',x:c.x0-.45,y:c.y0+.5,z:0,yaw:.15},{g:GOOD.sack([236,224,200]),k:'sack',x:c.x0-.45,y:c.y0+1.15,z:0,yaw:-.1});
+
       const along=c.y1-c.y0>c.x1-c.x0, cx=(c.x0+c.x1)/2, cy=(c.y0+c.y1)/2; let a=(along?c.y0:c.x0)+.95;
-      for(const [k,n,...args] of GLAY.counter)for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
+      for(const [k,n,...args] of []                 )for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
     const brands=[], bidx=new Map(); for(const it of list)for(const pa of it.g.parts)if(pa.brand){ const bc=pa.bc||GR, key=pa.brand+'|'+bc.join(); if(!bidx.has(key)){ bidx.set(key,brands.length+1); brands.push([pa.brand,bc]); } pa.bi=bidx.get(key); }
     const AW=1024, CW=128, CH=64, COLS=AW/CW, AH=Math.max(64,Math.ceil((brands.length+1)/COLS)*CH), acv=document.createElement('canvas'); acv.width=AW; acv.height=AH; const ag=acv.getContext('2d'); ag.fillStyle='#fff'; ag.fillRect(0,0,AW,AH);
     brands.forEach(([name,bc],i)=>{ const n=i+1, x=(n%COLS)*CW, y=Math.floor(n/COLS)*CH, lum=bc[0]*.3+bc[1]*.59+bc[2]*.11; ag.fillStyle=`rgb(${bc[0]|0},${bc[1]|0},${bc[2]|0})`; ag.fillRect(x,y,CW,CH); ag.fillStyle=lum>150?'rgba(255,255,255,.45)':'rgba(255,255,255,.22)'; ag.fillRect(x+5,y+14,CW-10,36); ag.strokeStyle=lum>150?'rgba(0,0,0,.35)':'rgba(255,255,255,.4)'; ag.lineWidth=2; ag.strokeRect(x+5,y+14,CW-10,36);

@@ -1,4 +1,4 @@
-// THE ART MUSEUM CHECK: node tests/art.cjs dist/market.html. Its lot and door on Market St, nothing hung before you go in; going in, every painting of data/art.json hung with its plaque and its thing, their pictures loaded, one big room a floor, three on each wall; the elevator between the floors (no stairs); one opened full screen, its full-resolution file fetched only then, zoomed, closed; out to the street by its door with nothing of the inside drawn.
+// THE ART MUSEUM CHECK: node tests/art.cjs dist/market.html. Its lot and door on Market St, nothing hung before you go in; going in, every painting of data/art.json hung with its plaque and its thing, their pictures loaded, one big room a floor, three on each wall; the elevator between the floors (no stairs): its doors open when you call it, you walk in, it carries you, you walk out; one opened full screen, its full-resolution file fetched only then, zoomed, closed; out to the street by its door with nothing of the inside drawn.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=art::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -19,15 +19,32 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     return { pics: STORE.art.pics().filter(g => g.children.some(m => m.material && m.material.map && m.material.map.image && m.material.map.image.width > 0)).length, galleries: [...new Set(L.map(p => p.k + ':' + p.g))].sort(), close }; });
   const per = await pg.evaluate(() => { const c = {}; for (const p of STORE.art.lay()) c[p.key + '@' + p.k] = (c[p.key + '@' + p.k] || 0) + 1; return { max: Math.max(...Object.values(c)), walls: Object.keys(c).length, floors: STORE.art.dbg().floors, per: STORE.art.PER }; });
   ok(d2.pics === N && d2.galleries.length === Math.ceil(N / 12) && per.floors === d2.galleries.length && per.max <= per.per && !d2.close, 'every painting has its picture, one big room a floor, three on each wall, as many floors as they need, none closer than 1.7 to the next: ' + JSON.stringify({ ...d2, ...per }));
-  const lv = async (f, ms = 30000) => pg.evaluate(async ([f, ms]) => { const t = Date.now(); while (Date.now() - t < ms && (FADE.busy || STORE.art.busy || STORE.art.floor() !== f)) await new Promise(r => setTimeout(r, 250)); await new Promise(r => setTimeout(r, 800)); return STORE.art.floor(); }, [f, ms]);
-  await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)); th.act(); document.querySelector('#artlift [data-f="2"]').click(); });
-  const e2 = await lv(2);
-  await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)); th.act(); document.querySelector('#artlift [data-f="1"]').click(); });
-  const h2 = await pg.evaluate(() => { const T = __dbg.cv().TILE; return { py: +(SHARED.py / T).toFixed(2), want: +(SHARED.BOD.Y(2 * STORE.art.FZ) / T).toFixed(2) }; });
-  const e1 = await lv(1);
+  const lift = () => pg.evaluate(() => STORE.art.lift());
+  const until = (f, ms = 30000) => pg.evaluate(async ([f, ms]) => { const g = new Function('return (' + f + ')')(); const t = Date.now(); while (Date.now() - t < ms && !g()) await new Promise(r => setTimeout(r, 200)); return g(); }, [f.toString(), ms]);
+  const walk = (k) => pg.evaluate(k => { const L = STORE.art.lift(), p = L[k]; SHARED.target = { x: p[0], z: p[1] }; }, k);
+  const press = (k) => pg.evaluate(k => { const th = __dbg.UI.things.find(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)); if (STORE.art.lift().inCab || !document.querySelector('#artlift:not([hidden])')) th.act(); const b = document.querySelector('#artlift:not([hidden]) [data-f="' + k + '"]'); if (b) b.click(); return !!b; }, k);
+  const call = () => pg.evaluate(() => __dbg.UI.things.find(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)).act());
+  await pg.evaluate(() => { const L = STORE.art.lift(); STORE.goTo(L.out[0], L.out[1], 'up', 0); }); await until(() => !FADE.busy); await pg.waitForTimeout(800);
+  await walk("cab"); await pg.waitForTimeout(6000); const shut = await lift();
+  ok(!shut.inCab && shut.door === 0, 'the elevator\'s doors are shut: walking at them you stay outside: ' + JSON.stringify(shut));
+  await call(); await until(() => STORE.art.lift().door === 1); await walk('cab'); await until(() => STORE.art.lift().inCab && !SHARED.target, 25000); await pg.waitForTimeout(500); const inn = await lift();
+  ok(inn.door === 1 && inn.inCab && inn.menu, 'double-click the elevator and its doors slide open; you walk in and its floors show: ' + JSON.stringify(inn));
+  const up = []; await press(2); for (let i = 0; i < 40 && up.length < 6; i++) { const s = await pg.evaluate(() => { const L = STORE.art.lift(), T = __dbg.cv().TILE; return { ...L, py: +(SHARED.py / T).toFixed(3), cy: +(L.y / T).toFixed(3), cab: null, out: null }; }); if (s.riding) up.push(s); await pg.waitForTimeout(250); }
+  await until(() => STORE.art.lift().at === 2 && STORE.art.lift().door === 1); await pg.waitForTimeout(500); const top = await lift();
+  const rides = up.length >= 3 && up.every(s => s.inCab && s.door === 0 && Math.abs(s.py - s.cy) < .05) && up[up.length - 1].z > up[0].z;
+  ok(rides && top.inCab && top.at === 2, 'the doors shut and the cab carries you up, you standing on its floor all the way; at the third floor its doors open: ' + JSON.stringify({ up: up.map(s => [s.z, s.py, s.cy, s.door]), top }));
+  await walk('out'); await until(() => !STORE.art.lift().inCab && !SHARED.target, 25000); await pg.waitForTimeout(600);
+  const o2 = await pg.evaluate(() => { const T = __dbg.cv().TILE; return { f: STORE.art.floor(), py: +(SHARED.py / T).toFixed(2), want: +(SHARED.BOD.Y(2 * STORE.art.FZ) / T).toFixed(2), inCab: STORE.art.lift().inCab }; });
+  ok(o2.f === 2 && !o2.inCab && Math.abs(o2.py - o2.want) < .1, 'you walk out onto the third floor\'s walkway: ' + JSON.stringify(o2));
+  await pg.evaluate(() => STORE.art.go(0)); await until(() => STORE.art.lift().at === 0); await pg.waitForTimeout(300); const away = await pg.evaluate(() => ({ f: STORE.art.floor(), ...STORE.art.lift() }));
+  await walk("cab"); await pg.waitForTimeout(6000); const away2 = await lift();
+  await call(); await until(() => STORE.art.lift().at === 2 && STORE.art.lift().door === 1); const back = await lift();
+  ok(away.f === 2 && away.at === 0 && !away2.inCab && back.at === 2 && back.door === 1, 'with the cab on another floor its doors here stay shut (you cannot step into the shaft); calling it brings it up and opens them: ' + JSON.stringify({ away: away.at, blocked: !away2.inCab, back: back.at }));
+  await walk('cab'); await until(() => STORE.art.lift().inCab && !SHARED.target, 25000); await press(0); await until(() => STORE.art.lift().at === 0 && STORE.art.lift().door === 1); await pg.waitForTimeout(300);
+  await walk('out'); await until(() => !STORE.art.lift().inCab && !SHARED.target, 25000); await pg.waitForTimeout(600);
+  const o0 = await pg.evaluate(() => { SHARED.target = null; return { f: STORE.art.floor(), inCab: STORE.art.lift().inCab }; });
   const st = await pg.evaluate(() => ({ stairs: __dbg.UI.things.filter(t => /STAIR/.test(t.name || '') && t.obj && STORE.art.groups.includes(t.obj.parent)).length, lifts: __dbg.UI.things.filter(t => t.name === 'ELEVATOR' && STORE.art.groups.includes(t.obj.parent)).length, floors: STORE.art.dbg().floors }));
-  ok(e2 === 2 && e1 === 1 && Math.abs(h2.py - h2.want) < .3 && st.stairs === 0 && st.lifts === st.floors && st.floors >= 3, 'the glass elevator carries you up to the third floor\'s walkway (you stand at its height) and down to the second; no stairs, its doors on every floor: ' + JSON.stringify({ e2, e1, h2, st }));
-  await pg.evaluate(() => STORE.art.go(0, '', 'lift')); await lv(0);
+  ok(o0.f === 0 && !o0.inCab && st.stairs === 0 && st.lifts === st.floors && st.floors >= 3, 'down again and out on the first floor; no stairs, its doors on every floor: ' + JSON.stringify({ o0, st }));
   const v0 = await pg.evaluate(() => { const th = __dbg.UI.things.find(t => t.obj && t.obj.userData.at); th.act(); return STORE.art.viewer(); });
   ok(v0 && v0.open && !v0.full && v0.t, 'double-clicking a painting opens it full screen at once, its full-resolution file still on its way: ' + JSON.stringify(v0));
   const v1 = await pg.evaluate(async () => { const t = Date.now(); while (Date.now() - t < 60000 && !STORE.art.viewer().full) await new Promise(r => setTimeout(r, 250)); return STORE.art.viewer(); });

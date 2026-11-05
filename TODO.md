@@ -217,6 +217,71 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **After the archive (5 Nov)** · P1 · code. Left from the archive lines below: the bank vault (say BANK), the bodega's fish tank and the
+  archived sellers' goods on its shelves as the items themselves, the golems in the dungeon, the teachers' own spots (the Fisherman at the
+  pier) and the self-serve shed and book stall folded into them, the go-karts placed, the archived characters' code moved out of src/
+  (today hidden by ARCH), the playhouse as an empty hall, the owner's map layout from the planner.
+- [x] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
+  - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
+    town mail and its carrier, the newsstand, the daily requests, the town
+    staff's duties, Summon.
+  - The Market BBS and the bodega drone that delivers its orders stay (owner, 5 Nov). The owner's letters from the tenants panel stay.
+  - Nobody walks around town (owner, 5 Nov: "i dont want anyone walking around town"); the characters kept stand at their own spots.
+  - Reuse the existing put-away list (`AWAY` in 006-map-pre, `?bring=`) for every archive, not a second system.
+
+- [x] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.
+  - Kept after all: climbing (trees stay in the game, none placed yet), skateboards and tricks, clothes (on a bodega rack; armour stays
+    archived), spray paint, cat food and fish food (Mango and a fish tank by the bodega register), gem cutting (the gem wheel), the golems
+    (they move to the dungeon; the Golems' Cave stays archived), the octopus drummer (not the pianist or the singer; the playhouse's
+    actors are archived too), the Bedsheet, the night ghosts, the kid in the ghost costume, the Squirrel Knight, Rosie's art museum tour,
+    the platform security drones, every book.
+  - Every skill has a teacher who sells and buys its gear: foraging and mycology the Mushroom Seller; gardening the Tomato; fishing the
+    Fisherman in Waders at the pier; entomology and birding the Park Ranger; beekeeping the Village Gardener; bookbinding the Professor;
+    swordsmanship the Samurai Warrior; martial arts the Squirrel Knight; climbing the Forest Ranger; golf the Game Master by the
+    Holodeck. The Scuba Diver sells diving gear and the gem wheel. Cooking, alchemy, prospecting and midway games are archived.
+  - The bank: near it, say BANK in chat and your vault opens (a container window like the bag); no tellers.
+  - Every vehicle of every type stays (owner, 5 Nov: "keep all vehicles in game too of all types"): the go-kart, every hover board, the
+    skateboard, the parked cars, the showcase vehicles, trains, boats, the warship, the planes, the rowboat, and the fair's rental go-karts (where they go: the owner's map; the bumper cars go with the fair).
+  - Remove every owner editor from the game, the /editor page too ("i will add back from scratch later"); players keep Decorate, the
+    Designer and the Painter.
+
+- [x] **Archive the items** · P1 · L · code · risk high · queued with the character and places archives, owner says when to start (5 Nov).
+  Owner, 4 Nov: "remove all items except" these.
+  - Stay: foraging and gardening (mushrooms, flowers, seeds, fruit, vegetables, pots, dirt, rain, acorns, bonsai, cacti), bees and honey,
+    butterflies and birds, diving and mining, fishing, books, art, the four swords (sold by the Samurai Warrior), the Pine Grain hover
+    board, the home computer, the modem, the black balloon, the cigars, litter.
+  - Archived: every food and drink (cooking too) and hunger itself, the bodega's groceries and bouquets, potions, armour, clothes, the
+    other boards, the skateboard and the kart, the other electronics, tickets, tokens, the passport, the paper, the other toys and prizes,
+    the curses, the museum gift shop.
+  - The cinema, the playhouse and the arcade become free.
+
+- [x] **Archive the places** · P1 · XL · code · risk high · queued with the character archive, owner says when to start (4 Nov). Owner, 4 Nov:
+  "remove 100% from game and archive all locations except" these.
+  - Stay: the Bodega, the Apartments (with the fire escape), the Art Museum, the Bank, the Bar, the Playhouse, the Movie Theatre, the Bath
+    House, the Arcade (its Holodeck offers only the Greens and Roam), the Subway Stairs and platform and the loop, To the Hudson, the river,
+    the Fishing Pier, Central Park's gate, paths, lamps, grass, benches, the lake and brook, the Round and the campfire, the Castle and the
+    dungeon under it, the Squirrel's Tower, every home, the Skate Park, and the six sections beyond.
+  - Archived (not loaded unless the owner names one): the Museum of Earth, the Boardwright, Fix-It Electronics, the Scanner, the Diner,
+    the Civic Tower (firehouse, clinic, precinct, post office, depot, city hall), Feel Lab, the Fountain, the Night Market, the Flea Market,
+    the Fair and its gate, the shrine, the park's trees, the Golems' Cave, the Gem, Hudson and Lake caverns, the Catacomb Run, the
+    Holodeck's other programs. An archived street building leaves an empty lot.
+  - Fires stay but each burns out by itself (no firehouse).
+
+- [x] **Archive the characters** · P1 · XL · code · risk high · queued, owner says when to start (4 Nov). Owner, 4 Nov: "archive all the
+  characters and remove them 100% from game (do not load unless pulled from archive specifically told)".
+  - Stay: the Tomato, the Mushroom Seller, the Teddy Bear, the dragons, the dungeon (ogres, skeletons, its creatures), all animals, every
+    skater (skate shop crew, park skaters, skatepark), the Scuba Diver, the Samurai Warrior, and the
+    buyers below. Everyone else goes to an archive folder the build never reads (castle cast, pawns, woodland folk, the Fox, the Gas
+    Station Attendant, the castle guardians included); one comes back only when the owner names it.
+  - Remove the Museum of Earth, building included (not the art museum; its gift shop goes with it), and the cinema snack stand, the bar's
+    taps and register, the playhouse drinks.
+  - Sellers: the Radish's goods and teaching go to the Tomato; the Shark's to the Scuba Diver at the same spot; the Swordsmith's swords and
+    teaching to the Samurai Warrior at the Swordsmith's spot; the Pine Grain hover board to the Skate Shop Owner (the only board kept).
+  - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), the Scuba
+    Diver (fish), the Tomato (mushrooms). The diner's and the Cart Man's food go to the bodega (owner, 4 Nov: they go with the places).
+  - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
+    staff, pay at the register yourself; every grocery comes off (the items archive below).
+
 - [ ] **Who stands on Market St, and why** · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
   one on the street"; he has not said yes to fixing these. The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at
   work" (`CREW.spot`, `src/111fb-fleamarket.js:30,49`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`),

@@ -279,9 +279,11 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[]};   // the room's other
     const darken=o=>o&&o.traverse(q=>{ if(!q.isMesh)return; for(const m of [].concat(q.material)){ if(!m||m.userData.dk||m.isMeshBasicMaterial||m.isShaderMaterial)continue; m.userData.dk=1; const f=m.onBeforeCompile, ck=m.customProgramCacheKey;
       m.onBeforeCompile=function(sh,r){ if(f)f.call(this,sh,r); if(sh.fragmentShader.indexOf('#include <lights_fragment_begin>')<0)return; sh.uniforms.uIn=DARK; sh.uniforms.uFill=FILL; sh.fragmentShader='uniform float uIn; uniform vec3 uFill;\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',LFB); };
       m.customProgramCacheKey=function(){ return (ck?ck.call(this):'')+'|dk2'; }; m.needsUpdate=true; } });   // your rooms take no sky fill (there is a ceiling, even when the view leaves it off); the sun only where it falls through a window (the walls and 059a's roof cast the rest)
+    // a new shadow type needs new shadow maps (three's maps are made for the type they were first drawn with)
+    const reShadow=()=>scene.traverse(o=>{ if(o.isLight&&o.shadow&&o.shadow.map){ o.shadow.map.dispose(); o.shadow.map=null; o.shadow.needsUpdate=true; } if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; });
     SYS.add('places',dt=>{ const inn=!!APTS.inReal;
-      if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFShadowMap; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
-      else if(!inn&&prevShadow!=null){ renderer.shadowMap.type=prevShadow; prevShadow=null; scene.traverse(o=>{ if(o.material)for(const m of [].concat(o.material))m.needsUpdate=true; }); }
+      if(inn&&prevShadow==null&&renderer.shadowMap.type!==THREE.PCFShadowMap){ prevShadow=renderer.shadowMap.type; renderer.shadowMap.type=THREE.PCFShadowMap; reShadow(); }
+      else if(!inn&&prevShadow!=null){ renderer.shadowMap.type=prevShadow; prevShadow=null; reShadow(); }
       if(!R)return; if(!R.apt.parent){ clear(R); R=null; ROOMK.api=null; return; }
       const k=Math.min(1,(dt||0)*5), e=CLOCK.elev(), day=cl((e+3)/12,0,1);
       for(const L of R.lamps){ const t=L.on?L.i0*(L.L.userData.k??1)*(1.2-.4*day):0; L.L.intensity+=(t-L.L.intensity)*k; L.sm.emissiveIntensity=L.on?.55:.03; if(L.halo)L.halo.material.opacity=L.on?.32:0; }

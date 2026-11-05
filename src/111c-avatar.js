@@ -58,10 +58,10 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
     variant:c=>{ const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!J){ load(M.f).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
-      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare)},M); VAR.set(k,b); return b; }};
+      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null},M); VAR.set(k,b); return b; }};
   AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>!!D[L.f];
   let gen=0;
-  const refresh=()=>{ const my=++gen; return load(L.f).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); draw(); }).catch(e=>console.warn('AVATAR',e)); };
+  const refresh=()=>{ const my=++gen; return load(L.f).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
   AVATAR.wear=(slot,n,c)=>{ if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 

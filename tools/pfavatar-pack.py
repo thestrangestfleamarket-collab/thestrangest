@@ -58,6 +58,15 @@ for f in ('m','f'):
         A=(p.get('alt') or {}).get(f)
         if A: e['alt']=[pack(v,rig,Jb,zmap) if v else None for v in A]
         D['pieces'].append(e)
+    # the walk (tools/pfavatar-anim.mjs): Polyfork's Idle, Walk and Run as each bone's move from the bind, a quaternion and a place (metres) a bone a frame
+    if os.path.exists('.polyfork/anim-raw.json'):
+        AN=json.load(open('.polyfork/anim-raw.json')); D['anim']={'bones':AN['bones'],'clips':{}}
+        for k in ('Idle','Walk','Run'):
+            c=AN['clips'][f][k]; nb=len(AN['bones']); n=c['n']; dur=c['dur']
+            if max(abs(c['q'][(n-1)*nb*4+i]-c['q'][i]) for i in range(nb*4))<.005: n-=1; dur=dur*n/(n+1)   # (a loop's last frame repeating its first: dropped, or the loop stalls there)
+            step=2 if k=='Idle' else 1; fr=range(0,n,step)
+            q=[round(v,4) for i in fr for v in c['q'][i*nb*4:(i+1)*nb*4]]; pp=[round(v,4) for i in fr for v in c['p'][i*nb*3:(i+1)*nb*3]]
+            D['anim']['clips'][k]={'n':len(fr),'dur':round(dur,4),'speed':c['speed'],'contact':c['contact'],'q':q,'p':pp}
     out='data/pfavatar-'+f+'.json'; json.dump(D,open(out,'w'),separators=(',',':'))
     print(out,len(D['pieces']),'pieces',round(os.path.getsize(out)/1e6,2),'MB')
 json.dump(IDX,open('data/pfavatar.json','w'),separators=(',',':')); print('data/pfavatar.json',round(os.path.getsize('data/pfavatar.json')/1e3,1),'KB')

@@ -1,7 +1,7 @@
 // THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {ARCH, CHARS, NPCS, pos, VIS, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
@@ -81,11 +81,53 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const yy=(a[1]*w+c[1]*(1-w))*x+(a[5]*w+c[5]*(1-w))*y+(a[9]*w+c[9]*(1-w))*z+(a[13]*w+c[13]*(1-w)); if(yy<lo)lo=yy; } return lo; };
   const rigLow=B=>{ let lo=Infinity; for(const k in B.J)if(B.J[k].y<lo)lo=B.J[k].y; return lo; };
   const place=(PM,body,S)=>{ for(let i=0;i<NB;i++){ const n=BONES[i]; PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } };
-  function pose(B,PM,body){ const S=body.S; chain(B,body); place(PM,body,S);
+  // a body's own recorded walk (body.anim: your avatar's, Polyfork's Idle, Walk and Run; owner, 5 Nov 2026: "walking is very glitchy ... smooth leg movements", his pick: the
+  // clips with the feet on the ground): free on your feet, walking or running, its bones come from the clips, the stride by the ground you cover (no sliding), walk and run
+  // blended by the rig's run, idle as you stop; a held tool's arms stay the rig's, carried by the walking body; a move, a ride, climbing or swimming take the rig, crossfaded
+  const Q1=new THREE.Quaternion(), Q2=new THREE.Quaternion(), Q3=new THREE.Quaternion(), P1=new V3(), P2=new V3(), P3=new V3(), SC=new V3(), M4=new THREE.Matrix4(), O=new V3(), O2=new V3();
+  const PMX={value:BONES.map(()=>new THREE.Matrix4())}, PMR={value:BONES.map(()=>new THREE.Matrix4())};
+  const prep=A=>{ if(!A.ready){ for(const c of Object.values(A.clips)){ c.Q=Float32Array.from(c.q); c.P=Float32Array.from(c.p); } A.ready=true; } return A; };
+  const clipAt=(c,u,i,q,p)=>{ const f=((u%1)+1)%1*c.n, a=Math.floor(f)%c.n, b=(a+1)%c.n, t=f-Math.floor(f), A=(a*NB+i), Bq=(b*NB+i);
+    q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,t);
+    p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
+  const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead;
+  const clamp1=x=>x<0?0:x>1?1:x;
+  function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
+    const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
+    const stride=C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
+    S._mph=((S._mph||0)+d/k/stride)%1; S._mit=((S._mit||0)+dt/C.Idle.dur)%1;
+    for(let i=0;i<NB;i++){ clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
+      clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
+  // a held tool's arm: the rig's, moved so its shoulder is where the walking body's is
+  const ARM={L:[3,4,5],R:[6,7,8]};
+  const keepArms=(PM,PR,body)=>{ for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
+      for(const j of ARM[side]){ PM.value[j].copy(PR.value[j]); PM.value[j].elements[12]+=O2.x; PM.value[j].elements[13]+=O2.y; PM.value[j].elements[14]+=O2.z; } } };
+  const blend=(PM,PA,t)=>{ for(let i=0;i<NB;i++){ PM.value[i].decompose(P1,Q1,SC); PA.value[i].decompose(P2,Q2,O); Q1.slerp(Q2,t); P1.lerp(P2,t); PM.value[i].compose(P1,Q1,SC); } };
+  // the feet on the actual ground (your avatar walking by its clips): each foot's ground under it, the hips lowered to the lower one, each leg bent (two bones) to put its foot there
+  const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
+  const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
+  const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
+  function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=G.position.y, h={};
+    for(const s of ['L','R']){ const A=jointAt(PM,body,LEG[s][2],IKV[0]).applyMatrix4(Mw); h[s]=(ground(A.x,A.z)-gy)/sy; if(!isFinite(h[s])||Math.abs(h[s])>20)h[s]=0; }
+    const low=Math.min(0,h.L,h.R); if(Math.abs(h.L)<.05&&Math.abs(h.R)<.05)return;
+    for(let i=0;i<NB;i++)PM.value[i].elements[13]+=low;
+    for(const s of ['L','R']){ const dy=h[s]-low; if(dy<.05)continue; const [ti,si,fi]=LEG[s], H=jointAt(PM,body,ti,IKV[1]), K=jointAt(PM,body,si,IKV[2]), A=jointAt(PM,body,fi,IKV[3]);
+      const At=IKV[4].copy(A); At.y+=dy; const l1=K.distanceTo(H), l2=A.distanceTo(K), d=Math.min(l1+l2-1e-3,At.distanceTo(H));
+      const dir=IKV[5].subVectors(At,H).normalize(), pole=IKV[6].subVectors(K,H); pole.addScaledVector(dir,-pole.dot(dir)); if(pole.lengthSq()<1e-6)pole.set(0,0,1); pole.normalize();
+      const x=(l1*l1-l2*l2+d*d)/(2*d), yk=Math.sqrt(Math.max(0,l1*l1-x*x)), Kt=IKV[0].copy(H).addScaledVector(dir,x).addScaledVector(pole,yk);
+      IKQ.setFromUnitVectors(IKV[5].subVectors(K,H).normalize(),IKV[6].subVectors(Kt,H).normalize()); turnAbout(PM.value[ti],H,IKQ); turnAbout(PM.value[si],H,IKQ); turnAbout(PM.value[fi],H,IKQ);
+      const K2=jointAt(PM,body,si,IKV[1]), A2=jointAt(PM,body,fi,IKV[2]); IKQ.setFromUnitVectors(IKV[5].subVectors(A2,K2).normalize(),IKV[6].subVectors(At,K2).normalize()); turnAbout(PM.value[si],K2,IKQ);
+      const A3=jointAt(PM,body,fi,IKV[5]); PM.value[fi].elements[12]+=At.x-A3.x; PM.value[fi].elements[13]+=At.y-A3.y; PM.value[fi].elements[14]+=At.z-A3.z; } }
+  BODIES.feetOnGround=feetOnGround;
+  function pose(B,PM,body,S){ const k=body.S; chain(B,body); place(PM,body,k);
     if(body.contact){ const g=body.GEO;
-      if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,S); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,S); }
+      if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
-      const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; } }
+      const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
+    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)?1:0;
+      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want;
+      if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
+        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
   /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */
@@ -97,7 +139,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); },
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on)feetOnGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

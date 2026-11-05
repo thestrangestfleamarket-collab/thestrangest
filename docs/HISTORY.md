@@ -5535,3 +5535,6 @@ Owner, of the menus listed with what works ("lets reorganize all the menus"), of
 - 5 Nov 2026, the ogre's skull tried and dropped (owner: "lets use the ogre head ... on the main avatar body", then of new hair, beards, brows and eyes made for it: "lets cancel all this work"; his pick: drop the ogre head too): the avatar keeps its own head.
 - 5 Nov 2026, the underwear (owner: "why does the underwear look like that"): it no longer flickers with the skin under it.
 - 5 Nov 2026, the render inspector back (owner: "add render inspector back in game"): out of the archive, opened from the menu's TOOLS as before.
+
+## 5 Nov 2026: real insides from the street (mockups)
+- Owner: "remove the interior/exterior off world style loading for interiors of shops ... all the buildings to be real interiors from outside ... interiors are not rendered until you are close by. show me some mockups": https://claude.ai/artifact/5u96CxZJbpwec5B1qg7Em1 (rings, portals, a door that opens when ready, fake rooms in far windows). Waiting on his pick.

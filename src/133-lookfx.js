@@ -19,7 +19,7 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
       const now=performance.now(), dt=Math.min(1,(now-WS.t)/1000); let dh=WS.h==null?0:CLOCK.h-WS.h; if(dh<0)dh+=24; if(dh>2)dh=0; WS.t=now; WS.h=CLOCK.h;
       if(WS.wet==null&&typeof WX!=='undefined'&&WX.now){ if(WX.hold||WX.fix&&!WX.nat){ WS.wet=W.rain>.05?1:0; WS.snow=W.snow>.05?1:0; } else { const Tm=Math.floor(Date.now()/86400000)*1440+CLOCK.h*60; WS.wet=WS.snow=0; for(let k=0;k<=180;k+=10){ const p=WX.at(Tm-k); if(p.rain>.05)WS.wet=Math.max(WS.wet,1-k/120); if(p.snow>.05)WS.snow=Math.max(WS.snow,1-k/180); } } }
       if(WS.wet==null){} else if(W.rain>.05)WS.wet=Math.min(1,WS.wet+dt/25*(.5+W.rain)); else WS.wet=Math.max(0,WS.wet-Math.max(dt/240,dh/2));
-      if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(0,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
+      if(WS.wet==null){} else if(W.snow>.05)WS.snow=Math.min(1,WS.snow+dt/90*(.5+W.snow)); else WS.snow=Math.max(CLOCK.seasonLook().snow,WS.snow-Math.max(dt/(W.rain>.05?60:300),dh/3));
       E[row+1]=inside?0:Math.round(255*(F.has('wet')?1:WS.wet||0)); E[row+6]=inside?0:Math.round(255*WS.snow); LFX.ws=WS;
       
       E[row+2]=F.has('ao')?255:0; E[row+3]=F.has('var')?255:0;

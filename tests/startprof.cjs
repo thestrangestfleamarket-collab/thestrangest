@@ -9,7 +9,7 @@ const OUT=process.argv[2]||'startprof.json', PAGE=path.resolve(process.argv[3]||
   const pg=await b.newPage({viewport:{width:1280,height:720}}); pg.setDefaultTimeout(900000); const errs=[];
   pg.on('pageerror',e=>errs.push(e.message.slice(0,200)));
   await pg.addInitScript(()=>{ window.FLATLOG={}; window.__LT=[]; try{ new PerformanceObserver(l=>{ for(const e of l.getEntries())window.__LT.push([Math.round(e.startTime),Math.round(e.duration)]); }).observe({type:'longtask',buffered:true}); }catch(e){} });
-  const t0=Date.now(); await pg.goto('file://'+PAGE+'?fresh=1&hour=13',{waitUntil:'commit'});
+  const t0=Date.now(); await pg.goto('file://'+PAGE+'?capture=1&fresh=1&hour=13',{waitUntil:'commit'});
   let started=null; for(let i=0;i<900;i++){ await pg.waitForTimeout(500); if(await pg.evaluate(()=>!!window.__started)){ started=Date.now()-t0; break; } }
   const rep={page:path.basename(PAGE),startMs:started,errs};
   const sample=async(name,go)=>{ await pg.evaluate(()=>{ if(window.BATCH&&BATCH.queues)for(const q of BATCH.queues)q.near(0,0,Infinity); else if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); if(go)await pg.evaluate(go); await pg.waitForTimeout(go?15000:4000);

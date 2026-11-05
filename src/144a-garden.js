@@ -1,26 +1,28 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INSPECT, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INSPECT, ITEMS, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {GRASS} from './014a-grass.js';
 import {CREATS} from './087-npc-creatures.js';
 import {VEG} from './144-veggies.js';
 const GARDEN={}; window.GARDEN=GARDEN;
 { const T=TILE, KEY='garden', say=SAY, use=FORAGE.use, sk=FORAGE.sk, CS=8*T;
-  const FL={dandelion:['DANDELION',0,1,0xf2c81e,0xe0a810,[.05,.4,.14,.5]],clover:['RED CLOVER',5,1,0xc86a9a,0,[.042,1,.1,0]],daisy:['OXEYE DAISY',15,2,0xf4f2ea,0xf2c81e,[.065,.28,.3,.38]],
-    chicory:['CHICORY',25,3,0x7a9af0,0x5a7ad0,[.05,.3,.42,.3]],goldenrod:['GOLDENROD',30,3,0xe8c030,0,[.045,2.6,.5,0]],aster:['NEW YORK ASTER',35,4,0x9a7ae0,0xf2c81e,[.055,.3,.36,.38]],
-    violet:['WILD VIOLET',45,6,0x6a3ab0,0xf2e8a0,[.04,.45,.08,.3]],slipper:["PINK LADY'S SLIPPER",75,30,0xe87aa8,0xb04a78,[.06,1.3,.3,.32]],
-    marigold:['MARIGOLD',10,3,0xf09020,0xd06010,[.065,.6,.26,.3]],zinnia:['ZINNIA',20,4,0xe03a5a,0xf2c81e,[.07,.38,.36,.32]],tulip:['TULIP',30,6,0xe02a2a,0,[.05,1.4,.32,0]],
-    sunflower:['SUNFLOWER',40,8,0xf2c81e,0x5a3a1a,[.15,.28,1.3,.55]],rose:['ROSE',55,14,0xc01a2a,0,[.055,.95,.4,0]],
-    bluebell:['BLUEBELL',10,3,0x6a7ae0,0,[.045,1.3,.3,0]],poppy:['POPPY',15,3,0xe02a1a,0x1a1414,[.06,.4,.42,.3]],cosmos:['COSMOS',15,3,0xe070b0,0xf2c81e,[.06,.15,.62,.3]],
-    lavender:['LAVENDER',20,4,0x8a6ad0,0,[.035,2.4,.45,0]],iris:['IRIS',35,6,0x5a4ad0,0x7a6ae8,[.06,.8,.5,.4]],foxglove:['FOXGLOVE',40,7,0xd060a0,0,[.045,3,.9,0]]};
+  // three tiers (RARITY): common 0-10, rare 30-45, super-rare 70-80; each grass grows one of each; the rose is the garden's own
+  const FL={dandelion:['DANDELION',0,1,0xf2c81e,0xe0a810,[.05,.4,.14,.5]],clover:['RED CLOVER',5,1,0xc86a9a,0,[.042,1,.1,0]],bluebell:['BLUEBELL',8,3,0x6a7ae0,0,[.045,1.3,.3,0]],
+    poppy:['POPPY',8,3,0xe02a1a,0x1a1414,[.06,.4,.42,.3]],lavender:['LAVENDER',10,4,0x8a6ad0,0,[.035,2.4,.45,0]],goldenrod:['GOLDENROD',10,3,0xe8c030,0,[.045,2.6,.5,0]],
+    daisy:['OXEYE DAISY',30,8,0xf4f2ea,0xf2c81e,[.065,.28,.3,.38]],marigold:['MARIGOLD',32,8,0xf09020,0xd06010,[.065,.6,.26,.3]],chicory:['CHICORY',34,8,0x7a9af0,0x5a7ad0,[.05,.3,.42,.3]],
+    cosmos:['COSMOS',36,9,0xe070b0,0xf2c81e,[.06,.15,.62,.3]],violet:['WILD VIOLET',40,12,0x6a3ab0,0xf2e8a0,[.04,.45,.08,.3]],aster:['NEW YORK ASTER',38,10,0x9a7ae0,0xf2c81e,[.055,.3,.36,.38]],
+    slipper:["PINK LADY'S SLIPPER",75,60,0xe87aa8,0xb04a78,[.06,1.3,.3,.32]],tulip:['TULIP',70,40,0xe02a2a,0,[.05,1.4,.32,0]],iris:['IRIS',72,45,0x5a4ad0,0x7a6ae8,[.06,.8,.5,.4]],
+    zinnia:['ZINNIA',74,45,0xe03a5a,0xf2c81e,[.07,.38,.36,.32]],foxglove:['FOXGLOVE',76,50,0xd060a0,0,[.045,3,.9,0]],sunflower:['SUNFLOWER',78,55,0xf2c81e,0x5a3a1a,[.15,.28,1.3,.55]],
+    rose:['ROSE',55,14,0xc01a2a,0,[.055,.95,.4,0]]};
   const SEED={marigold:['MARIGOLD SEEDS',1],zinnia:['ZINNIA SEEDS',2],tulip:['TULIP BULB',3],sunflower:['SUNFLOWER SEEDS',2],rose:['ROSE CUTTING',8]};
   // a rarer seed each week, sold by the mushroom seller only that week
   const WEEK={lavender:['LAVENDER SEEDS',3],iris:['IRIS BULB',5],foxglove:['FOXGLOVE SEEDS',4],violet:['WILD VIOLET SEEDS',6],slipper:["LADY'S SLIPPER ROOT",40]};
-  const WILD=Object.fromEntries(GRASS.K.map(k=>[k.id,k.flowers]));   // each grass kind's wild flowers (GRASS)
+  const WILD=Object.fromEntries(GRASS.K.map(k=>[k.id,k.flowers])), FTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)FTIER[k.flowers[t]]=t; GARDEN.FTIER=FTIER; for(const k in FTIER)ITEMS.reg('fl_'+k,{tier:{c:'common',r:'rare',s:'super'}[FTIER[k]]});   // each grass kind's wild flowers, a common, a rare and a super-rare (GRASS)
   const BQ=[['g_posy','WILDFLOWER POSY','garden',[0,45],{fl_daisy:2,fl_clover:2},'sells for $14'],['g_meadow','MEADOW BOUQUET','garden',[20,65],{fl_chicory:2,fl_goldenrod:2,fl_daisy:1},'sells for $28'],
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
     ['g_garden','GARDEN BOUQUET','garden',[40,85],{fl_zinnia:2,fl_marigold:2,fl_sunflower:1},'sells for $48'],['g_rose','HALF DOZEN ROSES','garden',[60,105],{fl_rose:6},'sells for $110'],
@@ -40,7 +42,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
-  const pickKind=(g,r,deep)=>{ const W=WILD[g]||WILD['01']; let s=0; for(const k in W)if(k!=='slipper'||deep)s+=W[k]; r*=s; for(const k in W){ if(k==='slipper'&&!deep)continue; if((r-=W[k])<0)return k; } return 'dandelion'; };
+  const pickKind=(g,r,deep)=>{ const T=WILD[g]||WILD['01']; return RARITY.pickFrom(deep?T:{c:T.c,r:T.r},r,'garden',r*5.17)||'dandelion'; };   // the super-rare only deep in the park
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], drift=vn(x/T/7,z/T/7,511)>.62;
       if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;
       out.push({k,x:px,z:pz,y:grp.top(px,y,pz),id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.85+.4*hsh(x,z,529),a:hsh(z,x,531)*6.28}); } return out; };
@@ -89,6 +91,6 @@ const GARDEN={}; window.GARDEN=GARDEN;
   const wait=()=>{ if(!VEG.add)return setTimeout(wait,500); VEG.add(Object.fromEntries(Object.keys(SEED).filter(k=>!WEEK[k]).map(k=>['sd_'+k,SEED[k][1]])),Object.assign({},PR,BP)); }; wait();
   const WK=Object.keys(WEEK), week=()=>Math.floor(day()/7)%WK.length; GARDEN.week=()=>WK[week()];
   WK.forEach((k,i)=>FORAGE.SELLS.push(['sd_'+k,WEEK[k][1],()=>week()===i]));
-  FORAGE.BOOK.push({id:'flowers',title:'FLOWERS',rows:()=>Object.keys(FL).map(k=>[FL[k][0],!!S.log[k],S.log[k]?'PICKED '+S.log[k]:'',FL[k][1]>=55]),foot:'Each grass grows its own wild flowers. The mushroom seller has a rarer seed each week.'});
+  FORAGE.BOOK.push({id:'flowers',title:'FLOWERS',rows:()=>Object.keys(FL).map(k=>[FL[k][0],!!S.log[k],S.log[k]?'PICKED '+S.log[k]:'',FTIER[k]==='s']),foot:'Each of the six grasses grows a common, a rare and a super-rare wild flower; the super-rare only deep in the park, once the Tomato ranks you high enough. The mushroom seller has a rarer seed each week.'});
   window.GARDDBG=()=>({shown:GARDEN.shown,chunks:CH.size,plots:S.plots.map(p=>({k:p.k,g:+Math.min(1,(now()-p.t)/GROW).toFixed(2)})),garden:sk('garden'),lawn:lawnAt(pos.x,pos.z)}); }
 export {GARDEN};

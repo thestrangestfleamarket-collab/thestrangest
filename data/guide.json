@@ -1,5 +1,5 @@
 {
- "intro": "Everything you can do in THE MARKET, step by step. Pick a chapter. Keys look like [THIS]; you can change most of them in SETTINGS, KEYS. Press [SHIFT] + [G] to open or close this guide anywhere.",
+ "intro": "Everything you can do in THE MARKET, step by step. Pick a chapter. Keys look like [THIS]; you can change most of them in SET, CONTROLS. Press [SHIFT] + [G] to open or close this guide anywhere.",
  "chapters": [
   {
    "id": "start",
@@ -10,7 +10,7 @@
     "Hold [SHIFT] to run. Press [SPACE] to jump. Hold [C] to crouch.",
     "Double-click a thing to walk to it and use it: a door, a seat, a lamp, a person, even yourself.",
     "Double-click does nothing while something is in your hands. Press [1] until your hands are free.",
-    "Press [?] for the list of every key. Press [ESC] for your handheld (the menu).",
+    "Press [?] for the list of every key. Press [ESC] for the menu.",
     "Your game saves by itself. Next time you come back where you left off."
    ]
   },
@@ -33,36 +33,33 @@
   {
    "id": "menu",
    "title": "MENU, PACK AND MAP",
-   "what": "Your character page, everything you carry, and the map that takes you places.",
+   "what": "One menu for everything: you, your things, the map, other players, the BBS, this guide and the settings.",
    "sections": [
     {
      "head": "THE MENU",
      "steps": [
-      "Press [ESC]. Your handheld pops up: a grid of icons.",
-      "YOU is your character page. PACK, MAP, CALL (any shop), BBS, CHAT and PEOPLE are there too.",
-      "SET opens the settings: DISPLAY, ATMOSPHERE, GRAPHICS, SOUND, KEYS. GUIDE, HELP and BUG too.",
-      "Click an icon, or use the arrow keys and [ENTER].",
-      "[ESC] goes back, then puts the handheld away."
+      "Press [ESC]. The menu opens where you left it.",
+      "Its sections run down the left: YOU, PACK, MAP, PEOPLE, BBS, GUIDE and SET. Each one has tabs along the top.",
+      "YOU: your look (LOOK, WEAR, WORDS), your passport, RESURRECT and LOG OUT.",
+      "PEOPLE: who is on your block, VISIT their apartment, and CHAT.",
+      "BBS: order from the bodega or the furniture catalog (a drone brings it to your fire escape), and play the arcade games.",
+      "[ESC] again shuts the menu."
      ]
     },
     {
      "head": "YOUR PACK",
      "steps": [
-      "Press [I]. The PACK tab shows your money and what you carry.",
-      "Each thing has buttons: EAT, DRINK, HOLD, WEAR, LOOK and more.",
-      "SKILLS shows your skills. CRAFT makes things.",
-      "BOOK keeps a page for each thing you collect: recipes, mushrooms, flowers, butterflies, birds, fish, honey, finds and books.",
-      "ASKS lists what merchants want today. Bring it to their shop and press HAND IN for extra money."
+      "Press [I] for your bag: everything you carry. Drag things around, drop them, use them.",
+      "The menu PACK has SKILLS, BOOK, FISHING and JOURNAL.",
+      "BOOK keeps a page for each thing you collect: mushrooms, flowers, butterflies, birds, fish, honey, finds and books."
      ]
     },
     {
      "head": "THE MAP",
      "steps": [
-      "Press [SHIFT] + [M]. (You need the MAP OF THE SECTION. Everyone starts with one.)",
-      "Click a spot on the map to go there. THE STREET or UNDERGROUND changes the level.",
-      "MY APARTMENT takes you home.",
-      "The CHOOSE A PLACE list at the bottom takes you to any place or room.",
-      "The A to H buttons take you to another section."
+      "Press [SHIFT] + [M], or MAP in the menu: the folded visitor’s map.",
+      "Click a place on it to go there. [F] flips it to the subway on the back.",
+      "[ESC] puts it away."
      ]
     }
    ]
@@ -122,7 +119,7 @@
     "Choose WHAT DO YOU SELL? to open the shop.",
     "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
     "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
-    "Who buys what: the Nature Merchant buys butterflies, birds and feathers; the Gem Peddler and the golems buy gems; Old Wetwhisker and BAIT & BOATS buy fish; the mushroom seller and the Radish buy mushrooms, potions and food; the mushroom seller also buys butterflies and birds.",
+    "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables and flowers; the Fisherman in Waders fish; the Park Ranger butterflies and birds; the Village Gardener honey; the Professor books and paintings; the Samurai Warrior swords; the golems in the dungeon gems.",
     "Merchants teach what they know: LESSON raises a skill for a fee.",
     "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
    ]
@@ -140,26 +137,26 @@
   {
    "id": "forage",
    "title": "FORAGING AND FOOD",
-   "what": "Pick mushrooms and flowers in the park, eat them, sell them or make things.",
+   "what": "Pick mushrooms and flowers in the park and sell them.",
    "steps": [
     "Go to a park lawn. Press [M] to take your shoes off (shoes squash mushrooms).",
     "Double-click a mushroom or a wildflower to pick it.",
-    "Unknown ones are STRANGE MUSHROOM. Press IDENTIFY in your pack.",
-    "To eat, press [I] and click EAT. Careful: RED CAP and MOONGLOW poison you. A CURE POTION fixes it.",
+    "Unknown ones are STRANGE MUSHROOM. Identify them from your bag.",
     "Mushrooms grow back every day. Some come up only after rain (INK CAP, BLACK TRUMPET), at dawn (OYSTER) or by night (GHOST CAP, only deep in the park).",
-    "Your BOOK (press [I], then BOOK) keeps a page for each thing you collect: mushrooms, butterflies, birds and fish.",
-    "Grow your own: buy seeds at the tomato stall, plant them from your pack on bare lawn, and double-click to pick when they bloom."
+    "Your BOOK ([ESC], PACK, BOOK) keeps a page for each thing you collect: mushrooms, butterflies, birds and fish.",
+    "Grow your own: buy seeds from the Tomato, plant them from your pack on bare lawn, and double-click to pick when they bloom.",
+    "The Mushroom Seller buys mushrooms; the Tomato buys vegetables and flowers."
    ]
   },
   {
    "id": "skills",
-   "title": "SKILLS, LESSONS AND CRAFTING",
-   "what": "Get better at what you do. Make potions, food and bouquets.",
+   "title": "SKILLS AND LESSONS",
+   "what": "Get better at what you do.",
    "sections": [
     {
      "head": "SKILLS",
      "steps": [
-      "Press [I], then SKILLS. A skill grows each time you use it, fastest on hard tasks.",
+      "[ESC], PACK, SKILLS. A skill grows each time you use it, fastest on hard tasks.",
       "All skills together go up to 600. Set each to ▲ raise, ▼ lower or ■ keep.",
       "Each skill has a rank: NOVICE, APPRENTICE, JOURNEYMAN, EXPERT, ADEPT, MASTER and GRANDMASTER."
      ]
@@ -173,15 +170,10 @@
      ]
     },
     {
-     "head": "CRAFTING",
+     "head": "MAKING THINGS",
      "steps": [
-      "Press [I], then CRAFT. Pick a recipe and click MAKE.",
-      "Potions need a mortar and an empty bottle (you start with both).",
-      "Food needs a flame near you: a fire, a candle or a torch.",
-      "Cut stones on a GEM WHEEL (the Shark sells one; PROSPECTING): a cut stone sells for twice as much and more.",
-      "Mend old books with a binder's kit (BOOKBINDING). Daisies and bluebells make BOOKCLOTH. A feather QUILL helps you mend.",
-      "In the MUSEUM OF EARTH, DONATE in your pack gives the museum the first of each specimen, find or restored book, for pay.",
-      "The mushroom seller has a rarer flower seed each week."
+      "Cut stones on a GEM WHEEL (the Scuba Diver sells one): a cut stone sells for more.",
+      "Mend old books with a binder’s kit from the Professor (BOOKBINDING). A feather QUILL helps you mend."
      ]
     }
    ]
@@ -194,7 +186,7 @@
     "Running, fighting and blocking use stamina. Stop for a moment and it fills again.",
     "Health does not come back by itself.",
     "To heal: double-click a bench, chair or bed and sit (about 2 minutes to full).",
-    "Or stand in the bath house steam (under a minute), or eat food and potions.",
+    "Or stand in the bath house steam (under a minute).",
     "At zero health you faint for 15 seconds. If you are hit again then, you die (see IF YOU DIE)."
    ]
   },
@@ -206,7 +198,7 @@
     {
      "head": "GET READY",
      "steps": [
-      "Go to the Hudson fishing pier. Double-click the BAIT & BOATS stand.",
+      "Go to the Hudson fishing pier. Double-click the Fisherman in Waders.",
       "Buy a FISHING ROD ($15) and WORMS or CUT BAIT.",
       "Hold the rod: press [1] until you hold it, or HOLD in your pack.",
       "Face the water. A FISH button shows. Press [F] or click it."
@@ -228,12 +220,12 @@
      "steps": [
       "Worms for perch, eels, shad and sturgeon. Cut bait for bass, bluefish, catfish, fluke and crabs.",
       "Deeper water off the pier's end, bigger fish. Bass bite at dusk, eels at night.",
-      "Sell your catch at BAIT & BOATS or to Old Wetwhisker."
+      "Sell your catch to the Fisherman in Waders."
      ]
     }
    ],
    "tips": [
-    "Better rods cast further on stronger line; better reels reel faster; lures are not used up. All at BAIT & BOATS."
+    "Better rods cast further on stronger line; better reels reel faster; lures are not used up. All from the Fisherman in Waders."
    ]
   },
   {
@@ -241,7 +233,7 @@
    "title": "CRAB POTS AND COOLERS",
    "what": "Catch crabs while you are away, and carry more fish.",
    "steps": [
-    "Buy a CRAB POT ($25) at BAIT & BOATS. You can have three out.",
+    "Buy a CRAB POT ($25) from the Fisherman in Waders. You can have three out.",
     "Face the water and press [P] in fishing mode (or DROP IN THE WATER in your pack). If you carry cut bait, the pot is baited and catches twice as fast.",
     "Leave it. Come back later and double-click its orange buoy to haul it up. Other players see your buoys, and you see theirs (only you can haul yours).",
     "You can carry 5 fish in your hands. A cooler (small, medium or big) holds 15, 40 or 100 more. With no room, a new fish goes back in the water."
@@ -255,12 +247,11 @@
     {
      "head": "BUTTERFLIES",
      "steps": [
-      "Buy a BUTTERFLY NET ($8) from the Nature Merchant (the paper fox by the arcade).",
+      "Buy a BUTTERFLY NET ($8) from the Park Ranger in the park.",
       "Press [1] until you hold the net. Aim with the mouse and click to swing. Swinging fast or jumping helps.",
       "You can carry 5. Jars hold 20, 50 or 100 more.",
-      "In your pack: IDENTIFY, MOUNT (needs a SPECIMEN FRAME, $4, Nature Merchant) or RELEASE (you learn a little).",
+      "In your pack: IDENTIFY or RELEASE (you learn a little).",
       "Hang a mounted one on your wall: DECORATE, then SPECIMENS.",
-      "In the MUSEUM OF EARTH, press DONATE on a mounted one. The museum pays for the first of each kind.",
       "Butterflies hide at night and in bad weather."
      ]
     },
@@ -268,8 +259,8 @@
      "head": "BIRDS",
      "steps": [
       "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
-      "A tamed bird follows you, and other players see it on your shoulder. Ask the Nature Merchant HOW DO I CATCH A BIRD? for free seed.",
-      "The Nature Merchant sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
+      "A tamed bird follows you, and other players see it on your shoulder. The Park Ranger sells bird seed.",
+      "The Park Ranger sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
       "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down. Other players see your feeder, and birds come to theirs for you too.",
       "Birds sometimes leave a FEATHER. Three make a QUILL (CRAFT, BIND), which helps you mend books."
      ]
@@ -307,29 +298,22 @@
   },
   {
    "id": "ride",
-   "title": "ROWBOAT, KITE AND HOVERBOARD",
-   "what": "Get out on the water, fly a kite or ride a board.",
+   "title": "ROWBOAT AND BOARDS",
+   "what": "Get out on the water or ride a board.",
    "sections": [
     {
      "head": "ROWBOAT",
      "steps": [
-      "At BAIT & BOATS, choose ROWBOAT · A TRIP ($5).",
+      "Rent one at the pier shed.",
       "Row with [W] [A] [S] [D]. You can fish from the boat.",
       "Row to a ladder or the pier and click STEP ASHORE."
      ]
     },
     {
-     "head": "KITE",
+     "head": "BOARDS",
      "steps": [
-      "Buy a KITE ($10) from the Nature Merchant. Hold it with [1].",
-      "Click to launch it. Hold the mouse button to wind it in. On calm days run into the wind."
-     ]
-    },
-    {
-     "head": "HOVERBOARD",
-     "steps": [
-      "Buy a board from the Boardwright on West St. Hold it with [1].",
-      "Click to get on, click to get off. Steer with [W] [A] [S] [D], [SPACE] hops."
+      "The Skate Shop Owner sells skateboards, hover boards and the kart. Hold one with [1].",
+      "Click to get on, click to get off. Steer with [W] [A] [S] [D], [SPACE] hops (on a skateboard: hold and let go to ollie)."
      ]
     }
    ]
@@ -419,8 +403,8 @@
    "steps": [
     "Other players walk, fish, fight and wear what they wear, just like you.",
     "Press [ENTER] to chat. Type, then [ENTER] to send ([ESC] closes).",
-    "Click ONLINE at the bottom right for the list of players.",
-    "Press VISIT beside a name to go into that player's apartment and see how they decorated it (their plants, photos, candles...). You can look, not change anything. Leave by the door as usual."
+    "[ESC], PEOPLE lists the players on your block.",
+    "Press VISIT THEIR APARTMENT beside a name to go into that player's apartment and see how they decorated it (their plants, photos, candles...). You can look, not change anything. Leave by the door as usual."
    ]
   },
   {
@@ -428,11 +412,11 @@
    "title": "SETTINGS, KEYS AND BUGS",
    "what": "Make the game look and play the way you like.",
    "steps": [
-    "[ESC], SET. DISPLAY: zoom, view, camera sway, size of the writing.",
-    "GRAPHICS: resolution, shadows, outline. ATMOSPHERE: time of day, weather, haze.",
-    "KEYS: click a key, then press the one you want. ALL BACK AS THEY WERE resets them.",
-    "Found something broken? Press [F8] (or REPORT A BUG), say what happened, and SEND.",
-    "Got a Quest 3? Open THE MARKET in its browser and press ENTER VR."
+    "[ESC], SET. VIEW: the camera, zoom, sway, the size of the writing.",
+    "PICTURE: resolution, shadows, outline, the PS2 filter, weather, haze and physics.",
+    "CONTROLS: click a key, then press the one you want (ALL BACK AS THEY WERE resets them); sound; VR.",
+    "Found something broken? Press [F8] (GUIDE, REPORT A BUG), say what happened, and SEND.",
+    "Got a Quest 3? Open THE MARKET in its browser, then SET, CONTROLS, ENTER VR."
    ]
   }
  ]

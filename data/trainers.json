@@ -1,0 +1,286 @@
+{
+ "note": "The trainers (owner, 5 Nov 2026: each trainer asks for more and more difficult things to find, pays 2 to 5 times their worth, so you explore every place for that skill, on a path to master). ranks: the rung you have reached names your rank; open: the rank from which the super-rare shows (RARITY); titles: shown over a master's head to other players. trainers: by the character's key, the skills each one trains; ladders: per skill, each rung's item (bf:NAME a butterfly, bird:NAME a bird), how many, the pay multiple, and where to look.",
+ "ranks": [
+  "NOVICE",
+  "APPRENTICE",
+  "JOURNEYMAN",
+  "EXPERT",
+  "ADEPT",
+  "MASTER"
+ ],
+ "open": 3,
+ "titles": {
+  "myco": "MASTER FORAGER",
+  "garden": "MASTER GARDENER",
+  "fish": "MASTER ANGLER",
+  "ento": "MASTER OF BUTTERFLIES",
+  "bird": "MASTER BIRDER",
+  "bee": "MASTER BEEKEEPER",
+  "gem": "MASTER OF GEMS"
+ },
+ "trainers": {
+  "mushroom": {
+   "name": "THE MUSHROOM SELLER",
+   "skills": [
+    "myco"
+   ]
+  },
+  "tomato": {
+   "name": "THE TOMATO",
+   "skills": [
+    "garden"
+   ]
+  },
+  "fisherman_in_waders": {
+   "name": "THE FISHERMAN IN WADERS",
+   "skills": [
+    "fish"
+   ]
+  },
+  "park_ranger": {
+   "name": "THE PARK RANGER",
+   "skills": [
+    "ento",
+    "bird"
+   ]
+  },
+  "village_gardener": {
+   "name": "THE VILLAGE GARDENER",
+   "skills": [
+    "bee"
+   ]
+  },
+  "scuba_diver": {
+   "name": "THE SCUBA DIVER",
+   "skills": [
+    "gem"
+   ]
+  }
+ },
+ "ladders": {
+  "myco": [
+   {
+    "item": "m_button",
+    "n": 3,
+    "pay": 2,
+    "where": "the mown lawn"
+   },
+   {
+    "item": "m_puffball",
+    "n": 3,
+    "pay": 3,
+    "where": "the pixel meadow"
+   },
+   {
+    "item": "m_inkcap",
+    "n": 2,
+    "pay": 3,
+    "where": "the mown lawn, after rain"
+   },
+   {
+    "item": "m_bolete",
+    "n": 2,
+    "pay": 4,
+    "where": "the leaf clumps"
+   },
+   {
+    "item": "m_morel",
+    "n": 1,
+    "pay": 5,
+    "where": "the round tufts, deep in the park"
+   }
+  ],
+  "garden": [
+   {
+    "item": "fl_dandelion",
+    "n": 3,
+    "pay": 2,
+    "where": "the mown lawn"
+   },
+   {
+    "item": "fl_bluebell",
+    "n": 3,
+    "pay": 3,
+    "where": "the round tufts"
+   },
+   {
+    "item": "fl_daisy",
+    "n": 2,
+    "pay": 3,
+    "where": "the mown lawn"
+   },
+   {
+    "item": "fl_aster",
+    "n": 2,
+    "pay": 4,
+    "where": "the leaf clumps"
+   },
+   {
+    "item": "fl_iris",
+    "n": 1,
+    "pay": 5,
+    "where": "the round tufts, deep in the park"
+   }
+  ],
+  "fish": [
+   {
+    "item": "x_perch",
+    "n": 3,
+    "pay": 2,
+    "where": "the pier"
+   },
+   {
+    "item": "x_crab",
+    "n": 2,
+    "pay": 3,
+    "where": "a crab pot off the pier"
+   },
+   {
+    "item": "x_eel",
+    "n": 1,
+    "pay": 3,
+    "where": "the pier, at night"
+   },
+   {
+    "item": "x_catfish",
+    "n": 1,
+    "pay": 4,
+    "where": "the river, at dusk"
+   },
+   {
+    "item": "x_bass",
+    "n": 1,
+    "pay": 5,
+    "where": "the deep river from a boat, at dusk"
+   }
+  ],
+  "ento": [
+   {
+    "item": "bf:Cabbage White",
+    "n": 2,
+    "pay": 2,
+    "where": "the mown lawn"
+   },
+   {
+    "item": "bf:Monarch",
+    "n": 2,
+    "pay": 3,
+    "where": "the crown tufts"
+   },
+   {
+    "item": "bf:Red Admiral",
+    "n": 1,
+    "pay": 3,
+    "where": "the round tufts"
+   },
+   {
+    "item": "bf:Mourning Cloak",
+    "n": 1,
+    "pay": 4,
+    "where": "the soft tussocks"
+   },
+   {
+    "item": "bf:Karner Blue",
+    "n": 1,
+    "pay": 5,
+    "where": "the mown lawn, deep in the park"
+   }
+  ],
+  "bird": [
+   {
+    "item": "bird:HOUSE SPARROW",
+    "n": 1,
+    "pay": 2,
+    "where": "the street kerb"
+   },
+   {
+    "item": "bird:AMERICAN ROBIN",
+    "n": 1,
+    "pay": 3,
+    "where": "the park lawn"
+   },
+   {
+    "item": "bird:BLUE JAY",
+    "n": 1,
+    "pay": 3,
+    "where": "the park lawn"
+   },
+   {
+    "item": "bird:NORTHERN CARDINAL",
+    "n": 1,
+    "pay": 4,
+    "where": "the bushes and flower beds"
+   },
+   {
+    "item": "bird:BALTIMORE ORIOLE",
+    "n": 1,
+    "pay": 5,
+    "where": "deep in the park"
+   }
+  ],
+  "bee": [
+   {
+    "item": "honey_wild",
+    "n": 2,
+    "pay": 2,
+    "where": "a hive on the lawn"
+   },
+   {
+    "item": "honey_clover",
+    "n": 2,
+    "pay": 3,
+    "where": "a hive among clover"
+   },
+   {
+    "item": "honey_lav",
+    "n": 1,
+    "pay": 3,
+    "where": "a hive among lavender"
+   },
+   {
+    "item": "honey_sun",
+    "n": 1,
+    "pay": 4,
+    "where": "a hive among sunflowers"
+   },
+   {
+    "item": "honey_moon",
+    "n": 1,
+    "pay": 5,
+    "where": "a hive deep in the park, by night"
+   }
+  ],
+  "gem": [
+   {
+    "item": "quartz",
+    "n": 3,
+    "pay": 2,
+    "where": "the dungeon's first hall"
+   },
+   {
+    "item": "amethyst",
+    "n": 2,
+    "pay": 3,
+    "where": "the dungeon's first hall"
+   },
+   {
+    "item": "geode",
+    "n": 2,
+    "pay": 3,
+    "where": "the dungeon's second level"
+   },
+   {
+    "item": "opal",
+    "n": 1,
+    "pay": 4,
+    "where": "the dungeon's third level"
+   },
+   {
+    "item": "emerald",
+    "n": 1,
+    "pay": 5,
+    "where": "the dungeon's deepest level"
+   }
+  ]
+ }
+}

@@ -44,6 +44,7 @@ the physics extras (darts now twice at the bar) · NPC voices (lifts the
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Market St and West St, the rest (owner, 5 Nov)** · P1 · L · code. After the re-lay (#TBD): the old shops' outsides as their Polyfork buildings (bank, bar, theatre, playhouse, arcade, art, bodega, bath); two flats a floor and the whole-floor penthouse for sale (a number maps to house, floor, flat; the shell's size); what the florist, tailor, barber, antiques, hotel, fish market and the outfitter sell (the outfitter: every skill's gear); the Museum of Earth's lot. The row has no room for 8 m garages: ask the owner about opening Market St west of West St.
 - [ ] **Run the full checks on `main` once** · P1 · S · check. Start the workflow on `main` with `full`. No full run exists since 4 Nov:
   #576 and other merges went in after the last `main` run (6dfc80f5, 16:05 UTC), and the skate park's tricks (#552) passed CI only on
   their pull request. The run also confirms lines that look fixed (close each if it passes):
@@ -217,6 +218,7 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
   planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
 - [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).

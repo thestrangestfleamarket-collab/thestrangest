@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {GRASS} from './014a-grass.js';
 import {FLORA} from './142a-flora.js';
 const BFLY={}; window.BFLY=BFLY;
@@ -24,21 +25,21 @@ const BFLY={}; window.BFLY=BFLY;
   { let n=FORAGE.has('frame'); if(n>0){ FORAGE.take('frame',n); INV.cash+=n*4; } for(let k=0;k<NK;k++){ n=FORAGE.has('s_'+k); if(n>0)FORAGE.take('s_'+k,n); } }
   // your log of what you caught
   const L={v:1,got:{}}; try{ const D=JSON.parse(OWNED.get('bflylog')||'null'); if(D&&D.v===1)Object.assign(L,D); }catch(e){} const saveL=()=>{ try{ OWNED.set('bflylog',JSON.stringify(L)); }catch(e){} }, got=k=>{ L.got[k]=(L.got[k]||0)+1; saveL(); };
-  FORAGE.BOOK.push({id:'bfly',title:'BUTTERFLIES',rows:()=>BF_KINDS.map((b,k)=>[b[0].toUpperCase(),!!L.got[k],L.got[k]?'CAUGHT '+L.got[k]:'',k>=12]),foot:'Each grass has its own butterflies and one rare, found only deep in the park. Keep them in jars, sell them, or let them go.'});
+  FORAGE.BOOK.push({id:'bfly',title:'BUTTERFLIES',rows:()=>BF_KINDS.map((b,k)=>[b[0].toUpperCase(),!!L.got[k],L.got[k]?'CAUGHT '+L.got[k]:'',k>=12]),foot:'Each of the six grasses has a common, a rare and a super-rare butterfly; the super-rare only deep in the park, once the Park Ranger ranks you high enough. Keep them in jars, sell them, or let them go.'});
   BFLY.L=L;
   const CH=new Map(), DEEP=10, pickC=r=>{ r*=CS; for(let i=0;i<12;i++)if((r-=COMMON[i])<0)return i; return 0; };
   // each grass kind's own butterflies and its one rare (GRASS), by name
-  const KI=n=>Math.max(0,BF_KINDS.findIndex(b=>b[0]===n)), BK=Object.fromEntries(GRASS.K.map(k=>[k.id,{c:k.bf.map(KI),r:KI(k.rare)}])), inGrass=(x,z,r,r2)=>{ const G=BK[WEEDS.kindAt(x,z)]; return G?r<.06?(G.rs?G.rs[Math.floor(r2*G.rs.length)]:G.r):G.c[Math.floor(r2*G.c.length)]:pickC(r2); };
-  // one grass everywhere (GRASS.only): it keeps every grass's butterflies and rares
-  if(GRASS.only)BK[GRASS.only]={c:[...new Set(GRASS.K.flatMap(k=>k.bf.map(KI)))],r:-1,rs:GRASS.K.map(k=>KI(k.rare))};
+  const KI=n=>Math.max(0,BF_KINDS.findIndex(b=>b[0]===n)), BK=Object.fromEntries(GRASS.K.map(k=>[k.id,{c:KI(k.bf.c),r:KI(k.bf.r),s:KI(k.bf.s)}])), BTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)BTIER[KI(k.bf[t])]=t; BFLY.BTIER=BTIER; for(const i in BTIER)ITEMS.reg('b_'+i,{tier:{c:'common',r:'rare',s:'super'}[BTIER[i]]});
+  const inGrass=(x,z,r,r2,deep)=>{ const G=BK[WEEDS.kindAt(x,z)]; if(!G)return pickC(r2); const k=RARITY.pickFrom(deep?G:{c:G.c,r:G.r},r,'ento',r2); return k==null?pickC(r2):k; };   // a common, a rare and a super-rare per grass; the super-rare only deep in the park
+  if(GRASS.only)BK[GRASS.only]={c:GRASS.K.map(k=>KI(k.bf.c)),r:GRASS.K.map(k=>KI(k.bf.r)),s:GRASS.K.map(k=>KI(k.bf.s))};
   const spawn=(key,grp)=>{ const Q=grp.sq; if(!Q||Q.length<9)return []; const turn=Math.floor((window.CLOCK?CLOCK.h:12)/2), d=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+turn, out=[];
     const i0=3*Math.floor(hsh(Q[0]/T,Q[2]/T,301)*(Q.length/3)), cx=Q[i0], cz=Q[i0+2], park=WEEDS.inPark(cx,cz), deep=WEEDS.inPark(cx,cz,DEEP), n=park&&!PARK.in?0:park?(hsh(cx/T+d,cz/T,303)<(window.FLORA&&FLORA.beds.length?.35:.7)?1+(hsh(cz/T,cx/T+d,305)<.35?1:0):0):(hsh(cx/T+d,cz/T,303)<.18?1:0);
     for(let j=0;j<n;j++){ const P=[]; for(let i=0;i<Q.length&&P.length<6;i+=3){ const x=Q[i], z=Q[i+2]; if(Math.hypot(x-cx,z-cz)>3.5*T||hsh(x/T+j,z/T+d,307)>.35)continue; P.push([x,grp.top(x,Q[i+1],z)+(.15+.7*hsh(z,x,309))*WU,z]); }
-      if(P.length<3)continue; const r=hsh(cx/T+j*7,cz/T+d,311), k=inGrass(cx,cz,deep?r:1,hsh(cx/T+d*3,cz/T+j,315));
+      if(P.length<3)continue; const r=hsh(cx/T+j*7,cz/T+d,311), k=inGrass(cx,cz,r,hsh(cx/T+d*3,cz/T+j,315),deep);
       const b=BF.add(k,P); wild(b); b.chunk=key; b.home=[cx,cz]; out.push(b); hit(b); } return out; };
   const BEDR=24*T, bedSpawn=d=>{ const dd=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+Math.floor((window.CLOCK?CLOCK.h:12)/2), r=hsh(d.x/T+dd,d.z/T,321), n=d.street?(r<.2?1:0):r<.4?1:r<.6?2:0, out=[]; if(!n)return out;
     const P=d.p.concat(...FLORA.beds.filter(o=>o!==d&&!o.street&&Math.hypot(o.x-d.x,o.z-d.z)<7*T).slice(0,2).map(o=>o.p)); if(P.length<2)return out; const deep=WEEDS.inPark&&WEEDS.inPark(d.x,d.z,DEEP);
-    for(let j=0;j<n;j++){ const k=deep&&hsh(d.z/T+j,d.x/T+dd,323)<.06?12+Math.floor(hsh(d.x/T,d.z/T+j+dd,325)*(NK-12)):pickC(hsh(d.x/T+dd*3,d.z/T+j,327)), b=BF.add(k,P), i=Math.floor(hsh(j,d.id+dd,329)*P.length);
+    for(let j=0;j<n;j++){ const k=deep&&hsh(d.z/T+j,d.x/T+dd,323)<.06&&RARITY.open('ento')?12+Math.floor(hsh(d.x/T,d.z/T+j+dd,325)*(NK-12)):pickC(hsh(d.x/T+dd*3,d.z/T+j,327)), b=BF.add(k,P), i=Math.floor(hsh(j,d.id+dd,329)*P.length);
       b.at=b.to=i; b.g.position.set(...P[i]); wild(b); b.chunk='bed:'+d.id; out.push(b); hit(b); } return out; };
   const beds=()=>{ if(!window.FLORA||!FLORA.beds.length||SHARED.LVL!=='up')return; for(const d of FLORA.beds){ const key='bed:'+d.id, far=!d.street&&!PARK.in?1e9:Math.hypot(d.x-pos.x,d.z-pos.z);
     if(far<BEDR&&!CH.has(key))CH.set(key,bedSpawn(d)); else if(far>BEDR+10*T&&CH.has(key)){ CH.get(key).forEach(drop); CH.delete(key); } } };

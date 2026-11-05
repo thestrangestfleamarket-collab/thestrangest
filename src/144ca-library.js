@@ -222,3 +222,4 @@ const LIB={data:null,max:5}; window.LIB=LIB;
         put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
   window.LIBDBG=()=>({data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,i:cur.i,lines:cur.L.length,pages:Math.ceil(cur.L.length/LPP)}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
 }
+export {LIB};

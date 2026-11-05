@@ -1,0 +1,17 @@
+{
+ "note": "Named points on baked models (5 Nov 2026, from Nevaland's required nodes): by kind (the data file), a record's own or the kind's \"*\", in the model's own frame before scale. A fish is unit length, nose at +x. ANCHORS (141fb) reads them; the asset contract check keeps them whole.",
+ "fishes": {
+  "*": {
+   "mouth": [
+    0.5,
+    0,
+    0
+   ],
+   "tail": [
+    -0.5,
+    0,
+    0
+   ]
+  }
+ }
+}

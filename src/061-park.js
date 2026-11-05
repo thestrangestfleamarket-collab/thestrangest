@@ -378,11 +378,11 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
   P.stand=NOTREES?null:mesh(TREES.slice(0,NI),true,false,false,{cards:2,far:1,lod:'far'}); P.standFar=NOTREES?null:mesh(TREES.back,false,false,false,{cards:2,far:1});
   // far trees simple (owner, 30 Oct 2026): a park tree is drawn whole within 25 tiles of you and as its leaf-card stand-in further off, the two dithered into each other over the 4 tiles round that (4 Nov 2026, no pop); none past the haze; a tree moved in the world editor keeps every tree whole
-  { const NEAR=25*TILE; let lx=1e9, lz=1e9, lr=-1, li=null;
+  { const NEAR=25*TILE; let lx=1e9, lz=1e9, lr=-1, li=null, lk=1;
     const set=(me,id,on)=>{ if(id>=0&&!(me.userData.gone&&me.userData.gone.has(id)))me.setVisibleAt(id,on); };
     PARK.lod=()=>{ const A=PARK.trees, B=P.stand, R=PARK.ring, inn=!!P.in; if(!A||!A.isBatchedMesh||!B||!B.isBatchedMesh)return; B.visible=true;
-      if(Math.hypot(pos.x-lx,pos.z-lz)<TILE&&CULL.R===lr&&inn===li)return; lx=pos.x; lz=pos.z; lr=CULL.R; li=inn; const far=CULL.R>0?CULL.R:1e9, ed=A.userData.edited, all=!!(ed&&ed.size), BW=2*TILE, b0=all?1e9:inn?NEAR-BW:-1e9; PARK.lodBand.value.set(b0,all?1e9+1:inn?NEAR+BW:-1e9+1);
-      A.userData.items.forEach((it,i)=>{ const d=Math.hypot(it.x-pos.x,it.z-pos.z)-it.r, keep=!!(ed&&ed.has(A.userData.ids[i])), past=d>far&&!keep, near=all||inn&&d<NEAR+BW, stand=!all&&(!inn||d>NEAR-BW);
+      if(Math.hypot(pos.x-lx,pos.z-lz)<TILE&&CULL.R===lr&&inn===li&&(SHARED.lodK||1)===lk)return; lx=pos.x; lz=pos.z; lr=CULL.R; li=inn; lk=SHARED.lodK||1; const far=CULL.R>0?CULL.R:1e9, ed=A.userData.edited, all=!!(ed&&ed.size), BW=2*TILE, NR=NEAR*(SHARED.lodK||1), b0=all?1e9:inn?NR-BW:-1e9; PARK.lodBand.value.set(b0,all?1e9+1:inn?NR+BW:-1e9+1);
+      A.userData.items.forEach((it,i)=>{ const d=Math.hypot(it.x-pos.x,it.z-pos.z)-it.r, keep=!!(ed&&ed.has(A.userData.ids[i])), past=d>far&&!keep, near=all||inn&&d<NR+BW, stand=!all&&(!inn||d>NR-BW);
         set(A,A.userData.ids[i],near&&!past); set(B,B.userData.ids[i],stand&&!past); });
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };

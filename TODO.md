@@ -206,6 +206,20 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.
+  - Kept after all: climbing (trees stay in the game, none placed yet), skateboards and tricks, clothes (on a bodega rack; armour stays
+    archived), spray paint, cat food and fish food (Mango and a fish tank by the bodega register), gem cutting (the gem wheel), the golems
+    (they move to the dungeon; the Golems' Cave stays archived), the octopus drummer (not the pianist or the singer; the playhouse's
+    actors are archived too), the Bedsheet, the night ghosts, the kid in the ghost costume, the Squirrel Knight, Rosie's art museum tour,
+    the platform security drones, every book.
+  - Every skill has a teacher who sells and buys its gear: foraging and mycology the Mushroom Seller; gardening the Tomato; fishing the
+    Fisherman in Waders at the pier; entomology and birding the Park Ranger; beekeeping the Village Gardener; bookbinding the Professor;
+    swordsmanship the Samurai Warrior; martial arts the Squirrel Knight; climbing the Forest Ranger; golf the Game Master by the
+    Holodeck. The Scuba Diver sells diving gear and the gem wheel. Cooking, alchemy, prospecting and midway games are archived.
+  - The bank: near it, say BANK in chat and your vault opens (a container window like the bag); no tellers.
+  - Remove every owner editor from the game, the /editor page too ("i will add back from scratch later"); players keep Decorate, the
+    Designer and the Painter.
+
 - [ ] **Archive the items** · P1 · L · code · risk high · queued with the character and places archives, owner says when to start (5 Nov).
   Owner, 4 Nov: "remove all items except" these.
   - Stay: foraging and gardening (mushrooms, flowers, seeds, fruit, vegetables, pots, dirt, rain, acorns, bonsai, cacti), bees and honey,

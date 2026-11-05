@@ -86,12 +86,15 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   clothes branch, stopped part way). Redo it on today's main with `tests/budget.cjs` (CI "measure" check). The baseline moved since: three
   r160→r186 (8e7626d4), the BatchedMesh cull (8bc04ece), the Drive models' shadows only near. Isolate the freeze below first; it skews the
   start-up numbers. Feeds every line in this area.
-- [ ] **Freeze about 20 s after the start** · P1 · M · code (owner's go first: he never asked) · risk med. `WINDOWS.first` in
+- [x] **Freeze about 20 s after the start** (done 4 Nov, his pick "Same look, in pieces": the bodega's window pictures taken in small idle steps; the 5.4 s stall in the test browser is gone) · P1 · M · code · risk med. `WINDOWS.first` in
   `src/130a-windows.js:72–75` runs 4 s after the start and, for each off-map inside with windows looking in, builds the whole inside
   (`ROOMS.offBuild`), takes its window pictures (`WINDOWS.bake`), saves them in `localStorage` and drops the inside, all at once on the main
   thread: seconds of stall on a fresh visit. Likely worse since the merchant shops got glass both ways (4 Nov). Fix: a piece per frame,
   nearest first (like `BATCH.tick`), or only when you first come near (shops already build live when near since 4 Nov). Check: frame gaps in
   the first 30 s with `?fresh=1`. Makes `tests/online.cjs` flaky. With: "Live windows" (same file).
+- [ ] **Two more stalls at the start, not the windows** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`, the window pictures off):
+  about 8 s as the start ends and 3.7–4.5 s about 10 s later. Find what runs then (shader compiles, `BATCH` painting, the first lights?) before
+  the tree-shadow work; the comparison line above measures them on a real card.
 - [ ] **Tree shadows: the lag in the owner's render-inspector shot** · P1 · M · pick + code · risk med. Owner, 2 Nov: "extremely laggy.",
   Market St near 32,25 at night, 10 FPS. Measured then: the park's leaf-card trees (about 148k triangles) and the street oaks (about 23k)
   cast shadows, and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps) draws them again: about 1,000 calls and

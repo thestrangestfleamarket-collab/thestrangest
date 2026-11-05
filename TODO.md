@@ -28,14 +28,13 @@ Risk is noted only when it isn't low.
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
-the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
+the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-VR on the Quest 3 (and the painter in it).
+VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).
 
 **To pick** (one batch; each line is in its area below):
 draw distance (one control or two, and the default) · tree shadows (option 1, 2 or 3, after the re-measure) · tree crowns (A–F) and trees
-by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the tee in one
-piece · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
+by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
@@ -349,16 +348,20 @@ One tree pass after the tree-shadow pick (more leaves mean more shadow triangles
 ## Clothes and the Walker
 
 One clothes review for the owner, then one pull request; portraits with `node tests/clothes.cjs dist/market.html <dir>`.
-- [ ] **The jeans in play** · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
+- [x] **The jeans in play** (dropped 5 Nov: the Walker is removed, the avatar is the only body) · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
 - [ ] **The shoes key M sits next to the map (Shift+M)** · P2 · S · pick. 2 Nov: his feet went bare, likely from pressing M for the map
   (barefoot matters for foraging). `shoes:'m'` in `src/094-ui.js:25`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; he picks the
   key. Update the keys list with it.
-- [ ] **Clothes leftovers** · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
+- [x] **Clothes leftovers** (dropped 5 Nov: the Walker is removed) · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
   jeans' seat back stays with the hips, `ks` in `MAKE.pants`, `src/072b-garb.js:159`); his forearm passes through the jeans at the hip when
   his arm swings behind him; stray pixels near the hips on some walking frames. The new Mesh2Motion poses may show more.
-- [ ] **The tee in one piece, like the jeans** · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
+- [x] **The tee in one piece, like the jeans** (dropped 5 Nov: the Walker is removed) · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
   tube with set-in sleeves that overlap at the shoulder (`MAKE.shirt`, `src/072b-garb.js:128`). Only if he wants it (no seam showed in any
   portrait), and after the jeans' yes.
+- [x] **The Polyfork avatar** (done 5 Nov) · P1 · L · code. AVATAR on YOU's BODY row (`src/111c-avatar.js`, `tests/avatar.cjs`; bake: `node tools/pfavatar-bake.mjs`
+  then `python3 tools/pfavatar-pack.py`, the adult cast's Polyfork modules in `.polyfork/mods/`). YOU redone around it (tabs, `LOOKS.add`). Waits for his look and yes.
+- [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
+  held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
 
 ## Moves (Mesh2Motion)
 

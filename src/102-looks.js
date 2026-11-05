@@ -1,4 +1,4 @@
-// THE LOOKS: LOOKS keeps the player's name, colours, hair and body shape and puts them on the Walker.
+// THE LOOKS: LOOKS keeps the player's name and shoes, and YOU, the window you change your look in (the avatar's lines join it: 111c).
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -37,32 +37,52 @@ LOOKS.over={};
   const feet=()=>{ if(!L.bare)return; const A=W3.mesh.geometry.attributes, n=A.mat.count, SK=W3.ramp[MATS.indexOf('skin')]; if(!SK)return;
     for(let i=0;i<n;i++){ const P=W3.pcs[A.pidx.getX(i)|0]; if(P&&/^shoe/.test(P.n))put(A,i,SK); } for(const k of ['c0','c1','c2','cd','color'])if(A[k])A[k].needsUpdate=true; };
   LOOKS.shoes=on=>{ '@later'; on=on===undefined?L.bare:!!on; if(on===!L.bare)return; L.bare=!on; save(); if(typeof RIG!=='undefined'&&RIG.act&&!st.move){ RIG.act(st,'C'); setTimeout(()=>RIG.release(st,'C'),650); }
-    setTimeout(()=>{ LOOKS.refresh(); draw(); },320); SAY(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
+    setTimeout(()=>{ LOOKS.refresh(); draw(); if(LOOKS.onChange)LOOKS.onChange(); },320); SAY(on?'YOU PUT YOUR SHOES BACK ON.':'YOU TAKE OFF YOUR SHOES.'); };
   const apply=()=>{ const set=(m,h)=>{ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones(h); }; for(const k in COL)set(k,LOOKS.over[k]||COL[k]); { const i=MATS.indexOf('lid'); if(i>=0)W3.ramp[i]=tones(COL.skin).map(c=>c.multiplyScalar(.78)); } { const h=new THREE.Color(COL.hair); for(const [m,k] of [['hairHi',1.2],['hairLo',.78]]){ const i=MATS.indexOf(m); if(i>=0)W3.ramp[i]=tones('#'+h.clone().multiplyScalar(k).getHexString()); } } recolor();
     for(let k=0;k<7;k++){ const i=W3.idx('eyes'+k); if(i>=0)W3.HIDE[i]=k!==6; } layers(); if(W3.dress)W3.dress(); else if(W3.reindex)W3.reindex(); };
-  const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:330px;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
+  // YOU (owner, 5 Nov 2026: "redo the character menu to fit this new avatar, make sure has all options and fits on screen"): your name and three tabs, LOOK, WEAR (the avatar's clothes) and WORDS;
+  // every option one line, its name on the left (LOOKS.add), only the ones for the body you wear (LOOKS.who); wide and short so it fits the screen, one column on a phone
+  const css=document.createElement('style'); css.textContent=`#looks{position:fixed;right:12px;top:12px;width:min(860px,calc(100vw - 24px));box-sizing:border-box;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel,#10131b);border:2px solid var(--line,#2a3040);color:var(--fg,#d8dbe4);font:11px var(--pixel,monospace);padding:12px;z-index:30}
     #looks h2{margin:0 0 8px;font-size:13px;color:#ffd27a;letter-spacing:1px} #looks h3{margin:10px 0 4px;font-size:10px;color:var(--dim,#8a8f9c);letter-spacing:1px}
     #looks .row{display:flex;flex-wrap:wrap;gap:4px;align-items:center} #looks button{font:inherit;color:inherit;background:#1a1f2b;border:2px solid #2a3040;padding:3px 6px;cursor:pointer} #looks button[aria-pressed=true]{border-color:#ffd27a;color:#ffd27a}
-    #looks input[type=text]{font:inherit;background:#0b0d13;color:inherit;border:2px solid #2a3040;padding:3px;width:180px}
+    #looks.ml button[aria-pressed="true"]{color:#020a06!important;background:#7dffa8!important}
+    #looks input[type=text]{font:inherit;background:#0b0d13;color:inherit;border:2px solid #2a3040;padding:3px;width:220px;max-width:100%}
+    #looks .lhd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px} #looks .ltabs{display:flex;gap:4px;margin-left:auto} #looks .ltabs button[data-t]{min-width:84px}
+    #looks .ltab{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;align-items:center} #looks .ltab[hidden]{display:none}
+    #looks .lr{display:contents} #looks .lr[hidden]{display:none} #looks .lk{color:var(--dim,#8a8f9c);letter-spacing:1px;white-space:nowrap} #looks .lr.full>.lv{grid-column:1/-1}
+    #looks .lv{min-width:0} #looks .lv>.row{gap:2px 4px}
+    #looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr) 110px minmax(0,1fr)}
+    @media (max-width:640px){ #looks .ltab,#looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr)} #looks .ltabs{margin-left:0} }
 `;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='looks'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Your character');
-  P.innerHTML=`<h2>YOU</h2><div class="row"><input type="text" id="lname" maxlength="24" placeholder="your name"><button id="lclose">CLOSE</button></div>
-    <h3>BUILD</h3><div class="row" id="lform"></div><h3>HAIR</h3><div class="row" id="lhair"></div><h3 id="lbeardh">BEARD</h3><div class="row" id="lbeard"></div>
-    <h3>SHOES</h3><div class="row"><button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span></div>`;
+  P.innerHTML=`<h2>YOU</h2><div class="lhd"><input type="text" id="lname" maxlength="24" placeholder="your name" aria-label="your name"><div class="ltabs" role="tablist"><button data-t="look" role="tab">LOOK</button><button data-t="wear" role="tab">WEAR</button><button data-t="words" role="tab">WORDS</button></div><button id="lclose">CLOSE</button></div>
+    <div class="ltab" data-t="look" role="tabpanel"></div><div class="ltab" data-t="wear" role="tabpanel"></div><div class="ltab" data-t="words" role="tabpanel"></div>`;
   document.body.appendChild(P);
-  const rows=[['#lform','form',[['M','MALE'],['F','FEMALE']]],['#lhair','hair',HAIRS],['#lbeard','beard',BEARDS]];
-  for(const [id,k,list] of rows)$(id).innerHTML=list.map(([v,t])=>`<button data-${k}="${v}">${t}</button>`).join('');
-  LOOKS.style=(k,v)=>{ '@later'; L[k]=v; if(L.form==='F')L.beard=''; save(); W3.style={form:L.form,hair:L.hair,beard:L.beard}; W3.dress(); if(k==='form')LOOKS.refresh(); draw(); };
-  for(const [id,k] of rows)$(id).onclick=e=>{ const b=e.target.closest('button'); if(b)LOOKS.style(k,b.dataset[k]); };
-  const draw=()=>{ '@later'; $('#lname').value=L.name; for(const [id,k] of rows)for(const b of $(id).children)b.setAttribute('aria-pressed',String(b.dataset[k]===L[k])); $('#lbeard').hidden=$('#lbeardh').hidden=L.form==='F'; $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
+  // a line of the window: key, its name (none: the whole width), what you set it with; o.tab (look, wear, words), o.who (walker or avatar: shown only while you wear that body), o.order
+  let tab='look'; LOOKS.who=()=>'avatar';
+  LOOKS.add=(key,label,el,o={})=>{ const T=P.querySelector(`.ltab[data-t="${o.tab||'look'}"]`), r=document.createElement('div'); r.className='lr'+(label?'':' full'); r.dataset.k=key; r.dataset.o=o.order??50; if(o.who)r.dataset.who=o.who;
+    r.innerHTML=label?`<span class="lk">${label}</span>`:''; const v=document.createElement('div'); v.className='lv'; v.appendChild(el); r.appendChild(v);
+    const after=[...T.children].find(x=>+x.dataset.o>+r.dataset.o); T.insertBefore(r,after||null); LOOKS.layout(); return r; };
+  LOOKS.layout=()=>{ const who=LOOKS.who();
+    for(const r of P.querySelectorAll('.lr'))r.hidden=!!(r.dataset.who&&r.dataset.who!==who)||r.dataset.off==='1';
+    for(const b of P.querySelectorAll('.ltabs [data-t]')){ const T=P.querySelector(`.ltab[data-t="${b.dataset.t}"]`); b.hidden=![...T.children].some(r=>!r.hidden); }
+    if(P.querySelector(`.ltabs [data-t="${tab}"]`).hidden)tab='look';
+    for(const T of P.querySelectorAll('.ltab'))T.hidden=T.dataset.t!==tab;
+    for(const b of P.querySelectorAll('.ltabs [data-t]')){ const on=String(b.dataset.t===tab); b.setAttribute('aria-pressed',on); b.setAttribute('aria-selected',on); } };
+  LOOKS.tab=t=>{ tab=t; LOOKS.layout(); };
+  P.querySelector('.ltabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b)LOOKS.tab(b.dataset.t); };
+  const line=(id,html)=>{ const d=document.createElement('div'); d.className='row'; d.id=id; if(html)d.innerHTML=html; return d; };
+  // (the Walker's own build, hair and beard are gone from YOU: the avatar is the only body you play, owner 5 Nov 2026; barefoot stays, it matters for foraging)
+  LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{order:7});
+  const draw=()=>{ '@later'; $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
   $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };
   // worn clothes dye your shirt or trousers (EQUIP sets LOOKS.over from the item's colour)
-  LOOKS.dye=()=>{ apply(); recolor(); };
-  LOOKS.open=()=>{ draw(); P.hidden=false; }; LOOKS.L=L; LOOKS.COL=COL;
+  LOOKS.dye=()=>{ apply(); recolor(); if(LOOKS.onChange)LOOKS.onChange(); };   // (onChange: the avatar takes the dyes and bare feet)
+  LOOKS.open=()=>{ draw(); LOOKS.layout(); P.hidden=false; }; LOOKS.L=L; LOOKS.COL=COL;
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(LEVELS.own(hit,'*'));
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
   UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>LOOKS.open()});

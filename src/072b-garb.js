@@ -1,7 +1,6 @@
-// THE CLOTHES: a real shirt, trousers, shoes, hat and jacket worn over the Walker, each its own mesh in photoreal fabric, cut to its own size chart and put on by the rig's joints (the jacket still fitted to the body); their loose parts hang and swing on DRAPE, kept out of his body: the shirt's and the jacket's lower body, the jacket's open front, the trouser cuffs and the sleeve ends.
+// THE CLOTHES: a real shirt, trousers, shoes, hat and jacket worn over the Walker, each its own mesh in plain cel cloth, cut to its own size chart and put on by the rig's joints (the jacket still fitted to the body); their loose parts hang and swing on DRAPE, kept out of his body: the shirt's and the jacket's lower body, the jacket's open front, the trouser cuffs and the sleeve ends.
 import {SHARED, THREE} from './003-shx.js';
 import {W3} from './003b-systems.js';
-import {renderer} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
 const GARB={};
@@ -15,42 +14,13 @@ const GARB={};
   const along=(n,t,r,a)=>{ const F=fr0(n), c=Math.cos(a)*r, s=Math.sin(a)*r; return V(F.o.x+F.y.x*t+F.x.x*c+F.z.x*s,F.o.y+F.y.y*t+F.x.y*c+F.z.y*s,F.o.z+F.y.z*t+F.x.z*c+F.z.z*s); };
   const J0=REST.J, LEN={upperArm:dist(J0.shoulderL,J0.elbowL),forearm:dist(J0.elbowL,J0.wristL),thigh:dist(J0.hipL,J0.kneeL),shin:dist(J0.kneeL,J0.ankleL)};
 
-  /* ---------- fabrics: painted the first time they are worn (a grey weave multiplied by the garment's colour, so dyes still work, and its bumps) ---------- */
-  const hsh=(x,y,s)=>{ let h=(x*374761393+y*668265263+s*982451653)|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
-  const vn=(x,y,Px,Py,s)=>{ const xi=Math.floor(x), yi=Math.floor(y), fx=x-xi, fy=y-yi, u=fx*fx*(3-2*fx), w=fy*fy*(3-2*fy), mx=k=>((k%Px)+Px)%Px, my=k=>((k%Py)+Py)%Py;
-    const a=hsh(mx(xi),my(yi),s), b=hsh(mx(xi+1),my(yi),s), c=hsh(mx(xi),my(yi+1),s), d=hsh(mx(xi+1),my(yi+1),s); return a+(b-a)*u+(c-a)*w+(a-b-c+d)*u*w; };
-  const fbm=(u,v,Px,Py,s,o)=>{ let t=0, a=.5, f=1, n=0; for(let i=0;i<o;i++){ t+=a*vn(u*Px*f,v*Py*f,Px*f,Py*f,s+i*7); n+=a; a*=.5; f*=2; } return t/n; };
-  const wave=x=>.5+.5*Math.cos((((x%1)+1)%1)*TAU);
-  // each: [height, lightness] at u,v in one tile (it repeats)
-  const PAINT={
-    jersey:(u,v)=>{ const cx=(u*40)%1, cy=(v*48)%1, r=1-Math.min(1,Math.abs(Math.abs(cx-.5)*2-cy)*2.4), n=fbm(u,v,64,64,1,2); return [r*.7+n*.3,.9+r*.07+(n-.5)*.08]; },
-    denim:(u,v)=>{ const r=wave(u*56+v*56), sl=fbm(u,v,40,6,5,3), n=fbm(u,v,128,128,9,2); return [r*.65+n*.35,.78+r*.1+(sl-.5)*.22+(n-.5)*.06]; },
-    canvas:(u,v)=>{ const r=wave(u*44-v*44), sl=fbm(u,v,24,24,11,3), wx=fbm(u,v,4,4,13,3), n=fbm(u,v,96,96,17,2); return [r*.6+n*.4,.86+r*.06+(sl-.5)*.12+(wx-.5)*.16]; },
-    leather:(u,v)=>{ const c=fbm(u,v,28,28,21,3), cr=1-Math.abs(c-.5)*2, b=fbm(u,v,5,5,23,3); return [cr*.8+fbm(u,v,64,64,25,2)*.2,.82+(1-cr)*.1+(b-.5)*.18]; },
-    felt:(u,v)=>{ const n=fbm(u,v,48,48,31,4), m=fbm(u,v,6,6,33,3); return [n,.88+(n-.5)*.1+(m-.5)*.1]; },
-    rubber:(u,v)=>{ const n=fbm(u,v,64,64,41,3), g=(v*20)%1<.5?1:0; return [n*.5+g*.5,.9+(n-.5)*.08]; },
-    band:(u,v)=>{ const r=wave(v*36), n=fbm(u,v,64,64,51,2); return [r*.8+n*.2,.86+r*.1]; },
-    lace:(u,v)=>{ const r=wave(u*12+v*12); return [r,.85+r*.12]; } };
-  // r roughness, m metal, sh/shr cloth sheen, cc/ccr a waxed or polished coat, ns bump strength, TS the size of one tile in rig units, N its pixels
-  const DEF={jersey:{r:.84,sh:.55,shr:.55,ns:.5,TS:3.2,N:256},denim:{r:.86,sh:.28,shr:.5,ns:.75,TS:2.4,N:256},canvas:{r:.74,sh:.32,shr:.55,cc:.14,ccr:.55,ns:.6,TS:2.6,N:256},
-    leather:{r:.46,cc:.4,ccr:.3,ns:.5,TS:2.2,N:128},felt:{r:.96,sh:.75,shr:.8,ns:.35,TS:3.4,N:128},rubber:{r:.9,ns:.4,TS:1.6,N:128},band:{r:.55,sh:.45,shr:.4,ns:.55,TS:1.2,N:128},
-    lace:{r:.8,sh:.3,ns:.4,TS:1,N:64},brass:{r:.32,m:.85}};
+  // each fabric's tile size in rig units (TS: the garments' uv scale)
+  const DEF={jersey:{TS:3.2},denim:{TS:2.4},canvas:{TS:2.6},leather:{TS:2.2},felt:{TS:3.4},rubber:{TS:1.6},band:{TS:1.2},lace:{TS:1},brass:{}};
   const COL=GARB.COL={shirt:'#e2dccd',pants:'#3a5070',jacket:'#6b6844',shoes:'#5b3b25',hat:'#3a3531',sole:'#2b2622',lace:'#2a201a',band:'#1e1b1a',belt:'#3a2517',buckle:'#b8954f'};
-  const FAB={}, MAT={};
-  const paint=k=>{ const N=DEF[k].N, f=PAINT[k], H=new Float32Array(N*N), cv=document.createElement('canvas'), nv=document.createElement('canvas'); cv.width=cv.height=nv.width=nv.height=N;
-    const g=cv.getContext('2d'), im=g.createImageData(N,N), ng=nv.getContext('2d'), ni=ng.createImageData(N,N);
-    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const r=f(x/N,y/N), i=y*N+x, c=Math.max(0,Math.min(1,r[1]))*255, o=i*4; H[i]=r[0]; im.data[o]=im.data[o+1]=im.data[o+2]=c; im.data[o+3]=255; }
-    const h=(x,y)=>H[((y+N)%N)*N+(x+N)%N], kb=3;
-    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const dx=(h(x+1,y)-h(x-1,y))*kb, dy=(h(x,y+1)-h(x,y-1))*kb, l=Math.hypot(dx,dy,1), o=(y*N+x)*4;
-      ni.data[o]=(-dx/l*.5+.5)*255; ni.data[o+1]=(dy/l*.5+.5)*255; ni.data[o+2]=(1/l*.5+.5)*255; ni.data[o+3]=255; }
-    g.putImageData(im,0,0); ng.putImageData(ni,0,0);
-    const map=new THREE.CanvasTexture(cv), nm=new THREE.CanvasTexture(nv); map.colorSpace=THREE.SRGBColorSpace;
-    const an=renderer.capabilities?renderer.capabilities.getMaxAnisotropy():1; for(const t of [map,nm]){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.anisotropy=Math.min(8,an); }
-    return {map,nm}; };
-  const mat=(k,c)=>{ const q=k+c; if(MAT[q])return MAT[q]; const D=DEF[k], o={color:new THREE.Color(c),roughness:D.r,metalness:D.m||0,side:THREE.DoubleSide};
-    if(PAINT[k]){ const f=FAB[k]||(FAB[k]=paint(k)); o.map=f.map; o.normalMap=f.nm; o.normalScale=new THREE.Vector2(D.ns,D.ns); }
-    if(D.sh){ o.sheen=D.sh; o.sheenRoughness=D.shr; o.sheenColor=new THREE.Color(c).lerp(new THREE.Color(0xffffff),.35); } if(D.cc){ o.clearcoat=D.cc; o.clearcoatRoughness=D.ccr; }
-    const M=new THREE.MeshPhysicalMaterial(o);
+  const MAT={};
+  // cloth in the game's cel: the Walker's own toon steps in the garment's colour, no woven texture
+  const mat=(k,c)=>{ const q=k+c; if(MAT[q])return MAT[q];
+    const M=new THREE.MeshToonMaterial({color:new THREE.Color(c),gradientMap:W3.GP,side:THREE.DoubleSide});
     // the inside of a garment is in its own shade, as real cloth is: a fold or an open hem shows dark, never lit like the outside
     // in shade it keeps the Walker's own least light (his darkest tone), so it never goes black
     M.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n { vec3 al=max(diffuseColor.rgb,vec3(.02)); vec3 L0=(reflectedLight.directDiffuse+reflectedLight.indirectDiffuse)/al*3.14159; float m0=max(L0.r,max(L0.g,L0.b)); if(m0<.45) reflectedLight.indirectDiffuse+=al/3.14159*(.45-m0); }\n if(!gl_FrontFacing){ reflectedLight.directDiffuse*=.25; reflectedLight.indirectDiffuse*=.4; reflectedLight.directSpecular*=0.; reflectedLight.indirectSpecular*=0.; }'); };

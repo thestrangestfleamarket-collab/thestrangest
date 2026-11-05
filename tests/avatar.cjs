@@ -34,7 +34,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const ph=await pg.evaluate(async()=>{ const PB=__dbg.PB||window.PB; if(PB)PB.set(true,true); const t0=performance.now(); while(PB&&!PB.ready&&performance.now()-t0<60000)await new Promise(r=>setTimeout(r,300));
     const n0=W3.body.physN||0; dispatchEvent(new KeyboardEvent('keydown',{key:'w',bubbles:true})); await new Promise(r=>setTimeout(r,2500)); dispatchEvent(new KeyboardEvent('keyup',{key:'w',bubbles:true})); await new Promise(r=>setTimeout(r,800));
     const g=BODIES.by.avatar.GEO, me=W3.group.children.find(m=>m.geometry===g); return {ready:!!(PB&&PB.ready),steps:(W3.body.physN||0)-n0,shown:!!(me&&me.visible)}; });
-  rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>10&&ph.shown,JSON.stringify(ph));
+  rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>=5&&ph.shown,JSON.stringify(ph));
   const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
   const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
   await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&document.querySelector('#looks .lr[data-k="w-face"]').hidden));

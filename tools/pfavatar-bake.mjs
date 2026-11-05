@@ -45,11 +45,19 @@ const recipeOf=async id=>{ const M=await mod(id); let cfg; globalThis.__pfHook=(
 const lin=v=>{ v/=255; return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4); };
 const zoneCols=keys=>keys.map((k,i)=>[20+(i%20)*11,20+Math.floor(i/20)*11]);
 const hex=n=>'#'+(n>>>0).toString(16).padStart(6,'0');
+// arms down (Polyfork builds in a T-pose): posed here on Polyfork's own skeleton and weights (its shoulder bone shares the turn), so on the rig's 15 bones,
+// two a vertex, the arms hanging at your sides are close to rest and the shoulders and sleeves don't fold (owner, 5 Nov 2026: the torn shoulders)
+const ARMS=[['LeftShoulder',-12],['LeftArm',-60],['RightShoulder',12],['RightArm',60]], ZA=new THREE.Vector3(0,0,1);
+function armsDown(g){ g.updateMatrixWorld(true); const done=new Set();
+  for(const [nm,deg] of ARMS){ let b=null; g.traverse(n=>{ if(n.isBone&&n.name===nm&&!b)b=n; }); if(!b||done.has(b))continue; done.add(b);
+    const pq=new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); const qw=new THREE.Quaternion().setFromAxisAngle(ZA,deg*Math.PI/180);
+    b.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); b.updateMatrixWorld(true); }
+  g.updateMatrixWorld(true); }
 function make(id,M,o,wear,force){ const P=params(id), keys=Object.keys(M.palette||{}), ZC=zoneCols(keys), opts={...o}, base={...o};
   keys.forEach((k,i)=>opts[k]='#'+[ZC[i][0],ZC[i][1],0].map(x=>x.toString(16).padStart(2,'0')).join(''));
   if(P.expression||M.params&&M.params.expression){ opts.expression=base.expression='neutral'; }
   const run=q=>{ let seen=null; globalThis.__pfHook=wear?((f,c)=>f({...c,wear})):null; globalThis.__pfForce=force||null; globalThis.__pfSeen=w=>{ if(w&&w.covers)seen=[...w.covers].sort(); };
-    const g=M.createAsset(q); globalThis.__pfHook=globalThis.__pfForce=globalThis.__pfSeen=null; g.updateMatrixWorld(true); return {g,seen}; };
+    const g=M.createAsset(q); globalThis.__pfHook=globalThis.__pfForce=globalThis.__pfSeen=null; armsDown(g); return {g,seen}; };
   const {g,seen}=run(opts), real=run(base).g;   // (real: the same build in its own colours, for the parts no palette key paints)
   const ref=ZC.map(([r,gg])=>[lin(r),lin(gg)]), pal=keys.map(k=>hex(M.palette[k]));
   const zoneOf=(r,gg,b)=>{ if(b>0.002)return -1; let z=-1,bd=4e-6; ref.forEach(([a,c],i)=>{ const d=(a-r)**2+(c-gg)**2; if(d<bd){bd=d;z=i;} }); return z; };
@@ -61,7 +69,8 @@ function dump(B,m,boneNames){ const G=m.geometry, p=G.attributes.position, c=G.a
   const zid=new Map(), zones=[], pal=[], Z=new Uint8Array(n), P=new Float32Array(n*3), J=new Uint8Array(n*4), W=new Float32Array(n*4);
   const zoneKey=i=>{ const z=B.zoneOf(c.getX(i),c.getY(i),c.getZ(i)); if(z>=0)return [B.keys[z],B.pal[z]];
     const h='#'+[rc.getX(i),rc.getY(i),rc.getZ(i)].map(v=>Math.round(Math.pow(v,1/2.2)*255).toString(16).padStart(2,'0')).join(''); return ['='+h,h]; };
-  for(let i=0;i<n;i++){ P[i*3]=p.getX(i)*s; P[i*3+1]=p.getY(i)*s; P[i*3+2]=p.getZ(i)*s; const [k,h]=zoneKey(i); if(!zid.has(k)){ zid.set(k,zones.length); zones.push(k); pal.push(h); } Z[i]=zid.get(k);
+  const V=new THREE.Vector3();
+  for(let i=0;i<n;i++){ V.fromBufferAttribute(p,i); if(m.isSkinnedMesh)m.applyBoneTransform(i,V); P[i*3]=V.x*s; P[i*3+1]=V.y*s; P[i*3+2]=V.z*s; const [k,h]=zoneKey(i); if(!zid.has(k)){ zid.set(k,zones.length); zones.push(k); pal.push(h); } Z[i]=zid.get(k);
     for(let q=0;q<4;q++){ const b=m.skeleton.bones[si.getComponent(i,q)].name, j=boneNames.indexOf(b); J[i*4+q]=j<0?0:j; W[i*4+q]=j<0?0:sw.getComponent(i,q); } }
   const F=ix?Array.from(ix.array):Array.from({length:n},(_,i)=>i);
   return {P:Array.from(P,v=>+v.toFixed(5)),F,J:Array.from(J),W:Array.from(W,v=>+v.toFixed(4)),Z:Array.from(Z),zones,pal}; }

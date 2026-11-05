@@ -48,7 +48,7 @@ const WARDROBE=[
  ['hands','patient-in-gown-fdab75','IV LINE'],['hands','buddhist-monk-39f498','MALA'],['hands','bmx-rider-91f1b0','SKATE PADS'],['hands','shambling-ghoul-256f2f','TATTOOS'],
  ['back','scuba-diver-bdd1c8','AIR TANK'],['back','backpacker-f56207','BACKPACK'],['back','chinchinero-2cc296','BASS DRUM'],['back','shuttle-pilot-067166','FLIGHT RIG'],
  ['back','groundskeeper-3e5578','LEAF BLOWER'],['back','astronaut-engineer-20b738','LIFE SUPPORT'],['back','delivery-courier-327e30','PACK'],['back','samurai-warrior-f2ebbe','SASHIMONO'],
- ['back','cafe-customer-ca7e8e','SHOULDER BAG'],['back','skier-e7ad44','SKIS'],['back','teen-zombie-b5bb27','SLUNG SACK'],['back','holidaymaker-in-a-sun-2ba5e5','TOTE BAG'],
+ ['back','cafe-customer-ca7e8e','SHOULDER BAG'],['back','teen-zombie-b5bb27','SLUNG SACK'],['back','holidaymaker-in-a-sun-2ba5e5','TOTE BAG'],
  ['righthand','groundskeeper-3e5578','BLOWER WAND'],['righthand','swimmer-in-a-wetsuit-9fca8f','BODYBOARD'],['righthand','commuter-381e7f','BRIEFCASE'],['righthand','kid-witch-01c770','BROOM'],
  ['righthand','el-catr-n-be48ea','CANE'],['righthand','team-mascot-abf426','CARRIED MASCOT HEAD'],['righthand','carving-chef-102bf5','CARVING KNIFE'],['righthand','diner-waitress-60f6a1','COFFEE POT'],
  ['righthand','merchant-6f606b','COIN POUCH'],['righthand','shunter-f25d24','COUPLING SHACKLE'],['righthand','chinchinero-2cc296','DRUMSTICK'],['righthand','la-catrina-b427ca','FAN'],
@@ -98,7 +98,8 @@ function armsDown(g){ g.updateMatrixWorld(true); const done=new Set();
 function make(id,M,o,wear,force){ const P=params(id), keys=Object.keys(M.palette||{}), ZC=zoneCols(keys), opts={...o}, base={...o};
   keys.forEach((k,i)=>opts[k]='#'+[ZC[i][0],ZC[i][1],0].map(x=>x.toString(16).padStart(2,'0')).join(''));
   if(P.expression||M.params&&M.params.expression){ opts.expression=base.expression='neutral'; }
-  const run=q=>{ let seen=null; globalThis.__pfHook=wear?((f,c)=>f({...c,age:'adult',species:'human',wear})):null;   // (a kid's, an old one's or a goblin's garment made for the grown body) globalThis.__pfForce=force||null; globalThis.__pfSeen=w=>{ if(w&&w.covers)seen=[...w.covers].sort(); };
+  // (a kid's, an old one's or a goblin's garment is made for the grown body)
+  const run=q=>{ let seen=null; globalThis.__pfHook=wear?((f,c)=>f({...c,...(c.age&&c.age!=='adult'?{age:'adult'}:{}),...(c.species&&c.species!=='human'?{species:'human'}:{}),wear})):null; globalThis.__pfForce=force||null; globalThis.__pfSeen=w=>{ if(w&&w.covers)seen=[...w.covers].sort(); };
     const g=M.createAsset(q); globalThis.__pfHook=globalThis.__pfForce=globalThis.__pfSeen=null; armsDown(g); return {g,seen}; };
   const {g,seen}=run(opts), real=run(base).g;   // (real: the same build in its own colours, for the parts no palette key paints)
   const ref=ZC.map(([r,gg])=>[lin(r),lin(gg)]), pal=keys.map(k=>hex(M.palette[k]));

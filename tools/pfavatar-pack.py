@@ -53,9 +53,9 @@ def reshape(P,J,Wt,names,legs,drop,head):
     P=P+(P-head)*((HEAD-1)*dh)[:,None]; P[:,1]+=dy-drop
     return P
 
-# the ogre's skull (owner, 5 Nov 2026: "lets use the ogre head (not ears and teeth tho) on the main avatar body"; "all were changing is the shape of the head"; 10% smaller than first shown):
-# the head's skin is the skull of the dungeon's ogre (data/pawns.json, no ears, teeth or eyes), as wide as the head x1.035; the face (eyes, brows, mouth), the ears and all a head
-# wears (hair, hats, glasses, beards) move out to it, each point along its direction from the head's middle by the gap between the old head and the skull there
+# the ogre's skull (owner, 5 Nov 2026: "lets use the ogre head (not ears and teeth tho) on the main avatar body"; "all were changing is the shape of the head"; "just make the round head
+# top the same size as the previous head so it fits, then if we scale up the head and headwear it will grow in size together"): the head's skin is the dungeon ogre's skull (data/pawns.json,
+# no ears, teeth or eyes), sized to the old head's box, so everything worn on the head fits as it was made; the face (eyes, brows, mouth) moves onto the skull's front, the ears onto its sides
 def skull_mesh():
     import base64
     O=json.load(open('data/pawns.json'))['ogre']; M=O['mesh']; b=lambda k:np.frombuffer(base64.b64decode(M[k]),np.uint8)
@@ -73,36 +73,31 @@ def skull_mesh():
         if k in seen: par[f(v)]=f(seen[k])
         else: seen[k]=v
     roots=np.array([f(v) if H[v] else -1 for v in range(len(pos))]); u,c=np.unique(roots[roots>=0],return_counts=True); keep=roots==u[c.argmax()]   # the largest piece: the skull
-    T=idx[keep[idx].all(1)]; k=np.where(keep)[0]; m=-np.ones(len(pos),int); m[k]=np.arange(len(k)); V=pos[k]; V[:,2]-=(V[:,2].min()+V[:,2].max())/2; V[:,1]-=V[:,1].min()
-    return V,m[T]
-def far_hits(O,D,V,T):   # each ray from O along D: the furthest hit on the triangles (Moller-Trumbore), nan if none
+    T=idx[keep[idx].all(1)]; k=np.where(keep)[0]; m=-np.ones(len(pos),int); m[k]=np.arange(len(k)); return pos[k],m[T]
+def hits(O,D,V,T):   # each ray (O[i] along D[i]): the nearest hit on the triangles (Moller-Trumbore), nan if none
     a,b,c=V[T[:,0]],V[T[:,1]],V[T[:,2]]; e1,e2=b-a,c-a; out=np.full(len(D),np.nan)
     for s in range(0,len(D),256):
-        d=D[s:s+256,None,:]; pv=np.cross(d,e2[None]); det=(e1[None]*pv).sum(-1); ok=np.abs(det)>1e-12; inv=np.where(ok,1/np.where(ok,det,1),0); tv=O-a
-        u=(tv[None]*pv).sum(-1)*inv; qv=np.cross(tv,e1); v=(d*qv[None]).sum(-1)*inv; t=(e2[None]*qv[None]).sum(-1)*inv
-        hit=ok&(u>=0)&(v>=0)&(u+v<=1)&(t>0); t=np.where(hit,t,-np.inf); r=t.max(1); out[s:s+256]=np.where(np.isfinite(r),r,np.nan)
+        d=D[s:s+256,None,:]; o=O[s:s+256,None,:]; pv=np.cross(d,e2[None]); det=(e1[None]*pv).sum(-1); ok=np.abs(det)>1e-12; inv=np.where(ok,1/np.where(ok,det,1),0); tv=o-a[None]
+        u=(tv*pv).sum(-1)*inv; qv=np.cross(tv,e1[None]); v=(d*qv).sum(-1)*inv; t=(e2[None]*qv).sum(-1)*inv
+        hit=ok&(u>=0)&(v>=0)&(u+v<=1)&(t>0); t=np.where(hit,t,np.inf); r=t.min(1); out[s:s+256]=np.where(np.isfinite(r),r,np.nan)
     return out
 class Ogre:
-    NA,NE=96,48
     def __init__(self,P,J,W,Z,F,X,names,zones,regions):
-        self.hid=[i for i,n in enumerate(names) if n=='Head' or n.startswith('Face_')]; hw=self.hw(J,W); skin=zones.index('skin'); ears=regions.index('ears')
-        self.skin,self.ears=skin,ears; H=(hw>=.5)&(Z==skin); lo,hi=P[H].min(0),P[H].max(0); sz=hi-lo; c=(lo+hi)/2; self.C=c
-        V,T=skull_mesh(); k=sz[0]*1.035/np.ptp(V[:,0]); V=V*k+np.array([c[0],lo[1]-sz[1]*.02,c[2]+sz[2]*.05]); self.V,self.T=V,T
-        HT=F[(H[F]).all(1)&(X!=ears)]   # the old head's skin (not its ears) as the surface the gap is measured from
-        az=(np.arange(self.NA)+.5)/self.NA*2*np.pi-np.pi; el=(np.arange(self.NE)+.5)/self.NE*np.pi-np.pi/2; A,E=np.meshgrid(az,el,indexing='ij'); D=np.stack([np.cos(E)*np.sin(A),np.sin(E),np.cos(E)*np.cos(A)],-1).reshape(-1,3)
-        ro=far_hits(c,D,P,HT); rs=far_hits(c,D,V,T); g=np.where(np.isnan(ro)|np.isnan(rs),0,rs-ro).reshape(self.NA,self.NE)
-        for _ in range(2): g=(2*g+np.roll(g,1,0)+np.roll(g,-1,0))/4   # (a little smoothing round)
-        self.G=g
+        self.hid=[i for i,n in enumerate(names) if n=='Head' or n.startswith('Face_')]; hw=self.hw(J,W); skin=zones.index('skin'); self.ears=regions.index('ears')
+        H=(hw>=.5)&(Z==skin); HT=F[(H[F]).all(1)&(X!=self.ears)]; Q=P[np.unique(HT)]; lo,hi=Q.min(0),Q.max(0); self.lo,self.hi=lo,hi
+        V,T=skull_mesh(); vl,vh=V.min(0),V.max(0); self.V=(V-vl)/(vh-vl)*(hi-lo)+lo; self.T=T
+        self.front=np.quantile(Q[:,2],.97)
     def hw(self,J,W): return sum((W*(J==i)).sum(1) for i in self.hid)
-    def morph(self,P,J,W):
-        w=self.hw(J,W); m=w>0
-        if not m.any(): return P
-        d=P[m]-self.C; L=np.linalg.norm(d,axis=1); L[L<1e-9]=1e-9; u=d/L[:,None]; az=np.arctan2(u[:,0],u[:,2]); el=np.arcsin(np.clip(u[:,1],-1,1))
-        fa=(az+np.pi)/(2*np.pi)*self.NA-.5; fe=np.clip((el+np.pi/2)/np.pi*self.NE-.5,0,self.NE-1); a0=np.floor(fa).astype(int); e0=np.floor(fe).astype(int); ta=fa-a0; te=fe-e0; e1=np.minimum(e0+1,self.NE-1)
-        G=self.G; gv=lambda a,e:G[a%self.NA,e]; g=(gv(a0,e0)*(1-ta)+gv(a0+1,e0)*ta)*(1-te)+(gv(a0,e1)*(1-ta)+gv(a0+1,e1)*ta)*te
-        P=P.copy(); P[m]+=u*(g*w[m])[:,None]; return P
+    def morph(self,P,J,W): return P   # (what a head wears fits as it was made)
     def body(self,P,J,W,Z,F,X,zones):
-        hw=self.hw(J,W); skin=zones.index('skin'); drop=((hw[F]>=.5)&(Z[F]==skin)).all(1)&(X!=self.ears)
+        hw=self.hw(J,W); skin=zones.index('skin'); H=hw>=.5; drop=((H[F])&(Z[F]==skin)).all(1)&(X!=self.ears)
+        P=P.copy(); face=np.unique(F[(H[F]).all(1)&(Z[F]!=skin).any(1)]); ear=np.unique(F[(H[F]).all(1)&(X==self.ears)])
+        if len(face):   # the face onto the skull's front, as far out as it stood off the old face
+            O=P[face].copy(); O[:,2]=self.hi[2]+1; t=hits(O,np.tile([0,0,-1.],(len(face),1)),self.V,self.T); ok=~np.isnan(t)
+            P[face[ok],2]=O[ok,2]-t[ok]+.002+np.maximum(0,P[face[ok],2]-self.front)
+        if len(ear):    # the ears onto the skull's sides
+            c=(self.lo+self.hi)/2; sx=np.sign(P[ear,0]-c[0]); O=P[ear].copy(); O[:,0]=c[0]+sx*(self.hi[0]-self.lo[0]); t=hits(O,np.stack([-sx,0*sx,0*sx],1),self.V,self.T); ok=~np.isnan(t)
+            side=O[ok,0]-sx[ok]*t[ok]; P[ear[ok],0]+=side-(c[0]+sx[ok]*(self.hi[0]-self.lo[0])/2)
         rg=np.bincount(X[drop]).argmax() if drop.any() else 0; n=len(P); h=self.hid[0]
         P=np.vstack([P,self.V]); J=np.vstack([J,np.tile([h,0,0,0],(len(self.V),1))]); W=np.vstack([W,np.tile([1.,0,0,0],(len(self.V),1))]); Z=np.concatenate([Z,np.full(len(self.V),skin)])
         F=np.vstack([F[~drop],self.T+n]); X=np.concatenate([X[~drop],np.full(len(self.T),rg)]); return P,J,W,Z,F,X

@@ -38,7 +38,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       INV.cash=2; th('THE SODA MACHINE').act(); const soda=INV.cash===0&&INV.items.d_cola>=1;
       return {broke,refused,bought,skee,claw,hockey,prize,soda}; });
     rec('arcade: the changer sells four tokens for $1, not when broke',a.broke&&a.bought,JSON.stringify(a));
-    rec('arcade: skee-ball, the claw and air hockey are games, a token a go, refused without one',a.refused&&a.skee&&a.claw&&a.hockey);
+    rec('arcade: skee-ball, the claw and air hockey are games (free play since the archive, owner 5 Nov 2026)',a.skee&&a.claw&&a.hockey);
     rec('arcade: tickets buy prizes at the counter; the soda machine sells a cola',a.prize&&a.soda);
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
@@ -57,7 +57,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       th('THE BULLETIN BOARD').act(); const board=MINI.on&&MINI.on.title==='THE BULLETIN BOARD'; MINI.close();
       const crates=__dbg.UI.things.filter(t=>t.name==='A MILK CRATE').length;
       return {shelves,picked,paid,broke,card,lotto,deli,urn,cat,board,crates}; });
-    rec('bodega: every shelf and fridge opens what is on it; picked goods are yours only once paid at the register; not when you are short',b.shelves>=13&&b.picked&&b.paid&&b.broke,JSON.stringify(b));
+    rec('bodega: every shelf and fridge opens what is on it (the groceries are archived, owner 5 Nov 2026)',b.shelves>=13,JSON.stringify(b));
     rec('bodega: a scratch-off is $2 and pays what it shows',b.card&&b.lotto);
     rec('bodega: the deli sells sandwiches, the urn coffee, the chest ice pops',b.deli&&b.urn);
     rec('bodega: MANGO eats cat food and brings luck; the board reads; two crates to sit on',b.cat&&b.board&&b.crates===2);

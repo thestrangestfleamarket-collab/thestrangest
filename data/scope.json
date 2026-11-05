@@ -1,0 +1,506 @@
+{
+ "note": "Telescope, globe and microscope content for the apartment. Globe maps are equirectangular, longitude -180 at the left edge and 0 in the middle, north up. sky: ra/dec are J2000 degrees (planets, moon and sun have none: compute them); fov_deg is roughly the angular width the picture spans. All images are public domain or CC0; per-file sources and licences are in data/full/scope-sources.json.",
+ "globes": [
+  {
+   "id": "earth",
+   "name": "EARTH",
+   "file": "scope/earth.jpg",
+   "night": "scope/earth-night.jpg",
+   "credit": "NASA Earth Observatory (Blue Marble: Next Generation, Reto Stöckli); night lights: NASA Earth Observatory / Suomi NPP (Black Marble 2012)",
+   "r_km": 6371,
+   "tilt": 23.44,
+   "day_h": 23.93
+  },
+  {
+   "id": "moon",
+   "name": "THE MOON",
+   "file": "scope/moon.jpg",
+   "credit": "NASA Scientific Visualization Studio, CGI Moon Kit (LRO / LROC WAC colour)",
+   "r_km": 1737.4,
+   "tilt": 6.68,
+   "day_h": 655.72
+  },
+  {
+   "id": "mars",
+   "name": "MARS",
+   "file": "scope/mars.jpg",
+   "credit": "NASA / JPL / USGS, Viking MDIM 2.1 colourised global mosaic",
+   "r_km": 3389.5,
+   "tilt": 25.19,
+   "day_h": 24.62
+  }
+ ],
+ "sky": [
+  {
+   "id": "sun",
+   "name": "THE SUN",
+   "kind": "sun",
+   "file": "scope/sky/sun.jpg",
+   "fov_deg": 0.6,
+   "about": "Seen through a safe solar filter, the dark sunspots are storms bigger than the whole Earth.",
+   "credit": "NASA's Scientific Visualization Studio - Global Science and Technology, Inc./Tom Bridgman, eMITS/Joy Ng, ADNET Systems, Inc./Laurence Schuler, ADNET Systems, In"
+  },
+  {
+   "id": "moon",
+   "name": "THE MOON",
+   "kind": "moon",
+   "file": "scope/sky/moon.jpg",
+   "fov_deg": 0.6,
+   "about": "The dark patches are old lava plains, and every bright dot is a crater from something that hit it.",
+   "credit": "NASA/GSFC/Arizona State University"
+  },
+  {
+   "id": "mercury",
+   "name": "MERCURY",
+   "kind": "planet",
+   "file": "scope/sky/mercury.jpg",
+   "fov_deg": 0.0025,
+   "about": "The smallest planet, baked on one side and frozen on the other, cratered just like our Moon.",
+   "credit": "NASA/Johns Hopkins University Applied Physics Laboratory/Arizona State University/Carnegie Institution of Washington"
+  },
+  {
+   "id": "venus",
+   "name": "VENUS",
+   "kind": "planet",
+   "file": "scope/sky/venus.jpg",
+   "fov_deg": 0.01,
+   "about": "The brightest planet in the sky, wrapped in clouds of acid so thick you never see the ground.",
+   "credit": "NASA/JPL-Caltech"
+  },
+  {
+   "id": "mars",
+   "name": "MARS",
+   "kind": "planet",
+   "file": "scope/sky/mars.jpg",
+   "fov_deg": 0.005,
+   "about": "The red planet; that long scar across it is a canyon that would stretch from New York to Los Angeles.",
+   "credit": "NASA / USGS (see PIA04304 catalog page)"
+  },
+  {
+   "id": "jupiter",
+   "name": "JUPITER",
+   "kind": "planet",
+   "file": "scope/sky/jupiter.jpg",
+   "fov_deg": 0.014,
+   "about": "The biggest planet; the red spot is a storm wider than Earth that has raged for centuries.",
+   "credit": "NASA, ESA, and A. Simon (NASA Goddard), edited by PlanetUser"
+  },
+  {
+   "id": "saturn",
+   "name": "SATURN",
+   "kind": "planet",
+   "file": "scope/sky/saturn.jpg",
+   "fov_deg": 0.014,
+   "about": "Its rings are billions of chunks of ice, some as small as a grain of sand, some as big as a house.",
+   "credit": "NASA / JPL / Space Science Institute"
+  },
+  {
+   "id": "uranus",
+   "name": "URANUS",
+   "kind": "planet",
+   "file": "scope/sky/uranus.jpg",
+   "fov_deg": 0.0013,
+   "about": "An ice giant tipped on its side, so it rolls around the Sun like a ball.",
+   "credit": "NASA/JPL-Caltech"
+  },
+  {
+   "id": "neptune",
+   "name": "NEPTUNE",
+   "kind": "planet",
+   "file": "scope/sky/neptune.jpg",
+   "fov_deg": 0.0008,
+   "about": "The farthest planet, with the fastest winds in the solar system.",
+   "credit": "NASA / JPL / Voyager-ISS / Aster Cowart"
+  },
+  {
+   "id": "m42",
+   "name": "ORION NEBULA",
+   "kind": "nebula",
+   "ra": 83.82,
+   "dec": -5.39,
+   "file": "scope/sky/m42.jpg",
+   "fov_deg": 0.5,
+   "about": "A cloud of glowing gas in Orion's sword where new stars are being born right now.",
+   "credit": "NASA, ESA, M. Robberto (Space Telescope Science Institute/ESA) and the Hubble Space Telescope Orion Treasury Project Team"
+  },
+  {
+   "id": "m31",
+   "name": "ANDROMEDA GALAXY",
+   "kind": "galaxy",
+   "ra": 10.68,
+   "dec": 41.27,
+   "file": "scope/sky/m31.jpg",
+   "fov_deg": 3.0,
+   "about": "The farthest thing you can see with the naked eye: a trillion stars, 2.5 million light-years away.",
+   "credit": "NASA/JPL/California Institute of Technology"
+  },
+  {
+   "id": "m45",
+   "name": "PLEIADES",
+   "kind": "cluster",
+   "ra": 56.75,
+   "dec": 24.12,
+   "file": "scope/sky/m45.jpg",
+   "fov_deg": 2.0,
+   "about": "The Seven Sisters, a family of young blue stars still wrapped in a wisp of dust.",
+   "credit": "NASA, ESA, AURA/Caltech, Palomar Observatory The science team consists of: D. Soderblom and E. Nelan (STScI), F. Benedict and B. Arthur (U. Texas), and B. Jone"
+  },
+  {
+   "id": "m1",
+   "name": "CRAB NEBULA",
+   "kind": "nebula",
+   "ra": 83.63,
+   "dec": 22.01,
+   "file": "scope/sky/m1.jpg",
+   "fov_deg": 0.12,
+   "about": "What is left of a star that exploded in the year 1054, bright enough then to see in daylight.",
+   "credit": "NASA, ESA, J. Hester and A. Loll (Arizona State University)"
+  },
+  {
+   "id": "m57",
+   "name": "RING NEBULA",
+   "kind": "nebula",
+   "ra": 283.4,
+   "dec": 33.03,
+   "file": "scope/sky/m57.jpg",
+   "fov_deg": 0.03,
+   "about": "A dying star puffed off its outer layers into a glowing smoke ring.",
+   "credit": "The Hubble Heritage Team (AURA/STScI/NASA)"
+  },
+  {
+   "id": "m51",
+   "name": "WHIRLPOOL GALAXY",
+   "kind": "galaxy",
+   "ra": 202.47,
+   "dec": 47.2,
+   "file": "scope/sky/m51.jpg",
+   "fov_deg": 0.2,
+   "about": "A spiral galaxy tugging on a smaller neighbour that is passing right by it.",
+   "credit": "NASA and European Space Agency"
+  },
+  {
+   "id": "m104",
+   "name": "SOMBRERO GALAXY",
+   "kind": "galaxy",
+   "ra": 190.0,
+   "dec": -11.62,
+   "file": "scope/sky/m104.jpg",
+   "fov_deg": 0.15,
+   "about": "A galaxy seen almost edge-on, with a dark lane of dust around it like the brim of a hat.",
+   "credit": "NASA/ESA and The Hubble Heritage Team (STScI/AURA)"
+  },
+  {
+   "id": "m16",
+   "name": "PILLARS OF CREATION",
+   "kind": "nebula",
+   "ra": 274.7,
+   "dec": -13.81,
+   "file": "scope/sky/m16.jpg",
+   "fov_deg": 0.05,
+   "about": "Towers of gas and dust in the Eagle Nebula, each one taller than our whole solar system.",
+   "credit": "Credit: NASA, Jeff Hester, and Paul Scowen (Arizona State University)"
+  },
+  {
+   "id": "m8",
+   "name": "LAGOON NEBULA",
+   "kind": "nebula",
+   "ra": 270.92,
+   "dec": -24.38,
+   "file": "scope/sky/m8.jpg",
+   "fov_deg": 0.05,
+   "about": "The heart of the Lagoon, where hot young stars carve twisting shapes into the gas.",
+   "credit": "NASA, ESA, and STScI"
+  },
+  {
+   "id": "m13",
+   "name": "HERCULES CLUSTER",
+   "kind": "cluster",
+   "ra": 250.42,
+   "dec": 36.46,
+   "file": "scope/sky/m13.jpg",
+   "fov_deg": 0.1,
+   "about": "Hundreds of thousands of ancient stars packed into a ball, older than almost anything in our galaxy.",
+   "credit": "NASA, ESA, and the Hubble Heritage Team (STScI/AURA)"
+  },
+  {
+   "id": "m27",
+   "name": "DUMBBELL NEBULA",
+   "kind": "nebula",
+   "ra": 299.9,
+   "dec": 22.72,
+   "file": "scope/sky/m27.jpg",
+   "fov_deg": 0.25,
+   "about": "The glowing shell of a dying star, shaped a bit like an apple core.",
+   "credit": "Digitized Sky Survey (DSS)"
+  },
+  {
+   "id": "m33",
+   "name": "TRIANGULUM GALAXY",
+   "kind": "galaxy",
+   "ra": 23.46,
+   "dec": 30.66,
+   "file": "scope/sky/m33.jpg",
+   "fov_deg": 0.05,
+   "about": "The middle of our third-biggest neighbour galaxy, packed with dust lanes and young blue stars.",
+   "credit": ", , and M. Durbin, J. Dalcanton, and B.F. Williams (University of Washington)"
+  }
+ ],
+ "slides": [
+  {
+   "id": "flea",
+   "name": "A FLEA",
+   "mag": "20x",
+   "file": "scope/slides/flea.jpg",
+   "about": "Robert Hooke drew this flea in 1665, one of the first close-ups of a bug anyone had ever seen.",
+   "credit": "Robert Hooke, Micrographia (1665)"
+  },
+  {
+   "id": "flea-sem",
+   "name": "A FLEA, UP CLOSE",
+   "mag": "100x",
+   "file": "scope/slides/flea-sem.jpg",
+   "about": "The same kind of flea under an electron microscope, flattened so it can slip between hairs.",
+   "credit": "CDC / Janice Haney Carr"
+  },
+  {
+   "id": "cork",
+   "name": "CORK",
+   "mag": "30x",
+   "file": "scope/slides/cork.jpg",
+   "about": "Hooke looked at a slice of cork, saw tiny boxes and called them cells, the word we still use.",
+   "credit": "Robert Hooke, Micrographia (1665)"
+  },
+  {
+   "id": "snowflake",
+   "name": "A SNOWFLAKE",
+   "mag": "40x",
+   "file": "scope/slides/snowflake.jpg",
+   "about": "Wilson Bentley photographed over 5,000 snowflakes and never found two alike.",
+   "credit": "Wilson A. Bentley (c. 1890-1931)"
+  },
+  {
+   "id": "snow-sem",
+   "name": "SNOW CRYSTAL",
+   "mag": "150x",
+   "file": "scope/slides/snow-sem.jpg",
+   "about": "A real snow crystal, frozen and scanned in an electron microscope.",
+   "credit": "USDA Agricultural Research Service, Electron and Confocal Microscopy Laboratory"
+  },
+  {
+   "id": "radiolaria",
+   "name": "RADIOLARIANS",
+   "mag": "200x",
+   "file": "scope/slides/radiolaria.jpg",
+   "about": "Single-celled sea creatures that build glass skeletons like tiny chandeliers.",
+   "credit": "Ernst Haeckel, Kunstformen der Natur (1904)"
+  },
+  {
+   "id": "diatoms",
+   "name": "DIATOMS",
+   "mag": "200x",
+   "file": "scope/slides/diatoms.jpg",
+   "about": "Algae in glass shells; they make about a fifth of the oxygen you breathe.",
+   "credit": "Prof. Gordon T. Taylor, Stony Brook University (NOAA Corps Collection)"
+  },
+  {
+   "id": "diatom",
+   "name": "A DIATOM",
+   "mag": "400x",
+   "file": "scope/slides/diatom.jpg",
+   "about": "One diatom, its glass shell patterned like a stained-glass window.",
+   "credit": "J. T. Redmayne (CC0)"
+  },
+  {
+   "id": "pollen",
+   "name": "POLLEN",
+   "mag": "500x",
+   "file": "scope/slides/pollen.jpg",
+   "about": "Pollen from different flowers: spiky, smooth and bean-shaped, each kind its own shape.",
+   "credit": "Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "spores",
+   "name": "MUSHROOM SPORES",
+   "mag": "2000x",
+   "file": "scope/slides/spores.jpg",
+   "about": "The underside of a button mushroom, covered in spores waiting for the wind.",
+   "credit": "Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "stomata",
+   "name": "LEAF SKIN",
+   "mag": "300x",
+   "file": "scope/slides/stomata.jpg",
+   "about": "The skin of a leaf, with tiny hairs sticking up from it.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "aphid",
+   "name": "AN APHID",
+   "mag": "100x",
+   "file": "scope/slides/aphid.jpg",
+   "about": "A greenfly, the little bug that sucks the sap out of garden plants.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "grasshopper",
+   "name": "GRASSHOPPER HEAD",
+   "mag": "40x",
+   "file": "scope/slides/grasshopper.jpg",
+   "about": "The face of a grasshopper: big eyes, feelers and jaws made for chewing leaves.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "weevil",
+   "name": "A WEEVIL",
+   "mag": "50x",
+   "file": "scope/slides/weevil.jpg",
+   "about": "A beetle with a long snout, the pest that gets into old flour and rice.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "firefly",
+   "name": "FIREFLY FACE",
+   "mag": "60x",
+   "file": "scope/slides/firefly.jpg",
+   "about": "A firefly up close; the light comes from its tail, not its face.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "flyeye",
+   "name": "A FLY'S EYE",
+   "mag": "800x",
+   "file": "scope/slides/flyeye.jpg",
+   "about": "A fruit fly's eye is hundreds of tiny eyes packed together, with bristles in between.",
+   "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility"
+  },
+  {
+   "id": "bedbug",
+   "name": "A BEDBUG",
+   "mag": "150x",
+   "file": "scope/slides/bedbug.jpg",
+   "about": "A bedbug's mouth folded under its head: check the old mattresses before you buy one.",
+   "credit": "CDC / Janice Haney Carr"
+  },
+  {
+   "id": "mite",
+   "name": "A PLANT MITE",
+   "mag": "400x",
+   "file": "scope/slides/mite.jpg",
+   "about": "A mite smaller than the dot on this i, living on the leaves of fruit trees.",
+   "credit": "USDA ARS: Eric Erbe, colourised by Chris Pooley"
+  },
+  {
+   "id": "varroa",
+   "name": "A MITE ON A BEE",
+   "mag": "100x",
+   "file": "scope/slides/varroa.jpg",
+   "about": "A varroa mite riding on a honeybee, hidden among its hairs.",
+   "credit": "USDA ARS: Eric Erbe, Christopher Pooley"
+  },
+  {
+   "id": "butterfly",
+   "name": "BUTTERFLY WING",
+   "mag": "50x",
+   "file": "scope/slides/butterfly.jpg",
+   "about": "Butterfly wings are tiled with tiny coloured scales, like shingles on a roof.",
+   "credit": "U.S. Fish and Wildlife Service"
+  },
+  {
+   "id": "tardigrade",
+   "name": "A WATER BEAR",
+   "mag": "100x",
+   "file": "scope/slides/tardigrade.jpg",
+   "about": "The first drawing of a tardigrade, from 1773: a tiny beast that can survive outer space.",
+   "credit": "Johann August Ephraim Goeze (1773)"
+  },
+  {
+   "id": "amoeba",
+   "name": "AN AMOEBA",
+   "mag": "100x",
+   "file": "scope/slides/amoeba.jpg",
+   "about": "A blob that moves by pouring itself forward and swallows its food whole.",
+   "credit": "Joseph Leidy, Fresh-water Rhizopods of North America (1879)"
+  },
+  {
+   "id": "volvox",
+   "name": "VOLVOX",
+   "mag": "100x",
+   "file": "scope/slides/volvox.jpg",
+   "about": "A rolling green ball of thousands of cells that swim together, with baby balls inside.",
+   "credit": "Walter R. Shaw (1922)"
+  },
+  {
+   "id": "onion",
+   "name": "ONION SKIN",
+   "mag": "100x",
+   "file": "scope/slides/onion.jpg",
+   "about": "Onion skin cells lined up like bricks in a wall.",
+   "credit": "Berkshire Community College Bioscience Image Library (CC0)"
+  },
+  {
+   "id": "cheek",
+   "name": "A CHEEK CELL",
+   "mag": "400x",
+   "file": "scope/slides/cheek.jpg",
+   "about": "A cell scraped from the inside of a cheek, the dark dot is its nucleus.",
+   "credit": "Kyreb (CC0)"
+  },
+  {
+   "id": "blood",
+   "name": "BLOOD CELLS",
+   "mag": "10000x",
+   "file": "scope/slides/blood.jpg",
+   "about": "A red blood cell, a platelet and a white blood cell, the three things floating in your blood.",
+   "credit": "NCI-Frederick Electron Microscopy Facility"
+  },
+  {
+   "id": "ecoli",
+   "name": "BACTERIA",
+   "mag": "10000x",
+   "file": "scope/slides/ecoli.jpg",
+   "about": "E. coli, rod-shaped bacteria that live in your gut by the billions.",
+   "credit": "NIAID"
+  },
+  {
+   "id": "penicillium",
+   "name": "PENICILLIUM MOLD",
+   "mag": "400x",
+   "file": "scope/slides/penicillium.jpg",
+   "about": "The mold on old bread and oranges; one kind gave us penicillin.",
+   "credit": "CDC / Dr. Lucille K. Georg"
+  },
+  {
+   "id": "yeast",
+   "name": "YEAST",
+   "mag": "400x",
+   "file": "scope/slides/yeast.jpg",
+   "about": "The tiny fungus that makes bread rise, here budding off new cells.",
+   "credit": "Ajay Kumar Chaurasiya (CC0)"
+  },
+  {
+   "id": "sand",
+   "name": "BLACK SAND",
+   "mag": "20x",
+   "file": "scope/slides/sand.jpg",
+   "about": "Black sand from a Hawaiian beach, made of lava that shattered when it hit the sea.",
+   "credit": "Renee1137 (Wikimedia Commons, public domain)"
+  },
+  {
+   "id": "hair",
+   "name": "A HUMAN HAIR",
+   "mag": "1500x",
+   "file": "scope/slides/hair.jpg",
+   "about": "A single hair, covered in overlapping scales like a pine cone.",
+   "credit": "Arlo James Barnes (CC0)"
+  },
+  {
+   "id": "fishscale",
+   "name": "FISH SCALES",
+   "mag": "40x",
+   "file": "scope/slides/fishscale.jpg",
+   "about": "Zebrafish scales overlapping like roof tiles, lit up with coloured dyes.",
+   "credit": "Daniel Castranova, NICHD / NIH"
+  }
+ ]
+}

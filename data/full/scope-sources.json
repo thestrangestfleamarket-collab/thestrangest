@@ -1,0 +1,474 @@
+[
+ {
+  "file": "data/scope/earth.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg/3840px-Blue_Marble_Next_Generation_%2B_topography_%2B_bathymetry.jpg",
+  "credit": "Reto Stöckli, NASA Earth Observatory (Blue Marble: Next Generation + topography + bathymetry), as uploaded by NordNordWest",
+  "licence": "Public domain (NASA; per Wikimedia Commons)",
+  "licence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+ },
+ {
+  "file": "data/scope/earth-night.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:The_earth_at_night.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/The_earth_at_night.jpg/3840px-The_earth_at_night.jpg",
+  "credit": "NASA Earth Observatory / NOAA NGDC, Suomi NPP VIIRS (Black Marble 2012)",
+  "licence": "Public domain (NASA; per Wikimedia Commons)",
+  "licence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+ },
+ {
+  "file": "data/scope/moon.jpg",
+  "source": "https://svs.gsfc.nasa.gov/4720",
+  "original": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_2k.tif",
+  "credit": "NASA Scientific Visualization Studio (Ernie Wright), LRO LROC WAC colour mosaic",
+  "licence": "Public domain (NASA)",
+  "licence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+ },
+ {
+  "file": "data/scope/mars.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Mars_Viking_MDIM21_ClrMosaic_1km.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Mars_Viking_MDIM21_ClrMosaic_1km.jpg/3840px-Mars_Viking_MDIM21_ClrMosaic_1km.jpg",
+  "credit": "NASA / JPL / USGS Astrogeology, Viking MDIM 2.1 colourised mosaic",
+  "licence": "Public domain (NASA; per Wikimedia Commons)",
+  "licence_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+ },
+ {
+  "file": "data/stars.json",
+  "source": "http://tdc-www.harvard.edu/catalogs/bsc5.html",
+  "original": "http://tdc-www.harvard.edu/catalogs/bsc5.dat.gz",
+  "credit": "Yale Bright Star Catalogue, 5th rev. ed. (Hoffleit & Warren 1991)",
+  "licence": "Public domain (catalogue data)",
+  "licence_url": "https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50"
+ },
+ {
+  "file": "data/stars.json",
+  "source": "https://github.com/ofrohn/d3-celestial/tree/master/data",
+  "original": "https://raw.githubusercontent.com/ofrohn/d3-celestial/master/data/ (constellations.lines.json, constellations.json, starnames.json, stars.6.json)",
+  "credit": "d3-celestial, Copyright (c) 2015 Olaf Frohn (constellation lines, constellation names, named-star names and positions)",
+  "licence": "BSD-3-Clause",
+  "licence_url": "https://github.com/ofrohn/d3-celestial/blob/master/LICENSE"
+ },
+ {
+  "file": "data/scope/sky/sun.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Solar_Cycle_25_-_the_Solar_Magnetic_Field_from_Solar_Minimum_to_Pole_Flip_(SVS5344_-_SolarCycle_Min2Max_HMI_INTENSITY_033000_print).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/Solar_Cycle_25_-_the_Solar_Magnetic_Field_from_Solar_Minimum_to_Pole_Flip_%28SVS5344_-_SolarCycle_Min2Max_HMI_INTENSITY_033000_print%29.jpg/960px-Solar_Cycle_25_-_the_Solar_Magnetic_Field_from_Solar_Minimum_to_Pole_Flip_%28SVS5344_-_SolarCycle_Min2Max_HMI_INTENSITY_033000_print%29.jpg",
+  "credit": "NASA's Scientific Visualization Studio - Global Science and Technology, Inc./Tom Bridgman, eMITS/Joy Ng, ADNET Systems, Inc./Laurence Schuler, ADNET Systems, In",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/moon.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Moon_nearside_LRO_5000.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Moon_nearside_LRO_5000.jpg/1280px-Moon_nearside_LRO_5000.jpg",
+  "credit": "NASA/GSFC/Arizona State University",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/mercury.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Mercury_in_true_color.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg",
+  "credit": "NASA/Johns Hopkins University Applied Physics Laboratory/Arizona State University/Carnegie Institution of Washington",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/venus.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:PIA23791-Venus-RealAndEnhancedContrastViews-20200608_(cropped).jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/c/c7/PIA23791-Venus-RealAndEnhancedContrastViews-20200608_%28cropped%29.jpg",
+  "credit": "NASA/JPL-Caltech",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/mars.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Mars_Valles_Marineris.jpeg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Mars_Valles_Marineris.jpeg/1280px-Mars_Valles_Marineris.jpeg",
+  "credit": "NASA / USGS (see PIA04304 catalog page)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/jupiter.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Jupiter,_image_taken_by_NASA%27s_Hubble_Space_Telescope,_June_2019_-_Edited.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Jupiter%2C_image_taken_by_NASA%27s_Hubble_Space_Telescope%2C_June_2019_-_Edited.jpg/1280px-Jupiter%2C_image_taken_by_NASA%27s_Hubble_Space_Telescope%2C_June_2019_-_Edited.jpg",
+  "credit": "NASA, ESA, and A. Simon (NASA Goddard), edited by PlanetUser",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/saturn.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Saturn_during_Equinox.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Saturn_during_Equinox.jpg/1280px-Saturn_during_Equinox.jpg",
+  "credit": "NASA / JPL / Space Science Institute",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/uranus.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Uranus2.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/Uranus2.jpg/1280px-Uranus2.jpg",
+  "credit": "NASA/JPL-Caltech",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/neptune.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Neptune_-_Voyager_2_(29347980845)_flatten_crop.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/6/63/Neptune_-_Voyager_2_%2829347980845%29_flatten_crop.jpg",
+  "credit": "NASA / JPL / Voyager-ISS / Aster Cowart",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m42.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg/1280px-Orion_Nebula_-_Hubble_2006_mosaic_18000.jpg",
+  "credit": "NASA, ESA, M. Robberto (Space Telescope Science Institute/ESA) and the Hubble Space Telescope Orion Treasury Project Team",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m31.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Andromeda_galaxy.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Andromeda_galaxy.jpg/1280px-Andromeda_galaxy.jpg",
+  "credit": "NASA/JPL/California Institute of Technology",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m45.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Pleiades_large.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/1280px-Pleiades_large.jpg",
+  "credit": "NASA, ESA, AURA/Caltech, Palomar Observatory The science team consists of: D. Soderblom and E. Nelan (STScI), F. Benedict and B. Arthur (U. Texas), and B. Jone",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m1.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Crab_Nebula.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1280px-Crab_Nebula.jpg",
+  "credit": "NASA, ESA, J. Hester and A. Loll (Arizona State University)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m57.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:M57_The_Ring_Nebula.JPG",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/M57_The_Ring_Nebula.JPG/960px-M57_The_Ring_Nebula.JPG",
+  "credit": "The Hubble Heritage Team (AURA/STScI/NASA)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m51.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Messier51_sRGB.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Messier51_sRGB.jpg/1280px-Messier51_sRGB.jpg",
+  "credit": "NASA and European Space Agency",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m104.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:M104_ngc4594_sombrero_galaxy_hi-res.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/M104_ngc4594_sombrero_galaxy_hi-res.jpg/1280px-M104_ngc4594_sombrero_galaxy_hi-res.jpg",
+  "credit": "NASA/ESA and The Hubble Heritage Team (STScI/AURA)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m16.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Eagle_nebula_pillars.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Eagle_nebula_pillars.jpg/1280px-Eagle_nebula_pillars.jpg",
+  "credit": "Credit: NASA, Jeff Hester, and Paul Scowen (Arizona State University)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m8.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Lagoon_Nebula_(Visible-light_View)_(2018-21-4150).png",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Lagoon_Nebula_%28Visible-light_View%29_%282018-21-4150%29.png/1280px-Lagoon_Nebula_%28Visible-light_View%29_%282018-21-4150%29.png",
+  "credit": "NASA, ESA, and STScI",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m13.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Hubble_image_of_globular_cluster_M13_(opo0840a).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Hubble_image_of_globular_cluster_M13_%28opo0840a%29.jpg/1280px-Hubble_image_of_globular_cluster_M13_%28opo0840a%29.jpg",
+  "credit": "NASA, ESA, and the Hubble Heritage Team (STScI/AURA)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m27.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:DSS_image_of_Dumbbell_Nebula_(ground-based_image)_(opo0306e).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/DSS_image_of_Dumbbell_Nebula_%28ground-based_image%29_%28opo0306e%29.jpg/500px-DSS_image_of_Dumbbell_Nebula_%28ground-based_image%29_%28opo0306e%29.jpg",
+  "credit": "Digitized Sky Survey (DSS)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/sky/m33.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Close-up_Views_of_Triangulum_Galaxy_(M33)_(2019-01-4307).png",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Close-up_Views_of_Triangulum_Galaxy_%28M33%29_%282019-01-4307%29.png/3840px-Close-up_Views_of_Triangulum_Galaxy_%28M33%29_%282019-01-4307%29.png",
+  "credit": ", , and M. Durbin, J. Dalcanton, and B.F. Williams (University of Washington)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/flea.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:HookeFlea01.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/HookeFlea01.jpg/1280px-HookeFlea01.jpg",
+  "credit": "Robert Hooke",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/flea-sem.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Flea_Scanning_Electron_Micrograph_False_Color.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Flea_Scanning_Electron_Micrograph_False_Color.jpg/1280px-Flea_Scanning_Electron_Micrograph_False_Color.jpg",
+  "credit": "CDC/Janice Haney Carr",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/cork.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Cork_Micrographia_Hooke.png",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/1/17/Cork_Micrographia_Hooke.png",
+  "credit": "Robert Hooke",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/snowflake.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Bentley_Snowflake_890.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Bentley_Snowflake_890.jpg/1280px-Bentley_Snowflake_890.jpg",
+  "credit": "Wilson Bentley",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/snow-sem.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Stereo_snow_crystals.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Stereo_snow_crystals.jpg/1280px-Stereo_snow_crystals.jpg",
+  "credit": "Electron and Confocal Microscopy Laboratory, Agricultural Research Service, U. S. Department of Agriculture.",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/radiolaria.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Haeckel_Stephoidea.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Haeckel_Stephoidea.jpg/1280px-Haeckel_Stephoidea.jpg",
+  "credit": "Ernst Haeckel",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/diatoms.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Diatoms_through_the_microscope.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Diatoms_through_the_microscope.jpg/1280px-Diatoms_through_the_microscope.jpg",
+  "credit": "Prof. Gordon T. Taylor, Stony Brook University",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/diatom.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Diatom_Helipelta_metil.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/9/99/Diatom_Helipelta_metil.jpg",
+  "credit": "J. T. Redmayne",
+  "licence": "CC0 (per Wikimedia Commons)",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+ },
+ {
+  "file": "data/scope/slides/pollen.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Misc_pollen_colorized.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/2/2a/Misc_pollen_colorized.jpg",
+  "credit": "Dartmouth Electron Microscope Facility, Dartmouth College",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/spores.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Agaricus_bisporus_spores_SEM_1.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Agaricus_bisporus_spores_SEM_1.jpg/960px-Agaricus_bisporus_spores_SEM_1.jpg",
+  "credit": "Dartmouth Electron Microscope Facility, Dartmouth College",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/stomata.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Leaf_epidermis.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/Leaf_epidermis.jpg/1280px-Leaf_epidermis.jpg",
+  "credit": "Louisa Howard (Dartmouth electron microscope facility)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/aphid.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Aphid_micro.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Aphid_micro.jpg/960px-Aphid_micro.jpg",
+  "credit": "Louisa Howard - Dartmouth Electron Microscope Facility",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/grasshopper.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Head_of_Orthoptera_SEM.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Head_of_Orthoptera_SEM.jpg/1280px-Head_of_Orthoptera_SEM.jpg",
+  "credit": "Louisa Howard (uploaded by gian_d)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/weevil.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Curculionidae.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Curculionidae.jpg/1280px-Curculionidae.jpg",
+  "credit": "Louisa Howard - Dartmouth Electron Microscope Facility",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/firefly.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Lampyridae.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Lampyridae.jpg/1280px-Lampyridae.jpg",
+  "credit": "Louisa Howard - Dartmouth Electron Microscope Facility",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/flyeye.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Drosophilidae_compound_eye.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Drosophilidae_compound_eye.jpg/1280px-Drosophilidae_compound_eye.jpg",
+  "credit": "Louisa Howard, Dartmouth College Electron Microscope Facility",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/bedbug.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:CDC_11739_Cimex_lectularius_SEM.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/CDC_11739_Cimex_lectularius_SEM.jpg/1280px-CDC_11739_Cimex_lectularius_SEM.jpg",
+  "credit": "Janice Harney Carr, Center for Disease Control",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/mite.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Yellow_mite_(Tydeidae),_Lorryia_formosa.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/Yellow_mite_%28Tydeidae%29%2C_Lorryia_formosa.jpg/1280px-Yellow_mite_%28Tydeidae%29%2C_Lorryia_formosa.jpg",
+  "credit": "Photo by Eric Erbe; digital colorization by Chris Pooley",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/varroa.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Varroa_destructor_on_honeybee_host.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Varroa_destructor_on_honeybee_host.jpg/1280px-Varroa_destructor_on_honeybee_host.jpg",
+  "credit": "Courtesy, Eric Erbe, Christopher Pooley: USDA, ARS, EMU.",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/butterfly.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Butterfly_wing_scale_pattern_-_DPLA_-_2e8c2719c895a74e44cd0e87e9a41d3f.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Butterfly_wing_scale_pattern_-_DPLA_-_2e8c2719c895a74e44cd0e87e9a41d3f.jpg/1280px-Butterfly_wing_scale_pattern_-_DPLA_-_2e8c2719c895a74e44cd0e87e9a41d3f.jpg",
+  "credit": "Department of the Interior. U.S. Fish and Wildlife Service. National Conservation Training Center. 10/1997-8888",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/tardigrade.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:First_Recorded_Image_of_Tardigrade.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/First_Recorded_Image_of_Tardigrade.jpg/960px-First_Recorded_Image_of_Tardigrade.jpg",
+  "credit": "Johann August Ephraim Goeze",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/amoeba.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Amoeba_proteus_from_Leidy.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Amoeba_proteus_from_Leidy.jpg/500px-Amoeba_proteus_from_Leidy.jpg",
+  "credit": "Joseph Leidy",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/volvox.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Volvox_barberi_in_Shaw_1922_pl_4.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Volvox_barberi_in_Shaw_1922_pl_4.jpg/1280px-Volvox_barberi_in_Shaw_1922_pl_4.jpg",
+  "credit": "Walter Robert Shaw (1871–?)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/onion.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Living_cells_of_onion_epidermis_(33605021164).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Living_cells_of_onion_epidermis_%2833605021164%29.jpg/1280px-Living_cells_of_onion_epidermis_%2833605021164%29.jpg",
+  "credit": "Berkshire Community College Bioscience Image Library",
+  "licence": "CC0 (per Wikimedia Commons)",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+ },
+ {
+  "file": "data/scope/slides/cheek.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Human_cheek_cells_from_science_class.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Human_cheek_cells_from_science_class.jpg/1280px-Human_cheek_cells_from_science_class.jpg",
+  "credit": "Kyreb",
+  "licence": "CC0 (per Wikimedia Commons)",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+ },
+ {
+  "file": "data/scope/slides/blood.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Red_White_Blood_cells.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/2/24/Red_White_Blood_cells.jpg",
+  "credit": "Electron Microscopy Facility at The National Cancer Institute at Frederick (NCI-Frederick)",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/ecoli.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:E._coli_Bacteria_(7316101966).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/E._coli_Bacteria_%287316101966%29.jpg/1280px-E._coli_Bacteria_%287316101966%29.jpg",
+  "credit": "NIAID",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/penicillium.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Penicillium_glabrum_conidiophores.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Penicillium_glabrum_conidiophores.jpg/500px-Penicillium_glabrum_conidiophores.jpg",
+  "credit": "CDC/Dr. Lucille K. Georg",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/yeast.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Yeast_Cells_in_Wet_Mount_Microscopy_of_Culture.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Yeast_Cells_in_Wet_Mount_Microscopy_of_Culture.jpg/1280px-Yeast_Cells_in_Wet_Mount_Microscopy_of_Culture.jpg",
+  "credit": "Ajay Kumar Chaurasiya",
+  "licence": "CC0 (per Wikimedia Commons)",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+ },
+ {
+  "file": "data/scope/slides/sand.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Sand_from_Punaluu,_Hawaii,_US.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Sand_from_Punaluu%2C_Hawaii%2C_US.jpg/960px-Sand_from_Punaluu%2C_Hawaii%2C_US.jpg",
+  "credit": "No machine-readable author provided. Renee1137~commonswiki assumed (based on copyright claims).",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
+  "file": "data/scope/slides/hair.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Hair_micrograph_1.jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Hair_micrograph_1.jpg/500px-Hair_micrograph_1.jpg",
+  "credit": "Arlo James Barnes",
+  "licence": "CC0 (per Wikimedia Commons)",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+ },
+ {
+  "file": "data/scope/slides/fishscale.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Zebrafish_Scales_(49949259068).jpg",
+  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Zebrafish_Scales_%2849949259068%29.jpg/500px-Zebrafish_Scales_%2849949259068%29.jpg",
+  "credit": "Daniel Castranova, National Institute of Child Health and Human Development/NIH",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ }
+]

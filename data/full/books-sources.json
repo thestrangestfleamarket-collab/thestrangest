@@ -1,0 +1,932 @@
+{
+ "note": "One record per file in data/books/. Covers resized to 300 px wide (JPEG q80); spines to 50 px wide.",
+ "files": [
+  {
+   "file": "data/books/covers/pride.jpg",
+   "source": "https://archive.org/details/prideprejudiceno00aust_1",
+   "original": "https://archive.org/download/prideprejudiceno00aust_1/page/cover_w800.jpg",
+   "credit": "University of Alberta Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1813, pre-1931)",
+   "licence_url": "https://archive.org/details/prideprejudiceno00aust_1",
+   "edition": "1st ed., T. Egerton, London, 1813 (vol. 1, contemporary boards)"
+  },
+  {
+   "file": "data/books/covers/frankenstein.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AChristie%27s_auction_scan_of_Frankenstein_1818.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/5/53/Christie%27s_auction_scan_of_Frankenstein_1818.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Mary Shelley; Cropped and slightly rotated from https://www.christies.com/lot/lot-6332204",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AChristie%27s_auction_scan_of_Frankenstein_1818.jpg",
+   "edition": "1st ed., Lackington, Hughes, Harding, Mavor & Jones, London, 1818 (title page of vol. 1; no binding scan found)"
+  },
+  {
+   "file": "data/books/covers/alice.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AAlice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Alice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Lewis Carroll; https://alice.fandom.com/wiki/Alice%27s_Adventures_in_Wonderland?file=Alice_in_Wonderland.jpg http://web.archive.org/web/20130205073644/http://unews.utah.edu/news_releases/lewis-carrolls-childrens-classics-acquired-by-marriott-library/",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AAlice%27s_Adventures_in_Wonderland_cover_%281865%29.jpg",
+   "edition": "1st ed., Macmillan & Co., London, 1865 (red cloth with gilt)"
+  },
+  {
+   "file": "data/books/covers/dracula.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ADracula-First-Edition-1897.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Dracula-First-Edition-1897.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "British Library Board; https://www.apollo-magazine.com/content/uploads/2014/10/Dracula-%E2%80%93-First-Edition-1897.-Photography-c-British-Library-Board.jpg",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ADracula-First-Edition-1897.jpg",
+   "edition": "1st ed., Archibald Constable & Co., London, 1897 (yellow cloth)"
+  },
+  {
+   "file": "data/books/covers/holmes.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AAdventures_of_sherlock_holmes.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Adventures_of_sherlock_holmes.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Rtrace (upload first version)User:ΛΦΠ (upload second version); OpenLibrary.org",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AAdventures_of_sherlock_holmes.jpg",
+   "edition": "1st ed., George Newnes, London, 1892"
+  },
+  {
+   "file": "data/books/covers/mobydick.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AMoby-Dick_FE_title_page.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/3/36/Moby-Dick_FE_title_page.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "The original uploader was Chick Bowen at English Wikipedia.; Transferred from en.wikipedia to Commons.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMoby-Dick_FE_title_page.jpg",
+   "edition": "1st American ed., Harper & Brothers, New York, 1851 (title page; no binding scan found)"
+  },
+  {
+   "file": "data/books/covers/gatsby.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/7/7a/The_Great_Gatsby_Cover_1925_Retouched.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Original cover illustration by Francis Cugat (1893–1981) and published by Charles Scribner's Sons. Digital restoration and enhancement by User:Flask.; Mechanical scan/photocopy of the 1925 original cover",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg",
+   "edition": "1st ed., Charles Scribner's Sons, New York, 1925 (dust jacket by Francis Cugat; digitally restored scan)"
+  },
+  {
+   "file": "data/books/covers/twocities.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ATales_serial.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Tales_serial.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Chapman &amp; Hall; Christies Auction House",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ATales_serial.jpg",
+   "edition": "1st ed. in monthly parts, Chapman & Hall, London, 1859 (part wrapper by Phiz)"
+  },
+  {
+   "file": "data/books/covers/dorian.jpg",
+   "source": "https://archive.org/details/pictureofdoriang00wildrich",
+   "original": "https://archive.org/download/pictureofdoriang00wildrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published [1891], pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/pictureofdoriang00wildrich",
+   "edition": "1st book ed., Ward, Lock & Co., London, 1891"
+  },
+  {
+   "file": "data/books/covers/janeeyre.jpg",
+   "source": "https://archive.org/details/janeeyreautobiog01bron",
+   "original": "https://archive.org/download/janeeyreautobiog01bron/page/cover_w800.jpg",
+   "credit": "Brandeis University Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1847, pre-1931)",
+   "licence_url": "https://archive.org/details/janeeyreautobiog01bron",
+   "edition": "1st ed., Smith, Elder & Co., London, 1847 (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/wuthering.jpg",
+   "source": "https://archive.org/details/wutheringheights02bron",
+   "original": "https://archive.org/download/wutheringheights02bron/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1847, pre-1931)",
+   "licence_url": "https://archive.org/details/wutheringheights02bron",
+   "edition": "1st ed., Thomas Cautley Newby, London, 1847 (vol. 2)"
+  },
+  {
+   "file": "data/books/covers/littlewomen.jpg",
+   "source": "https://archive.org/details/littlewomenormeg00alcoiala",
+   "original": "https://archive.org/download/littlewomenormeg00alcoiala/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1868-1869, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/littlewomenormeg00alcoiala",
+   "edition": "1st ed., Roberts Brothers, Boston, 1868-69"
+  },
+  {
+   "file": "data/books/covers/tomsawyer.jpg",
+   "source": "https://archive.org/details/adventuresoftoms00twaiiala",
+   "original": "https://archive.org/download/adventuresoftoms00twaiiala/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1876, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/adventuresoftoms00twaiiala",
+   "edition": "1st American ed., American Publishing Co., Hartford, 1876"
+  },
+  {
+   "file": "data/books/covers/huckfinn.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AHuckleberry_Finn_book.JPG",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/61/Huckleberry_Finn_book.JPG?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "E. W. Kemble; Scanned from the book",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AHuckleberry_Finn_book.JPG",
+   "edition": "1st ed., Charles L. Webster & Co., New York, 1885 (green cloth)"
+  },
+  {
+   "source": "https://commons.wikimedia.org/wiki/File%3AHuckleberry_Finn_book.JPG",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/61/Huckleberry_Finn_book.JPG?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "E. W. Kemble; Scanned from the book",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AHuckleberry_Finn_book.JPG",
+   "edition": "1st ed., Charles L. Webster & Co., New York, 1885 (green cloth) (spine, cropped from the same photograph)",
+   "file": "data/books/spines/huckfinn.jpg"
+  },
+  {
+   "file": "data/books/covers/treasure.jpg",
+   "source": "https://archive.org/details/islandtreasure00stevrich",
+   "original": "https://archive.org/download/islandtreasure00stevrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1883, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/islandtreasure00stevrich",
+   "edition": "1st ed., Cassell & Co., London, 1883"
+  },
+  {
+   "file": "data/books/covers/jekyll.jpg",
+   "source": "https://archive.org/details/strangecaseofdrj00stevrich",
+   "original": "https://archive.org/download/strangecaseofdrj00stevrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1886, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/strangecaseofdrj00stevrich",
+   "edition": "1st London ed., Longmans, Green & Co., 1886 (paper wrappers)"
+  },
+  {
+   "file": "data/books/covers/oz.jpg",
+   "source": "https://archive.org/details/wonderfulwizardo00baumiala",
+   "original": "https://archive.org/download/wonderfulwizardo00baumiala/page/cover_w800.jpg",
+   "credit": "Charles E. Young Research Library, UCLA; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1900, c1899, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/wonderfulwizardo00baumiala",
+   "edition": "1st ed., George M. Hill Co., Chicago, 1900"
+  },
+  {
+   "file": "data/books/covers/peterpan.jpg",
+   "source": "https://archive.org/details/peterwendy00barr2",
+   "original": "https://archive.org/download/peterwendy00barr2/page/cover_w800.jpg",
+   "credit": "New York Public Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published c1911, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/peterwendy00barr2",
+   "edition": "1st American ed., Charles Scribner's Sons, New York, 1911"
+  },
+  {
+   "file": "data/books/covers/junglebook.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AJunglebookCover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/f/f5/JunglebookCover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Illustrated by John Lockwood Kipling; Low-resolution scanned image",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJunglebookCover.jpg",
+   "edition": "1st ed., Macmillan & Co., London, 1894 (blue cloth with gilt)"
+  },
+  {
+   "source": "https://commons.wikimedia.org/wiki/File%3AJunglebookCover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/f/f5/JunglebookCover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Illustrated by John Lockwood Kipling; Low-resolution scanned image",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJunglebookCover.jpg",
+   "edition": "1st ed., Macmillan & Co., London, 1894 (blue cloth with gilt) (spine, cropped from the same photograph)",
+   "file": "data/books/spines/junglebook.jpg"
+  },
+  {
+   "file": "data/books/covers/timemachine.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ATimemachinebook.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/62/Timemachinebook.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "see source page",
+   "licence": "PD-US (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ATimemachinebook.jpg",
+   "edition": "1st English ed., William Heinemann, London, 1895"
+  },
+  {
+   "file": "data/books/covers/worlds.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_first_edition.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/3/30/The_War_of_the_Worlds_first_edition.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "H. G. Wells; drzeus.best.vhw.net",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_first_edition.jpg",
+   "edition": "1st ed., William Heinemann, London, 1898"
+  },
+  {
+   "file": "data/books/covers/leagues.jpg",
+   "source": "https://archive.org/details/twentythousandle1875vern",
+   "original": "https://archive.org/download/twentythousandle1875vern/page/cover_w800.jpg",
+   "credit": "Boston Public Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1875, pre-1931)",
+   "licence_url": "https://archive.org/details/twentythousandle1875vern",
+   "edition": "early American ed., J. R. Osgood, Boston, 1875 (1st English ed. 1872)"
+  },
+  {
+   "file": "data/books/covers/eightydays.jpg",
+   "source": "https://archive.org/details/tourofworldineig00vern",
+   "original": "https://archive.org/download/tourofworldineig00vern/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1873, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/tourofworldineig00vern",
+   "edition": "1st American ed. (Towle translation), J. R. Osgood & Co., Boston, 1873"
+  },
+  {
+   "file": "data/books/covers/journey.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AA_Journey_to_the_Centre_of_the_Earth-1874.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/67/A_Journey_to_the_Centre_of_the_Earth-1874.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "The original uploader was Sherurcij at English Wikisource.; Transferred from en.wikisource to Commons.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AA_Journey_to_the_Centre_of_the_Earth-1874.jpg",
+   "edition": "early English ed., 1874 (1st English ed. 1871/72)"
+  },
+  {
+   "file": "data/books/covers/montecristo.jpg",
+   "source": "https://archive.org/details/McGillLibrary-122863-2091",
+   "original": "https://archive.org/download/McGillLibrary-122863-2091/page/cover_w800.jpg",
+   "credit": "McGill University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1848, pre-1931)",
+   "licence_url": "https://archive.org/details/McGillLibrary-122863-2091",
+   "edition": "early French ed., N. Tresse, Paris, 1848 (1st ed. Pétion, 1844-46)"
+  },
+  {
+   "file": "data/books/covers/musketeers.jpg",
+   "source": "https://archive.org/details/bub_gb_E6IGAAAAQAAJ_2",
+   "original": "https://archive.org/download/bub_gb_E6IGAAAAQAAJ_2/page/cover_w800.jpg",
+   "credit": "unknown library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1844, pre-1931); Public Domain Mark 1.0 on the item",
+   "licence_url": "http://creativecommons.org/publicdomain/mark/1.0/",
+   "edition": "1844 ed. (French), Meline, Cans et Cie, Brussels, 1844 (1st year of publication)"
+  },
+  {
+   "file": "data/books/covers/lesmis.jpg",
+   "source": "https://archive.org/details/lesmisrables56hugo",
+   "original": "https://archive.org/download/lesmisrables56hugo/page/cover_w800.jpg",
+   "credit": "Harold B. Lee Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1862, pre-1931)",
+   "licence_url": "https://archive.org/details/lesmisrables56hugo",
+   "edition": "1st ed. (French), J. Hetzel / A. Lacroix, Paris, 1862 (vols. 5-6)"
+  },
+  {
+   "file": "data/books/covers/crime.jpg",
+   "source": "https://archive.org/details/crimepunishment0000cons_f2k2",
+   "original": "https://archive.org/download/crimepunishment0000cons_f2k2/page/cover_w800.jpg",
+   "credit": "Internet Archive; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/crimepunishment0000cons_f2k2",
+   "edition": "Constance Garnett translation, 1914 (1st printing of this translation; IA scan, publisher not stated)"
+  },
+  {
+   "file": "data/books/covers/warpeace.jpg",
+   "source": "https://archive.org/details/warpeacehistoric01tolsuoft",
+   "original": "https://archive.org/download/warpeacehistoric01tolsuoft/page/cover_w800.jpg",
+   "credit": "Robarts - University of Toronto; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1886, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/warpeacehistoric01tolsuoft",
+   "edition": "1st English ed. (Dole translation), W. S. Gottsberger, New York, 1886 (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/anna.jpg",
+   "source": "https://archive.org/details/annakarenina00tolsiala",
+   "original": "https://archive.org/download/annakarenina00tolsiala/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published [c1886], pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/annakarenina00tolsiala",
+   "edition": "1st English ed. (Dole translation), T. Y. Crowell & Co., New York, 1886"
+  },
+  {
+   "file": "data/books/covers/karamazov.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ADostoevsky-Brothers_Karamazov.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Dostoevsky-Brothers_Karamazov.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Russkii Vestnik; Russkii Vestnik - Zhurnal Literaturnyi I Politicheskii. Moskva : M. M. Kotkov, v. 139-150 (1878-1881). From http://www.dartmouth.edu/~karamazo/picturetour/bk_pictures.html",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ADostoevsky-Brothers_Karamazov.jpg",
+   "edition": "1st publication, The Russian Messenger, Moscow, 1879 (opening page; no early cover scan found)"
+  },
+  {
+   "file": "data/books/covers/quixote.jpg",
+   "source": "https://archive.org/details/elingeniosohidal00cerguat",
+   "original": "https://archive.org/download/elingeniosohidal00cerguat/page/cover_w800.jpg",
+   "credit": "Biblioteca Ludwig von Mises, Universidad Francisco Marroquín; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1605, pre-1931); Internet Archive possible-copyright-status: NOT IN COPYRIGHT",
+   "licence_url": "https://archive.org/details/elingeniosohidal00cerguat",
+   "edition": "1st ed., Juan de la Cuesta, Madrid, 1605 (limp vellum)"
+  },
+  {
+   "file": "data/books/covers/greatexp.jpg",
+   "source": "https://archive.org/details/greatexpectation02dick",
+   "original": "https://archive.org/download/greatexpectation02dick/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1861, pre-1931)",
+   "licence_url": "https://archive.org/details/greatexpectation02dick",
+   "edition": "1st ed., Chapman and Hall, London, 1861 (vol. 2, publisher's cloth)"
+  },
+  {
+   "file": "data/books/covers/oliver.jpg",
+   "source": "https://archive.org/details/twistoliver01dickrich",
+   "original": "https://archive.org/download/twistoliver01dickrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1839, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/twistoliver01dickrich",
+   "edition": "2nd ed., Richard Bentley, London, 1839 (vol. 1, half-calf; 1st ed. 1838 has no cover scan)"
+  },
+  {
+   "file": "data/books/covers/carol.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ACharles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Charles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Charles Dickens, Photographer: Heritage Auctions, Inc. Dallas, Texas; http://historical.ha.com/common/view_item.php?Sale_No=683&amp;Lot_No=57424&amp;type=&amp;ic=",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ACharles_Dickens-A_Christmas_Carol-Cloth-First_Edition_1843.jpg",
+   "edition": "1st ed., Chapman & Hall, London, 1843 (cinnamon cloth with gilt)"
+  },
+  {
+   "file": "data/books/covers/copperfield.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ACopperfield_cover_serial.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/5/50/Copperfield_cover_serial.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Bradbury &amp; Evans; NYPL",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ACopperfield_cover_serial.jpg",
+   "edition": "1st ed. in monthly parts, Bradbury & Evans, London, 1849-50 (part wrapper by Phiz)"
+  },
+  {
+   "file": "data/books/covers/emma.jpg",
+   "source": "https://archive.org/details/emmanovel02aust",
+   "original": "https://archive.org/download/emmanovel02aust/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1816, pre-1931)",
+   "licence_url": "https://archive.org/details/emmanovel02aust",
+   "edition": "1st ed., John Murray, London, 1816 [i.e. Dec. 1815] (vol. 2)"
+  },
+  {
+   "file": "data/books/covers/sense.jpg",
+   "source": "https://archive.org/details/sensesensibility03aust",
+   "original": "https://archive.org/download/sensesensibility03aust/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1811, pre-1931)",
+   "licence_url": "https://archive.org/details/sensesensibility03aust",
+   "edition": "1st ed., printed for the author by C. Roworth, sold by T. Egerton, London, 1811 (vol. 3)"
+  },
+  {
+   "file": "data/books/covers/persuasion.jpg",
+   "source": "https://archive.org/details/northangerabbeyp01aust",
+   "original": "https://archive.org/download/northangerabbeyp01aust/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1818, pre-1931)",
+   "licence_url": "https://archive.org/details/northangerabbeyp01aust",
+   "edition": "1st ed. (Northanger Abbey and Persuasion), John Murray, London, 1818 [Dec. 1817] (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/scarlet.jpg",
+   "source": "https://archive.org/details/scarletletterrom1850hawt",
+   "original": "https://archive.org/download/scarletletterrom1850hawt/page/cover_w800.jpg",
+   "credit": "Harold B. Lee Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1850, pre-1931)",
+   "licence_url": "https://archive.org/details/scarletletterrom1850hawt",
+   "edition": "2nd ed., Ticknor, Reed & Fields, Boston, 1850 (same year as the 1st)"
+  },
+  {
+   "file": "data/books/covers/callwild.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AJackLondoncallwild.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/2/26/JackLondoncallwild.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "The novel is by Jack London. According to web sources, the cover art seems to be by Paul Bransom (1885-1979) or possibly Charles Bull (1874-1932); Huntington.org",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJackLondoncallwild.jpg",
+   "edition": "1st ed., Macmillan Co., New York, 1903"
+  },
+  {
+   "file": "data/books/covers/whitefang.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AJackLondonwhitefang1.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/1/14/JackLondonwhitefang1.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Jack London; Transferred from en.wikipedia to Commons. by Crazy runner using CommonsHelper. (Original text: Huntington.org)",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJackLondonwhitefang1.jpg",
+   "edition": "1st ed., Macmillan Co., New York, 1906"
+  },
+  {
+   "file": "data/books/covers/darkness.jpg",
+   "source": "https://archive.org/details/youthnarrativetw00conrrich",
+   "original": "https://archive.org/download/youthnarrativetw00conrrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1902, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/youthnarrativetw00conrrich",
+   "edition": "1st book ed. (in 'Youth: a Narrative, and Two Other Stories'), William Blackwood & Sons, Edinburgh/London, 1902"
+  },
+  {
+   "file": "data/books/covers/gulliver.jpg",
+   "source": "https://archive.org/details/travelsintosever01swif_0",
+   "original": "https://archive.org/download/travelsintosever01swif_0/page/cover_w800.jpg",
+   "credit": "Boston College; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1726, pre-1931)",
+   "licence_url": "https://archive.org/details/travelsintosever01swif_0",
+   "edition": "1726, Benj. Motte, London ('B' edition, 3rd octavo issue, Dec. 1726) (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/crusoe.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ARobinson_Crusoe_1719_1st_edition.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Robinson_Crusoe_1719_1st_edition.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; First edition of Robinson Cruose",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ARobinson_Crusoe_1719_1st_edition.jpg",
+   "edition": "1st ed., W. Taylor, London, 1719 (title page with Clark & Pine frontispiece; cropped to title page)"
+  },
+  {
+   "file": "data/books/covers/odyssey.jpg",
+   "source": "https://archive.org/details/odysseyrenderedi00homerich",
+   "original": "https://archive.org/download/odysseyrenderedi00homerich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1900, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/odysseyrenderedi00homerich",
+   "edition": "1st ed. of Butler's translation, A. C. Fifield, London, 1900"
+  },
+  {
+   "file": "data/books/covers/iliad.jpg",
+   "source": "https://archive.org/details/cu31924026468417",
+   "original": "https://archive.org/download/cu31924026468417/page/cover_w800.jpg",
+   "credit": "Cornell University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924026468417",
+   "edition": "1st ed. of Butler's translation, Longmans, Green & Co., London, 1898"
+  },
+  {
+   "file": "data/books/covers/artofwar.jpg",
+   "source": "https://archive.org/details/artofwaroldestmi00suntuoft",
+   "original": "https://archive.org/download/artofwaroldestmi00suntuoft/page/cover_w800.jpg",
+   "credit": "Robarts - University of Toronto; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1910, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/artofwaroldestmi00suntuoft",
+   "edition": "1st ed. of Giles's translation, Luzac & Co., London, 1910 (title page)"
+  },
+  {
+   "file": "data/books/covers/meditations.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AMarcus_Aurelius._De_seipso%2C_seu_vita_sua_%28Xylander%2C_1558%29.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Marcus_Aurelius._De_seipso%2C_seu_vita_sua_%28Xylander%2C_1558%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Marcus Aurelius; http://reader.digitale-sammlungen.de/en/fs1/object/display/bsb10169588_00001.html",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMarcus_Aurelius._De_seipso%2C_seu_vita_sua_%28Xylander%2C_1558%29.jpg",
+   "edition": "editio princeps (Greek/Latin), Andreas Gesner, Zurich, 1559 (title page); English tr. by Casaubon 1634"
+  },
+  {
+   "file": "data/books/covers/republic.jpg",
+   "source": "https://archive.org/details/cu31924092280050",
+   "original": "https://archive.org/download/cu31924092280050/page/cover_w800.jpg",
+   "credit": "Cornell University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1871, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924092280050",
+   "edition": "1st ed. of Jowett's Dialogues of Plato, Clarendon Press, Oxford, 1871 (vol. 2, which holds The Republic)"
+  },
+  {
+   "file": "data/books/covers/grimm.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AGrimm%27s_Kinder-_und_Hausm%C3%A4rchen%2C_Erster_Theil_%281812%29.cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Grimm%27s_Kinder-_und_Hausm%C3%A4rchen%2C_Erster_Theil_%281812%29.cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "see source page",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AGrimm%27s_Kinder-_und_Hausm%C3%A4rchen%2C_Erster_Theil_%281812%29.cover.jpg",
+   "edition": "1st ed., Realschulbuchhandlung, Berlin, 1812 (vol. 1 title)"
+  },
+  {
+   "file": "data/books/covers/andersen.jpg",
+   "source": "https://archive.org/details/wonderfulstories00ande",
+   "original": "https://archive.org/download/wonderfulstories00ande/page/cover_w800.jpg",
+   "credit": "New York Public Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1846, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/wonderfulstories00ande",
+   "edition": "1st American ed. of Andersen in English ('Wonderful Stories for Children', Mary Howitt tr.), Wiley & Putnam, New York, 1846"
+  },
+  {
+   "file": "data/books/covers/aesop.jpg",
+   "source": "https://archive.org/details/threehundredaeso00weir_0",
+   "original": "https://archive.org/download/threehundredaeso00weir_0/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1867, pre-1931)",
+   "licence_url": "https://archive.org/details/threehundredaeso00weir_0",
+   "edition": "1st ed. of Townsend's translation, George Routledge & Sons, London, 1867"
+  },
+  {
+   "file": "data/books/covers/arabian.jpg",
+   "source": "https://archive.org/details/McGillLibrary-rbsc_bourke_arabian-nights-entertainment_PJ7715L361898-15699",
+   "original": "https://archive.org/download/McGillLibrary-rbsc_bourke_arabian-nights-entertainment_PJ7715L361898-15699/page/cover_w800.jpg",
+   "credit": "McGill University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/McGillLibrary-rbsc_bourke_arabian-nights-entertainment_PJ7715L361898-15699",
+   "edition": "1st ed., Longmans, Green & Co., London, 1898"
+  },
+  {
+   "file": "data/books/covers/hound.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ACover_%28Hound_of_Baskervilles%2C_1902%29.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/3/3b/Cover_%28Hound_of_Baskervilles%2C_1902%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Alfred Garth Jones; Internet Archive identifier: houndofbaskervil00doylrich",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ACover_%28Hound_of_Baskervilles%2C_1902%29.jpg",
+   "edition": "1st ed., George Newnes, London, 1902"
+  },
+  {
+   "file": "data/books/covers/scarletstudy.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AArthurConanDoyle_AStudyInScarlet_annual.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/2/2c/ArthurConanDoyle_AStudyInScarlet_annual.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "David Henry Friston; Transferred from en.wikipedia to Commons.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AArthurConanDoyle_AStudyInScarlet_annual.jpg",
+   "edition": "1st publication, Beeton's Christmas Annual, Ward, Lock & Co., London, 1887"
+  },
+  {
+   "file": "data/books/covers/secretgarden.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AHoughton_AC85_B9345_911s_-_Secret_Garden%2C_1911_-_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Houghton_AC85_B9345_911s_-_Secret_Garden%2C_1911_-_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Maria Louise Kirk; Houghton Library",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AHoughton_AC85_B9345_911s_-_Secret_Garden%2C_1911_-_cover.jpg",
+   "edition": "1st ed., Frederick A. Stokes Co., New York, 1911 (Houghton Library copy)"
+  },
+  {
+   "file": "data/books/covers/anne.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AMontgomery_Anne_of_Green_Gables.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Montgomery_Anne_of_Green_Gables.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "George Fort Gibbs (1870–1942) (Note: M. A. &amp; W. A. J. Claus did not illustrate the cover); https://books0977.tumblr.com/post/31686270543/anne-of-green-gables-lucy-maud-montgomery",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMontgomery_Anne_of_Green_Gables.jpg",
+   "edition": "1st ed., L. C. Page & Co., Boston, 1908"
+  },
+  {
+   "file": "data/books/covers/blackbeauty.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ABlackBeautyCoverFirstEd1877.jpeg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/BlackBeautyCoverFirstEd1877.jpeg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; https://archive.org/details/blackbeautyhisgr00seweiala",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3ABlackBeautyCoverFirstEd1877.jpeg",
+   "edition": "1st ed., Jarrold & Sons, London, 1877"
+  },
+  {
+   "file": "data/books/covers/willows.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Wind_in_the_Willows_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/1/15/The_Wind_in_the_Willows_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "W. Graham Robertson/Kenneth Grahame; https://www.gutenberg.org/files/289/289-h/289-h.htm",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Wind_in_the_Willows_cover.jpg",
+   "edition": "1st ed., Methuen & Co., London, 1908"
+  },
+  {
+   "file": "data/books/covers/pooh.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AWinnie-the-Pooh_%28book%29.png",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Winnie-the-Pooh_%28book%29.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "w:A. A. Milne, illustrated by w:E. H. Shepard, published by w:Methuen &amp; Co. Ltd.; Original: File:WinnieThePooh.JPG",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AWinnie-the-Pooh_%28book%29.png",
+   "edition": "1st ed., Methuen, London, 1926"
+  },
+  {
+   "file": "data/books/covers/pinocchio.jpg",
+   "source": "https://archive.org/details/storyofpuppetora00colliala",
+   "original": "https://archive.org/download/storyofpuppetora00colliala/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1892, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/storyofpuppetora00colliala",
+   "edition": "1st English ed. ('The Story of a Puppet'), T. Fisher Unwin, London, 1892"
+  },
+  {
+   "file": "data/books/covers/lookingglass.jpg",
+   "source": "https://archive.org/details/throughlookinggl01carr",
+   "original": "https://archive.org/download/throughlookinggl01carr/page/cover_w800.jpg",
+   "credit": "Duke University Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1872, pre-1931)",
+   "licence_url": "https://archive.org/details/throughlookinggl01carr",
+   "edition": "1st ed., Macmillan & Co., London, 1872 [Dec. 1871] (red cloth with gilt)"
+  },
+  {
+   "file": "data/books/covers/poe.jpg",
+   "source": "https://archive.org/details/talesedg00poeerich",
+   "original": "https://archive.org/download/talesedg00poeerich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1846, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/talesedg00poeerich",
+   "edition": "'Tales', Wiley & Putnam, London issue, 1846 (1st ed. New York, 1845)"
+  },
+  {
+   "file": "data/books/covers/leaves.jpg",
+   "source": "https://archive.org/details/whitmanleavesofgrass",
+   "original": "https://archive.org/download/whitmanleavesofgrass/page/cover_w800.jpg",
+   "credit": "uploaded by an Internet Archive user (jacklee_2001@outlook.com), scan from Google Books; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1855, pre-1931); Public Domain Mark 1.0 on the item",
+   "licence_url": "http://creativecommons.org/publicdomain/mark/1.0/",
+   "edition": "1st ed., [Brooklyn], 1855 (green cloth with gilt; Google Books scan via IA)"
+  },
+  {
+   "file": "data/books/covers/earnest.jpg",
+   "source": "https://archive.org/details/importanceofbein00wildrich",
+   "original": "https://archive.org/download/importanceofbein00wildrich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1899, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/importanceofbein00wildrich",
+   "edition": "1st ed., Leonard Smithers & Co., London, 1899 (title page)"
+  },
+  {
+   "file": "data/books/covers/hamlet.jpg",
+   "source": "https://archive.org/details/bim_early-english-books-1475-1640_the-tragicall-historie-o_shakespeare-william_1603",
+   "original": "https://archive.org/download/bim_early-english-books-1475-1640_the-tragicall-historie-o_shakespeare-william_1603/page/cover_w800.jpg",
+   "credit": "Internet Archive; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1603, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_early-english-books-1475-1640_the-tragicall-historie-o_shakespeare-william_1603",
+   "edition": "1st Quarto, N. L[ing] and J. Trundell, London, 1603 (title page)"
+  },
+  {
+   "file": "data/books/covers/romeo.jpg",
+   "source": "https://archive.org/details/bim_early-english-books-1475-1640_an-excellent-conceited-t_shakespeare-william_1597",
+   "original": "https://archive.org/download/bim_early-english-books-1475-1640_an-excellent-conceited-t_shakespeare-william_1597/page/cover_w800.jpg",
+   "credit": "Internet Archive; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1597, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_early-english-books-1475-1640_an-excellent-conceited-t_shakespeare-william_1597",
+   "edition": "1st Quarto, John Danter, London, 1597 (title page)"
+  },
+  {
+   "file": "data/books/covers/macbeth.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3ATitle_Page_-_Shakespeare_First_Folio_%281623%29%2C_title_page_-_BL.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/67/Title_Page_-_Shakespeare_First_Folio_%281623%29%2C_title_page_-_BL.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Creator:Droeshout; This file has been provided by the British Library from its digital collections. Links to the British Library's website may be broken as the library recovers from a October 2023 cyber attack, and will be updated once material becomes accessible online. For more information on the ",
+   "licence": "CC0 (as marked on Wikimedia Commons)",
+   "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+   "edition": "1st printing, the First Folio, Isaac Jaggard & Ed. Blount, London, 1623 (title page)"
+  },
+  {
+   "file": "data/books/covers/midsummer.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AMidsommer_nights_dreame_1600_Quarto_title_page.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/2/21/Midsommer_nights_dreame_1600_Quarto_title_page.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "William Shakespeare; A Midsommer nights dreame, Quarto of 1600",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMidsommer_nights_dreame_1600_Quarto_title_page.jpg",
+   "edition": "1st Quarto, Thomas Fisher, London, 1600 (title page)"
+  },
+  {
+   "file": "data/books/covers/prince.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AMachiavelli_Il_principe_1532_title_page.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Machiavelli_Il_principe_1532_title_page.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Niccolò Machiavelli; http://mdz-nbn-resolving.de/urn:nbn:de:bvb:12-bsb10201716-7",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AMachiavelli_Il_principe_1532_title_page.jpg",
+   "edition": "1st ed., Antonio Blado, Rome, 1532 (title page)"
+  },
+  {
+   "file": "data/books/covers/ulysses.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AJoyceUlysses2.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/a/ab/JoyceUlysses2.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "James Joyce; Own work",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AJoyceUlysses2.jpg",
+   "edition": "1st ed., Shakespeare and Company, Paris, 1922 (blue wrappers)"
+  },
+  {
+   "file": "data/books/covers/dalloway.jpg",
+   "source": "https://en.wikipedia.org/wiki/File%3AMrs._Dalloway_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/en/6/67/Mrs._Dalloway_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "see source page",
+   "licence": "PD-US (en.wikipedia local file)",
+   "licence_url": "https://en.wikipedia.org/wiki/File%3AMrs._Dalloway_cover.jpg",
+   "edition": "1st ed., Hogarth Press, London, 1925 (dust jacket by Vanessa Bell)"
+  },
+  {
+   "file": "data/books/covers/sunrises.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Sun_Also_Rises_%281st_ed._cover%29.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/8/8b/The_Sun_Also_Rises_%281st_ed._cover%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Cleo Damianakes; Heritage Auctions. Cropped by uploader.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Sun_Also_Rises_%281st_ed._cover%29.jpg",
+   "edition": "1st ed., Charles Scribner's Sons, New York, 1926 (dust jacket)"
+  },
+  {
+   "file": "data/books/covers/ackroyd.jpg",
+   "source": "https://en.wikipedia.org/wiki/File%3AThe_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/en/5/57/The_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "see source page",
+   "licence": "PD-US (en.wikipedia local file)",
+   "licence_url": "https://en.wikipedia.org/wiki/File%3AThe_Murder_of_Roger_Ackroyd_First_Edition_Cover_1926.jpg",
+   "edition": "1st ed., William Collins, London, 1926 (dust jacket)"
+  },
+  {
+   "file": "data/books/covers/styles.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AAmerican_cover_of_%C2%ABThe_Mysterious_Affair_at_Styles%C2%BB.png",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/1/1b/American_cover_of_%C2%ABThe_Mysterious_Affair_at_Styles%C2%BB.png?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "John Lane; John Lane",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AAmerican_cover_of_%C2%ABThe_Mysterious_Affair_at_Styles%C2%BB.png",
+   "edition": "1st ed., John Lane Co., New York, 1920 (dust jacket)"
+  },
+  {
+   "file": "data/books/covers/jungle.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Jungle_%281906%29_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/4/4a/The_Jungle_%281906%29_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; This image has been extracted from another file",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Jungle_%281906%29_cover.jpg",
+   "edition": "1st ed., Doubleday, Page & Co., New York, 1906"
+  },
+  {
+   "file": "data/books/covers/innocence.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AAge_of_Innocence_%281st_ed_dust_jacket%29.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/b/b0/Age_of_Innocence_%281st_ed_dust_jacket%29.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; Anonymous artist; http://manybooks.net/titles/whartoneetext96agino10.html",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AAge_of_Innocence_%281st_ed_dust_jacket%29.jpg",
+   "edition": "1st ed., D. Appleton & Co., New York, 1920 (dust jacket)"
+  },
+  {
+   "file": "data/books/covers/ethan.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AEthan_Frome_first_edition_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Ethan_Frome_first_edition_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Dargate auctioneers, book by Edith Wharton (1862-1937); http://www.dargate.com/cat/246_auction/246_images/246catalog.htm Lot 3080 (direct image)",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AEthan_Frome_first_edition_cover.jpg",
+   "edition": "1st ed., Charles Scribner's Sons, New York, 1911"
+  },
+  {
+   "file": "data/books/covers/wallpaper.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Yellow_Wall_Paper_pg_1.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/4/40/The_Yellow_Wall_Paper_pg_1.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Small, Maynard &amp; Company; File:The Yellow Wall Paper.djvu",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Yellow_Wall_Paper_pg_1.jpg",
+   "edition": "Small, Maynard & Co., Boston, 1901 (cover; 1st book ed. 1899, 1st publ. New England Magazine, 1892)"
+  },
+  {
+   "file": "data/books/covers/awakening.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_Awakening_%28Chopin_novel%29_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/d/df/The_Awakening_%28Chopin_novel%29_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "https://pinterest.com/pin/328129522827711453/",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_Awakening_%28Chopin_novel%29_cover.jpg",
+   "edition": "1st ed., Herbert S. Stone & Co., Chicago, 1899"
+  },
+  {
+   "file": "data/books/covers/middlemarch.jpg",
+   "source": "https://archive.org/details/middlemarchstudy01eliorich",
+   "original": "https://archive.org/download/middlemarchstudy01eliorich/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1871-72, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/middlemarchstudy01eliorich",
+   "edition": "1st ed., William Blackwood & Sons, Edinburgh, 1871-72 (vol. 1, later half binding)"
+  },
+  {
+   "file": "data/books/covers/bovary.jpg",
+   "source": "https://archive.org/details/madamebovarymurs11flau",
+   "original": "https://archive.org/download/madamebovarymurs11flau/page/cover_w800.jpg",
+   "credit": "Duke University Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1857, pre-1931)",
+   "licence_url": "https://archive.org/details/madamebovarymurs11flau",
+   "edition": "1st ed. in book form, Michel Lévy frères, Paris, 1857 (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/tess.jpg",
+   "source": "https://archive.org/details/tessofdurbervill01hard",
+   "original": "https://archive.org/download/tessofdurbervill01hard/page/cover_w800.jpg",
+   "credit": "University of Illinois Urbana-Champaign; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/tessofdurbervill01hard",
+   "edition": "1st ed., James R. Osgood, McIlvaine & Co., London, 1891 (vol. 1)"
+  },
+  {
+   "file": "data/books/covers/vanity.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AVanity_Fair_01_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Vanity_Fair_01_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "William Makepeace Thackery; Victorian Serial Novels",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AVanity_Fair_01_cover.jpg",
+   "edition": "1st ed. in monthly parts, Punch Office / Bradbury & Evans, London, 1847 (part I wrapper)"
+  },
+  {
+   "file": "data/books/covers/uncletom.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AHarriet_Beecher_Stowe%2C_Uncle_Tom%27s_Cabin%2C_vol._1%2C_1852%2C_title_page.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Harriet_Beecher_Stowe%2C_Uncle_Tom%27s_Cabin%2C_vol._1%2C_1852%2C_title_page.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Harriet Beecher Stowe; Internet Archive",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AHarriet_Beecher_Stowe%2C_Uncle_Tom%27s_Cabin%2C_vol._1%2C_1852%2C_title_page.jpg",
+   "edition": "1st ed., John P. Jewett & Co., Boston, 1852 (vol. 1 title page)"
+  },
+  {
+   "file": "data/books/covers/douglass.jpg",
+   "source": "https://archive.org/details/narrativeoflifeo1845doug",
+   "original": "https://archive.org/download/narrativeoflifeo1845doug/page/cover_w800.jpg",
+   "credit": "Harold B. Lee Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1845, pre-1931)",
+   "licence_url": "https://archive.org/details/narrativeoflifeo1845doug",
+   "edition": "1st ed., Anti-Slavery Office, Boston, 1845"
+  },
+  {
+   "file": "data/books/covers/walden.jpg",
+   "source": "https://archive.org/details/waldenorlifeinwo1854thor",
+   "original": "https://archive.org/download/waldenorlifeinwo1854thor/page/cover_w800.jpg",
+   "credit": "Boston Public Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1854, pre-1931)",
+   "licence_url": "https://archive.org/details/waldenorlifeinwo1854thor",
+   "edition": "1st ed., Ticknor & Fields, Boston, 1854 (title page)"
+  },
+  {
+   "file": "data/books/covers/origin.jpg",
+   "source": "https://archive.org/details/onoriginofspec00darw",
+   "original": "https://archive.org/download/onoriginofspec00darw/page/cover_w800.jpg",
+   "credit": "Smithsonian Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1859, pre-1931)",
+   "licence_url": "https://archive.org/details/onoriginofspec00darw",
+   "edition": "1st ed., John Murray, London, 1859 (green cloth)"
+  },
+  {
+   "file": "data/books/covers/invisible.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AWells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Wells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; https://www.abebooks.co.uk/servlet/BookDetailsPL?bi=30289720550",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AWells_-_The_Invisible_Man_-_Pearson_cover_1897.jpg",
+   "edition": "1st ed., C. Arthur Pearson, London, 1897"
+  },
+  {
+   "file": "data/books/covers/moreau.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AIslandOfDrMoreau.JPG",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/7/73/IslandOfDrMoreau.JPG?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; Here",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AIslandOfDrMoreau.JPG",
+   "edition": "1st ed., William Heinemann, London, 1896"
+  },
+  {
+   "file": "data/books/covers/phantom.jpg",
+   "source": "https://archive.org/details/phantomofopera00lero",
+   "original": "https://archive.org/download/phantomofopera00lero/page/cover_w800.jpg",
+   "credit": "Harold B. Lee Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/phantomofopera00lero",
+   "edition": "1st American publisher's text (de Mattos tr.), Grosset & Dunlap reprint, New York, [c1911] (title page)"
+  },
+  {
+   "file": "data/books/covers/hunchback.jpg",
+   "source": "https://archive.org/details/hunchbackofnotre00hugouoft",
+   "original": "https://archive.org/download/hunchbackofnotre00hugouoft/page/cover_w800.jpg",
+   "credit": "Robarts - University of Toronto; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1833, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/hunchbackofnotre00hugouoft",
+   "edition": "1st English ed. ('The Hunchback of Notre-Dame', Shoberl tr.), Richard Bentley, London, 1833"
+  },
+  {
+   "file": "data/books/covers/beowulf.jpg",
+   "source": "https://archive.org/details/cu31924013339373",
+   "original": "https://archive.org/download/cu31924013339373/page/cover_w800.jpg",
+   "credit": "Cornell University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1892, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924013339373",
+   "edition": "1st ed. of Hall's translation, D. C. Heath & Co., Boston, 1892"
+  },
+  {
+   "file": "data/books/covers/dante.jpg",
+   "source": "https://archive.org/details/divinecomedydant01dant",
+   "original": "https://archive.org/download/divinecomedydant01dant/page/cover_w800.jpg",
+   "credit": "University of California Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1867, pre-1931); Internet Archive possible-copyright-status: NOT_IN_COPYRIGHT",
+   "licence_url": "https://archive.org/details/divinecomedydant01dant",
+   "edition": "1st ed. of Longfellow's translation, Ticknor & Fields, Boston, 1867 (vol. 1 title page)"
+  },
+  {
+   "file": "data/books/covers/sleepyhollow.jpg",
+   "source": "https://archive.org/details/irvingsketchbook",
+   "original": "https://archive.org/download/irvingsketchbook/page/cover_w800.jpg",
+   "credit": "uploaded by an Internet Archive user (jacklee_2001@outlook.com), scan from Google Books; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1819, pre-1931); Public Domain Mark 1.0 on the item",
+   "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "edition": "1st ed. of 'The Sketch Book of Geoffrey Crayon, Gent.' (in which it first appeared), C. S. Van Winkle, New York, 1819-20"
+  },
+  {
+   "file": "data/books/covers/dubliners.jpg",
+   "source": "https://archive.org/details/dubliners00joyc_8",
+   "original": "https://archive.org/download/dubliners00joyc_8/page/cover_w800.jpg",
+   "credit": "Boston College Libraries; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/dubliners00joyc_8",
+   "edition": "1st ed., Grant Richards, London, 1914"
+  },
+  {
+   "file": "data/books/covers/screw.jpg",
+   "source": "https://archive.org/details/cu31924105726255",
+   "original": "https://archive.org/download/cu31924105726255/page/cover_w800.jpg",
+   "credit": "Cornell University Library; digitized by the Internet Archive",
+   "licence": "Public domain (work published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924105726255",
+   "edition": "1st ed. ('The Two Magics'), Macmillan Co., New York, 1898"
+  },
+  {
+   "file": "data/books/covers/farewell.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AA_Farewell_to_Arms_%281929%29_cover.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/3/36/A_Farewell_to_Arms_%281929%29_cover.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Cleo Damianakes; HA.com",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AA_Farewell_to_Arms_%281929%29_cover.jpg",
+   "edition": "1st ed., Charles Scribner's Sons, New York, 1929 (dust jacket by Cleonike Damianakes)"
+  },
+  {
+   "file": "data/books/covers/kinginyellow.jpg",
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_King_in_Yellow.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/64/The_King_in_Yellow.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; Scan of entire cover (front and back) of the first, 1895 edition of The King in Yellow by Robert W. Chambers.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_King_in_Yellow.jpg",
+   "edition": "1st ed., F. Tennyson Neely, Chicago/New York, 1895"
+  },
+  {
+   "source": "https://commons.wikimedia.org/wiki/File%3AThe_King_in_Yellow.jpg",
+   "original": "https://upload.wikimedia.org/wikipedia/commons/6/64/The_King_in_Yellow.jpg?utm_source=en.wikipedia.org&utm_campaign=imageinfo&utm_content=original",
+   "credit": "Unknown authorUnknown author; Scan of entire cover (front and back) of the first, 1895 edition of The King in Yellow by Robert W. Chambers.",
+   "licence": "Public domain (as marked on Wikimedia Commons)",
+   "licence_url": "https://commons.wikimedia.org/wiki/File%3AThe_King_in_Yellow.jpg",
+   "edition": "1st ed., F. Tennyson Neely, Chicago/New York, 1895 (spine, cropped from the same photograph)",
+   "file": "data/books/spines/kinginyellow.jpg"
+  }
+ ]
+}

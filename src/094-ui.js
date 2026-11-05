@@ -1,6 +1,6 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BLK, BUGS, CHARP, CIVIC, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, HANDHELD, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -18,7 +18,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · swim up, and faster · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · swim down'],
     ['view','change the view (map, isometric, third person, behind, first person)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops)'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (through walls)']];
-  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+N','THE NEXT LOOK'],['SHIFT+E','EDIT THE WORLD'],['SHIFT+0','THE EDITORS'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
+  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+N','THE NEXT LOOK'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m',chat:'enter',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
@@ -27,25 +27,23 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;
         try{ SAVE.set('keys',JSON.stringify(BIND)); }catch(err){} REV=rev(); } waiting=null; drawKeys(); e.preventDefault(); return null; }
     if(raw==='escape'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)GAMEED.toggle(); return null; }
-    if(raw==='escape'){ if(e.type==='keydown'){ if(0); else if(UI.menuOpen){ toggleMenu(); if(HANDHELD.back)HANDHELD.back(); } else if(HANDHELD.toggle)HANDHELD.toggle(); else toggleMenu(); } return null; }
+    if(raw==='escape'){ if(e.type==='keydown')toggleMenu(); return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
-    if(e.shiftKey&&/^Digit[0-9]$/.test(e.code)){ if(e.type==='keydown'&&!e.repeat&&e.code==='Digit0'&&EDITORS.key)EDITORS.key(0); return null; }
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
     if(raw==='g'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat){ const gp=document.getElementById('dguide'); if(UI.menuOpen&&gp&&!gp.hidden)UI.toggleMenu(); else UI.menuTab('guide'); } return null; }
-    if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat){} return null; }
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
-    if(UI.menuOpen||HANDHELD.up&&HANDHELD.up())return null;
+    if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
     const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=['map','iso','third','follow','first']; UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };
   { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
-  { const P=document.createElement('div'); P.id='movesp'; P.style.cssText='position:fixed;inset:6% 10%;z-index:20;display:none;overflow:auto;padding:16px 20px;background:#0b0d13f2;border:2px solid #2a3040;color:#c9ccd6;font:11px Silkscreen,monospace;letter-spacing:1px;line-height:1.9';
-    document.body.appendChild(P);
-    UI.moves=()=>{ '@later'; if(P.style.display!=='none'){ P.style.display='none'; return; }
-      const row=(k,t)=>'<div style="display:flex;gap:14px"><b style="min-width:120px;color:#f2c14e">'+k+'</b><span>'+t+'</span></div>', h=t=>'<div style="margin:12px 0 4px;color:#8a8f9c">'+t+'</div>';
-      let o='<h3 style="margin:0 0 6px">WHAT YOU CAN DO</h3>'+h('KEYS (CHANGE THEM IN THE MENU\'S KEYS)');
+  {
+    UI.moves=()=>{ const p=document.getElementById('dmoves'); if(UI.menuOpen&&p&&!p.hidden)UI.toggleMenu(); else UI.menuTab('guide','keys'); };
+    UI.movesHTML=()=>{ '@later';
+      const row=(k,t)=>'<div class="row"><span style="flex:0 0 170px;color:var(--mo)">'+k+'</span><span style="flex:1;white-space:normal">'+t+'</span></div>', h=t=>'<h3>'+t+'</h3>';
+      let o=h('KEYS (CHANGE THEM IN SET, CONTROLS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP')+row('SHIFT + N','THE NEXT LOOK')+row('SHIFT + 0','ALL THE EDITORS: PICK ONE')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('SHIFT + E','EDIT THE WORLD')+row('I','YOUR PACK: WHAT YOU CARRY, SKILLS, CRAFTING')+row('1 TO 0','THE QUICK BAR')+row('ESC','THE MENU')+row('?','THIS LIST')+row('F8','REPORT A BUG');
+      o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP')+row('SHIFT + N','THE NEXT LOOK')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('I','YOUR BAG')+row('1 TO 0','THE QUICK BAR')+row('ESC','THE MENU')+row('?','THIS LIST')+row('F8','REPORT A BUG');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
       o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('A D','IN A FIGHT: PULL THE ROD LEFT / RIGHT, AGAINST THE FISH\'S RUN')+row('W S','DRAG UP / DOWN')+row('P','DROP A CRAB POT')+row('V','CHANGE THE VIEW');
@@ -57,12 +55,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       o+=h('SITTING')+row('ANY MOVE KEY','STAND UP');
       o+=h('YOUR APARTMENT: DECORATING ('+NAME(keyOf('t'))+')')+row('DRAG','MOVE A THING')+row('Q E','TURN IT (ALT: A LITTLE)')+row('[ ]','LOWER / RAISE IT')+row('X, DELETE','PUT IT AWAY')+row('G','GRID ON / OFF')+row('CTRL + Z','UNDO')+row('ESC','DONE');
       o+=h('THE MOVIE SCREEN (DOUBLE CLICK IT)')+row('SOUND, VOLUME','YOUR OWN')+row('FULL SCREEN','THE FILM OVER THE WHOLE PAGE · ESC OR ✕ GOES BACK');
-      o+=h('THE MAP EDITOR')+row('CTRL + Z / Y','UNDO / REDO')+row('CTRL + D','COPY')+row('DELETE','REMOVE')+row('ESC','CLOSE');
       if(UI.padMoves)o+=UI.padMoves(row,h);
       o+=h('THE MOUSE')+row('DOUBLE CLICK','A THING: GO TO IT AND USE IT · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR NAME, HEALTH AND BODY · THE GUITARIST: WATCH HIS HANDS · A MUSHROOM: PICK IT · THE MUSHROOM SELLER: HIS SHOP')
         +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG, SHIFT + DRAG','TURN AND TILT THE VIEW')+row('WHEEL','ZOOM');
-      P.innerHTML=o; P.style.display='block'; };
-    addEventListener('keydown',e=>{ if(e.key==='Escape'&&P.style.display!=='none'){ P.style.display='none'; e.stopImmediatePropagation(); } },true); }
+      return o; }; }
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&'FLY: '+NAME(keyOf('g'))+' to land'].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
   function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }
@@ -186,12 +182,25 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:var(--mk)}
   #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
   #menu.solo .tabs{display:none} #menu.solo .box{grid-template-columns:minmax(0,1fr)} #menu.solo .pane{grid-column:1/-1} #menu.solo #mapcv{display:block;margin:0 auto;max-width:100%;max-height:calc(92vh - 300px);width:auto!important;image-rendering:pixelated}
-  @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);font-size:14px} #menu .tabs{flex-direction:row;flex-wrap:wrap} #menu .pane{grid-column:1;grid-row:3} #menu #dhome .cp-btn{font-size:14px} }`;
+  #menu .box{grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);height:min(760px,92vh);overflow:hidden}
+  #menu .tabs{grid-column:1;grid-row:2/4;align-self:stretch} #menu .tabs button{display:flex;justify-content:space-between;gap:10px} #menu .tabs button u{text-decoration:none;color:var(--md);font-size:13px} #menu .tabs button[aria-selected="true"] u{color:var(--mk)}
+  #menu .tabs .adm{margin-top:auto;color:#ffd27a} #menu .tabs .adm[aria-selected="true"]{color:var(--mk);background:#ffd27a}
+  #menu .subs{grid-column:2;grid-row:2;display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px;background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi)} #menu .subs:empty{display:none}
+  #menu .subs button{font:inherit;color:var(--mt);background:transparent;border:0;padding:4px 10px;cursor:pointer;letter-spacing:inherit} #menu .subs button:hover{color:var(--mo)} #menu .subs button[aria-selected="true"]{color:var(--mk);background:var(--mf)} #menu .subs button.act::after{content:' ↗';color:var(--md)}
+  #menu .panes{grid-column:2;grid-row:3;min-height:0;overflow:auto;padding:18px 16px;background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi)}
+  #menu .panes>.pane{grid-column:auto;grid-row:auto;padding:0;background:none;box-shadow:none;min-width:0} #menu .panes>.pane:not([hidden])~.pane:not([hidden]){margin-top:26px}
+  #menu .box>.pX{color:var(--mt);background:var(--mk);border:0;box-shadow:inset 0 0 0 2px var(--mi);font-family:var(--pixel)} #menu .box>.pX:hover{color:var(--mk);background:var(--mf)}
+  #menu.solo .subs{display:none} #menu.solo .panes{grid-column:1/-1;grid-row:2/4}
+  #menu .you{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px} #menu #dhome .cp-wrap{flex-direction:column}
+  #menu .inmenu{position:static!important;inset:auto!important;transform:none!important;width:auto!important;max-height:none!important;overflow:visible!important;padding:0!important;margin:0!important;background:none!important;box-shadow:none!important;border:0!important;zoom:1!important;z-index:auto!important}
+  #menu #looks h2,#menu #looks .ltabs,#menu #looks #lclose,#menu #packp>div:first-child,#menu .inmenu>.pX{display:none!important}
+  @media (max-width:640px){ #menu .box{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);font-size:14px} #menu .tabs{grid-row:2;flex-direction:row;flex-wrap:wrap} #menu .tabs .adm{margin-top:0} #menu .subs{grid-column:1;grid-row:3} #menu .panes{grid-column:1;grid-row:4} #menu .you{grid-template-columns:minmax(0,1fr)} #menu #dhome .cp-btn{font-size:14px} }`;
   document.head.appendChild(css);
   const M=document.createElement('div'); M.id='menu'; M.hidden=true; M.innerHTML=`<div class="box" role="dialog" aria-label="Menu">
-    <div class="ttl frame"><span id="mttl">THE STRANGEST FLEA MARKET</span></div>
-    <div class="tabs" role="tablist"><button role="tab" data-t="display">DISPLAY</button><button role="tab" data-t="atmo">ATMOSPHERE</button><button role="tab" data-t="graphics">GRAPHICS</button><button role="tab" data-t="sound">SOUND</button><button role="tab" data-t="keys">KEYS</button><button role="tab" data-t="vr">VR</button></div>
-    <div class="pane" data-p="home" id="dhome"></div>
+    <div class="ttl frame"><span id="mttl">THE STRANGEST FLEA MARKET</span><span id="msec"></span></div>
+    <div class="tabs" role="tablist" id="mnav"></div><div class="subs" role="tablist" id="msub"></div><div class="panes">
+    <div class="pane you" data-p="home"><div id="dhome"></div><div id="dlooks"></div></div>
+    <div class="pane" data-p="pack" id="dpack"></div><div class="pane" data-p="people" id="dpeople"></div><div class="pane" data-p="bbs" id="dbbs"></div>
     <div class="pane" data-p="map"><div class="row"><button class="btn" data-lv="up">THE STREET</button><button class="btn" data-lv="down">UNDERGROUND</button><button class="btn" id="myapt">MY APARTMENT</button><span class="dim">click the map to go there</span></div>
       <div class="row" id="mapz"></div><canvas id="mapcv" style="cursor:grab;touch-action:none"></canvas><h3>GO TO</h3><div class="row"><select id="placesel" class="btn" style="font:inherit;min-width:min(340px,80vw);padding:6px 8px;background:#0e1016;color:#ece5d3;border:2px solid #3a3f4e"></select></div></div>
     <div class="pane" data-p="display">
@@ -209,7 +218,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div id="adn"></div>
       <h3>WEATHER</h3><div id="awx"></div>
       <h3>LIGHT</h3><div class="row"><button class="btn" id="dlook">GLOW AND NIGHT LOOK</button></div>
-      <h3>HAZE</h3><div class="row" id="atmhaze"></div><div class="dim">the mist round the town's edge (MIST), the old far haze and sky (FAR), or none; its every number is in the editors' DISTANCE LOOK</div></div>
+      <h3>HAZE</h3><div class="row" id="atmhaze"></div><div class="dim">the mist round the town's edge (MIST), the old far haze and sky (FAR), or none</div></div>
     <div class="pane" data-p="graphics">
       <h3>RESOLUTION</h3><div class="row" id="dres"></div>
       <h3>SHADOWS</h3><div class="row" id="dshd"></div>
@@ -221,19 +230,59 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
     <div class="pane" data-p="vr" id="dvr"></div>
     <div class="pane" data-p="guide" id="dguide"></div>
+    <div class="pane" data-p="moves" id="dmoves"></div>
     <div class="pane" data-p="bug" id="dbug"></div>
-    <div class="pane" data-p="tenants" id="dten"></div></div>`;
+    <div class="pane" data-p="queue" id="dqueue"></div>
+    <div class="pane" data-p="tenants" id="dten"></div>
+    <div class="pane" data-p="tools" id="dtools"></div></div></div>`;
   document.body.appendChild(M);
-  const $=s=>M.querySelector(s); let tab='home', mapLv='up'; if(!SOUND)$('[data-t="sound"]').style.display='none';
-  const show=t=>{ tab=t; const home=t==='home', solo=!M.querySelector('.tabs [data-t="'+t+'"]'); M.querySelector('.tabs').style.display=solo?'none':''; M.querySelector('.box').classList.toggle('home',solo); M.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t))); M.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==t); if(home){ if(CHARP.show)CHARP.show($('#dhome')); } else if(CHARP.hide)CHARP.hide(); if(t==='map')drawMap(); if(t==='display'||t==='graphics'||t==='sound'||t==='atmo')drawDisplay(); if(t==='sound')SNDED.into($('#dsndin')); if(t==='keys')drawKeys(); if(t==='vr'&&VR.open)VR.open($('#dvr')); if(t==='bug')BUGS.open($('#dbug')); if(t==='guide'&&GUIDE.open)GUIDE.open($('#dguide')); if(t==='tenants'&&TENANTS.open)TENANTS.open($('#dten')); if(t==='atmo')window.DN&&DN.draw(); bars(); };
-  M.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>show(b.dataset.t));
+  const $=s=>M.querySelector(s); let mapLv='up';
+  // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
+  const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
+  const SEC=[['you','YOU','ESC',[['look','LOOK',['home']],['wear','WEAR',['home']],['words','WORDS',['home']]]],
+    ['pack','PACK','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
+    ['map','MAP','⇧M',null,()=>{ shut(); UI.mapWindow(); }],
+    ['people','PEOPLE','',[['online','ONLINE',['people']],['chat','CHAT',()=>{ shut(); if(ONLINE.on&&ONLINE.open)setTimeout(()=>ONLINE.open(),0); }]]],
+    ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],
+    ['guide','GUIDE','⇧G',[['guide','CHAPTERS',['guide']],['keys','ALL THE KEYS',['moves']],['bug','REPORT A BUG',['bug']]]],
+    ['set','SET','',[['view','VIEW',['display']],['picture','PICTURE',['graphics','atmo']],['controls','CONTROLS',['keys','sound','vr']]]],
+    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['tenants','TENANTS',['tenants']],['tools','TOOLS',['tools']]]]];
+  const OLD={home:['you'],display:['set','view'],graphics:['set','picture'],atmo:['set','picture'],sound:['set','controls'],keys:['set','controls'],vr:['set','controls'],bug:['guide','bug'],tenants:['admin','tenants'],city:['you']};
+  let cur='you', own=false; const last={};
+  const mount=(id,host,on)=>{ const el=document.getElementById(id); if(!el)return null; if(on){ if(el.parentNode!==host)host.appendChild(el); el.classList.add('ml','inmenu'); el.hidden=false; } else if(el.parentNode!==document.body){ el.classList.remove('inmenu'); el.hidden=true; document.body.appendChild(el); } return el; };
+  const people=()=>{ const all=ONLINE.others?[...ONLINE.others.values()]:[], E=TEXT.esc;
+    $('#dpeople').innerHTML=!ONLINE.on?'<div class="dim">nobody else here: other players are on the website, thestrangestfleamarket.com</div>':'<h3>ON YOUR BLOCK · '+(all.length+1)+'</h3><table>'+all.map(o=>'<tr><td>'+E(o.name||'TENANT')+'</td><td>'+(ONLINE.visit?'<button class="btn" data-visit="'+E(o.id)+'">VISIT THEIR APARTMENT</button>':'')+'</td></tr>').join('')+'</table>'+(all.length?'':'<div class="dim">nobody else is on</div>')+'<div class="dim" style="margin-top:10px">double-click a player in the street to trade</div>'; };
+  $('#dpeople').addEventListener('click',e=>{ const b=e.target.closest('[data-visit]'); if(!b)return; const o=ONLINE.others&&ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ shut(); ONLINE.visit(o.id,o.name); } });
+  const nav=()=>{ $('#mnav').innerHTML=SEC.filter(S=>S[0]!=='admin'||own).map(([k,n,key])=>'<button role="tab" data-sec="'+k+'" aria-selected="'+(k===cur)+'"'+(k==='admin'?' class="adm"':'')+'>'+n+(key?'<u>'+key+'</u>':'')+'</button>').join(''); };
+  const show=(sec,sub)=>{ const S=SEC.find(x=>x[0]===sec&&(sec!=='admin'||own))||SEC[0];
+    if(!S[3]){ S[4](); return; }
+    const P=S[3].find(x=>x[0]===sub); if(P&&typeof P[2]==='function'){ P[2](); return; }
+    const pt=P||S[3].find(x=>x[0]===last[S[0]])||S[3].find(x=>Array.isArray(x[2])); cur=S[0]; last[cur]=pt[0];
+    nav(); $('#msec').textContent=S[1].replace('★ ','');
+    $('#msub').innerHTML=S[3].map(([k,n,w])=>'<button role="tab" data-sub="'+k+'" aria-selected="'+(k===pt[0])+'"'+(Array.isArray(w)?'':' class="act"')+'>'+n+'</button>').join('');
+    const on=new Set(pt[2].filter(p=>p!=='sound'||SOUND)); M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=!on.has(p.dataset.p)); $('.panes').scrollTop=0;
+    if(on.has('home')){ if(CHARP.show)CHARP.show($('#dhome')); if(LOOKS.open){ LOOKS.open(); mount('looks',$('#dlooks'),true); LOOKS.tab(pt[0]); } } else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); }
+    if(on.has('pack')&&FORAGE.PACK){ mount('packp',$('#dpack'),true); FORAGE.PACK.tab=pt[0]; FORAGE.PACK.open=true; FORAGE.PACK.draw(); } else { if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; }
+    if(on.has('people'))people();
+    if(on.has('bbs')){ if(DRONE.menu)DRONE.menu($('#dbbs'),pt[0]); else $('#dbbs').innerHTML='<div class="dim">the BBS answers once your apartment is built</div>'; }
+    if(on.has('guide')&&GUIDE.open)GUIDE.open($('#dguide'));
+    if(on.has('moves'))$('#dmoves').innerHTML=UI.movesHTML();
+    if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
+    if(on.has('display')||on.has('graphics')||on.has('sound')||on.has('atmo'))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr'));
+    if(on.has('atmo'))window.DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools'));
+    bars(); };
+  $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });
+  $('#msub').addEventListener('click',e=>{ const b=e.target.closest('[data-sub]'); if(b)show(cur,b.dataset.sub); });
+  UI.menuNow=()=>UI.menuOpen?[cur,last[cur]]:null;
   M.querySelectorAll('.row.pick').forEach(r=>{ const o=()=>[...r.querySelectorAll('.btn:not(.arr)')], arr=(t,d)=>{ const b=document.createElement('button'); b.className='btn arr'; b.textContent=t; b.setAttribute('aria-label',d<0?'previous':'next');
     b.onclick=()=>{ const L=o(), i=L.findIndex(x=>x.getAttribute('aria-pressed')==='true'); L[(i+d+L.length)%L.length].click(); }; return b; }; r.insertBefore(arr('<',-1),o()[0]); r.appendChild(arr('>',1)); });   // a row of choices shows only the one picked, stepped with < >
   const bars=()=>M.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/((r.max-r.min)||1)*100+'%')); M.addEventListener('input',bars);
   M.addEventListener('click',e=>{ if(e.target===M)toggleMenu(); });
-  UI.toggleMenu=()=>toggleMenu(); UI.menuTab=t=>{ if(!UI.menuOpen)toggleMenu(); M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; show(t); };
-  UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; show('map'); };   // the map alone, no settings tabs (Shift+M)
-  function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; if(UI.menuOpen){ mapLv=SHARED.LVL; show('home'); } else if(CHARP.hide)CHARP.hide(); }
+  UI.toggleMenu=()=>toggleMenu(); UI.menuTab=(t,sub)=>{ const o=OLD[t]; if(o){ t=o[0]; sub=sub||o[1]; } if(!UI.menuOpen)toggleMenu(); M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; show(t,sub); };
+  UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='map'); drawMap(); };   // the map alone, no settings tabs (Shift+M)
+  function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET';
+    if(UI.menuOpen){ mapLv=SHARED.LVL; show(cur==='admin'&&!own?'you':cur); if(!own&&CINEMA.isAdmin)CINEMA.isAdmin().then(o=>{ if(o&&!own){ own=true; if(UI.menuOpen)nav(); } }).catch(()=>{}); }
+    else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; } }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;
     const w=B.x1-B.x0, d=B.z1-B.z0, k=Math.min(800/w,420/d); return {x0:B.x0,x1:B.x1,z0:B.z0,z1:B.z1,W:Math.round(w*k),H:Math.round(d*k)}; };
@@ -382,7 +431,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   document.getElementById('stat').hidden=true; document.getElementById('loading')?.remove();
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['movesp'],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['bagp',el=>{ el.hidden=true; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['cpadmin',el=>{ el.hidden=true; }],['rinsp',()=>RINSP.toggle(false)]];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(window.FORAGE)FORAGE.PACK.open=false; }],['bagp',el=>{ el.hidden=true; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['rinsp',()=>RINSP.toggle(false)]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   { const ML=document.createElement('style'), C='color:#7dffa8!important', DIM='color:#3aa866!important', HI='color:#d8ffe4!important', sel=(k,cs)=>cs.map(c=>`.ml [style*="${k}:${c}"]`).join(',');   // every menu in the ESC menu's look (owner, 30 Oct 2026)
     ML.textContent=`.ml{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:18px!important;line-height:1.45;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important}

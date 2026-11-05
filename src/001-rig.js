@@ -734,6 +734,7 @@ function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringif
   if(!busy&&!swimming&&!st.up&&!st.sit) B.walkF=st.w>0.05&&st.target>0?Math.floor((st.wd||0)/WSTEP)%8:-1;
   const m=st.move; B.anim=swimming||st.sit?null:m?(!m.variant&&STUDIO.includes(m.name)?m.name+'/'+Math.floor(m.t*10):null):st.up&&!st.out?(st.w<0.05&&STUDIO.includes(st.up.name)?st.up.name+'/'+Math.floor(st.up.t*10):null):B.walkF!=null?(B.walkF<0?'stand/0':'walk/'+B.walkF):null;
   if(st.sign)B.anim=null; st.B=B;
+  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
   return B; }
 
 const PIECES=['head','hair','beard','neck','torso','hips'].concat(...['L','R'].map(n=>['sleeve','upperArm','forearm','hand','thigh','shin','shoe'].map(k=>k+n)),

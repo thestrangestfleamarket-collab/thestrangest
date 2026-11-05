@@ -112,6 +112,7 @@ MIXAMO_ROLE={'pelvis':'Hips','waist':'Spine','neck':'Neck',
   'shoulderL':'LeftArm','elbowL':'LeftForeArm','wristL':'LeftHand','shoulderR':'RightArm','elbowR':'RightForeArm','wristR':'RightHand',
   'hipL':'LeftUpLeg','kneeL':'LeftLeg','ankleL':'LeftFoot','hipR':'RightUpLeg','kneeR':'RightLeg','ankleR':'RightFoot'}
 MIXAMO_W={'Hips':'hips','Spine':'torso','Spine1':'torso','Spine2':'torso','Neck':'head','Head':'head'}
+MIXAMO_W.update({'Face_'+k:'head' for k in ('Jaw','EyeL','EyeR','LidL','LidR','BrowL','BrowR','MouthL','MouthR')})   # Polyfork's face bones ride the head (unmapped, they fell back to the hips)
 for n in 'LR':
     s={'L':'Left','R':'Right'}[n]
     MIXAMO_W.update({s+'Shoulder':'torso',s+'Arm':'upperArm'+n,s+'ForeArm':'forearm'+n,s+'Hand':'hand'+n,'attach-'+s.lower()+'hand':'hand'+n,

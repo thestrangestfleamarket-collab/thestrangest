@@ -47,7 +47,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.computeBoundingSphere(); return g; }
   const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
-  const fitTo=(body,L)=>{ const S=I.skel[L.f], {off,binv}=BODIES.skeleton(S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:S.hipY,off,binv}); return BODIES.fit(body); };
+  const fitTo=(body,L)=>{ const S=I.skel[L.f], {off,binv}=BODIES.skeleton(S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:S.hipY,off,binv,contact:true}); delete body._calG; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}

@@ -68,13 +68,23 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  function pose(B,PM,body){ const S=body.S, KL=body.KL;
+  function chain(B,body){ const S=body.S, KL=body.KL;
     for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
       if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);
-      else{ const o=body.off[n]; M3.setFromMatrix4(ROT[o[0]]); OFV.set(o[1]*S,o[2]*S,o[3]*S).applyMatrix3(M3); POS[n].copy(POS[o[0]]).add(OFV); }
-      PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
+      else{ const o=body.off[n]; M3.setFromMatrix4(ROT[o[0]]); OFV.set(o[1]*S,o[2]*S,o[3]*S).applyMatrix3(M3); POS[n].copy(POS[o[0]]).add(OFV); } } }
+  // a body of other proportions than the rig's (body.contact: your avatar) touches the ground where the rig does: each frame its lowest point (a sole, a palm, its back
+  // in a roll) is set at the rig's lowest joint, with the difference they have standing; in the air it is as high off the ground as the rig (owner, 5 Nov 2026: cartwheels too high)
+  const lowOf=(PM,body)=>{ const g=body.GEO; if(!g||!g.attributes.position.count)return null; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity;
+    for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
+      const yy=(a[1]*w+c[1]*(1-w))*x+(a[5]*w+c[5]*(1-w))*y+(a[9]*w+c[9]*(1-w))*z+(a[13]*w+c[13]*(1-w)); if(yy<lo)lo=yy; } return lo; };
+  const rigLow=B=>{ let lo=Infinity; for(const k in B.J)if(B.J[k].y<lo)lo=B.J[k].y; return lo; };
+  const place=(PM,body,S)=>{ for(let i=0;i<NB;i++){ const n=BONES[i]; PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } };
+  function pose(B,PM,body){ const S=body.S; chain(B,body); place(PM,body,S);
+    if(body.contact){ const g=body.GEO;
+      if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,S); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,S); }
+      const lo=body._cal==null?null:lowOf(PM,body); if(lo!=null){ const dy=rigLow(B)+body._cal-lo; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; } } }
   BODIES.pose=pose; BODIES.mesh=mesh;
 
   /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */

@@ -40,18 +40,20 @@ const PHOTOS={stock:[],mine:[],price:10,sitting:15}; window.PHOTOS=PHOTOS;
     after:(B,N)=>{ if(!LENSG.g){ LENSG.g=lensMesh(); N.g.parent.add(LENSG.g); } const G=LENSG.g; G.visible=N.g.visible; N.g.updateMatrixWorld(); MERCH.at(N,'handR',[0,-.06,.03],V); G.position.copy(V); G.quaternion.setFromAxisAngle(UP,N.st.hd); if(snapT<=0)G.rotateX(.5); G.scale.setScalar(T); }});
 
   /* ---------- a photograph: the world from his lens, small, warm, grained; kept as a picture you can buy ---------- */
-  let rt=null, cam=null, buf=null; const W=192, H=144;
-  PHOTOS.take=(x,y,z,hd,pitch=-.12,cap)=>{ if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); cam=new THREE.PerspectiveCamera(48,W/H,.05,400); buf=new Uint8Array(W*H*4); }
-    cam.position.set(x+Math.sin(hd)*.45*T,y,z+Math.cos(hd)*.45*T); cam.rotation.set(pitch,hd+Math.PI,0,'YXZ'); cam.updateMatrixWorld(); const prev=renderer.getRenderTarget(), pc=renderer.localClippingEnabled, ps=renderer.shadowMap.autoUpdate, keep=LENSG.g&&LENSG.g.visible;
+  // o (a camera of your own, 146ma): from (its camera), fov, W/H, gain (the exposure instead of his auto gain), fx(g,cv) (blur after developing)
+  const RTS={}; let cam=null;
+  PHOTOS.take=(x,y,z,hd,pitch=-.12,cap,o)=>{ o=o||{}; const W=o.W||192, H=o.H||144, k=W+'x'+H, R=RTS[k]||(RTS[k]={rt:new THREE.WebGLRenderTarget(W,H),buf:new Uint8Array(W*H*4)}), rt=R.rt, buf=R.buf; if(!cam)cam=new THREE.PerspectiveCamera(48,4/3,.05,400);
+    cam.fov=o.fov||48; cam.aspect=W/H; cam.updateProjectionMatrix();
+    if(o.from){ cam.position.copy(o.from.position); cam.quaternion.copy(o.from.quaternion); } else { cam.position.set(x+Math.sin(hd)*.45*T,y,z+Math.cos(hd)*.45*T); cam.rotation.set(pitch,hd+Math.PI,0,'YXZ'); } cam.updateMatrixWorld(); const prev=renderer.getRenderTarget(), pc=renderer.localClippingEnabled, ps=renderer.shadowMap.autoUpdate, keep=LENSG.g&&LENSG.g.visible;
     if(LENSG.g)LENSG.g.visible=false; const me=NPCS.extra.find(q=>q.key==='newsreel'), mv=me&&me.g.visible; if(me)me.g.visible=false;
     try{ renderer.localClippingEnabled=false; renderer.shadowMap.autoUpdate=false; renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,cam); renderer.readRenderTargetPixels(rt,0,0,W,H,buf); }
     finally{ renderer.setRenderTarget(prev); renderer.localClippingEnabled=pc; renderer.shadowMap.autoUpdate=ps; if(LENSG.g)LENSG.g.visible=keep; if(me)me.g.visible=mv; }
     const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H); let lum=0;
-    for(let i=0;i<W*H;i++)lum+=buf[i*4]+buf[i*4+1]+buf[i*4+2]; const gain=Math.max(1,Math.min(1.7,95/(lum/(W*H*3)+1)));
+    for(let i=0;i<W*H;i++)lum+=buf[i*4]+buf[i*4+1]+buf[i*4+2]; const gain=o.gain!=null?o.gain:Math.max(1,Math.min(1.7,95/(lum/(W*H*3)+1)));
     for(let yy=0;yy<H;yy++)for(let xx=0;xx<W;xx++){ const s=((H-1-yy)*W+xx)*4, d=(yy*W+xx)*4, vx=(xx/W-.5), vy=(yy/H-.5), vig=1-(vx*vx+vy*vy)*1.1, n=(Math.random()-.5)*16;
       const r=Math.pow(buf[s]/255,1/2.2)*255*gain, gg=Math.pow(buf[s+1]/255,1/2.2)*255*gain, b=Math.pow(buf[s+2]/255,1/2.2)*255*gain;
       im.data[d]=Math.min(255,(r*1.06+12)*vig+n); im.data[d+1]=Math.min(255,(gg*1.0+6)*vig+n); im.data[d+2]=Math.min(255,(b*.86)*vig+n); im.data[d+3]=255; }
-    g.putImageData(im,0,0); const where=cap||((()=>{ try{ return ZONES.at(x,z,'up').name; }catch(e){ return 'THE MARKET'; } })()||'THE MARKET'), time=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
+    g.putImageData(im,0,0); if(o.fx)o.fx(g,cv); const where=cap||((()=>{ try{ return ZONES.at(x,z,'up').name; }catch(e){ return 'THE MARKET'; } })()||'THE MARKET'), time=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
     return {id:'photo_'+Date.now().toString(36)+Math.floor(Math.random()*1e3),cap:String(where).toUpperCase().slice(0,24)+' · '+time,src:cv.toDataURL('image/jpeg',.82)}; };
   // he stops and shoots now and then while you are near enough to see; up to six on offer, the newest first
   let waitT=8;
@@ -67,6 +69,7 @@ const PHOTOS={stock:[],mine:[],price:10,sitting:15}; window.PHOTOS=PHOTOS;
       <div style="display:flex;flex-wrap:wrap;gap:8px">${PHOTOS.stock.map((p,i)=>`<div style="width:164px"><img src="${p.src}" style="width:160px;border:2px solid #e8e0cc;image-rendering:auto"><div style="color:#9b9584;margin:2px 0">${p.cap}</div><button ${Bt} data-buy="${i}">BUY $${PHOTOS.price}</button></div>`).join('')||'<div style="color:#9b9584">NOTHING YET. HE IS WAITING FOR THE LIGHT.</div>'}</div>
       <div style="margin-top:10px"><button ${Bt} data-me>A PHOTO OF YOU $${PHOTOS.sitting}</button> <button ${Bt} data-x>CLOSE</button></div>`; };
   const own=p=>{ PHOTOS.mine.push(p); PHOTOS.save(); reg(); FORAGE.give(p.id,1); if(FORAGE.draw)FORAGE.draw(); if(PHOTOS.onBuy)PHOTOS.onBuy(p); };
+  PHOTOS.own=own;   // a print of your own (your camera, 146ma) joins the same store
   PANEL.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x!==undefined){ PANEL.hidden=true; return; }
     if(b.dataset.buy){ const p=PHOTOS.stock[+b.dataset.buy]; if(!p)return; if((INV.cash||0)<PHOTOS.price)return say('YOU CANNOT AFFORD THAT.','#c8a090'); INV.cash-=PHOTOS.price; PHOTOS.stock.splice(+b.dataset.buy,1); own(p); say('A PRINT, STILL WARM. FRAME IT AT HOME (DECORATE).','#e8e2cc'); draw(); return; }
     if(b.dataset.me!==undefined){ const N=NPCS.extra.find(q=>q.key==='newsreel'); if(!N)return; if((INV.cash||0)<PHOTOS.sitting)return say('YOU CANNOT AFFORD THAT.','#c8a090'); INV.cash-=PHOTOS.sitting;

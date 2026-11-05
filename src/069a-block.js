@@ -9,7 +9,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
 { const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
   let seed=11; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
   const cv=(w,h)=>{ const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w)); c.height=Math.max(1,Math.round(h)); return c; };
-  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.generateMipmaps=true; t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const G=new THREE.Group(); G.name='block'; scene.add(G);
   const solid=(x0,y0,x1,y1,hpx)=>{ const a=XS(x0), b=XS(x1), c=ZS(y0), d=ZS(y1); SOL.up.push([Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]); FIX.up.push([Math.min(a,b),Math.min(c,d),0,Math.max(a,b),Math.max(c,d),YP(hpx)]); };
   const ST=120;

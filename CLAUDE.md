@@ -5,6 +5,8 @@ It is not the live game (`bralynnb/tsfm`); since 18 Oct 2026 (after tsfm#803) no
 live on the website thestrangestfleamarket.com (Cloudflare Workers Builds deploy `main`). There is no claude.ai copy any more
 (owner, 20 Oct 2026): never publish the game as a claude.ai artifact.
 
+**The archive (owner, 5 Nov 2026)**: most of the game is in `archive/` (sources, tests, data the build never reads); archived characters are hidden by `ARCH`, archived items by `ARCHI` (both in `003b-systems.js`); nothing comes back unless the owner names it. All editors are removed for now.
+
 Every decision the owner has made, with his words and dates, is in `docs/HISTORY.md` (large: search it, don't read it whole).
 What is still to do, shared by every chat, is in `TODO.md` (take a line before starting it, tick it when done).
 Look there before changing how something looks or behaves, and add a dated entry there for each new decision. **Keep entries lean (owner, 22 Oct 2026: "i dont want anything verbose")**: the decision, the owner's words, the date, and any rule — no engineering detail, measurements or how-it-works; those go in the commit message. This applies everywhere: commit messages, pull requests, comments and replies stay short too.

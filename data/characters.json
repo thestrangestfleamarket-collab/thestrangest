@@ -447,7 +447,22 @@
  },
  "fixer": {
   "name": "THE FIXER",
-  "trade": {"sells": ["tv_console", "tv_small", "pc_home", "modem", "walkman", "handheld", "pockettv"], "line": "(the little one) He fixed them. They work. Mostly.", "buys": ["ore", "electronics"]},
+  "trade": {
+   "sells": [
+    "tv_console",
+    "tv_small",
+    "pc_home",
+    "modem",
+    "walkman",
+    "handheld",
+    "pockettv"
+   ],
+   "line": "(the little one) He fixed them. They work. Mostly.",
+   "buys": [
+    "ore",
+    "electronics"
+   ]
+  },
   "talk": {
    "start": "hi",
    "lines": {
@@ -2564,7 +2579,15 @@
    ]
   },
   "name": "THE SHOWGIRL",
-  "trade": {"sells": ["d_wine", "d_ale", "d_cola", "f_bonbons"], "line": "Wine, chocolates, or something with bubbles. Quick, the bell's about to go."}
+  "trade": {
+   "sells": [
+    "d_wine",
+    "d_ale",
+    "d_cola",
+    "f_bonbons"
+   ],
+   "line": "Wine, chocolates, or something with bubbles. Quick, the bell's about to go."
+  }
  },
  "la_catrina": {
   "pf": "la-catrina-b427ca",
@@ -2694,7 +2717,37 @@
     17
    ]
   },
-  "name": "THE PROFESSOR"
+  "name": "THE PROFESSOR",
+  "trade": {
+   "sells": [
+    "bk_paper",
+    "bk_novel",
+    "bk_atlas",
+    "bk_hymnal",
+    "bk_ledger",
+    "bk_herbal",
+    "bk_first",
+    "bs_kit",
+    "bs_glue",
+    "bs_thread",
+    "bs_cloth",
+    "bs_leather",
+    "canvas_s",
+    "canvas_m",
+    "canvas_w",
+    "canvas_t",
+    "paper",
+    "quill_pen"
+   ],
+   "buys": [
+    "books",
+    "paintings"
+   ],
+   "teaches": [
+    "bind"
+   ],
+   "line": "Old books, mending things, canvases. I buy the mended ones and good paintings."
+  }
  },
  "tour_guide": {
   "pf": "tour-guide-1b0428",
@@ -2825,7 +2878,15 @@
    ]
   },
   "name": "THE GAS STATION ATTENDANT",
-  "trade": {"sells": ["f_bec", "f_hero", "f_chopped", "d_coffee"], "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."}
+  "trade": {
+   "sells": [
+    "f_bec",
+    "f_hero",
+    "f_chopped",
+    "d_coffee"
+   ],
+   "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."
+  }
  },
  "motel_clerk": {
   "pf": "motel-clerk-950c39",
@@ -2851,7 +2912,16 @@
     24
    ]
   },
-  "name": "THE GAME MASTER"
+  "name": "THE GAME MASTER",
+  "trade": {
+   "sells": [
+    "putter"
+   ],
+   "teaches": [
+    "golf"
+   ],
+   "line": "Putters by the holodeck. Mind the koi."
+  }
  },
  "teen_player": {
   "pf": "teen-player-37865e",
@@ -2903,7 +2973,20 @@
     19
    ]
   },
-  "name": "THE SKATE SHOP OWNER"
+  "name": "THE SKATE SHOP OWNER",
+  "trade": {
+   "sells": [
+    "skateboard",
+    "board_pine",
+    "board_moss",
+    "board_ember",
+    "board_moth",
+    "board_bone",
+    "board_teal",
+    "kart"
+   ],
+   "line": "Wood, wheels, bearings, and the ones that float."
+  }
  },
  "street_skater": {
   "pf": "street-skater-4ee28b",
@@ -3525,7 +3608,29 @@
    "r": 25,
    "home": "house"
   },
-  "name": "THE PARK RANGER"
+  "name": "THE PARK RANGER",
+  "trade": {
+   "sells": [
+    "net",
+    "bnet",
+    "cage",
+    "bseed",
+    "feeder",
+    "binoc",
+    "jar_s",
+    "jar_m",
+    "jar_l"
+   ],
+   "buys": [
+    "butterflies",
+    "birds"
+   ],
+   "teaches": [
+    "ento",
+    "bird"
+   ],
+   "line": "Nets, jars, cages and glasses. I buy every butterfly and bird you bring me, and I teach what I know."
+  }
  },
  "forest_ranger": {
   "pf": "forest-ranger-6906b0",
@@ -3540,7 +3645,13 @@
    "r": 25,
    "home": "house"
   },
-  "name": "THE FOREST RANGER"
+  "name": "THE FOREST RANGER",
+  "trade": {
+   "teaches": [
+    "climb"
+   ],
+   "line": "Three points on the bark, always."
+  }
  },
  "groundskeeper_university": {
   "pf": "groundskeeper-3e5578",
@@ -3827,7 +3938,22 @@
    "r": 25,
    "home": "house"
   },
-  "name": "THE VILLAGE GARDENER"
+  "name": "THE VILLAGE GARDENER",
+  "trade": {
+   "sells": [
+    "bee_hive",
+    "bee_smoker",
+    "bee_veil",
+    "jar_honey"
+   ],
+   "buys": [
+    "honey"
+   ],
+   "teaches": [
+    "bee"
+   ],
+   "line": "Hives, smoke and jars. I buy honey and wax, and I'll teach you to keep them."
+  }
  },
  "village_child": {
   "pf": "village-child-bef09e",
@@ -3872,7 +3998,31 @@
    "r": 0,
    "home": "house"
   },
-  "name": "THE FISHERMAN IN WADERS"
+  "name": "THE FISHERMAN IN WADERS",
+  "trade": {
+   "sells": [
+    "rod",
+    "rod_carbon",
+    "rod_surf",
+    "reel_fast",
+    "reel_pro",
+    "lure_spoon",
+    "lure_worm",
+    "bait",
+    "bait_cut",
+    "crabpot",
+    "cooler_s",
+    "cooler_m",
+    "cooler_l"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "teaches": [
+    "fish"
+   ],
+   "line": "Rods, reels, bait. I buy what you land."
+  }
  },
  "armoured_knight_hero": {
   "pf": "armoured-knight-hero-07121f",
@@ -3990,7 +4140,19 @@
    "r": 8,
    "home": "house"
   },
-  "name": "THE SCUBA DIVER"
+  "name": "THE SCUBA DIVER",
+  "trade": {
+   "sells": [
+    "scuba",
+    "goggles",
+    "headlight",
+    "scanner",
+    "cutter",
+    "extractor",
+    "gem_wheel"
+   ],
+   "line": "Going down? Rent a tank, grab the kit."
+  }
  },
  "swimmer_in_a_wetsuit": {
   "pf": "swimmer-in-a-wetsuit-9fca8f",
@@ -4139,7 +4301,22 @@
    ]
   },
   "name": "THE DINER WAITRESS",
-  "trade": {"sells": ["d_coffee", "d_shake", "d_cola", "f_eggs", "f_pancake", "f_hash", "f_burger", "f_blt", "f_grilled", "f_pie", "f_cake"], "line": "Coffee's bottomless. The pie is not."}
+  "trade": {
+   "sells": [
+    "d_coffee",
+    "d_shake",
+    "d_cola",
+    "f_eggs",
+    "f_pancake",
+    "f_hash",
+    "f_burger",
+    "f_blt",
+    "f_grilled",
+    "f_pie",
+    "f_cake"
+   ],
+   "line": "Coffee's bottomless. The pie is not."
+  }
  },
  "carving_chef": {
   "pf": "carving-chef-102bf5",
@@ -4694,7 +4871,22 @@
    "r": 0,
    "home": "subway"
   },
-  "visit": "japan"
+  "visit": "japan",
+  "trade": {
+   "sells": [
+    "sword_wood",
+    "sword",
+    "sword_steel",
+    "sword_ench"
+   ],
+   "buys": [
+    "swords"
+   ],
+   "teaches": [
+    "sword"
+   ],
+   "line": "A blade for every purse. Hold P to block; catch the blow on the beat and they stagger."
+  }
  },
  "townswoman_medieval_japan": {
   "name": "THE TOWNSWOMAN",
@@ -5220,9 +5412,16 @@
   "name": "THE SKATE SHOP OWNER",
   "trade": {
    "sells": [
-    "skateboard"
+    "skateboard",
+    "board_pine",
+    "board_moss",
+    "board_ember",
+    "board_moth",
+    "board_bone",
+    "board_teal",
+    "kart"
    ],
-   "line": "Wood, wheels, bearings. Nothing that floats."
+   "line": "Wood, wheels, bearings, and the ones that float."
   },
   "talk": {
    "start": "hi",
@@ -5233,15 +5432,27 @@
       "Back for another, {name}?"
      ],
      "opts": [
-      {"t": "WHAT DO YOU SELL?", "do": "shop"},
-      {"t": "HOW DO I RIDE ONE?", "go": "ride"},
-      {"t": "GOODBYE.", "go": ""}
+      {
+       "t": "WHAT DO YOU SELL?",
+       "do": "shop"
+      },
+      {
+       "t": "HOW DO I RIDE ONE?",
+       "go": "ride"
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
      ]
     },
     "ride": {
      "say": "Hold it, click, step on. Push to go, lean to turn, space to ollie. Ramps and the bowl are all yours.",
      "opts": [
-      {"t": "BACK.", "go": "hi"}
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
      ]
     }
    }
@@ -5631,6 +5842,46 @@
      ]
     }
    }
+  }
+ },
+ "tomato": {
+  "trade": {
+   "sells": [
+    "seed_star",
+    "seed_sun",
+    "seed_hum",
+    "pot",
+    "dirt",
+    "water"
+   ],
+   "buys": [
+    "veg",
+    "flowers"
+   ],
+   "teaches": [
+    "garden"
+   ],
+   "line": "Fresh from far away!"
+  }
+ },
+ "mushroom": {
+  "trade": {
+   "buys": [
+    "mushrooms"
+   ],
+   "teaches": [
+    "forage",
+    "myco"
+   ],
+   "line": "Bring me what grows in the dark."
+  }
+ },
+ "squirrel": {
+  "trade": {
+   "teaches": [
+    "fight"
+   ],
+   "line": "Fists up. Again."
   }
  }
 }

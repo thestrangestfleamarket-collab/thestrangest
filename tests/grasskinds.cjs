@@ -30,14 +30,6 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(tally.fl.length > 0 && share(tally.fl) >= .95, 'wild flowers come up in the park, each its grass\'s own (' + tally.fl.filter(Boolean).length + ' of ' + tally.fl.length + ')');
     ok(share(tally.mu) >= .95, 'mushrooms come up by their grass\'s odds (' + tally.mu.filter(Boolean).length + ' of ' + tally.mu.length + ')');
     ok(share(tally.bf) >= .95, 'butterflies on the lawn are their grass\'s own or its rare (' + tally.bf.filter(Boolean).length + ' of ' + tally.bf.length + ')');
-    // the landscape editor paints a grass: a box of leaf clumps (or round tufts) where you stand
-    const pr = await pg.evaluate(async () => { const T = 33.9 / 30, x = W3.group.position.x, z = W3.group.position.z, was = GRASS.at(x / T, z / T), k = GRASS.of[was.id === '04' ? '33' : '04'];
-      __dbg.LAND.paint({ x0: x - 8 * T, x1: x + 8 * T, z0: z - 8 * T, z1: z + 8 * T, y: SHARED.py || 0, t: 'gk:' + k.id }); await new Promise(r => setTimeout(r, 6000));
-      const M = GRASS.map, W = Math.round(1 / M.v.z), mi = Math.floor(x / T) - M.v.x, mj = Math.floor(z / T) - M.v.y, o = { k: k.id, at: GRASS.at(x / T, z / T).id, map: M.m.image.data[mj * W + mi], want: k.i, n: 0, off: 0 };
-      for (const me of TUFTS.meshes) { const A = me.instanceMatrix.array; for (let i = 0; i < me.count; i++) { const tx = A[i * 16 + 12], tz = A[i * 16 + 14]; if (Math.abs(tx - x) > 7 * T || Math.abs(tz - z) > 7 * T) continue; o.n++; if (me.userData.shape !== k.shape) o.off++; } }
-      o.fl = GARDEN.spots().filter(([f, fx, fz]) => Math.abs(fx - x) < 7 * T && Math.abs(fz - z) < 7 * T).every(([f]) => f in k.flowers); return o; });
-    ok(pr.at === pr.k && pr.map === pr.want, 'a grass painted in the landscape editor grows there (' + pr.k + '), the ground\'s kind map with it');
-    ok(pr.n > 100 && pr.off === 0 && pr.fl, 'the standing grass and wild flowers in the painted patch are the painted grass\'s (' + pr.n + ' tufts, ' + pr.off + ' off)');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close();

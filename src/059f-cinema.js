@@ -171,7 +171,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.2*TILE, z=b.z-b.oz*.2*TILE;
     N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
   const F0=()=>window.FORAGE; let named=false;
-  const gate=()=>{ const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
+  const gate=()=>true, gate0=()=>{ const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
     if(n>0){ I.add('ticket',-1); if(F0()&&F0().draw)F0().draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
     say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
   const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();

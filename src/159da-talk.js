@@ -4,7 +4,6 @@ import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, TEX
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
-import {LIVES} from './158-lives.js';
 { const T=TILE, esc=TEXT.esc;
   const NOTALK=/^(ogre|skeleton|slime|dragon|rat|frog|bat|wasp|spider|snake)$|^(ogre|skeleton)_/, CPS=45;
   LINES.add('about',['This is the Strangest Flea Market. Everything is for sale, eventually.','Market St runs the whole block. The park is north, the subway under your feet.','You find things here you did not know you lost.',
@@ -25,7 +24,7 @@ import {LIVES} from './158-lives.js';
   const chat=N=>{ const shop=TALK.shops.has(N)||CHARS.trade&&CHARS.trade(N), R=[{t:'WHAT IS THIS PLACE?',go:'about'}]; if(shop)R.unshift({t:'WHAT DO YOU SELL?',do:'shop'}); R.push({t:'GOODBYE.',go:'bye'});
     return {start:'hi',lines:{hi:{say:'@greet',opts:R},about:{say:'@about',opts:R.filter(r=>r.go!=='about')},bye:{say:'@bye',opts:[]}}}; };
   TALK.tests.cash=a=>(INV.cash||0)>=(+a||0);
-  TALK.script=N=>{ const t=recOf(N).talk||N.talk, s=t&&t.lines&&t.lines[t.start]?t:chat(N); return N.key&&LIVES.data[N.key]?LIVES.talk(N.key,s):s; };   // a townsperson's own life is something to ask about (src/158-lives.js)
+  TALK.script=N=>{ const t=recOf(N).talk||N.talk, s=t&&t.lines&&t.lines[t.start]?t:chat(N); return s; };   // a townsperson's own life is something to ask about (src/158-lives.js)
 
   const P=document.createElement('div'); P.id='talkp'; P.hidden=true;
   P.style.cssText='position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(620px,94vw);z-index:22;padding:12px 16px 10px;font:12px Silkscreen,monospace;letter-spacing:.4px;line-height:1.6;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
@@ -51,7 +50,7 @@ import {LIVES} from './158-lives.js';
   const loop=t=>{ if(!N)return; const dt=Math.min(.1,(t-(last||t))/1000); last=t;
     if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length)SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
     if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); }; SYS.add('win',loop,'159da-talk');
-  TALK.open=n=>{ if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save(); if(N.key)LIVES.met(N.key);
+  TALK.open=n=>{ if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save();
     const st=N.st; keep={to:st.to,next:st.next,face:st.face,hold:st.hold}; st.to=null; st.next=null; st.face={x:pos.x,z:pos.z}; st.hold=true;
     P.querySelector('#talkn').textContent=(N.name||'SOMEONE').toUpperCase(); P.hidden=false; TALK.on=true; if(keys.clear)keys.clear(); show(S.start); last=0; };
   TALK.close=()=>{ if(N&&N.st&&keep){ const st=N.st; st.face=keep.face; st.hold=keep.hold; st.to=keep.to; st.next=keep.next; if(!st.hold)st.wait=.5; } N=null; S=null; keep=null; P.hidden=true; TALK.on=false; };

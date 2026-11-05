@@ -1,7 +1,6 @@
 // THE HANDHELD: ESC pops up a bulky 1980s pager-organiser (a red message light, a green LCD, a little keyboard); every menu opens from its grid of icons, and owners see ADMIN (the one admin window).
 import {CHARP, CINEMA, CLOCK, DRONE, FORAGE, HANDHELD, INV, keys, ONLINE, UI} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
-import {PHONE} from './146y-operator.js';
 { const ID='tablet';
   const css=document.createElement('style'); css.textContent=`#hh{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:29;width:min(480px,94vw);zoom:var(--uiz,1);background:linear-gradient(#2b2d33,#1b1c20);border-radius:20px;padding:14px 18px 18px;box-shadow:inset 0 2px 0 #4a4d55,inset 0 -6px 0 #101114,0 14px 40px #000c;font:11px Silkscreen,monospace;letter-spacing:1px;color:#9aa0a8;user-select:none}
     #hh .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px} #hh .led{width:11px;height:11px;border-radius:50%;background:#ff4a3a;box-shadow:0 0 9px #ff4a3a}
@@ -17,7 +16,7 @@ import {PHONE} from './146y-operator.js';
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   let page='home', admin=false, back=false, sel=0;
   const tab=t=>()=>{ back=true; UI.menuTab(t); };
-  const APPS=[['you','YOU','☺',()=>true,tab('home')],['pack','PACK','▤',()=>!!FORAGE.PACK,()=>FORAGE.PACK.toggle('pack')],['map','MAP','✦',()=>!!UI.mapWindow,()=>{ back=true; UI.mapWindow(); }],['call','CALL','☏',()=>!!PHONE.dial,()=>PHONE.dial('handheld')],
+  const APPS=[['you','YOU','☺',()=>true,tab('home')],['pack','PACK','▤',()=>!!FORAGE.PACK,()=>FORAGE.PACK.toggle('pack')],['map','MAP','✦',()=>!!UI.mapWindow,()=>{ back=true; UI.mapWindow(); }],
     ['bbs','BBS','▣',()=>!!DRONE.openAt,()=>DRONE.openAt('menu')],['chat','CHAT','✎',()=>!!(ONLINE.on&&ONLINE.open),()=>setTimeout(()=>ONLINE.open(),0)],['people','PEOPLE','♟',()=>!!ONLINE.others,null],['set','SET','⚙',()=>true,tab('display')],
     ['guide','GUIDE','◉',()=>true,tab('guide')],['help','HELP','?',()=>!!UI.moves,()=>UI.moves()],['bug','BUG','✱',()=>true,tab('bug')],['admin','ADMIN','★',()=>admin&&!!CHARP.admin,()=>{ back=true; CHARP.admin(); }]];
   const KB='<div class="kb">'+'QWERTYUIOPASDFGHJK'.split('').map(c=>'<i>'+c+'</i>').join('')+'<i class="w">ENTER</i></div>';

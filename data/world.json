@@ -611,10 +611,10 @@
    "face": "e",
    "merchant": "professor",
    "at": [
-    -1.8,
-    3.25
+    -2.4,
+    4.62
    ],
-   "inW": 6,
+   "inW": 8,
    "inD": 5,
    "inH": 86
   }

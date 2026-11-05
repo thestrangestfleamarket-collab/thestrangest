@@ -188,11 +188,18 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     // the middle: a rug, two armchairs and a velvet chair round a small table with its lamp, a floor lamp; the window's radiator and curtains; the counter by the door
     put(G,'rug2',W/2,D*.54,1,0,{s:.95,shadow:false}); put(G,'armchair',W*.36,D*.5,1,.2); put(G,'tubchair',W*.64,D*.5,-1,.2); put(G,'tubchair',W/2,D*.7,0,-1);
     put(G,'sidetable',W/2,D*.47,0,1); put(G,'tablelamp',W/2,D*.47,0,1,{h:.51,shadow:false}); put(G,'bookstack',W/2+.08,D*.47+.08,0,1,{h:.51,shadow:false}); put(G,'floorlamp',W*.26,D*.38,1,0); put(G,'blanket',W*.36,D*.5,1,.2,{h:.42,shadow:false});
-    const win=[W/2+.95,W-.35]; put(G,'radiator',(win[0]+win[1])/2,D-.07,0,-1,{shadow:false}); for(const u of win)put(G,'curtain',u,D-.12,0,-1,{shadow:false,s:.9});
+    const hfg=(R.x1-R.x0)/2-.3, GL={left:[W/2+(-hfg+.08)*TM,W/2-1.53*TM],right:[W/2+1.53*TM,W/2+(hfg-.08)*TM]}; put(G,'radiator',(GL.right[0]+GL.right[1])/2,D-.08,0,-1,{shadow:false}); for(const u of [...GL.left,...GL.right])put(G,'curtain',u+(u===GL.left[0]||u===GL.right[0]?-.12:.12),D-.14,0,-1,{shadow:false,s:.9});
     { const cu=W*.2, cv=D-.85; box(cu-.65,cv-.3,cu+.65,cv+.3,0,.95,0x4a2e1c); box(cu-.7,cv-.34,cu+.7,cv+.34,.95,1.0,0x2e1c10); sol(cu-.7,cv-.34,cu+.7,cv+.34);
       box(cu+.3,cv-.18,cu+.58,cv+.12,1.0,1.2,0x2c2c2e); K.cyl(cu-.4,cv,.05,1.0,1.06,0xb8923a); put(G,'tablelamp',cu-.1,cv-.12,0,1,{h:1.0,shadow:false}); put(G,'book',cu+.05,cv+.1,0,1,{h:1.0,shadow:false});
       use('RETURNS',cu,cv,1.4,1.1,()=>{ if(!S.b.length)return say('YOU HAVE NOTHING OF OURS. TAKE SOMETHING.'); load().then(()=>{ for(const id of S.b.slice())LIB.giveBack(id); say('THE PROFESSOR TAKES THEM BACK AND SHELVES THEM.'); }); }); }
-    put(G,'clock',W/2,D-.02,0,-1,{h:2.25}); put(G,'plant',W-.45,D-.45,0,-1); put(G,'globe',W*.2+.45,D-.85,0,1,{h:1.0,s:1.3,shadow:false});
+    // the front wall's real glass (the panes are the shop's own, 059i: the street seen through them): frames round the two doors and both windows, brass bars on the doors
+    { const cxm=W/2, dwm=1.25*TM, hf=(R.x1-R.x0)/2-.3, fr=0x2e3a32, m=z=>z/24*TM, tm=o=>cxm+o*TM;
+      const frame=(o0,o1,z0,z1)=>{ const u0=tm(o0), u1=tm(o1); box(u0-.05,D-.07,u0,D,m(z0),m(z1),fr); box(u1,D-.07,u1+.05,D,m(z0),m(z1),fr); box(u0-.05,D-.07,u1+.05,D,m(z0)-.05,m(z0),fr); box(u0-.05,D-.07,u1+.05,D,m(z1),m(z1)+.05,fr); };
+      frame(-hf+.08,-1.25-.28,19,89); frame(1.25+.28,hf-.08,19,89); frame(-1.25+.12,-.06,12,86); frame(.06,1.25-.12,12,86);
+      for(const sgn of [-1,1])box(cxm+sgn*.32-.15,D-.11,cxm+sgn*.32+.15,D-.08,1.05,1.09,0xb8923a);
+      box(tm(-hf+.08)-.05,D-.2,tm(-1.25-.28)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); box(tm(1.25+.28)-.05,D-.2,tm(hf-.08)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); }   // the window sills
+    for(const [u,v] of [[W*.12,D-.55],[W*.88,D-.55],[W/2,D*.18],[W*.25,D*.62],[W*.75,D*.62]]){ put(G,'hangplant',u,v,0,1,{h:HT-1.35,s:1.2,shadow:false}); box(u-.004,v-.004,u+.004,v+.004,HT-.1,HT,0x3a2a1a); }
+    put(G,'clock',W*.85,D-.02,0,-1,{h:2.25}); put(G,'plant',W-.45,D-.45,0,-1); put(G,'globe',W*.2+.45,D-.85,0,1,{h:1.0,s:1.3,shadow:false});
     sitIn('ARMCHAIR: SIT AND READ',W*.36,D*.5,.45,1,.2,.9); sitIn('VELVET CHAIR: SIT AND READ',W*.64,D*.5,.45,-1,.2,.8); sitIn('VELVET CHAIR: SIT AND READ',W/2,D*.7,.45,0,-1,.8);
     // the light: two glass pendants and the lamps, warm and low; a warm fill off the wood
     for(const [u,v] of [[W*.35,D*.36],[W*.65,D*.36]]){ box(u-.005,v-.005,u+.005,v+.005,HT-.75,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,HT-.85,.09,0xfff0d0)); warm(u,v,HT-1.0,1.3,6,0xffd29a); }
@@ -205,13 +212,13 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     K.flush(); };
   MSHOP.kit.books.drop=()=>{ DUST=null; };
   SYS.add('places',dt=>{ if(!DUST||!DUST.pts.parent)return; const {P,V}=DUST, MW=IKIT.MW, k=(dt||0)*MW*.5; DUST.t+=dt||0; for(let i=0;i<V.length;i++){ const j=i*3; P[j]+=V[i][0]*k+Math.sin(DUST.t*.3+i)*.0006*MW; P[j+1]+=V[i][1]*k; P[j+2]+=V[i][2]*k; if(P[j+1]>DUST.y1||P[j+1]<DUST.y0)V[i][1]*=-1; } DUST.pts.geometry.attributes.position.needsUpdate=true; },'144ca-library');
-  /* ---------- outside: polyfork's awning over the window, the hanging sign, a cart of books and a plant on the sidewalk (data/bookfront.json, loaded when you come near) ---------- */
+  /* ---------- outside: polyfork's hanging sign, a cart of books, hanging baskets by the doors and flower planters under the windows (data/bookfront.json, loaded when you come near) ---------- */
   { const FJ=__LAZY__("data/bookfront.json"); let done=false, chk=0;
     SYS.add('places',dt=>{ if(done||(chk-=dt||0)>0)return; chk=1; const at=MSHOP.at&&MSHOP.at.books, o=ROOMS.off&&ROOMS.off.books; if(!at||!o)return;
       if(Math.hypot(pos.x-at.door[0],pos.z-at.door[1])>60*IKIT.MW)return; done=true;
       FJ().then(Dd=>{ const MW=IKIT.MW, d=at.door, n0=[o.out[0]-d[0],o.out[1]-d[1]], nl=Math.hypot(n0[0],n0[1])||1, n=[n0[0]/nl,n0[1]/nl], tg=[n[1],-n[0]], G=new THREE.Group(); G.name='books-front'; scene.add(G);
         const put=(k,a,b,h,ry=0)=>{ const g=KIT.decode(Dd[k]); g.computeBoundingBox(); const bb=g.boundingBox, me=new THREE.Mesh(g,KIT.mat), grp=new THREE.Group(); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); me.castShadow=me.receiveShadow=true; grp.add(me);
           const x=d[0]+n[0]*a*MW+tg[0]*b*MW, z=d[1]+n[1]*a*MW+tg[1]*b*MW; grp.scale.setScalar(MW); grp.position.set(x,(SHARED.groundY?SHARED.groundY(x,z):0)+h*MW,z); grp.rotation.y=Math.atan2(n[0],n[1])+ry; G.add(grp); return grp; };
-        put('awning',.45,2.6,2.55); put('awning',.45,-2.6,2.55); put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,2.4,0,Math.PI/2); put('plant',.6,-1.3,0); put('plant',.6,1.3,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
+        put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }
   window.LIBDBG=()=>({data:!!LIB.data,n:LIB.data?LIB.data.books.length:0,borrowed:S.b.slice(),panel:!P.hidden,reading:cur?{id:cur.b.id,i:cur.i,lines:cur.L.length,pages:Math.ceil(cur.L.length/LPP)}:null,shop:!!(MSHOP.at&&MSHOP.at.books)});
 }

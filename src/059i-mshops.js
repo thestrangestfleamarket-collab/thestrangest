@@ -18,9 +18,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       win:(u,v,n)=>{ const k=Math.floor(u*4), du=u*4-k, r=Math.floor(v*3), dv=v*3-r; if(du>.12&&du<.88&&dv>.15&&dv<.85&&r<2){ const on=hs(k,r,7)>.35; return on?lit(n?[120,190,170]:[96,150,140]):[30,32,30]; } return null; }},
     scanner:{name:'THE SCANNER',sign:'RADIO',signC:[120,255,150],neon:true,signBg:[18,24,20],wall:BLOCKS.brick([70,74,66]),trim:[132,138,126],frame:[30,34,30],door:.2,h:140,
       win:(u,v,n)=>{ if(v>.2&&v<.8&&(Math.floor(u*9)%2)===0)return n?lit([90,200,120]):[44,70,50]; return null; }},
-    books:{name:'THE BOOKSTORE',sign:'BOOKS',signC:[232,196,120],neon:false,signBg:[40,52,44],wall:BLOCKS.brick([124,70,58]),trim:[206,196,170],frame:[44,58,48],door:.5,h:150,
-      win:(u,v,n)=>{ const r=Math.floor(v*4), dv=v*4-r; if(dv<.14)return [96,70,46]; if(dv>.9)return null; const k=Math.floor(u*46), lean=hs(k,r,23); if(dv>.88-lean*.3)return null;
-        const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return n?lit(c.map(q=>q*.75)):c; }},
+    books:{name:'THE BOOKSTORE',sign:'BOOKS',signC:[255,214,140],neon:true,signBg:[30,40,34],glass:true,both:true,dw:1.25,wall:BLOCKS.brick([124,70,58]),trim:[206,196,170],frame:[44,58,48],door:.5,h:150,
+      win:(u,v,n)=>{ const r=Math.floor(v*4), dv=v*4-r, warm=lit([118,86,52]); if(dv<.14)return lit([96,70,46]); if(dv>.9)return warm; const k=Math.floor(u*46), lean=hs(k,r,23); if(dv>.88-lean*.3)return warm;
+        const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return lit(c.map(q=>q*.85)); }},   // the shelves seen through the glass, in the shop's warm light
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
       win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }}};
 
@@ -30,13 +30,19 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       if(z<8)return sh([38,36,40],f*(.9+.2*hs(c,1,3)));
       if(z>=H0&&z<H0+44){ if(z<H0+3||z>=H0+41)return sh(D.trim,f*.8); const n=D.neon?MS.neon(on,c,z,sz,D.signC,f):(on(c,z)?sh(D.signC,f):null); return n||sh(D.signBg,f*(.92+.1*hs(Math.floor(c/6),Math.floor(z/6),11))); }
       if(z>=H0)return null;
-      if(Math.abs(u-du)<.85){ if(Math.abs(u-du)>.75||z>94)return sh(D.frame,f); if(z<88&&Math.abs(u-du)<.62&&z>10){ const g=Math.abs(u-du)<.5&&z>40; return g?sh([26,30,34],f*1.1):sh(D.frame,f*1.15); } return sh(D.frame,f*.9); }
+      const dw=D.dw||.85;   // the door's half width (a shop with glass doors: two tall panes, a stile between, brass bars, lit warm at night)
+      if(Math.abs(u-du)<dw){ const e=Math.abs(u-du); if(e>dw-.1||z>94)return sh(D.frame,f);
+        if(D.glass){ if(z<10)return sh(D.frame,f); if(e<.05)return sh(D.frame,f*1.1); if(z>48&&z<52&&e>.12&&e<.3)return sh([196,160,80],f*1.2); if(z>88)return sh(D.frame,f); return lit([168,124,74].map(c=>c*(.88+.12*hs(Math.floor(u*8),Math.floor(z/8),3))*(1+.1*((u*3+z/40)%1)))); }   // the shop's warm light through the glass (it glows after dark)
+        if(z<88&&e<.62&&z>10){ const g=e<.5&&z>40; return g?sh([26,30,34],f*1.1):sh(D.frame,f*1.15); } return sh(D.frame,f*.9); }
+      if(D.both){ const L0=Math.max(.35,du-D.half), L1=du-dw-.2, R0=du+dw+.2, R1=Math.min(W-.35,du+D.half), inL=u>L0&&u<L1, inR=u>R0&&u<R1;   // windows either side of the door
+        if((inL||inR)&&z>16&&z<92){ const a0=inL?L0:R0, a1=inL?L1:R1, m=(u-a0)%2.2; if(m<.08||z<19||z>89)return sh(D.frame,f); const w=D.win&&D.win((u-a0)/(a1-a0),(z-16)/76,night); if(w)return w; return sh([24,26,30],f*.9); }
+        if(z<16)return sh(D.trim,f*.85); return null; }
       const a0=du>W/2?.35:du+1, a1=du>W/2?du-1:W-.35; if(u>a0&&u<a1&&z>16&&z<92){ const m=(u-a0)%2.2; if(m<.08||z<19||z>89)return sh(D.frame,f);
         const w=D.win&&D.win((u-a0)/(a1-a0),(z-16)/76,night); if(w)return w; const gl=.6+.4*Math.max(0,1-Math.abs((u-a0)/(a1-a0)-.5)*2); return sh([24,26,30],f*gl); }
       if(z<16)return sh(D.trim,f*.85);
       return null; }; };
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
-    const fr=front(D,W), wall=D.wall, top=D.h;
+    if(D.both)D.half=(p.inW||11)/2-.3; const fr=front(D,W), wall=D.wall, top=D.h;
     BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:D.h,kind:'A',turn:TA,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),71)),
       paint:(side,u,z,f)=>{ if(side==='f'){ const q=fr(u-L.x0,z,f,0); if(q)return q; }
         if(z>top-14)return sh(D.trim,f*(z>top-4?1.1:.85)); const wu=u-L.x0;
@@ -68,9 +74,13 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     { // its window, real both ways (130a): the street front and the inside's front wall are matched at the door (M: street to inside, turned and moved), the glass the part of the painted window that lies along the inside's wall
       const V3=THREE.Vector3, P2=(q,y=0)=>new V3(q[0],y,q[1]), S0=P2(at(lcx,L.y1)), us=P2(at(lcx+1,L.y1)).sub(S0).normalize(), ns=P2(at(lcx,L.y1+1)).sub(S0).normalize(), I0=new V3(X(cx),0,Z(R.y1)), ui=new V3(Math.sign(X(cx+1)-X(cx)),0,0), ni=new V3(0,0,Math.sign(Z(R.y1+1)-Z(R.y1))), up=new V3(0,1,0);
       const Bs=new THREE.Matrix4().makeBasis(us,up,ns).setPosition(S0), Bi=new THREE.Matrix4().makeBasis(ui,up,ni).setPosition(I0), M=Bi.multiply(Bs.invert()); ROOMS.off[id].xf=M;
-      const du=D.door*W, a0=du>W/2?.35:du+1, a1=du>W/2?du-1:W-.35, o0=Math.max(a0-du,R.x0+.3-cx), o1=Math.min(a1-du,R.x1-.3-cx), z1=Math.min(92,WH-6), h=Y(z1)-Y(16), yc=(Y(16)+Y(z1))/2, tl=Math.abs(X(1)-X(0));
-      if(o1-o0>.5){ const mid=(o0+o1)/2, w=(o1-o0)*tl, ry=Math.atan2(ns.x,ns.z), sp=P2(at(lcx+mid,L.y1+.04),yc), pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(sp); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
-        const ip=new V3(X(cx+mid),yc,Z(R.y1-.04)), pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(ip); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); } }
+      const du=D.door*W, dw=D.dw||.85, tl=Math.abs(X(1)-X(0)), ry=Math.atan2(ns.x,ns.z);
+      // one pane: o0..o1 across from the door's middle (tiles), z0..z1 up (the street's pixels); seen from the street it shows the inside, from inside the street
+      const pane=(o0,o1,z0,z1)=>{ o0=Math.max(o0,R.x0+.3-cx); o1=Math.min(o1,R.x1-.3-cx); z1=Math.min(z1,WH-6); if(o1-o0<.5)return; const h=Y(z1)-Y(z0), yc=(Y(z0)+Y(z1))/2, mid=(o0+o1)/2, w=(o1-o0)*tl;
+        const pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(P2(at(lcx+mid,L.y1+.04),yc)); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
+        const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
+      if(D.both){ const hf=D.half; pane(-hf+.08,-dw-.28,19,89); pane(dw+.28,hf-.08,19,89); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
+      else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }
     MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);
     // its merchant stands inside, behind the counter, unless the level file or the character editor put them elsewhere

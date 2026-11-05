@@ -18,6 +18,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       win:(u,v,n)=>{ const k=Math.floor(u*4), du=u*4-k, r=Math.floor(v*3), dv=v*3-r; if(du>.12&&du<.88&&dv>.15&&dv<.85&&r<2){ const on=hs(k,r,7)>.35; return on?lit(n?[120,190,170]:[96,150,140]):[30,32,30]; } return null; }},
     scanner:{name:'THE SCANNER',sign:'RADIO',signC:[120,255,150],neon:true,signBg:[18,24,20],wall:BLOCKS.brick([70,74,66]),trim:[132,138,126],frame:[30,34,30],door:.2,h:140,
       win:(u,v,n)=>{ if(v>.2&&v<.8&&(Math.floor(u*9)%2)===0)return n?lit([90,200,120]):[44,70,50]; return null; }},
+    books:{name:'THE BOOKSTORE',sign:'BOOKS',signC:[232,196,120],neon:false,signBg:[40,52,44],wall:BLOCKS.brick([124,70,58]),trim:[206,196,170],frame:[44,58,48],door:.5,h:150,
+      win:(u,v,n)=>{ const r=Math.floor(v*4), dv=v*4-r; if(dv<.14)return [96,70,46]; if(dv>.9)return null; const k=Math.floor(u*46), lean=hs(k,r,23); if(dv>.88-lean*.3)return null;
+        const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return n?lit(c.map(q=>q*.75)):c; }},
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
       win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }}};
 

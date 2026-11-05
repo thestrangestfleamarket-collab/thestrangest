@@ -11,7 +11,7 @@ const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-c
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
 const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3)$/;
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
-const FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
+const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > max; }
@@ -39,6 +39,11 @@ export default {
       let r = null; try { r = await fetch(env.SUPABASE_URL + "/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: env.SUPABASE_KEY } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
     if (request.method === "GET" && p === "/texts") { if (!(await inside(env, request, dev))) return json({}, 401); return json(await postOf(env).texts()); }
+    if (request.method === "GET" && BOOK.test(p)) {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      const id = BOOK.exec(p)[1]; let r = null; try { r = await fetch("https://www.gutenberg.org/cache/epub/" + id + "/pg" + id + ".txt", { cf: { cacheTtl: 2592000, cacheEverything: true } }); } catch (e) {}
+      if (!r || !r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, { status: 200 }); out.headers.set("content-type", "text/plain; charset=utf-8"); out.headers.set("cache-control", "private, max-age=2592000"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const [, id, file] = FILM.exec(p), h = new Headers(), rg = request.headers.get("range"); if (rg) h.set("range", rg);

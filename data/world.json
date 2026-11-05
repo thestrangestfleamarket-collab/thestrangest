@@ -599,6 +599,24 @@
    "y0": 32.5,
    "y1": 46.5,
    "face": "e"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOKSTORE",
+   "kind": "front",
+   "x0": -65.5,
+   "x1": -52.5,
+   "y0": 52,
+   "y1": 71,
+   "face": "e",
+   "merchant": "professor",
+   "at": [
+    3.9,
+    7.3
+   ],
+   "inW": 14,
+   "inD": 12,
+   "inH": 112
   }
  ],
  "shells": [],
@@ -1318,11 +1336,6 @@
   "village_gardener": [
    96,
    -24,
-   0
-  ],
-  "professor": [
-   30,
-   -73.5,
    0
   ],
   "game_master": [

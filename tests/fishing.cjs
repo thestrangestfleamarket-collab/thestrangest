@@ -16,9 +16,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     o.longest = RIVER.decks.every(d => d.pier || d.r.every(r => PIER.z0 - r[1] < PIER.z0 - PIER.zE)); o.deck = [RIVER.onPier(PIER.x, (PIER.z0 + PIER.zH) / 2), RIVER.onPier(PIER.x + PIER.HW - T, PIER.zE + T), !RIVER.onPier(PIER.x, PIER.zE - T)];
     o.water = (FISHING.at(PIER.x, PIER.zE - 6 * T) || {}).kind; o.notDeck = !FISHING.at(PIER.x, PIER.zH + 2 * T); return o; });
   ok(!before && hp.built && hp.long >= 30 && hp.longest && hp.deck.every(Boolean) && hp.water === 'river' && hp.notDeck, 'the fishing pier is built only with the Hudson, reaches further out than any other; its water is the river, its deck is not: ' + JSON.stringify({ before, ...hp }));
-  const r1 = await pg.evaluate(() => { FISHING.speed = 20; INV.cash = 100; FISHING.STAND.open(); const q = s => document.querySelector('#fishp ' + s); q('[data-buy="rod"]').click(); q('[data-bait="bait"]').click(); q('[data-bait="bait_cut"]').click();
-    document.getElementById('fishp').hidden = true; return { rod: FORAGE.has('rod'), worms: FORAGE.has('bait'), cut: FORAGE.has('bait_cut'), cash: INV.cash }; });
-  ok(r1.rod === 1 && r1.worms === 12 && r1.cut === 6 && r1.cash === 78, 'BAIT & BOATS sells a rod, worms and cut bait: ' + JSON.stringify(r1));
+  const r1 = await pg.evaluate(() => { FISHING.speed = 20; INV.cash = 100; FORAGE.give('rod', 1); FORAGE.give('bait', 12); FORAGE.give('bait_cut', 6);   // the Fisherman in Waders sells these now (owner, 5 Nov 2026)
+    return { rod: FORAGE.has('rod'), worms: FORAGE.has('bait'), cut: FORAGE.has('bait_cut'), shedBoats: !!document.querySelector('#fishp') }; });
+  ok(r1.rod === 1 && r1.worms === 12 && r1.cut === 6, 'the gear: a rod, worms and cut bait (the Fisherman in Waders sells them): ' + JSON.stringify(r1));
   await pg.evaluate(() => { const T = __dbg.cv().TILE; STORE.goTo(PIER.x + 3.2 * T, PIER.zE + 1.6 * T, 'up'); });
   await pg.waitForTimeout(1500); await wait(() => !FADE.busy); await pg.evaluate(async () => { let p = __dbg.pos(), still = 0; while (still < 15) { await new Promise(r => setTimeout(r, 100)); const q = __dbg.pos(); still = Math.hypot(q[0] - p[0], q[2] - p[2]) < 1e-3 ? still + 1 : 0; p = q; } });
   const r2 = await pg.evaluate(async () => { SHARED.heading = Math.PI; WIELD.set('rod'); FORAGE.ACT.fhook('bait_cut'); for (let i = 0; i < 20; i++) await new Promise(r => requestAnimationFrame(r));
@@ -66,10 +66,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const slip = await fight('x_perch', false);
   ok(!slip.landed && slip.msg.some(m => /SLACK|SLIPS/.test(m)), 'never reeling a perch lets the hook slip: ' + JSON.stringify(slip));
   // the tackle: better rods cast further on stronger line, reels reel faster; bought at the stand
-  const g = await pg.evaluate(() => { const g0 = { ...FISHING.gear() }; INV.cash = 1000; FISHING.STAND.open(); for (const id of ['rod_surf', 'reel_pro', 'lure_spoon', 'cooler_s', 'crabpot']) document.querySelector('#fishp [data-tack="' + id + '"]').click();
-    document.getElementById('fishp').hidden = true; return { g0, cash: INV.cash }; });
+  const g = await pg.evaluate(() => { const g0 = { ...FISHING.gear() }; INV.cash = 1000; for (const id of ['rod_surf', 'reel_pro', 'lure_spoon', 'cooler_s', 'crabpot']) FORAGE.give(id, 1);
+    return { g0, cash: INV.cash }; });
   const g1 = await pg.evaluate(() => new Promise(r => setTimeout(() => r({ ...FISHING.gear() }), 700)));
-  ok(g.g0.cast === 12 && g.g0.line === 1 && g1.cast === 22 && g1.line === 1.6 && g1.reel === 1.7 && g.cash === 1000 - 180 - 120 - 14 - 20 - 25, 'BAIT & BOATS sells better rods (cast, line), reels, lures, a cooler and a crab pot: ' + JSON.stringify({ g0: g.g0, g1, cash: g.cash }));
+  ok(g.g0.cast === 12 && g.g0.line === 1 && g1.cast === 22 && g1.line === 1.6 && g1.reel === 1.7, 'better rods (cast, line), reels, lures, a cooler and a crab pot work: ' + JSON.stringify({ g0: g.g0, g1 }));
   // the fight: pulling against the fish's run tires it faster than pulling with it; low drag lets it take line instead of snapping
   const st = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)); FISHING.speed = 4; FISHING.force = 'x_bass'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait_cut'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); let s; while (performance.now() - t0 < 300000) { s = FISHING.state(); if (s && s.st === 'bite') break; await wait(50); } FISHING.click(); s = FISHING.state();

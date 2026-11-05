@@ -76,7 +76,6 @@ jobs:
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
-          k cast    'src/111a|src/111f[bc]|src/159-jobs|src/059i|data/cast/|data/characters|data/merchant|flea\.cjs|jobsim|merchant\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:

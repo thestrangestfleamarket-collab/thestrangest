@@ -62,8 +62,8 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         gl_FragColor=vec4(col,alpha); }`}; })();
 const SH={uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
 const WATERS=[
- {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: green and clear, a slow low swell, the mud bed and the fish seen many metres down.',
-  sig:[0.34,0.075,0.1],scat:[0.02,0.07,0.045],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.04,.085,.05],sky:.16,
+ {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: dark, a slow low swell.',
+  sig:[0.62,0.24,0.26],scat:[0.008,0.026,0.018],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.014,.03,.02],sky:.16,   // dark: nothing seen down in it (owner, 5 Nov 2026)
   waves:[[8,0.035,265,.25],[4.6,0.022,250,.3],[2.8,0.012,285,.3],[1.7,0.006,240,.3]]},
  {key:'b',name:'B · OPEN SEA',desc:'A long swell under a wind sea: crests a metre high that break white. A rock bed.',
   sig:[0.3,0.06,0.045],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,far:[.06,.16,.2],sky:.32,

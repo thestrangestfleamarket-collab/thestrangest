@@ -9,7 +9,7 @@ const {chromium}=require('playwright');
   const idle=()=>pg.waitForFunction(()=>!(window.FADE&&FADE.busy),null,{timeout:120000,polling:300}).catch(()=>{});
   const s0=await pg.evaluate(()=>({river:RIVER.on}));
   ok(!s0.river,'far from the Hudson the river is not built ('+JSON.stringify(s0)+')');
-  await pg.evaluate(()=>__dbg.UI.goTo(0,0,'up')); await pg.waitForTimeout(4000);
+  await pg.evaluate(()=>__dbg.UI.goTo(0,0,'up')); await pg.waitForTimeout(1500); await idle(); await pg.waitForTimeout(2500);
   const sm=await pg.evaluate(()=>({river:RIVER.on,shown:RIVER.shown,fade:!!(window.FADE&&FADE.busy)}));
   ok(sm.river&&sm.shown,'from Market St, near its side, the river is built and drawn ('+JSON.stringify(sm)+')');
   await pg.evaluate(()=>__dbg.UI.goTo((117.5-72)*1.13,(-112+77)*1.13,'up',Math.PI)); await pg.waitForTimeout(1500); await idle(); await pg.waitForTimeout(2000);

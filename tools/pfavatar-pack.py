@@ -15,8 +15,24 @@ def weld(v,extra=None):
     ok=(F[:,0]!=F[:,1])&(F[:,1]!=F[:,2])&(F[:,0]!=F[:,2])
     return P[first],J[first],W[first],Z[first],F[ok],(np.array(extra)[ok] if extra is not None else None)
 
-def pack(v,rig,Jb,zmap,extra=None):
+def under(P,Z,F,zones,X):   # the body's skin where its underwear lies over it, close as paint: left out, or the two flicker through each other (owner, 5 Nov 2026: "why does the underwear look like that")
+    if 'shirt' not in zones: return F,X
+    sk,sh=zones.index('skin'),zones.index('shirt'); U=P[np.unique(F[(Z[F]==sh).all(1)])]
+    if not len(U): return F,X
+    S=(Z[F]==sk).all(1); d=np.sqrt(((P[:,None,:]-U[None,:,:])**2).sum(-1)).min(1); near=d<.012; drop=S&near[F].all(1)
+    if X is not None: pel=RAW['regions'].index('pelvis'); drop|=S&(X==pel)&((Z[F]==sh).all(1)&(X==pel)).any()   # (the briefs are the hips' own skin, a little out: the skin there goes whole)
+    return F[~drop],(X[~drop] if X is not None else None)
+def lift(P,Z,F,zones,by=.005):   # the underwear out off the skin a little, along its own surface's facing (outward from the body's middle)
+    if 'shirt' not in zones: return P
+    sh=zones.index('shirt'); T=F[(Z[F]==sh).all(1)]
+    if not len(T): return P
+    N=np.zeros_like(P); n=np.cross(P[T[:,1]]-P[T[:,0]],P[T[:,2]]-P[T[:,0]])
+    for k in range(3): np.add.at(N,T[:,k],n)
+    v=np.unique(T); L=np.linalg.norm(N[v],axis=1,keepdims=True); L[L==0]=1; n=N[v]/L; c=P.mean(0); out=P[v]-c; out[:,1]=0
+    n*=np.where((n*out).sum(1)<0,-1,1)[:,None]; P=P.copy(); P[v]+=n*by; return P
+def pack(v,rig,Jb,zmap,extra=None,body=False):
     P,J,W,Z,F,X=weld(v,extra); P=reshape(P,J,W,rig['names'],*rig['prop'])
+    if body: F,X=under(P,Z,F,v['zones'],X); P=lift(P,Z,F,v['zones'])
     out,_=rr.rebake({'rig':rig,'arrays':(P,np.zeros((len(P),3)),F,J,W)},rr.MIXAMO_ROLE,PFW,J=Jb)
     Zg=np.array([zmap[v['zones'][z]] for z in Z],np.uint8)
     o={k:out[k] for k in ('lo','sc','pos','tri','bone','w')}; o['zone']=rr.enc(Zg)
@@ -67,7 +83,7 @@ for f in ('m','f'):
     bz=b0['zones']; bmap={z:i for i,z in enumerate(bz)}
     sk['height']=round(H0,4)   # (sized as before the proportions: the torso keeps its size, you are shorter)
     D={'bones':rr.BONES,'builds':RAW['builds'],'regions':RAW['regions'],'skel':{k:sk[k] for k in ('height','hipY','origin','rest')},
-       'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region']) for b in FG['bodies']]},'pieces':[]}
+       'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region'],body=True) for b in FG['bodies']]},'pieces':[]}
     IDX['skel'][f]=D['skel']
     for n,p in enumerate(RAW['pieces']):
         V=p['v'][f]

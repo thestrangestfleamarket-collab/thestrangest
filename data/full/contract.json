@@ -56,5 +56,9 @@
    "path": "things[].k",
    "to": "polyfork.json"
   }
- ]
+ ],
+ "anchors": {
+  "note": "data/anchors.json: each kind names a data file; every point is three numbers",
+  "fishes": "fishes.json"
+ }
 }

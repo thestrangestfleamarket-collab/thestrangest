@@ -85,7 +85,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     else if(k==='fridge'){ const [nx,nz]=front(o); at=[c.x+nx*(hx+.55*T),c.z+nz*(hz+.55*T)]; reach=.6*T; th.act=()=>fridge(o,th); }
     else if(k==='lamp')th.act=()=>lamp(o,th); else if(k==='vend'){ reach=Math.max(hx,hz)+.6*T; th.pick=.9*T; th.act=()=>vend(o,th); } else { reach=1.4*T; th.act=()=>radio(o,th); }
     th.reach=reach; th.near=reach+(k==='lamp'?2.5:k==='fridge'?2.2:1.2)*T; th.obj.position.set(at[0],b.min.y,at[1]); return th; };
-  USE.pick=ray=>{ '@later'; if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
+  USE.pick=ray=>{ if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
     for(const h of ray.intersectObjects(MS.filter(shown),false)){ if(cut(h))continue; const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)], k=o&&kindOf(o); if(!k)return null; const th=goal(o,k); return th?{th,d:h.distance}:null; } return null; };
   for(const th of (typeof KIT!=='undefined'?KIT.things:[]))if(th.name==='BENCH'){ th.act=()=>{ const se=seatOf(tris(th.obj)); if(se)sitOn(se,th); }; th.reach=1.5; th.near=1.5+1.2*T; }
   PARK.later(()=>{ if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);

@@ -185,7 +185,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
     DESIGN.test={pickAt,frame,shot,state:()=>({az,el:elv,zoom,ty,sel,mode,mirror,undo:undo.length,redo:redo.length}),grab:(x,y)=>grab(x,y),handles:()=>H,set:o=>{ if(o.sel)pick(o.sel); if(o.mode){ mode=o.mode; DESIGN.redraw(); } if(o.mirror!=null){ mirror=o.mirror; DESIGN.redraw(); } if(o.zoom)zoom=o.zoom; if(o.ty!=null)ty=o.ty; },edit:(key,j,v)=>{ const p=part(sel); p[key][j]=v; changed(); commit(); },undo:doUndo,redo:doRedo};
   }
   // YOU's button
-  { const lp=document.getElementById('looks'); if(lp){ const h=document.createElement('h3'), r=document.createElement('div'); h.textContent='SHAPE'; r.className='row'; r.innerHTML='<button id="ldesign">DESIGN YOUR WALKER</button>';
-      const at=lp.querySelector('h3'); lp.insertBefore(h,at); lp.insertBefore(r,at); r.querySelector('button').onclick=()=>{ lp.hidden=true; DESIGN.open(); }; } }
+  { const lp=document.getElementById('looks'); if(lp&&LOOKS.add){ const r=document.createElement('div'); r.className='row'; r.innerHTML='<button id="ldesign">DESIGN YOUR WALKER</button>';
+      LOOKS.add('shape','SHAPE',r,{who:'walker',order:24}); r.querySelector('button').onclick=()=>{ lp.hidden=true; DESIGN.open(); }; } }
 }
 export {DESIGN};

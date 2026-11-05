@@ -5477,3 +5477,8 @@ Owner, of the ten more things Nevaland does ("add all 'Worth taking'"): each bel
 ## 5 Nov 2026: the clothes in plain cel
 
 Owner, of the shirt's knit seen up close ("why is the avatars shirt look so detailed like this zoomed in?"; of keep, softer knit, or plain cel: "3"): every garment is drawn in the game's cel, the Walker's own light steps in its colour, no woven texture, bump or sheen. Their shape and physics stay.
+
+## 5 Nov 2026: the Polyfork avatar
+
+Owner: "i want to create a playable avatar based on the polyfork base character"; his picks: "Dressable Polyfork avatar", "Adult man, Adult woman, Body sliders"; to run Polyfork's modules for the bake: "1". AVATAR on YOU's BODY row: Polyfork's man or woman on your rig, three builds (Polyfork's garments change shape with build, so steps, not a slider), a height, skin and hair colour, and 87 pieces from the cast's own wardrobe in 11 slots, each recolourable; clothes hide the body under them by Polyfork's own rule. Your look is kept with your account; other players see it. Rule: Polyfork's modules run only in the bake (`tools/pfavatar-bake.mjs`, `.polyfork/`, never committed); only the baked pieces ship.
+- 5 Nov 2026, YOU redone (owner: "redo the character menu to fit this new avatar, make sure has all options and fits on screen"): your name and three tabs, LOOK, WEAR (the avatar's clothes) and WORDS; each option one line with its name; only the options for the body you wear; the chosen one lit. Rule: a line of YOU is added with `LOOKS.add`.

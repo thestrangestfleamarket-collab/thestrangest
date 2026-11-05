@@ -30,7 +30,7 @@ Risk is noted only when it isn't low.
 **To try on the live site** (one sitting; each line is in its area below):
 the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-VR on the Quest 3 (and the painter in it).
+VR on the Quest 3 (and the painter in it) · the Polyfork avatar and the new YOU window (5 Nov).
 
 **To pick** (one batch; each line is in its area below):
 draw distance (one control or two, and the default) · tree shadows (option 1, 2 or 3, after the re-measure) · tree crowns (A–F) and trees
@@ -359,6 +359,10 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [ ] **The tee in one piece, like the jeans** · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
   tube with set-in sleeves that overlap at the shoulder (`MAKE.shirt`, `src/072b-garb.js:128`). Only if he wants it (no seam showed in any
   portrait), and after the jeans' yes.
+- [x] **The Polyfork avatar** (done 5 Nov) · P1 · L · code. AVATAR on YOU's BODY row (`src/111c-avatar.js`, `tests/avatar.cjs`; bake: `node tools/pfavatar-bake.mjs`
+  then `python3 tools/pfavatar-pack.py`, the adult cast's Polyfork modules in `.polyfork/mods/`). YOU redone around it (tabs, `LOOKS.add`). Waits for his look and yes.
+- [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear (EQUIP: a hat or jacket you carry) and the pack's clothes on the avatar; the
+  held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
 
 ## Moves (Mesh2Motion)
 

@@ -1,0 +1,42 @@
+// THE POLYFORK AVATAR (src/111c-avatar.js, data/pfavatar*.json): node tests/avatar.cjs [out folder]. YOU's BODY row has AVATAR; worn, its figure's wardrobe loads and you are
+// Polyfork's man or woman on your rig, dressed as chosen; clothes hide the body under them (Polyfork's own regions), a hat that covers the hair hides it, the look's code
+// round-trips and another player's copy is the same body; with an out folder, third-person shots in an open field.
+const {chromium}=require('playwright'); const OUT=process.argv[2];
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
+  pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
+  const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
+  const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(400))if(await pg.evaluate(f))return true; return false; };
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
+  rec('YOU\'s BODY row has AVATAR',await pg.evaluate(()=>!!document.getElementById('lbody-avatar')&&!!BODIES.by.avatar));
+  await pg.evaluate(()=>BODIES.set('avatar')); rec('worn, its wardrobe loads',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'));
+  const tris=()=>pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g?g.attributes.position.count/3:0; });
+  await wait(500); const t0=await tris(); rec('you are the avatar, dressed (hair, tee, trousers, sneakers)',t0>2000&&await pg.evaluate(()=>W3.body.on),'tris '+t0);
+  const id=(slot,label)=>pg.evaluate(([s,l])=>{ const o=[...document.querySelectorAll('#lav-'+s+' option')].find(x=>x.textContent===l); return o?+o.value:null; },[slot,label]);
+  await pg.evaluate(()=>AVATAR.set({}));
+  const bare=await pg.evaluate(async()=>{ const L=AVATAR.L(); const keep=JSON.stringify(L.w); for(const s of Object.keys(L.w))await AVATAR.wear(s,null); const n=BODIES.by.avatar.GEO.attributes.position.count/3; L.w=JSON.parse(keep); await AVATAR.set({}); return n; });
+  rec('undressed you are the whole body, in underwear',bare>=1600&&bare<1800,'tris '+bare);
+  const trou=await id('bottom','TROUSERS'), none=await pg.evaluate(async()=>{ const L=AVATAR.L(), keep=JSON.stringify(L.w); for(const s of Object.keys(L.w))await AVATAR.wear(s,null); return keep; });
+  const tr=await pg.evaluate(async n=>{ await AVATAR.wear('bottom',n); return BODIES.by.avatar.GEO.attributes.position.count/3; },trou);
+  rec('trousers hide the legs and pelvis under them',tr<bare+700&&tr>bare-600,'bare '+bare+' with trousers '+tr);
+  const hood=await id('hat','HOOD'), long=await id('hair','LONG');
+  const hh=await pg.evaluate(async([h,l])=>{ await AVATAR.wear('hair',l); const a=BODIES.by.avatar.GEO.attributes.position.count/3; await AVATAR.wear('hat',h); const b=BODIES.by.avatar.GEO.attributes.position.count/3; await AVATAR.wear('hat',null); return [a,b]; },[hood,long]);
+  rec('a hood hides the hair (and ears) under it',hh[1]>0&&hh[1]<hh[0]+600,JSON.stringify(hh));
+  await pg.evaluate(async k=>{ const L=AVATAR.L(); L.w=JSON.parse(k); await AVATAR.set({}); },none);
+  const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
+  const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
+  await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&document.querySelector('#looks .lr[data-k="w-face"]').hidden));
+  const fc=await pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g.attributes.position.count/3; }); rec('she is dressed too',fc>2000,'tris '+fc);
+  await pg.evaluate(()=>AVATAR.set({b:2,h:108})); const tall=await pg.evaluate(()=>BODIES.by.avatar.S); await pg.evaluate(()=>AVATAR.set({h:92})); const short=await pg.evaluate(()=>BODIES.by.avatar.S);
+  rec('height: taller is drawn bigger',tall>short*1.1,tall.toFixed(3)+' vs '+short.toFixed(3));
+  if(OUT){   // in third person, the camera in front of you, in the park's open meadow (the shots' rule: an open field, third or first person)
+    const look=async(nm,set,wear)=>{ await pg.evaluate(async([set,wear])=>{ document.getElementById('looks').hidden=true; const L=AVATAR.L(); L.w={}; await AVATAR.set(set);
+        for(const [s,l,c] of wear){ const o=[...document.querySelectorAll('#lav-'+s+' option')].find(x=>x.textContent===l); await AVATAR.wear(s,o?+o.value:null,c); }
+        const UI=__dbg.UI; UI.setView('third'); UI.dist*=.55; SHARED.pitchTo=SHARED.pitch=.22; SHARED.yawTo=SHARED.yaw=SHARED.heading; },[set,wear]);
+      await wait(2500); await pg.screenshot({path:OUT+'/avatar-'+nm+'.png'}); };
+    await look('man',{f:'m',b:1,h:100},[['hair','SIDE PART'],['top','SHIRT'],['coat','JACKET','7a3b2e'],['bottom','TROUSERS'],['feet','SHOES']]);
+    await look('woman',{f:'f',b:0,h:97},[['hair','PONYTAIL'],['top','T-SHIRT','2f6d8c'],['bottom','PLEATED SKIRT','3b3b48'],['feet','SNEAKERS'],['eyes','CAT-EYES']]);
+    await look('broad',{f:'m',b:2,h:106,skin:'7e4c2f',hair:'1d1712'},[['hair','AFRO'],['face','FULL BEARD'],['top','WORK SHIRT'],['coat','HI-VIS VEST'],['bottom','DUNGAREES'],['feet','WORK BOOTS'],['hat','HARD HAT']]);
+    await look('coat',{f:'f',b:1,h:102,skin:'c08a64',hair:'b98a4e'},[['hair','LONG'],['top','SHIRT'],['coat','LONG COAT','5a2a3a'],['bottom','TROUSERS'],['feet','TALL BOOTS'],['hat','FELT HAT'],['neck','SCARF']]);
+    await pg.evaluate(()=>LOOKS.open()); await wait(800); await pg.screenshot({path:OUT+'/avatar-panel.png'}); }
+  const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
+  console.log(bad?bad+' FAILED':'ALL PASS'); await b.close(); process.exit(bad?1:0); })();

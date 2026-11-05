@@ -611,12 +611,12 @@
    "face": "e",
    "merchant": "professor",
    "at": [
-    3.9,
-    7.3
+    -6.4,
+    10.4
    ],
-   "inW": 14,
-   "inD": 12,
-   "inH": 112
+   "inW": 20,
+   "inD": 16,
+   "inH": 250
   }
  ],
  "shells": [],

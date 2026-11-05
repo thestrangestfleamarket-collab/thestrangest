@@ -37,10 +37,6 @@ const TOUR=[
     async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); }],
   ['art museum','x-art',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     STORE.enter('art',true); return await U(()=>STORE.art&&STORE.art.hung>0&&!(window.FADE&&FADE.busy)); },async()=>{ STORE.exit('art'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
-  ['gem cave','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    await GEMCAVE.go(1); return await U(()=>GEMCAVEDBG().built&&GEMCAVEDBG().inside&&!(window.FADE&&FADE.busy)); },async()=>{ await GEMCAVE.go(0); }],
-  ['hudson cavern','x-caverns',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    await HUDSON.go(1); return await U(()=>{ const d=HUDSONDBG(); return d.built&&d.inside&&d.swim&&!(window.FADE&&FADE.busy); }); },async()=>{ await HUDSON.go(0); }],
 ];
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});

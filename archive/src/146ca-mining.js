@@ -4,7 +4,6 @@ import {CITY, FORAGE, INSPECT, INV, MAIL, MOTION, pos, SFX, UI} from './003b-sys
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {TILE, ZU} from './006-map-pre.js';
-import {CAVERNS} from './066a-caverns.js';
 import {KIT} from './068-kit.js';
 import {GEMS} from './101-gems.js';
 const MINING={live:[]}; window.MINING=MINING;

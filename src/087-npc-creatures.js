@@ -150,4 +150,4 @@ const CREATS=[]; window.CREATS=CREATS;
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.body.visible})); }
 
 const PAWNS=__LAZY__("data/pawns.json");
-export {CREATS, PAWNS};
+export {CREATS};

@@ -52,7 +52,16 @@
    "east": "CURIO AVE"
   },
   "places": [
-   {"id": "skatepark", "section": "B", "x": 24.5, "y": 328.5, "face": "w", "w": 81, "d": 57, "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"}
+   {
+    "id": "skatepark",
+    "section": "B",
+    "x": 24.5,
+    "y": 328.5,
+    "face": "w",
+    "w": 81,
+    "d": 57,
+    "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"
+   }
   ],
   "ring": {
    "park": {
@@ -185,10 +194,285 @@
   "y0": -38,
   "y1": 181
  },
- "hangouts": {"pier":{"band":[30,100,-117.6,-116.6],"hd":3.1416},"meadow":{"areas":[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},"path":{"band":[-15,250,57,60]},"bench":{"areas":[[113,52,6],[30,140,5]]},"river":{"band":[0,200,-115,-111]},"flea":{"areas":[[223,-84,5]]},"shrine":{"band":[90.86,94.86,-110.6,-109.8],"hd":0}},
- "residences": [{"id":"corner_tenement","name":"THE CORNER TENEMENT","door":[158.62,-76.1],"beds":53},{"id":"brownstone_row_house","name":"THE BROWNSTONE","door":[169.71,-76.1],"beds":26},{"id":"narrow_walk_up","name":"THE WALK-UP","door":[178.05,-76.1],"beds":10},{"id":"cast_iron_loft","name":"THE CAST-IRON LOFT","door":[208.84,-76.1],"beds":50},{"id":"motel_room_run","name":"THE RIVER MOTEL","door":[32.21,-108.8],"beds":8},{"id":"corner_shophouse","name":"THE CORNER SHOPHOUSE","door":[47.0,-108.8],"beds":2},{"id":"two_storey_shophouse","name":"THE TWO-STOREY SHOPHOUSE","door":[52.26,-108.8],"beds":2},{"id":"three_storey_shophouse","name":"THE THREE-STOREY SHOPHOUSE","door":[67.55,-108.8],"beds":2},{"id":"wide_shophouse","name":"THE WIDE SHOPHOUSE","door":[75.19,-108.8],"beds":4},{"id":"haunted_victorian_house","name":"THE HAUNTED HOUSE","door":[2.0,157.96],"beds":1},{"id":"porch_log_cabin","name":"THE LOG CABIN","door":[40.0,144.34],"beds":2}],
+ "hangouts": {
+  "pier": {
+   "band": [
+    30,
+    100,
+    -117.6,
+    -116.6
+   ],
+   "hd": 3.1416
+  },
+  "meadow": {
+   "areas": [
+    [
+     -8,
+     46,
+     7
+    ],
+    [
+     88,
+     42,
+     6
+    ],
+    [
+     180,
+     30,
+     8
+    ],
+    [
+     130,
+     150,
+     7
+    ]
+   ]
+  },
+  "path": {
+   "band": [
+    -15,
+    250,
+    57,
+    60
+   ]
+  },
+  "bench": {
+   "areas": [
+    [
+     113,
+     52,
+     6
+    ],
+    [
+     30,
+     140,
+     5
+    ]
+   ]
+  },
+  "river": {
+   "band": [
+    0,
+    200,
+    -115,
+    -111
+   ]
+  },
+  "flea": {
+   "areas": [
+    [
+     223,
+     -84,
+     5
+    ]
+   ]
+  },
+  "shrine": {
+   "band": [
+    90.86,
+    94.86,
+    -110.6,
+    -109.8
+   ],
+   "hd": 0
+  }
+ },
+ "residences": [
+  {
+   "id": "corner_tenement",
+   "name": "THE CORNER TENEMENT",
+   "door": [
+    158.62,
+    -76.1
+   ],
+   "beds": 53
+  },
+  {
+   "id": "brownstone_row_house",
+   "name": "THE BROWNSTONE",
+   "door": [
+    169.71,
+    -76.1
+   ],
+   "beds": 26
+  },
+  {
+   "id": "narrow_walk_up",
+   "name": "THE WALK-UP",
+   "door": [
+    178.05,
+    -76.1
+   ],
+   "beds": 10
+  },
+  {
+   "id": "cast_iron_loft",
+   "name": "THE CAST-IRON LOFT",
+   "door": [
+    208.84,
+    -76.1
+   ],
+   "beds": 50
+  },
+  {
+   "id": "motel_room_run",
+   "name": "THE RIVER MOTEL",
+   "door": [
+    32.21,
+    -108.8
+   ],
+   "beds": 8
+  },
+  {
+   "id": "corner_shophouse",
+   "name": "THE CORNER SHOPHOUSE",
+   "door": [
+    47.0,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "two_storey_shophouse",
+   "name": "THE TWO-STOREY SHOPHOUSE",
+   "door": [
+    52.26,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "three_storey_shophouse",
+   "name": "THE THREE-STOREY SHOPHOUSE",
+   "door": [
+    67.55,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "wide_shophouse",
+   "name": "THE WIDE SHOPHOUSE",
+   "door": [
+    75.19,
+    -108.8
+   ],
+   "beds": 4
+  },
+  {
+   "id": "haunted_victorian_house",
+   "name": "THE HAUNTED HOUSE",
+   "door": [
+    2.0,
+    157.96
+   ],
+   "beds": 1
+  },
+  {
+   "id": "porch_log_cabin",
+   "name": "THE LOG CABIN",
+   "door": [
+    40.0,
+    144.34
+   ],
+   "beds": 2
+  }
+ ],
  "block": {
-  "pf": {"1":[[-71.9,-60.76],[-60.66,-50.54],[-50.44,-26.03],[-25.93,-6.83],[-6.73,8.15],[82.45,92.57],[153.2,164.05],[164.65,174.77],[175.37,180.74],[181.34,191.46],[201.4,216.29]],"2":[[-4.8,10.09],[9.99,20.11],[20.01,44.42],[44.32,49.68],[49.58,54.94],[54.84,64.97],[64.87,70.23],[70.13,80.25],[80.15,90.28],[90.18,95.54],[95.44,110.32]]},
+  "pf": {
+   "1": [
+    [
+     -71.9,
+     -60.76
+    ],
+    [
+     -60.66,
+     -50.54
+    ],
+    [
+     -50.44,
+     -26.03
+    ],
+    [
+     -25.93,
+     -6.83
+    ],
+    [
+     -6.73,
+     8.15
+    ],
+    [
+     82.45,
+     92.57
+    ],
+    [
+     153.2,
+     164.05
+    ],
+    [
+     164.65,
+     174.77
+    ],
+    [
+     175.37,
+     180.74
+    ],
+    [
+     181.34,
+     191.46
+    ],
+    [
+     201.4,
+     216.29
+    ]
+   ],
+   "2": [
+    [
+     -4.8,
+     10.09
+    ],
+    [
+     9.99,
+     20.11
+    ],
+    [
+     20.01,
+     44.42
+    ],
+    [
+     44.32,
+     49.68
+    ],
+    [
+     49.58,
+     54.94
+    ],
+    [
+     54.84,
+     64.97
+    ],
+    [
+     64.87,
+     70.23
+    ],
+    [
+     70.13,
+     80.25
+    ],
+    [
+     80.15,
+     90.28
+    ],
+    [
+     90.18,
+     95.54
+    ],
+    [
+     95.44,
+     110.32
+    ]
+   ]
+  },
   "x0": -100,
   "x1": 245,
   "front": -77,
@@ -315,95 +599,54 @@
    "y0": 32.5,
    "y1": 46.5,
    "face": "e"
-  },
-  {
-   "id": "boards",
-   "name": "THE BOARDWRIGHT",
-   "kind": "front",
-   "x0": -65.5,
-   "x1": -52.5,
-   "y0": 8,
-   "y1": 27,
-   "face": "e",
-   "merchant": "boardwright",
-   "at": [
-    4.1,
-    3.4
-   ]
-  },
-  {
-   "id": "fixit",
-   "name": "FIX-IT ELECTRONICS",
-   "kind": "front",
-   "x0": -65.5,
-   "x1": -52.5,
-   "y0": 52,
-   "y1": 71,
-   "face": "e",
-   "merchant": "fixer",
-   "at": [
-    1.1,
-    3.2
-   ],
-   "more": {
-    "fixkid": [
-     1.7,
-     2.0
-    ]
-   }
-  },
-  {
-   "id": "scanner",
-   "name": "THE SCANNER",
-   "kind": "front",
-   "x0": 143.2,
-   "x1": 153.2,
-   "lot": true,
-   "merchant": "scanner"
-  },
-  {
-   "id": "diner",
-   "name": "THE DINER",
-   "kind": "front",
-   "x0": 193.3,
-   "x1": 201.5,
-   "lot": true,
-   "inW": 14,
-   "inD": 14,
-   "inH": 112
-  },
-  {
-   "id": "flea",
-   "name": "THE FLEA MARKET",
-   "kind": "lot",
-   "x0": 216.6,
-   "x1": 229.65
-  },
-  {
-   "id": "fairgate",
-   "name": "THE FAIR GATE",
-   "kind": "gate",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 105.3,
-   "y1": 116.1,
-   "face": "e"
-  },
-  {
-   "id": "fair",
-   "name": "THE STRANGEST FAIR",
-   "kind": "fair",
-   "x0": -128.0,
-   "x1": -80.5,
-   "y0": -58.0,
-   "y1": 205.0,
-   "face": "e",
-   "door": [-79, 110.7],
-   "gate": [105.3, 116.1]
   }
  ],
  "shells": [],
- "cars": [{"id": "c1", "model": "muscle-car-60s", "x": 78.2, "y": -67.0, "hd": 90}, {"id": "c2", "model": "convertible-60s", "x": 87.3, "y": -67.0, "hd": 90}, {"id": "c3", "model": "station-wagon-70s", "x": 96.8, "y": -67.0, "hd": 90}, {"id": "c4", "model": "pickup-truck-70s", "x": 105.9, "y": -67.0, "hd": 90}, {"id": "c5", "model": "wedge-coupe-80s", "x": 123, "y": -67.0, "hd": 90}, {"id": "c6", "model": "camper-van", "x": 131.8, "y": -67.0, "hd": 90}], "parkPlaces": {
+ "cars": [
+  {
+   "id": "c1",
+   "model": "muscle-car-60s",
+   "x": 78.2,
+   "y": -67.0,
+   "hd": 90
+  },
+  {
+   "id": "c2",
+   "model": "convertible-60s",
+   "x": 87.3,
+   "y": -67.0,
+   "hd": 90
+  },
+  {
+   "id": "c3",
+   "model": "station-wagon-70s",
+   "x": 96.8,
+   "y": -67.0,
+   "hd": 90
+  },
+  {
+   "id": "c4",
+   "model": "pickup-truck-70s",
+   "x": 105.9,
+   "y": -67.0,
+   "hd": 90
+  },
+  {
+   "id": "c5",
+   "model": "wedge-coupe-80s",
+   "x": 123,
+   "y": -67.0,
+   "hd": 90
+  },
+  {
+   "id": "c6",
+   "model": "camper-van",
+   "x": 131.8,
+   "y": -67.0,
+   "hd": 90
+  }
+ ],
+ "parkPlaces": {
   "round": {
    "x": 112,
    "y": 59.5,
@@ -434,7 +677,63 @@
    "x": 255,
    "y": 59.5
   },
-  "brook": {"note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it", "pts": [[248, 168], [230, 150], [212, 128], [200, 114], [190, 104], [203, 90], [205, 76], [187.5, 68], [189, 59], [190.5, 50], [178, 42], [165, 34], [155, 20]]},
+  "brook": {
+   "note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it",
+   "pts": [
+    [
+     248,
+     168
+    ],
+    [
+     230,
+     150
+    ],
+    [
+     212,
+     128
+    ],
+    [
+     200,
+     114
+    ],
+    [
+     190,
+     104
+    ],
+    [
+     203,
+     90
+    ],
+    [
+     205,
+     76
+    ],
+    [
+     187.5,
+     68
+    ],
+    [
+     189,
+     59
+    ],
+    [
+     190.5,
+     50
+    ],
+    [
+     178,
+     42
+    ],
+    [
+     165,
+     34
+    ],
+    [
+     155,
+     20
+    ]
+   ]
+  },
   "shelvedSites": [
    {
     "id": "pub",

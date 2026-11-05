@@ -4,7 +4,7 @@ import {CITY, NPCS, ONLINE, VIS, WALKS} from './003b-systems.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 __CODE__("worker/folk.js")
-Object.assign(WALKS,{on:QS.get('folk')!=='0',remote:false,by:new Map(),S:null,sim:FOLKSIM,sent:0}); window.WALKS=WALKS;
+Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,sim:FOLKSIM,sent:0}); window.WALKS=WALKS;
 { const T=TILE, R0=.3*T, TELE=2.5*T, NUDGE=.6*T, S=WALKS.S=FOLKSIM.make(); S.T=T; S.freeFn=(x,z)=>stfree(x,z,R0); S.routeFn=(a,b)=>{ const r=CITY.route&&CITY.route('up',a,b,stfree); return r?r.pts:null; };
   const stamp=()=>String(__BUILDV__)+':'+((SHARED.MAPLIVE&&SHARED.MAPLIVE.at)||''); WALKS.stamp=stamp;
   let batch=[], gateSet=false, bake=null, scanT=0, ready=false, castHave='', castSent='';

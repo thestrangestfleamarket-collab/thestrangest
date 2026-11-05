@@ -47,7 +47,7 @@ import {FRESH} from './140c-fresh.js';
     p_gheal:()=>{ VIT.heal(1); buff('regen',60); },f_roast:()=>feed(.33),f_fritter:()=>{ feed(.33); VIT.sta=1; },f_skewer:()=>{ feed(.4); buff('regen',60); },f_soup:()=>{ feed(.6); VIT.heal(.3); },f_morel:()=>{ feed(.4); buff('swift',180); },f_oyster:()=>{ feed(.3); buff('regen',60); },f_chicken:()=>{ feed(.5); VIT.heal(.25); VIT.sta=1; },p_ghost:()=>buff('dark',300)};
   const PRICE={f_morel:56,f_oyster:14,f_chicken:44,p_ghost:150};   // the rest are in data/items.json
   const NM=FORAGE.NM={}, NAME=id=>NM[id]?NM[id]:id==='bottle'?'EMPTY BOTTLE':id==='mortar'?'MORTAR AND PESTLE':id.startsWith('m_')?MU[id.slice(2)][0]:id.startsWith('u_')?'STRANGE MUSHROOM ('+['','PALE','PUFFY','ORANGE','RED','SHAGGY','BROWN','PITTED','GLOWING','FAN-SHAPED','PURPLE','BLACK','SPOTTED','YELLOW','GHOSTLY'][MK.indexOf(id.slice(2))+1]+')':(RC.find(r=>r[0]===id)||[0,id])[1];
-  const SK=[['forage','FORAGING'],['alchemy','ALCHEMY'],['cooking','COOKING'],['myco','MYCOLOGY'],['fish','FISHING'],['prosp','PROSPECTING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['golf','GOLF'],['climb','CLIMBING'],['games','MIDWAY GAMES']], CAP=6000;
+  const SK=[['forage','FORAGING'],['myco','MYCOLOGY'],['fish','FISHING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['bind','BOOKBINDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['golf','GOLF'],['climb','CLIMBING']], CAP=6000;
   const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100,fight:100,bee:100,golf:100,climb:100,games:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up',golf:'up',climb:'up',games:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; S.log=S.log||{}; S.made=S.made||{}; S.gave=S.gave||{}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
@@ -65,7 +65,7 @@ import {FRESH} from './140c-fresh.js';
   FORAGE.sell=(...ids)=>{ for(const id of ids)ITEMS.reg(id,{sellable:true}); };
   reg({does:DO,prices:PRICE}); for(const k in MU)reg({prices:{['m_'+k]:MU[k][2],['u_'+k]:Math.floor(MU[k][2]/2)}});
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k of ITEMS.ids())s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
-  FORAGE.BUYK={mushrooms:['m_','u_','p_','f_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.NOTE.push(id=>{ const t=FRESH.tag(id); return t&&t!=='FRESH'?t:''; }); FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
+  FORAGE.BUYK={mushrooms:['m_','u_','p_','f_'],fish:['x_'],swords:['sword'],books:['br_'],veg:['v_','fr_'],flowers:['fl_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.NOTE.push(id=>{ const t=FRESH.tag(id); return t&&t!=='FRESH'?t:''; }); FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
   FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM',glowcap:'GLOWCAP MUSHROOM'},prices:{airshroom:8,glowcap:10}}); FORAGE.SELLS.push(['airshroom',8,()=>true],['glowcap',10,()=>true]);   // glowcap: you see in the dark deep water a while (its DARKSIGHT)   // off-world: the seller's one wares, lets you hold your breath longer underwater
   // a gift: a place (STORE.here) takes the first of each kind you bring it and pays for it ({is, place, pay, key, thanks})
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
@@ -76,7 +76,7 @@ import {FRESH} from './140c-fresh.js';
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
   const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
-    if(c>0&&c<1&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?1.2:1)+(S.sk[k]<300?.3:0);
+    if(c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?1.2:1)+(S.sk[k]<300?.3:0);
       if(Math.random()<g){ let n=S.sk[k]<300?1+Math.floor(Math.random()*2):1;
         while(n>0&&tot()>=CAP){ const dn=SK.map(s=>s[0]).find(o=>o!==k&&S.lock[o]==='down'&&S.sk[o]>0); if(!dn){ n=0; break; } S.sk[dn]--; n--; S.sk[k]++; }
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }

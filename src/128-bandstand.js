@@ -15,4 +15,4 @@ STAGE.make=()=>{ if(!STORE.bar)return; const ALL=[['dr',DRM]], SET=Math.max(5,+(
   STAGE.tick=dt=>{ const A=DRM.at; if(!A||!MAPG.bodega.visible||Math.hypot(pos.x-A.x,pos.z-A.z)>18)return; t+=dt; if(t>=SET)STAGE.next(); };
   for(const [,X] of ALL)NPCS.extra.push(X); STAGE.go('dr'); };
 if(!AWAY.has('bar'))STORE.kit.STEPS.push(DRM.make,STAGE.make);
-if(MUS.g){ MUS.on=true; VIS.hide(MUS.g,'away',false); MUS.start(); NPCS.extra.push(MUS); }
+if(0&&MUS.g){ MUS.on=true; VIS.hide(MUS.g,'away',false); MUS.start(); NPCS.extra.push(MUS); }

@@ -20,7 +20,7 @@ DRONE.mk=(o={})=>{ const R=.15, D=new THREE.Group(); D.add(new THREE.Mesh(DGEO||
 DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X=SHARED.BOD.X, Y=SHARED.BOD.Y, Z=SHARED.BOD.Z, AR=APTS.R, K=SHARED.BOD.K;
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), flat=c=>new THREE.MeshBasicMaterial({color:c}), bx=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
 
-  const BODEGA=[['COFFEE',2],['SODA',2],['WATER',1],['MILK',3],['EGGS',4],['BREAD',3],['CHIPS',2],['CANDY BAR',1],['CEREAL',4],['FISH FOOD',3],['SPRAY PAINT, SILVER',6,'spray_silver'],['SPRAY PAINT, GOLD',14,'spray_gold']];
+  const BODEGA=[['CAT FOOD',1,'g_catfood'],['FISH FOOD',3,'g_fishfood'],['SPRAY PAINT, SILVER',6,'spray_silver'],['SPRAY PAINT, GOLD',14,'spray_gold']];
   const FURN=['armchair','floor lamp','bookcase','coffee table','plant pot','fiddle-leaf fig','patterned rug','desk lamp','poster','radio']
     .filter(k=>K.CATALOG[k]).map(k=>{ const i=CAT_INFO[k]||{}; return [k,(i.name||k.replace(/\b\w/g,c=>c.toUpperCase())),(i.price||20)]; });
 

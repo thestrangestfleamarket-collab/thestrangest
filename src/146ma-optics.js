@@ -28,7 +28,7 @@ import {PHOTOS} from './146m-prints.js';
   const ray=new THREE.Raycaster(), FWD=new V3(), TO=new V3(), C0=new THREE.Vector2(0,0);
   const shown=o=>{ for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group)return false; return o.isMesh&&!(o.material&&(o.material.visible===false||o.material.transparent&&o.material.opacity<.05)); };
   const near=(x,y,z,max)=>{ const c=SHARED.cam.position; TO.set(x-c.x,y-c.y,z-c.z); const d=TO.length(); if(d<.3*T||d>max)return null; return {d,a:Math.acos(cl(TO.dot(FWD)/d,-1,1))}; };
-  OPTIC.look=()=>{ const cam=SHARED.cam; cam.getWorldDirection(FWD); ray.setFromCamera(C0,cam); ray.far=400*M; let d=null;
+  OPTIC.look=()=>{ '@later'; const cam=SHARED.cam; cam.getWorldDirection(FWD); ray.setFromCamera(C0,cam); ray.far=400*M; let d=null;
     try{ const h=ray.intersectObjects(scene.children,true).find(h=>h.distance>1.2*M&&shown(h.object)&&!(WIELD.on&&h.object.userData.wield)); if(h)d=h.distance; }catch(e){}
     const max=d==null?400*M:d+.6*T, tol=1.2*D2R; let best=null;
     for(const b of BIRDS.list||[]){ const q=near(b.x,b.y+.1*T,b.z,max); if(q&&q.a<tol&&(!best||q.a<best.a))best={...q,bird:b,name:BIRDS.K[b.k][0],latin:BIRDS.K[b.k][1]}; }
@@ -38,7 +38,7 @@ import {PHOTOS} from './146m-prints.js';
     if(d!=null){ const p=ray.ray.at(d,TO); try{ const z=ZONES.at(p.x,p.z,SHARED.LVL||'up'); OPTIC.what=z&&z.name?String(z.name).toUpperCase():''; }catch(e){} } };
 
   /* ---------- the light: the scene's exposure value (EV at ISO 100) from the sun's height, the sky and where you stand ---------- */
-  OPTIC.ev=()=>{ const inside=!!(ROOMS.cur||SHARED.LVL==='down'||MODS.apts&&MODS.apts.inReal); if(inside)return 6.5;
+  OPTIC.ev=()=>{ '@later'; const inside=!!(ROOMS.cur||SHARED.LVL==='down'||MODS.apts&&MODS.apts.inReal); if(inside)return 6.5;
     const e=CLOCK.elev(), W=WX.now||{}, cloud=W.cloud||0, rain=W.rain||0, fog=W.fog||0;
     const day=e>=10?15:e>-6?7+8*(e+6)/16:4.5;   // full sun, the golden hour and twilight, a lamp-lit street by night
     return day-(e>-6?2.2*cloud+1*rain+1*fog:0); };
@@ -47,12 +47,12 @@ import {PHOTOS} from './146m-prints.js';
   /* ---------- the two things in the hand ---------- */
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), HELD=[];   // the things in the hand: hidden while at the eye, so they never fill the view
   const glasses={name:'BINOCULARS',hint:'CLICK TO RAISE THEM TO YOUR EYES; THE WHEEL FOCUSES. CLICK AGAIN TO LOWER.',
-    make:()=>{ const g=new THREE.Group(), r=lam(0x1c1d20), m=lam(0x6a6c70); for(const s of [-1,1]){ const b=new THREE.Mesh(new THREE.CylinderGeometry(.034*M,.03*M,.15*M,10),r); b.rotation.x=Math.PI/2; b.position.set(s*.045*M,.08*M,0); g.add(b);
+    make:()=>{ '@later'; const g=new THREE.Group(), r=lam(0x1c1d20), m=lam(0x6a6c70); for(const s of [-1,1]){ const b=new THREE.Mesh(new THREE.CylinderGeometry(.034*M,.03*M,.15*M,10),r); b.rotation.x=Math.PI/2; b.position.set(s*.045*M,.08*M,0); g.add(b);
         const o=new THREE.Mesh(new THREE.CylinderGeometry(.03*M,.03*M,.01*M,10),m); o.rotation.x=Math.PI/2; o.position.set(s*.045*M,.08*M,-.078*M); g.add(o); }
       const br=new THREE.Mesh(new THREE.BoxGeometry(.05*M,.02*M,.06*M),m); br.position.y=.09*M; g.add(br); g.traverse(o=>{ o.userData.wield=1; }); HELD.push(g); g.tipL=new V3(0,.08*M,-.09*M); g.head=g.tipL; return g; },
     use:()=>OPTIC.toggle('binoc') };
   const box={name:'CAMERA',hint:'CLICK TO RAISE IT TO YOUR EYE; CLICK AGAIN TO TAKE THE PICTURE. THE WHEEL FOCUSES. ESC LOWERS IT.',
-    make:()=>{ const g=new THREE.Group(), body=new THREE.Mesh(new THREE.BoxGeometry(.14*M,.08*M,.035*M),lam(0x2a2a2c)), top=new THREE.Mesh(new THREE.BoxGeometry(.14*M,.02*M,.036*M),lam(0xb8b8bc));
+    make:()=>{ '@later'; const g=new THREE.Group(), body=new THREE.Mesh(new THREE.BoxGeometry(.14*M,.08*M,.035*M),lam(0x2a2a2c)), top=new THREE.Mesh(new THREE.BoxGeometry(.14*M,.02*M,.036*M),lam(0xb8b8bc));
       body.position.y=.06*M; top.position.y=.11*M; const lens=new THREE.Mesh(new THREE.CylinderGeometry(.024*M,.026*M,.05*M,12),lam(0x111113)); lens.rotation.x=Math.PI/2; lens.position.set(0,.06*M,-.04*M); g.add(body,top,lens);
       g.traverse(o=>{ o.userData.wield=1; }); HELD.push(g); g.tipL=new V3(0,.06*M,-.07*M); g.head=g.tipL; return g; },
     use:()=>OPTIC.up==='camera'?OPTIC.shoot():OPTIC.toggle('camera') };
@@ -62,7 +62,7 @@ import {PHOTOS} from './146m-prints.js';
   let view=null;   // the eyepiece or finder, built the first time (its chunk fetched then)
   const views={binoc:()=>LOAD('binocs').then(()=>binocsView()),camera:()=>LOAD('camera').then(()=>cameraView())}, made={};
   OPTIC.fovOf=()=>OPTIC.up==='binoc'?7.5:OPTIC.up==='camera'?2*Math.atan(12/OPTIC.cam.f)/D2R:OPTIC.fov0;
-  OPTIC.toggle=async id=>{ if(OPTIC.up){ OPTIC.lower(); return; } if(OPTIC.busy)return; OPTIC.busy=true;
+  OPTIC.toggle=async id=>{ '@later'; if(OPTIC.up){ OPTIC.lower(); return; } if(OPTIC.busy)return; OPTIC.busy=true;
     try{ view=made[id]||(made[id]=await views[id]()); } catch(e){ OPTIC.busy=false; say('IT WILL NOT COME UP RIGHT NOW. TRY AGAIN.','#c8a090'); return; } OPTIC.busy=false;
     if(WIELD.on!==id)return; OPTIC.up=id; OPTIC.fov0=PCAM.fov; OPTIC.view0=UI.view; if(UI.view!=='first')UI.setView('first'); PCAM.fov=OPTIC.fovOf(); PCAM.updateProjectionMatrix(); UI.lookK=OPTIC.fovOf()/OPTIC.fov0; view.show(true); };
   OPTIC.lower=()=>{ if(!OPTIC.up)return; const was=OPTIC.up; OPTIC.up=null; PCAM.fov=OPTIC.fov0; PCAM.updateProjectionMatrix(); UI.lookK=1; renderer.domElement.style.filter=''; if(made[was])made[was].show(false); if(OPTIC.view0&&OPTIC.view0!=='first'&&UI.view==='first')UI.setView(OPTIC.view0); };
@@ -111,7 +111,7 @@ import {PHOTOS} from './146m-prints.js';
   const saveCam=()=>OWNED.set('camera',JSON.stringify(OPTIC.cam));
   // the circle of confusion on the film (mm) for a subject at s metres with the lens focused at sf metres
   OPTIC.coc=(f,N,sf,s)=>{ const S=s*1000, F=sf===Infinity?1e9:sf*1000; return f*f/N*Math.abs(S-F)/(S*Math.max(F-f,1)); };
-  OPTIC.shoot=()=>{ const C=OPTIC.cam; if(OPTIC.up!=='camera')return; if(C.left<=0)return say('THE ROLL IS FINISHED. HOLD R TO WIND IN A NEW ONE.','#c8a090');
+  OPTIC.shoot=()=>{ '@later'; const C=OPTIC.cam; if(OPTIC.up!=='camera')return; if(C.left<=0)return say('THE ROLL IS FINISHED. HOLD R TO WIND IN A NEW ONE.','#c8a090');
     const dEV=OPTIC.ev()-OPTIC.evSet(C.N,C.t,C.iso), H=144, W=216, fov=2*Math.atan(12/C.f), cam=SHARED.cam;
     const blurM=(SH.w+OPTIC.turn)*C.t/fov*H, dist=OPTIC.dist??1000, blurD=OPTIC.coc(C.f,C.N,DISTS[C.s],Math.max(dist,.5))/24*H;
     const fx=(g,cv)=>{ if(blurD>.4){ const c2=document.createElement('canvas'); c2.width=W; c2.height=H; const g2=c2.getContext('2d'); g2.filter='blur('+Math.min(8,blurD/2).toFixed(1)+'px)'; g2.drawImage(cv,0,0); g.drawImage(c2,0,0); }

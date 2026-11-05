@@ -41,7 +41,7 @@ const SHOPS3={}; window.SHOPS3=SHOPS3;
     MSHOP.kit.boards.drop=k0.drop; } }
   /* ---------- FIX-IT ---------- */
   SHOPS3.bin=()=>{ if(INV.cash<6)return say('THE BIN IS $6 A GO.','#c8a090'); const ks=Object.keys(FIXES), k=ks[Math.floor(Math.random()*ks.length)]; INV.cash-=6; INV.add(k,1); say(`YOU DIG OUT ${FORAGE.name(k)}. $6. (MEND IT AT THE BENCH.)`); return k; };
-  SHOPS3.mend=()=>{ const k=Object.keys(FIXES).find(j=>(INV.items[j]||0)>0); MINI.open(GAMES.solder({title:'MEND IT: '+(k?FORAGE.name(k):'NOTHING TO MEND'),
+  SHOPS3.mend=()=>{ '@later'; const k=Object.keys(FIXES).find(j=>(INV.items[j]||0)>0); MINI.open(GAMES.solder({title:'MEND IT: '+(k?FORAGE.name(k):'NOTHING TO MEND'),
     can:()=>!k?'NOTHING BROKEN TO MEND: THE BARGAIN BIN BY THE DOOR HAS SOME.':!(INV.items.fix_parts>0)?'YOU NEED PARTS: THE SCREW JARS ON THE BENCH ($1).':'',
     pay:()=>{ FORAGE.take(k,1); FORAGE.take('fix_parts',1); },end:S=>{ SHOPS3.last={mend:S.score,k}; if(S.score){ INV.add(FIXES[k],1); say(`IT WORKS: ${FORAGE.name(FIXES[k])}. THE FIXER WILL BUY IT.`); } else say('IT IS SCRAP NOW. THE FIXER SHAKES HIS HEAD.','#c8a090'); }})); };
   { const k0=MSHOP.kit.fixit; if(k0){ MSHOP.kit.fixit=A=>{ '@later'; k0(A); kitOf(A,({box,cyl,ball,glow,pic,words,use,seat,own},t,sol)=>{ const C={steel:0x8a8c90,dark:0x2a2a2c,wood:0x6a4a2a,glass:0xcfe3ea};

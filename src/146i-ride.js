@@ -17,14 +17,14 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
     (WIELD.pend=WIELD.pend||[]).push([id,w]); if(WIELD.kind)WIELD.kind(id,w); };
   const indoors=()=>{ const c=ROOMS.cur, o=c&&c.off&&ROOMS.off[c.off]; return !!c&&!(o&&o.outdoor); };   // an off-map place can be outdoors (ROOMS.off[id].outdoor): ride there
   const free=()=>!(RAG.on||st.water&&st.water.in||st.climb||st.hang||st.sit||VIT.dead||VIT.out>0);
-  RIDE.mount=id=>{ const k=kindOf(id); if(!k||!k.world&&!FORAGE.has(id))return false; if(indoors()&&!k.inside)return say('NOT INDOORS. TAKE IT OUTSIDE.','#c8a090'),false; if(!free())return false;
+  RIDE.mount=id=>{ '@later'; const k=kindOf(id); if(!k||!k.world&&!FORAGE.has(id))return false; if(indoors()&&!k.inside)return say('NOT INDOORS. TAKE IT OUTSIDE.','#c8a090'),false; if(!free())return false;
     RIDE.on=id; RIDE.kind=k; RIDE.v=0; RIDE.hd=SHARED.heading; RIDE.z=0; RIDE.vz=0; RIDE.lean=0; RIDE.dry=!!k.dry; RIDE.ease=k.ease||20; RIDE.t0=performance.now(); st.move=null;
     st.ride=k.pose(RIDE); SHARED.target=null; if(k.on)k.on(RIDE); share(); say(k.onSay||'YOU STEP ON.'); if(SFX.play)SFX.play('step',{vol:.4,pitch:.7}); return true; };
-  RIDE.off=(why,fall)=>{ if(!RIDE.on)return; const k=RIDE.kind, id=RIDE.on; RIDE.on=null; RIDE.kind=null; RIDE.dry=false; RIDE.ease=20; st.ride=null; RIDE.lift=0; if(k&&k.off)k.off(id,fall); const m=M.get(id); if(m)m.visible=false; share();
+  RIDE.off=(why,fall)=>{ '@later'; if(!RIDE.on)return; const k=RIDE.kind, id=RIDE.on; RIDE.on=null; RIDE.kind=null; RIDE.dry=false; RIDE.ease=20; st.ride=null; RIDE.lift=0; if(k&&k.off)k.off(id,fall); const m=M.get(id); if(m)m.visible=false; share();
     if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=true; };
   RIDE.floor=g=>{ const k=RIDE.kind; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
   // the board's own motion: it keeps its speed, carves toward where you steer, brakes when you pull back; a wall at speed throws you off
-  RIDE.steer=(dt,mx,mz)=>{ const R=RIDE, k=R.kind, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
+  RIDE.steer=(dt,mx,mz)=>{ '@later'; const R=RIDE, k=R.kind, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
     const ml=Math.hypot(mx,mz), vmax=(+prop(id,'speed')||5)*T, acc=(k.acc||3)*T, len=+prop(id,'len')||.8, input={mx,mz,ml};
     if(k.step&&k.step(R,dt,input))return;
     if(ml>0){ const want=Math.atan2(mx,mz), e=wrap(want-R.hd), back=Math.abs(e)>2.4&&R.v>.5*T;
@@ -39,7 +39,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   /* ---------- drawn each frame: yours under you, theirs under them ---------- */
   const theirs=new Map(); let shT=0;
   const share=()=>{ if(ONLINE.on&&ONLINE.send)ONLINE.send({t:'ride',b:RIDE.on||null}); shT=4; };
-  ONLINE.hear.ride=msg=>{ const o=ONLINE.others&&ONLINE.others.get(msg.id), id=typeof msg.b==='string'&&kindOf(msg.b)?msg.b:null, was=theirs.get(msg.id);
+  ONLINE.hear.ride=msg=>{ '@later'; const o=ONLINE.others&&ONLINE.others.get(msg.id), id=typeof msg.b==='string'&&kindOf(msg.b)?msg.b:null, was=theirs.get(msg.id);
     if(was&&(!id||was.id!==id)){ was.m.removeFromParent(); theirs.delete(msg.id); if(o&&o.S)o.S.ride=null; }
     if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=k.make(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T}}); } };
   const deck=()=>RIG.RIDEG.deck*(W3.group.scale.y||.046);

@@ -27,7 +27,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     ['g_tulip','TULIP BUNCH','garden',[30,75],{fl_tulip:5},'sells for $40'],['g_aster','ASTER SPRAY','garden',[35,80],{fl_aster:3,fl_goldenrod:1},'sells for $36'],
     ['g_garden','GARDEN BOUQUET','garden',[40,85],{fl_zinnia:2,fl_marigold:2,fl_sunflower:1},'sells for $48'],['g_rose','HALF DOZEN ROSES','garden',[60,105],{fl_rose:6},'sells for $110'],
     ['g_corsage','ORCHID CORSAGE','garden',[70,110],{fl_slipper:1,fl_violet:2},'sells for $120']];
-  INSPECT.kinds.push({is:id=>/^(fl|sd)_/.test(id)&&FL[id.slice(3)]||!!BQ.find(r=>r[0]===id),make:id=>{ const P=INSPECT.part;
+  INSPECT.kinds.push({is:id=>/^(fl|sd)_/.test(id)&&FL[id.slice(3)]||!!BQ.find(r=>r[0]===id),make:id=>{ '@later'; const P=INSPECT.part;
     if(id.startsWith('sd_'))return INSPECT.shape('packet',FL[id.slice(3)][3],0xf2ead6);
     const bq=BQ.find(r=>r[0]===id); if(bq)return INSPECT.shape('bouquet',Object.keys(bq[4]).map(f=>FL[f.slice(3)][3]),0xe8dcc0);
     const [, , ,hc,cc,[r,hh,st,cr]]=FL[id.slice(3)], R=r*1.6, H=Math.max(.06,st*1.25), g=new THREE.Group();

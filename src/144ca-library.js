@@ -29,7 +29,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^lb_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
   if(S.b.length)load().catch(()=>{});
   const borrowed=id=>S.b.includes(id);
-  LIB.borrow=id=>{ if(borrowed(id))return say('THAT ONE IS ALREADY IN YOUR PACK.'); if(S.b.length>=LIB.max)return say('FIVE AT A TIME. BRING ONE BACK FIRST.','#c8a090');
+  LIB.borrow=id=>{ '@later'; if(borrowed(id))return say('THAT ONE IS ALREADY IN YOUR PACK.'); if(S.b.length>=LIB.max)return say('FIVE AT A TIME. BRING ONE BACK FIRST.','#c8a090');
     S.b.push(id); save(); FORAGE.give('lb_'+id,1); if(FORAGE.draw)FORAGE.draw(); say('BORROWED: '+LIB.by[id].t+'. READ IT ANYWHERE FROM YOUR PACK.'); if(SFX)SFX.play('page',{vol:.5}); };
   LIB.giveBack=id=>{ if(!borrowed(id))return; S.b=S.b.filter(x=>x!==id); save(); if(FORAGE.has('lb_'+id))FORAGE.take('lb_'+id,FORAGE.has('lb_'+id)); if(FORAGE.draw)FORAGE.draw(); say('RETURNED: '+LIB.by[id].t+'.'); };
 
@@ -41,12 +41,12 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   document.head.appendChild(css); document.body.appendChild(P);
   let tab='ALL', q='';
   const list=()=>{ const B=LIB.data.books; return B.filter(b=>(tab==='ALL'||(tab==='BORROWED'?borrowed(b.id):String(b.genre).toUpperCase()===tab))&&(!q||(b.t+' '+b.a).toLowerCase().includes(q.toLowerCase()))); };
-  const drawCat=()=>{ const G=['ALL','BORROWED',...[...new Set(LIB.data.books.map(b=>String(b.genre).toUpperCase()))]];
+  const drawCat=()=>{ '@later'; const G=['ALL','BORROWED',...[...new Set(LIB.data.books.map(b=>String(b.genre).toUpperCase()))]];
     P.innerHTML=`<div><b>THE BOOKSTORE · A LENDING LIBRARY</b> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="margin:6px 0;color:#6a4a32">${LIB.data.books.length} BOOKS, ALL FREE TO BORROW. YOU HAVE ${S.b.length} OF ${LIB.max}.</div>
       <div>${G.map(g=>`<button class="btn ${g===tab?'on':''}" data-t="${esc(g)}">${esc(g)}</button>`).join(' ')} <input data-q placeholder="TITLE OR AUTHOR" value="${esc(q)}"></div>
       <div class="grid">${list().map(b=>`<div class="bk ${borrowed(b.id)?'mine':''}" data-b="${b.id}"><img loading="lazy" alt="" src="${esc(cover(b.id))}"><div>${esc(b.t)}<br><span style="color:#7a5a40">${esc(b.a)}</span></div></div>`).join('')||'<div>NOTHING ON THE SHELF BY THAT NAME.</div>'}</div>`; };
-  const drawCard=id=>{ const b=LIB.by[id], m=borrowed(id), pg=S.p[id];
+  const drawCard=id=>{ '@later'; const b=LIB.by[id], m=borrowed(id), pg=S.p[id];
     P.innerHTML=`<div><button class="btn" data-a="back">&lt; THE SHELVES</button> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap"><img src="${esc(cover(id))}" alt="" style="width:200px;border:2px solid #3b2a1e;background:#cfc4ae">
       <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)} · ${b.y}</div>
@@ -57,7 +57,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   let atShop=false;
   LIB.open=(id,shop=true)=>load().then(()=>{ atShop=shop; P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
   LIB.close=()=>{ P.hidden=true; };
-  P.addEventListener('click',e=>{ const t=e.target.closest('[data-a],[data-t],[data-b]'); if(!t)return; const a=t.dataset.a;
+  P.addEventListener('click',e=>{ '@later'; const t=e.target.closest('[data-a],[data-t],[data-b]'); if(!t)return; const a=t.dataset.a;
     if(a==='x')return LIB.close(); if(a==='back')return drawCat(); if(t.dataset.t){ tab=t.dataset.t; return drawCat(); }
     const id=t.dataset.b; if(a==='read'){ LIB.close(); return LIB.read(id); } if(a==='bor'){ if(!atShop)return say('BORROW IT AT THE BOOKSTORE.'); LIB.borrow(id); return drawCard(id); } if(a==='ret'){ LIB.giveBack(id); return drawCard(id); }
     if(id)drawCard(id); });
@@ -80,11 +80,11 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const url=b=>location.protocol==='file:'?'https://www.gutenberg.org/cache/epub/'+b.pg+'/pg'+b.pg+'.txt':'/book/'+b.pg+'.txt';
   LIB.url=url;
   // the book's own words: without Project Gutenberg's header and licence, its paragraphs joined back from the hard-wrapped lines
-  const clean=txt=>{ txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
+  const clean=txt=>{ '@later'; txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
   // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
   const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, ROMAN=/^[ivxlcdm]+\.?$/i;
-  const chapters=P=>{ const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&(HEAD.test(p)||ROMAN.test(p)))c.push(i); });
+  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&(HEAD.test(p)||ROMAN.test(p)))c.push(i); });
     const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
     let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
     for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
@@ -98,17 +98,17 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const theme=()=>{ const T=THEMES[SET().theme]||THEMES.paper; for(const k in T)R.style.setProperty('--'+k,T[k]); };
   const pct=()=>{ const sc=R.querySelector('.scroll'), C=cur.ch[cur.c], end=(cur.ch[cur.c+1]||{i:cur.P.length}).i, f=sc&&sc.scrollHeight>sc.clientHeight?sc.scrollTop/(sc.scrollHeight-sc.clientHeight):0; return Math.round(((C.i+(end-C.i)*f)/cur.P.length)*1000)/10; };
   const bars=()=>{ const n=cur.ch.length, p=pct(); const lab=R.querySelector('[data-pos]'); if(lab)lab.textContent=`CH ${cur.c+1} OF ${n} · ${p}%`; const sl=R.querySelector('[data-k=go]'); if(sl&&document.activeElement!==sl)sl.value=p; };
-  const show=(c,toPara)=>{ cur.c=Math.max(0,Math.min(cur.ch.length-1,c)); const C=cur.ch[cur.c], end=(cur.ch[cur.c+1]||{i:cur.P.length}).i, Z=SET();
+  const show=(c,toPara)=>{ '@later'; cur.c=Math.max(0,Math.min(cur.ch.length-1,c)); const C=cur.ch[cur.c], end=(cur.ch[cur.c+1]||{i:cur.P.length}).i, Z=SET();
     const body=`<h2 style="font-size:${Z.fs*1.25}px">${esc(C.t)}</h2>`+cur.P.slice(C.i+(C.sk||0),end).map((p,k)=>`<p data-i="${C.i+(C.sk||0)+k}">${esc(p)}</p>`).join('');
     const sc=R.querySelector('.scroll'); sc.innerHTML=`<div class="pg" style="max-width:${Z.w}em;font-size:${Z.fs}px;line-height:${Z.lh};font-family:${FACES[Z.face]}">${body}<div class="end">${cur.c<cur.ch.length-1?`<button data-a="nextch">NEXT: ${esc(cur.ch[cur.c+1].t.slice(0,40))} &gt;</button>`:'<b>THE END</b>'}</div></div>`;
     sc.scrollTop=0; if(toPara!=null){ const el=sc.querySelector(`p[data-i="${toPara}"]`); if(el){ sc.scrollTop=el.offsetTop-20; } }
     bars(); keep(); };
-  const frame=()=>{ const Q=posOf();
+  const frame=()=>{ '@later'; const Q=posOf();
     R.innerHTML=`<div class="bar"><span class="t">${esc(cur.b.t)} · ${esc(cur.b.a)}</span><button data-a="toc">CONTENTS</button><button data-a="find">SEARCH</button><button data-a="mark">★ MARK</button><button data-a="set">Aa</button><button data-a="x">CLOSE</button></div>
       <div class="scroll" tabindex="0"></div>
       <div class="bar"><button data-a="prevch">&lt; CH</button><input type="range" min="0" max="100" step=".1" value="0" data-k="go" aria-label="Where in the book"><span data-pos style="min-width:140px;text-align:center"></span><button data-a="nextch">CH &gt;</button></div>`;
     R.querySelector('.scroll').addEventListener('scroll',()=>{ if(!cur)return; bars(); keepSoon(); }); show(Q.c||0,Q.p); };
-  const sideDraw=()=>{ const old=R.querySelector('.side'); if(old)old.remove(); if(!side)return; const d=document.createElement('div'); d.className='side'; const Q=posOf(), Z=SET();
+  const sideDraw=()=>{ '@later'; const old=R.querySelector('.side'); if(old)old.remove(); if(!side)return; const d=document.createElement('div'); d.className='side'; const Q=posOf(), Z=SET();
     if(side==='toc')d.innerHTML=`<div style="font:11px Silkscreen,monospace;margin-bottom:8px">CONTENTS</div>`+cur.ch.map((c,k)=>`<div class="it ${k===cur.c?'cur':''}" data-ch="${k}">${esc(c.t)}</div>`).join('')+(Q.m&&Q.m.length?`<div style="font:11px Silkscreen,monospace;margin:14px 0 6px">BOOKMARKS</div>`+Q.m.map((m,k)=>`<div class="it" data-bm="${k}">★ ${esc(cur.ch[m.c]?cur.ch[m.c].t:'')} — ${esc((cur.P[m.p]||'').slice(0,60))}…</div>`).join(''):'');
     if(side==='find')d.innerHTML=`<div style="font:11px Silkscreen,monospace;margin-bottom:8px">SEARCH THE BOOK</div><input type="text" data-k="q" placeholder="a word or phrase"><div data-res></div>`;
     if(side==='set')d.innerHTML=`<div style="font:11px Silkscreen,monospace">THE PAGE</div>
@@ -125,7 +125,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
     catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
   LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };
-  R.addEventListener('click',e=>{ const t=e.target.closest('[data-a],[data-ch],[data-bm],[data-hit],[data-s]'); if(!t)return; const a=t.dataset.a;
+  R.addEventListener('click',e=>{ '@later'; const t=e.target.closest('[data-a],[data-ch],[data-bm],[data-hit],[data-s]'); if(!t)return; const a=t.dataset.a;
     if(a==='x')return LIB.closeBook(); if(!cur)return;
     if(a==='prevch')return show(cur.c-1); if(a==='nextch'){ if(SFX)SFX.play('page',{vol:.35,vary:.2}); return show(cur.c+1); }
     if(a==='toc'||a==='find'||a==='set'){ side=side===a?null:a; return sideDraw(); }
@@ -135,7 +135,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     if(t.dataset.hit!=null){ goPara(+t.dataset.hit); return; }
     if(t.dataset.s){ const Z=SET(), k=t.dataset.s, v=t.dataset.v; if(k==='fs')Z.fs=Math.max(13,Math.min(32,Z.fs+ +v)); else if(k==='lh'||k==='w')Z[k]=+v; else Z[k]=v; save(); keep(); theme(); const Q=posOf(); show(cur.c,Q.p); sideDraw(); } });
   R.addEventListener('input',e=>{ if(!cur||e.target.dataset.k!=='go')return; const want=+e.target.value/100*cur.P.length; let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=want)c=k; const i=Math.max(cur.ch[c].i,Math.floor(want)); show(c,i); e.target.value=pct(); });
-  for(const ev of ['keydown','keyup','keypress'])R.addEventListener(ev,e=>{ const typing=e.target&&e.target.tagName==='INPUT'&&e.target.type==='text';
+  for(const ev of ['keydown','keyup','keypress'])R.addEventListener(ev,e=>{ '@later'; const typing=e.target&&e.target.tagName==='INPUT'&&e.target.type==='text';
     if(ev==='keydown'&&cur&&!typing){ const sc=R.querySelector('.scroll'), k=e.key;
       if(k==='Escape'){ if(side){ side=null; sideDraw(); } else LIB.closeBook(); } else if(k==='ArrowRight')show(cur.c+1); else if(k==='ArrowLeft')show(cur.c-1);
       else if(k===' '||k==='PageDown'){ sc.scrollTop+=sc.clientHeight*.9; e.preventDefault(); } else if(k==='PageUp'){ sc.scrollTop-=sc.clientHeight*.9; e.preventDefault(); } else if(k==='ArrowDown')sc.scrollTop+=60; else if(k==='ArrowUp')sc.scrollTop-=60; }
@@ -150,10 +150,10 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const BC={W:.62,H:2.05,D:.32,SH:[.08,.55,1.02,1.49],IN:.56,BW:.02};   // metres: the case, its shelves' tops, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
   const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.33+hsh(b.id)*.08,d:.23+hsh(b.t)*.05});
-  LIB.shelfOf=C=>{ const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
+  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
     return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); }); };
   // one spine on a canvas: w x h px, x/y its corner
-  const paintSpine=(g,x,y,w,h,b,im)=>{ g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);
+  const paintSpine=(g,x,y,w,h,b,im)=>{ '@later'; g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);
     if(im){ g.drawImage(im,x,y,w,h); g.restore(); return; }
     for(let i=0;i<w*h/30;i++){ g.fillStyle=`rgba(${Math.random()<.5?0:255},${Math.random()<.5?0:255},${Math.random()<.5?0:255},.05)`; g.fillRect(x+Math.random()*w,y+Math.random()*h,1,1); }
     g.fillStyle='rgba(0,0,0,.22)'; g.fillRect(x,y,w*.08,h); g.fillRect(x+w*.92,y,w*.08,h); g.fillStyle='rgba(255,255,255,.07)'; g.fillRect(x+w*.12,y,w*.08,h);
@@ -168,7 +168,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     g.save(); g.translate(x+w/2,(a0+a1)/2); g.rotate(Math.PI/2); g.font=`${afs}px Georgia,serif`; g.fillText(A,0,0); g.restore(); g.restore(); };
   const IMS={}, spineIm=id=>{ const f=spineF(id); if(!f)return null; if(!IMS[id]){ const im=new Image(); im.src=f; IMS[id]=im; } return IMS[id].complete&&IMS[id].naturalWidth?IMS[id]:null; };
   // the case's mesh, in metres (x across, y up, z out toward the room)
-  const caseMesh=C=>{ const G=new THREE.Group(), wood=new THREE.MeshLambertMaterial({color:0x4a2e1c}), boards=[];
+  const caseMesh=C=>{ '@later'; const G=new THREE.Group(), wood=new THREE.MeshLambertMaterial({color:0x4a2e1c}), boards=[];
     const bx=(w,h,d,x,y,z)=>{ const g=new THREE.BoxGeometry(w,h,d); g.translate(x,y,z); boards.push(g); };
     bx(BC.BW,BC.H,BC.D,-BC.W/2+BC.BW/2,BC.H/2,0); bx(BC.BW,BC.H,BC.D,BC.W/2-BC.BW/2,BC.H/2,0); bx(BC.W,BC.H,.015,0,BC.H/2,-BC.D/2+.008); bx(BC.W+.04,.05,BC.D+.03,0,BC.H+.025,.01); bx(BC.W,.08,BC.D,0,.04,0);
     for(const y of BC.SH.slice(1))bx(BC.W-.02,BC.BW,BC.D-.02,0,y-BC.BW/2,0);
@@ -198,7 +198,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   VW.appendChild(VB); { const st=document.createElement('style'); st.textContent='#libv .btn{font:inherit;padding:6px 10px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libv[hidden]{display:none!important}'; document.head.appendChild(st); }
   const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[],row:null,rot:0};
   let vpend=false; const vdraw=()=>{ if(vpend)return; vpend=true; requestAnimationFrame(()=>{ vpend=false; if(!VW.hidden)vpaint(); }); };   // one redraw a frame: the filter is a pass over every pixel
-  const vpaint=()=>{ const C=LIB.data.cases[V.ci], dpr=Math.min(2,window.devicePixelRatio||1), w=VC.clientWidth, h=VC.clientHeight; if(VC.width!==w*dpr||VC.height!==h*dpr){ VC.width=w*dpr; VC.height=h*dpr; }
+  const vpaint=()=>{ '@later'; const C=LIB.data.cases[V.ci], dpr=Math.min(2,window.devicePixelRatio||1), w=VC.clientWidth, h=VC.clientHeight; if(VC.width!==w*dpr||VC.height!==h*dpr){ VC.width=w*dpr; VC.height=h*dpr; }
     const g=VC.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.fillStyle='#2a1810'; g.fillRect(0,0,w,h);
     const k=V.s, X=m=>w/2+V.x+m*k, Y=m=>h/2+V.y-(m-BC.H/2)*k;   // metres to the screen
     g.save(); g.translate(w/2,h/2); g.rotate(-V.rot*Math.PI/180); g.translate(-w/2,-h/2);   // ROTATE turns the case so the spines read across
@@ -211,7 +211,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     if(PS2.on&&PS2.img){ const W_=VC.width, H_=VC.height, im=g.getImageData(0,0,W_,H_); PS2.img(im.data,W_,H_,480); g.putImageData(im,0,0); }   // the game's own look, at MED's 480 lines
     g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle='rgba(236,229,211,.9)'; g.font='12px Silkscreen,monospace'; g.fillText(`${C.name} · CASE ${V.ci+1} OF ${LIB.data.cases.length}${V.row!=null?' · SHELF '+(4-V.row)+' FROM THE TOP':''} · CLICK A BOOK`,16,24); };
   const rowTop=r=>r<3?BC.SH[r+1]:BC.H-.05;
-  const vfit=()=>{ const a=V.rot*Math.PI/180, c=Math.abs(Math.cos(a)), sn=Math.abs(Math.sin(a)), cw=VC.clientWidth, ch=VC.clientHeight;
+  const vfit=()=>{ '@later'; const a=V.rot*Math.PI/180, c=Math.abs(Math.cos(a)), sn=Math.abs(Math.sin(a)), cw=VC.clientWidth, ch=VC.clientHeight;
     const bw=BC.W+.2, bh=V.row==null?BC.H+.3:rowTop(V.row)-BC.SH[V.row]+.12, ew=bw*c+bh*sn, eh=bw*sn+bh*c;   // the box to show, turned
     V.fit=Math.min(cw/ew,ch/eh)*.92; V.s=V.fit; V.x=0; V.y=V.row==null?0:((BC.SH[V.row]+rowTop(V.row))/2-BC.H/2)*V.s; };
   const vopen=(ci,row)=>{ if(row!==undefined)V.row=row; V.ci=(ci+LIB.data.cases.length)%LIB.data.cases.length; V.rows=LIB.shelfOf(LIB.data.cases[V.ci]); VW.hidden=false; vfit(); vdraw(); };
@@ -221,11 +221,11 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   let drag=null, moved=0; const pts=new Map();
   const unturn=(x,y)=>{ const a=V.rot*Math.PI/180, cx=VC.clientWidth/2, cy=VC.clientHeight/2, dx=x-cx, dy=y-cy; return [cx+dx*Math.cos(a)-dy*Math.sin(a),cy+dx*Math.sin(a)+dy*Math.cos(a)]; };
   VC.addEventListener('pointerdown',e=>{ VC.setPointerCapture(e.pointerId); pts.set(e.pointerId,[e.offsetX,e.offsetY]); drag=[e.offsetX,e.offsetY,V.x,V.y,pts.size===2?Math.hypot(...[...pts.values()].reduce((a,p)=>[a[0]-p[0],a[1]-p[1]],[0,0])):0]; moved=0; VC.style.cursor='grabbing'; });
-  VC.addEventListener('pointermove',e=>{ if(!drag)return; const prev=pts.get(e.pointerId); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
+  VC.addEventListener('pointermove',e=>{ '@later'; if(!drag)return; const prev=pts.get(e.pointerId); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
     if(pts.size===2){ const [a,b]=[...pts.values()], d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(prev&&drag.pd)vzoom(d/drag.pd,(a[0]+b[0])/2,(a[1]+b[1])/2); drag.pd=d; moved=99; return; }
     moved+=Math.abs(e.movementX||0)+Math.abs(e.movementY||0); { const a=V.rot*Math.PI/180, dx=e.offsetX-drag[0], dy=e.offsetY-drag[1]; V.x=drag[2]+dx*Math.cos(a)-dy*Math.sin(a); V.y=drag[3]+dx*Math.sin(a)+dy*Math.cos(a); } vdraw(); });
   VC.addEventListener('pointerup',e=>{ pts.delete(e.pointerId); VC.style.cursor='grab'; if(drag&&moved<6&&!pts.size){ const [px,py]=unturn(e.offsetX,e.offsetY), h=V.hit.find(([,x,y,w,hh])=>px>=x&&px<=x+w&&py>=y&&py<=y+hh); if(h){ if(SFX)SFX.play('page',{vol:.4}); LIB.open(h[0]); } } if(!pts.size)drag=null; });
-  VB.addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b)return; const a=b.dataset.v; if(a==='x')LIB.closeLook(); else if(a==='in')vzoom(1.5); else if(a==='out')vzoom(1/1.5); else if(a==='fit'){ vfit(); vdraw(); } else if(a==='prev')vopen(V.ci-1); else if(a==='next')vopen(V.ci+1); else if(a==='up')vshelf(1); else if(a==='down')vshelf(-1); else if(a==='rot'){ V.rot=(V.rot+45)%135; vfit(); vdraw(); } });
+  VB.addEventListener('click',e=>{ '@later'; const b=e.target.closest('[data-v]'); if(!b)return; const a=b.dataset.v; if(a==='x')LIB.closeLook(); else if(a==='in')vzoom(1.5); else if(a==='out')vzoom(1/1.5); else if(a==='fit'){ vfit(); vdraw(); } else if(a==='prev')vopen(V.ci-1); else if(a==='next')vopen(V.ci+1); else if(a==='up')vshelf(1); else if(a==='down')vshelf(-1); else if(a==='rot'){ V.rot=(V.rot+45)%135; vfit(); vdraw(); } });
   const vshelf=d=>{ V.row=V.row==null?(d>0?3:0):Math.max(0,Math.min(3,V.row+d)); vfit(); vdraw(); };   // up and down the same case, a shelf at a time
   for(const ev of ['keydown','keyup'])VW.addEventListener(ev,e=>{ if(ev==='keydown'&&e.key==='Escape')LIB.closeLook(); e.stopPropagation(); });
   addEventListener('keydown',e=>{ if(VW.hidden||!LIB.data)return; const m={ArrowUp:()=>vshelf(1),ArrowDown:()=>vshelf(-1),ArrowLeft:()=>vopen(V.ci-1),ArrowRight:()=>vopen(V.ci+1)}[e.key]; if(m){ m(); e.preventDefault(); e.stopPropagation(); } },true);
@@ -312,7 +312,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   { const FJ=__LAZY__("data/bookfront.json"); let done=false, chk=0;
     SYS.add('places',dt=>{ if(done||(chk-=dt||0)>0)return; chk=1; const at=MSHOP.at&&MSHOP.at.books, o=ROOMS.off&&ROOMS.off.books; if(!at||!o)return;
       if(Math.hypot(pos.x-at.door[0],pos.z-at.door[1])>60*IKIT.MW)return; done=true;
-      FJ().then(Dd=>{ const MW=IKIT.MW, d=at.door, n0=[o.out[0]-d[0],o.out[1]-d[1]], nl=Math.hypot(n0[0],n0[1])||1, n=[n0[0]/nl,n0[1]/nl], tg=[n[1],-n[0]], G=new THREE.Group(); G.name='books-front'; scene.add(G);
+      FJ().then(Dd=>{ '@later'; const MW=IKIT.MW, d=at.door, n0=[o.out[0]-d[0],o.out[1]-d[1]], nl=Math.hypot(n0[0],n0[1])||1, n=[n0[0]/nl,n0[1]/nl], tg=[n[1],-n[0]], G=new THREE.Group(); G.name='books-front'; scene.add(G);
         const put=(k,a,b,h,ry=0)=>{ const g=KIT.decode(Dd[k]); g.computeBoundingBox(); const bb=g.boundingBox, me=new THREE.Mesh(g,KIT.mat), grp=new THREE.Group(); me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2); me.castShadow=me.receiveShadow=true; grp.add(me);
           const x=d[0]+n[0]*a*MW+tg[0]*b*MW, z=d[1]+n[1]*a*MW+tg[1]*b*MW; grp.scale.setScalar(MW); grp.position.set(x,(SHARED.groundY?SHARED.groundY(x,z):0)+h*MW,z); grp.rotation.y=Math.atan2(n[0],n[1])+ry; G.add(grp); return grp; };
         put('sign',.35,4.6,2.0,Math.PI/2); put('trolley',1.1,3.4,0,Math.PI/2); for(const b of [-1.5,1.5])put('hangplant',.4,b,1.7); for(const b of [-2.6,2.6])put('planter',.25,b,0); }).catch(()=>{ done=false; }); },'144ca-library'); }

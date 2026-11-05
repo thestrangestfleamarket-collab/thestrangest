@@ -92,17 +92,17 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const HUD=document.createElement('div'); HUD.id='carhud'; HUD.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:12;display:none;gap:10px;align-items:center;padding:6px 10px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#ece5d3;background:#0e1016e0;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   const BTN='font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer';
   HUD.innerHTML='<span></span><button data-r style="'+BTN+'">RADIO (T)</button><button data-o style="'+BTN+'">GET OUT (F)</button>'; document.body.appendChild(HUD); HUD.querySelector('[data-o]').onclick=()=>getOut(); HUD.querySelector('[data-r]').onclick=()=>RAD.next();
-  const board=id=>{ const C=CARS.get(id), k=C&&kindFor(C.model); if(!k)return; C.by=ONLINE.me||'me'; at(C); pos.x=C.x; pos.z=C.z; SHARED.py=SHARED.groundY(C.x,C.z); SHARED.heading=C.hd; k.V.x=C.x; k.V.z=C.z; k.V.hd=C.hd;
+  const board=id=>{ '@later'; const C=CARS.get(id), k=C&&kindFor(C.model); if(!k)return; C.by=ONLINE.me||'me'; at(C); pos.x=C.x; pos.z=C.z; SHARED.py=SHARED.groundY(C.x,C.z); SHARED.heading=C.hd; k.V.x=C.x; k.V.z=C.z; k.V.hd=C.hd;
     if(!RIDE.mount('car:'+C.model)){ C.by=null; at(C); if(ONLINE.on)ONLINE.send({t:'car',k:id,on:0}); return; } k.V.x=k.V.z=k.V.hd=null; mine=C; HUD.querySelector('span').textContent=k.name+' · W GO · S BRAKE · A D STEER'; HUD.style.display='flex'; say('YOU GET IN THE '+k.name+'.'); };
-  const getIn=id=>{ const C=CARS.get(id); if(!C||!DATA)return; if(mine)return; if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(C.by&&C.by!==ONLINE.me)return say('SOMEONE IS DRIVING IT.','#c8a090');
+  const getIn=id=>{ '@later'; const C=CARS.get(id); if(!C||!DATA)return; if(mine)return; if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(C.by&&C.by!==ONLINE.me)return say('SOMEONE IS DRIVING IT.','#c8a090');
     if(ONLINE.on&&ONLINE.me){ want=id; ONLINE.send({t:'car',k:id,on:1}); setTimeout(()=>{ if(want===id){ want=null; say('THE CAR DID NOT ANSWER. TRY AGAIN.','#c8a090'); } },4000); } else board(id); };
-  const getOut=()=>{ const C=mine; if(!C)return; RAD.tune(C,0); mine=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
+  const getOut=()=>{ '@later'; const C=mine; if(!C)return; RAD.tune(C,0); mine=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
     const D=DATA.cars[C.model], s=(D.size[0]/2+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
   CAR.getIn=getIn; CAR.getOut=getOut; CAR.build=m=>DATA&&DATA.cars[m]?build(m):null;
   // in first person at the wheel, your eye is the driver's, in the seat behind the wheel
   const EYE=new THREE.Vector3(), Q=new THREE.Quaternion(), LOOK=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.24,Math.PI,0,'YXZ'));   // the car looks along +z, a camera along -z
   SYS.add('cam',()=>{ if(!mine||UI.view!=='first')return; const k=KINDS[mine.model], m=k&&k.m, cb=m&&m.userData.cab; if(!cb||!m.visible)return; m.updateMatrixWorld(true); SHARED.cam.position.copy(m.localToWorld(EYE.copy(cb.eye))); SHARED.cam.quaternion.copy(m.getWorldQuaternion(Q)).multiply(LOOK); SHARED.cam.updateMatrixWorld(); },'150p-cars');
-  ONLINE.hear.car=m=>{ const C=CARS.get(m.k); if(!C)return; if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
+  ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C)return; if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
     if(typeof m.at==='string')fromWorld('car:'+m.k,m.at); if(m.by&&m.by===ONLINE.me){ if(want===m.k){ want=null; board(m.k); } return; } if(mine===C&&!m.by)return; C.by=m.by||null; if(DATA)at(C); };
   addEventListener('keydown',e=>{ if(!mine||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; const k=(e.key||'').toLowerCase(); if(k==='f'){ e.preventDefault(); getOut(); } else if(k==='t'){ e.preventDefault(); RAD.next(); } });
   /* ---------- the radio: four stations of public-domain records (data/radio.json, the Library of Congress's National Jukebox), each one loop that
@@ -112,21 +112,21 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const stOf=C=>+((ONLINE.world||{})['radio:'+C.id])||0, station=n=>RAD.data&&RAD.data.stations[n-1];
   const nowAt=S=>{ const t=(Date.now()/1000)%S.len; let k=S.tracks[0]; for(const q of S.tracks)if(q.at<=t)k=q; return {t,k}; };
   const faces=C=>{ const out=[]; if(C.mesh&&C.mesh.userData.cab)out.push(C.mesh.userData.cab.radio); const k=KINDS[C.model]; if(mine===C&&k&&k.m&&k.m.userData.cab)out.push(k.m.userData.cab.radio); return out; };
-  const showRadio=C=>{ const S=station(stOf(C)); for(const f of faces(C))if(f){ const n=S?nowAt(S).k:null; f.draw(S?S.call:'',n?n.title:''); }
+  const showRadio=C=>{ '@later'; const S=station(stOf(C)); for(const f of faces(C))if(f){ const n=S?nowAt(S).k:null; f.draw(S?S.call:'',n?n.title:''); }
     if(mine===C){ const k=KINDS[C.model], n=S&&nowAt(S).k; HUD.querySelector('span').textContent=k.name+(S?' · '+S.call+' '+S.name+(n?' · '+n.title.toUpperCase()+(n.year?' ('+n.year+')':''):''):' · W GO · S BRAKE · A D STEER'); HUD.querySelector('[data-r]').textContent=S?'RADIO: '+S.call+' (T)':'RADIO (T)'; } };
   RAD.tune=(C,n)=>{ if(!C)return; if(stOf(C)===n)return; ONLINE.put('radio:'+C.id,n); showRadio(C); };
-  RAD.next=()=>{ if(!mine)return; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RAD.next(); }).catch(e=>console.warn('CARS: the radio did not load',e)); } return; }
+  RAD.next=()=>{ '@later'; if(!mine)return; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RAD.next(); }).catch(e=>console.warn('CARS: the radio did not load',e)); } return; }
     const n=(stOf(mine)+1)%(RAD.data.stations.length+1); RAD.tune(mine,n); const S=station(n); say(S?'THE RADIO: '+S.call+', '+S.name+'.':'THE RADIO IS OFF.'); };
   const wake=()=>{ if(RAD.ctx){ if(RAD.ctx.state!=='running')RAD.ctx.resume(); return; } if(!RAD.data)return; try{ RAD.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} };
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
-  const chan=S=>{ let c=RAD.ch[S.id]; if(c||!RAD.ctx)return c; const a=new Audio(RFILE[S.id]); a.preload='auto'; a.loop=true; const x=RAD.ctx, src=x.createMediaElementSource(a), lp=x.createBiquadFilter(), g=x.createGain(), pan=x.createStereoPanner();
+  const chan=S=>{ '@later'; let c=RAD.ch[S.id]; if(c||!RAD.ctx)return c; const a=new Audio(RFILE[S.id]); a.preload='auto'; a.loop=true; const x=RAD.ctx, src=x.createMediaElementSource(a), lp=x.createBiquadFilter(), g=x.createGain(), pan=x.createStereoPanner();
     lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(x.destination); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
   const NOW=()=>performance.now()/1000;
   const P3=new THREE.Vector3(); let rT=0, fT=0;
   // a room's source (a jukebox): heard whole by whoever is in its room
   const inRoom=s=>!!s.room&&((ROOMS.offIn&&ROOMS.offIn()===s.room)||!!(ROOMS.cur&&ROOMS.cur.id===s.room));
   RADIO.now=id=>{ const s=RADIO.src.get(id), S=s&&station(stOf(s)); if(!S)return null; const n=nowAt(S).k; return {call:S.call,name:S.name,title:n?n.title:''}; };
-  RADIO.next=id=>{ const s=RADIO.src.get(id); if(!s)return 0; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RADIO.next(id); }).catch(()=>{}); } return 0; }
+  RADIO.next=id=>{ '@later'; const s=RADIO.src.get(id); if(!s)return 0; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RADIO.next(id); }).catch(()=>{}); } return 0; }
     const n=(stOf(s)+1)%(RAD.data.stations.length+1); ONLINE.put('radio:'+id,n); const S=station(n); say(S?'THE JUKEBOX: '+S.call+', '+S.name+'.':'THE JUKEBOX IS OFF.'); return n; };
   SYS.add('life',dt=>{ if(!DATA||(rT-=dt||0)>0)return; rT=.1; const on=[...CARS.values()].filter(C=>stOf(C)&&(C===mine||C.by)), rooms=[...RADIO.src.values()].filter(s=>stOf(s)&&inRoom(s));
     if((on.length||rooms.length)&&!RAD.data&&!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; for(const C of CARS.values())showRadio(C); }).catch(()=>{}); }

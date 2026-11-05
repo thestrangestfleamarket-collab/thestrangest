@@ -40,7 +40,7 @@ function laundryBasket(x,y,f=[1,0]){ '@later'; SHARED.PNAME='laundry basket'; co
   B.push(fb(r,w,1-w,w,1-w,2,H+3,c.wash,(s,t,z)=>z<H-4?sh(c.wash,.8):c.wash,(t,d,X,Y)=>{ const n=hash(Math.floor(X*48),Math.floor(Y*48),1621); return n<.15?sh(c.wash,.86):n>.9?c.wash:sh(c.wash,.95); },hi));
   return prop(B); }
 function utilitySink(x,y,f=[1,0]){ SHARED.PNAME='utility sink'; const r=rect(x,y,f,1.1,.6), B=[], Z=24, BZ=10, w=.07;
-  const cab=(s,t,z,len)=>{ '@later'; const k=worn(c.white,t,z,1623); if(z<3)return sh(c.whiteD,.8); if(s!=='f')return k; const a=t*len*FP, W=len*FP;
+  const cab=(s,t,z,len)=>{ const k=worn(c.white,t,z,1623); if(z<3)return sh(c.whiteD,.8); if(s!=='f')return k; const a=t*len*FP, W=len*FP;
     if(z>=Z-1||(z>=Z-8&&z<Z-7)||(Math.abs(a-W/2)<.6&&z<Z-8)||a<1||a>=W-1)return c.whiteD;
     if(z>=Z-5.5&&z<Z-3.5&&Math.abs(a-W/2)<4)return c.pinkD; if(z>=Z-15&&z<Z-12&&(Math.abs(a-W*.42)<1||Math.abs(a-W*.58)<1))return c.pinkD;
     return k; };
@@ -324,20 +324,20 @@ function djLeaf(u,v,s,light,dens=.85,gapOK=0){ '@later'; const CW=7, CH=6, cj0=M
       let L=light*6+(h/dens-.5)*1.6+.5; if(edge(du-1,dv)||edge(du,dv-1))L+=1.3; if(edge(du+1,dv)||edge(du,dv+1))L-=2.2; if(dv>3&&(col===4||col===5))L-=.9;
       best=DJLEAF[Math.max(0,Math.min(7,Math.round(L)))]; bj=cj; } }
   return best||(gapOK?null:DJLEAF[Math.max(0,Math.round(light*2))]); }
-function djLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ const out=[];
+function djLathe(cx,cy,z0,z1,rf,col,dz=2,dw=.04){ '@later'; const out=[];
   for(let z=z0;z<z1-1e-9;z+=dz){ const za=z, zb=Math.min(z1,z+dz), r=rf((za+zb)/2-z0); if(!(r>.004))continue; const n=Math.max(1,Math.round(2*r/dw)), w=2*r/n;
     for(let i=0;i<n;i++){ const xa=-r+i*w, xm=xa+w/2, hy=Math.sqrt(Math.max(0,r*r-xm*xm)); if(hy<w*.3)continue;
       out.push(sided({x0:cx+xa,y0:cy-hy,x1:cx+xa+w,y1:cy+hy,z0:za,z1:zb,c:[90,90,90],foot:0,nb:1,fs:(nx,ny,X,Y,zr)=>col(X-cx,Y-cy,za+zr-z0,0),top:(X,Y)=>col(X-cx,Y-cy,zb-z0,1)})); } }
   return out; }
 const DJTAT=[178,166,112], DJBRD=[128,84,50], DJWOOD=[70,48,34], DJPAP=[226,218,196], DJPLA=[204,192,164];
 const DJWIN=[-4,4], DJPAN=[[-3,-2],[2,3]];
-function djAndon(x,y){ SHARED.PNAME='andon'; const w=.17, P=(a,z)=>(Math.abs(a)>w-.025||z<9||z>27.5||Math.abs(z-18)<.6)?sh(DJWOOD,1.1):djE(z<12?[230,150,80]:[255,206,140]);
+function djAndon(x,y){ '@later'; SHARED.PNAME='andon'; const w=.17, P=(a,z)=>(Math.abs(a)>w-.025||z<9||z>27.5||Math.abs(z-18)<.6)?sh(DJWOOD,1.1):djE(z<12?[230,150,80]:[255,206,140]);
   const p=prop([djBx(x-w,y-w,x+w,y+w,0,6,DJWOOD,{top:()=>sh(DJWOOD,.8)}),{x0:x-w,y0:y-w,x1:x+w,y1:y+w,z0:6,z1:29,foot:0,c:DJWOOD,top:()=>djE([255,226,170]),fi:(v,z)=>P(v-y,z),fj:(u,z)=>P(u-x,z)}]);
   LAMPS.push({x,y,z:20,r:4.8,c:[.66,.34,.14],own:1,room:1,day:true,prop:p}); return p; }
 const DJFLH=[9,11,10,12,8,11,9,12];
-function djCandle(x,y){ SHARED.PNAME='dojo candle'; const LK=[30,24,22], WX=[234,224,198], FL={ph:0}, s=Math.round(x*7+y*13);
+function djCandle(x,y){ '@later'; SHARED.PNAME='dojo candle'; const LK=[30,24,22], WX=[234,224,198], FL={ph:0}, s=Math.round(x*7+y*13);
   const wax=(a,z,f)=>z>14?djE(sh([240,206,150],(.3+.6*(z-14)/9)*(hash(Math.floor(a*30),Math.floor(z/2),753)<.12?.86:1))):sh(WX,f*(hash(Math.floor(a*30),Math.floor(z/2),753)<.12?.86:1));
-  const flame=(du,zz)=>{ '@later'; if(typeof LIFE==='undefined'||LIFE.mode!==1)return null; const h=DJFLH[FL.ph], lean=(FL.ph%3-1)*.012; if(zz<0||zz>=h)return null;
+  const flame=(du,zz)=>{ if(typeof LIFE==='undefined'||LIFE.mode!==1)return null; const h=DJFLH[FL.ph], lean=(FL.ph%3-1)*.012; if(zz<0||zz>=h)return null;
     const w=.03*Math.pow(1-zz/h,.55), a=Math.abs(du-lean*zz); if(a>w)return null; return djE(zz<2?[255,244,190]:a<w*.4&&zz<h*.6?[255,224,120]:a>w*.75||zz>h*.8?[236,112,40]:[255,186,80]); };
   const p=prop([djBx(x-.2,y-.2,x+.2,y+.2,0,7,LK,{top:()=>sh(LK,1.4)}),...djLathe(x,y,7,30,z=>.11-(z>21?(z-21)*.004:0),(dx,dy,z,top)=>top?djE(sh([250,220,160],.9)):wax(dx+dy,z,.95),1.5,.035),
     {x0:x-.04,y0:y-.04,x1:x+.04,y1:y+.04,z0:30,z1:43,foot:0,nb:1,life:1,c:[255,186,80],top:()=>null,fi:(v,z)=>flame(v-y,z-30),fj:(u,z)=>flame(u-x,z-30)}],null,{walk:0});

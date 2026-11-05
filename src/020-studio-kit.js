@@ -135,7 +135,7 @@ function deskLamp(x,y,f=[0,1],z=ONZ){ '@later'; SHARED.PNAME='desk lamp'; const 
     fb(r,.2,.8,.1,.6,z+18,z+26,AP.glow,(s,t,zz)=>zz>7?sh(c,.9):AP.glow,()=>sh(c,.9),{foot:1,em:1})]);
   LAMPS.push({x,y,z:z+20,r:2.8,c:[1,.82,.56],own:1,room:1,day:true,live:true,prop:p}); return p; }
 function radio(x,y,f=[0,1],z=ONZ){ SHARED.PNAME='radio'; const r=rect(x,y,f,.5,.26), H=12, c=AP.walnut, cl=[164,142,104], gl=[186,176,144], kn=[46,34,28]; let p=null;
-  const face=(s,t,zz,len)=>{ '@later'; const a=t*len*FP, n=p&&p.radio;
+  const face=(s,t,zz,len)=>{ const a=t*len*FP, n=p&&p.radio;
     if(s==='f'&&t>.6&&t<.94&&zz>H-5.5&&zz<H-1.6){ const tick=zz<H-4.4&&Math.floor(a*2)%3===0, ndl=n&&Math.abs(t-(.62+.3*n.nt))<.025;
       if(LIFE.mode===1)return n&&n.on?(ndl?[236,64,40]:tick?[132,86,44]:[255,216,142]):ndl?[92,30,22]:null; return tick?sh(gl,.62):gl; }
     if(LIFE.mode===1)return null;

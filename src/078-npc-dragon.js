@@ -86,7 +86,7 @@ import {DRAGON} from './077-npc-skel.js';
       if(D.mode==='perch'){ const P=D.p; let x=P.x, z=P.z, y=P.y, h=P.h;
         if(P.sign){ const dx=pos.x-st.x, dz=pos.z-st.z, d=Math.hypot(dx,dz); D.cool-=dt;
           if(SHARED.LVL==='up'&&d<9*TI){ h=Math.atan2(dx,dz); if(D.cool<=0&&d>3*TI&&Math.abs(turnTo(st.h,h,9)[1])<.3){
-            breathe(pfire,()=>{ const hp=new THREE.Vector3(st.x,D.y+.12*TI,st.z).addScaledVector(new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)),.25*TI), dx=pos.x-st.x, dz=pos.z-st.z, d=Math.max(.5*TI,Math.hypot(dx,dz)), tx=pos.x-dx/d*2*TI, tz=pos.z-dz/d*2*TI, fall=Math.max(.3*TI,hp.y-gy(tx,tz)), t=Math.sqrt(2*fall/G); fire(hp,new THREE.Vector3((tx-hp.x)/t,0,(tz-hp.z)/t)); }); D.cool=18+Math.random()*20; } } }
+            breathe(pfire,()=>{ '@later'; const hp=new THREE.Vector3(st.x,D.y+.12*TI,st.z).addScaledVector(new THREE.Vector3(Math.sin(st.h),0,Math.cos(st.h)),.25*TI), dx=pos.x-st.x, dz=pos.z-st.z, d=Math.max(.5*TI,Math.hypot(dx,dz)), tx=pos.x-dx/d*2*TI, tz=pos.z-dz/d*2*TI, fall=Math.max(.3*TI,hp.y-gy(tx,tz)), t=Math.sqrt(2*fall/G); fire(hp,new THREE.Vector3((tx-hp.x)/t,0,(tz-hp.z)/t)); }); D.cool=18+Math.random()*20; } } }
         if(P===D.home&&P.tree){ const near=SHARED.LVL==='up'&&Math.hypot(pos.x-st.x,pos.z-st.z)<5*TI;
           if(D.asleep){ if(near||D.t<4){ D.asleep=false; D.zz=-15-Math.random()*20; } }
           else if(!near&&D.t>12&&!D.fx&&D.pw<.1&&(D.zz+=dt)>0){ D.asleep=true; D.peek=false; } }

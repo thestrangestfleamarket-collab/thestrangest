@@ -90,7 +90,7 @@ await grab('dungeon',async()=>{});
   const WEB=()=>new THREE.MeshLambertMaterial({map:WT||(WT=can(128,128,g=>{ g.strokeStyle='rgba(225,225,215,.85)'; g.lineWidth=1.5; const c=64; for(let k=0;k<12;k++){ const a=k/12*6.283+.1*Math.sin(k*3); g.beginPath(); g.moveTo(c,c); g.lineTo(c+Math.cos(a)*62,c+Math.sin(a)*62); g.stroke(); }
     for(let r=6;r<60;r+=6.5){ g.beginPath(); for(let k=0;k<=12;k++){ const a=k/12*6.283+.1*Math.sin(k*3), q=r*(.92+.08*Math.sin(k*5+r)); k?g.lineTo(c+Math.cos(a)*q,c+Math.sin(a)*q):g.moveTo(c+Math.cos(a)*q,c+Math.sin(a)*q); } g.stroke(); } })),transparent:true,depthWrite:false,alphaTest:.05});
   const m4=new THREE.Matrix4(), q0=new THREE.Quaternion(), s3=new THREE.Vector3(), v3=new THREE.Vector3(), PER=2.4, UP=.8;
-  const spikes=force=>{ if(!mine||!mine.hz)return; const t=performance.now()/1000;
+  const spikes=force=>{ '@later'; if(!mine||!mine.hz)return; const t=performance.now()/1000;
     for(const sp of mine.hz.sp){ const up=((t+sp.ph)%PER)<UP; if(!force&&up===sp.up)continue; sp.up=up; if(!up)sp.hit=false; const fy=Y(.3)+dy;
       sp.c.forEach(([x,y],k)=>{ sp.IM.setMatrixAt(sp.i0+k,m4.compose(v3.set(X(x),up?fy+.17*TILE:fy+.01*TILE,Z(y)),q0,s3.set(1,up?1:.12,1))); }); sp.IM.instanceMatrix.needsUpdate=true; } };
   const inside=(h,gx,gy)=>gx>h.x0&&gx<h.x1&&gy>h.y0&&gy<h.y1, inLava=(h,gx,gy,k=.95)=>{ const u=(gx-h.cx)/h.rx, v=(gy-h.cy)/h.ry; return Math.hypot(u,v)<k*lavaR(h,Math.atan2(v,u)); }, said={}, say=(k,m,c)=>{ const t=performance.now(); if(t-(said[k]||0)<1600)return; said[k]=t; SAY(m,c||'#ff9a6a'); };

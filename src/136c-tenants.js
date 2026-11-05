@@ -3,7 +3,7 @@ import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
-  const api=async(path,body)=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
+  const api=async(path,body)=>{ '@later'; try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     let r; try{ r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
@@ -43,7 +43,7 @@ import {SYS} from './006-map-pre.js';
       if(a==='admin'){ act(b,{do:'admin',id,on:!u.admin},()=>u.admin?'no longer an owner':'now an owner'); return; }
       if(a==='ban'){ if(!u.banned&&!confirm('Ban '+u.email+'? They are sent out and cannot log in.'))return; act(b,{do:'ban',id,on:!u.banned},()=>u.banned?'unbanned':'banned'); return; }
       if(a==='delete'){ if(!confirm('Delete '+u.email+' for good? This cannot be undone.'))return; act(b,{do:'delete',id},()=>'deleted'); } }); };
-  const load=async()=>{ '@later'; D=await api('/admin',{do:'list',room:room()}); draw(); };
+  const load=async()=>{ D=await api('/admin',{do:'list',room:room()}); draw(); };
   TENANTS.open=e=>{ el=e; D=null; draw(); load(); };
 
   /* ---------- letters waiting for you, shown when you come in ---------- */

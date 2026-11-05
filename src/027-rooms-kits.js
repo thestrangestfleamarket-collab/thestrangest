@@ -245,7 +245,7 @@ STOREK.diner={dinerFloorCol,dinerWall};
 }
 
 {
-function theatreSconce(x,y,n){ SHARED.PNAME='wall light'; const B=[110,82,40], A=[255,176,92], bx=x+n[0]*.03;
+function theatreSconce(x,y,n){ '@later'; SHARED.PNAME='wall light'; const B=[110,82,40], A=[255,176,92], bx=x+n[0]*.03;
   return prop([{x0:bx-.03,y0:y-.12,x1:bx+.03,y1:y+.12,z0:58,z1:76,foot:1,c:B,top:()=>B,fi:()=>sh(B,.8),fj:()=>B},
     {x0:bx+n[0]*.06-.06,y0:y-.1,x1:bx+n[0]*.06+.06,y1:y+.1,z0:62,z1:72,foot:0,em:1,c:A,top:()=>[255,214,150],fi:()=>A,fj:()=>sh(A,.92)}],null,{high:true}); }
 {
@@ -272,7 +272,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
   
   
   
-  function onBar(k,x,x1,y0,y1,bs){ const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1;
+  function onBar(k,x,x1,y0,y1,bs){ '@later'; const z=BZ+BT, m=(x+x1)/2, yc=(y0+y1)/2+.1;
     if(k===0){ bs.push(pb(m-.56,yc-.1,m-.34,yc+.1,z,z+1.5,[40,40,44],{top:(X,Y)=>Math.hypot(X-(m-.45),Y-yc)<.06?[20,20,22]:[40,40,44]}),pb(m-.52,yc-.012,m-.38,yc+.012,z+1.5,z+2.2,[236,230,210],{nb:1,top:(X)=>X>m-.4?[250,150,60]:[236,230,210]}),
         fb(m-.15,yc-.08,m+.08,yc+.08,z,z+7,DP.red,(s,a,row)=>row<1?DP.redD:(s==='py'||s==='ny')&&row>3&&row<10?DP.white:DP.red,DP.white),
         pb(m+.2,yc-.06,m+.42,yc+.06,z,z+2,DP.chromeD),pb(m+.22,yc-.04,m+.27,yc+.01,z+2,z+8,[180,40,30],{nb:1}),pb(m+.3,yc-.04,m+.35,yc+.01,z+2,z+8,[220,180,60],{nb:1}),pb(m+.36,yc-.02,m+.41,yc+.03,z+2,z+7,[60,40,30],{nb:1}));
@@ -372,9 +372,9 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     const p=prop([fb(x,y,x+.12,y+L,0,Z,DP.black,(s,a,row)=>s==='px'?A(a,row):DP.blackL,DP.blackL,{foot:1,em:BARDARK?0:1}),pb(x,y+L/2-.08,x+.05,y+L/2+.08,-6,0,DP.blackL)],null,{hang:0,walk:true,high:true});
     LAMPS.push({own:1,room:1,x:x+.9,y:y+L/2,z:Z/2,r:3.5,c:[.55,.8,1],prop:p,off:BARDARK?1:0}); return p; }
   function barCandle(x,y){ SHARED.PNAME='candle'; const FL={ph:0}, bs=tcandle(x,y,BZ+BT,FL); for(const b of bs)if(b.z0===BZ+BT)b.foot=1; const p=prop(bs,null,{hang:BZ+BT}); flick(p,FL,Math.round(x*11+y*17)); LAMPS.push({own:1,room:1,day:true,x,y,z:BZ+BT+8,r:2.6,c:[.72,.4,.15],prop:p}); return p; }
-  function consoleTV(x,y){ SHARED.PNAME='console TV'; const W=.76, D=.48, x0=x-W/2, x1=x+W/2, y0=y-D/2, y1=y+D/2, LZ=7, CZ=34, wood=[104,66,38], woodD=[70,44,26], woodL=[138,92,54], bs=[];
+  function consoleTV(x,y){ '@later'; SHARED.PNAME='console TV'; const W=.76, D=.48, x0=x-W/2, x1=x+W/2, y0=y-D/2, y1=y+D/2, LZ=7, CZ=34, wood=[104,66,38], woodD=[70,44,26], woodL=[138,92,54], bs=[];
     for(const [lx,ly] of [[x0+.06,y0+.06],[x1-.1,y0+.06],[x0+.06,y1-.1],[x1-.1,y1-.1]])bs.push(pb(lx,ly,lx+.04,ly+.04,0,LZ,woodD));
-    bs.push(pb(x0,y0,x1,y1,LZ,LZ+CZ,wood,{top:(X,Y)=>(X-x0)*24%6<1?woodD:woodL,fs:(nx,ny,X,Y,z)=>{ '@later'; const u=nx?Y-y0:X-x0, zr=z-LZ;
+    bs.push(pb(x0,y0,x1,y1,LZ,LZ+CZ,wood,{top:(X,Y)=>(X-x0)*24%6<1?woodD:woodL,fs:(nx,ny,X,Y,z)=>{ const u=nx?Y-y0:X-x0, zr=z-LZ;
       if(ny>0){ const a=(X-x0)/W; if(zr<9&&a>.12&&a<.88)return (Math.floor(a*W*24)+Math.floor(zr))%2?[86,74,58]:[110,96,74];
         if(zr<11&&zr>=9&&(Math.abs(a-.7)<.04||Math.abs(a-.82)<.04))return [210,196,160];
         if(zr>=12&&zr<CZ-3&&a>.1&&a<.9)return [26,28,30]; }
@@ -382,7 +382,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const s of [-1,1])bs.push(pb(x+s*.04-.008,y-.008,x+s*.04+.008,y+.008,LZ+CZ,LZ+CZ+2,[40,40,44]),pb(x+s*.18-.006,y-.006,x+s*.18+.006,y+.006,LZ+CZ+2,LZ+CZ+15,[170,172,176],{nb:1}));
     const p=prop(bs,null,{});
     const TUBE={x0:x0+W*.1,x1:x0+W*.9,y:y1+.002,z0:LZ+12,z1:LZ+CZ-3};
-    p.lifeDraw=(Dd,Wd,Hd,ox,oy,t,K=1)=>{ '@later'; const [fa,fb2]=vwV(0,1); if(fa+fb2<=0)return;
+    p.lifeDraw=(Dd,Wd,Hd,ox,oy,t,K=1)=>{ const [fa,fb2]=vwV(0,1); if(fa+fb2<=0)return;
       const zb=LVZ(V.lv), wf=Math.round((TUBE.x1-TUBE.x0)*24*K), hf=Math.round((TUBE.z1-TUBE.z0)*K), fl=.88+.12*hash(Math.floor(t*14),3,4713), roll=(t*.13)%1;
       for(let i=0;i<wf;i++){ const u=(i+.5)/wf, X=TUBE.x0+u*(TUBE.x1-TUBE.x0), [vx,vy]=vw(X,TUBE.y), bx=((vx-vy)*HW-ox)*K, by=((vx+vy)*HH-oy)*K;
         for(let j=0;j<hf;j++){ const v=(j+.5)/hf, z=TUBE.z1-v*(TUBE.z1-TUBE.z0), X2=Math.floor(bx), Y2=Math.floor(by-(z-zb)*K); if(X2<0||Y2<0||X2>=Wd||Y2>=Hd)continue;
@@ -403,13 +403,13 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
       for(const [bu,bv] of balls)if(Math.hypot(u-bu,v-bv)<.035)return .95; if(Math.hypot((u-bx)/.07,(v-.52)/.09)<1)return .8; if(v>.6&&Math.abs(u-bx)<.12-(v-.6)*.1)return .1; return v>.88?.4:bg; } }
   
 
-  function soffit(x,y,L,W){ SHARED.PNAME='soffit'; const Z0=106, Z1=126, rc=.6, bs=[], x1=x+L, y1=y+W;
+  function soffit(x,y,L,W){ '@later'; SHARED.PNAME='soffit'; const Z0=106, Z1=126, rc=.6, bs=[], x1=x+L, y1=y+W;
     const face=(s,a,row,Lf,h)=>s==='px'||s==='py'?(row<12?(row<1?[200,90,70]:[176,64,46]):row<13?[110,40,30]:row>h-2?[120,84,52]:[176,132,86]):[150,110,70];
     for(let X=x;X<x1-1e-6;X+=.04){ const m=X+.02, yy=m>x1-rc?(y1-rc)+Math.sqrt(Math.max(0,rc*rc-(m-(x1-rc))**2)):y1;
       bs.push(fb(X,y,X+.04,yy,Z0,Z1,[176,64,46],face,(XX,YY)=>edge(XX,YY,x,y,x1,yy)<.06?[150,110,70]:pcVn(XX*3,YY*3,102)<.4?[118,124,104]:[126,132,112],{nb:1,foot:1})); }
     return prop(bs,null,{hang:Z0,walk:true,high:true}); }
 
-  function fan(x,y){ SHARED.PNAME='ceiling fan'; const Zc=126, bs=[], R=1.15, Zb=106;
+  function fan(x,y){ '@later'; SHARED.PNAME='ceiling fan'; const Zc=126, bs=[], R=1.15, Zb=106;
     bs.push(pb(x-.02,y-.02,x+.02,y+.02,108,Zc,DP.black,{nb:1,foot:1}));
     bs.push(...round(x,y,104,110,z=>.13-(z>4?.04:0),(dx,dy,z,top)=>top?DP.blackL:z>2&&z<3.5?[180,40,36]:Math.atan2(dy,dx)>1.4?DP.blackL:DP.black,1,.03));
     bs.push(...round(x,y,92,104,z=>.17*Math.sqrt(Math.max(.05,1-((z-7)/7)**2)),(dx,dy,z,top)=>z>10?lt([200,190,170]):lt(z<4?[255,250,226]:Math.atan2(dy,dx)>1.2?[255,252,236]:[250,236,200]),1,.03).map(b=>Object.assign(b,{em:BARDARK?0:1})));
@@ -424,7 +424,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     LAMPS.push({own:1,room:1,x,y,z:96,r:9.5,c:[.9,.88,.68],prop:p}); return p; }
 
 
-  function stage(x,y,L,W){ SHARED.PNAME='stage'; const Z=14, x1=x+L, y1=y+W, K=[22,20,22], G=[188,146,58], bs=[];
+  function stage(x,y,L,W){ '@later'; SHARED.PNAME='stage'; const Z=14, x1=x+L, y1=y+W, K=[22,20,22], G=[188,146,58], bs=[];
     bs.push(fb(x,y,x1,y1,0,Z,K,(s,a,row,Lf,h)=>row<2?G:row>h-2?[12,10,12]:(a%(S*.5|0))<1?[34,30,32]:K,(X,Y)=>edge(X,Y,x,y,x1,y1)<.04?G:(Math.floor(Y*S/5)&1)?[30,26,30]:[36,32,36],{foot:1}));
     bs.push(fb(x+L/2-.5,y1,x+L/2+.5,y1+.3,0,7,K,(s,a,row)=>row<1?G:K,(X,Y)=>edge(X,Y,x+L/2-.5,y1,x+L/2+.5,y1+.3)<.03?G:[36,32,36],{foot:1}));
     return prop(bs,null,{stands:[{x0:x,y0:y,x1,y1,z:Z}]}); }
@@ -450,7 +450,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const u of [.15,.55,.85])bs.push(fb(x0+L*u-.012,y+.16,x0+L*u+.012,y+.185,Z(1),Z(2.6),[214,176,72],()=>[190,150,60],[226,190,96]));
     return prop(bs,null,{}); }
   function stageCloth(x,y,L){ SHARED.PNAME='stage cloth'; return prop([fb(x,y,x+L,y+.06,0,112,[16,14,18],(s,a,row)=>(a%14<2)?[10,8,10]:[18,16,20],[16,14,18],{foot:1})],null,{hang:0,walk:true,high:true}); }
-  function grand(x,y,z0){ SHARED.PNAME='grand piano'; const W=1.32, L=1.62, x0=x-W/2, x1=x+W/2, y1=y-.136, y0=y1-L, bs=[], Z=v=>z0+v;
+  function grand(x,y,z0){ '@later'; SHARED.PNAME='grand piano'; const W=1.32, L=1.62, x0=x-W/2, x1=x+W/2, y1=y-.136, y0=y1-L, bs=[], Z=v=>z0+v;
     const K=[20,18,22], KH=[64,60,70], tail=t=>y0+L*.55*Math.pow(Math.max(0,Math.min(1,(t-.18)/.82)),1.35)*(1-.0*t);
     const lac=(s,a,row,Lf,h)=>row<1?KH:(a%9===4&&row<h-2)?[30,28,34]:K;
     const N=30; for(let i=0;i<N;i++){ const ta=i/N, tb=(i+1)/N, X0=x0+W*ta, X1=x0+W*tb, Y0=tail((ta+tb)/2);
@@ -464,7 +464,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const d of [-.045,0,.045])bs.push(fb(x+d-.014,y-.12,x+d+.014,y-.04,Z(1.5),Z(2.5),[200,160,70],()=>[168,128,52],[226,190,96]));
     return prop(bs,null,{}); }
 
-  function poolTable(x,y){ SHARED.PNAME='pool table'; const hx=1.08, hy=.62, x0=x-hx, x1=x+hx, y0=y-hy, y1=y+hy, bs=[];
+  function poolTable(x,y){ '@later'; SHARED.PNAME='pool table'; const hx=1.08, hy=.62, x0=x-hx, x1=x+hx, y0=y-hy, y1=y+hy, bs=[];
     const FE=[26,90,56], FED=[16,60,40], FEL=[40,112,72], WD=[88,56,32], WK=[52,34,20], WL=[150,104,64], RL=[26,20,18];
     const ZL=15, ZA=19, ZB=19.6, ZR=22;
     for(const lx of [x0+.15,x1-.15])for(const ly of [y0+.15,y1-.15])bs.push(fb(lx-.075,ly-.075,lx+.075,ly+.075,0,ZL,WK,(s,a,row,L,h)=>row<2?WD:row>h-2?RL:a%6<1?WK:WD,WD,{foot:1}));
@@ -489,7 +489,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     bs.push(fb(x-.52,y-.12,x+.52,y+.12,PZ,PZ+7,[32,38,32],(s,a,row,L,h)=>row>h-2?[16,20,16]:[44,52,44],()=>null,{nb:1}));
     bs.push(fb(x-.5,y-.1,x+.5,y+.1,PZ-.6,PZ,lt([255,218,150]),()=>lt([255,224,160]),lt([255,214,146]),{nb:1,em:1}));
     const p=prop(bs,null,{solids:[{x0,y0,x1,y1}]}); LAMPS.push({own:1,room:1,day:true,x,y,z:PZ,r:4.6,c:[1,.84,.5],prop:p}); return p; }
-  function dartboard(x,y){ SHARED.PNAME='dartboard'; const D=.44, Z=10.6, w=Math.round(D*S), h=Math.round(Z*H);
+  function dartboard(x,y){ '@later'; SHARED.PNAME='dartboard'; const D=.44, Z=10.6, w=Math.round(D*S), h=Math.round(Z*H);
     const CAB=[40,30,24], BL=[224,212,176], BK=[28,24,22], RE=[182,42,40], GR=[38,120,70], WI=[158,158,164];
     const A=pic(w,h,put=>{ const cx=w/2, cy=h/2, R=Math.min(cx,cy)-1;
       for(let Y=0;Y<h;Y++)for(let X=0;X<w;X++){ const dx=X-cx+.5, dy=Y-cy+.5, r=Math.hypot(dx,dy); if(r>R){ if(r<R+2)put(X,Y,BK); continue; }
@@ -500,7 +500,7 @@ const {FP,H,S,art,F3,txt,pcVn,pcLathe,lit,tone,box,disc,DP,T3,fb,pb,edge,pic,rou
     for(const [fy,fz,fc] of [[.5,.6,[220,60,60]],[.44,.52,[240,220,70]],[.56,.5,[70,160,220]]]){ const cy=y+fy*D, cz=fz*Z;
       bs.push(pb(x+.04,cy-.006,x+.14,cy+.006,cz,cz+.012,[182,182,188],{nb:1}),fb(x+.13,cy-.022,x+.2,cy+.022,cz-.018,cz+.018,fc,()=>sh(fc,.75),fc,{nb:1})); }
     return prop(bs,null,{hang:0,walk:true,high:true}); }
-  function staircase(x,y){ SHARED.PNAME='staircase'; const W=1.6, steps=13, run=.26, rise=5.2, top=steps*rise, x1=x+W, bs=[];
+  function staircase(x,y){ '@later'; SHARED.PNAME='staircase'; const W=1.6, steps=13, run=.26, rise=5.2, top=steps*rise, x1=x+W, bs=[];
     const WD=[104,66,38], WK=[60,38,22], WL=[150,104,64], RUN=[84,52,30];
     for(let i=0;i<steps;i++){ const sy=y+i*run, z=top-(i+1)*rise;
       bs.push(fb(x,sy,x1,sy+run+.05,z,z+rise,WD,(s,a,row,L,h)=>row>h-2?WL:row<1?WK:(s==='py'?RUN:a%7<1?WK:WD),(X,Y)=>edge(X,Y,x,sy,x1,sy+run+.05)<.03?WL:hash(Math.floor(X*40),Math.floor(Y*40),331)<.1?WK:WD,{foot:i===steps-1?1:0})); }
@@ -582,7 +582,7 @@ const IMC={spruce:[222,184,122],spruceD:[196,156,98],rose:[92,48,30],roseD:[70,3
 const imB=(x0,y0,x1,y1,z0,z1,c,o={})=>sided({x0,y0,x1,y1,z0,z1,c,foot:z0===0?1:0,top:()=>sh(c,1.08),fs:(nx,ny,X,Y,z,k)=>sh(c,k),...o});
 function imFlat(B,x,y,z0,z1,w,d,c,cs,face){ for(let z=z0;z<z1;z++){ const h=w(z-z0); if(h<=0)continue; B.push(imB(x-h,y-d,x+h,y+d,z,z+1,c,{foot:z===0?1:0,top:()=>sh(c,1.05),
   fs:(nx,ny,X,Y,zz,k)=>{ if(ny>0){ const f=face&&face(X-x,z-z0); return sh(f||c,k); } return sh(cs,k*(ny<0?.9:1)); }})); } }
-function imRound(B,x,y,z0,z1,r,c,o={}){ for(let z=z0;z<z1;z++){ const R=r(z-z0); if(R<=0)continue; const d=R*.41;
+function imRound(B,x,y,z0,z1,r,c,o={}){ '@later'; for(let z=z0;z<z1;z++){ const R=r(z-z0); if(R<=0)continue; const d=R*.41;
   const fs=(nx,ny,X,Y,zz,k)=>sh(o.side?o.side(z-z0,X-x,Y-y):c,k), top=z===z1-1&&o.top?(X,Y)=>o.top(X-x,Y-y):()=>sh(c,1.08);
   B.push(imB(x-R,y-R+d,x+R,y+R-d,z,z+1,c,{fs,top,foot:z===0?1:0}),imB(x-R+d,y-R,x+R-d,y+R,z,z+1,c,{fs,top,foot:z===0?1:0})); } }
 function imStand(B,x,y,h,w=.16){ const c=IMC.black; B.push(imB(x-w,y-.12,x-w+.04,y+.08,0,2,c),imB(x+w-.04,y-.12,x+w,y+.08,0,2,c),imB(x-.02,y-.14,x+.02,y-.1,0,h,c),imB(x-.08,y-.14,x+.08,y-.1,h-2,h,c)); }
@@ -625,7 +625,7 @@ function imPipe(x,y,name){ '@later'; SHARED.PNAME=name; const B=[], f=name==='fl
   else { B.push(imB(x-.03,y-.03,x+.03,y+.03,14,16,IMC.black)); for(let z=16;z<27;z++){ const r=z>25?.022:.016; B.push(imB(x-r,y-r,x+r,y+r,z,z+1,IMC.maple,{fs:(nx,ny,X,Y,zz,k)=>sh(ny>0&&z>17&&z<24&&z%2===0?IMC.black:IMC.maple,k)})); } }
   const p=prop(B,null,{music:name}); return imOpts(p,name); }
 const IMKITBAR={k:1.1,sp:1.35};
-function imDrums(x,y,dz=0,k=1,sp=1){ SHARED.PNAME=dz?'drum kit on a stage':'drum kit'; const B=[], i2t=i=>i*.0254/.9/2*k, sh2=IMC.shell, hd=IMC.head, zk=z=>Math.round(z*k);
+function imDrums(x,y,dz=0,k=1,sp=1){ '@later'; SHARED.PNAME=dz?'drum kit on a stage':'drum kit'; const B=[], i2t=i=>i*.0254/.9/2*k, sh2=IMC.shell, hd=IMC.head, zk=z=>Math.round(z*k);
   { const r=i2t(22), cz=Math.round(r*24*1.1); for(let z=0;z<2*cz;z++){ const h=Math.sqrt(Math.max(0,cz*cz-(z-cz+.5)**2))/24/1.1; B.push(imB(x-h,y+.02,x+h,y+.02+.4*k,z,z+1,sh2,{foot:z===0?1:0,fs:(nx,ny,X,Y,zz,k)=>sh(ny>0?(Math.hypot(X-x,(z-cz)/24/1.1)>h*.9?IMC.chrome:hd):sh2,k)})); } }
   const drum=(dx,dy,inch,z0,dep)=>{ const r=i2t(inch); dx*=sp; dy*=sp; z0=zk(z0); dep=zk(dep); imRound(B,x+dx,y+dy,z0,z0+dep,()=>r,sh2,{side:(z)=>z===0||z===dep-1?IMC.chrome:sh2,top:()=>hd}); if(z0>0)B.push(imB(x+dx-.01,y+dy-.01,x+dx+.01,y+dy+.01,0,z0,IMC.chrome)); };
   drum(-.42,-.1,14,16,4); drum(-.12,.12,10,24,6); drum(.14,.12,12,24,7); drum(.46,-.08,16,0,15);

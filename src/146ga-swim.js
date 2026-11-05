@@ -58,7 +58,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   FORAGE.add({names:{scuba:'SCUBA SET (RENTAL)'}});
   const save=()=>{ try{ OWNED.set('tank',String(Math.max(0,SWIM.tankS).toFixed(1))); }catch(e){} }; try{ SWIM.tankS=+OWNED.get('tank')||0; }catch(e){}
   SWIM.tank=()=>EQUIP.breathe?SWIM.tankS:0; let st5=0;
-  VIT.supply=dt=>{ if(!EQUIP.breathe||SWIM.tankS<=0)return false; SWIM.tankS-=dt; if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5);   // breathing from the tank: your own breath comes back if((st5+=dt)>5){ st5=0; save(); }
+  VIT.supply=dt=>{ '@later'; if(!EQUIP.breathe||SWIM.tankS<=0)return false; SWIM.tankS-=dt; if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5);   // breathing from the tank: your own breath comes back if((st5+=dt)>5){ st5=0; save(); }
     if(SWIM.tankS<=0){ SWIM.tankS=0; const id=EQUIP.by.back; if(id){ EQUIP.off('back'); if(ITEMS.prop(id,'rental'))FORAGE.take(id,1); } save(); say('YOUR TANK IS EMPTY. THE RENTED SET GOES BACK TO THE SHARK.','#c8a090'); if(FORAGE.draw)FORAGE.draw(); return false; } return true; };
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);

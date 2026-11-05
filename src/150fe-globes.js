@@ -78,7 +78,7 @@ import {SCOPE} from './150fd-scope.js';
   GLOBE.close=()=>{ if(GLOBE.view)GLOBE.view.close(); };
 
   /* ---------- in your apartment: the floor globe and a side table with the Moon and Mars, plain painted balls until first looked at ---------- */
-  const plain=(col,k)=>{ const c=document.createElement('canvas'); c.width=256; c.height=128; const g=c.getContext('2d'); g.fillStyle=col; g.fillRect(0,0,256,128); g.strokeStyle='rgba(255,246,220,.35)'; g.lineWidth=1;
+  const plain=(col,k)=>{ '@later'; const c=document.createElement('canvas'); c.width=256; c.height=128; const g=c.getContext('2d'); g.fillStyle=col; g.fillRect(0,0,256,128); g.strokeStyle='rgba(255,246,220,.35)'; g.lineWidth=1;
     for(let i=1;i<12;i++){ g.beginPath(); g.moveTo(i*256/12,0); g.lineTo(i*256/12,128); g.stroke(); } for(let i=1;i<6;i++){ g.beginPath(); g.moveTo(0,i*128/6); g.lineTo(256,i*128/6); g.stroke(); }
     g.strokeStyle='rgba(255,236,170,.6)'; g.beginPath(); g.moveTo(0,64); g.lineTo(256,64); g.stroke(); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };

@@ -15,13 +15,13 @@ import {ROOMK} from './150a-bedroom.js';
   const V=document.createElement('video'); V.playsInline=true; V.preload='auto'; V.crossOrigin='anonymous'; V.muted=false;
   const vt=new THREE.VideoTexture(V); vt.colorSpace=THREE.SRGBColorSpace; vt.minFilter=vt.magFilter=THREE.LinearFilter;
   const sc=document.createElement('canvas'); sc.width=96; sc.height=72; const st=new THREE.CanvasTexture(sc); st.colorSpace=THREE.SRGBColorSpace; st.magFilter=THREE.NearestFilter;
-  const snow=()=>{ const g=sc.getContext('2d'), im=g.createImageData(96,72); for(let i=0;i<96*72;i++){ const v=Math.random()*210|0; im.data[i*4]=im.data[i*4+1]=v; im.data[i*4+2]=v+12; im.data[i*4+3]=255; } g.putImageData(im,0,0);
+  const snow=()=>{ '@later'; const g=sc.getContext('2d'), im=g.createImageData(96,72); for(let i=0;i<96*72;i++){ const v=Math.random()*210|0; im.data[i*4]=im.data[i*4+1]=v; im.data[i*4+2]=v+12; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const C=chan(); if(C){ g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(4,4,30,14); g.fillStyle='#7dff8a'; g.font='bold 11px monospace'; g.fillText('CH '+C.ch,6,15); } st.needsUpdate=true; };
   const screens=new Set();
   let src='', sync=0;
   const url=s=>(location.protocol==='file:'?'https://archive.org/download/':'/film/')+s.id+'/'+s.file;
   const stop=()=>{ if(src){ V.pause(); V.removeAttribute('src'); V.load(); src=''; } };
-  const tune=()=>{ const C=chan(); if(!C||!CRT.on){ stop(); return; } const {s,off}=nowOn(C), u=url(s);
+  const tune=()=>{ '@later'; const C=chan(); if(!C||!CRT.on){ stop(); return; } const {s,off}=nowOn(C), u=url(s);
     if(u!==src){ src=u; V.src=u; V.currentTime=off; CRT.snow=.7; } V.volume=CRT.vol; const p=V.play(); if(p&&p.catch)p.catch(()=>{});
     if(V.readyState>0&&!V.seeking&&Math.abs(off-V.currentTime)>4)V.currentTime=off; };
   const look=()=>{ for(const m of screens){ const live=CRT.on&&CRT.snow<=0&&V.readyState>=2; m.map=CRT.on?(live?vt:st):null; m.color.setRGB(CRT.on?1:.05,CRT.on?1:.06,CRT.on?1:.07); m.needsUpdate=true; } };
@@ -36,14 +36,14 @@ import {ROOMK} from './150a-bedroom.js';
   const css=document.createElement('style'); css.textContent='#crtp .row{display:flex;align-items:center;gap:6px;margin:8px 0;flex-wrap:wrap} #crtp .row>span:first-child{width:74px} #crtp input[type=range]{flex:1} #crtp .btn{font:inherit;padding:5px 8px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #crtp .btn.on{background:#3b2a1e;color:#ece5d3} #crtp .mclose{float:right} #crtp .now{margin-top:6px;min-height:28px;color:#6a4a32}';
   document.head.appendChild(css); document.body.appendChild(P);
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const draw=()=>{ if(P.hidden||!CRT.data)return; const C=chan(), n=C&&nowOn(C).s;
+  const draw=()=>{ '@later'; if(P.hidden||!CRT.data)return; const C=chan(), n=C&&nowOn(C).s;
     P.innerHTML=`<div><b>THE CRT TV</b> <button class="btn mclose" data-a="close">DONE</button></div>
       <div class="row"><span>POWER</span><button class="btn ${CRT.on?'on':''}" data-a="on">ON</button><button class="btn ${CRT.on?'':'on'}" data-a="off">OFF</button></div>
       <div class="row"><span>CHANNEL</span><button class="btn" data-a="dn">&lt;</button>${CRT.data.channels.map((c,i)=>`<button class="btn ${CRT.on&&i===CRT.ch?'on':''}" data-c="${i}">${c.ch}</button>`).join('')}<button class="btn" data-a="up">&gt;</button></div>
       <div class="row"><span>VOLUME</span><input type="range" min="0" max="100" value="${Math.round(CRT.vol*100)}" data-k="vol"><span>${Math.round(CRT.vol*100)}%</span></div>
       <div class="now">${CRT.on&&C?`CH ${C.ch} · ${esc(C.name)}<br>NOW: ${esc(n.title)}${n.year?' ('+n.year+')':''}`:'THE SET IS OFF.'}</div>`; };
   CRT.open=()=>load().then(()=>{ P.hidden=false; draw(); }).catch(e=>console.warn('CRT: the channels did not load',e)); CRT.close=()=>{ P.hidden=true; };
-  P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const a=b.dataset.a;
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b)return; const a=b.dataset.a;
     if(a==='close')return CRT.close(); if(a==='on')CRT.power(true); else if(a==='off')CRT.power(false); else if(a==='up')CRT.channel(CRT.ch+1); else if(a==='dn')CRT.channel(CRT.ch-1); else if(b.dataset.c!=null)CRT.channel(+b.dataset.c); });
   P.addEventListener('input',e=>{ const t=e.target; if(t.dataset.k!=='vol')return; CRT.volume(+t.value/100); if(t.nextElementSibling)t.nextElementSibling.textContent=t.value+'%'; });
 
@@ -69,7 +69,7 @@ import {ROOMK} from './150a-bedroom.js';
       const L=new THREE.PointLight(0x9ab8e0,0,2.8*c.M,2); L.position.set(0,BH*.58,.6); L.userData.tv=1; L.userData.flame=1; T.add(L);
       solid(U0-SD/2,V0-SW/2,U0+SD/2,V0+SW/2,SH+BH+.02); },{wire:'crt',bake:true}); });
 
-  ROOMK.wires.crt=(un,c)=>{ let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen){ o.material=o.material.clone(); G=o; } if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
+  ROOMK.wires.crt=(un,c)=>{ '@later'; let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen){ o.material=o.material.clone(); G=o; } if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
     screens.add(G.material); CRT.unit=un; look();
     c.hit(un,()=>'CRT TV: '+(CRT.on?'CH '+(chan()?chan().ch:''):'OFF'),()=>{ CRT.open(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); });
     let fl=0; un.tick=dt=>{ fl+=dt; if(L)L.intensity=CRT.on?.7+.25*Math.sin(fl*9)*Math.sin(fl*2.3):0; if(led)led.material.color.setHex(CRT.on?0x5aff7a:0xff3a2a); }; };

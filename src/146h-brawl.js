@@ -19,7 +19,7 @@ import {collide} from './075-main-13.js';
 
   /* ---------- your blows: each strike STRIKES gives is live for a moment; whichever of your fists, feet or blade touches a body part lands once on that player ---------- */
   let live=[];
-  const mine=(kind,J)=>{ const me={x:pos.x,y:SHARED.py,z:pos.z,hd:SHARED.heading}, out=[];
+  const mine=(kind,J)=>{ '@later'; const me={x:pos.x,y:SHARED.py,z:pos.z,hd:SHARED.heading}, out=[];
     if(kind==='blade'){ const h=st.hand==='L'?'L':'R'; if(!J['wrist'+h]||!J['elbow'+h])return out; toW(J['wrist'+h],me,undefined,A); toW(J['elbow'+h],me,undefined,B); C.subVectors(A,B).normalize();
       for(let i=1;i<=5;i++)out.push([A.clone().addScaledVector(C,i*.19*T),.07]); return out; }
     for(const [j,r] of LIMBS[kind])if(J[j])out.push([toW(J[j],me,undefined,new THREE.Vector3()),r*sh()]); return out; };
@@ -36,7 +36,7 @@ import {collide} from './075-main-13.js';
   const busy=()=>RAG.on||VIT.out>0||VIT.dead||st.climb||st.hang||st.ride||st.sit||(st.water&&st.water.in);
   const flinch=()=>{ if(busy())return; try{ RIG.begin(st,'flinch'); SYS.run('act','flinch'); }catch(e){} };
   const facing=f=>{ const dx=f.x-pos.x, dz=f.z-pos.z, l=Math.hypot(dx,dz)||1; return (dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading))/l>.2; };
-  ONLINE.hear.hit=m=>{ const now=performance.now(), o=ONLINE.others.get(m.id), f=Array.isArray(m.from)?{x:+m.from[0],z:+m.from[1]}:o&&o.p; if(!f||now-(last[m.id]||0)<150)return; last[m.id]=now;
+  ONLINE.hear.hit=m=>{ '@later'; const now=performance.now(), o=ONLINE.others.get(m.id), f=Array.isArray(m.from)?{x:+m.from[0],z:+m.from[1]}:o&&o.p; if(!f||now-(last[m.id]||0)<150)return; last[m.id]=now;
     const blocked=!!WIELD.block&&facing(f), r=VIT.hurt(Math.max(0,Math.min(.5,+m.d||0)),f); if(r===2){ ONLINE.send({t:'parried',to:m.id}); return; } if(!r||VIT.dead||VIT.out>0||RAG.on)return;   // down already: it hurts, it doesn't keep you down
     recent=recent.filter(t=>now-t<2000); recent.push(now); const dx=pos.x-f.x, dz=pos.z-f.z, l=Math.hypot(dx,dz)||1, kb=Math.max(0,Math.min(3,+m.kb||1))*(blocked?.4:1);
     if(busy())return;
@@ -60,9 +60,9 @@ import {collide} from './075-main-13.js';
 
   /* ---------- grab, carry and throw: double-click a player who is down to pick them up (they hang from your hands, held by their own ragdoll); punch to throw, double-click to put them down ---------- */
   let carry=null, thrown={id:'',until:0};
-  const letGo=(toss,quiet)=>{ if(!carry)return; const id=carry.id; carry=null; try{ RIG.release(st,'carry'); }catch(e){} SYS.run('act','carry',0); if(quiet)return;
+  const letGo=(toss,quiet)=>{ '@later'; if(!carry)return; const id=carry.id; carry=null; try{ RIG.release(st,'carry'); }catch(e){} SYS.run('act','carry',0); if(quiet)return;
     if(toss){ thrown={id,until:performance.now()+900}; const h=SHARED.heading; ONLINE.send({t:'toss',to:id,v:[r2(Math.sin(h)*1.2),r2(-Math.cos(h)*1.2)]}); } else ONLINE.send({t:'drop',to:id}); };
-  ONLINE.use=o=>{ if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(ONLINE.useUp)return ONLINE.useUp(o); SAY((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
+  ONLINE.use=o=>{ '@later'; if(carry&&carry.id===o.id)return letGo(false); if(VIT.dead||VIT.out>0||RAG.on||o.dead)return; if(!(o.rag&&o.rag.b&&performance.now()-o.rag.t<3000)){ if(ONLINE.useUp)return ONLINE.useUp(o); SAY((o.name||'TENANT')+' IS STANDING. KNOCK THEM DOWN FIRST.'); return; }
     if(carry)letGo(false); carry={id:o.id,t:0}; try{ RIG.act(st,'carry'); }catch(e){} SYS.run('act','carry',1); ONLINE.send({t:'grab',to:o.id}); };
   SYS.add('act',(k,on)=>{ if(carry&&k==='J'&&on)letGo(true); },'146h-brawl');
   const carrying=dt=>{ if(!carry)return; const o=ONLINE.others.get(carry.id);

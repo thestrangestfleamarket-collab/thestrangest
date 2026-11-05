@@ -11,7 +11,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
   // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
-  const tokenbot=()=>{ const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
+  const tokenbot=()=>{ '@later'; const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
     const BODY='plastic:#5a2a8a', TEAL='plastic:#2ad0c8', STEEL='metal:#8a8c90', DARK='plastic:#18181a';
     mk(B.torso,new THREE.BoxGeometry(.4,.42,.3),BODY,[0,.21,0]); mk(B.torso,new THREE.BoxGeometry(.07,.014,.01),STEEL,[0,.33,.152]); mk(B.torso,new THREE.BoxGeometry(.16,.04,.01),DARK,[0,.15,.152]); mk(B.torso,new THREE.BoxGeometry(.05,.1,.004),'plain:#f2c14e',[0,.09,.157]);
     mk(B.hips,new THREE.BoxGeometry(.32,.12,.26),DARK,[0,-.04,0]);

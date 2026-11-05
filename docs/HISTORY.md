@@ -5535,6 +5535,7 @@ Owner, of the menus listed with what works ("lets reorganize all the menus"), of
 - 5 Nov 2026, running and stopping (owner: "it doesnt seem like the running and stopping, etc works like it used to (realistic)"; of the side-by-side, his pick: clips + momentum): on its clips the avatar leans into a start and a run, into turns, and on a stop its upper body carries on and rocks back.
 - 5 Nov 2026, the ogre's skull tried and dropped (owner: "lets use the ogre head ... on the main avatar body", then of new hair, beards, brows and eyes made for it: "lets cancel all this work"; his pick: drop the ogre head too): the avatar keeps its own head.
 - 5 Nov 2026, the underwear (owner: "why does the underwear look like that"): it no longer flickers with the skin under it.
+- 5 Nov 2026, the PS2 filter in parts (owner: "lets make 1-5 toggle on off in ps2 filter so i can see what each one does, also a slider to minimize or maximize the effect"): GRAPHICS has 1 PIXELS, 2 COLOURS, 3 SMEAR, 4 FRINGES, 5 GRAIN, each on or off, and a STRENGTH slider (0–200%, 100% the look as made); kept in the browser.
 - 5 Nov 2026, the render inspector back (owner: "add render inspector back in game"): out of the archive, opened from the menu's TOOLS as before.
 
 ## 5 Nov 2026: real insides from the street (mockups)

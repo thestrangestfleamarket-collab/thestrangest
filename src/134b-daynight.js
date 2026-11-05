@@ -42,7 +42,7 @@ DN.clockH=()=>((Date.now()/600000)+5)%24; DN.lookFor=h=>h<6||h>=20?'night':h>=18
   const box=document.getElementById('adn'), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
   DN.dayText=()=>'the clock\'s, the same for everyone: '+fmt(CLOCK.h)+(DN.hold?' (held at '+DN.names[DN.hold]+' by the owner)':'');
   const msg=t=>{ const e=box&&box.querySelector('#dnmsg'); if(e)e.textContent=t; };
-  const V=TPANE.live({mode:[()=>DN.hold||'clock',m=>{ if(!DN.owner||m===(DN.hold||'clock'))return; DN.hold=m==='clock'?null:m; if(m!=='clock')DN.set(m,true); msg('setting the time...'); DN.pushTime(m).then(()=>msg(m==='clock'?'the clock\'s, for everyone':DN.names[m]+' for everyone, until the clock\'s is picked')).catch(e=>msg('not set: '+(e.message||'try again'))); }],
+  const V=TPANE.live({mode:[()=>DN.hold||'clock',m=>{ '@later'; if(!DN.owner||m===(DN.hold||'clock'))return; DN.hold=m==='clock'?null:m; if(m!=='clock')DN.set(m,true); msg('setting the time...'); DN.pushTime(m).then(()=>msg(m==='clock'?'the clock\'s, for everyone':DN.names[m]+' for everyone, until the clock\'s is picked')).catch(e=>msg('not set: '+(e.message||'try again'))); }],
     ...Object.fromEntries([...new Set(F.map(f=>f[0]))].map(k=>[k,[()=>DN.E()[k]??'#000000',v=>{ const P=DN.E(); if(typeof v==='number')v=+v.toFixed(4); if(P[k]===v)return; P[k]=v; if(k==='cld'||k==='lamp')fix(); dirty=true; msg('not saved'); }]]))});
   let pm=null, pk='', open=true, busy=Promise.resolve();
   const build=async()=>{ '@later'; const m=DN.mode, k=m==='night'?'n':m==='dusk'?'u':'d'; if(pm&&pk===m)return pm.refresh(); const p=await TPANE.make(box.querySelector('.dntp'));

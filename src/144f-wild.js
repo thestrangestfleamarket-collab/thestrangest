@@ -18,11 +18,11 @@ const WILD={}; window.WILD=WILD;
   const S={v:1,seen:{},paid:0}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
   const kindOf=N=>String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'');
   const binoc=()=>!!FORAGE.has('binoc'), WR0=3.5*T, WR1=9*T; let WS=null, lx=0, lz=0, spd=0;
-  const log=k=>{ const first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; const q=SP[k];
+  const log=k=>{ '@later'; const first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; const q=SP[k];
     if(first){ say(`NEW IN YOUR JOURNAL: ${q[0]} (${q[1].toUpperCase()}).`,'#c8b0ff'); if(q[4]){ INV.cash+=q[4]; say(`THE PARK'S WILDLIFE COUNT PAYS $${q[4]} FOR THE FIRST SIGHTING.`,'#f2c14e'); }
       if(!S.paid&&KS().every(j=>S.seen[j])){ S.paid=1; INV.cash+=FULL; say(`YOUR WILDLIFE PAGE IS FULL. THE PARK PAYS $${FULL}.`,'#f2c14e'); } }
     else say(`YOU WATCH THE ${q[0]} A WHILE.`,'#e8e2cc'); save(); FORAGE.draw&&FORAGE.draw(); };
-  const watch=N=>{ const k=kindOf(N), q=SP[k]; if(!q||!N.body.visible)return; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z), WR=binoc()?WR1:WR0;
+  const watch=N=>{ '@later'; const k=kindOf(N), q=SP[k]; if(!q||!N.body.visible)return; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z), WR=binoc()?WR1:WR0;
     if(d>WR){ say(binoc()?'IT IS TOO FAR OFF.':'IT IS TOO FAR OFF. GO NEARER, OR BRING BINOCULARS.','#c8a090'); return; }
     WS={N,k,t:0}; say(`YOU STAND STILL AND WATCH THE ${q[0].replace(/^THE /,'')}.`,'#9fe07f'); };
   WILD.watching=()=>WS&&{k:WS.k,t:+WS.t.toFixed(1)}; WILD.ff=s=>{ if(WS)WS.t+=s; }; WILD.seen=k=>S.seen[k]||0; WILD.SP=SP; WILD.watch=watch; WILD.log=log; WILD.add=(k,q)=>{ SP[k]=q; };

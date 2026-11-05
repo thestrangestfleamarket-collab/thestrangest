@@ -34,10 +34,10 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
 
   const flights=[], parcels=[]; const V=new THREE.Vector3();
-  const landParcel=(label,onIn,dp)=>{ const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
+  const landParcel=(label,onIn,dp)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
     const th={name:'A PARCEL: '+label,pick:true,obj:p,reach:1.3*T,near:2.6*T,tall:.7*T,act:()=>{ if(!p.parent)return; scene.remove(p); const i=parcels.indexOf(p); if(i>=0)parcels.splice(i,1); onIn(); toast('YOU BRING IN: '+label); }};
     UI.thing(th); toast('THE DRONE DROPPED '+label+' ON YOUR FIRE ESCAPE'); };
-  const deliver=(label,onIn)=>{ '@later'; const dp=dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
+  const deliver=(label,onIn)=>{ const dp=dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
     const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,ph:'in'}); };
   DRONE.go=deliver;
   SYS.add('life',dt=>{ if(!dt)return;
@@ -54,7 +54,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const COMP={page:'shop',host:null,orders:[],msg:'',arc:false}, E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
   const aptNum=()=>APTS.num||'--', flightState=()=>{ const f=flights[0]; if(!f)return 'done'; return f.ph; };
   const CABS=()=>[...STORE.cabs.walls.e,...STORE.cabs.walls.w].filter(n=>STORE.cabs.reg[n]);
-  const doOrder=()=>{ const furn=COMP.list==='furn', it=(furn?FURN:BODEGA)[COMP.sel]; if(!it)return; const label=furn?it[1]:it[0], price=furn?it[2]:it[1], kind=furn?it[0]:null;
+  const doOrder=()=>{ '@later'; const furn=COMP.list==='furn', it=(furn?FURN:BODEGA)[COMP.sel]; if(!it)return; const label=furn?it[1]:it[0], price=furn?it[2]:it[1], kind=furn?it[0]:null;
     if(DRONE.state!=='home'){ COMP.msg='THE DRONE IS OUT. WAIT FOR IT TO COME BACK.'; return draw(); } if(purse.get()<price){ COMP.msg='NOT ENOUGH MONEY.'; return draw(); }
     purse.add(-price); COMP.orders.push({no:1001+COMP.orders.length,name:label}); deliver(label,furn?()=>bringFurn(kind):()=>{ const b=BODEGA.find(q=>q[0]===label); if(b&&b[2]&&FORAGE.give){ FORAGE.give(b[2],1); if(FORAGE.draw)FORAGE.draw(); } });
     COMP.msg=''; COMP.page='orders'; if(UI.menuOpen&&COMP.host&&COMP.host.isConnected&&!COMP.host.hidden)UI.menuTab('bbs','orders'); else draw(); };
@@ -72,7 +72,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
         o+='<table>'+COMP.orders.slice().reverse().map((q,i)=>'<tr><td>#'+q.no+' '+E(q.name.toUpperCase())+'</td><td>'+(i===0?(ph==='in'?'ON ITS WAY':ph==='drop'?'AT YOUR FIRE ESCAPE':ph==='away'?'DELIVERED · THE DRONE HEADS BACK':'DELIVERED'):'DELIVERED')+'</td></tr>').join('')+'</table>';
         o+='<h3>DRONE VIEW</h3><div class="dim">'+(f?'DRONE CAM 01 · ALT '+alt+'M · TARGET: FIRE ESCAPE '+E(aptNum()):'SIGNAL LOST · THE DRONE IS HOME')+'</div>'; } }
     h.innerHTML=o; };
-  DRONE.menu=(host,page)=>{ COMP.host=host; COMP.page=page||'shop'; COMP.msg=''; draw();
+  DRONE.menu=(host,page)=>{ '@later'; COMP.host=host; COMP.page=page||'shop'; COMP.msg=''; draw();
     if(!host._bbs){ host._bbs=1; host.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
       if(b.dataset.buy){ const [l,i]=b.dataset.buy.split(':'); DRONE.pick(l,+i); }
       else if(b.dataset.play&&STORE.cabs.reg[b.dataset.play]){ if(UI.menuOpen)UI.toggleMenu(); STORE.cabs.play(b.dataset.play); } }); } };

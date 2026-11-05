@@ -7,7 +7,7 @@ import {SYS} from './006-map-pre.js';
   const ownerP=BUGS.owner?BUGS.owner().catch(()=>false):Promise.resolve(false);
   // the first fetch holds the edits' first apply (099 waits for WE.ready), never the start: 6 s at most
   WE.ready=Promise.race([Promise.all([get().catch(()=>null),ownerP]),new Promise(r=>setTimeout(()=>r(null),6000))]).then(x=>{ if(!x)return; own=x[1]===true; if(x[0]){ live=x[0]; WE.setLive(live,!own||dirty); if(own&&dirty)push(); } });
-  const post=(st,auto)=>{ const n=Object.keys(st).length; return BUGS.sb('/rest/v1/bug_reports',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id:crypto.randomUUID(),body:'WORLD EDIT — '+n+' change'+(n===1?'':'s')+(auto?' (sent on its own)':''),context:{kind:'worldedit',count:n,edits:st,auto:!!auto},status:'new'})}); };
+  const post=(st,auto)=>{ '@later'; const n=Object.keys(st).length; return BUGS.sb('/rest/v1/bug_reports',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id:crypto.randomUUID(),body:'WORLD EDIT — '+n+' change'+(n===1?'':'s')+(auto?' (sent on its own)':''),context:{kind:'worldedit',count:n,edits:st,auto:!!auto},status:'new'})}); };
   // the owner: every change goes live a moment after he makes it; a failed send is kept and sent again at the next start
   let timer=0, sending=null, again=false; const stat=t=>{ const b=document.getElementById('wsend'); if(b)b.textContent=t; };
   const push=()=>{ '@later'; if(sending){ again=true; return; } const st=WE.getState&&WE.getState(); if(!st)return; const j=JSON.stringify(st); if(j===JSON.stringify(live||{})&&!dirty)return; stat('SAVING...');
@@ -19,7 +19,7 @@ import {SYS} from './006-map-pre.js';
   let lastWe=null; SYS.add('world',(k,v)=>{ if(k!=='we'||own||v===lastWe)return; lastWe=v; (window.LOAD?LOAD('later'):Promise.resolve()).then(get).then(j=>{ live=j; if(WE.setLive(j,true))WE.applyAll(); }).catch(()=>{}); },'worldlive');
   const wire=async()=>{ const b=document.getElementById('wsend'); if(!b||b.dataset.on)return; try{ own=(await ownerP)===true; }catch(e){} if(!own)return; b.dataset.on='1'; b.hidden=false; b.disabled=true; b.textContent=dirty?'NOT SAVED YET':'LIVE FOR EVERYONE'; };
   let last=null; try{ last=SAVE.get('we-sent'); }catch(e){}
-  const auto=()=>{ if(own){ clearTimeout(timer); push(); return; } const st=WE.getState&&WE.getState(); if(!st)return; const j=JSON.stringify(st); if(j===last||last==null&&!Object.keys(st).length)return; last=j; try{ SAVE.set('we-sent',j); }catch(e){}
+  const auto=()=>{ '@later'; if(own){ clearTimeout(timer); push(); return; } const st=WE.getState&&WE.getState(); if(!st)return; const j=JSON.stringify(st); if(j===last||last==null&&!Object.keys(st).length)return; last=j; try{ SAVE.set('we-sent',j); }catch(e){}
     post(st,true).catch(()=>{ last=null; try{ SAVE.del('we-sent'); }catch(e){} }); };
   { let was=false; SYS.every(()=>{ const on=!!WE.on; if(was&&!on)auto(); was=on; },1000,'136b-worldpub'); addEventListener('pagehide',()=>{ if(WE.on||own&&(timer||sending))auto(); }); }
   const w=()=>{ if(!window.__started||!document.getElementById('wsend')){ setTimeout(w,500); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(wire).catch(()=>{}); }; w();

@@ -90,13 +90,13 @@ const MIC={open:false,data:null}; window.MIC=MIC;
   MIC.slides=()=>[{id:'pond',name:'POND WATER (LIVE)',mag:'',about:'A fresh drop from the park pond under a cover slip, about 100 µm deep. Everything in it is alive.',credit:''}].concat(((MIC.data&&MIC.data.slides)||[]).filter(s=>SLF[s.id]));
   // a slide's real width in µm: its own figure if it has one, else its picture read as a 100 mm print at the magnification given
   const widthOf=s=>{ if(s.um)return +s.um; const m=parseFloat(String(s.mag||'').replace(/[^0-9.]/g,''))||100; return 1e5/m; };
-  MIC.place=id=>{ const s=MIC.slides().find(x=>x.id===id); if(!s)return; V.slide=s; V.sx=V.sy=V.vx=V.vy=0; V.zf=(Math.random()<.5?-1:1)*(10+Math.random()*25); V.blurT=.5; V.img=null; V.org=null;
+  MIC.place=id=>{ '@later'; const s=MIC.slides().find(x=>x.id===id); if(!s)return; V.slide=s; V.sx=V.sy=V.vx=V.vy=0; V.zf=(Math.random()<.5?-1:1)*(10+Math.random()*25); V.blurT=.5; V.img=null; V.org=null;
     if(id==='pond')pond(); else { V.W=widthOf(s); const im=new Image(); im.decoding='async'; im.onload=()=>{ if(V.slide===s){ V.img=im; V.H=V.W*im.naturalHeight/im.naturalWidth; } }; im.src=SLF[id]; V.loads[id]=(V.loads[id]||0)+1; }
     V.draw(); if(SFX)SFX.play('click',{vol:.4,vary:.3}); };
   MIC.objective=i=>{ if(!V.el||i===V.obj||!OBJ[i])return; V.obj=i; V.blurT=.45; V.zf+=(Math.random()-.5)*OBJ[i].dof*3; V.draw(); if(SFX)SFX.play('click',{vol:.5,vary:.2}); };   // parfocal, nearly: a touch of fine focus after each turn
   MIC.focus=d=>{ if(!V.el)return; V.zf+=d*(Math.abs(d)>=10?1:Math.min(1,OBJ[V.obj].dof*.4+.1)); };
   // the stage's travel ends where the specimen does: a stop at each edge, the knob's spring giving a little
-  const edge=()=>{ const w=(V.slide&&V.slide.id==='pond')?V.PW:V.W||0, h=(V.slide&&V.slide.id==='pond')?V.PW:V.H||w; if(!w)return; const hx=w/2, hy=h/2;
+  const edge=()=>{ '@later'; const w=(V.slide&&V.slide.id==='pond')?V.PW:V.W||0, h=(V.slide&&V.slide.id==='pond')?V.PW:V.H||w; if(!w)return; const hx=w/2, hy=h/2;
     if(V.sx>hx){ V.sx=hx; V.vx=-Math.abs(V.vx)*.15; } if(V.sx<-hx){ V.sx=-hx; V.vx=Math.abs(V.vx)*.15; } if(V.sy>hy){ V.sy=hy; V.vy=-Math.abs(V.vy)*.15; } if(V.sy<-hy){ V.sy=-hy; V.vy=Math.abs(V.vy)*.15; } };
 
   /* ---------- the pond water: every organism at its real size (µm), speed and depth; small things jostled by the water's molecules ---------- */
@@ -106,7 +106,7 @@ const MIC={open:false,data:null}; window.MIC=MIC;
     rotifer:{len:280,wid:90,spd:0,n:[1,3],z:[85,99]}, volvox:{len:420,wid:420,spd:90,n:[1,3],z:[20,80]}, diatom:{len:70,wid:14,spd:12,n:[6,14],z:[94,99]},
     daphnia:{len:1500,wid:900,spd:0,n:[0,1],z:[30,70]}, tardigrade:{len:350,wid:110,spd:25,n:[0,1],z:[93,99]}};
   const rnd=s=>()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; };
-  const pond=()=>{ const r=rnd((Date.now()%2147483646)+1), PW=V.PW=2400, O=[], pick=(a,b)=>a+Math.floor(r()*(b-a+1)), at=()=>[(r()-.5)*PW,(r()-.5)*PW];
+  const pond=()=>{ '@later'; const r=rnd((Date.now()%2147483646)+1), PW=V.PW=2400, O=[], pick=(a,b)=>a+Math.floor(r()*(b-a+1)), at=()=>[(r()-.5)*PW,(r()-.5)*PW];
     for(const k in KINDS){ const K=KINDS[k], n=pick(...K.n); for(let i=0;i<n;i++){ const [x,y]=at(); O.push({k,x,y,z:K.z[0]+r()*(K.z[1]-K.z[0]),a:r()*6.28,len:K.len*(.8+r()*.4),ph:r()*6.28,t:0,rev:0,hop:0,vx:0,vy:0,seed:r()}); } }
     if(r()<.12){ const [x,y]=at(); O.push({k:'tardigrade',x,y,z:96,a:r()*6.28,len:350,ph:0,t:0}); }
     // bacteria, yeast and silt, 0.5 to 6 µm: no motion of their own, only Brownian
@@ -114,7 +114,7 @@ const MIC={open:false,data:null}; window.MIC=MIC;
     V.org=O; V.part=P; V.rand=r; };
   const brown=(d,dt,g)=>Math.sqrt(2*KT/(6*Math.PI*ETA*d/2*1e-6)*dt)*1e6*g;   // rms step per axis in µm: √(2·D·dt), D = kT/(6πηr)
   const gauss=r=>{ let u=0; for(let i=0;i<6;i++)u+=r(); return (u-3)/Math.SQRT2; };
-  const swim=dt=>{ const O=V.org, r=V.rand, PW=V.PW, H=PW/2;
+  const swim=dt=>{ '@later'; const O=V.org, r=V.rand, PW=V.PW, H=PW/2;
     for(const o of O){ const K=KINDS[o.k]; o.t+=dt; o.ph+=dt;
       if(o.k==='paramecium'){ if(o.rev>0){ o.rev-=dt; o.x-=Math.cos(o.a)*K.spd*.4*dt; o.y-=Math.sin(o.a)*K.spd*.4*dt; if(o.rev<=0)o.a+=1+r()*1.5; } else { o.a+=Math.sin(o.ph*2.2)*.9*dt+(r()-.5)*.3*dt; o.x+=Math.cos(o.a)*K.spd*dt; o.y+=Math.sin(o.a)*K.spd*dt; } o.z+=Math.sin(o.ph*1.3)*8*dt; }
       else if(o.k==='euglena'){ o.a+=(r()-.5)*1.4*dt; o.x+=Math.cos(o.a)*K.spd*dt; o.y+=Math.sin(o.a)*K.spd*dt; }
@@ -134,7 +134,7 @@ const MIC={open:false,data:null}; window.MIC=MIC;
 
   /* ---------- what you see: the bright field, the specimen at its scale, blurred by its distance from the focal plane ---------- */
   const blurOf=dz=>{ const O=OBJ[V.obj], e=Math.max(0,Math.abs(dz)-O.dof/2)/O.dof; return Math.min(14,e*1.6)*(1+V.diaph*.3)/(1+V.diaph*.6); };
-  const frame=dt=>{ if(!V.el||V.el.hidden)return; const g=V.g, S=V.cv.width, F=fov(), k=S/F, O=OBJ[V.obj]; V.t+=dt;
+  const frame=dt=>{ '@later'; if(!V.el||V.el.hidden)return; const g=V.g, S=V.cv.width, F=fov(), k=S/F, O=OBJ[V.obj]; V.t+=dt;
     // the stage: knobs (WASD/arrows) push it, it coasts a moment and stops at its ends
     const KY=V.keys, ax=(KY.has('d')||KY.has('arrowright')?1:0)-(KY.has('a')||KY.has('arrowleft')?1:0), ay=(KY.has('s')||KY.has('arrowdown')?1:0)-(KY.has('w')||KY.has('arrowup')?1:0);
     if(ax||ay){ V.vx+=ax*F*2.5*dt; V.vy+=ay*F*2.5*dt; } if(!V.drag){ V.sx+=V.vx*dt; V.sy+=V.vy*dt; } const f=Math.pow(.02,dt); V.vx*=f; V.vy*=f; edge();
@@ -163,26 +163,26 @@ const MIC={open:false,data:null}; window.MIC=MIC;
   // the microbes, drawn at their size L (px) along their long axis, facing +x
   const ell=(g,a,b)=>{ g.beginPath(); g.ellipse(0,0,a,b,0,0,7); };
   const DRAW={
-    paramecium:(g,o,L)=>{ const W=L*.27; ell(g,L/2,W/2); g.fillStyle='rgba(150,170,140,.35)'; g.fill(); g.strokeStyle='rgba(60,80,60,.8)'; g.lineWidth=Math.max(.6,L*.012); g.stroke();
+    paramecium:(g,o,L)=>{ '@later'; const W=L*.27; ell(g,L/2,W/2); g.fillStyle='rgba(150,170,140,.35)'; g.fill(); g.strokeStyle='rgba(60,80,60,.8)'; g.lineWidth=Math.max(.6,L*.012); g.stroke();
       g.strokeStyle='rgba(60,80,60,.35)'; g.lineWidth=Math.max(.4,L*.004); for(let i=0;i<40;i++){ const a=i/40*6.28, x=Math.cos(a)*L/2, y=Math.sin(a)*W/2, w=Math.sin(o.ph*40+i)*L*.02; g.beginPath(); g.moveTo(x,y); g.lineTo(x*1.06+w,y*1.12); g.stroke(); }
       g.fillStyle='rgba(90,110,90,.4)'; g.beginPath(); g.ellipse(-L*.05,0,L*.12,W*.25,0,0,7); g.fill(); g.strokeStyle='rgba(90,120,160,.6)'; for(const s of [-.28,.28]){ g.beginPath(); g.arc(L*s,0,W*.12+W*.06*Math.sin(o.ph*4+s*9),0,7); g.stroke(); } },
-    euglena:(g,o,L)=>{ const f=1+.25*Math.sin(o.ph*3); g.save(); g.scale(1/f,f); ell(g,L/2,L*.12); g.fillStyle='rgba(80,160,70,.55)'; g.fill(); g.strokeStyle='rgba(40,90,40,.8)'; g.lineWidth=Math.max(.5,L*.015); g.stroke(); g.restore();
+    euglena:(g,o,L)=>{ '@later'; const f=1+.25*Math.sin(o.ph*3); g.save(); g.scale(1/f,f); ell(g,L/2,L*.12); g.fillStyle='rgba(80,160,70,.55)'; g.fill(); g.strokeStyle='rgba(40,90,40,.8)'; g.lineWidth=Math.max(.5,L*.015); g.stroke(); g.restore();
       g.fillStyle='rgba(220,60,40,.8)'; g.beginPath(); g.arc(L*.38,L*.03,Math.max(.6,L*.03),0,7); g.fill(); g.strokeStyle='rgba(40,80,40,.5)'; g.lineWidth=Math.max(.4,L*.01); g.beginPath(); g.moveTo(L/2,0); for(let i=1;i<=10;i++)g.lineTo(L/2+i*L*.08,Math.sin(o.ph*14-i)*L*.06); g.stroke(); },
-    amoeba:(g,o,L)=>{ g.beginPath(); for(let i=0;i<=24;i++){ const a=i/24*6.28, r=L*.32*(1+.35*Math.sin(a*3+o.ph*.4+o.seed*9)+.2*Math.sin(a*5-o.ph*.25)); g.lineTo(Math.cos(a)*r,Math.sin(a)*r); } g.closePath(); g.fillStyle='rgba(170,170,150,.35)'; g.fill(); g.strokeStyle='rgba(90,90,80,.7)'; g.lineWidth=Math.max(.5,L*.006); g.stroke();
+    amoeba:(g,o,L)=>{ '@later'; g.beginPath(); for(let i=0;i<=24;i++){ const a=i/24*6.28, r=L*.32*(1+.35*Math.sin(a*3+o.ph*.4+o.seed*9)+.2*Math.sin(a*5-o.ph*.25)); g.lineTo(Math.cos(a)*r,Math.sin(a)*r); } g.closePath(); g.fillStyle='rgba(170,170,150,.35)'; g.fill(); g.strokeStyle='rgba(90,90,80,.7)'; g.lineWidth=Math.max(.5,L*.006); g.stroke();
       g.fillStyle='rgba(100,100,90,.4)'; for(let i=0;i<14;i++){ const a=o.seed*50+i*2.4, r=L*.18*((i*.37)%1); g.beginPath(); g.arc(Math.cos(a+o.ph*.1)*r,Math.sin(a+o.ph*.1)*r,Math.max(.4,L*.012),0,7); g.fill(); } g.fillStyle='rgba(80,80,70,.5)'; g.beginPath(); g.arc(L*.05,0,L*.05,0,7); g.fill(); },
-    rotifer:(g,o,L)=>{ g.beginPath(); g.moveTo(-L/2,0); g.quadraticCurveTo(-L*.1,L*.2,L*.35,L*.15); g.lineTo(L*.35,-L*.15); g.quadraticCurveTo(-L*.1,-L*.2,-L/2,0); g.fillStyle='rgba(190,180,150,.4)'; g.fill(); g.strokeStyle='rgba(100,90,70,.75)'; g.lineWidth=Math.max(.5,L*.01); g.stroke();
+    rotifer:(g,o,L)=>{ '@later'; g.beginPath(); g.moveTo(-L/2,0); g.quadraticCurveTo(-L*.1,L*.2,L*.35,L*.15); g.lineTo(L*.35,-L*.15); g.quadraticCurveTo(-L*.1,-L*.2,-L/2,0); g.fillStyle='rgba(190,180,150,.4)'; g.fill(); g.strokeStyle='rgba(100,90,70,.75)'; g.lineWidth=Math.max(.5,L*.01); g.stroke();
       for(const s of [-1,1]){ g.beginPath(); g.arc(L*.4,s*L*.1,L*.08,0,7); g.stroke(); for(let i=0;i<10;i++){ const a=i/10*6.28+o.ph*12*s; g.beginPath(); g.moveTo(L*.4+Math.cos(a)*L*.08,s*L*.1+Math.sin(a)*L*.08); g.lineTo(L*.4+Math.cos(a)*L*.11,s*L*.1+Math.sin(a)*L*.11); g.stroke(); } }
       g.fillStyle='rgba(120,100,70,.5)'; g.beginPath(); g.arc(L*.05,0,L*.06*(1+.3*Math.sin(o.ph*5)),0,7); g.fill(); },
-    volvox:(g,o,L)=>{ ell(g,L/2,L/2); g.fillStyle='rgba(90,170,80,.18)'; g.fill(); g.strokeStyle='rgba(50,120,50,.6)'; g.lineWidth=Math.max(.5,L*.008); g.stroke(); g.fillStyle='rgba(60,140,60,.7)';
+    volvox:(g,o,L)=>{ '@later'; ell(g,L/2,L/2); g.fillStyle='rgba(90,170,80,.18)'; g.fill(); g.strokeStyle='rgba(50,120,50,.6)'; g.lineWidth=Math.max(.5,L*.008); g.stroke(); g.fillStyle='rgba(60,140,60,.7)';
       for(let i=0;i<90;i++){ const a=i*2.4+(o.rot||0), r=L*.48*Math.sqrt((i+.5)/90); if(r<L*.42)continue; g.beginPath(); g.arc(Math.cos(a)*r,Math.sin(a)*r,Math.max(.4,L*.01),0,7); g.fill(); }
       g.fillStyle='rgba(40,120,40,.45)'; for(let i=0;i<4;i++){ const a=i*1.57+o.seed*6+(o.rot||0)*.3; g.beginPath(); g.arc(Math.cos(a)*L*.2,Math.sin(a)*L*.2,L*.08,0,7); g.fill(); } },
-    diatom:(g,o,L)=>{ ell(g,L/2,L*.1); g.fillStyle='rgba(180,150,80,.45)'; g.fill(); g.strokeStyle='rgba(120,90,40,.85)'; g.lineWidth=Math.max(.4,L*.02); g.stroke(); g.strokeStyle='rgba(120,90,40,.4)'; g.lineWidth=Math.max(.3,L*.006);
+    diatom:(g,o,L)=>{ '@later'; ell(g,L/2,L*.1); g.fillStyle='rgba(180,150,80,.45)'; g.fill(); g.strokeStyle='rgba(120,90,40,.85)'; g.lineWidth=Math.max(.4,L*.02); g.stroke(); g.strokeStyle='rgba(120,90,40,.4)'; g.lineWidth=Math.max(.3,L*.006);
       for(let i=-8;i<=8;i++){ g.beginPath(); g.moveTo(i*L*.055,-L*.08); g.lineTo(i*L*.055,L*.08); g.stroke(); } g.beginPath(); g.moveTo(-L*.45,0); g.lineTo(L*.45,0); g.stroke(); },
-    daphnia:(g,o,L)=>{ g.beginPath(); g.ellipse(0,L*.05,L*.42,L*.28,0,0,7); g.fillStyle='rgba(200,170,120,.3)'; g.fill(); g.strokeStyle='rgba(120,90,60,.7)'; g.lineWidth=Math.max(.6,L*.006); g.stroke();
+    daphnia:(g,o,L)=>{ '@later'; g.beginPath(); g.ellipse(0,L*.05,L*.42,L*.28,0,0,7); g.fillStyle='rgba(200,170,120,.3)'; g.fill(); g.strokeStyle='rgba(120,90,60,.7)'; g.lineWidth=Math.max(.6,L*.006); g.stroke();
       g.fillStyle='rgba(20,20,20,.85)'; g.beginPath(); g.arc(L*.36,-L*.12,L*.035,0,7); g.fill(); const hb=1+.35*Math.max(0,Math.sin(o.ph*2*Math.PI*4));   // its heart beats about four times a second
       g.fillStyle='rgba(200,80,60,.5)'; g.beginPath(); g.arc(L*.12,-L*.12,L*.03*hb,0,7); g.fill(); g.strokeStyle='rgba(120,90,60,.6)'; const sw=Math.max(0,o.hop-0.4)*2;
       for(const s of [-1,1]){ g.beginPath(); g.moveTo(L*.3,-L*.15); g.lineTo(L*.1,-L*.15+s*L*(.35-sw*.15)); g.stroke(); } g.beginPath(); g.moveTo(-L*.4,L*.1); g.lineTo(-L*.62,L*.25); g.stroke(); g.fillStyle='rgba(120,140,60,.35)'; g.beginPath(); g.ellipse(-L*.05,L*.08,L*.25,L*.05,0,0,7); g.fill(); },
-    tardigrade:(g,o,L)=>{ g.beginPath(); g.ellipse(0,0,L/2,L*.16,0,0,7); g.fillStyle='rgba(190,170,140,.5)'; g.fill(); g.strokeStyle='rgba(110,90,70,.8)'; g.lineWidth=Math.max(.5,L*.012); g.stroke();
+    tardigrade:(g,o,L)=>{ '@later'; g.beginPath(); g.ellipse(0,0,L/2,L*.16,0,0,7); g.fillStyle='rgba(190,170,140,.5)'; g.fill(); g.strokeStyle='rgba(110,90,70,.8)'; g.lineWidth=Math.max(.5,L*.012); g.stroke();
       g.strokeStyle='rgba(110,90,70,.6)'; for(let i=0;i<4;i++){ const x=-L*.36+i*L*.24, sw=Math.sin(o.ph*3+i*1.2)*L*.04; for(const s of [-1,1]){ g.beginPath(); g.moveTo(x,s*L*.14); g.lineTo(x+sw,s*L*.24); g.stroke(); } }
       g.fillStyle='rgba(40,30,30,.8)'; for(const s of [-1,1]){ g.beginPath(); g.arc(L*.42,s*L*.05,Math.max(.5,L*.015),0,7); g.fill(); } }};
   MIC.dbg=()=>V.el?{open:MIC.open,obj:V.obj,mag:OBJ[V.obj].m*10,fov:fov(),bar:V.bar,barPx:V.barPx,S:V.cv.width,slide:V.slide&&V.slide.id,img:!!V.img,W:V.W,H:V.H,sx:V.sx,sy:V.sy,zf:V.zf,blur:+blurOf(-V.zf).toFixed(2),loads:V.loads,

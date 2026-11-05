@@ -203,7 +203,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
       keep(p(new THREE.CylinderGeometry(.013,.013,.26,10).rotateX(Math.PI/2),brassD,.06,.06,.0,0,A)); keep(p(new THREE.CircleGeometry(.011,10),glass,.06,.06,.131,0,A,false));
       for(const s of [-1,1])keep(p(new THREE.CylinderGeometry(.012,.012,.03,10).rotateZ(Math.PI/2),brassD,s*.052,0,0,0,A));
       solid(U0-.3,V0-.3,U0+.3,V0+.3,.2); },{wire:'scope',bake:true}); });
-  ROOMK.wires.scope=(un,c)=>{ let Y=null, A=null; un.obj.traverse(o=>{ if(o.userData.yaw)Y=o; if(o.userData.alt)A=o; });
+  ROOMK.wires.scope=(un,c)=>{ '@later'; let Y=null, A=null; un.obj.traverse(o=>{ if(o.userData.yaw)Y=o; if(o.userData.alt)A=o; });
     c.hit(un,()=>'TELESCOPE',()=>{ SCOPE.open(); if(SFX)SFX.play('click',{vol:.5,vary:.2}); });
     un.tick=()=>{ if(Y)Y.rotation.y=-Math.PI/2-(SCOPE.az-270)*Math.PI/180; if(A)A.rotation.x=-Math.max(-5,SCOPE.alt)*Math.PI/180; }; };
   SYS.add('places',()=>{ if(SCOPE.view&&SCOPE.isOpen()&&!(MODS.apts&&MODS.apts.inReal))SCOPE.close(); },'150fd-scope');

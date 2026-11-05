@@ -64,7 +64,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       tex:(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.imageSmoothingEnabled=false; f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; },
       // a flat painted quad on the floor or a wall, its texture painted pixel by pixel like the street (fn(u,v) in tiles -> [r,g,b])
       floor:paint=>{ const {faceTex,bq,C}=SHARED.BOD; bq([X(R.x0),Y(.15),Z(R.y1)],[X(R.x1),Y(.15),Z(R.y1)],[X(R.x1),Y(.15),Z(R.y0)],[X(R.x0),Y(.15),Z(R.y0)],faceTex(IW*24,ID*24,(i,j)=>C(paint(R.x0+(i+.5)/24,R.y1-(j+.5)/24))),'A'); },
-      wall:(side,paint)=>{ const {faceTex,bq,C}=SHARED.BOD, h=WH, P=side==='b'?(a,z)=>[X(a),Y(z),Z(R.y0)]:side==='f'?(a,z)=>[X(a),Y(z),Z(R.y1)]:side==='w'?(a,z)=>[X(R.x0),Y(z),Z(a)]:(a,z)=>[X(R.x1),Y(z),Z(a)];
+      wall:(side,paint)=>{ '@later'; const {faceTex,bq,C}=SHARED.BOD, h=WH, P=side==='b'?(a,z)=>[X(a),Y(z),Z(R.y0)]:side==='f'?(a,z)=>[X(a),Y(z),Z(R.y1)]:side==='w'?(a,z)=>[X(R.x0),Y(z),Z(a)]:(a,z)=>[X(R.x1),Y(z),Z(a)];
         const a0=side==='b'||side==='f'?R.x0:R.y0, a1=side==='b'||side==='f'?R.x1:R.y1, w=Math.round((a1-a0)*24); bq(P(a0,0),P(a1,0),P(a1,h),P(a0,h),faceTex(w,h,(i,j)=>C(paint(a0+(i+.5)/24,h-j-.5))),'A'); },
       lamp:(x,y,h,c,i=4,r=8)=>{ const Lt=new THREE.PointLight(c,i,r*T,1.6); Lt.position.set(X(x),Y(h*24),Z(y)); scene.add(Lt); return Lt; },
       add:o=>{ scene.add(o); return o; }};

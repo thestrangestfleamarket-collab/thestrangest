@@ -3,12 +3,12 @@ import {SHARED} from './003-shx.js';
 import {DRONE} from './003b-systems.js';
 import {CATALOG, crack, grain, hash, KIND_OF, LAMPS, LBLD, LIFE, mt, prop, sh, sided, spot} from './014-gamekit.js';
 const BLOT=LBLD.find(b=>b.id==='lbodega'), BODOFF=BLOT.y0+3.75, bodegaFloorCol=(x,y)=>bodegaFloorAt(x,y,BLOT);
-function bodegaFloorAt(x,y,B){ '@later'; const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
+function bodegaFloorAt(x,y,B){ const off=B===BLOT?y<BODOFF:y>B.y1-3.75, n=grain(x,y,41,1.2), st=grain(x,y,47,2.6), c=off?[106,106,104]:[112,116,124];
   if(!off&&(((x-B.x0)%3+3)%3<.04||((y-B.y1)%3+3)%3<.04))return mt('concrete',[84,88,96]);
   if(crack(x,y,413,1.3,.006,.55))return mt('concrete',sh(c,.74));
   let k=n<.36?.92:n>.66?1.05:1; if(st>.68)k*=.8; else if(st>.62)k*=.9; if(spot(x,y,45,.7,.035,.3))k*=1.12;
   return mt('concrete',sh(c,k)); }
-function bodegaWall(q,nx,ny,X,Y,z,f){ '@later'; const u=nx?Y:X, i=Math.floor(u*1.5), j=Math.floor(z/16), bx=(u*1.5-i)*16, bz=z-j*16, joint=bz<1||((i+(j&1)*.5)*16%16<1&&bx<1);
+function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Math.floor(z/16), bx=(u*1.5-i)*16, bz=z-j*16, joint=bz<1||((i+(j&1)*.5)*16%16<1&&bx<1);
   if(z<4)return sh([40,42,46],f); if(z>=40&&z<43)return sh([70,76,86],f);
   const c=z<40?[78,88,98]:[148,156,160]; return sh(joint?sh(c,.82):c,f*(1+hash(i,j,43)*.04)); }
 { const FP=24, lit=c=>Object.assign([...c],{e:1});

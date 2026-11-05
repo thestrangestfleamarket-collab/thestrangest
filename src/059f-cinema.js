@@ -19,7 +19,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const EPOCH=Date.UTC(2026,9,28);
   // the playlist: an admin's own list from the screen's menu (shared, on the screen's record), else the free films above
   let plK='', PL=FILMS, CYCLE=0; const slotOf=len=>Math.ceil((len+600)/900)*900;
-  const list=()=>{ const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):FILMS; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
+  const list=()=>{ '@later'; const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):FILMS; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
   const showAt=t=>{ const L=list(), k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<L.length;i++){ const f=L[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:L[0],start:s0}; };
   CINEMA.films=FILMS; CINEMA.list=()=>list(); CINEMA.showAt=showAt;
   CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<Math.min(n,list().length*2);k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
@@ -31,13 +31,13 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true,marquee:'',poster:''};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title=''; CINEMA._set=r=>{ rec=r; onRec(); };
 
-  const pull=async()=>{ '@later'; if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
+  const pull=async()=>{ if(location.protocol==='file:')return; try{ const r=await fetch('/now'); if(!r.ok)return;
     const a=await r.json(); rec=a[0]||null; onRec(); }catch(e){} };
   const push=async patch=>{ '@later'; if(!BUGS.sb)return false; try{   // the site's one client to the server (136a)
     const r=await BUGS.sb('/rest/v1/now_playing?id=eq.'+ROW,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({...patch,updated_at:new Date().toISOString()})});
     const a=await r.json(); if(a[0]){ rec=a[0]; onRec(); } return true; }catch(e){ return false; } };
   CINEMA.push=push;
-  const isAdmin=async()=>{ '@later'; if(adm!=null)return adm; try{ adm=!!(BUGS.owner&&await BUGS.owner()); }catch(e){ adm=false; } return adm; };
+  const isAdmin=async()=>{ if(adm!=null)return adm; try{ adm=!!(BUGS.owner&&await BUGS.owner()); }catch(e){ adm=false; } return adm; };
   CINEMA.isAdmin=isAdmin;
 
   const startMs=()=>{ const s=cur().started_at; return s?Date.parse(s):0; };
@@ -54,7 +54,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   let clip=null, wrap=null, holder=null, player=null, soundBtn=null, haveVid='', ytP=null, making=false;
   const ensureYT=()=>ytP||(ytP=new Promise(res=>{ if(window.YT&&window.YT.Player)return res(); const prev=window.onYouTubeIframeAPIReady;
     window.onYouTubeIframeAPIReady=()=>{ try{ prev&&prev(); }catch(e){} res(); }; const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api'; s.async=1; document.head.appendChild(s); }));
-  const mkWrap=()=>{ if(wrap)return; clip=document.createElement('div'); clip.id='cinema';
+  const mkWrap=()=>{ '@later'; if(wrap)return; clip=document.createElement('div'); clip.id='cinema';
     clip.style.cssText='position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;display:none';
     wrap=document.createElement('div'); wrap.style.cssText='position:absolute;left:0;top:0;width:'+W0+'px;height:'+H0+'px;transform-origin:0 0;overflow:hidden;background:#000;will-change:transform';
     holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.appendChild(holder);
@@ -72,7 +72,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     clip.appendChild(wrap); const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); };
   // the scheduled film: its file from the Internet Archive, kept at the showing's moment
   let fvSrc='', fvSync=0;
-  const playFilm=f=>{ const src=(location.protocol==='file:'?'https://archive.org/download/':'/film/')+f.f.id+'/'+f.f.file; holder.style.display='none'; fv.style.display='block'; try{ player&&player.pauseVideo(); }catch(e){}
+  const playFilm=f=>{ '@later'; const src=(location.protocol==='file:'?'https://archive.org/download/':'/film/')+f.f.id+'/'+f.f.file; holder.style.display='none'; fv.style.display='block'; try{ player&&player.pauseVideo(); }catch(e){}
     if(fvSrc!==src){ fvSrc=src; fv.src=src; fv.currentTime=f.off; applySnd(); }
     const now=performance.now(); if(now-fvSync>1000){ fvSync=now; if(fv.paused)fv.play().catch(()=>{});
       if(fv.readyState>0&&!fv.seeking){ const d=f.off-fv.currentTime; if(Math.abs(d)>5){ fv.playbackRate=1; fv.currentTime=f.off+(fv.readyState<3?3:1); } else fv.playbackRate=Math.abs(d)<.3?1:1+Math.max(-.1,Math.min(.1,d*.05)); } } return fv.readyState>=2; };
@@ -89,30 +89,30 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
         onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
   const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
     holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
-  const onEnded=async()=>{ '@later'; if(adm)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
+  const onEnded=async()=>{ if(adm)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
 
   // the four corners of a plane on the page, and a homography that maps the video's own rectangle (no black bars) onto them
   // an edge of the screen past the camera would fold the picture: only the part in front of the camera is mapped (s: that part of the screen, 0..1 across and down)
-  const corners=me=>{ const g=me.geometry.parameters, r=renderer.domElement.getBoundingClientRect(), C=SHARED.cam; me.updateMatrixWorld(); C.updateMatrixWorld(); const V=new THREE.Vector3();
+  const corners=me=>{ '@later'; const g=me.geometry.parameters, r=renderer.domElement.getBoundingClientRect(), C=SHARED.cam; me.updateMatrixWorld(); C.updateMatrixWorld(); const V=new THREE.Vector3();
     const zc=(sx,sy)=>V.set(sx*g.width/2,sy*g.height/2,0).applyMatrix4(me.matrixWorld).applyMatrix4(C.matrixWorldInverse).z;
     let a=-1, b=1, c=-1, d=1; if(!C.isOrthographicCamera){ const z0=zc(0,0), zx=zc(1,0)-z0, zy=zc(0,1)-z0, m=-(C.near*2+.02*TILE);
       const cut=(k,o,lo,hi)=>{ const t=(m-z0-Math.abs(o))/k; return k>0?[lo,Math.min(hi,t)]:k<0?[Math.max(lo,t),hi]:z0+Math.abs(o)<m?[lo,hi]:[1,-1]; };
       if(Math.abs(zx)>=Math.abs(zy))[a,b]=cut(zx,zy,-1,1); else [c,d]=cut(zy,zx,-1,1); if(!(b>a&&d>c))return null; }
     const P=(sx,sy)=>{ V.set(sx*g.width/2,sy*g.height/2,0).applyMatrix4(me.matrixWorld).project(C); return {x:(V.x+1)/2*r.width,y:(1-V.y)/2*r.height,u:(V.x+1)/2,v:(V.y+1)/2}; };
     return {r,q:[P(a,d),P(b,d),P(b,c),P(a,c)],s:[(a+1)/2,(b+1)/2,(1-d)/2,(1-c)/2]}; };
-  const coef=(p0,p1,p2,p3)=>{ const dx1=p1.x-p2.x, dx2=p3.x-p2.x, dx3=p0.x-p1.x+p2.x-p3.x, dy1=p1.y-p2.y, dy2=p3.y-p2.y, dy3=p0.y-p1.y+p2.y-p3.y; let g=0, h=0;
+  const coef=(p0,p1,p2,p3)=>{ '@later'; const dx1=p1.x-p2.x, dx2=p3.x-p2.x, dx3=p0.x-p1.x+p2.x-p3.x, dy1=p1.y-p2.y, dy2=p3.y-p2.y, dy3=p0.y-p1.y+p2.y-p3.y; let g=0, h=0;
     if(Math.abs(dx3)>1e-6||Math.abs(dy3)>1e-6){ const det=(dx1*dy2-dx2*dy1)||1e-9; g=(dx3*dy2-dx2*dy3)/det; h=(dx1*dy3-dx3*dy1)/det; }
     return [p1.x-p0.x+g*p1.x,p3.x-p0.x+h*p3.x,p0.x,p1.y-p0.y+g*p1.y,p3.y-p0.y+h*p3.y,p0.y,g,h]; };
   const ap=(k,u,v)=>{ const w=k[6]*u+k[7]*v+1; return {x:(k[0]*u+k[1]*v+k[2])/w,y:(k[3]*u+k[4]*v+k[5])/w}; };
   const m3d=k=>'matrix3d('+[k[0]/W0,k[3]/W0,0,k[6]/W0, k[1]/H0,k[4]/H0,0,k[7]/H0, 0,0,1,0, k[2],k[5],0,1].map(v=>+v.toFixed(6)).join(',')+')';
   let aspect=16/9, aspId='';
-  const sniff=id=>{ if(aspId===id)return; aspId=id; aspect=16/9; ytCol=null; if(location.protocol==='file:')return; const im=new Image();
+  const sniff=id=>{ '@later'; if(aspId===id)return; aspId=id; aspect=16/9; ytCol=null; if(location.protocol==='file:')return; const im=new Image();
     im.onload=()=>{ try{ const c=document.createElement('canvas'), w=c.width=im.width, h=c.height=im.height, g=c.getContext('2d'); g.drawImage(im,0,0); const d=g.getImageData(0,0,w,h).data; { let r=0,gg=0,b=0; for(let i=0;i<d.length;i+=16){ r+=d[i]; gg+=d[i+1]; b+=d[i+2]; } const n=d.length/16*255; if(aspId===id)ytCol=[r/n,gg/n,b/n]; }
       const dark=(x0,y0,x1,y1)=>{ let m=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ const i=(y*w+x)*4; m=Math.max(m,d[i],d[i+1],d[i+2]); } return m<26; };
       let t=0, b=0, l=0, r=0; while(t<h/2&&dark(0,t,w,t+1))t++; while(b<h/2&&dark(0,h-1-b,w,h-b))b++; while(l<w/2&&dark(l,0,l+1,h))l++; while(r<w/2&&dark(w-1-r,0,w-r,h))r++;
       const cw=w-l-r, ch=h-t-b; if(aspId===id&&cw>w*.3&&ch>h*.3)aspect=Math.max(.45,Math.min(2.6,cw/ch)); }catch(e){} }; im.src='/yt/'+id+'.jpg'; };
   const vrect=()=>aspect>=W0/H0?{x:0,y:(H0-W0/aspect)/2,w:W0,h:W0/aspect}:{x:(W0-H0*aspect)/2,y:0,w:H0*aspect,h:H0};
-  const placeOver=(me,dim=1,ok=true)=>{ const cq=corners(me); if(!cq){ clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); return; }
+  const placeOver=(me,dim=1,ok=true)=>{ '@later'; const cq=corners(me); if(!cq){ clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); return; }
     const {r,q,s}=cq, cv=renderer.domElement, k0=coef(q[0],q[1],q[2],q[3]), V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), at=(u,v)=>ap(k0,(u-s[0])/(s[1]-s[0]),(v-s[2])/(s[3]-s[2]));
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
@@ -137,26 +137,26 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   let holeM=null, lgt=null;
   // the room lit by the picture: its average colour, read a few times a second (a film from our own site; a YouTube picture can't be read, so its poster's colour)
   const LC=new THREE.Color(0,0,0), LT=new THREE.Color(); let lsT=0, scv=null, ytCol=null;
-  const glow=(on,fl)=>{ if(!lgt)return; const now=performance.now();
+  const glow=(on,fl)=>{ '@later'; if(!lgt)return; const now=performance.now();
     if(!on)LT.setRGB(0,0,0); else if(now-lsT>100){ lsT=now; let c=null;
       if(fl&&fv&&fv.readyState>=2)try{ scv=scv||Object.assign(document.createElement('canvas'),{width:8,height:5}); const g=scv.getContext('2d',{willReadFrequently:true}); g.drawImage(fv,0,0,8,5); const d=g.getImageData(0,0,8,5).data; let r=0,gg=0,b=0; for(let i=0;i<d.length;i+=4){ r+=d[i]; gg+=d[i+1]; b+=d[i+2]; } const n=d.length/4*255; c=[r/n,gg/n,b/n]; }catch(e){ c=null; }
       c=c||ytCol||[.45,.47,.55]; LT.setRGB(c[0],c[1],c[2]).convertSRGBToLinear(); }
     LC.lerp(LT,.12); const m=Math.max(LC.r,LC.g,LC.b); if(m<.004){ lgt.intensity=0; return; } lgt.color.setRGB(LC.r/m,LC.g/m,LC.b/m); lgt.intensity=9*Math.sqrt(m)*(cur().brightness??.8); };
   // full screen: the picture over the whole page, the game behind it
   let full=false, xBtn=null;
-  CINEMA.fullscreen=on=>{ full=!!on; mkWrap();
+  CINEMA.fullscreen=on=>{ '@later'; full=!!on; mkWrap();
     if(!xBtn){ xBtn=document.createElement('button'); xBtn.textContent='✕ LEAVE FULL SCREEN'; xBtn.style.cssText='position:fixed;right:16px;top:16px;z-index:62;display:none;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer'; xBtn.onclick=()=>CINEMA.fullscreen(false); document.body.appendChild(xBtn); }
     clip.style.position=full?'fixed':'absolute'; clip.style.zIndex=full?'60':''; clip.style.background=full?'#000':''; xBtn.style.display=full?'block':'none';
     if(full)document.body.appendChild(clip); else { const stg=document.getElementById('stage')||document.body; stg.insertBefore(clip,stg.firstChild); }
     try{ if(full&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{}); else if(!full&&document.fullscreenElement)document.exitFullscreen().catch(()=>{}); }catch(e){} };
   CINEMA.isFull=()=>full; CINEMA.light=()=>lgt;
   document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&full)CINEMA.fullscreen(false); });
-  const fullPlace=()=>{ const W=innerWidth, H=innerHeight, V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), k=Math.min(W/V.w,H/V.h);
+  const fullPlace=()=>{ '@later'; const W=innerWidth, H=innerHeight, V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), k=Math.min(W/V.w,H/V.h);
     Object.assign(clip.style,{display:'block',left:'0px',top:'0px',width:W+'px',height:H+'px',borderRadius:'0'});
     wrap.style.transform='translate('+((W-V.w*k)/2-V.x*k)+'px,'+((H-V.h*k)/2-V.y*k)+'px) scale('+k+')'; wrap.style.filter='none';
     if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false);
     if(vFail||!snd.on){ soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; Object.assign(soundBtn.style,{display:'block',left:W/2+'px',top:(H-16)+'px'}); } else soundBtn.style.display='none'; };
-  const buildHole=m=>{ if(holeM)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
+  const buildHole=m=>{ '@later'; if(holeM)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
     holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE);
     lgt=new THREE.PointLight(0xffffff,0,w*7,1.2); lgt.userData.in=()=>CINEMA.on; lgt.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,w*.9); lgt.position.y-=h*.3; LITE.recs.push(lgt); holeM.quaternion.copy(fm.quaternion); holeM.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(w*2,h*2,.3*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.quaternion.copy(fm.quaternion); hb.position.copy(holeM.position); scene.add(hb);
@@ -171,7 +171,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.2*TILE, z=b.z-b.oz*.2*TILE;
     N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
   const F0=()=>window.FORAGE; let named=false;
-  const gate=()=>true, gate0=()=>{ const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
+  const gate=()=>true, gate0=()=>{ '@later'; const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
     if(n>0){ I.add('ticket',-1); if(F0()&&F0().draw)F0().draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
     say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
   const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
@@ -189,7 +189,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     glow(ok,fl);
     if(full)fullPlace(); else if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
     if(id)    sync(); };
-  const sync=()=>{ const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
+  const sync=()=>{ '@later'; const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
       try{ const is=player.getCurrentTime(), st=player.getPlayerState?player.getPlayerState():1;
         if(Date.now()<startMs()){ if(st===1)player.pauseVideo(); if(is>.5)player.seekTo(0,true); return; }
         if(st===3)return; const d=offset()-is;
@@ -213,17 +213,17 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const lines=()=>{ const o=ovr.text!=null?ovr.text:own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
   const litBg=(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#d9e6f5'); gr.addColorStop(.5,'#f6faff'); gr.addColorStop(1,'#d9e6f5'); g.fillStyle=gr; g.fillRect(0,0,W,H); };
   const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.5)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
-  const drawCanopy=()=>{ const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
+  const drawCanopy=()=>{ '@later'; const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
     { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-12)/n; litBg(g,W,H); rails(g,W,H,n); g.fillStyle='#111214'; g.textAlign='center'; g.textBaseline='middle'; if('letterSpacing' in g)g.letterSpacing='3px';
       L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.5:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
   const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; return '/ia/'+nextF().id+'.jpg'; };
   // the picture without its dark bars or border (a letterboxed thumbnail, a poster scanned with a black edge)
-  const trim=img=>{ const w=img.width, h=img.height; try{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,w,h).data;
+  const trim=img=>{ '@later'; const w=img.width, h=img.height; try{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,w,h).data;
       const dark=(x0,y0,x1,y1)=>{ let n=0, m=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ const i=(y*w+x)*4; m++; if(Math.max(d[i],d[i+1],d[i+2])>40)n++; } return n<m*.03; };
       let t=0, b=0, l=0, r=0; while(t<h*.3&&dark(0,t,w,t+1))t++; while(b<h*.3&&dark(0,h-1-b,w,h-b))b++; while(l<w*.3&&dark(l,t,l+1,h-b))l++; while(r<w*.3&&dark(w-1-r,t,w-r,h-b))r++;
       return [l,t,w-l-r,h-t-b]; }catch(e){ return [0,0,w,h]; } };
-  const drawPoster=()=>{ const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster');   // the picture fills the whole case, black behind it
+  const drawPoster=()=>{ '@later'; const {g,cv,tex}=post, W=cv.width, H=cv.height, src=posterSrc(), mine=!!own('poster');   // the picture fills the whole case, black behind it
     g.fillStyle='#000'; g.fillRect(0,0,W,H); g.textAlign='center'; g.textBaseline='middle';
     g.fillStyle='#d8a845'; fit(g,'COMING SOON',W-40,40); g.fillText('COMING SOON',W/2,H*.42); g.fillStyle='#faf8f0'; fit(g,title(),W-30,22); g.fillText(title(),W/2,H*.56); tex.needsUpdate=true;
     if(!src)return; const img=new Image(); img.crossOrigin='anonymous';
@@ -232,10 +232,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     img.src=src; };
   // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, backlit poster cases
   // a w by h sheet with a window cut in it (the box office), its picture still spread over the whole sheet
-  const holed=(w,h,cx,cy,hw,hh)=>{ const S=new THREE.Shape([new THREE.Vector2(-w/2,-h/2),new THREE.Vector2(w/2,-h/2),new THREE.Vector2(w/2,h/2),new THREE.Vector2(-w/2,h/2)]);
+  const holed=(w,h,cx,cy,hw,hh)=>{ '@later'; const S=new THREE.Shape([new THREE.Vector2(-w/2,-h/2),new THREE.Vector2(w/2,-h/2),new THREE.Vector2(w/2,h/2),new THREE.Vector2(-w/2,h/2)]);
     S.holes.push(new THREE.Path([new THREE.Vector2(cx-hw,cy-hh),new THREE.Vector2(cx-hw,cy+hh),new THREE.Vector2(cx+hw,cy+hh),new THREE.Vector2(cx+hw,cy-hh)])); const g=new THREE.ShapeGeometry(S), P=g.attributes.position, U=g.attributes.uv;
     for(let i=0;i<P.count;i++)U.setXY(i,P.getX(i)/w+.5,P.getY(i)/h+.5); return g; };
-  const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post,win})=>{ const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
+  const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post,win})=>{ '@later'; const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
     const OUT=.11*tw, put=(me,s,out,y)=>{ me.position.copy(at(s,OUT+out,y)); me.rotation.y=ry; F.add(me); return me; }, flat=(w,h,m)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),m), blk=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));
     const glow=m=>new THREE.MeshBasicMaterial({map:m.tex,toneMapped:false}), L=s=>sg*s;
     { const px=96/tw, W=Math.round(Wb*px), H=Math.round((top-y0)*px), c=canv(W,H), g=c.g, band=Math.round(H*.07), kick=Math.round(H*.06);
@@ -258,7 +258,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       const fr=blk(pw+.18*tw,ph+.18*tw,.12*tw,0x0c0b0d); fr.position.z=.06*tw; const r=flat(pw+.05*tw,ph+.05*tw,rim); r.position.z=.121*tw; const p=flat(pw,ph,pm); p.position.z=.123*tw; const h=flat(pw*2,ph*1.5,halo); h.position.z=.02*tw;
       G.add(h,fr,r,p); G.position.copy(at(s,OUT,yc)); G.rotation.y=ry; F.add(G); cases.push(G); }
     post.group=cases[0]||F; scene.add(F); return F; };
-  const buildSigns=m=>{ if(canopy)return; const dd=(STORE.main.doors||[]).find(d=>d[0]==='THE MOVIE THEATRE'); if(!dd)return;
+  const buildSigns=m=>{ '@later'; if(canopy)return; const dd=(STORE.main.doors||[]).find(d=>d[0]==='THE MOVIE THEATRE'); if(!dd)return;
     const Yb=SHARED.BOD.Y, tw=Math.abs(SHARED.BOD.X(1)-SHARED.BOD.X(0)), R=m.R, bx=dd[3], bz=dd[4]; let ox=dd[1]-bx, oz=dd[2]-bz; const L=Math.hypot(ox,oz)||1; ox/=L; oz/=L;
     const alongX=Math.abs(oz)>=Math.abs(ox), Wb=alongX?R.x1-R.x0:R.z1-R.z0, cS=alongX?(R.x0+R.x1)/2:(R.z0+R.z1)/2, ry=Math.atan2(ox,oz);
     const at=(s,out,y)=>alongX?new THREE.Vector3(s,y,bz+oz*out):new THREE.Vector3(bx+ox*out,y,s);
@@ -292,11 +292,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
         const c=new THREE.Color(ovr.col||'#ffffff').multiplyScalar(ovr.bri==null?1:ovr.bri); for(const i of [0,1,4]){ const mm=box.material[i]; if(mm&&mm.color)mm.color.copy(c); } canopy.key=''; sign(); }});
     if(TEXT.cur['sign.THEATRE MARQUEE']!=null)SIGNS.list[SIGNS.list.length-1].set({text:TEXT.cur['sign.THEATRE MARQUEE']});
     sign(); };
-  const sign=()=>{ if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
+  const sign=()=>{ '@later'; if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } }
     if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } } };
   // the showtimes, as the box office's screen draws them: the film on now and the next ones, in the viewer's own time
-  CINEMA.drawTimes=(g,W,H,n=6)=>{ const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
+  CINEMA.drawTimes=(g,W,H,n=6)=>{ '@later'; const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
     g.fillStyle='#0b0c10'; g.fillRect(0,0,W,H); g.fillStyle='#d8a845'; g.fillRect(0,0,W,H*.15); g.fillStyle='#0b0c10'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'SHOWTIMES',W*.8,H*.1); g.fillText('SHOWTIMES',W/2,H*.075);
     const rh=(H*.83)/n; L.forEach((f,i)=>{ const y=H*.17+rh*(i+.5), now=i===0&&P&&!P.yt&&P.id===f.id; g.fillStyle=now?'#2a1e10':i%2?'#111318':'#0d0f13'; g.fillRect(0,y-rh/2,W,rh);
       g.textAlign='left'; g.fillStyle=now?'#ffcf6a':'#e8e4da'; fit(g,now?'NOW':hm(f.start),W*.24,rh*.5); g.fillText(now?'NOW':hm(f.start),W*.04,y);
@@ -356,7 +356,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     dlg.style.display='block'; };
   CINEMA.openMenu=openMenu;
   const SQLHINT='could not save (has supabase/cinema.sql been run?)';
-  const mini=(head,body,wire)=>{ if(!edlg)edlg=box_();
+  const mini=(head,body,wire)=>{ '@later'; if(!edlg)edlg=box_();
     edlg.innerHTML=`<div style="font:600 18px system-ui;color:#d8a845;margin-bottom:10px">${head} · admin</div>${body}
       <div style="display:flex;gap:6px;justify-content:space-between;margin-top:10px"><span><button id="ezsave" style="${RED}padding:8px 14px">SAVE</button> <button id="ezauto" style="${DIM}padding:8px 12px">FROM THE VIDEO</button></span><button id="ezclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
       <div id="ezsay" style="color:#8f7470;font-size:12px;margin-top:8px"></div>`;

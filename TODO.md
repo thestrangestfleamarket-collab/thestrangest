@@ -206,6 +206,16 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [ ] **Archive the items** · P1 · L · code · risk high · queued with the character and places archives, owner says when to start (5 Nov).
+  Owner, 4 Nov: "remove all items except" these.
+  - Stay: foraging and gardening (mushrooms, flowers, seeds, fruit, vegetables, pots, dirt, rain, acorns, bonsai, cacti), bees and honey,
+    butterflies and birds, diving and mining, fishing, books, art, the four swords (sold by the Samurai Warrior), the Pine Grain hover
+    board, the home computer, the modem, the black balloon, the cigars, litter.
+  - Archived: every food and drink (cooking too) and hunger itself, the bodega's groceries and bouquets, potions, armour, clothes, the
+    other boards, the skateboard and the kart, the other electronics, tickets, tokens, the passport, the paper, the other toys and prizes,
+    the curses, the museum gift shop.
+  - The cinema, the playhouse and the arcade become free.
+
 - [ ] **Archive the places** · P1 · XL · code · risk high · queued with the character archive, owner says when to start (4 Nov). Owner, 4 Nov:
   "remove 100% from game and archive all locations except" these.
   - Stay: the Bodega, the Apartments (with the fire escape), the Art Museum, the Bank, the Bar, the Playhouse, the Movie Theatre, the Bath
@@ -227,11 +237,11 @@ One pass, one pull request.
   - Remove the Museum of Earth, building included (not the art museum; its gift shop goes with it), and the cinema snack stand, the bar's
     taps and register, the playhouse drinks.
   - Sellers: the Radish's goods and teaching go to the Tomato; the Shark's to the Scuba Diver at the same spot; the Swordsmith's swords and
-    teaching to the Samurai Warrior at the Swordsmith's spot; the Boardwright's boards and kart to the Skate Shop Owner.
+    teaching to the Samurai Warrior at the Swordsmith's spot; the Pine Grain hover board to the Skate Shop Owner (the only board kept).
   - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), the Scuba
     Diver (fish), the Tomato (mushrooms). The diner's and the Cart Man's food go to the bodega (owner, 4 Nov: they go with the places).
   - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
-    staff, pay at the register yourself; take off the groceries that do nothing (toilet paper, soap, and the like).
+    staff, pay at the register yourself; every grocery comes off (the items archive below).
 
 - [ ] **Who stands on Market St, and why** · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
   one on the street"; he has not said yes to fixing these. The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at

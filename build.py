@@ -48,7 +48,7 @@ open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
 # the owners' map editor: its own light page (no game), the ground picture beside it (tools/topmap.cjs)
-EDITOR = os.path.exists('data/topmap.json')
+EDITOR = False  # the map editor is archived (owner, 5 Nov 2026)
 shutil.rmtree('dist/edmap', ignore_errors=True)
 if EDITOR:
     open('dist/editor.html', 'w').write(code(data(read('src/editor/editor.html'))).replace('__BUILDV__', bv))
@@ -56,7 +56,7 @@ if EDITOR:
     for t in json.load(open('data/topmap.json'))['tiles']:
         if os.path.exists('data/topmap/' + t): shutil.copy('data/topmap/' + t, 'dist/edmap/' + t)
 else:
-    print('no data/topmap.json, so no dist/editor.html (node tools/topmap.cjs makes it)')
+    pass
 
 shutil.rmtree('dist/g', ignore_errors=True)
 os.makedirs('dist/g')

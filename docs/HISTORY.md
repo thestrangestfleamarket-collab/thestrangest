@@ -5482,3 +5482,7 @@ Owner, of the shirt's knit seen up close ("why is the avatars shirt look so deta
 ## 5 Nov 2026: less crawl
 
 Owner, of close-ups of the telephone wires, a roof and a tree ("constantly moving and have a ton of pixel detail moving nonstop"; "the roof also seems way too detailed and when zooming in and out it seems glitchy"; "every single leaf on this tree is moving"), of the fixes offered: "1, 2, fix - 3 remove all trees from map. will work on trees later": the painted roofs and walls have smaller copies for far off (chunky up close, no crawl); the telephone wires hang still (a perching bird still weighs one down); no tree is on the map (the park's, the street's, the skyline's), until the trees are worked on.
+
+## 5 Nov 2026: the view stays above ground
+
+Owner: "view should not be able to go underground like this". The overhead view tilts no lower than 15 degrees.

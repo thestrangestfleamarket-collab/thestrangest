@@ -21,7 +21,22 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!blocked, 'nobody walks into a wall');
     const sn = F.snap(S); ok(sn.n.length === 3 && sn.n.every(r => r.length === 9 && typeof r[0] === 'string' && typeof r[6] === 'number'), 'the word to the page: every walker, its place, its way, its state');
     const S2 = F.load(JSON.parse(JSON.stringify(F.save(S)))); F.step(S2, 1, rnd); ok(Object.keys(S2.by).length === 3 && !!S2.g && F.free(S2, 40 * C, 40 * C) && JSON.stringify(F.save(S)).length < 20000, 'the walks are saved and reloaded whole');
-    const S3 = F.make(); F.set(S3, 'd', { x: 1, z: 1, mode: { roam: 1 } }); F.step(S3, 5); ok(S3.by.d.x === 1 && S3.by.d.z === 1, 'with no grid yet nobody moves'); }
+    const S3 = F.make(); F.set(S3, 'd', { x: 1, z: 1, mode: { roam: 1 } }); F.step(S3, 5); ok(S3.by.d.x === 1 && S3.by.d.z === 1, 'with no grid yet nobody moves');
+    // a goal from the hour: walk there, then wander the range it names; one with nowhere to go hides where it stands; a jog goes faster
+    F.set(S, 'c', { goal: { gid: 'off:jog@2', at: { x: 70 * C, z: 70 * C }, in: 0, b: { band: [[66 * C, 66 * C, 76 * C, 76 * C]] }, hold: 0, fast: 1 } }, rnd);
+    let cv = S.by.c.v, band = 0, outside = 0; for (let i = 0; i < 1200; i++) { F.step(S, .5, rnd); const c = S.by.c; if (c.done === 'off:jog@2' && !c.goal) { band++; if (c.x < 65 * C || c.x > 77 * C || c.z < 65 * C || c.z > 77 * C) outside++; } }
+    ok(cv > .8 * T && S.by.c.mode.b && S.by.c.mode.b.band && band > 200 && !outside, 'a goal walks a walker to a spot at a jog, then it wanders the range the goal names (' + band + ' half-seconds in it, ' + outside + ' out)');
+    F.set(S, 'c', { goal: { gid: 'home@3', at: null, in: 1, hold: 1 } }, rnd); F.step(S, 1, rnd);
+    ok(S.by.c.in === -1 && S.by.c.v === S.by.c.v0 && F.snap(S).n.find(r => r[0] === 'c')[6] === 2, 'a goal with nowhere to go hides the walker where it stands, at its own pace again');
+    const { lvGoal, lvSpot, LV_DO } = await import(path.resolve(__dirname, '../worker/lives.js')), D = require('../data/lives.json');
+    const key = Object.keys(D).find(k => D[k].habits.includes('fish') && D[k].hours[0] >= 8), job = D[key], hg = { pier: { band: [10, -100, 90, -99], hd: 3.14 }, meadow: { areas: [[0, 40, 7]] }, path: { band: [-15, 250, 57, 60] }, bench: { areas: [[113, 52, 6]] }, river: { band: [0, 200, -115, -111] }, flea: { areas: [[223, -84, 5]] }, shrine: { band: [90, 94, -110, -109], hd: 0 } };
+    const doors = Object.fromEntries(Object.keys(LV_DO).filter(k => LV_DO[k].at).map(k => [LV_DO[k].at, { x: 5, z: 5 }])), cst = { job, life: 1, work: { x: 1, z: 2, in: 1 }, home: { x: 3, z: 4 } }, X = { hg, doors }, cur = { x: 9, z: 9 };
+    const day = [], g = h => lvGoal(key, cst, 2400 + h, null, X, 1.13, cur); for (let h = 0; h < 24; h++) day.push(g(h));
+    const atWork = day.find(o => o.w === 'work'), home = day.find(o => o.w === 'home'), outs = day.filter(o => o.w.startsWith('off:'));
+    ok(atWork && atWork.at.x === 1 && atWork.in === 1 && atWork.hold === 1 && home && home.at.x === 3 && home.in === 1 && outs.length && outs.every(o => o.at && (o.in === 1 || o.b || o.hold)), 'the hour rules name each goal (work at its door and in, home and in, a habit at its place or out in its range): ' + day.map(o => o.w).join(','));
+    const sp = lvSpot('fish', key, 2400, hg, doors, 1.13), jg = lvSpot('jog', key, 2400, hg, doors, 1.13); ok(sp && sp.r === 0 && sp.hd === 3.14 && sp.x >= 10 && sp.x <= 90 && jg && jg.band && jg.r > 0 && jg.fast && lvSpot('read', key, 2400, hg, doors, 1.13).r === 0 && lvSpot('drink', key, 2400, hg, doors, 1.13).door.x === 5, 'a habit\'s spot: the pier a place to stand facing the water, the path a band to jog, a bench a spot to stay, the bar its door');
+    const nl = lvGoal('someone', { job: {}, life: 0, hours: [9, 17, 22, 7], work: { x: 50, z: 50, r: 4 }, home: null }, 2400 + 10, null, X, 1.13, cur), nlh = lvGoal('someone', { job: {}, life: 0, hours: [9, 17, 22, 7], work: null, home: null }, 2400 + 23, null, X, 1.13, cur), nlo = lvGoal('someone', { job: {}, life: 0, hours: [9, 17, 22, 7], work: null, home: null }, 2400 + 19, null, X, 1.13, cur);
+    ok(nl.w === 'work' && nl.b && nl.b.r === 4 && !nl.hold && nlh.w === 'home' && nlh.at === null && nlh.in === 1 && nlo.w === 'off' && nlo.b && nlo.b.x === 9, 'not a life: the job\'s hours put them at work in their range, home out of sight, off near where they are'); }
 
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const pg = await b.newPage({ viewport: { width: 960, height: 600 } }), errs = [];

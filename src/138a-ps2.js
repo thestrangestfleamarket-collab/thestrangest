@@ -41,4 +41,4 @@ PS2.img=(px,W,H,lines)=>{ const L=Math.max(8,Math.round(lines)), Lx=Math.max(8,M
 PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };
 { let v='1'; try{ v=SAVE.get('ps2')||'1'; }catch(e){} PS2.on=v==='1'; PS2.sp.enabled=PS2.on; }
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
-  if(!PS2.on)return; const u=PS2.sp.uniforms; u.uL.value.set(Math.round(240*RW/Math.max(1,RH)),240); },'138a-ps2');
+  SHARED.cellLines=PS2.on?240:0; if(!PS2.on)return; const u=PS2.sp.uniforms; u.uL.value.set(Math.round(240*RW/Math.max(1,RH)),240); },'138a-ps2');

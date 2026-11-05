@@ -13,9 +13,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
     const R=RIG, st=__dbg.ST, raf=()=>new Promise(r=>requestAnimationFrame(r));
     const me=()=>W3.group.children.find(m=>m.geometry===BODIES.by.avatar.GEO), M=new __dbg.THREE.Matrix4(), V=new __dbg.THREE.Vector3();
     // the avatar's lowest point and the rig's, in the rig's space (its ground at 0)
-    window.__low=()=>{ const m=me(); if(!m)return null; const P=m.userData.PM.value, A=m.geometry.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array; let lo=1e9;
-      for(let i=0;i<A.position.count;i+=3){ const a=P[bi[i*2]|0], c=P[bi[i*2+1]|0], w=bw[i]; for(let k=0;k<16;k++)M.elements[k]=a.elements[k]*w+c.elements[k]*(1-w); V.set(p[i*3],p[i*3+1],p[i*3+2]).applyMatrix4(M); if(V.y<lo)lo=V.y; }
-      const B=W3.lastB; if(!B)return null; let rl=1e9; for(const k in B.J)rl=Math.min(rl,B.J[k].y); const g=W3.group; return {av:lo,rig:rl,off:lo-rl,floor:(SHARED.groundY(g.position.x,g.position.z)-g.position.y)/g.scale.y}; };
+    window.__low=()=>{ const m=me(); if(!m)return null; const P=m.userData.PM.value, A=m.geometry.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array; let lo=1e9; const LV=new __dbg.THREE.Vector3();
+      for(let i=0;i<A.position.count;i+=3){ const a=P[bi[i*2]|0], c=P[bi[i*2+1]|0], w=bw[i]; for(let k=0;k<16;k++)M.elements[k]=a.elements[k]*w+c.elements[k]*(1-w); V.set(p[i*3],p[i*3+1],p[i*3+2]).applyMatrix4(M); if(V.y<lo){ lo=V.y; LV.copy(V); } }
+      const B=W3.lastB; if(!B)return null; let rl=1e9; for(const k in B.J)rl=Math.min(rl,B.J[k].y); const g=W3.group; g.updateMatrixWorld(true); LV.applyMatrix4(g.matrixWorld);
+      return {av:lo,rig:rl,off:lo-rl,floor:lo+(SHARED.groundY(LV.x,LV.z)-LV.y)/g.scale.y,blend:(st._mw||0)>0}; };   // (floor: the ground under its lowest point, as the game reads it)
     // a tile of the sheet: the avatar from its side, the ground under its standing feet a green line
     window.__tile=n=>{ const THREE=__dbg.THREE, renderer=__dbg.renderer, g=W3.group, W=150, H=210, cols=8, rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; const cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,200), ry=g.rotation.y;
       g.updateMatrixWorld(true); const gp=g.getWorldPosition(new THREE.Vector3()), hh=window.__hh, ww=hh*W/H; cam.left=-ww/2; cam.right=ww/2; cam.top=hh*.72; cam.bottom=-hh*.28; cam.updateProjectionMatrix();
@@ -27,7 +28,8 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
     window.__moves=()=>Object.keys(R.MOVES);
     window.__play=async name=>{ for(let i=0;i<20;i++)await raf(); const s0=__low(); if(window.__c==null)window.__c=s0.off; R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
       let shot=!window.__nm;
-      while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l)continue; out.n++; const e=Math.abs(l.av-Math.max(l.rig+__c,l.floor-.3)); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
+      while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l||l.blend)continue;   // (not while it crossfades from its clips)
+      out.n++; const e=Math.abs(l.av-Math.max(l.rig+__c,l.floor-.3)); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
       if(st.move&&st.move.name===name)st.move.t=st.move.def.dur; for(let i=0;i<30;i++)await raf(); out.max=+out.max.toFixed(2); return out; }; });
   const moves=await pg.evaluate(()=>__moves()); console.log(moves.length+' moves');
   if(OUT)await pg.evaluate(n=>{ window.__nm=n; const THREE=__dbg.THREE, g=W3.group; g.updateMatrixWorld(true); window.__hh=(W3.eyeAt(new THREE.Vector3()).y-g.getWorldPosition(new THREE.Vector3()).y)*1.5; },moves.length);

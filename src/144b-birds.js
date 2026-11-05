@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
@@ -50,7 +51,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   let TRIS=0; for(const k in ME)TRIS+=ME[k].geometry.attributes.position.count/3; BIRDS.tris=TRIS;
   const HB=new THREE.BoxGeometry(.55*T,.5*T,.55*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  const CW=K.map(k=>k[5]), pickC=(r,deep)=>{ const W=CW.map((w,i)=>i>=10&&!deep?0:w), s=W.reduce((a,b)=>a+b,0); r*=s; for(let i=0;i<NK;i++)if((r-=W[i])<0)return i; return 0; };
+  const CW=K.map(k=>k[5]), TIER=k=>k>=10?'s':k>=5?'r':'c', pickC=(r,deep)=>{ const t=RARITY.pick(r,'bird'), tt=t==='s'&&!deep?'r':t, L=tt==='c'?[0,1,2,3,4]:tt==='r'?[5,6,7,8,9]:[10,11]; return L[Math.floor(((r*13.7)%1)*L.length)]; };   // a common, a rare and a super-rare tier (RARITY); the super-rare only deep in the park, once the Park Ranger ranks you high enough
   const flockN=(k,r)=>k<=2?2+Math.floor(r*4):k===4||k===9?1+Math.floor(r*2):1;
   const add=(k,x,y,z,o={})=>{ const hb=new THREE.Mesh(HB,HM); scene.add(hb); const b=Object.assign({k,x,y,z,yaw:Math.random()*6.28,pitch:0,st:'ground',t:Math.random()*5,until:1+Math.random()*3,wing:0,lift:0,hb,spots:[[x,y,z]],s:K[k][2]/1.2*WU*VIS},o);
     b.th={name:'A BIRD',obj:hb,reach:2*T,near:2.8*T,tall:.4*T,act:()=>BIRDS.menu(b)}; UI.thing(b.th); BIRDS.list.push(b); return b; };
@@ -194,6 +195,6 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE NATURE MERCHANT HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
   FORAGE.BOOK.push({id:'birds',title:'BIRDS',rows:()=>K.map((q,k)=>[q[0],!!S.seen[k],S.seen[k]?'SEEN '+S.seen[k]+' · '+q[1].toUpperCase():'',RARE(k)]),foot:'Double click a bird to watch it. Birds are out by day, in fair weather; most in the park. Scatter seed, or hang a feeder, and stand still to bring them near.'});
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
-  BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
+  BIRDS.TIER=TIER; window.BIRDS=BIRDS; BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }
 export {BIRDS};

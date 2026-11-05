@@ -1,10 +1,11 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FORAGE, ITEMS, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SOL, SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {CREATS} from './087-npc-creatures.js';
 import {MERCH} from './111e-merch.js';
 import {FLORA} from './142a-flora.js';
@@ -15,6 +16,7 @@ const BEES={list:[]}; window.BEES=BEES;
   // the honeys: what the flowers near a hive make of it (a rare moon honey by night, deep in the park)
   const HONEY={honey_wild:['WILDFLOWER HONEY',null],honey_clover:['CLOVER HONEY',['clover','dandelion','daisy']],honey_lav:['LAVENDER HONEY',['lavender','aster','chicory','iris']],
     honey_sun:['SUNFLOWER HONEY',['sunflower','marigold','goldenrod','zinnia']],honey_rose:['ROSE HONEY',['rose','tulip','foxglove','slipper']],honey_moon:['MOON HONEY',null]};
+  const HTIER={honey_wild:'c',honey_clover:'c',honey_lav:'r',honey_sun:'r',honey_rose:'r',honey_moon:'s'}; BEES.HTIER=HTIER; for(const id in HTIER)ITEMS.reg(id,{tier:{c:'common',r:'rare',s:'super'}[HTIER[id]]});
   const NM={bee_hive:'A BEEHIVE',bee_smoker:'A BEE SMOKER',bee_veil:"A BEEKEEPER'S VEIL",jar_honey:'AN EMPTY HONEY JAR',bee_wax:'BEESWAX',wax_candle:'A BEESWAX CANDLE'};
   for(const id in HONEY)NM[id]='A JAR OF '+HONEY[id][0];
   FORAGE.add({names:NM,recipes:[['wax_candle','A BEESWAX CANDLE','bee',[0,45],{bee_wax:3},'a candle for your home; sells for $12'],
@@ -34,7 +36,7 @@ const BEES={list:[]}; window.BEES=BEES;
     for(const p of GARDEN.plots?GARDEN.plots():[])if(Math.hypot(p.x-x,p.z-z)<R)add(p.k,2);
     if(window.FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-x,b.z-z)<R)for(const k of b.k||[])add(k,Math.max(1,b.n/(b.k.length||1)));
     return {n,t}; };
-  const kindOf=(h,night,n=flowers(h.x,h.z).n)=>{ if(night&&WEEDS.inPark&&WEEDS.inPark(h.x,h.z,10)&&Math.random()<.15)return 'honey_moon'; let best='honey_wild', bv=0;
+  const kindOf=(h,night,n=flowers(h.x,h.z).n)=>{ if(night&&WEEDS.inPark&&WEEDS.inPark(h.x,h.z,10)&&Math.random()<.15&&RARITY.open('bee'))return 'honey_moon'; let best='honey_wild', bv=0;
     for(const id in HONEY){ const L=HONEY[id][1]; if(!L)continue; const v=L.reduce((a,k)=>a+(n[k]||0),0); if(v>bv){ bv=v; best=id; } } return bv>=3?best:'honey_wild'; };
   // frames filled: one every MIN real minutes, up to four times as fast among flowers
   const frames=h=>{ const f=flowers(h.x,h.z).t, rate=1+Math.min(3,f/6); return Math.min(FULL,(h.f||0)+(Date.now()-h.t)/60000/MIN*rate); };

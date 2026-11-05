@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {KIT} from './068-kit.js';
@@ -160,7 +161,9 @@ const fishInit=()=>{ '@later'; if(FISHING.at)return; const T=TILE, RB={get lv(){
   FISHING.at=(x,z)=>{ if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
   const SOAK=25, K=.0022, rests=[];   // a bite's rate per second is K x the sum of the weights below; a spot just bitten rests 40 s
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;
-    for(const id of SPECIES){ if(IP(id,'water')!==w.kind||w.depth<(IP(id,'depth')||0))continue; const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, v=(IP(id,'common')||0)*b*tm; if(v>0){ per[id]=v; sum+=v; } }
+    // the water's kinds by tier (RARITY): 70, 25 and 5 in a hundred shared among its common, rare and super-rare; the super-rare only once the Fisherman ranks you high enough
+    const TN={c:0,r:0,s:0}, TK={common:'c',rare:'r',super:'s'}, tof=id=>TK[IP(id,'tier')]||'c', here=SPECIES.filter(id=>IP(id,'water')===w.kind&&w.depth>=(IP(id,'depth')||0)&&(tof(id)!=='s'||RARITY.open('fish'))); for(const id of here)TN[tof(id)]++;
+    for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm; if(v>0){ per[id]=v; sum+=v; } }
     if(w.kind==='river'&&bk)for(const [id,,c] of JUNK){ per[id]=c; sum+=c; }
     const now=performance.now()/1000, r=rests.filter(q=>Math.hypot(q[0]-x,q[1]-z)<3*T).reduce((m,q)=>Math.min(m,(now-q[2])/40),1), lam=K*sum*(1+FORAGE.sk('fish')/100)*Math.max(0,r);
     for(const k in per)per[k]=+(per[k]/sum).toFixed(4); return {water:w.kind,depth:+w.depth.toFixed(1),period:pd,bait:bk,rate:+lam.toFixed(4),bite:+(1-Math.exp(-lam*SOAK)).toFixed(3),per}; };

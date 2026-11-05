@@ -80,7 +80,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={player:o,name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(LEVELS.own(g,'*')); };
-  const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
+  const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.x&&o.x.title?' · '+o.x.title:'')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
     if(!o.lab)o.lab=LABELS.add();
     o.lab.set((say?'<div style="display:inline-block;max-width:min(320px,70vw);white-space:normal;overflow-wrap:anywhere;font:'+fitPx(SIZES[st.s]/2,say.length)+'px '+FONTS[st.f][0]+';color:'+st.c+';background:rgba(11,13,19,.88);padding:3px 6px;margin-bottom:3px">'+TEXT.esc(say)+'</div>':'')+(nm?'<div style="font:14px Silkscreen,monospace;color:'+(o.dead?'#cfe0ff':'#ffd27a')+';text-shadow:0 0 2px #0b0d13,1px 1px 0 #0b0d13,-1px -1px 0 #0b0d13,1px -1px 0 #0b0d13,-1px 1px 0 #0b0d13">'+TEXT.esc(nm)+'</div>':'')+(hp>=0?'<div style="width:80px;height:5px;margin:2px auto 0;background:#0b0d13;padding:1px"><div style="height:3px;width:'+Math.round(hp*100)+'%;background:#c84a3a"></div></div>':'')).show(!!(say||nm||hp>=0)); };
   // the whole sentence always shows: it wraps, and a long one gets smaller (not under 8 px)
@@ -89,7 +89,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } if(o.lab){ o.lab.remove(); o.lab=null; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
-  const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
+  const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.x&&o.x.title?' · '+o.x.title:'')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
     const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.textAlign='center'; x.textBaseline='middle';
     if(say){ let px=SIZES[st.s], L;
       const wrap=()=>{ x.font=px+'px '+FONTS[st.f][0]; const out=[]; let ln=''; for(const wd of say.split(/\s+/)){ const t=ln?ln+' '+wd:wd; if(ln&&x.measureText(t).width>480){ out.push(ln); ln=wd; } else ln=t; } if(ln)out.push(ln); return out; };

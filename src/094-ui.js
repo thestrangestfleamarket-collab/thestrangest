@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, BLK, BUGS, CHARP, CIVIC, DN, ED, EDITORS, FEEL, FORAGE, GAMEED, GUIDE, HANDHELD, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
-import {SAVE} from './005-save.js';
+import {OWNED, SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {GCAVE} from './060-cave.js';
@@ -204,6 +204,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div class="row onoff"><button class="btn" id="dsway">CAMERA SWAY</button></div>
       <div class="row"><span>SWAY LEVEL</span><input type="range" id="dswayl" min="1" max="10" step="1"><span id="dswaylv"></span></div>
       <div class="row pick"><span>UI SCALE</span><button class="btn" data-ui="small">SMALL</button><button class="btn" data-ui="medium">MEDIUM</button><button class="btn" data-ui="large">LARGE</button></div>
+      <div class="row pick"><span>SCREEN LAYOUT</span><button class="btn" id="uireset">RESET</button><span class="dim">DRAG ANY WINDOW OR PIECE OF THE SCREEN TO MOVE IT</span></div>
       <div class="row"><button class="btn" id="dreset">RESET THE VIEW</button></div></div>
     <div class="pane" data-p="atmo">
       <div id="adn"></div>
@@ -362,7 +363,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);
   $('#dreset').onclick=()=>{ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };
-  UI.setScale(SAVE.get('uiscale')||'medium'); M.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>UI.setScale(b.dataset.ui));
+  UI.setScale(SAVE.get('uiscale')||'medium'); M.querySelector('#uireset').onclick=()=>{ if(UI.resetLayout)UI.resetLayout(); }; M.querySelectorAll('[data-ui]').forEach(b=>b.onclick=()=>UI.setScale(b.dataset.ui));
   try{ OUTL.on=SAVE.get('outline')==='1'; }catch(e){ OUTL.on=false; } OUTL.sp.enabled=OUTL.on;
   $('#dps2').onclick=()=>{ if(PS2.set){ PS2.set(!PS2.on); resize(); } drawDisplay(); };
   $('#doutl').onclick=()=>{ OUTL.on=!OUTL.on; OUTL.sp.enabled=OUTL.on; try{ SAVE.set('outline',OUTL.on?'1':'0'); }catch(e){} drawDisplay(); };
@@ -405,22 +406,51 @@ ${sel('color',['#d8a845'])}{${HI}}
 .ml .pX{color:#7dffa8!important;background:#020a06!important;box-shadow:inset 0 0 0 2px #3aa866!important;border:0!important}
 .ml .pX:hover{color:#020a06!important;background:#7dffa8!important}`;
     document.head.appendChild(ML);
+    const HL=document.createElement('style'), PN='background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40', GL='text-shadow:0 0 5px #4aff9055', MONO="font-family:'Share Tech Mono',ui-monospace,monospace";   // the HUD in the same look (owner, 4 Nov 2026: "B")
+    HL.textContent=`body #vit{${MONO};font-size:13px;color:#7dffa8;${GL};${PN};padding:8px 10px;width:190px} body #vit #vnm{font-size:14px} body #vit .b{height:8px;margin-top:16px;background:transparent;box-shadow:inset 0 0 0 1px #2d5a40;padding:1px} body #vit .b s,body #vit .b b{top:-15px;font-size:11px;color:#3aa866}
+body #vit #vhp,body #vit #vair{background:#7dffa8!important} body #vit #vst{background:#d8ff7d!important}
+body #hmap{${MONO};font-size:12px;color:#7dffa8;text-shadow:0 0 4px #000,0 0 5px #4aff9055}
+body #hlog{${MONO};font-size:13px;letter-spacing:1px;color:#7dffa8;${GL}} body #hlines:not(:empty){${PN};padding:5px 9px} body #hlines b{color:#d8ffe4}
+body #hlines div[style*="rgb(232, 226, 204)"],body #fjour div[style*="rgb(232, 226, 204)"]{color:#7dffa8!important}
+body #fjour{${MONO}!important;font-size:14px!important;letter-spacing:1px!important} body #fjour div{${PN};padding:2px 9px;text-shadow:0 0 5px #4aff9055!important}
+body #hqb{gap:3px} body #hqb .qs{width:46px;height:46px;flex-direction:column;gap:1px;padding:11px 2px 2px;${PN};${MONO};font-size:10px;color:#7dffa8;${GL};word-break:normal}
+body #hqb .qs.on{box-shadow:0 0 0 1px #7dffa8,0 0 8px #4aff9066} body #hqb .qs.none{color:#3aa866;opacity:.6} body #hqb .qs.over{background:#0d3a1f} body #hqb .qs em,body #hqb .qs u{color:#3aa866;font-size:9px}
+body #hqb .qs img{width:18px;height:18px;image-rendering:pixelated} body #hqb .qs span{display:block;max-width:42px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body #onl{${MONO};font-size:13px;color:#7dffa8;${GL}} body #onl button{color:#7dffa8;background:rgba(2,10,6,.82);border:1px solid #3aa866} body #onl button:hover{color:#020a06;background:#7dffa8;text-shadow:none} body #onl .k{color:#3aa866;text-shadow:none}
+body #onllist,body #onllog div{${PN};border:0} body #onllog b{color:#d8ffe4} body #onlin{background:#020a06;color:#7dffa8;border:1px solid #7dffa8}
+body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0} body #roomsay{${MONO};font-size:14px}`;
+    document.head.appendChild(HL);
     const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|shopg|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };
   const NOPE='button,input,select,textarea,a,label,canvas,option,.pX,.tpg,.bgi,.bgr';
   const zoomOf=el=>{ let z=1; for(let q=el;q;q=q.parentElement){ const v=parseFloat(getComputedStyle(q).zoom); if(v>0)z*=v; } return z; };
-  const drag=(box)=>{ box.classList.add('pDrag'); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
+  // where you put each window and each piece of the HUD, kept with your account (owner, 4 Nov 2026: "allow players to move around the gui items where they want")
+  let POS={}; try{ POS=JSON.parse(OWNED.get('uipos')||'{}')||{}; }catch(e){}
+  const keep=(box,key)=>{ if(!key)return; const r=box.getBoundingClientRect(); POS[key]=[Math.round(r.left),Math.round(r.top)]; OWNED.set('uipos',JSON.stringify(POS)); };
+  const pin=(box,x,y)=>{ const z=zoomOf(box), r=box.getBoundingClientRect(), w=Math.max(r.width,60), h=Math.max(r.height,30); x=Math.max(-w+60,Math.min(innerWidth-60,x)); y=Math.max(0,Math.min(innerHeight-Math.min(h,30),y));
+    Object.assign(box.style,{position:'fixed',inset:'auto',right:'auto',bottom:'auto',transform:'none',margin:'0',left:(x/z)+'px',top:(y/z)+'px'}); };
+  const put=(box,key)=>{ const p=key&&POS[key]; if(p)pin(box,p[0],p[1]); };
+  const HUDP=['vit','hmap','hlog','hqb','mode'], MOVED=new Set();
+  const hudMove=el=>{ el.dataset.mv=1; el.style.pointerEvents='auto'; let s=null;   // a press that moves more than a few pixels drags it; a plain click still does what it did
+    el.addEventListener('mousedown',e=>{ if(e.button!==0||e.target.closest('button,input,select,textarea,a,[draggable="true"]'))return; const r=el.getBoundingClientRect(); s={x:e.clientX,y:e.clientY,dx:e.clientX-r.left,dy:e.clientY-r.top,on:false};
+      const mv=e=>{ if(!s.on){ if(Math.hypot(e.clientX-s.x,e.clientY-s.y)<6)return; s.on=true; } e.preventDefault(); pin(el,e.clientX-s.dx,e.clientY-s.dy); },
+        up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); if(s.on){ MOVED.add(el); keep(el,el.id); const eat=ev=>{ ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click',eat,{capture:true,once:true}); setTimeout(()=>removeEventListener('click',eat,true),0); } s=null; };
+      addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
+  UI.resetLayout=()=>{ POS={}; OWNED.del('uipos'); for(const id of HUDP){ const el=document.getElementById(id); if(el)for(const k of ['position','inset','right','bottom','transform','margin','left','top'])el.style[k]=''; } };   // the HUD back where it was; windows open where they always did
+  addEventListener('resize',()=>{ for(const id in POS){ const el=document.getElementById(id); if(el&&!el.hidden)put(el,id); } });
+  const drag=(box,key)=>{ box.classList.add('pDrag'); put(box,key); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
       const r=box.getBoundingClientRect(), z=zoomOf(box), dx=e.clientX-r.left, dy=e.clientY-r.top, px=v=>(v/z)+'px'; Object.assign(box.style,{position:'fixed',left:px(r.left),top:px(r.top),right:'auto',bottom:'auto',transform:'none',margin:'0',width:px(r.width),height:box.id==='ed'?px(r.height):box.style.height}); const fit=t=>{ box.style.maxHeight=px(Math.max(120,innerHeight-t-8)); if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=px(r.left); box.style.top=px(r.top);
-      const mv=e=>{ const t=Math.max(0,Math.min(innerHeight-30,e.clientY-dy)); box.style.left=px(Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))); box.style.top=px(t); fit(t); }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); };
+      const mv=e=>{ const t=Math.max(0,Math.min(innerHeight-30,e.clientY-dy)); box.style.left=px(Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))); box.style.top=px(t); fit(t); }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); keep(box,key); };
       addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
   const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
-      if(!box.dataset.pan){ box.dataset.pan=1; drag(box); if(getComputedStyle(box).position==='static')box.style.position='relative'; }
+      if(!box.dataset.pan){ box.dataset.pan=1; drag(box,id); if(getComputedStyle(box).position==='static')box.style.position='relative'; }
       if(!box.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); close?close(el):hide(el); }; box.appendChild(x); } } };
   const own=el=>[...el.querySelectorAll('button')].find(b=>/^(CLOSE|DONE|PUT AWAY|LEAVE|CANCEL|X|✕|×)$/i.test(b.textContent.trim())&&!b.classList.contains('pX'));
   const frame=()=>{ for(const el of document.querySelectorAll('body>.ml')){ if(PANS.some(p=>p[0]===el.id))continue;   // every menu: the same frame, drag and X; its own CLOSE button folds into the X
-      if(!el.dataset.pan){ el.dataset.pan=1; drag(el); }
+      if(!el.dataset.pan){ el.dataset.pan=1; drag(el,el.id); }
       const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');
       if(!el.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); const b=own(el); if(b)b.click(); else hide(el); }; el.appendChild(x); } } };
-  look(); SYS.every(()=>{ look(); UI.menuLook(); frame(); },400,'094-ui look'); }
+  const huds=()=>{ for(const id of HUDP){ const el=document.getElementById(id); if(!el)continue; if(!el.dataset.mv)hudMove(el); if(POS[id]&&!el.style.left)put(el,id); } };
+  look(); SYS.every(()=>{ look(); UI.menuLook(); frame(); huds(); },400,'094-ui look'); }

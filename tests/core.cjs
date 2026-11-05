@@ -60,6 +60,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
+    await pg.waitForFunction(() => window.WINDOWS && WINDOWS.firstDone && !(WINDOWS.taking && WINDOWS.taking.size), { timeout: 120000 }).catch(() => {});   // the bodega's window pictures (begun a few seconds after the start, a pane at a time) build its inside meanwhile
     const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
       o.sway = !!(SYS.P.cam && SYS.P.cam.some(s => s.name === '094-ui')) && __dbg.ui().sway === false && !!document.getElementById('dsway') && __dbg.ui().swayL >= 1 && __dbg.ui().swayL <= 10 && !!document.getElementById('dswayl');

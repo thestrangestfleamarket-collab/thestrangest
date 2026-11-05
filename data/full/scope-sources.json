@@ -136,14 +136,6 @@
   "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
  },
  {
-  "file": "data/scope/sky/m45.jpg",
-  "source": "https://commons.wikimedia.org/wiki/File:Pleiades_large.jpg",
-  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/1280px-Pleiades_large.jpg",
-  "credit": "NASA, ESA, AURA/Caltech, Palomar Observatory The science team consists of: D. Soderblom and E. Nelan (STScI), F. Benedict and B. Arthur (U. Texas), and B. Jone",
-  "licence": "Public domain (per Wikimedia Commons)",
-  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
- },
- {
   "file": "data/scope/sky/m1.jpg",
   "source": "https://commons.wikimedia.org/wiki/File:Crab_Nebula.jpg",
   "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1280px-Crab_Nebula.jpg",
@@ -196,14 +188,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Hubble_image_of_globular_cluster_M13_(opo0840a).jpg",
   "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Hubble_image_of_globular_cluster_M13_%28opo0840a%29.jpg/1280px-Hubble_image_of_globular_cluster_M13_%28opo0840a%29.jpg",
   "credit": "NASA, ESA, and the Hubble Heritage Team (STScI/AURA)",
-  "licence": "Public domain (per Wikimedia Commons)",
-  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
- },
- {
-  "file": "data/scope/sky/m27.jpg",
-  "source": "https://commons.wikimedia.org/wiki/File:DSS_image_of_Dumbbell_Nebula_(ground-based_image)_(opo0306e).jpg",
-  "original": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/DSS_image_of_Dumbbell_Nebula_%28ground-based_image%29_%28opo0306e%29.jpg/500px-DSS_image_of_Dumbbell_Nebula_%28ground-based_image%29_%28opo0306e%29.jpg",
-  "credit": "Digitized Sky Survey (DSS)",
   "licence": "Public domain (per Wikimedia Commons)",
   "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
  },

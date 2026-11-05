@@ -140,10 +140,8 @@
    "kind": "cluster",
    "ra": 56.75,
    "dec": 24.12,
-   "file": "scope/sky/m45.jpg",
    "fov_deg": 2.0,
-   "about": "The Seven Sisters, a family of young blue stars still wrapped in a wisp of dust.",
-   "credit": "NASA, ESA, AURA/Caltech, Palomar Observatory The science team consists of: D. Soderblom and E. Nelan (STScI), F. Benedict and B. Arthur (U. Texas), and B. Jone"
+   "about": "The Seven Sisters, a family of young blue stars still wrapped in a wisp of dust."
   },
   {
    "id": "m1",
@@ -228,10 +226,8 @@
    "kind": "nebula",
    "ra": 299.9,
    "dec": 22.72,
-   "file": "scope/sky/m27.jpg",
    "fov_deg": 0.25,
-   "about": "The glowing shell of a dying star, shaped a bit like an apple core.",
-   "credit": "Digitized Sky Survey (DSS)"
+   "about": "The glowing shell of a dying star, shaped a bit like an apple core."
   },
   {
    "id": "m33",

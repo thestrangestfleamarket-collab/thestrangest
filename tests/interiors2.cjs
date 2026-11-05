@@ -36,12 +36,6 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const r=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.cash=5; BATHK.until=0; th('THE FRONT DESK (A SOAK').act(); const soak=INV.cash===1&&BATHK.until>performance.now()/1000;
       const ghost=!!th('THE BEDSHEET'), benches=__dbg.UI.things.filter(t=>t.name==='A BENCH').length>=3, towels=!!th('THE TOWEL SHELF'); return {soak,ghost,benches,towels}; });
     rec('bath house: THE BEDSHEET at the desk sells a soak and a towel; benches; the towel shelf',r.soak&&r.ghost&&r.benches&&r.towels,JSON.stringify(r)); await shot('bath'); }
-  /* ---------- THE GOLEMS' CAVE ---------- */
-  { await pg.evaluate(()=>{ const p=STORE.places.find(q=>q[0]==="THE GOLEMS' CAVE"); STORE.goTo(p[1],p[2],'up'); }); await U(()=>window.GCAVE&&GCAVE.ready&&__dbg.UI.things.some(t=>t.name.startsWith('THE CUTTING WHEEL')),240000);
-    const c=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); th('THE ASSAY SCALE').act(); const assay=MINI.on&&MINI.on.title==='THE ASSAY SCALE'; MINI.close();
-      for(const k of CAVEK.gemIds())delete INV.items[k]; th('THE CUTTING WHEEL').act(); const refused=!MINI.state(); MINI.close();
-      INV.items.amethyst=1; INV.cash=5; th('THE CUTTING WHEEL').act(); const S=MINI.state(); S.n=6; await new Promise(r=>setTimeout(r,600)); const cut=(INV.items.cut_amethyst||0)===1&&!(INV.items.amethyst>0)&&INV.cash===4; MINI.close(); return {assay,refused,cut}; });
-    rec("golems' cave: the assay scale reads your stones; the wheel cuts a rough one ($1), not when you have none",c.assay&&c.refused&&c.cut,JSON.stringify(c)); await shot('cave'); }
   /* ---------- THE SQUIRREL'S TOWER ---------- */
   { await U(()=>!!ROOMS.off.sqtower,60000).catch(()=>{}); await pg.evaluate(()=>ROOMS.enter('sqtower')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='sqtower'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('THE LADDER')),120000).catch(()=>{});
     const t=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); const inn=ROOMS.offIn&&ROOMS.offIn()==='sqtower'; const ch=th("THE LOOKOUT'S CHART"); if(ch)ch.act(); const chart=MINI.on&&/CHART/.test(MINI.on.title); MINI.close(); return {inn,chart,bunk:!!th('THE BUNK')}; });

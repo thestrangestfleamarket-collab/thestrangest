@@ -836,7 +836,14 @@
   "value": 14
  },
  "binoc": {
-  "value": 30
+  "slot": "hand",
+  "value": 30,
+  "weight": 0.8
+ },
+ "camera": {
+  "slot": "hand",
+  "value": 120,
+  "weight": 0.6
  },
  "bird_feather": {
   "stackable": true,

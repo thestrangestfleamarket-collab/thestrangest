@@ -1,4 +1,4 @@
-// THE GRASS KINDS CHECK: node tests/grasskinds.cjs dist/market.html. The nine grasses (GRASS) grow in patches over the park; each stands in its own shape near you (none in the flat ones), and its own wild flowers, mushrooms and butterflies come up in it; a grass painted in the landscape editor grows where it is painted.
+// THE GRASS KINDS CHECK: node tests/grasskinds.cjs dist/market.html. The six grasses (GRASS) grow in patches over the park; each stands in its own shape near you (none in the flat ones), and its own wild flowers, mushrooms and butterflies come up in it; a grass painted in the landscape editor grows where it is painted.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=grasskinds::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -9,8 +9,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts in the park');
   if (st) {
-    const g = await pg.evaluate(() => ({ ids: GRASS.K.map(k => k.id), full: GRASS.K.every(k => (k.paint || k.img) && Object.keys(k.flowers).length && k.bf.length && k.rare && Object.keys(k.mush).length), map: !!(GRASS.map && GRASS.map.m), ms: GRASS.ms }));
-    ok(g.ids.join() === '34,33,32,29,30,08,04,01,03' && g.full, 'nine grass kinds, each with its look, wild flowers, butterflies (and a rare) and mushrooms: ' + g.ids.join());
+    const g = await pg.evaluate(() => ({ ids: GRASS.K.map(k => k.id), full: GRASS.K.every(k => (k.paint || k.img) && ['c', 'r', 's'].every(t => k.flowers[t] && k.bf[t] && k.mush[t])), map: !!(GRASS.map && GRASS.map.m), ms: GRASS.ms }));
+    ok(g.ids.join() === '34,33,32,08,04,01' && g.full, 'six grass kinds (5 Nov 2026), each with its look and a common, a rare and a super-rare wild flower, butterfly and mushroom: ' + g.ids.join());
     ok(g.map, 'the land is painted from a map of which kind grows where (painted in ' + g.ms + ' ms)');
     // each kind's middle: a spot in the park with the same kind five tiles round
     const spots = await pg.evaluate(() => { const T = 33.9 / 30, P = PARK, o = {}; for (let y = P.y0 + 12; y < P.y1 - 12; y += 3) for (let x = P.x0 + 12; x < P.x1 - 12; x += 3) { if (P.path && P.path(x, y)) continue; const wx = SHARED.BOD.XS(x + P.ox), wz = SHARED.BOD.ZS(y + P.oy), k = GRASS.at(wx / T, wz / T);
@@ -21,7 +21,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       await pg.evaluate(([x, z]) => __dbg.UI.goTo(x, z, SHARED.py), spots[id]); await pg.waitForTimeout(7000);
       const r = await pg.evaluate(() => { const T = 33.9 / 30, o = { n: 0, off: 0, flat: 0 }; for (const me of TUFTS.meshes) { const A = me.instanceMatrix.array; for (let i = 0; i < me.count; i++) { const k = GRASS.at(A[i * 16 + 12] / T, A[i * 16 + 14] / T); o.n++; if (k.shape !== me.userData.shape) o.off++; if (!k.shape) o.flat++; } }
         const kin = (x, z) => GRASS.at(x / T, z / T), near = (x, z, f) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([u, v]) => f(kin(x + u * T, z + v * T)));
-        o.fl = GARDEN.spots().map(([k, x, z]) => near(x, z, K => k in K.flowers)); o.mu = FORAGE.spots().map(([k, x, z]) => near(x, z, K => k in K.mush)); o.bf = BFLY.spots().map(([n, x, z]) => near(x, z, K => K.bf.includes(n) || K.rare === n)); return o; });
+        o.fl = GARDEN.spots().map(([k, x, z]) => near(x, z, K => Object.values(K.flowers).includes(k))); o.mu = FORAGE.spots().map(([k, x, z]) => near(x, z, K => Object.values(K.mush).includes(k))); o.bf = BFLY.spots().map(([n, x, z]) => near(x, z, K => Object.values(K.bf).includes(n))); return o; });
       tally.tufts += r.n; tally.off += r.off; tally.flatTufts += r.flat; tally.fl.push(...r.fl); tally.mu.push(...r.mu); tally.bf.push(...r.bf);
     }
     ok(tally.tufts > 1000 && tally.off / tally.tufts < .03, 'the grass near you stands in its own kind\'s shape (' + tally.off + ' of ' + tally.tufts + ' off, at the kinds\' edges)');

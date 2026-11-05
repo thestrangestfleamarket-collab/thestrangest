@@ -42,19 +42,20 @@ def frames(J):
         F['shoe'+n]=(J['ankle'+n],J['toe'+n],I)
     return F
 
-def rebake(char, name2role, w_map):
+def rebake(char, name2role, w_map, J=None):   # J: another body's joints, so a piece worn over it shares its skeleton (the Polyfork avatar's clothes)
     rig=char['rig']; names=rig['names']; nidx={n:i for i,n in enumerate(names)}
     P,col,idx,ji,wt=char['arrays'] if 'arrays' in char else decode_mesh(char['mesh'])
     W=rig['world'] if 'world' in rig else bone_world(rig)
     jp=lambda nm: W[nidx[nm]]
-    J={}
-    J['pelvis']=jp(name2role['pelvis']); J['waist']=jp(name2role['waist']); J['neck']=jp(name2role['neck'])
-    J['headTop']=jp(name2role['neck'])+np.array([0,(P[:,1].max()-jp(name2role['neck'])[1]),0])
-    for n in 'LR':
-        J['shoulder'+n]=jp(name2role['shoulder'+n]); J['elbow'+n]=jp(name2role['elbow'+n]); J['wrist'+n]=jp(name2role['wrist'+n])
-        J['hip'+n]=jp(name2role['hip'+n]); J['knee'+n]=jp(name2role['knee'+n]); J['ankle'+n]=jp(name2role['ankle'+n])
-        armdir=J['wrist'+n]-J['elbow'+n]; J['tip'+n]=J['wrist'+n]+armdir/ (np.linalg.norm(armdir) or 1)*0.1*(P[:,1].max())
-        J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12*(P[:,1].max())])
+    if J is None:
+        J={}
+        J['pelvis']=jp(name2role['pelvis']); J['waist']=jp(name2role['waist']); J['neck']=jp(name2role['neck'])
+        J['headTop']=jp(name2role['neck'])+np.array([0,(P[:,1].max()-jp(name2role['neck'])[1]),0])
+        for n in 'LR':
+            J['shoulder'+n]=jp(name2role['shoulder'+n]); J['elbow'+n]=jp(name2role['elbow'+n]); J['wrist'+n]=jp(name2role['wrist'+n])
+            J['hip'+n]=jp(name2role['hip'+n]); J['knee'+n]=jp(name2role['knee'+n]); J['ankle'+n]=jp(name2role['ankle'+n])
+            armdir=J['wrist'+n]-J['elbow'+n]; J['tip'+n]=J['wrist'+n]+armdir/ (np.linalg.norm(armdir) or 1)*0.1*(P[:,1].max())
+            J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12*(P[:,1].max())])
     F=frames(J)
     # remap per-vertex weights (src bone idx -> 15-bone bucket)
     srcmap=np.full(len(names),-1,int)

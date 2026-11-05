@@ -4,7 +4,7 @@ import {ED, PB, W3} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ZU} from './006-map-pre.js';
-Object.assign(PB,{on:false,ready:false,loose:0.5});
+Object.assign(PB,{on:false,ready:false,loose:0.5}); window.PB=PB;
 { const R=RIG, PCS=W3.pcs, KEYS=['hips','torso','head','upperArmL','forearmL','handL','upperArmR','forearmR','handR','thighL','shinL','shoeL','thighR','shinR','shoeR'];
   const PARENT={torso:'hips',head:'torso',upperArmL:'torso',forearmL:'upperArmL',handL:'forearmL',upperArmR:'torso',forearmR:'upperArmR',handR:'forearmR',thighL:'hips',shinL:'thighL',shoeL:'shinL',thighR:'hips',shinR:'thighR',shoeR:'shinR'};
   const partOf=n=>{ const s=n.slice(-1), sd=s==='L'||s==='R'?s:''; if(/^(head|hair|beard|brow|eye|nose|ear|mouth)/.test(n))return 'head'; if(n==='neck'||n==='torso')return 'torso'; if(n==='hips')return 'hips';
@@ -31,13 +31,14 @@ Object.assign(PB,{on:false,ready:false,loose:0.5});
       rb.setAngvel({x:w.x+(ax.x*k-w.x)*0.6,y:w.y+(ax.y*k-w.y)*0.6,z:w.z+(ax.z*k-w.z)*0.6},true);
       if(!down){ const p=rb.translation(), v=rb.linvel(), kp=(i===0?0.35:/^(torso|head)$/.test(KEYS[i])?0.1:0.04)*(0.4+0.6*(1-PB.loose))/h, f=t.v;
         rb.setLinvel({x:v.x+((t.p.x-p.x)*kp+f.x-v.x)*0.7,y:v.y+((t.p.y-p.y)*kp+f.y-v.y)*0.7,z:v.z+((t.p.z-p.z)*kp+f.z-v.z)*0.7},true); } }); }
-  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim||W3.body.on)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
+  PB.step=(dt,B,x,y,z,hd,gy,down)=>{ if(!PB.on||!PB.ready||ED.anim)return false; targets(B,x,y,z,hd,dt); if(need){ build(); }
     if(tgt[0].p.distanceTo(bodies[0].translation())>40)reset();
     if(!down&&tgt.every(t=>t.v.lengthSq()<64)){ reset(); acc=0; }
     else{ ground.setNextKinematicTranslation({x:x*PPU/W3.SZ,y:gy/ZU/W3.SZ,z:z*PPU/W3.SZ}); acc=Math.min(acc+dt,6/120);
       while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); } }
     W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
+    if(W3.body.on){ W3.body.phys(KEYS.map((k,i)=>Fb[i].clone().multiply(tgt[i].m.clone().invert())),T); return true; }   // the body you wear (your avatar) takes the same physics: each part's move off the rig, on its own bones
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
     PCS.forEach((pc,i)=>{ '@later'; const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });

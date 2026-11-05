@@ -1,4 +1,4 @@
-// THE FISHING CLOSE-UP (owner, 5 Nov 2026): when a fish comes for your hook, a close-up under the dark water of your line, hook and bait and that fish, in real time, over the whole screen or in a window (C toggles).
+// THE FISHING CLOSE-UP (owner, 5 Nov 2026): when a fish comes for your hook, a close-up under the dark water of your line, hook and bait and that fish, in real time, over the whole screen or in a window (TAB toggles).
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE} from './003b-systems.js';
 import {renderer} from './004-main.js';
@@ -27,12 +27,12 @@ const CLOSEUP={on:false,mode:SAVE.get('closeup')==='window'?'window':'full'}; wi
   let fish=null, fishId=null, t=0;
   const setFish=id=>{ if(fishId===id)return; if(fish)S.remove(fish); fish=null; fishId=id; if(!id)return; const o=FISHES.model(id,1); if(!o)return; o.scale.setScalar(.3); S.add(o); fish=o; };
   const fit=()=>{ const C=renderer.domElement, W=C.width/renderer.getPixelRatio(), H=C.height/renderer.getPixelRatio(); return {W,H}; };
-  // C toggles the close-up between the whole screen and a window in the corner
-  addEventListener('keydown',e=>{ if(e.repeat||e.key.toLowerCase()!=='c'||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return; if(!SHARED.fishing)return;
+  // TAB toggles the close-up between the whole screen and a window in the corner
+  addEventListener('keydown',e=>{ if(e.repeat||e.key!=='Tab'||e.ctrlKey||e.metaKey||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return; if(!SHARED.fishing||!CLOSEUP.on)return; e.preventDefault();
     CLOSEUP.mode=CLOSEUP.mode==='full'?'window':'full'; SAVE.set('closeup',CLOSEUP.mode); });
   const tip=document.createElement('div'); tip.style.cssText='position:fixed;left:50%;bottom:86px;transform:translateX(-50%);font:11px Silkscreen,monospace;color:#7fe0a0;background:rgba(10,14,12,.7);border:1px solid #2c4436;padding:5px 9px;z-index:20;pointer-events:none'; tip.hidden=true; document.body.appendChild(tip);
   SYS.add('overlay',dt=>{ const s=FISHING.state&&FISHING.state(), near=!!s&&SHARED.fishing&&(s.st==='bite'||s.st==='wait'&&s.bid&&s.tb-s.t<8);
-    CLOSEUP.on=near; tip.hidden=!near; if(!near){ if(fish)setFish(null); return; } tip.textContent=(s.st==='bite'?'BITE! CLICK TO STRIKE':'A FISH IS COMING')+' · C: '+(CLOSEUP.mode==='full'?'WINDOW':'FULL SCREEN'); if(!FISHES.ready){ FISHES.load(); return; }
+    CLOSEUP.on=near; tip.hidden=!near; if(!near){ if(fish)setFish(null); return; } tip.textContent=(s.st==='bite'?'BITE! CLICK TO STRIKE':'A FISH IS COMING')+' · TAB: '+(CLOSEUP.mode==='full'?'WINDOW':'FULL SCREEN'); if(!FISHES.ready){ FISHES.load(); return; }
     t+=dt; setFish(s.bid); const r=s.st==='bite'?0:s.tb-s.t;
     hook.position.set(Math.sin(t*.6)*.01,-.03+Math.sin(t*1.2)*.006+(s.st==='bite'?-.02*Math.abs(Math.sin(t*9)):0),0); hook.rotation.z=Math.sin(t*.8)*.08; line.position.set(hook.position.x,hook.position.y+.05,0);
     const lure=/^lure_/.test((FORAGE.S&&FORAGE.S.hook)||''); spoon.visible=lure; for(const w of worm)w.visible=!lure;

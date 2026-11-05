@@ -103,7 +103,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,t);
     p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
   const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead;
-  const clamp1=x=>x<0?0:x>1?1:x, GAIT=QS.get('gait');   // (?gait=walker: the rig's own walk while moving, the clips standing; to compare)
+  const clamp1=x=>x<0?0:x>1?1:x;
   function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
     const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
     const stride=C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
@@ -160,7 +160,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
       const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
-    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)&&!(GAIT==='walker'&&(S.w||0)>.05)?1:0;
+    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)?1:0;
       S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want;
       if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }

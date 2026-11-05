@@ -38,14 +38,28 @@ ul{margin:0;padding-left:20px;display:grid;gap:4px}
 <main>
   <div class="lede">
     <h3>The Bookstore · West St</h3>
-    <h1>Twice as long, every case on the back wall</h1>
-    <p>Two ways to read "2× as long". Both keep all 16 cases (640 books) together on the back wall, raise the ceiling 33%, and leave the floor open for the rug, chairs and lamps. Drawn to scale; the figure is 1.75 m.</p>
+    <h1>Every case on the back wall</h1>
+    <p>New: C, four stories of four cases. Below it, A and B from before: two ways to read "2× as long". Both keep all 16 cases (640 books) together on the back wall, raise the ceiling 33%, and leave the floor open for the rug, chairs and lamps. Drawn to scale; the figure is 1.75 m.</p>
     <div class="cmp">
       <div><div class="k">TODAY</div>7.4 m wide × 4.6 m deep × 3.3 m high<br>7 cases on the back wall, 9 on the sides</div>
       <div><div class="k">A · LONG ALONG THE STREET</div>14.8 m × 4.6 m × 4.4 m<br>16 cases in one row on the back wall</div>
       <div><div class="k">B · LONG INTO THE BUILDING</div>7.4 m × 9.2 m × 4.4 m<br>16 cases in two tiers of 8, a rolling ladder</div>
     </div>
   </div>
+
+  <section class="opt">
+    <div class="head"><span class="tag">C</span><h2>Four stories, four cases a floor</h2></div>
+    <div class="dims"><span>room <b>7.4 × 9.2 m</b></span><span>ceiling <b>10 m</b></span><span>back wall <b>4 floors × 4 cases, 2.6 m wide</b></span><span>galleries <b>0.9 m deep, brass rails</b></span><span>stair <b>spiral, to every floor</b></span></div>
+    <div class="draw">
+      <div><h3>Back wall</h3><div class="wrap"><svg id="elevC"></svg></div></div>
+      <div><h3>Side section</h3><div class="wrap"><svg id="sideC"></svg></div><h3>Plan</h3><div class="wrap"><svg id="planC"></svg></div></div>
+    </div>
+    <ul>
+      <li>The 16 cases stand four across and four high on the back wall, one genre each, like a stack in an old library.</li>
+      <li>Each upper floor has a narrow gallery with a brass railing; a spiral stair beside the stack climbs to all of them.</li>
+      <li>The room is twice as deep as today's, with the rug and chairs on the open floor, so you look up at the whole stack from your armchair.</li>
+    </ul>
+  </section>
 
   <section class="opt">
     <div class="head"><span class="tag">A</span><h2>Long along the street</h2></div>
@@ -138,8 +152,40 @@ function elev(id,W,tiers){
   label(s,X(W/2),-14,W.toFixed(1)+' m wall');
   const t=el('text',{x:-14,y:X(H/2),'font-size':12,'text-anchor':'middle',transform:`rotate(-90 -14 ${X(H/2)})`});t.textContent='4.4 m';s.appendChild(t);
 }
-function draw(){ for(const id of ['planA','planB','elevA','elevB'])document.getElementById(id).replaceChildren(); seed=7;
-  plan('planA',14.8,4.6,16); elev('elevA',14.8,1); plan('planB',7.4,9.2,8); elev('elevB',7.4,2); }
+
+const HC=10, ST=2.45, GD=.9;
+function elevC(){ const W=7.4, s=sheet('elevC',W,HC,34), X=m=>m*S; s.setAttribute('viewBox',`-34 -34 ${W*S+68} ${HC*S+68}`);
+  s.appendChild(el('rect',{x:0,y:0,width:X(W),height:X(HC),fill:c('plaster'),stroke:c('ink'),'stroke-width':4}));
+  const run=4*CW+3*GAP, x0=(W-run)/2-.6;
+  for(let t=0;t<4;t++){ const base=HC-t*ST; for(let i=0;i<4;i++)caseFront(s,x0+i*(CW+GAP),base-CH);
+    if(t){ s.appendChild(el('rect',{x:X(x0-.15),y:X(base)-4,width:X(run+.3),height:8,fill:c('oak')}));
+      s.appendChild(el('rect',{x:X(x0-.15),y:X(base-1.0),width:X(run+.3),height:3,fill:c('brass')}));
+      for(let k=0;k<=12;k++)s.appendChild(el('rect',{x:X(x0-.15+(run+.3)*k/12)-1,y:X(base-1.0),width:2,height:X(1.0),fill:c('brass')})); } }
+  const sx=x0+run+1.05; s.appendChild(el('rect',{x:X(sx)-3,y:X(HC-3*ST-1.0),width:6,height:X(3*ST+1.0),fill:c('oakd')}));
+  for(let k=0;k<32;k++){ const y=HC-k*(3*ST/31), dir=(k%8<4)?1:-1, w=.55*Math.abs(Math.sin(k*Math.PI/8))+.08; s.appendChild(el('rect',{x:X(sx-(dir>0?0:w)),y:X(y)-3,width:X(w),height:5,fill:c('oak')})); }
+  person(s,x0-.6,HC); person(s,x0+.4,HC-2*ST);
+  label(s,X(W/2),-14,'7.4 m wall'); const t=el('text',{x:-14,y:X(HC/2),'font-size':12,'text-anchor':'middle',transform:`rotate(-90 -14 ${X(HC/2)})`});t.textContent='10 m';s.appendChild(t);
+  for(let t2=0;t2<4;t2++)label(s,X(W)-8,X(HC-t2*ST)-8,'FLOOR '+(t2+1),'end'); }
+function sideC(){ const D=9.2, s=sheet('sideC',D,HC,34), X=m=>m*S; s.setAttribute('viewBox',`-34 -34 ${D*S+68} ${HC*S+68}`);
+  s.appendChild(el('rect',{x:0,y:0,width:X(D),height:X(HC),fill:c('plaster'),stroke:c('ink'),'stroke-width':4}));
+  s.appendChild(el('rect',{x:X(D)-6,y:X(HC-3.2),width:8,height:X(3.0),fill:c('glass')}));
+  for(let t=0;t<4;t++){ const base=HC-t*ST; s.appendChild(el('rect',{x:0,y:X(base-CH),width:X(CD),height:X(CH),fill:c('oakd')}));
+    if(t){ s.appendChild(el('rect',{x:0,y:X(base)-4,width:X(CD+GD),height:8,fill:c('oak')})); s.appendChild(el('rect',{x:X(CD+GD)-2,y:X(base-1.0),width:4,height:X(1.0),fill:c('brass')})); } }
+  s.appendChild(el('rect',{x:X(3.4),y:X(HC-.15),width:X(3.2),height:X(.15),fill:c('rug')})); s.appendChild(el('rect',{x:X(4.2),y:X(HC-.95),width:X(.8),height:X(.95),fill:c('green'),rx:6}));
+  person(s,6.3,HC); label(s,X(D/2),-14,'9.2 m deep'); label(s,X(D)-10,X(HC-3.4),'GLASS · WEST ST','end'); label(s,X(CD+GD)+10,X(HC-ST)-30,'GALLERIES','start'); }
+function planC(){ const W=7.4, D=9.2, s=sheet('planC',W,D,34), X=m=>m*S; s.setAttribute('viewBox',`-34 -34 ${W*S+68} ${D*S+68}`);
+  s.appendChild(el('rect',{x:0,y:0,width:X(W),height:X(D),fill:c('oak'),'fill-opacity':.25,stroke:c('ink'),'stroke-width':5}));
+  const run=4*CW+3*GAP, x0=(W-run)/2-.6; s.appendChild(el('rect',{x:X(x0-.15),y:0,width:X(run+.3),height:X(CD+GD),fill:c('oak'),'fill-opacity':.35,stroke:c('brass'),'stroke-dasharray':'4 3'}));
+  for(let i=0;i<4;i++)s.appendChild(el('rect',{x:X(x0+i*(CW+GAP)),y:0,width:X(CW),height:X(CD),fill:c('oakd')}));
+  s.appendChild(el('circle',{cx:X(x0+run+1.05),cy:X(.75),r:X(.6),fill:'none',stroke:c('ink'),'stroke-width':2})); label(s,X(x0+run+1.05),X(1.75),'STAIR');
+  label(s,X(x0+run/2),X(CD+GD)+16,'CASES + GALLERIES');
+  s.appendChild(el('rect',{x:X(W/2-1.6),y:X(D*.5-1.05),width:X(3.2),height:X(2.1),fill:c('rug'),'fill-opacity':.55,rx:4}));
+  for(const [dx,dy] of [[-1.1,-.4],[1.1,-.4],[0,.55]])s.appendChild(el('rect',{x:X(W/2+dx-.38),y:X(D*.5+dy-.38),width:X(.76),height:X(.76),fill:c('green'),rx:10}));
+  s.appendChild(el('rect',{x:X(W/2+1.6),y:X(D-1.4),width:X(1.4),height:X(.55),fill:c('oak'),stroke:c('ink')})); label(s,X(W/2+2.3),X(D-1.55),'COUNTER');
+  s.appendChild(el('rect',{x:X(.3),y:X(D)-4,width:X(W-.6),height:8,fill:c('glass')})); s.appendChild(el('rect',{x:X(W/2-.62),y:X(D)-5,width:X(1.25),height:10,fill:c('sheet'),stroke:c('ink')}));
+  label(s,X(W/2),X(D)+24,'GLASS FRONT · DOORS · WEST ST'); }
+function draw(){ for(const id of ['planA','planB','elevA','elevB','elevC','sideC','planC'])document.getElementById(id).replaceChildren(); seed=7;
+  plan('planA',14.8,4.6,16); elev('elevA',14.8,1); plan('planB',7.4,9.2,8); elev('elevB',7.4,2); elevC(); sideC(); planC(); }
 draw();
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>location.reload());
 </script>

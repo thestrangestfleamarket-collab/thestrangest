@@ -34,13 +34,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); const m4 = await pg.evaluate(() => ({ speed: FISHING.speed = 20, drag: FISHING.drag = 3, mode: FISHING.mode, view: __dbg.UI.view, menu: !!__dbg.UI.menuOpen, panel: getComputedStyle(document.getElementById('fishmode')).display }));
   ok(m1.go && m1.mode && m1.view === 'follow' && Math.hypot(p1[0] - p0[0], p1[2] - p0[2]) < 1e-3 && /CAST/.test(pb) && /HOOK/.test(pb) && m2.st && m2.ahead && m2.d > 2 && !m3.st && !m4.mode && m4.view === v0 && !m4.menu && m4.panel === 'none',
     'fishing mode: the FISH button by the water, locked in place, the behind view, SPACE held casts where you face, SPACE reels in, ESC leaves back to your view: ' + JSON.stringify({ m1, moved: Math.hypot(p1[0] - p0[0], p1[2] - p0[2]), pb, m2, m3, m4, v0 }));
-  const od = await pg.evaluate(() => { const T = __dbg.cv().TILE, x = PIER.x, z = PIER.zE - 6 * T, o = {}; for (const [b, h] of [['bait', 13], ['bait_cut', 13], ['bait_cut', 19], ['bait', 23]]) o[b + '@' + h] = FISHING.odds(x, z, b, h);
-    o.bare = FISHING.odds(x, z, null, 13); o.shallow = FISHING.odds(x + 4 * T, PIER.z0 - 2 * T, 'bait', 13); return o; });
+  const od = await pg.evaluate(() => { const T = __dbg.cv().TILE, x = PIER.x, z = PIER.zE - 6 * T, o = {}, r0 = TRAINERS.rank('fish'); TRAINERS.set('fish', 3); for (const [b, h] of [['bait', 13], ['bait_cut', 13], ['bait_cut', 19], ['bait', 23]]) o[b + '@' + h] = FISHING.odds(x, z, b, h);
+    o.bare = FISHING.odds(x, z, null, 13); o.shallow = FISHING.odds(x + 4 * T, PIER.z0 - 2 * T, 'bait', 13); TRAINERS.set('fish', 0); o.closed = FISHING.odds(x, z, 'bait_cut', 19); TRAINERS.set('fish', r0); return o; });   // the super-rare (bass, sturgeon) only from EXPERT with the Fisherman (5 Nov 2026)
   console.log('odds', JSON.stringify(od));
   const sum = o => Object.values(o.per).reduce((a, b) => a + b, 0);
   ok(Object.keys(od).filter(k => k !== 'bare').every(k => Math.abs(sum(od[k]) - 1) < .01 && od[k].bite > 0 && od[k].bite < 1), 'every odds table sums to one and some casts get nothing');
-  ok(od['bait_cut@19'].per.x_bass > od['bait@13'].per.x_bass * 3 && od['bait@23'].per.x_eel > od['bait@13'].per.x_eel && od.bare.rate === 0 && !od.shallow.per.x_sturgeon && !od['bait@13'].per.x_bluegill,
-    'bass take cut bait at dusk, eels worms at night, a bare hook catches nothing, sturgeon keep to deep water, lake fish not in the river');
+  ok(od['bait_cut@19'].per.x_bass > od['bait@13'].per.x_bass * 3 && od['bait@23'].per.x_eel > od['bait@13'].per.x_eel && od.bare.rate === 0 && !od.shallow.per.x_sturgeon && !od['bait@13'].per.x_bluegill && !od.closed.per.x_bass && od.closed.per.x_perch > 0,
+    'bass take cut bait at dusk, eels worms at night, a bare hook catches nothing, sturgeon keep to deep water, lake fish not in the river, no bass until the Fisherman ranks you');
   const r3 = await pg.evaluate(async () => { const T = __dbg.cv().TILE, seen = new Set(), tk = FISHING.tick; FISHING.tick = dt => { tk(dt); const q = FISHING.state(); if (q) seen.add(q.st); }; FISHING.force = 'x_bass'; FISHING.win = 30; FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); while (performance.now() - t0 < 400000) { const s = FISHING.state(); if (s) seen.add(s.st); if (s && s.st === 'bite') break; await new Promise(r => setTimeout(r, 50)); }
     const bob = FISHDBG().state; FISHING.click(); const hooked = FISHING.state() && FISHING.state().st; FISHING.auto = true;

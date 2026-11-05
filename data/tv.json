@@ -1,0 +1,509 @@
+{
+ "note": "Public-domain cartoons streamed from the Internet Archive (classic_cartoons and others; archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment. src/150fa-crt.js.",
+ "channels": [
+  {
+   "ch": 2,
+   "name": "BOOP TV",
+   "sub": "Fleischer Studios, 1932-1939",
+   "shows": [
+    {
+     "id": "bb_stop_that_noise",
+     "file": "bb_stop_that_noise_512kb.mp4",
+     "title": "STOP THAT NOISE",
+     "year": 1935,
+     "len": 542.4
+    },
+    {
+     "id": "bb_she_wronged_him_right",
+     "file": "bb_she_wronged_him_right_512kb.mp4",
+     "title": "SHE WRONGED HIM RIGHT",
+     "year": 1934,
+     "len": 387.2
+    },
+    {
+     "id": "bb_the_impractical_joker",
+     "file": "bb_the_impractical_joker_512kb.mp4",
+     "title": "THE IMPRACTICAL JOKER",
+     "year": 1937,
+     "len": 372.3
+    },
+    {
+     "id": "Betty_Boop_Baby_Be_Good_1935",
+     "file": "Betty_Boop_Baby_Be_Good_1935_512kb.mp4",
+     "title": "BABY BE GOOD",
+     "year": 1935,
+     "len": 463.4
+    },
+    {
+     "id": "Betty_Boop_More_Pep_1936",
+     "file": "Betty_Boop_More_Pep_1936_512kb.mp4",
+     "title": "MORE PEP",
+     "year": 1936,
+     "len": 335.1
+    },
+    {
+     "id": "Betty_Boop_Training_Pigeons_1936",
+     "file": "Betty_Boop_Training_Pigeons_1936_512kb.mp4",
+     "title": "TRAINING PIGEONS",
+     "year": 1936,
+     "len": 387.9
+    },
+    {
+     "id": "bb_parade_of_the_wooden_soldiers",
+     "file": "bb_parade_of_the_wooden_soldiers_512kb.mp4",
+     "title": "PARADE OF THE WOODEN SOLDIERS",
+     "year": 1933,
+     "len": 480.1
+    },
+    {
+     "id": "bb_snow_white",
+     "file": "bb_snow_white_512kb.mp4",
+     "title": "SNOW WHITE",
+     "year": 1933,
+     "len": 424.1
+    },
+    {
+     "id": "bb_rise_to_fame",
+     "file": "bb_rise_to_fame_512kb.mp4",
+     "title": "BETTY BOOP'S RISE TO FAME",
+     "year": 1934,
+     "len": 527.7
+    },
+    {
+     "id": "bb_chess_nuts",
+     "file": "bb_chess_nuts_512kb.mp4",
+     "title": "CHESS NUTS",
+     "year": 1932,
+     "len": 371.5
+    },
+    {
+     "id": "bb_happy_you",
+     "file": "bb_happy_you_512kb.mp4",
+     "title": "HAPPY YOU AND MERRY ME",
+     "year": 1936,
+     "len": 395.2
+    },
+    {
+     "id": "bb_be_human",
+     "file": "bb_be_human_512kb.mp4",
+     "title": "BE HUMAN",
+     "year": 1936,
+     "len": 388.5
+    },
+    {
+     "id": "bb_morning_noon_and_night",
+     "file": "bb_morning_noon_and_night_512kb.mp4",
+     "title": "MORNING, NOON AND NIGHT",
+     "year": 1933,
+     "len": 452.0
+    },
+    {
+     "id": "bb_betty_in_blunderland",
+     "file": "bb_betty_in_blunderland_512kb.mp4",
+     "title": "BETTY IN BLUNDERLAND",
+     "year": 1933,
+     "len": 393.5
+    },
+    {
+     "id": "bb_poor_cinderella",
+     "file": "bb_poor_cinderella_512kb.mp4",
+     "title": "POOR CINDERELLA (1934)",
+     "year": null,
+     "len": 621.1
+    },
+    {
+     "id": "Betty_Boop_and_Little_Jimmy_1936",
+     "file": "Betty_Boop_and_Little_Jimmy_1936_512kb.mp4",
+     "title": "BETTY BOOP AND LITTLE JIMMY",
+     "year": 1936,
+     "len": 337.5
+    },
+    {
+     "id": "bb_big_boss",
+     "file": "bb_big_boss_512kb.mp4",
+     "title": "BETTY BOOP'S BIG BOSS",
+     "year": 1933,
+     "len": 376.5
+    },
+    {
+     "id": "bb_and_grampy",
+     "file": "bb_and_grampy_512kb.mp4",
+     "title": "BETTY BOOP AND GRAMPY",
+     "year": 1935,
+     "len": 418.6
+    },
+    {
+     "id": "Betty_Boops_Crazy_Inventions_1933",
+     "file": "Betty_Boops_Crazy_Inventions_1933_512kb.mp4",
+     "title": "BETTY BOOP'S CRAZY INVENTIONS",
+     "year": 1933,
+     "len": 405.3
+    },
+    {
+     "id": "Betty_Boop_with_Henry_1935",
+     "file": "Betty_Boop_with_Henry_1935_512kb.mp4",
+     "title": "BETTY BOOP WITH HENRY, THE FUNNIEST LIVING AMERICAN",
+     "year": 1935,
+     "len": 407.4
+    },
+    {
+     "id": "Betty_Boops_Ker_Choo_1932",
+     "file": "Betty_Boops_Ker-Cho_1933_512kb.mp4",
+     "title": "BETTY BOOP'S KER-CHOO",
+     "year": 1932,
+     "len": 380.6
+    },
+    {
+     "id": "bb_not_now",
+     "file": "bb_not_now_512kb.mp4",
+     "title": "NOT NOW",
+     "year": 1935,
+     "len": 384.0
+    },
+    {
+     "id": "bb_and_the_little_king",
+     "file": "bb_and_the_little_king_512kb.mp4",
+     "title": "BETTY BOOP AND THE LITTLE KING",
+     "year": 1936,
+     "len": 369.5
+    },
+    {
+     "id": "bb_musical_mountaineers",
+     "file": "bb_musical_mountaineers_512kb.mp4",
+     "title": "MUSICAL MOUNTAINEERS",
+     "year": 1939,
+     "len": 370.2
+    },
+    {
+     "id": "bb_house_cleaning_blues",
+     "file": "bb_house_cleaning_blues_512kb.mp4",
+     "title": "HOUSE CLEANING BLUES",
+     "year": 1937,
+     "len": 369.3
+    },
+    {
+     "id": "Betty_Boop_The_Scared_Crows_1939",
+     "file": "Betty_Boop_The_Scared_Crows_1939_512kb.mp4",
+     "title": "THE SCARED CROWS",
+     "year": 1939,
+     "len": 355.5
+    },
+    {
+     "id": "Betty_Boop_Whoops_Im_a_Cowboy_1937",
+     "file": "Whoops_Im_a_Cowboy_1937_512kb.mp4",
+     "title": "WHOOPS! I'M A COWBOY",
+     "year": 1937,
+     "len": 382.6
+    },
+    {
+     "id": "bb_ill_be_glad_when_youre_dead",
+     "file": "bb_ill_be_glad_when_youre_dead_512kb.mp4",
+     "title": "I'LL BE GLAD WHEN YOU'RE DEAD, YOU RASCAL YOU",
+     "year": 1932,
+     "len": 429.4
+    },
+    {
+     "id": "bb_swat_the_fly",
+     "file": "bb_swat_that_fly_512kb.mp4",
+     "title": "SWAT THE FLY",
+     "year": 1935,
+     "len": 327.4
+    },
+    {
+     "id": "bb_bamboo_isle",
+     "file": "bb_bamboo_isle_512kb.mp4",
+     "title": "BAMBOO ISLE",
+     "year": 1932,
+     "len": 487.2
+    },
+    {
+     "id": "bb_old_man_of_the_mountain",
+     "file": "bb_old_man_of_the_mountain_512kb.mp4",
+     "title": "THE OLD MAN OF THE MOUNTAIN",
+     "year": 1933,
+     "len": 412.6
+    },
+    {
+     "id": "bb_minnie_the_moocher",
+     "file": "bb_minnie_the_moocher_512kb.mp4",
+     "title": "MINNIE THE MOOCHER",
+     "year": 1932,
+     "len": 466.5
+    },
+    {
+     "id": "Betty_Boop_A_Song_A_Day_1936_457",
+     "file": "Betty_Boop_A_Song_a_Day_1936_512kb.mp4",
+     "title": "A SONG A DAY",
+     "year": 1936,
+     "len": 416.6
+    }
+   ]
+  },
+  {
+   "ch": 4,
+   "name": "SATURDAY MORNING",
+   "sub": "Famous Studios and friends, 1941-1957",
+   "shows": [
+    {
+     "id": "popeye_i_dont_scare",
+     "file": "popeye_i_dont_scare_512kb.mp4",
+     "title": "POPEYE: I DON'T SCARE",
+     "year": 1956,
+     "len": 366.5
+    },
+    {
+     "id": "popeye_patriotic_popeye",
+     "file": "popeye_patriotic_popeye_512kb.mp4",
+     "title": "PATRIOTIC POPEYE",
+     "year": 1957,
+     "len": 363.2
+    },
+    {
+     "id": "popeye_big_bad_sinbad",
+     "file": "popeye_big_bad_sinbad_512kb.mp4",
+     "title": "BIG BAD SINBAD",
+     "year": 1952,
+     "len": 302.6
+    },
+    {
+     "id": "popeye_the_sailor_ancient_fantasy",
+     "file": "popeye_the_sailor_ancient_fantasy_512kb.mp4",
+     "title": "ANCIENT FISTORY",
+     "year": 1952,
+     "len": 406.7
+    },
+    {
+     "id": "popeye_taxi-turvey",
+     "file": "popeye_taxi-turvey_512kb.mp4",
+     "title": "POPEYE: TAXI-TURVY",
+     "year": 1954,
+     "len": 363.0
+    },
+    {
+     "id": "popeye_private_eye_popeye",
+     "file": "popeye_private_eye_popeye_512kb.mp4",
+     "title": "PRIVATE EYE POPEYE",
+     "year": 1954,
+     "len": 392.6
+    },
+    {
+     "id": "popeye_fright_to_the_finish",
+     "file": "popeye_fright_to_the_finish_512kb.mp4",
+     "title": "POPEYE: FRIGHT TO THE FINISH",
+     "year": 1954,
+     "len": 381.4
+    },
+    {
+     "id": "popeye_shuteye_popeye",
+     "file": "popeye_shuteye_popeye_512kb.mp4",
+     "title": "SHUTEYE POPEYE",
+     "year": 1952,
+     "len": 382.1
+    },
+    {
+     "id": "noveltoon_casper_tfg_theres_good_boos_tonight",
+     "file": "noveltoon_casper_tfg_theres_good_boos_tonight_512kb.mp4",
+     "title": "NOVELTOON: CASPAR THE FRIENDLY GHOST IN THERE'S GOOD BOOS TONIGHT",
+     "year": 1948,
+     "len": 524.8
+    },
+    {
+     "id": "little_audry_goofy_goofy_gander",
+     "file": "little_audry_goofy_goofy_gander_512kb.mp4",
+     "title": "LITTLE AUDRY: GOOFY GOOFY GANDER",
+     "year": 1950,
+     "len": 409.6
+    },
+    {
+     "id": "noveltoon_naughty_but_nice",
+     "file": "noveltoon_naughty_but_nice_512kb.mp4",
+     "title": "NOVELTOON: NAUGHTY BUT MICE",
+     "year": 1947,
+     "len": 403.5
+    },
+    {
+     "id": "noveltoon_the_stupidstitious_cat",
+     "file": "noveltoon_the_stupidstitious_cat_512kb.mp4",
+     "title": "NOVELTOON: THE STUPIDSTITIOUS CAT",
+     "year": 1946,
+     "len": 379.7
+    },
+    {
+     "id": "little_lulu_bargain_counter_attack",
+     "file": "little_lulu_bargain_counter_attack_512kb.mp4",
+     "title": "LITTLE LULU: BARGAIN COUNTER ATTACK",
+     "year": 1946,
+     "len": 454.4
+    },
+    {
+     "id": "woody_woodpecker_pantry_panic",
+     "file": "woody_woodpecker_pantry_panic_512kb.mp4",
+     "title": "WOODY WOODPECKER IN PANTRY PANIC",
+     "year": 1941,
+     "len": 411.5
+    },
+    {
+     "id": "mighty_mouse_wolf_wolf",
+     "file": "mighty_mouse_wolf_wolf_512kb.mp4",
+     "title": "MIGHTY MOUSE: WOLF! WOLF!",
+     "year": null,
+     "len": 371.8
+    },
+    {
+     "id": "hectors_hectic_life",
+     "file": "hectors_hectic_life_512kb.mp4",
+     "title": "HECTOR'S HECTIC LIFE",
+     "year": 1948,
+     "len": 388.5
+    },
+    {
+     "id": "gabby_alls_well",
+     "file": "gabby_alls_well_512kb.mp4",
+     "title": "GABBY: ALL'S WELL",
+     "year": 1941,
+     "len": 393.3
+    },
+    {
+     "id": "the_talking_magpies",
+     "file": "the_talking_magpies_512kb.mp4",
+     "title": "THE TALKING MAGPIES",
+     "year": 1946,
+     "len": 392.6
+    }
+   ]
+  },
+  {
+   "ch": 6,
+   "name": "THE MAN OF STEEL",
+   "sub": "Fleischer and Famous Studios, 1941-1943",
+   "shows": [
+    {
+     "id": "superman_1941",
+     "file": "superman_1941_512kb.mp4",
+     "title": "SUPERMAN",
+     "year": 1941,
+     "len": 620.8
+    },
+    {
+     "id": "superman_the_mechanical_monsters",
+     "file": "superman_the_mechanical_monsters_512kb.mp4",
+     "title": "THE MECHANICAL MONSTERS",
+     "year": 1941,
+     "len": 614.9
+    },
+    {
+     "id": "superman_electric_earthquake",
+     "file": "superman_electric_earthquake_512kb.mp4",
+     "title": "ELECTRIC EARTHQUAKE",
+     "year": 1942,
+     "len": 522.6
+    },
+    {
+     "id": "superman_eleventh_hour",
+     "file": "superman_eleventh_hour_512kb.mp4",
+     "title": "ELEVENTH HOUR",
+     "year": 1942,
+     "len": 478.9
+    },
+    {
+     "id": "superman_the_mad_scientist",
+     "file": "Superman-01-The_Mad_Scientist_512kb.mp4",
+     "title": "THE MAD SCIENTIST",
+     "year": 1941,
+     "len": 613.0
+    },
+    {
+     "id": "Superman_The_Magnetic_Telescope",
+     "file": "Superman_The_Magnetic_Telescope_512kb.mp4",
+     "title": "THE MAGNETIC TELESCOPE",
+     "year": 1942,
+     "len": 460.1
+    },
+    {
+     "id": "superman_terror_on_the_midway",
+     "file": "Superman-09-Terror_on_the_Midway_512kb.mp4",
+     "title": "TERROR ON THE MIDWAY",
+     "year": 1942,
+     "len": 481.4
+    },
+    {
+     "id": "superman_underground_world",
+     "file": "Superman-16-The_Underground_World_512kb.mp4",
+     "title": "THE UNDERGROUND WORLD",
+     "year": 1943,
+     "len": 475.9
+    },
+    {
+     "id": "superman_jungle_drums",
+     "file": "Superman-15-Jungle_Drums_512kb.mp4",
+     "title": "JUNGLE DRUMS",
+     "year": 1943,
+     "len": 467.2
+    },
+    {
+     "id": "superman_destruction_inc",
+     "file": "Superman-13-Destruction_Inc_512kb.mp4",
+     "title": "DESTRUCTION INC.",
+     "year": 1942,
+     "len": 499.2
+    }
+   ]
+  },
+  {
+   "ch": 9,
+   "name": "OLD TIME TOONS",
+   "sub": "1930-1948",
+   "shows": [
+    {
+     "id": "FLIP_FROG-FIDDLESTICKS",
+     "file": "FLIP_FROG-FIDDLESTICKS_64k_512kb.mp4",
+     "title": "FLIP THE FROG - FIDDLESTICKS",
+     "year": 1930,
+     "len": 372.5
+    },
+    {
+     "id": "JackFrost_",
+     "file": "JackFrost_512kb.mp4",
+     "title": "JACK FROST",
+     "year": 1934,
+     "len": 511.4
+    },
+    {
+     "id": "the_cobweb_hotel",
+     "file": "the_cobweb_hotel_512kb.mp4",
+     "title": "THE COBWEB HOTEL",
+     "year": 1936,
+     "len": 473.0
+    },
+    {
+     "id": "felix_the_cat_the_goos_that_laid_the_golden_egg",
+     "file": "felix_the_cat_the_goos_that_laid_the_golden_egg_512kb.mp4",
+     "title": "FELIX THE CAT: THE GOOSE THAT LAID THE GOLDEN EGG",
+     "year": 1936,
+     "len": 429.0
+    },
+    {
+     "id": "SantasSuprise",
+     "file": "SantasSuprise_512kb.mp4",
+     "title": "SANTA'S SURPRISE",
+     "year": 1947,
+     "len": 466.3
+    },
+    {
+     "id": "RudolphTheRed-nosedReindeer1948",
+     "file": "RudolphTheRed-nosedReindeer1948_512kb.mp4",
+     "title": "RUDOLPH THE RED-NOSED REINDEER (1948)",
+     "year": null,
+     "len": 491.7
+    },
+    {
+     "id": "mother_goose_little_miss_muffet",
+     "file": "mother_goose_little_miss_muffet_512kb.mp4",
+     "title": "MOTHER GOOSE: LITTLE MISS MUFFET",
+     "year": null,
+     "len": 122.5
+    }
+   ]
+  }
+ ]
+}

@@ -39,7 +39,7 @@ import {WORTH} from './140c-worth.js';
     ['p_ghost','GHOST POTION','alchemy',[70,115],{ghostcap:1,trumpet:1},'see in the dark 5 min']];
   const PCOL={p_refresh:0x6ad86a,p_heal:0xd8343a,p_str:0xe8862a,p_keen:0x4aa0e8,p_cure:0xeeeae0,p_gheal:0xf2c81e,p_ghost:0xc8a8ff};
   const OWNRC=new Set(RC.map(r=>r[0]));   // only these: other files add their recipes (books, bouquets, dishes) to the same list
-  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||id==='glowcap'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ const P=INSPECT.part;
+  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||id==='glowcap'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ '@later'; const P=INSPECT.part;
     if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }}); if(id==='glowcap')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe8ffe0,0,s*.5,0,s*.25,s,s*.25); p('cap',0x7cff9a,0,s*.95,0,s*1.1,s*.6,s*1.1); p('ball',0xd8ffb0,0,s*1.15,0,s*.25,s*.15,s*.25); }});
     if(PCOL[id])return INSPECT.shape('bottle',PCOL[id]); if(id==='bottle')return INSPECT.shape('bottle',0xcfe6e0);
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
@@ -73,7 +73,7 @@ import {WORTH} from './140c-worth.js';
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
   FORAGE.gave=(place,k)=>!!S.gave[place+':'+k];
   FORAGE.ROWB.push(id=>{ const g=giftOf(id); return g&&!S.gave[giftKey(g,id)]&&window.STORE&&STORE.here&&STORE.here(g.place)?[['DONATE','gift']]:[]; });
-  FORAGE.ACT.gift=id=>{ const g=giftOf(id); if(!g||!have(id)||S.gave[giftKey(g,id)]||!(STORE.here&&STORE.here(g.place)))return; take(id,1); S.gave[giftKey(g,id)]=1; const pay=Math.round(g.pay(id)); INV.cash+=pay; saveSoon(); SFX.play('clunk',{vol:.5});
+  FORAGE.ACT.gift=id=>{ '@later'; const g=giftOf(id); if(!g||!have(id)||S.gave[giftKey(g,id)]||!(STORE.here&&STORE.here(g.place)))return; take(id,1); S.gave[giftKey(g,id)]=1; const pay=Math.round(g.pay(id)); INV.cash+=pay; saveSoon(); SFX.play('clunk',{vol:.5});
     say(g.thanks?g.thanks(id,pay):`THE ${g.place.toUpperCase()} THANKS YOU FOR ITS FIRST ${NAME(id)} AND PAYS $${pay}.`,'#f2c14e'); };
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
@@ -187,7 +187,7 @@ import {WORTH} from './140c-worth.js';
       o+='</table>'; }
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   // the collection book: each thing you collect (mushrooms, butterflies, birds, fish, ...) registers a page {id, title, rows:()=>[[name, got, note, rare]], foot}
-  const book=()=>{ const B0=FORAGE.BOOK; if(!B0.length)return ''; const pg=B0.find(b=>b.id===PACK.page)||B0[0]; let o=`<div style="margin-bottom:8px">${B0.map(b=>{ const r=b.rows(), n=r.filter(x=>x[1]).length; return `<button ${B} data-page="${b.id}" style="${b===pg?'color:#f2c14e;':''}margin:0 4px 4px 0;font:inherit;background:#0e1016;border:2px solid ${b===pg?'#f2c14e':'#3a3f4e'};padding:2px 7px;cursor:pointer">${b.title} ${n}/${r.length}</button>`; }).join('')}</div>`;
+  const book=()=>{ '@later'; const B0=FORAGE.BOOK; if(!B0.length)return ''; const pg=B0.find(b=>b.id===PACK.page)||B0[0]; let o=`<div style="margin-bottom:8px">${B0.map(b=>{ const r=b.rows(), n=r.filter(x=>x[1]).length; return `<button ${B} data-page="${b.id}" style="${b===pg?'color:#f2c14e;':''}margin:0 4px 4px 0;font:inherit;background:#0e1016;border:2px solid ${b===pg?'#f2c14e':'#3a3f4e'};padding:2px 7px;cursor:pointer">${b.title} ${n}/${r.length}</button>`; }).join('')}</div>`;
     const R0=pg.rows(); o+=`<div style="margin-bottom:6px">${pg.title} · ${R0.filter(x=>x[1]).length} OF ${R0.length}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [nm,got,note,rare] of R0)o+=`<tr style="border-bottom:1px solid #22252f;${got?'':'color:#5d5a52'}"><td style="padding:4px 2px">${got?esc(nm)+(rare?' <span style="color:#f2c14e">RARE</span>':''):'? ? ?'}</td><td style="text-align:right;padding:4px 6px;color:#9b9584">${got?esc(note||''):''}</td></tr>`;
     return o+`</table>${pg.foot?`<div style="color:#9b9584;margin-top:8px;line-height:1.5">${pg.foot}</div>`:''}`; };

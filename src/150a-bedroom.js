@@ -10,7 +10,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[]};   // the room's other
     const col=c=>new THREE.Color('rgb('+c.join(',')+')');
     const mat=(c,o={})=>{ const {roughness,metalness,...r}=o; return new THREE.MeshLambertMaterial({color:col(c),...r}); };   // the game's cel shading: flat steps of light, no smooth gradients (owner, 25 Oct 2026)
     // a rounded box (metres, centred), its corners and edges smooth
-    const rbox=(w,h,d,r=.015,s=4)=>{ r=Math.min(r,w/2-1e-4,h/2-1e-4,d/2-1e-4); const g=new THREE.BoxGeometry(w,h,d,s,s,s), p=g.attributes.position, n=g.attributes.normal, hx=w/2-r, hy=h/2-r, hz=d/2-r, v=new V3(), q=new V3();
+    const rbox=(w,h,d,r=.015,s=4)=>{ '@later'; r=Math.min(r,w/2-1e-4,h/2-1e-4,d/2-1e-4); const g=new THREE.BoxGeometry(w,h,d,s,s,s), p=g.attributes.position, n=g.attributes.normal, hx=w/2-r, hy=h/2-r, hz=d/2-r, v=new V3(), q=new V3();
       for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); q.set(cl(v.x,-hx,hx),cl(v.y,-hy,hy),cl(v.z,-hz,hz)); v.sub(q); const l=v.length()||1; v.multiplyScalar(1/l); n.setXYZ(i,v.x,v.y,v.z); p.setXYZ(i,q.x+v.x*r,q.y+v.y*r,q.z+v.z*r); }
       p.needsUpdate=true; n.needsUpdate=true; return g; };
     const tex=(w,h,draw,rep)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; } return t; };
@@ -50,21 +50,21 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[]};   // the room's other
       chevron:{n:'CHEVRON',c:[170,112,64],gen:(Lx,Ly)=>tex(1024,1024,(g,W,H)=>{ const sx=W/Lx, sy=H/Ly, cw=.24, pw=.1; g.fillStyle='#2a160a'; g.fillRect(0,0,W,H);
         for(let j=0;j*cw<Lx;j++){ const d=j&1?1:-1, x0=j*cw*sx, x1=(j+1)*cw*sx; for(let y=-cw;y<Ly+cw;y+=pw){ const k=.84+rnd()*.26, y0=y*sy, dy=d*cw*sy;
           g.fillStyle=`rgb(${196*k|0},${134*k|0},${78*k|0})`; g.beginPath(); g.moveTo(x0+1,y0+1); g.lineTo(x1-1,y0+dy+1); g.lineTo(x1-1,y0+dy+pw*sy-1); g.lineTo(x0+1,y0+pw*sy-1); g.closePath(); g.fill(); } } })},
-      parquet:{n:'PARQUET',c:[186,130,78],gen:tiled(128,.48,(g,w)=>{ g.fillStyle='#3a2210'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<3;k++){ const f=.86+rnd()*.24; g.fillStyle=`rgb(${190*f|0},${132*f|0},${78*f|0})`;
+      parquet:{n:'PARQUET',c:[186,130,78],gen:tiled(128,.48,(g,w)=>{ '@later'; g.fillStyle='#3a2210'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++)for(let k=0;k<3;k++){ const f=.86+rnd()*.24; g.fillStyle=`rgb(${190*f|0},${132*f|0},${78*f|0})`;
         if((i+j)&1)g.fillRect(i*64+k*21.3+1,j*64+1,19.3,62); else g.fillRect(i*64+1,j*64+k*21.3+1,62,19.3); } })},
-      marble:{n:'MARBLE',c:[226,224,220],gen:tiled(256,1.2,(g,w)=>{ g.fillStyle='#e8e6e0'; g.fillRect(0,0,w,w); for(let i=0;i<14;i++){ g.strokeStyle=`rgba(${120+rnd()*40|0},${120+rnd()*40|0},${130+rnd()*40|0},${.15+rnd()*.25})`; g.lineWidth=.6+rnd()*1.6; g.beginPath(); let x=rnd()*w, y=rnd()*w; g.moveTo(x,y); for(let k=0;k<4;k++){ x+=(rnd()-.3)*90; y+=(rnd()-.5)*60; g.quadraticCurveTo(x-20,y+20,x,y); } g.stroke(); }
+      marble:{n:'MARBLE',c:[226,224,220],gen:tiled(256,1.2,(g,w)=>{ '@later'; g.fillStyle='#e8e6e0'; g.fillRect(0,0,w,w); for(let i=0;i<14;i++){ g.strokeStyle=`rgba(${120+rnd()*40|0},${120+rnd()*40|0},${130+rnd()*40|0},${.15+rnd()*.25})`; g.lineWidth=.6+rnd()*1.6; g.beginPath(); let x=rnd()*w, y=rnd()*w; g.moveTo(x,y); for(let k=0;k<4;k++){ x+=(rnd()-.3)*90; y+=(rnd()-.5)*60; g.quadraticCurveTo(x-20,y+20,x,y); } g.stroke(); }
         g.strokeStyle='rgba(150,146,140,.6)'; g.lineWidth=2; g.strokeRect(0,0,w,w); g.beginPath(); g.moveTo(128,0); g.lineTo(128,256); g.moveTo(0,128); g.lineTo(256,128); g.stroke(); })},
-      slate:{n:'SLATE',c:[70,74,80],gen:tiled(128,.8,(g,w)=>{ g.fillStyle='#2a2c30'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++){ const f=.8+rnd()*.35; g.fillStyle=`rgb(${74*f|0},${78*f|0},${86*f|0})`; g.fillRect(i*64+2,j*64+2,60,60);
+      slate:{n:'SLATE',c:[70,74,80],gen:tiled(128,.8,(g,w)=>{ '@later'; g.fillStyle='#2a2c30'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++){ const f=.8+rnd()*.35; g.fillStyle=`rgb(${74*f|0},${78*f|0},${86*f|0})`; g.fillRect(i*64+2,j*64+2,60,60);
         for(let k=0;k<60;k++){ g.fillStyle=`rgba(${rnd()<.5?20:200},${rnd()<.5?20:200},${rnd()<.5?30:210},.07)`; g.fillRect(i*64+2+rnd()*58,j*64+2+rnd()*58,4,2); } } })},
       hex:{n:'HEX TILE',c:[232,230,224],gen:(Lx,Ly)=>hexTex('#ecebe6','#b8b4ac',.3,Lx,Ly)}};
     // the hexagon tiles' picture: one period of flat-topped hexagons, repeated (a row of three widths by one height)
-    function hexTex(fill,grout,r,Lx,Ly){ const R=24, w=R*3, h=Math.round(R*Math.sqrt(3)); const t=tex(w,h,(g)=>{ g.fillStyle=grout; g.fillRect(0,0,w,h);
+    function hexTex(fill,grout,r,Lx,Ly){ '@later'; const R=24, w=R*3, h=Math.round(R*Math.sqrt(3)); const t=tex(w,h,(g)=>{ g.fillStyle=grout; g.fillRect(0,0,w,h);
         const hexA=(cx,cy)=>{ g.beginPath(); for(let k=0;k<6;k++){ const a=k*Math.PI/3; g.lineTo(cx+(R-1.5)*Math.cos(a),cy+(R-1.5)*Math.sin(a)); } g.closePath(); const f=.92+rnd()*.12; g.fillStyle=fill; g.globalAlpha=f; g.fill(); g.globalAlpha=1; };
         for(const [cx,cy] of [[0,0],[w,0],[0,h],[w,h],[R*1.5,h/2],[R*1.5+w,h/2],[R*1.5-w,h/2],[w/2+R*1.5- w/2,h/2]])hexA(cx,cy); }); return rep_(t,r*3/Lx,r*Math.sqrt(3)/Ly); }
     // the kitchen's own floor (its corner of the room): five, or the room's
     const KFLOORS={oak:{n:'LIGHT OAK',c:[214,172,124],gen:(w,h)=>planks(w,h,[214,172,124])},diner:{n:'DINER CHECKER',c:[40,40,44],gen:tiled(128,.5,(g,w)=>{ for(let i=0;i<2;i++)for(let j=0;j<2;j++){ g.fillStyle=(i+j)&1?'#222226':'#f2eee4'; g.fillRect(i*64,j*64,64,64); } })},
       terracotta:{n:'TERRACOTTA HEX',c:[196,108,70],gen:(w,h)=>hexTex('#c46c46','#d8c8b2',.22,w,h)},
-      cement:{n:'CEMENT TILE',c:[90,130,170],gen:tiled(128,.4,(g,w)=>{ g.fillStyle='#ece6d8'; g.fillRect(0,0,w,w); g.fillStyle='#4e7ea6'; for(const [x,y] of [[0,0],[128,0],[0,128],[128,128]]){ g.beginPath(); g.arc(x,y,44,0,7); g.fill(); }
+      cement:{n:'CEMENT TILE',c:[90,130,170],gen:tiled(128,.4,(g,w)=>{ '@later'; g.fillStyle='#ece6d8'; g.fillRect(0,0,w,w); g.fillStyle='#4e7ea6'; for(const [x,y] of [[0,0],[128,0],[0,128],[128,128]]){ g.beginPath(); g.arc(x,y,44,0,7); g.fill(); }
         g.fillStyle='#ece6d8'; for(const [x,y] of [[0,0],[128,0],[0,128],[128,128]]){ g.beginPath(); g.arc(x,y,28,0,7); g.fill(); } g.fillStyle='#c98a4a'; g.beginPath(); g.arc(64,64,14,0,7); g.fill(); g.strokeStyle='#4e7ea6'; g.lineWidth=4; g.beginPath(); g.moveTo(64,30); g.lineTo(98,64); g.lineTo(64,98); g.lineTo(30,64); g.closePath(); g.stroke(); g.strokeStyle='rgba(120,110,100,.5)'; g.lineWidth=2; g.strokeRect(0,0,w,w); })},
       ceramic:{n:'WHITE CERAMIC',c:[238,238,234],gen:tiled(128,.9,(g,w)=>{ g.fillStyle='#c6c2ba'; g.fillRect(0,0,w,w); for(let i=0;i<2;i++)for(let j=0;j<2;j++){ const f=.96+rnd()*.05; g.fillStyle=`rgb(${242*f|0},${242*f|0},${238*f|0})`; g.fillRect(i*64+1.5,j*64+1.5,61,61); } })},
       room:{n:'SAME AS ROOM',c:[120,100,80]}};
@@ -264,13 +264,13 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[]};   // the room's other
       window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics, the ones you added leave the scene
-    const clear=Q=>{ if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const t of Q.winTh||[]){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } AMB.breeze=0; for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
+    const clear=Q=>{ '@later'; if(!Q)return; if(GPH.drop)for(const it of Q.th)GPH.drop(it); for(const t of Q.winTh||[]){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } AMB.breeze=0; for(const un of Q.units||[]){ for(const t of un.th){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } if(un.loose)un.obj.removeFromParent(); } };
     APTS.furnish(APTS.my,()=>{ clear(R); R=null; ROOMK.api=null; build(); });
 
     /* ---------- each frame: the lamps glow (brighter as the day goes), the room's lights at their brightness, the pieces that move (fridge doors, flames), the sun's beams follow the hour, the sky is only in the windows in the isometric view ---------- */
     let prevShadow=null; const TV3=new THREE.Vector3(), TV4=new THREE.Vector3();
     // a curtain's step: it falls, is tied back to its shape, the breeze gusts it harder low down, and you push through it
-    const clothStep=(c,h,br,t,pl)=>{ const o=c.o||(c.o={g:-4,dm:.97,ks:.006,col:[],cyl:{cy:1,x:0,z:0,r:.28,y0:0,y1:0},
+    const clothStep=(c,h,br,t,pl)=>{ '@later'; const o=c.o||(c.o={g:-4,dm:.97,ks:.006,col:[],cyl:{cy:1,x:0,z:0,r:.28,y0:0,y1:0},
         push:(i,a,F)=>{ const X0=c.X0, fr=(i/c.nx|0)/(c.ny-1), h2=c.h2, t=c.t, gust=c.br*(1.6+1.2*Math.sin(t*.9+X0[a]*2.1)+.6*Math.sin(t*2.3+X0[a+1]*3+X0[a]))*(.3+.7*fr);
           F[0]=gust*.25*h2*Math.sin(t*.7+fr*2); F[2]=gust*.45*h2; }});
       c.h2=h*h; c.br=br; c.t=t; o.col.length=0; if(pl){ const y=o.cyl; y.x=pl.x; y.z=pl.z; y.y0=pl.y-1; y.y1=pl.y+1; o.col.push(y); }

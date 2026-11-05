@@ -51,7 +51,7 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
     const GT=[[(P.gate[0]+P.gate[1])/2,P.y0],...(P.egate?[[P.x1,(P.egate[0]+P.egate[1])/2]]:[]),...(P.wgate?[[P.x0,(P.wgate[0]+P.wgate[1])/2]]:[]),...(P.ngate?[[(P.ngate[0]+P.ngate[1])/2,P.y1]]:[])];
     const xa=Math.min(X(P.x0),X(P.x1))-T, xb=Math.max(X(P.x0),X(P.x1))+T, za=Math.min(Z(P.y0),Z(P.y1))-T, zb=Math.max(Z(P.y0),Z(P.y1))+T;
     const SB=SOL.up.filter(b=>b[2]>xa&&b[0]<xb&&b[3]>za&&b[1]<zb), RB=(STORE.rooms||[]).filter(R=>R.walls&&R.x0!=null&&!(R.y0>=1)), SZ=STALL.zones||[];
-    const ok=(x,y,r,bush)=>{ if(x<P.x0+2.2+r||x>P.x1-2.2-r||y<P.y0+2.8+r||y>P.y1-2.4-r||pd(x,y)<r+(bush?1.4:.45)||BK.wet(x,y,r+.7)||F.lake(x,y)<r+1.2||F.ter(x,y)<r+.5)return false;
+    const ok=(x,y,r,bush)=>{ '@later'; if(x<P.x0+2.2+r||x>P.x1-2.2-r||y<P.y0+2.8+r||y>P.y1-2.4-r||pd(x,y)<r+(bush?1.4:.45)||BK.wet(x,y,r+.7)||F.lake(x,y)<r+1.2||F.ter(x,y)<r+.5)return false;
       if(KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||GT.some(([gx,gy])=>Math.hypot(x-gx,y-gy)<(bush?6:3.5)))return false;
       const wx=X(x), wz=Z(y), m=(r+(bush?.5:.15))*T; if(SB.some(b=>wx>b[0]-m&&wx<b[2]+m&&wz>b[1]-m&&wz<b[3]+m)||RB.some(b=>wx>b.x0-m&&wx<b.x1+m&&wz>b.z0-m&&wz<b.z1+m)||SZ.some(b=>wx>b[0]-m&&wx<b[2]+m&&wz>b[1]-m&&wz<b[3]+m))return false;
       return !BU.some(b=>Math.hypot(b.px-x,b.py-y)<r+b.r+(bush?.3:0)); };
@@ -72,10 +72,10 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
       for(let i=0;i<28;i++){ const a=i/28*Math.PI*2; bedOpen(); for(let t=-2;t<=2;t++){ const b=a+t*.5/(R+1.2); fl(FK[i%5][(t+2)%2],C.x+Math.cos(b)*(R+1.1),C.y+Math.sin(b)*(R+1.1)); fl(FK[i%5][(t+3)%2],C.x+Math.cos(b+.01)*(R+1.6),C.y+Math.sin(b+.01)*(R+1.6)); } bedClose();
         if(i%2===0)bu(BKF[(i/2|0)%3],C.x+Math.cos(a+.08)*(R+3.4),C.y+Math.sin(a+.08)*(R+3.4)); } }
     const OK=(P.oaks||[]).map(([wx,wz,m])=>[wx/T+SHARED.BOD.OX-P.ox,wz/T+SHARED.BOD.OY-P.oy,m]).filter(([x,y])=>x>P.x0&&x<P.x1&&y>P.y0&&y<P.y1), TK=[2,1,3,8,8,2];
-    OK.forEach(([x,y,m],i)=>{ const cR=m*.42; for(let j=0;j<3;j++){ if(hsh(i,j,61)<.3)continue; const a=hsh(j,i,63)*6.28, d=2.2+hsh(i+j,7,65)*Math.min(2.6,cR*.5); bu(TK[Math.floor(hsh(i,j,67)*TK.length)],x+Math.cos(a)*d,y+Math.sin(a)*d); }
+    OK.forEach(([x,y,m],i)=>{ '@later'; const cR=m*.42; for(let j=0;j<3;j++){ if(hsh(i,j,61)<.3)continue; const a=hsh(j,i,63)*6.28, d=2.2+hsh(i+j,7,65)*Math.min(2.6,cR*.5); bu(TK[Math.floor(hsh(i,j,67)*TK.length)],x+Math.cos(a)*d,y+Math.sin(a)*d); }
       const a=hsh(i,9,69)*6.28, d=1.5+hsh(9,i,71); clump(x+Math.cos(a)*d,y+Math.sin(a)*d,.9,4+Math.floor(hsh(i,11,73)*3),hsh(i,13,75)<.5?[7,7,8]:[7,8,8],i); });
     { const WK=[4,7,6,5,4,6], L=[[P.x0+5,P.y0+4.6,1,0,P.x1-P.x0-10],[P.x0+5,P.y1-4.2,1,0,P.x1-P.x0-10],[P.x0+4.3,P.y0+6,0,1,P.y1-P.y0-11],[P.x1-4.3,P.y0+6,0,1,P.y1-P.y0-11]];
-      L.forEach(([x0,y0,ux,uy,len],w)=>{ for(let t=0;t<len;t+=8){ const x=x0+ux*t, y=y0+uy*t, r=hsh(x,y,81); if(r<.45){ const k=WK[Math.floor(hsh(y,x,83)*WK.length)]; bu(k,x,y); if(r<.2)bu(k,x+ux*1.9,y+uy*1.9); }
+      L.forEach(([x0,y0,ux,uy,len],w)=>{ '@later'; for(let t=0;t<len;t+=8){ const x=x0+ux*t, y=y0+uy*t, r=hsh(x,y,81); if(r<.45){ const k=WK[Math.floor(hsh(y,x,83)*WK.length)]; bu(k,x,y); if(r<.2)bu(k,x+ux*1.9,y+uy*1.9); }
         else if(r<.62){ bedOpen(); for(let j=0;j<3;j++)fl(2,x+ux*j*.55+uy*(j%2)*.4,y+uy*j*.55+ux*(j%2)*.4); bedClose(); } } }); }
     for(let i=0,n=0;i<120&&n<18;i++){ const x=P.x0+6+hsh(i,91,1)*(P.x1-P.x0-12), y=P.y0+8+hsh(i,93,3)*(P.y1-P.y0-14); if(!ok(x,y,1.6,false)||pd(x,y)<3||BU.some(b=>Math.hypot(b.px-x,b.py-y)<2.5))continue;
       const sh=OK.some(([ox,oy,m])=>Math.hypot(ox-x,oy-y)<m*.42), MK=sh?[7,7,1,8]:[[1,4],[4,9],[1,9],[9,3],[1,4,9],[4,4,1]][i%6]; n++; clump(x,y,1.5,6+Math.floor(hsh(i,95,5)*5),MK,i+300); }

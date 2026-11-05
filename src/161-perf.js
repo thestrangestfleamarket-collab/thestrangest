@@ -67,7 +67,7 @@ SELFSH.pick=()=>{ SELFSH.set.clear(); if(!PERFX.on[2])return; const R=12*TILE, c
   c.sort((a,b)=>a[0]-b[0]); for(const [,N] of c.slice(0,Math.round(2*(SHARED.lodK||1))))SELFSH.set.add(N); };
 SELFSH.use=N=>!PERFX.on[2]||SELFSH.set.has(N);
 SYS.add('shadowPre',()=>SELFSH.pick(),'161-perf');
-const PERFX_bounds0=()=>{ '@later'; if(!PERFX.on[4])return; const S=new THREE.Sphere();
+const PERFX_bounds0=()=>{ if(!PERFX.on[4])return; const S=new THREE.Sphere();
   scene.traverse(o=>{ if(!o.isMesh||o.frustumCulled||o.userData.nb)return;
     if(o.isSkinnedMesh){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); o.boundingSphere=g.boundingBox.getBoundingSphere(new THREE.Sphere()); o.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }
     if(o===W3.mesh)return; if(o.material&&o.material.customProgramCacheKey&&/^mus/.test(o.material.customProgramCacheKey())){ o.userData.nb=true; const g=o.geometry; g.computeBoundingBox(); g.boundingBox.getBoundingSphere(S); g.boundingSphere=S.clone(); g.boundingSphere.radius*=1.6; o.frustumCulled=true; return; }

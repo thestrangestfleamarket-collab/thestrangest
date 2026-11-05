@@ -44,7 +44,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     SO=K.sol.map(([a,b,c,d])=>[OX+a*MH,OZ+b*MH,OX+c*MH,OZ+d*MH]); SOL.up.push(...SO);
     t0=performance.now(); P=P2; return P2; };
   const D={SY:1.1};
-  const unbuild=()=>{ for(const r of SO.concat(DS)){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } SO=[]; DS=[]; for(const p of PHX.parts)if(p.drop&&K)p.drop(K);
+  const unbuild=()=>{ '@later'; for(const r of SO.concat(DS)){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } SO=[]; DS=[]; for(const p of PHX.parts)if(p.drop&&K)p.drop(K);
     if(ENV){ ENV.rt.dispose(); if(ENV.cam)ENV.cam.removeFromParent(); ENV=null; } for(const o of MIR)o.r.dispose(); MIR=[]; LT={};
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); G=null; } K=null; P=null; };
   const inside=()=>!!K&&ROOMS.offIn&&ROOMS.offIn()==='playhouse';

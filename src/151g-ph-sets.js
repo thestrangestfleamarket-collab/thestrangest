@@ -171,7 +171,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
   for(let i=0;i<2;i++){ const l=new THREE.PointLight(0xff9a40,0,9*K.MH,1.5); l.userData.pool=true; K.G.add(l); (ST.pl=ST.pl||[]).push(l); }
   ST.go('strike',true);
 },
-tick:(dt,K,now,inn)=>{ const ST=K.sets; if(!ST)return; const t=now/1000, ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+tick:(dt,K,now,inn)=>{ '@later'; const ST=K.sets; if(!ST)return; const t=now/1000, ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
   for(const P of Object.values(ST.P)){
     if(P.type==='wag'&&P.t!==P.to){ const d=P.to-P.t; P.t+=Math.sign(d)*Math.min(Math.abs(d),dt*P.spd/Math.abs(P.inX-P.outX)); P.g.position.x=P.outX+(P.inX-P.outX)*ease(P.t); if(P.t<=0&&P.to===0)P.g.visible=false; K.solDirty=true; }
     if(P.type==='fade'&&P.v!==P.to){ const d=P.to-P.v; P.v+=Math.sign(d)*Math.min(Math.abs(d),dt/2.5); P.set(P.v); }

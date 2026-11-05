@@ -79,7 +79,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
       settle(c,150); C.hung.push({c,s,dy:s.y}); } }
 
 },
-tick:(dt,K,now,inn)=>{ const C=K.cloth; if(!C)return; const h=Math.min(dt,1/20);
+tick:(dt,K,now,inn)=>{ '@later'; const C=K.cloth; if(!C)return; const h=Math.min(dt,1/20);
   // the player near the curtain pushes it; the hung cloths follow their bars when they fly
   let pl=null; if(inn&&K.you)pl=K.you();
   if(C.curtain)C.curtain.step(h,pl);

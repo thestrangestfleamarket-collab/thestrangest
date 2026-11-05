@@ -5,7 +5,7 @@ import {GTA} from './106-game-play-3-guitar-1-body.js';
 import {IMX} from './119-game-music-1-engine.js';
  STORE.STAGE=STAGE;
 STAGE.tick=()=>{}; STAGE.who=()=>null;
-STAGE.make=()=>{ if(!STORE.bar)return; const ALL=[['dr',DRM]], SET=Math.max(5,+(QS.get('set')||180)); let i=0, t=0;   // the octopus drummer is the bar's only act (owner, 30 Oct 2026)
+STAGE.make=()=>{ '@later'; if(!STORE.bar)return; const ALL=[['dr',DRM]], SET=Math.max(5,+(QS.get('set')||180)); let i=0, t=0;   // the octopus drummer is the bar's only act (owner, 30 Oct 2026)
   STAGE.go=k=>{ i=typeof k==='number'?k:Math.max(0,ALL.findIndex(a=>a[0]===k)); t=0;
     ALL.forEach(([,X],j)=>{ const on=j===i; if(X.on===on)return; X.on=on; VIS.hide(X.g,'away',!on); if(!on)X._rh=false; const f=on?X.start:X.stop; if(f)f(); }); };
   STAGE.next=()=>STAGE.go((i+1)%ALL.length); STAGE.who=()=>ALL[i][0]; STAGE.left=()=>SET-t;

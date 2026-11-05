@@ -90,7 +90,7 @@ const GAMES={}; window.GAMES=GAMES;
       font(g,20,'#c02838'); g.fillText(S.b,290,210); font(g,20,'#2060c0'); g.fillText(S.a,290,270); },
     end:S=>o.end&&o.end(S)});
   /* ---------- A SHIFT AT THE PASS: the octopus puts plates up, the tables want them; click a plate, then the table that ordered it; a tip for each, more for quick ---------- */
-  GAMES.orders=(o={})=>{ const DISH=o.dishes||[['EGGS','#f0c030'],['PANCAKES','#d89848'],['BURGER','#8a5a2a'],['BLT','#58a038'],['PIE','#c87a3a'],['SHAKE','#e8a0c8']], TB=[[50,330,'C1'],[120,330,'C2'],[190,330,'C3'],[260,330,'C4'],[330,330,'C5'],[85,405,'B1'],[200,405,'B2'],[315,405,'B3']];
+  GAMES.orders=(o={})=>{ '@later'; const DISH=o.dishes||[['EGGS','#f0c030'],['PANCAKES','#d89848'],['BURGER','#8a5a2a'],['BLT','#58a038'],['PIE','#c87a3a'],['SHAKE','#e8a0c8']], TB=[[50,330,'C1'],[120,330,'C2'],[190,330,'C3'],[260,330,'C4'],[330,330,'C5'],[85,405,'B1'],[200,405,'B2'],[315,405,'B3']];
     return {title:o.title||'A SHIFT AT THE PASS',w:400,h:440,again:true,help:'Plates come up in the window. Click a plate, then the table whose ticket matches. Quick is a bigger tip; a plate left too long goes cold. The shift is 60 seconds.',
     can:o.can,start:S=>{ if(o.pay)o.pay(); S.left=60; S.plates=[]; S.want=TB.map(()=>null); S.hold=-1; S.tips=0; S.served=0; S.cold=0; S.next=1; },
     tick:(S,dt)=>{ S.left-=dt; S.next-=dt;
@@ -111,7 +111,7 @@ const GAMES={}; window.GAMES=GAMES;
       if(S.hold>=0){ g.strokeStyle='#ffe080'; g.lineWidth=2; g.beginPath(); g.moveTo(60+S.hold*95,128); g.lineTo(S.mx,S.my); g.stroke(); } },
     end:S=>o.end&&o.end(S)}; };
   /* ---------- A SCRATCH TICKET: nine boxes under silver; scratch them off with the mouse held down; three of one amount wins it ---------- */
-  GAMES.scratchCard=(lucky=false)=>{ const A=[2,5,10,50,500], W=[50,30,14,5,1], pick=()=>{ let r=rnd()*100; for(let i=0;i<A.length;i++){ if((r-=W[i])<0)return A[i]; } return 2; };
+  GAMES.scratchCard=(lucky=false)=>{ '@later'; const A=[2,5,10,50,500], W=[50,30,14,5,1], pick=()=>{ let r=rnd()*100; for(let i=0;i<A.length;i++){ if((r-=W[i])<0)return A[i]; } return 2; };
     const win=rnd()<(lucky?.6:.3)?pick():0, cells=[], n=new Map(); if(win){ for(let i=0;i<3;i++)cells.push(win); n.set(win,3); }
     while(cells.length<9){ const a=A[Math.floor(rnd()*A.length)]; if((n.get(a)||0)<2&&a!==win){ cells.push(a); n.set(a,(n.get(a)||0)+1); } }
     for(let i=cells.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [cells[i],cells[j]]=[cells[j],cells[i]]; } return {cells,win}; };

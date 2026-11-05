@@ -19,7 +19,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
 
   // signs: each station's entrance (railings, two green globes, its name) and each section's edge
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
-  const sign=(w,h,fn,a,b,z0,z1,one)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
+  const sign=(w,h,fn,a,b,z0,z1,one)=>{ '@later'; const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
     const m=new THREE.MeshBasicMaterial({map:t}), q=(p,r)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([p[0],z0,p[1],r[0],z0,r[1],r[0],z1,r[1],p[0],z0,p[1],r[0],z1,r[1],p[0],z1,p[1]],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); scene.add(new THREE.Mesh(g,m)); };
     q(a,b); if(!one)q(b,a); };
   const postM=new THREE.MeshLambertMaterial({color:0x2a2c30}), rail=new THREE.MeshLambertMaterial({color:0x2f6b45}), globe=new THREE.MeshBasicMaterial({color:0xdcf3dc}), hole=new THREE.MeshBasicMaterial({color:0x050506});
@@ -28,7 +28,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
     bx(k.x0,k.y0,k.x1,k.y1,.005,.02,hole);
     bx(k.x0,back-.06,k.x1,back+.06,0,1.1,rail); bx(k.x0,out-.06,k.x1,out+.06,0,1.1,rail); bx(k.x1-.06,k.y0,k.x1+.06,k.y1,0,1.1,rail);
     for(const y of [k.y0,k.y1]){ bx(k.x0-.08,y-.08,k.x0+.08,y+.08,0,2.6,rail); const gl=new THREE.Mesh(new THREE.SphereGeometry(.16*T,10,8),globe); gl.position.set(XS(k.x0),2.75,ZS(y)); scene.add(gl); }
-    sign(512,80,(g,w,h)=>{ g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
+    sign(512,80,(g,w,h)=>{ '@later'; g.fillStyle='#f4f4ee'; g.fillRect(0,0,w,h); g.fillStyle='#3fbf5a'; g.beginPath(); g.arc(h*.5,h*.5,h*.26,0,7); g.fill(); g.fillStyle='#0b0b0b'; font(g,h*.42,900); g.textBaseline='middle';
       g.fillText(st.name+' · '+st.id,h*.95,h*.38); font(g,h*.22,700); g.fillStyle='#444'; const M_=SHARED.METRO, a=M_&&M_.nextOf&&M_.nextOf(st.id,0), b=M_&&M_.nextOf&&M_.nextOf(st.id,1); g.fillText(a&&b?TEXT.t('loop.entrance',null,{a,b}):TEXT.t('loop.entrance0',null),h*.95,h*.76); },[XS(k.x0+.4),ZS(out)+(st.side==='south'?.08:-.08)*T],[XS(k.x1-.4),ZS(out)+(st.side==='south'?.08:-.08)*T],1.15,1.75); }
   // the other sections' ground, blocks, water edges, trees, posts and edge signs: only when another section is loaded (none today), so this waits in the later chunk
   const others=()=>{ '@later';

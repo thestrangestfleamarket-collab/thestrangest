@@ -7,7 +7,7 @@ const SKELRIG={seen:new Set()}; window.SKELRIG=SKELRIG;
 { const DATA=__LAZY__("data/skelbodies.json"); let BM=null;
   DATA().then(J=>{ BM={}; for(const k of ['Warrior','Mage','Minion','Rogue'])BM[k]=BODIES.rebakedBody(J,k); }).catch(e=>console.warn('SKELRIG',e));
   const YS=ZU*24/TILE;
-  const add=N=>{ const body=BM[N.skelChar]; if(!body)return; const {me,PM}=BODIES.mesh(body), grp=new THREE.Group(), k=body.height*N.H/(2.166*52);
+  const add=N=>{ '@later'; const body=BM[N.skelChar]; if(!body)return; const {me,PM}=BODIES.mesh(body), grp=new THREE.Group(), k=body.height*N.H/(2.166*52);
     grp.scale.set(k,k*YS,k); grp.add(me); N.g.add(grp);
     for(const m of N.g.children)if(m!==grp)m.visible=false;   // hide the skinned skeleton (and its gear)
     N.rigOv={grp,PM,body,SR:RIG.create(),px:N.st.x,pz:N.st.z,mv:0}; SKELRIG.seen.add(N); };

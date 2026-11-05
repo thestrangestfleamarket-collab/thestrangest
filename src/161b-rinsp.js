@@ -57,7 +57,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
     return last={head,drawn:out,hidden:hid}; };
   // counted as the frame draws it: the same hiding the main loop does round its render (NPCs, interiors, other levels, the cull and the haze)
-  const collect=full=>{ '@later'; NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
+  const collect=full=>{ NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
   const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
       return '<div class="o">'+esc(o.type+(o.name?' "'+o.name+'"':'')+' · '+tris(o)+' tris'+(o.isInstancedMesh?' ('+o.count+' copies)':'')+' · shadow '+(o.castShadow?'CAST':'-')+'/'+(o.receiveShadow?'RECV':'-')+(o.frustumCulled?'':' · NEVER CULLED')+' · layers '+o.layers.mask+' · geo '+kb(gb(o.geometry)))+
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
@@ -89,12 +89,12 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
   const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
   const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':window.PS2&&p===PS2.sp?'PS2':window.LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
-  const gtWrap=(o,k,nm)=>{ const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
+  const gtWrap=(o,k,nm)=>{ '@later'; const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
       try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
-  GT.poll=()=>{ const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
+  GT.poll=()=>{ '@later'; const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
     while(GT.q.length&&gl.getQueryParameter(GT.q[0][0],gl.QUERY_RESULT_AVAILABLE)){ const [q,nm]=GT.q.shift(); if(!bad)frame[nm]=(frame[nm]||0)+gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6; gl.deleteQuery(q); }
     for(const k in frame)GT.ms[k]=GT.ms[k]==null?frame[k]:GT.ms[k]*.9+frame[k]*.1; };
-  GT.start=()=>{ const gl=renderer.getContext(); GT.X=GT.X||(gl.getExtension&&gl.getExtension('EXT_disjoint_timer_query_webgl2')); if(!GT.X)return; GT.on=true;
+  GT.start=()=>{ '@later'; const gl=renderer.getContext(); GT.X=GT.X||(gl.getExtension&&gl.getExtension('EXT_disjoint_timer_query_webgl2')); if(!GT.X)return; GT.on=true;
     const C=SHARED.composer; if(C)C.passes.forEach((p,i)=>gtWrap(p,'render',gtName(p,i)));
     gtWrap(renderer,'render',(sc,cam)=>sc===scene?(cam===SHARED.cam?'SCENE (extra)':'SCENE from another camera'):'OTHER ('+(sc.name||sc.type)+')'); };
   GT.stop=()=>{ GT.on=false; };

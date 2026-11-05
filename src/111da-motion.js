@@ -29,7 +29,7 @@ import {SYS} from './006-map-pre.js';
   sp.append(closeB,head,grid,tip);
   // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss
   const can=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!VIT.tired;
-  const fight=k=>{ if(!can())return; const m=st.move, t=m?m.t:0;
+  const fight=k=>{ '@later'; if(!can())return; const m=st.move, t=m?m.t:0;
     if(k==='l'){ if(m&&m.name==='mc_kickSide'){ if(t>.45)play('kickSpin'); return; } if(!m||m.name.startsWith('mc_')&&info[m.name.slice(3)]&&!/kick/.test(m.name))play('kickSide'); }
     else if(k==='o'&&(!m||!/^mc_(dodge|kick)/.test(m.name))){ VIT.spend(.06); play('dodge'); } };
   addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; const k=UI.key(e);

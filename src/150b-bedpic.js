@@ -171,19 +171,19 @@ import {ROOMK} from './150a-bedroom.js';
 
   // what the bedroom's pieces do (each copy of one too): the screens switch, the drawers slide out, the record turns, the cat breathes and wakes to a pat
   const W=ROOMK.wires;
-  W.screen=(un,c)=>{ let L=null; const S=[]; un.obj.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.screen){ o.material=o.material.clone(); S.push(o); } }); if(!L)return; un.st.L=L;
+  W.screen=(un,c)=>{ '@later'; let L=null; const S=[]; un.obj.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.screen){ o.material=o.material.clone(); S.push(o); } }); if(!L)return; un.st.L=L;
     c.hit(un,()=>un.name+': '+(un.st.L.userData.on!==false?'ON':'OFF'),()=>{ const u=un.st.L.userData; u.on=u.on===false; if(SFX)SFX.play('click',{vol:.6,vary:.2}); });
     un.tick=()=>{ const on=un.st.L.userData.on!==false; for(const s of S)s.material.color.setScalar(on?1:0); }; };
-  W.drawers=(un,c)=>{ const D=[]; un.obj.traverse(o=>{ if(o.userData.drawer)D.push({g:o,x0:o.position.x,z0:o.position.z,d:o.userData.drawer}); }); un.st.open=false;
+  W.drawers=(un,c)=>{ '@later'; const D=[]; un.obj.traverse(o=>{ if(o.userData.drawer)D.push({g:o,x0:o.position.x,z0:o.position.z,d:o.userData.drawer}); }); un.st.open=false;
     c.hit(un,()=>un.st.open?'CLOSE THE DRAWERS':'OPEN THE DRAWERS',()=>{ un.st.open=!un.st.open; if(SFX)SFX.play('latch',{vol:.6,vary:.2}); });
     un.tick=dt=>{ const k=Math.min(1,dt*6), o=un.st.open?1:0; for(const d of D){ d.g.position.x+=(d.x0+d.d[0]*o-d.g.position.x)*k; d.g.position.z+=(d.z0+d.d[1]*o-d.g.position.z)*k; } }; };
-  W.record=(un,c)=>{ let P=null, A=null; un.obj.traverse(o=>{ if(o.userData.platter)P=o; if(o.userData.arm)A=o; }); un.st.on=false;
+  W.record=(un,c)=>{ '@later'; let P=null, A=null; un.obj.traverse(o=>{ if(o.userData.platter)P=o; if(o.userData.arm)A=o; }); un.st.on=false;
     c.hit(un,()=>'RECORD PLAYER: '+(un.st.on?'ON':'OFF'),()=>{ un.st.on=!un.st.on; if(SFX)SFX.play('click',{vol:.6,vary:.2}); });
     un.tick=dt=>{ if(P&&un.st.on)P.rotation.y-=dt*3.49; if(A)A.rotation.y+=((un.st.on?-.5:0)-A.rotation.y)*Math.min(1,dt*3); }; };
-  W.cat=(un,c)=>{ const B=[], H=[]; un.obj.traverse(o=>{ if(o.userData.breath)B.push(o); if(o.userData.head)H.push(o); }); let pet=0, t=Math.random()*9;
+  W.cat=(un,c)=>{ '@later'; const B=[], H=[]; un.obj.traverse(o=>{ if(o.userData.breath)B.push(o); if(o.userData.head)H.push(o); }); let pet=0, t=Math.random()*9;
     c.hit(un,()=>'PET THE CAT',()=>{ pet=2.5; if(SFX)SFX.play('chirp',{vol:.25,vary:.3}); });
     un.tick=dt=>{ t+=dt; pet=Math.max(0,pet-dt); const b=1+.05*Math.sin(t*(pet?4:1.6)); for(const o of B)o.scale.y=o.userData.s0*b; for(const o of H)o.rotation.z+=((pet?.4:0)-o.rotation.z)*Math.min(1,dt*4); }; };
-  window.BEDPICDBG=()=>{ const A=ROOMK.api; if(!A)return {built:false}; const U=A.units(), names=[...new Set(U.filter(u=>!u.gone).map(u=>u.name))];
+  window.BEDPICDBG=()=>{ '@later'; const A=ROOMK.api; if(!A)return {built:false}; const U=A.units(), names=[...new Set(U.filter(u=>!u.gone).map(u=>u.name))];
     let tris=0, meshes=0; for(const u of U)u.obj.traverse(o=>{ if(o.isMesh&&o.visible!==false){ meshes++; const g=o.geometry; tris+=(g.index?g.index.count:g.attributes.position.count)/3; } });
     return {built:names.includes('CORNER DESK'),names,meshes,tris:Math.round(tris),drawers:U.filter(u=>u.wire==='drawers').map(u=>u.st.open),screens:U.filter(u=>u.wire==='screen').map(u=>u.st.L&&u.st.L.userData.on!==false),record:U.filter(u=>u.wire==='record').map(u=>u.st.on)}; };
 }

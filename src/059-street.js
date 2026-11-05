@@ -16,7 +16,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
 
   STORE.open=Object.assign(STORE.open||{},{theatre:[...['f','b','e'].map(sd=>TURN(lot('theatre'),WP.theatre.face).side(sd)),'lobby']});   // in the theatre only its screen wall stays (its local west, turned to its street)
   // the theatre is built in its own frame (the front at the local y1) and turned onto its street like the bar: props and lamps by turnIn, the painters by loc
-  STEPS.push(()=>{ const BW=lot('theatre',300), TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, door=B.x0+4.4, prop=SK.prop, sided=SK.sided; STORE.theatreFrame={B,TB};   // the theatre's own layout and its turn, for what furnishes it
+  STEPS.push(()=>{ '@later'; const BW=lot('theatre',300), TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, door=B.x0+4.4, prop=SK.prop, sided=SK.sided; STORE.theatreFrame={B,TB};   // the theatre's own layout and its turn, for what furnishes it
     const loc=(nx,ny,x,y)=>{ const l=TB.back(x,y); for(let i=0;i<TB.q;i++){ const t=nx; nx=ny; ny=-t; } return [nx,ny,l[0],l[1]]; }, solL=(x0,y0,x1,y1,h)=>{ const a=TB.pt(x0,y0), b=TB.pt(x1,y1); K.sol(Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1]),h); };
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
     const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
@@ -84,12 +84,12 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
 
   // the playhouse lot is solid from the start; only its painting waits for its step (the soak found a pawn sealed in when the step landed)
   { const LW=lot('play',190), TP=TURN(LW,WP.play.face); if(TP.q){ const a=X(LW.x0), b=X(LW.x1), c=Z(LW.y0), d=Z(LW.y1); SOL.up.push([Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]); FIX.up.push([Math.min(a,b),Math.min(c,d),0,Math.max(a,b),Math.max(c,d),Y(TP.L.h)]); } }
-  STEPS.push(()=>{ const LW=lot('play',190), TP=TURN(LW,WP.play.face), P=PY.PLAYK({...TP.L,h:LW.h}), br=[118,50,44], fc=(nx,ny,u,z,f)=>facade(nx,ny,u,u,z,f,LW.h,br);
+  STEPS.push(()=>{ '@later'; const LW=lot('play',190), TP=TURN(LW,WP.play.face), P=PY.PLAYK({...TP.L,h:LW.h}), br=[118,50,44], fc=(nx,ny,u,z,f)=>facade(nx,ny,u,u,z,f,LW.h,br);
     BLOCKS.make({...LW,z0:0,z1:LW.h,kind:'Rplayhouse',turn:TP,roof:()=>[58,57,57],paint:(sd,u,z,f)=>sd==='f'?(P.playFront(u,z,f)||fc(0,1,u,z,f)):fc(sd==='w'||sd==='e'?1:0,sd==='f'||sd==='b'?1:0,u,z,f)});
     unplace('PLAYHOUSE'); });
 
 
-  STEPS.push(()=>{
+  STEPS.push(()=>{ '@later';
     const film=now=>{ const M=MS.theatre; if(!M)return; if(CINEMA.on){ M.fm.visible=false; return; } const near=SHARED.LVL==='up'&&(M.R.inside(pos.x,pos.z)||Math.hypot(pos.x-M.R.at.x,pos.z-M.R.at.z)<6*TILE); M.fm.visible=near; if(!near)return;
       const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
       for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const s=(j*W+i)*3, o=((Hh-1-j)*W+i)*4; d[o]=f[s]; d[o+1]=f[s+1]; d[o+2]=f[s+2]; d[o+3]=255; } M.tx.needsUpdate=true; };

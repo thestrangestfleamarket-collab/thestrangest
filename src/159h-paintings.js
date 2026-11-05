@@ -38,7 +38,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const ask=b=>fetch('/art',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(b)});
   let dbp=null; const db=()=>dbp||(dbp=new Promise(res=>{ try{ const r=indexedDB.open('market-art',1); r.onupgradeneeded=()=>r.result.createObjectStore('a'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }));
   const idb=async(mode,f)=>{ const d=await db(); if(!d)return null; return new Promise(res=>{ try{ const tx=d.transaction('a',mode), q=f(tx.objectStore('a')); tx.oncomplete=()=>res(q&&q.result); tx.onerror=tx.onabort=()=>res(null); }catch(e){ res(null); } }); };
-  ART.put=async(k,d,fin)=>{ if(fin)ART.mem.set(k,d); await idb('readwrite',s=>s.put(d,k)); if(!web())return true;
+  ART.put=async(k,d,fin)=>{ '@later'; if(fin)ART.mem.set(k,d); await idb('readwrite',s=>s.put(d,k)); if(!web())return true;
     try{ const r=await ask({put:{id:k,d,fin:fin?1:0}}); if(r.ok)return true; const j=await r.json().catch(()=>({})); say(j.full?'YOUR PAINTINGS ARE FULL ON THE SERVER: KEPT ON THIS DEVICE ONLY.':'THE PAINTING WAS NOT SAVED TO THE SERVER: KEPT ON THIS DEVICE.','#e8a23a'); }catch(e){ say('THE PAINTING WAS NOT SAVED TO THE SERVER: KEPT ON THIS DEVICE.','#e8a23a'); } return false; };
   ART.get=async k=>{ if(ART.mem.has(k))return ART.mem.get(k); let d=await idb('readonly',s=>s.get(k)); if(!d&&web()){ try{ const r=await ask({get:k}); if(r.ok){ d=(await r.json()).d; if(d)idb('readwrite',s=>s.put(d,k)); } }catch(e){} }
     if(d&&k[0]==='a')ART.mem.set(k,d); return d||null; };
@@ -46,7 +46,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
 
   const mk=(w,h)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
   const thumb=(img,max=112)=>{ const s=Math.min(1,max/Math.max(img.width,img.height)), c=mk(Math.max(1,Math.round(img.width*s)),Math.max(1,Math.round(img.height*s))), x=c.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(img,0,0,c.width,c.height); return c.toDataURL('image/webp',.8); };
-  const effort=(img,bg)=>{ const c=mk(48,48), x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(img,0,0,48,48); const d=x.getImageData(0,0,48,48).data, n=parseInt(bg.slice(1),16), b=[n>>16&255,n>>8&255,n&255]; let k=0;
+  const effort=(img,bg)=>{ '@later'; const c=mk(48,48), x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(img,0,0,48,48); const d=x.getImageData(0,0,48,48).data, n=parseInt(bg.slice(1),16), b=[n>>16&255,n>>8&255,n&255]; let k=0;
     for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-b[0])+Math.abs(d[i+1]-b[1])+Math.abs(d[i+2]-b[2])>30)k++; return k/2304; };
   const today=()=>new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase();
 
@@ -54,7 +54,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const opened=()=>{ const P=FORAGE.PACK; if(P&&P.open&&P.toggle)try{ P.toggle(); }catch(e){} };
   PAINTINGS.start=can=>{ const c=CAN[can]; if(!c)return; if(!FORAGE.has(can))return say('YOU HAVE NO '+c.n+'.','#c8a090'); FORAGE.take(can,1);
     const id=uid(); M.wip[id]={c:can,w:c.w,h:c.h,t:'',at:Date.now()}; save(); names(); FORAGE.give('wip_'+id,1); if(INV.save)INV.save(); return open(id,true); };
-  const open=async(id,fresh)=>{ const w=M.wip[id]; if(!w)return; if(PAINTER.isOpen)return; let layers=null;
+  const open=async(id,fresh)=>{ '@later'; const w=M.wip[id]; if(!w)return; if(PAINTER.isOpen)return; let layers=null;
     if(!fresh){ try{ layers=JSON.parse(await ART.get('w'+id)||'null'); layers=layers&&layers.layers; }catch(e){ layers=null; } if(!layers)say('ITS PICTURE IS NOT ON THIS DEVICE YET: A FRESH START ON IT.','#e8a23a'); }
     opened(); UI.gamewin='paint';
     await PAINTER.open({w:w.w,h:w.h,title:w.t,bg:CAN[w.c].bg,layers,frames:Object.entries(FR).map(([k,v])=>[k,v[0]]),
@@ -62,12 +62,12 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
       onFinish:o=>finish(id,o), onClose:()=>{ if(UI.gamewin==='paint')UI.gamewin=null; }});
     return id; };
   PAINTINGS.open=id=>open(id,false);
-  const finish=async(id,{title,frame,img})=>{ const w=M.wip[id]; if(!w)return; const d=img.toDataURL('image/webp',.92), by=(ONLINE.myName&&ONLINE.myName())||'A TENANT';
+  const finish=async(id,{title,frame,img})=>{ '@later'; const w=M.wip[id]; if(!w)return; const d=img.toDataURL('image/webp',.92), by=(ONLINE.myName&&ONLINE.myName())||'A TENANT';
     M.art[id]={t:title,by:String(by).toUpperCase().slice(0,24),w:w.w,h:w.h,c:w.c,fr:frame||'',d:today(),e:+effort(img,CAN[w.c].bg).toFixed(3),th:thumb(img)}; delete M.wip[id]; save(); names();
     FORAGE.take('wip_'+id,1); FORAGE.give('pt_'+id,1); if(INV.save)INV.save(); kind(id); easel();
     say(`SIGNED: “${title}”. IT IS IN YOUR PACK: HANG IT AT HOME (DECORATE), GIVE IT OR SELL IT.`,'#b8f0a0'); if(FORAGE.draw)FORAGE.draw();
     await ART.put('a'+id,d,true); ART.del('w'+id); };
-  PAINTINGS.atEasel=()=>{ const ids=Object.keys(M.wip).filter(id=>FORAGE.has('wip_'+id)).sort((a,b)=>(M.wip[b].at||0)-(M.wip[a].at||0)); if(ids.length)return open(ids[0],false);
+  PAINTINGS.atEasel=()=>{ '@later'; const ids=Object.keys(M.wip).filter(id=>FORAGE.has('wip_'+id)).sort((a,b)=>(M.wip[b].at||0)-(M.wip[a].at||0)); if(ids.length)return open(ids[0],false);
     const can=['canvas_m','canvas_s','canvas_w','canvas_t','paper'].find(k=>FORAGE.has(k)); if(can)return PAINTINGS.start(can);
     say('YOU NEED A CANVAS. THE TRADER AT THE FLEA MARKET SELLS THEM.','#c8a090'); };
 
@@ -85,22 +85,22 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const closeV=()=>{ if(V.hidden)return; V.hidden=true; V.style.display='none'; V.innerHTML=''; if(UI.gamewin==='paintv')UI.gamewin=null; SHARED.covered=PAINTER.isOpen; };
   V.addEventListener('click',e=>{ if(e.target===V||e.target.dataset.x)closeV(); });
   addEventListener('keydown',e=>{ if(!V.hidden&&e.key==='Escape'){ e.stopImmediatePropagation(); closeV(); } },true);
-  PAINTINGS.view=async(id,a)=>{ a=a||M.art[id]; if(!a)return; V.innerHTML=`<div style="display:grid;place-items:center;min-height:0"><img alt="" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 0 ${a.fr?10:2}px #${(FR[a.fr||'']&&FR[a.fr][1]!=null?FR[a.fr][1]:0x3a3f4e).toString(16).padStart(6,'0')},0 8px 30px #000;image-rendering:auto"></div>
+  PAINTINGS.view=async(id,a)=>{ '@later'; a=a||M.art[id]; if(!a)return; V.innerHTML=`<div style="display:grid;place-items:center;min-height:0"><img alt="" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 0 ${a.fr?10:2}px #${(FR[a.fr||'']&&FR[a.fr][1]!=null?FR[a.fr][1]:0x3a3f4e).toString(16).padStart(6,'0')},0 8px 30px #000;image-rendering:auto"></div>
       <div><div style="color:#f2c14e;font-size:14px">“${TEXT.esc(a.t)}”</div><div style="color:#9b9584;margin-top:4px">BY ${TEXT.esc(a.by)} · ${TEXT.esc(a.d||'')} · ${a.w}×${a.h}</div><button data-x="1" style="margin-top:10px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:4px 10px;cursor:pointer">CLOSE</button></div>`;
     V.hidden=false; V.style.display='grid'; if(!UI.gamewin)UI.gamewin='paintv'; SHARED.covered=true; const im=V.querySelector('img'); if(a.th)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
 
   /* ---------- on the wall: a painting is a DECORATE thing of its own (as a photo is), framed; its picture loads from ART ---------- */
   const tex=new Map();
-  const texOf=(id,a)=>{ if(tex.has(id))return tex.get(id); const c=mk(4,4), x=c.getContext('2d'); x.fillStyle='#d8d2c4'; x.fillRect(0,0,4,4); const t=new THREE.Texture(c); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; tex.set(id,t);
+  const texOf=(id,a)=>{ '@later'; if(tex.has(id))return tex.get(id); const c=mk(4,4), x=c.getContext('2d'); x.fillStyle='#d8d2c4'; x.fillRect(0,0,4,4); const t=new THREE.Texture(c); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; tex.set(id,t);
     const put=src=>{ const im=new Image(); im.onload=()=>{ t.image=im; t.needsUpdate=true; }; im.src=src; }; if(a&&a.th)put(a.th); ART.get('a'+id).then(d=>{ if(d)put(d); }); return t; };
-  const framed=(id,a)=>{ const G=new THREE.Group(), W=a.w*PXM, H=a.h*PXM, f=FR[a.fr||'']||FR[''];
+  const framed=(id,a)=>{ '@later'; const G=new THREE.Group(), W=a.w*PXM, H=a.h*PXM, f=FR[a.fr||'']||FR[''];
     const back=new THREE.Mesh(new THREE.BoxGeometry(W,H,.024),new THREE.MeshStandardMaterial({color:0xe9e3d4,roughness:.9})); back.position.z=.012; G.add(back);
     const face=new THREE.Mesh(new THREE.PlaneGeometry(W,H),new THREE.MeshStandardMaterial({map:texOf(id,a),roughness:.85})); face.position.z=.0245; G.add(face);
     if(f[1]!=null){ const t=.05, d=.045, m=new THREE.MeshStandardMaterial({color:f[1],roughness:a.fr==='gilt'?.35:.65,metalness:a.fr==='gilt'?.55:0});
       for(const [w,h,x,y] of [[W+2*t,t,0,H/2+t/2],[W+2*t,t,0,-H/2-t/2],[t,H,-W/2-t/2,0],[t,H,W/2+t/2,0]]){ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); b.position.set(x,y,d/2); G.add(b); } }
     return G; };
   const lazy=(D,make)=>Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const t=make(); Object.defineProperty(D,'tpl',{value:t,enumerable:true}); return t; }});
-  const kind=(id,a,R)=>{ R=R||(ROOMK.api&&ROOMK.api.R); a=a||M.art[id]; if(!R||!a)return; const k='pt:'+id; if(R.kinds[k])return;
+  const kind=(id,a,R)=>{ '@later'; R=R||(ROOMK.api&&ROOMK.api.R); a=a||M.art[id]; if(!R||!a)return; const k='pt:'+id; if(R.kinds[k])return;
     const D={kind:k,name:'PAINTING: '+a.t,own:'pt_'+id,loose:false,m:0,wire:null,sol:[],shf:[],mount:'wall',dept:'art',deptName:'ART',art:{id,t:a.t,by:a.by,w:a.w,h:a.h,fr:a.fr||'',d:a.d||''}}; lazy(D,()=>framed(id,a)); R.kinds[k]=D; };
 
   /* ---------- the easel: a DECORATE thing ($40); double-click it to paint; your latest unfinished painting stands on it ---------- */
@@ -109,7 +109,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const easel=()=>{ const ids=Object.keys(M.wip).filter(id=>M.wip[id].th&&FORAGE.has('wip_'+id)).sort((a,b)=>(M.wip[b].at||0)-(M.wip[a].at||0)); if(!ids.length){ emat.visible=false; return; }
     const im=new Image(); im.onload=()=>{ ex.fillStyle='#e9e3d4'; ex.fillRect(0,0,128,128); const s=Math.min(128/im.width,128/im.height); ex.drawImage(im,(128-im.width*s)/2,(128-im.height*s)/2,im.width*s,im.height*s); etex.needsUpdate=true; emat.visible=true; }; im.src=M.wip[ids[0]].th; };
   easel();
-  const makeEasel=()=>{ const G=new THREE.Group(), wood=new THREE.MeshStandardMaterial({color:0x8a5a32,roughness:.75}), bx=(w,h,d,x,y,z,rx,rz)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wood); m.position.set(x,y,z); m.rotation.set(rx||0,0,rz||0); G.add(m); return m; };
+  const makeEasel=()=>{ '@later'; const G=new THREE.Group(), wood=new THREE.MeshStandardMaterial({color:0x8a5a32,roughness:.75}), bx=(w,h,d,x,y,z,rx,rz)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wood); m.position.set(x,y,z); m.rotation.set(rx||0,0,rz||0); G.add(m); return m; };
     bx(.04,1.75,.04,-.26,.86,.08,-.05,-.12); bx(.04,1.75,.04,.26,.86,.08,-.05,.12); bx(.04,1.7,.04,0,.8,-.24,.3,0); bx(.22,.05,.05,0,1.7,.03); bx(.74,.04,.11,0,.74,.15); bx(.74,.035,.015,0,.775,.2);
     const cv=new THREE.Mesh(new THREE.PlaneGeometry(.62,.62),emat); cv.position.set(0,1.08,.17); cv.rotation.x=-.06; G.add(cv);
     return G; };

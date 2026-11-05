@@ -28,9 +28,9 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     return [Math.max(x0,Math.min(x1,pos.x)),Math.max(z0,Math.min(z1,pos.z))]; };
   VIT.mends.push(()=>USE.seat&&st.sit?1/150:0);   // resting on a seat or a bed mends you slowly
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
-  USE.sitAt=(x,z,y,hd,more)=>{ SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
+  USE.sitAt=(x,z,y,hd,more)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
     USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; MOTION.play('sitDown'); };
-  const sitOn=(se,th)=>{ '@later'; const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
+  const sitOn=(se,th)=>{ const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
   const tint=(o,c,which)=>{ for(const p of o.parts){ if(!which(p))continue; const g=p.me.geometry, C=g.attributes.aCol; for(let i=0;i<18;i++)C.array[p.v0*3+i]=c[i%3]; C.needsUpdate=true; } };
@@ -85,10 +85,10 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     else if(k==='fridge'){ const [nx,nz]=front(o); at=[c.x+nx*(hx+.55*T),c.z+nz*(hz+.55*T)]; reach=.6*T; th.act=()=>fridge(o,th); }
     else if(k==='lamp')th.act=()=>lamp(o,th); else if(k==='vend'){ reach=Math.max(hx,hz)+.6*T; th.pick=.9*T; th.act=()=>vend(o,th); } else { reach=1.4*T; th.act=()=>radio(o,th); }
     th.reach=reach; th.near=reach+(k==='lamp'?2.5:k==='fridge'?2.2:1.2)*T; th.obj.position.set(at[0],b.min.y,at[1]); return th; };
-  USE.pick=ray=>{ '@later'; if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
+  USE.pick=ray=>{ if(OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0)!==nO){ nO=OBJS.length+(typeof PERFX!=='undefined'?PERFX.gen*1e6:0); MS=[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))]; }
     for(const h of ray.intersectObjects(MS.filter(shown),false)){ if(cut(h))continue; const o=h.object.userData.objOf[Math.floor(h.faceIndex/2)], k=o&&kindOf(o); if(!k)return null; const th=goal(o,k); return th?{th,d:h.distance}:null; } return null; };
   for(const th of (typeof KIT!=='undefined'?KIT.things:[]))if(th.name==='BENCH'){ th.act=()=>{ const se=seatOf(tris(th.obj)); if(se)sitOn(se,th); }; th.reach=1.5; th.near=1.5+1.2*T; }
-  PARK.later(()=>{ if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
+  PARK.later(()=>{ '@later'; if(!PARK.sitlog||!PARK.more)return; const [x,z]=PARK.sitlog, hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*T,.6*T,1.4*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,.3*T,z); scene.add(hb);
     let se=null; const th={name:'SITTING LOG',obj:hb,reach:1.3*T,near:2.5*T,tall:.8*T,act:()=>{ se=se||seatOf(tris(PARK.more,[x,z,.9*T])); if(se)sitOn(se,th); }}; UI.thing(th); });
   const sitKeys=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f','j','k','n','b','x','shift']);
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });

@@ -8,7 +8,7 @@ const TPANE={};
 --tp-label-foreground-color:#5fcf88;--tp-groove-foreground-color:#3aa866;--tp-monitor-background-color:#031a0d;--tp-monitor-foreground-color:#5fcf88}
 .tpg .tp-lblv_l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tpg .tp-sldv_k::after{background-color:#7dffa8}.tpg .tp-sldv_k::before{background-color:#3aa866}.tpg .tp-sldv_t::before{background-color:#0d3a1f}.tpg .tp-ckbv_w{box-shadow:inset 0 0 0 2px #3aa866}`;
   document.head.appendChild(css);
-  TPANE.load=async()=>{ '@later'; if(!M)M=await import('https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js'); return M; };
+  TPANE.load=async()=>{ if(!M)M=await import('https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js'); return M; };
   // a new pane in el (dressed); an old one there is dropped first, keeping whether it was folded
   TPANE.make=async(el,opt={})=>{ '@later'; const T=await TPANE.load(); if(!el.classList.contains('tpg')){ el.classList.add('tpg'); for(const ev of ['keydown','keyup'])el.addEventListener(ev,e=>{ if(e.key!=='Escape')e.stopPropagation(); }); } const old=el.__tp; if(old){ if(opt.expanded===undefined&&opt.title)opt.expanded=old.expanded; old.dispose(); }
     return el.__tp=new T.Pane({container:el,...opt}); };

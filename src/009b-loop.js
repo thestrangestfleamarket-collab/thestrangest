@@ -104,11 +104,11 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const TR=Object.fromEntries(D.trains.map(t=>[t.id,t])), next=(st,t)=>{ const L=order(t), i=L.indexOf(st); return L[(i+1)%L.length]; };
   const REP=[]; const sign=(mk,P,w,h,cut=[],peek,face)=>{ const t=draw(w,h,mk); REP.push({t,mk,w,h}); const m=new THREE.MeshBasicMaterial({map:t,clippingPlanes:cut}), me=[quad(...P,m),quad(P[1],P[0],P[3],P[2],m)];
     if(face){ const V=THREE.Vector3, c=new V(...P[0]).add(new V(...P[2])).multiplyScalar(.5), n=new V().crossVectors(new V(...P[1]).sub(new V(...P[0])),new V(...P[3]).sub(new V(...P[0]))), k=n.dot(new V(...face).sub(c))>0?1:0; me[k].removeFromParent(); me.splice(k,1); } if(peek)me.forEach(e=>PEEK.whole(e)); return {me,t,m}; };
-  const nameSign=(g,w,h,st)=>{ g.fillStyle='#ddd8c8'; g.fillRect(0,0,w,h); g.strokeStyle='#2f6b45'; g.lineWidth=h*.12; g.strokeRect(0,0,w,h); g.fillStyle='#111'; font(g,h*.52,900); g.textBaseline='middle';
+  const nameSign=(g,w,h,st)=>{ '@later'; g.fillStyle='#ddd8c8'; g.fillRect(0,0,w,h); g.strokeStyle='#2f6b45'; g.lineWidth=h*.12; g.strokeRect(0,0,w,h); g.fillStyle='#111'; font(g,h*.52,900); g.textBaseline='middle';
     const nm=TEXT.t('loop.name',null,{street:st.name}), tw=g.measureText(nm).width; g.fillText(nm,(w-tw-h*.7)/2,h*.54); g.lineWidth=h*.05; g.strokeStyle='#111'; const bx=(w+tw-h*.5)/2+h*.1; g.strokeRect(bx,h*.27,h*.46,h*.46); font(g,h*.34,900); g.fillText(st.id,bx+h*.1,h*.52); };
   const trackSign=(g,w,h,st,t)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); bullet(g,h*.55,h/2,h*.36,t.id); g.fillStyle='#f6f6f1'; font(g,h*.34); g.textBaseline='middle';
     const nx=next(st,t), nn=next(nx,t); g.fillText(STA.length>1?TEXT.t('loop.track',null,{next:nx.name}):TEXT.t('loop.shuttle',null,{street:st.name}),h*1.1,h*.36); font(g,h*.22,600); g.fillStyle='#c9c9c0'; if(STA.length>1)g.fillText(TEXT.t('loop.then',null,{then:nn.name,after:next(nn,t).name}),h*1.1,h*.74); };
-  const exitSign=(g,w,h,st)=>{ g.fillStyle=SIGN.ex; g.fillRect(0,0,w,h); g.strokeStyle='#bff2b0'; g.lineWidth=h*.06; g.strokeRect(h*.12,h*.2,h*1.7,h*.6); g.fillStyle='#bff2b0'; font(g,h*.36,900); g.textBaseline='middle';
+  const exitSign=(g,w,h,st)=>{ '@later'; g.fillStyle=SIGN.ex; g.fillRect(0,0,w,h); g.strokeStyle='#bff2b0'; g.lineWidth=h*.06; g.strokeRect(h*.12,h*.2,h*1.7,h*.6); g.fillStyle='#bff2b0'; font(g,h*.36,900); g.textBaseline='middle';
     g.fillText(TEXT.t('loop.exit',null,{id:st.id}),h*.24,h*.52); g.fillStyle='#f4fff0'; font(g,h*.42); g.fillText(TEXT.t('loop.up',null,{street:st.street}),h*2.1,h*.4); font(g,h*.24,600); g.fillText(TEXT.t('loop.exitsub',null,{name:st.name,id:st.id}),h*2.1,h*.76); };
   const mapSign=(g,w,h,st)=>{ g.fillStyle='#0b0d0c'; g.fillRect(0,0,w,h); g.fillStyle='#f6f6f1'; font(g,h*.07); g.fillText(TEXT.t('loop.map',null,{street:st.name}),w*.05,h*.1); const A=SECTIONS.live, m=w*.08, sx=(w-2*m)/(A.x1-A.x0), sy=(h*.62)/(A.y1-A.y0), X=x=>m+(x-A.x0)*sx, Y=y=>h*.16+(A.y1-y)*sy;
     g.fillStyle='#22382a'; g.fillRect(X(A.x0),Y(A.y1),(A.x1-A.x0)*sx,(A.y1-A.y0)*sy); g.strokeStyle='#3a3f3c'; g.lineWidth=1; for(const b of SECTIONS.loaded)g.strokeRect(X(b.x0),Y(b.y1),(b.x1-b.x0)*sx,(b.y1-b.y0)*sy);
@@ -123,10 +123,10 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       quad(...Q(0,P0,LEN,P1,0),MFLOOR,[0,0,0,LEN/4,1,LEN/4,1,0]);
       for(const [a0,a1] of [[0,P0],[P1,XW]]){ const v=x=>(x-(a0+a1)/2+BED/2)/BED; quad(P(0,a0,-32),P(LEN,a0,-32),P(LEN,a1,-32),P(0,a1,-32),MBED,[0,v(a0),LEN/1.1,v(a0),LEN/1.1,v(a1),0,v(a1)]); }
       for(const a of [P0,P1])quad(P(0,a,-32),P(LEN,a,-32),P(LEN,a,0),P(0,a,0),MEDGE,[0,0,LEN/2,0,LEN/2,1,0,1]);
-      const wall=(a,nx)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}), me=quad(P(0,a,-32),P(LEN,a,-32),P(LEN,a,196),P(0,a,196),m,[0,0,LEN/6,0,LEN/6,1,0,1]);
+      const wall=(a,nx)=>{ '@later'; const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}), me=quad(P(0,a,-32),P(LEN,a,-32),P(LEN,a,196),P(0,a,196),m,[0,0,LEN/6,0,LEN/6,1,0,1]);
         const n=new THREE.Vector3(...P(0,a+nx,0)).sub(new THREE.Vector3(...P(0,a,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me}); return pl; };
       pw0=wall(0,1); pw1=wall(XW,-1);
-      const endw=(u,R)=>{ const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}); for(const [a0,a1,z0,z1] of R)quad(P(u,a0,z0),P(u,a1,z0),P(u,a1,z1),P(u,a0,z1),m,[a0/6,(z0+32)/228,a1/6,(z0+32)/228,a1/6,(z1+32)/228,a0/6,(z1+32)/228]);
+      const endw=(u,R)=>{ '@later'; const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), m=lam(tileTex,{cut:[pl]}); for(const [a0,a1,z0,z1] of R)quad(P(u,a0,z0),P(u,a1,z0),P(u,a1,z1),P(u,a0,z1),m,[a0/6,(z0+32)/228,a1/6,(z0+32)/228,a1/6,(z1+32)/228,a0/6,(z1+32)/228]);
         const n=new THREE.Vector3(...P(u+(u?-1:1),0,0)).sub(new THREE.Vector3(...P(u,0,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null}); return pl; };
       const pe0=endw(0,[[P0,EX0,-32,196],[EX1,P1,-32,196],[EX0,EX1,-32,0],[EX0,EX1,86,196],[0,P0,140,196],[P1,XW,140,196]]); pe1=endw(LEN,[[P0,P1,-32,196],[0,P0,140,196],[P1,XW,140,196]]);
       quad(...Q(0,0,LEN,XW,196),MDARK);
@@ -180,7 +180,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   LEVELS.of.station.groups.push('loop');
   { const all=[]; for(const k in TRK){ const t=TRK[k].line; all.push([WX(t.west-6),WZ(t.south-6)],[WX(t.east+6),WZ(t.north+6)]); } const B=MODS.station.BOUND;
     for(const [x,z] of all){ B.x0=Math.min(B.x0,x); B.x1=Math.max(B.x1,x); B.z0=Math.min(B.z0,z); B.z1=Math.max(B.z1,z); } }
-  let busy=false; const go=async(st,dir)=>{ busy=true; await FADE.run(dir==='in'?'ENTERING '+st.name+' STATION':'LEAVING '+st.name+' STATION',()=>{
+  let busy=false; const go=async(st,dir)=>{ '@later'; busy=true; await FADE.run(dir==='in'?'ENTERING '+st.name+' STATION':'LEAVING '+st.name+' STATION',()=>{
       if(dir==='in'){ const p=st.P(1.1,(EX0+EX1)/2,0); UI.goTo(p[0],p[2],'down'); if(UI.view==='iso'||UI.view==='map')SHARED.yaw=SHARED.yawTo=M.YAW+(st.sg>0?Math.PI:0); }
       else { UI.goTo(WX(st.out.x),WZ(st.out.y),'up'); if((UI.view==='iso'||UI.view==='map')&&UI.isoTo){ UI.isoTo(); SHARED.yaw=SHARED.yawTo; } } },{hold:120}); busy=false; };
   SYS.add('places',()=>{ if(busy||FADE.busy||UI.freeCam||RAG.on)return; const x=pos.x, z=pos.z;

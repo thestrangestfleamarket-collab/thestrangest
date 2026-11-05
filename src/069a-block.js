@@ -50,8 +50,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const gy=(x,y)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(XS(x),ZS(y)):0;
   const quad=(P,U,I,a,b,c,d,ua,ub,uc,ud)=>{ const o=P.length/3; P.push(...a,...b,...c,...d); U.push(...ua,...ub,...uc,...ud); I.push(o,o+1,o+2,o,o+2,o+3); };
-  const mesh=(P,U,I,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.receiveShadow=true; G.add(me); PEEK.whole(me); return me; };
-  const lotPaint=(q,g,w,h)=>{ const R=(a,b)=>a+rnd()*(b-a), toC=(x,y)=>[(x-q.x0)*24,(q.y1-y)*24];
+  const mesh=(P,U,I,mat)=>{ '@later'; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.receiveShadow=true; G.add(me); PEEK.whole(me); return me; };
+  const lotPaint=(q,g,w,h)=>{ '@later'; const R=(a,b)=>a+rnd()*(b-a), toC=(x,y)=>[(x-q.x0)*24,(q.y1-y)*24];
     if(q.kind==='park'){ g.fillStyle='#3e4044'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/40;k++){ const v=50+rnd()*30|0; g.fillStyle=`rgb(${v},${v+1},${v+4})`; g.fillRect(R(0,w)|0,R(0,h)|0,1,1); }
       for(let k=0;k<4;k++){ g.fillStyle='rgba(20,20,24,.35)'; g.beginPath(); g.ellipse(R(0,w),R(0,h),R(8,26),R(5,14),0,0,7); g.fill(); }
       g.fillStyle='#d9d6c8'; const sp=2.6*24, len=5*24;
@@ -60,7 +60,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     else { g.fillStyle='#5e5040'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/30;k++){ const v=rnd(); g.fillStyle=v<.5?'#6e5e4a':v<.8?'#4e4234':'#7a6a54'; g.fillRect(R(0,w)|0,R(0,h)|0,2,2); }
       for(let k=0;k<w*h/260;k++){ const x=R(2,w-2), y=R(2,h-2), c=['#5a7a32','#6e8e3a','#48682a','#7e9a44'][rnd()*4|0]; g.fillStyle=c; for(let t=0;t<5;t++)g.fillRect(x+R(-3,3),y+R(-4,1),1,R(3,6)); }
       for(let k=0;k<3;k++){ g.fillStyle=['#b8b4a8','#8a3a2a','#3a5a7a'][k]; g.fillRect(R(6,w-12)|0,R(6,h-12)|0,R(3,7)|0,R(2,4)|0); } } };
-  function lot(q){ const W=q.x1-q.x0, D=q.y1-q.y0, c=cv(W*24,D*24); lotPaint(q,c.getContext('2d'),c.width,c.height);
+  function lot(q){ '@later'; const W=q.x1-q.x0, D=q.y1-q.y0, c=cv(W*24,D*24); lotPaint(q,c.getContext('2d'),c.width,c.height);
     const P=[], U=[], I=[], y=.02*T, v=(x,yy)=>[XS(x),gy(x,yy)+y,ZS(yy)];
     quad(P,U,I,v(q.x0,q.y0),v(q.x1,q.y0),v(q.x1,q.y1),v(q.x0,q.y1),[0,0],[1,0],[1,1],[0,1]);
     mesh(P,U,I,new THREE.MeshLambertMaterial({map:tex(c),side:THREE.DoubleSide}));

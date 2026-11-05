@@ -27,7 +27,7 @@ import {TPANE} from './087dz-tpane.js';
   const P=document.createElement('div'); P.id='ited'; P.hidden=true; document.body.appendChild(P);
   const esc=TEXT.esc;
   const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_');
-  const discovered=()=>{ const s=new Set();
+  const discovered=()=>{ '@later'; const s=new Set();
     try{ if(window.FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}
     try{ const G=window.GPH; if(G&&G.loose)for(const it of G.loose())if(it&&it.name)s.add(norm(it.name)); }catch(e){}
     for(const id in ITEMS.defs)s.delete(id); return [...s].sort(); };
@@ -65,7 +65,7 @@ import {TPANE} from './087dz-tpane.js';
     bp.addButton({title:'DONE'}).on('click',()=>ITEMED.toggle());
     await props(sel); };
   const redraw=()=>busy=busy.then(draw).catch(e=>console.warn('item editor',e));
-  P.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('button'); if(!b)return;
+  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest&&e.target.closest('button'); if(!b)return;
     if(b.id==='itadd'){ const v=(P.querySelector('#itnew').value||'').trim().toLowerCase().replace(/\s+/g,'_'); if(v&&!ITEMS.defs[v]){ ITEMS.defs[v]=DEF(); sel=v; save(); redraw(); } return; }
     if(b.dataset.add){ const id=b.dataset.add; if(!ITEMS.defs[id]){ ITEMS.defs[id]=DEF(); sel=id; save(); redraw(); } return; }
     if(b.dataset.pick){ pick(b.dataset.pick); return; } });

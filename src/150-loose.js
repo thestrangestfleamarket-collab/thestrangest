@@ -170,8 +170,8 @@ import {BVH} from './137-bvh.js';
     eq.drainCollisionEvents((h1,h2,on)=>{ for(const f of GPH.coll)f(h1,h2,on);
       if(!on||!lv)return; const yc=you&&you.collider(0).handle, it=h1===yc?byC.get(h2):h2===yc?byC.get(h1):null; if(!it||!it.rb||it===held||performance.now()-(it.thrown||0)<800)return;
       const v=it.rb.linvel(), sp=Math.hypot(v.x,v.y,v.z); if(sp>4&&VIT.hurt)VIT.hurt(Math.min(.15,(sp-4)*it.m*.0015*lv/5)); }); };
-  GPH.bin=it=>{ '@later'; it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play)SFX.play('clunk',{vol:.5,pitch:.8,at:p}); if(it.rb)off(it); hideMesh(it); };
-  GPH.smash=it=>{ '@later'; it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play){ SFX.play('click',{vol:.8,pitch:2.4,vary:.3,at:p}); SFX.play('clunk',{vol:.4,pitch:1.9,at:p}); } if(it.rb)off(it); hideMesh(it); };
+  GPH.bin=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play)SFX.play('clunk',{vol:.5,pitch:.8,at:p}); if(it.rb)off(it); hideMesh(it); };
+  GPH.smash=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play){ SFX.play('click',{vol:.8,pitch:2.4,vary:.3,at:p}); SFX.play('clunk',{vol:.4,pitch:1.9,at:p}); } if(it.rb)off(it); hideMesh(it); };
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
   Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
@@ -194,7 +194,7 @@ import {BVH} from './137-bvh.js';
   const itemOf=(h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
     if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
     const o=m.userData.objOf&&m.userData.objOf[Math.floor(h.faceIndex/2)]; let b=null, bd=1e9; if(o)for(const it of A){ if(it.o!==o||it.dm)continue; const t=at(it), d=Math.hypot(t.x-h.point.x,t.y-h.point.y,t.z-h.point.z); if(d<bd){ bd=d; b=it; } } return b; };
-  GPH.pick=ray=>{ '@later'; if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.hang||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
+  GPH.pick=ray=>{ if(!ready){ if(!cat||held)return null; const h=ray.intersectObjects(picks,false)[0], it=h&&itemOf(h,pre); if(!it||it.m>CARRY||it.hang||it.o&&USE.test&&USE.test.kindOf(it.o)&&!keys.has('shift'))return null;
       const o=new THREE.Object3D(), r=Math.max(it.h[0],it.h[2]); o.position.set(it.t.x,it.t.y-it.h[1],it.t.z);
       return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>{ want=it; }}}; }
     if(held){ const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-SHARED.py), g=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,g))return null; const it=held, o=new THREE.Object3D(); o.position.copy(g);
@@ -204,7 +204,7 @@ import {BVH} from './137-bvh.js';
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.loose=()=>items;
   // what the inspect window shows: the thing in your hands, else the loose thing under the pointer; its look copied (shared buffers marked, never freed)
-  GPH.inspectable=ray=>{ let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null;
+  GPH.inspectable=ray=>{ '@later'; let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null;
     const sub=(g,rs,mat)=>{ const G=new THREE.BufferGeometry(); let n=0; for(const [a,b] of rs)n+=b-a; for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); let j=0; for(const [a,b] of rs){ d.set(A.array.subarray(a*s,b*s),j*s); j+=b-a; } G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); } return new THREE.Mesh(G,mat); };
     let obj, mine=true;
     if(it.k==='o'){ obj=it.obj; mine=false; }
@@ -214,7 +214,7 @@ import {BVH} from './137-bvh.js';
     else { const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p.v0,p.v0+6]); obj=new THREE.Group(); for(const [me,rs] of by)obj.add(sub(me.geometry,rs,me.material)); }
     return {obj,mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
   // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
-  GPH.add=(obj,{name,m=1}={})=>{ obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
+  GPH.add=(obj,{name,m=1}={})=>{ '@later'; obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
     const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };
   GPH.drop=it=>{ if(!it)return; if(it===held)held=null; if(it.rb)off(it); pre.delete(it); const i=items.indexOf(it); if(i>=0)items.splice(i,1); GPH.n=items.length; };
   GPH.init=()=>{ if(typeof USE==='undefined'){ setTimeout(GPH.init,500); return; } const p0=USE.pick; USE.pick=ray=>{ const a=p0(ray), b=GPH.pick(ray); return b&&(!a||b.d<=a.d)?b:a; };

@@ -45,7 +45,7 @@ import {QUESTS} from './160a-quests.js';
   const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; }; HUD.qdraw=draw;
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
   HUD.use=i=>{ const id=S[i]; if(!id)return false; return HUD.useItem(id); };
-  HUD.useItem=id=>{ const say=SAY, nm=FORAGE.name(id);
+  HUD.useItem=id=>{ '@later'; const say=SAY, nm=FORAGE.name(id);
     if(!has(id)){ say('YOU HAVE NO '+nm+'.','#c8a090'); return true; }
     if(WIELD.LIST&&WIELD.LIST.includes(id)){ WIELD.set(WIELD.on===id?null:id); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); }
     else if(FORAGE.eats(id))FORAGE.eat(id);
@@ -57,7 +57,7 @@ import {QUESTS} from './160a-quests.js';
   QB.addEventListener('dragstart',e=>{ const s=e.target.closest('.qs'); if(!s||!S[+s.dataset.i])return e.preventDefault(); e.dataTransfer.setData('text/plain','slot:'+s.dataset.i); e.dataTransfer.effectAllowed='move'; });
   QB.addEventListener('dragover',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); s.classList.add('over'); });
   QB.addEventListener('dragleave',e=>{ const s=e.target.closest('.qs'); if(s)s.classList.remove('over'); });
-  QB.addEventListener('drop',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); const i=+s.dataset.i, d=e.dataTransfer.getData('text/plain')||'';
+  QB.addEventListener('drop',e=>{ '@later'; const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); const i=+s.dataset.i, d=e.dataTransfer.getData('text/plain')||'';
     if(d.startsWith('item:')){ const id=d.slice(5); const j=S.indexOf(id); if(j>=0&&j!==i)S[j]=null; S[i]=id; }
     else if(d.startsWith('slot:')){ const j=+d.slice(5); if(j!==i){ const t=S[i]; S[i]=S[j]; S[j]=t; } }
     save(); draw(); });

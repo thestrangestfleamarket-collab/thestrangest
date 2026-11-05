@@ -20,13 +20,13 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
   let pre=null;   // a thing dragged onto them goes in as soon as the trade opens
   SWAP.ask=(o,put)=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090'); pre=put&&put.id?put:null;
     ONLINE.send({t:'tr',op:'ask',to:o.id}); say('YOU ASK '+(o.name||'THEM')+' TO TRADE.'); };
-  const asked=()=>{ if(!ask){ Q.hidden=true; return; } Q.innerHTML=`<h3 style="margin:0 0 8px;color:#f2c14e;font:12px Silkscreen,monospace">TRADE</h3><div>${esc(ask.name||'A TENANT')} WANTS TO TRADE WITH YOU.</div>
+  const asked=()=>{ '@later'; if(!ask){ Q.hidden=true; return; } Q.innerHTML=`<h3 style="margin:0 0 8px;color:#f2c14e;font:12px Silkscreen,monospace">TRADE</h3><div>${esc(ask.name||'A TENANT')} WANTS TO TRADE WITH YOU.</div>
       <div style="margin-top:10px;display:flex;gap:6px;justify-content:flex-end"><button data-a="no" style="${B}">NO</button><button data-a="yes" style="${B}">YES</button></div>`; Q.hidden=false; };
   Q.addEventListener('click',e=>{ const b=e.target.closest('[data-a]'); if(!b||!ask)return; ONLINE.send({t:'tr',op:b.dataset.a,to:ask.from}); ask=null; asked(); });
   setInterval(()=>{ if(ask&&performance.now()>ask.until){ ask=null; asked(); } },1000);
 
   /* ---------- what the server says ---------- */
-  ONLINE.hear.tr=m=>{ const op=m.op;
+  ONLINE.hear.tr=m=>{ '@later'; const op=m.op;
     if(op==='ask'){ if(T)return ONLINE.send({t:'tr',op:'no',to:m.from}); ask={from:String(m.from),name:String(m.name||''),until:performance.now()+30000}; asked(); return; }
     if(op==='no')return say((m.name||'THEY')+' DOES NOT WANT TO TRADE.','#c8a090');
     if(op==='far')return say('TOO FAR AWAY TO TRADE: WALK UP TO THEM.','#c8a090');
@@ -37,10 +37,10 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
     if(op==='done'){ done(m); return; }
     if(op==='x'){ say('THE TRADE IS OFF'+(m.why?': '+String(m.why).toUpperCase():'')+'.','#c8a090'); shut(); } };
   let pend=false;
-  const payload=()=>{ const items={}, art={}; for(const id in T.mine.items){ const n=Math.min(T.mine.items[id],INV.items[id]||0); if(n>0&&can(id)){ items[id]=n; if(id.startsWith('pt_')&&window.PAINTINGS){ const a=PAINTINGS.meta(id.slice(3)); if(a)art[id.slice(3)]=a; } } } return {items,cash:Math.min(T.mine.cash,cash()),art}; };
+  const payload=()=>{ '@later'; const items={}, art={}; for(const id in T.mine.items){ const n=Math.min(T.mine.items[id],INV.items[id]||0); if(n>0&&can(id)){ items[id]=n; if(id.startsWith('pt_')&&window.PAINTINGS){ const a=PAINTINGS.meta(id.slice(3)); if(a)art[id.slice(3)]=a; } } } return {items,cash:Math.min(T.mine.cash,cash()),art}; };
   const flush=()=>{ clearTimeout(sendT); if(!T||!pend)return false; pend=false; ONLINE.send({t:'tr',op:'offer',o:payload()}); return true; };
   const offer=()=>{ pend=true; clearTimeout(sendT); sendT=setTimeout(flush,150); };   // the server takes one trade message each 100 ms
-  const done=m=>{ const g=m.give||{}, r=m.get||{};
+  const done=m=>{ '@later'; const g=m.give||{}, r=m.get||{};
     for(const id in g.items||{}){ const n=Math.min(+g.items[id]||0,INV.items[id]||0); if(n>0)FORAGE.take(id,n); if(id.startsWith('pt_')&&window.PAINTINGS)PAINTINGS.gave(id.slice(3)); }
     INV.cash=Math.max(0,cash()-Math.min(+g.cash||0,cash()))+Math.max(0,+r.cash||0);
     for(const id in r.art||{})if(window.PAINTINGS)PAINTINGS.got(id,r.art[id]);
@@ -52,10 +52,10 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
   SWAP.cancel=()=>{ if(T)ONLINE.send({t:'tr',op:'x'}); shut(); };
 
   /* ---------- the window ---------- */
-  const list=(o,mine)=>{ const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td>${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
+  const list=(o,mine)=>{ '@later'; const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td>${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
     if(o&&o.cash)h+=`<tr><td style="color:#f2c14e">CASH</td><td style="text-align:right;color:#f2c14e">$${Math.floor(o.cash).toLocaleString('en-US')}</td>${mine?'<td></td>':''}</tr>`;
     return h?`<table style="width:100%;border-collapse:collapse">${h}</table>`:'<div style="color:#9b9584">NOTHING YET.</div>'; };
-  const draw=()=>{ if(!T)return; const x=P.querySelector(':scope>.pX'); const pack=Object.keys(INV.items).filter(id=>can(id)&&(INV.items[id]-(T.mine.items[id]||0))>0).sort((a,b)=>nm(a).localeCompare(nm(b)));
+  const draw=()=>{ '@later'; if(!T)return; const x=P.querySelector(':scope>.pX'); const pack=Object.keys(INV.items).filter(id=>can(id)&&(INV.items[id]-(T.mine.items[id]||0))>0).sort((a,b)=>nm(a).localeCompare(nm(b)));
     P.innerHTML=`<h3 style="margin:0 0 8px;color:#f2c14e;font:12px Silkscreen,monospace">TRADE WITH ${esc(T.name)}</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><div style="color:#9b9584;margin-bottom:4px">YOU GIVE</div>${list(T.mine,true)}
@@ -68,7 +68,7 @@ const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip
       <h3 style="margin:12px 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">YOUR PACK</h3>
       ${pack.length?`<table style="width:100%;border-collapse:collapse">${pack.map(id=>`<tr style="border-bottom:1px solid #22252f"><td>${esc(nm(id))}</td><td style="text-align:right;color:#9b9584">${INV.items[id]-(T.mine.items[id]||0)}</td><td style="text-align:right"><button data-add="${esc(id)}" style="${B}">PUT IN</button></td></tr>`).join('')}</table>`:'<div style="color:#9b9584">NOTHING YOU CAN TRADE.</div>'}`;
     if(x)P.appendChild(x); };
-  P.addEventListener('click',e=>{ if(!T)return; const b=e.target.closest('button'); if(!b)return;
+  P.addEventListener('click',e=>{ '@later'; if(!T)return; const b=e.target.closest('button'); if(!b)return;
     if(b.dataset.add){ const id=b.dataset.add; if(can(id)&&(T.mine.items[id]||0)<INV.items[id]){ T.mine.items[id]=(T.mine.items[id]||0)+1; T.okMe=T.okThem=false; offer(); draw(); } }
     else if(b.dataset.less){ const id=b.dataset.less; if(T.mine.items[id]>1)T.mine.items[id]--; else delete T.mine.items[id]; T.okMe=T.okThem=false; offer(); draw(); }
     else if(b.dataset.ok){ const v=!T.okMe; if(flush())setTimeout(()=>{ if(T)ONLINE.send({t:'tr',op:'ok',v}); },160); else ONLINE.send({t:'tr',op:'ok',v}); }

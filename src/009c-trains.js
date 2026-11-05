@@ -155,7 +155,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
       for(const e of st.edge[k])if(us.some(u=>e.u0<u+DWH+.2&&e.u1>u-DWH-.2))e.box.splice(0,4,1e7,1e7,1e7,1e7); tn.open=st; } };
   L.riding=()=>ride.tn?TEXT.t('loop.riding',null,{id:ride.tn.id,next:ride.tn.S&&ride.tn.S.next?ride.tn.S.next.name:''}):null;
   TRAINS.ride=ride;
-  const signText=(tn)=>{ const S=tn.S, k=S.doors?S.at.name+' · '+S.at.id+'|DOORS CLOSE IN '+Math.ceil(S.left)+' S':'NEXT STOP  '+S.next.name+' · '+S.next.id+'|'+(S.left<30?'ARRIVING':Math.ceil(S.left/60)+' MIN');
+  const signText=(tn)=>{ '@later'; const S=tn.S, k=S.doors?S.at.name+' · '+S.at.id+'|DOORS CLOSE IN '+Math.ceil(S.left)+' S':'NEXT STOP  '+S.next.name+' · '+S.next.id+'|'+(S.left<30?'ARRIVING':Math.ceil(S.left/60)+' MIN');
     if(tn.sign.last===k)return; tn.sign.last=k; const g=tn.sign.cv.getContext('2d'), w=512, h=64, [a,b]=k.split('|'); g.fillStyle='#050505'; g.fillRect(0,0,w,h); g.textBaseline='middle';
     font(g,26); g.fillStyle='#ffb347'; g.fillText(a,12,h/2); font(g,18,700); const tw=g.measureText(b).width; g.fillStyle=S.doors?'#7fd36b':'#e7685a'; g.fillText(b,w-tw-12,h/2); tn.sign.tx.needsUpdate=true; };
   let bt=0;

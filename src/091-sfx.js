@@ -30,6 +30,8 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     boom:{len:.9,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=(Math.sin(TAU*(48-20*t)*s)*.6+F(rnd(),.05)*.5)*Math.min(t*40,1)*env(t,2.5); } }},
     creak:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=F(rnd(),.2)*(.6+.4*Math.sin(TAU*(28+10*t)*s))*Math.sin(t*Math.PI)*.4; } }},
     drip:{len:.18,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(1400-600*t)*s)*env(t,4)*.3; } }},
+    splash:{len:.32,f:(D,n,S)=>{ const f=lp(); for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=f(rnd(),.35)*env(t,2.5)*.5+Math.sin(TAU*(180-120*t)*s)*env(t,6)*.25; } }},
+    blip:{len:.06,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=Math.sin(TAU*1800*s)*Math.sin(t*Math.PI)*.3; } }},
     chirp:{len:.22,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S, k=Math.floor(t*3), u=t*3-k; D[i]=Math.sin(TAU*(2600+1400*u+300*k)*s)*Math.sin(u*Math.PI)*.2; } }},
     cricket:{len:.45,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n, g=(s*26)%1<.3?1:0; D[i]=Math.sin(TAU*4200*s)*g*Math.sin(t*Math.PI)*.12; } }},
     bark:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.5|0]){ const dt=i-st; if(dt>=0&&dt<n*.4){ const t=dt/(n*.4), s=dt/S; v+=(Math.sin(TAU*(320-80*t)*s)*.5+F(rnd(),.4)*.4)*Math.min(t*20,1)*env(t,2); } } D[i]=v*.5; } }},

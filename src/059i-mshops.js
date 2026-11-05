@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
-const MSHOP={kit:{},at:{},defs:{}};
+const MSHOP={kit:{},at:{},defs:{},fronts:[]};
 await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, MS=STORE.main, T=TILE;
   const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1});
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
@@ -22,7 +22,10 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       win:(u,v,n)=>{ const r=Math.floor(v*4), dv=v*4-r, warm=lit([118,86,52]); if(dv<.14)return lit([96,70,46]); if(dv>.9)return warm; const k=Math.floor(u*46), lean=hs(k,r,23); if(dv>.88-lean*.3)return warm;
         const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return lit(c.map(q=>q*.85)); }},   // the shelves seen through the glass, in the shop's warm light
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
-      win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }}};
+      win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }},
+    // Market St's new shops (owner, 5 Nov 2026): the outside a whole Polyfork building (pf: its key in data/street.json, stood on the lot by 068a-pfrow), the keeper's flat its top floor; h its height in z-pixels (a metre is 28.6)
+    florist:{name:'THE FLORIST',pf:'florist',door:.5,h:199},tailor:{name:'THE TAILOR',pf:'tailor',door:.5,h:269},barber:{name:'THE BARBER',pf:'barber',door:.5,h:162},outfitter:{name:'THE OUTFITTER',pf:'outfitter',door:.5,h:172},
+    fishmarket:{name:'THE FISH MARKET',pf:'fishmarket',door:.5,h:200},pets:{name:'THE PET STORE',pf:'pets',door:.5,h:200},antiques:{name:'ANTIQUES & PAWN',pf:'antiques',door:.5,h:237},hotel:{name:'THE HOTEL',pf:'hotel',door:.5,h:295}};
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;
@@ -42,13 +45,14 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       if(z<16)return sh(D.trim,f*.85);
       return null; }; };
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
-    if(D.both)D.half=(p.inW||11)/2-.3; const fr=front(D,W), wall=D.wall, top=D.h;
-    BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:D.h,kind:'A',turn:TA,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),71)),
+    if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
+    if(D.pf)MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(LW.y1),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)});   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
+    else BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:D.h,kind:'A',turn:TA,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),71)),
       paint:(side,u,z,f)=>{ if(side==='f'){ const q=fr(u-L.x0,z,f,0); if(q)return q; }
         if(z>top-14)return sh(D.trim,f*(z>top-4?1.1:.85)); const wu=u-L.x0;
         if(side==='f'&&z>112&&z<top-24){ const k=Math.floor(wu/2.6), m=wu-k*2.6; if(m>.7&&m<1.9&&wu>1&&wu<W-1){ const lt=hs(k,id.length,5)>.55; return (z-112)%30<3?sh(D.trim,f):lt?lit([214,170,96]):sh([20,22,28],f*1.2); } }
         return wall(u,z,f); }});
-    BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
+    if(!D.pf){ BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={}; }
     { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(D.h)]); }
 
     /* ---------- the inside, off the map: R in tiles, the door in the middle of its front wall ---------- */
@@ -79,7 +83,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       const pane=(o0,o1,z0,z1)=>{ o0=Math.max(o0,R.x0+.3-cx); o1=Math.min(o1,R.x1-.3-cx); z1=Math.min(z1,WH-6); if(o1-o0<.5)return; const h=Y(z1)-Y(z0), yc=(Y(z0)+Y(z1))/2, mid=(o0+o1)/2, w=(o1-o0)*tl;
         const pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(P2(at(lcx+mid,L.y1+.04),yc)); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
         const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
-      if(D.both){ const hf=D.half; pane(-hf+.08,-dw-.28,19,89); pane(dw+.28,hf-.08,19,89); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
+      if(D.pf){} else if(D.both){ const hf=D.half; pane(-hf+.08,-dw-.28,19,89); pane(dw+.28,hf-.08,19,89); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
       else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }
     MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);

@@ -26,12 +26,16 @@ for(const [f,fig] of [['m','masculine'],['f','feminine']]){
   g.updateMatrixWorld(true); const BIND=BONES.map(k=>by[MAP[k]].matrixWorld.clone().invert());
   const hip0=rest.Hips.p.y, ratio=hip0/0.95;
   out.clips[f]={};
-  for(const name of CLIPS){ const C=J[name]; if(!C)throw new Error('no clip '+name); const n=C.times.length, Q=[], P=[], foot=[];
+  for(const name of CLIPS){ const C=J[name]; if(!C)throw new Error('no clip '+name); const n=C.times.length, Q=[], P=[], foot=[]; let plant=null;
     for(let i=0;i<n;i++){
       for(const nm in rest){ by[nm].quaternion.copy(rest[nm].q); by[nm].position.copy(rest[nm].p); }
       for(const [bn,v] of Object.entries(C.tracks)){ const b=by[bn]; if(b)b.quaternion.set(v[i*4],v[i*4+1],v[i*4+2],v[i*4+3]); }
       if(C.hips)by.Hips.position.y=hip0+C.hips[i*3+1]*ratio;   // the hips' bob kept, their travel dropped (the game moves you)
       g.updateMatrixWorld(true);
+      // standing (Idle, Crouch): the hips shift under the sway so the feet stay where they stand (owner, 5 Nov 2026: "the character slides around in same spot when idle")
+      if(name==='Idle'||name==='Crouch'){ const a=new THREE.Vector3(), c=new THREE.Vector3(); by.LeftFoot.getWorldPosition(a); by.RightFoot.getWorldPosition(c); const mid=a.add(c).multiplyScalar(.5);
+        if(i===0)plant=mid.clone(); else { const d=plant.clone().sub(mid); d.y=0; const L=d.length(); if(L>1e-9)d.transformDirection(by.Hips.parent.matrixWorld.clone().invert()).multiplyScalar(L/(by.Hips.parent.getWorldScale(new THREE.Vector3()).x||1));
+          by.Hips.position.x+=d.x; by.Hips.position.z+=d.z; g.updateMatrixWorld(true); } }
       BONES.forEach((k,j)=>{ const D=by[MAP[k]].matrixWorld.clone().multiply(BIND[j]), q=new THREE.Quaternion(), p=new THREE.Vector3(), sc=new THREE.Vector3(); D.decompose(p,q,sc);
         Q.push(...q.toArray().map(x=>+x.toFixed(5))); P.push(...p.toArray().map(x=>+(x*s).toFixed(5))); });
       const a=new THREE.Vector3(), c=new THREE.Vector3(); by.LeftFoot.getWorldPosition(a); by.RightFoot.getWorldPosition(c); foot.push([a.y*s,a.z*s,c.y*s,c.z*s]); }

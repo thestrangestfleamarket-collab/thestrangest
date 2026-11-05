@@ -1,6 +1,6 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
 import {SHARED, THREE} from './003-shx.js';
-import {INTERIORS, LITE, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
+import {INTERIORS, LITE, NPCS, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -22,7 +22,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   const put=(kind,x,y,rot=0)=>{ const f=CATALOG[kind]; if(!f){ console.warn('store: no',kind); return null; } const p=f(+x.toFixed(3),+y.toFixed(3)); if(!p)return null; p.kind=kind; place(p,rot); storeBlob(p,rot); return p; };
   const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
   const roofCol=(x,y)=>{ const n=grain(x,y,61,1.4); return speck(n<.35?[50,50,52]:n>.7?[66,64,62]:[58,57,57],x,y,63); };
-  const planes={}, cuts=[]; STORE.inside={};
+  const planes={}, cuts=[], WALKIN={}; STORE.inside={};
   const CEIL=(x0,z0,x1,z1,y)=>{ const g=new THREE.PlaneGeometry(Math.abs(x1-x0),Math.abs(z1-z0)).rotateX(Math.PI/2), me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x5a544c,clippingPlanes:[new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]})); me.position.set((x0+x1)/2,y,(z0+z1)/2); me.receiveShadow=true; scene.add(me); return me; }; STORE.CEIL=CEIL;
   STORE.streetDoor={};
   const turnIn=(TB,n0,l0)=>{ if(!TB.q)return; for(const p of PROPS.slice(n0))SHARED.BOD.placeAt(p,TB.q,TB.cx,TB.cy,TB.cx,TB.cy); for(const l of LAMPS.slice(l0))[l.x,l.y]=TB.pt(l.x,l.y); }; STORE.turnIn=turnIn;
@@ -66,8 +66,10 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
           if(ax==='x')fr.position.set(X(c),zc,Z(at-inS*.1)); else{ fr.position.set(X(at-inS*.1),zc,Z(c)); fr.rotation.y=Math.PI/2; } scene.add(fr);
           for(const [look,off] of [['in',-inS*.14],['out',inS*.12]]){ const pm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(c+wd/2)-X(c-wd/2)),Y(84)-Y(30)));
             if(ax==='x')pm.position.set(X(c),zc,Z(at+off)); else{ pm.position.set(X(at+off),zc,Z(c)); pm.rotation.y=Math.PI/2; } scene.add(pm); WINDOWS.pane(pm,id,look,true); } }
-        if(lazy&&!inner){ if(!o.noOut)solidWall(wid,ax,at,a0,a1,inS,holes,-inS,'R'+id,paint);   // noOut: the box is off the street (its front a block there), its outside never seen if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
-          inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,holes,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
+        if(lazy&&!inner){ const wk=!o.noOut&&door&&door.w===wid, hw=wk?holes.map(h=>h.z0===0?{...h,open:true}:h):holes; if(!o.noOut)solidWall(wid,ax,at,a0,a1,inS,hw,-inS,'R'+id,paint);
+          if(!o.noOut){ let a=Math.min(a0,a1); const seg=(p,q)=>{ if(q-p<.01)return; if(ax==='x')sol(p,at-.1,q,at+.1,H); else sol(at-.1,p,at+.1,q,H); }; for(const d of hw.filter(h=>h.z0===0).sort((p,q)=>p.a0-q.a0)){ seg(a,d.a0); a=d.a1; } seg(a,Math.max(a0,a1)); }
+          if(wk)WALKIN[id]={wid,ax,at,inS,a0:door.a-door.wd/2,a1:door.a+door.wd/2,h:door.h};   // noOut: the box is off the street (its front a block there), its outside never seen if(ax==='x')sol(a0,at-.1,a1,at+.1,H); else sol(at-.1,a0,at+.1,a1,H);
+          inFaces.push(()=>{ solidWall(wid,ax,at,a0,a1,inS,hw,inS,kind,paint); cuts.push({kind,nx:ax==='y'?inS:0,nz:ax==='x'?inS:0,id,dyn:null}); }); continue; }
         const full=()=>{ const pt=(a,z,off)=>ax==='x'?[X(a),Y(z),Z(at+off)]:[X(at+off),Y(z),Z(a)];
         const as=new Set([a0,a1]), zs=new Set([0,H]); for(const h of holes){ as.add(Math.max(a0,h.a0)); as.add(Math.min(a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
         const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
@@ -237,7 +239,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       for(const k in STORE.meshes)if(P.objs.includes(STORE.meshes[k]))delete STORE.meshes[k];
       for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
       if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
-    { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P||WINDOWS.held.has(id))continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
+    { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P||WINDOWS.held.has(id)||STORE.held.has(id))continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in
     STORE.pre={};   // a door that fetches something first (the art museum: its paintings): id -> async () => done, run behind the fade before the inside is built
@@ -246,10 +248,31 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
         if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); } if(UI.inIso)UI.inIso(); },{cut:true,silent:R.done&&!walk}); R.busy=false; };
     STORE.exit=async id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.busy||FADE.busy)return; R.busy=true; const d=R.door, SD=STORE.streetDoor[id], [x,y]=SD?SD.out:DOORP(R,1.4);
       await FADE.run('',async()=>{ STORE.goTo(X(x),Z(y),'up',SD?SD.out[2]:d.w==='f'?0:d.w==='b'?Math.PI:d.w==='w'?-Math.PI/2:Math.PI/2); },{cut:true}); R.busy=false; };
-    STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; const SD=STORE.streetDoor[id], [x,y]=SD?SD.door:DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
+    STORE.doorThings=()=>{ if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; if(WALKIN[id]){ STORE.door(id); continue; } const SD=STORE.streetDoor[id], [x,y]=SD?SD.door:DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
         const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);
         UI.thing({name:'OUT TO THE STREET',ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }};
+    // a street shop's door you walk through (WALKIN): its inside built when you come within NEAR and held until past FAR; the door swings open as you reach it once the inside is built, and blocks while shut
+    STORE.held=new Set(); const DOORS={}, NEAR=14*TILE, FAR=18*TILE, REACH=2.4*TILE, building=new Set();
+    STORE.open=id=>!!DOORS[id]&&DOORS[id].t>.6;
+    STORE.openAt=(x,z)=>{ for(const id in DOORS){ if(DOORS[id].t<.05)continue; const B=STORE.inside[id].B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); if(x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb))return true; } return false; };
+    STORE.door=id=>{ const W=WALKIN[id], R=STORE.inside[id]; if(!W||!R||DOORS[id])return; const P=(a,t)=>W.ax==='x'?new THREE.Vector3(X(a),0,Z(t)):new THREE.Vector3(X(t),0,Z(a)), p0=P(W.a0,W.at), p1=P(W.a1,W.at), wv=p1.clone().sub(p0), len=wv.length(), hgt=Y(W.h)-Y(0);
+      const B=R.B, c=new THREE.Vector3(X((B.x0+B.x1)/2),0,Z((B.y0+B.y1)/2)), mid=p0.clone().add(p1).multiplyScalar(.5), inN=c.clone().sub(mid); if(W.ax==='x')inN.x=0; else inN.z=0; inN.normalize();
+      const cv=document.createElement('canvas'), Wp=Math.max(8,Math.round((W.a1-W.a0)*24)), Hp=Math.round(W.h); cv.width=Wp; cv.height=Hp; const g=cv.getContext('2d'), WD=[86,54,34], WL=[104,68,44], WK=[62,38,24], BR=[212,176,84];
+      for(let jj=0;jj<Hp;jj++)for(let ii=0;ii<Wp;ii++){ const z=Hp-jj, m=(ii+.5)/Wp, top=z>Hp*.55; const q=ii<2||ii>=Wp-2||z>Hp-2?WK:m>.82&&m<.9&&Math.abs(z-Hp*.42)<2?BR:m>.16&&m<.84&&(top?z>Hp*.6&&z<Hp*.92:z>Hp*.1&&z<Hp*.48)?((ii+jj)%7?WL:WD):WD; g.fillStyle=`rgb(${q[0]},${q[1]},${q[2]})`; g.fillRect(ii,jj,1,1); }
+      const tx=new THREE.CanvasTexture(cv); tx.magFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
+      const leaf=new THREE.Mesh(new THREE.BoxGeometry(len,hgt,.06*TILE),new THREE.MeshLambertMaterial({map:tx})); leaf.position.set(len/2,hgt/2,0); leaf.castShadow=true;
+      const pv=new THREE.Group(); pv.position.copy(p0); pv.rotation.y=Math.atan2(-wv.z,wv.x); pv.add(leaf); scene.add(pv);
+      const yaw0=pv.rotation.y, dir=new THREE.Vector3(Math.cos(yaw0+Math.PI/2),0,-Math.sin(yaw0+Math.PI/2)), sw=dir.dot(inN)>0?Math.PI/2:-Math.PI/2;   // swings into the shop
+      const th=.08*TILE, sb=[Math.min(p0.x,p1.x)-(W.ax==='y'?th:0),Math.min(p0.z,p1.z)-(W.ax==='x'?th:0),Math.max(p0.x,p1.x)+(W.ax==='y'?th:0),Math.max(p0.z,p1.z)+(W.ax==='x'?th:0)]; SOL.up.push(sb);
+      DOORS[id]={pv,yaw0,sw,mid,sb,shut:true,t:0}; R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,obj:pv,walk:1}; };
+    const build=id=>{ if(building.has(id))return; building.add(id); (async()=>{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); const R=STORE.inside[id]; if(R&&!R.done)STORE.inGo(id); })().catch(e=>console.warn('STORE walk-in build',e)).finally(()=>building.delete(id)); };
+    SYS.add('life',dt=>{ const up=SHARED.LVL==='up'; for(const id in DOORS){ const D=DOORS[id], R=STORE.inside[id]; if(!R)continue; const d=up?Math.hypot(pos.x-D.mid.x,pos.z-D.mid.z):1e9;
+      if(d<FAR)STORE.held.add(id); else STORE.held.delete(id);
+      if(d<NEAR&&!R.done&&!R.busy&&!FADE.busy)build(id);
+      const by=d<REACH||[...NPCS,...(NPCS.extra||[])].some(N=>{ const g=N&&N.g; return g&&g.visible&&Math.hypot(g.position.x-D.mid.x,g.position.z-D.mid.z)<REACH*.8; }), want=by&&R.done&&!R.busy&&(!STORE.gate[id]||(D.g??(D.g=!!STORE.gate[id]())))?1:0; if(d>=REACH)D.g=undefined;
+      D.t+=(want-D.t)*Math.min(1,(dt||.016)*6); if(Math.abs(want-D.t)<.002)D.t=want; D.pv.rotation.y=D.yaw0+D.sw*D.t;
+      const shut=D.t<.5; if(shut!==D.shut){ D.shut=shut; const i=SOL.up.indexOf(D.sb); if(shut&&i<0)SOL.up.push(D.sb); if(!shut&&i>=0)SOL.up.splice(i,1); } } },'058-store-doors');
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }

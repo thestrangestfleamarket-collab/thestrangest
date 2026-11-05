@@ -37,7 +37,7 @@ const BFLY={}; window.BFLY=BFLY;
     for(let j=0;j<n;j++){ const P=[]; for(let i=0;i<Q.length&&P.length<6;i+=3){ const x=Q[i], z=Q[i+2]; if(Math.hypot(x-cx,z-cz)>3.5*T||hsh(x/T+j,z/T+d,307)>.35)continue; P.push([x,grp.top(x,Q[i+1],z)+(.15+.7*hsh(z,x,309))*WU,z]); }
       if(P.length<3)continue; const r=hsh(cx/T+j*7,cz/T+d,311), k=inGrass(cx,cz,r,hsh(cx/T+d*3,cz/T+j,315),deep);
       const b=BF.add(k,P); wild(b); b.chunk=key; b.home=[cx,cz]; out.push(b); hit(b); } return out; };
-  const BEDR=24*T, bedSpawn=d=>{ '@later'; const dd=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+Math.floor((window.CLOCK?CLOCK.h:12)/2), r=hsh(d.x/T+dd,d.z/T,321), n=d.street?(r<.2?1:0):r<.4?1:r<.6?2:0, out=[]; if(!n)return out;
+  const BEDR=24*T, bedSpawn=d=>{ const dd=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+Math.floor((window.CLOCK?CLOCK.h:12)/2), r=hsh(d.x/T+dd,d.z/T,321), n=d.street?(r<.2?1:0):r<.4?1:r<.6?2:0, out=[]; if(!n)return out;
     const P=d.p.concat(...FLORA.beds.filter(o=>o!==d&&!o.street&&Math.hypot(o.x-d.x,o.z-d.z)<7*T).slice(0,2).map(o=>o.p)); if(P.length<2)return out; const deep=WEEDS.inPark&&WEEDS.inPark(d.x,d.z,DEEP);
     for(let j=0;j<n;j++){ const k=deep&&hsh(d.z/T+j,d.x/T+dd,323)<.06&&RARITY.open('ento')?12+Math.floor(hsh(d.x/T,d.z/T+j+dd,325)*(NK-12)):pickC(hsh(d.x/T+dd*3,d.z/T+j,327)), b=BF.add(k,P), i=Math.floor(hsh(j,d.id+dd,329)*P.length);
       b.at=b.to=i; b.g.position.set(...P[i]); wild(b); b.chunk='bed:'+d.id; out.push(b); hit(b); } return out; };

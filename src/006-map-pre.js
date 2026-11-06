@@ -116,7 +116,7 @@ const TURN=(R,face)=>{ const q={n:0,w:1,s:2,e:3}[face||'n']||0, cx=(R.x0+R.x1)/2
   return {q,face:face||'n',cx,cy,L:{...R,x0:cx-hw,x1:cx+hw,y0:cy-hd,y1:cy+hd},pt,back,side:s=>S[(S.indexOf(s)+q)%4],unside:s=>S[(S.indexOf(s)+4-q)%4],hd:h=>h-q*Math.PI/2,
     box:(x0,y0,x1,y1)=>{ const a=pt(x0,y0), b=pt(x1,y1); return {x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1])}; }}; };
 const RING={wx0:LEVEL.streets.west.x0,wx1:LEVEL.streets.west.x1,top:LEVEL.park.y1}; RING.wr0=RING.wx0+3.2; RING.wr1=RING.wx1-3.2; RING.wy1=Math.max(RING.top+WID,(SECTIONS.of(SECTION.id)||{y1:0}).y1);   // West St runs on to the section's edge, where the next section's carries on
-RING.stairs=[]; RING.river={y0:BLOCK.river,y1:BLOCK.river+46}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};
+RING.stairs=[]; RING.river={y0:BLOCK.river,y1:Math.min(...BLOCK.prom)}; RING.ff={x0:WESTX,x1:EASTX,y0:RING.river.y0-1.5,y1:RING.top+28};   // the near bank is the promenade's edge (the promenade twice as wide, 6 Nov 2026)
 const MAPSTAIR={x0:60.01,x1:64.01,y0:-82.9,y1:-76.9, steps:12, depth:98, dir:-1};
 { const o=LAY.o('subway'); MAPSTAIR.x0+=o.x; MAPSTAIR.x1+=o.x; MAPSTAIR.y0+=o.y; MAPSTAIR.y1+=o.y; }
 const PARKGX=WPP.round.x, PARKRY=WPP.round.y, PARKLAKE=[WPP.lake.x,WPP.lake.y,WPP.lake.r], PARKCAVE=[WPP.cave.x,WPP.cave.y], PARKTOWER=[WPP.tower.x,WPP.tower.y];

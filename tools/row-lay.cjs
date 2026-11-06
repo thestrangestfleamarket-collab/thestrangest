@@ -18,7 +18,7 @@ const MR=[...lay(MW,X0,PX0),...lay(ME,PX1,X1)], BR=W.block.backrow, spans=[];
 for(const [[id,name,,who],x0,x1] of MR){ const o={x0,x1,lot:true}; if(name)o.name=name; if(who)o.merchant=who; if(id==='bath'||id==='bodega')delete o.lot; set(id,o); }
 const HL=[...HW.map((id,i)=>[id,MR[i]]),...HE.map((id,i)=>[id,MR[MW.length+i]])];
 for(const [id,[,x0,x1]] of HL){ const last=id==='fishtables'||id==='fishing'||id==='flea', g=last?0:(x1-x0)*.28, a=x0<PX0?x0+g:x0, b=x0<PX0?x1:x1-g;   // the garage on the side away from the way through
-  const o={x0:r2(a),x1:r2(b),y0:BR[0],y1:BR[1],face:'s',row:2}; if(HN[id])o.name=HN[id]; if(HM[id])o.merchant=HM[id]; if(HLOT[id])o.kind='lot'; set(id,o); if(id!=='bar')spans.push([r2(a),r2(b)]); }   // the bar is shut until its new inside (job 7): garages stand on its lot
+  const o={x0:r2(a),x1:r2(b),y0:BR[0],y1:BR[1],face:'s',row:2}; if(HN[id])o.name=HN[id]; if(HM[id])o.merchant=HM[id]; if(HLOT[id])o.kind='lot'; if(id==='fishtables')o.fence='barbed'; set(id,o); if(id!=='bar')spans.push([r2(a),r2(b)]); }   // the bar is shut until its new inside (job 7): garages stand on its lot
 // the apartment street (owner, 6 Nov 2026): seven brownstones like today's, each two flats wide (twice its front), a small gap between, from the corner up beside the park
 { for(let i=out.length-1;i>=0;i--)if(/^house\d+$/.test(out[i].id))out.splice(i,1);
   const A=P.apts, D=A.y1-A.y0, L=r2(D*2), N=7; A.y1=r2(A.y0+L); let y=A.y1+1.2;

@@ -82,9 +82,11 @@ def joints(rig,P):
 
 # WEAR's two lists (owner, 5 Nov 2026: "categorize them so the dropdowns arent too long"): a piece's kind (k), then its version (v: who wears it), under that one's theme (g)
 CAST=json.load(open('tools/pfavatar-cast.json',encoding='utf-8'))
+BEARD={'STUBBLE','FULL BEARD','GOATEE','MOUSTACHE','JAW LINE'}   # (the woman wears no beards, though Polyfork shapes a few for her)
+def figs(p): return ''.join(f for f in 'mf' if any(p['v'][f]) and not (f=='f' and p['label'].partition(' · ')[0] in BEARD))
 def kvg(p): k,_,v=p['label'].partition(' · '); return k,(v or CAST[p['src']][0]),CAST[p['src']][1]
-IDX={'skel':{},'builds':RAW['builds'],'pieces':[dict(zip(('n','slot','label','figs','k','v','g'),(p['n'],p['slot'],p['label'],''.join(f for f in 'mf' if any(p['v'][f])))+kvg(p))) for p in PIECES()]}
-MAINZ={}
+IDX={'skel':{},'builds':RAW['builds'],'pieces':[dict(zip(('n','slot','label','figs','k','v','g'),(p['n'],p['slot'],p['label'],figs(p))+kvg(p))) for p in PIECES()]}
+MAINZ={}; CH={}; NCH=32
 for f in ('m','f'):
     FG=RAW['figs'][f]; W0=np.array(FG['bones']['world']); W1,legs,drop,head=proportions(FG['bones']['names'],W0)
     rig={'names':FG['bones']['names'],'world':W1,'prop':(legs,drop,head)}
@@ -98,7 +100,7 @@ for f in ('m','f'):
     BY={s:[] for s in SLOTS}
     for p in PIECES():
         n=p['n']; V=p['v'][f]
-        if not any(V): continue
+        if f not in figs(p): continue
         names=[]; cnt={}
         for v in V+(p.get('alt',{}).get(f) or []):
             if not v: continue
@@ -126,11 +128,22 @@ for f in ('m','f'):
             D['anim']['clips'][k]={'n':len(fr),'dur':round(dur,4),'speed':c['speed'],'contact':c['contact'],'q':q,'p':pp}
     # the body and the walk in one file, each WEAR line's pieces in their own (fetched when one is worn: data/pfavatar-<figure>-<slot>.json)
     del D['pieces']; out='data/pfavatar-'+f+'.json'; json.dump(D,open(out,'w'),separators=(',',':')); print(out,round(os.path.getsize(out)/1e6,2),'MB')
+    # the pieces in about a megabyte each, a kind's versions together (data/pfavatar-<figure>-NN.json, NCH of them a figure: the page names each); index c is a piece's file
+    K={q['n']:q['k'] for q in IDX['pieces']}; ch=[[]]; sz=0
     for sl in SLOTS:
-        o='data/pfavatar-'+f+'-'+sl+'.json'; json.dump({'pieces':BY[sl]},open(o,'w'),separators=(',',':')); print(' ',o,len(BY[sl]),'pieces',round(os.path.getsize(o)/1e6,2),'MB')
+        for e in sorted(BY[sl],key=lambda e:(K[e['n']],e['n'])):
+            b=len(json.dumps(e,separators=(',',':')))
+            if ch[-1] and sz+b>1.0e6 and K[ch[-1][-1]['n']]!=K[e['n']] or ch[-1] and sz+b>2.5e6: ch.append([]); sz=0
+            ch[-1].append(e); sz+=b
+    assert len(ch)<=NCH,len(ch)
+    for i in range(NCH):
+        o='data/pfavatar-%s-%02d.json'%(f,i); json.dump({'pieces':ch[i] if i<len(ch) else []},open(o,'w'),separators=(',',':'))
+        for e in (ch[i] if i<len(ch) else []): CH.setdefault(e['n'],{})[f]=i
+    print(' ',len(ch),'files')
 # OUTFITS: each of the cast's own pieces; a piece shared with another wearer takes this one's colour on its main zone
 def oc(o,s,n):
     src,z=MAINZ.get(n,(None,None))
     return '' if src==o['id'] or s in ('hair','face') or not z or z.startswith('=') else (o['pal'].get(z) or '')
+for q in IDX['pieces']: q['c']=CH.get(q['n'],{})
 IDX['outfits']=[{'t':o['t'],'g':o['g'],'f':o['f'],'hair':o['pal'].get('hair',''),'w':{s:[n,oc(o,s,n)] for s,(n,_) in o['w'].items()}} for o in RAW.get('outfits',[])]
 json.dump(IDX,open('data/pfavatar.json','w'),separators=(',',':'),ensure_ascii=False); print('data/pfavatar.json',round(os.path.getsize('data/pfavatar.json')/1e3,1),'KB')

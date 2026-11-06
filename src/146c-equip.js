@@ -18,7 +18,7 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
   EQUIP.code=()=>{ const c=SLOTS.map(s=>EQUIP.by[s]||'').join('~'); return /[^~]/.test(c)?c:''; };
   EQUIP.decode=c=>{ const by={}; String(c||'').split('~').forEach((id,i)=>{ if(id&&SLOTS[i]&&ITEMS.defs&&ITEMS.defs[id]&&prop(id,'slot')===SLOTS[i])by[SLOTS[i]]=id; }); return by; };
   const dye=()=>{ if(!LOOKS.dye)return; const {shirt:sh,pants:pa}=EQUIP.colours(EQUIP.by); if(LOOKS.over.shirt===(sh||undefined)&&LOOKS.over.pants===(pa||undefined))return; LOOKS.over.shirt=sh||undefined; LOOKS.over.pants=pa||undefined; LOOKS.dye(); };
-  EQUIP.wear=(id,quiet)=>{ const slot=prop(id,'slot'); if(!SLOTS.includes(slot))return;
+  EQUIP.wear=(id,quiet)=>{ '@later'; const slot=prop(id,'slot'); if(!SLOTS.includes(slot))return;
     if(EQUIP.by[slot]===id){ EQUIP.off(slot); save(); if(!quiet)say('YOU TAKE OFF THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); return; }
     if(!FORAGE.has(id)){ if(!quiet)say('YOU HAVE NO '+name(id)+'.','#c8a090'); return; }
     EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); dye(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
@@ -47,17 +47,17 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
   // worn on the eyes: night-vision goggles (two tubes on a head strap, their lenses glowing green), or, for anything with a colour, a pair of shades with lenses that colour
   const hu=new V(), hr=new V(), hf=new V(), HM=new THREE.Matrix4();
   const EYES={
-    nv:()=>{ const G=new THREE.Group(), dark=new THREE.MeshStandardMaterial({color:0x1e2220,roughness:.5,metalness:.4}), strap=new THREE.MeshStandardMaterial({color:0x141416,roughness:.8}), glow=new THREE.MeshStandardMaterial({color:0x2a5a30,emissive:0x3aff6a,emissiveIntensity:.7,roughness:.1});
+    nv:()=>{ '@later'; const G=new THREE.Group(), dark=new THREE.MeshStandardMaterial({color:0x1e2220,roughness:.5,metalness:.4}), strap=new THREE.MeshStandardMaterial({color:0x141416,roughness:.8}), glow=new THREE.MeshStandardMaterial({color:0x2a5a30,emissive:0x3aff6a,emissiveIntensity:.7,roughness:.1});
       G.add(new THREE.Mesh(new THREE.BoxGeometry(.78,.26,.2),dark));
       for(const s of [1,-1]){ const t=new THREE.Mesh(new THREE.CylinderGeometry(.15,.18,.38,18),dark); t.rotation.x=Math.PI/2; t.position.set(.2*s,.01,.22); G.add(t);
         const r=new THREE.Mesh(new THREE.TorusGeometry(.15,.025,8,20),dark); r.position.set(.2*s,.01,.41); G.add(r); const l=new THREE.Mesh(new THREE.CircleGeometry(.13,20),glow); l.position.set(.2*s,.01,.415); G.add(l); }
       const band=new THREE.Mesh(new THREE.TorusGeometry(.56,.045,8,32),strap); band.rotation.x=Math.PI/2; band.position.set(0,.02,-.6); band.scale.set(1.02,1.05,1); G.add(band);
       const top=new THREE.Mesh(new THREE.TorusGeometry(.56,.04,8,24,Math.PI),strap); top.rotation.y=Math.PI/2; top.position.set(0,.06,-.6); G.add(top); return G; },
-    shades:c=>{ const G=new THREE.Group(), lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
+    shades:c=>{ '@later'; const G=new THREE.Group(), lens=new THREE.MeshStandardMaterial({color:c,roughness:.08,metalness:.5}), band=new THREE.MeshStandardMaterial({color:0x141416,roughness:.4,metalness:.3});
       for(const s of [1,-1]){ const l=new THREE.Mesh(new THREE.CylinderGeometry(.21,.21,.05,20),lens); l.rotation.x=Math.PI/2; l.position.set(.25*s,0,0); G.add(l); const r=new THREE.Mesh(new THREE.TorusGeometry(.21,.03,8,20),band); r.position.set(.25*s,0,.01); G.add(r);
         const arm=new THREE.Mesh(new THREE.BoxGeometry(.04,.05,.62),band); arm.position.set(.62*s,.02,-.32); G.add(arm); } const br=new THREE.Mesh(new THREE.BoxGeometry(.08,.04,.04),band); br.position.set(0,.06,.01); G.add(br); G.userData.lens=lens; return G; }};
   // worn on the head and granting light: a headlamp on the forehead, its lens glowing when the light is on (underground or underwater)
-  EYES.lamp=()=>{ const G=new THREE.Group(), strap=new THREE.MeshStandardMaterial({color:0x2a2a2e,roughness:.8}), body=new THREE.MeshStandardMaterial({color:0xd8d8d0,roughness:.4,metalness:.3}), lens=new THREE.MeshStandardMaterial({color:0xfff2c0,emissive:0xfff0d0,emissiveIntensity:.2,roughness:.1});
+  EYES.lamp=()=>{ '@later'; const G=new THREE.Group(), strap=new THREE.MeshStandardMaterial({color:0x2a2a2e,roughness:.8}), body=new THREE.MeshStandardMaterial({color:0xd8d8d0,roughness:.4,metalness:.3}), lens=new THREE.MeshStandardMaterial({color:0xfff2c0,emissive:0xfff0d0,emissiveIntensity:.2,roughness:.1});
     const band=new THREE.Mesh(new THREE.TorusGeometry(.56,.05,8,32),strap); band.rotation.x=Math.PI/2; band.position.set(0,0,-.6); G.add(band);
     const b=new THREE.Mesh(new THREE.BoxGeometry(.3,.22,.14),body); b.position.set(0,0,.02); G.add(b); const l=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.04,20),lens); l.rotation.x=Math.PI/2; l.position.set(0,0,.1); G.add(l); G.userData.lamp=lens; return G; };
   EQUIP.lampOn=()=>SHARED.LVL==='down'||!!FLOW.under;

@@ -172,16 +172,16 @@ import {ROOMK} from './150a-bedroom.js';
   });
   // what the kitchen's pieces do (each copy of one too): the fridge opens, the stove lights, the tap runs
   const W=ROOMK.wires;
-  W.fridge=(un,c)=>{ const D=[]; un.obj.traverse(o=>{ if(o.userData.door)D.push({g:o,a:o.rotation.y}); }); un.st.open=false;
+  W.fridge=(un,c)=>{ '@later'; const D=[]; un.obj.traverse(o=>{ if(o.userData.door)D.push({g:o,a:o.rotation.y}); }); un.st.open=false;
     c.hit(un,()=>un.st.open?'CLOSE THE FRIDGE':'OPEN THE FRIDGE',()=>{ un.st.open=!un.st.open; if(SFX)SFX.play('latch',{vol:.8,vary:.2}); });
     un.tick=dt=>{ const k=Math.min(1,dt*6); for(const d of D){ d.a+=((un.st.open?-1.85:0)-d.a)*k; d.g.rotation.y=d.a; } }; };
-  W.stove=(un,c)=>{ const F=[]; let L=null; un.obj.traverse(o=>{ if(o.userData.flame){ if(o.isPointLight)L=o; else F.push(o); } }); un.st.on=false;
+  W.stove=(un,c)=>{ '@later'; const F=[]; let L=null; un.obj.traverse(o=>{ if(o.userData.flame){ if(o.isPointLight)L=o; else F.push(o); } }); un.st.on=false;
     c.hit(un,()=>'STOVE: '+(un.st.on?'ON':'OFF'),()=>{ un.st.on=!un.st.on; if(SFX)SFX.play('click',{vol:.8,vary:.2}); });
     un.tick=()=>{ for(const f of F)f.visible=un.st.on; if(L)L.intensity=un.st.on?.5:0; }; };
-  W.tap=(un,c)=>{ let w=null; un.obj.traverse(o=>{ if(o.userData.water)w=o; }); un.st.on=false;
+  W.tap=(un,c)=>{ '@later'; let w=null; un.obj.traverse(o=>{ if(o.userData.water)w=o; }); un.st.on=false;
     c.hit(un,()=>'TAP: '+(un.st.on?'ON':'OFF'),()=>{ un.st.on=!un.st.on; if(SFX)SFX.play(un.st.on?'drip':'click',{vol:.6,vary:.2}); });
     un.tick=()=>{ if(!w)return; w.visible=un.st.on; if(un.st.on)w.scale.x=w.scale.z=.9+.2*Math.sin(performance.now()*.03); }; };
-  window.KITCHENDBG=()=>{ const A=ROOMK.api; if(!A||!A.R.kitchen)return {built:false}; const U=A.units(), f=k=>U.find(u=>u.wire===k&&!u.gone);
+  window.KITCHENDBG=()=>{ '@later'; const A=ROOMK.api; if(!A||!A.R.kitchen)return {built:false}; const U=A.units(), f=k=>U.find(u=>u.wire===k&&!u.gone);
     let n=0; for(const u of A.R.kitchen)u.obj.traverse(o=>{ if(o.isMesh)n++; });
     return {built:!!f('fridge'),fridge:!!(f('fridge')&&f('fridge').st.open),stove:!!(f('stove')&&f('stove').st.on),tap:!!(f('tap')&&f('tap').st.on),meshes:n}; };
 }

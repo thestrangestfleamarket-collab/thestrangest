@@ -73,7 +73,7 @@ BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||
   const flush=()=>{ if(!q.hold.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes, c0=BATCH.cast; BATCH.meshes={}; BATCH.items=q.hold; q.hold=[]; q.hn=0;
     BATCH.cast=cast; const t0=BATCH.tile; BATCH.tile=tile||0; try{ BATCH.build(make); } finally{ BATCH.tile=t0; } BATCH.cast=c0; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; const g=group(); for(const k in M)g.add(M[k]); if(post)post(M); q.groups.push({ms:Object.values(M),jobs:q.pend.splice(0)}); };
   // a dropped group frees its meshes and pictures; its patches go back on the list, painted again when you come near
-  const drop=G=>{ for(const me of G.ms){ me.removeFromParent(); PEEK.boxes=PEEK.boxes.filter(b=>b.me!==me); me.geometry.dispose(); for(const m of [].concat(me.material)){ for(const k of ['map','emissiveMap'])if(m[k]){ m[k].dispose(); m[k].image=null; } m.dispose(); } }
+  const drop=G=>{ '@later'; for(const me of G.ms){ me.removeFromParent(); PEEK.boxes=PEEK.boxes.filter(b=>b.me!==me); me.geometry.dispose(); for(const m of [].concat(me.material)){ for(const k of ['map','emissiveMap'])if(m[k]){ m[k].dispose(); m[k].image=null; } m.dispose(); } }
     q.groups.splice(q.groups.indexOf(G),1); q.jobs.push(...G.jobs); q.dropped=true; };
   q.add=(x0,z0,x1,z1,go)=>q.jobs.push({x0:Math.min(x0,x1),x1:Math.max(x0,x1),z0:Math.min(z0,z1),z1:Math.max(z0,z1),go});
   q.near=(x,z,r=q.R)=>{ if(!BATCH.at())return; const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };

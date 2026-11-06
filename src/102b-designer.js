@@ -25,7 +25,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
   // the code: a byte for his height, then each shaped part's number and its nine values (sizes ½–2×, turns ±127°, moves ±6.4)
   const Q={s:v=>Math.round(128+128*Math.log2(v)), r:v=>Math.round(v)+128, o:v=>Math.round(v/.05)+128}, U={s:b=>Math.pow(2,(b-128)/128), r:b=>b-128, o:b=>(b-128)*.05};
   const clampB=b=>Math.max(0,Math.min(255,b));
-  const encode=d=>{ const b=[1,clampB(Math.round(128+256*Math.log2(d.h||1)))];
+  const encode=d=>{ '@later'; const b=[1,clampB(Math.round(128+256*Math.log2(d.h||1)))];
     PARTS.forEach((k,i)=>{ const p=d.p[k]; if(!p||plain(p))return; b.push(i,...p.s.map(v=>clampB(Q.s(v))),...p.r.map(v=>clampB(Q.r(v))),...p.o.map(v=>clampB(Q.o(v)))); });
     if(b.length===2&&b[1]===128)return ''; return btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
   const CACHE=new Map();
@@ -37,7 +37,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
   // a piece's edit with a design over it: its sizes times the design's, the design's turn and move in the bone's own frame
   // the face's parts (on the head): HEAD shapes all of them together first, then each its own part about its own middle
   const FACE=new Set(['face','earL','earR','nose','eyes','brows','lips']), CEN={};
-  const center=k=>{ if(CEN[k])return CEN[k]; const g=W3.mesh&&W3.mesh.geometry, P=g&&g.attributes.position, I=g&&g.attributes.pidx; if(!I)return null; let x=0,y=0,z=0,n=0;
+  const center=k=>{ '@later'; if(CEN[k])return CEN[k]; const g=W3.mesh&&W3.mesh.geometry, P=g&&g.attributes.position, I=g&&g.attributes.pidx; if(!I)return null; let x=0,y=0,z=0,n=0;
     for(let v=0;v<P.count;v++){ if(PART[Math.round(I.getX(v))]!==k)continue; x+=P.getX(v); y+=P.getY(v); z+=P.getZ(v); n++; } return n?(CEN[k]=[x/n,y/n,z/n]):null; };
   const lq=p=>p.r.some(v=>Math.abs(v)>=.5)?qt.setFromEuler(eu.set(p.r[0]*D2R,p.r[1]*D2R,p.r[2]*D2R)).toArray():null, lo=p=>p.o.some(v=>Math.abs(v)>=.025)?p.o.slice():null;
   const mix=(e,i,d)=>{ const k=PART[i], f=FACE.has(k), p=d&&d.p[k], hp=f&&d&&d.p.head&&!plain(d.p.head)?d.p.head:null, own=p&&!plain(p); if(!own&&!hp)return e;
@@ -57,7 +57,7 @@ const DESIGN={}; window.DESIGN=DESIGN;
   apply();
 
   /* ---------- THE STUDIO: you alone in a dark room, turned and zoomed with the mouse; click a part, drag its handles or its sliders ---------- */
-  DESIGN.open=()=>{ '@later';
+  DESIGN.open=()=>{
     if(!DESIGN.el)studio(); DESIGN.el.hidden=false; DESIGN.on=true; DESIGN.view('front'); DESIGN.redraw(); };
   function studio(){ '@later';
     const SW=560, SH=700, Y=new THREE.Vector3(0,1,0), V=new THREE.Vector3(), V2=new THREE.Vector3();
@@ -184,8 +184,5 @@ const DESIGN={}; window.DESIGN=DESIGN;
     cv.addEventListener('contextmenu',e=>e.preventDefault());
     DESIGN.test={pickAt,frame,shot,state:()=>({az,el:elv,zoom,ty,sel,mode,mirror,undo:undo.length,redo:redo.length}),grab:(x,y)=>grab(x,y),handles:()=>H,set:o=>{ if(o.sel)pick(o.sel); if(o.mode){ mode=o.mode; DESIGN.redraw(); } if(o.mirror!=null){ mirror=o.mirror; DESIGN.redraw(); } if(o.zoom)zoom=o.zoom; if(o.ty!=null)ty=o.ty; },edit:(key,j,v)=>{ const p=part(sel); p[key][j]=v; changed(); commit(); },undo:doUndo,redo:doRedo};
   }
-  // YOU's button
-  { const lp=document.getElementById('looks'); if(lp){ const h=document.createElement('h3'), r=document.createElement('div'); h.textContent='SHAPE'; r.className='row'; r.innerHTML='<button id="ldesign">DESIGN YOUR WALKER</button>';
-      const at=lp.querySelector('h3'); lp.insertBefore(h,at); lp.insertBefore(r,at); r.querySelector('button').onclick=()=>{ lp.hidden=true; DESIGN.open(); }; } }
 }
 export {DESIGN};

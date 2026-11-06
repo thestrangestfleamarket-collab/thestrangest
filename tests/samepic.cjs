@@ -13,7 +13,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
     await pg.addInitScript(()=>{ let x=123456789; Math.random=()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return (x>>>0)/4294967296; }; });
     const inside=place.startsWith('in:')?place.slice(3):null;
-    await pg.goto('file://'+page+'?fresh=1&hour=13'+(inside?'':'&place='+encodeURIComponent(place)),{waitUntil:'commit'});
+    await pg.goto('file://'+page+'?capture=1&fresh=1&hour=13'+(inside?'':'&place='+encodeURIComponent(place)),{waitUntil:'commit'});
     let s=false; for(let i=0;i<900&&!(s=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
     if(s&&inside)await pg.evaluate(id=>{ const T=__dbg.cv().TILE, A=MAIL.addr.find(a=>a.id===id); if(!A)return; const st=A.b.step; STORE.goTo(st.x-A.b.F.n.x*1.2*T,st.z-A.b.F.n.z*1.2*T,'up'); },inside);
     if(s&&place==='CENTRAL PARK')await pg.waitForFunction(()=>window.PARK&&PARK.ready,null,{polling:500,timeout:600000}).catch(()=>{});

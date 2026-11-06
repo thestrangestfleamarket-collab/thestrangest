@@ -9,7 +9,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
   const x0=OX+(P[0]-OX)/BLDK, y1=OY, B={id:'lbank',x0,x1:x0+(MB.x1-MB.x0),y0:y1-DEP,y1,h:MB.h};
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=B.x0-MB.x0, dy=B.y1-MB.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], stone=[226,220,204], OB={...MB,plain:1,id:'lmusfront'};
   // the front door: a big iron-bound vault door, gold studs and rings, under the portico's BANK
-  const DW=4, DH=140, door=(ii,jj,W,H)=>{ const z=H-jj, m=(ii+.5)/W, fr=[38,30,24], ir=[46,44,48], irL=[74,72,78], au=[226,184,70], auD=[150,112,40];
+  const DW=4, DH=140, door=(ii,jj,W,H)=>{ '@later'; const z=H-jj, m=(ii+.5)/W, fr=[38,30,24], ir=[46,44,48], irL=[74,72,78], au=[226,184,70], auD=[150,112,40];
     if(ii<4||ii>=W-4||z>H-5)return (ii+jj)%9?fr:[30,24,20]; if(Math.abs(m-.5)<.012)return [16,12,10];
     const lm=m<.5?m*2:(m-.5)*2, rc=Math.hypot((lm-.72+(m<.5?0:.44))*W*.5,z-H*.46); if(rc<6&&rc>3.6)return rc<4.6?au:auD;
     if(z%30<5){ if(ii%9===4&&z%30===2)return au; return z%30<1?irL:ir; } if(lm<.06||lm>.94)return ir;
@@ -28,14 +28,14 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
   const mp=(k,x,y,rot=0)=>{ const f=CATALOG[k]; SHARED.BOD.K.STUDIO.face(FW[rot]); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ SHARED.BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k; const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; SHARED.BOD.placeAt(p,2,cx,cy,SX-cx+dx,SY-cy+dy,true); return p; };
   const at=(x,y)=>[SX-x+dx,SY-y+dy];   // a spot in the bank, written in the museum's frame for mp
   rec('bank','THE BANK',B,D,true); STORE.bank={B};
-  STEPS.push(()=>{ room('bank','THE BANK',B,look,D,()=>{ const py=MB.y0-3;
+  STEPS.push(()=>{ '@later'; room('bank','THE BANK',B,look,D,()=>{ const py=MB.y0-3;
     mp('museum portico steps',M.mid,(py+MB.y0)/2); for(const d of [-4,-2.8,2.8,4])mp('museum column',M.mid+d,py+.7); mp('bank entablature',M.mid,py+.7,2);
     for(const [x,y,k] of [[mx-5.4,B.y0+3.2,'bone pile'],[mx+6.2,B.y0+5,'skull'],[mx-8,B.y1-4,'bones'],[mx+9,B.y1-3,'bones'],[mx+3.4,B.y0+2.4,'skull']])mp(k,...at(x,y));
     for(const [x,y,c,r] of [[B.x0+1,B.y0+4,[1.9,1.15,.55],12],[B.x1-1,B.y0+4,[1.9,1.15,.55],12],[B.x0+1,B.y1-4,[1.8,1.1,.5],11],[B.x1-1,B.y1-4,[1.8,1.1,.5],11],[mx,B.y0+5,[1.6,1.1,.5],10],[mx,B.y1-2,[1.4,1.1,.7],10]])
       LAMPS.push({own:1,room:1,day:true,x,y,z:120,r,c}); },{noWins:1});
     const S=STORE.inside.bank; if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); lair(); if(STORE.furnish&&STORE.furnish.bank)STORE.furnish.bank(STORE.bank); }; } });
   // the hoard: what is drawn in 3D, made the first time you go in
-  const lair=()=>{ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y, TU=X(1)-X(0), wallZ=Z(B.y0+T), HH=Y(B.h), clip=[new THREE.Plane(new THREE.Vector3(0,0,1),-wallZ)], g=new THREE.Group(); g.name='bank hoard';
+  const lair=()=>{ '@later'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Y=SHARED.BOD.Y, TU=X(1)-X(0), wallZ=Z(B.y0+T), HH=Y(B.h), clip=[new THREE.Plane(new THREE.Vector3(0,0,1),-wallZ)], g=new THREE.Group(); g.name='bank hoard';
     const lam=(c,o={})=>new THREE.MeshLambertMaterial({color:c,flatShading:true,clippingPlanes:clip,...o});
     // the gold: heaped mounds (four up to the ceiling) and coins over them and the floor
     const gold=lam(0xc8962a,{emissive:0x3a2400}), goldL=lam(0xf0c850,{emissive:0x5a3c08}), PILES=[[B.x0+3.2,B.y0+3.4,3.2,1],[B.x1-3.2,B.y0+3.4,3.2,1],[B.x1-2.2,B.y1-2.4,2.2,1],[B.x0+2.2,B.y0+9,2,1],

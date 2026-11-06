@@ -26,7 +26,7 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
   // the combo: every trick adds its points and one to the multiplier; it is banked when you roll away clean, lost when you bail
   const add=(R,name,pts)=>{ const C=TRICKS.combo||(TRICKS.combo={list:[],base:0,mult:0}); C.list.push(name); C.base+=pts; C.mult++; R.landT=0; flash=null; };
   const bonus=pts=>{ if(TRICKS.combo)TRICKS.combo.base+=pts; };
-  const bank=()=>{ const C=TRICKS.combo; TRICKS.combo=null; if(!C)return; const tot=Math.round(C.base*C.mult); TRICKS.session+=tot; flash={t:2,txt:'+'+tot+(C.mult>1?'  ('+C.list.length+' TRICKS)':'')};
+  const bank=()=>{ '@later'; const C=TRICKS.combo; TRICKS.combo=null; if(!C)return; const tot=Math.round(C.base*C.mult); TRICKS.session+=tot; flash={t:2,txt:'+'+tot+(C.mult>1?'  ('+C.list.length+' TRICKS)':'')};
     if(tot>TRICKS.best){ TRICKS.best=tot; try{ OWNED.set('skatebest',String(tot)); }catch(e){} if(tot>=200)postBest(tot); flash.txt+='  YOUR BEST!'; } };
   const bail=(R,why)=>{ TRICKS.combo=null; flash={t:2,txt:'BAIL!',bad:1}; R.s='roll'; R.flip=null; R.grab=null; R.z=0; R.vz=0; RIDE.off(why||'YOU BAIL.',true); };
   TRICKS.bail=bail;
@@ -38,15 +38,15 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
   SYS.onStart(()=>{ const b=+OWNED.get('skatebest')||0; if(b>TRICKS.best)TRICKS.best=b; },'146ib-tricks');
 
   // grinds: the nearest grind line under or beside your board
-  const railNear=(R,y)=>{ let best=null, bd=1e9; for(const r of SKATE.rails||[]){ const ax=r.a[0], az=r.a[2], ux=r.b[0]-ax, uz=r.b[2]-az, L2=ux*ux+uz*uz; if(!L2)continue;
+  const railNear=(R,y)=>{ '@later'; let best=null, bd=1e9; for(const r of SKATE.rails||[]){ const ax=r.a[0], az=r.a[2], ux=r.b[0]-ax, uz=r.b[2]-az, L2=ux*ux+uz*uz; if(!L2)continue;
       const t=Math.max(0,Math.min(1,((pos.x-ax)*ux+(pos.z-az)*uz)/L2)), x=ax+ux*t, z=az+uz*t, d=Math.hypot(pos.x-x,pos.z-z), ry=r.a[1]+(r.b[1]-r.a[1])*t;
       if(d<.75*MH&&ry>y-1.1*MV&&ry<y+.9*MV&&d<bd){ bd=d; best={r,t,L:Math.sqrt(L2),ry}; } } return best; };
-  const tryGrind=R=>{ const y=R.s==='air'?G(pos.x,pos.z)+R.z:G(pos.x,pos.z), n=railNear(R,y); if(!n)return false; const r=n.r, ux=(r.b[0]-r.a[0])/n.L, uz=(r.b[2]-r.a[2])/n.L;
+  const tryGrind=R=>{ '@later'; const y=R.s==='air'?G(pos.x,pos.z)+R.z:G(pos.x,pos.z), n=railNear(R,y); if(!n)return false; const r=n.r, ux=(r.b[0]-r.a[0])/n.L, uz=(r.b[2]-r.a[2])/n.L;
     R.rail=r; R.rL=n.L; R.gt=n.t*n.L; R.gs=Math.sin(R.md)*ux+Math.cos(R.md)*uz>=0?1:-1; R.v=Math.max(R.s==='air'?R.vh:R.v,1.6*T); const d=dir(), g=GRINDS[d]||GRINDS['']; R.slide=g[2]; R.s='grind'; R.vz=0; R.vert=false; R.bal=(Math.random()-.5)*.2; R.gp=0;
     add(R,g[0],g[1]); return true; };
   // spins add their own name when you land: 180, 360, ...
   const spinName=R=>{ const h=Math.round(Math.abs(R.spun||0)/PI); if(h>=1)add(R,h*180+'',h*100); };
-  const land=R=>{ const flipping=R.flip&&R.flip.t<R.flip.dur*.8;
+  const land=R=>{ '@later'; const flipping=R.flip&&R.flip.t<R.flip.dur*.8;
     if(R.vert){ R.md+=PI; R.v=Math.abs(R.vz)*.8; } else R.v=R.vh;
     const d=Math.abs(wrap(R.hd-R.md)), off=Math.min(d,PI-d);
     if(flipping||off>.65)return bail(R,flipping?'YOU LAND MID-FLIP AND BAIL.':'YOU LAND SIDEWAYS AND BAIL.');
@@ -55,7 +55,7 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
   const move=(R,dt,sp)=>{ const ox=pos.x, oz=pos.z, go=sp*dt; pos.x+=Math.sin(R.md)*go; pos.z+=Math.cos(R.md)*go; collide(pos);
     const moved=Math.hypot(pos.x-ox,pos.z-oz); if(go>.001&&moved<go*.5){ if(sp>5.5*T){ bail(R,'YOU HIT IT HARD AND BAIL.'); return false; } R.v*=.4; R.vh*=.4; } return true; };
 
-  TRICKS.step=(R,dt,inp)=>{ if(!ON())return false;
+  TRICKS.step=(R,dt,inp)=>{ '@later'; if(!ON())return false;
     if(R.t0!==R.mt){ Object.assign(R,{mt:R.t0,s:'roll',md:R.hd,z:0,vz:0,vh:0,charge:0,landT:0,spun:0,fakie:false,flip:null,grab:null,rail:null,slide:0,pt:0}); R.gy=G(pos.x,pos.z); TRICKS.combo=null; }
     hit=new Set([...DOWN].filter(a=>!was.has(a))); was.clear(); for(const a of DOWN)was.add(a);
     const sp=keys.has(' '), pop=spWas&&!sp; spWas=sp; dt=Math.min(dt,.05);
@@ -114,19 +114,19 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
   TRICKS.pose=(R,P)=>{ if(R!==RIDE)return; P.z=0; P.push=R.s==='roll'&&R.pushing?R.pt%1:-1; P.crouch=R.s==='air'?(R.grab?1.6:.6):R.s==='roll'?(R.charge||0)*1.2:R.s==='grind'?.5:0; P.grab=R.s==='air'?R.grab:null;
     P.lean=R.s==='manual'?(R.nose?20:-22):0; P.goofy=!!R.fakie; P.brake=R.s==='roll'&&!(R.v>.2*T); };
   // the board: it flips, shoves round, turns across a slide, tips up for a manual
-  TRICKS.place=(m,R)=>{ if(R!==RIDE)return; const f=R.flip; if(f){ const u=f.t/f.dur, a=2*PI*u; if(f.k==='kick')m.rotation.z+=a; else if(f.k==='heel')m.rotation.z-=a; else if(f.k==='hard'){ m.rotation.z+=a; m.rotation.y+=PI*u; } else m.rotation.y+=PI*u; }
+  TRICKS.place=(m,R)=>{ '@later'; if(R!==RIDE)return; const f=R.flip; if(f){ const u=f.t/f.dur, a=2*PI*u; if(f.k==='kick')m.rotation.z+=a; else if(f.k==='heel')m.rotation.z-=a; else if(f.k==='hard'){ m.rotation.z+=a; m.rotation.y+=PI*u; } else m.rotation.y+=PI*u; }
     if(R.s==='grind'&&R.slide)m.rotation.y+=PI/2; if(R.s==='manual')m.rotation.x=R.nose?.22:-.22; };
 
   // on screen: the combo as you build it, its balance while you grind or manual, what you banked
   let flash=null; const hudE=document.createElement('div'); hudE.id='skatehud'; hudE.hidden=true;
   hudE.style.cssText='position:fixed;left:50%;bottom:22%;transform:translateX(-50%);z-index:12;text-align:center;font:12px Silkscreen,monospace;letter-spacing:1px;color:#f2c14e;text-shadow:0 2px 0 #000,0 0 6px #000;pointer-events:none;zoom:var(--uiz,1)';
   document.body.appendChild(hudE);
-  const hud=(R,dt)=>{ const C=TRICKS.combo; let o='';
+  const hud=(R,dt)=>{ '@later'; const C=TRICKS.combo; let o='';
     if(C){ o+='<div style="color:#e8e2cc;max-width:70vw">'+C.list.slice(-5).join(' + ')+'</div><div style="font-size:16px">'+Math.round(C.base)+' × '+C.mult+'</div>'; }
     if(R.s==='grind'||R.s==='manual'){ const b=Math.max(-1,Math.min(1,R.bal||0)); o+='<div style="margin:6px auto 0;width:160px;height:6px;background:#1a1d26;border:1px solid #3a3f4e;position:relative"><div style="position:absolute;left:'+(50+b*48)+'%;top:-3px;width:4px;height:12px;background:'+(Math.abs(b)>.7?'#ff5a3a':'#7dffa4')+'"></div></div>'; }
     if(flash){ o+='<div style="font-size:15px;color:'+(flash.bad?'#ff5a3a':'#7dffa4')+'">'+flash.txt+'</div>'; if((flash.t-=dt)<=0)flash=null; }
     o+='<div style="color:#8a8f9c;font-size:9px;margin-top:4px">BEST '+TRICKS.best+' · THIS RIDE '+TRICKS.session+'</div>';
     hudE.innerHTML=o; hudE.hidden=false; };
   SYS.add('life',()=>{ if(!ON()&&!hudE.hidden){ hudE.hidden=true; if(TRICKS.combo)bank(); } },'146ib-tricks');
-  window.TRICKSDBG=()=>{ const R=RIDE; return {on:ON(),s:R.s,v:+((R.v||0)/T).toFixed(2),z:+((R.z||0)/T).toFixed(2),hd:+(R.hd||0).toFixed(2),md:+(R.md||0).toFixed(2),flip:R.flip&&R.flip.k,grab:R.grab,rail:!!R.rail,bal:+(R.bal||0).toFixed(2),combo:TRICKS.combo&&{list:TRICKS.combo.list,base:Math.round(TRICKS.combo.base),mult:TRICKS.combo.mult},best:TRICKS.best,session:TRICKS.session,rails:(SKATE.rails||[]).length}; };
+  window.TRICKSDBG=()=>{ '@later'; const R=RIDE; return {on:ON(),s:R.s,v:+((R.v||0)/T).toFixed(2),z:+((R.z||0)/T).toFixed(2),hd:+(R.hd||0).toFixed(2),md:+(R.md||0).toFixed(2),flip:R.flip&&R.flip.k,grab:R.grab,rail:!!R.rail,bal:+(R.bal||0).toFixed(2),combo:TRICKS.combo&&{list:TRICKS.combo.list,base:Math.round(TRICKS.combo.base),mult:TRICKS.combo.mult},best:TRICKS.best,session:TRICKS.session,rails:(SKATE.rails||[]).length}; };
 }

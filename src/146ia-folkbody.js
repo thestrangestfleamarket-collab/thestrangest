@@ -144,11 +144,11 @@ FOLK.body=R=>{ '@park'; const B=BODIES.BONES, b=R.bulk||1, PI=Math.PI, V=new THR
     draw:[[0,{L:HOLDS.bow.L,R:{ua:[10,10],fa:[30,8]}}],[.15,{L:{ua:[84,4],fa:[88,4]},R:{ua:[80,-8],fa:[86,-12]},cyaw:-25}],[.55,{L:{ua:[86,4],fa:[89,4]},R:{ua:[82,62],fa:[-88,-28]},cyaw:-35}],[.62,{L:{ua:[86,4],fa:[89,4]},R:{ua:[82,62],fa:[-88,-28]},cyaw:-35}],
       [.66,{L:{ua:[86,4],fa:[89,4]},R:{ua:[80,72],fa:[-100,-6]},cyaw:-35},'fast'],[1,{L:HOLDS.bow.L,R:{ua:[10,10],fa:[30,8]}}]]};
   FOLK.MOVEP=KEYS;
-  const keyAt=(K,u)=>{ let i=0; for(;i<K.length-1&&u>K[i+1][0];i++); const a=K[i], c=K[Math.min(i+1,K.length-1)], w=c[0]>a[0]?Math.min(1,(u-a[0])/(c[0]-a[0])):1, e=c[2]==='fast'?1-Math.pow(1-w,3):w*w*(3-2*w), o={};
+  const keyAt=(K,u)=>{ '@later'; let i=0; for(;i<K.length-1&&u>K[i+1][0];i++); const a=K[i], c=K[Math.min(i+1,K.length-1)], w=c[0]>a[0]?Math.min(1,(u-a[0])/(c[0]-a[0])):1, e=c[2]==='fast'?1-Math.pow(1-w,3):w*w*(3-2*w), o={};
     for(const n of ['R','L']){ const A=a[1][n], B=c[1][n]; if(A||B){ const A2=A||B, B2=B||A; o[n]={ua:L2(A2.ua,B2.ua,e),fa:L2(A2.fa,B2.fa,e)}; } }
     for(const k of ['cyaw','bend','dz'])o[k]=lerp(a[1][k]||0,c[1][k]||0,e); return o; };
   const setArm=(P,n,q,u=1)=>{ if(!q)return; P[n].ua=L2(P[n].ua,[q.ua[0]*D,q.ua[1]*D],u); P[n].fa=L2(P[n].fa,[q.fa[0]*D,q.fa[1]*D],u); };
-  FOLK.drive=(N,c,dt,A,R,grip)=>{ const SR=N.SR; SR.target=c.mv>.3?1:0; RIG.step(SR,dt);
+  FOLK.drive=(N,c,dt,A,R,grip)=>{ '@later'; const SR=N.SR; SR.target=c.mv>.3?1:0; RIG.step(SR,dt);
     const P=RIG.walkPose(SR,null), t=c.t;
     // what is held: blades up before you, poles planted, a bow out in front; shields and held things in the left
     const H=grip==='blade'?HOLDS.blade:grip==='pole'?(R.w==='spear'?HOLDS.spear:HOLDS.pole):grip==='bow'?HOLDS.bow:null;

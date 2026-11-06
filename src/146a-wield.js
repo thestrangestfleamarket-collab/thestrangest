@@ -4,6 +4,7 @@ import {FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, VIT,
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
+import {BODIES} from './111a-bodies.js';
 import {BFLY} from './143-bfly.js';
 import {BIRDS} from './144b-birds.js';
 Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'}); Object.defineProperty(WIELD,'hand',{get:()=>st.hand==='L'?'L':'R'});
@@ -36,7 +37,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
-  const WIELD_strike0=()=>{ if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
+  const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
     if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
       VIT.spend(heavy?.12:.06); VIT.inFight(5); WIELD.swing={heavy,winded,t:now,ax:aim0.x,az:aim0.z}; sw={t:0,T:winded?.55:heavy?.42:.3,s:side,h:heavy}; ONLINE.send({t:'swing',s:side,h:heavy?1:0}); }
     else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
@@ -62,7 +63,8 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
   WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J, P=(p,o)=>o.set(p.x,p.y,p.z).applyMatrix4(G);
-    P(J_(J,'shoulder'),sh); P(J.pelvis,hip); P(J_(J,'elbow'),ax); P(J_(J,'palm'),base); ax.subVectors(P(J_(J,'wrist'),tip),ax).normalize();
+    const AH=BODIES.hand(WIELD.hand);   // (in your avatar's own hand)
+    P(AH?AH.shoulder:J_(J,'shoulder'),sh); P(J.pelvis,hip); P(AH?AH.elbow:J_(J,'elbow'),ax); P(AH?AH.palm:J_(J,'palm'),base); ax.subVectors(P(AH?AH.wrist:J_(J,'wrist'),tip),ax).normalize();
     const HV=VR.on&&VR.hand&&VR.hand(WIELD.hand==='L'?'left':'right'); WIELD.vel=HV?HV.v:null;   // in the headset the tool hangs from the controller: its forward is the shaft, its roll the face
     if(HV){ base.copy(HV.wp); ax.set(0,0,-1).applyQuaternion(HV.wq); bx2.set(1,0,0).applyQuaternion(HV.wq); } else { bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); } bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); if(m.tipL){ WIELD.tip.copy(m.tipL).applyMatrix4(M); if(m.bend)m.bend(); } head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
@@ -81,18 +83,18 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     if(!id){ if(shS){ shS=''; ONLINE.send({t:'aim',w:''}); } return; }
     const v=st.aim.v, a=[r2(v.x),r2(v.y),r2(v.z)], h=WIELD.hand, k=id+h+a.join(); if(shT>-1&&(shT>0||k===shS))return; shT=1/6; shS=k; ONLINE.send(h==='L'?{t:'aim',w:id,v:a,h}:{t:'aim',w:id,v:a}); };
   const gone=id=>{ const t=theirs.get(id); if(!t)return; t.m.removeFromParent(); t.m.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); theirs.delete(id); const o=ONLINE.others.get(id); if(o&&o.S)o.S.aim=null; };
-  ONLINE.hear.aim=m=>{ const w=typeof m.w==='string'&&(MK[m.w]||SWC[m.w]||KIND[m.w])?m.w:''; let t=theirs.get(m.id); if(!w||!ONLINE.others.has(m.id))return gone(m.id);
+  ONLINE.hear.aim=m=>{ '@later'; const w=typeof m.w==='string'&&(MK[m.w]||SWC[m.w]||KIND[m.w])?m.w:''; let t=theirs.get(m.id); if(!w||!ONLINE.others.has(m.id))return gone(m.id);
     if(!t||t.w!==w){ gone(m.id); t={w,h:'R',m:mk(w),v:new V3(0,-.3,1).normalize(),cur:new V3(0,-.3,1).normalize(),sw:null}; t.m.matrixAutoUpdate=false; t.m.userData.anyRoom=true; scene.add(LEVELS.own(t.m,'*')); theirs.set(m.id,t); }
     t.h=m.h==='L'?'L':'R'; { const o=ONLINE.others.get(m.id); if(o&&o.S)o.S.hand=t.h; }
     if(Array.isArray(m.v)){ t.v.set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||0); if(t.v.lengthSq()<1e-6)t.v.set(0,-.3,1); t.v.normalize(); } t.at=performance.now(); };
   ONLINE.hear.swing=m=>{ const t=theirs.get(m.id); if(t)t.sw={t:0,T:m.h?.42:.3,s:m.s<0?-1:1,h:!!m.h}; };
-  const draw=dt=>{ const now=performance.now();
+  const draw=dt=>{ '@later'; const now=performance.now();
     for(const [id,t] of theirs){ const o=ONLINE.others.get(id); if(!o||now-t.at>4000){ gone(id); continue; }
       const F=o.fig, ok=!!(F&&F.g.visible&&o.B&&o.B.J&&o.B.J['palm'+t.h]&&!(o.rag&&o.rag.b)&&!o.dead); t.m.visible=ok; if(!ok){ if(o.S)o.S.aim=null; continue; }
       A.copy(t.v); if(t.sw&&slash(A,t.sw,dt))t.sw=null;
       t.cur.lerp(A,1-Math.exp(-dt*(t.sw?40:20))).normalize(); o.S.aim={v:RIG.V(t.cur.x,t.cur.y,t.cur.z),w:1}; o.wantPose=true;
       F.g.updateMatrixWorld(true); const G=F.g.matrixWorld, J=o.B.J, P=(p,q)=>q.set(p.x,p.y,p.z).applyMatrix4(G), b=new V3(), e=new V3(), w=new V3(), x=new V3(), z=new V3();
-      P(J['elbow'+t.h],e); P(J['palm'+t.h],b); w.subVectors(P(J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
+      const AH=F.PM&&F.body&&BODIES.hand(t.h,F.PM,F.body,o.B); P(AH?AH.elbow:J['elbow'+t.h],e); P(AH?AH.palm:J['palm'+t.h],b); w.subVectors(P(AH?AH.wrist:J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
       t.m.matrix.makeBasis(x,w,z).setPosition(b); t.m.matrixWorld.copy(t.m.matrix); if(t.m.tipL)(t.tip||(t.tip=new V3())).copy(t.m.tipL).applyMatrix4(t.m.matrix); } };
   WIELD.theirTip=id=>{ const t=theirs.get(id); return t&&t.m.visible&&t.tip||null; };   // another player's held rod or kite: where its line starts
   WIELD.head=head; window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));

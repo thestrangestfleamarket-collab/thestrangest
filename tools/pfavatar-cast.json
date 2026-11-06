@@ -1,0 +1,790 @@
+{
+"aircrew-pilot-e6b732": [
+"AIRCREW PILOT",
+"WORLD WAR II"
+],
+"aquarium-service-technician-b1fc4f": [
+"AQUARIUM SERVICE TECHNICIAN",
+"OFFICE"
+],
+"armoured-knight-hero-07121f": [
+"ARMOURED KNIGHT HERO",
+"DUNGEON"
+],
+"arriving-hotel-guest-b03353": [
+"ARRIVING HOTEL GUEST",
+"CASINO"
+],
+"ashigaru-foot-soldier-806707": [
+"ASHIGARU FOOT SOLDIER",
+"MEDIEVAL JAPAN"
+],
+"astronaut-engineer-20b738": [
+"ASTRONAUT ENGINEER",
+"SPACE"
+],
+"astronaut-explorer-323482": [
+"ASTRONAUT EXPLORER",
+"SPACE"
+],
+"astronaut-scientist-47d733": [
+"ASTRONAUT SCIENTIST",
+"SPACE"
+],
+"backpacker-f56207": [
+"BACKPACKER",
+"CAMPGROUND"
+],
+"barista-505240": [
+"BARISTA",
+"CAFE"
+],
+"base-commander-0ec028": [
+"BASE COMMANDER",
+"SPACE"
+],
+"beginner-kid-skater-1ad8ab": [
+"BEGINNER KID SKATER",
+"SKATEPARK"
+],
+"bellhop-053c4d": [
+"BELLHOP",
+"CASINO"
+],
+"bench-researcher-d0f1b9": [
+"BENCH RESEARCHER",
+"LAB"
+],
+"blackjack-dealer-fc0ab1": [
+"BLACKJACK DEALER",
+"CASINO"
+],
+"bmx-rider-91f1b0": [
+"BMX RIDER",
+"SKATEPARK"
+],
+"buddhist-monk-39f498": [
+"BUDDHIST MONK",
+"MEDIEVAL JAPAN"
+],
+"cafe-customer-ca7e8e": [
+"CAFE CUSTOMER",
+"CAFE"
+],
+"cage-cashier-f76725": [
+"CAGE CASHIER",
+"CASINO"
+],
+"campfire-parent-b1c0d5": [
+"CAMPFIRE PARENT",
+"CAMPGROUND"
+],
+"carving-chef-102bf5": [
+"CARVING CHEF",
+"CASINO"
+],
+"casino-security-officer-adca27": [
+"CASINO SECURITY OFFICER",
+"CASINO"
+],
+"cheerleader-90875e": [
+"CHEERLEADER",
+"STADIUM"
+],
+"child-with-a-painted-b8a19f": [
+"CHILD WITH A PAINTED FACE",
+"DÍA DE MUERTOS"
+],
+"china-cueca-dancer-c1707a": [
+"CHINA CUECA DANCER",
+"FIESTAS PATRIAS"
+],
+"chinchinero-2cc296": [
+"CHINCHINERO",
+"FIESTAS PATRIAS"
+],
+"city-commuter-52a53f": [
+"CITY COMMUTER",
+"FUTURE CITY"
+],
+"civic-security-officer-30b6fb": [
+"CIVIC SECURITY OFFICER",
+"FUTURE CITY"
+],
+"clean-room-technician-da290a": [
+"CLEAN-ROOM TECHNICIAN",
+"LAB"
+],
+"cocktail-server-eb211b": [
+"COCKTAIL SERVER",
+"CASINO"
+],
+"commuter-381e7f": [
+"COMMUTER",
+"CITY"
+],
+"construction-worker-c1ad8c": [
+"CONSTRUCTION WORKER",
+"CITY"
+],
+"cove-trader-0f94a6": [
+"COVE TRADER",
+"PIRATES"
+],
+"crane-banksman-3994e0": [
+"CRANE BANKSMAN",
+"CONSTRUCTION"
+],
+"crossing-keeper-e13207": [
+"CROSSING KEEPER",
+"RAILWAY"
+],
+"daimyo-lord-78364a": [
+"DAIMYO LORD",
+"MEDIEVAL JAPAN"
+],
+"delivery-courier-327e30": [
+"DELIVERY COURIER",
+"CITY"
+],
+"diner-waitress-60f6a1": [
+"DINER WAITRESS",
+"ROADSIDE"
+],
+"doctor-d49de0": [
+"DOCTOR",
+"HOSPITAL"
+],
+"doorman-3f2e09": [
+"DOORMAN",
+"CITY"
+],
+"dragon-rider-apprentice-dee2cd": [
+"DRAGON RIDER APPRENTICE",
+"DRAGON'S LAIR"
+],
+"dragon-slayer-91ab39": [
+"DRAGON SLAYER",
+"DRAGON'S LAIR"
+],
+"egg-poacher-428c56": [
+"EGG POACHER",
+"DRAGON'S LAIR"
+],
+"el-catr-n-be48ea": [
+"EL CATRÍN",
+"DÍA DE MUERTOS"
+],
+"engine-driver-1ba1e2": [
+"ENGINE DRIVER",
+"RAILWAY"
+],
+"family-road-tripper-247570": [
+"FAMILY ROAD-TRIPPER",
+"ROADSIDE"
+],
+"farmer-304a43": [
+"FARMER",
+"FARM"
+],
+"farmer-363820": [
+"FARMER",
+"MEDIEVAL JAPAN"
+],
+"field-medic-fd8919": [
+"FIELD MEDIC",
+"WORLD WAR II"
+],
+"firefighter-b13b36": [
+"FIREFIGHTER",
+"CITY"
+],
+"fireman-96bf23": [
+"FIREMAN",
+"RAILWAY"
+],
+"fisherman-in-waders-6dc25e": [
+"FISHERMAN IN WADERS",
+"BOARDWALK"
+],
+"flight-attendant-befaf4": [
+"FLIGHT ATTENDANT",
+"AIRPORT"
+],
+"flower-vendor-bc708b": [
+"FLOWER VENDOR",
+"DÍA DE MUERTOS"
+],
+"forest-ranger-6906b0": [
+"FOREST RANGER",
+"FOREST"
+],
+"front-desk-clerk-99f0c2": [
+"FRONT DESK CLERK",
+"CASINO"
+],
+"game-master-2b8912": [
+"GAME MASTER",
+"FANTASY"
+],
+"gas-station-attendant-38bd86": [
+"GAS STATION ATTENDANT",
+"ROADSIDE"
+],
+"goalkeeper-10017a": [
+"GOALKEEPER",
+"STADIUM"
+],
+"goblin-2461c8": [
+"GOBLIN",
+"DUNGEON"
+],
+"graduate-in-gown-c72050": [
+"GRADUATE IN GOWN",
+"UNIVERSITY"
+],
+"graduate-student-945ef0": [
+"GRADUATE STUDENT",
+"LAB"
+],
+"graffiti-artist-2deb3d": [
+"GRAFFITI ARTIST",
+"SKATEPARK"
+],
+"grandmother-in-a-rebozo-4d5190": [
+"GRANDMOTHER IN A REBOZO",
+"DÍA DE MUERTOS"
+],
+"gridiron-player-9d4168": [
+"GRIDIRON PLAYER",
+"STADIUM"
+],
+"groundskeeper-3e5578": [
+"GROUNDSKEEPER",
+"UNIVERSITY"
+],
+"groundskeeper-71be56": [
+"GROUNDSKEEPER",
+"STADIUM"
+],
+"groundworker-083f5c": [
+"GROUNDWORKER",
+"CONSTRUCTION"
+],
+"guard-bfa819": [
+"GUARD",
+"RAILWAY"
+],
+"hanga-roa-fisherman-e56812": [
+"HANGA ROA FISHERMAN",
+"RAPA NUI"
+],
+"high-roller-9d0aa1": [
+"HIGH ROLLER",
+"CASINO"
+],
+"highway-patrol-officer-e81282": [
+"HIGHWAY PATROL OFFICER",
+"ROADSIDE"
+],
+"hiker-3d1a41": [
+"HIKER",
+"FOREST"
+],
+"hiker-visitor-d10aa5": [
+"HIKER VISITOR",
+"RAPA NUI"
+],
+"holidaymaker-in-a-sun-2ba5e5": [
+"HOLIDAYMAKER IN A SUN HAT",
+"BOARDWALK"
+],
+"hooded-cultist-8a488f": [
+"HOODED CULTIST",
+"DUNGEON"
+],
+"huaso-c4847f": [
+"HUASO",
+"FIESTAS PATRIAS"
+],
+"infantry-rifleman-c1c0a5": [
+"INFANTRY RIFLEMAN",
+"WORLD WAR II"
+],
+"kid-in-a-bedsheet-f9c403": [
+"KID IN A BEDSHEET GHOST COSTUME",
+"HALLOWEEN"
+],
+"kid-in-a-black-2e5f87": [
+"KID IN A BLACK CAT COSTUME",
+"HALLOWEEN"
+],
+"kid-in-a-caped-663f11": [
+"KID IN A CAPED HERO COSTUME",
+"HALLOWEEN"
+],
+"kid-in-a-cardboard-670f7d": [
+"KID IN A CARDBOARD ROBOT COSTUME",
+"HALLOWEEN"
+],
+"kid-in-a-pumpkin-169f79": [
+"KID IN A PUMPKIN COSTUME",
+"HALLOWEEN"
+],
+"kid-in-a-skeleton-6bb49d": [
+"KID IN A SKELETON SUIT",
+"HALLOWEEN"
+],
+"kid-witch-01c770": [
+"KID WITCH",
+"HALLOWEEN"
+],
+"kid-with-a-flashlight-1a9e4c": [
+"KID WITH A FLASHLIGHT",
+"CAMPGROUND"
+],
+"kite-kid-0a7d70": [
+"KITE KID",
+"FIESTAS PATRIAS"
+],
+"la-catrina-b427ca": [
+"LA CATRINA",
+"DÍA DE MUERTOS"
+],
+"lake-angler-1c4740": [
+"LAKE ANGLER",
+"CAMPGROUND"
+],
+"lifeguard-321302": [
+"LIFEGUARD",
+"BOARDWALK"
+],
+"lift-operator-899cf8": [
+"LIFT OPERATOR",
+"ALPINE"
+],
+"longboarder-0ea806": [
+"LONGBOARDER",
+"SKATEPARK"
+],
+"lounge-bartender-9d425a": [
+"LOUNGE BARTENDER",
+"CASINO"
+],
+"lounge-crooner-ad77ec": [
+"LOUNGE CROONER",
+"CASINO"
+],
+"maintenance-technician-4bcfb8": [
+"MAINTENANCE TECHNICIAN",
+"FUTURE CITY"
+],
+"merchant-6f606b": [
+"MERCHANT",
+"MEDIEVAL VILLAGE"
+],
+"motel-clerk-950c39": [
+"MOTEL CLERK",
+"ROADSIDE"
+],
+"mountaineer-13df29": [
+"MOUNTAINEER",
+"ALPINE"
+],
+"naval-officer-93027f": [
+"NAVAL OFFICER",
+"PIRATES"
+],
+"neighborhood-child-8cc5ac": [
+"NEIGHBORHOOD CHILD",
+"NEIGHBOURHOOD"
+],
+"neighbour-handing-out-candy-2c1159": [
+"NEIGHBOUR HANDING OUT CANDY",
+"HALLOWEEN"
+],
+"orc-brute-08c6ca": [
+"ORC BRUTE",
+"DUNGEON"
+],
+"organillero-67b687": [
+"ORGANILLERO",
+"FIESTAS PATRIAS"
+],
+"outfield-player-2b742a": [
+"OUTFIELD PLAYER",
+"STADIUM"
+],
+"outlaw-e0fd6a": [
+"OUTLAW",
+"FRONTIER"
+],
+"paramedic-b0f358": [
+"PARAMEDIC",
+"HOSPITAL"
+],
+"parent-chaperone-79e535": [
+"PARENT CHAPERONE",
+"HALLOWEEN"
+],
+"park-ranger-c1697e": [
+"PARK RANGER",
+"CAMPGROUND"
+],
+"parrilla-cook-255918": [
+"PARRILLA COOK",
+"FIESTAS PATRIAS"
+],
+"passenger-ac425a": [
+"PASSENGER",
+"RAILWAY"
+],
+"patient-in-gown-fdab75": [
+"PATIENT IN GOWN",
+"HOSPITAL"
+],
+"pirate-captain-91f545": [
+"PIRATE CAPTAIN",
+"PIRATES"
+],
+"pirate-deckhand-98a6e7": [
+"PIRATE DECKHAND",
+"PIRATES"
+],
+"piste-patroller-cef4c2": [
+"PISTE PATROLLER",
+"ALPINE"
+],
+"pit-boss-234a94": [
+"PIT BOSS",
+"CASINO"
+],
+"platelayer-47dbe6": [
+"PLATELAYER",
+"RAILWAY"
+],
+"player-in-a-cardigan-b558c9": [
+"PLAYER IN A CARDIGAN",
+"FANTASY"
+],
+"player-in-flannel-d0bae4": [
+"PLAYER IN FLANNEL",
+"FANTASY"
+],
+"poker-pro-da0258": [
+"POKER PRO",
+"CASINO"
+],
+"police-officer-1cc379": [
+"POLICE OFFICER",
+"CITY"
+],
+"pool-guest-78b655": [
+"POOL GUEST",
+"CASINO"
+],
+"porter-e4e566": [
+"PORTER",
+"RAILWAY"
+],
+"preacher-a49199": [
+"PREACHER",
+"FRONTIER"
+],
+"professor-14dc4d": [
+"PROFESSOR",
+"UNIVERSITY"
+],
+"prospector-69a481": [
+"PROSPECTOR",
+"FRONTIER"
+],
+"pumpkin-stand-keeper-77ced9": [
+"PUMPKIN STAND KEEPER",
+"HALLOWEEN"
+],
+"pupil-seated-597f54": [
+"PUPIL GIRL",
+"SCHOOL"
+],
+"pupil-standing-0bd6d5": [
+"PUPIL STANDING",
+"SCHOOL"
+],
+"railway-carter-971897": [
+"RAILWAY CARTER",
+"RAILWAY"
+],
+"referee-9e9e73": [
+"REFEREE",
+"STADIUM"
+],
+"roller-skater-841ec1": [
+"ROLLER SKATER",
+"SKATEPARK"
+],
+"room-attendant-a5a309": [
+"ROOM ATTENDANT",
+"CASINO"
+],
+"salaryman-commuter-4170c1": [
+"SALARYMAN COMMUTER",
+"JAPANESE STREET"
+],
+"saloon-keeper-5eed40": [
+"SALOON KEEPER",
+"FRONTIER"
+],
+"samurai-warrior-f2ebbe": [
+"SAMURAI WARRIOR",
+"MEDIEVAL JAPAN"
+],
+"school-caretaker-b49fae": [
+"SCHOOL CARETAKER",
+"SCHOOL"
+],
+"school-student-385134": [
+"SCHOOL STUDENT",
+"JAPANESE STREET"
+],
+"school-teacher-8b8bfc": [
+"SCHOOL TEACHER",
+"SCHOOL"
+],
+"schoolkid-da94c1": [
+"SCHOOLKID",
+"CITY"
+],
+"scooter-kid-28cff9": [
+"SCOOTER KID",
+"SKATEPARK"
+],
+"scuba-diver-bdd1c8": [
+"SCUBA DIVER",
+"CORAL REEF"
+],
+"seated-office-worker-854671": [
+"SEATED OFFICE WORKER",
+"OFFICE"
+],
+"senior-scientist-631736": [
+"SENIOR SCIENTIST",
+"LAB"
+],
+"service-robot-93f82e": [
+"SERVICE ROBOT",
+"SPACE"
+],
+"shambling-ghoul-256f2f": [
+"SHAMBLING GHOUL",
+"DUNGEON"
+],
+"sheriff-986181": [
+"SHERIFF",
+"FRONTIER"
+],
+"shopkeeper-be5547": [
+"SHOPKEEPER",
+"JAPANESE STREET"
+],
+"showgirl-5bfa7a": [
+"SHOWGIRL",
+"CASINO"
+],
+"shunter-f25d24": [
+"SHUNTER",
+"RAILWAY"
+],
+"shuttle-pilot-067166": [
+"SHUTTLE PILOT",
+"SPACE"
+],
+"signalman-c561d7": [
+"SIGNALMAN",
+"RAILWAY"
+],
+"site-manager-d60b95": [
+"SITE MANAGER",
+"CONSTRUCTION"
+],
+"skate-coach-53be7d": [
+"SKATE COACH",
+"SKATEPARK"
+],
+"skate-filmer-b9d393": [
+"SKATE FILMER",
+"SKATEPARK"
+],
+"skate-shop-owner-137ca9": [
+"SKATE SHOP OWNER",
+"SKATEPARK"
+],
+"skeleton-mariachi-c1b4d5": [
+"SKELETON MARIACHI",
+"DÍA DE MUERTOS"
+],
+"skier-e7ad44": [
+"SKIER",
+"ALPINE"
+],
+"slot-tourist-08b37d": [
+"SLOT TOURIST",
+"CASINO"
+],
+"spectator-d086fe": [
+"SPECTATOR",
+"STADIUM"
+],
+"squad-officer-e5c52b": [
+"SQUAD OFFICER",
+"WORLD WAR II"
+],
+"stage-magician-2ecd48": [
+"STAGE MAGICIAN",
+"CASINO"
+],
+"standing-worker-on-a-8a0f9a": [
+"STANDING WORKER ON A CALL",
+"OFFICE"
+],
+"station-master-1d6a0a": [
+"STATION MASTER",
+"RAILWAY"
+],
+"steel-erector-124bef": [
+"STEEL ERECTOR",
+"CONSTRUCTION"
+],
+"street-skater-4ee28b": [
+"STREET SKATER",
+"SKATEPARK"
+],
+"street-vendor-139de3": [
+"STREET VENDOR",
+"CITY"
+],
+"student-in-a-hoodie-7c8223": [
+"STUDENT IN A HOODIE",
+"UNIVERSITY"
+],
+"student-with-backpack-65d2b4": [
+"STUDENT WITH BACKPACK",
+"UNIVERSITY"
+],
+"suburban-resident-a9db9c": [
+"SUBURBAN RESIDENT",
+"NEIGHBOURHOOD"
+],
+"surgeon-in-scrubs-4f1360": [
+"SURGEON IN SCRUBS",
+"HOSPITAL"
+],
+"surveyor-82e5c7": [
+"SURVEYOR",
+"CONSTRUCTION"
+],
+"swimmer-in-a-wetsuit-9fca8f": [
+"SWIMMER IN A WETSUIT",
+"BOARDWALK"
+],
+"tapati-dancer-5557aa": [
+"TAPATI DANCER",
+"RAPA NUI"
+],
+"team-mascot-abf426": [
+"TEAM MASCOT",
+"STADIUM"
+],
+"teen-player-37865e": [
+"TEEN PLAYER",
+"FANTASY"
+],
+"teen-zombie-b5bb27": [
+"TEEN ZOMBIE",
+"HALLOWEEN"
+],
+"touchline-manager-13a94b": [
+"TOUCHLINE MANAGER",
+"STADIUM"
+],
+"tour-guide-1b0428": [
+"TOUR GUIDE",
+"UNIVERSITY"
+],
+"townswoman-5aa87f": [
+"TOWNSWOMAN",
+"FRONTIER"
+],
+"townswoman-5ca8b5": [
+"TOWNSWOMAN",
+"MEDIEVAL JAPAN"
+],
+"tradesman-1707b9": [
+"TRADESMAN",
+"MEDIEVAL VILLAGE"
+],
+"trainspotter-ffd141": [
+"TRAINSPOTTER",
+"RAILWAY"
+],
+"trucker-9266a8": [
+"TRUCKER",
+"ROADSIDE"
+],
+"uniformed-floor-guard-d06c03": [
+"UNIFORMED FLOOR GUARD",
+"CASINO"
+],
+"valet-attendant-c351e6": [
+"VALET ATTENDANT",
+"CASINO"
+],
+"vert-skater-972639": [
+"VERT SKATER",
+"SKATEPARK"
+],
+"veteran-pool-skater-2c63ab": [
+"VETERAN POOL SKATER",
+"SKATEPARK"
+],
+"village-child-bef09e": [
+"VILLAGE CHILD",
+"SALVAGE"
+],
+"village-engineer-a44949": [
+"VILLAGE ENGINEER",
+"SALVAGE"
+],
+"village-gardener-9f7af6": [
+"VILLAGE GARDENER",
+"SALVAGE"
+],
+"village-guard-5f0f6f": [
+"VILLAGE GUARD",
+"MEDIEVAL VILLAGE"
+],
+"village-mechanic-508a0a": [
+"VILLAGE MECHANIC",
+"SALVAGE"
+],
+"villager-40255c": [
+"MALE VILLAGER",
+"MEDIEVAL VILLAGE"
+],
+"visitor-with-badge-1005a3": [
+"VISITOR WITH BADGE",
+"OFFICE"
+],
+"waiter-73dab1": [
+"WAITER",
+"CAFE"
+],
+"ward-nurse-84b61d": [
+"WARD NURSE",
+"HOSPITAL"
+],
+"waving-child-dfada0": [
+"WAVING CHILD",
+"RAILWAY"
+]
+}

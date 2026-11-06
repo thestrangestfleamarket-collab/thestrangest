@@ -88,7 +88,7 @@ PHX.parts.push({make:K=>{ '@playhouse';
     const order=['work','preset','dusk','court','lovers','helena','wood','shop','shopNight','flats','call','out']; let k=0;
     K.thing('THE LIGHTING BOARD',x,y+.9,z,1.3,.7,.8,()=>{ if(PHX.show&&PHX.show.running&&PHX.show.running())return; k=(k+1)%order.length; LX.cue(order[k],2.5); SAY('LIGHTS: '+order[k].toUpperCase()); },{reach:1.8,near:3}); K.solid(x-.65,z-.4,x+.65,z+.4); }
 },
-tick:(dt,K,now,inn)=>{ const LX=K.lx; if(!LX)return; LX.t+=dt; const ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+tick:(dt,K,now,inn)=>{ '@later'; const LX=K.lx; if(!LX)return; LX.t+=dt; const ease=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
   for(const c of Object.values(LX.ch)){ if(!c.from)continue; const k=ease((LX.t-c.t0)/c.dur); c.v=c.from.v+(c.to.v-c.from.v)*k; c.c.copy(c.from.c).lerp(c.to.c,k); if(k>=1)c.from=null; }
   const C=LX.ch, flick=1+.04*Math.sin(LX.t*23)*Math.sin(LX.t*7.3);
   PHX.houseLevel=C.house.v;

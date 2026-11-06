@@ -25,17 +25,28 @@ Risk is noted only when it isn't low.
 6. **Then the grouped polish passes** (each one pull request): the bath room, the clothes, one tree pass, the skate park in Section B,
    the shop insides with their windows, the moves.
 
+## The new map (owner, 6 Nov 2026: "ok lets go"; HISTORY "the new map", `mockups/newmap.svg`)
+
+One pull request each, in this order; the game stays playable after every one.
+- [x] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`, `row:2`), the way to the Hudson 22 m wide on the park gate, the alley's gates at the path, the places leaving the map gone from the level file. The new skill shops stand with their keepers; their insides are empty until job 4. The bar is shut (garages on its lot) until job 7.
+- [x] **1b. Forcefields and the fading backdrop** · P1 · L · code · done 6 Nov (`edge` in data/world.json: lines and runs). At every edge of the map: a forcefield you can't pass, and past it more apartments, park, lake and river fading out (seen, never walked, cheap).
+- [ ] **2. The apartment street** · P1 · L · code. Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
+- [ ] **3. The Hudson** · P2 · L · code. The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
+- [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
+- [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
+- [ ] **6. The park's made things** · P2 · L · code. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
+- [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
+
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
-the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
+the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-VR on the Quest 3 (and the painter in it).
+VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).
 
 **To pick** (one batch; each line is in its area below):
 draw distance (one control or two, and the default) · tree shadows (option 1, 2 or 3, after the re-measure) · tree crowns (A–F) and trees
-by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the tee in one
-piece · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
+by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
@@ -45,6 +56,7 @@ the physics extras (darts now twice at the bar) · NPC voices (lifts the
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Market St and West St, the rest (owner, 5 Nov)** · P1 · L · code. After the re-lay (#631, merged): the old shops' outsides as their Polyfork buildings (bank, bar, theatre, playhouse, arcade, art, bodega, bath); two flats a floor and the whole-floor penthouse for sale (a number maps to house, floor, flat; the shell's size); what the florist, tailor, barber, antiques, hotel, fish market and the outfitter sell (the outfitter: every skill's gear); the Museum of Earth's lot. The row has no room for 8 m garages: ask the owner about opening Market St west of West St.
 - [ ] **Run the full checks on `main` once** · P1 · S · check. Start the workflow on `main` with `full`. No full run exists since 4 Nov:
   #576 and other merges went in after the last `main` run (6dfc80f5, 16:05 UTC), and the skate park's tricks (#552) passed CI only on
   their pull request. The run also confirms lines that look fixed (close each if it passes):
@@ -185,7 +197,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 - [ ] **A ghost's revival at the end of the bath countdown** · P3 · S · look. The countdown and its reset on stepping out work; the moment at
   zero (`back()` in `src/103a-death.js:30`, alive where you stand) was never seen. Die, walk in, wait 10 s on the live site; or add the
   step to `tests/places.cjs`, which enters the bath.
-- [ ] **THE BOOKSTORE: 100 public-domain books** · P2 · L · pick + code. Owner, 5 Nov 2026: "i want to add a bookstore in game that has 100
+- [x] **THE BOOKSTORE: 100 public-domain books** · P2 · L · pick + code. Owner, 5 Nov 2026: "i want to add a bookstore in game that has 100
   of the most popular public books. each book will have the real cover and spine of the real book. the book content doesnt download until
   the player opens the book. - add this to a queue of things we will add". Picks first: where it stands, the 100 titles, and which covers
   (first-edition covers are free; most modern ones are not). The text (Project Gutenberg) hosted with the game, fetched only on opening;
@@ -218,6 +230,7 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
   planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
 - [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).
@@ -349,16 +362,22 @@ One tree pass after the tree-shadow pick (more leaves mean more shadow triangles
 ## Clothes and the Walker
 
 One clothes review for the owner, then one pull request; portraits with `node tests/clothes.cjs dist/market.html <dir>`.
-- [ ] **The jeans in play** · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
+- [x] **The jeans in play** (dropped 5 Nov: the Walker is removed, the avatar is the only body) · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
 - [ ] **The shoes key M sits next to the map (Shift+M)** · P2 · S · pick. 2 Nov: his feet went bare, likely from pressing M for the map
   (barefoot matters for foraging). `shoes:'m'` in `src/094-ui.js:25`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; he picks the
   key. Update the keys list with it.
-- [ ] **Clothes leftovers** · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
+- [x] **Clothes leftovers** (dropped 5 Nov: the Walker is removed) · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
   jeans' seat back stays with the hips, `ks` in `MAKE.pants`, `src/072b-garb.js:159`); his forearm passes through the jeans at the hip when
   his arm swings behind him; stray pixels near the hips on some walking frames. The new Mesh2Motion poses may show more.
-- [ ] **The tee in one piece, like the jeans** · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
+- [x] **The tee in one piece, like the jeans** (dropped 5 Nov: the Walker is removed) · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
   tube with set-in sleeves that overlap at the shoulder (`MAKE.shirt`, `src/072b-garb.js:128`). Only if he wants it (no seam showed in any
   portrait), and after the jeans' yes.
+- [x] **The Polyfork avatar** (done 5 Nov) · P1 · L · code. AVATAR on YOU's BODY row (`src/111c-avatar.js`, `tests/avatar.cjs`; bake: `node tools/pfavatar-bake.mjs`
+  then `python3 tools/pfavatar-pack.py`, the adult cast's Polyfork modules in `.polyfork/mods/`). YOU redone around it (tabs, `LOOKS.add`). Waits for his look and yes.
+- [x] **The whole cast's wardrobe** (done 5 Nov) · P2 · M · code. Every garment Polyfork's cast wears, one each, plus BACK and both hands. Waits for his look and yes.
+- [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
+- [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
+  held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
 
 ## Moves (Mesh2Motion)
 

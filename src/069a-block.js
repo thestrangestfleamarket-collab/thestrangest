@@ -50,8 +50,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     solid(o.x0,o.y0,o.x1,o.y1,o.h); BLK.blds.push({...o,mesh:m}); return m; }
   const gy=(x,y)=>MODS.bodega&&MODS.bodega.ground?MODS.bodega.ground(XS(x),ZS(y)):0;
   const quad=(P,U,I,a,b,c,d,ua,ub,uc,ud)=>{ const o=P.length/3; P.push(...a,...b,...c,...d); U.push(...ua,...ub,...uc,...ud); I.push(o,o+1,o+2,o,o+2,o+3); };
-  const mesh=(P,U,I,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.receiveShadow=true; G.add(me); PEEK.whole(me); return me; };
-  const lotPaint=(q,g,w,h)=>{ const R=(a,b)=>a+rnd()*(b-a), toC=(x,y)=>[(x-q.x0)*24,(q.y1-y)*24];
+  const mesh=(P,U,I,mat)=>{ '@later'; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2)); g.setIndex(I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.receiveShadow=true; G.add(me); PEEK.whole(me); return me; };
+  const lotPaint=(q,g,w,h)=>{ '@later'; const R=(a,b)=>a+rnd()*(b-a), toC=(x,y)=>[(x-q.x0)*24,(q.y1-y)*24];
     if(q.kind==='park'){ g.fillStyle='#3e4044'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/40;k++){ const v=50+rnd()*30|0; g.fillStyle=`rgb(${v},${v+1},${v+4})`; g.fillRect(R(0,w)|0,R(0,h)|0,1,1); }
       for(let k=0;k<4;k++){ g.fillStyle='rgba(20,20,24,.35)'; g.beginPath(); g.ellipse(R(0,w),R(0,h),R(8,26),R(5,14),0,0,7); g.fill(); }
       g.fillStyle='#d9d6c8'; const sp=2.6*24, len=5*24;
@@ -60,20 +60,21 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     else { g.fillStyle='#5e5040'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/30;k++){ const v=rnd(); g.fillStyle=v<.5?'#6e5e4a':v<.8?'#4e4234':'#7a6a54'; g.fillRect(R(0,w)|0,R(0,h)|0,2,2); }
       for(let k=0;k<w*h/260;k++){ const x=R(2,w-2), y=R(2,h-2), c=['#5a7a32','#6e8e3a','#48682a','#7e9a44'][rnd()*4|0]; g.fillStyle=c; for(let t=0;t<5;t++)g.fillRect(x+R(-3,3),y+R(-4,1),1,R(3,6)); }
       for(let k=0;k<3;k++){ g.fillStyle=['#b8b4a8','#8a3a2a','#3a5a7a'][k]; g.fillRect(R(6,w-12)|0,R(6,h-12)|0,R(3,7)|0,R(2,4)|0); } } };
-  function lot(q){ const W=q.x1-q.x0, D=q.y1-q.y0, c=cv(W*24,D*24); lotPaint(q,c.getContext('2d'),c.width,c.height);
+  function lot(q){ '@later'; const W=q.x1-q.x0, D=q.y1-q.y0, c=cv(W*24,D*24); lotPaint(q,c.getContext('2d'),c.width,c.height);
     const P=[], U=[], I=[], y=.02*T, v=(x,yy)=>[XS(x),gy(x,yy)+y,ZS(yy)];
     quad(P,U,I,v(q.x0,q.y0),v(q.x1,q.y0),v(q.x1,q.y1),v(q.x0,q.y1),[0,0],[1,0],[1,1],[0,1]);
     mesh(P,U,I,new THREE.MeshLambertMaterial({map:tex(c),side:THREE.DoubleSide}));
     BLK.lots.push(q); }
   const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
-  const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };
-  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // the Hudson row (row 2) is all closed garages (owner)
+  const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a>=a1)break; if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };   // (only the stretch a0..a1: a span past its end leaves no gap)
+  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row (row 1, owner 5 Nov 2026: one shut garage between every two shops) and the Hudson row (row 2) are all closed garages
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
   for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[]),B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
+  for(const p of LEVEL.places)if(p.kind==='lot'&&p.row===2)lot({x0:p.x0,x1:p.x1,y0:B.row2[0],y1:B.row2[1],kind:'empty',row:2,side:'s'});   // the Hudson row's open lots (the fish market's tables, the flea market's), 6 Nov 2026
   for(const [a0,b0] of [[B.x0,-62.4],[-33.6,B.hudson[0]],[B.hudson[1],B.x1]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
   { const F=RING.wx0; for(const [a,b] of holes(LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
@@ -82,5 +83,13 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
       w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
+  // the new map's backdrop near its edges (owner, 6 Nov 2026: "they see more apt buildings until it fades out"): the first blocks past each edge built as the street's are, brick with windows lit at night; further on the far city's hazed blocks carry on (134-skyline)
+  BLK.back=[]; { const E=LEVEL.edge||{}, NEAR=E.near||60;
+    const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});
+      const FZ=L(face(W,o.h,{k:o.k,tint:o.tint,lit:.24,nodoor:1})), FX=L(face(D,o.h,{k:o.k+7,tint:o.tint,lit:.24,nodoor:1}));
+      const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),[FX,FX,roofM,roofM,FZ,FZ]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.receiveShadow=true; m.raycast=()=>{}; G.add(m); PEEK.whole(m); BLK.back.push({...o,mesh:m}); };
+    let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0), end=a0+dir*Math.min(Math.abs(a1-a0),NEAR); let p=a0;
+      while((end-p)*dir>2){ const w=Math.min(14+rnd()*8,Math.abs(end-p)), h=360+Math.floor(rnd()*3)*120, q1=p+dir*w, lo=Math.min(p,q1), hi=Math.max(p,q1);
+        back(ax==='x'?{x0:lo,x1:hi,y0:b0,y1:b1,h,k:900+k*13,tint:TINTS[k%TINTS.length]}:{x0:b0,x1:b1,y0:lo,y1:hi,h,k:900+k*13,tint:TINTS[k%TINTS.length]}); k++; p=q1+dir*1.2; } } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

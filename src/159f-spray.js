@@ -24,7 +24,7 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
   sp.style.cssText='position:fixed;right:18px;top:18px;z-index:21;width:300px;padding:12px;box-sizing:border-box;font:11px Silkscreen,monospace;color:#ece5d3;background:rgba(16,18,26,.92);border:2px solid #2a2e3a;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')SPRAY.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());
   const hex=i=>'#'+COL[i].toString(16).padStart(6,'0');
-  const draw=()=>{ if(sp.hidden)return; const L=SPRAY.left(SPRAY.id), pc=Math.round(L/(PER[SPRAY.id]||1)*100);
+  const draw=()=>{ '@later'; if(sp.hidden)return; const L=SPRAY.left(SPRAY.id), pc=Math.round(L/(PER[SPRAY.id]||1)*100);
     sp.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="color:#f2c14e;font-size:13px">${SPRAY.id==='spray_gold'?'GOLD':'SILVER'} SPRAY PAINT</span><span style="color:#8a8a92">256 COLOURS</span><button class="pX" style="font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:2px 6px;cursor:pointer">X</button></div>
       <div style="display:grid;grid-template-columns:repeat(16,16px);gap:1px;background:#0b0d12;padding:3px">${COL.map((c,i)=>`<div data-c="${i}" tabindex="0" role="button" title="${i}" style="width:16px;height:16px;cursor:pointer;background-color:${hex(i)};${i===SPRAY.c?'outline:2px solid #fff;outline-offset:-1px':''}"></div>`).join('')}</div>
       <div style="display:flex;justify-content:space-between;margin-top:8px"><span>COLOUR <span style="display:inline-block;width:12px;height:12px;background:${hex(SPRAY.c)};vertical-align:middle"></span> 0x${SPRAY.c.toString(16).toUpperCase().padStart(2,'0')}</span><span>CAN <span style="color:${pc>20?'#7dffa8':'#e5403a'}">${pc}%</span></span></div>
@@ -33,15 +33,15 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
       <div style="color:#8a8a92;margin-top:8px;line-height:1.7">HOLD THE MOUSE ON A WALL OR THE FLOOR TO SPRAY<br>WHEEL: WIDTH · ESC: PUT THE CAN AWAY</div>`;
     sp.querySelector('.pX').onclick=()=>SPRAY.close(); sp.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ SPRAY.c=+b.dataset.c; end(); draw(); }); sp.querySelector('[data-w]').oninput=e=>{ SPRAY.w=+e.target.value*T; }; };
   let cur=null, down=false;
-  const end=()=>{ if(cur&&cur.p.length){ const k='tag:'+(SECTION.id)+':'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); mine.add(k);
+  const end=()=>{ '@later'; if(cur&&cur.p.length){ const k='tag:'+(SECTION.id)+':'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); mine.add(k);
       ONLINE.put(k,JSON.stringify({o:cur.o.toArray().map(v=>+v.toFixed(2)),n:cur.n.toArray().map(v=>+v.toFixed(3)),c:cur.c,w:+cur.w.toFixed(3),p:cur.p.map(v=>Math.round(v*100)).join(',')})); } cur=null; };
   const out=()=>{ say('THE CAN IS EMPTY. THE BODEGA SELLS MORE.','#e5403a'); FORAGE.take(SPRAY.id,1); FORAGE.draw(); SPRAY.close(); };
-  SPRAY.at=(p,n)=>{ if(!SPRAY.on)return false; if(SPRAY.left(SPRAY.id)<=0){ out(); return false; } n=n.clone().normalize();
+  SPRAY.at=(p,n)=>{ '@later'; if(!SPRAY.on)return false; if(SPRAY.left(SPRAY.id)<=0){ out(); return false; } n=n.clone().normalize();
     if(!cur||cur.n.dot(n)<.95||cur.p.length>=400||p.distanceTo(cur.o)>6*T){ end(); cur={o:p.clone(),n:n.clone(),c:SPRAY.c,w:SPRAY.w,p:[],ab:basis(n)}; }
     const d=p.clone().sub(cur.o), u=d.dot(cur.ab[0]), v=d.dot(cur.ab[1]), L=cur.p.length; if(L>=2&&Math.hypot(u-cur.p[L-2],v-cur.p[L-1])<cur.w*.45)return true;
     cur.p.push(u,v); C.setHex(COL[cur.c]); put(p,n,cur.w,C); if(use(SPRAY.id,1)<=0)out(); else if(cur.p.length%20===0)draw(); return true; };
   const cv=renderer.domElement, ray=new THREE.Raycaster();
-  const hitAt=(x,y)=>{ const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),SHARED.cam); ray.far=14*T;
+  const hitAt=(x,y)=>{ '@later'; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-((y-r.top)/r.height*2-1)),SHARED.cam); ray.far=14*T;
     const L=scene.children.filter(o=>o.visible&&o!==IM&&o!==W3.group&&!o.userData.blob&&!o.isSprite&&!o.isLight&&!o.isCamera); const h=ray.intersectObjects(L,true).find(h=>h.face&&h.object!==IM&&!h.object.isSprite&&!(h.object.material&&h.object.material.transparent&&h.object.material.opacity<.6)); if(!h)return null;
     if(Math.hypot(h.point.x-pos.x,h.point.z-pos.z)>4*T)return null; const n=h.face.normal.clone().transformDirection(h.object.matrixWorld).normalize(); if(n.dot(ray.ray.direction)>0)n.negate(); return {p:h.point,n}; };
   cv.addEventListener('pointerdown',e=>{ if(!SPRAY.on||e.button!==0)return; e.preventDefault(); e.stopImmediatePropagation(); down=true; const h=hitAt(e.clientX,e.clientY); if(h)SPRAY.at(h.p,h.n); },true);

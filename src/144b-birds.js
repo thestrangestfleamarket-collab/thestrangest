@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
@@ -41,7 +42,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.computeVertexNormals(); return g; };
   const mk=g=>{ const me=new THREE.InstancedMesh(g,mat,MAXI); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(MAXI*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; scene.add(me); return me; };
   for(const [nm,parts,w] of PART){ if(w){ ME[nm+'R']=mk(geo(parts)); ME[nm+'L']=mk(geo(parts,1)); } else ME[nm]=mk(geo(parts)); }
-  BIRDS.make=k=>{ const P=K[k][7], g=new THREE.Group(), add=(nm,c,m)=>{ const o=new THREE.Mesh(ME[nm].geometry,INSPECT.mat(c,{flat:1})); o.userData.shared=true; if(m)o.applyMatrix4(m); g.add(o); };
+  BIRDS.make=k=>{ '@later'; const P=K[k][7], g=new THREE.Group(), add=(nm,c,m)=>{ const o=new THREE.Mesh(ME[nm].geometry,INSPECT.mat(c,{flat:1})); o.userData.shared=true; if(m)o.applyMatrix4(m); g.add(o); };
     for(const p of ['body','breast','head','cap','crest','mask','beak','eye','tail','leg']){ const c=p==='eye'?0x0a0a0a:P[p]; if(c!=null)add(p,c); }
     for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar'])if(P[p]!=null)add(p+s,P[p],new THREE.Matrix4().makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(new THREE.Matrix4().makeRotationZ(sg*.25)));
     g.rotation.y=-Math.PI/2; const w=new THREE.Group(); w.add(g); return w; };
@@ -50,7 +51,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   let TRIS=0; for(const k in ME)TRIS+=ME[k].geometry.attributes.position.count/3; BIRDS.tris=TRIS;
   const HB=new THREE.BoxGeometry(.55*T,.5*T,.55*T), HM=new THREE.MeshBasicMaterial({visible:false});
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
-  const CW=K.map(k=>k[5]), pickC=(r,deep)=>{ const W=CW.map((w,i)=>i>=10&&!deep?0:w), s=W.reduce((a,b)=>a+b,0); r*=s; for(let i=0;i<NK;i++)if((r-=W[i])<0)return i; return 0; };
+  const CW=K.map(k=>k[5]), TIER=k=>k>=10?'s':k>=5?'r':'c', pickC=(r,deep)=>{ const t=RARITY.pick(r,'bird'), tt=t==='s'&&!deep?'r':t, L=tt==='c'?[0,1,2,3,4]:tt==='r'?[5,6,7,8,9]:[10,11]; return L[Math.floor(((r*13.7)%1)*L.length)]; };   // a common, a rare and a super-rare tier (RARITY); the super-rare only deep in the park, once the Park Ranger ranks you high enough
   const flockN=(k,r)=>k<=2?2+Math.floor(r*4):k===4||k===9?1+Math.floor(r*2):1;
   const add=(k,x,y,z,o={})=>{ const hb=new THREE.Mesh(HB,HM); scene.add(hb); const b=Object.assign({k,x,y,z,yaw:Math.random()*6.28,pitch:0,st:'ground',t:Math.random()*5,until:1+Math.random()*3,wing:0,lift:0,hb,spots:[[x,y,z]],s:K[k][2]/1.2*WU*VIS},o);
     b.th={name:'A BIRD',obj:hb,reach:2*T,near:2.8*T,tall:.4*T,act:()=>BIRDS.menu(b)}; UI.thing(b.th); BIRDS.list.push(b); return b; };
@@ -151,7 +152,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const feather=(k,p)=>{ if(k!==HAWK&&Math.random()<p){ FORAGE.give('bird_feather',1); say('IT LEAVES A FEATHER BEHIND. YOU KEEP IT.','#e8e2cc'); } };
   const ACT={pickup:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT BE PICKED UP.','#c8a090'); if(Math.hypot(b.x-pos.x,b.z-pos.z)>1.3*T)return say('GET CLOSER, SLOWLY.','#c8a090'); const d=DIFF(b.k)+20;
       if(use('bird',d-25,d+25)){ if(!S.seen[b.k])log(b); feather(b.k,.3); makePet(b.k,b); say('IT SITS CALM IN YOUR HANDS.','#9fe07f'); } else { say('IT STARTLES AND FLIES OFF.','#c8a090'); flush(b); } },
-    watch:b=>{ const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus)){ log(b); feather(b.k,.1); WS={b,t:0,d,bonus}; say('YOU SETTLE IN TO WATCH IT. STAY CLOSE.','#9fe07f'); } else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
+    watch:b=>{ '@later'; const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus)){ log(b); feather(b.k,.1); WS={b,t:0,d,bonus}; say('YOU SETTLE IN TO WATCH IT. STAY CLOSE.','#9fe07f'); } else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
     tame:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE NATURE MERCHANT HAS IT).','#c8a090');
       FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
     catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE NATURE MERCHANT HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
@@ -176,7 +177,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     say('YOU SCATTER A HANDFUL OF SEED. STAND STILL AND THE BIRDS WILL COME.','#9fe07f'); };
   FORAGE.ACT.bletgo=()=>freePet();
   // a feeder: yours (a double click takes it down) or another player's (theirs comes from the section, like hives and pots)
-  const feederAt=(f,who,act)=>{ const g=new THREE.Group(), wd=INSPECT.mat(0x8a6a4a,{flat:1}), pole=new THREE.Mesh(new THREE.CylinderGeometry(.03*WU,.03*WU,1.3*WU,6),wd); pole.position.y=.65*WU; g.add(pole);
+  const feederAt=(f,who,act)=>{ '@later'; const g=new THREE.Group(), wd=INSPECT.mat(0x8a6a4a,{flat:1}), pole=new THREE.Mesh(new THREE.CylinderGeometry(.03*WU,.03*WU,1.3*WU,6),wd); pole.position.y=.65*WU; g.add(pole);
     const tray=new THREE.Mesh(new THREE.CylinderGeometry(.22*WU,.2*WU,.05*WU,8),wd); tray.position.y=1.3*WU; g.add(tray); const roof=new THREE.Mesh(new THREE.ConeGeometry(.28*WU,.18*WU,4),INSPECT.mat(0x5a7a4a,{flat:1})); roof.position.y=1.62*WU; roof.rotation.y=Math.PI/4; g.add(roof);
     const seed=new THREE.Mesh(new THREE.CylinderGeometry(.18*WU,.18*WU,.02*WU,8),INSPECT.mat(0xc8a860,{flat:1})); seed.position.y=1.34*WU; g.add(seed); g.position.set(f.x,f.y,f.z); scene.add(g);
     const th={name:who?who+"'S BIRD FEEDER":'YOUR BIRD FEEDER',obj:tray,reach:1.6*T,near:2.4*T,tall:1.6*WU,act}; UI.thing(th); return {g,th}; };
@@ -185,15 +186,15 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   let FD=null; const feederShow=()=>{ feederGone(FD); FD=null; const f=S.feed; if(!f)return;
     FD=feederAt(f,null,()=>{ S.feed=null; save(); share(); FORAGE.give('feeder',1); feederShow(); say('YOU TAKE DOWN YOUR FEEDER.','#e8e2cc'); FORAGE.draw(); }); };
   const FEEDS=new Map(); BIRDS.feeds=FEEDS;
-  const theirFeed=(id,name,list)=>{ feederGone(FEEDS.get(id)); FEEDS.delete(id); if(!id||id===ONLINE.me||!Array.isArray(list)||!list[0])return; const a=list[0], f={x:+a[0],y:+a[1],z:+a[2]}; if(!isFinite(f.x)||!isFinite(f.z))return;
+  const theirFeed=(id,name,list)=>{ '@later'; feederGone(FEEDS.get(id)); FEEDS.delete(id); if(!id||id===ONLINE.me||!Array.isArray(list)||!list[0])return; const a=list[0], f={x:+a[0],y:+a[1],z:+a[2]}; if(!isFinite(f.x)||!isFinite(f.z))return;
     const who=String(name||'A NEIGHBOUR').toUpperCase(), F=feederAt(f,who,()=>say(`${who}'S FEEDER. THE BIRDS LIKE IT.`,'#e8e2cc')); F.f=f; FEEDS.set(id,F); };
   ONLINE.puts.feeder={set:theirFeed,clear:()=>{ for(const id of [...FEEDS.keys()])theirFeed(id); },share};
-  FORAGE.ACT.bhang=()=>{ if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('HANG IT OUTDOORS.','#c8a090'); FORAGE.take('feeder',1); S.feed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:1};
+  FORAGE.ACT.bhang=()=>{ '@later'; if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('HANG IT OUTDOORS.','#c8a090'); FORAGE.take('feeder',1); S.feed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:1};
     save(); share(); feederShow(); say('YOU HANG THE FEEDER. BIRDS NEARBY WILL COME TO IT. A DOUBLE CLICK TAKES IT DOWN.','#9fe07f'); };
   setTimeout(feederShow,0); BIRDS.feeder=()=>FD&&FD.th;
   FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE NATURE MERCHANT HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
   FORAGE.BOOK.push({id:'birds',title:'BIRDS',rows:()=>K.map((q,k)=>[q[0],!!S.seen[k],S.seen[k]?'SEEN '+S.seen[k]+' · '+q[1].toUpperCase():'',RARE(k)]),foot:'Double click a bird to watch it. Birds are out by day, in fair weather; most in the park. Scatter seed, or hang a feeder, and stand still to bring them near.'});
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
-  BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
+  BIRDS.TIER=TIER; window.BIRDS=BIRDS; BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }
 export {BIRDS};

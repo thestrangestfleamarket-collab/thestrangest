@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Menus mockups</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+<style>
+body{margin:0;background:#0a0b10;color:#ddd;font:14px system-ui;padding:24px 0}
+.scr{width:1280px;margin:0 auto 40px}
+.cap{font:600 18px system-ui;color:#f2c14e;margin:0 0 8px}
+.cap small{display:block;font:400 14px system-ui;color:#aab;margin-top:3px}
+.bg{height:720px;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 120%,#3b4a35 0,#1e2a24 45%,#121821 100%)}
+.bg::before{content:'';position:absolute;inset:0;background:rgba(5,6,10,.55)}
+.m{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--me:#0d3a1f;--mk:#020a06;position:relative;font-family:'Share Tech Mono',ui-monospace,monospace}
+.box{width:1060px;height:640px;overflow:hidden;display:grid;grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto 1fr;gap:12px;padding:12px;box-sizing:border-box;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),var(--mk);box-shadow:0 0 0 2px var(--mi);font:18px/1.45 'Share Tech Mono',monospace;letter-spacing:2px;color:var(--mt)}
+.box.solo{grid-template-columns:minmax(0,1fr);width:640px;height:auto}
+.ttl,.tabs,.pane{background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi)}
+.ttl{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:8px 14px 8px 18px;color:var(--mf);font-size:22px;letter-spacing:4px}
+.ttl b{font-weight:400}.ttl b::before{content:'[ '}.ttl b::after{content:' ]'}
+.ttl span{color:var(--md);font-size:15px}.ttl i{font-style:normal;color:var(--mt);padding:0 8px;box-shadow:inset 0 0 0 2px var(--mi);margin-left:14px}
+.tabs{display:flex;flex-direction:column;gap:3px;padding:14px 10px;align-self:stretch}
+.tabs div{padding:7px 10px;display:flex;justify-content:space-between}.tabs div u{text-decoration:none;color:var(--md);font-size:13px}
+.tabs .on{color:var(--mk);background:var(--mf)}.tabs .on u{color:var(--mk)}
+.tabs .adm{margin-top:auto;color:#ffd27a}.tabs .adm.on{background:#ffd27a;color:var(--mk)}
+.pane{padding:0 16px 16px;min-width:0;overflow:hidden}
+.solo .pane{padding-top:0}
+.sub{display:flex;gap:4px;margin:0 -16px 14px;padding:8px 10px;border-bottom:2px solid var(--mi)}
+.sub div{padding:4px 10px}.sub .on{color:var(--mk);background:var(--mf)}
+h3{font-size:13px;color:var(--md);margin:14px 0 4px;padding:0 4px 4px;border-bottom:2px solid var(--mi);font-weight:400}
+h3:first-of-type{margin-top:0}
+.row{display:flex;gap:4px 8px;align-items:center;margin:2px 0}
+.row>span:first-child{flex:1;padding:4px 4px;white-space:nowrap}
+.btn{padding:4px 6px;color:var(--mt)}.btn.off{color:var(--md)}.btn.p{color:var(--mo);box-shadow:inset 0 -2px 0 var(--mo)}
+.btn.hl{color:var(--mk);background:var(--mf)}
+.oo{display:flex;justify-content:space-between;flex:1;padding:4px 6px}.oo::after{content:'OFF';color:var(--md)}.oo.y::after{content:'ON';color:var(--mo)}
+.rg{width:150px;height:14px;background:repeating-linear-gradient(90deg,transparent 0 16px,var(--mk) 16px 21px),linear-gradient(90deg,var(--mo) var(--p),var(--me) var(--p))}
+.dim{color:var(--md);font-size:14px;line-height:1.5}
+table{border-collapse:collapse;width:100%}td{padding:4px 6px;border-bottom:2px solid var(--me)}td.r{text-align:right}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.sel{border:2px solid var(--mi);background:var(--mb);padding:4px 8px;display:inline-block}
+.stage{border:2px solid var(--mi);background:var(--mb);height:400px;display:flex;align-items:center;justify-content:center}
+.sw{display:inline-block;width:20px;height:20px;box-shadow:0 0 0 2px var(--mk);margin-right:3px}.sw.p{box-shadow:0 0 0 2px var(--mo)}
+.note{position:absolute;right:18px;bottom:14px;max-width:300px;font:13px/1.45 system-ui;color:#f2c14e;background:#111a;padding:6px 9px;border-left:3px solid #f2c14e}
+</style></head><body>
+<div id="out"></div>
+<script>
+const NAV=[['YOU','ESC'],['PACK','I'],['MAP','⇧M'],['PEOPLE','ENTER'],['BBS',''],['GUIDE','⇧G'],['SET','']];
+const btns=(a,p=-1)=>a.map((t,i)=>`<span class="btn${i===p?' p':''}">${t}</span>`).join('');
+const row=(l,c)=>`<div class="row"><span>${l}</span>${c}</div>`;
+const rg=p=>`<span class="rg" style="--p:${p}%"></span>`;
+const oo=(t,y)=>`<div class="row"><span class="oo${y?' y':''}">${t}</span></div>`;
+const tbl=(rows,hd)=>`<table>${hd?`<tr class="dim">${hd.map(h=>`<td>${h}</td>`).join('')}</tr>`:''}${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===r.length-1&&r.length>1?' class="r"':''}>${c}</td>`).join('')}</tr>`).join('')}</table>`;
+const fig=`<svg width="140" height="320" viewBox="0 0 140 320" fill="none" stroke="#7dffa8" stroke-width="3"><circle cx="70" cy="40" r="24"/><path d="M70 64v20M34 92h72l-8 110H42zM42 202l-6 110M98 202l6 110M34 96l-20 96M106 96l20 96"/></svg>`;
+const S=[];
+const scr=(cap,note,nav,subs,sel,body,o={})=>S.push({cap,note,nav,subs,sel,body,o});
+
+scr('1 · YOU — LOOK','Your name and three tabs, as today. PASSPORT goes (its item is archived); RESURRECT shows only when you are down.','YOU',['LOOK','WEAR','WORDS'],0,
+`<div style="display:grid;grid-template-columns:260px 1fr;gap:20px"><div><div class="stage">${fig}</div><div class="dim" style="margin-top:6px">ROSIE · APT 3B · SECTION A</div></div><div>
+<h3>BODY</h3>${row('BODY',btns(['MAN','WOMAN'],1))}${row('BUILD',btns(['SLIM','MIDDLE','BROAD'],1))}${row('HEIGHT',rg(55))}
+<h3>COLOUR</h3>${row('SKIN','<span class="sw" style="background:#f1c9a5"></span><span class="sw p" style="background:#c98e62"></span><span class="sw" style="background:#8a5a3b"></span><span class="sw" style="background:#4e3121"></span>')}${row('HAIR','<span class="sw" style="background:#222"></span><span class="sw" style="background:#6b3e1e"></span><span class="sw p" style="background:#c9a04a"></span><span class="sw" style="background:#b8b8b8"></span>')}
+${row('SHOES',btns(['ON','BAREFOOT'],0))}
+<h3>YOU</h3>${row('RESURRECT','<span class="btn off">ONLY WHEN YOU ARE DOWN</span>')}${row('LOG OUT','<span class="btn">LOG OUT</span>')}</div></div>`);
+
+scr('2 · PACK — SKILLS','The bag stays the bag you drag around (I opens it; BAG here does too). CRAFT goes (only archived alchemy was in it).','PACK',['BAG','SKILLS','BOOK','FISHING','JOURNAL'],1,
+tbl([['FORAGING','12','THE MUSHROOM SELLER'],['MYCOLOGY','4','THE MUSHROOM SELLER'],['GARDENING','9','THE TOMATO'],['FISHING','21','THE FISHERMAN IN WADERS'],['ENTOMOLOGY','3','THE PARK RANGER'],['BIRDING','0','THE PARK RANGER'],['BEEKEEPING','0','THE VILLAGE GARDENER'],['BOOKBINDING','2','THE PROFESSOR'],['SWORDSMANSHIP','7','THE SAMURAI WARRIOR'],['MARTIAL ARTS','5','THE SQUIRREL KNIGHT'],['CLIMBING','0','THE FOREST RANGER'],['GOLF','1','THE GAME MASTER']],['SKILL','LEVEL','WHO TEACHES IT']));
+
+scr('3 · MAP','The same map and GO TO, in the box like everything else.','MAP',['THE STREET','UNDERGROUND','MY APARTMENT'],0,
+`<div style="display:grid;grid-template-columns:1fr 260px;gap:18px"><svg viewBox="0 0 520 420" style="border:2px solid #3aa866;background:#020a06;width:100%;height:440px"><g stroke="#0d3a1f" stroke-width="1">${Array.from({length:26},(_,i)=>`<path d="M${i*20} 0v420M0 ${i*20}h520"/>`).join('')}</g><g fill="none" stroke="#3aa866" stroke-width="14"><path d="M40 210h440M260 30v370M120 60v300"/></g><g fill="#7dffa8">${[[70,170,'1'],[170,250,'2'],[300,170,'3'],[300,260,'4'],[400,170,'5'],[420,260,'6'],[200,90,'7']].map(([x,y,n])=>`<rect x="${x}" y="${y}" width="44" height="30"/><text x="${x+16}" y="${y+21}" fill="#020a06" font-size="16" font-family="Share Tech Mono">${n}</text>`).join('')}<circle cx="262" cy="214" r="7" fill="#d8ffe4"/></g></svg>
+<div><h3>GO TO</h3><div class="sel">THE BODEGA ▾</div><h3>PLACES</h3><div class="dim">1 THE BODEGA<br>2 THE APARTMENTS<br>3 THE ART MUSEUM<br>4 THE BANK<br>5 THE BAR<br>6 THE MOVIE THEATRE<br>7 THE BOOKSTORE</div><div class="dim" style="margin-top:10px">click the map to go there</div></div></div>`);
+
+scr('4 · PEOPLE — CHAT','PEOPLE and CHAT together: who is on your block on one side, the talk on the other. Double-click a name to trade.','PEOPLE',['CHAT','ONLINE','TRADE'],0,
+`<div style="display:grid;grid-template-columns:230px 1fr;gap:18px"><div><h3>ON YOUR BLOCK · 4</h3><div class="dim" style="font-size:16px;line-height:1.9;color:#7dffa8">ROSIE<br>MARCUS<br>JUNE<br>OTTO</div></div>
+<div><h3>BLOCK A</h3><div style="height:330px;font-size:16px;line-height:1.7"><span class="dim">MARCUS</span> anyone at the pier?<br><span class="dim">JUNE</span> fishing now, the shed has boats<br><span class="dim">ROSIE</span> coming<br><span class="dim">OTTO</span> selling a steel sword, 40</div><div class="sel" style="display:block">SAY SOMETHING_</div></div></div>`);
+
+scr('5 · BBS','The BBS the apartment computer dials, as a menu tab. The full-screen C64 terminal could stay on the computer itself — your call.','BBS',['ORDER','YOUR ORDERS','DRONE VIEW'],0,
+tbl([['CAT FOOD','$2','<span class="btn">BUY</span>'],['FISH FOOD','$2','<span class="btn">BUY</span>'],['A FLOOR LAMP','$18','<span class="btn">BUY</span>'],['A RUG','$12','<span class="btn">BUY</span>'],['A BOOKCASE','$30','<span class="btn">BUY</span>']],['WHAT','$',''])+`<div class="dim" style="margin-top:10px">a drone drops it on your fire escape</div>`);
+
+scr('6 · GUIDE — CHAPTERS','GUIDE, HELP and REPORT A BUG together. Chapters about archived things (food, crafting, the kite) leave.','GUIDE',['CHAPTERS','KEYS','REPORT A BUG'],0,
+`<div style="display:grid;grid-template-columns:300px 1fr;gap:18px"><div style="font-size:15px;line-height:1.75">${['GETTING STARTED','THE CAMERA AND VIEWS','YOUR CHARACTER','YOUR APARTMENT','MONEY AND SHOPS','FORAGING','SKILLS AND LESSONS','FISHING','BUTTERFLIES AND BIRDS','BEES AND HONEY','SWIMMING AND DIVING','FIGHTING','THE SUBWAY','PLACES TO GO'].map((t,i)=>`<div${i===7?' class="btn hl"':''} style="padding:0 6px">${t}</div>`).join('')}</div>
+<div><h3>FISHING</h3><div style="font-size:16px;line-height:1.6">1 buy a rod and bait from the Fisherman in Waders on the pier<br>2 hold 1 to cast where the water is deep<br>3 when the fish bites, click to reel<br>4 sell your catch back to him</div><div style="margin-top:12px;height:160px;border:2px solid #3aa866;background:#031a0d;display:flex;align-items:center;justify-content:center" class="dim">PICTURE FROM THE GAME</div></div></div>`);
+
+scr('7 · SET — VIEW','SET has three tabs instead of six. VIEW is today’s DISPLAY.','SET',['VIEW','PICTURE','CONTROLS'],0,
+`<div class="cols"><div><h3>CAMERA</h3>${row('VIEW',btns(['MAP','ISO','THIRD','BEHIND','FIRST'],2))}${row('ZOOM',rg(40))}${row('TILT',rg(60))}${oo('CAMERA SWAY',1)}${row('SWAY LEVEL',rg(30))}${row('RESET THE VIEW','<span class="btn">RESET</span>')}
+<h3>BODY</h3>${oo('PHYSICS BODY',1)}${row('LOOSE',rg(50))}</div>
+<div><h3>SCREEN</h3>${row('UI SCALE',btns(['SMALL','MEDIUM','LARGE'],1))}${row('SCREEN LAYOUT','<span class="btn">RESET</span>')}<div class="dim">drag any window to move it</div>
+<h3>NAME TAGS</h3>${row('FONT',btns(['◂','PIXEL','▸']))}${row('SIZE',btns(['SMALL','MEDIUM','LARGE'],1))}${oo('WORDS STAY',0)}</div></div>`);
+
+scr('8 · SET — PICTURE','Today’s GRAPHICS and ATMOSPHERE in one tab. The haze line that pointed at the removed editors goes.','SET',['VIEW','PICTURE','CONTROLS'],1,
+`<div class="cols"><div><h3>QUALITY</h3>${row('RESOLUTION',btns(['LOW','MED','HIGH','FULL'],2))}${row('DRAW DISTANCE',btns(['NEAR','ALL'],1))}${oo('AUTO QUALITY',1)}${row('SHADOWS',btns(['ON','SHADED','SELF'],1))}
+<h3>LOOK</h3>${oo('PS2 FILTER',1)}${row('SHADE STEPS',rg(45))}${row('SHADOW DEPTH',rg(60))}${oo('OUTLINE',1)}${oo('ANIMATION',1)}</div>
+<div><h3>SKY</h3>${row('WEATHER',btns(['◂','CLEAR','▸']))}${row('SEASON',btns(['AS THE DATE','PICK'],0))}${oo('GLOW AND NIGHT LOOK',1)}${row('HAZE',btns(['MIST','FAR','NONE'],0))}
+<h3>PHYSICS</h3>${oo('RAGDOLLS',1)}${oo('STAND ON THINGS',1)}${oo('VEHICLE PHYSICS',1)}<div class="dim">+ 6 more, as today</div></div></div>`);
+
+scr('9 · SET — CONTROLS','Today’s KEYS, SOUND and VR in one tab. SHIFT+E and SHIFT+0 leave the list.','SET',['VIEW','PICTURE','CONTROLS'],2,
+`<div class="cols"><div><h3>KEYS · CLICK ONE, THEN PRESS THE NEW KEY</h3>${tbl([['WALK','W A S D'],['RUN','SHIFT'],['JUMP','SPACE'],['PUNCH','J'],['KICK','K'],['WAVE','V'],['EMOTES','H'],['DECORATE','T'],['FREE CAMERA','C']])}<div class="row"><span class="btn">ALL BACK AS THEY WERE</span></div></div>
+<div><h3>SOUND</h3>${oo('EFFECTS',1)}${oo('AMBIENCE',1)}${row('VOLUME',rg(70))}<h3>VR</h3>${row('ENTER VR','<span class="btn">ENTER</span>')}${row('MOVE',btns(['TELEPORT','STICK'],1))}${row('TURN',btns(['SNAP','SMOOTH'],0))}${row('HANDED',btns(['LEFT','RIGHT'],1))}<div class="dim">+ the rest of VR, as today</div></div></div>`);
+
+scr('10 · ADMIN — PLAYERS (owners only)','ADMIN is the last section, in gold, only for owners. The dead buttons (EDITORS, SUMMON, CITY) are gone.','ADMIN',['BUG QUEUE','PLAYERS','CODES','LETTERS','SIGNS','TOOLS'],1,
+tbl([['ROSIE <span style="color:#7dffa8">ONLINE</span> <span style="color:#ffd27a">OWNER</span>','APT 3B','<span class="btn">MORE</span>'],['MARCUS <span style="color:#7dffa8">ONLINE</span>','APT 1A','<span class="btn">MORE</span>'],['JUNE','APT 2C','<span class="btn">MORE</span>'],['OTTO <span style="color:#e06a5a">BANNED</span>','APT 4A','<span class="btn">MORE</span>']],['WHO','HOME',''])+
+`<h3>MARCUS · JOINED 2 NOV · LAST ON NOW</h3><div class="row"><span class="btn">MAKE AN OWNER</span><span class="btn">BAN</span><span class="btn">DELETE</span><span class="btn">NEW PASSWORD</span><span class="btn">LETTER</span></div><div class="dim">TOOLS has STATS, the RENDER INSPECTOR and the GAME LOG</div>`,{admin:true});
+
+scr('11 · A SHOP, IN THE SAME BOX','Every window you open in the world (shops, the vault, trade, the cinema, the bookstore) gets this same box: [ NAME ], X, tabs along the top.',null,['BUY','SELL','LEARN'],0,
+`<div class="dim" style="margin-bottom:8px">“Deep water, light line.”</div>`+tbl([['A ROD','$8','<span class="btn">BUY</span>'],['A CARBON ROD','$30','<span class="btn">BUY</span>'],['A FAST REEL','$12','<span class="btn">BUY</span>'],['BAIT ×10','$2','<span class="btn">BUY</span>'],['A CRAB POT','$15','<span class="btn">BUY</span>'],['A SMALL COOLER','$10','<span class="btn">BUY</span>']])+`<div class="dim" style="margin-top:8px">YOU HAVE $1,000,000</div>`,{solo:'THE FISHERMAN IN WADERS'});
+
+document.getElementById('out').innerHTML=S.map(s=>{
+  const nav=s.o.solo?'':`<div class="tabs">${NAV.map(([n,k])=>`<div class="${n===s.nav?'on':''}">${n}<u>${k}</u></div>`).join('')}<div class="adm${s.nav==='ADMIN'?' on':''}">★ ADMIN</div></div>`;
+  return `<div class="scr"><div class="cap">${s.cap}<small>${s.note}</small></div><div class="bg"><div class="m"><div class="box${s.o.solo?' solo':''}"><div class="ttl"><b>${s.o.solo||'THE STRANGEST FLEA MARKET'}</b><span>${s.o.solo?'':s.nav}<i>X</i></span></div>${nav}<div class="pane"><div class="sub">${s.subs.map((t,i)=>`<div class="${i===s.sel?'on':''}">${t}</div>`).join('')}</div>${s.body}</div></div></div></div></div>`;}).join('');
+</script></body></html>

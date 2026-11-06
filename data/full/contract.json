@@ -48,6 +48,701 @@
     "sum": "any",
     "tr": "any"
    }
+  },
+  "pfavatar-m-00.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-01.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-02.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-03.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-04.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-05.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-06.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-07.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-08.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-09.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-10.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-11.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-12.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-13.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-14.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-15.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-16.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-17.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-18.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-19.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-20.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-21.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-22.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-m-23.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-00.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-01.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-02.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-03.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-04.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-05.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-06.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-07.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-08.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-09.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-10.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-11.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-12.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-13.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-14.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-15.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-16.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-17.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-18.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-19.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-20.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-21.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-22.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar-f-23.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "zones": "any",
+    "pal": "any",
+    "main": "any",
+    "v": "any"
+   }
+  },
+  "pfavatar.json": {
+   "sets": [
+    "pieces"
+   ],
+   "each": {
+    "n": "number",
+    "slot": "string",
+    "label": "string",
+    "figs": "string"
+   }
+  },
+  "street.json": {
+   "each": {
+    "n": "number",
+    "lo": "array3",
+    "sc": "number",
+    "p": "string",
+    "c": "string",
+    "i": "string",
+    "tris": "number",
+    "size": "array3"
+   }
   }
  },
  "refs": [
@@ -56,5 +751,9 @@
    "path": "things[].k",
    "to": "polyfork.json"
   }
- ]
+ ],
+ "anchors": {
+  "note": "data/anchors.json: each kind names a data file; every point is three numbers",
+  "fishes": "fishes.json"
+ }
 }

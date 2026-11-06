@@ -52,7 +52,7 @@ Object.assign(WX,{hold:null,now:null});
   { const box=document.getElementById('awx'), P=box&&box.closest('[data-p]'); if(box){ const L={'AS THE LOOK':'LOOK',NATURAL:'NATURAL',...Object.fromEntries(Object.keys(HOLDS).map(k=>[k,k]))}, cur=()=>WX.hold||(WX.nat?'NATURAL':'LOOK');
       const SS={'AS THE DATE':'',SPRING:'spring',SUMMER:'summer',AUTUMN:'autumn',WINTER:'winter'}; CLOCK.seasonPick=QS.get('season')||SAVE.get('season')||'';
       const V=TPANE.live({wx:[cur,k=>{ if(k===cur())return; WX.hold=HOLDS[k]?k:null; WX.nat=k==='NATURAL'?1:0; ft=0; }],season:[()=>CLOCK.seasonPick,k=>{ CLOCK.seasonPick=k; SAVE.set('season',k); fc=null; }]}); let mk=null;
-      const draw=()=>{ '@later'; mk=mk||TPANE.make(box).then(p=>{ p.addBinding(V,'wx',{label:'WEATHER',options:L}); p.addBinding(V,'season',{label:'SEASON',options:SS}); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };
+      const draw=()=>{ mk=mk||TPANE.make(box).then(p=>{ p.addBinding(V,'wx',{label:'WEATHER',options:L}); p.addBinding(V,'season',{label:'SEASON',options:SS}); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };
       for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
       new MutationObserver(()=>{ if(!P.hidden&&P.offsetParent)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); } }
   window.WX=WX; window.WXDBG=()=>WX.now; }

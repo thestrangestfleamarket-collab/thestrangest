@@ -130,7 +130,8 @@
   "bait": "worm",
   "weight": 0.35,
   "value": 5,
-  "common": 8
+  "common": 8,
+  "tier": "common"
  },
  "x_tomcod": {
   "edible": true,
@@ -144,7 +145,8 @@
   "weight": 0.25,
   "value": 4,
   "common": 5,
-  "potted": true
+  "potted": true,
+  "tier": "common"
  },
  "x_eel": {
   "edible": true,
@@ -158,7 +160,8 @@
   "weight": 0.9,
   "value": 9,
   "common": 4,
-  "potted": true
+  "potted": true,
+  "tier": "rare"
  },
  "x_crab": {
   "edible": true,
@@ -172,7 +175,8 @@
   "weight": 0.25,
   "value": 8,
   "common": 3,
-  "potted": true
+  "potted": true,
+  "tier": "common"
  },
  "x_catfish": {
   "edible": true,
@@ -186,7 +190,8 @@
   "weight": 2.5,
   "value": 10,
   "common": 4,
-  "potted": true
+  "potted": true,
+  "tier": "rare"
  },
  "x_shad": {
   "edible": true,
@@ -199,7 +204,8 @@
   "bait": "worm",
   "weight": 1.6,
   "value": 11,
-  "common": 3
+  "common": 3,
+  "tier": "rare"
  },
  "x_flounder": {
   "edible": true,
@@ -212,7 +218,8 @@
   "bait": "cut",
   "weight": 1.8,
   "value": 12,
-  "common": 3
+  "common": 3,
+  "tier": "rare"
  },
  "x_bluefish": {
   "edible": true,
@@ -225,7 +232,8 @@
   "bait": "cut",
   "weight": 3.5,
   "value": 16,
-  "common": 2
+  "common": 2,
+  "tier": "super"
  },
  "x_bass": {
   "edible": true,
@@ -238,7 +246,8 @@
   "bait": "cut",
   "weight": 6,
   "value": 20,
-  "common": 2
+  "common": 2,
+  "tier": "super"
  },
  "x_sturgeon": {
   "edible": true,
@@ -251,7 +260,8 @@
   "bait": "worm",
   "weight": 40,
   "value": 75,
-  "common": 0.3
+  "common": 0.3,
+  "tier": "super"
  },
  "x_sunfish": {
   "edible": true,
@@ -264,7 +274,8 @@
   "bait": "worm",
   "weight": 0.2,
   "value": 3,
-  "common": 6
+  "common": 6,
+  "tier": "common"
  },
  "x_bluegill": {
   "edible": true,
@@ -278,7 +289,8 @@
   "weight": 0.25,
   "value": 3,
   "common": 7,
-  "potted": true
+  "potted": true,
+  "tier": "common"
  },
  "x_yperch": {
   "edible": true,
@@ -292,7 +304,8 @@
   "weight": 0.3,
   "value": 5,
   "common": 6,
-  "potted": true
+  "potted": true,
+  "tier": "common"
  },
  "x_trout": {
   "edible": true,
@@ -305,7 +318,8 @@
   "bait": "worm",
   "weight": 1.2,
   "value": 9,
-  "common": 3
+  "common": 3,
+  "tier": "rare"
  },
  "x_carp": {
   "edible": true,
@@ -319,7 +333,8 @@
   "weight": 4,
   "value": 8,
   "common": 3,
-  "potted": true
+  "potted": true,
+  "tier": "rare"
  },
  "x_lbass": {
   "edible": true,
@@ -332,7 +347,8 @@
   "bait": "cut",
   "weight": 2.2,
   "value": 15,
-  "common": 2
+  "common": 2,
+  "tier": "super"
  },
  "x_pike": {
   "edible": true,
@@ -345,7 +361,8 @@
   "bait": "cut",
   "weight": 4,
   "value": 25,
-  "common": 1
+  "common": 1,
+  "tier": "super"
  },
  "jar_s": {
   "stackable": true,

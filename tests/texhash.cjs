@@ -14,7 +14,7 @@ const run=async(ctx,page,waitSave)=>{ const t0=Date.now(); const pg=await ctx.ne
   await pg.addInitScript(()=>{ window.__PH={}; const fnv=d=>{ let h=2166136261; for(let i=0;i<d.length;i++){ h^=d[i]; h=Math.imul(h,16777619); } return (h>>>0).toString(16); }; let P;
     Object.defineProperty(window,'PAINTC',{configurable:true,get:()=>P,set:v=>{ P=v; if(!v||v.__w)return; v.__w=1; const g=v.get, p=v.put;
       v.get=(k,w,h,fn)=>{ const im=g(k,w,h,fn); if(im)__PH[k]=fnv(im.data); return im; }; v.put=(k,im)=>{ __PH[k]=fnv(im.data); return p(k,im); }; }}); });
-  await pg.goto('file://'+page+'?fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:200,timeout:900000});
+  await pg.goto('file://'+page+'?capture=1&fresh=1&hour=13&wx=CLEAR',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{polling:200,timeout:900000});
   await pg.evaluate(()=>{ if(window.STORE&&STORE.ensure)STORE.ensure(); if(window.BATCH&&BATCH.queues)for(const q of BATCH.queues)q.near(0,0,Infinity); else if(window.BODB&&BODB.gnear)BODB.gnear(0,0,Infinity); }); await pg.waitForTimeout(3000);
   const r=await pg.evaluate(()=>{ const seen=new Set(), out=[]; let px=0; const cv=document.createElement('canvas'), g=cv.getContext('2d',{willReadFrequently:true});
     const fnv=d=>{ let h=2166136261; for(let i=0;i<d.length;i++){ h^=d[i]; h=Math.imul(h,16777619); } return (h>>>0).toString(16); };

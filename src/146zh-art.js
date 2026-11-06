@@ -18,7 +18,7 @@ const GALLERY={}; window.GALLERY=GALLERY;
     R.seats=GALLERY.places=[sp(2.0,6,-1,0),sp(2.0,11,-1,0),sp(2.0,16,-1,0),sp(28,6,1,0),sp(28,11,1,0),sp(28,16,1,0),sp(5,2.0,0,-1),sp(25,2.0,0,-1),
       sp(9.6,13,0,1,.45),sp(10.4,13,0,1,.45),sp(19.6,13,0,1,.45),sp(20.4,13,0,1,.45)]; } }
   // the floor plan: each floor's paintings as they hang now
-  GALLERY.plan=()=>{ const S=STORE.artFrame, FY=BOD.Y(S.FZ), fl={}; for(const t of UI.things)if(t.obj&&t.obj.userData&&t.obj.userData.at){ const p=new THREE.Vector3(); t.obj.getWorldPosition(p); const k=Math.round(p.y/FY); (fl[k]=fl[k]||[]).push(t.name); }
+  GALLERY.plan=()=>{ '@later'; const S=STORE.artFrame, FY=BOD.Y(S.FZ), fl={}; for(const t of UI.things)if(t.obj&&t.obj.userData&&t.obj.userData.at){ const p=new THREE.Vector3(); t.obj.getWorldPosition(p); const k=Math.round(p.y/FY); (fl[k]=fl[k]||[]).push(t.name); }
     const ks=Object.keys(fl).map(Number).sort((a,b)=>a-b);
     MINI.look('THE FLOOR PLAN',(g,w,h)=>{ g.fillStyle='#efe6cf'; g.fillRect(0,0,w,h); g.fillStyle='#2a2420'; g.textAlign='center'; g.textBaseline='top'; g.font='bold 16px serif'; g.fillText('THE ART MUSEUM',w/2,10);
       if(!ks.length){ g.font='13px serif'; g.fillText('The paintings are being hung. Come back in a moment.',w/2,60); return; }
@@ -26,15 +26,15 @@ const GALLERY={}; window.GALLERY=GALLERY;
         const L=fl[k], half=Math.ceil(L.length/2); for(let i=0;i<half;i++){ g.fillText((L[i]||'').slice(0,30),14,y); if(L[i+half])g.fillText(L[i+half].slice(0,30),w/2+4,y); y+=12; } y+=6; } },'The elevator at the back goes to every floor.'); };
   // THE TOUR: ROSIE walks to the first floor's paintings one by one, stops in front of each and tells you about it, then back to her sign
   const rosie=()=>BODIES.by.w_redpanda&&BODIES.by.w_redpanda.npc;
-  const stops=()=>{ const S=STORE.artFrame, FY=BOD.Y(S.FZ), C=frameOf(S).pw((S.B.x1-S.B.x0)/2*TM,(S.B.y1-S.B.y0)/2*TM), out=[];
+  const stops=()=>{ '@later'; const S=STORE.artFrame, FY=BOD.Y(S.FZ), C=frameOf(S).pw((S.B.x1-S.B.x0)/2*TM,(S.B.y1-S.B.y0)/2*TM), out=[];
     for(const t of UI.things){ const u=t.obj&&t.obj.userData&&t.obj.userData.at; if(!u)continue; const p=new THREE.Vector3(); t.obj.getWorldPosition(p); if(p.y>FY*.5)continue;
       const dx=C[0]-p.x, dz=C[1]-p.z, d=Math.hypot(dx,dz)||1, k=1.7*IKIT.MW*TM; out.push({name:t.name,key:u.key,x:p.x+dx/d*k,z:p.z+dz/d*k,hd:Math.atan2(-dx,-dz),a:Math.atan2(dx,dz)}); }
     out.sort((a,b)=>a.a-b.a); return out.filter((_,i)=>i%2===0).slice(0,6); };
-  const lineOf=s=>{ const t=(GALLERY.data||[]).find(d=>d.t.toUpperCase()===s.name); if(!t)return `ROSIE: "${s.name}. LOOK AT HOW THE LIGHT FALLS ON IT."`;
+  const lineOf=s=>{ '@later'; const t=(GALLERY.data||[]).find(d=>d.t.toUpperCase()===s.name); if(!t)return `ROSIE: "${s.name}. LOOK AT HOW THE LIGHT FALLS ON IT."`;
     return `ROSIE: "${t.t.toUpperCase()}, BY ${t.a.toUpperCase()}${t.d?', '+t.d:''}. THE ORIGINAL HANGS IN ${String(t.m||'ANOTHER MUSEUM').toUpperCase()}. DOUBLE-CLICK IT TO SEE IT UP CLOSE."`; };
-  GALLERY.tour=()=>{ const T=GALLERY.touring; if(T)return say('THE TOUR IS UNDER WAY: FOLLOW ROSIE.'); const N=rosie(); if(!N)return say('ROSIE IS NOT HERE YET.','#c8a090'); const S=stops(); if(!S.length)return say('THE PAINTINGS ARE STILL BEING HUNG.','#c8a090');
+  GALLERY.tour=()=>{ '@later'; const T=GALLERY.touring; if(T)return say('THE TOUR IS UNDER WAY: FOLLOW ROSIE.'); const N=rosie(); if(!N)return say('ROSIE IS NOT HERE YET.','#c8a090'); const S=stops(); if(!S.length)return say('THE PAINTINGS ARE STILL BEING HUNG.','#c8a090');
     if(INV.cash<3)return say('A TOUR IS $3.','#c8a090'); INV.cash-=3; GALLERY.touring={i:-1,S,N,wait:0}; say('ROSIE: "FOLLOW ME, PLEASE. A STEP BACK FROM THE PAINTINGS."'); next(); };
-  const next=()=>{ const T=GALLERY.touring; T.i++; const N=T.N; N.st.pin=false; N.st.hold=true; N.st.next=null;
+  const next=()=>{ '@later'; const T=GALLERY.touring; T.i++; const N=T.N; N.st.pin=false; N.st.hold=true; N.st.next=null;
     if(T.i>=T.S.length){ T.home=true; const sp=room().spots['DOCENT TOURS']; N.st.to={x:sp.x,z:sp.z}; say('ROSIE: "THAT IS THE FIRST FLOOR. THE ELEVATOR AT THE BACK TAKES YOU TO THE REST. THANK YOU!"'); return; }
     const s=T.S[T.i]; N.st.to={x:s.x,z:s.z}; T.wait=0; };
   GALLERY.stopTour=()=>{ const T=GALLERY.touring; if(!T)return; GALLERY.touring=null; GALLERY.done=(GALLERY.done||0)+(T.home?1:0); WORKERS.make('art'); };

@@ -71,7 +71,7 @@ const RIGNPC={};
   RIGNPC.glb=D=>{ const c=B64(D.c), C=new Float32Array(c.length); for(let i=0;i<c.length;i++)C[i]=c[i]/255; const w=B64(D.w), SW=new Float32Array(w.length); for(let i=0;i<w.length;i++)SW[i]=w[i]/255;
     return {bones:D.bones, mesh:{P:pts(D),C,I:new Uint16Array(B64(D.i).buffer),SI:Uint16Array.from(B64(D.j)),SW,parts:D.parts}, glass:D.glass&&{P:pts(D.glass),I:new Uint16Array(B64(D.glass.i).buffer),c:D.glass.c,a:D.glass.a,bone:D.glass.bone}}; };
   // the jointed walk: the walk plus a knee that lifts in swing, a foot that rolls off and plants, and an elbow that keeps a rest flex (for rigs whose arm bones are named elbow, not fore).
-  RIGNPC.limbs=(c,o={})=>{ const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
+  RIGNPC.limbs=(c,o={})=>{ '@later'; const B=c.B, ph=c.st.ph, m=c.mv, sw=Math.sin(ph)*m;
     RIGNPC.walk(c,Object.assign({body:'hips'},o));
     if(c.sheet)return;
     for(const [s,k] of [['L',1],['R',-1]]){ const kn=B['knee'+s], el=B['elbow'+s], ft=B['foot'+s], p=ph+(k>0?0:Math.PI);

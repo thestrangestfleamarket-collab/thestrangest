@@ -10,7 +10,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
   const NAMES={'skate-filmer':'THE FILMER','street-skater':'A STREET SKATER','veteran-pool-skater':'THE POOL VETERAN','vert-skater':'A VERT SKATER','roller-skater':'THE ROLLER SKATER','skate-coach':'THE COACH',
     'beginner-kid-skater':'A KID ON A BOARD','scooter-kid':'A KID ON A SCOOTER','bmx-rider':'A BMX RIDER','graffiti-artist':'THE GRAFFITI ARTIST','longboarder':'A LONGBOARDER','skate-shop-owner':'THE SKATE SHOP OWNER'};
   // a packed mesh (lo, sc, int16 corners, uint8 colours, uint32 triangles) placed by f(x,y,z) -> world
-  const geo=(M,f,col='c')=>{ const Q=new Int16Array(I16(M.p)), C=new Uint8Array(I16(M[col])), P=new Float32Array(Q.length), v=[0,0,0];
+  const geo=(M,f,col='c')=>{ '@later'; const Q=new Int16Array(I16(M.p)), C=new Uint8Array(I16(M[col])), P=new Float32Array(Q.length), v=[0,0,0];
     for(let i=0;i<Q.length;i+=3){ for(let k=0;k<3;k++)v[k]=(Q[i+k]+32500)*M.sc+M.lo[k]; const w=f(v[0],v[1],v[2]); P[i]=w[0]; P[i+1]=w[1]; P[i+2]=w[2]; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3,true)); g.setIndex(new THREE.BufferAttribute(new Uint32Array(I16(M.i)),1)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const MAT=()=>new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});

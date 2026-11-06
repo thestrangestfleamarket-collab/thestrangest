@@ -92,7 +92,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
-      w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
+      w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); const f0=w.foot; Object.defineProperty(w,'foot',{get:()=>lane()?Math.max(f0,YP(32)):f0,configurable:true}); n++; } BLK.walls=n; }   // from the alley or the promenade the row is cut at waist height, not hidden (owner, 6 Nov 2026)
   // the new map's backdrop near its edges (owner, 6 Nov 2026: "they see more apt buildings until it fades out"): the first blocks past each edge built as the street's are, brick with windows lit at night; further on the far city's hazed blocks carry on (134-skyline)
   BLK.back=[]; { const E=LEVEL.edge||{}, NEAR=E.near||60;
     const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});

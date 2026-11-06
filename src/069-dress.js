@@ -4,7 +4,7 @@ import {CLOCK, DN, DRESS, PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, CEL, FIX, LEVEL, MAINROW, MAPSTAIR, MODS, OUT, RING, SMOOTH, SOL, STORE, TILE} from './006-map-pre.js';
 import {KIT} from './068-kit.js';
-const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]; for(let i=0;i+1<MAINROW.length;i++){ const a=MAINROW[i][1], b=MAINROW[i+1][0]; if(b-a>1.5)G.push([a,b]); } return G; }});
+const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]; let e=MAINROW.length?MAINROW[0][1]:0; for(let i=1;i<MAINROW.length;i++){ const b=MAINROW[i][0]; if(b-e>1.5)G.push([e,b]); e=Math.max(e,MAINROW[i][1]); } return G; }});
 { const G=MODS.bodega.ground, xm=(SHARED.BOUND.x0+SHARED.BOUND.x1)/2; let zc=null, zf=null; for(let z=SHARED.BOUND.z0;z<SHARED.BOUND.z1;z+=0.02){ const g=G(xm,z); if(zc==null&&g<-.01)zc=z; if(zc!=null&&zf==null&&g>-.01&&z>zc)zf=z; }
   const sw=zc-.5, far=zf+.6, AX=SHARED.BOD.X(MODS.apts.A.x1), AX0=SHARED.BOD.X(MODS.apts.A.x0), BX0=SHARED.BOD.X(SHARED.BOD.B0.x0);
   DRESS.kerb={sw,far}; DRESS.cans=[];
@@ -97,6 +97,8 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
         OAK.push(['OakTree2',...tp(x,z),big?9.5:7+hsh(i,5),hsh(i,9)*6.28]);
         for(let j=0;j<4;j++){ const a=j*1.7+i, r=(.22+.2*hsh(i,j+40))*P; PL.push([['grass1','grass2','grass1','grass2'][j],...tp(x+Math.cos(a)*r,z+Math.sin(a)*r),.25+.12*hsh(j,i),a]); } };
       if(A){ let ti=0; for(const [a,b] of DRESS.gaps()){ if(b-a<4)continue; const n=b-a>14?2:1; for(let j=0;j<n;j++)tree(SHARED.BOD.XS(a+(b-a)*(j+1)/(n+1)+(b-a>6&&n===1?1:0)),ti,(ti++)%3===0,1); }
+        { const F=LEVEL.places.filter(p=>p.y1==null&&p.kind==='front').sort((a,b)=>a.x0-b.x0), W=LEVEL.places.find(p=>p.kind==='passage');   // the new map's row has no gaps (6 Nov 2026): a street tree at every join between two shops, none in the way through
+          for(let i=1;i<F.length;i++){ const x=F[i].x0; if(Math.abs(x-F[i-1].x1)>.05||W&&x>W.x0-3&&x<W.x1+3)continue; tree(SHARED.BOD.XS(x),ti,(ti++)%3===0,1); } }
         const zf=SHARED.BOD.Z(A.y1), sdf=Math.sign(zk-zf)||1, BR=0x7a4c3e, BRD=0x5e3a30, IR=0x1c1e22, dx=SHARED.BOD.X(A.x1-1)-SHARED.BOD.X(A.x1-1-2.2), DX=SHARED.BOD.X(MODS.apts.DX);
         for(const [k,cx] of [[0,DX-dx*1.05],[1,DX-dx*1.9],[2,DX+dx*1.05],[3,DX+dx*1.9]]){ const L=1.7*M, D=.8*M, h=.62*M, cz=zf+sdf*(D/2+.05*M), y=G(cx,cz);
           blk(cx,y+h/2,cz,L-.02*M,h-.01*M,D-.02*M,0x2e221c); for(let r=0;r<3;r++)for(let c=0;c<5;c++){ const w=L/5, hh=h/3, n=hsh(k*31+r,c), col=new THREE.Color(BR).multiplyScalar(.82+.3*n).offsetHSL((hsh(c,r+k)-.5)*.03,0,0).getHex(); blk(cx-L/2+w*(c+.5)+(r&1?w*.15:0)*(c<4?1:0),y+hh*(r+.5),cz,w-.012*M,hh-.012*M,D,col); } blk(cx,y+h+.03*M,cz,L+.08*M,.06*M,D+.08*M,BRD); blk(cx,y+.04*M,cz,L+.04*M,.08*M,D+.04*M,BRD);

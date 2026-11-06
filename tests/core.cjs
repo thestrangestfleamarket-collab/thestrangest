@@ -86,6 +86,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.vis = [h2, h1, m.visible, VIS.hidden(m)];
       { let n = 0; SYS.every(() => n++, 100, 'core probe'); const L = SYS.P.every, e = L[L.length - 1]; e.fn(1000); e.fn(1050); const a = n; e.fn(1100); L.pop();
         o.every = [a === 0, n === 1, (SYS.P.win || []).length > 0, typeof SAY === 'function'].join(); }
+      { SYS.timing = true; SYS.T.clear(); SYS.go(() => { for (let i = 0; i < 1e4; i++); }, 'core-timed'); const r0 = SYS.T.get('core-timed'); SYS.timing = false; SYS.T.clear(); SYS.go(() => {}, 'core-untimed'); o.timing = !!(r0 && r0.n === 1 && r0.ms >= 0) && !SYS.T.has('core-untimed'); }
       o.below = [LEVELS.below(-2), LEVELS.below(0)].join();
       { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
@@ -169,6 +170,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.levels[0] === 'street' && r.levels[1] === 'station' && r.levels[2] && r.levels[3] && !r.levels[4], 'LEVELS: the street above, the station below, every stairway joins two levels, the street is drawn only on its own level (' + r.levels.join(',') + ')');
     ok(r.floor === 'up,down,down,up', 'LEVELS.floor: the floor changes only on a stairway, never from height alone (' + r.floor + ')');
     ok(r.vis[0] && r.vis[1] && r.vis[2] && !r.vis[3], 'VIS: hidden while any reason is left, shown when none is');
+    ok(r.timing === true, 'SYS times each system only while asked (the render inspector open): ' + r.timing);
     ok(r.every === 'true,true,true,true', 'SYS.every runs a job on real time from the main loop, open windows draw in its win phase, every message is SAY (' + r.every + ')');
     ok(r.below === 'down,up', 'LEVELS.below is the one height rule (a stairway, the free camera): ' + r.below);
     ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
@@ -318,8 +320,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   { const rs = await pg.evaluate(async () => { if (window.AUTOQ) AUTOQ.on(false); const c = document.querySelector('#stage canvas'), out = {}, raf = () => new Promise(r => requestAnimationFrame(r)), at = async i => { document.querySelector('[data-res="' + i + '"]').click(); await raf(); return c.height; }; for (const i of [0, 2, 4]) out[i] = await at(i); PS2.set(false); out.off = await at(4); PS2.set(true); return out; }).catch(e => ({ err: e.message }));
     ok(rs[0] > 0 && rs[0] < rs[2] && rs[2] === 480 && rs[4] === 480 && rs.off > 480, 'RESOLUTION: LOWEST under MED; MED and HIGHEST both 480 lines while the PS2 filter is on, HIGHEST the screen\'s own with it off: ' + JSON.stringify(rs)); }
     await pg.evaluate(() => window.AUTOQ && AUTOQ.on(true)).catch(() => {});
-  { const av = await pg.evaluate(() => { const P = document.querySelector('#looks'), has = s => !!P.querySelector(s); return { avatar: BODIES.pick() === 'avatar', noBody: !has('[data-k=body]'), noWalker: !has('#lform,#lhair,#lbeard,#ldesign'), lines: ['avf', 'avb', 'avh', 'avs', 'avc', 'shoes'].every(k => has(`[data-k=${k}]`)), wear: P.querySelectorAll('.ltab[data-t=wear] select').length, lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(P.innerText) }; }).catch(e => ({ err: e.message }));
-    ok(av.avatar && av.noBody && av.noWalker && av.lines && av.wear === 14 && av.lean, 'YOU: you are the avatar, the only body; no Walker options; its figure, build, height, skin, hair colour and shoes, and 14 slots to wear (the 11 garments, the back and both hands): ' + JSON.stringify(av)); }
+  { const av = await pg.evaluate(() => { const P = document.querySelector('#looks'), has = s => !!P.querySelector(s); return { avatar: BODIES.pick() === 'avatar', noBody: !has('[data-k=body]'), noWalker: !has('#lform,#lhair,#lbeard,#ldesign'), lines: ['avf', 'avb', 'avh', 'avs', 'avc', 'shoes'].every(k => has(`[data-k=${k}]`)), wear: P.querySelectorAll('.ltab[data-t=wear] select[id^=lav-]').length, outfit: !!P.querySelector('#lavog'), lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(P.innerText) }; }).catch(e => ({ err: e.message }));
+    ok(av.avatar && av.noBody && av.noWalker && av.lines && av.wear === 14 && av.outfit && av.lean, 'YOU: you are the avatar, the only body; no Walker options; its figure, build, height, skin, hair colour and shoes, 14 slots to wear (the 11 garments, the back and both hands) and OUTFIT: ' + JSON.stringify(av)); }
   { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
       return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
     ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }

@@ -1,6 +1,6 @@
 // THE HEADSET: VR plays THE MARKET in a WebXR headset (a Quest 3 in its browser): you look out of the Walker's eyes or from behind him, walk by stick or teleport, see your body, hands and controllers, and an open window floats on a panel you point at with a controller or your hand; the menu's VR tab holds every setting.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, ED, FEEL, HANDHELD, keys, pos, RAG, st, UI, VIT, VR, W3} from './003b-systems.js';
+import {BOAT, ED, FEEL, keys, pos, RAG, st, UI, VIT, VR, W3} from './003b-systems.js';
 import {PCAM, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FADE, SYS, TILE} from './006-map-pre.js';
@@ -24,7 +24,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const TIP=['THE MARKET IN VR','LEFT STICK WALKS · RIGHT STICK TURNS · A JUMPS','X USES · Y KICKS · RIGHT TRIGGER RUNS · LEFT STICK PRESS: MENU','POINT + TRIGGER OR PINCH PRESSES · HOLD B: LEAVE VR'];
   const write=(c,t,L,big,small)=>{ const g=c.getContext('2d'), W=c.width, H=c.height; g.clearRect(0,0,W,H); g.fillStyle='rgba(16,18,26,.9)'; g.fillRect(0,0,W,H); g.strokeStyle='#2a2e3a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle';
     L.forEach((l,i)=>{ let px=i?small:big; do{ g.font=px+'px Silkscreen, monospace'; }while(g.measureText(l).width>W-28&&--px>9); g.fillStyle=i?'#ece5d3':'#f2c14e'; g.fillText(l,W/2,H/(L.length*2)*(i*2+1)); }); t.needsUpdate=true; };
-  const note=()=>{ const g=cv.getContext('2d'), W=cv.width, H=cv.height, L=VR.notes; g.clearRect(0,0,W,H); g.fillStyle='rgba(16,18,26,.9)'; g.fillRect(0,0,W,H); g.strokeStyle='#2a2e3a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle';
+  const note=()=>{ '@later'; const g=cv.getContext('2d'), W=cv.width, H=cv.height, L=VR.notes; g.clearRect(0,0,W,H); g.fillStyle='rgba(16,18,26,.9)'; g.fillRect(0,0,W,H); g.strokeStyle='#2a2e3a'; g.lineWidth=4; g.strokeRect(2,2,W-4,H-4); g.textAlign='center'; g.textBaseline='middle';
     L.forEach((o,i)=>{ const big=o.big&&L.length===1; let px=big?64:24; do{ g.font=px+'px Silkscreen, monospace'; }while(g.measureText(o.t).width>W-28&&--px>9); g.fillStyle=o.c||'#ece5d3'; g.fillText(o.t,W/2,H/(L.length*2)*(i*2+1)); }); tex.needsUpdate=true; };
   const tap=k=>{ for(const t of ['keydown','keyup'])dispatchEvent(new KeyboardEvent(t,{key:k,bubbles:true,cancelable:true})); };
 
@@ -32,7 +32,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const VP={id:'Meta Quest Touch (WebXR)',index:-1,connected:false,mapping:'standard',timestamp:0,axes:[0,0,0,0],buttons:Array.from({length:16},B0),hapticActuators:[]};
   const MAPB=[['R',4],['R',5],['L',4],['L',5],['L',1],['R',1],['L',0],['R',0]];
   const walkHand=()=>opt.hand==='left'?'right':'left';
-  const read=xf=>{ const H={L:null,R:null}; for(const s of xf.session.inputSources)if(s.gamepad&&!s.hand&&(s.handedness==='left'||s.handedness==='right'))H[s.handedness==='left'?'L':'R']=s.gamepad;
+  const read=xf=>{ '@later'; const H={L:null,R:null}; for(const s of xf.session.inputSources)if(s.gamepad&&!s.hand&&(s.handedness==='left'||s.handedness==='right'))H[s.handedness==='left'?'L':'R']=s.gamepad;
     MAPB.forEach((m,i)=>{ const b=H[m[0]]&&H[m[0]].buttons[m[1]], v=b?b.value:0; VP.buttons[i].value=v; VP.buttons[i].pressed=v>.5; });
     const ax=(g,k)=>!g?0:(g.axes.length>=4?g.axes[2+k]:g.axes[k])||0, [GW,GT]=opt.hand==='left'?[H.R,H.L]:[H.L,H.R]; VP.axes[0]=ax(GW,0); VP.axes[1]=ax(GW,1); VP.axes[2]=ax(GT,0); VP.axes[3]=ax(GT,1); VP.timestamp=performance.now();
     if(opt.move==='teleport'&&!UI.gamewin&&!SHARED.drive&&!VR.win&&vw()==='first'){ VR.tpa=VP.axes[1]<-.5; VP.axes[0]=VP.axes[1]=0; } else VR.tpa=false;   // in a vehicle, a window or a place that sets the view (the catacomb run), the walking stick stays a stick
@@ -40,16 +40,16 @@ import {collide, frame, PAD} from './075-main-13.js';
 
   const RAF=window.requestAnimationFrame, CAF=window.cancelAnimationFrame, Q=new Map(); let qid=1e9, nat=0, beat=false;
   const pulse=()=>{ nat=performance.now(); if(beat)RAF.call(window,pulse); };
-  const shim=on=>{ beat=on; if(!on){ window.requestAnimationFrame=RAF; window.cancelAnimationFrame=CAF; for(const [id,q] of Q)RAF.call(window,t=>{ if(Q.delete(id))q.f(t); }); return; } nat=performance.now(); RAF.call(window,pulse);
+  const shim=on=>{ '@later'; beat=on; if(!on){ window.requestAnimationFrame=RAF; window.cancelAnimationFrame=CAF; for(const [id,q] of Q)RAF.call(window,t=>{ if(Q.delete(id))q.f(t); }); return; } nat=performance.now(); RAF.call(window,pulse);
     window.requestAnimationFrame=f=>{ const id=++qid; Q.set(id,{f,n:RAF.call(window,t=>{ if(Q.delete(id))f(t); })}); return id; };
     window.cancelAnimationFrame=id=>{ const q=Q.get(id); if(q){ Q.delete(id); CAF.call(window,q.n); } else CAF.call(window,id); }; };
-  const flush=t=>{ if(!Q.size||performance.now()-nat<250)return; const L=[...Q.values()]; Q.clear(); for(const q of L){ CAF.call(window,q.n); try{ q.f(t); }catch(e){ console.warn('VR: a frame callback',e); } } };
+  const flush=t=>{ if(!Q.size||performance.now()-nat<250)return; nat=performance.now(); const L=[...Q.values()]; Q.clear(); for(const q of L){ CAF.call(window,q.n); try{ q.f(t); }catch(e){ console.warn('VR: a frame callback',e); } } };   // (nat first: a callback that is itself a headset frame must not flush again inside it)
 
   const [pcv,ptex]=label(2,2);
   const panel=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial(flat({map:ptex,transparent:true,side:THREE.DoubleSide}))); panel.visible=false; TRK.add(panel);
   // a canvas in an open window (a cabinet's game, the BBS screen) is a picture that never mutates the DOM: a small plane over its spot on the panel shows it live, a frame at a time
   const LIVE=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial(flat({side:THREE.DoubleSide}))); LIVE.visible=false; LIVE.position.z=.002; LIVE.renderOrder=1; panel.add(LIVE); let liveCv=null;
-  const live=()=>{ if(!panel.visible||!PN.ready){ LIVE.visible=false; return; } let c=null, r=null; for(const el of PN.els||[]){ const q=el.querySelector('canvas'); if(q){ const b=q.getBoundingClientRect(); if(b.width>=4&&b.height>=4){ c=q; r=b; break; } } }
+  const live=()=>{ '@later'; if(!panel.visible||!PN.ready){ LIVE.visible=false; return; } let c=null, r=null; for(const el of PN.els||[]){ const q=el.querySelector('canvas'); if(q){ const b=q.getBoundingClientRect(); if(b.width>=4&&b.height>=4){ c=q; r=b; break; } } }
     if(!c){ LIVE.visible=false; return; } if(c!==liveCv){ liveCv=c; if(LIVE.material.map)LIVE.material.map.dispose(); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; LIVE.material.map=t; LIVE.material.needsUpdate=true; }
     LIVE.position.set((r.left+r.width/2)/PN.W-.5,.5-(r.top+r.height/2)/PN.H,.002); LIVE.scale.set(r.width/PN.W,r.height/PN.H,1); LIVE.material.map.needsUpdate=true; LIVE.visible=true; };
   const hl=new THREE.LineLoop(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(12,3)),new THREE.LineBasicMaterial(flat({color:0xf2c14e}))); hl.visible=false; hl.frustumCulled=false; panel.add(hl);
@@ -81,9 +81,9 @@ import {collide, frame, PAD} from './075-main-13.js';
       const g=pcv.getContext('2d'); g.clearRect(0,0,W,H); for(const [c,r] of parts)g.drawImage(c,r.left,r.top,r.width,r.height); ptex.needsUpdate=true;
       PN.W=W; PN.H=H; PN.ready=true; PN.n++; PN.hits=hits; PN.fresh=sig()===PN.shot; if(!PN.fresh)dirt(); panel.scale.set(opt.panw,opt.panw*H/W,1); }
     catch(e){ console.warn('VR: the window picture',e); } PN.t=performance.now(); PN.busy=false; };
-  const watch=()=>{ if(PN.mo)PN.mo.disconnect(); PN.els=PAD.panels(); if(!VR.win)return; PN.mo=PN.mo||new MutationObserver(()=>{ const g=sig(); if(g!==PN.seen){ PN.seen=g; dirt(); PN.fresh=g===PN.shot; } });
+  const watch=()=>{ '@later'; if(PN.mo)PN.mo.disconnect(); PN.els=PAD.panels(); if(!VR.win)return; PN.mo=PN.mo||new MutationObserver(()=>{ const g=sig(); if(g!==PN.seen){ PN.seen=g; dirt(); PN.fresh=g===PN.shot; } });
     for(const el of PN.els)PN.mo.observe(el,{subtree:true,childList:true,attributes:true,characterData:true}); dirt(); };
-  const openPanel=()=>{ FW.set(0,0,-1).applyQuaternion(HQ); FW.y=0; if(FW.lengthSq()<1e-4)FW.set(0,0,-1); FW.normalize();
+  const openPanel=()=>{ '@later'; FW.set(0,0,-1).applyQuaternion(HQ); FW.y=0; if(FW.lengthSq()<1e-4)FW.set(0,0,-1); FW.normalize();
     panel.position.copy(HL).addScaledVector(FW,opt.pand); panel.position.y-=.12; panel.rotation.set(0,Math.atan2(-FW.x,-FW.z),0); panel.scale.set(opt.panw,opt.panw*PN.H/PN.W,1); panel.updateMatrix(); panel.visible=true; watch(); };
   const closePanel=()=>{ panel.visible=false; hl.visible=false; if(PN.mo)PN.mo.disconnect(); PN.els=[]; for(const P of PTR)P.press=null; };
 
@@ -93,19 +93,19 @@ import {collide, frame, PAD} from './075-main-13.js';
   const fire=el=>{ el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); };
   const rangeAt=(el,x)=>{ const r=el.getBoundingClientRect(), k=Math.max(0,Math.min(1,(x-r.left)/(r.width||1))), mn=el.min===''?0:+el.min, mx=el.max===''?100:+el.max; el.value=String(mn+k*(mx-mn)); fire(el); mark(); };
   const scroller=el=>{ for(let e=el;e&&e!==document.body&&e!==document.documentElement;e=e.parentElement){ const o=getComputedStyle(e).overflowY; if((o==='auto'||o==='scroll')&&e.scrollHeight>e.clientHeight+2)return e; } return null; };
-  const clickAt=(x,y,want)=>{ let el=at(x,y); if(want&&!(el&&(el===want||want.contains(el)))){ const q=want.getBoundingClientRect(); x=q.left+q.width/2; y=q.top+q.height/2; el=want; } if(!el)return; const o={bubbles:true,cancelable:true,composed:true,clientX:x,clientY:y,view:window,button:0,buttons:1};
+  const clickAt=(x,y,want)=>{ '@later'; let el=at(x,y); if(want&&!(el&&(el===want||want.contains(el)))){ const q=want.getBoundingClientRect(); x=q.left+q.width/2; y=q.top+q.height/2; el=want; } if(!el)return; const o={bubbles:true,cancelable:true,composed:true,clientX:x,clientY:y,view:window,button:0,buttons:1};
     el.dispatchEvent(new MouseEvent('mousedown',o));
     const f=el.closest('input,select,textarea,button,a[href],[tabindex]'); if(f&&f.focus)f.focus({preventScroll:true});
     el.dispatchEvent(new MouseEvent('mouseup',{...o,buttons:0}));
     if(f&&f.tagName==='SELECT'&&f.options.length){ f.selectedIndex=(f.selectedIndex+1)%f.options.length; fire(f); } else if(f&&f.type==='range')rangeAt(f,x); else el.dispatchEvent(new MouseEvent('click',{...o,buttons:0}));
     mark(); VR.clicks=(VR.clicks||0)+1; };
-  const onSel=e=>{ const P=PTR.find(p=>p.src===e.inputSource); if(!P)return;
+  const onSel=e=>{ '@later'; const P=PTR.find(p=>p.src===e.inputSource); if(!P)return;
     if(e.type==='selectstart'){ if(!P.hit||!PN.ready)return; let x=P.x, y=P.y, el=PN.fresh?at(x,y):null;
       if(!el){ const w=inPic(x,y); if(!w)return; const r=w[1], q=w[0].getBoundingClientRect(); el=w[0]; x=q.left+(x-r.left)/(r.width||1)*q.width; y=q.top+(y-r.top)/(r.height||1)*q.height; }
       P.press={x0:x,y0:y,ly:P.y,moved:false,el,range:!!(el.matches&&el.matches('input[type=range]'))}; if(P.press.range)rangeAt(el,x); return; }
     const pr=P.press; P.press=null; if(pr&&!pr.moved&&!pr.range&&pr.el.isConnected)clickAt(pr.x0,pr.y0,pr.el); };
 
-  const point=(xf,ref,dt)=>{ let k=0, top=null, nc=0; VR.grips.length=0;
+  const point=(xf,ref,dt)=>{ '@later'; let k=0, top=null, nc=0; VR.grips.length=0;
     for(const s of xf.session.inputSources){ if(k>=PTR.length)break; const p=s.targetRaySpace&&xf.getPose(s.targetRaySpace,ref); if(!p)continue; const P=PTR[k++], T=p.transform; P.src=s; P.hit=false;
       RO.set(T.position.x,T.position.y,T.position.z); RD.set(0,0,-1).applyQuaternion(Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w)); P.o=[RO.x,RO.y,RO.z]; P.d=[RD.x,RD.y,RD.z]; let len=1.2;
       if(!s.hand&&nc<2&&s.gripSpace){ const g=xf.getPose(s.gripSpace,ref), C=CTL[nc++], U=C.userData; if(g){ const G=g.transform; C.position.set(G.position.x,G.position.y,G.position.z); C.quaternion.set(G.orientation.x,G.orientation.y,G.orientation.z,G.orientation.w); C.visible=!!opt.ctl;
@@ -122,7 +122,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     hl.visible=false; if(top){ const el=PN.fresh&&at(top.x,top.y), c0=el&&el.closest(CLK), w=c0?null:inPic(top.x,top.y), c=c0||(w&&w[0]);
       if(c){ const r=c0?c0.getBoundingClientRect():w[1], a=hl.geometry.attributes.position, U=x=>x/PN.W-.5, V=y=>.5-y/PN.H; a.setXYZ(0,U(r.left),V(r.top),.001); a.setXYZ(1,U(r.right),V(r.top),.001); a.setXYZ(2,U(r.right),V(r.bottom),.001); a.setXYZ(3,U(r.left),V(r.bottom),.001); a.needsUpdate=true; hl.visible=true; } } };
 
-  const hands=(xf,ref)=>{ let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null;
+  const hands=(xf,ref)=>{ '@later'; let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null;
     for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
         if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
@@ -133,7 +133,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     JM.count=n; JM.instanceMatrix.needsUpdate=true; JM.visible=opt.hands; VR.hands=nh;
     if(wrist.visible&&tip){ const d=TIPR.distanceTo(wrist.position); if(d<.03&&!VR.wt){ VR.wt=1; tap('Escape'); } else if(d>.06)VR.wt=0; } };
 
-  const teleport=()=>{ if(VR.tpWas&&!VR.tpa&&VR.tp&&VR.tp.ok&&free()){ const dx=VR.tp.x-pos.x, dz=VR.tp.z-pos.z; pos.x+=dx; pos.z+=dz; O.x+=dx; O.z+=dz; collide(pos); VR.px=pos.x; VR.pz=pos.z; if(FEEL.take())FEEL.sync(); VR.blink=1; }
+  const teleport=()=>{ '@later'; if(VR.tpWas&&!VR.tpa&&VR.tp&&VR.tp.ok&&free()){ const dx=VR.tp.x-pos.x, dz=VR.tp.z-pos.z; pos.x+=dx; pos.z+=dz; O.x+=dx; O.z+=dz; collide(pos); VR.px=pos.x; VR.pz=pos.z; if(FEEL.take())FEEL.sync(); VR.blink=1; }
     VR.tpWas=VR.tpa; const want=VR.tpa&&vw()==='first'&&free(), P=want&&PTR.find(p=>p.src&&p.src.handedness===walkHand()&&!p.src.hand&&p.o); let hit=null;
     if(P){ RO.set(P.o[0],P.o[1],P.o[2]); RD.set(P.d[0],P.d[1],P.d[2]); const a=ARC.geometry.attributes.position, gy=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):SHARED.py; let n=0;
       for(let t=0;t<2.5&&n<64;t+=.05){ TPP.set(RO.x+RD.x*5*t,RO.y+RD.y*5*t-4.9*t*t,RO.z+RD.z*5*t); DOLLY.localToWorld(TPP); a.setXYZ(n++,TPP.x,TPP.y,TPP.z); const g=gy(TPP.x,TPP.z); if(TPP.y<=g+.01){ hit={x:TPP.x,y:g,z:TPP.z,ok:true}; break; } }
@@ -156,7 +156,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!SHARED.drive&&!(VR.want&&VR.want.turn===false);
   const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
-  SYS.add('xr',(dt,xf)=>{ const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
+  SYS.add('xr',(dt,xf)=>{ '@later'; const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;   // a move since the last frame (a door, a fade, a teleport) carries the room with you
     if(!VR.cal)calib(); if(UI.view!=='first')UI.setView('first'); VR.tip-=dt; VR.fn++; VR.blink=Math.max(0,VR.blink-dt*5);
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
@@ -173,7 +173,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     const mv=opt.vig&&!SHARED.drive&&(opt.move==='stick'&&Math.hypot(VP.axes[0],VP.axes[1])>.2||opt.turn==='smooth'&&Math.abs(rx)>.3)?1:0; vig.material.opacity+=(mv-vig.material.opacity)*Math.min(1,dt*8); vig.visible=vig.material.opacity>.02;
     if(ref){ point(xf,ref,dt); hands(xf,ref); if(!UI.gamewin)teleport(); else { VR.tp=null; VR.tpWas=false; ARC.visible=RING.visible=false; } } live(); },'162c-vr');
 
-  VR.draw=hold=>{ if(!VR.pose)return; const r=renderer;
+  VR.draw=hold=>{ '@later'; if(!VR.pose)return; const r=renderer;
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;
     const ey=SHARED.py+VR.eye+opt.height/100*FEEL.MV-VR.y0*FEEL.MV;
     if(SHARED.drive&&SHARED.drive.dolly)SHARED.drive.dolly(DOLLY,HL,HQ); else { if(vw()==='behind'){ const Y=VR.want&&VR.want.face!=null?VR.want.face+Math.PI:VR.yaw; DOLLY.position.set(pos.x+Math.sin(Y)*2.6*FEEL.MH,ey+1.1*FEEL.MV,pos.z+Math.cos(Y)*2.6*FEEL.MH); } else DOLLY.position.set(O.x,ey,O.z);
@@ -188,7 +188,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     if(hold||!VR.cal)r.clear(); else{ r.render(SHARED.drive&&SHARED.drive.scene||scene,CAM); HG.matrix.copy(CAM.matrixWorld); HG.matrixWorldNeedsUpdate=true; const ac=r.autoClear; r.autoClear=false; r.clearDepth(); r.render(HUD,CAM); r.autoClear=ac; }
     r.xr.enabled=false; };
 
-  const loop=(t,xf)=>{ const ref=renderer.xr.getReferenceSpace(); VR.pose=ref?xf.getViewerPose(ref):null; VR.rt=renderer.getRenderTarget(); read(xf); flush(t);
+  const loop=(t,xf)=>{ '@later'; const ref=renderer.xr.getReferenceSpace(); VR.pose=ref?xf.getViewerPose(ref):null; VR.rt=renderer.getRenderTarget(); read(xf); flush(t);
     try{ PAD.step(t,VP); }catch(e){ if(!VR.err){ VR.err=1; console.warn('VR: the controllers',e); } }
     try{ frame(t,xf); }catch(e){ if(!VR.err){ VR.err=1; console.warn('VR: the frame',e); } } };
 
@@ -218,7 +218,7 @@ import {collide, frame, PAD} from './075-main-13.js';
   VR.note=(t,c,o)=>{ if(!VR.on||!t)return; o=o||{}; VR.tip=0; if(o.only)VR.notes.length=0; VR.notes.push({t:String(t),c,big:!!o.big,until:performance.now()+(o.ms||4000)}); while(VR.notes.length>3)VR.notes.shift(); };
   VR.ask=w=>{ VR.want=w||null; VR.cal=false; };
   VR.hand=side=>{ if(!VR.on)return null; const C=CTL.find(c=>c.userData.on&&c.userData.h===side); return C?C.userData:null; };   // {wp, wq, v}: the controller's world position, orientation and velocity, or null
-  window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen||!!(HANDHELD.up&&HANDHELD.up()),fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
+  window.VR=VR; VR.state=()=>({vrview:vw(),notes:VR.notes.map(o=>o.t),turns:turns(),view:UI.view,body:W3.group.visible,nohead:VR.nh,pad:!!PAD.xr,menu:!!UI.menuOpen,fov:PCAM.fov,yaw:SHARED.yawTo,pitch:SHARED.pitchTo,win:VR.win,panel:panel.visible&&PN.ready,fresh:PN.ready&&PN.fresh&&!PN.dirty&&!PN.busy,shots:PN.n,clicks:VR.clicks||0,hands:VR.hands,ctl:VR.ctl,wrist:wrist.visible,hits:PTR.filter(P=>P.hit).length,tp:VR.tp,move:opt.move,live:LIVE.visible,gamewin:UI.gamewin||null});
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});
 
@@ -240,5 +240,5 @@ import {collide, frame, PAD} from './075-main-13.js';
   VR.enter=async()=>{ '@later'; if(VR.on||VR.busy||!xr)return; VR.busy=true;
     try{ const s=await xr.requestSession('immersive-vr',{optionalFeatures:['hand-tracking']}); renderer.xr.setReferenceSpaceType('local'); renderer.xr.setFramebufferScaleFactor(opt.scale); await renderer.xr.setSession(s); start(s); }
     catch(e){ console.warn('VR: the headset did not start',e); } finally{ VR.busy=false; } };
-  VR.leave=()=>{ '@later'; if(VR.s)VR.s.end().catch(()=>stop()); };
+  VR.leave=()=>{ if(VR.s)VR.s.end().catch(()=>stop()); };
 }

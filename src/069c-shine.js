@@ -56,7 +56,7 @@ const SHINE=window.SHINE={src:[],porch:[]};
   { const B=SHARED.BOD, B0=B.B0; porch(B.X((B0.x0+B0.x1)/2),B.Z(B0.y1),0); if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; porch(MODS.apts.doorAt[0],MODS.apts.doorAt[1],MODS.apts.doorHd,-1); }
     if(B.GD)porch(B.X(B.GD.door[0]),B.Z(B.GD.door[1]),0,1.6);
     for(const d of STORE.main?STORE.main.doors:[])if(!/THEATRE/.test(d[0]))porch(d[3],d[4],d[5]);
-    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5);
+    { const TB=TURN(WROW.bar,WP.bar.face), bp=TB.pt((TB.L.x0+TB.L.x1)/2,TB.L.y1); porch(B.X(bp[0]),B.Z(bp[1]),TB.hd(0)); if(WROW.mus){ const TM=TURN(WROW.mus,WP.museum.face), mp=TM.pt((TM.L.x0+TM.L.x1)/2,TM.L.y1), mx=B.X(mp[0]), mz=B.Z(mp[1]); porch(mx,mz,TM.hd(0),1.6,1.5); porch(mx,mz,TM.hd(0),-1.6,1.5); }
       if(WP.art&&!AWAY.has('art')&&STORE.main){ const TA=TURN(STORE.main.lot('art',1),WP.art.face), ap=TA.pt((TA.L.x0+TA.L.x1)/2,TA.L.y1), ax=B.X(ap[0]), az=B.Z(ap[1]); porch(ax,az,TA.hd(0),1.6,1.5); porch(ax,az,TA.hd(0),-1.6,1.5); } }
     sconce.computeBoundingSphere(); jar.computeBoundingSphere(); WED.meshes.push({place:'street',me:sconce,items:PI.slice(0,sconce.count)},{place:'street',me:jar,items:PI.slice(0,jar.count).map(o=>({k:o.k,x:o.x,y:o.y,z:o.z}))}); }
   if(TLX.mesh){ const sm=TLX.mesh, p=V(), s=V(); for(let i=0;i<sm.count;i++){ sm.getMatrixAt(i,m4); m4.decompose(p,q,s); if(Math.max(s.x,s.z)>.15*M&&s.y>.15*M)halo(p.clone(),.36*M,new THREE.Color(),null,{sig:i}); } }

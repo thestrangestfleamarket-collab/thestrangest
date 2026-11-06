@@ -40,11 +40,11 @@ import {SYS, TILE} from './006-map-pre.js';
       float qx=(texture2D(uF,vUv-vec2(uTx,0.)).y-F.x+F.y-texture2D(uF,vUv+vec2(uTx,0.)).x)*.5, qz=(texture2D(uF,vUv-vec2(0.,uTx)).w-F.z+F.w-texture2D(uF,vUv+vec2(0.,uTx)).z)*.5, a=max(h,.05)*uL;
       gl_FragColor=vec4((B.r+h-B.g)*uWU,clamp(qx/a,-6.,6.),clamp(qz/a,-6.,6.),h); }`);
   const CAM=new THREE.Camera(), mk=()=>{ const r=new THREE.WebGLRenderTarget(G,G,{type:ty,format:THREE.RGBAFormat,minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthBuffer:false}); r.texture.generateMipmaps=false; return r; };
-  const init=renderer=>{ if(RT)return; ty=renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffer_float')?THREE.FloatType:THREE.HalfFloatType; RT={H:[mk(),mk()],F:[mk(),mk()],O:mk()}; RT.O.texture.magFilter=RT.O.texture.minFilter=THREE.LinearFilter; RT.O.texture.needsUpdate=true; uTex.value=RT.O.texture; };
+  const init=renderer=>{ '@later'; if(RT)return; ty=renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffer_float')?THREE.FloatType:THREE.HalfFloatType; RT={H:[mk(),mk()],F:[mk(),mk()],O:mk()}; RT.O.texture.magFilter=RT.O.texture.minFilter=THREE.LinearFilter; RT.O.texture.needsUpdate=true; uTex.value=RT.O.texture; };
   const draw=(renderer,s,t)=>{ renderer.setRenderTarget(t); renderer.render(s,CAM); };
   const near=(px,pz)=>waters.filter(w=>!w.off&&w.box[0]<px+SW&&w.box[2]>px-SW&&w.box[1]<pz+SW&&w.box[3]>pz-SW);
   // the bed and rest surface under every cell, from the waters' own shapes; a cell no water claims is a wall
-  const fill=(ws,j0,j1,i0,i1)=>{ for(let j=j0;j<j1;j++){ const z=z0+(j+.5)*CELL; for(let i=i0;i<i1;i++){ const x=x0+(i+.5)*CELL, o=(j*G+i)*4; let w=null; for(const q of ws)if(q.has(x,z)){ w=q; break; }
+  const fill=(ws,j0,j1,i0,i1)=>{ '@later'; for(let j=j0;j<j1;j++){ const z=z0+(j+.5)*CELL; for(let i=i0;i<i1;i++){ const x=x0+(i+.5)*CELL, o=(j*G+i)*4; let w=null; for(const q of ws)if(q.has(x,z)){ w=q; break; }
         if(!w||w.solid&&w.solid(x,z)){ bed[o]=1e3; bed[o+1]=0; bed[o+2]=0; bed[o+3]=0; continue; } bed[o]=Math.max(w.bed(x,z),w.rest(x,z)-DMAX*WU)*MPU; bed[o+1]=w.rest(x,z)*MPU; bed[o+2]=w.swell?1:0; bed[o+3]=1; } } };
   FLOW.step=(renderer,dt,pos)=>{ FLOW.under=false; if(SHARED.LVL!=='up'||!waters.length){ uOn.value=0; live=false; return; }
     const ws=near(pos.x,pos.z); if(!ws.length){ uOn.value=0; live=false; return; } init(renderer);
@@ -66,7 +66,7 @@ import {SYS, TILE} from './006-map-pre.js';
     const c=FLOW.cur; c.ok=false; if(FLOW.need){ const i=Math.floor((pos.x-x0)/CELL), j=Math.floor((pos.z-z0)/CELL); if(i>=0&&j>=0&&i<G&&j<G){ const b=ty===THREE.FloatType?new Float32Array(4):new Uint16Array(4);
         renderer.readRenderTargetPixels(RT.O,i,j,1,1,b); const v=ty===THREE.FloatType?b:Array.from(b,THREE.DataUtils.fromHalfFloat); c.h=v[0]; c.u=v[1]*WU; c.w=v[2]*WU; c.d=v[3]; c.ok=true; } } FLOW.need=false; };
   // for the checks: the whole window read back once (the largest rise and flow, the wet cells)
-  FLOW.peek=renderer=>{ if(!RT)return null; const n=G*G*4, b=ty===THREE.FloatType?new Float32Array(n):new Uint16Array(n); renderer.readRenderTargetPixels(RT.O,0,0,G,G,b); const v=ty===THREE.FloatType?b:Float32Array.from(b,THREE.DataUtils.fromHalfFloat);
+  FLOW.peek=renderer=>{ '@later'; if(!RT)return null; const n=G*G*4, b=ty===THREE.FloatType?new Float32Array(n):new Uint16Array(n); renderer.readRenderTargetPixels(RT.O,0,0,G,G,b); const v=ty===THREE.FloatType?b:Float32Array.from(b,THREE.DataUtils.fromHalfFloat);
     let rise=0, sp=0, wet=0, at=null; for(let k=0;k<G*G;k++){ if(v[k*4+3]<1e-3)continue; wet++; rise=Math.max(rise,Math.abs(v[k*4])*MPU); const s=Math.hypot(v[k*4+1],v[k*4+2]); if(s>sp){ sp=s; at=[x0+(k%G+.5)*CELL,z0+((k/G|0)+.5)*CELL]; } }
     return {rise:+rise.toFixed(3),speed:+sp.toFixed(3),wet,at}; };
   // how far you see under water dm metres down (owner, 28 Oct 2026: "gets darker the further down you go, need headlight or ability to see in dark (mushrooms)"): daylight dies

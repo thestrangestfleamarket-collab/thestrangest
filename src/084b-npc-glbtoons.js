@@ -1,4 +1,4 @@
-// The owner's .glb toons (donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee, teddy bear): fetched after the start, walking the street.
+// The owner's .glb toons: the teddy bear, fetched after the start (the donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee and ticket fox are archived, owner 5 Nov 2026).
 import {CINEMA} from './003b-systems.js';
 import {QS, SYS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
@@ -9,16 +9,7 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     scarf:{f:-.35,s:.2,k:35,c:4,lim:.5}, hood:{f:-.1,s:.1,k:60,c:6,lim:.25}, horn:{f:-.06,s:.06,k:90,c:8,lim:.15}, hat:{f:-.08,s:.08,k:80,c:7,lim:.2}, umb:{f:-.12,s:.12,k:40,c:4,lim:.3},
     flapL:{f:-.3,k:45,c:5,lim:.4}, flapR:{f:-.3,k:45,c:5,lim:.4}, tail:{s:.3,y:.4,k:30,c:3,lim:.6}, tailFin:{s:.3,y:.4,k:30,c:3,lim:.6}, armLt:{f:-.1,k:50,c:5,lim:.3}, armRt:{f:-.1,k:50,c:5,lim:.3} };
   const KIND={
-    donut:{metres:.9,radius:.24,speed:.38,stride:9,at:58,o:{leg:.6,arm:.2,bob:.03,rock:.06}},
-    origamifox:{metres:1.25,radius:.24,speed:.42,stride:7,at:64},
-    coatbear:{metres:1.75,radius:.32,speed:.36,stride:6,at:70},
-    mrblocks:{metres:1.35,radius:.3,speed:.34,stride:6,at:72,o:{leg:.45,arm:.5,bob:.02,rock:.03}},
-    emberknight:{metres:1.85,radius:.32,speed:.4,stride:6,at:78},
-    number80:{metres:1.6,radius:.22,speed:.45,stride:7,at:80},
-    rainfish:{metres:1.15,radius:.3,speed:.3,stride:8,at:86,o:{leg:.55,arm:.35,bob:.025,rock:.07}},
-    manatee:{metres:1.9,radius:.34,speed:.28,stride:5,at:88,o:{leg:.35,arm:.35,bob:.02,rock:.05}},
-    teddy:{metres:1.4,radius:.3,speed:.34,stride:6,at:66,o:{leg:.4,arm:.3,bob:.025,rock:.05}},
-    ticketfox:{data:'origamifox',metres:1.15,radius:.24,speed:.42,stride:7,at:62} };
+    teddy:{metres:1.4,radius:.3,speed:.34,stride:6,at:66,o:{leg:.4,arm:.3,bob:.025,rock:.05}} };
   const skirt=def=>{ const S=def.bones.filter(b=>/^[kc]\d+$/.test(b[0])).map(b=>b[0]); if(!S.length)return null;
     const ys=def.bones.filter(b=>S.includes(b[0])).map(b=>b[2][1]), top=Math.max(...ys), bot=Math.min(...ys), hip=def.bones.find(b=>b[0]==='hips')[2], r=Math.max(...def.bones.filter(b=>S.includes(b[0])).map(b=>Math.abs(b[2][0])))||1;
     const at=Object.fromEntries(def.bones.map(b=>[b[0],b[2]]));
@@ -32,4 +23,3 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
     GLBTOONS.list.push(N); GLBTOONS[key]=N; if(CINEMA.toon)CINEMA.toon(key,N); return N; };
   GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)); if(SH&&KIND[SH])go(); else SYS.onStart(go,'084b-npc-glbtoons'); }
-export {GLBTOONS};

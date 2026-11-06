@@ -11,7 +11,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
   // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
-  const tokenbot=()=>{ const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
+  const tokenbot=()=>{ '@later'; const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
     const BODY='plastic:#5a2a8a', TEAL='plastic:#2ad0c8', STEEL='metal:#8a8c90', DARK='plastic:#18181a';
     mk(B.torso,new THREE.BoxGeometry(.4,.42,.3),BODY,[0,.21,0]); mk(B.torso,new THREE.BoxGeometry(.07,.014,.01),STEEL,[0,.33,.152]); mk(B.torso,new THREE.BoxGeometry(.16,.04,.01),DARK,[0,.15,.152]); mk(B.torso,new THREE.BoxGeometry(.05,.1,.004),'plain:#f2c14e',[0,.09,.157]);
     mk(B.hips,new THREE.BoxGeometry(.32,.12,.26),DARK,[0,-.04,0]);
@@ -26,7 +26,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   // the prizes and what they cost in tickets, the best you can have first
   const PRIZES=[['plush_bear',30],['plush_duck',12],['prize_yoyo',8],['kazoo',6],['prize_ring',4]];
   // a token a go (the changer by the door sells them); tickets come out of the games, prizes off the counter
-  const tok=()=>INV.items.arc_token||0, needTok=()=>tok()<1?'YOU NEED A TOKEN. THE CHANGER BY THE DOOR SELLS THEM.':'', payTok=()=>FORAGE.take('arc_token',1);
+  const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
   ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));

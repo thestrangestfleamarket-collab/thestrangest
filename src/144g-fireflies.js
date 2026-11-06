@@ -18,10 +18,10 @@ import {WILD} from './144f-wild.js';
     const G=new THREE.BufferGeometry(), n=C.length*N; G.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(n*3),3)); G.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(n*3),3));
     pts=new THREE.Points(G,glowMat()); pts.frustumCulled=false; pts.raycast=()=>{}; MAPG.park.add(pts);
     const HB=new THREE.BoxGeometry(2.2*T,1.2*T,2.2*T), HM=new THREE.MeshBasicMaterial({visible:false});
-    SW=C.map((c,j)=>{ const y=SHARED.groundY?SHARED.groundY(c.x,c.z):0, hb=new THREE.Mesh(HB,HM); hb.position.set(c.x,y+.6*WU,c.z); MAPG.park.add(hb);
+    SW=C.map((c,j)=>{ '@later'; const y=SHARED.groundY?SHARED.groundY(c.x,c.z):0, hb=new THREE.Mesh(HB,HM); hb.position.set(c.x,y+.6*WU,c.z); MAPG.park.add(hb);
       const sw={x:c.x,z:c.z,y,hb,f:[...Array(N)].map(()=>({a:Math.random()*6.3,b:Math.random()*6.3,r:rnd(.3,2)*WU,h:rnd(.3,1.8)*WU,s:rnd(.2,.5),ph:Math.random()*6,next:rnd(0,5),on:0}))};
       UI.thing({name:'FIREFLIES',obj:hb,reach:2.5*T,near:3.5*T,tall:.6*T,act:()=>catchOne(sw)}); return sw; }); return true; };
-  const catchOne=sw=>{ if(!out())return say('NO FIREFLIES NOW. THEY COME OUT AT NIGHT.','#c8a090'); if(Math.hypot(sw.x-pos.x,sw.z-pos.z)>3.5*T)return say('GO NEARER.','#c8a090');
+  const catchOne=sw=>{ '@later'; if(!out())return say('NO FIREFLIES NOW. THEY COME OUT AT NIGHT.','#c8a090'); if(Math.hypot(sw.x-pos.x,sw.z-pos.z)>3.5*T)return say('GO NEARER.','#c8a090');
     const first=!WILD.seen('firefly'), jar=JARS.find(j=>FORAGE.has(j));
     if(!FORAGE.use('ento',-15,40))return say('IT BLINKS OUT AND IS GONE FROM YOUR HANDS.','#c8a090');
     if(jar&&!FORAGE.has('jar_fly')){ FORAGE.take(jar,1); FORAGE.give('jar_fly',1); S.jar=jar; save(); say('A FEW FIREFLIES GO IN YOUR JAR. IT GLOWS. THEY GO FREE AT DAWN, OR WHEN YOU OPEN IT.','#e8f08a'); }

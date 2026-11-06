@@ -30,6 +30,8 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     boom:{len:.9,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=(Math.sin(TAU*(48-20*t)*s)*.6+F(rnd(),.05)*.5)*Math.min(t*40,1)*env(t,2.5); } }},
     creak:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=F(rnd(),.2)*(.6+.4*Math.sin(TAU*(28+10*t)*s))*Math.sin(t*Math.PI)*.4; } }},
     drip:{len:.18,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(1400-600*t)*s)*env(t,4)*.3; } }},
+    splash:{len:.32,f:(D,n,S)=>{ const f=lp(); for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=f(rnd(),.35)*env(t,2.5)*.5+Math.sin(TAU*(180-120*t)*s)*env(t,6)*.25; } }},
+    blip:{len:.06,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=Math.sin(TAU*1800*s)*Math.sin(t*Math.PI)*.3; } }},
     chirp:{len:.22,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S, k=Math.floor(t*3), u=t*3-k; D[i]=Math.sin(TAU*(2600+1400*u+300*k)*s)*Math.sin(u*Math.PI)*.2; } }},
     cricket:{len:.45,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n, g=(s*26)%1<.3?1:0; D[i]=Math.sin(TAU*4200*s)*g*Math.sin(t*Math.PI)*.12; } }},
     bark:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.5|0]){ const dt=i-st; if(dt>=0&&dt<n*.4){ const t=dt/(n*.4), s=dt/S; v+=(Math.sin(TAU*(320-80*t)*s)*.5+F(rnd(),.4)*.4)*Math.min(t*20,1)*env(t,2); } } D[i]=v*.5; } }},
@@ -51,7 +53,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     const S=c.sampleRate, n=Math.max(1,Math.round(r.len*S)), b=c.createBuffer(1,n,S); r.f(b.getChannelData(0),n,S); return BUF[key]=b; };
   const V=new THREE.Vector3(); const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
     if(P){ V.set(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+1,z).project(SHARED.cam); P.pan.value=Math.max(-.8,Math.min(.8,V.x*.8)); } return k; };
-  SFX.play=(k,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on||!R[k])return null; const b=SFX.buffer(k,c); if(!b)return null;
+  SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on||!R[k])return null; const b=SFX.buffer(k,c); if(!b)return null;
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!!R[k].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
     let P=null; if(o.at&&c.createStereoPanner){ P=c.createStereoPanner(); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
     const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); s.start(c.currentTime+(o.delay||0)); return {s,G,P}; };

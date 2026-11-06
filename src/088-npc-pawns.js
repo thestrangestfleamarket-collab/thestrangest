@@ -74,7 +74,7 @@ import {PAWNS} from './087-npc-creatures.js';
     const ix=g.index.array, I=new Uint32Array(ix.length+G.i.length); I.set(ix); for(let k=0;k<G.i.length;k++)I[ix.length+k]=G.i[k]+o; g.setIndex(new THREE.BufferAttribute(I,1)); return g; };
   const PEOPLE=['hero_m','hero_f','villager_m','villager_f'];
   MK=([key,kind,copy],i,X={})=>{ const D=PW[kind], rig=rigOf(D.rig), AR=armsOf(D,kind,rig,!!copy), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CLIPS[n])); let cur=null;
-    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.cloth!=null?recloth(withArms(geomOf(D.mesh),AR),X.cloth):copy?golem(withArms(geomOf(D.mesh),AR),copy*7+i):dressed(withArms(geomOf(D.mesh),AR),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:SHARED.BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:SHARED.BOD.ZS(i%2?SHARED.BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...(!copy&&/^(skeleton|ogre)/.test(key)&&QS.get('sheet')!==key&&DUN()||{}),
+    const N=makeNPC(null,{key,name:key.toUpperCase().replace('_',' '),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.cloth!=null?recloth(withArms(geomOf(D.mesh),AR),X.cloth):copy?golem(withArms(geomOf(D.mesh),AR),7):dressed(withArms(geomOf(D.mesh),AR),UNIFORM[key]),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres:1.35,x:SHARED.BOD.XS(66+(i%12)*4.4+(copy?1.7*copy:0)),z:SHARED.BOD.ZS(i%2?SHARED.BOD.FAR+.8:-73.6),lane:STLANE,free:stfree,roam:true,ground:(x,z)=>MODS.bodega.ground(x,z),radius:.3,speed:.5,stride:0,rock:0,bob:0,...((copy||/^(skeleton|ogre)/.test(key))&&QS.get('sheet')!==key&&DUN()||{}),
       brain:HOLD?(dt,you,st)=>{ st.to=null; st.hold=true; }:undefined,...(X.npc||{}),
       anim:(dt,moving,st,sc)=>{ '@later'; let want, ts=1;
         if(HOLD)want=HOLD; else if(N.sheet)want='UAL_A_TPose'; else{ const run=moving&&st.v>(N.gait?2.4:1.2)*TILE; const fast=moving&&N.gaitU>2.5; want=moving?(run&&!fast?'UAL_Sprint_Loop':N.gait||WALKC):N.dwell||N.idle||IDLEC; if(moving)ts=Math.max(.6,Math.min(1.8,st.v/((run&&!fast?RUNU:N.gaitU||WALK)*sc))); }
@@ -82,7 +82,7 @@ import {PAWNS} from './087-npc-creatures.js';
         act(cur).timeScale=N.sheet&&!HOLD?0:ts; mixer.update(dt); armsSolve(AR,rig.bones); }});
     N.restless=()=>!!HOLD||cur===N.dwell&&!STILLC.has(cur)&&(cur!=='UAL_Idle_Talking_Loop'||!!(N.walker&&N.walker.talk));
     N.mixer=mixer; N.kind=kind; N.act=act; if(copy&&!X.npc)N.park=true; if(!X.npc)PAWNL.push(N); return N; };
-  const build=J=>{ PW=J; const R0=PW.hero_m.rig; CLIPS=SKIN.clips(PW.hero_m.clips,R0.names,false); ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3].flatMap(n=>PEOPLE.map(k=>[k+'_'+n,k,n]))];
+  const build=J=>{ PW=J; const R0=PW.hero_m.rig; CLIPS=SKIN.clips(PW.hero_m.clips,R0.names,false); ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3,4].map(n=>['hero_m_'+n,'hero_m',n])];   // one golem kind, four of it, in the dungeon (owner, 5 Nov 2026)
     ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i)); };
   const go=()=>window.__started?PAWNS().then(build).catch(e=>console.warn('PAWNS',e)):setTimeout(go,600); go();
   window.PAWNNEW=(kind,key,X)=>PW&&MK([key,kind,0],0,X);

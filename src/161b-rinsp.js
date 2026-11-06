@@ -45,7 +45,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
       const k=label(o); let w=rows.get(k); if(!w)rows.set(k,w={name:k,tris:0,calls:0,n:0,sh:0,dist:1e9,inView:false,why:new Set(),act:null,objs:[]});
       w.tris+=tr; w.calls+=calls(o); w.n++; if(o.castShadow)w.sh++; w.dist=Math.min(w.dist,d); w.inView=w.inView||inV; for(const y of why)w.why.add(y); if(act)w.act=act; if(w.objs.length<40)w.objs.push(o); });
     const out=[...rows.values()].map(w=>({...w,dist:+(w.dist/T).toFixed(1),why:[...w.why]})).sort((a,b)=>b.tris-a.tris), I=renderer.info, lit=lights.filter(l=>(l.isPointLight||l.isSpotLight)&&l.intensity>0);
-    const head={fps:Math.round(RINSP.fps||0),ms:+(RINSP.ms||0).toFixed(1),calls:I.render.calls,tris:I.render.triangles,points:I.render.points,lines:I.render.lines,programs:(I.programs||[]).length,progsOnScreen:progs.size,
+    const head={fps:Math.round(RINSP.fps||0),ms:+(RINSP.ms||0).toFixed(1),calls:(I.last||I.render).calls,tris:(I.last||I.render).triangles,points:(I.last||I.render).points,lines:(I.last||I.render).lines,programs:(I.programs||[]).length,progsOnScreen:progs.size,
       geometries:I.memory.geometries,textures:I.memory.textures,lightsInScene:0,lightsLit:lit.length,shadows:lights.filter(l=>l.castShadow).map(l=>l.type.replace('Light','')+' '+(l.shadow&&l.shadow.mapSize?l.shadow.mapSize.x:'?')+(l.isPointLight?'x6':'')),
       lvl:SHARED.LVL,place:ROOMS.cur?(ROOMS.cur.name||ROOMS.cur.id||'room'):'',at:[+(pos.x/T).toFixed(1),+(pos.z/T).toFixed(1)],drawnObjs:drawn.size,drawnTris:out.reduce((a,w)=>a+w.tris,0),fog:fg?+(fg.far/T).toFixed(0):null};
     let hid=lastH; if(full){ const H=new Map(), gs=new Set(), ts=new Set(); let all=0, gB=0, tB=0;
@@ -57,7 +57,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
     return last={head,drawn:out,hidden:hid}; };
   // counted as the frame draws it: the same hiding the main loop does round its render (NPCs, interiors, other levels, the cull and the haze)
-  const collect=full=>{ '@later'; NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
+  const collect=full=>{ NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
   const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
       return '<div class="o">'+esc(o.type+(o.name?' "'+o.name+'"':'')+' · '+tris(o)+' tris'+(o.isInstancedMesh?' ('+o.count+' copies)':'')+' · shadow '+(o.castShadow?'CAST':'-')+'/'+(o.receiveShadow?'RECV':'-')+(o.frustumCulled?'':' · NEVER CULLED')+' · layers '+o.layers.mask+' · geo '+kb(gb(o.geometry)))+
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
@@ -72,6 +72,10 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
       esc(GT.line())+'<br>'+esc('LIGHTS '+h.lightsInScene+' in scene, '+h.lightsLit+' lighting · SHADOWS '+(h.shadows.join(', ')||'none'))+'<br>'+
       esc('MAIN VIEW '+h.drawnObjs+' objects, '+h.drawnTris.toLocaleString()+' tris · LOADED '+(h.loadedTris||0).toLocaleString()+' tris, geo '+kb(h.geoBytes||0)+', tex '+kb(h.texBytes||0))+'<br>'+
       esc((h.lvl==='up'?'STREET':String(h.lvl).toUpperCase())+(h.place?' · '+h.place:'')+' · at '+h.at.join(',')+(h.fog!=null?' · fog '+h.fog+' tiles':''));
+    { let tm=el.querySelector('.tm'); if(!tm){ tm=document.createElement('div'); tm.className='tm'; el.querySelector('.h').after(tm); }   // the time each system takes a frame (SYS.timing, on while this is open)
+      const fr=Math.max(1,RINSP.tf||0), L=[...SYS.T].map(([k,r])=>[k,r.ms/fr]).sort((a,b)=>b[1]-a[1]), sum=L.reduce((a,b)=>a+b[1],0), ms=h.ms||0; RINSP.tf=0; SYS.T.clear();
+      tm.innerHTML='<h4>[ TIME A FRAME ]</h4><table class="t0"><tr><th>SYSTEM</th><th>MS</th><th>OF FRAME</th></tr>'+L.slice(0,24).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+v.toFixed(2)+'</td><td>'+(ms?Math.round(v/ms*100):0)+'%</td></tr>').join('')+
+        '<tr><td>'+esc('THE REST (drawing, the frame\'s own work, waiting)')+'</td><td>'+Math.max(0,ms-sum).toFixed(2)+'</td><td>'+(ms?Math.round(Math.max(0,ms-sum)/ms*100):0)+'%</td></tr></table>'; }
     el.querySelector('.t1').innerHTML='<tr><th>DRAWN</th><th>TRIS</th><th>CALLS</th><th>SHD</th><th>DIST</th><th>VIEW</th><th>NOTES</th></tr>'+dr.map(w=>row(w,D.drawn.indexOf(w),0)).join('');
     el.querySelector('.t2').innerHTML='<tr><th>NOT DRAWN</th><th>TRIS</th><th>MEMORY</th><th>WHY</th></tr>'+hd.map(w=>row(w,D.hidden.indexOf(w),1)).join('');
     const s=D.drawn.find(w=>w.name===RINSP.sel)||D.hidden.find(w=>w.name===RINSP.sel); el.querySelector('.dt').innerHTML=s?'<b>'+esc(s.name)+'</b>'+detail(s):'<span class="d">click a row to light it up and see its parts</span>';
@@ -85,21 +89,21 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 #rinsp .dt{margin:6px 0;padding:6px;border:1px solid var(--line);word-break:break-word}#rinsp .o{margin-top:4px;color:var(--dim)}`; document.head.appendChild(css);
     el=document.createElement('div'); el.id='rinsp'; el.hidden=true; el.innerHTML='<h3>RENDER INSPECTOR</h3><div class="h"></div><h3>FIND</h3><input placeholder="name or note (FAR, SHUT IN, FOG...)"><div class="dt"></div><table class="t1"></table><h3>LOADED BUT NOT DRAWN</h3><table class="t2"></table>';
     document.body.appendChild(el); const inp=el.querySelector('input'); inp.oninput=()=>{ RINSP.f=inp.value; draw(); }; el.querySelector('.t1').onclick=pick(0); el.querySelector('.t2').onclick=pick(1); };
-  const loop=now=>{ if(!RINSP.on)return; fc++; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
+  const loop=now=>{ if(!RINSP.on)return; fc++; RINSP.tf=(RINSP.tf||0)+1; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
   // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
   const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
   const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':window.PS2&&p===PS2.sp?'PS2':window.LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
-  const gtWrap=(o,k,nm)=>{ const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
+  const gtWrap=(o,k,nm)=>{ '@later'; const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
       try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
-  GT.poll=()=>{ const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
+  GT.poll=()=>{ '@later'; const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
     while(GT.q.length&&gl.getQueryParameter(GT.q[0][0],gl.QUERY_RESULT_AVAILABLE)){ const [q,nm]=GT.q.shift(); if(!bad)frame[nm]=(frame[nm]||0)+gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6; gl.deleteQuery(q); }
     for(const k in frame)GT.ms[k]=GT.ms[k]==null?frame[k]:GT.ms[k]*.9+frame[k]*.1; };
-  GT.start=()=>{ const gl=renderer.getContext(); GT.X=GT.X||(gl.getExtension&&gl.getExtension('EXT_disjoint_timer_query_webgl2')); if(!GT.X)return; GT.on=true;
+  GT.start=()=>{ '@later'; const gl=renderer.getContext(); GT.X=GT.X||(gl.getExtension&&gl.getExtension('EXT_disjoint_timer_query_webgl2')); if(!GT.X)return; GT.on=true;
     const C=SHARED.composer; if(C)C.passes.forEach((p,i)=>gtWrap(p,'render',gtName(p,i)));
     gtWrap(renderer,'render',(sc,cam)=>sc===scene?(cam===SHARED.cam?'SCENE (extra)':'SCENE from another camera'):'OTHER ('+(sc.name||sc.type)+')'); };
   GT.stop=()=>{ GT.on=false; };
   GT.line=()=>{ if(!GT.X)return 'GPU TIME: this browser does not say'; const e=Object.entries(GT.ms).sort((a,b)=>b[1]-a[1]); return 'GPU MS: '+(e.length?e.map(([k,v])=>k+' '+v.toFixed(1)).join(' · '):'measuring...'); };
-  RINSP.toggle=v=>{ const on=v===undefined?!RINSP.on:!!v; if(on===RINSP.on)return; RINSP.on=on; if(!el)make(); el.hidden=!on;
+  RINSP.toggle=v=>{ const on=v===undefined?!RINSP.on:!!v; if(on===RINSP.on)return; RINSP.on=on; SYS.timing=on; SYS.T.clear(); RINSP.tf=0; if(!el)make(); el.hidden=!on;
     if(on){ n=0; fc=0; f0=0; GT.start(); draw(); } else { GT.stop(); mark(null); RINSP.sel=null; } };
   SYS.add('win',loop,'161b-rinsp fps'); SYS.every(()=>{ if(RINSP.on)draw(); },500,'161b-rinsp');
   window.RENDERLIST=()=>{ const D=collect(true), strip=w=>{ const {objs,...r}=w; return r; }; return JSON.parse(JSON.stringify({head:D.head,drawn:D.drawn.map(strip),hidden:D.hidden.map(strip)})); }; }

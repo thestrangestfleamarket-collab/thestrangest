@@ -30,9 +30,9 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
 let SCL=1; SHARED.ppu=PPU; SHARED.RESI=(r=>r>=0&&r<=4?r:4)(+(new URLSearchParams(location.search).get('res')??4));
 const V0=PPU*PXS, ZMAX=PPU*80;
 const RESN=['LOWEST','LOW','MED','HIGH','HIGHEST'], RESLN=[240,360,480,720,0];   // with the PS2 filter on, never more than 480 lines: its 240 cells each read a 2x2 box, so 480 gives the same picture as the screen's own pixels
-const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L0=RESLN[SHARED.RESI], L=PS2.on?Math.min(L0||480,480):L0; return L?Math.max(1,innerHeight*FRAMEK*(devicePixelRatio||1)/L):1; }, rppu=()=>vpu()/pxS();
+const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L0=RESLN[SHARED.RESI], L=PS2.on&&PS2.cap?Math.min(L0||PS2.cap,PS2.cap):L0; return (L?Math.max(1,innerHeight*FRAMEK*(devicePixelRatio||1)/L):1)/(SHARED.RESK||1); }, rppu=()=>vpu()/pxS();
 function frustum(){ const u=rppu(); let hw=RW/2/u, hh=RH/2/u; const mw=SHARED.camMaxW; if(mw>0&&2*hw>mw){ const k=mw/(2*hw); hw*=k; hh*=k; } SHARED.cam.left=-hw; SHARED.cam.right=hw; SHARED.cam.top=hh; SHARED.cam.bottom=-hh; SHARED.cam.updateProjectionMatrix(); }   // the visible width is capped at SHARED.camMaxW (set by the UI) so zooming all the way out shows the same extent at every resolution
-addEventListener('resize',resize);
+addEventListener('resize',resize); SHARED.resize=resize;
 
 const hash3=(x,y,s)=>{ let h=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,982451653))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; };
 const vnoise=(x,y,p,s)=>{ const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),m=a=>((a%p)+p)%p;

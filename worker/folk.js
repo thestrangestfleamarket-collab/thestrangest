@@ -1,13 +1,13 @@
 // THE FOLK'S WALKS: where every walker on the street is and where it is going, one path for the page (run there off the website) and the section's server (worker/door.js Block, stepped whoever is logged in): wandering a home range or an area, out through the park gate, in and out of a shop door, errands to a door or a spot along the walk grid.
 const FOLKSIM={};
 { const F=FOLKSIM, fin=v=>typeof v==='number'&&isFinite(v), N=(v,d=0)=>fin(v)?v:fin(+v)?+v:d, R2=v=>Math.round(v*100)/100;
-  F.make=()=>({t:0,at:0,T:1,gate:null,g:null,by:{}});
-  F.load=r=>{ const S=F.make(); if(!r||typeof r!=='object')return S; S.t=N(r.t); S.T=N(r.T,1)||1; S.gate=r.gate||null; if(r.g)F.grid(S,r.g);
-    if(r.by&&typeof r.by==='object')for(const k in r.by){ const e=r.by[k]; if(!e||!fin(e.x)||!fin(e.z))continue; const E=S.by[k]={k,x:e.x,z:e.z,hd:N(e.hd),v:N(e.v,1)||1,R:N(e.R,.3)||.3,to:e.to&&fin(e.to.x)?{x:e.to.x,z:e.to.z}:null,next:e.next&&fin(e.next.x)?{x:e.next.x,z:e.next.z}:null,path:null,i:0,wait:N(e.wait),in:N(e.in),goal:e.goal&&e.goal.at?{gid:String(e.goal.gid||''),at:{x:N(e.goal.at.x),z:N(e.goal.at.z)},in:N(e.goal.in)}:null,done:String(e.done||''),stuck:0,auto:e.auto?1:0,mode:mode(e.mode)};
+  F.make=()=>({t:0,at:0,H:null,T:1,gate:null,g:null,by:{}});
+  F.load=r=>{ const S=F.make(); if(!r||typeof r!=='object')return S; S.t=N(r.t); S.H=fin(r.H)?r.H:null; S.T=N(r.T,1)||1; S.gate=r.gate||null; if(r.g)F.grid(S,r.g);
+    if(r.by&&typeof r.by==='object')for(const k in r.by){ const e=r.by[k]; if(!e||!fin(e.x)||!fin(e.z))continue; const E=S.by[k]={k,x:e.x,z:e.z,hd:N(e.hd),v:N(e.v,1)||1,v0:N(e.v0,0)||N(e.v,1)||1,R:N(e.R,.3)||.3,to:e.to&&fin(e.to.x)?{x:e.to.x,z:e.to.z}:null,next:e.next&&fin(e.next.x)?{x:e.next.x,z:e.next.z}:null,path:null,i:0,wait:N(e.wait),in:N(e.in),goal:e.goal&&e.goal.at?{gid:String(e.goal.gid||''),at:{x:N(e.goal.at.x),z:N(e.goal.at.z)},in:N(e.goal.in),b:e.goal.b,hold:e.goal.hold}:null,done:String(e.done||''),stuck:0,auto:e.auto?1:0,mode:mode(e.mode)};
       if(Array.isArray(e.p)&&e.p.length){ E.path=[{x:E.x,z:E.z}].concat(e.p.map(q=>({x:N(q[0]),z:N(q[1])}))); E.i=1; E.to={x:E.path[1].x,z:E.path[1].z}; } } return S; };
   // kept small: the rest of an errand's way as pairs, a decimal each
-  F.save=S=>{ const by={}; for(const k in S.by){ const E=S.by[k], o={x:E.x,z:E.z,hd:E.hd,v:E.v,R:E.R,to:E.to,next:E.next,wait:E.wait,in:E.in,goal:E.goal,done:E.done,auto:E.auto,mode:E.mode}; if(E.path&&E.i<E.path.length)o.p=E.path.slice(E.i).map(q=>[Math.round(q.x*10)/10,Math.round(q.z*10)/10]); by[k]=o; }
-    return {t:S.t,T:S.T,gate:S.gate,g:S.g&&{v:S.g.v,x0:S.g.x0,z0:S.g.z0,c:S.g.c,w:S.g.w,h:S.g.h,rle:S.g.rle},by}; };
+  F.save=S=>{ const by={}; for(const k in S.by){ const E=S.by[k], o={x:E.x,z:E.z,hd:E.hd,v:E.v,v0:E.v0,R:E.R,to:E.to,next:E.next,wait:E.wait,in:E.in,goal:E.goal,done:E.done,auto:E.auto,mode:E.mode}; if(E.path&&E.i<E.path.length)o.p=E.path.slice(E.i).map(q=>[Math.round(q.x*10)/10,Math.round(q.z*10)/10]); by[k]=o; }
+    return {t:S.t,H:S.H,T:S.T,gate:S.gate,g:S.g&&{v:S.g.v,x0:S.g.x0,z0:S.g.z0,c:S.g.c,w:S.g.w,h:S.g.h,rle:S.g.rle},by}; };
   // the walk grid: the page's free ground in half-tile cells (rle: runs of blocked, free, blocked... in base 36), decoded when first read
   F.grid=(S,G)=>{ if(!G||!(G.w>0)||!(G.h>0)||typeof G.rle!=='string'){ S.g=null; return false; } if(G.w*G.h>4e6||G.rle.length>4e5)return false;
     S.g={v:String(G.v||''),x0:N(G.x0),z0:N(G.z0),c:N(G.c,1)||1,w:G.w|0,h:G.h|0,rle:G.rle,m:null}; if(G.T>0)S.T=+G.T; if(G.gate)S.gate={z:N(G.gate.z),x0:N(G.gate.x0),x1:N(G.gate.x1)}; return true; };
@@ -31,24 +31,24 @@ const FOLKSIM={};
     const out=[pts[0]]; let i=0; while(i<pts.length-1){ let j=pts.length-1; while(j>i+1&&!clear(pts[i],pts[j]))j--; out.push(pts[j]); i=j; } return out; };
   // a walker's mode: b a home range {x,z,r} or an area {band:[x0,z0,x1,z1]} (or null: nowhere to go), lane a box to keep to, shop a door it goes into now and then, roam free over the street, hold stand still
   const mode=m=>{ const o={b:null,lane:null,shop:null,roam:0,hold:0}; if(!m||typeof m!=='object')return o;
-    if(m.b&&typeof m.b==='object'){ if(Array.isArray(m.b.band)&&m.b.band.length===4)o.b={band:m.b.band.map(v=>N(v))}; else if(fin(m.b.x)&&fin(m.b.z))o.b={x:m.b.x,z:m.b.z,r:Math.max(0,N(m.b.r))}; }
+    if(m.b&&typeof m.b==='object'){ const B=m.b.band; if(Array.isArray(B)){ const L=(B.length===4&&!Array.isArray(B[0])?[B]:B).filter(r=>Array.isArray(r)&&r.length===4).map(r=>r.map(v=>N(v))); if(L.length)o.b={band:L}; } else if(fin(m.b.x)&&fin(m.b.z))o.b={x:m.b.x,z:m.b.z,r:Math.max(0,N(m.b.r))}; }
     if(Array.isArray(m.lane)&&m.lane.length===4)o.lane=m.lane.map(v=>N(v)); if(m.shop&&fin(m.shop.x)&&fin(m.shop.z))o.shop={x:m.shop.x,z:m.shop.z}; o.roam=m.roam?1:0; o.hold=m.hold?1:0; return o; };
-  const arrive=(S,E,rnd)=>{ const G=E.goal; E.path=null; E.to=null; E.next=null; if(G){ E.done=G.gid; E.goal=null; if(G.in){ E.in=G.in>0?G.in:-1; E.wait=1; return; } } E.wait=1.5+rnd()*4; };
+  const arrive=(S,E,rnd)=>{ const G=E.goal; E.path=null; E.to=null; E.next=null; if(G){ E.done=G.gid; E.goal=null; if(G.b!==undefined||G.hold!=null){ E.mode.b=G.b||null; E.mode.hold=G.hold?1:0; } if(G.in){ E.in=G.in>0?G.in:-1; E.wait=1; return; } } E.wait=1.5+rnd()*4; };
   const errand=(S,E,at,rnd)=>{ const p=F.route(S,{x:E.x,z:E.z},at); if(!p||p.length<2){ E.x=at.x; E.z=at.z; arrive(S,E,rnd); return; } E.path=p; E.i=1; E.to={x:p[1].x,z:p[1].z}; E.next=null; E.stuck=0; };
-  // what the page tells of a walker: where it starts (x, z, only when new), its pace v, radius R, its mode, an errand goal {gid, at:{x,z}, in (hidden on arriving: for seconds, or 1 until told out), now (be there)}, out (come out of where it is)
+  // what the page tells of a walker: where it starts (x, z, only when new), its pace v, radius R, its mode, a goal {gid, at:{x,z} (none: stay), in (hidden on arriving: seconds, or 1 until told out), now (be there), b and hold (its mode on arriving), fast (a jog)}, out (come out of where it is)
   F.set=(S,k,m,rnd=Math.random)=>{ if(typeof k!=='string'||!k||k.length>48||!m||typeof m!=='object')return null; let E=S.by[k];
-    if(!E){ if(!fin(m.x)||!fin(m.z)||Object.keys(S.by).length>=600)return null; E=S.by[k]={k,x:m.x,z:m.z,hd:N(m.hd),v:1,R:.3,to:null,next:null,path:null,i:0,wait:rnd()*3,in:0,goal:null,done:'',stuck:0,auto:0,mode:mode(null)}; }
-    if(m.v>0)E.v=Math.min(m.v,20); if(m.R>0)E.R=Math.min(m.R,5); if(m.auto!=null)E.auto=m.auto?1:0; if(m.mode)E.mode=mode(m.mode); if(m.out&&E.in)E.in=0;
-    const G=m.goal; if(G&&typeof G==='object'&&typeof G.gid==='string'&&G.gid.length<=64&&G.at&&fin(G.at.x)&&fin(G.at.z)&&G.gid!==E.done&&!(E.goal&&E.goal.gid===G.gid)){
-      E.goal={gid:G.gid,at:{x:G.at.x,z:G.at.z},in:G.in>0?Math.min(N(G.in),3600):0}; E.in=0;
-      if(G.now){ E.x=G.at.x; E.z=G.at.z; arrive(S,E,rnd); } else errand(S,E,E.goal.at,rnd); }
+    if(!E){ if(!fin(m.x)||!fin(m.z)||Object.keys(S.by).length>=600)return null; E=S.by[k]={k,x:m.x,z:m.z,hd:N(m.hd),v:1,v0:1,R:.3,to:null,next:null,path:null,i:0,wait:rnd()*3,in:0,goal:null,done:'',stuck:0,auto:0,mode:mode(null)}; }
+    if(m.v>0)E.v0=E.v=Math.min(m.v,20); if(m.R>0)E.R=Math.min(m.R,5); if(m.auto!=null)E.auto=m.auto?1:0; if(m.mode)E.mode=mode(m.mode); if(m.out&&E.in)E.in=0;
+    const G=m.goal; if(G&&typeof G==='object'&&typeof G.gid==='string'&&G.gid.length<=64&&(G.at==null||fin(G.at.x)&&fin(G.at.z))&&G.gid!==E.done&&!(E.goal&&E.goal.gid===G.gid)){
+      const M=G.b!==undefined||G.hold!=null?mode({b:G.b}):null; E.goal={gid:G.gid,at:G.at?{x:G.at.x,z:G.at.z}:null,in:G.in===1||G.in<0?-1:G.in>0?Math.min(N(G.in),3600):0,b:M?M.b:undefined,hold:G.hold!=null?(G.hold?1:0):null}; E.in=0; E.v=G.fast?(E.v0||E.v)*2.2:E.v0||E.v;
+      if(!G.at)arrive(S,E,rnd); else if(G.now){ E.x=G.at.x; E.z=G.at.z; arrive(S,E,rnd); } else errand(S,E,E.goal.at,rnd); }
     return E; };
   F.drop=(S,k)=>{ delete S.by[k]; };
   const inBand=(b,x,z)=>x>=b[0]&&x<=b[2]&&z>=b[1]&&z<=b[3];
   // the next place to wander to: in a home range (clamped to the lane), over an area, or anywhere free a few tiles off (over the park wall only through its gate); now and then a shop door, in for a while
   const pick=(S,E,rnd)=>{ const M=E.mode, T=S.T, R=E.R; if(M.hold)return false;
     if(M.shop&&E.auto&&rnd()<.3){ E.goal={gid:'shop',at:M.shop,in:20+rnd()*40}; E.done=''; errand(S,E,M.shop,rnd); return true; }
-    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const to={x:b.band[0]+rnd()*(b.band[2]-b.band[0]),z:b.band[1]+rnd()*(b.band[3]-b.band[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
+    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const r=b.band[Math.floor(rnd()*b.band.length)], to={x:r[0]+rnd()*(r[2]-r[0]),z:r[1]+rnd()*(r[3]-r[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
     if(b&&!(b.r>0)&&!M.roam)return false;
     if(M.roam){ for(let k=0;k<12;k++){ const a=rnd()*Math.PI*2, r=(2+rnd()*7)*T, to={x:E.x+Math.sin(a)*r,z:E.z+Math.cos(a)*r}; if(!F.free(S,to.x,to.z))continue;
       const g=S.gate; if(g&&(E.z<g.z)!==(to.z<g.z)){ E.next=to; E.to={x:g.x0+rnd()*(g.x1-g.x0),z:g.z}; } else { E.to=to; E.next=null; } return true; } return false; }

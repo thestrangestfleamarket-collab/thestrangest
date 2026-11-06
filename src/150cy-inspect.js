@@ -7,7 +7,7 @@ import {SYS} from './006-map-pre.js';
 { const W=320, H=320, esc=TEXT.esc;
   const ROOM=new THREE.Scene(), KEY=new THREE.DirectionalLight(0xfff4e2,1.9), FILL=new THREE.DirectionalLight(0xbcd0ff,.6), RIM=new THREE.DirectionalLight(0xffffff,.55), PIV=new THREE.Group();
   KEY.position.set(-3,4,4); FILL.position.set(4,1,-3); RIM.position.set(0,2,-5); ROOM.add(new THREE.AmbientLight(0xffffff,.18),KEY,FILL,RIM,PIV);
-  let ENV=null; const makeEnv=()=>{ const pm=new THREE.PMREMGenerator(renderer), s=new THREE.Scene();
+  let ENV=null; const makeEnv=()=>{ '@later'; const pm=new THREE.PMREMGenerator(renderer), s=new THREE.Scene();
     s.add(new THREE.Mesh(new THREE.BoxGeometry(24,24,24),new THREE.MeshStandardMaterial({side:THREE.BackSide,color:0x2b3040,roughness:1})));
     const lite=(r,gn,b,x,y,z,sx,sy,sz)=>{ const mm=new THREE.MeshBasicMaterial(); mm.color.setRGB(r,gn,b); const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mm); m.position.set(x,y,z); s.add(m); };
     lite(7,6.6,6,-6,9,5,7,.1,7); lite(2.6,3,4,7,3,-6,6,6,.1); lite(1.6,1.7,2,0,-7,0,12,.1,12); lite(2.4,2.6,3,0,10,0,9,.1,9);
@@ -15,7 +15,7 @@ import {SYS} from './006-map-pre.js';
     pm.dispose(); s.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); };
   const cam=new THREE.PerspectiveCamera(30,W/H,.01,100), CC=new THREE.Color(), BX=new THREE.Box3(), SP=new THREE.Sphere();
   let rt=null, P=null, cv=null, g2=null, px=null, im=null, obj=null, own=false, last=0, yaw=0, pitch=.35, zoom=1, R=1, drag=null, spin=true;
-  const make=()=>{ P=document.createElement('div'); P.id='inspp'; P.hidden=true;
+  const make=()=>{ '@later'; P=document.createElement('div'); P.id='inspp'; P.hidden=true;
     P.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;width:min(360px,92vw);padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
     P.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b id="inspn" style="color:#f2c14e"></b><button id="inspx" style="font:inherit;color:#d8dae2;background:none;border:0;cursor:pointer">X</button></div>'+
       `<canvas id="inspc" width="${W}" height="${H}" style="display:block;width:100%;aspect-ratio:1;margin:8px 0;background:#15171e;cursor:grab;touch-action:none"></canvas><div id="inspi" style="display:flex;flex-wrap:wrap;gap:4px"></div>`+
@@ -28,20 +28,20 @@ import {SYS} from './006-map-pre.js';
     cv.addEventListener('wheel',e=>{ e.preventDefault(); zoom=Math.max(.5,Math.min(3,zoom*Math.exp(-e.deltaY*.0015))); },{passive:false});
     for(const t of ['keydown','keyup'])P.addEventListener(t,e=>e.stopPropagation());
     addEventListener('keydown',e=>{ if(e.key==='Escape'&&INSPECT.on){ INSPECT.close(); e.stopImmediatePropagation(); } },true); };
-  const chips=(id,extra)=>{ const L=[...(extra||[])], d=id&&ITEMS.def&&ITEMS.def(id);
+  const chips=(id,extra)=>{ '@later'; const L=[...(extra||[])], d=id&&ITEMS.def&&ITEMS.def(id);
     if(id&&INV.items&&INV.items[id]>0)L.push('YOU HAVE '+INV.items[id]);
     if(d){ if(d.value)L.push('$'+d.value); if(d.weight&&d.weight!==1)L.push(d.weight+' KG'); if(d.heals)L.push('HEALS '+Math.round(d.heals*100)+'%'); for(const [k,n] of [['edible','EDIBLE'],['burnable','BURNS'],['stackable','STACKS']])if(d[k])L.push(n);
       if(d.slot&&d.slot!=='none')L.push('WORN: '+d.slot.toUpperCase()); if(d.grants&&d.grants!=='none')L.push('GIVES: '+d.grants.toUpperCase()); }
     return L.map(t=>`<span style="background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px">${esc(t)}</span>`).join(''); };
   // what INSPECT made is freed when it closes, geometry only (makers keep their materials cached, or mark their own ownMat); a part marked shared is the world's own
   const drop=()=>{ if(!obj)return; PIV.remove(obj); if(own)obj.traverse(c=>{ if(c.isInstancedMesh)c.dispose(); else if(c.geometry&&!c.userData.shared)c.geometry.dispose(); if(c.userData.ownMat&&c.material)c.material.dispose(); }); obj=null; };
-  const shot=()=>{ if(!obj)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; } if(!ENV)makeEnv();
+  const shot=()=>{ '@later'; if(!obj)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; } if(!ENV)makeEnv();
     PIV.rotation.set(pitch,yaw,0,'XYZ'); const d=R/Math.sin(cam.fov*Math.PI/360)*1.08/zoom; cam.position.set(0,0,d); cam.near=Math.max(.001,d-R*3); cam.far=d+R*3; cam.lookAt(0,0,0); cam.updateProjectionMatrix();
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(), tm=renderer.toneMapping, te=renderer.toneMappingExposure; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15; renderer.setRenderTarget(rt); renderer.setClearColor(0x14161d,1); renderer.clear(); renderer.render(ROOM,cam); renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); renderer.toneMapping=tm; renderer.toneMappingExposure=te;
     renderer.readRenderTargetPixels(rt,0,0,W,H,px); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!INSPECT.on)return; const dt=Math.min(.1,(t-(last||t))/1000); if(t-last<33)return; last=t; if(spin)yaw+=dt*.7; shot(); }; SYS.add('win',loop,'150cy-inspect');
   // o: the thing to show; mine: INSPECT made it (dropped when closed), else it is shared with the world and only cloned
-  INSPECT.open=(o,{name='',id=null,info=null,mine=false}={})=>{ if(!o)return false; if(!P)make(); drop();
+  INSPECT.open=(o,{name='',id=null,info=null,mine=false}={})=>{ '@later'; if(!o)return false; if(!P)make(); drop();
     if(mine){ obj=o; own=true; } else { const s=new THREE.Vector3(); o.updateMatrixWorld(true); o.getWorldScale(s); obj=o.clone(); obj.position.set(0,0,0); obj.quaternion.identity(); obj.scale.copy(s); own=false; }
     obj.visible=true; obj.traverse(c=>{ c.visible=true; c.frustumCulled=false; }); PIV.add(obj); PIV.rotation.set(0,0,0); obj.updateMatrixWorld(true);
     BX.setFromObject(obj); if(BX.isEmpty())BX.set(new THREE.Vector3(-.5,-.5,-.5),new THREE.Vector3(.5,.5,.5)); BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(1e-3,SP.radius);
@@ -50,7 +50,7 @@ import {SYS} from './006-map-pre.js';
   INSPECT.close=()=>{ if(!P)return; P.hidden=true; INSPECT.on=false; INSPECT.id=null; drop(); };
     // for the families' makers: one material per colour, kept; a STALL-style recipe (MUSH, VEG) as meshes; simple shapes for the things with no model of their own
   const MATS=new Map(), KINDS={ metal:{m:1,r:.32}, steel:{m:1,r:.14}, chrome:{m:1,r:.08}, iron:{m:1,r:.45}, gold:{m:1,r:.28}, brass:{m:1,r:.3}, copper:{m:1,r:.34}, tin:{m:1,r:.22}, wood:{r:.72}, bark:{r:.92,flat:1}, stone:{r:.9}, rock:{r:.95,flat:1}, ceramic:{r:.35,cc:.4}, clay:{r:.8}, food:{r:.58}, bread:{r:.72}, meat:{r:.5,cc:.25,ccr:.4}, fruit:{r:.45,cc:.3,ccr:.5}, cloth:{r:.96,sh:.5}, leather:{r:.68}, paper:{r:.85}, plastic:{r:.4,cc:.45,ccr:.2}, rubber:{r:.9}, wax:{r:.4,cc:.5,ccr:.3}, skin:{r:.55,cc:.15}, wet:{r:.18,cc:.6,ccr:.1}, leaf:{r:.5,sh:.6}, bone:{r:.6}, default:{r:.55} };
-  INSPECT.mat=(c,o={})=>{ if(o.glow){ const gk='g'+c+(o.ei||''); let gm=MATS.get(gk); if(!gm){ gm=new THREE.MeshBasicMaterial({color:c,toneMapped:false}); MATS.set(gk,gm); } return gm; }
+  INSPECT.mat=(c,o={})=>{ '@later'; if(o.glow){ const gk='g'+c+(o.ei||''); let gm=MATS.get(gk); if(!gm){ gm=new THREE.MeshBasicMaterial({color:c,toneMapped:false}); MATS.set(gk,gm); } return gm; }
     const kind=o.kind||(o.glass?'glass':o.gem?'gem':'default'), base=KINDS[kind]||KINDS.default, glassy=kind==='glass'||kind==='gem';
     const key=c+'|'+kind+'|'+(o.flat?1:0)+'|'+(o.rough??'')+'|'+(o.metal??'')+'|'+(o.emissive??'')+'|'+(o.ei??''); let m=MATS.get(key);
     if(!m){ const P={color:c,side:THREE.DoubleSide,flatShading:!!(o.flat||base.flat),roughness:o.rough!=null?o.rough:(base.r!=null?base.r:.55),metalness:o.metal!=null?o.metal:(base.m||0)};
@@ -65,7 +65,7 @@ import {SYS} from './006-map-pre.js';
   INSPECT.part=part;
   INSPECT.recipe=K=>{ const g=new THREE.Group(); let i=0; K.f((...a)=>g.add(part(...a)),K.s,0,()=>(i=(i*7+3)%10)/10); return g; };
   const B=(g,...a)=>{ g.add(part(...a)); return g; };
-  INSPECT.shape=(kind,c=0x8a6a4a,c2=0xe8e0c8)=>{ const g=new THREE.Group();
+  INSPECT.shape=(kind,c=0x8a6a4a,c2=0xe8e0c8)=>{ '@later'; const g=new THREE.Group();
     if(kind==='book'){ B(g,'box',c,0,0,0,.2,.052,.28,0,0,0,{kind:'leather'}); B(g,'box',c2,.01,0,0,.188,.044,.27,0,0,0,{kind:'paper'}); B(g,'box',c,-.098,0,0,.014,.058,.286,0,0,0,{kind:'leather'}); B(g,'box',0xcbb27a,.06,0,.146,.02,.03,.004,0,0,0,{kind:'gold',metal:1,rough:.3}); }
     else if(kind==='bottle'){ B(g,'cyl',c,0,.08,0,.05,.15,.05,0,0,0,{kind:'wet'}); B(g,'cyl',0xdfeee8,0,.12,0,.062,.24,.062,0,0,0,{glass:1}); B(g,'cone',0xdfeee8,0,.265,0,.062,.07,.062,0,0,0,{glass:1}); B(g,'cyl',0xdfeee8,0,.33,0,.023,.08,.023,0,0,0,{glass:1}); B(g,'cyl',0x8a6a44,0,.385,0,.026,.045,.026,0,0,0,{kind:'wood'}); }
     else if(kind==='jar'){ B(g,'cyl',c,0,.07,0,.07,.13,.07,0,0,0,{kind:'wet'}); B(g,'cyl',0xe6f0ec,0,.09,0,.08,.18,.08,0,0,0,{glass:1}); B(g,'cyl',c2,0,.195,0,.086,.035,.086,0,0,0,{kind:'metal',metal:1,rough:.35}); B(g,'tor',c2,0,.178,0,.08,.08,.025,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.35}); }
@@ -88,7 +88,7 @@ import {SYS} from './006-map-pre.js';
   INSPECT.model=id=>{ for(const k of INSPECT.kinds){ if(!k.is(id))continue; try{ const o=k.make(id); if(o)return o; }catch(e){ console.warn('INSPECT '+id,e); } } return parcel(); };
   INSPECT.item=id=>INSPECT.open(INSPECT.model(id),{id,mine:true});
   const ray=new THREE.Raycaster(), NDC=new THREE.Vector2(); let mx=-1, my=-1; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; },{passive:true});
-  INSPECT.key=()=>{ if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }
+  INSPECT.key=()=>{ '@later'; if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }
     const h=GPH.inspectable&&GPH.inspectable(r); if(h)return INSPECT.open(h.obj,h);
     SAY('PICK SOMETHING UP OR POINT AT IT, THEN PRESS '+String(UI.keyOf?UI.keyOf('inspect'):'5').toUpperCase()+' TO LOOK IT OVER. YOUR PACK HAS A LOOK BUTTON TOO.','#9b9584'); };
   if(FORAGE.ROWB)FORAGE.ROWB.push(()=>[['LOOK','inspect']]); FORAGE.ACT&&(FORAGE.ACT.inspect=id=>INSPECT.item(id)); }

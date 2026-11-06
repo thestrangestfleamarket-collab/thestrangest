@@ -52,7 +52,16 @@
    "east": "CURIO AVE"
   },
   "places": [
-   {"id": "skatepark", "section": "B", "x": 24.5, "y": 328.5, "face": "w", "w": 81, "d": 57, "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"}
+   {
+    "id": "skatepark",
+    "section": "B",
+    "x": 24.5,
+    "y": 328.5,
+    "face": "w",
+    "w": 81,
+    "d": 57,
+    "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"
+   }
   ],
   "ring": {
    "park": {
@@ -185,12 +194,245 @@
   "y0": -38,
   "y1": 181
  },
- "hangouts": {"pier":{"band":[30,100,-117.6,-116.6],"hd":3.1416},"meadow":{"areas":[[-8,46,7],[88,42,6],[180,30,8],[130,150,7]]},"path":{"band":[-15,250,57,60]},"bench":{"areas":[[113,52,6],[30,140,5]]},"river":{"band":[0,200,-115,-111]},"flea":{"areas":[[223,-84,5]]},"shrine":{"band":[90.86,94.86,-110.6,-109.8],"hd":0}},
- "residences": [{"id":"corner_tenement","name":"THE CORNER TENEMENT","door":[158.62,-76.1],"beds":53},{"id":"brownstone_row_house","name":"THE BROWNSTONE","door":[169.71,-76.1],"beds":26},{"id":"narrow_walk_up","name":"THE WALK-UP","door":[178.05,-76.1],"beds":10},{"id":"cast_iron_loft","name":"THE CAST-IRON LOFT","door":[208.84,-76.1],"beds":50},{"id":"motel_room_run","name":"THE RIVER MOTEL","door":[32.21,-108.8],"beds":8},{"id":"corner_shophouse","name":"THE CORNER SHOPHOUSE","door":[47.0,-108.8],"beds":2},{"id":"two_storey_shophouse","name":"THE TWO-STOREY SHOPHOUSE","door":[52.26,-108.8],"beds":2},{"id":"three_storey_shophouse","name":"THE THREE-STOREY SHOPHOUSE","door":[67.55,-108.8],"beds":2},{"id":"wide_shophouse","name":"THE WIDE SHOPHOUSE","door":[75.19,-108.8],"beds":4},{"id":"haunted_victorian_house","name":"THE HAUNTED HOUSE","door":[2.0,157.96],"beds":1},{"id":"porch_log_cabin","name":"THE LOG CABIN","door":[40.0,144.34],"beds":2}],
+ "hangouts": {
+  "pier": {
+   "band": [
+    30,
+    100,
+    -117.6,
+    -116.6
+   ],
+   "hd": 3.1416
+  },
+  "meadow": {
+   "areas": [
+    [
+     -8,
+     46,
+     7
+    ],
+    [
+     88,
+     42,
+     6
+    ],
+    [
+     180,
+     30,
+     8
+    ],
+    [
+     130,
+     150,
+     7
+    ]
+   ]
+  },
+  "path": {
+   "band": [
+    -15,
+    250,
+    57,
+    60
+   ]
+  },
+  "bench": {
+   "areas": [
+    [
+     113,
+     52,
+     6
+    ],
+    [
+     30,
+     140,
+     5
+    ]
+   ]
+  },
+  "river": {
+   "band": [
+    0,
+    200,
+    -115,
+    -111
+   ]
+  },
+  "flea": {
+   "areas": [
+    [
+     223,
+     -84,
+     5
+    ]
+   ]
+  },
+  "shrine": {
+   "band": [
+    90.86,
+    94.86,
+    -110.6,
+    -109.8
+   ],
+   "hd": 0
+  }
+ },
+ "residences": [
+  {
+   "id": "corner_tenement",
+   "name": "THE CORNER TENEMENT",
+   "door": [
+    158.62,
+    -76.1
+   ],
+   "beds": 53
+  },
+  {
+   "id": "brownstone_row_house",
+   "name": "THE BROWNSTONE",
+   "door": [
+    169.71,
+    -76.1
+   ],
+   "beds": 26
+  },
+  {
+   "id": "narrow_walk_up",
+   "name": "THE WALK-UP",
+   "door": [
+    178.05,
+    -76.1
+   ],
+   "beds": 10
+  },
+  {
+   "id": "cast_iron_loft",
+   "name": "THE CAST-IRON LOFT",
+   "door": [
+    208.84,
+    -76.1
+   ],
+   "beds": 50
+  },
+  {
+   "id": "motel_room_run",
+   "name": "THE RIVER MOTEL",
+   "door": [
+    32.21,
+    -108.8
+   ],
+   "beds": 8
+  },
+  {
+   "id": "corner_shophouse",
+   "name": "THE CORNER SHOPHOUSE",
+   "door": [
+    47,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "two_storey_shophouse",
+   "name": "THE TWO-STOREY SHOPHOUSE",
+   "door": [
+    52.26,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "three_storey_shophouse",
+   "name": "THE THREE-STOREY SHOPHOUSE",
+   "door": [
+    67.55,
+    -108.8
+   ],
+   "beds": 2
+  },
+  {
+   "id": "wide_shophouse",
+   "name": "THE WIDE SHOPHOUSE",
+   "door": [
+    75.19,
+    -108.8
+   ],
+   "beds": 4
+  },
+  {
+   "id": "haunted_victorian_house",
+   "name": "THE HAUNTED HOUSE",
+   "door": [
+    2,
+    157.96
+   ],
+   "beds": 1
+  },
+  {
+   "id": "porch_log_cabin",
+   "name": "THE LOG CABIN",
+   "door": [
+    40,
+    144.34
+   ],
+   "beds": 2
+  }
+ ],
  "block": {
-  "pf": {"1":[[-71.9,-60.76],[-60.66,-50.54],[-50.44,-26.03],[-25.93,-6.83],[-6.73,8.15],[82.45,92.57],[153.2,164.05],[164.65,174.77],[175.37,180.74],[181.34,191.46],[201.4,216.29]],"2":[[-4.8,10.09],[9.99,20.11],[20.01,44.42],[44.32,49.68],[49.58,54.94],[54.84,64.97],[64.87,70.23],[70.13,80.25],[80.15,90.28],[90.18,95.54],[95.44,110.32]]},
+  "pf": {
+   "2": [
+    [
+     -46.44,
+     -30.87
+    ],
+    [
+     -24.81,
+     -9.24
+    ],
+    [
+     18.44,
+     34.01
+    ],
+    [
+     40.07,
+     55.64
+    ],
+    [
+     61.7,
+     77.27
+    ],
+    [
+     77.27,
+     98.9
+    ],
+    [
+     125.1,
+     143.23
+    ],
+    [
+     143.23,
+     156.28
+    ],
+    [
+     161.36,
+     174.41
+    ],
+    [
+     179.49,
+     192.54
+    ],
+    [
+     197.61,
+     210.66
+    ],
+    [
+     215.74,
+     252
+    ]
+   ]
+  },
   "x0": -100,
-  "x1": 245,
+  "x1": 252,
   "front": -77,
   "back": -92.4,
   "alley": [
@@ -223,187 +465,438 @@
    "face": "e"
   },
   {
-   "id": "bodega",
-   "name": "THE BODEGA",
-   "kind": "front",
-   "x0": 124.45,
-   "x1": 142.05
-  },
-  {
-   "id": "museum",
-   "name": "MUSEUM OF EARTH",
-   "kind": "front",
-   "x0": -75.6,
-   "x1": -52.5,
-   "y0": 116.2,
-   "back": true,
-   "y1": 144.8,
-   "face": "e"
-  },
-  {
-   "id": "play",
-   "name": "THE PLAYHOUSE",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 77.0,
-   "y1": 91.0,
-   "face": "e"
-  },
-  {
-   "id": "bank",
-   "name": "THE BANK",
-   "kind": "front",
-   "x0": 53.95,
-   "x1": 82.55
-  },
-  {
-   "id": "art",
-   "name": "THE ART MUSEUM",
-   "kind": "front",
-   "x0": 10,
-   "x1": 50,
-   "lot": true
-  },
-  {
-   "id": "bar",
-   "name": "THE BAR",
-   "kind": "front",
-   "x0": -80.02,
-   "x1": -52.5,
-   "y0": -22.2,
-   "y1": -11.2,
-   "face": "e"
-  },
-  {
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": 114,
-   "x1": 118
+   "x0": 120.5,
+   "x1": 124.5
   },
   {
    "id": "hudson",
    "name": "TO THE HUDSON",
    "kind": "passage",
-   "x0": 111,
-   "x1": 124
+   "x0": 98.9,
+   "x1": 125.1
+  },
+  {
+   "id": "house1",
+   "name": "APARTMENTS 2",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": -22,
+   "y1": -2.95,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house2",
+   "name": "APARTMENTS 3",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": -1.75,
+   "y1": 17.3,
+   "face": "e",
+   "pf": "apt_sand"
+  },
+  {
+   "id": "house3",
+   "name": "APARTMENTS 4",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 18.5,
+   "y1": 37.55,
+   "face": "e",
+   "pf": "apt_grey"
+  },
+  {
+   "id": "house4",
+   "name": "APARTMENTS 5",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 38.75,
+   "y1": 57.8,
+   "face": "e",
+   "pf": "apt_red"
+  },
+  {
+   "id": "house5",
+   "name": "APARTMENTS 6",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 59,
+   "y1": 78.05,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house6",
+   "name": "APARTMENTS 7",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 79.25,
+   "y1": 98.3,
+   "face": "e",
+   "pf": "apt_sand"
+  },
+  {
+   "id": "house7",
+   "name": "APARTMENTS 8",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 99.5,
+   "y1": 118.55,
+   "face": "e",
+   "pf": "apt_grey"
+  },
+  {
+   "id": "house8",
+   "name": "APARTMENTS 9",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 119.75,
+   "y1": 138.8,
+   "face": "e",
+   "pf": "apt_red"
+  },
+  {
+   "id": "house9",
+   "name": "APARTMENTS 10",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 140,
+   "y1": 159.05,
+   "face": "e",
+   "pf": "apt_brown"
+  },
+  {
+   "id": "house10",
+   "name": "APARTMENTS 11",
+   "kind": "front",
+   "x0": -66.79,
+   "x1": -52.5,
+   "y0": 160.25,
+   "y1": 179.3,
+   "face": "e",
+   "pf": "apt_sand"
+  },
+  {
+   "id": "florist",
+   "name": "THE FLORIST",
+   "kind": "front",
+   "x0": -52.5,
+   "x1": -30.87,
+   "lot": true,
+   "merchant": "tomato"
+  },
+  {
+   "id": "bees",
+   "kind": "front",
+   "x0": -30.87,
+   "x1": -9.24,
+   "lot": true,
+   "name": "THE BEEKEEPER",
+   "merchant": "village_gardener"
+  },
+  {
+   "id": "bfly",
+   "kind": "front",
+   "x0": -9.24,
+   "x1": 12.39,
+   "lot": true,
+   "name": "THE BUTTERFLY SHOP",
+   "merchant": "park_ranger"
+  },
+  {
+   "id": "birds",
+   "kind": "front",
+   "x0": 12.39,
+   "x1": 34.01,
+   "lot": true,
+   "name": "THE BIRD SHOP",
+   "merchant": "forest_ranger"
+  },
+  {
+   "id": "pets",
+   "name": "THE PET STORE",
+   "kind": "front",
+   "x0": 34.01,
+   "x1": 55.64,
+   "lot": true
+  },
+  {
+   "id": "mush",
+   "kind": "front",
+   "x0": 55.64,
+   "x1": 77.27,
+   "lot": true,
+   "name": "THE MUSHROOM SHOP",
+   "merchant": "mushroom"
   },
   {
    "id": "bath",
    "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 92.51,
-   "x1": 110.99
+   "x0": 77.27,
+   "x1": 98.9
+  },
+  {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": 125.1,
+   "x1": 143.23
+  },
+  {
+   "id": "gems",
+   "kind": "front",
+   "x0": 143.23,
+   "x1": 161.36,
+   "lot": true,
+   "name": "THE GEM SHOP",
+   "merchant": "scuba_diver"
+  },
+  {
+   "id": "armor",
+   "kind": "front",
+   "x0": 161.36,
+   "x1": 179.49,
+   "lot": true,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior"
+  },
+  {
+   "id": "clothes",
+   "kind": "front",
+   "x0": 179.49,
+   "x1": 197.61,
+   "lot": true,
+   "name": "THE CLOTHES SHOP"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 197.61,
+   "x1": 215.74,
+   "lot": true,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner"
+  },
+  {
+   "id": "diner",
+   "kind": "front",
+   "x0": 215.74,
+   "x1": 252,
+   "lot": true,
+   "name": "THE DINER"
+  },
+  {
+   "id": "bank",
+   "name": "THE BANK",
+   "kind": "front",
+   "x0": -46.44,
+   "x1": -30.87,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "hotel",
+   "name": "THE HOTEL",
+   "kind": "front",
+   "x0": -24.81,
+   "x1": -9.24,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "bar",
+   "name": "THE BAR",
+   "kind": "front",
+   "x0": -3.18,
+   "x1": 12.39,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 91.2,
-   "y1": 105.2,
-   "face": "e"
+   "x0": 18.44,
+   "x1": 34.01,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "play",
+   "name": "THE PLAYHOUSE",
+   "kind": "front",
+   "x0": 40.07,
+   "x1": 55.64,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "art",
+   "name": "THE ART MUSEUM",
+   "kind": "front",
+   "x0": 61.7,
+   "x1": 77.27,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "fishtables",
+   "kind": "lot",
+   "x0": 77.27,
+   "x1": 98.9,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE FISH MARKET"
+  },
+  {
+   "id": "fishing",
+   "kind": "front",
+   "x0": 125.1,
+   "x1": 143.23,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "FISHING & SCUBA",
+   "merchant": "fisherman_in_waders"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOKSTORE",
+   "kind": "front",
+   "x0": 143.23,
+   "x1": 156.28,
+   "merchant": "professor",
+   "at": [
+    -2.4,
+    9.62
+   ],
+   "inW": 8,
+   "inD": 10,
+   "inH": 200,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 32.5,
-   "y1": 46.5,
-   "face": "e"
+   "x0": 161.36,
+   "x1": 174.41,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
-   "id": "boards",
-   "name": "THE BOARDWRIGHT",
+   "id": "tailor",
+   "name": "THE TAILOR",
    "kind": "front",
-   "x0": -65.5,
-   "x1": -52.5,
-   "y0": 8,
-   "y1": 27,
-   "face": "e",
-   "merchant": "boardwright",
-   "at": [
-    4.1,
-    3.4
-   ]
+   "x0": 179.49,
+   "x1": 192.54,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
-   "id": "fixit",
-   "name": "FIX-IT ELECTRONICS",
+   "id": "barber",
+   "name": "THE BARBER",
    "kind": "front",
-   "x0": -65.5,
-   "x1": -52.5,
-   "y0": 52,
-   "y1": 71,
-   "face": "e",
-   "merchant": "fixer",
-   "at": [
-    1.1,
-    3.2
-   ],
-   "more": {
-    "fixkid": [
-     1.7,
-     2.0
-    ]
-   }
-  },
-  {
-   "id": "scanner",
-   "name": "THE SCANNER",
-   "kind": "front",
-   "x0": 143.2,
-   "x1": 153.2,
-   "lot": true,
-   "merchant": "scanner"
-  },
-  {
-   "id": "diner",
-   "name": "THE DINER",
-   "kind": "front",
-   "x0": 193.3,
-   "x1": 201.5,
-   "lot": true,
-   "inW": 14,
-   "inD": 14,
-   "inH": 112
+   "x0": 197.61,
+   "x1": 210.66,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "flea",
-   "name": "THE FLEA MARKET",
    "kind": "lot",
-   "x0": 216.6,
-   "x1": 229.65
-  },
-  {
-   "id": "fairgate",
-   "name": "THE FAIR GATE",
-   "kind": "gate",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 105.3,
-   "y1": 116.1,
-   "face": "e"
-  },
-  {
-   "id": "fair",
-   "name": "THE STRANGEST FAIR",
-   "kind": "fair",
-   "x0": -128.0,
-   "x1": -80.5,
-   "y0": -58.0,
-   "y1": 205.0,
-   "face": "e",
-   "door": [-79, 110.7],
-   "gate": [105.3, 116.1]
+   "x0": 215.74,
+   "x1": 252,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE FLEA MARKET"
   }
  ],
  "shells": [],
- "cars": [{"id": "c1", "model": "muscle-car-60s", "x": 78.2, "y": -67.0, "hd": 90}, {"id": "c2", "model": "convertible-60s", "x": 87.3, "y": -67.0, "hd": 90}, {"id": "c3", "model": "station-wagon-70s", "x": 96.8, "y": -67.0, "hd": 90}, {"id": "c4", "model": "pickup-truck-70s", "x": 105.9, "y": -67.0, "hd": 90}, {"id": "c5", "model": "wedge-coupe-80s", "x": 123, "y": -67.0, "hd": 90}, {"id": "c6", "model": "camper-van", "x": 131.8, "y": -67.0, "hd": 90}], "parkPlaces": {
+ "cars": [
+  {
+   "id": "c1",
+   "model": "muscle-car-60s",
+   "x": 78.2,
+   "y": -67,
+   "hd": 90
+  },
+  {
+   "id": "c2",
+   "model": "convertible-60s",
+   "x": 87.3,
+   "y": -67,
+   "hd": 90
+  },
+  {
+   "id": "c3",
+   "model": "station-wagon-70s",
+   "x": 96.8,
+   "y": -67,
+   "hd": 90
+  },
+  {
+   "id": "c4",
+   "model": "pickup-truck-70s",
+   "x": 105.9,
+   "y": -67,
+   "hd": 90
+  },
+  {
+   "id": "c5",
+   "model": "wedge-coupe-80s",
+   "x": 123,
+   "y": -67,
+   "hd": 90
+  },
+  {
+   "id": "c6",
+   "model": "camper-van",
+   "x": 131.8,
+   "y": -67,
+   "hd": 90
+  }
+ ],
+ "parkPlaces": {
   "round": {
    "x": 112,
    "y": 59.5,
@@ -434,7 +927,63 @@
    "x": 255,
    "y": 59.5
   },
-  "brook": {"note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it", "pts": [[248, 168], [230, 150], [212, 128], [200, 114], [190, 104], [203, 90], [205, 76], [187.5, 68], [189, 59], [190.5, 50], [178, 42], [165, 34], [155, 20]]},
+  "brook": {
+   "note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it",
+   "pts": [
+    [
+     248,
+     168
+    ],
+    [
+     230,
+     150
+    ],
+    [
+     212,
+     128
+    ],
+    [
+     200,
+     114
+    ],
+    [
+     190,
+     104
+    ],
+    [
+     203,
+     90
+    ],
+    [
+     205,
+     76
+    ],
+    [
+     187.5,
+     68
+    ],
+    [
+     189,
+     59
+    ],
+    [
+     190.5,
+     50
+    ],
+    [
+     178,
+     42
+    ],
+    [
+     165,
+     34
+    ],
+    [
+     155,
+     20
+    ]
+   ]
+  },
   "shelvedSites": [
    {
     "id": "pub",
@@ -512,103 +1061,49 @@
   {
    "id": "path0",
    "a": [
-    112.0,
-    -37.0
+    112,
+    -37
    ],
    "b": [
-    112.0,
-    180.0
+    112,
+    180
    ]
   },
   {
    "id": "path1",
    "a": [
-    -23.0,
+    -23,
     59.5
    ],
    "b": [
-    261.0,
+    261,
     59.5
    ]
   },
   {
    "id": "path5",
    "a": [
-    112.0,
-    25.0
+    112,
+    25
    ],
    "b": [
     140.5,
-    12.0
+    12
    ]
   },
   {
    "id": "path6",
    "a": [
-    43.0,
+    43,
     59.5
    ],
    "b": [
-    43.0,
+    43,
     110.6
    ]
   }
  ],
  "things": [
-  {
-   "k": "fruitstand",
-   "x": 221.3,
-   "y": -88.6,
-   "who": "fruitseller"
-  },
-  {
-   "k": "bookstall",
-   "x": 226.7,
-   "y": -88.6,
-   "who": "junkman"
-  },
-  {
-   "k": "mstall",
-   "x": 219.6,
-   "y": -83,
-   "rot": 1.5708,
-   "who": "trader"
-  },
-  {
-   "k": "mercado",
-   "x": 228.5,
-   "y": -83,
-   "rot": -1.5708,
-   "who": "flowerlady"
-  },
-  {
-   "k": "ftable",
-   "x": 224,
-   "y": -82.6
-  },
-  {
-   "k": "scrate",
-   "x": 222.2,
-   "y": -80.4,
-   "rot": 0.4
-  },
-  {
-   "k": "sacks",
-   "x": 226,
-   "y": -80.2,
-   "rot": -0.3
-  },
-  {
-   "k": "aboard",
-   "x": 224,
-   "y": -76.3
-  },
-  {
-   "k": "hotdog",
-   "x": 216.5,
-   "y": -72.6,
-   "who": "hotdogman"
-  },
   {
    "k": "meter",
    "x": 156,
@@ -716,8 +1211,8 @@
  "pathWidth": 7.2,
  "homes": {
   "donut": [
-   133.25,
-   -74.2,
+   134.16,
+   -74.6,
    5,
    "bodega"
   ],
@@ -728,14 +1223,14 @@
    "bar"
   ],
   "origamifox": [
-   -64.25,
-   49.2,
+   76.62,
+   -74.6,
    5,
    "arcade"
   ],
   "manatee": [
-   236.75,
-   -74.1,
+   30.86,
+   -74.6,
    5,
    "theatre"
   ],
@@ -1043,6 +1538,41 @@
   "beekeeper": [
    118,
    44,
+   0
+  ],
+  "fisherman_in_waders": [
+   61.8,
+   -120.5,
+   0
+  ],
+  "scuba_diver": [
+   117.5,
+   -113,
+   0
+  ],
+  "samurai_warrior": [
+   -68,
+   -73.5,
+   0
+  ],
+  "park_ranger": [
+   106,
+   -30,
+   0
+  ],
+  "forest_ranger": [
+   118,
+   -30,
+   0
+  ],
+  "village_gardener": [
+   96,
+   -24,
+   0
+  ],
+  "game_master": [
+   -50.5,
+   39.5,
    0
   ]
  },
@@ -2797,5 +3327,86 @@
     "opacity": 1
    }
   ]
+ },
+ "cloudTrees": [],
+ "edge": {
+  "note": "THE NEW MAP'S EDGES (owner, 6 Nov 2026): lines in map tiles you cannot cross (a forcefield where you press on one); past them only the backdrop, seen, never walked",
+  "lines": [
+   [
+    -52.5,
+    -166.5,
+    -52.5,
+    181
+   ],
+   [
+    -52.5,
+    181,
+    262,
+    181
+   ],
+   [
+    262,
+    181,
+    262,
+    -38
+   ],
+   [
+    262,
+    -38,
+    252,
+    -38
+   ],
+   [
+    252,
+    -38,
+    252,
+    -166.5
+   ]
+  ],
+  "runs": [
+   [
+    "x",
+    -100,
+    -260,
+    -92.4,
+    -77
+   ],
+   [
+    "x",
+    -72,
+    -260,
+    -37,
+    -22
+   ],
+   [
+    "x",
+    -100,
+    -260,
+    -107.9,
+    -95.9
+   ],
+   [
+    "x",
+    254,
+    420,
+    -92.4,
+    -77
+   ],
+   [
+    "x",
+    254,
+    420,
+    -107.9,
+    -95.9
+   ],
+   [
+    "y",
+    181.5,
+    340,
+    -66.8,
+    -52.5
+   ]
+  ],
+  "near": 60
  }
 }

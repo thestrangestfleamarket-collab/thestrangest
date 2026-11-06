@@ -37,7 +37,7 @@ import {ROOMK} from './150a-bedroom.js';
     wall('LED STRIP','LED STRIP',g=>{ add(g,rbox(1.2,.03,.02,.006,1),mat([220,220,224],{roughness:.4}),0,0,.01); add(g,new THREE.BoxGeometry(1.16,.012,.006),bulb([255,222,170],{emissiveIntensity:1.6}),0,-.006,.022,{glow:1}); lit(g,0,0,.1,0xffd6a0,.9,3); });
   });
   // a fitting's glass glows in its light's colour, bright as the light is set, dark when it is off
-  ROOMK.wires.fixture=un=>{ let L=null; const B=[]; un.obj.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.bulb){ o.material=o.material.clone(); B.push(o.material); } }); if(!L)return; un.st.L=L;
+  ROOMK.wires.fixture=un=>{ '@later'; let L=null; const B=[]; un.obj.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.bulb){ o.material=o.material.clone(); B.push(o.material); } }); if(!L)return; un.st.L=L;
     if(L.isSpotLight&&L.target.parent!==L.parent)L.parent.add(L.target);
     un.tick=()=>{ const L=un.st.L, u=L.userData, on=u.on!==false; for(const m of B){ m.emissive.copy(L.color); m.emissiveIntensity=on?1.3*Math.min(1.6,Math.max(.25,u.k??1)):.03; } }; };
 }

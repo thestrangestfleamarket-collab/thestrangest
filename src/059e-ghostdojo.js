@@ -55,7 +55,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
         c=plaster(f,a,z); }
       const v=ivy(f,a,z); if(v)c=v; return sh(c,k); };
     const wood=(f=1)=>sh(WD,f);
-    function shoji(a,z,L,door,win,alc,holes){ '@later'; const n=Math.max(1,Math.round(L/2)), sp=L/n, pa=a-Math.floor(a/sp)*sp;
+    function shoji(a,z,L,door,win,alc,holes){ const n=Math.max(1,Math.round(L/2)), sp=L/n, pa=a-Math.floor(a/sp)*sp;
       if(door&&a>door[0]-.1&&a<door[1]+.1){ const m=(door[0]+door[1])/2, u=Math.abs(a-m)*24, hw=(door[1]-door[0])*12;   // two sliding shoji panels, the way out
         if(z<DH+4){ if(u>hw-2.4||z>DH-3||z<3)return wood(z>DH-3?1.12:.8); if(u<1.2)return wood(.7); if(z<16)return wood(.95); if(Math.hypot(u-5,z-52)<2.2)return [40,30,26];
           return u%8<1.1||(z-16)%11<1.1?wood(1.15):sh(J.DJPAP,.84+.05*hash(Math.floor(a*12),Math.floor(z/3),725)); }
@@ -160,7 +160,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     flat(X0+DOOR.a0,Y1-T,X0+DOOR.a1,Y1,.4,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDL');
     flat(X0+BAY.a0,Y1-T,X0+BAY.a1,Y1+BAY.out,BAY.z0+.3,(x,y)=>sh(J.DJBRD,(x*5)%1<.1?.72:1),'GDfront');
     const ITEMS=[], CAND=[[xi0+.5,yi1-.5],[xi1-.5,yi1-.5]], AND=[[X0+DOOR.a0-.6,yi1-.45],[X0+DOOR.a1+.6,yi1-.45]];
-    const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
+    const WAX=[226,214,186], WG=[236,184,120], E=c=>Object.assign(c,{e:1}), wax=p=>{ '@later'; for(const b of p.boxes)if(!b.life)for(const f of ['fs','fi','fj','top']){ const g=b[f]; if(g)b[f]=(...a)=>{ const c=g(...a); if(!c)return c; if(!c.e)return f==='fs'?E(sh(WG,.28)):c;
         const k=Math.max(0,Math.min(1,(c[0]/240-.3)/1.07)); return f==='top'?E(sh(WG,.62)):E(sh(WG,.3+.34*k*k)); }; }
       const fb=p.boxes.find(b=>b.life), x=(fb.x0+fb.x1)/2, y=(fb.y0+fb.y1)/2; p.boxes.push({x0:x-.012,y0:y-.012,x1:x+.012,y1:y+.012,z0:30,z1:32.5,c:[26,22,20],foot:0,nb:1}); return p; };
     const PLN={}; for(const id in WALLS)PLN[id]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
@@ -192,7 +192,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     const NEARB=30*TILE, LT=[], STEAM={k:.05,c:new THREE.Color(),day:new THREE.Color(.86,.85,.82),fog:new THREE.Fog(0xdcdad2,0,9*TILE),was:null};
-    const light=(x,y,z,c,r,fl)=>{ '@later'; const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     let built=false, BG=null, P=null, busy=false; const build=()=>{ '@bath'; built=true; LT.length=0;   // the dojo hall, empty but for its steam, built where it stands (owner, 4 Nov 2026)
       const RW={front:[],back:[cx-xi0-5.6,cx-xi0+5.6],west:[(yi1-yi0)/2],east:[(yi1-yi0)/2]};
       const OPEN=[[DOOR.a0-T,DOOR.a1-T,0,DH]];

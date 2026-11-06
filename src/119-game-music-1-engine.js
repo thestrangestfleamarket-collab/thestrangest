@@ -106,4 +106,4 @@ function imxRec(N,evs,t0){ '@later'; const R=IMSAMP[N.kind]&&imsLoad(N.kind); if
     else if(e.k==='stop'&&v)v.src.playbackRate.setValueAtTime(e.hz/v.hz,t);
     else if(e.k==='mute'&&v&&e.v<1){ v.g.gain.setTargetAtTime(0,t,.02); try{ v.src.stop(t+.2); }catch(err){} N.on[e.s]=null; } } }
 window.__imx=IMX;
-export {IMX, imxNode, imxOut, imxSend};
+export {IMX, imxNode, imxSend};

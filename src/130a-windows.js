@@ -23,7 +23,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     if(!p.rt){ p.rt=new THREE.WebGLRenderTarget(w,h); p.rt.texture.colorSpace=THREE.SRGBColorSpace; me.material=glass(p.rt.texture,p.look==='in'?1.7:1); }
     cam.aspect=a; cam.fov=fov; cam.updateProjectionMatrix(); cam.position.copy(V); cam.lookAt(V.x+N.x,V.y,V.z+N.z); cam.updateMatrixWorld();
     renderer.setRenderTarget(p.rt); renderer.render(scene,cam); renderer.setRenderTarget(null); me.visible=true; };
-  WINDOWS.bake=id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&!p.only); if(!L.length)return; const vis=L.map(p=>p.me.visible), sb=renderer.shadowMap.autoUpdate;
+  WINDOWS.bake=id=>{ '@later'; const L=WINDOWS.panes.filter(p=>p.off===id&&!p.only); if(!L.length)return; const vis=L.map(p=>p.me.visible), sb=renderer.shadowMap.autoUpdate;
     for(const p of L)p.me.visible=false; renderer.shadowMap.autoUpdate=false;
     try{ for(const p of L.filter(p=>p.look==='in'))bake(p); }
     finally{ renderer.shadowMap.autoUpdate=sb; L.forEach((p,i)=>{ p.me.visible=p.rt?true:vis[i]; }); } done[id]=Math.floor(CLOCK.h??12); };
@@ -32,18 +32,19 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     if(now-t0>1200&&done[id]!==hr&&!WINDOWS.busy){ WINDOWS.busy=true; try{ WINDOWS.bake(id); }catch(e){ console.warn('WINDOWS',e); done[id]=hr; } WINDOWS.busy=false; } },'130a-windows');
   // live: from inside, the street-side glass shows the real street in 3D, drawn each frame from your own camera moved to where the building really stands (only what lies beyond the glass), and seen through the glass's own pixels; the walkers near it keep walking (NPCS reads WINDOWS.near)
   const LV={rt:new Map(),res:new THREE.Vector2(1,1)}, FR=new THREE.Frustum(), M4=new THREE.Matrix4(), SP=new THREE.Sphere(), LC=new Map(); WINDOWS.eyes=[]; WINDOWS.live=LV;
-  const liveM=t=>{ const m=new THREE.ShaderMaterial({uniforms:{tLive:{value:t},uRes:{value:LV.res}},vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+  const liveM=t=>{ '@later'; const m=new THREE.ShaderMaterial({uniforms:{tLive:{value:t},uRes:{value:LV.res}},vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
       fragmentShader:'uniform sampler2D tLive; uniform vec2 uRes; varying vec2 vU; void main(){ vec3 c=texture2D(tLive,gl_FragCoord.xy/uRes).rgb; float t=vU.x*.8+vU.y*.55; gl_FragColor=vec4(c*vec3(.93,.95,.97)+vec3(.035,.04,.045)*smoothstep(.04,0.,abs(t-.55))+vec3(.018)*smoothstep(.1,0.,abs(t-.82)),1.); }',side:THREE.DoubleSide,toneMapped:false}); m.clipping=false; return m; };
   WINDOWS.near=(x,z,r=20*TILE)=>{ for(const e of WINDOWS.eyes)if(Math.abs(x-e.x)<r&&Math.abs(z-e.z)<r)return true; return false; };
   // one live view: these panes, the world moved by d (pane to what lies behind it), the side kept (out: away from the inside's middle C; in: towards it), eps past the glass
   const RES=()=>{ const R=SHARED.composer&&SHARED.composer.renderTarget1, sz=renderer.getDrawingBufferSize(new THREE.Vector2()); LV.res.set(Math.max(1,R?R.width:sz.x),Math.max(1,R?R.height:sz.y)); };
   // the lamps for one view: the pool's lights (not the shadow one) moved to the lamps that light what lies behind the glass, nearest first; put back after
-  const relight=(fit,px,pz)=>{ const P=LITE.pool, sv=P.map(S=>[S.position.clone(),S.color.clone(),S.intensity,S.distance,S.decay]); const sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&fit(L.position)).map(L=>[(L.position.x-px)**2+(L.position.z-pz)**2,L]).sort((a,b)=>a[0]-b[0]);
+  const relight=(fit,px,pz)=>{ '@later'; const P=LITE.pool, sv=P.map(S=>[S.position.clone(),S.color.clone(),S.intensity,S.distance,S.decay]); const sel=LITE.recs.filter(L=>L.intensity>0&&!L.userData.off&&fit(L.position)).map(L=>[(L.position.x-px)**2+(L.position.z-pz)**2,L]).sort((a,b)=>a[0]-b[0]);
     for(let i=1;i<P.length;i++){ const S=P[i], L=sel[i-1]&&sel[i-1][1]; if(!L){ S.intensity=0; continue; } S.position.copy(L.position); S.color.copy(L.color); S.intensity=L.intensity; S.distance=L.distance; S.decay=L.decay; }
     return ()=>P.forEach((S,i)=>{ const v=sv[i]; S.position.copy(v[0]); S.color.copy(v[1]); S.intensity=v[2]; S.distance=v[3]; S.decay=v[4]; }); };
   const FROM=new Map(); WINDOWS.from=id=>{ if(FROM.has(id))return FROM.get(id); const P=place(id), b=P&&P.b; let r=null; if(b&&WINDOWS.panes.some(p=>p.off===id&&p.look==='out')){ const c=new THREE.Vector3((b.x0+b.x1)/2,0,(b.z0+b.z1)/2).applyMatrix4(P.Mi); r={x:c.x,z:c.z}; } FROM.set(id,r); return r; };   // where an inside off the map stands on the street, if its glass looks out at it
-  WINDOWS.open=(x,z)=>{ for(const k of WINDOWS.held){ const P=place(k), b=P&&P.b; if(b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true; } return false; };   // inside a room seen live through its glass from the street: drawn though you are not in
-  const view=(L,T,Cx,Cz,inward,eps,eyes,peek,hide,fit,off)=>{ const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const G=new Map(), Vr=new THREE.Vector3();
+  WINDOWS.taking=new Set();   // insides being pictured for their glass, kept drawn and built meanwhile
+  WINDOWS.open=(x,z)=>{ for(const k of [...WINDOWS.held,...WINDOWS.taking]){ const P=place(k), b=P&&P.b; if(b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1)return true; } return false; };   // inside a room seen live through its glass from the street: drawn though you are not in
+  const view=(L,T,Cx,Cz,inward,eps,eyes,peek,hide,fit,off)=>{ '@later'; const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const G=new Map(), Vr=new THREE.Vector3();
     for(const p of L){ const me=p.me; me.updateWorldMatrix(true,false); me.getWorldPosition(V); N.set(0,0,1).applyQuaternion(me.getWorldQuaternion(Q)); N.y=0; N.normalize(); if((N.x*(Cx-V.x)+N.z*(Cz-V.z)>0)!==inward)N.negate();
       Vr.copy(V).applyMatrix4(T); N.transformDirection(T); N.y=0; N.normalize(); if(eyes)WINDOWS.eyes.push({x:Vr.x,z:Vr.z}); const c=-(N.x*Vr.x+N.z*Vr.z), k=p.look+':'+Math.round(N.x*8)+','+Math.round(N.z*8)+','+Math.round(c/(.5*TILE)); let g=G.get(k); if(!g)G.set(k,g={n:N.clone(),c,L:[],seen:false,at:Vr.clone()}); g.L.push(p);
       me.geometry.boundingSphere||me.geometry.computeBoundingSphere(); SP.copy(me.geometry.boundingSphere).applyMatrix4(me.matrixWorld); if(FR.intersectsSphere(SP))g.seen=true; }
@@ -55,9 +56,9 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     catch(e){ console.warn('WINDOWS live',e); } finally{ renderer.setRenderTarget(null); for(const p of hid)p.me.visible=true; renderer.shadowMap.autoUpdate=sb; WINDOWS.busy=false; } };
   // from the street: a shop near you (NEAR) whose glass looks in has its inside built and held (WINDOWS.held: not dropped) while you are near; let go further off (FAR), dropped as before
   const NEAR=14*TILE, FAR=18*TILE, building=new Set(), built=id=>{ const o=ROOMS.off[id]; return o?!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done):!!(STORE.inside&&STORE.inside[id]&&STORE.inside[id].done); };
-  const build=id=>{ if(building.has(id))return; building.add(id); (async()=>{ if(ROOMS.off[id]){ await ROOMS.offBuild(id); ROOMS.ceilOf(id); } else{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); if(!built(id))STORE.inGo(id); } })().catch(e=>console.warn('WINDOWS build',e)).finally(()=>building.delete(id)); };
+  const build=id=>{ '@later'; if(building.has(id))return; building.add(id); (async()=>{ if(ROOMS.off[id]){ await ROOMS.offBuild(id); ROOMS.ceilOf(id); } else{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); if(!built(id))STORE.inGo(id); } })().catch(e=>console.warn('WINDOWS build',e)).finally(()=>building.delete(id)); };
   let S0=null, moved=false;   // nothing is built for the glass until you have walked a step from where you started (the start builds no inside)
-  const onScreen=L=>{ const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); return L.some(p=>{ const me=p.me; me.geometry.boundingSphere||me.geometry.computeBoundingSphere(); SP.copy(me.geometry.boundingSphere).applyMatrix4(me.matrixWorld); return FR.intersectsSphere(SP); }); };
+  const onScreen=L=>{ '@later'; const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); return L.some(p=>{ const me=p.me; me.geometry.boundingSphere||me.geometry.computeBoundingSphere(); SP.copy(me.geometry.boundingSphere).applyMatrix4(me.matrixWorld); return FR.intersectsSphere(SP); }); };
   const unlive=p=>{ if(p.live){ p.me.material=p.pic||p.me.material; p.live=0; } if(p.only)p.me.visible=false; };
   SYS.add('rooms',()=>{ WINDOWS.eyes.length=0; if(WINDOWS.busy||VR.on||FADE.busy)return; const id=(ROOMS.offIn&&ROOMS.offIn())||(ROOMS.cur&&ROOMS.cur.id&&STORE.inside&&STORE.inside[ROOMS.cur.id]?ROOMS.cur.id:null);
     if(id){ const P=place(id), L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='out'&&p.me.parent); for(const p of WINDOWS.panes)if(p.look==='in')unlive(p); if(!P||!L.length)return; const b=P.b;
@@ -70,8 +71,18 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const KEY=id=>'winpic:'+id+':'+(((document.querySelector('meta[name=market-build]')||{}).content)||'local'), buf=new Uint8Array(256*256*4);
   const shot=p=>{ const w=p.rt.width, h=p.rt.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), im=g.createImageData(w,h); renderer.readRenderTargetPixels(p.rt,0,0,w,h,buf);
     for(let y=0;y<h;y++)im.data.set(buf.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4); g.putImageData(im,0,0); return cv.toDataURL('image/png'); };
-  WINDOWS.first=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null||WINDOWS.busy)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
+  // taken in small steps, each when the page is idle with a frame drawn between (the build, each pane's picture, each pane's saving), never one long stall
+  const idle=()=>new Promise(r=>requestAnimationFrame(()=>(window.requestIdleCallback?requestIdleCallback(()=>r(),{timeout:1500}):setTimeout(r,30))));
+  const bakeOne=p=>{ const sb=renderer.shadowMap.autoUpdate, others=WINDOWS.panes.filter(q=>q.off===p.off&&!q.only&&q.me.visible), vis=others.map(q=>q.me.visible);
+    for(const q of others)q.me.visible=false; renderer.shadowMap.autoUpdate=false; try{ bake(p); } finally{ renderer.shadowMap.autoUpdate=sb; others.forEach((q,i)=>{ q.me.visible=q.rt?true:vis[i]; }); } };
+  let chain=Promise.resolve();
+  const firstOne=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
     if(S&&S.length===L.length){ await Promise.all(L.map((p,i)=>new Promise(res=>{ const im=new Image(); im.onload=()=>{ const t=new THREE.Texture(im); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; p.me.material=glass(t,1.7); p.me.visible=true; p.kept=t; res(); }; im.onerror=()=>res(); im.src=S[i]; }))); if(L.every(p=>p.kept))return; }
-    const o=ROOMS.off[id]; if(!o||!ROOMS.offBuild)return; WINDOWS.busy=true; try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await ROOMS.offBuild(id); WINDOWS.bake(id); done[id]=null; try{ localStorage.setItem(KEY(id),JSON.stringify(L.map(shot))); }catch(e){} if(!was&&!WINDOWS.held.has(id))ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } WINDOWS.busy=false; };
+    const o=ROOMS.off[id], P=place(id); if(!o||!ROOMS.offBuild||!P||!P.sh)return;
+    WINDOWS.taking.add(id); try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await idle(); await ROOMS.offBuild(id);
+      for(const p of L){ await idle(); if(ROOMS.offIn()===id)return; while(WINDOWS.busy)await idle(); WINDOWS.busy=true; try{ bakeOne(p); } finally{ WINDOWS.busy=false; } }
+      const pics=[]; for(const p of L){ await idle(); pics.push(p.rt?shot(p):''); } if(pics.every(Boolean))try{ localStorage.setItem(KEY(id),JSON.stringify(pics)); }catch(e){}
+      await idle(); WINDOWS.taking.delete(id); if(!was&&!WINDOWS.held.has(id)&&ROOMS.offIn()!==id)ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } finally{ WINDOWS.taking.delete(id); } };
+  WINDOWS.first=id=>chain=chain.then(()=>firstOne(id));
   let firstAt=0; SYS.add('places',()=>{ if(!window.__started||FADE.busy||WINDOWS.firstDone)return; if(!firstAt)firstAt=performance.now(); if(performance.now()-firstAt<4000)return; WINDOWS.firstDone=true; for(const id in ROOMS.off)if(!ROOMS.offIn()&&WINDOWS.panes.some(p=>p.off===id&&p.look==='in'&&!p.only))WINDOWS.first(id); },'130a-windows-first');
   window.WINDOWS=WINDOWS; }

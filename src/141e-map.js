@@ -1,6 +1,6 @@
-// THE MAP: a folded 1986 visitor's brochure. MAP on the pager (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
+// THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
-import {FORAGE, HANDHELD, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
+import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
@@ -26,7 +26,7 @@ import {LOOP} from './009b-loop.js';
   const star=(x,y,r)=>`<polygon points="${[0,1,2,3,4,5,6,7,8,9].map(i=>{ const a=-Math.PI/2+i*Math.PI/5, q=i%2?r*.45:r; return (x+Math.cos(a)*q).toFixed(1)+','+(y+Math.sin(a)*q).toFixed(1); }).join(' ')}" fill="${RED}" stroke="${PAPER}" stroke-width="1.5"/>`;
   let PL=[], G=null;   // the numbered places and the sheet's geometry, made each time it opens
   /* ---------- the front: the map on the left, the guide column on the right ---------- */
-  const front=()=>{ const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, f=Math.min(960/Q.W,720/Q.H), mw=Q.W*f, mh=Q.H*f, my=(720-mh)/2, X=px=>px*f, Y=py=>my+py*f, TX=tx=>X(Q.sx(tx)), TY=ty=>Y(Q.sy(ty)), WX=x=>TX(OX+x/T), WY=z=>TY(OY+z/T);
+  const front=()=>{ '@later'; const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, f=Math.min(960/Q.W,720/Q.H), mw=Q.W*f, mh=Q.H*f, my=(720-mh)/2, X=px=>px*f, Y=py=>my+py*f, TX=tx=>X(Q.sx(tx)), TY=ty=>Y(Q.sy(ty)), WX=x=>TX(OX+x/T), WY=z=>TY(OY+z/T);
     G={Q,f,mw,mh,my,toWorld:(sx,sy)=>{ const [tx,ty]=Q.tile(sx/f,(sy-my)/f); return [(tx-OX)*T,(ty-OY)*T]; }};
     const cv=document.createElement('canvas'); cv.width=Q.W; cv.height=Q.H; const g=cv.getContext('2d'), im=g.createImageData(Q.W,Q.H), RGB=Q.KN.map(k=>{ const c=KC[k]||PAPER; return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; });
     for(let i=0,n=Q.W*Q.H;i<n;i++){ const c=RGB[Q.K[i]]; im.data[i*4]=c[0]; im.data[i*4+1]=c[1]; im.data[i*4+2]=c[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
@@ -62,7 +62,7 @@ import {LOOP} from './009b-loop.js';
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };
   /* ---------- the back: the cover on the left panel, THE SUBWAY across the other three ---------- */
-  const back=()=>{ const S=[]; S.push(`<rect width="1280" height="720" fill="${PAPER}"/>`);
+  const back=()=>{ '@later'; const S=[]; S.push(`<rect width="1280" height="720" fill="${PAPER}"/>`);
     // the cover
     S.push(`<g fill="${INK}"><rect x="0" y="238" width="320" height="50"/>${[[18,198,26,40],[50,178,18,60],[74,210,30,28],[110,158,22,80],[138,190,34,48],[180,170,16,68],[202,204,40,34],[248,184,20,54],[274,214,30,24]].map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join('')}<rect x="121" y="136" width="2" height="22"/></g><g fill="${PAPER}">${[[22,208],[30,208],[22,222],[54,188],[60,200],[116,170],[122,184],[116,198],[142,200],[158,212],[184,178],[184,192],[252,194],[258,210]].map(([a,b])=>`<rect x="${a}" y="${b}" width="4" height="5"/>`).join('')}</g>`);
     S.push(txt(TEXT.t('bro.ny'),22,46,15,{ls:4})+txt(TEXT.t('bro.ed'),298,44,11,{a:'end',f:RED,ls:2})+`<rect x="22" y="290" width="276" height="6" fill="${INK}"/>`+txt(TEXT.t('bro.title1'),22,330,20,{f:RED,ls:4})+txt(TEXT.t('bro.title2').split(' ')[0],22,372,36)+txt(TEXT.t('bro.title2').split(' ').slice(1).join(' '),22,410,36));
@@ -90,10 +90,10 @@ import {LOOP} from './009b-loop.js';
   /* ---------- the sheet: four panels on a zigzag fold, shown open; the flip, the zoom (no motion: it appears and disappears, owner 4 Nov 2026) ---------- */
   let SH=null, up=false, flipped=false, k=1, ox=0, oy=0, z=1, px=0, py=0;
   const fit=()=>{ k=Math.min(innerWidth/1280,innerHeight/720); ox=(innerWidth-1280*k)/2; oy=(innerHeight-720*k)/2; };
-  const pose=(t,a)=>{ const th=180*(1-t), s0=.36*k, sc=s0+(k-s0)*t, x=(innerWidth-330*s0)*(1-t)+ox*t, y=(innerHeight-730*s0)*(1-t)+oy*t, rz=-6*(1-t), rx=8*(1-t);
+  const pose=(t,a)=>{ '@later'; const th=180*(1-t), s0=.36*k, sc=s0+(k-s0)*t, x=(innerWidth-330*s0)*(1-t)+ox*t, y=(innerHeight-730*s0)*(1-t)+oy*t, rz=-6*(1-t), rx=8*(1-t);
     SH.style.transform=`translate(${px}px,${py}px) scale(${z}) translate(${x}px,${y}px) scale(${sc}) rotateZ(${rz}deg) rotateX(${rx}deg) translate(640px,360px) rotateY(${a}deg) translate(-640px,-360px)`;
     SH.querySelectorAll('.pn').forEach((p,i)=>{ if(i)p.style.transform=`rotateY(${(i%2?-1:1)*th}deg)`; }); };
-  const build=()=>{ const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
+  const build=()=>{ '@later'; const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
   const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
@@ -104,7 +104,7 @@ import {LOOP} from './009b-loop.js';
     W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
     W.addEventListener('pointerup',()=>{ dr=null; });
     W.addEventListener('wheel',e=>{ e.preventDefault(); if(!up)return; const z0=z; z=Math.min(3,Math.max(1,z*(e.deltaY<0?1.25:.8))); if(z===1){ px=py=0; } else { px=e.clientX-(e.clientX-px)*z/z0; py=e.clientY-(e.clientY-py)*z/z0; } pose(1,flipped?180:0); },{passive:false});
-    W.addEventListener('click',e=>{ if(moved||!up)return; const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-flip]'):null;
+    W.addEventListener('click',e=>{ '@later'; if(moved||!up)return; const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-flip]'):null;
       if(el&&el.dataset.flip)return flip();
       if(el&&el.dataset.go){ const n=el.dataset.go; return go(()=>UI.goPlace(n)); }
       if(el&&el.dataset.st){ const st=(LOOP.STA||[]).find(q=>q.id===el.dataset.st); if(!st)return; return go(()=>{ if(st.old)return UI.goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st.P(LOOP.LEN/2,LOOP.MID,0); UI.goTo(p[0],p[2],'down'); }); }
@@ -114,7 +114,7 @@ import {LOOP} from './009b-loop.js';
   addEventListener('keydown',e=>{ const key=(e.key||'').toLowerCase(), sm=e.shiftKey&&key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
     if(sm){ if(e.repeat||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return; e.preventDefault(); e.stopImmediatePropagation(); if(up)return close(); if(UI.menuOpen)UI.toggleMenu(); return open(); }
     if(!up)return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
-    if(key==='escape'){ close(); if(HANDHELD.back)HANDHELD.back(); } else if(key==='f')flip(); },true);
+    if(key==='escape'){ close(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
   UI.mapWindow=()=>{ if(!up)open(); };

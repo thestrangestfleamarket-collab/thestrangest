@@ -1,6 +1,6 @@
 // THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay the Fox at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
+import {ARCHI, FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -26,8 +26,8 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
       does:{f_bec:()=>{ FORAGE.feed(.5); VIT.sta=Math.min(1,VIT.sta+.3); },f_hero:()=>{ FORAGE.feed(.6); VIT.heal(.1); },f_chopped:()=>{ FORAGE.feed(.6); VIT.heal(.15); },f_icepop:()=>{ VIT.sta=Math.min(1,VIT.sta+.3); }}}); }
   // what a shelf holds, by its goods list (SHARED.BOD.GLAY, the goods drawn on it): one line a brand, its kind, its price
   const SHELF={fridge1:'fridge1',fridge2:'fridge2',fridge3:'fridge3',wl1:'aisle1a',wl2:'aisle1b',wr1:'aisle2a',wb3:'aisle2b',wl3:'aisle2a',wb1:'back1',wb2:'back2',wm1:'mid1',win1:'win1',win2:'win2'};
-  const linesOf=rows=>{ const out=[], seen=new Set(); for(const [k,,...a] of rows.flat()){ let br=typeof a[a.length-1]==='string'?a[a.length-1]:({goya:'GOYA',vienna:'VIENNA',spam:'SPAM',tide:'TIDE',ajax:'AJAX',pampers:'PAMPERS',koolaid:'KOOL-AID',candle:'7 DIAS',sack:'CAROLINA',platano:'PLATANOS'}[k]||'');
-      const K=kindOf(k,br); if(!K)continue; const key=br+'|'+K[0]; if(seen.has(key))continue; seen.add(key); out.push({brand:br,id:K[0],name:K[1],price:K[2]}); } return out; };
+  const linesOf=rows=>{ '@later'; const out=[], seen=new Set(); for(const [k,,...a] of rows.flat()){ let br=typeof a[a.length-1]==='string'?a[a.length-1]:({goya:'GOYA',vienna:'VIENNA',spam:'SPAM',tide:'TIDE',ajax:'AJAX',pampers:'PAMPERS',koolaid:'KOOL-AID',candle:'7 DIAS',sack:'CAROLINA',platano:'PLATANOS'}[k]||'');
+      const K=kindOf(k,br); if(!K||ARCHI(K[0]))continue; const key=br+'|'+K[0]; if(seen.has(key))continue; seen.add(key); out.push({brand:br,id:K[0],name:K[1],price:K[2]}); } return out; };
   BODEGA.shelf=key=>{ const L=BOD.GLAY&&BOD.GLAY[SHELF[key]]; return L?linesOf(L):[]; };
   BODEGA.counterLines=()=>BOD.GLAY?linesOf([BOD.GLAY.counter]):[];
   const total=()=>{ let t=0; for(const [id,n] of BODEGA.basket)t+=ITEMS.prop(id,'value')*n; return t; }, count=()=>{ let c=0; for(const n of BODEGA.basket.values())c+=n; return c; };
@@ -58,13 +58,14 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     o.spots={'STOCK CLERK WITH THE FOX':sp(11,.75,0,1),'NIGHT COUNTER':sp(15.6,4.4,-1,0)};
     o.seats=BODEGA.places=[sp(14.0,5.3,1,0),sp(13.2,5.3,1,0),sp(12.4,5.3,1,0),sp(9.9,2.9,0,-1),sp(11.6,2.9,0,-1),sp(2.0,2.0,-1,0),sp(3.6,6.2,-1,0),sp(5.6,3.4,1,0),sp(4.4,8.0,0,-1),sp(10.6,5.4,-1,0),sp(10.9,8.45,0,-1,.32),sp(11.6,8.45,0,-1,.32)]; } }
   STORE.furnish=STORE.furnish||{};
-  STORE.furnish.bodega=()=>{ '@later'; const F=frame(); if(!F)return; const first=!BODEGA.solids; BODEGA.solids=true; const K=IKIT.room(F,m=>SHARED.BODB.SG.add(m),first?undefined:()=>{}), {box,cyl,ball,glow,pic,words,sol,use,own,meshOf,seat,MW}=K, t=d=>d*TM;
+  STORE.furnish.bodega=()=>{ const F=frame(); if(!F)return; const first=!BODEGA.solids; BODEGA.solids=true; const K=IKIT.room(F,m=>SHARED.BODB.SG.add(m),first?undefined:()=>{}), {box,cyl,ball,glow,pic,words,sol,use,own,meshOf,seat,MW}=K, t=d=>d*TM;
     const O=BOD.O, X=BOD.X, Z=BOD.Z, T=TILE, C={steel:0xa8acb0,dsteel:0x6e7276,glass:0xcfe3ea,white:0xf2f2f0,red:0xc02028,cork:0xb08850,wood:0x8a5a2a,blue:0x2a5aa8};
     // a thing to use over a prop of the shop (its own boxes in map tiles)
     const over=(name,p,act,reach=1.5)=>{ if(!p)return; const bs=p.boxes||[], x0=Math.min(...bs.map(b=>b.x0)), x1=Math.max(...bs.map(b=>b.x1)), y0=Math.min(...bs.map(b=>b.y0)), y1=Math.max(...bs.map(b=>b.y1)), z1=Math.max(...bs.map(b=>b.z1||0),40);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),BOD.Y?BOD.Y(z1):z1,Math.abs(Z(y1)-Z(y0))),new THREE.MeshBasicMaterial({visible:false})); hb.position.set((X(x0)+X(x1))/2,(BOD.Y?BOD.Y(z1):z1)/2,(Z(y0)+Z(y1))/2); SHARED.BODB.SG.add(hb);
       UI.thing({name,obj:hb,reach:reach*T,near:(reach+1.1)*T,tall:BOD.Y?BOD.Y(z1):z1,act}); };
     for(const k in SHELF)over(/^fridge/.test(k)?'THE DRINKS FRIDGE (TAKE)':'THE SHELF (TAKE)',O[k],()=>BODEGA.openShelf(k));
+    if(BODEGA.goods)BODEGA.goods({X,Z,O,T,K,G:SHARED.BODB.SG});   // the goods whose sellers are archived, on the shelves (146zea)
     over('THE REGISTER (PAY)',O.counter,BODEGA.register,1.8); over('THE LOTTERY MACHINE (SCRATCH-OFF $2)',O.lotto,BODEGA.scratch,1.6);
     const WF=t(.12);   // the back wall's inside face
     // the deli on the back wall: a prep counter with the slicer against the wall, the glass case in front, the stock clerk between
@@ -96,10 +97,11 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
       for(const k of [-1,1]){ const e=new THREE.Mesh(new THREE.ConeGeometry(.028*MW,.06*MW,6),M); e.position.set(.2*MW,.18*MW,(.04+k*.04)*MW); cat.add(e); s(.009,Dk,.265,.11,.04+k*.025); }
       const tl=new THREE.Group(); tl.position.set(-.18*MW,.05*MW,0); for(let i=0;i<5;i++){ const q=new THREE.Mesh(new THREE.SphereGeometry(.025*MW,8,6),M); q.position.set(-i*.04*MW,0,(i*i)*.012*MW); tl.add(q); } cat.add(tl); cat.userData.tail=tl; cat.userData.head=hd; }
     const cp=F.pw(cu,cv); cat.position.set(cp[0],CH*MW,cp[1]); cat.rotation.y=F.hd(1,0)-Math.PI/2; cat.traverse(o=>{ o.userData.noMerge=true; o.castShadow=true; }); SHARED.BODB.SG.add(cat); BODEGA.cat=cat;
-    use('MANGO, THE BODEGA CAT',cu,cv,.5,1.2,()=>{ const now=Date.now();
+    use('MANGO, THE BODEGA CAT',cu,cv,.5,1.2,()=>{ '@later'; const now=Date.now();
       if(FORAGE.has&&FORAGE.has('g_catfood')){ FORAGE.take('g_catfood',1); BODEGA.lucky=true; BODEGA.fed=now; say('MANGO EATS THE WHOLE CAN, THEN BUMPS YOUR HAND. YOU FEEL LUCKY: YOUR NEXT SCRATCH-OFF IS LIKELIER.'); }
       else if(now-(BODEGA.petAt||0)>60e3){ BODEGA.petAt=now; FORAGE.buff&&FORAGE.buff('regen',30); say('MANGO PURRS. YOU FEEL A LITTLE BETTER. (SHE LIKES CAT FOOD, AISLE 2.)'); }
       else say('MANGO OPENS ONE EYE. THAT IS ENOUGH PETTING FOR NOW.','#c8a090'); },1.4);
     K.flush(); };
   SYS.add('life',()=>{ const c=BODEGA.cat; if(!c||!c.parent||!SHARED.BODB.SG||!SHARED.BODB.SG.parent)return; const t=performance.now()/1000, B=c.userData.body; B.scale.y=.75*(1+.04*Math.sin(t*1.6)); c.userData.tail.rotation.y=.3*Math.sin(t*.9)+(Math.sin(t*.23)>.8?.6*Math.sin(t*7):0); c.userData.head.rotation.z=.08*Math.sin(t*.4); },'146ze-cat');
 }
+export {BODEGA};

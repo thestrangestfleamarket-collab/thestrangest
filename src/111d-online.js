@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, st, TEXT, UI, VIT, VR, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, st, TEXT, UI, VAULT, VIT, VR, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
@@ -24,7 +24,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt:'+(MODS.apts.host||ONLINE.me||MODS.apts.num||''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
+  const lookKey=()=>{ '@later'; const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:'')); ONLINE.myName=myName;
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -32,14 +32,14 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:k&&typeof k==='object'?{t:'act',...k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
-  const place=(o,now)=>{ const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
+  const place=(o,now)=>{ '@later'; const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
     for(let i=n;i>0;i--)if(s[i-1].t<=t){ const a=s[i-1], b=s[i]; if(Math.hypot(b.x-a.x,b.z-a.z)>4*TILE||a.lv!==b.lv||a.rm!==b.rm)return b;
       const k=(t-a.t)/(b.t-a.t||1), dh=Math.atan2(Math.sin(b.hd-a.hd),Math.cos(b.hd-a.hd)); return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,y:a.y+(b.y-a.y)*k,hd:a.hd+dh*k,lv:b.lv,rm:b.rm}; }
     return s[n]; };
   ONLINE.at=(o,now)=>{ const p=place(o,now)||{x:0,z:0}; return [p.x/TL,-p.z/TL]; }; ONLINE.V=V8;
 
   const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
-  const up=(id,p)=>{ let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
+  const up=(id,p)=>{ '@later'; let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
   ONLINE.world={}; const wset=(k,v)=>{ ONLINE.world[k]=v; SYS.run('world',k,v); };
@@ -63,6 +63,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
   const BUILT=new Map();
+  ONLINE.refig=pre=>{ for(const o of ONLINE.others.values())if(String(o.look||'').startsWith(pre))o.key=''; };   // their bodies built again (a body whose data came after they were first drawn: the avatar)
   // a dyed shirt or trousers: one material a colour, shared by everyone dyed it
   const dyeMat=h=>{ const M=R.MATS, n='dye'+h; if(!M.includes(n)){ M.push(n); const c=new THREE.Color(h); W3.ramp.push([1,.9,.7,.42].map(q=>c.clone().multiplyScalar(q))); } return M.indexOf(n); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
@@ -80,16 +81,16 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={player:o,name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
     o.key=k; o.B=null; g.userData.anyRoom=true; scene.add(LEVELS.own(g,'*')); };
-  const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
+  const lab=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.x&&o.x.title?' · '+o.x.title:'')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20; o.tagS=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s;
     if(!o.lab)o.lab=LABELS.add();
     o.lab.set((say?'<div style="display:inline-block;max-width:min(320px,70vw);white-space:normal;overflow-wrap:anywhere;font:'+fitPx(SIZES[st.s]/2,say.length)+'px '+FONTS[st.f][0]+';color:'+st.c+';background:rgba(11,13,19,.88);padding:3px 6px;margin-bottom:3px">'+TEXT.esc(say)+'</div>':'')+(nm?'<div style="font:14px Silkscreen,monospace;color:'+(o.dead?'#cfe0ff':'#ffd27a')+';text-shadow:0 0 2px #0b0d13,1px 1px 0 #0b0d13,-1px -1px 0 #0b0d13,1px -1px 0 #0b0d13,-1px 1px 0 #0b0d13">'+TEXT.esc(nm)+'</div>':'')+(hp>=0?'<div style="width:80px;height:5px;margin:2px auto 0;background:#0b0d13;padding:1px"><div style="height:3px;width:'+Math.round(hp*100)+'%;background:#c84a3a"></div></div>':'')).show(!!(say||nm||hp>=0)); };
   // the whole sentence always shows: it wraps, and a long one gets smaller (not under 8 px)
   const fitPx=(px,n)=>n<=60?px:Math.max(8,Math.round(px*Math.sqrt(60/n)));
-  const unfig=o=>{ if(o.fig){ const i=UI.things.indexOf(o.fig.th); if(i>=0)UI.things.splice(i,1); scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
+  const unfig=o=>{ '@later'; if(o.fig){ const i=UI.things.indexOf(o.fig.th); if(i>=0)UI.things.splice(i,1); scene.remove(o.fig.g); const me=o.fig.me; for(const m of [me.material,me.customDistanceMaterial,me.customDepthMaterial])if(m)m.dispose(); o.fig=null; }
     if(o.tag){ scene.remove(o.tag); o.tag.material.map.dispose(); o.tag.material.dispose(); o.tag=null; o.tagS=''; } if(o.lab){ o.lab.remove(); o.lab=null; } };
 
   /* ---------- the name over their head, and what they last said for a few seconds ---------- */
-  const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
+  const tag=o=>{ const st={f:0,c:COLS[0],s:1,...(o.st||{})}, say=o.say&&performance.now()-o.sayT<ONLINE.sayFor*1000?o.say:'', nm=o.mine?'':(o.name||'TENANT')+(o.x&&o.x.title?' · '+o.x.title:'')+(o.dead?' (GHOST)':''), hp=o.mine||o.dead||o.hp==null||o.hp>.99?-1:Math.round(o.hp*20)/20, s=nm+'\n'+say+'\n'+hp+'\n'+st.f+st.c+st.s; if(o.tag&&o.tagS===s)return; o.tagS=s;
     const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d'); x.textAlign='center'; x.textBaseline='middle';
     if(say){ let px=SIZES[st.s], L;
       const wrap=()=>{ x.font=px+'px '+FONTS[st.f][0]; const out=[]; let ln=''; for(const wd of say.split(/\s+/)){ const t=ln?ln+' '+wd:wd; if(ln&&x.measureText(t).width>480){ out.push(ln); ln=wd; } else ln=t; } if(ln)out.push(ln); return out; };
@@ -114,7 +115,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
-      if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
+      if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body)BODIES.pose(B,F.PM,F.body,rg?null:o.S); else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }
       if(VR.on){ if(o.lab)o.lab.show(false); tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); } else { if(o.tag)o.tag.visible=false; lab(o); o.lab.at(p.x,p.y+2.15*TILE,p.z); } }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
   window.ONLINEDBG=()=>({me:{lv:SHARED.LVL,rk:roomKey(),at:[+pos.x.toFixed(1),+pos.z.toFixed(1),+SHARED.py.toFixed(2)]},on:ONLINE.on,others:[...ONLINE.others.values()].map(o=>({name:o.name,look:o.look,p:o.p&&{x:+o.p.x.toFixed(1),z:+o.p.z.toFixed(1),y:+o.p.y.toFixed(2),lv:o.p.lv,rm:o.p.rm},why:o.why||'',shown:!!(o.fig&&o.fig.g.visible),err:!!o.err}))});
@@ -141,15 +142,15 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
   ONLINE.open=()=>{ if(!EL||EL.hidden)return; keys.clear(); const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
   const line=(name,text)=>{ '@later'; ui(); const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML='<b>'+esc(name)+'</b> '+esc(text); const G=EL.querySelector('#onllog'); G.appendChild(d); while(G.children.length>30)G.firstChild.remove(); if(UI.log)UI.log(text,null,name); ONLINE.log.push([name,text]); if(ONLINE.log.length>30)ONLINE.log.shift(); };
-  let BN=null; const banner=(from,text)=>{ if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
+  let BN=null; const banner=(from,text)=>{ '@later'; if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
     BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
-  const list=()=>{ if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
+  const list=()=>{ '@later'; if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
     who.textContent='ONLINE '+(all.length+1)+(ONLINE.on||!sock?'':' · OFF'); EL.querySelector('.k').textContent=UI.keyOf?UI.keyOf('chat').toUpperCase()+' TO TALK':'';
     if(!L.hidden)L.innerHTML='<div><b>'+esc(myName())+'</b> (you)</div>'+all.map(o=>'<div>'+esc(o.name||'TENANT')+' <span style="color:#8a8f9c">'+esc(o.why||(o.s.length?'':'no position yet'))+'</span>'+(ONLINE.visit?' <button data-visit="'+esc(o.id)+'" style="font:inherit;color:#ece5d3;background:#0e1016;border:1px solid #3a3f4e;padding:0 5px;cursor:pointer">VISIT</button>':'')+'</div>').join(''); };
   let fadeT=0; const fade=dt=>{ if(!EL||(fadeT+=dt)<1)return; fadeT=0; if(!EL.querySelector('#onllist').hidden)list(); const now=performance.now(); for(const d of EL.querySelector('#onllog').children)d.classList.toggle('old',now-+d.dataset.t>FADE_S); };
 
   /* ---------- the connection: partysocket (it reconnects by itself); your moves at most six times a second, only when you move ---------- */
-  const connect=async()=>{ '@later'; let PS=null; try{ const m=await import('https://cdn.jsdelivr.net/npm/partysocket@1.3.0/+esm'); PS=m.PartySocket||m.default; }catch(e){ console.warn('ONLINE: no connection',e); return; }
+  const connect=async()=>{ let PS=null; try{ const m=await import('https://cdn.jsdelivr.net/npm/partysocket@1.3.0/+esm'); PS=m.PartySocket||m.default; }catch(e){ console.warn('ONLINE: no connection',e); return; }
     ui(); sock=new PS({host:location.host,party:'block',room:ROOM,query:async()=>{ try{ if(BUGS.tok)await BUGS.tok(); }catch(e){} return {}; }});
     sock.addEventListener('open',()=>{ ONLINE.on=true; last=null; meSent=''; meAcc=1; list(); });
     sock.addEventListener('close',e=>{ ONLINE.on=false; for(const id of [...ONLINE.others.keys()])drop(id);
@@ -166,7 +167,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(ONLINE.others.size)draw(dt,now); fade(dt);
     if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
-  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
+  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; } send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
   const PS=['sit','climb','hang','water','grip'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;
@@ -178,10 +179,10 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   // the settings: YOUR WORDS (font, colour, size) in the YOU window, WORDS STAY (seconds) in the menu's DISPLAY
   { const saveSP=()=>{ try{ SAVE.set('speech',JSON.stringify(SP)); }catch(e){} };
     const you=()=>{ const P=document.getElementById('looks'); if(!P)return setTimeout(you,1000); if(P.querySelector('#lsay'))return;
-      const B=document.createElement('div'); B.id='lsay'; B.innerHTML=`<h3>YOUR WORDS</h3><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
-        <div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
-        <div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
-      const nameRow=P.querySelector('#lname').closest('.row'); nameRow.after(B);
+      const B=document.createElement('div'); B.id='lsay'; B.style.cssText='display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;align-items:center'; B.innerHTML=`<span class="lk">FONT</span><div class="row" id="lsayf">${FONTS.map((f,i)=>`<button data-f="${i}" style="font-family:${f[0]}">${f[1]}</button>`).join('')}</div>
+        <span class="lk">COLOUR</span><div class="row" id="lsayc">${COLS.map(c=>`<button data-c="${c}" title="${c}"><i style="display:inline-block;width:16px;height:16px;vertical-align:middle;background:${c};box-shadow:0 0 0 1px #000"></i></button>`).join('')}</div>
+        <span class="lk">SIZE</span><div class="row" id="lsays"><button data-s="0">SMALL</button><button data-s="1">MEDIUM</button><button data-s="2">LARGE</button><span id="lsayp" style="margin-left:8px">hello there</span></div>`;
+      if(LOOKS.add)LOOKS.add('words',null,B,{tab:'words'});
       const show=()=>{ B.querySelectorAll('[data-f]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===SP.f))); B.querySelectorAll('[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SP.c))); B.querySelectorAll('[data-s]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===SP.s)));
         const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
       B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };

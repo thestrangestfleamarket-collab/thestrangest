@@ -1,0 +1,29 @@
+{
+ "note": "Quests as data (4 Nov 2026, from Nevaland). A quest: steps the game watches (flag: 'character flag' the character remembers; has: 'item n' you carry; at: {x,z,r,name} in map units; knows: something a quest taught; rank: 'skill n' your rank with that skill's trainer), stations the named characters keep while it runs (map units), what it teaches (knowledge flags, scripts test them with quest:knows:x) and the next quest. It starts when its start condition is met (or by a reply's do:quest arg:'start id'). Progress is yours, saved with your things (OWNED 'quests'). The trainers' ladders (data/trainers.json) are the skills' own path; these are the stories over them.",
+ "quests": [
+  {
+   "id": "first_ask",
+   "title": "THE TOMATO'S FIRST ASK",
+   "giver": "tomato",
+   "starts": {
+    "has": "fl_dandelion 1"
+   },
+   "steps": [
+    {
+     "id": "gather",
+     "text": "Gather three dandelions on the lawn",
+     "has": "fl_dandelion 3"
+    },
+    {
+     "id": "hand",
+     "text": "Hand them to the Tomato by the park gate",
+     "rank": "garden 1"
+    }
+   ],
+   "teaches": [
+    "the_garden"
+   ],
+   "next": null
+  }
+ ]
+}

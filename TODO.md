@@ -25,17 +25,28 @@ Risk is noted only when it isn't low.
 6. **Then the grouped polish passes** (each one pull request): the bath room, the clothes, one tree pass, the skate park in Section B,
    the shop insides with their windows, the moves.
 
+## The new map (owner, 6 Nov 2026: "ok lets go"; HISTORY "the new map", `mockups/newmap.svg`)
+
+One pull request each, in this order; the game stays playable after every one.
+- [x] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`, `row:2`), the way to the Hudson 22 m wide on the park gate, the alley's gates at the path, the places leaving the map gone from the level file. The new skill shops stand with their keepers; their insides are empty until job 4. The bar is shut (garages on its lot) until job 7.
+- [x] **1b. Forcefields and the fading backdrop** · P1 · L · code · done 6 Nov (`edge` in data/world.json: lines and runs). At every edge of the map: a forcefield you can't pass, and past it more apartments, park, lake and river fading out (seen, never walked, cheap).
+- [ ] **2. The apartment street** · P1 · L · code. Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
+- [ ] **3. The Hudson** · P2 · L · code. The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
+- [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
+- [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
+- [ ] **6. The park's made things** · P2 · L · code. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
+- [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
+
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
-the Mesh2Motion moves · the jeans · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
+the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
-VR on the Quest 3 (and the painter in it).
+VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).
 
 **To pick** (one batch; each line is in its area below):
 draw distance (one control or two, and the default) · tree shadows (option 1, 2 or 3, after the re-measure) · tree crowns (A–F) and trees
-by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the tee in one
-piece · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
+by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
 habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
 (back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
 parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
@@ -45,6 +56,7 @@ the physics extras (darts now twice at the bar) · NPC voices (lifts the
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Market St and West St, the rest (owner, 5 Nov)** · P1 · L · code. After the re-lay (#631, merged): the old shops' outsides as their Polyfork buildings (bank, bar, theatre, playhouse, arcade, art, bodega, bath); two flats a floor and the whole-floor penthouse for sale (a number maps to house, floor, flat; the shell's size); what the florist, tailor, barber, antiques, hotel, fish market and the outfitter sell (the outfitter: every skill's gear); the Museum of Earth's lot. The row has no room for 8 m garages: ask the owner about opening Market St west of West St.
 - [ ] **Run the full checks on `main` once** · P1 · S · check. Start the workflow on `main` with `full`. No full run exists since 4 Nov:
   #576 and other merges went in after the last `main` run (6dfc80f5, 16:05 UTC), and the skate park's tricks (#552) passed CI only on
   their pull request. The run also confirms lines that look fixed (close each if it passes):
@@ -54,6 +66,10 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
     back to A* anyway; no places failure since;
   - `tests/fishing.cjs` at random: steadied in ef15d2f1 (3 Nov), passed three times since;
   - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
+  - Run 41925479673 (4 Nov): stopped at `tests/physx.cjs` (a hidden character knocked over never got up; fixed in #615).
+  - Run 41947525626 (5 Nov, after #615): steps 1–20 pass (physics too); the headset step fails and hangs to its 45-minute limit, so the rest did not run (see the VR line below).
+  - Run 41975584372 (5 Nov, after #623): every step up to the interiors passes (headset too); `tests/interiors.cjs` fails (the arcade's games, the bodega's shelves, then a timeout), most likely the archive's leftovers (see "After the archive"); the rest did not run.
+- [x] **The headset check fails on `main`** (done 5 Nov, #623) · P1 · M · code. The stalled-frame fallback nested headset frames until the stack ran out; two stale lines in `tests/vr.cjs` and the map editor line in `tests/site.cjs` (archived) fixed with it.
 - [x] **Restore #512's lost HISTORY entry** (done 4 Nov) · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
   "lets add them all, add them as toggles in graphics…") was added in 6b3c9deb and dropped in the merges caee19fb/116b27da. Put it back.
 - [x] **The long checks need their own time limits** (done 4 Nov: his pick, 15 minutes a check; core, places, fights 20; headset 45) · P2 · S · pick + check. The job's limit was raised to 350 minutes (c460f80a, 4 Nov) and
@@ -86,18 +102,24 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   clothes branch, stopped part way). Redo it on today's main with `tests/budget.cjs` (CI "measure" check). The baseline moved since: three
   r160→r186 (8e7626d4), the BatchedMesh cull (8bc04ece), the Drive models' shadows only near. Isolate the freeze below first; it skews the
   start-up numbers. Feeds every line in this area.
-- [ ] **Freeze about 20 s after the start** · P1 · M · code (owner's go first: he never asked) · risk med. `WINDOWS.first` in
+- [x] **Freeze about 20 s after the start** (done 4 Nov, his pick "Same look, in pieces": the bodega's window pictures taken in small idle steps; the 5.4 s stall in the test browser is gone) · P1 · M · code · risk med. `WINDOWS.first` in
   `src/130a-windows.js:72–75` runs 4 s after the start and, for each off-map inside with windows looking in, builds the whole inside
   (`ROOMS.offBuild`), takes its window pictures (`WINDOWS.bake`), saves them in `localStorage` and drops the inside, all at once on the main
   thread: seconds of stall on a fresh visit. Likely worse since the merchant shops got glass both ways (4 Nov). Fix: a piece per frame,
   nearest first (like `BATCH.tick`), or only when you first come near (shops already build live when near since 4 Nov). Check: frame gaps in
   the first 30 s with `?fresh=1`. Makes `tests/online.cjs` flaky. With: "Live windows" (same file).
-- [x] **Tree shadows: the lag in the owner's render-inspector shot** (owner, 2 Nov: "extremely laggy."; his pick, 4 Nov: "fix 1"). Done 4 Nov:
-  the near park trees cast their shadow from their own lite cards (about 57% less tree shadow work in the park), and a dark street lamp's
-  shadow is no longer redrawn. On Market St itself the shadow work is mostly clothes and bodies, not trees (next line).
-- [ ] **Shadow work on Market St at night: clothes and bodies** · P2 · S · pick + code. 4 Nov: the lamp's shadow cube draws about 175k
-  triangles of clothes and 151k of bodies per refresh. Options for the owner: clothes cast no shadow (the body under them does), or people's
-  shadows from a simpler body.
+- [ ] **Two more stalls at the start, not the windows** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`, the window pictures off):
+  about 8 s as the start ends and 3.7–4.5 s about 10 s later. Find what runs then (shader compiles, `BATCH` painting, the first lights?) before
+  the tree-shadow work; the comparison line above measures them on a real card.
+- [ ] **Tree shadows: the lag in the owner's render-inspector shot** · P1 · M · pick + code · risk med. Owner, 2 Nov: "extremely laggy.",
+  Market St near 32,25 at night, 10 FPS. Measured then: the park's leaf-card trees (about 148k triangles) and the street oaks (about 23k)
+  cast shadows, and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps) draws them again: about 1,000 calls and
+  750k triangles that frame. A quarter of the trees use the fine-leaf look (1.8× the cards, `TREEGEN.cards` in `src/060b-trees.js`). The
+  lamp shadow still redraws every 0.2 s (`src/064-map-post.js:27`); moving loose things force near lamp shadows too (`reshade`,
+  `src/150-loose.js:119`). Options for the owner: **1** cast shadows from the trees' lite card set (recommended: nearly the same look for a
+  third of the cost; a shadow-only caster on its own layer; `lite` exists, 060b:67), **2** no tree shadows from street lamps (sun and moon
+  kept), **3** fewer cards on the fine-leaf trees. Re-measure first (the baseline moved). Check: render inspector at `?at=32.5,25.2&hour=21`,
+  `tests/startprof.cjs`, `tests/budget.cjs`. Before the tree look lines (they add shadow triangles).
 - [ ] **Does the wind bring the lag back?** · P2 · S · check. Wind on again for trees, plants and grass by the owner's 2 Nov pick ("Both,
   with wind"; he had turned it off on 30 Oct for lag). Not measured: `TUFTS.wind` (`src/140a-tufts.js:65`), `PARK.windK` (`src/061-park.js:262`).
   Measure in the same run as the comparison; if it costs, a WIND row in GRAPHICS (like the PHYSICS rows), with the owner's yes.
@@ -175,6 +197,11 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 - [ ] **A ghost's revival at the end of the bath countdown** · P3 · S · look. The countdown and its reset on stepping out work; the moment at
   zero (`back()` in `src/103a-death.js:30`, alive where you stand) was never seen. Die, walk in, wait 10 s on the live site; or add the
   step to `tests/places.cjs`, which enters the bath.
+- [x] **THE BOOKSTORE: 100 public-domain books** · P2 · L · pick + code. Owner, 5 Nov 2026: "i want to add a bookstore in game that has 100
+  of the most popular public books. each book will have the real cover and spine of the real book. the book content doesnt download until
+  the player opens the book. - add this to a queue of things we will add". Picks first: where it stands, the 100 titles, and which covers
+  (first-edition covers are free; most modern ones are not). The text (Project Gutenberg) hosted with the game, fetched only on opening;
+  the books through the existing book system (`144c-books`, `150m-bookshelf`), not a second one.
 - [ ] **The road along the Hudson from Market St** · P3 · S (check) / M (lay it) · find. Owner, 4 Nov: "why isnt the hudson showing,
   missing road". The water and quay show within 60 tiles now (9ec872d3); no road code exists there. Picture it; if a road is missing, lay it.
 - [ ] **The apartment house's two thin pipes hide early** · P4 · S · code. On its far side, they're cut a few steps before the house when
@@ -203,16 +230,76 @@ One pass, one pull request.
 
 ## Characters and the street
 
+- [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
+- [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
+  planner's layout, the bodega fish tank; the go-karts are only bought and ridden.
+- [x] **Cloud-style trees; the fishing close-up** (owner, 5 Nov: "A & C for trees, both A & B for fishing close up (toggle between)"). Left: climbing the puff trees; placing them (the owner's call).
+- [x] **Archive town life** · P1 · L · code · risk high · queued with the archives (5 Nov). Owner, 5 Nov: "remove all Town life".
+  - Archived: the townsfolk's jobs, homes, hours, habits and wages (`worker/lives.js` too), the folk's walks (`worker/folk.js` too), the
+    town mail and its carrier, the newsstand, the daily requests, the town
+    staff's duties, Summon.
+  - The Market BBS and the bodega drone that delivers its orders stay (owner, 5 Nov). The owner's letters from the tenants panel stay.
+  - Nobody walks around town (owner, 5 Nov: "i dont want anyone walking around town"); the characters kept stand at their own spots.
+  - Reuse the existing put-away list (`AWAY` in 006-map-pre, `?bring=`) for every archive, not a second system.
+
+- [x] **The archives: the owner's changes of 5 Nov** (these win over the three lines below) · P1 · code · queued with them.
+  - Kept after all: climbing (trees stay in the game, none placed yet), skateboards and tricks, clothes (on a bodega rack; armour stays
+    archived), spray paint, cat food and fish food (Mango and a fish tank by the bodega register), gem cutting (the gem wheel), the golems
+    (they move to the dungeon; the Golems' Cave stays archived), the octopus drummer (not the pianist or the singer; the playhouse's
+    actors are archived too), the Bedsheet, the night ghosts, the kid in the ghost costume, the Squirrel Knight, Rosie's art museum tour,
+    the platform security drones, every book.
+  - Every skill has a teacher who sells and buys its gear: foraging and mycology the Mushroom Seller; gardening the Tomato; fishing the
+    Fisherman in Waders at the pier; entomology and birding the Park Ranger; beekeeping the Village Gardener; bookbinding the Professor;
+    swordsmanship the Samurai Warrior; martial arts the Squirrel Knight; climbing the Forest Ranger; golf the Game Master by the
+    Holodeck. The Scuba Diver sells diving gear and the gem wheel. Cooking, alchemy, prospecting and midway games are archived.
+  - The bank: near it, say BANK in chat and your vault opens (a container window like the bag); no tellers.
+  - Every vehicle of every type stays (owner, 5 Nov: "keep all vehicles in game too of all types"): the go-kart, every hover board, the
+    skateboard, the parked cars, the showcase vehicles, trains, boats, the warship, the planes, the rowboat, and the fair's rental go-karts (where they go: the owner's map; the bumper cars go with the fair).
+  - Remove every owner editor from the game, the /editor page too ("i will add back from scratch later"); players keep Decorate, the
+    Designer and the Painter.
+
+- [x] **Archive the items** · P1 · L · code · risk high · queued with the character and places archives, owner says when to start (5 Nov).
+  Owner, 4 Nov: "remove all items except" these.
+  - Stay: foraging and gardening (mushrooms, flowers, seeds, fruit, vegetables, pots, dirt, rain, acorns, bonsai, cacti), bees and honey,
+    butterflies and birds, diving and mining, fishing, books, art, the four swords (sold by the Samurai Warrior), the Pine Grain hover
+    board, the home computer, the modem, the black balloon, the cigars, litter.
+  - Archived: every food and drink (cooking too) and hunger itself, the bodega's groceries and bouquets, potions, armour, clothes, the
+    other boards, the skateboard and the kart, the other electronics, tickets, tokens, the passport, the paper, the other toys and prizes,
+    the curses, the museum gift shop.
+  - The cinema, the playhouse and the arcade become free.
+
+- [x] **Archive the places** · P1 · XL · code · risk high · queued with the character archive, owner says when to start (4 Nov). Owner, 4 Nov:
+  "remove 100% from game and archive all locations except" these.
+  - Stay: the Bodega, the Apartments (with the fire escape), the Art Museum, the Bank, the Bar, the Playhouse, the Movie Theatre, the Bath
+    House, the Arcade (its Holodeck offers only the Greens and Roam), the Subway Stairs and platform and the loop, To the Hudson, the river,
+    the Fishing Pier, Central Park's gate, paths, lamps, grass, benches, the lake and brook, the Round and the campfire, the Castle and the
+    dungeon under it, the Squirrel's Tower, every home, the Skate Park, and the six sections beyond.
+  - Archived (not loaded unless the owner names one): the Museum of Earth, the Boardwright, Fix-It Electronics, the Scanner, the Diner,
+    the Civic Tower (firehouse, clinic, precinct, post office, depot, city hall), Feel Lab, the Fountain, the Night Market, the Flea Market,
+    the Fair and its gate, the shrine, the park's trees, the Golems' Cave, the Gem, Hudson and Lake caverns, the Catacomb Run, the
+    Holodeck's other programs. An archived street building leaves an empty lot.
+  - Fires stay but each burns out by itself (no firehouse).
+
+- [x] **Archive the characters** · P1 · XL · code · risk high · queued, owner says when to start (4 Nov). Owner, 4 Nov: "archive all the
+  characters and remove them 100% from game (do not load unless pulled from archive specifically told)".
+  - Stay: the Tomato, the Mushroom Seller, the Teddy Bear, the dragons, the dungeon (ogres, skeletons, its creatures), all animals, every
+    skater (skate shop crew, park skaters, skatepark), the Scuba Diver, the Samurai Warrior, and the
+    buyers below. Everyone else goes to an archive folder the build never reads (castle cast, pawns, woodland folk, the Fox, the Gas
+    Station Attendant, the castle guardians included); one comes back only when the owner names it.
+  - Remove the Museum of Earth, building included (not the art museum; its gift shop goes with it), and the cinema snack stand, the bar's
+    taps and register, the playhouse drinks.
+  - Sellers: the Radish's goods and teaching go to the Tomato; the Shark's to the Scuba Diver at the same spot; the Swordsmith's swords and
+    teaching to the Samurai Warrior at the Swordsmith's spot; the Pine Grain hover board to the Skate Shop Owner (the only board kept).
+  - Buyers: Park Ranger (butterflies, birds), Village Mechanic (ore), the Professor (paintings), Village Gardener (honey), the Scuba
+    Diver (fish), the Tomato (mushrooms). The diner's and the Cart Man's food go to the bodega (owner, 4 Nov: they go with the places).
+  - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
+    staff, pay at the register yourself; every grocery comes off (the items archive below).
+
 - [ ] **Who stands on Market St, and why** · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
   one on the street"; he has not said yes to fixing these. The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at
   work" (`CREW.spot`, `src/111fb-fleamarket.js:30,49`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`),
   so they walk main street. All seven visitor groups (43) come every day: should they take turns? JOBS also run on the server
   (`worker/lives.js`). With: the cast check, the referee, the fair's staff (4 Nov: "keep them as fair workers for now").
-- [ ] **The cast's hour changes on the server too** · P2 · M · code. Since the folk's walks (4 Nov, `worker/folk.js`) every walker on the
-  street is walked by the section's server, but the cast's goals on the hour (to work, home, a habit's spot) are still sent by a page
-  (`src/159-jobs.js`: `sync` and errands through `WALKS`); with nobody in they wander where they were until a player logs in, whose page
-  sends the hour's goals (walked there, or put there at a login). Next: the worker reads `lvPlan` itself, with the places' doors and
-  spots sent along with the walk grid, and sets the goals on the hour.
 - [ ] **The referee's habits** · P3 · S · pick. The merge of #567 and #570: `data/lives.json` `referee` is the fair's kart-track marshal with
   habits `drink, fish, movies` (the fair's `gamble` lost to the interiors' `movies`). Ask the owner.
 - [ ] **The egg poacher** · P3 · S · look + code. Never looked at on the live site since #511 (2 Nov). His colours aren't tintable: HISTORY
@@ -275,16 +362,22 @@ One tree pass after the tree-shadow pick (more leaves mean more shadow triangles
 ## Clothes and the Walker
 
 One clothes review for the owner, then one pull request; portraits with `node tests/clothes.cjs dist/market.html <dir>`.
-- [ ] **The jeans in play** · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
+- [x] **The jeans in play** (dropped 5 Nov: the Walker is removed, the avatar is the only body) · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
 - [ ] **The shoes key M sits next to the map (Shift+M)** · P2 · S · pick. 2 Nov: his feet went bare, likely from pressing M for the map
   (barefoot matters for foraging). `shoes:'m'` in `src/094-ui.js:25`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; he picks the
   key. Update the keys list with it.
-- [ ] **Clothes leftovers** · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
+- [x] **Clothes leftovers** (dropped 5 Nov: the Walker is removed) · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
   jeans' seat back stays with the hips, `ks` in `MAKE.pants`, `src/072b-garb.js:159`); his forearm passes through the jeans at the hip when
   his arm swings behind him; stray pixels near the hips on some walking frames. The new Mesh2Motion poses may show more.
-- [ ] **The tee in one piece, like the jeans** · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
+- [x] **The tee in one piece, like the jeans** (dropped 5 Nov: the Walker is removed) · P4 · L · pick + code. His pick, 2 Nov: "1", one continuous garment; the tee is still a body
   tube with set-in sleeves that overlap at the shoulder (`MAKE.shirt`, `src/072b-garb.js:128`). Only if he wants it (no seam showed in any
   portrait), and after the jeans' yes.
+- [x] **The Polyfork avatar** (done 5 Nov) · P1 · L · code. AVATAR on YOU's BODY row (`src/111c-avatar.js`, `tests/avatar.cjs`; bake: `node tools/pfavatar-bake.mjs`
+  then `python3 tools/pfavatar-pack.py`, the adult cast's Polyfork modules in `.polyfork/mods/`). YOU redone around it (tabs, `LOOKS.add`). Waits for his look and yes.
+- [x] **The whole cast's wardrobe** (done 5 Nov) · P2 · M · code. Every garment Polyfork's cast wears, one each, plus BACK and both hands. Waits for his look and yes.
+- [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
+- [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
+  held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
 
 ## Moves (Mesh2Motion)
 

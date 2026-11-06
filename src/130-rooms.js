@@ -9,13 +9,13 @@ import {WATER} from './009-down.js';
 import {CREATS} from './087-npc-creatures.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
 // A room's inside built late (ROOMS.part) records all it adds (meshes, its lights, things to use, wall cuts), so ROOMS.unpart takes it all away again.
-ROOMS.part=(group,fn,make,cast=true)=>{ '@later'; const n0=scene.children.length, t0=UI.things.length, c0=cutWalls.length, keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag; BATCH.meshes={}; BATCH.tag=null;
+ROOMS.part=(group,fn,make,cast=true)=>{ const n0=scene.children.length, t0=UI.things.length, c0=cutWalls.length, keep=BATCH.items.splice(0), m0=BATCH.meshes, tg=BATCH.tag; BATCH.meshes={}; BATCH.tag=null;
   try{ fn(); if(make&&BATCH.items.length){ const c=BATCH.cast; BATCH.cast=cast; BATCH.build(make); BATCH.cast=c; } } finally{ BATCH.meshes=m0; BATCH.items=keep; BATCH.tag=tg; }
   const P={group,objs:scene.children.slice(n0),things:UI.things.slice(t0),cuts:cutWalls.slice(c0),lights:[]};
   for(const o of P.objs)group.add(o);
   const L=[]; for(const o of P.objs)o.traverse(c=>{ if(c.isPointLight&&!c.userData.pool)L.push(c); });
   for(const l of L){ l.userData.grp=group; l.castShadow=false; l.removeFromParent(); LITE.recs.push(l); P.lights.push(l); } LITE.t=0; (ROOMS.built||(ROOMS.built=[])).push(P); return P; };   // (built: what src/161c-merge.js may merge)
-ROOMS.unpart=P=>{ '@later'; if(!P)return; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
+ROOMS.unpart=P=>{ if(!P)return; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
   out(UI.things,P.things); out(cutWalls,P.cuts); out(LITE.recs,P.lights); LITE.t=0; if(ROOMS.built)out(ROOMS.built,[P]); if(ROOMS.unmerge)ROOMS.unmerge(P);
   for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); } };
 ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(x,y,z),new THREE.Vector3(0,1,0),0,12).intersectObjects(scene.children,true).find(i=>{ for(let q=i.object;q;q=q.parent)if(!q.visible)return false; if(!LEVELS.drawn(i.object))return false; return i.object.isMesh&&!i.object.isSkinnedMesh; }); return h?+h.distance.toFixed(2):null; };
@@ -52,11 +52,11 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id)); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); }; ROOMS.offHide=offHide;
   // run fn with the world as it is outside the inside you are in (nothing hidden for the room, no clipping): a window's picture of the street
-  ROOMS.peek=fn=>{ const H=IV.H.slice(), L=IV.L.slice(), S=IV.S.slice(), ix=S.map(([g])=>g.index), off=IV.b&&IV.b.off, clip=renderer.clippingPlanes;
+  ROOMS.peek=fn=>{ '@later'; const H=IV.H.slice(), L=IV.L.slice(), S=IV.S.slice(), ix=S.map(([g])=>g.index), off=IV.b&&IV.b.off, clip=renderer.clippingPlanes;
     for(const [o] of H)VIS.hide(o,'room',false); for(const [o] of L)VIS.hide(o,'room',false); for(const [g,i] of S)g.setIndex(i); if(off)offHide(false); renderer.clippingPlanes=[];
     try{ fn(); } finally{ renderer.clippingPlanes=clip; if(off)offHide(true); S.forEach(([g],k)=>g.setIndex(ix[k])); for(const [o] of H)VIS.hide(o,'room'); for(const [o] of L)VIS.hide(o,'room',true,true); } };
   // an inside's ceiling faces down only: seen when you look up from inside, gone from above
-  const ceil=o=>{ if(o.ceilG||o.noCeil)return; o.ceilG=new THREE.Group(); o.ceilG.name='ceiling'; const M=new THREE.MeshLambertMaterial({color:0x2e2f35});
+  const ceil=o=>{ '@later'; if(o.ceilG||o.noCeil)return; o.ceilG=new THREE.Group(); o.ceilG.name='ceiling'; const M=new THREE.MeshLambertMaterial({color:0x2e2f35});
     for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }
     scene.add(o.ceilG); };
   ROOMS.ceilOf=id=>{ if(!RL)build(); ceil(ROOMS.off[id]); };   // an inside's ceiling made without going in (seen through its windows from the street)
@@ -98,9 +98,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const put=T=>{ for(const o of T.H){ IV.H.push([o]); VIS.hide(o,'room'); } for(const o of T.L){ IV.L.push([o]); VIS.hide(o,'room',true,true); } for(const q of T.S)if(q.o.geometry===q.g){ IV.S.push([q.g,q.g.index]); q.g.setIndex(q.ix); } };
   const leave=()=>{ '@later'; if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; if(IV.b&&IV.b.off)offHide(false); IV.key=null; IV.b=null;
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
-  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)){ L.drop(); L.done=false; IV.C.clear(); } } };
+  const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)&&!(WINDOWS.taking&&WINDOWS.taking.has(n))){ L.drop(); L.done=false; IV.C.clear(); } } };
   const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
-  const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b);
+  const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b), walk=b=>!!(b&&b.id&&STORE.held&&STORE.held.has(b.id)&&STORE.inside[b.id]);
+    if(!lz&&(walk(w&&w.b)||!w&&walk(IV.b))){ apply(w); return; }   // walked in or out through a street shop's door: no fade
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; try{ await FADE.run(lz?'ENTERING '+lz.name:'',async()=>{ if(lz){ if(lz.S)lz.S.busy=true; await lz.need(); lz.go(); }
       const l2=IV.want&&lazyOf(IV.want.b); if(l2){ await l2.need(); l2.go(); } apply(IV.want); },{cut:true}); } finally{ IV.busy=false; } };
@@ -113,7 +114,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&!b.id&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
-    ROOMS.cur=hit; { const w=hit?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
+    ROOMS.cur=hit; { const w=hit&&!(hit.id&&STORE.open&&STORE.open(hit.id))?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
     if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(SHARED.BOD.GD)SHARED.BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,SHARED.cam.position.y<h.y);

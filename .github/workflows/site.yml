@@ -34,27 +34,21 @@ jobs:
           k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
-          k folk    'src/111db|worker/folk|src/159-jobs|src/076-npc-map|src/111a|folk\.cjs'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
-          k mapeditor 'src/editor/|src/006-map-pre|src/089c-ponds|src/153-nav|src/076-npc-map|src/069-dress|src/096-mapedit|src/152a|worker/mappatch|worker/door|data/topmap|data/world\.json|build\.py|mapeditor\.cjs'
           k vr      'src/162[a-c]|vr\.cjs'
-          k catrun  'src/146bb|src/059b-arcade|src/162[a-c]|src/141-forage|catrun\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
-          k bins    'src/144d|src/111d|src/009-down|worker/|bins\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
-          k summon  'src/076b|src/162b|summon\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
           k spray   'src/159f|src/146-|spray\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k editors 'src/09[4-9]|src/13[34]|src/140b|src/136|editors'
           k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
@@ -64,11 +58,11 @@ jobs:
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
-          k lives   'src/158|src/159-jobs|src/159d|worker/lives|data/lives|lives\.cjs'
+          k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k handheld 'src/146ya-handheld|src/146y-operator|src/146-drone|src/094|src/162b|handheld\.cjs'
+          k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
@@ -76,14 +70,14 @@ jobs:
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
+          k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
-          k diner   'src/146za|src/038z[cd]|src/146z5|src/147-newsstand|src/125-game-zzz-bar-octopus|src/127-drummer|src/059i|src/111fb|src/159-jobs|src/100-use|diner\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
+          k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|avatar\.cjs|avatarmoves\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
-          k cast    'src/111a|src/111f[bc]|src/159-jobs|src/059i|data/cast/|data/characters|data/merchant|flea\.cjs|jobsim|merchant\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -222,14 +216,17 @@ jobs:
       - name: The street let go while you are in a room off the map (pictures back as they were on the way out)
         if: contains(steps.f.outputs.run, ' stow')
         run: node tests/stow.cjs dist/market.html
+      - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
+        if: contains(steps.f.outputs.run, ' layout')
+        run: node tests/layout.cjs dist/market.html
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
         run: node tests/bbs.cjs dist/market.html
-      - name: The handheld (ESC pops it up, its icons open the menus)
+      - name: The menu (ESC opens it; sections down the left, parts along the top)
         timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' handheld')
-        run: node tests/handheld.cjs dist/market.html
+        if: contains(steps.f.outputs.run, ' menus')
+        run: node tests/menus.cjs dist/market.html
       - name: The loop (two trains shuttle from A, you ride one out and back)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' train')
@@ -258,6 +255,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' westst')
         run: node tests/westst.cjs
+      - name: The Polyfork fronts (Market St's new shops, West St's apartment houses)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' pfrow')
+        run: node tests/pfrow.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
@@ -266,6 +267,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bees')
         run: node tests/bees.cjs dist/market.html
+      - name: The Polyfork avatar (worn, dressed, clothes hide the body, the look's code, another player's copy)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' avatar')
+        run: node tests/avatar.cjs
+      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 71 moves in software rendering, so past the usual 15 minutes)
+        timeout-minutes: 25
+        if: contains(steps.f.outputs.run, ' avatar')
+        run: node tests/avatarmoves.cjs
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')

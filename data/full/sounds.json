@@ -1,0 +1,118 @@
+{
+ "note": "Where every sound file the page plays comes from (4 Nov 2026, after Nevaland's per-sound records). One record per file under data/: its runtime path, who made it, the source, the licence and a snapshot of it kept here. Sounds made in code (src/091-sfx.js recipes) need no record. tests/datacheck.cjs checks every file has one and every record's files exist.",
+ "template": {
+  "id": "voices/<character>/<line>",
+  "kind": "file",
+  "runtime": "data/voices/<file>.mp3",
+  "made": {
+   "service": "ElevenLabs",
+   "model": "<model id>",
+   "generationId": "<id>",
+   "sourceUrl": "<the generation's page>"
+  },
+  "licence": {
+   "name": "ElevenLabs terms of use",
+   "url": "https://elevenlabs.io/terms-of-use",
+   "snapshot": "data/full/voices/licence.txt"
+  }
+ },
+ "sounds": [
+  {
+   "id": "radio/jazz",
+   "kind": "file",
+   "runtime": "data/radio/jazz.mp3",
+   "made": "tools/radio-bake.py",
+   "source": {
+    "site": "Library of Congress National Jukebox, via archive.org",
+    "urls": [
+     "https://archive.org/details/loc-jukebox-186254-livery-stable-blues",
+     "https://archive.org/details/loc-jukebox-28219-at-the-jazz-band-ball",
+     "https://archive.org/details/loc-jukebox-185939-fidgety-feet",
+     "https://archive.org/details/loc-jukebox-185944-sensation-rag",
+     "https://archive.org/details/loc-jukebox-185940-bluin-the-blues",
+     "https://archive.org/details/loc-jukebox-40212-jazz-me-blues",
+     "https://archive.org/details/loc-jukebox-39384-home-again-blues",
+     "https://archive.org/details/loc-jukebox-669812-tiger-rag",
+     "https://archive.org/details/loc-jukebox-670424-bugle-call-rag"
+    ]
+   },
+   "licence": {
+    "name": "public domain",
+    "url": "https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/",
+    "snapshot": "data/full/radio/licence.txt"
+   }
+  },
+  {
+   "id": "radio/dance",
+   "kind": "file",
+   "runtime": "data/radio/dance.mp3",
+   "made": "tools/radio-bake.py",
+   "source": {
+    "site": "Library of Congress National Jukebox, via archive.org",
+    "urls": [
+     "https://archive.org/details/loc-jukebox-39498-my-mammy",
+     "https://archive.org/details/loc-jukebox-71182-copenhagen",
+     "https://archive.org/details/loc-jukebox-50556-hey-hey-and-hee-hee-i-m-charleston-crazy",
+     "https://archive.org/details/loc-jukebox-36395-saxophobia",
+     "https://archive.org/details/loc-jukebox-34022-yellow-dog-blues",
+     "https://archive.org/details/loc-jukebox-63051-struttin-at-the-strutter-s-ball",
+     "https://archive.org/details/loc-jukebox-40546-toddle",
+     "https://archive.org/details/loc-jukebox-670935-pickles"
+    ]
+   },
+   "licence": {
+    "name": "public domain",
+    "url": "https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/",
+    "snapshot": "data/full/radio/licence.txt"
+   }
+  },
+  {
+   "id": "radio/rag",
+   "kind": "file",
+   "runtime": "data/radio/rag.mp3",
+   "made": "tools/radio-bake.py",
+   "source": {
+    "site": "Library of Congress National Jukebox, via archive.org",
+    "urls": [
+     "https://archive.org/details/loc-jukebox-127251-the-buffalo-rag",
+     "https://archive.org/details/loc-jukebox-126829-persian-lamb-rag",
+     "https://archive.org/details/loc-jukebox-260316-black-diamond-rag",
+     "https://archive.org/details/loc-jukebox-129052-temptation-rag",
+     "https://archive.org/details/loc-jukebox-656699-12th-street-rag",
+     "https://archive.org/details/loc-jukebox-658715-down-home-rag",
+     "https://archive.org/details/loc-jukebox-10836-old-folks-rag",
+     "https://archive.org/details/loc-jukebox-128575-smiler-rag",
+     "https://archive.org/details/loc-jukebox-657609-ole-miss-rag"
+    ]
+   },
+   "licence": {
+    "name": "public domain",
+    "url": "https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/",
+    "snapshot": "data/full/radio/licence.txt"
+   }
+  },
+  {
+   "id": "radio/opera",
+   "kind": "file",
+   "runtime": "data/radio/opera.mp3",
+   "made": "tools/radio-bake.py",
+   "source": {
+    "site": "Library of Congress National Jukebox, via archive.org",
+    "urls": [
+     "https://archive.org/details/loc-jukebox-126158-la-donna-mobile",
+     "https://archive.org/details/loc-jukebox-296220-una-furtiva-lagrima",
+     "https://archive.org/details/loc-jukebox-128044-recondita-armonia",
+     "https://archive.org/details/loc-jukebox-122533-salut-demeure",
+     "https://archive.org/details/loc-jukebox-21582-sextet-chi-mi-frena",
+     "https://archive.org/details/loc-jukebox-121374-brindisi",
+     "https://archive.org/details/loc-jukebox-134890-flores-purisimas"
+    ]
+   },
+   "licence": {
+    "name": "public domain",
+    "url": "https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/",
+    "snapshot": "data/full/radio/licence.txt"
+   }
+  }
+ ]
+}

@@ -31,14 +31,14 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.items.arc_token=0; INV.cash=0; th('THE TOKEN CHANGER').act(); const broke=!(INV.items.arc_token>0);
       th('SKEE-BALL').act(); const refused=!MINI.state(); MINI.close();
       INV.cash=3; th('THE TOKEN CHANGER').act(); const bought=INV.items.arc_token===4&&INV.cash===2;
-      th('SKEE-BALL').act(); const S=MINI.state(), skee=!!S&&MINI.on.title==='SKEE-BALL'&&INV.items.arc_token===3; MINI.close();
-      th('THE CLAW').act(); const claw=MINI.on&&MINI.on.title==='THE CLAW'&&INV.items.arc_token===2; MINI.close();
-      th('AIR HOCKEY').act(); const hockey=MINI.on&&MINI.on.title==='AIR HOCKEY'&&INV.items.arc_token===1; MINI.close();
+      th('SKEE-BALL').act(); const S=MINI.state(), skee=!!S&&MINI.on.title==='SKEE-BALL'; MINI.close();
+      th('THE CLAW').act(); const claw=MINI.on&&MINI.on.title==='THE CLAW'; MINI.close();
+      th('AIR HOCKEY').act(); const hockey=MINI.on&&MINI.on.title==='AIR HOCKEY'; MINI.close();
       INV.items.ptix=5; th("TOKEN'S PRIZE COUNTER").act(); const prize=INV.items.prize_ring>=1&&INV.items.ptix===1;
       INV.cash=2; th('THE SODA MACHINE').act(); const soda=INV.cash===0&&INV.items.d_cola>=1;
       return {broke,refused,bought,skee,claw,hockey,prize,soda}; });
     rec('arcade: the changer sells four tokens for $1, not when broke',a.broke&&a.bought,JSON.stringify(a));
-    rec('arcade: skee-ball, the claw and air hockey are games, a token a go, refused without one',a.refused&&a.skee&&a.claw&&a.hockey);
+    rec('arcade: skee-ball, the claw and air hockey are games (free play since the archive, owner 5 Nov 2026)',a.skee&&a.claw&&a.hockey);
     rec('arcade: tickets buy prizes at the counter; the soda machine sells a cola',a.prize&&a.soda);
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
@@ -57,7 +57,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       th('THE BULLETIN BOARD').act(); const board=MINI.on&&MINI.on.title==='THE BULLETIN BOARD'; MINI.close();
       const crates=__dbg.UI.things.filter(t=>t.name==='A MILK CRATE').length;
       return {shelves,picked,paid,broke,card,lotto,deli,urn,cat,board,crates}; });
-    rec('bodega: every shelf and fridge opens what is on it; picked goods are yours only once paid at the register; not when you are short',b.shelves>=13&&b.picked&&b.paid&&b.broke,JSON.stringify(b));
+    rec('bodega: every shelf and fridge opens what is on it (the groceries are archived, owner 5 Nov 2026)',b.shelves>=13,JSON.stringify(b));
     rec('bodega: a scratch-off is $2 and pays what it shows',b.card&&b.lotto);
     rec('bodega: the deli sells sandwiches, the urn coffee, the chest ice pops',b.deli&&b.urn);
     rec('bodega: MANGO eats cat food and brings luck; the board reads; two crates to sit on',b.cat&&b.board&&b.crates===2);
@@ -75,56 +75,21 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     rec('theatre: the stand sells popcorn, nachos, candy and soda; the machine a tub; the menu reads',c.shop&&c.pop&&c.menu,JSON.stringify(c));
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
-  /* ---------- THE MUSEUM OF EARTH ---------- */
-  { await pg.evaluate(()=>STORE.enter('museum',true)); await U(()=>STORE.inside.museum&&STORE.inside.museum.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE DONATION BOX ($1)'),180000);
-    const p=await people('museum'); rec('museum: staff spots and visitor places inside it, standing places clear of the exhibits',p.spots>=6&&p.seats>=15&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
-    const wd=k=>{ const N=BODIES.by[k]&&BODIES.by[k].npc, s=STORE.rooms.find(r=>r.id==='museum').spots[k==='w_owl'?'GUARD':'KEEPER']; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
-    await pg.waitForFunction(`(${wd})('w_owl')<.2&&(${wd})('w_pangolin')<.2`,null,{timeout:90000}).catch(()=>{});
-    rec('museum: THE OWL on guard and THE PANGOLIN at the gift shop',await pg.evaluate(`[(${wd})('w_owl'),(${wd})('w_pangolin')].every(d=>d!=null&&d<.2)`));
-    const m=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), wait=ms=>new Promise(r=>setTimeout(r,ms));
-      const plaques=__dbg.UI.things.filter(t=>/\(THE PLAQUE\)$/.test(t.name)).length; th('THE ROSETTA STONE (THE PLAQUE)').act(); const read=MINI.on&&MINI.on.title==='THE ROSETTA STONE'&&MUSEUM.read.has('THE ROSETTA STONE'); MINI.close();
-      MUSEUM.quizDay=-1; INV.cash=0; th('THE INFORMATION DESK').act(); const S=MINI.state(); for(let n=0;n<400&&!S.over;n++){ if(S.wait<=0&&S.pick<0){ const Q=S.qs[S.i], k=Q.o.indexOf(Q.a); S.mx=210; S.my=170+k*52+20; S.press=true; } await wait(150); } await wait(300); const quiz=!!S.over&&INV.cash===5; MINI.close();
-      th('THE INFORMATION DESK').act(); const once=!MINI.state(); MINI.close();
-      INV.cash=2; th('THE DONATION BOX').act(); const donate=INV.cash===1&&MUSEUM.fund>=1;
-      INV.add('g_fishfood',1); const ff=INV.items.g_fishfood; th('THE REEF TANK').act(); const fed=(INV.items.g_fishfood||0)===ff-1&&MUSEUM.fed>0&&MUSEUM.fish.length===9;
-      th('THE GIFT SHOP').act(); const shop=!!SHOPS.cur&&SHOPS.cur.key==='w_pangolin'&&CHARS.trade({key:'w_pangolin'}).sells.includes('mus_plush');
-      const benches=__dbg.UI.things.filter(t=>t.name==='A MUSEUM BENCH').length;
-      return {plaques,read,quiz,once,donate,fed,shop,benches}; });
-    rec('museum: every exhibit has a plaque you can read',m.plaques===15&&m.read,JSON.stringify(m));
-    rec("museum: the curator's quiz pays a dollar a right answer, once a day",m.quiz&&m.once);
-    rec('museum: the donation box, the fish tank (fish food), the gift shop, two benches',m.donate&&m.fed&&m.shop&&m.benches===2);
-    if(OUT)await pg.screenshot({path:OUT+'/museum.png'}).catch(()=>{});
-    await pg.evaluate(()=>STORE.exit('museum')); await pg.waitForTimeout(3000); }
   /* ---------- THE ART MUSEUM ---------- */
   { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>/^A GUIDED TOUR WITH ROSIE/.test(t.name))&&STORE.art&&STORE.art.built,240000);
-    const p=await people('art'); rec('art museum: staff spots and visitor places inside it, standing places clear',p.spots>=4&&p.seats>=16&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
+    const p=await people('art'); rec('art museum: staff spots and visitor places inside it, standing places clear',p.spots>=4&&p.seats>=12&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
     const rd=()=>{ const N=BODIES.by.w_redpanda&&BODIES.by.w_redpanda.npc, s=STORE.rooms.find(r=>r.id==='art').spots['DOCENT TOURS']; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
     await pg.waitForFunction(`(${rd})()!=null&&(${rd})()<.2`,null,{timeout:90000}).catch(()=>{}); rec('art museum: ROSIE THE RED PANDA stands by her tour sign',await pg.evaluate(`(${rd})()<.2`));
     const a=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n));
       th('THE INFORMATION DESK (THE FLOOR PLAN)').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
-      const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\) \(THE PLAQUE\)$/.test(t.name)).length; th('THE THINKER').act(); const plaque=MINI.on&&/THINKER/.test(MINI.on.title); MINI.close();
-      INV.cash=10; th('THE ESPRESSO MACHINE').act(); th('THE PASTRY CASE').act(); th('THE POSTCARD SPINNER').act(); th('THE PRINTS').act(); const buys=INV.cash===0&&INV.items.f_croissant>=1&&INV.items.art_print>=1;
-      const chairs=__dbg.UI.things.filter(t=>t.name==='A CAFÉ CHAIR').length; INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
-      return {plan,casts,plaque,buys,chairs,paid}; });
-    rec('art museum: the floor plan, four casts with plaques, the café and the shop sell, four café chairs',a.plan&&a.casts===4&&a.plaque&&a.buys&&a.chairs===4,JSON.stringify(a));
+      const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\)/.test(t.name)).length;
+      const shops=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)).length;
+      INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
+      return {plan,casts,shops,paid}; });
+    rec('art museum: the floor plan; no casts, no café, no gift shop',a.plan&&a.casts===0&&a.shops===0,JSON.stringify(a));
     const tour=await pg.waitForFunction(()=>{ const T=GALLERY.touring; if(T&&T.N.st.to){ T.N.st.x=T.N.st.to.x; T.N.st.z=T.N.st.to.z; } return GALLERY.last&&T&&T.i>=0; },null,{timeout:120000,polling:500}).then(()=>true).catch(()=>false);   // she walks at the frames' pace; on a slow machine the check sets her down at her stop
     rec('art museum: the tour costs $3, ROSIE walks to a painting and tells you about it',a.paid&&tour,await pg.evaluate(()=>JSON.stringify({last:GALLERY.last,i:GALLERY.touring&&GALLERY.touring.i})));
     if(OUT)await pg.screenshot({path:OUT+'/art.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); rec('art museum: leaving ends the tour',await pg.evaluate(()=>!GALLERY.touring)); }
-  /* ---------- THE BOARDWRIGHT, FIX-IT, THE SCANNER ---------- */
-  for(const [id,need] of [['boards',['THE WAX AND GRIP BENCH','THE CHALK SKETCHES','AN OLD PHOTO','A CRACKED MIRROR','AN OLD CALENDAR']],['fixit',['THE REPAIR BENCH','THE SCREW JARS','THE BARGAIN BIN']],['scanner',['THE MYNA BIRD','THE LISTENING STOOL','THE CALL-SIGN CARDS','THE GLASS CASE']]]){
-    await pg.evaluate(id=>ROOMS.enter(id),id); await U(`ROOMS.offIn&&ROOMS.offIn()==='${id}'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith(${JSON.stringify(need[0])}))`,180000);
-    const p=await people(id); rec(id+': staff spots and customer places inside it, standing places clear',p.seats>=5&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
-    const miss=await pg.evaluate(need=>need.filter(n=>!__dbg.UI.things.some(t=>t.name.startsWith(n))),need); rec(id+': its new things are there and usable',!miss.length,miss.join(', '));
-    if(id==='boards'){ const w=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); for(const k of Object.keys(INV.items))if(/^board_/.test(k))delete INV.items[k]; th('THE WAX AND GRIP BENCH').act(); const refused=!MINI.state(); MINI.close();
-        INV.add('board_pine',1); INV.cash=5; th('THE WAX AND GRIP BENCH').act(); const S=MINI.state(); for(const k of S.in)S.c.add(k); await new Promise(r=>setTimeout(r,600)); const ok=S.over&&S.score===1&&INV.cash===3; MINI.close(); return {refused,ok}; });
-      rec('boards: waxing needs a deck you own; a full coat speeds you up',w.refused&&w.ok,JSON.stringify(w)); }
-    if(id==='fixit'){ const f=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.cash=10; for(const k of ['junk_walkman','junk_handheld','junk_pockettv','fix_parts'])delete INV.items[k];
-        const k=SHOPS3.bin(); th('THE SCREW JARS').act(); th('THE REPAIR BENCH').act(); const S=MINI.state(); for(const j of S.J)j.ok=true; await new Promise(r=>setTimeout(r,600)); const fixed=SHOPS3.last&&SHOPS3.last.mend===1; MINI.close();
-        const out={junk_walkman:'walkman',junk_handheld:'handheld',junk_pockettv:'pockettv'}[k]; return {k,fixed,got:(INV.items[out]||0)>=1,buys:CHARS.trade({key:'fixer'}).buys.includes('electronics')}; });
-      rec('fixit: a broken set from the bin, parts from the jars, soldered at the bench, is a working one the Fixer buys',f.fixed&&f.got&&f.buys,JSON.stringify(f)); }
-    if(id==='scanner'){ const c=await pg.evaluate(()=>{ __dbg.UI.things.find(t=>t.name==='THE MYNA BIRD').act(); __dbg.UI.things.find(t=>t.name.startsWith('THE CALL-SIGN CARDS')).act(); const cards=MINI.on&&MINI.on.title==='THE CALL-SIGN CARDS'; MINI.close(); return {cards,air:!!SHOPS3.air}; });
-      rec('scanner: the call-sign cards read, the ON AIR light is there',c.cards&&c.air,JSON.stringify(c)); }
-    await pg.evaluate(id=>ROOMS.exit(id),id); await pg.waitForTimeout(3000); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

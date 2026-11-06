@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {LAY, MODS, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const FOX={};
-{ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
+if(0){ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
   const WHITE=[.95,.93,.88], CREAM=[.93,.85,.7], TAN=[.89,.73,.45], ORANGE=[.84,.42,.24], ORANGE2=[.67,.35,.2], BLUE=[.27,.45,.59], BLUE2=[.36,.53,.67], NAVY=[.15,.17,.27], PANT=[.84,.8,.68], PANT2=[.69,.64,.52], RED=[.53,.24,.18], BLACK=[0,0,0];
   const part=(name,rank,of)=>({name,rank,of});
   const fleck=(x,y,z)=>{ const v=noise(x,y,z,34), w=noise(x+3.1,y,z,14); return v>.72?BLUE:v<.18?CREAM:w>.68?ORANGE2:ORANGE; };
@@ -28,10 +28,10 @@ const FOX={};
   const AT={x:4.51+LAY.o('bodega').x*TILE+SHARED.BOD.SHOPDX,z:-6.1+LAY.o('bodega').y*TILE}, FACE=-Math.PI/2, TURN=35*Math.PI/180;
   const N=PARTSNPC.make(PARTS,{key:'fox',name:'THE FOX',eye:0,eyeC:'0.,0.,0.',metres:2.0,radius:.27,speed:.4,stride:6,rock:0,bob:.015,lv:'up',group:'bodega',
     x:AT.x,z:AT.z,ground:(x,z)=>MODS.bodega.ground(x,z),
-    brain:(dt,you,st,N)=>{ '@later'; if(N.sheet)return; st.to=null; st.hold=true; const H=N.home||AT; st.x=H.x; st.z=H.z;
+    brain:(dt,you,st,N)=>{ if(N.sheet)return; st.to=null; st.hold=true; const H=N.home||AT; st.x=H.x; st.z=H.z;
       let a=FACE; if(Math.hypot(you.x-st.x,you.z-st.z)<4.5*TILE){ if(Math.hypot(you.x-st.x,you.z-st.z)<2.6*TILE&&!((N.greet=(N.greet||0)-dt)>0)&&typeof LINES!=='undefined'){ N.greet=60; LINES.say(N,'fox'); } const w=Math.atan2(you.x-st.x,you.z-st.z), d=((w-FACE+Math.PI*3)%(Math.PI*2))-Math.PI; a=FACE+Math.max(-TURN,Math.min(TURN,d)); }
       st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; }});
-  scene.add(N.g); FOX.N=N; window.FOXDBG=()=>{ '@later'; const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
+  scene.add(N.g); FOX.N=N; window.FOXDBG=()=>{ const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
 
 const CREATURES={};   // the creature makers (data/creatures.json); filled by the lazy load just after the start
 const CREATURESREADY=new Promise(res=>{ const L=__LAZY__("data/creatures.json"), go=()=>window.__started?L().then(J=>{ Object.assign(CREATURES,J); res(CREATURES); }).catch(e=>{ console.warn('CREATURES',e); res(CREATURES); }):setTimeout(go,600); go(); });

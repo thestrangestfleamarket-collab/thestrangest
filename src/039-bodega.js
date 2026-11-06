@@ -159,7 +159,7 @@ const BF_SHAPE={
   blue:{f:[[0,0.145],[0.16,0.493],[0.56,0.667],[0.9,0.58],[0.84,0.174],[0.62,-0.02],[0,-0.04]],h:[.27,-.28,.32,.3]},
   bhut:{f:[[0,0.116],[0.2,0.493],[0.62,0.667],[1,0.551],[0.76,0.058],[0,-0.02]],h:[.26,-.32,.32,.28],tail:[[.3,-.52],[.36,-.98],[.42,-.96],[.4,-.52]],tail2:[[.18,-.55],[.22,-.82],[.27,-.8],[.26,-.55]]}};
 const bfIn=(P,x,y)=>{ let c=false; for(let i=0,j=P.length-1;i<P.length;j=i++){ const [a,b]=P[i],[p,q]=P[j]; if((b>y)!==(q>y)&&x<(p-a)*(y-b)/(q-b)+a)c=!c; } return c; };
-function bfWing(sh,u,v){ const S=BF_SHAPE[sh], [hx,hy,hr,hv]=S.h;
+function bfWing(sh,u,v){ '@later'; const S=BF_SHAPE[sh], [hx,hy,hr,hv]=S.h;
   const inF=(x,y)=>u>=0&&bfIn(S.f,x,y), inH=(x,y)=>x>=0&&((x-hx)/hr)**2+((y-hy)/hv)**2<=1||S.tail&&bfIn(S.tail,x,y)||S.tail2&&bfIn(S.tail2,x,y);
   const f=inF(u,v), h=!f&&inH(u,v); if(!f&&!h)return null;
   const [cx,cy]=f?[.42,.3]:[hx,hy], t=k=>{ const x=cx+(u-cx)/k, y=cy+(v-cy)/k; return f?inF(x,y):inH(x,y); };
@@ -200,7 +200,7 @@ const BF_KINDS=[
   ['Apollo','Parnassius apollo','mountain meadows of Europe and Asia',75,'pier',1,(u,v,f,r)=>{ const eye=!f&&[[.22,-.24],[.36,-.42]].find(([a,b])=>bfNear(u,v,a,b,.075)); if(eye)return bfNear(u,v,eye[0],eye[1],.045)?BF_C.red:BF_C.blk;
     return f&&[[.45,.3],[.62,.22],[.3,.14]].some(([a,b])=>bfNear(u,v,a,b,.05))?BF_C.blk:f&&r<.12?[196,198,196]:[244,242,236]; },[236,232,220]]];
 
-function bfPic(k,w,pose){ const [,,,,sh,,pat,under]=BF_KINDS[k], hs=w/2, ys=.72;
+function bfPic(k,w,pose){ '@later'; const [,,,,sh,,pat,under]=BF_KINDS[k], hs=w/2, ys=.72;
   if(pose===2){ const W=Math.max(3,Math.round(hs*1.25)), h=Math.max(3,Math.round(hs*1.05)+1), oy=h-1, px=new Array(W*h).fill(null);
     for(let y=0;y<h;y++)for(let x=0;x<W;x++){ const a=(x+.5-W*.45)/hs, b=(oy-(y+.5))/hs;
       if(y===oy&&Math.abs(a)<.42){ px[y*W+x]=a>.34?[40,34,30]:[30,26,24]; continue; }
@@ -428,7 +428,7 @@ const THFONT={A:'.###.#...##...#######...##...##...#',B:'####.#...##...#####.#..
   G:'.#####....#....#..###...##...#.###.',H:'#...##...##...#######...##...##...#',I:'#####..#....#....#....#....#..#####',K:'#...##..#.#.#..##...#.#..#..#.#...#',
   M:'#...###.###.#.##.#.##...##...##...#',N:'#...###..##.#.##..###...##...##...#',O:'.###.#...##...##...##...##...#.###.',P:'####.#...##...#####.#....#....#....',
   R:'####.#...##...#####.#.#..#..#.#...#',S:'.#####....#.....###.....#....#####.',T:'#####..#....#....#....#....#....#..',U:'#...##...##...##...##...##...#.###.'};
-const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Array(W*H).fill(null), px=(c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; };
+const THFRONT=(()=>{ let f=null; const build=()=>{ '@later'; const W=480, H=392, a=new Array(W*H).fill(null), px=(c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; };
   const box=(c0,z0,c1,z1,col)=>{ for(let z=Math.floor(z0);z<z1;z++)for(let c=Math.floor(c0);c<c1;c++)px(c,z,col); }, U=u=>u*24;
   const disc=(cx,cz,r,col)=>{ for(let z=Math.floor(cz-r);z<=cz+r;z++)for(let c=Math.floor(cx-r);c<=cx+r;c++)if((c+.5-cx)**2+(z+.5-cz)**2<=r*r)px(c,z,col); };
   const text=(s,c,z,k,col,ol)=>{ [...s].forEach((ch,i)=>{ const g=THFONT[ch]; if(!g)return; for(let j=0;j<7;j++)for(let q=0;q<5;q++)if(g[j*5+q]==='#'){
@@ -456,14 +456,14 @@ const THFRONT=(()=>{ let f=null; const build=()=>{ const W=480, H=392, a=new Arr
   brick(U(16.1),0,480,99); box(U(16.1),99,480,111,CREAM); box(U(16.1),99,480,100,CREAMD);
   return (u,z)=>{ const c=Math.floor(u*24), q=Math.floor(z); return c>=0&&c<W&&q>=0&&q<H?a[q*W+c]:null; }; }; return (u,z)=>(f||(f=build()))(u,z); })();
 let THX0=0, THY=0; const THX=u=>THX0-u, thAt=(x,y)=>{ THX0=x; THY=y; };
-function thOut(parts,o,more=[]){ SHARED.PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
+function thOut(parts,o,more=[]){ '@later'; SHARED.PNAME='theatre front'; const x0=THX0; return prop([...parts.map(([u0,u1,z0,z1,d,side,top,foot])=>sided({x0:THX(u1),x1:THX(u0),y0:THY-d,y1:THY,z0,z1,c:side,foot:foot?1:0,top:()=>top||side,
   fs:(nx,ny,X,Y,z,k)=>{ if(ny<0){ const c=THFRONT(x0-X,z+z0); if(c)return c.e?c:sh(c,k); } return sh(side,k); }})),...more],null,o); }
-const thFront=clip=>{ const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
+const thFront=clip=>{ '@later'; const RB=[164,58,48], CR=[234,228,206], GR=[112,122,144], SL=[74,80,98], C=L=>L.map(p=>clip(p)).filter(Boolean);
   for(const [L,o,m] of [[[[0,4.73,0,99,.5,RB,[150,52,44],1],[0,4.83,99,111,.62,CR,[246,242,228]]]],[[[16.1,20,0,99,.5,RB,[150,52,44],1],[16,20,99,111,.62,CR,[246,242,228]]]],
     [[[6.1,14.4,98,134,.15,SL,[96,102,122]],[8.5,12.1,106,131,.2,[250,248,240],[250,248,240]]],{walk:true}],
     [[[4.73,16.1,92,152,.2,RB,[150,52,44],1],[4.4,16.1,152,168,.42,CR,[246,242,228]]],{walk:true}],
     [[[8.4,12.5,0,2,.35,[200,204,210],[214,218,222],1]],{walk:true}]]){ const ps=C(L); if(ps.length||(m&&m.length))thOut(ps,o,m); } };
-function theatreScreen(S){ SHARED.PNAME='cinema screen'; const b=S.m/24, y0=S.y-.06, Bk=[12,10,12], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk,foot:0};
+function theatreScreen(S){ '@later'; SHARED.PNAME='cinema screen'; const b=S.m/24, y0=S.y-.06, Bk=[12,10,12], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk,foot:0};
   const film=(x,z)=>{ const f=filmFrame(30), i=Math.min(FILMW-1,Math.max(0,Math.floor((x-S.x0)/(S.x1-S.x0)*FILMW))), j=Math.min(FILMH-1,Math.max(0,Math.floor((S.z1-z)/(S.z1-S.z0)*FILMH))), q=(j*FILMW+i)*3; return [f[q],f[q+1],f[q+2]]; };
   return prop([{x0:S.x0,y0,x1:S.x1,y1:S.y,z0:S.z0,z1:S.z1,foot:1,em:1,c:[200,200,196],top:()=>Bk,fi:()=>Bk,fj:film},
     {x0:S.x0-b,y0,x1:S.x1+b,y1:S.y,z0:S.z1,z1:S.z1+S.m,...bk},{x0:S.x0-b,y0,x1:S.x1+b,y1:S.y,z0:S.z0-S.m,z1:S.z0,...bk},
@@ -472,10 +472,10 @@ const VELVET=[138,20,34];
 const fold=(u,z,f)=>sh(speck(VELVET,u,z/24,307),f*(.72+.28*Math.sin(u*Math.PI*5)**2));
 function theatreDrape(x0,x1,S){ SHARED.PNAME='stage curtain';
   return prop([{x0,y0:S.y-.5,x1,y1:S.y,z0:0,z1:S.z1+S.m+44,c:VELVET,top:()=>sh(VELVET,.8),fi:(y,z)=>fold(y,z,.8),fj:(x,z)=>fold(x,z,1)}],null,{high:true}); }
-function theatreValance(S){ SHARED.PNAME='stage curtain'; const b=S.m/24, z0=S.z1+S.m, G=[188,146,58], fr=(u,z,f)=>z<z0+5?sh((Math.floor(u*24)&1)?G:sh(G,.7),f):fold(u,z,f);
+function theatreValance(S){ '@later'; SHARED.PNAME='stage curtain'; const b=S.m/24, z0=S.z1+S.m, G=[188,146,58], fr=(u,z,f)=>z<z0+5?sh((Math.floor(u*24)&1)?G:sh(G,.7),f):fold(u,z,f);
   return prop([{x0:S.x0-b,y0:S.y-.6,x1:S.x1+b,y1:S.y,z0,z1:z0+44,foot:0,c:VELVET,top:()=>sh(VELVET,.8),fi:(y,z)=>fr(y,z,.8),fj:(x,z)=>fr(x,z,1)}],null,{walk:true,high:true}); }
 const PLUSH=[150,22,36], SEATZ=10;
-function theatreSeat(a,y1,w,end){ SHARED.PNAME='cinema chair'; const y0=y1-.7, P=PLUSH, Dk=[26,20,22], Ar=[40,30,28], pl={c:P,top:()=>sh(P,1.18),fi:()=>sh(P,.66),fj:()=>sh(P,.84)};
+function theatreSeat(a,y1,w,end){ '@later'; SHARED.PNAME='cinema chair'; const y0=y1-.7, P=PLUSH, Dk=[26,20,22], Ar=[40,30,28], pl={c:P,top:()=>sh(P,1.18),fi:()=>sh(P,.66),fj:()=>sh(P,.84)};
   const arm=a=>({x0:a-.06,y0:y0+.08,x1:a+.06,y1:y1-.1,z0:0,z1:16,c:Ar,top:()=>[64,50,42],fi:()=>sh(Ar,.7),fj:()=>Ar});
   return prop([{x0:a+.08,y0:y0+.12,x1:a+w-.08,y1:y1-.08,z0:0,z1:4,c:Dk,top:()=>Dk,fi:()=>sh(Dk,.7),fj:()=>Dk},
     {x0:a+.09,y0:y0+.16,x1:a+w-.09,y1:y1-.03,z0:4,z1:SEATZ,foot:0,...pl},{x0:a+.08,y0,x1:a+w-.08,y1:y0+.18,z0:4,z1:30,foot:0,...pl,top:()=>sh(P,1.1)},arm(a),...(end?[arm(a+w)]:[])]); }
@@ -483,11 +483,11 @@ function theatreAisleLights(xs,ys){ SHARED.PNAME='aisle lights'; const A=[255,16
   for(const x of xs)for(const y of ys)out.push({x0:x-.06,y0:y-.06,x1:x+.06,y1:y+.06,z0:0,z1:2,em:1,c:A,top:()=>A,fi:()=>A,fj:()=>A});
   return prop(out,null,{walk:true}); }
 const FONT3={E:['111','100','110','100','111'],X:['101','101','010','101','101'],I:['111','010','010','010','111'],T:['111','010','010','010','010']};
-function theatreExit(x,y){ SHARED.PNAME='exit sign'; const x0=x-.6, x1=x+.6, z0=68, z1=80;
+function theatreExit(x,y){ '@later'; SHARED.PNAME='exit sign'; const x0=x-.6, x1=x+.6, z0=68, z1=80;
   const face=(u,z)=>{ const c=Math.floor((x1-u)/(x1-x0)*17)-1, r=Math.floor((z1-2-z)/1.6), L='EXIT'[Math.floor(c/4)], k=c%4;
     return c>=0&&c<16&&k<3&&r>=0&&r<5&&FONT3[L][r][k]==='1'?[255,70,48]:[52,8,8]; };
   return prop([{x0,y0:y,x1,y1:y+.1,z0,z1,foot:1,em:1,c:[52,8,8],top:()=>[30,6,6],fi:()=>[40,8,8],fj:(u,z)=>face(u,z)}],null,{high:true}); }
-function theatrePort(x,y,z=296){ SHARED.PNAME='projection port'; const W=[255,226,168], F=[24,20,18];
+function theatrePort(x,y,z=296){ '@later'; SHARED.PNAME='projection port'; const W=[255,226,168], F=[24,20,18];
   return prop([{x0:x-.45,y0:y,x1:x+.45,y1:y+.05,z0:z,z1:z+22,foot:1,c:F,top:()=>F,fi:()=>F,fj:()=>F},{x0:x-.32,y0:y+.05,x1:x+.32,y1:y+.07,z0:z+4,z1:z+18,foot:0,em:1,c:W,top:()=>W,fi:()=>W,fj:()=>W}],null,{high:true}); }
 function theatreCarpet(x,y){ const a=(x+y)*1.5, b=(x-y)*1.5, fa=a-Math.floor(a), fb=b-Math.floor(b), n=hash(Math.floor(x*12),Math.floor(y*12),23);
   return mt('carpet',Math.abs(fa-.5)<.08&&Math.abs(fb-.5)<.08?[172,128,56]:fa<.06||fb<.06?[56,14,24]:n<.02?[48,90,100]:speck([104,28,40],x,y,24)); }
@@ -627,7 +627,7 @@ STOREK.theatre={THFONT,THFRONT,thAt,thFront,theatreCarpet,theatreWall,theatreScr
 const PFONT={...STOREK.theatre.THFONT,D:'####.#...##...##...##...##...#####.',F:'######....#....####.#....#....#....',L:'#....#....#....#....#....#....#####',V:'#...##...##...##...##...#.#.#..#...',
   Y:'#...##...#.#.#..#....#....#....#...',0:'.###.#...##..###.#.###..##...#.###.',1:'..#...##....#....#....#....#...###.',2:'.###.#...#....#...#...#...#...#####',
   4:'...#...##..#.#.#..#.#####...#....#.',6:'..##..#...#....####.#...##...#.###.',8:'.###.#...##...#.###.#...##...#.###.'};
-const PLAYK=PLB=>{ const PLMID=(PLB.x0+PLB.x1)/2;
+const PLAYK=PLB=>{ '@later'; const PLMID=(PLB.x0+PLB.x1)/2;
 const PFRONT=(()=>{ let o=null; const build=()=>{ const W=Math.round((PLB.x1-PLB.x0)*24), H=PLB.h, a=new Array(W*H).fill(null), px=(c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; };
   const box=(c0,z0,c1,z1,col)=>{ for(let z=Math.floor(z0);z<z1;z++)for(let c=Math.floor(c0);c<c1;c++)px(c,z,col); }, U=x=>(x-PLB.x0)*24, lit=c=>{ const o=c.slice(); o.e=1; return o; };
   const text=(s,c,z,k,col,ol)=>{ for(const pass of ol?[0,1]:[1])[...s].forEach((ch,i)=>{ const g=PFONT[ch]; if(!g)return; for(let j=0;j<7;j++)for(let q=0;q<5;q++)if(g[j*5+q]==='#'){
@@ -670,7 +670,7 @@ let MUSTURN=null;
 const MUS=(B=>{ const mid=(B.x0+B.x1)/2, hx0=mid-6, hx1=mid+6, by=B.y1-8, i=T;
   return {b:B,f:B,mid,hx0,hx1,by,side:[B.y0+4,B.y0+9],earth:[B.x0+2,B.x0+5],humans:[mid-3,mid+3],closed:[B.x1-5,B.x1-2],archZ:150,H:B.h-4,
     hall:{x0:hx0+i,x1:hx1-i,y0:B.y0+i,y1:by-i},west:{x0:B.x0+i,x1:hx0-i,y0:B.y0+i,y1:by-i},east:{x0:hx1+i,x1:B.x1-i,y0:B.y0+i,y1:by-i},
-    earthR:{x0:B.x0+i,x1:hx0-i,y0:by+i,y1:B.y1-i},humansR:{x0:hx0+i,x1:hx1-i,y0:by+i,y1:B.y1-i},closedR:{x0:hx1+i,x1:B.x1-i,y0:by+i,y1:B.y1-i}}; })((()=>{ const TM=TURN(WROW.mus,WP.museum.face), ox=TM.q?840+OFFDX/BLDK-TM.cx:0; MUSTURN={T:TM,ox,street:WROW.mus}; return {id:'lmusfront',...WROW.mus,...(TM.q?{x0:TM.L.x0+ox,x1:TM.L.x1+ox,y0:TM.L.y0,y1:TM.L.y1}:{})}; })());
+    earthR:{x0:B.x0+i,x1:hx0-i,y0:by+i,y1:B.y1-i},humansR:{x0:hx0+i,x1:hx1-i,y0:by+i,y1:B.y1-i},closedR:{x0:hx1+i,x1:B.x1-i,y0:by+i,y1:B.y1-i}}; })((()=>{ const MB0=WROW.mus||{x0:-18.3,x1:10.3,y0:-101,y1:-80,h:210}, TM=TURN(MB0,WP.museum&&WP.museum.face), ox=TM.q?840+OFFDX/BLDK-TM.cx:0; MUSTURN={T:TM,ox,street:MB0}; return {id:'lmusfront',...MB0,...(TM.q?{x0:TM.L.x0+ox,x1:TM.L.x1+ox,y0:TM.L.y0,y1:TM.L.y1}:{})}; })());   // the museum's front box stands in for the bank's width while the museum has no lot (5 Nov 2026)
 const MUC={stone:[214,206,188],stoneL:[226,220,204],stoneD:[186,178,160],joint:[166,158,140],skirt:[52,44,38],gilt:[196,160,82],giltD:[146,114,52],
   marble:[224,218,204],marbleG:[200,198,192],vein:[150,146,140],grout:[176,170,156],verde:[48,72,60],verdeL:[70,98,82],
   oak:[128,88,54],oakL:[146,104,64],oakD:[106,70,42],seam:[66,44,28],flag:[150,140,124],flagL:[166,156,138],flagD:[128,118,104],
@@ -692,13 +692,13 @@ const MUF={A:'.###.#...##...#######...##...##...#',B:'####.#...##...#####.#...##
 const muTW=(s,k=1)=>(s.length*6-1)*k;
 function muText(put,s,c,z,k,col){ [...s].forEach((ch,i)=>{ const g=MUF[ch]; if(!g)return; for(let j=0;j<7;j++)for(let q=0;q<5;q++)if(g[j*5+q]==='#')for(let a=0;a<k;a++)for(let b=0;b<k;b++)put(c+(i*6+q)*k+a,z+(6-j)*k+b,col); }); }
 function musRoom(x,y){ const M=MUS; for(const k of ['hall','west','east','earthR','humansR','closedR']){ const r=M[k]; if(x>=r.x0-.05&&x<r.x1+.05&&y>=r.y0-.05&&y<r.y1+.05)return k; } return null; }
-function museumHallCol(x,y,r){ const c=MUC, e=Math.min(x-r.x0,r.x1-x,y-r.y0,r.y1-y);
+function museumHallCol(x,y,r){ '@later'; const c=MUC, e=Math.min(x-r.x0,r.x1-x,y-r.y0,r.y1-y);
     if(e<.5)return mt('tiles',e<.06||Math.abs(e-.44)<.03?sh(c.verde,.8):cvNoise(x*3,y*3,1701)>.6?c.verdeL:c.verde);
     const s=1.5, i=Math.floor((x-r.x0-.5)/s), j=Math.floor((y-r.y0-.5)/s), u=x-r.x0-.5-i*s, v=y-r.y0-.5-j*s;
     if(u<.04||v<.04)return mt('tiles',c.grout);
     const b=(i+j)&1?c.marbleG:c.marble, n=cvNoise(x*1.6+i*7,y*1.6+j*5,1703)+cvNoise(x*5,y*5,1705)*.3;
     return mt('tiles',Math.abs(n-.72)<.012?c.vein:speck(b,x,y,1707)); }
-function museumFloorCol(x,y){ const c=MUC, k=musRoom(x,y), M=MUS;
+function museumFloorCol(x,y){ '@later'; const c=MUC, k=musRoom(x,y), M=MUS;
   if(k==='hall')return museumHallCol(x,y,M.hall);
   if(k==='earthR'||k==='humansR'){ const w=1.2, d=.9, j=Math.floor(y/d), o=hash(j,0,1709)*w, i=Math.floor((x+o)/w), u=x+o-i*w, v=y-j*d;
     if(u<.04||v<.04)return mt('concrete',sh(c.flagD,.8));
@@ -708,13 +708,13 @@ function museumFloorCol(x,y){ const c=MUC, k=musRoom(x,y), M=MUS;
   if(u<.03||v<.03)return mt('wood',c.seam);
   const n=hash(i,j,1719), b=n<.35?c.oak:n<.7?c.oakL:c.oakD, g=hash(Math.floor(x*24),Math.floor(y*6),1721);
   return mt('wood',g<.05?sh(b,.92):g>.96?sh(b,1.06):b); }
-const MUP=(()=>{ let o=null; const mk=(nx,ny,at,a0,a1,z0,H,draw)=>{ const u=(a)=>(nx?-a*nx:a*ny)*24, ua=u(a0), ub=u(a1), u0=Math.min(ua,ub), W=Math.round(Math.abs(ub-ua)), a=new Array(W*H).fill(null);
+const MUP=(()=>{ let o=null; const mk=(nx,ny,at,a0,a1,z0,H,draw)=>{ '@later'; const u=(a)=>(nx?-a*nx:a*ny)*24, ua=u(a0), ub=u(a1), u0=Math.min(ua,ub), W=Math.round(Math.abs(ub-ua)), a=new Array(W*H).fill(null);
     draw((c,z,col)=>{ c=Math.floor(c); z=Math.floor(z); if(col&&c>=0&&c<W&&z>=0&&z<H)a[z*W+c]=col; },W,H); return {nx,ny,at,u0,z0,W,H,a}; };
   const TT=out=>(nx,ny,at,a0,a1,num,name,k)=>{ const M=MUS, c=MUC, h=k*7+16, z0=M.archZ+10; out.push(mk(nx,ny,at,a0,a1,z0,h,(put,W)=>{ const w=Math.max(muTW(name,k),muTW(num,1))+16, l=Math.floor((W-w)/2);
       for(let z=0;z<h;z++)for(let q=l;q<l+w;q++)put(q,z,z<1||z>=h-1||q===l||q===l+w-1?c.giltD:c.stoneL);
       muText(put,num,Math.floor((W-muTW(num,1))/2),h-11,1,c.giltD); muText(put,name,Math.floor((W-muTW(name,k))/2),3,k,c.gilt); })); };
   const bank=()=>{ const M=MUS, B=M.b, out=[]; TT(out)(0,1,B.y0+T,M.hall.x0,M.hall.x1,'SAVINGS · LOANS','THE BANK',2); return out; };
-  const build=()=>{ const M=MUS, c=MUC, B=M.b, out=[], title=TT(out);
+  const build=()=>{ '@later'; const M=MUS, c=MUC, B=M.b, out=[], title=TT(out);
     title(0,1,B.y0+T,M.hall.x0,M.hall.x1,'THE GREAT HALL','MUSEUM OF EARTH',2);
     title(1,0,M.hx0+T,M.west.y0,M.by,'GALLERY 1','ANCIENT EGYPT',2); title(-1,0,M.hx1-T,M.east.y0,M.by,'GALLERY 2','AFRICA, CRADLE OF HUMANS',2);
     title(0,-1,M.by-T,M.hall.x0,M.hall.x1,'GALLERY 3','CAVE PEOPLE · ICE AGE',2); title(0,-1,M.by-T,M.west.x0,M.west.x1,'GALLERY 4','EARTH BEFORE US',1);
@@ -751,13 +751,13 @@ const MUEG=(()=>{ const g={ankh:['.###.','#...#','#...#','.###.','#####','..#..'
     bread:['.###.','#####'],man:['.##..','.##..','.#...','####.','.###.','.####','#####']};
   const order=[['ankh',2],['eye',0],['owl',3],['water',0],['reed',1],['bread',2],['man',3],['water',0],['ankh',2],['reed',1],['owl',3],['bread',2]];
   return {g,order}; })();
-function muEgypt(u,z){ const c=MUC, H=MUS.H; if(z>=H-24&&z<H-12){ const a=((Math.floor(u)%6)+6)%6, zz=z-(H-24); if(a===0)return c.ink; if(zz>9)return a===3?c.ink:c.west; return [c.egRed,c.egBlue,c.egGreen][((Math.floor(u/6)%3)+3)%3]; }
+function muEgypt(u,z){ '@later'; const c=MUC, H=MUS.H; if(z>=H-24&&z<H-12){ const a=((Math.floor(u)%6)+6)%6, zz=z-(H-24); if(a===0)return c.ink; if(zz>9)return a===3?c.ink:c.west; return [c.egRed,c.egBlue,c.egGreen][((Math.floor(u/6)%3)+3)%3]; }
   if(z>=H-12&&z<H-10)return c.ink;
   if(z>=124&&z<146){ if(z<126||z>=144)return c.egBlue; const n=Math.floor(u/12), [k,ci]=MUEG.order[((n%12)+12)%12], G=MUEG.g[k], a=Math.floor(u)-n*12-2, b=Math.floor(145-z)-2-(k==='water'?6:k==='bread'?7:0);
     if(b>=0&&b<G.length&&a>=0&&a<G[b].length&&G[b][a]==='#')return [c.egBlue,c.egRed,c.egGreen,c.ink][ci]; return null; }
   if(z<36)return z>=33?c.egRed:z>=8?c.ink:null;
   return null; }
-function museumWall(q,nx,ny,X,Y,z,f,o){ const M=MUS, c=MUC, at=nx?X:Y, u=(X*ny-Y*nx)*24, k=o&&o.k||musRoom(X+nx*.2,Y+ny*.2);
+function museumWall(q,nx,ny,X,Y,z,f,o){ '@later'; const M=MUS, c=MUC, at=nx?X:Y, u=(X*ny-Y*nx)*24, k=o&&o.k||musRoom(X+nx*.2,Y+ny*.2);
   for(const P of o&&o.P||MUP.all)if(P.nx===nx&&P.ny===ny&&Math.abs(at-P.at)<.05){ const cc=Math.floor(u-P.u0), zz=Math.floor(z-P.z0); if(cc>=0&&cc<P.W&&zz>=0&&zz<P.H){ const o=P.a[zz*P.W+cc]; if(o)return o.e?o:sh(o,f); } }
   if(ny>0&&Math.abs(Y-M.b.y0-T)<.05){ const d=muDoor(X-M.mid,z); if(d)return sh(d,f); }
   if(z<6)return sh(c.skirt,f);
@@ -773,7 +773,7 @@ function museumWall(q,nx,ny,X,Y,z,f,o){ const M=MUS, c=MUC, at=nx?X:Y, u=(X*ny-Y
   if(Math.abs(z-122)<1)return sh(c.gilt,f);
   if(z<36)return sh(z>33?c.stoneD:sh(w,.72),f);
   return sh(hash(Math.floor(u/3),Math.floor(z/3),1765)<.04?sh(w,.96):w,f); }
-const MUBAN=(()=>{ let o=null; const build=()=>{ const c=MUC, B=MUS.f, W=56, H=104, ban=[[B.x0+1.35,'EGYPT',[34,46,98]],[B.x0+4.2,'AFRICA',c.east],[B.x1-1.35,'ICE AGE',[70,62,58]]].filter((_,i)=>i!==1);
+const MUBAN=(()=>{ let o=null; const build=()=>{ '@later'; const c=MUC, B=MUS.f, W=56, H=104, ban=[[B.x0+1.35,'EGYPT',[34,46,98]],[B.x0+4.2,'AFRICA',c.east],[B.x1-1.35,'ICE AGE',[70,62,58]]].filter((_,i)=>i!==1);
   return ban.map(([x,nm,col],i)=>{ const a=new Array(W*H).fill(null), put=(q,z,cc)=>{ q=Math.floor(q); z=Math.floor(z); if(q>=0&&q<W&&z>=0&&z<H)a[z*W+q]=cc; };
     for(let z=0;z<H-6;z++)for(let q=2;q<W-2;q++)if(z>4||Math.abs(q-W/2)>(4-z)*4)put(q,z,z>=H-10?sh(col,.8):col);
     for(let q=0;q<W;q++){ put(q,H-6,c.giltD); put(q,H-5,c.gilt); }
@@ -786,9 +786,9 @@ const MUBAN=(()=>{ let o=null; const build=()=>{ const c=MUC, B=MUS.f, W=56, H=1
     if(i===3){ for(let z=0;z<40;z++)for(let q=0;q<W;q++){ const dx=q+.5-cx, dz=z+.5-20, r=Math.hypot(dx,dz); if(r>15)continue; const t=(Math.log(Math.max(r,.5)/15)/-.55+Math.atan2(dz,dx)/(2*Math.PI)+8)%1; put(q,z+cz-20,t<.18?d:g); } }
     return {x,W,H,z0:62,a}; }); };
   return {get all(){ return o||(o=build()); }}; })();
-function muDoor(u,z){ const c=MUC, a=Math.abs(u); if(z>=82||a>1.5)return null; if(z>=76||a>1.25)return z>=80||a>1.45?c.stoneD:c.stoneL;
+function muDoor(u,z){ '@later'; const c=MUC, a=Math.abs(u); if(z>=82||a>1.5)return null; if(z>=76||a>1.25)return z>=80||a>1.45?c.stoneD:c.stoneL;
   if(a<.03)return [40,30,20]; const p=a%1.2, q=z%36; if(p<.08||p>1.12||q<3||z>=74)return [96,72,40]; if(Math.abs(p-.2)<.04&&Math.abs(z-38)<3)return [200,166,90]; return q<5||q>31?[118,90,50]:[136,104,58]; }
-function museumOutside(b,nx,ny,X,Y,z,f,cap){ const c=MUC, u=(X*ny-Y*nx)*24, sx=b.id==='lmuscopy'?b.x0-MUS.f.x0:0;
+function museumOutside(b,nx,ny,X,Y,z,f,cap){ '@later'; const c=MUC, u=(X*ny-Y*nx)*24, sx=b.id==='lmuscopy'?b.x0-MUS.f.x0:0;
   if((b.id==='lmusfront'||b.id==='lmuscopy')&&ny<0&&Math.abs(Y-b.y0)<.2){ const d=muDoor(X-(b.x0+b.x1)/2,z); if(d)return sh(d,f); }
   if(!b.plain&&ny<0&&Math.abs(Y-b.y0)<.2)for(const n of MUBAN.all){ const cc=Math.floor((n.x+sx-X)*24+n.W/2), zz=Math.floor(z-n.z0); if(cc>=0&&cc<n.W&&zz>=0&&zz<n.H){ const o=n.a[zz*n.W+cc]; if(o)return sh(o,f); } }
   if(z>=cap-4)return null;
@@ -812,7 +812,7 @@ const BRZ=[118,92,52], BRZL=[164,132,76], GLINT=[220,232,236];
 const glassF=(s,t,z,len)=>{ const a=t*len*FP, g=((a+z)%34+34)%34; return g<1.2||g>4&&g<5?GLINT:null; };
 const glassT=(t,d)=>{ const g=((t*40+d*30)%17+17)%17; return g<.7?GLINT:null; };
 const label=(a,z,Z,W)=>{ const m=W/2; if(z<Z-14||z>Z-6||Math.abs(a-m)>9)return null; if(z<Z-13||z>Z-7||Math.abs(a-m)>8)return BRZ; return (z===Math.floor(Z-9)||z===Math.floor(Z-11))&&Math.abs(a-m)<6&&Math.floor(a)%3?[96,90,80]:[226,218,196]; };
-function glassCase(r,Z,H,o={}){ const cab=o.cab||[62,58,54], B=[];
+function glassCase(r,Z,H,o={}){ '@later'; const cab=o.cab||[62,58,54], B=[];
   B.push(fb(r,0,1,0,1,0,Z,cab,(s,t,z,len)=>{ const a=t*len*FP; if(z<2)return sh(cab,.7); if(z>=Z-2)return z>=Z-1?BRZL:BRZ; if(s==='f'&&!o.noLabel){ const l=label(a,z,Z,len*FP); if(l)return l; } return worn(cab,t,z,7); },
     ()=>o.floor||[70,64,58]));
   if(o.back)B.push(o.back);
@@ -823,26 +823,26 @@ function glassCase(r,Z,H,o={}){ const cab=o.cab||[62,58,54], B=[];
   return B; }
 function plinth(r,Z,col,o={}){ return fb(r,0,1,0,1,0,Z,col,(s,t,z,len)=>{ const a=t*len*FP; if(z<3)return sh(col,.7); if(z>=Z-1)return sh(col,1.1); if(s==='f'&&!o.noLabel){ const l=label(a,z,Z,len*FP); if(l)return l; } return worn(col,t,z,11); },()=>o.top||sh(col,1.06)); }
 const MARB=[226,220,206], MARBD=[194,188,174], MARBL=[240,236,226];
-function column(x,y,H){ const s=.3, flute=sided({x0:x-s*.8,y0:y-s*.8,x1:x+s*.8,y1:y+s*.8,z0:12,z1:H-16,foot:0,nb:1,c:MARB,top:()=>MARBL,
+function column(x,y,H){ '@later'; const s=.3, flute=sided({x0:x-s*.8,y0:y-s*.8,x1:x+s*.8,y1:y+s*.8,z0:12,z1:H-16,foot:0,nb:1,c:MARB,top:()=>MARBL,
     fs:(nx,ny,X,Y,z,k)=>{ const u=Math.floor((nx?Y:X)*24*1.4), q=((u%4)+4)%4; return sh(q===0?MARBD:q===2?MARBL:MARB,k*(z<2?.9:1)); }});
   const vol=sided({x0:x-s*1.25,y0:y-s*1.25,x1:x+s*1.25,y1:y+s*1.25,z0:H-16,z1:H-6,foot:0,c:MARB,top:()=>MARBL,
     fs:(nx,ny,X,Y,z,k)=>{ const u=(nx?Y-y:X-x)*24, a=Math.abs(u)-9, v=z-5, r=Math.hypot(a,v); if(Math.abs(u)<5)return sh(z>7?MARBL:MARB,k); const t=(Math.atan2(v,a)/(2*Math.PI)+r/3.2+8)%1; return sh(r<5&&t<.35?MARBD:MARB,k); }});
   return [{x0:x-s*1.3,y0:y-s*1.3,x1:x+s*1.3,y1:y+s*1.3,z0:0,z1:5,foot:1,c:MARBD,top:()=>MARB,fi:()=>sh(MARBD,.62),fj:()=>sh(MARBD,.8)},
     {x0:x-s*1.05,y0:y-s*1.05,x1:x+s*1.05,y1:y+s*1.05,z0:5,z1:12,foot:0,c:MARB,top:()=>MARBL,fi:(v,z)=>sh(z>7&&z<10?MARBL:MARB,.62),fj:(v,z)=>sh(z>7&&z<10?MARBL:MARB,.8)},
     flute,vol,{x0:x-s*1.35,y0:y-s*1.35,x1:x+s*1.35,y1:y+s*1.35,z0:H-6,z1:H,foot:0,c:MARBL,top:()=>MARBL,fi:()=>sh(MARB,.62),fj:()=>sh(MARB,.8)}]; }
-function scanBoxes(name,r,z0){ const S=MUSCAN[name], raw=atob(S.runs), sx=r.W/S.W, sy=r.D/S.D, B=[], T=S.pal.map(c=>({c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)}));
+function scanBoxes(name,r,z0){ '@later'; const S=MUSCAN[name], raw=atob(S.runs), sx=r.W/S.W, sy=r.D/S.D, B=[], T=S.pal.map(c=>({c,top:()=>c,fi:()=>sh(c,.62),fj:()=>sh(c,.8)}));
   for(let i=0;i+4<raw.length;i+=5){ const x=raw.charCodeAt(i), y=raw.charCodeAt(i+1), z=raw.charCodeAt(i+2), L=raw.charCodeAt(i+3), t=T[raw.charCodeAt(i+4)];
     const p=r.at(x/S.W,y/S.D), q=r.at((x+(S.k||1))/S.W,(y+(S.k||1))/S.D);
     B.push({x0:Math.min(p[0],q[0]),x1:Math.max(p[0],q[0]),y0:Math.min(p[1],q[1]),y1:Math.max(p[1],q[1]),z0:z0+z,z1:z0+z+L,foot:0,nb:1,...t}); }
   return B; }
 return {FP,rect,sub,fb,worn,metal,art,plane,line,ell,bone,BONE,glassCase,plinth,column,label,scanBoxes,BRZ,BRZL,MARB,MARBD,MARBL}; })();
 (()=>{ const {FP,rect,fb,worn,art,plane,line,ell,bone,BONE,plinth,column,BRZ,BRZL,MARB,MARBD,MARBL}=MUK, c=MUC;
-function porticoSteps(x,y){ SHARED.PNAME='museum portico steps'; const W=9, D=3;
+function porticoSteps(x,y){ '@later'; SHARED.PNAME='museum portico steps'; const W=9, D=3;
   return prop([{x0:x-W/2,y0:y-D/2,x1:x+W/2,y1:y+D/2,z0:0,z1:1,foot:1,c:MARB,top:(X,Y)=>{ const v=Y-(y-D/2); if(v<1.2&&Math.abs(v%.4-.38)<.03||Math.abs(X-(x-W/2))<.05||Math.abs(X-(x+W/2))<.05)return mt('concrete',MARBD);
     const i=Math.floor((X-x+W)/1.2), j=Math.floor(v/.8); if(((X-x+W)%1.2)<.03||(v%.8)<.03&&v>1.2)return mt('concrete',sh(MARBD,.95)); return mt('concrete',hash(i,j,1801)<.4?sh(MARB,.96):MARB); },fi:()=>sh(MARBD,.62),fj:()=>sh(MARBD,.8)}],null,{walk:true,flat:true}); }
 const portColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,150)); };
 const hallColumn=(x,y)=>{ SHARED.PNAME='museum column'; return prop(column(x,y,190)); };
-function entablature(x,y,nm='MUSEUM OF EARTH',k=1,pn){ SHARED.PNAME=pn||(k>1?'bank entablature':'museum entablature'); const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
+function entablature(x,y,nm='MUSEUM OF EARTH',k=1,pn){ '@later'; SHARED.PNAME=pn||(k>1?'bank entablature':'museum entablature'); const W=8.8, r=rect(x,y,[0,-1],W,.9), Z=150, H=k>1?32:26, B=[];
   B.push(fb(r,0,1,0,1,Z,Z+H,MARB,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP;
     if(z>=H-5)return z>=H-2?MARBL:Math.floor(a/4)%2?MARBD:MARB;
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
@@ -855,7 +855,7 @@ function entablature(x,y,nm='MUSEUM OF EARTH',k=1,pn){ SHARED.PNAME=pn||(k>1?'ba
     return sh(MARB,.9); };
   B.push(fb(r,0,1,.1,.7,Z+H,Z+H+PH,MARB,ped,()=>null,{foot:0}));
   return prop(B,null,{high:true,walk:true}); }
-function infoDesk(x,y){ SHARED.PNAME='information desk'; const r=rect(x,y,[0,1],3,.8), H=30, wal=[84,58,40], nm='INFORMATION', B=[];
+function infoDesk(x,y){ '@later'; SHARED.PNAME='information desk'; const r=rect(x,y,[0,1],3,.8), H=30, wal=[84,58,40], nm='INFORMATION', B=[];
   B.push(fb(r,0,1,0,1,0,H-2,wal,(s,t,z,len)=>{ const a=(1-t)*len*FP, L=len*FP; if(z<2)return sh(wal,.6);
     if(s==='f'){ const tw=muTW(nm,1), l=Math.floor((L-tw)/2), cc=Math.floor(a-l), zz=Math.floor(z-15); if(cc>=-2&&cc<tw+2&&zz>=-2&&zz<9){ const g=cc>=0&&cc<tw&&zz>=0&&zz<7&&MUF[nm[Math.floor(cc/6)]], q=cc%6; return g&&q<5&&g[(6-zz)*5+q]==='#'?BRZL:[46,34,26]; }
       if(Math.floor(a)%24<1)return sh(wal,.8); }
@@ -865,7 +865,7 @@ function infoDesk(x,y){ SHARED.PNAME='information desk'; const r=rect(x,y,[0,1],
   B.push(fb(r,.7,.86,.5,.75,H,H+12,[40,40,44],(s,t,z)=>s==='f'?(z>2&&t>.1&&t<.9?muLit([90,130,160]):[40,40,44]):[48,48,52],()=>[44,44,48]));
   B.push(fb(r,.5,.54,.3,.4,H,H+3,BRZL,null,()=>BRZL));
   return prop(B); }
-function museumBench(x,y){ SHARED.PNAME='museum bench'; const r=rect(x,y,[0,1],2,.6), L=[70,46,36], S=[34,34,36], B=[];
+function museumBench(x,y){ '@later'; SHARED.PNAME='museum bench'; const r=rect(x,y,[0,1],2,.6), L=[70,46,36], S=[34,34,36], B=[];
   for(const t of [.04,.92])B.push(fb(r,t,t+.04,.05,.95,0,12,S,null,()=>S));
   B.push(fb(r,0,1,0,1,12,17,L,(s,t,z)=>z<1?sh(L,.7):L,(t,d)=>{ const a=Math.floor(t*48), b=Math.floor(d*14); return (a%6===3&&b%4===2)?sh(L,.7):(a+b)%7===0?sh(L,1.08):L; }));
   return prop(B); }
@@ -875,7 +875,7 @@ for(const k in K){ CATALOG[k]=(x,y)=>K[k](x,y); KIND_OF[k]=k; }
 (()=>{ const {FP,rect,fb,worn,art,plane,line,ell,glassCase,plinth,BRZ,BRZL}=MUK, c=MUC;
 const CLOTH=[34,40,58], CLOTHL=[44,52,72];
 const board=(W,H,draw)=>art(W,H,(put,w,h)=>{ for(let z=0;z<h;z++)for(let x=0;x<w;x++)put(x,z,hash(x>>1,z>>1,1901)<.1?CLOTHL:CLOTH); draw(put,w,h); });
-function rosetta(x,y){ SHARED.PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],1.3,.9), Z=28, H=40, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[58,54,50]});
+function rosetta(x,y){ '@later'; SHARED.PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],1.3,.9), Z=28, H=40, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[58,54,50]});
   const G=[62,64,70], GL=[98,100,106], GD=[44,46,50], INK=[150,150,156], hs=[26,29,31,32,29,24], n=hs.length, w=.84/1.3, d0=.33, d1=.33+.32/.9;
   for(let i=0;i<n;i++){ const t0=.5-w/2+i*w/n, t1=t0+w/n, h=hs[i];
     B.push(fb(r,t0,t1,d0,d1,Z,Z+h,G,(s,t,z,len)=>{ const a=Math.floor((i+t)*len*FP), zz=Math.floor(z); if(zz>=h-1||(s==='l'&&i===0)||(s==='r'&&i===n-1))return GD;
@@ -885,7 +885,7 @@ function rosetta(x,y){ SHARED.PNAME='the Rosetta Stone'; const r=rect(x,y,[0,1],
           if(zz>=22&&zz<h-2)return (a%3<2&&zz%3<2)&&hash(a>>1,zz>>1,1907)<.7?INK:G; }
         return hash(a,zz,1909)<.08?GL:G; },()=>GD,{foot:0})); }
   return prop(B); }
-function tablets(x,y){ SHARED.PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.6), Z=26, H=46;
+function tablets(x,y){ '@later'; SHARED.PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.6), Z=26, H=46;
   const back=board(Math.round(1.8*FP),H-2,(put,W,h)=>{ const wedge=(cx,cz,k,dir)=>{ for(let i=0;i<k*3;i++)for(let j=-i/2;j<=i/2;j++)put(dir?cx+i:cx+j,dir?cz+j:cz-i,[200,170,120]); };
     for(let i=0;i<5;i++){ wedge(8+i*8,34,2,1); wedge(10+i*8,26,2,0); } wedge(58,36,3,1); wedge(66,30,3,0); wedge(70,36,2,1); });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)});
@@ -897,14 +897,14 @@ function tablets(x,y){ SHARED.PNAME='clay tablets'; const r=rect(x,y,[0,1],1.8,.
   tab(.68,.09/1.8,3,[196,170,130],(a,z)=>z%2?[150,126,96]:null);
   B.push(fb(r,.8,.94,.4,.6,Z,Z+2,[40,40,42],null,()=>[50,50,52],{foot:0}),fb(r,.8,.94,.42,.58,Z+2,Z+5,[176,150,112],(s,t,z)=>Math.floor(t*12)%2&&z>1?[136,110,78]:[176,150,112],()=>[190,166,128],{foot:0}));
   return prop(B); }
-function ishango(x,y){ SHARED.PNAME='the Ishango bone'; const r=rect(x,y,[0,1],.6,.6), Z=34, H=30;
+function ishango(x,y){ '@later'; SHARED.PNAME='the Ishango bone'; const r=rect(x,y,[0,1],.6,.6), Z=34, H=30;
   const back=board(Math.round(.6*FP),H-2,(put,W,h)=>{ const bz=12, b0=1, b1=W-2; for(let x=b0;x<b1;x++)for(let z=bz-2;z<=bz+2;z++)put(x,z,z===bz+2?[170,140,100]:z===bz-2?[96,72,48]:[136,106,72]);
     put(b1,bz,[230,230,236]); put(b1+1,bz,[230,230,236]); put(b1,bz+1,[200,200,210]);
     let x=b0+1; for(const g of [3,6,4,8,10,5,5,7]){ for(let i=0;i<g&&x<b1-1;i++,x+=.6)put(Math.floor(x),bz+((i&1)?2:3),[60,44,30]); x+=1; } });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)});
   B.push(fb(r,.48,.52,.45,.55,Z,Z+5,BRZ,null,()=>BRZL,{foot:0}),fb(r,.36,.36+.11/.6,.47,.53,Z+5,Z+6,[110,82,54],(s,t)=>t>.85?[220,220,228]:[110,82,54],()=>[136,106,72],{foot:0}));
   return prop(B); }
-function antikythera(x,y){ SHARED.PNAME='the Antikythera mechanism'; const r=rect(x,y,[0,1],1.4,.8), Z=28, H=36;
+function antikythera(x,y){ '@later'; SHARED.PNAME='the Antikythera mechanism'; const r=rect(x,y,[0,1],1.4,.8), Z=28, H=36;
   const back=board(Math.round(1.4*FP),H-2,(put,W,h)=>{ const gear=(cx,cz,R,spokes)=>{ for(let z=Math.floor(cz-R-2);z<=cz+R+2;z++)for(let x=Math.floor(cx-R-2);x<=cx+R+2;x++){ const dx=x+.5-cx, dz=z+.5-cz, rr=Math.hypot(dx,dz), a=Math.atan2(dz,dx);
         const tooth=rr<=R+1.6&&rr>R&&Math.floor((a+Math.PI)/(2*Math.PI)*Math.max(12,R*3))%2===0, rim=rr<=R&&rr>R-1.5, hub=rr<1.6, sp=rr<R&&spokes&&[0,1,2,3].some(k=>Math.abs(Math.sin(a-k*Math.PI/2))*rr<.8);
         if(tooth||rim||hub||sp)put(x,z,rr>R?[176,140,74]:[150,118,62]); } };
@@ -921,7 +921,7 @@ for(const k in K){ CATALOG[k]=(x,y)=>K[k](x,y); KIND_OF[k]=k; }
 const GOLD=[214,170,64], GOLDL=[240,206,104], GOLDD=[160,118,40], LAP=[36,58,132], LAPD=[26,40,96];
 const part=(B,r,zb)=>(x0,x1,y0,y1,z0,z1,col,paint,top)=>B.push(fb(r,.5+x0/r.W,.5+x1/r.W,y0/r.D,y1/r.D,zb+z0,zb+z1,col,paint?(s,t,z,len)=>paint(s,t*len*FP,z):null,
   top?(t,d)=>top((t-.5)*r.W,d*r.D):()=>sh(col,1.08),{foot:0}));
-function tutMask(x,y){ SHARED.PNAME='Tutankhamun\'s mask'; const r=rect(x,y,[0,1],.9,.9), Z=40, H=26, B=glassCase(r,Z,H,{cab:[40,36,34],floor:[30,28,28]});
+function tutMask(x,y){ '@later'; SHARED.PNAME='Tutankhamun\'s mask'; const r=rect(x,y,[0,1],.9,.9), Z=40, H=26, B=glassCase(r,Z,H,{cab:[40,36,34],floor:[30,28,28]});
   const m=rect(x,y,[0,1],.9,.9), P=part(B,m,Z+2), D0=.18, stripe=(s,a,z)=>Math.floor(z/1.5)%2?GOLD:LAP;
   B.push(fb(m,.44,.56,.44,.56,Z,Z+2,[30,28,28],null,()=>[36,34,34],{foot:0}));
   P(-.2,.2,D0,D0+.36,0,4,GOLD,(s,a,z)=>z>=3?GOLDL:[GOLD,LAP,[150,40,36],GOLD,[40,110,90]][Math.floor(z)%5],(u,v)=>Math.abs(u)<.1&&v<D0+.12?GOLD:[GOLD,LAP][Math.floor(Math.hypot(u,v-D0)*30)%2]);
@@ -935,7 +935,7 @@ function tutMask(x,y){ SHARED.PNAME='Tutankhamun\'s mask'; const r=rect(x,y,[0,1
   P(-.14,.14,D0+.26,D0+.52,4,12,GOLD,stripe,(u,v)=>GOLD);
   P(-.03,.03,D0-.03,D0+.03,12,15,GOLDL,(s,a,z)=>z>=2?[220,60,40]:GOLDL);
   return prop(B); }
-function coffin(x,y){ SHARED.PNAME='painted coffin'; const r=rect(x,y,[0,1],2.6,1), Z=18, H=22, B=glassCase(r,Z,H,{cab:[44,38,34],floor:[150,132,100]});
+function coffin(x,y){ '@later'; SHARED.PNAME='painted coffin'; const r=rect(x,y,[0,1],2.6,1), Z=18, H=22, B=glassCase(r,Z,H,{cab:[44,38,34],floor:[150,132,100]});
   const Y=[204,164,72], YD=[168,124,44], RED=[160,52,36], BLU=[40,70,120], GRN=[54,110,82], BLK=[34,30,28], SKN=[184,96,56];
   const seg=(t0,t1,w,h,top)=>B.push(fb(r,t0,t1,.5-w/2,.5+w/2,Z,Z+h,Y,(s,t,z,len)=>{ const a=Math.floor(t*len*FP); return z<1?YD:z>=h-1?YD:(a+Math.floor(z))%6===0?RED:(Math.floor(z)%4===1?BLU:Y); },(t,d)=>top(t0+(t1-t0)*t,d),{foot:0}));
   const lid=(T,d)=>{ const a=Math.floor(T*200), dd=Math.abs(d-.5);
@@ -946,7 +946,7 @@ function coffin(x,y){ SHARED.PNAME='painted coffin'; const r=rect(x,y,[0,1],2.6,
     return a%9===0?RED:Math.floor(T*28)%2?(dd>.3?BLU:Y):(hash(a,Math.floor(d*12),2001)<.2?GRN:Y); };
   seg(.08,.3,.44,10,lid); seg(.3,.72,.56,13,lid); seg(.72,.86,.6,14,lid); seg(.86,.97,.52,15,lid);
   return prop(B); }
-function warriors(x,y){ SHARED.PNAME='terracotta warriors'; const W=5.6, r=rect(x,y,[0,1],W,1.6), EZ=8, B=[], CL=[150,140,128], CLL=[172,162,148], CLD=[116,106,96];
+function warriors(x,y){ '@later'; SHARED.PNAME='terracotta warriors'; const W=5.6, r=rect(x,y,[0,1],W,1.6), EZ=8, B=[], CL=[150,140,128], CLL=[172,162,148], CLD=[116,106,96];
   const earth=[138,108,78]; B.push(fb(r,0,1,0,1,0,EZ,earth,(s,t,z)=>z>=EZ-1?[156,124,92]:hash(Math.floor(t*200),Math.floor(z),2011)<.2?[120,92,66]:earth,(t,d)=>hash(Math.floor(t*120),Math.floor(d*30),2013)<.25?[126,98,70]:earth));
   for(const t of [.02,.98])B.push(fb(r,t-.004,t+.004,0,.06,EZ,EZ+20,BRZ,null,()=>BRZL,{foot:0})); B.push(fb(r,.02,.98,0,.04,EZ+18,EZ+20,BRZ,null,()=>BRZL,{foot:0}));
   const clay=(k)=>(s,a,z)=>{ const n=hash(Math.floor(a),Math.floor(z),k); return n<.04?[150,60,50]:n<.07?[70,110,90]:n<.25?CLD:n>.9?CLL:CL; };
@@ -965,14 +965,14 @@ function warriors(x,y){ SHARED.PNAME='terracotta warriors'; const W=5.6, r=rect(
   };
   man(.14,.4,'officer',2021); man(.38,.45,'armour',2023); man(.62,.42,'plain',2025); man(.86,.45,'kneel',2027);
   return prop(B); }
-function suttonHoo(x,y){ SHARED.PNAME='the Sutton Hoo helmet'; const r=rect(x,y,[0,1],.7,.7), Z=40, H=22, B=glassCase(r,Z,H,{cab:[40,36,34],floor:[30,28,28]});
+function suttonHoo(x,y){ '@later'; SHARED.PNAME='the Sutton Hoo helmet'; const r=rect(x,y,[0,1],.7,.7), Z=40, H=22, B=glassCase(r,Z,H,{cab:[40,36,34],floor:[30,28,28]});
   const P=part(B,r,Z+4), I=[96,98,104], T=[188,192,196], TD=[140,144,150], G=[206,164,72];
   B.push(fb(r,.47,.53,.47,.53,Z,Z+4,[30,28,28],null,()=>[36,34,34],{foot:0}));
   P(-.1,.1,.24,.48,3,9,I,(s,a,z)=>Math.floor(a/2+Math.floor(z/2))%2?T:TD,(u,v)=>Math.abs(u)<.015?G:Math.floor((u+.2)*30+v*20)%2?T:TD);
   P(-.075,.075,.22,.26,0,6,I,(s,a,z)=>{ if(s!=='f')return I; const u=a-1.8, zz=Math.floor(z); if(zz===4&&Math.abs(u)<1.9)return G; if(Math.abs(u)<.6&&zz>=1&&zz<4)return G; if(zz===1&&Math.abs(u)<1.6)return G; if(zz===3&&Math.abs(Math.abs(u)-1.1)<.5)return [20,18,20]; return TD; });
   P(-.11,-.075,.26,.4,0,5,T); P(.075,.11,.26,.4,0,5,T); P(-.09,.09,.44,.5,0,4,T,(s,a,z)=>Math.floor(z)%2?T:TD);
   return prop(B); }
-function jadeSuit(x,y){ SHARED.PNAME='jade burial suit'; const r=rect(x,y,[0,1],2.5,1), Z=18, H=18, B=glassCase(r,Z,H,{cab:[44,38,34],floor:[120,30,34]});
+function jadeSuit(x,y){ '@later'; SHARED.PNAME='jade burial suit'; const r=rect(x,y,[0,1],2.5,1), Z=18, H=18, B=glassCase(r,Z,H,{cab:[44,38,34],floor:[120,30,34]});
   const J=[[104,148,104],[122,164,118],[88,130,94],[136,160,128]], WI=[200,164,80], jade=(a,b)=>a%2===0&&b%2===0?WI:J[Math.floor(hash(a>>1,b>>1,2031)*4)];
   const bx=(t0,t1,d0,d1,h)=>B.push(fb(r,t0,t1,d0,d1,Z,Z+h,J[0],(s,t,z,len)=>jade(Math.floor(t*len*FP),Math.floor(z)),(t,d,X,Y)=>jade(Math.floor(X*24),Math.floor(Y*24)),{foot:0}));
   bx(.86,.97,.42,.58,6); bx(.84,.86,.46,.54,4); bx(.52,.84,.33,.67,7); bx(.54,.82,.27,.33,5); bx(.54,.82,.67,.73,5);
@@ -986,7 +986,7 @@ const part=(B,r,zb)=>(x0,x1,y0,y1,z0,z1,col,paint,top)=>B.push(fb(r,.5+x0/r.W,.5
   top?(t,d)=>top((t-.5)*r.W,d*r.D):()=>sh(col,1.08),{foot:0}));
 const CLOTH=[34,40,58], CLOTHL=[44,52,72], board=(W,H,draw)=>art(W,H,(put,w,h)=>{ for(let z=0;z<h;z++)for(let x=0;x<w;x++)put(x,z,hash(x>>1,z>>1,2101)<.1?CLOTHL:CLOTH); draw(put,w,h); });
 const FOUND=[112,82,56], CAST=[214,204,180], FOUNDD=[84,60,40], CASTD=[184,174,150];
-function lucy(x,y){ SHARED.PNAME='Lucy'; const r=rect(x,y,[0,1],.9,.9), Z=14, H=46, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[60,56,52]}), P=part(B,r,Z), o=.4;
+function lucy(x,y){ '@later'; SHARED.PNAME='Lucy'; const r=rect(x,y,[0,1],.9,.9), Z=14, H=46, B=glassCase(r,Z,H,{cab:[52,50,48],floor:[60,56,52]}), P=part(B,r,Z), o=.4;
   const pc=(f)=>f?FOUND:CAST, ribs=(s,a,z)=>Math.floor(z)%2?null:(a%3<1?CASTD:FOUND);
   for(const [sx,f] of [[-1,1],[1,0]]){ const X=(a,b)=>sx<0?[-b,-a]:[a,b];
     P(...X(.02,.07),o,o+.1,0,1,pc(f)); P(...X(.03,.05),o+.03,o+.06,1,9,pc(f)); P(...X(.04,.06),o+.03,o+.06,9,13,pc(f)); P(...X(.055,.075),o+.03,o+.06,13,17,pc(f));
@@ -996,14 +996,14 @@ function lucy(x,y){ SHARED.PNAME='Lucy'; const r=rect(x,y,[0,1],.9,.9), Z=14, H=
   P(-.13,.13,o+.03,o+.05,27,28,CAST);
   P(-.05,.05,o-.03,o+.08,28,33,CAST,(s,a,z)=>s==='f'&&Math.floor(z)===2&&Math.abs(Math.abs(a-1.2)-.6)<.4?[40,36,32]:CAST); P(-.04,.04,o-.03,o+.03,27,29,FOUND);
   return prop(B); }
-function laetoli(x,y){ SHARED.PNAME='Laetoli footprints'; const W=3.2, r=rect(x,y,[0,1],W,1.2), Z=12, H=8, B=glassCase(r,Z,H,{cab:[52,50,48]});
+function laetoli(x,y){ '@later'; SHARED.PNAME='Laetoli footprints'; const W=3.2, r=rect(x,y,[0,1],W,1.2), Z=12, H=8, B=glassCase(r,Z,H,{cab:[52,50,48]});
   const ASH=[150,142,128], ASHD=[110,102,90], ASHL=[170,162,148];
   B.push(fb(r,.02,.98,.06,.94,Z,Z+1,ASH,null,(t,d,X,Y)=>{ const u=t*W, v=d*1.2, n=hash(Math.floor(u*24),Math.floor(v*24),2103);
       for(const [vc,s0] of [[.42,0],[.78,.2]]){ const k=Math.round((u-s0)/.42), uc=s0+k*.42, vv=vc+(k&1?.06:-.06), du=(u-uc)/.11, dv=(v-vv)/.045;
         if(du*du+dv*dv<1)return du>.5?ASHD:sh(ASHD,1.08); if(Math.abs(u-uc-.13)<.03&&Math.abs(v-vv)<.05)return ASHD; }
       return n<.1?ASHD:n>.92?ASHL:ASH; },{foot:0}));
   return prop(B); }
-function handAxes(x,y){ SHARED.PNAME='hand axes'; const r=rect(x,y,[0,1],.9,.6), Z=30, H=26;
+function handAxes(x,y){ '@later'; SHARED.PNAME='hand axes'; const r=rect(x,y,[0,1],.9,.6), Z=30, H=26;
   const back=board(Math.round(.9*FP),H-2,(put,W,h)=>{ const cx=W*.62, cz=h/2; for(let z=0;z<h;z++)for(let q=0;q<W;q++){ const dx=(q+.5-cx)/7, dz=(z+.5-cz)/10; if(dx*dx+dz*dz*(dz>0?1.6:.7)>1)continue;
       const s=Math.floor(cvNoise(q/2.5,z/2.5,2105)*5); put(q,z,[[150,138,120],[128,116,98],[168,156,138],[110,100,86],[140,128,110]][s]); } });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)}), LAVA=[126,116,102];
@@ -1011,7 +1011,7 @@ function handAxes(x,y){ SHARED.PNAME='hand axes'; const r=rect(x,y,[0,1],.9,.6),
   pin(.3); B.push(fb(r,.3-.13/.9,.3+.13/.9,.47,.53,Z+2,Z+8,LAVA,(s,t,z,len)=>{ const a=t*len*FP, m=len*FP/2, w=(z<2?.6:1-(z-2)/5)*m; if(Math.abs(a-m)>w)return null; return hash(Math.floor(a),Math.floor(z),2107)<.35?[104,96,84]:LAVA; },()=>null,{foot:0}));
   pin(.62); B.push(fb(r,.62-.05/.9,.62+.05/.9,.46,.54,Z+2,Z+5,[140,124,100],(s,t,z)=>z>2&&t>.5?[110,98,80]:[140,124,100],()=>[152,136,110],{foot:0}));
   return prop(B); }
-function skulls(x,y){ SHARED.PNAME='four skulls'; const W=2.4, r=rect(x,y,[0,1],W,.6), Z=26, H=30;
+function skulls(x,y){ '@later'; SHARED.PNAME='four skulls'; const W=2.4, r=rect(x,y,[0,1],W,.6), Z=26, H=30;
   const back=board(Math.round(W*FP),H-2,(put,w)=>{ line(put,4,6,w-5,6,[200,190,160],1); for(let i=0;i<=3;i++)line(put,4+i*(w-9)/3,4,4+i*(w-9)/3,8,[200,190,160],1); });
   const B=glassCase(r,Z,H,{cab:[52,50,48],back:MUK.plane(r,.86,.9,Z,H-2,back)}), P=part(B,r,Z+3);
   const sk=(cx,w,d,h,brow,col)=>{ const cd=col===FOUND?FOUNDD:CASTD; B.push(fb(r,.5+(cx-.012)/W,.5+(cx+.012)/W,.45,.55,Z,Z+3,[40,40,42],null,()=>[50,50,52],{foot:0}));
@@ -1021,7 +1021,7 @@ function skulls(x,y){ SHARED.PNAME='four skulls'; const W=2.4, r=rect(x,y,[0,1],
   return prop(B); }
 function mammoth(x,y){ SHARED.PNAME='woolly mammoth'; const S=MUSCAN.mammoth, r=rect(x,y,[0,1],S.W/FP+.5,S.D/FP+.5), Z=8, B=[plinth(r,Z,[36,34,34],{top:[46,44,42]})];
   return prop(B.concat(MUK.scanBoxes('mammoth',rect(x,y,r.f,S.W/FP,S.D/FP),Z))); }
-function meteorite(x,y){ SHARED.PNAME='Gibeon meteorite'; const r=rect(x,y,[0,1],.7,.7), Z=26, B=[plinth(r,Z,[96,94,92])], P=part(B,r,Z);
+function meteorite(x,y){ '@later'; SHARED.PNAME='Gibeon meteorite'; const r=rect(x,y,[0,1],.7,.7), Z=26, B=[plinth(r,Z,[96,94,92])], P=part(B,r,Z);
   const FE=[78,72,66], FED=[52,48,44], FEL=[150,150,154], skin=(s,a,z)=>{ if(s==='f'&&z>1&&z<8&&a>2&&a<13){ const u=Math.floor(a), zz=Math.floor(z); return (u+zz)%5===0||(u-zz+40)%5===0||zz%4===0?[124,128,134]:[176,180,186]; }
     return hash(Math.floor(a/2),Math.floor(z/2),2111)<.3?FED:FE; };
   P(-.3,.3,.14,.56,0,6,FE,skin); P(-.24,.26,.18,.52,6,9,FE,skin,(u,v)=>Math.hypot(u,v-.35)<.12?FEL:hash(Math.floor(u*24),Math.floor(v*24),2113)<.3?FED:FE); P(-.12,.14,.24,.44,9,10,FE,skin,()=>FEL);
@@ -1064,15 +1064,15 @@ const LBLD=[{id:'ldungeon',...CASTLE.hall,st:1}], CATALOG={}, CAT_INFO={}, CAT_D
 const {DGP,dgnLit,DGN,dgnWeb,dgnIvy,dgnRidge,dgnFoot,dgnStone,dgnDamp,dungeonWall,dungeonFloorCol}=dgnRoom(LBLD);
 const KPP={ash:[[138,130,116],[150,142,126],[144,138,128],[158,148,130],[132,126,116]],mortar:[104,98,88],trim:[184,174,150],trimD:[160,150,128],dark:[16,14,18],
   moss:[74,92,52],mossD:[56,74,44],mould:[96,100,84],lichen:[156,152,112],lead:[96,104,110],leadL:[112,120,126]};
-function castleStone(u,z,seed){ const j=Math.floor(z/12), zz=z-j*12, L=20+Math.floor(hash(j,1,seed)*15), o=hash(j,0,seed)*L, k=Math.floor((u+o)/L), uu=(u+o)-k*L;
+function castleStone(u,z,seed){ '@later'; const j=Math.floor(z/12), zz=z-j*12, L=20+Math.floor(hash(j,1,seed)*15), o=hash(j,0,seed)*L, k=Math.floor((u+o)/L), uu=(u+o)-k*L;
   if(zz<1||uu<1)return KPP.mortar;
   let c=KPP.ash[Math.floor(hash(j,k,seed+1)*5)]; if(zz>=11)c=sh(c,1.08); else if(zz<2)c=sh(c,.9);
   const g=hash(Math.floor(u),Math.floor(z),seed+2); if(g<.06)c=sh(c,.88); else if(g>.97)c=sh(c,1.07); return c; }
-function castleWeather(c,u,z,seed){ const s=cvNoise(u/9,z/150,seed+7); if(s>.64)c=sh(c,1-(s-.64)*.9);
+function castleWeather(c,u,z,seed){ '@later'; const s=cvNoise(u/9,z/150,seed+7); if(s>.64)c=sh(c,1-(s-.64)*.9);
   if(hash(Math.floor(u/2),Math.floor(z/2),seed+8)<.004)return KPP.lichen;
   if(z<30){ const p=(30-z)/30, n=hash(Math.floor(u/2),Math.floor(z/2),seed+9); if(n<p*p*.5)return n<p*.1?KPP.moss:KPP.mossD; if(n>1-p*.15)return KPP.mould; c=sh(c,1-p*.22); }
   return c; }
-function castleArch(du,z,zs,r,P){ const a=Math.abs(du), w=6;
+function castleArch(du,z,zs,r,P){ '@later'; const a=Math.abs(du), w=6;
   if(z>=zs){ const d=Math.hypot(du,z-zs); if(d<r)return P.dark; if(d>=r+w)return null; const t=Math.atan2(z-zs,du)/(Math.PI/9), k=Math.floor(t); return t-k<.1||d>=r+w-1?P.mortar:k&1?P.a:P.b; }
   if(a>=r&&a<r+w){ const j=Math.floor(z/12); return z-j*12<1?P.mortar:(j&1)?P.a:P.b; }
   return null; }
@@ -1107,7 +1107,7 @@ KMK.drum=(cx,cy,r,H,seed=0)=>{ SHARED.PNAME='drum tower'; const B=[], sd=4400+se
   const n=Math.max(8,Math.round(2*Math.PI*r/.85)); for(let i=0;i<n;i+=1){ if(i&1)continue; const a=i/n*2*Math.PI, mx=cx+Math.cos(a)*(r-.22), my=cy+Math.sin(a)*(r-.22);
     B.push(sided({x0:mx-.2,y0:my-.2,x1:mx+.2,y1:my+.2,z0:H,z1:H+26,c:C.ash[1],foot:0,top:kTop,fs:(nx,ny,X,Y,zr,k)=>face(X,Y,zr+H,k)})); }
   const q=r*.72; return prop(B,null,{solids:[{x0:cx-q,y0:cy-r,x1:cx+q,y1:cy+r},{x0:cx-r,y0:cy-q,x1:cx+r,y1:cy+q}]}); };
-KMK.gate=(gx,wy,H)=>{ SHARED.PNAME='gatehouse'; const y0=wy-1.1, y1=wy+.5, w=.65, sd=4800, ps=[];
+KMK.gate=(gx,wy,H)=>{ '@later'; SHARED.PNAME='gatehouse'; const y0=wy-1.1, y1=wy+.5, w=.65, sd=4800, ps=[];
   const arch=(nx,ny,u,z)=>ny>0||ny<0?castleArch(u-gx*24,z,104,15.6,KARCH.out):null;
   const leaf=(x0,x1)=>sided({x0,y0:y0+.05,x1,y1:y1-.05,z0:0,z1:100,c:DGP.oak,foot:1,top:()=>DGP.oakD,fs:(nx,ny,X,Y,z,k)=>{ const u=(nx?Y:X)*24; if([12,48,84].some(b=>z>=b&&z<b+4))return sh(z-Math.floor(z)<.5&&Math.floor(u)%6===0?DGP.ironL:DGP.iron,k); return sh(Math.floor(u)%7===0?DGP.oakD:hash(Math.floor(u),Math.floor(z/3),4801)<.15?DGP.oakL:DGP.oak,k); }});
   for(const [a,b,l0,l1] of [[gx-.9,gx-w,gx-w,gx-w+.08],[gx+w,gx+.9,gx+w-.08,gx+w]]){ const B=[kb(a,y0,b,y1,0,H,sd,{},arch),leaf(l0,l1)]; merlons(B,'x',y1-.3,y1,a,b,H,sd); ps.push(prop(B,null,{solids:[{x0:Math.min(a,l0),y0,x1:Math.max(b,l1),y1}]})); }
@@ -1538,13 +1538,13 @@ SHARED.BODB={};
   const wallPt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*.1)]:[X(w.at+s*.1),Y(z),Z(a)];
   const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x8fa6b8,side:THREE.DoubleSide}); glassIn.userData.keep=true;
   SHARED.BODB.tick=()=>{ if(SHARED.BODB.SG)glassIn.color.setHex(CLOCK.dark()?0x141a24:0x8fa6b8); };
-  const wallF=(w,inn)=>{ '@later'; const as=new Set([w.a0,w.a1]), zs=new Set([0,w.H]), kind='W'+w.id;
+  const wallF=(w,inn)=>{ const as=new Set([w.a0,w.a1]), zs=new Set([0,w.H]), kind='W'+w.id;
     for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
     const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
     for(const s of [-1,1]){ if((!w.outer||s===w.inS)!==inn)continue; for(let i=0;i+1<A.length;i++)for(let j=0;j+1<Zs.length;j++){ const a0=A[i], a1=A[i+1], z0=Zs[j], z1=Zs[j+1];
       if(w.holes.some(h=>(a0+a1)/2>h.a0&&(a0+a1)/2<h.a1&&(z0+z1)/2>h.z0&&(z0+z1)/2<h.z1))continue;
       SHARED.BOD.bq(wallPt(w,s,a0,z0),wallPt(w,s,a1,z0),wallPt(w,s,a1,z1),wallPt(w,s,a0,z1),SHARED.BOD.faceTex((a1-a0)*24,z1-z0,(ii,jj)=>SHARED.BOD.C(paint(w,s,a0+(ii+.5)/24,z1-jj-.5))),kind); } } };
-  const wallR=w=>{ '@later'; const kind='W'+w.id, pt=(a,z,o)=>w.ax==='x'?[X(a),Y(z),Z(w.at+o)]:[X(w.at+o),Y(z),Z(a)], fr=(P,len,hg,c)=>SHARED.BOD.bq(...P,SHARED.BOD.faceTex(Math.max(1,len*24),Math.max(1,hg),()=>c),kind);
+  const wallR=w=>{ const kind='W'+w.id, pt=(a,z,o)=>w.ax==='x'?[X(a),Y(z),Z(w.at+o)]:[X(w.at+o),Y(z),Z(a)], fr=(P,len,hg,c)=>SHARED.BOD.bq(...P,SHARED.BOD.faceTex(Math.max(1,len*24),Math.max(1,hg),()=>c),kind);
     fr([pt(w.a0,w.H,-.1),pt(w.a1,w.H,-.1),pt(w.a1,w.H,.1),pt(w.a0,w.H,.1)],w.a1-w.a0,5,COPE);
     for(const h of w.holes){ for(const a of [h.a0,h.a1])fr([pt(a,h.z0,-.1),pt(a,h.z0,.1),pt(a,h.z1,.1),pt(a,h.z1,-.1)],.2,h.z1-h.z0,SHARED.BOD.FRAME);
       fr([pt(h.a0,h.z1,-.1),pt(h.a1,h.z1,-.1),pt(h.a1,h.z1,.1),pt(h.a0,h.z1,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME); if(h.z0>0)fr([pt(h.a0,h.z0,-.1),pt(h.a1,h.z0,-.1),pt(h.a1,h.z0,.1),pt(h.a0,h.z0,.1)],h.a1-h.a0,5,SHARED.BOD.FRAME);
@@ -1643,9 +1643,9 @@ SHARED.BODB={};
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   SHARED.BODB.roof=BATCH.all(KINDS,'R');
   { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
-  const goods=()=>{ '@later'; const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
+  const goods=()=>{ const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
-      for(const [k,n,...args] of items){ if(last&&last!==k)a+=.04; last=k;
+      for(const [k,n,...args] of items){ if(k!=='catfood'&&k!=='fishfood')continue; if(last&&last!==k)a+=.04; last=k;   // only the cat's and the fish's food stay (owner, 5 Nov 2026)
         for(let i=0;i<n;i++){ const g=GOOD[k](...args), e=g.parts.map(q=>q.t==='box'?[q.h[0],q.h[1]]:[q.r,q.r]), w=Math.max(...e.map(v=>v[0])), d=Math.max(...e.map(v=>v[1]));
           if(a+2*w>a1-.06)return; const fr=f[0]+f[1]>0?(along?p.x1:p.y1)-.04-d:(along?p.x0:p.y0)+.04+d;
           list.push({g,k,x:along?fr:a+w,y:along?a+w:fr,z:zpx+.05,yaw:yaw+(hash(list.length,k.length,5)-.5)*.12}); a+=2*w+.015; } } };
@@ -1655,9 +1655,9 @@ SHARED.BODB={};
     lay('wl1',[1,0],SZ,GLAY.aisle1a); lay('wl2',[1,0],SZ,GLAY.aisle1b); lay('wr1',[-1,0],SZ,GLAY.aisle2a); lay('wb3',[0,1],SZ,GLAY.aisle2b); lay('wl3',[1,0],SZ,GLAY.aisle2a);
     lay('wb1',[0,1],SZ,GLAY.back1); lay('wb2',[0,1],SZ,GLAY.back2); lay('wm1',[1,0],SZ,GLAY.mid1); lay('win1',[0,1],SZ,GLAY.win1); lay('win2',[0,1],SZ,GLAY.win2);
     { const c=O.counter, F=SHARED.BOD.food, z=30; for(let i=0;i<3;i++)list.push({g:GOOD.fishfood(),k:'fishfood',x:F.x-.08+i*.16*(i%2?1:.5),y:F.y+(i===2?.15:0),z,yaw:0});
-      list.push({g:GOOD.sack(),k:'sack',x:c.x0-.45,y:c.y0+.5,z:0,yaw:.15},{g:GOOD.sack([236,224,200]),k:'sack',x:c.x0-.45,y:c.y0+1.15,z:0,yaw:-.1});
+
       const along=c.y1-c.y0>c.x1-c.x0, cx=(c.x0+c.x1)/2, cy=(c.y0+c.y1)/2; let a=(along?c.y0:c.x0)+.95;
-      for(const [k,n,...args] of GLAY.counter)for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
+      for(const [k,n,...args] of []                 )for(let i=0;i<n;i++){ list.push({g:GOOD[k](...args),k,x:along?cx-.12+i*.02:a,y:along?a:cy,z,yaw:along?Math.PI/2:0}); a+=(k==='bananas'?.36:.09); } }
     const brands=[], bidx=new Map(); for(const it of list)for(const pa of it.g.parts)if(pa.brand){ const bc=pa.bc||GR, key=pa.brand+'|'+bc.join(); if(!bidx.has(key)){ bidx.set(key,brands.length+1); brands.push([pa.brand,bc]); } pa.bi=bidx.get(key); }
     const AW=1024, CW=128, CH=64, COLS=AW/CW, AH=Math.max(64,Math.ceil((brands.length+1)/COLS)*CH), acv=document.createElement('canvas'); acv.width=AW; acv.height=AH; const ag=acv.getContext('2d'); ag.fillStyle='#fff'; ag.fillRect(0,0,AW,AH);
     brands.forEach(([name,bc],i)=>{ const n=i+1, x=(n%COLS)*CW, y=Math.floor(n/COLS)*CH, lum=bc[0]*.3+bc[1]*.59+bc[2]*.11; ag.fillStyle=`rgb(${bc[0]|0},${bc[1]|0},${bc[2]|0})`; ag.fillRect(x,y,CW,CH); ag.fillStyle=lum>150?'rgba(255,255,255,.45)':'rgba(255,255,255,.22)'; ag.fillRect(x+5,y+14,CW-10,36); ag.strokeStyle=lum>150?'rgba(0,0,0,.35)':'rgba(255,255,255,.4)'; ag.lineWidth=2; ag.strokeRect(x+5,y+14,CW-10,36);
@@ -1710,7 +1710,7 @@ SHARED.BODB={};
     add(B.x1-1.05,B.y0+5.4,62,[1,.62,.32],3.5,'warm'); add(SB.x0+1.5,SB.y1-.35,64,[1,.22,.32],4,'neon'); };
   // the back room (owner, 28 Oct 2026): its door locked (only the Fox has the key), its floor, things and lamp drawn only while you are in it; from the shop a dark ceiling over it
   const backOf=p=>/^of-/.test(p.key||''), inBack=()=>SHARED.BOD.inside(pos.x,pos.z)&&pos.z<Z(BODOFF)===(Z(SB.y0)<Z(BODOFF));
-  SHARED.BODB.build=()=>{ '@later'; const SG=new THREE.Group(); SG.name='bodega-in'; scene.add(SG); SHARED.BODB.SG=SG; const BG=new THREE.Group(); BG.name='bodega-back'; SG.add(BG); SHARED.BODB.BG=BG;
+  SHARED.BODB.build=()=>{ const SG=new THREE.Group(); SG.name='bodega-in'; scene.add(SG); SHARED.BODB.SG=SG; const BG=new THREE.Group(); BG.name='bodega-back'; SG.add(BG); SHARED.BODB.BG=BG;
     const g=SHARED.BOD.grounds.find(q=>q.id==='shop'), O=Object.values(SHARED.BOD.O);
     const P=ROOMS.part(SG,()=>{ for(const w of SHARED.BOD.WALLS){ wallF(w,true); wallR(w); }
       if(g)flat(g.x0,BODOFF,g.x1,g.y1,g.z,g.col,'G',!g.bld);
@@ -1731,16 +1731,16 @@ SHARED.BODB={};
       spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',shift:[X(m0)-X(mS),Z(B0.y1)-Z(SB.y1)]}; }
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
-  const tex=(k,pose)=>{ const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);
+  const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);
     for(let i=0;i<Q.w*Q.h;i++){ const p=Q.px[i]; if(!p)continue; im.data[i*4]=p[0]; im.data[i*4+1]=p[1]; im.data[i*4+2]=p[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const T=new THREE.CanvasTexture(c); T.magFilter=T.minFilter=THREE.NearestFilter; T.generateMipmaps=false; T.colorSpace=THREE.SRGBColorSpace; t={T,w:Q.w,h:Q.h,oy:Q.oy}; PICS.set(key,t); return t; }; BF.pic=tex;
   // the body and wings are the Drive's butterfly (data/bfly.json); each kind's own wing picture is painted over the wings, top and underside
   const BD=__DATA__("data/bfly.json"), F32=s=>new Float32Array(B64(s).buffer), GEO={}, WT=new Map();
-  const geos=()=>{ if(GEO.body)return GEO; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(F32(BD.body.p),3)); g.setAttribute('color',new THREE.BufferAttribute(B64(BD.body.c),3,true)); g.setIndex(new THREE.BufferAttribute(U16(BD.body.i),1)); g.computeVertexNormals(); g.computeBoundingBox();
+  const geos=()=>{ '@later'; if(GEO.body)return GEO; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(F32(BD.body.p),3)); g.setAttribute('color',new THREE.BufferAttribute(B64(BD.body.c),3,true)); g.setIndex(new THREE.BufferAttribute(U16(BD.body.i),1)); g.computeVertexNormals(); g.computeBoundingBox();
     const w=new THREE.BufferGeometry(), P=F32(BD.wing.p), uv=new Float32Array(P.length/3*2); for(let i=0;i<P.length/3;i++){ uv[i*2]=Math.max(0,P[i*3+1])/BD.a; uv[i*2+1]=(P[i*3+2]-BD.f[0])/(BD.f[1]-BD.f[0]); }
     w.setAttribute('position',new THREE.BufferAttribute(P,3)); w.setAttribute('uv',new THREE.BufferAttribute(uv,2)); w.setIndex(new THREE.BufferAttribute(U16(BD.wing.i),1)); w.computeVertexNormals();
     let nx=0; const N=w.attributes.normal.array; for(let i=0;i<N.length;i+=3)nx+=N[i]; GEO.out=nx>0; GEO.body=g; GEO.wing=w; GEO.mat=new THREE.MeshLambertMaterial({vertexColors:true}); return GEO; };
-  const wingTex=k=>{ let t=WT.get(k); if(t)return t; const Q=bfPic(k,32,0), under=BF_KINDS[k][7], hs=Q.w/2, ys=.72, x0=Math.ceil(Q.w/2+.07*hs);
+  const wingTex=k=>{ '@later'; let t=WT.get(k); if(t)return t; const Q=bfPic(k,32,0), under=BF_KINDS[k][7], hs=Q.w/2, ys=.72, x0=Math.ceil(Q.w/2+.07*hs);
     let y0=Q.h, y1=-1, x1=x0; for(let y=0;y<Q.h;y++)for(let x=x0;x<Q.w;x++)if(Q.px[y*Q.w+x]){ y0=Math.min(y0,y); y1=Math.max(y1,y); x1=Math.max(x1,x); }
     const W=x1-x0+1, H=y1-y0+1, top=[], und=[];
     for(let y=0;y<H;y++)for(let x=0;x<W;x++){ let p=Q.px[(y+y0)*Q.w+x+x0];
@@ -1751,14 +1751,14 @@ SHARED.BODB={};
     const G=geos(), A=new THREE.MeshLambertMaterial({map:mk(top),side:G.out?THREE.BackSide:THREE.FrontSide}), U=new THREE.MeshLambertMaterial({map:mk(und),side:G.out?THREE.FrontSide:THREE.BackSide});
     t=[A,U]; WT.set(k,t); return t; };
   // one butterfly, its wings open by a (0 shut upright, about 1.45 flat), scaled so it spans w
-  BF.model=(k,w)=>{ const G=geos(), [A,U]=wingTex(k), g=new THREE.Group(), body=new THREE.Group(), s=w/BD.span; body.scale.setScalar(s); body.position.y=-G.body.boundingBox.min.y*s; g.add(body);
+  BF.model=(k,w)=>{ '@later'; const G=geos(), [A,U]=wingTex(k), g=new THREE.Group(), body=new THREE.Group(), s=w/BD.span; body.scale.setScalar(s); body.position.y=-G.body.boundingBox.min.y*s; g.add(body);
     body.add(new THREE.Mesh(G.body,G.mat)); const wing=m=>{ const o=new THREE.Group(); o.add(new THREE.Mesh(G.wing,A),new THREE.Mesh(G.wing,U)); return o; }, L=wing(), R=wing(), RG=new THREE.Group(); RG.scale.x=-1; RG.add(R); body.add(L,RG);
     g.traverse(o=>{ if(o.isMesh)o.userData.shared=true; }); g.userData.open=a=>{ L.rotation.z=-a; R.rotation.z=-a; }; g.userData.open(1.2); return g; };
-  BF.add=(k,perches)=>{ const span=BF_KINDS[k][3]/1000*2/.84*TILE, g=BF.model(k,span);
+  BF.add=(k,perches)=>{ '@later'; const span=BF_KINDS[k][3]/1000*2/.84*TILE, g=BF.model(k,span);
     const b={k,name:BF_KINDS[k][0],g,open:g.userData.open,a:.1,perches,at:0,to:0,t0:0,dur:0,until:2+Math.random()*6,span,t:Math.random()*10,pose:2};
     b.open(.1); g.position.set(...perches[0]); scene.add(g); BF.list.push(b); return b; };
   const OPEN=[1.45,.75,.08];
-  BF.tick=dt=>{ const dark=CLOCK.dark();
+  BF.tick=dt=>{ '@later'; const dark=CLOCK.dark();
     for(const b of BF.list){ b.t+=dt; const t=b.t; let want=OPEN[2], P;
       if(b.dur&&t<b.t0+b.dur){ const u=(t-b.t0)/b.dur, A=b.perches[b.at], Cc=b.perches[b.to], dx=Cc[0]-A[0], dz=Cc[2]-A[2], L=Math.hypot(dx,dz)||1, hump=Math.sin(Math.PI*u)*.35*TILE*(b.hi||1), zig=Math.sin(u*Math.PI*5)*.06*TILE;
         P=[A[0]+dx*u+zig*dz/L,A[1]+(Cc[1]-A[1])*u+hump+Math.sin(t*9)*.05,A[2]+dz*u-zig*dx/L]; b.a=.25+1.2*(.5+.5*Math.sin(t*19)); want=null; b.g.rotation.y=Math.atan2(dx,dz); }

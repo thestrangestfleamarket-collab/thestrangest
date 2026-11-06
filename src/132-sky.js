@@ -20,7 +20,7 @@ import {HEMI} from './064-map-post.js';
   const SUN=[[-2,0xff4a20],[0,0xff6428],[3,0xff8c3a],[8,0xffc070],[20,0xfff0d0],[90,0xfff8ee]];
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
-    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
+    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
     uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
   // THE CUMULUS: a field of lumpy 3D clouds (puffs heaped on a flat base) baked once into a cube the dome reads (each pixel its normal, its height in the cloud, its cover), lit live by the sun in cel steps; the field turns very slowly. SKY.cumulus makes the same clouds as meshes (the clouds below your landing, 141c).
   const CUMD='uniform vec3 uSunDir,uSunCol,uCldC,uZ,uGrey,uGr,uLift; uniform float uSunK,uCldK,uCL,uCD,uGreyK,uCool,uLiftK;';
@@ -56,12 +56,13 @@ import {HEMI} from './064-map-post.js';
   U.uCum={value:CU.rt.texture}; SKY.CU=CU;
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK; uniform samplerCube uCum; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK; uniform samplerCube uCum; varying vec3 vD;
       ${CUMD}
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
       ${CUMG}
-      vec3 moon(vec3 c,vec3 d,float k){ float a=acos(clamp(dot(d,uMoonDir),-1.,1.)), disc=1.-step(uMoonR,a), hr=(step(a,uMoonR*2.3)+step(a,uMoonR*4.))*.5*(1.-disc); c=mix(c,vec3(.34,.05,.04),hr*.45*uBlood*k); return mix(c,uMoonCol,disc*k); }
+      vec3 moon(vec3 c,vec3 d,float k){ float a=acos(clamp(dot(d,uMoonDir),-1.,1.)), disc=1.-step(uMoonR,a), hr=(step(a,uMoonR*2.3)+step(a,uMoonR*4.))*.5*(1.-disc); c=mix(c,vec3(.34,.05,.04),hr*.45*uBlood*k);
+        vec3 t1=normalize(cross(uMoonDir,vec3(0.,1.,0.))), t2=cross(uMoonDir,t1); vec2 q=vec2(dot(d,t1),dot(d,t2))/uMoonR; float ph=uMoonPh*6.2832, lit=step(0.,dot(vec3(q,sqrt(max(0.,1.-dot(q,q)))),vec3(sin(ph),0.,-cos(ph)))); return mix(c,mix(uMoonCol*.12,uMoonCol,lit),disc*k); }
       vec3 bt(vec3 c,float el){ return mix(c,c*vec3(1.4,.42,.38)+vec3(.05,.003,0.),uBlood*(.3+.7*(1.-smoothstep(0.,.55,el)))); }
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
@@ -108,7 +109,7 @@ import {HEMI} from './064-map-post.js';
     U.uSunK.value=cl((e+1.5)/1.5)*(1-.9*cl((W.cloud-.3)/.6));
     { const n=CU.want(U.uCov.value+U.uGap.value); if(n!==CU.n)CU.bake(n); U.uCumA.value=U.uT.value*1.5e-4; U.uCD.value=cl((e+5)/10);   // the field turns about once in twelve hours
       const sv=CLOCK.sunV, cv=CU.cover(sv.x,sv.y,sv.z,U.uCumA.value); SKY.sunCover+=(cv-SKY.sunCover)*Math.min(1,dt*2.5); }
-    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars)); U.uGap.value=SC.gap; U.uSkyK.value=Math.max(SC.sky,cl((e-3)/10)*(1-cl((W.cloud-.4)/.5))*.85); U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
+    U.uMoonDir.value.copy(CLOCK.moonV); const night=cl((-e-4)/6), ml=CLOCK.moonLit(); U.uMoonPh.value=CLOCK.moonPhase(); U.uMoonK.value=night*(1-.8*cl((W.cloud-.3)/.6)); U.uStar.value=night*(1-cl(W.cloud*1.4)*(1-SC.stars))*(1-.35*ml); U.uGap.value=SC.gap; U.uSkyK.value=Math.max(SC.sky,cl((e-3)/10)*(1-cl((W.cloud-.4)/.5))*.85); U.uBlood.value=SC.blood*night; U.uMoonR.value=.03+.025*SC.blood; U.uMoonCol.value.setRGB(.86,.89,.95).lerp(MB,SC.blood); if(SC.blood&&up)HEMI.color.lerp(MB,.55*SC.blood*night);
     U.uGrey.value.setRGB(.55,.58,.62).multiplyScalar(.25+.75*day); if(W.storm)U.uGrey.value.multiplyScalar(1-.45*W.storm); U.uGreyK.value=cl(W.cloud*W.cloud*.85);
     if(W.flash&&up){ U.uGrey.value.setRGB(.85,.88,.95); U.uGreyK.value=Math.max(U.uGreyK.value,.9); }
     if(scene.fog){ U.uFogC.value.copy(scene.fog.color); U.uFogK.value=cl(W.fog*1.3); } else U.uFogK.value=0; },'132-sky');

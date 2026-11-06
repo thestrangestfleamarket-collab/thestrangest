@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, PARK, pos, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {OUT, QS, SYS, TILE} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 import {TPANE} from './087dz-tpane.js';
@@ -14,10 +15,15 @@ Object.assign(WX,{hold:null,now:null});
     const pres=t=>st(noise(t/2600,11,3),1.6), moist=t=>cl(st(noise(t/1900,23,3),1.6)*.85+dew(t)), p=pres(T), dp=(pres(T+60)-pres(T-60))*8;
     const cloudAt=t=>cl(moist(t)*1.4-pres(t)*1.0+st(noise(t/400,37,2),1.2)*.45-.12), cloud=(cloudAt(T-30)+cloudAt(T-60)+cloudAt(T-90))/3;
     const rainAt=t=>cl((cloudAt(t)-.7)*3.5)*cl((moist(t)-.5)*3), fall=rainAt(T-15), storm=fall>.5&&p<.22?cl((.22-p)*6*fall):0;
-    const cold=st(noise(T/4300,71,2),1.6)<.12;
+    const cold=CLOCK.seasonOf(Math.floor(T/1440))==='winter'||st(noise(T/4300,71,2),1.6)<.12;
     const wind=cl(Math.abs(dp)*.9+st(noise(T/700,47,2),1.3)*.5-.2+noise(T/9,53,3)*.25*Math.abs(dp)+storm*.3), dir=noise(T/3000,41,2)*Math.PI*2;
     const night=h<6||h>20?1:h<8?(8-h)/2:h>18?(h-18)/2:0, fog=cl((moist(T)-.6)*3.5)*cl(1-wind*1.6)*(.3+.7*night)*(1-fall);
-    return {cloud,rain:cold?0:fall,snow:cold?fall:0,storm,wind,dir,fog,flash:storm>0&&hsh(Math.floor(T*10/7),61)<storm*.15}; };
+    return {cloud,rain:cold?0:fall,snow:cold?fall:0,storm,wind,dir,fog,flash:storm>0&&hsh(Math.floor(T*10/7),61)<storm*.15,cold}; };
+  // the forecast (4 Nov 2026, from Nevaland): the weather is a function of the minute, so what comes is read ahead; WX.kind names a weather, WX.tempC its temperature, WX.forecast() {now:{kind,temp}, next:{kind,inMin}|null, held} (next: the first different kind in the six hours ahead; none while the look holds the weather)
+  WX.kind=w=>w.storm>.3?'STORM':w.snow>.15?'SNOW':w.rain>.15?'RAIN':w.fog>.3?'FOG':w.cloud>.6?'CLOUDY':'CLEAR';
+  WX.tempC=(T,w)=>{ const h=(T%1440+1440)%1440/60, S=CLOCK.SEASONS[CLOCK.seasonOf(Math.floor(T/1440))]; w=w||WX.at(T); return Math.round(S.temp+5*Math.cos((h-15)/24*Math.PI*2)-6*w.cloud-4*(w.rain>.05?1:0)-(w.cold?8:0)); };
+  let fc=null, fcAt=-1; WX.forecast=()=>{ const t=T(); if(fc&&Math.abs(t-fcAt)<1&&fc.held===!!(WX.hold||WX.fix&&!WX.nat))return fc; fcAt=t; const held=!!(WX.hold||WX.fix&&!WX.nat), W=WX.now||WX.at(t), k=WX.kind(W); let next=null;
+    if(!held)for(let m=30;m<=360;m+=30){ const w=WX.at(t+m), kk=WX.kind(w); if(kk!==k){ next={kind:kk,inMin:m}; break; } } return fc={now:{kind:k,temp:WX.tempC(t,held?{...W,cold:CLOCK.season()==='winter'}:W)},next,held}; };
   const HOLDS={CLEAR:{cloud:.08,rain:0,snow:0,storm:0,wind:.15,dir:1,fog:0},CLOUDY:{cloud:.85,rain:0,snow:0,storm:0,wind:.35,dir:1,fog:0},RAIN:{cloud:.95,rain:.7,snow:0,storm:0,wind:.4,dir:1,fog:0},
     STORM:{cloud:1,rain:1,snow:0,storm:.8,wind:.9,dir:1,fog:0},SNOW:{cloud:.9,rain:0,snow:.7,storm:0,wind:.2,dir:1,fog:0},FOG:{cloud:.6,rain:0,snow:0,storm:0,wind:0,dir:1,fog:.7}};
   { const q=(QS.get('wx')||'').toUpperCase(); if(q==='NATURAL')WX.nat=1; else if(HOLDS[q])WX.hold=q; }
@@ -44,8 +50,9 @@ Object.assign(WX,{hold:null,now:null});
         const x=((ss[i*4]+wx*t/3+Math.sin(a)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.x, z=((ss[i*4+2]+wz*t/3+Math.cos(a*.7)*.4*TILE)%(2*RB)+3*RB)%(2*RB)-RB+pos.z; sp.set([x,SHARED.py+y,z],i*3); }
       sg.setDrawRange(0,ns); sg.attributes.position.needsUpdate=true; } },'131-weather');
   { const box=document.getElementById('awx'), P=box&&box.closest('[data-p]'); if(box){ const L={'AS THE LOOK':'LOOK',NATURAL:'NATURAL',...Object.fromEntries(Object.keys(HOLDS).map(k=>[k,k]))}, cur=()=>WX.hold||(WX.nat?'NATURAL':'LOOK');
-      const V=TPANE.live({wx:[cur,k=>{ if(k===cur())return; WX.hold=HOLDS[k]?k:null; WX.nat=k==='NATURAL'?1:0; ft=0; }]}); let mk=null;
-      const draw=()=>{ '@later'; mk=mk||TPANE.make(box).then(p=>{ p.addBinding(V,'wx',{label:'WEATHER',options:L}); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };
+      const SS={'AS THE DATE':'',SPRING:'spring',SUMMER:'summer',AUTUMN:'autumn',WINTER:'winter'}; CLOCK.seasonPick=QS.get('season')||SAVE.get('season')||'';
+      const V=TPANE.live({wx:[cur,k=>{ if(k===cur())return; WX.hold=HOLDS[k]?k:null; WX.nat=k==='NATURAL'?1:0; ft=0; }],season:[()=>CLOCK.seasonPick,k=>{ CLOCK.seasonPick=k; SAVE.set('season',k); fc=null; }]}); let mk=null;
+      const draw=()=>{ mk=mk||TPANE.make(box).then(p=>{ p.addBinding(V,'wx',{label:'WEATHER',options:L}); p.addBinding(V,'season',{label:'SEASON',options:SS}); return p; }).catch(e=>{ mk=null; throw e; }); return mk.then(p=>p.refresh()).catch(()=>{}); };
       for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
       new MutationObserver(()=>{ if(!P.hidden&&P.offsetParent)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); } }
   window.WX=WX; window.WXDBG=()=>WX.now; }

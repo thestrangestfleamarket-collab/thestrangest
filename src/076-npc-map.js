@@ -1,7 +1,7 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -90,7 +90,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
   Object.defineProperty(N,'home',{get:()=>st.home,set:v=>{ st.home=v&&{r:0,...v}; },enumerable:true}); HOMES.assign(st,N.key,o,free); N.walk={auto:!o.pick&&!o.brain,roam:!!o.roam,lane:LN,v:st.v};
   N.pick=()=>pick();
-  const pick=()=>{ '@later'; if(o.pick){ o.pick(st); return; } if(!o.roam&&HOMES.pick(st,free,LN))return; if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
+  const pick=()=>{ if(o.pick){ o.pick(st); return; } if(!o.roam&&HOMES.pick(st,free,LN))return; if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
   const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; };
@@ -124,7 +124,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(smOf()); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   N.selfSh=!o.noSelf;
-  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); NPCS.push(N); return N; }
+  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; return N; } NPCS.push(N); return N; }
 SYS.add('shadow',r=>{ for(const N of NPCS)if(N.selfSh)try{ N.shadowPass(r); }catch(e){ if(!N.shErr){ N.shErr=1; console.warn('NPC shadow',N.key,e); } } },'npc shadows');
 const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SHARED.BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:SHARED.BOD.ZS(-76.3),z1:Math.min(SHARED.BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
   CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],

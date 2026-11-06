@@ -1,9 +1,8 @@
-// THE BODIES: the Walker you play as, and bodies moved by his rig (each of its 15 bones takes the turn of the rig piece it stands for); you are the Walker or a body.playable one, picked on YOU's BODY row (BODIES.set); one of each walks main street.
+// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CHARS, NPCS, pos, VIS, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
-import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -25,15 +24,28 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       let r=0; for(const p of P)r=Math.max(r,p.distanceTo(c)); Sp.radius=r*2.2+1e-3;
       // and the body at rest carried by its hips (all a body is before it is first posed)
       const g=me.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); const H=PM.value[0]; G.copy(g.boundingSphere).applyMatrix4(H); return Sp.union(G); },set(){}}); me.userData.PM=PM; me.frustumCulled=true; };
+  // body.dq (your avatar): its two bones blended as dual quaternions, not matrices, so a limb turned far from its rest keeps its thickness (owner, 5 Nov 2026: "my shoulder vanishes when i raise my arm too high")
+  const DQ=`
+  vec4 mq(mat3 m){ float t=m[0][0]+m[1][1]+m[2][2], s;
+    if(t>0.){ s=sqrt(t+1.)*2.; return vec4((m[1][2]-m[2][1])/s,(m[2][0]-m[0][2])/s,(m[0][1]-m[1][0])/s,.25*s); }
+    if(m[0][0]>m[1][1]&&m[0][0]>m[2][2]){ s=sqrt(1.+m[0][0]-m[1][1]-m[2][2])*2.; return vec4(.25*s,(m[1][0]+m[0][1])/s,(m[2][0]+m[0][2])/s,(m[1][2]-m[2][1])/s); }
+    if(m[1][1]>m[2][2]){ s=sqrt(1.+m[1][1]-m[0][0]-m[2][2])*2.; return vec4((m[1][0]+m[0][1])/s,.25*s,(m[2][1]+m[1][2])/s,(m[2][0]-m[0][2])/s); }
+    s=sqrt(1.+m[2][2]-m[0][0]-m[1][1])*2.; return vec4((m[2][0]+m[0][2])/s,(m[2][1]+m[1][2])/s,.25*s,(m[0][1]-m[1][0])/s); }
+  vec4 qm(vec4 a,vec4 b){ return vec4(a.w*b.xyz+b.w*a.xyz+cross(a.xyz,b.xyz),a.w*b.w-dot(a.xyz,b.xyz)); }
+  mat4 dqm(mat4 A,mat4 B,float w){ float sa=length(A[0].xyz), sb=length(B[0].xyz); vec4 qa=mq(mat3(A)/sa), qb=mq(mat3(B)/sb); if(dot(qa,qb)<0.)qb=-qb;
+    vec4 da=.5*qm(vec4(A[3].xyz,0.),qa), db=.5*qm(vec4(B[3].xyz,0.),qb), q=qa*w+qb*(1.-w), d=da*w+db*(1.-w); float l=length(q); q/=l; d/=l;
+    float x=q.x,y=q.y,z=q.z,c=q.w, s=sa*w+sb*(1.-w); vec3 t=2.*(c*d.xyz-d.w*q.xyz+cross(q.xyz,d.xyz));
+    return mat4(vec4(1.-2.*(y*y+z*z),2.*(x*y+c*z),2.*(x*z-c*y),0.)*s,vec4(2.*(x*y-c*z),1.-2.*(x*x+z*z),2.*(y*z+c*x),0.)*s,vec4(2.*(x*z+c*y),2.*(y*z-c*x),1.-2.*(x*x+y*y),0.)*s,vec4(t,1.)); }`;
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
-    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`, AT_=`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`;
+    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
-      sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
-    mat.customProgramCacheKey=()=>'body'+NB;
-    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB;
-    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB;
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4(position,1.)).xyz;');
+      // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
+      sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
+    mat.customProgramCacheKey=()=>'body'+NB+CK+'b';
+    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
+    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
     return {me,PM}; }
 
@@ -69,38 +81,119 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  function pose(B,PM,body){ const S=body.S, KL=body.KL;
+  function chain(B,body){ const S=body.S, KL=body.KL;
     for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
       if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);
-      else{ const o=body.off[n]; M3.setFromMatrix4(ROT[o[0]]); OFV.set(o[1]*S,o[2]*S,o[3]*S).applyMatrix3(M3); POS[n].copy(POS[o[0]]).add(OFV); }
-      PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } }
+      else{ const o=body.off[n]; M3.setFromMatrix4(ROT[o[0]]); OFV.set(o[1]*S,o[2]*S,o[3]*S).applyMatrix3(M3); POS[n].copy(POS[o[0]]).add(OFV); } } }
+  // a body of other proportions than the rig's (body.contact: your avatar) touches the ground where the rig does: each frame its lowest point (a sole, a palm, its back
+  // in a roll) is set at the rig's lowest joint, with the difference they have standing; in the air it is as high off the ground as the rig (owner, 5 Nov 2026: cartwheels too high)
+  const lowOf=(PM,body)=>{ const g=body.GEO; if(!g||!g.attributes.position.count)return null; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity;
+    for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
+      const yy=(a[1]*w+c[1]*(1-w))*x+(a[5]*w+c[5]*(1-w))*y+(a[9]*w+c[9]*(1-w))*z+(a[13]*w+c[13]*(1-w)); if(yy<lo)lo=yy; } return lo; };
+  const rigLow=B=>{ let lo=Infinity; for(const k in B.J)if(B.J[k].y<lo)lo=B.J[k].y; return lo; };
+  const place=(PM,body,S)=>{ for(let i=0;i<NB;i++){ const n=BONES[i]; PM.value[i].copy(ROT[n]).scale(OFV.set(S,S,S)).setPosition(POS[n]); if(body.binv)PM.value[i].multiply(body.binv[i]); } };
+  // a body's own recorded walk (body.anim: your avatar's, Polyfork's Idle, Walk and Run; owner, 5 Nov 2026: "walking is very glitchy ... smooth leg movements", his pick: the
+  // clips with the feet on the ground): free on your feet, walking or running, its bones come from the clips, the stride by the ground you cover (no sliding), walk and run
+  // blended by the rig's run, idle as you stop; a held tool's arms stay the rig's, carried by the walking body; a move, a ride, climbing or swimming take the rig, crossfaded
+  const Q1=new THREE.Quaternion(), Q2=new THREE.Quaternion(), Q3=new THREE.Quaternion(), P1=new V3(), P2=new V3(), P3=new V3(), SC=new V3(), M4=new THREE.Matrix4(), O=new V3(), O2=new V3();
+  const PMX={value:BONES.map(()=>new THREE.Matrix4())}, PMR={value:BONES.map(()=>new THREE.Matrix4())};
+  const prep=A=>{ if(!A.ready){ for(const c of Object.values(A.clips)){ c.Q=Float32Array.from(c.q); c.P=Float32Array.from(c.p); } A.ready=true; } return A; };
+  const clipAt=(c,u,i,q,p)=>{ const f=((u%1)+1)%1*c.n, a=Math.floor(f)%c.n, b=(a+1)%c.n, t=f-Math.floor(f), A=(a*NB+i), Bq=(b*NB+i);
+    q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,t);
+    p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
+  const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead;
+  const clamp1=x=>x<0?0:x>1?1:x;
+  function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
+    const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
+    const stride=C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
+    S._mph=((S._mph||0)+d/k/stride)%1; S._mit=((S._mit||0)+dt/C.Idle.dur)%1;
+    for(let i=0;i<NB;i++){ clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
+      clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
+  // a held tool's arm: the rig's, moved so its shoulder is where the walking body's is
+  const ARM={L:[3,4,5],R:[6,7,8]};
+  const keepArms=(PM,PR,body)=>{ '@later'; for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
+      for(const j of ARM[side]){ PM.value[j].copy(PR.value[j]); PM.value[j].elements[12]+=O2.x; PM.value[j].elements[13]+=O2.y; PM.value[j].elements[14]+=O2.z; } } };
+  const blend=(PM,PA,t)=>{ for(let i=0;i<NB;i++){ PM.value[i].decompose(P1,Q1,SC); PA.value[i].decompose(P2,Q2,O); Q1.slerp(Q2,t); P1.lerp(P2,t); PM.value[i].compose(P1,Q1,SC); } };
+  // the feet on the actual ground (your avatar walking by its clips): each foot's ground under it, the hips lowered to the lower one, each leg bent (two bones) to put its foot there
+  const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
+  const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
+  const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
+  function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)
+    for(const s of ['L','R']){ const A=jointAt(PM,body,LEG[s][2],IKV[0]).applyMatrix4(Mw); h[s]=(ground(A.x,A.z)-gy)/sy; if(!isFinite(h[s])||!isFinite(gy)||Math.abs(h[s])>20)h[s]=0; }
+    const low=Math.min(0,h.L,h.R); if(Math.abs(h.L)<.05&&Math.abs(h.R)<.05)return;
+    for(let i=0;i<NB;i++)PM.value[i].elements[13]+=low;
+    for(const s of ['L','R']){ const dy=h[s]-low; if(dy<.05)continue; const [ti,si,fi]=LEG[s], H=jointAt(PM,body,ti,IKV[1]), K=jointAt(PM,body,si,IKV[2]), A=jointAt(PM,body,fi,IKV[3]);
+      const At=IKV[4].copy(A); At.y+=dy; const l1=K.distanceTo(H), l2=A.distanceTo(K), d=Math.min(l1+l2-1e-3,At.distanceTo(H));
+      const dir=IKV[5].subVectors(At,H).normalize(), pole=IKV[6].subVectors(K,H); pole.addScaledVector(dir,-pole.dot(dir)); if(pole.lengthSq()<1e-6)pole.set(0,0,1); pole.normalize();
+      const x=(l1*l1-l2*l2+d*d)/(2*d), yk=Math.sqrt(Math.max(0,l1*l1-x*x)), Kt=IKV[0].copy(H).addScaledVector(dir,x).addScaledVector(pole,yk);
+      IKQ.setFromUnitVectors(IKV[5].subVectors(K,H).normalize(),IKV[6].subVectors(Kt,H).normalize()); turnAbout(PM.value[ti],H,IKQ); turnAbout(PM.value[si],H,IKQ); turnAbout(PM.value[fi],H,IKQ);
+      const K2=jointAt(PM,body,si,IKV[1]), A2=jointAt(PM,body,fi,IKV[2]); IKQ.setFromUnitVectors(IKV[5].subVectors(A2,K2).normalize(),IKV[6].subVectors(At,K2).normalize()); turnAbout(PM.value[si],K2,IKQ);
+      const A3=jointAt(PM,body,fi,IKV[5]); PM.value[fi].elements[12]+=At.x-A3.x; PM.value[fi].elements[13]+=At.y-A3.y; PM.value[fi].elements[14]+=At.z-A3.z; } }
+  BODIES.feetOnGround=feetOnGround;
+  // momentum (owner, 5 Nov 2026: "the running and stopping, etc ... like it used to (realistic)"): your avatar on its clips leans with what its speed does: into a start and a run,
+  // into a turn, and on a stop its upper body carries on and rocks back (the rig's own stop sway); a damped spring each, about the feet (whole body) and the waist (the upper body)
+  const MO={v:0,a:0,yaw:null,pit:0,pv:0,rol:0,rv:0}, MQ=new THREE.Quaternion(), MA=new V3(), MP=new V3(), MM=new THREE.Matrix4();
+  const spin=(PM,ids,pv,axis,ang)=>{ if(Math.abs(ang)<1e-4)return; MQ.setFromAxisAngle(MA.copy(axis),ang); for(const i of ids)turnAbout(PM.value[i],pv,MQ); };
+  const ALL=[...Array(NB).keys()], UPPER=[1,2,3,4,5,6,7,8], XA=new V3(1,0,0), ZA=new V3(0,0,1);
+  function momentum(PM,body,S,G,dt){ if(!dt)return; const k=body.S, wd=S.wd||0; const d=MO.wd==null?0:Math.max(0,wd-MO.wd); MO.wd=wd; const v=Math.min(12,d/k/dt);
+    const a=(v-MO.v)/dt; MO.v+=(v-MO.v)*Math.min(1,dt*12); MO.a+=(a-MO.a)*Math.min(1,dt*8);
+    const yaw=G.rotation.y; let w=0; if(MO.yaw!=null){ w=Math.atan2(Math.sin(yaw-MO.yaw),Math.cos(yaw-MO.yaw))/dt; } MO.yaw=yaw;
+    const pt=Math.max(-.12,Math.min(.22,.018*MO.v+.035*Math.max(0,MO.a))), rt=Math.max(-.3,Math.min(.3,-Math.atan(MO.v*w/9.8)));
+    MO.pv+=((pt-MO.pit)*60-MO.pv*9)*dt; MO.pit+=MO.pv*dt; MO.rv+=((rt-MO.rol)*50-MO.rv*10)*dt; MO.rol+=MO.rv*dt;
+    const so=S.stop, ks=so?so.a*Math.exp(-so.t/.3)*Math.cos(2*Math.PI*so.t/.8):0, m=S._mw||0;
+    const fL=jointAt(PM,body,11,IKV[0]), fR=jointAt(PM,body,14,IKV[1]); MP.copy(fL).add(fR).multiplyScalar(.5); MP.y=Math.min(fL.y,fR.y);
+    spin(PM,ALL,MP,XA,MO.pit*m); spin(PM,ALL,MP,ZA,MO.rol*m);
+    if(ks){ const W=jointAt(PM,body,1,IKV[2]); spin(PM,UPPER,W,XA,.3*ks*m); } }
+  BODIES.momentum=momentum;
+  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down)
+  const LOWV=new V3();
+  function aboveGround(PM,body,G,ground){ const g=body.GEO; if(!ground||!G||!g||!g.attributes.position.count)return; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity, li=-1;
+    for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
+      const yy=(a[1]*w+c[1]*(1-w))*x+(a[5]*w+c[5]*(1-w))*y+(a[9]*w+c[9]*(1-w))*z+(a[13]*w+c[13]*(1-w)); if(yy<lo){ lo=yy; li=i; } }
+    if(li<0)return; const a=P[bi[li*2]|0].elements, c=P[bi[li*2+1]|0].elements, w=bw[li], x=p[li*3], y=p[li*3+1], z=p[li*3+2];
+    LOWV.set((a[0]*w+c[0]*(1-w))*x+(a[4]*w+c[4]*(1-w))*y+(a[8]*w+c[8]*(1-w))*z+(a[12]*w+c[12]*(1-w)),lo,(a[2]*w+c[2]*(1-w))*x+(a[6]*w+c[6]*(1-w))*y+(a[10]*w+c[10]*(1-w))*z+(a[14]*w+c[14]*(1-w)));
+    G.updateMatrixWorld(true); LOWV.applyMatrix4(G.matrixWorld); const sy=G.scale.y||1, f=(ground(LOWV.x,LOWV.z)-LOWV.y)/sy; if(!isFinite(f)||f<.3||f>80)return;
+    for(let i=0;i<NB;i++)P[i].elements[13]+=f; }
+  function pose(B,PM,body,S){ const k=body.S; chain(B,body); place(PM,body,k);
+    if(body.contact){ const g=body.GEO;
+      if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
+      // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
+      const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
+    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)?1:0;
+      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want;
+      if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
+        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
   BODIES.pose=pose; BODIES.mesh=mesh;
+  // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
+  const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};
+  BODIES.hand=(side,PM,body,B)=>{ '@later'; if(!PM){ if(!ME||!W3.body.on)return null; PM=ME.PM; body=BODIES.by[MEK]; B=W3.lastB; } if(!body||!body.binv||!PM)return null; const [u,f,h]=ARMI[side==='L'?'L':'R'];
+    jointAt(PM,body,u,HJ.shoulder); jointAt(PM,body,f,HJ.elbow); jointAt(PM,body,h,HJ.wrist); const J=B&&B.J, a=J&&J['palm'+side], b=J&&J['wrist'+side], d=a&&b?Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z)*(body.KL||1):0;
+    HJ.palm.subVectors(HJ.wrist,HJ.elbow).normalize().multiplyScalar(d).add(HJ.wrist); return HJ; };
 
-  /* ---------- you (always the Walker unless a playable body is set; the knight and the hero stay in the game as its people; kept in the browser; ?avatar=key) ---------- */
+  /* ---------- you: the avatar (owner, 5 Nov 2026: "remove walker from game completely. no option other than this new avatar to play"); the Walker is never drawn, its rig moves the avatar ---------- */
   const playable=b=>!!(b&&b.playable);
-  let pick='walker'; try{ pick=SAVE.get('body')||'walker'; }catch(e){} if(QS.get('avatar'))pick=QS.get('avatar');
-  const curKey=()=>playable(BODIES.by[pick])?pick:'walker';
-  let ME=null, MEK=null, hid=false;
+  let pick='avatar'; if(QS.get('avatar')&&QS.get('avatar')!=='walker')pick=QS.get('avatar');
+  const curKey=()=>playable(BODIES.by[pick])?pick:'avatar';
+  let ME=null, MEK=null;
   W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
-    if(!body){ if(ME)ME.me.visible=false; if(hid){ hid=false; for(const m of W3.meshes)m.visible=!W3.hideMe; } return; }
+    for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
+    if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    hid=true; for(const m of W3.meshes)m.visible=false; ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body); }};   // (dead, you're the ghost sheet: 103a-death)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
+    phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
+  for(const m of W3.meshes)m.visible=false;
   BODIES.pick=()=>curKey();
-  BODIES.set=key=>{ pick=(key==='walker'||playable(BODIES.by[key]))?key:'walker'; try{ SAVE.set('body',pick); }catch(e){} drawRow(); };
-  // YOU's BODY row: the Walker and every playable body, added as it loads
-  const LP=document.getElementById('looks'); let ROW=null;
-  if(LP){ const at=LP.querySelector('h3'), h=document.createElement('h3'); h.textContent='BODY'; ROW=document.createElement('div'); ROW.className='row'; LP.insertBefore(h,at); LP.insertBefore(ROW,at); }
-  function addButton(key,label){ if(!ROW||document.getElementById('lbody-'+key))return; const b=document.createElement('button'); b.id='lbody-'+key; b.textContent=label; b.onclick=()=>BODIES.set(key); ROW.appendChild(b); drawRow(); }
-  function drawRow(){ if(ROW)for(const b of ROW.children)b.setAttribute('aria-pressed',String(b.id==='lbody-'+curKey())); }
-  addButton('walker','WALKER');
+  BODIES.onPick=[];   // told the body you now play as
+  BODIES.set=key=>{ pick=playable(BODIES.by[key])?key:'avatar'; for(const f of BODIES.onPick)f(curKey()); };
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
   /* ---------- a body that walks main street (?<key>=0 keeps it off, ?sheet=<key> shows its sheet) ---------- */
   const seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
-  BODIES.place=(key,x,z,hd,group)=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
+  BODIES.place=(key,x,z,hd,group)=>{ '@later'; const N=BODIES.by[key]&&BODIES.by[key].npc; if(!N)return null; const s=N.st; if(!N.prev)N.prev={parent:N.g.parent,x:s.x,z:s.z,hd:s.hd,home:{...s.home},free:N.free,on:N.on}; s.x=x; s.z=z; s.hd=hd; s.to=s.next=null; Object.assign(s.home,{x,z,r:0}); N.free=()=>true; if(group)group.add(N.g); N.on=true; return N; };
   BODIES.hide=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc; if(N){ N.on=false; VIS.hide(N.g,'away'); } };
   // a borrowed body (one a place conjures for a while) goes back where it was: its group, spot, home and roaming
   BODIES.restore=key=>{ const N=BODIES.by[key]&&BODIES.by[key].npc, P=N&&N.prev; if(!P){ BODIES.hide(key); return; } const s=N.st; if(P.parent)P.parent.add(N.g); s.x=P.x; s.z=P.z; s.hd=P.hd; s.to=s.next=null; Object.assign(s.home,P.home); N.free=P.free; N.on=P.on; VIS.hide(N.g,'away',!P.on); delete N.prev; };
@@ -114,10 +207,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const st={x:SHARED.BOD.XS(body.at??100),z:SHARED.BOD.ZS(-74),R:.3*TILE,to:null,next:null,wait:3+Math.random()*4,hd:-Math.PI/2,y:0}, SR=R.create(); NPC.st=st; NPC.at=st; NPC.SR=SR;
     const free=(x,z)=>NPC.free?NPC.free(x,z):stfree(x,z,st.R), turn=a=>{ const e=a-st.hd; return Math.atan2(Math.sin(e),Math.cos(e)); };
     if(SHEET){ st.x=SHARED.BOD.XS(100); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); st.hd=Math.PI/4; }
-    if(NPCS.extra)NPCS.extra.push(NPC);
+    if(NPCS.extra&&!ARCH.has(body.key))NPCS.extra.push(NPC);
     NPC.on=QS.get(body.key)!=='0'&&body.at!=null; if(body.at!=null)HOMES.assign(st,body.key,{lv:'up'},(x,z)=>stfree(x,z,st.R)); else HOMES.assign(st,body.key,{home:{x:st.x,z:st.z,r:0}}); NPC.walk={auto:true,roam:true,v:BODIES.V}; NPC.key=body.key; NPC.name=body.label; NPC.size=body.size||1; NPC.body=body; NPC.PM=FIG.PM; if(body.hd!=null)st.hd=body.hd; if(CHARS.apply)CHARS.apply(NPC);
     if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; NPC.board.userData.anyRoom=true; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
-    NPC.tick=dt=>{ if((!NPC.on||NPC.mode==='hidden')&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
+    NPC.tick=dt=>{ if(NPC.rag&&NPC.mode==='hidden')NPC.rag(dt);
+      if((!NPC.on||NPC.mode==='hidden'||ARCH.has(body.key))&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
       if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
       if(NPC.rag){ const B=NPC.rag(dt); if(B){ NPC.B=B; pose(B,FIG.PM,body); return; } }
@@ -149,7 +243,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
   /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
   const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
-  BODIES.baked=(D,key,label,at,PAL,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
+  BODIES.baked=(D,key,label,at,PAL,more)=>{ '@later'; const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
     const geo=()=>{ const P=b.pos, T=b.tri, nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3);
       const C=D.colors.map(c=>new THREE.Color(PAL[c][0])), va=new V3(),vb=new V3(),vc=new V3(),n=new V3(),e=new V3();
       for(let f=0;f<nf;f++){ const ix=[T[f*3],T[f*3+1],T[f*3+2]]; va.fromArray(P,ix[0]*3); vb.fromArray(P,ix[1]*3); vc.fromArray(P,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
@@ -171,6 +265,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); if(playable(body))addButton(body.key,body.label||body.key.toUpperCase()); };
+    walker(body); };
 }
 export {BODIES};

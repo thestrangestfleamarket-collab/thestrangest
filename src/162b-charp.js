@@ -1,6 +1,6 @@
-// THE CHARACTER PAGE: YOU on the handheld — your live avatar, SKILLS, PASSPORT, LOG OUT; and the one ADMIN window (owners): the bug queue, TENANTS, EDITORS, CITY, STATS, the render inspector, SUMMON and the game log.
+// THE CHARACTER PAGE: the menu's YOU (your live avatar beside your look; PASSPORT, RESURRECT, LOG OUT) and ADMIN's TOOLS (STATS, the render inspector, the game log).
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, CIVIC, EDITORS, FORAGE, HANDHELD, LOOKS, PASSPORT, PS2, RINSP, SUMMON, TEXT, UI, VIT, W3} from './003b-systems.js';
+import {BUGS, CHARP, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
@@ -22,56 +22,35 @@ import {DESIGN} from './102b-designer.js';
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');
 
-  const btns=()=>{ const B=[['SKILLS','',()=>openPack('skills')],['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];
+  const btns=()=>{ const B=[['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
-  const openPack=t=>{ if(UI.menuOpen)UI.toggleMenu(); if(FORAGE.PACK){ if(!FORAGE.PACK.open)FORAGE.PACK.toggle(t); else { FORAGE.PACK.tab=t; FORAGE.PACK.draw(); } } };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
-  let ap=null; const adminOpen=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!ap){ if(!LOADED('log')){ LOAD('log').then(adminOpen); return; } const L=CLOG(); ap=document.createElement('div'); ap.id='cpadmin'; ap.hidden=true; ap.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);z-index:21;width:min(460px,92vw);max-height:84vh;overflow:auto;padding:16px 18px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #7a3524;zoom:var(--uiz,1)';
-      ap.innerHTML=`<div style="color:#e0633f;font:12px Silkscreen,monospace;letter-spacing:.14em;margin-bottom:10px">ADMIN</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"><button class="cp-btn cp-adm" data-pane="bug">BUG QUEUE</button><button class="cp-btn cp-adm" data-pane="tenants">TENANTS</button>
-          <button class="cp-btn" id="cped">EDITORS<span style="color:#9b9584">SHIFT+0</span></button><button class="cp-btn" data-pane="city" id="cpcity">CITY</button><button class="cp-btn" id="cpstat">STATS</button><button class="cp-btn" id="cprin">RENDER INSPECTOR</button></div>
-        <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">SUMMON</div>
-        <div style="color:#9b9584;margin-bottom:6px">bring anyone to stand in front of you; everyone here sees them until SEND BACK</div>
-        <input id="cpsq" placeholder="find a character" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px;font:11px Silkscreen,monospace;color:#d8dae2;background:#0e1016;border:2px solid #3a3f4e;padding:6px 8px">
-        <div id="cpsl" style="max-height:30vh;overflow:auto;margin-bottom:14px"></div>
-        <div style="color:#f2c14e;letter-spacing:.1em;margin-bottom:6px">GAME LOG</div>
-        <div style="color:#9b9584;margin-bottom:8px">every update, newest first — ${L.length}</div>
-        <ul style="margin:0;padding-left:16px;max-height:52vh;overflow:auto;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:#f2c14e">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
-      document.body.appendChild(ap); ap.addEventListener('keydown',e=>e.stopPropagation()); ap.querySelectorAll('[data-pane]').forEach(b=>b.onclick=()=>{ ap.hidden=true; UI.menuTab(b.dataset.pane); if(b.dataset.pane==='city'&&CIVIC.draw)CIVIC.draw(); });
-      ap.querySelector('#cped').onclick=()=>{ ap.hidden=true; EDITORS.menu(); };
-      const tools=()=>{ ap.querySelector('#cpcity').style.display=document.querySelector('#menu [data-p="city"]')?'':'none'; const s=document.getElementById('stat'); ap.querySelector('#cpstat').setAttribute('aria-pressed',String(!!s&&!s.hidden)); ap.querySelector('#cprin').setAttribute('aria-pressed',String(!!RINSP.on)); };
-      ap.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(); };
-      const sl=ap.querySelector('#cpsl'), sq=ap.querySelector('#cpsq');
-      const sum=()=>{ const f=sq.value.trim().toLowerCase(), here=new Set(SUMMON.here()), A=SUMMON.list(), R=A.map(N=>{ const id=SUMMON.id(N,A), n=id.split('#')[1]; return {N,id,nm:(N.name||N.key)+(n?' '+n:'')}; }), L=R.filter(r=>!f||r.nm.toLowerCase().includes(f)||r.id.toLowerCase().includes(f)).sort((a,b)=>(here.has(b.id)-here.has(a.id))||a.nm.localeCompare(b.nm,undefined,{numeric:true})).slice(0,150);
-        sl.innerHTML=L.length?L.map(r=>'<div style="display:flex;gap:6px;margin-bottom:4px"><button class="cp-btn" data-sk="'+esc(r.id)+'" style="flex:1;padding:6px 10px">'+esc(r.nm)+'</button>'+(here.has(r.id)?'<button class="cp-btn cp-adm" data-sb="'+esc(r.id)+'" style="padding:6px 10px">SEND BACK</button>':'')+'</div>').join(''):'<div style="color:#9b9584">no one by that name</div>'; };
-      sq.addEventListener('input',sum); sl.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const k=b.dataset.sk||b.dataset.sb, A=SUMMON.list(), N=A.find(q=>SUMMON.id(q,A)===k);
-        if(b.dataset.sb)SUMMON.back(k); else if(N)SUMMON.go(N); sum(); }); ap._sum=sum;
-      ap.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); tools(); if(RINSP.on)ap.hidden=true; }; ap._tools=tools; }
-    ap._tools(); ap._sum(); ap.hidden=false; };
-  addEventListener('keydown',e=>{ if(e.key!=='Escape'||!ap||ap.hidden||UI.menuOpen||HANDHELD.up())return; ap.hidden=true; HANDHELD.back(); e.preventDefault(); e.stopImmediatePropagation(); },true);   // ESC: back to the handheld, like its other pages
+  const tools=host=>{ if(!LOADED('log')){ host.innerHTML='<div class="dim">...</div>'; LOAD('log').then(()=>tools(host)); return; } const L=CLOG(), st=document.getElementById('stat');
+    host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div>
+      <h3>GAME LOG · ${L.length}</h3><div class="dim" style="margin-bottom:8px">every update, newest first</div>
+      <ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:var(--mo);font-weight:normal">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
+    host.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(host); };
+    host.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); if(RINSP.on&&UI.menuOpen)UI.toggleMenu(); else tools(host); }; };
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;
-    el.innerHTML=`<div class="cp-wrap"><div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span><button class="cp-edit" id="cpedit" title="change your body, hair and shape">EDIT</button></div>
+    el.innerHTML=`<div class="cp-wrap"><div class="cp-stage"><canvas id="cpav" width="${W}" height="${H}"></canvas><span class="cp-live">LIVE</span></div>
       <div class="cp-right"><div class="cp-btns" id="cpbtns"></div></div></div>`;
     cv=el.querySelector('#cpav'); g2=cv.getContext('2d');
     { let dx=null; cv.style.cursor='grab'; cv.addEventListener('pointerdown',e=>{ dx=e.clientX; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; spin+=(e.clientX-dx)*.025; dx=e.clientX; }); const up=()=>{ dx=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }   // drag to turn yourself; facing you again each time the menu opens
-    el.querySelector('#cpedit').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); LOOKS.open(); };
     el.addEventListener('click',e=>{ const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); }); };
 
   Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); on=1; },
-    hide:()=>{ on=0; }, admin:adminOpen, log:CLOG }); window.CHARP=CHARP;
+    hide:()=>{ on=0; }, tools, log:CLOG }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
   #dhome .cp-stage{position:relative;background:radial-gradient(120% 90% at 50% 6%,#22242c,#0b0c11);border:2px solid var(--line)}
   #dhome .cp-stage canvas{display:block;width:200px;height:300px}
-  #dhome .cp-edit{position:absolute;right:6px;top:6px;font:9px var(--pixel);color:var(--key);border:1px solid #3a3f4e;padding:2px 6px;background:rgba(5,6,10,.7);cursor:pointer}
   #dhome .cp-live{position:absolute;left:6px;top:6px;font:9px var(--pixel);color:var(--dim);border:1px solid #3a3f4e;padding:1px 5px;background:rgba(5,6,10,.5)}
   #dhome .cp-right{display:flex;flex-direction:column;gap:8px;min-width:180px;flex:1}
   #dhome .cp-btns{display:flex;flex-direction:column;gap:7px} #menu #dhome .cp-btn:disabled{opacity:.35;cursor:default;background:transparent;color:var(--fg)}
-  #dhome .cp-btn,#cpadmin .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
-  #dhome .cp-btn:hover,#cpadmin .cp-btn:hover{color:var(--key);border-color:#6b6f80}
-  #cpadmin .cp-btn[aria-pressed="true"]{color:var(--key)}
+  #dhome .cp-btn{text-align:left;font:12px var(--pixel);color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;letter-spacing:.05em}
+  #dhome .cp-btn:hover{color:var(--key);border-color:#6b6f80}
   #dhome .cp-btn .cp-tag{color:var(--dim);font-size:9px}
-  #dhome .cp-btn.cp-adm,#cpadmin .cp-btn.cp-adm{color:#e0633f;border-color:#7a3524}
-  #dhome .cp-btn.cp-adm:hover,#cpadmin .cp-btn.cp-adm:hover{border-color:#e0633f}`; document.head.appendChild(css); }
+  #dhome .cp-btn.cp-adm{color:#e0633f;border-color:#7a3524}
+  #dhome .cp-btn.cp-adm:hover{border-color:#e0633f}`; document.head.appendChild(css); }

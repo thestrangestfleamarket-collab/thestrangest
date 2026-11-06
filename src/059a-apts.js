@@ -58,7 +58,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,FWU,escape:(F,lvs,h0,h1)=>{ APTS.escPlants=[]; FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
   // a real pot and plant (or a hanging basket, or a planter box for a ledge), w across and h tall in world units, standing on its base
   { const PM={}, pm=(k,c,o={})=>PM[k]||(PM[k]=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb('+c.join(',')+')'),...o}));
-    APTS.plant3D=(kind,seed,w,h)=>{ const g=new THREE.Group(), r=i=>hash(seed,i,77), add=(geo,m,x,y,z)=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; g.add(me); return me; };
+    APTS.plant3D=(kind,seed,w,h)=>{ '@later'; const g=new THREE.Group(), r=i=>hash(seed,i,77), add=(geo,m,x,y,z)=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; g.add(me); return me; };
       const G=[pm('g1',[70,128,58]),pm('g2',[96,150,70]),pm('g3',[52,104,50])], FL=[[230,90,120],[245,200,70],[200,110,220],[240,240,235],[240,130,60]], terr=pm('terr',[176,92,58]);
       if(kind==='box'){ const L=w, d=w*.22, bh=h*.9; add(new THREE.BoxGeometry(L,bh,d),pm('wood',[120,78,46]),0,bh/2,0); for(let i=0;i<9;i++){ const x=(i/8-.5)*L*.9; add(new THREE.IcosahedronGeometry(d*.45,0),G[i%3],x,bh+d*.2,(r(i)-.5)*d*.3); add(new THREE.IcosahedronGeometry(d*.18,0),pm('f'+(i%5),FL[(seed+i)%5]),x+(r(i+9)-.5)*d*.3,bh+d*.55,(r(i+5)-.5)*d*.3); } return g; }
       if(kind==='hang'){ const bR=w*.35, by=h*.5; add(new THREE.SphereGeometry(bR,12,6,0,Math.PI*2,Math.PI/2,Math.PI/2),pm('bask',[150,110,70],{side:THREE.DoubleSide}),0,by+bR,0); add(new THREE.CylinderGeometry(w*.012,w*.012,h-by-bR,4),pm('chain',[40,40,44]),0,(h+by+bR)/2,0);
@@ -139,7 +139,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
 
   const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0-HALL).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, HR=APTS.HR={x0:AR.x0,y0:AR.y1,x1:AR.x1,y1:+(AR.y1+HALL).toFixed(3)}, IN=APTS.IN={x0:AR.x0,y0:AR.y0,x1:AR.x1,y1:HR.y1}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
   // real window glass: clear looked through straight, the sky's sheen at a slant, the sun's glint
-  APTS.glassMat=(o={})=>{ const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
+  APTS.glassMat=(o={})=>{ '@later'; const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),3.); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.72,.82,.92),fr*.5); gl_FragColor.a=mix(gl_FragColor.a,.55,fr);'); };
     m.customProgramCacheKey=()=>'aptglass'; return m; }; const BED=APTS.BED={x0:AR.x0+7.75,y0:AR.y0,x1:AR.x1,y1:AR.y0+5,H:WH};   // the bedroom's corner (front right): its own walls, things and light (150a-bedroom)   // off-map in the empty sky; footprint and one-storey height match the real building exactly (1:1)
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;

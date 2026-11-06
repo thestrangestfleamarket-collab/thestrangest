@@ -26,7 +26,7 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   /* ---------- ragdolls: a townsperson knocked over falls as a body of eleven parts on Rapier joints, lies a moment, then gets up ---------- */
   const RAGS=new Set(), Q=new THREE.Quaternion(), M4=new THREE.Matrix4(), V=new THREE.Vector3(), V2=new THREE.Vector3();
   const v3=p=>new THREE.Vector3(p.x,p.y,p.z);
-  PHYS.knock=(N,dir,k=1)=>{ '@later'; if(!PHYS.on('rag')||!PB.R||N.rag||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
+  PHYS.knock=(N,dir,k=1)=>{ '@later'; if(!PHYS.on('rag')||!PB.R||N.rag||N.mode==='hidden'||!N.B||!N.B.J||!N.B.m||RAGS.size>=4)return false; const R=PB.R, J=N.B.J, m=N.B.m, RG=RIG; if(!J.pelvis||!m.Rb)return false;
     const world=new R.World({x:0,y:-(RG.G?RG.G():280),z:0}); world.timestep=1/120; const gy=Math.min(...['toeL','toeR','heelL','heelR'].map(n=>J[n]?J[n].y:0));
     world.createCollider(R.ColliderDesc.cuboid(400,5,400).setTranslation(0,gy-5,0).setFriction(1.1).setCollisionGroups(0x00010002));
     const W=n=>v3(J[n]), bs={}, list=[], hd=N.st.hd||0, ch=Math.cos(hd), sn=Math.sin(hd), push={x:(dir.x*ch-dir.z*sn)*90*k,y:30*k,z:(dir.x*sn+dir.z*ch)*90*k};
@@ -77,16 +77,16 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
       V.on=true; LIVE.add(V); return true; };
     V.drop=()=>{ const P=GPH.phys(); if(P&&V.vc){ try{ P.world.removeVehicleController(V.vc); }catch(e){} try{ P.world.removeRigidBody(V.rb); }catch(e){} } V.vc=V.rb=null; V.on=false; LIVE.delete(V); };
     // each frame while ridden: you go where it is; false hands the ride back to the board's own glide (VEHICLE PHYSICS off, or no physics yet)
-    V.step=R=>{ if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(V.on)V.drop(); return false; } if(!V.on&&!V.build())return false;
+    V.step=R=>{ '@later'; if(!PHYS.on('veh')||!PB.R||!GPH.phys()){ if(V.on)V.drop(); return false; } if(!V.on&&!V.build())return false;
       const p=V.rb.translation(), r=V.rb.rotation(), g=SHARED.groundY(p.x,p.z); if(!isFinite(g)||p.y<g-2*T){ V.drop(); return false; }
       pos.x=p.x; pos.z=p.z; VQ.set(r.x,r.y,r.z,r.w); VV.set(0,0,1).applyQuaternion(VQ); R.hd=SHARED.heading=Math.atan2(VV.x,VV.z); V.sp=V.vc.currentVehicleSpeed(); R.v=Math.abs(V.sp); R.lift=0;
       if(R.v>2*T){ const v=V.rb.linvel(); if(knockNear(p.x,p.y,p.z,v.x,v.z,Math.hypot(v.x,v.z)||1,S.knockR,Math.min(1.6,R.v/(4*T))))V.rb.setLinvel({x:v.x*.6,y:v.y,z:v.z*.6},true); }
       return true; };
-    V.place=(m,w)=>{ if(!V.on)return false; const r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
+    V.place=(m,w)=>{ '@later'; if(!V.on)return false; const r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
       for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(V.vc.wheelRotation(i)||0,i<2?V.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=V.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=S.wy+(S.rest-L)/S.unit; } return true; };
     return V; };
   GPH.ext.push(()=>LIVE.size>0);
-  GPH.pre.push(h=>{ for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
+  GPH.pre.push(h=>{ '@later'; for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
     V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax||f<0&&sp<-S.vback?0:f*(f>0?S.engine:S.reverse);
     for(const i of [0,1])vc.setWheelSteering(i,V.steer); for(const i of [2,3])vc.setWheelEngineForce(i,eng); for(let i=0;i<4;i++)vc.setWheelBrake(i,back?S.brake:f?0:S.idle); vc.updateVehicle(h,undefined,0x00010005); } });
 
@@ -94,7 +94,7 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   FORAGE.add({names:{kart:'THE GO-KART'}});
   const POSE={k:'kart',steer:0,z:0};
   const mat=c=>new THREE.MeshLambertMaterial({color:c}), WH=.15, WX=.36, WZ=.5;
-  const make=()=>{ const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
+  const make=()=>{ '@later'; const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
     const M=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; G.add(o); return o; };
     M(new THREE.BoxGeometry(.62,.07,1.25),gr,0,.12,0); M(new THREE.BoxGeometry(.5,.12,.34),red,0,.2,.5); M(new THREE.BoxGeometry(.66,.1,.22),red,0,.17,-.55);
     M(new THREE.BoxGeometry(.4,.06,.36),seat,0,.2,-.18); M(new THREE.BoxGeometry(.4,.32,.06),seat,0,.36,-.36);
@@ -120,6 +120,6 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
     if(PHYS.on('rag'))for(const it of GPH.active()){ if(!it.rb||it.rb.isSleeping()||it===GPH.heldNow())continue; const v=it.rb.linvel(), sp=Math.hypot(v.x,v.z); if(sp<3*T)continue;
       const p=it.rb.translation(); if(knockNear(p.x,p.y,p.z,v.x,v.z,sp,.4*M1+Math.max(it.h[0],it.h[2]),Math.min(1.4,sp*it.m/(40*T))))it.rb.setLinvel({x:-v.x*.25,y:v.y,z:-v.z*.25},true); } },'150o-physmore');
   window.PHYSDBG=()=>({zones:[...ZN.values()].map(z=>z.kind),boards:[...ZN.values()].filter(z=>z.kind==='dart').map(z=>z.c.map(v=>+v.toFixed(2))),rags:RAGS.size,ragt:[...RAGS].map(r=>+r.t().toFixed(2)),kart:KR.on&&{sp:+KR.sp.toFixed(2),at:(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(2)))(KR.rb.translation())},cfg:PHYS.cfg});
-  window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
+  window.PHYSKNOCK=(i=0)=>{ const L=(NPCS.extra||[]).filter(N=>N.on&&N.mode!=='hidden'&&N.B).sort((a,b)=>Math.hypot(a.st.x-pos.x,a.st.z-pos.z)-Math.hypot(b.st.x-pos.x,b.st.z-pos.z)); const N=L[i]; return N?{name:N.name,ok:PHYS.knock(N,{x:1,z:0},1)}:null; };
 }
 export {VEH};

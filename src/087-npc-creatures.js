@@ -53,41 +53,41 @@ const CREATS=[]; window.CREATS=CREATS;
   const itemsOf=m=>m&&m.userData&&m.userData.items||[], plants=()=>itemsOf(PARK.under).concat(FL().bushes.map(b=>({x:b.x,y:b.y,z:b.z,top:b.y+b.h,r:b.r}))).filter(o=>o.top!=null&&inL(PARKL,o.x,o.z));
   const parkBushes=()=>SHARE.bush||(SHARE.bush=(L=>L.length?L:null)(plants().filter(o=>o.top-o.y>.35*WU&&o.top-o.y<2.5*WU).map(o=>({x:o.x,y:o.y,z:o.z,h:o.top-o.y,r:Math.max(.15*WU,Math.min(o.r||.4*WU,1.2*WU))}))))||[];
   const coverOf=(x,z,px,pz)=>{ let best=null, bd=1e9; for(const b of parkBushes()){ const d=Math.hypot(b.x-x,b.z-z); if(d>10*WU)continue; const dp=Math.hypot(b.x-px,b.z-pz); if(dp<Math.hypot(x-px,z-pz))continue; if(d<bd){ bd=d; best=b; } } return best; };
-  const nestOf=()=>{ if(SHARE.nest)return SHARE.nest; const B=(PARK.treeItems?PARK.treeItems():[]).filter(t=>inL(PARKL,t.x,t.z)&&t.top-t.y>3*WU); if(!B.length)return null; const b=B[Math.floor(B.length*.37)];
+  const nestOf=()=>{ '@later'; if(SHARE.nest)return SHARE.nest; const B=(PARK.treeItems?PARK.treeItems():[]).filter(t=>inL(PARKL,t.x,t.z)&&t.top-t.y>3*WU); if(!B.length)return null; const b=B[Math.floor(B.length*.37)];
     const o=Math.min(b.tr||.25*WU,.6*WU)+.2*WU, n=SHARE.nest={x:b.x+o*.8,z:b.z+o*.6,y:b.y+Math.min(2.3*WU,(b.top-b.y)*.4),tree:b}; CREATS.nest=n;
     const pts=[[0,-.13],[.05,-.11],[.085,-.06],[.095,0],[.08,.06],[.05,.1],[.02,.12],[.015,.15]].map(([r,y])=>new THREE.Vector2(r*WU,y*WU)), G=new THREE.LatheGeometry(pts,9), c=[];
     for(let i=0;i<G.attributes.position.count;i++){ const y=G.attributes.position.getY(i)/WU, k=.82+.18*Math.sin(y*90); c.push(.62*k,.58*k,.5*k); } G.setAttribute('color',new THREE.Float32BufferAttribute(c,3));
     const me=new THREE.Mesh(G,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.position.set(n.x,n.y,n.z); me.castShadow=true; MAPG.park.add(me); n.mesh=me; return n; };
-  const foodOf=n=>{ if(!SHARE.beds)SHARE.beds=FL().beds.filter(d=>d.p&&d.p.length&&Math.hypot(d.x-n.x,d.z-n.z)<30*WU); const L=SHARE.beds;
+  const foodOf=n=>{ '@later'; if(!SHARE.beds)SHARE.beds=FL().beds.filter(d=>d.p&&d.p.length&&Math.hypot(d.x-n.x,d.z-n.z)<30*WU); const L=SHARE.beds;
     if(L.length){ const d=L[Math.floor(Math.random()*L.length)], p=d.p[Math.floor(Math.random()*d.p.length)]; return {x:p[0],y:p[1],z:p[2]}; }
     const B=parkBushes().filter(b=>Math.hypot(b.x-n.x,b.z-n.z)<30*WU), b=B[Math.floor(Math.random()*B.length)]; return b?{x:b.x,y:b.y+b.h,z:b.z}:{x:n.x+rnd(-3,3)*WU,y:n.y-.5*WU,z:n.z+rnd(-3,3)*WU}; };
-  const webGeo=(()=>{ let G=null; return ()=>{ if(G)return G; const v=[], R=.16*WU, S=9; for(let i=0;i<S;i++){ const a=i/S*Math.PI*2; v.push(0,0,0,Math.cos(a)*R,Math.sin(a)*R,0); }
+  const webGeo=(()=>{ let G=null; return ()=>{ '@later'; if(G)return G; const v=[], R=.16*WU, S=9; for(let i=0;i<S;i++){ const a=i/S*Math.PI*2; v.push(0,0,0,Math.cos(a)*R,Math.sin(a)*R,0); }
     for(let r=1;r<=7;r++){ const rr=R*r/7.4; for(let i=0;i<S;i++){ const a=i/S*Math.PI*2, b=(i+1)/S*Math.PI*2; v.push(Math.cos(a)*rr,Math.sin(a)*rr,0,Math.cos(b)*rr,Math.sin(b)*rr,0); } }
     G=new THREE.BufferGeometry(); G.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); return G; }; })();
   const webMat=new THREE.LineBasicMaterial({color:0xe8ecf0,transparent:true,opacity:.35,depthWrite:false});
   const fliers=new Set(['wasp','bat']);
   const BEH={
-    wasp:(dt,you,st,N,S,K)=>{ const n=S.set&&nestOf(); if(!n)return; const out=K.out(), at=(x,z)=>Math.hypot(st.x-x,st.z-z)<.08*WU;
+    wasp:(dt,you,st,N,S,K)=>{ '@later'; const n=S.set&&nestOf(); if(!n)return; const out=K.out(), at=(x,z)=>Math.hypot(st.x-x,st.z-z)<.08*WU;
       if(S.mode==='in'){ N.body.visible=false; st.to=null; if((S.c-=dt)<=0&&out){ S.mode='go'; S.food=foodOf(n); S.y=n.y-N.ground(n.x,n.z); N.body.visible=true; } return; }
       if(!out&&S.mode!=='home'){ S.mode='home'; st.to=null; }
       if(S.mode==='go'){ st.v=K.v*WU; S.hy=Math.max(.8*WU,S.food.y-N.ground(st.x,st.z)+.4*WU); if(!st.to)st.to={x:S.food.x,z:S.food.z}; if(at(S.food.x,S.food.z)){ S.mode='hover'; S.c=rnd(3,10); S.d=0; st.to=null; } }
       else if(S.mode==='hover'){ st.v=.6*WU; if((S.d-=dt)<=0){ S.d=rnd(.25,.9); st.to={x:S.food.x+rnd(-.15,.15)*WU,z:S.food.z+rnd(-.15,.15)*WU}; S.hy=S.food.y-N.ground(S.food.x,S.food.z)+rnd(.02,.18)*WU; }
         if((S.c-=dt)<=0){ if(Math.random()<.45){ S.mode='go'; S.food=foodOf(n); } else S.mode='home'; st.to=null; } }
       else if(S.mode==='home'){ st.v=K.v*WU; S.hy=n.y-N.ground(n.x,n.z); if(!st.to)st.to={x:n.x,z:n.z}; if(at(n.x,n.z)){ S.mode='in'; S.c=rnd(6,25); st.to=null; N.body.visible=false; } } },
-    bat:(dt,you,st,N,S,K)=>{ const out=K.out(); N.body.visible=out; if(!out){ st.to=null; return; } st.v=K.v*WU;
+    bat:(dt,you,st,N,S,K)=>{ '@later'; const out=K.out(); N.body.visible=out; if(!out){ st.to=null; return; } st.v=K.v*WU;
       if(!S.hubs){ const P=window.POND, H=[]; if(P&&P.c)H.push({x:P.c.x,z:P.c.z}); for(const d of FL().beds)if(inL(PARKL,d.x,d.z))H.push({x:d.x,z:d.z}); if(!H.length)H.push({x:(PARKL.x0+PARKL.x1)/2,z:(PARKL.z0+PARKL.z1)/2}); S.hubs=H; S.hub=H[Math.floor(Math.random()*H.length)]; S.sw=rnd(15,40); }
       if((S.sw-=dt)<=0){ S.sw=rnd(15,40); S.hub=S.hubs[Math.floor(Math.random()*S.hubs.length)]; }
       if((S.d-=dt)<=0||!st.to){ S.d=rnd(.4,1.3); const a=Math.random()*Math.PI*2, r=rnd(0,5)*WU; st.to={x:Math.max(PARKL.x0,Math.min(PARKL.x1,S.hub.x+Math.cos(a)*r)),z:Math.max(PARKL.z0,Math.min(PARKL.z1,S.hub.z+Math.sin(a)*r))}; S.hy=rnd(2.5,7)*WU; } },
     spider:(dt,you,st,N,S,K)=>{ st.to=null; },
-    frog:(dt,you,st,N,S,K)=>{ const P=window.POND; if(!S.set||!P||!P.c)return;
+    frog:(dt,you,st,N,S,K)=>{ '@later'; const P=window.POND; if(!S.set||!P||!P.c)return;
       if(!st.goIn&&st.inT==null&&Math.hypot(you.x-st.x,you.z-st.z)<K.flee*WU){ const a=Math.atan2(st.z-P.c.z,st.x-P.c.x); st.to={x:P.c.x+Math.cos(a)*P.r*.9,z:P.c.z+Math.sin(a)*P.r*.9}; st.goIn=true; S.fled=1; SFX.play&&SFX.play('splash'); } },
-    snake:(dt,you,st,N,S,K)=>{ const out=K.out(); if(!out){ N.body.visible=false; st.to=null; st.hold=true; return; } if(!N.body.visible&&st.inT==null){ N.body.visible=true; st.hold=false; }
+    snake:(dt,you,st,N,S,K)=>{ '@later'; const out=K.out(); if(!out){ N.body.visible=false; st.to=null; st.hold=true; return; } if(!N.body.visible&&st.inT==null){ N.body.visible=true; st.hold=false; }
       if(!st.goIn&&st.inT==null&&Math.hypot(you.x-st.x,you.z-st.z)<K.flee*WU){ const b=coverOf(st.x,st.z,you.x,you.z); if(b){ st.to={x:b.x,z:b.z}; st.goIn=true; st.v=1.2*WU; } } },
     rat:(dt,you,st,N,S,K)=>{ const out=(N.ex&&N.ex.out||K.out)(); if(!out){ N.body.visible=false; st.to=null; st.hold=true; return; } if(!N.body.visible){ N.body.visible=true; st.hold=false; }
       if(Math.hypot(you.x-st.x,you.z-st.z)<K.flee*WU&&!S.fl){ const a=Math.atan2(st.z-you.z,st.x-you.x); for(let k=0;k<8;k++){ const b=a+rnd(-.8,.8), r=rnd(3,6)*WU, p={x:st.x+Math.cos(b)*r,z:st.z+Math.sin(b)*r}; if(N.free(p.x,p.z,st.R)&&inL(N.lane,p.x,p.z)){ st.to=p; S.fl=1; break; } } }
       st.v=(S.fl?K.dart*1.6:K.dart)*WU; if(!st.to)S.fl=0; } };
   const SET={
-    spider:(N,S)=>{ const st=N.st; if(!SHARE.webs){ const T=(PARK.treeItems?PARK.treeItems():[]).filter(t=>inL(PARKL,t.x,t.z)); if(!T.length&&!parkBushes().length)return; const h=o=>Math.sin(o.x*12.9898+o.z*78.233)*43758.5453%1;
+    spider:(N,S)=>{ '@later'; const st=N.st; if(!SHARE.webs){ const T=(PARK.treeItems?PARK.treeItems():[]).filter(t=>inL(PARKL,t.x,t.z)); if(!T.length&&!parkBushes().length)return; const h=o=>Math.sin(o.x*12.9898+o.z*78.233)*43758.5453%1;
         SHARE.webs=parkBushes().concat(T.sort((p,q)=>h(p)-h(q)).map(t=>({x:t.x,y:t.y,z:t.z,h:2.4*WU,r:Math.max(.12*WU,Math.min(t.tr||.25*WU,.6*WU))}))); }
       const B=SHARE.webs, i=S.i, b=B[i%B.length], a=i*2.399+Math.floor(i/B.length)*1.7;
       const x=b.x+Math.sin(a)*(b.r+.06*WU), z=b.z+Math.cos(a)*(b.r+.06*WU), y=b.y+Math.min(b.h*.6,1.1*WU); st.x=x; st.z=z; st.h=a; S.hy=y-N.ground(x,z); S.y=S.hy;
@@ -96,8 +96,8 @@ const CREATS=[]; window.CREATS=CREATS;
     bat:(N,S)=>{ const P=window.POND; if(!P||!P.ready||!P.c)return false; const a=Math.random()*Math.PI*2, r=rnd(0,4)*WU; N.st.x=P.c.x+Math.cos(a)*r; N.st.z=P.c.z+Math.sin(a)*r; return true; },
     wasp:(N,S)=>{ const n=nestOf(); if(!n)return false; S.mode='in'; S.c=rnd(0,15); N.st.x=n.x; N.st.z=n.z; N.body.visible=false; return true; } };
   const PICK={
-    frog:(st,N,S)=>{ const P=window.POND; if(!P||!P.c||Math.random()<.65){ st.to=null; st.wait=rnd(6,22); return; } const a=Math.atan2(st.z-P.c.z,st.x-P.c.x)+rnd(-.12,.12), r=P.r+rnd(.25,1.1)*WU; st.to={x:P.c.x+Math.cos(a)*r,z:P.c.z+Math.sin(a)*r}; if(!N.free(st.to.x,st.to.z,st.R)){ st.to=null; st.wait=2; } },
-    snake:(st,N,S)=>{ if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(40,120); return; } st.v=.3*WU; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=rnd(1.5,6)*WU, p={x:st.x+Math.cos(a)*r,z:st.z+Math.sin(a)*r}; if(inL(PARKL,p.x,p.z)&&N.free(p.x,p.z,st.R)){ st.to=p; S.moved=1; return; } } st.wait=3; },
+    frog:(st,N,S)=>{ '@later'; const P=window.POND; if(!P||!P.c||Math.random()<.65){ st.to=null; st.wait=rnd(6,22); return; } const a=Math.atan2(st.z-P.c.z,st.x-P.c.x)+rnd(-.12,.12), r=P.r+rnd(.25,1.1)*WU; st.to={x:P.c.x+Math.cos(a)*r,z:P.c.z+Math.sin(a)*r}; if(!N.free(st.to.x,st.to.z,st.R)){ st.to=null; st.wait=2; } },
+    snake:(st,N,S)=>{ '@later'; if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(40,120); return; } st.v=.3*WU; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=rnd(1.5,6)*WU, p={x:st.x+Math.cos(a)*r,z:st.z+Math.sin(a)*r}; if(inL(PARKL,p.x,p.z)&&N.free(p.x,p.z,st.R)){ st.to=p; S.moved=1; return; } } st.wait=3; },
     rat:(st,N,S)=>{ if(S.moved){ S.moved=0; st.to=null; st.wait=rnd(.4,2.5); if(S.bin){ st.face={x:S.bin.x,z:S.bin.z}; st.wait=rnd(4,10); S.bin=null; } return; } st.face=null; const sol=SOL[N.lv]||SOL.up; let best=null, bs=1e9;
       if(Math.random()<.35)for(const b of (window.BINS&&BINS.list)||[]){ const p=b.G.position; if(b.G.parent&&Math.hypot(p.x-st.x,p.z-st.z)<15*WU){ const a=Math.random()*Math.PI*2, x=p.x+Math.cos(a)*.45*WU, z=p.z+Math.sin(a)*.45*WU; if(inL(N.lane,x,z)&&N.free(x,z,st.R)){ st.to={x,z}; S.moved=1; S.bin={x:p.x,z:p.z}; return; } } }
       for(let k=0;k<10;k++){ const a=Math.random()*Math.PI*2, r=rnd(1.5,5)*WU, x=st.x+Math.cos(a)*r, z=st.z+Math.sin(a)*r; if(!inL(N.lane,x,z)||!N.free(x,z,st.R))continue;
@@ -107,7 +107,7 @@ const CREATS=[]; window.CREATS=CREATS;
     const S={t:Math.random()*10,y:0,hy:0,i:K.beh==='spider'?si++:0,fly:Array.isArray(K.fly)?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false}; let cur=null; const beh=BEH[K.beh], pk=PICK[K.beh];
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:K.lane===PARKL?'park':'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:K.lane===PARKL?rnd(PARKL.x0,PARKL.x1):X(tx),z:ex?ex.z:K.lane===PARKL?rnd(PARKL.z0,PARKL.z1):Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:tiny?.03:.12,speed,stride:0,rock:0,bob:0,
       brain:beh&&((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }),
-      pick:st=>{ '@later'; if(pk)return pk(st,N,S); if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
+      pick:st=>{ if(pk)return pk(st,N,S); if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
           for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
       anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; VIS.hide(N.g,'away',!out); st.hold=!out; if(!out)st.to=null; } if(!out)return; } if(!N.body.visible)return;
         if(S.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); S.drink=false; }

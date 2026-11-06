@@ -19,12 +19,12 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
   const D2R=Math.PI/180, Mx=new THREE.Matrix4(), Tx=new THREE.Matrix4(), Ex=new THREE.Euler(), PB=new THREE.Box3();
   // a moved, scaled or removed thing takes its footprint (what you bump into) with it, and the grass round it is grown again
-  const foot=(it,e)=>{ if(!it||!it.sol)return; const b=it.sol, f=it.fix, b0=it.sol0||(it.sol0=b.slice()), f0=it.fix0||(f&&(it.fix0=f.slice())), cx=(b0[0]+b0[2])/2+e.t[0], cz=(b0[1]+b0[3])/2+e.t[2], hx=(b0[2]-b0[0])/2*Math.abs(e.s[0]), hz=(b0[3]-b0[1])/2*Math.abs(e.s[2]), was=b.slice();
+  const foot=(it,e)=>{ '@later'; if(!it||!it.sol)return; const b=it.sol, f=it.fix, b0=it.sol0||(it.sol0=b.slice()), f0=it.fix0||(f&&(it.fix0=f.slice())), cx=(b0[0]+b0[2])/2+e.t[0], cz=(b0[1]+b0[3])/2+e.t[2], hx=(b0[2]-b0[0])/2*Math.abs(e.s[0]), hz=(b0[3]-b0[1])/2*Math.abs(e.s[2]), was=b.slice();
     if(e.del){ b[0]=b[2]=b[1]=b[3]=1e9; } else { b[0]=cx-hx; b[2]=cx+hx; b[1]=cz-hz; b[3]=cz+hz; }
     if(f&&f0){ if(e.del){ f[0]=f[3]=f[1]=f[4]=1e9; } else { f[0]=b[0]; f[3]=b[2]; f[1]=b[1]; f[4]=b[3]; f[5]=f0[5]*Math.abs(e.s[1]); } }
     if(window.WEEDS&&WEEDS.lawnDrop&&was.some((v,i)=>v!==b[i])){ for(const r of [was,b])if(r[0]<1e8)WEEDS.lawnDrop([r[0]-TILE,r[1]-TILE,r[2]+TILE,r[3]+TILE]); } };
   // what goes with a thing: its lights (dark while it is removed) and glows
-  const follow=(it,e,pv)=>{ if(!it||!it.follow)return; Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ');
+  const follow=(it,e,pv)=>{ '@later'; if(!it||!it.follow)return; Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ');
     for(const L of it.follow){ const u=L.userData; if(!u.wePos0){ u.wePos0=L.position.clone(); u.weS0=L.scale.clone(); }
       if(L.isLight){ if(e.del){ if(u.weI0==null){ u.weI0=u.i0!=null?u.i0:L.intensity; u.i0=0; L.intensity=0; } } else if(u.weI0!=null){ u.i0=u.weI0; L.intensity=u.weI0; delete u.weI0; } }
       else L.scale.copy(u.weS0).multiplyScalar(e.del?0:1);
@@ -48,31 +48,31 @@ Object.assign(WE,{on:false}); window.WE=WE;
   // WED.meshes: {place, me (a BatchedMesh or InstancedMesh), items [{k:name, x,y,z:pivot, sol?, fix?, follow?}], ids? (batch or instance id to item; one item per instance when left out)}
   const ents=()=>{ for(const en of WED.meshes)if(!en.ids)en.ids=en.items.map((_,i)=>i); return WED.meshes; };
   // parts of one thing in different meshes (a tree's crown and trunk, a lantern's frame and glass) share a key and are edited together
-  let KX=null, KN=-1; const linked=o=>{ if(!o.prop||!o.me)return [o]; const L=ents(); let n=0; for(const en of L)n+=en.ids.length;
+  let KX=null, KN=-1; const linked=o=>{ '@later'; if(!o.prop||!o.me)return [o]; const L=ents(); let n=0; for(const en of L)n+=en.ids.length;
     if(!KX||n!==KN){ KX=new Map(); KN=n; for(const en of L)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); (KX.get(k)||KX.set(k,[]).get(k)).push(h); } } return KX.get(keyOf(o))||[o]; };
   const applyWED=()=>{ for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(ST[keyOf(h)])applyProp(h); } };
   // copies: a picked park thing again beside it, its own mesh cut from the same batch; kept in ST as 'C|n' {copy:name, of:the original's key, place, at:[x,y,z], ...the usual edits}
   const CP=new Map(); let cpg=null; const D2=Math.PI/180;
   const fromWED=key=>{ for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(keyOf(h)===key)return h; } return null; };
-  const geoOf=h=>{ const me=h.me; let G;
+  const geoOf=h=>{ '@later'; const me=h.me; let G;
     if(me.isInstancedMesh){ G=me.geometry.clone(); G.applyMatrix4(Bx.fromArray(h.en.base||me.instanceMatrix.array,h.id*16)); }
     else { let R=null; try{ R=me.getGeometryRangeAt(me.getGeometryIdAt(h.id)); }catch(e){} if(!R)return null; G=new THREE.BufferGeometry();
       for(const k in me.geometry.attributes){ if(k==='batchId')continue; const A=me.geometry.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(R.vertexStart*z,(R.vertexStart+R.vertexCount)*z),z,A.normalized)); } }
     G.translate(-h.pivot[0],-h.pivot[1],-h.pivot[2]); G.computeBoundingSphere(); return G; };
   // a painted object (OBJS) copied: its quads as first painted, one mesh per batch they sit in
-  const objGeos=o=>{ const B=base(o), by=new Map(); o.parts.forEach((p,k)=>(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p,B[k]]));
+  const objGeos=o=>{ '@later'; const B=base(o), by=new Map(); o.parts.forEach((p,k)=>(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p,B[k]]));
     return [...by].map(([me,L])=>{ const G=new THREE.BufferGeometry(); for(const n in me.geometry.attributes){ const A=me.geometry.attributes[n], z=A.itemSize, d=new A.array.constructor(L.length*6*z);
         L.forEach(([p,b],i)=>n==='position'?d.set(b,i*18):n==='aCol'||n==='aOp'?d.fill(1,i*6*z,(i+1)*6*z):d.set(A.array.subarray(p.v0*z,(p.v0+6)*z),i*6*z)); G.setAttribute(n,new THREE.BufferAttribute(d,z,A.normalized)); }
       G.translate(-o.c.x,-o.c.y,-o.c.z); G.computeVertexNormals(); G.computeBoundingSphere(); return [G,me]; }); };
   const fromOBJ=key=>{ for(const o of OBJS)if(kid(o)===key)return o; return null; };
-  const copyMesh=k=>{ let g=CP.get(k); const e=ST[k]; if(!e||!e.of)return null; if(!g){ const h0=fromWED(e.of), o=h0?null:fromOBJ(e.of);
+  const copyMesh=k=>{ '@later'; let g=CP.get(k); const e=ST[k]; if(!e||!e.of)return null; if(!g){ const h0=fromWED(e.of), o=h0?null:fromOBJ(e.of);
       const add=(src,me)=>{ me.castShadow=src.castShadow; me.receiveShadow=src.receiveShadow; if(src.customDepthMaterial)me.customDepthMaterial=src.customDepthMaterial; me.userData.weCopy=k; g.add(me); };
       g=new THREE.Group();
       if(h0)for(const h of linked(h0)){ const G=geoOf(h); if(!G)continue; let me; if(h.me.isInstancedMesh){ me=new THREE.InstancedMesh(G,h.me.material,1); me.setMatrixAt(0,Tx.identity()); if(h.me.instanceColor)me.setColorAt(0,cx.fromArray(h.en.col0||h.me.instanceColor.array,h.id*3)); me.computeBoundingSphere(); } else me=new THREE.Mesh(G,h.me.material); add(h.me,me); }
       else if(o)for(const [G,src] of objGeos(o))add(src,new THREE.Mesh(G,src.material));
       if(!g.children.length)return null; if(!cpg){ cpg=new THREE.Group(); scene.add(cpg); } cpg.add(g); CP.set(k,g); } return g; };
   const copyHandle=k=>({copy:true,key:k,name:ST[k].copy,place:ST[k].place,pivot:ST[k].at});
-  function applyCopy(o){ const e=ST[o.key]; if(!e)return; if(e.del){ const m=CP.get(o.key); if(m){ cpg.remove(m); m.traverse(c=>c.geometry&&c.geometry.dispose()); CP.delete(o.key); } return; } const me=copyMesh(o.key); if(!me)return;
+  function applyCopy(o){ '@later'; const e=ST[o.key]; if(!e)return; if(e.del){ const m=CP.get(o.key); if(m){ cpg.remove(m); m.traverse(c=>c.geometry&&c.geometry.dispose()); CP.delete(o.key); } return; } const me=copyMesh(o.key); if(!me)return;
     me.position.set(e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]); me.rotation.set((e.rx||0)*D2,(e.r||0)*D2,(e.rz||0)*D2,'YXZ'); me.scale.set(e.s[0],e.s[1],e.s[2]); me.visible=true; }
   const applyCopies=()=>{ for(const k in ST)if(k[0]==='C'&&k[1]==='|')applyCopy({key:k}); };
   const applySel=o=>o.copy?applyCopy(o):o.prop?linked(o).forEach(applyProp):apply(o);
@@ -185,8 +185,8 @@ Object.assign(WE,{on:false}); window.WE=WE;
     const al=pane.addFolder({title:'EVERY EDIT'}); bt(al,'EVERYTHING BACK','wall',allBack); bt(al,'EXPORT','wexp',exp); bt(al,'IMPORT','wimp',()=>$('#wimpf').click());
     bt(pane,'DONE (SHIFT+E)','wout',()=>WE.toggle()); draw(); };
   const exp=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
-  $('#wimpf').onchange=async ev=>{ const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); save(); frame(); draw(); }catch(e){} };
-  const copy=()=>{ if(!sel||sel.sign)return; const src=stOf(sel), [r]=ground(); let at, of, rad=0;
+  $('#wimpf').onchange=async ev=>{ '@later'; const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); save(); frame(); draw(); }catch(e){} };
+  const copy=()=>{ '@later'; if(!sel||sel.sign)return; const src=stOf(sel), [r]=ground(); let at, of, rad=0;
     if(sel.copy){ const e=ST[sel.key]; at=[e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]]; of=e.of; } else if(sel.prop){ at=[sel.pivot[0]+src.t[0],sel.pivot[1]+src.t[1],sel.pivot[2]+src.t[2]]; of=keyOf(sel); }
     else { const B=base(sel), c=sel.c; at=[c.x+src.t[0],c.y+src.t[1],c.z+src.t[2]]; of=kid(sel); for(const a of B)for(let i=0;i<18;i+=3)rad=Math.max(rad,Math.hypot(a[i]-c.x,a[i+2]-c.z)); }
     const h=fromWED(of), it=h&&h.it; if(it&&it.r)rad=it.r; const w=Math.max(.6*T,rad*2+.3*T);

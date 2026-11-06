@@ -50,14 +50,14 @@ void main(){
   const me=new THREE.Mesh(g,mat); me.frustumCulled=false; me.raycast=()=>{}; me.name='fire'; scene.add(LEVELS.own(me,'*'));
   const n1=(t,s)=>{ const i=Math.floor(t), f=t-i, u=f*f*(3-2*f), h=k=>{ const v=Math.sin((k+s*31.7)*127.1)*43758.5453; return v-Math.floor(v); }; return h(i)+(h(i+1)-h(i))*u; };
   const flick=(s,t=performance.now()/1000)=>.8+.12*n1(t*5.3,s)+.1*n1(t*13.1,s+7)-.1*Math.max(0,n1(t*1.7,s+3)-.7)/.3;
-  const add=o=>{ const s={name:o.name||o.kind,k:K[o.kind]??-1,x:o.x,y:o.y,z:o.z,w:o.w||.1,h:o.h||.2,sd:o.seed??Math.random()*50,embers:o.embers||0,smoke:o.smoke||0,steam:o.steam?6:5,sk:o.sk||1,light:o.light||null,li:o.light?o.light.intensity:0,ride:o.ride||o.light||null,ea:Math.random(),sa:Math.random(),a:new THREE.Object3D(),on:true};
+  const add=o=>{ '@later'; const s={name:o.name||o.kind,k:K[o.kind]??-1,x:o.x,y:o.y,z:o.z,w:o.w||.1,h:o.h||.2,sd:o.seed??Math.random()*50,embers:o.embers||0,smoke:o.smoke||0,steam:o.steam?6:5,sk:o.sk||1,light:o.light||null,li:o.light?o.light.intensity:0,ride:o.ride||o.light||null,ea:Math.random(),sa:Math.random(),a:new THREE.Object3D(),on:true};
     if(s.ride)s.off=[s.x-s.ride.position.x,s.y-s.ride.position.y,s.z-s.ride.position.z];
     s.a.position.set(s.x,s.y,s.z); (o.parent||scene).add(s.a); SRC.push(s); return s; };
   const shown=o=>{ for(;o;o=o.parent)if(!o.visible)return false; return true; };
   const part=(k,x,y,z,vx,vy,vz,life,sz,sd=Math.random()*9,g=0)=>{ if(PT.length>=N-64)return; PT.push({k,x,y,z,vx,vy,vz,t:0,life,sz,sd,g}); };
   const ember=(x,y,z,v=1)=>part(4,x,y,z,(Math.random()-.5)*.3*TILE*v,(.5+Math.random()*.7)*TILE*v,(Math.random()-.5)*.3*TILE*v,.7+Math.random()*1.1,(.025+Math.random()*.02)*TILE,Math.random()*9);
   const puff=(x,y,z,k=1,kk=5)=>part(kk,x,y,z,(Math.random()-.5)*.04*TILE,(.22+Math.random()*.12)*TILE*Math.sqrt(k),(Math.random()-.5)*.04*TILE,(2.2+Math.random()*1.6)*Math.sqrt(k),.14*TILE*k,Math.random()*9);
-  const props=(list,X,Y,Z,lights=[])=>{ const out=[], used=new Set();
+  const props=(list,X,Y,Z,lights=[])=>{ '@later'; const out=[], used=new Set();
     for(const p of list)for(const b of p.boxes){ const c=b.c; if(!b.life||!c||c[0]<240||c[2]>110||c[1]<100)continue;
       const nm=p.name||p.kind||'', cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, x=X(cx), z=Z(cy), bw=X(b.x1)-X(b.x0), kind=/brazier/.test(nm)?'bed':/torch/.test(nm)?'torch':'candle';
       let L=null, best=.45*TILE; for(const q of lights){ const d=Math.hypot(q.position.x-x,q.position.z-z); if(d<best&&Math.abs(q.position.y-Y(b.z0))<1.5*TILE){ best=d; L=q; } }

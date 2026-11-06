@@ -1,6 +1,6 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BOAT, BROOK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, GPH, GPUT, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, pos, RAG, RIDE, ROOMS, SFX, SGM, st, STAGE, TRICKS, UI, VIT, VR, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
+import {AMB, BOAT, BROOK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, GPH, GPUT, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, pos, PS2, RAG, RIDE, ROOMS, SFX, SGM, st, STAGE, TRICKS, UI, VIT, VR, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
 import {EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, resize, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX} from './004-main.js';
 import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -22,7 +22,7 @@ const PAD={mv:null,n:0}; SHARED.target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
 // the overhead view moves in whole pixels of the picture (the PS2 filter's chunky ones when it is on), so what stands still on the ground never shimmers from step to step
 const SNR=new THREE.Vector3(), SNU=new THREE.Vector3(), snapCam=()=>{ const c=SHARED.cam; if(!c.isOrthographicCamera||UI.persp)return; const L=SHARED.cellLines||RH, w=(c.top-c.bottom)/c.zoom/Math.max(1,L); if(!(w>0))return;
-  SNR.set(1,0,0).applyQuaternion(c.quaternion); SNU.set(0,1,0).applyQuaternion(c.quaternion); const a=c.position.dot(SNR), b=c.position.dot(SNU); c.position.addScaledVector(SNR,Math.round(a/w)*w-a).addScaledVector(SNU,Math.round(b/w)*w-b); };
+  SNR.set(1,0,0).applyQuaternion(c.quaternion); SNU.set(0,1,0).applyQuaternion(c.quaternion); const a=c.position.dot(SNR), b=c.position.dot(SNU); c.position.addScaledVector(SNR,Math.round(a/w)*w-a).addScaledVector(SNU,Math.round(b/w)*w-b); if(PS2.sp){ const m=n=>((n%4096)+4096)%4096; PS2.sp.uniforms.uO.value.set(m(Math.round(a/w)),m(Math.round(b/w))); } };
 const PMIN=Math.PI/12, PMAX=Math.PI/2-0.002, clampP=v=>Math.max(PMIN,Math.min(PMAX,v));
 renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 let drag=null;

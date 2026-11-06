@@ -12,6 +12,7 @@ import {FOREST, PROPS} from './039-bodega.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
 import {TREEGEN} from './060b-trees.js';
+PARK.noTrees=QS.get('trees')!=='1';   // no trees on the map yet (the park's, the street's, the skyline's); ?trees=1 shows them
 window.PARK=Object.assign(PARK,{x0:50,x1:108,y0:-61+NORTHY,y1:12.5+NORTHY+NORTHX,gate:[92.5,99.5],round:[96,-47,7]});
 PARK.sway={value:0}; PARK.windK={value:1}; PARK.swayAt={value:new THREE.Vector4(0,0,0,25*TILE)};
 PARK.TRK=1.65; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; const A=PARK.swayAt.value; A.x=pos.x; A.y=SHARED.py??pos.y; A.z=pos.z; if(NPCS.R)A.w=NPCS.R; };
@@ -270,6 +271,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     if(leafy)PEEK.mark(g,new Uint8Array(g.attributes.position.count).fill(4)); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy||opt.cards)me.userData.tall=1; if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
     if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway||opt.lod){ M.onBeforeCompile=sh=>{ if(sway)swayV(sh); if(opt.lod)lodH(sh); }; M.customProgramCacheKey=()=>'leafd'+sway+'lod'+(opt.lod||''); } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
+    // a shadow-only stand-in: drawn into the shadow maps by its own depth materials, never into the picture (its own material fails every depth test)
+    if(opt.caster){ me.material=new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false,depthFunc:THREE.NeverDepth}); me.receiveShadow=false;
+      for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5})],['customDistanceMaterial',new THREE.MeshDistanceMaterial({map:opt.map,alphaTest:.5})]]){ if(sway){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'leafsh'+sway+k; } me[k]=M; } }
     if(me.isBatchedMesh&&!opt.far){ const ids=[]; for(let i=0;i+1<RG.length;i++)if(RG[i+1]>RG[i])ids.push(i); WED.meshes.push({place:'park',me,items:IT,ids}); }
     if(!me.isBatchedMesh)me.userData.cull=1;
     scene.add(me); return me; };

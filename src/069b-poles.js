@@ -72,14 +72,14 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     for(const S of spans)if(S.w===S.k%2){ const t=S.w?.38+.1*h3(S.k,1,2):.55+.1*h3(S.k,2,2); WIRES.perch.push({x:0,z:0,y:0,h:S.w?Math.PI:0,span:S,t,d:0,on:0}); }
     const sag=S=>{ const c=S.L*S.L/(8*.024*S.L); return t=>c*(Math.cosh((t-.5)*S.L/c)-Math.cosh(S.L/2/c)); };
     for(const S of spans)S.f=sag(S);
-    const pt=(S,t,T,wind,o)=>{ const sw=Math.sin(Math.PI*t)*(.02+.16*wind)*M*Math.sin(T*(1.1+.25*S.k)+S.ph); let dip=0; for(const P of WIRES.perch)if(P.span===S&&P.d>0)dip+=P.d*(t<P.t?t/P.t:(1-t)/(1-P.t));
-      o.set(S.a.x+(S.b.x-S.a.x)*t,S.a.y+(S.b.y-S.a.y)*t+S.f(t)-dip+sw*.25,S.a.z+(S.b.z-S.a.z)*t+sw); return o; };
+    const pt=(S,t,o)=>{ let dip=0; for(const P of WIRES.perch)if(P.span===S&&P.d>0)dip+=P.d*(t<P.t?t/P.t:(1-t)/(1-P.t));
+      o.set(S.a.x+(S.b.x-S.a.x)*t,S.a.y+(S.b.y-S.a.y)*t+S.f(t)-dip,S.a.z+(S.b.z-S.a.z)*t); return o; };   // the wires hang still: only a perching bird's weight moves one
     const q=new V3(), q2=new V3(), RING=[[0,R],[R,0],[0,-R],[-R,0]], cam0=new V3(), nd=new V3(), you=new V3();
-    let T=0, still=-1, xm=(XS[0]+XS[XS.length-1])/2, half=(XS[XS.length-1]-XS[0])/2;
-    WIRES.tick=(dt,P)=>{ const W=window.WX, wind=W&&W.now?W.now.wind||0:.15; T+=dt;
-      let busy=false; for(const p of WIRES.perch)if(p.span){ const want=p.on?.16*M:0; if(Math.abs(p.d-want)>1e-4){ p.d+=(want-p.d)*Math.min(1,dt*3); busy=true; } pt(p.span,p.t,T,wind,q); p.x=q.x; p.z=q.z; p.y=q.y+R; }
+    let still=-1, xm=(XS[0]+XS[XS.length-1])/2, half=(XS[XS.length-1]-XS[0])/2;
+    WIRES.tick=(dt,P)=>{
+      let busy=false; for(const p of WIRES.perch)if(p.span){ const want=p.on?.16*M:0; if(Math.abs(p.d-want)>1e-4){ p.d+=(want-p.d)*Math.min(1,dt*3); busy=true; } pt(p.span,p.t,q); p.x=q.x; p.z=q.z; p.y=q.y+R; }
       const near=OUT.world&&Math.abs(P.x-xm)<half+60*M;
-      if(near&&(wind>0||busy||still!==0)){ still=wind>0||busy?1:0; let o=0; for(const S of spans){ for(let i=0;i<NS;i++){ pt(S,i/NS,T,wind,q); pt(S,(i+1)/NS,T,wind,q2);
+      if(near&&(busy||still!==0)){ still=busy?1:0; let o=0; for(const S of spans){ for(let i=0;i<NS;i++){ pt(S,i/NS,q); pt(S,(i+1)/NS,q2);
           for(let r=0;r<4;r++){ const A=RING[r], B=RING[(r+1)%4], C=[[q,A],[q2,A],[q2,B],[q,A],[q2,B],[q,B]]; for(const [p,d] of C){ wp[o++]=p.x; wp[o++]=p.y+d[0]; wp[o++]=p.z+d[1]; } } } }
         wg.attributes.position.needsUpdate=true; }
       if(near){ you.set(P.x,(P.y||0)+.9*M,P.z).project(SHARED.cam); SHARED.cam.getWorldDirection(nd); cam0.copy(SHARED.cam.position);

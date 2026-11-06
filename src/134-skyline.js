@@ -1,6 +1,6 @@
 // THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, pos, SKY, VIS, WX} from './003b-systems.js';
+import {CLOCK, CULL, FAR3, PARK, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -103,7 +103,7 @@ import {TPANE} from './087dz-tpane.js';
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));\n#ifdef USE_FOG\n gl_FragColor.rgb=mix(gl_FragColor.rgb,uMK>0.?uMC:fogColor,1.-smoothstep(.04,.45,vMapUv.y));\n#endif'); };   // whole haze at the panels' foot: the city rises out of the haze
     pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
     { const home=SECTION.id; SYS.add('places',()=>VIS.hide(pan,'section',SHARED.LVL==='up'&&SECTIONS.at(SHARED.BOD.MX(pos.x),SHARED.BOD.MY(pos.z))!==home),'134-panels'); } }
-  let TM=null; { const RB=RINGX.bound, T=TILE, P=[], out=(x,z)=>B.some(([bx,bz,sx,sz])=>Math.abs(x/T-bx)<sx/2+1.5&&Math.abs(z/T-bz)<sz/2+1.5);
+  let TM=null; if(!PARK.noTrees){ const RB=RINGX.bound, T=TILE, P=[], out=(x,z)=>B.some(([bx,bz,sx,sz])=>Math.abs(x/T-bx)<sx/2+1.5&&Math.abs(z/T-bz)<sz/2+1.5);
     const TFAR=8*T, TSC=.2, wet=Math.max(SHARED.BOD.ZS(RING.river.y0),SHARED.BOD.ZS(RING.river.y1)); for(const [k,[ax,fx,a0,a1]] of [['x',RB.z0-TFAR,RB.x0-6*T,RB.x1+6*T],['x',RB.z1+TFAR,RB.x0-6*T,RB.x1+6*T],['z',RB.x0-TFAR,RB.z0,RB.z1],['z',RB.x1+TFAR,RB.z0,RB.z1]].entries()){ const sg=k%2?1:-1;
       for(let a=a0;a<a1;a+=(2.6+hs(a,k+80)*1.6)*T){ const off=sg*(hs(a,k+81)*4)*T, x=ax==='x'?a:fx+off, z=ax==='x'?fx+off:a; if(out(x,z)||RINGX.inPocket(x,z,10*T)||z<wet)continue; P.push([x,z,(2.2+hs(a,k+82)*1.4)*T*TSC,(5+hs(a,k+83)*4)*T*TSC,hs(a,k+84)]); } }
     const geo=new THREE.IcosahedronGeometry(1,0), mt=new THREE.MeshLambertMaterial({color:0x2e4a2a,flatShading:true}); TM=new THREE.InstancedMesh(geo,mt,P.length*2); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();

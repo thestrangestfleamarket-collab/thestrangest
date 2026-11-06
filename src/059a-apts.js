@@ -3,19 +3,27 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {BLDK, FADE, FIX, grab, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 const APTS={EMPTY:true};
-await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
+// the flats (owner, 6 Nov 2026: "Free flat at first login"): a flat number maps to a house up the apartment street, a floor and a side; floors 1-10 two flats each, floor 11 the whole-floor penthouse
+APTS.PER=21; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; const i=(n-1)%APTS.PER; return {house:Math.floor((n-1)/APTS.PER),floor:i===20?11:1+Math.floor(i/2),side:i===20?0:i%2,pent:i===20}; };
+APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
+await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
+  APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.flat=FL;
+  for(let hi=0;hi<HOUSES.length;hi++)await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi);
+  MODS.apts=APTS; });
+async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{}; const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;
-  const AY=WP.apts.y1!=null?LOTY(WP.apts.y1):W, AW=WP.apts.y1!=null?{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:LOTY(WP.apts.y0),y1:AY}:{x0:LOTX(WP.apts.x0),x1:LOTX(WP.apts.x1),y0:AY-14,y1:AY}, TA=TURN(AW,WP.apts.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
+  const AY=HP.y1!=null?LOTY(HP.y1):W, AW=HP.y1!=null?{x0:LOTX(HP.x0),x1:LOTX(HP.x1),y0:LOTY(HP.y0),y1:AY}:{x0:LOTX(HP.x0),x1:LOTX(HP.x1),y0:AY-14,y1:AY}, TA=TURN(AW,HP.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   const XZ=(x,y)=>{ const p=TA.pt(x,y); return [X(p[0]),Z(p[1])]; }, loc=(x,z)=>TA.back(x/(TILE*BLDK)+SHARED.BOD.OX,z/(TILE*BLDK)+SHARED.BOD.OY);
   let FLAT=false;   // the fire escape view builds the house unturned
   const tgbox=(b,k)=>{ if(!TA.q||FLAT)return SHARED.BOD.gbox(b,k); const p={boxes:[b],x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}; SHARED.BOD.placeAt(p,TA.q,TA.cx,TA.cy,TA.cx,TA.cy); return SHARED.BOD.gbox(p.boxes[0],k); };
   const tcard=(x,y,z,w,h,kind,seed,k,cross=true)=>{ const p=FLAT?[x,y]:TA.pt(x,y); BLOCKS.card(p[0],p[1],z,w,h,kind,seed,k,cross,!FLAT&&!!(TA.q&1)); };
   const tbox4=(x0,y0,x1,y1)=>{ const r=TA.box(x0,y0,x1,y1), a=X(r.x0), b=X(r.x1), c=Z(r.y0), d=Z(r.y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  APTS.A=AW; APTS.AL=A; APTS.T=TA; APTS.H=H; APTS.floors=ST; APTS.DX=m;
+  const FWD=13, NF=Math.max(1,Math.round((A.x1-A.x0)/FWD)), OFF=mine&&FL.side?Math.min(NF-1,FL.side)*FWD:0;   // two flats a floor across the front; yours from OFF
+  APTS.A=AW; APTS.AL={...A,x0:A.x0+OFF,x1:A.x0+OFF+FWD}; APTS.T=TA; APTS.H=H; APTS.floors=ST; APTS.DX=m;
   const TN=SHARED.BOD.g.hash, vn=BLOCKS.vn, gr=(x,y,k,s=1)=>(vn(x/(5*s),y/(5*s),k)*3+vn(x/(1.7*s),y/(1.7*s),k+2)*2+vn(x*2.3/s,y*2.3/s,k+4))/6;
   const rock=(base,sd,bw=.6,bh=9,mid)=>{ const P=(a,z,f)=>{ const ui=a*24, bc=Math.floor(z/bh), p=ui+(bc&1)*bw*12, bi=Math.floor(p/(bw*24)), fx=p-bi*bw*24, fy=z-bc*bh;
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
@@ -23,7 +31,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
 
   const FWU=[3.25,9.75], SIDE=[.22,.5,.78], WHW=.775, WZ=[24,87], DU=6.5, DI=.85, DO=2.06, RD=5.3, steel=[34,36,40], WINA=Math.round(S*.12), WINB=Math.round(S*.88), WDH=1.5;
   const feats=[]; let seed=3; const win=(side,a,z0,z1,o={})=>{ seed++; feats.push({side,a0:a-(o.hw||.55),a1:a+(o.hw||.55),z0,z1,lit:hash(seed,1,9)<.45,seed,box:!o.door&&hash(seed,4,9)<.78,...o}); };
-  for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(const u of FWU)win('f',A.x0+u,z+WZ[0],z+WZ[1],{hw:WHW}); if(lv)win('f',A.x0+DU,z+3,z+94,{door:true,lit:false}); }
+  for(let lv=0;lv<ST;lv++){ const z=RZ+lv*S; for(let f=0;f<NF;f++){ for(const u of FWU)win('f',A.x0+f*FWD+u,z+WZ[0],z+WZ[1],{hw:WHW}); if(lv)win('f',A.x0+f*FWD+DU,z+3,z+94,{door:true,lit:false}); } }
   feats.push({side:'f',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,arch:true,lit:false,seed:41},{side:'b',a0:m-DW,a1:m+DW,z0:RZ,z1:RZ+DH,door:true,lit:false,seed:43});
   const AD=A.y1-A.y0-HALL, sideAt=APTS.sideAt=k=>A.y1-AD*(1-k);   // the side windows sit on the apartments' depth, measured from the front: none on the halls at the back
   for(const side of ['w','e'])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,sideAt(k),RZ+lv*S+WZ[0],RZ+lv*S+WZ[1],{box:false,hw:WHW});
@@ -34,8 +42,8 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
     const tk=loc(X(AW.x0+5),Z(AW.y0+2.4)), bx_=m+(tk[0]<m?3.2:-3.2), BH=APTS.BH={x0:bx_-1.4,x1:bx_+1.4,y0:A.y0+.5,y1:A.y0+3.3,cx:bx_}, rk=rock(CN,69,.9,14); tgbox({...BH,z0:TOP,z1:TOP+72,c:CN,fs:(nx,ny,X_,Y_,z,f)=>!nx&&Math.abs(X_-bx_)<.45&&z<TOP+62?sh([44,32,26],f):rk.fs(nx,ny,X_,Y_,z,f),top:rk.top},'A'); }   // the stair head at the back of the roof, clear of the roof kit's water tank (148)
 
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
-  const U=u=>A.x0+u, V=v=>A.y0+v; APTS.U=U; APTS.V=V;
-  const ESC=[{yf:A.y1,o:1,lx:11.9,k:'A'},{yf:A.y0,o:-1,lx:1.1,k:'E'}].map(F=>({...F,ua:.8,ub:12.6}));
+  const U=u=>A.x0+OFF+u, V=v=>A.y0+v; APTS.U=U; APTS.V=V;   // (from your flat's edge)
+  const ESC=Array.from({length:NF},(_,f)=>f*FWD-OFF).sort((a,b)=>Math.abs(a)-Math.abs(b)).map(d=>({yf:A.y1,o:1,k:'A',lx:11.9+d,ua:.8+d,ub:12.6+d,du:DU+d}));   // a fire escape for each flat across the front, yours first
   const ESCB=(F,lvs,h0,h1,keep)=>{ const Yd=d=>F.yf+F.o*d, B=(u0,u1,d0,d1,z0,z1,top)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:steel,foot:0,top:top?(x,y)=>(Math.floor(x*10)+Math.floor(y*10))&1?sh(steel,.6):steel:null},F.k);
     const pl=(x,y,z,w,h,kind,seed,k,cross=true)=>{ if(FLAT)APTS.escPlants.push({x,y,z,w,h,kind:cross===false?'box':kind,seed}); else tcard(x,y,z,w,h,kind,seed,k,cross); };   // the views (your landing, out of your windows) have real pots; the street keeps flat cards
     const stone=(u0,u1,d0,d1,z0,z1)=>gbox({x0:U(u0),x1:U(u1),y0:Math.min(Yd(d0),Yd(d1)),y1:Math.max(Yd(d0),Yd(d1)),z0,z1,c:[150,138,124],foot:0},F.k);
@@ -47,14 +55,14 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
       rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); B(F.ua,F.ub,DO-.16,DO+.02,z+33,z+35,1);   // a flat ledge along the top rail to set things on
       if(FLAT)for(const u of FWU)stone(u-WHW-.07,u+WHW+.07,0,.26,z+WZ[0]-2.5,z+WZ[0]);   // the windows' stone sills, deep enough for a pot
-      const sp=[F.ua+.45,F.ua+1.5,F.ua+2.6,F.ub-2.4,F.ub-1.4,F.ub-.45].filter(u=>Math.abs(u-F.lx)>.7&&Math.abs(u-DU)>.95), K=['pot','flower','fern','tall','flower'];
+      const sp=[F.ua+.45,F.ua+1.5,F.ua+2.6,F.ub-2.4,F.ub-1.4,F.ub-.45].filter(u=>Math.abs(u-F.lx)>.7&&Math.abs(u-F.du)>.95), K=['pot','flower','fern','tall','flower'];
       sp.forEach((u,i)=>{ const h=hash(lv,i,F.o+5); if(h<.25)return; const kd=K[Math.floor(hash(lv,i,F.o+7)*K.length)]; pl(U(u),Yd(DO-.3),RZ+z,.7,kd==='tall'?54:kd==='fern'?40:46,kd,lv*13+i*7+F.o,F.k); });
-      for(const [du,j] of [[-1.05,0],[1.05,1]])pl(U(DU+du),Yd(.4),RZ+z,.6,hash(lv,j,F.o+13)<.5?34:44,K[Math.floor(hash(lv,j+8,F.o)*K.length)],lv*17+j*5+F.o+29,F.k);
-      if(hash(lv,3,F.o+9)<.6)pl(U(DU+(hash(lv,4,F.o)<.5?-1.3:1.3)),Yd(DO-.08),RZ+z+35,1.1,12,'flower',lv*5+F.o+17,F.k,false);
+      for(const [du,j] of [[-1.05,0],[1.05,1]])pl(U(F.du+du),Yd(.4),RZ+z,.6,hash(lv,j,F.o+13)<.5?34:44,K[Math.floor(hash(lv,j+8,F.o)*K.length)],lv*17+j*5+F.o+29,F.k);
+      if(hash(lv,3,F.o+9)<.6)pl(U(F.du+(hash(lv,4,F.o)<.5?-1.3:1.3)),Yd(DO-.08),RZ+z+35,1.1,12,'flower',lv*5+F.o+17,F.k,false);
       if((lv<ST-1||!keep)&&hash(lv,5,F.o+11)<.7)pl(U(F.ua+.6+hash(lv,6,F.o)*(F.ub-F.ua-1.2)),Yd(DO-.35),RZ+z+S-58,.6,46,'hang',lv*9+F.o+3,F.k); }
     const l=F.lx, H1=Math.min(h1,AH+38); for(const u of [l-.24,l+.2]){ for(let h=h0;h<H1;h+=S)B(u,u+.04,DI+.03,DI+.07,h,Math.min(H1,h+S)); if(h1>=AH){ B(u,u+.04,-.35,DI+.07,AH+34,AH+38); B(u,u+.04,-.39,-.35,AH,AH+38); } }
     for(let h=h0+10;h<Math.min(h1,AH+32);h+=12)B(l-.2,l+.2,DI+.04,DI+.06,h,h+2); };
-  for(const F of ESC.slice(0,1))ESCB(F,Array.from({length:ST-1},(_,i)=>i+1),-RZ,AH+38,true);
+  for(const F of ESC)ESCB(F,Array.from({length:ST-1},(_,i)=>i+1),-RZ,AH+38,true);
   Object.assign(APTS,{ESC,DU,DI,DO,S,ST,TOP,FWU,escape:(F,lvs,h0,h1)=>{ APTS.escPlants=[]; FLAT=true; try{ ESCB(F,lvs,h0,h1,false); }finally{ FLAT=false; } }});
   // a real pot and plant (or a hanging basket, or a planter box for a ledge), w across and h tall in world units, standing on its base
   { const PM={}, pm=(k,c,o={})=>PM[k]||(PM[k]=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb('+c.join(',')+')'),...o}));
@@ -97,8 +105,10 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   const BHR=tbox4(APTS.BH.x0,APTS.BH.y0,APTS.BH.x1,APTS.BH.y1); FIX.up.push([BHR[0],BHR[1],Yr(TOP),BHR[2],BHR[3],Yr(TOP+72)]);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]]){ const r=tbox4(c0,ST0.y0,c1,ST0.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],.05]); }
   const EDGE=[tbox4(A.x0,A.y1-T,A.x1,A.y1),tbox4(A.x0,A.y0,A.x1,A.y0+T),tbox4(A.x0,A.y0,A.x0+T,A.y1),tbox4(A.x1-T,A.y0,A.x1,A.y1)];
+  if(!mine){ const d=XZ(m,A.y1+.25), o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(d[0],Yr(RZ)+1.2*TILE,d[1]); scene.add(o);   // another house's door: its lobby is for its own tenants
+    const nm='APARTMENTS '+(HI+1), mineNo=APTS0.houses?APTS0.houses.indexOf(APTS0.mine)+1:1, reg2=()=>{ try{ UI.thing({name:nm,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>UI.log(nm+': A TENANT\'S KEY OPENS THIS LOBBY. YOUR FLAT IS IN APARTMENTS '+mineNo+'.','#c8a090')}); }catch(e){ setTimeout(reg2,400); } }; setTimeout(reg2,0); return; }
   const LAD={F:null,y:0}, LV=38, LAND=Array.from({length:ST-1},(_,i)=>(i+1)*S), LS_=[-RZ,...LAND,AH], RFY=R0+SY*(ST-.3);
-  const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const [lx,ly]=loc(x,z), u=lx-A.x0;
+  const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const [lx,ly]=loc(x,z), u=lx-U(0);
     for(const F of ESC){ const d=(ly-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; let b=null; for(const c of LAND)if(Y(c)<=SHARED.py+TOL&&(b==null||c>b))b=c; return b==null?null:Y(b); }
     return null; };
   APTS.stoop=(x,z)=>{ const [u,v]=loc(x,z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
@@ -115,7 +125,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   const lgo=(F,y)=>{ LAD.F=F; LAD.y=y; lpos(F); st.climb={z:0,ph:y}; SHARED.target=null; };
   const loff=top=>{ const F=LAD.F, [x,z]=lpt(F,top?-1:.45); LAD.F=null; st.climb=null; pos.x=x; pos.z=z; };
   APTS.lad=(dt,up,dn,off)=>{ if(!window.POSOK||SHARED.LVL!=='up')return false;
-    if(!LAD.F){ if(!(up||dn))return false; for(const F of ESC){ const [lx,ly]=loc(pos.x,pos.z), u=lx-A.x0, d=(ly-F.yf)*F.o; if(Math.abs(u-F.lx)>.5)continue;
+    if(!LAD.F){ if(!(up||dn))return false; for(const F of ESC){ const [lx,ly]=loc(pos.x,pos.z), u=lx-U(0), d=(ly-F.yf)*F.o; if(Math.abs(u-F.lx)>.5)continue;
         if(d>DI&&d<DO)for(const y of [-RZ,...LAND])if(Math.abs(SHARED.py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
         if(dn&&d<0&&d>-1.5&&SHARED.py>RFY){ lgo(F,AH); return true; } } return false; }
     const [x,z]=lpt(LAD.F,1.3); if(Math.hypot(pos.x-x,pos.z-z)>1.5*TILE){ LAD.F=null; st.climb=null; return false; }
@@ -137,7 +147,7 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AW_=+(A.x1-A.x0).toFixed(3), AD_=+(A.y1-A.y0-HALL).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, HR=APTS.HR={x0:AR.x0,y0:AR.y1,x1:AR.x1,y1:+(AR.y1+HALL).toFixed(3)}, IN=APTS.IN={x0:AR.x0,y0:AR.y0,x1:AR.x1,y1:HR.y1}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
+  const AW_=FWD, AD_=+(A.y1-A.y0-HALL).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, HR=APTS.HR={x0:AR.x0,y0:AR.y1,x1:AR.x1,y1:+(AR.y1+HALL).toFixed(3)}, IN=APTS.IN={x0:AR.x0,y0:AR.y0,x1:AR.x1,y1:HR.y1}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=FL.floor!=null?Math.min(ST-1,FL.floor):ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
   // real window glass: clear looked through straight, the sky's sheen at a slant, the sun's glint
   APTS.glassMat=(o={})=>{ '@later'; const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),3.); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.72,.82,.92),fr*.5); gl_FragColor.a=mix(gl_FragColor.a,.55,fr);'); };
@@ -172,7 +182,6 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
   },'059a-apts');
   APTS.spawn=[X(DC),Z(AR.y1-1.3),0,Math.PI];   // the apartment is entered off the map (not a clipped ROOMS room), so the live sky shows through its open windows
   APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25));
-  APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
   // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
   { APTS.inReal=false;
     const hideFar=()=>{ const F=window.FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
@@ -191,4 +200,4 @@ await grab('apts',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.
       if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc; },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
     APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!PA}); }
-  MODS.apts=APTS; });
+  } }

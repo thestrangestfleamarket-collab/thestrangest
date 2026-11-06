@@ -142,7 +142,20 @@ async function pass(env, token, dev) {
   const r = await get("/auth/v1/user"); if (!r.ok) return { why: "login" };
   const u = await r.json(); if (!u || !UUID.test(u.id || "") || (u.banned_until && Date.parse(u.banned_until) > Date.now())) return { why: "login" };
   const pr = await get("/rest/v1/players?select=id,apt&id=eq." + u.id), pl = pr.ok ? (await pr.json())[0] : null;
+  if (pl && pl.apt == null) pl.apt = await freeFlat(env, u.id);
   return pl ? { ok: true, id: u.id, joined: u.created_at || "", email: u.email || "", apt: pl.apt ?? null } : { why: "code" };
+}
+
+// a free flat at first login (owner, 6 Nov 2026): the next number after the highest given, never a penthouse (every 21st, src/059a-apts.js APTS.PER), kept on the player; none without the service key
+const FLATS_PER = 21;
+async function freeFlat(env, id) {
+  const H = svc(env); if (!H) return null;
+  try {
+    const r = await fetch(env.SUPABASE_URL + "/rest/v1/players?select=apt&apt=not.is.null&order=apt.desc&limit=1", { headers: H }), top = r.ok ? (await r.json())[0] : null;
+    let n = (top && top.apt > 0 ? top.apt : 0) + 1; if (n % FLATS_PER === 0) n++;
+    const w = await fetch(env.SUPABASE_URL + "/rest/v1/players?id=eq." + id + "&apt=is.null", { method: "PATCH", headers: { ...H, "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ apt: n }) });
+    return w.ok ? n : null;
+  } catch (e) { return null; }
 }
 
 const svc = env => { const k = env.SUPABASE_SERVICE_KEY; return k ? { apikey: k, ...(k.startsWith("ey") ? { Authorization: "Bearer " + k } : {}) } : null; };

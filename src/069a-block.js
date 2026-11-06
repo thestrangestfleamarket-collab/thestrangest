@@ -75,14 +75,24 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[]),B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.row===2)lot({x0:p.x0,x1:p.x1,y0:B.row2[0],y1:B.row2[1],kind:'empty',row:2,side:'s'});   // the Hudson row's open lots (the fish market's tables, the flea market's), 6 Nov 2026
+  // a tall barbed-wire fence on an open lot's alley side (the fish market's, owner 6 Nov 2026: "a tall barbed wire gate to the alley"): posts, mesh, and a coil along the top; solid
+  for(const p of LEVEL.places)if(p.fence==='barbed'&&p.y1!=null){ const y=p.y1-.15, z=ZS(y), xa=XS(p.x0), xb=XS(p.x1), Hf=YP(70), FG=new THREE.Group(); FG.name='barbed';
+    const iron=new THREE.MeshLambertMaterial({color:0x3a3c40}), mesh=new THREE.MeshLambertMaterial({color:0x8a8c90,transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false}), wire=new THREE.MeshLambertMaterial({color:0xa8aab0});
+    const n=Math.max(2,Math.round(Math.abs(xb-xa)/(2.4*T)));
+    for(let i=0;i<=n;i++){ const x=xa+(xb-xa)*i/n, m=new THREE.Mesh(new THREE.BoxGeometry(.08*T,Hf,.08*T),iron); m.position.set(x,Hf/2,z); FG.add(m); }
+    { const m=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(xb-xa),Hf*.92),mesh); m.position.set((xa+xb)/2,Hf*.46,z); FG.add(m); }
+    for(const h of [.05,.5,.97]){ const m=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(xb-xa),.05*T,.05*T),iron); m.position.set((xa+xb)/2,Hf*h,z); FG.add(m); }
+    { const c=new THREE.Mesh(new THREE.TorusGeometry(.22*T,.018*T,4,10),wire), L=Math.abs(xb-xa), k=Math.round(L/(.3*T)), C=new THREE.InstancedMesh(c.geometry,wire,k), M4=new THREE.Matrix4(), q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI/2);
+      for(let i=0;i<k;i++)C.setMatrixAt(i,M4.compose(new THREE.Vector3(Math.min(xa,xb)+(i+.5)*L/k,Hf+.2*T,z),q,new THREE.Vector3(1,1,1))); FG.add(C); }
+    G.add(FG); solid(p.x0,y-.1,p.x1,y+.1,70); }
   for(const [a0,b0] of [[B.x0,-62.4],[-33.6,B.hudson[0]],[B.hudson[1],B.x1]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
-  { const F=RING.wx0; for(const [a,b] of holes(LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6).map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,RING.top-1))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }
+  { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,Math.max(LEVEL.park.y0+.5,...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none past the last, 6 Nov 2026)
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
   { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
     let n=0; for(const w of cutWalls){ if(!w.me||!w.me.geometry)continue; bb.setFromObject(w.me); if(bb.isEmpty()||bb.max.y<.1||bb.min.z<z0||bb.max.z>z1)continue;
       const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;
-      w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); n++; } BLK.walls=n; }
+      w.when=()=>lane()||(wh?wh():true); Object.defineProperty(w,'always',{get:()=>lane()||was(),configurable:true}); const f0=w.foot; Object.defineProperty(w,'foot',{get:()=>lane()?Math.max(f0,YP(32)):f0,configurable:true}); n++; } BLK.walls=n; }   // from the alley or the promenade the row is cut at waist height, not hidden (owner, 6 Nov 2026)
   // the new map's backdrop near its edges (owner, 6 Nov 2026: "they see more apt buildings until it fades out"): the first blocks past each edge built as the street's are, brick with windows lit at night; further on the far city's hazed blocks carry on (134-skyline)
   BLK.back=[]; { const E=LEVEL.edge||{}, NEAR=E.near||60;
     const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});

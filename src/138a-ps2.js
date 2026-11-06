@@ -4,9 +4,9 @@ import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
-PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uA:{value:0},uQ:{value:8},uK:{value:new THREE.Vector3(1,1,1)}},
+PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uA:{value:0},uQ:{value:8},uK:{value:new THREE.Vector3(1,1,1)},uO:{value:new THREE.Vector2()}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-  fragmentShader:`uniform sampler2D tDiffuse; uniform float uT,uA,uQ; uniform vec2 uL; uniform vec3 uK; varying vec2 vUv;
+  fragmentShader:`uniform sampler2D tDiffuse; uniform float uT,uA,uQ; uniform vec2 uL,uO; uniform vec3 uK; varying vec2 vUv;
     vec3 fb(vec2 cell){ vec3 c=.25*(texture2D(tDiffuse,(cell+vec2(.25,.25))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.75,.25))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.25,.75))/uL).rgb+texture2D(tDiffuse,(cell+vec2(.75,.75))/uL).rgb); return uQ>=1.?floor(clamp(c*255.,0.,255.)/uQ)*uQ/255.:c; }
     vec3 yiq(vec3 c){ return vec3(dot(c,vec3(.299,.587,.114)),dot(c,vec3(.596,-.274,-.322)),dot(c,vec3(.211,-.523,.312))); }
     vec3 rgb(vec3 y){ return vec3(y.x+.956*y.y+.621*y.z,y.x-.272*y.y-.647*y.z,y.x-1.106*y.y+1.703*y.z); }
@@ -18,10 +18,10 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
       float Y=c0.x+((cl.x+cr.x)*.08-c0.x*.16)*uK.x, e=cr.x-cl.x;
       Y+=(yiq(fb(cell-vec2(3.,0.))).x-c0.x)*.05*uK.x;
       vec2 IQ=c0.yz+((cl.yz+cr.yz)*.25-c0.yz*.5)*min(uK.x,2.);
-      float ph=(cell.x+cell.y)*1.5708;   // a fixed phase: one that turns each frame makes every far edge flicker
+      vec2 wc=cell+uO; float ph=(wc.x+wc.y)*1.5708;   // the grain and the fringes' phase ride with the world (uO: the camera's whole-cell offset), so walking moves them with the ground instead of every pixel changing (6 Nov 2026)
       IQ+=e*.18*uK.y*smoothstep(.2,.5,abs(e))*vec2(cos(ph),sin(ph));
       vec3 c=rgb(vec3(Y,IQ));
-      c+=gr(cell,Y)*uK.z;
+      c+=gr(wc,Y)*uK.z;
       gl_FragColor=vec4(clamp(c,0.,1.),mix(1.,texture2D(tDiffuse,(cell+.5)/uL).a,uA)); }`};
 PS2.sp=new ShaderPass(PS2.shader); PS2.sp.material.toneMapped=false; SHARED.composer.addPass(PS2.sp);
 // a see-through part of the picture (the cinema's screen) stays see-through while asked
@@ -47,5 +47,5 @@ PS2.save=()=>{ try{ SAVE.set('ps2p',['pix','col','smear','fringe','grain'].map(n
 PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };
 { let v='1'; try{ v=SAVE.get('ps2')||'1'; }catch(e){} PS2.on=v==='1'; PS2.sp.enabled=PS2.on; }
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
-  const Ln=PS2.lines(), cap=PS2.on&&Ln?Math.min(480,2*Ln):0; if(cap!==PS2.cap){ PS2.cap=cap; if(SHARED.resize)SHARED.resize(); } SHARED.cellLines=PS2.on?Ln:0; if(!PS2.on)return; const u=PS2.sp.uniforms, T=PS2.tune(), L=Ln||RH;
-  u.uL.value.set(Math.round(L*RW/Math.max(1,RH)),L); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]); },'138a-ps2');
+  const Ln=PS2.lines(), cap=PS2.on&&Ln?Math.min(480,2*Ln):0; if(cap!==PS2.cap){ PS2.cap=cap; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms, T=PS2.tune();
+  u.uL.value.set(RW/ck,RH/ck); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]); },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)

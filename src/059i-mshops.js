@@ -23,9 +23,12 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return lit(c.map(q=>q*.85)); }},   // the shelves seen through the glass, in the shop's warm light
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
       win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }},
-    // Market St's new shops (owner, 5 Nov 2026): the outside a whole Polyfork building (pf: its key in data/street.json, stood on the lot by 068a-pfrow), the keeper's flat its top floor; h its height in z-pixels (a metre is 28.6)
-    florist:{name:'THE FLORIST',pf:'florist',door:.5,h:199},tailor:{name:'THE TAILOR',pf:'tailor',door:.5,h:269},barber:{name:'THE BARBER',pf:'barber',door:.5,h:162},outfitter:{name:'THE OUTFITTER',pf:'outfitter',door:.5,h:172},
-    fishmarket:{name:'THE FISH MARKET',pf:'fishmarket',door:.5,h:200},pets:{name:'THE PET STORE',pf:'pets',door:.5,h:200},antiques:{name:'ANTIQUES & PAWN',pf:'antiques',door:.5,h:237},hotel:{name:'THE HOTEL',pf:'hotel',door:.5,h:295}};
+    // the new map's shops (owner, 6 Nov 2026): painted brick fronts, a sign and a shop window each (no awnings, nothing western); h their height in z-pixels (a metre is 28.6)
+    ...Object.fromEntries([['florist','THE FLORIST','FLOWERS',[128,64,52],[255,190,200]],['bees','THE BEEKEEPER','HONEY',[132,82,56],[255,206,90]],['bfly','THE BUTTERFLY SHOP','BUTTERFLIES',[110,62,54],[200,170,255]],
+      ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','THE PET STORE','PETS',[96,60,50],[180,255,170]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],
+      ['gems','THE GEM SHOP','GEMS',[92,86,90],[140,255,230]],['armor','THE ARMOURY','ARMS',[84,78,76],[255,120,90]],['clothes','THE CLOTHES SHOP','CLOTHES',[126,68,56],[255,220,160]],
+      ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
+      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;

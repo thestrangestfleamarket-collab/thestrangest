@@ -28,7 +28,8 @@ Risk is noted only when it isn't low.
 ## The new map (owner, 6 Nov 2026: "ok lets go"; HISTORY "the new map", `mockups/newmap.svg`)
 
 One pull request each, in this order; the game stays playable after every one.
-- [ ] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`), the way to the Hudson 22 m wide, the alley's two locked gates, forcefields at the edges with the fading backdrop, the places leaving the map archived.
+- [x] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`, `row:2`), the way to the Hudson 22 m wide on the park gate, the alley's gates at the path, the places leaving the map gone from the level file. The new skill shops stand with their keepers; their insides are empty until job 4. The bar is shut (garages on its lot) until job 7.
+- [ ] **1b. Forcefields and the fading backdrop** · P1 · L · code. At every edge of the map: a forcefield you can't pass, and past it more apartments, park, lake and river fading out (seen, never walked, cheap).
 - [ ] **2. The apartment street** · P1 · L · code. Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
 - [ ] **3. The Hudson** · P2 · L · code. The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
 - [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.

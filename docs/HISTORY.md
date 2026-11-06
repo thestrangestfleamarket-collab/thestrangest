@@ -5537,6 +5537,7 @@ Owner, of the menus listed with what works ("lets reorganize all the menus"), of
 - 5 Nov 2026, the underwear (owner: "why does the underwear look like that"): it no longer flickers with the skin under it.
 - 5 Nov 2026, the PS2 filter in parts (owner: "lets make 1-5 toggle on off in ps2 filter so i can see what each one does, also a slider to minimize or maximize the effect"): GRAPHICS has 1 PIXELS, 2 COLOURS, 3 SMEAR, 4 FRINGES, 5 GRAIN, each on or off, and a STRENGTH slider (0–200%, 100% the look as made); kept in the browser.
 - 5 Nov 2026, the render inspector back (owner: "add render inspector back in game"): out of the archive, opened from the menu's TOOLS as before.
+- 5 Nov 2026, the render inspector times a frame (owner, of the inspector at 19 FPS with the GPU near idle: "yes"): TIME A FRAME lists each system's milliseconds a frame while it is open; its draw totals read the frame just drawn (they read 0). The river's "below ground" note was only its bed: left as is.
 
 ## 5 Nov 2026: real insides from the street (mockups)
 - Owner: "remove the interior/exterior off world style loading for interiors of shops ... all the buildings to be real interiors from outside ... interiors are not rendered until you are close by. show me some mockups": https://claude.ai/artifact/5u96CxZJbpwec5B1qg7Em1 (rings, portals, a door that opens when ready, fake rooms in far windows). Waiting on his pick.

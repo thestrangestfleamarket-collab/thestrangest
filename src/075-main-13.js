@@ -47,7 +47,7 @@ function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N
 
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();
 let last=performance.now(), fpsT=0, fpsN=0, t=0;
-function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; } if(PARK.hold){ if(xf)VR.draw(true); return; } renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SYS.run('every',now); SYS.run('win',now); SHARED.METRO.tick(dt,pos); SYS.run('carry',dt); t+=dt; if(xf)SYS.run('xr',dt,xf);
+function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; } if(PARK.hold){ if(xf)VR.draw(true); return; } { const R=renderer.info.render; renderer.info.last={calls:R.calls,triangles:R.triangles,points:R.points,lines:R.lines}; } /* last: the frame just drawn, for the render inspector */ renderer.info.reset(); const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now; SYS.run('every',now); SYS.run('win',now); SHARED.METRO.tick(dt,pos); SYS.run('carry',dt); t+=dt; if(xf)SYS.run('xr',dt,xf);
   if(UI.freeCam?MAPLV(UI.camT.y-.9,UI.camT,true):MAPLV(SHARED.py,pos))setPhys(SHARED.LVL);
   if(UI.view!=='iso'){ if(keys.has('q'))SHARED.yawTo+=dt*1.8; if(keys.has('e'))SHARED.yawTo-=dt*1.8; if(keys.has('z'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo-dt*1.2); if(keys.has('x'))SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dt*1.2); }
   if(UI.hold&&!UI.persp){ const H=UI.hold; SHARED.yawTo=H.yaw; SHARED.pitchTo=H.pitch; SHARED.ppuTo=H.ppu; if(UI.off){ H.off?UI.off.copy(H.off):UI.off.set(0,0,0); if(H.look){ const c=SHARED.cam, lim=H.look*(c.top-c.bottom)/(c.zoom||1); H.dy=Math.max(-lim,Math.min(lim,H.dy||0)); UI.off.addScaledVector(UI.holdUp.setFromMatrixColumn(c.matrixWorld,1),H.dy); } } }

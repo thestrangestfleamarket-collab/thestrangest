@@ -468,8 +468,8 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": 114,
-   "x1": 118
+   "x0": 120.5,
+   "x1": 124.5
   },
   {
    "id": "hudson",

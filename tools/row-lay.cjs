@@ -13,7 +13,7 @@ const lay=(L,a,b)=>{ const s=L.reduce((t,r)=>t+r[2],0), out=[]; let x=a; for(con
 const KEEP=new Set(['apts','subway','hudson']); for(const k in P)if(/^house\d/.test(k))KEEP.add(k);
 const out=[]; for(const id of KEEP)if(P[id])out.push(P[id]);
 const set=(id,o)=>{ const p=Object.assign(P[id]?{...P[id]}:{id,kind:'front'},o); for(const k of ['y0','y1','face','lot','pf'])if(o[k]===undefined&&!(k in o))delete p[k]; out.push(p); return p; };
-P.hudson&&Object.assign(P.hudson,{x0:PX0,x1:PX1});
+P.hudson&&Object.assign(P.hudson,{x0:PX0,x1:PX1}); P.subway&&Object.assign(P.subway,{x0:r2(PX1-4.6),x1:r2(PX1-.6)});   // the subway stairs at the way through's east edge, by the bodega: its middle stays clear from the park gate to the pier (6 Nov 2026)
 const MR=[...lay(MW,X0,PX0),...lay(ME,PX1,X1)], BR=W.block.backrow, spans=[];
 for(const [[id,name,,who],x0,x1] of MR){ const o={x0,x1,lot:true}; if(name)o.name=name; if(who)o.merchant=who; if(id==='bath'||id==='bodega')delete o.lot; set(id,o); }
 const HL=[...HW.map((id,i)=>[id,MR[i]]),...HE.map((id,i)=>[id,MR[MW.length+i]])];

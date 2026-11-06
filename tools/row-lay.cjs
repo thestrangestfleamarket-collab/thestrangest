@@ -1,22 +1,29 @@
-// MARKET ST'S ROW (owner, 5 Nov 2026): lays the south row's places in data/world.json west to east from a list, a shut garage building in every gap; West St gets a line of apartment houses. Widths are the kit buildings' real metres (a map unit is 0.84 m); the bath house, the Hudson passage, the subway stairs and the bodega keep their spots. Run: node tools/row-lay.cjs
-const fs=require('fs'), F=__dirname+'/../data/world.json', W=JSON.parse(fs.readFileSync(F,'utf8')), U=m=>+(m/.84).toFixed(2), r2=v=>+v.toFixed(2);
-const P=Object.fromEntries(W.places.map(p=>[p.id,p])), keep=['bath','hudson','subway','bodega'];
-const X0=W.streets.west.x0, X1=W.park.x1-10;   // the walkable row: from West St's corner to 8 tiles short of the park's east wall (the corner, 18 Oct 2026)
-// the row's fronts in order, each its width in map units (the old shops keep their own) and the Polyfork front that stands on it (data/street.json)
-const WEST=[['art',30],['bank',P.bank.x1-P.bank.x0],['theatre',14],['play',14],['arcade',14]];
-const EAST=[['florist',U(8),'THE FLORIST','florist'],['tailor',U(4),'THE TAILOR','tailor'],['barber',U(4),'THE BARBER','barber'],['outfitter',U(10),'THE OUTFITTER','outfitter'],['fishmarket',U(8.85),'THE FISH MARKET','fishmarket'],['books',P.books.x1-P.books.x0],['pets',U(8.85),'THE PET STORE','pets'],['antiques',U(8),'ANTIQUES & PAWN','antiques'],['hotel',U(8),'THE HOTEL','hotel']];   // the bookstore keeps its own painted front and width
-const fixed=keep.map(k=>P[k]), fx0=Math.min(...fixed.map(p=>p.x0)), fx1=Math.max(...fixed.map(p=>p.x1));
-const sum=L=>L.reduce((s,r)=>s+r[1],0), gapWest=r2((fx0-X0-sum(WEST))/WEST.length), gapEast=r2((X1-fx1-sum(EAST))/EAST.length);   // the same gap after every front on each side of the bath house and the bodega, a garage in each
-const lay=(L,x0,gapW)=>{ let x=x0; for(const [id,w,name,pf] of L){ const p=P[id]||(P[id]={id,name,kind:'front'}); delete p.y0; delete p.y1; delete p.face; p.x0=r2(x); p.x1=r2(x+w); p.lot=true; if(pf)p.pf=pf; if(name)p.name=name; x+=w+gapW; } return x; };
-lay(WEST,X0,gapWest); lay(EAST,fx1+gapEast,gapEast);
-for(const id of ['play','theatre','arcade','bank'])delete P[id].lot;   // these four are the block's own lots (006-map-pre)
-delete P.museum; delete P.apts.lot;
-// the bar stays at the corner of West St: its inside (30 Oct 2026) is 11 wide and 27 deep, too deep for the row (5 Nov 2026)
-Object.assign(P.bar,{x0:-80.02,x1:X0,y0:-22.2,y1:-11.2,face:'e'}); delete P.bar.lot;
-// West St: the apartment house and the bar where they are, then ten Polyfork houses up the street with a small gap between them
-const H=P.apts, hw=U(16), hd=U(12), gap=1.2, cw=['apt_red','apt_brown','apt_sand','apt_grey']; let y=Math.max(H.y1,P.bar.y1)+gap, n=0; for(const k in P)if(/^house\d/.test(k))delete P[k];
-while(y+hw<=W.sections.grid.y0+W.sections.grid.h-2&&n<10){ n++; P['house'+n]={id:'house'+n,name:'APARTMENTS '+(n+1),kind:'front',x0:r2(X0-hd),x1:X0,y0:r2(y),y1:r2(y+hw),face:'e',pf:cw[n%4]}; y+=hw+gap; }
-W.places=Object.values(P); W.block.x0=-100; W.block.x1=252; W.block.pf={};   // the Drive's buildings' spans are gone with them (archived 5 Nov 2026)
-for(const [id,h] of Object.entries(W.homes)){ const k=h[3]; if(k==='bar'){ W.homes[id]=[-59.5,-17.5,h[2],k]; continue; } if(k&&P[k]&&P[k].y1==null){ const p=P[k]; W.homes[id]=[r2((p.x0+p.x1)/2),r2(W.block.front+2.4),h[2],k]; } }   // a keeper whose home names a moved place stands at its new door
+// THE NEW MAP'S ROWS (owner, 6 Nov 2026, "the new map" in docs/HISTORY.md): lays Market St's row (facing the park) and the Hudson row behind it (facing the river) in data/world.json, lot for lot, either side of the one way through to the Hudson, which lines up with the park's gate. Run: node tools/row-lay.cjs
+const fs=require('fs'), F=__dirname+'/../data/world.json', W=JSON.parse(fs.readFileSync(F,'utf8')), r2=v=>+v.toFixed(2);
+const P=Object.fromEntries(W.places.map(p=>[p.id,p]));
+const X0=W.streets.west.x0, X1=W.park.x1-10, GATE=(W.parkPlaces&&W.parkPlaces.round?W.parkPlaces.round.x:112), PASS=22/.84;   // the row runs from West St's corner to the park's east end; the way through is 22 m, centred on the park gate
+const PX0=r2(GATE-PASS/2), PX1=r2(GATE+PASS/2);
+// [id, name, weight (its share of the row), merchant]: Market St's row west to east, each side of the way through
+const MW=[['florist','THE FLORIST',1,'tomato'],['bees','THE BEEKEEPER',1,'village_gardener'],['bfly','THE BUTTERFLY SHOP',1,'park_ranger'],['birds','THE BIRD SHOP',1,'forest_ranger'],['pets','THE PET STORE',1],['mush','THE MUSHROOM SHOP',1,'mushroom'],['bath',null,1]];
+const ME=[['bodega',null,1],['gems','THE GEM SHOP',1,'scuba_diver'],['armor','THE ARMOURY',1,'samurai_warrior'],['clothes','THE CLOTHES SHOP',1],['skate','THE SKATE SHOP',1,'skate_shop_owner'],['diner','THE DINER',2]];
+// the Hudson row behind them, lot for lot (each place takes most of its lot, a shut garage the rest)
+const HW=['bank','hotel','bar','theatre','play','art','fishtables'], HE=['fishing','books','arcade','tailor','barber','flea'];
+const HN={fishtables:'THE FISH MARKET',fishing:'FISHING & SCUBA',flea:'THE FLEA MARKET'}, HM={fishing:'fisherman_in_waders'}, HLOT={fishtables:1,flea:1};
+const lay=(L,a,b)=>{ const s=L.reduce((t,r)=>t+r[2],0), out=[]; let x=a; for(const r of L){ const w=(b-a)*r[2]/s; out.push([r,r2(x),r2(x+w)]); x+=w; } return out; };
+const KEEP=new Set(['apts','subway','hudson']); for(const k in P)if(/^house\d/.test(k))KEEP.add(k);
+const out=[]; for(const id of KEEP)if(P[id])out.push(P[id]);
+const set=(id,o)=>{ const p=Object.assign(P[id]?{...P[id]}:{id,kind:'front'},o); for(const k of ['y0','y1','face','lot','pf'])if(o[k]===undefined&&!(k in o))delete p[k]; out.push(p); return p; };
+P.hudson&&Object.assign(P.hudson,{x0:PX0,x1:PX1});
+const MR=[...lay(MW,X0,PX0),...lay(ME,PX1,X1)], BR=W.block.backrow, spans=[];
+for(const [[id,name,,who],x0,x1] of MR){ const o={x0,x1,lot:true}; if(name)o.name=name; if(who)o.merchant=who; if(id==='bath'||id==='bodega')delete o.lot; set(id,o); }
+const HL=[...HW.map((id,i)=>[id,MR[i]]),...HE.map((id,i)=>[id,MR[MW.length+i]])];
+for(const [id,[,x0,x1]] of HL){ const last=id==='fishtables'||id==='fishing'||id==='flea', g=last?0:(x1-x0)*.28, a=x0<PX0?x0+g:x0, b=x0<PX0?x1:x1-g;   // the garage on the side away from the way through
+  const o={x0:r2(a),x1:r2(b),y0:BR[0],y1:BR[1],face:'s',row:2}; if(HN[id])o.name=HN[id]; if(HM[id])o.merchant=HM[id]; if(HLOT[id])o.kind='lot'; set(id,o); if(id!=='bar')spans.push([r2(a),r2(b)]); }   // the bar is shut until its new inside (job 7): garages stand on its lot
+// West St: the bar has left its corner, so the houses close up behind the apartment house, a small gap between each (5 Nov 2026)
+{ const H=out.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.y0-b.y0); let y=P.apts.y1+1.2; for(const h of H){ const d=h.y1-h.y0; h.y0=r2(y); h.y1=r2(y+d); y+=d+1.2; } }
+W.places=out; W.block.pf={2:spans};
+// keepers whose home names a place that is gone stand nowhere special now; a keeper whose home names a moved place stands at its new door
+const at=Object.fromEntries(out.map(p=>[p.id,p]));
+for(const [id,h] of Object.entries(W.homes)){ const k=h[3]; if(!k)continue; if(!at[k]){ delete W.homes[id]; continue; } const p=at[k]; if(p.y1==null)W.homes[id]=[r2((p.x0+p.x1)/2),r2(W.block.front+2.4),h[2],k]; }
 fs.writeFileSync(F,JSON.stringify(W,null,1)+'\n');
-console.log('gaps',gapWest,gapEast,'houses',n,'row:',W.places.filter(p=>p.y1==null).sort((a,b)=>a.x0-b.x0).map(p=>p.id+' '+p.x0+'..'+p.x1).join(' | '));
+console.log('way through',PX0,PX1,'\nMarket St:',MR.map(([r,a,b])=>r[0]+' '+a+'..'+b).join(' | '),'\nHudson:',HL.map(([id])=>id+' '+at[id].x0+'..'+at[id].x1).join(' | '));

@@ -25,6 +25,18 @@ Risk is noted only when it isn't low.
 6. **Then the grouped polish passes** (each one pull request): the bath room, the clothes, one tree pass, the skate park in Section B,
    the shop insides with their windows, the moves.
 
+## The new map (owner, 6 Nov 2026: "ok lets go"; HISTORY "the new map", `mockups/newmap.svg`)
+
+One pull request each, in this order; the game stays playable after every one.
+- [x] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`, `row:2`), the way to the Hudson 22 m wide on the park gate, the alley's gates at the path, the places leaving the map gone from the level file. The new skill shops stand with their keepers; their insides are empty until job 4. The bar is shut (garages on its lot) until job 7.
+- [ ] **1b. Forcefields and the fading backdrop** · P1 · L · code. At every edge of the map: a forcefield you can't pass, and past it more apartments, park, lake and river fading out (seen, never walked, cheap).
+- [ ] **2. The apartment street** · P1 · L · code. Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
+- [ ] **3. The Hudson** · P2 · L · code. The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
+- [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
+- [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
+- [ ] **6. The park's made things** · P2 · L · code. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
+- [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
+
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):

@@ -379,7 +379,58 @@
   }
  ],
  "block": {
-  "pf": {},
+  "pf": {
+   "2": [
+    [
+     -46.44,
+     -30.87
+    ],
+    [
+     -24.81,
+     -9.24
+    ],
+    [
+     18.44,
+     34.01
+    ],
+    [
+     40.07,
+     55.64
+    ],
+    [
+     61.7,
+     77.27
+    ],
+    [
+     77.27,
+     98.9
+    ],
+    [
+     125.1,
+     143.23
+    ],
+    [
+     143.23,
+     156.28
+    ],
+    [
+     161.36,
+     174.41
+    ],
+    [
+     179.49,
+     192.54
+    ],
+    [
+     197.61,
+     210.66
+    ],
+    [
+     215.74,
+     252
+    ]
+   ]
+  },
   "x0": -100,
   "x1": 252,
   "front": -77,
@@ -414,45 +465,6 @@
    "face": "e"
   },
   {
-   "id": "bodega",
-   "name": "THE BODEGA",
-   "kind": "front",
-   "x0": 124.45,
-   "x1": 142.05
-  },
-  {
-   "id": "play",
-   "name": "THE PLAYHOUSE",
-   "kind": "front",
-   "x0": 46.74,
-   "x1": 60.74
-  },
-  {
-   "id": "bank",
-   "name": "THE BANK",
-   "kind": "front",
-   "x0": -13.62,
-   "x1": 14.98
-  },
-  {
-   "id": "art",
-   "name": "THE ART MUSEUM",
-   "kind": "front",
-   "x0": -52.5,
-   "x1": -22.5,
-   "lot": true
-  },
-  {
-   "id": "bar",
-   "name": "THE BAR",
-   "kind": "front",
-   "x0": -80.02,
-   "x1": -52.5,
-   "y0": -22.2,
-   "y1": -11.2,
-   "face": "e"
-  },
-  {
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
@@ -463,117 +475,8 @@
    "id": "hudson",
    "name": "TO THE HUDSON",
    "kind": "passage",
-   "x0": 111,
-   "x1": 124
-  },
-  {
-   "id": "bath",
-   "name": "THE BATH HOUSE",
-   "kind": "front",
-   "x0": 92.51,
-   "x1": 110.99
-  },
-  {
-   "id": "theatre",
-   "name": "THE MOVIE THEATRE",
-   "kind": "front",
-   "x0": 23.86,
-   "x1": 37.86
-  },
-  {
-   "id": "arcade",
-   "name": "THE ARCADE",
-   "kind": "front",
-   "x0": 69.62,
-   "x1": 83.62
-  },
-  {
-   "id": "books",
-   "name": "THE BOOKSTORE",
-   "kind": "front",
-   "x0": 200.81,
-   "x1": 213.81,
-   "merchant": "professor",
-   "at": [
-    -2.4,
-    9.62
-   ],
-   "inW": 8,
-   "inD": 10,
-   "inH": 200,
-   "lot": true
-  },
-  {
-   "id": "florist",
-   "name": "THE FLORIST",
-   "kind": "front",
-   "x0": 144.93,
-   "x1": 154.45,
-   "lot": true,
-   "pf": "florist"
-  },
-  {
-   "id": "tailor",
-   "name": "THE TAILOR",
-   "kind": "front",
-   "x0": 157.33,
-   "x1": 162.09,
-   "lot": true,
-   "pf": "tailor"
-  },
-  {
-   "id": "barber",
-   "name": "THE BARBER",
-   "kind": "front",
-   "x0": 164.97,
-   "x1": 169.73,
-   "lot": true,
-   "pf": "barber"
-  },
-  {
-   "id": "outfitter",
-   "name": "THE OUTFITTER",
-   "kind": "front",
-   "x0": 172.61,
-   "x1": 184.51,
-   "lot": true,
-   "pf": "outfitter"
-  },
-  {
-   "id": "fishmarket",
-   "name": "THE FISH MARKET",
-   "kind": "front",
-   "x0": 187.39,
-   "x1": 197.93,
-   "lot": true,
-   "pf": "fishmarket"
-  },
-  {
-   "id": "pets",
-   "name": "THE PET STORE",
-   "kind": "front",
-   "x0": 216.69,
-   "x1": 227.23,
-   "lot": true,
-   "pf": "pets"
-  },
-  {
-   "id": "antiques",
-   "name": "ANTIQUES & PAWN",
-   "kind": "front",
-   "x0": 230.11,
-   "x1": 239.63,
-   "lot": true,
-   "pf": "antiques"
-  },
-  {
-   "id": "hotel",
-   "name": "THE HOTEL",
-   "kind": "front",
-   "x0": 242.51,
-   "x1": 252.03,
-   "lot": true,
-   "pf": "hotel"
+   "x0": 98.9,
+   "x1": 125.1
   },
   {
    "id": "house1",
@@ -581,8 +484,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": -10,
-   "y1": 9.05,
+   "y0": -22,
+   "y1": -2.95,
    "face": "e",
    "pf": "apt_brown"
   },
@@ -592,8 +495,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 10.25,
-   "y1": 29.3,
+   "y0": -1.75,
+   "y1": 17.3,
    "face": "e",
    "pf": "apt_sand"
   },
@@ -603,8 +506,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 30.5,
-   "y1": 49.55,
+   "y0": 18.5,
+   "y1": 37.55,
    "face": "e",
    "pf": "apt_grey"
   },
@@ -614,8 +517,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 50.75,
-   "y1": 69.8,
+   "y0": 38.75,
+   "y1": 57.8,
    "face": "e",
    "pf": "apt_red"
   },
@@ -625,8 +528,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 71,
-   "y1": 90.05,
+   "y0": 59,
+   "y1": 78.05,
    "face": "e",
    "pf": "apt_brown"
   },
@@ -636,8 +539,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 91.25,
-   "y1": 110.3,
+   "y0": 79.25,
+   "y1": 98.3,
    "face": "e",
    "pf": "apt_sand"
   },
@@ -647,8 +550,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 111.5,
-   "y1": 130.55,
+   "y0": 99.5,
+   "y1": 118.55,
    "face": "e",
    "pf": "apt_grey"
   },
@@ -658,8 +561,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 131.75,
-   "y1": 150.8,
+   "y0": 119.75,
+   "y1": 138.8,
    "face": "e",
    "pf": "apt_red"
   },
@@ -669,8 +572,8 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 152,
-   "y1": 171.05,
+   "y0": 140,
+   "y1": 159.05,
    "face": "e",
    "pf": "apt_brown"
   },
@@ -680,10 +583,272 @@
    "kind": "front",
    "x0": -66.79,
    "x1": -52.5,
-   "y0": 172.25,
-   "y1": 191.3,
+   "y0": 160.25,
+   "y1": 179.3,
    "face": "e",
    "pf": "apt_sand"
+  },
+  {
+   "id": "florist",
+   "name": "THE FLORIST",
+   "kind": "front",
+   "x0": -52.5,
+   "x1": -30.87,
+   "lot": true,
+   "merchant": "tomato"
+  },
+  {
+   "id": "bees",
+   "kind": "front",
+   "x0": -30.87,
+   "x1": -9.24,
+   "lot": true,
+   "name": "THE BEEKEEPER",
+   "merchant": "village_gardener"
+  },
+  {
+   "id": "bfly",
+   "kind": "front",
+   "x0": -9.24,
+   "x1": 12.39,
+   "lot": true,
+   "name": "THE BUTTERFLY SHOP",
+   "merchant": "park_ranger"
+  },
+  {
+   "id": "birds",
+   "kind": "front",
+   "x0": 12.39,
+   "x1": 34.01,
+   "lot": true,
+   "name": "THE BIRD SHOP",
+   "merchant": "forest_ranger"
+  },
+  {
+   "id": "pets",
+   "name": "THE PET STORE",
+   "kind": "front",
+   "x0": 34.01,
+   "x1": 55.64,
+   "lot": true
+  },
+  {
+   "id": "mush",
+   "kind": "front",
+   "x0": 55.64,
+   "x1": 77.27,
+   "lot": true,
+   "name": "THE MUSHROOM SHOP",
+   "merchant": "mushroom"
+  },
+  {
+   "id": "bath",
+   "name": "THE BATH HOUSE",
+   "kind": "front",
+   "x0": 77.27,
+   "x1": 98.9
+  },
+  {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": 125.1,
+   "x1": 143.23
+  },
+  {
+   "id": "gems",
+   "kind": "front",
+   "x0": 143.23,
+   "x1": 161.36,
+   "lot": true,
+   "name": "THE GEM SHOP",
+   "merchant": "scuba_diver"
+  },
+  {
+   "id": "armor",
+   "kind": "front",
+   "x0": 161.36,
+   "x1": 179.49,
+   "lot": true,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior"
+  },
+  {
+   "id": "clothes",
+   "kind": "front",
+   "x0": 179.49,
+   "x1": 197.61,
+   "lot": true,
+   "name": "THE CLOTHES SHOP"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 197.61,
+   "x1": 215.74,
+   "lot": true,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner"
+  },
+  {
+   "id": "diner",
+   "kind": "front",
+   "x0": 215.74,
+   "x1": 252,
+   "lot": true,
+   "name": "THE DINER"
+  },
+  {
+   "id": "bank",
+   "name": "THE BANK",
+   "kind": "front",
+   "x0": -46.44,
+   "x1": -30.87,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "hotel",
+   "name": "THE HOTEL",
+   "kind": "front",
+   "x0": -24.81,
+   "x1": -9.24,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "bar",
+   "name": "THE BAR",
+   "kind": "front",
+   "x0": -3.18,
+   "x1": 12.39,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "theatre",
+   "name": "THE MOVIE THEATRE",
+   "kind": "front",
+   "x0": 18.44,
+   "x1": 34.01,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "play",
+   "name": "THE PLAYHOUSE",
+   "kind": "front",
+   "x0": 40.07,
+   "x1": 55.64,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "art",
+   "name": "THE ART MUSEUM",
+   "kind": "front",
+   "x0": 61.7,
+   "x1": 77.27,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "fishtables",
+   "kind": "lot",
+   "x0": 77.27,
+   "x1": 98.9,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE FISH MARKET"
+  },
+  {
+   "id": "fishing",
+   "kind": "front",
+   "x0": 125.1,
+   "x1": 143.23,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "FISHING & SCUBA",
+   "merchant": "fisherman_in_waders"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOKSTORE",
+   "kind": "front",
+   "x0": 143.23,
+   "x1": 156.28,
+   "merchant": "professor",
+   "at": [
+    -2.4,
+    9.62
+   ],
+   "inW": 8,
+   "inD": 10,
+   "inH": 200,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "arcade",
+   "name": "THE ARCADE",
+   "kind": "front",
+   "x0": 161.36,
+   "x1": 174.41,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "tailor",
+   "name": "THE TAILOR",
+   "kind": "front",
+   "x0": 179.49,
+   "x1": 192.54,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "barber",
+   "name": "THE BARBER",
+   "kind": "front",
+   "x0": 197.61,
+   "x1": 210.66,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "flea",
+   "kind": "lot",
+   "x0": 215.74,
+   "x1": 252,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE FLEA MARKET"
   }
  ],
  "shells": [],
@@ -1046,7 +1211,7 @@
  "pathWidth": 7.2,
  "homes": {
   "donut": [
-   133.25,
+   134.16,
    -74.6,
    5,
    "bodega"

@@ -120,7 +120,9 @@ function dump(B,m,boneNames){ const G=m.geometry, p=G.attributes.position, c=G.a
 const triKeys=m=>{ const p=m.geometry.attributes.position, ix=m.geometry.index, n=ix?ix.count:p.count, k=i=>[p.getX(i),p.getY(i),p.getZ(i)].map(v=>Math.round(v*1e5)).join(','), L=[];
   for(let f=0;f<n;f+=3)L.push([0,1,2].map(j=>k(ix?ix.getX(f+j):f+j)).sort().join('|')); return L; };
 
-const out={base:BASE,builds:BUILDS,regions:REGIONS.map(r=>r[0]),figs:{},pieces:[]};
+// and every other version of them the cast wears, each named for who wears it (owner, 5 Nov 2026: "all psosible things to wear should be available"): tools/pfavatar-more.json
+const MORE=JSON.parse(fs.readFileSync(path.join(ROOT,'tools','pfavatar-more.json'),'utf8'));
+const out={base:BASE,builds:BUILDS,regions:REGIONS.map(r=>r[0]),figs:{}};
 const BM=await mod(BASE);
 for(const [f,fig] of Object.entries(FIGS)){ out.figs[f]={bodies:[]};
   for(const build of BUILDS){ const B=build_(BM,fig,build,{}), m=meshOf(B,'body');
@@ -130,8 +132,11 @@ for(const [f,fig] of Object.entries(FIGS)){ out.figs[f]={bodies:[]};
     d.region=reg; out.figs[f].bodies.push(d); } }
 function build_(M,fig,build,wear,force){ return make(BASE,M,{figure:fig,build},wear,force); }
 
-for(const [slot,src,label] of WARDROBE){ const M=await mod(src), cfg=await recipeOf(src), w=cfg.wear[slot]; if(!w)throw new Error(src+' has no '+slot);
-  const piece={slot,src,label,name:typeof w==='string'?w:w.name,v:{}}; let alt=null;
+// the pieces one a line (.polyfork/avatar-raw-pieces.ndjson); n is a piece's place in WARDROBE then MORE, and a MORE piece the same shape as one before it in its slot is left out
+const OUTP=fs.openSync(path.join(PF,'avatar-raw-pieces.ndjson'),'w'), SIG={}, BYW=new Map(); let kept=0;
+const sig=p=>JSON.stringify(['m','f'].map(f=>p.v[f].map(x=>x&&[x.P,x.F])));
+for(const [n,[slot,src,label]] of [...WARDROBE,...MORE].entries()){ const M=await mod(src), cfg=await recipeOf(src), w=cfg.wear[slot]; if(!w)throw new Error(src+' has no '+slot);
+  const piece={n,slot,src,label,name:typeof w==='string'?w:w.name,v:{}}; let alt=null;
   if(slot==='hair'){ const hc=(await recipeOf(HAT_FOR_HAIR[1])).wear.hat; alt={hat:hc}; }
   if(slot==='top'){ const cc=(await recipeOf(COAT_FOR_TOP[1])).wear.coat; alt={coat:cc}; }
   if(alt)piece.alt={};
@@ -140,5 +145,13 @@ for(const [slot,src,label] of WARDROBE){ const M=await mod(src), cfg=await recip
       if(!m){ piece.v[f].push(null); if(alt)piece.alt[f].push(null); continue; }
       piece.covers=B.covers; piece.v[f].push(dump(B,m,out.figs[f].bones.names));
       if(alt){ const A=make(src,M,{figure:fig,build},{[slot]:w,...alt}), am=meshOf(A,'attach-'+slot+'-mesh'); piece.alt[f].push(am?dump(A,am,out.figs[f].bones.names):null); } } }
-  out.pieces.push(piece); process.stdout.write(slot+':'+label+' '); }
-fs.writeFileSync(path.join(PF,'avatar-raw.json'),JSON.stringify(out)); console.log('\n',out.pieces.length,'pieces');
+  const g=sig(piece), S=SIG[slot]||(SIG[slot]=new Map()), wk=slot+'|'+JSON.stringify(w); if(n>=WARDROBE.length&&S.has(g)){ if(!BYW.has(wk))BYW.set(wk,S.get(g)); continue; } S.set(g,n); if(!BYW.has(wk))BYW.set(wk,n);
+  fs.writeSync(OUTP,JSON.stringify(piece)+'\n'); kept++; if(n%50===0)process.stdout.write(n+' '); }
+fs.closeSync(OUTP);
+// OUTFITS (owner, 5 Nov 2026: "lets make outfits that come all together, based on all the characters"): each of the cast's own pieces, in their own colours (a piece's most-used zone)
+const CAST=JSON.parse(fs.readFileSync(path.join(ROOT,'tools','pfavatar-cast.json'),'utf8')); out.outfits=[];
+const hx=v=>typeof v==='number'?v.toString(16).padStart(6,'0'):typeof v==='string'?v.replace('#','').toLowerCase():'';
+for(const id of Object.keys(CAST).sort()){ if(!fs.existsSync(path.join(MODS,id+'.mjs')))continue; const M=await mod(id), cfg=await recipeOf(id), pal={...M.palette,...(cfg.palette||{})}, w={};
+  for(const [s,v] of Object.entries(cfg.wear||{})){ const n=BYW.get(s+'|'+JSON.stringify(v)); if(n!=null)w[s]=[n,hx(pal[s==='hair'||s==='face'?'hair':null])]; }
+  out.outfits.push({id,t:CAST[id][0],g:CAST[id][1],f:cfg.figure==='feminine'?'f':'m',pal:Object.fromEntries(Object.entries(pal).map(([k,v])=>[k,hx(v)])),w}); }
+fs.writeFileSync(path.join(PF,'avatar-raw.json'),JSON.stringify(out)); console.log('\n',kept,'pieces');

@@ -15,7 +15,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('the Walker is never drawn; YOU has none of its options',await pg.evaluate(()=>W3.meshes.every(m=>!m.visible)&&!document.querySelector('#lform,#lhair,#lbeard,#ldesign')));
   const tris=()=>pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g?g.attributes.position.count/3:0; });
   await wait(500); const t0=await tris(); rec('you are the avatar, dressed (hair, tee, trousers, sneakers)',t0>2000&&await pg.evaluate(()=>W3.body.on),'tris '+t0);
-  const id=(slot,label)=>pg.evaluate(([s,l])=>{ const o=[...document.querySelectorAll('#lav-'+s+' option')].find(x=>x.textContent===l); return o?+o.value:null; },[slot,label]);
+  const id=(slot,label)=>pg.evaluate(([s,l])=>{ const o=AVATAR.pieces.find(x=>x.slot===s&&x.label===l); return o?o.n:null; },[slot,label]);
   await pg.evaluate(()=>AVATAR.set({}));
   const bare=await pg.evaluate(async()=>{ const L=AVATAR.L(); const keep=JSON.stringify(L.w); for(const s of Object.keys(L.w))await AVATAR.wear(s,null); const n=BODIES.by.avatar.GEO.attributes.position.count/3; L.w=JSON.parse(keep); await AVATAR.set({}); return n; });
   rec('undressed you are the whole body, in underwear',bare>=1500&&bare<1800,'tris '+bare);   // (less the skin under the underwear: tools/pfavatar-pack.py under)
@@ -36,8 +36,12 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const g=BODIES.by.avatar.GEO, me=W3.group.children.find(m=>m.geometry===g); return {ready:!!(PB&&PB.ready),steps:(W3.body.physN||0)-n0,shown:!!(me&&me.visible)}; });
   rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>=5&&ph.shown,JSON.stringify(ph));
   // every garment the cast wears (owner, 5 Nov 2026), and the back and both hands: each slot offers them, a pack or a held thing adds to you, a tool in that hand puts it down
-  const cnt=await pg.evaluate(()=>Object.fromEntries(['hat','neck','back','righthand','lefthand'].map(s=>[s,document.querySelectorAll('#lav-'+s+' option').length-1])));
-  rec('the whole cast\'s wardrobe is offered: hats, neck, back, right and left hand',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&cnt.righthand>=50&&cnt.lefthand>=20,JSON.stringify(cnt));
+  const cnt=await pg.evaluate(()=>Object.fromEntries(['hat','neck','back','righthand','lefthand','bottom'].map(s=>[s,document.querySelectorAll('#lavt-'+s+' option').length-1])));
+  rec('the whole cast\'s wardrobe is offered by kind: hats, neck, back, right and left hand',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&cnt.righthand>=50&&cnt.lefthand>=20,JSON.stringify(cnt));
+  // every version too (owner, 5 Nov 2026), under its kind: TROUSERS lists each one who wears trousers, grouped by theme
+  const tv=await pg.evaluate(async()=>{ const p=AVATAR.pieces.find(x=>x.slot==='bottom'&&x.label==='TROUSERS'); await AVATAR.wear('bottom',p.n); AVATAR.draw(); const s=document.getElementById('lav-bottom');
+    return {kind:document.getElementById('lavt-bottom').value,versions:s.options.length,groups:s.querySelectorAll('optgroup').length,all:AVATAR.pieces.length}; });
+  rec('every version of a garment: TROUSERS offers dozens, grouped by theme',tv.kind==='TROUSERS'&&tv.versions>=40&&tv.groups>=10&&tv.all>=900,JSON.stringify(tv));
   const pk=await id('back','BACKPACK'), fr=await id('righthand','FISHING ROD'), bk=await id('lefthand','BOOK');
   const hd=await pg.evaluate(async([pk,fr,bk])=>{ const t=()=>BODIES.by.avatar.GEO.attributes.position.count/3, a=t(); await AVATAR.wear('back',pk); const b=t(); await AVATAR.wear('righthand',fr); await AVATAR.wear('lefthand',bk); const c=t(), code=AVATAR.code();
     const was=WIELD.on; WIELD.on='net'; await AVATAR.set({}); const d=t(), seen=BODIES.by.avatar.look(); WIELD.on=was; await AVATAR.set({});
@@ -51,15 +55,20 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const code=AVATAR.code(), old=AVATAR.decode(code.replace(/~[0-9a-f_]+/,'~ff00ff')); return {n:ins.length,mag,code,rt:JSON.stringify(AVATAR.decode(code))===JSON.stringify(AVATAR.L()),old:JSON.stringify(old.w.back)}; },pk);
   rec('a piece of many colours has a colour for each part: the backpack\'s pack goes magenta, the look keeps it, and an old single colour still reads',mc.n>=5&&mc.mag>50&&/_/.test(mc.code)&&mc.rt&&/ff00ff/.test(mc.old),JSON.stringify(mc));
   await pg.evaluate(async()=>{ for(const s of ['back','righthand','lefthand'])await AVATAR.wear(s,null); });
+  // OUTFITS: every one of the cast's whole look, by theme then who; it all goes on at once
+  const of=await pg.evaluate(async()=>{ const O=AVATAR.outfits, i=O.findIndex(o=>o.t==='SAMURAI WARRIOR'), keep=JSON.stringify(AVATAR.L().w); await AVATAR.outfit(i); const w=AVATAR.L().w, n=Object.keys(w).length, t=BODIES.by.avatar.GEO.attributes.position.count/3;
+    const ok=Object.entries(O[i].w).filter(([s])=>w[s]).every(([s,[n]])=>w[s][0]===n); AVATAR.L().w=JSON.parse(keep); await AVATAR.set({});
+    return {outfits:O.length,themes:new Set(O.map(o=>o.g)).size,slots:n,tris:t,ok,menu:document.querySelectorAll('#lavog option').length-1}; });
+  rec('outfits: the whole cast, by theme; one goes on all together',of.outfits>=190&&of.themes>=30&&of.slots>=5&&of.ok&&of.tris>3000&&of.menu===of.themes,JSON.stringify(of));
   const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
   const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
-  await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&![...document.querySelectorAll('#lav-face option')].some(o=>/BEARD|STUBBLE|GOATEE|MOUSTACHE/.test(o.textContent))));
+  await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&![...document.querySelectorAll('#lavt-face option')].some(o=>/BEARD|STUBBLE|GOATEE|MOUSTACHE/.test(o.textContent))));
   const fc=await pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g.attributes.position.count/3; }); rec('she is dressed too',fc>2000,'tris '+fc);
   await pg.evaluate(()=>AVATAR.set({b:2,h:108})); const tall=await pg.evaluate(()=>BODIES.by.avatar.S); await pg.evaluate(()=>AVATAR.set({h:92})); const short=await pg.evaluate(()=>BODIES.by.avatar.S);
   rec('height: taller is drawn bigger',tall>short*1.1,tall.toFixed(3)+' vs '+short.toFixed(3));
   if(OUT){   // in third person, the camera in front of you, in the park's open meadow (the shots' rule: an open field, third or first person)
     const look=async(nm,set,wear)=>{ await pg.evaluate(async([set,wear])=>{ document.getElementById('looks').hidden=true; const L=AVATAR.L(); L.w={}; await AVATAR.set(set);
-        for(const [s,l,c] of wear){ const o=[...document.querySelectorAll('#lav-'+s+' option')].find(x=>x.textContent===l); await AVATAR.wear(s,o?+o.value:null,c); }
+        for(const [s,l,c] of wear){ const o=AVATAR.pieces.find(x=>x.slot===s&&x.label===l); await AVATAR.wear(s,o?o.n:null,c); }
         const UI=__dbg.UI; UI.setView('third'); UI.dist*=.55; SHARED.pitchTo=SHARED.pitch=.22; SHARED.yawTo=SHARED.yaw=SHARED.heading; },[set,wear]);
       await wait(2500); await pg.screenshot({path:OUT+'/avatar-'+nm+'.png'}); };
     await look('man',{f:'m',b:1,h:100},[['hair','SIDE PART'],['top','SHIRT'],['coat','JACKET','7a3b2e'],['bottom','TROUSERS'],['feet','SHOES']]);

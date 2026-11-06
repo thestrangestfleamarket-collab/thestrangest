@@ -6,6 +6,12 @@
 import json, os, importlib.util, numpy as np
 sp=importlib.util.spec_from_file_location('rr','tools/rig-rebake.py'); rr=importlib.util.module_from_spec(sp); sp.loader.exec_module(rr)
 RAW=json.load(open('.polyfork/avatar-raw.json'))
+# the pieces, one a line (tools/pfavatar-bake.mjs), each with its n
+def PIECES():
+    with open('.polyfork/avatar-raw-pieces.ndjson') as fh:
+        for ln in fh:
+            if ln.strip(): yield json.loads(ln)
+SLOTS=['hair','face','eyes','hat','top','coat','bottom','feet','belt','neck','hands','back','righthand','lefthand']
 # the collarbone (the rig has none) half the chest's, half the upper arm's, so a raised arm takes its shoulder with it (owner, 5 Nov 2026: "my shoulder vanishes when i raise my arm too high")
 PFW=dict(rr.MIXAMO_W); PFW.update({s+'Shoulder':[('torso',.55),('upperArm'+n,.45)] for n,s in (('L','Left'),('R','Right'))})
 
@@ -74,7 +80,13 @@ def joints(rig,P):
         a=J['wrist'+n]-J['elbow'+n]; J['tip'+n]=J['wrist'+n]+a/(np.linalg.norm(a) or 1)*0.1*top; J['toe'+n]=J['ankle'+n]+np.array([0,0,0.12*top])
     return J
 
-IDX={'skel':{},'builds':RAW['builds'],'pieces':[{'n':n,'slot':p['slot'],'label':p['label'],'figs':''.join(f for f in 'mf' if any(p['v'][f]))} for n,p in enumerate(RAW['pieces'])]}
+# WEAR's two lists (owner, 5 Nov 2026: "categorize them so the dropdowns arent too long"): a piece's kind (k), then its version (v: who wears it), under that one's theme (g)
+CAST=json.load(open('tools/pfavatar-cast.json',encoding='utf-8'))
+BEARD={'STUBBLE','FULL BEARD','GOATEE','MOUSTACHE','JAW LINE'}   # (the woman wears no beards, though Polyfork shapes a few for her)
+def figs(p): return ''.join(f for f in 'mf' if any(p['v'][f]) and not (f=='f' and p['label'].partition(' · ')[0] in BEARD))
+def kvg(p): k,_,v=p['label'].partition(' · '); return k,(v or CAST[p['src']][0]),CAST[p['src']][1]
+IDX={'skel':{},'builds':RAW['builds'],'pieces':[dict(zip(('n','slot','label','figs','k','v','g'),(p['n'],p['slot'],p['label'],figs(p))+kvg(p))) for p in PIECES()]}
+MAINZ={}; CH={}; NCH=32
 for f in ('m','f'):
     FG=RAW['figs'][f]; W0=np.array(FG['bones']['world']); W1,legs,drop,head=proportions(FG['bones']['names'],W0)
     rig={'names':FG['bones']['names'],'world':W1,'prop':(legs,drop,head)}
@@ -85,9 +97,10 @@ for f in ('m','f'):
     D={'bones':rr.BONES,'builds':RAW['builds'],'regions':RAW['regions'],'skel':{k:sk[k] for k in ('height','hipY','origin','rest')},
        'body':{'zones':bz,'pal':b0['pal'],'v':[pack(b,rig,Jb,bmap,b['region'],body=True) for b in FG['bodies']]},'pieces':[]}
     IDX['skel'][f]=D['skel']
-    for n,p in enumerate(RAW['pieces']):
-        V=p['v'][f]
-        if not any(V): continue
+    BY={s:[] for s in SLOTS}
+    for p in PIECES():
+        n=p['n']; V=p['v'][f]
+        if f not in figs(p): continue
         names=[]; cnt={}
         for v in V+(p.get('alt',{}).get(f) or []):
             if not v: continue
@@ -103,7 +116,7 @@ for f in ('m','f'):
            'main':sorted(range(len(names)),key=lambda i:-cnt.get(names[i],0))[:2],'v':[pack(v,rig,Jb,zmap) if v else None for v in V]}
         A=(p.get('alt') or {}).get(f)
         if A: e['alt']=[pack(v,rig,Jb,zmap) if v else None for v in A]
-        D['pieces'].append(e)
+        BY[p['slot']].append(e); MAINZ.setdefault(n,(p['src'],names[e['main'][0]] if e['main'] else None))
     # the walk (tools/pfavatar-anim.mjs): Polyfork's Idle, Walk and Run as each bone's move from the bind, a quaternion and a place (metres) a bone a frame
     if os.path.exists('.polyfork/anim-raw.json'):
         AN=json.load(open('.polyfork/anim-raw.json')); D['anim']={'bones':AN['bones'],'clips':{}}
@@ -113,6 +126,24 @@ for f in ('m','f'):
             step=2 if k=='Idle' else 1; fr=range(0,n,step)
             q=[round(v,4) for i in fr for v in c['q'][i*nb*4:(i+1)*nb*4]]; pp=[round(v,4) for i in fr for v in c['p'][i*nb*3:(i+1)*nb*3]]
             D['anim']['clips'][k]={'n':len(fr),'dur':round(dur,4),'speed':c['speed'],'contact':c['contact'],'q':q,'p':pp}
-    out='data/pfavatar-'+f+'.json'; json.dump(D,open(out,'w'),separators=(',',':'))
-    print(out,len(D['pieces']),'pieces',round(os.path.getsize(out)/1e6,2),'MB')
-json.dump(IDX,open('data/pfavatar.json','w'),separators=(',',':')); print('data/pfavatar.json',round(os.path.getsize('data/pfavatar.json')/1e3,1),'KB')
+    # the body and the walk in one file, each WEAR line's pieces in their own (fetched when one is worn: data/pfavatar-<figure>-<slot>.json)
+    del D['pieces']; out='data/pfavatar-'+f+'.json'; json.dump(D,open(out,'w'),separators=(',',':')); print(out,round(os.path.getsize(out)/1e6,2),'MB')
+    # the pieces in about a megabyte each, a kind's versions together (data/pfavatar-<figure>-NN.json, NCH of them a figure: the page names each); index c is a piece's file
+    K={q['n']:q['k'] for q in IDX['pieces']}; ch=[[]]; sz=0
+    for sl in SLOTS:
+        for e in sorted(BY[sl],key=lambda e:(K[e['n']],e['n'])):
+            b=len(json.dumps(e,separators=(',',':')))
+            if ch[-1] and sz+b>1.0e6 and K[ch[-1][-1]['n']]!=K[e['n']] or ch[-1] and sz+b>2.5e6: ch.append([]); sz=0
+            ch[-1].append(e); sz+=b
+    assert len(ch)<=NCH,len(ch)
+    for i in range(NCH):
+        o='data/pfavatar-%s-%02d.json'%(f,i); json.dump({'pieces':ch[i] if i<len(ch) else []},open(o,'w'),separators=(',',':'))
+        for e in (ch[i] if i<len(ch) else []): CH.setdefault(e['n'],{})[f]=i
+    print(' ',len(ch),'files')
+# OUTFITS: each of the cast's own pieces; a piece shared with another wearer takes this one's colour on its main zone
+def oc(o,s,n):
+    src,z=MAINZ.get(n,(None,None))
+    return '' if src==o['id'] or s in ('hair','face') or not z or z.startswith('=') else (o['pal'].get(z) or '')
+for q in IDX['pieces']: q['c']=CH.get(q['n'],{})
+IDX['outfits']=[{'t':o['t'],'g':o['g'],'f':o['f'],'hair':o['pal'].get('hair',''),'w':{s:[n,oc(o,s,n)] for s,(n,_) in o['w'].items()}} for o in RAW.get('outfits',[])]
+json.dump(IDX,open('data/pfavatar.json','w'),separators=(',',':'),ensure_ascii=False); print('data/pfavatar.json',round(os.path.getsize('data/pfavatar.json')/1e3,1),'KB')

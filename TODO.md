@@ -375,6 +375,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [x] **The Polyfork avatar** (done 5 Nov) · P1 · L · code. AVATAR on YOU's BODY row (`src/111c-avatar.js`, `tests/avatar.cjs`; bake: `node tools/pfavatar-bake.mjs`
   then `python3 tools/pfavatar-pack.py`, the adult cast's Polyfork modules in `.polyfork/mods/`). YOU redone around it (tabs, `LOOKS.add`). Waits for his look and yes.
 - [x] **The whole cast's wardrobe** (done 5 Nov) · P2 · M · code. Every garment Polyfork's cast wears, one each, plus BACK and both hands. Waits for his look and yes.
+- [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
 - [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
   held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
 

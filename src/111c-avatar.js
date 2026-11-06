@@ -1,4 +1,4 @@
-// THE POLYFORK AVATAR: AVATAR, a body you dress (owner, 5 Nov 2026: "a playable avatar based on the polyfork base character"): Polyfork's man or woman on your rig, three builds, a height, and a wardrobe of every garment the cast wears (and their packs and what they hold), each in its own colours; your look is kept with your account and other players see it.
+// THE POLYFORK AVATAR: AVATAR, a body you dress (owner, 5 Nov 2026: "a playable avatar based on the polyfork base character"): Polyfork's man or woman on your rig, three builds, a height, and a wardrobe of every garment the cast wears, every version of it (and their packs and what they hold), each in its own colours; your look is kept with your account and other players see it.
 import {THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {LOOKS, ONLINE, WIELD} from './003b-systems.js';
@@ -6,7 +6,9 @@ import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const AVATAR={}; window.AVATAR=AVATAR;
-{ const I=__DATA__("data/pfavatar.json"), LOAD={m:__LAZY__("data/pfavatar-m.json"),f:__LAZY__("data/pfavatar-f.json")}, D={}, WAIT={};
+{ const I=__DATA__("data/pfavatar.json"), LOAD={m:__LAZY__("data/pfavatar-m.json"),f:__LAZY__("data/pfavatar-f.json")}, D={}, WAIT={}, SW={};
+  // the pieces in files of about a megabyte, a kind's versions together, each fetched once something in it is worn (a figure's body and walk come first; c: a piece's file)
+  const LZ={m:[__LAZY__("data/pfavatar-m-00.json"),__LAZY__("data/pfavatar-m-01.json"),__LAZY__("data/pfavatar-m-02.json"),__LAZY__("data/pfavatar-m-03.json"),__LAZY__("data/pfavatar-m-04.json"),__LAZY__("data/pfavatar-m-05.json"),__LAZY__("data/pfavatar-m-06.json"),__LAZY__("data/pfavatar-m-07.json"),__LAZY__("data/pfavatar-m-08.json"),__LAZY__("data/pfavatar-m-09.json"),__LAZY__("data/pfavatar-m-10.json"),__LAZY__("data/pfavatar-m-11.json"),__LAZY__("data/pfavatar-m-12.json"),__LAZY__("data/pfavatar-m-13.json"),__LAZY__("data/pfavatar-m-14.json"),__LAZY__("data/pfavatar-m-15.json"),__LAZY__("data/pfavatar-m-16.json"),__LAZY__("data/pfavatar-m-17.json"),__LAZY__("data/pfavatar-m-18.json"),__LAZY__("data/pfavatar-m-19.json"),__LAZY__("data/pfavatar-m-20.json"),__LAZY__("data/pfavatar-m-21.json"),__LAZY__("data/pfavatar-m-22.json"),__LAZY__("data/pfavatar-m-23.json"),__LAZY__("data/pfavatar-m-24.json"),__LAZY__("data/pfavatar-m-25.json"),__LAZY__("data/pfavatar-m-26.json"),__LAZY__("data/pfavatar-m-27.json"),__LAZY__("data/pfavatar-m-28.json"),__LAZY__("data/pfavatar-m-29.json"),__LAZY__("data/pfavatar-m-30.json"),__LAZY__("data/pfavatar-m-31.json")],f:[__LAZY__("data/pfavatar-f-00.json"),__LAZY__("data/pfavatar-f-01.json"),__LAZY__("data/pfavatar-f-02.json"),__LAZY__("data/pfavatar-f-03.json"),__LAZY__("data/pfavatar-f-04.json"),__LAZY__("data/pfavatar-f-05.json"),__LAZY__("data/pfavatar-f-06.json"),__LAZY__("data/pfavatar-f-07.json"),__LAZY__("data/pfavatar-f-08.json"),__LAZY__("data/pfavatar-f-09.json"),__LAZY__("data/pfavatar-f-10.json"),__LAZY__("data/pfavatar-f-11.json"),__LAZY__("data/pfavatar-f-12.json"),__LAZY__("data/pfavatar-f-13.json"),__LAZY__("data/pfavatar-f-14.json"),__LAZY__("data/pfavatar-f-15.json"),__LAZY__("data/pfavatar-f-16.json"),__LAZY__("data/pfavatar-f-17.json"),__LAZY__("data/pfavatar-f-18.json"),__LAZY__("data/pfavatar-f-19.json"),__LAZY__("data/pfavatar-f-20.json"),__LAZY__("data/pfavatar-f-21.json"),__LAZY__("data/pfavatar-f-22.json"),__LAZY__("data/pfavatar-f-23.json"),__LAZY__("data/pfavatar-f-24.json"),__LAZY__("data/pfavatar-f-25.json"),__LAZY__("data/pfavatar-f-26.json"),__LAZY__("data/pfavatar-f-27.json"),__LAZY__("data/pfavatar-f-28.json"),__LAZY__("data/pfavatar-f-29.json"),__LAZY__("data/pfavatar-f-30.json"),__LAZY__("data/pfavatar-f-31.json")]};
   const SLOTS=[['hair','HAIR'],['face','FACE'],['eyes','GLASSES'],['hat','HAT'],['top','TOP'],['coat','JACKET'],['bottom','BOTTOMS'],['feet','SHOES'],['belt','BELT'],['neck','NECK'],['hands','HANDS'],['back','BACK'],['righthand','RIGHT HAND'],['lefthand','LEFT HAND']], OLD=11;   // (the slots after OLD came later: their codes go after the barefoot mark)
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
@@ -23,7 +25,10 @@ const AVATAR={}; window.AVATAR=AVATAR;
     return L; };
 
   /* ---------- the figure's data, fetched once someone wears it ---------- */
-  const load=f=>D[f]?Promise.resolve(D[f]):(WAIT[f]||(WAIT[f]=LOAD[f]().then(J=>{ J.byN=new Map(J.pieces.map(p=>[p.n,p])); D[f]=J; return J; })));
+  const load=f=>D[f]?Promise.resolve(D[f]):(WAIT[f]||(WAIT[f]=LOAD[f]().then(J=>{ J.byN=new Map(); D[f]=J; return J; })));
+  const files=(f,w)=>[...new Set(Object.values(w).map(x=>{ const p=x&&byN.get(x[0]); return p&&p.c[f]; }).filter(c=>c!=null))];
+  const has=(f,w)=>!!D[f]&&files(f,w).every(c=>SW[f+c]===true);
+  const need=(f,w)=>load(f).then(J=>Promise.all(files(f,w).map(c=>SW[f+c]===true?0:(SW[f+c]||(SW[f+c]=LZ[f][c]().then(S=>{ for(const p of S.pieces)J.byN.set(p.n,p); SW[f+c]=true; })))))).then(()=>D[f]);
   const dec=v=>v.$||(v.$={pos:I16(v.pos),tri:U16(v.tri),bone:B64(v.bone),w:B64(v.w),zone:B64(v.zone),reg:v.reg?B64(v.reg):null});
   // Polyfork's own rule for which of the body's regions its clothes hide (its culled())
   const culled=has=>{ const A=has('arms')&&has('hands'); return [has('trunk')&&has('waist'),has('waist')&&has('seat'),has('briefs'),has('legs')&&(!has('shins')||has('feet')),has('feet'),A,
@@ -60,18 +65,18 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const VAR=new Map();
   const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
     variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
-      if(!J){ load(M.f).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
+      if(!has(M.f,M.w)){ need(M.f,M.w).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
       b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null},M); VAR.set(k,b); return b; }};
-  AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>!!D[L.f];
+  AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
   let gen=0;
-  const refresh=()=>{ const my=++gen; return load(L.f).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
+  const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
   AVATAR.wear=(slot,n,c)=>{ if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 
   /* ---------- YOU: the avatar's lines (LOOKS.add) — figure, build, height, skin and hair colour on LOOK; a piece and its colour for each slot on WEAR ---------- */
   const $=s=>document.querySelector(s);
   const css=document.createElement('style'); css.textContent=`#looks .sw{padding:3px!important} #looks .sw i{display:block;width:16px;height:16px}
-    #looks .avk{display:flex;flex-wrap:wrap;gap:3px;max-width:126px} #looks .avk input[type=color]{width:22px;height:22px} #looks .avw{display:grid;grid-template-columns:minmax(110px,1fr) auto;gap:4px;align-items:center} #looks .avw select{font:inherit;color:inherit;background:#0b0d13;border:2px solid #2a3040;padding:2px;min-width:0;width:100%}
+    #looks .avk{display:flex;flex-wrap:wrap;gap:3px;max-width:126px} #looks .avk input[type=color]{width:22px;height:22px} #looks .avw{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:4px;align-items:center} #looks .avw select{font:inherit;color:inherit;background:#0b0d13;border:2px solid #2a3040;padding:2px;min-width:0;width:100%}
     #looks input[type=color]{width:30px;height:24px;padding:0;border:2px solid #2a3040;background:#0b0d13} #looks input[type=range]{width:min(220px,100%)} #looks .dim{color:var(--dim,#8a8f9c)}`;
   document.head.appendChild(css);
   const stop=el=>el.addEventListener('keydown',e=>e.stopPropagation());
@@ -84,14 +89,21 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avs','SKIN',el('lavs',SKINS.map(h=>`<button class="sw" data-c="${h}" aria-label="skin #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavsc" aria-label="any skin colour">'),{...A,order:4});
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
-    SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lav-${s}" aria-label="${t}"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
+    LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
+    SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
     $('#lavs').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({skin:b.dataset.c}); }; $('#lavsc').onchange=e=>AVATAR.set({skin:e.target.value.slice(1)});
     $('#lavc').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({hair:b.dataset.c}); }; $('#lavcc').onchange=e=>AVATAR.set({hair:e.target.value.slice(1)});
-    for(const [s] of SLOTS){ const sel=$('#lav-'+s), k=$('#lavk-'+s); stop(sel);
+    // OUTFITS: a theme, then one of the cast in it; their whole look goes on (what your figure can wear of it), their hair colour too
+    const og=$('#lavog'), ol=$('#lavo'), OG=[...new Set((I.outfits||[]).map(o=>o.g))].sort(); stop(og); stop(ol);
+    og.innerHTML='<option value="">THEME…</option>'+OG.map(g=>`<option>${esc(g)}</option>`).join('');
+    og.onchange=()=>{ ol.innerHTML='<option value="">WHO…</option>'+(I.outfits||[]).map((o,i)=>[o,i]).filter(([o])=>o.g===og.value).sort((a,b)=>a[0].t.localeCompare(b[0].t)).map(([o,i])=>`<option value="${i}">${esc(o.t)}</option>`).join(''); ol.style.visibility=og.value?'':'hidden'; };
+    ol.onchange=()=>{ if(ol.value!=='')AVATAR.outfit(+ol.value); }; ol.style.visibility='hidden';
+    for(const [s] of SLOTS){ const sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s); stop(sel); stop(kd);
+      kd.onchange=()=>{ const v=kinds(s).get(kd.value); AVATAR.wear(s,v?v[0].n:null); };   // (a kind: its first version, the one-each piece when there is one)
       sel.onchange=()=>AVATAR.wear(s,sel.value===''?null:+sel.value); k.onchange=e=>{ const w=L.w[s], J=D[L.f], p=w&&J&&J.byN.get(w[0]), z=+e.target.dataset.z; if(!p||!(z>=0))return; const a=partCols(p,w[1]); a[z]=e.target.value.slice(1); AVATAR.wear(s,w[0],a.join('_')); }; }
     return true; }
   const on=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); };   // (the menus' look marks the chosen one by aria-selected)
@@ -103,14 +115,22 @@ const AVATAR={}; window.AVATAR=AVATAR;
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
-    for(const [s] of SLOTS){ const list=I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)), sel=$('#lav-'+s), k=$('#lavk-'+s), w=L.w[s], J=D[L.f];
-      sel.closest('.lr').dataset.off=list.length?'':'1'; sel.innerHTML='<option value="">NONE</option>'+list.map(p=>`<option value="${p.n}">${p.label}</option>`).join(''); sel.value=w?String(w[0]):'';
+    for(const [s] of SLOTS){ const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
+      sel.closest('.lr').dataset.off=K.size?'':'1';
+      kd.innerHTML='<option value="">NONE</option>'+[...K].map(([t,v])=>`<option value="${esc(t)}">${esc(t)}${v.length>1?' ('+v.length+')':''}</option>`).join(''); kd.value=cur?cur.k:'';
+      const V=cur?K.get(cur.k)||[]:[], G=new Map(); for(const p of V){ if(!G.has(p.g))G.set(p.g,[]); G.get(p.g).push(p); }
+      sel.innerHTML=[...G].sort((a,b)=>a[0].localeCompare(b[0])).map(([g,ps])=>`<optgroup label="${esc(g)}">`+ps.map(p=>`<option value="${p.n}">${esc(p.v)}</option>`).join('')+'</optgroup>').join(''); sel.value=cur?String(cur.n):''; sel.style.visibility=V.length>1?'':'hidden';
       const p=w&&J&&J.byN.get(w[0]), Z=p&&s!=='hair'&&s!=='face'?tintable(p):[], key=p?L.f+p.n:'';
       if(k.dataset.p!==key){ k.dataset.p=key; k.innerHTML=Z.map(z=>`<input type="color" data-z="${z}" title="${p.zones[z].replace(/([a-z])([A-Z])/g,'$1 $2').toUpperCase()}" aria-label="${p.label} ${p.zones[z]} colour">`).join(''); }
       if(p){ const a=partCols(p,w[1]); for(const i of k.querySelectorAll('input'))i.value='#'+(a[+i.dataset.z]||String(p.pal[+i.dataset.z]).slice(1)); } }
     LOOKS.layout(); }
+  // a WEAR line's kinds, each with its versions (who wears it), for your figure; the one-each piece first
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), KC={};
+  const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
+  AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
+  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
-  load(L.f).catch(()=>{});   // (your figure's wardrobe starts coming with the page: you are only ever the avatar)
+  need(L.f,L.w).catch(()=>{});   // (your figure and what you wear start coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();
     let held=''; SYS.add('avatarHeld',()=>{ const h=WIELD.on?WIELD.hand:''; if(h!==held){ held=h; if(BODIES.pick()==='avatar'&&(L.w.righthand||L.w.lefthand))refresh(); } },'111c-avatar');
     const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); },'111c-avatar'); }

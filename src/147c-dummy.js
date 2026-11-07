@@ -17,5 +17,5 @@ const DUMMY={}; window.DUMMY=DUMMY;
   const at=()=>{ const H=LEVEL.homes&&LEVEL.homes.squirrel; if(!H||!SHARED.BOD||!SHARED.BOD.XS)return setTimeout(at,1000); const P=scene, G=make(), x=SHARED.BOD.XS(H[0]+6), z=SHARED.BOD.ZS(H[1]+2);
     G.position.set(x,SHARED.groundY?SHARED.groundY(x,z):0,z); P.add(G); DUMMY.g=G;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(.8*T,1.8*T,.8*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(G.position.x,G.position.y+.9*T,G.position.z); P.add(hb);
-    UI.thing({name:'A SPARRING DUMMY',obj:hb,reach:1.8*T,near:2.6*T,tall:1.8*T,act:()=>DUMMY.spar()}); SOL.up.push([x-.2*T,z-.2*T,x+.2*T,z+.2*T]); }; SYS.onStart(at,'147c-dummy');
+    UI.thing({name:'A SPARRING DUMMY',obj:hb,reach:1.8*T,near:2.6*T,tall:1.8*T,act:()=>DUMMY.spar()}); SOL.up.push([x-.2*T,z-.2*T,x+.2*T,z+.2*T]); }; SYS.onStart(()=>LOAD('later').then(at),'147c-dummy');
 }

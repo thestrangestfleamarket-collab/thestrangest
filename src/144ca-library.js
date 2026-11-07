@@ -51,11 +51,11 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const drawCard=id=>{ '@later'; const b=LIB.by[id], m=borrowed(id), pg=S.p[id];
     P.innerHTML=`<div><button class="btn" data-a="back">&lt; THE SHELVES</button> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap"><img src="${esc(cover(id))}" alt="" style="width:200px;border:2px solid #3b2a1e;background:#cfc4ae">
-      <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)} · ${b.y}</div>
+      <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)}${b.y?' · '+b.y:''}</div>
       <div style="color:#6a4a32">${LIB.files[id]?'THE COVER: '+esc(b.ed||'an early edition'):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-a="read" data-b="${id}">${pg?'READ ON':'READ HERE'}</button>
       ${m?`<button class="btn" data-a="ret" data-b="${id}">GIVE IT BACK</button>`:`<button class="btn" data-a="bor" data-b="${id}">BORROW IT (FREE)</button>`}</div>
-      <div style="margin-top:10px;color:#8a6a50;font-size:9px">THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT.</div></div></div>`; };
+      <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(b.page)} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
   let atShop=false;
   LIB.open=(id,shop=true)=>load().then(()=>{ atShop=shop; P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
   LIB.close=()=>{ P.hidden=true; };
@@ -79,7 +79,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const THEMES={paper:{rb:'#f4ecd8',rf:'#2a2018',rbar:'#e6dcc4',rbtn:'#f4ecd8',rline:'#8a7a60',rhit:'rgba(216,170,60,.35)'},sepia:{rb:'#e8d6b0',rf:'#3a2a18',rbar:'#d8c49a',rbtn:'#e8d6b0',rline:'#7a6040',rhit:'rgba(180,120,40,.35)'},night:{rb:'#16130f',rf:'#d8ccb4',rbar:'#221d17',rbtn:'#16130f',rline:'#5a4c38',rhit:'rgba(216,170,60,.25)'}};
   const FACES={serif:'Georgia,"Times New Roman",serif',sans:'"Helvetica Neue",Arial,sans-serif',mono:'"Courier New",monospace'};
   const SET=()=>S.set||(S.set={fs:19,face:'serif',lh:1.6,w:38,theme:'paper'});
-  const url=b=>location.protocol==='file:'?'https://www.gutenberg.org/cache/epub/'+b.pg+'/pg'+b.pg+'.txt':'/book/'+b.pg+'.txt';
+  const url=b=>b.txt?LIB.files[b.id+'~t']:location.protocol==='file:'?'https://www.gutenberg.org/cache/epub/'+b.pg+'/pg'+b.pg+'.txt':'/book/'+b.pg+'.txt';
   LIB.url=url;
   // the book's own words: without Project Gutenberg's header and licence, its paragraphs joined back from the hard-wrapped lines
   const clean=txt=>{ '@later'; txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
@@ -123,7 +123,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       d.querySelector('[data-res]').innerHTML=w.length<3?'':out.length?out.map(([i,t])=>`<div class="it" data-hit="${i}">…${esc(t)}…</div>`).join(''):'<div class="it">NOTHING FOUND.</div>'; }); } };
   const goPara=i=>{ let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=i)c=k; show(c,i); const el=R.querySelector(`p[data-i="${i}"]`); if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),2400); } };
   LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; theme(); R.hidden=false; side=null; R.innerHTML='<div class="bar"><span class="t">OPENING '+esc(b.t)+'…</span><button data-a="x">CLOSE</button></div>'; R.focus();
-    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(await r.text()); TX[id]={P,ch:chapters(P)}; }
+    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text());   // a modern book's own words come packed TX[id]={P,ch:chapters(P)}; }
       cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
     catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
   LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };

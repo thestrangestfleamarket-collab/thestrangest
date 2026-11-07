@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:30,end:220,blur:3,haze:.4,air:0,mist:0,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:0};   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier") let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:30,end:220,blur:3,haze:.4,air:0,mist:0,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},

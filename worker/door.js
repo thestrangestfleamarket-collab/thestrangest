@@ -272,8 +272,11 @@ export class Block extends Server {
       const x = {}; if (m.x && typeof m.x === "object") for (const k of Object.keys(m.x).slice(0, 8)) { const v = m.x[k]; if (/^[a-z]{1,8}$/.test(k)) x[k] = typeof v === "number" ? num(v, -1e4, 1e4) : word(v, 24); }
       const p = { ...s, name: word(m.name, 24), look: word(m.look, 400), dead: m.dead ? 1 : 0, hp: typeof m.hp === "number" ? num(m.hp, 0, 1) : 1, x }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
     } else if (m.t === "act") {
-      const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
-      this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
+      // a key's move, a flinch, an emote or dance (111da: mc_<name>, looped or once) and its stop: every one reaches the others (owner, 7 Nov 2026)
+      const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" || typeof m.m === "string" && /^mc_[A-Za-z0-9_]{1,32}$/.test(m.m) ? m.m : "";
+      if (m.stop) { this.broadcast(JSON.stringify({ t: "act", id: s.id, stop: 1 }), [c.id]); return; }
+      if (!k && !mv) return;
+      this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv, loop: m.loop ? 1 : 0 } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
     } else if (m.t === "ragon" && Array.isArray(m.n) && Array.isArray(m.jl) && m.n.length <= 16) {
       const n = m.n.map(x => word(x, 12)), jl = m.jl.slice(0, 16).map(a => (Array.isArray(a) ? a.slice(0, 8) : []).filter(Array.isArray).map(j => [word(j[0], 12), num(j[1], -9, 9), num(j[2], -9, 9), num(j[3], -9, 9)]));
       this.broadcast(JSON.stringify({ t: "ragon", id: s.id, n, jl }), [c.id]);
@@ -315,6 +318,9 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
     } else if (m.t === "ride") {
       this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
+    } else if (m.t === "trk") {   // a skater's trick as it happens (146ib): what the board and body are doing, for the others to draw
+      const w = v => /^[a-z]{0,8}$/.test(String(v || "")) ? String(v || "") : "";
+      this.broadcast(JSON.stringify({ t: "trk", id: s.id, s: w(m.s), g: w(m.g), fk: w(m.fk), fd: num(m.fd, 0, 3), ft: num(m.ft, 0, 3), n: m.n ? 1 : 0, f: m.f ? 1 : 0, sl: m.sl ? 1 : 0, p: m.p ? 1 : 0, c: num(m.c, 0, 1), v: num(m.v, 0, 400), z: num(m.z, -50, 400) }), [c.id]);
     } else if (m.t === "car") {
       // the parked cars (150p-cars): one driver a car; getting out parks it where it stands, kept in the block's world as car:<id> = "x,z,heading"
       const k = word(m.k, 24); if (!k) return; const cars = this.cars || (this.cars = new Map()), by = cars.get(k);
@@ -324,8 +330,8 @@ export class Block extends Server {
       if (a) { const v = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -10, 10)].map(x => +x.toFixed(3)).join(","); this.world().then(W => { W["car:" + k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v })); }); }
       else this.broadcast(JSON.stringify({ t: "car", k, by: null }));
     } else if (m.t === "ps") {
-      // a pose state (sitting, climbing, hanging, swimming): each a few numbers or flags
-      const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
+      // a pose state (sitting, climbing, hanging, swimming, gripping, flying: the page's PS, 111d): each a few numbers or flags
+      const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water", "grip", "fly"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
         for (const f in v) { if (n >= 16) break; const key = word(f, 12); if (!/^[a-zA-Z]+$/.test(key)) continue; const x = v[f]; if (typeof x === "number") { o[key] = num(x, -1e5, 1e5); n++; } else if (typeof x === "boolean") { o[key] = x; n++; } } ps[k] = o; }
       this.broadcast(JSON.stringify({ t: "ps", id: s.id, s: ps }), [c.id]);
     } else if (m.t === "fish") {

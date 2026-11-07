@@ -1,7 +1,7 @@
 // THE MOTION: the Walker's recorded moves (Mesh2Motion's human clips fitted to his rig, data/moves2.json, fetched when first used): emotes from the H panel and the moves of things you do (eat, craft, plant, mine, sit down), once or looped, shared with the players near.
 import {SHARED} from './003-shx.js';
-import {MOTION, RAG, st, TALK, UI, VIT} from './003b-systems.js';
-import {SYS} from './006-map-pre.js';
+import {MOTION, pos, RAG, ROOMS, st, TALK, UI, VIT} from './003b-systems.js';
+import {FADE, SYS, TILE} from './006-map-pre.js';
 import {AVATAR} from './111c-avatar.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
   const EMOTES=[['WAVE','greet'],['CLAP','clap'],['CHEER','cheer'],['FIST PUMP','fistPump'],['DAB','dab'],['YES','yes'],['NOD','nod'],['NO','no'],['ANGRY','angry'],['CONFUSED','confused'],['FLEX','flex'],['KNOCK','knock'],['POWER UP','powerUp'],['TALK','talk'],['ARMS FOLDED','foldArms'],
@@ -19,7 +19,14 @@ import {AVATAR} from './111c-avatar.js';
       if(typeof v==='number'&&typeof u==='number'){ let x=v; while(x-u>180)x-=360; while(x-u<-180)x+=360; a[k]=x; }
       else if(Array.isArray(v)&&Array.isArray(u)){ for(let i=0;i<v.length;i++)if(typeof v[i]==='number'&&typeof u[i]==='number'){ while(v[i]-u[i]>180)v[i]-=360; while(v[i]-u[i]<-180)v[i]+=360; } }
       else if(v&&typeof v==='object'&&u&&typeof u==='object')unwrap(v,u); } };
-  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++)unwrap(m.keys[i][1],m.keys[i-1][1]);
+  // an arm held almost straight out sideways: its swing hardly changes where it points, so a big jump in it (the recording's fit) is held from the key before
+  const dir=(a,b)=>{ a*=Math.PI/180; b*=Math.PI/180; return [Math.sin(b),-Math.cos(b)*Math.cos(a),Math.cos(b)*Math.sin(a)]; },
+    steady=(P,Q)=>{ for(const s of 'LR'){ const A=P[s], B=Q[s]; if(!A||!B)continue; for(const k of ['ua','fa']){ const a=A[k], b=B[k]; if(!a||!b)continue;
+        const near=x=>{ while(x-b[0]>180)x-=360; while(x-b[0]<-180)x+=360; return x; }, alt=[near(a[0]+180),(a[1]>=0?180:-180)-a[1]], cost=c=>Math.abs(near(c[0])-b[0])+Math.abs(c[1]-b[1]);
+        if(cost(alt)<cost(a)-20){ a[0]=alt[0]; a[1]=alt[1]; }   // (the same way written past straight up: the arm going over, not swinging round)
+        if(Math.abs(a[0]-b[0])<=40||Math.max(Math.abs(a[1]),Math.abs(b[1]))<=70)continue;
+      const d1=dir(a[0],a[1]), d2=dir(b[0],a[1]); if(Math.acos(Math.min(1,d1[0]*d2[0]+d1[1]*d2[1]+d1[2]*d2[2]))<.35)A[k]=[b[0],a[1]]; } } };
+  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++){ unwrap(m.keys[i][1],m.keys[i-1][1]); steady(m.keys[i][1],m.keys[i-1][1]); }
     for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
     const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
       R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }
@@ -31,11 +38,17 @@ import {AVATAR} from './111c-avatar.js';
     cur=start(st,n,loop); cur.while=o.while; if(o.share!==false)SYS.run('act',{m:'mc_'+n,loop:loop?1:0}); return true; };
   const stop=()=>{ if(!cur)return; const was=cur; cur=null; if(st.move&&st.move.name==='mc_'+was.n)st.move.t=st.move.def.dur; SYS.run('act',{stop:1}); };
   const theirs=new Map();
-  const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(c.while&&!c.while()){ if(m&&m.name==='mc_'+c.n)m.t=m.def.dur; return false; } if(m&&m.name==='mc_'+c.n)return true; if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };
+  const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(c.while&&!c.while()){ if(m&&m.name==='mc_'+c.n)m.t=m.def.dur; return false; } if(m&&m.name==='mc_'+c.n){ if(c.loop&&!(S.target>0)&&m.t>=m.def.dur-.05)R.begin(S,'mc_'+c.n); return true; } if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };   // (a loop starts again from its last pose before it ends: no frame back toward standing between)
   // standing still a moment: listening while someone talks to you, bent over when out of breath, hurting when low on health (until it no longer holds, or you move)
   let still=0; const STANCE=[['listen',()=>!!(window.TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
   const idle=()=>!st.move&&!st.up&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.target>0)&&!RAG.on&&!VIT.dead&&!SHARED.drive&&!UI.freeCam;
   SYS.add('life',dt=>{ if(cur||!idle()){ still=0; return; } if((still+=dt)<1.5)return; still=-1e9; const s=STANCE.find(([,f])=>f()); if(s)play(s[0],{loop:true,while:s[1]}).then(ok=>{ if(!ok)still=0; }); else still=0; },'111da-motion');
+  // a hard landing (owner, 7 Nov 2026: "add hard landing"): dropped more than about a storey in a moment (off a roof, a fire escape, a ledge), Polyfork's landing where you come down
+  let ly=null, lx=0, lz=0, llv=null, hi=null; const LANDH=2.5*TILE;
+  SYS.add('life',dt=>{ const y=SHARED.py, skip=ly==null||llv!==SHARED.LVL||Math.hypot(pos.x-lx,pos.z-lz)>2*TILE||FADE.busy||UI.fly||UI.freeCam||st.ride||SHARED.drive||RAG.on||VIT.dead||(st.water&&st.water.in)||st.climb||st.hang||ROOMS.cur;
+    lx=pos.x; lz=pos.z; llv=SHARED.LVL; if(skip){ ly=y; hi=null; return; }
+    if(dt>0&&(ly-y)/dt>6*TILE){ if(hi==null)hi=ly; } else if(hi!=null){ if(hi-y>LANDH&&!cur&&!st.move&&!st.sit)play('pf_Land'); hi=null; }   // (falling: coming down faster than running down stairs)
+    ly=y; },'111da-motion');
   SYS.onStart(()=>setTimeout(()=>ensure().catch(()=>{}),3000),'111da-motion');   // (the recordings soon after the start: the hand-made moves drawn from them from then on)
   SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here

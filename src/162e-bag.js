@@ -5,7 +5,6 @@ import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
-import {TEX} from './008a-blob.js';
 import {GEMS} from './101-gems.js';
 import {SWAP} from './159i-trade.js';
 window.BAG=BAG;
@@ -58,7 +57,7 @@ window.BAG=BAG;
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
   const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
-  if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); for(const [id,tx] of TEX){ tx.image=paint(id); tx.needsUpdate=true; } if(HUD.qdraw)HUD.qdraw(); if(BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
+  if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
   /* ---------- containers: a pouch or a chest is one thing each (pouch~3), holding things of its own ---------- */
   FORAGE.add({names:{pouch:'LEATHER POUCH',chest:'WOODEN CHEST'},prices:{pouch:12,chest:60}}); ITEMS.reg('pouch',{container:true,holds:12,sellable:true}); ITEMS.reg('chest',{container:true,holds:40,sellable:true});

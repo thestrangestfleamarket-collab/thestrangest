@@ -1,6 +1,6 @@
 // THE FIRST DAY: a new player's setup before the world (owner, 7 Nov 2026: "lets work on the 1st time a player creates account, choosing looks, stats, starting"; his picks: a setup screen first, basics only for looks, a unique name, starter money and items): your name, your look, your stats, then out onto the platform.
 import {THREE} from './003-shx.js';
-import {FIRSTDAY, FORAGE, LOOKS, TEXT, W3} from './003b-systems.js';
+import {FIRSTDAY, FORAGE, HUD, LOOKS, TEXT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -17,7 +17,8 @@ import {AVATAR} from './111c-avatar.js';
   if(OWNED.me&&OWNED.me.name)LOOKS.setName(OWNED.me.name);   // (the server's name is the one you go by)
   // the starter things, once (owner: "$1,000", two snacks, a fishing rod; the money is INV.START, 101-gems; the map is everyone's already: Shift+M)
   const STARTER=[['fr_apple',2],['rod',1]];
-  const starter=()=>{ if(OWNED.get('starter'))return; for(const [id,n] of STARTER)FORAGE.give(id,n); OWNED.set('starter','1'); };
+  const starter=()=>{ if(OWNED.get('starter'))return; for(const [id,n] of STARTER)FORAGE.give(id,n); OWNED.set('starter','1');
+    if(HUD.set&&HUD.slots)STARTER.forEach(([id],i)=>{ if(!HUD.slots.includes(id)){ const j=HUD.slots.findIndex((s,k)=>k>=i&&!s); if(j>=0)HUD.set(j,id); } }); };   // (and on the quick bar, 1 and 2, owner 7 Nov 2026)
   const need=()=>QS.get('firstday')==='1'||(!!OWNED.me&&!OWNED.me.name&&!OWNED.get('firstday')&&!/^dev-/.test(OWNED.me.id||''));   // (the checks' made-up logins go straight in)
   FIRSTDAY.on=false; window.FIRSTDAY=FIRSTDAY;
 

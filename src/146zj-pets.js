@@ -146,14 +146,9 @@ const PETS={}; window.PETS=PETS;
   PETS.shop=()=>{ idx().then(()=>{ inShop=true; DRAFT=MY?{...MY,c:MY.c.slice(),s:MY.s.slice(),h:false}:fresh(I.by.cat||I.kinds[0]); draw(); LOOKS.open(); LOOKS.tab('pet'); }); };
   SYS.every(()=>{ if(inShop&&($('#looks')&&$('#looks').hidden||!(ROOMS.off.pets&&ROOMS.off.pets.spawn&&Math.hypot(pos.x-ROOMS.off.pets.spawn[0],pos.z-ROOMS.off.pets.spawn[1])<15*TILE))){ inShop=false; DRAFT=null; draw(); } },400,'pet shop');
   SYS.onStart(()=>{ const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); if(MY)idx().then(draw).catch(()=>{}); },'146zj-pets');
-  /* ---------- THE PET STORE's inside: a counter with the adoption book, cages of straw and a sign ---------- */
-  const TM=.924, k0=MSHOP.kit.pets;
-  MSHOP.kit.pets=A=>{ if(k0)k0(A); const R=A.R, F=IKIT.frame(R), K=IKIT.room(F,o=>A.add(o),()=>{}), t=d=>d*TM, sol=(x0,y0,x1,y1)=>A.sol(R.x0+x0,R.y0+y0,R.x0+x1,R.y0+y1), {box,pic,words,use}=K, W=F.W;
-    A.floor((x,y)=>((Math.floor(x*2)+Math.floor(y*2))&1)?[196,186,160]:[176,164,138]);
-    for(const s of ['b','w','e','f'])A.wall(s,(a,z)=>z<20?[98,72,52]:[204,214,190]);
-    const cu=W/2; box(cu-1.4,t(2.0),cu+1.4,t(2.6),0,1.0,0x7a5236); box(cu-1.45,t(1.95),cu+1.45,t(2.65),1.0,1.05,0x5a3a26); sol((cu-1.4)/TM,2.0,(cu+1.4)/TM,2.6);
-    box(cu-.3,t(2.1),cu+.3,t(2.5),1.05,1.1,0xe8dcc0);
-    pic(cu,.03,1.6,2.4,.7,0,1,words(96,28,'#2a3a2a',[['THE PET STORE',48,4,'#f0e8d0',10,'center'],['ADOPT A FRIEND',48,17,'#b8e0a0',7,'center']]));
-    for(let i=0;i<4;i++){ const u=.8+i*.9; box(u,.2,u+.7,.8,0,.6,0x8a8a80); box(u+.05,.25,u+.65,.75,.05,.12,0xd8c070); }
-    use('THE ADOPTION BOOK (CHOOSE A PET)',cu,t(2.3),2.8,1.2,()=>PETS.shop(),1.8); K.flush(); };
+  // THE PET STORE: the shops' shared inside (162fa: the keeper's counter and shelves) and, by the door, a stand with the adoption book
+  MSHOP.kit.pets=A=>{ (MSHOP.kit._||(()=>{}))(A); const R=A.R, F=IKIT.frame(R), K=IKIT.room(F,o=>A.add(o),()=>{}), D=F.D, tm=D/(R.y1-R.y0), u0=.5, u1=1.1, v0=D-1.0, v1=D-.55;
+    K.box(u0,v0,u1,v1,0,.95,0x5a3a26); K.box(u0-.03,v0-.03,u1+.03,v1+.03,.95,1.0,0x3a2418); K.box(u0+.12,v0+.08,u1-.12,v1-.08,1.0,1.06,0xe8dcc0); K.box(u0+.16,v0+.1,u0+.3,v1-.1,1.0,1.07,0x7a2a2a);
+    A.sol(R.x0+u0/tm,R.y0+v0/tm,R.x0+u1/tm,R.y0+v1/tm); K.use('THE ADOPTION BOOK (ADOPT A PET)',(u0+u1)/2,(v0+v1)/2,.8,1.2,()=>PETS.shop(),1.8); K.flush(); };
+  MSHOP.kit.pets.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); };
 }

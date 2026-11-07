@@ -28,7 +28,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
       ${GLN}
       float vz(float d){ return isOrthographic?orthographicDepthToViewZ(d,uNear,uFar):perspectiveDepthToViewZ(d,uNear,uFar); }
       vec3 sky(float y){ return mix(uSkyH,uSkyZ,pow(clamp(y,0.,1.),.7)); }
-      void main(){ vec2 p=vP0; float fe=uAmp*clamp(min(p.x-uWin.x,uWin.y-p.x)/${(10*T).toFixed(3)},0.,1.);
+      void main(){ vec2 p=vP0; float fe=uAmp;   // the waves' look (normals, glints, foam) everywhere the water is, near or far; only the near strip's surface rises and falls (owner, 7 Nov 2026: "the water looks the same as far as you can see it")
         if(uMode>1.5){ vec2 q=(p-uRect.xy)/uRect.zw; fe*=1.-.7*clamp(min(min(q.x,1.-q.x),min(q.y,1.-q.y))*uRect.z/${(4*T).toFixed(3)},0.,1.); }
         vec3 n=vec3(0.,1.,0.); float jxx=1.,jzz=1.,jxz=0.;
         for(int i=0;i<${NW};i++){ if(i>=uNW)break; vec4 a=uWA[i], b=uWB[i]; float th=a.z*dot(a.xy,p)-a.w*uT+b.z, c=cos(th), s=sin(th), wa=a.z*b.x*fe;
@@ -41,7 +41,8 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         vec3 col; float alpha=1.;
         if(!up){ col=inC*1.6+sky(1.)*.12*pow(vd,2.); }
         else {
-          if(uMode<.5||uMode>1.5){
+          if(uMode>2.5){ col=inC*1.25; }   // the far water (mode 3): the same surface, its colour the water's own (nothing seen through it at that distance)
+          else if(uMode<.5||uMode>1.5){
             vec2 s=gl_FragCoord.xy/uRes; float th=max(0.,vVz-vz(texture2D(uDepth,s).r));
             vec2 r=clamp(s+n.xz*.035*uRefr*min(th*${MPU.toFixed(4)},2.),.001,.999); float th2=vVz-vz(texture2D(uDepth,r).r); if(th2<0.){ r=s; th2=th; }
             float m=min(th2*${MPU.toFixed(4)},40.); vec3 Tr=exp(-uSig*m); col=texture2D(uScene,r).rgb*Tr+inC*(1.-Tr); }
@@ -148,6 +149,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     uSunD:uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,
     uLP:SH.uLP,uLC:SH.uLC,uStep:SH.uStep,uRefl:{value:.45},uHi:{value:new THREE.Color(.05,.22,.22)}};
   const surfMat=new THREE.ShaderMaterial({uniforms:SU,side:THREE.DoubleSide,fog:false,vertexShader:SURF.vertexShader,fragmentShader:SURF.fragmentShader});
+  const farMat=surfMat.clone(); farMat.uniforms={...SU,uMode:{value:3},uScene:{value:bedTex},uDepth:{value:bedTex}}; RIVER.farMat=farMat;   // (it reads neither; not bound to the picture it is drawn into)
   const surf=new THREE.Mesh(PG(ND,NX,Math.round(ND/CELL),(DZ-ND)/2),surfMat), surfF=new THREE.Mesh(PG(DZ-ND+T,1,1,(T-ND)/2),surfMat); surf.frustumCulled=surfF.frustumCulled=false; surf.add(surfF); scene.add(surf);
   const FU={...UWU,uT:uT0,uSky:{value:new THREE.Color(.5,.62,.75)},uDay:{value:1},uDeep:{value:new THREE.Color(.06,.16,.2)},uSkyK:{value:.32}};
   const flatMat=new THREE.ShaderMaterial({uniforms:FU,fog:false,
@@ -157,10 +159,10 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
       void main(){ vec2 p=floor(vec2(vW.x+uT*${(1.6*T).toFixed(3)},vW.z)/${(.5*T).toFixed(3)});
         float g=step(.988,h(p+floor(uT*1.3)*vec2(0.,7.))), band=step(.7,h(vec2(floor(vW.z/${(1.4*T).toFixed(3)}),floor(uT*.6))));
         vec3 deep=uDeep*(.35+.65*uDay), c=mix(deep,uSky*.55,uSkyK)+band*.025; c+=g*(.28+.4*uDay)*vec3(.85,.95,1.); if(uUW>0.)c=mix(c,uUWC,clamp(length(vW-cameraPosition)/uUWF,0.,1.)); gl_FragColor=vec4(c,1.); }`});
-  const sheet=()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(1,DZ).rotateX(-Math.PI/2),flatMat); m.position.set(0,LV,(rz0+rz1)/2); scene.add(m); return m; };
+  const sheet=()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(1,DZ).rotateX(-Math.PI/2),farMat); m.position.set(0,LV,(rz0+rz1)/2); scene.add(m); return m; };
   const flatAll=sheet(), flatL=sheet(), flatR=sheet();
-  const sea=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0+400,900).rotateX(-Math.PI/2),flatMat); sea.position.set((lx0+lx1)/2,LV-0.05,rz0-450); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
-  for(const [a,b] of [[lx0-200,lx0+2*T],[lx1-2*T,lx1+200]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),flatMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
+  const sea=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0+400,900).rotateX(-Math.PI/2),farMat); sea.position.set((lx0+lx1)/2,LV-0.05,rz0-450); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
+  for(const [a,b] of [[lx0-200,lx0+2*T],[lx1-2*T,lx1+200]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
   const setFlats=()=>{ flatAll.scale.x=lx1-lx0; flatAll.position.x=(lx0+lx1)/2; const a=RIVER.cx-WIN/2, b=RIVER.cx+WIN/2;
     flatL.scale.x=Math.max(.01,a-lx0); flatL.position.x=(lx0+a)/2; flatR.scale.x=Math.max(.01,lx1-b); flatR.position.x=(b+lx1)/2; };
 

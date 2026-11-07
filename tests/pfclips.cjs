@@ -27,7 +27,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     await pg.evaluate(()=>MOTION.stop()); await wait(300); }
   rec('every Polyfork move plays on you, never NaN',!nan.length,'NaN: '+nan.join(','));
   rec('every Polyfork move moves the body (the held poses aside)',!still.length,'still: '+still.join(','));
-  const on=await pg.evaluate(async()=>{ MOTION.play('pf_Chat'); await new Promise(r=>setTimeout(r,900)); return {mw:st._mw,aw:st._aw,n:st._an}; });
+  const on=await pg.evaluate(async()=>{ MOTION.play('pf_Chat'); await new Promise(r=>setTimeout(r,900)); const s=__dbg.ST; return {mw:s._mw,aw:s._aw,n:s._an}; });
   rec('a Polyfork move is drawn from its clip, not the rig',on.mw===1&&on.aw>.9&&on.n==='Talking',JSON.stringify(on));
   if(OUT){ require('fs').mkdirSync(OUT,{recursive:true}); await pg.evaluate(()=>{ MOTION.stop(); UI.setView('third'); });
     for(const n of ['Thriller','HipHop','Chop','Drink','Laugh']){ await pg.evaluate(n=>MOTION.play('pf_'+n),n); await wait(1500); await pg.screenshot({path:OUT+'/'+n+'.png'}); await pg.evaluate(()=>MOTION.stop()); await wait(400); } }

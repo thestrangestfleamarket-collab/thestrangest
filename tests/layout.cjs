@@ -18,9 +18,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => { HUD.set(0, 'bottle'); FORAGE.give('bottle', 1); });
   const used = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs'); let n = 0; const o = HUD.use; HUD.use = i => { n++; }; s.click(); HUD.use = o; return n; });
   ok(used === 1, 'a plain click on a slot still uses it');
-  await pg.evaluate(() => SHOPS.open({ key: 'gas_station_attendant', name: 'THE DELI' })); await pg.waitForTimeout(1200);
+  await pg.evaluate(() => SHOPS.open({ key: 'professor', name: 'THE PROFESSOR' })); await pg.waitForTimeout(1200);
   const s0 = await box('shopg');
-  if (s0) { await dragBy(s0.x + s0.w / 2, s0.y + 40, 150, 120); const s1 = await box('shopg'); ok(s1 && Math.abs(s1.x - s0.x - 150) < 8, 'a window (the deli) drags too: ' + JSON.stringify([s0, s1])); } else ok(false, 'the deli opens');
+  if (s0) { await dragBy(s0.x + s0.w / 2, s0.y + 40, 150, 120); const s1 = await box('shopg'); ok(s1 && Math.abs(s1.x - s0.x - 150) < 8, 'a shop window drags too: ' + JSON.stringify([s0, s1])); } else ok(false, 'a shop opens');
   const saved = await pg.evaluate(() => __dbg.SAVE.get('uipos'));
   ok(saved && /vit/.test(saved) && /hqb/.test(saved) && /shopg/.test(saved), 'the layout is saved: ' + saved);
   const before = [await box('vit'), await box('hqb')];

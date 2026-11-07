@@ -83,9 +83,13 @@ BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||
     if(!q.jobs.length&&!q.hold.length)return; q.near(A.x,A.z); if((q.gt+=dt)<.05)return; q.gt=0;
     const t0=performance.now(); while(performance.now()-t0<6){ let b=null, bd=BATCH.reach()[0]; for(const j of q.jobs){ const d=gd(j,A.x,A.z); if(d<bd){ bd=d; b=j; } } if(!b)break; paint([b]); }
     const P=BATCH.reach()[0], more=q.jobs.some(j=>gd(j,A.x,A.z)<P); if(q.hn>=24||!more){ flush(); if(!more&&!q.settled){ q.settled=true; if(done)done(); } } };
+  q.rush=(ms,r)=>{ const A=BATCH.at(); if(!A)return; const P=Math.min(BATCH.reach()[0],r||Infinity), t0=performance.now(); while(performance.now()-t0<ms){ let b=null, bd=P; for(const j of q.jobs){ const d=gd(j,A.x,A.z); if(d<bd){ bd=d; b=j; } } if(!b)break; paint([b]); } flush(); };   // behind a loading screen: as much as fits in ms
+  q.left=r=>{ const A=BATCH.at(); if(!A)return 0; const P=Math.min(BATCH.reach()[0],r||Infinity); return q.jobs.filter(j=>gd(j,A.x,A.z)<P).length; };
   q.kept=()=>{ const A=BATCH.at()||pos, K=BATCH.reach()[1]; return q.groups.every(G=>G.jobs.some(j=>gd(j,A.x,A.z)<=K+1)); };
   BATCH.queues.push(q); return q; };
-BATCH.kept=()=>BATCH.queues.every(q=>q.kept());   // (for the checks: nothing kept past reach)
+BATCH.kept=()=>BATCH.queues.every(q=>q.kept());
+BATCH.rush=(ms,r)=>{ for(const q of BATCH.queues)q.rush(ms/BATCH.queues.length,r); };
+BATCH.left=r=>BATCH.queues.reduce((n,q)=>n+q.left(r),0);   // squares still to paint within reach (the loading screens' bars, FADE)   // (for the checks: nothing kept past reach)
 BATCH.near=(x,z)=>{ for(const q of BATCH.queues)q.near(x,z); };
 BATCH.tick=dt=>{ for(const q of BATCH.queues)q.tick(dt); };
 SYS.add('near',(x,z)=>BATCH.near(x,z),'008-batch');

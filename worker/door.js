@@ -80,7 +80,7 @@ export default {
       const P = postOf(env); if (!key || key.length > 80 || key !== (await P.botKey())) return json({ why: "wrong runner key (copy it from ADMIN > TENANTS > BOTS)" }, 403);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (body && body.status && typeof body.status === "object") await P.botStatus(body.status);
       return json({ bots: await Promise.all((await P.botList()).filter(b => b.on).map(async b => ({ ...botOut(b), login: await botLogin(env, b) }))) }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores" || p === "/art")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -90,11 +90,16 @@ export default {
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
-      if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no] = await Promise.all([H.ownedGet(id), H.passport(id)]); return json({ owned, me: { ...meOf(request, id), no } }); }
+      if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return (await homeOf(env).ownedPut(id, put)) ? json({ ok: true }) : json({ why: "too much saved (2 MB a player)", full: true }, 413); }
+      // your name (owner, 7 Nov 2026: a unique name chosen at the first day's setup): 3 to 16 letters, digits, spaces, ' or -, in capitals; no one else may have it, whatever its case
+      if (p === "/name") { const n = String(body.claim || "").toUpperCase().replace(/\s+/g, " ").trim();
+        if (!/^[A-Z0-9][A-Z0-9 '-]{1,14}[A-Z0-9]$/.test(n) || /^(TENANT|ADMIN|OWNER|MODERATOR|SYSTEM|GUEST)\b/.test(n)) return json({ why: "3 to 16 letters or digits" }, 400);
+        if (tooMany("name:" + id, 30)) return json({ why: "too many tries, wait a minute" }, 429);
+        return (await homeOf(env).nameClaim(id, n)) ? json({ ok: true, name: n }) : json({ why: "taken", taken: true }, 409); }
       // paintings (the painter): a picture a row (in 1 MB parts); finished ones never change and any player may look at them, unfinished ones only their painter
       if (p === "/art") { const H = homeOf(env), aid = x => (typeof x === "string" && /^[a-z0-9]{6,40}$/.test(x) ? x : "");
         if (body.get !== undefined) { const r = await H.artGet(aid(body.get), id); return r ? json(r) : json({ why: "no such picture" }, 404); }
@@ -564,6 +569,11 @@ export class Home extends DurableObject {
   // every citizen's passport number, issued in order from 1000 the first time the game asks
   passport(id) { this.sql.exec("create table if not exists passports(who text primary key, no integer, at integer)"); const r = this.sql.exec("select no from passports where who = ?", id).toArray()[0]; if (r) return r.no;
     const no = this.sql.exec("select coalesce(max(no), 999) + 1 as no from passports").toArray()[0].no; this.sql.exec("insert into passports(who, no, at) values(?, ?, ?)", id, no, Date.now()); return no; }
+  // every citizen's name, one a player and no two alike (low: the name in small letters, for the check)
+  nameT() { this.sql.exec("create table if not exists names(who text primary key, name text, low text unique, at integer)"); }
+  nameGet(id) { this.nameT(); const r = this.sql.exec("select name from names where who = ?", id).toArray()[0]; return r ? r.name : null; }
+  nameClaim(id, name) { this.nameT(); const low = name.toLowerCase(), r = this.sql.exec("select who from names where low = ?", low).toArray()[0]; if (r && r.who !== id) return false;
+    this.sql.exec("insert into names(who, name, low, at) values(?, ?, ?, ?) on conflict(who) do update set name = excluded.name, low = excluded.low, at = excluded.at", id, name, low, Date.now()); return true; }
   ownedGet(id) { this.ownedT(); const o = {}; for (const r of this.sql.exec("select k, v from owned where who = ?", id).toArray()) o[r.k] = r.v; return o; }
   ownedPut(id, put) { this.ownedT(); const now = Date.now(), had = this.ownedGet(id); let n = 0; for (const k in had) n += k in put ? 0 : had[k].length; for (const k in put) n += put[k] === null ? 0 : put[k].length;
     if (n > 2 << 20) return false;

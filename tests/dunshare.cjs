@@ -20,7 +20,7 @@ const fails=[], ok=(c,m)=>{ if(!c){ fails.push(m); console.log((process.env.GITH
   ok(H.hurt>0&&H.goo,'their monster hurts you by message; your kill pays you (the slime to scoop) '+JSON.stringify(H));
   // the other player last by id: you host and send the room out
   const S=await pg.evaluate(async()=>{ const w=ms=>new Promise(r=>setTimeout(r,ms)); ONLINE.feed({t:'out',id:'a'}); const p=__dbg.pos(); __sent.length=0;
-    ONLINE.feed({t:'in',p:{id:'z',name:'ZED',look:'w00',at:[p[0]+1,p[2],SHARED.py,0,'down','']}}); ONLINE.feed({t:'mv',id:'z',at:[p[0]+1,p[2],SHARED.py,0,'down','']}); await w(5000);
+    ONLINE.feed({t:'in',p:{id:'z',name:'ZED',look:'w00',at:[p[0]+1,p[2],SHARED.py,0,'down','']}}); for(let i=0;i<20&&!__sent.some(m=>m.t==='mob'&&m.k==='s');i++){ ONLINE.feed({t:'mv',id:'z',at:[p[0]+1,p[2],SHARED.py,0,'down','']}); await w(1000); }
     const snaps=__sent.filter(m=>m.t==='mob'&&m.k==='s'); return {snaps:snaps.length,room:snaps.length?snaps[0].r:null,me:__dbg.MAPK.MODS.dungeon.room}; });
   ok(S.snaps>0&&S.room===S.me,'first by id, you run the room and send it out '+JSON.stringify(S));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | '));

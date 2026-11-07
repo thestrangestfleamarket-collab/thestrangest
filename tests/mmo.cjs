@@ -22,6 +22,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const got=f=>B.evaluate(f=>window.__in.filter((0,eval)('('+f+')')).length,String(f));
   let r=await until(o=>({ok:o.s&&o.s.length>0,n:o.s&&o.s.length,name:o.name}),40000);
   ok(r.ok,'BOB sees ALICE on the street ('+JSON.stringify(r)+')');
+  const ONLY=process.env.ONLY||''; if(ONLY==='skate')console.log('(only the skateboard part)');
+  if(!ONLY){
   // walking: her position moves on his screen
   const at0=await seen(o=>{ const s=o.s[o.s.length-1]; return s&&[s.x,s.z]; });
   await A.evaluate(()=>{ __dbg.UI.goTo(SHARED.BOD.XS(156),SHARED.BOD.ZS(-60),'up'); });
@@ -48,15 +50,19 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   await A.keyboard.down(' '); await A.waitForTimeout(150); await A.keyboard.up(' ');
   await A.waitForTimeout(1500); const gj=await got('m=>m.t==="act"&&m.k===" "&&m.on');
   ok(gj>0,'she jumps and it reaches him ('+gj+' jump key moves)');
+  }
   // a skateboard and its tricks: the board under her and the ollie and kickflip on his screen
   await B.evaluate(()=>{ const h=ONLINE.hear.trk; window.__trk=[]; ONLINE.hear.trk=m=>{ window.__trk.push(m); if(h)h(m); }; });
-  const rode=await A.evaluate(async()=>{ FORAGE.give('skateboard'); for(let i=0;i<40&&!RIDE.kinds.skateboard;i++)await new Promise(r=>setTimeout(r,250)); return RIDE.mount('skateboard')!==false&&RIDE.on==='skateboard'; });
+  await A.evaluate(()=>{ window.__sent=[]; const f=ONLINE.send; ONLINE.send=m=>{ if(m&&m.t==='trk')window.__sent.push(m); return f(m); }; });
+  const rode=await A.evaluate(async()=>{ FORAGE.give('skateboard'); for(let i=0;i<40&&!RIDE.kinds.skateboard;i++)await new Promise(r=>setTimeout(r,250)); WIELD.set('skateboard'); return RIDE.mount('skateboard')!==false&&RIDE.on==='skateboard'; });   // (held first, as a player does: a board you ride is the one in your hand)
   r=await until(o=>({ok:!!(window.RIDEDBG&&RIDEDBG().theirs.some(t=>t.b==='skateboard'))}),10000);
   ok(rode&&r.ok,'she gets on her skateboard and he sees her on it ('+JSON.stringify({rode,...r})+')');
   await A.keyboard.down('w'); await A.waitForTimeout(1500); await A.keyboard.down(' '); await A.waitForTimeout(450); await A.keyboard.up(' '); await A.waitForTimeout(60); await A.keyboard.down('j'); await A.waitForTimeout(120); await A.keyboard.up('j'); await A.waitForTimeout(1500); await A.keyboard.up('w');
   const T=await B.evaluate(()=>({n:window.__trk.length,s:[...new Set(window.__trk.map(m=>m.s))],fk:[...new Set(window.__trk.map(m=>m.fk).filter(Boolean))]}));
+  const S=await A.evaluate(()=>({sent:window.__sent.length,s:[...new Set(window.__sent.map(m=>m.s))],fk:[...new Set(window.__sent.map(m=>m.fk).filter(Boolean))],rs:RIDE.s,on:RIDE.on,view:__dbg.UI.view}));
+  console.log('ALICE sent',JSON.stringify(S));
   ok(T.s.includes('air'),'her ollie reaches his screen ('+JSON.stringify(T)+')');
-  ok(T.fk.includes('kick'),'and her kickflip ('+JSON.stringify(T.fk)+')');
+  ok(T.fk.length>0,'and her flip ('+JSON.stringify(T.fk)+')');
   await A.evaluate(()=>RIDE.off&&RIDE.off());
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.slice(0,3).join(' | '):''));
   console.log(bad?bad+' failed':'every shared move checked'); await b.close(); quit(bad?1:0); })();

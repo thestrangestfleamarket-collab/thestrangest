@@ -1,6 +1,6 @@
 // THE BOOKSTORE: a one-floor lending library kept by the Professor: 16 Polyfork bookcases round its walls (three of the most read, then one per skill), of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, USE} from './003b-systems.js';
+import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, UI, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -243,6 +243,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     const sitIn=(name,u,v,h,du,dv,w)=>use(name,u,v,w,1.1,()=>{ const p=F.pw(u,v); USE.sitAt(p[0],p[1],h*MW,F.hd(du,dv)); setTimeout(()=>LIB.open(),600); },1.2);
     const warm=(u,v,h,i,r,c=0xffc887)=>A.lamp(tx(u),ty(v),h/TM,c,i*3.2,r*1.6);
     const G=GEO, d=LIB.data; if(!d)return;
+    { const p0=F.pw(0,0), pu=F.pw(1,0), pv=F.pw(0,1), a=pu[0]-p0[0], b=pv[0]-p0[0], c=pu[1]-p0[1], e=pv[1]-p0[1], det=a*e-b*c; KEEP={loc:(x,z)=>[(e*(x-p0[0])-b*(z-p0[1]))/det,(a*(z-p0[1])-c*(x-p0[0]))/det],W,side:.55+5*BC.W,in:.42-BC.Z0}; }   // the camera stays in front of the cases
     // the cases round one floor: six on the back wall, five down each side, the front left to the counter and the window
     const ROW=[...[0,1,2,3,4,5].map(j=>[(W-6*BC.W)/2+(j+.5)*BC.W,-BC.Z0+.01,0,1]),...[0,1,2,3,4].map(j=>[-BC.Z0+.01,.55+(j+.5)*BC.W,1,0]),...[0,1,2,3,4].map(j=>[W+BC.Z0-.01,.55+(j+.5)*BC.W,-1,0])];
     d.cases.slice(0,16).forEach((C,i)=>{ const [u,v,du,dv]=ROW[i], M=caseMesh(C), p=F.pw(u,v); M.scale.setScalar(MW); M.position.set(p[0],0,p[1]); M.rotation.y=F.hd(du,dv); A.add(M);
@@ -268,13 +269,21 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     for(const [u,v] of [[W*.35,D*.4],[W*.65,D*.4]]){ box(u-.005,v-.005,u+.005,v+.005,3.4,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,3.3,.09,0xfff0d0)); warm(u,v,3.1,1.3,6,0xffd29a); }
     warm(W/2,D*.47,.95,1.2,4,0xffc070); warm(W*.26,D*.38,1.7,1.1,5,0xffc27a); warm(W*.2-.1,D-.97,1.3,.8,4,0xffd090);
     A.add(new THREE.HemisphereLight(0xffd6a0,0x4a2414,1.5));
-    { const u=W/2-.3, v=D*.42, h=3.0; box(u-.006,v-.006,u+.006,v+.006,h+.4,HT,0x1c1c1c); K.cyl(u,v,.5,h+.36,h+.42,0xb8923a); K.cyl(u,v,.04,h-.1,h+.4,0xb8923a); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, uu=u+Math.cos(a)*.48, vv=v+Math.sin(a)*.48; K.cyl(uu,vv,.012,h+.05,h+.36,0xb8923a); K.glow(()=>K.ball(uu,vv,h+.12,.06,0xfff0d0)); } warm(u,v,h,1.6,9,0xffd29a); }   // a brass ring of lamps high over the room
+    { const u=W/2-.3, v=D*.42, h=3.0, R=.48, ring=new THREE.Mesh(new THREE.TorusGeometry(R*MW,.014*MW,6,32),new THREE.MeshLambertMaterial({color:0xb8923a})), p=F.pw(u,v);
+      ring.rotation.x=Math.PI/2; ring.position.set(p[0],(h+.36)*MW,p[1]); A.add(ring); box(u-.006,v-.006,u+.006,v+.006,h+.4,HT,0x1c1c1c); K.cyl(u,v,.04,h+.2,h+.42,0xb8923a);
+      box(u-R,v-.008,u+R,v+.008,h+.35,h+.37,0xb8923a); box(u-.008,v-R,u+.008,v+R,h+.35,h+.37,0xb8923a);
+      for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, uu=u+Math.cos(a)*R, vv=v+Math.sin(a)*R; K.cyl(uu,vv,.022,h+.36,h+.44,0xb8923a); K.glow(()=>K.ball(uu,vv,h+.5,.05,0xfff0d0)); } warm(u,v,h+.4,1.6,9,0xffd29a); }   // a brass ring of lamps high over the room: an open ring on a cross, a lamp on each of its eight cups
     K.glow(()=>{ for(const [u,v,h,r] of [[W/2,D*.47,.9,.07],[W*.26,D*.38,1.62,.1]])K.cyl(u,v,r*.6,h-.02,h+.04,0xfff0c0); });
     { const N=90, P=new Float32Array(N*3), Vv=[]; for(let i=0;i<N;i++){ const p=F.pw(W*.2+Math.random()*W*.6,D*.2+Math.random()*D*.6); P[i*3]=p[0]; P[i*3+1]=(.3+Math.random()*(HT-.6))*MW; P[i*3+2]=p[1]; Vv.push([(Math.random()-.5)*.02,(Math.random()-.4)*.01,(Math.random()-.5)*.02]); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
     K.flush(); };
-  MSHOP.kit.books.drop=()=>{ DUST=null; };
+  MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; };
+  // the third person's camera stays out of the cases round the walls, pulled in along the line to you (as a room keeps it within its walls)
+  let KEEP=null; UI.camKeeps.push((c,t)=>{ if(!KEEP||!UI.persp)return; const K_=KEEP, [cu,cv]=K_.loc(c.x,c.z), [tu,tv]=K_.loc(t.x,t.z), du=cu-tu, dv=cv-tv, m=K_.in; let k=1;
+    if(cv<m&&dv<-1e-6)k=Math.min(k,Math.max(0,(m-tv)/dv));
+    for(const [lim,s] of [[m,-1],[K_.W-m,1]]){ const out=s<0?cu<lim:cu>lim; if(out&&s*du>1e-6){ const f=Math.max(0,(lim-tu)/du), vAt=tv+dv*f; if(vAt<K_.side)k=Math.min(k,f); } }
+    if(k<1)c.lerpVectors(t,c,k); });
   SYS.add('places',dt=>{ if(!DUST||!DUST.pts.parent)return; const {P,V}=DUST, MW=IKIT.MW, k=(dt||0)*MW*.5; DUST.t+=dt||0; for(let i=0;i<V.length;i++){ const j=i*3; P[j]+=V[i][0]*k+Math.sin(DUST.t*.3+i)*.0006*MW; P[j+1]+=V[i][1]*k; P[j+2]+=V[i][2]*k; if(P[j+1]>DUST.y1||P[j+1]<DUST.y0)V[i][1]*=-1; } DUST.pts.geometry.attributes.position.needsUpdate=true; },'144ca-library');
   /* ---------- outside: polyfork's hanging sign, a cart of books, hanging baskets by the doors and flower planters under the windows (data/bookfront.json, loaded when you come near) ---------- */
   { const FJ=__LAZY__("data/bookfront.json"); let done=false, chk=0;

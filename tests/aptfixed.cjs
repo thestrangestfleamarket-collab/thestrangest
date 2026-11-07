@@ -1,4 +1,4 @@
-// THE APARTMENT'S OWN PIECES (owner, 7 Nov 2026): a fresh apartment, not furnished, still has the CRT TV, the typewriter's writing desk, the telescope, the globes, the microscope's desk and stool and the fish tank, with koi in it. node tests/aptfixed.cjs [dist/market.html]
+// THE APARTMENT'S OWN PIECES (owner, 7 Nov 2026): a fresh apartment, not furnished, still has the CRT TV, the typewriter's writing desk, the telescope, the globes, the microscope's desk and stool and the fish tank, with koi in it; in it third and first person, as in any inside. node tests/aptfixed.cjs [dist/market.html]
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=aptfixed::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -13,6 +13,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     let d = null; for (let i = 0; i < 40; i++) { d = await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG()); if (d && d.built && want.every(k => d.kinds.includes(k))) break; await pg.waitForTimeout(1000); }
     ok(d && want.every(k => d.kinds.includes(k)), 'a fresh apartment has its own pieces: ' + JSON.stringify(d && d.kinds));
     ok(d && d.kinds.every(k => want.includes(k)), 'and nothing else until you buy it');
+    const v = await pg.evaluate(async () => { const A = __dbg.MAPK.MODS.apts; await A.enterReal(); for (let i = 0; i < 40 && (window.FADE && FADE.busy); i++) await new Promise(r => setTimeout(r, 250)); return { inReal: !!A.inReal, views: __dbg.UI.viewsHere() }; });
+    ok(v.inReal && v.views.includes('third') && v.views.includes('first'), 'in your apartment you can go to third and first person, as in any inside (owner, 7 Nov 2026): ' + JSON.stringify(v));
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); process.exit(fails.length ? 1 : 0);

@@ -1,6 +1,6 @@
 // THE SHOPS' SHARED INSIDE (MSHOP.kit._): a merchant's shop without a kit of its own gets a floor and walls in its colours, a counter with its keeper behind it, shelves showing what the keeper sells (each thing's own picture), a lamp; the hotel, tailor and barber counters do their own thing (rest, WEAR, LOOK).
 import {THREE} from './003-shx.js';
-import {ARCHI, BAG, CHARS, INV, SHOPS, UI, VIT} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, INV, SHOPS, TALK, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
@@ -25,7 +25,8 @@ import {MSHOP} from './059i-mshops.js';
   MSHOP.kit._=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, K=IKIT.room(F,o=>A.add(o),()=>{}), {box,cyl,ball,glow,pic,words,use,seat,own}=K, W=F.W, D=F.D, tm=D/(R.y1-R.y0);
     const sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/tm,R.y0+Math.min(v0,v1)/tm,R.x0+Math.max(u0,u1)/tm,R.y0+Math.max(v0,v1)/tm), HT=A.WH/24*tm;
     const [FL,WA,WS,WOOD,EX]=LOOK[A.id]||DEF, tr=A.who&&CHARS.trade?CHARS.trade({key:A.who}):null, goods=(tr&&tr.sells||[]).filter(id=>!ARCHI(id));
-    const shop=()=>{ if(SERVE[A.id])return SERVE[A.id](); if(tr&&SHOPS.open)return SHOPS.open({key:A.who,name:A.name}); say('NOBODY IS SERVING.','#c8a090'); };
+    const shop=()=>{ if(SERVE[A.id])return SERVE[A.id](); for(const [N,f] of TALK.shops||[])if(N&&N.key===A.who)return f();   // a keeper with a shop of their own (the Tomato, the Mushroom Seller)
+      if(tr&&SHOPS.open)return SHOPS.open({key:A.who,name:A.name}); say('NOBODY IS SERVING.','#c8a090'); };
     // the floor's boards, the walls' plaster over a wainscot, a picture rail
     A.floor((x,y)=>{ const u=x-R.x0, v=y-R.y0, row=Math.floor(u*5), s=.84+.16*A.hs(row,Math.floor(v*1.4+row*.37),5), e=(u*5%1)<.06?.7:1; return FL.map(c=>c*s*e); });
     for(const sd of ['b','w','e','f'])A.wall(sd,(a,z)=>{ if(z<4)return WS.map(c=>c*.55); if(z<24)return (Math.floor(a*3)%2&&z>7&&z<21)?WS.map(c=>c*.85):WS; if(z<26)return WS.map(c=>c*1.3);

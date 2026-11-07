@@ -36,7 +36,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     if(b.dataset.rent){ if(!(window.FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
     if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); });
 
-  SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
+  SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; { const tr=CHARS.trade(N); if(!(tr.sells||[]).some(id=>!ARCHI(id))&&!(tr.buys||[]).length&&!(tr.teaches||[]).length){ say('CLOSED.'); return; } } SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
   SHOPS.close=()=>{ sp.hidden=true; SHOPS.cur=null; };
   SHOPS.draw=draw;
 

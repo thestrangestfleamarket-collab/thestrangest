@@ -1,5 +1,5 @@
 // THE ARCADE'S GAMES, the shared cabinet layer: each cabinet's game registers here (STORE.cabs.add: its name, the skill it trains, its lore, and its game as its own chunk, fetched the first time you play it); the window a game plays in over the page (a play costs $2 and trains the skill by your score), the best scores, the title cards, and the attract mode the cabinets' screens run. A cabinet whose game is not built yet shows its card: COMING SOON.
-import {FORAGE, INV, keys, SFX, UI} from './003b-systems.js';
+import {FORAGE, keys, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {STORE, SYS} from './006-map-pre.js';
 STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
@@ -66,7 +66,8 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
     cv.addEventListener('pointermove',ev=>{ const r=cv.getBoundingClientRect(); K.mx=(ev.clientX-r.left)/r.width*W; K.my=(ev.clientY-r.top)/r.height*H; }); cv.addEventListener('pointerleave',()=>{ K.mx=K.my=null; });   // a game that steers by the pointer (PETRI) reads where it is over the screen
     const kd=ev=>{ ev.stopPropagation(); const k=(ev.key||'').toLowerCase(); if(k==='escape'){ ev.preventDefault(); close(); return; } const m=map(k); if(!m)return; ev.preventDefault(); if(!ev.repeat&&!K[m])T[m]=1; K[m]=1; };
     const ku=ev=>{ ev.stopPropagation(); const m=map((ev.key||'').toLowerCase()); if(m)K[m]=0; }, blur=()=>{ for(const k in K)K[k]=0; };
-    const coin=()=>{ if(INV.cash<2){ msg='YOU NEED $2 TO PLAY'; beep(120,.2); return false; } INV.cash-=2; msg=''; beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };
+    const coin=()=>{ msg='';   // free to play (owner, 4 Nov 2026: the arcade is free)
+      beep(988,.08); setTimeout(()=>beep(1319,.15),80); return true; };
     const again=()=>{ mode='over'; wait=1.2; foot.textContent='SPACE TO PLAY AGAIN ($2) · ESC TO LEAVE'; };
     const end=()=>{ nb=setBest(name,g.score); const amt=1+G.grade.filter(v=>g.score>=v).length; if(e.skill)FORAGE.train(e.skill,400,0,amt); rank=0;
       if(qualifies(name,g.score)){ mode='initials'; slot=0; foot.textContent='▲▼ LETTER · ◀▶ SLOT · SPACE TO ENTER'; beep(1568,.6,'square',.05,2093); } else { if(nb)beep(1568,.6,'square',.05,2093); again(); } };

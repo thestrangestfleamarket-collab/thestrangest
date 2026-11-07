@@ -3664,7 +3664,7 @@
     "bird",
     "climb"
    ],
-   "line": "Nets, seed, feeders and glasses. I buy the birds you bring me. And three points on the bark, always.",
+   "line": "Nets, seed, feeders and glasses; I buy the birds you bring me. Climbing? Three points on the rungs: practise on the fire escapes.",
    "sells": [
     "bnet",
     "cage",
@@ -4169,13 +4169,10 @@
   "name": "THE SCUBA DIVER",
   "trade": {
    "sells": [
-    "cutter",
-    "extractor",
-    "scanner",
-    "headlight",
-    "gem_wheel"
+    "gem_wheel",
+    "headlight"
    ],
-   "line": "Cutters, extractors, the wheel. I buy every stone you bring up.",
+   "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
    "buys": [
     "gems"
    ],

@@ -20,6 +20,7 @@ const SHOTS = process.argv[3];
       ok(who && !W.homes[who], id + ': its keeper is ' + who + ', with no street spot of their own');
       await pg.evaluate(id => ROOMS.enter(id), id);
       let r = {}; for (let i = 0; i < 90; i++) { r = await pg.evaluate(([id, who]) => { const o = ROOMS.off[id], b = o.box, me = __dbg.you(), inR = me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1;
+          if (!inR && !(window.FADE && FADE.busy)) ROOMS.enter(id);   // (an entry asked during a fade is ignored: ask again)
           const inB = t => { const v = t.obj.getWorldPosition(new t.obj.position.constructor()); return v.x > b.x0 && v.x < b.x1 && v.z > b.z0 && v.z < b.z1; }, th = __dbg.UI.things.filter(t => t.obj && t.obj.parent && inB(t) && /COUNTER|FRONT DESK|SHELVES|DISPLAY TABLE/.test(t.name)).map(t => t.name);
           const N = (window.BODIES && BODIES.by[who] && BODIES.by[who].npc) || (__dbg.NPCS || []).concat((__dbg.NPCS && __dbg.NPCS.extra) || []).find(n => n.key === who || n.id === who), g = N && (N.g || N.group || N.mesh), p = g && g.position;
           return { inR, th, keeper: !!(p && p.x > b.x0 && p.x < b.x1 && p.z > b.z0 && p.z < b.z1) }; }, [id, who]).catch(e => ({ err: String(e) }));

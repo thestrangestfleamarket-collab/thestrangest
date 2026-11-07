@@ -75,7 +75,8 @@ function mix(A,B,u){ const P={root:lerpV(A.root,B.root,u)};
   return P; }
 const hipAt=(P,s)=>{ const Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv,0); return [add(add(P.root,pv),app(Rb,sub(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),pv))),Rb]; };
 function legIK(P,n,s,A,kp){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),THIGH+SHIN-1e-6),u=nrm(d);
-  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),fwd=kp?app(Rb,kp):app(Rb,yaw(V(0,0,1),P.pyaw)),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
+  const f0=app(Rb,yaw(V(0,0,1),P.pyaw)); let fwd=kp?app(Rb,kp):f0; if(kp){ const l=len(sub(fwd,mul(u,dot(fwd,u)))); if(l<.45){ const w=clamp((l-.15)/.3,0,1); fwd=add(mul(fwd,w),mul(f0,1-w)); } }   // (a knee's way given almost along the leg: forward, not flipping side to side)
+  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
   const Kn=add(H,add(mul(u,THIGH*ca),mul(pole,THIGH*Math.sqrt(1-ca*ca)))),A2=add(H,mul(u,dl));
   const ang=v=>{ const l=nrm(v),x=dot(l,Rb.x),y=dot(l,Rb.y),z=dot(l,Rb.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
   P[n].th=ang(sub(Kn,H)); P[n].sh=ang(sub(A2,Kn)); }

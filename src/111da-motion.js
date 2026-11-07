@@ -19,7 +19,14 @@ import {AVATAR} from './111c-avatar.js';
       if(typeof v==='number'&&typeof u==='number'){ let x=v; while(x-u>180)x-=360; while(x-u<-180)x+=360; a[k]=x; }
       else if(Array.isArray(v)&&Array.isArray(u)){ for(let i=0;i<v.length;i++)if(typeof v[i]==='number'&&typeof u[i]==='number'){ while(v[i]-u[i]>180)v[i]-=360; while(v[i]-u[i]<-180)v[i]+=360; } }
       else if(v&&typeof v==='object'&&u&&typeof u==='object')unwrap(v,u); } };
-  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++)unwrap(m.keys[i][1],m.keys[i-1][1]);
+  // an arm held almost straight out sideways: its swing hardly changes where it points, so a big jump in it (the recording's fit) is held from the key before
+  const dir=(a,b)=>{ a*=Math.PI/180; b*=Math.PI/180; return [Math.sin(b),-Math.cos(b)*Math.cos(a),Math.cos(b)*Math.sin(a)]; },
+    steady=(P,Q)=>{ for(const s of 'LR'){ const A=P[s], B=Q[s]; if(!A||!B)continue; for(const k of ['ua','fa']){ const a=A[k], b=B[k]; if(!a||!b)continue;
+        const near=x=>{ while(x-b[0]>180)x-=360; while(x-b[0]<-180)x+=360; return x; }, alt=[near(a[0]+180),(a[1]>=0?180:-180)-a[1]], cost=c=>Math.abs(near(c[0])-b[0])+Math.abs(c[1]-b[1]);
+        if(cost(alt)<cost(a)-20){ a[0]=alt[0]; a[1]=alt[1]; }   // (the same way written past straight up: the arm going over, not swinging round)
+        if(Math.abs(a[0]-b[0])<=40||Math.max(Math.abs(a[1]),Math.abs(b[1]))<=70)continue;
+      const d1=dir(a[0],a[1]), d2=dir(b[0],a[1]); if(Math.acos(Math.min(1,d1[0]*d2[0]+d1[1]*d2[1]+d1[2]*d2[2]))<.35)A[k]=[b[0],a[1]]; } } };
+  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++){ unwrap(m.keys[i][1],m.keys[i-1][1]); steady(m.keys[i][1],m.keys[i-1][1]); }
     for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
     const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
       R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }

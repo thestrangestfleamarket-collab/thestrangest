@@ -3,12 +3,12 @@ import {SHARED} from './003-shx.js';
 import {BAG, ED, FORAGE, HUD, INV, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
-import {SECTION, SYS, TILE} from './006-map-pre.js';
+import {MODS, SECTION, SYS, TILE} from './006-map-pre.js';
 import {QUESTS} from './160a-quests.js';
 { const T=TILE, MW=150, esc=TEXT.esc; let N=Math.max(1,Math.min(40,+OWNED.get('quickn')||10));   // (how many quick slots: the player's choice, 1 to 40, owner 7 Nov 2026; the first ten on keys 1 to 0)
   const css=document.createElement('style'); css.textContent=`#hmap{position:fixed;right:calc((24px + var(--fx,0px) + env(safe-area-inset-right,0px)) / var(--uiz,1));top:calc((24px + var(--fy,0px) + env(safe-area-inset-top,0px)) / var(--uiz,1));width:${MW}px;z-index:5;font:9px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
     #hmap[hidden]{display:none} #hmap canvas{display:block;width:${MW}px;height:${MW}px;border-radius:50%;image-rendering:pixelated;cursor:pointer} #hmap canvas[hidden]{display:none} #hmap .f{padding-top:5px;text-align:center} #hmap .f span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #hlog{position:fixed;left:calc((24px + var(--fx,0px) + env(safe-area-inset-left,0px)) / var(--uiz,1));bottom:calc((24px + var(--fy,0px) + env(safe-area-inset-bottom,0px)) / var(--uiz,1));width:min(320px,40vw);z-index:6;font:11px Silkscreen,monospace;letter-spacing:.3px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;pointer-events:none;zoom:var(--uiz,1)}
+    #hlog{position:fixed;left:calc((24px + var(--fx,0px) + env(safe-area-inset-left,0px)) / var(--uiz,1));bottom:calc((24px + var(--fy,0px) + var(--logup,0px) + env(safe-area-inset-bottom,0px)) / var(--uiz,1));width:min(320px,40vw);z-index:6;font:11px Silkscreen,monospace;letter-spacing:.3px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;pointer-events:none;zoom:var(--uiz,1)}
     #hlines{display:flex;flex-direction:column;justify-content:flex-end;max-height:150px;overflow:hidden} #hlines div{padding:1px 0;word-wrap:break-word} #hlines div.old{opacity:.5} #hlines b{color:#ffd27a;font-weight:400}
     #hlog:has(#onl.open) #hlines{max-height:60vh;overflow:auto;pointer-events:auto} #hlog:has(#onl.open) #hlines div.old{opacity:.8}
     #hlog #onl{position:static;width:auto;margin-top:4px;zoom:1} #hlog #onllog{display:none}
@@ -36,7 +36,7 @@ import {QUESTS} from './160a-quests.js';
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
-  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur; if(MP.hidden===on)MP.hidden=!on; if(!on)return;
+  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
     if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
 
   /* ---------- the quick bar ---------- */
@@ -47,7 +47,7 @@ import {QUESTS} from './160a-quests.js';
   const ACTS={map:['MAP',()=>{ const B=UI.brochure; if(B)B.up()?B.close():B.open(); }],bag:['BAG',()=>BAG.toggle&&BAG.toggle()],passport:['PASSPORT',()=>PASSPORT.open&&PASSPORT.open()],emotes:['EMOTES',()=>MOTION.toggle&&MOTION.toggle()]};
   const AC=id=>typeof id==='string'&&id.startsWith('act:')&&ACTS[id.slice(4)]?id.slice(4):null; HUD.acts=Object.keys(ACTS);
   const EM=id=>typeof id==='string'&&id.startsWith('emote:')?id.slice(6):null;   // an emote kept on the bar (dragged from the H panel): its name, never a thing in the pack
-  const draw=()=>{ let o='<div class="qg" title="drag to move the bar">⋮⋮</div>'; for(let i=0;i<N;i++){ const id=S[i], em=EM(id), ac=AC(id), key=i<10?(i+1)%10:''; if(ac){ o+=`<div class="qs" data-i="${i}" draggable="true" title="${ACTS[ac][0]}"><em>${key}</em><span>${ACTS[ac][0]}</span></div>`; continue; } if(em){ o+=`<div class="qs" data-i="${i}" draggable="true" title="${esc(MOTION.label(em)||em)} (emote)"><em>${key}</em><span>${esc(MOTION.label(em)||em)}</span></div>`; continue; } const on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${key}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; QB.style.maxWidth=N>10?(24+3+10*49)+'px':''; QB.style.flexWrap=N>10?'wrap':''; }; HUD.qdraw=draw;
+  const draw=()=>{ let o='<div class="qg" title="drag to move the bar">⋮⋮</div>'; for(let i=0;i<N;i++){ const id=S[i], em=EM(id), ac=AC(id), key=i<10?(i+1)%10:''; if(ac){ o+=`<div class="qs" data-i="${i}" draggable="true" title="${ACTS[ac][0]}"><em>${key}</em><span>${ACTS[ac][0]}</span></div>`; continue; } if(em){ o+=`<div class="qs" data-i="${i}" draggable="true" title="${esc(MOTION.label(em)||em)} (emote)"><em>${key}</em><span>${esc(MOTION.label(em)||em)}</span></div>`; continue; } const on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${key}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:32px;height:32px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; QB.style.maxWidth=N>10?(24+3+10*49)+'px':''; QB.style.flexWrap=N>10?'wrap':''; }; HUD.qdraw=draw;
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
   HUD.use=i=>{ const id=S[i]; if(!id)return false; const ac=AC(id); if(ac){ ACTS[ac][1](); return true; } const em=EM(id); if(em){ MOTION.play(em); return true; } return HUD.useItem(id); };
   HUD.count=n=>{ N=Math.max(1,Math.min(40,Math.round(+n)||10)); S.length=Math.max(S.length,N); try{ OWNED.set('quickn',String(N)); }catch(e){} draw(); return N; }; HUD.n=()=>N;
@@ -84,6 +84,9 @@ import {QUESTS} from './160a-quests.js';
   draw();
 
   const nmN=document.getElementById('vnm'); let named=0;
-  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
+  let liftT=0; const lift=dt=>{ if((liftT-=dt)>0)return; liftT=.5; const L=document.getElementById('hlog'), Q=document.getElementById('hqb'); if(!L||!Q)return;   // the log never under the quick bar: on a narrow window it sits just above it (unless you moved either)
+    let up=0; if(!L.style.top&&!Q.style.top&&!Q.hidden){ const a=L.getBoundingClientRect(), b=Q.getBoundingClientRect(); if(b.height>0&&a.right>b.left+2&&a.left<b.right-2)up=Math.round(b.height+8); }
+    if(L.style.getPropertyValue('--logup')!==up+'px')L.style.setProperty('--logup',up+'px'); };
+  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); lift(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
   window.HUDDBG=()=>({map:!MP.hidden,plan:!!Q,slots:[...S],lines:LN.children.length});
 }

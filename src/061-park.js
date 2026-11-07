@@ -374,6 +374,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       inst(cg,new THREE.MeshLambertMaterial({flatShading:true}),M1.length,(im,i)=>{ const [wx,wz,x,y,col,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y)+.11*TILE*k,wz),Q.setFromAxisAngle(up,i),S.set(k,k,k))); im.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); }); }
     grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
   const NOTREES=QS.get('trees')!=='1';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
+  PARK.trunksOf=trunks;
   const NI=TREES.length-PARK.ringN; PARK.later(()=>{ '@later'; PARK.trees=NOTREES?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1,lod:'near'}); PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2});   // the wall's ring always, the rest only with ?trees=1 (owner, 7 Nov 2026) PARK.ringTrunks=trunks(TREES.slice(NI));

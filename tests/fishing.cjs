@@ -14,8 +14,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     if (await wait(() => window.RIVER && RIVER.on && window.PIER && PIER.G && !FADE.busy && window.FISHING && FISHING.STAND, null, 90000).then(() => 1, () => 0)) break; }
   const hp = await pg.evaluate(() => { const T = __dbg.cv().TILE, o = {}; o.built = PIER.G.parent && PIER.G.parent.name === 'river'; o.long = +((PIER.z0 - PIER.zE) / T).toFixed(1);
     o.longest = RIVER.decks.every(d => d.pier || d.r.every(r => PIER.z0 - r[1] < PIER.z0 - PIER.zE)); o.deck = [RIVER.onPier(PIER.x, (PIER.z0 + PIER.zH) / 2), RIVER.onPier(PIER.x + PIER.HW - T, PIER.zE + T), !RIVER.onPier(PIER.x, PIER.zE - T)];
-    o.water = (FISHING.at(PIER.x, PIER.zE - 6 * T) || {}).kind; o.notDeck = !FISHING.at(PIER.x, PIER.zH + 2 * T); return o; });
-  ok(!before && hp.built && hp.long >= 30 && hp.longest && hp.deck.every(Boolean) && hp.water === 'river' && hp.notDeck, 'the fishing pier is built only with the Hudson, reaches further out than any other; its water is the river, its deck is not: ' + JSON.stringify({ before, ...hp }));
+    o.water = (FISHING.at(PIER.x, PIER.zE - 6 * T) || {}).kind; o.notDeck = !FISHING.at(PIER.x, PIER.zH + 2 * T); o.half = +((PIER.z0 - RIVER.box.z0) / T / 2).toFixed(1); return o; });
+  ok(!before && hp.built && hp.long >= 14 && hp.long <= hp.half + 1 && hp.longest && hp.deck.every(Boolean) && hp.water === 'river' && hp.notDeck, 'the fishing pier is built only with the Hudson, reaches further out than any other but no more than half-way across (7 Nov 2026); its water is the river, its deck is not: ' + JSON.stringify({ before, ...hp }));
   const r1 = await pg.evaluate(() => { FISHING.speed = 20; INV.cash = 100; FORAGE.give('rod', 1); FORAGE.give('bait', 12); FORAGE.give('bait_cut', 6);   // the Fisherman in Waders sells these now (owner, 5 Nov 2026)
     return { rod: FORAGE.has('rod'), worms: FORAGE.has('bait'), cut: FORAGE.has('bait_cut'), shedBoats: !!document.querySelector('#fishp') }; });
   ok(r1.rod === 1 && r1.worms === 12 && r1.cut === 6, 'the gear: a rod, worms and cut bait (the Fisherman in Waders sells them): ' + JSON.stringify(r1));

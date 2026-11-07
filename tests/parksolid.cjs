@@ -5,7 +5,7 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
   await pg.goto('file://'+require('path').resolve(page)+'?hour=12&fresh=1&at=100,40',{waitUntil:'commit',timeout:180000});
   for(let i=0;i<480;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&!!window.PARKPFDBG&&PARKPFDBG().done).catch(()=>false))break; } await pg.waitForTimeout(3000);
   const D=await pg.evaluate(()=>PARKPFDBG()); console.log('park',JSON.stringify({things:D.things,solids:D.solids,seats:D.seats,skipped:D.skipped.length}));
-  if(!(D.solids>600))errs.push('too few solids: '+D.solids); if(!(D.seats>150))errs.push('too few seats: '+D.seats);
+  if(!(D.solids>600))errs.push('too few solids: '+D.solids); if(!(D.seats>=60))errs.push('too few seats: '+D.seats);   // 72 park benches since the owner's cut (7 Nov 2026)
   const C=await pg.evaluate(()=>PARKPFCHK()); console.log('check',JSON.stringify(C)); if(C.mallBlocked)errs.push('the mall is blocked');
   const R=await pg.evaluate(async()=>{ const U=__dbg.UI, th=U.things.find(t=>t.name==='BENCH'), p=th.obj.position;
     const out={}; U.goTo(p.x+2.5,p.z,'up'); await new Promise(r=>setTimeout(r,800)); out.inside=SHARED.solids.some(s=>p.x>s[0]&&p.x<s[2]&&p.z>s[1]&&p.z<s[3]);

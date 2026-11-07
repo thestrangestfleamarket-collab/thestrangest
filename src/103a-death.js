@@ -23,7 +23,7 @@ import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   const takeBody=()=>{ if(!body||VIT.dead)return; const c=body.c; for(const k in c.items)INV.items[k]=(INV.items[k]||0)+c.items[k]; Object.assign(INV.inside,c.inside||{}); INV.cash+=c.cash||0; INV.save(); hideBody(); keepBody(null); note('YOU TAKE BACK WHAT YOUR BODY HELD.',4); };
   const herb=()=>{ const N=window.GUARD&&GUARD.list&&GUARD.list.find(n=>n.key==='gd_toucan'); if(N&&N.st)return {x:N.st.x,z:N.st.z}; const S=CASTLE.stair; return {x:SHARED.BOD.X((S.x0+S.x1)/2),z:SHARED.BOD.Z(S.y1+3)}; };   // THE HERBALIST's post in the keep, past the stair
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.fainted=false; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; wt=0; wn=0; want=false; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD);
-    const old=body&&body.c, c={x:pos.x,z:pos.z,py:SHARED.py,h:SHARED.heading,lv:LEVELS.cur||'*',t:Date.now(),items:{...INV.items},inside:{...(INV.inside||{})},cash:INV.cash};
+    const old=body&&body.c, c={x:pos.x,z:pos.z,py:SHARED.py,h:SHARED.heading,lv:SHARED.LVL==='down'&&LEVELS.cur||'*',t:Date.now(),items:{...INV.items},inside:{...(INV.inside||{})},cash:INV.cash};
     if(old){ for(const k in old.items)c.items[k]=(c.items[k]||0)+old.items[k]; Object.assign(c.inside,old.inside||{}); c.cash+=old.cash||0; }   // a body already lying somewhere: what it held comes to the new one
     if(Object.keys(c.items).length||c.cash){ INV.items={}; INV.inside={}; INV.cash=0; INV.save(); keepBody(c); showBody(c); } };
   const back=async here=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);

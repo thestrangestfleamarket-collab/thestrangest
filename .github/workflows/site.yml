@@ -174,6 +174,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/guardians.cjs dist/market.html
+      - name: Your body (dying leaves it; the Herbalist raises you; you take it all back)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' guardians')
+        run: node tests/body.cjs dist/market.html
       - name: passport
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' passport')

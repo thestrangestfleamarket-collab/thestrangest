@@ -7,11 +7,11 @@ import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
 const PFROW={fronts:[],houses:[],things:[]};
 { const STREET=__LAZY__("data/street.json"), {XS,ZS}=SHARED.BOD, M=TILE/.84, YS=ZU*24/TILE, MV=M*YS, G=(x,z)=>MODS.bodega.ground(x,z);
-  const HOUSES=LEVEL.places.filter(p=>p.pf&&p.y1!=null&&!p.row).sort((a,b)=>a.y0-b.y0);   // (a shop on the Hudson row stands through MSHOP.fronts)
+  const HOUSES=LEVEL.places.filter(p=>p.pf&&p.y1!=null&&!p.row&&p.kind!=='front').sort((a,b)=>a.y0-b.y0);   // (a shop on the Hudson row stands through MSHOP.fronts)
   for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,35/.84*ZU*24]); }   // solid from the start (the house is 35 m tall)
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };
-    for(const f of MSHOP.fronts){ const d=size(f.pf)[2]*M; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot}); if(g)PFROW.fronts.push({id:f.id,obj:g}); }
+    for(const f of MSHOP.fronts){ const sc=f.sc||1, d=size(f.pf)[2]*M*sc; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot,...(sc!==1?{m:size(f.pf)[1]*sc}:{})}); if(g)PFROW.fronts.push({id:f.id,obj:g}); }
     HOUSES.forEach((p,i)=>{ const fx=XS(p.x1), zc=(ZS(p.y0)+ZS(p.y1))/2, w=size(p.pf)[0]*M, d=size(p.pf)[2]*M, rot=Math.PI/2, g=put(p.pf,fx-d/2,zc,{rot});   // the front faces the street (east)
       if(!g)return; PFROW.houses.push({id:p.id,obj:g,door:[fx,zc]});
       for(let k=1;k<10;k++)put('fireescape',fx+.7*M,zc+(i%2?-6:6)*M,{rot,lift:(3*k-1.13)*MV});   // a landing at every floor line on one bay

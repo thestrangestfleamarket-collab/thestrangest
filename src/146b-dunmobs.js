@@ -162,7 +162,7 @@ __CODE__("worker/dunmobs.js")
     if(!GB)bake(); if(L.safe)plan={g:0,sp:0,sl:0}; };
   const arena=()=>{};
   const tick=dt=>{ if(!lvl||!L)return; if(remote&&!ONLINE.on)remote=false; const alive=!VIT.dead&&SHARED.LVL==='down';
-    if(!remote&&GB){ for(const e of MOBSIM.step(MS,dt,[{id:'me',x:pos.x,z:pos.z,ok:alive&&!SHARED.unseen}]))felt(e); pic=MOBSIM.snap(MS,new Set([D.room])); }
+    if(!remote&&GB&&!window.DUNMOBS.hold){ for(const e of MOBSIM.step(MS,dt,[{id:'me',x:pos.x,z:pos.z,ok:alive&&!SHARED.unseen}]))felt(e); pic=MOBSIM.snap(MS,new Set([D.room])); }
     const S=alive?strikes():[]; for(const s of S){ const m=strength(s);
       for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,gnd(sl.x,sl.z),.2*T)){ sl.flash=.12; strike(sl.i,s,m); STRIKES.landed(s); }
       for(const [i,r] of bodies)if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ strike(i,s,m); STRIKES.landed(s); } }

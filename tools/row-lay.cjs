@@ -4,11 +4,11 @@ const P=Object.fromEntries(W.places.map(p=>[p.id,p]));
 const X0=W.streets.west.x0, X1=W.park.x1-10, GATE=(W.parkPlaces&&W.parkPlaces.round?W.parkPlaces.round.x:112), PASS=22/.84;   // the row runs from West St's corner to the park's east end; the way through is 22 m, centred on the park gate
 const PX0=r2(GATE-PASS/2), PX1=r2(GATE+PASS/2);
 // [id, name, weight (its share of the row), merchant]: Market St's row west to east, each side of the way through
-const MW=[['florist','THE FLORIST',1,'tomato'],['bees','THE BEEKEEPER',1,'village_gardener'],['bfly','THE BUTTERFLY SHOP',1,'park_ranger'],['birds','THE BIRD SHOP',1,'forest_ranger'],['pets','THE PET STORE',1],['mush','THE MUSHROOM SHOP',1,'mushroom'],['bath',null,1]];
-const ME=[['bodega',null,1],['gems','THE GEM SHOP',1,'scuba_diver'],['armor','THE ARMOURY',1,'samurai_warrior'],['clothes','THE CLOTHES SHOP',1],['skate','THE SKATE SHOP',1,'skate_shop_owner'],['diner','THE DINER',2]];
+const MW=[['florist','THE FLORIST',1,'tomato'],['bees','THE BEEKEEPER',1,'village_gardener'],['bfly','THE BUTTERFLY SHOP',1,'park_ranger'],['birds','THE BIRD SHOP',1,'forest_ranger'],['pets','THE PET STORE',1,'aquarium_service_technician'],['mush','THE MUSHROOM SHOP',1,'mushroom'],['bath',null,1]];
+const ME=[['bodega',null,1],['gems','THE GEM SHOP',1,'scuba_diver'],['armor','THE ARMOURY',1,'samurai_warrior'],['clothes','THE CLOTHES SHOP',1,'valet_attendant'],['skate','THE SKATE SHOP',1,'skate_shop_owner'],['diner','THE DINER',2,'diner_waitress']];
 // the Hudson row behind them, lot for lot (each place takes most of its lot, a shut garage the rest)
 const HW=['bank','hotel','bar','theatre','play','art','fishtables'], HE=['fishing','books','arcade','tailor','barber','flea'];
-const HN={fishtables:'THE FISH MARKET',fishing:'FISHING & SCUBA',flea:'THE FLEA MARKET'}, HM={fishing:'fisherman_in_waders'}, HLOT={fishtables:1,flea:1};
+const HN={fishtables:'THE FISH MARKET',fishing:'FISHING & SCUBA',flea:'THE FLEA MARKET'}, HM={fishing:'fisherman_in_waders',hotel:'front_desk_clerk',tailor:'doorman',barber:'lounge_crooner'}, HLOT={fishtables:1,flea:1};
 const lay=(L,a,b)=>{ const s=L.reduce((t,r)=>t+r[2],0), out=[]; let x=a; for(const r of L){ const w=(b-a)*r[2]/s; out.push([r,r2(x),r2(x+w)]); x+=w; } return out; };
 const KEEP=new Set(['apts','subway','hudson']); for(const k in P)if(/^house\d/.test(k))KEEP.add(k);
 const out=[]; for(const id of KEEP)if(P[id])out.push(P[id]);

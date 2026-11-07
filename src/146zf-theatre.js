@@ -1,6 +1,6 @@
 // THE MOVIE THEATRE, FURNISHED: a concession stand on the back wall beside the screen, run by THE RACCOON (popcorn from the machine, nachos, candy, soda), its menu board, aisle lights on the steps; watching a film from a recliner rests you; where the doorman, the usher and the moviegoers (the twelve recliners) go.
 import {SHARED} from './003-shx.js';
-import {CINEMA, FORAGE, SHOPS, st, USE, VIT, WORKERS} from './003b-systems.js';
+import {CINEMA, FORAGE, st, USE, VIT, WORKERS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {STORE, SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -38,8 +38,6 @@ const THEATRE={}; window.THEATRE=THEATRE;
     // the menu board and the CONCESSIONS neon on the back wall
     const MENU=IKIT.tex(128,48,(g,w,h)=>{ g.fillStyle='#120c10'; g.fillRect(0,0,w,h); g.font='9px monospace'; g.textBaseline='top'; [['POPCORN','$3'],['NACHOS','$4'],['CANDY','$2'],['SODA','$3']].forEach(([a,b],i)=>{ g.fillStyle='#ffd070'; g.textAlign='left'; g.fillText(a,8,6+i*10); g.textAlign='right'; g.fillStyle='#f4ecd8'; g.fillText(b,w-8,6+i*10); }); });
     pic((u0+u1)/2,.11,1.75,1.6,.6,0,1,MENU,true); pic((u0+u1)/2,.11,2.45,1.8,.3,0,1,IKIT.tex(96,16,(g,w,h)=>{ g.fillStyle='#0a0608'; g.fillRect(0,0,w,h); g.font='bold 11px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.shadowColor='#ff3a5a'; g.shadowBlur=5; g.fillStyle='#ffc0d0'; g.fillText('CONCESSIONS',w/2,h/2); }),true);
-    use('THE CONCESSION STAND (ORDER)',(u0+u1)/2+.3,(v0+v1)/2,1.0,1.2,()=>SHOPS.open({key:'w_raccoon',name:'THE CONCESSION STAND'}),1.8);
-    use('THE POPCORN MACHINE (A TUB $3)',pu,pv,.6,1.7,()=>IKIT.buy('f_popcorn',3,'A TUB OF POPCORN, BUTTERED. $3.'),1.8);
     use('THE MENU BOARD',(u0+u1)/2-.5,.3,.6,2.4,()=>MINI.look('CONCESSIONS',MENU),2.4);
     // aisle lights: a small warm light on the front edge of every aisle step
     for(let i=0;i<G.NR;i++){ const xf=G.FX+i*G.P, xm=xf+G.P/2, h=(i+1)*G.RISE; for(const [x,hp] of [[xf,h-G.RISE/2],[xm,h]])glow(()=>{ for(const y of [G.cy-.5,G.cy+.5])box(U(x)-.04,V(y)-.05,U(x),V(y)+.05,PX(hp)-.05,PX(hp)-.02,0xffd890); }); }

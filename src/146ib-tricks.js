@@ -8,7 +8,7 @@ import {collide} from './075-main-13.js';
 import {SKATE} from './111fd-skatepark.js';
 Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
 { const T=TILE, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), say=(t,c)=>SAY(t,c||'#e8e2cc');
-  const ON=()=>!!(RIDE.on&&RIDE.kind&&RIDE.kind===SKATE.board);
+  const ON=()=>!!(RIDE.on&&RIDE.cur&&RIDE.cur===SKATE.board);
   // the trick keys (J flip, K grab, L grind, I manual; the gamepad's X, Y, RB, LB): taken from the walk while you ride, so they never punch, kick or open your pack
   const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'||k==='e'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();
   addEventListener('keydown',e=>{ if(!ON())return; const a=ACT(keyOf(e)); if(!a)return; DOWN.add(a); e.stopImmediatePropagation(); e.preventDefault(); },true);
@@ -105,8 +105,8 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
         R.bal+=((Math.random()-.5)*1.6+R.bal*1.1-(d==='left'?1:d==='right'?-1:0)*2.8)*dt;
         if(Math.abs(R.bal)>1)return bail(R,'YOU LOSE YOUR BALANCE AND BAIL.'),true;
         if(pop)leaveRail(R,3*T); } }
-    if(!RIDE.on||!RIDE.kind)return true;   // you bailed this step
-    SHARED.heading=R.hd; R.lift=0; st.ride=RIDE.kind.pose(R); hud(R,dt); return true; };
+    if(!RIDE.on||!RIDE.cur)return true;   // you bailed this step
+    SHARED.heading=R.hd; R.lift=0; st.ride=RIDE.cur.pose(R); hud(R,dt); return true; };
 
   // where you stand: on the ground, up in the air, or on the rail's top
   TRICKS.floor=(g,R,off)=>!ON()||R!==RIDE?g+off+(R.z||0):R.s==='grind'?R.railY+off:g+off+(R.z||0);

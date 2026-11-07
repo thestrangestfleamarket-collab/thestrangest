@@ -4,6 +4,7 @@ import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
+import { CLK } from "./clock.js";
 import LIVESDATA from "../data/lives.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -194,9 +195,12 @@ export class Block extends Server {
   castHour(F, H, jump) { const C = F.cast; if (!C || !C.keys) return; const recs = this.lives(), X = { hg: C.hg, doors: C.doors };
     for (const k in C.keys) { const E = F.by[k], c = C.keys[k]; if (!E || !c) continue; const job = LIVESDATA[k];
       try { const g = lvGoal(k, { job: job || {}, life: !!job, hours: c.hours, work: c.work, home: c.home }, H, recs[k], X, F.T, E); FOLKSIM.set(F, k, { goal: { gid: g.w + "@" + H, at: g.at, in: g.in, now: jump ? 1 : 0, b: g.b, hold: g.hold, fast: g.fast } }); } catch (e) {} } }
+  // the game's clock as the owner set it (/shared/time.json clk), read again each minute and when the owner changes it
+  async clock(now) { if (this.clkAt && now - this.clkAt < 60000) return; this.clkAt = now;
+    try { const f = await postOf(this.env).getFile("time.json"), j = f ? JSON.parse(new TextDecoder().decode(f.data)) : null; this.clk = j && CLK.ok(j.clk) ? j.clk : null; } catch (e) {} }
   async onAlarm() { const now = Date.now(), n = [...this.getConnections()].length;
-    try { const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
-      { const H = lvH(now); if (F.cast && F.H !== H) { const jump = F.H == null || H - F.H > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
+    try { await this.clock(now); const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+      { const H = lvH(now, this.clk); if (F.cast && F.H !== H) { const jump = F.H == null || Math.abs(H - F.H) > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
       if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
       if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); } }
     catch (e) { console.error("folk alarm", e); }
@@ -215,7 +219,7 @@ export class Block extends Server {
   // the townspeople's lives (worker/lives.js): one record each, kept by the section and brought up to the game hour when asked
   livesT() { this.ctx.storage.sql.exec("create table if not exists lives(k text primary key, rec text)"); }
   lives(only) {
-    this.livesT(); const H = lvH(Date.now()), out = {}, keys = only ? [only] : Object.keys(LIVESDATA);
+    this.livesT(); const H = lvH(Date.now(), this.clk), out = {}, keys = only ? [only] : Object.keys(LIVESDATA);
     if (!only && this.livesAt === H && this.livesMap) return this.livesMap;
     const have = {}; for (const r of this.ctx.storage.sql.exec("select k, rec from lives").toArray()) { try { have[r.k] = JSON.parse(r.rec); } catch (e) {} }
     for (const k of keys) { if (!LIVESDATA[k]) continue; const h0 = have[k] ? have[k].H : -1, r = lvRun(k, { job: LIVESDATA[k] }, have[k] || null, H, null); out[k] = r;
@@ -311,7 +315,7 @@ export class Block extends Server {
       const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return;
       this.world().then(W => { const v = k in W ? W[k] : ""; if (v !== "") { delete W[k]; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v: "" })); } c.send(JSON.stringify({ t: "took", k, v })); });
     } else if (m.t === "world") {
-      const k = word(m.k, 40); if (!k) return;
+      const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;   // (the owner changed the clock: read it at the next step)
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
       this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
         const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : k.startsWith("drop:") ? 1200 : 200);

@@ -376,7 +376,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
   const NOTREES=QS.get('trees')==='0';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   PARK.trunksOf=trunks;
-  const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ '@later'; PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
+  const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=NOTREES?null:mesh(TREES.slice(NI),true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the cherry by the lake in cards (owner, 7 Nov 2026)
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring,PARK.cards].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }

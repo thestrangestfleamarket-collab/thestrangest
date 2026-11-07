@@ -6289,7 +6289,7 @@
    "box": [-600, -130.1, 900, 800],
    "px": 2,
    "grass": [62, 96, 46],
-   "water": [172, 198, 218]
+   "water": [164, 198, 236]
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",

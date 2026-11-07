@@ -41,7 +41,8 @@ await grab('dungeon',async()=>{});
     const fall=(w,u)=>hz.some(h=>h.src==='wall'&&(h.cx<R.cx)===(w==='l')&&Math.abs(h.cy+h.fo*h.ry*.6-(R.y0+u))<1.4), gap=(w,u)=>(w==='l'?ds.w:ds.e).some(([a,b])=>R.y0+u>a-1&&R.y0+u<b+1);
     if(!bare)for(let u=3.4;u<B.y1-B.y0-2;u+=6.5)for(const t of [{w:'l',u},{w:'r',u:u+3.25>B.y1-B.y0-2?u:u+3.25}])if(!fall(t.w,t.u)&&!gap(t.w,t.u))R.torches.push(t);
     const clear=(x,y)=>!hz.some(h=>h.t==='web'?Math.hypot(x-h.cx,y-h.cy)<h.r+.8:x>h.x0-.8&&x<h.x1+.8&&y>h.y0-.8&&y<h.y1+.8);
-    let sp={x:R.cx,y:R.cy}; for(let j=0;j<40;j++){ const y=R.cy+(j&1?1:-1)*Math.ceil(j/2)*.5; if(y>R.y0+1&&y<R.y1-1&&clear(R.cx,y)){ sp={x:R.cx,y}; break; } }
+    let sp=null, bd=1e9; for(let x=R.x0+1;x<R.x1-1;x+=.5)for(let y=R.y0+1;y<R.y1-1;y+=.5)if(clear(x,y)){ const d=Math.hypot(x-R.cx,y-R.cy); if(d<bd){ bd=d; sp={x,y}; } }   // where you arrive: the clear point nearest the middle
+    if(!sp)sp={x:R.cx,y:R.cy};
     return LC[k]={n,k,nm:r.nm,c:r.c,safe:!r.d,seed:k*31+n,B,R,up,dn:null,hz,ds,atUp:up?{x:X((up.x0+up.x1)/2),z:Z(up.y1+.6),h:0}:{x:X(sp.x),z:Z(sp.y),h:0},atDn:null}; };
   const pick=n=>{ const r=RM.find(r=>!r.c&&r.n===n)||RM.filter(r=>!r.c).reduce((a,r)=>Math.abs(r.n-n)<Math.abs(a.n-n)?r:a); return r.k; };
   const lavaR=(h,a)=>1+.16*Math.sin(3*a+h.ph[0])+.09*Math.sin(5*a+h.ph[1])+.05*Math.sin(8*a+h.ph[2]);   // a pool's edge: its radius at each angle
@@ -125,7 +126,7 @@ await grab('dungeon',async()=>{});
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*band(); say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=()=>({x0:X(BB.x0),x1:X(BB.x1),z0:Z(BB.y0),z1:Z(BB.y1)});
-  const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm)SAY(r.nm,'#d8c8a8'); for(const f of HK)f(k); };   // a room's monsters wake as you come into it
+  let said=0; const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm&&said!==k){ said=k; SAY(r.nm,'#d8c8a8'); } for(const f of HK)f(k); };   // a room's monsters wake as you come into it
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(how==='load'?'':'ENTERING THE DUNGEON'):'LEAVING THE DUNGEON',async()=>{
     if(n){ await LOAD('dungeon'); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }

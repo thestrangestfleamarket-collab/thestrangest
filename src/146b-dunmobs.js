@@ -154,6 +154,7 @@ __CODE__("worker/dunmobs.js")
         if(dead&&!r.dead){ r.dead=true; r.t=0; N.alert=false; st.to=null; st.hold=true; if(r.kk&&N.an)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); } }
       seen[i]={acts,hits,blks}; }
     for(const [i,r] of bodies)if(!want.has(r)){ bodies.delete(i); if(r.on&&!r.dead)park(r); }
+    for(const r of [...resolve(),...SPI])if(!want.has(r)&&!r.dead&&r.N.g.parent!==PK)park(r);   // every body not standing for a monster is put away
     for(const r of [...(RES||[]),...SPI])if(r.on){ if(!r.kk)pawnTick(r,dt); if(r.spider&&!r.lunge&&!(r.jolt>0)&&!r.dead){ r.N.clip=r.N.st.to?'Spider_Walk':'Spider_Idle'; r.N.clipK=1; } }
     IM.count=GL.count=Math.min(NS,slimes.length); plan=M_.length?{g,sp,sl}:plan; draw(); };
   const onLevel=k=>{ for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[];

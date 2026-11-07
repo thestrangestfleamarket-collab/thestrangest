@@ -72,11 +72,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const taper=(X,d,f)=>{ const O=I.skel[f].origin; for(const [fb,e,w] of [[4,O[4],O[5]],[7,O[7],O[8]]]){ TA.fromArray(e); TB.fromArray(w).sub(TA); const L2=TB.lengthSq();
       for(let q=0;q<X.length/3;q++){ const b0=d.bone[q*2], b1=d.bone[q*2+1], wt=(b0===fb?d.w[q]/255:0)+(b1===fb?1-d.w[q]/255:0); if(wt<=0)continue;
         TV.fromArray(X,q*3).sub(TA); const u=Math.max(0,Math.min(1,TV.dot(TB)/L2)), k=1-TAPER*u*wt; TV.sub(TB.clone().multiplyScalar(u)).multiplyScalar(k).add(TB.clone().multiplyScalar(u)).add(TA); X[q*3]=TV.x; X[q*3+1]=TV.y; X[q*3+2]=TV.z; } } };
-  function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, cut=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: Polyfork's jointed ones in place of the body's, 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
-    const parts=[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
+    const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
     let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!cut(P,d,t))k++; nf+=k; return d; });
@@ -170,6 +170,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a WEAR line's kinds, each with its versions (who wears it), for your figure; the one-each piece first
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), KC={};
   const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
+  // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
+  AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
   AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();

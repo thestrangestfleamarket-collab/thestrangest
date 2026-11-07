@@ -23,6 +23,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return lit(c.map(q=>q*.85)); }},   // the shelves seen through the glass, in the shop's warm light
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
       win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }},
+    bar:{name:'THE BAR',sign:'BAR',signC:[255,120,170],neon:true,signBg:[20,14,20],wall:BLOCKS.brick([72,46,48]),trim:[150,118,70],frame:[26,18,20],door:.5,h:200,
+      win:(u,v,n)=>{ if(v<.1||v>.9)return null; const k=Math.floor(u*6), du=u*6-k; if(du<.1||du>.9)return [30,20,22]; const g=.5+.5*hs(k,Math.floor(v*3),17); return lit([150*g+40,70*g+20,50*g+16]); }},   // the lounge's low amber light through its glass (146zca)
     // the new map's shops (owner, 6 Nov 2026): painted brick fronts, a sign and a shop window each (no awnings, nothing western); h their height in z-pixels (a metre is 28.6)
     ...Object.fromEntries([['florist','THE FLORIST','FLOWERS',[128,64,52],[255,190,200]],['bees','THE BEEKEEPER','HONEY',[132,82,56],[255,206,90]],['bfly','THE BUTTERFLY SHOP','BUTTERFLIES',[110,62,54],[200,170,255]],
       ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','THE PET STORE','PETS',[96,60,50],[180,255,170]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],

@@ -24,7 +24,7 @@ import {AVATAR} from './111c-avatar.js';
   const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } ensure().then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
   // the emote panel (H), a window like the others (owner, 7 Nov 2026: "make the emote menu look like regular menus. also allow to drag them to the favorites bar"): a button an emote, by kind; drag one onto the quick bar
   const sp=document.createElement('div'); sp.id='emotes'; sp.hidden=true;
-  sp.style.cssText='position:fixed;right:16px;bottom:96px;width:min(460px,92vw);max-height:70vh;overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
+  sp.style.cssText='position:fixed;right:16px;bottom:96px;width:min(424px,92vw);max-height:70vh;overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')MOTION.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());
   const ALLE=[...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])], LABEL=Object.fromEntries(ALLE.map(([t,n])=>[n,t]));
   const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Call','pf_Laugh','clap','cheer','fistPump','dab','flex','knock','powerUp']],
@@ -33,7 +33,7 @@ import {AVATAR} from './111c-avatar.js';
     ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],['WORK',['pf_Chop','pf_Fix','pf_Push','pf_Torch','pf_Lantern']]];
   const B=(t,n)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; b.draggable=true; b.title='drag onto the quick bar to keep it there';
     b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
-  { const c=document.createElement('style'); c.textContent='#emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px} #emotes .emg button{aspect-ratio:1;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;font-size:13px!important;padding:4px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;word-break:break-word}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
+  { const c=document.createElement('style'); c.textContent='#emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,62px);gap:4px} #emotes .emg button{width:62px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
   const head=document.createElement('h3'); head.textContent='EMOTES'; sp.append(head);
   for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.style.cssText='color:#9b9584;margin:8px 0 2px'; const g=document.createElement('div'); g.className='emg'; for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
   const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS · DRAG ONE ONTO THE QUICK BAR'; tip.style.cssText='margin-top:8px;color:#9b9584'; sp.append(tip);

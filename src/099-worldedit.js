@@ -149,7 +149,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   WE.setLive=(live,mine)=>{ const was=JSON.stringify(ST); for(const k in ST)delete ST[k]; Object.assign(ST,BAKED,live||{},mine?LOCAL:{}); try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} return JSON.stringify(ST)!==was; };
   // things built after the start (the park's Polyfork things, the Polyfork rows) call this once they stand, so their saved edits are put on them
   WE.late=()=>{ if(!Object.keys(ST).length)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyWED(); applyObjs(); settle(); }).catch(()=>{}); };
-  WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); };
+  WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyAll(); drainWED(); }).catch(()=>{ applyAll(); drainWED(); }); };   // the retries too wait for the later code (scanWorld is in it)
   SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(()=>{ if(Object.keys(ST).length)WE.applyAll(); }),'099-worldedit');
   WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`

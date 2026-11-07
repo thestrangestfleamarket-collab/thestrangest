@@ -6,7 +6,7 @@ import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 const PIER={}; window.PIER=PIER;
 RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, LV=RB.lv, WU=T/.84, Y=v=>v*WU, X=RIVER.fpier, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-  const hw=RIVER.fpw||1.8*T, zH=Q-27*T, HD=6*T, zE=zH-HD, HW=5.5*T, G=new THREE.Group(); G.name='pier'; scene.add(G);
+  const hw=RIVER.fpw||1.8*T, zH=Q-Math.min(27*T,Math.max(8*T,(Q-RB.z0)*.5-6*T)), HD=6*T, zE=zH-HD, HW=5.5*T, G=new THREE.Group(); G.name='pier'; scene.add(G);
   Object.assign(PIER,{x:X,z0:Q,zH,zE,hw,HW,G});
   RIVER.decks.push({r:[[X-hw,zH,X+hw,Q],[X-HW,zE,X+HW,zH]],lad:[X,zE-.55*T,X,zE+.8*T],pier:1});
   const cv=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };

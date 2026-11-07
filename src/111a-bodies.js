@@ -147,6 +147,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   // in the water (treading, swimming): the head's base set over the surface, by A.head rig units (owner, 7 Nov 2026: "your head is almost entirely underwater"), bobbing with the rig
   const HUV=new V3(), headUp=(PM,body,S,G,me)=>{ const W=S.water; G.updateMatrixWorld(true); me.updateMatrixWorld(true); jointAt(PM,body,2,HUV).applyMatrix4(me.matrixWorld); const sy=G.scale.y||1, my=me.matrixWorld.elements[5]||sy;
     const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0)*Math.max(0,1-2*(W.under||0)); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
+  BODIES.headUp=headUp;
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
   const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
   function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)

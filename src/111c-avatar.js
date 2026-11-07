@@ -67,11 +67,30 @@ const AVATAR={}; window.AVATAR=AVATAR;
     has('upperArms')&&has('hands')&&!A,has('upperArms')&&has('armCut')&&!has('hands')&&!has('arms'),has('ears'),has('eyes')]; };
   const lin=h=>new THREE.Color('#'+h);
   // the forearms narrower toward the hand (owner, 7 Nov 2026: "lets make the forearms a little more narrow towards the hand"): every point the forearm moves (skin and the sleeve over it, so layers stay in order)
-  // drawn in toward the forearm's line, nothing at the elbow, TAPER less wide at the wrist
-  const TAPER=.25, TV=new THREE.Vector3(), TA=new THREE.Vector3(), TB=new THREE.Vector3();
+  // drawn in toward the forearm's line, nothing at the elbow, TAPER less wide at the wrist; with the jointed hands (111b) the wrist is drawn to the hand's own width and thickness instead (owner, 7 Nov 2026: "a and b go")
+  const TAPER=.25, TV=new THREE.Vector3(), TA=new THREE.Vector3(), TB=new THREE.Vector3(), CUFF=1.06;
   const taper=(X,d,f)=>{ const O=I.skel[f].origin; for(const [fb,e,w] of [[4,O[4],O[5]],[7,O[7],O[8]]]){ TA.fromArray(e); TB.fromArray(w).sub(TA); const L2=TB.lengthSq();
       for(let q=0;q<X.length/3;q++){ const b0=d.bone[q*2], b1=d.bone[q*2+1], wt=(b0===fb?d.w[q]/255:0)+(b1===fb?1-d.w[q]/255:0); if(wt<=0)continue;
         TV.fromArray(X,q*3).sub(TA); const u=Math.max(0,Math.min(1,TV.dot(TB)/L2)), k=1-TAPER*u*wt; TV.sub(TB.clone().multiplyScalar(u)).multiplyScalar(k).add(TB.clone().multiplyScalar(u)).add(TA); X[q*3]=TV.x; X[q*3+1]=TV.y; X[q*3+2]=TV.z; } } };
+  // the wrist across the jointed hand's palm (u1) and through it (u2): the body's own wrist ring and the hand where it meets it, each a centre and half sizes
+  const V3=THREE.Vector3, FITS=new Map();
+  const wristFit=(Xb,db,L)=>{ const key=L.f+L.b; if(FITS.has(key))return FITS.get(key); const S=I.skel[L.f], O=S.origin, base=HANDS.base(BODIES.skeleton(O,S.rest).binv,{b:L.b}), out=[];
+    for(const [fb,hb,sd] of [[4,5,'L'],[7,8,'R']]){ const E=new V3(...O[fb]), W=new V3(...O[hb]), A=W.clone().sub(E), len=A.length(), a=A.clone().divideScalar(len), M=base[sd];
+      const u1=new V3().setFromMatrixColumn(M,0); u1.sub(a.clone().multiplyScalar(u1.dot(a))).normalize(); const u2=new V3().crossVectors(a,u1), p=new V3();
+      const ext=()=>({x0:1e9,x1:-1e9,y0:1e9,y1:-1e9}), add=(r,v)=>{ v.sub(W); const x=v.dot(u1), y=v.dot(u2); r.x0=Math.min(r.x0,x); r.x1=Math.max(r.x1,x); r.y0=Math.min(r.y0,y); r.y1=Math.max(r.y1,y); };
+      const ring=ext(), hand=ext();
+      for(let q=0;q<Xb.length/3;q++){ const bn=db.w[q]>=128?db.bone[q*2]:db.bone[q*2+1]; if(bn!==fb&&bn!==hb)continue; p.fromArray(Xb,q*3); if(Math.abs(p.clone().sub(W).dot(a))<.02)add(ring,p); }
+      for(let q=0;q<HANDS.X.length/3;q++){ p.fromArray(HANDS.X,q*3).applyMatrix4(M); const t=p.clone().sub(W).dot(a); if(t>-.005&&t<.03)add(hand,p); }
+      if(ring.x1<ring.x0||hand.x1<hand.x0)continue;
+      const c=r=>[(r.x0+r.x1)/2,(r.y0+r.y1)/2,(r.x1-r.x0)/2,(r.y1-r.y0)/2], R=c(ring), H=c(hand);
+      out.push({fb,hb,E,a,len,u1,u2,R,H,kx:Math.min(1,H[2]*CUFF/R[2]),ky:Math.min(1,H[3]*CUFF/R[3])}); }
+    FITS.set(key,out); return out; };
+  const fitWrist=(X,d,F)=>{ const p=new V3(), q=new V3();
+    for(const w of F)for(let i=0;i<X.length/3;i++){ const b0=d.bone[i*2], b1=d.bone[i*2+1], wt=(b0===w.fb||b0===w.hb?d.w[i]/255:0)+(b1===w.fb||b1===w.hb?1-d.w[i]/255:0); if(wt<=0)continue;
+      p.fromArray(X,i*3); const t=p.clone().sub(w.E).dot(w.a), s=Math.max(0,Math.min(1,t/w.len))*Math.min(1,wt); if(s<=0)continue;
+      q.copy(p).sub(w.E).addScaledVector(w.a,-w.len); const x=q.dot(w.u1), y=q.dot(w.u2);
+      const nx=w.R[0]+(x-w.R[0])*(1+(w.kx-1)*s)+(w.H[0]-w.R[0])*s, ny=w.R[1]+(y-w.R[1])*(1+(w.ky-1)*s)+(w.H[1]-w.R[1])*s;
+      p.addScaledVector(w.u1,nx-x).addScaledVector(w.u2,ny-y); X[i*3]=p.x; X[i*3+1]=p.y; X[i*3+2]=p.z; } };
   function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
@@ -82,7 +101,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
     let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]))k++; nf+=k; return d; });
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
-    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; taper(X,d,L.f);
+    const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
+    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f);
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);

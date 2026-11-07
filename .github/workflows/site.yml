@@ -43,7 +43,7 @@ jobs:
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
-          k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
+          k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'

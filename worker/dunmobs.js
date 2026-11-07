@@ -4,7 +4,7 @@ const MOBSIM={};
   M.make=()=>({t:0,at:0,seq:0,g:null,m:[],dm:null});
   // the map and the book, from the page: {v, T, rooms:[{k,n,safe,lane:[x0,z0,x1,z1],block:[[x0,z0,x1,z1]...]}], cat:{tiers,mix,guards,stats,styles,kk}}
   M.grid=(S,G)=>{ if(!G||!Array.isArray(G.rooms)||!G.cat)return false; const T=N(G.T,1)||1, rooms={};
-    for(const r of G.rooms.slice(0,64)){ const k=r.k|0, L=Array.isArray(r.lane)?r.lane.slice(0,4).map(v=>N(v)):null; if(!k||!L)continue; rooms[k]={k,n:Math.max(1,Math.min(5,r.n|0||1)),safe:!!r.safe,lane:L,block:(Array.isArray(r.block)?r.block:[]).slice(0,80).map(b=>(Array.isArray(b)?b:[]).slice(0,4).map(v=>N(v)))}; }
+    for(const r of G.rooms.slice(0,64)){ const k=r.k|0, L=Array.isArray(r.lane)?r.lane.slice(0,4).map(v=>N(v)):null; if(!k||!L)continue; rooms[k]={k,n:Math.max(1,Math.min(5,r.n|0||1)),safe:!!r.safe,lv:r.lv==='up'?'up':'down',keep:r.keep?1:0,rally:Array.isArray(r.rally)?[N(r.rally[0]),N(r.rally[1])]:null,lane:L,block:(Array.isArray(r.block)?r.block:[]).slice(0,80).map(b=>(Array.isArray(b)?b:[]).slice(0,4).map(v=>N(v)))}; }
     const was=S.g&&S.g.v; S.g={v:String(G.v||''),T,rooms,cat:G.cat}; if(was!==S.g.v){ S.m=[]; M.fill(S); } return true; };
   const inL=(L,x,z)=>x>L[0]&&x<L[2]&&z>Math.min(L[1],L[3])&&z<Math.max(L[1],L[3]);
   const free=(R,x,z,r)=>inL(R.lane,x,z)&&!R.block.some(b=>x>Math.min(b[0],b[2])-r&&x<Math.max(b[0],b[2])+r&&z>Math.min(b[1],b[3])-r&&z<Math.max(b[1],b[3])+r);
@@ -22,16 +22,17 @@ const MOBSIM={};
     if(!free(R,x,z,.15*T)){ const p=spot(R,rnd,.3*T); x=p.x; z=p.z; }
     const h=Math.round(e.hp); return {i:++S.seq,e:e.id,j,r:R.k,kind:e.kind,key:e.key,x:R2(x),z:R2(z),h:rnd()*6.28,hp:h,mhp:h,dmg:e.dmg,v:e.v*T,reach:e.reach*T,see:e.see*T,ranged:e.ranged,beh:e.beh,hostile:e.hostile,loot:e.loot,blk:e.blk,rs:e.respawn,
       dead:0,agg:0,prov:0,tg:'',to:null,wait:rnd()*3,cool:1+rnd(),act:0,acts:0,hits:0,blks:0,land:0,stun:0,kb:null,home:{x,z},pt:e.px||e.pz?{x:x+e.px*T,z:z+e.pz*T}:null,leg:0}; };
-  M.load=r=>{ const S=M.make(); if(!r||typeof r!=='object')return S; S.t=N(r.t); S.seq=N(r.seq); if(r.g&&r.g.rooms)S.g=r.g; S.dm=r.dm?M.clean(r.dm):null; if(S.dm&&Array.isArray(r.m))S.m=r.m.filter(m=>m&&fin(m.x)&&fin(m.z)).map(m=>({...m,to:null,kb:null,land:0})); return S; };
-  M.save=S=>({t:S.t,seq:S.seq,g:S.g,dm:S.dm,m:S.m.map(m=>({...m,to:null,kb:null}))});
-  const roomAt=(S,x,z)=>{ if(!S.g)return 0; for(const k in S.g.rooms)if(inL(S.g.rooms[k].lane,x,z))return +k; return 0; };
+  M.load=r=>{ const S=M.make(); if(!r||typeof r!=='object')return S; S.t=N(r.t); S.seq=N(r.seq); S.boDay=r.boDay; if(r.g&&r.g.rooms)S.g=r.g; S.dm=r.dm?M.clean(r.dm):null; if(S.dm&&Array.isArray(r.m))S.m=r.m.filter(m=>m&&fin(m.x)&&fin(m.z)).map(m=>({...m,to:null,kb:null,land:0})); return S; };
+  M.save=S=>({t:S.t,seq:S.seq,boDay:S.boDay,g:S.g,dm:S.dm,m:S.m.map(m=>({...m,to:null,kb:null}))});
+  const roomAt=(S,x,z,lv='down')=>{ if(!S.g)return 0; for(const k in S.g.rooms){ const R=S.g.rooms[k]; if((R.lv||'down')===lv&&inL(R.lane,x,z))return +k; } return 0; };
   M.roomAt=roomAt;
   // a step: players [{id,x,z,ok}] (ok: alive, seen, below); returns what happened to them: [{t:'hurt',to,d,x,z,i}]
-  M.step=(S,dt,P,rnd=Math.random)=>{ const ev=[]; if(!S.g||!(dt>0))return ev; S.t+=dt; const T=S.g.T, kk=S.g.cat.kk||[], live=P.filter(p=>p.ok).map(p=>({...p,r:roomAt(S,p.x,p.z)}));
+  M.step=(S,dt,P,rnd=Math.random)=>{ const ev=[]; if(!S.g||!(dt>0))return ev; S.t+=dt; const T=S.g.T, kk=S.g.cat.kk||[], live=P.filter(p=>p.ok).map(p=>({...p,r:roomAt(S,p.x,p.z,p.lv)}));
     for(let j=S.m.length-1;j>=0;j--){ const m=S.m[j], R=S.g.rooms[m.r]; if(!R){ S.m.splice(j,1); continue; }
       if(m.dead){ const rs=m.rs==null?RESPAWN:m.rs, e=S.dm&&S.dm.mobs.find(q=>q.id===m.e);   // back again after a while, out of sight (never, if its respawn is 0)
         if(e&&rs>0){ if(S.t-m.dead>rs&&!live.some(p=>p.r===m.r))S.m[j]=made(S,R,e,m.j,rnd); } else if(S.t-m.dead>ROT)S.m.splice(j,1); continue; }
       if(m.kb){ const a=Math.min(1,dt*12), nx=m.x+(m.kb.x-m.x)*a, nz=m.z+(m.kb.z-m.z)*a; if(free(R,nx,nz,.15*T)){ m.x=nx; m.z=nz; } if(Math.hypot(m.kb.x-m.x,m.kb.z-m.z)<.03*T)m.kb=null; continue; }
+      if(R.keep&&R.rally){ const g=Math.hypot(m.x-R.rally[0],m.z-R.rally[1])<6*T?1:0; m.gd=(m.gd||0)+dt*g; if(m.gd>=1.6){ m.gd-=1.6; m.hp-=1.2; m.hits++; if(m.hp<=0){ m.dead=S.t||.001; m.hp=0; m.tg=''; continue; } } }   // the keep's guardians close in and fight it
       if(m.stun>0){ m.stun-=dt; continue; }
       m.cool-=dt; let you=null, yd=1e9; for(const p of live){ if(p.r!==m.r)continue; const d=Math.hypot(p.x-m.x,p.z-m.z); if(d<yd){ yd=d; you=p; } }
       const beh=m.beh||'hunt', mean=m.hostile!==0&&(beh!=='wander'||m.prov), hd=Math.hypot(m.x-m.home.x,m.z-m.home.z), leash=m.see+3*T;
@@ -46,6 +47,7 @@ const MOBSIM={};
         if(yd>m.reach&&!(stuck&&yd<m.reach*1.4)){}   // blocked short of you, it still strikes from a little further (its blow lands to 1.45 reach)
         else if(m.cool<=0&&!m.land){ m.cool=(m.kind==='s'?1.6:1.8+rnd()*.7)/(1+.1*R.n); m.acts++; m.act=S.t; m.land=S.t+(m.kind==='s'?.15:m.kind==='p'?.3:.45); m.ltg=you.id; }
         continue; }
+      if(R.keep&&R.rally&&mean){ const rx=R.rally[0], rz=R.rally[1], d=Math.hypot(rx-m.x,rz-m.z); if(d>m.reach){ walk(rx,rz,m.v*.7); } else if(m.cool<=0){ m.cool=1.8+rnd(); m.acts++; m.act=S.t; } continue; }   // nobody to hunt: it goes for the guardians
       if(beh==='still'){ m.to=null; continue; }
       if(beh==='guard'&&hd>leash*.5){ if(walk(m.home.x,m.home.z,m.v*.6))m.to=null; continue; }   // back to its post
       if(beh==='patrol'){ const P=m.pt||{x:2*(R.lane[0]+R.lane[2])/2-m.home.x,z:2*(R.lane[1]+R.lane[3])/2-m.home.z}, G=m.leg?m.home:P; if(walk(G.x,G.z,m.v*.5)||Math.hypot(G.x-m.x,G.z-m.z)<.15*T)m.leg=m.leg?0:1; continue; }
@@ -58,6 +60,13 @@ const MOBSIM={};
     m.hp-=Math.max(0,Math.min(20,N(o.d))); m.hits++; const dx=m.x-N(o.x,m.x), dz=m.z-N(o.z,m.z), l=Math.hypot(dx,dz)||1, kb=(m.kind==='s'?.45:.6)*T*Math.max(.5,Math.min(3,N(o.kb,1)));
     if(R&&free(R,m.x+dx/l*kb,m.z+dz/l*kb,.15*T))m.kb={x:m.x+dx/l*kb,z:m.z+dz/l*kb}; if(o.heavy)m.stun=Math.max(m.stun,m.kind==='g'?1.2:.6); m.land=0;
     if(m.hp>0)return {res:'hit',m}; m.dead=S.t||.001; m.hp=0; m.tg=''; return {res:'dead',m,n:R?R.n:1}; };
+  // a breakout (owner, 7 Nov 2026: "only from the published dungeon"): up to n of the design's living, hostile creatures come up the castle stair into the keep; below, each comes back after its own respawn
+  M.breakout=(S,n,rnd=Math.random)=>{ if(!S.g||!S.dm)return 0; const K=Object.values(S.g.rooms).find(R=>R.keep); if(!K)return 0; const T=S.g.T, c=S.m.filter(m=>!m.dead&&m.hostile!==0&&!S.g.rooms[m.r].keep), out=[];
+    while(out.length<n&&c.length)out.push(c.splice(Math.floor(rnd()*c.length),1)[0]);
+    for(const m of out){ const a=rnd()*6.28, sp=K.rally?{x:K.rally[0]+Math.sin(a)*.8*T,z:K.rally[1]+Math.cos(a)*.8*T}:spot(K,rnd,.3*T);
+      S.m.push({...m,i:++S.seq,r:K.k,x:R2(sp.x),z:R2(sp.z),home:{x:sp.x,z:sp.z},pt:null,rs:0,beh:'hunt',agg:0,prov:0,tg:'',to:null,kb:null,land:0,stun:0,cool:1.5+rnd(),acts:0,hits:0,blks:0,gd:0});
+      m.dead=S.t||.001; m.hp=0; }   // gone from below till it comes back
+    return out.length; };
   M.parried=(S,i)=>{ const m=S.m.find(q=>q.i===i); if(m&&!m.dead){ m.cool=3.2; m.stun=Math.max(m.stun,.8); } };   // caught on the beat: it staggers, open to you
   // what the page draws: the monsters in the rooms asked for, [i,room,kind,key,x,z,heading,hp,most hp,dead for s,strikes,hits,blocks,target,design entry]
   M.snap=(S,rooms)=>({at:R2(S.t),m:S.m.filter(m=>!rooms||rooms.has(m.r)).filter(m=>!m.dead||S.t-m.dead<ROT).map(m=>[m.i,m.r,m.kind,m.key,R2(m.x),R2(m.z),R2(m.h),R2(m.hp),m.mhp,m.dead?R2(S.t-m.dead):0,m.acts,m.hits,m.blks,m.tg,m.e||''])}); }

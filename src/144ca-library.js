@@ -123,7 +123,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       d.querySelector('[data-res]').innerHTML=w.length<3?'':out.length?out.map(([i,t])=>`<div class="it" data-hit="${i}">…${esc(t)}…</div>`).join(''):'<div class="it">NOTHING FOUND.</div>'; }); } };
   const goPara=i=>{ let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=i)c=k; show(c,i); const el=R.querySelector(`p[data-i="${i}"]`); if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),2400); } };
   LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; theme(); R.hidden=false; side=null; R.innerHTML='<div class="bar"><span class="t">OPENING '+esc(b.t)+'…</span><button data-a="x">CLOSE</button></div>'; R.focus();
-    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text());   // a modern book's own words come packed TX[id]={P,ch:chapters(P)}; }
+    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text()); TX[id]={P,ch:chapters(P)}; }   // a modern book's own words come packed (gzip)
       cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
     catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
   LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };

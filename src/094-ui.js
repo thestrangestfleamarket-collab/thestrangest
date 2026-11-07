@@ -4,7 +4,7 @@ import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, DN, DRONE, ED, FEEL, FORAGE, 
 import {SAY} from './003d-say.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
@@ -166,9 +166,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(best){ best.started=false; goal=best; return; }
     if(window.RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; });
-  UI.nearThing=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return null; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading); let best=null, bs=1e9;
+  UI.nearThing=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return null; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py; let best=null, bs=1e9;   // a swimmer's own height (a sunken chest is reached by diving to it)
     for(const th of THINGS){ if(!th.obj.visible||th.obj.parent&&!th.obj.parent.visible||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz);
-      if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-SHARED.py)>2*TILE)continue; const s=d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
+      if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; const s=d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
     if(!best&&typeof USE!=='undefined')for(const dy of [0,-.5,-1.2]){ ray.set(new THREE.Vector3(pos.x,SHARED.py+TILE,pos.z),new THREE.Vector3(hx,dy,hz).normalize()); ray.far=2.4*TILE; const u=USE.pick(ray); ray.far=Infinity; if(u){ best=u.th; break; } }
     return best; };
   UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; best.started=false; goal=best; return true; };

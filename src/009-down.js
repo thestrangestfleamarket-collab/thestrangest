@@ -374,7 +374,7 @@ const SSUB=(()=>{ const W={};
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
       const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
       if(live){ el.textContent=text||''; el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
-      if(keys.clear)keys.clear(); try{ SHARED.target=null; }catch(e){}
+      if(keys.clear&&!o.keep)keys.clear(); try{ SHARED.target=null; }catch(e){}   // (keep: a fade you pass through mid-move, the river loading as you dive, keeps the keys you hold)
       try{ if(o.cut)await fr(2); if(work)await work(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
       if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
       FADE.busy--; };

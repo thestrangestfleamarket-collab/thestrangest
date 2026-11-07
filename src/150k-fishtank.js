@@ -1,9 +1,11 @@
-// THE FISH TANK: a huge tank in every apartment (owner, 5 Nov 2026): still, clear water you see through, sand, rocks and plants, and koi swimming slow.
+// THE FISH TANK: a huge tank in every apartment (owner, 5 Nov 2026): still, clear water you see through, sand, rocks and plants, and koi swimming slow; double-click it with fish food and they rise to eat.
 import {THREE} from './003-shx.js';
+import {FORAGE, SFX} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {FISHES} from './141f-fishes.js';
 import {ROOMK} from './150a-bedroom.js';
-const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.visible,pos:[+T.g.position.x.toFixed(2),+T.g.position.z.toFixed(2)]}));
+const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.visible,pos:[+T.g.position.x.toFixed(2),+T.g.position.z.toFixed(2)],fed:+(T.fed||0).toFixed(1),y:T.fish.length?+(T.fish.reduce((a,f)=>a+f.o.position.y,0)/T.fish.length).toFixed(3):0}));
 { const TW=2.4, TD=.7, TH=1.0, SH=.78, GL=.012, KINDS=['koi','koi_gold','koi_showa','koi_sanke','koi_platinum','koi_asagi','koi_orange','koi_black'], N=8;
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   for(const k of ['FISH TANK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
@@ -30,8 +32,12 @@ const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.vis
       const T={g,plants,fish:[],u0,v0,y0:SH+.16,y1:SH+TH*.86,t:Math.random()*100}; TANKS.push(T);
       FISHES.load().then(()=>{ for(let i=0;i<N;i++){ const o=FISHES.model(KINDS[i%KINDS.length]); if(!o)continue; o.scale.setScalar(.022+hs(i,11)*.014); g.add(o);
         T.fish.push({o,a:hs(i,12)*6.28,s:.12+hs(i,13)*.12,rx:.25+hs(i,14)*(TW/2-.45),rz:.06+hs(i,15)*(TD/2-.16),cy:T.y0+hs(i,16)*(T.y1-T.y0),bob:hs(i,17)*6,dir:hs(i,18)<.5?1:-1}); } }).catch(()=>{});
-    },{id:'fishtank'}); });
+    },{id:'fishtank',wire:'tank'}); });
+  ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return;
+    c.hit(un,()=>FORAGE.has('g_fishfood')?'FEED THE FISH':'THE FISH TANK',()=>{ if(!FORAGE.has('g_fishfood'))return SAY('THE KOI DRIFT ROUND. A TUB OF FISH FOOD WOULD BRING THEM UP (THE BODEGA, THE PET STORE).','#c8d8e0');
+      FORAGE.take('g_fishfood',1); if(FORAGE.draw)FORAGE.draw(); T.fed=30; if(SFX)SFX.play('click',{vol:.3,vary:.2}); SAY('YOU SHAKE IN A PINCH OF FOOD. THE KOI RISE AND SNAP IT UP.','#c8e8f0'); }); };
   SYS.add('life',dt=>{ for(let k=TANKS.length-1;k>=0;k--){ const T=TANKS[k]; if(!T.g.parent){ TANKS.splice(k,1); continue; } if(!T.g.visible)continue; T.t+=dt;
     for(const [m,ph] of T.plants)m.rotation.z=.04*Math.sin(T.t*.6+ph);
-    for(const f of T.fish){ f.a+=f.dir*f.s*dt/Math.max(f.rx,f.rz); const x=Math.cos(f.a)*f.rx, z=Math.sin(f.a)*f.rz, y=f.cy+.03*Math.sin(T.t*.5+f.bob);
+    const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/2):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back
+    for(const f of T.fish){ f.a+=f.dir*f.s*(1+up)*dt/Math.max(f.rx,f.rz); const x=Math.cos(f.a)*f.rx, z=Math.sin(f.a)*f.rz, y=f.cy+(T.y1-.04-f.cy)*up+.03*Math.sin(T.t*.5+f.bob);
       const dx=-Math.sin(f.a)*f.rx*f.dir, dz=Math.cos(f.a)*f.rz*f.dir; f.o.position.set(x,y-T.g.position.y,z); f.o.rotation.y=Math.atan2(-dz,dx); } } },'150k-fishtank'); }

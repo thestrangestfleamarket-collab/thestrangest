@@ -23,7 +23,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   // walking: her position moves on his screen
   const at0=await seen(o=>{ const s=o.s[o.s.length-1]; return s&&[s.x,s.z]; });
   await A.evaluate(()=>{ __dbg.UI.goTo(SHARED.BOD.XS(156),SHARED.BOD.ZS(-60),'up'); });
-  r=await until(o=>{ const s=o.s[o.s.length-1]; return {ok:!!s&&s.x!==undefined,at:s&&[s.x,s.z]}; });
+  r=await until(new Function('o','const s=o.s[o.s.length-1]; return {ok:!!s&&Math.hypot(s.x-('+at0[0]+'),s.z-('+at0[1]+'))>3,at:s&&[s.x,s.z]};'));
   ok(r.at&&at0&&Math.hypot(r.at[0]-at0[0],r.at[1]-at0[1])>3,'she walks and he sees her move ('+JSON.stringify(at0)+' to '+JSON.stringify(r.at)+')');
   // emote, dance (the old clips and the avatar's own)
   for(const n of ['greet','dance','pf_Bop','sitGround']){

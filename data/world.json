@@ -383,46 +383,54 @@
    "2": [
     [
      -51,
-     -34.63
+     -36.42
     ],
     [
-     -33.13,
-     -24.94
+     -34.92,
+     -27.63
     ],
     [
-     -23.44,
-     1.12
+     -26.13,
+     -4.26
     ],
     [
-     2.62,
-     27.18
+     -2.76,
+     19.1
     ],
     [
-     28.68,
-     45.06
+     20.6,
+     35.18
     ],
     [
-     46.56,
-     67.03
+     36.68,
+     54.91
     ],
     [
-     146.74,
-     179.33
+     56.41,
+     70.98
     ],
     [
-     180.83,
-     206.9
+     141.35,
+     164.5
     ],
     [
-     208.4,
-     221.43
+     166,
+     192.17
     ],
     [
-     222.93,
-     235.97
+     193.67,
+     214.6
     ],
     [
-     237.47,
+     216.1,
+     226.57
+    ],
+    [
+     228.07,
+     238.53
+    ],
+    [
+     240.03,
      250.5
     ]
    ]
@@ -535,18 +543,11 @@
    "face": "e"
   },
   {
-   "id": "bodega",
-   "name": "THE BODEGA",
-   "kind": "front",
-   "x0": -46.9,
-   "x1": -26.81
-  },
-  {
    "id": "bank",
    "name": "THE BANK",
    "kind": "front",
-   "x0": -26.81,
-   "x1": -6.72,
+   "x0": -46.9,
+   "x1": -23.81,
    "y0": -92.4,
    "y1": -77
   },
@@ -554,8 +555,8 @@
    "id": "art",
    "name": "THE ART MUSEUM",
    "kind": "front",
-   "x0": -6.72,
-   "x1": 14.91,
+   "x0": -23.81,
+   "x1": 1.06,
    "y0": -92.4,
    "y1": -77
   },
@@ -563,16 +564,16 @@
    "id": "florist",
    "name": "THE FLORIST",
    "kind": "front",
-   "x0": 14.91,
-   "x1": 30.36,
+   "x0": 1.06,
+   "x1": 18.82,
    "merchant": "tomato",
    "lot": true
   },
   {
    "id": "bees",
    "kind": "front",
-   "x0": 30.36,
-   "x1": 45.82,
+   "x0": 18.82,
+   "x1": 36.58,
    "name": "THE BEEKEEPER",
    "merchant": "village_gardener",
    "lot": true
@@ -580,8 +581,8 @@
   {
    "id": "bfly",
    "kind": "front",
-   "x0": 45.82,
-   "x1": 61.27,
+   "x0": 36.58,
+   "x1": 54.34,
    "name": "THE BUTTERFLY SHOP",
    "merchant": "park_ranger",
    "lot": true
@@ -589,8 +590,8 @@
   {
    "id": "birds",
    "kind": "front",
-   "x0": 61.27,
-   "x1": 76.72,
+   "x0": 54.34,
+   "x1": 72.11,
    "name": "THE BIRD SHOP",
    "merchant": "forest_ranger",
    "lot": true
@@ -599,32 +600,25 @@
    "id": "pets",
    "name": "THE PET STORE",
    "kind": "front",
-   "x0": 76.72,
-   "x1": 92.18,
+   "x0": 72.11,
+   "x1": 89.87,
    "merchant": "aquarium_service_technician",
    "lot": true
   },
   {
    "id": "mush",
    "kind": "front",
-   "x0": 92.18,
+   "x0": 89.87,
    "x1": 107.63,
    "name": "THE MUSHROOM SHOP",
    "merchant": "mushroom",
    "lot": true
   },
   {
-   "id": "bath",
-   "name": "THE BATH HOUSE",
-   "kind": "front",
-   "x0": 116.37,
-   "x1": 139.62
-  },
-  {
    "id": "gems",
    "kind": "front",
-   "x0": 139.62,
-   "x1": 159,
+   "x0": 116.37,
+   "x1": 139.75,
    "name": "THE GEM SHOP",
    "merchant": "scuba_diver",
    "lot": true
@@ -632,8 +626,8 @@
   {
    "id": "armor",
    "kind": "front",
-   "x0": 159,
-   "x1": 178.37,
+   "x0": 139.75,
+   "x1": 163.14,
    "name": "THE ARMOURY",
    "merchant": "samurai_warrior",
    "lot": true
@@ -641,8 +635,8 @@
   {
    "id": "clothes",
    "kind": "front",
-   "x0": 178.37,
-   "x1": 197.75,
+   "x0": 163.14,
+   "x1": 186.52,
    "name": "THE CLOTHES SHOP",
    "merchant": "valet_attendant",
    "lot": true
@@ -650,8 +644,8 @@
   {
    "id": "skate",
    "kind": "front",
-   "x0": 197.75,
-   "x1": 217.12,
+   "x0": 186.52,
+   "x1": 209.91,
    "name": "THE SKATE SHOP",
    "merchant": "skate_shop_owner",
    "lot": true
@@ -659,7 +653,7 @@
   {
    "id": "diner",
    "kind": "front",
-   "x0": 217.12,
+   "x0": 209.91,
    "x1": 252,
    "name": "THE DINER",
    "merchant": "diner_waitress",
@@ -670,7 +664,7 @@
    "name": "THE HOTEL",
    "kind": "front",
    "x0": -51,
-   "x1": -34.63,
+   "x1": -36.42,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -682,8 +676,8 @@
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -33.13,
-   "x1": -24.94,
+   "x0": -34.92,
+   "x1": -27.63,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -697,8 +691,8 @@
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": -23.44,
-   "x1": 1.12,
+   "x0": -26.13,
+   "x1": -4.26,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -709,8 +703,8 @@
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": 2.62,
-   "x1": 27.18,
+   "x0": -2.76,
+   "x1": 19.1,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -720,8 +714,8 @@
   {
    "id": "antiques",
    "kind": "front",
-   "x0": 28.68,
-   "x1": 45.06,
+   "x0": 20.6,
+   "x1": 35.18,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -732,8 +726,8 @@
   {
    "id": "outfitter",
    "kind": "front",
-   "x0": 46.56,
-   "x1": 67.03,
+   "x0": 36.68,
+   "x1": 54.91,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -742,10 +736,22 @@
    "pf": "outfitter"
   },
   {
+   "id": "bath",
+   "name": "THE BATH HOUSE",
+   "kind": "front",
+   "x0": 56.41,
+   "x1": 70.98,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "bath"
+  },
+  {
    "id": "fishtables",
    "kind": "lot",
-   "x0": 68.53,
-   "x1": 87.44,
+   "x0": 72.48,
+   "x1": 89.32,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -756,7 +762,7 @@
   {
    "id": "flea",
    "kind": "lot",
-   "x0": 88.94,
+   "x0": 90.82,
    "x1": 106.13,
    "y0": -107.9,
    "y1": -95.9,
@@ -768,7 +774,7 @@
    "id": "flea2",
    "kind": "lot",
    "x0": 117.87,
-   "x1": 145.24,
+   "x1": 139.85,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -776,10 +782,22 @@
    "name": "THE FLEA MARKET"
   },
   {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": 141.35,
+   "x1": 164.5,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "bodega"
+  },
+  {
    "id": "fishing",
    "kind": "front",
-   "x0": 146.74,
-   "x1": 179.33,
+   "x0": 166,
+   "x1": 192.17,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -792,8 +810,8 @@
    "id": "books",
    "name": "THE BOOKSTORE",
    "kind": "front",
-   "x0": 180.83,
-   "x1": 206.9,
+   "x0": 193.67,
+   "x1": 214.6,
    "merchant": "professor",
    "at": [
     -2.4,
@@ -812,8 +830,8 @@
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": 208.4,
-   "x1": 221.43,
+   "x0": 216.1,
+   "x1": 226.57,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -824,8 +842,8 @@
    "id": "tailor",
    "name": "THE TAILOR",
    "kind": "front",
-   "x0": 222.93,
-   "x1": 235.97,
+   "x0": 228.07,
+   "x1": 238.53,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -837,7 +855,7 @@
    "id": "barber",
    "name": "THE BARBER",
    "kind": "front",
-   "x0": 237.47,
+   "x0": 240.03,
    "x1": 250.5,
    "y0": -107.9,
    "y1": -95.9,
@@ -1202,42 +1220,42 @@
   },
   {
    "k": "mstall",
-   "x": 72.24,
+   "x": 75.93,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 77.99,
+   "x": 80.9,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 83.74,
+   "x": 85.88,
    "y": -104.6
   },
   {
    "k": "ftable",
-   "x": 75.11,
+   "x": 78.41,
    "y": -100
   },
   {
    "k": "ftable",
-   "x": 80.87,
+   "x": 83.39,
    "y": -100
   },
   {
    "k": "scrate",
-   "x": 70.33,
+   "x": 74.28,
    "y": -98.5
   },
   {
    "k": "scrate",
-   "x": 85.64,
+   "x": 87.52,
    "y": -98.5
   },
   {
    "k": "sacks",
-   "x": 84.74,
+   "x": 86.74,
    "y": -98.4
   },
   {
@@ -6896,25 +6914,25 @@
  "pathWidth": 7.2,
  "homes": {
   "donut": [
-   -36.85,
-   -74.6,
+   152.93,
+   -110.3,
    5,
    "bodega"
   ],
   "number80": [
-   -29.04,
+   -31.27,
    -110.3,
    5,
    "bar"
   ],
   "origamifox": [
-   214.92,
+   221.33,
    -110.3,
    5,
    "arcade"
   ],
   "manatee": [
-   -11.16,
+   -15.2,
    -110.3,
    5,
    "theatre"

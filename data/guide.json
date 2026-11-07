@@ -40,7 +40,7 @@
      "steps": [
       "Press [ESC]. The menu opens where you left it.",
       "Its sections run down the left: YOU, PACK, MAP, PEOPLE, BBS, GUIDE and SET. Each one has tabs along the top.",
-      "YOU: your look (LOOK, WEAR, WORDS), your passport, RESURRECT and LOG OUT.",
+      "YOU: your look (LOOK, WEAR, WORDS), RESURRECT and LOG OUT.",
       "PEOPLE: who is on your block, VISIT their apartment, and CHAT.",
       "BBS: order from the bodega or the furniture catalog (a drone brings it to your fire escape), and play the arcade games.",
       "[ESC] again shuts the menu."
@@ -67,13 +67,13 @@
   {
    "id": "you",
    "title": "YOUR CHARACTER",
-   "what": "Change your name, body, hair, clothes and shape.",
+   "what": "Change your look, your clothes and your words.",
    "steps": [
-    "Double-click yourself, or press [ESC], YOU, and click EDIT.",
-    "The YOU page opens: your name, BUILD, HAIR, BEARD, CLOTHES and SHOES.",
-    "For your body's shape click SHAPE, then DESIGN YOUR WALKER. Pick a part and drag the sliders. Click DONE.",
-    "Press [M] to take your shoes off or put them on.",
-    "Clothes and gear you buy go on through the gear slots on the CHARACTER page."
+    "Double-click yourself, or press [ESC], YOU.",
+    "YOU has three tabs: LOOK, WEAR and WORDS.",
+    "Clothes you buy go on from WEAR.",
+    "THE TAILOR changes what you wear. THE BARBER changes your hair. Both are on the Hudson row.",
+    "Press [M] to take your shoes off or put them on."
    ]
   },
   {
@@ -115,13 +115,61 @@
    "title": "MONEY AND SHOPS",
    "what": "You start with $1,000,000. Buy from the merchants and sell them what you find.",
    "steps": [
+    "Every keeper stands inside their own shop. Double-click the shop door to go in (see THE SHOPS).",
     "Double-click a merchant. A talk window opens.",
     "Choose WHAT DO YOU SELL? to open the shop.",
     "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
     "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
-    "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables and flowers; the Fisherman in Waders fish; the Park Ranger butterflies and birds; the Village Gardener honey; the Professor books and paintings; the Samurai Warrior swords; the golems in the dungeon gems.",
+    "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables, fruit and flowers; the Fisherman in Waders fish; the Park Ranger butterflies; the Forest Ranger birds and feathers; the Village Gardener honey and wax; the Professor mended books and paintings; the Samurai Warrior swords; the Scuba Diver gems and cut gems.",
     "Merchants teach what they know: LESSON raises a skill for a fee.",
     "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
+   ]
+  },
+  {
+   "id": "shops",
+   "title": "THE SHOPS",
+   "what": "Every keeper stands inside their own shop. The Market St row faces the park, the Hudson row faces the river.",
+   "sections": [
+    {
+     "head": "MARKET ST",
+     "steps": [
+      "THE FLORIST (the Tomato): seeds, pot, dirt, water, cactus, bonsai. Buys vegetables, fruit and flowers. Teaches GARDENING.",
+      "THE BEEKEEPER (the Village Gardener): hive, smoker, veil, honey jars. Buys honey and wax. Teaches BEEKEEPING.",
+      "THE BUTTERFLY SHOP (the Park Ranger): butterfly net, jars. Buys butterflies. Teaches ENTOMOLOGY.",
+      "THE BIRD SHOP (the Forest Ranger): bird net, cage, birdseed, feeder, binoculars. Buys birds and feathers. Teaches BIRDING and CLIMBING.",
+      "THE PET STORE: cat food, fish food.",
+      "THE MUSHROOM SHOP (the Mushroom Seller): buys mushrooms. Teaches FORAGING and MYCOLOGY.",
+      "THE BATH HOUSE: ghosts come back to life in its steam.",
+      "THE BODEGA: pay yourself at the register.",
+      "THE GEM SHOP (the Scuba Diver): gem wheel, headlight. Buys gems and cut gems. Teaches GEMS.",
+      "THE ARMOURY (the Samurai Warrior): four swords. Buys swords. Teaches SWORDSMANSHIP.",
+      "THE CLOTHES SHOP (the Clothier): jackets, jeans, coats, shades.",
+      "THE SKATE SHOP: skateboard, hover boards, go-kart.",
+      "THE DINER: fruit and honey."
+     ]
+    },
+    {
+     "head": "THE HUDSON ROW",
+     "steps": [
+      "THE BANK: your vault (see THE BANK).",
+      "THE HOTEL: rest for $10, full health.",
+      "THE MOVIE THEATRE, THE PLAYHOUSE and THE ART MUSEUM.",
+      "FISHING & SCUBA (the Fisherman in Waders): rods, reels, lures, bait, crab pot, coolers, goggles, a scuba tank to rent. Buys fish. Teaches FISHING.",
+      "THE BOOKSTORE (the Professor): the free library; bookbinding kits, canvases, paper, quill. Buys mended books and paintings. Teaches BOOKBINDING.",
+      "THE ARCADE: free games and the Holodeck. The Game Master teaches GOLF.",
+      "THE TAILOR: change what you wear.",
+      "THE BARBER: change your hair."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bank",
+   "title": "THE BANK",
+   "what": "Keep your things safe in your own vault.",
+   "steps": [
+    "Go to THE BANK on the Hudson row.",
+    "Near it, press [ENTER] and say BANK in chat. Your vault opens."
    ]
   },
   {
@@ -136,7 +184,7 @@
   },
   {
    "id": "forage",
-   "title": "FORAGING AND FOOD",
+   "title": "FORAGING",
    "what": "Pick mushrooms and flowers in the park and sell them.",
    "steps": [
     "Go to a park lawn. Press [M] to take your shoes off (shoes squash mushrooms).",
@@ -144,8 +192,8 @@
     "Unknown ones are STRANGE MUSHROOM. Identify them from your bag.",
     "Mushrooms grow back every day. Some come up only after rain (INK CAP, BLACK TRUMPET), at dawn (OYSTER) or by night (GHOST CAP, only deep in the park).",
     "Your BOOK ([ESC], PACK, BOOK) keeps a page for each thing you collect: mushrooms, butterflies, birds and fish.",
-    "Grow your own: buy seeds from the Tomato, plant them from your pack on bare lawn, and double-click to pick when they bloom.",
-    "The Mushroom Seller buys mushrooms; the Tomato buys vegetables and flowers."
+    "Grow your own: buy seeds from the Tomato at THE FLORIST, plant them from your pack on bare lawn, and double-click to pick when they bloom.",
+    "THE MUSHROOM SHOP buys mushrooms and teaches FORAGING and MYCOLOGY. THE FLORIST buys vegetables, fruit and flowers."
    ]
   },
   {
@@ -166,16 +214,38 @@
      "steps": [
       "Merchants teach what they buy: talk to them and choose a LESSON (each +1.0, up to 30).",
       "The arcade games and the holodeck train skills too (see PLACES TO GO).",
-      "The SPARRING DUMMY on the park lawn by the Stump teaches the basics (to 40): hold a sword for SWORDSMANSHIP, bare hands for MARTIAL ARTS. Each bout tires you."
+      "The SPARRING DUMMY on the park lawn teaches the basics (to 40): hold a sword for SWORDSMANSHIP, bare hands for MARTIAL ARTS. Each bout tires you.",
+      "The Squirrel Knight teaches MARTIAL ARTS on the roof of the Squirrel's Tower in the park (take the ladder inside).",
+      "The Forest Ranger teaches CLIMBING: practise on the apartment fire escapes."
      ]
     },
     {
      "head": "MAKING THINGS",
      "steps": [
-      "Cut stones on a GEM WHEEL (the Scuba Diver sells one): a cut stone sells for more.",
+      "Buy a GEM WHEEL at THE GEM SHOP, then cut a gem from your pack's MAKE list: a cut gem sells for more.",
       "Mend old books with a binder’s kit from the Professor (BOOKBINDING). A feather QUILL helps you mend."
      ]
     }
+   ]
+  },
+  {
+   "id": "paint",
+   "title": "PAINTING",
+   "what": "Paint a picture and sell it.",
+   "steps": [
+    "Buy a CANVAS from the Professor at THE BOOKSTORE.",
+    "At home, press [T] and put up an EASEL from DECORATE.",
+    "Sell your paintings to the Professor."
+   ]
+  },
+  {
+   "id": "books",
+   "title": "THE BOOKSTORE",
+   "what": "A free library, and the Professor's shop.",
+   "steps": [
+    "Go into THE BOOKSTORE on the Hudson row.",
+    "Borrow books from the library for free, five at a time.",
+    "The Professor sells bookbinding kits, canvases, paper and a quill, buys mended books and paintings, and teaches BOOKBINDING."
    ]
   },
   {
@@ -186,7 +256,7 @@
     "Running, fighting and blocking use stamina. Stop for a moment and it fills again.",
     "Health does not come back by itself.",
     "To heal: double-click a bench, chair or bed and sit (about 2 minutes to full).",
-    "Or stand in the bath house steam (under a minute).",
+    "Or stand in the bath house steam (under a minute), or rest at THE HOTEL ($10: full health).",
     "At zero health you faint for 15 seconds. If you are hit again then, you die (see IF YOU DIE)."
    ]
   },
@@ -198,10 +268,10 @@
     {
      "head": "GET READY",
      "steps": [
-      "Go to the Hudson fishing pier. Double-click the Fisherman in Waders.",
+      "Go into FISHING & SCUBA on the Hudson row. Double-click the Fisherman in Waders.",
       "Buy a FISHING ROD ($15) and WORMS or CUT BAIT.",
       "Hold the rod: press [1] until you hold it, or HOLD in your pack.",
-      "Face the water. A FISH button shows. Press [F] or click it."
+      "Go out on the Hudson pier and face the water. A FISH button shows. Press [F] or click it."
      ]
     },
     {
@@ -247,7 +317,7 @@
     {
      "head": "BUTTERFLIES",
      "steps": [
-      "Buy a BUTTERFLY NET ($8) from the Park Ranger in the park.",
+      "Buy a BUTTERFLY NET ($8) from the Park Ranger at THE BUTTERFLY SHOP. He buys butterflies and teaches ENTOMOLOGY.",
       "Press [1] until you hold the net. Aim with the mouse and click to swing. Swinging fast or jumping helps.",
       "You can carry 5. Jars hold 20, 50 or 100 more.",
       "In your pack: IDENTIFY or RELEASE (you learn a little).",
@@ -259,8 +329,8 @@
      "head": "BIRDS",
      "steps": [
       "Double-click a bird: PICK UP, WATCH, TAME (uses birdseed) or CATCH (needs a bird net and a cage).",
-      "A tamed bird follows you, and other players see it on your shoulder. The Park Ranger sells bird seed.",
-      "The Park Ranger sells seed, nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and teaches BIRDING and ENTOMOLOGY.",
+      "A tamed bird follows you, and other players see it on your shoulder.",
+      "The Forest Ranger at THE BIRD SHOP sells birdseed, bird nets, cages, a BIRD FEEDER and BINOCULARS, buys birds and feathers and teaches BIRDING.",
       "BINOCULARS: watch birds from far off. A FEEDER: HANG IT HERE from your pack, and birds come to it. Double-click it to take it down. Other players see your feeder, and birds come to theirs for you too.",
       "Birds sometimes leave a FEATHER. Three make a QUILL (CRAFT, BIND), which helps you mend books."
      ]
@@ -270,30 +340,28 @@
   {
    "id": "bees",
    "title": "BEES AND HONEY",
-   "what": "Keep bees in the park, take their honey and wax, eat it, cook with it or sell it.",
+   "what": "Keep bees in the park, take their honey and wax and sell them.",
    "steps": [
-    "Find THE BEEKEEPER on the park path near the Stump. Buy a HIVE ($40), EMPTY HONEY JARS ($1), a SMOKER ($12) and a VEIL ($15).",
+    "Go into THE BEEKEEPER on Market St and see the Village Gardener. Buy a HIVE ($40), EMPTY HONEY JARS ($1), a SMOKER ($12) and a VEIL ($15).",
     "Stand on a park lawn where flowers grow thick. In your pack press SET IT HERE on the hive. You can keep three.",
     "The hive fills over real time: about a frame every half hour, up to four times faster among flowers. Your own garden's flowers count double.",
     "Double-click the hive and press TAKE HONEY. Two frames fill one jar; you also get beeswax.",
     "The smoker calms the bees (BEEKEEPING). Without it, or if it fails, you get stung. The veil keeps stings off.",
     "The flowers near the hive make the honey: clover, lavender, sunflower or rose; otherwise wildflower. By night, deep in the park, sometimes MOON HONEY.",
-    "Eat honey to heal. Cook HONEY-GLAZED BASS or HONEYED CHANTERELLES by a flame. Brew a ROYAL JELLY TONIC from moon honey and a moonglow.",
     "Three beeswax make a CANDLE (CRAFT). Put candles in your apartment with DECORATE.",
-    "The Beekeeper buys honey, wax and candles, and teaches BEEKEEPING. LIFT IT puts an empty hive back in your pack. Other players see your hives, and you see theirs."
+    "The Village Gardener buys honey and wax, and teaches BEEKEEPING. LIFT IT puts an empty hive back in your pack. Other players see your hives, and you see theirs."
    ]
   },
   {
    "id": "swim",
    "title": "SWIMMING AND DIVING",
-   "what": "Swim the Hudson, dive to the bottom and explore the caverns.",
+   "what": "Swim the Hudson and dive to the bottom.",
    "steps": [
     "Walk into the water to swim.",
     "[SPACE] swims down, [SHIFT] swims up. In first person you swim where you look.",
     "You have 16 seconds of air. It fills again at the surface.",
-    "For more air: eat an AIRCAP mushroom (+20 s, from the mushroom seller), or rent a SCUBA SET from THE SHARK ($40, 5 minutes).",
-    "A GLOWCAP lets you see in the dark water.",
-    "Swim to the bottom in the middle of the Hudson and double-click A CAVE MOUTH. You need 45 seconds of air."
+    "For more air: eat an AIRCAP mushroom (+20 s), or rent a SCUBA TANK at FISHING & SCUBA (goggles there too).",
+    "A GLOWCAP lets you see in the dark water."
    ]
   },
   {
@@ -312,7 +380,7 @@
     {
      "head": "BOARDS",
      "steps": [
-      "The Skate Shop Owner sells skateboards, hover boards and the kart. Hold one with [1].",
+      "THE SKATE SHOP on Market St sells skateboards, hover boards and the go-kart. Hold one with [1].",
       "Click to get on, click to get off. Steer with [W] [A] [S] [D], [SPACE] hops (on a skateboard: hold and let go to ollie)."
      ]
     }
@@ -326,8 +394,7 @@
     "[J] punches, [K] kicks, [N] slaps. Press again in time to chain a combo (press [?] for them all).",
     "Hold [C] to crouch, then [J] uppercut or [K] sweep. [2] leg sweep, [3] back flip, [4] front flip, [Y] roll, [U] cartwheel.",
     "Hold [P] to block. Block on the beat with a sword to stagger them.",
-    "Swords: buy one from the swordsmith. Press [1] to hold it, aim with the mouse, click to swing. Three quick swings make the third a heavy one.",
-    "Armour from the knight on Main Street halves the hurt. WEAR it from your pack.",
+    "Swords: buy one at THE ARMOURY from the Samurai Warrior. Press [1] to hold it, aim with the mouse, click to swing. Three quick swings make the third a heavy one.",
     "Players: knock one down, then double-click to pick them up and [J] to throw. If you are held, mash any key to break free."
    ]
   },
@@ -360,38 +427,37 @@
    "what": "Double-click a door to go in. Double-click OUT TO THE STREET to leave.",
    "sections": [
     {
-     "head": "THE ARCADE (MAIN ST)",
+     "head": "THE ARCADE (HUDSON ROW)",
      "steps": [
-      "Double-click a cabinet to play ($2). [SPACE] starts, [ESC] leaves.",
-      "Each game trains a skill: RAINBOW RUN birding, GALAXY RAID swords, MAZE prospecting, ROAD 85 fishing, TELEMAK entomology, ISTANBUL TAKSI foraging."
+      "Double-click a cabinet to play (free). [SPACE] starts, [ESC] leaves.",
+      "Each game trains a skill: RAINBOW RUN birding, GALAXY RAID swords, ROAD 85 fishing, TELEMAK entomology, ISTANBUL TAKSI foraging."
      ]
     },
     {
      "head": "THE HOLODECK (BACK OF THE ARCADE)",
      "steps": [
-      "SWORD TRAINING ($8): swing when the knight calls STRIKE!",
-      "THE DUEL ($15): hold [P] to block on the beat. Both train swords, and lend you a sword."
+      "Two programs: THE GREENS (golf) and ROAM.",
+      "The Game Master by the holodeck teaches GOLF."
      ]
     },
     {
      "head": "THE MOVIE THEATRE",
      "steps": [
-      "Buy a MOVIE TICKET ($5) from the ticket fox, then double-click the door.",
+      "Free. Double-click the door on the Hudson row.",
       "Films play on a schedule. Double-click THE SCREEN for sound."
      ]
     },
     {
-     "head": "THE GOLEMS' CAVE AND THE CASTLE (CENTRAL PARK)",
+     "head": "THE CASTLE (CENTRAL PARK)",
      "steps": [
-      "Double-click A GLINT to dig gems; sell them at THE TRADING STONE. A CRACK IN THE FLOOR goes deeper (needs a cutter beam).",
       "The castle's stairs go down to the dungeon: traps, slimes and loot to double-click."
      ]
     },
     {
      "head": "MORE",
      "steps": [
-      "THE BANK on Market St: go in through its big vault door and see the dragon asleep on its gold. It wakes when you come close. Take its gold and it burns you to ashes.",
-      "THE BATH HOUSE heals you. The bar has a band. The museum and the playhouse are open to walk around."
+      "THE BATH HOUSE heals you. THE HOTEL: rest for $10.",
+      "THE PLAYHOUSE and THE ART MUSEUM are free to walk around."
      ]
     }
    ]
@@ -405,6 +471,15 @@
     "Press [ENTER] to chat. Type, then [ENTER] to send ([ESC] closes).",
     "[ESC], PEOPLE lists the players on your block.",
     "Press VISIT THEIR APARTMENT beside a name to go into that player's apartment and see how they decorated it (their plants, photos, candles...). You can look, not change anything. Leave by the door as usual."
+   ]
+  },
+  {
+   "id": "trade",
+   "title": "TRADING",
+   "what": "Swap things with other players.",
+   "steps": [
+    "Double-click a player to trade with them.",
+    "Or drag a thing from your bag onto them."
    ]
   },
   {

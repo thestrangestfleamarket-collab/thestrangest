@@ -1,8 +1,8 @@
 // SWAP, the trade between players: double-click a player who is standing to ask them to trade; each puts things from the pack and cash in, both ACCEPT, and the block's server tells both games to swap them (a gift is a trade with nothing back).
-import {FORAGE, INV, ONLINE, TEXT} from './003b-systems.js';
+import {ARCHI, FORAGE, INV, ONLINE, TEXT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {PAINTINGS} from './159h-paintings.js';
-const SWAP={no:[id=>id==='passport'||id.startsWith('photo_')||id.startsWith('wip_')]}; window.SWAP=SWAP;
+const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.startsWith('wip_')]}; window.SWAP=SWAP;
 {
   const say=(t,c)=>SAY(t,c||'#e8e2cc'), esc=TEXT.esc, B='font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer';
   let T=null, ask=null, sendT=0;   // T: {with,name,mine:{items,cash},theirs,okMe,okThem}; ask: {from,name,until}

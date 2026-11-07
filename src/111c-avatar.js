@@ -12,16 +12,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const LZ={m:[__LAZY__("data/pfavatar-m-00.json"),__LAZY__("data/pfavatar-m-01.json"),__LAZY__("data/pfavatar-m-02.json"),__LAZY__("data/pfavatar-m-03.json"),__LAZY__("data/pfavatar-m-04.json"),__LAZY__("data/pfavatar-m-05.json"),__LAZY__("data/pfavatar-m-06.json"),__LAZY__("data/pfavatar-m-07.json"),__LAZY__("data/pfavatar-m-08.json"),__LAZY__("data/pfavatar-m-09.json"),__LAZY__("data/pfavatar-m-10.json"),__LAZY__("data/pfavatar-m-11.json"),__LAZY__("data/pfavatar-m-12.json"),__LAZY__("data/pfavatar-m-13.json"),__LAZY__("data/pfavatar-m-14.json"),__LAZY__("data/pfavatar-m-15.json"),__LAZY__("data/pfavatar-m-16.json"),__LAZY__("data/pfavatar-m-17.json"),__LAZY__("data/pfavatar-m-18.json"),__LAZY__("data/pfavatar-m-19.json"),__LAZY__("data/pfavatar-m-20.json"),__LAZY__("data/pfavatar-m-21.json"),__LAZY__("data/pfavatar-m-22.json"),__LAZY__("data/pfavatar-m-23.json"),__LAZY__("data/pfavatar-m-24.json"),__LAZY__("data/pfavatar-m-25.json"),__LAZY__("data/pfavatar-m-26.json"),__LAZY__("data/pfavatar-m-27.json"),__LAZY__("data/pfavatar-m-28.json"),__LAZY__("data/pfavatar-m-29.json"),__LAZY__("data/pfavatar-m-30.json"),__LAZY__("data/pfavatar-m-31.json")],f:[__LAZY__("data/pfavatar-f-00.json"),__LAZY__("data/pfavatar-f-01.json"),__LAZY__("data/pfavatar-f-02.json"),__LAZY__("data/pfavatar-f-03.json"),__LAZY__("data/pfavatar-f-04.json"),__LAZY__("data/pfavatar-f-05.json"),__LAZY__("data/pfavatar-f-06.json"),__LAZY__("data/pfavatar-f-07.json"),__LAZY__("data/pfavatar-f-08.json"),__LAZY__("data/pfavatar-f-09.json"),__LAZY__("data/pfavatar-f-10.json"),__LAZY__("data/pfavatar-f-11.json"),__LAZY__("data/pfavatar-f-12.json"),__LAZY__("data/pfavatar-f-13.json"),__LAZY__("data/pfavatar-f-14.json"),__LAZY__("data/pfavatar-f-15.json"),__LAZY__("data/pfavatar-f-16.json"),__LAZY__("data/pfavatar-f-17.json"),__LAZY__("data/pfavatar-f-18.json"),__LAZY__("data/pfavatar-f-19.json"),__LAZY__("data/pfavatar-f-20.json"),__LAZY__("data/pfavatar-f-21.json"),__LAZY__("data/pfavatar-f-22.json"),__LAZY__("data/pfavatar-f-23.json"),__LAZY__("data/pfavatar-f-24.json"),__LAZY__("data/pfavatar-f-25.json"),__LAZY__("data/pfavatar-f-26.json"),__LAZY__("data/pfavatar-f-27.json"),__LAZY__("data/pfavatar-f-28.json"),__LAZY__("data/pfavatar-f-29.json"),__LAZY__("data/pfavatar-f-30.json"),__LAZY__("data/pfavatar-f-31.json")]};
   const SLOTS=[['hair','HAIR'],['face','FACE'],['eyes','GLASSES'],['hat','HAT'],['top','TOP'],['coat','JACKET'],['bottom','BOTTOMS'],['feet','SHOES'],['belt','BELT'],['neck','NECK'],['hands','HANDS'],['back','BACK'],['righthand','RIGHT HAND'],['lefthand','LEFT HAND']], OLD=11;   // (the slots after OLD came later: their codes go after the barefoot mark)
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
+  const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
   const DEF=()=>({f:'m',b:1,h:100,skin:'d9a984',hair:'4b2519',w:{hair:[nOf('hair','SHORT'),''],top:[nOf('top','T-SHIRT'),''],bottom:[nOf('bottom','TROUSERS'),''],feet:[nOf('feet','SNEAKERS'),'']}});
 
   /* ---------- a look as a short code for the other players: figure.build.height.skin.hair, then each slot (piece number in base 36, ~colour) ---------- */
   const enc=([s],L)=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; }, at=i=>i<OLD?5+i:6+i;
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L))].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots)
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true;
+    if(a[5+OLD]==='1')L.bare=true; L.eye=hex(a[6+SLOTS.length])||EYE0;
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -39,7 +40,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const clip=(f,n)=>{ const g=CLG[n]; if(!g)return null; const k=f+g, C=CLC[k]; if(C&&C.clips)return C.clips[n]||null;
     if(!C)CLC[k]=CLF[f][g]().then(J=>{ for(const c of Object.values(J.clips)){ c.Q=Float32Array.from(c.q); c.P=Float32Array.from(c.p); } CLC[k]=J; }).catch(e=>{ console.warn('AVATAR clips',e); delete CLC[k]; });
     return null; };
-  AVATAR.SKINS=SKINS; AVATAR.HAIRC=HAIRC;
+  AVATAR.SKINS=SKINS; AVATAR.HAIRC=HAIRC; AVATAR.EYES=EYES; AVATAR.BUILDN=BUILDN;
   AVATAR.clips=Object.keys(CLG); AVATAR.clip=clip;
   // Polyfork's clips with a move of their own (MOTION 'pf_<key>', 111da): the clip, the part of it played [from, to] in seconds, and whether it loops; on the rig they hold still
   AVATAR.PF={Agree:['Agree',0,1.83],Shake:['Head shake',0,2.57],Laugh:['Laughing',0,9.77],Chat:['Talking',0,2.93,1],Phone:['Phone call',0,2.93,1],Cross:['Arms folded',0,2.5,1],
@@ -83,7 +84,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; taper(X,d,L.f);
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
-      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair);
+      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
       for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]]||cut(P,d,t))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]];
         va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();

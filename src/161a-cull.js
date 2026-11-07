@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CULL, ED, FAR3, MAPED, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {QS, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
 import {DFOG} from './134e-distfog.js';
 Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:[],D:[],R:0,hz:QS.get('hazecull')!=='0',PAD:2*TILE});
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), S=new THREE.Sphere(), B=new THREE.Box3(), C=new THREE.Color(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
@@ -57,7 +57,9 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
       P.appendChild(B); const R=B.querySelector('#ddist'), V=B.querySelector('#ddistv'), show=()=>{ R.value=DD.v||300; V.textContent=DD.v?DD.v+' TILES':'ALL'; }; R.oninput=e=>{ CULL.setDraw(+e.target.value); show(); }; show(); };
     }
   const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD;
-    const inP=PARK.in&&PARK.box&&!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&PARK.within(pos.x,pos.z,1); if(inP!==!!CULL.keep)CULL.keep=inP?PARK.box():null; };   // in the park only the park is drawn, the sky and far skyline kept (owner, 7 Nov 2026)
+    const free=!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on, BR=LEVEL.block.backrow, ZS=SHARED.BOD.ZS, zr=ZS(BR[0]), z1=ZS(BR[1]), south=Math.sign(ZS(BR[0]-1)-zr);
+    const zone=!free?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
+    if(zone!==CULL.zone){ CULL.zone=zone; CULL.keep=zone==='park'?PARK.box():zone==='hudson'?(south<0?[-1e6,-1e6,1e6,z1+.5*TILE]:[-1e6,z1-.5*TILE,1e6,1e6]):null; } };
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };

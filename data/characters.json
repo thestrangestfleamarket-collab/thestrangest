@@ -2750,11 +2750,13 @@
     "canvas_w",
     "canvas_t",
     "paper",
-    "quill_pen"
+    "quill_pen",
+    "stack_key"
    ],
    "buys": [
     "books",
-    "paintings"
+    "paintings",
+    "antiquities"
    ],
    "teaches": [
     "bind"

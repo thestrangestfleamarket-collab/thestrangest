@@ -48,10 +48,13 @@ const GRASS={}; window.GRASS=GRASS;
   K.forEach((k,i)=>{ k.i=i; }); GRASS.of=Object.fromEntries(K.map(k=>[k.id,k]));
   // where each grows: patches about 30 tiles across on a bent grid, their borders mingled a few tiles deep (tile coords, x east, z south)
   const PS=30;
+  // the mix (owner, 7 Nov 2026: "make 80% of the lawn #6, with patches of 2-5 around the park (those are only spots mushrooms grow)"): mown lawn, and in one cell in five a patch of round tufts, crown tufts, soft tussocks or leaf clumps; the pixel meadow's wildlife joins the lawn and the patches
+  GRASS.MIX={lawn:'01',patches:['33','32','08','04'],gone:['34'],share:.2};
+  const MIXK=GRASS.MIX.patches.map(id=>K.find(k=>k.id===id)), LAWNK=K.find(k=>k.id===GRASS.MIX.lawn), kindOf=(a,b)=>{ const h=hash(a,b,73); return h<GRASS.MIX.share?MIXK[Math.floor(h/GRASS.MIX.share*MIXK.length)]:LAWNK; };
   const at0=(tx,tz)=>{ const wx=tx+16*(cvNoise(tx/18,tz/18,91)-.5)+5*(cvNoise(tx/6,tz/6,93)-.5), wz=tz+16*(cvNoise(tx/18,tz/18,92)-.5)+5*(cvNoise(tx/6,tz/6,94)-.5), gx=Math.floor(wx/PS), gz=Math.floor(wz/PS);
-    let d1=1e18, d2=1e18, k1=0, k2=0; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hash(a,b,71))*PS, pz=(b+hash(b,a,72))*PS, d=(wx-px)**2+(wz-pz)**2, k=Math.floor(hash(a,b,73)*K.length);
+    let d1=1e18, d2=1e18, k1=LAWNK, k2=LAWNK; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hash(a,b,71))*PS, pz=(b+hash(b,a,72))*PS, d=(wx-px)**2+(wz-pz)**2, k=kindOf(a,b);
       if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
-    return K[Math.sqrt(d2)-Math.sqrt(d1)<3.5*hash(Math.floor(tx*2),Math.floor(tz*2),95)?k2:k1]; };
+    return Math.sqrt(d2)-Math.sqrt(d1)<3.5*hash(Math.floor(tx*2),Math.floor(tz*2),95)?k2:k1; };
   // each kind's painted picture: 12 tiles square, 24 to a tile, mirrored when laid
   // where the landscape editor painted a grass (its patches whose ground is gk:<id>, world coords): the latest patch over a spot wins
   const OV=[], inside=(r,x,z)=>r.brush?r.brush.some(([px,pz])=>(x-px)**2+(z-pz)**2<=r.r*r.r):r.poly?(()=>{ let c=false; const P=r.poly; for(let i=0,j=P.length-1;i<P.length;j=i++)if((P[i][1]>z)!==(P[j][1]>z)&&x<(P[j][0]-P[i][0])*(z-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c; return c; })():x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1;

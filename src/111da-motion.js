@@ -1,16 +1,23 @@
 // THE MOTION: the Walker's recorded moves (Mesh2Motion's human clips fitted to his rig, data/moves2.json, fetched when first used): emotes from the H panel and the moves of things you do (eat, craft, plant, mine, sit down), once or looped, shared with the players near.
 import {SHARED} from './003-shx.js';
-import {MOTION, RAG, st, UI, VIT} from './003b-systems.js';
+import {MOTION, RAG, st, TALK, UI, VIT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 import {AVATAR} from './111c-avatar.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
   const EMOTES=[['WAVE','greet'],['CLAP','clap'],['CHEER','cheer'],['FIST PUMP','fistPump'],['DAB','dab'],['YES','yes'],['NOD','nod'],['NO','no'],['ANGRY','angry'],['CONFUSED','confused'],['FLEX','flex'],['KNOCK','knock'],['POWER UP','powerUp'],['TALK','talk'],['ARMS FOLDED','foldArms'],
-    ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['SHIVER','shiver'],['ZOMBIE','zombie']];
+    ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['SHIVER','shiver'],
+    ['LISTEN','listen'],['DIZZY','dizzy'],['SHAKE OFF','shakeOff'],['HURT','hurt'],['TIRED','tired'],
+    ['STROLL','stroll'],['STRUT','strut'],['SNEAK','sneak'],['TIPTOE','tiptoe'],['STAGGER','stagger'],['LIMP','limp'],['SPRINT','sprint'],['BACK UP','backUp'],['CROUCH WALK','crouchWalk'],['CRAWL','crawl'],['FORMAL WALK','formalWalk'],
+    ['BACKFLIP','backflip'],['ROLL','rollGo'],['STUMBLE BACK','knockback'],['GROUND POUND','pound'],['FRONT KICK','kickFront'],['ROUNDHOUSE','kickRound'],['GUARD','guard'],['SWORD COMBO','swordCombo'],['SLASH','slash'],
+    ['THROW','throw'],['LOB','toss'],['DIG','dig'],['CHOP TREE','chopTree'],['PICK UP','pickUp']];
   // Polyfork's clips with no move of his (AVATAR.PF, owner 7 Nov 2026: "yes lets use mixamo"): on the rig they stand still for the clip's length; the avatar plays the clip
   const PFE=[['AGREE','Agree'],['SHAKE HEAD','Shake'],['LAUGH','Laugh'],['CHAT','Chat'],['PHONE CALL','Phone'],['CROSS ARMS','Cross'],['BOP','Bop'],['HIP HOP','HipHop'],['TWIST','Twist'],['SWING','Swing'],['THRILLER','Thriller'],
     ['TIPSY','Drunk'],['LEAN ON RAIL','Lean'],['CALL OUT','Call'],['CHOP WOOD','Chop'],['FIX','Fix'],['PUSH','Push'],['HOLD TORCH','Torch'],['HOLD LANTERN','Lantern']];
-  const ensure=()=>ready||(ready=DATA().then(J=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
-    const K0=J.greet.keys[0][1]; for(const [n,[,a,b,lp]] of Object.entries(AVATAR.PF)){ R.MOVES['mc_pf_'+n]=R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; } return info; }));
+  const TRAV=__LAZY__("data/pfanim-travel.json");   // (Polyfork's emotes that go somewhere: the hips' way forward, metres; 16 rig units a metre, as Mesh2Motion's recordings fit the rig)
+  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
+    const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
+      R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }
+    Object.assign(R.LOOK,{roll:'mc_roll2',frontKick:'mc_kickFront',roundhouse:'mc_kickRound',slap:'mc_hook2',hook:'mc_hook2',flinch:'mc_hitChest'}); return info; }));   // (the hand-made moves drawn from recordings: their timing, travel and hits kept)
   const has=n=>!!R.MOVES['mc_'+n];
   // play one on a rig state: a whole-body move from his current pose (a held tool's arm still goes where the game aims it); a looped one starts again as it ends, until he walks, another move takes over or its `while` fails
   const start=(S,n,loop)=>{ R.begin(S,'mc_'+n); return {S,n,loop}; };
@@ -19,24 +26,32 @@ import {AVATAR} from './111c-avatar.js';
   const stop=()=>{ if(!cur)return; const was=cur; cur=null; if(st.move&&st.move.name==='mc_'+was.n)st.move.t=st.move.def.dur; SYS.run('act',{stop:1}); };
   const theirs=new Map();
   const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(c.while&&!c.while()){ if(m&&m.name==='mc_'+c.n)m.t=m.def.dur; return false; } if(m&&m.name==='mc_'+c.n)return true; if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };
+  // standing still a moment: listening while someone talks to you, bent over when out of breath, hurting when low on health (until it no longer holds, or you move)
+  let still=0; const STANCE=[['listen',()=>!!(window.TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
+  const idle=()=>!st.move&&!st.up&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.target>0)&&!RAG.on&&!VIT.dead&&!SHARED.drive&&!UI.freeCam;
+  SYS.add('life',dt=>{ if(cur||!idle()){ still=0; return; } if((still+=dt)<1.5)return; still=-1e9; const s=STANCE.find(([,f])=>f()); if(s)play(s[0],{loop:true,while:s[1]}).then(ok=>{ if(!ok)still=0; }); else still=0; },'111da-motion');
+  SYS.onStart(()=>setTimeout(()=>ensure().catch(()=>{}),3000),'111da-motion');   // (the recordings soon after the start: the hand-made moves drawn from them from then on)
   SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here
   const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } ensure().then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
   // the emote panel (H), a window like the others (owner, 7 Nov 2026: "make the emote menu look like regular menus. also allow to drag them to the favorites bar"): a button an emote, by kind; drag one onto the quick bar
   const sp=document.createElement('div'); sp.id='emotes'; sp.hidden=true;
-  sp.style.cssText='position:fixed;right:16px;bottom:96px;width:min(424px,92vw);max-height:70vh;overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
+  sp.style.cssText='position:fixed;right:16px;top:56px;width:min(880px,96vw);max-height:calc(100vh - 72px);overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')MOTION.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());
   const ALLE=[...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])], LABEL=Object.fromEntries(ALLE.map(([t,n])=>[n,t]));
-  const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Call','pf_Laugh','clap','cheer','fistPump','dab','flex','knock','powerUp']],
-    ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','zombie','pf_Lean']],
+  const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Call','pf_Laugh','listen','clap','cheer','fistPump','dab','flex','knock','powerUp']],
+    ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','pf_Lean','dizzy','shakeOff','hurt','tired']],
     ['DANCE',['dance','pf_Bop','pf_HipHop','pf_Twist','pf_Swing','pf_Thriller','armPump','bodyRoll','charleston','hipReach','moonwalk']],
-    ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],['WORK',['pf_Chop','pf_Fix','pf_Push','pf_Torch','pf_Lantern']]];
+    ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],
+    ['WALKS',['stroll','strut','sneak','tiptoe','stagger','limp','sprint','backUp','crouchWalk','crawl','formalWalk']],
+    ['TRICKS AND FIGHTING',['backflip','rollGo','knockback','pound','kickFront','kickRound','guard','swordCombo','slash','throw','toss']],
+    ['WORK',['pf_Chop','pf_Fix','pf_Push','pf_Torch','pf_Lantern','dig','chopTree','pickUp']]];
   const B=(t,n)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; b.draggable=true; b.title='drag onto the quick bar to keep it there';
     b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
-  { const c=document.createElement('style'); c.textContent='#emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,62px);gap:4px} #emotes .emg button{width:62px;height:62px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
+  { const c=document.createElement('style'); c.textContent='#emotes .emk{color:#3aa866;margin:4px 0 2px;font-size:12px!important;line-height:1.2!important} #emotes h3{margin:0 0 4px} #emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:3px} #emotes .emg button{height:21px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
   const head=document.createElement('h3'); head.textContent='EMOTES'; sp.append(head);
-  for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.style.cssText='color:#9b9584;margin:8px 0 2px'; const g=document.createElement('div'); g.className='emg'; for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
-  const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS · DRAG ONE ONTO THE QUICK BAR'; tip.style.cssText='margin-top:8px;color:#9b9584'; sp.append(tip);
+  for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.className='emk'; const g=document.createElement('div'); g.className='emg'; for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
+  const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS · DRAG ONE ONTO THE QUICK BAR'; tip.className='emk'; sp.append(tip);
   // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss
   const can=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!VIT.tired;
   const fight=k=>{ '@later'; if(!can())return; const m=st.move, t=m?m.t:0;

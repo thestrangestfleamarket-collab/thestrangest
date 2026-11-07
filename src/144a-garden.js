@@ -42,6 +42,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const vn=(x,z,s)=>{ const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz), h=(a,b)=>hsh(a/97,b/89,s); return (h(ix,iz)*(1-u)+h(ix+1,iz)*u)*(1-v)+(h(ix,iz+1)*(1-u)+h(ix+1,iz+1)*u)*v; };
+  if(!GRASS.only&&GRASS.MIX)for(const g of GRASS.MIX.gone){ const L=WILD[GRASS.MIX.lawn]={...WILD[GRASS.MIX.lawn]}, G=WILD[g]; for(const t of RARITY.TIERS)L[t]=[].concat(L[t],G[t]); }   // the meadow's flowers on the lawn (7 Nov 2026)
   const pickKind=(g,r,deep)=>{ const T=WILD[g]||WILD['01']; return RARITY.pickFrom(deep?T:{c:T.c,r:T.r},r,'garden',r*5.17)||'dandelion'; };   // the super-rare only deep in the park
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2], drift=vn(x/T/7,z/T/7,511)>.62;
       if(hsh(x/T+d*.29,z/T,521)>(drift?.05:.005))continue; const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.41,523),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,525)-.5)*.4*T, pz=z+(hsh(z,x,527)-.5)*.4*T;

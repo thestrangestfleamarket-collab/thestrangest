@@ -15,13 +15,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     // each kind's middle: a spot in the park with the same kind five tiles round
     const spots = await pg.evaluate(() => { const T = 33.9 / 30, P = PARK, o = {}; for (let y = P.y0 + 12; y < P.y1 - 12; y += 3) for (let x = P.x0 + 12; x < P.x1 - 12; x += 3) { if (P.path && P.path(x, y)) continue; const wx = SHARED.BOD.XS(x + P.ox), wz = SHARED.BOD.ZS(y + P.oy), k = GRASS.at(wx / T, wz / T);
       if ([[5, 0], [-5, 0], [0, 5], [0, -5]].every(([u, v]) => GRASS.at(wx / T + u, wz / T + v) === k) && !o[k.id]) o[k.id] = [wx, wz]; } return o; });
-    ok(Object.keys(spots).length >= 6, 'the park grows at least six of the kinds: ' + Object.keys(spots).join());
+    ok(Object.keys(spots).length >= 5 && spots['01'] && !spots['34'], 'the park grows the mown lawn and its four patch kinds, not the meadow (one lawn with patches, 7 Nov 2026): ' + Object.keys(spots).join());
     const tally = { tufts: 0, off: 0, flatTufts: 0, fl: [], mu: [], bf: [] };
     for (const id of Object.keys(spots)) {
       await pg.evaluate(([x, z]) => __dbg.UI.goTo(x, z, SHARED.py), spots[id]); await pg.waitForTimeout(7000);
       const r = await pg.evaluate(() => { const T = 33.9 / 30, o = { n: 0, off: 0, flat: 0 }; for (const me of TUFTS.meshes) { const A = me.instanceMatrix.array; for (let i = 0; i < me.count; i++) { const k = GRASS.at(A[i * 16 + 12] / T, A[i * 16 + 14] / T); o.n++; if (k.shape !== me.userData.shape) o.off++; if (!k.shape) o.flat++; } }
-        const kin = (x, z) => GRASS.at(x / T, z / T), near = (x, z, f) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([u, v]) => f(kin(x + u * T, z + v * T)));
-        o.fl = GARDEN.spots().map(([k, x, z]) => near(x, z, K => Object.values(K.flowers).includes(k))); o.mu = FORAGE.spots().map(([k, x, z]) => near(x, z, K => Object.values(K.mush).includes(k))); o.bf = BFLY.spots().map(([n, x, z]) => near(x, z, K => Object.values(K.bf).includes(n))); return o; });
+        const M = GRASS.MIX, by = id => GRASS.K.find(q => q.id === id), own = (K, f, it) => [K.id, ...(K.id === M.lawn ? M.gone : f === 'mush' && M.patches.includes(K.id) ? [M.lawn, ...M.gone] : [])].some(id => Object.values(by(id)[f]).includes(it)), kin = (x, z) => GRASS.at(x / T, z / T), near = (x, z, f) => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([u, v]) => f(kin(x + u * T, z + v * T)));
+        o.fl = GARDEN.spots().map(([k, x, z]) => near(x, z, K => own(K, 'flowers', k))); o.mu = FORAGE.spots().map(([k, x, z]) => near(x, z, K => own(K, 'mush', k))); o.bf = BFLY.spots().map(([n, x, z]) => near(x, z, K => own(K, 'bf', n))); return o; });
       tally.tufts += r.n; tally.off += r.off; tally.flatTufts += r.flat; tally.fl.push(...r.fl); tally.mu.push(...r.mu); tally.bf.push(...r.bf);
     }
     ok(tally.tufts > 1000 && tally.off / tally.tufts < .03, 'the grass near you stands in its own kind\'s shape (' + tally.off + ' of ' + tally.tufts + ' off, at the kinds\' edges)');

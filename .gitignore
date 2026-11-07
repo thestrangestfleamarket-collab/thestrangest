@@ -8,3 +8,4 @@ mod.mjs
 *.gif
 .polyfork/
 docs/MAP.md
+data/full/covers-progress.jsonl

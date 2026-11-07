@@ -11,16 +11,17 @@ const open=async(b,plays,q='')=>{ const ctx=await b.newContext({viewport:{width:
   const b=await chromium.launch({...(process.env.PWEXE?{executablePath:process.env.PWEXE}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const [p1,p2]=await Promise.all([open(b,0),open(b,1,'&at=36,4')]);
   ok(await p1.evaluate(()=>!!window.__started)&&await p2.evaluate(()=>!!window.__started),'the market starts');
-  await p1.keyboard.press('Shift+E'); await wait(300);
+  await p1.evaluate(()=>{ const U=__dbg.UI; if(U.menuOpen)U.toggleMenu(); }); await p1.keyboard.press('Shift+E'); await wait(300);
   ok(await p1.evaluate(()=>WE.may()===false&&!WE.on),'a first visit: Shift+E does not open it');
   ok(await p2.evaluate(()=>WE.may()===true),'a second visit may edit');
   const st=pg=>pg.evaluate(()=>({on:WE.on,lock:document.getElementById('we').classList.contains('lock'),msg:!document.getElementById('welock').hidden}));
-  const setV=async x=>{ await p2.evaluate(x=>{ __dbg.UI.setView(x); },x); await wait(500); };
+  // another view: the street is isometric only now (owner, 7 Nov), so the free camera stands in for one
+  const setV=async x=>{ await p2.evaluate(x=>{ const U=__dbg.UI; if(U.menuOpen)U.toggleMenu(); U.setFree(x!=='iso'); if(x==='iso')U.setView('iso'); },x); await wait(500); };
   await setV('third'); await p2.keyboard.press('Shift+E'); await wait(300);
-  ok(!(await st(p2)).on,'third person: Shift+E does not open it');
+  ok(!(await st(p2)).on,'another view (the free camera): Shift+E does not open it');
   await setV('iso'); await p2.keyboard.press('Shift+E'); await wait(800); let s=await st(p2);
   ok(s.on&&!s.lock,'isometric: Shift+E opens it');
-  await setV('third'); s=await st(p2); ok(s.on&&s.lock&&s.msg,'leaving isometric greys it out');
+  await setV('third'); s=await st(p2); ok(s.on&&s.lock&&s.msg,'leaving isometric (the free camera) greys it out');
   await setV('iso'); s=await st(p2); ok(s.on&&!s.lock&&!s.msg,'back in isometric it works again');
   const can=await p2.evaluate(()=>['bath house','kerb brick','brick wall','floor','bench','street signs','street lamp','lamp post','gate lantern'].map(n=>WE.can({name:n})));
   ok(JSON.stringify(can)==='[false,false,false,false,true,true,true,true,true]','buildings, walls, kerbs and floors are not pickable; benches, signs and lamps are ('+can+')');

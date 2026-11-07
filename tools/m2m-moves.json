@@ -100,10 +100,6 @@
 "clip": "shiver",
 "loop": true
 },
-"zombie": {
-"clip": "zombie-idle",
-"loop": true
-},
 "eat": {
 "clip": "consume"
 },
@@ -192,15 +188,8 @@
 "clip": "idle-listening",
 "loop": true
 },
-"yell": {
-"clip": "zombie-yell"
-},
 "dizzy": {
 "clip": "dizzy",
-"loop": true
-},
-"cry": {
-"clip": "sit-ground-crying",
 "loop": true
 },
 "shakeOff": {
@@ -236,25 +225,10 @@
 "loop": true,
 "drift": 0.56
 },
-"zombieWalk": {
-"clip": "zombie-walk",
-"loop": true,
-"drift": 0.87
-},
-"shamble": {
-"clip": "zombie-walk-2",
-"loop": true,
-"drift": 0.59
-},
 "sprint": {
 "clip": "sprint",
 "loop": true,
 "drift": 2.14
-},
-"dash": {
-"clip": "run-anime",
-"loop": true,
-"drift": 3.71
 },
 "backUp": {
 "clip": "walk-backwards",
@@ -284,13 +258,6 @@
 "travel": true,
 "opts": {"travel": true, "keep": 0}
 },
-"levitate": {
-"clip": "levitate-idle",
-"loop": true
-},
-"rise": {
-"clip": "zombie-rise"
-},
 "pound": {
 "clip": "attack-ground-pound"
 },
@@ -304,21 +271,8 @@
 "slash": {
 "clip": "one-hand-slash-combo"
 },
-"spearThrow": {
-"clip": "spear-throw"
-},
-"knifeThrow": {
-"clip": "knife-throw"
-},
 "toss": {
 "clip": "grenade-throw"
-},
-"staffSpin": {
-"clip": "staff-spin",
-"loop": true
-},
-"potion": {
-"clip": "consume-powerup"
 },
 "dig": {
 "clip": "shovel-dig",

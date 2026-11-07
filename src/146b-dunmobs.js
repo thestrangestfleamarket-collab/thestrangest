@@ -1,7 +1,7 @@
 // THE DUNGEON SLIMES: the coloured slimes that roam the dungeon, fight and drop slime.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, ONLINE, pos, SFX, st, UI, VIS, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
@@ -78,8 +78,8 @@ __CODE__("worker/dunmobs.js")
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
       if(!lv.length||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
       RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); } } return RES; };
-  const park=r=>{ const N=r.N; PK.add(N.g); N.st.to=null; N.st.hold=true; N.alert=false; r.on=false; };
-  const place=(r,used)=>{ const N=r.N, st=N.st, p=spot(st.R,[L.atUp,L.atDn,...used]); used.push(p); st.x=p.x; st.z=p.z; st.to=null; st.face=null; st.hold=true; st.sx=st.sz=0; N.free=(x,z,R)=>free(x,z,R)&&!slimes.some(o=>!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T); N.alert=false;
+  const park=r=>{ const N=r.N; PK.add(N.g); VIS.hide(N.g,'parked'); N.st.to=null; N.st.hold=true; N.alert=false; r.on=false; };   // put away: hidden, and nothing to double-click
+  const place=(r,used)=>{ VIS.hide(r.N.g,'parked',false); const N=r.N, st=N.st, p=spot(st.R,[L.atUp,L.atDn,...used]); used.push(p); st.x=p.x; st.z=p.z; st.to=null; st.face=null; st.hold=true; st.sx=st.sz=0; N.free=(x,z,R)=>free(x,z,R)&&!slimes.some(o=>!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T); N.alert=false;
     N.g.position.set(st.x,D.ground(st.x,st.z),st.z); MAPG.dungeon.add(N.g); N.me.rotation.x=0; N.me.position.y=0; if(r.kk&&N.an)N.an.clear();
     const S0_=SST[r.key]; Object.assign(r,{on:true,dead:false,agg:false,act:0,cool:1+Math.random(),w:Math.random()*2,lunge:null,jolt:0,hp:Math.ceil((S0_?S0_[0]:3)*F()),dmg:(S0_?S0_[1]:.05)*F(),t:0}); };
   const toxic=g=>{ if(g.index)g=g.toNonIndexed(); const p=g.attributes.position.array, c=g.attributes.color.array, n=p.length/3, U8=c instanceof Uint8Array; let lo=1e9, hi=-1e9; for(let i=0;i<n;i++){ lo=Math.min(lo,p[i*3+1]); hi=Math.max(hi,p[i*3+1]); }   // radioactive: black-green with glowing lime spots

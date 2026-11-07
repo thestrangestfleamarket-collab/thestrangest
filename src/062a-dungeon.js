@@ -126,7 +126,7 @@ await grab('dungeon',async()=>{});
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*band(); say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};
   const bnd=()=>({x0:X(BB.x0),x1:X(BB.x1),z0:Z(BB.y0),z1:Z(BB.y1)});
-  let said=0; const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm&&said!==k){ said=k; SAY(r.nm,'#d8c8a8'); } for(const f of HK)f(k); };   // a room's monsters wake as you come into it
+  let named=0; const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm&&named!==k){ named=k; SAY(r.nm,'#d8c8a8'); } for(const f of HK)f(k); };   // a room's monsters wake as you come into it
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(how==='load'?'':'ENTERING THE DUNGEON'):'LEAVING THE DUNGEON',async()=>{
     if(n){ await LOAD('dungeon'); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }

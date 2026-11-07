@@ -1,6 +1,7 @@
 name: site
 on:
   pull_request:
+    types: [opened, reopened, ready_for_review, synchronize, labeled]
     paths-ignore: ['docs/**', '**.md']
   workflow_dispatch:
     inputs:
@@ -12,13 +13,38 @@ on:
         description: 'Run every check, not only those for the files changed'
         type: boolean
         default: false
-concurrency:
-  group: site-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
-  build-check:
+  # runs only when it is worth it (owner, 7 Nov 2026): never on a draft; on a push only when it is new work, not a merge of main; on a label only for go, full or measure
+  gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 2
+    outputs:
+      go: ${{ steps.g.outputs.go }}
+    steps:
+      - id: g
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EV: ${{ github.event_name }}
+          ACT: ${{ github.event.action }}
+          DRAFT: ${{ github.event.pull_request.draft }}
+          LABEL: ${{ github.event.label.name }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          go=true
+          if [ "$EV" = pull_request ]; then
+            if [ "$DRAFT" = true ]; then go=false
+            elif [ "$ACT" = labeled ]; then case "$LABEL" in go|full|measure) ;; *) go=false;; esac
+            elif [ "$ACT" = synchronize ]; then n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); [ "$n" -gt 1 ] && go=false; fi
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go ($EV $ACT)"
+  build-check:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    concurrency:
+      group: site-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 75 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -433,6 +459,8 @@ jobs:
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.c.outputs.tests }}

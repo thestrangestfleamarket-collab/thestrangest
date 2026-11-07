@@ -31,6 +31,7 @@ const TYPER={pages:[],st:null,carX:42.5,on:false}; window.TYPER=TYPER;
   const kind=(R,p)=>{ '@later'; const k='pg:'+p.id; if(R.kinds[k])return; const D={kind:k,name:'PAGE: '+(p.t||'TYPED PAGE'),own:p.id,loose:false,m:0,wire:null,sol:[],shf:[],mount:'wall',dept:'pages',deptName:'PAGES'};
     Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const t=pinned(p); Object.defineProperty(D,'tpl',{value:t,enumerable:true}); return t; }}); R.kinds[k]=D; };
   TYPER.kind=p=>{ const A=ROOMK.api; if(A&&A.R)kind(A.R,p); };
+  for(const k of ['WRITING DESK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(ctx=>{ for(const p of TYPER.pages)kind(ctx.R,p); });
 
   /* ---------- the writing desk and the machine on it, the chair before it ---------- */

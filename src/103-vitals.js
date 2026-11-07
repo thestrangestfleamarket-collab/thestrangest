@@ -20,7 +20,7 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
     if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
   VIT.spend=x=>{ VIT.sta=Math.max(0,VIT.sta-x*(VIT.spendK||1)); rest=0; };   // effort: stamina comes back only after a rest
-  VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; if(keys.has('shift'))st.runTarget=1; }   // empty: no running till a third is back
+  VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; }   // empty: no running till a third is back
     if(VIT.tired)st.runTarget=0;
     const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
     if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);

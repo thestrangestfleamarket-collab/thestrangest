@@ -148,7 +148,7 @@ import {ROOMK} from './150a-bedroom.js';
     cap('PICTURE',()=>{ p(rbox(.3,.36,.025,.006,1),mat([96,60,36],{roughness:.5,...clip('Wf')}),7.42,2.28,.0125); p(new THREE.PlaneGeometry(.24,.3),mat([255,255,255],{map:art,roughness:.8,...clip('Wf')}),7.42,2.28,.026,0,cur(),false); },BK);
 
     /* ---------- the table under its gingham cloth, donuts and coffee for two, the two chairs, the pet's bowl ---------- */
-    const TU=8.5, TV=2.45, TW=.92, TD=.72, TH=.74;
+    const TU=5.6, TV=.42, TW=.92, TD=.72, TH=.74;   // against the north wall (owner, 7 Nov 2026: "put all the stuff in apartment along the walls")
     cap('TABLE',()=>{ p(rbox(TW,.04,TD,.01,2),woodl,TU,TH-.02,TV); p(rbox(TW-.1,.06,TD-.1,.006,1),cab,TU,TH-.07,TV);
     for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]])p(rbox(.05,TH-.04,.05,.008,1),cab,TU+sx*(TW/2-.06),(TH-.04)/2,TV+sz*(TD/2-.06));
     { const nu=40, nv=32, Dr=.2, X0=TW/2, Z0=TD/2, gc=new THREE.PlaneGeometry(1,1,nu,nv), pp=gc.attributes.position, uv=gc.attributes.uv;

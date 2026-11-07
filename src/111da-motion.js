@@ -1,7 +1,7 @@
 // THE MOTION: the Walker's recorded moves (Mesh2Motion's human clips fitted to his rig, data/moves2.json, fetched when first used): emotes from the H panel and the moves of things you do (eat, craft, plant, mine, sit down), once or looped, shared with the players near.
 import {SHARED} from './003-shx.js';
-import {MOTION, RAG, st, TALK, UI, VIT} from './003b-systems.js';
-import {SYS} from './006-map-pre.js';
+import {MOTION, pos, RAG, ROOMS, st, TALK, UI, VIT} from './003b-systems.js';
+import {FADE, SYS, TILE} from './006-map-pre.js';
 import {AVATAR} from './111c-avatar.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
   const EMOTES=[['WAVE','greet'],['CLAP','clap'],['CHEER','cheer'],['FIST PUMP','fistPump'],['DAB','dab'],['YES','yes'],['NOD','nod'],['NO','no'],['ANGRY','angry'],['CONFUSED','confused'],['FLEX','flex'],['KNOCK','knock'],['POWER UP','powerUp'],['TALK','talk'],['ARMS FOLDED','foldArms'],
@@ -36,6 +36,12 @@ import {AVATAR} from './111c-avatar.js';
   let still=0; const STANCE=[['listen',()=>!!(window.TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
   const idle=()=>!st.move&&!st.up&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.target>0)&&!RAG.on&&!VIT.dead&&!SHARED.drive&&!UI.freeCam;
   SYS.add('life',dt=>{ if(cur||!idle()){ still=0; return; } if((still+=dt)<1.5)return; still=-1e9; const s=STANCE.find(([,f])=>f()); if(s)play(s[0],{loop:true,while:s[1]}).then(ok=>{ if(!ok)still=0; }); else still=0; },'111da-motion');
+  // a hard landing (owner, 7 Nov 2026: "add hard landing"): dropped more than about a storey in a moment (off a roof, a fire escape, a ledge), Polyfork's landing where you come down
+  let ly=null, lx=0, lz=0, llv=null, hi=null; const LANDH=2.5*TILE;
+  SYS.add('life',dt=>{ const y=SHARED.py, skip=ly==null||llv!==SHARED.LVL||Math.hypot(pos.x-lx,pos.z-lz)>2*TILE||FADE.busy||UI.fly||UI.freeCam||st.ride||SHARED.drive||RAG.on||VIT.dead||(st.water&&st.water.in)||st.climb||st.hang||ROOMS.cur;
+    lx=pos.x; lz=pos.z; llv=SHARED.LVL; if(skip){ ly=y; hi=null; return; }
+    if(dt>0&&(ly-y)/dt>6*TILE){ if(hi==null)hi=ly; } else if(hi!=null){ if(hi-y>LANDH&&!cur&&!st.move&&!st.sit)play('pf_Land'); hi=null; }   // (falling: coming down faster than running down stairs)
+    ly=y; },'111da-motion');
   SYS.onStart(()=>setTimeout(()=>ensure().catch(()=>{}),3000),'111da-motion');   // (the recordings soon after the start: the hand-made moves drawn from them from then on)
   SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here

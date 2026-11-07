@@ -36,7 +36,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **4a. The skill shops' insides and keepers** · done 7 Nov (claude/friendly-albattani-9a8elf): every merchant's shop furnished, its keeper inside, gear by skill (`tests/skillshops.cjs`). Each shop's own furniture, beyond the shared inside, is still open.
 - [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
 - [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
-- [x] **6. The park's made things** · P2 · L · code · done 7 Nov (`src/111fe-parkpf.js`, `tests/parkpf.cjs`; the big lake past the forcefield). Left: the skate extension; the park's lamps don't light at night yet. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
+- [x] **6. The park's made things** · P2 · L · code · done 7 Nov (`src/111fe-parkpf.js`, `tests/parkpf.cjs`; the big lake past the forcefield). Left: the skate extension. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
 - [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
 
 ## For the owner

@@ -122,7 +122,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); }
-      { const ey=SHARED.cam.position.y; if(UI._fpy==null||Math.abs(ey-UI._fpy)>TILE)UI._fpy=ey; else UI._fpy+=(ey-UI._fpy)*Math.min(1,(dt||.016)/.22); SHARED.cam.position.y=UI._fpy; }   // low-pass the eye height so the walk bounce doesn't jolt the view; real elevation still comes through
+      { const c=SHARED.cam.position, ox=c.x-pos.x, oy=c.y-SHARED.py, oz=c.z-pos.z, k=1-Math.exp(-(dt||.016)/.2), F=UI._fpo;
+        if(!F||UI._fpy==null||Math.abs(SHARED.py-UI._fpy)>TILE){ UI._fpo=[ox,oy,oz,ox,oy,oz]; UI._fpy=SHARED.py; }
+        else { UI._fpy+=(SHARED.py-UI._fpy)*(1-Math.exp(-(dt||.016)/.08)); F[0]+=(ox-F[0])*k; F[1]+=(oy-F[1])*k; F[2]+=(oz-F[2])*k; F[3]+=(F[0]-F[3])*k; F[4]+=(F[1]-F[4])*k; F[5]+=(F[2]-F[5])*k; }
+        c.set(pos.x+UI._fpo[3],UI._fpy+UI._fpo[4],pos.z+UI._fpo[5]); }   // the eye rides the body, its offset from the body twice low-passed: the head's bob and rock in a step don't reach the view; crouching, stairs and jumps still do
       { const b=FOUNT.bedAt&&FOUNT.bedAt(SHARED.cam.position.x,SHARED.cam.position.z); if(b!=null&&SHARED.cam.position.y<b+LOW*.3)SHARED.cam.position.y=b+LOW*.3; } SHARED.cam.updateMatrixWorld(); return; }
     const FT=FEEL.take(); let T=new THREE.Vector3(pos.x,SHARED.py+(FT?FEEL.cfg.camH*FEEL.MV:HEAD*sk),pos.z); const F=new THREE.Vector3(Math.sin(a)*Math.cos(SHARED.pitch),Math.sin(SHARED.pitch),Math.cos(a)*Math.cos(SHARED.pitch));
     const dv=FOUNT.swim&&st.water&&FOUNT.bedAt?st.water.under:0; if(dv>.01&&W3.eyeAt&&W3.eyeAt(eyeV))T.y+=(Math.min(T.y,eyeV.y+LOW*.4)-T.y)*dv;

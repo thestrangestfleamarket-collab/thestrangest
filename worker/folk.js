@@ -48,7 +48,9 @@ const FOLKSIM={};
   // the next place to wander to: in a home range (clamped to the lane), over an area, or anywhere free a few tiles off (over the park wall only through its gate); now and then a shop door, in for a while
   const pick=(S,E,rnd)=>{ const M=E.mode, T=S.T, R=E.R; if(M.hold)return false;
     if(M.shop&&E.auto&&rnd()<.3){ E.goal={gid:'shop',at:M.shop,in:20+rnd()*40}; E.done=''; errand(S,E,M.shop,rnd); return true; }
-    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const r=b.band[Math.floor(rnd()*b.band.length)], to={x:r[0]+rnd()*(r[2]-r[0]),z:r[1]+rnd()*(r[3]-r[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
+    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const r=b.band[Math.floor(rnd()*b.band.length)], to={x:r[0]+rnd()*(r[2]-r[0]),z:r[1]+rnd()*(r[3]-r[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } }
+      for(let k=0;k<10;k++){ const r=b.band.find(q=>E.x>=q[0]&&E.x<=q[2]&&E.z>=q[1]&&E.z<=q[3])||b.band[0], a=rnd()*Math.PI*2, d=(1.5+rnd()*8)*T, to={x:Math.max(r[0],Math.min(r[2],E.x+Math.sin(a)*d)),z:Math.max(r[1],Math.min(r[3],E.z+Math.cos(a)*d))};   // a wide area: a short walk from where it stands
+        if(F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
     if(b&&!(b.r>0)&&!M.roam)return false;
     if(M.roam){ for(let k=0;k<12;k++){ const a=rnd()*Math.PI*2, r=(2+rnd()*7)*T, to={x:E.x+Math.sin(a)*r,z:E.z+Math.cos(a)*r}; if(!F.free(S,to.x,to.z))continue;
       const g=S.gate; if(g&&(E.z<g.z)!==(to.z<g.z)){ E.next=to; E.to={x:g.x0+rnd()*(g.x1-g.x0),z:g.z}; } else { E.to=to; E.next=null; } return true; } return false; }

@@ -42,6 +42,7 @@ jobs:
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
+          k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
@@ -185,6 +186,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dm')
         run: node tests/dm.cjs dist/market.html
+      - name: The park's animals walk by the shared walks
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' animals')
+        run: node tests/animals.cjs dist/market.html
       - name: The park's things solid, its benches seats
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')

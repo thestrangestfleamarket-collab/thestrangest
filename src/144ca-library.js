@@ -1,6 +1,6 @@
 // THE BOOKSTORE: a one-floor lending library kept by the Professor: 16 Polyfork bookcases round its walls (three of the most read, then one per skill), of 4 shelves of 10 real public-domain books (data/library.json); double-click a case to read its spines; borrow up to five free and read them anywhere; a book's text (Project Gutenberg) downloads only when it is opened.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, USE} from './003b-systems.js';
+import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, UI, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -52,10 +52,10 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     P.innerHTML=`<div><button class="btn" data-a="back">&lt; THE SHELVES</button> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap"><img src="${esc(cover(id))}" alt="" style="width:200px;border:2px solid #3b2a1e;background:#cfc4ae">
       <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)}${b.y?' · '+b.y:''}</div>
-      <div style="color:#6a4a32">${LIB.files[id]?'THE COVER: '+esc(b.ed||'an early edition'):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
+      <div style="color:#6a4a32">${LIB.files[id]?(b.txt?'THE COVER: ITS OWN FIRST PAGE':'THE COVER: '+esc(b.ed||'an early edition')):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-a="read" data-b="${id}">${pg?'READ ON':'READ HERE'}</button>
       ${m?`<button class="btn" data-a="ret" data-b="${id}">GIVE IT BACK</button>`:`<button class="btn" data-a="bor" data-b="${id}">BORROW IT (FREE)</button>`}</div>
-      <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(b.page)} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
+      <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(String(b.page).replace(/^https?:\/\/(www\.)?/,'').split('/')[0])} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
   let atShop=false;
   LIB.open=(id,shop=true)=>load().then(()=>{ atShop=shop; P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
   LIB.close=()=>{ P.hidden=true; };
@@ -85,8 +85,8 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const clean=txt=>{ '@later'; txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
   // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
-  const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, ROMAN=/^[ivxlcdm]+\.?$/i;
-  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&(HEAD.test(p)||ROMAN.test(p)))c.push(i); });
+  const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, PROSE=/^\w+\s+[a-z]+\s+[a-z]/, ROMAN=/^[ivxlcdm]+\.?$/i;
+  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
     const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
     let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
     for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
@@ -152,7 +152,8 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
   const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.25+hsh(b.id)*.07,d:.2+hsh(b.t)*.05});
-  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
+  // a case reads from its top shelf down (row 0 is the bottom shelf)
+  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice((3-r)*10,(3-r)*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
     return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); }); };
   // one spine on a canvas: w x h px, x/y its corner
   const paintSpine=(g,x,y,w,h,b,im)=>{ '@later'; g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);
@@ -242,6 +243,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     const sitIn=(name,u,v,h,du,dv,w)=>use(name,u,v,w,1.1,()=>{ const p=F.pw(u,v); USE.sitAt(p[0],p[1],h*MW,F.hd(du,dv)); setTimeout(()=>LIB.open(),600); },1.2);
     const warm=(u,v,h,i,r,c=0xffc887)=>A.lamp(tx(u),ty(v),h/TM,c,i*3.2,r*1.6);
     const G=GEO, d=LIB.data; if(!d)return;
+    { const p0=F.pw(0,0), pu=F.pw(1,0), pv=F.pw(0,1), a=pu[0]-p0[0], b=pv[0]-p0[0], c=pu[1]-p0[1], e=pv[1]-p0[1], det=a*e-b*c; KEEP={loc:(x,z)=>[(e*(x-p0[0])-b*(z-p0[1]))/det,(a*(z-p0[1])-c*(x-p0[0]))/det],W,side:.55+5*BC.W,in:.42-BC.Z0}; }   // the camera stays in front of the cases
     // the cases round one floor: six on the back wall, five down each side, the front left to the counter and the window
     const ROW=[...[0,1,2,3,4,5].map(j=>[(W-6*BC.W)/2+(j+.5)*BC.W,-BC.Z0+.01,0,1]),...[0,1,2,3,4].map(j=>[-BC.Z0+.01,.55+(j+.5)*BC.W,1,0]),...[0,1,2,3,4].map(j=>[W+BC.Z0-.01,.55+(j+.5)*BC.W,-1,0])];
     d.cases.slice(0,16).forEach((C,i)=>{ const [u,v,du,dv]=ROW[i], M=caseMesh(C), p=F.pw(u,v); M.scale.setScalar(MW); M.position.set(p[0],0,p[1]); M.rotation.y=F.hd(du,dv); A.add(M);
@@ -267,13 +269,21 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     for(const [u,v] of [[W*.35,D*.4],[W*.65,D*.4]]){ box(u-.005,v-.005,u+.005,v+.005,3.4,HT,0x1c1c1c); K.glow(()=>K.ball(u,v,3.3,.09,0xfff0d0)); warm(u,v,3.1,1.3,6,0xffd29a); }
     warm(W/2,D*.47,.95,1.2,4,0xffc070); warm(W*.26,D*.38,1.7,1.1,5,0xffc27a); warm(W*.2-.1,D-.97,1.3,.8,4,0xffd090);
     A.add(new THREE.HemisphereLight(0xffd6a0,0x4a2414,1.5));
-    { const u=W/2-.3, v=D*.42, h=3.0; box(u-.006,v-.006,u+.006,v+.006,h+.4,HT,0x1c1c1c); K.cyl(u,v,.5,h+.36,h+.42,0xb8923a); K.cyl(u,v,.04,h-.1,h+.4,0xb8923a); for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, uu=u+Math.cos(a)*.48, vv=v+Math.sin(a)*.48; K.cyl(uu,vv,.012,h+.05,h+.36,0xb8923a); K.glow(()=>K.ball(uu,vv,h+.12,.06,0xfff0d0)); } warm(u,v,h,1.6,9,0xffd29a); }   // a brass ring of lamps high over the room
+    { const u=W/2-.3, v=D*.42, h=3.0, R=.48, ring=new THREE.Mesh(new THREE.TorusGeometry(R*MW,.014*MW,6,32),new THREE.MeshLambertMaterial({color:0xb8923a})), p=F.pw(u,v);
+      ring.rotation.x=Math.PI/2; ring.position.set(p[0],(h+.36)*MW,p[1]); A.add(ring); box(u-.006,v-.006,u+.006,v+.006,h+.4,HT,0x1c1c1c); K.cyl(u,v,.04,h+.2,h+.42,0xb8923a);
+      box(u-R,v-.008,u+R,v+.008,h+.35,h+.37,0xb8923a); box(u-.008,v-R,u+.008,v+R,h+.35,h+.37,0xb8923a);
+      for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, uu=u+Math.cos(a)*R, vv=v+Math.sin(a)*R; K.cyl(uu,vv,.022,h+.36,h+.44,0xb8923a); K.glow(()=>K.ball(uu,vv,h+.5,.05,0xfff0d0)); } warm(u,v,h+.4,1.6,9,0xffd29a); }   // a brass ring of lamps high over the room: an open ring on a cross, a lamp on each of its eight cups
     K.glow(()=>{ for(const [u,v,h,r] of [[W/2,D*.47,.9,.07],[W*.26,D*.38,1.62,.1]])K.cyl(u,v,r*.6,h-.02,h+.04,0xfff0c0); });
     { const N=90, P=new Float32Array(N*3), Vv=[]; for(let i=0;i<N;i++){ const p=F.pw(W*.2+Math.random()*W*.6,D*.2+Math.random()*D*.6); P[i*3]=p[0]; P[i*3+1]=(.3+Math.random()*(HT-.6))*MW; P[i*3+2]=p[1]; Vv.push([(Math.random()-.5)*.02,(Math.random()-.4)*.01,(Math.random()-.5)*.02]); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
     K.flush(); };
-  MSHOP.kit.books.drop=()=>{ DUST=null; };
+  MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; };
+  // the third person's camera stays out of the cases round the walls, pulled in along the line to you (as a room keeps it within its walls)
+  let KEEP=null; UI.camKeeps.push((c,t)=>{ if(!KEEP||!UI.persp)return; const K_=KEEP, [cu,cv]=K_.loc(c.x,c.z), [tu,tv]=K_.loc(t.x,t.z), du=cu-tu, dv=cv-tv, m=K_.in; let k=1;
+    if(cv<m&&dv<-1e-6)k=Math.min(k,Math.max(0,(m-tv)/dv));
+    for(const [lim,s] of [[m,-1],[K_.W-m,1]]){ const out=s<0?cu<lim:cu>lim; if(out&&s*du>1e-6){ const f=Math.max(0,(lim-tu)/du), vAt=tv+dv*f; if(vAt<K_.side)k=Math.min(k,f); } }
+    if(k<1)c.lerpVectors(t,c,k); });
   SYS.add('places',dt=>{ if(!DUST||!DUST.pts.parent)return; const {P,V}=DUST, MW=IKIT.MW, k=(dt||0)*MW*.5; DUST.t+=dt||0; for(let i=0;i<V.length;i++){ const j=i*3; P[j]+=V[i][0]*k+Math.sin(DUST.t*.3+i)*.0006*MW; P[j+1]+=V[i][1]*k; P[j+2]+=V[i][2]*k; if(P[j+1]>DUST.y1||P[j+1]<DUST.y0)V[i][1]*=-1; } DUST.pts.geometry.attributes.position.needsUpdate=true; },'144ca-library');
   /* ---------- outside: polyfork's hanging sign, a cart of books, hanging baskets by the doors and flower planters under the windows (data/bookfront.json, loaded when you come near) ---------- */
   { const FJ=__LAZY__("data/bookfront.json"); let done=false, chk=0;

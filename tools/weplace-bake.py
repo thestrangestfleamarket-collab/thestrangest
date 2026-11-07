@@ -2,6 +2,7 @@
 # committed; the licence lets the game ship them baked) and baked flat-coloured, one file a category: data/weplace-<n>.json
 # {key: {n: name, m: metres tall, w: footprint [x,z] in metres, b: [lo, hi], p: int16 points over b (three a face), c: uint8 colour a point}},
 # its feet at 0, centred, real size. data/weplace.json is the list (category, key, name, metres) the PLACE tab shows before a category is fetched.
+# SMALL BUILDINGS come 25% over Polyfork's size (owner, 7 Nov 2026: "increase the overall size of all polyfork buildings by 25%").
 # Run: python3 tools/weplace-bake.py   (MAXT=6000: a model over that many faces is left out)
 import os, sys, json, time, base64, urllib.request, importlib.util, numpy as np
 sp=importlib.util.spec_from_file_location('pb','tools/props-bake.py'); src=open('tools/props-bake.py').read().split('OUT=json.load')[0]
@@ -28,7 +29,7 @@ for ci,(cat,ids) in enumerate(L.items()):
         try: T,Cc=pb['from_glb'](f)
         except Exception as e: print('skip',i,e); continue
         if len(T)>MAXT or len(T)==0: print('skip',i,len(T),'faces'); continue
-        P=T.reshape(-1,3); lo=P.min(0); hi=P.max(0); P=P-[(lo[0]+hi[0])/2,lo[1],(lo[2]+hi[2])/2]; lo=P.min(0); hi=P.max(0)
+        P=T.reshape(-1,3)*(1.25 if cat=='SMALL BUILDINGS' else 1); lo=P.min(0); hi=P.max(0); P=P-[(lo[0]+hi[0])/2,lo[1],(lo[2]+hi[2])/2]; lo=P.min(0); hi=P.max(0)
         h=float(hi[1]-lo[1])
         if h<.02 or h>40: print('skip',i,'height',h); continue
         q=np.round((P-lo)/np.maximum(hi-lo,1e-6)*65535-32768).clip(-32768,32767).astype(np.int16)

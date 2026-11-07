@@ -16,7 +16,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   const cash=()=>Math.floor(INV.cash||0);
 
   /* ---------- asking and being asked ---------- */
-  ONLINE.useUp=o=>SWAP.ask(o);
+  ONLINE.useUp=o=>(ONLINE.botUse&&ONLINE.botUse(o))||SWAP.ask(o);   // an owner's own bot opens its window (136ca), anyone else is asked to trade
   let pre=null;   // a thing dragged onto them goes in as soon as the trade opens
   SWAP.ask=(o,put)=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090'); pre=put&&put.id?put:null;
     ONLINE.send({t:'tr',op:'ask',to:o.id}); say('YOU ASK '+(o.name||'THEM')+' TO TRADE.'); };

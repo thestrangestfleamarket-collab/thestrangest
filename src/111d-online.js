@@ -67,7 +67,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   // a dyed shirt or trousers: one material a colour, shared by everyone dyed it
   const dyeMat=h=>{ const M=R.MATS, n='dye'+h; if(!M.includes(n)){ M.push(n); const c=new THREE.Color(h); W3.ramp.push([1,.9,.7,.42].map(q=>c.clone().multiplyScalar(q))); } return M.indexOf(n); };
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
-    if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return built('w00'); b={body}; BUILT.set(k,b); return b; }
+    if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return base&&base.failed&&!base.failed(c)?null:built('w00'); b={body};   // (a body still coming: none yet, never the Walker first; one that failed: the Walker)
+    BUILT.set(k,b); return b; }
     const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS, D=DESIGN.decode(k.split('.')[1]||'');
     const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
     for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
@@ -75,7 +76,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
     b={PCS,bh:D.h,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
-  const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k), g=new THREE.Group();
+  const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k); o.key=k; if(!b)return; const g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
@@ -110,7 +111,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
     for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=o.x&&o.x.invis?'unseen':!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
-    for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
+    for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(o.key!==(o.look||'w00'))fig(o); const F=o.fig; if(!F)continue; const g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
       const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }

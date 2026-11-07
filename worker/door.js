@@ -104,6 +104,7 @@ export default {
         return (await homeOf(env).nameClaim(id, n)) ? json({ ok: true, name: n }) : json({ why: "taken", taken: true }, 409); }
       // paintings (the painter): a picture a row (in 1 MB parts); finished ones never change and any player may look at them, unfinished ones only their painter
       if (p === "/art") { const H = homeOf(env), aid = x => (typeof x === "string" && /^[a-z0-9]{6,40}$/.test(x) ? x : "");
+        if (body.have !== undefined) return (await H.artOffed(aid(body.have))) ? json({ gone: true }, 410) : json({ ok: true });   // taken down by an owner: no picture, not even the thumbnail
         if (body.get !== undefined) { const r = await H.artGet(aid(body.get), id); return r ? json(r) : json({ why: "no such picture" }, 404); }
         if (body.del !== undefined) return json({ ok: await H.artDel(aid(body.del), id) });
         const put = body.put && typeof body.put === "object" ? body.put : {}, k = aid(put.id);
@@ -173,10 +174,15 @@ const FLATS_PER = 21;
 async function freeFlat(env, id) {
   const H = svc(env); if (!H) return null;
   try {
-    const r = await fetch(env.SUPABASE_URL + "/rest/v1/players?select=apt&apt=not.is.null&order=apt.desc&limit=1", { headers: H }), top = r.ok ? (await r.json())[0] : null;
-    let n = (top && top.apt > 0 ? top.apt : 0) + 1; if (n % FLATS_PER === 0) n++;
-    const w = await fetch(env.SUPABASE_URL + "/rest/v1/players?id=eq." + id + "&apt=is.null", { method: "PATCH", headers: { ...H, "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ apt: n }) });
-    return w.ok ? n : null;
+    // players.apt is unique: two first logins at once can pick the same number, so the loser of the race takes the next one
+    for (let t = 0; t < 6; t++) {
+      const r = await fetch(env.SUPABASE_URL + "/rest/v1/players?select=apt&apt=not.is.null&order=apt.desc&limit=1", { headers: H }), top = r.ok ? (await r.json())[0] : null;
+      let n = (top && top.apt > 0 ? top.apt : 0) + 1 + t; if (n % FLATS_PER === 0) n++;
+      const w = await fetch(env.SUPABASE_URL + "/rest/v1/players?id=eq." + id + "&apt=is.null&select=apt", { method: "PATCH", headers: { ...H, "content-type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ apt: n }) });
+      if (w.ok) { const got = (await w.json())[0]; if (got) return got.apt; const me = await fetch(env.SUPABASE_URL + "/rest/v1/players?select=apt&id=eq." + id, { headers: H }); return me.ok ? ((await me.json())[0]?.apt ?? null) : null; }
+      if (w.status !== 409) return null;
+    }
+    return null;
   } catch (e) { return null; }
 }
 
@@ -444,7 +450,7 @@ async function email(env, to, subject, text) {
   return n;
 }
 async function admin(env, b, origin) {
-  const k = svc(env); if (!k && b.do !== "tell" && !(env.DEV_AUTH === "1" && /^bot/.test(b.do || ""))) return { why: "the server has no service key" };
+  const k = svc(env); if (!k && b.do !== "tell" && !/^art/.test(b.do || "") && !(env.DEV_AUTH === "1" && /^bot/.test(b.do || ""))) return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
   const room = ROOM.test(b.room || "") ? b.room : SECROOMS[0], kick = id => Promise.all(SECROOMS.map(r => blockAsk(env, r, "kick", { id, out: 1 }).catch(() => {}))), id = String(b.id || ""), user = () => UUID.test(id);
@@ -485,6 +491,11 @@ async function admin(env, b, origin) {
     if (b.do === "botset") { await P.botPut(botRec(x, b.set)); await botKick(env, origin); return { ok: true }; }
     if (UUID.test(id) && k) { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok && r.status !== 404) return res(r); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); }
     forget(id); await kick(id); bots.delete(id); await P.botDel(id); await botKick(env, origin); return { ok: true }; }
+  if (b.do === "art" || b.do === "artget" || b.do === "artoff") { const H = homeOf(env), a = typeof b.art === "string" && /^a[a-z0-9]{6,40}$/.test(b.art) ? b.art : "";
+    if (b.do === "art") return { ok: true, art: await H.artList() };
+    if (!a) return { why: "no such painting" };
+    if (b.do === "artget") { const d = await H.artAny(a); return d ? { ok: true, d } : { why: "no such painting" }; }
+    return (await H.artOff(a)) ? { ok: true } : { why: "no such painting" }; }
   if (!user()) return { why: "no such player" };
   if (b.do === "user") {
     const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);
@@ -641,12 +652,18 @@ export class Home extends DurableObject {
     return true; }
   // paintings: a picture in 1 MB parts; its painter alone writes it while it is unfinished, nobody once it is finished; 96 MB a painter
   artT() { this.sql.exec("create table if not exists art(id text, part integer, who text, fin integer, d text, at integer, primary key(id, part))"); }
-  artGet(k, who) { this.artT(); if (!k) return null; const r = this.sql.exec("select who, fin, d from art where id = ? order by part", k).toArray(); if (!r.length || (!r[0].fin && r[0].who !== who)) return null;
+  artGet(k, who) { this.artT(); if (!k) return null; const r = this.sql.exec("select who, fin, d from art where id = ? order by part", k).toArray(); if (!r.length || r[0].fin === 2 || (!r[0].fin && r[0].who !== who)) return null;
     return { d: r.map(x => x.d).join(""), fin: r[0].fin, by: r[0].who }; }
   artPut(k, who, d, fin) { this.artT(); const had = this.sql.exec("select who, fin from art where id = ? limit 1", k).toArray()[0];
-    if (had && had.who !== who) return "not yours"; if (had && had.fin) return "finished";
+    if (had && had.who !== who) return "not yours"; if (had && had.fin === 2) return "taken down"; if (had && had.fin) return "finished";
     const used = this.sql.exec("select coalesce(sum(length(d)), 0) as n from art where who = ? and id != ?", who, k).toArray()[0].n; if (used + d.length > 96 << 20) return "full";
     this.ctx.storage.transactionSync(() => { this.sql.exec("delete from art where id = ?", k); for (let i = 0, n = 0; i < d.length; i += 1 << 20, n++) this.sql.exec("insert into art(id, part, who, fin, d, at) values(?, ?, ?, ?, ?, ?)", k, n, who, fin, d.slice(i, i + (1 << 20)), Date.now()); });
     return true; }
+  // the owner's panel: every finished painting (no pictures), one picture, and a takedown (the picture goes; its id stays, marked fin 2, so it can't be put back)
+  artOffed(k) { this.artT(); return !!k && this.sql.exec("select 1 from art where id = ? and fin = 2 limit 1", k).toArray().length > 0; }
+  artList() { this.artT(); return this.sql.exec("select id, who, sum(length(d)) as n, max(at) as at from art where fin = 1 group by id order by at desc limit 500").toArray(); }
+  artAny(k) { this.artT(); const r = this.sql.exec("select d from art where id = ? and fin = 1 order by part", k).toArray(); return r.length ? r.map(x => x.d).join("") : null; }
+  artOff(k) { this.artT(); const r = this.sql.exec("select who from art where id = ? limit 1", k).toArray()[0]; if (!r) return false;
+    this.ctx.storage.transactionSync(() => { this.sql.exec("delete from art where id = ?", k); this.sql.exec("insert into art(id, part, who, fin, d, at) values(?, 0, ?, 2, '', ?)", k, r.who, Date.now()); }); return true; }
   artDel(k, who) { this.artT(); const r = this.sql.exec("select who, fin from art where id = ? limit 1", k).toArray()[0]; if (!r || r.who !== who || r.fin) return false; this.sql.exec("delete from art where id = ?", k); return true; }
 }

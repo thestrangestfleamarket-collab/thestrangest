@@ -27,8 +27,8 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn)=>{ const th=nearest(UI.things,t=>/^THE COUNTER/.test(t.name||'')), p=th&&thAt(th);
-    if(!th||d2(p.x,p.z)>30*T){ task.at=task.at||{}; if(!task.at[shop]){ task.at[shop]=1; task.wt=12; UI.goName(shop); return false; } if((task.wt-=dt)>0)return false; return null; }
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
+    if(!th||d2(p.x,p.z)>30*T){ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; } if((s.wt-=dt)>0)return false; return null; }
     if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
   let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
@@ -88,7 +88,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(d>.9*T){ if(!path||(task&&task.fx!=null&&Math.hypot(task.fx-o.p.x,task.fz-o.p.z)>.5*T)){ walk(o.p.x,o.p.z); task=Object.assign(task||{},{fx:o.p.x,fz:o.p.z}); } walking(dt); return true; }
     path=null; SHARED.target=null; SHARED.heading=Math.atan2(o.p.x-pos.x,o.p.z-pos.z);
     fightOn.t=(fightOn.t||0)-dt; if(fightOn.t<=0){ fightOn.t=.7+R()*.6; const k=R()<.6?'J':'K'; RIG.act(st,k); SYS.run('act',k,1); setTimeout(()=>{ RIG.release&&RIG.release(st,k); SYS.run('act',k,0); },120); } return true; };
-  const status=()=>({doing,cash:cash(),hp:Math.round((VIT.hp||0)*100)/100,job:C.job,at:[+pos.x.toFixed(1),+pos.z.toFixed(1)],...(path&&path.length?{to:[+path[path.length-1].x.toFixed(1),+path[path.length-1].z.toFixed(1)]}:{})});
+  const status=()=>({doing,...(BOT.tally&&BOT.tally()?{tests:BOT.tally()}:{}),cash:cash(),hp:Math.round((VIT.hp||0)*100)/100,job:C.job,at:[+pos.x.toFixed(1),+pos.z.toFixed(1)],...(path&&path.length?{to:[+path[path.length-1].x.toFixed(1),+path[path.length-1].z.toFixed(1)]}:{})});
   const place=()=>{ if(C.place){ UI.goName(C.place); setTimeout(()=>{ home={x:pos.x,z:pos.z}; },1500); }
     else if(C.at){ const [x,z,dn]=C.at, id=!dn&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id&&ROOMS.enterAt)ROOMS.enterAt(id,[x,z,0,0]); else UI.goTo(x,z,dn?'down':'up'); home={x,z}; } else home={x:pos.x,z:pos.z}; };   // a spot in an inside off the map goes in, as GO TO does
   const look=()=>{ if(C.look===looked)return; looked=C.look||''; try{ if(C.look)AVATAR.set(AVATAR.decode(C.look)); else if(AVATAR.outfits&&AVATAR.outfits.length)AVATAR.outfit(Math.floor(R()*AVATAR.outfits.length)); }catch(e){} };
@@ -96,6 +96,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
     if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
+  BOT.kit={JOB,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
   SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25);
     // health: never over what the owner set; can't be knocked down keeps it full
@@ -108,3 +109,4 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     const L=lines(); if(L.length&&(sayT-=dt)<0){ sayT=(C.job==='chat'?12:30)+R()*30; say(L[Math.floor(R()*L.length)]); } },'162g-bots');
   SYS.onStart(()=>{ setTimeout(()=>{ BOT.ready=true; doing='ready'; },1500); },'162g-bots');
 }
+export {BOT};

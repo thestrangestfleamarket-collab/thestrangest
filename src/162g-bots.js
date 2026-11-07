@@ -31,40 +31,43 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
   const goal=()=>C.goal>0&&cash()>=C.goal;
+  // walk about a centre (home, or where a job brought it), its own pauses
+  let rw=0; const roam=(dt,c)=>{ if(walking(dt))return; if((rw-=dt)>0){ doing='looking round'; return; } const h=c||{x:pos.x,z:pos.z};
+    for(let k=0;k<6;k++){ const a=R()*6.283, r=(2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if(!CITY.blocked||!CITY.blocked(lv(),x,z)){ walk(x,z); break; } }
+    rw=2+R()*6; doing='wandering'; };
+  const here=t=>t.c||(t.c={x:pos.x,z:pos.z});
   /* ---------- the jobs: each a step a frame, its state in task ---------- */
   const JOB={
     stand:()=>{ doing='standing'; },
-    wander:dt=>{ if(walking(dt))return; task=task||{wait:0}; if((task.wait-=dt)>0){ doing='looking round'; return; }
-      const h=home||{x:pos.x,z:pos.z}; for(let k=0;k<6;k++){ const a=R()*6.283, r=(2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if(!CITY.blocked||!CITY.blocked(lv(),x,z)){ walk(x,z); break; } }
-      task.wait=2+R()*6; doing='wandering'; },
+    wander:dt=>roam(dt,home),
     goto:dt=>{ if(walking(dt)){ doing='walking there'; return; } doing='there'; },
     follow:dt=>{ const o=C.who&&ONLINE.others.get(C.who); if(!o||!o.p||o.why!=='near you'){ doing=o?'can\'t see '+o.name+' ('+o.why+')':'waiting for who to follow'; return; }
       const d=d2(o.p.x,o.p.z); if(d>2.2*T){ if(!path||(task&&Math.hypot(task.x-o.p.x,task.z-o.p.z)>T)){ task={x:o.p.x,z:o.p.z}; walk(o.p.x,o.p.z); } walking(dt); doing='following '+o.name; } else { path=null; SHARED.target=null; doing='with '+o.name; } },
     fight:dt=>{ const o=C.who&&ONLINE.others.get(C.who); if(!o){ doing='waiting for who to fight'; return; } fightOn(o,dt); },
-    chat:dt=>{ JOB.wander(dt); doing='chatting'; },
+    chat:dt=>{ roam(dt,home); doing='chatting'; },
     sit:dt=>{ if(st.sit){ doing='sitting'; return; } if(walking(dt))return; task=task||{n:0,t:0}; if((task.t-=dt)>0)return; task.t=1.5;
       for(let k=0;k<8;k++){ SHARED.heading=k*Math.PI/4; if(UI.useNear&&UI.useNear())return; }
-      if(++task.n>4){ task.n=0; JOB.wander(dt); doing='looking for a seat'; } },
+      if(++task.n>4){ task.n=0; roam(dt,here(task)); doing='looking for a seat'; } },
     mushrooms:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'find'};
       const F=FORAGE, have=Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0);
-      if(task.s==='find'){ if(LOOKS.L&&!LOOKS.L.bare)LOOKS.L.bare=true;
+      if(task.s==='find'){ if(task.go>0){ task.go-=dt; return; } if(LOOKS.L&&!LOOKS.L.bare)LOOKS.L.bare=true;
         const th=F.things?nearest(F.things()):null;
-        if(task.hold>0)task.hold-=dt; const extra=have-(task.keep||0); if((!th||extra>=(C.sellAt||12))&&extra>0&&!(task.hold>0)){ task.s='sell'; return; } if(!th){ if(!task.park){ task.park=1; UI.goName('CENTRAL PARK'); doing='going to the park'; return; } JOB.wander(dt); doing='looking for mushrooms'; return; }
+        if(task.hold>0)task.hold-=dt; const extra=have-(task.keep||0); if((!th||extra>=(C.sellAt||12))&&extra>0&&!(task.hold>0)){ task.s='sell'; return; } if(!th){ if(!task.park){ task.park=1; task.go=3; UI.goName('CENTRAL PARK'); doing='going to the park'; return; } roam(dt,here(task)); doing='looking for mushrooms'; return; }
         doing='picking mushrooms ('+have+' in the bag)'; use(th,dt); return; }
       if(task.s==='sell'){ doing='taking '+have+' mushrooms to THE MUSHROOM SHOP'; const r=counter('THE MUSHROOM SHOP',dt,sellAll); if(r===false)return;
         if(r===null){ task={s:'find',hold:60,keep:task.keep}; doing='can\'t sell mushrooms now, picking more'; return; }
         task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
     fish:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
-      if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast'}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
+      if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
         const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); }); if(r===false)return;
         if(r===null||!F.has('rod')||!BAIT.some(id=>F.has(id))){ doing=r===null?'can\'t get to FISHING & SCUBA':'can\'t afford fishing gear ($'+cash()+')'; task={s:'gear',hold:30}; } return; }
       if(task.s==='sell'){ doing='selling '+fish+' fish'; const r=stand&&d2(thAt(stand).x,thAt(stand).z)<40*T?(use(stand,dt)?(sellAll(),close(),true):false):counter('FISHING & SCUBA',dt,sellAll);
         if(r===false)return; task={s:'gear'}; if(r===null){ task={s:'cast',hold:60}; doing='nobody buying fish nearby'; } return; }
-      if(task.s==='cast'){ if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
+      if(task.s==='cast'){ if(task.go>0){ task.go-=dt; return; } if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
         const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; return; }
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
-        if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else JOB.wander(dt); doing='looking for water'; return; }
+        if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
     decorate:dt=>{ const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
       if(task.s==='in'){ if(MODS.apts&&MODS.apts.inReal){ task.s='buy'; return; } if(!task.go){ task.go=1; UI.goName('YOUR APARTMENT'); } doing='going home'; return; }

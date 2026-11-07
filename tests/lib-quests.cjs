@@ -39,8 +39,8 @@ const SHOTS = process.argv[3];
     ok(bk.got === 1 && bk.again === 0 && /EMPTY/.test(bk.name), 'a rotted book is an old book to mend, one a shelf a day: ' + JSON.stringify(bk));
     // run, and the ghost puts you out
     await pg.evaluate(() => __dbg.UI.setView('third')); await pg.mouse.click(480, 300); await pg.waitForTimeout(500);
-    await pg.keyboard.down('Shift'); await pg.keyboard.down('w');
-    const gh = await wait(() => STACKSDBG().ghost || STACKSDBG().outs > 0, 20000); await pg.keyboard.up('w'); await pg.keyboard.up('Shift');
+    for (let i = 0; i < 2; i++) { await pg.keyboard.press('Shift'); await pg.waitForTimeout(200); } await pg.keyboard.down('w');   // two Shift taps: walk, jog, run (owner, 7 Nov 2026)
+    const gh = await wait(() => STACKSDBG().ghost || STACKSDBG().outs > 0, 20000); await pg.keyboard.up('w'); await pg.evaluate(() => { SHARED.gait = 0; });
     ok(gh, 'running in the stacks: the librarian\'s ghost rises and shushes');
     await shot('ghost');
     ok(await wait(() => STACKSDBG().outs > 0 && !STACKSDBG().inside && !FADE.busy, 60000), 'and she puts you out (on the street by the bookstore): ' + JSON.stringify(await pg.evaluate(() => ({ ...STACKSDBG(), off: ROOMS.offIn() }))));

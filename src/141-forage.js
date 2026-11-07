@@ -87,7 +87,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon; FORAGE.dmgK=()=>(1+(S.st.str-30)/100)*(S.fx.str?1.5:1); FORAGE.ST=S.st;
   const STN=[['str','STRENGTH','hits harder'],['int','INTELLIGENCE','skills grow faster, mushrooms and potions last longer'],['sta','STAMINA','tires slower']], STMIN=10, STMAX=60, STSUM=90, stLeft=()=>STSUM-S.st.str-S.st.int-S.st.sta;
   ONLINE.mine.invis=()=>S.fx.invis?1:null;
-  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!window.__started)return setTimeout(ask,1000); setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }
+  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!window.__started)return setTimeout(ask,1000); setTimeout(async()=>{ if(window.LOAD)await LOAD('later'); PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }   // the pack's panel is in the later chunk: fetched first
   FORAGE.climbK=()=>.7+.8*sk('climb')/100; FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders), and a reach that works it
   const RANK=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']]; FORAGE.rank=k=>RANK.find(r=>sk(k)>=r[0])[1];
   // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap

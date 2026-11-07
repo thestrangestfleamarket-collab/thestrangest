@@ -35,6 +35,7 @@ const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BO
 // the fishing guide: a tab in your pack, read from the fish's own habits in the item model (so the item editor keeps it true) and your catch
 FISHING.NAMES={x_sunfish:'SUNFISH',x_perch:'WHITE PERCH',x_tomcod:'ATLANTIC TOMCOD',x_crab:'BLUE CRAB',x_eel:'AMERICAN EEL',x_catfish:'CHANNEL CATFISH',x_flounder:'SUMMER FLOUNDER',x_shad:'AMERICAN SHAD',x_bluefish:'BLUEFISH',x_bass:'STRIPED BASS',x_sturgeon:'ATLANTIC STURGEON',
   x_bluegill:'BLUEGILL',x_yperch:'YELLOW PERCH',x_trout:'RAINBOW TROUT',x_carp:'CARP',x_lbass:'LARGEMOUTH BASS',x_pike:'NORTHERN PIKE'};
+FISHING.EXTRA=[]; FISHING.LAND=[];   // a set piece's own bites ({x,z,w,bait,h} -> {id: its share against the rest}) and what it does with a landed catch (id, kg)
 FISHING.guide=()=>{ const P=FORAGE.PACK; if(!P)return; if(!P.open)P.toggle('fishing'); else { P.tab='fishing'; P.draw(); } };
 FORAGE.ACT.fguide=()=>FISHING.guide();
 FORAGE.HELP.push('FISHING: a rod and bait from FISHING & SCUBA on the Hudson row; F by the water to fish. The FISHING tab in your pack (I) is the whole guide.');
@@ -165,6 +166,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     const TN={c:0,r:0,s:0}, TK={common:'c',rare:'r',super:'s'}, tof=id=>TK[IP(id,'tier')]||'c', here=SPECIES.filter(id=>IP(id,'water')===w.kind&&w.depth>=(IP(id,'depth')||0)&&(tof(id)!=='s'||RARITY.open('fish'))); for(const id of here)TN[tof(id)]++;
     for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm; if(v>0){ per[id]=v; sum+=v; } }
     if(w.kind==='river'&&bk)for(const [id,,c] of JUNK){ per[id]=c; sum+=c; }
+    for(const f of FISHING.EXTRA){ const r=f({x,z,w,bait:bk,h}); if(r)for(const id in r){ const v=sum*r[id]; per[id]=(per[id]||0)+v; sum+=v; } }
     const now=performance.now()/1000, r=rests.filter(q=>Math.hypot(q[0]-x,q[1]-z)<3*T).reduce((m,q)=>Math.min(m,(now-q[2])/40),1), lam=K*sum*(1+FORAGE.sk('fish')/100)*Math.max(0,r);
     for(const k in per)per[k]=+(per[k]/sum).toFixed(4); return {water:w.kind,depth:+w.depth.toFixed(1),period:pd,bait:bk,rate:+lam.toFixed(4),bite:+(1-Math.exp(-lam*SOAK)).toFixed(3),per}; };
   const pickBite=o=>{ if(FISHING.force&&(NAMES[FISHING.force]||JUNK.some(j=>j[0]===FISHING.force)))return FISHING.force; let s=Math.random(); for(const k in o.per)if((s-=o.per[k])<0)return k; return Object.keys(o.per)[0]; };
@@ -217,7 +219,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     FORAGE.give(f.id); if(s.fish){ FISHES.gone(s.fish); s.landed=true; } FORAGE.save();
     if(f.id==='chest'){ const g=INV.random(), c=10+Math.floor(Math.random()*31); INV.add(g); INV.cash+=c; FORAGE.take('chest',1); say(`A SUNKEN CHEST! INSIDE: $${c} AND A ${GEMS.find(x=>x[0]===g)[1]}.`,'#f2c14e'); if(window.BOOKS&&Math.random()<.4)BOOKS.chest(); }
     else say(`YOU TAKE ${NAMES[f.id]?'THE '+f.kg.toFixed(2)+' KG '+NAMES[f.id]:'THE '+FORAGE.NM[f.id]} OFF THE HOOK.`,NAMES[f.id]?'#b8f0a0':'#c8c2b0');
-    SFX.play('drip',{vol:.6}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2)}; FISHING.reel(); FORAGE.draw(); };
+    SFX.play('drip',{vol:.6}); FISHING.last={id:f.id,kg:+f.kg.toFixed(2)}; FISHING.reel(); for(const g of FISHING.LAND)g(f.id,f.kg); FORAGE.draw(); };
   const V=new THREE.Vector3(), SH=document.createElement('div'); let shT=0; SH.style.cssText='position:fixed;left:50%;top:28%;transform:translateX(-50%);z-index:20;pointer-events:none;font:20px Silkscreen,monospace;letter-spacing:1px;text-align:center;max-width:90vw;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;opacity:0;transition:opacity .35s'; document.body.appendChild(SH);
   const shout=(t,c)=>{ say(t,c); SH.textContent=t; SH.style.color=c; SH.style.opacity=1; clearTimeout(shT); shT=setTimeout(()=>{ SH.style.opacity=0; },3000); };
   FISHING.tick=dt=>{ dt*=FISHING.speed||1; const s=S_; if(!s){ FISHING.bendK=.03; return; } s.t+=dt;

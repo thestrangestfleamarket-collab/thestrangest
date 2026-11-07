@@ -4040,7 +4040,8 @@
     "cooler_l",
     "scuba",
     "goggles",
-    "headlight"
+    "headlight",
+    "winch"
    ],
    "buys": [
     "fish"

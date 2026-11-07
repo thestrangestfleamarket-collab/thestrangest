@@ -53,7 +53,7 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
       c.rotation.x=Math.PI/2; c.rotation.y=F.hd(0,sd); c.position.set(p[0],y+(1.2-(LOW(u)?.5:0))*S*MW,p[1]); scene.add(c); WRECK.parts.push(c); }
     { const p=F.pw(11.5*S,(mid+4.6)*S), m=new THREE.Mesh(new THREE.CylinderGeometry(.14*S*MW,.16*S*MW,6*S*MW,8),new THREE.MeshLambertMaterial({color:0x2e2116})); m.rotation.z=Math.PI/2; m.rotation.y=.4; m.position.set(p[0],bedY(p[0],p[1])+.4*MW,p[1]); scene.add(m); WRECK.parts.push(m); }   // the mizzen on the bed beside it
     WRECK.parts.push(G); WRECK.floorY=y-.4*S*MW; WRECK.F=F; return F; };
-  WRECK.parts=[];
+  WRECK.parts=[]; WRECK.S=S; WRECK.mid=mid;
   // its guards: sharks circling the wreck; one comes for a diver who gets close, bites, and turns away
   const SHK=[], shark=()=>{ const G=new THREE.Group(), grey=new THREE.MeshLambertMaterial({color:0x5a6670}), pale=new THREE.MeshLambertMaterial({color:0xc8ccd0}), M=MW;
     const body=new THREE.Mesh(new THREE.SphereGeometry(.5*M,12,8),grey); body.scale.set(.55,.5,3.2); G.add(body); const belly=new THREE.Mesh(new THREE.SphereGeometry(.48*M,12,8),pale); belly.scale.set(.5,.38,3.0); belly.position.y=-.08*M; G.add(belly);
@@ -77,3 +77,4 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
     for(const o of WRECK.parts)o.visible=near; if(near)guard(Math.min(.1,dt||0)); for(const C of WRECK.chests){ const n=Math.hypot(pos.x-C.G.position.x,pos.z-C.G.position.z)<140*T, full=INV.ready(C.k); C.G.visible=n; C.gold.visible=full; C.lid.rotation.x=full?-1.1:0; C.th.name=full?'A SUNKEN CHEST':'A SUNKEN CHEST (EMPTY)'; } },'066ba-wreck');
   window.WRECKDBG=()=>({built:!!WRECK.built,at:WRECK.at&&WRECK.at.map(v=>+(v/T).toFixed(1)),depth:WRECK.at&&+RIVER.depthAt(...WRECK.at).toFixed(1),chests:WRECK.chests.map(C=>({k:C.k,depth:+RIVER.depthAt(C.G.position.x,C.G.position.z).toFixed(1),full:INV.ready(C.k)}))});
 }
+export {WRECK};

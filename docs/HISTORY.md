@@ -5670,3 +5670,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 7 Nov 2026, the bank's manager (owner: "move the spots"): the manager stands behind the cages, off the art museum's lot that the bank's east third overlaps since the re-lay.
 - 7 Nov 2026, your apartment is an inside: third and first person work there as in any interior (by the 7 Nov views-by-place rule; the flat was held to the overhead view, which shows the house from outside).
 - 7 Nov 2026, the bookstore's last two (owner: "fix both and merge"): a cover with no publisher says "the 1655 edition"; a hanging plant between the camera and you is hidden so its vines never fill the view.
+- 7 Nov 2026, the bath house moved (owner: "move the bath house"; it had stood under the apartments since the re-lay): a Polyfork bath front on its Hudson row lot; the old bath house (steam, pool, desk, benches, its ghosts) is its inside off the map, in and out by the door.

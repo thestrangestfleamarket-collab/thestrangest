@@ -31,11 +31,12 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     rec('bank: the dragon still sleeps over its gold',await pg.evaluate(()=>!!STORE.bank.hoard&&!STORE.bank.dragon().awake));
     await shot('bank'); await pg.evaluate(()=>STORE.exit('bank')); await pg.waitForTimeout(4000); }
   /* ---------- THE BATH HOUSE ---------- */
-  { await pg.evaluate(()=>{ const G=SHARED.BOD.GD; __dbg.UI.goTo(SHARED.BOD.X(G.door[0]),SHARED.BOD.Z(G.door[1])+1.2*(SHARED.BOD.Z(1)-SHARED.BOD.Z(0)),0); }); await U(()=>SHARED.BOD.GD.built()&&__dbg.UI.things.some(t=>t.name.startsWith('THE FRONT DESK')),180000);
+  { await U(()=>!!ROOMS.off.bath,60000).catch(()=>{}); for(let i=0;i<6;i++){ await pg.evaluate(()=>{ if(!(window.FADE&&FADE.busy)&&!(ROOMS.offIn&&ROOMS.offIn()==='bath'))ROOMS.enter('bath'); }); if(await U(()=>ROOMS.offIn&&ROOMS.offIn()==='bath',30000).then(()=>1,()=>0))break; } await U(()=>!(window.FADE&&FADE.busy)&&SHARED.BOD.GD.built()&&__dbg.UI.things.some(t=>t.name.startsWith('THE FRONT DESK')),180000);
     const p=await people('dojo'); rec('bath house: its two attendants have their spots, the bathers six places on the benches',p.spots>=2&&p.seats>=6&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length,JSON.stringify(p));
     const r=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.cash=5; BATHK.until=0; th('THE FRONT DESK (A SOAK').act(); const soak=INV.cash===1&&BATHK.until>performance.now()/1000;
       const ghost=!!th('THE BEDSHEET'), benches=__dbg.UI.things.filter(t=>t.name==='A BENCH').length>=3, towels=!!th('THE TOWEL SHELF'); return {soak,ghost,benches,towels}; });
-    rec('bath house: THE BEDSHEET at the desk sells a soak and a towel; benches; the towel shelf',r.soak&&r.ghost&&r.benches&&r.towels,JSON.stringify(r)); await shot('bath'); }
+    rec('bath house: THE BEDSHEET at the desk sells a soak and a towel; benches; the towel shelf',r.soak&&r.ghost&&r.benches&&r.towels,JSON.stringify(r)); await shot('bath');
+    for(let i=0;i<6&&await pg.evaluate(()=>ROOMS.offIn&&ROOMS.offIn()==='bath');i++){ await pg.evaluate(()=>{ if(!(window.FADE&&FADE.busy))ROOMS.exit('bath'); }); await pg.waitForTimeout(5000); } }
   /* ---------- THE SQUIRREL'S TOWER ---------- */
   { await U(()=>!!ROOMS.off.sqtower,60000).catch(()=>{}); await pg.evaluate(()=>ROOMS.enter('sqtower')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='sqtower'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('THE LADDER')),120000).catch(()=>{});
     const t=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); const inn=ROOMS.offIn&&ROOMS.offIn()==='sqtower'; const ch=th("THE LOOKOUT'S CHART"); if(ch)ch.act(); const chart=MINI.on&&/CHART/.test(MINI.on.title); MINI.close(); return {inn,chart,bunk:!!th('THE BUNK')}; });

@@ -9,7 +9,7 @@ const BATHK={until:0}; window.BATHK=BATHK;
 { const say=(t,c)=>SAY(t,c||'#f2c14e'), GD=()=>SHARED.BOD.GD, now=()=>performance.now()/1000;
   // its list of where people go, on the street's rooms (no walls of its own there: its inside is built in place)
   const frame=()=>{ const G=GD(); return G&&G.r?IKIT.frame({x0:G.r[0],y0:G.r[1],x1:G.r[2],y1:G.r[3]}):null; };
-  { const F=frame(), G=GD(); if(F&&G){ const {W,D}=F, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, b=F.box(0,0,W,D), dp=G.door?[SHARED.BOD.X(G.door[0]),SHARED.BOD.Z(G.door[1])]:F.pw(W/2,D);
+  { const F=frame(), G=GD(); if(F&&G){ const {W,D}=F, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),off:true,...(h!=null?{y:h*IKIT.MW}:{})}; }, b=F.box(0,0,W,D), dp=G.door?[SHARED.BOD.X(G.door[0]),SHARED.BOD.Z(G.door[1])]:F.pw(W/2,D);
     const R={id:'dojo',name:'THE BATHS',x0:b[0],z0:b[1],x1:b[2],z1:b[3],y0:-1,y1:SHARED.BOD.Y(170),at:{x:dp[0],z:dp[1]},inside:()=>false,
       spots:{ATTENDANT:sp(W-1.1,D-2.6,-1,0),'KEEPS THE STEAM':sp(W/2,2.2,0,1)},
       seats:[sp(W*.3-.45,.75,0,1,.45),sp(W*.3+.45,.75,0,1,.45),sp(W*.7-.45,.75,0,1,.45),sp(W*.7+.45,.75,0,1,.45),sp(.75,D*.4,1,0,.45),sp(.75,D*.4+.9,1,0,.45)]};

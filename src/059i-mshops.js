@@ -98,6 +98,15 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
   for(const id of ['theatre','play','bar']){ const p=WP[id]; if(!p||!p.pf||DEF[id])continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
+  { const p=WP.bath, K=SHARED.BOD.GDK; if(p&&p.pf&&K&&!DEF.bath){ const LW=MS.lot('bath',200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'), L=TA.L, lcx=(L.x0+L.x1)/2, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; }, cx=K.X0+K.W/2;   // the bath house: its Polyfork front on the Hudson row lot, the old bath house (its steam, pool, desk and benches) off the map as its inside (owner, 7 Nov 2026)
+    MSHOP.fronts.push({id:'bath',pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)});
+    { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(200)]); }
+    { const r=box4(K.X0-1,K.Y1+.9,K.X1+1,K.Y1+1.1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(120)]); }   // its court ends a step past the open door
+    STORE.bound.x1=Math.max(STORE.bound.x1,X(K.X1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(K.Y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(K.Y1+6));
+    const wb=box4(K.X0-.6,K.Y0-.6,K.X1+.6,K.Y1+1.2);
+    ROOMS.off.bath={name:p.name||'THE BATH HOUSE',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(340)},need:()=>LOAD('later'),build:()=>null,keep:true,noCeil:true,
+      spawn:[X(cx),Z(K.Y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(K.Y1-.25)],exitName:'OUT TO THE STREET'};
+    STORE.places.push([ROOMS.off.bath.name,X(cx),Z(K.Y1-1.3),'up','off',Math.PI]); } }
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

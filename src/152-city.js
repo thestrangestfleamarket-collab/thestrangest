@@ -1,6 +1,6 @@
 // THE CITY: CITY lists the town's places and keeps the day, jobs and schedules of its people.
 import {SHARED} from './003-shx.js';
-import {CITY, CLIP, CLOCK, MAPED, NPCS, PARK} from './003b-systems.js';
+import {CITY, CLIP, CLOCK, MAPED, NPCS, PARK, ROOMS} from './003b-systems.js';
 import {CASTLE, MAPSTAIR, MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {STHOLE} from './076-npc-map.js';
 Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}); window.CITY=CITY;
@@ -9,7 +9,7 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
     { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }
     
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',SHARED.BOD.X(MODS.apts.DX),SHARED.BOD.Z(A.y1),T); }
-    if(SHARED.BOD.GD)add('dojo','THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]),T);
+    if(ROOMS.off.bath)add('dojo','THE BATH HOUSE',ROOMS.off.bath.door[0],ROOMS.off.bath.door[2],T);
     add('park','CENTRAL PARK',SHARED.BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),SHARED.BOD.ZS(PARK.y0+PARK.oy),-T);
     add('castle','THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]),-1.5*T);
     add('subway','THE SUBWAY',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1),.8*T);

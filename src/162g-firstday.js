@@ -15,8 +15,8 @@ import {AVATAR} from './111c-avatar.js';
     try{ const r=await fetch('/name',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({claim:n})}), j=await r.json().catch(()=>({}));
       return j.ok?{ok:true,name:j.name}:{ok:false,why:j.taken?'taken':r.status===429?'busy':'bad'}; }catch(e){ return {ok:false,why:'offline'}; } };
   if(OWNED.me&&OWNED.me.name)LOOKS.setName(OWNED.me.name);   // (the server's name is the one you go by)
-  // the starter things, once (owner: "$1,000", a map, two snacks, a fishing rod; the money is INV.START, 101-gems)
-  const STARTER=[['map',1],['f_bec',2],['rod',1]];
+  // the starter things, once (owner: "$1,000", two snacks, a fishing rod; the money is INV.START, 101-gems; the map is everyone's already: Shift+M)
+  const STARTER=[['fr_apple',2],['rod',1]];
   const starter=()=>{ if(OWNED.get('starter'))return; for(const [id,n] of STARTER)FORAGE.give(id,n); OWNED.set('starter','1'); };
   const need=()=>QS.get('firstday')==='1'||(!!OWNED.me&&!OWNED.me.name&&!OWNED.get('firstday')&&!/^dev-/.test(OWNED.me.id||''));   // (the checks' made-up logins go straight in)
   FIRSTDAY.on=false; window.FIRSTDAY=FIRSTDAY;

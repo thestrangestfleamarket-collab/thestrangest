@@ -68,7 +68,7 @@ import {QUESTS} from './160a-quests.js';
   let qt=0, lt=0; const tickBar=dt=>{ if(!window.__started)return; if((qt+=dt)>.5){ qt=0; draw(); } if((lt+=dt)>1){ lt=0; const now=performance.now(); for(const d of LN.children)d.classList.toggle('old',now-+d.dataset.t>20000); } };
   draw();
 
-  const nmN=document.getElementById('vnm'); let named=0;
-  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(!named&&window.__started&&nmN){ named=1; nmN.textContent=ONLINE.myName?ONLINE.myName():''; } },'162d-hud');
+  const nmN=document.getElementById('vnm'); let named=null;
+  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(window.__started&&nmN){ const n=ONLINE.myName?ONLINE.myName():''; if(n!==named){ named=n; nmN.textContent=n; } } },'162d-hud');   // (the name: yours as it is now, the first day's or one changed in YOU)
   window.HUDDBG=()=>({map:!MP.hidden,plan:!!Q,slots:[...S],lines:LN.children.length});
 }

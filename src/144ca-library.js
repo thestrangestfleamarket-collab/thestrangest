@@ -4,8 +4,9 @@ import {FORAGE, INSPECT, pos, PS2, ROOMS, SFX, TABLES, UI, USE} from './003b-sys
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {SYS} from './006-map-pre.js';
+import {STORE, SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
+import {MINI} from './038zd-mini.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
 const LIB={data:null,max:5}; window.LIB=LIB;
@@ -146,7 +147,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
 
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null]); },'144ca-library'); }
+  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); },'144ca-library'); }
   let DUST=null;
   /* ---------- a bookcase: Polyfork's alcove bookcase, empty, its four open shelves holding ten real books each, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards
@@ -234,6 +235,42 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   /* ---------- the shop: one floor twice as wide as it was, the books in its left half (six cases on the back, five down each side; in the middle only a rug, chairs and lamps; the Professor's counter by the door), the café in its right half (144cc's game tables) ---------- */
   // the café, the room's right half: Polyfork's counter on the back wall with an espresso machine and a pastry case, the chalkboard menu over it, five bistro tables of four chairs (144cc's game tables), the game cupboard
   const CAFE=[[1.45,3.1],[3.7,3.1],[5.95,3.1],[2.55,6.35],[4.85,6.35]], SEATS=[[0,.62,0,-1],[-.62,0,1,0],[0,-.62,0,1],[.62,0,-1,0]], TUSE=[];
+  /* ---------- the café's paintings (data/bookart.json, the Art Institute of Chicago's, public domain): each in a real moulded frame, swept from its moulding's profile round the picture with mitred corners, the canvas set back in the rebate, a soft shadow on the wall; double-click opens the art museum's viewer and its guided tour ---------- */
+  const BART=__LAZY__("data/bookart.json"); let ARTS=null; const arts=()=>ARTS?Promise.resolve(ARTS):BART().then(d=>ARTS=d).catch(()=>ARTS=[]);
+  // mouldings: [out from the sight edge, up off the wall, light (1 lit, lower in the hollows)] in metres, inner edge first
+  const MOULD={
+    barbizon:{f:'gilt',p:[[-.005,.012,.5],[0,.022,.6],[.004,.028,.9],[.01,.026,.6],[.016,.03,.95],[.03,.034,.75],[.05,.04,.55],[.065,.052,.7],[.08,.066,.95],[.092,.07,1],[.104,.068,1],[.115,.06,.9],[.124,.048,.75],[.13,.03,.6],[.132,0,.45]]},
+    cassetta:{f:'gilt',p:[[-.005,.012,.5],[0,.02,.6],[.006,.03,1],[.012,.03,.95],[.016,.024,.6],[.02,.022,.75],[.09,.022,.8],[.094,.026,.6],[.1,.036,.9],[.106,.04,1],[.112,.036,.9],[.115,.02,.6],[.116,0,.45]]},
+    ogee:{f:'walnut',p:[[-.005,.012,.5],[0,.02,.6],[.005,.026,.9],[.02,.032,.8],[.035,.042,.75],[.05,.055,.9],[.06,.06,1],[.072,.058,.95],[.08,.04,.7],[.082,0,.5]]},
+    white:{f:'white',p:[[-.005,.012,.6],[0,.015,.7],[.004,.02,1],[.07,.024,.95],[.074,.02,.8],[.075,0,.6]]},
+    oak:{f:'oak',p:[[-.005,.012,.5],[0,.018,.6],[.006,.026,1],[.05,.03,.95],[.056,.026,.8],[.058,0,.55]]}};
+  const FINISH={};
+  const finish=k=>FINISH[k]||(FINISH[k]=(()=>{ const c=document.createElement('canvas'); c.width=512; c.height=64; const g=c.getContext('2d'), rnd=Math.random, I=g.createImageData(512,64), d=I.data;
+    for(let y=0;y<64;y++)for(let x=0;x<512;x++){ const i=(y*512+x)*4; let r,gg,b;
+      if(k==='gilt'){ const s=.86+.14*Math.sin(x*.9+y*.3)*Math.sin(y*1.7)+.1*(rnd()-.5), worn=Math.sin(x*.031+Math.sin(y*.5)*2)*Math.sin(x*.007+y*.11)>.82; r=worn?150:226*s; gg=worn?70:178*s; b=worn?44:84*s; }   // leaf gold, burnished in streaks, the red bole through where it is worn
+      else if(k==='walnut'){ const gr=.75+.25*Math.sin(y*.9+Math.sin(x*.02)*3+Math.sin(x*.005)*6)+.06*(rnd()-.5); r=92*gr; gg=60*gr; b=38*gr; }   // the grain runs along each side
+      else if(k==='oak'){ const gr=.8+.2*Math.sin(y*1.4+Math.sin(x*.03)*2)+(rnd()<.02?-.25:0)+.05*(rnd()-.5); r=168*gr; gg=126*gr; b=78*gr; }
+      else { const s=.95+.05*(rnd()-.5); r=236*s; gg=232*s; b=222*s; }
+      d[i]=r; d[i+1]=gg; d[i+2]=b; d[i+3]=255; }
+    g.putImageData(I,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=THREE.RepeatWrapping; t.anisotropy=4;
+    const sp={gilt:[0x8a6a2a,42],walnut:[0x2a2a2a,18],oak:[0x1c1c1c,10],white:[0x202020,8]}[k];
+    return new THREE.MeshPhongMaterial({map:t,vertexColors:true,specular:sp[0],shininess:sp[1]}); })());
+  // the frame round a w x h picture (metres): one ring of the rectangle for each profile point, joined side by side (the mitres fall at the corners)
+  const frameGeo=(w,h,P)=>{ const pos=[],nor=[],uv=[],col=[], L=[0]; for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
+    const ring=d=>[[-(w/2+d),-(h/2+d)],[w/2+d,-(h/2+d)],[w/2+d,h/2+d],[-(w/2+d),h/2+d]], OUT=[[0,-1],[1,0],[0,1],[-1,0]];
+    const pn=i=>{ const a=P[Math.max(0,i-1)], b=P[Math.min(P.length-1,i+1)], td=b[0]-a[0], tz=b[1]-a[1], l=Math.hypot(td,tz)||1; return [-tz/l,td/l]; };
+    for(let s=0;s<4;s++){ const o=OUT[s];
+      for(let i=0;i<P.length-1;i++){ const A=ring(P[i][0]), B=ring(P[i+1][0]), q=[[A[s],P[i],i],[A[(s+1)%4],P[i],i],[B[(s+1)%4],P[i+1],i+1],[B[s],P[i+1],i+1]];
+        for(const k of [0,1,2,0,2,3]){ const [xy,p,j]=q[k], n=pn(j); pos.push(xy[0],xy[1],p[1]); nor.push(o[0]*n[0],o[1]*n[0],n[1]); uv.push((s%2?xy[1]:xy[0])*2.2,L[j]/L[L.length-1]); col.push(p[2],p[2],p[2]); } } }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); return g; };
+  let SHADOW=null; const shadowTex=()=>SHADOW||(SHADOW=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,8,32,32,32); gr.addColorStop(0,'rgba(0,0,0,.55)'); gr.addColorStop(.7,'rgba(0,0,0,.35)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); return t; })());
+  const hang=(A,use,F,t,u,v,du,dv,hc)=>{ const MW=IKIT.MW, M=MOULD[t.fr]||MOULD.barbizon, s=Math.min(1,(t.big||.95)/Math.max(t.cm[0],t.cm[1])*100), h=t.cm[0]/100*s, w=t.cm[1]/100*s, ow=M.p[M.p.length-1][0];
+    const G=new THREE.Group(), me=new THREE.Mesh(frameGeo(w,h,M.p),finish(M.f)); me.castShadow=me.receiveShadow=true; G.add(me);
+    const tx=new THREE.TextureLoader().load(t.i); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tx})); cv.position.z=.012; cv.receiveShadow=true; G.add(cv);
+    const bk=new THREE.Mesh(new THREE.BoxGeometry(w+.01,h+.01,.012),new THREE.MeshLambertMaterial({color:0x3a2a1c})); bk.position.z=.006; G.add(bk);
+    const sh=new THREE.Mesh(new THREE.PlaneGeometry(w+2*ow+.12,h+2*ow+.12),new THREE.MeshBasicMaterial({map:shadowTex(),transparent:true,depthWrite:false})); sh.position.set(.015,-.035,.002); G.add(sh);   // the soft shadow it throws on the wall, below and to one side
+    G.scale.setScalar(MW); const p=F.pw(u,v); G.position.set(p[0],hc*MW,p[1]); G.rotation.y=F.hd(du,dv); A.add(G);
+    use(t.t.toUpperCase()+' · '+t.a.toUpperCase(),u+du*.25,v+dv*.25,Math.max(w,.6),hc+h/2+.2,()=>{ if(STORE.art&&STORE.art.viewOne)STORE.art.viewOne(t); else MINI.look(t.t.toUpperCase(),Object.assign(new Image(),{src:t.i}),t.a+', '+t.d); },2.2); };
   const cafe=(A,G,put,box,sol,use,K,F,W,D,Wb,HT,warm)=>{ '@later'; const MW=IKIT.MW, cx=Wb+Wb/2;
     put(G,'cafecounter',cx,.62,0,1); sol(cx-1.02,.1,cx+1.02,1.14);
     { const u=cx-.55, v=.4; box(u-.24,v-.18,u+.24,v+.18,1.4,1.82,0xb8b8bc); box(u-.22,v+.18,u+.22,v+.2,1.48,1.76,0x2a2a2e); box(u-.2,v-.16,u+.2,v+.16,1.82,1.86,0x9a9aa0);   // the espresso machine: steel, its group heads and the cups warming on top
@@ -248,7 +285,8 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     TUSE.length=0; CAFE.forEach(([du,v],n)=>{ const u=Wb+du; put(G,'bistrotable',u,v,0,1); sol(u-.36,v-.36,u+.36,v+.36);
       const top=TABLES.top(n,.62*MW); if(top){ const p=F.pw(u,v); top.position.set(p[0],.757*MW,p[1]); top.rotation.z=F.hd(0,1); A.add(top); }
       SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const th=use(TABLES.label(n),u+a,v+b,.5,.9,()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); },1.1); TUSE.push([th,n]); }); });
-    warm(Wb+3.7,2.6,2.3,1.5,6.5,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a); };
+    warm(Wb+3.7,2.6,2.3,1.5,6.5,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a);
+    for(const t of ARTS||[]){ const a=t.at, e=.005; if(t.wall==='b')hang(A,use,F,t,Wb+a,e,0,1,1.75); else if(t.wall==='e')hang(A,use,F,t,W-e,a,-1,0,t.hc||1.75); else if(t.wall==='p')hang(A,use,F,t,Wb+.06+e,a,1,0,1.7); else hang(A,use,F,t,Wb+a,D-e,0,-1,1.75); } };
   SYS.every(()=>{ for(const [th,n] of TUSE)th.name=TABLES.label(n); },1000,'144ca-cafe');
   MSHOP.kit.books=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, K=IKIT.room(F,o=>A.add(o),()=>{}), t=d=>d*TM, sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/TM,R.y0+Math.min(v0,v1)/TM,R.x0+Math.max(u0,u1)/TM,R.y0+Math.max(v0,v1)/TM), {box,use}=K, W=t(R.x1-R.x0), D=t(R.y1-R.y0), Wb=W/2;
     const tx=u=>R.x0+u/TM, ty=v=>R.y0+v/TM, HT=A.WH/24*TM;

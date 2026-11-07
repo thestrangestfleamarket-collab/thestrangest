@@ -44,7 +44,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **The park closed in** · P1 · L · code. Owner, 7 Nov: large trees round the park wall so you can't see out; inside the park draw only the park, the skyline, sky and weather (no Market St, apartment street, cars).
 - [x] **The skyline across the Hudson** · P2 · M · look. Owner's pick 6 Nov: in-game pictures (the far picture re-baked for each option: low shore, denser shore, and the city along our bank).
 
-- [ ] **The bath house and the bodega still open on Market St** · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
+- [x] **The bath house and the bodega still open on Market St** (done 7 Nov: both back on Market St's row with the map moved again) · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 
 ## For the owner
 
@@ -325,6 +325,7 @@ One pass, one pull request.
 
 ## Physics and vehicles
 
+- [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard scoring a throw (the bar now also
   has a darts 301 game, 8999ffd2: two ways to score, ask whether the physics one stays), an upright trash can taking small things, hanging
   plants, lanterns and bulbs swaying, glass breaking. `src/150-loose.js`, `src/150o-physmore.js`; add cases to `tests/physx.cjs`.

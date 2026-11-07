@@ -13,6 +13,13 @@ const DESIGN={}; window.DESIGN=DESIGN;
     W3.lv.value=1; W3.L.copy(lw).applyAxisAngle(UP,-g.rotation.y).normalize(); const m0=W3.mesh.material; if(mat)W3.mesh.material=mat;
     renderer.getClearColor(CC); const ca=renderer.getClearAlpha(); renderer.setRenderTarget(target); renderer.setClearColor(mat?0x000000:0x15171e,mat?0:1); renderer.clear(); renderer.render(ROOM,c);
     renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); W3.mesh.material=m0; if(home)home.add(g); g.visible=sv.vis; W3.lv.value=sv.lv; W3.L.copy(sv.L); };
+  // a picture of you on a 2D canvas, the background left clear (the first day's stage; the passport's photo): whole, or head = the shoulders and up; a turns the camera round you
+  const SNAP={}, HIDE=new THREE.MeshBasicMaterial({visible:false});
+  DESIGN.snap=(cx,W,H,o={})=>{ const k=W+'x'+H, s=SNAP[k]||(SNAP[k]={rt:new THREE.WebGLRenderTarget(W,H),cam:new THREE.OrthographicCamera(-1,1,1,-1,.01,200),px:new Uint8Array(W*H*4)}); s.rt.texture.colorSpace=THREE.SRGBColorSpace;
+    const g=W3.group; g.updateMatrixWorld(true); const gp=g.getWorldPosition(new THREE.Vector3()), eye=W3.eyeAt(new THREE.Vector3()).y-gp.y, a=g.rotation.y+(o.a||0), c=s.cam;
+    const cy=gp.y+(o.head?eye*.9:0), top=o.head?eye*.27:eye*1.26, bot=o.head?-eye*.2:-eye*.08, ww=(top-bot)*W/H;
+    c.left=-ww/2; c.right=ww/2; c.top=top; c.bottom=bot; c.updateProjectionMatrix(); c.position.set(gp.x+Math.sin(a)*20,cy,gp.z+Math.cos(a)*20); c.lookAt(gp.x,cy,gp.z); c.updateMatrixWorld(true);
+    DESIGN.portrait(s.rt,c,HIDE); renderer.readRenderTargetPixels(s.rt,0,0,W,H,s.px); const img=cx.createImageData(W,H); for(let y=0;y<H;y++)img.data.set(s.px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); cx.putImageData(img,0,0); };
   // the parts you shape, each the pieces on one of his bones (a sleeve with its arm, the hair with the head); pairs end L / R
   const PARTS=['head','neck','torso','hips','upperArmL','upperArmR','forearmL','forearmR','handL','handR','thighL','thighR','shinL','shinR','footL','footR','bust','face','earL','earR','nose','eyes','brows','lips'];
   const NAME={face:'FACE SHAPE',ear:'EAR',nose:'NOSE',eyes:'EYES',brows:'EYEBROWS',lips:'LIPS',bust:'BUST',head:'HEAD',neck:'NECK',torso:'CHEST',hips:'HIPS',upperArm:'UPPER ARM',forearm:'FOREARM',hand:'HAND',thigh:'THIGH',shin:'SHIN',foot:'FOOT'};

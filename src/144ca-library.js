@@ -262,7 +262,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       frame(-hf+.08,-1.25-.28,19,89); frame(1.25+.28,hf-.08,19,89); frame(-1.25+.12,-.06,12,86); frame(.06,1.25-.12,12,86);
       for(const sgn of [-1,1])box(cxm+sgn*.32-.15,D-.11,cxm+sgn*.32+.15,D-.08,1.05,1.09,0xb8923a);
       box(tm(-hf+.08)-.05,D-.2,tm(-1.25-.28)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); box(tm(1.25+.28)-.05,D-.2,tm(hf-.08)+.05,D-.07,m(19)-.05,m(19),0x4a2e1c); }   // the window sills
-    for(const [u,v] of [[W*.12,D-.55],[W*.88,D-.55],[W/2,D*.3],[W*.25,D*.62],[W*.75,D*.62]]){ put(G,'hangplant',u,v,0,1,{h:2.3,s:1.2,shadow:false}); box(u-.004,v-.004,u+.004,v+.004,3.2,HT,0x3a2a1a); }
+    for(const [u,v] of [[W*.12,D-.55],[W*.88,D-.55],[W/2,D*.3],[W*.25,D*.62],[W*.75,D*.62]]){ const hp=put(G,'hangplant',u,v,0,1,{h:2.3,s:1.2,shadow:false}); if(hp)PLANTS.push(hp); box(u-.004,v-.004,u+.004,v+.004,3.2,HT,0x3a2a1a); }
     put(G,'clock',W*.85,D-.02,0,-1,{h:2.25}); put(G,'plant',W-.45,D-.45,0,-1); put(G,'globe',W*.2+.45,D-.85,0,1,{h:1.0,s:1.3,shadow:false});
     sitIn('ARMCHAIR: SIT AND READ',W*.36,D*.5,.45,1,.2,.9); sitIn('VELVET CHAIR: SIT AND READ',W*.64,D*.5,.45,-1,.2,.8); sitIn('VELVET CHAIR: SIT AND READ',W/2,D*.7,.45,0,-1,.8);
     // the light: two glass pendants and the lamps, warm and low; a warm fill off the wood
@@ -278,7 +278,9 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
     K.flush(); };
-  MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; };
+  MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; PLANTS.length=0; };
+  // a hanging plant between the camera and you steps aside (it is hidden), so its vines never fill the view
+  const PLANTS=[]; SYS.add('places',()=>{ if(!PLANTS.length||!PLANTS[0].parent)return; const c=SHARED.cam.position, r=.9*IKIT.MW, ax=pos.x-c.x, az=pos.z-c.z, L2=ax*ax+az*az||1; for(const g of PLANTS){ const dx=g.position.x-c.x, dz=g.position.z-c.z, f=Math.max(0,Math.min(1,(dx*ax+dz*az)/L2)), ex=dx-ax*f, ez=dz-az*f; g.visible=ex*ex+ez*ez>r*r; } },'144ca-plants');   // (near the line from the camera to you)
   // the third person's camera stays out of the cases round the walls, pulled in along the line to you (as a room keeps it within its walls)
   let KEEP=null; UI.camKeeps.push((c,t)=>{ if(!KEEP||!UI.persp)return; const K_=KEEP, [cu,cv]=K_.loc(c.x,c.z), [tu,tv]=K_.loc(t.x,t.z), du=cu-tu, dv=cv-tv, m=K_.in; let k=1;
     if(cv<m&&dv<-1e-6)k=Math.min(k,Math.max(0,(m-tv)/dv));

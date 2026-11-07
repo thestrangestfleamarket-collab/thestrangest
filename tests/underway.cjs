@@ -17,6 +17,18 @@ const SHOTS = process.argv[3];
     ok(await wait(() => window.WRECK && WRECK.built), 'the wreck lies on the Hudson bed: ' + JSON.stringify(await pg.evaluate(() => window.WRECKDBG && WRECKDBG())));
     const w = await pg.evaluate(() => { const C = WRECK.chests[0], c0 = INV.cash; C.th.act(); const a = { got: INV.cash - c0, empty: !INV.ready(C.k) }; const c1 = INV.cash; C.th.act(); a.again = INV.cash - c1; return a; });
     ok(w.got >= 10 && w.empty && w.again === 0, 'a sunken chest gives coins and a stone, once a day: ' + JSON.stringify(w));
+    // diving: SPACE held once carries you down past the river's loading, the view drops to your own eyes, and a chest on the bed is the thing in front of you when you reach it
+    await pg.evaluate(() => { for (const id of ['goggles', 'headlight', 'scuba']) { INV.add(id, 1); EQUIP.wear(id, true); } SYS.run('rent', 'scuba'); const C = WRECK.chests[0].G.position; STORE.goTo(C.x, C.z, 'up'); });
+    await wait(() => RIVER.swim, 60000); await pg.mouse.click(480, 300); await pg.keyboard.down(' ');
+    const held = await wait(() => RIVER.dep > 3.5, 120000); await pg.keyboard.up(' ');
+    ok(held, 'one held SPACE dives on past the river loading (a fade keeps the keys you hold)');
+    ok(await pg.evaluate(() => __dbg.UI.view === 'first'), 'a dive takes the view: under the water you see through your own eyes');
+    for (let t = 0; t < 80; t++) { const g = await pg.evaluate(() => { const W = __dbg.ST.water, gap = RIVER.bot - RIVER.dep - 1; if (W && SWIM.d != null && gap > 0) { const k = Math.min(60, gap * 6); W.y -= k; SWIM.d += k; } return gap; }); if (g < .5) break; await pg.waitForTimeout(400); }
+    const near = await pg.evaluate(() => { const t = __dbg.UI.nearThing(); return { name: t && t.name, dep: +RIVER.dep.toFixed(1), bot: +RIVER.bot.toFixed(1) }; });
+    ok(near.name && /SUNKEN CHEST/.test(near.name), 'dived down beside a sunken chest, it is the thing to double-click: ' + JSON.stringify(near));
+    await pg.keyboard.down('Shift'); for (let t = 0; t < 80; t++) { const d = await pg.evaluate(() => { const W = __dbg.ST.water; if (W && RIVER.dep > 3) { const k = Math.min(60, (RIVER.dep - 2) * 6); W.y += k; if (SWIM.d != null) SWIM.d = Math.max(30, SWIM.d - k); } return RIVER.dep; }); if (d <= 3) break; await pg.waitForTimeout(400); }   // (this machine's frame rate swims slowly: up near the top, then swim the rest)
+    await wait(() => SWIM.d == null, 120000); await pg.keyboard.up('Shift');
+    ok(await wait(() => __dbg.UI.view === 'iso', 20000), 'back at the surface, the overhead view again');
     // the river mouth asks for air, then lets a diver in
     await wait(() => window.UNDERWAYAT && UNDERWAYAT.river, 60000);
     const gate = await pg.evaluate(() => { const t = __dbg.UI.things.find(t => /DROWNED GATE/.test(t.name)), t2 = __dbg.UI.things.find(t => /LAKE RISE/.test(t.name)); return { river: !!t, lake: !!t2 }; });

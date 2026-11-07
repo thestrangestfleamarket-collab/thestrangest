@@ -42,8 +42,8 @@ export default {
     if (request.method === "GET" && p === "/texts") { if (!(await inside(env, request, dev))) return json({}, 401); return json(await postOf(env).texts()); }
     if (request.method === "GET" && BOOK.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
-      const id = BOOK.exec(p)[1]; let r = null; try { r = await fetch("https://www.gutenberg.org/cache/epub/" + id + "/pg" + id + ".txt", { cf: { cacheTtl: 2592000, cacheEverything: true } }); } catch (e) {}
-      if (!r || !r.ok) return new Response("not found", { status: 404 });
+      const id = BOOK.exec(p)[1], r = await bookText(id);
+      if (!r.ok) return new Response("not found: " + r.why, { status: 404 });
       const out = new Response(r.body, { status: 200 }); out.headers.set("content-type", "text/plain; charset=utf-8"); out.headers.set("cache-control", "private, max-age=2592000"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
@@ -128,6 +128,14 @@ async function who(env, request, dev) {
 }
 // who you are, for your passport: the login's id, email and the day it was made (only what who() just checked)
 function meOf(request, id) { const m = /(?:^|;\s*)tsfm-pass=([^;]+)/.exec(request.headers.get("Cookie") || ""), s = m && passed.get(decodeURIComponent(m[1])); return { id, email: s && s.id === id && s.email || "", joined: s && s.id === id && s.joined || "", apt: s && s.id === id ? s.apt ?? null : null }; }
+// a book's text from Project Gutenberg, else its mirrors (gutenberg.org turns away Cloudflare's servers, 7 Nov 2026)
+async function bookText(id) {
+  const d = id.length > 1 ? id.slice(0, -1).split("").join("/") + "/" + id : "0/" + id, why = [];
+  for (const u of ["https://www.gutenberg.org/cache/epub/" + id + "/pg" + id + ".txt", "https://gutenberg.pglaf.org/cache/epub/" + id + "/pg" + id + ".txt",
+    "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + "-0.txt", "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + ".txt"]) {
+    try { const r = await fetch(u, { cf: { cacheTtl: 2592000, cacheEverything: true } }); if (r.ok) return { ok: true, body: r.body }; why.push(new URL(u).host + " " + r.status); } catch (e) { why.push(new URL(u).host + " failed"); } }
+  return { ok: false, why: why.join(", ") };
+}
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
 const forget = id => { for (const [k, v] of passed) if (v.id === id) passed.delete(k); };
 

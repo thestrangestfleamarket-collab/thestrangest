@@ -52,10 +52,10 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     P.innerHTML=`<div><button class="btn" data-a="back">&lt; THE SHELVES</button> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap"><img src="${esc(cover(id))}" alt="" style="width:200px;border:2px solid #3b2a1e;background:#cfc4ae">
       <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)}${b.y?' · '+b.y:''}</div>
-      <div style="color:#6a4a32">${LIB.files[id]?'THE COVER: '+esc(b.ed||'an early edition'):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
+      <div style="color:#6a4a32">${LIB.files[id]?(b.txt?'THE COVER: ITS OWN FIRST PAGE':'THE COVER: '+esc(b.ed||'an early edition')):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-a="read" data-b="${id}">${pg?'READ ON':'READ HERE'}</button>
       ${m?`<button class="btn" data-a="ret" data-b="${id}">GIVE IT BACK</button>`:`<button class="btn" data-a="bor" data-b="${id}">BORROW IT (FREE)</button>`}</div>
-      <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(b.page)} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
+      <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(String(b.page).replace(/^https?:\/\/(www\.)?/,'').split('/')[0])} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
   let atShop=false;
   LIB.open=(id,shop=true)=>load().then(()=>{ atShop=shop; P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
   LIB.close=()=>{ P.hidden=true; };
@@ -85,8 +85,8 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const clean=txt=>{ '@later'; txt=txt.replace(/\r/g,''); const s=txt.search(/\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG[^\n]*\n/i); if(s>=0)txt=txt.slice(txt.indexOf('\n',s)+1); const e=txt.search(/\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG/i); if(e>=0)txt=txt.slice(0,e);
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
   // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
-  const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, ROMAN=/^[ivxlcdm]+\.?$/i;
-  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&(HEAD.test(p)||ROMAN.test(p)))c.push(i); });
+  const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, PROSE=/^\w+\s+[a-z]+\s+[a-z]/, ROMAN=/^[ivxlcdm]+\.?$/i;
+  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
     const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
     let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
     for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
@@ -152,7 +152,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
   const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.25+hsh(b.id)*.07,d:.2+hsh(b.t)*.05});
-  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice(r*10,r*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
+  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice((3-r)*10,(3-r)*10+10));   // (row 0 the bottom shelf: a case reads from its top shelf down) return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
     return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); }); };
   // one spine on a canvas: w x h px, x/y its corner
   const paintSpine=(g,x,y,w,h,b,im)=>{ '@later'; g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);

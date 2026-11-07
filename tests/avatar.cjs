@@ -18,7 +18,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const id=(slot,label)=>pg.evaluate(([s,l])=>{ const o=AVATAR.pieces.find(x=>x.slot===s&&x.label===l); return o?o.n:null; },[slot,label]);
   await pg.evaluate(()=>AVATAR.set({}));
   const bare=await pg.evaluate(async()=>{ const L=AVATAR.L(); const keep=JSON.stringify(L.w); for(const s of Object.keys(L.w))await AVATAR.wear(s,null); const n=BODIES.by.avatar.GEO.attributes.position.count/3; L.w=JSON.parse(keep); await AVATAR.set({}); return n; });
-  rec('undressed you are the whole body, in underwear',bare>=1500&&bare<1800,'tris '+bare);   // (less the skin under the underwear: tools/pfavatar-pack.py under)
+  rec('undressed you are the whole body, in underwear',bare>=1200&&bare<1800,'tris '+bare);   // (less the skin under the underwear: tools/pfavatar-pack.py under; and less its own mitten hands, Polyfork's jointed ones in their place, 111b)
   const trou=await id('bottom','TROUSERS'), none=await pg.evaluate(async()=>{ const L=AVATAR.L(), keep=JSON.stringify(L.w); for(const s of Object.keys(L.w))await AVATAR.wear(s,null); return keep; });
   const tr=await pg.evaluate(async n=>{ await AVATAR.wear('bottom',n); return BODIES.by.avatar.GEO.attributes.position.count/3; },trou);
   rec('trousers hide the legs and pelvis under them',tr<bare+700&&tr>bare-600,'bare '+bare+' with trousers '+tr);

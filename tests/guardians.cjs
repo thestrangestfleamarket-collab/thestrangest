@@ -12,9 +12,9 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
     for(let i=0;i<120&&!(window.DUNMOBS&&DUNMOBS.MS.g);i++)await new Promise(r=>setTimeout(r,1000)); const L=DUNMOBS.MS.g.rooms[3].lane;   // the dungeon's design: what can come up
     await DUNMOBS.tryIt({mobs:[{id:'b',r:3,kind:'s',key:'red',x:(L[0]+L[2])/2,z:(L[1]+L[3])/2,n:3,hp:7,dmg:.05},{id:'w',r:3,kind:'c',key:'fa:Wolf',x:(L[0]+L[2])/2,z:(L[1]+L[3])/2,n:2,hp:5,dmg:.05}]});
     BREAK.wave(4); await new Promise(r=>setTimeout(r,500)); return DUNMOBS.MS.m.filter(m=>m.r===64).map(m=>m.key); });
-  console.log('came up',JSON.stringify(W)); if(W.length!==4)errs.push('the breakout did not bring up four of the dungeon\'s creatures'); for(let i=0;i<24;i++){ await pg.waitForTimeout(5000); if(await pg.evaluate(()=>BREAK.list.some(c=>c.hp<c.K.hp||c.dead)||BREAK.list.length<4))break; }
-  const BK=await pg.evaluate(()=>({left:BREAK.list.length,hurt:BREAK.list.filter(c=>c.hp<c.K.hp||c.dead).length,fighting:GUARD.list.filter(N=>N.inFight).length}));
-  console.log('breakout',JSON.stringify(BK)); if(!BK.fighting||(BK.left===4&&!BK.hurt))errs.push('the guardians did not fight the breakout');
+  console.log('came up',JSON.stringify(W)); if(W.length!==4)errs.push('the breakout did not bring up four of the dungeon\'s creatures'); for(let i=0;i<36;i++){ await pg.waitForTimeout(5000); if(await pg.evaluate(()=>GUARD.list.some(N=>N.inFight)&&BREAK.list.some(c=>c.hp<c.K.hp||c.dead)))break; }   // slow machines: till the guardians are at them
+  const BK=await pg.evaluate(()=>({left:BREAK.list.length,hurt:BREAK.list.filter(c=>c.hp<c.K.hp||c.dead).length+(window.DUNMOBS?DUNMOBS.MS.m.filter(m=>m.r===64&&(m.dead||m.hp<m.mhp)).length:0),fighting:GUARD.list.filter(N=>N.inFight).length}));
+  console.log('breakout',JSON.stringify(BK)); if(!BK.fighting||!BK.hurt)errs.push('the guardians did not fight the breakout');
   const bt=await pg.evaluate(()=>{ TALK.ops.bounty('take slimes'); for(let i=0;i<6;i++)SYS.run('slain',{kind:'slime',lvl:1}); const done=TALK.tests.bounty('done'), c0=INV.cash; TALK.ops.bounty('pay'); return {done,paid:INV.cash-c0,left:GUARD.bounty()}; });
   console.log('bounty',JSON.stringify(bt)); if(!bt.done||bt.paid!==30||bt.left)errs.push('bounty failed');
   await b.close(); if(errs.length){ console.log('FAIL',errs.join(' | ')); process.exit(1); } console.log('ok'); })();

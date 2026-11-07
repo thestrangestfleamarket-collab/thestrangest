@@ -1,4 +1,4 @@
-// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages, paintings; worker/door.js /admin) and the letters the market sends you (/post).
 import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
@@ -28,6 +28,7 @@ import {SYS} from './006-map-pre.js';
     el.querySelectorAll('details[data-sec]').forEach(d=>d.ontoggle=()=>{ SEC[d.dataset.sec]=!d.open; keep(); const h=d.querySelector('summary h3'); if(h)h.textContent=(d.open?'▾':'▸')+h.textContent.slice(1); });
     el.querySelector('#tfold').onclick=()=>{ const all=SECS.every(k=>SEC[k]); for(const k of SECS)SEC[k]=!all; keep(); draw(); };
     if(TENANTS.bots)TENANTS.bots(el.querySelector('#tbots'));
+    art(el.querySelector('#tart'),U);
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
@@ -38,6 +39,16 @@ import {SYS} from './006-map-pre.js';
       if(a==='admin'){ act(b,{do:'admin',id,on:!u.admin},()=>u.admin?'no longer an owner':'now an owner'); return; }
       if(a==='ban'){ if(!u.banned&&!confirm('Ban '+u.email+'? They are sent out and cannot log in.'))return; act(b,{do:'ban',id,on:!u.banned},()=>u.banned?'unbanned':'banned'); return; }
       if(a==='delete'){ if(!confirm('Delete '+u.email+' for good? This cannot be undone.'))return; act(b,{do:'delete',id},()=>'deleted'); } }); };
+  /* ---------- the players' finished paintings: view one, take one down (its frame goes blank for everyone) ---------- */
+  let A=null, seen={};
+  const art=(box,U)=>{ '@later'; if(!box)return; const who=id=>{ const u=U.find(x=>x.id===id); return u?((u.player&&u.player.apt?u.player.apt+' · ':'')+u.email):id; };
+    if(!A){ box.innerHTML='<div class="row"><button class="btn" id="tartl">SHOW PAINTINGS</button></div>'; box.querySelector('#tartl').onclick=async e=>{ e.target.disabled=true; A=await api('/admin',{do:'art'}); art(box,U); }; return; }
+    if(A.why){ box.innerHTML='<div class="dim">'+esc(A.why)+'</div>'; A=null; return; }
+    box.innerHTML=(A.art||[]).map(a=>`<div class="row" data-art="${esc(a.id)}"><span>${esc(who(a.who))}</span><span class="dim">${esc(day(a.at))} · ${Math.round(a.n/1024)} KB</span><button class="btn" data-v>${seen[a.id]?'HIDE':'VIEW'}</button><button class="btn" data-x>TAKE DOWN</button>${seen[a.id]?`<div style="flex-basis:100%"><img src="${esc(seen[a.id])}" style="max-width:320px;max-height:320px;image-rendering:pixelated;border:2px solid var(--line)"></div>`:''}</div>`).join('')||'<div class="dim">no paintings yet</div>';
+    box.querySelectorAll('[data-art]').forEach(r=>{ const k=r.dataset.art;
+      r.querySelector('[data-v]').onclick=async e=>{ if(seen[k]){ delete seen[k]; art(box,U); return; } e.target.disabled=true; const j=await api('/admin',{do:'artget',art:k}); if(j.d)seen[k]=j.d; else say='not shown: '+(j.why||'?'); art(box,U); };
+      r.querySelector('[data-x]').onclick=async e=>{ if(!confirm('Take this painting down for good? Its frame goes blank for everyone.'))return; e.target.disabled=true; const j=await api('/admin',{do:'artoff',art:k});
+        say=j.why?'not done: '+j.why:'painting taken down'; delete seen[k]; A=await api('/admin',{do:'art'}); draw(); }; }); };
   const load=async()=>{ D=await api('/admin',{do:'list',room:room()}); draw(); };
   // TEXT: the game's text boxes and the signs' words, its own admin tab (owner, 7 Nov 2026)
   TENANTS.text=e=>{ '@later'; if(!e)return; const note=m=>{ const n=e.querySelector('#txsay'); if(n)n.textContent=m; };

@@ -622,8 +622,12 @@ function flyPose(st){ const F=st.fly,t=F.t||0,f=smooth(clamp(F.f||0,0,1)),u=clam
   const V0=u>0?mixW(H,U,smooth(u)):mixW(H,D0,smooth(-u)); return mixW(V0,S,f); }
 // a hand-made move drawn from a recording (LOOK[name] = a recorded move's name, filled by MOTION): its own clock, travel and air kept, the pose the recording's at the same share of the way through
 const LOOK={};
-function lookAt(st){ const m=st.move, L=LOOK[m.name]&&MOVES[LOOK[m.name]]; if(!L||m.def.air)return moveAt(st);
-  const P=moveAtOf({def:L,t:Math.min(1,m.t/m.def.dur)*L.dur}); if(m.def.travel)P.root=V(P.root.x,P.root.y,P.root.z+moveAt(st).root.z); return P; }   // (a move that carries you: the recording drawn where the move has got to)
+function lookAt(st){ const m=st.move, L=LOOK[m.name]&&MOVES[LOOK[m.name]]; if(!L||m.def.air)return m.name.startsWith('mc_')?wrapPose(moveAt(st)):moveAt(st);
+  const P=moveAtOf({def:L,t:Math.min(1,m.t/m.def.dur)*L.dur}); if(m.def.travel)P.root=V(P.root.x,P.root.y,P.root.z+moveAt(st).root.z); return wrapPose(P); }
+// a recorded pose's angles back within a turn (the keys run on past 180 to stay continuous): the same body, and a blend to or from it takes the short way
+const wrapA=a=>a-2*Math.PI*Math.round(a/(2*Math.PI));
+function wrapPose(P){ for(const k of ['yaw','roll','pitch','side','bend','cyaw','nod','look'])if(typeof P[k]==='number')P[k]=wrapA(P[k]);
+  for(const n of 'LR'){ const H=P[n]; if(!H)continue; for(const k of ['ua','fa','th','sh'])if(Array.isArray(H[k]))H[k]=H[k].map(v=>typeof v==='number'?wrapA(v):v); if(typeof H.foot==='number')H.foot=wrapA(H.foot); } return P; }   // (a move that carries you: the recording drawn where the move has got to)
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(lookAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }

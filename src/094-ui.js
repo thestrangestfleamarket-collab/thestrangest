@@ -1,10 +1,10 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, SWIM, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
@@ -35,7 +35,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
-    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=UI.viewsHere(); UI.setView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
+    const act=REV[raw]; if(act!==undefined){ if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=UI.viewsHere(); UI.switchView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot')UI.turn4(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };
   { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
   {
@@ -65,9 +65,11 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }
   // flying like a superhero (G): a cape on, Space up and Shift down, faster the longer you fly one way, up through the clouds (132b) to FLY.top; G again comes down where you are and lands
   const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:42,min:7};
+  // where you can come down: over a building's solid, the nearest clear ground round it (CLIP's test, as the townsfolk are moved out of walls)
+  const clearOf=(x,z)=>{ const L=SHARED.LVL==='down'?SOL.down:SOL.up, R=.35*TILE; if(!CLIP.hit||!CLIP.hit(L,x,z,R))return null; for(let r=TILE/2;r<=60*TILE;r+=TILE/2){ const n=Math.max(8,Math.round(2*Math.PI*r/(TILE/2))); for(let k=0;k<n;k++){ const a=k/n*2*Math.PI, px=x+Math.sin(a)*r, pz=z+Math.cos(a)*r; const B=SHARED.BOUND; if(B&&(px<B.x0||px>B.x1||pz<B.z0||pz>B.z1))continue; if(!CLIP.hit(L,px,pz,R))return {x:px,z:pz,t:0}; } } return null; };
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
   function setFly(on,now){ const g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0;
-    if(!on&&!now&&UI.fly){ if(UI.landing){ UI.landing=false; drawBadge(); return; } if(SHARED.py-g>1.5*WM){ UI.landing=true; drawBadge(); return; } }   // high up: come down first (G again while coming down flies on)
+    if(!on&&!now&&UI.fly){ if(UI.landing){ UI.landing=false; FLY.to=null; drawBadge(); return; } if(SHARED.py-g>1.5*WM||clearOf(pos.x,pos.z)){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); return; } }   // high up: come down first (G again while coming down flies on)
     if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A DRIFTCAP MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the DRIFTCAP (141)
     UI.fly=on; UI.landing=false; flyS().on=on; if(on){ SHARED.target=null; st.move=null; FLY.sp=0; FLY.vy=0; } drawBadge(); }
   UI.setFly=setFly; UI.setFree=setFree;
@@ -77,9 +79,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     UI.camT.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,UI.camT.x)); UI.camT.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,UI.camT.z)); UI.camT.y=Math.max(-12,Math.min(30,UI.camT.y)); };
   UI.flyGo=(dt,moving)=>{ FLY.sp=moving?Math.min(FLY.max,Math.max(FLY.min,FLY.sp)+dt*(3+FLY.sp*.45)):Math.max(0,FLY.sp-dt*30); return FLY.sp*WM*dt; };   // metres a second, built up the longer you fly
   UI.canFly=()=>!!(FORAGE.S&&FORAGE.S.fx&&FORAGE.S.fx.fly>0);
-  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?14:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):22:0;
+  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?14:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):22:0;
     FLY.vy+=(w*top-FLY.vy)*Math.min(1,dt*(w?2.2:4)); SHARED.py+=FLY.vy*WM*dt; SHARED.py=Math.max(-5,Math.min(FLY.top,SHARED.py));
-    if(L&&SHARED.py-g<.15*WM){ SHARED.py=Math.max(SHARED.py,g); setFly(false,true); }
+    if(L&&FLY.to){ const dx=FLY.to.x-pos.x, dz=FLY.to.z-pos.z, d=Math.hypot(dx,dz), st=Math.min(d,14*WM*dt); if(d<.05||(FLY.to.t+=dt)>8)FLY.to=null; else{ pos.x+=dx/d*st; pos.z+=dz/d*st; SHARED.heading=Math.atan2(dx,dz); } }   // over a building: glide to clear ground as you come down
+    if(L&&!FLY.to&&SHARED.py-g<.15*WM){ SHARED.py=Math.max(SHARED.py,g); setFly(false,true); }
     F.f+=(Math.min(1,FLY.sp/9)-F.f)*Math.min(1,dt*3); F.u+=(Math.max(-1,Math.min(1,FLY.vy/12))-F.u)*Math.min(1,dt*3); pos.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,pos.x)); pos.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,pos.z)); };
   const cv=renderer.domElement; let L=null;
   UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
@@ -89,7 +92,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }
     ray.setFromCamera(ndc(e),SHARED.cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
   UI.isoStep=d=>{ const A=Math.PI/4, k=(SHARED.yawTo-Math.PI/4)/A; SHARED.yawTo=Math.PI/4+(d>0?Math.floor(k+1e-6)+1:Math.ceil(k-1e-6)-1)*A; SHARED.yaw=SHARED.yawTo; };
-  UI.orbit=(dx,dy)=>{ if(UI.view==='iso')return;   // iso tilt is locked and only Q/E/R turn it (the eight angles); a drag never spins or tilts it
+  UI.orbit=(dx,dy)=>{ if(UI.view==='iso'||(window.CARS&&CARS.driving))return;   // iso tilt is locked and only Q/E/R turn it (the eight angles); a drag never spins or tilts it
     if(UI.persp){ const lk=UI.lookK||1; SHARED.yawTo-=dx*.006*lk; SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dy*.005*lk); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
     q0.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ')); SHARED.yawTo-=dx*0.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*0.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; q1.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
@@ -116,6 +119,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(v==='follow'){ UI.dist=4*TILE; SHARED.pitchTo=.2; }
     if(v==='first'){ SHARED.pitchTo=.05; UI._fpy=null; } if(v==='third'){ UI.off.set(0,0,0); UI.dist=8*TILE; SHARED.pitchTo=.45; SHARED.yawTo=SHARED.yaw=SHARED.heading+Math.PI; }   // third person opens behind him, looking down the street
     if(!UI.persp)SHARED.pitchTo=clampP(SHARED.pitchTo); try{ SAVE.set('view',v); }catch(e){} };
+  // the player's own switch out of the overhead view (owner, 7 Nov 2026: "before switching out of isometric view make sure the view is fully loaded"): SWITCHING VIEW behind the black until all within the new view's reach is painted
+  UI.switchView=async v=>{ const into=v==='third'||v==='first'||v==='follow'; if(UI.persp||!into||!window.__started||FADE.busy){ UI.setView(v); return; }
+    await FADE.run('SWITCHING VIEW',()=>{ UI.setView(v); },{settle:true}); };
   UI.inIso=()=>{ UI.setView('iso'); requestAnimationFrame(()=>requestAnimationFrame(()=>UI.isoTo())); };   // going into an inside starts in the overhead view at the room's angle
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ UI.isoStep(-1); return; } SHARED.yawTo=Math.round((SHARED.yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{
@@ -145,13 +151,13 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.ZL=[1,2,5,10].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
   UI.DL=[1,2,5,10,20].map(k=>22*TILE/k);   // the behind view's wheel steps the same way: its distance 1×, 2×, 5×, 10×, 20× in from 22 tiles, never nearer than 1.2 or past the place's own limit
   { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc); acc=0;
-    if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
+    if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=UI.distMin||1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; const r=cv.getBoundingClientRect(), v=tv.set(pos.x,SHARED.py+HEAD*.6*(W3.SZ||1),pos.z).project(SHARED.cam); UI.wheelAt({deltaY:e.deltaY,clientX:r.left+(v.x+1)/2*r.width,clientY:r.top+(1-v.y)/2*r.height}); }; }   // each step zooms round you, not the mouse, so you stay where you are on screen
-  UI.viewsHere=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)||SWIM.vw?['iso','third','first']:['iso']; };   // (a dive takes the view, like fishing: SWIM.vw)
+  UI.viewsHere=()=>{ if(window.CARS&&CARS.driving)return ['third']; let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)?['iso','third','first']:['iso']; };
   { const W=window, own=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
     SYS.add('cam',()=>{ if(!window.__started||own())return; if(!UI.viewsHere().includes(UI.view))UI.setView('iso'); if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
-  UI.keepOn=()=>{ const c=SHARED.cam, z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
+  UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
     if(!Number.isFinite(UI.off.x+UI.off.y+UI.off.z))UI.off.set(0,0,0); if(!(hw>0&&hh>0&&Number.isFinite(R.x+R.y+R.z)))return;   // a bad frame never sticks: the view comes back to you
     let u=UI.off.dot(R), k=Math.max(-hw,Math.min(hw,u)); if(k!==u)UI.off.addScaledVector(R,k-u); const U=tv.setFromMatrixColumn(c.matrixWorld,1); u=UI.off.dot(U); k=Math.max(-hh,Math.min(hh,u)); if(k!==u)UI.off.addScaledVector(U,k-u); };
   { const p0=UI.pan; UI.pan=(dx,dy)=>{ p0(dx,dy); if(!UI.freeCam)UI.keepOn(); }; }
@@ -408,7 +414,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const st=(LOOP.STA||[]).map(q=>[q,Math.hypot(q.x-x,q.my(LOOP.XW/2)-y)]).sort((a,b)=>a[1]-b[1])[0]; if(st&&st[1]<45){ if(st[0].old)return goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st[0].P(LOOP.LEN/2,LOOP.MID,0); goTo(p[0],p[2],'down'); } }); }
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
   $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(MODS.apts&&MODS.apts.enterReal)MODS.apts.enterReal(); };
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[d[0],d[1],d[2],'up',null,d[5]]):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['DUNGEON L1',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[d[0],d[1],d[2],'up',null,d[5]]):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
   const goPlace=async n=>{ '@later'; if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(window.FIREV&&n===FIREV.name&&FIREV.out)return FIREV.out(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P&&P[6])return P[6](); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); if(q)SYS.onStart(()=>setTimeout(()=>goPlace(q.toUpperCase()),300),'094-ui place'); }
@@ -437,7 +443,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   { let v=null; try{ v=SAVE.get('res'); }catch(e){} if(v!=null&&RESN[+v]&&QS.get('res')==null){ SHARED.RESI=+v; resize(); } }
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
-  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('IN TOWN THE VIEW IS OVERHEAD. THIRD AND FIRST PERSON ARE FOR INSIDES AND THE PARK.','#c8a090'); return; } UI.setView(b.dataset.view); drawDisplay(); });
+  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('IN TOWN THE VIEW IS OVERHEAD. THIRD AND FIRST PERSON ARE FOR INSIDES AND THE PARK.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
   $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);
   $('#dreset').onclick=()=>{ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };

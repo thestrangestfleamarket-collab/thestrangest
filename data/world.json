@@ -710,7 +710,10 @@
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "pf": "bar"
+   "pf": "bar",
+   "inW": 17,
+   "inD": 26,
+   "inH": 172
   },
   {
    "id": "theatre",

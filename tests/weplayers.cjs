@@ -30,12 +30,15 @@ const open=async(b,plays,q='')=>{ const ctx=await b.newContext({viewport:{width:
   // PLACE: a Polyfork thing put down outside, solid, kept in the edits (so it goes to the queue)
   const pl=await p2.evaluate(async()=>{ const q=s=>document.querySelector(s); q('#we [data-wt="place"]').click(); for(let i=0;i<100&&!q('#wplist [data-pk]');i++)await new Promise(r=>setTimeout(r,200));
     const b=q('#wplist [data-pk]'); if(!b)return {err:'no list'}; const k=b.dataset.pk, n0=SHARED.solids.length; b.click(); for(let i=0;i<150&&!/to put down the/.test(q('#wpsay').textContent);i++)await new Promise(r=>setTimeout(r,200));
-    const cv=document.querySelector('canvas'), r=cv.getBoundingClientRect(), ev={button:0,clientX:r.left+r.width/2,clientY:r.top+r.height*.7};
+    const cv=document.querySelector('canvas'), r=cv.getBoundingClientRect(), ev={button:0,clientX:r.left+r.width*.15,clientY:r.top+r.height*.5};
     const took=WE.placeDown(ev); const st=WE.getState(), key=Object.keys(st).find(x=>st[x].pf===k);
     return {k,took,key,placed:!!key,solid:SHARED.solids.length>n0,cats:q('#wpcat').options.length,say:q('#wpsay').textContent}; });
   console.log(JSON.stringify(pl));
   ok(pl.cats===13,'PLACE lists 13 categories');
   ok(pl.took&&pl.placed,'a Polyfork thing is put down and kept in the edits ('+pl.k+')');
   ok(pl.solid,'it is solid (in the things he bumps into)');
+  const nr=await p2.evaluate(async()=>{ await WE.pfLoad('food-truck-3c4e0e'); const P=__dbg.you(), n0=Object.keys(WE.getState()).length, k=WE.addPf('food-truck-3c4e0e','food truck',[P.x,P.y,P.z],0); return {k,same:Object.keys(WE.getState()).length===n0,blank:WE.blank({t:[0,0,0],r:0,rx:0,rz:0,s:[1,1,1],col:'#ffffff',bri:1,op:1,del:false})}; });
+  ok(nr.k===null&&nr.same,'nothing is put down on top of you (it is solid and would hold you)');
+  ok(nr.blank===true,'a thing picked and never changed is not an edit');
   await p2.keyboard.press('Shift+E'); await wait(300); ok(!(await st(p2)).on,'Shift+E closes it');
   await b.close(); console.log(bad?bad+' failed':'all passed'); process.exit(bad?1:0); })();

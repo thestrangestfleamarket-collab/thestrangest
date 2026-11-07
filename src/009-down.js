@@ -1,6 +1,6 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
+import {CULL, keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
@@ -345,10 +345,10 @@ const SSUB=(()=>{ const W={};
     const fence=(ax,c,a,b,sg)=>{ const B=(u0,u1,v0,v1,z0,z1,col)=>ax==='y'?bx(c+v0,u0,z0,c+v1,u1,z1,col):bx(u0,c+v0,z0,u1,c+v1,z1,col);
       B(a,b,-.04,.04,7,9,RAIL); B(a,b,-.05,.05,33,36,RAIL); B(a,b,-.03,.03,29,30,RAIL);
       for(let u=a+.2;u<b-.1;u+=.2)if(Math.abs(u-(a+b)/2)>sg/2)B(u-.02,u+.02,-.02,.02,9,33,RAIL);
-      B((a+b)/2-sg/2,(a+b)/2+sg/2,-.03,.03,11,29,PNL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,10,11,RAIL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,29,30,RAIL);
-      for(const u of [a+(b-a)/3,a+2*(b-a)/3])if(Math.abs(u-(a+b)/2)>sg/2+.05)B(u-.05,u+.05,-.05,.05,5,38,RAIL); };
+      B((a+b)/2-sg/2,(a+b)/2+sg/2,-.03,.03,11,29,PNL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,10,11,RAIL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,29,30.2,RAIL);
+      for(const u of [a+(b-a)/3,a+2*(b-a)/3])if(Math.abs(u-(a+b)/2)>sg/2+.05)B(u-.05,u+.05,-.06,.06,5,38,RAIL); };
     fence('y',xl,yb,S.y1-.08,2.2); fence('y',xr,yb,S.y1-.08,2.2); fence('x',yb,xl,xr,3.2);
-    for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.05,y-.05,14,x+.05,y+.05,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
+    for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.06,y-.06,14,x+.06,y+.06,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:pl})); me.receiveShadow=me.castShadow=true; scene.add(me); return me; };
@@ -369,14 +369,29 @@ const SSUB=(()=>{ const W={};
     sol('up',S.x0-.3,S.y0-.3,S.x1+.3,S.y0,36*ZU); };
   { const run=(SM.y1-SM.y0)/SM.steps, tread=(x,z)=>{ const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); return gx>=SM.x0&&gx<SM.x1&&gy>=SM.y0&&gy<SM.y1?Math.min(SM.steps,Math.floor((SM.y1-gy)/run)+1):null; };
     const el=document.createElement('div'); el.id='subfade';
-    el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
+    el.style.cssText='position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .32s steps(4);z-index:60;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;color:#d8d2c4;font:14px/1 monospace;letter-spacing:3px';
+    el.innerHTML='<div class="ft"></div><div class="fb" style="width:min(360px,70vw);height:10px;border:2px solid #4a4a52;padding:2px;visibility:hidden"><div style="height:100%;width:0;background:#d8d2c4"></div></div><div class="fl" style="font-size:11px;letter-spacing:2px;color:#8a8478;min-height:11px;text-align:center;max-width:80vw"></div>';
     document.body.appendChild(el);
+    // the loading screens' bar (owner, 7 Nov 2026: "showing loading progress bars that show what is loading on every loading screen"): what the work says it is doing (FADE.note), the files coming down (__LDG, the website), the squares still to paint near you (BATCH.left)
+    const ft=el.querySelector('.ft'), fb=el.querySelector('.fb'), fbi=fb.firstChild, fl=el.querySelector('.fl'); let B0=null, NOTE=null;
+    FADE.note=(what,i,n)=>{ NOTE=what?{what,i,n}:null; }; FADE.left=()=>BATCH.left?BATCH.left(FADE.R()):0;
+    const bar=()=>{ if(!B0)return; const L=window.__LDG, net=L?L.n-B0.n:0, netD=L?L.d-B0.d:0, pl=BATCH.left?BATCH.left(FADE.R()):0; B0.p=Math.max(B0.p,pl);
+      // (each source keeps its own share; the bar follows the one the line names first that is not done: building, then downloading, then painting)
+      const parts=[], S=B0.s, put=(k,v)=>{ S[k]=Math.max(S[k]||0,Math.min(1,v)); }; if(NOTE){ parts.push(NOTE.what+(NOTE.n?' '+NOTE.i+' / '+NOTE.n:'')); if(NOTE.n)put('note',NOTE.i/NOTE.n); }
+      if(L&&L.now.size)parts.push('DOWNLOADING '+[...new Set(L.now.values())].slice(0,3).join(', ').toUpperCase()); if(net>0)put('net',netD/net);
+      if(pl)parts.push('PAINTING '+pl+' SQUARE'+(pl>1?'S':'')+' NEAR YOU'); if(B0.p)put('paint',1-pl/B0.p);
+      const live_=['note','net','paint'].filter(k=>k in S&&S[k]<1), k=live_.length?S[live_[0]]:Object.keys(S).length?1:0; B0.k=k; fbi.style.width=(B0.k*100).toFixed(1)+'%'; fb.style.visibility='visible'; fl.textContent=parts.join(' · ')||(B0.k>=1?'READY':'LOADING'); };
+    let barT=0; const barOn=on=>{ if(on){ if(!B0){ const L=window.__LDG; B0={n:L?L.n:0,d:L?L.d:0,p:0,k:0,s:{}}; } if(!barT)barT=setInterval(bar,250); bar(); } else { clearInterval(barT); barT=0; B0=null; NOTE=null; fb.style.visibility='hidden'; fbi.style.width='0'; fl.textContent=''; } };
+    // settled: nothing downloading and every square within reach painted (a view's switch waits for it, at most 20 s; the painting goes faster behind the black)
+    FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return D?D+8*TILE:0; };   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
+    // every loading screen that ends in a close-up view lifts once that view is painted (owner, 7 Nov 2026)
+    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!(BATCH.left&&BATCH.left(R)))return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
       const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
-      if(live){ el.textContent=text||''; el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
-      if(keys.clear&&!o.keep)keys.clear(); try{ SHARED.target=null; }catch(e){}   // (keep: a fade you pass through mid-move, the river loading as you dive, keeps the keys you hold)
-      try{ if(o.cut)await fr(2); if(work)await work(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
-      if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; } }
+      if(live){ ft.textContent=text||''; barOn(true); el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
+      if(keys.clear)keys.clear(); try{ SHARED.target=null; }catch(e){}
+      try{ if(o.cut)await fr(2); if(work)await work(); if(live&&o.settle!==false&&FADE.R())await FADE.settle(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
+      if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ if(B0){ bar(); B0.k=1; fbi.style.width='100%'; } el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; if(FADE.busy===1)barOn(false); } }
       FADE.busy--; };
     const qy=QS.get('subyaw'); M.YAW=-Math.PI/4+(qy!=null?+qy:0)*Math.PI/2;
     let busy=false;

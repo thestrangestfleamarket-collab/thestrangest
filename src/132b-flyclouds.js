@@ -14,4 +14,4 @@ import {SYS, TILE} from './006-map-pre.js';
     if(!up){ if(D.m)D.m.visible=false; if(fog.style.display!=='none')fog.style.display='none'; return; }
     if(!D.m)make(); const t=performance.now()/1000, CU=SKY.CU, k=CU&&CU.N?Math.max(.35,CU.n/CU.N):1; D.n=Math.max(1,Math.round(N*k));
     D.m.count=D.m.userData.ends[D.n-1]; D.m.visible=true; D.m.material.uniforms.uDr.value=t;
-    const w=inside(cam.position,t); fog.style.display=w>0?'':'none'; if(w>0)fog.style.opacity=String(Math.min(.92,w)); },'132b-flyclouds'); }
+    const w=inside(cam.position,t); fog.style.display=w>0?'':'none'; if(w>0)fog.style.opacity=String(Math.min(.7,w)); },'132b-flyclouds'); }

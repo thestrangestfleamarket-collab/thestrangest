@@ -23,6 +23,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const c=[[120,40,36],[40,64,96],[62,92,58],[150,120,60],[70,46,86],[30,30,34],[160,140,110]][Math.floor(hs(k,r,41)*7)]; return lit(c.map(q=>q*.85)); }},   // the shelves seen through the glass, in the shop's warm light
     diner:{name:'THE DINER',sign:'DINER',signC:[255,96,128],neon:true,signBg:[26,30,40],wall:BLOCKS.brick([188,186,180]),trim:[226,226,230],frame:[150,40,48],door:.5,h:140,
       win:(u,v,n)=>{ if(v<.12)return [150,40,48]; const k=Math.floor(u*5), du=u*5-k; if(v>.3&&v<.62&&du>.15&&du<.85)return hs(k,3,9)>.5?(n?lit([250,210,150]):[200,170,130]):(n?lit([210,120,110]):[150,90,84]); return null; }},
+    bar:{name:'THE BAR',sign:'BAR',signC:[255,120,170],neon:true,signBg:[20,14,20],wall:BLOCKS.brick([72,46,48]),trim:[150,118,70],frame:[26,18,20],door:.5,h:200,
+      win:(u,v,n)=>{ if(v<.1||v>.9)return null; const k=Math.floor(u*6), du=u*6-k; if(du<.1||du>.9)return [30,20,22]; const g=.5+.5*hs(k,Math.floor(v*3),17); return lit([150*g+40,70*g+20,50*g+16]); }},   // the lounge's low amber light through its glass (146zca)
     // the new map's shops (owner, 6 Nov 2026): painted brick fronts, a sign and a shop window each (no awnings, nothing western); h their height in z-pixels (a metre is 28.6)
     ...Object.fromEntries([['florist','THE FLORIST','FLOWERS',[128,64,52],[255,190,200]],['bees','THE BEEKEEPER','HONEY',[132,82,56],[255,206,90]],['bfly','THE BUTTERFLY SHOP','BUTTERFLIES',[110,62,54],[200,170,255]],
       ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','THE PET STORE','PETS',[96,60,50],[180,255,170]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],
@@ -95,7 +97,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
-  for(const id of ['theatre','play','bar']){ const p=WP[id]; if(!p||!p.pf)continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
+  for(const id of ['theatre','play','bar']){ const p=WP[id]; if(!p||!p.pf||DEF[id])continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

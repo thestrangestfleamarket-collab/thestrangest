@@ -18,7 +18,7 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
   function counter(x,y,L=1.73){ SHARED.PNAME=L>2?'long counter':'counter'; const D=.67, t=.05, IN=QG.lamDark;
     const pan=(dim)=>(u,z)=>{ const c=z<4?QG.steelDark:QG.lam; return dim?sh(c,.8):c; };
     const face=(nx,ny,X,Y,z,k)=>ny>0||nx?sh(z<4?QG.steelDark:QG.lam,k):sh(IN,k);
-    const B=[sided({x0:x,y0:y+D-t,x1:x+L,y1:y+D,z0:0,z1:28,c:QG.lam,top:()=>QG.lam,fs:face}),
+    const B=[sided({x0:x+t,y0:y+D-t,x1:x+L-t,y1:y+D,z0:0,z1:28,c:QG.lam,top:()=>QG.lam,fs:face}),
       {x0:x,y0:y,x1:x+t,y1:y+D,z0:0,z1:28,c:QG.lam,top:()=>QG.lam,fi:pan(1),fj:pan(0)},{x0:x+L-t,y0:y,x1:x+L,y1:y+D,z0:0,z1:28,c:QG.lam,top:()=>QG.lam,fi:pan(1),fj:pan(0)},
       {x0:x+t,y0:y,x1:x+L-t,y1:y+.04,z0:24,z1:28,c:QG.steel,fi:()=>QG.steelDark,top:()=>QG.steel},
       {x0:x+t,y0:y+.04,x1:x+L-t,y1:y+D-t,z0:8,z1:10,c:QG.steel,top:()=>QG.board,fi:()=>QG.steelDark,fj:()=>QG.steelDark},
@@ -37,22 +37,22 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
   const strip=(u,z,zt)=>zt-z<2?(hash(Math.floor(u*2.5),zt,77)<.28?QG.tag:[196,200,206]):QG.steel;
   function shelfOf(x,y,L,D,two){ const B=[{x0:x,y0:y,x1:x+L,y1:y+D,z0:0,z1:SHELF_Z[0],c:QG.steelDark,top:()=>QG.board},{x0:x,y0:y,x1:x+L,y1:y+D,z0:SH-3,z1:SH,c:QG.steel,top:()=>QG.steelTop}];
     const m=two?y+D/2-.02:y; B.push({x0:x+.04,y0:m,x1:x+L-.04,y1:m+.04,z0:SHELF_Z[0],z1:SH-3,c:QG.board,top:()=>QG.board});
-    for(const z of SHELF_Z.slice(1))B.push({x0:x+.04,y0:y,x1:x+L-.04,y1:y+D,z0:z-2,z1:z,c:QG.steel,top:()=>QG.board,fj:(u,zz)=>strip(u,zz,z),fi:()=>QG.steelDark});
-    for(const a of [x,x+L-.04])B.push({x0:a,y0:y,x1:a+.04,y1:y+D,z0:0,z1:SH,c:QG.steelDark,top:()=>QG.steelTop});
+    for(const z of SHELF_Z.slice(1))B.push({x0:x+.04,y0:two?y:y+.04,x1:x+L-.04,y1:y+D,z0:z-2,z1:z,c:QG.steel,top:()=>QG.board,fj:(u,zz)=>strip(u,zz,z),fi:()=>QG.steelDark});
+    for(const a of [x,x+L-.04])B.push({x0:a,y0:y,x1:a+.04,y1:y+D,z0:SHELF_Z[0],z1:SH-3,c:QG.steelDark,top:()=>QG.steelTop});
     return prop(B); }
   const goodsShelf=(x,y)=>{ SHARED.PNAME='shelf of goods'; return shelfOf(x,y,2,.62,true); }, shopShelf=(x,y)=>{ SHARED.PNAME='shop shelf'; return shelfOf(x,y,2,.5,false); };
   const doorMat=(x,y)=>{ SHARED.PNAME='door mat'; const L=1, D=.67; return prop([{x0:x,y0:y,x1:x+L,y1:y+D,z0:0,z1:1,c:QG.mat,top:(u,v)=>Math.min(u-x,x+L-u,v-y,y+D-v)<.08?QG.matEdge:QG.mat}],null,{walk:true,flat:true}); };
   const FRIDGE_Z=[7,23,36,49];
   function drinksFridge(x,y){ SHARED.PNAME='drinks fridge'; const D=.78, W=.92, Z=64, F=[226,228,226], I=lit([196,224,240]), t=.05, fr=(u,z)=>F;
-    const p=prop([{x0:x,y0:y,x1:x+D,y1:y+W,z0:0,z1:FRIDGE_Z[0],c:F,top:()=>[200,206,210],fi:(v,z)=>z<5&&(Math.floor(z/2)&1)?[60,62,64]:F},
-      sided({x0:x,y0:y,x1:x+t,y1:y+W,z0:0,z1:Z,c:F,fs:(nx,ny)=>nx>0?I:nx<0?[204,208,210]:F,top:()=>F}),{x0:x,y0:y,x1:x+D,y1:y+t,z0:0,z1:Z,c:F,fj:fr,top:()=>F},{x0:x,y0:y+W-t,x1:x+D,y1:y+W,z0:0,z1:Z,c:F,fj:fr,top:()=>F},
-      {x0:x,y0:y,x1:x+D,y1:y+W,z0:Z-6,z1:Z,c:F,top:()=>sh(F,1.04),fi:()=>F},
+    const p=prop([{x0:x+t,y0:y+t,x1:x+D,y1:y+W-t,z0:0,z1:FRIDGE_Z[0],c:F,top:()=>[200,206,210],fi:(v,z)=>z<5&&(Math.floor(z/2)&1)?[60,62,64]:F},
+      sided({x0:x,y0:y+t,x1:x+t,y1:y+W-t,z0:0,z1:Z,c:F,fs:(nx,ny)=>nx>0?I:nx<0?[204,208,210]:F,top:()=>F}),{x0:x,y0:y,x1:x+D,y1:y+t,z0:0,z1:Z,c:F,fj:fr,top:()=>F},{x0:x,y0:y+W-t,x1:x+D,y1:y+W,z0:0,z1:Z,c:F,fj:fr,top:()=>F},
+      {x0:x+t,y0:y+t,x1:x+D,y1:y+W-t,z0:Z-6,z1:Z,c:F,top:()=>sh(F,1.04),fi:()=>F},
       ...FRIDGE_Z.slice(1).map(z=>({x0:x+t,y0:y+t,x1:x+D-.03,y1:y+W-t,z0:z-1,z1:z,c:[200,230,236],top:()=>lit([214,236,244]),fi:()=>[170,200,210]}))],null,
       {glass:{x:x+D,y0:y,y1:y+W,z0:FRIDGE_Z[0],z1:Z-6}});
     LAMPS.push({own:1,room:1,x:x+D+.5,y:y+W/2,z:30,r:3.2,c:[.45,.7,1],prop:p}); return p; }
   const newsRack=(x,y)=>{ '@later'; SHARED.PNAME='newspaper rack'; const c=[120,122,126], W=.5, D=.4, P=[[214,210,196],[222,220,212],[206,200,182]], B=[];
     for(const [a,b] of [[x,y],[x+W-.03,y],[x,y+D-.03],[x+W-.03,y+D-.03]])B.push({x0:a,y0:b,x1:a+.03,y1:b+.03,z0:0,z1:26,c,nb:1,top:()=>sh(c,1.1)});
-    B.push({x0:x,y0:y+D-.03,x1:x+W,y1:y+D,z0:24,z1:26,c,nb:1,top:()=>sh(c,1.1)},{x0:x,y0:y,x1:x+W,y1:y+.03,z0:2,z1:3,c,nb:1},{x0:x,y0:y+D-.03,x1:x+W,y1:y+D,z0:2,z1:3,c,nb:1});
+    B.push({x0:x+.03,y0:y+D-.03,x1:x+W-.03,y1:y+D,z0:24,z1:26,c,nb:1,top:()=>sh(c,1.1)},{x0:x+.03,y0:y,x1:x+W-.03,y1:y+.03,z0:2,z1:3,c,nb:1},{x0:x+.03,y0:y+D-.03,x1:x+W-.03,y1:y+D,z0:2,z1:3,c,nb:1});
     for(let i=0;i<3;i++){ const y0=y+i*.12, y1=Math.min(y+D,y0+.18), z=6+i*6;
       B.push({x0:x+.03,y0,x1:x+W-.03,y1,z0:z-1,z1:z,c,nb:1,top:(u,v)=>(Math.floor((u-x)*FP)&1)?sh(c,.75):c},{x0:x+.03,y0,x1:x+W-.03,y1:y0+.02,z0:z,z1:z+3,c,nb:1,top:()=>c});
       for(let k=0;k<2;k++){ const p=P[(i+k)%3], a=x+.05+k*.21, h=2+((i+k)&1);
@@ -60,11 +60,11 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
           top:(u,v)=>v<y0+.08?(u>a+.03&&u<a+.16?[40,40,46]:p):(Math.floor((v-y0)*FP)&1)&&u>a+.02&&u<a+.17?sh(p,.78):p}); } }
     return prop(B); };
   const cigRack=(x,y)=>{ SHARED.PNAME='cigarette rack'; const L=3.2, D=.22, PK=[[196,60,52],[40,130,150],[226,226,220],[60,140,80],[226,170,60],[120,60,150],[40,40,44]];
-    const B=[ft(x,y,x+L,y+D),{x0:x,y0:y,x1:x+L,y1:y+.03,z0:36,z1:92,c:QG.steelDark,foot:0,top:()=>QG.steel},{x0:x,y0:y,x1:x+L,y1:y+D,z0:36,z1:38,c:QG.steel,foot:0,top:()=>QG.steelTop}];
-    for(const a of [x,x+L*.25,x+L*.5,x+L*.75,x+L-.04])B.push({x0:Math.min(a,x+L-.04),y0:y+.03,x1:Math.min(a,x+L-.04)+.04,y1:y+D,z0:36,z1:92,c:QG.steel,foot:0,top:()=>QG.steelTop,fi:()=>QG.steelDark});
+    const B=[ft(x,y,x+L,y+D),{x0:x,y0:y,x1:x+L,y1:y+.03,z0:36,z1:92,c:QG.steelDark,foot:0,top:()=>QG.steel},{x0:x+.04,y0:y+.03,x1:x+L-.04,y1:y+D,z0:36,z1:38,c:QG.steel,foot:0,top:()=>QG.steelTop}];
+    for(const a of [x,x+L*.25,x+L*.5,x+L*.75,x+L-.04])B.push({x0:Math.min(a,x+L-.04),y0:y+.03,x1:Math.min(a,x+L-.04)+.04,y1:y+D-.02,z0:36,z1:92,c:QG.steel,foot:0,top:()=>QG.steelTop,fi:()=>QG.steelDark});
     for(let r=0;r<4;r++){ const z=40+r*13;
-      if(r)B.push({x0:x,y0:y+.03,x1:x+L,y1:y+D,z0:z-1,z1:z,c:QG.steel,foot:0,nb:1,top:()=>QG.steelTop});
-      B.push({x0:x,y0:y+D-.02,x1:x+L,y1:y+D,z0:z-1,z1:z+2,c:QG.steelTop,foot:0,nb:1,fj:()=>QG.edge});
+      if(r)B.push({x0:x+.04,y0:y+.03,x1:x+L-.04,y1:y+D-.02,z0:z-1,z1:z,c:QG.steel,foot:0,nb:1,top:()=>QG.steelTop});
+      B.push({x0:x+.04,y0:y+D-.02,x1:x+L-.04,y1:y+D,z0:z-1,z1:z+2,c:QG.steelTop,foot:0,nb:1,fj:()=>QG.edge});
       for(let k=0;k<12;k++){ if(hash(k,r,52)<.12)continue; const a=x+.07+k*.26+(k>=3?.02:0)+(k>=6?.02:0)+(k>=9?.02:0), p=PK[Math.floor(hash(k,r,51)*PK.length)];
         B.push({x0:a,y0:y+.06,x1:a+.17,y1:y+.16,z0:z,z1:z+10,c:p,foot:0,fj:(u,zz)=>zz>z+7?sh(p,1.15):zz<z+2?[226,226,220]:p,top:()=>sh(p,1.1)}); } }
     B.push({x0:x,y0:y,x1:x+L,y1:y+D+.02,z0:92,z1:102,c:[236,214,120],foot:0,fj:(u,z)=>z>94&&z<100&&Math.floor((u-x)*FP/4)%3===1?[40,80,200]:[236,214,120],top:()=>QG.steel});

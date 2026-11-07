@@ -29,10 +29,10 @@ PHA.make=K=>{ '@playhouse';
     plane(2*W,D.Z1-D.ZR,M.carpet,0,FY,(D.ZR+D.Z1)/2,{rx:-PI/2,s:1.6}).receiveShadow=true;
     // the apron: its boards out over the front, the footlights' trough along its edge
     const ap=[]; for(let i=0;i<=40;i++){ const x=-W+2*W*i/40; ap.push([x,-D.edge(x)]); } ap.push([W,0],[-W,0]);
-    const ex=ext(ap,D.SY+.02,[M.boards,M.black],0,-.02,0,{rx:-PI/2}); ex.material=[M.boards,M.matte];
+    const ex=ext(ap,D.SY+.02,[M.boards,M.black],0,-.02,0,{rx:-PI/2}); ex.material=[M.boards,M.mahog];
     const tro=[]; for(let i=0;i<=40;i++){ const x=-7.2+14.4*i/40; tro.push([x,D.SY+.04,D.edge(x)-.18]); } tube(tro,.06,M.brass,{n:80,seg:6});
     K.foot=tro; }
-  for(const s of [-1,1]){ const n=6, run=(D.ZP-2.8)/n; for(let i=0;i<n;i++){ const z=D.ZP-(i+1)*run; boxA(s*7.8,0,z,s*W,D.SY*(i+1)/n,z+run,M.carpet,{s:1.6}); }
+  for(const s of [-1,1]){ const n=6, run=(D.ZP-2.8)/n; for(let i=0;i<n;i++){ const z=D.ZP-(i+1)*run; boxA(s*7.8,0,z,s*W,D.SY*(i+1)/n,z+run,M.carpet,{s:1.6}); rod([s*7.8,D.SY*(i+1)/n+.01,z+run-.02],[s*W,D.SY*(i+1)/n+.01,z+run-.02],.02,M.brass); }
     ext([[2.8,0],[2.8,D.SY+.08],[D.ZP,.3],[D.ZP,0]],.1,M.mahog,s>0?7.8:-7.7,0,0,{ry:-PI/2}); rod([s*7.75,D.SY+.95,2.9],[s*7.75,.95,D.ZP],.03,M.brass); }
 
   /* ---------- the stalls' seats: six rows in two blocks, cast-iron standards, tip-up velvet seats, buttoned backs with a mahogany rim ---------- */

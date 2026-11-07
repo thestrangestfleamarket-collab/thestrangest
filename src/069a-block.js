@@ -101,5 +101,22 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0), end=a0+dir*Math.min(Math.abs(a1-a0),NEAR); let p=a0;
       while((end-p)*dir>2){ const w=Math.min(14+rnd()*8,Math.abs(end-p)), h=360+Math.floor(rnd()*3)*120, q1=p+dir*w, lo=Math.min(p,q1), hi=Math.max(p,q1);
         back(ax==='x'?{x0:lo,x1:hi,y0:b0,y1:b1,h,k:900+k*13,tint:TINTS[k%TINTS.length]}:{x0:b0,x1:b1,y0:lo,y1:hi,h,k:900+k*13,tint:TINTS[k%TINTS.length]}); k++; p=q1+dir*1.2; } } }
+  // the streets and the park carried on past the edges (owner, 7 Nov 2026: "the map to look like it keeps going (past map) lower res ... like real nyc"): low-res ground strips, the park's wall and a band of plain trees (data/world.json edge.strips, edge.park)
+  { const E=LEVEL.edge||{}, PX=4, PAL={road:[46,47,52],walk:[128,124,114],alley:[70,70,74],prom:[150,144,128]}, mats={};
+    const groundM=(kind,along,across)=>{ const k=kind+along; if(mats[k])return mats[k]; const W=8, H=Math.max(2,Math.round(across*PX/4)), c=cv(W,H), g=c.getContext('2d'), base=PAL[kind]||PAL.walk;
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){ const n=.9+rnd()*.14; g.fillStyle=`rgb(${base.map(v=>Math.round(v*n)).join(',')})`; g.fillRect(x,y,1,1); }
+      if(kind==='road'){ g.fillStyle='#c9a227'; const m=Math.floor(H/2); g.fillRect(0,m-1,W,1); g.fillRect(0,m+1,W,1); g.fillStyle='#bdbab0'; for(let x=0;x<W;x+=4){ g.fillRect(x,1,2,1); g.fillRect(x,H-2,2,1); } }
+      if(kind==='walk'||kind==='prom'){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,1,H); g.fillRect(W/2,0,1,H); }
+      const t=tex(c); t.wrapS=THREE.RepeatWrapping; return mats[k]=new THREE.MeshLambertMaterial({map:t}); };
+    for(const [x0,y0,x1,y1,kind] of (E.strips&&E.strips.list)||[]){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx, m=groundM(kind,alongX?'x':'y',across).clone();
+      m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
+      const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.012,(ZS(y0)+ZS(y1))/2);
+      me.receiveShadow=true; me.raycast=()=>{}; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }
+    const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(34),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
+      wl.position.set((XS(a0)+XS(a1))/2,YP(17),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; G.add(wl);
+      const [t0,u0,t1,u1]=P.trees, N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
+      for(let i=0;i<N;i++){ const x=t0+rnd()*(t1-t0), y=u0+Math.pow(rnd(),.7)*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
+        Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
+      for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

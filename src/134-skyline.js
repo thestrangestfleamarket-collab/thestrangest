@@ -46,6 +46,9 @@ import {TPANE} from './087dz-tpane.js';
   for(const [ax,a0,a1,b0,b1] of (LEVEL.edge&&LEVEL.edge.runs)||[]){ const dir=Math.sign(a1-a0), d=b1-b0; let p=a0+dir*((LEVEL.edge.near||60)+1.2), k=0;   // (the first stretch past the edge is the street's own blocks, 069a)
     while((a1-p)*dir>0){ const w=14+hs(k,81+a0)*8, h=14+hs(k,82+a0)*16, c=p+dir*w/2, mx=ax==='x'?c:(b0+b1)/2, my=ax==='x'?(b0+b1)/2:c;
       B.push([mx-SHARED.BOD.OX,my-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6][Math.floor(hs(k,83+a0)*4)]]); p+=dir*(w+1.2); k++; } }
+  // the far city past the backdrop (owner, 7 Nov 2026: "like real nyc"): the far shore across the Hudson and the city past the park, hazed rows of blocks (data/world.json edge.far: axis, from, to, across from, across to, lowest, highest in tiles)
+  for(const [ax,a0,a1,b0,b1,h0,h1] of (LEVEL.edge&&LEVEL.edge.far&&LEVEL.edge.far.list)||[]){ let p=a0, k=0; while(p<a1){ const w=8+hs(k,91+a0+b0)*16, d=(b1-b0)*(.5+hs(k,92+b0)*.5), h=h0+Math.pow(hs(k,93+a0),2)*(h1-h0), c=p+w/2, mid=(b0+b1)/2+(hs(k,94+b0)-.5)*(b1-b0-d);
+      B.push([(ax==='x'?c:mid)-SHARED.BOD.OX,(ax==='x'?mid:c)-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6,2,5][Math.floor(hs(k,95+a1)*6)]]); p+=w+.8+hs(k,96)*3; k++; } }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
   for(let v=0;v<NV;v++)for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){ const k=((v*FH+y)*FW+x)*4, w=WALL[v], n=.9+hp(x+v*7,y)*.18; let c=[w[0]*n,w[1]*n,w[2]*n], a=0;

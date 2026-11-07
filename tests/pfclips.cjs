@@ -16,8 +16,8 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     return {sit:a({sit:{}}),swim:a({water:{in:true,swim:1}}),tread:a({water:{in:true,swim:0}}),car:a({ride:{k:'car'}}),skate:a({ride:{k:'skate'}}),eat:a({move:M('mc_eat',.4,1.3)}),plant:a({move:M('mc_plant',1,2.77)}),
       jab:a({up:M('jab',.2,.42)}),kick:a({move:M('frontKick',.2,.7)}),pick:a({move:M('pick',.1,.6)}),crouch:a({move:M('crouch',.1,.22)}),carry:a({up:M('carry',.1,.24)}),thr:a({move:M('mc_pf_Thriller',3,18.87)}),
       greet:a({move:M('mc_greet',1,4.7)}),none:a({}),up:(()=>{ const S={sit:{}}; AVATAR.act(S); S.sit=null; return a(S); })()}; });
-  rec('each state and move names its clip (sitting, swimming, treading water, driving, eating, planting, a jab, a kick, picking up, crouching, carrying, an emote, standing up; the old emotes and the skateboard stay the rig\'s)',
-    map.sit==='Sitting'&&map.swim==='Swimming'&&map.tread==='Treading water'&&map.car==='Driving'&&!map.skate&&map.eat==='Eating'&&map.plant==='Planting'&&map.jab==='Punch'&&map.kick==='Kick'&&map.pick==='Pick up'&&map.crouch==='Crouch'&&map.carry==='Walk carrying'&&map.thr==='Thriller'&&!map.greet&&!map.none&&map.up==='Stand up',JSON.stringify(map));
+  rec('each state and move names its clip (sitting, swimming, treading water, driving, eating, planting, a jab (the kicks are the rig\'s, drawn from recordings), picking up, crouching, carrying, an emote, standing up; the old emotes and the skateboard stay the rig\'s)',
+    map.sit==='Sitting'&&map.swim==='Swimming'&&map.tread==='Treading water'&&map.car==='Driving'&&!map.skate&&map.eat==='Eating'&&map.plant==='Planting'&&map.jab==='Punch'&&!map.kick&&map.pick==='Pick up'&&map.crouch==='Crouch'&&map.carry==='Walk carrying'&&map.thr==='Thriller'&&!map.greet&&!map.none&&map.up==='Stand up',JSON.stringify(map));
   rec('the H panel offers the 19 Polyfork emotes beside the old ones',await pg.evaluate(()=>{ const t=[...document.querySelectorAll('#emotes button')].map(b=>b.textContent); return ['AGREE','LAUGH','THRILLER','HIP HOP','CHOP WOOD','HOLD LANTERN','TIPSY'].every(x=>t.includes(x)); }));
   // each Polyfork move on you: the clip plays (the avatar's hand moves, finite), the rig's move ends as the clip's part does
   const hand=()=>pg.evaluate(()=>{ const h=BODIES.hand('R'); return h&&[h.wrist.x,h.wrist.y,h.wrist.z]; });
@@ -46,6 +46,12 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const p1=P(), r={dist:+(S.dist-d0).toFixed(1),moved:+Math.hypot(p1[0]-p0[0],p1[1]-p0[1]).toFixed(2)}; MOTION.stop(); await new Promise(r=>setTimeout(r,500)); return r; },n);
   const mw=await goes('moonwalk'), th=await goes('pf_Thriller'), cl=await goes('clap');
   rec('the moonwalk glides you backwards, Thriller walks you forward, a clap stays put',mw.dist<-20&&mw.moved>.3&&th.dist>10&&th.moved>.1&&Math.abs(cl.dist)<.5&&cl.moved<.05,JSON.stringify({mw,th,cl}));
+  // the new recorded moves (owner, 7 Nov 2026: "start adding emotes and animations ... we probably need 50"): the walks move you their way, the roll is drawn from its recording and still carries you, standing tired you bend over
+  const st2=await goes('stroll'), bk=await goes('backUp');
+  const lk=await pg.evaluate(async()=>{ const S=__dbg.ST, d0=S.dist; __dbg.RIG.begin(S,'roll'); await new Promise(r=>setTimeout(r,400)); const r={look:__dbg.RIG.LOOK.roll,move:S.move&&S.move.name}; for(let i=0;i<60&&S.move;i++)await new Promise(r=>setTimeout(r,200)); r.went=+(S.dist-d0).toFixed(1); return r; });
+  rec('the stroll walks you forward, backing up walks you back, the roll is drawn from its recording and still carries you',st2.dist>10&&st2.moved>.1&&bk.dist<-3&&lk.look==='mc_roll2'&&lk.move==='roll'&&lk.went>5,JSON.stringify({st2,bk,lk}));
+  const tired=await pg.evaluate(async()=>{ __dbg.VIT.tired=true; for(let i=0;i<40&&MOTION.cur!=='tired';i++)await new Promise(r=>setTimeout(r,250)); const c=MOTION.cur; __dbg.VIT.tired=false; await new Promise(r=>setTimeout(r,1500)); return {on:c,off:MOTION.cur}; });
+  rec('standing still out of breath, you bend over; rested, you stand',tired.on==='tired'&&tired.off!=='tired',JSON.stringify(tired));
   // a window keeps its size when clicked, resizes from its corner (kept), and the emotes fit it without scrolling
   const win=async()=>pg.evaluate(()=>{ const r=document.getElementById('emotes').getBoundingClientRect(); return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]; });
   await pg.evaluate(()=>MOTION.open()); await wait(800); const w0=await win();

@@ -153,5 +153,182 @@
 },
 "dodge": {
 "clip": "dodge-back"
+},
+"roll2": {
+"clip": "roll"
+},
+"kickFront": {
+"clip": "kick-front"
+},
+"kickRound": {
+"clip": "kick-roundhouse"
+},
+"hook2": {
+"clip": "melee-hook"
+},
+"hitChest": {
+"clip": "hit-chest"
+},
+"throw": {
+"clip": "throw-ball"
+},
+"knockback": {
+"clip": "hit-knockback-rm",
+"travel": true,
+"opts": {"travel": true, "keep": 0}
+},
+"draw": {
+"clip": "weapon-draw"
+},
+"tired": {
+"clip": "tired-hunched",
+"loop": true
+},
+"hurt": {
+"clip": "idle-hurt",
+"loop": true
+},
+"listen": {
+"clip": "idle-listening",
+"loop": true
+},
+"yell": {
+"clip": "zombie-yell"
+},
+"dizzy": {
+"clip": "dizzy",
+"loop": true
+},
+"cry": {
+"clip": "sit-ground-crying",
+"loop": true
+},
+"shakeOff": {
+"clip": "idle-shakeoff"
+},
+"stroll": {
+"clip": "walk-happy",
+"loop": true,
+"drift": 1.15
+},
+"strut": {
+"clip": "walk-large",
+"loop": true,
+"drift": 0.59
+},
+"sneak": {
+"clip": "walk-stealth",
+"loop": true,
+"drift": 0.37
+},
+"tiptoe": {
+"clip": "walk-cautious",
+"loop": true,
+"drift": 0.39
+},
+"stagger": {
+"clip": "drunk-walk",
+"loop": true,
+"drift": 0.61
+},
+"limp": {
+"clip": "walk-injured",
+"loop": true,
+"drift": 0.56
+},
+"zombieWalk": {
+"clip": "zombie-walk",
+"loop": true,
+"drift": 0.87
+},
+"shamble": {
+"clip": "zombie-walk-2",
+"loop": true,
+"drift": 0.59
+},
+"sprint": {
+"clip": "sprint",
+"loop": true,
+"drift": 2.14
+},
+"dash": {
+"clip": "run-anime",
+"loop": true,
+"drift": 3.71
+},
+"backUp": {
+"clip": "walk-backwards",
+"loop": true,
+"drift": -0.67
+},
+"crouchWalk": {
+"clip": "crouch-walk",
+"loop": true,
+"drift": 0.39
+},
+"crawl": {
+"clip": "crawl",
+"loop": true,
+"drift": 0.77
+},
+"formalWalk": {
+"clip": "walk-formal",
+"loop": true,
+"drift": 0.67
+},
+"backflip": {
+"clip": "backflip"
+},
+"rollGo": {
+"clip": "roll-rm",
+"travel": true,
+"opts": {"travel": true, "keep": 0}
+},
+"levitate": {
+"clip": "levitate-idle",
+"loop": true
+},
+"rise": {
+"clip": "zombie-rise"
+},
+"pound": {
+"clip": "attack-ground-pound"
+},
+"guard": {
+"clip": "fighting-idle",
+"loop": true
+},
+"swordCombo": {
+"clip": "sword-regular-combo"
+},
+"slash": {
+"clip": "one-hand-slash-combo"
+},
+"spearThrow": {
+"clip": "spear-throw"
+},
+"knifeThrow": {
+"clip": "knife-throw"
+},
+"toss": {
+"clip": "grenade-throw"
+},
+"staffSpin": {
+"clip": "staff-spin",
+"loop": true
+},
+"potion": {
+"clip": "consume-powerup"
+},
+"dig": {
+"clip": "shovel-dig",
+"loop": true
+},
+"chopTree": {
+"clip": "chop-tree",
+"loop": true
+},
+"pickUp": {
+"clip": "pick-up"
 }
 }

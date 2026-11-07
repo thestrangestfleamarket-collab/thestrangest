@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:false,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},

@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.PFROWDBG&&PFROWDBG().done,null,{timeout:120000}).catch(()=>{}); await pg.waitForTimeout(1500);
   const d=await pg.evaluate(()=>PFROWDBG());
   ok(d.done,'the Polyfork fronts came after the start: '+JSON.stringify(d));
-  ok(['hotel','bar','theatre','play','antiques','outfitter','fishing','books','tailor','barber'].every(id=>d.fronts.includes(id))&&!['bodega','florist','pets','bath','gems','diner'].some(id=>d.fronts.includes(id)),'every Hudson row shop wears its Polyfork building, Market St\'s are brick (the map moved again, 7 Nov 2026: '+d.fronts.join(', ')+')');
+  ok(['hotel','bar','theatre','play','antiques','outfitter','bath','bodega','fishing','books','tailor','barber'].every(id=>d.fronts.includes(id))&&!['florist','pets','gems','diner'].some(id=>d.fronts.includes(id)),'every Hudson row shop wears its Polyfork building, Market St\'s are brick (the map moved again, 7 Nov 2026: '+d.fronts.join(', ')+')');
   ok(d.houses===0&&d.solids===0,'no Polyfork towers on West St (its apartment houses are brownstones, 7 Nov 2026): '+d.houses);
   ok(d.tris>0&&d.tris<200000,'the fronts and their dressing are about 170,000 triangles along 230 m of street, never all in view ('+d.tris+')');
   

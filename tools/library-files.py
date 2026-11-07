@@ -6,5 +6,6 @@ for c in L['cases']:
     for b in c['books']:
         if b.get('cover'): E.append(f'{json.dumps(b["id"])}:__FILE__("data/{b["cover"]}")')
         if b.get('spine'): E.append(f'{json.dumps(b["id"]+"~s")}:__FILE__("data/{b["spine"]}")')
+        if b.get('txt'): E.append(f'{json.dumps(b["id"]+"~t")}:__FILE__("data/{b["txt"]}")')
 src='// THE BOOKSTORE\'S COVERS: each book\'s cover (and real spine) as its own file, fetched only when the book is shown (written by tools/library-files.py from data/library.json).\nObject.assign(LIB.files,{'+',\n  '.join(E)+'});\n'
 open('src/144cb-libfiles.js','w').write(src); print(len(E),'files')

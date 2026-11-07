@@ -5,7 +5,7 @@ import {renderer} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 const AUTOQ={};
-{ const STEPS=[1,.9,.8], SLOW=24, FAST=13; let on=SAVE.get('autoq')!=='0', i=0, acc=0, n=0, slowS=0, fastS=0, t0=null;
+{ const STEPS=[1,.9,.8], SLOW=24, FAST=13; let on=false, i=0, acc=0, n=0, slowS=0, fastS=0, t0=null;
   const apply=k=>{ i=Math.max(0,Math.min(STEPS.length-1,k)); acc=0; n=0; slowS=0; fastS=0; SHARED.RESK=STEPS[i]; if(SHARED.resize)SHARED.resize(); for(const f of AUTOQ.onchange)f(); };
   // one second of frames at a time: two slow seconds step down, eight quick ones step up
   AUTOQ.feed=ms=>{ acc+=ms; n++; if(acc<1000)return; const avg=acc/n; acc=0; n=0; if(avg>SLOW){ fastS=0; if(++slowS>=2){ slowS=0; if(i<STEPS.length-1)apply(i+1); } } else if(avg<FAST){ slowS=0; if(++fastS>=8){ fastS=0; if(i>0)apply(i-1); } } else { slowS=0; fastS=0; } };
@@ -14,5 +14,5 @@ const AUTOQ={};
   const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dautoq'))return;
     const B=document.createElement('div'); B.innerHTML='<h3>AUTO QUALITY</h3><div class="row"><label><input type="checkbox" id="dautoq"> ON</label><span id="dautoqv"></span></div><div class="dim">when frames run long the picture is drawn a little smaller for a while, then back; off keeps the resolution you set</div>';
     P.appendChild(B); const R=B.querySelector('#dautoq'), V=B.querySelector('#dautoqv'), show=()=>{ R.checked=on; V.textContent=on?(i?'DRAWING AT '+Math.round(STEPS[i]*100)+'%':'FULL'):''; }; R.onchange=()=>AUTOQ.on(R.checked); AUTOQ.onchange.push(show); show(); };
-  gfx(); window.AUTOQ=AUTOQ; }
+ window.AUTOQ=AUTOQ; }
 export {AUTOQ};

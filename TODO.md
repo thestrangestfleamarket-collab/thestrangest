@@ -39,6 +39,11 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **6. The park's made things** · P2 · L · code · done 7 Nov (`src/111fe-parkpf.js`, `tests/parkpf.cjs`; the big lake past the forcefield; the skate extension dropped). Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake.
 - [x] **7. The new bar** (done 7 Nov: the lounge, the octopus on its stage, the badger back) · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
 
+- [x] **Two resolutions only** · P2 · S · code. Owner, 7 Nov: "i want Low graphics setting to the max setting. get rid of med high highest resolution, only Lowest and Low (rename to Low - High)". RESOLUTION keeps LOWEST (240 lines) as LOW and LOW (360) as HIGH, the most anyone gets; MED, HIGH, HIGHEST go (`RESLN` in src/004-main.js, the buttons in src/094-ui.js, core's resolution check).
+- [x] **The camera by place** · P1 · M · pick + code · done 7 Nov. Owner, 7 Nov: in town only the overhead view (rotate, zoom from his shot's distance all the way in); third and first person only inside interiors and Central Park. Questions asked: the start zoom, leaving the park in first person, which water way.
+- [x] **The park closed in** · P1 · L · code. Owner, 7 Nov: large trees round the park wall so you can't see out; inside the park draw only the park, the skyline, sky and weather (no Market St, apartment street, cars).
+- [x] **The skyline across the Hudson** · P2 · M · look. Owner's pick 6 Nov: in-game pictures (the far picture re-baked for each option: low shore, denser shore, and the city along our bank).
+
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
@@ -385,7 +390,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
 - [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
   held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
-- [ ] **The avatar's Mixamo clips** (owner, 7 Nov: "yes lets use mixamo"; his picks: Polyfork's 44, every group) · P2 · L · code. Moving, the actions you already do, emotes, work and food on the avatar. [taking: claude/gracious-pasteur-mwhah7, 7 Nov]
+- [x] **The avatar's Mixamo clips** (owner, 7 Nov: "yes lets use mixamo"; his picks: Polyfork's 44, every group) · P2 · L · code. Moving, the actions you already do, emotes, work and food on the avatar. Done 7 Nov, and 45 of Mesh2Motion's more.
 
 ## Moves (Mesh2Motion)
 

@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.PARKPFDBG&&PARKPFDBG().done,null,{timeout:240000}).catch(()=>{}); await pg.waitForTimeout(1500);
   const d=await pg.evaluate(()=>({...PARKPFDBG(),...PARKPFCHK()}));
   ok(d.done,'the park\'s Polyfork things are built');
-  ok(d.skipped.length<=2,'all but at most two of the '+d.want+' things stand ('+d.things+'; skipped: '+d.skipped.join(', ')+')');
+  ok(!d.skipped.length,'every one of the '+d.want+' things stands ('+d.things+'; skipped: '+d.skipped.join(', ')+')');
   ok(d.patches<130&&d.tris<600000,'baked into '+d.patches+' patch meshes, '+d.tris+' triangles in all');
   ok(d.drawn<d.tris*.4&&d.hid>d.patches/2,'only the near patches are drawn ('+d.drawn+' triangles, '+d.hid+' of '+d.patches+' patches hidden)');
   ok(d.shadow<=12,'shadows only from the big patches close by ('+d.shadow+')');

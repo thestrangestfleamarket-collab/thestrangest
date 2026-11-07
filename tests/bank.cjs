@@ -26,7 +26,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const vn = await pg.evaluate(() => VAULT.near()); ok(vn, 'by the bank\'s door on Market St, saying BANK opens your vault: ' + vn);
   await pg.evaluate(() => STORE.enter('bank', true)); await pg.waitForTimeout(2000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 }); await at(1); await pg.waitForTimeout(1500); const g0 = await pg.evaluate(() => { const c = INV.cash; STORE.bank.steal(); return c; }); await pg.waitForTimeout(4000);
   const fr = await pg.evaluate(() => ({ dead: __dbg.VIT.dead, cash: INV.cash, d: STORE.bank.dragon(), p: __dbg.pos().map(v => +v.toFixed(1)) }));
-  ok(fr.dead && fr.cash === g0, 'taking its gold, the dragon breathes fire and burns you up; the gold falls back: ' + JSON.stringify(fr));
+  ok(fr.dead && (fr.cash === g0 || fr.cash === 0), 'taking its gold, the dragon breathes fire and burns you up; the gold falls back (since 7 Nov your own cash lies with your body): ' + JSON.stringify(fr));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all bank checks passed'); process.exit(fails.length ? 1 : 0);
 })();

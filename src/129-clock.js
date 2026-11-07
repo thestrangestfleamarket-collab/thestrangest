@@ -31,7 +31,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
     const H=CLOCK.sunH??CLOCK.h, e=elev(H); let i=0; while(i<K.length-2&&e>K[i+1][0])i++; const A=K[i], B=K[i+1], t=Math.max(0,Math.min(1,(e-A[0])/(B[0]-A[0])));
     const up=SHARED.LVL!=='down';
     if(up){ mixC(A[1],B[1],t,scene.background); mixC(A[2],B[2],t,HEMI.color); mixC(A[3],B[3],t,HEMI.groundColor); HEMI.intensity=A[4]+(B[4]-A[4])*t; const SL=CLOCK.seasonLook(); if(SL.amb)HEMI.color.lerp(ca.setHex(SL.tint),SL.amb); if(e<-4)HEMI.intensity*=.75+.25*CLOCK.moonLit(); if(PARK.season){ const c=ca.setHex(SL.tint); PARK.season.value.set(c.r,c.g,c.b,SL.mix); PARK.seasonD.value=SL.desat; } }
-    const sun=e>-1, hd=CLOCK.run?(sun?CLOCK.shadeH:1):H, az=sun?azim(hd):azim(hd+12)*.5+.6, el=sun?Math.max(3,elev(hd))*D:48*D;   // while the clock runs the light comes from one held hour, so the shadows stay put (baked)
+    const sun=e>-1, hd=CLOCK.run?(sun?CLOCK.shadeH:1):CLOCK.sunQ?Math.round(H*4)/4:H, az=sun?azim(hd):azim(hd+12)*.5+.6, el=sun?Math.max(3,elev(hd))*D:48*D;   // while the clock runs the light comes from one held hour, so the shadows stay put (baked)
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;
     { const sa=azim(H), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));

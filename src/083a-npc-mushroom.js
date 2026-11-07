@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {PARK} from './003b-systems.js';
 import {MODS} from './006-map-pre.js';
+import {HOMES} from './076-npc-map.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {STALL} from './081-stalls.js';
 import {RIGNPC} from './083-npc-rig.js';
@@ -56,6 +57,6 @@ const MUSH={};
   const BOOTH=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g0=P.gate[0];
     MUSH.booth=STALL.build({X,Z,x0:g0-7.8,x1:g0-3,y:P.y0,veg:false,seed:7,gate:1}); };
   const N=RIGNPC.make(def,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:3.16, radius:.3,speed:.4,stride:6},PARTSNPC.street(72,-70),{roam:false}));
-  { const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet)STALL.work(N,MUSH.booth,{tray:1,jobs:['look'],wait:()=>2+Math.random()*3}); }; wait(); }
+  { const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet&&!HOMES.keeper(N))STALL.work(N,MUSH.booth,{tray:1,jobs:['look'],wait:()=>2+Math.random()*3}); }; wait(); }
   MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris,job:N.rig.job&&N.rig.job.k}); }
 export {MUSH};

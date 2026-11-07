@@ -1,6 +1,6 @@
-// THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay the Fox at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
+// THE BODEGA, FURNISHED: what is on the shelves is for sale (pick it into a basket, pay yourself at the register; walk out and the basket stays), scratch-off tickets at the lottery machine, a deli on the back wall run by the stock clerk, a coffee urn, an ice chest, a bulletin board, milk crates to sit on, and MANGO the bodega cat (pet her; feed her cat food and she brings luck); where its staff and its customers stand.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, FORAGE, INV, ITEMS, ROOMS, SHOPS, UI, VIT} from './003b-systems.js';
+import {ARCHI, FORAGE, INV, ITEMS, ROOMS, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
@@ -34,9 +34,9 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
   BODEGA.pick=(id,n=1)=>{ BODEGA.basket.set(id,(BODEGA.basket.get(id)||0)+n); };
   BODEGA.pay=()=>{ const t=total(); if(!count())return 'YOUR BASKET IS EMPTY.'; if(INV.cash<t)return `THAT IS $${t}. YOU HAVE $${INV.cash}.`; INV.cash-=t; for(const [id,n] of BODEGA.basket)INV.add(id,n); BODEGA.basket.clear(); BODEGA.paid=(BODEGA.paid||0)+t; return ''; };
   // a list you click: a shelf, or the register (the basket, then what is by the register)
-  const list=(title,rows,reg)=>({title,w:400,h:440,help:reg?'Click a line by the register to add it. PAY takes your cash and the bag is yours.':'Click a line to put one in your basket. Pay the Fox at the register on the counter.',
+  const list=(title,rows,reg)=>({title,w:400,h:440,help:reg?'Click a line by the register to add it. PAY takes your cash and the bag is yours.':'Click a line to put one in your basket. Pay yourself at the register on the counter.',
     start:S=>{ S.rows=rows(); },
-    tick:S=>{ if(!S.press)return; const y=S.my, x=S.mx; if(reg&&y>392&&y<428){ if(x<200){ const no=BODEGA.pay(); S.line=no||''; if(!no)S.over='PAID. THE FOX BAGS IT AND SLIDES IT OVER.'; } else { BODEGA.basket.clear(); S.line='YOU PUT IT ALL BACK.'; } S.rows=rows(); return; }
+    tick:S=>{ if(!S.press)return; const y=S.my, x=S.mx; if(reg&&y>392&&y<428){ if(x<200){ const no=BODEGA.pay(); S.line=no||''; if(!no)S.over='PAID. YOU BAG IT YOURSELF.'; } else { BODEGA.basket.clear(); S.line='YOU PUT IT ALL BACK.'; } S.rows=rows(); return; }
       const i=Math.floor((y-reg0(S))/22); const r=S.rows[i]; if(r&&r.id&&x>10&&x<390){ BODEGA.pick(r.id); S.line=`${r.brand?r.brand+': ':''}${r.name} IN YOUR BASKET.`; S.rows=rows(); } },
     draw:(S,g)=>{ g.fillStyle='#1c1a16'; g.fillRect(0,0,400,440); g.font='12px monospace'; g.textBaseline='middle'; const y0=reg0(S);
       S.rows.forEach((r,i)=>{ const y=y0+i*22+11; if(r.head){ g.fillStyle='#f0c040'; g.textAlign='left'; g.fillText(r.head,14,y); return; } g.fillStyle=i%2?'#26231e':'#2c2822'; g.fillRect(10,y-11,380,22);
@@ -49,7 +49,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     R.push({head:'BY THE REGISTER'}); for(const r of BODEGA.counterLines())R.push(r); return R.slice(0,16); },true));
   // the scratch-offs: $2 a ticket; a fed cat's luck makes the next one likelier
   BODEGA.scratch=()=>MINI.open(GAMES.scratch({can:()=>INV.cash<2?'A TICKET IS $2.':'',pay:()=>{ INV.cash-=2; },lucky:()=>{ const l=BODEGA.lucky; BODEGA.lucky=false; return l; },
-    end:S=>{ BODEGA.last={win:S.win}; if(S.win){ INV.cash+=S.win; say(`YOU WIN $${S.win}. THE FOX PAYS OUT FROM THE DRAWER.`); if(S.win>=50)BODEGA.board=`$${S.win} WINNER, SOLD HERE!`; } }}));
+    end:S=>{ BODEGA.last={win:S.win}; if(S.win){ INV.cash+=S.win; say(`YOU WIN $${S.win}. THE MACHINE PAYS OUT.`); if(S.win>=50)BODEGA.board=`$${S.win} WINNER, SOLD HERE!`; } }}));
   // a basket left unpaid stays in the bodega
   SYS.add('life',()=>{ if(BODEGA.basket.size&&(!ROOMS.offIn||ROOMS.offIn()!=='bodega')){ BODEGA.basket.clear(); say('YOU LEFT THE BASKET BY THE DOOR. UNPAID THINGS STAY IN THE BODEGA.','#c8a090'); } },'146ze-bodega');
   // where its people go, in the shop's own metres (u from its west wall, v from its back wall toward the street)
@@ -64,7 +64,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     const over=(name,p,act,reach=1.5)=>{ if(!p)return; const bs=p.boxes||[], x0=Math.min(...bs.map(b=>b.x0)), x1=Math.max(...bs.map(b=>b.x1)), y0=Math.min(...bs.map(b=>b.y0)), y1=Math.max(...bs.map(b=>b.y1)), z1=Math.max(...bs.map(b=>b.z1||0),40);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(x1)-X(x0)),BOD.Y?BOD.Y(z1):z1,Math.abs(Z(y1)-Z(y0))),new THREE.MeshBasicMaterial({visible:false})); hb.position.set((X(x0)+X(x1))/2,(BOD.Y?BOD.Y(z1):z1)/2,(Z(y0)+Z(y1))/2); SHARED.BODB.SG.add(hb);
       UI.thing({name,obj:hb,reach:reach*T,near:(reach+1.1)*T,tall:BOD.Y?BOD.Y(z1):z1,act}); };
-    for(const k in SHELF)over(/^fridge/.test(k)?'THE DRINKS FRIDGE (TAKE)':'THE SHELF (TAKE)',O[k],()=>BODEGA.openShelf(k));
+    for(const k in SHELF)if(BODEGA.shelf(k).length)over(/^fridge/.test(k)?'THE DRINKS FRIDGE (TAKE)':'THE SHELF (TAKE)',O[k],()=>BODEGA.openShelf(k));
     if(BODEGA.goods)BODEGA.goods({X,Z,O,T,K,G:SHARED.BODB.SG});   // the goods whose sellers are archived, on the shelves (146zea)
     over('THE REGISTER (PAY)',O.counter,BODEGA.register,1.8); over('THE LOTTERY MACHINE (SCRATCH-OFF $2)',O.lotto,BODEGA.scratch,1.6);
     const WF=t(.12);   // the back wall's inside face
@@ -74,20 +74,17 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
     { const gl=own(()=>{ box(t(9.03),t(2.07),t(12.97),t(2.1),.75,1.15,C.glass); box(t(9.03),t(1.5),t(12.97),t(1.53),.95,1.15,C.glass); }), gm=meshOf(gl,new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.22,depthWrite:false})); gm.castShadow=false; gm.userData.noMerge=true; }
     glow(()=>box(t(9.05),t(1.52),t(12.95),t(2.08),1.13,1.14,0xf4f8ff)); for(let i=0;i<8;i++){ const u=t(9.3)+i*.43; box(u,t(1.6),u+.34,t(2.0),.78,.86,[0xd88a7a,0xe8c890,0xc84a3a,0xf0e0b0,0xa85a4a,0xe0b080,0xd06a5a,0xf4e4c0][i]); }
     pic(t(11),WF+.005,1.75,2.4,.55,0,1,words(112,24,'#16140f',[['DELI · HEROES',56,3,'#f0c040',9,'center'],['BACON EGG & CHEESE',56,14,'#f4ecd8',7,'center']]),true);
-    use('THE DELI CASE (ORDER)',t(11),t(1.8),t(1.2),1.2,()=>SHOPS.open({key:'gas_station_attendant',name:'THE DELI'}),2.0);
     // the coffee urn on its table by the front, cups and lids
     box(t(12.8),t(8.1),t(13.8),t(8.7),0,.8,C.wood); sol(t(12.8),t(8.1),t(13.8),t(8.7)); cyl(t(13.1),t(8.4),.13,.8,1.25,C.steel); cyl(t(13.1),t(8.4),.1,1.25,1.3,C.dsteel); box(t(13.1)-.02,t(8.4)+.12,t(13.1)+.02,t(8.4)+.16,.95,1.0,C.dsteel);
     for(let i=0;i<5;i++)cyl(t(13.5),t(8.3),.045,.8+i*.06,.86+i*.06,C.white,.05); pic(t(13.3),t(8.1)-.005,.85,.5,.18,0,-1,words(40,14,'#5a2a14',[['COFFEE $1',20,3,'#f4ecd8',8,'center']]),true);
-    use('THE COFFEE URN ($1)',t(13.2),t(8.4),t(.8),1.3,()=>IKIT.buy('d_coffee',1,'A HOT COFFEE IN A BLUE CUP. $1.'));
     // the ice chest: ice pops under a sliding lid; MANGO the cat sleeps on top
     box(t(9.2),t(8.1),t(10.4),t(8.7),0,.85,C.white); box(t(9.2),t(8.1),t(10.4),t(8.7),.85,.88,C.glass); box(t(9.25),t(8.08),t(10.35),t(8.1),.3,.6,C.blue); sol(t(9.2),t(8.1),t(10.4),t(8.7));
     pic(t(9.8),t(8.08),.4,.5,.16,0,-1,words(40,12,'#2a5aa8',[['ICE POPS $1',20,2,'#f4f8ff',7,'center']]),true);
-    use('THE ICE CHEST (ICE POP $1)',t(9.5),t(8.4),t(.6),.9,()=>IKIT.buy('f_icepop',1,'AN ICE POP, CHERRY. $1.'),1.4);
     // two milk crates to sit on
     for(const u of [10.9,11.6]){ const cu=t(u), cv=t(8.45); seat('A MILK CRATE',own(()=>{ box(cu-.17,cv-.17,cu+.17,cv+.17,0,.3,u<11?C.red:C.blue); }),[[cu,cv,.3,0,-1]],.8); }
     // the bulletin board on the back wall
     box(t(6.6),WF,t(7.9),WF+.03,1.15,1.95,C.wood); box(t(6.65),WF+.03,t(7.85),WF+.04,1.2,1.9,C.cork); for(let i=0;i<6;i++){ const u=t(6.75)+(i%3)*.38, h=1.28+Math.floor(i/3)*.32; box(u,WF+.04,u+.28,WF+.045,h,h+.24,[0xf4f0e0,0xf0e080,0xa0d0f0,0xf4c0c0,0xf4f0e0,0xc0f0c0][i]); }
-    use('THE BULLETIN BOARD',t(7.25),WF+.15,t(1.2),1.95,()=>MINI.look('THE BULLETIN BOARD',(g,w,h)=>{ g.fillStyle='#b08850'; g.fillRect(0,0,w,h); const N=[['ROOM FOR RENT','ASK THE FOX. NO PETS','(EXCEPT CATS)'],['GUITAR LESSONS','$5 A HOUR','CALL ROY'],['LOST: ONE GLOVE','LEFT, BROWN','THE PARK'],['THE FLEA MARKET','UNDER THE TRACKS','ALL WEEK'],['MANGO LIKES','CAT FOOD','AISLE 2'],[BODEGA.board||'LOTTO','SCRATCH-OFFS $2','AT THE REGISTER']];
+    use('THE BULLETIN BOARD',t(7.25),WF+.15,t(1.2),1.95,()=>MINI.look('THE BULLETIN BOARD',(g,w,h)=>{ g.fillStyle='#b08850'; g.fillRect(0,0,w,h); const N=[['ROOM FOR RENT','ASK UPSTAIRS. NO PETS','(EXCEPT CATS)'],['GUITAR LESSONS','$5 A HOUR','CALL ROY'],['LOST: ONE GLOVE','LEFT, BROWN','THE PARK'],['THE FLEA MARKET','UNDER THE TRACKS','ALL WEEK'],['MANGO LIKES','CAT FOOD','AISLE 2'],[BODEGA.board||'LOTTO','SCRATCH-OFFS $2','AT THE REGISTER']];
       N.forEach((n,i)=>{ const x=12+(i%3)*(w-24)/3, y=14+Math.floor(i/3)*(h-28)/2, nw=(w-24)/3-10, nh=(h-28)/2-10; g.fillStyle=['#f4f0e0','#f0e080','#a0d0f0','#f4c0c0','#f4f0e0','#c0f0c0'][i]; g.fillRect(x,y,nw,nh); g.fillStyle='#c02028'; g.beginPath(); g.arc(x+nw/2,y+6,4,0,7); g.fill();
         g.fillStyle='#2a2a32'; g.textAlign='center'; g.textBaseline='top'; n.forEach((l,j)=>{ g.font=(j?11:12)+'px monospace'; g.fillText(l,x+nw/2,y+20+j*18); }); }); }),2.0);
     // MANGO, the bodega cat, curled on the ice chest: she breathes and flicks her tail; pet her, or feed her

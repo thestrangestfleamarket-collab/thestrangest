@@ -24,9 +24,9 @@ import {TILE} from './006-map-pre.js';
     if(id==='bs_thread'){ const g=new THREE.Group(); g.add(P('cyl',0xe8e0cc,0,0,0,.04,.07,.04),P('cyl',0x8a6a44,0,0,0,.05,.012,.05),P('cyl',0x8a6a44,0,.04,0,.05,.012,.05)); g.children[2].position.y=-.04; g.children[1].position.y=.04; return g; }
     if(/^bs_/.test(id))return INSPECT.shape('book',id==='bs_leather'?0x8a5a32:0x6a7a9a,id==='bs_leather'?0x7a4a28:0x5a6a8a);
     const c=new THREE.Color(BC[id.slice(3)]); if(id.startsWith('bk_'))c.lerp(new THREE.Color(0x8a8070),.45); return INSPECT.shape('book',c.getHex(),id.startsWith('bk_')?0xc8bc98:0xf2ead6); }});
-  FORAGE.CK.bind={short:'BIND',bonus:()=>FORAGE.has('quill_pen')?10:0,need:()=>FORAGE.has('bs_kit')?null:"YOU NEED A BINDER'S KIT (THE ODDITIES STALL HAS ONE).",made:nm=>`YOU MEND IT, PAGE BY PAGE: ${nm}.`,fail:'THE GLUE SETS CROOKED. THE BOOK IS NO WORSE, BUT YOUR SUPPLIES ARE WASTED.',keep:id=>id.startsWith('bk_'),
+  FORAGE.CK.bind={short:'BIND',bonus:()=>FORAGE.has('quill_pen')?10:0,need:()=>FORAGE.has('bs_kit')?null:"YOU NEED A BINDER'S KIT (THE PROFESSOR AT THE BOOKSTORE SELLS ONE).",made:nm=>`YOU MEND IT, PAGE BY PAGE: ${nm}.`,fail:'THE GLUE SETS CROOKED. THE BOOK IS NO WORSE, BUT YOUR SUPPLIES ARE WASTED.',keep:id=>id.startsWith('bk_'),
     status:()=>FORAGE.has('bs_kit')?"BINDER'S KIT":"NO BINDER'S KIT"};
-  FORAGE.HELP.push("BOOKBINDING restores worn books (a binder's kit, glue, thread, cloth, leather); find them in trash cans and the river, or buy them at the oddities stall, which buys them back mended.");
+  FORAGE.HELP.push("BOOKBINDING restores worn books (a binder's kit, glue, thread, cloth, leather); find them in trash cans and the river, or buy them from the Professor at the bookstore, who buys them back mended.");
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   const S={v:1,cans:{},sd:-1,stock:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const restock=()=>{ if(S.sd===day())return; S.sd=day(); S.stock={paper:4,novel:3,atlas:2,hymnal:2,ledger:1}; save(); };

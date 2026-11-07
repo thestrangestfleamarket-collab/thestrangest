@@ -33,6 +33,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **2. The apartment street** · P1 · L · code · done 6 Nov. Still open: selling the penthouses (every 21st flat), the lobbies and the other floors (only your own flat is built), two first logins at once can get the same flat number.
   Was: Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
 - [x] **3. The Hudson** · P2 · L · code · done 6 Nov (the promenade twice as wide, the pier at the way through, the fish market's stalls and barbed fence; the river's walkable part ends at the section's edge, the far water on past it). Was: The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
+- [x] **4a. The skill shops' insides and keepers** · done 7 Nov (claude/friendly-albattani-9a8elf): every merchant's shop furnished, its keeper inside, gear by skill (`tests/skillshops.cjs`). Each shop's own furniture, beyond the shared inside, is still open.
 - [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
 - [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
 - [ ] **6. The park's made things** · P2 · L · code. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
@@ -384,6 +385,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
 - [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
   held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
+- [ ] **The avatar's Mixamo clips** (owner, 7 Nov: "yes lets use mixamo"; his picks: Polyfork's 44, every group) · P2 · L · code. Moving, the actions you already do, emotes, work and food on the avatar. [taking: claude/gracious-pasteur-mwhah7, 7 Nov]
 
 ## Moves (Mesh2Motion)
 

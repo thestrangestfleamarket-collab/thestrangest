@@ -9,7 +9,7 @@ import {BANKK} from './146zm-bank.js';
   const read=()=>{ try{ const v=OWNED.get('vault'), o=typeof v==='string'?JSON.parse(v):v; return o&&o.v===1&&o.items?o:{v:1,items:{}}; }catch(e){ return {v:1,items:{}}; } };
   const write=o=>{ try{ OWNED.set('vault',JSON.stringify(o)); }catch(e){} };
   // near the bank: in front of its lot on Market St, or inside it
-  VAULT.near=()=>{ const b=WP.bank; if(!b||!SHARED.BOD.MX)return false; const x=SHARED.BOD.MX(pos.x), y=SHARED.BOD.MY(pos.z); return x>b.x0-4&&x<b.x1+4&&y>-96&&y<-62; };
+  VAULT.near=()=>{ const b=WP.bank; if(!b||!SHARED.BOD.MX)return false; const x=SHARED.BOD.MX(pos.x), y=SHARED.BOD.MY(pos.z); return x>b.x0-4&&x<b.x1+4&&(b.y1!=null?y>b.y0-8&&y<b.y1+1:y>-96&&y<-62); };   // (a Hudson-row bank faces the river: its promenade side and inside its lot)
   const name=id=>(FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
   const movable=id=>!String(id).includes('~')&&!(ITEMS.prop&&ITEMS.prop(id,'container'));
   const W=document.createElement('div'); W.id='vaultw'; W.hidden=true;

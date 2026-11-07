@@ -520,7 +520,8 @@
    "kind": "front",
    "x0": 34.01,
    "x1": 55.64,
-   "lot": true
+   "lot": true,
+   "merchant": "aquarium_service_technician"
   },
   {
    "id": "mush",
@@ -569,7 +570,8 @@
    "x0": 179.49,
    "x1": 197.61,
    "lot": true,
-   "name": "THE CLOTHES SHOP"
+   "name": "THE CLOTHES SHOP",
+   "merchant": "valet_attendant"
   },
   {
    "id": "skate",
@@ -586,7 +588,8 @@
    "x0": 215.74,
    "x1": 252,
    "lot": true,
-   "name": "THE DINER"
+   "name": "THE DINER",
+   "merchant": "diner_waitress"
   },
   {
    "id": "bank",
@@ -608,7 +611,8 @@
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
-   "row": 2
+   "row": 2,
+   "merchant": "front_desk_clerk"
   },
   {
    "id": "bar",
@@ -717,7 +721,8 @@
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
-   "row": 2
+   "row": 2,
+   "merchant": "doorman"
   },
   {
    "id": "barber",
@@ -728,7 +733,8 @@
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
-   "row": 2
+   "row": 2,
+   "merchant": "lounge_crooner"
   },
   {
    "id": "flea",
@@ -1529,41 +1535,6 @@
   "beekeeper": [
    118,
    44,
-   0
-  ],
-  "fisherman_in_waders": [
-   61.8,
-   -120.5,
-   0
-  ],
-  "scuba_diver": [
-   117.5,
-   -113,
-   0
-  ],
-  "samurai_warrior": [
-   -68,
-   -73.5,
-   0
-  ],
-  "park_ranger": [
-   106,
-   -30,
-   0
-  ],
-  "forest_ranger": [
-   118,
-   -30,
-   0
-  ],
-  "village_gardener": [
-   96,
-   -24,
-   0
-  ],
-  "game_master": [
-   -50.5,
-   39.5,
    0
   ]
  },

@@ -10,8 +10,12 @@ const PFROW={fronts:[],houses:[],things:[]};
   const HOUSES=LEVEL.places.filter(p=>p.pf&&p.y1!=null&&!p.row&&p.kind!=='front').sort((a,b)=>a.y0-b.y0);   // (a shop on the Hudson row stands through MSHOP.fronts)
   for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,35/.84*ZU*24]); }   // solid from the start (the house is 35 m tall)
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
+  // words on a front's sign board, in the piece's own units: {t, at:[x,y,z] of the board's face, w, h}
+  const board=(g,S)=>{ const cv=document.createElement('canvas'), H=64, W=Math.round(H*S.w/S.h); cv.width=W; cv.height=H; const c=cv.getContext('2d'); c.fillStyle=S.bg||'#2c2620'; c.fillRect(0,0,W,H);
+    c.fillStyle=S.ink||'#ffe6a0'; c.font='bold '+Math.round(H*.8)+'px Georgia,serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(S.t,W/2,H*.54); const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace;
+    const me=g.children[0].children[0], p=new THREE.Mesh(new THREE.PlaneGeometry(S.w,S.h),new THREE.MeshBasicMaterial({map:tx})); p.position.set(S.at[0],S.at[1],S.at[2]+.02); me.add(p); };
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };
-    for(const f of MSHOP.fronts){ const sc=f.sc||1, d=size(f.pf)[2]*M*sc; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot,...(sc!==1?{m:size(f.pf)[1]*sc}:{})}); if(g)PFROW.fronts.push({id:f.id,obj:g}); }
+    for(const f of MSHOP.fronts){ const sc=f.sc||1, d=size(f.pf)[2]*M*sc; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot,cut:f.cut,...(sc!==1?{m:size(f.pf)[1]*sc}:{})}); if(g){ if(f.sign)board(g,f.sign); PFROW.fronts.push({id:f.id,obj:g}); } }
     HOUSES.forEach((p,i)=>{ const fx=XS(p.x1), zc=(ZS(p.y0)+ZS(p.y1))/2, w=size(p.pf)[0]*M, d=size(p.pf)[2]*M, rot=Math.PI/2, g=put(p.pf,fx-d/2,zc,{rot});   // the front faces the street (east)
       if(!g)return; PFROW.houses.push({id:p.id,obj:g,door:[fx,zc]});
       for(let k=1;k<10;k++)put('fireescape',fx+.7*M,zc+(i%2?-6:6)*M,{rot,lift:(3*k-1.13)*MV});   // a landing at every floor line on one bay

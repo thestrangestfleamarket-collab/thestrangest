@@ -11,9 +11,14 @@ const KIT={data:KITD,geos:{},things:[]};
     g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); return g; };
   KIT.geo=name=>{ if(KIT.geos[name])return KIT.geos[name]; const M=KITD[name]; if(!M){ console.warn('kit: no',name); return null; } return KIT.geos[name]=KIT.decode(M); };
   KIT.mat=new THREE.MeshLambertMaterial({vertexColors:true});
+  // the same piece without what lies wholly inside the given boxes (model units), for one place that leaves a part off
+  KIT.cutGeo=(name,cut)=>{ const k=name+JSON.stringify(cut); if(KIT.geos[k])return KIT.geos[k]; const g0=KIT.geo(name); if(!g0)return null; const P=g0.attributes.position.array, I=g0.index.array, keep=[];
+    const inB=v=>cut.some(b=>P[v*3]>=b[0]&&P[v*3]<=b[3]&&P[v*3+1]>=b[1]&&P[v*3+1]<=b[4]&&P[v*3+2]>=b[2]&&P[v*3+2]<=b[5]);
+    for(let t=0;t<I.length;t+=3)if(!(inB(I[t])&&inB(I[t+1])&&inB(I[t+2])))keep.push(I[t],I[t+1],I[t+2]);
+    const g=g0.clone(); g.setIndex(keep); g.computeBoundingBox(); g.computeBoundingSphere(); return KIT.geos[k]=g; };
   KIT.piece=(name,w,geo)=>{ '@later'; const g=geo||KIT.geo(name); if(!g)return null; g.boundingBox||g.computeBoundingBox(); const bb=g.boundingBox, s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z), me=new THREE.Mesh(g,KIT.mat), o=new THREE.Group();
     me.position.set(-(bb.min.x+bb.max.x)/2*s,-(bb.min.y+bb.max.y)/2*s,-(bb.min.z+bb.max.z)/2*s); me.scale.setScalar(s); me.userData.shared=true; o.add(me); return o; };
-  KIT.put=(name,x,z,o={})=>{ const geo=KIT.geo(name); if(!geo)return null; const M=KITD[name], bb=geo.boundingBox, tall=bb.max.y-bb.min.y, s=o.m?o.m/.84*TILE/tall:1/.84*TILE;
+  KIT.put=(name,x,z,o={})=>{ const geo=o.cut?KIT.cutGeo(name,o.cut):KIT.geo(name); if(!geo)return null; const M=KITD[name], bb=geo.boundingBox, tall=bb.max.y-bb.min.y, s=o.m?o.m/.84*TILE/tall:1/.84*TILE;
     const me=new THREE.Mesh(geo,o.mat||KIT.mat); me.castShadow=true; me.receiveShadow=true; me.position.set(-(bb.min.x+bb.max.x)/2,-bb.min.y,-(bb.min.z+bb.max.z)/2);
     const body=new THREE.Group(); body.add(me); body.scale.set(s,s*YS,s); const g=new THREE.Group(); g.add(body); g.rotation.y=o.rot||0;
     const gy=o.ground?o.ground(x,z):MODS.bodega.ground(x,z); g.position.set(x,gy+(o.lift||0),z); (o.group||MAPG.bodega).add(g);

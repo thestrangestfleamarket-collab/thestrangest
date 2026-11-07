@@ -49,6 +49,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const w=D.win&&D.win((u-a0)/(a1-a0),(z-16)/76,night); if(w)return w; const gl=.6+.4*Math.max(0,1-Math.abs((u-a0)/(a1-a0)-.5)*2); return sh([24,26,30],f*gl); }
       if(z<16)return sh(D.trim,f*.85);
       return null; }; };
+  MSHOP.front=front;
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
     if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
     if(D.pf)MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(LW.y1),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)});   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint

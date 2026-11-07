@@ -17,13 +17,12 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const walking=dt=>{ if(!path)return false; const p=path[pi]; if(!p){ path=null; return false; }
     if(d2(p.x,p.z)<.3*T||!SHARED.target){ pi++; if(pi>=path.length){ path=null; SHARED.target=null; return false; } step(); return true; }
     last.t+=dt; if(last.t>3){ if(Math.hypot(pos.x-last.x,pos.z-last.z)<.2*T&&++stuck>3){ path=null; SHARED.target=null; return false; } last={x:pos.x,z:pos.z,t:0}; } return true; };
-  const arrive=(x,z,near=.6*T)=>d2(x,z)<near;
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
   const nearest=(list,ok=()=>true)=>{ let b=null, bd=1e18; for(const th of list){ if(!th||!th.obj||!ok(th))continue; const p=thAt(th), d=d2(p.x,p.z); if(d<bd){ bd=d; b=th; } } return b; };
   // go to a thing and use it as a double click does: true once used
   const use=(th,dt)=>{ if(!th)return false; const p=thAt(th), reach=(th.reach||T)*.8, d=d2(p.x,p.z); if(d<=reach||(!path&&th.tried&&d<5*T)){ th.tried=0; path=null; SHARED.target=null; SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z); th.act&&th.act(); return true; }
     if(!path||Math.hypot(p.x-(path[path.length-1]||p).x,p.z-(path[path.length-1]||p).z)>T){ if(!path&&th.tried>2&&d<5*T)th.tried=9; else { th.tried=(th.tried||0)+1; walk(p.x,p.z); } } else walking(dt); return false; };
-  const click=sel=>{ const b=[...document.querySelectorAll(sel)].find(e=>e.offsetParent!==null||e.closest(':not([hidden])')); if(b){ b.click(); return true; } return false; };
+  const click=sel=>{ const b=[...document.querySelectorAll(sel)].find(e=>e.offsetParent!==null&&!e.closest('[hidden]')); if(b){ b.click(); return true; } return false; };
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached

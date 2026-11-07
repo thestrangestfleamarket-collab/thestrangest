@@ -273,6 +273,12 @@ export class Block extends Server {
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
+    } else if (m.t === "mob") {   // the dungeon's monsters shared in a room (src/146b-dunmobs.js): the host's picture to everyone below, a blow, a hurt or a kill to one
+      if (!s.at || s.at[4] !== "down") return; const k = word(m.k, 4), arr = (a, n) => (Array.isArray(a) ? a.slice(0, n) : []), o = { t: "mob", id: s.id, k, r: num(m.r, 0, 999) };
+      if (k === "s") { o.a = arr(m.a, 12).map(e => arr(e, 7).map((v, i) => i === 5 ? word(v, 8) : num(v, -1e5, 1e5))); o.b = arr(m.b, 12).map(e => arr(e, 6).map((v, i) => i === 0 ? word(v, 24) : num(v, -1e5, 1e5))); }
+      else { for (const f of ["w", "key", "tk"]) if (m[f] != null) o[f] = word(m[f], 24); for (const f of ["i", "kb", "hv", "x", "z"]) if (m[f] != null) o[f] = num(m[f], -1e5, 1e5); if (m.d != null) o.d = num(m.d, 0, 1); }
+      const msg = JSON.stringify(o), to = m.to ? String(m.to) : "";
+      for (const c2 of this.getConnections()) { const t = c2.state; if (c2 === c || !t || !t.at || t.at[4] !== "down") continue; if (to) { if (t.id === to) { c2.send(msg); break; } } else c2.send(msg); }
     } else if (m.t === "aim") {
       const v = Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
       this.broadcast(JSON.stringify({ t: "aim", id: s.id, w: word(m.w, 16), v }), [c.id]);

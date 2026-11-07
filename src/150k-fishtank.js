@@ -38,6 +38,6 @@ const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.vis
       FORAGE.take('g_fishfood',1); if(FORAGE.draw)FORAGE.draw(); T.fed=30; if(SFX)SFX.play('click',{vol:.3,vary:.2}); SAY('YOU SHAKE IN A PINCH OF FOOD. THE KOI RISE AND SNAP IT UP.','#c8e8f0'); }); };
   SYS.add('life',dt=>{ for(let k=TANKS.length-1;k>=0;k--){ const T=TANKS[k]; if(!T.g.parent){ TANKS.splice(k,1); continue; } if(!T.g.visible)continue; T.t+=dt;
     for(const [m,ph] of T.plants)m.rotation.z=.04*Math.sin(T.t*.6+ph);
-    const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/2):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back
+    const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/.6):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back
     for(const f of T.fish){ f.a+=f.dir*f.s*(1+up)*dt/Math.max(f.rx,f.rz); const x=Math.cos(f.a)*f.rx, z=Math.sin(f.a)*f.rz, y=f.cy+(T.y1-.04-f.cy)*up+.03*Math.sin(T.t*.5+f.bob);
       const dx=-Math.sin(f.a)*f.rx*f.dir, dz=Math.cos(f.a)*f.rz*f.dir; f.o.position.set(x,y-T.g.position.y-(T.tg?T.tg.position.y:0),z); f.o.rotation.y=Math.atan2(-dz,dx); } } },'150k-fishtank'); }

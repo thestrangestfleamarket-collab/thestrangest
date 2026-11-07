@@ -50,7 +50,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const st2=await goes('stroll'), bk=await goes('backUp');
   const lk=await pg.evaluate(async()=>{ const S=__dbg.ST, d0=S.dist; __dbg.RIG.begin(S,'roll'); await new Promise(r=>setTimeout(r,400)); const r={look:__dbg.RIG.LOOK.roll,move:S.move&&S.move.name}; for(let i=0;i<60&&S.move;i++)await new Promise(r=>setTimeout(r,200)); r.went=+(S.dist-d0).toFixed(1); return r; });
   rec('the stroll walks you forward, backing up walks you back, the roll is drawn from its recording and still carries you',st2.dist>10&&st2.moved>.1&&bk.dist<-3&&lk.look==='mc_roll2'&&lk.move==='roll'&&lk.went>5,JSON.stringify({st2,bk,lk}));
-  const tired=await pg.evaluate(async()=>{ __dbg.VIT.tired=true; for(let i=0;i<40&&MOTION.cur!=='tired';i++)await new Promise(r=>setTimeout(r,250)); const c=MOTION.cur; __dbg.VIT.tired=false; await new Promise(r=>setTimeout(r,1500)); return {on:c,off:MOTION.cur}; });
+  const tired=await pg.evaluate(async()=>{ const V=__dbg.VIT; for(let i=0;i<60&&MOTION.cur!=='tired';i++){ V.sta=0; await new Promise(r=>setTimeout(r,250)); } const c=MOTION.cur; V.sta=1; await new Promise(r=>setTimeout(r,1500)); return {on:c,off:MOTION.cur}; });
   rec('standing still out of breath, you bend over; rested, you stand',tired.on==='tired'&&tired.off!=='tired',JSON.stringify(tired));
   // a window keeps its size when clicked, resizes from its corner (kept), and the emotes fit it without scrolling
   const win=async()=>pg.evaluate(()=>{ const r=document.getElementById('emotes').getBoundingClientRect(); return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]; });

@@ -45,7 +45,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
     await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
-    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TENANTS,TOOLS', 'ADMIN: BUG QUEUE, TENANTS, TOOLS');
+    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TENANTS,TEXT,TOOLS', 'ADMIN: BUG QUEUE, TENANTS, TEXT, TOOLS');
     await sub('tools'); ok(await until(() => document.querySelectorAll('#dtools ul li').length > 10 && !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats, the render inspector and the game log');
     await shot('admin');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);

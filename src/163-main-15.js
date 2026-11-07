@@ -17,4 +17,4 @@ GATES.init(); DRAINS.init(); CLIP.run(); WEEDS.lawnInit(); DRONE.init(); NEWS.in
 { const t0=performance.now(), PL=[0,1,2,3,4,5].map(()=>new THREE.Plane(new THREE.Vector3(0,1,0),1e6)); if(FREE)ROOMS.nearAll(); renderer.setRenderTarget(SHARED.composer.readBuffer); renderer.compile(scene,SHARED.cam);
   if(!FREE){ renderer.clippingPlanes=PL; renderer.render(new THREE.Scene(),SHARED.cam); renderer.compile(scene,SHARED.cam); renderer.clippingPlanes=[]; } renderer.setRenderTarget(null);
   window.WARMMS=Math.round(performance.now()-t0); }
-resize(); applyTime(0); requestAnimationFrame(frame);
+resize(); applyTime(0); requestAnimationFrame(frame); START.reveal();

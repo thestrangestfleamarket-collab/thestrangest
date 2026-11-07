@@ -1,4 +1,4 @@
-// THE FISHING PIER: PIER builds the long timber pier out into the Hudson with the river (decks, pilings, rails, lamps, gear, the shed at its end).
+// THE FISHING PIER: PIER builds the long timber pier out into the Hudson with the river (decks, pilings, rails, lamps, gear).
 import {THREE} from './003-shx.js';
 import {CLOCK} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -6,7 +6,7 @@ import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 const PIER={}; window.PIER=PIER;
 RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, LV=RB.lv, WU=T/.84, Y=v=>v*WU, X=RIVER.fpier, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-  const hw=RIVER.fpw||1.8*T, zH=Q-Math.min(27*T,Math.max(8*T,(Q-RB.z0)*.5-6*T)), HD=6*T, zE=zH-HD, HW=5.5*T, G=new THREE.Group(); G.name='pier'; scene.add(G);
+  const hw=RIVER.fpw||1.8*T, zH=Q-Math.min(34.5*T,Q-RB.z0-14*T), HD=6*T, zE=zH-HD, HW=5.5*T, G=new THREE.Group(); G.name='pier'; scene.add(G);
   Object.assign(PIER,{x:X,z0:Q,zH,zE,hw,HW,G});
   RIVER.decks.push({r:[[X-hw,zH,X+hw,Q],[X-HW,zE,X+HW,zH]],lad:[X,zE-.55*T,X,zE+.8*T],pier:1});
   const cv=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
@@ -68,18 +68,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
     box(tx-.3*WU,.93*WU,tz+.05*WU,.16*WU,.012*WU,.03*WU,[.8,.82,.85]); SOL.up.push([tx-.8*T,tz-.4*T,tx+.8*T,tz+.4*T]);
     box(X-.9*T,.12*WU,zE+1.3*T,.45*WU,.22*WU,.25*WU,[.22,.36,.24]); box(X-.9*T,.24*WU,zE+1.3*T,.12*WU,.03*WU,.04*WU,IRON);
     { const rx=X-hw-.04*WU, ry=.72*WU, rz=Q-16.2*T; TO.push([rx,ry,rz,.28*WU,[.84,.22,.15],1]); for(let k=0;k<4;k++){ const a=k*Math.PI/2+.785; box(rx,ry+Math.sin(a)*.28*WU,rz+Math.cos(a)*.28*WU,.11*WU,.1*WU,.1*WU,[.92,.9,.86]); } } }
-  // the shed at the end of the head: clapboard walls, a tin roof, a window and a door
-  const SW=2.6*WU, SD=2.1*WU, SH=2.3*WU, sx=X-HW+.35*T+SW/2, sz=zE+.3*T+SD/2;
-  { const clap=cv(64,64,(g,w,h)=>{ for(let y=0;y<h;y++){ const b=Math.floor(y/6), sh=y%6; const k=.85+.25*hs(b,1); g.fillStyle=`rgb(${(78*k)|0},${(98*k)|0},${(96*k)|0})`; g.fillRect(0,y,w,1); if(sh===5){ g.fillStyle='rgba(20,22,24,.7)'; g.fillRect(0,y,w,1); } }
-      for(let i=0;i<60;i++){ g.fillStyle=`rgba(200,196,180,${(.15+.2*hs(i,4)).toFixed(2)})`; g.fillRect(hs(i,1)*w|0,hs(i,2)*h|0,2+hs(i,3)*5|0,1); } });
-    clap.wrapS=clap.wrapT=THREE.RepeatWrapping; const geo=[]; for(const [px,pz,ry,w] of [[sx,sz+SD/2,0,SW],[sx,sz-SD/2,Math.PI,SW],[sx+SW/2,sz,Math.PI/2,SD],[sx-SW/2,sz,-Math.PI/2,SD]]){ const g=new THREE.PlaneGeometry(w,SH); const uv=g.attributes.uv; for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w/WU,uv.getY(i)*SH/WU*1.2); g.rotateY(ry); g.translate(px,SH/2,pz); geo.push(g); }
-    const wall=new THREE.Mesh(mergeG(geo),lit(new THREE.MeshLambertMaterial({map:clap}),.25)); wall.castShadow=wall.receiveShadow=true; G.add(wall);
-    for(const s of [-1,1]){ const a=.32; box(sx,SH+.32*WU,sz+s*SD*.26,SW+.35*WU,.05*WU,SD*.62,RUST,s*a,0,0); }
-    box(sx,SH+.1*WU,sz,SW,.2*WU,SD,DK); cyl(sx+SW*.3,SH+.8*WU,sz-SD*.2,.07*WU,1*WU,IRON); cyl(sx+SW*.3,SH+1.32*WU,sz-SD*.2,.12*WU,.06*WU,IRON);
-    box(sx+.45*WU,1*WU,sz+SD/2+.03*WU,.75*WU,1.9*WU,.05*WU,[.24,.3,.3]); box(sx+.2*WU,1*WU,sz+SD/2+.06*WU,.06*WU,.06*WU,.04*WU,[.7,.6,.3]);
-    box(sx-.65*WU,1.45*WU,sz+SD/2+.03*WU,.8*WU,.6*WU,.04*WU,[.06,.08,.09]); box(sx-.65*WU,1.45*WU,sz+SD/2+.05*WU,.86*WU,.05*WU,.04*WU,[.8,.78,.7]); box(sx-.65*WU,1.45*WU,sz+SD/2+.05*WU,.05*WU,.66*WU,.04*WU,[.8,.78,.7]);
-    GL.push([sx-.65*WU,1.45*WU,sz+SD/2+.02*WU,.74*WU,.54*WU,.02*WU]);
-    SOL.up.push([sx-SW/2-.1*T,sz-SD/2-.1*T,sx+SW/2+.1*T,sz+SD/2+.1*T]); FIX.up.push([sx-SW/2,sz-SD/2,0,sx+SW/2,sz+SD/2,SH+.6*WU]); }
+  // (no shed on the pier head: bait is sold at FISHING & SCUBA, owner 7 Nov 2026)
   // a net hung to dry over the head's rail, and the signs
   { const net=cv(64,32,(g,w,h)=>{ g.clearRect(0,0,w,h); g.strokeStyle='rgba(70,72,64,1)'; g.lineWidth=1; for(let x=0;x<w;x+=4){ g.beginPath(); g.moveTo(x,0); g.lineTo(x+2,h); g.stroke(); } for(let y=0;y<h;y+=4){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y+1); g.stroke(); }
       g.fillStyle='#c8b070'; for(let x=2;x<w;x+=10)g.fillRect(x,0,3,2); });
@@ -88,7 +77,6 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
     const sign=cv(128,32,(g,w,h)=>{ g.fillStyle='#1d2a26'; g.fillRect(0,0,w,16); g.fillStyle='#e8dfc4'; g.font='bold 11px monospace'; g.textAlign='center'; g.fillText('FISHING PIER',w/2,12);
       g.fillStyle='#6e3a22'; g.fillRect(0,16,w,16); g.fillStyle='#efe6cf'; g.font='bold 10px monospace'; g.fillText('BAIT · ICE · TACKLE',w/2,28); });
     const sg=[]; { const a=new THREE.PlaneGeometry(2*hw-.2*WU,.5*WU); const uv=a.attributes.uv; for(let i=0;i<uv.count;i++)uv.setY(i,.5+uv.getY(i)*.5); a.translate(X,2.3*WU,Q+.05*T+.12*WU); sg.push(a); const a2=a.clone(); a2.rotateY(Math.PI); a2.translate(2*X,0,2*(Q+.05*T)); sg.push(a2); }
-    { const b=new THREE.PlaneGeometry(1.6*WU,.4*WU); const uv=b.attributes.uv; for(let i=0;i<uv.count;i++)uv.setY(i,uv.getY(i)*.5); b.translate(sx,SH-.3*WU,sz+SD/2+.04*WU); sg.push(b); }
     G.add(new THREE.Mesh(mergeG(sg),new THREE.MeshBasicMaterial({map:sign,side:THREE.DoubleSide}))); }
   // into instanced meshes: one for the timber and iron boxes, one for the round things, one for the rope, one for the glass
   const M=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V=THREE.Vector3, c=new THREE.Color();

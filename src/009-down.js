@@ -1,6 +1,6 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, keys, LEVELS, pos, RAG, SHAD, UI} from './003b-systems.js';
+import {CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
@@ -374,8 +374,8 @@ const SSUB=(()=>{ const W={};
     document.body.appendChild(el);
     // the loading screens' bar (owner, 7 Nov 2026: "showing loading progress bars that show what is loading on every loading screen"): what the work says it is doing (FADE.note), the files coming down (__LDG, the website), the squares still to paint near you (BATCH.left)
     const ft=el.querySelector('.ft'), fb=el.querySelector('.fb'), fbi=fb.firstChild, fl=el.querySelector('.fl'); let B0=null, NOTE=null;
-    FADE.note=(what,i,n)=>{ NOTE=what?{what,i,n}:null; }; FADE.left=()=>BATCH.left?BATCH.left(FADE.R()):0;
-    const bar=()=>{ if(!B0)return; const L=window.__LDG, net=L?L.n-B0.n:0, netD=L?L.d-B0.d:0, pl=BATCH.left?BATCH.left(FADE.R()):0; B0.p=Math.max(B0.p,pl);
+    FADE.note=(what,i,n)=>{ NOTE=what?{what,i,n}:null; }; FADE.left=()=>BATCH.left&&!(ROOMS.offIn&&ROOMS.offIn())?BATCH.left(FADE.R()):0;   // (never asked from a room off the map: its windows' answer is fixed the first time it is asked)
+    const bar=()=>{ if(!B0)return; const L=window.__LDG, net=L?L.n-B0.n:0, netD=L?L.d-B0.d:0, pl=FADE.left(); B0.p=Math.max(B0.p,pl);
       // (each source keeps its own share; the bar follows the one the line names first that is not done: building, then downloading, then painting)
       const parts=[], S=B0.s, put=(k,v)=>{ S[k]=Math.max(S[k]||0,Math.min(1,v)); }; if(NOTE){ parts.push(NOTE.what+(NOTE.n?' '+NOTE.i+' / '+NOTE.n:'')); if(NOTE.n)put('note',NOTE.i/NOTE.n); }
       if(L&&L.now.size)parts.push('DOWNLOADING '+[...new Set(L.now.values())].slice(0,3).join(', ').toUpperCase()); if(net>0)put('net',netD/net);
@@ -385,11 +385,11 @@ const SSUB=(()=>{ const W={};
     // settled: nothing downloading and every square within reach painted (a view's switch waits for it, at most 20 s; the painting goes faster behind the black)
     FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return D?D+8*TILE:0; };   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
     // every loading screen that ends in a close-up view lifts once that view is painted (owner, 7 Nov 2026)
-    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!(BATCH.left&&BATCH.left(R)))return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
+    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left())return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
       const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
       if(live){ ft.textContent=text||''; barOn(true); el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
-      if(keys.clear)keys.clear(); try{ SHARED.target=null; }catch(e){}
+      if(keys.clear&&!o.keep)keys.clear(); try{ SHARED.target=null; }catch(e){}
       try{ if(o.cut)await fr(2); if(work)await work(); if(live&&o.settle!==false&&FADE.R())await FADE.settle(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
       if(live){ await fr(o.cut?2:3); if(o.hold)await w(o.hold); if(FADE.busy===1){ if(B0){ bar(); B0.k=1; fbi.style.width='100%'; } el.style.transition=o.cut?'none':'opacity .4s steps(5)'; el.style.opacity='0'; el.style.pointerEvents='none'; if(!o.cut)await w(420); el.style.transition=tr; if(FADE.busy===1)barOn(false); } }
       FADE.busy--; };

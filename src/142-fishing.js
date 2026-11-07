@@ -13,7 +13,7 @@ import {GEMS} from './101-gems.js';
 import {WORTH} from './140c-worth.js';
 import {FISHES} from './141f-fishes.js';
 import {ANCHORS} from './141fb-anchors.js';
-const FISHING={reeling:false,auto:false,force:null,mode:false}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
+const FISHING={reeling:false,auto:false,force:null,mode:false,waters:[]}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
 // the rod is held through WIELD (146a): its blank bends with the line's pull; the cast and the fight drive the arm
 { const T=TILE, Y=v=>v*T/.84, V3=THREE.Vector3, A=.95;
   const rod={name:'FISHING ROD',hint:'CLICK THE WATER TO CAST, OR F BY THE WATER FOR FISHING MODE. CLICK TO STRIKE A BITE, HOLD TO REEL.',
@@ -158,7 +158,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   const S=FORAGE.S; S.fishkg=S.fishkg||{};
   const period=h=>h>=7&&h<17?'day':h>=21||h<5?'night':'dusk';
   const lakeAt=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); if(b!=null)return FOUNT.LV; const h=window.HILL?HILL(x,z):0; return h<-.35*T?-.25*T:null; };   // still water: the big lake, the stream and THE LAKE
-  FISHING.at=(x,z)=>{ if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
+  FISHING.at=(x,z)=>{ for(const f of FISHING.waters){ const w=f(x,z); if(w!==undefined)return w; } if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
   const SOAK=25, K=.0022, rests=[];   // a bite's rate per second is K x the sum of the weights below; a spot just bitten rests 40 s
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ '@later'; const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;
     // the water's kinds by tier (RARITY): 70, 25 and 5 in a hundred shared among its common, rare and super-rare; the super-rare only once the Fisherman ranks you high enough

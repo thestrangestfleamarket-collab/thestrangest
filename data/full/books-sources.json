@@ -927,6 +927,3228 @@
    "licence": "Public domain (published 1836, pre-1931; scan by Harold B. Lee Library)",
    "licence_url": "https://archive.org/details/holybiblecontain1836phil",
    "edition": "R. S. H. George, Philadelphia, 1836 (Authorized Version; title page)"
+  },
+  {
+   "file": "data/books/covers/bk-london-and.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1736, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736",
+   "edition": "1736"
+  },
+  {
+   "file": "data/books/covers/bk-seabeach-at.jpg",
+   "source": "https://archive.org/details/seabeachatebbtid00arno2",
+   "original": "https://archive.org/download/seabeachatebbtid00arno2/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, iacl)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/seabeachatebbtid00arno2",
+   "edition": "New York : The Century Co, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-studies-of.jpg",
+   "source": "https://archive.org/details/studiesofamericaf00atki",
+   "original": "https://archive.org/download/studiesofamericaf00atki/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, NY_Botanical_Garden)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/studiesofamericaf00atki",
+   "edition": "Ithaca, Andrus & Church, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-compleat-angler.jpg",
+   "source": "https://archive.org/details/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655",
+   "original": "https://archive.org/download/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_early-english-books-1641-1700, bim_microfilm)",
+   "licence": "Public domain (edition published 1655, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655",
+   "edition": "1655"
+  },
+  {
+   "file": "data/books/covers/bk-complete-golfer.jpg",
+   "source": "https://archive.org/details/completegolfer00vard",
+   "original": "https://archive.org/download/completegolfer00vard/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/completegolfer00vard",
+   "edition": "New York, McClure, Phillips & co, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-as-a.jpg",
+   "source": "https://archive.org/details/cu31924029124308",
+   "original": "https://archive.org/download/cu31924029124308/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924029124308",
+   "edition": "Thomas Y. Crowell company, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-beowulf.jpg",
+   "source": "https://archive.org/details/11696735bsb",
+   "original": "https://archive.org/download/11696735bsb/page/cover_w800.jpg",
+   "credit": "Internet Archive (german-online-libraries, booksbylanguage_german)",
+   "licence": "Public domain (edition published 1839, pre-1931)",
+   "licence_url": "https://archive.org/details/11696735bsb",
+   "edition": "1839"
+  },
+  {
+   "file": "data/books/covers/bk-enchanted-april.jpg",
+   "source": "https://archive.org/details/enchantedapril0000eliz_t2k1",
+   "original": "https://archive.org/download/enchantedapril0000eliz_t2k1/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-brittany_girard)",
+   "licence": "Public domain (edition published 1923, pre-1931)",
+   "licence_url": "https://archive.org/details/enchantedapril0000eliz_t2k1",
+   "edition": "CURTIS BOOKS, 1923"
+  },
+  {
+   "file": "data/books/covers/bk-king-in.jpg",
+   "source": "https://archive.org/details/kingonyellow0000robe",
+   "original": "https://archive.org/download/kingonyellow0000robe/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-klingonopera99)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/kingonyellow0000robe",
+   "edition": "1895"
+  },
+  {
+   "file": "data/books/covers/bk-robinson.jpg",
+   "source": "https://archive.org/details/bwb_W9-CIB-769_2",
+   "original": "https://archive.org/download/bwb_W9-CIB-769_2/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_W9-CIB-769_2",
+   "edition": "fred defau & company, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-brothers.jpg",
+   "source": "https://archive.org/details/brotherskaramaz00dost",
+   "original": "https://archive.org/download/brotherskaramaz00dost/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/brotherskaramaz00dost",
+   "edition": "New York Modern library, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-crime.jpg",
+   "source": "https://archive.org/details/crimepunishment00dostiala",
+   "original": "https://archive.org/download/crimepunishment00dostiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/crimepunishment00dostiala",
+   "edition": "New York : Modern Library, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-study.jpg",
+   "source": "https://archive.org/details/studyinscarletno00doyl",
+   "original": "https://archive.org/download/studyinscarletno00doyl/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/studyinscarletno00doyl",
+   "edition": "New York and London : Street & Smith, Publishers, 1898"
+  },
+  {
+   "file": "data/books/covers/bk-twenty-years.jpg",
+   "source": "https://archive.org/details/twentyyearsafter0000alex_c7z4",
+   "original": "https://archive.org/download/twentyyearsafter0000alex_c7z4/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-ak-47-ak-74)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/twentyyearsafter0000alex_c7z4",
+   "edition": "Everyman's Library, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-grimms.jpg",
+   "source": "https://archive.org/details/grimmsfairytales00grim_1",
+   "original": "https://archive.org/download/grimmsfairytales00grim_1/page/cover_w800.jpg",
+   "credit": "Internet Archive (ualberta_historical_school, ualbertawiedrick)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/grimmsfairytales00grim_1",
+   "edition": "New York, Cupples and Leon, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-legend.jpg",
+   "source": "https://archive.org/details/legendsleepyhollow00irvi",
+   "original": "https://archive.org/download/legendsleepyhollow00irvi/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/legendsleepyhollow00irvi",
+   "edition": "Philadelphia : Henry Altemus Company, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-ulysses.jpg",
+   "source": "https://archive.org/details/ulysses00joyc_1",
+   "original": "https://archive.org/download/ulysses00joyc_1/page/cover_w800.jpg",
+   "credit": "Internet Archive (bostonpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/ulysses00joyc_1",
+   "edition": "London : Published for the Egoist Press, London by John Rodker, Paris, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-jungle-book.jpg",
+   "source": "https://archive.org/details/junglebookkipl",
+   "original": "https://archive.org/download/junglebookkipl/page/cover_w800.jpg",
+   "credit": "Internet Archive (juvenilehistoricalcollection, unclibraries)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/junglebookkipl",
+   "edition": "New York : The Century Co, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-moby.jpg",
+   "source": "https://archive.org/details/mobydickorwhale0000melv_i7l4",
+   "original": "https://archive.org/download/mobydickorwhale0000melv_i7l4/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-hystxrics)",
+   "licence": "Public domain (edition published 1851, pre-1931)",
+   "licence_url": "https://archive.org/details/mobydickorwhale0000melv_i7l4",
+   "edition": "Indianapolis, Bobbs-Merrill, 1851"
+  },
+  {
+   "file": "data/books/covers/bk-winnie.jpg",
+   "source": "https://archive.org/details/winniethepoohdec0000aami",
+   "original": "https://archive.org/download/winniethepoohdec0000aami/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-blueberrylemondrops)",
+   "licence": "Public domain (edition published 1926, pre-1931)",
+   "licence_url": "https://archive.org/details/winniethepoohdec0000aami",
+   "edition": "E.P.Dutton & Company [1926]"
+  },
+  {
+   "file": "data/books/covers/bk-blue-castle.jpg",
+   "source": "https://archive.org/details/bwb_W9-ASM-228",
+   "original": "https://archive.org/download/bwb_W9-ASM-228/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-360organistbookworm)",
+   "licence": "Public domain (edition published 1926, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_W9-ASM-228",
+   "edition": "1926"
+  },
+  {
+   "file": "data/books/covers/bk-genealogy-of.jpg",
+   "source": "https://archive.org/details/genealogyofmoral00nietuoft",
+   "original": "https://archive.org/download/genealogyofmoral00nietuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1887, pre-1931)",
+   "licence_url": "https://archive.org/details/genealogyofmoral00nietuoft",
+   "edition": "New York : Boni and Liveright, 1887"
+  },
+  {
+   "file": "data/books/covers/bk-works-of.jpg",
+   "source": "https://archive.org/details/cu31924021956069",
+   "original": "https://archive.org/download/cu31924021956069/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924021956069",
+   "edition": "Chicago : Stone & Kimball, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-complete-works.jpg",
+   "source": "https://archive.org/details/completeworksofw02shakuoft",
+   "original": "https://archive.org/download/completeworksofw02shakuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (kellylibrary, toronto)",
+   "licence": "Public domain (edition published 1899, pre-1931)",
+   "licence_url": "https://archive.org/details/completeworksofw02shakuoft",
+   "edition": "Boston, M.A. : Ginn & Company, 1899"
+  },
+  {
+   "file": "data/books/covers/bk-hamlet.jpg",
+   "source": "https://archive.org/details/hamletprinceofde00shak_3",
+   "original": "https://archive.org/download/hamletprinceofde00shak_3/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplsctpbs, bplsceep)",
+   "licence": "Public domain (edition published 1734, pre-1931)",
+   "licence_url": "https://archive.org/details/hamletprinceofde00shak_3",
+   "edition": "London : Printed for J. Tonson, and the rest of the proprietors and sold by the Booksellers of London and Westminster, 1734"
+  },
+  {
+   "file": "data/books/covers/bk-romeo.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_romeo-and-juliet-by-sha_shakespeare-william_1756",
+   "original": "https://archive.org/download/bim_eighteenth-century_romeo-and-juliet-by-sha_shakespeare-william_1756/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1756, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_romeo-and-juliet-by-sha_shakespeare-william_1756",
+   "edition": "1756"
+  },
+  {
+   "file": "data/books/covers/bk-adventures-of.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-adventures-of-ferdin_smollett-tobias-george_1753_2_1",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-adventures-of-ferdin_smollett-tobias-george_1753_2_1/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1753, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-adventures-of-ferdin_smollett-tobias-george_1753_2_1",
+   "edition": "1753"
+  },
+  {
+   "file": "data/books/covers/bk-adventures-of-smollett.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-adventures-of-roderi_smollett-tobias-george_1748_2",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-adventures-of-roderi_smollett-tobias-george_1748_2/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1748, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-adventures-of-roderi_smollett-tobias-george_1748_2",
+   "edition": "1748"
+  },
+  {
+   "file": "data/books/covers/bk-expedition-of.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-expedition-of-humphr_smollett-tobias-george_1771_1_1",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-expedition-of-humphr_smollett-tobias-george_1771_1_1/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1771, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-expedition-of-humphr_smollett-tobias-george_1771_1_1",
+   "edition": "1771"
+  },
+  {
+   "file": "data/books/covers/bk-modest.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_a-modest-proposal-for-pr_swift-jonathan_1729",
+   "original": "https://archive.org/download/bim_eighteenth-century_a-modest-proposal-for-pr_swift-jonathan_1729/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1729, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_a-modest-proposal-for-pr_swift-jonathan_1729",
+   "edition": "1729"
+  },
+  {
+   "file": "data/books/covers/bk-adventures.jpg",
+   "source": "https://archive.org/details/adventuresofhuck00twai",
+   "original": "https://archive.org/download/adventuresofhuck00twai/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1884, pre-1931)",
+   "licence_url": "https://archive.org/details/adventuresofhuck00twai",
+   "edition": "New York : C.L. Webster, 1884"
+  },
+  {
+   "file": "data/books/covers/bk-time.jpg",
+   "source": "https://archive.org/details/wellstimemachine",
+   "original": "https://archive.org/download/wellstimemachine/page/cover_w800.jpg",
+   "credit": "Internet Archive (folkscanomy_fiction, folkscanomy)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/wellstimemachine",
+   "edition": "London : William Heinemann, 1895"
+  },
+  {
+   "file": "data/books/covers/bk-leaves.jpg",
+   "source": "https://archive.org/details/bwb_Y0-BNN-470",
+   "original": "https://archive.org/download/bwb_Y0-BNN-470/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-chapalan)",
+   "licence": "Public domain (edition published 1855, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_Y0-BNN-470",
+   "edition": "1855"
+  },
+  {
+   "file": "data/books/covers/bk-tractatus-logicophilosophicus.jpg",
+   "source": "https://archive.org/details/tractatuslogicop1971witt",
+   "original": "https://archive.org/download/tractatuslogicop1971witt/page/cover_w800.jpg",
+   "credit": "Internet Archive (brigham_young_university, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/tractatuslogicop1971witt",
+   "edition": "London : Routledge & Kegan Paul, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-international-development.jpg",
+   "source": "https://archive.org/details/cu31924023508686",
+   "original": "https://archive.org/download/cu31924023508686/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924023508686",
+   "edition": "New York ; London : G.P. Putnam's Sons, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-herbals-their.jpg",
+   "source": "https://archive.org/details/b33393928",
+   "original": "https://archive.org/download/b33393928/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/b33393928",
+   "edition": "Cambridge : University Press, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-shelters-shacks.jpg",
+   "source": "https://archive.org/details/sheltersshackssh00bear",
+   "original": "https://archive.org/download/sheltersshackssh00bear/page/cover_w800.jpg",
+   "credit": "Internet Archive (bostonpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/sheltersshackssh00bear",
+   "edition": "New York : Scribner, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-wild-flowers.jpg",
+   "source": "https://archive.org/details/wildflowersworth0000nelt_n6b1",
+   "original": "https://archive.org/download/wildflowersworth0000nelt_n6b1/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-ahelmtexas)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/wildflowersworth0000nelt_n6b1",
+   "edition": "1917"
+  },
+  {
+   "file": "data/books/covers/bk-handbook-of.jpg",
+   "source": "https://archive.org/details/handbookofnature00coms_0",
+   "original": "https://archive.org/download/handbookofnature00coms_0/page/cover_w800.jpg",
+   "credit": "Internet Archive (ualberta_historical_school, ualbertawiedrick)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/handbookofnature00coms_0",
+   "edition": "Ithaca, N.Y., Comstock, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-complete-herbal.jpg",
+   "source": "https://archive.org/details/b22011870",
+   "original": "https://archive.org/download/b22011870/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1835, pre-1931)",
+   "licence_url": "https://archive.org/details/b22011870",
+   "edition": "London : Thomas Kelly, 1835"
+  },
+  {
+   "file": "data/books/covers/bk-acetaria-a.jpg",
+   "source": "https://archive.org/details/acetariadiscours00evel_0",
+   "original": "https://archive.org/download/acetariadiscours00evel_0/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1699, pre-1931)",
+   "licence_url": "https://archive.org/details/acetariadiscours00evel_0",
+   "edition": "London : Printed for B. Tooke at the Middle-Temple Gate in Fleetstreet, 1699"
+  },
+  {
+   "file": "data/books/covers/bk-plant-lore.jpg",
+   "source": "https://archive.org/details/plantlorelegends00folk",
+   "original": "https://archive.org/download/plantlorelegends00folk/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, NY_Botanical_Garden)",
+   "licence": "Public domain (edition published 1884, pre-1931)",
+   "licence_url": "https://archive.org/details/plantlorelegends00folk",
+   "edition": "London, S. Low, Marston, Searle, and Rivington, 1884"
+  },
+  {
+   "file": "data/books/covers/bk-field-and.jpg",
+   "source": "https://archive.org/details/fieldwoodlandpla00furn",
+   "original": "https://archive.org/download/fieldwoodlandpla00furn/page/cover_w800.jpg",
+   "credit": "Internet Archive (uconn_libraries, blc)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/fieldwoodlandpla00furn",
+   "edition": "London ; New York : Longmans, Green, and Co, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-camp-life.jpg",
+   "source": "https://archive.org/details/camplifeinwoodst00gibsrich",
+   "original": "https://archive.org/download/camplifeinwoodst00gibsrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1881, pre-1931)",
+   "licence_url": "https://archive.org/details/camplifeinwoodst00gibsrich",
+   "edition": "New York, Harper & Brothers, 1881"
+  },
+  {
+   "file": "data/books/covers/bk-camping-for.jpg",
+   "source": "https://archive.org/details/campingforboys00gibsrich",
+   "original": "https://archive.org/download/campingforboys00gibsrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/campingforboys00gibsrich",
+   "edition": "New York, Association press, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-deadfalls-and.jpg",
+   "source": "https://archive.org/details/deadfallssnaresb00harduoft",
+   "original": "https://archive.org/download/deadfallssnaresb00harduoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (gerstein, toronto)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/deadfallssnaresb00harduoft",
+   "edition": "Columbus, O., A.R. Harding, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-ginseng-and.jpg",
+   "source": "https://archive.org/details/ginsengothermedi00hard",
+   "original": "https://archive.org/download/ginsengothermedi00hard/page/cover_w800.jpg",
+   "credit": "Internet Archive (medicalheritagelibrary, cushingwhitneymedicallibrary)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/ginsengothermedi00hard",
+   "edition": "Columbus, O. : A. R. Harding, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-culinary-herbs.jpg",
+   "source": "https://archive.org/details/cu31924073971008",
+   "original": "https://archive.org/download/cu31924073971008/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924073971008",
+   "edition": "New York : Orange Judd Co, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-our-southern.jpg",
+   "source": "https://archive.org/details/oursouthernhighl0000hora_b9h0",
+   "original": "https://archive.org/download/oursouthernhighl0000hora_b9h0/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/oursouthernhighl0000hora_b9h0",
+   "edition": "1913"
+  },
+  {
+   "file": "data/books/covers/bk-science-of.jpg",
+   "source": "https://archive.org/details/scienceoftrappin00kreprich",
+   "original": "https://archive.org/download/scienceoftrappin00kreprich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/scienceoftrappin00kreprich",
+   "edition": "Columbus, O., A.R. Harding pub. co, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-on-the.jpg",
+   "source": "https://archive.org/details/ontrailoutdoorbo00bear",
+   "original": "https://archive.org/download/ontrailoutdoorbo00bear/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1915, pre-1931)",
+   "licence_url": "https://archive.org/details/ontrailoutdoorbo00bear",
+   "edition": "New York, C. Scribner's Sons, 1915"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-northcot.jpg",
+   "source": "https://archive.org/details/cu31924073899373",
+   "original": "https://archive.org/download/cu31924073899373/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924073899373",
+   "edition": "London ; New York : J. Lane, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-old-english.jpg",
+   "source": "https://archive.org/details/oldenglishherbal00rohd",
+   "original": "https://archive.org/download/oldenglishherbal00rohd/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/oldenglishherbal00rohd",
+   "edition": "London, New York, Longmans, Green, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-rolf-in.jpg",
+   "source": "https://archive.org/details/rolfinwoodsadven01seto",
+   "original": "https://archive.org/download/rolfinwoodsadven01seto/page/cover_w800.jpg",
+   "credit": "Internet Archive (ianativeamerican, americana)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/rolfinwoodsadven01seto",
+   "edition": "1911"
+  },
+  {
+   "file": "data/books/covers/bk-two-little.jpg",
+   "source": "https://archive.org/details/littlesavages00setorich",
+   "original": "https://archive.org/download/littlesavages00setorich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/littlesavages00setorich",
+   "edition": "New York, Doubleday, Page & Company, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-camp-and.jpg",
+   "source": "https://archive.org/details/cihm_81969",
+   "original": "https://archive.org/download/cihm_81969/page/cover_w800.jpg",
+   "credit": "Internet Archive (university_of_alberta_libraries_microfilm, university_of_alberta_libraries)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/cihm_81969",
+   "edition": "Toronto : Musson, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-swiss-family.jpg",
+   "source": "https://archive.org/details/swissfamilyrobin01wyssiala",
+   "original": "https://archive.org/download/swissfamilyrobin01wyssiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, yrlsc)",
+   "licence": "Public domain (edition published 1832, pre-1931)",
+   "licence_url": "https://archive.org/details/swissfamilyrobin01wyssiala",
+   "edition": "New-York : Printed and published by J. & J. Harper, 1832"
+  },
+  {
+   "file": "data/books/covers/bk-theory-and.jpg",
+   "source": "https://archive.org/details/theorypracticeof00comb",
+   "original": "https://archive.org/download/theorypracticeof00comb/page/cover_w800.jpg",
+   "credit": "Internet Archive (johnadamsBPL, bostonpubliclibrary)",
+   "licence": "Public domain (edition published 1762, pre-1931)",
+   "licence_url": "https://archive.org/details/theorypracticeof00comb",
+   "edition": "London : Printed by J. Haberkorn; sold by R. and J. Dodsley ... T. Becket and P.A. de Hondt ... and T. Longman, 1762"
+  },
+  {
+   "file": "data/books/covers/bk-fungi-their.jpg",
+   "source": "https://archive.org/details/fungitheirnature00cookrich",
+   "original": "https://archive.org/download/fungitheirnature00cookrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1875, pre-1931)",
+   "licence_url": "https://archive.org/details/fungitheirnature00cookrich",
+   "edition": "New York, D. Appleton and Company, 1875"
+  },
+  {
+   "file": "data/books/covers/bk-rust-smut.jpg",
+   "source": "https://archive.org/details/rustsmutmildewmo001cook",
+   "original": "https://archive.org/download/rustsmutmildewmo001cook/page/cover_w800.jpg",
+   "credit": "Internet Archive (calacademy, biodiversity)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/rustsmutmildewmo001cook",
+   "edition": "London : R. Hardwicke, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-among-the.jpg",
+   "source": "https://archive.org/details/amongmushroomsgu00dall",
+   "original": "https://archive.org/download/amongmushroomsgu00dall/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, NY_Botanical_Garden)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/amongmushroomsgu00dall",
+   "edition": "New York, Philadelphia [etc.] D. Biddle, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-mushrooms-how.jpg",
+   "source": "https://archive.org/details/cu31924073871638",
+   "original": "https://archive.org/download/cu31924073871638/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924073871638",
+   "edition": "New York : Orange Judd Co, 1891"
+  },
+  {
+   "file": "data/books/covers/bk-our-edible.jpg",
+   "source": "https://archive.org/details/ouredibletoadsto00gibs",
+   "original": "https://archive.org/download/ouredibletoadsto00gibs/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/ouredibletoadsto00gibs",
+   "edition": "New York : Harper & brothers, 1895"
+  },
+  {
+   "file": "data/books/covers/bk-alcoholic-fermentation.jpg",
+   "source": "https://archive.org/details/b28108450",
+   "original": "https://archive.org/download/b28108450/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/b28108450",
+   "edition": "London ; New York : Bombay; Calcutta : Longmans, Green and co, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-microbe-hunters.jpg",
+   "source": "https://archive.org/details/microbehunters0000paul",
+   "original": "https://archive.org/download/microbehunters0000paul/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-ahgmem)",
+   "licence": "Public domain (edition published 1926, pre-1931)",
+   "licence_url": "https://archive.org/details/microbehunters0000paul",
+   "edition": "1926"
+  },
+  {
+   "file": "data/books/covers/bk-north-american.jpg",
+   "source": "https://archive.org/details/northamericansl00macb",
+   "original": "https://archive.org/download/northamericansl00macb/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/northamericansl00macb",
+   "edition": "New York, Macmillan Co.; London, Macmillan, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-bacteria.jpg",
+   "source": "https://archive.org/details/cu31924004258939",
+   "original": "https://archive.org/download/cu31924004258939/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1899, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924004258939",
+   "edition": "New York, Putnam, 1899"
+  },
+  {
+   "file": "data/books/covers/bk-mushrooms-of.jpg",
+   "source": "https://archive.org/details/cu31924101467094",
+   "original": "https://archive.org/download/cu31924101467094/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1885, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924101467094",
+   "edition": "Boston, L. Prang & Co, 1885"
+  },
+  {
+   "file": "data/books/covers/bk-studies-on.jpg",
+   "source": "https://archive.org/details/studiesonferment00past",
+   "original": "https://archive.org/download/studiesonferment00past/page/cover_w800.jpg",
+   "credit": "Internet Archive (uconn_libraries, blc)",
+   "licence": "Public domain (edition published 1879, pre-1931)",
+   "licence_url": "https://archive.org/details/studiesonferment00past",
+   "edition": "London : Macmillan & Co, 1879"
+  },
+  {
+   "file": "data/books/covers/bk-mushroom-culture.jpg",
+   "source": "https://archive.org/details/mushroomculturei00robirich",
+   "original": "https://archive.org/download/mushroomculturei00robirich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1870, pre-1931)",
+   "licence_url": "https://archive.org/details/mushroomculturei00robirich",
+   "edition": "[s.l. : s. n, 1870"
+  },
+  {
+   "file": "data/books/covers/bk-lichens.jpg",
+   "source": "https://archive.org/details/cu31924001614480",
+   "original": "https://archive.org/download/cu31924001614480/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1921, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924001614480",
+   "edition": "Cambridge, At the University Press, 1921"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-fisk.jpg",
+   "source": "https://archive.org/details/bookofcheese00thomrich",
+   "original": "https://archive.org/download/bookofcheese00thomrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/bookofcheese00thomrich",
+   "edition": "New York, The Macmillan company, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-disease-in.jpg",
+   "source": "https://archive.org/details/lbg.576.6.war.3915",
+   "original": "https://archive.org/download/lbg.576.6.war.3915/page/cover_w800.jpg",
+   "credit": "Internet Archive (LalbaghBotanicalGarden, ServantsOfKnowledge)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/lbg.576.6.war.3915",
+   "edition": "Macmillan And Co, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-oldtime-recipes.jpg",
+   "source": "https://archive.org/details/oldtimerecipesfo00wrig",
+   "original": "https://archive.org/download/oldtimerecipesfo00wrig/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/oldtimerecipesfo00wrig",
+   "edition": "Boston, Page, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-art-of.jpg",
+   "source": "https://archive.org/details/artofanglingwher00barkrich",
+   "original": "https://archive.org/download/artofanglingwher00barkrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1653, pre-1931)",
+   "licence_url": "https://archive.org/details/artofanglingwher00barkrich",
+   "edition": "London, 1653"
+  },
+  {
+   "file": "data/books/covers/bk-fly-fishing.jpg",
+   "source": "https://archive.org/details/flyfishinginwond00barn",
+   "original": "https://archive.org/download/flyfishinginwond00barn/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1910, pre-1931)",
+   "licence_url": "https://archive.org/details/flyfishinginwond00barn",
+   "edition": "Chicago, O.P. Barnes, 1910"
+  },
+  {
+   "file": "data/books/covers/bk-treatyse-of.jpg",
+   "source": "https://archive.org/details/treatyseoffysshy00bern",
+   "original": "https://archive.org/download/treatyseoffysshy00bern/page/cover_w800.jpg",
+   "credit": "Internet Archive (museumofcomparativezoology, biodiversity)",
+   "licence": "Public domain (edition published 1880, pre-1931)",
+   "licence_url": "https://archive.org/details/treatyseoffysshy00bern",
+   "edition": "London, E. Stock, 1880"
+  },
+  {
+   "file": "data/books/covers/bk-harvest-of.jpg",
+   "source": "https://archive.org/details/cu31924003243676",
+   "original": "https://archive.org/download/cu31924003243676/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1873, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003243676",
+   "edition": "London, J. Murray, 1873"
+  },
+  {
+   "file": "data/books/covers/bk-determined-angler.jpg",
+   "source": "https://archive.org/details/determinedangler00brad",
+   "original": "https://archive.org/download/determinedangler00brad/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/determinedangler00brad",
+   "edition": "New York [etc.] G. P. Putnam's sons, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-fishing-with-camp.jpg",
+   "source": "https://archive.org/details/fishingwithfloat00camprich",
+   "original": "https://archive.org/download/fishingwithfloat00camprich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/fishingwithfloat00camprich",
+   "edition": "New York, Outing publishing company, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-fishing-and.jpg",
+   "source": "https://archive.org/details/fishingshootings00clev",
+   "original": "https://archive.org/download/fishingshootings00clev/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/fishingshootings00clev",
+   "edition": "New York : The Outing publishing company, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-days-in.jpg",
+   "source": "https://archive.org/details/daysinopen00cran",
+   "original": "https://archive.org/download/daysinopen00cran/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/daysinopen00cran",
+   "edition": "New York, Chicago, Fleming H. Revell Co, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-salmonia.jpg",
+   "source": "https://archive.org/details/salmoniaordaysof00davyrich",
+   "original": "https://archive.org/download/salmoniaordaysof00davyrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1828, pre-1931)",
+   "licence_url": "https://archive.org/details/salmoniaordaysof00davyrich",
+   "edition": "London, Murray, 1828"
+  },
+  {
+   "file": "data/books/covers/bk-concise-practical.jpg",
+   "source": "https://archive.org/details/concisepractical00drakiala",
+   "original": "https://archive.org/download/concisepractical00drakiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1860, pre-1931)",
+   "licence_url": "https://archive.org/details/concisepractical00drakiala",
+   "edition": "London : G. Berger, 1860"
+  },
+  {
+   "file": "data/books/covers/bk-little-rivers.jpg",
+   "source": "https://archive.org/details/littleriversbook00vandiala",
+   "original": "https://archive.org/download/littleriversbook00vandiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/littleriversbook00vandiala",
+   "edition": "New York : C. Scribner's Sons, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-brook-and.jpg",
+   "source": "https://archive.org/details/brookrivertrouti00edmorich",
+   "original": "https://archive.org/download/brookrivertrouti00edmorich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/brookrivertrouti00edmorich",
+   "edition": "Bradford, The author, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-tales-of-grey.jpg",
+   "source": "https://archive.org/details/cu31924012509828",
+   "original": "https://archive.org/download/cu31924012509828/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1919, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924012509828",
+   "edition": "New York, London : Harper & Brothers, 1919"
+  },
+  {
+   "file": "data/books/covers/bk-chats-on.jpg",
+   "source": "https://archive.org/details/chatsonangling00hartrich",
+   "original": "https://archive.org/download/chatsonangling00hartrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/chatsonangling00hartrich",
+   "edition": "London : Cox, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-bass-pike.jpg",
+   "source": "https://archive.org/details/basspikeperchoth00hens",
+   "original": "https://archive.org/download/basspikeperchoth00hens/page/cover_w800.jpg",
+   "credit": "Internet Archive (museumofcomparativezoology, biodiversity)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/basspikeperchoth00hens",
+   "edition": "New York : Macmillan, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-favorite-fish.jpg",
+   "source": "https://archive.org/details/favoritefishfish00hens",
+   "original": "https://archive.org/download/favoritefishfish00hens/page/cover_w800.jpg",
+   "credit": "Internet Archive (museumofcomparativezoology, biodiversity)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/favoritefishfish00hens",
+   "edition": "New York, The Outing publishing company, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-idyl-of.jpg",
+   "source": "https://archive.org/details/idylofsplitbambo00holdiala",
+   "original": "https://archive.org/download/idylofsplitbambo00holdiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/idylofsplitbambo00holdiala",
+   "edition": "Cincinnati : Stewart & Kidd company, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-guide-to.jpg",
+   "source": "https://archive.org/details/guidetostudyoffi01jord",
+   "original": "https://archive.org/download/guidetostudyoffi01jord/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, MBLWHOI)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/guidetostudyoffi01jord",
+   "edition": "New York, H. Holt and Company, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-angling-sketches.jpg",
+   "source": "https://archive.org/details/anglingsketches00langiala",
+   "original": "https://archive.org/download/anglingsketches00langiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/anglingsketches00langiala",
+   "edition": "London and New York : Longmans, Green, 1891"
+  },
+  {
+   "file": "data/books/covers/bk-adventures-of-lanman.jpg",
+   "source": "https://archive.org/details/adventuresofangl00lanmrich",
+   "original": "https://archive.org/download/adventuresofangl00lanmrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1848, pre-1931)",
+   "licence_url": "https://archive.org/details/adventuresofangl00lanmrich",
+   "edition": "London, R. Bentley, 1848"
+  },
+  {
+   "file": "data/books/covers/bk-tales-of.jpg",
+   "source": "https://archive.org/details/talesoffishpatrol00londrich",
+   "original": "https://archive.org/download/talesoffishpatrol00londrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/talesoffishpatrol00londrich",
+   "edition": "Cleveland, New York, International Fiction Library, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-fishing-with.jpg",
+   "source": "https://archive.org/details/fishingwithflysk00orvirich",
+   "original": "https://archive.org/download/fishingwithflysk00orvirich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1883, pre-1931)",
+   "licence_url": "https://archive.org/details/fishingwithflysk00orvirich",
+   "edition": "Troy, N.Y. : H.B. Nims, 1883"
+  },
+  {
+   "file": "data/books/covers/bk-tent-dwellers.jpg",
+   "source": "https://archive.org/details/thetentdwellers00painrich",
+   "original": "https://archive.org/download/thetentdwellers00painrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/thetentdwellers00painrich",
+   "edition": "New York : The Outing Publishing Co, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-maxims-and.jpg",
+   "source": "https://archive.org/details/maximshintsonang00pennrich",
+   "original": "https://archive.org/download/maximshintsonang00pennrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1842, pre-1931)",
+   "licence_url": "https://archive.org/details/maximshintsonang00pennrich",
+   "edition": "London : John Murray, 1842"
+  },
+  {
+   "file": "data/books/covers/bk-fishing-with-perry.jpg",
+   "source": "https://archive.org/details/fishingwaworm00perrrich",
+   "original": "https://archive.org/download/fishingwaworm00perrrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/fishingwaworm00perrrich",
+   "edition": "Boston and New York : Houghton and Mifflin company, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-fishing-from.jpg",
+   "source": "https://archive.org/details/fishingfromearli00radc",
+   "original": "https://archive.org/download/fishingfromearli00radc/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1921, pre-1931)",
+   "licence_url": "https://archive.org/details/fishingfromearli00radc",
+   "edition": "London : J. Murray, 1921"
+  },
+  {
+   "file": "data/books/covers/bk-game-fish.jpg",
+   "source": "https://archive.org/details/gamefishofnorthe00roos",
+   "original": "https://archive.org/download/gamefishofnorthe00roos/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1862, pre-1931)",
+   "licence_url": "https://archive.org/details/gamefishofnorthe00roos",
+   "edition": "New York, Carleton, 1862"
+  },
+  {
+   "file": "data/books/covers/bk-superior-fishing.jpg",
+   "source": "https://archive.org/details/superiorfishingo00roos",
+   "original": "https://archive.org/download/superiorfishingo00roos/page/cover_w800.jpg",
+   "credit": "Internet Archive (museumofcomparativezoology, biodiversity)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/superiorfishingo00roos",
+   "edition": "New York : Carleton, Publisher, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-experienced-angler.jpg",
+   "source": "https://archive.org/details/experiencedangle00venarich",
+   "original": "https://archive.org/download/experiencedangle00venarich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1827, pre-1931)",
+   "licence_url": "https://archive.org/details/experiencedangle00venarich",
+   "edition": "London : T. Gosden, 1827"
+  },
+  {
+   "file": "data/books/covers/bk-curious-facts.jpg",
+   "source": "https://archive.org/details/curiousfactsinhi00cowa",
+   "original": "https://archive.org/download/curiousfactsinhi00cowa/page/cover_w800.jpg",
+   "credit": "Internet Archive (mugar, blc)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/curiousfactsinhi00cowa",
+   "edition": "Philadelphia, J.B. Lippincott & Co, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-common-spiders.jpg",
+   "source": "https://archive.org/details/commonspidersofuemer",
+   "original": "https://archive.org/download/commonspidersofuemer/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/commonspidersofuemer",
+   "edition": "Boston, London, Ginn & Company, 1902"
+  },
+  {
+   "file": "data/books/covers/bk-glowworm-and.jpg",
+   "source": "https://archive.org/details/glowwormotherbee00fabr",
+   "original": "https://archive.org/download/glowwormotherbee00fabr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1919, pre-1931)",
+   "licence_url": "https://archive.org/details/glowwormotherbee00fabr",
+   "edition": "New York : Dodd, Mead and Company, 1919"
+  },
+  {
+   "file": "data/books/covers/bk-hunting-wasps.jpg",
+   "source": "https://archive.org/details/b31344586",
+   "original": "https://archive.org/download/b31344586/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/b31344586",
+   "edition": "London ; New York : Hodder & Stoughton, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-insect-adventures.jpg",
+   "source": "https://archive.org/details/insectadventures00fabr",
+   "original": "https://archive.org/download/insectadventures00fabr/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/insectadventures00fabr",
+   "edition": "New York, Dodd, Mead, and Company, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-life-of-fabre.jpg",
+   "source": "https://archive.org/details/lifeofcaterpilla00fabruoft",
+   "original": "https://archive.org/download/lifeofcaterpilla00fabruoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (gerstein, biodiversity)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/lifeofcaterpilla00fabruoft",
+   "edition": "Toronto McClelland, Goodchild & Stewart, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-life-of.jpg",
+   "source": "https://archive.org/details/lifeofgrasshoppe00fabr",
+   "original": "https://archive.org/download/lifeofgrasshoppe00fabr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/lifeofgrasshoppe00fabr",
+   "edition": "New York : Dodd, Mead and Company, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-sacred-beetle.jpg",
+   "source": "https://archive.org/details/b31344562",
+   "original": "https://archive.org/download/b31344562/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/b31344562",
+   "edition": "London : Hodder and Stoughton, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-social-life.jpg",
+   "source": "https://archive.org/details/sociallifeininse12fabr",
+   "original": "https://archive.org/download/sociallifeininse12fabr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, MBLWHOI)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/sociallifeininse12fabr",
+   "edition": "London, T.F. Unwin, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-wonders-of.jpg",
+   "source": "https://archive.org/details/wondersofinstinc00fabruoft",
+   "original": "https://archive.org/download/wondersofinstinc00fabruoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (gerstein, biodiversity)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/wondersofinstinc00fabruoft",
+   "edition": "New York : Century, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-insect-world.jpg",
+   "source": "https://archive.org/details/insectworldbeing00fig",
+   "original": "https://archive.org/download/insectworldbeing00fig/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, fav-emma_apos_s_english)",
+   "licence": "Public domain (edition published 1869, pre-1931)",
+   "licence_url": "https://archive.org/details/insectworldbeing00fig",
+   "edition": "London : Chapman and Hall, 1869"
+  },
+  {
+   "file": "data/books/covers/bk-australian-insects.jpg",
+   "source": "https://archive.org/details/australianinsect00frog",
+   "original": "https://archive.org/download/australianinsect00frog/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/australianinsect00frog",
+   "edition": "Sydney, W. Brooks, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-butterflies-and.jpg",
+   "source": "https://archive.org/details/butterfliesmoths00furn",
+   "original": "https://archive.org/download/butterfliesmoths00furn/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/butterfliesmoths00furn",
+   "edition": "London, New York, Bombay, Calcutta, Longmans, Green, and Co, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-butterfly-book.jpg",
+   "source": "https://archive.org/details/butterflybook00holl",
+   "original": "https://archive.org/download/butterflybook00holl/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/butterflybook00holl",
+   "edition": "New York, Doubleday & McClure co, 1898"
+  },
+  {
+   "file": "data/books/covers/bk-introduction-to-spence.jpg",
+   "source": "https://archive.org/details/b29331225_0002",
+   "original": "https://archive.org/download/b29331225_0002/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1815, pre-1931)",
+   "licence_url": "https://archive.org/details/b29331225_0002",
+   "edition": "London : Printed for Longman, Hurst, Rees, Orme, and Brown, 1815"
+  },
+  {
+   "file": "data/books/covers/bk-insect.jpg",
+   "source": "https://archive.org/details/insect__00mich",
+   "original": "https://archive.org/download/insect__00mich/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1875, pre-1931)",
+   "licence_url": "https://archive.org/details/insect__00mich",
+   "edition": "London ; New York : T. Nelson and Sons, 1875"
+  },
+  {
+   "file": "data/books/covers/bk-our-common.jpg",
+   "source": "https://archive.org/details/ourcommoninsects00pack",
+   "original": "https://archive.org/download/ourcommoninsects00pack/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1873, pre-1931)",
+   "licence_url": "https://archive.org/details/ourcommoninsects00pack",
+   "edition": "Salem, Naturalists' Agency; New York, Dodd & Mead; [etc., etc.], 1873"
+  },
+  {
+   "file": "data/books/covers/bk-textbook-of.jpg",
+   "source": "https://archive.org/details/textbookofentomo0000alph",
+   "original": "https://archive.org/download/textbookofentomo0000alph/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1898, pre-1931)",
+   "licence_url": "https://archive.org/details/textbookofentomo0000alph",
+   "edition": "1898"
+  },
+  {
+   "file": "data/books/covers/bk-mimicry-in.jpg",
+   "source": "https://archive.org/details/mimicryinbutterf00punn",
+   "original": "https://archive.org/download/mimicryinbutterf00punn/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, MBLWHOI)",
+   "licence": "Public domain (edition published 1915, pre-1931)",
+   "licence_url": "https://archive.org/details/mimicryinbutterf00punn",
+   "edition": "Cambridge, University press, 1915"
+  },
+  {
+   "file": "data/books/covers/bk-insect-architecture.jpg",
+   "source": "https://archive.org/details/insectarchitectu00renn",
+   "original": "https://archive.org/download/insectarchitectu00renn/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1857, pre-1931)",
+   "licence_url": "https://archive.org/details/insectarchitectu00renn",
+   "edition": "London, Murray, 1857"
+  },
+  {
+   "file": "data/books/covers/bk-moths-of.jpg",
+   "source": "https://archive.org/details/mothsofbritishis01sout",
+   "original": "https://archive.org/download/mothsofbritishis01sout/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/mothsofbritishis01sout",
+   "edition": "London, New York, F. Warne & Co, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-girl-of.jpg",
+   "source": "https://archive.org/details/girloflimberlost00stra",
+   "original": "https://archive.org/download/girloflimberlost00stra/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/girloflimberlost00stra",
+   "edition": "New York, Grosset & Dunlap, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-elizabeth-and.jpg",
+   "source": "https://archive.org/details/elizabethhergerm00vona",
+   "original": "https://archive.org/download/elizabethhergerm00vona/page/cover_w800.jpg",
+   "credit": "Internet Archive (brigham_young_university, americana)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/elizabethhergerm00vona",
+   "edition": "New York ; London : Macmillan Co, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-solitary-summer.jpg",
+   "source": "https://archive.org/details/solitarysummer00vona",
+   "original": "https://archive.org/download/solitarysummer00vona/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplill, bostonpubliclibrary)",
+   "licence": "Public domain (edition published 1899, pre-1931)",
+   "licence_url": "https://archive.org/details/solitarysummer00vona",
+   "edition": "New York ; London : The Macmillan company, 1899"
+  },
+  {
+   "file": "data/books/covers/bk-of-gardens.jpg",
+   "source": "https://archive.org/details/ofgardensessa00baco",
+   "original": "https://archive.org/download/ofgardensessa00baco/page/cover_w800.jpg",
+   "credit": "Internet Archive (thomasfisher, biodiversity)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/ofgardensessa00baco",
+   "edition": "London, Hacon & Ricketts, 1902"
+  },
+  {
+   "file": "data/books/covers/bk-manual-of.jpg",
+   "source": "https://archive.org/details/cu31924097691152",
+   "original": "https://archive.org/download/cu31924097691152/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924097691152",
+   "edition": "New York : Macmillan Co, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-pleasant-talk.jpg",
+   "source": "https://archive.org/details/pleasanttalkabou00beec",
+   "original": "https://archive.org/download/pleasanttalkabou00beec/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1874, pre-1931)",
+   "licence_url": "https://archive.org/details/pleasanttalkabou00beec",
+   "edition": "New York, J.B. Ford and Co, 1874"
+  },
+  {
+   "file": "data/books/covers/bk-american-flower.jpg",
+   "source": "https://archive.org/details/americanflowerga01buis",
+   "original": "https://archive.org/download/americanflowerga01buis/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1841, pre-1931)",
+   "licence_url": "https://archive.org/details/americanflowerga01buis",
+   "edition": "Philadelphia, Carey and Hart, 1841"
+  },
+  {
+   "file": "data/books/covers/bk-field-and-burr.jpg",
+   "source": "https://archive.org/details/fieldandgardenveg00burrrich",
+   "original": "https://archive.org/download/fieldandgardenveg00burrrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1863, pre-1931)",
+   "licence_url": "https://archive.org/details/fieldandgardenveg00burrrich",
+   "edition": "Boston, Crosby and Nichols, 1863"
+  },
+  {
+   "file": "data/books/covers/bk-amateur-garden.jpg",
+   "source": "https://archive.org/details/amateurgarden00cabl",
+   "original": "https://archive.org/download/amateurgarden00cabl/page/cover_w800.jpg",
+   "credit": "Internet Archive (americana, fav-gardens22)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/amateurgarden00cabl",
+   "edition": "New York, C. Scribner's Sons, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-formation-of.jpg",
+   "source": "https://archive.org/details/cu31924050528995",
+   "original": "https://archive.org/download/cu31924050528995/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1888, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924050528995",
+   "edition": "New York, D. Appleton, 1888"
+  },
+  {
+   "file": "data/books/covers/bk-oldtime-gardens.jpg",
+   "source": "https://archive.org/details/oldtimegardensne00earluoft",
+   "original": "https://archive.org/download/oldtimegardensne00earluoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (kellylibrary, biodiversity)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/oldtimegardensne00earluoft",
+   "edition": "New York : The Macmillan Company; London, Macmillan & Co ltd, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-plantlore-gardencraft.jpg",
+   "source": "https://archive.org/details/plantloregardenc00ella",
+   "original": "https://archive.org/download/plantloregardenc00ella/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, fav-cekeating)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/plantloregardenc00ella",
+   "edition": "London ; New York : E. Arnold, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-practical-gardenbook.jpg",
+   "source": "https://archive.org/details/practicalgarden00hunna",
+   "original": "https://archive.org/download/practicalgarden00hunna/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, chicagobotanic)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/practicalgarden00hunna",
+   "edition": "New York ; London : The Macmillan Company, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-colour-in.jpg",
+   "source": "https://archive.org/details/colourinflowerga00jeky",
+   "original": "https://archive.org/download/colourinflowerga00jeky/page/cover_w800.jpg",
+   "credit": "Internet Archive (brigham_young_university, americana)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/colourinflowerga00jeky",
+   "edition": "[London] : \"Country life,\" ltd. [etc.], 1908"
+  },
+  {
+   "file": "data/books/covers/bk-wood-and.jpg",
+   "source": "https://archive.org/details/woodgardennotest01jeky",
+   "original": "https://archive.org/download/woodgardennotest01jeky/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1910, pre-1931)",
+   "licence_url": "https://archive.org/details/woodgardennotest01jeky",
+   "edition": "London, New York, Longmans, Green, 1910"
+  },
+  {
+   "file": "data/books/covers/bk-english-husbandman.jpg",
+   "source": "https://archive.org/details/markhamenglishhusbandman",
+   "original": "https://archive.org/download/markhamenglishhusbandman/page/cover_w800.jpg",
+   "credit": "Internet Archive (folkscanomy_agriculture, folkscanomy)",
+   "licence": "Public domain (edition published 1635, pre-1931)",
+   "licence_url": "https://archive.org/details/markhamenglishhusbandman",
+   "edition": "London : Printed [by Augustine Mathewes and John Norton] for Henry Taunton, and are to be sold at his shop in Saint Dunstans Church-yard in Fleetstreet, 1635"
+  },
+  {
+   "file": "data/books/covers/bk-paradisi-in.jpg",
+   "source": "https://archive.org/details/gri_33125012606931",
+   "original": "https://archive.org/download/gri_33125012606931/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1629, pre-1931)",
+   "licence_url": "https://archive.org/details/gri_33125012606931",
+   "edition": "London : Printed by Hvmfrey Lownes and Robert Yovng, at the signe of the Starre on Bread-street hill, 1629"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-parkman.jpg",
+   "source": "https://archive.org/details/cu31924002824336",
+   "original": "https://archive.org/download/cu31924002824336/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1866, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924002824336",
+   "edition": "Boston, J. E. Tilton and company, 1866"
+  },
+  {
+   "file": "data/books/covers/bk-amateur-gardencraft.jpg",
+   "source": "https://archive.org/details/cu31924016403408",
+   "original": "https://archive.org/download/cu31924016403408/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924016403408",
+   "edition": "Philadelphia & London, J.B. Lippincott Company, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-wild-garden.jpg",
+   "source": "https://archive.org/details/cu31924002827156",
+   "original": "https://archive.org/download/cu31924002827156/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1870, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924002827156",
+   "edition": "London, J. Murray, 1870"
+  },
+  {
+   "file": "data/books/covers/bk-gardening-indoors.jpg",
+   "source": "https://archive.org/details/gardeningindoors00rock",
+   "original": "https://archive.org/download/gardeningindoors00rock/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, NY_Botanical_Garden)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/gardeningindoors00rock",
+   "edition": "New York, McBride, Nast & Company, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-home-vegetable.jpg",
+   "source": "https://archive.org/details/homevegetablegar00rock",
+   "original": "https://archive.org/download/homevegetablegar00rock/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/homevegetablegar00rock",
+   "edition": "New York, McBride, Winston & company, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-gardencraft-old.jpg",
+   "source": "https://archive.org/details/oldnegardencraft00seddrich",
+   "original": "https://archive.org/download/oldnegardencraft00seddrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/oldnegardencraft00seddrich",
+   "edition": "London, K. Paul, Trench, Trübner & co., ltd, 1891"
+  },
+  {
+   "file": "data/books/covers/bk-shakespeare-garden.jpg",
+   "source": "https://archive.org/details/shakespearegarde00singrich",
+   "original": "https://archive.org/download/shakespearegarde00singrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/shakespearegarde00singrich",
+   "edition": "New York : Century, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-my-summer.jpg",
+   "source": "https://archive.org/details/mysummer00warnrich",
+   "original": "https://archive.org/download/mysummer00warnrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1871, pre-1931)",
+   "licence_url": "https://archive.org/details/mysummer00warnrich",
+   "edition": "Boston : J. R. Osgood & co, 1871"
+  },
+  {
+   "file": "data/books/covers/bk-italian-villas.jpg",
+   "source": "https://archive.org/details/italianvillast00whar",
+   "original": "https://archive.org/download/italianvillast00whar/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, smithsonian)",
+   "licence": "Public domain (edition published 1904, pre-1931)",
+   "licence_url": "https://archive.org/details/italianvillast00whar",
+   "edition": "New York : The Century Co, 1904"
+  },
+  {
+   "file": "data/books/covers/bk-garden-you.jpg",
+   "source": "https://archive.org/details/gardenyoui00wrigiala",
+   "original": "https://archive.org/download/gardenyoui00wrigiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/gardenyoui00wrigiala",
+   "edition": "New York London : the Macmillan company, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-birds-in.jpg",
+   "source": "https://archive.org/details/birdscalendar00aflaiala",
+   "original": "https://archive.org/download/birdscalendar00aflaiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/birdscalendar00aflaiala",
+   "edition": "London : Secker, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-audubon-and.jpg",
+   "source": "https://archive.org/details/cu31924080097847",
+   "original": "https://archive.org/download/cu31924080097847/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1897, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924080097847",
+   "edition": "New York, C. Scribner, 1897"
+  },
+  {
+   "file": "data/books/covers/bk-ornithological-biography.jpg",
+   "source": "https://archive.org/details/ornithologicalbi01audu",
+   "original": "https://archive.org/download/ornithologicalbi01audu/page/cover_w800.jpg",
+   "credit": "Internet Archive (darwinslibrary, nhml_london)",
+   "licence": "Public domain (edition published 1831, pre-1931)",
+   "licence_url": "https://archive.org/details/ornithologicalbi01audu",
+   "edition": "Edinburgh : Adam Black, 1831"
+  },
+  {
+   "file": "data/books/covers/bk-synopsis-of-audubon.jpg",
+   "source": "https://archive.org/details/synopsisofbirdso00audu",
+   "original": "https://archive.org/download/synopsisofbirdso00audu/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, fav-3457525911)",
+   "licence": "Public domain (edition published 1839, pre-1931)",
+   "licence_url": "https://archive.org/details/synopsisofbirdso00audu",
+   "edition": "Edinburgh : Adam and Charles Black ; London : Longman, Rees, Brown, Green, and Longman, 1839"
+  },
+  {
+   "file": "data/books/covers/bk-curious-book.jpg",
+   "source": "https://archive.org/details/curiousbookofbir00brow",
+   "original": "https://archive.org/download/curiousbookofbir00brow/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/curiousbookofbir00brow",
+   "edition": "Boston, Mass. ; New York : Houghton, Mifflin, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-burgess-bird.jpg",
+   "source": "https://archive.org/details/burgessbirdbookf00burg2",
+   "original": "https://archive.org/download/burgessbirdbookf00burg2/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1919, pre-1931)",
+   "licence_url": "https://archive.org/details/burgessbirdbookf00burg2",
+   "edition": "Boston, Mass. : Little, Brown & Co, 1919"
+  },
+  {
+   "file": "data/books/covers/bk-birds-and.jpg",
+   "source": "https://archive.org/details/birdspoetswithot00burrrich",
+   "original": "https://archive.org/download/birdspoetswithot00burrrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1877, pre-1931)",
+   "licence_url": "https://archive.org/details/birdspoetswithot00burrrich",
+   "edition": "New York, Hurd and Houghton, 1877"
+  },
+  {
+   "file": "data/books/covers/bk-riverby.jpg",
+   "source": "https://archive.org/details/riverby00burr_5",
+   "original": "https://archive.org/download/riverby00burr_5/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplpubboston, bplfrc)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/riverby00burr_5",
+   "edition": "Boston ; New York : Houghton, Mifflin and Company, 1895"
+  },
+  {
+   "file": "data/books/covers/bk-color-key.jpg",
+   "source": "https://archive.org/details/cu31924022565174",
+   "original": "https://archive.org/download/cu31924022565174/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924022565174",
+   "edition": "New York, Doubleday, Page & company, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-reptiles-and.jpg",
+   "source": "https://archive.org/details/reptilesbirdspop00figu",
+   "original": "https://archive.org/download/reptilesbirdspop00figu/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1869, pre-1931)",
+   "licence_url": "https://archive.org/details/reptilesbirdspop00figu",
+   "edition": "Springfield, Mass. : W.J. Holland, 1869"
+  },
+  {
+   "file": "data/books/covers/bk-ornithology-of.jpg",
+   "source": "https://archive.org/details/ornithologyofsha00hartiala",
+   "original": "https://archive.org/download/ornithologyofsha00hartiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1871, pre-1931)",
+   "licence_url": "https://archive.org/details/ornithologyofsha00hartiala",
+   "edition": "London : J. Van Voorst, 1871"
+  },
+  {
+   "file": "data/books/covers/bk-birds-and-hudson.jpg",
+   "source": "https://archive.org/details/cu31924001163769",
+   "original": "https://archive.org/download/cu31924001163769/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924001163769",
+   "edition": "London ; New York : Longmans, Green, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-birds-in-hudson.jpg",
+   "source": "https://archive.org/details/townvillabirdsin00hudsrich",
+   "original": "https://archive.org/download/townvillabirdsin00hudsrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/townvillabirdsin00hudsrich",
+   "edition": "New York, E.P. Dutton & company, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-birds-in-ingersol.jpg",
+   "source": "https://archive.org/details/birdsinlegendfab00inge",
+   "original": "https://archive.org/download/birdsinlegendfab00inge/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americanmuseumnaturalhistory)",
+   "licence": "Public domain (edition published 1923, pre-1931)",
+   "licence_url": "https://archive.org/details/birdsinlegendfab00inge",
+   "edition": "New York, London [etc.] Longmans, Green and co, 1923"
+  },
+  {
+   "file": "data/books/covers/bk-birds-of.jpg",
+   "source": "https://archive.org/details/birdsofrockies00keysrich",
+   "original": "https://archive.org/download/birdsofrockies00keysrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (prelinger_library, americana)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/birdsofrockies00keysrich",
+   "edition": "Chicago, A. C. McClurg and co, 1902"
+  },
+  {
+   "file": "data/books/covers/bk-australian-bird.jpg",
+   "source": "https://archive.org/details/australianbird00leac",
+   "original": "https://archive.org/download/australianbird00leac/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americanmuseumnaturalhistory)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/australianbird00leac",
+   "edition": "Melbourne : Whitcombe & Tombs, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-bird.jpg",
+   "source": "https://archive.org/details/birdthe00mich",
+   "original": "https://archive.org/download/birdthe00mich/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americanmuseumnaturalhistory)",
+   "licence": "Public domain (edition published 1868, pre-1931)",
+   "licence_url": "https://archive.org/details/birdthe00mich",
+   "edition": "London ; New York : T. Nelson, 1868"
+  },
+  {
+   "file": "data/books/covers/bk-birdlover-in.jpg",
+   "source": "https://archive.org/details/birdloverinwest00milliala",
+   "original": "https://archive.org/download/birdloverinwest00milliala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/birdloverinwest00milliala",
+   "edition": "Boston ; New York : Houghton, Mifflin, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-in-nesting.jpg",
+   "source": "https://archive.org/details/cu31924090295605",
+   "original": "https://archive.org/download/cu31924090295605/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924090295605",
+   "edition": "Boston and New York, Houghton, Mifflin, 1895"
+  },
+  {
+   "file": "data/books/covers/bk-little-brothers.jpg",
+   "source": "https://archive.org/details/littlebrothersof00mil",
+   "original": "https://archive.org/download/littlebrothersof00mil/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1892, pre-1931)",
+   "licence_url": "https://archive.org/details/littlebrothersof00mil",
+   "edition": "Boston, New York, Houghton, Mifflin and Company, 1892"
+  },
+  {
+   "file": "data/books/covers/bk-bird-book.jpg",
+   "source": "https://archive.org/details/cu31924090283783",
+   "original": "https://archive.org/download/cu31924090283783/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924090283783",
+   "edition": "Worcester, Mass., C. K. Reed, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-extinct-birds.jpg",
+   "source": "https://archive.org/details/extinctbirdsatte00roth",
+   "original": "https://archive.org/download/extinctbirdsatte00roth/page/cover_w800.jpg",
+   "credit": "Internet Archive (bostonpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/extinctbirdsatte00roth",
+   "edition": "London : Hutchinson, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-song-of.jpg",
+   "source": "https://archive.org/details/songofthecardina00strarich",
+   "original": "https://archive.org/download/songofthecardina00strarich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/songofthecardina00strarich",
+   "edition": "Indianapolis : The Bobbs-Merrill Company, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-birds-in-torrey.jpg",
+   "source": "https://archive.org/details/birdsinbush00torr",
+   "original": "https://archive.org/download/birdsinbush00torr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americanmuseumnaturalhistory)",
+   "licence": "Public domain (edition published 1885, pre-1931)",
+   "licence_url": "https://archive.org/details/birdsinbush00torr",
+   "edition": "Boston, Houghton, Mifflin and company, 1885"
+  },
+  {
+   "file": "data/books/covers/bk-footpath-way.jpg",
+   "source": "https://archive.org/details/footpathway00torr",
+   "original": "https://archive.org/download/footpathway00torr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1892, pre-1931)",
+   "licence_url": "https://archive.org/details/footpathway00torr",
+   "edition": "Boston : Houghton Mifflin, 1892"
+  },
+  {
+   "file": "data/books/covers/bk-citizen-bird.jpg",
+   "source": "https://archive.org/details/cu31924090239462",
+   "original": "https://archive.org/download/cu31924090239462/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1897, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924090239462",
+   "edition": "New York, The Macmillan Company; [etc., etc.], 1897"
+  },
+  {
+   "file": "data/books/covers/bk-practical-bookbinding.jpg",
+   "source": "https://archive.org/details/cihm_97168",
+   "original": "https://archive.org/download/cihm_97168/page/cover_w800.jpg",
+   "credit": "Internet Archive (university_of_alberta_libraries_microfilm, university_of_alberta_libraries)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/cihm_97168",
+   "edition": "London : Scott, Greenwood ; Toronto : Copp, Clark, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-american-bookplates.jpg",
+   "source": "https://archive.org/details/cu31924029546540",
+   "original": "https://archive.org/download/cu31924029546540/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924029546540",
+   "edition": "New York [etc.] : Macmillan and Co, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-printed-book.jpg",
+   "source": "https://archive.org/details/printedbookitshi00boucrich",
+   "original": "https://archive.org/download/printedbookitshi00boucrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1887, pre-1931)",
+   "licence_url": "https://archive.org/details/printedbookitshi00boucrich",
+   "edition": "London, H. Grevel and co, 1887"
+  },
+  {
+   "file": "data/books/covers/bk-illuminated-manuscripts-bradley.jpg",
+   "source": "https://archive.org/details/illuminatedmanus00brad",
+   "original": "https://archive.org/download/illuminatedmanus00brad/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/illuminatedmanus00brad",
+   "edition": "London : Methuen, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-letters-lettering.jpg",
+   "source": "https://archive.org/details/bwb_C0-AUF-458",
+   "original": "https://archive.org/download/bwb_C0-AUF-458/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-bloodshoes)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_C0-AUF-458",
+   "edition": "1902"
+  },
+  {
+   "file": "data/books/covers/bk-bookhunter.jpg",
+   "source": "https://archive.org/details/bookhunter00burtrich",
+   "original": "https://archive.org/download/bookhunter00burtrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1862, pre-1931)",
+   "licence_url": "https://archive.org/details/bookhunter00burtrich",
+   "edition": "New York : Sheldon and Co, 1862"
+  },
+  {
+   "file": "data/books/covers/bk-love-of.jpg",
+   "source": "https://archive.org/details/loveofbooksphilo0000unse_m3v5",
+   "original": "https://archive.org/download/loveofbooksphilo0000unse_m3v5/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-lindakb759)",
+   "licence": "Public domain (edition published 1925, pre-1931)",
+   "licence_url": "https://archive.org/details/loveofbooksphilo0000unse_m3v5",
+   "edition": "1925"
+  },
+  {
+   "file": "data/books/covers/bk-bookbinding-and.jpg",
+   "source": "https://archive.org/details/bookbindingcareo00cockiala",
+   "original": "https://archive.org/download/bookbindingcareo00cockiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/bookbindingcareo00cockiala",
+   "edition": "New York : D. Appleton, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-of-the-crane.jpg",
+   "source": "https://archive.org/details/ofdecorativeillu00cranrich",
+   "original": "https://archive.org/download/ofdecorativeillu00cranrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/ofdecorativeillu00cranrich",
+   "edition": "London ; New York : G. Bell, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-english-embroidered.jpg",
+   "source": "https://archive.org/details/englishbookbindings00davenuoft",
+   "original": "https://archive.org/download/englishbookbindings00davenuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (toronto, fav-abananapeel)",
+   "licence": "Public domain (edition published 1899, pre-1931)",
+   "licence_url": "https://archive.org/details/englishbookbindings00davenuoft",
+   "edition": "London : Kegan Paul, Trench, TruÌbner, 1899"
+  },
+  {
+   "file": "data/books/covers/bk-english-heraldic.jpg",
+   "source": "https://archive.org/details/b22650611",
+   "original": "https://archive.org/download/b22650611/page/cover_w800.jpg",
+   "credit": "Internet Archive (rcplondon, ukmhl)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/b22650611",
+   "edition": "London : Archibald Constable & Co, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-bibliomania-or.jpg",
+   "source": "https://archive.org/details/10601195bsb",
+   "original": "https://archive.org/download/10601195bsb/page/cover_w800.jpg",
+   "credit": "Internet Archive (german-online-libraries, booksbylanguage_german)",
+   "licence": "Public domain (edition published 1811, pre-1931)",
+   "licence_url": "https://archive.org/details/10601195bsb",
+   "edition": "1811"
+  },
+  {
+   "file": "data/books/covers/bk-early-printed.jpg",
+   "source": "https://archive.org/details/earlyprintedboo00duff",
+   "original": "https://archive.org/download/earlyprintedboo00duff/page/cover_w800.jpg",
+   "credit": "Internet Archive (pimslibrary, universityofottawa)",
+   "licence": "Public domain (edition published 1893, pre-1931)",
+   "licence_url": "https://archive.org/details/earlyprintedboo00duff",
+   "edition": "London, K. Paul, Trench, Trübner & co., ltd, 1893"
+  },
+  {
+   "file": "data/books/covers/bk-william-caxton.jpg",
+   "source": "https://archive.org/details/williamcaxton00duff",
+   "original": "https://archive.org/download/williamcaxton00duff/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplscinc, bostonpubliclibrary)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/williamcaxton00duff",
+   "edition": "Chicago : The Caxton club, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-love-affairs.jpg",
+   "source": "https://archive.org/details/cu31924032385100",
+   "original": "https://archive.org/download/cu31924032385100/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924032385100",
+   "edition": "New York : C. Scribner's Sons, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-art-practice.jpg",
+   "source": "https://archive.org/details/artpracticeoftyp00gres",
+   "original": "https://archive.org/download/artpracticeoftyp00gres/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/artpracticeoftyp00gres",
+   "edition": "New York : Oswald Pub. Co, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-short-history.jpg",
+   "source": "https://archive.org/details/shorthistoryofpr00hoeruoft",
+   "original": "https://archive.org/download/shorthistoryofpr00hoeruoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/shorthistoryofpr00hoeruoft",
+   "edition": "New York, R. Hoe, 1902"
+  },
+  {
+   "file": "data/books/covers/bk-writing-illuminating.jpg",
+   "source": "https://archive.org/details/writingilluminat00johnrich",
+   "original": "https://archive.org/download/writingilluminat00johnrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/writingilluminat00johnrich",
+   "edition": "New York, Macmillan, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-library.jpg",
+   "source": "https://archive.org/details/cu31924029546011",
+   "original": "https://archive.org/download/cu31924029546011/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1881, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924029546011",
+   "edition": "London : Macmillan & Co, 1881"
+  },
+  {
+   "file": "data/books/covers/bk-american-printer.jpg",
+   "source": "https://archive.org/details/americanprinterm1874mack",
+   "original": "https://archive.org/download/americanprinterm1874mack/page/cover_w800.jpg",
+   "credit": "Internet Archive (brigham_young_university, americana)",
+   "licence": "Public domain (edition published 1874, pre-1931)",
+   "licence_url": "https://archive.org/details/americanprinterm1874mack",
+   "edition": "Philadelphia : MacKellar, Smiths & Jordan, 1874"
+  },
+  {
+   "file": "data/books/covers/bk-bibliomania-in.jpg",
+   "source": "https://archive.org/details/bibliomaniainmid00merruoft",
+   "original": "https://archive.org/download/bibliomaniainmid00merruoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1849, pre-1931)",
+   "licence_url": "https://archive.org/details/bibliomaniainmid00merruoft",
+   "edition": "London : Merryweather, 1849"
+  },
+  {
+   "file": "data/books/covers/bk-illuminated-manuscripts.jpg",
+   "source": "https://archive.org/details/illuminatedmanus00midd",
+   "original": "https://archive.org/download/illuminatedmanus00midd/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1892, pre-1931)",
+   "licence_url": "https://archive.org/details/illuminatedmanus00midd",
+   "edition": "Cambridge, University press, 1892"
+  },
+  {
+   "file": "data/books/covers/bk-amenities-of.jpg",
+   "source": "https://archive.org/details/cu31924031034956",
+   "original": "https://archive.org/download/cu31924031034956/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924031034956",
+   "edition": "Boston : Atlantic Monthly Press, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-manual-of-nicholso.jpg",
+   "source": "https://archive.org/details/manualofartofboo00nich",
+   "original": "https://archive.org/download/manualofartofboo00nich/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1856, pre-1931)",
+   "licence_url": "https://archive.org/details/manualofartofboo00nich",
+   "edition": "Philadelphia : Henry Carey Baird, 1856"
+  },
+  {
+   "file": "data/books/covers/bk-fine-books.jpg",
+   "source": "https://archive.org/details/finebooks00poll",
+   "original": "https://archive.org/download/finebooks00poll/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/finebooks00poll",
+   "edition": "London : Methuen & Co., Ltd, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-bookhunter-in.jpg",
+   "source": "https://archive.org/details/bookhunterinlond00robeuoft",
+   "original": "https://archive.org/download/bookhunterinlond00robeuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1895, pre-1931)",
+   "licence_url": "https://archive.org/details/bookhunterinlond00robeuoft",
+   "edition": "Chicago A.C. McClurg, 1895"
+  },
+  {
+   "file": "data/books/covers/bk-old-english-savage.jpg",
+   "source": "https://archive.org/details/oldenglishlibrar00savauoft",
+   "original": "https://archive.org/download/oldenglishlibrar00savauoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/oldenglishlibrar00savauoft",
+   "edition": "London, Methuen, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-manufacture-of.jpg",
+   "source": "https://archive.org/details/manufactureofpap00sindrich",
+   "original": "https://archive.org/download/manufactureofpap00sindrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/manufactureofpap00sindrich",
+   "edition": "London, A. Constable & co. ltd, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-invention-of.jpg",
+   "source": "https://archive.org/details/cu31924029494097",
+   "original": "https://archive.org/download/cu31924029494097/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1878, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924029494097",
+   "edition": "New York : F. Hart, 1878"
+  },
+  {
+   "file": "data/books/covers/bk-art-of-watt.jpg",
+   "source": "https://archive.org/details/artofpapermaking00watt",
+   "original": "https://archive.org/download/artofpapermaking00watt/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1890, pre-1931)",
+   "licence_url": "https://archive.org/details/artofpapermaking00watt",
+   "edition": "London : Crosby Lockwood and Son, 1890"
+  },
+  {
+   "file": "data/books/covers/bk-art-of-zaehnsdo.jpg",
+   "source": "https://archive.org/details/artofbookbinding00zaehrich",
+   "original": "https://archive.org/download/artofbookbinding00zaehrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1880, pre-1931)",
+   "licence_url": "https://archive.org/details/artofbookbinding00zaehrich",
+   "edition": "London, G. Bell & sons, 1880"
+  },
+  {
+   "file": "data/books/covers/bk-british-and.jpg",
+   "source": "https://archive.org/details/cu31924030736957",
+   "original": "https://archive.org/download/cu31924030736957/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924030736957",
+   "edition": "London ; Edinburgh : T.C. & E.C. Jack, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-secrets-of.jpg",
+   "source": "https://archive.org/details/cu31924031218542",
+   "original": "https://archive.org/download/cu31924031218542/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924031218542",
+   "edition": "London, New York, G. Bell, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-burton.jpg",
+   "source": "https://archive.org/details/BurtonSword",
+   "original": "https://archive.org/download/BurtonSword/page/cover_w800.jpg",
+   "credit": "Internet Archive (clevelandmuseumofartIngallslibrary, patron-library-collection)",
+   "licence": "Public domain (edition published 1884, pre-1931)",
+   "licence_url": "https://archive.org/details/BurtonSword",
+   "edition": "London : Chatto and Windus, 1884"
+  },
+  {
+   "file": "data/books/covers/bk-spanish-arms.jpg",
+   "source": "https://archive.org/details/spanisharmsarmou00calvuoft",
+   "original": "https://archive.org/download/spanisharmsarmou00calvuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/spanisharmsarmou00calvuoft",
+   "edition": "London J. Lane, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-knights-and.jpg",
+   "source": "https://archive.org/details/knightstheirdays1856dora",
+   "original": "https://archive.org/download/knightstheirdays1856dora/page/cover_w800.jpg",
+   "credit": "Internet Archive (brigham_young_university, americana)",
+   "licence": "Public domain (edition published 1856, pre-1931)",
+   "licence_url": "https://archive.org/details/knightstheirdays1856dora",
+   "edition": "New York : Redfield, 1856"
+  },
+  {
+   "file": "data/books/covers/bk-sir-nigel.jpg",
+   "source": "https://archive.org/details/sirnigel00doylrich",
+   "original": "https://archive.org/download/sirnigel00doylrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/sirnigel00doylrich",
+   "edition": "London : Smith, Elder, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-three-musketeers.jpg",
+   "source": "https://archive.org/details/threemusketeers0000alex_f0z3",
+   "original": "https://archive.org/download/threemusketeers0000alex_f0z3/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-agent-lisa)",
+   "licence": "Public domain (edition published 1844, pre-1931)",
+   "licence_url": "https://archive.org/details/threemusketeers0000alex_f0z3",
+   "edition": "Garden City, N.Y. International Collectors Library, 1844"
+  },
+  {
+   "file": "data/books/covers/bk-armour-weapons.jpg",
+   "source": "https://archive.org/details/ArmourFfoulkes",
+   "original": "https://archive.org/download/ArmourFfoulkes/page/cover_w800.jpg",
+   "credit": "Internet Archive (clevelandmuseumofartIngallslibrary, patron-library-collection)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/ArmourFfoulkes",
+   "edition": "Oxford : Clarendon Press, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-armourer-and.jpg",
+   "source": "https://archive.org/details/cu31924030681278",
+   "original": "https://archive.org/download/cu31924030681278/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924030681278",
+   "edition": "London : Methuen & Co. Ltd, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-armour-in.jpg",
+   "source": "https://archive.org/details/armourinenglandf00garduoft",
+   "original": "https://archive.org/download/armourinenglandf00garduoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1897, pre-1931)",
+   "licence_url": "https://archive.org/details/armourinenglandf00garduoft",
+   "edition": "London : Seeley, 1897"
+  },
+  {
+   "file": "data/books/covers/bk-ancient-armour.jpg",
+   "source": "https://archive.org/details/ancientarmourwea00hewirich",
+   "original": "https://archive.org/download/ancientarmourwea00hewirich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1855, pre-1931)",
+   "licence_url": "https://archive.org/details/ancientarmourwea00hewirich",
+   "edition": "Oxford, London, J. Henry and J. Parker, 1855"
+  },
+  {
+   "file": "data/books/covers/bk-history-of-james.jpg",
+   "source": "https://archive.org/details/historyofchivalr00jame",
+   "original": "https://archive.org/download/historyofchivalr00jame/page/cover_w800.jpg",
+   "credit": "Internet Archive (ColumbiaUniversityLibraries, americana)",
+   "licence": "Public domain (edition published 1832, pre-1931)",
+   "licence_url": "https://archive.org/details/historyofchivalr00jame",
+   "edition": "New York : Harper, 1832"
+  },
+  {
+   "file": "data/books/covers/bk-duel.jpg",
+   "source": "https://archive.org/details/duelkuprin00kupr",
+   "original": "https://archive.org/download/duelkuprin00kupr/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/duelkuprin00kupr",
+   "edition": "London : George Allen & Unwin, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-art-of-labat.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-art-of-fencing-or-_labat-matre-darmes_1735",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-art-of-fencing-or-_labat-matre-darmes_1735/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1735, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-art-of-fencing-or-_labat-matre-darmes_1735",
+   "edition": "1735"
+  },
+  {
+   "file": "data/books/covers/bk-buke-of.jpg",
+   "source": "https://archive.org/details/bukeoforderofkny00lluluoft",
+   "original": "https://archive.org/download/bukeoforderofkny00lluluoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1847, pre-1931)",
+   "licence_url": "https://archive.org/details/bukeoforderofkny00lluluoft",
+   "edition": "Edinburgh, 1847"
+  },
+  {
+   "file": "data/books/covers/bk-fencing-foil.jpg",
+   "source": "https://archive.org/details/fencingfoilclass00manrrich",
+   "original": "https://archive.org/download/fencingfoilclass00manrrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/fencingfoilclass00manrrich",
+   "edition": "New York : American Sports Publ. Co, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-mark-of.jpg",
+   "source": "https://archive.org/details/markofzorro00mccu",
+   "original": "https://archive.org/download/markofzorro00mccu/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1924, pre-1931)",
+   "licence_url": "https://archive.org/details/markofzorro00mccu",
+   "edition": "New York, Grosset & Dunlap, 1924"
+  },
+  {
+   "file": "data/books/covers/bk-history-of-millinge.jpg",
+   "source": "https://archive.org/details/historyofduellin02milluoft",
+   "original": "https://archive.org/download/historyofduellin02milluoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1841, pre-1931)",
+   "licence_url": "https://archive.org/details/historyofduellin02milluoft",
+   "edition": "London R. Bentley, 1841"
+  },
+  {
+   "file": "data/books/covers/bk-men-of.jpg",
+   "source": "https://archive.org/details/bwb_S0-DQS-348",
+   "original": "https://archive.org/download/bwb_S0-DQS-348/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_S0-DQS-348",
+   "edition": "1891"
+  },
+  {
+   "file": "data/books/covers/bk-bardelys-the.jpg",
+   "source": "https://archive.org/details/bwb_P7-CAI-530",
+   "original": "https://archive.org/download/bwb_P7-CAI-530/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1924, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_P7-CAI-530",
+   "edition": "HOUGHTON MIFFLIN CO, 1924"
+  },
+  {
+   "file": "data/books/covers/bk-talisman.jpg",
+   "source": "https://archive.org/details/talismanlibraryo0000unse",
+   "original": "https://archive.org/download/talismanlibraryo0000unse/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-jahanzeb_shah)",
+   "licence": "Public domain (edition published 1825, pre-1931)",
+   "licence_url": "https://archive.org/details/talismanlibraryo0000unse",
+   "edition": "Collins London and Glasgow, 1825"
+  },
+  {
+   "file": "data/books/covers/bk-lessons-in.jpg",
+   "source": "https://archive.org/details/lessonsinsabresi00wait",
+   "original": "https://archive.org/download/lessonsinsabresi00wait/page/cover_w800.jpg",
+   "credit": "Internet Archive (smithsonian, fav-1919189246)",
+   "licence": "Public domain (edition published 1880, pre-1931)",
+   "licence_url": "https://archive.org/details/lessonsinsabresi00wait",
+   "edition": "London, Weldon & Co, 1880"
+  },
+  {
+   "file": "data/books/covers/bk-under-the.jpg",
+   "source": "https://archive.org/details/underredrobe00weymuoft",
+   "original": "https://archive.org/download/underredrobe00weymuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/underredrobe00weymuoft",
+   "edition": "New York Longmans, Green, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-code-of.jpg",
+   "source": "https://archive.org/details/codeofhonororrul00wils",
+   "original": "https://archive.org/download/codeofhonororrul00wils/page/cover_w800.jpg",
+   "credit": "Internet Archive (auburnuniversitylibraries, americana)",
+   "licence": "Public domain (edition published 1858, pre-1931)",
+   "licence_url": "https://archive.org/details/codeofhonororrul00wils",
+   "edition": "James Phinney, 1858"
+  },
+  {
+   "file": "data/books/covers/bk-daily-training.jpg",
+   "source": "https://archive.org/details/cu31924031283256",
+   "original": "https://archive.org/download/cu31924031283256/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924031283256",
+   "edition": "New York : E.P. Dutton, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-how-to-blaikie.jpg",
+   "source": "https://archive.org/details/howtogetstrongho02blai",
+   "original": "https://archive.org/download/howtogetstrongho02blai/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1879, pre-1931)",
+   "licence_url": "https://archive.org/details/howtogetstrongho02blai",
+   "edition": "New York, Harper & brothers, 1879"
+  },
+  {
+   "file": "data/books/covers/bk-croxley-master.jpg",
+   "source": "https://archive.org/details/croxleymastergre00doylrich",
+   "original": "https://archive.org/download/croxleymastergre00doylrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/croxleymastergre00doylrich",
+   "edition": "New York, McClure, Phillips & co, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-rodney-stone.jpg",
+   "source": "https://archive.org/details/rodneyston00doyl",
+   "original": "https://archive.org/download/rodneyston00doyl/page/cover_w800.jpg",
+   "credit": "Internet Archive (ubclibrary, toronto)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/rodneyston00doyl",
+   "edition": "New York, D. Appleton, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-personal-hygiene.jpg",
+   "source": "https://archive.org/details/personalhygienep00galb",
+   "original": "https://archive.org/download/personalhygienep00galb/page/cover_w800.jpg",
+   "credit": "Internet Archive (columbialongmhl, medicalheritagelibrary)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/personalhygienep00galb",
+   "edition": "Philadelphia and London, W. B. Saunders company, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-greek-athletic.jpg",
+   "source": "https://archive.org/details/greekathleticspo00garduoft",
+   "original": "https://archive.org/download/greekathleticspo00garduoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1910, pre-1931)",
+   "licence_url": "https://archive.org/details/greekathleticspo00garduoft",
+   "edition": "London : Macmillan, 1910"
+  },
+  {
+   "file": "data/books/covers/bk-chushingura-the.jpg",
+   "source": "https://archive.org/details/chushinguraortre0000unse_a7y8",
+   "original": "https://archive.org/download/chushinguraortre0000unse_a7y8/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1910, pre-1931)",
+   "licence_url": "https://archive.org/details/chushinguraortre0000unse_a7y8",
+   "edition": "1910"
+  },
+  {
+   "file": "data/books/covers/bk-practical-training.jpg",
+   "source": "https://archive.org/details/practicaltrainin00jame",
+   "original": "https://archive.org/download/practicaltrainin00jame/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1877, pre-1931)",
+   "licence_url": "https://archive.org/details/practicaltrainin00jame",
+   "edition": "New York, E. James, 1877"
+  },
+  {
+   "file": "data/books/covers/bk-guide-to-leonard.jpg",
+   "source": "https://archive.org/details/guidetohistoryof00leon",
+   "original": "https://archive.org/download/guidetohistoryof00leon/page/cover_w800.jpg",
+   "credit": "Internet Archive (west_virginia_university, americana)",
+   "licence": "Public domain (edition published 1923, pre-1931)",
+   "licence_url": "https://archive.org/details/guidetohistoryof00leon",
+   "edition": "Philadelphia and New York, Lea & Febiger, 1923"
+  },
+  {
+   "file": "data/books/covers/bk-abysmal-brute.jpg",
+   "source": "https://archive.org/details/abysmalbrute00londrich",
+   "original": "https://archive.org/download/abysmalbrute00londrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/abysmalbrute00londrich",
+   "edition": "New York : The Century Co, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-game.jpg",
+   "source": "https://archive.org/details/thegamejack00londrich",
+   "original": "https://archive.org/download/thegamejack00londrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/thegamejack00londrich",
+   "edition": "New York, The Macmillan Company; London, Macmillan & Co., ltd, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-nightborn.jpg",
+   "source": "https://archive.org/details/cu31924021764067",
+   "original": "https://archive.org/download/cu31924021764067/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924021764067",
+   "edition": "New York : Century, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-when-god.jpg",
+   "source": "https://archive.org/details/whengodlaughsand00londrich",
+   "original": "https://archive.org/download/whengodlaughsand00londrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/whengodlaughsand00londrich",
+   "edition": "Cleveland, New York, International fiction library, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-vitality-supreme.jpg",
+   "source": "https://archive.org/details/B-001-014-062",
+   "original": "https://archive.org/download/B-001-014-062/page/cover_w800.jpg",
+   "credit": "Internet Archive (nicolai-woodenko-library, patron-library-collection)",
+   "licence": "Public domain (edition published 1915, pre-1931)",
+   "licence_url": "https://archive.org/details/B-001-014-062",
+   "edition": "1915"
+  },
+  {
+   "file": "data/books/covers/bk-pugilistica-the.jpg",
+   "source": "https://archive.org/details/pugilisticahisto01mileuoft",
+   "original": "https://archive.org/download/pugilisticahisto01mileuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (kellylibrary, toronto)",
+   "licence": "Public domain (edition published 1906, pre-1931)",
+   "licence_url": "https://archive.org/details/pugilisticahisto01mileuoft",
+   "edition": "Edinburgh, J. Grant, 1906"
+  },
+  {
+   "file": "data/books/covers/bk-tales-of-mitford.jpg",
+   "source": "https://archive.org/details/cu31924023513595",
+   "original": "https://archive.org/download/cu31924023513595/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1883, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924023513595",
+   "edition": "London : Macmillan & Co, 1883"
+  },
+  {
+   "file": "data/books/covers/bk-tales-of-miyamori.jpg",
+   "source": "https://archive.org/details/talesofsamuraist00miyauoft",
+   "original": "https://archive.org/download/talesofsamuraist00miyauoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/talesofsamuraist00miyauoft",
+   "edition": "Tokyo Kyo-bun-kwan, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-bushido-the.jpg",
+   "source": "https://archive.org/details/bushidosoulofjap00nitouoft",
+   "original": "https://archive.org/download/bushidosoulofjap00nitouoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/bushidosoulofjap00nitouoft",
+   "edition": "London G.P. Putnam's sons, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-religion-of.jpg",
+   "source": "https://archive.org/details/religionofsamura00nuka",
+   "original": "https://archive.org/download/religionofsamura00nuka/page/cover_w800.jpg",
+   "credit": "Internet Archive (Wellesley_College_Library, blc)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/religionofsamura00nuka",
+   "edition": "London, Luzac, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-wrestling-and.jpg",
+   "source": "https://archive.org/details/wrestlingwrestle00robiiala",
+   "original": "https://archive.org/download/wrestlingwrestle00robiiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1893, pre-1931)",
+   "licence_url": "https://archive.org/details/wrestlingwrestle00robiiala",
+   "edition": "London : Bemrose, 1893"
+  },
+  {
+   "file": "data/books/covers/bk-strength-and.jpg",
+   "source": "https://archive.org/details/b28089789",
+   "original": "https://archive.org/download/b28089789/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1897, pre-1931)",
+   "licence_url": "https://archive.org/details/b28089789",
+   "edition": "London : Gale & Polden, Ltd, 1897"
+  },
+  {
+   "file": "data/books/covers/bk-admirable-bashville.jpg",
+   "source": "https://archive.org/details/admirablebashvil0000geor",
+   "original": "https://archive.org/download/admirablebashvil0000geor/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-marcia1987)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/admirablebashvil0000geor",
+   "edition": "Brentano's, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-daughter-of.jpg",
+   "source": "https://archive.org/details/daughterofsamura0000etsu_t6l4",
+   "original": "https://archive.org/download/daughterofsamura0000etsu_t6l4/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-tenlha555)",
+   "licence": "Public domain (edition published 1928, pre-1931)",
+   "licence_url": "https://archive.org/details/daughterofsamura0000etsu_t6l4",
+   "edition": "Doubleday, Doran & Company, Inc, 1928"
+  },
+  {
+   "file": "data/books/covers/bk-handbook-of-whittake.jpg",
+   "source": "https://archive.org/details/handbookofsummer00whit",
+   "original": "https://archive.org/download/handbookofsummer00whit/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1880, pre-1931)",
+   "licence_url": "https://archive.org/details/handbookofsummer00whit",
+   "edition": "New York, Beadle and Adams, 1880"
+  },
+  {
+   "file": "data/books/covers/bk-white-feather.jpg",
+   "source": "https://archive.org/details/whitefeather00wodeuoft",
+   "original": "https://archive.org/download/whitefeather00wodeuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (kellylibrary, toronto)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/whitefeather00wodeuoft",
+   "edition": "London : A. & C. Black, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-greek-athletics.jpg",
+   "source": "https://archive.org/details/greekathletics00wrig",
+   "original": "https://archive.org/download/greekathletics00wrig/page/cover_w800.jpg",
+   "credit": "Internet Archive (university_of_illinois_urbana-champaign, americana)",
+   "licence": "Public domain (edition published 1925, pre-1931)",
+   "licence_url": "https://archive.org/details/greekathletics00wrig",
+   "edition": "London, J. Cape, 1925"
+  },
+  {
+   "file": "data/books/covers/bk-tale-of.jpg",
+   "source": "https://archive.org/details/taleofbusterbumb00bail",
+   "original": "https://archive.org/download/taleofbusterbumb00bail/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/taleofbusterbumb00bail",
+   "edition": "New York, Grosset & Dunlap, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-honeybee.jpg",
+   "source": "https://archive.org/details/honeybeeitsnatur00beva",
+   "original": "https://archive.org/download/honeybeeitsnatur00beva/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1827, pre-1931)",
+   "licence_url": "https://archive.org/details/honeybeeitsnatur00beva",
+   "edition": "London, Baldwin, Cradock, and Joy, 1827"
+  },
+  {
+   "file": "data/books/covers/bk-adventures-of-bonsels.jpg",
+   "source": "https://archive.org/details/adventuresofmaya00bons",
+   "original": "https://archive.org/download/adventuresofmaya00bons/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/adventuresofmaya00bons",
+   "edition": "New York : T. Seltzer, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-birds-and-burrough.jpg",
+   "source": "https://archive.org/details/birdsbeesessays01burr",
+   "original": "https://archive.org/download/birdsbeesessays01burr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1887, pre-1931)",
+   "licence_url": "https://archive.org/details/birdsbeesessays01burr",
+   "edition": "Boston ; New York : Houghton, Mifflin, 1887"
+  },
+  {
+   "file": "data/books/covers/bk-buzz-a.jpg",
+   "source": "https://archive.org/details/cu31924003194820",
+   "original": "https://archive.org/download/cu31924003194820/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1872, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003194820",
+   "edition": "London : Griffith & Farran; Chester, Phillipson & Golder, 1872"
+  },
+  {
+   "file": "data/books/covers/bk-how-to-comstock.jpg",
+   "source": "https://archive.org/details/howtokeepbeeshan00comsiala",
+   "original": "https://archive.org/download/howtokeepbeeshan00comsiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/howtokeepbeeshan00comsiala",
+   "edition": "New York : Doubleday, Page & company, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-manual-of-cook.jpg",
+   "source": "https://archive.org/details/cu31924085659757",
+   "original": "https://archive.org/download/cu31924085659757/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1876, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924085659757",
+   "edition": "[Lansing, Mich. : W.S. George & Co.], 1876"
+  },
+  {
+   "file": "data/books/covers/bk-bee-keeping.jpg",
+   "source": "https://archive.org/details/cu31924003433657",
+   "original": "https://archive.org/download/cu31924003433657/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1883, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003433657",
+   "edition": "[n.p.], 1883"
+  },
+  {
+   "file": "data/books/covers/bk-beekeeping.jpg",
+   "source": "https://archive.org/details/beekeeping00cumm",
+   "original": "https://archive.org/download/beekeeping00cumm/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1864, pre-1931)",
+   "licence_url": "https://archive.org/details/beekeeping00cumm",
+   "edition": "London : Sampson Low, Son, & Marston, 14 Ludgate Hill, 1864"
+  },
+  {
+   "file": "data/books/covers/bk-beemaster-of.jpg",
+   "source": "https://archive.org/details/cu31924003203431",
+   "original": "https://archive.org/download/cu31924003203431/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003203431",
+   "edition": "London, The \"Pall Mall\" press, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-lore-of.jpg",
+   "source": "https://archive.org/details/cu31924003215088",
+   "original": "https://archive.org/download/cu31924003215088/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003215088",
+   "edition": "London, Methuen, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-bramblebees-and.jpg",
+   "source": "https://archive.org/details/bramblebeesother00fabruoft",
+   "original": "https://archive.org/download/bramblebeesother00fabruoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (gerstein, biodiversity)",
+   "licence": "Public domain (edition published 1915, pre-1931)",
+   "licence_url": "https://archive.org/details/bramblebeesother00fabruoft",
+   "edition": "New York Dodd, Mead, 1915"
+  },
+  {
+   "file": "data/books/covers/bk-masonbees.jpg",
+   "source": "https://archive.org/details/masonbees00fabr",
+   "original": "https://archive.org/download/masonbees00fabr/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/masonbees00fabr",
+   "edition": "New York : Dodd, Mead and Company, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-bee-preserver.jpg",
+   "source": "https://archive.org/details/beepreserverorpr00gl",
+   "original": "https://archive.org/download/beepreserverorpr00gl/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1829, pre-1931)",
+   "licence_url": "https://archive.org/details/beepreserverorpr00gl",
+   "edition": "Edinburgh, J. Anderson, 1829"
+  },
+  {
+   "file": "data/books/covers/bk-new-observations.jpg",
+   "source": "https://archive.org/details/b21942560",
+   "original": "https://archive.org/download/b21942560/page/cover_w800.jpg",
+   "credit": "Internet Archive (rcpedinburgh, ukmhl)",
+   "licence": "Public domain (edition published 1821, pre-1931)",
+   "licence_url": "https://archive.org/details/b21942560",
+   "edition": "Edinburgh : printed for W. & C. Tait, 1821"
+  },
+  {
+   "file": "data/books/covers/bk-nuova-or.jpg",
+   "source": "https://archive.org/details/nuovaornewbeesto00kell",
+   "original": "https://archive.org/download/nuovaornewbeesto00kell/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, iacl)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/nuovaornewbeesto00kell",
+   "edition": "Boston ; New York : Houghton Mifflin company, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-langstroth-on.jpg",
+   "source": "https://archive.org/details/cu31924003218819",
+   "original": "https://archive.org/download/cu31924003218819/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1853, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003218819",
+   "edition": "Northampton : Hopkins, Bridgman, 1853"
+  },
+  {
+   "file": "data/books/covers/bk-bee-hunting.jpg",
+   "source": "https://archive.org/details/beehuntingbookof00lock",
+   "original": "https://archive.org/download/beehuntingbookof00lock/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/beehuntingbookof00lock",
+   "edition": "Columbus, O., A. R. Harding Pub. Co, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-apiary.jpg",
+   "source": "https://archive.org/details/apiaryorbeesbeeh00neig",
+   "original": "https://archive.org/download/apiaryorbeesbeeh00neig/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/apiaryorbeesbeeh00neig",
+   "edition": "London, Kent, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-humanity-to.jpg",
+   "source": "https://archive.org/details/humanitytohoneyb00nutt",
+   "original": "https://archive.org/download/humanitytohoneyb00nutt/page/cover_w800.jpg",
+   "credit": "Internet Archive (university_of_illinois_urbana-champaign, biodiversity)",
+   "licence": "Public domain (edition published 1834, pre-1931)",
+   "licence_url": "https://archive.org/details/humanitytohoneyb00nutt",
+   "edition": "Wisbech : Printed by H. and J. Leach, for the author; London, Longman and Co, 1834"
+  },
+  {
+   "file": "data/books/covers/bk-wilderness-honey.jpg",
+   "source": "https://archive.org/details/wildernesshoney00poll",
+   "original": "https://archive.org/download/wildernesshoney00poll/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/wildernesshoney00poll",
+   "edition": "New York, The Century Co, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-mysteries-of.jpg",
+   "source": "https://archive.org/details/mysteriesofbeeke00quin",
+   "original": "https://archive.org/download/mysteriesofbeeke00quin/page/cover_w800.jpg",
+   "credit": "Internet Archive (ncsulibraries, americana)",
+   "licence": "Public domain (edition published 1853, pre-1931)",
+   "licence_url": "https://archive.org/details/mysteriesofbeeke00quin",
+   "edition": "New York : C.M. Saxton, 1853"
+  },
+  {
+   "file": "data/books/covers/bk-wild-bees.jpg",
+   "source": "https://archive.org/details/b28071141",
+   "original": "https://archive.org/download/b28071141/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/b28071141",
+   "edition": "London : Routledge, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-british-bees.jpg",
+   "source": "https://archive.org/details/cu31924066723655",
+   "original": "https://archive.org/download/cu31924066723655/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1866, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924066723655",
+   "edition": "London : Reeve, 1866"
+  },
+  {
+   "file": "data/books/covers/bk-meadowbrook-girls.jpg",
+   "source": "https://archive.org/details/bwb_w6-byy-203",
+   "original": "https://archive.org/download/bwb_w6-byy-203/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_w6-byy-203",
+   "edition": "Saalfield, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-tennis-for.jpg",
+   "source": "https://archive.org/details/tennisforgirls00ballrich",
+   "original": "https://archive.org/download/tennisforgirls00ballrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1919, pre-1931)",
+   "licence_url": "https://archive.org/details/tennisforgirls00ballrich",
+   "edition": "New York, American sports publishing company, 1919"
+  },
+  {
+   "file": "data/books/covers/bk-halfback.jpg",
+   "source": "https://archive.org/details/halfbackstoryofs0000unse",
+   "original": "https://archive.org/download/halfbackstoryofs0000unse/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-rereno)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/halfbackstoryofs0000unse",
+   "edition": "D. Appleton COmpany, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-cricket-of.jpg",
+   "source": "https://archive.org/details/cricketofabelhir00bens",
+   "original": "https://archive.org/download/cricketofabelhir00bens/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/cricketofabelhir00bens",
+   "edition": "New York, E.P. Dutton & co, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-croquet.jpg",
+   "source": "https://archive.org/details/croquetasplayedb00newp",
+   "original": "https://archive.org/download/croquetasplayedb00newp/page/cover_w800.jpg",
+   "credit": "Internet Archive (bostonpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/croquetasplayedb00newp",
+   "edition": "New York: : Sheldon & Company, 498 & 500 Broadway, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-golf-courses.jpg",
+   "source": "https://archive.org/details/golfcoursesofbri00darwuoft",
+   "original": "https://archive.org/download/golfcoursesofbri00darwuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1910, pre-1931)",
+   "licence_url": "https://archive.org/details/golfcoursesofbri00darwuoft",
+   "edition": "London Duckworth, 1910"
+  },
+  {
+   "file": "data/books/covers/bk-golfing-idyll.jpg",
+   "source": "https://archive.org/details/golfingidyllorsk00flin",
+   "original": "https://archive.org/download/golfingidyllorsk00flin/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1897, pre-1931)",
+   "licence_url": "https://archive.org/details/golfingidyllorsk00flin",
+   "edition": "St. Andrews : Henderson, 1897"
+  },
+  {
+   "file": "data/books/covers/bk-theory-and-ford.jpg",
+   "source": "https://archive.org/details/theorypracticeof00ford",
+   "original": "https://archive.org/download/theorypracticeof00ford/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1887, pre-1931)",
+   "licence_url": "https://archive.org/details/theorypracticeof00ford",
+   "edition": "London : Longmans, Green, 1887"
+  },
+  {
+   "file": "data/books/covers/bk-cricket-songs.jpg",
+   "source": "https://archive.org/details/cricketsongs00galeiala",
+   "original": "https://archive.org/download/cricketsongs00galeiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1894, pre-1931)",
+   "licence_url": "https://archive.org/details/cricketsongs00galeiala",
+   "edition": "London : Methuen, 1894"
+  },
+  {
+   "file": "data/books/covers/bk-pip.jpg",
+   "source": "https://archive.org/details/bwb_KV-351-926",
+   "original": "https://archive.org/download/bwb_KV-351-926/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_KV-351-926",
+   "edition": "1914"
+  },
+  {
+   "file": "data/books/covers/bk-archery-rules.jpg",
+   "source": "https://archive.org/details/archeryrules00hinr",
+   "original": "https://archive.org/download/archeryrules00hinr/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1870, pre-1931)",
+   "licence_url": "https://archive.org/details/archeryrules00hinr",
+   "edition": "New York, C. F. A. Hinrichs, 1870"
+  },
+  {
+   "file": "data/books/covers/bk-happy-golfer.jpg",
+   "source": "https://archive.org/details/happygolferbeing00leac",
+   "original": "https://archive.org/download/happygolferbeing00leac/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/happygolferbeing00leac",
+   "edition": "London : Macmillan and Co., limited, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-spirit-of.jpg",
+   "source": "https://archive.org/details/spiritoflinks00leac",
+   "original": "https://archive.org/download/spiritoflinks00leac/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/spiritoflinks00leac",
+   "edition": "London : Methuen, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-fore.jpg",
+   "source": "https://archive.org/details/forexxxx00vanliala",
+   "original": "https://archive.org/download/forexxxx00vanliala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/forexxxx00vanliala",
+   "edition": "New York : George H. Doran Company, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-cricket-field.jpg",
+   "source": "https://archive.org/details/cricketfield00pycr",
+   "original": "https://archive.org/download/cricketfield00pycr/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1859, pre-1931)",
+   "licence_url": "https://archive.org/details/cricketfield00pycr",
+   "edition": "Boston, Mayhew & Baker, 1859"
+  },
+  {
+   "file": "data/books/covers/bk-poems-on.jpg",
+   "source": "https://archive.org/details/poemsongolf00ediniala",
+   "original": "https://archive.org/download/poemsongolf00ediniala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1867, pre-1931)",
+   "licence_url": "https://archive.org/details/poemsongolf00ediniala",
+   "edition": "Edinburgh : Printed for Private Circulation, 1867"
+  },
+  {
+   "file": "data/books/covers/bk-cricket.jpg",
+   "source": "https://archive.org/details/bwb_W9-CWS-459",
+   "original": "https://archive.org/download/bwb_W9-CWS-459/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1890, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_W9-CWS-459",
+   "edition": "1890"
+  },
+  {
+   "file": "data/books/covers/bk-golf-course.jpg",
+   "source": "https://archive.org/details/golfcoursemyster0000ches",
+   "original": "https://archive.org/download/golfcoursemyster0000ches/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-emperor_dalek)",
+   "licence": "Public domain (edition published 1919, pre-1931)",
+   "licence_url": "https://archive.org/details/golfcoursemyster0000ches",
+   "edition": "International Fiction Library, 1919"
+  },
+  {
+   "file": "data/books/covers/bk-art-of-tilden.jpg",
+   "source": "https://archive.org/details/artoflawntennis00tildrich",
+   "original": "https://archive.org/download/artoflawntennis00tildrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/artoflawntennis00tildrich",
+   "edition": "London : Methuen, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-soul-of.jpg",
+   "source": "https://archive.org/details/soulofgolf00vailrich",
+   "original": "https://archive.org/download/soulofgolf00vailrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/soulofgolf00vailrich",
+   "edition": "London, Macmillan and co, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-making-a-walsh.jpg",
+   "source": "https://archive.org/details/makingtenniscour00walsrich",
+   "original": "https://archive.org/download/makingtenniscour00walsrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/makingtenniscour00walsrich",
+   "edition": "New York, McBride, Nast & company, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-bawl-for.jpg",
+   "source": "https://archive.org/details/bawlforamericanc00wist",
+   "original": "https://archive.org/download/bawlforamericanc00wist/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1893, pre-1931)",
+   "licence_url": "https://archive.org/details/bawlforamericanc00wist",
+   "edition": "Philadelphia, 1893"
+  },
+  {
+   "file": "data/books/covers/bk-clicking-of.jpg",
+   "source": "https://archive.org/details/bwb_KU-397-538",
+   "original": "https://archive.org/download/bwb_KU-397-538/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_KU-397-538",
+   "edition": "herbert jenkins limited, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-girl-on.jpg",
+   "source": "https://archive.org/details/girlonboat0000pgwo_p2l8",
+   "original": "https://archive.org/download/girlonboat0000pgwo_p2l8/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/girlonboat0000pgwo_p2l8",
+   "edition": "Herbert Jenkins, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-mike.jpg",
+   "source": "https://archive.org/details/mikepublicschool00wodeuoft",
+   "original": "https://archive.org/download/mikepublicschool00wodeuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/mikepublicschool00wodeuoft",
+   "edition": "London : A.S.C. Black, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-adventures-on.jpg",
+   "source": "https://archive.org/details/adventuresonroof00lebl",
+   "original": "https://archive.org/download/adventuresonroof00lebl/page/cover_w800.jpg",
+   "credit": "Internet Archive (victorianbrighamyounguniv, brigham_young_university)",
+   "licence": "Public domain (edition published 1904, pre-1931)",
+   "licence_url": "https://archive.org/details/adventuresonroof00lebl",
+   "edition": "London : T. Fisher Unwin, 1904"
+  },
+  {
+   "file": "data/books/covers/bk-true-tales.jpg",
+   "source": "https://archive.org/details/bub_gb_KQUPAAAAQAAJ",
+   "original": "https://archive.org/download/bub_gb_KQUPAAAAQAAJ/page/cover_w800.jpg",
+   "credit": "Internet Archive (europeanlibraries)",
+   "licence": "Public domain (edition published 1903, pre-1931)",
+   "licence_url": "https://archive.org/details/bub_gb_KQUPAAAAQAAJ",
+   "edition": "T.F. Unwin, 1903"
+  },
+  {
+   "file": "data/books/covers/bk-assault-on.jpg",
+   "source": "https://archive.org/details/assaultonmountev00bruc",
+   "original": "https://archive.org/download/assaultonmountev00bruc/page/cover_w800.jpg",
+   "credit": "Internet Archive (northeastern, blc)",
+   "licence": "Public domain (edition published 1923, pre-1931)",
+   "licence_url": "https://archive.org/details/assaultonmountev00bruc",
+   "edition": "New York : Longmans, Green, 1923"
+  },
+  {
+   "file": "data/books/covers/bk-climbing-on.jpg",
+   "source": "https://archive.org/details/isbn_9781163525791",
+   "original": "https://archive.org/download/isbn_9781163525791/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1902, pre-1931)",
+   "licence_url": "https://archive.org/details/isbn_9781163525791",
+   "edition": "new york: charles scribner's sons, 1902"
+  },
+  {
+   "file": "data/books/covers/bk-alps-conway.jpg",
+   "source": "https://archive.org/details/alpsalps00conwrich",
+   "original": "https://archive.org/download/alpsalps00conwrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (americana, fav-grannyfps)",
+   "licence": "Public domain (edition published 1904, pre-1931)",
+   "licence_url": "https://archive.org/details/alpsalps00conwrich",
+   "edition": "London : A. and C. Black, 1904"
+  },
+  {
+   "file": "data/books/covers/bk-tartarin-on.jpg",
+   "source": "https://archive.org/details/tartarinonthealp00daud",
+   "original": "https://archive.org/download/tartarinonthealp00daud/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1888, pre-1931)",
+   "licence_url": "https://archive.org/details/tartarinonthealp00daud",
+   "edition": "London : George Routledge and sons, 1888"
+  },
+  {
+   "file": "data/books/covers/bk-above-the.jpg",
+   "source": "https://archive.org/details/abovesnowlinemou00dentrich",
+   "original": "https://archive.org/download/abovesnowlinemou00dentrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1885, pre-1931)",
+   "licence_url": "https://archive.org/details/abovesnowlinemou00dentrich",
+   "edition": "London, Longmans, Green, and Co, 1885"
+  },
+  {
+   "file": "data/books/covers/bk-italian-alps.jpg",
+   "source": "https://archive.org/details/italianalpssketc00fres",
+   "original": "https://archive.org/download/italianalpssketc00fres/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1875, pre-1931)",
+   "licence_url": "https://archive.org/details/italianalpssketc00fres",
+   "edition": "London, Longmans, Green, and co, 1875"
+  },
+  {
+   "file": "data/books/covers/bk-exploring-expedition.jpg",
+   "source": "https://archive.org/details/cihm_42178",
+   "original": "https://archive.org/download/cihm_42178/page/cover_w800.jpg",
+   "credit": "Internet Archive (university_of_alberta_libraries_microfilm, university_of_alberta_libraries)",
+   "licence": "Public domain (edition published 1849, pre-1931)",
+   "licence_url": "https://archive.org/details/cihm_42178",
+   "edition": "Buffalo : G.H. Derby, 1849"
+  },
+  {
+   "file": "data/books/covers/bk-himalayan-journals.jpg",
+   "source": "https://archive.org/details/b28125800_0002",
+   "original": "https://archive.org/download/b28125800_0002/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1854, pre-1931)",
+   "licence_url": "https://archive.org/details/b28125800_0002",
+   "edition": "London : John Murray, 1854"
+  },
+  {
+   "file": "data/books/covers/bk-rockclimbing-in.jpg",
+   "source": "https://archive.org/details/cu31924103707968",
+   "original": "https://archive.org/download/cu31924103707968/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924103707968",
+   "edition": "Keswick, Cumberland, G.P. Abraham, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-mountaineering-in.jpg",
+   "source": "https://archive.org/details/mountaineering00king",
+   "original": "https://archive.org/download/mountaineering00king/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, americana)",
+   "licence": "Public domain (edition published 1872, pre-1931)",
+   "licence_url": "https://archive.org/details/mountaineering00king",
+   "edition": "London, S. Low, Marston, Low, & Searle, 1872"
+  },
+  {
+   "file": "data/books/covers/bk-mount-rainier.jpg",
+   "source": "https://archive.org/details/mountrainierreco0000edmo",
+   "original": "https://archive.org/download/mountrainierreco0000edmo/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/mountrainierreco0000edmo",
+   "edition": "The Macmillan company, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-wild-life.jpg",
+   "source": "https://archive.org/details/wildlifeonrockie00mill",
+   "original": "https://archive.org/download/wildlifeonrockie00mill/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1909, pre-1931)",
+   "licence_url": "https://archive.org/details/wildlifeonrockie00mill",
+   "edition": "Boston and New York : Houghton Mifflin company, 1909"
+  },
+  {
+   "file": "data/books/covers/bk-steep-trails.jpg",
+   "source": "https://archive.org/details/steeptrails00muir",
+   "original": "https://archive.org/download/steeptrails00muir/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, biodiversity)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/steeptrails00muir",
+   "edition": "Boston : Houghton, Mifflin, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-white-mountain.jpg",
+   "source": "https://archive.org/details/whitemountaintra00pack",
+   "original": "https://archive.org/download/whitemountaintra00pack/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/whitemountaintra00pack",
+   "edition": "Boston, Small, Maynard and company, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-cliff-climbers.jpg",
+   "source": "https://archive.org/details/cliffclimbersorl00reid",
+   "original": "https://archive.org/download/cliffclimbersorl00reid/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1865, pre-1931)",
+   "licence_url": "https://archive.org/details/cliffclimbersorl00reid",
+   "edition": "Boston : Ticknor and Fields, 1865"
+  },
+  {
+   "file": "data/books/covers/bk-climber-in.jpg",
+   "source": "https://archive.org/details/climberinnewzeal00rossrich",
+   "original": "https://archive.org/download/climberinnewzeal00rossrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/climberinnewzeal00rossrich",
+   "edition": "London, E. Arnold, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-mountains-of.jpg",
+   "source": "https://archive.org/details/mountainsoforego00steerich",
+   "original": "https://archive.org/download/mountainsoforego00steerich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1890, pre-1931)",
+   "licence_url": "https://archive.org/details/mountainsoforego00steerich",
+   "edition": "Portland : D. Steel, successor to Himes printer, 1890"
+  },
+  {
+   "file": "data/books/covers/bk-ascent-of.jpg",
+   "source": "https://archive.org/details/ascentofdenalimo01stuc",
+   "original": "https://archive.org/download/ascentofdenalimo01stuc/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/ascentofdenalimo01stuc",
+   "edition": "New York, C. Scribner's sons, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-glaciers-of.jpg",
+   "source": "https://archive.org/details/glaciersofalpsbe00tynduoft",
+   "original": "https://archive.org/download/glaciersofalpsbe00tynduoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (gerstein, toronto)",
+   "licence": "Public domain (edition published 1896, pre-1931)",
+   "licence_url": "https://archive.org/details/glaciersofalpsbe00tynduoft",
+   "edition": "London, Longmans, 1896"
+  },
+  {
+   "file": "data/books/covers/bk-hours-of.jpg",
+   "source": "https://archive.org/details/hoursofexercisei00tynd",
+   "original": "https://archive.org/download/hoursofexercisei00tynd/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1875, pre-1931)",
+   "licence_url": "https://archive.org/details/hoursofexercisei00tynd",
+   "edition": "New York, D. Appleton & company, 1875"
+  },
+  {
+   "file": "data/books/covers/bk-scrambles-amongst.jpg",
+   "source": "https://archive.org/details/scramblesamongst00whym_2",
+   "original": "https://archive.org/download/scramblesamongst00whym_2/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplfrc, bostonpubliclibrary)",
+   "licence": "Public domain (edition published 1871, pre-1931)",
+   "licence_url": "https://archive.org/details/scramblesamongst00whym_2",
+   "edition": "London : J. Murray, 1871"
+  },
+  {
+   "file": "data/books/covers/bk-mountain-craft.jpg",
+   "source": "https://archive.org/details/mountaincraft00younuoft",
+   "original": "https://archive.org/download/mountaincraft00younuoft/page/cover_w800.jpg",
+   "credit": "Internet Archive (robarts, toronto)",
+   "licence": "Public domain (edition published 1920, pre-1931)",
+   "licence_url": "https://archive.org/details/mountaincraft00younuoft",
+   "edition": "London, Methuen, 1920"
+  },
+  {
+   "file": "data/books/covers/bk-pearl.jpg",
+   "source": "https://archive.org/details/pearlitsstoryits00cattrich",
+   "original": "https://archive.org/download/pearlitsstoryits00cattrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/pearlitsstoryits00cattrich",
+   "edition": "Philadelphia, London, J. B. Lippincott Co, 1907"
+  },
+  {
+   "file": "data/books/covers/bk-flaming-jewel.jpg",
+   "source": "https://archive.org/details/flamingjewel00cham",
+   "original": "https://archive.org/download/flamingjewel00cham/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1922, pre-1931)",
+   "licence_url": "https://archive.org/details/flamingjewel00cham",
+   "edition": "New York : George H. Doran company, 1922"
+  },
+  {
+   "file": "data/books/covers/bk-mystery.jpg",
+   "source": "https://archive.org/details/mysteryofbluetra0000unse_f7d8",
+   "original": "https://archive.org/download/mysteryofbluetra0000unse_f7d8/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-knighthawk82)",
+   "licence": "Public domain (edition published 1928, pre-1931)",
+   "licence_url": "https://archive.org/details/mysteryofbluetra0000unse_f7d8",
+   "edition": "1928"
+  },
+  {
+   "file": "data/books/covers/bk-beach-rambles.jpg",
+   "source": "https://archive.org/details/beachramblesinse00fran",
+   "original": "https://archive.org/download/beachramblesinse00fran/page/cover_w800.jpg",
+   "credit": "Internet Archive (thomasfisherbiodiversity, thomasfisher)",
+   "licence": "Public domain (edition published 1859, pre-1931)",
+   "licence_url": "https://archive.org/details/beachramblesinse00fran",
+   "edition": "London, Routledge, Warne, and Routledge, 1859"
+  },
+  {
+   "file": "data/books/covers/bk-story-of-geikie.jpg",
+   "source": "https://archive.org/details/storyofboulderor00geikrich",
+   "original": "https://archive.org/download/storyofboulderor00geikrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1858, pre-1931)",
+   "licence_url": "https://archive.org/details/storyofboulderor00geikrich",
+   "edition": "Edinburgh, Thos. Constable & Co, 1858"
+  },
+  {
+   "file": "data/books/covers/bk-leisure-hours.jpg",
+   "source": "https://archive.org/details/leisurehoursamon00haml_0",
+   "original": "https://archive.org/download/leisurehoursamon00haml_0/page/cover_w800.jpg",
+   "credit": "Internet Archive (bplhoughton, bostonpubliclibrary)",
+   "licence": "Public domain (edition published 1891, pre-1931)",
+   "licence_url": "https://archive.org/details/leisurehoursamon00haml_0",
+   "edition": "Boston, Houghton, Mifflin, 1891"
+  },
+  {
+   "file": "data/books/covers/bk-amateur-cracksman.jpg",
+   "source": "https://archive.org/details/bwb_S0-DNL-634",
+   "original": "https://archive.org/download/bwb_S0-DNL-634/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, fav-emogirl47)",
+   "licence": "Public domain (edition published 1905, pre-1931)",
+   "licence_url": "https://archive.org/details/bwb_S0-DNL-634",
+   "edition": "Charles Scribner's Sons, 1905"
+  },
+  {
+   "file": "data/books/covers/bk-madam-how.jpg",
+   "source": "https://archive.org/details/madamhowladywhyo00kingiala",
+   "original": "https://archive.org/download/madamhowladywhyo00kingiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1870, pre-1931)",
+   "licence_url": "https://archive.org/details/madamhowladywhyo00kingiala",
+   "edition": "London : Bell and Daldy, 1870"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-kunz.jpg",
+   "source": "https://archive.org/details/bookofpearlhisto00kunz",
+   "original": "https://archive.org/download/bookofpearlhisto00kunz/page/cover_w800.jpg",
+   "credit": "Internet Archive (Wellesley_College_Library, blc)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/bookofpearlhisto00kunz",
+   "edition": "New York, The Century co, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-curious-lore.jpg",
+   "source": "https://archive.org/details/b28997839",
+   "original": "https://archive.org/download/b28997839/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1913, pre-1931)",
+   "licence_url": "https://archive.org/details/b28997839",
+   "edition": "Philadelphia ; London : J.B Lippincott Co, 1913"
+  },
+  {
+   "file": "data/books/covers/bk-magic-of.jpg",
+   "source": "https://archive.org/details/cu31924029913385",
+   "original": "https://archive.org/download/cu31924029913385/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1915, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924029913385",
+   "edition": "Philadelphia London : J.B. Lippincott company, 1915"
+  },
+  {
+   "file": "data/books/covers/bk-rings-for.jpg",
+   "source": "https://archive.org/details/ringsforfingerfr00kunz",
+   "original": "https://archive.org/download/ringsforfingerfr00kunz/page/cover_w800.jpg",
+   "credit": "Internet Archive (smithsonian, fav-11jessica11)",
+   "licence": "Public domain (edition published 1917, pre-1931)",
+   "licence_url": "https://archive.org/details/ringsforfingerfr00kunz",
+   "edition": "Philadelphia, London, J.B. Lippincott Company, 1917"
+  },
+  {
+   "file": "data/books/covers/bk-shakespeare-and.jpg",
+   "source": "https://archive.org/details/shakespearepreci00kunzrich",
+   "original": "https://archive.org/download/shakespearepreci00kunzrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1916, pre-1931)",
+   "licence_url": "https://archive.org/details/shakespearepreci00kunzrich",
+   "edition": "Philadelpha, London, J.B. Lippincott company, 1916"
+  },
+  {
+   "file": "data/books/covers/bk-field-book.jpg",
+   "source": "https://archive.org/details/fieldbookofcommo0000fred_b9h4",
+   "original": "https://archive.org/download/fieldbookofcommo0000fred_b9h4/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks)",
+   "licence": "Public domain (edition published 1923, pre-1931)",
+   "licence_url": "https://archive.org/details/fieldbookofcommo0000fred_b9h4",
+   "edition": "1923"
+  },
+  {
+   "file": "data/books/covers/bk-old-red.jpg",
+   "source": "https://archive.org/details/cu31924002989428",
+   "original": "https://archive.org/download/cu31924002989428/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, americana)",
+   "licence": "Public domain (edition published 1851, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924002989428",
+   "edition": "Boston, Gould and Lincoln, 1851"
+  },
+  {
+   "file": "data/books/covers/bk-stories-about.jpg",
+   "source": "https://archive.org/details/storiesaboutfamo00orpe",
+   "original": "https://archive.org/download/storiesaboutfamo00orpe/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1890, pre-1931)",
+   "licence_url": "https://archive.org/details/storiesaboutfamo00orpe",
+   "edition": "Boston, D. Lothrop company, 1890"
+  },
+  {
+   "file": "data/books/covers/bk-underground-treasures.jpg",
+   "source": "https://archive.org/details/undergroundtreas00ortorich",
+   "original": "https://archive.org/download/undergroundtreas00ortorich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1881, pre-1931)",
+   "licence_url": "https://archive.org/details/undergroundtreas00ortorich",
+   "edition": "Philadelphia, H. C. Baird & co, 1881"
+  },
+  {
+   "file": "data/books/covers/bk-book-of-pavitt.jpg",
+   "source": "https://archive.org/details/bookoftalismansa00paviiala",
+   "original": "https://archive.org/download/bookoftalismansa00paviiala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1914, pre-1931)",
+   "licence_url": "https://archive.org/details/bookoftalismansa00paviiala",
+   "edition": "London : Rider, 1914"
+  },
+  {
+   "file": "data/books/covers/bk-handbook-of-rothschi.jpg",
+   "source": "https://archive.org/details/handbookofprecio00roth",
+   "original": "https://archive.org/download/handbookofprecio00roth/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1890, pre-1931)",
+   "licence_url": "https://archive.org/details/handbookofprecio00roth",
+   "edition": "New York, London, G.P. Putnam's sons, 1890"
+  },
+  {
+   "file": "data/books/covers/bk-ethics-of.jpg",
+   "source": "https://archive.org/details/ethicsofdusttenl00ruskrich",
+   "original": "https://archive.org/download/ethicsofdusttenl00ruskrich/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1880, pre-1931)",
+   "licence_url": "https://archive.org/details/ethicsofdusttenl00ruskrich",
+   "edition": "Chicago, Donohue, Henneberry & co, 1880"
+  },
+  {
+   "file": "data/books/covers/bk-pearls-and.jpg",
+   "source": "https://archive.org/details/cu31924003386673",
+   "original": "https://archive.org/download/cu31924003386673/page/cover_w800.jpg",
+   "credit": "Internet Archive (cornell, biodiversity)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/cu31924003386673",
+   "edition": "London, Murray, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-gemstones-and.jpg",
+   "source": "https://archive.org/details/gemstonestheirdi00smit",
+   "original": "https://archive.org/download/gemstonestheirdi00smit/page/cover_w800.jpg",
+   "credit": "Internet Archive (internetarchivebooks, americana)",
+   "licence": "Public domain (edition published 1912, pre-1931)",
+   "licence_url": "https://archive.org/details/gemstonestheirdi00smit",
+   "edition": "London, Methuen & Co, 1912"
+  },
+  {
+   "file": "data/books/covers/bk-jewellery.jpg",
+   "source": "https://archive.org/details/jewellery00smith",
+   "original": "https://archive.org/download/jewellery00smith/page/cover_w800.jpg",
+   "credit": "Internet Archive (getty, americana)",
+   "licence": "Public domain (edition published 1908, pre-1931)",
+   "licence_url": "https://archive.org/details/jewellery00smith",
+   "edition": "London : Methuen and co, 1908"
+  },
+  {
+   "file": "data/books/covers/bk-eustace-diamonds.jpg",
+   "source": "https://archive.org/details/eustacediamondsn00trol",
+   "original": "https://archive.org/download/eustacediamondsn00trol/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1872, pre-1931)",
+   "licence_url": "https://archive.org/details/eustacediamondsn00trol",
+   "edition": "New York, Harper & brothers, 1872"
+  },
+  {
+   "file": "data/books/covers/bk-crystals.jpg",
+   "source": "https://archive.org/details/b2812103x",
+   "original": "https://archive.org/download/b2812103x/page/cover_w800.jpg",
+   "credit": "Internet Archive (wellcomelibrary, ukmhl)",
+   "licence": "Public domain (edition published 1911, pre-1931)",
+   "licence_url": "https://archive.org/details/b2812103x",
+   "edition": "London : K. Paul, Trench, Trübner & Co., ltd, 1911"
+  },
+  {
+   "file": "data/books/covers/bk-textbook-of-wade.jpg",
+   "source": "https://archive.org/details/textbookofprecio00wade",
+   "original": "https://archive.org/download/textbookofprecio00wade/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1918, pre-1931)",
+   "licence_url": "https://archive.org/details/textbookofprecio00wade",
+   "edition": "New York, Putnam, 1918"
+  },
+  {
+   "file": "data/books/covers/bk-jewel-house.jpg",
+   "source": "https://archive.org/details/jewelhouseaccoun00youniala",
+   "original": "https://archive.org/download/jewelhouseaccoun00youniala/page/cover_w800.jpg",
+   "credit": "Internet Archive (cdl, americana)",
+   "licence": "Public domain (edition published 1921, pre-1931)",
+   "licence_url": "https://archive.org/details/jewelhouseaccoun00youniala",
+   "edition": "London : H. Jenkins, 1921"
   }
  ]
 }

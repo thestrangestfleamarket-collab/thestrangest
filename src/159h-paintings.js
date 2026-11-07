@@ -40,7 +40,9 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const idb=async(mode,f)=>{ const d=await db(); if(!d)return null; return new Promise(res=>{ try{ const tx=d.transaction('a',mode), q=f(tx.objectStore('a')); tx.oncomplete=()=>res(q&&q.result); tx.onerror=tx.onabort=()=>res(null); }catch(e){ res(null); } }); };
   ART.put=async(k,d,fin)=>{ '@later'; if(fin)ART.mem.set(k,d); await idb('readwrite',s=>s.put(d,k)); if(!web())return true;
     try{ const r=await ask({put:{id:k,d,fin:fin?1:0}}); if(r.ok)return true; const j=await r.json().catch(()=>({})); say(j.full?'YOUR PAINTINGS ARE FULL ON THE SERVER: KEPT ON THIS DEVICE ONLY.':'THE PAINTING WAS NOT SAVED TO THE SERVER: KEPT ON THIS DEVICE.','#e8a23a'); }catch(e){ say('THE PAINTING WAS NOT SAVED TO THE SERVER: KEPT ON THIS DEVICE.','#e8a23a'); } return false; };
-  ART.get=async k=>{ if(ART.mem.has(k))return ART.mem.get(k); let d=await idb('readonly',s=>s.get(k)); if(!d&&web()){ try{ const r=await ask({get:k}); if(r.ok){ d=(await r.json()).d; if(d)idb('readwrite',s=>s.put(d,k)); } }catch(e){} }
+  const okP=new Map();   // a finished picture an owner took down (TENANTS) shows nothing, even from this browser's copy
+  ART.ok=k=>{ if(!web()||k[0]!=='a')return Promise.resolve(true); if(!okP.has(k))okP.set(k,ask({have:k}).then(r=>{ if(r.status!==410)return true; ART.mem.delete(k); idb('readwrite',s=>s.delete(k)); return false; }).catch(()=>true)); return okP.get(k); };
+  ART.get=async k=>{ if(!(await ART.ok(k)))return null; if(ART.mem.has(k))return ART.mem.get(k); let d=await idb('readonly',s=>s.get(k)); if(!d&&web()){ try{ const r=await ask({get:k}); if(r.ok){ d=(await r.json()).d; if(d)idb('readwrite',s=>s.put(d,k)); } }catch(e){} }
     if(d&&k[0]==='a')ART.mem.set(k,d); return d||null; };
   ART.del=async k=>{ ART.mem.delete(k); await idb('readwrite',s=>s.delete(k)); if(web())try{ await ask({del:k}); }catch(e){} };
 
@@ -87,12 +89,12 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   addEventListener('keydown',e=>{ if(!V.hidden&&e.key==='Escape'){ e.stopImmediatePropagation(); closeV(); } },true);
   PAINTINGS.view=async(id,a)=>{ '@later'; a=a||M.art[id]; if(!a)return; V.innerHTML=`<div style="display:grid;place-items:center;min-height:0"><img alt="" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 0 ${a.fr?10:2}px #${(FR[a.fr||'']&&FR[a.fr][1]!=null?FR[a.fr][1]:0x3a3f4e).toString(16).padStart(6,'0')},0 8px 30px #000;image-rendering:auto"></div>
       <div><div style="color:#f2c14e;font-size:14px">“${TEXT.esc(a.t)}”</div><div style="color:#9b9584;margin-top:4px">BY ${TEXT.esc(a.by)} · ${TEXT.esc(a.d||'')} · ${a.w}×${a.h}</div><button data-x="1" style="margin-top:10px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:4px 10px;cursor:pointer">CLOSE</button></div>`;
-    V.hidden=false; V.style.display='grid'; if(!UI.gamewin)UI.gamewin='paintv'; SHARED.covered=true; const im=V.querySelector('img'); if(a.th)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
+    V.hidden=false; V.style.display='grid'; if(!UI.gamewin)UI.gamewin='paintv'; SHARED.covered=true; const im=V.querySelector('img'); if(!(await ART.ok('a'+id))){ im.alt='TAKEN DOWN'; return; } if(a.th&&!V.hidden)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
 
   /* ---------- on the wall: a painting is a DECORATE thing of its own (as a photo is), framed; its picture loads from ART ---------- */
   const tex=new Map();
   const texOf=(id,a)=>{ '@later'; if(tex.has(id))return tex.get(id); const c=mk(4,4), x=c.getContext('2d'); x.fillStyle='#d8d2c4'; x.fillRect(0,0,4,4); const t=new THREE.Texture(c); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; tex.set(id,t);
-    const put=src=>{ const im=new Image(); im.onload=()=>{ t.image=im; t.needsUpdate=true; }; im.src=src; }; if(a&&a.th)put(a.th); ART.get('a'+id).then(d=>{ if(d)put(d); }); return t; };
+    const put=src=>{ const im=new Image(); im.onload=()=>{ t.image=im; t.needsUpdate=true; }; im.src=src; }; ART.ok('a'+id).then(ok=>{ if(!ok)return; if(a&&a.th)put(a.th); ART.get('a'+id).then(d=>{ if(d)put(d); }); }); return t; };
   const framed=(id,a)=>{ '@later'; const G=new THREE.Group(), W=a.w*PXM, H=a.h*PXM, f=FR[a.fr||'']||FR[''];
     const back=new THREE.Mesh(new THREE.BoxGeometry(W,H,.024),new THREE.MeshStandardMaterial({color:0xe9e3d4,roughness:.9})); back.position.z=.012; G.add(back);
     const face=new THREE.Mesh(new THREE.PlaneGeometry(W,H),new THREE.MeshStandardMaterial({map:texOf(id,a),roughness:.85})); face.position.z=.0245; G.add(face);

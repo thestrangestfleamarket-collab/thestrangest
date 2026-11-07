@@ -1,4 +1,4 @@
-// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages, paintings; worker/door.js /admin) and the letters the market sends you (/post).
 import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
@@ -20,6 +20,7 @@ import {SYS} from './006-map-pre.js';
       <div class="row"><textarea id="ttext" rows="3" maxlength="4000" placeholder="your message" style="flex:1;min-width:240px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:6px"></textarea></div>
       <div class="row"><label><input type="checkbox" id="tlive" checked> LIVE (if online)</label><label><input type="checkbox" id="tletter"> LETTER (next time they come in)</label><label${D.email?'':' class="dim"'}><input type="checkbox" id="temail"${D.email?'':' disabled'}> EMAIL${D.email?'':' (not set up)'}</label><button class="btn" id="tsend">SEND</button></div>
       <div id="tbots"></div>
+      <h3>PAINTINGS</h3><div id="tart"></div>
       <h3>PLAYERS</h3>${U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
         <div class="row"><b>${esc(p.apt||'—')}</b><span>${esc(u.email)}</span>${u.online?'<span style="color:#7fdc8a">ONLINE</span>':''}${u.admin?'<span style="color:#ffd27a">OWNER</span>':''}${u.banned?'<span style="color:#e06a5a">BANNED</span>':''}<span class="dim">joined ${esc(day(u.joined))} · last in ${esc(day(u.last))}</span><button class="btn" data-a="more">${open===u.id?'LESS':'MORE'}</button></div>
         ${open===u.id?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(Object.entries({id:u.id,phone:u.phone,confirmed:u.confirmed,provider:u.provider,...p}).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join('\n'))}</div>
@@ -30,6 +31,7 @@ import {SYS} from './006-map-pre.js';
       ${TEXT.list().map(t=>`<div class="row" data-txt="${esc(t.id)}"><code style="min-width:130px">${esc(t.id)}</code><input type="text" maxlength="200" value="${esc(t.cur??t.def)}" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${t.cur!=null?`<span class="dim">was: ${esc(t.def)}</span>`:''}</div>`).join('')}
       ${SIGNS.list.map(sg=>`<div class="row" data-sign="${esc(sg.name)}"><code style="min-width:130px">${esc(sg.name)}</code><input type="text" maxlength="200" value="${esc((sg.get&&sg.get().text)||'')}" placeholder="the sign's own words" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"></div>`).join('')}`;
     if(TENANTS.bots)TENANTS.bots(el.querySelector('#tbots'));
+    art(el.querySelector('#tart'),U);
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     el.querySelectorAll('[data-txt] input').forEach(i=>i.onchange=()=>{ const id=i.closest('[data-txt]').dataset.txt; TEXT.set(id,i.value.trim()); act(null,{do:'text',key:id,text:TEXT.cur[id]||''},()=>'text saved'); });
     el.querySelectorAll('[data-sign] input').forEach(i=>i.onchange=()=>{ const n=i.closest('[data-sign]').dataset.sign, sg=SIGNS.list.find(q=>q.name===n), v=i.value.trim(); if(sg&&sg.set)sg.set({...(sg.get?sg.get():{}),text:v||null}); TEXT.set('sign.'+n,v); act(null,{do:'text',key:'sign.'+n,text:v},()=>'sign saved'); });
@@ -45,6 +47,16 @@ import {SYS} from './006-map-pre.js';
       if(a==='admin'){ act(b,{do:'admin',id,on:!u.admin},()=>u.admin?'no longer an owner':'now an owner'); return; }
       if(a==='ban'){ if(!u.banned&&!confirm('Ban '+u.email+'? They are sent out and cannot log in.'))return; act(b,{do:'ban',id,on:!u.banned},()=>u.banned?'unbanned':'banned'); return; }
       if(a==='delete'){ if(!confirm('Delete '+u.email+' for good? This cannot be undone.'))return; act(b,{do:'delete',id},()=>'deleted'); } }); };
+  /* ---------- the players' finished paintings: view one, take one down (its frame goes blank for everyone) ---------- */
+  let A=null, seen={};
+  const art=(box,U)=>{ '@later'; if(!box)return; const who=id=>{ const u=U.find(x=>x.id===id); return u?((u.player&&u.player.apt?u.player.apt+' · ':'')+u.email):id; };
+    if(!A){ box.innerHTML='<div class="row"><button class="btn" id="tartl">SHOW PAINTINGS</button></div>'; box.querySelector('#tartl').onclick=async e=>{ e.target.disabled=true; A=await api('/admin',{do:'art'}); art(box,U); }; return; }
+    if(A.why){ box.innerHTML='<div class="dim">'+esc(A.why)+'</div>'; A=null; return; }
+    box.innerHTML=(A.art||[]).map(a=>`<div class="row" data-art="${esc(a.id)}"><span>${esc(who(a.who))}</span><span class="dim">${esc(day(a.at))} · ${Math.round(a.n/1024)} KB</span><button class="btn" data-v>${seen[a.id]?'HIDE':'VIEW'}</button><button class="btn" data-x>TAKE DOWN</button>${seen[a.id]?`<div style="flex-basis:100%"><img src="${esc(seen[a.id])}" style="max-width:320px;max-height:320px;image-rendering:pixelated;border:2px solid var(--line)"></div>`:''}</div>`).join('')||'<div class="dim">no paintings yet</div>';
+    box.querySelectorAll('[data-art]').forEach(r=>{ const k=r.dataset.art;
+      r.querySelector('[data-v]').onclick=async e=>{ if(seen[k]){ delete seen[k]; art(box,U); return; } e.target.disabled=true; const j=await api('/admin',{do:'artget',art:k}); if(j.d)seen[k]=j.d; else say='not shown: '+(j.why||'?'); art(box,U); };
+      r.querySelector('[data-x]').onclick=async e=>{ if(!confirm('Take this painting down for good? Its frame goes blank for everyone.'))return; e.target.disabled=true; const j=await api('/admin',{do:'artoff',art:k});
+        say=j.why?'not done: '+j.why:'painting taken down'; delete seen[k]; A=await api('/admin',{do:'art'}); draw(); }; }); };
   const load=async()=>{ D=await api('/admin',{do:'list',room:room()}); draw(); };
   TENANTS.open=e=>{ el=e; D=null; draw(); load(); };
 

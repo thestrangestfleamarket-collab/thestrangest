@@ -72,7 +72,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const person=m=>{ for(let q=m;q;q=q.parent){ if(q===W3.group||q.userData.npc||q.userData.body||q.userData.player)return true; if(NPCS.some(N=>N.g===q))return true; } return false; };
   const plainMesh=m=>m&&m.isMesh&&!(m.material&&m.material.visible===false)&&!m.isSkinnedMesh&&!m.isInstancedMesh&&!m.isBatchedMesh&&!m.userData.weCopy&&!m.userData.weObj&&!(m.material&&m.material.transparent&&m.material.depthWrite===false)&&vis(m)&&!person(m);
   const asWorld=m=>{ const en={place:'world',name:wname(m),obj:m}; WED.objs.push(en); objFirst(en); return en; };
-  let scanned=0; const scanWorld=()=>{ '@later'; const want=new Set(Object.keys(ST).filter(k=>k.startsWith('world|'))); if(!want.size||scanned===want.size)return; scanned=want.size;
+  let scanned=0; const scanWorld=()=>{ const want=new Set(Object.keys(ST).filter(k=>k.startsWith('world|'))); if(!want.size||scanned===want.size)return; scanned=want.size;
     scene.traverse(m=>{ if(!m.isMesh||m.userData.weObj||m.isSkinnedMesh||m.isInstancedMesh||m.isBatchedMesh||m.userData.weCopy)return; m.updateMatrixWorld(); const p=new THREE.Vector3().setFromMatrixPosition(m.matrixWorld), k='world|'+wname(m)+'|'+rp(p.x)+','+rp(p.y)+','+rp(p.z); if(want.has(k))asWorld(m); }); };
   const applyObjs=()=>{ scanWorld(); for(const en of objs()){ const h=objHandle(en); if(ST[keyOf(h)])applyObj(h); } };
   const fromOBJE=key=>{ for(const en of objs()){ const h=objHandle(en); if(keyOf(h)===key)return h; } return null; };

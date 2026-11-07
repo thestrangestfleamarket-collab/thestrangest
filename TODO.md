@@ -350,7 +350,7 @@ One pass, one pull request.
   cars get shoved onto the pavement.
 
 ## Trees, grass and the park
-- [x] **The park's benches can't be sat on** (done 7 Nov: every park bench a seat) · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
+- [x] **The park's benches can't be sat on** (done 7 Nov, e961c25: benches sittable) · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
 
 One tree pass after the tree-shadow pick (more leaves mean more shadow triangles).
 - [ ] **Fluffy crown + real leaves** · P3 · L · pick + code · risk med. Options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov:
@@ -436,6 +436,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 
 ## Menus, map and HUD
 
+- [x] **Every item its own picture; the item audit's broken items** · P2 · L · code. Owner, 7 Nov: "go with A, fix all the broken ones". [taking: claude/dreamy-shannon-8nfieq, 7 Nov]
 - [ ] **Try live, once deployed** · P2 · S · look. The menus (#563: one ADMIN window), where you start (#571: back where you left off within
   the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576, merged on local checks only).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only; his live shot sat tighter

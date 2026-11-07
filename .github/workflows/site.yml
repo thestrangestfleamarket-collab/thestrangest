@@ -98,6 +98,7 @@ jobs:
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
+          k items   'src/162e|src/162d|src/150k|src/076a|src/146zea|src/146d-gear|data/icons|data/items|tools/icons|items\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
           k kite    'src/146g-kite|src/093|kite\.cjs'
@@ -224,6 +225,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/body.cjs dist/market.html
+      - name: The items (each its own picture and name, the archived dead ones, fish food for the koi)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' items')
+        run: node tests/items.cjs dist/market.html
       - name: passport
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' passport')

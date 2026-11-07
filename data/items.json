@@ -1623,5 +1623,23 @@
   "speed": 6,
   "len": 1.6,
   "weight": 10
+ },
+ "slime_blue": {
+  "sellable": true
+ },
+ "slime_green": {
+  "sellable": true
+ },
+ "slime_purple": {
+  "sellable": true
+ },
+ "slime_red": {
+  "sellable": true
+ },
+ "x_boot": {
+  "value": 1
+ },
+ "x_can": {
+  "value": 1
  }
 }

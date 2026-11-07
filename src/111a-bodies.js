@@ -84,13 +84,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  // an arm's twist eased from the rig's reference to its fallback as the arm comes near the reference (the rig switches at once: a knot in the skin)
+  // an arm's or leg's twist eased from the rig's reference to its fallback as the arm comes near the reference (the rig switches at once: a knot in the skin)
   const AF={x:{},y:{},z:{}}, armFrame=(a,b,ref,alt)=>{ let yx=b.x-a.x, yy=b.y-a.y, yz=b.z-a.z; const l=Math.hypot(yx,yy,yz)||1; yx/=l; yy/=l; yz/=l;
     const cr=(r)=>[r.y*yz-r.z*yy,r.z*yx-r.x*yz,r.x*yy-r.y*yx], p=cr(ref), q=cr(alt), lp=Math.hypot(...p), w=Math.min(1,Math.max(0,(.45-lp)/.3)), sg=p[0]*q[0]+p[1]*q[1]+p[2]*q[2]<0?-1:1;
     let zx=p[0]*(1-w)+q[0]*sg*w, zy=p[1]*(1-w)+q[1]*sg*w, zz=p[2]*(1-w)+q[2]*sg*w; const lz=Math.hypot(zx,zy,zz)||1; zx/=lz; zy/=lz; zz/=lz;
     AF.y.x=yx; AF.y.y=yy; AF.y.z=yz; AF.z.x=zx; AF.z.y=zy; AF.z.z=zz; AF.x.x=yy*zz-yz*zy; AF.x.y=yz*zx-yx*zz; AF.x.z=yx*zy-yy*zx; return AF; };
   function chain(B,body){ const S=body.S, KL=body.KL;
-    for(let i=0;i<NB;i++){ const n=BONES[i], sd=n.charAt(n.length-1), F=n==='upperArmL'||n==='upperArmR'?armFrame(B.J['shoulder'+sd],B.J['elbow'+sd],B.m.Ru.x,B.m.Ru.z):n==='forearmL'||n==='forearmR'?armFrame(B.J['elbow'+sd],B.J['wrist'+sd],B.m.Ru.x,B.m.Ru.z):R.frameOf(n,B);
+    for(let i=0;i<NB;i++){ const n=BONES[i], sd=n.charAt(n.length-1), F=n==='upperArmL'||n==='upperArmR'?armFrame(B.J['shoulder'+sd],B.J['elbow'+sd],B.m.Ru.x,B.m.Ru.z):n==='forearmL'||n==='forearmR'?armFrame(B.J['elbow'+sd],B.J['wrist'+sd],B.m.Ru.x,B.m.Ru.z):n==='thighL'||n==='thighR'?armFrame(B.J['hip'+sd],B.J['knee'+sd],B.m.Rb.x,B.m.Rb.z):n==='shinL'||n==='shinR'?armFrame(B.J['knee'+sd],B.J['ankle'+sd],B.m.Rb.x,B.m.Rb.z):R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
       if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);

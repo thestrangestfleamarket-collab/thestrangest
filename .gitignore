@@ -9,3 +9,4 @@ mod.mjs
 .polyfork/
 docs/MAP.md
 data/full/covers-progress.jsonl
+.cache/

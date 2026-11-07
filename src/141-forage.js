@@ -55,6 +55,10 @@ import {WORTH} from './140c-worth.js';
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; S.log=S.log||{}; S.made=S.made||{}; S.gave=S.gave||{}; S.st={str:30,int:30,sta:30,...S.st}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; INV.save(); saveSoon(); }   // the starter kit saves itself at the start (the MAP gift used to; not INV.add: its trade window is later code)
+  // the starter kit (owner, 7 Nov 2026: "make all players start with aircap mushrooms x99, hoverboard, bicycle, bird net, butterfly net, other stuff in game that is fun to use"; his picks: every power
+  // mushroom 99, the fastest board, the BMX, skateboard, go-kart, balloon, kite, guitar, rod, camera, binoculars; "everyone, once"): given once to every player, new and old, kept with the account
+  FORAGE.KIT={airshroom:99,glowcap:99,shroom_invis:99,shroom_str:99,shroom_swift:99,shroom_fly:99,board_teal:1,bmx:1,bnet:1,net:1,skateboard:1,kart:1,balloon:1,kite:1,guitar:1,rod:1,camera:1,binoc:1};
+  if(!S.kit1){ for(const [id,n] of Object.entries(FORAGE.KIT))INV.items[id]=Math.max(INV.items[id]||0,n); S.kit1=1; INV.save(); saveSoon(); }
   FORAGE.S=S; FORAGE.MU=MU; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
   INV.count=()=>GEMS.reduce((a,g)=>a+(g[0].startsWith('m_')?0:INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);

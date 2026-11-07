@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import puppeteer from "@cloudflare/puppeteer";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
@@ -120,7 +121,7 @@ export default {
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
-      return json(await admin(env, body)); }
+      return json(await admin(env, body, url.origin)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -437,7 +438,7 @@ async function email(env, to, subject, text) {
     if (r.ok) n += part.length; }
   return n;
 }
-async function admin(env, b) {
+async function admin(env, b, origin) {
   const k = svc(env); if (!k && b.do !== "tell" && !/^art/.test(b.do || "") && !(env.DEV_AUTH === "1" && /^bot/.test(b.do || ""))) return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
@@ -463,7 +464,7 @@ async function admin(env, b) {
     if (b.email) out.email = env.RESEND_API_KEY ? await email(env, (await users()).filter(x => x.email && (to === "*" || x.id === to)).map(x => x.email).slice(0, 1000), subject, text) : "email is not set up";
     return out;
   }
-  if (b.do === "bots") { const P = postOf(env); return { ok: true, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
+  if (b.do === "bots") { const P = postOf(env); return { ok: true, cloud: env.BROWSER && (env.DEV_AUTH !== "1" || env.BOTRUN_DEV === "1") ? await botrunOf(env).state() : null, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
   if (b.do === "botkey") return { ok: true, key: await postOf(env).botKey(true) };
   if (b.do === "botnew") { const P = postOf(env); if ((await P.botList()).length >= 20) return { why: "20 bots at most" };
     const r = crypto.getRandomValues(new Uint8Array(12)), hex = [...r.slice(0, 4)].map(x => x.toString(16).padStart(2, "0")).join(""), pass = btoa(String.fromCharCode(...r)) + "Aa1";
@@ -474,11 +475,11 @@ async function admin(env, b) {
       const u = await fetch(env.SUPABASE_URL + "/auth/v1/user", { headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + j.access_token } }).then(x => x.json()).catch(() => null); if (!u || !u.id) return { why: "the bot's account was made but not found" };
       made = { id: u.id }; }
     const rec = botRec({ on: 1, name: "BOT " + hex.slice(0, 3).toUpperCase(), job: "wander", hp: 1, fight: 1 }, b.set); rec.id = made.id; rec.email = email; rec.pass = pass; rec.at0 = Date.now();
-    await P.botPut(rec); return { ok: true, id: rec.id }; }
+    await P.botPut(rec); await botKick(env, origin); return { ok: true, id: rec.id }; }
   if (b.do === "botset" || b.do === "botdel") { const P = postOf(env), x = (await P.botList()).find(q => q.id === id); if (!x) return { why: "no such bot" };
-    if (b.do === "botset") { await P.botPut(botRec(x, b.set)); return { ok: true }; }
+    if (b.do === "botset") { await P.botPut(botRec(x, b.set)); await botKick(env, origin); return { ok: true }; }
     if (UUID.test(id) && k) { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok && r.status !== 404) return res(r); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); }
-    forget(id); await kick(id); bots.delete(id); await P.botDel(id); return { ok: true }; }
+    forget(id); await kick(id); bots.delete(id); await P.botDel(id); await botKick(env, origin); return { ok: true }; }
   if (b.do === "art" || b.do === "artget" || b.do === "artoff") { const H = homeOf(env), a = typeof b.art === "string" && /^a[a-z0-9]{6,40}$/.test(b.art) ? b.art : "";
     if (b.do === "art") return { ok: true, art: await H.artList() };
     if (!a) return { why: "no such painting" };
@@ -513,6 +514,42 @@ async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
   const r = await fetch(env.SUPABASE_URL + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: env.SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ email: b.email, password: b.pass }) }).catch(() => null);
   const s = r && r.ok ? await r.json() : null; if (!s || !s.access_token) return null; const o = { access_token: s.access_token, refresh_token: s.refresh_token }; bots.set(b.id, { until: Date.now() + 3e6, s: o }); return o; }
+
+// THE BOTS ON CLOUDFLARE (owner, 7 Nov 2026, his pick "3": nothing to run on his PC): one browser (Browser Run) with a tab a bot, kept by this object while any bot is on;
+// every 20 s it opens a missing bot's game, hands each its job, reads what each is doing and closes the tabs of bots turned off; with none on, the browser is closed
+const botrunOf = env => env.Botrun.get(env.Botrun.idFromName("run"));
+async function botKick(env, origin) { if (!env.BROWSER || env.DEV_AUTH === "1" && env.BOTRUN_DEV !== "1") return; try { await botrunOf(env).kick(origin || ""); } catch (e) {} }
+const BOTLS = "sb-jvcetttmqseoteidfggn-auth-token";
+export class Botrun extends DurableObject {
+  async kick(site) { if (site) await this.ctx.storage.put("site", site); const a = await this.ctx.storage.getAlarm(); if (a == null || a > Date.now() + 3000) await this.ctx.storage.setAlarm(Date.now() + 500); return true; }
+  async state() { return { sid: (await this.ctx.storage.get("sid")) || null, err: (await this.ctx.storage.get("err")) || null, at: (await this.ctx.storage.get("at")) || 0 }; }
+  async alarm() { let again = true; try { again = await this.tick(); await this.ctx.storage.delete("err"); } catch (e) { await this.ctx.storage.put("err", String(e && e.message || e).slice(0, 300)); }
+    await this.ctx.storage.put("at", Date.now()); if (again) await this.ctx.storage.setAlarm(Date.now() + 20000); }
+  async tick() {
+    const env = this.env, S = this.ctx.storage, P = postOf(env), list = (await P.botList()).filter(b => b.on), site = (await S.get("site")) || "https://thestrangestfleamarket.com";
+    let sid = await S.get("sid"), browser = null;
+    if (!list.length) { if (sid) { try { const b = await puppeteer.connect(env.BROWSER, sid); await b.close(); } catch (e) {} await S.delete("sid"); await S.delete("tabs"); } return false; }
+    if (sid) { try { browser = await puppeteer.connect(env.BROWSER, sid); } catch (e) { browser = null; } }
+    if (!browser) { browser = await puppeteer.launch(env.BROWSER, { keep_alive: 600000 }); sid = browser.sessionId(); await S.put("sid", sid); await S.delete("tabs"); }
+    const tabs = (await S.get("tabs")) || {}, status = {};
+    try {
+      const byId = new Map(); for (const pg of await browser.pages()) { const m = /[?&]b=([^&#]+)/.exec(pg.url()); if (m) byId.set(decodeURIComponent(m[1]), pg); }
+      for (const b of list) { const login = await botLogin(env, b); if (!login) { status[b.id] = { doing: "could not log in" }; continue; }
+        let pg = byId.get(b.id), t = tabs[b.id] || (tabs[b.id] = {});
+        if (pg && t.tok !== login.access_token) { const host = new URL(site).hostname; await pg.setCookie({ name: "tsfm-pass", value: login.access_token, domain: host, path: "/", secure: site.startsWith("https"), sameSite: "Strict" }).catch(() => {}); t.tok = login.access_token; }
+        if (!pg) { const host = new URL(site).hostname; pg = await browser.newPage(); await pg.setViewport({ width: 480, height: 270 });
+          await pg.setCookie({ name: "tsfm-pass", value: login.access_token, domain: host, path: "/", secure: site.startsWith("https"), sameSite: "Strict" });
+          await pg.evaluateOnNewDocument((k, v) => { try { localStorage.setItem(k, v); } catch (e) {} window.__botErrs = []; addEventListener("error", e => { if (window.__botErrs.length < 5) window.__botErrs.push(String(e.message || e).slice(0, 160)); }); }, BOTLS, JSON.stringify(login));
+          pg.goto(site + "/?bot=1&res=0&b=" + encodeURIComponent(b.id), { timeout: 120000 }).catch(() => {}); tabs[b.id] = { tok: login.access_token, t0: Date.now() }; status[b.id] = { doing: "opening the game on Cloudflare" }; continue; }
+        const st = await pg.evaluate(() => window.BOT && BOT.ready ? BOT.status() : { wait: 1, started: !!window.__started, errs: window.__botErrs || [], gl: (() => { try { return !!document.createElement("canvas").getContext("webgl2"); } catch (e) { return false; } })() }).catch(e => ({ wait: 1, errs: [String(e.message || e).slice(0, 160)] }));
+        if (st.wait) { const s = Math.round((Date.now() - (t.t0 || Date.now())) / 1000); status[b.id] = { doing: st.gl === false ? "this browser can't draw 3D (no WebGL): the game can't run here" : st.errs && st.errs.length && s > 90 ? "the game hit an error: " + st.errs[0] : "loading the game (" + s + " s)" };
+          if (s > 600) { await pg.close().catch(() => {}); delete tabs[b.id]; } continue; }
+        const c = JSON.stringify(botOut(b)); if (t.cfg !== c) { const ok = await pg.evaluate(c => (BOT.set(JSON.parse(c)), true), c).catch(() => false); if (ok) t.cfg = c; }
+        status[b.id] = { ...st, cloud: 1 }; }
+      for (const [id, pg] of byId) if (!list.some(b => b.id === id)) { await pg.evaluate(() => window.BOT && BOT.bye && BOT.bye()).catch(() => {}); await pg.close().catch(() => {}); delete tabs[id]; }
+    } finally { await S.put("tabs", tabs); await P.botStatus(status); await browser.disconnect().catch(() => {}); }
+    return true; }
+}
 
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
 // each player sends only how they steer, and gets back what is in their view ten times a second; bots fill the dish

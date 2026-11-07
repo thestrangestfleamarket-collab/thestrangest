@@ -34,7 +34,7 @@ import {MSHOP} from './059i-mshops.js';
     // the counter, its keeper behind it (059i stands them 2.2 tiles from the back wall)
     const kv=2.2*tm, c0=kv+.5, c1=kv+1.05, cu0=W*.28, cu1=W*.72;
     box(cu0,c0,cu1,c1,0,.95,WOOD); box(cu0-.04,c0-.04,cu1+.04,c1+.04,.95,1.0,0x2a2420); sol(cu0,c0,cu1,c1);
-    box(cu1-.42,c0+.12,cu1-.12,c0+.4,1.0,1.2,0x2c2c2e); use(SVN[A.id]||('THE COUNTER ('+(goods.length?'BUY':'TALK')+')'),W/2,(c0+c1)/2,cu1-cu0,1.2,shop,1.8);
+    box(cu1-.42,c0+.12,cu1-.12,c0+.4,1.0,1.2,0x2c2c2e); use(SVN[A.id]||('THE COUNTER ('+(goods.length||[...(TALK.shops||new Map()).keys()].some(N=>N&&N.key===A.who)?'BUY':'TALK')+')'),W/2,(c0+c1)/2,cu1-cu0,1.2,shop,1.8);
     pic(W/2,.03,HT-.75,Math.min(W*.6,3.2),.5,0,1,words(128,20,'#1e1a18',[[A.name||'THE SHOP',64,5,'#f2c14e',10,'center']]),true);
     // the shelves: the back wall either side of the keeper, then both side walls; each thing on them is what the keeper sells
     const runs=[[.25,.0,W*.36,.42,0,1],[W*.64,.0,W-.25,.42,0,1],[.0,D*.42,.42,D-1.1,1,0],[W-.42,D*.42,W,D-1.1,-1,0]], spots=[];

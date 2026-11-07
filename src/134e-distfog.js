@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog9')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -66,7 +66,7 @@ const DFOG={};
   const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dhaze'))return;
     const B=document.createElement('div'); B.innerHTML='<h3>HAZE RANGE</h3><div class="row"><span>NEAR</span><input type="range" id="dhaze" min="20" max="120" step="5"><span>FAR</span><span id="dhazev"></span></div><div class="dim">how far you see before the haze takes everything; further draws more and costs more</div>';
     P.appendChild(B); const R=B.querySelector('#dhaze'), V=B.querySelector('#dhazev'), show=()=>{ R.value=C.end; V.textContent=C.end+' TILES'; }; R.oninput=e=>DFOG.range(+e.target.value); DFOG.onchange.push(show); show(); };
-  gfx();
+  // (no HAZE RANGE or DISTANCE FOG in the menu: owner, 7 Nov 2026)
   // its numbers in ATMOSPHERE, under HAZE
   const ui=()=>{ const P=document.querySelector('[data-p="atmo"]'); if(!P)return setTimeout(ui,1000); if(P.querySelector('#dfog'))return;
     const B=document.createElement('div'); B.id='dfog';
@@ -79,6 +79,6 @@ const DFOG={};
     DFOG.onchange.push(()=>{ if(mk)draw(); });
     for(const ev of ['keydown','keyup'])B.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
     new MutationObserver(()=>{ if(!P.hidden&&P.offsetParent)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); };
-  ui();
+
 }
 export {DFOG};

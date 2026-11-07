@@ -28,8 +28,8 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   { const local=location.protocol==='file:'||/^(127\.|localhost)/.test(location.hostname), q=local?Q('look').toLowerCase():'', qh=local?+(Q('hour')||NaN):NaN; if(DN.modes.includes(q)){ DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.mode=DN.lookFor(qh); S[DN.mode].h=qh; DN.test=1; } }
   // the time: DAY or NIGHT by the clock's hour (or the owner's hold, on the server); a change fades over a minute. The sun and sky stay each look's own (CLOCK.sunH); the day's hour runs
   const T={prev:DN.mode,t0:0};
-  // the sun by the clock (not held, not a test): on the horizon at the real sunrise, highest at midday, on the horizon at the real sunset; the night's moon stays the look's own
-  DN.moving=()=>!DN.test&&!DN.hold; DN.sunOf=(m,h)=>{ if(m==='night')return S.night.h; const {rise:r,set:st}=DN.times(); return Math.max(4,Math.min(21.4,7.31+(h-r)*10.78/Math.max(1,st-r))); };
+  // the sun by the clock (not held, not a test): on the horizon at the real sunrise, highest at midday, on the horizon at the real sunset; the moon's disc where the real one is, its real phase (its light stays the night look's)
+  DN.moving=()=>!DN.test&&!DN.hold; CLOCK.moonReal=()=>DN.moving()?CLK.moon(Date.now(),DN.clk):null; DN.sunOf=(m,h)=>{ if(m==='night')return S.night.h; const {rise:r,set:st}=DN.times(); return Math.max(4,Math.min(21.4,7.31+(h-r)*10.78/Math.max(1,st-r))); };
   const B={}, ca=new THREE.Color(), cb=new THREE.Color(), blend=(A,C,f)=>{ for(const k in C){ const a=A[k]??C[k], c=C[k]; if(typeof c==='number'){ if(k==='h'){ let d=((c-a)%24+24)%24; if(d>12)d-=24; B[k]=((a+d*f)%24+24)%24; } else B[k]=a+(c-a)*f; } else if(typeof c==='string'&&c[0]==='#'&&typeof a==='string'&&a[0]==='#')B[k]='#'+ca.set(a).lerp(cb.set(c),f).getHexString(); else B[k]=c; } return B; };
   DN.P=()=>B; DN.E=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
   const fix=()=>{ const P=S[DN.mode]; WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; window.PARK&&PARK.lampLit&&PARK.lampLit(); };

@@ -20,3 +20,11 @@ for f in ('m','f'):
             q=[round(v,3) for i in fr for v in c['q'][i*nb*4:(i+1)*nb*4]]; p=[round(v,3) for i in fr for v in c['p'][i*nb*3:(i+1)*nb*3]]
             out[k]={'n':len(fr),'dur':round(dur,4),'speed':c['speed'],'contact':c['contact'],'q':q,'p':p}
         o='data/pfanim-%s-%s.json'%(f,g); json.dump({'bones':AN['bones'],'clips':out},open(o,'w'),separators=(',',':')); print(o,round(os.path.getsize(o)/1e3),'KB')
+# the emotes that go somewhere (owner, 7 Nov 2026: "the player should really moev when needed for the emote, dont lock in place"): the hips' way forward through the clip (metres, 10 a second),
+# which the clip itself leaves out; MOTION's move carries you along it, through the walls like walking (data/pfanim-travel.json)
+CL=json.load(open('.polyfork/anim/clips.json')); TR={}
+for k in ('Thriller','Hip hop'):
+    c=CL[k]; z=c['hips'][2::3]; t=c['times']; n=len(z)
+    if abs(z[-1]-z[0])<.05 and abs(z[-2]-z[0])>.3: n-=1   # (a loop's last frame back at the start: dropped)
+    dur=t[n-1]+(t[1]-t[0]); TR[k]={'dur':round(dur,3),'z':[round(z[min(n-1,round(i/10/(t[1]-t[0])))]-z[0],3) for i in range(int(dur*10)+1)]}
+json.dump(TR,open('data/pfanim-travel.json','w'),separators=(',',':')); print('data/pfanim-travel.json',{k:(v['dur'],v['z'][-1]) for k,v in TR.items()})

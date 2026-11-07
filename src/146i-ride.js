@@ -24,7 +24,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
     if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=true; };
   RIDE.floor=g=>{ const k=RIDE.cur; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
   // the board's own motion: it keeps its speed, carves toward where you steer, brakes when you pull back; a wall at speed throws you off
-  RIDE.steer=(dt,mx,mz)=>{ '@later'; const R=RIDE, k=R.kind, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
+  RIDE.steer=(dt,mx,mz)=>{ '@later'; const R=RIDE, k=R.cur, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
     const ml=Math.hypot(mx,mz), vmax=(+prop(id,'speed')||5)*T, acc=(k.acc||3)*T, len=+prop(id,'len')||.8, input={mx,mz,ml};
     if(k.step&&k.step(R,dt,input))return;
     if(ml>0){ const want=Math.atan2(mx,mz), e=wrap(want-R.hd), back=Math.abs(e)>2.4&&R.v>.5*T;

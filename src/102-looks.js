@@ -56,8 +56,8 @@ LOOKS.over={};
 `;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='looks'; P.hidden=true; P.setAttribute('role','dialog'); P.setAttribute('aria-label','Your character');
-  P.innerHTML=`<h2>YOU</h2><div class="lhd"><input type="text" id="lname" maxlength="24" placeholder="your name" aria-label="your name"><div class="ltabs" role="tablist"><button data-t="look" role="tab">LOOK</button><button data-t="wear" role="tab">WEAR</button><button data-t="words" role="tab">WORDS</button></div><button id="lclose">CLOSE</button></div>
-    <div class="ltab" data-t="look" role="tabpanel"></div><div class="ltab" data-t="wear" role="tabpanel"></div><div class="ltab" data-t="words" role="tabpanel"></div>`;
+  P.innerHTML=`<h2>YOU</h2><div class="lhd"><input type="text" id="lname" maxlength="24" placeholder="your name" aria-label="your name"><div class="ltabs" role="tablist"><button data-t="look" role="tab">LOOK</button><button data-t="wear" role="tab">WEAR</button><button data-t="words" role="tab">WORDS</button><button data-t="pet" role="tab">PET</button></div><button id="lclose">CLOSE</button></div>
+    <div class="ltab" data-t="look" role="tabpanel"></div><div class="ltab" data-t="wear" role="tabpanel"></div><div class="ltab" data-t="words" role="tabpanel"></div><div class="ltab" data-t="pet" role="tabpanel"></div>`;
   document.body.appendChild(P);
   // a line of the window: key, its name (none: the whole width), what you set it with; o.tab (look, wear, words), o.who (walker or avatar: shown only while you wear that body), o.order
   let tab='look'; LOOKS.who=()=>'avatar';

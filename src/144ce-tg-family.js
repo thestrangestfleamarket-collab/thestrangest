@@ -167,7 +167,9 @@ TG.lib.push(()=>{ '@tables'; const D={};
   // a piece in its goal stays in it; you win when the goal is full and every other piece in it never left its own home
   const hopMoves=(S,N,J,goal)=>{ const c=''+S.p, g=goal(S.p), out=[]; for(let i=0;i<S.b.length;i++)if(S.b[i]===c)for(const t of hopTo(S.b,i,N,J))if(!g.has(i)||g.has(t))out.push([i,t]); return out; };
   const hopWon=(S,k,goal,home)=>{ let mine=0; for(const i of goal(k)){ const v=S.b[i]; if(v==='.')return false; if(v===''+k)mine++; else if(!home(+v).has(i))return false; } return mine>0; };
-  const hopAi=(S,rnd,M,dist)=>best(M,m=>dist(m[0],S.p)*1.01-dist(m[1],S.p)+rnd()*.3);
+  // closer to the far point, and to the nearest free hole of the goal (so the last pieces find the gaps)
+  const hopAi=(S,rnd,M,dist,goal,hd)=>{ const g=goal(S.p), E=[...g].filter(i=>S.b[i]==='.'), ne=i=>g.has(i)?0:Math.min(99,...E.map(j=>hd(i,j)));
+    return best(M,([a,b])=>dist(a,S.p)*1.01-dist(b,S.p)+.5*(ne(a)-ne(b))+rnd()*.05); };
   const hopOver=(S,np,goal,home,dist,cap)=>{ for(let k=0;k<np;k++)if(hopWon(S,k,goal,home))return {win:[k],text:CN[k]+' FILLS THE FAR CAMP AND WINS.'};
     if(S.n>=cap){ const t=[...Array(np)].map((_,k)=>{ let s=0; for(let i=0;i<S.b.length;i++)if(S.b[i]===''+k)s+=dist(i,k); return s; }), m=Math.min(...t), w=t.map((v,k)=>v===m?k:-1).filter(k=>k>=0); return {win:w,text:'TIME! '+w.map(k=>CN[k]).join(' AND ')+' GOT FURTHEST.'}; } return null; };
   const hopDraw=(g,S,me,ui,P,r,mv)=>{ const M=me===S.p?mv(S):[], src=new Set(M.map(m=>m[0])), tg=new Set(M.filter(m=>m[0]===ui.sel).map(m=>m[1]));
@@ -186,7 +188,7 @@ TG.lib.push(()=>{ '@tables'; const D={};
     init:n=>{ let b=''; for(let i=0;i<CC.length;i++){ const k=CCS[n].indexOf(ccCorner(CC[i])); b+=k>=0?''+k:'.'; } return {b,p:0,np:n,n:0}; },
     moves:ccMoves, play:(S,m)=>{ S.b=setc(setc(S.b,m[0],'.'),m[1],S.b[m[0]]); S.n++; S.p=(S.p+1)%S.np; return S; },
     over:S=>hopOver(S,S.np,ccGoal(S),ccHome(S),ccDist(S),160*S.np),
-    ai:(S,rnd)=>hopAi(S,rnd,ccMoves(S),ccDist(S)),
+    ai:(S,rnd)=>hopAi(S,rnd,ccMoves(S),ccDist(S),ccGoal(S),(i,j)=>{ const a=CC[i], b=CC[j]; return Math.max(Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]),Math.abs(a[2]-b[2])); }),
     status:S=>CN[S.p]+' TO MOVE · MOVE '+(S.n+1)+' OF '+160*S.np+'.',
     draw:(g,S,me,ui,W,H)=>{ wood(g,W,H,'#4a3220'); g.fillStyle='#c8a46a';
       for(const T of [[0,2,4],[1,3,5]]){ g.beginPath(); T.forEach((c,j)=>{ const a=CCA[c], x=260+(a[0]+a[1]/2)*31*1.12, y=260+a[1]*31*.866*1.12; j?g.lineTo(x,y):g.moveTo(x,y); }); g.closePath(); g.fill(); }
@@ -207,11 +209,11 @@ TG.lib.push(()=>{ '@tables'; const D={};
     init:n=>{ let b=''; for(let i=0;i<256;i++){ const k=HS[n].findIndex(c=>HC[n][c].has(i)); b+=k>=0?''+k:'.'; } return {b,p:0,np:n,n:0}; },
     moves:haMoves, play:(S,m)=>{ S.b=setc(setc(S.b,m[0],'.'),m[1],S.b[m[0]]); S.n++; S.p=(S.p+1)%S.np; return S; },
     over:S=>hopOver(S,S.np,haGoal(S),haHome(S),haDist(S),220*S.np),
-    ai:(S,rnd)=>hopAi(S,rnd,haMoves(S),haDist(S)),
+    ai:(S,rnd)=>hopAi(S,rnd,haMoves(S),haDist(S),haGoal(S),(i,j)=>Math.max(Math.abs(i%16-j%16),Math.abs((i>>4)-(j>>4)))),
     status:S=>CN[S.p]+' TO MOVE · MOVE '+(S.n+1)+' OF '+220*S.np+'.',
     draw:(g,S,me,ui,W,H)=>{ wood(g,W,H,'#4a3220');
-      for(let i=0;i<256;i++){ const x=12+(i%16)*31, y=12+(i>>4)*31, k=HS[S.np].findIndex(c=>HC[S.np][c].has(i)); g.fillStyle=((i%16)+(i>>4))%2?'#d8c098':'#c4a87a'; g.fillRect(x,y,31,31);
-        const c=[0,1,2,3].find(c=>HC[S.np][c].has(i)); if(c!=null){ const o=HS[S.np].indexOf(c), og=HS[S.np].indexOf((c+2)%4); g.fillStyle=(o>=0?COL[o]:og>=0?COL[og]:'#888')+(o>=0?'55':'30'); g.fillRect(x,y,31,31); } if(k<-1)g.fillRect(0,0,0,0); }
+      for(let i=0;i<256;i++){ const x=12+(i%16)*31, y=12+(i>>4)*31; g.fillStyle=((i%16)+(i>>4))%2?'#d8c098':'#c4a87a'; g.fillRect(x,y,31,31);
+        const c=[0,1,2,3].find(c=>HC[S.np][c].has(i)); if(c!=null){ const o=HS[S.np].indexOf(c), og=HS[S.np].indexOf((c+2)%4); g.fillStyle=(o>=0?COL[o]:og>=0?COL[og]:'#888')+(o>=0?'55':'30'); g.fillRect(x,y,31,31); } }
       g.strokeStyle='#3b2a1e'; g.lineWidth=2; g.strokeRect(12,12,496,496); hopDraw(g,S,me,ui,HAP2,11,haMoves); },
     click:(S,me,x,y,ui)=>hopClick(S,me,x,y,ui,HAP2,11,haMoves)};
 
@@ -247,7 +249,7 @@ TG.lib.push(()=>{ '@tables'; const D={};
       g.strokeStyle='#8a7a60'; g.lineWidth=1; for(const [c,r] of LP)g.strokeRect(LO+c*LCS,LO+r*LCS,LCS,LCS);
       for(let c=0;c<4;c++)for(let k=1;k<=5;k++){ const [hc,hr]=lRot([k,7],c); g.strokeRect(LO+hc*LCS,LO+hr*LCS,LCS,LCS); }
       for(const a of LSAFE)if(a%13){ const [x,y]=lPx(LP[a]); TG.text(g,'★',x,y+1,{s:20,c:'#9a8a60'}); }
-      const C=[LO+7.5*LCS,LO+7.5*LCS]; for(let c=0;c<4;c++){ const P=[[6,6],[6,9],[7.5,7.5]].map(p=>lRot(p,c)); g.beginPath(); P.forEach(([x,y],j)=>{ const X=LO+x*LCS, Y=LO+y*LCS; j?g.lineTo(X,Y):g.moveTo(X,Y); }); g.closePath(); g.fillStyle=LCOL[c]; g.fill(); }
+      const C=[LO+7.5*LCS,LO+7.5*LCS]; for(let c=0;c<4;c++){ const P=[[6,6],[6,9],[7.5,7.5]].map(p=>{ let [x,y]=p; for(let i=0;i<c;i++)[x,y]=[15-y,x]; return [x,y]; }); g.beginPath(); P.forEach(([x,y],j)=>{ const X=LO+x*LCS, Y=LO+y*LCS; j?g.lineTo(X,Y):g.moveTo(X,Y); }); g.closePath(); g.fillStyle=LCOL[c]; g.fill(); }
       const M=me===S.p?lMoves(S):[], cnt={};
       for(let p=0;p<S.np;p++)for(let j=0;j<4;j++){ const cell=lCell(S,p,j), k=cell.join(','), o=(cnt[k]=(cnt[k]||0)+1)-1, [x,y]=lPx(cell), r=S.t[p*4+j]===56?7:12, X=x+o*5-(S.t[p*4+j]>=0?4:0), Y=y-o*5;
         disc(g,X,Y,r,LCOL[lCol(S,p)],'#1c1c22',2); disc(g,X,Y,r*.45,'rgba(255,255,255,.5)',null); if(p===S.p&&M.includes(j))ring(g,X,Y,r+4,'#ffd040',3); }
@@ -366,7 +368,7 @@ TG.lib.push(()=>{ '@tables'; const D={};
     draw:(g,S,me,ui,W,H)=>{ wood(g,W,H,'#2a5a3a'); const M=me===S.p?yMoves(S):[];
       S.d.forEach((v,i)=>TG.die(g,82+i*74,20,S.rl?v:0,60,{held:S.hd[i]==='1'})); if(S.rl&&S.rl<3&&me===S.p)TG.text(g,'CLICK A DIE TO HOLD IT',260,94,{s:11,c:'#c9e0c0'});
       if(M.length&&M.some(m=>m[0]==='R'))TG.btn(g,ui,'roll',200,104,120,30,S.rl?'ROLL AGAIN':'ROLL');
-      g.fillStyle='rgba(251,246,234,.92)'; g.fillRect(8,138,504,374); TG.text(g,'',0,0);
+      g.fillStyle='rgba(251,246,234,.92)'; g.fillRect(8,138,504,374);
       for(let p=0;p<S.np;p++){ const x=yColX(S,p); g.fillStyle=p===S.p?COL[p]+'55':'rgba(0,0,0,0)'; g.fillRect(x,138,310/S.np,374); TG.text(g,p===me?'YOU':CN[p],x+155/S.np,150-1,{b:1,s:11,c:COL[p]}); }
       YC.forEach((name,k)=>{ const y=yRow(k)+12; TG.text(g,name,16,y+12,{a:'left',s:12,c:'#3b2a1e'}); g.fillStyle='rgba(59,42,30,.2)'; g.fillRect(12,y+24,496,1);
         for(let p=0;p<S.np;p++){ const v=S.sc[p][k], x=yColX(S,p)+155/S.np; if(v>=0)TG.text(g,''+v,x,y+12,{b:1,s:14,c:'#1c1c22'}); else if(p===S.p&&S.rl&&me===S.p)TG.text(g,''+yScore(k,S.d),x,y+12,{s:13,c:'#3a8a3a'}); } });

@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Place Things Mockup</title>
+<style>
+:root{--bg:#0b0d12;--fg:#cfe8c8;--key:#7dff8a;--line:#2e6b3a;--dim:#5b6b5e}
+body{margin:0;background:#06070a;color:var(--fg);font:13px/1.45 ui-monospace,Menlo,monospace;padding:16px}
+h1{color:var(--key);font-size:15px;margin:0 0 4px}h2{color:var(--key);font-size:13px;margin:22px 0 8px}
+.shot{position:relative;width:640px;max-width:100%;height:330px;border:2px solid var(--line);overflow:hidden;background:#5c8a4c}
+.ground{position:absolute;left:38%;top:55%;width:620px;height:620px;transform:translate(-50%,-50%) rotateX(60deg) rotateZ(45deg);background:repeating-linear-gradient(0deg,#5f8f4e 0 30px,#578546 30px 60px)}
+.ghost{position:absolute;left:150px;top:170px;width:58px;height:38px;border:2px dashed var(--key);background:#7dff8a33}
+.ghost:after{content:"park bench";position:absolute;top:-18px;left:0;font-size:10px;color:var(--key);white-space:nowrap}
+.me{position:absolute;left:260px;top:190px;width:10px;height:22px;background:#e8d2b0;border-radius:3px}
+.tag{position:absolute;left:8px;top:8px;background:#000a;padding:2px 6px;font-size:11px}
+.panel{position:absolute;right:8px;top:8px;width:230px;background:var(--bg);border:2px solid var(--line);font-size:11px}
+.panel b{display:block;color:var(--key);padding:6px 8px;border-bottom:2px solid var(--line)}.panel>div{padding:5px 8px}
+.tabs span{display:inline-block;padding:2px 6px;border:2px solid #3a3f4e;margin-right:2px}.tabs .on{border-color:var(--key);color:var(--key)}
+select{width:100%;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.grid div{border:2px solid #3a3f4e;height:42px;font-size:9px;display:flex;align-items:flex-end;padding:2px;background:#0e1016}.grid .on{border-color:var(--key)}
+.cap{width:640px;max-width:100%;color:var(--dim);margin-top:4px}
+.opt{flex:1 1 260px;border:2px solid var(--line);padding:10px;background:var(--bg)}.opt b{color:var(--key)}.row{display:flex;flex-wrap:wrap;gap:12px}
+ol li{margin:6px 0}
+</style></head><body>
+<h1>WORLD EDITOR · PLACE NEW THINGS (POLYFORK) — MOCKUP</h1>
+<div>Nothing built yet. Polyfork has 3,058 models (people, vehicles, buildings, furniture, plants, props...).</div>
+<h2>How it looks</h2>
+<div class="shot"><div class="ground"></div><div class="ghost"></div><div class="me"></div><div class="tag">ISOMETRIC · SHIFT+E</div>
+ <div class="panel"><b>EDIT THE WORLD ✕</b><div class="tabs"><span>EDIT</span><span class="on">PLACE</span></div>
+  <div><select><option>STREET FURNITURE (32)</option></select></div>
+  <div><select><option>search…  bench</option></select></div>
+  <div class="grid"><div class="on">park bench</div><div>bus bench</div><div>picnic bench</div><div>garden bench</div><div>stone bench</div><div>…</div></div>
+  <div>click the ground to put it down · R turns · then EDIT it like anything else</div></div></div>
+<div class="cap">PLACE tab: pick a category, then a model (little pictures); a see-through copy follows the mouse; click the ground to put it down. Placed things are then picked and edited with the usual buttons (move, turn, size, colour, delete).</div>
+<h2>Which models (the big question: weight)</h2>
+<div class="row">
+ <div class="opt"><b>A · ALL 3,058</b><br>Every model, fetched only when someone places one or walks near one. A big bake (hours) and a lot of server space, but players' downloads stay small.</div>
+ <div class="opt"><b>B · A PICKED SET (recommended to start)</b><br>The world-fitting categories first (street furniture, plants, rocks, fences, signs, lamps, market and shop props, about 400–600 models). Add more categories later.</div>
+ <div class="opt"><b>C · ONLY SMALL THINGS</b><br>Props and furniture under a set size, with no buildings or vehicles, so nobody drops a skyscraper on Market St.</div>
+</div>
+<h2>Questions</h2>
+<ol>
+ <li><b>Which models</b>: A, B or C?</li>
+ <li><b>Categories</b>: Polyfork has no categories of its own. Should I sort them myself (street, park, plants, rocks, furniture, shop props, food, vehicles, buildings, characters…)?</li>
+ <li><b>Characters, vehicles, buildings</b>: can they be placed? If so, are they still props (a car that doesn't drive, a person that stands still)?</li>
+ <li><b>Players too, or you only?</b> Same as edits (B): a player sees it at once, and everyone else sees it after you approve?</li>
+ <li><b>A limit per player</b> (e.g. 50 placed things), and a limit on how many any one spot can hold?</li>
+ <li><b>Where</b>: outside only, or inside shops too (your apartment already has Decorate)?</li>
+ <li><b>Bump into them?</b> Should placed things be solid, or can you walk through them?</li>
+</ol>
+</body></html>

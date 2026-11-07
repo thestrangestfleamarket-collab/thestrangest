@@ -74,6 +74,12 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
+    // the bot runner (tools/bots.cjs on the owner's PC): its key from the BOTS panel, no page; gets each bot's settings and login, sends back what each is doing
+    if (request.method === "POST" && p === "/bots/run") { const key = request.headers.get("x-bot-key") || "";
+      if (tooMany("bots:" + (request.headers.get("CF-Connecting-IP") || "local"), 60)) return json({ why: "too many tries, wait a minute" }, 429);
+      const P = postOf(env); if (!key || key.length > 80 || key !== (await P.botKey())) return json({ why: "wrong runner key (copy it from ADMIN > TENANTS > BOTS)" }, 403);
+      let body; try { body = await request.json(); } catch (e) { body = {}; } if (body && body.status && typeof body.status === "object") await P.botStatus(body.status);
+      return json({ bots: await Promise.all((await P.botList()).filter(b => b.on).map(async b => ({ ...botOut(b), login: await botLogin(env, b) }))) }); }
     if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/scores" || p === "/art")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
@@ -267,6 +273,12 @@ export class Block extends Server {
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
+    } else if (m.t === "mob") {   // the dungeon's monsters shared in a room (src/146b-dunmobs.js): the host's picture to everyone below, a blow, a hurt or a kill to one
+      if (!s.at || s.at[4] !== "down") return; const k = word(m.k, 4), arr = (a, n) => (Array.isArray(a) ? a.slice(0, n) : []), o = { t: "mob", id: s.id, k, r: num(m.r, 0, 999) };
+      if (k === "s") { o.a = arr(m.a, 12).map(e => arr(e, 7).map((v, i) => i === 5 ? word(v, 8) : num(v, -1e5, 1e5))); o.b = arr(m.b, 12).map(e => arr(e, 6).map((v, i) => i === 0 ? word(v, 24) : num(v, -1e5, 1e5))); }
+      else { for (const f of ["w", "key", "tk"]) if (m[f] != null) o[f] = word(m[f], 24); for (const f of ["i", "kb", "hv", "x", "z"]) if (m[f] != null) o[f] = num(m[f], -1e5, 1e5); if (m.d != null) o.d = num(m.d, 0, 1); }
+      const msg = JSON.stringify(o), to = m.to ? String(m.to) : "";
+      for (const c2 of this.getConnections()) { const t = c2.state; if (c2 === c || !t || !t.at || t.at[4] !== "down") continue; if (to) { if (t.id === to) { c2.send(msg); break; } } else c2.send(msg); }
     } else if (m.t === "aim") {
       const v = Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
       this.broadcast(JSON.stringify({ t: "aim", id: s.id, w: word(m.w, 16), v }), [c.id]);
@@ -403,7 +415,7 @@ async function email(env, to, subject, text) {
   return n;
 }
 async function admin(env, b) {
-  const k = svc(env); if (!k && b.do !== "tell") return { why: "the server has no service key" };
+  const k = svc(env); if (!k && b.do !== "tell" && !(env.DEV_AUTH === "1" && /^bot/.test(b.do || ""))) return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
   const room = ROOM.test(b.room || "") ? b.room : SECROOMS[0], kick = id => Promise.all(SECROOMS.map(r => blockAsk(env, r, "kick", { id, out: 1 }).catch(() => {}))), id = String(b.id || ""), user = () => UUID.test(id);
@@ -428,6 +440,22 @@ async function admin(env, b) {
     if (b.email) out.email = env.RESEND_API_KEY ? await email(env, (await users()).filter(x => x.email && (to === "*" || x.id === to)).map(x => x.email).slice(0, 1000), subject, text) : "email is not set up";
     return out;
   }
+  if (b.do === "bots") { const P = postOf(env); return { ok: true, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
+  if (b.do === "botkey") return { ok: true, key: await postOf(env).botKey(true) };
+  if (b.do === "botnew") { const P = postOf(env); if ((await P.botList()).length >= 20) return { why: "20 bots at most" };
+    const r = crypto.getRandomValues(new Uint8Array(12)), hex = [...r.slice(0, 4)].map(x => x.toString(16).padStart(2, "0")).join(""), pass = btoa(String.fromCharCode(...r)) + "Aa1";
+    const email = "bot-" + hex + "@bots.thestrangestfleamarket.com", code = newCode();
+    let made; if (!k) made = { id: "dev-bot-" + hex }; else {
+      const c = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!c.ok) return res(c);
+      const j = await join(env, k, code, { email, password: pass }); if (!j.ok) return { why: j.why };
+      const u = await fetch(env.SUPABASE_URL + "/auth/v1/user", { headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + j.access_token } }).then(x => x.json()).catch(() => null); if (!u || !u.id) return { why: "the bot's account was made but not found" };
+      made = { id: u.id }; }
+    const rec = botRec({ on: 1, name: "BOT " + hex.slice(0, 3).toUpperCase(), job: "wander", hp: 1, fight: 1 }, b.set); rec.id = made.id; rec.email = email; rec.pass = pass; rec.at0 = Date.now();
+    await P.botPut(rec); return { ok: true, id: rec.id }; }
+  if (b.do === "botset" || b.do === "botdel") { const P = postOf(env), x = (await P.botList()).find(q => q.id === id); if (!x) return { why: "no such bot" };
+    if (b.do === "botset") { await P.botPut(botRec(x, b.set)); return { ok: true }; }
+    if (UUID.test(id) && k) { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok && r.status !== 404) return res(r); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); }
+    forget(id); await kick(id); bots.delete(id); await P.botDel(id); return { ok: true }; }
   if (!user()) return { why: "no such player" };
   if (b.do === "user") {
     const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);
@@ -444,6 +472,20 @@ async function admin(env, b) {
     forget(id); await kick(id); await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); return { ok: true }; }
   return { why: "unknown" };
 }
+// THE BOTS (owner, 7 Nov 2026): test players the owner spawns from TENANTS; each a real account run as a whole game by tools/bots.cjs on his PC
+const JOBS = ["stand", "wander", "follow", "goto", "sit", "fish", "mushrooms", "decorate", "fight", "chat"];
+const botRec = (o, set) => { const r = { ...o }, v = set && typeof set === "object" ? set : {};
+  if ("name" in v) r.name = word(v.name, 24) || r.name; if ("look" in v) r.look = word(v.look, 400); if ("on" in v) r.on = v.on ? 1 : 0;
+  if ("job" in v && JOBS.includes(v.job)) r.job = v.job; if ("who" in v) r.who = word(v.who, 40); if ("say" in v) r.say = word(v.say, 400);
+  if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4)] : null; if ("place" in v) r.place = word(v.place, 40);
+  if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0))); return r; };
+const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0 });
+const bots = new Map();   // each bot's login, kept 50 minutes
+async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "dev:" + b.id.slice(4), refresh_token: "" };
+  const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
+  const r = await fetch(env.SUPABASE_URL + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: env.SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ email: b.email, password: b.pass }) }).catch(() => null);
+  const s = r && r.ok ? await r.json() : null; if (!s || !s.access_token) return null; const o = { access_token: s.access_token, refresh_token: s.refresh_token }; bots.set(b.id, { until: Date.now() + 3e6, s: o }); return o; }
+
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
 // each player sends only how they steer, and gets back what is in their view ten times a second; bots fill the dish
 export class Dish extends Server {
@@ -497,6 +539,13 @@ export class Post extends DurableObject {
   // the owner's words over the game's text boxes (TEXT in the game), one row a text box
   texts() { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); const o = {}; for (const r of this.sql.exec("select k, t from texts").toArray()) o[r.k] = r.t; return o; }
   putText(k, t) { this.sql.exec("create table if not exists texts(k text primary key, t text, at integer)"); if (t) this.sql.exec("insert into texts(k, t, at) values(?, ?, ?) on conflict(k) do update set t = excluded.t, at = excluded.at", k, t, Date.now()); else this.sql.exec("delete from texts where k = ?", k); return true; }
+  // the bots: a row a bot (its settings, login and what it last said it was doing), and the runner's key
+  botT() { this.sql.exec("create table if not exists bots(id text primary key, rec text, status text, at integer)"); }
+  botList() { this.botT(); return this.sql.exec("select rec, status from bots order by at").toArray().map(r => { const b = JSON.parse(r.rec); try { b.status = r.status ? JSON.parse(r.status) : null; } catch (e) {} return b; }); }
+  botPut(b) { this.botT(); const { status, ...rec } = b; this.sql.exec("insert into bots(id, rec, at) values(?, ?, ?) on conflict(id) do update set rec = excluded.rec", b.id, JSON.stringify(rec), b.at0 || Date.now()); return true; }
+  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); return true; }
+  botStatus(all) { this.botT(); let n = 0; for (const id of Object.keys(all).slice(0, 20)) { const v = all[id]; if (!v || typeof v !== "object" || Array.isArray(v) || JSON.stringify(v).length > 2000) continue; this.sql.exec("update bots set status = ? where id = ?", JSON.stringify({ ...v, seen: Date.now() }), id); n++; } return n; }
+  async botKey(fresh) { let k = await this.ctx.storage.get("botkey"); if (!k || fresh) { const r = crypto.getRandomValues(new Uint8Array(18)); k = "BOTS-" + [...r].map(x => x.toString(16).padStart(2, "0")).join(""); await this.ctx.storage.put("botkey", k); } return k; }
   // shared files, kept in 1 MB parts
   putFile(k, type, buf) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))"); this.sql.exec("delete from files where k = ?", k);
     for (let i = 0, n = 0; i < buf.byteLength; i += 1 << 20, n++) this.sql.exec("insert into files(k, part, type, data, at) values(?, ?, ?, ?, ?)", k, n, type, buf.slice(i, i + (1 << 20)), Date.now()); return true; }

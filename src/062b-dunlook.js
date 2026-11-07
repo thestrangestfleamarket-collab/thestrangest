@@ -52,8 +52,9 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
   const put=(g,a,b,c,d,v,col)=>{ const [u0,v0,s]=v<0?[0,0,1]:[(v&1)*.5,(v>>1)*.5,.5], UV=[[u0,v0],[u0+s,v0],[u0+s,v0+s],[u0,v0+s]], P=[a,b,c,d];
     for(const i of [0,1,2,0,2,3]){ g.p.push(...P[i]); g.u.push(...UV[i]); if(col)g.c.push(...col); } };
   const geo=g=>{ const o=new THREE.BufferGeometry(); o.setAttribute('position',new F32(g.p,3)); o.setAttribute('uv',new F32(g.u,2)); if(g.c.length)o.setAttribute('color',new F32(g.c,3)); o.computeVertexNormals(); return o; };
-  const props=(L,Kc)=>{ '@dungeon'; const {R,up,dn,hz,n}=L, r=rng(n*4111+7), out=[], took=[];   // the same bones, crates and camp each time you come to a level
-    const free=(x,y,m)=>!hz.some(h=>h.t==='web'?Math.hypot(x-h.cx,y-h.cy)<h.r+m:x>h.x0-m&&x<h.x1+m&&y>h.y0-m&&y<h.y1+m)&&!(y<up.y1+2&&x>up.x0-1.5&&x<up.x1+1.5)&&!(dn&&y>dn.y0-2.5&&x>dn.x0-1.5&&x<dn.x1+1.5)&&!took.some(t=>Math.hypot(x-t[0],y-t[1])<t[2]+m);
+  const near=(L,x,y,m)=>{ const {B,ds}=L; return ds.b.some(([a,b])=>x>a-m&&x<b+m&&y<B.y0+m)||ds.f.some(([a,b])=>x>a-m&&x<b+m&&y>B.y1-m)||ds.w.some(([a,b])=>y>a-m&&y<b+m&&x<B.x0+m)||ds.e.some(([a,b])=>y>a-m&&y<b+m&&x>B.x1-m); };   // by a doorway: nothing stands there
+  const props=(L,Kc)=>{ '@dungeon'; const {R,up,dn,hz,n}=L, r=rng((L.seed||n)*4111+7), out=[], took=[];   // the same bones, crates and camp each time you come to a level
+    const free=(x,y,m)=>!hz.some(h=>h.t==='web'?Math.hypot(x-h.cx,y-h.cy)<h.r+m:x>h.x0-m&&x<h.x1+m&&y>h.y0-m&&y<h.y1+m)&&!(up&&y<up.y1+2&&x>up.x0-1.5&&x<up.x1+1.5)&&!(L.ds&&near(L,x,y,m+1.5))&&!(dn&&y>dn.y0-2.5&&x>dn.x0-1.5&&x<dn.x1+1.5)&&!took.some(t=>Math.hypot(x-t[0],y-t[1])<t[2]+m);
     const spot=(m,wall)=>{ for(let k=0;k<40;k++){ const w=r()<.5, x=wall?(w?R.x0+.45+r()*.4:R.x1-.45-r()*.4):R.x0+1+r()*(R.x1-R.x0-2), y=R.y0+4+r()*(R.y1-R.y0-7); if(free(x,y,m)){ took.push([x,y,m]); return [x,y]; } } return null; };
     const put1=(k,x,y,s)=>{ const p=Kc[k](x,y); if(s)out.push([p.x0,p.y0,p.x1,p.y1,s]); return p; };
     const camp=spot(1.6,true); if(camp){ const [x,y]=camp, sx=x<R.cx?1:-1; put1('straw',x-sx*.05,y-.5); put1('crate',x,y+.75,16); put1('oak barrel',x,y+1.3,28); put1('bones',x+sx*.9,y-.9); L.camp={x:x+sx*1.05,y:y+.25}; }
@@ -62,8 +63,8 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
     if(n>2){ const s=spot(.6,true); if(s)put1('iron chest',...s,12); }
     if(n>1){ const s=spot(1,false); if(s)put1('gibbet',...s); }
     L.took=took; return out; };
-  const dress=(L,ctx)=>{ '@dungeon'; const {R,B,hz,n}=L, {own,light,PL,lavaR}=ctx, r=rng(n*9157+3), fy=Y(.3)+dy, top=Y(R.H+4)+dy, c3=new THREE.Color(), LV=hz.filter(h=>h.t==='lava'), e=.004*TILE;
-    S.lights=[]; S.up=[];
+  const dress=(L,ctx)=>{ '@dungeon'; const {R,B,hz,n}=L, {own,light,PL,lavaR}=ctx, r=rng((L.seed||n)*9157+3), fy=Y(.3)+dy, top=Y(R.H+4)+dy, c3=new THREE.Color(), LV=hz.filter(h=>h.t==='lava'), e=.004*TILE;
+    if(!ctx.more){ S.lights=[]; S.up=[]; S.pn=0; for(let i=0;i<NP;i++)MISTU.uP.value[i].set(0,0,-1); }
     const col=(a)=>{ c3.setRGB(a[0]/255,a[1]/255,a[2]/255,THREE.SRGBColorSpace); return [c3.r,c3.g,c3.b]; };
     const cx=x=>Math.max(R.x0,Math.min(R.x1,x)), W=(x,z,y)=>[X(x),z,Z(y)];
     const wpt=(w,a,z,o=.02)=>w==='l'?W(R.x0+o,z,a):w==='r'?W(R.x1-o,z,a):w==='b'?W(a,z,R.y0+o):W(a,z,R.y1-o);
@@ -88,7 +89,7 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
         const gw=.8+.25*h.rx, G0=[ring(A,k,-.15,fy+2*e),ring(Bq,k+1,-.15,fy+2*e)], G1=[ring(A,k,gw,fy+2*e),ring(Bq,k+1,gw,fy+2*e)], hot=[.55,.2,.05], z0=[0,0,0];
         for(const [P,c] of [[G0[0],hot],[G0[1],hot],[G1[1],z0],[G0[0],hot],[G1[1],z0],[G1[0],z0]]){ gp.push(...P); gc.push(...c); }
         if(k%5===0)for(let j=0;j<2;j++){ const f=r()*.8; EP.push(...W(h.cx+(A[0]-h.cx)*f,zl,h.cy+(A[1]-h.cy)*f)); ES.push(r()); } }
-      MISTU.uP.value[i]&&MISTU.uP.value[i].set(X(h.cx),Z(h.cy),(h.rx+1.6)*TILE);
+      const pi=S.pn++; MISTU.uP.value[pi]&&MISTU.uP.value[pi].set(X(h.cx),Z(h.cy),(h.rx+1.6)*TILE);
       // the falls that feed it: out of a crack in the wall or down from the ceiling
       let lz=Y(12)+dy, ly=h.cy, lx=h.cx;
       if(h.src==='wall'){ const w=h.cx<R.cx?'l':'r', fyy=h.cy+h.fo*h.ry*.6, wd=.35+r()*.35, zt=Y(h.fz)+dy, g=quads(); wq(g,w,fyy,zl,wd,zt-zl,-1,.035);
@@ -99,7 +100,6 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
         flat(gq('glow'),fx,fyy,zl+2*e,1.3,1.3,0,-1); lx=fx; ly=fyy; lz=zl+Y(40); }
       const Lt=light({x:lx,y:ly,z:(lz-dy)/SHARED.BOD.YS(1),c:[1,.42,.12],r:3.4+h.rx*1.2}); S.lights.push([Lt,Lt.intensity,r()*6]);
       for(let k=0;k<3;k++){ const a=r()*6.283, q=lavaR(h,a)*1.15, d=.5+r()*.7, x=h.cx+Math.cos(a)*(h.rx*q+d), y=h.cy+Math.sin(a)*(h.ry*q+d); if(x>R.x0+.3&&x<R.x1-.3)flat(gq('glowc'),x,y,fy+3*e,1.4+r()*.8,1.4+r()*.8,a,(r()*4)|0); } });
-    for(let i=LV.length;i<NP;i++)MISTU.uP.value[i].set(0,0,-1);
     if(lp.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new F32(lp,3)); g.setAttribute('aE',new F32(lE,1)); own(new THREE.Mesh(g,LAVA()));
       const k=new THREE.BufferGeometry(); k.setAttribute('position',new F32(kp,3)); k.setAttribute('color',new F32(kc,3)); k.computeVertexNormals(); const km=new THREE.Mesh(k,new THREE.MeshLambertMaterial({vertexColors:true,side:2})); km.receiveShadow=true; own(km);
       const gl=new THREE.BufferGeometry(); gl.setAttribute('position',new F32(gp,3)); gl.setAttribute('color',new F32(gc,3)); const gm=new THREE.Mesh(gl,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:2})); gm.renderOrder=1; own(gm);

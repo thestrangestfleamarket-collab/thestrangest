@@ -84,8 +84,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
+  // an arm's twist eased from the rig's reference to its fallback as the arm comes near the reference (the rig switches at once: a knot in the skin)
+  const AF={x:{},y:{},z:{}}, armFrame=(a,b,ref,alt)=>{ let yx=b.x-a.x, yy=b.y-a.y, yz=b.z-a.z; const l=Math.hypot(yx,yy,yz)||1; yx/=l; yy/=l; yz/=l;
+    const cr=(r)=>[r.y*yz-r.z*yy,r.z*yx-r.x*yz,r.x*yy-r.y*yx], p=cr(ref), q=cr(alt), lp=Math.hypot(...p), w=Math.min(1,Math.max(0,(.45-lp)/.3)), sg=p[0]*q[0]+p[1]*q[1]+p[2]*q[2]<0?-1:1;
+    let zx=p[0]*(1-w)+q[0]*sg*w, zy=p[1]*(1-w)+q[1]*sg*w, zz=p[2]*(1-w)+q[2]*sg*w; const lz=Math.hypot(zx,zy,zz)||1; zx/=lz; zy/=lz; zz/=lz;
+    AF.y.x=yx; AF.y.y=yy; AF.y.z=yz; AF.z.x=zx; AF.z.y=zy; AF.z.z=zz; AF.x.x=yy*zz-yz*zy; AF.x.y=yz*zx-yx*zz; AF.x.z=yx*zy-yy*zx; return AF; };
   function chain(B,body){ const S=body.S, KL=body.KL;
-    for(let i=0;i<NB;i++){ const n=BONES[i], F=R.frameOf(n,B);
+    for(let i=0;i<NB;i++){ const n=BONES[i], sd=n.charAt(n.length-1), F=n==='upperArmL'||n==='upperArmR'?armFrame(B.J['shoulder'+sd],B.J['elbow'+sd],B.m.Ru.x,B.m.Ru.z):n==='forearmL'||n==='forearmR'?armFrame(B.J['elbow'+sd],B.J['wrist'+sd],B.m.Ru.x,B.m.Ru.z):R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
       if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);
@@ -131,7 +136,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const ARM={L:[3,4,5],R:[6,7,8]};
   const keepArms=(PM,PR,body)=>{ '@later'; for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
       for(const j of ARM[side]){ PM.value[j].copy(PR.value[j]); PM.value[j].elements[12]+=O2.x; PM.value[j].elements[13]+=O2.y; PM.value[j].elements[14]+=O2.z; } } };
-  const blend=(PM,PA,t)=>{ for(let i=0;i<NB;i++){ PM.value[i].decompose(P1,Q1,SC); PA.value[i].decompose(P2,Q2,O); Q1.slerp(Q2,t); P1.lerp(P2,t); PM.value[i].compose(P1,Q1,SC); } };
+  // the rig's pose and a clip's, mixed bone by bone at the joints (the skin's own matrices mixed swing a big arm move about the body's middle: a knot)
+  const BW1=new THREE.Matrix4(), BW2=new THREE.Matrix4();
+  const blend=(PM,PA,t,body)=>{ const bv=body&&body.binv, bd=bv&&(body._bind||(body._bind=bv.map(m=>m.clone().invert())));
+    for(let i=0;i<NB;i++){ if(bd){ BW1.multiplyMatrices(PM.value[i],bd[i]).decompose(P1,Q1,SC); BW2.multiplyMatrices(PA.value[i],bd[i]).decompose(P2,Q2,O); }
+      else { PM.value[i].decompose(P1,Q1,SC); PA.value[i].decompose(P2,Q2,O); }
+      Q1.slerp(Q2,t); P1.lerp(P2,t); PM.value[i].compose(P1,Q1,SC); if(bd)PM.value[i].multiply(bv[i]); } };
   // the feet on the actual ground (your avatar walking by its clips): each foot's ground under it, the hips lowered to the lower one, each leg bent (two bones) to put its foot there
   const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
@@ -181,8 +191,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const A=body.act&&!S.dead?body.act(S):null, AC=A&&body.clip?body.clip(A.n):null, want=loco(S)||AC?1:0;   // (a clip not fetched yet: the rig, until it comes)
       S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat);
       if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
-        if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2).multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them) if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
-        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } }
+        if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2).multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
+        if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }   // (a held tool: the arms where the rig aims them)
+        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw,body); } }
     if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own

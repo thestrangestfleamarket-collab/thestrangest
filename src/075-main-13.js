@@ -1,7 +1,7 @@
 // THE FRAME: the main loop (frame): movement, collision, water, sun shade, lamps, rooms, culling, then the render.
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, BOAT, BROOK, CITY, CLOCK, CULL, DRESS, DRM, ED, EQUIP, FAR3, FEEL, FIGFX, GPH, GPUT, INTERIORS, keys, LEVELS, LINES, LITE, LOOK, MUS, NPCS, ONLINE, PARK, PB, PERFX, PH, PNM, pos, PS2, RAG, RIDE, ROOMS, SFX, SGM, st, STAGE, TRICKS, UI, VIT, VR, W3, WHERE, WIELD, wvV, ZONES} from './003b-systems.js';
-import {EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, resize, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0, ZMAX} from './004-main.js';
+import {EffectComposer, frustum, OCAM, OutputPass, PPU, pxS, renderer, RenderPass, resize, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0} from './004-main.js';
 import {applyTime, ASTEP, BF, C2, cutWalls, lamps, MODS, nightTo, SEEN, shopGroups, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, PEEK} from './008-batch.js';
@@ -19,7 +19,7 @@ looseDraw();
 let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
 const PAD={mv:null,n:0}; SHARED.target=null;
-const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
+const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU*1.5}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
 // the overhead view moves in whole pixels of the picture (the PS2 filter's chunky ones when it is on), so what stands still on the ground never shimmers from step to step
 const SNR=new THREE.Vector3(), SNU=new THREE.Vector3(), snapCam=()=>{ const c=SHARED.cam; if(!c.isOrthographicCamera||UI.persp)return; const L=SHARED.cellLines||RH, w=(c.top-c.bottom)/c.zoom/Math.max(1,L); if(!(w>0))return;
   SNR.set(1,0,0).applyQuaternion(c.quaternion); SNU.set(0,1,0).applyQuaternion(c.quaternion); const a=c.position.dot(SNR), b=c.position.dot(SNU); c.position.addScaledVector(SNR,Math.round(a/w)*w-a).addScaledVector(SNU,Math.round(b/w)*w-b); if(PS2.sp){ const m=n=>((n%4096)+4096)%4096; PS2.sp.uniforms.uO.value.set(m(Math.round(a/w)),m(Math.round(b/w))); } };
@@ -30,7 +30,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.butto
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
-renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } if(e.deltaY>0&&!UI.persp&&RW/rppu()>=UI.MAXW*.995)return; SHARED.ppuTo=Math.max(3,Math.min(ZMAX,SHARED.ppuTo*Math.pow(1.0015,-e.deltaY))); UI.wheelAt(e); },{passive:false});
+renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } UI.zoomLv(e); },{passive:false});
 addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(TRICKS.takes&&TRICKS.takes(k))return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='shift'&&!VIT.tired)st.runTarget=1; if(st.water&&st.water.in&&(k===' '||k==='j')){ e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!ED.on&&!UI.fly&&!(FT&&k===' ')){ RIG.act(st,MOVEK[k]); SYS.run('act',MOVEK[k],1); } });
@@ -57,7 +57,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on||SHARED.fishing)up=dn=lf=rt=false;
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
   if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
-  if(!RAG.on&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf,rt,!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
+  if(!RAG.on&&!UI.fly&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf,rt,!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }
   if(mx||mz)SHARED.target=null; else if(SHARED.target){ const dx=SHARED.target.x-pos.x, dz=SHARED.target.z-pos.z, d=Math.hypot(dx,dz); if(d<0.12)SHARED.target=null; else {mx=dx/d;mz=dz/d;} }
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=SHARED.heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;
@@ -69,11 +69,11 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   else{
     if(SHARED.drive){ mx=0; mz=0; SHARED.target=null; st.runTarget=0; } if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; } if(RIDE.on){ RIDE.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; }
     if(window.RUNNER&&RUNNER.on){ const r=RUNNER.steer(dt); mx=r[0]; mz=r[1]; SHARED.target=null; st.runTarget=1; } const ml=Math.hypot(mx,mz), busy=st.move;
-    if(FT){ st.yr=0; if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
+    if(FT){ st.yr=0; if(UI.fly){ if(st.water)st.water.in=false; RIVER.swim=false; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
     else{
     if(window.WIELD)WIELD.pre(dt);
     if(ml>0&&!(busy&&busy.def.below!=null)){ const tk=busy?.5:1; let dh=Math.atan2(mx,mz)-SHARED.heading; dh=Math.atan2(Math.sin(dh),Math.cos(dh)); const turn=3*Math.PI*dt*tk; const dd=Math.max(-turn,Math.min(turn,dh*(1-Math.exp(-dt*12*tk)))); SHARED.heading+=dd; st.yr=dd/Math.max(dt,1e-3); } else st.yr=0;
-    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(RIDE.on&&RIDE.dry){ if(st.water)st.water.in=false; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=ml>0&&!UI.fly?1:0; const before=st.dist; RIG.step(st,dt); const go=UI.fly?UI.flyGo(dt,ml>0):(st.dist-before)*W3.SZ/PPU*(SHARED.drag??1)*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); SFX.steps(st,go);
+    if(window.BOAT&&BOAT.on){ BOAT.carry(st,pos); SHARED.heading=BOAT.hd; } else if(RIDE.on&&RIDE.dry){ if(st.water)st.water.in=false; } else if(UI.fly){ if(st.water)st.water.in=false; RIVER.swim=false; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=ml>0&&!UI.fly?1:0; const before=st.dist; RIG.step(st,dt); const go=UI.fly?UI.flyGo(dt,ml>0):(st.dist-before)*W3.SZ/PPU*(SHARED.drag??1)*(VIT.dead&&NPCS.some(N=>N.lv===SHARED.LVL&&!N.far&&N.mode!=='hidden'&&N.blocks(pos.x,pos.z,.3*TILE))?.75:1); SFX.steps(st,go);
     if(go){ const ox=pos.x,oz=pos.z; pos.x+=Math.sin(SHARED.heading)*go; pos.z+=Math.cos(SHARED.heading)*go; if(UI.fly)UI.flyStep(0); else collide(pos); if(st.water&&st.water.in&&RIVER.swim)RIVER.clamp(pos);
     if(SHARED.target&&Math.hypot(pos.x-ox,pos.z-oz)<go*0.2)SHARED.target=null; }
     if(UI.fly)UI.flyStep(dt); else if(window.BOAT&&BOAT.on)SHARED.py=BOAT.py; else { let g=SHARED.groundY(pos.x,pos.z); if(st.fk&&!st.climb&&!st.hang&&!st.move)for(const n of 'LR'){ const f=st.fk[n]; if(f&&f.on&&Math.hypot(f.x-pos.x,f.z-pos.z)<1)g=Math.min(g,f.y); } if(window.EQUIP&&EQUIP.float)g+=.6*TILE; if(GPH.floor)g=GPH.floor(g); if(RIDE.on)g=RIDE.floor(g); SHARED.py+=(g-SHARED.py)*Math.min(1,dt*(RIDE.on?RIDE.ease:20)); } }

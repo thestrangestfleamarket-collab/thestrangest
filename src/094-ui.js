@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, SWIM, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene, ZMAX} from './004-main.js';
+import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
@@ -19,7 +19,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · swim up, and faster · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · swim down'],
     ['view','change the view (map, isometric, third person, behind, first person)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops)'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (Space up, Shift down; G again lands)']];
-  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+N','THE NEXT LOOK'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
+  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+E','EDIT THE WORLD (ISOMETRIC)'],['SHIFT+N','THE NEXT LOOK'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m',chat:'enter',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
@@ -31,6 +31,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(raw==='escape'){ if(e.type==='keydown')toggleMenu(); return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
+    if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat&&WE.key)WE.key(); return null; }
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
@@ -95,7 +96,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(!UI.freeCam){ tv.set(0,0,1).applyQuaternion(q1); UI.off.addScaledVector(tv,-UI.off.dot(tv)); } };
   UI.MAXW=30*TILE; UI.NEARH=6.6/.84*TILE; window.CAMW=()=>(SHARED.cam.right-SHARED.cam.left)/TILE;
   SHARED.camMaxW=UI.MAXW;   // the frustum (004-main) caps the visible width here, so full zoom-out is the same extent at every resolution; the zoom just freezes once the view fills it
-  let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ SHARED.ppuTo=SHARED.ppu; if(UI.view==='third'||UI.view==='follow')UI.dist=Math.max(1.2*TILE,Math.min(UI.distMax||22*TILE,UI.dist*Math.pow(1.0015,e.deltaY))); return; }
+  let zAt=null; UI.wheelAt=e=>{ if(UI.persp){ SHARED.ppuTo=SHARED.ppu; return; }
     if(e.deltaY>0&&RW/rppu()>=UI.MAXW*.995){ SHARED.ppuTo=SHARED.ppu; zAt=null; return; } const r=cv.getBoundingClientRect(); zAt={x:e.clientX-r.left-r.width/2,y:r.height/2-(e.clientY-r.top)}; };
   UI.zk=()=>(SHARED.cam.right-SHARED.cam.left)/cv.getBoundingClientRect().width;
   UI.zoomStep=k0=>{ if(!UI.persp&&RW/rppu()>=UI.MAXW)SHARED.ppuTo=Math.max(SHARED.ppuTo,SHARED.ppu);   // at the zoom-out limit, hold ppu steady (the frustum cap keeps the extent at MAXW) instead of snapping back
@@ -120,6 +121,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.view3=a=>{
     SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
   UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
+    if(UI.distTo==null||UI.dist!==UI._dl)UI.distTo=UI.dist; else UI.dist=Math.abs(UI.distTo-UI.dist)<1e-3?UI.distTo:UI.dist+(UI.distTo-UI.dist)*Math.min(1,(dt||.016)*12); UI._dl=UI.dist;   // a wheel step eases there; anything else that sets the distance is taken as it is
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); }
       { const c=SHARED.cam.position, ox=c.x-pos.x, oy=c.y-SHARED.py, oz=c.z-pos.z, k=1-Math.exp(-(dt||.016)/.2), F=UI._fpo;
         if(!F||UI._fpy==null||Math.abs(SHARED.py-UI._fpy)>TILE){ UI._fpo=[ox,oy,oz,ox,oy,oz]; UI._fpy=SHARED.py; }
@@ -140,11 +142,17 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     SHARED.cam.lookAt(T); SHARED.cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');
   // the views by place (owner, 7 Nov 2026): in town only the overhead view, turned and zoomed in from the start's distance (never further out); third and first person inside an inside or Central Park; out of those you are put back overhead. Whatever takes the view for itself (fishing, a spyglass, the tower's glass, VR, a holodeck program) keeps it
-  UI.ZOUT=PPU*1.5;
+  UI.ZL=[1,2,5,10].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
+  UI.DL=[1,2,5,10,20].map(k=>22*TILE/k);   // the behind view's wheel steps the same way: its distance 1×, 2×, 5×, 10×, 20× in from 22 tiles, never nearer than 1.2 or past the place's own limit
+  { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc); acc=0;
+    if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
+      const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
+    const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; const r=cv.getBoundingClientRect(), v=tv.set(pos.x,SHARED.py+HEAD*.6*(W3.SZ||1),pos.z).project(SHARED.cam); UI.wheelAt({deltaY:e.deltaY,clientX:r.left+(v.x+1)/2*r.width,clientY:r.top+(1-v.y)/2*r.height}); }; }   // each step zooms round you, not the mouse, so you stay where you are on screen
   UI.viewsHere=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)||SWIM.vw?['iso','third','first']:['iso']; };   // (a dive takes the view, like fishing: SWIM.vw)
   { const W=window, own=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
     SYS.add('cam',()=>{ if(!window.__started||own())return; if(!UI.viewsHere().includes(UI.view))UI.setView('iso'); if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam, z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
+    if(!Number.isFinite(UI.off.x+UI.off.y+UI.off.z))UI.off.set(0,0,0); if(!(hw>0&&hh>0&&Number.isFinite(R.x+R.y+R.z)))return;   // a bad frame never sticks: the view comes back to you
     let u=UI.off.dot(R), k=Math.max(-hw,Math.min(hw,u)); if(k!==u)UI.off.addScaledVector(R,k-u); const U=tv.setFromMatrixColumn(c.matrixWorld,1); u=UI.off.dot(U); k=Math.max(-hh,Math.min(hh,u)); if(k!==u)UI.off.addScaledVector(U,k-u); };
   { const p0=UI.pan; UI.pan=(dx,dy)=>{ p0(dx,dy); if(!UI.freeCam)UI.keepOn(); }; }
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
@@ -267,6 +275,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   ['you','PROFILE','ESC',[['look','LOOK',['home']],['wear','WEAR',['home']],['words','WORDS',['home']]]],
     ['set','SETTINGS','',[['view','VIEW',['display']],['picture','PICTURE',['graphics','atmo']],['controls','CONTROLS',['keys','sound','vr']],['bug','REPORT A BUG',['bug']]]],   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
     ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
+    ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
     ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['tenants','TENANTS',['tenants']],['tools','TOOLS',['tools']]]]];
   const OLD={home:['you'],display:['set','view'],graphics:['set','picture'],atmo:['set','picture'],sound:['set','controls'],keys:['set','controls'],vr:['set','controls'],bug:['set','bug'],tenants:['admin','tenants'],city:['you']};
   let cur='you', own=false; const last={};
@@ -274,7 +283,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const people=()=>{ '@later'; const all=ONLINE.others?[...ONLINE.others.values()]:[], E=TEXT.esc;
     $('#dpeople').innerHTML=!ONLINE.on?'<div class="dim">nobody else here: other players are on the website, thestrangestfleamarket.com</div>':'<h3>ON YOUR BLOCK · '+(all.length+1)+'</h3><table>'+all.map(o=>'<tr><td>'+E(o.name||'TENANT')+'</td><td>'+(ONLINE.visit?'<button class="btn" data-visit="'+E(o.id)+'">VISIT THEIR APARTMENT</button>':'')+'</td></tr>').join('')+'</table>'+(all.length?'':'<div class="dim">nobody else is on</div>')+'<div class="dim" style="margin-top:10px">double-click a player in the street to trade</div>'; };
   $('#dpeople').addEventListener('click',e=>{ const b=e.target.closest('[data-visit]'); if(!b)return; const o=ONLINE.others&&ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ shut(); ONLINE.visit(o.id,o.name); } });
-  const nav=()=>{ $('#mnav').innerHTML=SEC.filter(S=>S[0]!=='admin'||own).map(([k,n,key])=>'<button role="tab" data-sec="'+k+'" aria-selected="'+(k===cur)+'"'+(k==='admin'?' class="adm"':'')+'>'+n+(key?'<u>'+key+'</u>':'')+'</button>').join(''); };
+  const nav=()=>{ $('#mnav').innerHTML=SEC.filter(S=>S[0]!=='bbs'&&(S[0]!=='admin'||own)).map(([k,n,key])=>'<button role="tab" data-sec="'+k+'" aria-selected="'+(k===cur)+'"'+(k==='admin'?' class="adm"':'')+'>'+n+(key?'<u>'+key+'</u>':'')+'</button>').join(''); };
   const show=(sec,sub)=>{ const S=SEC.find(x=>x[0]===sec&&(sec!=='admin'||own))||SEC[0];
     if(!S[3]){ S[4](); return; }
     const P=S[3].find(x=>x[0]===sub); if(P&&typeof P[2]==='function'){ P[2](); return; }
@@ -416,7 +425,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     UI.goName=n=>{ const P=PLACEN.includes(n)||ROOMN.includes(n)?PLACES.find(p=>p[0]===n):null; if(P)toPlace(P[1],P[2],P[3],P[5]); else goPlace(n); };
     sel.onchange=()=>{ const n=sel.value; sel.value=''; if(n)UI.goName(n); };
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
-  const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
+  const zMin=UI.ZOUT, zMax=UI.ZL[UI.ZL.length-1], z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
     $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dps2').setAttribute('aria-pressed',String(!!PS2.on)); $('#dps2').textContent='PS2 FILTER '+(PS2.on?'ON':'OFF'); if(PS2.parts){ for(const e of document.querySelectorAll('#dps2p [data-k]')){ e.setAttribute('aria-pressed',String(!!PS2.parts[e.dataset.k])); e.disabled=!PS2.on; } $('#dps2k').value=PS2.k; $('#dps2k').disabled=!PS2.on; $('#dps2kv').textContent=Math.round(PS2.k*100)+'%'; } }
   { const SH={on:true,lv:2}, D=$('#dshd'); D.innerHTML='<button class="btn" data-s="1">ON</button><button class="btn" data-l="1">SHADED</button><button class="btn" data-l="2">SELF</button>';   // the figures' shadows: on/off, lit by the lamps, or self-shadowed too

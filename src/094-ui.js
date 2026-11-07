@@ -4,7 +4,7 @@ import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FO
 import {SAY} from './003d-say.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, FADE, LEVEL, LOTX, LOTY, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, SOL, STORE, SYS, TILE, WP, ZU} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
@@ -417,7 +417,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const st=(LOOP.STA||[]).map(q=>[q,Math.hypot(q.x-x,q.my(LOOP.XW/2)-y)]).sort((a,b)=>a[1]-b[1])[0]; if(st&&st[1]<45){ if(st[0].old)return goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st[0].P(LOOP.LEN/2,LOOP.MID,0); goTo(p[0],p[2],'down'); } }); }
   M.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ mapLv=b.dataset.lv; drawMap(); });
   $('#myapt').onclick=()=>{ if(UI.menuOpen)toggleMenu(); if(MODS.apts&&MODS.apts.enterReal)MODS.apts.enterReal(); };
-  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up'],...(STORE.main?STORE.main.doors.map(d=>[d[0],d[1],d[2],'up',null,d[5]]):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
+  const PLACES=[['THE STREET',-2.2,3.2,'up'],['THE BODEGA',SHARED.BOD.X((SHARED.BOD.SB.x0+SHARED.BOD.SB.x1)/2),SHARED.BOD.Z(SHARED.BOD.SB.y1)-1.6,'up',null,Math.PI],['THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,'down'],['CENTRAL PARK',SHARED.BOD.XS(PARK.round[0]+PARK.ox),SHARED.BOD.ZS(PARK.y0+7+PARK.oy),'up'],(WP.bath&&WP.bath.row===2?['THE BATH HOUSE',SHARED.BOD.X(LOTX((WP.bath.x0+WP.bath.x1)/2)),SHARED.BOD.Z(LOTY(WP.bath.y0)-1.6),'up',null,Math.PI]:['THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]+4.5),'up']),...(STORE.main?STORE.main.doors.map(d=>[d[0],d[1],d[2],'up',null,d[5]]):[]),['THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]-3),'up'],['THE DUNGEON',MODS.dungeon.arrive(1).x,MODS.dungeon.arrive(1).z,'down']];
   UI.places=()=>PLACES.concat(STORE.places||[]);
   const goPlace=async n=>{ '@later'; if(n==='YOUR APARTMENT'&&MODS.apts&&MODS.apts.enterReal)return MODS.apts.enterReal(); if(window.FIREV&&n===FIREV.name&&FIREV.out)return FIREV.out(); if(STORE.ensure)await STORE.ensure(); if(STORE.offGo)await STORE.offGo(n); const P=PLACES.concat(STORE.places).find(p=>p[0]===n); if(P&&P[6])return P[6](); if(P)toPlace(P[1],P[2],P[3],P[5]); }; UI.goPlace=goPlace;
   { const q=QS.get('place'); if(q)SYS.onStart(()=>setTimeout(()=>goPlace(q.toUpperCase()),300),'094-ui place'); }

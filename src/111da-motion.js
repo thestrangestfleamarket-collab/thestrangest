@@ -22,16 +22,20 @@ import {AVATAR} from './111c-avatar.js';
   SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here
   const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } ensure().then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
-  // the emote panel (H): a button an emote; a looped one runs until you walk
+  // the emote panel (H), a window like the others (owner, 7 Nov 2026: "make the emote menu look like regular menus. also allow to drag them to the favorites bar"): a button an emote, by kind; drag one onto the quick bar
   const sp=document.createElement('div'); sp.id='emotes'; sp.hidden=true;
-  sp.style.cssText='position:fixed;right:16px;bottom:96px;width:min(420px,92vw);max-height:70vh;overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#ffe9b0;background:rgba(26,16,4,.95);box-shadow:inset 0 0 0 2px #b8862a,0 12px 40px #000;zoom:var(--uiz,1)';
+  sp.style.cssText='position:fixed;right:16px;bottom:96px;width:min(460px,92vw);max-height:70vh;overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')MOTION.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());
-  const B=(t,f,css='')=>{ const b=document.createElement('button'); b.textContent=t; b.style.cssText='font:inherit;color:#ffe9b0;background:#2a1a06;border:2px solid #b8862a;padding:5px 7px;margin:3px;cursor:pointer;'+css; b.onclick=f; return b; };
-  const closeB=B('X',()=>MOTION.close(),'position:absolute;right:8px;top:8px;margin:0'); closeB.className='pX';
-  const head=document.createElement('div'); head.textContent='EMOTES'; head.style.cssText='margin:2px 0 8px;color:#ffcf5a';
-  const grid=document.createElement('div'); for(const [t,n] of [...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])])grid.append(B(t,()=>{ play(n); MOTION.close(); }));
-  const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS'; tip.style.cssText='margin-top:8px;opacity:.7';
-  sp.append(closeB,head,grid,tip);
+  const ALLE=[...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])], LABEL=Object.fromEntries(ALLE.map(([t,n])=>[n,t]));
+  const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Call','pf_Laugh','clap','cheer','fistPump','dab','flex','knock','powerUp']],
+    ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','zombie','pf_Lean']],
+    ['DANCE',['dance','pf_Bop','pf_HipHop','pf_Twist','pf_Swing','pf_Thriller','armPump','bodyRoll','charleston','hipReach','moonwalk']],
+    ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],['WORK',['pf_Chop','pf_Fix','pf_Push','pf_Torch','pf_Lantern']]];
+  const B=(t,n)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; b.draggable=true; b.title='drag onto the quick bar to keep it there';
+    b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
+  const head=document.createElement('h3'); head.textContent='EMOTES'; sp.append(head);
+  for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.style.cssText='color:#9b9584;margin:8px 0 2px'; const g=document.createElement('div'); for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
+  const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS · DRAG ONE ONTO THE QUICK BAR'; tip.style.cssText='margin-top:8px;color:#9b9584'; sp.append(tip);
   // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss
   const can=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!VIT.tired;
   const fight=k=>{ '@later'; if(!can())return; const m=st.move, t=m?m.t:0;
@@ -39,6 +43,6 @@ import {AVATAR} from './111c-avatar.js';
     else if(k==='o'&&(!m||!/^mc_(dodge|kick)/.test(m.name))){ VIT.spend(.06); play('dodge'); } };
   addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; const k=UI.key(e);
     if(k==='h'&&!UI.menuOpen){ MOTION.toggle(); e.preventDefault(); } else if((k==='l'||k==='o')&&!UI.menuOpen)fight(k); });
-  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,ensure,play,stop,their,has,info,
+  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,label:n=>LABEL[n]||null,ensure,play,stop,their,has,info,
     open:()=>{ sp.hidden=false; ensure(); }, close:()=>{ sp.hidden=true; }, toggle:()=>{ if(sp.hidden)MOTION.open(); else MOTION.close(); }});
 }

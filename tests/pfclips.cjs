@@ -29,7 +29,20 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('every Polyfork move moves the body (the held poses aside)',!still.length,'still: '+still.join(','));
   const on=await pg.evaluate(async()=>{ MOTION.play('pf_Chat'); await new Promise(r=>setTimeout(r,900)); const s=__dbg.ST; return {mw:s._mw,aw:s._aw,n:s._an}; });
   rec('a Polyfork move is drawn from its clip, not the rig',on.mw===1&&on.aw>.9&&on.n==='Talking',JSON.stringify(on));
-  if(OUT){ require('fs').mkdirSync(OUT,{recursive:true}); await pg.evaluate(()=>{ MOTION.stop(); UI.setView('third'); });
+  // the emote window looks like the other windows, and an emote dragged onto the quick bar stays there and plays on its key
+  const look=await pg.evaluate(async()=>{ MOTION.open(); await new Promise(r=>setTimeout(r,1200)); const e=document.getElementById('emotes'), r={ml:e.classList.contains('ml'),x:!!e.querySelector(':scope>.pX'),kinds:[...e.querySelectorAll('h3')].length,drag:[...e.querySelectorAll('button[draggable="true"]')].length}; MOTION.close(); return r; });
+  rec('the emote window has the menus\' look and close button, every emote draggable',look.ml&&look.x&&look.kinds===1&&look.drag>=47,JSON.stringify(look));
+  const bar=await pg.evaluate(async()=>{ const s=document.querySelector('#hqb .qs[data-i="0"]'), dt=new DataTransfer(); dt.setData('text/plain','emote:pf_Bop');
+    s.dispatchEvent(new DragEvent('dragover',{dataTransfer:dt,bubbles:true,cancelable:true})); s.dispatchEvent(new DragEvent('drop',{dataTransfer:dt,bubbles:true,cancelable:true}));
+    const slot=HUDDBG().slots[0], txt=document.querySelector('#hqb .qs[data-i="0"]').textContent; dispatchEvent(new KeyboardEvent('keydown',{code:'Digit1',key:'1',bubbles:true}));
+    await new Promise(r=>setTimeout(r,800)); const cur=MOTION.cur; MOTION.stop(); return {slot,txt,cur}; });
+  rec('an emote dropped on the quick bar stays there, named, and plays on its number',bar.slot==='emote:pf_Bop'&&/BOP/.test(bar.txt)&&bar.cur==='pf_Bop',JSON.stringify(bar));
+  const g=await pg.$('#hqb .qg'), gb=g&&await g.boundingBox(), q0=await pg.evaluate(()=>document.getElementById('hqb').getBoundingClientRect().left);
+  if(gb){ await pg.mouse.move(gb.x+gb.width/2,gb.y+gb.height/2); await pg.mouse.down(); await pg.mouse.move(gb.x-60,gb.y-80,{steps:8}); await pg.mouse.up(); }
+  const q1=await pg.evaluate(()=>document.getElementById('hqb').getBoundingClientRect().left);
+  rec('the quick bar moves by its grip',!!gb&&q1-q0<-40,'moved '+(q1-q0));
+  if(OUT){ require('fs').mkdirSync(OUT,{recursive:true}); await pg.evaluate(()=>{ MOTION.stop(); __dbg.UI.setView('third'); __dbg.UI.dist*=.55; });
+    await pg.evaluate(()=>MOTION.open()); await wait(800); await pg.screenshot({path:OUT+'/emotes.png'}); await pg.evaluate(()=>MOTION.close());
     for(const n of ['Thriller','HipHop','Chop','Drink','Laugh']){ await pg.evaluate(n=>MOTION.play('pf_'+n),n); await wait(1500); await pg.screenshot({path:OUT+'/'+n+'.png'}); await pg.evaluate(()=>MOTION.stop()); await wait(400); } }
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,v])=>v+'× '+k).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'ALL PASS'); process.exit(bad?1:0); })();

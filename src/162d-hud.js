@@ -69,6 +69,6 @@ import {QUESTS} from './160a-quests.js';
   draw();
 
   const nmN=document.getElementById('vnm'); let named=0;
-  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(!named&&window.__started&&nmN){ named=1; nmN.textContent=ONLINE.myName?ONLINE.myName():''; } },'162d-hud');
+  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
   window.HUDDBG=()=>({map:!MP.hidden,plan:!!Q,slots:[...S],lines:LN.children.length});
 }

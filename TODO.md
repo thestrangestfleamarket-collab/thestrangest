@@ -37,12 +37,14 @@ One pull request each, in this order; the game stays playable after every one.
 - [ ] **4. The fronts** · P2 · XL · code. Brick downtown fronts on Market St (no awnings, nothing western), the bodega and diner corners, the new skill shops with their merchants, the Hudson row's buildings and garages.
 - [ ] **5. The park's grounds and trees** · P2 · XL · code · risk med. The six grasses as grounds, a glade each, our trees back at real size (measure the cost first), our bushes.
 - [x] **6. The park's made things** · P2 · L · code · done 7 Nov (`src/111fe-parkpf.js`, `tests/parkpf.cjs`; the big lake past the forcefield; the skate extension dropped). Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake.
-- [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
+- [x] **7. The new bar** (done 7 Nov: the lounge, the octopus on its stage, the badger back) · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
 
 - [x] **Two resolutions only** · P2 · S · code. Owner, 7 Nov: "i want Low graphics setting to the max setting. get rid of med high highest resolution, only Lowest and Low (rename to Low - High)". RESOLUTION keeps LOWEST (240 lines) as LOW and LOW (360) as HIGH, the most anyone gets; MED, HIGH, HIGHEST go (`RESLN` in src/004-main.js, the buttons in src/094-ui.js, core's resolution check).
 - [x] **The camera by place** · P1 · M · pick + code · done 7 Nov. Owner, 7 Nov: in town only the overhead view (rotate, zoom from his shot's distance all the way in); third and first person only inside interiors and Central Park. Questions asked: the start zoom, leaving the park in first person, which water way.
 - [x] **The park closed in** · P1 · L · code. Owner, 7 Nov: large trees round the park wall so you can't see out; inside the park draw only the park, the skyline, sky and weather (no Market St, apartment street, cars).
 - [x] **The skyline across the Hudson** · P2 · M · look. Owner's pick 6 Nov: in-game pictures (the far picture re-baked for each option: low shore, denser shore, and the city along our bank).
+
+- [ ] **The bath house and the bodega still open on Market St** · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 
 ## For the owner
 
@@ -348,6 +350,7 @@ One pass, one pull request.
   cars get shoved onto the pavement.
 
 ## Trees, grass and the park
+- [ ] **The park's benches can't be sat on** · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
 
 One tree pass after the tree-shadow pick (more leaves mean more shadow triangles).
 - [ ] **Fluffy crown + real leaves** · P3 · L · pick + code · risk med. Options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov:

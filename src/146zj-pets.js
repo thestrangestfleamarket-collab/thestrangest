@@ -47,7 +47,7 @@ const PETS={}; window.PETS=PETS;
     if(want==='walk')return f(/^walk(?!.*open)/i)||f(/walk|crawl|hop|jump|run|swim|fly/i)||N[0];
     return f(/^idle(?!.*open)/i)||f(/idle|rest|stand|breath/i)||N[0]; };
   /* ---------- one pet in the world, following someone ---------- */
-  const PG=new THREE.Group(); PG.name='pets'; scene.add(LEVELS.own(PG,'*')); MAPG.pets=PG;
+  const PG=new THREE.Group(); PG.name='pets'; PG.userData.anyRoom=true; scene.add(LEVELS.own(PG,'*')); MAPG.pets=new THREE.Group();   // (makeNPC's group is only a holder: each pet moves into PG, which no room hides (not one of MAPG's, anyRoom), so your pet goes in with you)
   const THEIRS=new Map(); PETS.theirs=THEIRS;
   const groundAt=(x,z,y0)=>{ let g=typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):y0; if(!(Math.abs(g-y0)<1.2*WU))g=y0; return g; };
   const make=async(id,P,lead,o={})=>{ const K=(await idx()).by[P.k]; if(!K)return null; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T);
@@ -62,15 +62,17 @@ const PETS={}; window.PETS=PETS;
       brain:(dt,you,st)=>{ const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true; const v=lastL?Math.hypot(L.x-lastL.x,L.z-lastL.z)/Math.max(dt,1e-3):0; lastL=L;
         const dx=st.x-L.x, dz=st.z-L.z, d=Math.hypot(dx,dz)/WU;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
+        if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
         if(d>1.7){ const k=1.05/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>3.5?Math.max(runV,v/WU*1.15):walkV)*WU; } else if(d<1.3){ st.to=null; st.face={x:L.x,z:L.z}; } },
       anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2, air=onlyFly||flies&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||lastL&&lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU);
         hover+=((air?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
         const want=air&&FC||(moving?pickClip(CL,fast?'run':'walk'):pickClip(CL,'idle'));
         if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt); }});
-    const place=L=>{ const st=N.st, a=L.hd+Math.PI*.8; st.x=L.x+Math.sin(a)*1.1*WU; st.z=L.z+Math.cos(a)*1.1*WU; st.h=L.hd; st.to=null; N.placed=true; };
+    const gap=(.25+long*.6)*WU, clear=(x,z)=>!(SHARED.solids||[]).some(b=>x>b[0]-gap&&x<b[2]+gap&&z>b[1]-gap&&z<b[3]+gap);   // (room for its whole body)
+    const place=L=>{ const st=N.st, r=o.preview?1.6:1.1; let a=L.hd+Math.PI*.8; if(o.preview){ a=L.hd; for(const d of [.5,-.5,.9,-.9,1.3,-1.3,1.8,-1.8,0]){ const x=L.x+Math.sin(L.hd+d)*r*WU, z=L.z+Math.cos(L.hd+d)*r*WU; if(clear(x,z)){ a=L.hd+d; break; } } } st.x=L.x+Math.sin(a)*r*WU; st.z=L.z+Math.cos(a)*r*WU; st.h=o.preview?L.hd+Math.PI:L.hd; st.to=null; N.placed=true; };   // (preview: in front of you, facing you, while you choose it)
     N.farMove=()=>{ const L=lead(); if(L)place(L); };   // (a pet left far behind, not ticked: back beside its person)
-    N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K;
+    PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
     N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+' IS HAPPY TO SEE YOU.':'IT SNIFFS YOUR HAND.','#9fe07f')};
@@ -83,9 +85,9 @@ const PETS={}; window.PETS=PETS;
   const meLead=()=>VIT.dead?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading};
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
-  const refresh=()=>{ const P=shown(), want=P&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
+  const refresh=()=>{ const P=shown(), want=P&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
-    make('mine',P,meLead,{mine:true,stay:homeSpot}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
   ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null;
@@ -122,7 +124,7 @@ const PETS={}; window.PETS=PETS;
     return true; };
   const cur=()=>inShop?DRAFT:MY;
   const set=o=>{ const P=cur(); if(!P)return; Object.assign(P,o); if(!inShop)save(); draw(); };
-  const choose=key=>{ const K=I.by[key]; if(!K)return; DRAFT=Object.assign(fresh(K),{n:DRAFT&&DRAFT.n||''}); draw(); };
+  const choose=key=>{ const K=I&&I.by[key]; if(!K)return; DRAFT=Object.assign(fresh(K),{n:DRAFT&&DRAFT.n||''}); draw(); };
   const price=P=>P&&I&&I.by[P.k]?PRICE[I.by[P.k].group]||30:0;
   function adopt(){ const P=DRAFT; if(!P||!inShop)return; const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
     const K=I.by[P.k]; MY={...P,c:P.c.slice(),s:P.s.slice()}; save(); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. CHANGE ITS LOOK ANY TIME IN YOU, PET.','#9fe07f'); draw(); }

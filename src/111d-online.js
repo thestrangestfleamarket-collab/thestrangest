@@ -108,7 +108,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   // a tag keeps one size on the screen whatever the zoom or the view: half a canvas pixel a screen pixel (the name 14 px, the words 11 to 18)
   const fit=sp=>{ const cam=SHARED.cam, H=renderer.domElement.clientHeight||innerHeight; let u; if(cam.isOrthographicCamera)u=(cam.top-cam.bottom)/(cam.zoom||1)/H; else u=2*cam.position.distanceTo(sp.position)*Math.tan((cam.fov||60)*Math.PI/360)/H; const k=u*.5; sp.scale.set(512*k,128*k,1); };
   const draw=(dt,now)=>{ '@later'; const lv=SHARED.LVL||'up', rk=roomKey(), C=[];
-    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
+    for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=o.x&&o.x.invis?'unseen':!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(!o.fig||o.key!==(o.look||'w00'))fig(o); const F=o.fig, g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);

@@ -5891,6 +5891,14 @@
  },
  "mushroom": {
   "trade": {
+   "sells": [
+    "m_button",
+    "m_puffball",
+    "m_oyster",
+    "m_parasol",
+    "m_woodear",
+    "m_chanterelle"
+   ],
    "buys": [
     "mushrooms"
    ],

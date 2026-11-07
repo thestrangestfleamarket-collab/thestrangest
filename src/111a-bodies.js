@@ -146,7 +146,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
   // in the water (treading, swimming): the head's base set over the surface, by A.head rig units (owner, 7 Nov 2026: "your head is almost entirely underwater"), bobbing with the rig
   const HUV=new V3(), headUp=(PM,body,S,G,me)=>{ const W=S.water; G.updateMatrixWorld(true); me.updateMatrixWorld(true); jointAt(PM,body,2,HUV).applyMatrix4(me.matrixWorld); const sy=G.scale.y||1, my=me.matrixWorld.elements[5]||sy;
-    const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
+    const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0)*Math.max(0,1-2*(W.under||0)); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
   const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
   function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)
@@ -192,9 +192,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
     if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now;
       const A=body.act&&!S.dead?body.act(S):null, AC=A&&body.clip?body.clip(A.n):null, want=loco(S)||AC?1:0;   // (a clip not fetched yet: the rig, until it comes)
-      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat); S._pfHead=AC&&A.head||0; S._pfRest=AC&&A.rest||0;
+      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat); S._seatOut=S._pfSeat?1:S._mw>0?S._seatOut||0:0; S._pfHead=AC&&A.head||0; S._pfRest=AC&&A.rest||0;
       if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
-        if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2); O.multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
+        if(S._pfSeat||S._seatOut){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2); O.multiplyScalar(1); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
         if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }   // (a held tool: the arms where the rig aims them)
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw,body); } }
     if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)

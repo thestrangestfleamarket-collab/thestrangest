@@ -94,7 +94,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });
   const g0=UI.goTick; let last=performance.now();
   UI.goTick=()=>{ g0(); const now=performance.now(), dt=Math.min(.05,(now-last)/1000); last=now;
-    const S=USE.seat; if(S){ if(SHARED.target||st.move||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
+    const S=USE.seat; if(S){ if(SHARED.target||st.move&&!/sitDown/.test(st.move.name)||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
     for(const d of DOORS){ const step=dt*9, k=d.to-d.a; d.a=Math.abs(k)<=step?d.to:d.a+Math.sign(k)*step; turnDoor(d); if(d.a===d.to)DOORS.delete(d); }
     for(let i=0;i<CANS.length;i++){ const m=CANS[i], u=m.userData; if(u.rest)continue; u.vy-=30*T*dt; m.position.y+=u.vy*dt; if(m.position.y<=u.floor){ m.position.y=u.floor; if(Math.abs(u.vy)>2*T){ u.vy*=-.3; } else { u.rest=true; m.rotation.z=Math.PI/2; m.position.y=u.floor-.03*T; } } }
     for(const o of BLINK){ o.blink-=dt; tint(o,o.blink>0&&Math.floor(o.blink/.125)%2===0?[1.8,1.8,1.8]:[1,1,1],glows); if(!(o.blink>0))BLINK.delete(o); }

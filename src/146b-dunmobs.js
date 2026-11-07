@@ -105,10 +105,10 @@ import {GEMS} from './101-gems.js';
     slimes.push({i,k,x:p.x,z:p.z,h:Math.random()*6.28,hp:Math.ceil(t.hp*F()),dmg:Math.max(t.dmg,.025)*F(),v:t.v*(1+.08*(n-1)),to:null,wait:Math.random()*3,air:0,ph:0,cool:1,flash:0,dead:false,pop:0,agg:false,kb:null}); } IM.count=GL.count=slimes.length; draw(); };
   const planOf=n=>{ const N=3+Math.floor(Math.random()*3), g=Math.min(N-1,n===1?(Math.random()<.5?1:0):1+Math.floor(Math.random()*Math.min(3,n-1))); let sp=0, sl=0; for(let i=g;i<N;i++){ if(Math.random()<.25+.06*n)sp++; else sl++; } return {g,sp,sl}; };
   const arena=(A,n,k)=>{ if(!A){ if(!AR)return; AR=null; lvl=0; slimes=[]; IM.count=GL.count=0; MAPG.dungeon.add(G); return; } AR=A; A.G.add(G); L=null; TR=[]; plan=null; lvl=n; spawnSlimes(n,k); };
-  const onLevel=n=>{ if(AR)arena(null); for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
-    TR=n?D.traps().filter(h=>h.t!=='web').map(h=>[Math.min(X(h.x0),X(h.x1)),Math.min(Z(h.y0),Z(h.y1)),Math.max(X(h.x0),X(h.x1)),Math.max(Z(h.y0),Z(h.y1))]):[];
-    if(!n){ plan=null; arrange(0); return; } plan=planOf(n); spawnSlimes(n,plan.sl); arrange(n); if(plan.sp&&!SPI.length)mkSpiders().then(()=>{ if(lvl===n)arrange(n); });
-    if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(lvl===n)arrange(n); else arrange(lvl); }); } };
+  const onLevel=k=>{ if(AR)arena(null); for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; L=k?D.lay(k):null; const n=lvl=L?L.n:0, me=L; slimes=[]; IM.count=GL.count=0;
+    TR=L?L.hz.filter(h=>h.t!=='web').map(h=>[Math.min(X(h.x0),X(h.x1)),Math.min(Z(h.y0),Z(h.y1)),Math.max(X(h.x0),X(h.x1)),Math.max(Z(h.y0),Z(h.y1))]):[];
+    if(!n||L.safe){ plan=null; arrange(0); return; } plan=planOf(n); spawnSlimes(n,plan.sl); arrange(n); if(plan.sp&&!SPI.length)mkSpiders().then(()=>{ if(L===me)arrange(n); });
+    if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(L===me)arrange(n); else arrange(lvl); }); } };
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
       if(S.dead){ const u=Math.min(1,S.pop/.28); sx=u<.4?1+u*.8:1.32+(u-.4)*.4; sy=u<.4?1+u*.5:Math.max(.13,1.2-(u-.4)*1.8); }
       else if(S.air>0){ const u=S.ph; if(u<.2){ sy=1-u*1.2; sx=1+u*.6; } else if(u<.8){ const a=(u-.2)/.6; y=Math.sin(Math.PI*a)*.34*T; sy=1.12-.12*Math.abs(a-.5)*2; sx=.94; } else{ const a=(u-.8)/.2; sy=.78+.22*a; sx=1.12-.12*a; } }

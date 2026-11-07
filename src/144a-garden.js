@@ -38,6 +38,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   FORAGE.CK.garden={short:'GARD',made:nm=>`YOU TIE A ${nm}.`,fail:'THE STEMS SNAP. THE FLOWERS ARE SPOILED.'};
   FORAGE.HELP.push('GARDENING picks wildflowers, grows flowers from seed on any lawn (the tomato sells seeds) and ties bouquets.');
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, now=()=>day()*24+CLOCK.h, GROW=24;
+  GARDEN.beds=[]; GARDEN.now=now; const GR=p=>{ const b=p.bed&&GARDEN.beds.find(q=>q.id===p.bed); return b&&b.grow?b.grow:GROW; };   // a bed of its own (a place's: GARDEN.beds, {id, at(x,z)->y, grow hours}) plants like a lawn
   const S={v:1,picked:{},pd:-1,plots:[],log:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); S.log=S.log||{}; }catch(e){}
   let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
@@ -61,27 +62,27 @@ const GARDEN={}; window.GARDEN=GARDEN;
   const sync=()=>{ hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[]; const n={s:0,h:0,c:0,l:0}, t0=now();
     const add=(name,x,y,z,act)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,y+.15*T,z); hits.add(hb); const th={name,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act}; UI.thing(th); things.push(th); };
     for(const arr of CH.values())for(const f of arr){ if(S.picked[f.id]||n.s>=NMX-20)continue; put(f.k,f.x,f.y,f.z,f.s,f.a,1,n); add(FL[f.k][0],f.x,f.y,f.z,()=>GARDEN.pick(f)); }
-    for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GROW); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
+    for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GR(p)); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }
     for(const [me,c] of [[STEM,n.s],[HEAD,n.h],[CTR,n.c],[LEAF,n.l]]){ me.count=c; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } GARDEN.shown=n.s; };
-  GARDEN.sync=sync; GARDEN.plots=()=>S.plots; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
+  GARDEN.sync=sync; GARDEN.plots=()=>S.plots; GARDEN.lose=p=>{ const i=S.plots.indexOf(p); if(i>=0){ S.plots.splice(i,1); save(); sync(); } }; GARDEN.spots=()=>[...CH.values()].flat().map(f=>[f.k,f.x,f.z]);
   { SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); sync(); },'144a-garden'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))sync(); },'144a-garden');
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
-    const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GROW)<1?Math.floor((now()-p.t)/GROW*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
+    const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GR(p))<1?Math.floor((now()-p.t)/GR(p)*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
   GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
     if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); S.log[f.k]=(S.log[f.k]||0)+n; say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }
     else if(Math.random()<.3){ S.picked[f.id]=1; say('YOU CRUSH IT. THE PETALS FALL.','#c8a090'); } else say('THE STEM WILL NOT COME CLEANLY.','#c8a090');
     saveSoon(); sync(); FORAGE.draw(); };
-  const lawnAt=(x,z)=>{ const g=WEEDS.chunks&&WEEDS.chunks.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!g||!g.sq)return null; const Q=g.sq; let b=null, bd=(.4*T)**2;
+  const lawnAt=(x,z)=>{ for(const b of GARDEN.beds){ const y=b.at(x,z); if(y!=null)return y; } const g=WEEDS.chunks&&WEEDS.chunks.get(Math.floor(x/CS)+','+Math.floor(z/CS)); if(!g||!g.sq)return null; const Q=g.sq; let b=null, bd=(.4*T)**2;
     for(let i=0;i<Q.length;i+=3){ const d=(Q[i]-x)**2+(Q[i+2]-z)**2; if(d<bd){ bd=d; b=i; } } return b==null?null:g.top(x,Q[b+1],z); };
   GARDEN.lawnAt=lawnAt;
   FORAGE.ROWB.push(id=>id.startsWith('sd_')?[['PLANT','gplant']]:[]);
   FORAGE.ACT.gplant=id=>{ '@later'; const k=id.slice(3); if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('PLANT IT IN A LAWN, OUTDOORS.','#c8a090');
     const y=lawnAt(pos.x,pos.z); if(y==null)return say('YOU NEED BARE LAWN UNDER YOUR FEET TO PLANT IT.','#c8a090');
     if(S.plots.length>=12)return say('YOU ALREADY TEND TWELVE PLANTS. PICK SOME FIRST.','#c8a090'); if(S.plots.some(p=>Math.hypot(p.x-pos.x,p.z-pos.z)<.45*T))return say('SOMETHING IS ALREADY PLANTED HERE.','#c8a090');
-    FORAGE.take(id,1); MOTION.play('plant'); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
-  GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GROW, [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GROW); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
+    FORAGE.take(id,1); MOTION.play('plant'); const bd=GARDEN.beds.find(b=>b.at(pos.x,pos.z)!=null); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28,...(bd?{bed:bd.id}:{})}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
+  GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GR(p), [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GR(p)); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
     const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4}); MOTION.play('harvest');
     const R=15*T, near=L=>L.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<R), cs=CREATS.filter(N=>N.wild&&N.body.visible).map(N=>({k:N.kind,x:N.web?N.web.x:N.st.x,z:N.web?N.web.z:N.st.z})), W=window.WX&&WX.now;
     const help=near(cs.filter(c=>c.k==='Frog'||c.k==='Spider'))||!!(window.BIRDS&&near(window.BIRDS.list)), harm=near(cs.filter(c=>c.k==='Rat'))||!!(W&&W.rain>.3&&CLOCK.dark()), pm=help&&!harm?1:harm&&!help?-1:0;

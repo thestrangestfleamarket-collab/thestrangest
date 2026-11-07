@@ -1,5 +1,21 @@
 {
- "shelved": true,
+ "shelved": false,
+ "crew": [
+  "gd_captain",
+  "gd_catknight",
+  "gd_rustmouse",
+  "gd_hedgehog",
+  "gd_rhino",
+  "gd_raccoon",
+  "gd_whitecat",
+  "gd_lizknight",
+  "gd_bear",
+  "gd_pandaarcher",
+  "gd_frogarcher",
+  "gd_greenmouse",
+  "gd_redmouse",
+  "gd_toucan"
+ ],
  "bounties": [
   {
    "id": "slimes",

@@ -36,7 +36,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok(r.ok,'she plays '+n+' and he sees it ('+JSON.stringify({played:can,...r})+')');
     await A.evaluate(()=>MOTION.stop()); await A.waitForTimeout(600); }
   // flying
-  await A.evaluate(()=>__dbg.UI.setFly(true));
+  await A.evaluate(()=>{ if(FORAGE.S){ FORAGE.S.fx=FORAGE.S.fx||{}; FORAGE.S.fx.fly=300; } __dbg.UI.setFly(true); });   // (as if she ate a DRIFTCAP: flying comes from it)
   await A.evaluate(()=>{ window.__flyT=setInterval(()=>{ SHARED.py+=1; },100); });
   r=await until(o=>({ok:!!(o.S&&o.S.fly),fly:o.S&&o.S.fly,y:o.s[o.s.length-1]&&o.s[o.s.length-1].y,heard:window.__in.filter(m=>m.t==='ps'&&m.s&&m.s.fly).length}));
   ok(r.ok,'she flies and he sees her flying ('+JSON.stringify(r)+')');

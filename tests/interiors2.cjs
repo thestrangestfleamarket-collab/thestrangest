@@ -12,12 +12,12 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const inB=p=>p.x>b.x0&&p.x<b.x1&&p.z>b.z0&&p.z<b.z1, free=p=>!sol.some(r=>p.x>r[0]&&p.x<r[2]&&p.z>r[1]&&p.z<r[3]);
     const sp=Object.entries(R.spots||{}), se=R.seats||[]; return {spots:sp.length,seats:se.length,spotsIn:sp.every(([,p])=>inB(p)),seatsIn:se.every(inB),spotsFree:sp.filter(([,p])=>!free(p)).map(([k])=>k),standFree:se.filter(p=>p.y==null&&!free(p)).length}; },at);
   /* ---------- THE PLAYHOUSE ---------- */
-  { await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('THE BOX OFFICE')),240000);
+  { await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name.startsWith('THE PROGRAMME')),240000);   // (its box office and foyer bar are archived, 7 Nov 2026)
     const p=await people('playhouse'); rec('playhouse: the company has its posts in the foyer and the stage manager his at the prompt desk; sixty stalls seats for the audience',p.spots>=7&&p.seats>=60&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length,JSON.stringify(p));
-    const r=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)); INV.cash=10; delete INV.items.play_ticket; th('THE BOX OFFICE').act(); const ticket=INV.items.play_ticket===1&&INV.cash===2;
-      th('THE FOYER BAR').act(); const bar=!!SHOPS.cur&&SHOPS.cur.key==='showgirl'&&CHARS.trade({key:'showgirl'}).sells.includes('d_wine')&&ITEMS.prop('d_wine','edible');
-      th('THE PROGRAMME').act(); const prog=MINI.on&&MINI.on.title==='THE PROGRAMME'; MINI.close(); const benches=__dbg.UI.things.filter(t=>t.name==='A VELVET BENCH').length; return {ticket,bar,prog,benches}; });
-    rec('playhouse: the box office sells a ticket, the bar its drinks, the programme reads, two benches to sit on',r.ticket&&r.bar&&r.prog&&r.benches===2,JSON.stringify(r));
+    const r=await pg.evaluate(()=>{ const live=t=>t.obj&&t.obj.parent, th=n=>__dbg.UI.things.find(t=>live(t)&&t.name.startsWith(n));
+      th('THE PROGRAMME').act(); const prog=MINI.on&&MINI.on.title==='THE PROGRAMME'; MINI.close(); const benches=__dbg.UI.things.filter(t=>live(t)&&t.name==='A VELVET BENCH').length;
+      return {prog,benches,gone:!th('THE BOX OFFICE')&&!th('THE FOYER BAR')}; });
+    rec('playhouse: the programme reads, two benches to sit on; the archived box office and foyer bar are gone',r.prog&&r.benches===2&&r.gone,JSON.stringify(r));
     await shot('playhouse'); await pg.evaluate(()=>ROOMS.exit('playhouse')); await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),120000).catch(()=>{}); await pg.waitForTimeout(1000); }
   /* ---------- THE BANK ---------- */
   { await U(()=>!!STORE.inside.bank,120000); for(let i=0;i<6;i++){ await pg.evaluate(()=>{ if(!(window.FADE&&FADE.busy))STORE.enter('bank',true); }); if(await U(()=>STORE.inside.bank.done,30000).then(()=>1,()=>0))break; }

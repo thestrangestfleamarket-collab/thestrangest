@@ -78,7 +78,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   // a placed Polyfork thing stands where he bumps into it (its footprint turned with it), and takes its colour and see-through
   const pfSolid=(k,e,g)=>{ const S=g.userData.sol||(g.userData.sol=[0,0,0,0]), F=g.userData.fix||(g.userData.fix=[0,0,0,0,0,0]);
     if(e.del){ for(const [L,x] of [[SOL.up,S],[FIX.up,F]]){ const i=L.indexOf(x); if(i>=0)L.splice(i,1); } return; }
-    const b=new THREE.Box3().setFromObject(g); S[0]=b.min.x; S[1]=b.min.z; S[2]=b.max.x; S[3]=b.max.z; F[0]=b.min.x; F[1]=b.min.z; F[2]=b.min.y; F[3]=b.max.x; F[4]=b.max.z; F[5]=b.max.y;
+    const b=new THREE.Box3().setFromObject(g), f=WE.pfFoot&&WE.pfFoot(e.pf); if(f){ const y=b.min.y; b.makeEmpty(); for(const [x,z] of [[f[0],f[1]],[f[2],f[1]],[f[0],f[3]],[f[2],f[3]]])b.expandByPoint(vv.set(x,0,z).applyMatrix4(g.matrixWorld)); b.min.y=y; b.max.y=Math.max(b.max.y,new THREE.Box3().setFromObject(g).max.y); } S[0]=b.min.x; S[1]=b.min.z; S[2]=b.max.x; S[3]=b.max.z; F[0]=b.min.x; F[1]=b.min.z; F[2]=b.min.y; F[3]=b.max.x; F[4]=b.max.z; F[5]=b.max.y;
     if(!SOL.up.includes(S))SOL.up.push(S); if(!FIX.up.includes(F))FIX.up.push(F);
     for(const c of g.children){ const m=c.material; if(!m||!m.isMeshLambertMaterial)continue; m.color.set(e.col||'#ffffff').multiplyScalar(e.bri==null?1:e.bri); const t=(e.op==null?1:e.op)<1; if(m.transparent!==t){ m.transparent=t; m.needsUpdate=true; } m.opacity=e.op==null?1:e.op; } };
   const copyHandle=k=>({copy:true,key:k,name:ST[k].copy,place:ST[k].place,pivot:ST[k].at});
@@ -124,7 +124,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
   #we .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0} #we .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer}
   #we .dim{color:var(--dim)} #we .lab{width:84px} #we textarea{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;width:100%;box-sizing:border-box;min-height:56px;padding:6px} #we .tp{margin:6px 0}
-  #we.lock>h2,#we.lock>.pane{opacity:.35;filter:grayscale(1);pointer-events:none} #welock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--key);font:12px var(--pixel);line-height:2;pointer-events:none} #welock[hidden]{display:none}`;
+  #we.lock>h2,#we.lock>.pane,#we.lock>.wtabs{opacity:.35;filter:grayscale(1);pointer-events:none} #welock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--key);text-shadow:none;pointer-events:none} #welock span{background:var(--bg);border:2px solid var(--line);padding:10px 14px;font:12px var(--pixel);line-height:2;pointer-events:none} #welock[hidden]{display:none}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='we'; P.hidden=true; P.innerHTML=`<h2>EDIT THE WORLD</h2><div class="pane">
     <div class="dim" id="wname">double-click a thing to pick it</div>
@@ -137,7 +137,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     </div>
     <div class="tp"></div><div class="dim" id="wmsg"></div>
     <input type="file" id="wimpf" accept="application/json" style="display:none"><div class="row"><button class="btn" id="wsend" hidden>SEND TO SERVER</button></div>
-    <div class="dim" id="wwho"></div></div><div id="welock" hidden>EDITING ONLY IN ISOMETRIC<br>PRESS V</div>`;
+    <div class="dim" id="wwho"></div></div><div id="welock" hidden><span>EDITING ONLY IN<br>THE ISOMETRIC VIEW</span></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   ['keydown','keyup','keypress'].forEach(ev=>P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); }));
   $('.tp').addEventListener('mousedown',e=>e.stopPropagation());
@@ -205,7 +205,11 @@ Object.assign(WE,{on:false}); window.WE=WE;
     if(!copyMesh(k)){ delete ST[k]; return; } sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); };
   WE.newKey=()=>{ let k; do k='C|'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); while(ST[k]); return k; };
   // PLACE (099a): a new Polyfork thing at a spot, picked so it edits like anything else
-  WE.addPf=(pf,name,at,r)=>{ const k=WE.newKey(); ST[k]=Object.assign(E0(),{copy:name,pf,place:'street',at,r:r||0}); sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); return k; };
+  WE.addPf=(pf,name,at,r)=>{ const k=WE.newKey(); ST[k]=Object.assign(E0(),{copy:name,pf,place:'street',at,r:r||0}); applyCopy({key:k});
+    const g=CP.get(k), S=g&&g.userData.sol, m=.3*T; if(S&&pos.x>S[0]-m&&pos.x<S[2]+m&&pos.z>S[1]-m&&pos.z<S[3]+m){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; settle(); return null; }   // never on top of you: it is solid and would hold you
+    sel=copyHandle(k); settle(); save(); frame(); draw(); return k; };
+  // an entry that changes nothing (picked, never moved): not an edit
+  WE.blank=e=>{ if(!e||typeof e!=='object')return false; const j=JSON.stringify(e); return j===JSON.stringify(E0())||j===JSON.stringify(E0L()); };
   WE.ground=e=>{ const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const y=SHARED.py!=null?SHARED.py:0, q=new THREE.Vector3(); if(!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-y),q))return null; const gy=SHARED.groundY?SHARED.groundY(q.x,q.z):null; if(gy!=null&&isFinite(gy))q.y=gy; return [q.x,q.y,q.z]; };
   const allBack=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }

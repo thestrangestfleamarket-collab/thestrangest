@@ -84,13 +84,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   /* ---------- posing: the rig's turns, the body's own bone lengths ---------- */
   const X=new V3(),Y=new V3(),Z=new V3(), ROT={}, POS={}, OFV=new V3(), M3=new THREE.Matrix3();
   for(const n of BONES){ ROT[n]=new THREE.Matrix4(); POS[n]=new V3(); }
-  // an arm's twist eased from the rig's reference to its fallback as the arm comes near the reference (the rig switches at once: a knot in the skin)
+  // an arm's or leg's twist eased from the rig's reference to its fallback as the arm comes near the reference (the rig switches at once: a knot in the skin)
   const AF={x:{},y:{},z:{}}, armFrame=(a,b,ref,alt)=>{ let yx=b.x-a.x, yy=b.y-a.y, yz=b.z-a.z; const l=Math.hypot(yx,yy,yz)||1; yx/=l; yy/=l; yz/=l;
     const cr=(r)=>[r.y*yz-r.z*yy,r.z*yx-r.x*yz,r.x*yy-r.y*yx], p=cr(ref), q=cr(alt), lp=Math.hypot(...p), w=Math.min(1,Math.max(0,(.45-lp)/.3)), sg=p[0]*q[0]+p[1]*q[1]+p[2]*q[2]<0?-1:1;
     let zx=p[0]*(1-w)+q[0]*sg*w, zy=p[1]*(1-w)+q[1]*sg*w, zz=p[2]*(1-w)+q[2]*sg*w; const lz=Math.hypot(zx,zy,zz)||1; zx/=lz; zy/=lz; zz/=lz;
     AF.y.x=yx; AF.y.y=yy; AF.y.z=yz; AF.z.x=zx; AF.z.y=zy; AF.z.z=zz; AF.x.x=yy*zz-yz*zy; AF.x.y=yz*zx-yx*zz; AF.x.z=yx*zy-yy*zx; return AF; };
   function chain(B,body){ const S=body.S, KL=body.KL;
-    for(let i=0;i<NB;i++){ const n=BONES[i], sd=n.charAt(n.length-1), F=n==='upperArmL'||n==='upperArmR'?armFrame(B.J['shoulder'+sd],B.J['elbow'+sd],B.m.Ru.x,B.m.Ru.z):n==='forearmL'||n==='forearmR'?armFrame(B.J['elbow'+sd],B.J['wrist'+sd],B.m.Ru.x,B.m.Ru.z):R.frameOf(n,B);
+    for(let i=0;i<NB;i++){ const n=BONES[i], sd=n.charAt(n.length-1), F=n==='upperArmL'||n==='upperArmR'?armFrame(B.J['shoulder'+sd],B.J['elbow'+sd],B.m.Ru.x,B.m.Ru.z):n==='forearmL'||n==='forearmR'?armFrame(B.J['elbow'+sd],B.J['wrist'+sd],B.m.Ru.x,B.m.Ru.z):n==='thighL'||n==='thighR'?armFrame(B.J['hip'+sd],B.J['knee'+sd],B.m.Rb.x,B.m.Rb.z):n==='shinL'||n==='shinR'?armFrame(B.J['knee'+sd],B.J['ankle'+sd],B.m.Rb.x,B.m.Rb.z):R.frameOf(n,B);
       X.set(F.x.x,F.x.y,F.x.z); Y.set(F.y.x,F.y.y,F.y.z); Z.set(F.z.x,F.z.y,F.z.z); if(LIMB.test(n)){ Y.negate(); Z.negate(); }
       ROT[n].makeBasis(X,Y,Z);
       if(n==='hips')POS[n].set(B.J.pelvis.x*KL,B.J.pelvis.y*KL,B.J.pelvis.z*KL);
@@ -122,12 +122,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   function mocap(PM,body,S,dt,A,AC){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
     const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
     const LC=A&&A.loco&&AC?AC:null;   // (a walk of its own, carrying: in place of the walk, the run and the idle, still where you stop)
-    const stride=LC?LC.speed*LC.dur:C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
+    const stride=LC&&!A.idle?LC.speed*LC.dur:C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
     S._mph=((S._mph||0)+d/k/Math.max(.2,stride))%1; S._mit=((S._mit||0)+dt/C.Idle.dur)%1;
     const aw=S._aw=(S._aw||0)+(((A&&AC&&!LC)?1:0)-(S._aw||0))*Math.min(1,dt*8), at=A&&AC&&!LC?actT(A,AC,S,dt):0, loop=!!(A&&A.loop);
     if(A&&AC&&!LC){ if(S._pc&&S._pc.n!==A.n){ S._pf={c:S._pc.c,t:S._pc.t,l:S._pc.l,w:1}; } S._pc={n:A.n,c:AC,t:at,l:loop}; } else if(aw<.01)S._pc=null;
     const PF=S._pf; if(PF){ PF.w-=dt*4; if(PF.w<=0)S._pf=null; }
-    for(let i=0;i<NB;i++){ if(LC){ clipAt(LC,S._mph,i,Q2,P2); }
+    for(let i=0;i<NB;i++){ if(LC){ clipAt(LC,S._mph,i,Q2,P2); if(A.idle){ clipAt(C.Idle,S._mit,i,Q1,P1); Q1.slerp(Q2,w); P1.lerp(P2,w); Q2.copy(Q1); P2.copy(P1); } }
       else { clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
         clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); }
       if(aw>.001&&S._pc){ clipT(S._pc.c,S._pc.t,S._pc.l,i,Q1,P1); if(S._pf&&S._pf.w>0){ clipT(S._pf.c,S._pf.t,S._pf.l,i,Q4,P4); Q1.slerp(Q4,S._pf.w); P1.lerp(P4,S._pf.w); } Q2.slerp(Q1,aw); P2.lerp(P1,aw); }

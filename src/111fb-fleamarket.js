@@ -74,11 +74,11 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
   /* ---------- the cast: a group's bodies when you come near its place ---------- */
   const REC=LEVEL.chars||{}, members={};
   for(const k in REC){ const r=REC[k]; if(r&&r.pf&&r.group&&G[r.group]&&!ARCH.has(k))(members[r.group]=members[r.group]||[]).push(k); }
-  const anchor=g=>{ const H=members[g].map(k=>LEVEL.homes&&LEVEL.homes[k]).find(h=>h&&h[2]===0); if(H)return {x:SHARED.BOD.XS(H[0]),z:SHARED.BOD.ZS(H[1])};   // a teacher's own spot (owner, 5 Nov 2026)
-    const k=members[g][0], at=REC[k].job&&REC[k].job.at; return at==='street'||!at?null:CREW.door(at); };
+  const anchor=g=>{ const H=members[g].map(k=>LEVEL.homes&&LEVEL.homes[k]).filter(h=>h&&h[2]===0); if(H.length)return H.map(h=>({x:SHARED.BOD.XS(h[0]),z:SHARED.BOD.ZS(h[1])}));   // every teacher's own spot (owner, 5 Nov 2026): the group comes when you near any of them (a shop's keeper inside it, the rest outdoors)
+    const k=members[g][0], at=REC[k].job&&REC[k].job.at, d=at==='street'||!at?null:CREW.door(at); return d?[d]:[]; };
   let busy=false;
   const tick=()=>{ if(busy||SHARED.LVL!=='up')return; let best=null, bd=90*T;
-    for(const g in members){ if(CREW.loaded[g])continue; const a=anchor(g), d=a?Math.hypot(a.x-pos.x,a.z-pos.z):0; if(d<bd){ bd=d; best=g; } }
+    for(const g in members){ if(CREW.loaded[g])continue; const A=anchor(g), d=A.length?Math.min(...A.map(a=>Math.hypot(a.x-pos.x,a.z-pos.z))):0; if(d<bd){ bd=d; best=g; } }
     if(!best)return; busy=true; CREW.loaded[best]=true;
     G[best]().then(D=>{ for(const k of members[best]){ const b=D.bodies[k]; if(!b)continue; const r=REC[k];
         BODIES.rebaked(D,k,r.name||'SOMEONE',0,{size:b.height/1.8,hd:CREW.hd[k]});

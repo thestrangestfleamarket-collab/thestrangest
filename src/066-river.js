@@ -94,6 +94,8 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   const fbm=(x,y)=>vn(x,y)*0.5+vn(x*2.1+5,y*2.1+3)*0.3+vn(x*4.3+9,y*4.3+1)*0.2;
   // the very deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): along the channel, 60 to 110 m more, black without a light
   const RW=(lx1-lx0)*MPU, HOLES=[[.18,.55,7,70],[.47,.7,9,110],[.79,.5,6,60]].map(([f,u,r,d])=>[(lx0*MPU)/RW+f,u,r,d]);
+  // the scour basin the wreck lies in (owner, 7 Nov 2026: "very far down at bottom of hudson, should take like 30 seconds"): flat, 55 m down, off the pier, as long as the ship and a little wider
+  const BASIN={x:XS(40)*MPU,z:(rz0+rz1)/2*MPU,rx:42,rz:13,d:55}; RIVER.basin=BASIN;
   const depthAt=(x,z)=>{ const Wt=WATERS[RIVER.wi], xm=x*MPU, zm=z*MPU, e=(rz1-z)*MPU, t=cl(e/16,0,1);
     let d=1.3+(Wt.deep-1.3)*Math.pow(t,1.1)-(fbm(xm*0.25,zm*0.25)-0.5)*1.8;
     if(Wt.bed===2)d-=Math.sin(xm*2.7+fbm(xm*0.55,zm*0.55)*6)*0.07;
@@ -101,6 +103,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     if(Wt.bed===0)d-=(vn(xm*1.6,zm*1.6)-0.5)*0.25;
     const u=e/((rz1-rz0)*MPU), mx=(x-RIVER.mouth.x)*MPU, mz=(z-RIVER.mouth.z)*MPU, near=Math.exp(-mx*mx/1600), m=(2+8*cl(vn(xm/70+.3,3.7)*1.5-.25,0,1))*(1-near)+3*near;   // two to ten times deeper out in the channel; the cavern's pit mid-river
     d*=1+(m-1)*cl((u-.2)/.35,0,1)*cl((u-.2)/.35,0,1); d+=6*Math.exp(-(mx*mx+mz*mz)/49); for(const [px,pu,r,dd] of HOLES){ const hx=xm-px*RW, hz=(u-pu)*(rz1-rz0)*MPU; d+=dd*Math.exp(-(hx*hx+hz*hz)/(r*r)); }
+    { const B=BASIN, ex=(xm-B.x)/B.rx, ez=(zm-B.z)/B.rz, r=Math.hypot(ex,ez); if(r<1.5){ const k=r<1?1:1-(r-1)/.5, t=k*k*(3-2*k); d+=(B.d-d)*t; } }   // the wreck's scour basin: flat at its depth, its sides easing up
     return Math.max(1.2,d); };
   RIVER.depthAt=depthAt;
   const NW=8, WA=Array.from({length:NW},()=>new THREE.Vector4()), WB=Array.from({length:NW},()=>new THREE.Vector4()); let WV=[];

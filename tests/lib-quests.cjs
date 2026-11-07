@@ -64,7 +64,7 @@ const SHOTS = process.argv[3];
     // the vault, on a fresh page by the art museum
     ok(PART === 'vault' || await start(), 'a fresh page starts for the vault'); await wait(() => MVAULTDBG().reg && STORE.streetDoor && STORE.streetDoor.art, 60000);
     const i3 = await pg.evaluate(() => FORAGE.ST.int);
-    await pg.evaluate(() => STORE.enter('art', true)); await pg.waitForFunction(() => STORE.art.hung > 0 && !FADE.busy, null, { timeout: 900000, polling: 1000 }).catch(() => {});
+    await pg.evaluate(async () => { await STORE.ensure(); STORE.enter('art', true); }); await pg.waitForFunction(() => STORE.art.hung > 0 && !FADE.busy, null, { timeout: 900000, polling: 1000 }).catch(() => {});
     ok(await wait(() => STORE.here('art') && !FADE.busy && __dbg.UI.things.some(t => /SEALED VAULT/.test(t.name)), 120000), 'in the art museum: the sealed vault\'s hatch and its dials');
     await calm(); await shot('hatch');
     await act('THE SEALED VAULT*'); ok(await pg.evaluate(() => !document.getElementById('vaultp').hidden), 'double-click it: the dials and the star chart');

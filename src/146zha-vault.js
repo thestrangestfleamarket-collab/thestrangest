@@ -1,4 +1,4 @@
-// THE MUSEUM'S SEALED MVAULT: a steel hatch in the art museum's floor with three dials and a star chart; the curator sets a new combination each night and leaves its parts round the city (the cornerstone, the founder's statue, a note in the bookstore, the theatre's sky poster); each clue read and the vault opened gives INTELLIGENCE; inside, a case of antiquities a day to donate to the museum, which pays and shows them.
+// THE MUSEUM'S SEALED VAULT: a steel hatch in the art museum's floor with three dials and a star chart; the curator sets a new combination each night and leaves its parts round the city (the cornerstone, the founder's statue, a note in the bookstore, the theatre's sky poster); each clue read and the vault opened gives INTELLIGENCE; inside, a case of antiquities a day to donate to the museum, which pays and shows them.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INSPECT, INV, MAIL, pos, ROOMS, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -17,8 +17,8 @@ const MVAULT={}; window.MVAULT=MVAULT;
   const NM=Object.fromEntries(ART.map(a=>[a[0],a[1]])), PR=Object.fromEntries(ART.map(a=>[a[0],a[2]]));
   FORAGE.add({names:NM,prices:PR,sellable:true}); FORAGE.BUYK.antiquities=['va_'];
   FORAGE.GIFTS.push({is:id=>/^va_/.test(id),place:'art',pay:id=>(PR[id]||20)*2,thanks:(id,p)=>`THE CURATOR SETS YOUR ${NM[id]} IN THE MUSEUM'S CASE AND PAYS $${p}.`});
-  FORAGE.BOOK.push({id:'vault',title:'THE MVAULT',rows:()=>ART.map(a=>[a[1],FORAGE.has(a[0])>0||FORAGE.gave('art',a[0]),FORAGE.gave('art',a[0])?'IN THE MUSEUM':'',a[2]>=100]),foot:'The art museum\'s sealed vault opens to the night\'s combination; its parts are hidden round the city. Donate what you find there.'});
-  FORAGE.HELP.push("THE MUSEUM'S MVAULT: a hatch in the art museum's floor. Three dials and a star, new each night; the cornerstone, the founder's statue, a note in the bookstore and the theatre's sky poster hold the parts.");
+  FORAGE.BOOK.push({id:'vault',title:'THE VAULT',rows:()=>ART.map(a=>[a[1],FORAGE.has(a[0])>0||FORAGE.gave('art',a[0]),FORAGE.gave('art',a[0])?'IN THE MUSEUM':'',a[2]>=100]),foot:'The art museum\'s sealed vault opens to the night\'s combination; its parts are hidden round the city. Donate what you find there.'});
+  FORAGE.HELP.push("THE MUSEUM'S VAULT: a hatch in the art museum's floor. Three dials and a star, new each night; the cornerstone, the founder's statue, a note in the bookstore and the theatre's sky poster hold the parts.");
   const LOOK={va_astrolabe:P=>[P('tor',0xc8a040,0,.12,0,.11,.11,.02,Math.PI/2,0,0,{metal:1,rough:.3}),P('cyl',0xb08a30,0,.12,0,.1,.01,.1,Math.PI/2,0,0,{metal:1,rough:.3}),P('box',0x8a6a20,0,.12,.012,.2,.012,.006,0,.6,0,{metal:1})],
     va_scarab:P=>[P('sph',0x2a4aa0,0,.03,0,.07,.035,.09,0,0,0,{rough:.2}),P('sph',0x22408a,0,.035,.07,.035,.025,.03)],va_coin:P=>[P('cyl',0xe8c040,0,.006,0,.05,.012,.05,0,0,0,{metal:1,rough:.25})],
     va_lamp:P=>[P('sph',0xa86a40,0,.04,0,.08,.04,.06),P('cone',0xa86a40,.08,.045,0,.03,.06,.03,0,Math.PI/2)],va_seal:P=>[P('box',0x4a8a5a,0,.04,0,.07,.08,.07,0,0,0,{rough:.25}),P('sph',0x4a8a5a,0,.1,0,.035,.03,.035)],
@@ -48,14 +48,14 @@ const MVAULT={}; window.MVAULT=MVAULT;
   MVAULT.clues={
     plaque:()=>{ const c=code(lock()); clue('plaque','THE CORNERSTONE',(g,w,h)=>{ paper(g,w,h,'#9a8a6a'); g.fillStyle='#2a2016'; lines(g,w,['THIS HOUSE OF ART','WAS RAISED BY ITS FRIENDS','FOR EVERYONE'],70,18); g.fillStyle='#f4f0e4'; lines(g,w,['BENEATH IT, IN FRESH CHALK:',`"THE FIRST DIAL: ${ROMAN[c.dials[0]]}"`],200,15); },'Bronze letters on the museum\'s cornerstone, and the curator\'s chalk.'); },
     statue:()=>{ const d=lock(), c=code(d); clue('statue',"THE FOUNDER'S STATUE",(g,w,h)=>{ paper(g,w,h,'#5a5a4a'); g.fillStyle='#e8e0c0'; lines(g,w,['ADA PELL, FOUNDER','"WHO SEEKS, COUNTS."'],80,18); g.fillStyle='#f4f0e4'; lines(g,w,['SCRATCHED INTO THE PLINTH:',`"THE SECOND DIAL IS ${riddle(c.dials[1],d)}"`],190,14); },'The inscription on the bronze founder.'); },
-    note:()=>{ const d=lock(), c=code(d), L=WORDS[c.dials[2]], wd=L[Math.floor(hs(d,101)*L.length)]; clue('note','A FOLDED NOTE',(g,w,h)=>{ paper(g,w,h); lines(g,w,['PROFESSOR, FOR THE MVAULT TONIGHT:','','THE LAST DIAL IS AS MANY','AS THE LETTERS IN',`"${wd}"`,'','BURN THIS.'],60,15); },'Tucked into the lectern\'s book, in the curator\'s hand.'); },
+    note:()=>{ const d=lock(), c=code(d), L=WORDS[c.dials[2]], wd=L[Math.floor(hs(d,101)*L.length)]; clue('note','A FOLDED NOTE',(g,w,h)=>{ paper(g,w,h); lines(g,w,['PROFESSOR, FOR THE VAULT TONIGHT:','','THE LAST DIAL IS AS MANY','AS THE LETTERS IN',`"${wd}"`,'','BURN THIS.'],60,15); },'Tucked into the lectern\'s book, in the curator\'s hand.'); },
     sky:()=>{ const c=code(lock()); clue('sky',"TONIGHT'S SKY",(g,w,h)=>{ g.fillStyle='#0e1428'; g.fillRect(0,0,w,h); g.fillStyle='#f4ecd0'; g.textAlign='center'; g.font='16px Georgia,serif'; g.fillText('THE PLANETARIUM SHOW: TONIGHT\'S SKY',w/2,34); starPic(g,c.star,w/2-90,60,180); g.font='14px Georgia,serif'; g.fillText('LOOK UP FOR '+STARS[c.star][0],w/2,270); },'A poster by the theatre\'s door.'); }};
   // the dials and the star chart: set them, then turn the wheel
   const B='style="margin:0 2px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='vaultp'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(480px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #5a6070;zoom:var(--uiz,1)';
   document.body.appendChild(P); for(const ev of ['keydown','keyup'])P.addEventListener(ev,e=>{ if(ev==='keydown'&&e.key==='Escape')P.hidden=true; e.stopPropagation(); });
   const SPIC=STARS.map((_,i)=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); g.fillStyle='#0e1428'; g.fillRect(0,0,64,64); starPic(g,i,6,6,52); return c.toDataURL(); });
-  const draw=()=>{ '@later'; lock(); let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE SEALED MVAULT</h3><div style="color:#9b9584;margin-bottom:10px">Three brass dials and a star chart on a steel hatch. A time lock clears them at midnight; the curator sets a new combination each night.</div><div style="display:flex;gap:14px;justify-content:center;margin-bottom:10px">`;
+  const draw=()=>{ '@later'; lock(); let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE SEALED VAULT</h3><div style="color:#9b9584;margin-bottom:10px">Three brass dials and a star chart on a steel hatch. A time lock clears them at midnight; the curator sets a new combination each night.</div><div style="display:flex;gap:14px;justify-content:center;margin-bottom:10px">`;
     S.dials.forEach((v,i)=>{ o+=`<div style="text-align:center"><button ${B} data-dial="${i}" data-d="1">▲</button><div style="font-size:22px;color:#f2c14e;margin:4px 0">${v}</div><button ${B} data-dial="${i}" data-d="-1">▼</button></div>`; });
     o+=`</div><div style="color:#9b9584;margin-bottom:4px">THE STAR</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">`+STARS.map((s,i)=>`<button data-star="${i}" style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid ${S.star===i?'#f2c14e':'#3a3f4e'};padding:3px;cursor:pointer;width:96px"><img src="${SPIC[i]}" width="64" height="64" style="image-rendering:pixelated;display:block;margin:0 auto"><div style="font-size:9px">${s[0]}</div></button>`).join('')+'</div>';
     o+=`<div style="text-align:center"><button ${B} data-turn="1">TURN THE WHEEL</button></div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
@@ -67,7 +67,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
   MVAULT.set=(dials,star)=>{ lock(); S.dials=dials.slice(); S.star=star; save(); };
   MVAULT.try=()=>{ const d=lock(), c=code(d), ok=S.dials.every((v,i)=>v===c.dials[i])&&S.star===c.star;
     if(!ok){ say('THE WHEEL WILL NOT TURN. SOMETHING IS WRONG.','#c8a090'); if(SFX.play)SFX.play('clunk',{vol:.3,pitch:.6}); return false; }
-    const first=S.open!==d; S.open=d; save(); P.hidden=true; if(first)smart(2,'THE TUMBLERS FALL. THE MVAULT OPENS.'); else say('THE MVAULT IS OPEN TILL MIDNIGHT.'); if(SFX.play)SFX.play('chirp',{vol:.4,pitch:.7}); setTimeout(()=>ROOMS.enter('vault'),700); return true; };
+    const first=S.open!==d; S.open=d; save(); P.hidden=true; if(first)smart(2,'THE TUMBLERS FALL. THE VAULT OPENS.'); else say('THE VAULT IS OPEN TILL MIDNIGHT.'); if(SFX.play)SFX.play('chirp',{vol:.4,pitch:.7}); setTimeout(()=>ROOMS.enter('vault'),700); return true; };
   MVAULT.isOpen=()=>S.open===lock();
   MVAULT.hatch=()=>{ if(MVAULT.isOpen())return ROOMS.enter('vault'); P.hidden=false; draw(); };
   // in the art museum: the hatch and its pedestal on the first floor, and the case of what has been given
@@ -79,10 +79,10 @@ const MVAULT={}; window.MVAULT=MVAULT;
       box(u-.05,v-.5,u+.05,v+.5,.06,.08,0x50565e); box(u-.5,v-.05,u+.5,v+.05,.06,.08,0x50565e);
       const pu=u+1.15; box(pu-.18,v-.18,pu+.18,v+.18,0,1.0,0x3a3e44); box(pu-.24,v-.24,pu+.24,v+.24,1.0,1.06,steel); for(let i=0;i<3;i++)cyl(pu-.12+i*.12,v+.25,.04,1.03,1.09,brass);
       pic(pu,v+.25,.62,.3,.3,0,1,words(32,32,'#0e1428',[['* .',4,6,'#f4ecd0',8],['. *',14,16,'#f4ecd0',8]]));
-      use('THE SEALED MVAULT (DIALS AND A STAR CHART)',u+.5,v,1.8,1.2,()=>MVAULT.hatch(),1.8);
+      use('THE SEALED VAULT (DIALS AND A STAR CHART)',u+.5,v,1.8,1.2,()=>MVAULT.hatch(),1.8);
       const cu=t(22), cv=t(8.5); box(cu-1.3,cv-.3,cu+1.3,cv+.3,0,.9,0x3a2a20); box(cu-1.32,cv-.32,cu+1.32,cv+.32,.9,.95,0x6a4a2a); K.sol(cu-1.35,cv-.35,cu+1.35,cv+.35);
-      pic(cu,cv+.33,.45,.9,.3,0,1,words(72,24,'#efe6cf',[['FROM THE MVAULT',36,3,'#2a2420',8,'center'],['GIVEN BY VISITORS',36,13,'#6a5a48',7,'center']]));
-      use("THE MVAULT'S CASE (WHAT VISITORS HAVE GIVEN)",cu,cv,2.6,1.6,()=>{ const L=gave(); say(L.length?'IN THE CASE: '+L.map(id=>NM[id]).join(', ')+'.':'THE CASE IS EMPTY. DONATE WHAT YOU FIND IN THE MVAULT (YOUR PACK: DONATE).'); },1.8);
+      pic(cu,cv+.33,.45,.9,.3,0,1,words(72,24,'#efe6cf',[['FROM THE VAULT',36,3,'#2a2420',8,'center'],['GIVEN BY VISITORS',36,13,'#6a5a48',7,'center']]));
+      use("THE VAULT'S CASE (WHAT VISITORS HAVE GIVEN)",cu,cv,2.6,1.6,()=>{ const L=gave(); say(L.length?'IN THE CASE: '+L.map(id=>NM[id]).join(', ')+'.':'THE CASE IS EMPTY. DONATE WHAT YOU FIND IN THE VAULT (YOUR PACK: DONATE).'); },1.8);
       K.flush(); const gm=new THREE.Mesh(new THREE.BoxGeometry(2.6*MW,.6*MW,.6*MW),new THREE.MeshLambertMaterial({color:0xcfe3ea,transparent:true,opacity:.18,depthWrite:false})), p=F.pw(cu,cv); gm.position.set(p[0],1.25*MW,p[1]); gm.rotation.y=F.hd(0,1); scene.add(gm);
       DISP.g=new THREE.Group(); DISP.g.position.set(p[0],.96*MW,p[1]); DISP.g.rotation.y=F.hd(0,1); scene.add(DISP.g); fill(); }; }
   { let t=0; SYS.add('life',dt=>{ if((t+=dt||0)<1)return; t=0; if(DISP.g&&DISP.g.parent&&gave().length!==DISP.n)fill(); if(DISP.g&&!DISP.g.parent)DISP.g=null; },'146zha-vault-case'); }
@@ -132,7 +132,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
   MVAULT.up=async()=>{ const R=STORE.inside&&STORE.inside.art, IV=ROOMS.iv; if(FADE.busy||IV.busy)return; if(!R)return ROOMS.exit('vault'); IV.busy=true;
     try{ await FADE.run('',async()=>{ if(!R.done){ await STORE.ensure(); if(STORE.pre.art)await STORE.pre.art(); } ROOMS.goOut('vault'); if(!R.done)STORE.inGo('art'); },{cut:true}); } finally{ IV.busy=false; } };
   const reg=()=>{ if(ROOMS.off.vault)return true; const o=outAt(); if(!o)return false; const F=frame(), sp=F.pw(RW/2,RD-1.4), a=F.pw(0,0), b=F.pw(RW,RD);
-    ROOMS.off.vault={name:'THE SEALED MVAULT',box:{x0:Math.min(a[0],b[0])-.3*T,z0:Math.min(a[1],b[1])-.3*T,x1:Math.max(a[0],b[0])+.3*T,z1:Math.max(a[1],b[1])+.3*T,y0:-1,y1:(H+.5)*MW},noCeil:true,need:()=>LOAD('later'),
+    ROOMS.off.vault={name:'THE SEALED VAULT',box:{x0:Math.min(a[0],b[0])-.3*T,z0:Math.min(a[1],b[1])-.3*T,x1:Math.max(a[0],b[0])+.3*T,z1:Math.max(a[1],b[1])+.3*T,y0:-1,y1:(H+.5)*MW},noCeil:true,need:()=>LOAD('later'),
       build:()=>ROOMS.part(G=Object.assign(new THREE.Group(),{name:'vault-in'}),()=>{ scene.add(G); furnish(); }),unbuild:()=>{ if(G)G.removeFromParent(); G=null; MVAULT.cases=null; },spawn:[sp[0],sp[1],0,F.hd(0,-1)],out:o};
     if(ROOMS.reset)ROOMS.reset(); return true; };
   { let done=false; SYS.add('life',()=>{ if(!done)done=reg(); },'146zha-vault-reg'); }

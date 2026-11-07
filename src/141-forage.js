@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, BAG, CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
+import {ARCHI, BAG, BUGS, CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, WE, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -39,8 +39,8 @@ import {WORTH} from './140c-worth.js';
     ['p_ghost','GHOST POTION','alchemy',[70,115],{ghostcap:1,trumpet:1},'see in the dark 5 min']];
   const PCOL={p_refresh:0x6ad86a,p_heal:0xd8343a,p_str:0xe8862a,p_keen:0x4aa0e8,p_cure:0xeeeae0,p_gheal:0xf2c81e,p_ghost:0xc8a8ff};
   const OWNRC=new Set(RC.map(r=>r[0]));   // only these: other files add their recipes (books, bouquets, dishes) to the same list
-  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||id==='glowcap'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ '@later'; const P=INSPECT.part;
-    if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }}); if(id==='glowcap')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe8ffe0,0,s*.5,0,s*.25,s,s*.25); p('cap',0x7cff9a,0,s*.95,0,s*1.1,s*.6,s*1.1); p('ball',0xd8ffb0,0,s*1.15,0,s*.25,s*.15,s*.25); }});
+  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||id==='glowcap'||id==='skycap'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ '@later'; const P=INSPECT.part;
+    if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }}); if(id==='skycap')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xfff6e0,0,s*.5,0,s*.25,s,s*.25); p('cap',0xd8302c,0,s*.95,0,s*1.15,s*.55,s*1.15); p('ball',0xffffff,s*.4,s*1.25,0,s*.2,s*.12,s*.2); p('ball',0xffffff,-s*.35,s*1.2,s*.3,s*.18,s*.1,s*.18); }}); if(id==='glowcap')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe8ffe0,0,s*.5,0,s*.25,s,s*.25); p('cap',0x7cff9a,0,s*.95,0,s*1.1,s*.6,s*1.1); p('ball',0xd8ffb0,0,s*1.15,0,s*.25,s*.15,s*.25); }});
     if(PCOL[id])return INSPECT.shape('bottle',PCOL[id]); if(id==='bottle')return INSPECT.shape('bottle',0xcfe6e0);
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
     if(id==='f_skewer'){ const g=new THREE.Group(); g.add(P('cyl',0xc8a878,0,0,0,.006,.32,.006,0,Math.PI/2)); for(let i=0;i<4;i++)g.add(P('cap',i%2?0xe08a2a:0xe8dcc0,-.09+i*.06,0,0,.026,.022,.026,0,Math.PI/2)); return g; }
@@ -68,7 +68,7 @@ import {WORTH} from './140c-worth.js';
   reg({does:DO,prices:PRICE}); for(const k in MU)reg({prices:{['m_'+k]:MU[k][2],['u_'+k]:Math.floor(MU[k][2]/2)}});
   FORAGE.ids=()=>{ const s=new Set(); for(const k in NM)s.add(k); for(const k of ITEMS.ids())s.add(k); for(const k in DO)s.add(k); for(const r of RC)if(r&&r[0])s.add(r[0]); for(const k in MU)s.add(iid(k)); return [...s].sort(); };
   FORAGE.BUYK={gems:['quartz','amethyst','geode','amber','moonstone','opal','emerald','sapphire','ruby','meteor','cut_'],mushrooms:['m_','u_','p_','f_'],fish:['x_'],swords:['sword'],books:['br_'],veg:['v_','fr_'],flowers:['fl_']}; FORAGE.SELLS=[]; FORAGE.BOOK=[]; FORAGE.GIFTS=[]; FORAGE.ROWB=[]; FORAGE.NOTE=[]; FORAGE.ACT={}; FORAGE.CK={}; FORAGE.HELP=[]; FORAGE.TABS=[];
-  FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM',glowcap:'GLOWCAP MUSHROOM'},prices:{airshroom:8,glowcap:10}}); FORAGE.SELLS.push(['airshroom',8,()=>true],['glowcap',10,()=>true]);   // glowcap: you see in the dark deep water a while (its DARKSIGHT)   // off-world: the seller's one wares, lets you hold your breath longer underwater
+  FORAGE.add({names:{airshroom:'AIRCAP MUSHROOM',glowcap:'GLOWCAP MUSHROOM',skycap:'SKYCAP MUSHROOM'},prices:{airshroom:8,glowcap:10,skycap:25}}); FORAGE.SELLS.push(['airshroom',8,()=>true],['glowcap',10,()=>true],['skycap',25,()=>true]);   // glowcap: you see in the dark deep water a while (its DARKSIGHT)   // off-world: the seller's one wares, lets you hold your breath longer underwater
   // a gift: a place (STORE.here) takes the first of each kind you bring it and pays for it ({is, place, pay, key, thanks})
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
   FORAGE.gave=(place,k)=>!!S.gave[place+':'+k];
@@ -97,7 +97,7 @@ import {WORTH} from './140c-worth.js';
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
       if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
       S.food=1; if(window.WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
-      for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); } }
+      for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',fly:'THE SKYCAP WEARS OFF. YOU COME DOWN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }
   const CH=new Map(), capG=new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2), stemG=new THREE.CylinderGeometry(.32,.38,1,6).translate(0,.5,0), NMX=420;
   const mk=(g,m)=>{ const me=new THREE.InstancedMesh(g,m,NMX); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NMX*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; (MAPG.park||scene).add(me); return me; };
@@ -123,6 +123,8 @@ import {WORTH} from './140c-worth.js';
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
+  // owners start with 99 of every mushroom that gives something extra (owner, 7 Nov 2026)
+  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(!o)return; for(const id of ['airshroom','glowcap','skycap']){ const n=99-have(id); if(n>0)give(id,n); } saveSoon(); FORAGE.draw(); }).catch(()=>{}); },'141-forage owners');
   SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;
@@ -144,7 +146,8 @@ import {WORTH} from './140c-worth.js';
     saveSoon(); FORAGE.sync(); PACK.draw(); };
   FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); MOTION.play(/^(p|d)_|^soda/.test(id)?'pf_Drink':'eat'); let k=id.slice(2);
     if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT THE '+NAME(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
-    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
+    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'flight')){ const s=+ITEMS.prop(id,'flight')||0; buff('fly',(S.fx.fly||0)+s); say('YOU EAT THE '+NAME(id)+'. YOU FEEL LIGHT AS AIR: PRESS G TO FLY ('+Math.round(S.fx.fly/60)+' MINUTES).','#ffd27a'); SFX.play('chirp',{vol:.4}); }
+    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
     else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }

@@ -779,6 +779,12 @@
   "stackable": true,
   "darksight": 240
  },
+ "skycap": {
+  "edible": true,
+  "offworld": true,
+  "stackable": true,
+  "flight": 300
+ },
  "rod_carbon": {
   "value": 60,
   "cast": 16,

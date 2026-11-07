@@ -112,8 +112,8 @@ put('jlamp',173,55); put('jlamp',206,64)
 BR=PP['brook']['pts']
 def across(x,y):
     i=min(range(len(BR)-1),key=lambda i:math.hypot((BR[i][0]+BR[i+1][0])/2-x,(BR[i][1]+BR[i+1][1])/2-y)); dx,dy=BR[i+1][0]-BR[i][0],BR[i+1][1]-BR[i][1]; L=math.hypot(dx,dy); return -dy/L,dx/L
-for k,x,y in (('archbridge',204,83),('creekbridge',196.5,97),('woodbridge',184,46),('logbridge',171,38.5)): ax,ay=across(x,y); put(k,x,y,math.atan2(-ay,ax))
-ax,ay=across(160,27); put('trestle',160,27,math.atan2(ax,ay))
+for k,x,y in (('archbridge',160,27),('creekbridge',196.5,97),('woodbridge',184,46),('logbridge',171,38.5)): ax,ay=across(x,y); put(k,x,y,math.atan2(-ay,ax))
+ax,ay=across(205.4,81.5); put('trestle',205.4,81.5,math.atan2(ax,ay))   # the long trestle where the brook's banks are clearest
 put('wayfind',200,62); put('wayfind',43,64); put('wayfind',116,64); put('drink',196,55); put('drink',47,64)
 # the big lake's shore: the boat shed and its dock, launch, raft and boats; lifebuoys, lamps, log benches, hammocks, the lookout
 face=lambda t:math.atan2(-math.cos(t),-math.sin(t))

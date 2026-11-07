@@ -27,6 +27,7 @@ import {WORTH} from './140c-worth.js';
   const MK=Object.keys(MU);
   const GROWS=Object.fromEntries(GRASS.K.map(k=>[k.id,{...k.mush}])), MTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)MTIER[k.mush[t]]=t; FORAGE.MTIER=MTIER; for(const k in MTIER)ITEMS.reg('m_'+k,{tier:{c:'common',r:'rare',s:'super'}[MTIER[k]],heals:MU[k][4]?0:{c:.1,r:.2,s:.4}[MTIER[k]]});
   // one grass everywhere (GRASS.only): it grows every grass's mushrooms, so none go missing
+  if(!GRASS.only&&GRASS.MIX){ const M=GRASS.MIX, gone=[M.lawn,...M.gone]; gone.forEach((g,i)=>{ const P=GROWS[M.patches[i%M.patches.length]]; for(const t of RARITY.TIERS)P[t]=[].concat(P[t],GROWS[g][t]); }); for(const g of gone)GROWS[g]={c:[],r:[],s:[]}; }   // mushrooms grow only in the patches; the lawn's and the meadow's move into them (7 Nov 2026)
   if(GRASS.only){ const U={c:[],r:[],s:[]}; for(const g in GROWS)for(const t of RARITY.TIERS)U[t].push(GROWS[g][t]); GROWS[GRASS.only]=U; }
   FORAGE.MU=MU; FORAGE.GROWS=GROWS; FORAGE.WHEN=WHEN; FORAGE.now=now;
   const RC=[['p_refresh','REFRESH POTION','alchemy',[0,50],{puffball:3},'your stamina all back'],['p_heal','HEAL POTION','alchemy',[15,65],{chanterelle:2,puffball:1},'half your health back'],
@@ -111,7 +112,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.spots=()=>[...CH.values()].flat().map(m=>[m.k,m.x,m.z]);
   const pickKind=(g,r,deep)=>{ const T=GROWS[g]||GROWS['01']; return RARITY.pickFrom(deep?T:{c:T.c,r:T.r},r,'myco',r*7.31)||'button'; };   // a common, a rare and a super-rare per grass; the super-rare only deep in the park
   const spawns=(key,grp)=>{ const d=day(), Q=grp.sq, out=[]; for(let i=0;i<Q.length;i+=3){ const x=Q[i], y=Q[i+1], z=Q[i+2];
-      if(hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z)))continue;
+      if(hsh(x/T+d*.37,z/T,201)>.016||!WEEDS.inPark||!WEEDS.inPark(x,z,10)||(WEEDS.mushAt&&!WEEDS.mushAt(x,z))||(GRASS.MIX&&!GRASS.only&&!GRASS.MIX.patches.includes(WEEDS.kindAt(x,z))))continue;
       const k=pickKind(WEEDS.kindAt(x,z),hsh(x/T,z/T+d*.53,202),WEEDS.inPark(x,z,10)), px=x+(hsh(x,z,203)-.5)*.4*T, pz=z+(hsh(z,x,204)-.5)*.4*T;
       out.push({k,g:0,x:px,z:pz,y,top:grp.top(px,y,pz),pk:true,rv:0,cr:0,id:d+':'+Math.round(px*10)+','+Math.round(pz*10),s:.8+.5*hsh(x,z,205)}); } return out; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), V3=THREE.Vector3, col=new THREE.Color(); let things=[];

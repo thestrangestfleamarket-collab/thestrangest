@@ -48,17 +48,20 @@ const GRASS={}; window.GRASS=GRASS;
   K.forEach((k,i)=>{ k.i=i; }); GRASS.of=Object.fromEntries(K.map(k=>[k.id,k]));
   // where each grows: patches about 30 tiles across on a bent grid, their borders mingled a few tiles deep (tile coords, x east, z south)
   const PS=30;
+  // the mix (owner, 7 Nov 2026: "make 80% of the lawn #6, with patches of 2-5 around the park (those are only spots mushrooms grow)"): mown lawn, and in one cell in five a patch of round tufts, crown tufts, soft tussocks or leaf clumps; the pixel meadow's wildlife joins the lawn and the patches
+  GRASS.MIX={lawn:'01',patches:['33','32','08','04'],gone:['34'],share:.2};
+  const MIXK=GRASS.MIX.patches.map(id=>K.find(k=>k.id===id)), LAWNK=K.find(k=>k.id===GRASS.MIX.lawn), kindOf=(a,b)=>{ const h=hash(a,b,73); return h<GRASS.MIX.share?MIXK[Math.floor(h/GRASS.MIX.share*MIXK.length)]:LAWNK; };
   const at0=(tx,tz)=>{ const wx=tx+16*(cvNoise(tx/18,tz/18,91)-.5)+5*(cvNoise(tx/6,tz/6,93)-.5), wz=tz+16*(cvNoise(tx/18,tz/18,92)-.5)+5*(cvNoise(tx/6,tz/6,94)-.5), gx=Math.floor(wx/PS), gz=Math.floor(wz/PS);
-    let d1=1e18, d2=1e18, k1=0, k2=0; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hash(a,b,71))*PS, pz=(b+hash(b,a,72))*PS, d=(wx-px)**2+(wz-pz)**2, k=Math.floor(hash(a,b,73)*K.length);
+    let d1=1e18, d2=1e18, k1=LAWNK, k2=LAWNK; for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){ const a=gx+i, b=gz+j, px=(a+hash(a,b,71))*PS, pz=(b+hash(b,a,72))*PS, d=(wx-px)**2+(wz-pz)**2, k=kindOf(a,b);
       if(d<d1){ d2=d1; k2=k1; d1=d; k1=k; } else if(d<d2){ d2=d; k2=k; } }
-    return K[Math.sqrt(d2)-Math.sqrt(d1)<3.5*hash(Math.floor(tx*2),Math.floor(tz*2),95)?k2:k1]; };
+    return Math.sqrt(d2)-Math.sqrt(d1)<3.5*hash(Math.floor(tx*2),Math.floor(tz*2),95)?k2:k1; };
   // each kind's painted picture: 12 tiles square, 24 to a tile, mirrored when laid
   // where the landscape editor painted a grass (its patches whose ground is gk:<id>, world coords): the latest patch over a spot wins
   const OV=[], inside=(r,x,z)=>r.brush?r.brush.some(([px,pz])=>(x-px)**2+(z-pz)**2<=r.r*r.r):r.poly?(()=>{ let c=false; const P=r.poly; for(let i=0,j=P.length-1;i<P.length;j=i++)if((P[i][1]>z)!==(P[j][1]>z)&&x<(P[j][0]-P[i][0])*(z-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c; return c; })():x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1;
   GRASS.box=r=>{ const R=r.r||0, P=r.brush||r.poly; return P?[Math.min(...P.map(p=>p[0]))-R,Math.min(...P.map(p=>p[1]))-R,Math.max(...P.map(p=>p[0]))+R,Math.max(...P.map(p=>p[1]))+R]:[r.x0,r.z0,r.x1,r.z1]; };
   GRASS.setPainted=regions=>{ OV.length=0; for(const r of regions||[]){ const k=/^gk:/.test(r.t||'')&&GRASS.of[r.t.slice(3)]; if(k)OV.push({r,k,b:GRASS.box(r)}); } };
   try{ const B=__DATA__("data/landscape.json")||[], L=JSON.parse(SAVE.get('land')||'null'); GRASS.setPainted(Array.isArray(L)?L:B); }catch(e){}
-  GRASS.only=new URLSearchParams(location.search).get('grass')==='one'?'01':null;   // the six grasses live (owner, 5 Nov 2026; ?grass=one for the 30 Oct one-lawn look)
+  GRASS.only=(q=>q==='one'?'01':q&&GRASS.K&&GRASS.K.some(k=>k.id===q)?q:null)(new URLSearchParams(location.search).get('grass'));   // the six grasses live (owner, 5 Nov 2026; ?grass=one for the 30 Oct one-lawn look)
   GRASS.at=(tx,tz)=>{ if(GRASS.only)return GRASS.of[GRASS.only]; if(OV.length){ const x=tx*TILE, z=tz*TILE; for(let i=OV.length-1;i>=0;i--){ const o=OV[i]; if(x>=o.b[0]&&x<=o.b[2]&&z>=o.b[1]&&z<=o.b[3]&&inside(o.r,x,z))return o.k; } } return at0(tx,tz); };
   GRASS.TS=12; GRASS.pms={}; GRASS.paint=k=>{ const p0=performance.now(), N=GRASS.TS*24; if(k.img){ const A=k.img(N); GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; } const A=new Uint8Array(N*N*4); for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const c=k.paint((i+.5)/24+200,(j+.5)/24+200), q=(j*N+i)*4; A[q]=c[0]; A[q+1]=c[1]; A[q+2]=c[2]; A[q+3]=255; } GRASS.pms[k.id]=Math.round(performance.now()-p0); return A; };
 }

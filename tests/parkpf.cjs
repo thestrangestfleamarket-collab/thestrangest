@@ -8,8 +8,9 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=22'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   await pg.evaluate(()=>__dbg.UI.goTo(SHARED.BOD.XS(112),SHARED.BOD.ZS(12),'up'));
   await pg.waitForFunction(()=>window.PARKPFDBG&&PARKPFDBG().done,null,{timeout:240000}).catch(()=>{}); await pg.waitForTimeout(1500);
-  await pg.waitForFunction(()=>{ try{ PARKPFCHK(); return true; }catch(e){ return false; } },null,{timeout:120000,polling:500}).catch(()=>{});   // the park's water (FOUNT.bedAt) can come a moment after its things
-  const d=await pg.evaluate(()=>({...PARKPFDBG(),...PARKPFCHK()}));
+  await pg.waitForFunction(()=>{ try{ PARKPFCHK(); return typeof FOUNT.bedAt==='function'; }catch(e){ return false; } },null,{timeout:420000,polling:1000}).catch(()=>{});   // the park's water (FOUNT.bedAt) can come a moment after its things
+  const d=await pg.evaluate(()=>{ try{ return {...PARKPFDBG(),...PARKPFCHK()}; }catch(e){ return {...PARKPFDBG(),err:e.message,skipped:[]}; } });
+  ok(!d.err,'the park\'s water came (slow runners wait up to 7 minutes)'+(d.err?': '+d.err:''));
   ok(d.done,'the park\'s Polyfork things are built');
   ok(!d.skipped.length,'every one of the '+d.want+' things stands ('+d.things+'; skipped: '+d.skipped.join(', ')+')');
   ok(d.patches<130&&d.tris<600000,'baked into '+d.patches+' patch meshes, '+d.tris+' triangles in all');

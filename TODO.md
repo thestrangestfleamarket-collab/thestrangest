@@ -181,6 +181,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   with the trade line.
 
 ## Places and insides
+- [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 
 - [ ] **Shop insides: can you walk in and out?** · P2 · S (check) · find, then pick. Owner, 3 Nov (his shot of the bath house): "when
   entering buildings like the bathhouse you dont go all the way in, you get sent to a middle area where you cant walk in or out, and you can

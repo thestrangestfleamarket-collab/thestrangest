@@ -147,18 +147,19 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   pier(g0-PW,P.y0-.3,g0,P.y0+T+.6,21); pier(g1,P.y0-.3,g1+PW,P.y0+T+.6,25);
   LEAVES.push([g0,P.y0+T+.85,-1,'x',(g1-g0)/2],[g1,P.y0+T+.85,1,'x',(g1-g0)/2]);
   PARK.look=[X(g1+1.8),Z(P.y0-1.6)];
+  const EL=(LEVEL.edge&&LEVEL.edge.lines)||[], onEdge=(ax,v)=>EL.some(l=>ax==='x'?l[0]===l[2]&&Math.abs(l[0]-v-PO.x)<1:l[1]===l[3]&&Math.abs(l[1]-v-PO.y)<1), openE=PARK.openE=onEdge('x',P.x1), openN=PARK.openN=onEdge('y',P.y1);   // a side on the map's edge has no wall, only the forcefield (owner, 7 Nov 2026)
   const EG=PARK.egate=[P.round[1]-1.5,P.round[1]+1.5], ex=P.x1-T;
-  wall(ex,P.y0+T,P.x1,EG[0]-PW,31); wall(ex,EG[1]+PW,P.x1,P.y1,35);
+  if(!openE){ wall(ex,P.y0+T,P.x1,EG[0]-PW,31); wall(ex,EG[1]+PW,P.x1,P.y1,35);
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
-  LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]);
+  LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]); }
   const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
   const cw=CB[0]<=wx+T+.5, wTop=cw?Math.min(P.y1,CB[2]):ny, nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);   // the west wall breaks for the castle only where the castle stands on it
   wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(cw&&CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
   pier(wx-.3,WG[0]-PW,wx+T+.6,WG[0],57); pier(wx-.3,WG[1],wx+T+.6,WG[1]+PW,61);
   LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]);
-  wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,P.x1-T,P.y1,69);
+  if(!openN){ wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,openE?P.x1:P.x1-T,P.y1,69);
   pier(NG[0]-PW,ny-.6,NG[0],P.y1+.3,71); pier(NG[1],ny-.6,NG[1]+PW,P.y1+.3,75);
-  LEAVES.push([NG[0],ny-.85,-1,'x',3.5],[NG[1],ny-.85,1,'x',3.5]);
+  LEAVES.push([NG[0],ny-.85,-1,'x',3.5],[NG[1],ny-.85,1,'x',3.5]); }
   { const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS, top=Y(WH), rnd=(a,b,c)=>hash(a,b,c);
     const cut=(g,f)=>{ const N=g.attributes.normal.array, k=[]; for(let t=0;t<N.length/9;t++)if(!f(N[t*9+1]))k.push(t); for(const n of ['position','normal']){ const A=g.attributes[n].array, D=new Float32Array(k.length*9); k.forEach((t,j)=>D.set(A.subarray(t*9,t*9+9),j*9)); g.setAttribute(n,new THREE.BufferAttribute(D,3)); } return g; };
     const pick=(()=>{ const sh=cut(new THREE.BoxGeometry(.042*M,1,.042*M).translate(0,.5,0).toNonIndexed(),y=>Math.abs(y)>.9), cl=new THREE.BoxGeometry(.07*M,.025,.07*M).translate(0,.985,0).toNonIndexed(), tp=cut(new THREE.ConeGeometry(.05*M,.17,4).rotateY(Math.PI/4).translate(0,1.08,0).toNonIndexed(),y=>y<-.9), g=new THREE.BufferGeometry();
@@ -311,9 +312,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
       const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=(prev+r)/2+.3; if(u>a1-r)break; prev=r;
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
-      row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
+      row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); if(!PARK.openN)row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
-      row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
+      row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); if(!PARK.openE)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
     // the edge ring baked low, its crowns kept inside the wall and clear of the gateways: moved in or along, else shrunk to fit, else left out
     { const low=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return q; }, M=.6, w0=[P.x0+T,P.x1-T,P.y0+T,P.y1-T], D=7;
       const GB=[[P.gate,0,w0[2],1],[PARK.ngate,0,w0[3],-1],[PARK.wgate,1,w0[0],1],[PARK.egate,1,w0[1],-1]].filter(g=>g[0]).map(([g,ax,f,sg])=>{ const a=Math.min(f,f+D*sg), b=Math.max(f,f+D*sg); return ax?[a,g[0]-PW,b,g[1]+PW,1]:[g[0]-PW,a,g[1]+PW,b,0]; });

@@ -6284,6 +6284,13 @@
    ]
   ],
   "near": 60,
+  "ground": {
+   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
+   "box": [-600, -130.1, 900, 800],
+   "px": 2,
+   "grass": [62, 96, 46],
+   "water": [172, 198, 218]
+  },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
    "list": [

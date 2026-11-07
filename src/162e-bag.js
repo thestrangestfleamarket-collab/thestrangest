@@ -110,7 +110,7 @@ window.BAG=BAG;
     const sc0=(el.querySelector('.bgm')||{}).scrollTop||0;   // the list keeps its place when it is drawn again, so a second click lands on the same thing (owner, 7 Nov 2026)
     el.innerHTML=`<div class="bgo"><div class="bgk"><div class="bgpan"></div><div class="bgt">${title}</div>${key==='bag'?'':'<button class="bgx" type="button" title="close">X</button>'}<div class="bgm${LIST?' list':''}">${LIST?listed(key,ids).map(id=>row(key,id,have(id,key))).join(''):ids.map(id=>{ const [x,y]=tl?tl.at(id):spot(key,id,ids); return icon(key,id,have(id,key),x,y,tl?Math.min(IC,tl.c-2):IC); }).join('')}</div><button class="bggrip" type="button" title="drag to make the bag bigger or smaller"></button></div></div>${strip(key)}`; if(x)el.appendChild(x); sized(W); if(sc0){ const m=el.querySelector('.bgm'); if(m)m.scrollTop=sc0; } };
   const sized=W=>{ '@later'; const S=sizeOf(W.key), o=W.el.querySelector('.bgo'), k=W.el.querySelector('.bgk'); if(!o||!k)return; W.el.style.width=o.style.width=Math.round(BW*S)+'px'; o.style.height=Math.round(BH*S)+'px'; k.style.transform='scale('+S+')'; const x=W.el.querySelector(':scope>.pX'); if(x){ x.style.right=Math.round(8*S)+'px'; x.style.top=Math.round(6*S)+'px'; } };
-  BAG.draw=()=>{ for(const W of WINS.values())draw(W); };
+  BAG.draw=()=>{ const go=()=>{ for(const W of WINS.values())draw(W); }; if(typeof LOAD==='function')LOAD('later').then(go); else go(); };   // asked early (the icons' picture loading), it waits for its code
   const pk=win('bag').el;
   BAG.toggle=on=>{ pk.hidden=on===undefined?!pk.hidden:!on; BAG.draw(); };
   Object.defineProperty(BAG,'open_',{get:()=>!pk.hidden});

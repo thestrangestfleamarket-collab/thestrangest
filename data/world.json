@@ -9162,20 +9162,28 @@
    ]
   },
   "park": {
-   "note": "Central Park carried on north past the edge: its wall along West St and low trees",
+   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles)",
    "wall": [
-    -24,
-    181,
-    -23,
+    -23.9,
+    -38,
+    -23.3,
     520
    ],
-   "trees": [
-    -20,
-    185,
-    262,
-    420
+   "bands": [
+    [
+     -21,
+     -34,
+     -13,
+     181
+    ],
+    [
+     -20,
+     185,
+     262,
+     420
+    ]
    ],
-   "n": 520
+   "n": 620
   },
   "far": {
    "note": "the far city past the backdrop, hazed: (axis, from, to, across from, across to, lowest, highest storeys in tiles)",

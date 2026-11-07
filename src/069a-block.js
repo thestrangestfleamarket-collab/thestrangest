@@ -97,7 +97,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   BLK.back=[]; { const E=LEVEL.edge||{}, NEAR=E.near||60;
     const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});
       const FZ=L(face(W,o.h,{k:o.k,tint:o.tint,lit:.24,nodoor:1})), FX=L(face(D,o.h,{k:o.k+7,tint:o.tint,lit:.24,nodoor:1}));
-      const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),[FX,FX,roofM,roofM,FZ,FZ]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.receiveShadow=true; m.raycast=()=>{}; G.add(m); PEEK.whole(m); BLK.back.push({...o,mesh:m}); };
+      const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),[FX,FX,roofM,roofM,FZ,FZ]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.receiveShadow=true; m.raycast=()=>{}; m.userData.haze=1; G.add(m); PEEK.whole(m); BLK.back.push({...o,mesh:m}); };
     let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0), end=a0+dir*Math.min(Math.abs(a1-a0),NEAR); let p=a0;
       while((end-p)*dir>2){ const w=Math.min(14+rnd()*8,Math.abs(end-p)), h=360+Math.floor(rnd()*3)*120, q1=p+dir*w, lo=Math.min(p,q1), hi=Math.max(p,q1);
         back(ax==='x'?{x0:lo,x1:hi,y0:b0,y1:b1,h,k:900+k*13,tint:TINTS[k%TINTS.length]}:{x0:b0,x1:b1,y0:lo,y1:hi,h,k:900+k*13,tint:TINTS[k%TINTS.length]}); k++; p=q1+dir*1.2; } } }
@@ -111,12 +111,13 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     for(const [x0,y0,x1,y1,kind] of (E.strips&&E.strips.list)||[]){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx, m=groundM(kind,alongX?'x':'y',across).clone();
       m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
       const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.012,(ZS(y0)+ZS(y1))/2);
-      me.receiveShadow=true; me.raycast=()=>{}; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }
-    const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(34),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
-      wl.position.set((XS(a0)+XS(a1))/2,YP(17),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; G.add(wl);
-      const [t0,u0,t1,u1]=P.trees, N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
-      for(let i=0;i<N;i++){ const x=t0+rnd()*(t1-t0), y=u0+Math.pow(rnd(),.7)*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
+      me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }   // (past the draw distance too: the fog fades it)
+    const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
+      wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
+      const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
+      const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
+      for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi], x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
         Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
-      for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; G.add(im); } BLK.back.push({park:true,n:N}); } }
+      for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; im.userData.haze=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

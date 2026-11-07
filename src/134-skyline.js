@@ -1,6 +1,6 @@
 // THE SKYLINE: FAR3 builds the far city skyline, the fog and the distance haze.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, PARK, pos, SKY, VIS, WX} from './003b-systems.js';
+import {BLK, CLOCK, CULL, FAR3, PARK, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -49,6 +49,10 @@ import {TPANE} from './087dz-tpane.js';
   // the far city past the backdrop (owner, 7 Nov 2026: "like real nyc"): the far shore across the Hudson and the city past the park, hazed rows of blocks (data/world.json edge.far: axis, from, to, across from, across to, lowest, highest in tiles)
   for(const [ax,a0,a1,b0,b1,h0,h1] of (LEVEL.edge&&LEVEL.edge.far&&LEVEL.edge.far.list)||[]){ let p=a0, k=0; while(p<a1){ const w=8+hs(k,91+a0+b0)*16, d=(b1-b0)*(.5+hs(k,92+b0)*.5), h=h0+Math.pow(hs(k,93+a0),2)*(h1-h0), c=p+w/2, mid=(b0+b1)/2+(hs(k,94+b0)-.5)*(b1-b0-d);
       B.push([(ax==='x'?c:mid)-SHARED.BOD.OX,(ax==='x'?mid:c)-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6,2,5][Math.floor(hs(k,95+a1)*6)]]); p+=w+.8+hs(k,96)*3; k++; } }
+  // stand-ins past the draw distance (owner, 7 Nov 2026: "you shouldnt see gaps like no buildings, gap between buildings ... the further away the more faded"): every building on the rows and up West St and every near backdrop block has a hazed box a little inside it, seen once the real one is past the draw distance
+  { const ZT=ZU/TILE, HPX={apts:480,house1:480,house2:480,house3:480,house4:480,house5:480,house6:480,bank:196,art:196,hotel:240,theatre:200,play:200}, IN=.6, sb=(x0,y0,x1,y1,h,v)=>{ const w=x1-x0-2*IN, d=y1-y0-2*IN; if(w>1&&d>1)B.push([(x0+x1)/2-SHARED.BOD.OX,(y0+y1)/2-SHARED.BOD.OY,w,d,h,null,v]); };
+    for(const p of LEVEL.places){ if(p.kind!=='front')continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
+    for(const o of BLK.back||[])if(o.h)sb(o.x0,o.y0,o.x1,o.y1,o.h*ZT*.95,[0,4,1,6][o.k%4]); }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
   for(let v=0;v<NV;v++)for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){ const k=((v*FH+y)*FW+x)*4, w=WALL[v], n=.9+hp(x+v*7,y)*.18; let c=[w[0]*n,w[1]*n,w[2]*n], a=0;
@@ -60,7 +64,7 @@ import {TPANE} from './087dz-tpane.js';
     atlas[k]=c[0]; atlas[k+1]=c[1]; atlas[k+2]=c[2]; atlas[k+3]=a; }
   const AVG=[],WIN=[]; for(let v=0;v<NV;v++){ let r=0,g=0,b=0,w=0; for(let i=0;i<FW*FH;i++){ const k=(v*FW*FH+i)*4; r+=atlas[k]; g+=atlas[k+1]; b+=atlas[k+2]; w+=atlas[k+3]>127?1:0; } const n=FW*FH; AVG.push(new THREE.Color().setRGB(r/n/255,g/n/255,b/n/255,THREE.SRGBColorSpace)); WIN.push(w/n); }
   const ftex=new THREE.DataTexture(atlas,FW,FH*NV); ftex.magFilter=ftex.minFilter=THREE.NearestFilter; ftex.colorSpace=THREE.SRGBColorSpace; ftex.flipY=false; ftex.needsUpdate=true;
-  const FU={uBake:{value:0},uAvg:{value:AVG},uWin:{value:WIN},uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uHS:{value:8},uDT:{value:.45}};
+  const FU={uBake:{value:0},uAvg:{value:AVG},uWin:{value:WIN},uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uNR:{value:150*TILE},uHS:{value:8},uDT:{value:.45}};
   const FARIMG={"day": __B64__("data/far-day.png"), "night": __B64__("data/far-night.png"), "meta": {"CX": 33.62, "CZ": -15.82, "EYE": 1.9, "V0": -0.03492, "V1": 0.57735, "N": 450, "dens": 5, "W": 900, "H": 138, "faces": 2}}, BAKE=QS.get('farbake')==='1', FARON=!!FARIMG&&!BAKE&&QS.get('farbaked')!=='0';
   const outPast=([x,z])=>Math.max(LR.x0-x,x-LR.x1,LR.z0-z,z-LR.z1), south=([x,z])=>z<LR.z0+20&&LR.z0+20-z>LR.x0-x&&LR.z0+20-z>x-LR.x1, BN=B.filter(b=>!(FARON&&outPast(b)>=40)&&!(FARON&&south(b))&&!(mist&&outPast(b)<10&&((b[0]*TILE>PFAR.x&&b[1]*TILE>MISTB.w)||(b[1]*TILE>PFAR.y&&b[0]*TILE>MISTB.z)))), BF=B.filter(b=>outPast(b)>=40);
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
@@ -70,7 +74,7 @@ import {TPANE} from './087dz-tpane.js';
   const me=mk(BN);
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,FU);
     sh.vertexShader='attribute float aV; attribute float aS; varying float vFV,vFS; varying vec3 vFW,vFN;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vec4 fw=vec4(transformed,1.);\n#ifdef USE_INSTANCING\n fw=instanceMatrix*fw;\n#endif\n fw=modelMatrix*fw; vFW=fw.xyz; vFN=normalize(mat3(modelMatrix)*objectNormal); vFV=aV; vFS=aS;');
-    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb,uTW,uTL,uHN,uHF,uHD,uHS,uDT; uniform vec4 uBX; uniform float uBake; uniform vec3 uAvg[8]; uniform float uWin[8]; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n float pastK(){ vec2 q=vFW.xz/uTL; float d=max(max(uBX.x/uTL-q.x,q.x-uBX.z/uTL),max(uBX.y/uTL-q.y,q.y-uBX.w/uTL)); return clamp((d-3.)/uHD,0.,1.); }\n'+sh.fragmentShader
+    sh.fragmentShader='uniform vec3 uMC,uMP; uniform float uMK; uniform sampler2D uFT; uniform float uLit,uBay,uStorey,uY0,uAmb,uTW,uTL,uHN,uHF,uHD,uHS,uDT,uNR; uniform vec4 uBX; uniform float uBake; uniform vec3 uAvg[8]; uniform float uWin[8]; varying float vFV,vFS; varying vec3 vFW,vFN; float fLit=0.;\n float pastK(){ vec2 q=vFW.xz/uTL; float d=max(max(uBX.x/uTL-q.x,q.x-uBX.z/uTL),max(uBX.y/uTL-q.y,q.y-uBX.w/uTL)); return clamp((d-3.)/uHD,0.,1.); }\n'+sh.fragmentShader
       .replace('#include <color_fragment>',`#include <color_fragment>
  { vec3 an=abs(vFN); if(an.y>.5){ diffuseColor.rgb=vec3(.16,.16,.17); } else {
      float u=(an.x>an.z?vFW.z:vFW.x)/(uBay*2.), v=(vFW.y-uY0)/uStorey; vec2 f=vec2(fract(u),1.-fract(v));
@@ -79,7 +83,7 @@ import {TPANE} from './087dz-tpane.js';
      float tp=max(fwidth(u*16.),fwidth(v*10.)), aa=smoothstep(.12,.4,tp); int fi=int(floor(vFV)); if(aa>0.){ diffuseColor.rgb=mix(diffuseColor.rgb,uAvg[fi],aa); fLit=mix(fLit,uLit*uWin[fi],aa); } } }`)
       .replace('#include <fog_fragment>',`if(uMK<=0.){
 #include <fog_fragment>
-} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())); }
+} else { float fd=distance(vFW.xz,uMP.xz); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,pastK())*smoothstep(0.,uNR,distance(vFW.xz,cameraPosition.xz))); }
 `).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n if(uBake>.5) gl_FragColor=vec4(pastK(),0.,0.,1.);'); };
   mat.customProgramCacheKey=()=>'skylinefronts';
   const FSP=BN.map(([x,z,sx,sz,h])=>new THREE.Sphere(new THREE.Vector3(x*TILE,y0+h*TILE/2,z*TILE),Math.hypot(sx,sz,h)*TILE/2));
@@ -106,6 +110,12 @@ import {TPANE} from './087dz-tpane.js';
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));\n#ifdef USE_FOG\n gl_FragColor.rgb=mix(gl_FragColor.rgb,uMK>0.?uMC:fogColor,1.-smoothstep(.04,.45,vMapUv.y));\n#endif'); };   // whole haze at the panels' foot: the city rises out of the haze
     pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
     { const home=SECTION.id; SYS.add('places',()=>VIS.hide(pan,'section',SHARED.LVL==='up'&&SECTIONS.at(SHARED.BOD.MX(pos.x),SHARED.BOD.MY(pos.z))!==home),'134-panels'); } }
+  // the near backdrop past the edges takes the same haze, so nothing jumps where the draw distance hands it to the stand-ins (owner, 7 Nov 2026: "the change in fade shouldnt be so sudden ... more gradual")
+  { const HZ=m=>{ if(m.userData.hz)return; m.userData.hz=1; m.onBeforeCompile=sh=>{ for(const k of ['uMC','uMK','uHN','uHF','uHD','uBX','uTL','uNR'])sh.uniforms[k]=FU[k];
+      sh.vertexShader='varying vec3 vHW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n#ifdef USE_INSTANCING\n vHW=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz;\n#else\n vHW=(modelMatrix*vec4(transformed,1.)).xyz;\n#endif');
+      sh.fragmentShader='varying vec3 vHW; uniform vec3 uMC; uniform float uMK,uHN,uHF,uHD,uTL,uNR; uniform vec4 uBX;\n'+sh.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\n if(uMK>0.){ vec2 q=vHW.xz/uTL; float d=max(max(uBX.x/uTL-q.x,q.x-uBX.z/uTL),max(uBX.y/uTL-q.y,q.y-uBX.w/uTL)); gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,clamp((d-3.)/uHD,0.,1.))*smoothstep(0.,uNR,distance(vHW.xz,cameraPosition.xz))); }'); };
+      m.customProgramCacheKey=()=>'nearhaze'+(m.map?1:0); m.needsUpdate=true; };
+    scene.traverse(o=>{ if(o.userData.haze&&o.material)for(const m of [].concat(o.material))HZ(m); }); }
   let TM=null; if(!PARK.noTrees){ const RB=RINGX.bound, T=TILE, P=[], out=(x,z)=>B.some(([bx,bz,sx,sz])=>Math.abs(x/T-bx)<sx/2+1.5&&Math.abs(z/T-bz)<sz/2+1.5);
     const TFAR=8*T, TSC=.2, wet=Math.max(SHARED.BOD.ZS(RING.river.y0),SHARED.BOD.ZS(RING.river.y1)); for(const [k,[ax,fx,a0,a1]] of [['x',RB.z0-TFAR,RB.x0-6*T,RB.x1+6*T],['x',RB.z1+TFAR,RB.x0-6*T,RB.x1+6*T],['z',RB.x0-TFAR,RB.z0,RB.z1],['z',RB.x1+TFAR,RB.z0,RB.z1]].entries()){ const sg=k%2?1:-1;
       for(let a=a0;a<a1;a+=(2.6+hs(a,k+80)*1.6)*T){ const off=sg*(hs(a,k+81)*4)*T, x=ax==='x'?a:fx+off, z=ax==='x'?fx+off:a; if(out(x,z)||RINGX.inPocket(x,z,10*T)||z<wet)continue; P.push([x,z,(2.2+hs(a,k+82)*1.4)*T*TSC,(5+hs(a,k+83)*4)*T*TSC,hs(a,k+84)]); } }

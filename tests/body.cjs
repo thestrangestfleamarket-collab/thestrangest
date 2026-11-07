@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
   await pg.waitForFunction(()=>DEADDBG().gh>=1,null,{timeout:120000}).catch(()=>console.log('no ghost'));
   if(g.at){ await pg.evaluate(a=>{ __dbg.UI.goTo(a.x,a.z,'up'); },g.at); }
   await pg.waitForTimeout(3000); console.log('ghost',JSON.stringify(await pg.evaluate(()=>({d:DEADDBG(),p:__dbg.pos(),lvl:__dbg.lvl&&__dbg.lvl()}))));
-  let ok=false; for(let i=0;i<20&&!ok;i++){ await pg.evaluate(()=>{ const N=GUARD.list.find(n=>n.key==='gd_toucan'), B=__dbg.MAPK.BOD, St=__dbg.MAPK.CASTLE.stair, a=N?{x:N.st.x,z:N.st.z}:{x:B.X((St.x0+St.x1)/2),z:B.Z(St.y1+3)}; const p=__dbg.pos(); if(Math.hypot(p[0]-a.x,p[2]-a.z)>1)__dbg.UI.goTo(a.x,a.z,'up'); }); await pg.waitForTimeout(3000); ok=await pg.evaluate(()=>!__dbg.VIT.dead); }
+  let ok=false; for(let i=0;i<60&&!ok;i++){ await pg.evaluate(()=>{ const N=GUARD.list.find(n=>n.key==='gd_toucan'), B=__dbg.MAPK.BOD, St=__dbg.MAPK.CASTLE.stair, a=N?{x:N.st.x,z:N.st.z}:{x:B.X((St.x0+St.x1)/2),z:B.Z(St.y1+3)}; const p=__dbg.pos(); if(Math.hypot(p[0]-a.x,p[2]-a.z)>1)__dbg.UI.goTo(a.x,a.z,'up'); }); await pg.waitForTimeout(3000); ok=await pg.evaluate(()=>!__dbg.VIT.dead); }
   console.log('raised',ok);
   console.log('after',JSON.stringify(await pg.evaluate(()=>({d:DEADDBG(),p:__dbg.pos(),dead:__dbg.VIT.dead,note:(document.getElementById('dead')||{}).textContent}))));
   const t=await pg.evaluate(async()=>{ const B=BODYDBG(); if(!B)return 'no body'; __dbg.UI.goTo(B.x,B.z,'up'); await new Promise(r=>setTimeout(r,3000)); const th=__dbg.UI.things.find(t=>t.name==='YOUR BODY'); th.act(); return {back:!!INV.items.sword&&INV.cash===50,gone:!BODYDBG()}; });

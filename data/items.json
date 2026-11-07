@@ -1578,6 +1578,38 @@
   "weight": 0.2,
   "edible": true
  },
+ "shroom_invis": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "invis",
+  "boostS": 60
+ },
+ "shroom_str": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "str",
+  "boostS": 120
+ },
+ "shroom_swift": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "swift",
+  "boostS": 120
+ },
+ "shroom_fly": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "fly",
+  "boostS": 300
+ },
  "guitar": {
   "value": 180,
   "weight": 2.5,

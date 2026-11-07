@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BROOK, CLOCK, FLOW, PARK, ROOMS, SKY, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
 { const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const raw=(x,y)=>{ const {C,R,L}=FOUNT.S, dx=x-L.x, dy=y-L.y, e=Math.hypot(dx/L.rx,dy/L.ry)||1e-6, g=Math.hypot(dx/(L.rx*L.rx),dy/(L.ry*L.ry))/e||1e-6, a=Math.atan2(dy,dx), k=Math.hypot(x-C.x,y-C.y);
@@ -14,10 +14,10 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
   // the running track round the lake (owner, 2 Nov 2026, his picture of the reservoir's path and rail): a band TRACK[1] either side of TRACK[0] tiles off the water, along the whole shore inside the park
   const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(lake(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
-    const C={x:cx,y:Math.ceil(yS+3.5+R)}, L={x:C.x+20,y:C.y+45,rx:95,ry:45,cx:P.x1-1.6,cy:P.y1-1.6};
+    const C={x:cx,y:Math.ceil(yS+3.5+R)}, BL=LEVEL.parkPlaces.bigLake||{}, L={x:BL.x??P.x1,y:BL.y??P.y1,rx:BL.rx||110,ry:BL.ry||85}; L.cx=L.x+L.rx+6; L.cy=L.y+L.ry+6;
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
     for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
-    // the whole shore, cut where the park ends (x past L.cx, y past L.cy)
+    // the whole shore (owner, 7 Nov 2026: "the stream should lead to the actual large lake in corner ... not all fitting in this section"): most of it lies past the forcefield, seen, never walked
     const cut=(Q,k,v)=>{ const o=[]; for(let i=0;i<Q.length;i++){ const p=Q[i], q=Q[(i+1)%Q.length], ip=p[k]<=v, iq=q[k]<=v; if(ip)o.push(p); if(ip!==iq){ const t=(v-p[k])/(q[k]-p[k]); o.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]); } } return o; };
     const poly=cut(cut(pts,0,L.cx),1,L.cy);
     S.poly=poly; S.x0=Math.min(...poly.map(p=>p[0])); S.y0=Math.min(...poly.map(p=>p[1]));
@@ -81,7 +81,7 @@ const FOUNT={ready:false,swim:false,on:false}; window.FOUNT=FOUNT;
       m.customProgramCacheKey=()=>'fwater'; return m; };
     const lakeM=wmat([.13,.25,.18],[.24,.33,.21],[0,0,0,0]); FOUNT.lakeM=lakeM;
     const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16; let tris=0;
-      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[]; for(let x=cx;x<Math.min(cx+CH,L.cx+cell);x+=cell)for(let y=cy;y<Math.min(cy+CH,L.cy+cell);y+=cell){ const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
+      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[], cl=cx>=P.x1||cy>=P.y1?cell*4:cell; for(let x=cx;x<Math.min(cx+CH,L.cx+cl);x+=cl)for(let y=cy;y<Math.min(cy+CH,L.cy+cl);y+=cl){ const cell=cl; const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();

@@ -603,7 +603,22 @@ function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in|
   H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
 function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame
   const s=G.side>0?1:-1,n=s>0?'L':'R'; armIK(P,n,s,V(G.x,G.y,G.z)); P[n].fist=1; return P; }
-const rawPose=st=>gripLayer(st,aimLayer(st,upLayer(st,rawPose0(st))));
+const flying=st=>!!(st.fly&&st.fly.k>1e-3);
+const rawPose=st=>{ const P=gripLayer(st,aimLayer(st,upLayer(st,rawPose0(st)))); if(!flying(st)) return P; const k=smooth(clamp(st.fly.k,0,1)); return k<1?mixW(P,flyPose(st),k):flyPose(st); };
+// FLYING like a superhero: upright and bobbing at a hover, one fist up going up, laid out flat with a fist ahead going forward (nose up climbing, down diving), the legs together trailing
+function flyPose(st){ const F=st.fly,t=F.t||0,f=smooth(clamp(F.f||0,0,1)),u=clamp(F.u||0,-1,1),b=Math.sin(t*2.2);
+  const H=neutral(); H.root=V(0,STAND+0.8*b,0); H.pitch=(6+2*b)*D; H.nod=-4*D;
+  for(const [n,s] of [['L',0],['R',Math.PI]]){ H[n].ua=[(14+4*Math.sin(t*1.7+s))*D,24*D]; H[n].fa=[(34+5*Math.sin(t*1.7+s))*D,22*D]; H[n].fist=.6;
+    H[n].th=[(n=='L'?8:2)*D,5*D]; H[n].sh=[(n=='L'?-22:-10)*D,5*D]; H[n].foot=-45*D; }
+  const U=neutral(); U.root=V(0,STAND,0); U.pitch=-2*D; U.nod=-10*D;
+  U.R.ua=[176*D,4*D]; U.R.fa=[178*D,4*D]; U.R.fist=1; U.L.ua=[6*D,10*D]; U.L.fa=[12*D,10*D]; U.L.fist=1;
+  for(const n of 'LR'){ U[n].th=[-2*D,2*D]; U[n].sh=[(n=='L'?-8:-3)*D,2*D]; U[n].foot=-65*D; }
+  const D0=neutral(); D0.root=V(0,STAND,0); D0.pitch=4*D; D0.nod=14*D;
+  for(const n of 'LR'){ D0[n].ua=[(40)*D,46*D]; D0[n].fa=[(62)*D,44*D]; D0[n].fist=.3; D0[n].th=[(n=='L'?14:6)*D,6*D]; D0[n].sh=[(n=='L'?-30:-14)*D,6*D]; D0[n].foot=-40*D; }
+  const S=neutral(), lean=lerp(84,u>0?40:118,Math.abs(u)), w=Math.sin(t*9)*(.5+.5*f); S.root=V(0,STAND,0); S.pitch=lean*D; S.roll=(st.bank||0)*2.2+1.5*D*Math.sin(t*1.3); S.nod=-58*D;
+  S.R.ua=[174*D,5*D]; S.R.fa=[177*D,5*D]; S.R.fist=1; S.L.ua=[(8+2*w)*D,12*D]; S.L.fa=[14*D,12*D]; S.L.fist=1;
+  S.L.th=[(-6+1.5*w)*D,3*D]; S.L.sh=[-26*D,3*D]; S.R.th=[(-3-1.5*w)*D,3*D]; S.R.sh=[-6*D,3*D]; S.L.foot=S.R.foot=-72*D;
+  const V0=u>0?mixW(H,U,smooth(u)):mixW(H,D0,smooth(-u)); return mixW(V0,S,f); }
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -712,7 +727,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
   { const v=g.speed*st.w*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run), mx=(9+9*st.run)*D, to=st.move||st.target===0?0:Math.max(-mx,Math.min(mx,Math.atan(v*(st.yr||0)/G)));
     st.bank=(st.bank||0)+(to-(st.bank||0))*Math.min(1,h*7); if(to===0&&Math.abs(st.bank)<0.05*D) st.bank=0; }
   if(st.water) st.water.load=st.move&&st.move.def.load&&st.move.t<st.move.def.air.t0?keyAt(st.move.def.load,st.move.t):0;
-  waterTick(st,h);
+  waterTick(st,h); if(st.fly){ const F=st.fly; F.k=clamp(F.k+(F.on?1:-1)*h*2.5,0,1); F.t=(F.t||0)+h; if(!F.on&&!F.k) st.fly=null; }
   const sk=(st.wk||1)+((st.rk||1)-(st.wk||1))*st.run, walked=st.move?0:g.speed*st.w*h*sk; st.wd=(st.wd||0)+walked;
   st.ph=(st.ph+h*sk*(st.anim||1)/g.cycle)%1; st.dist+=walked+(st.move&&st.move.def.air&&st.move.t<st.move.def.air.t0?(st.move.def.entry?0:st.mvw||0):st.mv)*h;
   const P=rawPose(st); st.last=P; const B=build(P,null),H=st.head;
@@ -724,7 +739,7 @@ function step(st,dt){ if(st.target>0&&!st.went&&st.w<0.3&&!st.move){ st.ph=0; st
 const WSTEP=4.75;
 function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringify(st.last||rawPose(st))),dev={};
   for(const n of 'LR') dev[n]=ZERO;
-  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit;
+  const swimming=st.water&&st.water.in||!!st.climb||!!st.hang||!!st.ride||!!st.sit||flying(st);
   if(!st.move&&!swimming) st.abd=clearArms(st,dev); st.fdn=0; if(!busy&&!swimming){ st._lk=1; Object.assign(P,lift(walkPose(st,st.abd),floorOf(st))); st._lk=0; gripLayer(st,aimLayer(st,upLayer(st,P))); if(st.sign)st.sign(P); }
   if(st.move&&st.move.def.travel) P.root=V(P.root.x,P.root.y,inPlace?0:P.root.z-(carries(st.move)?st.move.zc||0:0));
   if(OVL.fn)OVL.fn(st,P);

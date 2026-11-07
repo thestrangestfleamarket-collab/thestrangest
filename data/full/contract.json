@@ -743,13 +743,32 @@
     "tris": "number",
     "size": "array3"
    }
+  },
+  "parkpf.json": {
+   "each": {
+    "n": "number",
+    "lo": "array3",
+    "sc": "number",
+    "p": "string",
+    "c": "string",
+    "i": "string",
+    "tris": "number",
+    "size": "array3"
+   }
   }
  },
  "refs": [
   {
    "from": "world.json",
    "path": "things[].k",
-   "to": "polyfork.json"
+   "to": "polyfork.json",
+   "skip": "p:"
+  },
+  {
+   "from": "world.json",
+   "path": "things[].k",
+   "to": "parkpf.json",
+   "prefix": "p:"
   }
  ],
  "anchors": {

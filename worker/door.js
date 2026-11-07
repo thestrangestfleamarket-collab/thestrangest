@@ -215,7 +215,10 @@ export class Block extends Server {
   static options = { hibernate: false };
   roster(skip) { const by = new Map(); for (const c of this.getConnections()) if (c.id !== skip && c.state && c.state.id) by.set(c.state.id, c.state); return [...by.values()]; }
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
-  async world() { if (!this.W) this.W = (await this.ctx.storage.get("world")) || {}; return this.W; }
+  async world() { if (!this.W) { this.W = (await this.ctx.storage.get("world")) || {};
+      // the cars grew 40% (3 Nov 2026): their spots saved before then are cleared once so they park in their own places again (owner, 7 Nov 2026)
+      if ((await this.ctx.storage.get("carsv")) !== 1) { for (const k of Object.keys(this.W)) if (k.startsWith("car:")) delete this.W[k]; await this.ctx.storage.put("world", this.W); await this.ctx.storage.put("carsv", 1); } }
+    return this.W; }
   // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
   async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; const a = await this.ctx.storage.getAlarm(); if (a == null || a < Date.now()) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }   // (an alarm left in the past, a stale record on disk, is set afresh)
   // the cast's goals on the game hour (worker/lives.js lvGoal: to work, home, a habit's place), from the cast's table a page sent; after a gap of hours they are put there, not walked
@@ -517,9 +520,9 @@ const JOBS = ["stand", "wander", "follow", "goto", "sit", "fish", "mushrooms", "
 const botRec = (o, set) => { const r = { ...o }, v = set && typeof set === "object" ? set : {};
   if ("name" in v) r.name = word(v.name, 24) || r.name; if ("look" in v) r.look = word(v.look, 400); if ("on" in v) r.on = v.on ? 1 : 0;
   if ("job" in v && JOBS.includes(v.job)) r.job = v.job; if ("who" in v) r.who = word(v.who, 40); if ("say" in v) r.say = word(v.say, 400);
-  if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4)] : null; if ("place" in v) r.place = word(v.place, 40);
+  if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4), v.at[2] ? 1 : 0] : null; if ("call" in v) r.call = Math.floor(num(+v.call, 0, 1e13)); if ("place" in v) r.place = word(v.place, 40);
   if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0))); return r; };
-const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0 });
+const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0 });
 const bots = new Map();   // each bot's login, kept 50 minutes
 async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "dev:" + b.id.slice(4), refresh_token: "" };
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;

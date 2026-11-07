@@ -107,12 +107,31 @@ const GHOLD={};
       AK.forEach((k,q)=>{ const Mq=M.map((row,r)=>row.map((v,c)=>c===q?b[r]:v)); const dx=det(Mq)/D; A[k]=Math.max(ALIM[k][0],Math.min(ALIM[k][1],A[k]+Math.max(-.3,Math.min(.3,dx)))); }); }
     return A; };
 
+  /* ---------- the right arm from Polyfork's own recorded 'Holding lantern' (owner, 7 Nov 2026: "those dont look like human arms"): its arm bent at the elbow, the forearm across the body,
+     taken against the chest, then the smallest turn at the shoulder and change at the elbow that brings the hand to the strings; the bones keep the clip's own turns ---------- */
+  const CLIPN='Holding lantern';
+  const clipArm=(body,H)=>{ if(H.carm)return H.carm; const c=body.clip&&body.clip(CLIPN); if(!c||!c.Q)return null; const NB=15, k=body.S||1, fr=Math.min(c.n-1,Math.floor(c.n*(GHOLD.clipU||0)));
+    const pm=i=>{ const o=fr*NB+i; return new M4().compose(new V3(c.P[o*3],c.P[o*3+1],c.P[o*3+2]).multiplyScalar(k),new Q4(c.Q[o*4],c.Q[o*4+1],c.Q[o*4+2],c.Q[o*4+3]),new V3(k,k,k)); };
+    const T1=pm(1).invert(); return H.carm=[6,7,8].map(i=>T1.clone().multiply(pm(i))); };
+  const RV=new V3(), QR=new Q4();
+  const clipPose=(P1,W,restM,R,a)=>{ [6,7,8].forEach((b,j)=>W[b].multiplyMatrices(P1,R[j]).multiply(restM[b]));
+    const S=org(W[6],new V3()); RV.set(a[0],a[1],a[2]); const ang=RV.length(); if(ang>1e-6){ QR.setFromAxisAngle(RV.clone().normalize(),ang); for(const b of [6,7,8])turnAbout(W[b],S,QR); }
+    const E=org(W[7],new V3()), hinge=new V3().crossVectors(new V3().subVectors(E,S),new V3().subVectors(org(W[8],new V3()),E)).normalize(); if(hinge.lengthSq()>.5&&Math.abs(a[3])>1e-6){ QR.setFromAxisAngle(hinge,a[3]); for(const b of [7,8])turnAbout(W[b],E,QR); } };
+  const clipSolve=(P1,W,restM,R,T,a,k)=>{ const at=x=>{ clipPose(P1,W,restM,R,x); return org(W[8],new V3()); }, E=new V3(), lam=[.4,.4,.4,.2].map(v=>v*k*k*.05);
+    for(let it=0;it<6;it++){ const p0=at(a); E.subVectors(T,p0); if(E.lengthSq()<1e-6*k*k)break; const J=[0,1,2,3].map(q=>{ const b=a.slice(); b[q]+=.01; return at(b).sub(p0).multiplyScalar(100); });
+      // (J^T J + damping) dx = J^T e, damped toward the clip's own pose
+      const M=[0,1,2,3].map(r=>[0,1,2,3].map(c=>J[r].dot(J[c])+(r===c?lam[r]:0))), bb=[0,1,2,3].map(r=>J[r].dot(E)-lam[r]*a[r]*.3);
+      for(let i=0;i<4;i++){ let mx=i; for(let r=i+1;r<4;r++)if(Math.abs(M[r][i])>Math.abs(M[mx][i]))mx=r; [M[i],M[mx]]=[M[mx],M[i]]; [bb[i],bb[mx]]=[bb[mx],bb[i]]; for(let r=i+1;r<4;r++){ const f=M[r][i]/M[i][i]; for(let c=i;c<4;c++)M[r][c]-=f*M[i][c]; bb[r]-=f*bb[i]; } }
+      const dx=[0,0,0,0]; for(let i=3;i>=0;i--){ let v=bb[i]; for(let c=i+1;c<4;c++)v-=M[i][c]*dx[c]; dx[i]=v/M[i][i]; }
+      for(let q=0;q<4;q++)a[q]+=Math.max(-.25,Math.min(.25,dx[q])); a[3]=Math.max(-1.2,Math.min(1.2,a[3])); }
+    clipPose(P1,W,restM,R,a); return a; };
+
   /* ---------- a body holding it: GHOLD.attach puts the guitar on it and a step on its pose (PM.post, 111a) ---------- */
   const DIRS={Lf:new V3(-.5,-.05,.85),Ld:new V3(.85,-.1,.5),Rf:new V3(.85,-.1,-.5),Rd:new V3(.15,.25,1),Lpole:new V3(.35,-1,-.15),Rpole:new V3(-.3,-1,-.45)};   // (the elbows' aims in the body's own frame: +x its left, +y up, +z ahead; the left hangs under the neck, the right rests behind the upper bout)
   GHOLD.DIRS=DIRS; GHOLD.stage=4;   // (for checking the hold a stage at a time: 1 the upper arms out, 2 the elbows bent, 3 the hands turned, fingers open, 4 the fingers placed)
   GHOLD.attach=(me,PM,body,src)=>{ if(!body.binv)return null; const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm);
     const restM=body.binv.map(m=>m.clone().invert()), W=restM.map(()=>new M4()), Gm=new M4(), tgL=[0,1,2,3,4].map(()=>new V3()), tgR=[0,1,2,3,4].map(()=>new V3());
-    const fg={L:HANDS.R0.map(f=>f.slice()),R:HANDS.R0.map(f=>f.slice())}, W0=restM.map(()=>new M4()), H={me,PM,gm,src,fg,on:true,off:{L:new V3(),R:new V3()},ang:{lift:.35,bend:1.6,turn:.9}};
+    const fg={L:HANDS.R0.map(f=>f.slice()),R:HANDS.R0.map(f=>f.slice())}, W0=restM.map(()=>new M4()), H={me,PM,gm,src,fg,on:true,off:{L:new V3(),R:new V3()},ang:{lift:.35,bend:1.6,turn:.9},cang:[0,0,0,0]};
     const toG=(v,o)=>o.copy(v).applyMatrix4(Gm), dirG=(v,o)=>o.copy(v).transformDirection(Gm); let PB=null; const dirB=v=>new V3().copy(v).transformDirection(PB);
     PM.post=(PMx,b)=>{ if(!H.on)return; const P=PMx.value, sc=src.score(), t=src.time();
       for(let i=0;i<15;i++)W[i].multiplyMatrices(P[i],restM[i]);
@@ -128,7 +147,7 @@ const GHOLD={};
       for(let i=0;i<15;i++)W0[i].copy(W[i]); const st=PMx.hands, E={L:new V3(),R:new V3()};
       for(let it=0;it<4;it++){ if(it)for(let i=0;i<15;i++)W[i].copy(W0[i]);
         reach(W,[3,4,5],VA.copy(wL).add(H.off.L),dirB(DIRS.Lpole));
-        { const T=VB.copy(wR).add(H.off.R); armSolve(P[1],W,restM,[6,7,8],'R',T,H.ang); armFK(P[1],W,restM,[6,7,8],'R',H.ang,GHOLD.stage); }
+        { const T=VB.copy(wR).add(H.off.R), R=GHOLD.clip!==false&&clipArm(body,H); if(R){ if(GHOLD.stage>=3)clipSolve(P[1],W,restM,R,T,H.cang,VA.setFromMatrixColumn(P[1],0).length()); else clipPose(P[1],W,restM,R,[0,0,0,0]); } else { armSolve(P[1],W,restM,[6,7,8],'R',T,H.ang); armFK(P[1],W,restM,[6,7,8],'R',H.ang,GHOLD.stage); } }
         if(GHOLD.twist!==false)untwist(W,[3,4,5],1);
         if(GHOLD.stage>=3){ aim(W,5,'L',dirG(DIRS.Lf,new V3()),dirG(DIRS.Ld,new V3())); if(GHOLD.stage>=4)aim(W,8,'R',dirG(DIRS.Rf,new V3()),dirG(DIRS.Rd,new V3())); }
         if(GHOLD.stage>=3&&GHOLD.twist!==false){ untwist(W,[3,4,5],2); untwist(W,[6,7,8],2); }

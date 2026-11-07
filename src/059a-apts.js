@@ -12,7 +12,7 @@ APTS.PER=21; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:
 APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
 await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.flat=FL;
-  for(let hi=0;hi<HOUSES.length;hi++)await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi);
+  for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
   MODS.apts=APTS; });
 async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{}; const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;

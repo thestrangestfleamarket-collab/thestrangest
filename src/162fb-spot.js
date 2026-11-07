@@ -7,7 +7,7 @@ import {SPOT0} from './071-main-11.js';
 const SPOT={};
 { const f2=v=>Math.round(v*100)/100, f4=v=>Math.round(v*1e4)/1e4;
   SPOT.make=()=>{ const o={x:f2(pos.x),z:f2(pos.z),y:f2(SHARED.py),h:f4(SHARED.heading),lv:SHARED.floor,v:UI.view,yw:f4(SHARED.yaw),pt:f4(SHARED.pitch),pp:f4(SHARED.ppu||0),d:f2(UI.dist||0),fz:f2(UI.fz||1),
-      of:[f2(UI.off.x),f2(UI.off.y),f2(UI.off.z)],sec:SECTION.id,hr:f2(DN.clockH?DN.clockH():0),wx:WX.now||''};
+      of:[f2(UI.off.x),f2(UI.off.y),f2(UI.off.z)],sec:SECTION.id,hr:f2(DN.clockH?DN.clockH():0),wx:WX.now&&WX.kind?WX.kind(WX.now):''};
     try{ o.in=ROOMS.offIn()||''; }catch(e){} try{ o.lvl=SHARED.LVL||''; }catch(e){}
     return 'S1'+btoa(JSON.stringify(o)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
   const put=o=>{ if(!o)return; if(o.v&&UI.view!==o.v)UI.setView(o.v); if(Number.isFinite(o.yw))SHARED.yaw=SHARED.yawTo=o.yw; if(Number.isFinite(o.pt))SHARED.pitch=SHARED.pitchTo=o.pt;

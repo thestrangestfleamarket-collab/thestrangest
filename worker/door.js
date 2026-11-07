@@ -309,6 +309,9 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
     } else if (m.t === "ride") {
       this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
+    } else if (m.t === "trk") {   // a skater's trick as it happens (146ib): what the board and body are doing, for the others to draw
+      const w = v => /^[a-z]{0,8}$/.test(String(v || "")) ? String(v || "") : "";
+      this.broadcast(JSON.stringify({ t: "trk", id: s.id, s: w(m.s), g: w(m.g), fk: w(m.fk), fd: num(m.fd, 0, 3), ft: num(m.ft, 0, 3), n: m.n ? 1 : 0, f: m.f ? 1 : 0, sl: m.sl ? 1 : 0, p: m.p ? 1 : 0, c: num(m.c, 0, 1), v: num(m.v, 0, 400), z: num(m.z, -50, 400) }), [c.id]);
     } else if (m.t === "car") {
       // the parked cars (150p-cars): one driver a car; getting out parks it where it stands, kept in the block's world as car:<id> = "x,z,heading"
       const k = word(m.k, 24); if (!k) return; const cars = this.cars || (this.cars = new Map()), by = cars.get(k);

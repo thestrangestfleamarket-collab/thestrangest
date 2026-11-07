@@ -26,7 +26,7 @@ const TG={lib:[],G:null};
       for(const [i,j] of P){ g.beginPath(); g.arc(x+s*(.25+i*.25),y+s*(.25+j*.25),s*.08,0,7); g.fill(); } } g.restore(); };
   // a button: drawn and remembered for this frame (ui.btns), so click() finds it with TG.hit(ui,x,y)
   TG.btn=(g,ui,id,x,y,w,h,label,on=true)=>{ g.save(); g.fillStyle=on?'#ece5d3':'#8a8478'; g.fillRect(x,y,w,h); g.strokeStyle='#3b2a1e'; g.lineWidth=2; g.strokeRect(x+1,y+1,w-2,h-2);
-    g.fillStyle=on?'#3b2a1e':'#4a4438'; g.font=`${Math.min(14,h*.5)}px monospace`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(label,x+w/2,y+h/2+1); g.restore(); if(on)(ui.btns||(ui.btns={}))[id]=[x,y,w,h]; };
+    g.fillStyle=on?'#3b2a1e':'#4a4438'; let fs=Math.min(14,h*.5); g.font=`${fs}px monospace`; const tw=g.measureText(label).width; if(tw>w-8){ fs*=(w-8)/tw; g.font=`${fs}px monospace`; } g.textAlign='center'; g.textBaseline='middle'; g.fillText(label,x+w/2,y+h/2+1); g.restore(); if(on)(ui.btns||(ui.btns={}))[id]=[x,y,w,h]; };
   TG.hit=(ui,x,y)=>{ for(const id in ui.btns||{}){ const [bx,by,bw,bh]=ui.btns[id]; if(x>=bx&&x<bx+bw&&y>=by&&y<by+bh)return id; } return null; };
   TG.text=(g,t,x,y,o={})=>{ g.save(); g.fillStyle=o.c||'#f1e6c8'; g.font=`${o.b?'bold ':''}${o.s||13}px ${o.serif?'Georgia,serif':'monospace'}`; g.textAlign=o.a||'center'; g.textBaseline='middle'; g.fillText(t,x,y); g.restore(); };
   TG.felt=(g,W,H,c='#1f5a3a')=>{ g.fillStyle=c; g.fillRect(0,0,W,H); g.fillStyle='rgba(255,255,255,.03)'; for(let i=0;i<W;i+=4)for(let j=(i/4)%2*2;j<H;j+=4)g.fillRect(i,j,1,1); };

@@ -53,6 +53,7 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
+          k weplay  'src/099-|src/136b|weplayers\.cjs'
           k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|worker/|cars\.cjs|radio\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
@@ -305,6 +306,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' art')
         run: node tests/art.cjs dist/market.html
+      - name: The world editor for players (Shift+E, isometric only, from the second visit)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' weplay')
+        run: node tests/weplayers.cjs
       - name: The cars (parked on Market St, get in, drive, get out, someone else's car)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')

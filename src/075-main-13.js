@@ -19,7 +19,7 @@ looseDraw();
 let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
 
 const PAD={mv:null,n:0}; SHARED.target=null;
-const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
+const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU*1.5}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
 // the overhead view moves in whole pixels of the picture (the PS2 filter's chunky ones when it is on), so what stands still on the ground never shimmers from step to step
 const SNR=new THREE.Vector3(), SNU=new THREE.Vector3(), snapCam=()=>{ const c=SHARED.cam; if(!c.isOrthographicCamera||UI.persp)return; const L=SHARED.cellLines||RH, w=(c.top-c.bottom)/c.zoom/Math.max(1,L); if(!(w>0))return;
   SNR.set(1,0,0).applyQuaternion(c.quaternion); SNU.set(0,1,0).applyQuaternion(c.quaternion); const a=c.position.dot(SNR), b=c.position.dot(SNU); c.position.addScaledVector(SNR,Math.round(a/w)*w-a).addScaledVector(SNU,Math.round(b/w)*w-b); if(PS2.sp){ const m=n=>((n%4096)+4096)%4096; PS2.sp.uniforms.uO.value.set(m(Math.round(a/w)),m(Math.round(b/w))); } };

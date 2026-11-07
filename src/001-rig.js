@@ -595,6 +595,7 @@ const lift=(P,y)=>{ P.root=V(P.root.x,P.root.y+y,P.root.z); for(const n of 'LR')
 const floorOf=st=>st.water?st.water.floor:0;
 const armsOf=d=>{ const o={}; for(const n of 'LR')o[n]=d.k.some(k=>['ua','fa'].some(f=>Math.abs(k.P[n][f][0]-START[n][f][0])+Math.abs(k.P[n][f][1]-START[n][f][1])>1e-3)); return o; };
 function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in||st.climb||st.hang||st.ride){ st.up=null; return P; }
+  if(u.prev){ if(u.t<0.08){ st.up=u.prev; P=upLayer(st,P); st.up=u; } else u.prev=null; }
   const d=u.def, U=moveAtOf(u), k=smooth(clamp(u.t/0.08,0,1))*(1-smooth(clamp((u.t-(d.dur-0.14))/0.14,0,1))); if(k<=0)return P; const arms=d.arms||(d.arms=armsOf(d));
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
@@ -676,7 +677,7 @@ function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
   st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);
-function beginUp(st,name){ st.up={def:handed(st,MOVES[name]),name,t:0,held:true}; st.upNext=null; }
+function beginUp(st,name){ const pv=st.up; if(pv)pv.prev=null; st.up={def:handed(st,MOVES[name]),name,t:0,held:true,prev:pv}; st.upNext=null; }   // (prev: the arm move it follows, blended from)
 const carries=m=>!!(m&&m.def.travel&&!m.def.below&&!m.def.deck);
 const free=m=>{ const d=m.def; return d.below==null&&!d.deck&&!m.wall&&!(d.src&&(d.src.drop||d.src.entry)); };
 const pick=(st,n)=>n=='jump'&&st.w>.6&&st.run>.4?'runJump':n;
@@ -715,7 +716,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
       W.in=true; W.y=M.root.y; W.vy=vy; W.under=1; W.swim=0; W.ph=0.15; W.sp=1; st.out.y0=W.y; W.events.push({k:'splash',z:6,v:-vy}); st.move=null; st.mv*=0.3; }
     else if(mv.t>=d.dur||(st.target>0||d.again&&mv.held)&&fr&&mv.t>=(d.ex??(a?a.t0+a.T+.04:d.dur*.8))){ if(mv.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; }
-      const O=lift(moveAt(st),mv.floor),z=O.root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
+      const O=lift(lookAt(st),mv.floor),z=moveAt(st).root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
       const nx=st.next||(d.again&&mv.held&&!st.climb&&!st.hang?mv.name:null); st.move=null; if(st.target>0){ const J=build(O).J; st.ph=d.ph??(J.ankleL.z>J.ankleR.z?.75:.25); } if(nx) begin(st,pick(st,nx)); }
     const m=st.move,P0=pace(st)*st.target;
     if(!m) st.mv=0;

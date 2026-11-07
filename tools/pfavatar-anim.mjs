@@ -4,13 +4,15 @@
 // Run: node tools/pfavatar-anim.mjs (after pfavatar-bake.mjs)
 import fs from 'fs'; import path from 'path'; import * as THREE from 'three';
 const ROOT=path.resolve(path.dirname(new URL(import.meta.url).pathname),'..'), PF=path.join(ROOT,'.polyfork');
-const BASE='holidaymaker-in-a-sun-2ba5e5', CLIPS=['Idle','Walk','Jog','Run','Crouch'];
+const BASE='holidaymaker-in-a-sun-2ba5e5', J=JSON.parse(fs.readFileSync(path.join(PF,'anim','clips.json'),'utf8')), CLIPS=Object.keys(J);   // every clip in Polyfork's library (owner, 7 Nov 2026: "yes lets use mixamo", his pick: Polyfork's 44)
+// clips that travel or lie down keep the hips where the clip has them; the rest stand, their feet kept where they stand
+const MOVING=new Set(['Walk','Jog','Run','Walk formal','Walk carrying','Swimming','Treading water','Kick','Sit down','Stand up','Sitting','Sitting talking','Driving']);
 // each avatar bone (the rig's 15) follows one of Polyfork's
 const MAP={hips:'Hips',torso:'Spine1',head:'Head',upperArmL:'LeftArm',forearmL:'LeftForeArm',handL:'LeftHand',upperArmR:'RightArm',forearmR:'RightForeArm',handR:'RightHand',
   thighL:'LeftUpLeg',shinL:'LeftLeg',shoeL:'LeftFoot',thighR:'RightUpLeg',shinR:'RightLeg',shoeR:'RightFoot'};
 const BONES=Object.keys(MAP);
 const ARMS=[['LeftShoulder',-12],['LeftArm',-60],['RightShoulder',12],['RightArm',60]], ZA=new THREE.Vector3(0,0,1);
-const M=await import(path.join(PF,'patched',BASE+'.mjs')), J=JSON.parse(fs.readFileSync(path.join(PF,'anim','clips.json'),'utf8'));
+const M=await import(path.join(PF,'patched',BASE+'.mjs'));
 const out={bones:BONES,clips:{}};
 for(const [f,fig] of [['m','masculine'],['f','feminine']]){
   globalThis.__pfHook=(fn,c)=>fn({...c,wear:{}}); const g=M.createAsset({figure:fig,build:1.02,expression:'neutral'}); globalThis.__pfHook=null; g.updateMatrixWorld(true);
@@ -33,7 +35,7 @@ for(const [f,fig] of [['m','masculine'],['f','feminine']]){
       if(C.hips)by.Hips.position.y=hip0+C.hips[i*3+1]*ratio;   // the hips' bob kept, their travel dropped (the game moves you)
       g.updateMatrixWorld(true);
       // standing (Idle, Crouch): the hips shift under the sway so the feet stay where they stand (owner, 5 Nov 2026: "the character slides around in same spot when idle")
-      if(name==='Idle'||name==='Crouch'){ const a=new THREE.Vector3(), c=new THREE.Vector3(); by.LeftFoot.getWorldPosition(a); by.RightFoot.getWorldPosition(c); const mid=a.add(c).multiplyScalar(.5);
+      if(!MOVING.has(name)){ const a=new THREE.Vector3(), c=new THREE.Vector3(); by.LeftFoot.getWorldPosition(a); by.RightFoot.getWorldPosition(c); const mid=a.add(c).multiplyScalar(.5);
         if(i===0)plant=mid.clone(); else { const d=plant.clone().sub(mid); d.y=0; const L=d.length(); if(L>1e-9)d.transformDirection(by.Hips.parent.matrixWorld.clone().invert()).multiplyScalar(L/(by.Hips.parent.getWorldScale(new THREE.Vector3()).x||1));
           by.Hips.position.x+=d.x; by.Hips.position.z+=d.z; g.updateMatrixWorld(true); } }
       BONES.forEach((k,j)=>{ const D=by[MAP[k]].matrixWorld.clone().multiply(BIND[j]), q=new THREE.Quaternion(), p=new THREE.Vector3(), sc=new THREE.Vector3(); D.decompose(p,q,sc);

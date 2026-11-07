@@ -41,6 +41,22 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   if(gb){ await pg.mouse.move(gb.x+gb.width/2,gb.y+gb.height/2); await pg.mouse.down(); await pg.mouse.move(gb.x-60,gb.y-80,{steps:8}); await pg.mouse.up(); }
   const q1=await pg.evaluate(()=>document.getElementById('hqb').getBoundingClientRect().left);
   rec('the quick bar moves by its grip',!!gb&&q1-q0<-40,'moved '+(q1-q0));
+  // emotes that go somewhere move you (owner, 7 Nov 2026: "the player should really moev when needed for the emote"): the moonwalk back, Thriller forward, through the walls like walking
+  const goes=async n=>pg.evaluate(async n=>{ const S=__dbg.ST, P=()=>__dbg.pos(), d0=S.dist, p0=P(); await MOTION.play(n); for(let i=0;i<120&&!(S.move&&S.move.t>2.6);i++)await new Promise(r=>setTimeout(r,250));   // (the move's own clock: software rendering runs slow)
+    const p1=P(), r={dist:+(S.dist-d0).toFixed(1),moved:+Math.hypot(p1[0]-p0[0],p1[1]-p0[1]).toFixed(2)}; MOTION.stop(); await new Promise(r=>setTimeout(r,500)); return r; },n);
+  const mw=await goes('moonwalk'), th=await goes('pf_Thriller'), cl=await goes('clap');
+  rec('the moonwalk glides you backwards, Thriller walks you forward, a clap stays put',mw.dist<-20&&mw.moved>.3&&th.dist>10&&th.moved>.1&&Math.abs(cl.dist)<.5&&cl.moved<.05,JSON.stringify({mw,th,cl}));
+  // a window keeps its size when clicked, resizes from its corner (kept), and the emotes fit it without scrolling
+  const win=async()=>pg.evaluate(()=>{ const r=document.getElementById('emotes').getBoundingClientRect(); return [Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)]; });
+  await pg.evaluate(()=>MOTION.open()); await wait(800); const w0=await win();
+  for(let i=0;i<4;i++){ const w=await win(); await pg.mouse.click(w[0]+w[2]/2,w[1]+6); await wait(200); }
+  const w1=await win(); rec('clicking a window four times leaves it as it was',JSON.stringify(w0)===JSON.stringify(w1),JSON.stringify([w0,w1]));
+  const fit=await pg.evaluate(()=>{ const e=document.getElementById('emotes'); return {sh:e.scrollHeight,ch:e.clientHeight,btn:[...e.querySelectorAll('.emg button')].every(b=>b.offsetWidth>b.offsetHeight*2&&b.scrollWidth<=b.clientWidth)}; });
+  rec('every emote a rectangle with its name inside, all in the window without scrolling',fit.sh<=fit.ch+1&&fit.btn,JSON.stringify(fit));
+  await pg.mouse.move(w1[0]+w1[2]-5,w1[1]+w1[3]-5); await pg.mouse.down(); await pg.mouse.move(w1[0]+w1[2]-85,w1[1]+w1[3]-65,{steps:8}); await pg.mouse.up(); await wait(300); const w2=await win();
+  await pg.evaluate(()=>MOTION.close()); await wait(200); await pg.evaluate(()=>MOTION.open()); await wait(600); const w3=await win();
+  rec('a window resizes from its bottom right corner, and keeps that size',w2[2]<w1[2]-40&&w2[3]<w1[3]-30&&Math.abs(w3[2]-w2[2])<3&&Math.abs(w3[3]-w2[3])<3,JSON.stringify([w1,w2,w3]));
+  await pg.evaluate(()=>{ MOTION.close(); __dbg.UI.resetLayout(); });
   if(OUT){ require('fs').mkdirSync(OUT,{recursive:true}); await pg.evaluate(()=>{ MOTION.stop(); __dbg.UI.setView('third'); __dbg.UI.dist*=.55; });
     await pg.evaluate(()=>MOTION.open()); await wait(800); await pg.screenshot({path:OUT+'/emotes.png'}); await pg.evaluate(()=>MOTION.close());
     for(const n of ['Thriller','HipHop','Chop','Drink','Laugh']){ await pg.evaluate(n=>MOTION.play('pf_'+n),n); await wait(1500); await pg.screenshot({path:OUT+'/'+n+'.png'}); await pg.evaluate(()=>MOTION.stop()); await wait(400); } }

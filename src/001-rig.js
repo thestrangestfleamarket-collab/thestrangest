@@ -703,7 +703,8 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
     else if(m.def.air){ const a=m.def.air; if(m.t>a.t0+a.T){ if(!m.down){ m.down=1; st.mv=st.mvw||0; } if(st.target>0&&free(m)) st.mv+=(P0-st.mv)*Math.min(1,h*8); else if(m.def.ph==null) st.mv*=Math.exp(-14*h); }
       else if(m.t>=a.t0&&st.target>0&&free(m)) st.mv+=(P0+a.vz-st.mv)*Math.min(1,h*2); }
     else if(st.target>0&&free(m)) st.mv+=(P0*(m.def.keep??.5)-st.mv)*Math.min(1,h*6); else st.mv*=Math.exp(-(m.def.stop||1.2)*h);
-    if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }
+    if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; }
+    if(st.move&&st.move.def.drift) st.dist+=st.move.def.drift*h; }   // a glide (an in-place recording that goes somewhere: the moonwalk), rig units a second along the facing
   else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||.12)) st.out=null; }
   const w0=st.w;
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;

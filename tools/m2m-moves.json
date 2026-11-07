@@ -49,7 +49,8 @@
 },
 "dance": {
 "clip": "dance-simple",
-"loop": true
+"loop": true,
+"travel": true
 },
 "armPump": {
 "clip": "dance-arm-pump",
@@ -57,19 +58,23 @@
 },
 "bodyRoll": {
 "clip": "dance-body-roll",
-"loop": true
+"loop": true,
+"travel": true
 },
 "charleston": {
 "clip": "dance-charleston",
-"loop": true
+"loop": true,
+"travel": true
 },
 "hipReach": {
 "clip": "dance-reach-hip",
-"loop": true
+"loop": true,
+"travel": true
 },
 "moonwalk": {
 "clip": "moonwalk",
-"loop": true
+"loop": true,
+"drift": -1.31
 },
 "jacks": {
 "clip": "jumping-jacks",

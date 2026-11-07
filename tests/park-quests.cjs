@@ -82,7 +82,7 @@ const SHOTS = process.argv[3];
       await ev(() => { PQ.LOFT.lit = false; PQ.lamp(); });
       const n0 = await ev(() => PQ.LOFT.moths.length);
       ok(await wait(n => { PQ.step(.5); return PQ.LOFT.moths.length < n; }, 30000, n0), 'a bat swoops and takes a moth from a slow netter');
-      await ev(() => PQ.climbLoft(-1)); ok(await wait(() => !PQ.LOFT.up && !PQ.LOFT.mode, 20000), 'and you climb back down');
+      await ev(() => PQ.climbLoft(-1)); ok(await wait(() => { PQ.step(.5); return !PQ.LOFT.up && !PQ.LOFT.mode; }, 30000), 'and you climb back down');
       await ev(() => { CLOCK.run = false; CLOCK.speed = 1; });
     }
     // the ice

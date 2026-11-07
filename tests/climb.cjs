@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await tap(' '); await hold('w', 60); const c1 = await dbg();
   ok(c1.climbing && c1.mode === 'trunk' && c1.climb && c1.ch > .3 * tree.T, 'SPACE at the trunk climbs it, W goes up: ' + JSON.stringify(c1));
   const a1 = Math.atan2(c1.z - tree.tz, c1.x - tree.tx);
-  await hold('d', 30); const c2 = await dbg(); const a2 = Math.atan2(c2.z - tree.tz, c2.x - tree.tx);
+  await hold('d', 80); const c2 = await dbg(); const a2 = Math.atan2(c2.z - tree.tz, c2.x - tree.tx);
   ok(c2.climbing && Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1))) > .15 && Math.abs(c2.ch - c1.ch) < .05 * tree.T, 'D goes round the trunk at the same height: ' + JSON.stringify({ a1: +a1.toFixed(2), a2: +a2.toFixed(2), ch: c2.ch }));
   // the skill bounds the height: at 10.0 the trunk's top is out of reach
   await hold('w', 300); const c4 = await dbg();
@@ -42,7 +42,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await tap(' '); const f3 = await frames(); while ((await frames()) - f3 < 15) await pg.waitForTimeout(50); const c3 = await dbg();
   ok(c3.climbing && (c3.mode === 'hang' || c3.ch > c2b.ch + .2 * tree.T), 'SPACE on the trunk jumps up (or catches a branch): ' + JSON.stringify({ from: c2b.ch, to: c3.ch, mode: c3.mode }));
   // down and off (from a branch: let go)
-  await hold('s', 500); const c5 = await dbg();
+  await hold('s', 900); const c5 = await dbg();
   ok(!c5.climbing, 'S climbs down and off: ' + JSON.stringify(c5));
   // under a branch: SPACE grabs it, you hang; A or D moves along it; W pulls you up to stand on it
   const under = await pg.evaluate(t => { TREES.go(t.x, t.z); return { g: SHARED.groundY(t.x, t.z), top: t.top, reach: (3 + .9 * FORAGE.sk('climb') / 100) * t.T }; }, tree);

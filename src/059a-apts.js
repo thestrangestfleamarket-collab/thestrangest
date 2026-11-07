@@ -37,8 +37,8 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   for(const side of ['w','e'])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,sideAt(k),RZ+lv*S+WZ[0],RZ+lv*S+WZ[1],{box:false,hw:WHW});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,roof:(x,y)=>roofCol(...TA.back(x,y)),paint:PAINT});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
-  { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14)},'A');
+  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,paint:PAINT});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
+  { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14),top:roofCol},'A');
     const tk=loc(X(AW.x0+5),Z(AW.y0+2.4)), bx_=m+(tk[0]<m?3.2:-3.2), BH=APTS.BH={x0:bx_-1.4,x1:bx_+1.4,y0:A.y0+.5,y1:A.y0+3.3,cx:bx_}, rk=rock(CN,69,.9,14); tgbox({...BH,z0:TOP,z1:TOP+72,c:CN,fs:(nx,ny,X_,Y_,z,f)=>!nx&&Math.abs(X_-bx_)<.45&&z<TOP+62?sh([44,32,26],f):rk.fs(nx,ny,X_,Y_,z,f),top:rk.top},'A'); }   // the stair head at the back of the roof, clear of the roof kit's water tank (148)
 
   const SOLS=[]; APTS.sol=SOLS; for(let lv=0;lv<ST;lv++)SOLS[lv]=[];
@@ -52,7 +52,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
       B(u0,u1,d0,d1,z+30,z+33); B(u0,u1,d0,d1,z+14,z+16); for(let i=0;i<=n;i++){ const t=i/n*L; al?B(u0+t-.02,u0+t+.02,d0,d1,z,z+30):B(u0,u1,d0+t-.02,d0+t+.02,z,z+30); } };
     for(const lv of lvs){ const z=lv*S; B(F.ua,F.ub,0,DI,z-3,z,1);
       B(F.ua,F.lx-.4,DI,DO,z-3,z,1); B(F.lx+.4,F.ub,DI,DO,z-3,z,1);
-      B(F.ua,F.ub,DO-.06,DO,z-9,z); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
+      B(F.ua,F.ub,DO-.06,DO,z-9,z-3); for(let u=F.ua+.3;u<F.ub;u+=2.4)B(u,u+.06,0,DO,z-12,z-3);
       rail(lv,F.ua,F.ub,DO-.05,DO); rail(lv,F.ua,F.ua+.05,0,DO); rail(lv,F.ub-.05,F.ub,0,DO); B(F.ua,F.ub,DO-.16,DO+.02,z+33,z+35,1);   // a flat ledge along the top rail to set things on
       if(FLAT)for(const u of FWU)stone(u-WHW-.07,u+WHW+.07,0,.26,z+WZ[0]-2.5,z+WZ[0]);   // the windows' stone sills, deep enough for a pot
       const sp=[F.ua+.45,F.ua+1.5,F.ua+2.6,F.ub-2.4,F.ub-1.4,F.ub-.45].filter(u=>Math.abs(u-F.lx)>.7&&Math.abs(u-F.du)>.95), K=['pot','flower','fern','tall','flower'];

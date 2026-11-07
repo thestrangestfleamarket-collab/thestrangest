@@ -24,7 +24,7 @@ const open=async(b,plays,q='')=>{ const ctx=await b.newContext({viewport:{width:
   await setV('third'); s=await st(p2); ok(s.on&&s.lock&&s.msg,'leaving isometric (the free camera) greys it out');
   await setV('iso'); s=await st(p2); ok(s.on&&!s.lock&&!s.msg,'back in isometric it works again');
   const can=await p2.evaluate(()=>['bath house','kerb brick','brick wall','floor','bench','street signs','street lamp','lamp post','gate lantern'].map(n=>WE.can({name:n})));
-  ok(JSON.stringify(can)==='[false,false,false,false,true,true,true,true,true]','buildings, walls, kerbs and floors are not pickable; benches, signs and lamps are ('+can+')');
+  ok(can.every(Boolean),'everything can be picked, buildings and streets too (owner, 7 Nov 2026: everyone everything) ('+can+')');
   const mv=await p2.evaluate(()=>{ const L=WE.dbgProps(); const mi=L.findIndex(e=>e.place==='street'&&e.ids.length); if(mi<0)return null; const k=WE.dbgPick(mi,0); document.querySelector('#we [data-up="1"]').click(); return k&&WE.getState()[k]&&WE.getState()[k].t[1]; });
   ok(mv>0,'a street thing picks and moves ('+mv+')');
   // PLACE: a Polyfork thing put down outside, solid, kept in the edits (so it goes to the queue)
@@ -40,5 +40,9 @@ const open=async(b,plays,q='')=>{ const ctx=await b.newContext({viewport:{width:
   const nr=await p2.evaluate(async()=>{ await WE.pfLoad('food-truck-3c4e0e'); const P=__dbg.you(), n0=Object.keys(WE.getState()).length, k=WE.addPf('food-truck-3c4e0e','food truck',[P.x,P.y,P.z],0); return {k,same:Object.keys(WE.getState()).length===n0,blank:WE.blank({t:[0,0,0],r:0,rx:0,rz:0,s:[1,1,1],col:'#ffffff',bri:1,op:1,del:false})}; });
   ok(nr.k===null&&nr.same,'nothing is put down on top of you (it is solid and would hold you)');
   ok(nr.blank===true,'a thing picked and never changed is not an edit');
+  const fd=await p2.evaluate(async()=>{ const k='food-truck-3c4e0e'; await WE.pfLoad(k); const cv=document.querySelector('canvas'), R=cv.getBoundingClientRect(), n0=PEEK.boxes.length; let key=null;
+    for(const fx of [.12,.18,.85,.9])for(const fy of [.2,.5,.8]){ if(key)break; const g=WE.ground({clientX:R.left+R.width*fx,clientY:R.top+R.height*fy}); if(g)key=WE.addPf(k,'food truck',g,0); }
+    const n1=PEEK.boxes.length, s=WE.getState(); if(key){ s[key].del=true; WE.applyAll(); await new Promise(r=>setTimeout(r,1500)); } return {key:!!key,added:n1-n0,after:PEEK.boxes.length-n0}; });
+  ok(fd.key&&fd.added===1&&fd.after===0,'a big placed thing fades round you like the big trees and walls, and stops when it is taken away '+JSON.stringify(fd));
   await p2.keyboard.press('Shift+E'); await wait(300); ok(!(await st(p2)).on,'Shift+E closes it');
   await b.close(); console.log(bad?bad+' failed':'all passed'); process.exit(bad?1:0); })();

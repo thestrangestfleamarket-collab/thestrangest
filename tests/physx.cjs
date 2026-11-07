@@ -6,7 +6,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 const wait=(pg,ms)=>pg.waitForTimeout(ms);
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:960,height:640}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(m.type()==='warning'&&/^SYS /.test(m.text()))errs.push(m.text()); });
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&at=59.9,1.6',{timeout:180000});
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&at=79.6,1.6',{timeout:180000});
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built&&GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500);
@@ -23,7 +23,7 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   ok(up>.08,`walking onto a low block steps you up onto it (feet at ${up.toFixed(2)}, its top 0.20)`);
   ok(errs.length===0,'no page errors so far '+errs.join(' | '));
   // a ragdoll
-  const near=await pg.evaluate(()=>{ const L=Object.values(BODIES.by).map(b=>b.npc).filter(Boolean).filter(N=>N.on&&N.st); if(!L.length)return null; const N=L[0]; __dbg.go(N.st.x+1.2,N.st.z); return {name:N.name,x:N.st.x,z:N.st.z}; });
+  const near=await pg.evaluate(()=>{ const L=(__dbg.npcs().extra||[]).filter(N=>N.on&&N.mode!=='hidden'&&N.B&&N.st); if(!L.length)return null; const N=L[0]; __dbg.go(N.st.x+1.2,N.st.z); return {name:N.name,x:N.st.x,z:N.st.z}; });
   if(near){ await wait(pg,4000); const k=await pg.evaluate(()=>PHYSKNOCK(0)); await wait(pg,1500); const r1=await pg.evaluate(()=>PHYSDBG().rags);
     ok(k&&k.ok&&r1===1,`${k&&k.name} knocked over falls as a ragdoll (${JSON.stringify(k)}, ${r1} ragdolls)`);
     await wait(pg,8000); ok(await pg.evaluate(()=>PHYSDBG().rags)===0,'and gets up again'); }

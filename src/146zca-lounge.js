@@ -68,6 +68,8 @@ const LOUNGE={}; window.LOUNGE=LOUNGE;
     lamp(1.2,8,1.6,0xffa860,2.6,4.5); lamp(1.2,12,1.6,0xffa860,2.6,4.5);
     for(const v of [10.2,13.4,16.6])lamp(W-.5,v,2.2,0xff9a60,1.2,3); for(const v of [16.5,19.5,22.5])lamp(.5,v,2.2,0xff9a60,1.2,3);
     lamp(W/2,D-1.5,2.8,0xffc890,1.4,4);
+    // a little lamp on every drum table (booths and the floor): its own warm pool in the dark
+    for(const [u,v] of [[W-1.9,8.6],[W-1.9,11.8],[W-1.9,15],[5.2,18.2],[9.4,18.2],[5.2,21.4],[9.4,21.4]]){ K.cyl(u,v,.035,.55,.82,0xb08838); K.glow(()=>K.cyl(u,v,.11,.8,.95,0xffc070,.07)); lamp(u,v,.95,0xffb070,1.6,2.8); }
     K.flush();
     setTimeout(()=>WORKERS.make('bar'),0);   // the badger at the taps (once the room's spots are set, below)
     // where people go: the staff at the counter and the stage, the drinkers on the stools, booths and chairs

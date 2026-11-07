@@ -5,9 +5,9 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8797, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
-  const quit=c=>{ try{ w.kill('SIGKILL'); }catch(e){} process.exit(c); }; process.on('unhandledRejection',e=>{ console.log('FAIL '+String(e&&e.stack||e).slice(0,600)); quit(1); });
+  const quit=c=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } process.exit(c); };   // (the worker's whole group: wrangler leaves workerd running otherwise) process.on('unhandledRejection',e=>{ console.log('FAIL '+String(e&&e.stack||e).slice(0,600)); quit(1); });
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
   if(!up){ console.log('FAIL: the worker never started\n'+log.slice(-2000)); quit(1); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}), errs=[];

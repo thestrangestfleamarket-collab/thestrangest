@@ -48,6 +48,7 @@ import {ROOMK} from './150a-bedroom.js';
   P.addEventListener('input',e=>{ const t=e.target; if(t.dataset.k!=='vol')return; CRT.volume(+t.value/100); if(t.nextElementSibling)t.nextElementSibling.textContent=t.value+'%'; });
 
   /* ---------- the set and its stand, in your apartment by the living room's wall ---------- */
+  for(const k of ['CRT TV'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
     const U0=c.Lx-.56, V0=c.Ly*.62, RY=-Math.PI/2;   // against the living room's far wall, facing into the room
     const wood=mat([92,58,34]), woodD=mat([60,38,22]), black=mat([28,28,30]), grey=mat([58,58,62]), chrome=mat([176,178,184]), grille=mat([40,40,42]);

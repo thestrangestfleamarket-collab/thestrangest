@@ -164,14 +164,14 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ 
 function build(P,dev){ const J={},m={},Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv,0),W=p=>add(add(P.root,pv),app(Rb,sub(p,pv)));
   const RB=RIGP.bones,S0=V(...RB.spine),Ru=turn(0,P.side,P.bend),U=p=>add(S0,app(Ru,sub(p,S0))),N0=V(...RB.neck),Rn=turn(P.look,0,P.nod),Hd=p=>U(add(N0,app(Rn,sub(p,N0))));
   J.pelvis=W(ZERO); J.spine=W(S0); J.chest=W(U(V(...RB.chest))); J.neck=W(U(N0)); J.headBase=W(Hd(V(...RB.headBase))); J.head=W(Hd(V(...RB.head))); J.headTop=W(Hd(V(...RB.headTop)));
-  m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={};
+  m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={}; m.fg={};
   for(const s of [1,-1]){ const n=s>0?'L':'R',g=P[n];
     const H=J['hip'+n]=W(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw)),Kn=J['knee'+n]=add(H,mul(app(Rb,limb(g.th[0],g.th[1],s)),THIGH)),A=J['ankle'+n]=add(Kn,mul(app(Rb,limb(Math.min(g.sh[0],g.th[0]),g.sh[1],s)),SHIN));
     const Rf=g.fyaw!=null?turn(g.fyaw,0,0):Rb,fw=app(Rf,fwv(g.foot)),dn=app(Rf,dnv(g.foot)); m.foot[n]=M3(Rf.x,mul(dn,-1),fw);
     J['heel'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,-1.1)); J['ball'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,1.9)); J['toe'+n]=add(J['ball'+n],mul(fw,1.1));
     const C=V(...RB.chest),cl=RB.clav,so=RB.shoulder; J['clav'+n]=W(U(add(C,yaw(V(s*cl[0],cl[1],cl[2]),P.cyaw)))); const S=J['shoulder'+n]=W(U(add(C,yaw(V(s*so[0],so[1],so[2]),P.cyaw))));
     const ua=app(m.Ru,limb(g.ua[0],g.ua[1],s)),fa=app(m.Ru,limb(g.fa[0],g.fa[1],s)),E=J['elbow'+n]=add(S,mul(ua,UPPER)); J['wrist'+n]=add(E,mul(fa,FORE));
-    m.hf[n]=hand(J,n,s,dev&&dev[n]?nrm(add(fa,dev[n])):fa,m.Ru,g); m.fist[n]=g.fist; }
+    m.hf[n]=hand(J,n,s,dev&&dev[n]?nrm(add(fa,dev[n])):fa,m.Ru,g); m.fist[n]=g.fist; m.fg[n]=g.fg; }
   return {J,m}; }
 const DIG=[[0.55,-0.85,0.45,[1.15,0.8,0.62],[0.5,0.44,0.4,0.36]],
   [2.05,-0.95,0,[1.05,0.66,0.52],[0.42,0.38,0.35,0.32]],[2.15,-0.32,0,[1.15,0.74,0.56],[0.43,0.39,0.36,0.33]],
@@ -619,8 +619,12 @@ function flyPose(st){ const F=st.fly,t=F.t||0,f=smooth(clamp(F.f||0,0,1)),u=clam
   S.R.ua=[174*D,5*D]; S.R.fa=[177*D,5*D]; S.R.fist=1; S.L.ua=[(8+2*w)*D,12*D]; S.L.fa=[14*D,12*D]; S.L.fist=1;
   S.L.th=[(-6+1.5*w)*D,3*D]; S.L.sh=[-26*D,3*D]; S.R.th=[(-3-1.5*w)*D,3*D]; S.R.sh=[-6*D,3*D]; S.L.foot=S.R.foot=-72*D;
   const V0=u>0?mixW(H,U,smooth(u)):mixW(H,D0,smooth(-u)); return mixW(V0,S,f); }
+// a hand-made move drawn from a recording (LOOK[name] = a recorded move's name, filled by MOTION): its own clock, travel and air kept, the pose the recording's at the same share of the way through
+const LOOK={};
+function lookAt(st){ const m=st.move, L=LOOK[m.name]&&MOVES[LOOK[m.name]]; if(!L||m.def.air)return moveAt(st);
+  const P=moveAtOf({def:L,t:Math.min(1,m.t/m.def.dur)*L.dur}); if(m.def.travel)P.root=V(P.root.x,P.root.y,P.root.z+moveAt(st).root.z); return P; }   // (a move that carries you: the recording drawn where the move has got to)
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
-  if(st.move){ const M=lift(moveAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
+  if(st.move){ const M=lift(lookAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
   return W; }
 
@@ -718,7 +722,8 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
     else if(m.def.air){ const a=m.def.air; if(m.t>a.t0+a.T){ if(!m.down){ m.down=1; st.mv=st.mvw||0; } if(st.target>0&&free(m)) st.mv+=(P0-st.mv)*Math.min(1,h*8); else if(m.def.ph==null) st.mv*=Math.exp(-14*h); }
       else if(m.t>=a.t0&&st.target>0&&free(m)) st.mv+=(P0+a.vz-st.mv)*Math.min(1,h*2); }
     else if(st.target>0&&free(m)) st.mv+=(P0*(m.def.keep??.5)-st.mv)*Math.min(1,h*6); else st.mv*=Math.exp(-(m.def.stop||1.2)*h);
-    if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; } }
+    if(carries(st.move)){ const zn=moveAt(st).root.z, zc=st.move.zc||0; st.dist+=zn-zc; st.move.zc=zn; }
+    if(st.move&&st.move.def.drift) st.dist+=st.move.def.drift*h; }   // a glide (an in-place recording that goes somewhere: the moonwalk), rig units a second along the facing
   else { if(st.out) st.out.t+=h; if(st.out&&st.out.t>(st.out.T||.12)) st.out=null; }
   const w0=st.w;
   st.w+=(st.target-st.w)*Math.min(1,h*RIGT.start); if(Math.abs(st.w-st.target)<1e-3||st.snap&&!st.move) st.w=st.target;
@@ -960,7 +965,7 @@ function tune(o){ G=o.g;
   for(const k in MOVES){ const s=MOVES[k].src; if(!s)continue; if(k!=='jump'){ MOVES[k]=jumpMove(s); continue; }
     const v0=4*o.jh/o.jT, g=8*o.jh/(o.jT*o.jT), keys=JUMP0.keys.map(([t,c,e])=>[typeof t=='string'?t:t>=100?100+(t-100)*o.rec/.34:t*o.crouch/JUMP0.t0,c,e]);
     MOVES.jump=jumpMove({...JUMP0,v0,g,t0:o.crouch,keys}); } }
-return {rbox,ell,rcone,box,OVL,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,GAITV,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
+return {rbox,ell,rcone,box,OVL,LOOK,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,GAITV,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
   apply,STANDK,RIDEG,mix,clearPose,settle,rcone,ell,box,rbox,add,sub,mul,nrm,cross,dot,len,STAND,ANKLE,FOOTX,frameOf,MATS,
   DIG,digitBase,digitFK,fgOf,hand,yaw,get THIGH(){ return THIGH; },get SHIN(){ return SHIN; },get UPPER(){ return UPPER; },get FORE(){ return FORE; },get HIPX(){ return HIPX; },
   get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};

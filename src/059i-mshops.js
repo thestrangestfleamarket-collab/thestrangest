@@ -97,7 +97,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
-  for(const id of ['theatre','play','bar','art']){ const p=WP[id]; if(!p||!p.pf||DEF[id])continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),sc:p.pfsc||1}); }   // the Polyfork outsides of the places whose insides are off the map
+  for(const id of ['theatre','play','bar','art','bank']){ const p=WP[id]; if(!p||!p.pf||DEF[id])continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),sc:p.pfsc||1}); }   // the Polyfork outsides of the places whose insides are off the map
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

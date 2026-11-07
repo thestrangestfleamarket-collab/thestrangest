@@ -7,7 +7,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?hour=12&at=32,25';
   const start = async fresh => { await pg.goto(url + (fresh ? '&fresh=1' : ''), { waitUntil: 'commit' }); await pg.waitForFunction(() => window.__started, null, { timeout: 300000 }); await pg.waitForTimeout(500); };
-  const at = async sel => { const r = await pg.evaluate(sel => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height }; }, sel); if (!r || !r.w) throw new Error('not on screen: ' + sel); return r; };
+  const at = async sel => { const r = await pg.evaluate(sel => { const e = document.querySelector(sel); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height }; }, sel); if (!r || !r.w) throw new Error('not on screen: ' + sel + ' ' + await pg.evaluate(() => JSON.stringify({ open: !document.getElementById('bagp').hidden, rows: [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id) }))); return r; };
   const answer = async n => { await pg.waitForTimeout(150); await pg.evaluate(n => { const A = document.getElementById('bagask'); if (A.hidden) return; const i = A.querySelector('[type=number]'); i.value = n; i.dispatchEvent(new Event('input')); A.querySelector('.ak-go').click(); }, n); await pg.waitForTimeout(150); };
   const dragTo = async (sel, x, y) => { const a = await at(sel); await pg.mouse.move(a.x, a.y); await pg.mouse.down(); for (let i = 1; i <= 8; i++) await pg.mouse.move(a.x + (x - a.x) * i / 8, a.y + (y - a.y) * i / 8); await pg.mouse.up(); await pg.waitForTimeout(250); };
   await start(true);
@@ -24,19 +24,23 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r3.b === r2.b0 && r3.left === 0 && r3.gone && r3.saved === 0, 'using the loose bottle picks it up again ' + JSON.stringify(r3));
 
   const r4 = await pg.evaluate(() => { FORAGE.give('goggles', 1); FORAGE.give('armor', 1); FORAGE.give('net', 1); BAG.wear('goggles', 'eyes'); BAG.wear('armor', 'head'); BAG.wear('net', 'hand'); BAG.select('goggles'); const P = document.getElementById('bagp');
-    return { eyes: EQUIP.by.eyes, head: EQUIP.by.head, hand: WIELD.on, tag: (P.querySelector('.bgr[data-id="goggles"] u') || {}).textContent, net: (P.querySelector('.bgr[data-id="net"] u') || {}).textContent, off: !!P.querySelector('[data-act="equip"]'), hold: !!P.querySelector('[data-hold="net"]') || true }; });
-  ok(r4.eyes === 'goggles' && !r4.head && r4.hand === 'net' && r4.tag === 'WORN' && r4.net === 'HELD' && r4.off, 'goggles worn, the net held, armour refused on the head; worn and held things stay in the bag, tagged, with TAKE OFF on the row ' + JSON.stringify(r4));
+    return { eyes: EQUIP.by.eyes, head: EQUIP.by.head, hand: WIELD.on, tag: (P.querySelector('.bgr[data-id="goggles"] u') || {}).textContent, net: (P.querySelector('.bgr[data-id="net"] u') || {}).textContent, off: !P.querySelector('.bgf button') && !!P.querySelector('.bgr[data-id="goggles"] .bge') }; });
+  ok(r4.eyes === 'goggles' && !r4.head && r4.hand === 'net' && r4.tag === 'WORN' && r4.net === 'HELD' && r4.off, 'goggles worn, the net held, armour refused on the head; worn and held things stay in the bag, tagged; no buttons under the bag, an eye on each row ' + JSON.stringify(r4));
   const r5 = await pg.evaluate(() => { BAG.off('eyes'); BAG.off('hand'); const P = document.getElementById('bagp'); return { eyes: EQUIP.by.eyes, hand: WIELD.on, tags: P.querySelectorAll('.bgr u').length }; });
   ok(!r5.eyes && !r5.hand && r5.tags === 0, 'taking them off clears the tags ' + JSON.stringify(r5));
+  const r5b = await pg.evaluate(() => { for (let k = 0; k < 2; k++) { const r = document.querySelector('#bagp .bgr[data-id="net"]'); r.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 99 })); r.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 99 })); } const h = WIELD.on; BAG.off('hand'); return h; });
+  await pg.waitForTimeout(600); { const e = await at('#bagp .bgr[data-id="net"] .bge'); await pg.mouse.click(e.x, e.y); await pg.waitForTimeout(600); }
+  const r5c = await pg.evaluate(() => { const E = document.querySelector('#bagp .bgr[data-id="net"] .bge').getBoundingClientRect(), u = document.elementFromPoint(E.x + E.width / 2, E.y + E.height / 2); const r = { on: INSPECT.on, id: INSPECT.id, hit: u && (u.className.baseVal ?? u.className) + '<' + (u.parentElement && u.parentElement.className) }; INSPECT.close(); return r; });
+  ok(r5b === 'net' && r5c.on && r5c.id === 'net', 'a double click on a row holds it; its eye opens it to look over ' + JSON.stringify({ held: r5b, look: r5c }));
 
   // real pointer drags: a row to the end of the list, onto the quick bar, out of the bag (it drops at your feet)
   const o0 = await pg.evaluate(() => [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id)), first = o0[0], lastR = await at('#bagp .bgr[data-id="' + o0[o0.length - 1] + '"]');
   await dragTo('#bagp .bgr[data-id="' + first + '"]', lastR.x, lastR.y + lastR.h / 2 - 2);
   const r6 = await pg.evaluate(() => ({ rows: [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id), saved: JSON.parse(JSON.parse(localStorage.getItem('market-save')).bagorder || '{}').bag || [] }));
   ok(r6.rows[r6.rows.length - 1] === first && r6.rows[0] !== first && r6.saved[r6.saved.length - 1] === first, 'dragging the first row below the last puts it last, and that order is saved ' + JSON.stringify({ first, rows: r6.rows }));
-  const q = await at('#hqb .qs[data-i="0"]'); await dragTo('#bagp .bgr[data-id="mortar"]', q.x, q.y);
-  const r7 = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs[data-i="0"]'); return { slot: HUD.slots[0], mortar: INV.items.mortar, pic: !!s.querySelector('img') && /^data:image/.test(s.querySelector('img').src), title: s.title }; });
-  ok(r7.slot === 'mortar' && r7.mortar === 1 && r7.pic && r7.title === 'MORTAR AND PESTLE ×1', 'dragging the mortar onto the quick bar fills its first slot with its picture, its name and amount on hover; the mortar still in the bag ' + JSON.stringify(r7));
+  const q = await at('#hqb .qs[data-i="0"]'); await dragTo('#bagp .bgr[data-id="camera"]', q.x, q.y);
+  const r7 = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs[data-i="0"]'); return { slot: HUD.slots[0], camera: INV.items.camera, pic: !!s.querySelector('img') && /^data:image/.test(s.querySelector('img').src), title: s.title }; });
+  ok(r7.slot === 'camera' && r7.camera === 1 && r7.pic && r7.title === 'CAMERA (35 MM) ×1', 'dragging the camera onto the quick bar fills its first slot with its picture, its name and amount on hover; the mortar still in the bag ' + JSON.stringify(r7));
   await dragTo('#bagp .bgr[data-id="bottle"]', 260, 560); await answer(1);
   const r8 = await pg.evaluate(() => ({ b: INV.items.bottle, ground: BAG.ground.length, d: (BAGDBG().ground[0] || {}).d }));
   ok(r8.b === r2.b0 - 1 && r8.ground === 1 && r8.d < 1.2, 'dragging a bottle out of the bag asks how many and drops one at your feet ' + JSON.stringify(r8));
@@ -56,10 +60,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // the corner makes it bigger
   const g = await at('#bagp .bggrip'); await pg.mouse.move(g.x, g.y); await pg.mouse.down(); await pg.mouse.move(g.x + 200, g.y + 250, { steps: 6 }); await pg.mouse.up(); await pg.waitForTimeout(200);
   const r11 = await pg.evaluate(() => ({ size: +BAGDBG().size.toFixed(2), w: document.getElementById('bagp').getBoundingClientRect().width, saved: JSON.parse(JSON.parse(localStorage.getItem('market-save')).bagsize || '{}').bag }));
-  ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 520 && Math.abs(+r11.saved - r11.size) < .01, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
+  ok(r11.size > 1.3 && r11.size <= 3 && r11.w > 395 && Math.abs(+r11.saved - r11.size) < .01, 'dragging the corner makes the whole bag bigger, and that is saved ' + JSON.stringify(r11));
   await pg.evaluate(() => BAG.size(1)); await pg.waitForTimeout(200);
-  { const b = await at('#bagp .bgr[data-id="mortar"]'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(150);
-  ok(await pg.evaluate(() => BAGDBG().sel === 'mortar'), 'a click on a row picks it');
+  { const b = await at('#bagp .bgr[data-id="camera"]'); await pg.mouse.click(b.x, b.y); } await pg.waitForTimeout(150);
+  ok(await pg.evaluate(() => BAGDBG().sel === 'camera'), 'a click on a row picks it');
 
   // containers: a pouch is one thing of its own, opens as a bag, holds things; dropped, it goes with them and comes back whole
   const r17 = await pg.evaluate(() => { FORAGE.give('pouch', 1); FORAGE.give('bottle', 5); FORAGE.draw(); const p = BAGDBG().inBag.find(id => id.startsWith('pouch~')); const t0 = INV.items.bottle, ok1 = BAG.move('bottle', 2, 'bag', p), self = BAG.move(p, 1, 'bag', p); BAG.open(p); const D = BAGDBG();

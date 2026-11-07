@@ -1,0 +1,1227 @@
+{
+ "forage": [
+  {
+   "t": "One Moving Part: The Forest Service Ax Manual",
+   "a": "USDA Forest Service, National Technology & Development Program (1823-2812P-NTDP)",
+   "y": 2020,
+   "pages": 249,
+   "url": "https://fs.usda.gov/t-d/pubs/pdfpubs/pdf18232812P/1823-2812P_AxManual_508_10-21-20c_150dpi.pdf",
+   "page": "https://www.fs.usda.gov/t-d/",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service T&D publication, no copyright notice; a few photos/illustrations are marked 'courtesy of' outside people (leave those out or check them)."
+  },
+  {
+   "t": "Survival (ATP 3-50.21)",
+   "a": "US Army, Headquarters Department of the Army",
+   "y": 2018,
+   "pages": 228,
+   "url": "https://archive.org/download/survival-atp-3-50-21/Survival%20%28ATP%203-50-21%29.pdf",
+   "page": "https://archive.org/details/survival-atp-3-50-21",
+   "format": "pdf",
+   "licence": "US government work, cleared for public release",
+   "evidence": "Cover: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.' Has chapters on plant food, plant medicine, water, fire, shelter. Official copy also on armypubs.army.mil and irp.fas.org/doddir/army/atp3-50-21.pdf (FAS blocks scripts)."
+  },
+  {
+   "t": "Assessment of Nontimber Forest Products in the United States Under Changing Conditions (GTR SRS-232)",
+   "a": "USDA Forest Service, Southern Research Station (Chamberlain, Emery, Patel-Weynand, eds.)",
+   "y": 2018,
+   "pages": 267,
+   "url": "https://research.fs.usda.gov/download/treesearch/56484.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/56484",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "USDA Forest Service General Technical Report; cover photos credited to some non-federal photographers. A survey of wild-harvested foods, medicinals and crafts, not a beginner's field guide."
+  },
+  {
+   "t": "Survival, Evasion, Resistance, Escape (SERE) Operations (AFH 10-644)",
+   "a": "US Air Force",
+   "y": 2017,
+   "pages": 652,
+   "url": "https://archive.org/download/afh-10-644-sere-operations-27-mar-2017/AFH%2010-644%20SERE%20Operations%2027Mar2017.pdf",
+   "page": "https://archive.org/details/afh-10-644-sere-operations-27-mar-2017",
+   "format": "pdf",
+   "licence": "US government work, no release restrictions",
+   "evidence": "Cover: 'RELEASABILITY: There are no releasability restrictions on this publication.' Long sections on plant food (17.4) and preparing plant food (17.10). Also at irp.fas.org/doddir/usaf/afh10-644.pdf."
+  },
+  {
+   "t": "Saws That Sing: A Guide to Using Crosscut Saws",
+   "a": "David E. Michael, USDA Forest Service, Missoula Technology and Development Center (0423-2822-MTDC)",
+   "y": 2004,
+   "pages": 72,
+   "url": "https://fs.usda.gov/t-d/pubs/pdfpubs/pdf04232822/pdf04232822dpi300.pdf",
+   "page": "https://www.fs.usda.gov/eng/pubs/htmlpubs/htm04232822/toc.htm",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service MTDC publication by a Tahoe National Forest employee (revised 2012); also in HTML. Woodcraft."
+  },
+  {
+   "t": "Special Forest Products: Species Information Guide for the Pacific Northwest (GTR PNW-513)",
+   "a": "Vance, Borsting, Pilz, Freed; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 2001,
+   "pages": 177,
+   "url": "https://research.fs.usda.gov/download/treesearch/3075.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/3075",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report. Over 60 wild plants and fungi with how they are harvested and used; it warns readers to learn with an expert before eating anything."
+  },
+  {
+   "t": "An Ax to Grind: A Practical Ax Manual",
+   "a": "Bernie Weisgerber, USDA Forest Service, Missoula Technology and Development Center (9923-2823-MTDC)",
+   "y": 1999,
+   "pages": 68,
+   "url": "https://fs.usda.gov/t-d/pubs/pdfpubs/pdf99232823/pdf99232823Pdpi300.pdf",
+   "page": "https://www.fs.usda.gov/t-d/pubs/htmlpubs/htm99232823/page02.htm",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service MTDC publication, also in HTML. Replaced in 2020 by One Moving Part (above). A few historical photos are credited to other people."
+  },
+  {
+   "t": "A Guide to Selected Non-Timber Forest Products of the Hayfork Adaptive Management Area (GTR PSW-162)",
+   "a": "Yvonne Everett; USDA Forest Service, Pacific Southwest Research Station",
+   "y": 1997,
+   "pages": 69,
+   "url": "https://research.fs.usda.gov/download/treesearch/27281.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/27281",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report. Wild plants of northern California and how to harvest them sustainably."
+  },
+  {
+   "t": "Common Weeds of the United States (reprint of Selected Weeds of the United States, Agriculture Handbook 366, 1970)",
+   "a": "USDA Agricultural Research Service",
+   "y": 1971,
+   "pages": 463,
+   "url": "https://archive.org/download/CAT75657085/CAT75657085.pdf",
+   "page": "https://archive.org/details/CAT75657085",
+   "format": "pdf",
+   "licence": "US government work (USDA ARS)",
+   "evidence": "Title page: 'Prepared by the Agricultural Research Service of the United States Department of Agriculture'. This scan is Dover's unchanged reprint (the Dover cover and ad pages are not federal). NAL item: 'not in copyright'. Identifies about 220 wild plants; not a guide to eating them."
+  }
+ ],
+ "myco": [
+  {
+   "t": "Mycology Laboratory Manual",
+   "a": "Laura Ramos-Sepulveda (Millersville University), PA-ADOPT",
+   "y": 2025,
+   "pages": null,
+   "url": "https://open.umn.edu/opentextbooks/textbooks/mycology-laboratory-manual",
+   "page": "https://open.umn.edu/opentextbooks/textbooks/mycology-laboratory-manual",
+   "format": "html",
+   "licence": "CC BY-NC-SA (NC: the owner must decide)",
+   "evidence": "The Open Textbook Library lists it as CC BY-NC-SA. A reviewer says some figures do not state their licence. Not checked: the full-text link and the page count (the site was blocking scripts)."
+  },
+  {
+   "t": "Mind the Fungi",
+   "a": "Vera Meyer, Regine Rapp (eds.); Universitätsverlag der TU Berlin",
+   "y": 2020,
+   "pages": 156,
+   "url": "https://library.oapen.org/bitstream/20.500.12657/50293/1/mind_the_fungi.pdf",
+   "page": "https://library.oapen.org/handle/20.500.12657/50293",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "PDF: 'is licensed under the Creatice Commons Licence CC BY 4.0' (spelling as in the PDF); OAPEN record links creativecommons.org/licenses/by/4.0. A science-and-art citizen-science book, not a field guide."
+  },
+  {
+   "t": "An Introduction to Mushroom",
+   "a": "Ajit Kumar Passari, Sergio Sánchez (eds.); IntechOpen",
+   "y": 2020,
+   "pages": 150,
+   "url": "https://mts.intechopen.com/storage/books/9463/authors_book/authors_book.pdf",
+   "page": "https://directory.doabooks.org/handle/20.500.12854/67572",
+   "format": "pdf",
+   "licence": "CC BY 3.0 (each chapter)",
+   "evidence": "PDF: 'Individual chapters of this publication are distributed under the terms of the Creative Commons Attribution 3.0 Unported License which permits commercial use'. The book as a whole is (c) IntechOpen, and some images may be excluded. Academic (nutrition, enzymes), not for beginners."
+  },
+  {
+   "t": "Field Guide to Common Macrofungi in Eastern Forests and Their Ecosystem Functions (GTR NRS-79)",
+   "a": "Michael E. Ostry, Neil A. Anderson, Joseph G. O'Brien; USDA Forest Service, Northern Research Station",
+   "y": 2011,
+   "pages": 90,
+   "url": "https://research.fs.usda.gov/download/treesearch/38089.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/38089",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report, revised February 2017. Also at govinfo.gov (GOVPUB-A13-PURL-gpo11807). One of the three authors (Anderson) is from the University of Minnesota, so his share and his photos are not plainly federal."
+  },
+  {
+   "t": "Ecology and Management of Morels Harvested from the Forests of Western North America (GTR PNW-710)",
+   "a": "David Pilz et al.; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 2007,
+   "pages": 170,
+   "url": "https://www.fs.usda.gov/pnw/pubs/pnw_gtr710.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/26906",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report. Several co-authors are not federal, and some photos may belong to others."
+  },
+  {
+   "t": "Handbook to Additional Fungal Species of Special Concern in the Northwest Forest Plan (GTR PNW-572)",
+   "a": "Castellano, Cázares, Fondrick, Dreisbach; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 2003,
+   "pages": 152,
+   "url": "https://research.fs.usda.gov/download/treesearch/5253.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/5253",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service); some photos copyrighted",
+   "evidence": "Forest Service General Technical Report with keys to identify each species. Photos are marked 'Copyright Steve Trudell', 'Copyright Michael Beug': use the text, not those pictures."
+  },
+  {
+   "t": "Ecology and Management of Commercially Harvested Chanterelle Mushrooms (GTR PNW-576)",
+   "a": "Pilz, Norvell, Danell, Molina; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 2003,
+   "pages": 90,
+   "url": "https://www.fs.usda.gov/pnw/pubs/gtr576.pdf",
+   "page": "https://www.fs.usda.gov/pnw/pubs/gtr576.pdf",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service); some photos copyrighted",
+   "evidence": "Forest Service General Technical Report. Photos are marked '© S.A. Redhead/Agriculture Canada' and '© Steve Trudell': use the text only."
+  },
+  {
+   "t": "Handbook to Strategy 1 Fungal Species in the Northwest Forest Plan (GTR PNW-476)",
+   "a": "Michael A. Castellano et al.; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 1999,
+   "pages": 205,
+   "url": "https://research.fs.usda.gov/download/treesearch/2966.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/2966",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report: 135 species, each described, with keys and a glossary."
+  },
+  {
+   "t": "Ecology and Management of the Commercially Harvested American Matsutake Mushroom (GTR PNW-412)",
+   "a": "Hosford, Pilz, Molina, Amaranthus; USDA Forest Service, Pacific Northwest Research Station",
+   "y": 1997,
+   "pages": 74,
+   "url": "https://research.fs.usda.gov/download/treesearch/7599.pdf",
+   "page": "https://research.fs.usda.gov/treesearch/7599",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Forest Service General Technical Report. Three of the four authors are Forest Service; Hosford is from Central Washington University."
+  },
+  {
+   "t": "Plant Diseases: The Yearbook of Agriculture 1953",
+   "a": "US Department of Agriculture",
+   "y": 1953,
+   "pages": 940,
+   "url": "https://archive.org/download/yoa1953/yoa1953.pdf",
+   "page": "https://archive.org/details/yoa1953",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, scanned by the National Agricultural Library: 'The contributing institution believes that this item is not in copyright.' Mostly about fungi that cause plant diseases; it is also in the garden list."
+  },
+  {
+   "t": "Mushroom Growing in the United States (Farmers' Bulletin 1875)",
+   "a": "Edmund B. Lambert, USDA",
+   "y": 1941,
+   "pages": 41,
+   "url": "https://archive.org/download/CAT87203746/farmbul1875.pdf",
+   "page": "https://archive.org/details/CAT87203746",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Farmers' Bulletin; NAL scan: 'The contributing institution believes that this item is not in copyright.' A beginner's guide to growing mushrooms. Just meets the 40-page minimum."
+  }
+ ],
+ "garden": [
+  {
+   "t": "Introduction to Soil Science (2nd edition)",
+   "a": "Amber Anderson, Rivka Fidel; Iowa State University Digital Press",
+   "y": 2025,
+   "pages": null,
+   "url": "https://iastate.pressbooks.pub/isudp-2025-201/open/download?type=pdf",
+   "page": "https://iastate.pressbooks.pub/isudp-2025-201",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "Pressbooks page has a creativecommons.org/licenses/by/4.0 notice. 1st edition (2022): iastate.pressbooks.pub/introsoilscience. A soil textbook more than a garden guide. Not checked: the download link and page count (Pressbooks blocks scripts)."
+  },
+  {
+   "t": "The Science of Plants: Understanding Plants and How They Grow",
+   "a": "Tom Michaels, Matt Clark, Emily Hoover, Laura Irish, Alan Smith, Emily Tepe; University of Minnesota Libraries Publishing",
+   "y": 2022,
+   "pages": null,
+   "url": "https://open.lib.umn.edu/horticulture/open/download?type=pdf",
+   "page": "https://open.lib.umn.edu/horticulture/",
+   "format": "pdf",
+   "licence": "CC BY-NC 4.0 (NC: the owner must decide)",
+   "evidence": "'The Science of Plants Copyright © 2022 by The Authors is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License'. A horticulture and plant propagation textbook."
+  },
+  {
+   "t": "Building Soils for Better Crops (4th edition)",
+   "a": "Fred Magdoff, Harold van Es; SARE",
+   "y": 2021,
+   "pages": null,
+   "url": "https://geo.libretexts.org/Bookshelves/Soil_Science/Building_Soils_for_Better_Crops_-_Ecological_Management_for_Healthy_Soils_4e_(Magdoff_and_van_Es)",
+   "page": "https://geo.libretexts.org/Bookshelves/Soil_Science/Building_Soils_for_Better_Crops_-_Ecological_Management_for_Healthy_Soils_4e_(Magdoff_and_van_Es)",
+   "format": "html",
+   "licence": "CC BY-NC 4.0 per LibreTexts (doubtful)",
+   "evidence": "The LibreTexts page has a CC BY-NC 4.0 tag. SARE's own copy does not state an open licence: check with SARE before using."
+  },
+  {
+   "t": "Red Seal Landscape Horticulturist Identify Plants and Plant Requirements",
+   "a": "Michelle Nakano (Kwantlen Polytechnic University), BCcampus",
+   "y": 2020,
+   "pages": null,
+   "url": "https://opentextbc.ca/plantidentification/open/download?type=pdf",
+   "page": "https://opentextbc.ca/plantidentification/",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "Copyright page: 'licensed under a Creative Commons Attribution 4.0 International License, except where otherwise noted.' Also an EPUB (download?type=epub). Not checked: the page count (the site blocks scripts)."
+  },
+  {
+   "t": "Introduction to Permaculture",
+   "a": "Andrew Millison; Oregon State University",
+   "y": 2019,
+   "pages": 256,
+   "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/847/3/Introduction-to-Permaculture-1597693544.pdf",
+   "page": "https://open.oregonstate.education/permaculture",
+   "format": "pdf",
+   "licence": "CC BY-NC 4.0 (NC: the owner must decide)",
+   "evidence": "PDF: 'Introduction to Permaculture by Andrew Millison is licensed under a Creative Commons Attribution-NonCommercial 4.0'. The year is approximate."
+  },
+  {
+   "t": "Soils: A Practical Guide for Organic Farmers and Gardeners",
+   "a": "Valerie Dantoin, Northeast Wisconsin Technical College (SARE-funded)",
+   "y": 2019,
+   "pages": null,
+   "url": "https://geo.libretexts.org/Courses/Northeast_Wisconsin_Technical_College/Soils%3A_A_Practical_Guide_for_Organic_Farmers_and_Gardeners",
+   "page": "https://hub.ofrf.org/?p=42546",
+   "format": "html",
+   "licence": "CC BY-NC 4.0 per LibreTexts (NC; doubtful)",
+   "evidence": "The LibreTexts page has a CC BY-NC 4.0 tag, but that may be LibreTexts' own default; the original SARE/OFRF pages say only 'free, open-access'. The year is approximate."
+  },
+  {
+   "t": "Intensive Vegetable Gardening for Profit and Self-Sufficiency (Publication R0025)",
+   "a": "Peace Corps (revised with USAID Feed the Future funding)",
+   "y": 2014,
+   "pages": 106,
+   "url": "https://files.peacecorps.gov/documents/R0025-Intensive-Vegetable-Gardening.pdf",
+   "page": "https://files.peacecorps.gov/documents/R0025-Intensive-Vegetable-Gardening.pdf",
+   "format": "pdf",
+   "licence": "US government work (Peace Corps)",
+   "evidence": "PDF: 'This publication was produced by the Peace Corps with funding from the U.S. Agency for International Development'. The 2014 revision was written under contract with EnCompass LLC."
+  },
+  {
+   "t": "Living on a Few Acres: The 1978 Yearbook of Agriculture",
+   "a": "US Department of Agriculture",
+   "y": 1978,
+   "pages": 474,
+   "url": "https://archive.org/download/yoa1978/yoa1978.pdf",
+   "page": "https://archive.org/details/yoa1978",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, scanned by NAL: 'The contributing institution believes that this item is not in copyright.' Also an EPUB. Covers vegetables, fruit, small livestock and woodlots."
+  },
+  {
+   "t": "Gardening for Food and Fun: The 1977 Yearbook of Agriculture",
+   "a": "US Department of Agriculture (Jack Hayes, ed.)",
+   "y": 1977,
+   "pages": 432,
+   "url": "https://archive.org/download/yoa1977/yoa1977.pdf",
+   "page": "https://archive.org/details/yoa1977",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook (xl + 392 pp.), scanned by NAL: 'The contributing institution believes that this item is not in copyright.' The best beginner's book here: soil, vegetables, fruit and nuts, keeping food."
+  },
+  {
+   "t": "Insects and Diseases of Vegetables in the Home Garden (Home and Garden Bulletin 46)",
+   "a": "L. B. Reed, R. E. Webb; USDA",
+   "y": 1975,
+   "pages": 60,
+   "url": "https://archive.org/download/CAT87210097/CAT87210097.pdf",
+   "page": "https://archive.org/details/CAT87210097",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Home and Garden Bulletin; NAL scan: 'not in copyright'. Its pesticide advice is out of date."
+  },
+  {
+   "t": "Landscape for Living: The 1972 Yearbook of Agriculture",
+   "a": "US Department of Agriculture",
+   "y": 1972,
+   "pages": 456,
+   "url": "https://archive.org/download/yoa1972/yoa1972.pdf",
+   "page": "https://archive.org/details/yoa1972",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, NAL scan: 'The contributing institution believes that this item is not in copyright.' Home landscaping and gardens."
+  },
+  {
+   "t": "Seeds: The Yearbook of Agriculture 1961",
+   "a": "US Department of Agriculture",
+   "y": 1961,
+   "pages": 692,
+   "url": "https://archive.org/download/yoa1961/yoa1961.pdf",
+   "page": "https://archive.org/details/yoa1961",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, NAL scan: 'not in copyright'. Also an EPUB."
+  },
+  {
+   "t": "Soil: The Yearbook of Agriculture 1957",
+   "a": "US Department of Agriculture",
+   "y": 1957,
+   "pages": 858,
+   "url": "https://archive.org/download/yoa1957/yoa1957.pdf",
+   "page": "https://archive.org/details/yoa1957",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, NAL scan: 'not in copyright'. Also an EPUB."
+  },
+  {
+   "t": "Plant Diseases: The Yearbook of Agriculture 1953",
+   "a": "US Department of Agriculture",
+   "y": 1953,
+   "pages": 940,
+   "url": "https://archive.org/download/yoa1953/yoa1953.pdf",
+   "page": "https://archive.org/details/yoa1953",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Yearbook, NAL scan: 'not in copyright'."
+  }
+ ],
+ "fish": [
+  {
+   "t": "Fish, Fishing, and Conservation",
+   "a": "Donald J. Orth (Virginia Tech)",
+   "y": 2023,
+   "pages": 413,
+   "url": "https://vtechworks.lib.vt.edu/server/api/core/bitstreams/65a7fae6-cdc3-4ae7-b7ad-694cd8b52857/content",
+   "page": "https://vtechworks.lib.vt.edu/handle/10919/112741",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "VTechWorks record dc.rights: 'Creative Commons Attribution 4.0 International'. Low-res PDF (11.8 MB) downloaded, 413 pp; EPUB and full-res PDF also there; Pressbooks: pressbooks.lib.vt.edu/fishandconservation"
+  },
+  {
+   "t": "Survey Fishes: An Illustrated List of the Fishes Captured during the NWFSC West Coast Surveys",
+   "a": "Daniel J. Kamikawa, NOAA Northwest Fisheries Science Center (Tech. Memo NMFS-NWFSC-138)",
+   "y": 2017,
+   "pages": 453,
+   "url": "https://repository.library.noaa.gov/view/noaa/16391/noaa_16391_DS1.pdf",
+   "page": "https://repository.library.noaa.gov/view/noaa/16391",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "NOAA Institutional Repository 'Rights Statement: Public Domain'; NOAA describes it as an ID guide needing no technical expertise. 60 MB"
+  },
+  {
+   "t": "A Handy Field Guide to the Nearshore Marine Fishes of Alaska",
+   "a": "Scott W. Johnson, A. Darcie Neff, Mandy R. Lindeberg, NOAA Alaska Fisheries Science Center (Tech. Memo NMFS-AFSC-293)",
+   "y": 2015,
+   "pages": null,
+   "url": "https://repository.library.noaa.gov/view/noaa/4898/noaa_4898_DS1.pdf",
+   "page": "https://repository.library.noaa.gov/view/noaa/4898",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "NOAA IR 'Rights Statement: Public Domain'; bibliography on p.109, so over 100 pp (count not checked: NOAA blocked curl after the first downloads)"
+  },
+  {
+   "t": "Field Guide to the Nonindigenous Marine Fishes of Florida",
+   "a": "Pamela J. Schofield, James A. Morris Jr., Lad Akins (USGS / NOAA, Tech. Memo NOS NCCOS 92)",
+   "y": 2009,
+   "pages": 133,
+   "url": "https://repository.library.noaa.gov/view/noaa/12675/noaa_12675_DS1.pdf",
+   "page": "https://repository.library.noaa.gov/view/noaa/12675",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "NOAA IR rights: Public Domain; USGS pubs record 70005287. PDF downloaded, 133 pp, 35 MB"
+  },
+  {
+   "t": "An Illustrated Field Guide to the Fishes of Gray's Reef National Marine Sanctuary",
+   "a": "Matthew R. Gilligan, NOAA National Ocean Service (Tech. Memo NOS MEMD 25)",
+   "y": 1989,
+   "pages": null,
+   "url": "https://repository.library.noaa.gov/view/noaa/26722/noaa_26722_DS1.pdf",
+   "page": "https://repository.library.noaa.gov/view/noaa/26722",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "NOAA IR 'Rights Statement: Public Domain'. Author was a university professor writing for NOAA; page count not checked (24.5 MB)"
+  },
+  {
+   "t": "Fishes of the Gulf of Maine (first revision, Fishery Bulletin 74)",
+   "a": "Henry B. Bigelow & William C. Schroeder, US Fish and Wildlife Service",
+   "y": 1953,
+   "pages": 577,
+   "url": "https://archive.org/download/fishesofgulfofma1953bige/fishesofgulfofma1953bige.pdf",
+   "page": "https://archive.org/details/fishesofgulfofma1953bige",
+   "format": "pdf",
+   "licence": "US government publication (public domain)",
+   "evidence": "Title page: 'United States Department of the Interior, Fish and Wildlife Service ... Fishery Bulletin 74', US Government Printing Office; BHL/MBLWHOI scan, open download (EPUB and text too). Authors were WHOI/Harvard staff, published by FWS"
+  }
+ ],
+ "ento": [
+  {
+   "t": "Insect Science",
+   "a": "University of Queensland (Pressbooks)",
+   "y": 2022,
+   "pages": null,
+   "url": "https://uq.pressbooks.pub/insect-science/",
+   "page": "https://uq.pressbooks.pub/insect-science/",
+   "format": "html",
+   "licence": "CC BY-NC-SA 4.0",
+   "evidence": "Book page: 'published under a CC BY-NC-SA licence unless otherwise noted' (from search snippet; the site blocked my fetch). Year and length not checked"
+  },
+  {
+   "t": "Entomology 311 Lab Manual",
+   "a": "Oregon State University (Scherr)",
+   "y": 2020,
+   "pages": null,
+   "url": "https://open.oregonstate.education/entomology-lab-manual/",
+   "page": "https://open.umn.edu/opentextbooks/textbooks/entomology-311-lab-manual-1st-edition-scherr",
+   "format": "html",
+   "licence": "CC BY-NC 4.0",
+   "evidence": "Open Textbook Library / OSU back matter list CC BY-NC; marked as archived. Not fetched"
+  },
+  {
+   "t": "Lepidoptera of the Pacific Northwest: Caterpillars and Adults",
+   "a": "Jeffrey C. Miller & Paul C. Hammond, USDA Forest Service FHTET (FHTET-2003-03)",
+   "y": 2003,
+   "pages": 324,
+   "url": "https://archive.org/download/CAT30915303/CAT30915303.pdf",
+   "page": "https://archive.org/details/CAT30915303",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Published by FHTET, USDA FS; NAL scan says 'The contributing institution believes that this item is not in copyright.' Authors are university scientists and photos are mostly theirs, so DOUBTFUL"
+  },
+  {
+   "t": "Geometroid Caterpillars of Northeastern and Appalachian Forests",
+   "a": "David L. Wagner et al., USDA Forest Service FHTET (FHTET-2001-10)",
+   "y": 2001,
+   "pages": 250,
+   "url": "https://archive.org/download/CAT11119960/CAT11119960.pdf",
+   "page": "https://archive.org/details/CAT11119960",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "USDA FS publication; NAL scan: 'not in copyright'. Lead author not federal, so DOUBTFUL (same footing as Caterpillars of Eastern Forests)"
+  },
+  {
+   "t": "Guide to Common Bark Beetles (Coleoptera: Scolytidae) Endemic to the Northeastern United States",
+   "a": "Jessica J. Rykken et al., USDA Forest Service FHTET",
+   "y": 1999,
+   "pages": 44,
+   "url": "https://archive.org/download/CAT10874883/CAT10874883.pdf",
+   "page": "https://archive.org/details/CAT10874883",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Publisher: 'Morgantown, WV: USDA, Forest Service, Forest Health Technology Enterprise Team'; NAL: 'not in copyright'. Borderline length (48 scanned pages)"
+  },
+  {
+   "t": "Caterpillars of Eastern Forests",
+   "a": "David L. Wagner, Valerie Giles, Richard C. Reardon, Michael L. McManus, USDA Forest Service FHTET (FHTET-96-34)",
+   "y": 1997,
+   "pages": 113,
+   "url": "https://archive.org/download/caterpillarsofea001997/caterpillarsofea001997.pdf",
+   "page": "https://archive.org/details/caterpillarsofea001997",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Cover: 'Forest Health Technology Enterprise Team ... USDA'; Internet Archive: 'This item is in the public domain.' No copyright notice in the text; Reardon & McManus are FS staff, Wagner is from UConn"
+  },
+  {
+   "t": "Collecting and Preserving Insects and Mites: Techniques and Tools",
+   "a": "M. E. Schauff (ed.), USDA Systematic Entomology Laboratory",
+   "y": 1997,
+   "pages": 69,
+   "url": "https://www.ars.usda.gov/ARSUserFiles/80420580/CollectingandPreservingInsectsandMites/collpres.pdf",
+   "page": "https://www.ars.usda.gov/northeast-area/beltsville-md-barc/beltsville-agricultural-research-center/systematic-entomology-laboratory/",
+   "format": "pdf",
+   "licence": "US government work (USDA ARS)",
+   "evidence": "Title page: 'Edited by M. E. Schauff, Systematic Entomology Laboratory, USDA'; an update of USDA Misc. Pub. 1443. PDF downloaded, 69 pp. A beginner how-to: nets, killing jars, traps, pinning"
+  },
+  {
+   "t": "Butterflies of the Green Mountain National Forest",
+   "a": "John R. Grehan et al., USDA Forest Service",
+   "y": 1996,
+   "pages": 48,
+   "url": "https://archive.org/download/CAT10829700/CAT10829700.pdf",
+   "page": "https://archive.org/details/CAT10829700",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Publisher: U.S. Dept. of Agriculture, Forest Service; NAL scan: 'not in copyright'. Short (52 scanned pages)"
+  },
+  {
+   "t": "Insects and Mites: Techniques for Collection and Preservation (Misc. Publication 1443)",
+   "a": "George C. Steyskal, William L. Murphy, Edna M. Hoover, USDA Agricultural Research Service",
+   "y": 1986,
+   "pages": 103,
+   "url": "https://archive.org/download/insectsmitestech1443stey/insectsmitestech1443stey.pdf",
+   "page": "https://archive.org/details/insectsmitestech1443stey",
+   "format": "pdf",
+   "licence": "US government work (USDA ARS)",
+   "evidence": "Publisher: 'U.S. Dept. of Agriculture, Agricultural Research Service: For sale by the Supt. of Docs., U.S. G.P.O.'; authors were USDA entomologists"
+  },
+  {
+   "t": "Insects of Eastern Forests (Misc. Publication 1426)",
+   "a": "Arnold T. Drooz (ed.), USDA Forest Service",
+   "y": 1985,
+   "pages": 608,
+   "url": "https://archive.org/download/insectsofeastern1426unit/insectsofeastern1426unit.pdf",
+   "page": "https://archive.org/details/insectsofeastern1426unit",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Publisher: 'U.S. Forest Service; for sale by the Supt. of Docs., U.S. Govt. Print. Off.'; NAL: 'not in copyright'. 78 MB"
+  },
+  {
+   "t": "Insects and Diseases of Trees in the South",
+   "a": "USDA Forest Service, Southern Region",
+   "y": 1985,
+   "pages": 98,
+   "url": "https://archive.org/download/CAT85842602/CAT85842602.pdf",
+   "page": "https://archive.org/details/CAT85842602",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Publisher: 'Atlanta, Ga.: U.S. Dept. of Agriculture, Forest Service, Southern Region'; NAL: 'not in copyright'. About half of it is on tree diseases"
+  },
+  {
+   "t": "Western Forest Insects (Misc. Publication 1339)",
+   "a": "R. L. Furniss & V. M. Carolin, USDA Forest Service",
+   "y": 1977,
+   "pages": 654,
+   "url": "https://archive.org/download/westernforestins1339furn/westernforestins1339furn.pdf",
+   "page": "https://archive.org/details/westernforestins1339furn",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Title page: 'U.S. Department of Agriculture, Forest Service, Miscellaneous Publication 1339'; NAL: 'not in copyright'. Also on BHL bibliography/131875"
+  },
+  {
+   "t": "Insects: The Yearbook of Agriculture 1952",
+   "a": "US Department of Agriculture (Alfred Stefferud, ed.)",
+   "y": 1952,
+   "pages": 780,
+   "url": "https://archive.org/download/insectsyearbooko00unit/insectsyearbooko00unit.pdf",
+   "page": "https://archive.org/details/insectsyearbooko00unit",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "Title page: 'United States Department of Agriculture ... United States Government Printing Office'; Internet Archive US Government Documents collection. 96 MB"
+  }
+ ],
+ "bird": [
+  {
+   "t": "Bird Species: How They Arise, Modify and Vanish",
+   "a": "Dieter Thomas Tietze (ed.), Springer (Fascinating Life Sciences)",
+   "y": 2018,
+   "pages": null,
+   "url": "https://link.springer.com/content/pdf/10.1007/978-3-319-91689-7.pdf",
+   "page": "https://link.springer.com/book/10.1007/978-3-319-91689-7",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "OER catalogue record (oer.unair.ac.id) lists Rights creativecommons.org/licenses/by/4.0; Springer open-access book. DOUBTFUL: Springer blocked my fetch, so the licence and download were not checked on the book itself. Ornithology science, not a field guide"
+  },
+  {
+   "t": "A Guide to the Birds of the Hiawatha National Forest (incl. directions to popular birding spots)",
+   "a": "USDA Forest Service, Hiawatha National Forest",
+   "y": 1998,
+   "pages": 44,
+   "url": "https://archive.org/download/CAT10847360/CAT10847360.pdf",
+   "page": "https://archive.org/details/CAT10847360",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Publisher: U.S. Dept. of Agriculture, Forest Service; NAL: 'not in copyright'. Borderline length (48 scanned pages); a real birding guide"
+  },
+  {
+   "t": "Birds of Cimarron National Grassland",
+   "a": "Ted T. Cable, Scott Seltman, Kevin J. Cook, USDA Forest Service Rocky Mountain Station",
+   "y": 1996,
+   "pages": 108,
+   "url": "https://archive.org/download/CAT10755925/CAT10755925.pdf",
+   "page": "https://archive.org/details/CAT10755925",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Publisher: 'U.S. Dept. of Agriculture, Forest Service, Rocky Mountain Forest and Range Experiment Station'; NAL: 'not in copyright'. Lead author was at a university"
+  },
+  {
+   "t": "Birds of the St. Croix River Valley, Minnesota and Wisconsin (North American Fauna 73)",
+   "a": "Craig A. Faanes, US Fish and Wildlife Service",
+   "y": 1981,
+   "pages": 196,
+   "url": "https://archive.org/download/birdsofstcroixri73faan/birdsofstcroixri73faan.pdf",
+   "page": "https://archive.org/details/birdsofstcroixri73faan",
+   "format": "pdf",
+   "licence": "US government work (USFWS)",
+   "evidence": "Publisher: 'Washington, D.C.: Fish and Wildlife Service'; author was FWS staff; 'not in copyright'"
+  },
+  {
+   "t": "Birds of the Superior National Forest",
+   "a": "Janet C. Green, USDA Forest Service",
+   "y": 1980,
+   "pages": 88,
+   "url": "https://archive.org/download/CAT31060010/CAT31060010.pdf",
+   "page": "https://archive.org/details/CAT31060010",
+   "format": "pdf",
+   "licence": "US government publication (USDA Forest Service)",
+   "evidence": "Publisher: 'Duluth, Minn.: Dept. of Agriculture, Forest Service'; NAL: 'not in copyright' (a 1978 printing is CAT79710735). Author not federal"
+  },
+  {
+   "t": "Migration of Birds (Circular 16, revised)",
+   "a": "Frederick C. Lincoln, rev. Steven R. Peterson, US Fish and Wildlife Service",
+   "y": 1979,
+   "pages": 120,
+   "url": "https://archive.org/download/migrationofbirds00lincrich/migrationofbirds00lincrich.pdf",
+   "page": "https://archive.org/details/migrationofbirds00lincrich",
+   "format": "pdf",
+   "licence": "US government work (USFWS)",
+   "evidence": "Publisher: 'Dept. of the Interior, Fish and Wildlife Service: for sale by the Supt. of Docs., U.S. Govt. Print. Off.'; Internet Archive: NOT_IN_COPYRIGHT"
+  },
+  {
+   "t": "Ducks at a Distance: A Waterfowl Identification Guide",
+   "a": "Bob Hines, US Fish and Wildlife Service",
+   "y": 1978,
+   "pages": 56,
+   "url": "https://archive.org/download/ducksatdistancew00hinerich/ducksatdistancew00hinerich.pdf",
+   "page": "https://archive.org/details/ducksatdistancew00hinerich",
+   "format": "pdf",
+   "licence": "US government work (USFWS)",
+   "evidence": "Cover: 'Department of the Interior, U.S. Fish and Wildlife Service'; Hines was the FWS staff artist. PDF downloaded, 56 pp. Also NY DEC copy extapps.dec.ny.gov/docs/wildlife_pdf/ducksatdis.pdf; the 1963 edition is Gutenberg #18884"
+  },
+  {
+   "t": "Cavity-Nesting Birds of Arizona and New Mexico Forests (GTR RM-10)",
+   "a": "Virgil E. Scott, David R. Patton et al., USDA Forest Service",
+   "y": 1975,
+   "pages": 52,
+   "url": "https://archive.org/download/CAT75667385/CAT75667385.pdf",
+   "page": "https://archive.org/details/CAT75667385",
+   "format": "pdf",
+   "licence": "US government work (USDA Forest Service)",
+   "evidence": "Publisher: 'Rocky Mountain Forest and Range Experiment Station, Forest Service, U.S. Dept. of Agriculture'; authors were FS/FWS staff; NAL: 'not in copyright'"
+  },
+  {
+   "t": "Birds in Our Lives",
+   "a": "Alfred Stefferud (ed.), Bob Hines (art), US Fish and Wildlife Service",
+   "y": 1966,
+   "pages": 561,
+   "url": "https://archive.org/download/birdsinourlives00stef/birdsinourlives00stef.pdf",
+   "page": "https://archive.org/details/birdsinourlives00stef",
+   "format": "pdf",
+   "licence": "US government work (USDI / USFWS)",
+   "evidence": "Title page: 'The United States Department of the Interior'; Internet Archive: 'This item is in the public domain.' DOUBTFUL in part: it quotes some copyrighted poems (e.g. 'Copyright 1934, 1959, by Jesse Stuart'); leave those out"
+  },
+  {
+   "t": "Waterfowl Tomorrow",
+   "a": "Joseph P. Linduska (ed.), Bob Hines (art), US Fish and Wildlife Service",
+   "y": 1964,
+   "pages": 770,
+   "url": "https://archive.org/download/waterfowltomorro00unit/waterfowltomorro00unit.pdf",
+   "page": "https://archive.org/details/waterfowltomorro00unit",
+   "format": "pdf",
+   "licence": "US government work (USDI / USFWS)",
+   "evidence": "Publisher: 'U.S. Dept. of the Interior, Bureau of Sport Fisheries and Wildlife, Fish and Wildlife Service; for sale by the Superintendent of Documents'; open download (not lending-only). 89 MB"
+  }
+ ],
+ "bee": [
+  {
+   "t": "The Very Handy Bee Manual: How to Catch and Identify Bees and Manage a Collection (v2.0)",
+   "a": "Sam Droege (USGS Bee Inventory and Monitoring Lab) and collaborators",
+   "y": 2024,
+   "pages": null,
+   "url": "https://zenodo.org/records/12812755/files/beemanual.pdf?download=1",
+   "page": "https://zenodo.org/records/12812755",
+   "format": "pdf",
+   "licence": "CC BY 4.0 (also a USGS staff work)",
+   "evidence": "Zenodo record licence: 'Creative Commons Attribution 4.0 International'; 2.5 MB PDF plus DOCX. Zenodo blocks curl (403) but serves browsers; pages not counted. About native bees, not hives"
+  },
+  {
+   "t": "Good Beekeeping Practices for Sustainable Apiculture",
+   "a": "FAO, Apimondia, CAAS, IZSLT",
+   "y": 2021,
+   "pages": 267,
+   "url": "https://www.fao.org/3/cb5353en/cb5353en.pdf",
+   "page": "https://openknowledge.fao.org/",
+   "format": "pdf",
+   "licence": "CC BY-NC-SA 3.0 IGO",
+   "evidence": "Copyright page: 'Some rights reserved. This work is made available under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 IGO licence'. PDF downloaded, 267 pp"
+  },
+  {
+   "t": "Modern Beekeeping: Bases for Sustainable Production",
+   "a": "Ramón Eduardo Rebolledo Ranz (ed.), IntechOpen",
+   "y": 2020,
+   "pages": 204,
+   "url": "https://mts.intechopen.com/storage/books/8929/authors_book/authors_book.pdf",
+   "page": "https://doi.org/10.5772/intechopen.82888",
+   "format": "pdf",
+   "licence": "CC BY 3.0",
+   "evidence": "Front matter: 'Individual chapters of this publication are distributed under the terms of the Creative Commons Attribution 3.0 Unported License which permits commercial use...'; some images may be excluded. PDF downloaded, 204 pp. An edited research collection, not a beginner's guide"
+  },
+  {
+   "t": "Radicalize the Hive",
+   "a": "Angela Roell, UMass Amherst Libraries",
+   "y": 2020,
+   "pages": null,
+   "url": "https://openbooks.library.umass.edu/radicalizethehive/",
+   "page": "https://openbooks.library.umass.edu/radicalizethehive/",
+   "format": "html",
+   "licence": "CC BY-NC 4.0",
+   "evidence": "'Radicalize the Hive Copyright 2020 by Angela Roell is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License' (Pressbooks; it blocked curl, so its PDF/EPUB export links were not checked). A beginner's beekeeping book"
+  },
+  {
+   "t": "Diagnosis of Honey Bee Diseases (Agriculture Handbook 690)",
+   "a": "Hachiro Shimanuki & David A. Knox, USDA Agricultural Research Service",
+   "y": 2000,
+   "pages": 63,
+   "url": "https://www.mass.gov/doc/diagnosis-of-honey-bee-diseases/download",
+   "page": "https://www.mass.gov/doc/diagnosis-of-honey-bee-diseases",
+   "format": "pdf",
+   "licence": "US government work (USDA ARS)",
+   "evidence": "USDA Agriculture Handbook 690 (1991, rev. 2000) by ARS Bee Research Lab staff; PDF downloaded, 63 pp (state-hosted copy of the federal handbook)"
+  },
+  {
+   "t": "Beekeeping as a Business",
+   "a": "Commonwealth Secretariat",
+   "y": 1999,
+   "pages": null,
+   "url": "https://www.thecommonwealth-ilibrary.org/index.php/comsec/catalog/book/804",
+   "page": "https://www.thecommonwealth-ilibrary.org/index.php/comsec/catalog/book/804",
+   "format": "pdf",
+   "licence": "CC BY-NC-ND 4.0",
+   "evidence": "Catalogue: 'licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License'. ND as well as NC; download link not checked"
+  },
+  {
+   "t": "A Manual for Trainers of Small Scale Beekeeping Development Workers",
+   "a": "Peace Corps (prepared under contract PC 282-1011)",
+   "y": 1983,
+   "pages": 371,
+   "url": "https://archive.org/download/ERIC_ED242921/ERIC_ED242921.pdf",
+   "page": "https://archive.org/details/ERIC_ED242921",
+   "format": "pdf",
+   "licence": "US government publication (Peace Corps), no copyright notice",
+   "evidence": "Peace Corps / ERIC ED242921; no copyright notice in the text (published before 1989 without notice, so public domain in the US). Written by a contractor, so DOUBTFUL-ish; a training course"
+  },
+  {
+   "t": "Small Scale Beekeeping (Appropriate Technologies for Development, Manual M-17)",
+   "a": "Curtis Gentry for the Peace Corps",
+   "y": 1982,
+   "pages": 221,
+   "url": "https://archive.org/download/ERIC_ED241775/ERIC_ED241775.pdf",
+   "page": "https://archive.org/details/ERIC_ED241775",
+   "format": "pdf",
+   "licence": "US government publication (Peace Corps), no copyright notice",
+   "evidence": "'Prepared for the Peace Corps by Curtis Gentry under Contract No. 81-043-1028'; no copyright notice (published 1982 without notice, so public domain in the US). DOUBTFUL because of the contract, but a very good beginner manual. PDF downloaded, 221 pp"
+  },
+  {
+   "t": "Beekeeping in the United States (Agriculture Handbook 335, revised)",
+   "a": "USDA Science and Education Administration (S. E. McGregor et al.)",
+   "y": 1980,
+   "pages": 193,
+   "url": "https://archive.org/download/Beekeeping.in.the.United.StatesD7/Beekeeping.in_.the_.United.States%20D7.pdf",
+   "page": "https://archive.org/details/Beekeeping.in.the.United.StatesD7",
+   "format": "pdf",
+   "licence": "US government work (USDA)",
+   "evidence": "USDA Agriculture Handbook 335 (1967, rev. 1980), scanned from the USDA National Agricultural Library copy; 8.9 MB. The 1967 edition is also at scientificbeekeeping.com"
+  },
+  {
+   "t": "Insect Pollination of Cultivated Crop Plants (Agriculture Handbook 496)",
+   "a": "S. E. McGregor, USDA Agricultural Research Service",
+   "y": 1976,
+   "pages": 411,
+   "url": "https://www.ars.usda.gov/ARSUserFiles/20220500/OnlinePollinationHandbook.pdf",
+   "page": "https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/",
+   "format": "pdf",
+   "licence": "US government work (USDA ARS)",
+   "evidence": "USDA ARS online edition (PDF 849 pages as reflowed; the print book has 411). Long chapters on honey bee management for pollination"
+  }
+ ],
+ "sword": [
+  {
+   "t": "Martial Culture and Historical Martial Arts in Europe and Asia: A Multi-perspective View on Sword Culture",
+   "a": "Hing Chao, Daniel Jaquet, Loretta Kim (eds.), Springer",
+   "y": 2023,
+   "pages": 394,
+   "url": "https://link.springer.com/content/pdf/10.1007/978-981-19-2037-0.pdf",
+   "page": "https://doi.org/10.1007/978-981-19-2037-0",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "PDF front matter: 'This book is licensed under the terms of the Creative Commons Attribution 4.0 International License'. (OAPEN metadata wrongly says BY-NC-ND; the PDF is authoritative.) A history/study of sword culture, not a beginner manual."
+  },
+  {
+   "t": "FMFM 1-1 Marine Bayonet Training",
+   "a": "US Marine Corps",
+   "y": 1965,
+   "pages": 98,
+   "url": "https://archive.org/download/MarineBayonetTraining/MarineBayonetTraining_text.pdf",
+   "page": "https://archive.org/details/MarineBayonetTraining",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "Fleet Marine Force Manual, HQ USMC; no distribution statement printed (predates them). Bayonet, not sword."
+  },
+  {
+   "t": "FM 23-25 Bayonet",
+   "a": "War Department (US Army)",
+   "y": 1943,
+   "pages": 64,
+   "url": "https://archive.org/download/MManuals/UsArmyWwiiBayonetTrainingManual1943.pdf",
+   "page": "https://ibiblio.org/hyperwar/USA/ref/FM/FM23-25/index.html",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "'War Department Basic Field Manual FM 23-25 Bayonet', 7 Sep 1943; HTML transcription on ibiblio HyperWar. Bayonet, not sword."
+  }
+ ],
+ "fight": [
+  {
+   "t": "TC 3-25.150 Combatives",
+   "a": "Headquarters, Department of the Army",
+   "y": 2017,
+   "pages": 408,
+   "url": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/ARN3118_TC%203-25x150%20FINAL%20WEB.pdf",
+   "page": "https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1002122",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "Official APD PDF (31 March 2017): 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.' (A Nov 2016 draft on armywriter.com carries a restricted marking; use the APD file.)"
+  },
+  {
+   "t": "FM 3-25.150 Combatives",
+   "a": "Headquarters, Department of the Army",
+   "y": 2002,
+   "pages": 264,
+   "url": "https://archive.org/download/MManuals/Fm3-25.150Combatives.pdf",
+   "page": "https://www.globalsecurity.org/military/library/policy/army/fm/3-25-150/index.html",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "Cover, 18 January 2002: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "FM 21-150 Combatives",
+   "a": "Headquarters, Department of the Army",
+   "y": 1992,
+   "pages": 223,
+   "url": "https://archive.org/download/MManuals/UsArmyFm21-150Combatives1992.pdf",
+   "page": "https://archive.org/details/MManuals",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "30 September 1992: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "FM 21-150 Hand-to-Hand Combat",
+   "a": "Department of the Army",
+   "y": 1971,
+   "pages": 157,
+   "url": "https://archive.org/download/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo/fm_21-150_hand_to_hand_combat_1971_deal_the_first_deadly_blow.pdf",
+   "page": "https://archive.org/details/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "Army field manual; scan has no text layer, so the distribution statement could not be read (needs OCR)."
+  },
+  {
+   "t": "Hand to Hand Combat for Amphibious Scouts",
+   "a": "US Naval Amphibious Training Base, Fort Pierce",
+   "y": 1945,
+   "pages": 148,
+   "url": "https://archive.org/download/HandToHandCombatForAmphibiousScouts-nsia/HandToHandCombatForAmphibiousScouts_text.pdf",
+   "page": "https://archive.org/details/HandToHandCombatForAmphibiousScouts-nsia",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "Navy training-base course book, 1945; no distribution statement (predates them)."
+  },
+  {
+   "t": "FM 21-150 Unarmed Defense for the American Soldier",
+   "a": "War Department (US Army)",
+   "y": 1942,
+   "pages": 75,
+   "url": "https://archive.org/download/Fm21-150/Fm21-150.pdf",
+   "page": "https://archive.org/details/Fm21-150",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "'Basic Field Manual ... War Department, Washington, June 30, 1942. ... BY ORDER OF THE SECRETARY OF WAR'."
+  }
+ ],
+ "climb": [
+  {
+   "t": "TC 3-97.61 Military Mountaineering",
+   "a": "Headquarters, Department of the Army",
+   "y": 2025,
+   "pages": 432,
+   "url": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN45366-TC_3-97.61-000-WEB-1.pdf",
+   "page": "https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1032223",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "Dated 26 Nov 2025: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.' Supersedes TC 3-97.61 (2012)."
+  },
+  {
+   "t": "ATP 3-21.50 Infantry Small-Unit Mountain and Cold Weather Operations",
+   "a": "Headquarters, Department of the Army",
+   "y": 2025,
+   "pages": 200,
+   "url": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/ARN44366-ATP_3-21.50-000-WEB-1.pdf",
+   "page": "https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1031476",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "29 July 2025: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "MCRP 12-10A.1 Small Unit Leader's Guide to Mountain Warfare Operations",
+   "a": "US Marine Corps",
+   "y": 2018,
+   "pages": 228,
+   "url": "https://archive.org/download/small-unit-leaders-guide-to-mountain-warfare-operations-mcrp-12-10-a.-1/Small%20Unit%20Leader%E2%80%99s%20Guide%20to%20Mountain%20Warfare%20Operations%20-%20MCRP%2012-10A.1.pdf",
+   "page": "https://archive.org/details/small-unit-leaders-guide-to-mountain-warfare-operations-mcrp-12-10-a.-1",
+   "format": "pdf",
+   "licence": "US government work; Distribution Statement A",
+   "evidence": "'DISTRIBUTION STATEMENT A: Approved for public release; distribution is unlimited.' (Change 1, 4 April 2018)."
+  },
+  {
+   "t": "MCRP 12-10A.2 Mountain Leader's Guide to Winter Operations",
+   "a": "US Marine Corps",
+   "y": 2018,
+   "pages": 90,
+   "url": "https://archive.org/download/mountain-leaders-guide-to-winter-operations-mcrp-12-10-a.-2_202604/Mountain%20Leader%27s%20Guide%20to%20Winter%20Operations%20-%20MCRP%2012-10A.2.pdf",
+   "page": "https://archive.org/details/mountain-leaders-guide-to-winter-operations-mcrp-12-10-a.-2_202604",
+   "format": "pdf",
+   "licence": "US government work; Distribution Statement A",
+   "evidence": "'DISTRIBUTION STATEMENT A: Approved for public release; distribution is unlimited.' (Change 1, 4 April 2018)."
+  },
+  {
+   "t": "ATP 3-90.97 Mountain Warfare and Cold Weather Operations",
+   "a": "Headquarters, Department of the Army",
+   "y": 2016,
+   "pages": 156,
+   "url": "https://armypubs.army.mil/epubs/DR_pubs/DR_a/pdf/web/atp3_90x97.pdf",
+   "page": "https://armypubs.army.mil/ProductMaps/PubForm/Details.aspx?PUB_ID=1001536",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "29 April 2016: 'DISTRIBUTION RESTRICTION: Approved for public release. Distribution is unlimited.'"
+  },
+  {
+   "t": "FM 3-97.61 Military Mountaineering",
+   "a": "Headquarters, Department of the Army",
+   "y": 2002,
+   "pages": 324,
+   "url": "https://archive.org/download/MManuals/Fm3-97UsArmyMilitaryMountaineering2002.pdf",
+   "page": "https://www.globalsecurity.org/military/library/policy/army/fm/3-97-61/index.html",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "August 2002: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "FM 3-97.6 Mountain Operations",
+   "a": "Headquarters, Department of the Army",
+   "y": 2000,
+   "pages": 140,
+   "url": "https://archive.org/download/MManuals/Fm90-6UsArmyMountainOperations2000.pdf",
+   "page": "https://archive.org/details/MManuals",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "November 2000: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "TC 21-24 Rappelling",
+   "a": "Headquarters, Department of the Army",
+   "y": 1997,
+   "pages": 145,
+   "url": "https://archive.org/download/MManuals/Tc21-24UsArmyRappelling1997.pdf",
+   "page": "https://archive.org/details/MManuals",
+   "format": "pdf",
+   "licence": "US government work; Approved for public release",
+   "evidence": "10 September 1997: 'DISTRIBUTION RESTRICTION: Approved for public release; distribution is unlimited.'"
+  },
+  {
+   "t": "FM 31-72 Mountain Operations",
+   "a": "Department of the Army",
+   "y": 1964,
+   "pages": 160,
+   "url": "https://archive.org/download/FM_31_72_M_O_1964/FM%2031-72%20Mountain%20Operations%20%281964%29.pdf",
+   "page": "https://archive.org/details/FM_31_72_M_O_1964",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "Army field manual, 1964; no distribution statement printed."
+  },
+  {
+   "t": "FM 70-10 Mountain Operations",
+   "a": "War Department (US Army)",
+   "y": 1944,
+   "pages": 253,
+   "url": "https://archive.org/download/FM_70_10_W_D_F_M_M_O_1944/FM%2070-10%20War%20Department%20Field%20Manual%2C%20Mountain%20Operations%20%281944%29.pdf",
+   "page": "https://archive.org/details/FM_70_10_W_D_F_M_M_O_1944",
+   "format": "pdf",
+   "licence": "US government work (public domain)",
+   "evidence": "'War Department Field Manual FM 70-10 Mountain Operations', 1944."
+  }
+ ],
+ "bind": [
+  {
+   "t": "Collections Care Section: General Manual (Basic Minor Treatments; Intermediate Treatments I and II; Policy, Practices, Treatment Procedures)",
+   "a": "Library of Congress, Preservation Directorate, Collections Care Section",
+   "y": 2015,
+   "pages": 108,
+   "url": "https://www.loc.gov/preservation/care/PDF/basic_treat.pdf",
+   "page": "https://www.loc.gov/preservation/care/ccs_manual.html",
+   "format": "pdf",
+   "licence": "US government work (Library of Congress staff)",
+   "evidence": "LoC's own staff manual on loc.gov, no copyright notice: 'the standard protocol for treatment for the General and Reference Collections at the Library of Congress'. Seven PDFs: Intro.pdf, Policy.pdf, wrkflow_prac.pdf, treatproc.pdf, basic_treat.pdf (27 pp), intermed_treat1.pdf (31 pp), intermed_treat2.pdf (37 pp) under https://www.loc.gov/preservation/care/PDF/"
+  },
+  {
+   "t": "Museum Handbook Part I, Appendix J: Curatorial Care of Paper Objects",
+   "a": "Sara J. Wolf, National Park Service",
+   "y": 2003,
+   "pages": 33,
+   "url": "https://www.nps.gov/subjects/museums/upload/MHI_AppJ_PaperObjects.pdf",
+   "page": "https://www.nps.gov/subjects/museums/mh1.htm",
+   "format": "pdf",
+   "licence": "US government work (NPS)",
+   "evidence": "NPS Museum Handbook, by an NPS conservator. Short (33 dense pages): under the 40-page guide."
+  },
+  {
+   "t": "Book Preservation Technologies",
+   "a": "US Congress, Office of Technology Assessment",
+   "y": 1988,
+   "pages": 124,
+   "url": "https://files.eric.ed.gov/fulltext/ED297778.pdf",
+   "page": "https://eric.ed.gov/?id=ED297778",
+   "format": "pdf",
+   "licence": "US government work",
+   "evidence": "OTA report to Congress (OTA-O-375), a federal agency publication; about paper decay and deacidification, not a hands-on guide."
+  },
+  {
+   "t": "Bookbinding and the Conservation of Books: A Dictionary of Descriptive Terminology",
+   "a": "Matt T. Roberts and Don Etherington (Library of Congress, National Preservation Program)",
+   "y": 1982,
+   "pages": 318,
+   "url": "https://files.eric.ed.gov/fulltext/ED232698.pdf",
+   "page": "https://eric.ed.gov/?id=ED232698",
+   "format": "pdf",
+   "licence": "US government work (Library of Congress publication)",
+   "evidence": "Published by the Library of Congress, sold by the Superintendent of Documents (LC 1.2:B64/3); no copyright notice on the title or verso pages. Doubt: Roberts may not have been a federal employee."
+  },
+  {
+   "t": "Lithographer 3 & 2 (Rate Training Manual, NAVEDTRA 10452-C)",
+   "a": "US Navy, Naval Education and Training Command",
+   "y": 1975,
+   "pages": 662,
+   "url": "https://files.eric.ed.gov/fulltext/ED110635.pdf",
+   "page": "https://eric.ed.gov/?id=ED110635",
+   "format": "pdf",
+   "licence": "US government work",
+   "evidence": "Navy training manual NAVEDTRA 10452-C, sold by the Superintendent of Documents, GPO; covers printing, platemaking, presswork and bindery."
+  },
+  {
+   "t": "Military Curricula for Vocational & Technical Education: Offset Printing, 5-5",
+   "a": "Defense Mapping School (US Army, Fort Belvoir); compiled by National Center for Research in Vocational Education",
+   "y": 1974,
+   "pages": 912,
+   "url": "https://files.eric.ed.gov/fulltext/ED183827.pdf",
+   "page": "https://eric.ed.gov/?id=ED183827",
+   "format": "pdf",
+   "licence": "US government work (military course reproduced under a US Office of Education project)",
+   "evidence": "ERIC resume: institution 'Defense Mapping School, Fort Belvoir, Va.'; sponsor 'Bureau of Occupational and Adult Education (DHEW/OE)'. Lessons and workbooks include bindery work. Doubt: the compiler's own front matter may not be a federal work."
+  },
+  {
+   "t": "Theory and Practice of Bookbinding (Apprentice Training Series)",
+   "a": "US Government Printing Office",
+   "y": 1962,
+   "pages": 244,
+   "url": "https://iiif.wellcomecollection.org/pdf/b32173647",
+   "page": "https://wellcomecollection.org/works/gudz2fku",
+   "format": "pdf",
+   "licence": "US government work (Public Domain Mark at Wellcome)",
+   "evidence": "Wellcome item licence: 'Public Domain Mark'; GPO apprentice textbook. The PDF is 58 MB of page scans; plain text at https://api.wellcomecollection.org/text/v1/b32173647. Also full view on HathiTrust: https://catalog.hathitrust.org/Record/001175525"
+  },
+  {
+   "t": "The Making of a Book (GPO Apprentice Series No. 10)",
+   "a": "US Government Printing Office (John Greene, Deputy Public Printer)",
+   "y": 1933,
+   "pages": 152,
+   "url": "https://www.govinfo.gov/content/pkg/GOVPUB-GP-525ef06e406af91089103f8b5eecfb25/pdf/GOVPUB-GP-525ef06e406af91089103f8b5eecfb25.pdf",
+   "page": "https://www.govinfo.gov/app/details/GOVPUB-GP-525ef06e406af91089103f8b5eecfb25",
+   "format": "pdf",
+   "licence": "US government work",
+   "evidence": "govinfo rights statement: 'This document is a work of the United States Government and is not subject to copyright pursuant to 17 USC 105.' HTML text also at the same package's /html/ path."
+  }
+ ],
+ "golf": [
+  {
+   "t": "Marketing for Golf Management",
+   "a": "Colin Robertson (Fanshawe College / eCampusOntario)",
+   "y": 2024,
+   "pages": null,
+   "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/2249/3/Marketing-for-Golf-Management-1714672506.pdf",
+   "page": "https://openlibrary-repo.ecampusontario.ca/jspui/handle/123456789/2249",
+   "format": "pdf",
+   "licence": "CC BY-NC-SA 4.0 (NC)",
+   "evidence": "Repository rights field: CC BY-NC-SA 4.0. About the golf business, not about playing."
+  },
+  {
+   "t": "Business Fundamentals for the Golf & Club Industry - Canadian Edition",
+   "a": "Robert Foster (Fanshawe College Pressbooks)",
+   "y": 2022,
+   "pages": null,
+   "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/1693/2/Business-Fundamentals-for-the-Golf-amp-Club-Industry-1657048465.pdf",
+   "page": "https://openlibrary-repo.ecampusontario.ca/jspui/handle/123456789/1693",
+   "format": "pdf",
+   "licence": "CC BY-NC-SA 4.0 (NC)",
+   "evidence": "Repository rights field: CC BY-NC-SA 4.0. About the golf business, not about playing."
+  },
+  {
+   "t": "Introduction to Golf (UGA)",
+   "a": "James Castle, Ilse Mason, Sophie Walter, Stephen Bridges, Stephen Balfour (University of Georgia)",
+   "y": 2019,
+   "pages": null,
+   "url": "https://open.online.uga.edu/golf/",
+   "page": "https://oer.galileo.usg.edu/health-textbooks/6",
+   "format": "html",
+   "licence": "CC BY 4.0",
+   "evidence": "GALILEO Open Learning Materials record: 'Creative Commons Attribution 4.0 International License'. Pressbooks site (etiquette, rules, clubs, putting & chipping, pitch & bunker, skills, concepts). Not checked: the length and the PDF export, because the site's CloudFront blocks this workspace (try https://open.online.uga.edu/golf/open/download?type=pdf from a browser)."
+  }
+ ],
+ "gem": [
+  {
+   "t": "Mineralogy (Perkins et al.)",
+   "a": "Dexter Perkins et al. (University of North Dakota; LibreTexts)",
+   "y": 2023,
+   "pages": 833,
+   "url": "https://batch.libretexts.org/print/Letter/Finished/geo-17509/Full.pdf",
+   "page": "https://geo.libretexts.org/Bookshelves/Geology/Mineralogy_(Perkins_et_al.)",
+   "format": "pdf",
+   "licence": "CC BY-NC-SA 4.0 (NC)",
+   "evidence": "LibreTexts book licence: CC BY-NC-SA 4.0. Full mineralogy course, including hand-specimen identification and mineral descriptions."
+  },
+  {
+   "t": "Gemology",
+   "a": "The Gemology Project (LibreTexts)",
+   "y": 2022,
+   "pages": null,
+   "url": "https://geo.libretexts.org/Bookshelves/Geology/Gemology",
+   "page": "https://geo.libretexts.org/Bookshelves/Geology/Gemology",
+   "format": "html",
+   "licence": "CC BY-NC-SA 2.5 (NC)",
+   "evidence": "LibreTexts page licence: 'CC BY-NC-SA 2.5'. 17 chapters: crystallography, optics, hardness, SG, equipment, inclusions, treatments, synthetics, gem descriptions, lapidary. The full-book PDF (batch.libretexts.org/.../geo-3164/Full.pdf) came back broken (1 page); use HTML."
+  },
+  {
+   "t": "Physical Geology, 2nd Edition",
+   "a": "Steven Earle (BCcampus)",
+   "y": 2019,
+   "pages": null,
+   "url": "https://openlibrary-repo.ecampusontario.ca/jspui/bitstream/123456789/713/3/Physical-Geology-2nd-Edition-1591817334.pdf",
+   "page": "https://opentextbc.ca/physicalgeology2ed/",
+   "format": "pdf",
+   "licence": "CC BY 4.0",
+   "evidence": "eCampusOntario record rights: CC BY 4.0; the book's 'Exceptions to the CC BY Licence' page lists some figures under other licences. A general geology textbook (minerals, crystals and rocks chapters), not about gems. The PDF is 249 MB; an EPUB and XHTML are on the same record."
+  },
+  {
+   "t": "Natural Gemstones (General Interest Publication, version 1.1)",
+   "a": "US Geological Survey",
+   "y": 2001,
+   "pages": 20,
+   "url": "https://pubs.usgs.gov/gip/7000029/report.pdf",
+   "page": "https://pubs.usgs.gov/gip/gemstones/",
+   "format": "pdf",
+   "licence": "US government work (USGS)",
+   "evidence": "USGS General Interest Publication (pubs.usgs.gov 7000029/7000030); the PDF is the 1992 printing and the HTML is v1.1 (2001). Short (20 pp): a beginner primer, under 40 pages."
+  },
+  {
+   "t": "Gemstones: An Overview of Production of Specific U.S. Gemstones (Special Publication 14-95)",
+   "a": "US Bureau of Mines",
+   "y": 1995,
+   "pages": 55,
+   "url": "https://apps.usgs.gov/minerals-information-archives/gemstones/sp14-95/contents.html",
+   "page": "https://pubs.usgs.gov/publication/7000012",
+   "format": "html",
+   "licence": "US government work",
+   "evidence": "Federal Bureau of Mines publication, now hosted by USGS: 'contains the text of the originally published book in its entirety'. 17 HTML pages, about 17,000 words; the page count is estimated from that."
+  },
+  {
+   "t": "Gem Stones of the United States (Bulletin 1042-G)",
+   "a": "Dorothy M. Schlegel, US Geological Survey",
+   "y": 1957,
+   "pages": 53,
+   "url": "https://pubs.usgs.gov/bul/1042g/report.pdf",
+   "page": "https://pubs.usgs.gov/publication/b1042G",
+   "format": "pdf",
+   "licence": "US government work (USGS)",
+   "evidence": "USGS Bulletin 1042-G, pp. 203-253; USGS publications are public domain."
+  }
+ ]
+}

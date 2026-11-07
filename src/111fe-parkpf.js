@@ -1,17 +1,14 @@
 // THE PARK'S POLYFORK THINGS: data/world.json's things with k 'p:<key>' (data/parkpf.json, tools/park-pf-bake.py), baked a patch of ground at a time into still meshes; only near patches drawn, small things nearer still, shadows close by; the big ones solid; the lamps lit at night.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CLOCK, DN, LITE, PARK, pos, UI, USE} from './003b-systems.js';
+import {CLOCK, DN, LITE, PARK, pos, UI, USE, WE, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]};
 { const DATA=__LAZY__("data/parkpf.json"), CELL=24, FAR=72, NEAR=36, SHD=28;
   const LAMP={globelamp:1,colonial:1,campuslamp:1,jlamp:1,sealamp:1,stringlights:.6};
-  const SOLID=new Set(['boatshed','conservatory','greenhouse','toilet','seatoilet','refresh','coffee','newsstand','icecream','hotdog','founder','plazafountain','campusfountain','zen','trailmap','trailhead','lion','picnictable','library',
-    'ironbench','parkbench','campusbench','logbench','b2bbench','amphi','basket','trashcan','planter','planterbox','bollard','drink','sphere','birdbath','beehive','bikerack','wayfind','campusrail','bowtop','arearail','ironfence']);
-  const POST={colonial:.32,globelamp:.32,sealamp:.32,campuslamp:.3,jlamp:.34,birdhouse:.26};   // a lamp or a pole: only its post is in the way, not its head
-  const SEAT=new Set(['ironbench','parkbench','campusbench','logbench','b2bbench','amphi']);
+  const SOLID=new Set(['boatshed','conservatory','greenhouse','toilet','seatoilet','refresh','coffee','newsstand','icecream','hotdog','founder','plazafountain','campusfountain','zen','trailmap','trailhead','lion','picnictable','library']);
   const WET=new Set(['raft','canoe','kayak','skiff','duck','dock','launch','lifebuoy','archbridge','creekbridge','woodbridge','logbridge','trestle']);
   const BRIDGE=new Set(['archbridge','creekbridge','woodbridge','logbridge','trestle']);
   const mat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
@@ -32,20 +29,23 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
         if(!f){ PARKPF.skipped.push(o.k+'@'+o.x+','+o.y); continue; } [mx,my]=f; PARKPF.moved++; }
       const x=B.XS(mx), z=B.ZS(my), y=o.float?water(x,z):(SHARED.groundY?SHARED.groundY(x,z):0);
       const big=Math.max(sx,sz)>=2.4||sy>=2.5, key=Math.floor(mx/CELL)+','+Math.floor(my/CELL)+(big?'b':'s'); let c=cells.get(key); if(!c)cells.set(key,c={big,L:[],n:0,t:0});
-      const m=model(Dk); c.L.push({m,x,y,z,ca,sa}); c.n+=m.n; c.t+=m.I.length;
-      if(LAMP[k]){ const h=m.head, M_=M; lampAt.push([x+(h[0]*ca+h[2]*sa)*M_,y+h[1]*M_,z+(-h[0]*sa+h[2]*ca)*M_,LAMP[k]]); }
-      if(SOLID.has(k)||POST[k]){ const top=y+sy*M, put=(cx,cz,hx,hz)=>{ const s=[cx-hx,cz-hz,cx+hx,cz+hz]; SOL.up.push(s); FIX.up.push([s[0],s[1],y,s[2],s[3],top]); PARKPF.solids++; };
+      const m=model(Dk), it={k:k,x,y,z}; c.L.push({m,x,y,z,ca,sa,it}); c.n+=m.n; c.t+=m.I.length;
+      if(LAMP[k]){ const h=m.head, M_=M; lampAt.push([x+(h[0]*ca+h[2]*sa)*M_,y+h[1]*M_,z+(-h[0]*sa+h[2]*ca)*M_,LAMP[k],it]); }
+      if(SOLID.has(k)||POST[k]){ const top=y+sy*M, put=(cx,cz,hx,hz)=>{ const s=[cx-hx,cz-hz,cx+hx,cz+hz], f=[s[0],s[1],y,s[2],s[3],top]; SOL.up.push(s); FIX.up.push(f); if(it.sol)(it.more=it.more||[]).push([s,f]); else { it.sol=s; it.fix=f; } PARKPF.solids++; };
         if(POST[k])put(x,z,POST[k]/2*M,POST[k]/2*M);
         else { const L=Math.max(sx,sz), W=Math.min(sx,sz), n=Math.abs(Math.sin(2*a))<.05?1:Math.max(1,Math.ceil(L/Math.max(.35,W*1.5))), ux=sx>=sz?ca:sa, uz=sx>=sz?-sa:ca, lx=sx>=sz?sx/n:sx, lz=sx>=sz?sz:sz/n;   // a turned rail or bench: short boxes along it, not one box over its corner
           const hx=(Math.abs(ca)*lx+Math.abs(sa)*lz)/2*M, hz=(Math.abs(sa)*lx+Math.abs(ca)*lz)/2*M; for(let i=0;i<n;i++){ const t=(-L/2+(i+.5)*L/n)*M; put(x+ux*t,z+uz*t,hx,hz); } }
         if(SEAT.has(k))seats.push({m,x,y,z,a,hx:ex*M,hz:ez*M,h:sy*M}); } }
-    for(const c of cells.values()){ const P=new Float32Array(c.n*3), C=new Float32Array(c.n*3), I=c.n>65535?new Uint32Array(c.t):new Uint16Array(c.t); let v=0, j=0;
-      for(const {m,x,y,z,ca,sa} of c.L){ for(let i=0;i<m.n;i++){ const px=m.P[i*3]*M, py=m.P[i*3+1]*M, pz=m.P[i*3+2]*M, w=(v+i)*3; P[w]=x+px*ca+pz*sa; P[w+1]=y+py; P[w+2]=z-px*sa+pz*ca; }
-        C.set(m.C,v*3); for(let i=0;i<m.I.length;i++)I[j+i]=m.I[i]+v; v+=m.n; j+=m.I.length; }
-      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeBoundingSphere();
-      const me=new THREE.Mesh(g,mat); me.matrixAutoUpdate=false; me.receiveShadow=true; me.castShadow=false; me.visible=false; me.userData.parkpf=1; root.add(me);
-      const bs=g.boundingSphere; PARKPF.patches.push({me,big:c.big,x:bs.center.x,z:bs.center.z,r:bs.radius,tris:c.t/3}); PARKPF.tris+=c.t/3; }
-    lights(lampAt,root); sits(seats,root,M); PARKPF.done=true; cull(); };
+    // each patch one batch (one draw), a thing its own entry in it, so the world editor picks, moves and hides each one (owner, 7 Nov 2026: "make sure everything in game can be edited")
+    for(const c of cells.values()){ const me=new THREE.BatchedMesh(c.L.length,c.n,c.t,mat), items=[];
+      for(const {m,x,y,z,ca,sa,it} of c.L){ const P=new Float32Array(m.n*3);
+        for(let i=0;i<m.n;i++){ const px=m.P[i*3]*M, py=m.P[i*3+1]*M, pz=m.P[i*3+2]*M; P[i*3]=x+px*ca+pz*sa; P[i*3+1]=y+py; P[i*3+2]=z-px*sa+pz*ca; }
+        const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(m.C,3)); g.setIndex(new THREE.BufferAttribute(m.I,1));
+        me.addInstance(me.addGeometry(g)); items.push(it); }
+      me.computeBoundingSphere();
+      me.matrixAutoUpdate=false; me.receiveShadow=true; me.castShadow=false; me.visible=false; me.userData.parkpf=1; root.add(me); WED.meshes.push({place:'park',me,items});
+      const bs=me.boundingSphere; PARKPF.patches.push({me,big:c.big,x:bs.center.x,z:bs.center.z,r:bs.radius,tris:c.t/3}); PARKPF.tris+=c.t/3; }
+    lights(lampAt,root); sits(seats,root,M); PARKPF.done=true; cull(); if(WE.late)WE.late(); };
   // the benches: double-click one to sit (USE finds its seat and its back from the bench's own shape)
   const sits=(L,root,M)=>{ const HM=new THREE.MeshBasicMaterial({visible:false});
     for(const b of L){ const hb=new THREE.Mesh(new THREE.BoxGeometry(b.hx*2,b.h,b.hz*2),HM); hb.position.set(b.x,b.y+b.h/2,b.z); root.add(hb); let me=null;
@@ -53,7 +53,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
       UI.thing(th); } PARKPF.seats=L.length; };
   // the lamps at night (owner, 7 Nov 2026: "make the park lamps light up at night"): each a light record in the pool (LITE: the nearest few lit for real, the rest a glow on the ground), their heads one glowing points draw
   const lights=(L,root)=>{ const T=TILE, recs=[], pp=new Float32Array(L.length*3);
-    L.forEach(([x,y,z,k],i)=>{ const l=new THREE.PointLight(new THREE.Color(1,.84,.58),40*k,14*T*k,1.6); l.position.set(x,y,z); l.userData.i0=40*k; l.userData.grp=root; l.intensity=0; l.castShadow=false; recs.push(l); LITE.recs.push(l); pp.set([x,y,z],i*3); });
+    L.forEach(([x,y,z,k,it],i)=>{ const l=new THREE.PointLight(new THREE.Color(1,.84,.58),40*k,14*T*k,1.6); l.position.set(x,y,z); l.userData.i0=40*k; l.userData.grp=root; l.intensity=0; l.castShadow=false; recs.push(l); LITE.recs.push(l); pp.set([x,y,z],i*3); if(it)it.follow=[l]; });
     const W=32, cv=document.createElement('canvas'); cv.width=cv.height=W; const g=cv.getContext('2d'), im=g.createImageData(W,W);
     for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), a=d<.22?1:d<.45?.45:d<.75?.16:0, o=(j*W+i)*4; im.data[o]=255; im.data[o+1]=d<.22?240:206; im.data[o+2]=d<.22?200:140; im.data[o+3]=a*255; }
     g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;

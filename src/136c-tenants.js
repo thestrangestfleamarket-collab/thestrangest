@@ -1,4 +1,4 @@
-// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages; worker/door.js /admin) and the letters the market sends you (/post).
+// THE TENANTS: the owner's panel (from ADMIN) (players, invite codes, messages, paintings; worker/door.js /admin) and the letters the market sends you (/post).
 import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
@@ -7,45 +7,58 @@ import {SYS} from './006-map-pre.js';
     let r; try{ r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
+  // each part folds; which are folded is kept in this browser
+  const SECS=['codes','bots','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
+  const keep=()=>{ try{ localStorage.setItem('tenants-folds',JSON.stringify(SEC)); }catch(e){} };
+  const sec=(k,t,body)=>`<details data-sec="${k}"${SEC[k]?'':' open'}><summary style="cursor:pointer;list-style:none"><h3 style="display:inline">${SEC[k]?'▸':'▾'} ${t}</h3></summary>${body}</details>`;
 
   /* ---------- the panel ---------- */
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
     const U=D.users.slice().sort((a,b)=>((a.player&&a.player.apt)||1e9)-((b.player&&b.player.apt)||1e9)), on=U.filter(u=>u.online).length;
-    const opts='<option value="*">EVERYONE</option>'+U.map(u=>`<option value="${esc(u.id)}">${esc((u.player&&u.player.apt?u.player.apt+' · ':'')+u.email)}</option>`).join('');
-    el.innerHTML=`<h3>TENANTS</h3><div class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</div>
-      <h3>INVITE CODES</h3><div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button><span id="tnew"></span></div>
-      <div>${D.codes.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)} of ${esc(c.max_uses)} used</span><span class="dim">${esc(Object.entries(c).filter(([k,v])=>!['code','uses','max_uses'].includes(k)&&v!=null&&v!=='').map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · '))}</span>${c.uses<c.max_uses?`<button class="btn" data-off="${esc(c.code)}">TURN OFF</button>`:'<span class="dim">used up</span>'}</div>`).join('')||'<div class="dim">no codes</div>'}</div>
-      <h3>MESSAGE</h3><div class="row"><span>TO</span><select id="tto" style="font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${opts}</select></div>
-      <div class="row"><input id="tsub" type="text" maxlength="120" placeholder="subject (letters and email)" style="flex:1;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"></div>
-      <div class="row"><textarea id="ttext" rows="3" maxlength="4000" placeholder="your message" style="flex:1;min-width:240px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:6px"></textarea></div>
-      <div class="row"><label><input type="checkbox" id="tlive" checked> LIVE (if online)</label><label><input type="checkbox" id="tletter"> LETTER (next time they come in)</label><label${D.email?'':' class="dim"'}><input type="checkbox" id="temail"${D.email?'':' disabled'}> EMAIL${D.email?'':' (not set up)'}</label><button class="btn" id="tsend">SEND</button></div>
-      <div id="tbots"></div>
-      <h3>PLAYERS</h3>${U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
+    const live=D.codes.filter(c=>c.uses<c.max_uses), done=D.codes.length-live.length;
+    el.innerHTML=`<h3>TENANTS</h3><div class="row"><span class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</span><button class="btn" id="tfold">${Object.keys(SEC).length&&SECS.every(k=>SEC[k])?'OPEN ALL':'COLLAPSE ALL'}</button></div>
+      ${sec('codes','INVITE CODES',`<div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button></div>
+      ${live.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)}/${esc(c.max_uses)}</span><button class="btn" data-off="${esc(c.code)}">TURN OFF</button></div>`).join('')||'<div class="dim">no codes open</div>'}${done?`<div class="dim">${done} used up</div>`:''}`)}
+      ${sec('bots','BOTS','<div id="tbots"></div>')}
+      ${sec('players','PLAYERS',U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
         <div class="row"><b>${esc(p.apt||'—')}</b><span>${esc(u.email)}</span>${u.online?'<span style="color:#7fdc8a">ONLINE</span>':''}${u.admin?'<span style="color:#ffd27a">OWNER</span>':''}${u.banned?'<span style="color:#e06a5a">BANNED</span>':''}<span class="dim">joined ${esc(day(u.joined))} · last in ${esc(day(u.last))}</span><button class="btn" data-a="more">${open===u.id?'LESS':'MORE'}</button></div>
         ${open===u.id?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(Object.entries({id:u.id,phone:u.phone,confirmed:u.confirmed,provider:u.provider,...p}).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join('\n'))}</div>
           <div class="row"><span>EMAIL</span><input data-f="email" type="text" value="${esc(u.email)}" style="width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>APT</span><input data-f="apt" type="number" value="${esc(p.apt??'')}" style="width:70px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>NEW PASSWORD</span><input data-f="password" type="text" placeholder="8 or more" style="width:120px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" data-a="save">SAVE</button></div>
-          <div class="row"><button class="btn" data-a="admin">${u.admin?'NOT AN OWNER':'MAKE AN OWNER'}</button><button class="btn" data-a="ban">${u.banned?'UNBAN':'BAN'}</button><button class="btn" data-a="delete">DELETE</button></div>`:''}</div>`; }).join('')}
-      <h3>LETTERS SENT</h3>${D.letters.length?D.letters.slice(0,20).map(l=>`<div class="dim">${esc(day(l.at))} · to ${esc(l.too==='*'?'EVERYONE':((U.find(u=>u.id===l.too)||{}).email||l.too))} · ${esc(l.subject)} · read ${esc(l.read)}</div>`).join(''):'<div class="dim">none yet</div>'}
-      <h3>TEXT</h3><div class="dim">The game's text boxes. Change the words and everyone sees them, on the signs at once. A {part} fills itself in. Empty puts the game's own words back.</div>
-      ${TEXT.list().map(t=>`<div class="row" data-txt="${esc(t.id)}"><code style="min-width:130px">${esc(t.id)}</code><input type="text" maxlength="200" value="${esc(t.cur??t.def)}" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${t.cur!=null?`<span class="dim">was: ${esc(t.def)}</span>`:''}</div>`).join('')}
-      ${SIGNS.list.map(sg=>`<div class="row" data-sign="${esc(sg.name)}"><code style="min-width:130px">${esc(sg.name)}</code><input type="text" maxlength="200" value="${esc((sg.get&&sg.get().text)||'')}" placeholder="the sign's own words" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"></div>`).join('')}`;
+          <div class="row"><button class="btn" data-a="admin">${u.admin?'NOT AN OWNER':'MAKE AN OWNER'}</button><button class="btn" data-a="ban">${u.banned?'UNBAN':'BAN'}</button><button class="btn" data-a="delete">DELETE</button></div>`:''}</div>`; }).join(''))}`;
+    el.querySelectorAll('details[data-sec]').forEach(d=>d.ontoggle=()=>{ SEC[d.dataset.sec]=!d.open; keep(); const h=d.querySelector('summary h3'); if(h)h.textContent=(d.open?'▾':'▸')+h.textContent.slice(1); });
+    el.querySelector('#tfold').onclick=()=>{ const all=SECS.every(k=>SEC[k]); for(const k of SECS)SEC[k]=!all; keep(); draw(); };
     if(TENANTS.bots)TENANTS.bots(el.querySelector('#tbots'));
+    art(el.querySelector('#tart'),U);
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
-    el.querySelectorAll('[data-txt] input').forEach(i=>i.onchange=()=>{ const id=i.closest('[data-txt]').dataset.txt; TEXT.set(id,i.value.trim()); act(null,{do:'text',key:id,text:TEXT.cur[id]||''},()=>'text saved'); });
-    el.querySelectorAll('[data-sign] input').forEach(i=>i.onchange=()=>{ const n=i.closest('[data-sign]').dataset.sign, sg=SIGNS.list.find(q=>q.name===n), v=i.value.trim(); if(sg&&sg.set)sg.set({...(sg.get?sg.get():{}),text:v||null}); TEXT.set('sign.'+n,v); act(null,{do:'text',key:'sign.'+n,text:v},()=>'sign saved'); });
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
     el.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>act(b,{do:'codeoff',code:b.dataset.off},()=>'code turned off'));
-    $('#tsend').onclick=e=>{ const text=$('#ttext').value.trim(); if(!text){ say='write the message first'; draw(); return; }
-      act(e.target,{do:'tell',to:$('#tto').value,subject:$('#tsub').value.trim(),text,live:$('#tlive').checked,letter:$('#tletter').checked,email:$('#temail').checked},
-        r=>'sent'+(r.live!=null?' · live to '+r.live:'')+(r.letter?' · letter waiting':'')+(r.email!=null?' · email '+(typeof r.email==='number'?'to '+r.email:r.email):'')); };
     el.querySelectorAll('[data-u]').forEach(box=>box.onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b)return; const id=box.dataset.u, u=D.users.find(x=>x.id===id), a=b.dataset.a;
       if(a==='more'){ open=open===id?null:id; draw(); return; }
       if(a==='save'){ const v=f=>box.querySelector(`[data-f="${f}"]`).value.trim(), body={do:'user',id}; if(v('email')&&v('email')!==u.email)body.email=v('email'); if(v('password'))body.password=v('password'); if(v('apt')!==String((u.player&&u.player.apt)??''))body.apt=v('apt'); act(b,body,()=>'saved'); return; }
       if(a==='admin'){ act(b,{do:'admin',id,on:!u.admin},()=>u.admin?'no longer an owner':'now an owner'); return; }
       if(a==='ban'){ if(!u.banned&&!confirm('Ban '+u.email+'? They are sent out and cannot log in.'))return; act(b,{do:'ban',id,on:!u.banned},()=>u.banned?'unbanned':'banned'); return; }
       if(a==='delete'){ if(!confirm('Delete '+u.email+' for good? This cannot be undone.'))return; act(b,{do:'delete',id},()=>'deleted'); } }); };
+  /* ---------- the players' finished paintings: view one, take one down (its frame goes blank for everyone) ---------- */
+  let A=null, seen={};
+  const art=(box,U)=>{ '@later'; if(!box)return; const who=id=>{ const u=U.find(x=>x.id===id); return u?((u.player&&u.player.apt?u.player.apt+' · ':'')+u.email):id; };
+    if(!A){ box.innerHTML='<div class="row"><button class="btn" id="tartl">SHOW PAINTINGS</button></div>'; box.querySelector('#tartl').onclick=async e=>{ e.target.disabled=true; A=await api('/admin',{do:'art'}); art(box,U); }; return; }
+    if(A.why){ box.innerHTML='<div class="dim">'+esc(A.why)+'</div>'; A=null; return; }
+    box.innerHTML=(A.art||[]).map(a=>`<div class="row" data-art="${esc(a.id)}"><span>${esc(who(a.who))}</span><span class="dim">${esc(day(a.at))} · ${Math.round(a.n/1024)} KB</span><button class="btn" data-v>${seen[a.id]?'HIDE':'VIEW'}</button><button class="btn" data-x>TAKE DOWN</button>${seen[a.id]?`<div style="flex-basis:100%"><img src="${esc(seen[a.id])}" style="max-width:320px;max-height:320px;image-rendering:pixelated;border:2px solid var(--line)"></div>`:''}</div>`).join('')||'<div class="dim">no paintings yet</div>';
+    box.querySelectorAll('[data-art]').forEach(r=>{ const k=r.dataset.art;
+      r.querySelector('[data-v]').onclick=async e=>{ if(seen[k]){ delete seen[k]; art(box,U); return; } e.target.disabled=true; const j=await api('/admin',{do:'artget',art:k}); if(j.d)seen[k]=j.d; else say='not shown: '+(j.why||'?'); art(box,U); };
+      r.querySelector('[data-x]').onclick=async e=>{ if(!confirm('Take this painting down for good? Its frame goes blank for everyone.'))return; e.target.disabled=true; const j=await api('/admin',{do:'artoff',art:k});
+        say=j.why?'not done: '+j.why:'painting taken down'; delete seen[k]; A=await api('/admin',{do:'art'}); draw(); }; }); };
   const load=async()=>{ D=await api('/admin',{do:'list',room:room()}); draw(); };
+  // TEXT: the game's text boxes and the signs' words, its own admin tab (owner, 7 Nov 2026)
+  TENANTS.text=e=>{ '@later'; if(!e)return; const note=m=>{ const n=e.querySelector('#txsay'); if(n)n.textContent=m; };
+    e.innerHTML=`<h3>TEXT</h3><div class="dim" id="txsay"></div><div class="dim">The game's text boxes. Change the words and everyone sees them, on the signs at once. A {part} fills itself in. Empty puts the game's own words back.</div>
+      ${TEXT.list().map(t=>`<div class="row" data-txt="${esc(t.id)}"><code style="min-width:130px">${esc(t.id)}</code><input type="text" maxlength="200" value="${esc(t.cur??t.def)}" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px">${t.cur!=null?`<span class="dim">was: ${esc(t.def)}</span>`:''}</div>`).join('')}
+      ${SIGNS.list.map(sg=>`<div class="row" data-sign="${esc(sg.name)}"><code style="min-width:130px">${esc(sg.name)}</code><input type="text" maxlength="200" value="${esc((sg.get&&sg.get().text)||'')}" placeholder="the sign's own words" style="flex:1;min-width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"></div>`).join('')}`;
+    for(const f of e.querySelectorAll('input'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,x=>x.stopPropagation());
+    const put=(key,text,ok)=>api('/admin',{room:room(),do:'text',key,text}).then(r=>note(r.why?'not saved: '+r.why:ok));
+    e.querySelectorAll('[data-txt] input').forEach(i=>i.onchange=()=>{ const id=i.closest('[data-txt]').dataset.txt; TEXT.set(id,i.value.trim()); put(id,TEXT.cur[id]||'','text saved'); });
+    e.querySelectorAll('[data-sign] input').forEach(i=>i.onchange=()=>{ const n=i.closest('[data-sign]').dataset.sign, sg=SIGNS.list.find(q=>q.name===n), v=i.value.trim(); if(sg&&sg.set)sg.set({...(sg.get?sg.get():{}),text:v||null}); TEXT.set('sign.'+n,v); put('sign.'+n,v,'sign saved'); }); };
   TENANTS.open=e=>{ el=e; D=null; draw(); load(); };
 
   /* ---------- letters waiting for you, shown when you come in ---------- */

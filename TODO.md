@@ -30,7 +30,7 @@ Risk is noted only when it isn't low.
 One pull request each, in this order; the game stays playable after every one.
 - [x] **1. The map's bones** · P1 · XL · code · risk high · [taking: claude/pensive-wozniak-j9x484, 6 Nov]. Market St's row and the Hudson row re-laid lot for lot (`tools/row-lay.cjs`), Hudson-row places facing the river (`face:'s'`, `row:2`), the way to the Hudson 22 m wide on the park gate, the alley's gates at the path, the places leaving the map gone from the level file. The new skill shops stand with their keepers; their insides are empty until job 4. The bar is shut (garages on its lot) until job 7.
 - [x] **1b. Forcefields and the fading backdrop** · P1 · L · code · done 6 Nov (`edge` in data/world.json: lines and runs). At every edge of the map: a forcefield you can't pass, and past it more apartments, park, lake and river fading out (seen, never walked, cheap).
-- [x] **2. The apartment street** · P1 · L · code · done 6 Nov. Still open: selling the penthouses (every 21st flat), the lobbies and the other floors (only your own flat is built), two first logins at once can get the same flat number.
+- [x] **2. The apartment street** · P1 · L · code · done 6 Nov. Still open: selling the penthouses (every 21st flat), the lobbies and the other floors (only your own flat is built), ~~two first logins at once can get the same flat number~~ (done 7 Nov: the second takes the next free one).
   Was: Today's flat two wide, two a floor, as long as the park; the park's west gate onto it; the forcefield at its north end.
 - [x] **3. The Hudson** · P2 · L · code · done 6 Nov (the promenade twice as wide, the pier at the way through, the fish market's stalls and barbed fence; the river's walkable part ends at the section's edge, the far water on past it). Was: The river as long and as wide as the park, the promenade twice as wide, the pier on the path, the fish market's tables and barbed-wire fence.
 - [x] **4a. The skill shops' insides and keepers** · done 7 Nov (claude/friendly-albattani-9a8elf): every merchant's shop furnished, its keeper inside, gear by skill (`tests/skillshops.cjs`). Each shop's own furniture, beyond the shared inside, is still open.
@@ -66,7 +66,7 @@ the physics extras (darts now twice at the bar) · NPC voices (lifts the
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
 - [ ] **Market St and West St, the rest (owner, 5 Nov)** · P1 · L · code. After the re-lay (#631, merged): the old shops' outsides as their Polyfork buildings (bank, bar, theatre, playhouse, arcade, art, bodega, bath); two flats a floor and the whole-floor penthouse for sale (a number maps to house, floor, flat; the shell's size); what the florist, tailor, barber, antiques, hotel, fish market and the outfitter sell (the outfitter: every skill's gear); the Museum of Earth's lot. The row has no room for 8 m garages: ask the owner about opening Market St west of West St.
-- [ ] **Run the full checks on `main` once** · P1 · S · check. Start the workflow on `main` with `full`. No full run exists since 4 Nov:
+- [ ] **Run the full checks on `main` once** · P1 · S · check. [taking: claude/exciting-planck-t77ehf, 7 Nov: started by hand on `main` with `full`] Start the workflow on `main` with `full`. No full run exists since 4 Nov:
   #576 and other merges went in after the last `main` run (6dfc80f5, 16:05 UTC), and the skate park's tricks (#552) passed CI only on
   their pull request. The run also confirms lines that look fixed (close each if it passes):
   - "GitHub's checks get no machine": over (failed 15:05–15:34 UTC on 4 Nov; runs pass again since 16:05);
@@ -77,6 +77,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   - `tests/cars.cjs` flaky: b56ea1db lets go of W after two tiles; the "beside another check" case is local only (CI runs steps one at a time).
   - Run 41925479673 (4 Nov): stopped at `tests/physx.cjs` (a hidden character knocked over never got up; fixed in #615).
   - Run 41947525626 (5 Nov, after #615): steps 1–20 pass (physics too); the headset step fails and hangs to its 45-minute limit, so the rest did not run (see the VR line below).
+  - Run 42392267465 (7 Nov): steps up to fights pass; physics stopped it. The crates had moved (check's spot fixed, 7 Nov); still failing: **no visible character can ragdoll** (knocks reach only rig bodies, archived 5 Nov; the cast's bodies have no joints), so the kart and thrown things knock no one over. Owner's pick (7 Nov): dormant until today's bodies get ragdolls (line below). The steps after physics did not run.
   - Run 41975584372 (5 Nov, after #623): every step up to the interiors passes (headset too); `tests/interiors.cjs` fails (the arcade's games, the bodega's shelves, then a timeout), most likely the archive's leftovers (see "After the archive"); the rest did not run.
 - [x] **The headset check fails on `main`** (done 5 Nov, #623) · P1 · M · code. The stalled-frame fallback nested headset frames until the stack ran out; two stale lines in `tests/vr.cjs` and the map editor line in `tests/site.cjs` (archived) fixed with it.
 - [x] **Restore #512's lost HISTORY entry** (done 4 Nov) · P1 · S · code. "2 Nov 2026: more of Rapier, each one a PHYSICS setting in GRAPHICS" (owner:
@@ -93,6 +94,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **The black-void sheet view doesn't show rig bodies** (done 4 Nov: `tests/sheet.cjs poacher` shows him front, side and back; the crash on `hud`/`stat` was the cause; the minimap still shows in a corner) · P2 · S-M · code. `?sheet=poacher` showed only ground, the camera not on it
   (`?sheet=` is handled per maker, `src/111a-bodies.js:113,122`; the poacher doesn't reach it); `tests/sheet.cjs:9` crashes on `hud`/`stat`,
   no longer globals. Every new character's look-over goes through it: do before the egg poacher's look and pictures of the moves.
+- [ ] **Ragdolls for today's bodies** · P3 · L · pick + code. Owner, 7 Nov 2026 ("go with your recommendations"): knock-overs (the kart, thrown things) stay dormant: they need a jointed body, and every character with one is archived. Give today's cast's bodies a ragdoll when the owner wants knock-overs back; `tests/physx.cjs` checks them again as soon as one exists.
 - [ ] **`tests/loosecheck.cjs`: two street failures, and the bodega part** · P3 · M · find. Brought up to date on 4 Nov (#607: the nearest
   light thing on the ground, since no trash can is loose any more; the bodega entered by its door). Now: the milk crates fly when shoved, land,
   sleep and can be picked up, but **walking into them doesn't push them** (moved 0.00) and **a shoved thing's old place still blocks you a
@@ -159,7 +161,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   build bundles it: verify), and also three-mesh-bvh (087b, 137), rapier (090), tweakpane (087dz), @recast-navigation (153). Bundle them into
   `dist/g/` as hashed files (the `+esm` bundles chain more CDN imports; recast and rapier carry wasm). three.js stays on the CDN on purpose.
   With: the login cookie, VR hand models.
-- [ ] **Painting: a way to take a painting down** · P2 · S-M · code. From #564. The TENANTS panel can't hide or remove a player's
+- [x] **Painting: a way to take a painting down** (done 7 Nov: PAINTINGS in TENANTS, VIEW and TAKE DOWN; the frame goes blank for everyone, the id can't be reused) · P2 · S-M · code. From #564. The TENANTS panel can't hide or remove a player's
   painting. An ART tab in `src/136c-tenants.js` and an owner-only `/admin` `do:"artoff"` in `worker/door.js` (`artDel` at :477 lets only the
   painter remove unfinished work). Decide what a hung or packed painting shows once removed (a blank frame, or the item goes). Ships on
   today's `Home`; the split below carries it over.

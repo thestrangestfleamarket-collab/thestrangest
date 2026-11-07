@@ -3,7 +3,7 @@ import {SHARED} from './003-shx.js';
 import {BAG, ED, FORAGE, HUD, INV, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
-import {SECTION, SYS, TILE} from './006-map-pre.js';
+import {MODS, SECTION, SYS, TILE} from './006-map-pre.js';
 import {QUESTS} from './160a-quests.js';
 { const T=TILE, MW=150, esc=TEXT.esc; let N=Math.max(1,Math.min(40,+OWNED.get('quickn')||10));   // (how many quick slots: the player's choice, 1 to 40, owner 7 Nov 2026; the first ten on keys 1 to 0)
   const css=document.createElement('style'); css.textContent=`#hmap{position:fixed;right:calc((24px + var(--fx,0px) + env(safe-area-inset-right,0px)) / var(--uiz,1));top:calc((24px + var(--fy,0px) + env(safe-area-inset-top,0px)) / var(--uiz,1));width:${MW}px;z-index:5;font:9px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
@@ -35,7 +35,7 @@ import {QUESTS} from './160a-quests.js';
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
-  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur; if(MP.hidden===on)MP.hidden=!on; if(!on)return;
+  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
     if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
 
   /* ---------- the quick bar ---------- */

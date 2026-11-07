@@ -150,7 +150,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   // things built after the start (the park's Polyfork things, the Polyfork rows) call this once they stand, so their saved edits are put on them
   WE.late=()=>{ if(!Object.keys(ST).length)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyWED(); applyObjs(); settle(); }).catch(()=>{}); };
   WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); };
-  SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(()=>{ if(Object.keys(ST).length)WE.applyAll(); }),'099-worldedit');
+  SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(async()=>{ if(!Object.keys(ST).length)return; if(window.LOAD)await LOAD('later'); WE.applyAll(); }),'099-worldedit');   // laying the edits needs the later chunk
   WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:min(400px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20;box-sizing:border-box}

@@ -1,6 +1,6 @@
 // THE WORLD EDITOR: WE lets you pick, move, turn, scale, recolour and hide objects in the world.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, PARK, pos, SIGNS, UI, WE, WED, WEEDS} from './003b-systems.js';
+import {LEVELS, LITE, NPCS, PARK, pos, SIGNS, UI, W3, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -14,7 +14,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   let KMAP=null;
   const kraw=o=>{ base(o); const c=o.c; return o.place+'|'+o.name+'|'+Math.round(c.x*10)/10+','+Math.round(c.y*10)/10+','+Math.round(c.z*10)/10; };
   const kid=o=>{ '@later'; if(!KMAP){ KMAP=new Map(); const g={}; for(const q of OBJS){ const r=kraw(q); (g[r]||(g[r]=[])).push(q); } for(const r in g){ const L=g[r]; if(L.length<2)KMAP.set(L[0],r); else { L.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0); L.forEach((q,i)=>KMAP.set(q,r+'#'+i)); } } } return KMAP.get(o)||kraw(o); };
-  const rp=p=>Math.round(p*10)/10, keyOf=o=>o.copy?o.key:o.prop?o.place+'|'+o.name+'|'+rp(o.pivot[0])+','+rp(o.pivot[1])+','+rp(o.pivot[2]):kid(o);
+  const rp=p=>Math.round(p*10)/10, keyOf=o=>o.copy?o.key:o.prop||o.obj?o.place+'|'+o.name+'|'+rp(o.pivot[0])+','+rp(o.pivot[1])+','+rp(o.pivot[2]):kid(o);
   const stOf=o=>{ const k=keyOf(o); return ST[k]||(ST[k]=E0()); };
   const v=new THREE.Vector3(), vv=new THREE.Vector3(), E3=new THREE.Euler(), col=new THREE.Color(), touched=new Set();
   const D2R=Math.PI/180, Mx=new THREE.Matrix4(), Tx=new THREE.Matrix4(), Ex=new THREE.Euler(), PB=new THREE.Box3();
@@ -43,14 +43,37 @@ Object.assign(WE,{on:false}); window.WE=WE;
     Mx.multiply(Tx.makeTranslation(-pv[0],-pv[1],-pv[2])); Mx.premultiply(Tx.makeTranslation(pv[0]+e.t[0],pv[1]+e.t[1],pv[2]+e.t[2]));
     if(inst){ Mx.multiply(Bx.fromArray(en.base,id*16)); me.instanceMatrix.needsUpdate=true;
       if(en.col0){ col.set(e.col).multiplyScalar(e.bri==null?1:e.bri); me.setColorAt(id,cx.fromArray(en.col0,id*3).multiply(col)); me.instanceColor.needsUpdate=true; } }
-    me.setMatrixAt(id,Mx); if(me.computeBoundingSphere)me.computeBoundingSphere(); twin((t,j)=>{ t.setMatrixAt(j,Mx); t.setVisibleAt(j,true); if(t.computeBoundingSphere)t.computeBoundingSphere(); }); }
-  const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z],it,en,tint:!!(en.me.isInstancedMesh&&en.me.instanceColor)}; };
+    me.setMatrixAt(id,Mx); if(me.isBatchedMesh&&me.setColorAt){ const plain=(e.col||'#ffffff').toLowerCase()==='#ffffff'&&(e.bri==null||e.bri===1); if(!plain||me.userData.tinted){ me.userData.tinted=1; me.setColorAt(id,col.set(e.col||'#ffffff').multiplyScalar(e.bri==null?1:e.bri)); } } if(me.computeBoundingSphere)me.computeBoundingSphere(); twin((t,j)=>{ t.setMatrixAt(j,Mx); t.setVisibleAt(j,true); if(t.computeBoundingSphere)t.computeBoundingSphere(); }); }
+  const propHandle=(en,bid)=>{ const it=en.items[en.ids[bid]]; return {prop:true,me:en.me,id:bid,place:en.place,name:it.k,pivot:[it.x,it.y,it.z],it,en,tint:!!((en.me.isInstancedMesh&&en.me.instanceColor)||en.me.isBatchedMesh)}; };
   // WED.meshes: {place, me (a BatchedMesh or InstancedMesh), items [{k:name, x,y,z:pivot, sol?, fix?, follow?}], ids? (batch or instance id to item; one item per instance when left out)}
-  const ents=()=>{ for(const en of WED.meshes)if(!en.ids)en.ids=en.items.map((_,i)=>i); return WED.meshes; };
+  // an inside's pieces are there only while it is built: dropped from the lists once it is gone
+  const inScene=o=>{ for(let q=o;q;q=q.parent)if(q===scene)return true; return false; };
+  const prune=L=>{ for(let i=L.length-1;i>=0;i--){ const en=L[i]; if(en.temp&&!inScene(en.me||en.obj))L.splice(i,1); } return L; };
+  const ents=()=>{ prune(WED.meshes); for(const en of WED.meshes)if(!en.ids)en.ids=en.items.map((_,i)=>i); return WED.meshes; };
   // parts of one thing in different meshes (a tree's crown and trunk, a lantern's frame and glass) share a key and are edited together
   let KX=null, KN=-1; const linked=o=>{ '@later'; if(!o.prop||!o.me)return [o]; const L=ents(); let n=0; for(const en of L)n+=en.ids.length;
     if(!KX||n!==KN){ KX=new Map(); KN=n; for(const en of L)for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); (KX.get(k)||KX.set(k,[]).get(k)).push(h); } } return KX.get(keyOf(o))||[o]; };
   const applyWED=()=>{ for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid); if(ST[keyOf(h)])applyProp(h); } };
+  // WED.objs: {place, name, obj (a whole model: a Polyfork building, a kit piece), sol?, fix?}: moved, turned, scaled, tinted and hidden as one; its first place and look kept to edit from
+  const objFirst=en=>{ if(en.p0)return; const o=en.obj; o.updateMatrixWorld(true); en.p0=o.position.clone(); en.q0=o.quaternion.clone(); en.s0=o.scale.clone(); en.w0=new THREE.Vector3().setFromMatrixPosition(o.matrixWorld);
+    en.m0=[]; o.traverse(m=>{ if(m.isMesh){ m.userData.weObj=en; en.m0.push([m,m.matrixWorld.clone()]); } }); };
+  const objHandle=en=>{ objFirst(en); return {obj:true,ob:en.obj,place:en.place,name:en.name,pivot:[en.w0.x,en.w0.y,en.w0.z],it:en,en}; };
+  function applyObj(o){ '@later'; const e=stOf(o), en=o.en, ob=o.ob; objFirst(en); foot(en,e); if(e.del){ ob.visible=false; return; } ob.visible=true;
+    ob.position.set(en.p0.x+e.t[0],en.p0.y+e.t[1],en.p0.z+e.t[2]); ob.quaternion.setFromEuler(Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ')).multiply(en.q0); ob.scale.set(en.s0.x*e.s[0],en.s0.y*e.s[1],en.s0.z*e.s[2]);
+    const plain=(e.col||'#ffffff').toLowerCase()==='#ffffff'&&(e.bri==null||e.bri===1)&&(e.op==null||e.op>=1);
+    ob.traverse(m=>{ if(!m.isMesh||!m.material)return; if(!m.userData.weMat0)m.userData.weMat0=m.material; if(plain){ m.material=m.userData.weMat0; return; }
+      if(m.material===m.userData.weMat0){ m.material=m.material.clone(); } m.material.color.set(e.col||'#ffffff').multiplyScalar(e.bri==null?1:e.bri); const t=(e.op==null?1:e.op)<1; if(m.material.transparent!==t){ m.material.transparent=t; m.material.needsUpdate=true; } m.material.opacity=e.op==null?1:e.op; });
+    ob.updateMatrixWorld(true); }
+  const objs=()=>prune(WED.objs||[]);
+  // anything else in the world (the skate park, the fair, a sign, the ground): a plain mesh is taken as a whole thing when picked, and found again by its key when the world loads; never a person, a glow or a particle
+  const wname=m=>String(m.name||(m.parent&&m.parent.name)||(m.geometry&&m.geometry.type.replace(/Geometry$/,''))||'thing').toLowerCase().slice(0,40);
+  const person=m=>{ for(let q=m;q;q=q.parent){ if(q===W3.group||q.userData.npc||q.userData.body||q.userData.player)return true; if(NPCS.some(N=>N.g===q))return true; } return false; };
+  const plainMesh=m=>m&&m.isMesh&&!(m.material&&m.material.visible===false)&&!m.isSkinnedMesh&&!m.isInstancedMesh&&!m.isBatchedMesh&&!m.userData.weCopy&&!m.userData.weObj&&!(m.material&&m.material.transparent&&m.material.depthWrite===false)&&vis(m)&&!person(m);
+  const asWorld=m=>{ const en={place:'world',name:wname(m),obj:m}; WED.objs.push(en); objFirst(en); return en; };
+  let scanned=0; const scanWorld=()=>{ '@later'; const want=new Set(Object.keys(ST).filter(k=>k.startsWith('world|'))); if(!want.size||scanned===want.size)return; scanned=want.size;
+    scene.traverse(m=>{ if(!m.isMesh||m.userData.weObj||m.isSkinnedMesh||m.isInstancedMesh||m.isBatchedMesh||m.userData.weCopy)return; m.updateMatrixWorld(); const p=new THREE.Vector3().setFromMatrixPosition(m.matrixWorld), k='world|'+wname(m)+'|'+rp(p.x)+','+rp(p.y)+','+rp(p.z); if(want.has(k))asWorld(m); }); };
+  const applyObjs=()=>{ scanWorld(); for(const en of objs()){ const h=objHandle(en); if(ST[keyOf(h)])applyObj(h); } };
+  const fromOBJE=key=>{ for(const en of objs()){ const h=objHandle(en); if(keyOf(h)===key)return h; } return null; };
   // copies: a picked park thing again beside it, its own mesh cut from the same batch; kept in ST as 'C|n' {copy:name, of:the original's key, place, at:[x,y,z], ...the usual edits}
   // a placed thing far off waits until you come within 90 tiles (its category fetched then)
   const FAR=new Set(); SYS.every(()=>{ for(const k of FAR)if(!ST[k])FAR.delete(k); else if(Math.hypot(ST[k].at[0]-pos.x,ST[k].at[2]-pos.z)<=90*T)applyCopy({key:k}); },2000,'099-far');
@@ -67,25 +90,26 @@ Object.assign(WE,{on:false}); window.WE=WE;
         L.forEach(([p,b],i)=>n==='position'?d.set(b,i*18):n==='aCol'||n==='aOp'?d.fill(1,i*6*z,(i+1)*6*z):d.set(A.array.subarray(p.v0*z,(p.v0+6)*z),i*6*z)); G.setAttribute(n,new THREE.BufferAttribute(d,z,A.normalized)); }
       G.translate(-o.c.x,-o.c.y,-o.c.z); G.computeVertexNormals(); G.computeBoundingSphere(); return [G,me]; }); };
   const fromOBJ=key=>{ for(const o of OBJS)if(kid(o)===key)return o; return null; };
-  const copyMesh=k=>{ '@later'; let g=CP.get(k); const e=ST[k]; if(!e||!e.of&&!e.pf)return null; if(!g){ const h0=e.pf?null:fromWED(e.of), o=h0||e.pf?null:fromOBJ(e.of);
+  const copyMesh=k=>{ '@later'; let g=CP.get(k); const e=ST[k]; if(!e||!e.of&&!e.pf)return null; if(!g){ const h0=e.pf?null:fromWED(e.of), oe=h0||e.pf?null:fromOBJE(e.of), o=h0||oe||e.pf?null:fromOBJ(e.of);
       const add=(src,me)=>{ me.castShadow=src.castShadow; me.receiveShadow=src.receiveShadow; if(src.customDepthMaterial)me.customDepthMaterial=src.customDepthMaterial; me.userData.weCopy=k; g.add(me); };
       g=new THREE.Group();
       if(h0)for(const h of linked(h0)){ const G=geoOf(h); if(!G)continue; let me; if(h.me.isInstancedMesh){ me=new THREE.InstancedMesh(G,h.me.material,1); me.setMatrixAt(0,Tx.identity()); if(h.me.instanceColor)me.setColorAt(0,cx.fromArray(h.en.col0||h.me.instanceColor.array,h.id*3)); me.computeBoundingSphere(); } else me=new THREE.Mesh(G,h.me.material); add(h.me,me); }
       else if(o)for(const [G,src] of objGeos(o))add(src,new THREE.Mesh(G,src.material));
+      else if(oe)for(const [m,M] of oe.en.m0){ const G=m.geometry.clone().applyMatrix4(M); G.translate(-oe.pivot[0],-oe.pivot[1],-oe.pivot[2]); G.computeBoundingSphere(); add(m,new THREE.Mesh(G,m.userData.weMat0||m.material)); }
       else if(e.pf){ const G=WE.pfGeo&&WE.pfGeo(e.pf); if(!G){ if(Math.hypot(e.at[0]-pos.x,e.at[2]-pos.z)>90*T){ FAR.add(k); return null; } FAR.delete(k); if(WE.pfLoad)WE.pfLoad(e.pf).then(()=>{ if(ST[k]&&!CP.get(k)){ applyCopy({key:k}); settle(); if(sel&&sel.key===k)frame(); } }).catch(()=>{}); return null; }
         const me=new THREE.Mesh(G,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.castShadow=me.receiveShadow=true; me.userData.weCopy=k; g.add(me); }
       if(!g.children.length)return null; if(!cpg){ cpg=new THREE.Group(); scene.add(cpg); } cpg.add(g); CP.set(k,g); } return g; };
   // a placed Polyfork thing stands where he bumps into it (its footprint turned with it), and takes its colour and see-through
   const pfSolid=(k,e,g)=>{ const S=g.userData.sol||(g.userData.sol=[0,0,0,0]), F=g.userData.fix||(g.userData.fix=[0,0,0,0,0,0]);
     if(e.del){ for(const [L,x] of [[SOL.up,S],[FIX.up,F]]){ const i=L.indexOf(x); if(i>=0)L.splice(i,1); } return; }
-    const b=new THREE.Box3().setFromObject(g); S[0]=b.min.x; S[1]=b.min.z; S[2]=b.max.x; S[3]=b.max.z; F[0]=b.min.x; F[1]=b.min.z; F[2]=b.min.y; F[3]=b.max.x; F[4]=b.max.z; F[5]=b.max.y;
+    const b=new THREE.Box3().setFromObject(g), f=WE.pfFoot&&WE.pfFoot(e.pf); if(f){ const y=b.min.y; b.makeEmpty(); for(const [x,z] of [[f[0],f[1]],[f[2],f[1]],[f[0],f[3]],[f[2],f[3]]])b.expandByPoint(vv.set(x,0,z).applyMatrix4(g.matrixWorld)); b.min.y=y; b.max.y=Math.max(b.max.y,new THREE.Box3().setFromObject(g).max.y); } S[0]=b.min.x; S[1]=b.min.z; S[2]=b.max.x; S[3]=b.max.z; F[0]=b.min.x; F[1]=b.min.z; F[2]=b.min.y; F[3]=b.max.x; F[4]=b.max.z; F[5]=b.max.y;
     if(!SOL.up.includes(S))SOL.up.push(S); if(!FIX.up.includes(F))FIX.up.push(F);
     for(const c of g.children){ const m=c.material; if(!m||!m.isMeshLambertMaterial)continue; m.color.set(e.col||'#ffffff').multiplyScalar(e.bri==null?1:e.bri); const t=(e.op==null?1:e.op)<1; if(m.transparent!==t){ m.transparent=t; m.needsUpdate=true; } m.opacity=e.op==null?1:e.op; } };
   const copyHandle=k=>({copy:true,key:k,name:ST[k].copy,place:ST[k].place,pivot:ST[k].at});
   function applyCopy(o){ '@later'; const e=ST[o.key]; if(!e)return; if(e.del){ const m=CP.get(o.key); if(m){ if(e.pf)pfSolid(o.key,e,m); cpg.remove(m); m.traverse(c=>c.geometry&&c.geometry.dispose()); CP.delete(o.key); } return; } const me=copyMesh(o.key); if(!me)return;
     me.position.set(e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]); me.rotation.set((e.rx||0)*D2,(e.r||0)*D2,(e.rz||0)*D2,'YXZ'); me.scale.set(e.s[0],e.s[1],e.s[2]); me.visible=true; if(e.pf){ me.updateMatrixWorld(true); pfSolid(o.key,e,me); } }
   const applyCopies=()=>{ for(const k in ST)if(k[0]==='C'&&k[1]==='|')applyCopy({key:k}); };
-  const applySel=o=>o.copy?applyCopy(o):o.prop?linked(o).forEach(applyProp):apply(o);
+  const applySel=o=>o.copy?applyCopy(o):o.obj?applyObj(o):o.prop?linked(o).forEach(applyProp):apply(o);
   function apply(o){ '@later'; const B=base(o), e=stOf(o), c=o.c; foot(o,e); follow(o,e,[c.x,c.y,c.z]); E3.set((e.rx||0)*Math.PI/180,(e.r||0)*Math.PI/180,(e.rz||0)*Math.PI/180,'YXZ'); col.set(e.col).multiplyScalar(e.bri==null?1:e.bri);
     o.parts.forEach((p,k)=>{ const g=p.me.geometry, P=g.attributes.position.array, N=g.attributes.normal.array, C=g.attributes.aCol.array, O=g.attributes.aOp.array, a=B[k];
       for(let i=0;i<6;i++){ vv.set((a[i*3]-c.x)*e.s[0],(a[i*3+1]-c.y)*e.s[1],(a[i*3+2]-c.z)*e.s[2]).applyEuler(E3);
@@ -112,10 +136,12 @@ Object.assign(WE,{on:false}); window.WE=WE;
   let BAKED={}; try{ BAKED=__DATA__("data/world-edits.json")||{}; }catch(e){}
   let LOCAL={}; try{ LOCAL=JSON.parse(localStorage.getItem('market-world')||'{}'); }catch(e){}
   try{ Object.assign(ST,BAKED,LOCAL); }catch(e){}
-  const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); };
-  const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); applyLights(); applySigns(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
+  const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyObjs(); applyCopies(); applyLights(); applySigns(); settle(); };
+  const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); applyObjs(); applyLights(); applySigns(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
   // the world everyone shares (the server's file, 136b) under your own browser's edits; the owner's browser is the server's copy unless a send of his failed
   WE.setLive=(live,mine)=>{ const was=JSON.stringify(ST); for(const k in ST)delete ST[k]; Object.assign(ST,BAKED,live||{},mine?LOCAL:{}); try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} return JSON.stringify(ST)!==was; };
+  // things built after the start (the park's Polyfork things, the Polyfork rows) call this once they stand, so their saved edits are put on them
+  WE.late=()=>{ if(!Object.keys(ST).length)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyWED(); applyObjs(); settle(); }).catch(()=>{}); };
   WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); };
   SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(()=>{ if(Object.keys(ST).length)WE.applyAll(); }),'099-worldedit');
   WE.getState=()=>ST;
@@ -124,7 +150,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   #we[hidden]{display:none} #we h2{font:12px var(--pixel);color:var(--key);margin:0;padding:12px 14px;border-bottom:2px solid var(--line)} #we .pane{padding:10px 14px}
   #we .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0} #we .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:5px 8px;cursor:pointer}
   #we .dim{color:var(--dim)} #we .lab{width:84px} #we textarea{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;width:100%;box-sizing:border-box;min-height:56px;padding:6px} #we .tp{margin:6px 0}
-  #we.lock>h2,#we.lock>.pane{opacity:.35;filter:grayscale(1);pointer-events:none} #welock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--key);font:12px var(--pixel);line-height:2;pointer-events:none} #welock[hidden]{display:none}`;
+  #we.lock>h2,#we.lock>.pane,#we.lock>.wtabs{opacity:.35;filter:grayscale(1);pointer-events:none} #welock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--key);text-shadow:none;pointer-events:none} #welock span{background:var(--bg);border:2px solid var(--line);padding:10px 14px;font:12px var(--pixel);line-height:2;pointer-events:none} #welock[hidden]{display:none}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='we'; P.hidden=true; P.innerHTML=`<h2>EDIT THE WORLD</h2><div class="pane">
     <div class="dim" id="wname">double-click a thing to pick it</div>
@@ -137,7 +163,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     </div>
     <div class="tp"></div><div class="dim" id="wmsg"></div>
     <input type="file" id="wimpf" accept="application/json" style="display:none"><div class="row"><button class="btn" id="wsend" hidden>SEND TO SERVER</button></div>
-    <div class="dim" id="wwho"></div></div><div id="welock" hidden>EDITING ONLY IN ISOMETRIC<br>PRESS V</div>`;
+    <div class="dim" id="wwho"></div></div><div id="welock" hidden><span>EDITING ONLY IN<br>THE ISOMETRIC VIEW</span></div>`;
   document.body.appendChild(P); const $=s=>P.querySelector(s);
   ['keydown','keyup','keypress'].forEach(ev=>P.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); }));
   $('.tp').addEventListener('mousedown',e=>e.stopPropagation());
@@ -156,6 +182,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   function frame(){ '@later'; if(box){ scene.remove(box); box=null; } if(!sel||(!sel.sign&&stOf(sel).del))return; const b=new THREE.Box3();
     if(sel.sign){ if(sel.me&&sel.me.geometry){ sel.me.geometry.computeBoundingBox(); b.copy(sel.me.geometry.boundingBox).applyMatrix4(sel.me.matrixWorld); } }
     else if(sel.copy){ const me=CP.get(sel.key); if(me)b.setFromObject(me); }
+    else if(sel.obj){ b.setFromObject(sel.ob); }
     else if(sel.prop){ for(const h of linked(sel)){ const m=h.me; if(!m)continue; PB.makeEmpty(); if(m.getBoundingBoxAt)m.getBoundingBoxAt(h.id,PB); else if(m.isInstancedMesh){ if(!m.geometry.boundingBox)m.geometry.computeBoundingBox(); PB.copy(m.geometry.boundingBox); } if(m.getMatrixAt){ m.getMatrixAt(h.id,Mx); PB.applyMatrix4(Mx); } b.union(PB.applyMatrix4(m.matrixWorld)); } }
     else for(const p of sel.parts){ const a=p.me.geometry.attributes.position.array; for(let i=0;i<6;i++)b.expandByPoint(v.fromArray(a,(p.v0+i)*3)); }
     if(b.isEmpty())return; box=new THREE.Box3Helper(b,0xf2c14e); scene.add(LEVELS.own(box,'*')); }
@@ -198,14 +225,18 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const exp=()=>{ const blob=new Blob([JSON.stringify(ST,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='world-edits.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2e3); };
   $('#wimpf').onchange=async ev=>{ '@later'; const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return; try{ const j=JSON.parse(await f.text()); Object.assign(ST,j); for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyCopies(); applyLights(); applySigns(); settle(); save(); frame(); draw(); }catch(e){} };
   const copy=()=>{ '@later'; if(!sel||sel.sign)return; const src=stOf(sel), [r]=ground(); let at, of, rad=0;
-    let pf=null; if(sel.copy){ const e=ST[sel.key]; at=[e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]]; of=e.of; pf=e.pf||null; if(pf){ const g=CP.get(sel.key); if(g){ const b=new THREE.Box3().setFromObject(g); rad=Math.max(b.max.x-b.min.x,b.max.z-b.min.z)/2; } } } else if(sel.prop){ at=[sel.pivot[0]+src.t[0],sel.pivot[1]+src.t[1],sel.pivot[2]+src.t[2]]; of=keyOf(sel); }
+    let pf=null; if(sel.copy){ const e=ST[sel.key]; at=[e.at[0]+e.t[0],e.at[1]+e.t[1],e.at[2]+e.t[2]]; of=e.of; pf=e.pf||null; if(pf){ const g=CP.get(sel.key); if(g){ const b=new THREE.Box3().setFromObject(g); rad=Math.max(b.max.x-b.min.x,b.max.z-b.min.z)/2; } } } else if(sel.prop||sel.obj){ at=[sel.pivot[0]+src.t[0],sel.pivot[1]+src.t[1],sel.pivot[2]+src.t[2]]; of=keyOf(sel); if(sel.obj){ const b=new THREE.Box3().setFromObject(sel.ob); rad=Math.max(b.max.x-b.min.x,b.max.z-b.min.z)/2; } }
     else { const B=base(sel), c=sel.c; at=[c.x+src.t[0],c.y+src.t[1],c.z+src.t[2]]; of=kid(sel); for(const a of B)for(let i=0;i<18;i+=3)rad=Math.max(rad,Math.hypot(a[i]-c.x,a[i+2]-c.z)); }
     const h=fromWED(of), it=h&&h.it; if(it&&it.r)rad=it.r; const w=Math.max(.6*T,rad*2+.3*T);
     const k=WE.newKey(); ST[k]=Object.assign(E0(),{copy:sel.name,of,pf,place:sel.place,at:[at[0]+r.x*w,at[1],at[2]+r.z*w],r:src.r||0,rx:src.rx||0,rz:src.rz||0,s:src.s.slice()});
     if(!copyMesh(k)){ delete ST[k]; return; } sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); };
   WE.newKey=()=>{ let k; do k='C|'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); while(ST[k]); return k; };
   // PLACE (099a): a new Polyfork thing at a spot, picked so it edits like anything else
-  WE.addPf=(pf,name,at,r)=>{ const k=WE.newKey(); ST[k]=Object.assign(E0(),{copy:name,pf,place:'street',at,r:r||0}); sel=copyHandle(k); applyCopy(sel); settle(); save(); frame(); draw(); return k; };
+  WE.addPf=(pf,name,at,r)=>{ const k=WE.newKey(); ST[k]=Object.assign(E0(),{copy:name,pf,place:'street',at,r:r||0}); applyCopy({key:k});
+    const g=CP.get(k), S=g&&g.userData.sol, m=.3*T; if(S&&pos.x>S[0]-m&&pos.x<S[2]+m&&pos.z>S[1]-m&&pos.z<S[3]+m){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; settle(); return null; }   // never on top of you: it is solid and would hold you
+    sel=copyHandle(k); settle(); save(); frame(); draw(); return k; };
+  // an entry that changes nothing (picked, never moved): not an edit
+  WE.blank=e=>{ if(!e||typeof e!=='object')return false; const j=JSON.stringify(e); return j===JSON.stringify(E0())||j===JSON.stringify(E0L()); };
   WE.ground=e=>{ const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const y=SHARED.py!=null?SHARED.py:0, q=new THREE.Vector3(); if(!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-y),q))return null; const gy=SHARED.groundY?SHARED.groundY(q.x,q.z):null; if(gy!=null&&isFinite(gy))q.y=gy; return [q.x,q.y,q.z]; };
   const allBack=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
@@ -215,7 +246,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     for(const sg of SIGNS.list){ const k='S|'+sg.place+'|'+sg.name; if(ST[k]){ sg.set&&sg.set({text:null,bri:null,col:null}); delete ST[k]; } } settle(); save(); frame(); draw(); };
   let busy=null;
   WE.copies=()=>[...CP.keys()];
-  // every player who has played before edits, in the isometric view only; buildings, the park wall, streets and sidewalks are not theirs to edit (owner, 7 Nov 2026)
+  // every player who has played before edits, in the isometric view only (owner, 7 Nov 2026)
   WE.iso=()=>UI.view==='iso'&&!UI.freeCam;
   WE.key=()=>{ if(WE.on)return WE.toggle(); if(WE.may&&!WE.may()){ UI.log&&UI.log('The world editor opens from your second visit.','#e8a23a'); return; }
     if(!WE.iso()){ UI.log&&UI.log('Edit the world in the isometric view (V).','#e8a23a'); return; } return WE.toggle(); };
@@ -225,15 +256,16 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const vis=m=>{ let q=m; while(q){ if(!q.visible)return false; q=q.parent; } return true; };
   const ray=new THREE.Raycaster(), meshes=()=>[...new Set(OBJS.flatMap(o=>o.parts.map(p=>p.me)))].filter(vis);
   const wedOf=o=>{ for(const en of WED.meshes)if(en.me===o)return en; return null; };
-  const pickSet=()=>{ const s=meshes(); for(const g of CP.values())if(g.visible)s.push(...g.children); for(const en of ents())if(vis(en.me))s.push(en.me); for(const sg of SIGNS.list)if(sg.me&&vis(sg.me))s.push(sg.me); return s; };
-  const NOPE=/\b(walls?|kerb|kerb brick|curb|sidewalks?|pavement|roads?|street|asphalt|building|bath house|facade|floor|ceiling|roof)$/i;
-  WE.can=o=>!!o&&!NOPE.test(String(o.name||''));
-  const hitAt=e=>{ const h=hitAt0(e); return h&&WE.can(h.o)?h:null; };
+  const pickSet=()=>{ const s=meshes(); for(const g of CP.values())if(g.visible)s.push(...g.children); for(const en of ents())if(vis(en.me))s.push(en.me); for(const sg of SIGNS.list)if(sg.me&&vis(sg.me))s.push(sg.me); for(const en of objs()){ if(!vis(en.obj))continue; objFirst(en); for(const [m] of en.m0)s.push(m); } return s; };
+  WE.can=o=>!!o;   // everything, buildings and streets too, for everyone (owner, 7 Nov 2026); a player's edits still reach others only through the owner's APPROVE
+  const hitAt=e=>{ const h=hitAt0(e)||hitWorld(e); return h&&WE.can(h.o)?h:null; };
+  const hitWorld=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
+    for(const h of ray.intersectObject(scene,true)){ const m=h.object; if(!plainMesh(m))continue; const o=objHandle(asWorld(m)), st=ST[keyOf(o)]; if(st&&st.del)return null; return {o,p:h.point}; } return null; };
   const hitAt0=e=>{ '@later'; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
-    for(const h of ray.intersectObjects(pickSet(),false)){ if(h.object.userData.weCopy&&ST[h.object.userData.weCopy])return {o:copyHandle(h.object.userData.weCopy),p:h.point}; const sg=sgOf(h.object); if(sg)return {o:{sign:true,ref:sg,name:sg.name,place:sg.place,me:sg.me},p:h.point}; const en=wedOf(h.object);
+    for(const h of ray.intersectObjects(pickSet(),false)){ if(h.object.userData.weCopy&&ST[h.object.userData.weCopy])return {o:copyHandle(h.object.userData.weCopy),p:h.point}; if(h.object.userData.weObj){ const o=objHandle(h.object.userData.weObj), st=ST[keyOf(o)]; if(st&&st.del)return null; return {o,p:h.point}; } const sg=sgOf(h.object); if(sg)return {o:{sign:true,ref:sg,name:sg.name,place:sg.place,me:sg.me},p:h.point}; const en=wedOf(h.object);
       if(en){ const bid=h.batchId==null?h.instanceId:h.batchId; if(bid==null||en.ids[bid]==null)return null; const o=propHandle(en,bid), s=ST[keyOf(o)]; if(s&&s.del)return null; return {o,p:h.point}; }
       const o=h.object.userData.objOf&&h.object.userData.objOf[Math.floor(h.faceIndex/2)]; if(o&&!(ST[kid(o)]&&ST[kid(o)].del))return {o,p:h.point}; return null; } return null; };
-  WE.pick=e=>{ if(!WE.iso())return; const h=hitAt(e); sel=h?h.o:null; if(sel&&!sel.sign){ if(!sel.prop&&!sel.copy)base(sel); sel.lite=null; const L=nearLight(h.p,9*T); if(L){ litOrig(L); sel.lite=L; sel.liteKey=litKey(L); } } frame(); draw(); };
+  WE.pick=e=>{ if(!WE.iso())return; const h=hitAt(e); sel=h?h.o:null; if(sel&&!sel.sign){ if(!sel.prop&&!sel.copy&&!sel.obj)base(sel); sel.lite=null; const L=nearLight(h.p,9*T); if(L){ litOrig(L); sel.lite=L; sel.liteKey=litKey(L); } } frame(); draw(); };
   WE.down=e=>{ if(WE.on&&WE.iso()&&WE.placeDown&&WE.placeDown(e))return true; if(!WE.on||!WE.iso()||!sel||sel.sign||e.button!==0)return false; const h=hitAt(e); if(!h||h.o.sign||keyOf(h.o)!==keyOf(sel))return false; drag={y:h.p.y,last:h.p.clone()}; return true; };
   WE.move=e=>{ '@later'; if(!drag)return; const r=renderer.domElement.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
     const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-drag.y), q=new THREE.Vector3(); if(!ray.ray.intersectPlane(pl,q))return; const dx=q.x-drag.last.x, dz=q.z-drag.last.z; drag.last.copy(q);
@@ -243,6 +275,9 @@ Object.assign(WE,{on:false}); window.WE=WE;
   // the editor's instanced things (bricks, rocks, lanterns...) answer rays only while editing: the camera's every-frame ray skips them
   { const gate=en=>{ const m=en&&en.me; if(!m||!m.isInstancedMesh||m.userData.weOnly)return; m.userData.weOnly=1; const r0=m.raycast; m.raycast=function(r,i){ if(WE.on)r0.call(this,r,i); }; };
     WED.meshes.forEach(gate); const p0=WED.meshes.push.bind(WED.meshes); WED.meshes.push=(...a)=>{ a.forEach(gate); return p0(...a); }; }
+  WE.dbgWobj=(f,i=0)=>{ const en=objs().filter(f)[i]; if(!en)return null; sel=objHandle(en); frame(); draw(); return keyOf(sel); };
+  WE.dbgWorld=(near=40*T)=>{ let m=null; scene.traverse(q=>{ if(m||!plainMesh(q))return; q.updateMatrixWorld(); const p=new THREE.Vector3().setFromMatrixPosition(q.matrixWorld); if(Math.hypot(p.x-pos.x,p.z-pos.z)<near&&q.geometry&&q.geometry.attributes.position.count>24)m=q; }); if(!m)return null; sel=objHandle(asWorld(m)); frame(); draw(); return keyOf(sel); };
+  WE.dbgSelObj=()=>sel&&sel.ob; WE.dbgObjs=()=>objs();
   WE.dbgProps=()=>ents(); WE.baked=()=>BAKED; WE.dbgPick=(mi,bid)=>{ const en=ents()[mi]; if(!en||en.ids[bid]==null)return null; sel=propHandle(en,bid); frame(); draw(); return keyOf(sel); };
   WE.dbgSel=()=>sel; WE.dbgLinked=()=>sel?linked(sel).length:0; WE.dbgObj=(name,i=0)=>{ const o=OBJS.filter(q=>q.name===name)[i]; if(!o)return null; base(o); sel=o; sel.lite=null; frame(); draw(); return kid(o); };
   WE.dbgLights=()=>sceneLights().length; WE.dbgSelLight=i=>{ const L=sceneLights()[i]; if(!L)return null; litOrig(L); sel={name:'TEST',place:'world',prop:true,pivot:[0,0,0],lite:L,liteKey:litKey(L)}; draw(); return {key:litKey(L),i0:L.userData.i0,intensity:+L.intensity.toFixed(3)}; };

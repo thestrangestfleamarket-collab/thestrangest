@@ -848,7 +848,7 @@ function entablature(x,y,nm='MUSEUM OF EARTH',k=1,pn){ '@later'; SHARED.PNAME=pn
     if(z<10)return z%3===0?MARBD:z<3?sh(MARB,.96):MARB;
     if(k>1?s==='b':s==='f'){ const tw=muTW(nm,k), l=(L-tw)/2, cc=Math.floor(((s==='b'?L-a:a)-l)/k), zz=Math.floor((z-12)/k); if(cc>=0&&cc<tw/k&&zz>=0&&zz<7){ const g=MUF[nm[Math.floor(cc/6)]], q=cc%6; if(g&&q<5&&g[(6-zz)*5+q]==='#')return k>1?muLit([238,204,120]):[92,84,70]; } }
     return MARB; },()=>MARBL,{foot:1}));
-  for(const t of [0,1-.9/W])B.push(fb(r,t,t+.9/W,0,2.9,Z,Z+H,MARB,(s,tt,z)=>z>=H-2?MARBL:z<10&&z%3===0?MARBD:MARB,()=>MARBL,{foot:1}));
+  for(const t of [0,1-.9/W])B.push(fb(r,t,t+.9/W,1,2.9,Z,Z+H,MARB,(s,tt,z)=>z>=H-2?MARBL:z<10&&z%3===0?MARBD:MARB,()=>MARBL,{foot:1}));
   const PH=26, ped=(s,t,z,len)=>{ if(s!=='f'&&s!=='b')return null; const a=t*len*FP, L=len*FP, w=(1-z/PH)*L/2, d=Math.abs(a-L/2); if(d>w)return null;
     if(d>w-4||z<3)return d>w-2||z<1.5?MARBL:MARBD;
     const ex=(a-L/2)/13, ez=(z-14)/11, rr=ex*ex+ez*ez; if(rr<1){ const land=cvNoise(a/7+3,z/7,1803)>.55; return rr>.8?MARBD:land?MARBL:sh(MARB,.94); }
@@ -1226,7 +1226,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('news','newspaper rack',B.x0+.6,B.y1-.5); put('dock','drone box',B.x1-.85,B.y0+.85); O.dock.boxes.push({x0:B.x1-1.05,y0:B.y0+.65,x1:B.x1-.65,y1:B.y0+1.05,z0:114,z1:SB.h,c:[120,122,122],fi:(v,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126],fj:(u,z)=>Math.floor(z)%6===0?[96,98,98]:[124,126,126]});
   put('wl3','shop shelf',B.x0+.36,B.y0+8.5,3);
   put('mat-fox','counter mat',B.x1-.42,B.y0+5.3); put('mat-run','rubber mat',B.x1-1.75,B.y0+5.3,1);
-  { const y0=SB.y0, x0=SB.x0; put('of-desk','desk',x0+1.4,y0+.75); put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
+  { const y0=SB.y0, x0=SB.x0; put('of-chair','office chair',x0+1.4,y0+1.6); put('of-pc','home computer',x0+1.4,y0+.6);
     put('of-shelf','shelves with boxes',x0+4.6,y0+.5); put('of-boxes','cardboard boxes',x0+6.6,y0+.7); put('of-sink','utility sink',x0+.55,y0+2.6,3);
     put('of-clock','wall clock',x0+3.2,y0+.29); put('of-tube','fluorescent tube',x0+3.6,y0+1.9); }
   SHARED.BOD.food={x:B.x1-1.05,y:B.y0+6.3};

@@ -93,15 +93,12 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const BTN='font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer';
   HUD.innerHTML='<span></span><button data-r style="'+BTN+'">RADIO (T)</button><button data-o style="'+BTN+'">GET OUT (F)</button>'; document.body.appendChild(HUD); HUD.querySelector('[data-o]').onclick=()=>getOut(); HUD.querySelector('[data-r]').onclick=()=>RAD.next();
   const board=id=>{ '@later'; const C=CARS.get(id), k=C&&kindFor(C.model); if(!k)return; C.by=ONLINE.me||'me'; at(C); pos.x=C.x; pos.z=C.z; SHARED.py=SHARED.groundY(C.x,C.z); SHARED.heading=C.hd; k.V.x=C.x; k.V.z=C.z; k.V.hd=C.hd;
-    if(!RIDE.mount('car:'+C.model)){ C.by=null; at(C); if(ONLINE.on)ONLINE.send({t:'car',k:id,on:0}); return; } k.V.x=k.V.z=k.V.hd=null; mine=C; HUD.querySelector('span').textContent=k.name+' · W GO · S BRAKE · A D STEER'; HUD.style.display='flex'; say('YOU GET IN THE '+k.name+'.'); };
+    if(!RIDE.mount('car:'+C.model)){ C.by=null; at(C); if(ONLINE.on)ONLINE.send({t:'car',k:id,on:0}); return; } k.V.x=k.V.z=k.V.hd=null; mine=C; UI.distMin=Math.max(1.2*TILE,DATA.cars[C.model].size[0]*M1); UI.setView('third'); HUD.querySelector('span').textContent=k.name+' · W GO · S BRAKE · A D STEER · Q E LOOK'; HUD.style.display='flex'; say('YOU GET IN THE '+k.name+'.'); };
   const getIn=id=>{ '@later'; const C=CARS.get(id); if(!C||!DATA)return; if(mine)return; if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(C.by&&C.by!==ONLINE.me)return say('SOMEONE IS DRIVING IT.','#c8a090');
     if(ONLINE.on&&ONLINE.me){ want=id; ONLINE.send({t:'car',k:id,on:1}); setTimeout(()=>{ if(want===id){ want=null; say('THE CAR DID NOT ANSWER. TRY AGAIN.','#c8a090'); } },4000); } else board(id); };
-  const getOut=()=>{ '@later'; const C=mine; if(!C)return; RAD.tune(C,0); mine=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
+  const getOut=()=>{ '@later'; const C=mine; if(!C)return; RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
     const D=DATA.cars[C.model], s=(D.size[0]/2+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
   CAR.getIn=getIn; CAR.getOut=getOut; CAR.build=m=>DATA&&DATA.cars[m]?build(m):null;
-  // in first person at the wheel, your eye is the driver's, in the seat behind the wheel
-  const EYE=new THREE.Vector3(), Q=new THREE.Quaternion(), LOOK=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.24,Math.PI,0,'YXZ'));   // the car looks along +z, a camera along -z
-  SYS.add('cam',()=>{ if(!mine||UI.view!=='first')return; const k=KINDS[mine.model], m=k&&k.m, cb=m&&m.userData.cab; if(!cb||!m.visible)return; m.updateMatrixWorld(true); SHARED.cam.position.copy(m.localToWorld(EYE.copy(cb.eye))); SHARED.cam.quaternion.copy(m.getWorldQuaternion(Q)).multiply(LOOK); SHARED.cam.updateMatrixWorld(); },'150p-cars');
   ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C){ for(const f of VEH.hear||[])f(m); return; }   // another thing you drive on the same lock (the helicopters, VEH.hear)
   if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
     if(typeof m.at==='string')fromWorld('car:'+m.k,m.at); if(m.by&&m.by===ONLINE.me){ if(want===m.k){ want=null; board(m.k); } return; } if(mine===C&&!m.by)return; C.by=m.by||null; if(DATA)at(C); };
@@ -114,7 +111,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const nowAt=S=>{ const t=(Date.now()/1000)%S.len; let k=S.tracks[0]; for(const q of S.tracks)if(q.at<=t)k=q; return {t,k}; };
   const faces=C=>{ const out=[]; if(C.mesh&&C.mesh.userData.cab)out.push(C.mesh.userData.cab.radio); const k=KINDS[C.model]; if(mine===C&&k&&k.m&&k.m.userData.cab)out.push(k.m.userData.cab.radio); return out; };
   const showRadio=C=>{ '@later'; const S=station(stOf(C)); for(const f of faces(C))if(f){ const n=S?nowAt(S).k:null; f.draw(S?S.call:'',n?n.title:''); }
-    if(mine===C){ const k=KINDS[C.model], n=S&&nowAt(S).k; HUD.querySelector('span').textContent=k.name+(S?' · '+S.call+' '+S.name+(n?' · '+n.title.toUpperCase()+(n.year?' ('+n.year+')':''):''):' · W GO · S BRAKE · A D STEER'); HUD.querySelector('[data-r]').textContent=S?'RADIO: '+S.call+' (T)':'RADIO (T)'; } };
+    if(mine===C){ const k=KINDS[C.model], n=S&&nowAt(S).k; HUD.querySelector('span').textContent=k.name+(S?' · '+S.call+' '+S.name+(n?' · '+n.title.toUpperCase()+(n.year?' ('+n.year+')':''):''):' · W GO · S BRAKE · A D STEER · Q E LOOK'); HUD.querySelector('[data-r]').textContent=S?'RADIO: '+S.call+' (T)':'RADIO (T)'; } };
   RAD.tune=(C,n)=>{ if(!C)return; if(stOf(C)===n)return; ONLINE.put('radio:'+C.id,n); showRadio(C); };
   RAD.next=()=>{ '@later'; if(!mine)return; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RAD.next(); }).catch(e=>console.warn('CARS: the radio did not load',e)); } return; }
     const n=(stOf(mine)+1)%(RAD.data.stations.length+1); RAD.tune(mine,n); const S=station(n); say(S?'THE RADIO: '+S.call+', '+S.name+'.':'THE RADIO IS OFF.'); };
@@ -145,7 +142,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   SYS.add('world',k=>{ if(typeof k==='string'&&k.startsWith('radio:')){ const C=CARS.get(k.slice(6)); if(C&&RAD.data)showRadio(C); } },'150p-cars');
   CAR.radio=()=>({loaded:!!RAD.data,best:RAD.best,ctx:RAD.ctx&&RAD.ctx.state,mine:mine&&stOf(mine),ch:Object.fromEntries(Object.entries(RAD.ch).map(([k,c])=>[k,{paused:c.a.paused,t:+c.a.currentTime.toFixed(1),want:RAD.data?+((Date.now()/1000)%RAD.data.stations.find(S=>S.id===k).len).toFixed(1):null,g:+c.g.gain.value.toFixed(2),src:c.a.src.slice(-30)}]))});
   // the ride ended some other way (a fall, a crash): the car parks where it stopped
-  SYS.add('life',()=>{ if(mine&&!(RIDE.on&&RIDE.on==='car:'+mine.model)){ const C=mine; RAD.tune(C,0); mine=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); if(DATA)at(C); } },'150p-cars');
+  SYS.add('life',()=>{ if(mine&&!(RIDE.on&&RIDE.on==='car:'+mine.model)){ const C=mine; RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); if(DATA)at(C); } },'150p-cars');
 
   // the ground's height is only true near you: a parked car within reach is set on it again now and then
   let gT=0; SYS.add('life',dt=>{ if(!DATA||(gT-=dt||0)>0)return; gT=.5; for(const C of CARS.values())if(C.mesh&&C.mesh.visible&&Math.hypot(C.x-pos.x,C.z-pos.z)<60*T)C.mesh.position.y=SHARED.groundY(C.x,C.z); },'150p-cars');

@@ -34,8 +34,13 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
   const BMXK={name:'BMX',...vehicle('bmx',.75,(u,k)=>RIG.RIDEG.bb[1]*u+.125*k),
     pose:R=>{ BPOSE.c=(BPOSE.c||0)+(R.v/TILE)*.14; BPOSE.brake=!(R.v>.2*TILE); return BPOSE; }};   // its cranks under the rig's: they turn as it rolls
   const KINDS={skate:SKATEK,scoot:SCOOTK,bmx:BMXK};
+  // the BMX for anyone (owner, 7 Nov 2026: "make the BMX rideable"): the BMX rider's bike, ridden by you as the hoverboard is (data/items.json bmx, grants bmx); others see you on it
+  const BMXP={...BMXK,name:'BMX',hint:'A CLICK SETS IT DOWN AND YOU GET ON. WASD PEDALS AND STEERS, SPACE HOPS, A CLICK GETS OFF.',onSay:'YOU SWING A LEG OVER THE BMX.',held:.5,acc:2.2,turn:2.2,drag:.5,knock:5,hop:2.6,
+    make:()=>{ const m=BMXK.make(); m.scale.setScalar(TILE/.84*.75); return m; },
+    place:(m,R,t,c)=>BMXK.place(m,R,t,c||{g:W3.group,S:(BODIES.by[BODIES.pick()]||{}).S||1})};
+  SKATE.bmx=BMXP;
   // anyone can own one: the skate shop sells it (data/items.json skateboard, grants skate; the shop owner's trade in characters.json)
-  SYS.onStart(()=>{ FORAGE.add({names:{skateboard:'SKATEBOARD'}}); BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); }).catch(e=>console.warn('SKATE board',e)); },'111fd-skateboard');
+  SYS.onStart(()=>{ FORAGE.add({names:{skateboard:'SKATEBOARD',bmx:'A BMX'}}); RIDES().then(r=>{ RD=RD||r; if(RIDE.kind&&!RIDE.kinds.bmx)RIDE.kind('bmx',BMXP); }).catch(e=>console.warn('BMX',e)); BOARD().then(b=>{ BD=b; if(RIDE.kind&&!RIDE.kinds.skate)RIDE.kind('skate',SKATEK); }).catch(e=>console.warn('SKATE board',e)); },'111fd-skateboard');
 
   // the park, out in the open in its section's Central Park (sections.places in data/world.json): built when you are in that section, its gate facing where the entry says
   const S=(SECTIONS.places||[]).find(q=>q.id==='skatepark'), GX=0, GZ=32.5;   // its gateway, in the park's metres (tools/skatepark-bake.py)

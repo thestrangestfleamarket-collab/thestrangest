@@ -1,6 +1,6 @@
 // THE POLYFORK FRONTS (owner, 5 Nov 2026): whole Polyfork buildings on Market St's new shops and up West St as a line of 10-storey apartment houses (a small gap between each), from data/street.json fetched after the start, with their fire escapes, railings, plants and trees; the lots' solids stand from the start.
 import {SHARED, THREE} from './003-shx.js';
-import {UI} from './003b-systems.js';
+import {UI, WE} from './003b-systems.js';
 import {KITD, scene} from './004-main.js';
 import {FIX, LEVEL, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {MSHOP} from './059i-mshops.js';
@@ -8,17 +8,17 @@ import {KIT} from './068-kit.js';
 const PFROW={fronts:[],houses:[],things:[]};
 { const STREET=__LAZY__("data/street.json"), {XS,ZS}=SHARED.BOD, M=TILE/.84, YS=ZU*24/TILE, MV=M*YS, G=(x,z)=>MODS.bodega.ground(x,z);
   const HOUSES=LEVEL.places.filter(p=>p.pf&&p.y1!=null&&!p.row).sort((a,b)=>a.y0-b.y0);   // (a shop on the Hudson row stands through MSHOP.fronts)
-  for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); SOL.up.push([x0,z0,x1,z1]); FIX.up.push([x0,z0,0,x1,z1,35/.84*ZU*24]); }   // solid from the start (the house is 35 m tall)
+  for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); p.sol=[x0,z0,x1,z1]; p.fix=[x0,z0,0,x1,z1,35/.84*ZU*24]; SOL.up.push(p.sol); FIX.up.push(p.fix); }   // solid from the start (the house is 35 m tall)
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };
     for(const f of MSHOP.fronts){ const d=size(f.pf)[2]*M; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot}); if(g)PFROW.fronts.push({id:f.id,obj:g}); }
-    HOUSES.forEach((p,i)=>{ const fx=XS(p.x1), zc=(ZS(p.y0)+ZS(p.y1))/2, w=size(p.pf)[0]*M, d=size(p.pf)[2]*M, rot=Math.PI/2, g=put(p.pf,fx-d/2,zc,{rot});   // the front faces the street (east)
+    HOUSES.forEach((p,i)=>{ const fx=XS(p.x1), zc=(ZS(p.y0)+ZS(p.y1))/2, w=size(p.pf)[0]*M, d=size(p.pf)[2]*M, rot=Math.PI/2, g=put(p.pf,fx-d/2,zc,{rot,sol:p.sol,fix:p.fix,label:p.name});   // the front faces the street (east)
       if(!g)return; PFROW.houses.push({id:p.id,obj:g,door:[fx,zc]});
       for(let k=1;k<10;k++)put('fireescape',fx+.7*M,zc+(i%2?-6:6)*M,{rot,lift:(3*k-1.13)*MV});   // a landing at every floor line on one bay
       for(const dz of [-2.2,2.2])put('planter',fx+.45*M,zc+dz*M,{rot}); for(const dz of [-3.4,3.4])put('basket',fx+.3*M,zc+dz*M,{rot,lift:2.2*MV});
       for(const dz of [-7,-5.5,-4,4,5.5,7])put(['shrub','bush','evergreen'][Math.abs(dz*2)%3|0],fx+.5*M,zc+dz*M,{rot}); put('bougainvillea',fx+.3*M,zc+(i%2?7.2:-7.2)*M,{rot});
       put('streettree',fx+2*M,ZS(p.y1)+.6*M,{rot}); if(i%2)put('globelamp',fx+2.3*M,ZS(p.y0)+2*M,{rot}); });
-    PFROW.tris=tris; PFROW.done=true; };
+    PFROW.tris=tris; PFROW.done=true; if(WE.late)WE.late(); };
   SYS.onStart(()=>Promise.all([LOAD('later'),STREET()]).then(([_,J])=>{ Object.assign(KITD,J); place(); }).catch(e=>console.warn('pfrow',e)),'068a-pfrow');
   // the houses' doors: a thing at each (the lobby is shut until the flats are built; your own apartment's door is on the first house, 059a)
   let made=false; SYS.add('places',()=>{ if(made||!UI.thing||!PFROW.done)return; made=true; for(const h of PFROW.houses){ const m=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.3*TILE),new THREE.MeshBasicMaterial({visible:false})); m.position.set(h.door[0]+.25*TILE,G(h.door[0],h.door[1])+1.2*TILE,h.door[1]); scene.add(m);

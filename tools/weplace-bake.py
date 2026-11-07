@@ -1,6 +1,6 @@
 # THE WORLD EDITOR'S PLACE MODELS (owner, 7 Nov 2026): every Polyfork model in tools/weplace-list.json fetched into .polyfork/ (never
 # committed; the licence lets the game ship them baked) and baked flat-coloured, one file a category: data/weplace-<n>.json
-# {key: {n: name, m: metres tall, w: footprint [x,z] in metres, b: [lo, hi], p: int16 points over b (three a face), c: uint8 colour a point}},
+# {key: {n: name, m: metres tall, f: the footprint on the ground [x0,z0,x1,z1] in metres (what is solid), w: footprint [x,z] in metres, b: [lo, hi], p: int16 points over b (three a face), c: uint8 colour a point}},
 # its feet at 0, centred, real size. data/weplace.json is the list (category, key, name, metres) the PLACE tab shows before a category is fetched.
 # SMALL BUILDINGS come 25% over Polyfork's size (owner, 7 Nov 2026: "increase the overall size of all polyfork buildings by 25%").
 # Run: python3 tools/weplace-bake.py   (MAXT=6000: a model over that many faces is left out)
@@ -34,7 +34,9 @@ for ci,(cat,ids) in enumerate(L.items()):
         if h<.02 or h>40: print('skip',i,'height',h); continue
         q=np.round((P-lo)/np.maximum(hi-lo,1e-6)*65535-32768).clip(-32768,32767).astype(np.int16)
         name=i.rsplit('-',1)[0].replace('-',' ')
-        OUT[i]={'n':name,'m':round(h,3),'w':[round(float(hi[0]-lo[0]),3),round(float(hi[2]-lo[2]),3)],'b':[round(float(x),4) for x in (*lo,*hi)],'p':b64(q),'c':b64(np.clip(Cc.reshape(-1,3),0,255).round().astype(np.uint8))}
+        lw=P[P[:,1]<min(.6,.3*h)]; lw=lw if len(lw)>2 else P   # what stands on the ground (a tree's trunk, a lamp's post): the solid part
+        f=[round(float(v),3) for v in (lw[:,0].min(),lw[:,2].min(),lw[:,0].max(),lw[:,2].max())]
+        OUT[i]={'f':f,'n':name,'m':round(h,3),'w':[round(float(hi[0]-lo[0]),3),round(float(hi[2]-lo[2]),3)],'b':[round(float(x),4) for x in (*lo,*hi)],'p':b64(q),'c':b64(np.clip(Cc.reshape(-1,3),0,255).round().astype(np.uint8))}
         LIST.append([ci,i,name,round(h,2)])
     fn='data/weplace-%d.json'%ci; json.dump(OUT,open(fn,'w'),separators=(',',':')); tot+=os.path.getsize(fn); print(cat,len(OUT),os.path.getsize(fn)//1024,'KB',flush=True)
 json.dump({'cats':list(L.keys()),'list':LIST,'license':'Polyfork (polyfork.dev/licensing): use in games, no reselling the files'},open('data/weplace.json','w'),separators=(',',':'))

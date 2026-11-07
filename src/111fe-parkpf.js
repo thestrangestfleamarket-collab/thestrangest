@@ -1,7 +1,7 @@
 // THE PARK'S POLYFORK THINGS: data/world.json's things with k 'p:<key>' (data/parkpf.json, tools/park-pf-bake.py), baked a patch of ground at a time into still meshes; only near patches drawn, small things nearer still, shadows close by; the big ones solid; the lamps lit at night.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CLOCK, DN, LITE, PARK, pos} from './003b-systems.js';
+import {CLOCK, DN, LITE, PARK, pos, WE, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -29,19 +29,22 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
         if(!f){ PARKPF.skipped.push(o.k+'@'+o.x+','+o.y); continue; } [mx,my]=f; PARKPF.moved++; }
       const x=B.XS(mx), z=B.ZS(my), y=o.float?water(x,z):(SHARED.groundY?SHARED.groundY(x,z):0);
       const big=Math.max(sx,sz)>=2.4||sy>=2.5, key=Math.floor(mx/CELL)+','+Math.floor(my/CELL)+(big?'b':'s'); let c=cells.get(key); if(!c)cells.set(key,c={big,L:[],n:0,t:0});
-      const m=model(Dk); c.L.push({m,x,y,z,ca,sa}); c.n+=m.n; c.t+=m.I.length;
-      if(LAMP[k]){ const h=m.head, M_=M; lampAt.push([x+(h[0]*ca+h[2]*sa)*M_,y+h[1]*M_,z+(-h[0]*sa+h[2]*ca)*M_,LAMP[k]]); }
-      if(SOLID.has(k)){ const s=[x-ex*M,z-ez*M,x+ex*M,z+ez*M]; SOL.up.push(s); FIX.up.push([s[0],s[1],y,s[2],s[3],y+sy*M]); PARKPF.solids++; } }
-    for(const c of cells.values()){ const P=new Float32Array(c.n*3), C=new Float32Array(c.n*3), I=c.n>65535?new Uint32Array(c.t):new Uint16Array(c.t); let v=0, j=0;
-      for(const {m,x,y,z,ca,sa} of c.L){ for(let i=0;i<m.n;i++){ const px=m.P[i*3]*M, py=m.P[i*3+1]*M, pz=m.P[i*3+2]*M, w=(v+i)*3; P[w]=x+px*ca+pz*sa; P[w+1]=y+py; P[w+2]=z-px*sa+pz*ca; }
-        C.set(m.C,v*3); for(let i=0;i<m.I.length;i++)I[j+i]=m.I[i]+v; v+=m.n; j+=m.I.length; }
-      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeBoundingSphere();
-      const me=new THREE.Mesh(g,mat); me.matrixAutoUpdate=false; me.receiveShadow=true; me.castShadow=false; me.visible=false; me.userData.parkpf=1; root.add(me);
-      const bs=g.boundingSphere; PARKPF.patches.push({me,big:c.big,x:bs.center.x,z:bs.center.z,r:bs.radius,tris:c.t/3}); PARKPF.tris+=c.t/3; }
-    lights(lampAt,root); PARKPF.done=true; cull(); };
+      const m=model(Dk), it={k:k,x,y,z}; c.L.push({m,x,y,z,ca,sa,it}); c.n+=m.n; c.t+=m.I.length;
+      if(LAMP[k]){ const h=m.head, M_=M; lampAt.push([x+(h[0]*ca+h[2]*sa)*M_,y+h[1]*M_,z+(-h[0]*sa+h[2]*ca)*M_,LAMP[k],it]); }
+      if(SOLID.has(k)){ const s=[x-ex*M,z-ez*M,x+ex*M,z+ez*M], f=[s[0],s[1],y,s[2],s[3],y+sy*M]; SOL.up.push(s); FIX.up.push(f); it.sol=s; it.fix=f; PARKPF.solids++; } }
+    // each patch one batch (one draw), a thing its own entry in it, so the world editor picks, moves and hides each one (owner, 7 Nov 2026: "make sure everything in game can be edited")
+    for(const c of cells.values()){ const me=new THREE.BatchedMesh(c.L.length,c.n,c.t,mat), items=[];
+      for(const {m,x,y,z,ca,sa,it} of c.L){ const P=new Float32Array(m.n*3);
+        for(let i=0;i<m.n;i++){ const px=m.P[i*3]*M, py=m.P[i*3+1]*M, pz=m.P[i*3+2]*M; P[i*3]=x+px*ca+pz*sa; P[i*3+1]=y+py; P[i*3+2]=z-px*sa+pz*ca; }
+        const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(m.C,3)); g.setIndex(new THREE.BufferAttribute(m.I,1));
+        me.addInstance(me.addGeometry(g)); items.push(it); }
+      me.computeBoundingSphere();
+      me.matrixAutoUpdate=false; me.receiveShadow=true; me.castShadow=false; me.visible=false; me.userData.parkpf=1; root.add(me); WED.meshes.push({place:'park',me,items});
+      const bs=me.boundingSphere; PARKPF.patches.push({me,big:c.big,x:bs.center.x,z:bs.center.z,r:bs.radius,tris:c.t/3}); PARKPF.tris+=c.t/3; }
+    lights(lampAt,root); PARKPF.done=true; cull(); if(WE.late)WE.late(); };
   // the lamps at night (owner, 7 Nov 2026: "make the park lamps light up at night"): each a light record in the pool (LITE: the nearest few lit for real, the rest a glow on the ground), their heads one glowing points draw
   const lights=(L,root)=>{ const T=TILE, recs=[], pp=new Float32Array(L.length*3);
-    L.forEach(([x,y,z,k],i)=>{ const l=new THREE.PointLight(new THREE.Color(1,.84,.58),40*k,14*T*k,1.6); l.position.set(x,y,z); l.userData.i0=40*k; l.userData.grp=root; l.intensity=0; l.castShadow=false; recs.push(l); LITE.recs.push(l); pp.set([x,y,z],i*3); });
+    L.forEach(([x,y,z,k,it],i)=>{ const l=new THREE.PointLight(new THREE.Color(1,.84,.58),40*k,14*T*k,1.6); l.position.set(x,y,z); l.userData.i0=40*k; l.userData.grp=root; l.intensity=0; l.castShadow=false; recs.push(l); LITE.recs.push(l); pp.set([x,y,z],i*3); if(it)it.follow=[l]; });
     const W=32, cv=document.createElement('canvas'); cv.width=cv.height=W; const g=cv.getContext('2d'), im=g.createImageData(W,W);
     for(let j=0;j<W;j++)for(let i=0;i<W;i++){ const d=Math.hypot((i+.5)/W*2-1,(j+.5)/W*2-1), a=d<.22?1:d<.45?.45:d<.75?.16:0, o=(j*W+i)*4; im.data[o]=255; im.data[o+1]=d<.22?240:206; im.data[o+2]=d<.22?200:140; im.data[o+3]=a*255; }
     g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;

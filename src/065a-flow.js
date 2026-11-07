@@ -72,7 +72,7 @@ import {SYS, TILE} from './006-map-pre.js';
   // how far you see under water dm metres down (owner, 28 Oct 2026: "gets darker the further down you go, need headlight or ability to see in dark (mushrooms)"): daylight dies
   // with depth; a headlight (EQUIP's light) lights a few metres round you, a glowcap mushroom (FORAGE's dark) lets you see as if near the surface; goggles make the water clear
   FLOW.see=(dm,far)=>{ const day=Math.max(.012,Math.exp(-dm*.09)), glow=!!(FORAGE.S&&FORAGE.S.fx&&FORAGE.S.fx.dark>0), lamp=!!EQUIP.light, k=glow?Math.max(day,.6):lamp?Math.max(day,.32):day;
-    FLOW.under=true; return {k,far:far*(EQUIP.sight?6:1)*(glow?1:lamp?Math.max(day,.4):Math.max(day,.05))}; };   // murky without goggles, clear through them (owner, 7 Nov 2026)
+    FLOW.under=true; let f=far*(EQUIP.sight?6:1)*(glow?1:lamp?Math.max(day,.4):Math.max(day,.05)); if(EQUIP.sight&&(lamp||glow))f=Math.max(f,18); return {k,far:f}; };   // goggles and a light: some eighteen metres clear even deep down   // murky without goggles, clear through them (owner, 7 Nov 2026)
   FLOW.rest=()=>{ x0=1e9; live=false; uOn.value=0; };
   // a swimmer is carried by the flow where they are
   FLOW.carry=(pos,dt)=>{ FLOW.need=true; const c=FLOW.cur; if(!c.ok)return 0; pos.x+=c.u*dt; pos.z+=c.w*dt; return c.h; };

@@ -14,9 +14,10 @@ const TUFTS=window.TUFTS={wind:0,dir:1};
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); g.computeVertexNormals(); return g; };
   const SHP={round:{g:[sph(7,4),sph(5,3)],t:[.36,.5,.62],w:2.3},crown:{g:[ico(),ico()],t:[.42,.42,.86],w:2.1},clump:{g:[sph(6,3),sph(5,3)],t:[.3,.78,.42],w:2.2},tussock:{g:[sph(6,5),sph(5,3)],t:[.4,.5,1.25],w:1.7},blade:{g:[fan(6),fan(4)],t:[0,1,1],w:1.4,two:1}};
   const KC=GRASS.K.map(k=>{ const P=k.cols||TUFTC, W=P.reduce((a,c)=>a+c[3],0), C=P.map(c=>new THREE.Color().setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace)); return r=>{ r*=W; for(let i=0;i<P.length;i++)if((r-=P[i][3])<0)return C[i]; return C[0]; }; });
-  const PP=[...Array(NP)].map(()=>new THREE.Vector4(0,0,0,0)), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind},uWr:{value:new THREE.Vector2(1,0)},uMe:{value:new THREE.Vector2()},uFd:{value:new THREE.Vector3(R2*.15,R2*.95,TUFTS.dark=.72)}};
+  const PP=[...Array(NP)].map(()=>new THREE.Vector4(0,0,0,0)), U={uPP:{value:PP},uTt:{value:0},uKn:{value:.6},uWd:{value:TUFTS.wind},uWr:{value:new THREE.Vector2(1,0)},uMe:{value:new THREE.Vector2()},uFd:{value:new THREE.Vector3(R2*.15,R2*.95,TUFTS.dark=1)}};
   // each tuft leans away from what presses it (more at its top); the push is turned into the tuft's own frame (a turn about Y and a scale); further out they widen, so the sparser far ring covers the ground as the near one does
-  const mat=new THREE.MeshLambertMaterial({flatShading:true}); mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U);
+  const mat=new THREE.MeshLambertMaterial(); mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,U); sh.vertexShader=sh.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n objectNormal=vec3(0.,1.,0.);');   // lit as the lawn under it is (facing up), so the standing grass is the lawn's own colour and no patch follows you (owner, 6 Nov 2026)
+
     sh.vertexShader='uniform vec4 uPP['+NP+']; uniform float uTt,uKn,uWd; uniform vec2 uMe,uWr; uniform vec3 uFd; varying float vFd,vH,vTv;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
       { vec3 b=(modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz; vec2 dv=vec2(0.); for(int i=0;i<${NP};i++){ vec4 p=uPP[i]; if(p.w==0.)continue; vec2 d=b.xz-p.xy; float l=length(d), f=1.-l/p.z; if(f<=0.)continue; f=f*f*(3.-2.*f); dv+=d/max(l,.001)*f*p.w; }
         float m=length(dv); if(m>1.)dv/=m; vec2 bt=b.xz*${(1/T).toFixed(5)}; float ph=dot(bt,uWr)*.45-uTt*1.7, gu=.55+.45*sin(ph)*(.65+.35*sin(ph*.37+1.3)); dv+=uWd*(uWr*gu+.22*vec2(sin(uTt*2.3+bt.x*1.7),sin(uTt*2.1+bt.y*1.7)));
@@ -24,10 +25,10 @@ const TUFTS=window.TUFTS={wind:0,dir:1};
         vec3 dw=vec3(dv.x,-.45*dot(dv,dv),dv.y)*uKn*h*h*1.1; vec3 c0=instanceMatrix[0].xyz, c1=instanceMatrix[1].xyz, c2=instanceMatrix[2].xyz;
         transformed+=vec3(dot(c0,dw)/dot(c0,c0),dot(c1,dw)/dot(c1,c1),dot(c2,dw)/dot(c2,c2));
         float dm=distance(b.xz,uMe); vFd=1.-smoothstep(uFd.x,uFd.y,dm); transformed.y*=mix(.08,1.,vFd); transformed.xz*=mix(1.,${(RINGS[1].sp/RINGS[0].sp).toFixed(3)},smoothstep(${(R1*.5).toFixed(3)},${R1.toFixed(3)},dm)); }`);
-    sh.fragmentShader='uniform vec3 uFd; varying float vFd,vH,vTv;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n float gh=smoothstep(0.,1.,vH); diffuseColor.rgb*=mix(1.,mix(.7,1.04,gh),vFd); diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*mix(vec3(.86,.97,.92),vec3(1.12,1.07,.8),vTv),gh*vFd*.8);\n diffuseColor.rgb*=mix(uFd.z,1.,vFd);'); };
+    sh.fragmentShader='uniform vec3 uFd; varying float vFd,vH,vTv;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n float gh=smoothstep(0.,1.,vH); diffuseColor.rgb*=vec3(.47,.41,.47)*mix(1.,mix(.9,1.1,gh),vFd); diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*mix(vec3(.86,.97,.92),vec3(1.12,1.07,.8),vTv),gh*vFd*.8);\n diffuseColor.rgb*=mix(uFd.z,1.,vFd);'); };
   mat.customProgramCacheKey=()=>'tufts'; const mat2=mat.clone(); mat2.side=THREE.DoubleSide; mat2.onBeforeCompile=mat.onBeforeCompile; mat2.customProgramCacheKey=()=>'tufts2';
   const SN=Object.keys(SHP), ME=[]; for(const R of RINGS){ R.M={}; for(const sn of SN){ const D=SHP[sn], g=D.g[RINGS.indexOf(R)]; if(!g.userData.done){ g.translate(0,D.t[0],0); g.scale(D.t[1],D.t[2],D.t[1]); g.userData.done=1; }
-    const me=new THREE.InstancedMesh(g,D.two?mat2:mat,R.cap); me.count=0; me.visible=false; me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); me.setColorAt(0,new THREE.Color()); me.instanceColor.setUsage(THREE.DynamicDrawUsage);
+    const me=new THREE.InstancedMesh(g,D.two?mat2:mat,R.cap); me.count=0; me.visible=false; me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); me.setColorAt(0,new THREE.Color()); me.instanceColor.setUsage(THREE.DynamicDrawUsage); (TUFTS.meshes=TUFTS.meshes||[]).push(me);
     me.frustumCulled=false; me.receiveShadow=true; me.castShadow=false; me.raycast=()=>{}; me.userData.tufts=1; me.userData.shape=sn; me.userData.tris=g.attributes.position.count/3; R.M[sn]=me; ME.push(me); } }
   const G=new THREE.Group(); G.add(...ME); let added=false;
   // the grass's height in patches, five levels from ankle to waist (3 is knee-high)
@@ -56,7 +57,7 @@ const TUFTS=window.TUFTS={wind:0,dir:1};
   const fill=()=>{ const px=pos.x, pz=pos.z; RINGS.forEach((R,ri)=>{ const r0=ri?R1:0, r1=ri?R2:R1; for(const sn of SN){ const me=R.M[sn], A=me.instanceMatrix.array, C=me.instanceColor.array; let n=0;
       for(const c of CH.values()){ if(!c)continue; const L=c.L[ri][sn]; if(!L)continue; const dx=Math.max(c.x0-px,0,px-c.x0-c.CS), dz=Math.max(c.z0-pz,0,pz-c.z0-c.CS); if(dx*dx+dz*dz>=r1*r1)continue;
         for(let k=0;k<L.length&&n<R.cap;k+=19){ const d=(L[k]-px)**2+(L[k+1]-pz)**2; if(d<r0*r0||d>=r1*r1)continue; for(let e=0;e<16;e++)A[n*16+e]=L[k+2+e]; const cl=L[k+18]; C[n*3]=cl.r; C[n*3+1]=cl.g; C[n*3+2]=cl.b; n++; } }
-      me.count=n; me.visible=n>0; me.instanceMatrix.needsUpdate=true; me.instanceColor.needsUpdate=true; } }); lx=px; lz=pz; dirty=false; };
+      me.count=n; me.visible=n>0&&!TUFTS.off; me.instanceMatrix.needsUpdate=true; me.instanceColor.needsUpdate=true; } }); lx=px; lz=pz; dirty=false; };
   let clk=0;   // its own clock, a fifteenth of a second a frame at most
   const cnt=R=>SN.reduce((a,sn)=>a+R.M[sn].count,0);
   TUFTS.stat=()=>({near:cnt(RINGS[0]),far:cnt(RINGS[1]),tris:ME.reduce((a,m)=>a+m.count*m.userData.tris,0),draws:ME.filter(m=>m.visible&&m.count).length,shapes:Object.fromEntries(SN.map(sn=>[sn,RINGS[0].M[sn].count+RINGS[1].M[sn].count])),chunks:CH.size,knee,ms:TUFTS.ms});

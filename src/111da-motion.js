@@ -14,7 +14,13 @@ import {AVATAR} from './111c-avatar.js';
   const PFE=[['AGREE','Agree'],['SHAKE HEAD','Shake'],['LAUGH','Laugh'],['CHAT','Chat'],['PHONE CALL','Phone'],['CROSS ARMS','Cross'],['BOP','Bop'],['HIP HOP','HipHop'],['TWIST','Twist'],['SWING','Swing'],['THRILLER','Thriller'],
     ['TIPSY','Drunk']];
   const TRAV=__LAZY__("data/pfanim-travel.json");   // (Polyfork's emotes that go somewhere: the hips' way forward, metres; 16 rig units a metre, as Mesh2Motion's recordings fit the rig)
-  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
+  // a recording's angles made continuous from key to key (161 then -151 is 209: a turn of 48 the short way, not 312 back through upright)
+  const POSN=new Set(['root','ik','kp']), unwrap=(a,b)=>{ for(const k in a){ if(POSN.has(k)||!(k in b))continue; const v=a[k], u=b[k];
+      if(typeof v==='number'&&typeof u==='number'){ let x=v; while(x-u>180)x-=360; while(x-u<-180)x+=360; a[k]=x; }
+      else if(Array.isArray(v)&&Array.isArray(u)){ for(let i=0;i<v.length;i++)if(typeof v[i]==='number'&&typeof u[i]==='number'){ while(v[i]-u[i]>180)v[i]-=360; while(v[i]-u[i]<-180)v[i]+=360; } }
+      else if(v&&typeof v==='object'&&u&&typeof u==='object')unwrap(v,u); } };
+  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++)unwrap(m.keys[i][1],m.keys[i-1][1]);
+    for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
     const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
       R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }
     Object.assign(R.LOOK,{roll:'mc_roll2',frontKick:'mc_kickFront',roundhouse:'mc_kickRound',hook:'mc_hook2',flinch:'mc_hitChest'}); return info; }));   // (the hand-made moves drawn from recordings: their timing, travel and hits kept)

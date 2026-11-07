@@ -2,13 +2,15 @@
   "name": "thestrangest",
   "main": "worker/door.js",
   "compatibility_date": "2026-10-06",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": true },
   "vars": {
     "SUPABASE_URL": "https://jvcetttmqseoteidfggn.supabase.co",
     "SUPABASE_KEY": "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik"
   },
-  "durable_objects": { "bindings": [{ "name": "Block", "class_name": "Block" }, { "name": "Post", "class_name": "Post" }, { "name": "Home", "class_name": "Home" }, { "name": "Dish", "class_name": "Dish" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Block"] }, { "tag": "v2", "new_sqlite_classes": ["Post"] }, { "tag": "v3", "new_sqlite_classes": ["Home"] }, { "tag": "v4", "new_sqlite_classes": ["Dish"] }],
+  "durable_objects": { "bindings": [{ "name": "Block", "class_name": "Block" }, { "name": "Post", "class_name": "Post" }, { "name": "Home", "class_name": "Home" }, { "name": "Dish", "class_name": "Dish" }, { "name": "Botrun", "class_name": "Botrun" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Block"] }, { "tag": "v2", "new_sqlite_classes": ["Post"] }, { "tag": "v3", "new_sqlite_classes": ["Home"] }, { "tag": "v4", "new_sqlite_classes": ["Dish"] }, { "tag": "v5", "new_sqlite_classes": ["Botrun"] }],
+  "browser": { "binding": "BROWSER" },
   "workers_dev": true,
   "observability": { "enabled": true }
 }

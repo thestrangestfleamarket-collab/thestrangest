@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import puppeteer from "@cloudflare/puppeteer";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { MAPPATCH } from "./mappatch.js";
@@ -119,7 +120,7 @@ export default {
       if (p === "/post") return json({ letters: await postOf(env).mine(id, Array.isArray(body.seen) ? body.seen.filter(Number.isInteger).slice(0, 50) : []) });
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
-      return json(await admin(env, body)); }
+      return json(await admin(env, body, url.origin)); }
     if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
@@ -241,7 +242,7 @@ export class Block extends Server {
     c.setState({ id, name: "", look: "", at: null }); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk(), MS = await this.mobs();
     c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
-    c.send(JSON.stringify({ t: "puts", all: this.puts() }));
+    c.send(JSON.stringify({ t: "puts", all: this.puts() })); c.send(JSON.stringify({ t: "dm", d: MS.dm || null }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
   putT() { this.ctx.storage.sql.exec("create table if not exists puts(who text, k text, name text, list text, at integer, primary key(who, k))"); }
@@ -260,9 +261,9 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, mobgrid: 3000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, mobgrid: 3000, dmset: 3000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -289,13 +290,16 @@ export class Block extends Server {
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
+    } else if (m.t === "dmset" && m.d) {   // the dungeon master's design, published: only an owner's goes live for everyone
+      owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o !== true) { c.send(JSON.stringify({ t: "dmres", ok: 0, why: "only the owner publishes the dungeon" })); return; }
+        this.mobs().then(MS => { const d = MOBSIM.design(MS, { ...m.d, by: s.name || s.id }); this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.broadcast(JSON.stringify({ t: "dm", d })); c.send(JSON.stringify({ t: "dmres", ok: 1, n: d ? d.mobs.length : 0 })); this.mobGo(); }); });
     } else if (m.t === "mobgrid" && m.g) {   // the dungeon's map and the monsters' book, baked by a page (worker/dunmobs.js)
       this.mobs().then(MS => { if (MOBSIM.grid(MS, m.g)) { this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.mobGo(); } });
     } else if (m.t === "mobhit" || m.t === "mobpar") {   // a blow on a monster, or a monster's blow caught on the beat
       this.mobs().then(MS => { if (!MS.g || !s.at || s.at[4] !== "down") return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > 4 * MS.g.T) return;
         if (m.t === "mobpar") { MOBSIM.parried(MS, i); return; }
         const r = MOBSIM.hit(MS, i, { d: num(m.d, 0, 20), kb: num(m.kb, 0, 3), heavy: !!m.hv, x: s.at[0], z: s.at[1] });
-        if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });
+        if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n, loot: r.m.loot || "" })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });
     } else if (m.t === "aim") {
       const v = Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
       this.broadcast(JSON.stringify({ t: "aim", id: s.id, w: word(m.w, 16), v }), [c.id]);
@@ -431,7 +435,7 @@ async function email(env, to, subject, text) {
     if (r.ok) n += part.length; }
   return n;
 }
-async function admin(env, b) {
+async function admin(env, b, origin) {
   const k = svc(env); if (!k && b.do !== "tell" && !(env.DEV_AUTH === "1" && /^bot/.test(b.do || ""))) return { why: "the server has no service key" };
   const call = (path, init = {}) => fetch(env.SUPABASE_URL + path, { ...init, headers: { ...k, "content-type": "application/json", Prefer: "return=minimal", ...(init.headers || {}) } });
   const res = async r => r.ok ? { ok: true } : { why: r.status + " " + (await r.text()).slice(0, 200) };
@@ -457,7 +461,7 @@ async function admin(env, b) {
     if (b.email) out.email = env.RESEND_API_KEY ? await email(env, (await users()).filter(x => x.email && (to === "*" || x.id === to)).map(x => x.email).slice(0, 1000), subject, text) : "email is not set up";
     return out;
   }
-  if (b.do === "bots") { const P = postOf(env); return { ok: true, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
+  if (b.do === "bots") { const P = postOf(env); return { ok: true, cloud: env.BROWSER && (env.DEV_AUTH !== "1" || env.BOTRUN_DEV === "1") ? await botrunOf(env).state() : null, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
   if (b.do === "botkey") return { ok: true, key: await postOf(env).botKey(true) };
   if (b.do === "botnew") { const P = postOf(env); if ((await P.botList()).length >= 20) return { why: "20 bots at most" };
     const r = crypto.getRandomValues(new Uint8Array(12)), hex = [...r.slice(0, 4)].map(x => x.toString(16).padStart(2, "0")).join(""), pass = btoa(String.fromCharCode(...r)) + "Aa1";
@@ -468,11 +472,11 @@ async function admin(env, b) {
       const u = await fetch(env.SUPABASE_URL + "/auth/v1/user", { headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + j.access_token } }).then(x => x.json()).catch(() => null); if (!u || !u.id) return { why: "the bot's account was made but not found" };
       made = { id: u.id }; }
     const rec = botRec({ on: 1, name: "BOT " + hex.slice(0, 3).toUpperCase(), job: "wander", hp: 1, fight: 1 }, b.set); rec.id = made.id; rec.email = email; rec.pass = pass; rec.at0 = Date.now();
-    await P.botPut(rec); return { ok: true, id: rec.id }; }
+    await P.botPut(rec); await botKick(env, origin); return { ok: true, id: rec.id }; }
   if (b.do === "botset" || b.do === "botdel") { const P = postOf(env), x = (await P.botList()).find(q => q.id === id); if (!x) return { why: "no such bot" };
-    if (b.do === "botset") { await P.botPut(botRec(x, b.set)); return { ok: true }; }
+    if (b.do === "botset") { await P.botPut(botRec(x, b.set)); await botKick(env, origin); return { ok: true }; }
     if (UUID.test(id) && k) { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok && r.status !== 404) return res(r); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); }
-    forget(id); await kick(id); bots.delete(id); await P.botDel(id); return { ok: true }; }
+    forget(id); await kick(id); bots.delete(id); await P.botDel(id); await botKick(env, origin); return { ok: true }; }
   if (!user()) return { why: "no such player" };
   if (b.do === "user") {
     const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);
@@ -502,6 +506,42 @@ async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
   const r = await fetch(env.SUPABASE_URL + "/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: env.SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ email: b.email, password: b.pass }) }).catch(() => null);
   const s = r && r.ok ? await r.json() : null; if (!s || !s.access_token) return null; const o = { access_token: s.access_token, refresh_token: s.refresh_token }; bots.set(b.id, { until: Date.now() + 3e6, s: o }); return o; }
+
+// THE BOTS ON CLOUDFLARE (owner, 7 Nov 2026, his pick "3": nothing to run on his PC): one browser (Browser Run) with a tab a bot, kept by this object while any bot is on;
+// every 20 s it opens a missing bot's game, hands each its job, reads what each is doing and closes the tabs of bots turned off; with none on, the browser is closed
+const botrunOf = env => env.Botrun.get(env.Botrun.idFromName("run"));
+async function botKick(env, origin) { if (!env.BROWSER || env.DEV_AUTH === "1" && env.BOTRUN_DEV !== "1") return; try { await botrunOf(env).kick(origin || ""); } catch (e) {} }
+const BOTLS = "sb-jvcetttmqseoteidfggn-auth-token";
+export class Botrun extends DurableObject {
+  async kick(site) { if (site) await this.ctx.storage.put("site", site); const a = await this.ctx.storage.getAlarm(); if (a == null || a > Date.now() + 3000) await this.ctx.storage.setAlarm(Date.now() + 500); return true; }
+  async state() { return { sid: (await this.ctx.storage.get("sid")) || null, err: (await this.ctx.storage.get("err")) || null, at: (await this.ctx.storage.get("at")) || 0 }; }
+  async alarm() { let again = true; try { again = await this.tick(); await this.ctx.storage.delete("err"); } catch (e) { await this.ctx.storage.put("err", String(e && e.message || e).slice(0, 300)); }
+    await this.ctx.storage.put("at", Date.now()); if (again) await this.ctx.storage.setAlarm(Date.now() + 20000); }
+  async tick() {
+    const env = this.env, S = this.ctx.storage, P = postOf(env), list = (await P.botList()).filter(b => b.on), site = (await S.get("site")) || "https://thestrangestfleamarket.com";
+    let sid = await S.get("sid"), browser = null;
+    if (!list.length) { if (sid) { try { const b = await puppeteer.connect(env.BROWSER, sid); await b.close(); } catch (e) {} await S.delete("sid"); await S.delete("tabs"); } return false; }
+    if (sid) { try { browser = await puppeteer.connect(env.BROWSER, sid); } catch (e) { browser = null; } }
+    if (!browser) { browser = await puppeteer.launch(env.BROWSER, { keep_alive: 600000 }); sid = browser.sessionId(); await S.put("sid", sid); await S.delete("tabs"); }
+    const tabs = (await S.get("tabs")) || {}, status = {};
+    try {
+      const byId = new Map(); for (const pg of await browser.pages()) { const m = /[?&]b=([^&#]+)/.exec(pg.url()); if (m) byId.set(decodeURIComponent(m[1]), pg); }
+      for (const b of list) { const login = await botLogin(env, b); if (!login) { status[b.id] = { doing: "could not log in" }; continue; }
+        let pg = byId.get(b.id), t = tabs[b.id] || (tabs[b.id] = {});
+        if (pg && t.tok !== login.access_token) { const host = new URL(site).hostname; await pg.setCookie({ name: "tsfm-pass", value: login.access_token, domain: host, path: "/", secure: site.startsWith("https"), sameSite: "Strict" }).catch(() => {}); t.tok = login.access_token; }
+        if (!pg) { const host = new URL(site).hostname; pg = await browser.newPage(); await pg.setViewport({ width: 480, height: 270 });
+          await pg.setCookie({ name: "tsfm-pass", value: login.access_token, domain: host, path: "/", secure: site.startsWith("https"), sameSite: "Strict" });
+          await pg.evaluateOnNewDocument((k, v) => { try { localStorage.setItem(k, v); } catch (e) {} window.__botErrs = []; addEventListener("error", e => { if (window.__botErrs.length < 5) window.__botErrs.push(String(e.message || e).slice(0, 160)); }); }, BOTLS, JSON.stringify(login));
+          pg.goto(site + "/?bot=1&res=0&b=" + encodeURIComponent(b.id), { timeout: 120000 }).catch(() => {}); tabs[b.id] = { tok: login.access_token, t0: Date.now() }; status[b.id] = { doing: "opening the game on Cloudflare" }; continue; }
+        const st = await pg.evaluate(() => window.BOT && BOT.ready ? BOT.status() : { wait: 1, started: !!window.__started, errs: window.__botErrs || [], gl: (() => { try { return !!document.createElement("canvas").getContext("webgl2"); } catch (e) { return false; } })() }).catch(e => ({ wait: 1, errs: [String(e.message || e).slice(0, 160)] }));
+        if (st.wait) { const s = Math.round((Date.now() - (t.t0 || Date.now())) / 1000); status[b.id] = { doing: st.gl === false ? "this browser can't draw 3D (no WebGL): the game can't run here" : st.errs && st.errs.length && s > 90 ? "the game hit an error: " + st.errs[0] : "loading the game (" + s + " s)" };
+          if (s > 600) { await pg.close().catch(() => {}); delete tabs[b.id]; } continue; }
+        const c = JSON.stringify(botOut(b)); if (t.cfg !== c) { const ok = await pg.evaluate(c => (BOT.set(JSON.parse(c)), true), c).catch(() => false); if (ok) t.cfg = c; }
+        status[b.id] = { ...st, cloud: 1 }; }
+      for (const [id, pg] of byId) if (!list.some(b => b.id === id)) { await pg.evaluate(() => window.BOT && BOT.bye && BOT.bye()).catch(() => {}); await pg.close().catch(() => {}); delete tabs[id]; }
+    } finally { await S.put("tabs", tabs); await P.botStatus(status); await browser.disconnect().catch(() => {}); }
+    return true; }
+}
 
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
 // each player sends only how they steer, and gets back what is in their view ten times a second; bots fill the dish

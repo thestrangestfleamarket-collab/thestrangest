@@ -136,7 +136,12 @@ const GHOLD={};
     PM.post=(PMx,b)=>{ if(!H.on)return; const P=PMx.value, sc=src.score(), t=src.time();
       for(let i=0;i<15;i++)W[i].multiplyMatrices(P[i],restM[i]);
       PB=P[1];
-      Gm.multiplyMatrices(P[1],GB); gm.matrix.copy(Gm); gm.matrixWorldNeedsUpdate=true;
+      // the body plays along (owner, 7 Nov 2026: "you create the animation for guitar playing"): it breathes, sways with the music, dips on the beat and the right foot taps it
+      { const beat=sc.beat||(src.beat&&src.beat())||.6, last=sc.tune&&sc.tune.length?sc.tune.reduce((m,n)=>n.t<=t&&n.t>m?n.t:m,-9):-9, live=t-last<1.6, ph=t/beat, tap=live?Math.max(0,Math.cos(ph*2*Math.PI))**4:0, sw=live?Math.sin(ph*Math.PI):0;
+        const hp=org(W[0],new V3()); QA.setFromEuler(new THREE.Euler(.02*tap+.008*Math.sin(t*1.7),0,.03*sw,'XYZ'));
+        for(const i of [1,2,3,4,5,6,7,8])turnAbout(W[i],hp,QA);
+        const fp=org(W[14],new V3()); turnAbout(W[14],fp,QA.setFromAxisAngle(new V3(1,0,0),live?-.32*(1-tap):0)); H.tap=tap; }
+      Gm.multiplyMatrices(MA.multiplyMatrices(W[1],body.binv[1]),GB); gm.matrix.copy(Gm); gm.matrixWorldNeedsUpdate=true;
       // the head looks down at the neck
       { const hp=org(W[2],new V3()), bt=sc.beat?Math.max(0,Math.sin(t/sc.beat*Math.PI))**3*.06:0; turnAbout(W[2],hp,QA.setFromEuler(new THREE.Euler(.32+bt,.22,0,'YXZ'))); }   // (the head looks down at the neck, nodding on a song's beat)
       left(sc,t,tgL,{f:0}); const strum=right(sc,t,tgR);
@@ -161,5 +166,11 @@ const GHOLD={};
       if(GHOLD.dbg){ const inv=new M4().copy(P[1]).invert(), k=1/VA.setFromMatrixColumn(P[1],0).length(), j=i=>org(W[i],new V3()).applyMatrix4(inv).toArray().map(v=>+v.toFixed(3)); GHOLD.dbg={R:[j(6),j(7),j(8)],L:[j(3),j(4),j(5)]}; }   // (the arms' joints in the body's rest space, metres, for the checks)
       for(let i=0;i<15;i++)P[i].multiplyMatrices(W[i],body.binv[i]); };
     return H; };
+  // slung on the back (owner, 7 Nov 2026: "fully flesh out guitar"): neck up over the left shoulder, its back against yours; it rides the chest bone
+  const BACKP={neck:[.38,.92,0],top:[0,0,-1],at:[-.03,1.02,-.13],back:[0,F.hole[0],-F.d]};
+  const GBK=(()=>{ const y=new V3(...BACKP.neck).normalize(), z0=new V3(...BACKP.top), z=z0.sub(y.clone().multiplyScalar(z0.dot(y))).normalize(), x=new V3().crossVectors(y,z), M=new M4().makeBasis(x,y,z);
+    const p=new V3(...BACKP.back).applyMatrix4(M); M.setPosition(new V3(...BACKP.at).sub(p)); return M; })();
+  GHOLD.sling=(me,PM)=>{ const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm); const S={me,PM,gm,on:true}; S.upd=()=>{ gm.matrix.multiplyMatrices(PM.value[1],GBK); gm.matrixWorldNeedsUpdate=true; }; S.upd(); return S; };
+  GHOLD.unsling=S=>{ if(!S)return; S.on=false; if(S.gm.parent)S.gm.parent.remove(S.gm); };
   GHOLD.detach=H=>{ if(!H)return; H.on=false; if(H.PM.post)H.PM.post=null; if(H.gm.parent)H.gm.parent.remove(H.gm); const st=H.PM.hands; if(st)st.fg=null; }; }
 export {GHOLD};

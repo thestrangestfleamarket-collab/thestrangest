@@ -34,8 +34,8 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('every chord\'s pressing fingertips land on their strings at their frets (within 10 mm)',Object.values(p.miss).every(m=>m<=10),JSON.stringify(p.miss));
   if(OUT){ await pg.evaluate(()=>{ GUITAR.play('chord','C'); GUITAR.closeUp(true); }); await wait(1500); await pg.screenshot({path:OUT+'/guitar-closeup.png'}); }
   // a song moves the fingers and plucks the strings
-  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); GUITAR.play('song',0); const seen=new Set(); for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); seen.add(snap()); }
-    const r={song:GUITAR.ME.song,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); return r; });
+  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); FORAGE.S.sk.guitar=1000; GUITAR.play('song',0); const seen=new Set(); for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); seen.add(snap()); }
+    const r={song:GUITAR.ME.song,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); FORAGE.S.sk.guitar=100; return r; });
   rec('a song from the book plays: its notes go out and the fingers move',s.song===0&&s.poses>=6&&s.notes>5,JSON.stringify(s));
   // the sound: the strings ring out loud, and each open string at its real pitch
   const a=await pg.evaluate(async()=>{ const G=GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.ok;i++)await new Promise(r=>setTimeout(r,250)); if(!G.ok)return {ok:false};
@@ -59,9 +59,20 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const T=GUITAR.THEM().get('g1'); const r={them:!!T,held:!!(T&&T.H&&T.H.gm.parent),chord:T&&T.chord,voice:!!(T&&T.V),miss:T&&T.H&&T.H.err?Math.round(Math.max(...[...new Set(T.live.lh.filter(q=>q.t1>1e8).map(q=>q.f))].map(f=>T.H.err.L[f]||0))*1000):null};   // (the fingers that press the chord, as for yours)
     ONLINE.feed({t:'gtr',id:'g1',k:'off',v:''}); ONLINE.feed({t:'out',id:'g1'}); await new Promise(r=>setTimeout(r,400)); r.gone=!GUITAR.THEM().has('g1'); return r; });
   rec('another player\'s guitar: in their hands, their chord under their fingers, heard from where they stand, gone when they stop',o.them&&o.held&&o.chord==='Am'&&o.voice&&o.miss!=null&&o.miss<=10&&o.gone,JSON.stringify(o));
-  // ESC puts it away
-  const e=await pg.evaluate(async()=>{ document.body.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape',bubbles:true})); await new Promise(r=>setTimeout(r,500)); const me=W3.group.children.find(m=>m.userData&&m.userData.hands); return {on:GUITAR.on(),guitar:!!me&&me.children.some(c=>c.name==='guitar'),fg:!!(me&&me.userData.hands.fg),panel:!document.getElementById('gtp').hidden}; });
-  rec('ESC puts it away: the guitar off your body, your fingers the rig\'s again, the panel gone',!e.on&&!e.guitar&&!e.fg&&!e.panel,JSON.stringify(e));
+  // ESC puts it down: off your hands, onto your back (others see it there), till you stow it in the bag
+  const e=await pg.evaluate(async()=>{ document.body.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape',bubbles:true})); await new Promise(r=>setTimeout(r,600)); const me=()=>W3.group.children.find(m=>m.userData&&m.userData.hands);
+    const r={on:GUITAR.on(),slung:GUITAR.slung(),onBody:me().children.some(c=>c.name==='guitar'),fg:!!me().userData.hands.fg,panel:!document.getElementById('gtp').hidden,seen:ONLINE.mine.gtr()};
+    FORAGE.ACT.gstow('guitar'); await new Promise(r=>setTimeout(r,300)); r.stowed=!GUITAR.slung()&&!me().children.some(c=>c.name==='guitar')&&ONLINE.mine.gtr()==null; return r; });
+  rec('ESC puts it down onto your back (your fingers the rig\'s again, the panel gone, others see it slung); STOW IT puts it in the bag',!e.on&&e.slung&&e.onBody&&!e.fg&&!e.panel&&e.seen==='b'&&e.stowed,JSON.stringify(e));
+  // the songs: the book's five and the downloaded pieces, each needing its GUITAR level; practice raises it
+  const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.notes);
+    GUITAR.play('song',hard); const refused=GUITAR.ME.song!==hard; FORAGE.S.sk.guitar=1000; GUITAR.play('song',hard); await new Promise(r=>setTimeout(r,2500)); const playing=GUITAR.ME.song===hard, notes=GUITAR.ME.cur; GUITAR.play('stop');
+    FORAGE.S.sk.guitar=100; for(let i=0;i<600;i++)GUITAR.play('pluck',1+i%6); const after=FORAGE.sk('guitar'); GUITAR.stop(); GUITAR.stow();
+    return {book:B.length,downloaded:B.filter(b=>b.notes).length,skill:lv,inSkills:FORAGE.SK.some(s=>s[0]==='guitar'),refused,playing,notes,after}; });
+  rec('the song book has the downloaded pieces; GUITAR is a skill (10 to start), a piece above yours is refused, at 100 it plays, practice raises it',sg.downloaded>=150&&sg.inSkills&&sg.skill===10&&sg.refused&&sg.playing&&sg.notes>3&&sg.after>10,JSON.stringify(sg));
+  // the headset's tracked hands as the jointed hands: every WebXR joint name is one of the hand's bones
+  const vr=await pg.evaluate(()=>{ const R=HANDS.vr(), names=['wrist','thumb-tip','index-finger-phalanx-intermediate','pinky-finger-tip']; let ok=true; for(const n of names){ const before=R.U.value[HANDS.NAME[n]*3].x; R.set('L',n,new (__dbg.THREE.Matrix4)().makeTranslation(.5,0,0)); ok=ok&&HANDS.NAME[n]!=null&&R.U.value[HANDS.NAME[n]*3].w===.5; } return {ok,joints:Object.keys(HANDS.NAME).length}; });
+  rec('the headset\'s tracked hands drive the jointed hands joint for joint (25 WebXR joints)',vr.ok&&vr.joints===25,JSON.stringify(vr));
   // the park's guitar, on its stand by the round: anyone's to play where it stands
   const ps=await U(()=>GUITAR.STAND.g,30000);   // (built once you are within 60 tiles of it: the start is)
   const pk=ps?await pg.evaluate(async()=>{ const S=GUITAR.STAND.g.position, P=__dbg.you(), d=Math.hypot(S.x-P.x,S.z-P.z)/__dbg.cv().TILE; S.set(P.x+1.5*__dbg.cv().TILE,S.y,P.z); GUITAR.start('park'); await new Promise(r=>setTimeout(r,600)); const r={d:+d.toFixed(1),on:GUITAR.on(),hidden:!GUITAR.STAND.gm.visible,held:!!GUITAR.ME.H}; GUITAR.stop(); r.back=GUITAR.STAND.gm.visible; return r; }):{};

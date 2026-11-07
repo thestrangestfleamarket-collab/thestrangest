@@ -4,7 +4,7 @@ import {B64, I16, U16} from './003a-skin.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
-const HANDS={};
+const HANDS={}; window.HANDS=HANDS;
 { const H=__DATA__("data/pfhand.json"), NJ=25, V3=THREE.Vector3, M4=THREE.Matrix4;
   const Q=I16(H.pos), JI=B64(H.j), ZN=B64(H.z), TR=U16(H.tri), N=JI.length;
   const X=new Float32Array(N*3); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*H.sc+H.lo[i%3];
@@ -88,5 +88,12 @@ const HANDS={};
       const k=Math.min(1,.25/Math.max(1e-6,Math.hypot(...dx))); set(f,x[0]+dx[0]*k,x[1]+dx[1]*k,i?x[2]+dx[2]*k:f[3]); }
     return f; };
   HANDS.set=(st,fg)=>{ if(st)st.fg=fg; };
+  // the headset's tracked hands as these hands (VR, 162c): WebXR's 25 joints are this hand's, frame for frame, so each joint's pose drives its bone; the right hand the left one mirrored
+  let XG=null;
+  const xrGeo=skin=>{ const g=geo(skin).clone(), p=g.attributes.position.array.slice(); for(let i=N*3;i<N*6;i+=3)p[i]=-p[i]; g.setAttribute('position',new THREE.BufferAttribute(p,3)); return g; };
+  HANDS.vr=(skin='d9a984')=>{ const U={value:Array.from({length:NJ*6},()=>new THREE.Vector4())}, M=mats(U), g=xrGeo(skin), hm=new THREE.Mesh(g,M.mat); hm.frustumCulled=false; hm.castShadow=false; hm.name='vrhands'; hm.userData.ownMat=true;
+    const seen={L:0,R:0};
+    return {mesh:hm,set:(side,name,m)=>{ const j=NAME[name]; if(j==null)return; const e=m.elements, a=U.value, q=((side==='R'?NJ:0)+j)*3; a[q].set(e[0],e[4],e[8],e[12]); a[q+1].set(e[1],e[5],e[9],e[13]); a[q+2].set(e[2],e[6],e[10],e[14]); seen[side]=1; },
+      hide:(side)=>{ const a=U.value; for(let j=0;j<NJ;j++){ const q=((side==='R'?NJ:0)+j)*3; a[q].set(0,0,0,0); a[q+1].set(0,0,0,0); a[q+2].set(0,0,0,0); } },U}; };
   HANDS.credit=H.credit; }
 export {HANDS};

@@ -1,4 +1,4 @@
-// THE DUNGEON SLIMES: the coloured slimes that roam the dungeon, fight and drop slime.
+// THE DUNGEON'S CREATURES: the ones the dungeon master put in (slimes, creatures, animals, pawns), drawn, struck and felt; the dungeon master's design in play (DUNMOBS.apply, publish).
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
 import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, ONLINE, pos, SFX, st, UI, VIS, VIT, W3, WIELD} from './003b-systems.js';
@@ -8,6 +8,7 @@ import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {RARITY} from './013a-rarity.js';
 import {SKELGO} from './077-npc-skel.js';
 import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
+import {CREATS} from './087-npc-creatures.js';
 import {GEMS} from './101-gems.js';
 __CODE__("worker/dunmobs.js")
 { const D=MODS.dungeon; let M=null, Mp=null;
@@ -124,27 +125,42 @@ __CODE__("worker/dunmobs.js")
       return {k:r.k,n:L.n,safe:!!L.safe,lane:lo.map(v=>+v.toFixed(2)),block}; });
     const cat={tiers:Object.fromEntries(Object.entries(TIER).map(([k,t])=>[k,{hp:t.hp,dmg:t.dmg,v:t.v}])),mix:MIX,guards,stats:SST,styles:STY,kk:KK};
     const g={T,rooms,cat}; g.v=hash(JSON.stringify(g)); GB=g; MOBSIM.grid(MS,g); if(remote&&heardV!==g.v){ heardV=g.v; ONLINE.send({t:'mobgrid',g}); } };
-  SYS.add('hi',m=>{ remote=true; heardV=m.mv||''; if(GB&&heardV!==GB.v){ heardV=GB.v; ONLINE.send({t:'mobgrid',g:GB}); } },'146b-dunmobs');
-  ONLINE.hear.mobs=m=>{ if(remote)pic=m; };
-  ONLINE.hear.mobhurt=m=>felt(m);
-  ONLINE.hear.mobkill=m=>won(m);
+  const hi=m=>{ remote=true; heardV=m.mv||''; if(GB&&heardV!==GB.v){ heardV=GB.v; ONLINE.send({t:'mobgrid',g:GB}); } }; if(HI)hi(HI);
+  ONLINE.hear.mobs=m=>{ if(remote&&!trying)pic=m; };
+  ONLINE.hear.mobhurt=m=>{ if(!trying)felt(m); };
+  // the dungeon master's design (worker/dunmobs.js M.clean): the published one from the server, or a draft being tried alone
+  let live=LIVE, trying=null;
+  const apply=async d=>{ if(window.LOAD)await LOAD('later'); if(D.setMap)D.setMap(d&&d.map); await bake(); MOBSIM.design(MS,d); pic=null; };
+  const dm=()=>{ live=LIVE; if(!trying)apply(live); };
+  ONLINE.hear.dmres=m=>say(m.ok?'THE DUNGEON IS PUBLISHED: '+(m.n|0)+' CREATURE KINDS.':'NOT PUBLISHED: '+String(m.why||'').toUpperCase(),m.ok?'#b8f0a0':'#e8a090');
+  ONLINE.hear.mobkill=m=>{ if(!trying)won(m); };
   ONLINE.hear.mobres=m=>{ if(m.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); };
   const felt=e=>{ if(VIT.dead)return; if(VIT.hurt(+e.d||0,{x:+e.x||pos.x,z:+e.z||pos.z})===2){ if(remote)ONLINE.send({t:'mobpar',i:e.i}); else MOBSIM.parried(MS,e.i); } };   // parried on the beat: it staggers
-  const won=e=>{ const n=e.n|0||lvl; const k=lvl; lvl=n; prize(e.w==='s'?'s':'r',e.w==='p'?'spider':e.key,+e.x||pos.x,+e.z||pos.z); lvl=k; };
+  const won=e=>{ const n=e.n|0||lvl; const k=lvl; lvl=n; const x=+e.x||pos.x, z=+e.z||pos.z, lt=e.loot;
+    if(e.w==='c'){ if(lt==='none')xp(10+lvl*8,60+lvl*8); else if(lt==='slime')prize('s','green',x,z); else prize('r',lt==='gold'?'Gold':lt==='spider'?'spider':'bone',x,z); }
+    else prize(e.w==='s'?'s':'r',e.w==='p'?'spider':e.key,x,z); lvl=k; };
   const strike=(id,s,m)=>{ const o={d:+(s.d*m).toFixed(3),kb:s.kb||1,heavy:!!s.heavy}; sfx(s.heavy?'clunk':'step',{vol:.5,pitch:1.5,vary:.2});
-    if(remote){ ONLINE.send({t:'mobhit',i:id,d:o.d,kb:o.kb,hv:o.heavy?1:0}); return; }
-    const r=MOBSIM.hit(MS,id,{...o,x:pos.x,z:pos.z}); if(r.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); else if(r.res==='dead')won({w:r.m.kind,key:r.m.key,x:r.m.x,z:r.m.z,n:r.n}); };
+    if(remote&&!trying){ ONLINE.send({t:'mobhit',i:id,d:o.d,kb:o.kb,hv:o.heavy?1:0}); return; }
+    const r=MOBSIM.hit(MS,id,{...o,x:pos.x,z:pos.z}); if(r.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); else if(r.res==='dead')won({w:r.m.kind,key:r.m.key,x:r.m.x,z:r.m.z,n:r.n,loot:r.m.loot}); };
   // the picture: slimes as instances, guards and spiders as the dungeon's bodies, each kept on its monster's id
   const bodies=new Map(), seen={};
+  // a creature's body (kind 'c': cr:Rat, fa:Bear, pw:ogre, pw:golem), made the first time one is wanted, then kept for the next
+  const CB=[], SZ={Rat:.3,Frog:.3,Snake:.25,Spider:.55,Wasp:.3,Bat:.4,Slime:.45}; for(const f of window.CREATS&&CREATS.FA||[])SZ[f[0]]=f[2];
+  const entryOf=id=>{ const d=trying||live; return d&&d.mobs.find(e=>e.id===id); };
+  const mkC=key=>{ const [src,k]=key.split(':'), o={lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.4,radius:.18}; let N=null;
+    try{ if(src==='pw')N=window.PAWNNEW&&PAWNNEW(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(window.CREATNEW&&CREATURES[k])N=CREATNEW(k,'dm_'+k,SZ[k]||.6,{npc:o}); }catch(e){ console.warn('dungeon body',key,e); }
+    if(!N)return null; const C=src==='pw'?null:Object.keys(CREATURES[k].clips||{}), f=re=>C&&C.find(n=>re.test(n));
+    const r={N,key,c:true,lv:[],v0:1.4*T,hp:0,style:{reach:.8},cl:C&&{walk:f(/_(Walk|Flying|Jump)$/),idle:f(/_Idle$/)||f(/_Flying$/),hit:f(/Attack/),hurt:f(/_Hit$/),die:f(/Death/)}}; CB.push(r); park(r); return r; };
   const show=dt=>{ const want=new Set(), k=D.room, M_=pic?pic.m.filter(e=>e[1]===k):[]; let g=0, sp=0, sl=0;
     const keep=new Map(slimes.map(S=>[S.i,S])); slimes=[];
-    for(const e of M_){ const [i,,kind,key,x,z,h,hp,mhp,dead,acts,hits,blks,tg]=e, was=seen[i]||{acts,hits,blks};
+    for(const e of M_){ const [i,,kind,key,x,z,h,hp,mhp,dead,acts,hits,blks,tg,eid]=e, was=seen[i]||{acts,hits,blks};
       if(kind==='s'){ sl++; let S=keep.get(i); if(!S)S={i,k:TIER[key]?key:'green',x,z,h,hp,dead:false,pop:0,air:0,ph:0,flash:0};
         const mv=Math.hypot(x-S.x,z-S.z); if(mv>1.5*T){ S.x=x; S.z=z; } else { S.x+=(x-S.x)*Math.min(1,dt*8); S.z+=(z-S.z)*Math.min(1,dt*8); }
         S.h=h; S.hp=hp; if(mv>.02*T&&!dead){ S.air=1; S.ph=(S.ph+dt/.62)%1; } else { S.air=0; S.ph=0; }
         if(hits>was.hits)S.flash=.12; if(dead&&!S.dead){ S.dead=true; S.pop=0; sfx('drip',{vol:.8,pitch:.45}); } if(S.flash>0)S.flash-=dt; if(S.dead&&S.pop<.28)S.pop+=dt; slimes.push(S); }
       else { kind==='p'?sp++:g++; let r=bodies.get(i); if(r&&!r.on)r=null;
-        if(!r){ const pool=kind==='p'?SPI:resolve(); r=pool.find(q=>!q.on&&(kind==='p'||q.key===key)&&![...bodies.values()].includes(q)); if(!r){ if(kind==='p'&&!SPI.length)mkSpiders(); continue; } place(r,[]); const st=r.N.st; st.x=x; st.z=z; r.N.g.position.set(x,D.ground(x,z),z); bodies.set(i,r); }
+        if(!r){ const pool=kind==='p'?SPI:kind==='c'?CB:resolve(); r=pool.find(q=>!q.on&&(kind==='p'||q.key===key)&&![...bodies.values()].includes(q)); if(!r&&kind==='c'&&CB.filter(q=>q.key===key).length<12)r=mkC(key); if(!r){ if(kind==='p'&&!SPI.length)mkSpiders(); continue; } place(r,[]);
+          if(r.c){ const E=entryOf(eid); r.N.g.scale.setScalar(E?E.size:1); r.N.name=E&&E.name||key.split(':')[1].toUpperCase().replace(/_/g,' '); r.style.reach=E?E.reach:.8; } const st=r.N.st; st.x=x; st.z=z; r.N.g.position.set(x,D.ground(x,z),z); bodies.set(i,r); }
         want.add(r); const N=r.N, st=N.st; r.hp=hp;
         if(Math.hypot(st.x-x,st.z-z)>1.5*T){ st.x=x; st.z=z; st.to=null; } else st.to=Math.hypot(st.x-x,st.z-z)>.05*T?{x,z}:null; st.v=r.v0*1.6; st.hold=!st.to;
         st.face=tg===ONLINE.me||tg==='me'?{x:pos.x,z:pos.z}:st.to?null:{x:x+Math.sin(h),z:z+Math.cos(h)};
@@ -154,23 +170,28 @@ __CODE__("worker/dunmobs.js")
         if(dead&&!r.dead){ r.dead=true; r.t=0; N.alert=false; st.to=null; st.hold=true; if(r.kk&&N.an)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); } }
       seen[i]={acts,hits,blks}; }
     for(const [i,r] of bodies)if(!want.has(r)){ bodies.delete(i); if(r.on&&!r.dead)park(r); }
-    for(const r of [...resolve(),...SPI])if(!want.has(r)&&!r.dead&&r.N.g.parent!==PK)park(r);   // every body not standing for a monster is put away
-    for(const r of [...(RES||[]),...SPI])if(r.on){ if(!r.kk)pawnTick(r,dt); if(r.spider&&!r.lunge&&!(r.jolt>0)&&!r.dead){ r.N.clip=r.N.st.to?'Spider_Walk':'Spider_Idle'; r.N.clipK=1; } }
+    for(const r of [...resolve(),...SPI,...CB])if(!want.has(r)&&!r.dead&&r.N.g.parent!==PK)park(r);
+    for(const r of CB)if(r.on&&r.cl){ const c=r.cl, N=r.N, w=r.dead?c.die||c.idle:r.lunge&&c.hit?c.hit:r.jolt>0&&c.hurt?c.hurt:N.st.to?c.walk:c.idle; if(w&&N.clip!==w){ N.clip=w; N.clipN=(N.clipN||0)+1; } N.clipK=1; }   // every body not standing for a monster is put away
+    for(const r of [...(RES||[]),...SPI,...CB])if(r.on){ if(!r.kk)pawnTick(r,dt); if(r.spider&&!r.lunge&&!(r.jolt>0)&&!r.dead){ r.N.clip=r.N.st.to?'Spider_Walk':'Spider_Idle'; r.N.clipK=1; } }
     IM.count=GL.count=Math.min(NS,slimes.length); plan=M_.length?{g,sp,sl}:plan; draw(); };
   const onLevel=k=>{ for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[];
-    L=k?D.lay(k):null; lvl=L?L.n:0; if(!k){ pic=null; plan=null; slimes=[]; IM.count=GL.count=0; for(const [i,r] of bodies)park(r); bodies.clear(); for(const r of [...(RES||[]),...SPI])if(r.on)park(r); return; }
+    L=k?D.lay(k):null; lvl=L?L.n:0; if(!k){ pic=null; plan=null; slimes=[]; IM.count=GL.count=0; for(const [i,r] of bodies)park(r); bodies.clear(); for(const r of [...(RES||[]),...SPI,...CB])if(r.on)park(r); return; }
     if(!GB)bake(); if(L.safe)plan={g:0,sp:0,sl:0}; };
   const arena=()=>{};
   const tick=dt=>{ if(!lvl||!L)return; if(remote&&!ONLINE.on)remote=false; const alive=!VIT.dead&&SHARED.LVL==='down';
-    if(!remote&&GB&&!window.DUNMOBS.hold){ for(const e of MOBSIM.step(MS,dt,[{id:'me',x:pos.x,z:pos.z,ok:alive&&!SHARED.unseen}]))felt(e); pic=MOBSIM.snap(MS,new Set([D.room])); }
+    if((!remote||trying)&&GB&&!window.DUNMOBS.hold){ for(const e of MOBSIM.step(MS,dt,[{id:'me',x:pos.x,z:pos.z,ok:alive&&!SHARED.unseen}]))felt(e); pic=MOBSIM.snap(MS,new Set([D.room])); }
     const S=alive?strikes():[]; for(const s of S){ const m=strength(s);
       for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,gnd(sl.x,sl.z),.2*T)){ sl.flash=.12; strike(sl.i,s,m); STRIKES.landed(s); }
       for(const [i,r] of bodies)if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ strike(i,s,m); STRIKES.landed(s); } }
     show(dt); boltTick(dt); };
-  window.DUNMOBS={T,MS,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things};
+  const tryIt=async d=>{ trying=d?MOBSIM.clean(d):null; await apply(trying||live); };   // play a draft alone (nobody else sees it); null: back to the published dungeon
+  const publish=d=>{ if(!remote||!ONLINE.on)return say('PUBLISHING NEEDS THE WEBSITE.','#e8a090'), false; ONLINE.send({t:'dmset',d:MOBSIM.clean(d)}); return true; };
+  window.DUNMOBS={T,MS,apply,tryIt,publish,get live(){ return live; },get trying(){ return trying; },cb:()=>CB,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things};
   window.DUNSPI=()=>SPI;
-  window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
-    plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); return {onLevel,tick,arena,wave:()=>{},alive:()=>slimes.filter(S=>!S.dead).length}; };
+  window.DUNMOBDBG=()=>({level:lvl,cb:CB.filter(r=>r.on).map(r=>r.key),slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
+    plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); if(live)apply(live); return {onLevel,tick,arena,hi,dm,wave:()=>{},alive:()=>slimes.filter(S=>!S.dead).length}; };
+  let LIVE=null, HI=null; SYS.add('hi',m=>{ HI=m; if(M)M.hi(m); },'146b-dunmobs');   // heard before the dungeon's code started: kept for it
+  ONLINE.hear.dm=m=>{ LIVE=m.d||null; if(D.setMap||window.LOAD)Promise.resolve(window.LOAD&&LOAD('later')).then(()=>{ if(!(M&&window.DUNMOBS&&DUNMOBS.trying)&&D.setMap)D.setMap(LIVE&&LIVE.map); }); if(M)M.dm(); };   // the layout is laid before the dungeon is built
   const ensureInit=()=>Mp||(Mp=CREATURESREADY.then(()=>M||(M=init())));   // the slimes' mesh needs the creature data (lazy, loads just after the start), so init waits for it
   D.hook(n=>{ if(!n&&!M)return; ensureInit().then(m=>m.onLevel(n)); });
   // an arena elsewhere runs the slimes: {G, lane:{x0,z0,x1,z1}, sol:[rects], away:[{x,z}], ground(x,z), lv}; wave n of k slimes (tier and toughness by n, as the dungeon's levels)

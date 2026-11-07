@@ -248,7 +248,7 @@ export class Block extends Server {
     c.setState({ id, name: "", look: "", at: null }); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk(), MS = await this.mobs();
     c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
-    c.send(JSON.stringify({ t: "puts", all: this.puts() }));
+    c.send(JSON.stringify({ t: "puts", all: this.puts() })); c.send(JSON.stringify({ t: "dm", d: MS.dm || null }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
   putT() { this.ctx.storage.sql.exec("create table if not exists puts(who text, k text, name text, list text, at integer, primary key(who, k))"); }
@@ -267,9 +267,9 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, mobgrid: 3000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, mobgrid: 3000, dmset: 3000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -278,8 +278,11 @@ export class Block extends Server {
       const x = {}; if (m.x && typeof m.x === "object") for (const k of Object.keys(m.x).slice(0, 8)) { const v = m.x[k]; if (/^[a-z]{1,8}$/.test(k)) x[k] = typeof v === "number" ? num(v, -1e4, 1e4) : word(v, 24); }
       const p = { ...s, name: word(m.name, 24), look: word(m.look, 400), dead: m.dead ? 1 : 0, hp: typeof m.hp === "number" ? num(m.hp, 0, 1) : 1, x }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
     } else if (m.t === "act") {
-      const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" ? m.m : ""; if (!k && !mv) return;
-      this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
+      // a key's move, a flinch, an emote or dance (111da: mc_<name>, looped or once) and its stop: every one reaches the others (owner, 7 Nov 2026)
+      const k = typeof m.k === "string" && /^([ JKRVUFNXCQEB]|carry)$/.test(m.k) ? m.k : "", mv = m.m === "flinch" || typeof m.m === "string" && /^mc_[A-Za-z0-9_]{1,32}$/.test(m.m) ? m.m : "";
+      if (m.stop) { this.broadcast(JSON.stringify({ t: "act", id: s.id, stop: 1 }), [c.id]); return; }
+      if (!k && !mv) return;
+      this.broadcast(JSON.stringify(mv ? { t: "act", id: s.id, m: mv, loop: m.loop ? 1 : 0 } : { t: "act", id: s.id, k, on: m.on ? 1 : 0 }), [c.id]);
     } else if (m.t === "ragon" && Array.isArray(m.n) && Array.isArray(m.jl) && m.n.length <= 16) {
       const n = m.n.map(x => word(x, 12)), jl = m.jl.slice(0, 16).map(a => (Array.isArray(a) ? a.slice(0, 8) : []).filter(Array.isArray).map(j => [word(j[0], 12), num(j[1], -9, 9), num(j[2], -9, 9), num(j[3], -9, 9)]));
       this.broadcast(JSON.stringify({ t: "ragon", id: s.id, n, jl }), [c.id]);
@@ -296,13 +299,16 @@ export class Block extends Server {
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
+    } else if (m.t === "dmset" && m.d) {   // the dungeon master's design, published: only an owner's goes live for everyone
+      owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o !== true) { c.send(JSON.stringify({ t: "dmres", ok: 0, why: "only the owner publishes the dungeon" })); return; }
+        this.mobs().then(MS => { const d = MOBSIM.design(MS, { ...m.d, by: s.name || s.id }); this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.broadcast(JSON.stringify({ t: "dm", d })); c.send(JSON.stringify({ t: "dmres", ok: 1, n: d ? d.mobs.length : 0 })); this.mobGo(); }); });
     } else if (m.t === "mobgrid" && m.g) {   // the dungeon's map and the monsters' book, baked by a page (worker/dunmobs.js)
       this.mobs().then(MS => { if (MOBSIM.grid(MS, m.g)) { this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.mobGo(); } });
     } else if (m.t === "mobhit" || m.t === "mobpar") {   // a blow on a monster, or a monster's blow caught on the beat
       this.mobs().then(MS => { if (!MS.g || !s.at || s.at[4] !== "down") return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > 4 * MS.g.T) return;
         if (m.t === "mobpar") { MOBSIM.parried(MS, i); return; }
         const r = MOBSIM.hit(MS, i, { d: num(m.d, 0, 20), kb: num(m.kb, 0, 3), heavy: !!m.hv, x: s.at[0], z: s.at[1] });
-        if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });
+        if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n, loot: r.m.loot || "" })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });
     } else if (m.t === "aim") {
       const v = Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
       this.broadcast(JSON.stringify({ t: "aim", id: s.id, w: word(m.w, 16), v }), [c.id]);
@@ -316,6 +322,9 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "curse", id: s.id, to, k }), [c.id]);
     } else if (m.t === "ride") {
       this.broadcast(JSON.stringify({ t: "ride", id: s.id, b: m.b ? word(m.b, 24) : null }), [c.id]);
+    } else if (m.t === "trk") {   // a skater's trick as it happens (146ib): what the board and body are doing, for the others to draw
+      const w = v => /^[a-z]{0,8}$/.test(String(v || "")) ? String(v || "") : "";
+      this.broadcast(JSON.stringify({ t: "trk", id: s.id, s: w(m.s), g: w(m.g), fk: w(m.fk), fd: num(m.fd, 0, 3), ft: num(m.ft, 0, 3), n: m.n ? 1 : 0, f: m.f ? 1 : 0, sl: m.sl ? 1 : 0, p: m.p ? 1 : 0, c: num(m.c, 0, 1), v: num(m.v, 0, 400), z: num(m.z, -50, 400) }), [c.id]);
     } else if (m.t === "car") {
       // the parked cars (150p-cars): one driver a car; getting out parks it where it stands, kept in the block's world as car:<id> = "x,z,heading"
       const k = word(m.k, 24); if (!k) return; const cars = this.cars || (this.cars = new Map()), by = cars.get(k);
@@ -325,8 +334,8 @@ export class Block extends Server {
       if (a) { const v = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -10, 10)].map(x => +x.toFixed(3)).join(","); this.world().then(W => { W["car:" + k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v })); }); }
       else this.broadcast(JSON.stringify({ t: "car", k, by: null }));
     } else if (m.t === "ps") {
-      // a pose state (sitting, climbing, hanging, swimming): each a few numbers or flags
-      const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
+      // a pose state (sitting, climbing, hanging, swimming, gripping, flying: the page's PS, 111d): each a few numbers or flags
+      const ps = {}; if (m.s && typeof m.s === "object") for (const k of ["sit", "climb", "hang", "water", "grip", "fly"]) { const v = m.s[k]; if (!v || typeof v !== "object") continue; const o = {}; let n = 0;
         for (const f in v) { if (n >= 16) break; const key = word(f, 12); if (!/^[a-zA-Z]+$/.test(key)) continue; const x = v[f]; if (typeof x === "number") { o[key] = num(x, -1e5, 1e5); n++; } else if (typeof x === "boolean") { o[key] = x; n++; } } ps[k] = o; }
       this.broadcast(JSON.stringify({ t: "ps", id: s.id, s: ps }), [c.id]);
     } else if (m.t === "fish") {

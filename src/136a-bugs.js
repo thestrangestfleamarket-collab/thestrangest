@@ -8,6 +8,11 @@ import {BUILDV} from './135-where.js';
 { const SB='https://jvcetttmqseoteidfggn.supabase.co', KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik', LS='sb-jvcetttmqseoteidfggn-auth-token';
   const errs=[], err=m=>{ errs.push(String(m||'').slice(0,240)); if(errs.length>8)errs.shift(); };
   addEventListener('error',e=>err(e.message)); addEventListener('unhandledrejection',e=>err(e.reason&&e.reason.message||e.reason));
+  // the draw's "r.toArray is not a function" (owner, 7 Nov 2026: "add the toArray catch"): which object, material and uniform holds a bad entry, kept with the next bug report; the entry is set right so the frame draws
+  BUGS.err=err; let seen=0;
+  BUGS.badUni=(root,e)=>{ const out=[], fix=(v,k,o,m)=>{ if(!Array.isArray(v)||!v.length)return; const g=v.find(x=>x&&x.toArray&&x.clone); if(!g)return; v.forEach((x,i)=>{ if(x&&x.toArray)return; out.push((o.name||o.type)+'<'+(o.parent&&(o.parent.name||o.parent.type))+' '+m.type+(m.name?'/'+m.name:'')+' '+k+'['+i+']='+(x==null?String(x):Array.isArray(x)?'array':typeof x)); v[i]=g.clone(); }); };
+    root.traverse(o=>{ if(!o.material)return; for(const m of [].concat(o.material)){ if(!m)continue; const P=renderer.properties.get(m), U=Object.assign({},m.uniforms||{},P&&P.uniforms||{}); for(const k in U)if(U[k])fix(U[k].value,k,o,m); } });
+    if(seen++<3){ const t='draw '+String(e&&e.message).slice(0,40)+': '+(out.slice(0,3).join('; ')||'no bad uniform found'); err(t); console.warn(t,e); } return out.length; };
   const esc=TEXT.esc;
   const jw=t=>{ try{ return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return {}; } };
   const ck=()=>{ const m=/(?:^|;\s*)tsfm-pass=([^;]+)/.exec(document.cookie); return m?decodeURIComponent(m[1]):''; };

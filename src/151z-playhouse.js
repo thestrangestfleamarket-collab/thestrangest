@@ -49,6 +49,9 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); G=null; } K=null; P=null; };
   const inside=()=>!!K&&ROOMS.offIn&&ROOMS.offIn()==='playhouse';
   UI.camKeeps.push((c,t)=>{ if(!inside()||!UI.persp)return; const zf=OZ+(PD.ZF-.3)*MH, xw=(PD.W-.3)*MH; if(lz(t.z)>PD.Z1&&c.z>zf)c.z=zf; if(lz(t.z)>PD.Z1)c.x=Math.max(OX-xw,Math.min(OX+xw,c.x)); });   // in the foyer the camera stays off the front wall and its doors
+  UI.camKeeps.push((c,t)=>{ if(!inside()||!UI.persp||!K)return; const tz=lz(t.z), e=.25, P=[PD.STG+e]; const cu=K.cloth&&K.cloth.curtain; if(cu&&cu.open<.5)P.push(-.55);
+    for(const s of K.fly.sets)if((s.kind==='black'||s.kind==='cyc')&&s.y<PD.SY+3)P.push(s.z);
+    let cz=lz(c.z); for(const z of P){ if(tz<z&&cz>z-e)cz=z-e; else if(tz>z&&cz<z+e)cz=z+e; } c.z=OZ+cz*MH; });   // on stage the camera stays on your side of a drop that is in, the closed house curtain and the back wall
   // the ground inside: each region's height (the stage, the steps, the rake, the foyer)
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(K&&x>OX+B.x0*MH&&x<OX+B.x1*MH&&z>OZ+B.z0*MH&&z<OZ+B.z1*MH){ const y=K.groundAt(lx(x),lz(z)); return (y==null?PD.FY:y)*MV; } return sg0?sg0(x,z):null; };
   const door=at(m,L.y1+.25), out=at(m,L.y1+.9);

@@ -243,8 +243,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; ID[i]=-1; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(ID[i]=me.addInstance(me.addGeometry(G)),I); }
     me.sortObjects=false; return me; };
   const CK={}, CARDS=(key,lite,look=0)=>{ const q=key+(lite===2?'.cl':'.c')+look; if(q in CK)return CK[q]; const D=F[key]; return CK[q]=D&&D.sum?TREEGEN.cards(D.sum,D.trunk,key.length*31+key.charCodeAt(key.length-1),lite===2,look):null; };
-  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ if(opt.cards)opt.map=TREEGEN.leaf(); const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=opt.cards&&CARDS(key,opt.cards,Math.floor(hash(Math.round(x*7),Math.round(y*7),977)*4)%4)||F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y), LBW=(D.limbs||[]).map(([ax,ay,az,bx,by,bz,ra,rb])=>[ox+(ax*ca-az*sa)*s,ay*s+oy,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,by*s+oy,oz+(bx*sa+bz*ca)*s,ra*s,rb*s]);
-      const nt=opt.noTrunk&&/^OakTree/.test(key); for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; if(nt&&k[Math.floor(i/9)]===1)P3.push(ox,oy,oz); else P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), tq=D.cards?t>>1:t, sh=k[t]===0?.86+.28*hash(tq,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
+  const OLD=['Elder1','OakTree1','OakTree2','OakTree3','Willow1'], OWN=k=>OLD.includes(k);   // the old trees with their own leaves (owner, 7 Nov 2026)
+  const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ if(opt.cards)opt.map=TREEGEN.leaf(); const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=opt.cards&&!OWN(key)&&CARDS(key,opt.cards,Math.floor(hash(Math.round(x*7),Math.round(y*7),977)*4)%4)||F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y), LBW=(D.limbs||[]).map(([ax,ay,az,bx,by,bz,ra,rb])=>[ox+(ax*ca-az*sa)*s,ay*s+oy,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,by*s+oy,oz+(bx*sa+bz*ca)*s,ra*s,rb*s]);
+      const nt=opt.noTrunk&&/^OakTree/.test(key)&&!OWN(key); for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; if(nt&&k[Math.floor(i/9)]===1)P3.push(ox,oy,oz); else P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), tq=D.cards?t>>1:t, sh=k[t]===0?.86+.28*hash(tq,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
       if(D.n)CN.push([p0,D.n,ca,sa]); if(opt.map){ const u=D.uv; for(let i=0,n=p.length/3;i<n;i++)UV.push(u?u[i*2]:0,u?u[i*2+1]:0); }
       if(TL){ const q0=p0/3, q1=P3.length/3; let y0=1e9, y1=-1e9, cx=0, cz=0, n=0, r1=1e-3; for(let v=q0;v<q1;v++)if(LF[v]){ y0=Math.min(y0,P3[v*3+1]); y1=Math.max(y1,P3[v*3+1]); cx+=P3[v*3]; cz+=P3[v*3+2]; n++; } cx/=n||1; cz/=n||1;
@@ -281,7 +282,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   for(const S of ['A','C','AL','CL','E','K'])for(let i=0;i<TREEGEN.count(S);i++)F['G'+S+i]=TREEGEN.get(S,i);
   for(const k in TREEGEN.old)if(F[k])F[k].sum=TREEGEN.old[k];
   // the park's trees are elms (owner, 2 Nov 2026, his picture of the Mall: "this large compared to avatars and shaped exactly the same"): 26 to 31 m; the rows past the north wall half the old pack's, half grown
-  const ELM=(a,b,c)=>'G'+'E'+Math.floor(hash(a,b,c)*TREEGEN.count('E')), EM=(a,b,c)=>26+hash(a,b,c)*5;
+  const ELM=(a,b,c)=>OLD[Math.floor(hash(a,b,c)*OLD.length)], EM=(a,b,c)=>9+hash(a,b,c)*4;
   const gk=(x,y,sd,low)=>{ const h=k=>hash(Math.round(x*3),Math.round(y*3),sd+k); if(h(0)<.5)return null; const S=(h(1)<.5?'A':'C')+(low?'L':''); return 'G'+S+Math.floor(h(2)*TREEGEN.count(S)); };
   const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
@@ -303,12 +304,12 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=5.25*(1.1+.25*hash(n,203,5)), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
-    { const TK=['Giant1','Elder1','Elder2','OakTree1','OakTree2','OakTree3','Spruce1','Willow1'];
+    { const TK=OLD;
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||inCL(x,y,1));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
-      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
+      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=(prev+r)/2+.3; if(u>a1-r)break; prev=r;
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
@@ -319,7 +320,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const bd=(x,y,b)=>Math.hypot(x-Math.max(b[0],Math.min(b[2],x)),y-Math.max(b[1],Math.min(b[3],y))), fit=(x,y)=>Math.min(x-w0[0],w0[1]-x,y-w0[2],w0[3]-y,...GB.map(b=>bd(x,y,b)))-M;
       const slide=(x,y,r)=>{ for(const b of GB){ if(bd(x,y,b)>=r+M)continue; if(b[4])y=y<(b[1]+b[3])/2?b[1]-r-M:b[3]+r+M; else x=x<(b[0]+b[2])/2?b[0]-r-M:b[2]+r+M; }
         return [Math.max(w0[0]+r+M,Math.min(w0[1]-r-M,x)),Math.max(w0[2]+r+M,Math.min(w0[3]-r-M,y))]; };
-      for(let i=out.length-1;i>=R0;i--){ const e=out[i]; if(!F[e[0]].sum)continue; e[0]=low(e[0]); const r=F[e[0]].rad*e[3]/.84, [x,y]=slide(e[1],e[2],r);
+      for(let i=out.length-1;i>=R0;i--){ const e=out[i]; if(!F[e[0]].sum)continue; const r=F[low(e[0])].rad*e[3]/.84, [x,y]=slide(e[1],e[2],r);
         if(edgeOK(x,y)&&fit(x,y)>=r-.01){ e[1]=+x.toFixed(1); e[2]=+y.toFixed(1); continue; }
         const m=e[3]*Math.max(0,fit(e[1],e[2]))/r; if(m<3){ out.splice(i,1); continue; } if(e[5])e[5]*=m/e[3]; e[3]=+m.toFixed(1); }
       PARK.ringN=out.length-R0; }
@@ -373,15 +374,15 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       inst(sg,new THREE.MeshLambertMaterial(),M1.length,(im,i)=>{ const [wx,wz,x,y,,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y),wz),Q.identity(),S.set(k,k,k))); im.setColorAt(i,c.setRGB(.9,.86,.76,THREE.SRGBColorSpace)); });
       inst(cg,new THREE.MeshLambertMaterial({flatShading:true}),M1.length,(im,i)=>{ const [wx,wz,x,y,col,k]=M1[i]; im.setMatrixAt(i,M.compose(V.set(wx,gy(wx,wz,x,y)+.11*TILE*k,wz),Q.setFromAxisAngle(up,i),S.set(k,k,k))); im.setColorAt(i,c.setRGB(col[0],col[1],col[2],THREE.SRGBColorSpace)); }); }
     grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
-  const NOTREES=QS.get('trees')!=='1';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
+  const NOTREES=QS.get('trees')==='0';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   PARK.trunksOf=trunks;
-  const NI=TREES.length-PARK.ringN; PARK.later(()=>{ '@later'; PARK.trees=NOTREES?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1,lod:'near'}); PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
+  const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ '@later'; PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
-  PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2});   // the wall's ring always, the rest only with ?trees=1 (owner, 7 Nov 2026) PARK.ringTrunks=trunks(TREES.slice(NI));
-  { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
-  PARK.oaks=NOTREES?[]:TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
+  PARK.ring=NOTREES?null:mesh(TREES.slice(NI),true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the cherry by the lake in cards (owner, 7 Nov 2026)
+  { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring,PARK.cards].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
+  PARK.oaks=NOTREES?[]:TREES.slice(NI).map(([k,x,y,m])=>[X(x),Z(y),m]);
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
-  P.stand=NOTREES?null:mesh(TREES.slice(0,NI),true,false,false,{cards:2,far:1,lod:'far'}); P.standFar=NOTREES?null:mesh(TREES.back,false,false,false,{cards:2,far:1});
+  P.stand=NOTREES||!INO.length?null:mesh(INO,true,false,false,{far:1,lod:'far'}); P.standFar=null;   // no trees outside the park for now (owner, 7 Nov 2026)
   // far trees simple (owner, 30 Oct 2026): a park tree is drawn whole within 25 tiles of you and as its leaf-card stand-in further off, the two dithered into each other over the 4 tiles round that (4 Nov 2026, no pop); none past the haze; a tree moved in the world editor keeps every tree whole
   { const NEAR=25*TILE; let lx=1e9, lz=1e9, lr=-1, li=null, lk=1;
     const set=(me,id,on)=>{ if(id>=0&&!(me.userData.gone&&me.userData.gone.has(id)))me.setVisibleAt(id,on); };

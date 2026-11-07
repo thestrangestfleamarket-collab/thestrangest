@@ -57,7 +57,7 @@ window.TESTS=TESTS;
       if(have(id)>s.n0)return ['pass','bought '+NM(id)+' for $'+(s.c0-K.cash())]; return ['fail',s.btn?'pressed BUY, nothing came ($'+s.c0+' then $'+K.cash()+')':'no BUY button for '+NM(id)]; };
     const sub=(c,k)=>{ const s=c.s[k]||(c.s[k]={}); return {e:c.e,t:c.t,s}; };
     const RUN={
-      go:(c)=>{ const r=goTo(c,c.s,c.e.at); return r===true?['pass','got there ('+pos.x.toFixed(0)+', '+pos.z.toFixed(0)+')']:r; },
+      go:(c)=>{ if(c.e.at==='YOUR APARTMENT'&&!K.cfg().apt)return ['skip','has no apartment (OWN APARTMENT is off)']; const r=goTo(c,c.s,c.e.at); return r===true?['pass','got there ('+pos.x.toFixed(0)+', '+pos.z.toFixed(0)+')']:r; },
       use:(c,dt)=>{ const s=c.s; if(!s.there){ const r=goTo(c,s,c.e.at); if(r!==true)return r; s.there=c.t; s.x=pos.x; s.z=pos.z; s.list=null; s.ok=[]; s.bad=[]; }
         if(!s.list){ s.list=UI.things.filter(t=>t&&t.obj&&t.act&&!t.npc&&!/DOOR|EXIT|LEAVE|OUT TO|STAIRS|SUBWAY|TRAIN|ELEVATOR|GO (UP|DOWN|IN|OUT)|TO THE /i.test(t.name||'')).map(t=>[t,K.thAt(t)]).filter(([t,p])=>Math.hypot(p.x-s.x,p.z-s.z)<20*T).sort((a,b)=>Math.hypot(a[1].x-s.x,a[1].z-s.z)-Math.hypot(b[1].x-s.x,b[1].z-s.z)).slice(0,8).map(a=>a[0]); s.i=0; if(!s.list.length)return ['skip','nothing to use near '+c.e.at]; }
         const th=s.list[s.i]; if(!th){ return s.bad.length?['fail','used '+s.ok.length+'; could not: '+s.bad.join(', ')]:['pass','used '+s.ok.length+': '+s.ok.join(', ')]; }
@@ -98,7 +98,7 @@ window.TESTS=TESTS;
         if(!s.coin){ s.coin=c.t; for(const t of ['keydown','keyup'])setTimeout(()=>dispatchEvent(new KeyboardEvent(t,{key:' ',code:'Space',bubbles:true})),t==='keyup'?120:0); return; }
         if(D.mode!=='play'&&c.t-s.coin<6)return; if(D.mode!=='play'&&!s.played)return ['fail','pressed SPACE, it did not start ('+D.mode+')']; s.played=s.played||c.t; if(c.t-s.played<4)return;
         return ['pass','played '+n+' ($'+(s.c0-K.cash())+', score '+(D.score||0)+')']; },
-      job:(c,dt)=>{ const s=c.s, j=c.e.job; if(s.c0==null)s.c0=K.cash(); K.JOB[j](dt);
+      job:(c,dt)=>{ const s=c.s, j=c.e.job; if(j==='decorate'&&!K.cfg().apt)return ['skip','has no apartment (OWN APARTMENT is off)']; if(s.c0==null)s.c0=K.cash(); K.JOB[j](dt);
         if(j==='sit'&&st.sit)return ['pass','sat down'];
         if(j==='decorate'&&MODS.apts&&MODS.apts.inReal&&K.cash()<s.c0)return ['pass','bought a thing for $'+(s.c0-K.cash())]; } };
     const LIM={go:45,use:260,talk:120,buy:150,sell:150,learn:150,skill:420,pet:150,arcade:120,job:180};

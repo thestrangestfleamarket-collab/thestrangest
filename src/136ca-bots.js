@@ -22,7 +22,7 @@ import {AVATAR} from './111c-avatar.js';
           ${testRow(b)}
           <div class="row"><span>WHERE</span>${sel('place',[['','WHERE IT IS'],...places()],b.place)}<span class="dim">${b.at?'at '+esc(b.at.map(v=>v.toFixed(1)).join(', ')):''}</span></div>
           <div class="row"><span>SAYS</span><input data-f="say" type="text" maxlength="400" value="${esc(b.say||'')}" placeholder="lines it says now and then, split by |" style="flex:1;min-width:220px;${IN}"></div>
-          <div class="row"><span>HEALTH</span><input data-f="hp" type="range" min="5" max="100" value="${esc(Math.round((b.hp??1)*100))}"><label><input data-f="fight" type="checkbox"${b.fight?' checked':''}> FIGHTS BACK</label><label><input data-f="god" type="checkbox"${b.god?' checked':''}> CAN'T BE KNOCKED DOWN</label></div>
+          <div class="row"><span>HEALTH</span><input data-f="hp" type="range" min="5" max="100" value="${esc(Math.round((b.hp??1)*100))}"><label><input data-f="fight" type="checkbox"${b.fight?' checked':''}> FIGHTS BACK</label><label><input data-f="god" type="checkbox"${b.god?' checked':''}> CAN'T BE KNOCKED DOWN</label><label><input data-f="apt" type="checkbox"${b.apt?' checked':''}> OWN APARTMENT</label></div>
           <div class="row"><button class="btn" data-a="save">SAVE</button><button class="btn" data-a="del">DELETE BOT</button><span class="dim">${esc(b.email||'')}</span></div>`:''}</div>`; };
   // the tests the game lists (162h), counted by kind
   let LIST=null; const list=()=>{ if(!LIST&&TESTS.all){ LIST=[]; TESTS.all().then(L=>{ LIST=L; if(el)draw(); if(W)win(W.dataset.bot); if(tel)tdraw(); }).catch(()=>{}); } return LIST||[]; };
@@ -38,7 +38,7 @@ import {AVATAR} from './111c-avatar.js';
       if(a==='call'){ act(b,{do:'botset',id,set:callSet()},()=>x.name+' is coming'); return; }
       if(a==='del'){ if(!confirm('Delete '+x.name+' and its account for good?'))return; act(b,{do:'botdel',id},()=>'deleted'); return; }
       if(a==='save'){ const look=f('look').value, set={name:f('name').value.trim(),look:look==='me'?AVATAR.code():look,job:f('job').value,who:f('who').value==='me'?ONLINE.me:f('who').value,
-          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked};
+          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked,apt:f('apt').checked};
         const pl=f('place').value; if(pl!==(x.place||'')){ set.place=pl; if(pl)set.at=null; }
         const cs=[...box.querySelectorAll('[data-cat]')]; if(cs.length){ set.tests=[...cs.filter(c=>c.checked).map(c=>c.dataset.cat+':'),...(box.querySelector('[data-f="keep"]')?.checked?(x.tests||[]).filter(t=>!/:$/.test(t)):[])]; }
         if(set.job==='tests'&&(x.job!=='tests'||JSON.stringify(set.tests||x.tests)!==JSON.stringify(x.tests)))set.run=Date.now();
@@ -47,7 +47,7 @@ import {AVATAR} from './111c-avatar.js';
     const B=D.bots, live=B.filter(b=>b.status&&Date.now()-b.status.seen<60000).length;
     el.innerHTML=`<div class="dim">Test players that play the game by themselves, on Cloudflare: a bot that is ON is running, OFF stops it. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
       ${D.cloud&&D.cloud.err?`<div style="color:#e06a5a">CLOUDFLARE: ${esc(D.cloud.err)}</div>`:''}${D.cloud===null?'<div class="dim">Cloudflare is not running bots on this server.</div>':''}
-      <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><button class="btn" id="ball">CALL ALL</button><button class="btn" id="bhow">${open==='how'?'HIDE':'COST AND OTHER WAYS'}</button></div>
+      <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><label><input type="checkbox" id="bapt"> WITH ITS OWN APARTMENT</label><button class="btn" id="ball">CALL ALL</button><button class="btn" id="bhow">${open==='how'?'HIDE':'COST AND OTHER WAYS'}</button></div>
       ${open==='how'?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">On Cloudflare all the bots share one browser. Cloudflare's paid Workers plan includes 10 browser hours a month, then about 9 cents an hour; the free plan stops after 10 minutes a day. Turn bots OFF when you are done.
 
 Or run them on a PC instead (turn them off here first). Once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
@@ -58,7 +58,7 @@ Then, while you want bots in the game:
 Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${esc(D.key)}</code><button class="btn" id="bcopy">COPY KEY</button><button class="btn" id="bkey">NEW KEY</button></div>`:''}
       ${B.map(b=>card(b,open===b.id)).join('')}`;
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
-    $('#bnew').onclick=e=>act(e.target,{do:'botnew',set:{at:[pos.x,pos.z]}},r=>{ open=r.id; return 'a new bot, where you stand'; });
+    $('#bnew').onclick=e=>act(e.target,{do:'botnew',set:{at:[pos.x,pos.z],apt:$('#bapt').checked}},r=>{ open=r.id; return 'a new bot, where you stand'; });
     $('#ball').onclick=async e=>{ e.target.disabled=true; const on=D.bots.filter(b=>b.on), c=callSet(); for(const b of on)await api({do:'botset',id:b.id,set:c}); say=on.length?on.length+' coming':'no bot is on'; await load(); };
     $('#bhow').onclick=()=>{ open=open==='how'?null:'how'; draw(); };
     if($('#bcopy'))$('#bcopy').onclick=()=>{ try{ navigator.clipboard.writeText(D.key); say='key copied'; }catch(e){ say='copy it by hand'; } draw(); };

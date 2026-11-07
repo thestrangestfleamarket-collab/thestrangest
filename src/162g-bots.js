@@ -1,7 +1,7 @@
 // A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in TENANTS > BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
-import {MODS, QS, SYS, TILE} from './006-map-pre.js';
+import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
@@ -27,8 +27,9 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
-    if(!th||d2(p.x,p.z)>30*T){ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; } if((s.wt-=dt)>0)return false; return null; }
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
+    if(FADE.busy)return false; const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
+    if(!th||d2(p.x,p.z)>30*T){ if((s.wt-=dt)>0)return false; return null; }
     if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
   let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
@@ -72,7 +73,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
-    decorate:dt=>{ const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
+    decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
       if(task.s==='in'){ if(MODS.apts&&MODS.apts.inReal){ task.s='buy'; return; } if(!task.go){ task.go=1; UI.goName('YOUR APARTMENT'); } doing='going home'; return; }
       if(!MODS.apts.inReal){ task={s:'in',n:0,t:0}; return; } if(!E){ doing='no decorating here'; return; }
       if(task.s==='buy'){ if(walking(dt))return; if((task.t-=dt)>0)return; task.t=2+R()*2; if(!E.on)E.toggle();
@@ -97,6 +98,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
   BOT.kit={JOB,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
+  ONLINE.mine.noapt=()=>C.apt?null:1;   // a bot has no apartment unless the owner gave it one
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
   SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25);
     // health: never over what the owner set; can't be knocked down keeps it full

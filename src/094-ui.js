@@ -1,10 +1,10 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, pos, PS2, RINSP, ROOMS, SFX, SNDED, st, SWIM, TALK, TENANTS, TEXT, UI, USE, VIT, VR, W3, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
-import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {ASTEP, BLDK, CASTLE, FADE, LEVEL, MAPG, MAPSTAIR, MODS, QS, RING, SECTION, SECTIONS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {FOUNT} from './060a-fount.js';
 import {GTOWER} from './063-tower.js';
@@ -154,7 +154,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=UI.distMin||1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; const r=cv.getBoundingClientRect(), v=tv.set(pos.x,SHARED.py+HEAD*.6*(W3.SZ||1),pos.z).project(SHARED.cam); UI.wheelAt({deltaY:e.deltaY,clientX:r.left+(v.x+1)/2*r.width,clientY:r.top+(1-v.y)/2*r.height}); }; }   // each step zooms round you, not the mouse, so you stay where you are on screen
-  UI.viewsHere=()=>{ if(window.CARS&&CARS.driving)return ['third']; let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)?['iso','third','first']:['iso']; };
+  UI.viewsHere=()=>{ if(window.CARS&&CARS.driving)return ['third']; let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)||SWIM.vw?['iso','third','first']:['iso']; };   // (a dive takes the view, like fishing: SWIM.vw)
   { const W=window, own=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
     SYS.add('cam',()=>{ if(!window.__started||own())return; if(!UI.viewsHere().includes(UI.view))UI.setView('iso'); if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)

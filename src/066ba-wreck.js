@@ -1,9 +1,9 @@
 // THE WRECK: a sunken pirate ship far down on the Hudson's bed (about 55 m, half a minute's swim down), broken-backed, its black flag still on the mast, and sunken chests to dive for (in the wreck and deeper out in the channel): each gives you old coins and a gem once a day.
 import {SHARED, THREE} from './003-shx.js';
-import {INV, pos, SFX, UI, VIT} from './003b-systems.js';
+import {INV, pos, SFX, st, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {RIVER} from './066-river.js';
 const WRECK={chests:[]}; window.WRECK=WRECK;
@@ -43,7 +43,7 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
     for(let i=0;i<3;i++)box(C1-.12,mid-1.2+i*1.0,C1-.1,mid-.8+i*1.0,2.9,3.4,0x0c1418);
     box(13.3,mid-.8,14.6,mid+.2,CH0,CH0+.35,0x4a2e18); box(13.2,mid-.9,14.7,mid+.3,CH0+.35,CH0+.4,0x2e1c10);   // the captain's table
     // the hold: barrels and crates on the hull's floor
-    for(let i=0;i<14;i++){ const u=1.5+hs(i,1)*11, v=mid+(hs(i,2)-.5)*half(u)*1.3; if(BRK(u))continue; if(i%2)cyl(u,v,.22,-.4,.2,0x5a3a20,.2); else box(u-.25,v-.25,u+.25,v+.25,-.4,.1+.2*hs(i,3),0x6a4a2a); }
+    const cargo=[]; for(let i=0;i<14;i++){ const u=1.5+hs(i,1)*11, v=mid+(hs(i,2)-.5)*half(u)*1.3; if(BRK(u))continue; if(i%2)cyl(u,v,.22,-.4,.2,0x5a3a20,.2); else box(u-.25,v-.25,u+.25,v+.25,-.4,.1+.2*hs(i,3),0x6a4a2a); cargo.push([u,v]); }
     cyl(4.6,mid,.2,-.4,5.4,0x2e2116,.16); cyl(10.6,mid,.17,-.4,2.6,0x2e2116,.14); box(3.4,mid-.06,5.8,mid+.06,4.6,4.7,W2);   // the masts (the main one standing, the mizzen snapped) and a yard
     const flag=IKIT.tex(32,24,(g,w,h)=>{ g.fillStyle='#141416'; g.fillRect(0,0,w,h); g.clearRect(26,0,6,4); g.clearRect(29,4,3,6); g.clearRect(0,20,4,4); g.clearRect(24,19,8,5);
       g.fillStyle='#d8d2c0'; g.fillRect(12,5,8,7); g.fillStyle='#141416'; g.fillRect(13,7,2,2); g.fillRect(17,7,2,2); g.fillRect(15,10,2,1); g.fillStyle='#d8d2c0'; for(let i=0;i<8;i++){ g.fillRect(8+i,14+(i%2),2,2); g.fillRect(22-i,14+(i%2),2,2); } });
@@ -52,7 +52,13 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
     const iron=new THREE.MeshLambertMaterial({color:0x202326}); for(const sd of [-1,1])for(const u of [3,5.6,11]){ const p=F.pw(u*S,(mid+sd*(half(u)+.2))*S), c=new THREE.Mesh(new THREE.CylinderGeometry(.11*S*MW,.14*S*MW,1.1*S*MW,8),iron);   // its cannons out of the ports
       c.rotation.x=Math.PI/2; c.rotation.y=F.hd(0,sd); c.position.set(p[0],y+(1.2-(LOW(u)?.5:0))*S*MW,p[1]); scene.add(c); WRECK.parts.push(c); }
     { const p=F.pw(11.5*S,(mid+4.6)*S), m=new THREE.Mesh(new THREE.CylinderGeometry(.14*S*MW,.16*S*MW,6*S*MW,8),new THREE.MeshLambertMaterial({color:0x2e2116})); m.rotation.z=Math.PI/2; m.rotation.y=.4; m.position.set(p[0],bedY(p[0],p[1])+.4*MW,p[1]); scene.add(m); WRECK.parts.push(m); }   // the mizzen on the bed beside it
-    WRECK.parts.push(G); WRECK.floorY=y-.4*S*MW; WRECK.F=F; return F; };
+    WRECK.parts.push(G); WRECK.floorY=y-.4*S*MW; WRECK.F=F;
+    // what a swimmer bumps into down among the planks (the room's ground solids are flat, so they stand only while you swim below the gunwales): the hull's sides, the cabin's walls, the cargo
+    const W=[], WR=(u0,v0,u1,v1)=>W.push(F.box(u0*S,v0*S,u1*S,v1*S));
+    for(let u=0;u<LEN;u+=.5){ if(BRK(u))continue; const w=half(u+.25); WR(u,mid-w-.06,u+.5,mid-w+.06); WR(u,mid+w-.06,u+.5,mid+w+.06); }
+    WR(C0,mid-1.75,C1,mid-1.6); WR(C0,mid+1.6,C1,mid+1.75); WR(C1-.12,mid-1.7,C1,mid+1.7); WR(C0,mid-1.7,C0+.1,mid-.5); WR(C0,mid+.5,C0+.1,mid+1.7);
+    for(const [u,v] of cargo)WR(u-.25,v-.25,u+.25,v+.25);
+    WRECK.walls=W; WRECK.topY=y+2.2*S*MW; WRECK.solid=false; return F; };
   WRECK.parts=[];
   // its guards: sharks circling the wreck; one comes for a diver who gets close, bites, and turns away
   const SHK=[], shark=()=>{ const G=new THREE.Group(), grey=new THREE.MeshLambertMaterial({color:0x5a6670}), pale=new THREE.MeshLambertMaterial({color:0xc8ccd0}), M=MW;
@@ -74,6 +80,8 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
     deeps().forEach(([dx,dz],i)=>chest(dx,dz,'deep'+i)); SHARK(); WRECK.built=true; };
   // built once the river is, drawn only near it; a full chest shows its gold, an emptied one is shut till tomorrow
   SYS.add('places',dt=>{ if(!WRECK.built){ if(RIVER.box&&RIVER.depthAt)build(); return; } if(WRECK.none)return; const [x,z]=WRECK.at, near=Math.hypot(pos.x-x,pos.z-z)<140*T;
-    for(const o of WRECK.parts)o.visible=near; if(near)guard(Math.min(.1,dt||0)); for(const C of WRECK.chests){ const n=Math.hypot(pos.x-C.G.position.x,pos.z-C.G.position.z)<140*T, full=INV.ready(C.k); C.G.visible=n; C.gold.visible=full; C.lid.rotation.x=full?-1.1:0; C.th.name=full?'A SUNKEN CHEST':'A SUNKEN CHEST (EMPTY)'; } },'066ba-wreck');
+    for(const o of WRECK.parts)o.visible=near; if(near)guard(Math.min(.1,dt||0));
+    { const Wt=st.water, sy=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:1e9, on=near&&RIVER.swim&&sy<WRECK.topY&&Math.hypot(pos.x-x,pos.z-z)<40*MW;   // swimming down among the wreck: its planks are solid
+      if(on!==WRECK.solid&&WRECK.walls){ WRECK.solid=on; for(const r of WRECK.walls){ const i=SOL.up.indexOf(r); if(on&&i<0)SOL.up.push(r); else if(!on&&i>=0)SOL.up.splice(i,1); } } } for(const C of WRECK.chests){ const n=Math.hypot(pos.x-C.G.position.x,pos.z-C.G.position.z)<140*T, full=INV.ready(C.k); C.G.visible=n; C.gold.visible=full; C.lid.rotation.x=full?-1.1:0; C.th.name=full?'A SUNKEN CHEST':'A SUNKEN CHEST (EMPTY)'; } },'066ba-wreck');
   window.WRECKDBG=()=>({built:!!WRECK.built,at:WRECK.at&&WRECK.at.map(v=>+(v/T).toFixed(1)),depth:WRECK.at&&+RIVER.depthAt(...WRECK.at).toFixed(1),chests:WRECK.chests.map(C=>({k:C.k,depth:+RIVER.depthAt(C.G.position.x,C.G.position.z).toFixed(1),full:INV.ready(C.k)}))});
 }

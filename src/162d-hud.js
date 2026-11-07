@@ -19,7 +19,8 @@ import {QUESTS} from './160a-quests.js';
 
   /* ---------- the log ---------- */
   const LG=document.createElement('div'); LG.id='hlog'; LG.innerHTML='<div id="hlines" aria-live="polite"></div><div id="hchat"></div>'; document.body.appendChild(LG); const LN=LG.firstChild;
-  UI.log=(text,color,who)=>{ const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML=(who?'<b>'+esc(who)+'</b> ':'')+esc(text); if(color&&!who)d.style.color=color; LN.appendChild(d); while(LN.children.length>40)LN.firstChild.remove(); };
+  UI.log=(text,color,who)=>{ const L=LN.lastChild, key=(who||'')+'\u0001'+text; if(L&&L.dataset.k===key){ L.dataset.n=String(+L.dataset.n+1); L.dataset.t=String(performance.now()); L.lastChild.textContent=' ×'+L.dataset.n; L.classList.remove('old'); LN.appendChild(L); return; }   // the same line again counts up, never repeats
+    const d=document.createElement('div'); d.dataset.k=key; d.dataset.n='1'; d.dataset.t=String(performance.now()); d.innerHTML=(who?'<b>'+esc(who)+'</b> ':'')+esc(text); if(color&&!who)d.style.color=color; d.appendChild(document.createElement('span')); LN.appendChild(d); while(LN.children.length>40)LN.firstChild.remove(); };
   HUD.lines=()=>[...LN.children].map(d=>d.textContent);
 
   /* ---------- the minimap ---------- */

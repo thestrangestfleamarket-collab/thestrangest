@@ -87,7 +87,7 @@ LOOKS.over={};
   LOOKS.open=()=>{ draw(); LOOKS.layout(); P.hidden=false; }; LOOKS.L=L; LOOKS.COL=COL;
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(LEVELS.own(hit,'*'));
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
-  UI.thing({name:'YOU',ghost:1,obj:hit,reach:99,tall:2,act:()=>UI.menuTab('you')});
+  UI.thing({name:'YOU',ghost:1,quiet:1,obj:hit,reach:99,tall:2,act:()=>UI.menuTab('you')});
   SYS.add('life',()=>{ hit.visible=UI.view!=='first'; },'102-looks you');   // through your own eyes you are not a thing in front of you
   W3.E=W3.pcs.map(()=>null); W3.pcs.forEach((P,i)=>{ const v=MALE[P.under||P.n]; if(v)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; });
   E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); EF=W3.pcs.map(P=>{ const v=FEMALE[P.under||P.n]; return v?{s:v.slice(),o:[0,0,0],q:[0,0,0,1]}:null; });

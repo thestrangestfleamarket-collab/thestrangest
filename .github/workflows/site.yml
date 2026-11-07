@@ -31,7 +31,6 @@ jobs:
         run: |
           C=$(for f in $(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL); do [ "$f" = ALL ] && { echo ALL; break; }; case "$f" in src/*.js) git diff -U0 "origin/$BASE"...HEAD -- "$f" | grep -E '^[-+][^-+]' | grep -vqE "^[-+](import \{[^}]*\} from '\./[^']+';|export \{[^}]*\};) *$" && echo "$f";; *) echo "$f";; esac; done)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
-          k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
@@ -60,6 +59,7 @@ jobs:
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
+          k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|underway\.cjs'
           k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
@@ -109,10 +109,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' mapeditor')
         run: node tests/mapeditor.cjs dist/market.html
-      - name: The lawn (knee-high tufts, painted ground)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' lawn')
-        run: node tests/lawn.cjs dist/market.html
       - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
@@ -215,6 +211,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' insides')
         run: node tests/insides.cjs dist/market.html
+      - name: The Underway and the wreck (in from the river, the dry gallery, out through the lake; the sunken chests)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' underway')
+        run: node tests/underway.cjs dist/market.html
       - name: The merchants' shops (every one furnished, its keeper inside, the counter opens the shop)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')

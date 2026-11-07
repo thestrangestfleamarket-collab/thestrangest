@@ -191,7 +191,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.chars.fns && r.chars.levelChars && r.chars.applied, 'CHARS applies character overrides (name, stats, scale) and reads characters.json: ' + JSON.stringify(r.chars));
     ok(r.shops.ok && r.shops.noTrade, 'SHOPS is wired and a character with no shop config sells nothing: ' + JSON.stringify(r.shops));
     ok(r.itemcls.ok && r.itemcls.painter && r.itemcls.swap, 'an id made in play takes its class\'s properties on the item model (a painting); the painter and trade are there: ' + JSON.stringify(r.itemcls));
-    ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (the grass itself: tests/lawn.cjs) (' + JSON.stringify(r.lawn) + ')');
+    ok(r.lawn && r.lawn.painted && r.lawn.col && r.lawn.top, 'the lawn: the land wears its lawn texture and lawnCol gives a colour (' + JSON.stringify(r.lawn) + ')');
     ok(r.edges && r.edges[0] <= 16 && r.edges[1] && r.edges[2], 'cheaper shadow edges: PCF and SOFT read 4 texels (not 17/16), the point light 4 (not 9), the sun reads its near or far map and the moving map only where lit (' + JSON.stringify(r.edges) + ')');
     ok(r.walkin && r.walkin.every(Boolean), 'walk-in shops (owner, 5 Nov 2026): a street shop builds its inside when you come near, its door swings open when it is ready, no fade (STORE.open, STORE.openAt, STORE.held): ' + JSON.stringify(r.walkin));
     ok(r.shafts && r.shafts.every(Boolean), 'the sun shafts: on by DAY, off at DUSK and NIGHT (owner, 5 Nov 2026), still lit by the sun\'s shadow map and hidden by what stands in front (SHAFTS: ' + JSON.stringify(r.shafts) + ')');

@@ -22,35 +22,50 @@ import {AVATAR} from './111c-avatar.js';
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
   sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);zoom:var(--uiz,1)';
-  sp.addEventListener('click',e=>{ if(e.target===sp)PASSPORT.close(); }); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')PASSPORT.close(); e.stopPropagation(); }); document.body.appendChild(sp);
+  sp.addEventListener('click',e=>{ if(e.target===sp)PASSPORT.close(); }); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')PASSPORT.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation()); document.body.appendChild(sp);
   // the card (owner, 7 Nov 2026: "C, no stamps, include other details like height, hair color, eye color, etc. address, etc. all passport/dl style info"): the map's look; your photo from your look as it is; every line from what you are
   const HAIRN=[['1d1712','BLK'],['3b2a1e','BRO'],['5a3a24','BRO'],['8a5a32','AUB'],['b98a4e','BLN'],['d8c28a','BLN'],['8c8c8c','GRY'],['e8e4dc','WHI']];
   const rgb=h=>[0,2,4].map(i=>parseInt(String(h||'000000').slice(i,i+2),16)), near=(h,L)=>{ const a=rgb(h); let b=L[0], d=1e9; for(const e of L){ const c=rgb(e[0]), q=(a[0]-c[0])**2+(a[1]-c[1])**2+(a[2]-c[2])**2; if(q<d){ d=q; b=e; } } return b[1]; };
   const usd=d=>/^\d{4}-\d\d-\d\d$/.test(d||'')?d.slice(5,7)+'/'+d.slice(8,10)+'/'+d.slice(0,4):'—';
-  const hgt=L=>{ const n=Math.round(67*(L.h||100)/100); return Math.floor(n/12)+"'-"+String(n%12).padStart(2,'0')+'"'; };   // (the figure stands 5 ft 7 at 100%)
   const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return (F.pent?'PENTHOUSE':'APT '+F.floor+(F.side?'B':'A'))+' · '+(F.house+1)+' WEST ST'; };
-  const K=(n,k,v,x='')=>`<div style="${x}"><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">${n?`<span style="color:#e53935;margin-right:3px">${n}</span>`:''}${k}</div><div style="font-size:14px;font-weight:900;letter-spacing:.4px;line-height:1.15">${v}</div></div>`;
+  const lb=(n,k)=>`<div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">${n?`<span style="color:#e53935;margin-right:3px">${n}</span>`:''}${k}</div>`;
+  const K=(n,k,v,x='')=>`<div style="${x}">${lb(n,k)}<div style="font-size:14px;font-weight:900;letter-spacing:.4px;line-height:1.15">${v}</div></div>`;
+  const IN=(f,v,x='',t='text')=>`<input class="pE" data-f="${f}" type="${t}" value="${esc(v)}" spellcheck="false" autocomplete="off" style="${x}">`;
+  const SEL=(f,v,L)=>`<select class="pE" data-f="${f}">${L.map(([k,t])=>`<option value="${esc(k)}"${String(k)===String(v)?' selected':''}>${esc(t)}</option>`).join('')}</select>`;
+  const uniq=L=>{ const o=[]; for(const [h,t] of L)if(!o.some(e=>e[1]===t))o.push([h,t]); return o; };
+  const inch=L=>Math.round(67*(L.h||100)/100), HTS=[]; for(let n=60;n<=74;n++)HTS.push([n,Math.floor(n/12)+"'-"+String(n%12).padStart(2,'0')+'"']);
+  const wgt=L=>P.wgt||Math.round(155*((L.h||100)/100)**2*[.85,1,1.2][L.b==null?1:L.b]);   // (until you write your own: from your height and build)
+  const snap=()=>{ const c=!sp.hidden&&sp.querySelector('.pPh'); if(c)try{ DESIGN.snap(c.getContext('2d'),132,178,{head:true}); }catch(e){ console.warn('PASSPORT photo',e); } };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
+  const look=o=>Promise.resolve(AVATAR.set&&AVATAR.set(o)).catch(e=>console.warn('PASSPORT look',e)).then(()=>{ if(!sp.hidden)draw(); setTimeout(snap,400); });
+  const edit=async(f,v)=>{ const L=AVATAR.L?AVATAR.L():{};
+    if(f==='name'){ const r=PASSPORT.claim?await PASSPORT.claim(v):{ok:false,why:'offline'}; if(r.ok&&LOOKS.setName)LOOKS.setName(r.name); else say(r.why==='taken'?'THAT NAME IS TAKEN.':r.why==='offline'?'THE MARKET CANNOT BE REACHED.':r.why==='busy'?'TOO MANY TRIES. WAIT A MINUTE.':'A NAME IS 3 TO 16 LETTERS OR DIGITS.','#e5403a'); return draw(); }
+    if(f==='a1'||f==='a2'){ P[f]=String(v).toUpperCase().slice(0,32).trim(); save(); return draw(); }
+    if(f==='dob'){ if(v===''||(/^\d{4}-\d\d-\d\d$/.test(v)&&v>='1900-01-01'&&v<=new Date().toISOString().slice(0,10)))PASSPORT.set({dob:v}); else draw(); return; }
+    if(f==='wgt'){ const n=Math.round(+v); if(n>=60&&n<=600)PASSPORT.set({wgt:n}); else draw(); return; }
+    if(f==='f')return look({f:v==='F'?'f':'m'});
+    if(f==='h')return look({h:Math.min(110,Math.max(90,Math.round(+v*100/67)))});
+    if(f==='b')return look({b:+v});
+    if(f==='eye')return look({eye:v});
+    if(f==='hair')return look({hair:v}); };
   const draw=()=>{ '@later'; const name=((LOOKS.L&&LOOKS.L.name)||'').trim().toUpperCase()||'A TENANT', L=AVATAR.L?AVATAR.L():{}, sex=L.f==='f'?'F':'M', dob=P.dob||'', hand=st.hand==='L'?'L':'R';
-    const mrz1=('P<TSFM'+name.replace(/[^A-Z0-9]/g,'<')).padEnd(44,'<').slice(0,44), mrz2=(String(P.no)+'<<<<'+P.home+'<'+(dob?dob.slice(2,4)+dob.slice(5,7)+dob.slice(8,10):'<<<<<<')+sex).padEnd(42,'<')+'04';
+    const EY=uniq(AVATAR.EYES||[['2a2019','BRN']]), HR=uniq(HAIRN), ey=near(L.eye||'2a2019',EY), hr=near(L.hair,HR);
     const hb=h=>`<button class="pH" data-h="${h}" style="font:900 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:3px 9px;cursor:pointer;border:2px solid #111;margin-right:4px;background:${hand===h?'#111':'#f6f4ec'};color:${hand===h?'#f6f4ec':'#111'}">${h}</button>`;
-    sp.innerHTML=`<div style="position:relative"><div style="width:640px;height:404px;background:#f6f4ec;color:#111;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px #000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
+    sp.innerHTML=`<style>#passportw .pE{font:inherit;font-weight:900;color:inherit;background:transparent;border:0;border-bottom:1.5px dashed transparent;padding:0;margin:0;width:100%;box-sizing:border-box;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;cursor:text}#passportw select.pE{cursor:pointer}#passportw input[type=number].pE{-moz-appearance:textfield}#passportw .pE::-webkit-inner-spin-button{-webkit-appearance:none}#passportw .pE:hover,#passportw .pE:focus{border-bottom-color:#999;background:#ebe7da}</style><div style="position:relative"><div style="width:640px;padding-bottom:18px;background:#f6f4ec;color:#111;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px #000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
       <div style="background:#111;color:#f6f4ec;font-weight:900;letter-spacing:1px;padding:9px 18px;display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:16px">THE STRANGEST FLEA MARKET</span><span style="font-size:11px;letter-spacing:2px">NEW YORK · <span style="color:#ffd400;font-size:15px">PASSPORT</span></span></div>
       <div style="display:flex;gap:18px;padding:14px 18px 0">
         <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><canvas class="pPh" width="132" height="178" style="border:3px solid #111;background:#d6e2e8;image-rendering:pixelated;display:block"></canvas>
           <div style="font-family:'Brush Script MT','Segoe Script','Snell Roundhand',cursive;font-size:${Math.min(28,Math.round(300/Math.max(4,name.length)))}px;height:28px;display:flex;align-items:flex-end;line-height:1;color:#1a2a6c;max-width:138px;white-space:nowrap">${esc(name.charAt(0)+name.slice(1).toLowerCase())}</div><div style="width:132px;border-top:1.5px solid #111;margin-top:-3px"></div><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666;margin-top:-3px">SIGNATURE</div></div>
         <div style="flex:1;display:flex;flex-direction:column;gap:9px">
-          <div style="display:flex;justify-content:space-between">${K(1,'NAME',`<span style="font-size:24px">${esc(name)}</span>`)}<div style="text-align:right"><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">CITIZEN NO.</div><div style="font-size:20px;font-weight:900;color:#e53935">${esc(P.no)}</div></div></div>
-          ${K(2,'ADDRESS',esc(addr())+'<br>SECTION '+esc(P.home)+', NEW YORK')}
+          <div style="display:flex;justify-content:space-between;gap:12px">${K(1,'NAME',IN('name',name,'font-size:24px;text-transform:uppercase'),'flex:1')}<div style="text-align:right"><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">CITIZEN NO.</div><div style="font-size:20px;font-weight:900;color:#e53935">${esc(P.no)}</div></div></div>
+          ${K(2,'ADDRESS',IN('a1',P.a1||addr(),'text-transform:uppercase')+IN('a2',P.a2||'SECTION '+P.home+', NEW YORK','text-transform:uppercase'))}
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px 12px">
-            ${K(3,'ISSUED',usd(P.issued))}${K(4,'EXPIRES','NEVER')}${K(5,'DOB',usd(dob))}${K('','CLASS','TENANT')}
-            ${K(15,'SEX',sex)}${K(16,'HGT',hgt(L))}${K(18,'EYES',near(L.eye||'2a2019',AVATAR.EYES||[['2a2019','BRN']]))}${K(19,'HAIR',near(L.hair,HAIRN))}
-            ${K('','BUILD',esc((AVATAR.BUILDN||[])[L.b]||'MEDIUM'))}<div><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">HAND</div>${hb('R')}${hb('L')}</div>${K('','HOME','SECTION '+esc(P.home))}
-            <div style="display:flex;justify-content:flex-end;align-items:flex-end"><canvas class="pGh" width="46" height="62" style="opacity:.3;filter:grayscale(1);image-rendering:pixelated"></canvas></div>
-          </div></div></div>
-      <div style="position:absolute;left:18px;right:18px;bottom:10px;border-top:2px solid #111;padding-top:5px;font-family:'Courier New',monospace;font-size:12.5px;letter-spacing:2.2px;font-weight:700;line-height:1.35">${esc(mrz1)}<br>${esc(mrz2)}</div>
-      <div style="position:absolute;right:18px;bottom:52px;font-size:8.5px;font-weight:900;letter-spacing:1px;color:#666">SHOW IT AT A STATION'S MACHINE TO LEAVE</div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
+            ${K(3,'ISSUED',usd(P.issued))}${K(4,'EXPIRES','NEVER')}${K(5,'DOB',IN('dob',dob,'font-size:12px','date'))}${K('','CLASS','TENANT')}
+            ${K(15,'SEX',SEL('f',sex,[['M','M'],['F','F']]))}${K(16,'HGT',SEL('h',inch(L),HTS))}${K(18,'EYES',SEL('eye',EY.find(e=>e[1]===ey)[0],EY))}${K(19,'HAIR',SEL('hair',HR.find(e=>e[1]===hr)[0],HR))}
+            ${K('','BUILD',SEL('b',L.b==null?1:L.b,(AVATAR.BUILDN||['SLIM','MEDIUM','BROAD']).map((t,i)=>[i,t])))}${K(17,'WGT',`<span style="display:flex;align-items:baseline">${IN('wgt',wgt(L),'width:38px','number')}<span>LB</span></span>`)}<div>${lb('','HAND')}${hb('R')}${hb('L')}</div>${K('','HOME','SECTION '+esc(P.home))}
+          </div></div></div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
     sp.querySelector('.pX').onclick=()=>PASSPORT.close(); sp.querySelectorAll('.pH').forEach(b=>{ b.onclick=()=>PASSPORT.setHand(b.dataset.h); });
-    try{ const ph=sp.querySelector('.pPh'); DESIGN.snap(ph.getContext('2d'),132,178,{head:true}); sp.querySelector('.pGh').getContext('2d').drawImage(ph,0,0,46,62); }catch(e){ console.warn('PASSPORT photo',e); } };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
+    sp.querySelectorAll('.pE').forEach(e=>{ e.onchange=()=>edit(e.dataset.f,e.value); if(e.tagName==='INPUT')e.onkeydown=k=>{ if(k.key==='Enter')e.blur(); }; });
+    snap(); };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
   PASSPORT.set=o=>{ Object.assign(P,o); save(); if(!sp.hidden)draw(); };
   PASSPORT.open=()=>{ sp.hidden=false; sp.style.display='flex'; draw(); }; PASSPORT.close=()=>{ sp.hidden=true; sp.style.display='none'; };
   FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);

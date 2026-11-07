@@ -12,6 +12,7 @@ import {AVATAR} from './111c-avatar.js';
     if(!OWNED.me)return {ok:true,name:n};
     try{ const r=await fetch('/name',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({claim:n})}), j=await r.json().catch(()=>({}));
       return j.ok?{ok:true,name:j.name}:{ok:false,why:j.taken?'taken':r.status===429?'busy':'bad'}; }catch(e){ return {ok:false,why:'offline'}; } };
+  PASSPORT.claim=FIRSTDAY.claim;   // (renaming yourself on the passport goes the same way)
   if(OWNED.me&&OWNED.me.name)LOOKS.setName(OWNED.me.name);   // (the server's name is the one you go by)
   // the starter things, once (owner: "$1,000", two snacks, a fishing rod; the money is INV.START, 101-gems; the map is everyone's already: Shift+M)
   const STARTER=[['fr_apple',2],['rod',1]];

@@ -11,7 +11,8 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   day:()=>Math.floor(Date.now()/86400000),seasonOf:day=>{ const m=new Date(day*86400000).getUTCMonth(); return m<2||m===11?'winter':m<5?'spring':m<8?'summer':'autumn'; },
   SEASONS:{spring:{tint:0x9fd08a,mix:0,desat:0,amb:0,snow:0,temp:14},summer:{tint:0xd9b35a,mix:.1,desat:.02,amb:.03,snow:0,temp:26},autumn:{tint:0xc8763a,mix:.26,desat:.08,amb:.05,snow:0,temp:12},winter:{tint:0xcfe0f0,mix:.24,desat:.5,amb:.08,snow:.6,temp:1}},
   seasonPick:'',season:()=>CLOCK.SEASONS[CLOCK.seasonPick]?CLOCK.seasonPick:CLOCK.seasonOf(CLOCK.day()),seasonLook:()=>CLOCK.SEASONS[CLOCK.season()],
-  moonPhase:()=>(((CLOCK.day()+(CLOCK.h??12)/24)/8+.125)%1+1)%1,moonLit:()=>(1-Math.cos(CLOCK.moonPhase()*Math.PI*2))/2});
+  moonPhase:()=>{ const m=CLOCK.moonReal&&CLOCK.moonReal(); return m?m.phase:(((CLOCK.day()+(CLOCK.h??12)/24)/8+.125)%1+1)%1; },   // the real Moon's (moonReal, set by THE HOURS) or an 8-day cycle
+ moonLit:()=>(1-Math.cos(CLOCK.moonPhase()*Math.PI*2))/2});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
@@ -35,7 +36,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;
     { const sa=azim(H), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));
-      const ma=azim(H+12)*.5+.6, me=48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }
+      const mr=CLOCK.moonReal&&CLOCK.moonReal(), ma=mr?mr.az:azim(H+12)*.5+.6, me=mr?mr.alt:48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }   // the moon's disc where the real one is (its light stays the night's own)
     const aim=L=>{ const sc=L.shadow.camera, tx=(sc.right-sc.left)/L.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,SHARED.py,pos.z);
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
       L.position.copy(L.target.position).addScaledVector(dir,200*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };

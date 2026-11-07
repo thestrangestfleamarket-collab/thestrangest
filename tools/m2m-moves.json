@@ -49,7 +49,8 @@
 },
 "dance": {
 "clip": "dance-simple",
-"loop": true
+"loop": true,
+"travel": true
 },
 "armPump": {
 "clip": "dance-arm-pump",
@@ -57,19 +58,23 @@
 },
 "bodyRoll": {
 "clip": "dance-body-roll",
-"loop": true
+"loop": true,
+"travel": true
 },
 "charleston": {
 "clip": "dance-charleston",
-"loop": true
+"loop": true,
+"travel": true
 },
 "hipReach": {
 "clip": "dance-reach-hip",
-"loop": true
+"loop": true,
+"travel": true
 },
 "moonwalk": {
 "clip": "moonwalk",
-"loop": true
+"loop": true,
+"drift": -1.31
 },
 "jacks": {
 "clip": "jumping-jacks",
@@ -93,10 +98,6 @@
 },
 "shiver": {
 "clip": "shiver",
-"loop": true
-},
-"zombie": {
-"clip": "zombie-idle",
 "loop": true
 },
 "eat": {
@@ -148,5 +149,140 @@
 },
 "dodge": {
 "clip": "dodge-back"
+},
+"roll2": {
+"clip": "roll"
+},
+"kickFront": {
+"clip": "kick-front"
+},
+"kickRound": {
+"clip": "kick-roundhouse"
+},
+"hook2": {
+"clip": "melee-hook"
+},
+"hitChest": {
+"clip": "hit-chest"
+},
+"throw": {
+"clip": "throw-ball"
+},
+"knockback": {
+"clip": "hit-knockback-rm",
+"travel": true,
+"opts": {"travel": true, "keep": 0}
+},
+"draw": {
+"clip": "weapon-draw"
+},
+"tired": {
+"clip": "tired-hunched",
+"loop": true
+},
+"hurt": {
+"clip": "idle-hurt",
+"loop": true
+},
+"listen": {
+"clip": "idle-listening",
+"loop": true
+},
+"dizzy": {
+"clip": "dizzy",
+"loop": true
+},
+"shakeOff": {
+"clip": "idle-shakeoff"
+},
+"stroll": {
+"clip": "walk-happy",
+"loop": true,
+"drift": 1.15
+},
+"strut": {
+"clip": "walk-large",
+"loop": true,
+"drift": 0.59
+},
+"sneak": {
+"clip": "walk-stealth",
+"loop": true,
+"drift": 0.37
+},
+"tiptoe": {
+"clip": "walk-cautious",
+"loop": true,
+"drift": 0.39
+},
+"stagger": {
+"clip": "drunk-walk",
+"loop": true,
+"drift": 0.61
+},
+"limp": {
+"clip": "walk-injured",
+"loop": true,
+"drift": 0.56
+},
+"sprint": {
+"clip": "sprint",
+"loop": true,
+"drift": 2.14
+},
+"backUp": {
+"clip": "walk-backwards",
+"loop": true,
+"drift": -0.67
+},
+"crouchWalk": {
+"clip": "crouch-walk",
+"loop": true,
+"drift": 0.39
+},
+"crawl": {
+"clip": "crawl",
+"loop": true,
+"drift": 0.77
+},
+"formalWalk": {
+"clip": "walk-formal",
+"loop": true,
+"drift": 0.67
+},
+"backflip": {
+"clip": "backflip"
+},
+"rollGo": {
+"clip": "roll-rm",
+"travel": true,
+"opts": {"travel": true, "keep": 0}
+},
+"pound": {
+"clip": "attack-ground-pound"
+},
+"guard": {
+"clip": "fighting-idle",
+"loop": true
+},
+"swordCombo": {
+"clip": "sword-regular-combo"
+},
+"slash": {
+"clip": "one-hand-slash-combo"
+},
+"toss": {
+"clip": "grenade-throw"
+},
+"dig": {
+"clip": "shovel-dig",
+"loop": true
+},
+"chopTree": {
+"clip": "chop-tree",
+"loop": true
+},
+"pickUp": {
+"clip": "pick-up"
 }
 }

@@ -99,7 +99,8 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const getOut=()=>{ '@later'; const C=mine; if(!C)return; RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
     const D=DATA.cars[C.model], s=(D.size[0]/2+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
   CAR.getIn=getIn; CAR.getOut=getOut; CAR.build=m=>DATA&&DATA.cars[m]?build(m):null;
-  ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C)return; if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
+  ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C){ for(const f of VEH.hear||[])f(m); return; }   // another thing you drive on the same lock (the helicopters, VEH.hear)
+  if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
     if(typeof m.at==='string')fromWorld('car:'+m.k,m.at); if(m.by&&m.by===ONLINE.me){ if(want===m.k){ want=null; board(m.k); } return; } if(mine===C&&!m.by)return; C.by=m.by||null; if(DATA)at(C); };
   addEventListener('keydown',e=>{ if(!mine||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; const k=(e.key||'').toLowerCase(); if(k==='f'){ e.preventDefault(); getOut(); } else if(k==='t'){ e.preventDefault(); RAD.next(); } });
   /* ---------- the radio: four stations of public-domain records (data/radio.json, the Library of Congress's National Jukebox), each one loop that

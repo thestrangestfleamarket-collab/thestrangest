@@ -13,16 +13,19 @@ import {AVATAR} from './111c-avatar.js';
   const sel=(f,list,v)=>`<select data-f="${f}" style="${IN}">${list.map(([k,n])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<h3>BOTS</h3><div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<h3>BOTS</h3><div class="dim">'+esc(D.why)+'</div>'; return; }
     const B=D.bots, live=B.filter(b=>b.status&&Date.now()-b.status.seen<20000).length;
-    el.innerHTML=`<h3>BOTS</h3><div class="dim">Test players that play the game on your PC. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
-      <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><button class="btn" id="bhow">${open==='how'?'HIDE':'HOW TO RUN THEM'}</button></div>
-      ${open==='how'?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">On your PC, once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
+    el.innerHTML=`<h3>BOTS</h3><div class="dim">Test players that play the game by themselves, on Cloudflare: a bot that is ON is running, OFF stops it. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
+      ${D.cloud&&D.cloud.err?`<div style="color:#e06a5a">CLOUDFLARE: ${esc(D.cloud.err)}</div>`:''}${D.cloud===null?'<div class="dim">Cloudflare is not running bots on this server.</div>':''}
+      <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><button class="btn" id="bhow">${open==='how'?'HIDE':'COST AND OTHER WAYS'}</button></div>
+      ${open==='how'?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">On Cloudflare all the bots share one browser. Cloudflare's paid Workers plan includes 10 browser hours a month, then about 9 cents an hour; the free plan stops after 10 minutes a day. Turn bots OFF when you are done.
+
+Or run them on a PC instead (turn them off here first). Once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
   npm install playwright
   npx playwright install chromium
 Then, while you want bots in the game:
   node bots.cjs ${esc(D.key)}
 Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${esc(D.key)}</code><button class="btn" id="bcopy">COPY KEY</button><button class="btn" id="bkey">NEW KEY</button></div>`:''}
       ${B.map(b=>{ const s=b.status, on=s&&Date.now()-s.seen<20000; return `<div data-b="${esc(b.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
-        <div class="row"><b>${esc(b.name)}</b><span class="dim">${esc((JOBS.find(j=>j[0]===b.job)||['',b.job])[1])}</span>${b.on?(on?'<span style="color:#7fdc8a">RUNNING</span>':'<span class="dim">waiting for your PC</span>'):'<span class="dim">OFF</span>'}
+        <div class="row"><b>${esc(b.name)}</b><span class="dim">${esc((JOBS.find(j=>j[0]===b.job)||['',b.job])[1])}</span>${b.on?(on?'<span style="color:#7fdc8a">RUNNING</span>':'<span class="dim">starting</span>'):'<span class="dim">OFF</span>'}
           ${s?`<span class="dim">${esc(s.doing||'')}${s.cash!=null?' · $'+esc(s.cash):''}${s.hp!=null?' · health '+esc(Math.round(s.hp*100))+'%':''} · ${esc(ago(s.seen))}</span>`:''}
           <button class="btn" data-a="on">${b.on?'TURN OFF':'TURN ON'}</button><button class="btn" data-a="edit">${open===b.id?'CLOSE':'SET'}</button></div>
         ${open===b.id?`<div class="row"><span>NAME</span><input data-f="name" type="text" maxlength="24" value="${esc(b.name)}" style="width:160px;${IN}"><span>LOOK</span>${sel('look',[['','RANDOM'],['me','LIKE ME NOW'],...(b.look&&b.look!=='me'?[[b.look,'AS SET']]:[])],b.look)}</div>

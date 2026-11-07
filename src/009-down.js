@@ -345,10 +345,10 @@ const SSUB=(()=>{ const W={};
     const fence=(ax,c,a,b,sg)=>{ const B=(u0,u1,v0,v1,z0,z1,col)=>ax==='y'?bx(c+v0,u0,z0,c+v1,u1,z1,col):bx(u0,c+v0,z0,u1,c+v1,z1,col);
       B(a,b,-.04,.04,7,9,RAIL); B(a,b,-.05,.05,33,36,RAIL); B(a,b,-.03,.03,29,30,RAIL);
       for(let u=a+.2;u<b-.1;u+=.2)if(Math.abs(u-(a+b)/2)>sg/2)B(u-.02,u+.02,-.02,.02,9,33,RAIL);
-      B((a+b)/2-sg/2,(a+b)/2+sg/2,-.03,.03,11,29,PNL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,10,11,RAIL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,29,30,RAIL);
-      for(const u of [a+(b-a)/3,a+2*(b-a)/3])if(Math.abs(u-(a+b)/2)>sg/2+.05)B(u-.05,u+.05,-.05,.05,5,38,RAIL); };
+      B((a+b)/2-sg/2,(a+b)/2+sg/2,-.03,.03,11,29,PNL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,10,11,RAIL); B((a+b)/2-sg/2-.04,(a+b)/2+sg/2+.04,-.035,.035,29,30.2,RAIL);
+      for(const u of [a+(b-a)/3,a+2*(b-a)/3])if(Math.abs(u-(a+b)/2)>sg/2+.05)B(u-.05,u+.05,-.06,.06,5,38,RAIL); };
     fence('y',xl,yb,S.y1-.08,2.2); fence('y',xr,yb,S.y1-.08,2.2); fence('x',yb,xl,xr,3.2);
-    for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.05,y-.05,14,x+.05,y+.05,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
+    for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.06,y-.06,14,x+.06,y+.06,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
     const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:pl})); me.receiveShadow=me.castShadow=true; scene.add(me); return me; };

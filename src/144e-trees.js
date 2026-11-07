@@ -1,4 +1,4 @@
-// THE TREES TO CLIMB: TREES lets you climb the park's trees (hold up at a trunk, or double-click it) and pick the blossoms and fruit in their crowns; the tomato buys them.
+// THE TREES TO CLIMB: TREES lets you climb the trees marked climbable (PARK.climbable: the big trees, 144d): SPACE next to one, or double-click it; and pick the fruit and blossoms they grow; the tomato buys them.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INSPECT, INV, keys, MAIL, PARK, pos, st, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -55,11 +55,11 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     const p=at(l,C.u); pos.x=p.x+nx*.2*T; pos.z=p.z+nz*.2*T; SHARED.heading=Math.atan2(-nx,-nz); TREES.h=p.y+p.r-HANG/ky(); C.t+=dt;
     const hh=lx=>{ const q=at(l,Math.max(0,Math.min(1,C.u-lx*rs/kx()/L))); return {x:q.x,y:q.y+q.r,z:q.z,nx:0,ny:1,nz:0}; };
     st.hang.t=C.t; st.hang.grip={L:{h:hh(4)},R:{h:hh(-4)}}; return p; };
-  MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,lf,rt,off)=>{ if(SHARED.LVL!=='up'||!PARK.treeItems)return false; const IT=PARK.treeItems(), sp=keys.has(' '), jump=sp&&!C.jp; C.jp=sp;
+  MODS.climbs=MODS.climbs||[]; MODS.climbs.push((dt,up,dn,lf,rt,off)=>{ if(SHARED.LVL!=='up'||!PARK.climbable)return false; const IT=PARK.climbable, sp=keys.has(' '), jump=sp&&!C.jp; C.jp=sp;
     if(TREES.stand&&!C.it){ const it=TREES.stand; TREES.stand=null; const g=SHARED.groundY(pos.x,pos.z); if(SHARED.py>g+.3*T&&Math.hypot(pos.x-it.x,pos.z-it.z)<it.r+T)TREES.stand=it; }   // off the branch: on the ground again
     C.fr=(C.fr||0)+1;
     if(!C.it){ if(jump&&!TREES.want)for(const o of IT){ if(Math.hypot(o.x-pos.x,o.z-pos.z)>o.r+T)continue; const g=grabAt(o,pos.x,pos.z,SHARED.py,.7*T); if(g){ onLimb(o,g); return true; } }
-      const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), it=TREES.want||IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.9*T&&o.top-o.y>3*T&&(up||jump&&(o.x-pos.x)*fx+(o.z-pos.z)*fz>0)); TREES.want=null;
+      const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), it=TREES.want||(jump?IT.find(o=>Math.hypot(o.x-pos.x,o.z-pos.z)<rT(o)+.9*T):null); TREES.want=null;   // only SPACE next to the trunk starts a climb (owner, 7 Nov 2026)
       if(!it)return false; if(jump){ const h0=Math.max(0,SHARED.py-it.y); onTrunk(it,h0+REACH()-HOLD/ky()); C.leap={h0,h1:C.h,t:0,T:.3}; C.h=h0; roll(); } else onTrunk(it,SHARED.py-it.y); }
     const it=C.it;
     if(C.mode==='up'){ if(st.move&&st.move.name==='mantle')return true; drop(); return false; }   // the pull-up runs its course before you walk
@@ -79,10 +79,11 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     const cyc=Math.floor(C.h/(PER*ZU)); if(cyc!==C.cyc){ C.cyc=cyc; roll(); }   // each reach up or down works the skill
     st.climb.ph=C.h/ZU; st.climb.per=PER; TREES.h=it.y+C.h; grip(it,dt,dir);
     if(off||(dn&&C.h<=0)){ drop(); pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });
-  PARK.later(()=>{ '@park'; const IT=PARK.treeItems(), g=MAPG.park||scene, SP=[]; let n=0;
+  PARK.later(()=>{ '@park'; const IT=PARK.climbable, g=MAPG.park||scene, SP=[]; let n=0;
     for(const it of IT){ const i=n++; if(it.top-it.y<=3*T)continue; const f=/^Oak/.test(it.k)?BL:FR[Math.floor(hs(i,1)*FR.length)];   // blossoms on the oaks, fruit on the tall trees
-      const tb=new THREE.Mesh(new THREE.BoxGeometry(.9*T,1.6*T,.9*T),new THREE.MeshBasicMaterial({visible:false})); tb.position.set(it.x,it.y+.8*T,it.z); g.add(tb); UI.thing({name:'CLIMB THE TREE',obj:tb,reach:1.3*T,near:2.4*T,tall:2*T,act:()=>{ TREES.want=it; }});
+      const tb=new THREE.Mesh(new THREE.BoxGeometry(2*rT(it),1.6*T,2*rT(it)),new THREE.MeshBasicMaterial({visible:false})); tb.position.set(it.x,it.y+.8*T,it.z); g.add(tb); UI.thing({name:'CLIMB',key:'SPACE',obj:tb,r:rT(it),reach:.9*T,near:.9*T,tall:2*T,act:()=>{ TREES.want=it; }});
       const lo=/^G[EK]/.test(it.k);   // in an elm the fruit hangs in its open middle, just over where the climb stops
+      if(it.lb&&it.lb.length){ const LL=limbs(it); for(let k=0;k<6&&LL.length;k++){ const l=LL[Math.floor(hs(i,k,5)*LL.length)], p=at(l,.5+.4*hs(i,k,6)); if(p.r<RS)continue; SP.push({x:p.x,y:p.y+p.r+T,z:p.z,f,key:'tree:'+i+':'+k,i:SP.length}); } continue; }   // in a big tree the fruit hangs over its branches, picked standing on them
       for(let k=0;k<3;k++){ const a=hs(i,k,2)*6.28, r=lo?rT(it)+(.8+.8*hs(i,k,3))*T:it.r*(.35+.3*hs(i,k,3)); SP.push({x:it.x+Math.cos(a)*r,y:lo?it.y+forkCap(it)+(1+.6*hs(i,k,4))*T:it.y+(it.top-it.y)*(.62+.2*hs(i,k,4)),z:it.z+Math.sin(a)*r,f,key:'tree:'+i+':'+k,i:SP.length}); } }
     const IM=new THREE.InstancedMesh(new THREE.SphereGeometry(.5,6,5),new THREE.MeshLambertMaterial({color:0xffffff}),Math.max(1,SP.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(); IM.count=SP.length; g.add(IM);
     const show=(s,on)=>{ IM.setMatrixAt(s.i,m4.compose(new THREE.Vector3(s.x,s.y,s.z),q,new THREE.Vector3(1,1,1).multiplyScalar(on?.22*T:0))); IM.setColorAt(s.i,c.setHex(s.f[3])); IM.instanceMatrix.needsUpdate=true; if(IM.instanceColor)IM.instanceColor.needsUpdate=true; if(s.hb)s.hb.visible=on; };

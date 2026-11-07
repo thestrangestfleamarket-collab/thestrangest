@@ -927,6 +927,51 @@
    "licence": "Public domain (published 1836, pre-1931; scan by Harold B. Lee Library)",
    "licence_url": "https://archive.org/details/holybiblecontain1836phil",
    "edition": "R. S. H. George, Philadelphia, 1836 (Authorized Version; title page)"
+  },
+  {
+   "file": "data/books/covers/bk-london-and.jpg",
+   "source": "https://archive.org/details/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736",
+   "original": "https://archive.org/download/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_eighteenth-century, bim_microfilm)",
+   "licence": "Public domain (edition published 1736, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_eighteenth-century_the-london-and-country-_ellis-william-farmer_1736",
+   "edition": "1736"
+  },
+  {
+   "file": "data/books/covers/bk-seabeach-at.jpg",
+   "source": "https://archive.org/details/seabeachatebbtid00arno2",
+   "original": "https://archive.org/download/seabeachatebbtid00arno2/page/cover_w800.jpg",
+   "credit": "Internet Archive (newyorkpubliclibrary, iacl)",
+   "licence": "Public domain (edition published 1901, pre-1931)",
+   "licence_url": "https://archive.org/details/seabeachatebbtid00arno2",
+   "edition": "New York : The Century Co, 1901"
+  },
+  {
+   "file": "data/books/covers/bk-studies-of.jpg",
+   "source": "https://archive.org/details/studiesofamericaf00atki",
+   "original": "https://archive.org/download/studiesofamericaf00atki/page/cover_w800.jpg",
+   "credit": "Internet Archive (biodiversity, NY_Botanical_Garden)",
+   "licence": "Public domain (edition published 1900, pre-1931)",
+   "licence_url": "https://archive.org/details/studiesofamericaf00atki",
+   "edition": "Ithaca, Andrus & Church, 1900"
+  },
+  {
+   "file": "data/books/covers/bk-compleat-angler.jpg",
+   "source": "https://archive.org/details/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655",
+   "original": "https://archive.org/download/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655/page/cover_w800.jpg",
+   "credit": "Internet Archive (pub_early-english-books-1641-1700, bim_microfilm)",
+   "licence": "Public domain (edition published 1655, pre-1931)",
+   "licence_url": "https://archive.org/details/bim_early-english-books-1641-1700_the-compleat-angler-_walton-isaac_1655",
+   "edition": "1655"
+  },
+  {
+   "file": "data/books/covers/bk-complete-golfer.jpg",
+   "source": "https://archive.org/details/completegolfer00vard",
+   "original": "https://archive.org/download/completegolfer00vard/page/cover_w800.jpg",
+   "credit": "Internet Archive (library_of_congress, americana)",
+   "licence": "Public domain (edition published 1907, pre-1931)",
+   "licence_url": "https://archive.org/details/completegolfer00vard",
+   "edition": "New York, McClure, Phillips & co, 1907"
   }
  ]
 }

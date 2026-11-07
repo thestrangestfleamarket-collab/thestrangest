@@ -6,7 +6,8 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/'+(process.argv[2]||'dist/market.html')+'?fresh=1&hour=13'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   const r=await pg.evaluate(async()=>{ const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(250))if(f())return true; return false; };
     FORAGE.buff('invis',900); await DUNGEON.go(5); await U(()=>window.DUNMOBS&&DUNMOBS.MS.g,120000);   // unseen: the spider leaves you be while it is put through its moves
-    let sp=null; const T0=__dbg.cv().TILE; for(let k=0;k<6&&!sp;k++){ const m=DUNMOBS.MS.m.find(q=>q.kind==='p'&&!q.dead); if(!m)break; __dbg.UI.goTo(m.x+1.5*T0,m.z,'down'); await U(()=>window.DUNSPI&&DUNSPI().some(r=>r.on),60000); sp=window.DUNSPI&&DUNSPI().find(r=>r.on); }
+    let sp=null; const T0=__dbg.cv().TILE; for(let k=0;k<6&&!sp;k++){ const m=DUNMOBS.MS.m.find(q=>q.kind==='p'&&!q.dead); if(!m)break; __dbg.UI.goTo(m.x,m.z,'down'); await U(()=>window.DUNSPI&&DUNSPI().some(r=>r.on),60000); sp=window.DUNSPI&&DUNSPI().find(r=>r.on); }
+    if(sp)__dbg.UI.goTo(sp.N.st.x+.8*T0,sp.N.st.z,'down');   // beside the body that stands for it
     if(!sp)return {err:'no spider came'}; const N=sp.N, A=n=>N.mixer._actions.find(a=>a.getClip().name===n), out={}, T=__dbg.cv().TILE;
     __dbg.UI.goTo(N.st.x+1.5*T,N.st.z,'down'); await wait(3000);
     let hits=0; sp.cool=99; sp.lunge={t:-2,hit:()=>hits++}; await U(()=>N.clip==='Spider_Attack'&&A('Spider_Attack')&&A('Spider_Attack').getEffectiveWeight()>.5,20000);

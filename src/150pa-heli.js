@@ -186,7 +186,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     UI.thing({name:'THE HELIPAD (UP THE HOTEL STAIRS)',obj:sign,reach:1.4*T,near:2.6*T,tall:2.2*T,act:()=>ask(HELI.list.find(h=>h.mode==='rest'&&!h.by&&!h.park))}); built=true; return true; };
   SYS.add('life',()=>{ if(D||!window.__started||!PFROW.done)return; D=1; HD().then(J=>{ D=J; if(!make())D=null; }).catch(e=>{ D=null; console.warn('HELI: the models did not load',e); }); },'150pa-heli');
   // before you move: every helicopter where its clock (or its pilot) says, so a seat carries you the same frame
-  SYS.add('carry',dt=>{ if(!built)return; dt=dt||0; for(const H of HELI.list){ update(H,dt); if(H.th)H.th.reach=(H.mode==='rest'?14:3.5)*M0; }
+  SYS.add('carry',dt=>{ if(!built)return; dt=dt||0; HELI.n=(HELI.n||0)+1; for(const H of HELI.list){ update(H,dt); if(H.th)H.th.reach=(H.mode==='rest'?14:3.5)*M0; }
     if(!castAsked&&HELI.list.some(H=>Math.hypot(H.s0.x-pos.x,H.s0.z-pos.z)<60*T))bring();   // the pilots' bodies (data/cast/v-space.json) only once you are near one
     const P=HELI.pad, t=now(); if(P&&P.sp){ P.sp.rotation.y=.8+Math.sin(t*.13)*.5; P.sp.rotation.x=Math.sin(t*1.7)*.04; } },'150pa-heli');
   // the ride ended some other way (a fall): the helicopter stops where it is

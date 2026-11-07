@@ -7,8 +7,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'warning' && /^SYS |HELI/.test(m.text())) errs.push(m.text().slice(0, 300)); });
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=-50,-38', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started && window.HELI && HELI.dbg().built, null, { timeout: 400000, polling: 500 });
-  const until = async (f, n = 60) => { for (let i = 0; i < n; i++) { if (await pg.evaluate(f)) return true; await pg.waitForTimeout(500); } return false; };   // (the test machine's frames are slow: wait on the game, not the clock)
-  const at = async u => { await pg.evaluate(u => { const H = HELI.list[0]; HELI.skew += ((u - HELI.phase(H)) % 240 + 240) % 240; return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }, u); };   // the utility's own clock to u seconds, once two frames have drawn it there
+  const until = async (f, n = 60, a) => { for (let i = 0; i < n; i++) { if (await pg.evaluate(f, a)) return true; await pg.waitForTimeout(500); } return false; };   // (the test machine's frames are slow: wait on the game, not the clock)
+  const at = async u => { const n = await pg.evaluate(u => { const H = HELI.list[0]; HELI.skew += ((u - HELI.phase(H)) % 240 + 240) % 240; return HELI.n; }, u); await until(n => HELI.n >= n + 2, 120, n); };   // the utility's own clock to u seconds, once two of its updates have run (a place loading holds the frames)
   const d0 = await pg.evaluate(() => HELI.dbg());
   ok(d0.pad && d0.pad.top > 10 && d0.list.length === 2, 'the deck stands on the hotel roof, two helicopters: ' + JSON.stringify(d0.pad));
   const modes = d0.list.map(h => h.mode).sort().join();

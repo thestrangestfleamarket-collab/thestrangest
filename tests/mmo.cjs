@@ -13,7 +13,10 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}), errs=[];
   const open=async who=>{ const c=await b.newContext({viewport:{width:640,height:360}}); await c.addCookies([{name:'tsfm-pass',value:'dev:'+who,url:BASE}]); const p=await c.newPage(); p.on('pageerror',e=>errs.push(who+': '+e.message.slice(0,200)));
     await p.goto(BASE+'/?fresh=1&hour=13'); await p.waitForFunction(()=>window.__started&&window.ONLINE&&ONLINE.on,null,{timeout:400000}); return p; };
-  const A=await open('alice'), B=await open('bob');
+  // (two pages drawn in software share the machine's few cores: hers is frozen while his starts, or his may never start on a small machine)
+  const freeze=async(p,on)=>{ const s=await p.context().newCDPSession(p); await s.send('Page.setWebLifecycleState',{state:on?'frozen':'active'}); await s.detach(); };
+  const A=await open('alice'); await freeze(A,true); const B=await open('bob'); await freeze(A,false);
+  await A.waitForFunction(()=>ONLINE.on,null,{timeout:60000});
   for(const p of [A,B])await p.evaluate(()=>{ __dbg.UI.goTo(SHARED.BOD.XS(150),SHARED.BOD.ZS(-60),'up'); });
   // B's view of A: the one other player
   const seen=f=>B.evaluate(f=>{ const o=[...ONLINE.others.values()][0]; if(!o)return null; return (0,eval)('('+f+')')(o); },String(f));

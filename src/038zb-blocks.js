@@ -18,10 +18,11 @@ const BLOCKS={PX:12};
   const wtex=(w,px)=>{ const W=Math.max(4,Math.round((w.a1-w.a0)*px)), H=Math.max(4,Math.round((w.z1-w.z0)*px/24)), k=W+','+H+','+(w.lit?1:0)+','+w.seed+','+(w.door?1:0);
     let t=winT.get(k); if(!t){ t=SHARED.BOD.windowTex(W,H,!!w.lit,w.seed|0,!!w.door); t={W,H,d:t.map.image.data,e:t.em?t.em.image.data:null}; winT.set(k,t); } return t; };
   BLOCKS.facade=o=>{ const px=o.px||BLOCKS.PX, wall=o.wall||BLOCKS.brick(), base=o.base, TS=o.trim||[150,144,132], BOX=o.box||[58,74,46], top=o.top;
-    const F=o.feats||[], IV=o.ivy||[];
+    const F=o.feats||[], IV=o.ivy||[], BIN=new Map(), none=[];
+    for(const w of F){ const za=Math.floor((w.z0-34)/24), zb=Math.floor((w.z1+(w.arch?40:12))/24); for(let a=Math.floor(w.a0-.35);a<=Math.floor(w.a1+.35);a++)for(let b=za;b<=zb;b++){ const key=w.side+a+','+b; let l=BIN.get(key); if(!l)BIN.set(key,l=[]); l.push(w); } }
     return (side,u,z,f)=>{
       if(top!=null&&z>=top-30){ const zz=z-(top-30); return sh(TS,f*(zz<6?.62:zz<10?1.1:zz<16?((Math.floor(u*px/2)&1)?.55:1.04):zz>=27?1.14:.96)); }
-      for(const w of F){ if(w.side!==side||u<w.a0-.35||u>w.a1+.35||z<w.z0-34||z>w.z1+(w.arch?40:12))continue; const cx=(w.a0+w.a1)/2, hw=(w.a1-w.a0)/2, ax=Math.abs(u-cx);
+      for(const w of BIN.get(side+Math.floor(u)+','+Math.floor(z/24))||none){ if(w.side!==side||u<w.a0-.35||u>w.a1+.35||z<w.z0-34||z>w.z1+(w.arch?40:12))continue; const cx=(w.a0+w.a1)/2, hw=(w.a1-w.a0)/2, ax=Math.abs(u-cx);
         if(ax<hw&&z>=w.z0&&z<w.z1){ const t=wtex(w,px), i=Math.min(t.W-1,Math.floor((u-w.a0)*px)), j=Math.min(t.H-1,Math.max(0,Math.floor((w.z1-z)*px/24))), q=(j*t.W+i)*4;
           if(w.box&&z<w.z0+12+6*hs(Math.floor(u*px),1,w.seed)){ const fl=BLOCKS.flowers(u,z,w,w.seed+5); if(fl)return sh(fl,f); }
           const c=[t.d[q],t.d[q+1],t.d[q+2]]; return t.e&&t.e[q+3]?[c[0],c[1],c[2],1]:c; }

@@ -5,7 +5,7 @@ import {OWNED, SAVE} from './005-save.js';
 import {MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {SAVED} from './071-main-11.js';
 
-{ const KEY='where', test=['at','place','sheet','npcat'].some(k=>QS.get(k)!=null);   // KEY on the server (for another device), 'here' in this browser (always the latest here)
+{ const KEY='where', test=['at','place','sheet','npcat','spot'].some(k=>QS.get(k)!=null);   // KEY on the server (for another device), 'here' in this browser (always the latest here)
   if(QS.get('fresh')!=null){ SAVE.del(KEY); SAVE.del('here'); }
   // saved here every few seconds you move (and each minute you don't), on the server every 30 s and as the page closes: the time says whether you come back to it (071)
   let last='', lt=0, sv='', up=0, t=0; const save=end=>{ if(test||RAG.on||!window.__started)return; const w={x:+pos.x.toFixed(3),z:+pos.z.toFixed(3),y:+SHARED.py.toFixed(3),hd:+SHARED.heading.toFixed(3),lv:SHARED.floor}, at=JSON.stringify(w), now=Date.now(); w.t=now; w.u=OWNED.me&&OWNED.me.id||''; const j=JSON.stringify(w);

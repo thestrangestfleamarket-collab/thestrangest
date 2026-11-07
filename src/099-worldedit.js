@@ -22,6 +22,8 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const foot=(it,e)=>{ '@later'; if(!it||!it.sol)return; const b=it.sol, f=it.fix, b0=it.sol0||(it.sol0=b.slice()), f0=it.fix0||(f&&(it.fix0=f.slice())), cx=(b0[0]+b0[2])/2+e.t[0], cz=(b0[1]+b0[3])/2+e.t[2], hx=(b0[2]-b0[0])/2*Math.abs(e.s[0]), hz=(b0[3]-b0[1])/2*Math.abs(e.s[2]), was=b.slice();
     if(e.del){ b[0]=b[2]=b[1]=b[3]=1e9; } else { b[0]=cx-hx; b[2]=cx+hx; b[1]=cz-hz; b[3]=cz+hz; }
     if(f&&f0){ if(e.del){ f[0]=f[3]=f[1]=f[4]=1e9; } else { f[0]=b[0]; f[3]=b[2]; f[1]=b[1]; f[4]=b[3]; f[5]=f0[5]*Math.abs(e.s[1]); } }
+    for(const q of it.more||[]){ const [s,g]=q, s0=q[2]||(q[2]=s.slice()), g0=q[3]||(q[3]=g.slice()), dx=e.del?1e9:cx-(b0[0]+b0[2])/2, dz=e.del?1e9:cz-(b0[1]+b0[3])/2;   // a long thing's other boxes go with it
+      s[0]=s0[0]+dx; s[2]=s0[2]+dx; s[1]=s0[1]+dz; s[3]=s0[3]+dz; g[0]=s[0]; g[3]=s[2]; g[1]=s[1]; g[4]=s[3]; }
     if(window.WEEDS&&WEEDS.lawnDrop&&was.some((v,i)=>v!==b[i])){ for(const r of [was,b])if(r[0]<1e8)WEEDS.lawnDrop([r[0]-TILE,r[1]-TILE,r[2]+TILE,r[3]+TILE]); } };
   // what goes with a thing: its lights (dark while it is removed) and glows
   const follow=(it,e,pv)=>{ '@later'; if(!it||!it.follow)return; Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ');

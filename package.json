@@ -15,6 +15,7 @@
     "wrangler": "^4.42.0"
   },
   "dependencies": {
+    "@cloudflare/puppeteer": "^1.4.0",
     "partyserver": "0.5.10"
   }
 }

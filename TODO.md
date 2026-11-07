@@ -439,6 +439,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 
 ## Menus, map and HUD
 
+- [x] **Every item its own picture; the item audit's broken items** · P2 · L · code. Owner, 7 Nov: "go with A, fix all the broken ones". [taking: claude/dreamy-shannon-8nfieq, 7 Nov]
 - [ ] **Try live, once deployed** · P2 · S · look. The menus (#563: one ADMIN window), where you start (#571: back where you left off within
   the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576, merged on local checks only).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only; his live shot sat tighter

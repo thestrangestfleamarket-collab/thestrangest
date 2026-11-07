@@ -29,6 +29,16 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const files=(f,w)=>[...new Set(Object.values(w).map(x=>{ const p=x&&byN.get(x[0]); return p&&p.c[f]; }).filter(c=>c!=null))];
   const has=(f,w)=>!!D[f]&&files(f,w).every(c=>SW[f+c]===true);
   const need=(f,w)=>load(f).then(J=>Promise.all(files(f,w).map(c=>SW[f+c]===true?0:(SW[f+c]||(SW[f+c]=LZ[f][c]().then(S=>{ for(const p of S.pieces)J.byN.set(p.n,p); SW[f+c]=true; })))))).then(()=>D[f]);
+  // the avatar's other clips (tools/pfavatar-clips.py): a group's file fetched the first time one of its clips is asked for; null until it has come
+  const CLF={m:{move:__LAZY__("data/pfanim-m-move.json"),act:__LAZY__("data/pfanim-m-act.json"),emote:__LAZY__("data/pfanim-m-emote.json"),work:__LAZY__("data/pfanim-m-work.json")},
+    f:{move:__LAZY__("data/pfanim-f-move.json"),act:__LAZY__("data/pfanim-f-act.json"),emote:__LAZY__("data/pfanim-f-emote.json"),work:__LAZY__("data/pfanim-f-work.json")}}, CLG={}, CLC={};
+  for(const [g,ns] of Object.entries({move:['Jog','Crouch','Walk carrying','Walk formal','Hard landing'],act:['Sit down','Sitting','Sitting talking','Stand up','Swimming','Treading water','Punch','Kick','Driving','Pick up','Opening','Interact'],
+    emote:['Agree','Head shake','Laughing','Talking','Phone call','Arms folded','Dance','Hip hop','Twist','Swing','Thriller','Drunk idle','Leaning on rail','Calling from rail'],
+    work:['Eating','Drinking','Chopping wood','Planting','Watering','Harvesting','Fixing','Pushing','Holding torch','Holding lantern']}))for(const n of ns)CLG[n]=g;
+  const clip=(f,n)=>{ const g=CLG[n]; if(!g)return null; const k=f+g, C=CLC[k]; if(C&&C.clips)return C.clips[n]||null;
+    if(!C)CLC[k]=CLF[f][g]().then(J=>{ for(const c of Object.values(J.clips)){ c.Q=Float32Array.from(c.q); c.P=Float32Array.from(c.p); } CLC[k]=J; }).catch(e=>{ console.warn('AVATAR clips',e); delete CLC[k]; });
+    return null; };
+  AVATAR.clips=Object.keys(CLG); AVATAR.clip=clip;
   const dec=v=>v.$||(v.$={pos:I16(v.pos),tri:U16(v.tri),bone:B64(v.bone),w:B64(v.w),zone:B64(v.zone),reg:v.reg?B64(v.reg):null});
   // Polyfork's own rule for which of the body's regions its clothes hide (its culled())
   const culled=has=>{ const A=has('arms')&&has('hands'); return [has('trunk')&&has('waist'),has('waist')&&has('seat'),has('briefs'),has('legs')&&(!has('shins')||has('feet')),has('feet'),A,
@@ -63,10 +73,10 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // and a tool in your hand (WIELD) puts down what that hand held
   const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; if(WIELD.on)delete w[WIELD.hand==='L'?'lefthand':'righthand']; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
   const VAR=new Map();
-  const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
+  const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),clip:n=>clip(L.f,n),
     variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!has(M.f,M.w)){ need(M.f,M.w).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
-      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null},M); VAR.set(k,b); return b; }};
+      b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null,clip:n=>clip(M.f,n)},M); VAR.set(k,b); return b; }};
   AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };

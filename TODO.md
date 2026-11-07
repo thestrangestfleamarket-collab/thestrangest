@@ -379,6 +379,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [x] **Every version, by kind, and outfits** (done 6 Nov) · P2 · M · code. WEAR: kind then version; OUTFIT: theme then who. Waits for his look and yes.
 - [ ] **Avatar follow-ups** · P3 · M · pick. Not in yet: worn gear's own shapes on the avatar (rack clothes only dye it; a lamp, shades or a pack ride the rig's joints); the
   held tools' hands; ages (kid, teen, old: Polyfork has them); the 3 MB a figure could shrink if a build were dropped. His pick of which, if any.
+- [ ] **The avatar's Mixamo clips** (owner, 7 Nov: "yes lets use mixamo"; his picks: Polyfork's 44, every group) · P2 · L · code. Moving, the actions you already do, emotes, work and food on the avatar. [taking: claude/gracious-pasteur-mwhah7, 7 Nov]
 
 ## Moves (Mesh2Motion)
 

@@ -55,7 +55,7 @@ const BODEGA={basket:new Map(),lucky:false}; window.BODEGA=BODEGA;
   // where its people go, in the shop's own metres (u from its west wall, v from its back wall toward the street)
   const frame=()=>{ const SB=BOD.SB; return SB?IKIT.frame({x0:SB.x0,y0:SB.y0+3.75,x1:SB.x1,y1:SB.y1}):null; };
   { const o=ROOMS.off.bodega, F=frame(); if(o&&F){ const t=d=>d*TM, sp=(dx,dy,du,dv,h)=>{ const p=F.pw(t(dx),t(dy)); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; };
-    o.spots={'STOCK CLERK WITH THE FOX':sp(11,.75,0,1),'NIGHT COUNTER':sp(15.6,4.4,-1,0)};
+    o.spots={'STOCK CLERK WITH THE FOX':sp(11,.75,0,1),'NIGHT COUNTER':sp(16.0,4.4,-1,0)};
     o.seats=BODEGA.places=[sp(14.0,5.3,1,0),sp(13.2,5.3,1,0),sp(12.4,5.3,1,0),sp(9.9,2.9,0,-1),sp(11.6,2.9,0,-1),sp(2.0,2.0,-1,0),sp(3.6,6.2,-1,0),sp(5.6,3.4,1,0),sp(4.4,8.0,0,-1),sp(10.6,5.4,-1,0),sp(10.9,8.45,0,-1,.32),sp(11.6,8.45,0,-1,.32)]; } }
   STORE.furnish=STORE.furnish||{};
   STORE.furnish.bodega=()=>{ const F=frame(); if(!F)return; const first=!BODEGA.solids; BODEGA.solids=true; const K=IKIT.room(F,m=>SHARED.BODB.SG.add(m),first?undefined:()=>{}), {box,cyl,ball,glow,pic,words,sol,use,own,meshOf,seat,MW}=K, t=d=>d*TM;

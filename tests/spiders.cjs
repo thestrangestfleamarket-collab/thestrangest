@@ -9,7 +9,7 @@ const {chromium}=require('playwright');
     let sp=null; const T0=__dbg.cv().TILE; for(let k=0;k<6&&!sp;k++){ const m=DUNMOBS.MS.m.find(q=>q.kind==='p'&&!q.dead); if(!m)break; __dbg.UI.goTo(m.x+1.5*T0,m.z,'down'); await U(()=>window.DUNSPI&&DUNSPI().some(r=>r.on),60000); sp=window.DUNSPI&&DUNSPI().find(r=>r.on); }
     if(!sp)return {err:'no spider came'}; const N=sp.N, A=n=>N.mixer._actions.find(a=>a.getClip().name===n), out={}, T=__dbg.cv().TILE;
     __dbg.UI.goTo(N.st.x+1.5*T,N.st.z,'down'); await wait(3000);
-    let hits=0; sp.cool=99; sp.lunge={t:0,hit:()=>hits++}; await U(()=>N.clip==='Spider_Attack'&&A('Spider_Attack')&&A('Spider_Attack').getEffectiveWeight()>.5,20000);
+    let hits=0; sp.cool=99; sp.lunge={t:-2,hit:()=>hits++}; await U(()=>N.clip==='Spider_Attack'&&A('Spider_Attack')&&A('Spider_Attack').getEffectiveWeight()>.5,20000);
     out.attack={clip:N.clip,once:!!A('Spider_Attack')&&A('Spider_Attack').loop===2200}; await U(()=>!sp.lunge,20000); out.attack.hits=hits;
     sp.jolt=.6; await U(()=>N.clip==='Spider_Hit',20000); out.hit=N.clip==='Spider_Hit';
     sp.dead=true; sp.t=0; await U(()=>N.clip==='Spider_Death',20000); out.death=N.clip==='Spider_Death'; await U(()=>!sp.on,90000); out.gone=!sp.on;

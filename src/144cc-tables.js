@@ -39,12 +39,12 @@ const TG={lib:[],G:null};
 }
 
 { const say=t=>SAY(t,'#e8d6a8'), N=5, W=520, BH=520, TOP=58, H=TOP+BH+30, ALONE='me';
-  const T=[...Array(N)].map(()=>({g:'',s:['','','',''],nm:['','','',''],st:null,v:0,t:0})), TOPS=[];
+  const T=[...Array(N)].map(()=>({g:'',s:['','','',''],P:null,st:null,v:0,t:0})), TOPS=[];
   const key=n=>'tbl:books:'+n, me=()=>(ONLINE.on&&ONLINE.me)||ALONE, online=()=>!!(ONLINE.on&&ONLINE.put);
   const nameOf=id=>{ if(id==='cpu')return 'COMPUTER'; if(id===me())return 'YOU'; const o=ONLINE.others&&ONLINE.others.get(id); return (o&&o.name)||'A PLAYER'; };
   const here=id=>id===me()||id==='cpu'||!!(ONLINE.others&&ONLINE.others.has(id));
-  // players are the filled seats in order; S.p is a player, P[S.p] its seat
-  const players=R=>R.s.map((id,i)=>id?i:-1).filter(i=>i>=0);
+  // the players are the filled seats in order, fixed at START (R.P); S.p is a player, P[S.p] its seat. Sitting in a computer's seat mid-game takes it over; an empty one watches.
+  const players=R=>R.st&&R.P?R.P:R.s.map((id,i)=>id?i:-1).filter(i=>i>=0);
   const publish=(n,R)=>{ R.v++; R.t=Date.now(); paintTop(n); if(online())ONLINE.put(key(n),JSON.stringify(R)); };
   const fromWorld=(n,v)=>{ let R; try{ R=JSON.parse(v); }catch(e){ return; } if(!R||!Array.isArray(R.s))return; const L=T[n]; if(R.v<L.v&&Date.now()-L.t<4000)return; Object.assign(L,R); paintTop(n); };
   SYS.add('world',(k,v)=>{ if(typeof k==='string'&&k.startsWith('tbl:books:')){ const n=+k.slice(10); if(n>=0&&n<N)fromWorld(n,v); } },'144cc-tables');
@@ -62,14 +62,14 @@ const TG={lib:[],G:null};
     o.material.map.needsUpdate=true; };
   TABLES.top=(n,size)=>{ '@tables'; const cv=document.createElement('canvas'); cv.width=cv.height=256; const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
     const me_=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshLambertMaterial({map:tex})); me_.rotation.x=-Math.PI/2; me_.userData.g=cv.getContext('2d'); TOPS[n]=me_; TG.games(); setTimeout(()=>paintTop(n),0); return me_; };
-  TABLES.label=n=>{ const R=T[n], G=TG.G&&TG.G[R.g], free=R.s.filter(x=>!x).length; return 'TABLE '+(n+1)+(G?': '+G.name.toUpperCase():'')+(G&&R.st&&!G.over(R.st)?' · PLAYING':'')+' · SIT'; };
+  TABLES.label=n=>{ const R=T[n], G=TG.G&&TG.G[R.g]; return 'TABLE '+(n+1)+(G?': '+G.name.toUpperCase():'')+(G&&R.st&&!G.over(R.st)?' · PLAYING':'')+' · SIT'; };
 
   /* ---------- sitting and leaving ---------- */
   let at=null;   // [table, seat] you sit at
   TABLES.sit=(n,seat)=>{ '@tables'; TG.games(); const R=T[n]; if(R.s[seat]&&R.s[seat]!==me()&&here(R.s[seat])&&R.s[seat]!=='cpu'){ say('SOMEONE IS SITTING THERE.'); return; }
     if(at&&(at[0]!==n||at[1]!==seat))TABLES.leave();
-    at=[n,seat]; if(R.s[seat]!==me()){ const was=R.s[seat]; R.s[seat]=me(); if(R.st&&was==='')R.st=null; publish(n,R); } open(); };
-  TABLES.leave=()=>{ if(!at)return; const [n,seat]=at, R=T[n]; at=null; if(R.s[seat]===me()){ const G=TG.G&&TG.G[R.g], live=G&&R.st&&!G.over(R.st); R.s[seat]=live?'cpu':''; if(!R.s.some(id=>id&&id!=='cpu')){ R.s=['','','','']; R.st=null; } publish(n,R); } setTimeout(()=>{ if(MINI.on&&MINI.on.tbl)MINI.close(); },0); };   // (not from inside the window's own tick)
+    at=[n,seat]; if(R.s[seat]!==me()){ R.s[seat]=me(); publish(n,R); } open(); };
+  TABLES.leave=()=>{ if(!at)return; const [n,seat]=at, R=T[n]; at=null; if(R.s[seat]===me()){ const G=TG.G&&TG.G[R.g], live=G&&R.st&&!G.over(R.st); R.s[seat]=live&&players(R).includes(seat)?'cpu':''; if(!R.s.some(id=>id&&id!=='cpu')){ R.s=['','','','']; R.st=null; R.P=null; } publish(n,R); } setTimeout(()=>{ if(MINI.on&&MINI.on.tbl)MINI.close(); },0); };   // (not from inside the window's own tick)
   SYS.add('places',()=>{ if(!at)return; if(ROOMS.offIn&&ROOMS.offIn()!=='books'||!st.sit)TABLES.leave(); },'144cc-leave');
 
   /* ---------- the window: the seats along the top, then the lobby (pick a game) or the game ---------- */
@@ -93,11 +93,11 @@ const TG={lib:[],G:null};
   const lineOf=(R,G)=>{ if(!G)return 'PICK A GAME.'; if(!R.st)return G.name.toUpperCase()+': '+G.help; const o=G.over(R.st); if(o)return o.text||'GAME OVER.'; const P=players(R), id=R.s[P[R.st.p]]; return (id===me()&&P[R.st.p]===at[1]?'YOUR TURN.':nameOf(id)+' TO PLAY.')+(G.status?' '+G.status(R.st,P.indexOf(at[1])):''); };
   const press=(R,G,b)=>{ const n=at[0];
     if(b==='up'){ TABLES.leave(); if(USE.stand)USE.stand(); return; }
-    if(b==='new'){ R.st=null; R.g=''; for(let i=0;i<4;i++)if(R.s[i]==='cpu')R.s[i]=''; publish(n,R); return; }
+    if(b==='new'){ R.st=null; R.P=null; R.g=''; for(let i=0;i<4;i++)if(R.s[i]==='cpu')R.s[i]=''; publish(n,R); return; }
     if(b.startsWith('seat')){ const i=+b.slice(4); R.s[i]=R.s[i]==='cpu'?'':'cpu'; publish(n,R); return; }
-    if(b.startsWith('g:')){ R.g=b.slice(2); R.st=null; const G2=TG.G[R.g]; let f=R.s.filter(Boolean).length; for(let i=0;i<4&&f>G2.max;i++)if(R.s[i]==='cpu'){ R.s[i]=''; f--; } for(let i=0;i<4&&f<G2.min;i++)if(!R.s[i]){ R.s[i]='cpu'; f++; } publish(n,R); return; }
+    if(b.startsWith('g:')){ R.g=b.slice(2); R.st=null; R.P=null; const G2=TG.G[R.g]; let f=R.s.filter(Boolean).length; for(let i=0;i<4&&f>G2.max;i++)if(R.s[i]==='cpu'){ R.s[i]=''; f--; } for(let i=0;i<4&&f<G2.min;i++)if(!R.s[i]){ R.s[i]='cpu'; f++; } publish(n,R); return; }
     if(b==='back'){ R.g=''; publish(n,R); return; }
-    if(b==='start'&&G){ const P=players(R); if(P.length<G.min||P.length>G.max)return; const st0={r:(Math.random()*4294967296)>>>0}; R.st=G.init(P.length,TG.rng(st0)); if(R.st.r==null)R.st.r=st0.r; publish(n,R); } };
+    if(b==='start'&&G){ const P=players(R); if(P.length<G.min||P.length>G.max)return; const st0={r:(Math.random()*4294967296)>>>0}; R.st=G.init(P.length,TG.rng(st0)); if(R.st.r==null)R.st.r=st0.r; R.P=P; publish(n,R); } };
   const KINDS=[['board','BOARD GAMES'],['cards','CARDS'],['dice','DICE']];
   const lobby=(g,R,G,u)=>{ const L=Object.entries(TG.G);
     if(!G){ let y=12; for(const [k,label] of KINDS){ const rows=L.filter(([,q])=>q.kind===k); if(!rows.length)continue; TG.text(g,label,W/2,y+6,{b:1,serif:1,s:14}); y+=20;

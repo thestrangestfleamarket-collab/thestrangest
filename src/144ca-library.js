@@ -249,7 +249,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
       const top=TABLES.top(n,.62*MW); if(top){ const p=F.pw(u,v); top.position.set(p[0],.757*MW,p[1]); top.rotation.z=F.hd(0,1); A.add(top); }
       SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const th=use(TABLES.label(n),u+a,v+b,.5,.9,()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); },1.1); TUSE.push([th,n]); }); });
     for(const [du,v] of CAFE){ const u=Wb+du; box(u-.005,v-.005,u+.005,v+.005,2.2,HT,0x1c1c1c); K.cyl(u,v,.13,2.16,2.3,0x2f4a3a); K.glow(()=>K.ball(u,v,2.15,.045,0xfff0d0)); }   // a green pendant shade over each table
-    warm(Wb+3.7,3.1,2.3,1.4,6,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a); warm(cx,1.2,2.6,1,4,0xfff0d0); };
+    warm(Wb+3.7,2.6,2.3,1.5,6.5,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a); };
   SYS.every(()=>{ for(const [th,n] of TUSE)th.name=TABLES.label(n); },1000,'144ca-cafe');
   MSHOP.kit.books=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, K=IKIT.room(F,o=>A.add(o),()=>{}), t=d=>d*TM, sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/TM,R.y0+Math.min(v0,v1)/TM,R.x0+Math.max(u0,u1)/TM,R.y0+Math.max(v0,v1)/TM), {box,use}=K, W=t(R.x1-R.x0), D=t(R.y1-R.y0), Wb=W/2;
     const tx=u=>R.x0+u/TM, ty=v=>R.y0+v/TM, HT=A.WH/24*TM;

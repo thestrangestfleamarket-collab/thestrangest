@@ -25,7 +25,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(saved && /vit/.test(saved) && /hqb/.test(saved) && /shopg/.test(saved), 'the layout is saved: ' + saved);
   const before = [await box('vit'), await box('hqb')];
   await start('');
-  const after = [await box('vit'), await box('hqb')];
+  let after = null; for (let i = 0; i < 20; i++) { after = [await box('vit'), await box('hqb')]; if (after[0] && after[1] && Math.abs(after[0].x - before[0].x) < 4 && Math.abs(after[1].y - before[1].y) < 4) break; await pg.waitForTimeout(500); }   // the HUD is put back on the UI's next look (every 0.4 s)
   ok(after[0] && after[1] && Math.abs(after[0].x - before[0].x) < 4 && Math.abs(after[0].y - before[0].y) < 4 && Math.abs(after[1].y - before[1].y) < 4, 'after a reload they are where you left them: ' + JSON.stringify([before, after]));
   await pg.evaluate(() => __dbg.ui().resetLayout());
   await pg.waitForTimeout(300);

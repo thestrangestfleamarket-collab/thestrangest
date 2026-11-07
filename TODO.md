@@ -38,9 +38,9 @@ One pull request each, in this order; the game stays playable after every one.
 - [ ] **6. The park's made things** · P2 · L · code. Polyfork benches, lamps, low iron fence, bridges, gates, terrace, bandstand, boat house, playground, statues; the big lake; the skate extension.
 - [ ] **7. The new bar** · P3 · L · pick + code. A Polyfork bar, moody, tall ceilings, full featured; mockup first.
 
-- [ ] **Two resolutions only** · P2 · S · code. Owner, 7 Nov: "i want Low graphics setting to the max setting. get rid of med high highest resolution, only Lowest and Low (rename to Low - High)". RESOLUTION keeps LOWEST (240 lines) as LOW and LOW (360) as HIGH, the most anyone gets; MED, HIGH, HIGHEST go (`RESLN` in src/004-main.js, the buttons in src/094-ui.js, core's resolution check).
+- [x] **Two resolutions only** · P2 · S · code. Owner, 7 Nov: "i want Low graphics setting to the max setting. get rid of med high highest resolution, only Lowest and Low (rename to Low - High)". RESOLUTION keeps LOWEST (240 lines) as LOW and LOW (360) as HIGH, the most anyone gets; MED, HIGH, HIGHEST go (`RESLN` in src/004-main.js, the buttons in src/094-ui.js, core's resolution check).
 - [x] **The camera by place** · P1 · M · pick + code · done 7 Nov. Owner, 7 Nov: in town only the overhead view (rotate, zoom from his shot's distance all the way in); third and first person only inside interiors and Central Park. Questions asked: the start zoom, leaving the park in first person, which water way.
-- [ ] **The park closed in** · P1 · L · code. Owner, 7 Nov: large trees round the park wall so you can't see out; inside the park draw only the park, the skyline, sky and weather (no Market St, apartment street, cars).
+- [x] **The park closed in** · P1 · L · code. Owner, 7 Nov: large trees round the park wall so you can't see out; inside the park draw only the park, the skyline, sky and weather (no Market St, apartment street, cars).
 - [ ] **The skyline across the Hudson** · P2 · M · look. Owner's pick 6 Nov: in-game pictures (the far picture re-baked for each option: low shore, denser shore, and the city along our bank).
 
 ## For the owner

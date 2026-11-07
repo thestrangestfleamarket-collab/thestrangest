@@ -1,6 +1,6 @@
 // THE CULL: CULL draws each big mesh as one BatchedMesh (an instanced mesh's copies a piece each, a plain mesh marked userData.cull in cells of 10 tiles) so three's multi-draw draws only the pieces in view and within the distance fog's end (DFOG.cut) or the player's DRAW DISTANCE; nothing wholly past them is drawn.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
+import {CULL, ED, FAR3, MAPED, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
@@ -32,15 +32,15 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const tie=R=>{ const s=R.s, p=R.bm; if(p.parent!==s.parent)s.parent.add(p); p.matrix.copy(s.matrix); p.matrixWorldNeedsUpdate=true; p.visible=R.vis; p.layers.mask=s.layers.mask; p.castShadow=s.castShadow; p.receiveShadow=s.receiveShadow; p.frustumCulled=s.frustumCulled;
     p.material=s.material; p.customDepthMaterial=s.customDepthMaterial; p.customDistanceMaterial=s.customDistanceMaterial; p.renderOrder=s.renderOrder; wrap(s.material); wrap(s.customDepthMaterial); wrap(s.customDistanceMaterial); };
   // the pieces wholly past the distance: left out, until the distance or you move
-  const far=R=>{ const bm=R.bm, c=R.c, n=R.n; if(!(CULL.R>0)){ if(R.hid){ for(let i=0;i<n;i++)bm.setVisibleAt(i,true); R.hid=false; } return; } const e=R.s.matrixWorld.elements; let any=false;
+  const far=R=>{ const bm=R.bm, c=R.c, n=R.n; if(!(CULL.R>0||CULL.keep)){ if(R.hid){ for(let i=0;i<n;i++)bm.setVisibleAt(i,true); R.hid=false; } return; } const e=R.s.matrixWorld.elements; let any=false;
     for(let i=0;i<n;i++){ B.min.set(c[i*6],c[i*6+1],c[i*6+2]); B.max.set(c[i*6+3],c[i*6+4],c[i*6+5]); const F=foot(B,e), p=CULL.pastBox(F[0],F[1],F[2],F[3]); bm.setVisibleAt(i,!p); any=any||p; } R.hid=any; };
   const SM=new THREE.Matrix4(), SF=new THREE.Frustum(), SS=new THREE.Sphere();
   CULL.seen=(L,o,skip)=>{ SM.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); const e=SM.elements, ox=o?o.x:0, oy=o?o.y:0, oz=o?o.z:0;
     if(!SHARED.cam.isOrthographicCamera){ SF.setFromProjectionMatrix(SM); return L.some(S=>!(skip&&skip(S))&&SF.intersectsSphere(SS.set(S.center,S.radius).translate(v.set(ox,oy,oz)))); }
     const rx=Math.hypot(e[0],e[4],e[8]), ry=Math.hypot(e[1],e[5],e[9]);
     return L.some(S=>{ if(skip&&skip(S))return false; const x=S.center.x+ox, y=S.center.y+oy, z=S.center.z+oz; return Math.abs(e[0]*x+e[4]*y+e[8]*z+e[12])<=1+S.radius*rx&&Math.abs(e[1]*x+e[5]*y+e[9]*z+e[13])<=1+S.radius*ry; }); };
-  CULL.pastBox=(x0,z0,x1,z1)=>{ const L=FAR3.land; return CULL.R>0&&Math.hypot(Math.max(x0-pos.x,0,pos.x-x1),Math.max(z0-pos.z,0,pos.z-z1))>CULL.R&&(!L||x0>L[0]&&x1<L[2]&&z0>L[1]&&z1<L[3]); };
-  CULL.past=(x,z,r)=>{ const L=FAR3.land; return CULL.R>0&&Math.hypot(x-pos.x,z-pos.z)-r>CULL.R&&(!L||x-r>L[0]&&x+r<L[2]&&z-r>L[1]&&z+r<L[3]); };
+  CULL.pastBox=(x0,z0,x1,z1)=>{ const L=FAR3.land, K=CULL.keep; if(K&&(x1<K[0]||x0>K[2]||z1<K[1]||z0>K[3])&&(!L||x0>L[0]&&x1<L[2]&&z0>L[1]&&z1<L[3]))return true; return CULL.R>0&&Math.hypot(Math.max(x0-pos.x,0,pos.x-x1),Math.max(z0-pos.z,0,pos.z-z1))>CULL.R&&(!L||x0>L[0]&&x1<L[2]&&z0>L[1]&&z1<L[3]); };
+  CULL.past=(x,z,r)=>{ const L=FAR3.land, K=CULL.keep; if(K&&(x+r<K[0]||x-r>K[2]||z+r<K[1]||z-r>K[3])&&(!L||x-r>L[0]&&x+r<L[2]&&z-r>L[1]&&z+r<L[3]))return true; return CULL.R>0&&Math.hypot(x-pos.x,z-pos.z)-r>CULL.R&&(!L||x-r>L[0]&&x+r<L[2]&&z-r>L[1]&&z+r<L[3]); };
   // its footprint on the land (x0, z0, x1, z1): the cut is by distance over the ground to its nearest point, so a tall thin thing (a pipe up the apartment house) goes with the house, not later
   const FT=[0,0,0,0], box=o=>{ if(o.isInstancedMesh||o.isBatchedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return o.boundingBox; } const g=o.geometry; if(!g.boundingBox)g.computeBoundingBox(); return g.boundingBox; };
   const foot=(b,e)=>{ let x0=1e30, x1=-1e30, z0=1e30, z1=-1e30;
@@ -56,19 +56,20 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
       const B=document.createElement('div'); B.innerHTML='<h3>DRAW DISTANCE</h3><div class="row"><span>NEAR</span><input type="range" id="ddist" min="40" max="300" step="10"><span>ALL</span><span id="ddistv"></span></div><div class="dim">how far the town is drawn round you in first and third person; nearer draws less and runs faster</div>';
       P.appendChild(B); const R=B.querySelector('#ddist'), V=B.querySelector('#ddistv'), show=()=>{ R.value=DD.v||300; V.textContent=DD.v?DD.v+' TILES':'ALL'; }; R.oninput=e=>{ CULL.setDraw(+e.target.value); show(); }; show(); };
     }
-  const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD; };
-  const hazeHide=()=>{ if(!(CULL.R>0))return;
+  const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD;
+    const inP=PARK.in&&PARK.box&&!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&PARK.within(pos.x,pos.z,1); if(inP!==!!CULL.keep)CULL.keep=inP?PARK.box():null; };   // in the park only the park is drawn, the sky and far skyline kept (owner, 7 Nov 2026)
+  const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],bm:null,n:0,ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
   CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf)FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
     if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
-  let lx=1e9, lz=1e9, lR=-1;
-  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); const moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; }
+  let lx=1e9, lz=1e9, lR=-1, lK=null;
+  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); const moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR||CULL.keep!==lK; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; lK=CULL.keep; }
     for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
       R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); };
   CULL.end=()=>{ for(const o of CULL.H)o.visible=true; for(const [g,n] of CULL.D)g.drawRange.count=n; CULL.D.length=0; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.bm)continue; R.s.visible=R.vis; R.bm.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }
+  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }

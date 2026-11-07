@@ -308,7 +308,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||inCL(x,y,1));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
-      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(.8+.4*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
+      const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=prev+r+.3; if(u>a1-r)break; prev=r;
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
@@ -376,7 +376,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const NOTREES=QS.get('trees')!=='1';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   const NI=TREES.length-PARK.ringN; PARK.later(()=>{ '@later'; PARK.trees=NOTREES?null:mesh(TREES.slice(0,NI),true,true,true,{noTrunk:1,cards:1,lod:'near'}); PARK.trunks=trunks(TREES.slice(0,NI)); PARK.feet=feet(TREES.slice(0,NI));
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
-  PARK.ring=NOTREES?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2}); PARK.ringTrunks=trunks(TREES.slice(NI));
+  PARK.ring=QS.get('trees')==='0'?null:mesh(TREES.slice(NI),true,true,false,{noTrunk:1,cards:2});   // the wall's ring always, the rest only with ?trees=1 (owner, 7 Nov 2026) PARK.ringTrunks=trunks(TREES.slice(NI));
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=NOTREES?[]:TREES.map(([k,x,y,m])=>[X(x),Z(y),m]);
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
@@ -469,6 +469,7 @@ await grab('park',async()=>{});
   P.at=(x,z)=>[x/TILE+SHARED.BOD.OX-P.ox,z/TILE+SHARED.BOD.OY-P.oy];
   P.within=(x,z,m=0)=>{ const [px,py]=P.at(x,z), b=CASTLE.b, c=[b[0]-P.ox,b[2]-P.oy,b[1]-P.ox,b[3]-P.oy]; return px>P.x0+m&&px<P.x1-m&&py>P.y0+m&&py<P.y1-m||px>c[0]+m&&px<c[2]-m&&py>c[1]+m&&py<c[3]-m; };
   P.rect=()=>{ const a=SHARED.BOD.XS(P.x0+P.ox-2), b=SHARED.BOD.XS(P.x1+P.ox+2), c=SHARED.BOD.ZS(P.y0+P.oy-2), d=SHARED.BOD.ZS(P.y1+P.oy+2); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
+  P.box=()=>{ const r=P.rect(), b=CASTLE.b, B=SHARED.BOD, xs=[B.XS(b[0]),B.XS(b[1])], zs=[B.ZS(b[2]),B.ZS(b[3])]; return [Math.min(r[0],...xs),Math.min(r[1],...zs),Math.max(r[2],...xs),Math.max(r[3],...zs)]; };   // the park and the castle, in the world
   P.steps=[]; P.load=async()=>{ await LOAD('park'); const t0=performance.now(); while(P.Q.length){ const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
   P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };

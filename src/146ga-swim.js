@@ -10,14 +10,16 @@ import {DFOG} from './134e-distfog.js';
 Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
 { const T=TILE, WM=T/.84, MS=T/(.84*ZU), V=THREE.Vector3, say=(t,c)=>{ SAY(t,c||'#9fd8ff'); };   // WM: world units a metre; MS: the rig's units a metre
   let told=false;
-  SYS.add('swim',(st,dt,keys,go)=>{ const W=st.water; if(!W||!W.in||W.level==null){ SWIM.d=null; if(W)W.dive=false; return; }
+  // under the water you see from behind or through your own eyes, the overhead view back when you come up (owner, 7 Nov 2026: the wreck seen as you dive; whatever takes the view itself keeps it)
+  const dive=on=>{ if(on&&!SWIM.vw&&UI.view==='iso'){ SWIM.vw='iso'; UI.setView('first'); } else if(!on&&SWIM.vw){ const v=SWIM.vw; SWIM.vw=null; UI.setView(v); } };
+  SYS.add('swim',(st,dt,keys,go)=>{ const W=st.water; if(!W||!W.in||W.level==null){ SWIM.d=null; if(W)W.dive=false; dive(false); return; }
     const lvl=W.level, now=lvl-W.y, max=Math.max(30,lvl-W.floor-8), sp=(W.fast?2.8:1.8)*MS, back=keys.has('s')||keys.has('arrowdown');
     let v=(keys.has(' ')||keys.has('j')?sp:0)-(keys.has('shift')?sp:0);
     if(UI.view==='first'&&go&&!UI.freeCam){ const p=SHARED.pitch; if(Math.abs(p)>(SWIM.d==null?.25:.12))v+=Math.sin(p)*sp*1.2*(back?-1:1); }   // first person: you swim where you look
     if(SWIM.d==null&&v>0){ SWIM.d=Math.max(30,now); if(!told){ told=true; say('SPACE SWIMS DOWN, SHIFT UP; IN FIRST PERSON YOU SWIM WHERE YOU LOOK.'); } }
     if(SWIM.d!=null){ if(!v&&!(EQUIP.breathe&&SWIM.tankS>0))v=-.3*MS;   // still, you drift slowly up; a diver's set holds you level
       SWIM.d=Math.max(now-15,Math.min(max,now+30,SWIM.d+v*dt)); if(SWIM.d<28&&v<0)SWIM.d=null; }
-    W.dive=SWIM.d!=null; W.deep=SWIM.d||0; },'146ga-swim');
+    W.dive=SWIM.d!=null; W.deep=SWIM.d||0; dive(W.dive); },'146ga-swim');
 
   // your arms in first person: two arms in the camera's space, a breaststroke under, a crawl on top, treading or sculling when still
   const skin=new THREE.MeshLambertMaterial({color:0xe6c4b0}), seg=()=>new THREE.Mesh(new THREE.CapsuleGeometry(1,4,3,8),skin), root=LEVELS.own(new THREE.Group(),'*'); root.name='swimarms'; root.visible=false; scene.add(root);

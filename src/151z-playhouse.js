@@ -21,7 +21,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     const lamp=(k,p,c,i,r)=>{ const l=new THREE.PointLight(c,i,r*MH,1.4); l.userData.pool=true; l.position.set(...p); K.G.add(l); (LT[k]=LT[k]||[]).push({l,i}); return l; };
     lamp('house',[K.chandelier[0],K.chandelier[1]-.2,K.chandelier[2]],0xffcf90,50,40); for(const s of [-1,1])lamp('house',[s*8,6,8.3],0xffb070,9,20);
     for(const p of K.fch)lamp('foyer',p,0xffc888,15,16);
-    lamp('ghost',K.ghost.at,0xfff0d0,10,16);
+    lamp('ghost',K.ghost.at,0xfff0d0,4,16); for(const s of [-1,1])lamp('work',[s*PD.WING*.6,D.SY+5,PD.STG/2],0x8a9ccc,6,16);   // the ghost light soft up close; the wings' blue work lights keep the stage house from going black
     const hemi=new THREE.HemisphereLight(0xe8c8a0,0x24120c,.12); K.G.add(hemi); (LT.hemi=[]).push({l:hemi,i:.12});
     for(const l of Object.values(LT).flat())l.l.castShadow=false;
     // the shiny things take the hall's reflection: a cube taken once from over the stalls (again when the house lights change)
@@ -48,6 +48,7 @@ await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE
     if(ENV){ ENV.rt.dispose(); if(ENV.cam)ENV.cam.removeFromParent(); ENV=null; } for(const o of MIR)o.r.dispose(); MIR=[]; LT={};
     if(G){ G.traverse(c=>{ if(c.geometry)c.geometry.dispose(); }); G.removeFromParent(); G=null; } K=null; P=null; };
   const inside=()=>!!K&&ROOMS.offIn&&ROOMS.offIn()==='playhouse';
+  UI.camKeeps.push((c,t)=>{ if(!inside()||!UI.persp)return; const zf=OZ+(PD.ZF-.3)*MH, xw=(PD.W-.3)*MH; if(lz(t.z)>PD.Z1&&c.z>zf)c.z=zf; if(lz(t.z)>PD.Z1)c.x=Math.max(OX-xw,Math.min(OX+xw,c.x)); });   // in the foyer the camera stays off the front wall and its doors
   // the ground inside: each region's height (the stage, the steps, the rake, the foyer)
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(K&&x>OX+B.x0*MH&&x<OX+B.x1*MH&&z>OZ+B.z0*MH&&z<OZ+B.z1*MH){ const y=K.groundAt(lx(x),lz(z)); return (y==null?PD.FY:y)*MV; } return sg0?sg0(x,z):null; };
   const door=at(m,L.y1+.25), out=at(m,L.y1+.9);

@@ -39,7 +39,8 @@ jobs:
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
-          k dunshare 'src/062a|src/146b|src/111d|worker/door|dunshare\.cjs'
+          k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
+          k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -81,9 +82,11 @@ jobs:
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
+          k lounge 'src/146zca|src/127-drummer|src/128-bandstand|src/059i|src/146zb-workers|data/bar\.json|lounge\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
+          k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
@@ -190,6 +193,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' interiors')
         run: node tests/interiors.cjs
+      - name: The bar, the lounge (its pieces, the octopus at his kit, the badger at the taps, pool, darts, seats)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' lounge')
+        run: node tests/lounge.cjs
       - name: The interiors, part two (the playhouse's foyer, the golems' cave, the bath house, your hall, the bank, the squirrel's tower)
         if: contains(steps.f.outputs.run, ' interiors2')
         run: node tests/interiors2.cjs
@@ -311,14 +318,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/avatar.cjs
-      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 71 moves in software rendering, so past the usual 15 minutes)
-        timeout-minutes: 25
+      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 125 moves in software rendering, so well past the usual 15 minutes)
+        timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/avatarmoves.cjs
       - name: The avatar's Mixamo clips (every clip loads, each state names its clip, every Polyfork move plays)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/pfclips.cjs
+      - name: The first day (a new player's name, look and stats before the world; the starter money and things)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' firstday')
+        run: node tests/firstday.cjs
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')
@@ -361,6 +372,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/radio.cjs dist/market.html
+      - name: The dungeon's server (the monsters stepped and sent to those below, blows, kills)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' dunsrv')
+        run: node tests/dunmobs-server.cjs
       - name: The cars' server (one driver a car, parking kept and heard)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')

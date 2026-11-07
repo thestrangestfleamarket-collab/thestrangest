@@ -34,7 +34,7 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
     const box=(u0,v0,u1,v1,h0,h1,c)=>K.box(u0*S,v0*S,u1*S,v1*S,h0*S,h1*S,c), cyl=(u,v,r,h0,h1,c,rt)=>K.cyl(u*S,v*S,r*S,h0*S,h1*S,c,(rt??r)*S), pic=(u,v,h,w,hh,du,dv,t)=>K.pic(u*S,v*S,h*S,w*S,hh*S,du,dv,t);
     const W1=0x3b2a1c, W2=0x2e2116, BRK=u=>u>7.2&&u<8.7, LOW=u=>u>6&&u<10;
     for(let u=0;u<LEN;u+=.5){ if(BRK(u))continue; const w=half(u+.25), top=2.4+(u>11.5?(u-11.5)*.18:0)-(LOW(u)?.6:0), c=hs(u*2,1)>.5?W1:W2;   // broken-backed: lower toward the break
-      box(u,mid-w,u+.5,mid+w,-.6,-.4,W2); for(const s of [-1,1]){ const v=mid+s*w; for(let h=-.4;h<top;h+=.3)if(hs(u*7+s,h*9)>.14||h<.3)box(u,v-.05,u+.5,v+.05,h,h+.3,c); }   // its planks, some sprung: holes to look in through
+      box(u,mid-w,u+.5,mid+w,-.6,-.4,W2); for(const s of [-1,1]){ const v=mid+s*w; for(let h=-.4;h<top;h+=.3)if(hs(u*7+s,h*9)>.05||h<.9)box(u,v-.05,u+.5,v+.05,h,h+.3,c); }   // its planks, a few sprung high up
       if(hs(u*3,5)>.5&&!LOW(u))box(u,mid-w+.06,u+.5,mid+w-.06,top-.08,top-.02,0x4a3624);   // what is left of the upper deck
       if(u>1&&u<13&&!LOW(u)&&hs(u*5,9)>.35)box(u,mid-w+.1,u+.5,mid+w-.1,.9,.95,0x3e2c1c); }   // the orlop deck, rotten through in places
     // the stern cabin: hollow, its door into the hold, its dark windows

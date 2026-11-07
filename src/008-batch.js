@@ -64,7 +64,7 @@ PEEK.tick=dt=>{ const on=PEEK.on&&!PEEK.off&&UI.view!=='first'&&!UI.freeCam&&!ED
   R.origin.copy(c); if(UI.persp)R.direction.copy(SHARED.cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(SHARED.cam.quaternion);
   let cov=false; if(on){ const far=UI.persp?c.distanceTo(SHARED.cam.position):1e5; W.copy(c).project(SHARED.cam); if(far>1.5*M&&Math.abs(W.x)<1.1&&Math.abs(W.y)<1.1&&W.z<1)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible)||!LEVELS.drawn(me))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
   PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=SHARED.py+2.6*TILE; if(!PEEK.k)return;
-  W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar(1.6*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
+  W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar((UI.persp?1.6:2.6)*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };
 PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});
 BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.at=()=>pos;   // painted within reach()[0] of BATCH.at() (you; in a room off the map where its windows look out, 130), dropped past reach()[1] (the haze range sets them, 134e), all dropped while it is null (a room with no window out)

@@ -7,6 +7,7 @@ import {FIXIT} from './146l-fixer.js';
 import {PLANTS} from './146v-plants.js';
 import {BODEGA} from './146ze-bodega.js';
 { const std=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.8,...o});
+  FORAGE.add({names:{coat_red:'RED COAT',coat_green:'GREEN COAT',coat_navy:'NAVY COAT',jacket_denim:'DENIM JACKET',jacket_stud:'STUDDED JACKET',jeans:'BLUE JEANS',shades:'GREEN SHADES',nv_goggles:'NIGHT-VISION GOGGLES'}});   // their names went with their archived sellers
   const box=(w,h,d,c,o)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),std(c,o)); m.position.y=h/2; return m; };
   const grp=(...a)=>{ const g=new THREE.Group(); for(const m of a)g.add(m); return g; };
   const folded=c=>{ const g=new THREE.Group(); for(let i=0;i<3;i++){ const m=box(.3,.05,.26,c); m.position.y=.025+i*.052; m.rotation.y=(i-1)*.05; g.add(m); } return g; };

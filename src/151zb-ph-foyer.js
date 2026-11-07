@@ -1,5 +1,5 @@
 // THE PLAYHOUSE'S FOYER AT WORK: the box office sells tickets (a show watched from a seat with one rests you), the bar sells drinks, the programme reads, the velvet benches seat you; the company runs the foyer and the bar, the skeleton is stage manager at the prompt desk; sixty seats in the stalls for the townspeople who come to a show.
-import {FORAGE, INV, ROOMS, SHOPS, st, USE, VIT} from './003b-systems.js';
+import {FORAGE, INV, ROOMS, st, USE, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {STORE} from './006-map-pre.js';
@@ -28,8 +28,7 @@ const PLAYF={}; window.PLAYF=PLAYF;
   STORE.furnish.playhouse=S=>{ '@later'; const {B,MH,MV,FY}=S, F=IKIT.frame({x0:B.x0,y0:B.z0,x1:B.x1,y1:B.z1},(x,z)=>[S.OX+x*MH,S.OZ+z*MH]), K=IKIT.room(F,o=>scene.add(o),()=>{}), {use}=K, u=x=>x-B.x0, v=z=>z-B.z0, fy=FY*MV/MH;
     const at=(x,z)=>F.pw(u(x),v(z)), hz=(h)=>h*MV/MH;
     // the box office's window, the bar's counter, the programme's easel: each now does what it is for
-    K.use('THE BOX OFFICE (A TICKET $8)',u(-7.4),v(20.75),1.0,fy+hz(2.4),PLAYF.buy,2.0);
-    K.use('THE FOYER BAR (DRINKS)',u(7.6),v(21.2),1.0,fy+hz(1.6),()=>SHOPS.open({key:'showgirl',name:'THE BAR'}),2.0);
+    
     K.use('THE PROGRAMME (READ)',u(0),v(PHA.D.ZB),.9,fy+hz(2.0),PLAYF.programme,1.8);
     for(const s of [-1,1]){ const x=s*4.5, z=16.9; K.use('A VELVET BENCH',u(x),v(z),1.4,fy+hz(.6),()=>{ const p=at(x,z+.1); USE.sitAt(p[0],p[1],(FY+.45)*MV,F.hd(0,1)); },1.6); }
     K.flush(); };

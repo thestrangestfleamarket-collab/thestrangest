@@ -7,7 +7,7 @@ import {OWNED} from './005-save.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
 { const H=STORE.holo, T=TILE, M=FEEL.MH, V3=THREE.Vector3, say=(t,c)=>SAY(t,c), m=v=>v*M;
-  const WX=4200, WZ=0, PAR=2, COST=6, BALLR=.021, CUPR=.054, LANEW=.9, HEADR=.055;
+  const WX=4200, WZ=0, PAR=2, COST=0, BALLR=.021, CUPR=.054, LANEW=.9, HEADR=.055;
   let D=null, W=null, savedGY=null, savedView=null, keyoff=null, amb=null; const FG=new THREE.Fog(0x4b5852,1,60), FV=new V3();
   const rnd=(s=>()=>{ s=(s*16807)%2147483647; return s/2147483647; })(4242);
   const hashN=(x,y)=>{ const v=Math.sin(x*127.1+y*311.7)*43758.5453; return v-Math.floor(v); };

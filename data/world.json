@@ -6197,6 +6197,15 @@
    }
   ]
  },
+ "bigTrees": [
+  {"note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"},
+  {"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "climb": true},
+  {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "climb": true},
+  {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "climb": true},
+  {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "climb": true},
+  {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "climb": true},
+  {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "climb": true}
+ ],
  "cloudTrees": [],
  "edge": {
   "note": "THE NEW MAP'S EDGES (owner, 6 Nov 2026): lines in map tiles you cannot cross (a forcefield where you press on one); past them only the backdrop, seen, never walked",

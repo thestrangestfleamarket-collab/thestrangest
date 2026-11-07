@@ -36,7 +36,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   UI.camKeeps.push((c,t)=>{ const B=ROOMS.cur; if(!B||!(B.x1>B.x0)||!UI.persp)return; const e=.3*TILE; let k=1;
     for(const [a,lo,hi] of [['x',B.x0+e,B.x1-e],['y',(B.y0??-1e9)+e,(B.y1??1e9)-e],['z',B.z0+e,B.z1-e]]){ const d=c[a]-t[a]; if(c[a]>hi&&d>1e-6)k=Math.min(k,Math.max(0,(hi-t[a])/d)); else if(c[a]<lo&&d<-1e-6)k=Math.min(k,Math.max(0,(lo-t[a])/d)); }
     if(k<1)c.lerpVectors(t,c,k); });
-  ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
+  ROOMS.reset=()=>{ RL=null; if(IV.key){ IV.re=IV.key; IV.reOff=IV.b&&IV.b.off||null; leave(); } IV.C.clear(); SYS.run('roomsReset'); };
   const within=(b,x,z,e=0)=>x>b.x0-e&&x<b.x1+e&&z>b.z0-e&&z<b.z1+e;
   ROOMS.nearAll=()=>{ NEARON=true; const skip=new Set([W3.group,...NPCS.map(N=>N.g),...NPCS.extra.map(X=>X.g).filter(Boolean)]); for(const o of [MUS.g,PNM.g,SGM.g,DRM.g])if(o)skip.add(o);
         const own=new Set(); for(const g of skip)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))own.add(mt); });
@@ -68,7 +68,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
-  ROOMS.offIn=()=>IV.b&&IV.b.off||null;
+  ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;   // (between a reset and the room put back you are still in it)
   ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
@@ -99,7 +99,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const leave=()=>{ '@later'; if(!IV.key)return; for(const [o] of IV.H)VIS.hide(o,'room',false); for(const [o] of IV.L)VIS.hide(o,'room',false); for(const [g,i] of IV.S)g.setIndex(i); IV.H=[]; IV.L=[]; IV.S=[]; if(IV.b&&IV.b.off)offHide(false); IV.key=null; IV.b=null;
     for(const L of LITE.pool)if(L.castShadow)L.shadow.needsUpdate=true; };
   const drop=w=>{ if(w&&w.b.noBuild)return; const k=w&&w.b.lz; for(const n in ROOMS.lazy){ const L=ROOMS.lazy[n]; if(n!==k&&L.done&&L.drop&&!WINDOWS.held.has(n)&&!(WINDOWS.taking&&WINDOWS.taking.has(n))){ L.drop(); L.done=false; IV.C.clear(); } } };
-  const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; };
+  const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; IV.reOff=null; };
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b), walk=b=>!!(b&&b.id&&STORE.held&&STORE.held.has(b.id)&&STORE.inside[b.id]);
     if(!lz&&(walk(w&&w.b)||!w&&walk(IV.b))){ apply(w); return; }   // walked in or out through a street shop's door: no fade
     if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
@@ -114,7 +114,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
       hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&!b.id&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
-    ROOMS.cur=hit; { const w=hit&&!(hit.id&&STORE.open&&STORE.open(hit.id))?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; }
+    ROOMS.cur=hit; { const w=hit&&!(hit.id&&STORE.open&&STORE.open(hit.id))?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; if(!IV.b)IV.reOff=null; }
     if(IV.key&&scene.background)scene.background.setRGB(0,0,0);
     UI.isoPlace(); if(SHARED.BOD.GD)SHARED.BOD.GD.tick(); if(MODS.dungeon)MODS.dungeon.tick();
     for(const h of OVERHEAD)SEEN(h.o,SHARED.cam.position.y<h.y);

@@ -22,10 +22,10 @@ const BANKK={}; window.BANKK=BANKK;
     tick:S=>{ if(!S.press)return; const i=B.findIndex((b,k)=>{ const x=20+(k%3)*118, y=150+Math.floor(k/3)*60; return S.mx>x&&S.mx<x+108&&S.my>y&&S.my<y+46; }); if(i<0)return; const no=BANKK.move(B[i][1]); S.o=BANKK.account(); S.line=no||(B[i][1]>0?'DEPOSITED.':'WITHDRAWN.'); },
     draw:(S,g)=>{ g.fillStyle='#1a1612'; g.fillRect(0,0,380,300); g.textAlign='left'; g.textBaseline='top'; g.font='13px monospace'; g.fillStyle='#c8b080'; g.fillText('ON YOU',20,24); g.fillText('IN THE ACCOUNT',20,70); g.font='bold 22px monospace'; g.fillStyle='#f4ecd8'; g.fillText('$'+INV.cash.toLocaleString(),20,40); g.fillStyle='#f0c040'; g.fillText('$'+S.o.bal.toLocaleString(),20,86);
       B.forEach(([t],k)=>{ const x=20+(k%3)*118, y=150+Math.floor(k/3)*60; g.fillStyle=k<3?'#2a5a3a':'#5a3a24'; g.fillRect(x,y,108,46); g.fillStyle='#f4ecd8'; g.font='12px monospace'; g.textAlign='center'; g.fillText(t,x+54,y+16); g.textAlign='left'; }); }});
-  // where its people go: the rat and the teller in their cages, the guard by the door, the clerk and the manager at the sides; customers queue at the cages
+  // where its people go: the rat and the teller in their cages, the guard by the door, the clerk at the side, the manager behind the cages; customers queue at the cages
   const frameOf=S=>IKIT.frame({x0:S.B.x0,y0:S.B.y0,x1:S.B.x1,y1:S.B.y1});
   { const S=STORE.bank, R=(STORE.rooms||[]).find(r=>r.id==='bank'); if(S&&S.B&&R){ const F=frameOf(S), TM=F.W/(S.B.x1-S.B.x0), mx=(S.B.x1-S.B.x0)/2, Dp=S.B.y1-S.B.y0, sp=(x,y,du,dv)=>{ const p=F.pw(x*TM,y*TM); return {x:p[0],z:p[1],hd:F.hd(du,dv)}; };
-    R.spots={CAGES:sp(mx-3.5,Dp-3.1,0,1),TELLER:sp(mx+3.5,Dp-3.1,0,1),GUARD:sp(mx+2.4,Dp-1.0,0,-1),CLERK:sp(mx-6.5,Dp-1.6,1,0),MANAGER:sp(mx+6.5,Dp-1.6,-1,0)};
+    R.spots={CAGES:sp(mx-3.5,Dp-3.1,0,1),TELLER:sp(mx+3.5,Dp-3.1,0,1),GUARD:sp(mx+2.4,Dp-1.0,0,-1),CLERK:sp(mx-6.5,Dp-1.6,1,0),MANAGER:sp(mx+1.5,Dp-6,0,1)};
     R.seats=BANKK.places=[sp(mx-3.5,Dp-1.5,0,-1),sp(mx-3.5,Dp-.7,0,-1),sp(mx+3.5,Dp-1.5,0,-1),sp(mx+3.5,Dp-.7,0,-1)]; } }
   STORE.furnish=STORE.furnish||{};
   STORE.furnish.bank=S=>{ '@later'; const F=frameOf(S), K=IKIT.room(F,o=>scene.add(o)), {box,cyl,glow,pic,words,use}=K, TM=F.W/(S.B.x1-S.B.x0), mx=(S.B.x1-S.B.x0)/2*TM, Dp=(S.B.y1-S.B.y0)*TM, C={wood:0x4a2e1c,brass:0xb08838,marble:0xd8d0c0,dark:0x1a1612};

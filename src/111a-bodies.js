@@ -105,12 +105,25 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
   const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead&&!S.fly;
   const clamp1=x=>x<0?0:x>1?1:x;
-  function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
+  // a clip at a time in seconds: looped, or held on its last frame
+  const clipT=(c,t,loop,i,q,p)=>{ if(loop)return clipAt(c,t/c.dur,i,q,p); const f=Math.max(0,Math.min(c.n-1,t/c.dur*c.n)), a=Math.floor(f), b=Math.min(c.n-1,a+1), x=f-a, A=a*NB+i, Bq=b*NB+i;
+    q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,x); p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,x); };
+  // the clip a body's act names (body.act, 111c: Polyfork's clip for what the rig is doing) and when in it; the last one kept a moment to crossfade from
+  const actT=(A,C,S,dt)=>{ if(S._an!==A.n){ S._an=A.n; S._at=0; } S._at+=dt; return A.t!=null?A.t:A.u!=null?A.a+A.u*((A.b??C.dur)-A.a):S._at; };
+  const Q4=new THREE.Quaternion(), P4=new V3();
+  function mocap(PM,body,S,dt,A,AC){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
     const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;
-    const stride=C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
-    S._mph=((S._mph||0)+d/k/stride)%1; S._mit=((S._mit||0)+dt/C.Idle.dur)%1;
-    for(let i=0;i<NB;i++){ clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
-      clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
+    const LC=A&&A.loco&&AC?AC:null;   // (a walk of its own, carrying: in place of the walk, the run and the idle, still where you stop)
+    const stride=LC?LC.speed*LC.dur:C.Walk.speed*C.Walk.dur*(1-r)+C.Run.speed*C.Run.dur*r;   // metres a cycle
+    S._mph=((S._mph||0)+d/k/Math.max(.2,stride))%1; S._mit=((S._mit||0)+dt/C.Idle.dur)%1;
+    const aw=S._aw=(S._aw||0)+(((A&&AC&&!LC)?1:0)-(S._aw||0))*Math.min(1,dt*8), at=A&&AC&&!LC?actT(A,AC,S,dt):0, loop=!!(A&&A.loop);
+    if(A&&AC&&!LC){ if(S._pc&&S._pc.n!==A.n){ S._pf={c:S._pc.c,t:S._pc.t,l:S._pc.l,w:1}; } S._pc={n:A.n,c:AC,t:at,l:loop}; } else if(aw<.01)S._pc=null;
+    const PF=S._pf; if(PF){ PF.w-=dt*4; if(PF.w<=0)S._pf=null; }
+    for(let i=0;i<NB;i++){ if(LC){ clipAt(LC,S._mph,i,Q2,P2); }
+      else { clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
+        clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); }
+      if(aw>.001&&S._pc){ clipT(S._pc.c,S._pc.t,S._pc.l,i,Q1,P1); if(S._pf&&S._pf.w>0){ clipT(S._pf.c,S._pf.t,S._pf.l,i,Q4,P4); Q1.slerp(Q4,S._pf.w); P1.lerp(P4,S._pf.w); } Q2.slerp(Q1,aw); P2.lerp(P1,aw); }
+      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
   // a held tool's arm: the rig's, moved so its shoulder is where the walking body's is
   const ARM={L:[3,4,5],R:[6,7,8]};
   const keepArms=(PM,PR,body)=>{ '@later'; for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);
@@ -161,9 +174,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
       const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
-    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now; const want=loco(S)?1:0;
-      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want;
-      if(want||S._mw>0){ mocap(PMX,body,S,dt); if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
+    if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now;
+      const A=body.act&&!S.dead?body.act(S):null, AC=A&&body.clip?body.clip(A.n):null, want=loco(S)||AC?1:0;   // (a clip not fetched yet: the rig, until it comes)
+      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat);
+      if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
+        if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2).multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them) if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
@@ -181,7 +196,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(body.anim&&st._mw>0&&!RAG.on&&!st._pfSeat){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

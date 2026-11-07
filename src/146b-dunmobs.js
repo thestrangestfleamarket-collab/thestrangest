@@ -22,7 +22,7 @@ import {GEMS} from './101-gems.js';
       if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:(k?1.5:1)*(s.winded?.6:1)}); }
       if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h,ax:swing.ax,az:swing.az}); } } return out; };
     const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
-    const strength=s=>1+(FORAGE.sk(s&&s.sk||'fight')||0)/100, landed=s=>{ if(s)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
+    const strength=s=>(1+(FORAGE.sk(s&&s.sk||'fight')||0)/100)*FORAGE.dmgK(), landed=s=>{ if(s)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
     return {strikes,inCone,strength,landed}; })(); window.STRIKES=STRIKES;
   const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=SAY, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
   const MIX={1:{green:.7,blue:.3},2:{green:.3,blue:.5,purple:.2},3:{blue:.4,purple:.4,red:.2},4:{purple:.5,red:.5},5:{purple:.2,red:.8}};
@@ -120,7 +120,7 @@ import {GEMS} from './101-gems.js';
       if(S.flash>0){ S.flash-=dt; ch=true; }
       if(S.dead){ if(S.pop<.28){ S.pop+=dt; ch=true; } continue; }
       if(S.kb){ S.x+=(S.kb.x-S.x)*Math.min(1,dt*12); S.z+=(S.kb.z-S.z)*Math.min(1,dt*12); ch=true; if(Math.hypot(S.kb.x-S.x,S.kb.z-S.z)<.02*T)S.kb=null; continue; }
-      const d=Math.hypot(you.x-S.x,you.z-S.z), chase=alive&&(S.agg?d<2*see()*T:d<see()*T);
+      const d=Math.hypot(you.x-S.x,you.z-S.z), chase=alive&&!SHARED.unseen&&(S.agg?d<2*see()*T:d<see()*T);
       if(chase&&S.air<=0&&(S.wait-=dt*3)<=0){ S.to={x:you.x,z:you.z}; S.wait=0; }
       if(S.air>0){ S.ph+=dt/(.62/Math.sqrt(S.v)); ch=true;
         if(S.ph>.2&&S.ph<.8&&S.to){ const ex=S.to.x-S.x, ez=S.to.z-S.z, l=Math.hypot(ex,ez), stp=Math.min(l,S.v*1.7*T*dt), nx=S.x+ex/(l||1)*stp, nz=S.z+ez/(l||1)*stp;
@@ -148,7 +148,7 @@ import {GEMS} from './101-gems.js';
   const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
     const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
     if(r.spider&&!r.lunge&&!(r.jolt>0)){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
-    const sr=see()+(r.spider?.6:0), see_=alive&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
+    const sr=see()+(r.spider?.6:0), see_=alive&&!SHARED.unseen&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
     if(!see_){ N.alert=false; st.face=null; if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
     N.alert=true; const busy=r.kk?!!N.an.once:!!r.lunge||r.jolt>0, ranged=!!r.style.bolt, R=(ranged?5.5:r.style.reach||.8)*T;
     if(busy){ st.to=null; st.face={x:you.x,z:you.z}; return; }

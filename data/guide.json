@@ -367,13 +367,13 @@
   {
    "id": "fly",
    "title": "FLYING",
-   "what": "Eat a SKYCAP MUSHROOM and fly like a superhero for five minutes, anywhere on the map, over everything and up through the clouds. You wear a cape while you fly.",
+   "what": "Eat a DRIFTCAP MUSHROOM and fly like a superhero for five minutes, anywhere on the map, over everything and up through the clouds. You wear a cape while you fly.",
    "steps": [
-    "Buy a SKYCAP MUSHROOM ($25) from the Mushroom Seller. Eat it from your pack.",
+    "Buy a DRIFTCAP MUSHROOM ($30) from the Mushroom Seller. Eat it from your pack.",
     "Press [G] to take off. Your cape goes on.",
     "Fly with [W] [A] [S] [D]. The longer you fly one way, the faster you go.",
     "Hold [SPACE] to go up, [SHIFT] to go down. Keep going up to pass through the clouds.",
-    "Press [G] again to come down and land. When the skycap wears off you come down by yourself."
+    "Press [G] again to come down and land. When the driftcap wears off you come down by yourself."
    ]
   },
   {

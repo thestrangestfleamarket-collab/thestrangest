@@ -779,12 +779,6 @@
   "stackable": true,
   "darksight": 240
  },
- "skycap": {
-  "edible": true,
-  "offworld": true,
-  "stackable": true,
-  "flight": 300
- },
  "rod_carbon": {
   "value": 60,
   "cast": 16,
@@ -1583,5 +1577,37 @@
   "stackable": true,
   "weight": 0.2,
   "edible": true
+ },
+ "shroom_invis": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "invis",
+  "boostS": 60
+ },
+ "shroom_str": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "str",
+  "boostS": 120
+ },
+ "shroom_swift": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "swift",
+  "boostS": 120
+ },
+ "shroom_fly": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "fly",
+  "boostS": 300
  }
 }

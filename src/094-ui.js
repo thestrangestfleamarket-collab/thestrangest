@@ -68,7 +68,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
   function setFly(on,now){ const g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0;
     if(!on&&!now&&UI.fly){ if(UI.landing){ UI.landing=false; drawBadge(); return; } if(SHARED.py-g>1.5*WM){ UI.landing=true; drawBadge(); return; } }   // high up: come down first (G again while coming down flies on)
-    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A SKYCAP MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the SKYCAP (141)
+    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A DRIFTCAP MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the DRIFTCAP (141)
     UI.fly=on; UI.landing=false; flyS().on=on; if(on){ SHARED.target=null; st.move=null; FLY.sp=0; FLY.vy=0; } drawBadge(); }
   UI.setFly=setFly; UI.setFree=setFree;
   UI.camStep=(dt,a,up,dn,lf,rt)=>{ if(!UI.freeCam||UI.menuOpen)return; const fx=-Math.sin(a), fz=-Math.cos(a), s=dt*9*PPU/Math.max(4,SHARED.ppu);
@@ -406,7 +406,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       for(const p of UI.places()){ const n=p[0]; if(seen.has(n))continue; seen.add(n); (p[3]==='down'?G.UNDERGROUND:p[4]==='off'||typeof p[3]==='number'||inn.has(n)?G.INSIDE:G.OUTSIDE).push(n); }
       sel.textContent=''; const first=document.createElement('option'); first.value=''; first.textContent='CHOOSE A PLACE...'; sel.appendChild(first); for(const k in G)grp(k,G[k]); };
     const fresh=()=>{ if(sel.options.length!==1+new Set(UI.places().map(p=>p[0])).size)fill(); }; UI.fillPlaces=fill; fill(); SYS.onStart(fill,'094-ui places'); sel.addEventListener('focus',fresh); sel.addEventListener('mousedown',fresh);
-    sel.onchange=()=>{ const n=sel.value; sel.value=''; if(!n)return; const P=PLACEN.includes(n)||ROOMN.includes(n)?PLACES.find(p=>p[0]===n):null; if(P)toPlace(P[1],P[2],P[3],P[5]); else goPlace(n); };
+    UI.goName=n=>{ const P=PLACEN.includes(n)||ROOMN.includes(n)?PLACES.find(p=>p[0]===n):null; if(P)toPlace(P[1],P[2],P[3],P[5]); else goPlace(n); };
+    sel.onchange=()=>{ const n=sel.value; sel.value=''; if(n)UI.goName(n); };
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
   const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);

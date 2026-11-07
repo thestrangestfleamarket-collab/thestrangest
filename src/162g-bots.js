@@ -31,7 +31,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(!th||d2(p.x,p.z)>30*T){ task.at=task.at||{}; if(!task.at[shop]){ task.at[shop]=1; task.wt=12; UI.goName(shop); return false; } if((task.wt-=dt)>0)return false; return null; }
     if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
-  const goal=()=>C.goal>0&&cash()>=C.goal;
+  let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
   // walk about a centre (home, or where a job brought it), its own pauses
   let rw=0; const roam=(dt,c,far,ok)=>{ if(walking(dt))return; if((rw-=dt)>0){ doing='looking round'; return; } const h=c||{x:pos.x,z:pos.z};
     for(let k=0;k<12;k++){ const a=R()*6.283, r=(far?6+R()*20:2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if((!ok||ok(x,z))&&!(CITY.blocked&&CITY.blocked(lv(),x,z))){ walk(x,z); break; } }
@@ -51,7 +51,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         const kt=nearest(UI.things,t=>!task.skip.has(t)&&/^(BENCH|SEAT|SITTING LOG|A? ?(VELVET )?BENCH|CHAIR|SOFA|STOOL)/i.test(t.name||'')), kd=kt?d2(thAt(kt).x,thAt(kt).z):1e9;
         if(kt&&kd<bd){ task.o=kt; task.th=kt; task.t=0; } else if(b){ task.o=b; task.th=USE.test.goal(b,'sit'); task.t=0; if(!task.th)task.skip.add(b); } if(!task.th){ roam(dt,here(task),true); doing='looking for a seat'; return; } }
       doing='going to sit on a '+task.th.name.toLowerCase(); if(use(task.th,dt)||(task.t+=dt)>40){ if(!st.sit&&task.t>2){ task.skip.add(task.o); task.th=null; } } },
-    mushrooms:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'find'};
+    mushrooms:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'find'};
       const F=FORAGE, have=Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0);
       if(task.s==='find'){ if(task.go>0){ task.go-=dt; return; } if(LOOKS.L&&!LOOKS.L.bare)LOOKS.L.bare=true;
         const th=F.things?nearest(F.things()):null;
@@ -60,7 +60,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
       if(task.s==='sell'){ doing='taking '+have+' mushrooms to THE MUSHROOM SHOP'; const r=counter('THE MUSHROOM SHOP',dt,sellAll); if(r===false)return;
         if(r===null){ task={s:'find',hold:60,keep:task.keep}; doing='can\'t sell mushrooms now, picking more'; return; }
         task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
-    fish:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
+    fish:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
       if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
         const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); }); if(r===false)return;
@@ -94,7 +94,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const look=()=>{ if(C.look===looked)return; looked=C.look||''; try{ if(C.look)AVATAR.set(AVATAR.decode(C.look)); else if(AVATAR.outfits&&AVATAR.outfits.length)AVATAR.outfit(Math.floor(R()*AVATAR.outfits.length)); }catch(e){} };
   BOT.set=c=>{ const was=C; C=Object.assign({job:'stand'},c||{}); if(LOOKS.L)LOOKS.L.name=C.name||LOOKS.L.name; look();
     if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
-    if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
+    if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
   SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25);

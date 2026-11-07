@@ -478,66 +478,6 @@
    "kind": "front",
    "x0": -70.925,
    "x1": -52.5,
-   "y0": -37.5,
-   "y1": -8.9,
-   "face": "e"
-  },
-  {
-   "id": "house1",
-   "name": "APARTMENTS 2",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": -7.7,
-   "y1": 20.9,
-   "face": "e"
-  },
-  {
-   "id": "house2",
-   "name": "APARTMENTS 3",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 22.1,
-   "y1": 50.7,
-   "face": "e"
-  },
-  {
-   "id": "house3",
-   "name": "APARTMENTS 4",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 51.9,
-   "y1": 80.5,
-   "face": "e"
-  },
-  {
-   "id": "house4",
-   "name": "APARTMENTS 5",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 81.7,
-   "y1": 110.3,
-   "face": "e"
-  },
-  {
-   "id": "house5",
-   "name": "APARTMENTS 6",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 111.5,
-   "y1": 140.1,
-   "face": "e"
-  },
-  {
-   "id": "house6",
-   "name": "APARTMENTS 7",
-   "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
    "y0": 141.3,
    "y1": 169.9,
    "face": "e"
@@ -6197,6 +6137,15 @@
    }
   ]
  },
+ "bigTrees": [
+  {"note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"},
+  {"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "climb": true},
+  {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "climb": true},
+  {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "climb": true},
+  {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "climb": true},
+  {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "climb": true},
+  {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "climb": true}
+ ],
  "cloudTrees": [],
  "edge": {
   "note": "THE NEW MAP'S EDGES (owner, 6 Nov 2026): lines in map tiles you cannot cross (a forcefield where you press on one); past them only the backdrop, seen, never walked",
@@ -6289,7 +6238,7 @@
    "box": [-600, -130.1, 900, 800],
    "px": 2,
    "grass": [62, 96, 46],
-   "water": [172, 198, 218]
+   "water": [164, 198, 236]
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",

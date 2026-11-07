@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {TEX} from './008a-blob.js';
 import {GEMS} from './101-gems.js';
 import {SWAP} from './159i-trade.js';
 window.BAG=BAG;

@@ -8,3 +8,4 @@ Object.assign(SHAD,{ tex:TEX,
   mat(o={}){ return new THREE.MeshBasicMaterial({map:TEX,transparent:true,opacity:o.alpha??.5,depthWrite:false,...(o.clip?{clippingPlanes:o.clip}:{})}); },
   // a soft dark ellipse on the floor at (x,y,z), rx by rz across; pass a shared material in o.mat for many blobs
   blob(parent,x,y,z,rx,rz,o={}){ const m=new THREE.Mesh(GEO,o.mat||SHAD.mat(o)); m.position.set(x,y+(o.lift??.01),z); m.scale.set(rx,1,rz); if(o.ry)m.rotation.y=o.ry; m.renderOrder=o.renderOrder??1; m.castShadow=m.receiveShadow=false; m.userData.blob=true; (parent||scene).add(m); return m; } });
+export {TEX};

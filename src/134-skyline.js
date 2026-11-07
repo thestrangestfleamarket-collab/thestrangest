@@ -124,8 +124,9 @@ import {TPANE} from './087dz-tpane.js';
       m4.compose(new THREE.Vector3(x+(g-.5)*r,h*.55,z+(g-.4)*r),q,new THREE.Vector3(r*.8,r*.9,r*.8)); TM.setMatrixAt(i*2+1,m4); TM.setColorAt(i*2+1,c.setHSL(.25+g*.05,.3,.17+g*.06)); });
     TM.computeBoundingSphere(); TM.receiveShadow=false; (MAPG.bodega||scene).add(TM); FAR3.trees=TM; FAR3.treeN=P.length; }
   SYS.add('sky',(dt)=>{
-    const up=SHARED.LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(TM){ TM.visible=up; TM.material.color.setRGB(1,1,1).lerp(FU.uMC.value,FU.uMK.value>0?.45:0); } if(pan){ pan.visible=me.visible; } if(me.visible&&!CULL.seen(FSP))me.visible=false; if(pan){ FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
-    FU.uHN.value=FL.hn; FU.uHF.value=FL.hf; FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
+    const up=SHARED.LVL!=='down', inside=!OUT.open; me.visible=FAR3.on&&up; if(TM){ TM.visible=up; TM.material.color.setRGB(1,1,1); } if(pan){ pan.visible=me.visible; } if(me.visible&&!CULL.seen(FSP))me.visible=false; if(pan){ FAR3.PU.uNK.value=Math.max(0,Math.min(1,(FU.uLit.value-FL.wd)/Math.max(1e-3,FL.wn-FL.wd))); }
+    FU.uHN.value=0; FU.uHF.value=0;   // no haze at all, near or far (owner, 7 Nov 2026: "lets remove haze from the game completeley")
+    FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
     FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(!FAR3.on||inside||!up||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }

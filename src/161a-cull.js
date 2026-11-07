@@ -49,7 +49,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   // the triangles of a culled mesh's pieces in a frustum (the render inspector), -1 when none
   CULL.view=(R,F)=>{ const bm=R.bm; if(!bm)return -1; let t=-1; for(let i=0;i<R.n;i++){ if(!bm.getVisibleAt(i))continue; bm.getMatrixAt(i,m4); bm.getBoundingSphereAt(R.gid(i),S).applyMatrix4(w4.multiplyMatrices(bm.matrixWorld,m4)); if(F.intersectsSphere(S))t=Math.max(t,0)+R.tri(i); } return t; };
   // DRAW DISTANCE in GRAPHICS (owner, 4 Nov 2026: "add a draw distance for far buildings"): in first and third person nothing on the land wholly past it is drawn; 0 is ALL
-  const DD={v:40};   // the owner's draw distance, fixed (7 Nov 2026)
+  const DD={v:0};   // everything in view drawn, however far (owner, 7 Nov 2026: "lets remove things vanishing when far away")
   CULL.drawD=()=>DD.v>0&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?DD.v*TILE:0;
   CULL.setDraw=v=>{ DD.v=v>=300?0:Math.max(40,Math.round(v)); try{ SAVE.set('drawd',String(DD.v)); }catch(e){} }; CULL.getDraw=()=>DD.v;
   { const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#ddist'))return;
@@ -60,7 +60,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
     for(const p of LEVEL.places)if(p.id==='apts'||/^house\d+$/.test(p.id)){ const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, xa=Math.min(XS(p.x0),XS(p.x1)), xb=Math.max(XS(p.x0),XS(p.x1)), za=Math.min(ZS(y0),ZS(y1)), zb=Math.max(ZS(y0),ZS(y1)); K[0]=Math.min(K[0],xa); K[2]=Math.max(K[2],xb); K[1]=Math.min(K[1],za); K[3]=Math.max(K[3],zb); } return K; };
   const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD;
     const free=!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on, BR=LEVEL.block.backrow, ZS=SHARED.BOD.ZS, zr=ZS(BR[0]), z1=ZS(BR[1]), south=Math.sign(ZS(BR[0]-1)-zr);
-    const zone=!free?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
+    const zone=true?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
     if(zone!==CULL.zone){ CULL.zone=zone; CULL.keep=zone==='park'?parkKeep():zone==='hudson'?(south<0?[-1e6,-1e6,1e6,z1+.5*TILE]:[-1e6,z1-.5*TILE,1e6,1e6]):null; } };
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);

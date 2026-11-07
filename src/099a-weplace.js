@@ -15,6 +15,7 @@ import {SYS, TILE} from './006-map-pre.js';
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   WE.pfGeo=k=>GEO[k]||(RAW[k]?(GEO[k]=geo(k)):null);
+  WE.pfFoot=k=>{ const f=RAW[k]&&RAW[k].f; return f?f.map(v=>v*M):null; };
   WE.pfLoad=k=>list().then(j=>{ const e=j.by[k]; if(!e)throw new Error('no '+k); return cat(e.ci); });
   // the tab: a category, a search, the things in it; one armed follows the mouse until you click the ground
   const P=document.getElementById('we'), pane=P.querySelector('.pane');
@@ -25,15 +26,16 @@ import {SYS, TILE} from './006-map-pre.js';
   const tabs=document.createElement('div'); tabs.className='wtabs'; tabs.innerHTML='<button class="btn" data-wt="edit" aria-pressed="true">EDIT</button><button class="btn" data-wt="place" aria-pressed="false">PLACE</button>';
   const box=document.createElement('div'); box.id='wplace'; box.className='pane'; box.hidden=true;
   box.innerHTML='<select id="wpcat"></select><input id="wpq" placeholder="search…" autocomplete="off"><div id="wplist" class="dim">loading…</div><div class="row"><button class="btn" data-pt="-45">⟲ 45°</button><button class="btn" data-pt="45">⟳ 45°</button><button class="btn" id="wpno">CANCEL</button></div><div class="dim" id="wpsay">pick a thing, then click the ground to put it down</div>';
-  P.insertBefore(tabs,pane); P.insertBefore(box,pane.nextSibling);
+  P.insertBefore(tabs,pane); queueMicrotask(()=>paint('edit')); P.insertBefore(box,pane.nextSibling);
   const $=s=>P.querySelector(s); for(const ev of ['keydown','keyup','keypress'])$('#wpq').addEventListener(ev,e=>e.stopPropagation());
   const say=t=>{ $('#wpsay').textContent=t; };
-  const tab=w=>{ for(const b of tabs.children)b.setAttribute('aria-pressed',String(b.dataset.wt===w)); pane.hidden=w!=='edit'; box.hidden=w!=='place'; if(w!=='place')arm(null); else fill(); };
+  const paint=w=>{ for(const b of tabs.children){ const on=b.dataset.wt===w; b.setAttribute('aria-pressed',String(on)); b.setAttribute('aria-selected',String(on)); } };
+  const tab=w=>{ paint(w); pane.hidden=w!=='edit'; box.hidden=w!=='place'; if(w!=='place')arm(null); else fill(); };
   tabs.onclick=e=>{ const b=e.target.closest('[data-wt]'); if(b)tab(b.dataset.wt); };
   const fill=async()=>{ '@later'; const j=await list().catch(()=>null), sel=$('#wpcat'); if(!j){ $('#wplist').textContent='the things did not load'; return; }
     if(!sel.options.length)sel.innerHTML=j.cats.map((c,i)=>`<option value="${i}">${c} (${j.list.filter(r=>r[0]===i).length})</option>`).join('');
     const ci=+sel.value, q=$('#wpq').value.trim().toLowerCase(), rows=j.list.filter(r=>q?r[2].includes(q):r[0]===ci);
-    $('#wplist').innerHTML=rows.map(r=>`<button class="btn" data-pk="${r[1]}" aria-pressed="${!!armed&&armed.k===r[1]}">${TEXT.esc(r[2])} <span class="dim">${r[3]}m</span></button>`).join('')||'<div class="dim">nothing</div>'; };
+    $('#wplist').innerHTML=rows.map(r=>`<button class="btn" data-pk="${r[1]}" aria-pressed="${!!armed&&armed.k===r[1]}" aria-selected="${!!armed&&armed.k===r[1]}">${TEXT.esc(r[2])} <span class="dim">${r[3]}m</span></button>`).join('')||'<div class="dim">nothing</div>'; };
   $('#wpcat').onchange=()=>{ $('#wpq').value=''; fill(); }; $('#wpq').oninput=()=>fill();
   const unghost=()=>{ if(ghost){ scene.remove(ghost); ghost.material.dispose(); ghost=null; } };
   const arm=async k=>{ '@later'; unghost(); armed=null; if(!k){ fill(); return; } const j=await list(); say('loading '+j.by[k].n+'…'); await WE.pfLoad(k); armed={k,n:j.by[k].n};
@@ -44,5 +46,5 @@ import {SYS, TILE} from './006-map-pre.js';
   const outside=()=>!ROOMS.cur&&SHARED.LVL==='up';
   renderer.domElement.addEventListener('pointermove',e=>{ if(!ghost||!WE.on||!WE.iso())return; const g=WE.ground(e); ghost.visible=!!g&&outside(); if(g){ ghost.position.set(g[0],g[1],g[2]); ghost.rotation.y=turn*Math.PI/180; } });
   WE.placeDown=e=>{ if(!armed||e.button!==0)return false; if(!outside()){ say('things go outside only'); return true; } const g=WE.ground(e); if(!g)return true;
-    WE.addPf(armed.k,armed.n,g,turn); say('put down: '+armed.n+' · click again for another, or CANCEL'); return true; };
+    if(!WE.addPf(armed.k,armed.n,g,turn)){ say('too close to you: put it down a step away'); return true; } say('put down: '+armed.n+' · click again for another, or CANCEL'); return true; };
   SYS.every(()=>{ if(!WE.on&&(armed||!box.hidden))tab('edit'); if(ghost&&!WE.iso())ghost.visible=false; },500,'099a-weplace'); }

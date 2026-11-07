@@ -12,7 +12,7 @@ import {SYS} from './006-map-pre.js';
   let plays=0; try{ plays=+OWNED.get('plays')||(OWNED.had?1:0); }catch(e){} SYS.onStart(()=>{ plays++; try{ OWNED.set('plays',plays); }catch(e){} },'136b-plays');
   WE.may=()=>own||plays>=2;
   // a player's change set: what differs from the world everyone has (the baked file and the live one); null puts a thing back
-  const diff=st=>{ const b=Object.assign({},WE.baked?WE.baked():{},live||{}), d={}; for(const k in st)if(JSON.stringify(st[k])!==JSON.stringify(b[k]))d[k]=st[k]; for(const k in b)if(!(k in st))d[k]=null; return d; };
+  const diff=st=>{ const b=Object.assign({},WE.baked?WE.baked():{},live||{}), d={}; for(const k in st)if(JSON.stringify(st[k])!==JSON.stringify(b[k])&&!(!(k in b)&&WE.blank&&WE.blank(st[k])))d[k]=st[k]; for(const k in b)if(!(k in st))d[k]=null; return d; };
   const post=(st,auto)=>{ '@later'; const n=Object.keys(st).length; return BUGS.sb('/rest/v1/bug_reports',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id:crypto.randomUUID(),body:'WORLD EDIT — '+n+' change'+(n===1?'':'s')+(auto?' (sent on its own)':''),context:{kind:'worldedit',diff:true,count:n,edits:st,auto:!!auto,at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2)],lvl:SHARED.LVL,view:'iso'},status:'new'})}); };
   // the owner's APPROVE: the player's changes laid on the live file, for everyone
   BUGS.approveEdit=async r=>{ '@later'; const c=r.context||{}; if(c.kind!=='worldedit'||!c.diff||!c.edits)return; const cur=await get(); for(const k in c.edits){ if(c.edits[k]==null)delete cur[k]; else cur[k]=c.edits[k]; }

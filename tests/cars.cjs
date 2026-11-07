@@ -13,8 +13,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const d1 = await pg.evaluate(() => ({ ...CARS.dbg(), hud: document.getElementById('carhud').style.display === 'flex', ride: RIDE.on }));
   ok(d1.driving === 'c1' && d1.ride === 'car:muscle-car-60s' && !d1.cars[0].shown && d1.hud, 'double-clicking gets you in: driving it, the parked one not drawn, the controls on screen: ' + JSON.stringify({ driving: d1.driving, ride: d1.ride, hud: d1.hud }));
   const cam = () => pg.evaluate(() => ({ view: __dbg.UI.view, here: __dbg.UI.viewsHere().join(), off: +((((SHARED.yawTo - SHARED.heading - Math.PI) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI).toFixed(2), pitch: +SHARED.pitchTo.toFixed(2), dist: +(__dbg.UI.distTo ?? __dbg.UI.dist).toFixed(1) }));
-  const c0 = await cam(); await pg.evaluate(() => { __dbg.UI.orbit(300, 150); __dbg.UI.setView('first'); }); await pg.waitForTimeout(400); const c1 = await cam();
-  await pg.keyboard.down('q'); await pg.waitForTimeout(1200); const cq = await cam(); await pg.keyboard.up('q'); await pg.keyboard.down('e'); await pg.waitForTimeout(1200); const ce = await cam(); await pg.keyboard.up('e'); await pg.waitForTimeout(1200); const cb = await cam();
+  const off = () => { return (((SHARED.yawTo - SHARED.heading - Math.PI) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; }, until = (f, a) => pg.waitForFunction(f, a, { timeout: 30000, polling: 200 }).then(() => true, () => false);
+  const c0 = await cam(); await pg.evaluate(() => { __dbg.UI.orbit(300, 150); __dbg.UI.setView('first'); }); await until(() => __dbg.UI.view === 'third' && Math.abs(SHARED.pitchTo - .3) < .01); const c1 = await cam();
+  await pg.keyboard.down('q'); await until(new Function('return (' + off + ')() > 1.2')); const cq = await cam(); await pg.keyboard.up('q');
+  await pg.keyboard.down('e'); await until(new Function('return (' + off + ')() < -1.2')); const ce = await cam(); await pg.keyboard.up('e');
+  await until(new Function('return Math.abs((' + off + ')()) < .1')); const cb = await cam();
   await pg.evaluate(() => __dbg.UI.zoomLv({ deltaY: -120 })); await pg.waitForTimeout(300); const cz = await cam();
   ok(c0.view === 'third' && c0.here === 'third' && Math.abs(c0.off) < .05 && c1.view === 'third' && Math.abs(c1.off) < .05 && c1.pitch === c0.pitch && cq.off > 1.2 && ce.off < -1.2 && Math.abs(cb.off) < .1 && cz.dist < c0.dist, 'driving, the view is locked behind the car (no drag, tilt or other view), Q and E look left and right, the wheel zooms: ' + JSON.stringify({ c0, c1, cq, ce, cb, cz }));
   const x0 = await pg.evaluate(() => __dbg.pos()[0] / __dbg.cv().TILE);

@@ -1,0 +1,40 @@
+// THE FLY CHECK: node tests/fly.cjs dist/market.html. G: the hero cape goes on and you fly like a superhero (a fist up climbing, laid out flat going forward), faster the longer you fly, up through the cloud deck; G again comes down and lands, the cape off; nothing throws.
+const { chromium } = require('playwright'), path = require('path');
+const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=fly::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
+const SHOTS = process.env.SHOTS;
+(async () => {
+  const b = await chromium.launch({ ...(process.env.PWEXE ? { executablePath: process.env.PWEXE } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const pg = await b.newPage({ viewport: { width: 800, height: 500 } }), errs = [];
+  pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=40,150&res=0', { waitUntil: 'commit' });
+  await pg.waitForFunction(() => window.__started, null, { timeout: 300000 });
+  await pg.waitForFunction(() => !FADE.busy && OUT.open, null, { timeout: 120000, polling: 200 });
+  await pg.evaluate(() => { window.UI = __dbg.UI; window.st = __dbg.ST; window.WM = 33.9 / 30 / .84; UI.setView('third'); UI.dist *= .5; WX.hold = 'CLOUDY'; });
+  const shot = async n => { if (SHOTS) await pg.screenshot({ path: SHOTS + '/' + n + '.png' }); };
+  const S = () => pg.evaluate(() => { const N = AVATAR.pieces.find(p => p.label === 'HERO CAPE').n, W = AVATAR.worn(), y = __dbg.you(), F = st.fly;
+    return { fly: UI.fly, landing: !!UI.landing, on: !!(F && F.on), k: F ? +F.k.toFixed(2) : 0, f: F ? +F.f.toFixed(2) : 0, u: F ? +F.u.toFixed(2) : 0, pitch: +(st.last.pitch * 57.3).toFixed(0),
+      py: +(SHARED.py / WM).toFixed(1), g: +(SHARED.groundY(y.x, y.z) / WM).toFixed(1), sp: +UI.FLY.sp.toFixed(1), cape: !!(W.neck && W.neck[0] === N), x: y.x, z: y.z, deck: !!(SKY.deck && SKY.deck.m && SKY.deck.m.visible) }; });
+  const until = async (f, s = 60) => { let r; for (let i = 0; i < s * 2; i++) { r = await S(); if (f(r)) return r; await pg.waitForTimeout(500); } return r; };
+  const s0 = await S();
+  ok(!s0.fly && !s0.cape, 'on the ground: not flying, no cape ' + JSON.stringify(s0));
+  await pg.keyboard.press('g');
+  const s1 = await until(s => s.k > .99 && s.cape);
+  ok(s1.fly && s1.on && s1.k > .99 && s1.cape, 'G: flying, the flying pose on, the hero cape on ' + JSON.stringify(s1));
+  await shot('1-hover');
+  await pg.keyboard.down(' '); const s2 = await until(s => s.py > s1.py + 5 && s.u > .5); await shot('2-up'); await pg.keyboard.up(' ');
+  ok(s2.py > s1.py + 5 && s2.u > .5 && s2.pitch < 20, 'Space climbs upright, a fist up ' + JSON.stringify(s2));
+  await pg.keyboard.down('w'); const s3 = await until(s => s.f > .95 && s.sp > 15); await shot('3-forward');
+  ok(s3.f > .95 && s3.sp > 15 && s3.pitch > 70 && Math.hypot(s3.x - s2.x, s3.z - s2.z) > 5, 'W flies forward laid out flat, faster the longer: ' + JSON.stringify(s3));
+  await pg.evaluate(() => { SHARED.py = 120 * WM; }); const s4 = await until(s => s.deck, 20); await shot('4-clouds'); await pg.keyboard.up('w');
+  ok(s4.deck, 'up high the cloud deck is drawn ' + JSON.stringify(s4));
+  await pg.evaluate(() => { SHARED.py = 220 * WM; }); await pg.keyboard.down(' '); const s5 = await until(s => s.py > 222, 20); await pg.keyboard.up(' '); await shot('5-above');
+  ok(s5.py > 222, 'you fly on far above the clouds ' + JSON.stringify(s5));
+  await pg.evaluate(() => { SHARED.py = 20 * WM + SHARED.groundY(__dbg.you().x, __dbg.you().z); });
+  await pg.keyboard.press('g'); await pg.waitForTimeout(300);
+  const s6 = await S();
+  ok(s6.fly && s6.landing, 'G high up comes down first ' + JSON.stringify(s6));
+  const s7 = await until(s => !s.fly && !s.cape && s.k === 0);
+  ok(!s7.fly && !s7.cape && Math.abs(s7.py - s7.g) < .5, 'it lands on the ground, the cape off ' + JSON.stringify(s7));
+  ok(!errs.length, 'nothing throws' + (errs.length ? ': ' + errs.join(' | ') : ''));
+  await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all ok'); process.exit(fails.length ? 1 : 0);
+})().catch(e => { console.log('FAIL ' + e.message); process.exit(1); });

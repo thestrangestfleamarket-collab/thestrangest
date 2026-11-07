@@ -365,6 +365,17 @@
    ]
   },
   {
+   "id": "fly",
+   "title": "FLYING",
+   "what": "Fly like a superhero anywhere on the map, over everything and up through the clouds. You wear a cape while you fly.",
+   "steps": [
+    "Press [G] to take off. Your cape goes on.",
+    "Fly with [W] [A] [S] [D]. The longer you fly one way, the faster you go.",
+    "Hold [SPACE] to go up, [SHIFT] to go down. Keep going up to pass through the clouds.",
+    "Press [G] again to come down and land where you are. Press [G] while coming down to keep flying."
+   ]
+  },
+  {
    "id": "ride",
    "title": "ROWBOAT AND BOARDS",
    "what": "Get out on the water or ride a board.",

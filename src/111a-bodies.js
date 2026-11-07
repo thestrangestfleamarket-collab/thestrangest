@@ -103,7 +103,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const clipAt=(c,u,i,q,p)=>{ const f=((u%1)+1)%1*c.n, a=Math.floor(f)%c.n, b=(a+1)%c.n, t=f-Math.floor(f), A=(a*NB+i), Bq=(b*NB+i);
     q.set(c.Q[A*4],c.Q[A*4+1],c.Q[A*4+2],c.Q[A*4+3]); Q3.set(c.Q[Bq*4],c.Q[Bq*4+1],c.Q[Bq*4+2],c.Q[Bq*4+3]); q.slerp(Q3,t);
     p.set(c.P[A*3],c.P[A*3+1],c.P[A*3+2]); P3.set(c.P[Bq*3],c.P[Bq*3+1],c.P[Bq*3+2]); p.lerp(P3,t); };
-  const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead;
+  const loco=S=>!!S&&!S.move&&!S.ride&&!S.climb&&!S.hang&&!(S.water&&S.water.in)&&!S.sit&&!S.up&&!S.dead&&!S.fly;
   const clamp1=x=>x<0?0:x>1?1:x;
   function mocap(PM,body,S,dt){ const C=prep(body.anim).clips, w=clamp1(S.w||0), r=clamp1(S.run||0), k=body.S;
     const wd=S.wd||0; let d=S._mwd==null?0:wd-S._mwd; S._mwd=wd; if(d<0)d=0;

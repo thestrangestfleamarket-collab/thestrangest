@@ -1,7 +1,7 @@
 // THE POLYFORK AVATAR: AVATAR, a body you dress (owner, 5 Nov 2026: "a playable avatar based on the polyfork base character"): Polyfork's man or woman on your rig, three builds, a height, and a wardrobe of every garment the cast wears, every version of it (and their packs and what they hold), each in its own colours; your look is kept with your account and other players see it.
 import {THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {LOOKS, ONLINE, WIELD} from './003b-systems.js';
+import {LOOKS, ONLINE, st, WIELD} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
@@ -61,13 +61,14 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const save=()=>{ try{ OWNED.set('pfav',code({...L,bare:false})); }catch(e){} };
   // what you wear on top of your choice: bare feet (LOOKS.shoes), and worn clothes' dyes (EQUIP: a shirt, jacket or coat colours your jacket, or your top without one; trousers your bottoms)
   // and a tool in your hand (WIELD) puts down what that hand held
-  const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; if(WIELD.on)delete w[WIELD.hand==='L'?'lefthand':'righthand']; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
+  const CAPE=nOf('neck','HERO CAPE'), flying=()=>!!(st.fly&&st.fly.on);   // flying (G, 094): the wardrobe's hero cape goes on over what you wear at the neck
+  const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; if(WIELD.on)delete w[WIELD.hand==='L'?'lefthand':'righthand']; if(CAPE!=null&&flying())w.neck=[CAPE,'']; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
   const VAR=new Map();
   const body={key:'avatar',label:'AVATAR',playable:true,geo:empty,look:()=>code(mine()),
     variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!has(M.f,M.w)){ need(M.f,M.w).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>console.warn('AVATAR',e)); return null; }
       b=fitTo({key:'avatar~'+k,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null},M); VAR.set(k,b); return b; }};
-  AVATAR.code=()=>code(L); AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
+  AVATAR.code=()=>code(L); AVATAR.worn=()=>mine().w; AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
@@ -132,5 +133,5 @@ const AVATAR={}; window.AVATAR=AVATAR;
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
   need(L.f,L.w).catch(()=>{});   // (your figure and what you wear start coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();
-    let held=''; SYS.add('avatarHeld',()=>{ const h=WIELD.on?WIELD.hand:''; if(h!==held){ held=h; if(BODIES.pick()==='avatar'&&(L.w.righthand||L.w.lefthand))refresh(); } },'111c-avatar');
+    let held='', fl=false; SYS.add('life',()=>{ const h=WIELD.on?WIELD.hand:'', f=flying(); if(h!==held){ held=h; if(BODIES.pick()==='avatar'&&(L.w.righthand||L.w.lefthand))refresh(); } if(f!==fl){ fl=f; if(BODIES.pick()==='avatar')refresh(); } },'111c-avatar');
     const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); },'111c-avatar'); }

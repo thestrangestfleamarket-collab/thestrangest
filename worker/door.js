@@ -230,6 +230,7 @@ export class Block extends Server {
     const msgs = new Map(); for (const [id, c] of who) { const r = MOBSIM.roomAt(MS, c.state.at[0], c.state.at[1]); if (!r) continue; if (!msgs.has(r)) msgs.set(r, JSON.stringify({ t: "mobs", ...MOBSIM.snap(MS, new Set([r])) })); c.send(msgs.get(r)); }   // each player told of their own room
     if (now - (this.mobSaved || 0) > 30000) { this.mobSaved = now; this.ctx.storage.put("mobs", MOBSIM.save(MS)); } }
   async onAlarm() { const now = Date.now(), n = [...this.getConnections()].length;
+    try { this.dropSweep(now); } catch (e) { console.error("drops", e); }
     try { await this.clock(now); const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
       { const H = lvH(now, this.clk); if (F.cast && F.H !== H) { const jump = F.H == null || Math.abs(H - F.H) > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
       if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
@@ -241,12 +242,25 @@ export class Block extends Server {
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
     c.setState({ id, name: "", look: "", at: null }); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk(), MS = await this.mobs();
-    c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: await this.world(), cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
+    c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: { ...(await this.world()), ...this.drops(this.W) }, cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() })); c.send(JSON.stringify({ t: "dm", d: MS.dm || null }));
   }
   // things players set down in the world (hives...): kept by the section, so others see them while their owner is away
   putT() { this.ctx.storage.sql.exec("create table if not exists puts(who text, k text, name text, list text, at integer, primary key(who, k))"); }
   puts() { this.putT(); return this.ctx.storage.sql.exec("select who as id, k, name, list from puts").toArray().map(r => { let list = []; try { list = JSON.parse(r.list); } catch (e) {} return { id: r.id, k: r.k, name: r.name, list }; }); }
+  // things dropped on the ground (src/162e-bag.js): drop:<id> records the section keeps, sent with its world; each gone 60 to 120 minutes after it was dropped (the alarm), at most 200 (the oldest go first); whoever takes one first gets it
+  dropT() { if (this.dropOk) return; this.dropOk = 1; this.ctx.storage.sql.exec("create table if not exists drops(k text primary key, rec text, at integer, until integer)"); this.ctx.storage.sql.exec("create index if not exists drops_until on drops(until)"); }
+  drops(W) { this.dropT(); if (W) { let moved = false; for (const k of Object.keys(W)) if (k.startsWith("drop:")) { this.dropAdd(k, W[k], null, 0); delete W[k]; moved = true; } if (moved) this.ctx.storage.put("world", W); }   // (drops kept in the world before 7 Nov 2026 move over)
+    const o = {}; for (const r of this.ctx.storage.sql.exec("select k, rec from drops").toArray()) o[r.k] = r.rec; return o; }
+  dropAdd(k, v, by, life) { this.dropT(); if (typeof v !== "string" || v.length > 1200 || this.ctx.storage.sql.exec("select 1 from drops where k = ?", k).toArray().length) return null; let r; try { r = JSON.parse(v); } catch (e) { return null; }
+    const id = String(r && r.id || ""), n = Math.floor(+r.n); if (!/^[a-z0-9_]{1,48}$/.test(id) || !(n >= 1 && n <= 9999)) return null; const now = Date.now();
+    const o = { id, n, x: num(r.x, -1e5, 1e5), y: num(r.y, -1e4, 1e4), z: num(r.z, -1e5, 1e5), lv: word(r.lv, 24) || "street", t: now, until: now + (life || (60 + Math.random() * 60) * 60000), by: by || word(r.by, 48) };
+    if (r.rm) o.rm = word(r.rm, 40); if (r.in && typeof r.in === "object") o.in = r.in; if (r.subs && typeof r.subs === "object") o.subs = r.subs; if (!by) o.until = Math.min(o.until, (+r.t || now) + 7200000);
+    const rec = JSON.stringify(o); this.ctx.storage.sql.exec("insert into drops(k, rec, at, until) values(?, ?, ?, ?)", k, rec, now, o.until);
+    const over = this.ctx.storage.sql.exec("select count(*) as n from drops").one().n - 200, gone = over > 0 ? this.ctx.storage.sql.exec("select k from drops order by at, k limit ?", over).toArray().map(q => q.k) : [];
+    for (const g of gone) this.dropGone(g); return gone.includes(k) ? null : rec; }
+  dropGone(k) { this.ctx.storage.sql.exec("delete from drops where k = ?", k); this.broadcast(JSON.stringify({ t: "world", k, v: "" })); }
+  dropSweep(now) { this.dropT(); for (const r of this.ctx.storage.sql.exec("select k from drops where until < ?", now).toArray()) this.dropGone(r.k); }
   // the townspeople's lives (worker/lives.js): one record each, kept by the section and brought up to the game hour when asked
   livesT() { this.ctx.storage.sql.exec("create table if not exists lives(k text primary key, rec text)"); }
   lives(only) {
@@ -357,10 +371,11 @@ export class Block extends Server {
     } else if (m.t === "tr") {
       this.trade(c, s, m);
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
-      const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return;
-      this.world().then(W => { const v = k in W ? W[k] : ""; if (v !== "") { delete W[k]; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v: "" })); } c.send(JSON.stringify({ t: "took", k, v })); });
+      const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return; this.dropT(); const r = this.ctx.storage.sql.exec("select rec, until from drops where k = ?", k).toArray()[0], v = r && r.until >= now ? r.rec : "";
+      if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
     } else if (m.t === "world") {
-      const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;   // (the owner changed the clock: read it at the next step)
+      const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;
+      if (k.startsWith("drop:")) { if (!/^drop:[a-z0-9]{4,24}$/.test(k)) return; const life = this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, 7200000) : 0; this.world().then(W => { this.drops(W); const rec = this.dropAdd(k, m.v, s.id, life); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }); return; }   // a drop is set once, never changed or cleared by a player (a test's server may give it a short life)   // (the owner changed the clock: read it at the next step)
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
       this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
         const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : k.startsWith("drop:") ? 1200 : 200);

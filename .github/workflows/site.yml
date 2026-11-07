@@ -59,6 +59,7 @@ jobs:
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
+          k drops   'src/162[de]|src/150cy|worker/door|drops'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
@@ -160,6 +161,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: The ground drops (off the quick bar onto the world, their 3D look, picked up, gone in time)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' drops')
+        run: node tests/drops.cjs dist/market.html
+      - name: The ground drops' server (kept, told, first to take, expiry, the cap)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' drops')
+        run: node tests/drops-server.cjs
       - name: The folk's walks (the walks alone, the page following them, the walk grid)
         if: contains(steps.f.outputs.run, ' folk')
         run: node tests/folk.cjs dist/market.html

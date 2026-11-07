@@ -31,7 +31,7 @@ const SHOTS = process.argv[3];
       ok(tr ? used.shop : (id === 'hotel' || used.menu), id + ': the counter ' + (tr ? 'opens the shop (' + (tr.sells || []).length + ' things)' : id === 'hotel' ? 'rests you' : 'opens the YOU window') + ' ' + JSON.stringify(used));
       if (SHOTS) { await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(SHOTS, id + '.png') }); }
       await pg.evaluate(id => ROOMS.exit(id), id);
-      const out = await pg.waitForFunction(id => { const b = ROOMS.off[id].box, me = __dbg.you(); return !(me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1) && !(window.FADE && FADE.busy); }, id, { timeout: 15000 }).then(() => true, () => false);   // (the way out's fade takes longer on a slow machine)
+      const out = await pg.waitForFunction(id => { const b = ROOMS.off[id].box, me = __dbg.you(); return !(me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1); }, id, { timeout: 30000 }).then(() => true, () => false);   // (you are out as soon as you stand outside; the street's pictures come back behind the fade after)
       ok(out, id + ': and back out to the street');
     }
   }

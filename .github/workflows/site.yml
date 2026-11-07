@@ -76,6 +76,7 @@ jobs:
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
+          k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|src/094-ui|tools/recover|loadscreens'
           k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|data/world|tools/park-pf|parkpf'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
@@ -286,6 +287,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' pfrow')
         run: node tests/pfrow.cjs
+      - name: The loading screens (the start's bar, SWITCHING VIEW, nothing left to paint when it lifts)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' loadscreens')
+        run: node tests/loadscreens.cjs
       - name: The park's Polyfork things
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parkpf')

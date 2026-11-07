@@ -1,9 +1,9 @@
 // THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, your body left holding what you carried, and the ghost's walk to the Herbalist at the keep to come back (or RESURRECT in the menu).
 import {SHARED, THREE} from './003-shx.js';
-import {GHOSTS, keys, LEVELS, PH, pos, RAG, st, VIT, W3} from './003b-systems.js';
+import {GHOSTS, GUARD, INV, keys, LEVELS, PH, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SAVE} from './005-save.js';
-import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
+import {OWNED, SAVE} from './005-save.js';
+import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
 { const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);

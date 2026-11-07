@@ -52,7 +52,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const o=await pg.evaluate(async()=>{ const P=__dbg.you(), at=[P.x+1.6,P.z+.4,SHARED.py,0,SHARED.LVL,''];
     ONLINE.feed({t:'hi',you:'me',all:[{id:'g1',name:'LUZ',look:'b:avatar:'+AVATAR.code(),at,x:{gtr:'f'}}]}); await new Promise(r=>setTimeout(r,1500));
     ONLINE.feed({t:'gtr',id:'g1',k:'chord',v:'Am'}); ONLINE.feed({t:'gtr',id:'g1',k:'strum',v:'D'}); await new Promise(r=>setTimeout(r,1200));
-    const T=GUITAR.THEM().get('g1'); const r={them:!!T,held:!!(T&&T.H&&T.H.gm.parent),chord:T&&T.chord,voice:!!(T&&T.V),miss:T&&T.H&&T.H.err?Math.round(Math.max(...[2,3,4].map(f=>T.H.err.L[f]||0))*1000):null};
+    const T=GUITAR.THEM().get('g1'); const r={them:!!T,held:!!(T&&T.H&&T.H.gm.parent),chord:T&&T.chord,voice:!!(T&&T.V),miss:T&&T.H&&T.H.err?Math.round(Math.max(...[...new Set(T.live.lh.filter(q=>q.t1>1e8).map(q=>q.f))].map(f=>T.H.err.L[f]||0))*1000):null};   // (the fingers that press the chord, as for yours)
     ONLINE.feed({t:'gtr',id:'g1',k:'off',v:''}); ONLINE.feed({t:'out',id:'g1'}); await new Promise(r=>setTimeout(r,400)); r.gone=!GUITAR.THEM().has('g1'); return r; });
   rec('another player\'s guitar: in their hands, their chord under their fingers, heard from where they stand, gone when they stop',o.them&&o.held&&o.chord==='Am'&&o.voice&&o.miss!=null&&o.miss<=10&&o.gone,JSON.stringify(o));
   // ESC puts it away

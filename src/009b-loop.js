@@ -66,6 +66,8 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
 
   // the tunnels: one strip per stretch between stations on each track, its floor, two walls and a roof; lamps every 18 tiles, a real light every 36
   const TG=new THREE.Group(); TG.name='loop-tunnels'; scene.add(TG);
+  const BEDS=STA.map(st=>{ if(!st.old)return {x0:st.x0,x1:st.x0+LEN,y0:Math.min(st.my(0),st.my(XW)),y1:Math.max(st.my(0),st.my(XW))}; const p=M.at(0,0), q=M.at(XW,LEN);
+    return {x0:MX(Math.min(p.x,q.x)),x1:MX(Math.max(p.x,q.x)),y0:MY(Math.min(p.z,q.z)),y1:MY(Math.max(p.z,q.z))}; });   // A's bed is where 009-down built it
   const LAMPG=new THREE.BoxGeometry(.12*T,8*ZU,.6*T), LAMPM=new THREE.MeshBasicMaterial({color:0xffe2a0,clippingPlanes:[PT]}), lampAt=[];
   // only the loaded sections' stretch of each track: a tunnel runs from a station to the section's edge and stops at a black end wall
   const LV=SECTIONS.live, inLive=(tr,s)=>{ const o=tr.pt(s); return o.x>LV.x0&&o.x<LV.x1&&o.y>LV.y0&&o.y<LV.y1; }, ENDS={};
@@ -76,9 +78,16 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
     for(const [a,b] of free(k)){ for(let p=a;p<b-.01;p+=60){ const q=Math.min(b,p+60), n=Math.max(2,Math.ceil((q-p)/2)), S=[]; for(let i=0;i<=n;i++)S.push(p+(q-p)*i/n);
         const F=[],FU=[],WL=[],WLU=[],WR=[],WRU=[],C=[],CU=[];
         const at=(s,v,h)=>{ const o=tr.pt(s), nx=-o.hy, ny=o.hx; return [WX(o.x+nx*v),H(h),WZ(o.y+ny*v)]; };
+        // on a bend the floor's inner edge sweeps back over a station's track bed: what lies on one is left out
+        const cut=(P,f)=>{ const O=[]; P.forEach((q,i)=>{ const r=P[(i+1)%P.length], dq=f(q), dr=f(r); if(dq>=0)O.push(q); if(dq>=0!==dr>=0){ const t=dq/(dq-dr); O.push({x:q.x+(r.x-q.x)*t,y:q.y+(r.y-q.y)*t,u:q.u+(r.u-q.u)*t,w:q.w+(r.w-q.w)*t}); } }); return O; };
+        const off=P=>{ let L=[P]; for(const {x0,x1,y0,y1} of BEDS){ const N=[];
+            for(const Q of L){ if(Q.every(q=>q.x<=x0)||Q.every(q=>q.x>=x1)||Q.every(q=>q.y<=y0)||Q.every(q=>q.y>=y1)){ N.push(Q); continue; }
+              const mid=cut(cut(Q,q=>q.x-x0),q=>x1-q.x); N.push(cut(Q,q=>x0-q.x),cut(Q,q=>q.x-x1),cut(mid,q=>y0-q.y),cut(mid,q=>q.y-y1)); }
+            L=N.filter(Q=>Q.length>2); } return L; };
+        const floor=T3=>{ for(const P of off(T3.map(([s,v])=>{ const o=tr.pt(s); return {x:o.x-o.hy*v,y:o.y+o.hx*v,u:s/1.1,w:(v+BED/2)/BED}; })))
+          for(let i=1;i+1<P.length;i++)for(const q of [P[0],P[i],P[i+1]]){ F.push(WX(q.x),H(-32),WZ(q.y)); FU.push(q.u,q.w); } };
         for(let i=0;i<n;i++){ const s0=S[i], s1=S[i+1], a0=-tr.hin(s0), a1=-tr.hin(s1), b0=tr.hout(s0), b1=tr.hout(s1);
-          F.push(...at(s0,a0,-32),...at(s1,a1,-32),...at(s1,b1,-32),...at(s0,a0,-32),...at(s1,b1,-32),...at(s0,b0,-32)); const fv=v=>(v+BED/2)/BED;
-          FU.push(s0/1.1,fv(a0),s1/1.1,fv(a1),s1/1.1,fv(b1),s0/1.1,fv(a0),s1/1.1,fv(b1),s0/1.1,fv(b0));
+          for(const T3 of [[[s0,a0],[s1,a1],[s1,b1]],[[s0,a0],[s1,b1],[s0,b0]]])floor(T3);
           for(const [B,U,v0,v1] of [[WL,WLU,a0,a1],[WR,WRU,b0,b1]]){ B.push(...at(s0,v0,-32),...at(s1,v1,-32),...at(s1,v1,140),...at(s0,v0,-32),...at(s1,v1,140),...at(s0,v0,140));
             U.push(s0/9,0,s1/9,0,s1/9,1,s0/9,0,s1/9,1,s0/9,1); }
           C.push(...at(s0,a0,140),...at(s1,b1,140),...at(s1,a1,140),...at(s0,a0,140),...at(s0,b0,140),...at(s1,b1,140)); for(let z=0;z<6;z++)CU.push(0,0); }

@@ -595,6 +595,7 @@ const lift=(P,y)=>{ P.root=V(P.root.x,P.root.y+y,P.root.z); for(const n of 'LR')
 const floorOf=st=>st.water?st.water.floor:0;
 const armsOf=d=>{ const o={}; for(const n of 'LR')o[n]=d.k.some(k=>['ua','fa'].some(f=>Math.abs(k.P[n][f][0]-START[n][f][0])+Math.abs(k.P[n][f][1]-START[n][f][1])>1e-3)); return o; };
 function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in||st.climb||st.hang||st.ride){ st.up=null; return P; }
+  if(u.prev){ if(u.t<0.08){ st.up=u.prev; P=upLayer(st,P); st.up=u; } else u.prev=null; }
   const d=u.def, U=moveAtOf(u), k=smooth(clamp(u.t/0.08,0,1))*(1-smooth(clamp((u.t-(d.dur-0.14))/0.14,0,1))); if(k<=0)return P; const arms=d.arms||(d.arms=armsOf(d));
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
@@ -621,8 +622,12 @@ function flyPose(st){ const F=st.fly,t=F.t||0,f=smooth(clamp(F.f||0,0,1)),u=clam
   const V0=u>0?mixW(H,U,smooth(u)):mixW(H,D0,smooth(-u)); return mixW(V0,S,f); }
 // a hand-made move drawn from a recording (LOOK[name] = a recorded move's name, filled by MOTION): its own clock, travel and air kept, the pose the recording's at the same share of the way through
 const LOOK={};
-function lookAt(st){ const m=st.move, L=LOOK[m.name]&&MOVES[LOOK[m.name]]; if(!L||m.def.air)return moveAt(st);
-  const P=moveAtOf({def:L,t:Math.min(1,m.t/m.def.dur)*L.dur}); if(m.def.travel)P.root=V(P.root.x,P.root.y,P.root.z+moveAt(st).root.z); return P; }   // (a move that carries you: the recording drawn where the move has got to)
+function lookAt(st){ const m=st.move, L=LOOK[m.name]&&MOVES[LOOK[m.name]]; if(!L||m.def.air)return m.name.startsWith('mc_')?wrapPose(moveAt(st)):moveAt(st);
+  const P=moveAtOf({def:L,t:Math.min(1,m.t/m.def.dur)*L.dur}); if(m.def.travel)P.root=V(P.root.x,P.root.y,P.root.z+moveAt(st).root.z); return wrapPose(P); }
+// a recorded pose's angles back within a turn (the keys run on past 180 to stay continuous): the same body, and a blend to or from it takes the short way
+const wrapA=a=>a-2*Math.PI*Math.round(a/(2*Math.PI));
+function wrapPose(P){ for(const k of ['yaw','roll','pitch','side','bend','cyaw','nod','look'])if(typeof P[k]==='number')P[k]=wrapA(P[k]);
+  for(const n of 'LR'){ const H=P[n]; if(!H)continue; for(const k of ['ua','fa','th','sh'])if(Array.isArray(H[k]))H[k]=H[k].map(v=>typeof v==='number'?wrapA(v):v); if(typeof H.foot==='number')H.foot=wrapA(H.foot); } return P; }   // (a move that carries you: the recording drawn where the move has got to)
 function rawPose0(st){ const Wt=st.water,W=Wt&&Wt.in?swimPose(st):st.climb?climbPose(st):st.hang?hangPose(st):st.ride?ridePose(st):st.sit?sitPose(st):lift(walkPose(st,st.abd),floorOf(st));
   if(st.move){ const M=lift(lookAt(st),st.move.floor),u=smooth(clamp(st.move.t/(st.move.def.blend||0.1),0,1)); return u<1?mix(st.move.from,M,u):M; }
   if(st.out){ const u=smooth(clamp(st.out.t/(st.out.T||.12),0,1)),O=st.out.y0!=null?lift(JSON.parse(JSON.stringify(st.out.pose)),Wt.y-st.out.y0):st.out.pose; return mix(O,W,u); }
@@ -676,7 +681,7 @@ function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
   st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);
-function beginUp(st,name){ st.up={def:handed(st,MOVES[name]),name,t:0,held:true}; st.upNext=null; }
+function beginUp(st,name){ const pv=st.up; if(pv)pv.prev=null; st.up={def:handed(st,MOVES[name]),name,t:0,held:true,prev:pv}; st.upNext=null; }   // (prev: the arm move it follows, blended from)
 const carries=m=>!!(m&&m.def.travel&&!m.def.below&&!m.def.deck);
 const free=m=>{ const d=m.def; return d.below==null&&!d.deck&&!m.wall&&!(d.src&&(d.src.drop||d.src.entry)); };
 const pick=(st,n)=>n=='jump'&&st.w>.6&&st.run>.4?'runJump':n;
@@ -715,7 +720,7 @@ function tick(st,h){ st.run+=(st.runTarget-st.run)*Math.min(1,h*RIGT.blend); con
       const M=lift(moveAt(st),mv.floor),W=st.water,vy=d.air.v0-d.air.g*d.air.T; st.out={pose:JSON.parse(JSON.stringify(M)),t:0,T:0.9};
       W.in=true; W.y=M.root.y; W.vy=vy; W.under=1; W.swim=0; W.ph=0.15; W.sp=1; st.out.y0=W.y; W.events.push({k:'splash',z:6,v:-vy}); st.move=null; st.mv*=0.3; }
     else if(mv.t>=d.dur||(st.target>0||d.again&&mv.held)&&fr&&mv.t>=(d.ex??(a?a.t0+a.T+.04:d.dur*.8))){ if(mv.name=='climb'&&st.water){ st.water.in=false; st.water.floor=0; }
-      const O=lift(moveAt(st),mv.floor),z=O.root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
+      const O=lift(lookAt(st),mv.floor),z=moveAt(st).root.z; st.dist+=z-(mv.zc||0); O.root=V(O.root.x,O.root.y,0); st.out={pose:O,t:0,T:.12};
       const nx=st.next||(d.again&&mv.held&&!st.climb&&!st.hang?mv.name:null); st.move=null; if(st.target>0){ const J=build(O).J; st.ph=d.ph??(J.ankleL.z>J.ankleR.z?.75:.25); } if(nx) begin(st,pick(st,nx)); }
     const m=st.move,P0=pace(st)*st.target;
     if(!m) st.mv=0;

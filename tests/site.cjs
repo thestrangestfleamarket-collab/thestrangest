@@ -26,6 +26,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   { const me=who=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.no).catch(()=>null);
     const a1=await me('dev:pass-a'), a2=await me('dev:pass-a'), b1=await me('dev:pass-b');
     ok(Number.isInteger(a1)&&a1>=1000&&a1===a2&&Number.isInteger(b1)&&b1!==a1,'/owned issues each player one passport number, in order, and keeps it ('+a1+', '+b1+')'); }
+  { const nm=(who,claim)=>fetch(BASE+'/name',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify({claim})}).then(async r=>({s:r.status,...(await r.json().catch(()=>({})))})).catch(e=>({why:String(e)}));
+    const N='CHECK '+String(Date.now()%1e6), a=await nm('dev:name-a',N.toLowerCase()), b=await nm('dev:name-b',N), c=await nm('dev:name-a','x'), me=await fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass=dev:name-a',origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.name).catch(()=>null);
+    ok(a.ok&&a.name===N&&b.s===409&&b.taken&&c.s===400&&me===N,'/name gives each player a name no one else has, in capitals, and the login says it ('+JSON.stringify([a,b.s,c.s,me])+')'); }
   { const sh=(who,init)=>fetch(BASE+'/shared/world-edits.json',{...init,headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json',...(init&&init.headers||{})}});
     ok((await fetch(BASE+'/shared/world-edits.json')).status===401,'/shared/world-edits.json without a login is refused');
     ok((await sh('dev:site-check',{method:'POST',body:'{"x":1}'})).status===403,'a player cannot write the shared world edits');

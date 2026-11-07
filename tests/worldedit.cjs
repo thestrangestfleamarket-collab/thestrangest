@@ -34,7 +34,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   ok(R.movedUp>0.01,'UP moves the prop\'s instance matrix ('+(R.movedUp||0).toFixed(2)+')');
   ok(R.hidden===false,'DELETE hides the prop');
   ok(R.visBack===true&&R.backToStart,'BACK AS IT WAS restores it');
-  ok(R.colHidden===true,'colour/brightness rows hidden for a prop');
+  ok(R.colHidden===false,'a batched prop can be recoloured too (owner, 7 Nov 2026: everything can be edited)');
   ok(R.copies===1&&R.copyOf===R.name,'COPY puts a second '+R.name+' beside it, kept in the edits ('+R.copyOf+')');
   ok(R.copyUp>0,'the copy is picked and moves on its own');
   ok(R.copiesAfterDel===0,'DELETE takes the copy away');
@@ -45,10 +45,9 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
       const key=WE.dbgPick(mi,bid), parts=WE.dbgLinked(), tint=$('#wcol').closest('[data-prow]').style.display!=='none'; up(); const dy=Y(en.me,bid)-y0; $('#wdel').click(); en.me.getMatrixAt(bid,M); const gone=M.elements[0]===0&&M.elements[5]===0;
       WE.dbgPick(mi,bid); $('#wback').click(); return {key,parts,tint,dy:+dy.toFixed(3),gone,back:Math.abs(Y(en.me,bid)-y0)<1e-4}; };
     for(const k of ['river rock','lake rock','kerb brick','gate lantern'])out[k]=inst(k);
-    { const ti=metas.findIndex(e=>e.me.isInstancedMesh&&/^OakTree/.test(e.items[0].k)), te=metas[ti], it=te&&te.items[te.ids[0]];
-      const ci=metas.findIndex(e=>e.me.isBatchedMesh&&e.items.some(c=>c.k===it.k&&Math.abs(c.x-it.x)<1e-3&&Math.abs(c.z-it.z)<1e-3)), ce=metas[ci], cb=ce?ce.ids.findIndex(j=>{ const c=ce.items[j]; return c.k===it.k&&Math.abs(c.x-it.x)<1e-3&&Math.abs(c.z-it.z)<1e-3; }):-1;
-      if(ti<0||cb<0)out.oak={err:'no oak '+ti+' '+cb}; else { const t0=Y(te.me,0), c0=Y(ce.me,cb), key=WE.dbgPick(ti,0), parts=WE.dbgLinked(); up(); const dt=Y(te.me,0)-t0, dc=Y(ce.me,cb)-c0; $('#wdel').click(); const cHid=ce.me.getVisibleAt(cb)===false; WE.dbgPick(ti,0); $('#wback').click();
-        out.oak={key,parts,dt:+dt.toFixed(3),dc:+dc.toFixed(3),cHid,back:Math.abs(Y(te.me,0)-t0)<1e-4&&ce.me.getVisibleAt(cb)}; } }
+    { const ti=metas.findIndex(e=>e.me.isBatchedMesh&&e.ids.some(j=>/^OakTree/.test(e.items[j].k))), te=metas[ti];   // the oaks are one batch each since 7 Nov 2026 (the old trees keep their own leaves)
+      if(ti<0)out.oak={err:'no oak'}; else { const bid=te.ids.findIndex(j=>/^OakTree/.test(te.items[j].k)), t0=Y(te.me,bid), key=WE.dbgPick(ti,bid), parts=WE.dbgLinked(); up(); const dt=Y(te.me,bid)-t0; $('#wdel').click(); const cHid=!te.me.getVisibleAt(bid);
+        WE.dbgPick(ti,bid); $('#wback').click(); out.oak={key,parts,dt:+dt.toFixed(3),dc:+dt.toFixed(3),cHid,back:Math.abs(Y(te.me,bid)-t0)<1e-4&&te.me.getVisibleAt(bid)}; } }
     { const key=WE.dbgObj('park lamp',0), s=WE.dbgSel(), p=s.parts[0], P=p.me.geometry.attributes.position.array, y0=P[p.v0*3+1], L=s.follow&&s.follow[0], ly0=L&&L.position.y, f0=s.fix&&s.fix.slice();
       $('#wdel').click(); WE.dbgObj('park lamp',0); const dark=L&&L.userData.i0===0, hole=s.sol[0]>1e8; $('#wback').click(); WE.dbgObj('park lamp',0); up();
       const q=s.parts[0]; out.lamp={key,dy:+(q.me.geometry.attributes.position.array[q.v0*3+1]-y0).toFixed(3),light:L?+(L.position.y-ly0).toFixed(3):null,dark,hole,lit:L&&L.userData.i0>0};
@@ -58,9 +57,29 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   for(const k of ['river rock','lake rock','kerb brick','gate lantern']){ const r=Q[k]||{}; ok(/^park\|/.test(r.key||'')&&r.dy>0.01&&r.gone&&r.back,'a '+k+' picks, moves up, goes and comes back ('+(r.key||r.err)+')'); }
   ok(Q['kerb brick']&&Q['kerb brick'].tint,'a kerb brick can be recoloured');
   ok(Q['gate lantern']&&Q['gate lantern'].parts>=3,'a gate lantern\'s frame, glass and core are one thing ('+(Q['gate lantern']||{}).parts+' parts)');
-  ok(Q.oak&&Q.oak.parts===2&&Q.oak.dt>0.01&&Math.abs(Q.oak.dt-Q.oak.dc)<1e-3&&Q.oak.cHid&&Q.oak.back,'an oak\'s trunk and crown move and go together ('+JSON.stringify(Q.oak)+')');
+  ok(Q.oak&&Q.oak.parts>=1&&Q.oak.dt>0.01&&Q.oak.cHid&&Q.oak.back,'an oak moves, goes and comes back with everything that is part of it ('+JSON.stringify(Q.oak)+')');
   ok(Q.lamp&&Q.lamp.dy>0.01&&Math.abs(Q.lamp.light-Q.lamp.dy)<1e-3,'a park lamp moves and its light goes with it');
   ok(Q.lamp&&Q.lamp.dark&&Q.lamp.hole&&Q.lamp.lit,'a removed lamp goes dark and stops blocking, and comes back lit');
   ok(Q.lamp&&Q.lamp.copies===1&&Q.lamp.copiesAfter===0,'COPY makes a second park lamp; DELETE takes it away');
+  // everything can be edited (owner, 7 Nov 2026): the park's Polyfork things one by one, the Polyfork houses whole, anything else picked as a whole, a shop's inside piece by piece
+  for(let i=0;i<120&&!await pg.evaluate(()=>!!(window.PARKPF&&PARKPF.done&&window.PFROW&&PFROW.done)).catch(()=>false);i++)await wait(1000);
+  const A=await pg.evaluate(async()=>{ const out={}, $=s=>document.querySelector('#we '+s), up=()=>{ $('[data-up="1"]').click(); $('[data-up="1"]').click(); }, M=new (WE.dbgProps()[0].me.matrixWorld.constructor)();
+    if(!WE.on)await WE.toggle();
+    { const metas=WE.dbgProps(), mi=metas.findIndex(e=>e.me.userData.parkpf&&e.ids.length); if(mi<0)out.pf={err:'no park polyfork batch'}; else { const en=metas[mi]; en.me.getMatrixAt(0,M); const y0=M.elements[13];
+        const key=WE.dbgPick(mi,0), tint=$('#wcol').closest('[data-prow]').style.display!=='none'; up(); en.me.getMatrixAt(0,M); const dy=M.elements[13]-y0; $('#wdel').click(); const gone=!en.me.getVisibleAt(0);
+        WE.dbgPick(mi,0); $('#wback').click(); en.me.getMatrixAt(0,M); out.pf={key,name:en.items[0].k,tint,dy:+dy.toFixed(3),gone,back:Math.abs(M.elements[13]-y0)<1e-4&&en.me.getVisibleAt(0),things:metas.filter(e=>e.me.userData.parkpf).reduce((a,e)=>a+e.ids.length,0)}; } }
+    { const key=WE.dbgWobj(e=>e.place==='street'), ob=WE.dbgSelObj(); if(!ob)out.house={err:'no house'}; else { const y0=ob.position.y, s0=(WE.dbgObjs().find(e=>e.obj===ob).sol||[0]).slice(); up(); const dy=ob.position.y-y0;
+        document.querySelector('#we [data-dx="1"]')&&document.querySelector('#we [data-dx="1"]').click(); $('#wdel').click(); const gone=!ob.visible; WE.dbgWobj(e=>e.obj===ob); $('#wback').click(); out.house={key,n:WE.dbgObjs().filter(e=>e.place==='street').length,dy:+dy.toFixed(3),gone,back:ob.visible&&Math.abs(ob.position.y-y0)<1e-4}; } }
+    { const key=WE.dbgWorld(), ob=WE.dbgSelObj(); if(!ob)out.world={err:'nothing plain near'}; else { const y0=ob.position.y; up(); const dy=ob.position.y-y0; $('#wdel').click(); const gone=!ob.visible; WE.dbgWobj(e=>e.obj===ob); $('#wback').click(); out.world={key,dy:+dy.toFixed(3),gone,back:ob.visible}; } }
+    WE.toggle(); return out; });
+  console.log(JSON.stringify(A));
+  ok(A.pf&&/^park\|/.test(A.pf.key||'')&&A.pf.dy>0.01&&A.pf.gone&&A.pf.back&&A.pf.tint,'a park Polyfork thing picks on its own, moves, can be recoloured, goes and comes back ('+JSON.stringify(A.pf)+')');
+  ok(A.house&&/^street\|/.test(A.house.key||'')&&A.house.dy>0.01&&A.house.gone&&A.house.back,'a Polyfork house picks whole, moves, goes and comes back ('+JSON.stringify(A.house)+')');
+  ok(A.world&&/^world\|/.test(A.world.key||'')&&A.world.dy>0.01&&A.world.gone&&A.world.back,'anything else is picked whole and edited ('+JSON.stringify(A.world)+')');
+  // a shop's inside: its pieces while you are in, gone from the lists once you are out
+  await pg.evaluate(()=>__UI.goName('THE MUSHROOM SHOP')); let inside=false; for(let i=0;i<90&&!inside;i++){ await wait(1000); inside=await pg.evaluate(()=>WE.dbgProps().some(e=>e.temp&&e.ids.length)&&!(window.FADE&&FADE.busy)).catch(()=>false); }
+  const S=await pg.evaluate(async()=>{ const $=s=>document.querySelector('#we '+s), metas=WE.dbgProps(), mi=metas.findIndex(e=>e.temp&&e.ids.length); if(mi<0)return {err:'no inside pieces'}; const en=metas[mi], M=en.me.matrixWorld.clone(); en.me.getMatrixAt(0,M); const y0=M.elements[13];
+    if(!WE.on)await WE.toggle(); const key=WE.dbgPick(mi,0); $('[data-up="1"]').click(); en.me.getMatrixAt(0,M); const dy=M.elements[13]-y0; $('#wback').click(); WE.toggle(); return {key,pieces:en.ids.length,dy:+dy.toFixed(3)}; });
+  ok(inside&&S.pieces>0&&S.dy>0.01,'a shop\'s inside is edited piece by piece ('+JSON.stringify(S)+')');
   await b.close(); process.exit(bad?1:0);
 })();

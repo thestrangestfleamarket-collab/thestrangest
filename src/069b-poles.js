@@ -1,6 +1,6 @@
 // THE WIRES: WIRES strings the street's telephone poles and wires, with perches for birds.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, pos} from './003b-systems.js';
+import {CULL, DRESS, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLOCK, FIX, MAPSTAIR, MODS, OUT, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
@@ -68,7 +68,11 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     const NS=24, R=.032*M, WN=2, spans=[]; for(let w=0;w<WN;w++)for(let k=0;k+1<XS.length;k++){ const a=ends.find(e=>e.p===k&&e.sd===(w?1:-1)).at, b=ends.find(e=>e.p===k+1&&e.sd===(w?1:-1)).at; spans.push({w,k,a,b,L:a.distanceTo(b),ph:h3(w,k,6)*6}); }
     const NV=spans.length*NS*4*6, wp=new Float32Array(NV*3), wu=new Float32Array(NV*2), wf=new Float32Array(NV).fill(-1), u0=UV(SWT.wire,.5,.5); for(let i=0;i<NV;i++){ wu[i*2]=u0[0]; wu[i*2+1]=u0[1]; }
     const wg=new THREE.BufferGeometry(); wg.setAttribute('position',new THREE.BufferAttribute(wp,3)); wg.setAttribute('uv',new THREE.BufferAttribute(wu,2)); wg.setAttribute('pf',new THREE.BufferAttribute(wf,1));
-    const wm=new THREE.Mesh(wg,mat); wm.frustumCulled=false; scene.add(wm); OUT.add(wm,'world');
+    const uR={value:0}, uPl={value:new THREE.Vector2()}, wmat=new THREE.MeshLambertMaterial({map,flatShading:true});   // the wires end where the draw distance hides their poles (owner, 7 Nov 2026: no wires hanging in the sky)
+    wmat.onBeforeCompile=sh=>{ mat.onBeforeCompile(sh); sh.uniforms.uR=uR; sh.uniforms.uPl=uPl; sh.vertexShader='varying vec3 vWW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
+      sh.fragmentShader='varying vec3 vWW; uniform float uR; uniform vec2 uPl;\n'+sh.fragmentShader.replace('void main() {','void main() { if(uR>0.&&distance(vWW.xz,uPl)>uR)discard;'); }; wmat.customProgramCacheKey=()=>'wires';
+    SYS.add('life',()=>{ uR.value=CULL.R||0; uPl.value.set(pos.x,pos.z); },'069b-wires');
+    const wm=new THREE.Mesh(wg,wmat); wm.frustumCulled=false; scene.add(wm); OUT.add(wm,'world');
     for(const S of spans)if(S.w===S.k%2){ const t=S.w?.38+.1*h3(S.k,1,2):.55+.1*h3(S.k,2,2); WIRES.perch.push({x:0,z:0,y:0,h:S.w?Math.PI:0,span:S,t,d:0,on:0}); }
     const sag=S=>{ const c=S.L*S.L/(8*.024*S.L); return t=>c*(Math.cosh((t-.5)*S.L/c)-Math.cosh(S.L/2/c)); };
     for(const S of spans)S.f=sag(S);

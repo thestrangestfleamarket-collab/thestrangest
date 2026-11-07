@@ -3005,7 +3005,8 @@
     "board_moth",
     "board_bone",
     "board_teal",
-    "kart"
+    "kart",
+    "bmx"
    ],
    "line": "Wood, wheels, bearings, and the ones that float."
   }
@@ -3636,7 +3637,8 @@
     "net",
     "jar_s",
     "jar_m",
-    "jar_l"
+    "jar_l",
+    "kite"
    ],
    "buys": [
     "butterflies"
@@ -3672,7 +3674,8 @@
     "cage",
     "bseed",
     "feeder",
-    "binoc"
+    "binoc",
+    "camera"
    ],
    "buys": [
     "birds"
@@ -5446,7 +5449,8 @@
     "board_moth",
     "board_bone",
     "board_teal",
-    "kart"
+    "kart",
+    "bmx"
    ],
    "line": "Wood, wheels, bearings, and the ones that float."
   },

@@ -1,6 +1,6 @@
 // A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in TENANTS > BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
+import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
 import {MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {AVATAR} from './111c-avatar.js';
@@ -90,10 +90,10 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     fightOn.t=(fightOn.t||0)-dt; if(fightOn.t<=0){ fightOn.t=.7+R()*.6; const k=R()<.6?'J':'K'; RIG.act(st,k); SYS.run('act',k,1); setTimeout(()=>{ RIG.release&&RIG.release(st,k); SYS.run('act',k,0); },120); } return true; };
   const status=()=>({doing,cash:cash(),hp:Math.round((VIT.hp||0)*100)/100,job:C.job,at:[+pos.x.toFixed(1),+pos.z.toFixed(1)],...(path&&path.length?{to:[+path[path.length-1].x.toFixed(1),+path[path.length-1].z.toFixed(1)]}:{})});
   const place=()=>{ if(C.place){ UI.goName(C.place); setTimeout(()=>{ home={x:pos.x,z:pos.z}; },1500); }
-    else if(C.at){ UI.goTo(C.at[0],C.at[1],'up'); home={x:C.at[0],z:C.at[1]}; } else home={x:pos.x,z:pos.z}; };
+    else if(C.at){ const [x,z,dn]=C.at, id=!dn&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id&&ROOMS.enterAt)ROOMS.enterAt(id,[x,z,0,0]); else UI.goTo(x,z,dn?'down':'up'); home={x,z}; } else home={x:pos.x,z:pos.z}; };   // a spot in an inside off the map goes in, as GO TO does
   const look=()=>{ if(C.look===looked)return; looked=C.look||''; try{ if(C.look)AVATAR.set(AVATAR.decode(C.look)); else if(AVATAR.outfits&&AVATAR.outfits.length)AVATAR.outfit(Math.floor(R()*AVATAR.outfits.length)); }catch(e){} };
   BOT.set=c=>{ const was=C; C=Object.assign({job:'stand'},c||{}); if(LOOKS.L)LOOKS.L.name=C.name||LOOKS.L.name; look();
-    if(!placed||was.place!==C.place||String(was.at)!==String(C.at)){ placed=true; path=null; place(); }
+    if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
     if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };

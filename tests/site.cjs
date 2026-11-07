@@ -47,6 +47,13 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await T({do:'text',key:'check.x',text:'HELLO'},'dev:site-check')).status===403,'/admin text: not for a player who is not the owner');
     const put=await (await T({do:'text',key:'check.x',text:'HELLO'},'dev:owner-check')).json(), got=await (await fetch(BASE+'/texts',{headers:{cookie:'tsfm-pass=dev:site-check'}})).json(); await T({do:'text',key:'check.x',text:''},'dev:owner-check');
     ok(put.ok===true&&got['check.x']==='HELLO'&&(await fetch(BASE+'/texts')).status===401,'/texts carries the owner\'s words to every player, and only to players ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const K='a'+Date.now().toString(36)+'chk', art=(body,ck)=>fetch(BASE+'/art',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)});
+    const A=(body,ck='dev:owner-art')=>fetch(BASE+'/admin',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    const put=await (await art({put:{id:K,d:'data:image/webp;base64,AAAA',fin:1}},'dev:art-painter')).json(), seen=(await art({get:K},'dev:art-visitor')).status, list=await A({do:'art'}), pic=await A({do:'artget',art:K});
+    const notP=await A({do:'artoff',art:K},'dev:art-visitor'), off=await A({do:'artoff',art:K}), have=(await art({have:K},'dev:art-visitor')).status, after=(await art({get:K},'dev:art-visitor')).status;
+    const again=(await art({put:{id:K,d:'data:image/webp;base64,BBBB',fin:1}},'dev:art-painter')).status, list2=await A({do:'art'});
+    ok(put.ok&&seen===200&&list.art&&list.art.some(a=>a.id===K&&a.who==='dev-art-painter')&&pic.d==='data:image/webp;base64,AAAA'&&notP.why&&off.ok&&have===410&&after===404&&again===409&&!list2.art.some(a=>a.id===K),
+      'the owner sees a finished painting, takes it down, and it is gone for everyone and cannot be put back ('+JSON.stringify([put,seen,list.why||(list.art||[]).length,pic.why,off,have,after,again])+')'); }
   { const A=(body,ck='dev:owner-bots')=>fetch(BASE+'/admin',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     const run=(key,body={})=>fetch(BASE+'/bots/run',{method:'POST',headers:{'x-bot-key':key,'content-type':'application/json'},body:JSON.stringify(body)});
     ok((await A({do:'bots'},'dev:site-check')).why!==undefined&&(await run('nope')).status===403,'the bots: not for a player, and the runner needs the key');

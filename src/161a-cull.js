@@ -56,10 +56,12 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
       const B=document.createElement('div'); B.innerHTML='<h3>DRAW DISTANCE</h3><div class="row"><span>NEAR</span><input type="range" id="ddist" min="40" max="300" step="10"><span>ALL</span><span id="ddistv"></span></div><div class="dim">how far the town is drawn round you in first and third person; nearer draws less and runs faster</div>';
       P.appendChild(B); const R=B.querySelector('#ddist'), V=B.querySelector('#ddistv'), show=()=>{ R.value=DD.v||300; V.textContent=DD.v?DD.v+' TILES':'ALL'; }; R.oninput=e=>{ CULL.setDraw(+e.target.value); show(); }; show(); };
     }
+  const parkKeep=()=>{ const K=PARK.box().slice(), XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;   // in the park the apartment houses on West St stay drawn as from the street (owner, 7 Nov 2026: "need to be consistent")
+    for(const p of LEVEL.places)if(p.id==='apts'||/^house\d+$/.test(p.id)){ const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, xa=Math.min(XS(p.x0),XS(p.x1)), xb=Math.max(XS(p.x0),XS(p.x1)), za=Math.min(ZS(y0),ZS(y1)), zb=Math.max(ZS(y0),ZS(y1)); K[0]=Math.min(K[0],xa); K[2]=Math.max(K[2],xb); K[1]=Math.min(K[1],za); K[3]=Math.max(K[3],zb); } return K; };
   const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD;
     const free=!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on, BR=LEVEL.block.backrow, ZS=SHARED.BOD.ZS, zr=ZS(BR[0]), z1=ZS(BR[1]), south=Math.sign(ZS(BR[0]-1)-zr);
     const zone=!free?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
-    if(zone!==CULL.zone){ CULL.zone=zone; CULL.keep=zone==='park'?PARK.box():zone==='hudson'?(south<0?[-1e6,-1e6,1e6,z1+.5*TILE]:[-1e6,z1-.5*TILE,1e6,1e6]):null; } };
+    if(zone!==CULL.zone){ CULL.zone=zone; CULL.keep=zone==='park'?parkKeep():zone==='hudson'?(south<0?[-1e6,-1e6,1e6,z1+.5*TILE]:[-1e6,z1-.5*TILE,1e6,1e6]):null; } };
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };

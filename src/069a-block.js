@@ -1,10 +1,11 @@
 // THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and empty dirt lots (no fences).
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, pos, ROOMS, UI} from './003b-systems.js';
+import {BLK, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLOCK, cutWalls, FIX, LEVEL, MAINROW, MAPG, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
+import {FOUNT} from './060a-fount.js';
 Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
 { const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, B=BLOCK, s=T/24, YP=px=>px*ZU;
   let seed=11; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
@@ -86,7 +87,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       for(let i=0;i<k;i++)C.setMatrixAt(i,M4.compose(new THREE.Vector3(Math.min(xa,xb)+(i+.5)*L/k,Hf+.2*T,z),q,new THREE.Vector3(1,1,1))); FG.add(C); }
     G.add(FG); solid(p.x0,y-.1,p.x1,y+.1,70); }
   for(const [a0,b0] of [[B.x0,Math.min(-62.4,LEVEL.streets.west.x0)]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
-  { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,Math.max(LEVEL.park.y0+.5,...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none past the last, 6 Nov 2026)
+  { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),Math.min(...WH.map(p=>p.y0)),Math.max(...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none before the first or past the last)
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
   { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;
@@ -112,12 +113,23 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
       const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.012,(ZS(y0)+ZS(y1))/2);
       me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }   // (past the draw distance too: the fog fades it)
+    // the land past the edges (owner, 7 Nov 2026: "set a base color for far off distance things like grass"; "needs to be entire lake visible"): one low-res grass picture outside the section, the big lake whole in it, under the strips
+    { const GD=E.ground, Ls=E.lines||[]; if(GD&&Ls.length){ const [bx0,by0,bx1,by1]=GD.box, k=GD.px||2, W=Math.ceil((bx1-bx0)/k), H=Math.ceil((by1-by0)/k), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data, gc=GD.grass, wc=GD.water;
+      const S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
+      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:gc, n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
+        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=255; }
+      g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t});
+      const xs=Ls.flatMap(l=>[l[0],l[2]]), ys=Ls.flatMap(l=>[l[1],l[3]]), X0=Math.min(...xs), X1=Math.max(...xs), Y1=Math.max(...ys), step=Ls.find(l=>l[1]===l[3]&&l[1]<Y1), XB=step?Math.min(step[0],step[2]):X1, YS=step?step[1]:by0;
+      const rects=[[bx0,by0,X0,by1],[X0,Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
+      for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
+        for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
+        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
     const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
       for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi], x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
         Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
-      for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; im.userData.haze=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
+      for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

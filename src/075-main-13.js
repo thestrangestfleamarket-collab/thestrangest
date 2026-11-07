@@ -37,7 +37,7 @@ addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(TRICKS.takes
 // a tap of Shift (with the walking keys or alone) steps the pace: walk, jog, run, walk; Shift with any other key is that key's own (owner, 7 Nov 2026)
 const WALKK=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright']);
 const MOVEK={' ':' ',j:'J',k:'K',r:'R',v:'V',u:'U',n:'N',i:'C','2':'X','3':'Q','4':'E'};
-addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k); if(k==='shift'&&SHARED.shiftAlone){ SHARED.shiftAlone=false; SHARED.gait=((SHARED.gait||0)+1)%3; UI.log&&UI.log(['YOU WALK.','YOU JOG.','YOU RUN.'][SHARED.gait],'#a8d8ff'); } if(MOVEK[k]){ RIG.release(st,MOVEK[k]); SYS.run('act',MOVEK[k],0); } });
+addEventListener('keyup',e=>{ const k=UI.key(e); if(!k)return; keys.delete(k); if(k==='shift'&&SHARED.shiftAlone){ SHARED.shiftAlone=false; SHARED.gait=((SHARED.gait||0)+1)%3; } if(MOVEK[k]){ RIG.release(st,MOVEK[k]); SYS.run('act',MOVEK[k],0); } });
 addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; }); document.addEventListener('visibilitychange',()=>{ if(document.hidden){ keys.clear(); st.runTarget=0; FEEL.IN.press=0; } });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(LEVELS.own(marker,'*'));

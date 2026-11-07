@@ -38,7 +38,12 @@ const GTBOOK=[
   {name:'De Colores',beat:0.52,beats:3,times:2,pattern:'D du du',chords:'G G G G D7 D7 D7 D7 D7 D7 D7 D7 G G G G G G G7 G7 C C C C G G D7 D7 G G G G'},
   {name:'Las Mañanitas',beat:0.62,beats:3,times:2,pattern:'D du du',chords:'C C G7 G7 G7 G7 C C C C7 F F C G7 C C'}];
 function gtCompile(T){ if(T.c)return T.c; const tune=[], strum=[], bars=[], AMP={p:0.62,i:0.48,m:0.48,a:0.56}, TONE={p:2600,i:4200,m:4200,a:4600,s:4200};
-  if(T.tab){ const time=q=>1.0+q*T.q; let bar=0;
+  // a piece as notes (the downloaded songs, tools/guitar-songs-bake.py): [dt, string, fret, length] in centiseconds; a chord's notes share a time, the top three strings to a, m and i, the rest the thumb
+  if(T.notes){ const N=T.notes; let t=1.0, i=0, bar=-9; while(i<N.length){ t+=N[i]/100; const g=[]; while(i<N.length&&(g.length===0||N[i]===0)){ g.push({s:N[i+1],k:N[i+2]}); i+=4; }
+      const strs=[...new Set(g.map(n=>n.s))].sort((a,b)=>a-b), up=strs.filter(s=>s<=3).slice(0,3);
+      for(const n of g){ const r=up.includes(n.s)?['a','m','i'][up.indexOf(n.s)+(3-up.length)]:'p'; tune.push({t,s:n.s,k:n.k,r,amp:AMP[r],tone:TONE[r]}); }
+      if(t-bar>=2){ bars.push(t); bar=t; } } }
+  else if(T.tab){ const time=q=>1.0+q*T.q; let bar=0;
     for(const sys of T.tab){ const rows=sys.map(r=>r?r.split('|'):null), nb=rows[0].length;
       for(let b=0;b<nb;b++,bar++){ const notes=[];
         rows.forEach((r,si)=>{ const seg=r?r[b]:''; for(let c=0;c<seg.length;c++){ if(!/\d/.test(seg[c])||/\d/.test(seg[c-1]||''))continue; const k=parseInt(seg.slice(c,c+2),10); notes.push({q:bar*T.per+(c-T.c0)/2,s:si+1,k}); } });
@@ -69,7 +74,9 @@ function gtCompile(T){ if(T.c)return T.c; const tune=[], strum=[], bars=[], AMP=
   for(const n of tune)n.at=fret(n.s,n.t);
   const damp=[]; for(const q of lh)for(const t of [q.t0,q.t1]){ const last=tune.filter(n=>n.s===q.s&&n.t<=t).pop(); if(last&&t-last.t<6&&t-last.t>0.02&&fret(q.s,t-0.001)!==fret(q.s,t+0.001))damp.push({s:q.s,t}); } damp.sort((a,b)=>a.t-b.t);
   const len=tune.reduce((m,n)=>Math.max(m,n.t),0)+2.5, ev=tune.map(n=>({t:n.t,n})).concat(damp.map(q=>({t:q.t,s:q.s}))).sort((a,b)=>a.t-b.t);
-  return T.c={tune,strum,bars,lh,pos,damp,len,ev,beat:T.beat}; }
+  // a piece's beat (for the body's sway and the foot's tap): the book's own, else the commonest gap between its notes brought into a walking pace
+  let beat=T.beat; if(!beat){ const g=[]; for(let i=1;i<tune.length;i++){ const d=tune[i].t-tune[i-1].t; if(d>.06)g.push(d); } g.sort((a,b)=>a-b); beat=g.length?g[g.length>>1]:.6; while(beat<.42)beat*=2; while(beat>.95)beat/=2; }
+  return T.c={tune,strum,bars,lh,pos,damp,len,ev,beat}; }
 let GTSONG=0, GTTUNE=[], GTSTRUM=[], GTBAR=[], GTLH=[], GTPOS=[{t:0,p:1}], GTDAMP=[], GTEND=0, GTPRE=0, GTEV=[], GTBEAT=0.75;
 const GTS={t:0,i:0,sent:0,env:[0,0,0,0,0,0]};
 function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; GTSTRUM=c.strum; GTBAR=c.bars; GTLH=c.lh; GTPOS=c.pos; GTDAMP=c.damp; GTEND=c.len; GTPRE=Math.ceil(GTEND)+0.6; GTEV=c.ev; GTBEAT=T.beat;
@@ -77,4 +84,4 @@ function gtSet(i){ const T=GTBOOK[i], c=gtCompile(T); GTSONG=i; GTTUNE=c.tune; G
 const gtNext=i=>{ do i=(i+1)%GTBOOK.length; while(GTBOOK[i].kept); return i; };
 for(const T of GTBOOK)gtCompile(T); gtSet(0);
 const gtPosAt=t=>{ let a=GTPOS[0]; for(const q of GTPOS){ if(q.t-0.15>t)break; a=q; } const i=GTPOS.indexOf(a), pv=i>0?GTPOS[i-1]:a, u=Math.max(0,Math.min(1,(t-(a.t-0.15))/0.13)); return pv.p+(a.p-pv.p)*u*u*(3-2*u); };
-export {GTBOOK, GTCHORD, GTDAMP, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE};
+export {GTBOOK, GTCHORD, gtCompile, GTDAMP, GTEV, GTLH, gtNext, gtPosAt, GTS, gtSet, GTSONG, GTSTRUM, GTTUNE};

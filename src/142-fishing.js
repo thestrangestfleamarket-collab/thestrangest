@@ -104,7 +104,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     UI.thing({name:'BOATS (A ROWBOAT, $5 A TRIP)',obj:hb,reach:1.4*T,near:2.2*T,tall:Y(2.6),can:()=>INV.cash>=5?true:'YOU NEED $5 FOR A TRIP',act:()=>STAND.open()}); }
     const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ '@later'; const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-RB.lv), hp=new THREE.Vector3(); if(FORAGE.has('rod')&&!RIVER.swim&&!S_&&ray.intersectPlane(pl,hp)&&FISHING.at(hp.x,hp.z)){ const d=Math.hypot(hp.x-p.x,hp.z-p.z); if(d<16*T&&d>1.5*T){ FISHING.cast(hp.x,hp.z); return true; } }
       return pick0(ray,p); }; };
-  if(RIVER.on)stand(); else RIVER.onBuild.push(stand);
+  // (no bait stand on the promenade: bait is sold at FISHING & SCUBA, owner 7 Nov 2026)
   const STAND={}; FISHING.STAND=STAND; const B='style="margin:0 0 0 4px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
   const sp=document.createElement('div'); sp.id='fishp'; sp.hidden=true; sp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(460px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>e.stopPropagation());

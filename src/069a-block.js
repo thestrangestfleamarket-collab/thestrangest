@@ -87,7 +87,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       for(let i=0;i<k;i++)C.setMatrixAt(i,M4.compose(new THREE.Vector3(Math.min(xa,xb)+(i+.5)*L/k,Hf+.2*T,z),q,new THREE.Vector3(1,1,1))); FG.add(C); }
     G.add(FG); solid(p.x0,y-.1,p.x1,y+.1,70); }
   for(const [a0,b0] of [[B.x0,Math.min(-62.4,LEVEL.streets.west.x0)]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
-  { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),LEVEL.park.y0+.5,Math.max(LEVEL.park.y0+.5,...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none past the last, 6 Nov 2026)
+  { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),Math.min(...WH.map(p=>p.y0)),Math.max(...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none before the first or past the last)
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }
   { const lane=()=>!UI.persp&&(UI.view==='iso'||UI.view==='map')&&SHARED.LVL!=='down'&&!ROOMS.cur&&BLK.band(pos.x,pos.z)&&SHARED.cam.position.z>pos.z, z0=ZS(B.back)-.6*T, z1=ZS(-77)+.6*T, bb=new THREE.Box3(); BLK.lane=lane;

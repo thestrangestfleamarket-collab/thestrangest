@@ -42,12 +42,13 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   ONLINE.hear.ride=msg=>{ '@later'; const o=ONLINE.others&&ONLINE.others.get(msg.id), id=typeof msg.b==='string'&&kindOf(msg.b)?msg.b:null, was=theirs.get(msg.id);
     if(was&&(!id||was.id!==id)){ was.m.removeFromParent(); theirs.delete(msg.id); if(o&&o.S)o.S.ride=null; }
     if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=k.make(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T}}); } };
+  RIDE.their=id=>{ const o=theirs.get(id); return o&&o.R; };   // another rider's board state (their tricks land on it, 146ib)
   const deck=()=>RIG.RIDEG.deck*(W3.group.scale.y||.046);
   SYS.add('life',dt=>{ const t=performance.now()/1000;
     for(const [id,m] of M)if(id!==RIDE.on)m.visible=false;
     if(RIDE.on){ const m=mesh(RIDE.on); m.visible=RIDE.cur.hide||RIDE.cur.seat||!(W3.group&&W3.group.visible===false); m.position.set(pos.x,SHARED.py+deck(),pos.z); m.rotation.set(0,RIDE.hd,0); RIDE.cur.place(m,RIDE,t); if((shT-=dt||0)<=0)share(); }
     for(const [pid,o] of theirs){ const R=ONLINE.others&&ONLINE.others.get(pid); if(!R||!R.fig||!R.p){ o.m.removeFromParent(); theirs.delete(pid); continue; }
-      if(R.S)R.S.ride=o.k.pose(o.R); const g=R.fig.g; o.m.visible=o.k.hide||o.k.seat||g.visible; o.m.position.set(g.position.x,g.position.y+RIG.RIDEG.deck*(g.scale.y||.046),g.position.z); o.R.hd=R.p.hd||0; o.m.rotation.set(0,o.R.hd,0); o.k.place(o.m,o.R,t); } },'146i-ride');
+      const q=o.R; if(q.flip&&(q.flip.t+=dt||0)>q.flip.dur)q.flip=null; if(q.pushing)q.pt=(q.pt||0)+(dt||0)*1.3; if(R.S)R.S.ride=o.k.pose(o.R); const g=R.fig.g; o.m.visible=o.k.hide||o.k.seat||g.visible; o.m.position.set(g.position.x,g.position.y+RIG.RIDEG.deck*(g.scale.y||.046),g.position.z); o.R.hd=R.p.hd||0; o.m.rotation.set(0,o.R.hd,0); o.k.place(o.m,o.R,t); } },'146i-ride');
   const SEAT=new THREE.Vector3(), sitIn=(g,k,m)=>{ m.updateMatrixWorld(true); m.localToWorld(k.seat(m,SEAT)); const f=k.fit?k.fit(m):1; g.scale.multiplyScalar(f); m.getWorldQuaternion(g.quaternion); SEAT.y-=RIG.RIDEG.sit*g.scale.y; g.position.copy(SEAT); g.updateMatrixWorld(true); };
   SYS.add('cam',()=>{ if(RIDE.on&&RIDE.cur){ if(RIDE.cur.seat)sitIn(W3.group,RIDE.cur,mesh(RIDE.on)); else if(RIDE.cur.hide)W3.group.visible=false; }
     for(const [pid,o] of theirs)if(o.k.hide||o.k.seat){ const R=ONLINE.others&&ONLINE.others.get(pid); if(!R||!R.fig)continue; if(o.k.seat)sitIn(R.fig.g,o.k,o.m); else R.fig.g.visible=false; } },'146i-ride');   // after the view sets who is drawn

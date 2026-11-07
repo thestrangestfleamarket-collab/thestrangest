@@ -30,8 +30,8 @@ Object.assign(CHARS,{
   store:(()=>{ try{ return JSON.parse(SAVE.get('chared')||'null')||{...(LEVEL.chars||{})}; }catch(e){ return {...(LEVEL.chars||{})}; } })(),
   save(){ try{ SAVE.set('chared',JSON.stringify(CHARS.store)); }catch(e){} },
   byId:id=>NPCS.find(N=>CHARS.id(N)===id)||null,
-  // a character's effective shop config (draft over committed), or null if it sells nothing
-  trade:N=>{ const id=CHARS.id(N), r=(CHARS.store&&CHARS.store[id])||CHARS.rec(id); return r&&r.trade&&Array.isArray(r.trade.sells)&&r.trade.sells.length?r.trade:null; },
+  // a character's effective shop config (draft over committed), or null if it sells, buys and teaches nothing
+  trade:N=>{ const id=CHARS.id(N), r=(CHARS.store&&CHARS.store[id])||CHARS.rec(id); const t=r&&r.trade; if(!t)return null; const s=Array.isArray(t.sells)?t.sells:[]; return s.length||(t.buys||[]).length||(t.teaches||[]).length?(t.sells===s?t:{...t,sells:s}):null; },
   // apply the whole draft to the live characters (ship fields and home)
   applyAll(){ for(const id in CHARS.store){ const N=CHARS.byId(id); if(!N)continue; const r=CHARS.store[id]; CHARS.put(N,r);
     if(r.home&&N.st)N.home={id,x:CHARS.wx(r.home[0]),z:CHARS.wz(r.home[1]),r:(+r.home[2]||0)*TILE}; } },

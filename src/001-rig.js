@@ -75,7 +75,8 @@ function mix(A,B,u){ const P={root:lerpV(A.root,B.root,u)};
   return P; }
 const hipAt=(P,s)=>{ const Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv,0); return [add(add(P.root,pv),app(Rb,sub(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw),pv))),Rb]; };
 function legIK(P,n,s,A,kp){ const [H,Rb]=hipAt(P,s),d=sub(A,H),dl=Math.min(len(d),THIGH+SHIN-1e-6),u=nrm(d);
-  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),fwd=kp?app(Rb,kp):app(Rb,yaw(V(0,0,1),P.pyaw)),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
+  const f0=app(Rb,yaw(V(0,0,1),P.pyaw)); const fwd=kp?add(app(Rb,kp),mul(f0,.35)):f0;   // (a knee's given way leans a little forward: one given almost along the leg doesn't flip side to side)
+  const ca=clamp((THIGH*THIGH+dl*dl-SHIN*SHIN)/(2*THIGH*dl),-1,1),pole=nrm(sub(fwd,mul(u,dot(fwd,u))));
   const Kn=add(H,add(mul(u,THIGH*ca),mul(pole,THIGH*Math.sqrt(1-ca*ca)))),A2=add(H,mul(u,dl));
   const ang=v=>{ const l=nrm(v),x=dot(l,Rb.x),y=dot(l,Rb.y),z=dot(l,Rb.z); return [Math.atan2(z,-y),Math.asin(clamp(s*x,-1,1))]; };
   P[n].th=ang(sub(Kn,H)); P[n].sh=ang(sub(A2,Kn)); }
@@ -675,7 +676,7 @@ function create(){ return {ph:0,w:0,target:0,run:0,runTarget:0,dist:0,acc:0,abd:
   head:{x:0,v:0,a0:null,a1:null}}; }
 function handed(st,def){ if(!def||!def.lead||(st.hand||'R')===def.lead) return def; return def.mir||(def.mir={...def,lead:st.hand,mir:null,arms:null,k:def.k.map(K=>({...K,P:mirror(K.P)}))}); }
 const pace=st=>gaitOf(st.run).speed*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run);
-function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.last||rawPose(st))),om=st.move;
+function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.out&&!(st.out.t>0)?st.out.pose:st.last||rawPose(st))),om=st.move;   // (straight after a move ends: from its last pose, its travel already taken into the step)
   if(om){ const z=from.root.z; st.dist+=z-(om.zc||0); from.root=V(from.root.x,from.root.y,0); }
   st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);

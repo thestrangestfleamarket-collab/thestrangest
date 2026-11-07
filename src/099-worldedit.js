@@ -72,7 +72,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const person=m=>{ for(let q=m;q;q=q.parent){ if(q===W3.group||q.userData.npc||q.userData.body||q.userData.player)return true; if(NPCS.some(N=>N.g===q))return true; } return false; };
   const plainMesh=m=>m&&m.isMesh&&!(m.material&&m.material.visible===false)&&!m.isSkinnedMesh&&!m.isInstancedMesh&&!m.isBatchedMesh&&!m.userData.weCopy&&!m.userData.weObj&&!(m.material&&m.material.transparent&&m.material.depthWrite===false)&&vis(m)&&!person(m);
   const asWorld=m=>{ const en={place:'world',name:wname(m),obj:m}; WED.objs.push(en); objFirst(en); return en; };
-  let scanned=0; const scanWorld=()=>{ '@later'; const want=new Set(Object.keys(ST).filter(k=>k.startsWith('world|'))); if(!want.size||scanned===want.size)return; scanned=want.size;
+  let scanned=0; const scanWorld=()=>{ const want=new Set(Object.keys(ST).filter(k=>k.startsWith('world|'))); if(!want.size||scanned===want.size)return; scanned=want.size;
     scene.traverse(m=>{ if(!m.isMesh||m.userData.weObj||m.isSkinnedMesh||m.isInstancedMesh||m.isBatchedMesh||m.userData.weCopy)return; m.updateMatrixWorld(); const p=new THREE.Vector3().setFromMatrixPosition(m.matrixWorld), k='world|'+wname(m)+'|'+rp(p.x)+','+rp(p.y)+','+rp(p.z); if(want.has(k))asWorld(m); }); };
   const applyObjs=()=>{ scanWorld(); for(const en of objs()){ const h=objHandle(en); if(ST[keyOf(h)])applyObj(h); } };
   const fromOBJE=key=>{ for(const en of objs()){ const h=objHandle(en); if(keyOf(h)===key)return h; } return null; };
@@ -144,13 +144,13 @@ Object.assign(WE,{on:false}); window.WE=WE;
   let LOCAL={}; try{ LOCAL=JSON.parse(localStorage.getItem('market-world')||'{}'); }catch(e){}
   try{ Object.assign(ST,BAKED,LOCAL); }catch(e){}
   const applyAll=()=>{ if(!Object.keys(ST).length)return; for(const o of OBJS)if(ST[kid(o)])apply(o); applyWED(); applyObjs(); applyCopies(); applyLights(); applySigns(); settle(); };
-  const drainWED=()=>{ let t=800; const re=()=>{ applyWED(); applyObjs(); applyLights(); applySigns(); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
+  const drainWED=()=>{ let t=800; const re=()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyWED(); applyObjs(); applyLights(); applySigns(); }).catch(()=>{}); if((t*=2)<40000)setTimeout(re,t); }; setTimeout(re,t); };
   // the world everyone shares (the server's file, 136b) under your own browser's edits; the owner's browser is the server's copy unless a send of his failed
   WE.setLive=(live,mine)=>{ const was=JSON.stringify(ST); for(const k in ST)delete ST[k]; Object.assign(ST,BAKED,live||{},mine?LOCAL:{}); try{ localStorage.setItem('market-world',JSON.stringify(ST)); }catch(e){} return JSON.stringify(ST)!==was; };
   // things built after the start (the park's Polyfork things, the Polyfork rows) call this once they stand, so their saved edits are put on them
   WE.late=()=>{ if(!Object.keys(ST).length)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyWED(); applyObjs(); settle(); }).catch(()=>{}); };
-  WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>{ applyAll(); drainWED(); }).catch(()=>{ applyAll(); drainWED(); }); };   // the retries too wait for the later code (scanWorld is in it)
-  SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(()=>{ if(Object.keys(ST).length)WE.applyAll(); }),'099-worldedit');
+  WE.applyAll=()=>{ if(!SYS.started)return; (window.LOAD?LOAD('later'):Promise.resolve()).then(applyAll).catch(applyAll); drainWED(); };
+  SYS.onStart(()=>(WE.ready||Promise.resolve()).catch(()=>{}).then(async()=>{ if(!Object.keys(ST).length)return; if(window.LOAD)await LOAD('later'); WE.applyAll(); }),'099-worldedit');   // laying the edits needs the later chunk
   WE.getState=()=>ST;
   const css=document.createElement('style'); css.textContent=`
   #we{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:min(400px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:var(--bg);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20;box-sizing:border-box}

@@ -81,6 +81,7 @@ const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 const START={k:0,n:(()=>{ try{ return +localStorage.getItem('market-grabs')||21; }catch(e){ return 21; } })()}; START.show=name=>{ const L=document.getElementById('loading'); if(!L)return; if(!START.el){ L.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div>OPENING THE MARKET</div><div style="width:min(320px,70vw);height:8px;border:2px solid #3a3f4e;padding:2px"><div class="sb" style="height:100%;width:0;background:#8a8f9c"></div></div><div class="sl" style="font-size:10px;color:#5d6270"></div></div>'; START.el=L; }
   L.querySelector('.sb').style.width=Math.min(100,START.k/START.n*100).toFixed(0)+'%'; L.querySelector('.sl').textContent=name?'BUILDING '+name.toUpperCase().replace(/[^A-Z0-9]+/g,' ')+' ('+(START.k+1)+' / '+Math.max(START.n,START.k+1)+')':'READY'; };
 START.done=()=>{ try{ localStorage.setItem('market-grabs',START.k); }catch(e){} START.show(null); };
+START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };
 const grab=async(name,fn)=>{ if(!SYS.started)START.show(name); const n0=scene.children.length; await fn(); if(!SYS.started)START.k++; const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 __CODE__("worker/mappatch.js")
 const LEVEL0=__DATA__("data/world.json"), MAPFILE=MAPPATCH.file(LEVEL0);
@@ -102,7 +103,7 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
-const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
+const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.row===2?(1240-2000/BLDK-131)*BLDK:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const L=LAYOUT0; return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();

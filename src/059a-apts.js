@@ -12,7 +12,7 @@ APTS.PER=21; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:
 APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
 await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.flat=FL;
-  for(let hi=0;hi<HOUSES.length;hi++)await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi);
+  for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
   MODS.apts=APTS; });
 async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{}; const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;
@@ -180,7 +180,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
       for(let k=0;k<p.length;k+=3){ const by=b[k+1], f=(c.y1-by)/span, g=f*f+.05; p[k+2]=b[k+2]+Math.sin(t*1.6+by*.05+c.ph)*.5*c.fw*g; p[k]=b[k]+Math.cos(t*1.3+by*.04+c.ph)*.3*g; } c.m.geometry.attributes.position.needsUpdate=true; }
     for(const f of DYN.flame){ const fl=.7+.3*Math.sin(t*11+f.fy)+.15*Math.sin(t*23.3+f.fy*2); f.L.intensity=f.i0*(.6+.4*fl); f.fm.scale.set(1,.85+.3*fl,1); f.fm.material.opacity=.72+.24*fl; f.fm.position.y=f.fy+Math.sin(t*7+f.fy)*.3; }
   },'059a-apts');
-  APTS.spawn=[X(DC),Z(AR.y1-1.3),0,Math.PI];   // the apartment is entered off the map (not a clipped ROOMS room), so the live sky shows through its open windows
+  APTS.spawn=[X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),0,Math.PI];   // in the middle of your rooms (owner, 7 Nov 2026: "yuo spawn in the middle of you apartment")   // the apartment is entered off the map (not a clipped ROOMS room), so the live sky shows through its open windows
   APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25));
   // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
   { APTS.inReal=false;

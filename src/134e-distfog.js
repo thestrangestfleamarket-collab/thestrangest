@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:0,mist:0,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:0}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog8')||'{}')); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0,JSON.parse(SAVE.get('dfog9')||'{}')); }catch(e){ C=Object.assign({},D0); }
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -57,7 +57,7 @@ const DFOG={};
   pass.enabled=C.on; comp.insertPass(pass,1); SHARED.carry(pass);
   // a room's steam (SHARED.steam: {b:[x0,y0,z0,x1,y1,z1], k: thickness per unit, c: colour}): the same pass fogs each pixel by how far its view through the box runs, so it reads the same from every camera
   let stOn=false; SYS.add('rooms',()=>{ const on=!!SHARED.steam&&!renderer.xr.isPresenting; if(on!==stOn){ stOn=on; pass.enabled=C.on||on; } },'134e-steam');
-  const save=()=>{ try{ SAVE.set('dfog8',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
+  const save=()=>{ try{ SAVE.set('dfog9',JSON.stringify(C)); }catch(e){} pass.enabled=C.on||stOn; };
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&C.cut&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;

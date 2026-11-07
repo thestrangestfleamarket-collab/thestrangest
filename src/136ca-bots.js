@@ -11,9 +11,9 @@ import {AVATAR} from './111c-avatar.js';
   const people=()=>{ const o=[['me','ME ('+(ONLINE.myName?ONLINE.myName():'you')+')']]; for(const [id,p] of ONLINE.others||[])o.push([id,(p.name||id).slice(0,24)]); return o; };
   const places=()=>{ try{ return [...new Set(['YOUR APARTMENT',...UI.places().map(p=>p[0])])].map(n=>[n,n]); }catch(e){ return []; } };
   const sel=(f,list,v)=>`<select data-f="${f}" style="${IN}">${list.map(([k,n])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
-  const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<h3>BOTS</h3><div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<h3>BOTS</h3><div class="dim">'+esc(D.why)+'</div>'; return; }
+  const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
     const B=D.bots, live=B.filter(b=>b.status&&Date.now()-b.status.seen<20000).length;
-    el.innerHTML=`<h3>BOTS</h3><div class="dim">Test players that play the game by themselves, on Cloudflare: a bot that is ON is running, OFF stops it. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
+    el.innerHTML=`<div class="dim">Test players that play the game by themselves, on Cloudflare: a bot that is ON is running, OFF stops it. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
       ${D.cloud&&D.cloud.err?`<div style="color:#e06a5a">CLOUDFLARE: ${esc(D.cloud.err)}</div>`:''}${D.cloud===null?'<div class="dim">Cloudflare is not running bots on this server.</div>':''}
       <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><button class="btn" id="bhow">${open==='how'?'HIDE':'COST AND OTHER WAYS'}</button></div>
       ${open==='how'?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">On Cloudflare all the bots share one browser. Cloudflare's paid Workers plan includes 10 browser hours a month, then about 9 cents an hour; the free plan stops after 10 minutes a day. Turn bots OFF when you are done.

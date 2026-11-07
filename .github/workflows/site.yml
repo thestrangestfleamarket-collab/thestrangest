@@ -64,6 +64,7 @@ jobs:
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|underway\.cjs'
+          k underquests 'src/066a-caverns|src/062a-dungeon|src/147d-under|src/146zca-lounge|under-quests\.cjs'
           k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
@@ -241,6 +242,10 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' underway')
         run: node tests/underway.cjs dist/market.html
+      - name: The underground set pieces (the Fairy Ring, the Crystal Grotto, the Drowned Apothecary, the Knight's Tomb, the Smugglers' Tunnel)
+        timeout-minutes: 40
+        if: contains(steps.f.outputs.run, ' underquests')
+        run: node tests/under-quests.cjs dist/market.html
       - name: The merchants' shops (every one furnished, its keeper inside, the counter opens the shop)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')

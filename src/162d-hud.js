@@ -59,7 +59,7 @@ import {QUESTS} from './160a-quests.js';
     draw(); return true; };
   QB.addEventListener('click',e=>{ const s=e.target.closest('.qs'); if(s)HUD.use(+s.dataset.i); });
   QB.addEventListener('contextmenu',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); HUD.set(+s.dataset.i,null); });
-  QB.addEventListener('dragstart',e=>{ const s=e.target.closest('.qs'); if(!s||!S[+s.dataset.i])return e.preventDefault(); e.dataTransfer.setData('text/plain','slot:'+s.dataset.i); e.dataTransfer.effectAllowed='move'; });
+  QB.addEventListener('dragstart',e=>{ const s=e.target.closest('.qs'); if(!s||!S[+s.dataset.i])return e.preventDefault(); e.dataTransfer.setData('text/plain','slot:'+s.dataset.i); e.dataTransfer.setData('application/x-slot',s.dataset.i); e.dataTransfer.effectAllowed='move'; });
   QB.addEventListener('dragover',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); s.classList.add('over'); });
   QB.addEventListener('dragleave',e=>{ const s=e.target.closest('.qs'); if(s)s.classList.remove('over'); });
   QB.addEventListener('drop',e=>{ '@later'; const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); const i=+s.dataset.i, d=e.dataTransfer.getData('text/plain')||'';

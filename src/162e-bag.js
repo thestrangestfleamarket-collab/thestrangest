@@ -173,7 +173,8 @@ window.BAG=BAG;
   const cv=renderer.domElement, ray=new THREE.Raycaster();
   const who=(cx,cy)=>{ '@later'; if(!SHARED.cam)return null; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height*2-1)),SHARED.cam); const L=UI.things.filter(t=>(t.player||t.npc)&&t.obj&&t.obj.visible&&(!t.obj.parent||t.obj.parent.visible)), h=ray.intersectObjects(L.map(t=>t.obj),true); if(!h.length)return null; return L.find(t=>{ for(let q=h[0].object;q;q=q.parent)if(q===t.obj)return true; return false; })||null; };
   // a quick bar slot dragged onto the world: one drops where you point (within 3 tiles) or at your feet, Shift the whole stack; its slot empties when none is left
-  cv.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('text/plain')){ e.preventDefault(); e.dataTransfer.dropEffect='move'; } });
+  cv.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('application/x-slot')){   // only a quick bar slot drops on the world (a bag row dragged past the list stays a reorder)
+    e.preventDefault(); e.dataTransfer.dropEffect='move'; } });
   cv.addEventListener('drop',e=>{ '@later'; const d=e.dataTransfer&&e.dataTransfer.getData('text/plain')||''; if(!d.startsWith('slot:'))return; e.preventDefault(); const i=+d.slice(5), id=HUD.slots[i]; if(!id)return; if(id.startsWith('emote:'))return HUD.set(i,null);
     const q=WE.ground?WE.ground(e):null, at=q&&Math.hypot(q[0]-pos.x,q[2]-pos.z)<=3*T&&Math.abs(q[1]-SHARED.py)<T?{x:q[0],y:q[1],z:q[2]}:null;
     BAG.drop(id,e.shiftKey?have(id,'bag'):1,at,'bag'); if(have(id,'bag')<1)HUD.set(i,null); else HUD.qdraw(); });

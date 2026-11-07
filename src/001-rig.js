@@ -164,14 +164,14 @@ function walkPose(st,abd){ const r=st.run||0,rs=r*r,g=gaitOf(r); if(st.smooth){ 
 function build(P,dev){ const J={},m={},Rb=turn(P.yaw,P.roll,P.pitch),pv=V(0,P.pv,0),W=p=>add(add(P.root,pv),app(Rb,sub(p,pv)));
   const RB=RIGP.bones,S0=V(...RB.spine),Ru=turn(0,P.side,P.bend),U=p=>add(S0,app(Ru,sub(p,S0))),N0=V(...RB.neck),Rn=turn(P.look,0,P.nod),Hd=p=>U(add(N0,app(Rn,sub(p,N0))));
   J.pelvis=W(ZERO); J.spine=W(S0); J.chest=W(U(V(...RB.chest))); J.neck=W(U(N0)); J.headBase=W(Hd(V(...RB.headBase))); J.head=W(Hd(V(...RB.head))); J.headTop=W(Hd(V(...RB.headTop)));
-  m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={};
+  m.Rb=Rb; m.Ru=cat(Rb,Ru); m.Rh=cat(m.Ru,Rn); m.Rc=cat(m.Ru,turn(P.cyaw,0,0)); m.Rp=cat(Rb,turn(P.pyaw,0,0)); m.foot={}; m.hf={}; m.fist={}; m.fg={};
   for(const s of [1,-1]){ const n=s>0?'L':'R',g=P[n];
     const H=J['hip'+n]=W(yaw(V(s*HIP[0],HIP[1],HIP[2]),P.pyaw)),Kn=J['knee'+n]=add(H,mul(app(Rb,limb(g.th[0],g.th[1],s)),THIGH)),A=J['ankle'+n]=add(Kn,mul(app(Rb,limb(Math.min(g.sh[0],g.th[0]),g.sh[1],s)),SHIN));
     const Rf=g.fyaw!=null?turn(g.fyaw,0,0):Rb,fw=app(Rf,fwv(g.foot)),dn=app(Rf,dnv(g.foot)); m.foot[n]=M3(Rf.x,mul(dn,-1),fw);
     J['heel'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,-1.1)); J['ball'+n]=add(add(A,mul(dn,ANKLE)),mul(fw,1.9)); J['toe'+n]=add(J['ball'+n],mul(fw,1.1));
     const C=V(...RB.chest),cl=RB.clav,so=RB.shoulder; J['clav'+n]=W(U(add(C,yaw(V(s*cl[0],cl[1],cl[2]),P.cyaw)))); const S=J['shoulder'+n]=W(U(add(C,yaw(V(s*so[0],so[1],so[2]),P.cyaw))));
     const ua=app(m.Ru,limb(g.ua[0],g.ua[1],s)),fa=app(m.Ru,limb(g.fa[0],g.fa[1],s)),E=J['elbow'+n]=add(S,mul(ua,UPPER)); J['wrist'+n]=add(E,mul(fa,FORE));
-    m.hf[n]=hand(J,n,s,dev&&dev[n]?nrm(add(fa,dev[n])):fa,m.Ru,g); m.fist[n]=g.fist; }
+    m.hf[n]=hand(J,n,s,dev&&dev[n]?nrm(add(fa,dev[n])):fa,m.Ru,g); m.fist[n]=g.fist; m.fg[n]=g.fg; }
   return {J,m}; }
 const DIG=[[0.55,-0.85,0.45,[1.15,0.8,0.62],[0.5,0.44,0.4,0.36]],
   [2.05,-0.95,0,[1.05,0.66,0.52],[0.42,0.38,0.35,0.32]],[2.15,-0.32,0,[1.15,0.74,0.56],[0.43,0.39,0.36,0.33]],

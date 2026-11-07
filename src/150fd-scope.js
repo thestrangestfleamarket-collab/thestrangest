@@ -186,6 +186,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
   SCOPE.isOpen=()=>!!(SCOPE.view&&!document.getElementById('scopev').hidden);
 
   /* ---------- the telescope in your apartment: a wooden tripod, an alt-az fork, the brass tube that turns as you move it ---------- */
+  for(const k of ['TELESCOPE'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
     const U0=.95, V0=c.Ly*(1-.22), HT=1.12;   // at the side wall's window nearest the back, looking out
     const wood=mat([126,84,46]), brass=mat([200,156,74]), brassD=mat([150,112,50]), black=mat([26,26,28]), glass=new THREE.MeshBasicMaterial({color:0x1a2a3a});

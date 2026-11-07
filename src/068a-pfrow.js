@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {UI, WE} from './003b-systems.js';
 import {KITD, scene} from './004-main.js';
-import {FIX, LEVEL, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
 const PFROW={fronts:[],houses:[],things:[]};
@@ -12,6 +12,17 @@ const PFROW={fronts:[],houses:[],things:[]};
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };
     for(const f of MSHOP.fronts){ const d=size(f.pf)[2]*M; const g=put(f.pf,f.x,f.zf+(f.zi||-1)*d/2,{rot:f.rot}); if(g)PFROW.fronts.push({id:f.id,obj:g}); }
+    // the Hudson row's shops dressed (owner, 7 Nov 2026: "busier"): a lit name board over the door, planters and baskets by it, a lamp at every other shop, a small tree and shrubs on the ground either side of the building
+    MSHOP.fronts.forEach((f,i)=>{ const zi=f.zi||-1, out=-zi, mw=size(f.pf)[0]*M, z0=f.zf, gap=(f.w-mw)/2, P=LEVEL.places.find(p=>p.id===f.id);
+      for(const sx of [-1,1])put('planter',f.x+sx*.36*mw,z0+out*.5*M,{rot:f.rot});
+      put('basket',f.x+(i%2?-.42:.42)*mw,z0+out*.3*M,{rot:f.rot,lift:2.2*MV});
+      if(i%2===0)put('globelamp',f.x-(mw/2+.5*M),z0+out*2.4*M,{rot:f.rot});
+      if(gap>1.4*M)for(const sx of [-1,1]){ const gx=f.x+sx*(mw/2+gap/2); put('streettree',gx,z0+zi*1.2*M,{rot:f.rot}); for(const dx of [-.28,.28])put(['shrub','bush','evergreen'][(i+(dx>0?1:0))%3],gx+dx*gap,z0+out*.3*M,{rot:f.rot}); }
+      if(P&&P.name&&!/^arcade$/.test(f.id)){ const n=P.name.replace(/^THE /,''), cv=document.createElement('canvas'); cv.width=Math.max(96,n.length*14+16); cv.height=22; const g=cv.getContext('2d'), hue=(i*47)%360;
+        g.fillStyle='#16141a'; g.fillRect(0,0,cv.width,cv.height); g.fillStyle=`hsl(${hue},85%,70%)`; g.font='bold 15px monospace'; g.textBaseline='middle'; g.textAlign='center'; g.fillText(n,cv.width/2,cv.height/2+1); g.strokeStyle=`hsl(${hue},60%,45%)`; g.strokeRect(1,1,cv.width-2,cv.height-2);
+        const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
+        const w=Math.min(mw*.8,cv.width/22*.9*M), h=w*cv.height/cv.width, sg=new THREE.Mesh(new THREE.PlaneGeometry(w,h*YS*1.1),new THREE.MeshBasicMaterial({map:t,toneMapped:false}));
+        sg.position.set(f.x,G(f.x,z0)+3.3*MV,z0+out*.18*M); sg.rotation.y=out>0?0:Math.PI; sg.raycast=()=>{}; (MAPG.bodega||scene).add(sg); tris+=2; } });
     HOUSES.forEach((p,i)=>{ const fx=XS(p.x1), zc=(ZS(p.y0)+ZS(p.y1))/2, w=size(p.pf)[0]*M, d=size(p.pf)[2]*M, rot=Math.PI/2, g=put(p.pf,fx-d/2,zc,{rot,sol:p.sol,fix:p.fix,label:p.name});   // the front faces the street (east)
       if(!g)return; PFROW.houses.push({id:p.id,obj:g,door:[fx,zc]});
       for(let k=1;k<10;k++)put('fireescape',fx+.7*M,zc+(i%2?-6:6)*M,{rot,lift:(3*k-1.13)*MV});   // a landing at every floor line on one bay

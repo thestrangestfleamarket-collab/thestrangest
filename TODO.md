@@ -350,6 +350,7 @@ One pass, one pull request.
   cars get shoved onto the pavement.
 
 ## Trees, grass and the park
+- [x] **The big climbing trees** · done 7 Nov (`src/144d-bigtrees.js`, `bigTrees` in data/world.json, `tests/bigtrees.cjs`). Six giants in the middle of the park, all marked climbable; SPACE · CLIMB next to one; no other tree climbs.
 - [x] **The park's benches can't be sat on** (done 7 Nov, e961c25: benches sittable) · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
 
 One tree pass after the tree-shadow pick (more leaves mean more shadow triangles).

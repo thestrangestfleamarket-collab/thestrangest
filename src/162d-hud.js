@@ -1,6 +1,6 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {BAG, ED, FORAGE, HUD, INV, ONLINE, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
+import {BAG, ED, FORAGE, HUD, INV, MOTION, ONLINE, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SECTION, SYS, TILE} from './006-map-pre.js';
@@ -14,7 +14,7 @@ import {QUESTS} from './160a-quests.js';
     #hlog #onl{position:static;width:auto;margin-top:4px;zoom:1} #hlog #onllog{display:none}
     #hqb{position:fixed;left:50%;bottom:calc((24px + var(--fy,0px) + env(safe-area-inset-bottom,0px)) / var(--uiz,1));transform:translateX(-50%);display:flex;gap:3px;z-index:6;zoom:var(--uiz,1)} #hqb[hidden]{display:none}
     #hqb .qs{width:44px;height:44px;position:relative;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;background:#00000066;font:8px Silkscreen,monospace;line-height:1.25;color:#fff;text-shadow:1px 1px 0 #000;cursor:pointer;overflow:hidden;word-break:break-word}
-    #hqb .qs.on{background:#000000b8} #hqb .qs.none{color:#ffffff66} #hqb .qs.over{background:#ffffff30} #hqb .qs em,#hqb .qs u{position:absolute;font-style:normal;text-decoration:none;color:#ffffffa0} #hqb .qs em{left:3px;top:2px} #hqb .qs u{right:3px;bottom:2px}`;
+    #hqb .qg{width:22px;display:flex;align-items:center;justify-content:center;cursor:grab;color:#ffffffa0;background:#00000066;font:14px monospace;user-select:none} #hqb .qg:active{cursor:grabbing} #hqb .qs.on{background:#000000b8} #hqb .qs.none{color:#ffffff66} #hqb .qs.over{background:#ffffff30} #hqb .qs em,#hqb .qs u{position:absolute;font-style:normal;text-decoration:none;color:#ffffffa0} #hqb .qs em{left:3px;top:2px} #hqb .qs u{right:3px;bottom:2px}`;
   document.head.appendChild(css); window.HUD=HUD;
 
   /* ---------- the log ---------- */
@@ -42,9 +42,10 @@ import {QUESTS} from './160a-quests.js';
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;
   const save=()=>{ try{ OWNED.set('quick',JSON.stringify(S)); }catch(e){} };
   const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(window.INV&&INV.items&&INV.items[id])||0;
-  const draw=()=>{ let o=''; for(let i=0;i<N;i++){ const id=S[i], on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; }; HUD.qdraw=draw;
+  const EM=id=>typeof id==='string'&&id.startsWith('emote:')?id.slice(6):null;   // an emote kept on the bar (dragged from the H panel): its name, never a thing in the pack
+  const draw=()=>{ let o='<div class="qg" title="drag to move the bar">⋮⋮</div>'; for(let i=0;i<N;i++){ const id=S[i], em=EM(id); if(em){ o+=`<div class="qs" data-i="${i}" draggable="true" title="${esc(MOTION.label(em)||em)} (emote)"><em>${(i+1)%10}</em><span>${esc(MOTION.label(em)||em)}</span></div>`; continue; } const on=!!id&&WIELD.on===id, n=id?count(id):0; o+=`<div class="qs${on?' on':''}${id&&!n?' none':''}" data-i="${i}" ${id?'draggable="true"':''} title="${id?esc(FORAGE.name(id))+(n?' ×'+n:' (none left)'):'drag a thing here from your pack'}"><em>${(i+1)%10}</em>${id?(BAG.icon?`<img src="${BAG.icon(id)}" alt="" draggable="false" style="width:30px;height:30px;image-rendering:pixelated;pointer-events:none${n?'':';opacity:.35'}">`:esc(FORAGE.name(id))):''}${n>1?`<u>${n}</u>`:''}</div>`; } QB.innerHTML=o; }; HUD.qdraw=draw;
   HUD.set=(i,id)=>{ if(i<0||i>=N)return; S[i]=id||null; save(); draw(); };
-  HUD.use=i=>{ const id=S[i]; if(!id)return false; return HUD.useItem(id); };
+  HUD.use=i=>{ const id=S[i]; if(!id)return false; const em=EM(id); if(em){ MOTION.play(em); return true; } return HUD.useItem(id); };
   HUD.useItem=id=>{ '@later'; const say=SAY, nm=FORAGE.name(id);
     if(!has(id)){ say('YOU HAVE NO '+nm+'.','#c8a090'); return true; }
     if(WIELD.LIST&&WIELD.LIST.includes(id)){ WIELD.set(WIELD.on===id?null:id); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); }
@@ -58,7 +59,7 @@ import {QUESTS} from './160a-quests.js';
   QB.addEventListener('dragover',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); s.classList.add('over'); });
   QB.addEventListener('dragleave',e=>{ const s=e.target.closest('.qs'); if(s)s.classList.remove('over'); });
   QB.addEventListener('drop',e=>{ '@later'; const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); const i=+s.dataset.i, d=e.dataTransfer.getData('text/plain')||'';
-    if(d.startsWith('item:')){ const id=d.slice(5); const j=S.indexOf(id); if(j>=0&&j!==i)S[j]=null; S[i]=id; }
+    if(d.startsWith('item:')||d.startsWith('emote:')){ const id=d.startsWith('item:')?d.slice(5):d; const j=S.indexOf(id); if(j>=0&&j!==i)S[j]=null; S[i]=id; }
     else if(d.startsWith('slot:')){ const j=+d.slice(5); if(j!==i){ const t=S[i]; S[i]=S[j]; S[j]=t; } }
     save(); draw(); });
   QB.addEventListener('dragend',e=>{ QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); const s=e.target.closest('.qs'); if(s&&e.dataTransfer.dropEffect==='none')HUD.set(+s.dataset.i,null); });   // dragged off the bar: the slot empties

@@ -1,7 +1,8 @@
 // THE LIVES: what each townsperson does each game hour and what it does to them (one path for the page, put in by the build, __CODE__, and the worker, imported): work, eat, sleep at home, their own habits off the clock; needs, mood, money, a log of their days, the players they know.
-const LV_HOUR=600000, LV_KEEP=40;
-// the game's hour count: six game hours a real hour, the same for everyone (src/134b-daynight.js), 05:00 at the epoch's first hour
-const lvH=t=>Math.floor(t/LV_HOUR)+5;
+import {CLK} from "./clock.js";
+const LV_HOUR=3600000, LV_KEEP=40;
+// the game's hour count: whole hours on the game's clock (worker/clock.js: Central time, or as the owner set it), the same for everyone
+const lvH=(t,c)=>CLK.count(t,c);
 const lvHash=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
 const lvIn=(h,a,b)=>{ a=((a%24)+24)%24; b=((b%24)+24)%24; return a<=b?h>=a&&h<b:h>=a||h<b; };
 // what each free-time habit is: what it is called, where it is done (a place's inside, or out of doors), what it costs or pays
@@ -63,7 +64,8 @@ const lvStep=(key,c,r,H,where)=>{ const did=lvPlan(key,c,H,r), D=LV_DO[did]||LV_
   else { if(D.cost)r.money-=D.cost; if(prev!==did)say(did==='sleep'?'went to bed':did==='home'?(prev==='sleep'?'got up':'went home'):D.verb); }
   r.fun=Math.max(0,Math.min(10,r.fun-.15)); r.hunger=Math.min(10,r.hunger); r.tired=Math.min(16,r.tired); r.money=Math.round(r.money); r.mood=lvMood(r); return r; };
 // bring a record up to hour H (a new one starts a day back; at most two game days at once)
-const lvRun=(key,c,r,H,where)=>{ r=r||lvNew(); if(!r.H)r.H=H-24; else if(H-r.H>48)r.H=H-48; for(let k=r.H+1;k<=H;k++)lvStep(key,c,r,k,where); return r; };
+const lvRun=(key,c,r,H,where)=>{ r=r||lvNew(); if(!r.H)r.H=H-24; else if(H-r.H>48)r.H=H-48; else if(r.H>H)r.H=H;   // (the clock set back: they carry on from there)
+  for(let k=r.H+1;k<=H;k++)lvStep(key,c,r,k,where); return r; };
 // a player met them: they know the player by name from now on
 const lvMeet=(r,name)=>{ if(!name)return r; const k=String(name).slice(0,24); r.knows[k]=(r.knows[k]||0)+1; const ks=Object.keys(r.knows); if(ks.length>30)delete r.knows[ks.sort((a,b)=>r.knows[a]-r.knows[b])[0]]; return r; };
 // what players are sent: the needs, money and counts, the last few lines of the log, the players they know best

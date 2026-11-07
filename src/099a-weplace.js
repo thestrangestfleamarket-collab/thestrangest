@@ -6,15 +6,16 @@ import {SYS, TILE} from './006-map-pre.js';
 { const LIST=__LAZY__("data/weplace.json"), CAT=[__LAZY__("data/weplace-0.json"),__LAZY__("data/weplace-1.json"),__LAZY__("data/weplace-2.json"),__LAZY__("data/weplace-3.json"),__LAZY__("data/weplace-4.json"),
     __LAZY__("data/weplace-5.json"),__LAZY__("data/weplace-6.json"),__LAZY__("data/weplace-7.json"),__LAZY__("data/weplace-8.json"),__LAZY__("data/weplace-9.json"),__LAZY__("data/weplace-10.json"),
     __LAZY__("data/weplace-11.json"),__LAZY__("data/weplace-12.json")];
-  const M=TILE/.84, GEO={}, RAW={}, GOT={}; let L=null, armed=null, ghost=null, turn=0;
+  const M=TILE/.84, GEO={}, RAW={}, GOT={}, CI={}; let L=null, armed=null, ghost=null, turn=0;
   const list=()=>L||(L=LIST().then(j=>{ const by={}; for(const [ci,k,n,m] of j.list)by[k]={ci,n,m}; return {...j,by}; }));
-  const cat=ci=>GOT[ci]||(GOT[ci]=CAT[ci]().then(D=>{ Object.assign(RAW,D); return D; }));
+  const cat=ci=>GOT[ci]||(GOT[ci]=CAT[ci]().then(D=>{ Object.assign(RAW,D); for(const k in D)CI[k]=ci; return D; }));
   const geo=k=>{ '@later'; const D=RAW[k]; if(!D)return null; const q=new Int16Array(Uint8Array.from(atob(D.p),c=>c.charCodeAt(0)).buffer), col=Uint8Array.from(atob(D.c),c=>c.charCodeAt(0)), b=D.b;
     const P=new Float32Array(q.length), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=(b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]))*M; }
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   WE.pfGeo=k=>GEO[k]||(RAW[k]?(GEO[k]=geo(k)):null);
+  WE.pfTree=k=>CI[k]===0;   // the TREES category
   WE.pfFoot=k=>{ const f=RAW[k]&&RAW[k].f; return f?f.map(v=>v*M):null; };
   WE.pfLoad=k=>list().then(j=>{ const e=j.by[k]; if(!e)throw new Error('no '+k); return cat(e.ci); });
   // the tab: a category, a search, the things in it; one armed follows the mouse until you click the ground

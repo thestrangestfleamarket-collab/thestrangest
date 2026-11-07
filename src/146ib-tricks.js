@@ -111,10 +111,15 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
   // where you stand: on the ground, up in the air, or on the rail's top
   TRICKS.floor=(g,R,off)=>!ON()||R!==RIDE?g+off+(R.z||0):R.s==='grind'?R.railY+off:g+off+(R.z||0);
   // how you stand: crouched to pop or tucked in the air, a hand on the board, leaning into a manual; your stance swaps riding fakie
-  TRICKS.pose=(R,P)=>{ if(R!==RIDE)return; P.z=0; P.push=R.s==='roll'&&R.pushing?R.pt%1:-1; P.crouch=R.s==='air'?(R.grab?1.6:.6):R.s==='roll'?(R.charge||0)*1.2:R.s==='grind'?.5:0; P.grab=R.s==='air'?R.grab:null;
+  // shared (owner, 7 Nov 2026: "all moves and player actions shared in real time"): your trick as it happens, a few times a second and at every change; another skater's lands on their board here (RIDE.their)
+  { let last='', kT=0; SYS.add('life',dt=>{ const R=RIDE; if(!R.on||!R.s||!ONLINE.on){ last=''; return; } const f=R.flip, m={t:'trk',s:R.s,g:R.s==='air'&&R.grab?String(R.grab).toLowerCase().replace(/[^a-z]/g,'').slice(0,8):'',fk:f?f.k:'',fd:f?+f.dur.toFixed(2):0,ft:f?+f.t.toFixed(2):0,n:R.nose?1:0,f:R.fakie?1:0,sl:R.slide?1:0,p:R.pushing?1:0,c:+(R.charge||0).toFixed(2),v:+(R.v||0).toFixed(1),z:+(R.z||0).toFixed(2)};
+      const k=[m.s,m.g,m.fk,m.n,m.f,m.sl,m.p].join(); kT-=dt||0; if(k!==last||kT<=0){ last=k; kT=.25; ONLINE.send(m); } },'146ib-tricks share');
+    ONLINE.hear.trk=m=>{ '@later'; const R=RIDE.their&&RIDE.their(m.id); if(!R)return; R.trk=true; R.s=m.s||'roll'; R.grab=m.g||null; R.nose=!!m.n; R.fakie=!!m.f; R.slide=m.sl?1:0; R.pushing=!!m.p; R.charge=+m.c||0; R.v=+m.v||0; R.z=+m.z||0;
+      if(m.fk&&m.fd>0){ if(!R.flip||R.flip.k!==m.fk)R.flip={k:m.fk,dur:+m.fd,t:+m.ft||0}; } else R.flip=null; }; }
+  TRICKS.pose=(R,P)=>{ if(R!==RIDE&&!R.trk)return; P.z=0; P.push=R.s==='roll'&&R.pushing?R.pt%1:-1; P.crouch=R.s==='air'?(R.grab?1.6:.6):R.s==='roll'?(R.charge||0)*1.2:R.s==='grind'?.5:0; P.grab=R.s==='air'?R.grab:null;
     P.lean=R.s==='manual'?(R.nose?20:-22):0; P.goofy=!!R.fakie; P.brake=R.s==='roll'&&!(R.v>.2*T); };
   // the board: it flips, shoves round, turns across a slide, tips up for a manual
-  TRICKS.place=(m,R)=>{ '@later'; if(R!==RIDE)return; const f=R.flip; if(f){ const u=f.t/f.dur, a=2*PI*u; if(f.k==='kick')m.rotation.z+=a; else if(f.k==='heel')m.rotation.z-=a; else if(f.k==='hard'){ m.rotation.z+=a; m.rotation.y+=PI*u; } else m.rotation.y+=PI*u; }
+  TRICKS.place=(m,R)=>{ '@later'; if(R!==RIDE&&!R.trk)return; const f=R.flip; if(f){ const u=f.t/f.dur, a=2*PI*u; if(f.k==='kick')m.rotation.z+=a; else if(f.k==='heel')m.rotation.z-=a; else if(f.k==='hard'){ m.rotation.z+=a; m.rotation.y+=PI*u; } else m.rotation.y+=PI*u; }
     if(R.s==='grind'&&R.slide)m.rotation.y+=PI/2; if(R.s==='manual')m.rotation.x=R.nose?.22:-.22; };
 
   // on screen: the combo as you build it, its balance while you grind or manual, what you banked

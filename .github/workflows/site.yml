@@ -1,6 +1,7 @@
 name: site
 on:
   pull_request:
+    types: [opened, reopened, ready_for_review, synchronize, labeled]
     paths-ignore: ['docs/**', '**.md']
   workflow_dispatch:
     inputs:
@@ -12,13 +13,38 @@ on:
         description: 'Run every check, not only those for the files changed'
         type: boolean
         default: false
-concurrency:
-  group: site-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
-  build-check:
+  # runs only when it is worth it (owner, 7 Nov 2026): never on a draft; on a push only when it is new work, not a merge of main; on a label only for go, full or measure
+  gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 2
+    outputs:
+      go: ${{ steps.g.outputs.go }}
+    steps:
+      - id: g
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EV: ${{ github.event_name }}
+          ACT: ${{ github.event.action }}
+          DRAFT: ${{ github.event.pull_request.draft }}
+          LABEL: ${{ github.event.label.name }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          go=true
+          if [ "$EV" = pull_request ]; then
+            if [ "$DRAFT" = true ]; then go=false
+            elif [ "$ACT" = labeled ]; then case "$LABEL" in go|full|measure) ;; *) go=false;; esac
+            elif [ "$ACT" = synchronize ]; then n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); [ "$n" -gt 1 ] && go=false; fi
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go ($EV $ACT)"
+  build-check:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    concurrency:
+      group: site-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 75 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +67,8 @@ jobs:
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
+          k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
+          k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -64,7 +92,7 @@ jobs:
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
-          k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|underway\.cjs'
+          k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|src/094-ui|src/102-looks|src/009-down|underway\.cjs'
           k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
@@ -179,6 +207,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
+      - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' dm')
+        run: node tests/dm.cjs dist/market.html
+      - name: The park's things solid, its benches seats
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' parksolid')
+        run: node tests/parksolid.cjs dist/market.html
       - name: The keep's guardians (the crew, a breakout fought, a bounty)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
@@ -423,6 +459,8 @@ jobs:
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
   game:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.c.outputs.tests }}

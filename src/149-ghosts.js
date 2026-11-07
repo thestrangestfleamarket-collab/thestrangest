@@ -39,7 +39,8 @@ GHOSTS.init=()=>{ if(typeof SHARED.BOD==='undefined'||!SHARED.BOD.GD)return; con
   const BR=.12;
   const mat=new THREE.MeshLambertMaterial({color:0xf2f0ea,emissive:0x3a4050,transparent:true,opacity:.8,side:THREE.DoubleSide,depthWrite:false});
   const eyeM=new THREE.MeshBasicMaterial({color:0x0c0c10}), eg=new THREE.CircleGeometry(1,10);
-  KINDS.forEach(([name,R,sq,N],g)=>{ const [sx,sz]=spot(g%2===0), C=GHOSTS.cloth(R,sq,N,BR,mat,sx,.52,sz), me=C.me;
+  KINDS.forEach(([name,R,sq,N],g)=>{ if(g%2===0)return;   // the bath is empty but for its steam (owner, 7 Nov 2026): the two that lived inside are gone
+    const [sx,sz]=spot(g%2===0), C=GHOSTS.cloth(R,sq,N,BR,mat,sx,.52,sz), me=C.me;
     const eyes=[0,1,2].map(k=>{ const e=new THREE.Mesh(eg,eyeM); e.scale.set((k<2?.026:.016)*MH,(k<2?.036:.013)*MV,1); e.renderOrder=4; scene.add(e); return e; });
     GHOSTS.settle(C,180); const REL=new Float32Array(C.P.length); for(const k of C.live){ REL[k]=C.P[k]-C.ball.x; REL[k+1]=C.P[k+1]-C.ball.y; REL[k+2]=C.P[k+2]-C.ball.z; const A=C.pos.array; A[k]=C.P[k]*MH; A[k+1]=C.P[k+1]*MV; A[k+2]=C.P[k+2]*MH; } C.pos.needsUpdate=true; C.geo.computeVertexNormals();   // its drape, settled once
     GHOSTS.list.push(Object.assign(C,{REL,ph:Math.random()*6.28,name,eyes,v:{x:0,z:0},yaw:Math.random()*6.28,yawTo:0,to:spot(g%2===0),wait:3+Math.random()*6,in:g%2===0,t:Math.random()*10}));

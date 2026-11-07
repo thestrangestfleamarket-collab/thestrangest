@@ -39,7 +39,8 @@ jobs:
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
-          k dunshare 'src/062a|src/146b|src/111d|worker/door|dunshare\.cjs'
+          k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
+          k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -371,6 +372,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/radio.cjs dist/market.html
+      - name: The dungeon's server (the monsters stepped and sent to those below, blows, kills)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' dunsrv')
+        run: node tests/dunmobs-server.cjs
       - name: The cars' server (one driver a car, parking kept and heard)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')

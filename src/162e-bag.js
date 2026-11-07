@@ -1,6 +1,6 @@
-// THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, dragged about by its leather and made any size by its corner; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground are loose things everyone in the section sees (the Block's world), picked up by a double click; a stack asks how many.
+// THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, dragged about by its leather and made any size by its corner; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground (or off the quick bar onto the world) are loose things everyone in the section sees (the Block keeps them, each 60 to 120 minutes), in their own 3D look near you, picked up by a double click; a stack asks how many.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, BAG, CHARS, EQUIP, FORAGE, HUD, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WIELD} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, EQUIP, FORAGE, HUD, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -57,7 +57,7 @@ window.BAG=BAG;
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
   const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
-  if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); for(const [id,tx] of TEX){ tx.image=paint(id); tx.needsUpdate=true; } if(HUD.qdraw)HUD.qdraw(); if(BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
+  if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
   /* ---------- containers: a pouch or a chest is one thing each (pouch~3), holding things of its own ---------- */
   FORAGE.add({names:{pouch:'LEATHER POUCH',chest:'WOODEN CHEST'},prices:{pouch:12,chest:60}}); ITEMS.reg('pouch',{container:true,holds:12,sellable:true}); ITEMS.reg('chest',{container:true,holds:40,sellable:true});
@@ -132,39 +132,57 @@ window.BAG=BAG;
     redraw(); };
   BAG.off=slot=>{ if(slot==='hand'){ if(WIELD.on){ WIELD.set(null); say('YOUR HANDS ARE FREE.','#e8e2cc'); } } else if(EQUIP.by[slot])EQUIP.wear(EQUIP.by[slot]); redraw(); };
 
-  /* ---------- the ground: loose things, shared through the section's world when you are online ---------- */
-  const GRD=[]; BAG.ground=GRD; const MAXG=30, OLD=7*864e5; let loaded=false;
+  /* ---------- the ground: loose things, shared through the section's room when you are online, each gone 60 to 120 minutes after it was dropped ---------- */
+  const GRD=[]; BAG.ground=GRD; const MAXG=30, LIFE=()=>(60+Math.random()*60)*6e4, SEE=20*T, KEEP=26*T, MOST=24; let loaded=false;
   const online=()=>!!(ONLINE.on&&ONLINE.me), uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  const saveG=()=>{ try{ OWNED.set('ground',JSON.stringify(GRD.filter(g=>!g.key.startsWith('drop:')).map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t,in:g.in,subs:g.subs})))); }catch(e){} };
-  const rec=g=>{ const r={id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t}; if(g.in)r.in=g.in; if(g.subs)r.subs=g.subs; return JSON.stringify(r); };
-  const TEX=new Map(); const tex=id=>{ let t=TEX.get(id); if(!t){ t=new THREE.CanvasTexture(paint(id)); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; TEX.set(id,t); } return t; };
+  const saveG=()=>{ try{ OWNED.set('ground',JSON.stringify(GRD.filter(g=>!g.key.startsWith('drop:')).map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t,until:g.until,rm:g.rm,in:g.in,subs:g.subs})))); }catch(e){} };
+  const rec=g=>{ const r={id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t}; if(g.rm)r.rm=g.rm; if(g.in)r.in=g.in; if(g.subs)r.subs=g.subs; return JSON.stringify(r); };
+  // a thing's look on the ground: its own model (INSPECT.model), made once a kind and copied, about a third of a tile across, its glass made plain
+  const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3();
+  const plain=q=>{ let r=PLAIN.get(q); if(!r){ r=new THREE.MeshStandardMaterial({color:q.color,roughness:.15,transparent:true,opacity:.5,depthWrite:false}); PLAIN.set(q,r); } return r; };
+  const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
+    m.traverse(c=>{ if(c.material&&!Array.isArray(c.material)&&c.material.transmission>0)c.material=plain(c.material); });
+    const b=new THREE.Box3().setFromObject(m), S=b.isEmpty()?1:Math.max(.5,Math.min(4,.36*T/Math.max(.001,...b.getSize(V3).toArray()))), I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
+    P=new THREE.Group(); P.add(I); LOOK.set(id,P); return P; };
+  const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
-  const place=g=>{ '@later'; const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex(g.id),transparent:true,depthWrite:false})); sp.name='loose-'+g.id; sp.scale.set(.42*T,.42*T,1); sp.position.set(g.x,g.y+.24*T,g.z); sp.userData.level=g.lv||'street'; sp.renderOrder=1; scene.add(sp); g.sp=sp;
-    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); };
-  const lose=g=>{ const i=GRD.indexOf(g); if(i>=0)GRD.splice(i,1); if(g.th)unthing(g.th); if(g.sp){ g.sp.removeFromParent(); g.sp.material.dispose(); } };
+  const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
+    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); near(); };
+  const lose=g=>{ const i=GRD.indexOf(g); if(i>=0)GRD.splice(i,1); if(g.th)unthing(g.th); if(g.sp)g.sp.removeFromParent(); g.m=null; };
+  // drawn only near you: the nearest 24 within 20 tiles on your level and in your room, kept until 26
+  const near=()=>{ const rm=room(), now=Date.now(); let ex=false; for(const g of GRD.slice())if(g.until&&now>g.until&&!g.taking){ lose(g); ex=ex||!g.key.startsWith('drop:'); } if(ex)saveG();
+    const L=[]; for(const g of GRD){ const d=Math.hypot(g.x-pos.x,g.z-pos.z); if((g.rm||'')===rm&&d<(g.m?KEEP:SEE)&&LEVELS.drawn(g.sp))L.push([g,d]); } const on=new Set(L.sort((a,b)=>a[1]-b[1]).slice(0,MOST).map(q=>q[0]));
+    for(const g of GRD){ const v=on.has(g); if(v&&!g.m){ g.m=look(g.id).clone(); g.sp.add(g.m); } else if(!v&&g.m){ g.m.removeFromParent(); g.m=null; } g.sp.visible=v; } };
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
   const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP THE '+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
   BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
   BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
-    if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; if(ROOMS.cur)return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
+    if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; const rm=room(); if(ROOMS.cur&&(!rm||/^apt/i.test(rm)))return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
     for(const s in EQUIP.by)if(EQUIP.by[s]===id&&FORAGE.has(id)<=n)EQUIP.wear(id,true); if(WIELD.on===id&&FORAGE.has(id)<=n)WIELD.set(null);
     let inside=null; if(isCont(id)){ inside=pack(id); if(WINS.get(id))WINS.get(id).el.hidden=true; } if(from!=='bag'){ const I=INV.inside[from]||{}; I[id]=(I[id]||0)-n; if(I[id]<=0)delete I[id]; }
     FORAGE.take(id,n); if(INV.save)INV.save(); const h=SHARED.heading||0, a=(Math.random()-.5)*.6, p=at||{x:pos.x+Math.sin(h+a)*.6*T,z:pos.z+Math.cos(h+a)*.6*T};
-    const g={key:(online()?'drop:':'local:')+uid(),id:kindOf(id),n,x:p.x,y:SHARED.py,z:p.z,lv:LEVELS.cur||'street',t:Date.now()}; if(inside){ g.in=inside.in; g.subs=inside.subs; }
+    const g={key:(online()?'drop:':'local:')+uid(),id:kindOf(id),n,x:p.x,y:at&&isFinite(at.y)?at.y:SHARED.py,z:p.z,lv:LEVELS.cur||'street',t:Date.now(),until:Date.now()+LIFE()}; if(rm)g.rm=rm; if(inside){ g.in=inside.in; g.subs=inside.subs; }
     place(g); if(online())ONLINE.put(g.key,rec(g)); else { while(GRD.filter(q=>q.key.startsWith('local:')).length>MAXG)lose(GRD.find(q=>q.key.startsWith('local:'))); saveG(); }
     say('YOU DROP THE '+name(id)+(n>1?' ×'+n:'')+'.','#e8e2cc'); SFX.play('clunk',{vol:.35}); if(sel===id&&!have(id,from))sel=null; redraw(); return true; };
-  const restore=()=>{ loaded=true; let L=[]; try{ L=JSON.parse(OWNED.get('ground')||'[]')||[]; }catch(e){ L=[]; } for(const o of L)if(o&&o.id&&o.n>0&&!GRD.some(g=>g.key===o.key))place({key:o.key||'local:'+uid(),id:o.id,n:o.n,x:+o.x,y:+o.y,z:+o.z,lv:o.lv||'street',t:o.t||0,in:o.in,subs:o.subs}); };
-  SYS.add('life',()=>{ if(!loaded&&window.__started)restore(); },'162e-bag');
+  const restore=()=>{ loaded=true; let L=[]; try{ L=JSON.parse(OWNED.get('ground')||'[]')||[]; }catch(e){ L=[]; } for(const o of L)if(o&&o.id&&o.n>0&&!GRD.some(g=>g.key===o.key))place({key:o.key||'local:'+uid(),id:o.id,n:o.n,x:+o.x,y:+o.y,z:+o.z,lv:o.lv||'street',t:o.t||0,until:+o.until||(+o.t||0)+LIFE(),rm:o.rm||'',in:o.in,subs:o.subs}); };
+  let nt=0; SYS.add('life',()=>{ if(!loaded&&window.__started)restore(); const t=performance.now(); if(GRD.length&&t>nt){ nt=t+250; near(); } },'162e-bag');
+  SYS.add('hi',m=>{ const W=m&&m.world||{}; for(const g of GRD.slice())if(g.key.startsWith('drop:')&&!g.taking&&!(g.key in W))lose(g); },'162e-bag');   // a drop gone while you were away
   SYS.add('world',(k,v)=>{ '@later'; if(typeof k!=='string'||!k.startsWith('drop:'))return; const g=GRD.find(q=>q.key===k);
-    if(v===''||v==null){ if(g&&!g.taking)lose(g); return; } if(g)return; let r=null; try{ r=JSON.parse(v); }catch(e){} if(!r||!r.id||!(r.n>0))return;
-    if(Date.now()-(r.t||0)>OLD){ if(online())ONLINE.put(k,''); return; } place({key:k,id:String(r.id),n:+r.n,x:+r.x||0,y:+r.y||0,z:+r.z||0,lv:r.lv||'street',t:+r.t||0,in:r.in,subs:r.subs}); },'162e-bag');
+    if(v===''||v==null){ if(g&&!g.taking)lose(g); return; } let r=null; try{ r=JSON.parse(v); }catch(e){} if(!r||!r.id||!(r.n>0))return; if(g){ if(r.until)g.until=+r.until; return; }
+    if(r.until&&Date.now()>r.until)return; place({key:k,id:String(r.id),n:+r.n,x:+r.x||0,y:+r.y||0,z:+r.z||0,lv:r.lv||'street',t:+r.t||0,until:+r.until||0,rm:r.rm||'',in:r.in,subs:r.subs}); },'162e-bag');
   SYS.add('took',(k,v)=>{ const g=GRD.find(q=>q.key===k); if(!g)return; g.taking=false; let r=null; if(v){ try{ r=JSON.parse(v); }catch(e){} } if(r&&r.id)finish(g,r); else { say('SOMEONE GOT THERE FIRST.','#c8a090'); lose(g); redraw(); } },'162e-bag');
 
   /* ---------- dragging a picture or a row: about the mouth, into a container, onto the quick bar, out onto the ground ---------- */
   const cv=renderer.domElement, ray=new THREE.Raycaster();
   const who=(cx,cy)=>{ '@later'; if(!SHARED.cam)return null; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height*2-1)),SHARED.cam); const L=UI.things.filter(t=>(t.player||t.npc)&&t.obj&&t.obj.visible&&(!t.obj.parent||t.obj.parent.visible)), h=ray.intersectObjects(L.map(t=>t.obj),true); if(!h.length)return null; return L.find(t=>{ for(let q=h[0].object;q;q=q.parent)if(q===t.obj)return true; return false; })||null; };
+  // a quick bar slot dragged onto the world: one drops where you point (within 3 tiles) or at your feet, Shift the whole stack; its slot empties when none is left
+  cv.addEventListener('dragover',e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('application/x-slot')){   // only a quick bar slot drops on the world (a bag row dragged past the list stays a reorder)
+    e.preventDefault(); e.dataTransfer.dropEffect='move'; } });
+  cv.addEventListener('drop',e=>{ '@later'; const d=e.dataTransfer&&e.dataTransfer.getData('text/plain')||''; if(!d.startsWith('slot:'))return; e.preventDefault(); const i=+d.slice(5), id=HUD.slots[i]; if(!id)return; if(id.startsWith('emote:'))return HUD.set(i,null);
+    const q=WE.ground?WE.ground(e):null, at=q&&Math.hypot(q[0]-pos.x,q[2]-pos.z)<=3*T&&Math.abs(q[1]-SHARED.py)<T?{x:q[0],y:q[1],z:q[2]}:null;
+    BAG.drop(id,e.shiftKey?have(id,'bag'):1,at,'bag'); if(have(id,'bag')<1)HUD.set(i,null); else HUD.qdraw(); });
   let drag=null, lastTap={id:null,t:0};
   const endDrag=()=>{ if(!drag)return; if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('held'); document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); drag=null; };
   const howMany=async(id,from,x,y)=>{ const n=have(id,from); if(n<=1||isCont(id))return n>=1?1:0; return (await BAG.ask(n,x,y))||0; };
@@ -204,4 +222,4 @@ window.BAG=BAG;
   BAG.tiled=v=>{ if(v!=null){ TILED=!!v; saveSet(); BAG.draw(); } return TILED; };
   BAG.list=v=>{ if(v!=null){ LIST=!!v; saveSet(); BAG.draw(); } return LIST; };
   BAG.sel=()=>sel; BAG.select=(id,key='bag')=>{ sel=id; selWin=key; redraw(); }; BAG.have=have; BAG.contents=contents;
-  window.BAGDBG=()=>({open:!pk.hidden,sel,selWin,size:sizeOf('bag'),tiled:TILED,list:LIST,order:[...(ORD.bag||[])],pos:{...(POS.bag||{})},inside:JSON.parse(JSON.stringify(INV.inside)),wins:[...WINS.keys()].filter(k=>!WINS.get(k).el.hidden),ground:GRD.map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(1),z:+g.z.toFixed(1),lv:g.lv,d:+(Math.hypot(g.x-pos.x,g.z-pos.z)/T).toFixed(2),drawn:!!(g.sp&&g.sp.parent),thing:UI.things.includes(g.th),pick:!!(g.th&&g.th.pick),in:g.in||null,taking:!!g.taking})),loose:UI.things.filter(t=>t.name.startsWith('A LOOSE ')).map(t=>t.name),inBag:contents('bag'),worn:{...EQUIP.by,hand:WIELD.on}}); }
+  window.BAGDBG=()=>({open:!pk.hidden,sel,selWin,size:sizeOf('bag'),tiled:TILED,list:LIST,order:[...(ORD.bag||[])],pos:{...(POS.bag||{})},inside:JSON.parse(JSON.stringify(INV.inside)),wins:[...WINS.keys()].filter(k=>!WINS.get(k).el.hidden),ground:GRD.map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(1),z:+g.z.toFixed(1),lv:g.lv,d:+(Math.hypot(g.x-pos.x,g.z-pos.z)/T).toFixed(2),drawn:!!(g.m&&g.m.parent&&g.sp.visible),until:g.until||0,rm:g.rm||'',thing:UI.things.includes(g.th),pick:!!(g.th&&g.th.pick),in:g.in||null,taking:!!g.taking})),loose:UI.things.filter(t=>t.name.startsWith('A LOOSE ')).map(t=>t.name),inBag:contents('bag'),worn:{...EQUIP.by,hand:WIELD.on}}); }

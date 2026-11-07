@@ -48,7 +48,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     rain:{len:3,loop:true,f:(D,n)=>{ const F=lp(); for(let i=0;i<n;i++)D[i]=(rnd()-F(rnd(),.5)*.5)*.6; const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
     wind:{len:5,loop:true,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ const s=i/S; D[i]=F(rnd(),.05)*(.6+.4*Math.sin(TAU*s*.23)*Math.sin(TAU*s*.071)); } const a=n*.05|0; for(let i=0;i<a;i++){ const k=i/a; D[i]*=k; D[n-1-i]*=k; } }},
   };
-  SFX.names=()=>Object.keys(R); SFX.recipe=k=>R[k];
+  SFX.names=()=>Object.keys(R); SFX.recipe=k=>R[k]; SFX.add=(k,r)=>{ R[k]=r; };
   const BUF={}; SFX.buffer=(k,c)=>{ const r=R[k]; if(!r)return null; const key=k+(r.loop?'':''); if(BUF[key]&&BUF[key].sampleRate===c.sampleRate)return BUF[key];
     const S=c.sampleRate, n=Math.max(1,Math.round(r.len*S)), b=c.createBuffer(1,n,S); r.f(b.getChannelData(0),n,S); return BUF[key]=b; };
   const V=new THREE.Vector3(); const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;

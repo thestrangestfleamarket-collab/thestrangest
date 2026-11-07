@@ -1,8 +1,9 @@
 // THE HANDS: HANDS, Polyfork's jointed hands (25 joints each, data/pfhand.json) on your avatar's wrists at all times (owner, 7 Nov 2026: "lets add real hands at all times"); the fingers follow the rig's grip, or a pose something sets (HANDS.set, the guitar).
-import {THREE} from './003-shx.js';
+import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
+import {SYS, TILE} from './006-map-pre.js';
 const HANDS={};
 { const H=__DATA__("data/pfhand.json"), NJ=25, V3=THREE.Vector3, M4=THREE.Matrix4;
   const Q=I16(H.pos), JI=B64(H.j), ZN=B64(H.z), TR=U16(H.tri), N=JI.length;
@@ -51,13 +52,18 @@ const HANDS={};
   const LOCL=new M4().makeBasis(new V3(0,0,-1),new V3(1,0,0),new V3(0,-1,0)), LOCR=new M4().makeBasis(new V3(0,0,1),new V3(-1,0,0),new V3(0,-1,0));
   const WR=new V3(0,.026,-.004);   // (the hand's wrist point: halfway through it, at the joint)
   const LIVE=new Set();
+  // drawn only near the camera (owner, 7 Nov 2026: "dont draw hands unless zoomed in"; both hands are twice the rest of the body's triangles): past NEAR the body's own simple hands show instead
+  HANDS.NEAR=3;   // metres from the camera
+  const CP=new V3();
+  SYS.add('cam',()=>{ const cam=SHARED.cam; if(!cam)return; const far=HANDS.NEAR*TILE/.84;
+    for(const st of LIVE){ st.me.getWorldPosition(CP); const near=CP.distanceTo(cam.position)<far; if(st.near!==near){ st.near=near; st.hm.visible=near; if(st.PM.hh)st.PM.hh.value=near?1:0; } } },'111b-hands');
   HANDS.add=(me,PM,body,o={})=>{ if(!body.binv)return null; const U={value:Array.from({length:NJ*6},()=>new THREE.Vector4())}, M=mats(U), g=geo(o.skin||'d9a984');
     const k=(o.scale||.95)*(1+.05*((o.b??1)-1)), S=new M4().makeScale(k,k,k).multiply(new M4().makeTranslation(-WR.x,-WR.y,-WR.z));
     const base={L:body.binv[5].clone().invert().multiply(LOCL).multiply(S),R:body.binv[8].clone().invert().multiply(LOCR).multiply(S).multiply(MX)};
     const hm=new THREE.Mesh(g,M.mat); hm.customDistanceMaterial=M.dist; hm.customDepthMaterial=M.depth; hm.castShadow=hm.receiveShadow=true; hm.name='hands';
     Object.defineProperty(hm,'boundingSphere',{configurable:true,get(){ return me.boundingSphere; },set(){}});   // (seen when the body is)
     const J={L:REST.map(()=>new M4()),R:REST.map(()=>new M4())}, W=new M4(); let fr=-1;
-    const st={me,PM,fg:null};
+    const st={me,PM,fg:null,hm,near:null};
     hm.onBeforeRender=()=>{ const f=renderer.info.render.frame; if(f===fr)return; fr=f; const B=PM.B, m=B&&B.m;
       for(const [s,bi,oj] of [['L',5,0],['R',8,NJ]]){ const fg=st.fg&&st.fg[s]||(m?RIG.fgOf({fist:Math.max(m.fist&&m.fist[s]||0,o.grip&&o.grip[s]?1:0),fg:m.fg&&m.fg[s]}):R0); fk(fg,J[s]); W.multiplyMatrices(PM.value[bi],base[s]);
         for(let j=0;j<NJ;j++){ T1.multiplyMatrices(W,J[s][j]); const e=T1.elements, a=U.value, q=(oj+j)*3; a[q].set(e[0],e[4],e[8],e[12]); a[q+1].set(e[1],e[5],e[9],e[13]); a[q+2].set(e[2],e[6],e[10],e[14]); } } };

@@ -152,7 +152,7 @@ const GHOLD={};
         if(GHOLD.stage>=3){ aim(W,5,'L',dirG(DIRS.Lf,new V3()),dirG(DIRS.Ld,new V3())); if(GHOLD.stage>=4)aim(W,8,'R',dirG(DIRS.Rf,new V3()),dirG(DIRS.Rd,new V3())); }
         if(GHOLD.stage>=3&&GHOLD.twist!==false){ untwist(W,[3,4,5],2); untwist(W,[6,7,8],2); }
         if(GHOLD.stage<4){ for(const sd of 'LR')for(let i=0;i<5;i++)fg[sd][i]=[0,0,0,HANDS.R0[i][3]]; break; }
-        if(!st||!st.base)break; H.err={L:[],R:[]};
+        if(!st||!st.base||!st.near)break; H.err={L:[],R:[]};
         for(const [side,bi,tg] of [['L',5,tgL],['R',8,tgR]]){ const base=MA.multiplyMatrices(W[bi],body.binv[bi]).multiply(st.base[side]), inv=MB.copy(base).invert(), f=fg[side], e=E[side].set(0,0,0); let wsum=0;
           for(let i=0;i<5;i++){ if(side==='R'&&i===4){ f[4]=[.9,1.2,.85,HANDS.R0[4][3]]; continue; } const tw=toG(tg[i],new V3()), v=VC.copy(tw).applyMatrix4(inv); HANDS.reach(i,v,f[i]);
             const tip=HANDS.tip(i,f[i],VD).applyMatrix4(base), w=i===0?.5:1; H.err[side][i]=tip.distanceTo(tw)/k; e.addScaledVector(tw.sub(tip),w); wsum+=w; }

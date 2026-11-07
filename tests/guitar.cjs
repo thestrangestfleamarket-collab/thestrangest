@@ -17,7 +17,10 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const a={hands:!!me()&&me().children.some(c=>c.name==='hands'), tris:n()};
     const g=AVATAR.pieces.find(p=>p.slot==='hands'&&p.figs.includes(AVATAR.L().f)); if(g){ await AVATAR.wear('hands',g.n); await new Promise(r=>setTimeout(r,300)); a.gloved=!me()||!me().children.some(c=>c.name==='hands'); await AVATAR.wear('hands',null); await new Promise(r=>setTimeout(r,300)); a.back=!!me()&&me().children.some(c=>c.name==='hands'); }
     return a; });
-  rec('your avatar wears Polyfork\'s jointed hands (its own mitten hands cut away)',h.hands,JSON.stringify(h));
+  rec('your avatar wears Polyfork\'s jointed hands',h.hands,JSON.stringify(h));
+  const lod=await pg.evaluate(async()=>{ const UI=__dbg.UI; UI.setView('third'); await new Promise(r=>setTimeout(r,1200)); const me=W3.group.children.find(m=>m.userData&&m.userData.hands), st=me.userData.hands, far={jointed:st.hm.visible,mittens:me.userData.PM.hh.value===0};
+    const d0=UI.dist; UI.dist*=.2; await new Promise(r=>setTimeout(r,1200)); const near={jointed:st.hm.visible,mittens:me.userData.PM.hh.value===0}; UI.dist=d0; await new Promise(r=>setTimeout(r,800)); return {far,near}; });
+  rec('the jointed hands are drawn only near the camera; further off, the body\'s own simple hands',!lod.far.jointed&&lod.far.mittens&&lod.near.jointed&&!lod.near.mittens,JSON.stringify(lod));
   rec('gloves cover them (the glove, no jointed hands), and they come back bare',h.gloved!==false&&h.back!==false,JSON.stringify(h));
   // the bodega sells it
   const sh=await pg.evaluate(()=>({name:FORAGE.name('guitar'),price:ITEMS.prop('guitar','value'),shelf:!!(window.BODEGA||{}).LAYOUT&&BODEGA.LAYOUT.some(r=>r[2].includes('guitar')),make:!!(BODEGA.MAKE&&BODEGA.MAKE.guitar&&BODEGA.MAKE.guitar().children.length)}));
@@ -49,7 +52,8 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('a strum sounds through the guitar\'s own audio',a.ok&&a.peak>.01,JSON.stringify({ok:a.ok,peak:a.peak}));
   rec('each open string sounds at its real pitch (E A D G B E, within 3%)',a.ok&&[1,2,3,4,5,6].every(s=>{ const h=a.hz[s], w=a.want[s-1]; return [w,w*2,w/2].some(v=>Math.abs(h-v)/v<.03); }),JSON.stringify(a.hz));
   // another player playing: their guitar drawn on them, their chord in their fingers, their voice placed where they stand
-  const o=await pg.evaluate(async()=>{ const P=__dbg.you(), at=[P.x+1.6,P.z+.4,SHARED.py,0,SHARED.LVL,''];
+  const o=await pg.evaluate(async()=>{ __dbg.UI.dist*=.3;   // (the camera in close: the jointed hands are drawn and fingered only near it)
+    const P=__dbg.you(), at=[P.x+1.6,P.z+.4,SHARED.py,0,SHARED.LVL,''];
     ONLINE.feed({t:'hi',you:'me',all:[{id:'g1',name:'LUZ',look:'b:avatar:'+AVATAR.code(),at,x:{gtr:'f'}}]}); await new Promise(r=>setTimeout(r,1500));
     ONLINE.feed({t:'gtr',id:'g1',k:'chord',v:'Am'}); ONLINE.feed({t:'gtr',id:'g1',k:'strum',v:'D'}); await new Promise(r=>setTimeout(r,1200));
     const T=GUITAR.THEM().get('g1'); const r={them:!!T,held:!!(T&&T.H&&T.H.gm.parent),chord:T&&T.chord,voice:!!(T&&T.V),miss:T&&T.H&&T.H.err?Math.round(Math.max(...[...new Set(T.live.lh.filter(q=>q.t1>1e8).map(q=>q.f))].map(f=>T.H.err.L[f]||0))*1000):null};   // (the fingers that press the chord, as for yours)

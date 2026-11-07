@@ -49,7 +49,7 @@ def one(b):
         y, d, im = best
         im = im.resize((300, round(im.height * 300 / im.width)), Image.LANCZOS); f = 'data/books/covers/bk-' + b['id'] + '.jpg'; im.save(f, 'JPEG', quality=80)
         pub = d.get('publisher', ''); pub = (pub[0] if isinstance(pub, list) else pub).strip(' .;:,')
-        ed = pub if str(y) in pub else (pub + ', ' if pub else '') + str(y)
+        ed = pub if str(y) in pub else (pub + ', ' + str(y) if pub else 'the ' + str(y) + ' edition')
         return b['id'], {'file': f, 'source': 'https://archive.org/details/' + d['identifier'], 'original': 'https://archive.org/download/' + d['identifier'] + '/page/cover_w800.jpg',
                          'credit': 'Internet Archive (' + ', '.join((d.get('collection') if isinstance(d.get('collection'), list) else [d.get('collection', '')])[:2]) + ')',
                          'licence': 'Public domain (edition published ' + str(y) + ', pre-1931)', 'licence_url': 'https://archive.org/details/' + d['identifier'], 'edition': ed}

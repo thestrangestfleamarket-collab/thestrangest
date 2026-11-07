@@ -88,13 +88,13 @@ import {SCOPE} from './150fd-scope.js';
       const m=new THREE.MeshLambertMaterial({color:0xffffff,map:GLOBE.done[k]||plain(GLOBE[k].col,k)}); (GLOBE.spheres[k]=GLOBE.spheres[k]||[]).push(m);
       const me=keep(new THREE.Mesh(new THREE.SphereGeometry(r,40,28),m)); me.castShadow=true; S.add(me);
       keep(p(new THREE.TorusGeometry(r+.012,.005,6,48),brass,0,0,0,0,T)); keep(p(new THREE.CylinderGeometry(.004,.004,2*r+.06,6),brass,0,0,0,0,T)); return T; };
-    const E0=[3.75,8.65];
+    const E0=[.45,7];   // against the west wall (owner, 7 Nov 2026: "put all the stuff in apartment along the walls")
     cap('EARTH GLOBE',()=>{ const G=new THREE.Group(); G.position.set(E0[0],0,E0[1]); cur().add(G); const H=1.02, r=.23;
       for(let i=0;i<4;i++){ const a=i*Math.PI/2+Math.PI/4; p(rbox(.04,.05,.3,.01),woodD,Math.cos(a)*.13,.025,Math.sin(a)*.13,-a+Math.PI/2,G); p(new THREE.SphereGeometry(.022,8,6),brass,Math.cos(a)*.27,.02,Math.sin(a)*.27,0,G); }
       p(new THREE.CylinderGeometry(.035,.05,H-r-.12,12),wood,0,(H-r-.12)/2+.05,0,0,G); p(new THREE.CylinderGeometry(.05,.035,.06,12),wood,0,H-r-.06,0,0,G);
       const ring=p(new THREE.TorusGeometry(r+.06,.018,6,40).rotateX(Math.PI/2),wood,0,H,0,0,G); for(let i=0;i<3;i++){ const a=i*Math.PI*2/3+.3, A=new THREE.Vector3(0,H-r-.08,0), B=new THREE.Vector3(Math.cos(a)*(r+.06),H-.01,Math.sin(a)*(r+.06)), D=B.clone().sub(A), st=p(new THREE.CylinderGeometry(.011,.011,D.length(),6),wood,(A.x+B.x)/2,(A.y+B.y)/2,(A.z+B.z)/2,0,G); st.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),D.normalize()); }   // three arms from the column up to the horizon ring
       const C=new THREE.Group(); C.position.set(0,H,0); G.add(C); ball('earth',r,C); solid(E0[0]-.3,E0[1]-.3,E0[0]+.3,E0[1]+.3,H+r); },{wire:'globe',bake:true});
-    const T0=[3.9,9.55], TH=.64;
+    const T0=[.42,8.2], TH=.64;
     cap('GLOBE TABLE',()=>{ const G=new THREE.Group(); G.position.set(T0[0],0,T0[1]); cur().add(G); p(new THREE.CylinderGeometry(.3,.3,.03,28),wood,0,TH-.015,0,0,G); p(new THREE.CylinderGeometry(.03,.04,TH-.03,10),woodD,0,(TH-.03)/2,0,0,G);
       for(let i=0;i<3;i++){ const a=i*Math.PI*2/3; p(rbox(.04,.03,.24,.008),woodD,Math.cos(a)*.1,.015,Math.sin(a)*.1,-a+Math.PI/2,G); } solid(T0[0]-.3,T0[1]-.3,T0[0]+.3,T0[1]+.3,TH); },{bake:true});
     for(const [k,du,dv] of [['moon',-.13,-.04],['mars',.12,.06]])cap(k.toUpperCase()+' GLOBE',()=>{ const G=new THREE.Group(); G.position.set(T0[0]+du,TH,T0[1]+dv); cur().add(G); const r=.085;

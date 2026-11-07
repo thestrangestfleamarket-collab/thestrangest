@@ -52,7 +52,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   AVATAR.act=S=>{ const m=S.move, up=S.up, W=S.water, now=performance.now();
     if(S.sit)S._pfSat=1; else if(S._pfSat){ S._pfSat=0; S._pfUp=now; }   // (up from a seat: Polyfork's stand-up, unless you walk off)
     if(S.ride)return /^(car|kart)$/.test(S.ride.k)?{n:'Driving',loop:1,seat:1}:null;
-    if(W&&W.in)return (W.under||0)>.5||(W.back||0)>.5?null:{n:(W.swim||0)>.5?'Swimming':'Treading water',loop:1,seat:1};
+    if(W&&W.in)return (W.under||0)>.5||(W.back||0)>.5?null:(W.swim||0)>.5?{n:'Swimming',loop:1,seat:1,head:1.5,rest:-2.4}:{n:'Treading water',loop:1,seat:1,head:2,rest:-21};
     if(m){ const n=m.name; if(n.startsWith('mc_pf_')){ const e=AVATAR.PF[n.slice(6)]; return e&&{n:e[0],t:e[1]+(e[3]?m.t%(e[2]-e[1]):Math.min(m.t,e[2]-e[1]))}; }
       if(MV[n])return one(m,MV[n]); if(n==='crouch')return {n:'Crouch',loop:1}; return null; }
     if(up){ if(MV[up.name])return one(up,MV[up.name]); if(up.name==='carry')return {n:'Walk carrying',loco:1}; return null; }

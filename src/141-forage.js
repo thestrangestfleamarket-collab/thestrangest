@@ -129,6 +129,8 @@ import {WORTH} from './140c-worth.js';
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
+  // every player starts with 99 DRIFTCAPs to fly (owner, 7 Nov 2026: "all players start with 99 mushrooms to fly")
+  SYS.onStart(()=>{ const n=99-have('shroom_fly'); if(n>0){ give('shroom_fly',n); saveSoon(); LOAD('later').then(()=>FORAGE.draw()); } },'141-forage driftcaps');
   // owners start with 99 of every mushroom that gives something extra (owner, 7 Nov 2026)
   SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(!o)return; for(const id of ['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly']){ const n=99-have(id); if(n>0)give(id,n); } saveSoon(); FORAGE.draw(); }).catch(()=>{}); },'141-forage owners');
   SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);

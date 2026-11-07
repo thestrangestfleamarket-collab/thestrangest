@@ -10,7 +10,7 @@ const APTS={EMPTY:true};
 // the flats (owner, 6 Nov 2026: "Free flat at first login"): a flat number maps to a house up the apartment street, a floor and a side; floors 1-10 two flats each, floor 11 the whole-floor penthouse
 APTS.PER=21; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; const i=(n-1)%APTS.PER; return {house:Math.floor((n-1)/APTS.PER),floor:i===20?11:1+Math.floor(i/2),side:i===20?0:i%2,pent:i===20}; };
 APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
-await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
+await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.flat=FL;
   for(let hi=0;hi<HOUSES.length;hi++)await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi);
   MODS.apts=APTS; });

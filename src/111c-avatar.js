@@ -47,8 +47,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     Chop:['Chopping wood',0,.97,1],Fix:['Fixing',0,5.2,1],Push:['Pushing',0,2.67,1],Torch:['Holding torch',0,1.27,1],Lantern:['Holding lantern',0,2.5,1],Drink:['Drinking',2.1,5.7],Open:['Opening',0,1.37],Use:['Interact',0,2]};
   // what the avatar plays for what the rig is doing (owner, 7 Nov 2026): the rig's move or state, and Polyfork's clip in its place: n the clip, t seconds into it (or u, the move's
   // share done, played over [a,b]), seat: the hips where the rig has them (a seat, the water); loco: walked by the ground covered like the walk
-  const MV={mc_eat:'Eating',mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up',
-    jab:['Punch',.2,.75],cross:['Punch',1,1.6],uppercut:['Punch',1,1.6]};   // (the kicks, the hook and the slap: the rig's, drawn from Mesh2Motion's recordings, RIG.LOOK)
+  const MV={mc_eat:'Eating',mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
   const one=(m,e)=>{ const u=m.def&&m.def.dur?Math.min(1,m.t/m.def.dur):0; return typeof e==='string'?{n:e,u,a:0,b:null}:{n:e[0],u,a:e[1],b:e[2],seat:!!e[3]}; };
   AVATAR.act=S=>{ const m=S.move, up=S.up, W=S.water, now=performance.now();
     if(S.sit)S._pfSat=1; else if(S._pfSat){ S._pfSat=0; S._pfUp=now; }   // (up from a seat: Polyfork's stand-up, unless you walk off)

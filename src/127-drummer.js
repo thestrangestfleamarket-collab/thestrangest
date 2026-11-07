@@ -1,4 +1,4 @@
-// THE DRUMMER: DRM puts the octopus drummer and its drum kit in the bar.
+// THE DRUMMER: DRM puts the octopus drummer at a drum kit: the bar's (DRM.make(S,{add,live}): S its kit's spot, add puts the figure in a room, live says it is being heard).
 import {SHARED, THREE} from './003-shx.js';
 import {DRM, pos, SND} from './003b-systems.js';
 import {PPU} from './004-main.js';
@@ -17,10 +17,10 @@ const octFig=(CAP=160)=>{ '@later'; const g=new THREE.Group(); g.scale.set(1/PPU
     for(const [x,y,z,c] of B.D){ if(n>=CAP)break; place(n++,x,y,z,.7,.7,.7,0,0,0,c); }
     im.count=n; im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true; };
   return {g,im,draw}; };
-DRM.make=()=>{ '@later'; if(!STORE.bar)return; const S=STORE.bar, AT={...S.at(S.drums.x,S.drums.y-OCTBK),hd:S.hd,y:SHARED.BOD.Y(S.stage.z)}, F=octFig(), g=F.g; MAPG.bodega.add(g); DRM.g=g; DRM.at=AT;
+DRM.make=(S=STORE.bar,o={})=>{ '@later'; if(!S)return; const live=DRM.live=o.live||(()=>MAPG.bodega.visible), AT={...S.at(S.drums.x,S.drums.y-OCTBK),hd:S.hd,y:SHARED.BOD.Y(S.stage.z)}, F=octFig(), g=F.g; (o.add||(x=>MAPG.bodega.add(x)))(g); DRM.g=g; DRM.at=AT;
   g.position.set(AT.x,AT.y,AT.z); g.rotation.set(0,AT.hd,0);
   const hush=()=>{ const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx)N.g.gain.setTargetAtTime(0,SND.ctx.currentTime,.1); }; DRM.stop=hush;
-  DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!DRM.on||!MAPG.bodega.visible||d>18){ hush(); return; } const now=performance.now();
+  DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!DRM.on||!live()||d>18){ hush(); return; } const now=performance.now();
     octStep(dt,now); octHabits(now); const p=octPose(now), A=octArms(p), B=octBody(A);
     F.draw(B);
     const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(SHARED.cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; };

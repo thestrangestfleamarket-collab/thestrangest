@@ -17,7 +17,7 @@ import {AVATAR} from './111c-avatar.js';
   const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
     const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
       R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }
-    Object.assign(R.LOOK,{roll:'mc_roll2',frontKick:'mc_kickFront',roundhouse:'mc_kickRound',slap:'mc_hook2',hook:'mc_hook2',flinch:'mc_hitChest'}); return info; }));   // (the hand-made moves drawn from recordings: their timing, travel and hits kept)
+    Object.assign(R.LOOK,{roll:'mc_roll2',frontKick:'mc_kickFront',roundhouse:'mc_kickRound',hook:'mc_hook2',flinch:'mc_hitChest'}); return info; }));   // (the hand-made moves drawn from recordings: their timing, travel and hits kept)
   const has=n=>!!R.MOVES['mc_'+n];
   // play one on a rig state: a whole-body move from his current pose (a held tool's arm still goes where the game aims it); a looped one starts again as it ends, until he walks, another move takes over or its `while` fails
   const start=(S,n,loop)=>{ R.begin(S,'mc_'+n); return {S,n,loop}; };

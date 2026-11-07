@@ -15,20 +15,20 @@ const SHOTS = process.argv[3];
     const want = ['florist', 'bees', 'bfly', 'birds', 'pets', 'mush', 'gems', 'armor', 'clothes', 'skate', 'diner', 'fishing', 'tailor', 'barber', 'hotel'];
     ok(want.every(id => ids.includes(id)), 'every merchant\'s shop is on the rows (' + ids.join(', ') + ')');
     if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await pg.evaluate(() => __dbg.UI.setView && __dbg.UI.setView('third')); }
-    for (const id of want) {
+    for (const id of (process.env.ONLY ? process.env.ONLY.split(',') : want)) {
       const P = W.places.find(p => p.id === id), who = P && P.merchant;
       ok(who && !W.homes[who], id + ': its keeper is ' + who + ', with no street spot of their own');
       await pg.evaluate(id => ROOMS.enter(id), id);
       let r = {}; for (let i = 0; i < 90; i++) { r = await pg.evaluate(([id, who]) => { const o = ROOMS.off[id], b = o.box, me = __dbg.you(), inR = me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1;
           const th = __dbg.UI.things.filter(t => t.obj && t.obj.parent && /COUNTER|FRONT DESK|SHELVES|DISPLAY TABLE/.test(t.name)).map(t => t.name);
-          const N = (window.BODIES && BODIES.by[who] && BODIES.by[who].npc) || (window.NPCS ? NPCS.concat(NPCS.extra || []) : []).find(n => n.key === who || n.id === who), g = N && (N.g || N.group || N.mesh), p = g && g.position;
+          const N = (window.BODIES && BODIES.by[who] && BODIES.by[who].npc) || (__dbg.NPCS || []).concat((__dbg.NPCS && __dbg.NPCS.extra) || []).find(n => n.key === who || n.id === who), g = N && (N.g || N.group || N.mesh), p = g && g.position;
           return { inR, th, keeper: !!(p && p.x > b.x0 && p.x < b.x1 && p.z > b.z0 && p.z < b.z1) }; }, [id, who]).catch(e => ({ err: String(e) }));
         if (r.inR && r.th && r.th.length && r.keeper) break; await pg.waitForTimeout(1000); }
       ok(r.inR && r.th && r.th.some(n => /COUNTER|FRONT DESK/.test(n)), id + ': you go in and it is furnished (' + JSON.stringify(r.th) + ')');
       ok(r.keeper, id + ': ' + who + ' stands inside');
       const tr = C[who] && C[who].trade;
       const used = await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.obj && t.obj.parent && /COUNTER|FRONT DESK/.test(t.name)); window.__said = ''; t.act(); const sp = document.getElementById('shopg'), a = { shop: sp && !sp.hidden, menu: !!__dbg.UI.menuOpen }; if (window.SHOPS) SHOPS.close(); if (__dbg.UI.menuOpen) __dbg.UI.toggleMenu(); return a; });
-      ok(tr ? used.shop : (id === 'hotel' || used.menu), id + ': the counter ' + (tr ? 'opens the shop (' + tr.sells.length + ' things)' : id === 'hotel' ? 'rests you' : 'opens the YOU window') + ' ' + JSON.stringify(used));
+      ok(tr ? used.shop : (id === 'hotel' || used.menu), id + ': the counter ' + (tr ? 'opens the shop (' + (tr.sells || []).length + ' things)' : id === 'hotel' ? 'rests you' : 'opens the YOU window') + ' ' + JSON.stringify(used));
       if (SHOTS) { await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(SHOTS, id + '.png') }); }
       await pg.evaluate(id => ROOMS.exit(id), id); await pg.waitForTimeout(2500);
       const out = await pg.evaluate(id => { const b = ROOMS.off[id].box, me = __dbg.you(); return !(me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1); }, id);

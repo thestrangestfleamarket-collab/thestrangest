@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {BLDK, FADE, FIX, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
@@ -23,7 +23,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   HOLO.hide=()=>{ hp.hidden=true; };
   HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); };
   HOLO.close=()=>{ HOLO.end(); HOLO.hide(); HOLO.hall=null; };
-  HOLO.start=P=>{ '@later'; if(HOLO.run||!HOLO.hall)return; const c=P.cost==null?8:P.cost; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+  HOLO.start=P=>{ '@later'; if(HOLO.run||!HOLO.hall)return; const c=P.cost||0; if(INV.cash<c)return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.cash-=c; if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
     const H=HOLO.hall; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); if(P.place)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
   SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
   SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return;
@@ -258,6 +258,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
+  { const B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0)); if(LEVEL.homes&&!LEVEL.homes.game_master)LEVEL.homes.game_master=[+tx(X(cx-2.2)).toFixed(2),+tz(Z(AR.y0+1.6)).toFixed(2),0,'arcade']; }   // the Game Master by the holodeck's door (owner, 5 Nov 2026)
   { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+3),'up','off',Math.PI]); }
   window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,run:HOLO.run?HOLO.run.P.name:null,rows:hp.querySelectorAll('button[data-run]').length}});
 });

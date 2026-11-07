@@ -1,4 +1,4 @@
-// THE MERCHANTS' SHOPS: MSHOP, the one way a merchant gets a small shop: its outside one painted block on its lot in the level file (shopfront, window, door, sign), its inside off the map (about half the bodega), built behind the fade when you go in and furnished by the merchant's own kit (MSHOP.kit[id]).
+// THE MERCHANTS' SHOPS: MSHOP, the one way a merchant gets a small shop: its outside one painted block on its lot in the level file (shopfront, window, door, sign), its inside off the map (about half the bodega), built behind the fade when you go in and furnished by the merchant's own kit (MSHOP.kit[id]), or else the shared one (MSHOP.kit._, 162fa).
 import {SHARED, THREE} from './003-shx.js';
 import {ROOMS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -62,7 +62,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const IW=p.inW||11, ID=p.inD||9, R={x0:1600+n*30,x1:1600+n*30+IW,y0:-100,y1:-100+ID}, cx=(R.x0+R.x1)/2, WH=p.inH||84;
     STORE.bound.x1=Math.max(STORE.bound.x1,X(R.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(R.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(R.y1+6));
     let G=null, S=[], PA=null;
-    const api={id,R,cx,WH,X,Y,Z,T,hs,sh,lit,
+    const api={id,who:p.merchant,name:D.name,R,cx,WH,X,Y,Z,T,hs,sh,lit,
       sol:(x0,y0,x1,y1)=>{ const r=box4(x0,y0,x1,y1); S.push(r); SOL.up.push(r); return r; },
       tex:(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.imageSmoothingEnabled=false; f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; return t; },
       // a flat painted quad on the floor or a wall, its texture painted pixel by pixel like the street (fn(u,v) in tiles -> [r,g,b])
@@ -72,9 +72,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       lamp:(x,y,h,c,i=4,r=8)=>{ const Lt=new THREE.PointLight(c,i,r*T,1.6); Lt.position.set(X(x),Y(h*24),Z(y)); scene.add(Lt); return Lt; },
       add:o=>{ scene.add(o); return o; }};
     const build=()=>{ '@later'; G=new THREE.Group(); G.name=id+'-in'; scene.add(G); S=[];
-      PA=ROOMS.part(G,()=>{ (MSHOP.kit[id]||(()=>{}))(api); },MKA);
+      PA=ROOMS.part(G,()=>{ (MSHOP.kit[id]||MSHOP.kit._||(()=>{}))(api); },MKA);
       api.sol(R.x0-.1,R.y0,R.x0+.1,R.y1); api.sol(R.x1-.1,R.y0,R.x1+.1,R.y1); api.sol(R.x0,R.y0-.1,R.x1,R.y0+.1); api.sol(R.x0,R.y1-.1,cx-.9,R.y1+.1); api.sol(cx+.9,R.y1-.1,R.x1,R.y1+.1); return PA; };
-    const unbuild=()=>{ for(const r of S){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } S=[]; if(G){ G.removeFromParent(); G=null; } PA=null; if(MSHOP.kit[id]&&MSHOP.kit[id].drop)MSHOP.kit[id].drop(); };
+    const unbuild=()=>{ for(const r of S){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } S=[]; if(G){ G.removeFromParent(); G=null; } PA=null; const k=MSHOP.kit[id]||MSHOP.kit._; if(k&&k.drop)k.drop(); };
     const wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2);
     ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>LOAD('later'),build,unbuild,
       spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUT TO THE STREET'};

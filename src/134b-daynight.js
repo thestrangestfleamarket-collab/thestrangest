@@ -1,13 +1,14 @@
-// THE HOURS: DN holds the two looks, DAY and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything); which one it is the owner picks for everyone (/shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
+// THE HOURS: DN holds the three looks, DAY, DUSK and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything), picked by the game's clock (real Central time; the owner can set it, stop it or hold a look for everyone, /shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MISTE, MISTS, MISTSC, QS, STORE, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 import {TPANE} from './087dz-tpane.js';
-Object.assign(DN,{lk:1,mode:'day',modes:['day','dusk','night'],names:{day:'DAY',dusk:'DUSK',night:'NIGHT'},FADE:60000,hold:null});
-// the game's hour by the real clock, the same for everyone: six game hours a real hour, 05:00 at the epoch (worker/lives.js lvH); the look is DAY from 06:00 to 18:00, DUSK to 20:00, NIGHT to 06:00, unless the owner holds one
-DN.clockH=()=>((Date.now()/600000)+5)%24; DN.lookFor=h=>h<6||h>=20?'night':h>=18?'dusk':'day';
+__CODE__("worker/clock.js")
+Object.assign(DN,{lk:1,mode:'day',modes:['day','dusk','night'],names:{day:'DAY',dusk:'DUSK',night:'NIGHT'},FADE:60000,hold:null,clk:null});
+// the game's hour, the same for everyone: real Central time unless the owner set or stopped it (worker/clock.js, DN.clk); the look is DAY from 06:00 to 18:00, DUSK to 20:00, NIGHT to 06:00, unless the owner holds one
+DN.clockH=()=>CLK.hour(Date.now(),DN.clk); DN.lookFor=h=>h<6||h>=20?'night':h>=18?'dusk':'day';
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
     D0={day:{h:9.5,sun:1.3,amb:1.15,sunc:'#fff6e8',ambc:'#e6f0ff',zen:'#2f7ae8',hor:'#b4d6f6',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#a8cbf0',skym:0,farb:1.15,grade:'#fbfcff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ffffff',sunk:0,shaft:.7,glow:1,bands:0,tun:.02},
       dusk:{h:18.9,sun:.25,amb:.75,sunc:'#ff7050',ambc:'#6a78c0',zen:'#1e2c6e',hor:'#d88aa0',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#7a6a9a',skym:0,farb:1.15,grade:'#f0f0ff',lift:'#2a3060',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ff9080',sunk:.4,shaft:0,glow:1.3,bands:0,tun:.02},
@@ -42,7 +43,9 @@ DN.clockH=()=>((Date.now()/600000)+5)%24; DN.lookFor=h=>h<6||h>=20?'night':h>=18
     { const shop=!!(ROOMS.cur&&!ROOMS.cur.off&&STORE.inside&&STORE.inside[ROOMS.cur.id]&&ROOMS.dark()); if(shop!==DN.shop){ DN.shop=shop; VIS.hide(SKY.dome,'room',shop); } if(shop&&scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); }   // inside a street shop: a black void past its walls
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
   const box=document.getElementById('adn'), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
-  DN.dayText=()=>'the clock\'s, the same for everyone: '+fmt(CLOCK.h)+(DN.hold?' (held at '+DN.names[DN.hold]+' by the owner)':'');
+  DN.dayText=()=>'the clock\'s, the same for everyone: '+fmt(CLOCK.h)+(DN.clk&&DN.clk.stop!=null?' (stopped by the owner)':DN.clk&&Math.abs(DN.clk.off||0)>=60000?' (set by the owner)':' (Central time)')+(DN.hold?' (held at '+DN.names[DN.hold]+' by the owner)':'');
+  const clkShow=()=>{ const e=box&&box.querySelector('#dnclkt'), b=box&&box.querySelector('#dnclkp'); if(e)e.textContent=fmt(DN.clockH())+(DN.clk&&DN.clk.stop!=null?' STOPPED':DN.clk&&Math.abs(DN.clk.off||0)>=60000?' SET':' CENTRAL'); if(b)b.textContent=DN.clk&&DN.clk.stop!=null?'RUN':'PAUSE'; };
+  setInterval(()=>{ if(DN.owner&&box&&box.offsetParent)clkShow(); },5000);
   const msg=t=>{ const e=box&&box.querySelector('#dnmsg'); if(e)e.textContent=t; };
   const V=TPANE.live({mode:[()=>DN.hold||'clock',m=>{ '@later'; if(!DN.owner||m===(DN.hold||'clock'))return; DN.hold=m==='clock'?null:m; if(m!=='clock')DN.set(m,true); msg('setting the time...'); DN.pushTime(m).then(()=>msg(m==='clock'?'the clock\'s, for everyone':DN.names[m]+' for everyone, until the clock\'s is picked')).catch(e=>msg('not set: '+(e.message||'try again'))); }],
     ...Object.fromEntries([...new Set(F.map(f=>f[0]))].map(k=>[k,[()=>DN.E()[k]??'#000000',v=>{ const P=DN.E(); if(typeof v==='number')v=+v.toFixed(4); if(P[k]===v)return; P[k]=v; if(k==='cld'||k==='lamp')fix(); dirty=true; msg('not saved'); }]]))});
@@ -57,16 +60,21 @@ DN.clockH=()=>((Date.now()/600000)+5)%24; DN.lookFor=h=>h<6||h>=20?'night':h>=18
     pm=p; pk=m; };
   DN.draw=()=>{ if(!box)return; const m=DN.mode;
     if(!DN.owner){ box.innerHTML=`<h3>THE HOURS</h3><div class="row"><span class="dim" id="dnday">${DN.names[m]}: ${DN.dayText()}</span></div>`; return; }
-    if(!box.querySelector('.dntp')){ box.innerHTML='<h3>THE HOURS</h3><div class="dntp"></div><div class="row"><span class="dim" id="dnday">the clock\'s by default (night 20:00 to 06:00); hold a look for everyone to edit or keep it (a change fades over a minute)</span><span class="dim" id="dnmsg"></span></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>'; pm=null; }
-    msg(dirty?'not saved':''); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
+    if(!box.querySelector('.dntp')){ box.innerHTML='<h3>THE HOURS</h3><div class="dntp"></div><div class="row"><span class="dim" id="dnday">the clock\'s by default (night 20:00 to 06:00); hold a look for everyone to edit or keep it (a change fades over a minute)</span><span class="dim" id="dnmsg"></span></div><div class="row" id="dnclk"><b>THE CLOCK</b> <span id="dnclkt"></span> <input id="dnclkh" type="time" style="width:90px"> <button id="dnclkset">SET</button> <button id="dnclkp">PAUSE</button> <button id="dnclkr">REAL TIME</button></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>'; pm=null;
+      const C=box.querySelector('#dnclk'), go=(f,say)=>{ '@later'; const c=f(Date.now(),DN.clk); msg('setting the clock...'); DN.pushClk(c).then(()=>{ DN.clk=c; clkShow(); msg(say()); }).catch(e=>msg('not set: '+(e.message||'try again'))); };
+      C.querySelector('#dnclkset').onclick=()=>{ const v=C.querySelector('#dnclkh').value; if(!/^\d\d:\d\d/.test(v))return msg('pick a time first'); const h=+v.slice(0,2)+v.slice(3,5)/60; go((t,c)=>CLK.setHour(t,c,h),()=>'the clock at '+v+' for everyone'); };
+      C.querySelector('#dnclkp').onclick=()=>{ const st=DN.clk&&DN.clk.stop!=null; go(st?CLK.resume:CLK.pause,()=>st?'the clock runs on for everyone':'the clock stopped for everyone'); };
+      C.querySelector('#dnclkr').onclick=()=>go(CLK.real,()=>'Central time for everyone'); }
+    clkShow(); msg(dirty?'not saved':''); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
   if(box)for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
   { const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };
     const get=()=>fetch(FILE,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(take).catch(()=>{});
-    const TF='/shared/time.json', getT=()=>fetch(TF,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(j=>{ if(j&&j.hold&&DN.modes.includes(j.now)){ DN.hold=j.now; DN.set(j.now,DN.started); } else DN.hold=null; }).catch(()=>{});   // (a pick from before the clock ran, with no hold, is the clock's now)
+    const TF='/shared/time.json', getT=()=>fetch(TF,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(j=>{ DN.clk=j&&CLK.ok(j.clk)?j.clk:null; DN.draw(); if(j&&j.hold&&DN.modes.includes(j.now)){ DN.hold=j.now; DN.set(j.now,DN.started); } else DN.hold=null; }).catch(()=>{});   // (a pick from before the clock ran, with no hold, is the clock's now)
     if(!DN.test){ get(); getT(); }
-    DN.pushTime=m=>fetch(TF,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({now:m,hold:m==='clock'?0:1})}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('time',Date.now()); });
+    const putT=o=>fetch(TF,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({now:DN.hold||'clock',hold:DN.hold?1:0,clk:DN.clk,...o})}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('time',Date.now()); });
+    DN.pushTime=m=>putT({now:m,hold:m==='clock'?0:1}); DN.pushClk=c=>putT({clk:c});   // the look held and the clock: one file, each change keeps the other
     DN.diff=()=>{ const o={}; for(const m of DN.modes){ const d={}; for(const k in S[m])if(S[m][k]!==D0[m][k])d[k]=S[m][k]; if(Object.keys(d).length)o[m]=d; } return o; };   // only what differs from the game's own: a reset look leaves the file
     DN.push=()=>fetch(FILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(DN.diff())}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('looks',Date.now()); });
     let lastL=null, lastT=null; SYS.add('world',(k,v)=>{ if(DN.owner||DN.test)return; if(k==='looks'&&v!==lastL){ lastL=v; get(); } if(k==='time'&&v!==lastT){ lastT=v; DN.started=1; getT(); } },'134b-looks'); }
-  CLOCK.run=false; blend(S[DN.mode],S[DN.mode],1); fix(); DN.draw(); window.DN=DN; window.DNDBG=()=>({mode:DN.mode,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }
+  CLOCK.run=false; blend(S[DN.mode],S[DN.mode],1); fix(); DN.draw(); window.DN=DN; window.CLK=CLK; window.DNDBG=()=>({mode:DN.mode,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

@@ -69,14 +69,14 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
     await ART.put('a'+id,d,true); ART.del('w'+id); };
   PAINTINGS.atEasel=()=>{ '@later'; const ids=Object.keys(M.wip).filter(id=>FORAGE.has('wip_'+id)).sort((a,b)=>(M.wip[b].at||0)-(M.wip[a].at||0)); if(ids.length)return open(ids[0],false);
     const can=['canvas_m','canvas_s','canvas_w','canvas_t','paper'].find(k=>FORAGE.has(k)); if(can)return PAINTINGS.start(can);
-    say('YOU NEED A CANVAS. THE TRADER AT THE FLEA MARKET SELLS THEM.','#c8a090'); };
+    say('YOU NEED A CANVAS. THE PROFESSOR AT THE BOOKSTORE SELLS THEM.','#c8a090'); };
 
   /* ---------- the pack: PAINT a canvas or an unfinished painting, VIEW a finished one ---------- */
   FORAGE.ACT.paint=id=>{ if(CAN[id])return PAINTINGS.start(id); if(id.startsWith('wip_'))return open(id.slice(4),false); };
   FORAGE.ACT.artview=id=>PAINTINGS.view(id.slice(3));
   FORAGE.ROWB.push(id=>CAN[id]||id.startsWith('wip_')?[['PAINT','paint']]:id.startsWith('pt_')?[['VIEW','artview']]:[]);
   FORAGE.NOTE.push(id=>{ if(id.startsWith('pt_')){ const a=M.art[id.slice(3)]; return a?`BY ${a.by} · ${a.w}×${a.h}${a.fr?' · '+FR[a.fr][0]+' FRAME':''}`:''; } if(CAN[id])return `${CAN[id].w}×${CAN[id].h}: PAINT ON IT`; if(id.startsWith('wip_'))return 'PAINT TO CARRY ON'; return ''; });
-  FORAGE.HELP.push('PAINTING: PAINT on a canvas from your pack, or double-click your easel at home. FINISH signs it: one of a kind, to hang (DECORATE), give or sell (THE TRADER buys them).');
+  FORAGE.HELP.push('PAINTING: PAINT on a canvas from your pack, or double-click your easel at home. FINISH signs it: one of a kind, to hang (DECORATE), give or sell (the Professor at the bookstore buys them).');
 
   /* ---------- looking at a painting, full screen ---------- */
   const V=document.createElement('div'); V.id='artview'; V.hidden=true; V.setAttribute('role','dialog');

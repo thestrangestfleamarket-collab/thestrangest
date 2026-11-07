@@ -45,7 +45,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // Polyfork's clips with a move of their own (MOTION 'pf_<key>', 111da): the clip, the part of it played [from, to] in seconds, and whether it loops; on the rig they hold still
   AVATAR.PF={Agree:['Agree',0,1.83],Shake:['Head shake',0,2.57],Laugh:['Laughing',0,9.77],Chat:['Talking',0,2.93,1],Phone:['Phone call',0,2.93,1],Cross:['Arms folded',0,2.5,1],
     Bop:['Dance',0,1,1],HipHop:['Hip hop',0,6.1,1],Twist:['Twist',0,9.43,1],Swing:['Swing',0,2.47,1],Thriller:['Thriller',0,18.87],Drunk:['Drunk idle',0,7.4,1],Lean:['Leaning on rail',0,2.5,1],Call:['Calling from rail',0,2.5,1],
-    Chop:['Chopping wood',0,.97,1],Fix:['Fixing',0,5.2,1],Push:['Pushing',0,2.67,1],Torch:['Holding torch',0,1.27,1],Lantern:['Holding lantern',0,2.5,1],Drink:['Drinking',2.1,5.7],Open:['Opening',0,1.37],Use:['Interact',0,2]};
+    Chop:['Chopping wood',0,.97,1],Fix:['Fixing',0,5.2,1],Push:['Pushing',0,2.67,1],Torch:['Holding torch',0,1.27,1],Lantern:['Holding lantern',0,2.5,1],Drink:['Drinking',2.1,5.7],Open:['Opening',0,1.37],Use:['Interact',0,2],Land:['Hard landing',0,1.6]};
   // what the avatar plays for what the rig is doing (owner, 7 Nov 2026): the rig's move or state, and Polyfork's clip in its place: n the clip, t seconds into it (or u, the move's
   // share done, played over [a,b]), seat: the hips where the rig has them (a seat, the water); loco: walked by the ground covered like the walk
   const MV={mc_eat:'Eating',mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
@@ -59,6 +59,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     if(up){ if(MV[up.name])return one(up,MV[up.name]); if(up.name==='carry')return {n:'Walk carrying',loco:1}; return null; }
     if(S.sit)return {n:'Sitting',loop:1,seat:1};
     if(S._pfUp&&now-S._pfUp<1030&&(S.w||0)<.3)return {n:'Stand up',t:(now-S._pfUp)/1000};
+    if(S.jog)return {n:'Jog',loco:1,idle:1};   // (jog mode, Shift: Polyfork's jog for the walk, the idle where you stop)
     return null; };
   const dec=v=>v.$||(v.$={pos:I16(v.pos),tri:U16(v.tri),bone:B64(v.bone),w:B64(v.w),zone:B64(v.zone),reg:v.reg?B64(v.reg):null});
   // Polyfork's own rule for which of the body's regions its clothes hide (its culled())

@@ -51,7 +51,7 @@ window.BAG=BAG;
   BAG.kind=id0=>{ const id=kindOf(id0), p=prop(id,'icon'); if(p&&p!=='auto'&&ART[p])return p; if(GEMS.some(g=>g[0]===id&&!id.startsWith('m_')))return 'gem'; for(const [re,k] of KIND)if(re.test(id))return k; return 'sack'; };
   const colour=(id,k)=>{ '@later'; const c=prop(id,'color'); if(c&&c!=='none')return c; if(k==='mush'){ const m=(FORAGE.MU||{})[id.slice(2)]; if(m&&m[5]!=null)return hex(m[5]); } if(id.startsWith('cut_')){ const q=prop(id.slice(4),'color'); if(q&&q!=='none')return q; } if(id==='bottle')return '#a8adb8'; if(k==='fish'||k==='sack'||k==='crate'||k==='mortar'||k==='net'||k==='rod'||k==='lamp'||k==='armour')return MAIN[k]||'#a8adb8'; return MAIN[k]&&!/^(coat|gadget|cube|kite|card|bfly|bird|book|jar|potion|fruit|dish|board)$/.test(k)?MAIN[k]:hue(id); };
   // each item's own 16-pixel picture (data/icons.json, tools/icons.py; owner, 7 Nov 2026: "go with A"); the family pictures above until it has loaded, and for anything it lacks
-  const SH=(()=>{ try{ return __DATA__("data/icons.json"); }catch(e){ return null; } })(), SI=new Map(SH?SH.ids.map((id,i)=>[id,i]):[]); let SIMG=null;
+  let SH=null; try{ SH=__DATA__("data/icons.json"); }catch(e){} const SI=new Map(SH?SH.ids.map((id,i)=>[id,i]):[]); let SIMG=null;
   const CV=new Map(); const paint=id0=>{ '@later'; const id=kindOf(id0); let c=CV.get(id); if(c)return c;
     if(SIMG&&SI.has(id)){ const i=SI.get(id), n=SH.s; c=document.createElement('canvas'); c.width=c.height=n; c.getContext('2d').drawImage(SIMG,(i%SH.cols)*n,Math.floor(i/SH.cols)*n,n,n,0,0,n,n); CV.set(id,c); return c; }
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;

@@ -1608,6 +1608,11 @@
   "sellable": true,
   "icon": "mush",
   "boost": "fly",
-  "boostS": 30
+  "boostS": 300
+ },
+ "guitar": {
+  "value": 180,
+  "weight": 2.5,
+  "sellable": true
  }
 }

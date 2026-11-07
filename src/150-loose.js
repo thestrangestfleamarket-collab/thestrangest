@@ -1,6 +1,6 @@
 // THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, ED, GPH, keys, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
+import {DRESS, ED, GPH, keys, MOTION, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -136,7 +136,7 @@ import {BVH} from './137-bvh.js';
       if(d<1.1*T&&f>.35&&Math.abs(p.y-hy)<.7*T+it.h[1]&&(it.k!=='v'||inB(p.x,p.z)===me0)){ const k=(kick?5.5:3.8)*Math.min(it.m,25), j=k*.02*Math.max(1,it.h[1]/(.15*T));
         it.rb.wakeUp(); it.rb.applyImpulse({x:fx*k,y:k*.35,z:fz*k},true); it.rb.applyTorqueImpulse({x:(Math.random()-.5)*j,y:(Math.random()-.5)*j,z:(Math.random()-.5)*j},true); } } };
   const grab=it=>{ if(held||!it.rb)return; held=it; it.rb.setBodyType(R.RigidBodyType.KinematicPositionBased,true); it.rb.collider(0).setCollisionGroups(GH); RIG.act(st,'carry'); };
-  const throwTo=(it,g)=>{ '@later'; held=null; it.thrown=performance.now(); RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
+  const throwTo=(it,g)=>{ '@later'; held=null; it.thrown=performance.now(); RIG.release(st,'carry'); MOTION.play('throw'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI); const h=hand(), dx=g.x-h.x, dz=g.z-h.z, d=Math.max(.5,Math.hypot(dx,dz)), sp=Math.min(9,3+d*.9)*Math.min(1,Math.sqrt(8/Math.max(8,it.m)));
     it.rb.setLinvel({x:dx/d*sp,y:2.6+d*.25,z:dz/d*sp},true); it.rb.setAngvel({x:(Math.random()-.5)*6,y:(Math.random()-.5)*6,z:(Math.random()-.5)*6},true); };
   const putAt=(it,g)=>{ '@later'; held=null; RIG.release(st,'carry'); it.rb.setBodyType(R.RigidBodyType.Dynamic,true); it.rb.collider(0).setCollisionGroups(GI);
     it.rb.setTranslation({x:g.x,y:g.y+it.h[1]+.02*T,z:g.z},true); it.rb.setRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)},true); it.rb.setLinvel({x:0,y:0,z:0},true); it.rb.setAngvel({x:0,y:0,z:0},true); };

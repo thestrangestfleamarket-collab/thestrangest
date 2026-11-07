@@ -2,10 +2,15 @@
 import {SHARED} from './003-shx.js';
 import {MOTION, RAG, st, UI, VIT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
+import {AVATAR} from './111c-avatar.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
   const EMOTES=[['WAVE','greet'],['CLAP','clap'],['CHEER','cheer'],['FIST PUMP','fistPump'],['DAB','dab'],['YES','yes'],['NOD','nod'],['NO','no'],['ANGRY','angry'],['CONFUSED','confused'],['FLEX','flex'],['KNOCK','knock'],['POWER UP','powerUp'],['TALK','talk'],['ARMS FOLDED','foldArms'],
     ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['SHIVER','shiver'],['ZOMBIE','zombie']];
-  const ensure=()=>ready||(ready=DATA().then(J=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; } return info; }));
+  // Polyfork's clips with no move of his (AVATAR.PF, owner 7 Nov 2026: "yes lets use mixamo"): on the rig they stand still for the clip's length; the avatar plays the clip
+  const PFE=[['AGREE','Agree'],['SHAKE HEAD','Shake'],['LAUGH','Laugh'],['CHAT','Chat'],['PHONE CALL','Phone'],['CROSS ARMS','Cross'],['BOP','Bop'],['HIP HOP','HipHop'],['TWIST','Twist'],['SWING','Swing'],['THRILLER','Thriller'],
+    ['TIPSY','Drunk'],['LEAN ON RAIL','Lean'],['CALL OUT','Call'],['CHOP WOOD','Chop'],['FIX','Fix'],['PUSH','Push'],['HOLD TORCH','Torch'],['HOLD LANTERN','Lantern']];
+  const ensure=()=>ready||(ready=DATA().then(J=>{ for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
+    const K0=J.greet.keys[0][1]; for(const [n,[,a,b,lp]] of Object.entries(AVATAR.PF)){ R.MOVES['mc_pf_'+n]=R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; } return info; }));
   const has=n=>!!R.MOVES['mc_'+n];
   // play one on a rig state: a whole-body move from his current pose (a held tool's arm still goes where the game aims it); a looped one starts again as it ends, until he walks, another move takes over or its `while` fails
   const start=(S,n,loop)=>{ R.begin(S,'mc_'+n); return {S,n,loop}; };
@@ -24,7 +29,7 @@ import {SYS} from './006-map-pre.js';
   const B=(t,f,css='')=>{ const b=document.createElement('button'); b.textContent=t; b.style.cssText='font:inherit;color:#ffe9b0;background:#2a1a06;border:2px solid #b8862a;padding:5px 7px;margin:3px;cursor:pointer;'+css; b.onclick=f; return b; };
   const closeB=B('X',()=>MOTION.close(),'position:absolute;right:8px;top:8px;margin:0'); closeB.className='pX';
   const head=document.createElement('div'); head.textContent='EMOTES'; head.style.cssText='margin:2px 0 8px;color:#ffcf5a';
-  const grid=document.createElement('div'); for(const [t,n] of EMOTES)grid.append(B(t,()=>{ play(n); MOTION.close(); }));
+  const grid=document.createElement('div'); for(const [t,n] of [...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])])grid.append(B(t,()=>{ play(n); MOTION.close(); }));
   const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS'; tip.style.cssText='margin-top:8px;opacity:.7';
   sp.append(closeB,head,grid,tip);
   // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss

@@ -20,14 +20,14 @@ const SHOTS = process.argv[3];
       ok(who && !W.homes[who], id + ': its keeper is ' + who + ', with no street spot of their own');
       await pg.evaluate(id => ROOMS.enter(id), id);
       let r = {}; for (let i = 0; i < 90; i++) { r = await pg.evaluate(([id, who]) => { const o = ROOMS.off[id], b = o.box, me = __dbg.you(), inR = me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1;
-          const th = __dbg.UI.things.filter(t => t.obj && t.obj.parent && /COUNTER|FRONT DESK|SHELVES|DISPLAY TABLE/.test(t.name)).map(t => t.name);
+          const inB = t => { const v = t.obj.getWorldPosition(new t.obj.position.constructor()); return v.x > b.x0 && v.x < b.x1 && v.z > b.z0 && v.z < b.z1; }, th = __dbg.UI.things.filter(t => t.obj && t.obj.parent && inB(t) && /COUNTER|FRONT DESK|SHELVES|DISPLAY TABLE/.test(t.name)).map(t => t.name);
           const N = (window.BODIES && BODIES.by[who] && BODIES.by[who].npc) || (__dbg.NPCS || []).concat((__dbg.NPCS && __dbg.NPCS.extra) || []).find(n => n.key === who || n.id === who), g = N && (N.g || N.group || N.mesh), p = g && g.position;
           return { inR, th, keeper: !!(p && p.x > b.x0 && p.x < b.x1 && p.z > b.z0 && p.z < b.z1) }; }, [id, who]).catch(e => ({ err: String(e) }));
         if (r.inR && r.th && r.th.length && r.keeper) break; await pg.waitForTimeout(1000); }
       ok(r.inR && r.th && r.th.some(n => /COUNTER|FRONT DESK/.test(n)), id + ': you go in and it is furnished (' + JSON.stringify(r.th) + ')');
       ok(r.keeper, id + ': ' + who + ' stands inside');
       const tr = C[who] && C[who].trade;
-      const used = await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.obj && t.obj.parent && /COUNTER|FRONT DESK/.test(t.name)); window.__said = ''; t.act(); const sp = document.getElementById('shopg'), a = { shop: sp && !sp.hidden, menu: !!__dbg.UI.menuOpen }; if (window.SHOPS) SHOPS.close(); if (__dbg.UI.menuOpen) __dbg.UI.toggleMenu(); return a; });
+      const used = await pg.evaluate(id => { const b = ROOMS.off[id].box, t = __dbg.UI.things.find(t => { if (!t.obj || !t.obj.parent || !/COUNTER|FRONT DESK/.test(t.name)) return false; const v = t.obj.getWorldPosition(new t.obj.position.constructor()); return v.x > b.x0 && v.x < b.x1 && v.z > b.z0 && v.z < b.z1; }); window.__said = ''; t.act(); const sp = document.getElementById('shopg'), a = { shop: sp && !sp.hidden, menu: !!__dbg.UI.menuOpen }; if (window.SHOPS) SHOPS.close(); if (__dbg.UI.menuOpen) __dbg.UI.toggleMenu(); return a; }, id);
       ok(tr ? used.shop : (id === 'hotel' || used.menu), id + ': the counter ' + (tr ? 'opens the shop (' + (tr.sells || []).length + ' things)' : id === 'hotel' ? 'rests you' : 'opens the YOU window') + ' ' + JSON.stringify(used));
       if (SHOTS) { await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(SHOTS, id + '.png') }); }
       await pg.evaluate(id => ROOMS.exit(id), id); await pg.waitForTimeout(2500);

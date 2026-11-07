@@ -72,6 +72,7 @@ jobs:
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
+          k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|data/world|tools/park-pf|parkpf'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
@@ -264,6 +265,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' pfrow')
         run: node tests/pfrow.cjs
+      - name: The park's Polyfork things
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' parkpf')
+        run: node tests/parkpf.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')

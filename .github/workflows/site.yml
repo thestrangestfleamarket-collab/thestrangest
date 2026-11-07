@@ -31,7 +31,6 @@ jobs:
         run: |
           C=$(for f in $(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL); do [ "$f" = ALL ] && { echo ALL; break; }; case "$f" in src/*.js) git diff -U0 "origin/$BASE"...HEAD -- "$f" | grep -E '^[-+][^-+]' | grep -vqE "^[-+](import \{[^}]*\} from '\./[^']+';|export \{[^}]*\};) *$" && echo "$f";; *) echo "$f";; esac; done)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
-          k lawn    'src/14[0-2]|lawn'
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k brawl   'src/146h|src/146a|src/103|brawl'
@@ -60,6 +59,7 @@ jobs:
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
+          k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|underway\.cjs'
           k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
@@ -70,13 +70,16 @@ jobs:
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
+          k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
+          k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|data/world|tools/park-pf|parkpf'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
+          k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
@@ -108,10 +111,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' mapeditor')
         run: node tests/mapeditor.cjs dist/market.html
-      - name: The lawn (knee-high tufts, painted ground)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' lawn')
-        run: node tests/lawn.cjs dist/market.html
       - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
@@ -214,6 +213,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' insides')
         run: node tests/insides.cjs dist/market.html
+      - name: The Underway and the wreck (in from the river, the dry gallery, out through the lake; the sunken chests)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' underway')
+        run: node tests/underway.cjs dist/market.html
       - name: The merchants' shops (every one furnished, its keeper inside, the counter opens the shop)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')
@@ -256,6 +259,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' visit')
         run: node tests/visit.cjs dist/market.html
+      - name: A fresh apartment has its own pieces
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' aptfixed')
+        run: node tests/aptfixed.cjs dist/market.html
       - name: West St faces its street (every door and way out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' westst')
@@ -264,6 +271,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' pfrow')
         run: node tests/pfrow.cjs
+      - name: The park's Polyfork things
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' parkpf')
+        run: node tests/parkpf.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
@@ -272,6 +283,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bees')
         run: node tests/bees.cjs dist/market.html
+      - name: The guitar and the hands (jointed hands worn, the bodega sells it, chords land, a song plays, the strings' pitches, another player's guitar, the park's)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' guitar')
+        run: node tests/guitar.cjs dist/market.html
       - name: The Polyfork avatar (worn, dressed, clothes hide the body, the look's code, another player's copy)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')

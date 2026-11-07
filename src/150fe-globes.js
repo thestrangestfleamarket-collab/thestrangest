@@ -81,6 +81,7 @@ import {SCOPE} from './150fd-scope.js';
   const plain=(col,k)=>{ '@later'; const c=document.createElement('canvas'); c.width=256; c.height=128; const g=c.getContext('2d'); g.fillStyle=col; g.fillRect(0,0,256,128); g.strokeStyle='rgba(255,246,220,.35)'; g.lineWidth=1;
     for(let i=1;i<12;i++){ g.beginPath(); g.moveTo(i*256/12,0); g.lineTo(i*256/12,128); g.stroke(); } for(let i=1;i<6;i++){ g.beginPath(); g.moveTo(0,i*128/6); g.lineTo(256,i*128/6); g.stroke(); }
     g.strokeStyle='rgba(255,236,170,.6)'; g.beginPath(); g.moveTo(0,64); g.lineTo(256,64); g.stroke(); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
+  for(const k of ['EARTH GLOBE', 'GLOBE TABLE'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
     const wood=mat([110,70,38]), woodD=mat([78,48,26]), brass=mat([200,156,74]);
     const ball=(k,r,par)=>{ const T=new THREE.Group(); T.rotation.z=-GLOBE[k].tilt*Math.PI/180; T.userData.tilt=k; par.add(T); const S=new THREE.Group(); S.userData.spin=k; T.add(S);

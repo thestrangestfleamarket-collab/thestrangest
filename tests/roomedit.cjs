@@ -1,4 +1,4 @@
-// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
+// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty but for its own pieces and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=roomedit::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     const R = await room(), R0 = R;
-    ok(await pg.evaluate(() => ROOMED._api().units().length === 0), 'the apartment starts empty');
+    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
     ok((await db()).cash >= 1e6, 'you start with $1,000,000 (' + (await db()).cash + ')');
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
     await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .5), B.Z(A.y0 + (A.y1 - A.y0) * .5), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
@@ -104,7 +104,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(saved && saved.wall === 'brick' && saved.added.length === n && saved.added.every(a => a.paid > 0) && !(await db()).on, 'DONE closes the editor and saves the room (' + n + ' things)');
     await start('');
     const back = await pg.evaluate(id => { const A = ROOMED._api(), un = A.units().find(u => u.id === id); return { wall: A.R.wall, floor: A.R.floor, kfloor: A.R.kfloorK, added: A.units().filter(u => u.added).length, all: A.units().length, t: un && A.getT(un) }; }, bed);
-    ok(back.wall === 'brick' && back.floor === 'checker' && back.kfloor === 'diner' && back.added === n && back.all === n && back.t && Math.abs(back.t.u - tbx.u) < .01 && Math.abs(back.t.ry - tbx.ry) < .01, 'after a reload the room is as you left it (' + JSON.stringify({ wall: back.wall, floor: back.floor, added: back.added, all: back.all }) + ')');
+    ok(back.wall === 'brick' && back.floor === 'checker' && back.kfloor === 'diner' && back.added === n && back.all === n + own && back.t && Math.abs(back.t.u - tbx.u) < .01 && Math.abs(back.t.ry - tbx.ry) < .01, 'after a reload the room is as you left it (' + JSON.stringify({ wall: back.wall, floor: back.floor, added: back.added, all: back.all }) + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

@@ -46,14 +46,6 @@ import {TPANE} from './087dz-tpane.js';
   for(const [ax,a0,a1,b0,b1] of (LEVEL.edge&&LEVEL.edge.runs)||[]){ const dir=Math.sign(a1-a0), d=b1-b0; let p=a0+dir*((LEVEL.edge.near||60)+1.2), k=0;   // (the first stretch past the edge is the street's own blocks, 069a)
     while((a1-p)*dir>0){ const w=14+hs(k,81+a0)*8, h=14+hs(k,82+a0)*16, c=p+dir*w/2, mx=ax==='x'?c:(b0+b1)/2, my=ax==='x'?(b0+b1)/2:c;
       B.push([mx-SHARED.BOD.OX,my-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6][Math.floor(hs(k,83+a0)*4)]]); p+=dir*(w+1.2); k++; } }
-  // the far bank across the Hudson, three mockups (owner, 6 Nov 2026; ?farshore=a low shore, b denser shore, c the city along our bank; seen live with ?farbaked=0)
-  { const o=QS.get('farshore'), Rv=RING.river, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, E=(LEVEL.edge&&LEVEL.edge.lines)||[], xs=E.flat().filter((v,i)=>i%2===0), XA=Math.min(...xs), XB=Math.max(...xs), put=(x,y,w,d,h,v)=>B.push([x-OX,y-OY,w,d,h,null,v]);
-    const line=(x0,x1,y,gap,wmin,wmax,dmin,dmax,hmin,hmax,k)=>{ let x=x0, n=0; while(x<x1){ const w=wmin+hs(n,k)*(wmax-wmin), d=dmin+hs(n,k+1)*(dmax-dmin), h=hmin+hs(n,k+2)*(hmax-hmin); put(x+w/2,y-d/2,w,d,h,[0,1,2,3,4,5,6,7][Math.floor(hs(n,k+3)*8)]); x+=w+gap*(.5+hs(n,k+4)); n++; } };
-    const fb=Rv.y0-4, W0=XA-260, W1=XB+260;
-    if(o==='a'){ line(W0,W1,fb,3,10,22,8,14,2,4,301); }
-    if(o==='b'){ line(W0,W1,fb,1,8,16,10,16,6,12,321); line(W0,W1,fb-20,1.5,10,18,10,16,12,22,331); }
-    if(o==='c'){ line(W0,W1,fb,3,10,22,8,14,2,4,351);
-      const nb=Rv.y1+16; line(W0,XA-6,nb,2,10,18,12,18,10,30,371); line(XB+6,W1,nb,2,10,18,12,18,10,30,381); line(W0,XA-6,nb+28,3,12,20,12,18,16,40,391); line(XB+6,W1,nb+28,3,12,20,12,18,16,40,401); } }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
   for(let v=0;v<NV;v++)for(let y=0;y<FH;y++)for(let x=0;x<FW;x++){ const k=((v*FH+y)*FW+x)*4, w=WALL[v], n=.9+hp(x+v*7,y)*.18; let c=[w[0]*n,w[1]*n,w[2]*n], a=0;

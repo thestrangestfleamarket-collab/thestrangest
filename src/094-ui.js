@@ -89,7 +89,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.grab=e=>{ if(ED.on&&ED.pickW){ const p=ED.pickW(e); if(p){ piv.copy(p); return; } }
     ray.setFromCamera(ndc(e),SHARED.cam); const h=ray.intersectObjects(scene.children,true).find(h=>shown(h.object)); if(h)piv.copy(h.point); else ray.ray.closestPointToPoint(disp,piv); };
   UI.isoStep=d=>{ const A=Math.PI/4, k=(SHARED.yawTo-Math.PI/4)/A; SHARED.yawTo=Math.PI/4+(d>0?Math.floor(k+1e-6)+1:Math.ceil(k-1e-6)-1)*A; SHARED.yaw=SHARED.yawTo; };
-  UI.orbit=(dx,dy)=>{ if(UI.view==='iso')return;   // iso tilt is locked and only Q/E/R turn it (the eight angles); a drag never spins or tilts it
+  UI.orbit=(dx,dy)=>{ if(UI.view==='iso'||(window.CARS&&CARS.driving))return;   // iso tilt is locked and only Q/E/R turn it (the eight angles); a drag never spins or tilts it
     if(UI.persp){ const lk=UI.lookK||1; SHARED.yawTo-=dx*.006*lk; SHARED.pitchTo=UI.clampV(SHARED.pitchTo+dy*.005*lk); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; return; }
     q0.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ')); SHARED.yawTo-=dx*0.008; SHARED.pitchTo=clampP(SHARED.pitchTo+dy*0.006); SHARED.yaw=SHARED.yawTo; SHARED.pitch=SHARED.pitchTo; q1.setFromEuler(UI.eul.set(-SHARED.pitch,SHARED.yaw,0,'YXZ'));
     tv.subVectors(disp,piv); const t0=tv.clone(); tv.applyQuaternion(q0.invert()).applyQuaternion(q1); viewV().add(tv.sub(t0)); disp.add(tv);
@@ -145,12 +145,12 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.ZL=[1,2,5,10,20,50,100].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
   UI.DL=[1,2,5,10,20].map(k=>22*TILE/k);   // the behind view's wheel steps the same way: its distance 1×, 2×, 5×, 10×, 20× in from 22 tiles, never nearer than 1.2 or past the place's own limit
   { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc); acc=0;
-    if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=1.2*TILE, hi=UI.distMax||22*TILE, c=UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
+    if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=UI.distMin||1.2*TILE, hi=UI.distMax||22*TILE, c=UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; UI.wheelAt(e); }; }
-  UI.viewsHere=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)?['iso','third','first']:['iso']; };
+  UI.viewsHere=()=>{ if(window.CARS&&CARS.driving)return ['third']; let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)?['iso','third','first']:['iso']; };
   { const W=window, own=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
-    SYS.add('cam',()=>{ if(!window.__started||own())return; if(!UI.viewsHere().includes(UI.view))UI.setView('iso'); if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
+    SYS.add('cam',()=>{ if(!window.__started||own())return; { const V=UI.viewsHere(); if(!V.includes(UI.view))UI.setView(V[0]); } if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam, z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
     let u=UI.off.dot(R), k=Math.max(-hw,Math.min(hw,u)); if(k!==u)UI.off.addScaledVector(R,k-u); const U=tv.setFromMatrixColumn(c.matrixWorld,1); u=UI.off.dot(U); k=Math.max(-hh,Math.min(hh,u)); if(k!==u)UI.off.addScaledVector(U,k-u); };
   { const p0=UI.pan; UI.pan=(dx,dy)=>{ p0(dx,dy); if(!UI.freeCam)UI.keepOn(); }; }
@@ -436,7 +436,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   { let v=null; try{ v=SAVE.get('res'); }catch(e){} if(v!=null&&RESN[+v]&&QS.get('res')==null){ SHARED.RESI=+v; resize(); } }
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
-  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('IN TOWN THE VIEW IS OVERHEAD. THIRD AND FIRST PERSON ARE FOR INSIDES AND THE PARK.','#c8a090'); return; } UI.setView(b.dataset.view); drawDisplay(); });
+  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log(window.CARS&&CARS.driving?'DRIVING, THE VIEW STAYS BEHIND THE CAR.':'IN TOWN THE VIEW IS OVERHEAD. THIRD AND FIRST PERSON ARE FOR INSIDES AND THE PARK.','#c8a090'); return; } UI.setView(b.dataset.view); drawDisplay(); });
   $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);
   $('#dreset').onclick=()=>{ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };

@@ -12,12 +12,18 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => CARS.getIn('c1')); await pg.waitForTimeout(1500);
   const d1 = await pg.evaluate(() => ({ ...CARS.dbg(), hud: document.getElementById('carhud').style.display === 'flex', ride: RIDE.on }));
   ok(d1.driving === 'c1' && d1.ride === 'car:muscle-car-60s' && !d1.cars[0].shown && d1.hud, 'double-clicking gets you in: driving it, the parked one not drawn, the controls on screen: ' + JSON.stringify({ driving: d1.driving, ride: d1.ride, hud: d1.hud }));
+  const cam = () => pg.evaluate(() => ({ view: UI.view, here: UI.viewsHere().join(), off: +((((SHARED.yawTo - SHARED.heading - Math.PI) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI).toFixed(2), pitch: +SHARED.pitchTo.toFixed(2), dist: +(UI.distTo ?? UI.dist).toFixed(1) }));
+  const c0 = await cam(); await pg.evaluate(() => { UI.orbit(300, 150); UI.setView('first'); }); await pg.waitForTimeout(400); const c1 = await cam();
+  await pg.keyboard.down('q'); await pg.waitForTimeout(1200); const cq = await cam(); await pg.keyboard.up('q'); await pg.keyboard.down('e'); await pg.waitForTimeout(1200); const ce = await cam(); await pg.keyboard.up('e'); await pg.waitForTimeout(1200); const cb = await cam();
+  await pg.evaluate(() => UI.zoomLv({ deltaY: -120 })); await pg.waitForTimeout(300); const cz = await cam();
+  ok(c0.view === 'third' && c0.here === 'third' && Math.abs(c0.off) < .05 && c1.view === 'third' && Math.abs(c1.off) < .05 && c1.pitch === c0.pitch && cq.off > 1.2 && ce.off < -1.2 && Math.abs(cb.off) < .1 && cz.dist < c0.dist, 'driving, the view is locked behind the car (no drag, tilt or other view), Q and E look left and right, the wheel zooms: ' + JSON.stringify({ c0, c1, cq, ce, cb, cz }));
   const x0 = await pg.evaluate(() => __dbg.pos()[0] / __dbg.cv().TILE);
   await pg.keyboard.down('w'); let top = 0, veh = false; for (let i = 0; i < 20; i++) { await pg.waitForTimeout(500); const q = await pg.evaluate(() => ({ ...CARS.dbg(), x: __dbg.pos()[0] / __dbg.cv().TILE })); top = Math.max(top, q.v); veh = veh || q.veh; if (q.x - x0 > 2) break; } await pg.keyboard.up('w');   // let go after two tiles: held for a fixed time a fast runner reaches the next parked car and bounces off it
   const x1 = await pg.evaluate(() => __dbg.pos()[0] / __dbg.cv().TILE);
   ok(veh && x1 - x0 > 1 && top > 1, 'W drives it east on Rapier\'s wheels: ' + JSON.stringify({ moved: +(x1 - x0).toFixed(1), top, veh }));
   await pg.waitForTimeout(2500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200);
   const d2 = await pg.evaluate(() => { const c = CARS.dbg(), p = __dbg.pos(), T = __dbg.cv().TILE, c1 = c.cars[0]; return { driving: c.driving, ride: RIDE.on, c1, gap: +Math.hypot(p[0] / T + SHARED.BOD.OX - c1.x, p[2] / T + SHARED.BOD.OY - c1.z).toFixed(2), hud: document.getElementById('carhud').style.display === 'flex' }; });
+  ok(await pg.evaluate(() => UI.view) === 'iso', 'out of the car in town, the view is overhead again');
   ok(!d2.driving && !d2.ride && d2.c1.shown && d2.c1.x - d0.cars[0].x > 1 && d2.gap > 1 && d2.gap < 4 && !d2.hud, 'F gets you out beside it, and it stays parked where it stopped: ' + JSON.stringify(d2));
   const d3 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: 'a' }); const s = CARS.dbg().cars[1]; CARS.getIn('c2'); return { shown: s.shown, by: s.by, driving: CARS.dbg().driving }; });
   const d4 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: null, at: [SHARED.BOD.XS(60), SHARED.BOD.ZS(-60), 1.2].join(',') }); return CARS.dbg().cars[1]; });

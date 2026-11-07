@@ -443,6 +443,8 @@ One clothes review for the owner, then one pull request; portraits with `node te
 
 ## VR
 
+Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line here waits until the rest is done.
+
 One session on the owner's Quest 3 settles most of these.
 - [ ] **Try it on the Quest 3; the owner to approve** · P2 · S (him) · look · risk med (real hardware). Owner, 27 Oct: "make sure that the
   controls in game match the quest 3 controllers, also add hand tracking in game so i can use my hands to use the menus". Only tested on an

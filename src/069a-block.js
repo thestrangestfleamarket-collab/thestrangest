@@ -71,8 +71,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row (row 1, owner 5 Nov 2026: one shut garage between every two shops) and the Hudson row (row 2) are all closed garages
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
-  // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
-  for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[]),B.x0,Math.min(B.x1,LEVEL.streets.west.x0)))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
+  // (the Drive's buildings on the rows, data/world.json block.pf, and the places with lots of their own (the bank, the art museum) keep their spans)
+  for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[],LEVEL.places.filter(p=>p.y1!=null&&p.y0===B.back&&p.y1===B.front).map(p=>[p.x0,p.x1])),B.x0,Math.min(B.x1,LEVEL.streets.west.x0)))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.row===2)lot({x0:p.x0,x1:p.x1,y0:B.row2[0],y1:B.row2[1],kind:'empty',row:2,side:'s'});   // the Hudson row's open lots (the fish market's tables, the flea market's), 6 Nov 2026
   // a tall barbed-wire fence on an open lot's alley side (the fish market's, owner 6 Nov 2026: "a tall barbed wire gate to the alley"): posts, mesh, and a coil along the top; solid

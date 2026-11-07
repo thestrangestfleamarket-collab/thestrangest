@@ -180,7 +180,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat);
       if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
         if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2).multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them) if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
-        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
+        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } }
+    if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
   const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};

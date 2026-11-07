@@ -1577,5 +1577,10 @@
   "stackable": true,
   "weight": 0.2,
   "edible": true
+ },
+ "guitar": {
+  "value": 180,
+  "weight": 2.5,
+  "sellable": true
  }
 }

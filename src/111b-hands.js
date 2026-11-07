@@ -61,9 +61,26 @@ const HANDS={};
     hm.onBeforeRender=()=>{ const f=renderer.info.render.frame; if(f===fr)return; fr=f; const B=PM.B, m=B&&B.m;
       for(const [s,bi,oj] of [['L',5,0],['R',8,NJ]]){ const fg=st.fg&&st.fg[s]||(m?RIG.fgOf({fist:Math.max(m.fist&&m.fist[s]||0,o.grip&&o.grip[s]?1:0),fg:m.fg&&m.fg[s]}):R0); fk(fg,J[s]); W.multiplyMatrices(PM.value[bi],base[s]);
         for(let j=0;j<NJ;j++){ T1.multiplyMatrices(W,J[s][j]); const e=T1.elements, a=U.value, q=(oj+j)*3; a[q].set(e[0],e[4],e[8],e[12]); a[q+1].set(e[1],e[5],e[9],e[13]); a[q+2].set(e[2],e[6],e[10],e[14]); } } };
-    me.add(hm); me.userData.hands=st; LIVE.add(st); hm.addEventListener('removed',()=>LIVE.delete(st)); return st; };
+    st.base=base; PM.hands=st; me.add(hm); me.userData.hands=st; LIVE.add(st); hm.addEventListener('removed',()=>LIVE.delete(st)); return st; };
   // a joint's place in the body mesh's space (HANDS.joint(st,'L','index-finger-tip')): where the guitar's solver aims; its rest frames for the solver's reach
-  HANDS.NAME=NAME; HANDS.REST=REST; HANDS.CH=CH; HANDS.fk=(fg)=>fk(fg,REST.map(()=>new M4()));
+  HANDS.NAME=NAME; HANDS.REST=REST; HANDS.CH=CH; HANDS.LOC={L:LOCL,R:LOCR}; HANDS.R0=R0;
+  // a digit's tip (hand space) for its pose f, and its pose moved till the tip reaches a point (damped least squares on its knuckle, middle joint and spread; the last joint follows the middle)
+  const TA=new M4(), TM=new M4();
+  const tipOf=(i,f,out)=>{ const c=CH[i], sp=(f[3]-R0[i][3])*(i?-1:0); TA.copy(REST[c[0]]);
+    for(let k=0;k<3;k++){ TM.makeRotationX(-f[k]*(i?1:.8)); if(k===0&&sp)TM.premultiply(RY.makeRotationY(sp)); if(i===0&&k===0)TM.premultiply(RY.makeRotationY(-f[0]*.6)); TA.multiply(TM); TA.multiply(LOC[c[k+1]]); }
+    return out.setFromMatrixPosition(TA); };
+  HANDS.tip=(i,f,out=new V3())=>tipOf(i,f,out);
+  const LIM=[[-.4,1.4],[0,1.9]], J=[[0,0,0],[0,0,0],[0,0,0]], E=new V3(), P0=new V3(), P1=new V3();
+  HANDS.reach=(i,tg,f)=>{ const np=i?3:2, set=(f,a0,a1,sp)=>{ f[0]=Math.max(LIM[0][0],Math.min(LIM[0][1],a0)); f[1]=Math.max(LIM[1][0],Math.min(LIM[1][1],a1)); f[2]=f[1]*.72; if(i)f[3]=Math.max(R0[i][3]-.55,Math.min(R0[i][3]+.55,sp)); };
+    for(let it=0;it<10;it++){ tipOf(i,f,P0); E.subVectors(tg,P0); if(E.lengthSq()<1e-8)break; const x=[f[0],f[1],f[3]];
+      for(let q=0;q<np;q++){ const g=f.slice(), d=.01; if(q===0)g[0]+=d; else if(q===1){ g[1]+=d; g[2]=g[1]*.72; } else g[3]+=d; tipOf(i,g,P1).sub(P0).multiplyScalar(1/d); J[q][0]=P1.x; J[q][1]=P1.y; J[q][2]=P1.z; }
+      // (J^T J + lambda) dx = J^T e, a 2 or 3 square solved by hand
+      const A=[], b=[]; for(let r=0;r<np;r++){ A.push([]); for(let c=0;c<np;c++)A[r].push(J[r][0]*J[c][0]+J[r][1]*J[c][1]+J[r][2]*J[c][2]+(r===c?2e-5:0)); b.push(J[r][0]*E.x+J[r][1]*E.y+J[r][2]*E.z); }
+      const dx=np===2?(()=>{ const D=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return [(b[0]*A[1][1]-A[0][1]*b[1])/D,(A[0][0]*b[1]-A[1][0]*b[0])/D]; })():(()=>{ const [a,bb,c]=A, D=a[0]*(bb[1]*c[2]-bb[2]*c[1])-a[1]*(bb[0]*c[2]-bb[2]*c[0])+a[2]*(bb[0]*c[1]-bb[1]*c[0]);
+        const s=(m,k)=>{ const M=m.map(r=>r.slice()); for(let r=0;r<3;r++)M[r][k]=b[r]; return M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]); };
+        return [s(A,0)/D,s(A,1)/D,s(A,2)/D]; })();
+      const k=Math.min(1,.25/Math.max(1e-6,Math.hypot(...dx))); set(f,x[0]+dx[0]*k,x[1]+dx[1]*k,i?x[2]+dx[2]*k:f[3]); }
+    return f; };
   HANDS.set=(st,fg)=>{ if(st)st.fg=fg; };
   HANDS.credit=H.credit; }
 export {HANDS};

@@ -40,8 +40,8 @@ const CAVERNS={hooks:[]}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];  
     // n: 1 in, 0 out; at: which way (in: the spawn's key in C.spawns; out: the key in C.outs)
     const go=async(n,at)=>{ if(busy)return; busy=true; await FADE.run(n?(M?'':'ENTERING '+C.name):C.leaving,async()=>{
       if(n){ await LOAD('caverns'); if(!M)M=build(C,G); const S=C.spawns[at]; if(S){ UI.goTo(X(S[0]),Z(S[1]),'down'); SHARED.heading=S[2]; } SHARED.BOUND=bound(); }
-      else{ clear(); if(st.water){ st.water.in=false; st.water.dive=false; st.water.level=null; } (C.outs[at]||Object.values(C.outs)[0])(); } },{hold:140}); busy=false; };
-    const api=C.api={go,inside,ground,bound,get built(){ return !!M; }};
+      else{ clear(); if(st.water){ st.water.in=false; st.water.dive=false; st.water.level=null; } await (C.outs[at]||Object.values(C.outs)[0])(); } },{hold:140}); busy=false; };
+    const api=C.api={go,inside,ground,bound,C,get built(){ return !!M; }};
     LEVELS.of[C.id]={name:C.name,floor:'down',groups:[C.id],has:inside,ground,bound}; MODS[C.id]=api;
     { const H=C.H, inP=(x,z)=>(C.pockets||[]).find(K=>inR(K,x,z)), dry=(x,z)=>(C.dry||[]).some(R=>inR(R,x,z));
       const feed=(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='down'||!inside(pos.x,pos.z)||dry(pos.x,pos.z))return false; const pk=inP(pos.x,pos.z), W=RIG.water(st,{level:pk?pk.lv:H+60,floor:0}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
@@ -93,3 +93,4 @@ const CAVERNS={hooks:[]}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];  
       const th={name:'A RUSTED GRATE',obj:gr,reach:1.4*T,near:2.4*T,tall:1.8*T,act:()=>SAY('RUSTED SHUT. A DRAUGHT THROUGH IT SMELLS OF THE SUBWAY.','#c8c0a8')}; UI.thing(th); m.things.push(th); });
     window.UNDERWAYAT=MO; }
 }
+export {CAVERNS};

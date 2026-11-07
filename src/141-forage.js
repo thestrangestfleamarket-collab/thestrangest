@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, BAG, BUGS, CITY, CIVIC, CLOCK, ED, EQUIP, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WX} from './003b-systems.js';
+import {ARCHI, BAG, BUGS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -87,7 +87,8 @@ import {WORTH} from './140c-worth.js';
   FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon; FORAGE.dmgK=()=>(1+(S.st.str-30)/100)*(S.fx.str?1.5:1); FORAGE.ST=S.st;
   const STN=[['str','STRENGTH','hits harder'],['int','INTELLIGENCE','skills grow faster, mushrooms and potions last longer'],['sta','STAMINA','tires slower']], STMIN=10, STMAX=60, STSUM=90, stLeft=()=>STSUM-S.st.str-S.st.int-S.st.sta;
   ONLINE.mine.invis=()=>S.fx.invis?1:null;
-  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!window.__started)return setTimeout(ask,1000); setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }
+  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!window.__started||FIRSTDAY.on)return setTimeout(ask,1000); if(!S.stPick)setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }   // (the first day's setup asks them itself)
+  FORAGE.stats={N:STN,MIN:STMIN,MAX:STMAX,SUM:STSUM,get:()=>({...S.st}),picked:()=>!!S.stPick,set:o=>{ const v={}; for(const [k] of STN)v[k]=Math.max(STMIN,Math.min(STMAX,Math.round(+o[k]||STMIN))); if(v.str+v.int+v.sta>STSUM)return false; Object.assign(S.st,v); S.stPick=1; saveSoon(); return true; }};
   FORAGE.climbK=()=>.7+.8*sk('climb')/100; FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders), and a reach that works it
   const RANK=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']]; FORAGE.rank=k=>RANK.find(r=>sk(k)>=r[0])[1];
   // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap
@@ -151,13 +152,14 @@ import {WORTH} from './140c-worth.js';
       give((known?'m_':'u_')+m.k,n); if(known)S.log[m.k]=(S.log[m.k]||0)+n; say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }
     else if(Math.random()<.3){ S.picked[m.id]=1; say('IT CRUMBLES IN YOUR HAND.','#c8a090'); } else say('YOU FAIL TO PICK IT CLEANLY.','#c8a090');
     saveSoon(); FORAGE.sync(); PACK.draw(); };
+  const THE=id=>'THE '+String(NAME(id)).replace(/^(A|AN|THE|SOME) /,'');   // (an item's name may start with its own article: A JAR OF HONEY)
   FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); MOTION.play(/^(p|d)_|^soda/.test(id)?'pf_Drink':'eat'); let k=id.slice(2);
-    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT THE '+NAME(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
-    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT THE '+NAME(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
+    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT '+THE(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
+    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT '+THE(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
     else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); const h=+ITEMS.prop('m_'+k,'heals')||0; if(h>0){ VIT.heal(h); say('YOU EAT THE '+MU[k][0]+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
-    else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK THE '+NAME(id)+'.':'YOU EAT THE '+NAME(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
-    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK THE '+NAME(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',invis:'YOU FADE FROM SIGHT.',fly:'YOU FEEL LIGHT AS AIR. PRESS G TO FLY.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.heal(h); say('YOU EAT THE '+NAME(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT.'); }
+    else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK '+THE(id)+'.':'YOU EAT '+THE(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
+    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU DRINK '+THE(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',invis:'YOU FADE FROM SIGHT.',fly:'YOU FEEL LIGHT AS AIR. PRESS G TO FLY.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.'}[bk]||''),'#b8f0a0'); } else if(h>0){ VIT.heal(h); say('YOU EAT '+THE(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT '+THE(id)+'.'); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); S.log[k]=(S.log[k]||0)+n; say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
   const fire=()=>{ '@later'; if(typeof FLAME==='undefined')return null; const w=new V3(); for(const s of FLAME.src){ if(s.k<0||s.k>2)continue; let o=s.a, vis=true; for(;o;o=o.parent)if(!o.visible){ vis=false; break; } if(!vis)continue; s.a.getWorldPosition(w); if(Math.hypot(w.x-pos.x,w.z-pos.z)<3*T&&Math.abs(w.y-SHARED.py)<3*T)return s; } return null; };

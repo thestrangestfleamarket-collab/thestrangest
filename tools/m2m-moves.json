@@ -274,14 +274,6 @@
 "toss": {
 "clip": "grenade-throw"
 },
-"dig": {
-"clip": "shovel-dig",
-"loop": true
-},
-"chopTree": {
-"clip": "chop-tree",
-"loop": true
-},
 "pickUp": {
 "clip": "pick-up"
 }

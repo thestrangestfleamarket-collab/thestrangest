@@ -39,6 +39,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const clip=(f,n)=>{ const g=CLG[n]; if(!g)return null; const k=f+g, C=CLC[k]; if(C&&C.clips)return C.clips[n]||null;
     if(!C)CLC[k]=CLF[f][g]().then(J=>{ for(const c of Object.values(J.clips)){ c.Q=Float32Array.from(c.q); c.P=Float32Array.from(c.p); } CLC[k]=J; }).catch(e=>{ console.warn('AVATAR clips',e); delete CLC[k]; });
     return null; };
+  AVATAR.SKINS=SKINS; AVATAR.HAIRC=HAIRC;
   AVATAR.clips=Object.keys(CLG); AVATAR.clip=clip;
   // Polyfork's clips with a move of their own (MOTION 'pf_<key>', 111da): the clip, the part of it played [from, to] in seconds, and whether it loops; on the rig they hold still
   AVATAR.PF={Agree:['Agree',0,1.83],Shake:['Head shake',0,2.57],Laugh:['Laughing',0,9.77],Chat:['Talking',0,2.93,1],Phone:['Phone call',0,2.93,1],Cross:['Arms folded',0,2.5,1],

@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, SIGNS, UI, W3, WE, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {FIX, SOL, SYS, TILE} from './006-map-pre.js';
-import {OBJS} from './008-batch.js';
+import {OBJS, PEEK} from './008-batch.js';
 import {TPANE} from './087dz-tpane.js';
 Object.assign(WE,{on:false}); window.WE=WE;
 { const T=TILE, ST={}; let sel=null, box=null, drag=null;
@@ -103,9 +103,14 @@ Object.assign(WE,{on:false}); window.WE=WE;
       if(!g.children.length)return null; if(!cpg){ cpg=new THREE.Group(); scene.add(cpg); } cpg.add(g); CP.set(k,g); } return g; };
   // a placed Polyfork thing stands where he bumps into it (its footprint turned with it), and takes its colour and see-through
   const pfSolid=(k,e,g)=>{ const S=g.userData.sol||(g.userData.sol=[0,0,0,0]), F=g.userData.fix||(g.userData.fix=[0,0,0,0,0,0]);
-    if(e.del){ for(const [L,x] of [[SOL.up,S],[FIX.up,F]]){ const i=L.indexOf(x); if(i>=0)L.splice(i,1); } return; }
+    if(e.del){ for(const [L,x] of [[SOL.up,S],[FIX.up,F],[PEEK.boxes,g.userData.peek]]){ const i=L.indexOf(x); if(i>=0)L.splice(i,1); } return; }
     const b=new THREE.Box3().setFromObject(g), f=WE.pfFoot&&WE.pfFoot(e.pf); if(f){ const y=b.min.y; b.makeEmpty(); for(const [x,z] of [[f[0],f[1]],[f[2],f[1]],[f[0],f[3]],[f[2],f[3]]])b.expandByPoint(vv.set(x,0,z).applyMatrix4(g.matrixWorld)); b.min.y=y; b.max.y=Math.max(b.max.y,new THREE.Box3().setFromObject(g).max.y); } S[0]=b.min.x; S[1]=b.min.z; S[2]=b.max.x; S[3]=b.max.z; F[0]=b.min.x; F[1]=b.min.z; F[2]=b.min.y; F[3]=b.max.x; F[4]=b.max.z; F[5]=b.max.y;
     if(!SOL.up.includes(S))SOL.up.push(S); if(!FIX.up.includes(F))FIX.up.push(F);
+    // a big one fades round you like the park's big trees and the walls (PEEK): a tree opens fully, anything else as a wall
+    { const W=new THREE.Box3().setFromObject(g), M=T/.84, big=W.max.y-W.min.y>=2.2*M||Math.max(W.max.x-W.min.x,W.max.z-W.min.z)>=3*M, pk=g.userData.peek;
+      if(big){ for(const c of g.children)if(c.geometry&&!c.geometry.attributes.aWl)PEEK.mark(c.geometry,new Uint8Array(c.geometry.attributes.position.count).fill(WE.pfTree&&WE.pfTree(e.pf)?4:2));
+        if(pk){ const ex=.7*M; pk.b.min.copy(W.min).subScalar(ex); pk.b.max.copy(W.max).addScalar(ex); } else { PEEK.box(g,W.min.x,W.min.y,W.min.z,W.max.x,W.max.y,W.max.z); g.userData.peek=PEEK.boxes[PEEK.boxes.length-1]; } }
+      else if(pk){ const i=PEEK.boxes.indexOf(pk); if(i>=0)PEEK.boxes.splice(i,1); g.userData.peek=null; } }
     for(const c of g.children){ const m=c.material; if(!m||!m.isMeshLambertMaterial)continue; m.color.set(e.col||'#ffffff').multiplyScalar(e.bri==null?1:e.bri); const t=(e.op==null?1:e.op)<1; if(m.transparent!==t){ m.transparent=t; m.needsUpdate=true; } m.opacity=e.op==null?1:e.op; } };
   const copyHandle=k=>({copy:true,key:k,name:ST[k].copy,place:ST[k].place,pivot:ST[k].at});
   function applyCopy(o){ '@later'; const e=ST[o.key]; if(!e)return; if(e.del){ const m=CP.get(o.key); if(m){ if(e.pf)pfSolid(o.key,e,m); cpg.remove(m); m.traverse(c=>c.geometry&&c.geometry.dispose()); CP.delete(o.key); } return; } const me=copyMesh(o.key); if(!me)return;

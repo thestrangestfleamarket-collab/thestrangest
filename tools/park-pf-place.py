@@ -167,11 +167,13 @@ put('toilet',122,165); put('trashcan',105,165)
 st=T(PF['ironfence']['size'][0])
 for i in range(6): put('ironfence',-21.6,140+st*(i+.5),math.pi/2)
 BROOK=[[201,102]]+[p for p in PP['brook']['pts'] if not inBL(p[0],p[1],8) and p!=[190,104]]
+KEEP={'parkbench','campusrail','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
 FLOAT={'raft','canoe','kayak','skiff','duck'}
 W=json.load(open('data/world.json'))
 W['things']=[t for t in W['things'] if not str(t['k']).startswith('p:')]
 FL=FLOAT
 for k,x,y,r in P:
+    if k not in KEEP: continue
     o={'k':'p:'+k,'x':round(x,2),'y':round(y,2)}
     if abs(r)>1e-4: o['rot']=round(r,3)
     if k in FL: o['float']=1

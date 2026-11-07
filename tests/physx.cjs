@@ -8,7 +8,9 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   const pg=await b.newPage({viewport:{width:960,height:640}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(m.type()==='warning'&&/^SYS /.test(m.text()))errs.push(m.text()); });
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&at=79.6,1.6',{timeout:180000});
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
-  for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built&&GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
+  for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built).catch(()=>false);i++)await wait(pg,1000);
+  await pg.evaluate(()=>{ const c=LOOSE.list(true).find(q=>q.name==='milk crates'); if(c)__dbg.UI.goTo(c.at[0]+1.5,c.at[2],'up'); });   // the crates move with the map: go to them
+  for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500);
   const ui=await pg.evaluate(()=>{ const B=document.querySelector('#menu [data-p="graphics"] #dphx'); return {rows:B?B.querySelectorAll('[data-px]').length:0,cfg:PHYS.cfg}; });
   ok(ui.rows>=10&&Object.values(ui.cfg).every(v=>v>0),`GRAPHICS has the PHYSICS rows (${ui.rows} controls), all on to start ${JSON.stringify(ui.cfg)}`);

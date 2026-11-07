@@ -30,8 +30,8 @@ const SHOTS = process.argv[3];
       const used = await pg.evaluate(id => { const b = ROOMS.off[id].box, t = __dbg.UI.things.find(t => { if (!t.obj || !t.obj.parent || !/COUNTER|FRONT DESK/.test(t.name)) return false; const v = t.obj.getWorldPosition(new t.obj.position.constructor()); return v.x > b.x0 && v.x < b.x1 && v.z > b.z0 && v.z < b.z1; }); window.__said = ''; t.act(); const open = i => { const e = document.getElementById(i); return !!(e && !e.hidden); }, a = { shop: ['shopg', 'vegp', 'shopp'].some(open), menu: !!__dbg.UI.menuOpen }; if (window.SHOPS) SHOPS.close(); for (const i of ['vegp', 'shopp']) { const e = document.getElementById(i); if (e) e.hidden = true; } if (__dbg.UI.menuOpen) __dbg.UI.toggleMenu(); return a; }, id);
       ok(tr ? used.shop : (id === 'hotel' || used.menu), id + ': the counter ' + (tr ? 'opens the shop (' + (tr.sells || []).length + ' things)' : id === 'hotel' ? 'rests you' : 'opens the YOU window') + ' ' + JSON.stringify(used));
       if (SHOTS) { await pg.waitForTimeout(1500); await pg.screenshot({ path: path.join(SHOTS, id + '.png') }); }
-      await pg.evaluate(id => ROOMS.exit(id), id); await pg.waitForTimeout(2500);
-      const out = await pg.evaluate(id => { const b = ROOMS.off[id].box, me = __dbg.you(); return !(me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1); }, id);
+      await pg.evaluate(id => ROOMS.exit(id), id);
+      const out = await pg.waitForFunction(id => { const b = ROOMS.off[id].box, me = __dbg.you(); return !(me.x > b.x0 && me.x < b.x1 && me.z > b.z0 && me.z < b.z1) && !(window.FADE && FADE.busy); }, id, { timeout: 15000 }).then(() => true, () => false);   // (the way out's fade takes longer on a slow machine)
       ok(out, id + ': and back out to the street');
     }
   }

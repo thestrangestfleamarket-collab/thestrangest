@@ -39,6 +39,8 @@ jobs:
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
+          k dunshare 'src/062a|src/146b|src/111d|worker/door|dunshare\.cjs'
+          k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
@@ -52,6 +54,7 @@ jobs:
           k guide   'src/136d|src/094|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
+          k weplay  'src/099-|src/136b|weplayers\.cjs'
           k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|worker/|cars\.cjs|radio\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
@@ -167,6 +170,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' spiders')
         run: node tests/spiders.cjs dist/market.html
+      - name: The shared dungeon (one map, the room's monsters run by one player for all)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' dunshare')
+        run: node tests/dunshare.cjs dist/market.html
+      - name: The keep's guardians (the crew, a breakout fought, a bounty)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' guardians')
+        run: node tests/guardians.cjs dist/market.html
+      - name: Your body (dying leaves it; the Herbalist raises you; you take it all back)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' guardians')
+        run: node tests/body.cjs dist/market.html
       - name: passport
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' passport')
@@ -334,6 +349,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' art')
         run: node tests/art.cjs dist/market.html
+      - name: The world editor for players (Shift+E, isometric only, from the second visit)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' weplay')
+        run: node tests/weplayers.cjs
       - name: The cars (parked on Market St, get in, drive, get out, someone else's car)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')

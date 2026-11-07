@@ -84,6 +84,7 @@ keep([1049],31.8,24.2,-1.65)                                                    
 KIDS=[c for c in root['children']]; TILE0=next(i for i,c in enumerate(KIDS) if N[c]['name'].startswith('skate-slab-tile') and abs(WM[c][1,3])<.01)
 NOFLOOR={'concrete-transition-module','asphalt-pump-track-section','plywood-ramp-module','composite-deck-tile','skate-hall-bay','skatepark-clubhouse','skate-shop','container-snack-kiosk',
   'overpass-pier','concrete-full-pipe','red-brick-bank','concrete-stair-set','galvanised-prefab-ramp','concrete-skate-bump','wallride-wall'}
+BIG={'skate-shop','skatepark-clubhouse','skate-hall-bay','container-snack-kiosk'}   # the park's buildings (owner, 7 Nov 2026: "increase the overall size of all polyfork buildings by 25%")
 FOOT=(-24,-34,24,34)   # the new footprint, x0 z0 x1 z1
 TP,TC,TG,TK,TN=[],[],[],[],[]   # triangle corners, colours, glow night colour (or nan), part kind (0 terrain, 1 solid part, 2 loose), night strength
 people=[]; ITEMS=[]; RAILS=[]; COVER={}   # floor cells a part covers from above: True when the part is sunk (no tile there)
@@ -97,7 +98,8 @@ def placed():   # the kept placements with their moves, then the new floor's til
 for c,nm,k,(dx,dz,dy),bi in list(placed()):
     if bi is not None:
         M=WM[c]; people.append({'key':k,'b':bi,'x':round(M[0,3]+dx,3),'y':round(M[1,3]+dy,3),'z':round(M[2,3]+dz,3),'hd':round(float(np.arctan2(M[0,2],M[2,2])),3)}); continue
-    pr=[(P+np.array([dx,dy,dz]),C) for P,C in prims(c)]
+    o=WM[c][:3,3]; sc=1.25 if k in BIG else 1.   # (the buildings 25% over the kit's size, grown from where each stands)
+    pr=[(o+(P-o)*sc+np.array([dx,dy,dz]),C) for P,C in prims(c)]
     if k in GRIND:   # its grind lines: a rail's top centre, a ledge's or box's two long top edges, a ramp's coping (the top edge over its high side)
         IW=np.linalg.inv(WM[c]); L=np.vstack([(np.c_[P-np.array([dx,dy,dz]),np.ones(len(P))]@IW.T)[:,:3] for P,C in pr]); lo_,hi_=L.min(0),L.max(0); top=hi_[1]
         ax=0 if hi_[0]-lo_[0]>=hi_[2]-lo_[2] else 2; ox=2-ax; segs=[]

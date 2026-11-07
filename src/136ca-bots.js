@@ -12,7 +12,7 @@ import {AVATAR} from './111c-avatar.js';
   const places=()=>{ try{ return [...new Set(['YOUR APARTMENT',...UI.places().map(p=>p[0])])].map(n=>[n,n]); }catch(e){ return []; } };
   const sel=(f,list,v)=>`<select data-f="${f}" style="${IN}">${list.map(([k,n])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
-    const B=D.bots, live=B.filter(b=>b.status&&Date.now()-b.status.seen<20000).length;
+    const B=D.bots, live=B.filter(b=>b.status&&Date.now()-b.status.seen<60000).length;
     el.innerHTML=`<div class="dim">Test players that play the game by themselves, on Cloudflare: a bot that is ON is running, OFF stops it. ${B.length} bots · ${live} running${say?' · '+esc(say):''}</div>
       ${D.cloud&&D.cloud.err?`<div style="color:#e06a5a">CLOUDFLARE: ${esc(D.cloud.err)}</div>`:''}${D.cloud===null?'<div class="dim">Cloudflare is not running bots on this server.</div>':''}
       <div class="row"><button class="btn" id="bnew">SPAWN A BOT</button><button class="btn" id="bhow">${open==='how'?'HIDE':'COST AND OTHER WAYS'}</button></div>
@@ -24,7 +24,7 @@ Or run them on a PC instead (turn them off here first). Once: install Node (node
 Then, while you want bots in the game:
   node bots.cjs ${esc(D.key)}
 Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${esc(D.key)}</code><button class="btn" id="bcopy">COPY KEY</button><button class="btn" id="bkey">NEW KEY</button></div>`:''}
-      ${B.map(b=>{ const s=b.status, on=s&&Date.now()-s.seen<20000; return `<div data-b="${esc(b.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
+      ${B.map(b=>{ const s=b.status, on=s&&Date.now()-s.seen<60000; return `<div data-b="${esc(b.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
         <div class="row"><b>${esc(b.name)}</b><span class="dim">${esc((JOBS.find(j=>j[0]===b.job)||['',b.job])[1])}</span>${b.on?(on?'<span style="color:#7fdc8a">RUNNING</span>':'<span class="dim">starting</span>'):'<span class="dim">OFF</span>'}
           ${s?`<span class="dim">${esc(s.doing||'')}${s.cash!=null?' · $'+esc(s.cash):''}${s.hp!=null?' · health '+esc(Math.round(s.hp*100))+'%':''} · ${esc(ago(s.seen))}</span>`:''}
           <button class="btn" data-a="on">${b.on?'TURN OFF':'TURN ON'}</button><button class="btn" data-a="edit">${open===b.id?'CLOSE':'SET'}</button></div>

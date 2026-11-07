@@ -25,3 +25,4 @@ const PFROW={fronts:[],houses:[],things:[]};
       UI.thing({name:LEVEL.places.find(p=>p.id===h.id).name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>UI.log('THE LOBBY IS SHUT: THE FLATS ARE NOT BUILT YET. YOUR APARTMENT IS IN THE FIRST HOUSE.','#c8a090')}); PFROW.things.push(m); } },'068a-pfrow');
   window.PFROWDBG=()=>({done:!!PFROW.done,fronts:PFROW.fronts.map(f=>f.id),houses:PFROW.houses.length,things:PFROW.things.length,tris:PFROW.tris||0,solids:HOUSES.length,blocked:PFROW.houses.every(h=>{ const x=h.obj.position.x-.5*TILE, z=h.obj.position.z; return SOL.up.some(r=>x>r[0]&&x<r[2]&&z>r[1]&&z<r[3]); })}); }
 window.PFROW=PFROW;
+export {PFROW};

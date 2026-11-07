@@ -102,7 +102,8 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   // in first person at the wheel, your eye is the driver's, in the seat behind the wheel
   const EYE=new THREE.Vector3(), Q=new THREE.Quaternion(), LOOK=new THREE.Quaternion().setFromEuler(new THREE.Euler(-.24,Math.PI,0,'YXZ'));   // the car looks along +z, a camera along -z
   SYS.add('cam',()=>{ if(!mine||UI.view!=='first')return; const k=KINDS[mine.model], m=k&&k.m, cb=m&&m.userData.cab; if(!cb||!m.visible)return; m.updateMatrixWorld(true); SHARED.cam.position.copy(m.localToWorld(EYE.copy(cb.eye))); SHARED.cam.quaternion.copy(m.getWorldQuaternion(Q)).multiply(LOOK); SHARED.cam.updateMatrixWorld(); },'150p-cars');
-  ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C)return; if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
+  ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C){ for(const f of VEH.hear||[])f(m); return; }   // another thing you drive on the same lock (the helicopters, VEH.hear)
+  if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
     if(typeof m.at==='string')fromWorld('car:'+m.k,m.at); if(m.by&&m.by===ONLINE.me){ if(want===m.k){ want=null; board(m.k); } return; } if(mine===C&&!m.by)return; C.by=m.by||null; if(DATA)at(C); };
   addEventListener('keydown',e=>{ if(!mine||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; const k=(e.key||'').toLowerCase(); if(k==='f'){ e.preventDefault(); getOut(); } else if(k==='t'){ e.preventDefault(); RAD.next(); } });
   /* ---------- the radio: four stations of public-domain records (data/radio.json, the Library of Congress's National Jukebox), each one loop that

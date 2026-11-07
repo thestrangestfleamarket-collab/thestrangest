@@ -31,6 +31,7 @@ const BFLY={}; window.BFLY=BFLY;
   // each grass kind's own butterflies and its one rare (GRASS), by name
   const KI=n=>Math.max(0,BF_KINDS.findIndex(b=>b[0]===n)), BK=Object.fromEntries(GRASS.K.map(k=>[k.id,{c:KI(k.bf.c),r:KI(k.bf.r),s:KI(k.bf.s)}])), BTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)BTIER[KI(k.bf[t])]=t; BFLY.BTIER=BTIER; for(const i in BTIER)ITEMS.reg('b_'+i,{tier:{c:'common',r:'rare',s:'super'}[BTIER[i]]});
   const inGrass=(x,z,r,r2,deep)=>{ const G=BK[WEEDS.kindAt(x,z)]; if(!G)return pickC(r2); const k=RARITY.pickFrom(deep?G:{c:G.c,r:G.r},r,'ento',r2); return k==null?pickC(r2):k; };   // a common, a rare and a super-rare per grass; the super-rare only deep in the park
+  if(!GRASS.only&&GRASS.MIX)for(const g of GRASS.MIX.gone){ const L=BK[GRASS.MIX.lawn], G=BK[g]; for(const t of RARITY.TIERS)L[t]=[].concat(L[t],G[t]); }   // the meadow's butterflies on the lawn (7 Nov 2026)
   if(GRASS.only)BK[GRASS.only]={c:GRASS.K.map(k=>KI(k.bf.c)),r:GRASS.K.map(k=>KI(k.bf.r)),s:GRASS.K.map(k=>KI(k.bf.s))};
   const spawn=(key,grp)=>{ const Q=grp.sq; if(!Q||Q.length<9)return []; const turn=Math.floor((window.CLOCK?CLOCK.h:12)/2), d=(window.MAIL&&MAIL.ready?MAIL.day():0)*13+turn, out=[];
     const i0=3*Math.floor(hsh(Q[0]/T,Q[2]/T,301)*(Q.length/3)), cx=Q[i0], cz=Q[i0+2], park=WEEDS.inPark(cx,cz), deep=WEEDS.inPark(cx,cz,DEEP), n=park&&!PARK.in?0:park?(hsh(cx/T+d,cz/T,303)<(window.FLORA&&FLORA.beds.length?.35:.7)?1+(hsh(cz/T,cx/T+d,305)<.35?1:0):0):(hsh(cx/T+d,cz/T,303)<.18?1:0);

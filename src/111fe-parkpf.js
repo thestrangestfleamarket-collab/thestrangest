@@ -10,6 +10,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
   const LAMP={globelamp:1,colonial:1,campuslamp:1,jlamp:1,sealamp:1,stringlights:.6};
   const SOLID=new Set(['boatshed','conservatory','greenhouse','toilet','seatoilet','refresh','coffee','newsstand','icecream','hotdog','founder','plazafountain','campusfountain','zen','trailmap','trailhead','lion','picnictable','library']);
   const WET=new Set(['raft','canoe','kayak','skiff','duck','dock','launch','lifebuoy','archbridge','creekbridge','woodbridge','logbridge','trestle']);
+  const BRIDGE=new Set(['archbridge','creekbridge','woodbridge','logbridge','trestle']);
   const mat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
   const model=D=>{ if(D.m)return D.m; const q=I16(D.p), n=D.n, P=new Float32Array(n*3), C=new Float32Array(n*3), col=B64(D.c), c=new THREE.Color();
     for(let i=0;i<n*3;i++)P[i]=(q[i]+32500)*D.sc+D.lo[i%3];
@@ -23,7 +24,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
     const cells=new Map(), lampAt=[];
     for(const o of LEVEL.things||[]){ if(!String(o.k).startsWith('p:'))continue; const k=o.k.slice(2), Dk=D[k]; if(!Dk){ PARKPF.skipped.push(k); continue; } PARKPF.things++;
       const a=o.rot||0, ca=Math.cos(a), sa=Math.sin(a), [sx,sy,sz]=Dk.size, ex=(Math.abs(ca)*sx+Math.abs(sa)*sz)/2, ez=(Math.abs(sa)*sx+Math.abs(ca)*sz)/2;
-      let mx=o.x, my=o.y; const free=(x,y)=>{ const X=B.XS(x), Z=B.ZS(y); return (WET.has(k)||!wet(x,y))&&!hit(X-ex*M*.8,Z-ez*M*.8,X+ex*M*.8,Z+ez*M*.8); };
+      let mx=o.x, my=o.y; const free=(x,y)=>{ const X=B.XS(x), Z=B.ZS(y); return BRIDGE.has(k)||(WET.has(k)||!wet(x,y))&&!hit(X-ex*M*.8,Z-ez*M*.8,X+ex*M*.8,Z+ez*M*.8); };   // a bridge spans the brook's bank rocks
       if(!free(mx,my)){ let f=null; for(let r=.6;r<=3&&!f;r+=.6)for(let i=0;i<8&&!f;i++){ const u=mx+Math.cos(i*Math.PI/4)*r, v=my+Math.sin(i*Math.PI/4)*r; if(free(u,v))f=[u,v]; }
         if(!f){ PARKPF.skipped.push(o.k+'@'+o.x+','+o.y); continue; } [mx,my]=f; PARKPF.moved++; }
       const x=B.XS(mx), z=B.ZS(my), y=o.float?water(x,z):(SHARED.groundY?SHARED.groundY(x,z):0);

@@ -66,7 +66,10 @@ const TOUR=[
     ok(req.some(q=>q.f.startsWith(file+'.')),name+': its code fetched ('+file+')');
     ok(errs.length===e0&&late.length===l0,name+': no page errors, no slow fetch '+errs.slice(e0).concat(late.slice(l0)).join(' | '));
     await pg.evaluate(`(${back})()`).catch(e=>errs.push(name+' back: '+e.message)); await wait(1500); }
-  await pg.evaluate(async()=>{ await DUNGEON.go(2); for(const t=Date.now();Date.now()-t<60000&&!(DUNDBG().level===2&&DUNDBG().objs>0);)await new Promise(r=>setTimeout(r,250)); await new Promise(r=>setTimeout(r,2500)); }); await wait(1000);
+  const inDun=await pg.evaluate(async()=>{ const idle=async()=>{ for(const t=Date.now();Date.now()-t<60000&&((window.FADE&&FADE.busy)||DUNDBG().busy);)await new Promise(r=>setTimeout(r,250)); };   // the last place's fade done first, and again if the first try was dropped
+    for(let k=0;k<3&&!(DUNDBG().level===2&&DUNDBG().objs>0);k++){ await idle(); await DUNGEON.go(2); for(const t=Date.now();Date.now()-t<60000&&!(DUNDBG().level===2&&DUNDBG().objs>0);)await new Promise(r=>setTimeout(r,250)); }
+    await new Promise(r=>setTimeout(r,2500)); return Object.assign(DUNDBG(),{you:__dbg.you()}); }); await wait(1000);
+  ok(inDun.level===2&&inDun.objs>0,'before the reload you are in the dungeon, level 2 ('+JSON.stringify(inDun).slice(0,300)+')');
   phase='saved'; const l1=late.length, e1=errs.length; await start('?hour=13&wx=CLEAR'); for(let i=0;i<60&&!(await pg.evaluate(()=>DUNDBG().objs>0).catch(()=>false));i++)await wait(1000);
   const lv=await pg.evaluate(()=>Object.assign(DUNDBG(),{you:__dbg.you()})).catch(e=>'ERR '+e.message);
   ok(lv&&lv.level===2&&lv.objs>0,'a login within the hour comes back where you left off: the dungeon, its code loaded at the start ('+JSON.stringify(lv).slice(0,400)+')');

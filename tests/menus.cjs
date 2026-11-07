@@ -1,4 +1,4 @@
-// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (YOU, PACK, MAP, PEOPLE, BBS, GUIDE, SET; ADMIN for owners), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
+// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (PROFILE, SETTINGS, INVENTORY; ADMIN for owners, 7 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=menus::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -19,37 +19,29 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     ok(!(await pg.evaluate(() => !!document.getElementById('hh'))), 'the pager is gone');
     await pg.keyboard.press('Escape');
-    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'you'), 'ESC opens the menu at YOU');
-    ok(await texts('#mnav [data-sec]') === 'YOU,PACK,MAP,PEOPLE,BBS,GUIDE,SET', 'the sections down the left (no ADMIN for a player)');
-    ok(await texts('#msub [data-sub]') === 'LOOK,WEAR,WORDS', 'YOU has LOOK, WEAR and WORDS');
+    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'you'), 'ESC opens the menu at PROFILE');
+    ok(await texts('#mnav [data-sec]') === 'PROFILE,SETTINGS,INVENTORY', 'the sections down the left: PROFILE, SETTINGS, INVENTORY (no ADMIN for a player; no MAP, PEOPLE, BBS or GUIDE)');
+    ok(await texts('#msub [data-sub]') === 'LOOK,WEAR,WORDS', 'PROFILE has LOOK, WEAR and WORDS');
     ok(await until(() => document.querySelector('#dlooks #looks') && !document.querySelector('#looks').hidden), 'your look sits beside your avatar');
-    ok(await pg.evaluate(() => [...document.querySelectorAll('#cpbtns button')].map(x => x.firstChild.textContent).join() === 'PASSPORT,RESURRECT,LOG OUT'), 'YOU keeps PASSPORT, RESURRECT and LOG OUT');
+    ok(await pg.evaluate(() => [...document.querySelectorAll('#cpbtns button')].map(x => x.firstChild.textContent).join() === 'PASSPORT,RESURRECT,LOG OUT'), 'PROFILE keeps PASSPORT, RESURRECT and LOG OUT');
     await pg.waitForTimeout(800); await shot('you');
     await sub('wear'); ok((await now())[1] === 'wear', 'WEAR is a tab');
-    await sec('pack'); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'PACK shows your skills in the menu');
-    ok(await texts('#msub [data-sub]') === 'BAG,SKILLS,BOOK,FISHING,JOURNAL', 'PACK: BAG, SKILLS, BOOK, FISHING, JOURNAL (no CRAFT)');
+    await sec('pack'); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');
+    ok(await texts('#msub [data-sub]') === 'BAG,SKILLS,BOOK,FISHING,JOURNAL', 'INVENTORY: BAG, SKILLS, BOOK, FISHING, JOURNAL');
     await shot('pack');
     await sub('book'); ok(await pg.evaluate(() => FORAGE.PACK.tab === 'book'), 'BOOK');
-    await sec('people'); ok((await now())[0] === 'people' && (await shown()) === 'people', 'PEOPLE');
-    await sec('bbs'); ok(await until(() => window.DRONEDBG && DRONEDBG().on && DRONEDBG().page === 'shop' && document.querySelectorAll('#dbbs [data-buy]').length > 0), 'BBS: the bodega to order from');
-    await shot('bbs');
-    { const c0 = await pg.evaluate(() => INV.cash); await pg.evaluate(() => document.querySelector('#dbbs [data-buy]').click());
-      ok(await until(() => DRONEDBG().page === 'orders' && INV.cash < 1e12) && await pg.evaluate(c => INV.cash < c, c0), 'BUY orders it and YOUR ORDERS shows it'); }
-    await sec('guide'); ok((await shown()) === 'guide', 'GUIDE opens at its chapters');
-    await sub('keys'); ok(await until(() => document.querySelector('#dmoves').textContent.includes('WALK')), 'ALL THE KEYS lists the keys');
-    ok(await pg.evaluate(() => !/EDITOR|SHIFT \+ E/.test(document.querySelector('#dmoves').textContent)), 'no editor keys');
-    await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
-    await sec('set'); ok((await shown()) === 'display', 'SET opens at VIEW');
+    await sec('set'); ok((await shown()) === 'display', 'SETTINGS opens at VIEW');
+    ok(await texts('#msub [data-sub]') === 'VIEW,PICTURE,CONTROLS,REPORT A BUG', 'SETTINGS: VIEW, PICTURE, CONTROLS, REPORT A BUG');
     await shot('set-view');
     await sub('picture'); ok((await shown()) === 'atmo,graphics' || (await shown()) === 'graphics,atmo', 'PICTURE: graphics and atmosphere');
     await shot('set-picture');
     await sub('controls'); ok(/^keys,(sound,)?vr$/.test(await shown()), 'CONTROLS: keys, sound and VR');
+    await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
     await pg.keyboard.press('Escape'); ok(await until(() => !__UI.menuOpen), 'ESC shuts it');
     await pg.keyboard.press('Escape'); ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'and opens it again where you were');
-    await sec('map'); ok(await until(() => !__UI.menuOpen), 'MAP opens the map on its own');
-    await pg.keyboard.press('Escape'); await pg.waitForTimeout(300);
+    await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => __UI.menuTab('graphics')); ok((await now()).join() === 'set,picture', 'the old tab names still land in the right place');
-    await pg.evaluate(() => __UI.menuTab('bug')); ok((await now()).join() === 'guide,bug', 'F8 lands on REPORT A BUG');
+    await pg.evaluate(() => __UI.menuTab('bug')); ok((await now()).join() === 'set,bug', 'F8 lands on REPORT A BUG');
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
     await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');

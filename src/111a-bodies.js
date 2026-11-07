@@ -49,6 +49,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
+    if(body.onMesh)body.onMesh(me,PM);   // (your avatar's hands, 111b)
     return {me,PM}; }
 
   /* ---------- a smooth body (the merchants): smooth normals, and each part's surface drawn from where it is on the part — knit, woven cloth, denim, leather, metal, skin, fur, wood, ivory, glass — with its own relief, roughness and shine ---------- */
@@ -171,7 +172,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     LOWV.set((a[0]*w+c[0]*(1-w))*x+(a[4]*w+c[4]*(1-w))*y+(a[8]*w+c[8]*(1-w))*z+(a[12]*w+c[12]*(1-w)),lo,(a[2]*w+c[2]*(1-w))*x+(a[6]*w+c[6]*(1-w))*y+(a[10]*w+c[10]*(1-w))*z+(a[14]*w+c[14]*(1-w)));
     G.updateMatrixWorld(true); LOWV.applyMatrix4(G.matrixWorld); const sy=G.scale.y||1, f=(ground(LOWV.x,LOWV.z)-LOWV.y)/sy; if(!isFinite(f)||f<.3||f>80)return;
     for(let i=0;i<NB;i++)P[i].elements[13]+=f; }
-  function pose(B,PM,body,S){ const k=body.S; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
+  function pose(B,PM,body,S){ const k=body.S; PM.B=B; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
     if(body.contact){ const g=body.GEO;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
@@ -181,7 +182,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat);
       if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
         if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2).multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them) if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }
-        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } } }
+        if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw); } }
+    if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
   const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};

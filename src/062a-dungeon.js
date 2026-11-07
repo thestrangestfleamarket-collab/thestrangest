@@ -15,8 +15,8 @@ await grab('dungeon',async()=>{});
     ['',54,12,58,24,.28,1],['THE WEB HALL',46,24,66,40,.35],['',30,30,46,34,.4,1],['THE NEST',18,26,30,40,.45],['THE CHAPEL',74,0,90,18,.42],['',80,18,84,28,.48,1],['THE LEVER ROOM',74,28,90,42,.52],
     ['',66,32,74,36,.5,1],['',54,40,58,48,.56,1],['THE BRIDGES',42,48,70,62,.62],['',26,52,42,56,.68,1],['THE VAULT',14,48,26,62,.74],['',80,42,84,50,.62,1],['THE FORGE',74,50,92,64,.72],
     ['',70,54,74,58,.68,1],['',54,62,58,70,.8,1],['THE BONE PIT',44,70,68,84,.86],['',82,64,86,72,.9,1],['THE THRONE',72,72,96,92,1],['',68,76,72,80,.93,1]];
-  const RM=MAP.map(([nm,x0,y0,x1,y1,d,c],i)=>({i,k:i+1,nm,d,c:!!c,n:1+Math.round(d*4),B:{x0:OX+x0,y0:OY+y0,x1:OX+x1,y1:OY+y1,h:130}}));
-  const BB={x0:OX,y0:OY,x1:OX+Math.max(...MAP.map(m=>m[3])),y1:OY+Math.max(...MAP.map(m=>m[4])),h:130};
+  const rmOf=()=>MAP.map(([nm,x0,y0,x1,y1,d,c],i)=>({i,k:i+1,nm,d,c:!!c,n:1+Math.round(d*4),B:{x0:OX+x0,y0:OY+y0,x1:OX+x1,y1:OY+y1,h:130}})), bbOf=()=>({x0:OX,y0:OY,x1:OX+Math.max(...MAP.map(m=>m[3])),y1:OY+Math.max(...MAP.map(m=>m[4])),h:130});
+  const RM=rmOf(), BB=bbOf(), MAP0=MAP.map(r=>r.slice());   // the map as built in; the dungeon master's layout replaces it (setMap), the first room always the entrance with the stair
   const inB=(B,gx,gy,m=0)=>gx>B.x0-m&&gx<B.x1+m&&gy>B.y0-m&&gy<B.y1+m, roomAt=(gx,gy)=>RM.find(r=>inB(r.B,gx,gy))||null;
   const lotAt=(x,z)=>inB(BB,iX(x),iZ(z),.5)?1:0;
   const opens=(r,s)=>{ const B=r.B, o=[]; for(const q of RM){ if(q===r)continue; const A=q.B;   // where a side of a room meets another room or corridor: an opening
@@ -128,7 +128,7 @@ await grab('dungeon',async()=>{});
   const bnd=()=>({x0:X(BB.x0),x1:X(BB.x1),z0:Z(BB.y0),z1:Z(BB.y1)});
   let named=0; const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm&&named!==k){ named=k; SAY(r.nm,'#d8c8a8'); } for(const f of HK)f(k); };   // a room's monsters wake as you come into it
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(how==='load'?'':'ENTERING THE DUNGEON'):'LEAVING THE DUNGEON',async()=>{
-    if(n){ await LOAD('dungeon'); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
+    if(n){ await LOAD('dungeon'); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'||n===1?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
     PH.hd=SHARED.heading; },{hold:140}); busy=false; };
   MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;
@@ -136,7 +136,10 @@ await grab('dungeon',async()=>{});
     if(!mine)return go(1,'load');
     const gx=iX(p.x), gy=iZ(p.z), r=roomAt(gx,gy); if(r&&!r.c)enter(r.k); if(tread(lay(1).up,gx,gy))go(0); };
   LEVELS.of.dungeon={name:'THE DUNGEON',amb:0,label:()=>'THE DUNGEON'+(cur&&RM[cur-1].nm?' — '+RM[cur-1].nm:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:()=>bnd()};
-  MODS.dungeon={get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){}};
+  const setMap=L=>{ '@later'; const W=Array.isArray(L)&&L.length?L:MAP0; if(JSON.stringify(W)===JSON.stringify(MAP))return false;
+    MAP.splice(0,MAP.length,...W.map(r=>r.slice())); RM.splice(0,RM.length,...rmOf()); Object.assign(BB,bbOf()); for(const k in LC)delete LC[k];
+    if(mine){ clear(); build(); SHARED.BOUND=bnd(); const r=roomAt(iX(pos.x),iZ(pos.z)); if(!r){ const a=lay(1).atUp; UI.goTo(a.x,a.z,'down'); } cur=0; enter(r&&!r.c?r.k:1); } return true; };
+  MODS.dungeon={get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){},setMap,map:()=>MAP.map(r=>r.slice()),map0:()=>MAP0.map(r=>r.slice()),OX,OY};
   window.DUNGEON={get level(){ return mine?band():0; },get room(){ return cur&&RM[cur-1].nm; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>MODS.dungeon.traps(),go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&(!mine||band()!==n))await go(n,'top'); return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:mine?band():0,room:cur,hp:+VIT.hp.toFixed(3),drag:SHARED.drag,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

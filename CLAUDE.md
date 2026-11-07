@@ -79,8 +79,9 @@ on a missing `LOAD`.
 
 Several chats work at once, each on its own branch. Every time:
 1. Start from `main` (fetch and branch from it, or merge it in).
-2. Before opening the pull request, `git fetch origin` and merge `origin/main`; build and test from that.
-3. Open a pull request to `main`; merging it is going live (the website deploys `main`). Tell the owner.
+2. Open the pull request as a **draft**: drafts get no GitHub check (owner, 7 Nov 2026: Actions minutes). Push work to it freely.
+3. When it is done: `git fetch origin`, merge `origin/main` **once**, build and test locally, push, then mark it ready (the check runs then). Merging it is going live (the website deploys `main`). Tell the owner.
+4. Don't keep merging `main` into an open pull request or press "Update branch": a push that is only a merge of main starts no check. To check again on purpose, add the `go` label (or `full`, `measure`) or start the workflow by hand; a by-hand run and the pull request's own run share one slot per branch, the newer cancelling the older.
 
 ## The website (thestrangestfleamarket.com)
 

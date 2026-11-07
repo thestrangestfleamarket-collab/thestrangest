@@ -41,6 +41,8 @@ jobs:
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
+          k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
+          k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -179,6 +181,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
+      - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' dm')
+        run: node tests/dm.cjs dist/market.html
+      - name: The park's things solid, its benches seats
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' parksolid')
+        run: node tests/parksolid.cjs dist/market.html
       - name: The keep's guardians (the crew, a breakout fought, a bounty)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')

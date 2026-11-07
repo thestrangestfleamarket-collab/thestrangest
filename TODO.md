@@ -240,7 +240,7 @@ One pass, one pull request.
 ## Characters and the street
 
 - [x] **The guitar and real hands** (owner, 7 Nov 2026: "add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; "lets add real hands at all times"; done 7 Nov) · P2 · L · code. `src/111b-hands.js`, `src/146zo-guitar-sound.js`, `146zoa-guitar-hold.js`, `146zob-guitar.js`, `tools/pfhand-bake.py`, `tools/pfguitar-bake.py`, `tests/guitar.cjs`. Waits for his look and yes.
-- [ ] **The guitar, next** · P3 · M · pick. A bandstand to stand the park's guitar on (job 6); the guitar on your back while you walk; VR hands driving the jointed hands; more songs. His pick of which, if any.
+- [x] **The guitar, next** (owner, 7 Nov 2026: "guitar playing is skill you can increase ... download real tab and my player is 100 skill level and can play all the songs"; done 7 Nov) · P3 · M · code. GUITAR skill, 183 Mutopia pieces as tab ranked 1–100, playing animation, slung on the back, VR hands. Left: a bandstand for the park guitar (job 6); a recorded guitar clip if he downloads one.
 
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 

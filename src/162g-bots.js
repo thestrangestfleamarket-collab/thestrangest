@@ -1,8 +1,7 @@
 // A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in TENANTS > BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, CITY, FORAGE, INV, LOOKS, NPCS, ONLINE, pos, SHOPS, st, UI, VIT} from './003b-systems.js';
+import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, SHOPS, st, UI, VIT} from './003b-systems.js';
 import {MODS, QS, SYS, TILE} from './006-map-pre.js';
-import {MUSH} from './083a-npc-mushroom.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
 const BOT=window.BOT={ready:false};
@@ -22,18 +21,15 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
   const nearest=(list,ok=()=>true)=>{ let b=null, bd=1e18; for(const th of list){ if(!th||!th.obj||!ok(th))continue; const p=thAt(th), d=d2(p.x,p.z); if(d<bd){ bd=d; b=th; } } return b; };
   // go to a thing and use it as a double click does: true once used
-  const use=(th,dt)=>{ if(!th)return false; const p=thAt(th), reach=(th.reach||T)*.8; if(d2(p.x,p.z)<=reach){ path=null; SHARED.target=null; SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z); th.act&&th.act(); return true; }
-    if(!path||Math.hypot(p.x-(path[path.length-1]||p).x,p.z-(path[path.length-1]||p).z)>T)walk(p.x,p.z); else walking(dt); return false; };
+  const use=(th,dt)=>{ if(!th)return false; const p=thAt(th), reach=(th.reach||T)*.8, d=d2(p.x,p.z); if(d<=reach||(!path&&th.tried&&d<5*T)){ th.tried=0; path=null; SHARED.target=null; SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z); th.act&&th.act(); return true; }
+    if(!path||Math.hypot(p.x-(path[path.length-1]||p).x,p.z-(path[path.length-1]||p).z)>T){ if(!path&&th.tried>2&&d<5*T)th.tried=9; else { th.tried=(th.tried||0)+1; walk(p.x,p.z); } } else walking(dt); return false; };
   const click=sel=>{ const b=[...document.querySelectorAll(sel)].find(e=>e.offsetParent!==null||e.closest(':not([hidden])')); if(b){ b.click(); return true; } return false; };
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
-  // a merchant near enough to walk to who buys this group (FORAGE.BUYK) or sells this item: seen, on the map, within 300 m
-  const seen=N=>{ for(let q=N&&N.g;q;q=q.parent)if(!q.visible)return false; return !!(N&&N.st&&isFinite(N.st.x)); };
-  const merchant=(buys,sells)=>{ let b=null, bd=300; for(const N of NPCS){ if(!seen(N))continue; let tr=null; try{ tr=CHARS.trade&&CHARS.trade(N); }catch(e){} if(!tr)continue;
-      if(buys&&!(tr.buys||[]).includes(buys))continue; if(sells&&!(tr.sells||[]).includes(sells))continue; const d=d2(N.st.x,N.st.z); if(d<bd){ bd=d; b=N; } } return b; };
-  // walk to a merchant and press its buttons: true once done
-  const atShop=(N,dt,fn)=>{ const p=N.st; if(d2(p.x,p.z)>2*T){ if(!path||Math.hypot(path[path.length-1].x-p.x,path[path.length-1].z-p.z)>T)walk(p.x,p.z); walking(dt); return false; }
-    path=null; SHARED.target=null; fn(); return true; };
+  // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
+  const counter=(shop,dt,fn)=>{ const th=nearest(UI.things,t=>/^THE COUNTER/.test(t.name||'')), p=th&&thAt(th);
+    if(!th||d2(p.x,p.z)>30*T){ task.at=task.at||{}; if(!task.at[shop]){ task.at[shop]=1; task.wt=4; UI.goName(shop); return false; } if((task.wt-=dt)>0)return false; return null; }
+    if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
   const goal=()=>C.goal>0&&cash()>=C.goal;
   /* ---------- the jobs: each a step a frame, its state in task ---------- */
@@ -54,21 +50,18 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
       const F=FORAGE, have=Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0);
       if(task.s==='find'){ if(LOOKS.L&&!LOOKS.L.bare)LOOKS.L.bare=true;
         const th=F.things?nearest(F.things()):null;
-        if(task.hold>0)task.hold-=dt; if((!th||have>=(C.sellAt||12))&&have&&!(task.hold>0)){ task.s='sell'; return; } if(!th){ if(!task.park){ task.park=1; UI.goName('CENTRAL PARK'); doing='going to the park'; return; } JOB.wander(dt); doing='looking for mushrooms'; return; }
+        if(task.hold>0)task.hold-=dt; const extra=have-(task.keep||0); if((!th||extra>=(C.sellAt||12))&&extra>0&&!(task.hold>0)){ task.s='sell'; return; } if(!th){ if(!task.park){ task.park=1; UI.goName('CENTRAL PARK'); doing='going to the park'; return; } JOB.wander(dt); doing='looking for mushrooms'; return; }
         doing='picking mushrooms ('+have+' in the bag)'; use(th,dt); return; }
-      if(task.s==='sell'){ const M=seen(MUSH.N)&&d2(MUSH.N.st.x,MUSH.N.st.z)<300?MUSH.N:null, N=M||merchant('mushrooms');
-        if(!N){ task={s:'find',park:1,hold:60}; doing='nobody buying mushrooms nearby (closed?), picking more'; return; }
-        doing='taking '+have+' mushrooms to '+(N.name||'a merchant').toLowerCase(); if(!atShop(N,dt,()=>{ if(N===MUSH.N)F.SHOP.open(); else SHOPS.open(N); sellAll(); close(); SHOPS.close&&SHOPS.close(); }))return;
-        task={s:'find',park:1}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
-    fish:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'gear'}; const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
+      if(task.s==='sell'){ doing='taking '+have+' mushrooms to THE MUSHROOM SHOP'; const r=counter('THE MUSHROOM SHOP',dt,sellAll); if(r===false)return;
+        if(r===null){ task={s:'find',hold:60,keep:task.keep}; doing='can\'t sell mushrooms now, picking more'; return; }
+        task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
+    fish:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
-      if(task.s==='gear'){ if(F.has('rod')&&bait){ task.s='cast'; return; } const N=merchant(null,F.has('rod')?'bait':'rod');
-        if(!N){ const go=['TO THE HUDSON (THE PIER)','FISHING & SCUBA'][task.go||0]; if(go){ task.go=(task.go||0)+1; UI.goName(go); doing='going to buy fishing gear'; } else doing='can\'t find anyone selling rods or bait'; return; }
-        doing=F.has('rod')?'buying bait':'buying a rod'; if(!atShop(N,dt,()=>{ SHOPS.open(N); if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); close(); SHOPS.close&&SHOPS.close(); }))return;
-        if(!F.has('rod')||!BAIT.some(id=>F.has(id))){ doing='can\'t afford fishing gear ($'+cash()+')'; task.go=0; } return; }
-      if(task.s==='sell'){ doing='selling '+fish+' fish'; const N=merchant('fish');
-        if(N){ if(!atShop(N,dt,()=>{ SHOPS.open(N); sellAll(); close(); SHOPS.close&&SHOPS.close(); }))return; task={s:'gear'}; return; }
-        if(stand){ if(!use(stand,dt))return; sellAll(); close(); task={s:'gear'}; return; } doing='nobody buying fish nearby'; task={s:'cast',hold:60}; return; }
+      if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast'}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
+        const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); }); if(r===false)return;
+        if(r===null||!F.has('rod')||!BAIT.some(id=>F.has(id))){ doing=r===null?'can\'t get to FISHING & SCUBA':'can\'t afford fishing gear ($'+cash()+')'; task={s:'gear',hold:30}; } return; }
+      if(task.s==='sell'){ doing='selling '+fish+' fish'; const r=stand&&d2(thAt(stand).x,thAt(stand).z)<40*T?(use(stand,dt)?(sellAll(),close(),true):false):counter('FISHING & SCUBA',dt,sellAll);
+        if(r===false)return; task={s:'gear'}; if(r===null){ task={s:'cast',hold:60}; doing='nobody buying fish nearby'; } return; }
       if(task.s==='cast'){ if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
         const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; return; }
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
@@ -81,8 +74,8 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         const A=E._api&&E._api(), K=A?A.kinds():{}, budget=C.goal>0?C.goal:Infinity; task.spent=task.spent||0;
         const can=Object.keys(K).filter(k=>{ const q=K[k]; return q&&!q.bad&&!q.own&&k!=='CAT'&&(q.price??4)<=cash()&&task.spent+(q.price??4)<=budget; });
         if(!can.length||task.n>=12){ if(E.on)E.toggle(); task.s='done'; doing='decorated: '+task.n+' things bought'; return; }
-        const k=can[Math.floor(R()*can.length)], before=cash(); if(E.buy(k)){ task.n++; task.spent+=before-cash(); doing='bought a '+k.toLowerCase().replace(/_/g,' '); }
-        const a=R()*6.283; path=[{x:pos.x+Math.sin(a)*1.2*T,z:pos.z+Math.cos(a)*1.2*T}]; pi=0; stuck=0; last={x:pos.x,z:pos.z,t:0}; step(); return; }
+        const k=can[Math.floor(R()*can.length)], before=cash(); if(E.buy(k)){ task.n++; task.spent+=before-cash(); doing='bought a '+k.toLowerCase().replace(/^[a-z]+:/,'').replace(/_/g,' '); }
+        return; }
       doing='decorated: '+task.n+' things bought'; } };
   /* ---------- fighting: face them, close in, a punch or a kick ---------- */
   const fightOn=(o,dt)=>{ if(!o.p||o.why!=='near you'||o.dead){ doing=o.dead?o.name+' is down':'looking for '+o.name; return false; }

@@ -47,5 +47,5 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
         const pl=f('place').value; if(pl!==(x.place||'')){ set.place=pl; if(pl)set.at=null; }
         act(b,{do:'botset',id,set},()=>'saved'); } }); };
   const load=async()=>{ D=await api({do:'bots'}); draw(); };
-  TENANTS.bots=e=>{ el=e; D=null; draw(); load(); };
+  TENANTS.bots=e=>{ el=e; D=null; draw(); load(); }; window.TENANTS=TENANTS;
 }

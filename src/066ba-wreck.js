@@ -10,10 +10,12 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
 { const T=TILE, MW=T/.84, say=(t,c)=>SAY(t,c||'#9fd8ff'), hs=(a,b)=>{ let h=(Math.imul(a|0,374761393)+Math.imul(b|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   const bedY=(x,z)=>RIVER.box.lv-RIVER.depthAt(x,z)*MW;
   // where: on a flat stretch of the bed about 55 m down, nearest the pier (owner, 7 Nov 2026: "very far down at bottom of hudson, should take like 30 seconds to get to the ship swimming down in scuba gear"; you swim down 1.8 m a second)
-  const DEPTH=55, spot=()=>{ const B=RIVER.box, px=(RIVER.piers&&RIVER.piers[0])||RIVER.mouth.x, M=1/MW; let best=null, bc=1e9;
-    for(let x=Math.max(B.x0+20*T,SHARED.BOD.XS(-40));x<Math.min(B.x1-20*T,SHARED.BOD.XS(240));x+=2*T)for(let z=B.z1-6*T;z>B.z0+6*T;z-=1.5*T){ const d=RIVER.depthAt(x,z); if(Math.abs(d-DEPTH)>12)continue;
-      let lo=1e9, hi=-1e9; for(const [u,v] of [[-26,-9],[26,-9],[-26,9],[26,9],[0,0],[-13,0],[13,0]]){ const q=RIVER.depthAt(x+u*MW,z+v*MW); lo=Math.min(lo,q); hi=Math.max(hi,q); }
-      const c=Math.abs(d-DEPTH)*2+(hi-lo)*3+Math.abs(x-px)/T*.03; if(c<bc){ bc=c; best=[x,z]; } } return best; };
+  const DEPTH=55, spot=()=>{ const B=RIVER.box, px=(RIVER.piers&&RIVER.piers[0])||RIVER.mouth.x;
+    for(const [dd,flat] of [[12,10],[16,16],[20,24],[30,40]]){ let best=null, bc=1e9;   // the flattest stretch near the depth, loosening till one fits
+      for(let x=Math.max(B.x0+20*T,SHARED.BOD.XS(-40));x<Math.min(B.x1-20*T,SHARED.BOD.XS(240));x+=2*T)for(let z=B.z1-6*T;z>B.z0+6*T;z-=1.5*T){ const d=RIVER.depthAt(x,z); if(Math.abs(d-DEPTH)>dd)continue;
+        let lo=1e9, hi=-1e9; for(let u=-27;u<=27;u+=4.5)for(let v=-8;v<=8;v+=4){ const q=RIVER.depthAt(x+u*MW,z+v*MW); lo=Math.min(lo,q); hi=Math.max(hi,q); } if(hi-lo>flat)continue;   // the hull and a margin round it on one level stretch, never on the rim of a hole
+        const c=Math.abs(d-DEPTH)*2+(hi-lo)*3+Math.abs(x-px)/T*.03; if(c<bc){ bc=c; best=[x,z]; } }
+      if(best)return best; } return null; };
   const deeps=()=>{ const B=RIVER.box, out=[]; for(let i=0;i<400&&out.length<3;i++){ const x=B.x0+(.1+.8*hs(i,3))*(B.x1-B.x0), z=B.z1-(10+hs(i,7)*((B.z1-B.z0)/T-14))*T, d=RIVER.depthAt(x,z);
       if(d>20&&d<40&&out.every(p=>Math.hypot(p[0]-x,p[1]-z)>40*T))out.push([x,z]); } return out; };
   // a chest on the bed: its lid propped open on its coins while it is full
@@ -67,11 +69,11 @@ const WRECK={chests:[]}; window.WRECK=WRECK;
       const dx=tx-k.x, dy=ty-k.y, dz=tz-k.z, d=Math.hypot(dx,dy,dz)||1, st_=Math.min(d,sp*dt); k.x+=dx/d*st_; k.y+=dy/d*st_; k.z+=dz/d*st_;
       const hd=Math.atan2(dx,dz); k.hd=k.hd==null?hd:k.hd+Math.atan2(Math.sin(hd-k.hd),Math.cos(hd-k.hd))*Math.min(1,dt*2.5); k.g.position.set(k.x,k.y,k.z); k.g.rotation.set(-Math.atan2(dy,Math.hypot(dx,dz))*.5,k.hd,0); k.g.userData.tail.rotation.y=Math.sin(performance.now()/180+k.r)*.5;
       if(k===hunter&&d<2.2*MW&&bit<=0){ bit=3; k.rest=7; if(VIT.hurt)VIT.hurt(.12); say('A SHARK BITES! IT TURNS AWAY, CIRCLING.','#ff9a8a'); } } };
-  const build=()=>{ const [x,z]=spot(); WRECK.at=[x,z]; const F=ship(x,z);
+  const build=()=>{ const at=spot(); if(!at){ WRECK.built=true; WRECK.none=true; return; } const [x,z]=at; WRECK.at=[x,z]; const F=ship(x,z);
     for(const [u,v,i,inn] of [[7.9,mid,0],[3,mid+.6,1,1],[13.9,mid-.3,2,2],[-2,mid+3.6,3]]){ const p=F.pw(u*S,v*S); chest(p[0],p[1],'wreck'+i,inn===1?WRECK.floorY:inn===2?WRECK.floorY+(3.0*S*MW):null); }   // in the break, in the hold, on the cabin floor, one tumbled out by the bow
     deeps().forEach(([dx,dz],i)=>chest(dx,dz,'deep'+i)); SHARK(); WRECK.built=true; };
   // built once the river is, drawn only near it; a full chest shows its gold, an emptied one is shut till tomorrow
-  SYS.add('places',dt=>{ if(!WRECK.built){ if(RIVER.box&&RIVER.depthAt)build(); return; } const [x,z]=WRECK.at, near=Math.hypot(pos.x-x,pos.z-z)<140*T;
+  SYS.add('places',dt=>{ if(!WRECK.built){ if(RIVER.box&&RIVER.depthAt)build(); return; } if(WRECK.none)return; const [x,z]=WRECK.at, near=Math.hypot(pos.x-x,pos.z-z)<140*T;
     for(const o of WRECK.parts)o.visible=near; if(near)guard(Math.min(.1,dt||0)); for(const C of WRECK.chests){ const n=Math.hypot(pos.x-C.G.position.x,pos.z-C.G.position.z)<140*T, full=INV.ready(C.k); C.G.visible=n; C.gold.visible=full; C.lid.rotation.x=full?-1.1:0; C.th.name=full?'A SUNKEN CHEST':'A SUNKEN CHEST (EMPTY)'; } },'066ba-wreck');
   window.WRECKDBG=()=>({built:!!WRECK.built,at:WRECK.at&&WRECK.at.map(v=>+(v/T).toFixed(1)),depth:WRECK.at&&+RIVER.depthAt(...WRECK.at).toFixed(1),chests:WRECK.chests.map(C=>({k:C.k,depth:+RIVER.depthAt(C.G.position.x,C.G.position.z).toFixed(1),full:INV.ready(C.k)}))});
 }

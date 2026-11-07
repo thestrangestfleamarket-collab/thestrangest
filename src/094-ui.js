@@ -19,7 +19,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · swim up, and faster · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · swim down'],
     ['view','change the view (map, isometric, third person, behind, first person)'],['rot','turn the view a quarter (four angles)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops)'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (Space up, Shift down; G again lands)']];
-  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+N','THE NEXT LOOK'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
+  const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+G','THE GUIDE'],['SHIFT+E','EDIT THE WORLD (ISOMETRIC)'],['SHIFT+N','THE NEXT LOOK'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
   const NAME=k=>k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
   const DEF={view:'v',v:'b',rot:'r',r:'y',shoes:'m',chat:'enter',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
@@ -31,6 +31,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(raw==='escape'){ if(e.type==='keydown')toggleMenu(); return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
+    if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat&&WE.key)WE.key(); return null; }
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='e'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
     if(UI.menuOpen)return null;
     if(ED.on){ const a=REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
@@ -140,7 +141,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     SHARED.cam.lookAt(T); SHARED.cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');
   // the views by place (owner, 7 Nov 2026): in town only the overhead view, turned and zoomed in from the start's distance (never further out); third and first person inside an inside or Central Park; out of those you are put back overhead. Whatever takes the view for itself (fishing, a spyglass, the tower's glass, VR, a holodeck program) keeps it
-  UI.ZOUT=PPU*1.5;
+  UI.ZL=[1,2,5,10,20,50,100].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
+  { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc), c=SHARED.ppuTo; acc=0;
+    if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; UI.wheelAt(e); }; }
   UI.viewsHere=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){} return r||(window.PARK&&PARK.in)?['iso','third','first']:['iso']; };
   { const W=window, own=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
     SYS.add('cam',()=>{ if(!window.__started||own())return; if(!UI.viewsHere().includes(UI.view))UI.setView('iso'); if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
@@ -416,7 +419,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     UI.goName=n=>{ const P=PLACEN.includes(n)||ROOMN.includes(n)?PLACES.find(p=>p[0]===n):null; if(P)toPlace(P[1],P[2],P[3],P[5]); else goPlace(n); };
     sel.onchange=()=>{ const n=sel.value; sel.value=''; if(n)UI.goName(n); };
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
-  const zMin=3, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
+  const zMin=UI.ZOUT, zMax=ZMAX, z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
     $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dps2').setAttribute('aria-pressed',String(!!PS2.on)); $('#dps2').textContent='PS2 FILTER '+(PS2.on?'ON':'OFF'); if(PS2.parts){ for(const e of document.querySelectorAll('#dps2p [data-k]')){ e.setAttribute('aria-pressed',String(!!PS2.parts[e.dataset.k])); e.disabled=!PS2.on; } $('#dps2k').value=PS2.k; $('#dps2k').disabled=!PS2.on; $('#dps2kv').textContent=Math.round(PS2.k*100)+'%'; } }
   { const SH={on:true,lv:2}, D=$('#dshd'); D.innerHTML='<button class="btn" data-s="1">ON</button><button class="btn" data-l="1">SHADED</button><button class="btn" data-l="2">SELF</button>';   // the figures' shadows: on/off, lit by the lamps, or self-shadowed too

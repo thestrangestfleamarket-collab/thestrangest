@@ -59,7 +59,7 @@ import {BUILDV} from './135-where.js';
       <div class="row">${r.shots?'<button class="btn" data-a="pic">PICTURE</button>':''}${c.at?'<button class="btn" data-a="go">GO THERE</button>':''}
       ${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${({new:'BACK TO NEW',approved:'APPROVE'})[k]||n}</button>`).join('')}</div><img hidden style="max-width:100%;image-rendering:pixelated"></div>`; }).join(''):'<div class="dim">nothing here</div>';
     $('#bugq').onclick=async e=>{ const b=e.target.closest('button'), box=e.target.closest('[data-id]'); if(!b||!box)return; const r=rows.find(x=>x.id===box.dataset.id);
-      if(b.dataset.s){ b.disabled=true; try{ await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
+      if(b.dataset.s){ b.disabled=true; try{ if(b.dataset.s==='approved'&&r.context&&r.context.kind==='worldedit'&&BUGS.approveEdit)await BUGS.approveEdit(r); await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
   const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };

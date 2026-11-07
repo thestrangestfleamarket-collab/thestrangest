@@ -1,7 +1,7 @@
 // THE DUNGEON SLIMES: the coloured slimes that roam the dungeon, fight and drop slime.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, ITEMS, LEVELS, NPCS, ONLINE, pos, SFX, st, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
@@ -71,17 +71,19 @@ import {GEMS} from './101-gems.js';
       sfx('clunk',{vol:.4,pitch:1.6}); unthing(th); FORAGE.draw(); },m); };
   const goo=S=>{ const t=TIER[S.k]; S.th=thing(t.nm+' SLIME',S.x,S.z,th=>{ if(!FORAGE.has('bottle'))return say('YOU NEED A BOTTLE TO HOLD THE SLIME.','#c8a090');
     FORAGE.take('bottle',1); FORAGE.give('slime_'+S.k,1); say('YOU SCOOP THE '+t.nm+' SLIME INTO A BOTTLE.','#b8f0a0'); sfx('drip',{vol:.5,pitch:.7}); unthing(th); S.gone=true; FORAGE.draw(); }); };
-  const hitSlime=(S,dmg,from,s)=>{ if(S.dead)return; const t=TIER[S.k]; S.hp-=dmg; S.flash=.12; S.agg=true; sfx('step',{vol:.6,pitch:.55,vary:.2});
+  const prize=(w,tk,x,z,S)=>{ if(w==='s'){ const t=TIER[tk]; if(!t)return; xp(t.sk[0],t.sk[1]); if(!AR){ goo(S||{k:tk,x,z}); loot(tk,t.loot,x,z); } SYS.run('slain',{kind:'slime',lvl,sim:!!AR}); return; }   // your kill: what it teaches and drops
+    xp(10+lvl*8,60+lvl*8); const k=tk==='Gold'?'gold':tk==='spider'?'spider':'bone'; loot(k,.6,x,z); if(tk==='Gold')drop('gold',x,z); SYS.run('slain',{kind:k==='bone'?'guard':k,lvl}); };
+  const hitSlime=(S,dmg,from,s,by)=>{ if(S.dead)return; const t=TIER[S.k]; S.hp-=dmg; S.flash=.12; S.agg=true; sfx('step',{vol:.6,pitch:.55,vary:.2});
     const dx=S.x-from.x, dz=S.z-from.z, l=Math.hypot(dx,dz)||1, kb=.45*T*(s&&s.kb||1), p={x:S.x+dx/l*kb,z:S.z+dz/l*kb}; if(free(p.x,p.z,.18*T)){ S.kb={x:p.x,z:p.z}; }
     if(S.hp>0)return; S.dead=true; S.pop=0; S.air=0; sfx('drip',{vol:.8,pitch:.45}); sfx('boom',{vol:.15,pitch:2.4});
-    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); xp(t.sk[0],t.sk[1]); if(!AR){ goo(S); loot(S.k,t.loot,S.x,S.z); } SYS.run('slain',{kind:'slime',lvl,sim:!!AR}); };   // an arena's slimes are light: nothing to scoop or pick up
-  const killRes=r=>{ const N=r.N; r.dead=true; r.t=0; N.alert=false; N.st.to=null; N.st.face=null; N.st.hold=true;
+    say('THE '+t.nm+' SLIME BURSTS.','#e8e2cc'); if(by)return net({k:'kill',to:by,w:'s',tk:S.k,x:+(S.x/T).toFixed(2),z:+(S.z/T).toFixed(2)}); prize('s',S.k,S.x,S.z,S); };   // an arena's slimes are light: nothing to scoop or pick up
+  const killRes=(r,by)=>{ const N=r.N; r.dead=true; r.t=0; N.alert=false; N.st.to=null; N.st.face=null; N.st.hold=true;
     if(r.kk)N.an.play('Death_A',{hold:true}); sfx('clunk',{vol:.6,pitch:.7}); say(r.kk?'THE '+N.name+' FALLS.':r.spider?'THE SPIDER CURLS UP AND DIES.':r.ogre?'THE OGRE GOES DOWN.':'THE SKELETON CRUMBLES.','#e8e2cc');
-    xp(10+lvl*8,60+lvl*8); const k=r.key==='Gold'?'gold':r.spider?'spider':'bone'; loot(k,.6,N.st.x,N.st.z); if(r.key==='Gold')drop('gold',N.st.x,N.st.z); SYS.run('slain',{kind:k==='bone'?'guard':k,lvl}); };
-  const hitRes=(r,dmg,from,s)=>{ if(r.dead)return; const N=r.N, st=N.st; r.agg=true;
+    if(by)return net({k:'kill',to:by,w:'r',tk:r.spider?'spider':r.key,x:+(N.st.x/T).toFixed(2),z:+(N.st.z/T).toFixed(2)}); prize('r',r.spider?'spider':r.key,N.st.x,N.st.z); };
+  const hitRes=(r,dmg,from,s,by)=>{ if(r.dead)return; const N=r.N, st=N.st; r.agg=true;
     if(r.kk&&!(s&&s.heavy)&&!N.an.once&&Math.random()<Math.min(.5,lvl*.1)){ N.an.play('Block'); sfx('clunk',{vol:.5,pitch:2.1}); say('THE '+N.name+' BLOCKS.','#c8c2b0'); return false; }   // a guard blocks a light blow; a heavy one gets through
     r.hp-=dmg; const dx=st.x-from.x, dz=st.z-from.z, l=Math.hypot(dx,dz)||1, kb=2.2*T*(s&&s.kb||1); st.sx=dx/l*kb; st.sz=dz/l*kb;
-    sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r); if(s&&s.heavy)r.cool=Math.max(r.cool,2.4); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=s&&s.heavy?.6:.25; } };
+    sfx('clunk',{vol:.5,pitch:1.5,vary:.2}); if(r.hp<=0)return killRes(r,by); if(s&&s.heavy)r.cool=Math.max(r.cool,2.4); if(r.kk){ r.act=0; N.an.play('Hit_A'); } else{ r.lunge=null; r.jolt=s&&s.heavy?.6:.25; } };
   const {strikes,inCone,strength}=STRIKES;
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
       if(!lv.length||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
@@ -105,10 +107,10 @@ import {GEMS} from './101-gems.js';
     slimes.push({i,k,x:p.x,z:p.z,h:Math.random()*6.28,hp:Math.ceil(t.hp*F()),dmg:Math.max(t.dmg,.025)*F(),v:t.v*(1+.08*(n-1)),to:null,wait:Math.random()*3,air:0,ph:0,cool:1,flash:0,dead:false,pop:0,agg:false,kb:null}); } IM.count=GL.count=slimes.length; draw(); };
   const planOf=n=>{ const N=3+Math.floor(Math.random()*3), g=Math.min(N-1,n===1?(Math.random()<.5?1:0):1+Math.floor(Math.random()*Math.min(3,n-1))); let sp=0, sl=0; for(let i=g;i<N;i++){ if(Math.random()<.25+.06*n)sp++; else sl++; } return {g,sp,sl}; };
   const arena=(A,n,k)=>{ if(!A){ if(!AR)return; AR=null; lvl=0; slimes=[]; IM.count=GL.count=0; MAPG.dungeon.add(G); return; } AR=A; A.G.add(G); L=null; TR=[]; plan=null; lvl=n; spawnSlimes(n,k); };
-  const onLevel=n=>{ if(AR)arena(null); for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; lvl=n; L=n?D.lay(n):null; slimes=[]; IM.count=GL.count=0;
-    TR=n?D.traps().filter(h=>h.t!=='web').map(h=>[Math.min(X(h.x0),X(h.x1)),Math.min(Z(h.y0),Z(h.y1)),Math.max(X(h.x0),X(h.x1)),Math.max(Z(h.y0),Z(h.y1))]):[];
-    if(!n){ plan=null; arrange(0); return; } plan=planOf(n); spawnSlimes(n,plan.sl); arrange(n); if(plan.sp&&!SPI.length)mkSpiders().then(()=>{ if(lvl===n)arrange(n); });
-    if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(lvl===n)arrange(n); else arrange(lvl); }); } };
+  const onLevel=k=>{ if(AR)arena(null); for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[]; L=k?D.lay(k):null; const n=lvl=L?L.n:0, me=L; slimes=[]; IM.count=GL.count=0;
+    TR=L?L.hz.filter(h=>h.t!=='web').map(h=>[Math.min(X(h.x0),X(h.x1)),Math.min(Z(h.y0),Z(h.y1)),Math.max(X(h.x0),X(h.x1)),Math.max(Z(h.y0),Z(h.y1))]):[];
+    if(!n||L.safe){ plan=null; arrange(0); return; } plan=planOf(n); spawnSlimes(n,plan.sl); arrange(n); if(plan.sp&&!SPI.length)mkSpiders().then(()=>{ if(L===me)arrange(n); });
+    if(SKL[n]&&SKL[n].some(k=>KK.includes(k))&&!(window.GUARDX)){ SKELGO().then(()=>{ RES=null; if(L===me)arrange(n); else arrange(lvl); }); } };
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
       if(S.dead){ const u=Math.min(1,S.pop/.28); sx=u<.4?1+u*.8:1.32+(u-.4)*.4; sy=u<.4?1+u*.5:Math.max(.13,1.2-(u-.4)*1.8); }
       else if(S.air>0){ const u=S.ph; if(u<.2){ sy=1-u*1.2; sx=1+u*.6; } else if(u<.8){ const a=(u-.2)/.6; y=Math.sin(Math.PI*a)*.34*T; sy=1.12-.12*Math.abs(a-.5)*2; sx=.94; } else{ const a=(u-.8)/.2; sy=.78+.22*a; sx=1.12-.12*a; } }
@@ -116,17 +118,17 @@ import {GEMS} from './101-gems.js';
       if(S.gone)s3.set(0,0,0); IM.setMatrixAt(i,m4.compose(v3,q4,s3)); col.setHex(t.c); if(S.flash>0)col.lerp(WH,.7); IM.setColorAt(i,col);
       const gr=(S.dead?.5:.42)*T*t.s*(S.gone?0:1); m4.compose(v3.set(S.x,gnd(S.x,S.z)+.012*T,S.z),q4.identity(),s3.set(gr,1,gr)); GL.setMatrixAt(i,m4); col.setHex(t.c).multiplyScalar(S.dead?.6:1); GL.setColorAt(i,col); });
     for(const m of [IM,GL]){ m.instanceMatrix.needsUpdate=true; if(m.instanceColor)m.instanceColor.needsUpdate=true; } };
-  const slimeTick=(dt,you,alive)=>{ let ch=false; for(const S of slimes){ const t=TIER[S.k];
+  const slimeTick=(dt,C)=>{ let ch=false; for(const S of slimes){ const t=TIER[S.k];
       if(S.flash>0){ S.flash-=dt; ch=true; }
       if(S.dead){ if(S.pop<.28){ S.pop+=dt; ch=true; } continue; }
       if(S.kb){ S.x+=(S.kb.x-S.x)*Math.min(1,dt*12); S.z+=(S.kb.z-S.z)*Math.min(1,dt*12); ch=true; if(Math.hypot(S.kb.x-S.x,S.kb.z-S.z)<.02*T)S.kb=null; continue; }
-      const d=Math.hypot(you.x-S.x,you.z-S.z), chase=alive&&!SHARED.unseen&&(S.agg?d<2*see()*T:d<see()*T);
+      const you=pickT(C,S.x,S.z), d=you?Math.hypot(you.x-S.x,you.z-S.z):1e9, chase=!!you&&(S.agg?d<2*see()*T:d<see()*T);
       if(chase&&S.air<=0&&(S.wait-=dt*3)<=0){ S.to={x:you.x,z:you.z}; S.wait=0; }
       if(S.air>0){ S.ph+=dt/(.62/Math.sqrt(S.v)); ch=true;
         if(S.ph>.2&&S.ph<.8&&S.to){ const ex=S.to.x-S.x, ez=S.to.z-S.z, l=Math.hypot(ex,ez), stp=Math.min(l,S.v*1.7*T*dt), nx=S.x+ex/(l||1)*stp, nz=S.z+ez/(l||1)*stp;
           if(chase&&d<.45*T){} else if(free(nx,nz,.18*T)&&!crowd(nx,nz,.18*T,S)){ S.x=nx; S.z=nz; } else S.to=null; if(l>.01)S.h=Math.atan2(ex,ez); }
         if(S.ph>=1){ S.air=0; S.ph=0; S.cool-=.62;
-          if(chase&&d<.75*T&&S.cool<=0){ S.cool=1.6/(1+.1*lvl); if(VIT.hurt(S.dmg,S)===2){ S.cool=3.2; S.kb=near(S.x,S.z,.8*T,1.2*T,.18*T); } else S.kb=near(S.x,S.z,.4*T,.7*T,.18*T); }
+          if(chase&&d<.75*T&&S.cool<=0){ S.cool=1.6/(1+.1*lvl); if(hurtT(you,S.dmg,S)===2){ S.cool=3.2; S.kb=near(S.x,S.z,.8*T,1.2*T,.18*T); } else S.kb=near(S.x,S.z,.4*T,.7*T,.18*T); }
           if(!S.to||Math.hypot(S.to.x-S.x,S.to.z-S.z)<.15*T){ S.to=null; S.wait=chase?.15:1.5+Math.random()*3; } else S.wait=chase?.05:.12; } continue; }
       S.cool-=dt; if((S.wait-=dt)>0)continue;
       if(!S.to)S.to=near(S.x,S.z,1.2*T,3.2*T,.18*T); if(S.to){ S.air=1; S.ph=0; } else S.wait=1; }
@@ -145,22 +147,50 @@ import {GEMS} from './101-gems.js';
     m.position.set(N.st.x,y,N.st.z); G.add(m); const to=new THREE.Vector3(pos.x,SHARED.py+.9*T,pos.z); m.lookAt(to); bolts.push({m,to,dmg:r.dmg,from:{x:N.st.x,z:N.st.z}}); };
   const boltTick=dt=>{ for(const b of [...bolts]){ const d=b.to.clone().sub(b.m.position), l=d.length(), stp=11*T*dt;
     if(l<=stp){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); bolts.splice(bolts.indexOf(b),1); if(!VIT.dead&&Math.hypot(pos.x-b.to.x,pos.z-b.to.z)<.5*T)VIT.hurt(b.dmg,b.from); } else b.m.position.addScaledVector(d,stp/l); } };
-  const resTick=(r,dt,you,alive)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
-    const d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
+  const resTick=(r,dt,C)=>{ const N=r.N, st=N.st; if(!r.kk)pawnTick(r,dt); if(r.dead||!r.on)return;
+    const you=pickT(C,st.x,st.z)||{x:1e9,z:1e9,id:null}, d=Math.hypot(you.x-st.x,you.z-st.z); r.cool-=dt;
     if(r.spider&&!r.lunge&&!(r.jolt>0)){ N.clip=st.to?'Spider_Walk':'Spider_Idle'; N.clipK=st.to?Math.max(.8,st.v/(1.2*T)):1; }
-    const sr=see()+(r.spider?.6:0), see_=alive&&!SHARED.unseen&&Math.abs(SHARED.py-N.g.position.y)<1.6*T&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
+    const sr=see()+(r.spider?.6:0), see_=you.x<1e8&&(!!you.id||Math.abs(SHARED.py-N.g.position.y)<1.6*T)&&(r.agg?d<2*sr*T:d<sr*T); r.agg=see_&&(r.agg||d<sr*T);
     if(!see_){ N.alert=false; st.face=null; if(!st.to&&(r.w-=dt)<=0){ st.to=near(st.x,st.z,1.5*T,4*T,st.R); st.v=r.v0; r.w=3+Math.random()*5; } return; }
     N.alert=true; const busy=r.kk?!!N.an.once:!!r.lunge||r.jolt>0, ranged=!!r.style.bolt, R=(ranged?5.5:r.style.reach||.8)*T;
     if(busy){ st.to=null; st.face={x:you.x,z:you.z}; return; }
     if(d>R){ const k=Math.max(0,(d-R*.8)/d); st.to={x:st.x+(you.x-st.x)*k,z:st.z+(you.z-st.z)*k}; st.v=r.v0*1.6*(1+.08*(lvl-1)); st.face=null; return; }
     st.to=null; st.face={x:you.x,z:you.z}; const off=Math.abs(((Math.atan2(you.x-st.x,you.z-st.z)-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
     if(r.cool>0||off>.45)return; r.cool=(1.8+Math.random()*.7)/(1+.1*lvl);
-    const land=()=>{ if(VIT.dead||r.dead)return; if(ranged)return shoot(r,r.style.bolt); if(Math.hypot(pos.x-st.x,pos.z-st.z)<R*1.45&&VIT.hurt(r.dmg,st)===2){ r.cool=3.2; if(r.kk)N.an.play('Hit_A'); else r.jolt=.6; } };   // parried: it staggers, open to you
+    const land=()=>{ if(r.dead)return; if(you.id){ if(Math.hypot(you.x-st.x,you.z-st.z)<(ranged?7*T:R*1.45))hurtT(you,r.dmg,st); return; } if(VIT.dead)return; if(ranged)return shoot(r,r.style.bolt); if(Math.hypot(pos.x-st.x,pos.z-st.z)<R*1.45&&VIT.hurt(r.dmg,st)===2){ r.cool=3.2; if(r.kk)N.an.play('Hit_A'); else r.jolt=.6; } };   // parried: it staggers, open to you
     if(r.kk)N.an.play(r.style.hit==='1H_Melee_Attack_Chop'&&Math.random()<.5?'1H_Melee_Attack_Slice_Diagonal':r.style.hit,{at:[r.style.at,land]}); else r.lunge={t:0,hit:land}; };
-  const tick=dt=>{ if(!lvl||!(L||AR))return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL===lvOf();
-    const S=alive?strikes():[]; for(const s of S){ const m=strength(s); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,gnd(sl.x,sl.z),.2*T)){ hitSlime(sl,s.d*m,you,s); STRIKES.landed(s); }
-      for(const r of [...(RES||[]),...SPI])if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
-    if(slimeTick(dt,you,alive)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,you,alive); for(const r of SPI)if(r.on)resTick(r,dt,you,alive); boltTick(dt); };
+  // shared with the others in your room (owner, 7 Nov 2026): whoever of you is first by id runs the room's monsters and sends them out; the others draw them and send their blows back
+  let host=true, hostId=null, snapT=0, heard=-1e9;
+  const net=m=>ONLINE.send({t:'mob',r:D.room,...m});
+  const peers=()=>{ const out=[]; if(!ONLINE.on||!lvl||AR||!D.roomOf)return out; for(const [id,o] of ONLINE.others){ const p=o.p; if(p&&p.lv==='down'&&!o.dead&&!(o.x&&o.x.invis)&&D.roomOf(p.x,p.z)===D.room)out.push({id,x:p.x,z:p.z}); } return out; };
+  const pickT=(C,x,z)=>{ let b=null, bd=1e9; for(const c of C){ const d=Math.hypot(c.x-x,c.z-z); if(d<bd){ bd=d; b=c; } } return b; };
+  const hurtT=(you,d,from)=>you&&you.id?(net({k:'hurt',to:you.id,d:+d.toFixed(3),x:+(from.x/T).toFixed(2),z:+(from.z/T).toFixed(2)}),0):VIT.hurt(d,from);
+  const live=()=>[...(RES||[]),...SPI].filter(r=>r.on);
+  const snap=()=>net({k:'s',a:slimes.map(S=>[+(S.x/T).toFixed(2),+(S.z/T).toFixed(2),+S.h.toFixed(2),+S.hp.toFixed(2),S.dead?1:0,S.k,+(S.air>0?S.ph:0).toFixed(2)]),
+    b:live().map(r=>[r.spider?'spider':r.key,+(r.N.st.x/T).toFixed(2),+(r.N.st.z/T).toFixed(2),+(r.N.st.h||0).toFixed(2),+r.hp.toFixed(2),r.dead?1:0])});
+  const apply=m=>{ heard=performance.now(); hostId=m.id; const a=Array.isArray(m.a)?m.a:[];
+    if(a.length!==slimes.length||a.some((e,i)=>slimes[i].k!==e[5])){ slimes=a.map((e,i)=>({i,k:TIER[e[5]]?e[5]:Object.keys(TIER)[0],x:e[0]*T,z:e[1]*T,h:e[2],hp:e[3],dmg:.03,v:1,to:null,wait:1,air:0,ph:0,cool:1,flash:0,dead:!!e[4],pop:e[4]?.28:0,agg:false,kb:null})); IM.count=GL.count=slimes.length; }
+    a.forEach((e,i)=>{ const S=slimes[i]; S.x=e[0]*T; S.z=e[1]*T; S.h=e[2]; S.hp=e[3]; if(e[4]&&!S.dead){ S.dead=true; S.pop=0; } S.air=e[6]>0?1:0; S.ph=e[6]; });
+    const R=[...resolve(),...SPI], used=[];
+    for(const e of Array.isArray(m.b)?m.b:[]){ const r=R.find(q=>(q.spider?'spider':q.key)===e[0]&&!used.includes(q)); if(!r)continue; used.push(r); const st=r.N.st, x=e[1]*T, z=e[2]*T;
+      if(!r.on){ place(r,[]); st.x=x; st.z=z; r.N.g.position.set(x,D.ground(x,z),z); }
+      if(Math.hypot(st.x-x,st.z-z)>1.5*T){ st.x=x; st.z=z; st.to=null; } else st.to=Math.hypot(st.x-x,st.z-z)>.05*T?{x,z}:null; st.v=r.v0*1.6; st.hold=!st.to; r.hp=e[4];
+      if(e[5]&&!r.dead){ r.dead=true; r.t=0; r.N.alert=false; if(r.kk)r.N.an.play('Death_A',{hold:true}); } }
+    for(const r of R)if(r.on&&!used.includes(r))park(r); };
+  ONLINE.hear.mob=m=>{ if(!lvl||AR||m.r!==D.room)return;
+    if(m.k==='s'){ if(!host||String(m.id)<String(ONLINE.me))apply(m); }
+    else if(m.k==='hit'&&host){ const from={x:(+m.x||0)*T,z:(+m.z||0)*T}, s={kb:+m.kb||1,heavy:!!m.hv};
+      if(m.w==='s'){ const S=slimes[m.i|0]; if(S&&!S.dead)hitSlime(S,+m.d||0,from,s,m.id); } else { const r=live().find(q=>(q.spider?'spider':q.key)===m.key&&!q.dead); if(r)hitRes(r,+m.d||0,from,s,m.id); } }
+    else if(m.k==='hurt'&&!VIT.dead)VIT.hurt(+m.d||0,{x:(+m.x||0)*T,z:(+m.z||0)*T});
+    else if(m.k==='kill')prize(m.w==='s'?'s':'r',m.tk,(+m.x||0)*T,(+m.z||0)*T); };
+  const tick=dt=>{ if(!lvl||!(L||AR))return; const you={x:pos.x,z:pos.z}, alive=!VIT.dead&&SHARED.LVL===lvOf(), P=peers();
+    host=!P.length||P.every(q=>String(ONLINE.me)<String(q.id))||performance.now()-heard>3000;
+    const S=alive?strikes():[]; for(const s of S){ const m=strength(s); for(const sl of slimes)if(!sl.dead&&inCone(s,sl.x,sl.z,gnd(sl.x,sl.z),.2*T)){ if(host)hitSlime(sl,s.d*m,you,s); else{ sl.flash=.12; net({k:'hit',to:hostId,w:'s',i:slimes.indexOf(sl),d:+(s.d*m).toFixed(3),kb:s.kb||1,hv:s.heavy?1:0,x:+(pos.x/T).toFixed(2),z:+(pos.z/T).toFixed(2)}); } STRIKES.landed(s); }
+      for(const r of [...(RES||[]),...SPI])if(r.on&&!r.dead&&inCone(s,r.N.st.x,r.N.st.z,r.N.g.position.y,.25*T)){ if(!host){ net({k:'hit',to:hostId,w:'r',key:r.spider?'spider':r.key,d:+(s.d*m).toFixed(3),kb:s.kb||1,hv:s.heavy?1:0,x:+(pos.x/T).toFixed(2),z:+(pos.z/T).toFixed(2)}); STRIKES.landed(s); } else if(hitRes(r,s.d*m,you,s)!==false)STRIKES.landed(s); } }
+    if(!host){ for(const sl of slimes){ if(sl.flash>0)sl.flash-=dt; if(sl.dead&&sl.pop<.28)sl.pop+=dt; } draw(); for(const r of live())if(!r.kk)pawnTick(r,dt); return; }
+    const C=P.map(q=>({x:q.x,z:q.z,id:q.id})); if(alive&&!SHARED.unseen)C.push({x:pos.x,z:pos.z,id:null});
+    if(slimeTick(dt,C)||S.length)draw(); if(RES)for(const r of RES)if(r.on)resTick(r,dt,C); for(const r of SPI)if(r.on)resTick(r,dt,C); boltTick(dt);
+    if(P.length&&(snapT-=dt)<=0){ snapT=.2; snap(); } };
   window.DUNMOBS={T,get slimes(){ return slimes; },get res(){ return RES; },hit:(i,d=1)=>hitSlime(slimes[i],d,{x:pos.x,z:pos.z}),hitRes:(i,d=1)=>hitRes([...(RES||[]),...SPI].filter(r=>r.on)[i],d,{x:pos.x,z:pos.z}),things:()=>things};
   window.DUNSPI=()=>SPI;
   window.DUNMOBDBG=()=>({level:lvl,slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),

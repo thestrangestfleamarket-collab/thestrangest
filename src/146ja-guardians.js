@@ -6,12 +6,11 @@ import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {RIGNPC} from './083-npc-rig.js';
-import {SITES} from './089b-parksites.js';
 import {GEMS} from './101-gems.js';
 import {BODIES} from './111a-bodies.js';
 import {FOLK} from './146ha-folk.js';
 GUARD.list=[];
-{ const D=__DATA__("data/guardians.json"), T=TILE, say=(t,c)=>SAY(t,c||'#f2c14e');
+{ const D=__DATA__("data/guardians.json"), T=TILE, SITES={at:{},inside:{},homes:{}}, CREW=D.crew?D.list.filter(R=>D.crew.includes(R.k)):D.list, say=(t,c)=>SAY(t,c||'#f2c14e');
   // the bounty you hold: {id, n, got}, kept with your things; the dungeon's kills count toward it (SYS 'slain')
   let B=null; try{ B=JSON.parse(OWNED.get('bounty')||'null'); }catch(e){ B=null; }
   const keep=()=>{ try{ OWNED.set('bounty',JSON.stringify(B)); }catch(e){} }, def=id=>D.bounties.find(b=>b.id===id), done=()=>!!B&&B.got>=B.n;
@@ -134,7 +133,7 @@ GUARD.list=[];
           lo.shade(); N.geoHi=N.me.geometry; N.geoLo=lo.me.geometry; N.trisLo=lo.tris; const i=NPCS.indexOf(lo); if(i>=0)NPCS.splice(i,1); lo.g.removeFromParent(); lo.me.geometry=new THREE.BufferGeometry(); } finally{ FOLK.Q=q0; } }
       if(at[3]!=null)N.st.h=Math.atan2(X(1)*Math.sin(face)-X(0)*Math.sin(face),Z(1)*-Math.cos(face)-Z(0)*-Math.cos(face));
       return N; };
-    for(const R of D.list){ try{ GUARD.list.push(mk(R)); }catch(e){ console.warn('guardian '+R.k,e); } }
+    for(const R of CREW){ try{ GUARD.list.push(mk(R)); }catch(e){ console.warn('guardian '+R.k,e); } }
     // coming up the castle stair: the nearest guard on watch hails you
     let was=SHARED.LVL; const [sx0,sx1,sy0,sy1]=[CASTLE.stair.x0,CASTLE.stair.x1,CASTLE.stair.y0,CASTLE.stair.y1];
     SYS.add('life',()=>{ const lv=SHARED.LVL; if(lv===was)return; const up=was==='down'&&lv==='up'; was=lv; if(!up)return;

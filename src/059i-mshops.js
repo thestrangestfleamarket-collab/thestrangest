@@ -47,6 +47,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const w=D.win&&D.win((u-a0)/(a1-a0),(z-16)/76,night); if(w)return w; const gl=.6+.4*Math.max(0,1-Math.abs((u-a0)/(a1-a0)-.5)*2); return sh([24,26,30],f*gl); }
       if(z<16)return sh(D.trim,f*.85);
       return null; }; };
+  MSHOP.front=front;
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
     if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
     if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
@@ -94,7 +95,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
-  for(const id of ['theatre','play']){ const p=WP[id]; if(!p||!p.pf)continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
+  for(const id of ['theatre','play','bar']){ const p=WP[id]; if(!p||!p.pf)continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

@@ -21,6 +21,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const ad=await pg.evaluate(async()=>{ PETS.choose('dog'); PETS.set({n:'Biscuit',c:['#c08040','#f4f0e0','#e0b070','#c09060','#1a1410','#c7778e']}); INV.cash=500; const c0=INV.cash; PETS.adopt(); await new Promise(r=>setTimeout(r,300));
     return {my:PETS.my()&&PETS.my().k,paid:c0-INV.cash,saved:OWNED.get('pet')}; });
   rec('adopting takes the price and keeps the pet with your account',ad.my==='dog'&&ad.paid>0&&/^dog\|Biscuit/.test(ad.saved||''),JSON.stringify(ad));
+  rec('in a room off the map (the store) your pet is drawn, not hidden with the street',await U(()=>{ const N=PETS.mine(); if(!N)return false; let o=N.g; while(o){ if(!o.visible||VIS.hidden(o))return false; o=o.parent; } return true; },30000));
   await pg.evaluate(async()=>{ document.querySelector('#lclose').click(); ROOMS.goOut('pets'); }); await wait(3000);
   rec('it comes out with you',await U(()=>!!(PETS.mine()&&PETS.mine().pet.k==='dog'&&PETS.mine().g.visible),60000));
   await pg.mouse.click(480,320); const x0=await pg.evaluate(()=>[pos.x,pos.z]); await pg.keyboard.down('w'); await wait(3500); await pg.keyboard.up('w'); await wait(3000);

@@ -9,10 +9,10 @@ import {AVATAR} from './111c-avatar.js';
     ['LISTEN','listen'],['DIZZY','dizzy'],['SHAKE OFF','shakeOff'],['HURT','hurt'],['TIRED','tired'],
     ['STROLL','stroll'],['STRUT','strut'],['SNEAK','sneak'],['TIPTOE','tiptoe'],['STAGGER','stagger'],['LIMP','limp'],['SPRINT','sprint'],['BACK UP','backUp'],['CROUCH WALK','crouchWalk'],['CRAWL','crawl'],['FORMAL WALK','formalWalk'],
     ['BACKFLIP','backflip'],['ROLL','rollGo'],['STUMBLE BACK','knockback'],['GROUND POUND','pound'],['FRONT KICK','kickFront'],['ROUNDHOUSE','kickRound'],['GUARD','guard'],['SWORD COMBO','swordCombo'],['SLASH','slash'],
-    ['THROW','throw'],['LOB','toss'],['DIG','dig'],['CHOP TREE','chopTree'],['PICK UP','pickUp']];
+    ['THROW','throw'],['LOB','toss'],['PICK UP','pickUp']];
   // Polyfork's clips with no move of his (AVATAR.PF, owner 7 Nov 2026: "yes lets use mixamo"): on the rig they stand still for the clip's length; the avatar plays the clip
   const PFE=[['AGREE','Agree'],['SHAKE HEAD','Shake'],['LAUGH','Laugh'],['CHAT','Chat'],['PHONE CALL','Phone'],['CROSS ARMS','Cross'],['BOP','Bop'],['HIP HOP','HipHop'],['TWIST','Twist'],['SWING','Swing'],['THRILLER','Thriller'],
-    ['TIPSY','Drunk'],['LEAN ON RAIL','Lean'],['CALL OUT','Call'],['CHOP WOOD','Chop'],['FIX','Fix'],['PUSH','Push'],['HOLD TORCH','Torch'],['HOLD LANTERN','Lantern']];
+    ['TIPSY','Drunk']];
   const TRAV=__LAZY__("data/pfanim-travel.json");   // (Polyfork's emotes that go somewhere: the hips' way forward, metres; 16 rig units a metre, as Mesh2Motion's recordings fit the rig)
   // a recording's angles made continuous from key to key (161 then -151 is 209: a turn of 48 the short way, not 312 back through upright)
   const POSN=new Set(['root','ik','kp']), unwrap=(a,b)=>{ for(const k in a){ if(POSN.has(k)||!(k in b))continue; const v=a[k], u=b[k];
@@ -45,13 +45,13 @@ import {AVATAR} from './111c-avatar.js';
   sp.style.cssText='position:fixed;right:16px;top:56px;width:min(880px,96vw);max-height:calc(100vh - 72px);overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
   document.body.appendChild(sp); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')MOTION.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation());
   const ALLE=[...EMOTES,...PFE.map(([t,n])=>[t,'pf_'+n])], LABEL=Object.fromEntries(ALLE.map(([t,n])=>[n,t]));
-  const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Call','pf_Laugh','listen','clap','cheer','fistPump','dab','flex','knock','powerUp']],
-    ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','pf_Lean','dizzy','shakeOff','hurt','tired']],
+  const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Laugh','listen','clap','cheer','fistPump','dab','flex','knock','powerUp']],
+    ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','dizzy','shakeOff','hurt','tired']],
     ['DANCE',['dance','pf_Bop','pf_HipHop','pf_Twist','pf_Swing','pf_Thriller','armPump','bodyRoll','charleston','hipReach','moonwalk']],
     ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],
     ['WALKS',['stroll','strut','sneak','tiptoe','stagger','limp','sprint','backUp','crouchWalk','crawl','formalWalk']],
     ['TRICKS AND FIGHTING',['backflip','rollGo','knockback','pound','kickFront','kickRound','guard','swordCombo','slash','throw','toss']],
-    ['WORK',['pf_Chop','pf_Fix','pf_Push','pf_Torch','pf_Lantern','dig','chopTree','pickUp']]];
+    ['WORK',['pickUp']]];
   const B=(t,n)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; b.draggable=true; b.title='drag onto the quick bar to keep it there';
     b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
   { const c=document.createElement('style'); c.textContent='#emotes .emk{color:#3aa866;margin:4px 0 2px;font-size:12px!important;line-height:1.2!important} #emotes h3{margin:0 0 4px} #emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:3px} #emotes .emg button{height:21px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)

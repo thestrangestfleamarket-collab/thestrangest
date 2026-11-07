@@ -40,7 +40,7 @@ K.rec('bar','THE BAR',BL,D,true); STORE.barFrame={B:BL,at:(x,y)=>({x:X(x),z:Z(y)
       LAMPS.push({own:1,room:1,day:true,x:stools[1].x,y:stools[1].y,z:38,r:1.4,c:[.9,.36,.1]});
       STORE.turnIn(TB,n0,l0); STORE.bar={B,at:(x,y)=>{ const q=TB.pt(x,y); return {x:X(q[0]),z:Z(q[1])}; },hd:TB.hd(0),stage:{x:SX,y:SY,z:14+LAY.h('bar')*TILE/ZU/BLDK},piano:{x:PX,y:PY,keys:PY-1.736},drums:{x:SX+.35,y:Kb+1.25},gtr:{x:SX-.35,y:Kb+2.35},singer:{x:SX+.8,y:Kb+2.4},stools}; if(STORE.furnish&&STORE.furnish.bar)STORE.furnish.bar(STORE.bar); },{noOut:1,noWins:1});
     const fr=MSHOP.front(FRONT,L.x1-L.x0);
-    BLOCKS.make({...LW,z0:0,z1:H,kind:'Rbar',turn:TP,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),73)),
+    if(!WP.bar.pf)BLOCKS.make({...LW,z0:0,z1:H,kind:'Rbar',turn:TP,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),73)),
       paint:(sd,u,z,f)=>{ if(sd==='f'){ const q=fr(u-L.x0,z,f,0); if(q)return q; } if(z>H-14)return sh(FRONT.trim,f*(z>H-4?1.1:.85)); return FRONT.wall(u,z,f); }});
     sol(LW.x0,LW.y0,LW.x1,LW.y1,H); STORE.streetDoor.bar={door:TP.pt(cxL,L.y1+.35),out:[...TP.pt(cxL,L.y1+1.4),TP.hd(0)]};
     STORE.bound.x1=Math.max(STORE.bound.x1,X(BL.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(BL.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(BL.y1+6)); });

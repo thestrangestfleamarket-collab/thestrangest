@@ -143,7 +143,7 @@ import {WORTH} from './140c-worth.js';
       for(const arr of CH.values())for(const m of arr){ if(m.cr&&m.cr<=now){ m.cr=0; ch=true; } if(S.picked[m.id])continue; const v0=m.pk||m.rv>now;
         if(up&&pressed(m.x,m.z,now)>.3)m.rv=now+20; if(v0!==(m.pk||m.rv>now))ch=true; const d=Math.hypot(pos.x-m.x,pos.z-m.z); if(d<8*T)near=true;
         if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&!(window.EQUIP&&EQUIP.float)&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
-      if(near&&shod&&up&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
+      if(near&&shod&&up&&!UI.fly&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); },'141-forage');
     window.MUSHDBG=()=>{ '@later'; const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),lawn:{}}; for(const arr of CH.values())for(const m of arr){ o.lawn[m.k]=(o.lawn[m.k]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
   FORAGE.pick=m=>{ '@later'; const [nm,d]=MU[m.k], kb=FORAGE.keen(); SFX.play('step',{vol:.5});

@@ -317,8 +317,8 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/avatar.cjs
-      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 71 moves in software rendering, so past the usual 15 minutes)
-        timeout-minutes: 25
+      - name: The avatar's moves (every rig and recorded move keeps it on what the rig stands on; 125 moves in software rendering, so well past the usual 15 minutes)
+        timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/avatarmoves.cjs
       - name: The avatar's Mixamo clips (every clip loads, each state names its clip, every Polyfork move plays)

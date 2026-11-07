@@ -7,8 +7,8 @@ import {KIT} from './068-kit.js';
 { const DATA=__LAZY__("data/fishboat.json"), K=2;
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const build=()=>{ const P=window.PIER, T=TILE, WU=T/.84, RB=RIVER.box; if(!P||!P.G||!RB||!KIT.data.fishboat)return;
-    const M=KIT.data.fishboat, LEN=M.size[2]*K*WU, BEAM=M.size[0]*K*WU, x=P.x-P.hw-BEAM/2-.35*T, z=P.z0-LEN/2-1.6*T, sink=.28*M.size[1]*K*WU*ZU*24/T;
-    const g=KIT.put('fishboat',x,z,{m:M.size[1]*K,rot:Math.PI,group:P.G,ground:()=>RB.lv-sink}); if(!g)return; const me=g.children[0].children[0];
+    const M=KIT.data.fishboat, LEN=M.size[2]*K*WU, BEAM=M.size[0]*K*WU, x=P.x-P.hw-LEN/2-3*T, z=P.z0-BEAM/2-.4*T, sink=.28*M.size[1]*K*WU*ZU*24/T;
+    const g=KIT.put('fishboat',x,z,{m:M.size[1]*K,rot:-Math.PI/2,group:P.G,ground:()=>RB.lv-sink}); if(!g)return; const me=g.children[0].children[0];
     // solid white, worn: grime and rust low, scuffs and peeling everywhere, the dark parts (glass, tyres, the engine) kept
     const geo=me.geometry.clone(), C=geo.attributes.color.array, Pp=geo.attributes.position.array, bb=geo.boundingBox, H=bb.max.y-bb.min.y, col=new THREE.Color();
     for(let i=0;i<C.length;i+=9){ const l=(C[i]+C[i+1]+C[i+2])/3, y=(Pp[i+1]+Pp[i+4]+Pp[i+7])/3, t=(y-bb.min.y)/H, n=hs(Math.round(Pp[i]*9),Math.round(Pp[i+2]*9)+Math.round(Pp[i+1]*7));

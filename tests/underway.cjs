@@ -26,9 +26,13 @@ const SHOTS = process.argv[3];
     for (let t = 0; t < 80; t++) { const g = await pg.evaluate(() => { const W = __dbg.ST.water, gap = RIVER.bot - RIVER.dep - 1; if (W && SWIM.d != null && gap > 0) { const k = Math.min(60, gap * 6); W.y -= k; SWIM.d += k; } return gap; }); if (g < .5) break; await pg.waitForTimeout(400); }
     const near = await pg.evaluate(() => { const t = __dbg.UI.nearThing(); return { name: t && t.name, dep: +RIVER.dep.toFixed(1), bot: +RIVER.bot.toFixed(1) }; });
     ok(near.name && /SUNKEN CHEST/.test(near.name), 'dived down beside a sunken chest, it is the thing to double-click: ' + JSON.stringify(near));
+    const hull = await pg.evaluate(() => ({ solid: WRECK.solid, walls: WRECK.walls.length, inSol: WRECK.walls.filter(r => SHARED.solids.includes(r)).length, you: !!(__dbg.UI.nearThing() && __dbg.UI.nearThing().name === 'YOU') }));
+    ok(hull.solid && hull.inSol === hull.walls && hull.walls > 50, 'down among the wreck its planks, cabin and cargo are solid to swim against: ' + JSON.stringify(hull));
+    ok(!hull.you, 'through your own eyes you are not the thing in front of you (no DOUBLE-CLICK YOU under water)');
     await pg.keyboard.down('Shift'); for (let t = 0; t < 80; t++) { const d = await pg.evaluate(() => { const W = __dbg.ST.water; if (W && RIVER.dep > 3) { const k = Math.min(60, (RIVER.dep - 2) * 6); W.y += k; if (SWIM.d != null) SWIM.d = Math.max(30, SWIM.d - k); } return RIVER.dep; }); if (d <= 3) break; await pg.waitForTimeout(400); }   // (this machine's frame rate swims slowly: up near the top, then swim the rest)
     await wait(() => SWIM.d == null, 120000); await pg.keyboard.up('Shift');
     ok(await wait(() => __dbg.UI.view === 'iso', 20000), 'back at the surface, the overhead view again');
+    ok(await pg.evaluate(() => !WRECK.solid && !WRECK.walls.some(r => SHARED.solids.includes(r))), 'above the wreck again, its planks no longer stand in the way');
     // the river mouth asks for air, then lets a diver in
     await wait(() => window.UNDERWAYAT && UNDERWAYAT.river, 60000);
     const gate = await pg.evaluate(() => { const t = __dbg.UI.things.find(t => /DROWNED GATE/.test(t.name)), t2 = __dbg.UI.things.find(t => /LAKE RISE/.test(t.name)); return { river: !!t, lake: !!t2 }; });

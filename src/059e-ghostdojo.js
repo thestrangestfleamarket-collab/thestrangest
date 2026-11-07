@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, SEEN, SOL, STORE, TILE} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, SEEN, SOL, STORE, TILE, WP} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 
@@ -244,6 +244,9 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'&&window.__started){ busy=true; Promise.all([LOAD('later'),LOAD(build.chunk)]).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
       else if(built&&d>NEARB+12*TILE){ ROOMS.unpart(P); P=null; if(BG)BG.removeFromParent(); BG=null; built=false; LT.length=0; SHARED.steam=null; if(scene.fog===STEAM.fog)scene.fog=null; STEAM.was=null; } }
     window.GSDBG=()=>({X0,X1,Y0,Y1,door:SHARED.BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
+    if(WP.bath&&WP.bath.row===2){ const P=WP.bath, hx=LOTX((P.x0+P.x1)/2), hy=LOTY(P.y0), dX=X(X0+W/2);   // on the Hudson row (owner, 7 Nov 2026) the whole bath house stands off the map; its door is on its Hudson lot (a Polyfork building, 059i)
+      ROOMS.off.bath={name:'THE BATH HOUSE',box:{x0:Math.min(ix0,ix1)-.3,z0:Math.min(iz0,iz1)-.3,x1:Math.max(ix0,ix1)+.3,z1:Math.max(iz0,iz1)+.3,y0:-1,y1:Y(H+4)},need:()=>Promise.resolve(),build:()=>{},unbuild:()=>{},
+        spawn:[dX,Z(Y1-1.6),0,Math.PI],out:[X(hx),Z(hy-.7),0,Math.PI],door:[X(hx),Y(0),Z(hy-.25)],exit:[dX,0,Z(Y1-.4)],exitName:'OUT TO THE PROMENADE'}; }
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
     window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };

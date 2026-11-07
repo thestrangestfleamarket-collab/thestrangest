@@ -1608,6 +1608,6 @@
   "sellable": true,
   "icon": "mush",
   "boost": "fly",
-  "boostS": 30
+  "boostS": 300
  }
 }

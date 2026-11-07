@@ -1,6 +1,6 @@
 // THE LOOKS: LOOKS keeps the player's name and shoes, and YOU, the window you change your look in (the avatar's lines join it: 111c).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
+import {CLOCK, FIRSTDAY, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -77,7 +77,9 @@ LOOKS.over={};
   LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{order:7});
   const draw=()=>{ $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
-  $('#lname').oninput=e=>{ L.name=e.target.value; save(); };
+  $('#lname').oninput=e=>{ if(!FIRSTDAY.claim){ L.name=e.target.value; save(); } };
+  $('#lname').onchange=e=>{ if(!FIRSTDAY.claim)return; const was=L.name; FIRSTDAY.claim(e.target.value).then(r=>{ if(r.ok){ L.name=r.name; save(); } else { e.target.value=was; SAY(r.why==='taken'?'THAT NAME IS TAKEN.':'A NAME IS 3 TO 16 LETTERS OR DIGITS.','#c8a090'); } }); };   // (a unique name: the server says if it is free)
+  LOOKS.setName=n=>{ L.name=n; save(); try{ $('#lname').value=n; }catch(e){} };
   $('#lname').addEventListener('keydown',e=>e.stopPropagation());
   $('#lclose').onclick=()=>{ P.hidden=true; };
   // worn clothes dye your shirt or trousers (EQUIP sets LOOKS.over from the item's colour)

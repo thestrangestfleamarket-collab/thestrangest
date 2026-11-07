@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
+import {BATCH, PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
@@ -75,6 +75,7 @@ import {BLOCKS} from './038zb-blocks.js';
     const pl=STORE.places.find(q=>q[0]===F.name); if(pl){ pl[1]=X(DX); pl[2]=Z(V(.9)); pl[3]=Y(HZ); }
     // seen from your rooms in the isometric view: the house up to your ceiling (its real outside round your walls), the fire escapes up to your landing's rails (cut down with your front wall), nothing above
     G.traverse(o=>{ if(o.material&&!o.userData.sky)for(const m of [].concat(o.material)){ m.clippingPlanes=house.has(o)?[BOT]:[TOP,APTS.WPL.Wf]; m.needsUpdate=true; } });
+    G.updateMatrixWorld(true); for(const me of house)PEEK.whole(me);   // the see-through circle shows you behind the house's brick from your rooms, as in every inside (owner, 28 Oct 2026: "only circle transparency")
     F.built=true; };
   const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&APTS.inReal&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;

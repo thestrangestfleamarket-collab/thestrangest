@@ -84,6 +84,7 @@ jobs:
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
+          k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
@@ -319,6 +320,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
         run: node tests/pfclips.cjs
+      - name: The first day (a new player's name, look and stats before the world; the starter money and things)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' firstday')
+        run: node tests/firstday.cjs
       - name: The skateboard's tricks (ollie, flips, grabs, spins, grinds, manuals, quarter pipes, reverts, bails)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')

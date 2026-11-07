@@ -1,11 +1,12 @@
-// THE FISH TANK: a huge tank in every apartment (owner, 5 Nov 2026): still, clear water you see through, sand, rocks and plants, and tiny tropical fish swimming slow.
+// THE FISH TANK: a huge tank in every apartment (owner, 5 Nov 2026): still, clear water you see through, sand, rocks and plants, and koi swimming slow.
 import {THREE} from './003-shx.js';
 import {SYS} from './006-map-pre.js';
 import {FISHES} from './141f-fishes.js';
 import {ROOMK} from './150a-bedroom.js';
 const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.visible,pos:[+T.g.position.x.toFixed(2),+T.g.position.z.toFixed(2)]}));
-{ const TW=2.4, TD=.7, TH=1.0, SH=.78, GL=.012, KINDS=['clownfish','bluetang','wrasse','goatfish'], N=16;
+{ const TW=2.4, TD=.7, TH=1.0, SH=.78, GL=.012, KINDS=['koi','koi_gold','koi_showa','koi_sanke','koi_platinum','koi_asagi','koi_orange','koi_black'], N=8;
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
+  for(const k of ['FISH TANK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {R,part,mat,rbox,cap,Lx,Ly}=c;
     cap('FISH TANK',g=>{ const u0=Lx/2, v0=Ly*.55;
       // the stand: a dark walnut cabinet
@@ -27,7 +28,7 @@ const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.vis
       const hood=new THREE.MeshBasicMaterial({color:new THREE.Color(.85,.95,1)}); part(new THREE.BoxGeometry(TW-.2,.006,.05),hood,u0,SH+TH-.004,v0,0,undefined,false);
       // the fish: tiny ones, a few of each kind, each on its own slow loop
       const T={g,plants,fish:[],u0,v0,y0:SH+.16,y1:SH+TH*.86,t:Math.random()*100}; TANKS.push(T);
-      FISHES.load().then(()=>{ for(let i=0;i<N;i++){ const o=FISHES.model(KINDS[i%KINDS.length]); if(!o)continue; o.scale.setScalar(.035+hs(i,11)*.025); g.add(o);
+      FISHES.load().then(()=>{ for(let i=0;i<N;i++){ const o=FISHES.model(KINDS[i%KINDS.length]); if(!o)continue; o.scale.setScalar(.022+hs(i,11)*.014); g.add(o);
         T.fish.push({o,a:hs(i,12)*6.28,s:.12+hs(i,13)*.12,rx:.25+hs(i,14)*(TW/2-.45),rz:.06+hs(i,15)*(TD/2-.16),cy:T.y0+hs(i,16)*(T.y1-T.y0),bob:hs(i,17)*6,dir:hs(i,18)<.5?1:-1}); } }).catch(()=>{});
     },{id:'fishtank'}); });
   SYS.add('life',dt=>{ for(let k=TANKS.length-1;k>=0;k--){ const T=TANKS[k]; if(!T.g.parent){ TANKS.splice(k,1); continue; } if(!T.g.visible)continue; T.t+=dt;

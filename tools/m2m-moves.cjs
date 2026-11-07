@@ -42,7 +42,7 @@ const fit=(M,o)=>{ const F=M.frames, fps=M.fps, i0=Math.round((o.from||0)*fps), 
   const keys=[], dur=(i1-i0)/fps, step=Math.max(1,Math.round(fps/KF));
   for(let i=i0;i<=i1;i+=step) keys.push([+((i-i0)/fps).toFixed(3),keyOf(F[i]),'lin']);
   if((i1-i0)%step) keys.push([+dur.toFixed(3),keyOf(F[i1]),'lin']);
-  console.log('  fit: bones off by',(ER.s/ER.n).toFixed(0),'deg on average, worst',ER.w.toFixed(0)); return {src:M.src,dur:+dur.toFixed(3),loop:!!o.loop,keys}; };
+  console.log('  fit: bones off by',(ER.s/ER.n).toFixed(0),'deg on average, worst',ER.w.toFixed(0)); return {src:M.src,dur:+dur.toFixed(3),loop:!!o.loop,keys,...(o.drift?{opts:{...(o.opts||{}),drift:+(o.drift*K).toFixed(2)}}:{})}; };   // drift: an in-place recording's glide (m/s along the facing, e.g. the moonwalk's sliding foot), as rig units a second
 const OUT=path.join(__dirname,'../data/moves2.json'), all={};   // (the spec is the whole list)
-for(const [name,o] of Object.entries(SPECS)){ const M=JSON.parse(fs.readFileSync(path.join(DIR,o.clip+'.json'))); all[name]={...fit(M,o),...(o.opts?{opts:o.opts}:{})}; console.log(name,'<-',o.clip,all[name].dur+'s',all[name].keys.length,'keys',JSON.stringify(all[name]).length,'bytes'); }
+for(const [name,o] of Object.entries(SPECS)){ const M=JSON.parse(fs.readFileSync(path.join(DIR,o.clip+'.json'))); all[name]={...(o.opts?{opts:o.opts}:{}),...fit(M,o)}; console.log(name,'<-',o.clip,all[name].dur+'s',all[name].keys.length,'keys',JSON.stringify(all[name]).length,'bytes'); }
 fs.writeFileSync(OUT,JSON.stringify(all)); console.log(OUT,fs.statSync(OUT).size,'bytes,',Object.keys(all).length,'moves');

@@ -57,10 +57,16 @@ def one(b):
         print('fail', b['id'], e, flush=True); return b['id'], None
 L = json.load(open('data/library.json')); SRC = json.load(open('data/full/books-sources.json'))
 todo = [b for c in L['cases'] for b in c['books'] if (b['id'] in sys.argv[1:]) if sys.argv[1:]] or [b for c in L['cases'] for b in c['books'] if not b.get('cover')]
-got = {}
-with ThreadPoolExecutor(4) as ex:
+PROG = 'data/full/covers-progress.jsonl'   # (each book's answer as it comes, so a stopped run picks up where it was)
+got, seen = {}, set()
+try:
+    for l in open(PROG): i, r = json.loads(l); seen.add(i); got.update({i: r} if r else {})
+except FileNotFoundError: pass
+todo = [b for b in todo if b['id'] not in seen]
+with ThreadPoolExecutor(8) as ex:
     for n, (i, r) in enumerate(ex.map(one, todo)):
         if r: got[i] = r
+        open(PROG, 'a').write(json.dumps([i, r]) + '\n')
         if n % 50 == 0: print(n, len(todo), len(got), flush=True)
 for c in L['cases']:
     for b in c['books']:
@@ -69,4 +75,5 @@ SRC['files'] = [x for x in SRC['files'] if x['file'] not in {g['file'] for g in 
 with open('data/library.json', 'w') as f:
     f.write('{"note":' + json.dumps(L['note']) + ',"cases":[\n' + ',\n'.join('{"id":' + json.dumps(c['id']) + ',"name":' + json.dumps(c['name']) + ',"books":[\n' + ',\n'.join(json.dumps(b, ensure_ascii=False) for b in c['books']) + ']}' for c in L['cases']) + '\n]}\n')
 json.dump(SRC, open('data/full/books-sources.json', 'w'), indent=1, ensure_ascii=False)
+import os; os.remove(PROG) if os.path.exists(PROG) else None
 print('covers', len(got), 'of', len(todo), '; still without:', [b['id'] for b in todo if b['id'] not in got])

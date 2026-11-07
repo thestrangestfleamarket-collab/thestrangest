@@ -4039,7 +4039,8 @@
     "cooler_m",
     "cooler_l",
     "scuba",
-    "goggles"
+    "goggles",
+    "headlight"
    ],
    "buys": [
     "fish"
@@ -4047,7 +4048,7 @@
    "teaches": [
     "fish"
    ],
-   "line": "Rods, reels, bait, and the tanks and goggles for under the water. I buy what you land."
+   "line": "Rods, reels, bait; a tank, goggles and a headlight for down below. I buy what you land."
   }
  },
  "armoured_knight_hero": {

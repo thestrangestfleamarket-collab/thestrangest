@@ -496,21 +496,30 @@ body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0}
   const zoomOf=el=>{ let z=1; for(let q=el;q;q=q.parentElement){ const v=parseFloat(getComputedStyle(q).zoom); if(v>0)z*=v; } return z; };
   // where you put each window and each piece of the HUD, kept with your account (owner, 4 Nov 2026: "allow players to move around the gui items where they want")
   let POS={}; try{ POS=JSON.parse(OWNED.get('uipos')||'{}')||{}; }catch(e){}
-  const keep=(box,key)=>{ if(!key)return; const r=box.getBoundingClientRect(); POS[key]=[Math.round(r.left),Math.round(r.top)]; OWNED.set('uipos',JSON.stringify(POS)); };
+  const keep=(box,key)=>{ if(!key)return; const r=box.getBoundingClientRect(), w=parseFloat(box.style.width), h=parseFloat(box.style.height); POS[key]=[Math.round(r.left),Math.round(r.top),...(box.dataset.sized&&w&&h?[Math.round(w),Math.round(h)]:[])]; OWNED.set('uipos',JSON.stringify(POS)); };   // (and its size, once you have resized it)
   const pin=(box,x,y)=>{ '@later'; const z=zoomOf(box), r=box.getBoundingClientRect(), w=Math.max(r.width,60), h=Math.max(r.height,30); x=Math.max(-w+60,Math.min(innerWidth-60,x)); y=Math.max(0,Math.min(innerHeight-Math.min(h,30),y));
     Object.assign(box.style,{position:'fixed',inset:'auto',right:'auto',bottom:'auto',transform:'none',margin:'0',left:(x/z)+'px',top:(y/z)+'px'}); };
-  const put=(box,key)=>{ const p=key&&POS[key]; if(p)pin(box,p[0],p[1]); };
+  const put=(box,key)=>{ const p=key&&POS[key]; if(!p)return; if(p[2]&&p[3]){ box.dataset.sized=1; box.style.width=p[2]+'px'; box.style.height=p[3]+'px'; box.style.maxHeight='none'; } pin(box,p[0],p[1]); };
   const HUDP=['vit','hmap','hlog','hqb','mode'], MOVED=new Set();
   const hudMove=el=>{ el.dataset.mv=1; el.style.pointerEvents='auto'; let s=null;   // a press that moves more than a few pixels drags it; a plain click still does what it did
     el.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest('button,input,select,textarea,a,[draggable="true"]'))return; const r=el.getBoundingClientRect(); s={x:e.clientX,y:e.clientY,dx:e.clientX-r.left,dy:e.clientY-r.top,on:false};
       const mv=e=>{ if(!s.on){ if(Math.hypot(e.clientX-s.x,e.clientY-s.y)<6)return; s.on=true; } e.preventDefault(); pin(el,e.clientX-s.dx,e.clientY-s.dy); },
         up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); if(s.on){ MOVED.add(el); keep(el,el.id); const eat=ev=>{ ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click',eat,{capture:true,once:true}); setTimeout(()=>removeEventListener('click',eat,true),0); } s=null; };
       addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
-  UI.resetLayout=()=>{ POS={}; OWNED.del('uipos'); for(const id of HUDP){ const el=document.getElementById(id); if(el)for(const k of ['position','inset','right','bottom','transform','margin','left','top'])el.style[k]=''; } };   // the HUD back where it was; windows open where they always did
+  UI.resetLayout=()=>{ POS={}; OWNED.del('uipos'); for(const id of HUDP){ const el=document.getElementById(id); if(el)for(const k of ['position','inset','right','bottom','transform','margin','left','top'])el.style[k]=''; }
+    for(const b of document.querySelectorAll('.pDrag[data-sized]')){ delete b.dataset.sized; b.style.width=b.style.height=b.style.maxHeight=''; } };   // (and every window you resized, its own size again)   // the HUD back where it was; windows open where they always did
   addEventListener('resize',()=>{ for(const id in POS){ const el=document.getElementById(id); if(el&&!el.hidden)put(el,id); } });
-  const drag=(box,key)=>{ box.classList.add('pDrag'); put(box,key); box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; e.stopPropagation(); e.preventDefault();
-      const r=box.getBoundingClientRect(), z=zoomOf(box), dx=e.clientX-r.left, dy=e.clientY-r.top, px=v=>(v/z)+'px'; Object.assign(box.style,{position:'fixed',left:px(r.left),top:px(r.top),right:'auto',bottom:'auto',transform:'none',margin:'0',width:px(r.width),height:box.id==='ed'?px(r.height):box.style.height}); const fit=t=>{ box.style.maxHeight=px(Math.max(120,innerHeight-t-8)); if(getComputedStyle(box).overflowY==='visible')box.style.overflowY='auto'; }; fit(r.top); box.style.inset='auto'; box.style.left=px(r.left); box.style.top=px(r.top);
-      const mv=e=>{ const t=Math.max(0,Math.min(innerHeight-30,e.clientY-dy)); box.style.left=px(Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))); box.style.top=px(t); fit(t); }, up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); keep(box,key); };
+  // a window: pressed and moved, it follows the mouse (a plain click leaves it as it is: owner, 7 Nov 2026, "dont change size of menu when clicking on it"); its bottom right corner resizes it ("allow menus to be resized though (drag to resize)")
+  const drag=(box,key)=>{ box.classList.add('pDrag'); { const cs=getComputedStyle(box); if(cs.resize==='none')box.style.resize='both'; if(cs.overflow==='visible')box.style.overflow='auto'; } put(box,key);
+    box.addEventListener('mousedown',e=>{ '@later'; if(e.button!==0||e.target.closest(NOPE))return; const r=box.getBoundingClientRect();
+      if(e.clientX>r.right-20&&e.clientY>r.bottom-20){ e.stopPropagation(); addEventListener('mouseup',()=>{ box.dataset.sized=1; box.style.maxHeight='none'; keep(box,key); },{once:true,capture:true}); return; }   // the corner: the browser's own resize
+      e.stopPropagation(); e.preventDefault();
+      const z=zoomOf(box), x0=e.clientX, y0=e.clientY, dx=x0-r.left, dy=y0-r.top, px=v=>(v/z)+'px'; let on=false, mh=Infinity;
+      const mv=e=>{ if(!on){ if(Math.hypot(e.clientX-x0,e.clientY-y0)<5)return; on=true; const cs=getComputedStyle(box); if(box.dataset.mh0==null)box.dataset.mh0=cs.maxHeight; mh=parseFloat(box.dataset.mh0)||Infinity;
+          Object.assign(box.style,{position:'fixed',inset:'auto',right:'auto',bottom:'auto',transform:'none',margin:'0',width:cs.width,height:box.id==='ed'||box.dataset.sized?cs.height:box.style.height}); }   // (its own size, exactly: the computed one, never the outer box)
+        const t=Math.max(0,Math.min(innerHeight-30,e.clientY-dy)); box.style.left=px(Math.max(-r.width+60,Math.min(innerWidth-60,e.clientX-dx))); box.style.top=px(t);
+        if(!box.dataset.sized)box.style.maxHeight=Math.min(mh,(innerHeight-t-8)/z)+'px'; },
+        up=()=>{ removeEventListener('mousemove',mv,true); removeEventListener('mouseup',up,true); if(on)keep(box,key); };
       addEventListener('mousemove',mv,true); addEventListener('mouseup',up,true); }); };
   const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
       if(!box.dataset.pan){ box.dataset.pan=1; drag(box,id); if(getComputedStyle(box).position==='static')box.style.position='relative'; }

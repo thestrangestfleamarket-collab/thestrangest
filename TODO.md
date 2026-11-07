@@ -348,6 +348,7 @@ One pass, one pull request.
   cars get shoved onto the pavement.
 
 ## Trees, grass and the park
+- [ ] **The park's benches can't be sat on** · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
 
 One tree pass after the tree-shadow pick (more leaves mean more shadow triangles).
 - [ ] **Fluffy crown + real leaves** · P3 · L · pick + code · risk med. Options at https://claude.ai/artifact/D7mg8a17ZmWbz5Q88GJrov:

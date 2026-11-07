@@ -39,5 +39,5 @@ const OWNED=await (async()=>{ const L={ get:k=>SAVE.get(k), set:(k,v)=>SAVE.set(
   // first time on the server: once the game has read everything it owns, send up what this browser had
   if(first){ const up=()=>{ if(!window.__started)return setTimeout(up,1000); for(const k of KEYS){ const v=SAVE.get(k); if(v!=null)dirty[k]=v; } flush(); }; setTimeout(up,1000); }
   return { get:k=>{ note(k); return SAVE.get(k); }, set:(k,v)=>{ note(k); dirty[k]=v==null?null:String(v); clearTimeout(t); t=setTimeout(flush,2000); return SAVE.set(k,v); },
-    del:k=>{ dirty[k]=null; clearTimeout(t); t=setTimeout(flush,2000); return SAVE.del(k); }, flush:()=>flush(true), server:true, isFull:()=>full, me }; })();
+    del:k=>{ dirty[k]=null; clearTimeout(t); t=setTimeout(flush,2000); return SAVE.del(k); }, flush:()=>flush(true), server:true, isFull:()=>full, me, had:!first }; })();
 export {OWNED, SAVE};

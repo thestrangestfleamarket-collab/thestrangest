@@ -8,9 +8,9 @@ const run=(L,a,b,gap)=>{ const n=L.length, tot=L.reduce((t,r)=>t+r[1],0), k=(b-a
 const out=[], set=(id,o)=>{ const p={...(P[id]||{id,kind:'front'}),...o}; for(const k of ['y0','y1','face','lot','pf','row','fence'])if(!(k in o))delete p[k]; out.push(p); return p; };
 set('hudson',{x0:PX0,x1:PX1});
 if(P.subway)set('subway',{x0:r2(SUB[0]),x1:r2(SUB[1])});   // the subway stairs at Market St's west end, by the bodega
-// the apartment houses up West St, facing the park (as on 6 Nov 2026)
+// the apartment house up West St, facing the park (one since 7 Nov 2026)
 { const O=JSON.parse(process.env.APTS_FROM?fs.readFileSync(process.env.APTS_FROM,'utf8'):'null'), OP=O?Object.fromEntries(O.places.map(p=>[p.id,p])):null;
-  for(const id of ['apts','house1','house2','house3','house4','house5','house6']){ const q=OP&&OP[id]||P[id]; if(q)set(id,{name:q.name,x0:q.x0,x1:q.x1,y0:q.y0,y1:q.y1,face:q.face||'e'}); } }
+  for(const id of ['apts']){ const q=OP&&OP[id]||P[id]; if(q)set(id,{name:q.name,x0:q.x0,x1:q.x1,y0:q.y0,y1:q.y1,face:q.face||'e'}); } }
 // Market St's row: brick fronts (the merchants' shops are lots of their own), the bodega and the bath house their own builders
 const MW=[['bank',1.3],['art',1.4],['florist',1],['bees',1],['bfly',1],['birds',1],['pets',1],['mush',1]], ME=[['gems',1],['armor',1],['clothes',1],['skate',1],['diner',1.8]];
 const NM={florist:['THE FLORIST','tomato'],bees:['THE BEEKEEPER','village_gardener'],bfly:['THE BUTTERFLY SHOP','park_ranger'],birds:['THE BIRD SHOP','forest_ranger'],pets:['THE PET STORE','aquarium_service_technician'],mush:['THE MUSHROOM SHOP','mushroom'],

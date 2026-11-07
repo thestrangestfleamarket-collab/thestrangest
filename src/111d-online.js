@@ -172,7 +172,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;
   SYS.add('life',dt=>{ if(!ONLINE.on)return; psT+=dt||0; psKeep+=dt||0; if(psT<.2)return; psT=0; const s=snap(), j=JSON.stringify(s); if(j!==psSent||(j!=='{}'&&psKeep>3)){ const was=psSent; psSent=j; psKeep=0; if(j!=='{}'||was!=='{}')send({t:'ps',s}); } },'111d-online-ps');
-  ONLINE.hear.ps=m=>{ const o=ONLINE.others.get(m.id); if(!o||!m.s||typeof m.s!=='object')return; for(const k of PS){ const v=m.s[k]; o.S[k]=v&&typeof v==='object'?(k==='water'?{...v,in:true}:{...v}):null; } o.wantPose=true; o.B=null; };
+  ONLINE.hear.ps=m=>{ const o=ONLINE.others.get(m.id); if(!o||!m.s||typeof m.s!=='object')return; for(const k of PS){ const v=m.s[k]; if(k==='water'){ const W=o.S.water; if(v&&typeof v==='object'){ if(!W)o.S.water={...v,in:false}; else{ const LIVE={y:1,vy:1,ph:1,swim:1,under:1,back:1,t:1}; for(const f in v)if(!LIVE[f])W[f]=v[f]; W.in=true; if(typeof v.y==='number'&&typeof W.y==='number')W.y+=(v.y-W.y)*.3; } } else o.S.water=null; } else o.S[k]=v&&typeof v==='object'?{...v}:null; } o.wantPose=true; o.B=null; };   // (their water: what they do set by each word, 0.2 s apart; its height and stroke run on here, drawn toward theirs: no step in their body)
   SYS.add('life',dt=>ONLINE.tick(dt||0),'111d-online');
   const go=async()=>{ await LOAD('later');
     if(QS.get('online')==='0'||!/(?:^|;\s*)tsfm-pass=/.test(document.cookie))return; connect(); };

@@ -28,7 +28,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','THE PET STORE','PETS',[96,60,50],[180,255,170]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],
       ['gems','THE GEM SHOP','GEMS',[92,86,90],[140,255,230]],['armor','THE ARMOURY','ARMS',[84,78,76],[255,120,90]],['clothes','THE CLOTHES SHOP','CLOTHES',[126,68,56],[255,220,160]],
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
-      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
+      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;
@@ -49,7 +49,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       return null; }; };
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
     if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
-    if(D.pf)MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(LW.y1),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)});   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
+    if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
     else BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:D.h,kind:'A',turn:TA,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),71)),
       paint:(side,u,z,f)=>{ if(side==='f'){ const q=fr(u-L.x0,z,f,0); if(q)return q; }
         if(z>top-14)return sh(D.trim,f*(z>top-4?1.1:.85)); const wu=u-L.x0;
@@ -94,7 +94,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
-  let n=0; for(const id in DEF)if(WP[id])make(id,DEF[id],n++);
+  for(const id of ['theatre','play']){ const p=WP[id]; if(!p||!p.pf)continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
+  let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });
 window.MSHOP=MSHOP;

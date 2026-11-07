@@ -196,7 +196,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
       for(let y=LV-1.4*WU;y<-.05*WU;y+=.3*WU)box(lx-.32*T,y,rz1-.09*T,lx+.32*T,y+.04*WU,rz1-.03*T,steel); }
     let a=fx0; const span=(a,b)=>{ if(b-a<.3*T)return; for(let x=a;x<=b+1e-6;x+=Math.max(.5*T,(b-a)/Math.ceil((b-a)/(2.5*T))))box(x-.05*T,0,rz-.05*T,x+.05*T,1.0*WU,rz+.05*T,iron);
       box(a,.92*WU,rz-.04*T,b,1.0*WU,rz+.04*T,iron); box(a,.45*WU,rz-.03*T,b,.5*WU,rz+.03*T,iron); SOL.up.push([a,rz-.1*T,b,rz+.1*T]); FIX.up.push([a,rz-.1*T,0,b,rz+.1*T,1.0*WU]); };
-    for(const lx of LAD){ const g=PIERS.includes(lx)?PW+.1*T:lx===FP?(RIVER.fpw||1.8*T)+.1*T:.9*T; span(a,lx-g); a=lx+g; } span(a,fx1);
+    // (no railing along the quay: owner, 7 Nov 2026)
     const geo=new THREE.BoxGeometry(1,1,1), im=new THREE.InstancedMesh(geo,selfLit(new THREE.MeshLambertMaterial({color:0xffffff})),B.length), M=new THREE.Matrix4(), C=new THREE.Color();
     B.forEach((b,i)=>{ M.makeScale(b[3]-b[0],b[4]-b[1],b[5]-b[2]); M.setPosition((b[0]+b[3])/2,(b[1]+b[4])/2,(b[2]+b[5])/2); im.setMatrixAt(i,M); im.setColorAt(i,C.setRGB(...b[6])); });
     im.castShadow=true; im.receiveShadow=true; scene.add(im); RIVER.kit=im; RIVER.kitN=B.length; }

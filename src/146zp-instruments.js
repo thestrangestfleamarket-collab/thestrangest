@@ -110,10 +110,10 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
     if(window.GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on'); K.loadBook&&K.loadBook();
-    say('YOU SET DOWN '+K.name+' AND SIT AT IT. '+K.help+' · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
+    say('YOU SET DOWN '+K.name+' AND SIT AT IT. PICK A PIECE FROM THE BOOK · ` PLAYS IT · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
   INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   INSTR.play=(k,v)=>{ if(!on)return; const K=ME.K; if(k==='song'&&v===ME.song)k='stop';
-    if(k==='song'){ const T=K.BOOK[v]; if(!T||(T.lvl||1)>skill(K)+1e-6)return say(T?`${T.name.toUpperCase()} NEEDS ${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}. PLAY EASIER PIECES OR PLAY FREELY TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); songGo(ME,v); tell('song',v); }
+    if(k==='song'){ const T=K.BOOK[v]; if(!T||(T.lvl||1)>skill(K)+1e-6)return say(T?`${T.name.toUpperCase()} NEEDS ${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}. PLAY EASIER PIECES TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); songGo(ME,v); tell('song',v); }
     else if(k==='stop'){ songStop(ME); tell('stop'); }
     drawPanel(); };
 
@@ -123,7 +123,6 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
     if(down&&c==='Escape')INSTR.stop();
     else if(down&&c==='Tab'){ if(!e.repeat)closeUp(!CU.on); }
     else if(down&&c==='Backquote'){ if(!e.repeat)INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+(PN&&PN.querySelector('#insong').value||0)); }
-    else if(ME.K.keys(e,down)){}
     else if(/^(Key[A-Z]|Digit\d|Arrow\w+|Space|Shift\w*|Comma|Period|Slash|Semicolon|Quote|Bracket\w+|Minus|Equal|Backslash)$/.test(c)){}   // (your feet stay put while you play)
     else used=false;
     if(used){ e.preventDefault(); e.stopImmediatePropagation(); } };
@@ -145,9 +144,9 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
       PN.addEventListener('pointercancel',e=>{ const b=e.target.closest('b,button'); if(b&&on&&(b.dataset.n!=null||b.dataset.pad!=null))ME.K.click(b,false); });
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!on)return; GSND.wake(); if(b.dataset.n!=null||b.dataset.pad!=null)return;
         if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else ME.K.click(b,true); b.blur(); }); }
-    PN.innerHTML=`<div class="r"><span class="h" id="insk"></span><span id="innow"></span></div><div id="inown"></div>
+    PN.innerHTML=`<div class="r"><span class="h" id="insk"></span><span id="innow"></span></div>
       <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
-    PN.querySelector('#inown').innerHTML=ME.K.panel(); for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
+    for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };
   INSTR.fillSongs=()=>fillSongs();
@@ -156,9 +155,9 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
     if(v)el.value=v; };
   const drawPanel=()=>{ if(!PN||PN.hidden||!ME.K)return; const K=ME.K, T=ME.song>=0&&K.BOOK[ME.song];
     PN.querySelector('#insk').textContent=K.skill.toUpperCase()+' '+skill(K).toFixed(1);
-    PN.querySelector('#innow').textContent=T?'PLAYING '+T.name.toUpperCase()+(T.credit?' · '+T.credit.split(': ').pop().split(', http')[0]:''):K.status?K.status(ME):'';
+    PN.querySelector('#innow').textContent=T?'PLAYING '+T.name.toUpperCase()+(T.credit?' · '+T.credit.split(': ').pop().split(', http')[0]:''):'PICK A PIECE';
     const pl=PN.querySelector('#inplay'); pl.textContent=ME.song>=0?'STOP':'PLAY'; pl.setAttribute('aria-pressed',String(ME.song>=0)); PN.querySelector('#incu').setAttribute('aria-pressed',String(CU.on)); PN.querySelector('#invol').value=GSND.vol;
-    if(K.draw)K.draw(PN,ME); };
+  };
   INSTR.drawPanel=drawPanel;
 
   /* ---------- the close-up: the view in close on the hands and what they play (TAB) ---------- */

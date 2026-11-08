@@ -469,186 +469,76 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": -51.9,
-   "x1": -47.9
+   "x0": 219.75,
+   "x1": 223.75,
+   "y0": -116.5,
+   "y1": -110.5,
+   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
   },
   {
    "id": "apts",
    "name": "THE TOWER",
    "kind": "front",
-   "x0": 76.0,
-   "x1": 107.63,
+   "x0": -47,
+   "x1": -17,
    "y0": -92.4,
    "y1": -77,
    "face": "n"
   },
   {
-   "id": "bank",
-   "name": "THE BANK",
-   "kind": "front",
-   "x0": -46.9,
-   "x1": -23.81,
-   "y0": -92.4,
-   "y1": -77
-  },
-  {
-   "id": "art",
-   "name": "THE ART MUSEUM",
-   "kind": "front",
-   "x0": -23.81,
-   "x1": 1.06,
-   "y0": -92.4,
-   "y1": -77
-  },
-  {
-   "id": "florist",
-   "name": "THE FLORIST",
-   "kind": "front",
-   "x0": -51,
-   "x1": -36.42,
-   "merchant": "tomato",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "bees",
-   "kind": "front",
-   "x0": -26.13,
-   "x1": -15.2,
-   "name": "THE BEEKEEPER",
-   "merchant": "village_gardener",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "bfly",
-   "kind": "front",
-   "x0": -15.2,
-   "x1": -4.26,
-   "name": "THE BUTTERFLY SHOP",
-   "merchant": "park_ranger",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "birds",
-   "kind": "front",
-   "x0": -2.76,
-   "x1": 8.17,
-   "name": "THE BIRD SHOP",
-   "merchant": "forest_ranger",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "pets",
-   "name": "THE PET STORE",
-   "kind": "front",
-   "x0": 8.17,
-   "x1": 19.1,
-   "merchant": "aquarium_service_technician",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "mush",
-   "kind": "front",
-   "x0": 36.68,
-   "x1": 45.8,
-   "name": "THE MUSHROOM SHOP",
-   "merchant": "mushroom",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "gems",
-   "kind": "front",
-   "x0": 45.8,
-   "x1": 54.91,
-   "name": "THE GEM SHOP",
-   "merchant": "scuba_diver",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "armor",
-   "kind": "front",
-   "x0": 117.87,
-   "x1": 128.86,
-   "name": "THE ARMOURY",
-   "merchant": "samurai_warrior",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "gym",
-   "name": "KNUCKLE & IRON",
-   "kind": "front",
-   "x0": 147.75,
-   "x1": 167.75,
-   "lot": true,
-   "inW": 22,
-   "inD": 17,
-   "inH": 130
-  },
-  {
-   "id": "skate",
-   "kind": "front",
-   "x0": 128.86,
-   "x1": 139.85,
-   "name": "THE SKATE SHOP",
-   "merchant": "skate_shop_owner",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -34.92,
-   "x1": -27.63,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 3.21,
+   "x1": 21.21,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "bar",
    "inW": 17,
    "inD": 26,
    "inH": 172
   },
   {
+   "id": "pets",
+   "name": "THE PET STORE",
+   "kind": "front",
+   "x0": 41.42,
+   "x1": 61.42,
+   "merchant": "aquarium_service_technician",
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": 94.5,
+   "x1": 107.63,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "pf": "bodega"
+  },
+  {
+   "id": "arcade",
+   "name": "THE ARCADE",
+   "kind": "front",
+   "x0": 116.37,
+   "x1": 129.5,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "pf": "bodega"
+  },
+  {
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": 1.06,
-   "x1": 25.5,
+   "x0": 138.3,
+   "x1": 158.3,
    "y0": -92.4,
    "y1": -77,
    "face": "n",
@@ -658,18 +548,52 @@
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": 25.5,
-   "x1": 50.0,
+   "x0": 162.22,
+   "x1": 182.22,
    "y0": -92.4,
    "y1": -77,
    "face": "n",
    "pf": "playhouse"
   },
   {
+   "id": "gym",
+   "name": "KNUCKLE & IRON",
+   "kind": "front",
+   "x0": 186.15,
+   "x1": 202.15,
+   "lot": true,
+   "inW": 22,
+   "inD": 17,
+   "inH": 130,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "bank",
+   "name": "THE BANK",
+   "kind": "front",
+   "x0": 206.07,
+   "x1": 226.07,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "art",
+   "name": "THE ART MUSEUM",
+   "kind": "front",
+   "x0": 230,
+   "x1": 252,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
    "id": "antiques",
    "kind": "front",
-   "x0": 20.6,
-   "x1": 35.18,
+   "x0": -51,
+   "x1": -37,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -678,17 +602,10 @@
    "pf": "antiques"
   },
   {
-   "id": "bath",
-   "name": "THE BATH HOUSE",
-   "kind": "front",
-   "x0": 116.37,
-   "x1": 147.75
-  },
-  {
    "id": "fishtables",
    "kind": "lot",
-   "x0": 72.48,
-   "x1": 89.32,
+   "x0": 57.01,
+   "x1": 77.01,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -699,8 +616,8 @@
   {
    "id": "flea",
    "kind": "lot",
-   "x0": 90.82,
-   "x1": 106.13,
+   "x0": 77.01,
+   "x1": 107.63,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -708,22 +625,21 @@
    "name": "THE FLEA MARKET"
   },
   {
-   "id": "bodega",
-   "name": "THE BODEGA",
-   "kind": "front",
-   "x0": 141.35,
-   "x1": 164.5,
+   "id": "flea2",
+   "kind": "lot",
+   "x0": 116.37,
+   "x1": 146.99,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "pf": "bodega"
+   "name": "THE FLEA MARKET"
   },
   {
    "id": "fishing",
    "kind": "front",
-   "x0": 166,
-   "x1": 192.17,
+   "x0": 146.99,
+   "x1": 170.99,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -733,11 +649,39 @@
    "pf": "outfitter"
   },
   {
+   "id": "armor",
+   "kind": "front",
+   "x0": 182.49,
+   "x1": 194.49,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 206,
+   "x1": 218,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
    "id": "books",
    "name": "THE BOOKSTORE",
    "kind": "front",
-   "x0": 193.67,
-   "x1": 214.6,
+   "x0": 229.5,
+   "x1": 250.5,
    "merchant": "professor",
    "at": [
     -2.4,
@@ -753,16 +697,15 @@
    "pf": "books"
   },
   {
-   "id": "arcade",
-   "name": "THE ARCADE",
+   "id": "bath",
+   "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 216.1,
-   "x1": 226.57,
-   "y0": -107.9,
-   "y1": -95.9,
+   "x0": 203.24,
+   "x1": 226.76,
+   "y0": 152.2,
+   "y1": 163.76,
    "face": "s",
-   "row": 2,
-   "pf": "arcade"
+   "park": true
   }
  ],
  "shells": [],
@@ -966,6 +909,110 @@
     "d": 8,
     "face": "e"
    }
+  ],
+  "sites": [
+   {
+    "id": "bath",
+    "x": 215,
+    "y": 152,
+    "w": 27.53,
+    "d": 17.55,
+    "note": "the bath house on its island in the lake: no trees or paths here"
+   },
+   {
+    "id": "bridge",
+    "x": 215,
+    "y": 102,
+    "w": 6,
+    "d": 8,
+    "note": "where the island's footbridge lands: no trees here"
+   }
+  ],
+  "stalls": [
+   {
+    "id": "bfly",
+    "name": "THE BUTTERFLY STALL",
+    "merchant": "park_ranger",
+    "goods": [
+     "net",
+     "bjar",
+     "bjar",
+     "bjar"
+    ],
+    "side": "w",
+    "slot": 0
+   },
+   {
+    "id": "bees",
+    "name": "THE BEEKEEPER'S STALL",
+    "merchant": "village_gardener",
+    "goods": [
+     "hive",
+     "comb",
+     "honey",
+     "honey"
+    ],
+    "side": "w",
+    "slot": 1
+   },
+   {
+    "id": "birds",
+    "name": "THE BIRD STALL",
+    "merchant": "forest_ranger",
+    "goods": [
+     "seed",
+     "cage",
+     "cage",
+     "seed"
+    ],
+    "side": "w",
+    "slot": 2
+   },
+   {
+    "id": "mush",
+    "name": "THE MUSHROOM STALL",
+    "side": "e",
+    "slot": 0
+   },
+   {
+    "id": "tomato",
+    "name": "THE VEGETABLE STALL",
+    "side": "e",
+    "slot": 1
+   },
+   {
+    "id": "gems",
+    "name": "THE GEM STALL",
+    "merchant": "scuba_diver",
+    "goods": [
+     "geode",
+     "stone",
+     "crystal",
+     "crystal"
+    ],
+    "side": "e",
+    "slot": 2
+   }
+  ],
+  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)",
+  "islands": [
+   {
+    "x": 215,
+    "y": 152,
+    "rx": 19,
+    "ry": 14,
+    "note": "the bath house's island in the middle of the lake (owner, 8 Nov 2026): ghosts float out to it"
+   }
+  ],
+  "bridges": [
+   {
+    "x0": 215,
+    "y0": 140,
+    "x1": 215,
+    "y1": 102,
+    "w": 3,
+    "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
+   }
   ]
  },
  "paths": [
@@ -1120,42 +1167,42 @@
   },
   {
    "k": "mstall",
-   "x": 75.93,
+   "x": 62.04,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 80.9,
+   "x": 67.01,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 85.88,
+   "x": 71.99,
    "y": -104.6
   },
   {
    "k": "ftable",
-   "x": 78.41,
+   "x": 64.52,
    "y": -100
   },
   {
    "k": "ftable",
-   "x": 83.39,
+   "x": 69.5,
    "y": -100
   },
   {
    "k": "scrate",
-   "x": 74.28,
+   "x": 60.39,
    "y": -98.5
   },
   {
    "k": "scrate",
-   "x": 87.52,
+   "x": 73.63,
    "y": -98.5
   },
   {
    "k": "sacks",
-   "x": 86.74,
+   "x": 72.85,
    "y": -98.4
   },
   {
@@ -4229,26 +4276,26 @@
  "pathWidth": 7.2,
  "homes": {
   "donut": [
-   152.93,
-   -110.3,
+   101.06,
+   -74.6,
    5,
    "bodega"
   ],
   "number80": [
-   -31.27,
-   -110.3,
+   12.21,
+   -74.6,
    5,
    "bar"
   ],
   "origamifox": [
-   221.33,
-   -110.3,
+   122.94,
+   -74.6,
    5,
    "arcade"
   ],
   "manatee": [
-   -15.2,
-   -110.3,
+   148.3,
+   -74.6,
    5,
    "theatre"
   ],
@@ -6505,147 +6552,42 @@
    [
     "x",
     -204.5,
-    -330,
+    -3000,
     -92.4,
     -77
    ],
    [
     "x",
-    -204.5,
-    -330,
-    -37,
-    -22
-   ],
-   [
-    "x",
     -50,
-    -330,
+    -3000,
     -107.9,
     -95.9
    ],
    [
     "x",
     404,
-    520,
+    3000,
     -92.4,
     -77
    ],
    [
     "x",
     254,
-    520,
+    3000,
     -107.9,
     -95.9
-   ],
-   [
-    "y",
-    181.5,
-    520,
-    -66.8,
-    -52.5
-   ],
-   [
-    "y",
-    -37,
-    181,
-    -66.8,
-    -52.5
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    25,
-    85,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    87,
-    147,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    149,
-    209,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    25,
-    85,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    87,
-    147,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    149,
-    209,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    25,
-    85,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    87,
-    147,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    149,
-    209,
-    -138,
-    -122
    ]
   ],
   "near": 60,
   "ground": {
    "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
    "box": [
-    -600,
+    -1200,
     -130.1,
-    900,
-    800
+    1500,
+    1400
    ],
-   "px": 2,
+   "px": 4,
    "grass": [
     62,
     96,
@@ -6661,7 +6603,7 @@
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
    "list": [
     [
-     -330,
+     -3000,
      -77,
      -202.5,
      -70,
@@ -6675,7 +6617,7 @@
      "walk"
     ],
     [
-     -330,
+     -3000,
      -70,
      -202.5,
      -50,
@@ -6689,7 +6631,7 @@
      "road"
     ],
     [
-     -330,
+     -3000,
      -50,
      -202.5,
      -38,
@@ -6703,14 +6645,14 @@
      "walk"
     ],
     [
-     -330,
+     -3000,
      -95.9,
      -52.5,
      -92.4,
      "alley"
     ],
     [
-     -330,
+     -3000,
      -130.1,
      -52.5,
      -107.9,
@@ -6726,7 +6668,7 @@
     [
      402,
      -77,
-     520,
+     3000,
      -70,
      "walk"
     ],
@@ -6740,7 +6682,7 @@
     [
      402,
      -70,
-     520,
+     3000,
      -50,
      "road"
     ],
@@ -6754,21 +6696,21 @@
     [
      402,
      -50,
-     520,
+     3000,
      -38,
      "walk"
     ],
     [
      250,
      -95.9,
-     520,
+     3000,
      -92.4,
      "alley"
     ],
     [
      250,
      -130.1,
-     520,
+     3000,
      -107.9,
      "prom"
     ],
@@ -6791,13 +6733,6 @@
      212,
      -24,
      520,
-     "walk"
-    ],
-    [
-     -330,
-     -37,
-     -52.5,
-     212,
      "walk"
     ]
    ]
@@ -6834,12 +6769,30 @@
      -30,
      520,
      176
+    ],
+    [
+     -1200,
+     -34,
+     -26,
+     1400
+    ],
+    [
+     -20,
+     760,
+     1500,
+     1400
+    ],
+    [
+     520,
+     -30,
+     1500,
+     760
     ]
    ],
-   "n": 1500
+   "n": 4000
   },
   "city": {
-   "note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius)",
+   "note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius), lands (y bands, what the ring's ground is that way: water, street or park)",
    "center": [
     105,
     -25
@@ -6855,6 +6808,10 @@
     [
      -725.8,
      -122
+    ],
+    [
+     -122,
+     100000
     ]
    ],
    "lowY": -725.8,
@@ -6897,15 +6854,32 @@
     2000
    ],
    "panorama": 1200,
-   "seed": 7
+   "seed": 7,
+   "lands": [
+    [
+     -725.8,
+     -122,
+     "water"
+    ],
+    [
+     -122,
+     -38,
+     "street"
+    ],
+    [
+     -38,
+     100000,
+     "park"
+    ]
+   ]
   },
   "far": {
    "note": "the far city past the backdrop: (axis, from, to, across from, across to, lowest, highest storeys in tiles); shore: where the water past the river ends (the far bank, a map y); ends: how far the far water and its shore run (map x)",
    "list": [
     [
      "x",
-     -1860,
-     2160,
+     -6000,
+     6000,
      -767.8,
      -747.8,
      8,
@@ -6913,45 +6887,18 @@
     ],
     [
      "x",
-     -1860,
-     2160,
+     -6000,
+     6000,
      -735.8,
      -727.8,
      5,
      14
-    ],
-    [
-     "x",
-     -420,
-     -56,
-     600,
-     640,
-     18,
-     60
-    ],
-    [
-     "y",
-     -125,
-     600,
-     -420,
-     -380,
-     14,
-     44
-    ],
-    [
-     "y",
-     -125,
-     600,
-     600,
-     640,
-     14,
-     50
     ]
    ],
    "shore": -723.8,
    "ends": [
-    -1900,
-    2200
+    -6000,
+    6000
    ]
   },
   "mirror": {

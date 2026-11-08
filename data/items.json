@@ -388,11 +388,13 @@
   "slot": "back",
   "grants": "breathe",
   "tank": 300,
-  "rental": true
+  "rental": true,
+  "size": 0.7
  },
  "ticket": {
   "stackable": true,
-  "value": 5
+  "value": 5,
+  "size": 0.12
  },
  "board_pine": {
   "slot": "hand",
@@ -480,44 +482,52 @@
   "slot": "hand",
   "grants": "scan",
   "value": 70,
-  "weight": 0.5
+  "weight": 0.5,
+  "size": 0.2
  },
  "nv_goggles": {
   "slot": "eyes",
   "grants": "night",
   "value": 95,
   "weight": 0.6,
-  "offworld": true
+  "offworld": true,
+  "size": 0.2
  },
  "curse_rats": {
   "value": 15,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.2
  },
  "curse_cloud": {
   "value": 12,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.2
  },
  "curse_stink": {
   "value": 8,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.2
  },
  "cube2": {
   "value": 6,
   "weight": 0.1,
-  "sellable": true
+  "sellable": true,
+  "size": 0.05
  },
  "cube3": {
   "value": 12,
   "weight": 0.15,
-  "sellable": true
+  "sellable": true,
+  "size": 0.06
  },
  "cube4": {
   "value": 25,
   "weight": 0.2,
-  "sellable": true
+  "sellable": true,
+  "size": 0.07
  },
  "balloon": {
   "slot": "hand",
@@ -530,33 +540,39 @@
   "value": 6,
   "stackable": true,
   "weight": 0.02,
-  "offworld": true
+  "offworld": true,
+  "size": 0.1
  },
  "seed_sun": {
   "value": 9,
   "stackable": true,
   "weight": 0.02,
-  "offworld": true
+  "offworld": true,
+  "size": 0.1
  },
  "seed_hum": {
   "value": 4,
   "stackable": true,
   "weight": 0.02,
-  "offworld": true
+  "offworld": true,
+  "size": 0.1
  },
  "pot": {
   "value": 8,
-  "weight": 2
+  "weight": 2,
+  "size": 0.25
  },
  "dirt": {
   "value": 3,
   "stackable": true,
-  "weight": 3
+  "weight": 3,
+  "size": 0.5
  },
  "water": {
   "value": 1,
   "stackable": true,
-  "weight": 1
+  "weight": 1,
+  "size": 0.4
  },
  "fr_star": {
   "value": 10,
@@ -565,7 +581,8 @@
   "edible": true,
   "sellable": true,
   "offworld": true,
-  "heals": 0.25
+  "heals": 0.25,
+  "size": 0.2
  },
  "fr_sun": {
   "value": 16,
@@ -574,7 +591,8 @@
   "edible": true,
   "sellable": true,
   "offworld": true,
-  "heals": 0.45
+  "heals": 0.45,
+  "size": 0.1
  },
  "fr_hum": {
   "value": 4,
@@ -583,7 +601,8 @@
   "edible": true,
   "sellable": true,
   "offworld": true,
-  "heals": 0.12
+  "heals": 0.12,
+  "size": 0.15
  },
  "p_refresh": {
   "stackable": true,
@@ -615,43 +634,53 @@
  },
  "quartz": {
   "stackable": true,
-  "value": 6
+  "value": 6,
+  "size": 0.08
  },
  "amethyst": {
   "stackable": true,
-  "value": 14
+  "value": 14,
+  "size": 0.06
  },
  "geode": {
   "stackable": true,
-  "value": 18
+  "value": 18,
+  "size": 0.15
  },
  "amber": {
   "stackable": true,
-  "value": 24
+  "value": 24,
+  "size": 0.04
  },
  "moonstone": {
   "stackable": true,
-  "value": 30
+  "value": 30,
+  "size": 0.04
  },
  "opal": {
   "stackable": true,
-  "value": 45
+  "value": 45,
+  "size": 0.04
  },
  "emerald": {
   "stackable": true,
-  "value": 70
+  "value": 70,
+  "size": 0.04
  },
  "sapphire": {
   "stackable": true,
-  "value": 85
+  "value": 85,
+  "size": 0.04
  },
  "ruby": {
   "stackable": true,
-  "value": 100
+  "value": 100,
+  "size": 0.04
  },
  "meteor": {
   "stackable": true,
-  "value": 150
+  "value": 150,
+  "size": 0.12
  },
  "f_roast": {
   "stackable": true,
@@ -676,40 +705,46 @@
  "f_fishfry": {
   "stackable": true,
   "edible": true,
-  "value": 12
+  "value": 12,
+  "size": 0.25
  },
  "f_chowder": {
   "stackable": true,
   "edible": true,
-  "value": 30
+  "value": 30,
+  "size": 0.25
  },
  "jacket_denim": {
   "slot": "body",
   "color": "#2a4a7a",
   "value": 35,
   "weight": 1.2,
-  "sellable": true
+  "sellable": true,
+  "size": 0.7
  },
  "jacket_stud": {
   "slot": "body",
   "color": "#1c1c20",
   "value": 60,
   "weight": 1.6,
-  "sellable": true
+  "sellable": true,
+  "size": 0.7
  },
  "jeans": {
   "slot": "legs",
   "color": "#34507e",
   "value": 30,
   "weight": 0.8,
-  "sellable": true
+  "sellable": true,
+  "size": 1.0
  },
  "shades": {
   "slot": "eyes",
   "color": "#1e6a3a",
   "value": 20,
   "weight": 0.1,
-  "sellable": true
+  "sellable": true,
+  "size": 0.15
  },
  "soda_pink": {
   "value": 4,
@@ -718,7 +753,8 @@
   "edible": true,
   "offworld": true,
   "boost": "swift",
-  "boostS": 90
+  "boostS": 90,
+  "size": 0.14
  },
  "soda_white": {
   "value": 4,
@@ -727,7 +763,8 @@
   "edible": true,
   "offworld": true,
   "boost": "str",
-  "boostS": 120
+  "boostS": 120,
+  "size": 0.14
  },
  "soda_teal": {
   "value": 5,
@@ -736,20 +773,24 @@
   "edible": true,
   "offworld": true,
   "boost": "regen",
-  "boostS": 60
+  "boostS": 60,
+  "size": 0.14
  },
  "cactus_eye": {
   "value": 35,
   "weight": 1.5,
-  "offworld": true
+  "offworld": true,
+  "size": 0.15
  },
  "cactus": {
   "value": 5,
-  "weight": 1
+  "weight": 1,
+  "size": 0.12
  },
  "bonsai": {
   "value": 20,
-  "weight": 1.5
+  "weight": 1.5,
+  "size": 0.35
  },
  "cigar": {
   "slot": "hand",
@@ -766,12 +807,14 @@
  },
  "phone_home": {
   "value": 40,
-  "weight": 2
+  "weight": 2,
+  "size": 0.22
  },
  "phone_cell": {
   "slot": "hand",
   "value": 120,
-  "weight": 1
+  "weight": 1,
+  "size": 0.14
  },
  "glowcap": {
   "edible": true,
@@ -783,63 +826,73 @@
   "value": 60,
   "cast": 16,
   "line": 1.3,
-  "sellable": true
+  "sellable": true,
+  "size": 2.4
  },
  "rod_surf": {
   "value": 180,
   "cast": 22,
   "line": 1.6,
-  "sellable": true
+  "sellable": true,
+  "size": 3.0
  },
  "reel_fast": {
   "value": 40,
   "reel": 1.35,
-  "sellable": true
+  "sellable": true,
+  "size": 0.12
  },
  "reel_pro": {
   "value": 120,
   "reel": 1.7,
-  "sellable": true
+  "sellable": true,
+  "size": 0.14
  },
  "lure_worm": {
   "stackable": true,
   "value": 10,
   "bait": "worm",
   "reuse": true,
-  "sellable": true
+  "sellable": true,
+  "size": 0.1
  },
  "lure_spoon": {
   "stackable": true,
   "value": 14,
   "bait": "cut",
   "reuse": true,
-  "sellable": true
+  "sellable": true,
+  "size": 0.08
  },
  "cooler_s": {
   "stackable": true,
   "value": 20,
   "holds": 15,
   "keeps": "fish",
-  "sellable": true
+  "sellable": true,
+  "size": 0.35
  },
  "cooler_m": {
   "stackable": true,
   "value": 50,
   "holds": 40,
   "keeps": "fish",
-  "sellable": true
+  "sellable": true,
+  "size": 0.55
  },
  "cooler_l": {
   "stackable": true,
   "value": 120,
   "holds": 100,
   "keeps": "fish",
-  "sellable": true
+  "sellable": true,
+  "size": 0.8
  },
  "crabpot": {
   "stackable": true,
   "value": 25,
-  "sellable": true
+  "sellable": true,
+  "size": 0.7
  },
  "cage": {
   "stackable": true,
@@ -850,7 +903,8 @@
   "value": 1
  },
  "feeder": {
-  "value": 14
+  "value": 14,
+  "size": 0.35
  },
  "binoc": {
   "slot": "hand",
@@ -865,110 +919,131 @@
  "bird_feather": {
   "stackable": true,
   "sellable": true,
-  "value": 2
+  "value": 2,
+  "size": 0.2
  },
  "quill_pen": {
   "sellable": true,
-  "value": 9
+  "value": 9,
+  "size": 0.3
  },
  "bee_hive": {
-  "value": 40
+  "value": 40,
+  "size": 0.5
  },
  "bee_smoker": {
-  "value": 12
+  "value": 12,
+  "size": 0.3
  },
  "bee_veil": {
   "slot": "head",
-  "value": 15
+  "value": 15,
+  "size": 0.45
  },
  "jar_honey": {
   "stackable": true,
-  "value": 1
+  "value": 1,
+  "size": 0.12
  },
  "bee_wax": {
   "stackable": true,
   "sellable": true,
-  "value": 3
+  "value": 3,
+  "size": 0.1
  },
  "wax_candle": {
   "stackable": true,
   "sellable": true,
-  "value": 12
+  "value": 12,
+  "size": 0.2
  },
  "honey_wild": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.15,
-  "value": 8
+  "value": 8,
+  "size": 0.12
  },
  "honey_clover": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.15,
-  "value": 10
+  "value": 10,
+  "size": 0.12
  },
  "honey_lav": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.2,
-  "value": 16
+  "value": 16,
+  "size": 0.12
  },
  "honey_sun": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.2,
-  "value": 14
+  "value": 14,
+  "size": 0.12
  },
  "honey_rose": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.25,
-  "value": 22
+  "value": 22,
+  "size": 0.12
  },
  "honey_moon": {
   "stackable": true,
   "sellable": true,
   "edible": true,
   "heals": 0.6,
-  "value": 80
+  "value": 80,
+  "size": 0.12
  },
  "gem_wheel": {
-  "value": 35
+  "value": 35,
+  "size": 0.6
  },
  "coat_red": {
   "slot": "body",
   "color": "#7a2e2a",
   "value": 28,
   "weight": 1.2,
-  "sellable": true
+  "sellable": true,
+  "size": 0.9
  },
  "coat_green": {
   "slot": "body",
   "color": "#2e4a3a",
   "value": 28,
   "weight": 1.2,
-  "sellable": true
+  "sellable": true,
+  "size": 0.9
  },
  "coat_navy": {
   "slot": "body",
   "color": "#2e3a5a",
   "value": 28,
   "weight": 1.2,
-  "sellable": true
+  "sellable": true,
+  "size": 0.9
  },
  "spray_silver": {
-  "value": 6
+  "value": 6,
+  "size": 0.22
  },
  "spray_gold": {
-  "value": 14
+  "value": 14,
+  "size": 0.22
  },
  "passport": {
-  "value": 0
+  "value": 0,
+  "size": 0.13
  },
  "putter": {
   "slot": "hand",
@@ -988,595 +1063,704 @@
   "value": 6,
   "stackable": true,
   "weight": 0.5,
-  "edible": true
+  "edible": true,
+  "size": 0.15
  },
  "d_stout": {
   "value": 7,
   "stackable": true,
   "weight": 0.5,
-  "edible": true
+  "edible": true,
+  "size": 0.15
  },
  "d_cola": {
   "value": 3,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.14
  },
  "prize_yoyo": {
   "value": 4,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.06
  },
  "prize_ring": {
   "value": 2,
   "stackable": true,
-  "weight": 0.02
+  "weight": 0.02,
+  "size": 0.03
  },
  "d_coffee": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.12
  },
  "d_shake": {
   "value": 2,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.2
  },
  "f_eggs": {
   "value": 4,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_pancake": {
   "value": 3,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_hash": {
   "value": 4,
   "stackable": true,
   "weight": 0.5,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_burger": {
   "value": 5,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_blt": {
   "value": 4,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_grilled": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_pie": {
   "value": 3,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_cake": {
   "value": 3,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_gumball": {
   "value": 1,
   "stackable": true,
   "weight": 0.01,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "news_paper": {
   "value": 1,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.4
  },
  "arc_token": {
   "value": 1,
   "stackable": true,
-  "weight": 0.01
+  "weight": 0.01,
+  "size": 0.025
  },
  "f_bec": {
   "value": 4,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_hero": {
   "value": 6,
   "stackable": true,
   "weight": 0.5,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_chopped": {
   "value": 5,
   "stackable": true,
   "weight": 0.4,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_icepop": {
   "value": 1,
   "stackable": true,
   "weight": 0.1,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "lotto_ticket": {
   "value": 2,
   "stackable": true,
-  "weight": 0.01
+  "weight": 0.01,
+  "size": 0.1
  },
  "g_water": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "g_soda": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.12
  },
  "g_juice": {
   "value": 2,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "g_milk": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "g_eggs": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.3
  },
  "g_butter": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "g_cheese": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.12
  },
  "g_yogurt": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.1
  },
  "g_cereal": {
   "value": 4,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.3
  },
  "g_bread": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.3
  },
  "g_bagels": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.3
  },
  "g_coffee": {
   "value": 5,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.15
  },
  "g_oats": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.2
  },
  "g_chips": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.3
  },
  "g_vaseline": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.08
  },
  "g_soup": {
   "value": 2,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.11
  },
  "g_tuna": {
   "value": 2,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.09
  },
  "g_pasta": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.25
  },
  "g_noodles": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.12
  },
  "g_candy": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.15
  },
  "g_gum": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.08
  },
  "g_tp": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.45
  },
  "g_towels": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.28
  },
  "g_dishsoap": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.25
  },
  "g_bleach": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.3
  },
  "g_sponge": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "g_tea": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.15
  },
  "g_bulb": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.11
  },
  "g_batteries": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "g_matches": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.06
  },
  "g_lighter": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.08
  },
  "g_soap": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.09
  },
  "g_toothpaste": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.2
  },
  "g_toothbrush": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.19
  },
  "g_shampoo": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.22
  },
  "g_deodorant": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.15
  },
  "g_aspirin": {
   "value": 4,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.1
  },
  "g_qtips": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "g_catfood": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.08
  },
  "g_dogfood": {
   "value": 5,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.6
  },
  "g_fishfood": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.1
  },
  "g_bananas": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "g_beans": {
   "value": 2,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.11
  },
  "g_vienna": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.07
  },
  "g_spam": {
   "value": 3,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.1
  },
  "g_detergent": {
   "value": 5,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.3
  },
  "g_cleanser": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.18
  },
  "g_diapers": {
   "value": 8,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.45
  },
  "g_koolaid": {
   "value": 1,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.1
  },
  "g_candle": {
   "value": 2,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.2
  },
  "g_rice": {
   "value": 8,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.45
  },
  "g_plantains": {
   "value": 1,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.3
  },
  "g_beer": {
   "value": 2,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.12
  },
  "f_popcorn": {
   "value": 3,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_nachos": {
   "value": 4,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "f_candybox": {
   "value": 2,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "mus_postcard": {
   "value": 1,
   "stackable": true,
-  "weight": 0.01
+  "weight": 0.01,
+  "size": 0.15
  },
  "mus_plush": {
   "value": 8,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.3
  },
  "mus_replica": {
   "value": 5,
   "stackable": true,
-  "weight": 0.5
+  "weight": 0.5,
+  "size": 0.3
  },
  "mus_guidebook": {
   "value": 4,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.22
  },
  "fairticket": {
   "stackable": true,
-  "value": 2
+  "value": 2,
+  "size": 0.12
  },
  "ptix": {
   "stackable": true,
   "value": 0,
-  "weight": 0
+  "weight": 0,
+  "size": 0.12
  },
  "plush_bear": {
   "value": 12,
   "weight": 0.4,
-  "sellable": true
+  "sellable": true,
+  "size": 0.4
  },
  "plush_duck": {
   "value": 8,
   "weight": 0.3,
-  "sellable": true
+  "sellable": true,
+  "size": 0.3
  },
  "plush_giant": {
   "value": 40,
   "weight": 1.5,
-  "sellable": true
+  "sellable": true,
+  "size": 1.2
  },
  "kazoo": {
   "value": 3,
   "weight": 0.05,
-  "sellable": true
+  "sellable": true,
+  "size": 0.12
  },
  "fair_pennant": {
   "value": 4,
   "weight": 0.05,
-  "sellable": true
+  "sellable": true,
+  "size": 0.5
  },
  "fairphoto": {
   "value": 6,
   "weight": 0.02,
-  "sellable": true
+  "sellable": true,
+  "size": 0.15
  },
  "cotton_candy": {
   "edible": true,
   "value": 4,
   "weight": 0.05,
-  "heals": 0.12
+  "heals": 0.12,
+  "size": 0.4
  },
  "popcorn": {
   "edible": true,
   "value": 3,
   "weight": 0.1,
-  "heals": 0.1
+  "heals": 0.1,
+  "size": 0.2
  },
  "corndog": {
   "edible": true,
   "value": 5,
   "weight": 0.15,
-  "heals": 0.2
+  "heals": 0.2,
+  "size": 0.25
  },
  "lemonade": {
   "edible": true,
   "value": 3,
   "weight": 0.3,
-  "heals": 0.08
+  "heals": 0.08,
+  "size": 0.18
  },
  "funnelcake": {
   "edible": true,
   "value": 6,
   "weight": 0.2,
-  "heals": 0.22
+  "heals": 0.22,
+  "size": 0.25
  },
  "art_postcard": {
   "value": 1,
   "stackable": true,
-  "weight": 0.01
+  "weight": 0.01,
+  "size": 0.15
  },
  "art_print": {
   "value": 6,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.4
  },
  "f_croissant": {
   "value": 2,
   "stackable": true,
   "weight": 0.1,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "fix_parts": {
   "value": 1,
   "stackable": true,
-  "weight": 0.1
+  "weight": 0.1,
+  "size": 0.2
  },
  "junk_walkman": {
   "value": 3,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "junk_handheld": {
   "value": 4,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.15
  },
  "junk_pockettv": {
   "value": 6,
   "stackable": true,
-  "weight": 0.4
+  "weight": 0.4,
+  "size": 0.15
  },
  "walkman": {
   "value": 25,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.12
  },
  "handheld": {
   "value": 35,
   "stackable": true,
-  "weight": 0.3
+  "weight": 0.3,
+  "size": 0.15
  },
  "pockettv": {
   "value": 60,
   "stackable": true,
-  "weight": 0.4
+  "weight": 0.4,
+  "size": 0.15
  },
  "play_ticket": {
   "value": 8,
   "stackable": true,
-  "weight": 0.01
+  "weight": 0.01,
+  "size": 0.12
  },
  "d_wine": {
   "value": 5,
   "stackable": true,
   "weight": 0.3,
-  "edible": true
+  "edible": true,
+  "size": 0.2
  },
  "f_bonbons": {
   "value": 3,
   "stackable": true,
   "weight": 0.2,
-  "edible": true
+  "edible": true,
+  "size": 0.25
  },
  "shroom_invis": {
   "edible": true,
@@ -1584,7 +1768,8 @@
   "sellable": true,
   "icon": "mush",
   "boost": "invis",
-  "boostS": 60
+  "boostS": 60,
+  "size": 0.1
  },
  "shroom_str": {
   "edible": true,
@@ -1592,7 +1777,8 @@
   "sellable": true,
   "icon": "mush",
   "boost": "str",
-  "boostS": 120
+  "boostS": 120,
+  "size": 0.1
  },
  "shroom_swift": {
   "edible": true,
@@ -1600,7 +1786,8 @@
   "sellable": true,
   "icon": "mush",
   "boost": "swift",
-  "boostS": 120
+  "boostS": 120,
+  "size": 0.1
  },
  "shroom_fly": {
   "edible": true,
@@ -1608,27 +1795,32 @@
   "sellable": true,
   "icon": "mush",
   "boost": "fly",
-  "boostS": 300
+  "boostS": 300,
+  "size": 0.1
  },
  "guitar": {
   "value": 180,
   "weight": 2.5,
-  "sellable": true
+  "sellable": true,
+  "size": 1.0
  },
  "piano": {
   "value": 900,
   "weight": 2.5,
-  "sellable": true
+  "sellable": true,
+  "size": 1.5
  },
  "drums": {
   "value": 450,
   "weight": 2.5,
-  "sellable": true
+  "sellable": true,
+  "size": 1.5
  },
  "harp": {
   "value": 700,
   "weight": 2.5,
-  "sellable": true
+  "sellable": true,
+  "size": 1.7
  },
  "bmx": {
   "slot": "hand",
@@ -1637,7 +1829,8 @@
   "value": 150,
   "speed": 6,
   "len": 1.6,
-  "weight": 10
+  "weight": 10,
+  "size": 1.7
  },
  "slime_blue": {
   "sellable": true
@@ -1656,6 +1849,201 @@
  },
  "x_can": {
   "value": 1
+ },
+ "auger": {
+  "size": 1.2
+ },
+ "bs_kit": {
+  "size": 0.3
+ },
+ "canvas_m": {
+  "size": 0.6
+ },
+ "canvas_s": {
+  "size": 0.3
+ },
+ "canvas_t": {
+  "size": 0.9
+ },
+ "canvas_w": {
+  "size": 0.9
+ },
+ "fr_gage": {
+  "size": 0.04
+ },
+ "fr_medlar": {
+  "size": 0.05
+ },
+ "fr_quince": {
+  "size": 0.1
+ },
+ "fr_russet": {
+  "size": 0.08
+ },
+ "gb_feathery": {
+  "size": 0.045
+ },
+ "gb_gutty": {
+  "size": 0.043
+ },
+ "gb_old": {
+  "size": 0.043
+ },
+ "jar_fly": {
+  "size": 0.18
+ },
+ "nut_acorn": {
+  "size": 0.1
+ },
+ "orchard_key": {
+  "size": 0.15
+ },
+ "p_royal": {
+  "size": 0.12
+ },
+ "painting": {
+  "size": 0.6
+ },
+ "paper": {
+  "size": 0.3
+ },
+ "photo": {
+  "size": 0.15
+ },
+ "pouch": {
+  "size": 0.15
+ },
+ "rf_scroll": {
+  "size": 0.3
+ },
+ "unfinished": {
+  "size": 0.6
+ },
+ "pet_0": {
+  "size": 0.16
+ },
+ "pet_1": {
+  "size": 0.32
+ },
+ "pet_2": {
+  "size": 0.22
+ },
+ "pet_3": {
+  "size": 0.25
+ },
+ "pet_4": {
+  "size": 0.3
+ },
+ "pet_5": {
+  "size": 0.28
+ },
+ "pet_6": {
+  "size": 0.22
+ },
+ "pet_7": {
+  "size": 0.13
+ },
+ "pet_8": {
+  "size": 0.25
+ },
+ "pet_9": {
+  "size": 0.22
+ },
+ "pet_10": {
+  "size": 0.2
+ },
+ "pet_11": {
+  "size": 0.17
+ },
+ "pet_12": {
+  "size": 0.55
+ },
+ "cut_amber": {
+  "size": 0.03
+ },
+ "cut_amethyst": {
+  "size": 0.03
+ },
+ "cut_emerald": {
+  "size": 0.03
+ },
+ "cut_m_moonglow": {
+  "size": 0.03
+ },
+ "cut_m_morel": {
+  "size": 0.03
+ },
+ "cut_meteor": {
+  "size": 0.03
+ },
+ "cut_moonstone": {
+  "size": 0.03
+ },
+ "cut_opal": {
+  "size": 0.03
+ },
+ "cut_quartz": {
+  "size": 0.03
+ },
+ "cut_ruby": {
+  "size": 0.03
+ },
+ "cut_sapphire": {
+  "size": 0.03
+ },
+ "f_grillbass": {
+  "size": 0.25
+ },
+ "f_hfish": {
+  "size": 0.25
+ },
+ "f_hmush": {
+  "size": 0.25
+ },
+ "f_smokeeel": {
+  "size": 0.25
+ },
+ "f_sturgeon": {
+  "size": 0.25
+ },
+ "m_elfcup": {
+  "size": 0.12
+ },
+ "m_lionsmane": {
+  "size": 0.12
+ },
+ "m_parasol": {
+  "size": 0.12
+ },
+ "m_woodear": {
+  "size": 0.12
+ },
+ "mo_clear": {
+  "size": 0.08
+ },
+ "mo_luna": {
+  "size": 0.08
+ },
+ "mo_miller": {
+  "size": 0.08
+ },
+ "mo_tiger": {
+  "size": 0.08
+ },
+ "mo_underwing": {
+  "size": 0.08
+ },
+ "u_elfcup": {
+  "size": 0.12
+ },
+ "u_lionsmane": {
+  "size": 0.12
+ },
+ "u_parasol": {
+  "size": 0.12
+ },
+ "u_woodear": {
+  "size": 0.12
  },
  "brickphone": {
   "slot": "hand",

@@ -1615,6 +1615,21 @@
   "weight": 2.5,
   "sellable": true
  },
+ "piano": {
+  "value": 900,
+  "weight": 2.5,
+  "sellable": true
+ },
+ "drums": {
+  "value": 450,
+  "weight": 2.5,
+  "sellable": true
+ },
+ "harp": {
+  "value": 700,
+  "weight": 2.5,
+  "sellable": true
+ },
  "bmx": {
   "slot": "hand",
   "grants": "bmx",

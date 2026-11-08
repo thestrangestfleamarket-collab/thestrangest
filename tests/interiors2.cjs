@@ -12,7 +12,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const inB=p=>p.x>b.x0&&p.x<b.x1&&p.z>b.z0&&p.z<b.z1, free=p=>!sol.some(r=>p.x>r[0]&&p.x<r[2]&&p.z>r[1]&&p.z<r[3]);
     const sp=Object.entries(R.spots||{}), se=R.seats||[]; return {spots:sp.length,seats:se.length,spotsIn:sp.every(([,p])=>inB(p)),seatsIn:se.every(inB),spotsFree:sp.filter(([,p])=>!free(p)).map(([k])=>k),standFree:se.filter(p=>p.y==null&&!free(p)).length}; },at);
   /* ---------- THE PLAYHOUSE ---------- */
-  { await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name.startsWith('THE PROGRAMME')),240000);   // (its box office and foyer bar are archived, 7 Nov 2026)
+  if(await pg.evaluate(()=>!!ROOMS.off.playhouse)){ await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name.startsWith('THE PROGRAMME')),240000);   // (its box office and foyer bar are archived, 7 Nov 2026)
     const p=await people('playhouse'); rec('playhouse: the company has its posts in the foyer and the stage manager his at the prompt desk; sixty stalls seats for the audience',p.spots>=7&&p.seats>=60&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length,JSON.stringify(p));
     const r=await pg.evaluate(()=>{ const live=t=>t.obj&&t.obj.parent, th=n=>__dbg.UI.things.find(t=>live(t)&&t.name.startsWith(n));
       th('THE PROGRAMME').act(); const prog=MINI.on&&MINI.on.title==='THE PROGRAMME'; MINI.close(); const benches=__dbg.UI.things.filter(t=>live(t)&&t.name==='A VELVET BENCH').length;

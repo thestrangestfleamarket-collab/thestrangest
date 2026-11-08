@@ -30,7 +30,7 @@ const DFOG={};
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg)*(1.+uSB*pow(max(0.,dot(ray,uSun.xyz)),4.)))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
-              float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); ins=mix(uMC+uSC*pow(max(0.,dot(ray,uSun.xyz)),uSun.w),uC,sb); c.rgb=mix(c.rgb,ins,a); }
+              float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); ins=mix(uMC,uC,sb)+uSC*pow(max(0.,dot(ray,uSun.xyz)),uSun.w); c.rgb=mix(c.rgb,ins,a); }
             m=uF>0.?land*smoothstep(uF*.67,uF,dd)*step(dd,uF*1.05):0.;
             if(uRm.x>0.){ float ri=min(min(w.x-uK.x,uK.z-w.x),min(w.z-uK.y,uK.w-w.z)); rf=land*(1.-smoothstep(0.,uRm.x,ri))*smoothstep(uRm.y,uRm.z,L); m=max(m,rf); }
             if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.99999||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=.99999){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; } } }

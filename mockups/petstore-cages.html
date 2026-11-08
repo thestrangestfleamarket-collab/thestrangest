@@ -5,87 +5,64 @@ body{margin:0;background:#1c1915;color:#e8e2cc;font:14px/1.4 monospace}
 .w{max-width:1240px;margin:0 auto;padding:16px}
 h1{font-size:20px;margin:4px 0 2px;letter-spacing:2px}h2{font-size:15px;margin:18px 0 6px;color:#e0b060;letter-spacing:1px}
 .dim{color:#9a927c}svg{width:100%;height:auto;display:block;background:#0f0d0b;border:1px solid #3a342a}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}.box{border:1px solid #3a342a;padding:10px 12px;background:#15130f}
-ul{margin:4px 0;padding-left:18px}li{margin:1px 0}.out{color:#d08870}.keep{color:#90c090}
+.cat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.box{border:1px solid #3a342a;padding:8px 10px;background:#15130f}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:4px;margin-top:6px}
+.c{border:1px solid #6a5a38;background:#2a241a;text-align:center;padding:3px 2px;font-size:9px;line-height:1.2}
+.c b{display:block;font-size:22px;font-weight:normal}.c.n{border-color:#e0b060;background:#3a2e14}.c.t{background:#14283a;border-color:#4a7a9a}
+.k{display:inline-block;width:12px;height:12px;vertical-align:middle;border:1px solid}
+ul{margin:4px 0;padding-left:18px}li{margin:1px 0}
 </style></head><body><div class="w">
-<h1>THE PET STORE: EVERY PARK ANIMAL IN A CAGE</h1>
-<div class="dim">Mockup. Central Park keeps only its birds and butterflies; every other animal moves here, pet-sized (a dog's size or smaller), one cage each, on the left, right and back walls. Click a cage to buy that animal.</div>
+<h1>THE PET STORE: EVERY LIVING THING</h1>
+<div class="dim">Mockup. Every kind of animal and creature in the game can be a pet, pet-sized (a dog's size or smaller). The store's left, right and back walls are cages floor to ceiling, one kind each; fish live in tanks, bugs in glass cases. Central Park keeps only its birds and butterflies (the store sells birds and bees too). Prices to come.</div>
 <h2>FROM THE DOOR</h2>
-<svg id="v" viewBox="0 0 1200 640"></svg>
-<h2>FLOOR PLAN</h2>
-<svg id="p" viewBox="0 0 1200 520"></svg>
-<div class="cols">
-<div class="box"><h2>LEAVES THE PARK → A CAGE</h2><ul class="out">
-<li>Woods: fox, wolf, deer, black bear</li>
-<li>Farm: cow, pig, horse, wild horse, mule, ibex</li>
-<li>Zoo: lion, elephant, giraffe, zebra, camel</li>
-<li>Dinosaur valley: velociraptor, stegosaurus, brachiosaurus, pteranodon</li>
-<li>Small things: rat, frog, squirrel</li>
-<li>Street: cat, black cat, dog</li>
-<li>Bugs (one glass case): ants, beetle, mantis, grasshopper, ladybird, snail, slug</li></ul></div>
-<div class="box"><h2>STAYS IN THE PARK</h2><ul class="keep">
-<li>All birds: crows, owl, ducks, pigeons, the park's songbirds</li>
-<li>All butterflies</li></ul>
-<h2>HOW IT PLAYS</h2><ul>
-<li>Each cage: the animal pet-sized, idling and turning; its name and price on a tag.</li>
-<li>Double-click a cage (or E): buy it; it comes out and follows you (same pet as the adoption book, its looks changeable in YOU / PETS).</li>
-<li>The cage stays full: everyone can buy the same animal.</li>
-<li>The keeper's counter and the adoption book stay by the door.</li></ul></div>
-</div>
+<svg id="v" viewBox="0 0 1200 660"></svg>
+<h2>EVERY KIND, WALL BY WALL</h2>
+<div class="dim"><span class="k" style="border-color:#6a5a38;background:#2a241a"></span> already a pet today &nbsp; <span class="k" style="border-color:#e0b060;background:#3a2e14"></span> new: not a pet yet &nbsp; <span class="k" style="border-color:#4a7a9a;background:#14283a"></span> new, in a tank</div>
+<div id="cat"></div>
 <h2>TO DECIDE</h2><ul>
-<li>Bugs, bees and fireflies: out too (glass case), or stay in the park (beekeeping, fireflies and the wildlife journal use them)?</li>
-<li>Street cats and the dog: stay on the street, or only in the store?</li>
-<li>Penguin: it is a bird, so it stays at the lake?</li>
-<li>Bats, wasps, spiders, snake, slime: stay as the park's wild creatures, or go?</li></ul>
+<li>Fish and sea animals: this undoes "water animals are not pets" (7 Nov). Kept how: a bowl or tank in your apartment (they can't follow you), or a tank you carry?</li>
+<li>Caged birds: this undoes "no caged birds" for the store. OK?</li>
+<li>Left out unless you say: people-like folk (ogres, the mushroom folk, fairies) and things not alive (skeletons, golems, ghosts).</li>
+<li>Dog and cat breeds (323) stay in the adoption book, not cages.</li></ul>
 </div>
 <script>
-const NS='http://www.w3.org/2000/svg',mk=(s,t,a,txt)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;s.appendChild(e);return e;};
-const L=[['🦊','FOX',60],['🐺','WOLF',70],['🦌','DEER',80],['🐻','BEAR',90],['🐈','CAT',40],['🐈‍⬛','BLACK CAT',40],['🐕','DOG',50],['🐀','RAT',15]];
-const B=[['🦁','LION',150],['🐘','ELEPHANT',250],['🦒','GIRAFFE',220],['🦓','ZEBRA',140],['🐫','CAMEL',120],['🦖','RAPTOR',300],['🦕','STEGOSAUR',320],['🦕','BRACHIO',400],['🪽','PTERANODON',300],['🐸','FROG',20]];
-const R=[['🐄','COW',80],['🐖','PIG',60],['🐎','HORSE',110],['🐴','WILD HORSE',120],['🫏','MULE',90],['🐐','IBEX',90],['🐿️','SQUIRREL',25],['🐞','BUG CASE',30]];
-const v=document.getElementById('v');
-const W=1200,H=640,bx0=330,bx1=870,by0=150,by1=470;
-const g=mk(v,'defs',{});const lg=mk(g,'linearGradient',{id:'fl',x1:0,y1:0,x2:0,y2:1});mk(lg,'stop',{offset:0,'stop-color':'#4a3a28'});mk(lg,'stop',{offset:1,'stop-color':'#6e5638'});
-mk(v,'polygon',{points:`0,0 ${W},0 ${bx1},${by0} ${bx0},${by0}`,fill:'#2a2620'});
-mk(v,'polygon',{points:`0,${H} ${W},${H} ${bx1},${by1} ${bx0},${by1}`,fill:'url(#fl)'});
-mk(v,'polygon',{points:`0,0 ${bx0},${by0} ${bx0},${by1} 0,${H}`,fill:'#8a9a84'});
-mk(v,'polygon',{points:`${W},0 ${bx1},${by0} ${bx1},${by1} ${W},${H}`,fill:'#8a9a84'});
-mk(v,'rect',{x:bx0,y:by0,width:bx1-bx0,height:by1-by0,fill:'#9cac94'});
-for(let i=0;i<=12;i++){const t=i/12;mk(v,'line',{x1:bx0+(bx1-bx0)*t,y1:by1,x2:W*t,y2:H,stroke:'#5a4630','stroke-width':1});}
-const lerp=(a,b,t)=>a+(b-a)*t;
-function cage(pts,cx,cy,s,e,name,price){
-  mk(v,'polygon',{points:pts.map(p=>p.join(',')).join(' '),fill:'#3a3226',stroke:'#c8b070','stroke-width':2});
-  const [a,b,c,d]=pts;for(let i=1;i<6;i++){const t=i/6;mk(v,'line',{x1:lerp(a[0],b[0],t),y1:lerp(a[1],b[1],t),x2:lerp(d[0],c[0],t),y2:lerp(d[1],c[1],t),stroke:'#c8b070','stroke-width':1,opacity:.55});}
-  mk(v,'text',{x:cx,y:cy+s*.32,'font-size':s,'text-anchor':'middle'},e);
-  mk(v,'text',{x:cx,y:cy+s*.32+s*.62,'font-size':Math.max(7,s*.24),'text-anchor':'middle',fill:'#f0e6c8'},name+' $'+price);
-}
-const rows=[by0+30,by0+170],ch=125;
-B.forEach((k,i)=>{const col=i%5,row=i/5|0,cw=(bx1-bx0-30)/5,x=bx0+15+col*cw,y=rows[row];cage([[x+4,y],[x+cw-4,y],[x+cw-4,y+ch],[x+4,y+ch]],x+cw/2,y+ch/2-8,48,...k);});
-function side(list,left){
-  for(let i=0;i<list.length;i++){const col=i%4,row=i/4|0;
-    const t0=col/4+.02,t1=(col+1)/4-.02;
-    const X=t=>left?lerp(10,bx0,Math.pow(t,1)):lerp(W-10,bx1,t);
-    const yt=(t,yb)=>{const top=lerp(0,by0,t),bot=lerp(H,by1,t);return lerp(top,bot,yb);};
-    const ya=row?.55:.12,yb=row?.88:.45;
-    const q=[[X(t0),yt(t0,ya)],[X(t1),yt(t1,ya)],[X(t1),yt(t1,yb)],[X(t0),yt(t0,yb)]];
-    const tm=(t0+t1)/2,s=lerp(70,40,tm);cage(q,X(tm),yt(tm,(ya+yb)/2)-s*.15,s,...list[i]);}
-}
-side(L,true);side(R,false);
-mk(v,'rect',{x:470,y:520,width:260,height:70,fill:'#5a3a26',stroke:'#3a2418','stroke-width':3});
-mk(v,'text',{x:600,y:562,'font-size':16,'text-anchor':'middle',fill:'#f0e0b0'},'KEEPER\'S COUNTER');
-mk(v,'text',{x:600,y:140,'font-size':15,'text-anchor':'middle',fill:'#e0b060'},'BACK WALL: ZOO, DINOSAURS, FROG');
-mk(v,'text',{x:20,y:24,'font-size':15,fill:'#e0b060'},'LEFT: WOODS, STREET, RAT');
-mk(v,'text',{x:W-20,y:24,'font-size':15,'text-anchor':'end',fill:'#e0b060'},'RIGHT: FARM, SQUIRREL, BUGS');
-const p=document.getElementById('p'),P=(t,a,x)=>mk(p,t,a,x);
-P('rect',{x:300,y:40,width:600,height:440,fill:'#4a3a28',stroke:'#c8c0a0','stroke-width':4});
-P('rect',{x:540,y:472,width:120,height:16,fill:'#0f0d0b'});P('text',{x:600,y:505,'font-size':14,'text-anchor':'middle',fill:'#e0b060'},'DOOR (MARKET ST)');
-const pc=(x,y,w,h,e,n)=>{P('rect',{x,y,width:w,height:h,fill:'#3a3226',stroke:'#c8b070','stroke-width':2});P('text',{x:x+w/2,y:y+h/2+8,'font-size':22,'text-anchor':'middle'},e);P('text',{x:x+w/2,y:y+h+(y<60?14:-3),'font-size':9,'text-anchor':'middle',fill:'#f0e6c8'},n);};
-B.forEach((k,i)=>pc(310+i*58,48,52,46,k[0],k[1]));
-L.forEach((k,i)=>pc(308,110+(7-i)*42,52,38,k[0],k[1]));
-R.forEach((k,i)=>pc(840,110+(7-i)*42,52,38,k[0],k[1]));
-P('rect',{x:520,y:330,width:160,height:40,fill:'#5a3a26'});P('text',{x:600,y:355,'font-size':12,'text-anchor':'middle',fill:'#f0e0b0'},'COUNTER + KEEPER');
-P('rect',{x:420,y:420,width:60,height:36,fill:'#7a2a2a'});P('text',{x:450,y:443,'font-size':10,'text-anchor':'middle',fill:'#f0e0b0'},'BOOK');
-P('text',{x:600,y:230,'font-size':14,'text-anchor':'middle',fill:'#c8b890'},'open floor: walk the cages');
-P('text',{x:150,y:200,'font-size':13,fill:'#9a927c','text-anchor':'middle'},'2 rows high');P('text',{x:150,y:218,'font-size':13,fill:'#9a927c','text-anchor':'middle'},'on the walls');
-P('text',{x:1050,y:200,'font-size':13,fill:'#9a927c','text-anchor':'middle'},'26 cages,');P('text',{x:1050,y:218,'font-size':13,fill:'#9a927c','text-anchor':'middle'},'one animal each');
+const W={
+'LEFT WALL: MAMMALS, REPTILES, SLIMES':[
+['🐈','CAT'],['🐕','DOG'],['🐕','XOLO'],['🐇','RABBIT'],['🐇','HARE'],['🐀','RAT'],['🐿️','SQUIRREL',1],['🦇','BAT',1],['🦊','FOX'],['🐺','WOLF'],['🐻','BEAR'],['🦌','DEER'],['🐐','IBEX'],['🦁','LION'],
+['🐎','HORSE'],['🫏','DONKEY'],['🫏','MULE'],['🐄','COW'],['🐂','OX'],['🐖','PIG'],['🐑','SHEEP'],['🐐','GOAT'],['🐘','ELEPHANT'],['🦒','GIRAFFE'],['🦓','ZEBRA'],['🐫','CAMEL'],
+['🐸','FROG'],['🐸','BEELZEBUFO'],['🐊','CROCODILE'],['🐍','GARTER SNAKE',1],['🐍','PIT SNAKE',1],['🟢','PARK SLIME',1],['🟢','GREEN SLIME',1],['🔵','BLUE SLIME',1],['🔴','RED SLIME',1],['🟣','PURPLE SLIME',1],
+['🐀','GIANT RAT',1],['🦇','CAVE BAT',1],['🐸','CAVE FROG',1]],
+'BACK WALL: DINOSAURS, DRAGONS, TANKS':[
+['🦖','T. REX'],['🦖','RAPTOR'],['🦖','COMPY'],['🦕','STEGOSAURUS'],['🦕','TRICERATOPS'],['🦕','ANKYLOSAUR'],['🦕','PARASAUR'],['🦕','BRACHIOSAUR'],['🪽','PTERANODON'],['🐛','ARTHROPLEURA'],
+['🐉','RED DRAGONLING'],['🐉','PURPLE DRAGONLING'],['🐉','CRYSTAL DRAGONLING'],['🐉','GREEN DRAGONLING'],['🐉','RED DRAGON'],['🐉','CRYSTAL DRAGON'],
+...[['🐟','KOI'],['🐟','GOLDFISH'],['🐟','DACE'],['🐟','SOCKEYE'],['🐟','CATFISH'],['🐠','CLOWNFISH'],['🐠','ANGELFISH'],['🐠','BLUE TANG'],['🐠','YELLOW TANG'],['🐠','BUTTERFLYFISH'],['🐠','CARDINALFISH'],['🐠','CHROMIS'],['🐠','CLEANER WRASSE'],['🐠','WRASSE'],['🐠','FIREFISH'],['🐠','FOXFACE'],['🐠','GOATFISH'],['🐠','KNIFEJAW'],['🐠','LIONFISH'],['🐠','MANDARINFISH'],['🐠','MOORISH IDOL'],['🐍','MORAY'],['🐡','PUFFER'],['🐡','STRIPED PUFFER'],['🐟','SEA BREAM'],['🐟','TREVALLY'],['🐟','BARRACUDA'],['🦈','SHARK'],['🐟','STINGRAY'],['🐢','SEA TURTLE'],['🐬','DOLPHIN'],['🐙','OCTOPUS'],['🪼','JELLYFISH'],['🦐','SHRIMP'],['🐟','COELACANTH'],['🦕','PLESIOSAUR']].map(a=>[...a,2])],
+'RIGHT WALL: BIRDS, BUGS, CRABS':[
+['🦜','PARROT'],['🕊️','PIGEON'],['🐦‍⬛','CROW'],['🦉','OWL'],['🐦','GULL'],['🦆','DUCK'],['🐔','CHICKEN'],['🐧','PENGUIN'],
+['🐦','ROBIN',1],['🐦','BLUE JAY',1],['🐦','CARDINAL',1],['🐦','ORIOLE',1],['🐦','STARLING',1],['🐦','SPARROW',1],['🕊️','MOURNING DOVE',1],['🐦','MOCKINGBIRD',1],['🐦‍⬛','RED-WINGED BLACKBIRD',1],['🦅','RED-TAILED HAWK',1],['🪶','HERON',1],
+['🦋','BUTTERFLY'],['🐝','HONEYBEE'],['🐝','BUMBLEBEE'],['🐝','HIVEBUG'],['🐝','WASP'],['🐝','GIANT WASP',1],['✨','FIREFLY'],['🐞','LADYBIRD'],['🪲','BEETLE'],['🦗','MANTIS'],['🦗','GRASSHOPPER'],['🐜','ANT'],['🐜','ANT QUEEN'],['🐛','APHID'],
+['🕷️','SPIDER'],['🕷️','TARANTULA'],['🕷️','RADIOACTIVE SPIDER',1],['🐛','WOODLOUSE'],['🐛','CENTIPEDE'],['🦟','WATER SKATER'],['🐛','CATERPILLAR'],['🪱','WORM'],['🐌','SLUG'],['🐌','SNAIL'],['🦀','HERMIT CRAB'],['🦀','SHORE CRAB'],['🦀','REEF CRAB']]};
+const cat=document.getElementById('cat');let tot=0,nw=0;
+for(const [t,L] of Object.entries(W)){tot+=L.length;nw+=L.filter(a=>a[2]).length;const d=document.createElement('div');d.className='box';d.style.marginBottom='10px';
+ d.innerHTML='<b style="color:#e0b060">'+t+' ('+L.length+')</b><div class="g">'+L.map(([e,n,f])=>'<div class="c'+(f==1?' n':f==2?' t':'')+'"><b>'+e+'</b>'+n+'</div>').join('')+'</div>';cat.appendChild(d);}
+const s=document.createElement('div');s.className='dim';s.textContent=tot+' kinds in all, '+nw+' of them new (not a pet today).';cat.prepend(s);
+const NS='http://www.w3.org/2000/svg',v=document.getElementById('v'),mk=(t,a,x)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;v.appendChild(e);return e;};
+const Wd=1200,H=660,bx0=300,bx1=900,by0=110,by1=470,lerp=(a,b,t)=>a+(b-a)*t;
+mk('polygon',{points:`0,0 ${Wd},0 ${bx1},${by0} ${bx0},${by0}`,fill:'#2a2620'});
+mk('polygon',{points:`0,${H} ${Wd},${H} ${bx1},${by1} ${bx0},${by1}`,fill:'#6a5236'});
+for(let i=0;i<=12;i++){const t=i/12;mk('line',{x1:bx0+(bx1-bx0)*t,y1:by1,x2:Wd*t,y2:H,stroke:'#4a3a26'});}
+mk('polygon',{points:`0,0 ${bx0},${by0} ${bx0},${by1} 0,${H}`,fill:'#7a8a74'});
+mk('polygon',{points:`${Wd},0 ${bx1},${by0} ${bx1},${by1} ${Wd},${H}`,fill:'#7a8a74'});
+mk('rect',{x:bx0,y:by0,width:bx1-bx0,height:by1-by0,fill:'#8a9a84'});
+function cell(q,e,f){const[a,b,c,d]=q;const tank=f==2;
+ mk('polygon',{points:q.map(p=>p.join(',')).join(' '),fill:tank?'#1c4a6a':'#3a3226',stroke:tank?'#8ac0e0':f==1?'#e0b060':'#b0a070','stroke-width':1.2});
+ if(!tank)for(let i=1;i<4;i++){const t=i/4;mk('line',{x1:lerp(a[0],b[0],t),y1:lerp(a[1],b[1],t),x2:lerp(d[0],c[0],t),y2:lerp(d[1],c[1],t),stroke:'#b0a070','stroke-width':.6,opacity:.5});}
+ const cx=(a[0]+b[0]+c[0]+d[0])/4,cy=(a[1]+b[1]+c[1]+d[1])/4,h=Math.abs(d[1]-a[1]);const w=Math.abs(b[0]-a[0]),s=Math.min(h*.55,w*.8);mk('text',{x:cx,y:cy+s*.35,'font-size':s,'text-anchor':'middle'},e);}
+const back=W['BACK WALL: DINOSAURS, DRAGONS, TANKS'],BR=5,BC=Math.ceil(back.length/BR),cw=(bx1-bx0-16)/BC,chh=(by1-by0-16)/BR;
+back.forEach((k,i)=>{const c=i%BC,r=i/BC|0,x=bx0+8+c*cw,y=by0+8+r*chh;cell([[x+1,y+1],[x+cw-1,y+1],[x+cw-1,y+chh-1],[x+1,y+chh-1]],k[0],k[2]);});
+function side(L,left){const R=4,C=Math.ceil(L.length/R),X=t=>left?lerp(0,bx0,t):lerp(Wd,bx1,t),Y=(t,u)=>lerp(lerp(0,by0,t),lerp(H,by1,t),u);
+ L.forEach((k,i)=>{const c=i%C,r=i/C|0,t0=.03+c/C*.95,t1=.03+(c+1)/C*.95,u0=.04+r*.21,u1=u0+.2;cell([[X(t0),Y(t0,u0)],[X(t1),Y(t1,u0)],[X(t1),Y(t1,u1)],[X(t0),Y(t0,u1)]],k[0],k[2]);});}
+side(W['LEFT WALL: MAMMALS, REPTILES, SLIMES'],1);side(W['RIGHT WALL: BIRDS, BUGS, CRABS'],0);
+mk('rect',{x:470,y:545,width:260,height:62,fill:'#5a3a26',stroke:'#3a2418','stroke-width':3});mk('text',{x:600,y:582,'font-size':15,'text-anchor':'middle',fill:'#f0e0b0'},'KEEPER + ADOPTION BOOK');
+mk('text',{x:600,y:100,'font-size':14,'text-anchor':'middle',fill:'#e0b060'},'BACK: DINOSAURS & DRAGONS · TANKS (FISH, SEA LIFE)');
+mk('text',{x:14,y:650,'font-size':14,fill:'#e0b060'},'LEFT: MAMMALS, REPTILES, SLIMES');mk('text',{x:Wd-14,y:650,'font-size':14,'text-anchor':'end',fill:'#e0b060'},'RIGHT: BIRDS, BUGS, CRABS');
 </script></body></html>

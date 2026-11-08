@@ -12,8 +12,8 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   /* ---------- the plain shapes: a block every so many tiles, two to four buildings on it ---------- */
   const B=[]; const [BX,BY]=C.block;
   for(let gx=cx-C.R;gx<cx+C.R;gx+=BX)for(let gy=cy-C.R;gy<cy+C.R;gy+=BY){ const mx=gx+BX/2, my=gy+BY/2; if(Math.hypot(mx-cx,my-cy)>C.R||inBox(mx,my,near)||isWet(my))continue;
-    const low=C.lowY!=null&&my<C.lowY; let x=gx+3; while(x<gx+BX-6){ const w=Math.min(gx+BX-3-x,8+rnd()*18), d=(BY-6)*(.55+.45*rnd()); let h=tall(x+w/2,my); if(low)h*=C.lowK; if(rnd()<.12)h*=.4;
-      B.push([x+w/2,gy+3+d/2,w,d,Math.max(3,h),rnd()]); x+=w+1+rnd()*2; } }
+    const low=C.lowY!=null&&my<C.lowY; let x=gx+3; while(x<gx+BX-6){ const w=Math.min(gx+BX-3-x,8+rnd()*18), d=(BY-6)*(.55+.45*rnd()); let h=tall(x+w/2,my); if(low)h*=C.lowK; if(rnd()<.12)h*=.4; const room=gx+BX-3-x, ww=Math.min(room,Math.max(w,h*.3)), dd=Math.max(d,Math.min(BY-6,h*.3)); h=Math.min(h,3.2*Math.max(ww,dd));
+      B.push([x+ww/2,gy+3+dd/2,ww,dd,Math.max(3,h),rnd()]); x+=ww+1+rnd()*2; } }
   // one box without its floor: five faces, ten triangles
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0); { const ix=geo.index.array, keep=[]; for(let i=0;i<ix.length;i+=3){ const f=Math.floor(i/6); if(f!==3)keep.push(ix[i],ix[i+1],ix[i+2]); } geo.setIndex(keep); }
   const U={uHaze:{value:new THREE.Color()},uDay:{value:1},uF0:{value:C.fade[0]*T},uF1:{value:C.fade[1]*T},uSun:{value:new THREE.Vector3(0,1,0)}};
@@ -27,7 +27,7 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
         float wk=1.-smoothstep(${(60*TILE).toFixed(2)},${(220*TILE).toFixed(2)},d); if(wk>0.&&abs(vN.y)<.5){ vec2 g=vec2(dot(vW.xz,vec2(-vN.z,vN.x))/${(1.6*TILE).toFixed(2)},vW.y/${(1.4*TILE).toFixed(2)}), f=fract(g);
           float win=step(.25,f.x)*step(f.x,.75)*step(.3,f.y)*step(f.y,.8); c=mix(c,c*.55+vec3(.04,.06,.09),win*wk*uDay); c+=win*step(.62,h(floor(g)+vT*31.))*vec3(1.,.82,.5)*.5*(1.-uDay)*(.3+.7*wk); }
         if(abs(vN.y)<.5)c*=.85+.15*clamp(vL.y*1.5,0.,1.);
-        gl_FragColor=vec4(mix(c,uHaze,smoothstep(uF0,uF1,d)),1.); }`});
+        gl_FragColor=vec4(c,1.); }`});
   const M=new THREE.InstancedMesh(geo,mat,B.length), m4=new THREE.Matrix4(), aT=new Float32Array(B.length);
   B.forEach(([x,y,w,d,h,t],i)=>{ M.setMatrixAt(i,m4.makeScale(w*T,h*T,d*T).setPosition(XS(x),-.5*ZU,ZS(y))); aT[i]=t; });
   geo.setAttribute('aT',new THREE.InstancedBufferAttribute(aT,1)); M.frustumCulled=false; M.name='farcity'; M.userData.anyRoom=false; scene.add(M);
@@ -38,9 +38,9 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   g.fillStyle='rgb(255,0,90)'; g.fillRect(0,yOf(0)-1,W,H);   // (the ground to the horizon, all haze)
   const sx=Math.sign(XS(1)-XS(0))||1, sz=Math.sign(ZS(1)-ZS(0))||1, at=(u,D)=>{ const a=u*2*Math.PI; return [cx+sx*Math.sin(a)*D/T,cy+sz*Math.cos(a)*D/T]; };   // (a direction round the ring, as the cylinder lays it: from +z toward +x; back to map tiles)
   for(const [L,D,k] of [[1,C.ring[2],.95],[.7,C.ring[1],.8],[.4,C.ring[0],.65]]){ let x=0;
-    while(x<W){ const w=3+Math.floor(rnd()*9*k), u=(x+w/2)/W, [tx,ty]=at(u,D*T); let hh=tall(tx,ty)*(isWet(ty)?0:1)*(C.lowY!=null&&ty<C.lowY?C.lowK:1); if(rnd()<.15)hh*=.3;
+    while(x<W){ let w=3+Math.floor(rnd()*9*k); const [tx,ty]=at((x+w/2)/W,D*T); let hh=tall(tx,ty)*(isWet(ty)?0:1)*(C.lowY!=null&&ty<C.lowY?C.lowK:1); if(rnd()<.15)hh*=.3; w=Math.max(w,Math.ceil(hh*.3/(2*Math.PI*D/W)));
       if(hh>0){ const top=yOf(Math.atan2(hh*T,D*T)), bot=yOf(0), tone=Math.floor(rnd()*255); g.fillStyle=`rgb(${Math.round(L*255)},0,${tone})`; g.fillRect(x,top,w,bot-top);
-        if(hh>C.base[1]*1.6&&rnd()<.5){ const t2=yOf(Math.atan2(hh*1.12*T,D*T)); g.fillRect(x+Math.floor(w*.3),t2,Math.max(1,Math.floor(w*.4)),top-t2); if(rnd()<.4)g.fillRect(x+Math.floor(w/2),t2-3,1,3); }
+        if(hh>C.base[1]*1.6&&rnd()<.5){ const t2=yOf(Math.atan2(hh*1.08*T,D*T)); g.fillRect(x+Math.floor(w*.2),t2,Math.max(2,Math.floor(w*.6)),top-t2); }
         for(let yy=top+2;yy<bot-1;yy+=3)for(let xx=x+1;xx<x+w-1;xx+=2)if(rnd()<.5){ g.fillStyle=`rgb(${Math.round(L*255)},255,${tone})`; g.fillRect(xx,yy,1,1); } }
       x+=w+(rnd()<.3?1:0); } }
   const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.wrapS=THREE.RepeatWrapping;
@@ -48,7 +48,7 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
     vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader:`uniform sampler2D uTex; uniform vec3 uHaze; uniform float uDay; varying vec2 vU; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
       void main(){ vec4 t=texture2D(uTex,vU); if(t.a<.5)discard; vec3 base=mix(vec3(.30,.31,.34),vec3(.52,.46,.38),t.b)*(.25+.75*uDay);
-        vec3 c=mix(base,uHaze,.35+.6*t.r); c+=t.g*step(.55,h(floor(vU*vec2(${W}.,${H}.))))*vec3(1.,.82,.5)*.45*(1.-uDay)*(1.-.6*t.r); gl_FragColor=vec4(c,1.); }`});
+        vec3 c=base*(1.-.25*t.r); c+=t.g*step(.55,h(floor(vU*vec2(${W}.,${H}.))))*vec3(1.,.82,.5)*.45*(1.-uDay)*(1.-.6*t.r); gl_FragColor=vec4(c,1.); }`});
   const ring=new THREE.Mesh(new THREE.CylinderGeometry(RAD,RAD,PH,96,1,true).translate(0,(RAD*Math.tan(E1)+RAD*Math.tan(E0))/2,0),pmat);
   // (the ring is round the eye wherever it goes, so the far city stays on the horizon; only with the view in perspective)
   ring.frustumCulled=false; ring.renderOrder=-5; ring.name='skyline'; ring.userData.anyRoom=false; scene.add(ring);

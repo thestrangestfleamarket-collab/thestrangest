@@ -167,7 +167,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   // the open water past the river: across to the far shore three times as far as it was, and on along the city both ways out to the far plane (owner, 8 Nov 2026: "acrsoss the hudson should be 3x wider"; data/world.json edge.city)
   const CYw=LEVEL.edge&&LEVEL.edge.city, Rw=(CYw?CYw.reach:400)*T, szS=CYw?ZS(CYw.shore):rz0-900, sxa=-Rw, sxb=Rw;
   const sea=new THREE.Mesh(new THREE.PlaneGeometry(sxb-sxa,rz0-szS).rotateX(-Math.PI/2),farMat); sea.position.set((sxa+sxb)/2,LV-0.05,(rz0+szS)/2); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
-  for(const [a,b] of [[sxa,lx0+2*T],[lx1-2*T,sxb]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
+  for(const [a,b] of [[sxa,lx0],[lx1,sxb]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
   { const m=new THREE.Mesh(new THREE.PlaneGeometry(sxb-sxa,.05-LV+.04),new THREE.MeshLambertMaterial({color:0x5c5a55})); m.position.set(0,(.05-LV)/2-.02,szS-sea.position.z); m.raycast=()=>{}; sea.add(m); }   // the far shore's bank
   const setFlats=()=>{ flatAll.scale.x=lx1-lx0; flatAll.position.x=(lx0+lx1)/2; const a=RIVER.cx-WIN/2, b=RIVER.cx+WIN/2;
     flatL.scale.x=Math.max(.01,a-lx0); flatL.position.x=(lx0+a)/2; flatR.scale.x=Math.max(.01,lx1-b); flatR.position.x=(b+lx1)/2; };

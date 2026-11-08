@@ -287,7 +287,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -307,6 +307,9 @@ export class Block extends Server {
     } else if (m.t === "rag" && Array.isArray(m.b) && Array.isArray(m.o) && m.b.length <= 16) {
       const b = m.b.map(v => (Array.isArray(v) ? v.slice(0, 7) : []).map((x, i) => num(x, i < 3 ? -1e5 : -1, i < 3 ? 1e5 : 1)));
       this.broadcast(JSON.stringify({ t: "rag", id: s.id, o: [num(m.o[0], -1e5, 1e5), num(m.o[1], -1e5, 1e5)], hd: num(m.hd, -20, 20), b }), [c.id]);
+    } else if (m.t === "vr") {   // a headset player's own head, hands and fingers (162cb), to everyone else in the section
+      const arr = (a, n) => Array.isArray(a) && a.length ? a.slice(0, n).map(x => num(x, -9, 9)) : 0;
+      this.broadcast(JSON.stringify(m.off ? { t: "vr", id: s.id, off: 1 } : { t: "vr", id: s.id, h: arr(m.h, 4), L: arr(m.L, 27), R: arr(m.R, 27) }), [c.id]);
     } else if (m.t === "ragoff") {
       this.broadcast(JSON.stringify({ t: "ragoff", id: s.id }), [c.id]);
     } else if (m.t === "grab" || m.t === "drop" || m.t === "toss" || m.t === "free") {

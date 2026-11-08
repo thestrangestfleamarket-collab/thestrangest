@@ -115,6 +115,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      if(F.PM){ const v=!rg&&o.vr&&now-o.vr.t<3000?o.vr:null; if(v||F.PM.vr){ o.wantPose=true; if(!v&&F.PM.hands)F.PM.hands.fg=null; F.PM.vr=v; } }   // (a headset player: their own head, arms and fingers every frame, 162cb)
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body){ BODIES.pose(B,F.PM,F.body,rg?null:o.S); const W=o.S.water; if(!rg&&o.S._pfHead&&W&&W.in&&W.level!=null&&F.body.binv&&BODIES.headUp)BODIES.headUp(F.PM,F.body,o.S,F.g,F.me); } else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }
       if(VR.on){ if(o.lab)o.lab.show(false); tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); } else { if(o.tag)o.tag.visible=false; lab(o); o.lab.at(p.x,p.y+2.15*TILE,p.z); } }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
@@ -187,8 +188,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
         const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
       B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
     you();
-    const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
-      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
+    const disp=()=>{ const P=document.querySelector('#menu [data-p="chat"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
+      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.prepend(R);
       const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
     disp(); }
   SYS.onStart(go,'111d-online'); }

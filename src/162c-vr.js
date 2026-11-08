@@ -12,7 +12,7 @@ import {AVATAR} from './111c-avatar.js';
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
   const opt=Object.assign({},DEF); try{ const o=JSON.parse(SAVE.get('vr')||'{}'); for(const k in o)if(k in DEF&&typeof o[k]===typeof DEF[k])opt[k]=o[k]; }catch(e){}
   const PT={fast:[300,150,1000],normal:[800,300,1500],slow:[2000,500,3000]};
-  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
+  Object.assign(VR,{joints:{L:null,R:null},jp:{L:new Float32Array(75),R:new Float32Array(75)},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(), TRK=new THREE.Group(); HG.matrixAutoUpdate=TRK.matrixAutoUpdate=false; HUD.add(HG,TRK);
@@ -128,7 +128,9 @@ import {AVATAR} from './111c-avatar.js';
   const realHands=()=>{ if(VR.rh||!HANDS.vr)return VR.rh; VR.rh=HANDS.vr(AVATAR.L?AVATAR.L().skin:undefined); JM.parent.add(VR.rh.mesh); return VR.rh; };
   const hands=(xf,ref)=>{ '@later'; let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null; const RH=realHands(), got={L:0,R:0};
     for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
+      const jp=VR.jp[s.handedness==='left'?'L':'R']; J.jp=jp;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
+        { const j=HANDS.NAME[name]; if(j!=null){ jp[j*3]=P4.x; jp[j*3+1]=P4.y; jp[j*3+2]=P4.z; } }   // (every joint where it is, for your body's fingers: 162cb)
         if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
         if(RH){ const sd=s.handedness==='left'?'L':'R'; RH.set(sd,name,M4.compose(P4,Q4,S4.setScalar(1))); got[sd]=1; }
         JM.setMatrixAt(n++,M4.compose(P4,Q4,S4.setScalar(p.radius||.008)));

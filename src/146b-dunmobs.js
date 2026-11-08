@@ -125,10 +125,11 @@ __CODE__("worker/dunmobs.js")
     const rooms=D.rooms.filter(r=>!r.c).map(r=>{ const L=D.lay(r.k), Rr=L.R, ln=[X(Rr.x0+.9),Z(Rr.y0+.9),X(Rr.x1-.9),Z(Rr.y1-.9)], lo=[Math.min(ln[0],ln[2]),Math.min(ln[1],ln[3]),Math.max(ln[0],ln[2]),Math.max(ln[1],ln[3])];
       const inl=b=>b[2]>lo[0]&&b[0]<lo[2]&&b[3]>lo[1]&&b[1]<lo[3], block=SOL.down.filter(inl).map(b=>b.map(v=>+v.toFixed(2)));
       for(const h of L.hz)if(h.t!=='web')block.push([X(h.x0),Z(h.y0),X(h.x1),Z(h.y1)].map(v=>+v.toFixed(2)));
+      if(MODS.dunTerr&&L.T)for(const b of MODS.dunTerr.cliffs(L))block.push(b.map(v=>+v.toFixed(2)));   // a monster keeps off a cliff edge as off a wall
       return {k:r.k,n:L.n,safe:!!L.safe,lane:lo.map(v=>+v.toFixed(2)),block}; });
     { const A=KEEP.lane; rooms.push({k:KEEP.k,n:3,lv:'up',keep:1,rally:[+KT.x.toFixed(2),+KT.z.toFixed(2)],lane:[A.x0,A.z0,A.x1,A.z1].map(v=>+v.toFixed(2)),block:[]}); }
     const cat={tiers:Object.fromEntries(Object.entries(TIER).map(([k,t])=>[k,{hp:t.hp,dmg:t.dmg,v:t.v}])),mix:MIX,guards,stats:SST,styles:STY,kk:KK};
-    const g={T,rooms,cat}; g.v=hash(JSON.stringify(g)); GB=g; MOBSIM.grid(MS,g); if(remote&&heardV!==g.v){ heardV=g.v; ONLINE.send({t:'mobgrid',g}); } };
+    const g={T,rooms,cat}; g.v=hash(JSON.stringify(g)); GB=g; GB.ground=D.rooms.some(r=>!r.c&&D.lay(r.k).T); MOBSIM.grid(MS,g); if(remote&&heardV!==g.v){ heardV=g.v; ONLINE.send({t:'mobgrid',g}); } };
   const hi=m=>{ remote=true; heardV=m.mv||''; if(GB&&heardV!==GB.v){ heardV=GB.v; ONLINE.send({t:'mobgrid',g:GB}); } }; if(HI)hi(HI);
   ONLINE.hear.mobs=m=>{ if(remote&&!trying)pic=m; };
   ONLINE.hear.mobhurt=m=>{ if(!trying)felt(m); };
@@ -180,7 +181,7 @@ __CODE__("worker/dunmobs.js")
     IM.count=GL.count=Math.min(NS,slimes.length); plan=M_.length?{g,sp,sl}:plan; draw(); };
   const onLevel=k=>{ for(const th of [...things])unthing(th); for(const b of bolts){ b.m.removeFromParent(); b.m.geometry.dispose(); b.m.material.dispose(); } bolts=[];
     L=k?D.lay(k):null; lvl=L?L.n:0; if(!k){ pic=null; plan=null; slimes=[]; IM.count=GL.count=0; for(const [i,r] of bodies)park(r); bodies.clear(); for(const r of [...(RES||[]),...SPI,...CB])if(r.on)park(r); return; }
-    if(!GB)bake(); if(L.safe)plan={g:0,sp:0,sl:0}; };
+    if(!GB||!GB.ground&&L.T)bake(); if(L.safe)plan={g:0,sp:0,sl:0}; };   // baked again once the rooms have their ground, so the cliffs go in
   const arena=()=>{};
   const toKeep=on=>{ for(const [i,r] of bodies)park(r); bodies.clear(); for(const r of [...(RES||[]),...SPI,...CB])if(r.on)park(r); slimes=[]; pic=null; IM.count=GL.count=0; AR=on?KEEP:null; (on?KG:MAPG.dungeon).add(G); lvl=on?3:L?L.n:0; if(on&&!GB)bake(); };
   const tick=dt=>{ const atKeep=SHARED.LVL==='up'&&Math.hypot(pos.x-KT.x,pos.z-KT.z)<30*T; if(atKeep!==(AR===KEEP))toKeep(atKeep);

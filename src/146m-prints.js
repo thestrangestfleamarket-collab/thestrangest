@@ -8,7 +8,7 @@ const PHOTOS={mine:[]}; window.PHOTOS=PHOTOS;
 { const T=TILE;
   try{ PHOTOS.mine=JSON.parse(OWNED.get('photos')||'[]')||[]; }catch(e){ PHOTOS.mine=[]; }
   const nameOf=p=>'PHOTO: '+p.cap; const reg=()=>FORAGE.add({names:Object.fromEntries(PHOTOS.mine.map(p=>[p.id,nameOf(p)]))}); reg();
-  ITEMS.reg('photo',{sellable:true}); ITEMS.cls.push({is:id=>id.startsWith('photo_'),as:'photo',calc:{value:id=>{ const p=PHOTOS.mine.find(p=>p.id===id); return p&&p.v||1; }}});
+  ITEMS.reg('photo',{sellable:true}); FORAGE.NM.photo='A PHOTOGRAPH'; ITEMS.cls.push({is:id=>id.startsWith('photo_'),as:'photo',calc:{value:id=>{ const p=PHOTOS.mine.find(p=>p.id===id); return p&&p.v||1; }}});
   PHOTOS.save=()=>{ try{ OWNED.set('photos',JSON.stringify(PHOTOS.mine.slice(-40))); }catch(e){} };
   // a photograph of the world: o.from (a camera), fov, W/H, gain (exposure), fx(g,cv) (blur after developing)
   const RTS={}; let cam=null;

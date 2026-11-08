@@ -1,35 +1,39 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32, I16, SKIN} from './003a-skin.js';
-import {INV, LEVELS, LOOKS, NPCS, ONLINE, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {scene} from './004-main.js';
+import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {makeNPC} from './076-npc-map.js';
-const PETS={}; window.PETS=PETS;
+window.PETS=PETS;
 { const IDX=__LAZY__("data/pets.json"), WU=TILE/.84, V3=THREE.Vector3;
   const KD={};
   const PETFILES={cat:__LAZY__("data/pets/cat.json"),dog:__LAZY__("data/pets/dog.json"),xolo:__LAZY__("data/pets/xolo.json"),rabbit:__LAZY__("data/pets/rabbit.json"),hare:__LAZY__("data/pets/hare.json"),rat:__LAZY__("data/pets/rat.json"),frog:__LAZY__("data/pets/frog.json"),parrot:__LAZY__("data/pets/parrot.json"),pigeon:__LAZY__("data/pets/pigeon.json"),crow:__LAZY__("data/pets/crow.json"),owl:__LAZY__("data/pets/owl.json"),gull:__LAZY__("data/pets/gull.json"),duck:__LAZY__("data/pets/duck.json"),chicken:__LAZY__("data/pets/chicken.json"),penguin:__LAZY__("data/pets/penguin.json"),fox:__LAZY__("data/pets/fox.json"),wolf:__LAZY__("data/pets/wolf.json"),bear:__LAZY__("data/pets/bear.json"),deer:__LAZY__("data/pets/deer.json"),ibex:__LAZY__("data/pets/ibex.json"),lion:__LAZY__("data/pets/lion.json"),crocodile:__LAZY__("data/pets/crocodile.json"),beelzebufo:__LAZY__("data/pets/beelzebufo.json"),horse:__LAZY__("data/pets/horse.json"),donkey:__LAZY__("data/pets/donkey.json"),mule:__LAZY__("data/pets/mule.json"),cow:__LAZY__("data/pets/cow.json"),ox:__LAZY__("data/pets/ox.json"),pig:__LAZY__("data/pets/pig.json"),sheep:__LAZY__("data/pets/sheep.json"),goat:__LAZY__("data/pets/goat.json"),elephant:__LAZY__("data/pets/elephant.json"),giraffe:__LAZY__("data/pets/giraffe.json"),zebra:__LAZY__("data/pets/zebra.json"),camel:__LAZY__("data/pets/camel.json"),trex:__LAZY__("data/pets/trex.json"),raptor:__LAZY__("data/pets/raptor.json"),compy:__LAZY__("data/pets/compy.json"),stego:__LAZY__("data/pets/stego.json"),trike:__LAZY__("data/pets/trike.json"),anky:__LAZY__("data/pets/anky.json"),parasaur:__LAZY__("data/pets/parasaur.json"),brachio:__LAZY__("data/pets/brachio.json"),ptera:__LAZY__("data/pets/ptera.json"),arthro:__LAZY__("data/pets/arthro.json"),rdragonling:__LAZY__("data/pets/rdragonling.json"),pdragonling:__LAZY__("data/pets/pdragonling.json"),cdragonling:__LAZY__("data/pets/cdragonling.json"),gdragonling:__LAZY__("data/pets/gdragonling.json"),rdragon:__LAZY__("data/pets/rdragon.json"),cdragon:__LAZY__("data/pets/cdragon.json"),hivebug:__LAZY__("data/pets/hivebug.json"),bee:__LAZY__("data/pets/bee.json"),bumblebee:__LAZY__("data/pets/bumblebee.json"),wasp:__LAZY__("data/pets/wasp.json"),butterfly:__LAZY__("data/pets/butterfly.json"),firefly:__LAZY__("data/pets/firefly.json"),ladybird:__LAZY__("data/pets/ladybird.json"),beetle:__LAZY__("data/pets/beetle.json"),mantis:__LAZY__("data/pets/mantis.json"),hopper:__LAZY__("data/pets/hopper.json"),ant:__LAZY__("data/pets/ant.json"),antqueen:__LAZY__("data/pets/antqueen.json"),aphid:__LAZY__("data/pets/aphid.json"),spider:__LAZY__("data/pets/spider.json"),tarantula:__LAZY__("data/pets/tarantula.json"),woodlouse:__LAZY__("data/pets/woodlouse.json"),centipede:__LAZY__("data/pets/centipede.json"),skater:__LAZY__("data/pets/skater.json"),caterpillar:__LAZY__("data/pets/caterpillar.json"),worm:__LAZY__("data/pets/worm.json"),slug:__LAZY__("data/pets/slug.json"),snail:__LAZY__("data/pets/snail.json"),hermit:__LAZY__("data/pets/hermit.json"),shorecrab:__LAZY__("data/pets/shorecrab.json"),reefcrab:__LAZY__("data/pets/reefcrab.json")};
-  const PRICE={pets:30,birds:25,bugs:10,shore:10,farm:60,wild:80,zoo:120,dino:150,dragons:200};
-  const GN={pets:'CATS, DOGS AND SMALL PETS',birds:'BIRDS',wild:'WILD ANIMALS',farm:'FARM ANIMALS',zoo:'ZOO ANIMALS',dino:'DINOSAURS',dragons:'DRAGONS',bugs:'BUGS',shore:'CRABS'};
+  const BREEDF={chihuahua:__LAZY__("data/pets/b/chihuahua.json"),pomeranian:__LAZY__("data/pets/b/pomeranian.json"),yorkie:__LAZY__("data/pets/b/yorkie.json"),maltese:__LAZY__("data/pets/b/maltese.json"),shihtzu:__LAZY__("data/pets/b/shihtzu.json"),pug:__LAZY__("data/pets/b/pug.json"),papillon:__LAZY__("data/pets/b/papillon.json"),pekingese:__LAZY__("data/pets/b/pekingese.json"),minpin:__LAZY__("data/pets/b/minpin.json"),italiangrey:__LAZY__("data/pets/b/italiangrey.json"),cavalier:__LAZY__("data/pets/b/cavalier.json"),havanese:__LAZY__("data/pets/b/havanese.json"),bichon:__LAZY__("data/pets/b/bichon.json"),toypoodle:__LAZY__("data/pets/b/toypoodle.json"),japchin:__LAZY__("data/pets/b/japchin.json"),brusselsgriffon:__LAZY__("data/pets/b/brusselsgriffon.json"),chinesecrested:__LAZY__("data/pets/b/chinesecrested.json"),jackrussell:__LAZY__("data/pets/b/jackrussell.json"),westie:__LAZY__("data/pets/b/westie.json"),scottie:__LAZY__("data/pets/b/scottie.json"),cairn:__LAZY__("data/pets/b/cairn.json"),airedale:__LAZY__("data/pets/b/airedale.json"),bullterrier:__LAZY__("data/pets/b/bullterrier.json"),staffy:__LAZY__("data/pets/b/staffy.json"),pitbull:__LAZY__("data/pets/b/pitbull.json"),amstaff:__LAZY__("data/pets/b/amstaff.json"),bostonterrier:__LAZY__("data/pets/b/bostonterrier.json"),foxterrier:__LAZY__("data/pets/b/foxterrier.json"),bedlington:__LAZY__("data/pets/b/bedlington.json"),schnauzer:__LAZY__("data/pets/b/schnauzer.json"),giantschnauzer:__LAZY__("data/pets/b/giantschnauzer.json"),dandie:__LAZY__("data/pets/b/dandie.json"),borderterrier:__LAZY__("data/pets/b/borderterrier.json"),ratterrier:__LAZY__("data/pets/b/ratterrier.json"),kerryblue:__LAZY__("data/pets/b/kerryblue.json"),skye:__LAZY__("data/pets/b/skye.json"),beagle:__LAZY__("data/pets/b/beagle.json"),basset:__LAZY__("data/pets/b/basset.json"),bloodhound:__LAZY__("data/pets/b/bloodhound.json"),dachshund:__LAZY__("data/pets/b/dachshund.json"),longdachshund:__LAZY__("data/pets/b/longdachshund.json"),coonhound:__LAZY__("data/pets/b/coonhound.json"),redbone:__LAZY__("data/pets/b/redbone.json"),foxhound:__LAZY__("data/pets/b/foxhound.json"),harrier:__LAZY__("data/pets/b/harrier.json"),bluetick:__LAZY__("data/pets/b/bluetick.json"),petitbasset:__LAZY__("data/pets/b/petitbasset.json"),greyhound:__LAZY__("data/pets/b/greyhound.json"),whippet:__LAZY__("data/pets/b/whippet.json"),afghan:__LAZY__("data/pets/b/afghan.json"),saluki:__LAZY__("data/pets/b/saluki.json"),borzoi:__LAZY__("data/pets/b/borzoi.json"),irishwolfhound:__LAZY__("data/pets/b/irishwolfhound.json"),deerhound:__LAZY__("data/pets/b/deerhound.json"),basenji:__LAZY__("data/pets/b/basenji.json"),pharaoh:__LAZY__("data/pets/b/pharaoh.json"),ibizan:__LAZY__("data/pets/b/ibizan.json"),rhodesian:__LAZY__("data/pets/b/rhodesian.json"),labrador:__LAZY__("data/pets/b/labrador.json"),golden:__LAZY__("data/pets/b/golden.json"),flatcoat:__LAZY__("data/pets/b/flatcoat.json"),chessie:__LAZY__("data/pets/b/chessie.json"),toller:__LAZY__("data/pets/b/toller.json"),cocker:__LAZY__("data/pets/b/cocker.json"),englishcocker:__LAZY__("data/pets/b/englishcocker.json"),springer:__LAZY__("data/pets/b/springer.json"),brittany:__LAZY__("data/pets/b/brittany.json"),kingcharles:__LAZY__("data/pets/b/kingcharles.json"),waterspaniel:__LAZY__("data/pets/b/waterspaniel.json"),pointer:__LAZY__("data/pets/b/pointer.json"),gsp:__LAZY__("data/pets/b/gsp.json"),weimaraner:__LAZY__("data/pets/b/weimaraner.json"),vizsla:__LAZY__("data/pets/b/vizsla.json"),irishsetter:__LAZY__("data/pets/b/irishsetter.json"),englishsetter:__LAZY__("data/pets/b/englishsetter.json"),gordonsetter:__LAZY__("data/pets/b/gordonsetter.json"),rottweiler:__LAZY__("data/pets/b/rottweiler.json"),doberman:__LAZY__("data/pets/b/doberman.json"),boxer:__LAZY__("data/pets/b/boxer.json"),greatdane:__LAZY__("data/pets/b/greatdane.json"),mastiff:__LAZY__("data/pets/b/mastiff.json"),bullmastiff:__LAZY__("data/pets/b/bullmastiff.json"),neapolitan:__LAZY__("data/pets/b/neapolitan.json"),canecorso:__LAZY__("data/pets/b/canecorso.json"),saintbernard:__LAZY__("data/pets/b/saintbernard.json"),newfoundland:__LAZY__("data/pets/b/newfoundland.json"),bernese:__LAZY__("data/pets/b/bernese.json"),swissmountain:__LAZY__("data/pets/b/swissmountain.json"),greatpyrenees:__LAZY__("data/pets/b/greatpyrenees.json"),akita:__LAZY__("data/pets/b/akita.json"),husky:__LAZY__("data/pets/b/husky.json"),malamute:__LAZY__("data/pets/b/malamute.json"),samoyed:__LAZY__("data/pets/b/samoyed.json"),portuguesewater:__LAZY__("data/pets/b/portuguesewater.json"),dogue:__LAZY__("data/pets/b/dogue.json"),leonberger:__LAZY__("data/pets/b/leonberger.json"),komondor:__LAZY__("data/pets/b/komondor.json"),kuvasz:__LAZY__("data/pets/b/kuvasz.json"),tibetanmastiff:__LAZY__("data/pets/b/tibetanmastiff.json"),collie:__LAZY__("data/pets/b/collie.json"),bordercollie:__LAZY__("data/pets/b/bordercollie.json"),aussie:__LAZY__("data/pets/b/aussie.json"),gsd:__LAZY__("data/pets/b/gsd.json"),malinois:__LAZY__("data/pets/b/malinois.json"),sheltie:__LAZY__("data/pets/b/sheltie.json"),corgi:__LAZY__("data/pets/b/corgi.json"),cardigan:__LAZY__("data/pets/b/cardigan.json"),oldenglish:__LAZY__("data/pets/b/oldenglish.json"),cattledog:__LAZY__("data/pets/b/cattledog.json"),puli:__LAZY__("data/pets/b/puli.json"),beardedcollie:__LAZY__("data/pets/b/beardedcollie.json"),belgiantervuren:__LAZY__("data/pets/b/belgiantervuren.json"),belgiansheepdog:__LAZY__("data/pets/b/belgiansheepdog.json"),briard:__LAZY__("data/pets/b/briard.json"),bulldog:__LAZY__("data/pets/b/bulldog.json"),frenchie:__LAZY__("data/pets/b/frenchie.json"),dalmatian:__LAZY__("data/pets/b/dalmatian.json"),poodle:__LAZY__("data/pets/b/poodle.json"),minipoodle:__LAZY__("data/pets/b/minipoodle.json"),chowchow:__LAZY__("data/pets/b/chowchow.json"),sharpei:__LAZY__("data/pets/b/sharpei.json"),shiba:__LAZY__("data/pets/b/shiba.json"),keeshond:__LAZY__("data/pets/b/keeshond.json"),lhasa:__LAZY__("data/pets/b/lhasa.json"),schipperke:__LAZY__("data/pets/b/schipperke.json"),xoloitzcuintli:__LAZY__("data/pets/b/xoloitzcuintli.json"),lowchen:__LAZY__("data/pets/b/lowchen.json"),finnishspitz:__LAZY__("data/pets/b/finnishspitz.json"),americaneskimo:__LAZY__("data/pets/b/americaneskimo.json"),norwegianelk:__LAZY__("data/pets/b/norwegianelk.json"),farmdog:__LAZY__("data/pets/b/farmdog.json"),mutt:__LAZY__("data/pets/b/mutt.json"),streetdog:__LAZY__("data/pets/b/streetdog.json"),labradoodle:__LAZY__("data/pets/b/labradoodle.json"),goldendoodle:__LAZY__("data/pets/b/goldendoodle.json"),cockapoo:__LAZY__("data/pets/b/cockapoo.json"),dingo:__LAZY__("data/pets/b/dingo.json"),carolina:__LAZY__("data/pets/b/carolina.json"),domestic:__LAZY__("data/pets/b/domestic.json"),domesticlong:__LAZY__("data/pets/b/domesticlong.json"),tuxedo:__LAZY__("data/pets/b/tuxedo.json"),calico:__LAZY__("data/pets/b/calico.json"),tortoiseshell:__LAZY__("data/pets/b/tortoiseshell.json"),blackcat:__LAZY__("data/pets/b/blackcat.json"),ginger:__LAZY__("data/pets/b/ginger.json"),siamese:__LAZY__("data/pets/b/siamese.json"),oriental:__LAZY__("data/pets/b/oriental.json"),balinese:__LAZY__("data/pets/b/balinese.json"),persian:__LAZY__("data/pets/b/persian.json"),himalayan:__LAZY__("data/pets/b/himalayan.json"),exotic:__LAZY__("data/pets/b/exotic.json"),mainecoon:__LAZY__("data/pets/b/mainecoon.json"),ragdoll:__LAZY__("data/pets/b/ragdoll.json"),birman:__LAZY__("data/pets/b/birman.json"),norwegian:__LAZY__("data/pets/b/norwegian.json"),siberian:__LAZY__("data/pets/b/siberian.json"),britishsh:__LAZY__("data/pets/b/britishsh.json"),britishlh:__LAZY__("data/pets/b/britishlh.json"),scottishfold:__LAZY__("data/pets/b/scottishfold.json"),scottishstraight:__LAZY__("data/pets/b/scottishstraight.json"),americanshorthair:__LAZY__("data/pets/b/americanshorthair.json"),americancurl:__LAZY__("data/pets/b/americancurl.json"),bengal:__LAZY__("data/pets/b/bengal.json"),egyptianmau:__LAZY__("data/pets/b/egyptianmau.json"),ocicat:__LAZY__("data/pets/b/ocicat.json"),savannah:__LAZY__("data/pets/b/savannah.json"),abyssinian:__LAZY__("data/pets/b/abyssinian.json"),somali:__LAZY__("data/pets/b/somali.json"),russianblue:__LAZY__("data/pets/b/russianblue.json"),nebelung:__LAZY__("data/pets/b/nebelung.json"),chartreux:__LAZY__("data/pets/b/chartreux.json"),korat:__LAZY__("data/pets/b/korat.json"),burmese:__LAZY__("data/pets/b/burmese.json"),bombay:__LAZY__("data/pets/b/bombay.json"),tonkinese:__LAZY__("data/pets/b/tonkinese.json"),havanabrown:__LAZY__("data/pets/b/havanabrown.json"),sphynx:__LAZY__("data/pets/b/sphynx.json"),devonrex:__LAZY__("data/pets/b/devonrex.json"),cornishrex:__LAZY__("data/pets/b/cornishrex.json"),selkirkrex:__LAZY__("data/pets/b/selkirkrex.json"),lykoi:__LAZY__("data/pets/b/lykoi.json"),munchkin:__LAZY__("data/pets/b/munchkin.json"),manx:__LAZY__("data/pets/b/manx.json"),japanesebobtail:__LAZY__("data/pets/b/japanesebobtail.json"),americanbobtail:__LAZY__("data/pets/b/americanbobtail.json"),pixiebob:__LAZY__("data/pets/b/pixiebob.json"),turkishvan:__LAZY__("data/pets/b/turkishvan.json"),turkishangora:__LAZY__("data/pets/b/turkishangora.json"),snowshoe:__LAZY__("data/pets/b/snowshoe.json"),ragamuffin:__LAZY__("data/pets/b/ragamuffin.json"),toyger:__LAZY__("data/pets/b/toyger.json"),chausie:__LAZY__("data/pets/b/chausie.json"),singapura:__LAZY__("data/pets/b/singapura.json"),laperm:__LAZY__("data/pets/b/laperm.json"),cymric:__LAZY__("data/pets/b/cymric.json"),khaomanee:__LAZY__("data/pets/b/khaomanee.json"),alleycat:__LAZY__("data/pets/b/alleycat.json")};
+  const PRICE={pets:30,dogs:30,cats:30,birds:25,bugs:10,shore:10,farm:60,wild:80,zoo:120,dino:150,dragons:200};
+  const GN={dogs:'DOG BREEDS',cats:'CAT BREEDS',pets:'CATS, DOGS AND SMALL PETS',birds:'BIRDS',wild:'WILD ANIMALS',farm:'FARM ANIMALS',zoo:'ZOO ANIMALS',dino:'DINOSAURS',dragons:'DRAGONS',bugs:'BUGS',shore:'CRABS'};
   let I=null; const idx=()=>I?Promise.resolve(I):IDX().then(J=>{ I=J; I.by={}; for(const k of J.kinds)I.by[k.key]=k; return I; });
-  const kind=key=>KD[key]||(KD[key]=PETFILES[key]?PETFILES[key]():Promise.reject(new Error('no pet kind '+key)));
+  const kind=key=>{ if(KD[key])return KD[key]; const K=I&&I.by[key];   // (a breed: its base animal with the breed's own corners, bones and zone map over it)
+    return KD[key]=K&&K.of?Promise.all([kind(K.of),BREEDF[key]?BREEDF[key]():Promise.reject(new Error('no breed '+key))]).then(([D,b])=>({...D,key,breed:b,zones0:D.zones,zones:K.zones,size:b.size,tall:b.tall}))
+      :PETFILES[key]?PETFILES[key]():Promise.reject(new Error('no pet kind '+key)); };
   const H2=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   /* ---------- a pet's look: kind, name, a colour a zone, a value a knob (0..100 from least to most), size (50..150), home (1: waits at home) ---------- */
   const code=P=>[P.k,encodeURIComponent(P.n||''),(P.c||[]).map(h=>h.replace('#','')).join('_'),(P.s||[]).join('_'),P.z||100,P.h?1:0].join('|');
   const decode=s=>{ const a=String(s||'').split('|'); if(!a[0])return null; return {k:a[0],n:decodeURIComponent(a[1]||''),c:a[2]?a[2].split('_').map(h=>'#'+h):[],s:a[3]?a[3].split('_').map(Number):[],z:+a[4]||100,h:a[5]==='1'}; };
-  const fresh=K=>({k:K.key,n:'',c:K.zones.map(z=>z[1]),s:K.knobs.map(([,, mn,df,mx])=>Math.round((df-mn)/Math.max(1e-6,mx-mn)*100)),z:100,h:false});
+  const fresh=K=>({k:K.key,n:'',c:K.zones.map(z=>z[1]),s:K.s0?K.s0.slice():K.knobs.map(([,, mn,df,mx])=>Math.round((df-mn)/Math.max(1e-6,mx-mn)*100)),z:100,h:false});
   /* ---------- a pet's body: the base shape with each knob's ends blended in, its bones moved the same, its zones painted ---------- */
   const QS=new THREE.Quaternion(), M4=new THREE.Matrix4(), S1=new V3(1,1,1);
-  const shape=(D,P)=>{ const M=D.mesh, n=M.n, Pp=SKIN.dec(M).p.slice(), T=D.rig.t.map(t=>t.slice());
+  const shape=(D,P)=>{ const M=D.mesh, n=M.n, Pp=SKIN.dec(M).p.slice(), T=D.rig.t.map(t=>t.slice()), B=D.breed;
+    if(B){ const d=B.dd||(B.dd=new Int8Array(B64(B.p).buffer)); for(let j=0;j<n*3;j++)Pp[j]+=d[j]*B.s; for(const b in B.t){ const t=B.t[b]; for(let c=0;c<3;c++)T[+b][c]+=t[c]; } }
     D.knobs.forEach((kb,i)=>{ const v=P.s[i]; if(v==null)return; const x=kb.min+(kb.max-kb.min)*v/100, lo=x<kb.def, e=lo?kb.lo:kb.hi; if(!e)return; const w=lo?(kb.def-x)/Math.max(1e-6,kb.def-kb.min):(x-kb.def)/Math.max(1e-6,kb.max-kb.def); if(w<=0)return;
       const d=e.d||(e.d=new Int8Array(B64(e.p).buffer)); for(let j=0;j<n*3;j++)Pp[j]+=d[j]*e.s*w; for(const b in e.t){ const t=e.t[b]; for(let c=0;c<3;c++)T[+b][c]+=t[c]*w; } });
     return {P:Pp,T}; };
-  const paint=(D,P,g)=>{ const M=D.mesh, Z=M.zd||(M.zd=B64(M.z)), C0=SKIN.dec(M).c, C=g.attributes.color.array, Z0=D.zones.map(z=>H2(z[1])), Zn=D.zones.map((z,i)=>H2(P.c[i]||z[1]));
-    for(let i=0;i<M.n;i++){ const z=Z[i], a=Z0[z], b=Zn[z], la=a[0]+a[1]+a[2]+1, lv=(C0[i*3]+C0[i*3+1]+C0[i*3+2]+1)/la; for(let c=0;c<3;c++)C[i*3+c]=Math.max(0,Math.min(255,Math.round(b[c]*lv))); }
+  const paint=(D,P,g)=>{ const M=D.mesh, Z=M.zd||(M.zd=B64(M.z)), BZ=D.breed&&D.breed.z?D.breed.zz||(D.breed.zz=B64(D.breed.z)):null, C0=SKIN.dec(M).c, C=g.attributes.color.array, Z0=(D.zones0||D.zones).map(z=>H2(z[1])), Zn=D.zones.map((z,i)=>H2(P.c[i]||z[1]));
+    for(let i=0;i<M.n;i++){ const z=Z[i], a=Z0[z], b=Zn[BZ?BZ[i]:z], la=a[0]+a[1]+a[2]+1, lv=(C0[i*3]+C0[i*3+1]+C0[i*3+2]+1)/la; for(let c=0;c<3;c++)C[i*3+c]=Math.max(0,Math.min(255,Math.round(b[c]*lv))); }
     g.attributes.color.needsUpdate=true; };
   const rig=(D,T)=>{ const R=D.rig, bones=R.names.map((nm,i)=>{ const b=new THREE.Bone(); b.name=nm; b.position.fromArray(T[i]); b.quaternion.fromArray(R.q[i]); if(R.s)b.scale.fromArray(R.s[i]); return b; });
     R.parent.forEach((p,i)=>{ if(p>=0)bones[p].add(bones[i]); }); const W=bones.map(()=>new THREE.Matrix4());
@@ -75,17 +79,38 @@ const PETS={}; window.PETS=PETS;
     PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
-    N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+' IS HAPPY TO SEE YOU.':'IT SNIFFS YOUR HAND.','#9fe07f')};
+    N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); }};
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
   /* ---------- yours ---------- */
-  let MY=decode(OWNED.get('pet')), DRAFT=null, inShop=false, gen=0;
-  const save=()=>{ try{ if(MY)OWNED.set('pet',code(MY)); else OWNED.del('pet'); }catch(e){} };
+  /* ---------- your pets (owner, 8 Nov 2026): every one you have, one out with you; each has an age, hunger, loyalty and health; your permapet (the one you chose on
+     your first day) can never be lost: starved, it faints until it is fed; any other pet starved long enough runs away. Kept with your account (OWNED 'pets') ---------- */
+  const HR=3600e3, now=()=>Date.now();
+  const recs=()=>{ try{ const j=JSON.parse(OWNED.get('pets')||'null'); if(Array.isArray(j))return j.filter(r=>r&&decode(r.c)); }catch(e){} const o=OWNED.get('pet'); return o&&decode(o)?[{id:1,c:o,born:now(),at:now(),hu:20,lo:50,hp:100,out:true}]:[]; };
+  let LIST=recs(), DRAFT=null, inShop=false, gen=0;
+  const out=()=>LIST.find(r=>r.out)||null;
+  let MY=out()?decode(out().c):null;
+  const keep=()=>{ try{ OWNED.set('pets',JSON.stringify(LIST)); const o=out(); if(o)OWNED.set('pet',o.c); else OWNED.del('pet'); }catch(e){} };
+  const save=()=>{ const o=out(); if(o&&MY)o.c=code(MY); keep(); };
+  const cl=v=>Math.max(0,Math.min(100,v));
+  // a pet's hours: hungrier all the time (but never past hungry while you are away), loyal while it is out with you and fed, ill when starved
+  const step=(r,h,away)=>{ const h0=r.hu; r.hu=cl(h0+4*h); if(away)r.hu=Math.min(r.hu,Math.max(80,h0));
+    if(!away&&r.out&&r.hu<60)r.lo=cl(r.lo+2*h); if(r.hu>80)r.lo=cl(r.lo-3*h);
+    if(!away&&r.hu>=100)r.hp=cl(r.hp-6*h); else if(r.hu<50)r.hp=cl(r.hp+10*h); };
+  const fainted=r=>!!r&&r.perma&&r.hp<=0;
+  const tickAll=away=>{ const t=now(); let lost=[];
+    for(const r of LIST){ const h=Math.max(0,(t-(r.at||t))/HR); r.at=t; if(h>0)step(r,h,away); if(r.hp<=0&&!r.perma)lost.push(r); }
+    for(const r of lost){ const P=decode(r.c), K=I&&I.by[P.k]; LIST.splice(LIST.indexOf(r),1); SAY((P.n||'YOUR '+(K?K.name:'PET')).toUpperCase()+' WENT TOO LONG WITHOUT FOOD AND RAN AWAY.','#e0a080'); }
+    if(lost.length&&!out()&&LIST.length)LIST[0].out=true; MY=out()?decode(out().c):null; keep(); };
+  const PFOOD=['g_catfood'];
+  const feed=r=>{ const id=PFOOD.find(f=>FORAGE.has&&FORAGE.has(f)); const P=decode(r.c), nm=(P.n||'YOUR PET').toUpperCase();
+    if(!id)return SAY(nm+' IS HUNGRY FOR PET FOOD: CAT FOOD FROM THE PET STORE OR THE BODEGA.','#c8a090'); FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw();
+    const was=fainted(r); r.hu=cl(r.hu-45); r.lo=cl(r.lo+4); if(was)r.hp=30; keep(); SAY(was?nm+' WAKES UP AND EATS EVERY BITE.':nm+' EATS IT ALL UP.','#9fe07f'); if(PETS.menuDraw)PETS.menuDraw(); };
   const shown=()=>inShop&&DRAFT||MY;
   const meLead=()=>VIT.dead?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading};
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
-  const refresh=()=>{ const P=shown(), want=P&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
+  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
     make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
@@ -127,7 +152,13 @@ const PETS={}; window.PETS=PETS;
   const choose=key=>{ const K=I&&I.by[key]; if(!K)return; DRAFT=Object.assign(fresh(K),{n:DRAFT&&DRAFT.n||''}); draw(); };
   const price=P=>P&&I&&I.by[P.k]?PRICE[I.by[P.k].group]||30:0;
   function adopt(){ const P=DRAFT; if(!P||!inShop)return; const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
-    const K=I.by[P.k]; MY={...P,c:P.c.slice(),s:P.s.slice()}; save(); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. CHANGE ITS LOOK ANY TIME IN YOU, PET.','#9fe07f'); draw(); }
+    const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
+  // a new pet in your list and out with you (the one out before goes home to wait)
+  function add(P,perma){ for(const r of LIST)r.out=false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1; LIST.push({id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:true}); MY=decode(code(P)); keep(); refresh(); }
+  PETS.add=add; PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
+  PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; add(P,true); return true; };
+  PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; for(const x of LIST)x.out=x===r; MY=decode(r.c); keep(); draw(); };
+  PETS.letGo=id=>{ const r=LIST.find(x=>x.id===id); if(!r||r.perma)return false; LIST.splice(LIST.indexOf(r),1); if(r.out&&LIST.length)LIST[0].out=true; MY=out()?decode(out().c):null; keep(); draw(); return true; };
   const on=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); };
   function draw(){ if(!I){ idx().then(draw).catch(e=>console.warn('PET',e)); return; } if(!panel())return; const P=cur(), K=P&&I.by[P.k], rows=k=>$('#looks .lr[data-k="'+k+'"]');
     rows('pt-none').dataset.off=P||inShop?'1':''; for(const k of ['pt-name','pt-pre','pt-col','pt-shape','pt-size','pt-home'])rows(k).dataset.off=P?'':'1'; rows('pt-kind').dataset.off=inShop||P?'':'1'; rows('pt-adopt').dataset.off=inShop?'':'1'; rows('pt-home').dataset.off=P&&!inShop?'':'1';
@@ -141,17 +172,80 @@ const PETS={}; window.PETS=PETS;
       $('#lptp').innerHTML='<button data-p="">NATURAL</button>'+Object.keys(K.presets).map(p=>`<button data-p="${esc(p)}">${esc(p)}</button>`).join('');
       $('#lpts').innerHTML=K.knobs.map(([k,l],i)=>`<span class="dim">${esc(l)}</span><input type="range" min="0" max="100" step="5" data-i="${i}" aria-label="${esc(l)}">`).join('')||'<span class="dim">NONE FOR THIS ONE</span>'; }
     for(const i of $('#lptc').querySelectorAll('input'))i.value=P.c[+i.dataset.i]||K.zones[+i.dataset.i][1]; for(const i of $('#lpts').querySelectorAll('input'))i.value=P.s[+i.dataset.i]??50;
-    $('#lpta').textContent='ADOPT THIS '+K.name+' FOR $'+price(P); $('#lptam').textContent=MY?'(YOUR '+(MY.n||I.by[MY.k].name).toUpperCase()+' GOES TO A GOOD HOME)':'';
+    $('#lpta').textContent='ADOPT THIS '+K.name+' FOR $'+price(P); $('#lptam').textContent=MY?'(YOUR '+(MY.n||I.by[MY.k].name).toUpperCase()+' GOES HOME TO WAIT)':'';
     LOOKS.layout(); refresh(); }
   PETS.draw=draw; PETS.choose=k=>choose(k); PETS.set=set; PETS.adopt=()=>adopt(); PETS.inShop=()=>inShop;
   // the counter: the YOU window on its PET tab, the kinds open, the one you are choosing beside you; leaving the shop puts yours back
   PETS.shop=()=>{ idx().then(()=>{ inShop=true; DRAFT=MY?{...MY,c:MY.c.slice(),s:MY.s.slice(),h:false}:fresh(I.by.cat||I.kinds[0]); draw(); LOOKS.open(); LOOKS.tab('pet'); }); };
   SYS.every(()=>{ if(inShop&&($('#looks')&&$('#looks').hidden||!(ROOMS.off.pets&&ROOMS.off.pets.spawn&&Math.hypot(pos.x-ROOMS.off.pets.spawn[0],pos.z-ROOMS.off.pets.spawn[1])<15*TILE))){ inShop=false; DRAFT=null; draw(); } },400,'pet shop');
   SYS.onStart(()=>{ const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); if(MY)idx().then(draw).catch(()=>{}); },'146zj-pets');
+  /* ---------- a pet's portrait: its own little stage, drawn into a canvas (the first day, the PETS menu) ---------- */
+  const PV={key:'',busy:null,rt:{}};
+  const pvBuild=async P=>{ const K=(await idx()).by[P.k]; if(!K)return; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
+    geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
+    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
+    const mix=new THREE.AnimationMixer(R.bones[0]), id=pickClip(CL,'idle'); if(id)mix.clipAction(CL[id]).play();
+    if(!PV.sc){ PV.sc=new THREE.Scene(); PV.sc.add(new THREE.HemisphereLight(0xffffff,0x506050,2.4)); const d=new THREE.DirectionalLight(0xffffff,1.6); d.position.set(1.5,3,2); PV.sc.add(d); PV.cam=new THREE.PerspectiveCamera(28,1,.01,100); }
+    if(PV.me){ PV.sc.remove(PV.me); PV.me.geometry.dispose(); PV.me.material.dispose(); }
+    const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let i=0;i<Pp.length;i++){ const c=i%3; if(Pp[i]<lo[c])lo[c]=Pp[i]; if(Pp[i]>hi[c])hi[c]=Pp[i]; }
+    PV.sc.add(me); PV.me=me; PV.mix=mix; PV.box={lo,hi}; };
+  PETS.portrait=(cv,P,a=0,dt=1/60)=>{ if(!cv||!P)return; const key=code(P);
+    if(PV.key!==key&&!PV.busy)PV.busy=pvBuild(P).then(()=>{ PV.key=key; }).catch(e=>{ PV.key=key; console.warn('PET',e); }).finally(()=>{ PV.busy=null; });
+    if(!PV.me)return; const W=cv.width, H=cv.height, k=W+'x'+H, rt=PV.rt[k]||(PV.rt[k]={t:new THREE.WebGLRenderTarget(W,H),px:new Uint8Array(W*H*4)}); rt.t.texture.colorSpace=THREE.SRGBColorSpace;
+    PV.mix.update(dt); const {lo,hi}=PV.box, c=new V3((lo[0]+hi[0])/2,(lo[1]+hi[1])/2,(lo[2]+hi[2])/2), r=Math.max(hi[0]-lo[0],hi[1]-lo[1],hi[2]-lo[2])*2.4, cam=PV.cam;
+    cam.aspect=W/H; cam.updateProjectionMatrix(); cam.position.set(c.x+Math.sin(a)*r,c.y+r*.28,c.z+Math.cos(a)*r); cam.lookAt(c);
+    const old=renderer.getRenderTarget(), cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha();
+    renderer.setRenderTarget(rt.t); renderer.setClearColor(0x000000,0); renderer.clear(); renderer.render(PV.sc,cam); renderer.setRenderTarget(old); renderer.setClearColor(cc,ca);
+    renderer.readRenderTargetPixels(rt.t,0,0,W,H,rt.px); const cx=cv.getContext('2d'), img=cx.createImageData(W,H); for(let y=0;y<H;y++)img.data.set(rt.px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); cx.putImageData(img,0,0); };
+  /* ---------- choosing a pet: every kind and breed, its colour varieties, its name (the first day's PET step, the PETS menu's permapet) ---------- */
+  PETS.picker=(el,P0,onChange)=>{ let P=P0?{...P0}:null;
+    const draw=()=>{ if(!I){ idx().then(draw); return; } if(!P)P=fresh(I.by.labrador||I.by.cat||I.kinds[0]); const K=I.by[P.k], G=[...new Set(I.kinds.map(k=>k.group))];
+      el.innerHTML=`<label>ANIMAL</label><div class="row"><select data-pk="g" aria-label="kind of animal">${G.map(g=>`<option value="${g}"${g===K.group?' selected':''}>${esc(GN[g]||g.toUpperCase())}</option>`).join('')}</select>`
+        +`<select data-pk="k" aria-label="animal">${I.kinds.filter(k=>k.group===K.group).map(k=>`<option value="${k.key}"${k.key===K.key?' selected':''}>${esc(k.name)}</option>`).join('')}</select></div>`
+        +`<label>COLOURS</label><div class="row">${(Object.keys(K.presets).length?Object.keys(K.presets):['NATURAL']).map(p=>`<button class="btn" data-pp="${esc(p)}">${esc(p)}</button>`).join('')}</div>`
+        +`<label>NAME</label><input type="text" data-pk="n" maxlength="18" autocomplete="off" spellcheck="false" value="${esc(P.n||'')}" placeholder="${esc(K.name)}">`
+        +`<div class="dim stp">EVERY PET IS PET SIZED. COLOURS, SHAPE AND SIZE CHANGE ANY TIME (PROFILE, PET).</div>`;
+      for(const x of el.querySelectorAll('select,input'))stop(x); if(onChange)onChange(P); };
+    el.onchange=e=>{ const d=e.target.dataset.pk; if(d==='g'){ const K=I.kinds.find(k=>k.group===e.target.value); if(K){ P=Object.assign(fresh(K),{n:P.n}); draw(); } } else if(d==='k'){ P=Object.assign(fresh(I.by[e.target.value]),{n:P.n}); draw(); } };
+    el.oninput=e=>{ if(e.target.dataset.pk==='n'){ P.n=e.target.value.trim().toUpperCase().slice(0,18); if(onChange)onChange(P); } };
+    el.onclick=e=>{ const b=e.target.closest('[data-pp]'); if(!b)return; const K=I.by[P.k], pr=K.presets[b.dataset.pp]; P.c=K.zones.map(([z,d])=>pr&&pr[z]||d); if(onChange)onChange(P); };
+    draw(); return {get:()=>P}; };
+  /* ---------- the menu's PETS: every pet you have, all about it ---------- */
+  const TYPE={birds:'BIRD',wild:'WILD ANIMAL',farm:'FARM ANIMAL',zoo:'ZOO ANIMAL',dino:'DINOSAUR',dragons:'DRAGON',bugs:'BUG',shore:'CRAB'};
+  const typeOf=K=>K.of?K.of.toUpperCase():K.key==='xolo'?'DOG':TYPE[K.group]||K.name;
+  const ageOf=r=>{ const d=Math.floor((now()-(r.born||now()))/864e5); return d<1?'NEW TODAY':d===1?'1 DAY':d+' DAYS'; };
+  const moodOf=r=>fainted(r)?'FAINTED: FEED IT TO WAKE IT':r.hp<40?'ILL':r.hu>80?'HUNGRY':r.lo>80?'DEVOTED':r.lo>50?'HAPPY':r.lo>25?'SETTLING IN':'SHY';
+  const bar=(v,bad)=>`<span style="display:inline-block;width:110px;height:9px;box-shadow:inset 0 0 0 1px currentColor;vertical-align:middle"><i style="display:block;height:100%;width:${Math.round(v)}%;background:${bad?'#e0a080':'#7dffa8'}"></i></span> ${Math.round(v)}`;
+  let MEL=null, choosing=null, pa=0, pcv=null, praf=0;
+  const spin=()=>{ cancelAnimationFrame(praf); if(!MEL||!MEL.isConnected||MEL.closest('[hidden]')||!pcv||!pcv.isConnected)return; praf=requestAnimationFrame(spin); try{ PETS.portrait(pcv,choosing?choosing.get():MY,pa+=.008); }catch(e){ console.warn('PET',e); } };
+  const menuDraw=()=>{ const el=MEL; if(!el)return; if(!I){ idx().then(menuDraw); return; } tickAll(false);
+    const perma=LIST.find(r=>r.perma); let o='<h3>YOUR PETS</h3>';
+    if(!perma&&!choosing)o+='<div class="row"><span>CHOOSE YOUR PERMAPET: ANY ANIMAL, FREE, AND IT CAN NEVER BE LOST.</span><button class="btn" data-pa="perma">CHOOSE</button></div>';
+    if(choosing)o+='<div class="row" style="align-items:flex-start;gap:14px"><canvas width="220" height="190" style="width:220px;height:190px;flex:none"></canvas><div id="dpetpick" style="flex:1;min-width:0"></div></div><div class="row"><button class="btn" data-pa="keep">KEEP THIS ONE AS MY PERMAPET</button><button class="btn" data-pa="cancel">NOT NOW</button></div>';
+    else if(LIST.length)o+='<div class="row"><canvas width="220" height="170" style="width:220px;height:170px"></canvas></div>';
+    if(!LIST.length&&!choosing)o+='<div class="dim">NO PETS YET. ADOPT ONE AT THE PET STORE ON MARKET ST.</div>';
+    const ord=LIST.slice().sort((a,b)=>(b.out-a.out)||(b.perma-a.perma)||(a.id-b.id));
+    for(const r of ord){ const P=decode(r.c), K=I.by[P.k]; if(!K)continue; const long=K.long*P.z/100, tall=K.size[1]*long/Math.max(...K.size), run=Math.max(1.4,Math.min(4.5,3.6*tall));
+      const rows=[['KIND',typeOf(K)],['BREED',K.of||K.key==='xolo'?K.name:K.key==='cat'||K.key==='dog'?'MIXED':K.name],['PERMAPET',r.perma?'YES: IT CAN NEVER BE LOST':'NO'],['AGE',ageOf(r)],['ADOPTED',new Date(r.born||now()).toLocaleDateString()],
+        ['WHERE',r.out?(P.h?'WAITING AT HOME':'WITH YOU'):'RESTING AT HOME'],['MOOD',moodOf(r)],['HEALTH',bar(r.hp,r.hp<40)],['HUNGER',bar(r.hu,r.hu>80)],['LOYALTY',bar(r.lo,r.lo<25)],
+        ['SIZE',tall.toFixed(2)+' M TALL, '+long.toFixed(2)+' M LONG'],['SPEED',run.toFixed(1)+' M/S AT A RUN']];
+      o+=`<div style="margin:12px 0 4px;color:#d8ffe4">${esc((P.n||K.name).toUpperCase())}${r.perma?' ★':''}</div><table>${rows.map(([a,b])=>`<tr><td class="dim" style="padding-right:12px">${a}</td><td>${b}</td></tr>`).join('')}</table>`
+        +`<div class="row">${r.out?'':`<button class="btn" data-pa="out" data-id="${r.id}">TAKE WITH YOU</button>`}<button class="btn" data-pa="feed" data-id="${r.id}">FEED</button><button class="btn" data-pa="look" data-id="${r.id}">CHANGE ITS LOOK</button>${r.perma?'':`<button class="btn" data-pa="go" data-id="${r.id}">LET IT GO</button>`}</div>`; }
+    o+='<div class="dim" style="margin-top:10px">PETS GET HUNGRY: FEED THEM CAT FOOD (THE PET STORE, THE BODEGA). PET YOURS NOW AND THEN (DOUBLE-CLICK IT). A PET STARVED TOO LONG RUNS AWAY; YOUR PERMAPET ONLY FAINTS.</div>';
+    el.innerHTML=o; pcv=el.querySelector('canvas'); if(choosing){ const pk=el.querySelector('#dpetpick'); choosing=PETS.picker(pk,choosing.get()); } spin(); };
+  PETS.menu=el=>{ MEL=el; if(!el.dataset.on){ el.dataset.on='1'; el.addEventListener('click',e=>{ const b=e.target.closest('[data-pa]'); if(!b)return; const a=b.dataset.pa, r=LIST.find(x=>x.id===+b.dataset.id);
+      if(a==='perma'){ choosing={get:()=>null}; menuDraw(); return; }
+      if(a==='keep'&&choosing){ const P=choosing.get(); choosing=null; if(P&&PETS.setPerma(P))SAY((P.n||'YOUR '+I.by[P.k].name).toUpperCase()+' IS YOUR PERMAPET. IT WILL ALWAYS FIND ITS WAY BACK TO YOU.','#9fe07f'); menuDraw(); return; }
+      if(a==='cancel'){ choosing=null; menuDraw(); return; }
+      if(!r)return; if(a==='out'){ PETS.takeOut(r.id); menuDraw(); } else if(a==='feed')feed(r); else if(a==='look'){ PETS.takeOut(r.id); if(UI.menuTab)UI.menuTab('pets','pet'); }
+      else if(a==='go'){ const P=decode(r.c); if(b.dataset.sure){ PETS.letGo(r.id); SAY((P.n||'YOUR PET').toUpperCase()+' WANDERS OFF TO A NEW HOME.','#c8d8e0'); menuDraw(); } else { b.dataset.sure='1'; b.textContent='SURE? CLICK AGAIN'; } } }); }
+    menuDraw(); };
+  PETS.menuDraw=()=>{ if(MEL&&MEL.isConnected&&!MEL.closest('[hidden]'))menuDraw(); };
+  SYS.every(()=>{ tickAll(false); if(!choosing)PETS.menuDraw(); },60000,'pet hours');
+  SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
   // THE PET STORE: the shops' shared inside (162fa: the keeper's counter and shelves) and, by the door, a stand with the adoption book
   MSHOP.kit.pets=A=>{ (MSHOP.kit._||(()=>{}))(A); const R=A.R, F=IKIT.frame(R), K=IKIT.room(F,o=>A.add(o),()=>{}), D=F.D, tm=D/(R.y1-R.y0), u0=.5, u1=1.1, v0=D-1.0, v1=D-.55;
     K.box(u0,v0,u1,v1,0,.95,0x5a3a26); K.box(u0-.03,v0-.03,u1+.03,v1+.03,.95,1.0,0x3a2418); K.box(u0+.12,v0+.08,u1-.12,v1-.08,1.0,1.06,0xe8dcc0); K.box(u0+.16,v0+.1,u0+.3,v1-.1,1.0,1.07,0x7a2a2a);
     A.sol(R.x0+u0/tm,R.y0+v0/tm,R.x0+u1/tm,R.y0+v1/tm); K.use('THE ADOPTION BOOK (ADOPT A PET)',(u0+u1)/2,(v0+v1)/2,.8,1.2,()=>PETS.shop(),1.8); K.flush(); };
   MSHOP.kit.pets.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); };
 }
-export {PETS};

@@ -13,7 +13,7 @@ import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
-{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=1e9, MAXN=20, FADE_S=15000;
   // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
   const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
   const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
@@ -32,13 +32,13 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:k&&typeof k==='object'?{t:'act',...k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
-  const place=(o,now)=>{ '@later'; const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
+  const place=(o,now)=>{ '@later'; const s=o.s, n=s.length-1; if(n<0)return null; const t=now-Math.max(LAG,(o.gap||0)*1.4); if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
     for(let i=n;i>0;i--)if(s[i-1].t<=t){ const a=s[i-1], b=s[i]; if(Math.hypot(b.x-a.x,b.z-a.z)>4*TILE||a.lv!==b.lv||a.rm!==b.rm)return b;
       const k=(t-a.t)/(b.t-a.t||1), dh=Math.atan2(Math.sin(b.hd-a.hd),Math.cos(b.hd-a.hd)); return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,y:a.y+(b.y-a.y)*k,hd:a.hd+dh*k,lv:b.lv,rm:b.rm}; }
     return s[n]; };
   ONLINE.at=(o,now)=>{ const p=place(o,now)||{x:0,z:0}; return [p.x/TL,-p.z/TL]; }; ONLINE.V=V8;
 
-  const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
+  const push=(o,a)=>{ const t0=performance.now(), L=o.s[o.s.length-1]; if(L)o.gap=(o.gap||SEND*1000)*.8+Math.min(3000,t0-L.t)*.2; o.s.push({t:t0,x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ '@later'; let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };

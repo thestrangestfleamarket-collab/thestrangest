@@ -42,7 +42,7 @@ addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(LEVELS.own(marker,'*'));
 
-function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); if(ONLINE.push)ONLINE.push(p); } const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
+function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); NPCS.pushX(p); if(ONLINE.push)ONLINE.push(p); } const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
   for(const [x0,z0,x1,z1] of SHARED.solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } }
@@ -71,7 +71,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   if(RAG.on)B=ragPose();
   else{
     if(SHARED.drive){ mx=0; mz=0; SHARED.target=null; st.runTarget=0; } if(window.BOAT&&BOAT.on){ BOAT.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; } if(RIDE.on){ RIDE.steer(dt,mx,mz); mx=0; mz=0; SHARED.target=null; }
-    if(window.RUNNER&&RUNNER.on){ const r=RUNNER.steer(dt); mx=r[0]; mz=r[1]; SHARED.target=null; st.runTarget=1; } const ml=Math.hypot(mx,mz), busy=st.move;
+    if(window.RUNNER&&RUNNER.on){ const r=RUNNER.steer(dt); mx=r[0]; mz=r[1]; SHARED.target=null; st.runTarget=r[2]??1; } const ml=Math.hypot(mx,mz), busy=st.move;
     if(FT){ st.yr=0; if(UI.fly){ if(st.water)st.water.in=false; RIVER.swim=false; } else if(!RIVER.feed(st,pos,dt,ml>0,keys)&&!(FOUNT.feed&&FOUNT.feed(st,pos,dt,ml>0,keys))&&!(BROOK.feed&&BROOK.feed(st,pos,dt,ml>0,keys))&&!(SHARED.BOD.GD&&SHARED.BOD.GD.feed&&SHARED.BOD.GD.feed(st,pos,dt,ml>0,keys))&&!(MODS.waters||[]).some(w=>w.feed&&w.feed(st,pos,dt,ml>0,keys)))WATER.feed(st,pos,dt,ml>0,keys); SYS.run('swim',st,dt,keys,ml>0); st.target=0; RIG.step(st,dt); FEEL.step(dt,mx,mz); }
     else{
     if(window.WIELD)WIELD.pre(dt);

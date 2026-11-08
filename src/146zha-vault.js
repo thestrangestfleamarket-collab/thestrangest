@@ -39,7 +39,6 @@ const MVAULT={}; window.MVAULT=MVAULT;
   const riddle=(b,d)=>{ const k=Math.floor(hs(d,89)*3), x=1+Math.floor(hs(d,97)*8); return k===0?`HALF OF ${2*b}`:k===1?`${b+x} TAKE AWAY ${x}`:b%3===0?`THREE TIMES ${b/3}`:`ONE MORE THAN ${b-1}`; };
   MVAULT.code=()=>code(lock());
   // INTELLIGENCE grows by reading the city (a stat, 141-forage; capped at its most)
-  if(!FORAGE.stats.gain)FORAGE.stats.gain=(k,n=1)=>{ const st_=FORAGE.ST, mx=FORAGE.stats.MAX; if(st_[k]==null||st_[k]>=mx)return 0; const v=Math.min(mx,st_[k]+n), g=v-st_[k]; st_[k]=v; FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); return g; };
   const smart=(n,why)=>{ const g=FORAGE.stats.gain('int',n); if(g)say(`${why} YOUR INTELLIGENCE RISES TO ${FORAGE.ST.int}.`,'#7fd0ff'); };
   const clue=(id,title,draw,cap)=>{ const d=lock(); MINI.look(title,draw,cap); if(S.read[id]!==d){ S.read[id]=d; save(); smart(1,'YOU WORK IT OUT.'); } MVAULT.reads=(MVAULT.reads||0)+1; };
   const paper=(g,w,h,bg='#e8dcb8')=>{ g.fillStyle=bg; g.fillRect(0,0,w,h); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.strokeRect(10,10,w-20,h-20); g.fillStyle='#2a2420'; g.textAlign='center'; };

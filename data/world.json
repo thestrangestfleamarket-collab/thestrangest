@@ -23,9 +23,9 @@
    "cols": 4,
    "rows": 2,
    "x0": -130,
-   "y0": -186.5,
+   "y0": -231.5,
    "w": 392,
-   "h": 395.5
+   "h": 440.5
   },
   "ids": [
    [
@@ -451,7 +451,7 @@
    -130.1,
    -107.9
   ],
-  "river": -185,
+  "river": -230,
   "origin": [
    72,
    -77
@@ -474,13 +474,13 @@
   },
   {
    "id": "apts",
-   "name": "APARTMENTS",
+   "name": "THE TOWER",
    "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 141.3,
-   "y1": 169.9,
-   "face": "e"
+   "x0": 76.0,
+   "x1": 107.63,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
   },
   {
    "id": "bank",
@@ -504,91 +504,138 @@
    "id": "florist",
    "name": "THE FLORIST",
    "kind": "front",
-   "x0": 1.06,
-   "x1": 18.82,
+   "x0": -51,
+   "x1": -36.42,
    "merchant": "tomato",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "bees",
    "kind": "front",
-   "x0": 18.82,
-   "x1": 36.58,
+   "x0": -26.13,
+   "x1": -15.2,
    "name": "THE BEEKEEPER",
    "merchant": "village_gardener",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "bfly",
    "kind": "front",
-   "x0": 36.58,
-   "x1": 54.34,
+   "x0": -15.2,
+   "x1": -4.26,
    "name": "THE BUTTERFLY SHOP",
    "merchant": "park_ranger",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "birds",
    "kind": "front",
-   "x0": 54.34,
-   "x1": 72.11,
+   "x0": -2.76,
+   "x1": 8.17,
    "name": "THE BIRD SHOP",
    "merchant": "forest_ranger",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "pets",
    "name": "THE PET STORE",
    "kind": "front",
-   "x0": 72.11,
-   "x1": 89.87,
+   "x0": 8.17,
+   "x1": 19.1,
    "merchant": "aquarium_service_technician",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "mush",
    "kind": "front",
-   "x0": 89.87,
-   "x1": 107.63,
+   "x0": 36.68,
+   "x1": 45.8,
    "name": "THE MUSHROOM SHOP",
    "merchant": "mushroom",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "gems",
    "kind": "front",
-   "x0": 116.37,
-   "x1": 139.75,
+   "x0": 45.8,
+   "x1": 54.91,
    "name": "THE GEM SHOP",
    "merchant": "scuba_diver",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "armor",
    "kind": "front",
-   "x0": 139.75,
-   "x1": 163.14,
+   "x0": 117.87,
+   "x1": 128.86,
    "name": "THE ARMOURY",
    "merchant": "samurai_warrior",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
+  },
+  {
+   "id": "gym",
+   "name": "KNUCKLE & IRON",
+   "kind": "front",
+   "x0": 147.75,
+   "x1": 167.75,
+   "lot": true,
+   "inW": 22,
+   "inD": 17,
+   "inH": 130
   },
   {
    "id": "clothes",
    "kind": "front",
-   "x0": 163.14,
-   "x1": 186.52,
-   "name": "THE CLOTHES SHOP",
+   "x0": 167.75,
+   "x1": 209.91,
+   "name": "THE DEPARTMENT STORE",
    "merchant": "valet_attendant",
    "lot": true
   },
   {
    "id": "skate",
    "kind": "front",
-   "x0": 186.52,
-   "x1": 209.91,
+   "x0": 128.86,
+   "x1": 139.85,
    "name": "THE SKATE SHOP",
    "merchant": "skate_shop_owner",
-   "lot": true
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "diner",
@@ -603,12 +650,11 @@
    "id": "hotel",
    "name": "THE HOTEL",
    "kind": "front",
-   "x0": -51,
-   "x1": -36.42,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 116.37,
+   "x1": 147.75,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "merchant": "front_desk_clerk",
    "pf": "hotel"
   },
@@ -631,24 +677,22 @@
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": -26.13,
-   "x1": -4.26,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 1.06,
+   "x1": 25.5,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "theatre"
   },
   {
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": -2.76,
-   "x1": 19.1,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 25.5,
+   "x1": 50.0,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "playhouse"
   },
   {
@@ -666,12 +710,11 @@
   {
    "id": "outfitter",
    "kind": "front",
-   "x0": 36.68,
-   "x1": 54.91,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 50.0,
+   "x1": 76.0,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "name": "THE OUTFITTER",
    "pf": "outfitter"
   },
@@ -704,17 +747,6 @@
    "kind": "lot",
    "x0": 90.82,
    "x1": 106.13,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "THE FLEA MARKET"
-  },
-  {
-   "id": "flea2",
-   "kind": "lot",
-   "x0": 117.87,
-   "x1": 139.85,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -757,7 +789,7 @@
     -2.4,
     9.62
    ],
-   "inW": 8,
+   "inW": 16,
    "inD": 10,
    "inH": 100,
    "y0": -107.9,
@@ -4050,6 +4082,220 @@
    "k": "p:trashcan",
    "x": 105,
    "y": 165
+  },
+  {
+   "k": "p:jlamp",
+   "x": 103.41,
+   "y": -22.2,
+   "rot": 1.505
+  },
+  {
+   "k": "p:jlamp",
+   "x": 116.14,
+   "y": -7.76,
+   "rot": -1.344
+  },
+  {
+   "k": "p:jlamp",
+   "x": 108.57,
+   "y": 9.56,
+   "rot": 1.746
+  },
+  {
+   "k": "p:jlamp",
+   "x": 105.51,
+   "y": 37.68,
+   "rot": 1.329
+  },
+  {
+   "k": "p:jlamp",
+   "x": 108.25,
+   "y": 98.93,
+   "rot": 1.367
+  },
+  {
+   "k": "p:jlamp",
+   "x": 115.77,
+   "y": 116.28,
+   "rot": -1.776
+  },
+  {
+   "k": "p:jlamp",
+   "x": 103.58,
+   "y": 131.11,
+   "rot": 1.677
+  },
+  {
+   "k": "p:jlamp",
+   "x": 117.98,
+   "y": 144.2,
+   "rot": -1.319
+  },
+  {
+   "k": "p:jlamp",
+   "x": 109.29,
+   "y": 160.99,
+   "rot": 1.594
+  },
+  {
+   "k": "p:jlamp",
+   "x": -8.18,
+   "y": 68.11,
+   "rot": 3.081
+  },
+  {
+   "k": "p:jlamp",
+   "x": 6.17,
+   "y": 55.24,
+   "rot": 0.234
+  },
+  {
+   "k": "p:jlamp",
+   "x": 23.47,
+   "y": 62.79,
+   "rot": -2.977
+  },
+  {
+   "k": "p:jlamp",
+   "x": 38.87,
+   "y": 51.55,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 51.65,
+   "y": 66.32,
+   "rot": 2.905
+  },
+  {
+   "k": "p:jlamp",
+   "x": 67.96,
+   "y": 56.73,
+   "rot": 0.061
+  },
+  {
+   "k": "p:jlamp",
+   "x": 84.94,
+   "y": 65.01,
+   "rot": -2.882
+  },
+  {
+   "k": "p:jlamp",
+   "x": 98.3,
+   "y": 50.89,
+   "rot": 0.061
+  },
+  {
+   "k": "p:jlamp",
+   "x": 129.95,
+   "y": 56.2,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 145.35,
+   "y": 67.46,
+   "rot": -2.977
+  },
+  {
+   "k": "p:jlamp",
+   "x": 158.13,
+   "y": 52.68,
+   "rot": 0.237
+  },
+  {
+   "k": "p:jlamp",
+   "x": 219.14,
+   "y": 55.25,
+   "rot": 0.234
+  },
+  {
+   "k": "p:jlamp",
+   "x": 251.84,
+   "y": 51.54,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 109.63,
+   "y": 19.81,
+   "rot": 0.428
+  },
+  {
+   "k": "p:jlamp",
+   "x": 125.63,
+   "y": 25.05,
+   "rot": -2.714
+  },
+  {
+   "k": "p:jlamp",
+   "x": 132.16,
+   "y": 9.54,
+   "rot": 0.428
+  },
+  {
+   "k": "p:jlamp",
+   "x": 48.35,
+   "y": 61.47,
+   "rot": -1.924
+  },
+  {
+   "k": "p:jlamp",
+   "x": 34.32,
+   "y": 71.23,
+   "rot": 1.531
+  },
+  {
+   "k": "p:jlamp",
+   "x": 47.8,
+   "y": 81.58,
+   "rot": -1.224
+  },
+  {
+   "k": "p:jlamp",
+   "x": 40.2,
+   "y": 95.98,
+   "rot": 1.677
+  },
+  {
+   "k": "p:jlamp",
+   "x": 145.78,
+   "y": 174.62
+  },
+  {
+   "k": "p:jlamp",
+   "x": 151.2,
+   "y": 152.72
+  },
+  {
+   "k": "p:jlamp",
+   "x": 163.2,
+   "y": 132.51
+  },
+  {
+   "k": "p:jlamp",
+   "x": 190.28,
+   "y": 108.9
+  },
+  {
+   "k": "p:jlamp",
+   "x": 214.62,
+   "y": 97.41
+  },
+  {
+   "k": "p:jlamp",
+   "x": 245.79,
+   "y": 90.39
+  },
+  {
+   "k": "p:jlamp",
+   "x": 142.19,
+   "y": 2.61
+  },
+  {
+   "k": "p:jlamp",
+   "x": 162.5,
+   "y": 10
   }
  ],
  "pathWidth": 7.2,
@@ -6190,7 +6436,7 @@
   "lines": [
    [
     -52.5,
-    -186.5,
+    -231.5,
     -52.5,
     181
    ],
@@ -6216,7 +6462,19 @@
     252,
     -38,
     252,
-    -186.5
+    -231.5
+   ],
+   [
+    -52.5,
+    -38,
+    -24.5,
+    -38
+   ],
+   [
+    -24.5,
+    -38,
+    -24.5,
+    181
    ]
   ],
   "runs": [

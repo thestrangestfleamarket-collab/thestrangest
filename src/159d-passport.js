@@ -28,7 +28,7 @@ import {AVATAR} from './111c-avatar.js';
   const rgb=h=>[0,2,4].map(i=>parseInt(String(h||'000000').slice(i,i+2),16)), near=(h,L)=>{ const a=rgb(h); let b=L[0], d=1e9; for(const e of L){ const c=rgb(e[0]), q=(a[0]-c[0])**2+(a[1]-c[1])**2+(a[2]-c[2])**2; if(q<d){ d=q; b=e; } } return b[1]; };
   const usd=d=>/^\d{4}-\d\d-\d\d$/.test(d||'')?d.slice(5,7)+'/'+d.slice(8,10)+'/'+d.slice(0,4):'—';
   const hgt=L=>{ const n=Math.round(67*(L.h||100)/100); return Math.floor(n/12)+"'-"+String(n%12).padStart(2,'0')+'"'; };   // (the figure stands 5 ft 7 at 100%)
-  const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return (F.pent?'PENTHOUSE':'APT '+F.floor+(F.side?'B':'A'))+' · '+(F.house+1)+' WEST ST'; };
+  const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return 'APT '+F.floor+(F.side?'B':'A')+' · THE TOWER, MARKET ST'; };
   const K=(n,k,v,x='')=>`<div style="${x}"><div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">${n?`<span style="color:#e53935;margin-right:3px">${n}</span>`:''}${k}</div><div style="font-size:14px;font-weight:900;letter-spacing:.4px;line-height:1.15">${v}</div></div>`;
   const draw=()=>{ '@later'; const name=((LOOKS.L&&LOOKS.L.name)||'').trim().toUpperCase()||'A TENANT', L=AVATAR.L?AVATAR.L():{}, sex=L.f==='f'?'F':'M', dob=P.dob||'', hand=st.hand==='L'?'L':'R';
     const mrz1=('P<TSFM'+name.replace(/[^A-Z0-9]/g,'<')).padEnd(44,'<').slice(0,44), mrz2=(String(P.no)+'<<<<'+P.home+'<'+(dob?dob.slice(2,4)+dob.slice(5,7)+dob.slice(8,10):'<<<<<<')+sex).padEnd(42,'<')+'04';

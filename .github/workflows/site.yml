@@ -73,9 +73,11 @@ jobs:
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
+          k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
           k spray   'src/159f|src/146-|spray\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
@@ -209,6 +211,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
+      - name: things take room
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' space')
+        run: node tests/space.cjs dist/market.html
       - name: fauna rests
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')
@@ -280,6 +286,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scanner')
         run: node tests/scanner.cjs dist/market.html
+      - name: The bookstore café (its tables, every game played out by the computer)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cafe')
+        run: node tests/tgames.cjs && node tests/cafe.cjs dist/market.html
       - name: spray
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' spray')

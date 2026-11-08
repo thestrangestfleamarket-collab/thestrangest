@@ -10,7 +10,7 @@ import {MINI} from './038zd-mini.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
 import {BODIES} from './111a-bodies.js';
-const LOUNGE={}; window.LOUNGE=LOUNGE;
+const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the room as it builds (K, F)
 { const PJ=__LAZY__("data/bar.json"); let PG=null, GEO=null; const geo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
   { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.bar; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,geo()]); },'146zca-lounge'); }
   const say=(t,c)=>SAY(t,c||'#e8c8a0'), inBar=()=>!!(ROOMS.offIn&&ROOMS.offIn()==='bar');
@@ -70,6 +70,7 @@ const LOUNGE={}; window.LOUNGE=LOUNGE;
     lamp(W/2,D-1.5,2.8,0xffc890,1.4,4);
     // a little lamp on every drum table (booths and the floor): its own warm pool in the dark
     for(const [u,v] of [[W-1.9,8.6],[W-1.9,11.8],[W-1.9,15],[5.2,18.2],[9.4,18.2],[5.2,21.4],[9.4,21.4]]){ K.cyl(u,v,.035,.55,.82,0xb08838); K.glow(()=>K.cyl(u,v,.11,.8,.95,0xffc070,.07)); lamp(u,v,.95,0xffb070,1.6,2.8); }
+    for(const f of LOUNGE.uses)f(K,F);
     K.flush();
     setTimeout(()=>WORKERS.make('bar'),0);   // the badger at the taps (once the room's spots are set, below)
     // where people go: the staff at the counter and the stage, the drinkers on the stools, booths and chairs
@@ -79,3 +80,4 @@ const LOUNGE={}; window.LOUNGE=LOUNGE;
   MSHOP.kit.bar.drop=()=>{ if(DRM.stop)DRM.stop(); };
   LOUNGE.dbg={DRM,KIT,MINI,SHOPS,CHARS,scene};
   window.LOUNGEDBG=()=>({built:!!(ROOMS.lazy.bar&&ROOMS.lazy.bar.done),geo:!!GEO,kit:LOUNGE.kit||null,drum:!!DRM.g,at:DRM.at?{x:+DRM.at.x.toFixed(1),z:+DRM.at.z.toFixed(1)}:null,on:!!DRM.on,live:DRM.live?DRM.live():null}); }
+export {LOUNGE};

@@ -1,9 +1,9 @@
-// THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the hotel, and its two helicopters (the utility helicopter and the air ambulance, data/heli.json) that take turns flying the section's sky tour from the shared clock, a Polyfork pilot at each one's controls; ride along in a seat, or take the controls yourself (one pilot a helicopter, kept by the section's server like a car).
+// THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the bank, and the news helicopter (data/heli.json) that flies a round of the city every five minutes from the shared clock and lands again, its rotor still on the pad, a Polyfork pilot at the controls; ride along in a seat, or take the controls yourself (one pilot, kept by the section's server like a car).
 import {SHARED, THREE} from './003-shx.js';
 import {keys, ONLINE, pos, RIDE, st, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {PFROW} from './068a-pfrow.js';
 import {BODIES} from './111a-bodies.js';
@@ -11,11 +11,10 @@ import {VEH} from './150o-physmore.js';
 const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
 { const HD=__LAZY__("data/heli.json"), CAST=__LAZY__("data/cast/v-space.json");
   const T=TILE, M0=T/.84, YS=ZU*24/TILE, MV=M0*YS, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, sm=u=>u<=0?0:u>=1?1:u*u*(3-2*u), wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
-  // the tour: each helicopter flies F seconds then rests on the pad; the two are half a cycle apart, so one is always on the pad but for a few seconds while they swap
-  const H2=120, CYC=2*H2, F=130, UP0=5, UP1=11, DN0=F-14, DN1=F-4, LIFT=12, CRUISE=55, DECK={s:.8,v:.6};
-  // the two helicopters: [id, model, scale over Polyfork's size, the pilot (a Polyfork character), their seats in the model's metres: the pilot's first]
-  const DEFS=[{id:'utility',model:'utility',name:'THE UTILITY HELICOPTER',s:.82,pilot:'aircrew_pilot',label:'THE AIRCREW PILOT',seats:[[-.38,.62,2.45],[.38,.62,2.45],[-.42,.62,1.0],[.42,.62,1.0]]},
-    {id:'amb',model:'amb',name:'THE AIR AMBULANCE',s:.7,pilot:'shuttle_pilot',label:'THE SHUTTLE PILOT',seats:[[-.36,1.02,3.0],[.36,1.02,3.0],[-.4,1.02,1.7],[.4,1.02,1.7]]}];
+  // the round: it leaves the pad every CYC seconds, flies F seconds and rests the rest, the rotor still
+  const H2=0, CYC=300, F=130, UP0=5, UP1=11, DN0=F-14, DN1=F-4, LIFT=12, CRUISE=55, DECK={s:.8,v:.6};
+  // the helicopter: [id, model, scale over Polyfork's size, the pilot (a Polyfork character), its seats in the model's metres: the pilot's first]
+  const DEFS=[{id:'news',model:'utility',name:'THE NEWS HELICOPTER',s:.615,mark:'NEWS',pilot:'aircrew_pilot',label:'THE NEWS PILOT',seats:[[-.38,.62,2.45],[.38,.62,2.45],[-.42,.62,1.0],[.42,.62,1.0]]}];
   // the sky tour's way, in map tiles: out over the Hudson, east along the river, down the park's east side to the big lake, back west over the park and up West St
   const WAY=[[24.7,-101.9],[34,-130],[110,-150],[210,-142],[245,-92],[242,0],[228,118],[165,166],[60,152],[2,92],[-36,22],[-40,-62],[-12,-122],[24.7,-101.9]];
   let D=null, built=false, curve=null, LEN=0, restHd=0, mineH=null, want=null, ui=null;
@@ -31,15 +30,15 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     for(const n in M.parts){ const Q=M.parts[n], p=new THREE.Group(), me=new THREE.Mesh(geo(Q),MAT); me.castShadow=me.receiveShadow=true; p.position.set(...Q.at); p.add(me); G.add(p); parts[n]=p; p.userData.at=p.position.clone(); }
     G.userData.parts=parts; return G; };
 
-  /* ---------- the pad on the hotel's roof: the deck, the windsock, where each pilot waits ---------- */
-  const padAt=()=>{ const h=PFROW.fronts.find(f=>f.id==='hotel'); if(!h)return null; h.obj.updateMatrixWorld(true); const bb=new THREE.Box3().setFromObject(h.obj), c=bb.getCenter(new THREE.Vector3());
+  /* ---------- the pad on the bank's roof: the deck, the windsock, where the pilot waits ---------- */
+  const padAt=()=>{ const h={obj:STORE.bank&&STORE.bank.out}; if(!h.obj)return null; h.obj.updateMatrixWorld(true); const bb=new THREE.Box3().setFromObject(h.obj), c=bb.getCenter(new THREE.Vector3());
     const base=bb.max.y-.2*MV, top=base+3*DECK.v*MV; return {x:c.x,z:c.z,base,top,rot:h.obj.rotation.y,front:h.obj.rotation.y,hb:bb}; };
   const deckPt=(P,u,v)=>{ const c=Math.cos(P.rot), s=Math.sin(P.rot); return {x:P.x+(u*c+v*s)*M0,z:P.z+(-u*s+v*c)*M0}; };
   const buildPad=P=>{ const deck=model('deck',DECK.s*M0,DECK.v*MV); deck.position.set(P.x,P.base,P.z); deck.rotation.y=P.rot; deck.userData.anyRoom=false; scene.add(deck);
     const w=6*DECK.s*M0; FIX.up.push([P.x-w,P.z-w,P.base,P.x+w,P.z+w,P.top]);
     const sk=model('sock',.5*M0,.5*MV), sp=sk.userData.parts.sock, q=deckPt(P,4.1,-4.1); sk.position.set(q.x,P.top,q.z); sk.children.forEach(c=>c.position.z-=D.sock.parts.sock.at[2]); sk.userData.anyRoom=false; scene.add(sk);
     HELI.pad={...P,deck,sock:sk,sp}; };
-  // the street below: where you come down the hotel's stairs, by its front door
+  // the street below: where you come down the bank's stairs, by its front door
   const street=()=>{ const P=HELI.pad, d=(P.hb.max.z-P.hb.min.z)/2+1.2*M0, q=deckPt(P,0,0); const fz=P.z+Math.cos(P.rot)*d, fx=P.x+Math.sin(P.rot)*d+3*M0; return {x:fx,z:fz,hd:P.rot}; };
 
   /* ---------- the tour's way, from the pad and back to it ---------- */
@@ -74,7 +73,12 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const mk=(def,i)=>{ const H={...def,i,by:null,park:null,mode:'rest',s0:{},rot:0,spin:0,seatO:[],taken:[],sol:null};
     H.root=new THREE.Group(); H.root.rotation.order='YXZ'; H.root.userData.anyRoom=false; H.body=model(def.model,def.s*M0,def.s*MV); H.root.add(H.body); scene.add(H.root);
     H.seatO=def.seats.map(s=>{ const o=new THREE.Object3D(); o.position.set(s[0]*def.s*M0,s[1]*def.s*MV,s[2]*def.s*M0); H.root.add(o); return o; });
-    H.parts=H.body.userData.parts; return H; };
+    H.parts=H.body.userData.parts; if(def.mark)H.parts.body.add(...markSides(def.mark)); return H; };
+  // its name along both sides of the cabin, over the doors: white letters on a red panel, in the model's metres
+  const markSides=t=>{ const c=document.createElement('canvas'); c.width=96; c.height=20; const x=c.getContext('2d'); x.fillStyle='#b8202a'; x.fillRect(0,0,96,20); x.fillStyle='#f4efe4'; x.fillRect(0,1,96,1); x.fillRect(0,18,96,1);
+    x.font='bold 17px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t.split('').join(String.fromCharCode(8202)),48,11); const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
+    const m=new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-2}), g=new THREE.PlaneGeometry(2.6,.54);
+    return [1,-1].map(sd=>{ const me=new THREE.Mesh(g,m); me.position.set(sd*.875,.95,.72); me.rotation.y=sd*Math.PI/2; return me; }); };
   const phase=H=>((now()+H.i*H2)%CYC+CYC)%CYC;   // its own clock: 0..F flying, F..CYC resting
   HELI.phase=phase;
   const fetchAt=H=>{ const t0=H.park.t+5, p=((t0+H.i*H2)%CYC+CYC)%CYC; return t0+((F-p)%CYC+CYC)%CYC; };
@@ -86,7 +90,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
       if(k>=0&&k<HELI.homeLen(H)){ mode='home'; homeway(H,k,o); } else if(k>=HELI.homeLen(H)){ H.park=null; if(ONLINE.on)ONLINE.put('car:heli-'+H.id,''); mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:0}); }
       else { mode='parked'; Object.assign(o,{x:H.park.x,y:H.park.y,z:H.park.z,hd:H.park.hd,pitch:0,bank:0,rot:0}); } }
     else if(u<F){ mode='tour'; tour(u,o); }
-    else { mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:Math.max(0,1-(u-F)/10)}); }
+    else { mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:Math.max(0,1-(u-F)/3)}); }
     H.mode=mode; H.rot=o.rot; H.root.position.set(o.x,o.y,o.z); H.root.rotation.set(o.pitch||0,o.hd,o.bank||0); H.root.updateMatrixWorld(true);
     H.spin=(H.spin+dt*o.rot*o.rot*30)%(Math.PI*2); const pr=H.parts; if(pr.rotor)pr.rotor.rotation.y=H.spin; if(pr.tail)pr.tail.rotation.x=H.spin*1.6;
     const open=mode==='rest'&&u>F+10&&u<CYC-8?1:0; for(const [n,sd] of [['doorL',1],['doorR',-1]])if(pr[n]){ const d=pr[n]; d.userData.o=(d.userData.o||0)+(open-(d.userData.o||0))*Math.min(1,dt*3); d.position.z=d.userData.at.z-.95*d.userData.o; }
@@ -95,7 +99,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     if(still){ H.sol[0]=o.x-r; H.sol[1]=o.z-r; H.sol[2]=o.x+r; H.sol[3]=o.z+r; } else H.sol[0]=H.sol[1]=H.sol[2]=H.sol[3]=-1e7;
     pilot(H); };
 
-  /* ---------- the pilots: Polyfork's aircrew pilot and shuttle pilot, at the controls while the tour flies, waiting on the deck otherwise ---------- */
+  /* ---------- the pilot: Polyfork's aircrew pilot, at the controls while it flies, waiting on the deck otherwise ---------- */
   let castAsked=false; const PL={};
   const bring=()=>{ if(castAsked)return; castAsked=true; CAST().then(J=>{ for(const H of HELI.list){ const b=J.bodies[H.pilot]; if(!b)continue; const k='heli_'+H.pilot, P={y:0};
       BODIES.add({...BODIES.rebakedBody(J,H.pilot,{}),key:k,label:H.label,size:b.height/1.8,hd:0,ground:()=>P.y});
@@ -118,7 +122,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const rideAlong=H=>{ if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(H.mode!=='rest'||H.by||H.park)return say('THE '+H.name.replace(/^THE /,'')+' IS NOT ON THE PAD.','#c8a090');
     for(let i=1;i<H.seatO.length;i++)if(!taken(H,i)){ if(RIDE.mount('heliseat:'+H.id+':'+i)){ say('YOU CLIMB IN AND BUCKLE UP. IT LEAVES ON ITS NEXT TOUR.'); return true; } return false; }
     say('EVERY SEAT IS TAKEN.','#c8a090'); return false; };
-  const down=(H,why)=>{ const P=HELI.pad; if(H.mode==='rest'||H.mode==='home'){ const s=street(); pos.x=s.x; pos.z=s.z; SHARED.py=SHARED.groundY(s.x,s.z); SHARED.heading=s.hd; say(why||'YOU TAKE THE HOTEL STAIRS DOWN TO THE STREET.'); }
+  const down=(H,why)=>{ const P=HELI.pad; if(H.mode==='rest'||H.mode==='home'){ const s=street(); pos.x=s.x; pos.z=s.z; SHARED.py=SHARED.groundY(s.x,s.z); SHARED.heading=s.hd; say(why||'YOU TAKE THE BANK STAIRS DOWN TO THE STREET.'); }
     else { const o=H.s0, d=(3*H.s+.8)*M0; pos.x=o.x-Math.cos(o.hd)*d; pos.z=o.z+Math.sin(o.hd)*d; SHARED.py=SHARED.groundY(pos.x,pos.z); say(why||'YOU CLIMB DOWN.'); } };
   const leaveSeat=()=>{ const id=RIDE.on||'', m=/^heliseat:(\w+):(\d)$/.exec(id); if(!m)return; const H=HELI.list.find(h=>h.id===m[1]); if(!H)return;
     if(!landed(H))return say('NOT WHILE IT IS IN THE AIR.','#c8a090'); RIDE.off(); down(H); };
@@ -152,7 +156,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     say('YOU TAKE THE CONTROLS OF '+H.name+'. SPACE LIFTS.'); };
   const atPad=()=>{ const P=HELI.pad; return Math.hypot(FLY.x-P.x,FLY.z-P.z)<3*M0&&Math.abs(FLY.y-P.top)<.6*MV; };
   const land=()=>{ const H=mineH; if(!H)return; if(!FLY.down)return say('LAND FIRST: SHIFT TAKES YOU DOWN.','#c8a090');
-    const home=atPad(), u=phase(H); if(home&&!(u>=F+2&&u<CYC-2))return say('THE PAD IS THE OTHER HELICOPTER\'S NOW. LAND ON THE STREET.','#c8a090');
+    const home=atPad(), u=phase(H); if(home&&!(u>=F+2&&u<CYC-2))return say('IT IS DUE OUT ON ITS ROUND. LAND ON THE STREET.','#c8a090');
     mineH=null; H.by=null; const o={x:FLY.x,y:FLY.y,z:FLY.z,hd:FLY.hd}; RIDE.off();
     if(home){ H.park=null; if(ONLINE.on){ ONLINE.send({t:'car',k:'heli-'+H.id,on:0}); ONLINE.put('car:heli-'+H.id,''); } H.mode='rest'; down(H,'YOU SET IT DOWN ON THE PAD AND TAKE THE STAIRS DOWN.'); }
     else { o.t=now(); H.park=o; if(ONLINE.on){ ONLINE.send({t:'car',k:'heli-'+H.id,on:0}); ONLINE.put('car:heli-'+H.id,[o.x,o.z,o.hd,o.t].map(v=>+v.toFixed(3)).join(',')); } H.mode='parked'; H.s0={...o,pitch:0,bank:0,rot:0}; down(H,'YOU SHUT IT DOWN AND CLIMB OUT. ITS PILOT WILL FLY IT HOME.'); } };
@@ -168,11 +172,11 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const HUD=document.createElement('div'); HUD.id='helihud'; HUD.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:12;display:none;gap:10px;align-items:center;padding:6px 10px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#ece5d3;background:#0e1016e0;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   HUD.innerHTML='<span></span><button style="'+BTN+'">GET OUT (F)</button>'; document.body.appendChild(HUD);
   const out=()=>{ if(mineH)land(); else leaveSeat(); }; HUD.querySelector('button').onclick=out;
-  const hud=(H,i)=>{ HUD.querySelector('span').textContent=H.name+(i?' · A PASSENGER SEAT · IT FLIES THE TOUR FROM THE PAD':' · W FORWARD · S BACK · A D TURN · SPACE UP · SHIFT DOWN'); HUD.style.display='flex'; };
+  const hud=(H,i)=>{ HUD.querySelector('span').textContent=H.name+(i?' · A PASSENGER SEAT · IT FLIES ITS ROUND FROM THE PAD':' · W FORWARD · S BACK · A D TURN · SPACE UP · SHIFT DOWN'); HUD.style.display='flex'; };
   const hudOff=()=>{ HUD.style.display='none'; };
   addEventListener('keydown',e=>{ if(!/^heli/.test(RIDE.on||'')||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; if((e.key||'').toLowerCase()==='f'){ e.preventDefault(); out(); } });
   const ASK=document.createElement('div'); ASK.id='heliask'; ASK.style.cssText=HUD.style.cssText.replace('bottom:64px','bottom:120px'); document.body.appendChild(ASK);
-  const ask=H=>{ if(!H){ const n=HELI.list.map(h=>Math.ceil((CYC-phase(h))%CYC)).filter(s=>s>0); return say('NO HELICOPTER ON THE PAD. THE NEXT LANDS IN '+Math.min(...n.map(s=>s>CYC-F?s-(CYC-F):s))+' S.'); }
+  const ask=H=>{ if(!H){ const n=HELI.list.map(h=>Math.ceil((CYC-phase(h))%CYC)).filter(s=>s>0); return say('THE HELICOPTER IS OUT. IT LANDS IN '+Math.min(...n.map(s=>s>CYC-F?s-(CYC-F):s))+' S.'); }
     ASK.innerHTML='<span>'+H.name+'</span><button data-r style="'+BTN+'">RIDE ALONG</button><button data-f style="'+BTN+'">FLY IT YOURSELF</button><button data-x style="'+BTN+'">NO</button>'; ASK.style.display='flex';
     const shut=()=>{ ASK.style.display='none'; }; ASK.querySelector('[data-r]').style.display=H.mode==='rest'?'':'none';
     ASK.querySelector('[data-r]').onclick=()=>{ shut(); rideAlong(H); }; ASK.querySelector('[data-f]').onclick=()=>{ shut(); fly(H); }; ASK.querySelector('[data-x]').onclick=shut; setTimeout(shut,12000); };
@@ -181,10 +185,13 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   /* ---------- made after the start: the pad, the helicopters, their things to double-click ---------- */
   const make=()=>{ const P=padAt(); if(!P)return false; buildPad(P); makeWay();
     for(const d of DEFS){ const H=mk(d,HELI.list.length); HELI.list.push(H); RIDE.kind('heli:'+H.id,pilotKind(H)); for(let i=1;i<H.seatO.length;i++)RIDE.kind('heliseat:'+H.id+':'+i,seatKind(H,i)); fromWorld(H,(ONLINE.world||{})['car:heli-'+H.id]); update(H,0);
-      const th={name:H.name,obj:H.body,reach:3*M0,near:5*M0,tall:3*MV,act:()=>{ if(H.mode==='rest'||H.mode==='parked')ask(H); else say(H.mode==='tour'||H.mode==='home'?'IT IS FLYING THE TOUR.':'SOMEONE IS FLYING IT.','#c8a090'); }}; H.th=th; UI.thing(th); }
+      const th={name:H.name,obj:H.body,reach:3*M0,near:5*M0,tall:3*MV,act:()=>{ if(H.mode==='rest'||H.mode==='parked')ask(H); else say(H.mode==='tour'||H.mode==='home'?'IT IS OUT ON ITS ROUND.':'SOMEONE IS FLYING IT.','#c8a090'); }}; H.th=th; UI.thing(th); }
     const s=street(), sign=new THREE.Mesh(new THREE.BoxGeometry(.6*M0,2.2*MV,.6*M0),new THREE.MeshBasicMaterial({visible:false})); sign.position.set(s.x,SHARED.groundY(s.x,s.z)+1.1*MV,s.z); scene.add(sign);
-    UI.thing({name:'THE HELIPAD (UP THE HOTEL STAIRS)',obj:sign,reach:1.4*T,near:2.6*T,tall:2.2*T,act:()=>ask(HELI.list.find(h=>h.mode==='rest'&&!h.by&&!h.park))}); built=true; return true; };
-  SYS.add('life',()=>{ if(D||!window.__started||!PFROW.done)return; D=1; HD().then(J=>{ D=J; if(!make())D=null; }).catch(e=>{ D=null; console.warn('HELI: the models did not load',e); }); },'150pa-heli');
+    UI.thing({name:'THE HELIPAD (UP THE BANK STAIRS)',obj:sign,reach:1.4*T,near:2.6*T,tall:2.2*T,act:()=>ask(HELI.list.find(h=>h.mode==='rest'&&!h.by&&!h.park))}); built=true; return true; };
+  // the models are fetched once; until the bank is there, the pad is only tried again every two seconds
+  let asked=0, tries=0, nextTry=0;
+  SYS.add('life',()=>{ if(built||!window.__started||!PFROW.done)return; if(D&&D!==1){ const t=performance.now(); if(t<nextTry)return; nextTry=t+2000; make(); return; }
+    if(asked||tries>=3)return; asked=1; tries++; D=1; HD().then(J=>{ D=J; asked=0; make(); }).catch(e=>{ D=null; asked=0; console.warn('HELI: the models did not load',e); }); },'150pa-heli');
   // before you move: every helicopter where its clock (or its pilot) says, so a seat carries you the same frame
   SYS.add('carry',dt=>{ if(!built)return; dt=dt||0; HELI.n=(HELI.n||0)+1; for(const H of HELI.list){ update(H,dt); if(H.th)H.th.reach=(H.mode==='rest'?14:3.5)*M0; }
     if(!castAsked&&HELI.list.some(H=>Math.hypot(H.s0.x-pos.x,H.s0.z-pos.z)<60*T))bring();   // the pilots' bodies (data/cast/v-space.json) only once you are near one

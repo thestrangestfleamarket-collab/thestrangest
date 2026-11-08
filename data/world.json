@@ -469,8 +469,11 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": -51.9,
-   "x1": -47.9
+   "x0": 219.75,
+   "x1": 223.75,
+   "y0": -116.5,
+   "y1": -110.5,
+   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
   },
   {
    "id": "apts",
@@ -697,10 +700,10 @@
    "id": "bath",
    "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 25,
-   "x1": 48.53,
-   "y0": -34,
-   "y1": -22.45,
+   "x0": 203.24,
+   "x1": 226.76,
+   "y0": 152.2,
+   "y1": 163.76,
    "face": "s",
    "park": true
   }
@@ -910,11 +913,19 @@
   "sites": [
    {
     "id": "bath",
-    "x": 36.77,
-    "y": -28.23,
+    "x": 215,
+    "y": 152,
     "w": 27.53,
     "d": 17.55,
-    "note": "the bath house in the park: no trees or paths here"
+    "note": "the bath house on its island in the lake: no trees or paths here"
+   },
+   {
+    "id": "bridge",
+    "x": 215,
+    "y": 102,
+    "w": 6,
+    "d": 8,
+    "note": "where the island's footbridge lands: no trees here"
    }
   ],
   "stalls": [
@@ -983,7 +994,26 @@
     "slot": 2
    }
   ],
-  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)"
+  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)",
+  "islands": [
+   {
+    "x": 215,
+    "y": 152,
+    "rx": 19,
+    "ry": 14,
+    "note": "the bath house's island in the middle of the lake (owner, 8 Nov 2026): ghosts float out to it"
+   }
+  ],
+  "bridges": [
+   {
+    "x0": 215,
+    "y0": 140,
+    "x1": 215,
+    "y1": 102,
+    "w": 3,
+    "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
+   }
+  ]
  },
  "paths": [
   {
@@ -6522,147 +6552,42 @@
    [
     "x",
     -204.5,
-    -330,
+    -3000,
     -92.4,
     -77
    ],
    [
     "x",
-    -204.5,
-    -330,
-    -37,
-    -22
-   ],
-   [
-    "x",
     -50,
-    -330,
+    -3000,
     -107.9,
     -95.9
    ],
    [
     "x",
     404,
-    520,
+    3000,
     -92.4,
     -77
    ],
    [
     "x",
     254,
-    520,
+    3000,
     -107.9,
     -95.9
-   ],
-   [
-    "y",
-    181.5,
-    520,
-    -66.8,
-    -52.5
-   ],
-   [
-    "y",
-    -37,
-    181,
-    -66.8,
-    -52.5
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    25,
-    85,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    87,
-    147,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    149,
-    209,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    25,
-    85,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    87,
-    147,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    149,
-    209,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    25,
-    85,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    87,
-    147,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    149,
-    209,
-    -138,
-    -122
    ]
   ],
   "near": 60,
   "ground": {
    "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
    "box": [
-    -600,
+    -1200,
     -130.1,
-    900,
-    800
+    1500,
+    1400
    ],
-   "px": 2,
+   "px": 4,
    "grass": [
     62,
     96,
@@ -6678,7 +6603,7 @@
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
    "list": [
     [
-     -330,
+     -3000,
      -77,
      -202.5,
      -70,
@@ -6692,7 +6617,7 @@
      "walk"
     ],
     [
-     -330,
+     -3000,
      -70,
      -202.5,
      -50,
@@ -6706,7 +6631,7 @@
      "road"
     ],
     [
-     -330,
+     -3000,
      -50,
      -202.5,
      -38,
@@ -6720,14 +6645,14 @@
      "walk"
     ],
     [
-     -330,
+     -3000,
      -95.9,
      -52.5,
      -92.4,
      "alley"
     ],
     [
-     -330,
+     -3000,
      -130.1,
      -52.5,
      -107.9,
@@ -6743,7 +6668,7 @@
     [
      402,
      -77,
-     520,
+     3000,
      -70,
      "walk"
     ],
@@ -6757,7 +6682,7 @@
     [
      402,
      -70,
-     520,
+     3000,
      -50,
      "road"
     ],
@@ -6771,21 +6696,21 @@
     [
      402,
      -50,
-     520,
+     3000,
      -38,
      "walk"
     ],
     [
      250,
      -95.9,
-     520,
+     3000,
      -92.4,
      "alley"
     ],
     [
      250,
      -130.1,
-     520,
+     3000,
      -107.9,
      "prom"
     ],
@@ -6808,13 +6733,6 @@
      212,
      -24,
      520,
-     "walk"
-    ],
-    [
-     -330,
-     -37,
-     -52.5,
-     212,
      "walk"
     ]
    ]
@@ -6851,12 +6769,30 @@
      -30,
      520,
      176
+    ],
+    [
+     -1200,
+     -34,
+     -26,
+     1400
+    ],
+    [
+     -20,
+     760,
+     1500,
+     1400
+    ],
+    [
+     520,
+     -30,
+     1500,
+     760
     ]
    ],
-   "n": 1500
+   "n": 4000
   },
   "city": {
-   "note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius)",
+   "note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius), lands (y bands, what the ring's ground is that way: water, street or park)",
    "center": [
     105,
     -25
@@ -6872,6 +6808,10 @@
     [
      -725.8,
      -122
+    ],
+    [
+     -122,
+     100000
     ]
    ],
    "lowY": -725.8,
@@ -6914,15 +6854,32 @@
     2000
    ],
    "panorama": 1200,
-   "seed": 7
+   "seed": 7,
+   "lands": [
+    [
+     -725.8,
+     -122,
+     "water"
+    ],
+    [
+     -122,
+     -38,
+     "street"
+    ],
+    [
+     -38,
+     100000,
+     "park"
+    ]
+   ]
   },
   "far": {
    "note": "the far city past the backdrop: (axis, from, to, across from, across to, lowest, highest storeys in tiles); shore: where the water past the river ends (the far bank, a map y); ends: how far the far water and its shore run (map x)",
    "list": [
     [
      "x",
-     -1860,
-     2160,
+     -6000,
+     6000,
      -767.8,
      -747.8,
      8,
@@ -6930,45 +6887,18 @@
     ],
     [
      "x",
-     -1860,
-     2160,
+     -6000,
+     6000,
      -735.8,
      -727.8,
      5,
      14
-    ],
-    [
-     "x",
-     -420,
-     -56,
-     600,
-     640,
-     18,
-     60
-    ],
-    [
-     "y",
-     -125,
-     600,
-     -420,
-     -380,
-     14,
-     44
-    ],
-    [
-     "y",
-     -125,
-     600,
-     600,
-     640,
-     14,
-     50
     ]
    ],
    "shore": -723.8,
    "ends": [
-    -1900,
-    2200
+    -6000,
+    6000
    ]
   },
   "mirror": {

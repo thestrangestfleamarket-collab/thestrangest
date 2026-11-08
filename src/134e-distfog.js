@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:15,end:180,blur:0,haze:0,air:.3,mist:.4,most:.6,mistH:3,sun:1,g:.6,rays:1,tint:.25,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
+{ const D0={on:true,cut:false,start:15,end:180,blur:0,haze:0,air:.3,mist:.4,most:.6,mistH:3,sun:0,g:.6,rays:1,tint:.25,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -32,7 +32,7 @@ const DFOG={};
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
-              float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); float mu=dot(ray,uSun.xyz), g=uSun.w, lt=1.; if(mu>-.2){ vec3 n=normalize(cross(dFdx(w),dFdy(w))); if(dot(n,ray)>0.)n=-n; float tn=uSun.y/max(.05,length(uSun.xz)), hs=dot(n,uSun.xyz)<0.?max(0.,w.y-uP.y)/max(.05,tn):0.; lt=0.;   // a face turned from the sun shades the air in front of it as far as its shadow reaches
+              float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); float mu=dot(ray,uSun.xyz), g=uSun.w, lt=1.; if(mu>-.2&&uSC.r+uSC.g+uSC.b>0.){ vec3 n=normalize(cross(dFdx(w),dFdy(w))); if(dot(n,ray)>0.)n=-n; float tn=uSun.y/max(.05,length(uSun.xz)), hs=dot(n,uSun.xyz)<0.?max(0.,w.y-uP.y)/max(.05,tn):0.; lt=0.;   // a face turned from the sun shades the air in front of it as far as its shadow reaches
                 for(int i=0;i<8;i++){ float t=(float(i)+.5)/8., m=uOcc>.5?sunAt(cp+seg*t):-1.; lt+=min(m>=0.?m:1.,step(hs,(1.-t)*L)); } lt/=8.; }   // the air in a shadow (a building's, a tree's) is not lit by the sun
               ins=mix(uMC,uC,sb)+uSC*lt*(1.-g*g)/pow(1.+g*g-2.*g*mu,1.5); c.rgb=mix(c.rgb,ins,a); }
             m=uF>0.?land*smoothstep(uF*.67,uF,dd)*step(dd,uF*1.05):0.;

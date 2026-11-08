@@ -80,4 +80,3 @@ const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the 
   MSHOP.kit.bar.drop=()=>{ if(DRM.stop)DRM.stop(); };
   LOUNGE.dbg={DRM,KIT,MINI,SHOPS,CHARS,scene};
   window.LOUNGEDBG=()=>({built:!!(ROOMS.lazy.bar&&ROOMS.lazy.bar.done),geo:!!GEO,kit:LOUNGE.kit||null,drum:!!DRM.g,at:DRM.at?{x:+DRM.at.x.toFixed(1),z:+DRM.at.z.toFixed(1)}:null,on:!!DRM.on,live:DRM.live?DRM.live():null}); }
-export {LOUNGE};

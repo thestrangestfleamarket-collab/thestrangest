@@ -34,7 +34,7 @@ import {LOOP} from './009b-loop.js';
   /* ---------- the front: the map on the left, the guide column on the right ---------- */
   const front=()=>{ '@later'; const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, E=(LEVEL.edge&&LEVEL.edge.lines)||[], F=Q.F;
     // the map cropped to the section (its forcefields and the houses on them), a little of the backdrop round it
-    const ex=E.flatMap(l=>[l[0],l[2]]), ey=E.flatMap(l=>[l[1],l[3]]), vx0=Math.max(F.x0,(ex.length?Math.min(...ex):F.x0)-22), vx1=Math.min(F.x1,(ex.length?Math.max(...ex):F.x1)+4), vy0=F.y0, vy1=Math.min(F.y1,(ey.length?Math.max(...ey):F.y1)+5);
+    const ex=E.flatMap(l=>[l[0],l[2]]), ey=E.flatMap(l=>[l[1],l[3]]), vx0=Math.max(F.x0,(ex.length?Math.min(...ex):F.x0)-22), vx1=Math.min(F.x1,(ex.length?Math.max(...ex):F.x1)+4), vy0=Math.max(F.y0,(LEVEL.block&&LEVEL.block.walk?Math.min(...LEVEL.block.walk):F.y0)-16), vy1=Math.min(F.y1,(ey.length?Math.max(...ey):F.y1)+5);
     const f=Math.min(720/(vx1-vx0),720/(vy1-vy0)), mw=(vx1-vx0)*f, mh=720, my=0, TX=tx=>(tx-vx0)*f, TY=ty=>(vy1-ty)*f, WX=x=>TX(OX+x/T), WY=z=>TY(OY+z/T);
     G={Q,f,mw,mh,my,toWorld:(sx,sy)=>[(vx0+sx/f-OX)*T,(vy1-sy/f-OY)*T]};
     const cv=document.createElement('canvas'); cv.width=Q.W; cv.height=Q.H; const g=cv.getContext('2d'), im=g.createImageData(Q.W,Q.H), RGB=Q.KN.map(k=>{ const c=KC[k]||PAPER; return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; });
@@ -88,11 +88,11 @@ import {LOOP} from './009b-loop.js';
     S.push(`<line x1="${gx}" y1="132" x2="${gx+gw}" y2="132" stroke="${INK}" stroke-width="2"/>`+txt(TEXT.t('bro.goto'),gx,152,11,{ls:2}));
     G.sel={x:gx+62,y:139,w:gw-62,h:18};
     S.push(`<line x1="${gx}" y1="168" x2="${gx+gw}" y2="168" stroke="${INK}" stroke-width="1" opacity=".4"/>`+txt(TEXT.t('bro.poi'),gx,185,11,{ls:2}));
-    const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let cut=0, best=tot; for(let i=0,a=0;i<gh.length;i++){ a+=gh[i]; const m=Math.max(a,tot-a); if(m<best){ best=m; cut=i+1; } }   // two columns, split between groups
-    const cw=gw/2, rh=Math.min(14,440/best);
-    LS.forEach(([k,L],i)=>{ const c=i<cut?0:1, r0=gh.slice(c?cut:0,i).reduce((a,b)=>a+b,0), x=gx+c*cw; let y=202+r0*rh;
+    const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let CM=gh.map(()=>0), best=tot; for(let m=0;m<1<<gh.length;m+=2){ let a=0; gh.forEach((h,i)=>{ if(m>>i&1)a+=h; }); const w=Math.max(a,tot-a); if(w<best-1e-9){ best=w; CM=gh.map((_,i)=>m>>i&1); } }   // two columns, the groups shared between them so neither runs long (owner, 8 Nov 2026: "too much empty space")
+    const cw=gw/2, rh=Math.min(21,430/best), fz=Math.min(12,Math.max(9,rh*.62));
+    LS.forEach(([k,L],i)=>{ const c=CM[i], r0=gh.slice(0,i).reduce((a,b,j)=>a+(CM[j]===c?b:0),0), x=gx+c*cw; let y=202+r0*rh;
       S.push(`<rect x="${x}" y="${(y-8).toFixed(1)}" width="${cw-14}" height="11" fill="${INK}"/>`+txt(k,x+4,(y+.5).toFixed(1),8,{f:PAPER,ls:2})); y+=HH*rh;
-      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-3.5).toFixed(1),6,s.col,7.5):'')+`<text x="${x+21}" y="${y.toFixed(1)}" font-size="9">${esc(name)}</text></g>`); y+=rh; } });
+      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-fz*.38).toFixed(1),fz*.66,s.col,fz*.82):'')+`<text x="${x+23}" y="${y.toFixed(1)}" font-size="${fz.toFixed(1)}">${esc(name)}</text></g>`); y+=rh; } });
     S.push(`<line x1="${gx}" y1="652" x2="${gx+40}" y2="652" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`+txt(TEXT.t('bro.ff'),gx+48,655,8,{w:'600'}));
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };

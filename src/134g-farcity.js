@@ -32,11 +32,14 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   B.forEach(([x,y,w,d,h,t],i)=>{ M.setMatrixAt(i,m4.makeScale(w*T,h*T,d*T).setPosition(XS(x),-.5*ZU,ZS(y))); aT[i]=t; });
   geo.setAttribute('aT',new THREE.InstancedBufferAttribute(aT,1)); M.frustumCulled=false; M.name='farcity'; M.userData.anyRoom=false; scene.add(M);
   /* ---------- the painted skyline past them: a ring round the eye, the far city's towers drawn once (how far each layer stands, how tall the city is that way), hazier the further ---------- */
-  const W=4096, H=512, E0=-30*Math.PI/180, E1=24*Math.PI/180, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
+  const RADT=()=>C.panorama*T, W=4096, H=512, E0=-30*Math.PI/180, E1=24*Math.PI/180, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
   const t0=Math.tan(E0), t1=Math.tan(E1), yOf=e=>Math.round((1-(Math.tan(e)-t0)/(t1-t0))*H);   // (the ring is straight up and down: its height goes with the angle's tangent)
   // R: how far (0 near .. 1 farthest), G: a window, B: the building's tone, A: there
-  g.fillStyle='rgb(255,0,90)'; g.fillRect(0,yOf(0)-1,W,H);   // (the ground to the horizon, all haze)
   const sx=Math.sign(XS(1)-XS(0))||1, sz=Math.sign(ZS(1)-ZS(0))||1, at=(u,D)=>{ const a=u*2*Math.PI; return [cx+sx*Math.sin(a)*D/T,cy+sz*Math.cos(a)*D/T]; };   // (a direction round the ring, as the cylinder lays it: from +z toward +x; back to map tiles)
+  // the ground to the horizon by what lies that way (C.lands: y bands of water, street, park; else haze), a line of trees over the park (owner, 8 Nov 2026: "the hudson should look at least blue from any angle ... the park should look like it goes on forever")
+  const LK={water:0,park:1,street:2,trees:3}, land=y=>{ for(const [a,b,k] of C.lands||[])if(y>a&&y<b)return k; return null; };
+  for(let x=0;x<W;x++){ const [,ty]=at((x+.5)/W,RADT()), k=land(ty); g.fillStyle=k?`rgb(0,0,${LK[k]*64+32})`:'rgb(255,0,90)'; g.fillRect(x,yOf(0)-1,1,H);
+    if(k==='park'){ const [,t2]=at((x+.5)/W,C.ring[0]*T); if(land(t2)==='park'){ const top=yOf(Math.atan2((3+rnd()*5)*T,C.ring[0]*T)); g.fillStyle=`rgb(0,0,${LK.trees*64+32})`; g.fillRect(x,top,1,yOf(0)-top); } } }
   for(const [L,D,k] of [[1,C.ring[2],.95],[.7,C.ring[1],.8],[.4,C.ring[0],.65]]){ let x=0;
     while(x<W){ let w=3+Math.floor(rnd()*9*k); const [tx,ty]=at((x+w/2)/W,D*T); let hh=tall(tx,ty)*(isWet(ty)?0:1)*(C.lowY!=null&&ty<C.lowY?C.lowK:1); if(rnd()<.15)hh*=.3; w=Math.max(w,Math.ceil(hh*.3/(2*Math.PI*D/W)));
       if(hh>0){ const top=yOf(Math.atan2(hh*T,D*T)), bot=yOf(0), tone=Math.floor(rnd()*255); g.fillStyle=`rgb(${Math.round(L*255)},0,${tone})`; g.fillRect(x,top,w,bot-top);
@@ -47,7 +50,9 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   const RAD=C.panorama*T, PH=RAD*(Math.tan(E1)-Math.tan(E0)), pmat=new THREE.ShaderMaterial({uniforms:{uTex:{value:tex},uHaze:U.uHaze,uDay:U.uDay},fog:false,side:THREE.BackSide,
     vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader:`uniform sampler2D uTex; uniform vec3 uHaze; uniform float uDay; varying vec2 vU; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
-      void main(){ vec4 t=texture2D(uTex,vU); if(t.a<.5)discard; vec3 base=mix(vec3(.30,.31,.34),vec3(.52,.46,.38),t.b)*(.25+.75*uDay);
+      void main(){ vec4 t=texture2D(uTex,vU); if(t.a<.5)discard;
+        if(t.r<.1){ vec3 g=t.b<.25?vec3(.22,.40,.58):t.b<.5?vec3(.24,.37,.18):t.b<.75?vec3(.28,.28,.30):vec3(.14,.25,.11); gl_FragColor=vec4(mix(g,uHaze,.12)*(.25+.75*uDay),1.); return; }
+        vec3 base=mix(vec3(.30,.31,.34),vec3(.52,.46,.38),t.b)*(.25+.75*uDay);
         vec3 c=base*(1.-.25*t.r); c+=t.g*step(.55,h(floor(vU*vec2(${W}.,${H}.))))*vec3(1.,.82,.5)*.45*(1.-uDay)*(1.-.6*t.r); gl_FragColor=vec4(c,1.); }`});
   const ring=new THREE.Mesh(new THREE.CylinderGeometry(RAD,RAD,PH,96,1,true).translate(0,(RAD*Math.tan(E1)+RAD*Math.tan(E0))/2,0),pmat);
   // (the ring is round the eye wherever it goes, so the far city stays on the horizon; only with the view in perspective)

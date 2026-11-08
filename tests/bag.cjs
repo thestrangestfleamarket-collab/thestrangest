@@ -36,7 +36,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const o0 = await pg.evaluate(() => { const m = document.querySelector('#bagp .bgm').getBoundingClientRect(); return [...document.querySelectorAll('#bagp .bgr')].filter(r => r.getBoundingClientRect().bottom <= m.bottom).map(r => r.dataset.id); }), first = o0[0], tgt = o0[o0.length - 1], lastR = await at('#bagp .bgr[data-id="' + tgt + '"]');
   await dragTo('#bagp .bgr[data-id="' + first + '"]', lastR.x, lastR.y + lastR.h / 2 - 2);
   const r6 = await pg.evaluate(() => ({ rows: [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id), saved: JSON.parse(JSON.parse(localStorage.getItem('market-save')).bagorder || '{}').bag || [] }));
-  ok(r6.rows.indexOf(first) === r6.rows.indexOf(tgt) + 1 && r6.rows[0] !== first && r6.saved.indexOf(first) === r6.saved.indexOf(tgt) + 1, 'dragging the first row below the last one in sight puts it there, and that order is saved ' + JSON.stringify({ first, tgt, rows: r6.rows }));
+  ok(r6.rows.indexOf(first) > r6.rows.indexOf(tgt) && r6.rows[0] !== first && r6.saved.indexOf(first) === r6.rows.indexOf(first), 'dragging the first row below the last one in sight puts it past it, and that order is saved ' + JSON.stringify({ first, tgt, rows: r6.rows }));
+  { const top = await pg.evaluate(() => [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id)[0]), a = await at('#bagp .bgr[data-id="' + top + '"]'), m = await at('#bagp .bgm');
+    await pg.mouse.move(a.x, a.y); await pg.mouse.down(); for (let k = 1; k <= 8; k++) await pg.mouse.move(a.x, a.y + (m.y + m.h / 2 - 6 - a.y) * k / 8); await pg.waitForTimeout(4000);
+    const sc = await pg.evaluate(() => { const g = document.querySelector('#bagp .bgm'); return { top: g.scrollTop, max: g.scrollHeight - g.clientHeight }; });
+    await pg.mouse.move(a.x, m.y + m.h / 2 - 5); await pg.mouse.up(); await pg.waitForTimeout(300);
+    const rows = await pg.evaluate(() => [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id));
+    ok(sc.max > 0 && sc.top >= sc.max - 2 && rows[rows.length - 1] === top, 'held at the bottom edge the list scrolls to its end, and the row drops there last ' + JSON.stringify({ sc, top, last: rows[rows.length - 1] })); }
   const q = await at('#hqb .qs[data-i="0"]'); await dragTo('#bagp .bgr[data-id="camera"]', q.x, q.y);
   const r7 = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs[data-i="0"]'); return { slot: HUD.slots[0], camera: INV.items.camera, pic: !!s.querySelector('img') && /^data:image/.test(s.querySelector('img').src), title: s.title }; });
   ok(r7.slot === 'camera' && r7.camera === 1 && r7.pic && r7.title === 'CAMERA (35 MM) ×1', 'dragging the camera onto the quick bar fills its first slot with its picture, its name and amount on hover; the mortar still in the bag ' + JSON.stringify(r7));

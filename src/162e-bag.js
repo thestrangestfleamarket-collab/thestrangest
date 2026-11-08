@@ -183,7 +183,11 @@ window.BAG=BAG;
     const q=WE.ground?WE.ground(e):null, at=q&&Math.hypot(q[0]-pos.x,q[2]-pos.z)<=3*T&&Math.abs(q[1]-SHARED.py)<T?{x:q[0],y:q[1],z:q[2]}:null;
     BAG.drop(id,e.shiftKey?have(id,'bag'):1,at,'bag'); if(have(id,'bag')<1)HUD.set(i,null); else HUD.qdraw(); });
   let drag=null, lastTap={id:null,t:0};
-  const endDrag=()=>{ if(!drag)return; if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('held'); document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); drag=null; };
+  // a held thing near a list's top or bottom edge scrolls that list, faster the nearer (owner, 8 Nov 2026)
+  let scT=0, scL=0; const edgeScroll=t=>{ scT=0; if(!drag||!drag.moved)return; const dt=Math.min(.1,scL?(t-scL)/1000:0); scL=t; for(const m of document.querySelectorAll('.bagw:not([hidden]) .bgm.list')){ const r=m.getBoundingClientRect(), E=36*uz(); if(drag.cx<r.left||drag.cx>r.right||drag.cy<r.top-E||drag.cy>r.bottom+E)continue;
+      const d=drag.cy<r.top+E?-(r.top+E-drag.cy):drag.cy>r.bottom-E?drag.cy-(r.bottom-E):0; if(d)m.scrollTop+=Math.sign(d)*Math.min(900,120+Math.abs(d)*20)*dt; }
+    scT=requestAnimationFrame(edgeScroll); };
+  const endDrag=()=>{ if(scT){ cancelAnimationFrame(scT); scT=0; } scL=0;  if(!drag)return; if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('held'); document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); drag=null; };
   const howMany=async(id,from,x,y)=>{ const n=have(id,from); if(n<=1||isCont(id))return n>=1?1:0; return (await BAG.ask(n,x,y))||0; };
   function bind(W){ const {el,key}=W, S=()=>sizeOf(key);
     el.addEventListener('pointerdown',e=>{ '@later'; 
@@ -192,6 +196,7 @@ window.BAG=BAG;
     el.addEventListener('pointermove',e=>{ '@later'; 
       if(W.mv){ el.style.left=Math.round((e.clientX-W.mv.dx)/W.mv.z)+'px'; el.style.top=Math.round((e.clientY-W.mv.dy)/W.mv.z)+'px'; return; }
       if(!drag||drag.from!==key)return; if(!drag.moved){ if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<4)return; drag.moved=true; drag.el.classList.add('held'); const g=document.createElement('img'); g.className='bgghost'; g.src=BAG.icon(drag.id); g.style.width=drag.w+'px'; g.style.height=drag.h+'px'; document.body.appendChild(g); drag.ghost=g; }
+      drag.cx=e.clientX; drag.cy=e.clientY; if(!scT)scT=requestAnimationFrame(edgeScroll);
       drag.ghost.style.left=(e.clientX-drag.ox)+'px'; drag.ghost.style.top=(e.clientY-drag.oy)+'px'; document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); const u=document.elementFromPoint(e.clientX,e.clientY), c=u&&u.closest('.cont'); if(c&&c.dataset.id!==drag.id)c.classList.add('over'); });
     const up=e=>{ '@later'; if(W.mv){ W.mv=null; return; } if(!drag||drag.from!==key)return; const D=drag; endDrag(); const id=D.id, from=D.from;
       if(!D.moved){ const now=performance.now(); if(lastTap.id===id&&now-lastTap.t<400){ lastTap={id:null,t:0}; if(isCont(id))BAG.open(id); else if(HUD.useItem)HUD.useItem(id); } else { lastTap={id,t:now}; sel=id; selWin=from; } redraw(); return; }

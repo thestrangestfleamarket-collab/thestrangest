@@ -7,8 +7,7 @@ import {SYS, TILE} from './006-map-pre.js';
 import {CREATS} from './087-npc-creatures.js';
 const WILD={}; window.WILD=WILD;
 { const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), KEY='wild';
-  const SP={snake:['EASTERN GARTER SNAKE','Thamnophis sirtalis','forage',40,15],
-    spider:['GARDEN SPIDER','Araneus diadematus','ento',15,0],wasp:['COMMON WASP','Vespula vulgaris','ento',10,0],bat:['LITTLE BROWN BAT','Myotis lucifugus','bird',35,15],slime:['THE PARK SLIME','unknown to science','myco',30,10],
+  const SP={
     crow:['AMERICAN CROW','Corvus brachyrhynchos','bird',10,0],owl:['GREAT HORNED OWL','Bubo virginianus','bird',45,15],duck:['MALLARD','Anas platyrhynchos','bird',5,0],
     bee:['HONEYBEE','Apis mellifera','ento',10,0],bumblebee:['BUMBLEBEE','Bombus impatiens','ento',15,0]};
   const KS=()=>Object.keys(SP), FULL=50, NEED=5;
@@ -33,7 +32,7 @@ const WILD={}; window.WILD=WILD;
   const DONE=new Set(); let seenN=0; const things=()=>{ if(CREATS.length===seenN)return; seenN=CREATS.length; for(const N of CREATS){ if(DONE.has(N))continue; DONE.add(N); const k=kindOf(N); if(!SP[k])continue; const hb=new THREE.Mesh(HB,HM); hb.position.y=Math.min(N.H*.5,.6*T)+.05*T; N.g.add(hb); HBS.push([N,hb]);
     UI.thing({name:'A '+SP[k][0].replace(/^THE /,''),obj:hb,reach:N.ex?2*T:2.6*T,near:3*T,tall:.3*T,act:()=>watch(N)}); } };
   FORAGE.BOOK.push({id:'wild',title:'WILDLIFE',rows:()=>KS().map(k=>[SP[k][0],!!S.seen[k],S.seen[k]?'SEEN '+S.seen[k]+' · '+SP[k][1].toUpperCase():'',SP[k][4]>0]),
-    foot:`Double click a creature and keep still to watch it; binoculars watch from afar. Wasps and the snake are out on warm days, bats by night, spiders in their webs. A full page pays $${FULL}.`});
-  FORAGE.HELP.push('WILDLIFE: double click a park creature and keep still a few seconds to log it in your journal (it trains its skill: insects ENTOMOLOGY, the bat BIRDING, the slime MYCOLOGY, the rest FORAGING).');
+    foot:`Double click a creature and keep still to watch it; binoculars watch from afar. Owls by night, ducks on the lake, bees among the flowers. A full page pays $${FULL}.`});
+  FORAGE.HELP.push('WILDLIFE: double click a park creature and keep still a few seconds to log it in your journal (it trains its skill: bees ENTOMOLOGY, birds BIRDING).');
   window.WILDDBG=()=>({seen:S.seen,paid:S.paid,watching:WILD.watching(),spd:+(spd/T).toFixed(2),things:CREATS.length}); }
 export {WILD};

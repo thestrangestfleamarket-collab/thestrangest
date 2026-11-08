@@ -43,10 +43,7 @@ const CREATS=[]; window.CREATS=CREATS;
         const dep=(.68+.32*Math.min(1,q[1]*1.6))*(N.y>.5?1.06:N.y<-.3?.78:1);
         for(let k=0;k<3;k++)for(let j=0;j<3;j++){ const v=Math.max(0,Math.min(255,o[j]*dep)); c[i+k*3+j]=c instanceof Uint8Array?Math.round(v):v/255; } }
       g.attributes.color.needsUpdate=true; return g; }; })();
-  const CH=[['Slime','SLIME',.45,[62,-17],.25,0],['Snake','SNAKE',.05,[90,-24],.3,0]];
-  for(let i=0;i<10;i++)CH.push(['Spider','SPIDER',.012+i%3*.003,[57+i*5,-29+i%4*3],.45,0]);
-  for(let i=0;i<5;i++)CH.push(['Bat','BAT',.09+i%2*.02,[60+i*8,-22+i%3*3],1.1,0]);
-  for(let i=0;i<7;i++)CH.push(['Wasp','WASP',.022+i%2*.004,[64+i*4,-32+i%3*2],.8,0]);
+  const CH=[];   // (the park's own creatures are pets at the pet store; the subway's rats stay)
   for(const r of SHARED.METRO.rats){ const L=r.lane; CH.push(['Rat','RAT',.08,null,.9,0,{lv:'down',group:'down',lane:L,free:(x,z,R)=>x>L.x0&&x<L.x1&&z>L.z0&&z<L.z1&&!SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R),ground:(x,z)=>MODS.station.ground(x,z),x:r.x,z:r.z,out:OUT.always}]); }
   const SHARE={nest:null,webs:null,beds:null};
   const itemsOf=m=>m&&m.userData&&m.userData.items||[], plants=()=>itemsOf(PARK.under).concat(FL().bushes.map(b=>({x:b.x,y:b.y,z:b.z,top:b.y+b.h,r:b.r}))).filter(o=>o.top!=null&&inL(PARKL,o.x,o.z));

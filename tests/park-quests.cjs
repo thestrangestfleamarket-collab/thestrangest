@@ -17,7 +17,7 @@ const SHOTS = process.argv[3];
     await ev(() => { for (const k in FORAGE.S.sk) FORAGE.S.sk[k] = 1000; STORE.goTo(-34, 245, 'up'); });
     ok(await wait(() => PQDBG().placed, 180000), 'in the park, its finds are placed: ' + JSON.stringify(await ev(() => PQDBG())));
     const D = await ev(() => PQDBG());
-    ok(D.orch && D.hive && D.pond && D.green && D.loft, 'the orchard, the hollow oak, the ball pond, the green and the moth lamp all found room');
+    ok(D.orch && D.hive && D.loft && !D.pond && !D.green, 'the orchard, the hollow oak and the moth lamp all found room (no golf: archived 8 Nov 2026)');
     const go = (x, z) => ev(([x, z]) => { STORE.goTo(x, z, 'up'); }, [x, z]);
     const hurt = () => ev(() => __dbg.VIT.hp);
     // the orchard
@@ -49,21 +49,6 @@ const SHOTS = process.argv[3];
       const w = await ev(() => { FORAGE.give('bee_smoker', 1); FORAGE.give('jar_honey', 3); const n0 = FORAGE.has('honey_wild'), q0 = FORAGE.has('bee_hive'); for (let i = 0; i < 10 && FORAGE.has('honey_wild') === n0; i++) PQ.wild(); return [FORAGE.has('honey_wild') - n0, FORAGE.has('bee_hive') - q0]; });
       ok(w[0] >= 1 && w[1] === 1, 'with smoke and jars, wild honey and once a queen: ' + JSON.stringify(w));
       await shot('hive');
-    }
-    // the pond and the green
-    if (D.pond) {
-      await ev(() => STORE.goTo(PQ.POND.x, PQ.POND.z, 'up')); await pg.waitForTimeout(1500);
-      const g = await ev(() => { let n = 0; for (let i = 0; i < 20; i++)PQ.ball(); for (const id of ['gb_old', 'gb_gutty', 'gb_feathery']) n += FORAGE.has(id); return n; });
-      ok(g === 6, 'wading in, six old balls a day come out of the mud: ' + g);
-      await ev(() => __dbg.VIT.heal(1)); const h0 = await hurt(); ok(await wait(() => { PQ.step(.5); return PQ.POND.bit > 0; }, 30000) && (await hurt()) < h0, 'the snapping turtle bites a wader who lingers');
-      await shot('pond');
-    }
-    if (D.green) {
-      await ev(() => STORE.goTo(PQ.GREEN.x + 2 * __dbg.cv().TILE, PQ.GREEN.z, 'up')); await pg.waitForTimeout(1500);
-      let paid = 0; for (let i = 0; i < 6 && !paid; i++) { const c0 = await ev(() => { FORAGE.give('gb_feathery', 1); const c = INV.cash; PQ.putt(); return c; }); await wait(() => !PQ.GREEN.roll, 10000); paid = (await ev(() => INV.cash)) - c0; }
-      ok(paid === 150, 'a hole in one on the hidden green pays $150: ' + paid);
-      const again = await ev(() => INV.ready('hio'));
-      ok(!again, 'and only once a day');
     }
     // the moth lamp
     if (D.loft) {

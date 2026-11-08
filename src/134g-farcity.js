@@ -55,9 +55,9 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
         vec3 base=mix(vec3(.30,.31,.34),vec3(.52,.46,.38),t.b)*(.25+.75*uDay);
         vec3 c=base*(1.-.25*t.r); c+=t.g*step(.55,h(floor(vU*vec2(${W}.,${H}.))))*vec3(1.,.82,.5)*.45*(1.-uDay)*(1.-.6*t.r); gl_FragColor=vec4(c,1.); }`});
   const ring=new THREE.Mesh(new THREE.CylinderGeometry(RAD,RAD,PH,96,1,true).translate(0,(RAD*Math.tan(E1)+RAD*Math.tan(E0))/2,0),pmat);
-  // (the ring is round the eye wherever it goes, so the far city stays on the horizon; only with the view in perspective)
+  // (the ring goes round the eye but stays on the ground, so flying high its ground stays on the horizon instead of rising with you; only with the view in perspective)
   ring.frustumCulled=false; ring.renderOrder=-5; ring.name='skyline'; ring.userData.anyRoom=false; scene.add(ring);
-  ring.onBeforeRender=(r,s,cam)=>{ ring.position.set(cam.position.x,cam.position.y,cam.position.z); };
+  ring.onBeforeRender=(r,s,cam)=>{ ring.position.set(cam.position.x,Math.min(cam.position.y,0),cam.position.z); };
   // the cylinder's angle against the painting's: its u runs from +z toward +x, as the painting was laid out
   let sT=0; SYS.add('sky',dt=>{ ring.visible=!!UI.persp; if((sT-=dt||0)>0)return; sT=.5;
     if(SKY.U&&SKY.U.uH)U.uHaze.value.copy(SKY.U.uH.value); const e=CLOCK.elev?CLOCK.elev():30; U.uDay.value=Math.max(.06,Math.min(1,(e+4)/16)); if(CLOCK.sunV)U.uSun.value.copy(CLOCK.sunV).normalize(); },'134g-farcity');

@@ -127,6 +127,12 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
         const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
     const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
+      // Market St's park wall past the mirror's reach (161d): plain stone and a railing of bars, to the end of the strips
+      if(PARK.wallOn){ const [,w0,w1]=PARK.wallOn, wa=E.mirror?E.mirror.x[1]+E.mirror.reach:PARK.wallOn[0], we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
+        const sw=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(L),YP(96),d),new THREE.MeshLambertMaterial({color:0x6a6862})); sw.position.set(cx,YP(48),cz);
+        const rc=cv(4,16), rg=rc.getContext('2d'); rg.fillStyle='#24282b'; rg.fillRect(0,0,1,16); rg.fillRect(0,0,4,1); rg.fillRect(0,10,4,1); const rt=tex(rc); rt.wrapS=THREE.RepeatWrapping; rt.repeat.set(Math.abs(L)/(.19*T*2),1);
+        const rl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(L),YP(43)),new THREE.MeshLambertMaterial({map:rt,transparent:true,alphaTest:.5,side:THREE.DoubleSide})); rl.position.set(cx,YP(96+21.5),cz);
+        for(const m of [sw,rl]){ m.raycast=()=>{}; m.userData.cullOf=1; m.userData.haze=1; G.add(m); } BLK.back.push({parkwall:true,x0:wa,x1:we}); } }
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
       for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi], x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);

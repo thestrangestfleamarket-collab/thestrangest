@@ -69,6 +69,7 @@ const EYE={on:false,last:null};
     if(hit)for(const N of (NPCS.all?NPCS.all():NPCS))if(N&&N.g&&under(hit.object,N.g))return {name:up(N.name||'SOMEONE'),kind:'A PERSON'};
     const L=GPH.pick&&GPH.pick(RC); if(L&&L.th&&L.th.name&&(!hit||L.d<=hit.distance+.5*TILE))return {name:up(L.th.name),kind:'A LOOSE THING',info:'DOUBLE-CLICK TO PICK IT UP'};
     if(!hit||hit.distance>400*TILE)return {name:'THE SKY'};
+    if(hit.object.name==='farcity'||hit.object.name==='skyline')return {name:'THE CITY',kind:'TOO FAR TO WALK TO'};
     const p=hit.point, z=ZONES.at(p.x,p.z,SHARED.LVL,ROOMS.cur), at=z&&z.name?up(z.name):'';
     // a painted prop: the name its maker gave it (the faces a prop's, as the world editor picks them)
     const OF=hit.object.userData.objOf, po=OF&&hit.faceIndex!=null&&OF[Math.floor(hit.faceIndex/2)];

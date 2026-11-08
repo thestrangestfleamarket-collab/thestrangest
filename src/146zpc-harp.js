@@ -5,7 +5,7 @@ import {imAct} from './120-game-music-2-instruments.js';
 import {INSTR} from './146zp-instruments.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3;
   // the strings' plane (metres, the harpist at the origin facing +z, +x their left): along the soundboard from its foot (the bass) to its top at the shoulder (the treble)
-  const N=34, PX=-.07, SB0=new V3(PX,.13,.4), SB1=new V3(PX,.92,.04);
+  const N=34, PX=-.07, SB0=new V3(PX,.13,.46), SB1=new V3(PX,.9,.15);
   const root=s=>SB0.clone().lerp(SB1,s/(N-1)), topY=s=>{ const u=s/(N-1); return 1.19+(.99-1.19)*u+.045*Math.sin(Math.PI*u); };
   const pluckY=s=>{ const r=root(s).y, t=topY(s); return Math.max(r+.05,Math.min(t-.05,.8)); };
   const at=s=>{ const r=root(s); return new V3(PX,pluckY(s),r.z); };
@@ -31,10 +31,10 @@ import {INSTR} from './146zp-instruments.js';
     const sb=box(.16,len+.06,.025,WOOD,0,0,0); sb.position.copy(mid); sb.rotation.x=ang; g.add(sb);
     const bx=new THREE.Mesh(new THREE.CylinderGeometry(.04,.13,len,10,1,false,Math.PI/2,Math.PI),mat(0x5a3218)); bx.castShadow=true; bx.position.copy(mid).add(new V3(0,-.07*Math.cos(ang),.07*Math.sin(ang)).multiplyScalar(-1)); bx.rotation.x=ang; g.add(bx);
     // the neck through the strings' tops, on to the column's head
-    const pts=[]; for(let s=0;s<N;s+=3)pts.push(new V3(PX,topY(s)+.03,root(s).z)); pts.unshift(new V3(PX,1.22,.47)); pts.push(new V3(PX,topY(N-1)+.02,SB1.z-.04),new V3(PX,SB1.y+.02,SB1.z-.03));
+    const pts=[]; for(let s=0;s<N;s+=3)pts.push(new V3(PX,topY(s)+.03,root(s).z)); pts.unshift(new V3(PX,1.22,.54)); pts.push(new V3(PX,topY(N-1)+.02,SB1.z-.04),new V3(PX,SB1.y+.02,SB1.z-.03));
     const neck=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.02,8),mat(WOOD)); neck.castShadow=true; g.add(neck);
-    g.add(cyl(.028,.034,1.2,GOLD,12,PX,.62,.47)); g.add(cyl(.05,.035,.08,GOLD,12,PX,1.25,.47));   // the column and its crown
-    g.add(box(.3,.1,.34,mat(WOOD),PX,.05,.36));   // the base
+    g.add(cyl(.028,.034,1.2,GOLD,12,PX,.62,.54)); g.add(cyl(.05,.035,.08,GOLD,12,PX,1.25,.54));   // the column and its crown
+    g.add(box(.3,.1,.34,mat(WOOD),PX,.05,.42));   // the base
     U.peds=PORD.map((L,i)=>{ const p=new THREE.Group(); p.position.set(PX0[i],.035,.19); p.add(box(.016,.012,.07,GOLD,0,0,-.035)); g.add(p); return {g:p,L}; });
     // the strings: gut, the C strings red, the F strings dark blue, the lowest wound in copper
     U.str=[]; for(let s=0;s<N;s++){ const r=root(s), tY=topY(s), L=tY-r.y, l=letter(s), c=l===0?0xb3262a:l===3?0x232c6e:s<7?0xb07a4a:0xe6dcc2, th=s<7?.0024:s<20?.0017:.0012;

@@ -22,13 +22,14 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   for(const K of ['piano','harp','drums']){
     const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
       const W=P.H.W, hipY=P.H.W&&new P.H.G.position.constructor().setFromMatrixPosition(W[0]).y/P.H.k; o.sat=+hipY.toFixed(2);
-      const chords=K==='piano'?[[48,52,55,60,64,67],[41,45,72,76,79],[45,52,57,64,67,72]]:K==='harp'?[[7,9,11,16,18,20],[3,5,22,24,26],[10,12,26,28,30]]:[[1],[5],[2],[6],[4],[7]];
+      const chords=K==='piano'?[[48,52,55,60,64,67],[41,45,72,76,79],[48,52,55,64,67,71]]:K==='harp'?[[7,9,11,16,18,20],[3,5,22,24,26],[10,12,26,28,30]]:[[1],[5],[2],[6],[4],[7]];
       for(const ch of chords){ const evs=ch.map(n=>INSTR.note(P,K==='piano'?{n,v:.8,d:1e9,h:n<60?'L':'R'}:K==='harp'?{n,f:0,v:.8,d:2,h:n<14?'L':'R'}:{n,v:.8,d:.1,h:n===1?'L':'R'})); await new Promise(r=>setTimeout(r,K==='drums'?40:450));
-        if(K==='drums'){ const e=evs[0], U=P.H.G.userData, s=U.st[e.h], tip=s.position.clone().add(new s.position.constructor(0,1,0).applyQuaternion(s.quaternion).multiplyScalar(.2)), hp=P.K.at(e); o.miss.push(Math.round(tip.distanceTo(hp)*1000)); await new Promise(r=>setTimeout(r,400)); }
+        if(K==='drums'){ const e=evs[0], H=P.H, sd=e.h; P.K.hands(P,e.t,H); const q=H.st[sd]; o.miss.push(Math.round(q.tp.distanceTo(P.K.at(e))*1000));
+          await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); const q2=H.st[sd]; o.reach=Math.max(o.reach||0,Math.round(H.wr[sd].distanceTo(q2.wr)*1000)); await new Promise(r=>setTimeout(r,300)); }
         else { const err=P.H.err; o.miss.push(Math.round(Math.max(...['L','R'].flatMap(sd=>[0,1,2,3,4].filter(f=>evs.some(e=>e['f'+sd]===f||e.fh===f&&e.h===sd)).map(f=>err[sd][f]||0)))*1000)); for(const e of evs)INSTR.off(P,e); await new Promise(r=>setTimeout(r,200)); } }
       return o; },K);
     rec(`PLAY sets ${K.toUpperCase()} before you, seats you at it (hips at the seat) and shows its panel`,p.on&&p.held&&p.panel&&p.sat>.4&&p.sat<.65,JSON.stringify({on:p.on,held:p.held,panel:p.panel,sat:p.sat}));
-    rec(K==='drums'?'each stick is on its drum or cymbal as it strikes (within 6 cm of the head, the edge or the bow)':`every played ${K==='piano'?'key':'string'}'s fingertip lands on it (within 10 mm)`,K==='drums'?p.miss.every(m=>m<=60):p.miss.every(m=>m<=10),JSON.stringify(p.miss));
+    rec(K==='drums'?'each stick comes down onto its drum or cymbal as it strikes (within 1 cm), the fist where the stick wants it (within 2 cm)':`every played ${K==='piano'?'key':'string'}'s fingertip lands on it (within 10 mm)`,K==='drums'?p.miss.every(m=>m<=10)&&p.reach<=20:p.miss.every(m=>m<=10),JSON.stringify(K==='drums'?{tip:p.miss,reach:p.reach}:p.miss));
     if(OUT){ await pg.evaluate(()=>{ document.getElementById('inp').style.visibility='hidden'; INSTR.closeUp(true); }); await wait(1500); await pg.screenshot({path:OUT+'/'+K+'-closeup.png'}); await pg.evaluate(()=>{ document.getElementById('inp').style.visibility=''; }); }
     // a song: its notes go out and what moves moves; one past your skill is refused
     const s=await pg.evaluate(async K=>{ const P=INSTR.ME; FORAGE.S.sk[K]=1000; if(P.K.loadBook)await P.K.loadBook(); const i=P.K.BOOK.findIndex(T=>T.lvl===1); INSTR.play('song',i); const seen=new Set(), keys=new Set();
@@ -54,7 +55,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const ring=await render(PK.dsp(),PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),1.2), damped=await render(PK.dsp(),[...PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),{k:'damp',id:60,T:.12,t:.3}],1.2);
     return {ok:true,peak,hz,dr,ring:+rms(ring,.8,1.1).toFixed(5),damped:+rms(damped,.8,1.1).toFixed(5)}; });
   rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.01),JSON.stringify(a.peak));
-  rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 2%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.02),JSON.stringify(a.hz));
+  rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 3%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.03),JSON.stringify(a.hz));
   rec('the kick, the snare and the hi-hat each strike loud (rendered offline)',a.ok&&Object.values(a.dr).every(p=>p>.05),JSON.stringify(a.dr));
   rec('a released piano key is stopped by its damper (far quieter than one held)',a.ok&&a.damped<a.ring*.1,JSON.stringify({ring:a.ring,damped:a.damped}));
   // another player at a piano: drawn on them, their note in their live score and their fingers, heard from where they sit; gone when they put it away

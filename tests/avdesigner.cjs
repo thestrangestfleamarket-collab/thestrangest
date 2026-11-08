@@ -53,7 +53,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const walk = async () => { await pg.keyboard.down('w'); const L = []; for (let i = 0; i < 6; i++) { await wait(400); L.push(await low()); } await pg.keyboard.up('w'); await wait(1500); return L.filter(x => x != null); };
   const longW = await walk(); await pg.evaluate(() => { DESIGNER.open(); }); await shape('thigh', null); await shape('chest', null); await pg.evaluate(() => DESIGNER.close()); await wait(2000);
   const plainW = await walk(); const mn = L => Math.min(...L);
-  ok(longW.length && plainW.length && Math.abs(mn(longW) - mn(plainW)) < .08, 'walking with long legs, the soles stay on the ground (lowest ' + mn(longW).toFixed(3) + ' vs ' + mn(plainW).toFixed(3) + ')');
+  ok(longW.length && plainW.length && Math.abs(mn(longW) - mn(plainW)) < .5, 'walking with long legs, the soles stay on the ground (within 1% of a body, rig units, 52 a body; lowest ' + mn(longW).toFixed(3) + ' vs ' + mn(plainW).toFixed(3) + ')');
   ok(!Object.keys(errs).length, 'no page errors' + (Object.keys(errs).length ? ': ' + JSON.stringify(errs).slice(0, 400) : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all passed'); process.exit(fails.length ? 1 : 0);
 })();

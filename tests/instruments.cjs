@@ -16,6 +16,9 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const sk=await pg.evaluate(async()=>{ __dbg.UI.menuTab('pack','skills'); await new Promise(r=>setTimeout(r,500)); const t=(document.getElementById('packp')||{}).innerText||''; __dbg.UI.toggleMenu&&__dbg.UI.toggleMenu();
     const i=k=>t.indexOf(k); return {music:i('MUSIC'),wild:i('THE WILD'),guitar:i('GUITAR'),piano:i('PIANO'),drums:i('DRUMS'),harp:i('HARP'),sk:['piano','drums','harp'].map(k=>FORAGE.sk(k))}; });
   rec('the skills list MUSIC first: GUITAR, PIANO, DRUMS, HARP, each starting at 10',sk.music>=0&&sk.music<sk.wild&&[sk.guitar,sk.piano,sk.drums,sk.harp].every(v=>v>sk.music&&v<sk.wild)&&sk.sk.every(v=>v===10),JSON.stringify(sk));
+  const ok=await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])delete INV.items[k]; FORAGE.ownerKit(); return {items:['guitar','piano','drums','harp'].map(k=>INV.items[k]||0),sk:['guitar','piano','drums','harp'].map(k=>FORAGE.sk(k))}; });
+  rec('an owner starts with the guitar, piano, drum kit and harp in the bag, each skill at 100',ok.items.every(n=>n===1)&&ok.sk.every(v=>v===100),JSON.stringify(ok));
+  await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])FORAGE.S.sk[k]=100; });
   const sh=await pg.evaluate(()=>['piano','drums','harp'].map(id=>({id,name:FORAGE.name(id),price:ITEMS.prop(id,'value'),shelf:BODEGA.LAYOUT.some(r=>r[2].includes(id)),make:!!(BODEGA.MAKE[id]&&BODEGA.MAKE[id]().children.length)})));
   rec('the bodega sells A PIANO ($900), A DRUM KIT ($450) and A HARP ($700) on its shelf',sh.every(s=>s.shelf&&s.make)&&sh.map(s=>s.name+' '+s.price).join()==='A PIANO 900,A DRUM KIT 450,A HARP 700',JSON.stringify(sh));
   // each: set down and sat at; fingers (or sticks) on what they play

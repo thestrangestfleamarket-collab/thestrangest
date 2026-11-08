@@ -138,7 +138,9 @@ import {WORTH} from './140c-worth.js';
   // every player starts with 99 DRIFTCAPs to fly (owner, 7 Nov 2026: "all players start with 99 mushrooms to fly")
   SYS.onStart(()=>{ const n=99-have('shroom_fly'); if(n>0){ give('shroom_fly',n); saveSoon(); LOAD('later').then(()=>FORAGE.draw()); } },'141-forage driftcaps');
   // owners start with 99 of every mushroom that gives something extra (owner, 7 Nov 2026), and GUITAR at 100 (owner, 7 Nov 2026: "my player is 100 skill level and can play all the songs")
-  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(!o)return; for(const id of ['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly']){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp']){ S.sk[k]=1000; if(!have(k))give(k,1); } saveSoon(); FORAGE.draw(); }).catch(()=>{}); },'141-forage owners');
+  // the owners' kit, each start: every power mushroom to 99, every instrument in the bag and its skill at 100
+  FORAGE.ownerKit=()=>{ for(const id of ['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly']){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp']){ S.sk[k]=1000; if(!have(k))give(k,1); } saveSoon(); FORAGE.draw(); };
+  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o)FORAGE.ownerKit(); }).catch(()=>{}); },'141-forage owners');
   SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;

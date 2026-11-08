@@ -123,3 +123,4 @@ const DM={open:false,draft:null,sel:null,room:0,pick:null,tab:'layout'}; window.
   addEventListener('keydown',e=>{ if(e.shiftKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='Y'||e.key==='y')&&!(e.target&&e.target.matches&&e.target.matches('input,textarea,select'))){ e.preventDefault(); DM.toggle(); } });
   SYS.every(()=>{ if(DM.open&&DM.draw&&SHARED.LVL==='down')DM.draw(); },500,'146bb-dm map');
   let told=false; SYS.every(()=>{ if(!told&&SHARED.LVL==='down'&&MODS.dungeon&&MODS.dungeon.room){ told=true; SAY('SHIFT+Y: DUNGEON MASTER','#c8c2b0'); } },2000,'146bb-dm hint'); }
+export {DM};

@@ -60,6 +60,8 @@ jobs:
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k drops   'src/162[de]|src/150cy|worker/door|drops'
+          k photog  'src/146m|src/160b|photog'
+          k earn    'src/140c|src/160b|data/trainers|earn'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
@@ -69,8 +71,9 @@ jobs:
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
+          k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
-          k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
+          k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -175,6 +178,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops.cjs dist/market.html
+      - name: Photography (the subject in frame, its price, sold prints train the skill)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' photog')
+        run: node tests/photog.cjs dist/market.html
+      - name: Earning (known kinds sell for more, the trainer ladders, loot buyers, the bounties)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' earn')
+        run: node tests/earn.cjs dist/market.html
       - name: The ground drops' server (kept, told, first to take, expiry, the cap)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
@@ -234,6 +245,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dm')
         run: node tests/dm.cjs dist/market.html
+      - name: The park's animals walk by the shared walks
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' animals')
+        run: node tests/animals.cjs dist/market.html
       - name: The park's things solid, its benches seats
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')

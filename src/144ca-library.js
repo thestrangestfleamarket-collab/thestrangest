@@ -87,10 +87,10 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
   // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
   const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, PROSE=/^\w+\s+[a-z]+\s+[a-z]/, ROMAN=/^[ivxlcdm]+\.?$/i;
-  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
+  const chapters=(P,modern)=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
     const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
     let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
-    for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
+    for(const i of keep){ let t=P[i], sk=1; if(!modern&&!/:/.test(t)&&P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
     if(out.length<2){ out.length=0; for(let i=0;i<P.length;i+=60)out.push({t:'PART '+(out.length+1),i,sk:0}); }
     if(out[0].i>0)out.unshift({t:'THE BEGINNING',i:0,sk:0}); return out; };   // sk: how many of its first paragraphs are its own heading
   let cur=null, side=null;   // the book open: {b, P paragraphs, ch chapters, c chapter}
@@ -124,7 +124,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
       d.querySelector('[data-res]').innerHTML=w.length<3?'':out.length?out.map(([i,t])=>`<div class="it" data-hit="${i}">…${esc(t)}…</div>`).join(''):'<div class="it">NOTHING FOUND.</div>'; }); } };
   const goPara=i=>{ let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=i)c=k; show(c,i); const el=R.querySelector(`p[data-i="${i}"]`); if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),2400); } };
   LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; theme(); R.hidden=false; side=null; R.innerHTML='<div class="bar"><span class="t">OPENING '+esc(b.t)+'…</span><button data-a="x">CLOSE</button></div>'; R.focus();
-    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text()); TX[id]={P,ch:chapters(P)}; }   // a modern book's own words come packed (gzip)
+    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text()); TX[id]={P,ch:chapters(P,!!b.txt)}; }   // a modern book's own words come packed (gzip)
       cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
     catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
   LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };

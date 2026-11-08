@@ -100,7 +100,9 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});
       const FZ=L(face(W,o.h,{k:o.k,tint:o.tint,lit:.24,nodoor:1})), FX=L(face(D,o.h,{k:o.k+7,tint:o.tint,lit:.24,nodoor:1}));
       const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),[FX,FX,roofM,roofM,FZ,FZ]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.receiveShadow=true; m.raycast=()=>{}; m.userData.haze=1; G.add(m); PEEK.whole(m); BLK.back.push({...o,mesh:m}); };
-    let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0), end=a0+dir*Math.min(Math.abs(a1-a0),NEAR); let p=a0;
+    // a row starts past the last real building on it (owner, 8 Nov 2026: "make sure the buildings dont over lap")
+    const clear=(ax,p,dir,b0,b1)=>{ for(const q of LEVEL.places||[]){ const [u0,u1,v0,v1]=ax==='x'?[q.x0,q.x1,q.y0,q.y1]:[q.y0,q.y1,q.x0,q.x1]; if(u0==null||v0==null||v1<=b0||v0>=b1)continue; if(u0<p&&u1>p)p=dir<0?u0-1.2:u1+1.2; } return p; };
+    let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0); let p=clear(ax,a0,dir,b0,b1); const end=p+dir*Math.min(Math.abs(a1-p),NEAR);
       while((end-p)*dir>2){ const w=Math.min(14+rnd()*8,Math.abs(end-p)), h=360+Math.floor(rnd()*3)*120, q1=p+dir*w, lo=Math.min(p,q1), hi=Math.max(p,q1);
         back(ax==='x'?{x0:lo,x1:hi,y0:b0,y1:b1,h,k:900+k*13,tint:TINTS[k%TINTS.length]}:{x0:b0,x1:b1,y0:lo,y1:hi,h,k:900+k*13,tint:TINTS[k%TINTS.length]}); k++; p=q1+dir*1.2; } } }
   // the streets and the park carried on past the edges (owner, 7 Nov 2026: "the map to look like it keeps going (past map) lower res ... like real nyc"): low-res ground strips, the park's wall and a band of plain trees (data/world.json edge.strips, edge.park)

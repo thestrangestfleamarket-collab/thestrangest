@@ -6,15 +6,32 @@ import {FACADES} from './038zc-facades.js';
 const HUDSHOP={tris:0,made:0};
 { const lin=c=>{ const t=new THREE.Color(); t.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace); return [t.r,t.g,t.b]; }, hs=(a,b,c)=>hash(a,b,c);
   let MB=null, MP=null, MG=null, BT=null;
-  HUDSHOP.brick=()=>{ if(BT)return BT;
-    // the brick: running bond, each brick its own tone (grey, tinted per shop by the vertex colour), mortar between, soot at the top
-    const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.fillStyle='#b8b4ac'; g.fillRect(0,0,128,128);
-    for(let r=0;r<16;r++)for(let k=-1;k<6;k++){ const x=k*24+(r%2?12:0), v=150+hs(r,k,7)*70|0; g.fillStyle=`rgb(${v},${v},${v})`; g.fillRect(x+1,r*8+1,22,7); }
-    const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return BT=t; };
+  // the brick (owner, 8 Nov 2026: "make all the brickes and textures on the polyfork buildings in game way more realistic"): running bond at the old size, 512 px; each brick its own tone, grain and speckle,
+  // rounded edges lit from above, a few dark clinkers and chips, the mortar sunk back with the brick's shadow along its top, grime that gathers low; and a relief map from the same heights (the mortar in, the bricks out)
+  let BN=null, BMk=null; const bake=()=>{ const N=512, RH=32, BL=96, MO=4, L=new Float32Array(N*N), Hh=new Float32Array(N*N), C=new Uint8ClampedArray(N*N*4), fr=x=>x-Math.floor(x);
+    const n2=(x,y,s)=>{ const X=Math.floor(x/s), Y=Math.floor(y/s), u=fr(x/s), v=fr(y/s), a=hs(X,Y,11), b=hs(X+1,Y,11), c=hs(X,Y+1,11), d=hs(X+1,Y+1,11), su=u*u*(3-2*u), sv=v*v*(3-2*v); return a+(b-a)*su+(c-a)*sv+(a-b-c+d)*su*sv; };
+    for(let y=0;y<N;y++){ const r=Math.floor(y/RH), yy=y-r*RH, off=r%2?BL/2:0;
+      for(let x=0;x<N;x++){ const xx0=(x+off)%N, k=Math.floor(xx0/BL), xx=xx0-k*BL, i=y*N+x, kk=k%(N/BL);
+        const grime=.92+.08*n2(x,y,64), spk=(hs(x,y,3)-.5)*.07;
+        if(yy<MO||xx<MO){ const sh=yy<MO?.78+.06*yy:.9; L[i]=(.66+.08*n2(x,y,5)+spk)*sh*grime; Hh[i]=0; C[i*4]=C[i*4+1]=C[i*4+2]=0; continue; }
+        const t=hs(r,kk,7), dark=hs(r,kk,9)<.08, base=dark?.4+.08*t:.6+.28*t, d=Math.min(xx-MO,BL-1-xx,yy-MO,RH-1-yy), edge=Math.min(1,d/2.5);
+        let l=base*(.86+.14*edge)+(n2(x,y,7)-.5)*.1+(n2(x,y,2)-.5)*.06+spk;
+        if(yy-MO<2)l+=.06; if(RH-1-yy<2)l-=.08; if(hs(Math.floor(x/3),Math.floor(y/3),13)<.012)l*=.62;   // (lit along the top, shadow below; a chip here and there)
+        L[i]=l*grime; Hh[i]=.55+.45*edge-(hs(Math.floor(x/3),Math.floor(y/3),13)<.012?.4:0); const tw=(hs(r,kk,5)-.5)*.22; C[i*4]=128+tw*255; C[i*4+1]=128; C[i*4+2]=128-tw*255; } }
+    const cv=document.createElement('canvas'); cv.width=cv.height=N; const g=cv.getContext('2d'), im=g.createImageData(N,N);
+    for(let i=0;i<N*N;i++){ const v=Math.max(0,Math.min(1,L[i]))*255, tw=C[i*4]?(C[i*4]-128)/255:0; im.data[i*4]=v*(1+tw); im.data[i*4+1]=v; im.data[i*4+2]=v*(1-tw); im.data[i*4+3]=255; } g.putImageData(im,0,0);
+    const cn=document.createElement('canvas'); cn.width=cn.height=N; const gn=cn.getContext('2d'), nm=gn.createImageData(N,N), at=(x,y)=>Hh[((y+N)%N)*N+(x+N)%N];
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const dx=(at(x-1,y)-at(x+1,y))*2.2, dy=(at(x,y-1)-at(x,y+1))*2.2, l=Math.hypot(dx,dy,1), o=(y*N+x)*4; nm.data[o]=(dx/l*.5+.5)*255; nm.data[o+1]=(-dy/l*.5+.5)*255; nm.data[o+2]=(1/l*.5+.5)*255; nm.data[o+3]=255; }
+    gn.putImageData(nm,0,0);
+    const tex=(c,srgb)=>{ const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.generateMipmaps=true; t.anisotropy=4; if(srgb)t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const cm=document.createElement('canvas'); cm.width=cm.height=N; const gm=cm.getContext('2d'), mm=gm.createImageData(N,N); for(let i=0;i<N*N;i++){ const v=Hh[i]===0?255:0; mm.data[i*4]=mm.data[i*4+1]=mm.data[i*4+2]=v; mm.data[i*4+3]=255; } gm.putImageData(mm,0,0);
+    BT=tex(cv,true); BN=tex(cn,false); BMk=tex(cm,false); };
+  HUDSHOP.brick=()=>{ if(!BT)bake(); return BT; }; HUDSHOP.brickN=()=>{ if(!BN)bake(); return BN; }; HUDSHOP.brickM=()=>{ if(!BMk)bake(); return BMk; };   // (the mortar's mask: grey, not the brick's colour)
   const mats=()=>{ if(MB)return; const t=HUDSHOP.brick();
     const glow=m=>{ m.onBeforeCompile=sh=>{ sh.uniforms.uNight=FACADES.night; sh.vertexShader='attribute float aGlow; varying float vGlow;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vGlow=aGlow;');
       sh.fragmentShader='uniform float uNight; varying float vGlow;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','outgoingLight+=diffuseColor.rgb*vGlow*(.2+uNight*1.8);\n#include <opaque_fragment>'); }; return m; };
-    MB=glow(new THREE.MeshLambertMaterial({map:t,vertexColors:true})); MB.customProgramCacheKey=()=>'hudshopB';
+    MB=glow(new THREE.MeshLambertMaterial({map:t,normalMap:HUDSHOP.brickN(),normalScale:new THREE.Vector2(.9,.9),vertexColors:true})); MB.customProgramCacheKey=()=>'hudshopB';
+    { const g0=MB.onBeforeCompile; MB.onBeforeCompile=sh=>{ g0(sh); sh.uniforms.uM={value:HUDSHOP.brickM()}; sh.fragmentShader='uniform sampler2D uM;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n { float mk=texture2D(uM,vMapUv).r; diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.6,.58,.54)*texture2D(map,vMapUv).g*1.3,mk); }'); }; }
     MP=glow(new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); MP.customProgramCacheKey=()=>'hudshopP';
     MG=new THREE.MeshPhongMaterial({color:0x9fb4c4,specular:0xffffff,shininess:90,transparent:true,opacity:.26,depthWrite:false,side:THREE.DoubleSide}); };
   // o: L the lot in its own frame (front along L.y1), pt (u,v)->lot tiles, brick (the shop's brick colour), du the door's middle (tiles), seed

@@ -8,7 +8,10 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.PFROWDBG&&PFROWDBG().done,null,{timeout:120000}).catch(()=>{}); await pg.waitForTimeout(1500);
   const d=await pg.evaluate(()=>PFROWDBG());
   ok(d.done,'the Polyfork fronts came after the start: '+JSON.stringify(d));
-  ok(['hotel','bar','antiques','outfitter','bath','bodega','fishing','books','tailor','barber'].every(id=>d.fronts.includes(id))&&!['florist','pets','gems','diner','theatre','play'].some(id=>d.fronts.includes(id)),'every Hudson row shop wears its Polyfork building, Market St\'s are brick (the map moved again, 7 Nov 2026: '+d.fronts.join(', ')+')');
+  ok(['arcade','bodega','books','bar','armor','skate','fishing','antiques'].every(id=>d.fronts.includes(id))&&!['hotel','outfitter','bath','tailor','barber','florist','pets','gems','diner','theatre','play'].some(id=>d.fronts.includes(id)),'every Hudson row shop wears its Polyfork building, Market St\'s are brick (the map as of 8 Nov 2026: '+d.fronts.join(', ')+')');
+  // nothing overlaps (owner, 8 Nov 2026: "make sure the buildings dont over lap"): the backdrop's blocks past the map's edge stand clear of every place on their row
+  const ov=await pg.evaluate(L=>{ const bad=[]; for(const k of BLK.back||[])for(const p of L){ if(p.x0==null||p.y0==null||p.y1==null)continue; const ox=Math.min(k.x1,p.x1)-Math.max(k.x0,p.x0), oy=Math.min(k.y1,p.y1)-Math.max(k.y0,p.y0); if(ox>.2&&oy>.2)bad.push(p.id+' '+ox.toFixed(1)); } return {n:(BLK.back||[]).length,bad}; },require('../data/world.json').places);
+  ok(ov.n>0&&!ov.bad.length,'the backdrop past the map\'s edge overlaps no building: '+JSON.stringify(ov));
   ok(d.houses===0&&d.solids===0,'no Polyfork towers on West St (its apartment houses are brownstones, 7 Nov 2026): '+d.houses);
   ok(d.tris>0&&d.tris<200000,'the fronts and their dressing are about 170,000 triangles along 230 m of street, never all in view ('+d.tris+')');
   

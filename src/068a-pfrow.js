@@ -14,10 +14,11 @@ const PFROW={fronts:[],houses:[],things:[]};
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
   const PFC={hotel:[168,150,128],theatre:[120,52,48],play:[148,92,70],bar:[72,46,48],bodega:[150,62,48],bath:[188,180,164],books:[96,70,58],fishing:[90,96,104],tailor:[120,72,60],barber:[116,66,58],antiques:[110,84,64],outfitter:[96,92,80]};
   let BM=null; const BODMAT=()=>{ if(BM)return BM; BM=KIT.mat.clone(); const T=HUDSHOP.brick();
-    BM.onBeforeCompile=sh=>{ sh.uniforms.uB={value:T}; sh.vertexShader='varying vec3 vBW; varying vec3 vBN;\n'+sh.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vBW=(modelMatrix*vec4(transformed,1.)).xyz; vBN=normalize(mat3(modelMatrix)*objectNormal);');
-      sh.fragmentShader='uniform sampler2D uB; varying vec3 vBW; varying vec3 vBN;\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+    BM.onBeforeCompile=sh=>{ sh.uniforms.uB={value:T}; sh.uniforms.uN={value:HUDSHOP.brickN()}; sh.uniforms.uM={value:HUDSHOP.brickM()}; sh.vertexShader='varying vec3 vBW; varying vec3 vBN;\n'+sh.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vBW=(modelMatrix*vec4(transformed,1.)).xyz; vBN=normalize(mat3(modelMatrix)*objectNormal);');
+      sh.fragmentShader='uniform sampler2D uB; uniform sampler2D uN; uniform sampler2D uM; varying vec3 vBW; varying vec3 vBN;\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       { vec3 c=diffuseColor.rgb; float red=c.r-max(c.g,c.b); vec3 an=abs(vBN); vec2 uv=an.x>an.z?vBW.zy:vBW.xy;
-        if(an.y<.5&&red>.06&&c.r>.12){ float l=dot(texture2D(uB,uv*.5).rgb,vec3(.33)); diffuseColor.rgb=c*(.55+.9*l)*1.1; }
+        if(an.y<.5&&red>.06&&c.r>.12){ vec2 bu=uv*.5; vec3 t=texture2D(uB,bu).rgb; float l=dot(t,vec3(.333)), mk=texture2D(uM,bu).r; vec3 n=texture2D(uN,bu).xyz*2.-1.; float rl=clamp(.92+.45*n.y-.15*n.x,.6,1.3);   // (the brick's own tone and tint, the mortar grey and sunk, lit from above)
+          diffuseColor.rgb=mix(c*(t/max(l,.01))*(.3+1.05*l)*1.15,vec3(.5,.48,.45)*(.65+.45*l),mk)*rl; }
         else if(an.y<.5&&c.b>c.r&&c.r<.1){ diffuseColor.rgb=mix(c,vec3(.16,.2,.24),.4)+vec3(.05,.04,.02)*step(.5,fract(vBW.y*.9)); } }`); };
     BM.customProgramCacheKey=()=>'bodbrick'; return BM; };
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };

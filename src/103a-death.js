@@ -8,7 +8,7 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. GO TO THE BATH HOUSE.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
-  const MH=T/.84, WAIT=10, HOUR=36e5; let S=null, gh=0, rise=-1, busy=false, dp=null, wt=0, wn=0;
+  const MH=T/.84, WAIT=10, HOUR=36e5; let S=null, gh=0, rise=-1, busy=false, dp=null, wt=0, wt0=0, wn=0;
   const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; W3.ghost=on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
@@ -35,7 +35,7 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   const wake=async()=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
     let at=body&&body.c; if(!at)try{ at=JSON.parse(SAVE.get('deadat')||'null'); }catch(e){}
     if(at){ STORE.goTo(at.x,at.z,at.dn?'down':'up',at.h); PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
-    VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; wt=0; wn=0; look(false); try{ SAVE.del('dead'); SAVE.del('deadat'); }catch(e){}
+    VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; wt=0; wt0=0; wn=0; look(false); try{ SAVE.del('dead'); SAVE.del('deadat'); }catch(e){}
     },{hold:200}); if(body)takeBody(); note('YOU WAKE AT YOUR BODY, ALIVE.',5); busy=false; };
   // RESURRECT in the menu (owner, 4 Nov 2026, every player): back to life where you stand (a ragdoll still falling settles first)
   let want=false; VIT.revive=()=>{ if(!VIT.dead||busy)return false; want=true; return true; };
@@ -46,8 +46,8 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:SHARED.py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
     if(rise<0){ gh=Math.min(1,gh+dt);   // ten seconds in the bath house's steam and you wake alive at your body (owner, 8 Nov 2026); walking out starts it over
-      if(gh>=1&&inBath()){ wt+=dt; const n=Math.max(1,Math.ceil(WAIT-wt)); if(n!==wn){ wn=n; note('THE STEAM REFRESHES YOU \u00b7 '+n); } if(wt>=WAIT){ rise=0; wake(); } }
-      else if(wt>0){ wt=0; wn=0; note(DEAD); } }
+      if(gh>=1&&inBath()){ const nw=performance.now()/1000; if(!wt0)wt0=nw; wt=nw-wt0; const n=Math.max(1,Math.ceil(WAIT-wt)); if(n!==wn){ wn=n; note('THE STEAM REFRESHES YOU \u00b7 '+n); } if(wt>=WAIT){ rise=0; wake(); } }
+      else if(wt>0||wt0){ wt=0; wt0=0; wn=0; note(DEAD); } }
     const dn=SHARED.BOD.GD&&SHARED.BOD.GD.deep!=null?SHARED.BOD.GD.deep/S.MV+.45:SHARED.py/S.MV, y0=SHARED.py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, s3=e*e*(3-2*e), q=rise>0&&dp?Math.min(1,s3*1.6):0, to={x:(pos.x+((dp?dp[0]:pos.x)-pos.x)*q)/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*s3,z:(pos.z+((dp?dp[1]:pos.z)-pos.z)*q)/MH}; S.gnd=rise>0?dn-.5:SHARED.py/S.MV;
     if(Math.hypot(to.x-b.x,to.z-b.z)>1||Math.abs(to.y-b.y)>1)GHOSTS.move(S,to);
     if(gh>=1&&rise<0&&!GHOSTS.on(S)){ S.ball={...to}; S.drop(); GHOSTS.settle(S,240); }

@@ -38,8 +38,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const br=await pg.evaluate(async()=>{ const I=await PETS.idx(), d=I.kinds.filter(k=>k.of==='dog').length, c=I.kinds.filter(k=>k.of==='cat').length;
     const mk=async k=>{ const K=I.by[k], N=await PETS.make('b'+k,{k,n:'',c:K.zones.map(z=>z[1]),s:K.s0||K.knobs.map(()=>50),z:100,h:false},()=>({x:pos.x,z:pos.z,y:SHARED.py,hd:0})); const p=Array.from(N.me.geometry.attributes.position.array.slice(0,600)), H=N.H; PETS.drop(N); return {p,H}; };
     const dog=await mk('dog'), dach=await mk('dachshund'), lab=await mk('labrador'), dal=I.by.dalmatian;
-    return {d,c,differ:dach.p.join()!==dog.p.join()&&lab.p.join()!==dach.p.join(),low:dach.H<lab.H,spots:dal.zones.some(z=>z[0]==='mark'),varieties:Object.keys(I.by.labrador.presets).length}; });
-  rec('every dog and cat breed: its own body, size, coat and colour varieties',br.d>=100&&br.c>=50&&br.differ&&br.low&&br.spots&&br.varieties>=3,JSON.stringify(br));
+    const T={}; for(const k of I.kinds)if(k.type)T[k.type]=(T[k.type]||0)+1;
+    return {d,c,T,bases:[...new Set(I.kinds.filter(k=>k.type==='DOG').map(k=>k.of))].sort().join(),differ:dach.p.join()!==dog.p.join()&&lab.p.join()!==dach.p.join(),low:dach.H<lab.H,spots:dal.zones.some(z=>z[0]==='mark'),varieties:Object.keys(I.by.labrador.presets).length}; });
+  rec('every breed: dogs (on the collie, the xolo, the wolf, the fox), cats, horses, rabbits, poultry, parrots, livestock: its own body, size, coat and colour varieties',
+    br.T.DOG>=130&&br.T.CAT>=50&&br.T.HORSE>=15&&br.T.RABBIT>=15&&br.T.CHICKEN>=10&&br.T.PARROT>=10&&br.T.COW>=8&&br.T.GOAT>=8&&br.bases==='dog,fox,wolf,xolo'&&br.differ&&br.low&&br.spots&&br.varieties>=3,JSON.stringify(br));
   // the first day: the PET step chooses your permapet, any animal, free
   const fd=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)), q=s=>document.querySelector('#fday '+s), c0=INV.cash; FIRSTDAY.open(); await W(300);
     q('#fdn').value='PETTEST'; q('#fdn').dispatchEvent(new Event('input')); q('#fdb').value='2000-01-01'; q('#fdb').dispatchEvent(new Event('input'));
@@ -59,6 +61,22 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     if(cv){ const px=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data; for(let i=3;i<px.length;i+=4)if(px[i]>0)lit++; }
     const nav=!!document.querySelector('#mnav [data-sec=pets]'); UI.toggleMenu(); return {nav,info:['MISO','SIAMESE','PERMAPET','AGE','HEALTH','HUNGER','LOYALTY','MOOD','SPEED'].filter(w=>!t.includes(w)),portrait:lit}; });
   rec('the menu\'s PETS: every pet\'s name, age, breed, kind, stats, hunger and loyalty, its portrait',mn.nav&&!mn.info.length&&mn.portrait>200,JSON.stringify(mn));
+  // what each eats: hunters dog or cat food (dog food back from the archive, at the pet store), grazers fruit
+  const fd2=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)), I=await PETS.idx(), K=I.by.arabian; PETS.add({k:'arabian',n:'Dancer',c:K.zones.map(z=>z[1]),s:K.s0||[],z:100,h:false},false); await W(300);
+    const L=PETS.list(), h=L.find(r=>r.out), p=L.find(r=>r.perma); for(const id of Object.keys(INV.items))if(/^fr_|^g_(cat|dog)food/.test(id))delete INV.items[id];
+    FORAGE.give('fr_apple',1); p.hu=h.hu=90; PETS.feed(p); const catApple=p.hu; PETS.feed(h); const horseApple=h.hu; FORAGE.give('g_dogfood',1); PETS.feed(p); const catDog=p.hu;
+    return {catApple,horseApple,catDog,dogfoodBack:!ARCHI('g_dogfood'),diets:[PETS.dietOf(I.by.siamese),PETS.dietOf(I.by.arabian),PETS.dietOf(I.by.rat)].join()}; });
+  rec('each pet eats its own food: a cat refuses fruit and eats dog food, a horse eats an apple; dog food is back',fd2.catApple===90&&fd2.horseApple<90&&fd2.catDog<90&&fd2.dogfoodBack&&fd2.diets==='meat,plant,any',JSON.stringify(fd2));
+  // the pets not out with you wait in your apartment
+  const hm=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)), A=__dbg.MAPK.MODS.apts; await A.enterReal(); for(let i=0;i<60&&(window.FADE&&FADE.busy||!A.inReal);i++)await W(250);
+    for(let i=0;i<60&&![...PETS.home().values()].some(h=>h.N);i++)await W(250); const H=[...PETS.home().values()].filter(h=>h.N), ok=H.length>=1&&H.every(h=>h.N.g.visible);
+    await A.exitReal(); for(let i=0;i<60&&(window.FADE&&FADE.busy||A.inReal);i++)await W(250); await W(1500); return {inReal:true,home:H.length,ok,after:PETS.home().size}; });
+  rec('the pets not with you wait in your apartment, and stay there when you leave',hm.ok&&hm.home>=1&&hm.after===0,JSON.stringify(hm));
+  // stats at work: a loyal fed pet finds things, a hungry one is slow
+  const sts=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)); for(let i=0;i<80&&!(PETS.mine()&&PETS.mine().g.visible);i++)await W(250); const h=PETS.list().find(r=>r.out); h.lo=100; h.hu=0; h.hp=100;
+    const c0=INV.cash, f0=h.finds||0, rnd=Math.random; Math.random=()=>0; try{ PETS.fetch(); } finally{ Math.random=rnd; } const found=(h.finds||0)-f0;
+    h.hu=95; UI.menuTab('pets','mine'); await W(800); const slow=/SLOWED: HUNGRY/.test(document.getElementById('dpets').textContent); UI.toggleMenu(); h.hu=10; return {found,got:INV.cash-c0,slow}; });
+  rec('a loyal, fed pet finds things for you; a hungry one is slowed',sts.found===1&&sts.slow,JSON.stringify(sts));
   if(OUT){ require('fs').mkdirSync(OUT,{recursive:true});   // in the park's open meadow, third person, the pet in front of you, side on
     await pg.evaluate(h=>{ document.getElementById('looks').hidden=true; UI.goTo(h[0],h[1],h[2],h[3]); },home); await wait(4000);
     for(const k of ['dog','cat','parrot','pigeon','crow','rabbit','elephant','giraffe','trex','rdragonling','lion','bee']){

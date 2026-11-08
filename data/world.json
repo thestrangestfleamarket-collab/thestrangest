@@ -918,6 +918,14 @@
     "w": 27.53,
     "d": 17.55,
     "note": "the bath house on its island in the lake: no trees or paths here"
+   },
+   {
+    "id": "bridge",
+    "x": 215,
+    "y": 102,
+    "w": 6,
+    "d": 8,
+    "note": "where the island's footbridge lands: no trees here"
    }
   ],
   "stalls": [
@@ -994,6 +1002,16 @@
     "rx": 19,
     "ry": 14,
     "note": "the bath house's island in the middle of the lake (owner, 8 Nov 2026): ghosts float out to it"
+   }
+  ],
+  "bridges": [
+   {
+    "x0": 215,
+    "y0": 140,
+    "x1": 215,
+    "y1": 102,
+    "w": 3,
+    "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
    }
   ]
  },

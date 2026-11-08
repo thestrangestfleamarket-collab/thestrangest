@@ -1,4 +1,4 @@
-// A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in TENANTS > BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
+// A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
 import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';

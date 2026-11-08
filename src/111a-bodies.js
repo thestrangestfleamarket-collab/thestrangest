@@ -133,7 +133,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       else { clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
         clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); }
       if(aw>.001&&S._pc){ clipT(S._pc.c,S._pc.t,S._pc.l,i,Q1,P1); if(S._pf&&S._pf.w>0){ clipT(S._pf.c,S._pf.t,S._pf.l,i,Q4,P4); Q1.slerp(Q4,S._pf.w); P1.lerp(P4,S._pf.w); } Q2.slerp(Q1,aw); P2.lerp(P1,aw); }
-      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } }
+      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } if(body.O1)relen(PM,body); }
+  // a reshaped body (the designer, 111c: O1 the shape's joints) on a recorded clip: every bone turned as the clip has it, each joint where its parent's bone, at the shape's length, puts it
+  const RL=BONES.map(()=>new V3()), RM=new THREE.Matrix3(), RV=new V3();
+  const relen=(PM,body)=>{ const O1=body.O1; for(let i=0;i<NB;i++){ const n=BONES[i], p=PARENT[n]?BONES.indexOf(PARENT[n]):-1, e=PM.value[i].elements;
+      if(p<0)RL[i].copy(O1[i]).applyMatrix4(PM.value[i]); else { RM.setFromMatrix4(PM.value[p]); RL[i].copy(RL[p]).add(RV.subVectors(O1[i],O1[p]).applyMatrix3(RM)); }
+      RM.setFromMatrix4(PM.value[i]); RV.copy(O1[i]).applyMatrix3(RM); e[12]=RL[i].x-RV.x; e[13]=RL[i].y-RV.y; e[14]=RL[i].z-RV.z; } };
   // a held tool's arm: the rig's, moved so its shoulder is where the walking body's is
   const ARM={L:[3,4,5],R:[6,7,8]};
   const keepArms=(PM,PR,body)=>{ '@later'; for(const side of ['L','R']){ const [u]=ARM[side]; O.setFromMatrixPosition(M4.copy(body.binv[u]).invert()); O2.copy(O).applyMatrix4(PM.value[u]); O.applyMatrix4(PR.value[u]); O2.sub(O);

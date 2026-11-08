@@ -6,7 +6,6 @@ import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
-import {DESIGN} from './102b-designer.js';
 import {LABELS} from './104-labels.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
@@ -24,7 +23,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt:'+(MODS.apts.host||ONLINE.me||MODS.apts.num||''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ '@later'; const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
+  const lookKey=()=>{ '@later'; const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'..'+LOOKS.code()+'.'+wn:(LOOKS.code()!=='M00'?'.':'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:'')); ONLINE.myName=myName;
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -69,13 +68,13 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
     if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return base&&base.failed&&!base.failed(c)?null:built('w00'); b={body};   // (a body still coming: none yet, never the Walker first; one that failed: the Walker)
     BUILT.set(k,b); return b; }
-    const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS, D=DESIGN.decode(k.split('.')[1]||'');
+    const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS;
     const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
-    for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
+    for(const p of PCS){ if(p.e!=null)p.E=E[p.e]||null;
       if(bare&&/^shoe/.test(p.n))p.recol=()=>SK;
       if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    b={PCS,bh:D.h,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
+    b={PCS,bh:1,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>E[i]||null)}; BUILT.set(k,b); return b; };
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k); o.key=k; if(!b)return; const g=new THREE.Group();
     if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }

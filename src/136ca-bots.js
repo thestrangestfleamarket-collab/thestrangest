@@ -1,4 +1,4 @@
-// THE BOTS PANEL: the owner's test players in TENANTS (spawn, set each one's name, look, place, job, health and fighting; worker/door.js bots, run by tools/bots.cjs).
+// THE BOTS PANEL: the owner's test players in the menu's BOTS (spawn, set each one's name, look, place, job, health and fighting; worker/door.js bots, run by tools/bots.cjs).
 import {SHARED} from './003-shx.js';
 import {BUGS, CINEMA, ONLINE, pos, TENANTS, TESTS, TEXT, UI} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
@@ -76,31 +76,5 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
   ONLINE.botUse=o=>{ if(!o||!IDS.has(o.id))return false; (window.LOAD?LOAD('later'):Promise.resolve()).then(async()=>{ if(!D)await load(); win(o.id); }); return true; };
   // an owner learns which players are bots once the start is done
   SYS.onStart(()=>setTimeout(()=>{ (window.LOAD?LOAD('later'):Promise.resolve()).then(()=>CINEMA.isAdmin&&CINEMA.isAdmin()).then(a=>{ if(a)return api({do:'bots'}).then(r=>{ if(r&&r.bots)for(const b of r.bots)IDS.add(b.id); }); }).catch(()=>{}); },4000),'136ca-bots');
-  /* ---------- ADMIN > TESTS: every test, its last result, run the picked ones split over the bots that are on ---------- */
-  let tel=null, TR=null, tsay='', pick=new Set(), topen=new Set();
-  const tload=async()=>{ const [r,b]=await Promise.all([api({do:'tests'}),api({do:'bots'})]); TR=r&&r.tests?new Map(r.tests.map(x=>[x.id,x])):TR||new Map(); if(b&&b.bots)D=b; tdraw(); };
-  const COL={pass:'#7fdc8a',fail:'#e06a5a',skip:'#c8b070'};
-  const tdraw=()=>{ '@later'; if(!tel)return; const L=list(), R=TR||new Map(), on=D&&D.bots?D.bots.filter(b=>b.on):[], n=k=>L.filter(t=>R.get(t.id)&&R.get(t.id).r===k).length;
-    const runs=on.filter(b=>b.job==='tests'&&b.status&&b.status.tests).map(b=>esc(b.name)+': '+esc(b.status.tests.left)+' to go').join(' · ');
-    tel.innerHTML=`<div class="dim">${L.length} tests, made by the game from its own places, shops, skills, pets and games. A bot plays each like a player. Last results: <span style="color:${COL.pass}">${n('pass')} passed</span> · <span style="color:${COL.fail}">${n('fail')} failed</span> · <span style="color:${COL.skip}">${n('skip')} skipped</span> · ${L.length-n('pass')-n('fail')-n('skip')} not run${runs?'<br>running: '+runs:''}${tsay?'<br>'+esc(tsay):''}</div>
-      <div class="row"><button class="btn" id="trun">RUN PICKED (${pick.size}) ON ${on.length} BOT${on.length===1?'':'S'}</button><button class="btn" id="tfail">PICK THE FAILED</button><button class="btn" id="tnone">PICK NONE</button><button class="btn" id="tre">REFRESH</button><button class="btn" id="tclr">CLEAR RESULTS</button></div>
-      ${(TESTS.cats||[]).map(([k,nm])=>{ const C=L.filter(t=>t.cat===k), all=C.length&&C.every(t=>pick.has(t.id)), f=C.filter(t=>R.get(t.id)&&R.get(t.id).r==='fail').length, p=C.filter(t=>R.get(t.id)&&R.get(t.id).r==='pass').length;
-        return `<div style="border:2px solid var(--line);padding:4px 8px;margin:6px 0"><div class="row"><label><input type="checkbox" data-tc="${k}"${all?' checked':''}> <b>${esc(nm)}</b></label><span class="dim">${C.length} · <span style="color:${COL.pass}">${p} passed</span> · <span style="color:${COL.fail}">${f} failed</span></span><button class="btn" data-to="${k}">${topen.has(k)?'HIDE':'SHOW'}</button></div>
-          ${topen.has(k)?C.map(t=>{ const x=R.get(t.id); return `<div class="row" style="margin:2px 0"><label><input type="checkbox" data-ti="${esc(t.id)}"${pick.has(t.id)?' checked':''}> ${esc(t.name)}</label>${x?`<span style="color:${COL[x.r]}">${x.r.toUpperCase()}</span><span class="dim">${esc(x.why)} · ${esc(ago(x.at))}</span>`:'<span class="dim">not run</span>'}</div>`; }).join(''):''}</div>`; }).join('')}`;
-    const $=q=>tel.querySelector(q);
-    tel.querySelectorAll('[data-tc]').forEach(c=>c.onchange=()=>{ for(const t of L)if(t.cat===c.dataset.tc){ if(c.checked)pick.add(t.id); else pick.delete(t.id); } tdraw(); });
-    tel.querySelectorAll('[data-ti]').forEach(c=>c.onchange=()=>{ if(c.checked)pick.add(c.dataset.ti); else pick.delete(c.dataset.ti); tdraw(); });
-    tel.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>{ const k=b.dataset.to; if(topen.has(k))topen.delete(k); else topen.add(k); tdraw(); });
-    $('#tfail').onclick=()=>{ pick=new Set(L.filter(t=>R.get(t.id)&&R.get(t.id).r==='fail').map(t=>t.id)); tdraw(); };
-    $('#tnone').onclick=()=>{ pick.clear(); tdraw(); };
-    $('#tre').onclick=()=>tload();
-    $('#tclr').onclick=async()=>{ if(!confirm('Clear every test result?'))return; await api({do:'testclear'}); tsay='results cleared'; tload(); };
-    $('#trun').onclick=async e=>{ if(!pick.size){ tsay='pick some tests first'; tdraw(); return; } if(!on.length){ tsay='turn a bot on first (ADMIN > TENANTS > BOTS)'; tdraw(); return; } e.target.disabled=true;
-      // cheap ones first; the rest dealt round the bots, so each gets a share of every kind
-      const ids=L.filter(t=>pick.has(t.id)).map(t=>t.id), share=on.map(()=>[]); ids.forEach((id,i)=>share[i%on.length].push(id)); const run=Date.now();
-      for(let i=0;i<on.length;i++)await api({do:'botset',id:on[i].id,set:{job:'tests',tests:share[i].slice(0,800),run}});
-      tsay=ids.length+' tests sent to '+on.length+' bot'+(on.length===1?'':'s')+(ids.length>800*on.length?' (800 a bot at most: turn more on for the rest)':''); tload(); };
-  };
-  TENANTS.tests=e=>{ '@later'; tel=e; list(); tdraw(); tload(); if(!TENANTS.tests.t)TENANTS.tests.t=setInterval(()=>{ if(tel&&tel.offsetParent)tload(); },15000); };
   TENANTS.bots=e=>{ el=e; D=null; draw(); load(); }; window.TENANTS=TENANTS;
 }

@@ -283,7 +283,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="queue" id="dqueue"></div>
     <div class="pane" data-p="tenants" id="dten"></div>
     <div class="pane" data-p="text" id="dtext"></div>
-    <div class="pane" data-p="tests" id="dtests"></div>
+    <div class="pane" data-p="bots" id="dbots"></div>
     <div class="pane" data-p="editors" id="deditors"></div>
     <div class="pane" data-p="tools" id="dtools"></div></div></div>`;
   document.body.appendChild(M);
@@ -296,15 +296,16 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
-    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['tenants','TENANTS',['tenants']],['text','TEXT',['text']],['tests','TESTS',['tests']],['editors','EDITORS',['editors']],['tools','TOOLS',['tools']]]]];   // TEXT its own tab (owner, 7 Nov 2026)
-  const OLD={home:['you'],display:['set','view'],graphics:['set','picture'],atmo:['set','picture'],sound:['set','controls'],keys:['set','controls'],vr:['set','controls'],bug:['set','bug'],tenants:['admin','tenants'],city:['you']};
-  let cur='you', own=false; const last={};
+    ['tenants','TENANTS','',[['players','TENANTS',['tenants']]]],['bots','BOTS','',[['bots','BOTS',['bots']]]],   // owners only, each its own (owner, 8 Nov 2026)
+    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['tools','TOOLS',['tools']]]]];   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
+  const OLD={home:['you'],display:['set','view'],graphics:['set','picture'],atmo:['set','picture'],sound:['set','controls'],keys:['set','controls'],vr:['set','controls'],bug:['set','bug'],tenants:['tenants','players'],city:['you']};
+  let cur='you', own=false; const last={}, OWN=new Set(['tenants','bots','admin']);
   const mount=(id,host,on)=>{ const el=document.getElementById(id); if(!el)return null; if(on){ if(el.parentNode!==host)host.appendChild(el); el.classList.add('ml','inmenu'); el.hidden=false; } else if(el.parentNode!==document.body){ el.classList.remove('inmenu'); el.hidden=true; document.body.appendChild(el); } return el; };
   const people=()=>{ '@later'; const all=ONLINE.others?[...ONLINE.others.values()]:[], E=TEXT.esc;
     $('#dpeople').innerHTML=!ONLINE.on?'<div class="dim">nobody else here: other players are on the website, thestrangestfleamarket.com</div>':'<h3>ON YOUR BLOCK · '+(all.length+1)+'</h3><table>'+all.map(o=>'<tr><td>'+E(o.name||'TENANT')+'</td><td>'+(ONLINE.visit&&!(o.x&&o.x.noapt)?'<button class="btn" data-visit="'+E(o.id)+'">VISIT THEIR APARTMENT</button>':'')+'</td></tr>').join('')+'</table>'+(all.length?'':'<div class="dim">nobody else is on</div>')+'<div class="dim" style="margin-top:10px">double-click a player in the street to trade</div>'; };
   $('#dpeople').addEventListener('click',e=>{ const b=e.target.closest('[data-visit]'); if(!b)return; const o=ONLINE.others&&ONLINE.others.get(b.dataset.visit); if(o&&ONLINE.visit){ shut(); ONLINE.visit(o.id,o.name); } });
-  const nav=()=>{ $('#mnav').innerHTML=SEC.filter(S=>S[0]!=='bbs'&&(S[0]!=='admin'||own)).map(([k,n,key])=>'<button role="tab" data-sec="'+k+'" aria-selected="'+(k===cur)+'"'+(k==='admin'?' class="adm"':'')+'>'+n+(key?'<u>'+key+'</u>':'')+'</button>').join(''); };
-  const show=(sec,sub)=>{ const S=SEC.find(x=>x[0]===sec&&(sec!=='admin'||own))||SEC[0];
+  const nav=()=>{ $('#mnav').innerHTML=SEC.filter(S=>S[0]!=='bbs'&&(!OWN.has(S[0])||own)).map(([k,n,key])=>'<button role="tab" data-sec="'+k+'" aria-selected="'+(k===cur)+'"'+(k==='admin'?' class="adm"':'')+'>'+n+(key?'<u>'+key+'</u>':'')+'</button>').join(''); };
+  const show=(sec,sub)=>{ const S=SEC.find(x=>x[0]===sec&&(!OWN.has(sec)||own))||SEC[0];
     if(!S[3]){ S[4](); return; }
     const P=S[3].find(x=>x[0]===sub); if(P&&typeof P[2]==='function'){ P[2](); return; }
     const pt=P||S[3].find(x=>x[0]===last[S[0]])||S[3].find(x=>Array.isArray(x[2])); cur=S[0]; last[cur]=pt[0];
@@ -319,7 +320,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(on.has('moves'))$('#dmoves').innerHTML=UI.movesHTML();
     if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
     if(on.has('display')||on.has('graphics')||on.has('sound')||on.has('atmo'))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr'));
-    if(on.has('atmo'))window.DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tests')&&TENANTS.tests)TENANTS.tests($('#dtests')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors'));
+    if(on.has('atmo'))window.DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('bots')&&TENANTS.bots)TENANTS.bots($('#dbots')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors'));
     bars(); };
   $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });
   $('#msub').addEventListener('click',e=>{ const b=e.target.closest('[data-sub]'); if(b)show(cur,b.dataset.sub); });
@@ -331,7 +332,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.toggleMenu=()=>toggleMenu(); UI.menuTab=(t,sub)=>{ const o=OLD[t]; if(o){ t=o[0]; sub=sub||o[1]; } if(!SEC.some(q=>q[0]===t))return; if(!UI.menuOpen)toggleMenu(); M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET'; show(t,sub); };
   UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='map'); drawMap(); };   // the map alone, no settings tabs (Shift+M)
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET';
-    if(UI.menuOpen){ mapLv=SHARED.LVL; show(cur==='admin'&&!own?'you':cur); if(!own&&CINEMA.isAdmin)CINEMA.isAdmin().then(o=>{ if(o&&!own){ own=true; if(UI.menuOpen)nav(); } }).catch(()=>{}); }
+    if(UI.menuOpen){ mapLv=SHARED.LVL; show(OWN.has(cur)&&!own?'you':cur); if(!own&&CINEMA.isAdmin)CINEMA.isAdmin().then(o=>{ if(o&&!own){ own=true; if(UI.menuOpen)nav(); } }).catch(()=>{}); }
     else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; } }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;

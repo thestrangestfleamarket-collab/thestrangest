@@ -1,12 +1,12 @@
 // THE CHARACTER PAGE: the menu's YOU (your live avatar beside your look; PASSPORT, RESURRECT, LOG OUT) and ADMIN's TOOLS (STATS, the render inspector, the game log).
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, ED, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from './003b-systems.js';
+import {BUGS, CHARP, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
+import {DESIGNER} from './111cb-designer.js';
 import {DM} from './146bb-dm.js';
 { const esc=TEXT.esc;
-  const CLOG=()=>{ '@log'; return __CHANGELOG__; };   // [date, summary] of every HISTORY update, newest first; baked by build.py into its own chunk
 
   // the avatar: render W3.group into the panel canvas. The body is one mesh posed by shader uniforms, so its
   // geometry bounds are the bind pose, not the real figure: frame from the feet (group y) to the head (W3.eyeAt).
@@ -26,10 +26,9 @@ import {DM} from './146bb-dm.js';
   const btns=()=>{ const B=[['PASSPORT','',()=>{ if(UI.menuOpen)UI.toggleMenu(); PASSPORT.open(); }],['RESURRECT','',()=>{ if(VIT.revive&&VIT.revive()&&UI.menuOpen)UI.toggleMenu(); },0,!VIT.dead],['LOG OUT','',logout]];
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
-  const tools=host=>{ if(!LOADED('log')){ host.innerHTML='<div class="dim">...</div>'; LOAD('log').then(()=>tools(host)); return; } const L=CLOG(), st=document.getElementById('stat');
+  const tools=host=>{ const st=document.getElementById('stat');
     host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div>
-      <h3>GAME LOG · ${L.length}</h3><div class="dim" style="margin-bottom:8px">every update, newest first</div>
-      <ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:var(--mo);font-weight:normal">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
+`;
     host.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(host); };
     host.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); if(RINSP.on&&UI.menuOpen)UI.toggleMenu(); else tools(host); }; };
 
@@ -38,9 +37,7 @@ import {DM} from './146bb-dm.js';
       ['EDIT THE WORLD','SHIFT+E · isometric',()=>{ shut(); if(WE.key)WE.key(); }],
       ['DUNGEON MASTER','SHIFT+Y',()=>{ shut(); if(DM.toggle)DM.toggle(true); }],
       ['ITEM EDITOR','SHIFT+7',()=>{ shut(); if(ITEMED.key)ITEMED.key(); }],
-      ['DECORATE','T · in your apartment',async()=>{ shut(); if(ED.toggle&&!ED.on)await ED.toggle(); if(!ED.on&&UI.log)UI.log('Decorate works inside your apartment.','#e8a23a'); }],
-      ['YOUR LOOK','PROFILE · LOOK',()=>UI.menuTab('you','look')],
-      ['WALKER DESIGNER','',()=>{ shut(); if(DESIGN.open)DESIGN.open(); }]];
+      ['AVATAR DESIGNER','',()=>{ shut(); DESIGNER.open(); }]];
     host.innerHTML='<h3>EDITORS</h3>'+E.map((e,i)=>`<div class="row"><button class="btn" data-ed="${i}">${e[0]}${e[1]?' · '+e[1]:''}</button></div>`).join('');
     host.onclick=ev=>{ const b=ev.target.closest('[data-ed]'); if(b)E[+b.dataset.ed][2](); }; };
 
@@ -52,7 +49,7 @@ import {DM} from './146bb-dm.js';
     el.addEventListener('click',e=>{ const b=e.target.closest('.cp-btn[data-i]'); if(b&&el._btns&&el._btns[+b.dataset.i])el._btns[+b.dataset.i][2](); }); };
 
   Object.assign(CHARP,{ show:host=>{ spin=0; build(host); btns(); shot(); on=1; },
-    hide:()=>{ on=0; }, tools, editors, log:CLOG }); window.CHARP=CHARP;
+    hide:()=>{ on=0; }, tools, editors }); window.CHARP=CHARP;
 
   const css=document.createElement('style'); css.textContent=`
   #dhome .cp-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}

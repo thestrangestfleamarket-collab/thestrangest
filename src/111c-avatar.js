@@ -141,7 +141,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
   // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; its faces
   // there cut finer first (cutFace) and shaded smooth (sm)
-  const RR=.05, RE=.006, SAG=.0012, HB=2;
+  const RR=.05, RE=.02, HB=2;
   const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
   const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9;
     for(let q=0;q<n;q++)if(hb(q)===HB)top=Math.max(top,X[q*3+1]); if(!(top>-1e9))return null;
@@ -154,8 +154,9 @@ const AVATAR={}; window.AVATAR=AVATAR;
         nx=x+(nx-x)*hw; nz=z+(nz-z)*hw; ny=y+(yy-y)*hw; }
       o[i]=nx; o[i+1]=ny; o[i+2]=nz; };
     return {at,ty:ty-RE,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
-  // a head face cut where it bends: an edge halved while its middle would sit over SAG off the line between its ends (none under RE); a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
-  const cutFace=(A,B,C,f,out,at)=>{ const o=[0,0,0,0,0,0,0,0,0], bent=(a,b)=>{ if(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<RE)return false; at(a[0],a[1],a[2],1,o,0); at(b[0],b[1],b[2],1,o,3); at((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,1,o,6); return Math.hypot(o[6]-(o[0]+o[3])/2,o[7]-(o[1]+o[4])/2,o[8]-(o[2]+o[5])/2)>SAG; };
+  // a head face cut where it bends: an edge over RE with part of it on the rounded strip halved; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
+  const cutFace=(A,B,C,f,out,at)=>{ const o=[0,0,0], moves=(x,y,z)=>{ at(x,y,z,1,o,0); return Math.abs(o[0]-x)+Math.abs(o[1]-y)+Math.abs(o[2]-z)>1e-7; },
+      bent=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])>RE&&[0,.25,.5,.75,1].some(t=>moves(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t));
     const go=(V,F)=>{ const s=[0,1,2].map(i=>bent(V[i].p,V[(i+1)%3].p)), n=s[0]+s[1]+s[2];
       if(!n){ out.push(V); return; }
       const mid=i=>{ const a=V[i], b=V[(i+1)%3]; return {b:[(a.b[0]+b.b[0])/2,(a.b[1]+b.b[1])/2,(a.b[2]+b.b[2])/2],p:[(a.p[0]+b.p[0])/2,(a.p[1]+b.p[1])/2,(a.p[2]+b.p[2])/2],pin:F[i]}; };

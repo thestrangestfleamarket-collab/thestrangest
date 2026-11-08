@@ -24,7 +24,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
     for(const [x0,z0,x1,z1] of SHARED.solids){ const w=x1-x0, d=z1-z0; if(Math.min(w,d)<2.5*T&&w*d<12*T*T)continue; const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
       if(d2>=r*r)continue; if(d2>1e-8){ const q=Math.sqrt(d2); p.x=cx+dx/q*r; p.z=cz+dz/q*r; } else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } };
   const POSE={k:'zip',z:0,sway:0};
-  RIDE.kind('lift',{name:'BLACK BALLOON',hint:'A CLICK AND IT LIFTS YOU. WASD DRIFTS. A CLICK BRINGS YOU DOWN.',onSay:'THE BALLOON TUGS. YOUR FEET LEAVE THE GROUND.',held:.5,dry:true,hop:false,ease:6,
+  RIDE.kind('lift',{name:'BLACK BALLOON',hint:'E AND IT LIFTS YOU. WASD DRIFTS. E BRINGS YOU DOWN.',onSay:'THE BALLOON TUGS. YOUR FEET LEAVE THE GROUND.',held:.5,dry:true,hop:false,ease:6,
     make:()=>balloon(),
     on:R=>{ R.h=0; R.down=SHARED.LVL!=='up'; R.vx=0; R.vz2=0; R.warned=false; const a=airGet(); say('THE BALLOON HAS AIR FOR '+Math.ceil(a)+' S.','#d8d8e8'); },
     leave:R=>{ if(!R.down){ R.down=true; say('YOU LET A LITTLE AIR OUT. YOU SINK.','#d8d8e8'); } },

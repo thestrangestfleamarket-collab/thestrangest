@@ -1,7 +1,7 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32, I16, SKIN} from './003a-skin.js';
-import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, st, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -9,6 +9,7 @@ import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {makeNPC} from './076-npc-map.js';
+import {TREES} from './144e-trees.js';
 window.PETS=PETS;
 { const IDX=__LAZY__("data/pets.json"), WU=TILE/.84, V3=THREE.Vector3;
   const KD={};
@@ -107,7 +108,7 @@ window.PETS=PETS;
     if(!id)return SAY(nm+' IS HUNGRY FOR PET FOOD: CAT FOOD FROM THE PET STORE OR THE BODEGA.','#c8a090'); FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw();
     const was=fainted(r); r.hu=cl(r.hu-45); r.lo=cl(r.lo+4); if(was)r.hp=30; keep(); SAY(was?nm+' WAKES UP AND EATS EVERY BITE.':nm+' EATS IT ALL UP.','#9fe07f'); if(PETS.menuDraw)PETS.menuDraw(); };
   const shown=()=>inShop&&DRAFT||MY;
-  const meLead=()=>VIT.dead?null:{x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading};
+  let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading}; };   // up a tree, your pet waits at its foot
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
   const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;

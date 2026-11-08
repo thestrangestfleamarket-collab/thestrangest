@@ -24,7 +24,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   ppl=await pg.evaluate(()=>{ const T=__dbg.THREE, c=__dbg.camO(), r=document.querySelector('canvas').getBoundingClientRect(), me=__dbg.you(), out=[];
     for(const n of __dbg.NPCS.all()){ if(!n||!n.g||!n.g.visible)continue; const w=new T.Vector3(); n.g.getWorldPosition(w); if(Math.hypot(w.x-me.x,w.z-me.z)>30)continue; const C=new T.Box3().setFromObject(n.g).getCenter(new T.Vector3()), q=C.project(c);
       if(Math.abs(q.x)<.85&&Math.abs(q.y)<.8&&q.z<1)out.push({name:n.name,x:(q.x+1)/2*r.width+r.left,y:(1-q.y)/2*r.height+r.top}); } return out.slice(0,6); }); }
-  const named=[]; for(const p of ppl){ const w=await look(null,[p.x,p.y]); named.push([p.name,w.last.name]); }
+  // (each one asked where they stand at that moment: they walk)
+  const named=await pg.evaluate(names=>{ const T=__dbg.THREE, c=__dbg.camO(), r=document.querySelector('canvas').getBoundingClientRect(), out=[];
+    for(const n of __dbg.NPCS.all()){ if(!n||!n.g||!names.includes(n.name))continue; const q=new T.Box3().setFromObject(n.g).getCenter(new T.Vector3()).project(c), x=(q.x+1)/2*r.width+r.left, y=(1-q.y)/2*r.height+r.top;
+      out.push([n.name,EYE.what(document.elementFromPoint(x,y)||document.body,x,y).name]); } return out; },ppl.map(p=>p.name));
   rec('someone on the street: their name (at least one of those in view, none the tunnels under the street)',named.some(([n,w])=>w&&!/GROUND|WALL|FLOOR|CEILING|SKY|TUNNEL/.test(w)&&n.toUpperCase().startsWith(w.split(' ')[0])),JSON.stringify(named));
   const bg=await look('#bagp'); rec('a window: the bag',/BAG/.test(bg.last.kind||bg.last.name),JSON.stringify(bg.last)); await shot('5-bag'); await pg.evaluate(()=>BAG.toggle(false));
   await pg.click('#heye'); await wait(200); await pg.keyboard.press('Escape'); await wait(200); rec('Esc stops the eye',await pg.evaluate(()=>!EYE.on));

@@ -11,7 +11,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const WM=new WeakMap(), PK=THREE.Material.prototype.customProgramCacheKey, wrap=m=>{ if(!m||m.isShaderMaterial)return; const W=WM.get(m); if(W&&m.onBeforeCompile===W.wrap)return; const prev=m.onBeforeCompile, ck=W&&W.ck&&m.customProgramCacheKey===W.ck?PK:m.customProgramCacheKey;
     const fn=(sh,r)=>{ if(prev)prev(sh,r); if(!sh.batching)return; let s=sh.vertexShader; if(!/instanceMatrix|USE_INSTANCING/.test(s))return;
       s=s.replace(/\binstanceMatrix\b/g,'batchingMatrix').replace(/\bUSE_INSTANCING\b/g,'USE_BATCHING').replace(/\bUSE_INSTANCING_COLOR\b/g,'USE_BATCHING_COLOR').replace(/\binstanceColor\b/g,'batchingColor');
-      if(s.includes('#include <batching_vertex>'))s=s.replace('#include <batching_vertex>','').replace(/void main\(\)\s*\{/,'void main() {\n#include <batching_vertex>'); sh.vertexShader=s; };
+      if(s.includes('#include <batching_vertex>'))s=s.replace('#include <batching_vertex>','').replace(/void main\(\)\s*\{/,'void main() {\n#include <batching_vertex>\n'); sh.vertexShader=s; };
     m.onBeforeCompile=fn; const key=ck===PK?()=>prev.toString():ck; m.customProgramCacheKey=key; WM.set(m,{wrap:m.onBeforeCompile,ck:ck===PK?key:null}); };   // the program's key still names the hook's own text, as three's default does; the hook is remembered as read back (the shader edit check wraps what is set)
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); p.dispose(); } R.px=[]; R.bm=null; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?'c'+s.instanceColor.version:'')+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };

@@ -16,13 +16,20 @@
   "ento": "MASTER OF BUTTERFLIES",
   "bird": "MASTER BIRDER",
   "bee": "MASTER BEEKEEPER",
-  "gem": "MASTER OF GEMS"
+  "gem": "MASTER OF GEMS",
+  "forage": "MASTER FORAGER OF THE PARK",
+  "bind": "MASTER BOOKBINDER",
+  "sword": "MASTER SWORDSMAN",
+  "fight": "MASTER OF FISTS",
+  "climb": "MASTER CLIMBER",
+  "photo": "MASTER PHOTOGRAPHER"
  },
  "trainers": {
   "mushroom": {
    "name": "THE MUSHROOM SELLER",
    "skills": [
-    "myco"
+    "myco",
+    "forage"
    ]
   },
   "tomato": {
@@ -40,8 +47,7 @@
   "park_ranger": {
    "name": "THE PARK RANGER",
    "skills": [
-    "ento",
-    "bird"
+    "ento"
    ]
   },
   "village_gardener": {
@@ -54,6 +60,32 @@
    "name": "THE SCUBA DIVER",
    "skills": [
     "gem"
+   ]
+  },
+  "forest_ranger": {
+   "name": "THE FOREST RANGER",
+   "skills": [
+    "bird",
+    "climb",
+    "photo"
+   ]
+  },
+  "professor": {
+   "name": "THE PROFESSOR",
+   "skills": [
+    "bind"
+   ]
+  },
+  "samurai_warrior": {
+   "name": "THE SAMURAI WARRIOR",
+   "skills": [
+    "sword"
+   ]
+  },
+  "squirrel": {
+   "name": "THE SQUIRREL",
+   "skills": [
+    "fight"
    ]
   }
  },
@@ -280,6 +312,198 @@
     "n": 1,
     "pay": 5,
     "where": "the dungeon's deepest level"
+   }
+  ],
+  "forage": [
+   {
+    "item": "fr_apple",
+    "n": 3,
+    "pay": 2,
+    "where": "the low limbs of the big trees"
+   },
+   {
+    "item": "nut_acorn",
+    "n": 4,
+    "pay": 2,
+    "where": "a squirrel's cache"
+   },
+   {
+    "item": "fr_fig",
+    "n": 2,
+    "pay": 3,
+    "where": "up the big trees"
+   },
+   {
+    "item": "fl_blossom",
+    "n": 3,
+    "pay": 3,
+    "where": "high in the big trees"
+   },
+   {
+    "item": "fr_medlar",
+    "n": 1,
+    "pay": 5,
+    "where": "the orchard"
+   }
+  ],
+  "bind": [
+   {
+    "item": "br_paper",
+    "n": 2,
+    "pay": 2,
+    "where": "mend a tattered paperback"
+   },
+   {
+    "item": "br_novel",
+    "n": 2,
+    "pay": 2,
+    "where": "mend a water-stained novel"
+   },
+   {
+    "item": "br_ledger",
+    "n": 1,
+    "pay": 3,
+    "where": "mend a moldy ledger"
+   },
+   {
+    "item": "br_herbal",
+    "n": 1,
+    "pay": 4,
+    "where": "mend a crumbling herbal"
+   },
+   {
+    "item": "br_first",
+    "n": 1,
+    "pay": 5,
+    "where": "mend a ruined first edition"
+   }
+  ],
+  "sword": [
+   {
+    "item": "slime_green",
+    "n": 3,
+    "pay": 2,
+    "where": "the dungeon, by the blade"
+   },
+   {
+    "item": "slime_blue",
+    "n": 2,
+    "pay": 3,
+    "where": "the dungeon"
+   },
+   {
+    "item": "slime_purple",
+    "n": 2,
+    "pay": 3,
+    "where": "deeper in the dungeon"
+   },
+   {
+    "item": "slime_red",
+    "n": 1,
+    "pay": 4,
+    "where": "the deepest rooms"
+   },
+   {
+    "item": "slime_red",
+    "n": 3,
+    "pay": 5,
+    "where": "the deepest rooms"
+   }
+  ],
+  "fight": [
+   {
+    "item": "slime_green",
+    "n": 4,
+    "pay": 2,
+    "where": "the dungeon, bare-handed"
+   },
+   {
+    "item": "slime_blue",
+    "n": 3,
+    "pay": 2,
+    "where": "the dungeon"
+   },
+   {
+    "item": "slime_purple",
+    "n": 2,
+    "pay": 3,
+    "where": "deeper in the dungeon"
+   },
+   {
+    "item": "slime_red",
+    "n": 2,
+    "pay": 4,
+    "where": "the deepest rooms"
+   },
+   {
+    "item": "slime_purple",
+    "n": 5,
+    "pay": 5,
+    "where": "deeper in the dungeon"
+   }
+  ],
+  "climb": [
+   {
+    "item": "fl_blossom",
+    "n": 2,
+    "pay": 2,
+    "where": "high in the big trees"
+   },
+   {
+    "item": "fr_plum",
+    "n": 2,
+    "pay": 3,
+    "where": "up the big trees"
+   },
+   {
+    "item": "fr_fig",
+    "n": 3,
+    "pay": 3,
+    "where": "the tops of the big trees"
+   },
+   {
+    "item": "photo:bd_",
+    "n": 2,
+    "pay": 4,
+    "where": "a print of a bird, taken up a tree"
+   },
+   {
+    "item": "fl_blossom",
+    "n": 6,
+    "pay": 5,
+    "where": "the highest branches"
+   }
+  ],
+  "photo": [
+   {
+    "item": "photo:b_",
+    "n": 3,
+    "pay": 2,
+    "where": "prints of butterflies"
+   },
+   {
+    "item": "photo:bd_",
+    "n": 3,
+    "pay": 2,
+    "where": "prints of birds"
+   },
+   {
+    "item": "photo:w_",
+    "n": 2,
+    "pay": 3,
+    "where": "prints of park creatures"
+   },
+   {
+    "item": "photo:d_",
+    "n": 2,
+    "pay": 4,
+    "where": "prints of dungeon monsters"
+   },
+   {
+    "item": "photo:d_golem",
+    "n": 1,
+    "pay": 5,
+    "where": "a print of a rock golem"
    }
   ]
  }

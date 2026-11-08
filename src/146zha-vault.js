@@ -15,7 +15,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
   // the antiquities: found in the vault, donated to the museum (the first of each pays twice its worth and goes on show), the Professor buys the rest
   const ART=[['va_astrolabe','A BRASS ASTROLABE',90],['va_scarab','A LAPIS SCARAB',60],['va_coin','A GOLD COIN OF ROME',70],['va_lamp','A CLAY OIL LAMP',40],['va_seal','A JADE SEAL',80],['va_globe','A CELESTIAL GLOBE',120],['va_chart','A SEA CHART ON VELLUM',75],['va_idol','A STONE IDOL',100]];
   const NM=Object.fromEntries(ART.map(a=>[a[0],a[1]])), PR=Object.fromEntries(ART.map(a=>[a[0],a[2]]));
-  FORAGE.add({names:NM,prices:PR,sellable:true}); FORAGE.BUYK.antiquities=['va_'];
+  FORAGE.add({names:NM,prices:PR,sellable:true}); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('va_');
   FORAGE.GIFTS.push({is:id=>/^va_/.test(id),place:'art',pay:id=>(PR[id]||20)*2,thanks:(id,p)=>`THE CURATOR SETS YOUR ${NM[id]} IN THE MUSEUM'S CASE AND PAYS $${p}.`});
   FORAGE.BOOK.push({id:'vault',title:'THE VAULT',rows:()=>ART.map(a=>[a[1],FORAGE.has(a[0])>0||FORAGE.gave('art',a[0]),FORAGE.gave('art',a[0])?'IN THE MUSEUM':'',a[2]>=100]),foot:'The art museum\'s sealed vault opens to the night\'s combination; its parts are hidden round the city. Donate what you find there.'});
   FORAGE.HELP.push("THE MUSEUM'S VAULT: a hatch in the art museum's floor. Three dials and a star, new each night; the cornerstone, the founder's statue, a note in the bookstore and the theatre's sky poster hold the parts.");

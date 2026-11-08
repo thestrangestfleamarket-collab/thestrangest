@@ -81,7 +81,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.ACT.gift=id=>{ '@later'; const g=giftOf(id); if(!g||!have(id)||S.gave[giftKey(g,id)]||!(STORE.here&&STORE.here(g.place)))return; take(id,1); S.gave[giftKey(g,id)]=1; const pay=Math.round(g.pay(id)); INV.cash+=pay; saveSoon(); SFX.play('clunk',{vol:.5});
     say(g.thanks?g.thanks(id,pay):`THE ${g.place.toUpperCase()} THANKS YOU FOR ITS FIRST ${NAME(id)} AND PAYS $${pay}.`,'#f2c14e'); };
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
-  const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+b,0);
+  const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+(+b||0),0);
   const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
     if(c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?1.2:1)+(S.sk[k]<300?.3:0); g*=1+(S.st.int-30)/60;
       if(Math.random()<g){ let n=S.sk[k]<300?1+Math.floor(Math.random()*2):1;
@@ -96,7 +96,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.climbK=()=>.7+.8*sk('climb')/100; FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders), and a reach that works it
   const RANK=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']]; FORAGE.rank=k=>RANK.find(r=>sk(k)>=r[0])[1];
   // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap
-  FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');
+  FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; if(!SK.some(s=>s[0]===k))return; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');
     if(INV.cash<c)return say('YOU CANNOT AFFORD THE LESSON ($'+c+').','#c8a090'); if(tot()+amt>CAP)return say('YOU KNOW ALL YOU CAN HOLD. LOWER A SKILL FIRST.','#c8a090');
     INV.cash-=c; S.sk[k]=Math.min(cap,S.sk[k]+amt); saveSoon(); SFX.play('clunk',{vol:.4}); say(`A LESSON IN ${nm}: IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); PACK.draw(); };
   FORAGE.trainRows=(ks,cap=300)=>ks.map(k=>{ const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=8+Math.round(S.sk[k]/20); return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">TRAIN ${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">${(S.sk[k]/10).toFixed(1)}</td><td style="text-align:right"><button ${B} data-train="${k}" data-cap="${cap}">LESSON</button></td></tr>`; }).join('');

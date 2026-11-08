@@ -2846,10 +2846,12 @@
   "name": "THE PET STORE KEEPER",
   "trade": {
    "sells": [
+    "g_dogfood",
     "g_catfood",
+    "fr_apple",
     "g_fishfood"
    ],
-   "line": "Cat food, fish food. Feed them a little every day."
+   "line": "Dog food, cat food, apples for the grazers. Feed them a little every day."
   }
  },
  "clean_room_technician": {

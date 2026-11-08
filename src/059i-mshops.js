@@ -2,9 +2,10 @@
 import {SHARED, THREE} from './003-shx.js';
 import {ROOMS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
+import {AWAY, FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
+import {FACADES} from './038zc-facades.js';
 const MSHOP={kit:{},at:{},defs:{},fronts:[]};
 await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, MS=STORE.main, T=TILE;
   const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1});
@@ -54,12 +55,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
   MSHOP.front=front;
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
     if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
-    if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
-    else BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:D.h,kind:'A',turn:TA,roof:(x,y)=>sh([48,46,50],.9+.14*hs(Math.floor(x*4),Math.floor(y*4),71)),
-      paint:(side,u,z,f)=>{ if(side==='f'){ const q=fr(u-L.x0,z,f,0); if(q)return q; }
-        if(z>top-14)return sh(D.trim,f*(z>top-4?1.1:.85)); const wu=u-L.x0;
-        if(side==='f'&&z>112&&z<top-24){ const k=Math.floor(wu/2.6), m=wu-k*2.6; if(m>.7&&m<1.9&&wu>1&&wu<W-1){ const lt=hs(k,id.length,5)>.55; return (z-112)%30<3?sh(D.trim,f):lt?lit([214,170,96]):sh([20,22,28],f*1.2); } }
-        return wall(u,z,f); }});
+    if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L,pt:TA.pt,du:lcx}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
+    else { const dw=D.dw||.85, du=D.door*W, sh0=D.both?[[lcx-D.half+.08,lcx-dw-.28,19,89],[lcx+dw+.28,lcx+D.half-.08,19,89],[lcx-dw+.12,lcx+dw-.12,12,86]]:[[L.x0+(du>W/2?.35:du+dw+.15),L.x0+(du>W/2?du-dw-.15:W-.35),16,92]];
+      FACADES.make({id,L,pt:TA.pt,z1:D.h,wall:(D.wall&&D.wall.c)||[128,64,52],trim:D.trim,frame:D.frame,seed:id.length*31+n,ground:118,door:D.both?null:{u:lcx,w:dw},shop:sh0.map(([u0,u1,z0,z1])=>({u0,u1,z0,z1})),sign:{text:D.sign,color:D.signC,bg:D.signBg,u:(L.x0+L.x1)/2}}); }   // modelled, not painted (owner, 8 Nov 2026)
     if(!D.pf){ BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={}; }
     { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(D.h)]); }
 
@@ -99,7 +97,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
-  for(const id of ['theatre','play','bar','bodega','bath']){ const p=WP[id]; if(!p||!p.pf||DEF[id])continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0)});
+  for(const id of ['theatre','play','bar','bodega','bath']){ const p=WP[id]; if(!p||!p.pf||DEF[id]||AWAY.has(id==='play'?'playhouse':id))continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L:TA.L,pt:TA.pt});
     if(id==='bodega'||id==='bath'){ const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(120)]); } }   // the theatre's, playhouse's, bar's, bodega's and bath house's Polyfork outsides (their insides off the map; the bodega and bath house solid here, the others by their own builders)   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});

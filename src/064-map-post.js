@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, FIX, grab, lamps, LAY, LEVEL, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
@@ -95,7 +95,11 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LZ0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
   const clip=(Q,e)=>{ const m=.5, inside=([x,z])=>e===0?x>LR.x0+m:e===1?x<LR.x1-m:e===2?z>LZ0+m:z<LR.z1-m, cross=(a,b)=>{ const k=e<2?(e===0?LR.x0+m:LR.x1-m):(e===2?LZ0+m:LR.z1-m), t=e<2?(k-a[0])/(b[0]-a[0]):(k-a[1])/(b[1]-a[1]); return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
     const out=[]; for(let i=0;i<Q.length;i++){ const a=Q[i], b=Q[(i+1)%Q.length], ia=inside(a), ib=inside(b); if(ia&&ib)out.push(b); else if(ia&&!ib)out.push(cross(a,b)); else if(!ia&&ib){ out.push(cross(a,b)); out.push(b); } } return out; };
-  for(const P of SHARED.BOD.roadPolys){ let Q=P.map(([x,y])=>[tt(XS(x)),tt(ZS(y))]); for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3)sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); }
+  // the roads past the map's edges (069a, edge.strips) lie in the land like the street's own (owner, 8 Nov 2026: "the road still doesnt match"): Market St's hole runs on along them, the others get their own
+  const SBM=SHARED.BOD.MAP, ER=((LEVEL.edge&&LEVEL.edge.strips&&LEVEL.edge.strips.list)||[]).filter(q=>q[4]==='road'), onM=q=>q[2]-q[0]>=q[3]-q[1]&&q[1]<=SBM.y1&&q[3]>=SBM.y0-40&&(q[0]<SBM.x0||q[2]>SBM.x1);
+  const xw=Math.min(SBM.x0,...ER.filter(onM).map(q=>q[0])), xe=Math.max(SBM.x1,...ER.filter(onM).map(q=>q[2])), cl=Q=>{ for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3)sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); };
+  for(const P of SHARED.BOD.roadPolys)cl(P.map(([x,y])=>[tt(XS(x===SBM.x1?xe:x===SBM.x0?xw:x)),tt(ZS(y))]));
+  for(const q of ER)if(!onM(q))cl([[q[0],q[1]],[q[2],q[1]],[q[2],q[3]],[q[0],q[3]]].map(([x,y])=>[tt(XS(x)),tt(ZS(y))]));
   for(const r of SHARED.BOD.ramps.RP){ const a=r.e+r.dir*.01, b=r.e+r.dir*SHARED.BOD.ramps.D, P=r.ax==='x'?[r.u0,Math.min(a,b),r.u1,Math.max(a,b)]:[Math.min(a,b),r.u0,Math.max(a,b),r.u1]; hole(tt(XS(P[0])),tt(ZS(P[1])),tt(XS(P[2])),tt(ZS(P[3]))); }
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));

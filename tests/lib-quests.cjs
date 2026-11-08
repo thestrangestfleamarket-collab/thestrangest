@@ -18,9 +18,9 @@ const SHOTS = process.argv[3];
   const PART = process.env.PART || '';   // stacks or vault: one half only
   if (st && PART !== 'vault') {
     await wait(() => MVAULTDBG().reg, 60000);
-    const s0 = await pg.evaluate(() => ({ v: MVAULTDBG(), tr: CHARS.trade({ key: 'professor' }) }));
+    const s0 = await pg.evaluate(() => ({ v: MVAULTDBG(), tr: CHARS.trade({ key: 'professor' }), bind: CHARS.trade({ key: 'professor' }).sells.filter(id => /^(bk_|bs_)|stack_key/.test(id) && !ARCHI(id)) }));
     ok(s0.v.reg && !s0.v.inside, 'the vault is registered off the map and nothing of it is built at the start: ' + JSON.stringify(s0.v.reg));
-    ok(s0.tr && s0.tr.buys.includes('antiquities') && !s0.tr.sells.some(id => /^(bk_|bs_)|stack_key/.test(id) && !ARCHI(id)), 'the Professor buys antiquities and sells no bookbinding (archived 8 Nov 2026)');
+    ok(s0.tr && s0.tr.buys.includes('antiquities') && !s0.bind.length, 'the Professor buys antiquities and sells no bookbinding (archived 8 Nov 2026)');
     // the bookstore: the note (the Sealed Stacks' hatch archived with bookbinding)
     await pg.evaluate(() => ROOMS.enter('books')); await wait(() => __dbg.UI.things.some(t => /FOLDED NOTE/.test(t.name)), 90000); await calm();
     ok(await has('A FOLDED NOTE') === 1 && await has('A LOCKED HATCH') === 0, 'in the bookstore: a folded note on the lectern, and no hatch');

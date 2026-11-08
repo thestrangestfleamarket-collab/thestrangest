@@ -191,7 +191,7 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen&&!WINDOWS.near(p.x,p.z));
       N.far=far; N.hid=!N.sheet&&(!seen||far&&!N.shaded||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
-      if(!far)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; } } }   // a body not ticked still stands where its character is
+      if(!far)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; if(!N.hid&&N.ground)N.g.position.y=N.ground(N.st.x,N.st.z)+(N._bb||0); } } }   // (and on its ground, if it is drawn)   // a body not ticked still stands where its character is
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
   // someone in the way (8 Nov 2026): would N standing at x,z overlap another character, a standing body or a player near you, and closer than it is now (so two who overlap can always part)
   const live=X=>X.on!==false&&X.st&&X.g&&(X.g.visible||X._cv)&&X.mode!=='hidden'&&!X.rag&&!X.far&&!X.fly&&!X.tiny&&X.st.inT==null;

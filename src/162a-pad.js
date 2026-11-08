@@ -78,7 +78,7 @@ import {PAD} from './075-main-13.js';
     if(rr>.2&&!UI.menuOpen&&!VR.on){ const k=(rr-.2)/.8/rr; if(UI.persp)UI.orbit(rx*k*dt*420,ry*k*dt*300); else UI.orbit(rx*k*dt*420,0); }
     if(!PAD.useX&&hit(b('use'))&&UI.useNear())PAD.useX=true; else if(PAD.useX&&!on(b('use')))PAD.useX=false;
     hold('A',on(b('jump'))&&!PAD.aWait?K(' '):null); hold('X',on(b('punch'))&&!PAD.useX?K('j'):null); hold('Y',on(b('kick'))?K('k'):null);
-    const run=(Bv[b('run')]||0)>.3; hold('RT',run?K('shift'):null); hold('LB',on(b('turnL'))?K('q'):null); hold('RB',on(b('turnR'))?K('e'):null);
+    const run=(Bv[b('run')]||0)>.3; hold('RT',run?K('shift'):null); hold('LB',on(b('turnL'))?K('q'):null); hold('RB',on(b('turnR'))?K('rot'):null);
     hold('LT',on(b('roll'))?K('r'):null); hold('W',on(b('wave'))?K('v'):null); hold('CW',on(b('cartwheel'))?K('u'):null); if(hit(b('fall')))tap(K('f'));
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }

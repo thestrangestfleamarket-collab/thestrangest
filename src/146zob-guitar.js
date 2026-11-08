@@ -60,7 +60,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const myMesh=()=>W3.group.children.find(m=>m.userData&&m.userData.hands&&m.userData.PM&&m.visible!==undefined);
   const tell=(k,v)=>{ if(ONLINE.send)ONLINE.send({t:'gtr',k,v:v==null?'':v}); };
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
-    GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
+    if(window.INSTR&&window.INSTR.on())window.INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
     say('YOU TAKE UP THE GUITAR. 1-0 CHORDS · SPACE STRUM DOWN, B UP · A S D F G H THE STRINGS · TAB THE CLOSE-UP · ESC TO STOP.'); };
   // put down, your own guitar goes on your back (others see it) till you stow it in the bag
@@ -156,3 +156,4 @@ const GUITAR={}; window.GUITAR=GUITAR;
       songTick(P); if(P.V&&o.p)GSND.place(P.V,o.p.x,o.p.z); }
     // someone already playing when you came: their guitar, open strings till they play
     for(const o of ONLINE.others.values())if(o.x&&o.x.gtr&&!THEM.has(o.id)&&o.id){ THEM.set(o.id,mk(o.id)); } },'146zob-guitar'); }
+export {GUITAR};

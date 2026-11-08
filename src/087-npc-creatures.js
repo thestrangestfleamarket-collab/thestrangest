@@ -1,8 +1,8 @@
 // THE CREATURES: the park's wild things at their real sizes, each living as its kind does (wasps from a nest to the flowers, spiders in webs, bats at dusk, frogs by the pond, a basking snake, rats along walls at night); CREATS lists them.
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
-import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, VIS, WX} from './003b-systems.js';
-import {MAPG, MODS, SOL, TILE} from './006-map-pre.js';
+import {BINS, CLOCK, FLOW, PARK, POND, PONDS, SFX, VIS, WALKS, WX} from './003b-systems.js';
+import {MAPG, MODS, SOL, SYS, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
 import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
@@ -107,7 +107,7 @@ const CREATS=[]; window.CREATS=CREATS;
     const S={t:Math.random()*10,y:0,hy:0,i:K.beh==='spider'?si++:0,fly:Array.isArray(K.fly)?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false}; let cur=null; const beh=BEH[K.beh], pk=PICK[K.beh];
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:K.lane===PARKL?'park':'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:K.lane===PARKL?rnd(PARKL.x0,PARKL.x1):X(tx),z:ex?ex.z:K.lane===PARKL?rnd(PARKL.z0,PARKL.z1):Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:tiny?.03:.12,fly:!!K.fly,speed,stride:0,rock:0,bob:0,
       brain:beh&&((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }),
-      pick:st=>{ if(pk)return pk(st,N,S); if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
+      pick:st=>{ if(pk)return pk(st,N,S); if(WALKS.pick&&WALKS.pick(st))return; if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=window.POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
           for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
       anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; VIS.hide(N.g,'away',!out); st.hold=!out; if(!out)st.to=null; } if(!out)return; } if(!N.body.visible)return;
         if(S.drink&&!st.to&&window.POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); S.drink=false; }
@@ -121,7 +121,9 @@ const CREATS=[]; window.CREATS=CREATS;
     if(K.beh&&K.beh!=='frog'&&K.beh!=='snake'&&K.beh!=='rat')N.st.hold=true;
     if(K.fly&&!K.beh){ N.st.v=speed*TILE; } if(tiny||K.fly){ N.blocks=()=>false; N.push=()=>{}; } if(tiny){ N.push=()=>{}; N.selfSh=false; N.me.castShadow=false; } N.ex=ex; N.kind=key; N.wild=S; if(SET[K.beh])N.farMove=()=>{ if(!S.set&&PARK.ready)S.set=SET[K.beh](N,S); };
     if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);
-    N.mixer=mixer; N.restless=()=>!!K.fly; if(!ex&&(K.lane===PARKL||K.park))N.park=true; N.pack(); CREATS.push(N); };
+    N.mixer=mixer; N.restless=()=>!!K.fly; if(!ex&&(K.lane===PARKL||K.park))N.park=true; N.pack(); CREATS.push(N);
+    if(!K.beh&&!K.fly&&!ex){ const L=K.lane; N.wkey='an:'+key+':'+(SEEN[key]=(SEEN[key]||0)+1); WSH.push([N,{v:speed*TILE*.5,auto:0,mode:{b:{band:[[L.x0,L.z0,L.x1,L.z1]]}}}]); } };   // an animal on the ground walks where the section's walks say: the same for everyone
+  const SEEN={}, WSH=[]; let shareT=0; SYS.every(()=>{ if(!WSH.length||!WALKS.on||!WALKS.reg||!(window.LOAD))return; if(shareT)return; shareT=1; LOAD('later').then(()=>{ for(const [N,m] of WSH.splice(0))WALKS.reg(N,m); shareT=0; }); },2000,'087 animals walk shared');
   CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); });
   // the Drive's animals (owner, 3 Nov 2026): the park's woods, its farm, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
   { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);

@@ -616,15 +616,6 @@
    "inH": 130
   },
   {
-   "id": "clothes",
-   "kind": "front",
-   "x0": 167.75,
-   "x1": 209.91,
-   "name": "THE DEPARTMENT STORE",
-   "merchant": "valet_attendant",
-   "lot": true
-  },
-  {
    "id": "skate",
    "kind": "front",
    "x0": 128.86,
@@ -632,28 +623,6 @@
    "name": "THE SKATE SHOP",
    "merchant": "skate_shop_owner",
    "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
-  },
-  {
-   "id": "diner",
-   "kind": "front",
-   "x0": 209.91,
-   "x1": 252,
-   "name": "THE DINER",
-   "merchant": "diner_waitress",
-   "lot": true
-  },
-  {
-   "id": "hotel",
-   "name": "THE HOTEL",
-   "kind": "front",
-   "merchant": "front_desk_clerk",
-   "pf": "hotel",
-   "x0": 56.41,
-   "x1": 70.98,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -707,17 +676,6 @@
    "row": 2,
    "name": "ANTIQUES & PAWN",
    "pf": "antiques"
-  },
-  {
-   "id": "outfitter",
-   "kind": "front",
-   "x0": 50.0,
-   "x1": 76.0,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n",
-   "name": "THE OUTFITTER",
-   "pf": "outfitter"
   },
   {
    "id": "bath",
@@ -805,32 +763,6 @@
    "face": "s",
    "row": 2,
    "pf": "arcade"
-  },
-  {
-   "id": "tailor",
-   "name": "THE TAILOR",
-   "kind": "front",
-   "x0": 228.07,
-   "x1": 238.53,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "merchant": "doorman",
-   "pf": "tailor"
-  },
-  {
-   "id": "barber",
-   "name": "THE BARBER",
-   "kind": "front",
-   "x0": 240.03,
-   "x1": 250.5,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "merchant": "lounge_crooner",
-   "pf": "barber"
   }
  ],
  "shells": [],

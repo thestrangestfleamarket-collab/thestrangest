@@ -66,6 +66,7 @@ jobs:
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
+          k vrbody  'src/162c|src/111a|src/111b|src/111d|worker/door|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
@@ -209,6 +210,10 @@ jobs:
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
+      - name: Your real moves in the headset (head, arms and fingers, seen by the others)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' vrbody')
+        run: node tests/vrbody.cjs dist/market.html
       - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' catrun')

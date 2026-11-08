@@ -1,5 +1,5 @@
 // THE ITEM EDITOR (src/140ba-itembench.js): node tests/itemed.cjs [out folder]. Shift+7 opens the owner's workbench (off the website you are the owner); every family lists its items
-// (game, wear, held, place); a wear piece, a held piece and a placeable thing each draw in the 360 view, alone and on your body; a game item shows its picture; the list draws pictures;
+// (game, wear, held, place); a wear piece, a held piece and a placeable thing each draw in the 360 view, alone and on your body; a game item is its own 3D model; the list draws pictures;
 // a change makes the item's settings; Esc closes it and frees its renderer. With an out folder, screenshots of the editor.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader'],...(process.env.PW_CHROMIUM?{executablePath:process.env.PW_CHROMIUM}:{})}); const pg=await b.newPage({viewport:{width:1280,height:760}}); const errs={}; let bad=0;
@@ -28,8 +28,8 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     if(f==='place')await shot('itemed-truck-beside-you');
     await pg.evaluate(()=>ITEMED.dbg.body(false)); await U(ready,60000); }
   await pg.evaluate(()=>ITEMED.dbg.tab('wear').then(()=>ITEMED.dbg.pick('pf_hat_top_hat'))); await U(ready,60000); await wait(500); await shot('itemed-top-hat');
-  const g=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('game'); const id=[...ITEMED.dbg.byId().keys()][0]; ITEMED.dbg.pick(id); await new Promise(r=>setTimeout(r,1500)); return {id,note:document.querySelector('#itb .note').textContent,pic:!!document.querySelector('#itb .cell .im.px[style]')}; });
-  rec('a game item shows its 16-pixel picture',/16-PIXEL/.test(g.note)&&g.pic,JSON.stringify(g)); await shot('itemed-game');
+  const g=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('game'); const id=ITEMED.dbg.byId().has('cage')?'cage':[...ITEMED.dbg.byId().keys()][0]; ITEMED.dbg.pick(id); await new Promise(r=>setTimeout(r,2500)); const z=ITEMED.dbg.size(); return {id,note:document.querySelector('#itb .note').textContent,thin:Math.min(...z)/Math.max(...z),pic:!!document.querySelector('#itb .cell .im.px[style]')}; });
+  rec('a game item turns as its own 3D model (the bird cage, not a flat picture)',g.id==='cage'&&g.note===''&&g.thin>.3&&g.pic,JSON.stringify(g)); await shot('itemed-game');
   await pg.evaluate(()=>ITEMED.dbg.tab('place'));
   rec('the list draws pictures of what is on screen',await U(()=>ITEMED.dbg.thumbs()>=6,120000),await pg.evaluate(()=>ITEMED.dbg.thumbs())+' pictures'); await shot('itemed-place-list');
   const set=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('wear'); ITEMED.dbg.pick('pf_hat_kabuto'); for(let i=0;i<50&&!document.querySelector('#itb .tp').__tp;i++)await new Promise(r=>setTimeout(r,100));

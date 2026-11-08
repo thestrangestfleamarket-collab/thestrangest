@@ -26,8 +26,8 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
       // grouped by what it is, far (past 40 tiles) only
       const G={}; for(const e of out){ if(e.d<40)continue; const k=DEEP&&new RegExp(DEEP).test(e.n)?e.full:e.n.replace(/\d+/g,'#'); const q=G[k]||(G[k]={n:k,t:0,px:0,c:0,d:0}); q.t+=e.t; q.px+=Math.min(e.px,1280*720); q.c++; q.d+=e.d; }
       const L=Object.values(G).map(q=>({...q,d:q.d/q.c,k:q.t/Math.max(1,q.px)})).filter(q=>q.t>(DEEP?1500:2000)).sort((a,b)=>b.t-a.t);
-      R.info.autoReset=false; R.info.reset(); return new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ const tris=R.info.render.triangles; R.info.autoReset=true; res({tris,far:L.slice(0,DEEP?30:14),farTris:L.reduce((a,q)=>a+q.t,0)}); }))); },process.env.DEEP||'');
-    console.log(`== ${name}: ${r.tris} triangles drawn; far (past 40 tiles) ${Math.round(r.farTris)}`);
+      R.info.autoReset=false; R.info.reset(); return new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(()=>{ const tris=R.info.render.triangles; R.info.autoReset=true; res({tris,sc:window.SMALLCULLDBG&&SMALLCULLDBG(),far:L.slice(0,DEEP?30:14),farTris:L.reduce((a,q)=>a+q.t,0)}); }))); },process.env.DEEP||'');
+    console.log(`== ${name}: ${r.tris} triangles drawn; far (past 40 tiles) ${Math.round(r.farTris)}`+(r.sc?' · park small things '+JSON.stringify(r.sc):''));
     for(const q of r.far)console.log(`   ${String(Math.round(q.t)).padStart(8)} tris  ${String(q.c).padStart(4)}×  ~${Math.round(q.d)} tiles  ${q.k.toFixed(2)} tris/px  ${q.n}`);
     if(LIMIT)for(const q of r.far)if(q.k>LIMIT){ bad++; console.log('FAIL far thing costs '+q.k.toFixed(2)+' tris a pixel: '+q.n); }
     if(OUT)await pg.screenshot({path:OUT+'/far-'+name.replace(/\W+/g,'-').toLowerCase()+'.png'}); }

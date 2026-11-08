@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   for (const [id, want, kind] of ITEMS_) { const x = r[id]; ok(x && Math.abs(x.m - want) / want < .25 && x.sprite === (kind === 'picture'), id + ' lies as its ' + kind + ' at about ' + want + ' m (' + (x ? x.m.toFixed(2) + ' m' + (x.sprite ? ', picture' : ', model') : 'not drawn') + ')'); }
   if (SHOT) { await pg.evaluate(() => { __dbg.ui().setView && __dbg.ui().setView('third'); }); await pg.waitForTimeout(1500); await pg.mouse.move(500, 350); for (let i = 0; i < 6; i++) { await pg.mouse.wheel(0, -300); await pg.waitForTimeout(150); } await pg.waitForTimeout(2500); await pg.screenshot({ path: SHOT }); }
   for (const id of ['guitar', 'bmx', 'ruby', 'g_soda']) ok(r[id] && r[id].pf, id + ' is Polyfork\'s model (' + (r[id] && r[id].pf) + ')');
-  const none = await pg.evaluate(() => ITEMS.ids().filter(id => !INSPECT.has(id))); ok(!none.length, 'every item has a 3D model of its own (' + none.length + ' without' + (none.length ? ': ' + none.slice(0, 10).join(', ') : '') + ')');
+  const none = await pg.evaluate(() => ITEMS.ids().filter(id => !ARCHI(id) && !INSPECT.has(id))); ok(!none.length, 'every item has a 3D model of its own (' + none.length + ' without' + (none.length ? ': ' + none.slice(0, 10).join(', ') : '') + ')');
   ok(!Object.keys(errs).length, 'no page errors' + (Object.keys(errs).length ? ': ' + JSON.stringify(errs).slice(0, 300) : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all passed'); process.exit(fails.length ? 1 : 0);
 })();

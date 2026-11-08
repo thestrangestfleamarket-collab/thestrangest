@@ -8,7 +8,7 @@ import {SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
-const LIB={data:null,max:5}; window.LIB=LIB;
+const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else furnishes the shop ({A,F,K,W,D})
 { const BJ=__LAZY__("data/library.json"), say=(t,c)=>SAY(t,c||'#e8d6a8'), TM=.924;
   LIB.files={};   // id -> the cover's file (and spine's, id+'~s'), filled below from the baked list
   const load=()=>LIB.data?Promise.resolve(LIB.data):BJ().then(d=>{ d.books=[]; for(const c of d.cases)for(const b of c.books){ b.genre=c.name; b.case=c.id; d.books.push(b); } LIB.data=d; LIB.by=Object.fromEntries(d.books.map(b=>[b.id,b])); names(); gone(); return d; });   // the shop's cases, each one genre of forty
@@ -277,6 +277,7 @@ const LIB={data:null,max:5}; window.LIB=LIB;
     { const N=90, P=new Float32Array(N*3), Vv=[]; for(let i=0;i<N;i++){ const p=F.pw(W*.2+Math.random()*W*.6,D*.2+Math.random()*D*.6); P[i*3]=p[0]; P[i*3+1]=(.3+Math.random()*(HT-.6))*MW; P[i*3+2]=p[1]; Vv.push([(Math.random()-.5)*.02,(Math.random()-.4)*.01,(Math.random()-.5)*.02]); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
+    for(const f of LIB.inside)f({A,F,K,W,D});
     K.flush(); };
   MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; PLANTS.length=0; };
   // a hanging plant between the camera and you steps aside (it is hidden), so its vines never fill the view

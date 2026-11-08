@@ -32,8 +32,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ROOMS.enter('bodega'));
     await until(() => ROOMS.offIn() === 'bodega' && !FADE.busy);
     await pg.waitForTimeout(4000);
-    const B = await pg.evaluate(() => ({ at: BATCH.at(), st: ROOMS.stowed().map(r => r.name).filter(Boolean) }));
-    ok(B.at && !B.st.includes('bodega'), 'in the bodega (windows look out) the street around it stays, its painted ground painted where it stands' + (B.st.length ? '; let go: ' + B.st.join(' ') : ''));
+    const B = await pg.evaluate(() => ({ at: BATCH.at(), win: !!ROOMS.real(), st: ROOMS.stowed().map(r => r.name).filter(Boolean) }));
+    if (B.win) ok(B.at && !B.st.includes('bodega'), 'in the bodega (windows look out) the street around it stays, its painted ground painted where it stands' + (B.st.length ? '; let go: ' + B.st.join(' ') : ''));
+    else ok(B.st.includes('mainstreet') && B.st.includes('bodega'), 'in the bodega (no window out since its move to the Hudson row, 7 Nov) the street lets go as in the arcade; let go: ' + B.st.join(' '));
     await pg.evaluate(() => ROOMS.exit('bodega'));
     ok(await until(() => !ROOMS.offIn() && ROOMS.stowed().length === 0), 'out of the bodega nothing stays let go');
   }

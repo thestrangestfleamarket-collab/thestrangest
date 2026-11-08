@@ -56,7 +56,7 @@ const HUDSHOP={tris:0,made:0};
       GL.push([W0+.55*m,W1-.55*m,sv,.25*zm,gf-.35*zm]); box(du-.55*m,du+.55*m,sv-.05*m,sv+.03*m,.1*zm,2.4*zm,[96,64,42]); box(du+.3*m,du+.38*m,sv+.03*m,sv+.07*m,1.1*zm,1.2*zm,[200,170,90]); }
     // inside the shop: shelves of goods down both walls, a counter, the back wall lit warm
     const GOODS=[[216,87,58],[232,184,74],[106,168,79],[60,120,216],[166,77,121],[241,194,50],[142,124,195],[69,129,142]];
-    for(const s of [0,1]){ const u0=s?W1-th-.5*m:W0+th, u1=u0+.5*m; box(u0,u1,V0+1.2*m,V1-2*m,0,2.6*zm,[110,80,56]);
+    if(!o.bare)for(const s of [0,1]){ const u0=s?W1-th-.5*m:W0+th, u1=u0+.5*m; box(u0,u1,V0+1.2*m,V1-2*m,0,2.6*zm,[110,80,56]);
       for(let r=0;r<4;r++)for(let k=0;k*.7*m<V1-V0-3.6*m;k++)box(u0+.08*m,u1-.08*m,V0+1.4*m+k*.7*m,V0+1.4*m+k*.7*m+.4*m,(.45+r*.6)*zm,(.8+r*.6)*zm,GOODS[(k+r*3+s*4+seed)%8],{glow:.35}); }
     box((W0+W1)/2-1.5*m,(W0+W1)/2+1.5*m,V0+2*m,V0+2.8*m,0,1*zm,[130,92,60],{glow:.3}); box((W0+W1)/2-1.55*m,(W0+W1)/2+1.55*m,V0+1.95*m,V0+2.85*m,1*zm,1.08*zm,[200,180,150]);
     box(W0+th,W1-th,V0+th,V0+th+.05*m,.1*zm,gf,[150,118,84],{glow:.5});

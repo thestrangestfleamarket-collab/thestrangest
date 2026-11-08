@@ -1,6 +1,6 @@
 // THE FISH TANK: a huge tank in every apartment (owner, 5 Nov 2026): still, clear water you see through, sand, rocks and plants, and koi swimming slow; double-click it with fish food and they rise to eat.
 import {THREE} from './003-shx.js';
-import {FORAGE, SFX} from './003b-systems.js';
+import {FORAGE, PETS, SFX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {FISHES} from './141f-fishes.js';
@@ -31,11 +31,14 @@ const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,vis:T.g.vis
       // the fish: tiny ones, a few of each kind, each on its own slow loop
       const T={g,tg,plants,fish:[],u0,v0,y0:SH+.16,y1:SH+TH*.86,t:Math.random()*100}; TANKS.push(T);
       FISHES.load().then(()=>{ for(let i=0;i<N;i++){ const o=FISHES.model(KINDS[i%KINDS.length]); if(!o)continue; o.scale.setScalar(.022+hs(i,11)*.014); tg.add(o);
-        T.fish.push({o,a:hs(i,12)*6.28,s:.12+hs(i,13)*.12,rx:.25+hs(i,14)*(TW/2-.45),rz:.06+hs(i,15)*(TD/2-.16),cy:T.y0+hs(i,16)*(T.y1-T.y0),bob:hs(i,17)*6,dir:hs(i,18)<.5?1:-1}); } }).catch(()=>{});
+        T.fish.push({o,a:hs(i,12)*6.28,s:.12+hs(i,13)*.12,rx:.25+hs(i,14)*(TW/2-.45),rz:.06+hs(i,15)*(TD/2-.16),cy:T.y0+hs(i,16)*(T.y1-T.y0),bob:hs(i,17)*6,dir:hs(i,18)<.5?1:-1}); }
+        // your sea pets from the aquarium, a little bigger than the koi, each its own size
+        (PETS.sea?PETS.sea():[]).slice(0,24).forEach((r,j)=>{ const o=FISHES.model(r.k); if(!o)return; const i=N+j, L0=FISHES.len(r.k,1), g=FISHES.len('goldfish',1); o.scale.multiplyScalar(Math.min(.24,Math.max(.05,.06*Math.sqrt(L0/g)))/L0); tg.add(o);
+          T.fish.push({o,a:hs(i,12)*6.28,s:.08+hs(i,13)*.1,rx:.3+hs(i,14)*(TW/2-.55),rz:.06+hs(i,15)*(TD/2-.2),cy:T.y0+.05+hs(i,16)*(T.y1-T.y0-.1),bob:hs(i,17)*6,dir:hs(i,18)<.5?1:-1}); }); }).catch(()=>{});
     },{id:'fishtank',wire:'tank'}); });
   ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return;
-    c.hit(un,()=>FORAGE.has('g_fishfood')?'FEED THE FISH':'THE FISH TANK',()=>{ if(!FORAGE.has('g_fishfood'))return SAY('THE KOI DRIFT ROUND. A TUB OF FISH FOOD WOULD BRING THEM UP (THE BODEGA, THE PET STORE).','#c8d8e0');
-      FORAGE.take('g_fishfood',1); if(FORAGE.draw)FORAGE.draw(); T.fed=30; if(SFX)SFX.play('click',{vol:.3,vary:.2}); SAY('YOU SHAKE IN A PINCH OF FOOD. THE KOI RISE AND SNAP IT UP.','#c8e8f0'); }); };
+    c.hit(un,()=>FORAGE.has('g_fishfood')?'FEED THE FISH':'THE FISH TANK',()=>{ if(!FORAGE.has('g_fishfood'))return SAY('THE FISH DRIFT ROUND. A TUB OF FISH FOOD WOULD BRING THEM UP (THE BODEGA, THE PET STORE, THE AQUARIUM).','#c8d8e0');
+      FORAGE.take('g_fishfood',1); if(FORAGE.draw)FORAGE.draw(); T.fed=30; if(SFX)SFX.play('click',{vol:.3,vary:.2}); SAY('YOU SHAKE IN A PINCH OF FOOD. THE FISH RISE AND SNAP IT UP.','#c8e8f0'); }); };
   SYS.add('life',dt=>{ for(let k=TANKS.length-1;k>=0;k--){ const T=TANKS[k]; if(!T.g.parent){ TANKS.splice(k,1); continue; } if(!T.g.visible)continue; T.t+=dt;
     for(const [m,ph] of T.plants)m.rotation.z=.04*Math.sin(T.t*.6+ph);
     const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/.6):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back

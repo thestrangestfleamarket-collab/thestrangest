@@ -33,7 +33,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','THE PET STORE','PETS',[96,60,50],[180,255,170]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],
       ['gems','THE GEM SHOP','GEMS',[92,86,90],[140,255,230]],['armor','THE ARMOURY','ARMS',[84,78,76],[255,120,90]],['clothes','THE CLOTHES SHOP','CLOTHES',[126,68,56],[255,220,160]],
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
-      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
+      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;
@@ -62,9 +62,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     // a Hudson shop is open at the front (owner, 8 Nov 2026: "they should be open area you walk in no door"): its walls, shelves and counter are solid, the shop is walked into, its merchant behind the counter; the bookstore keeps its door (its library and stacks are inside)
     if(p.row===2&&D.pf&&id!=='books'){ const m=1/.84, w=L.x1-L.x0, c=(L.x0+L.x1)/2, sb=(u0,v0,u1,v1,h)=>{ const a=TA.pt(u0,v0), b=TA.pt(u1,v1), r=box4(a[0],a[1],b[0],b[1]); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(h)]); };
       sb(L.x0,L.y0,L.x0+.4,L.y1,D.h); sb(L.x1-.4,L.y0,L.x1,L.y1,D.h); sb(L.x0,L.y0,L.x1,L.y0+.4,D.h); for(const u of [L.x0,L.x1-.55*m])sb(u,L.y1-.6*m,u+.55*m,L.y1,D.h);
-      for(const u of [L.x0+.3*m,L.x1-.8*m])sb(u,L.y0+1.2*m,u+.5*m,L.y1-2*m,80); sb(c-1.5*m,L.y0+2*m,c+1.5*m,L.y0+2.8*m,32);
+      if(!p.bare)for(const u of [L.x0+.3*m,L.x1-.8*m])sb(u,L.y0+1.2*m,u+.5*m,L.y1-2*m,80); sb(c-1.5*m,L.y0+2*m,c+1.5*m,L.y0+2.8*m,32);
       const q=TA.pt(c,L.y0+1.3*m), B=SHARED.BOD, who=p.merchant; if(who&&LEVEL.homes&&!LEVEL.homes[who])LEVEL.homes[who]=[+((X(q[0])-B.XS(0))/(B.XS(1)-B.XS(0))).toFixed(2),+((Z(q[1])-B.ZS(0))/(B.ZS(1)-B.ZS(0))).toFixed(2),0,null];
-      const e=TA.pt(c,L.y1-1.5*m); STORE.places.push([D.name,X(e[0]),Z(e[1]),'up']); MSHOP.at[id]={open:true,door:at(c,L.y1)}; return; }
+      const e=TA.pt(c,L.y1-1.5*m); STORE.places.push([D.name,X(e[0]),Z(e[1]),'up']); MSHOP.at[id]={open:true,door:at(c,L.y1),L,pt:TA.pt,sb}; return; }
     { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(D.h)]); }
 
     /* ---------- the inside, off the map: R in tiles, the door in the middle of its front wall ---------- */
@@ -79,7 +79,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       wall:(side,paint)=>{ '@later'; const {faceTex,bq,C}=SHARED.BOD, h=WH, P=side==='b'?(a,z)=>[X(a),Y(z),Z(R.y0)]:side==='f'?(a,z)=>[X(a),Y(z),Z(R.y1)]:side==='w'?(a,z)=>[X(R.x0),Y(z),Z(a)]:(a,z)=>[X(R.x1),Y(z),Z(a)];
         const a0=side==='b'||side==='f'?R.x0:R.y0, a1=side==='b'||side==='f'?R.x1:R.y1, w=Math.round((a1-a0)*24); bq(P(a0,0),P(a1,0),P(a1,h),P(a0,h),faceTex(w,h,(i,j)=>C(paint(a0+(i+.5)/24,h-j-.5))),'A'); },
       lamp:(x,y,h,c,i=4,r=8)=>{ const Lt=new THREE.PointLight(c,i,r*T,1.6); Lt.position.set(X(x),Y(h*24),Z(y)); scene.add(Lt); return Lt; },
-      add:o=>{ scene.add(o); return o; }};
+      add:o=>{ scene.add(o); return o; },
+      live:()=>!!G, late:(o,things=[])=>{ if(!G)return false; G.add(o); if(PA)PA.things.push(...things); return true; }};   // (what a kit adds after the build, its data come: kept with the inside and dropped with it)
     const build=()=>{ '@later'; G=new THREE.Group(); G.name=id+'-in'; scene.add(G); S=[];
       PA=ROOMS.part(G,()=>{ (MSHOP.kit[id]||MSHOP.kit._||(()=>{}))(api); },MKA);
       api.sol(R.x0-.1,R.y0,R.x0+.1,R.y1); api.sol(R.x1-.1,R.y0,R.x1+.1,R.y1); api.sol(R.x0,R.y0-.1,R.x1,R.y0+.1); api.sol(R.x0,R.y1-.1,cx-.9,R.y1+.1); api.sol(cx+.9,R.y1-.1,R.x1,R.y1+.1); return PA; };

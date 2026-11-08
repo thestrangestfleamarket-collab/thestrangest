@@ -15,6 +15,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
+  INV.mark=k=>{ INV.picked[k]=day(); save(); };   // a find taken today (INV.pick also gives a stone)
   INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
     TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GEM SHOP PAYS $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
   INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();

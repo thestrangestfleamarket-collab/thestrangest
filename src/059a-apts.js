@@ -101,7 +101,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
 
   const SY=APTS.SY=Y(S)-Y(0), TOL=Y(24)-Y(0);
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  const BLK=tbox4(A.x0,A.y0,A.x1,A.y1); SOL.up.push(BLK); FIX.up.push([BLK[0],BLK[1],0,BLK[2],BLK[3],Yr(TOP)]);
+  const BLK=tbox4(A.x0,A.y0,A.x1,A.y1); SOL.up.push(BLK); (APTS0.blocks||(APTS0.blocks=[])).push({id:HP.id,box:BLK,top:Yr(TOP),mine}); FIX.up.push([BLK[0],BLK[1],0,BLK[2],BLK[3],Yr(TOP)]);
   const BHR=tbox4(APTS.BH.x0,APTS.BH.y0,APTS.BH.x1,APTS.BH.y1); FIX.up.push([BHR[0],BHR[1],Yr(TOP),BHR[2],BHR[3],Yr(TOP+72)]);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]]){ const r=tbox4(c0,ST0.y0,c1,ST0.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],.05]); }
   const EDGE=[tbox4(A.x0,A.y1-T,A.x1,A.y1),tbox4(A.x0,A.y0,A.x1,A.y0+T),tbox4(A.x0,A.y0,A.x0+T,A.y1),tbox4(A.x1-T,A.y0,A.x1,A.y1)];
@@ -191,7 +191,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
       hb(APTS.doorW,'YOUR APARTMENT',()=>APTS.enterReal()); const r=XZ(APTS.BH.cx,APTS.BH.y1+.4); hb([r[0],Yr(TOP),r[1]],'STAIRS DOWN',()=>{ if(SHARED.py>RFY)APTS.enterReal(()=>APTS.hallSpawn); }); };   // the front door on the street; the stair head on the roof (down into your hall)
     const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(HR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-4&&z<Math.max(c,d)+3; };
-    APTS.inR=inR;   // a saved spot inside the apartment (off the map): rebuild and re-enter it on reload, else you land in the empty sky
+    APTS.inR=inR; APTS.bound=()=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(HR.y1); return {x0:Math.min(a,b)-8,x1:Math.max(a,b)+8,z0:Math.min(c,d)-8,z1:Math.max(c,d)+8}; };   // walking in your rooms is bounded by them, not by the street's edge   // a saved spot inside the apartment (off the map): rebuild and re-enter it on reload, else you land in the empty sky
     const inH=(x,z)=>{ const a=X(HR.x0),b=X(HR.x1),c=Z(HR.y0),d=Z(HR.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); }; APTS.inHall=()=>!!APTS.inReal&&inH(pos.x,pos.z); APTS.HPL=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); APTS.CUTH=Yh(0)+Yr(45)-Yr(0);   // in the hall the isometric view cuts the hall's walls to waist height (your rooms' walls stay whole)
     APTS.offAt=async(x,z,lv)=>{ if(lv==='down')return false; const F=window.FIREV, u=x/(TILE*BLDK)+SHARED.BOD.OX, v=z/(TILE*BLDK)+SHARED.BOD.OY; if(inR(x,z)){ if(!APTS.inReal)await APTS.enterReal(); return [x,z,Yh(0)]; }   // your rooms and their fire escape are all on one floor
       if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing

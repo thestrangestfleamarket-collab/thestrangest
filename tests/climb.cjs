@@ -42,7 +42,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await tap(' '); const f3 = await frames(); while ((await frames()) - f3 < 15) await pg.waitForTimeout(50); const c3 = await dbg();
   ok(c3.climbing && (c3.mode === 'hang' || c3.ch > c2b.ch + .2 * tree.T), 'SPACE on the trunk jumps up (or catches a branch): ' + JSON.stringify({ from: c2b.ch, to: c3.ch, mode: c3.mode }));
   // down and off (from a branch: let go)
-  await hold('s', 3800); const c5 = await dbg();
+  for (let k = 0; k < 40 && (await dbg()).climbing; k++) await hold('s', 200); const c5 = await dbg();
   ok(!c5.climbing, 'S climbs down and off: ' + JSON.stringify(c5));
   // under a branch: SPACE grabs it, you hang; A or D moves along it; W pulls you up to stand on it
   const under = await pg.evaluate(t => { TREES.go(t.x, t.z); return { g: SHARED.groundY(t.x, t.z), top: t.top, reach: (3 + .9 * FORAGE.sk('climb') / 100) * t.T }; }, tree);

@@ -12,6 +12,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the pieces in files of about a megabyte, a kind's versions together, each fetched once something in it is worn (a figure's body and walk come first; c: a piece's file)
   const LZ={m:[__LAZY__("data/pfavatar-m-00.json"),__LAZY__("data/pfavatar-m-01.json"),__LAZY__("data/pfavatar-m-02.json"),__LAZY__("data/pfavatar-m-03.json"),__LAZY__("data/pfavatar-m-04.json"),__LAZY__("data/pfavatar-m-05.json"),__LAZY__("data/pfavatar-m-06.json"),__LAZY__("data/pfavatar-m-07.json"),__LAZY__("data/pfavatar-m-08.json"),__LAZY__("data/pfavatar-m-09.json"),__LAZY__("data/pfavatar-m-10.json"),__LAZY__("data/pfavatar-m-11.json"),__LAZY__("data/pfavatar-m-12.json"),__LAZY__("data/pfavatar-m-13.json"),__LAZY__("data/pfavatar-m-14.json"),__LAZY__("data/pfavatar-m-15.json"),__LAZY__("data/pfavatar-m-16.json"),__LAZY__("data/pfavatar-m-17.json"),__LAZY__("data/pfavatar-m-18.json"),__LAZY__("data/pfavatar-m-19.json"),__LAZY__("data/pfavatar-m-20.json"),__LAZY__("data/pfavatar-m-21.json"),__LAZY__("data/pfavatar-m-22.json"),__LAZY__("data/pfavatar-m-23.json"),__LAZY__("data/pfavatar-m-24.json"),__LAZY__("data/pfavatar-m-25.json"),__LAZY__("data/pfavatar-m-26.json"),__LAZY__("data/pfavatar-m-27.json"),__LAZY__("data/pfavatar-m-28.json"),__LAZY__("data/pfavatar-m-29.json"),__LAZY__("data/pfavatar-m-30.json"),__LAZY__("data/pfavatar-m-31.json")],f:[__LAZY__("data/pfavatar-f-00.json"),__LAZY__("data/pfavatar-f-01.json"),__LAZY__("data/pfavatar-f-02.json"),__LAZY__("data/pfavatar-f-03.json"),__LAZY__("data/pfavatar-f-04.json"),__LAZY__("data/pfavatar-f-05.json"),__LAZY__("data/pfavatar-f-06.json"),__LAZY__("data/pfavatar-f-07.json"),__LAZY__("data/pfavatar-f-08.json"),__LAZY__("data/pfavatar-f-09.json"),__LAZY__("data/pfavatar-f-10.json"),__LAZY__("data/pfavatar-f-11.json"),__LAZY__("data/pfavatar-f-12.json"),__LAZY__("data/pfavatar-f-13.json"),__LAZY__("data/pfavatar-f-14.json"),__LAZY__("data/pfavatar-f-15.json"),__LAZY__("data/pfavatar-f-16.json"),__LAZY__("data/pfavatar-f-17.json"),__LAZY__("data/pfavatar-f-18.json"),__LAZY__("data/pfavatar-f-19.json"),__LAZY__("data/pfavatar-f-20.json"),__LAZY__("data/pfavatar-f-21.json"),__LAZY__("data/pfavatar-f-22.json"),__LAZY__("data/pfavatar-f-23.json"),__LAZY__("data/pfavatar-f-24.json"),__LAZY__("data/pfavatar-f-25.json"),__LAZY__("data/pfavatar-f-26.json"),__LAZY__("data/pfavatar-f-27.json"),__LAZY__("data/pfavatar-f-28.json"),__LAZY__("data/pfavatar-f-29.json"),__LAZY__("data/pfavatar-f-30.json"),__LAZY__("data/pfavatar-f-31.json")]};
   const SLOTS=[['hair','HAIR'],['face','FACE'],['eyes','GLASSES'],['hat','HAT'],['top','TOP'],['coat','JACKET'],['bottom','BOTTOMS'],['feet','SHOES'],['belt','BELT'],['neck','NECK'],['hands','HANDS'],['back','BACK'],['righthand','RIGHT HAND'],['lefthand','LEFT HAND']], OLD=11;   // (the slots after OLD came later: their codes go after the barefoot mark)
+  // no props held in the hands from the wardrobe (owner, 8 Nov 2026: "remove the ability to add something to your left or right hand in the character menu ... you cant just put them in your hand as props"): the slots stay in the list (the look codes keep their places) but are never offered, worn or drawn
+  const NOPROP=new Set(['righthand','lefthand']);
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
   const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
@@ -46,7 +48,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
     if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length];
-    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
+    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
   /* ---------- the figure's data, fetched once someone wears it ---------- */
@@ -139,7 +141,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:parseInt(ST,16),hw:HW,st:LY.st}; return T; };
-  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
@@ -165,7 +167,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
     g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.computeBoundingSphere();
-    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; g.userData.lan=LSP; return g; }
+    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; g.userData.lan=LSP; return g; }
   const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
   const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
@@ -187,7 +189,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
-  AVATAR.wear=(slot,n,c)=>{ if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
+  AVATAR.wear=(slot,n,c)=>{ if(NOPROP.has(slot)&&n!=null)return refresh(); if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 
   /* ---------- YOU: the avatar's lines (LOOKS.add) — figure, build, height, skin and hair colour on LOOK; a piece and its colour for each slot on WEAR ---------- */
   const $=s=>document.querySelector(s);
@@ -207,7 +209,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avly','LANYARD',el('lavly','<select id="lavlf" aria-label="badge frame"><option value="0">NO FRAME</option><option value="1">CLEAR FRAME</option><option value="2">METAL FRAME</option><option value="3">COLOURED FRAME</option></select><input type="color" id="lavlfc" aria-label="frame colour"><select id="lavls" aria-label="string"><option value="0">CORD</option><option value="1">FLAT STRAP</option><option value="2">BEAD CHAIN</option></select><input type="color" id="lavlsc" aria-label="string colour">'),{...A,order:5.5});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
-    SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
+    SLOTS.forEach(([s,t],i)=>!NOPROP.has(s)&&LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
     { const ly=()=>{ const v=k=>$('#'+k).value; AVATAR.set({ly:[v('lavlf'),v('lavlfc').slice(1),v('lavls'),v('lavlsc').slice(1)].join('_')}); }; for(const k of ['lavlf','lavlfc','lavls','lavlsc']){ stop($('#'+k)); $('#'+k).onchange=ly; } }
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
@@ -220,7 +222,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     og.innerHTML='<option value="">THEME…</option>'+OG.map(g=>`<option>${esc(g)}</option>`).join('');
     og.onchange=()=>{ ol.innerHTML='<option value="">WHO…</option>'+(I.outfits||[]).map((o,i)=>[o,i]).filter(([o])=>o.g===og.value).sort((a,b)=>a[0].t.localeCompare(b[0].t)).map(([o,i])=>`<option value="${i}">${esc(o.t)}</option>`).join(''); ol.style.display=og.value?'':'none'; };
     ol.onchange=()=>{ if(ol.value!=='')AVATAR.outfit(+ol.value); }; ol.style.display='none';
-    for(const [s] of SLOTS){ const sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s); stop(sel); stop(kd);
+    for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s); stop(sel); stop(kd);
       kd.onchange=()=>{ const v=kinds(s).get(kd.value); AVATAR.wear(s,v?v[0].n:null); };   // (a kind: its first version, the one-each piece when there is one)
       sel.onchange=()=>AVATAR.wear(s,sel.value===''?null:+sel.value); k.onchange=e=>{ const w=L.w[s], J=D[L.f], p=w&&J&&J.byN.get(w[0]), z=+e.target.dataset.z; if(!p||!(z>=0))return; const a=partCols(p,w[1]); a[z]=e.target.value.slice(1); AVATAR.wear(s,w[0],a.join('_')); }; }
     return true; }
@@ -234,7 +236,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     { const y=lyOf(L); $('#lavlf').value=String(y.fr); $('#lavlfc').value='#'+y.fc; $('#lavlfc').style.visibility=y.fr===3?'':'hidden'; $('#lavls').value=String(y.st); $('#lavlsc').value='#'+y.sc; }
-    for(const [s] of SLOTS){ const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
+    for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';
       kd.innerHTML='<option value="">NONE</option>'+[...K].map(([t,v])=>`<option value="${esc(t)}">${esc(t)}${v.length>1?' ('+v.length+')':''}</option>`).join(''); kd.value=cur?cur.k:'';
       const V=cur?K.get(cur.k)||[]:[], G=new Map(); for(const p of V){ if(!G.has(p.g))G.set(p.g,[]); G.get(p.g).push(p); }
@@ -249,7 +251,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
   AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
-  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
+  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ if(NOPROP.has(s))continue; const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
   need(L.f,L.w).catch(()=>{});   // (your figure and what you wear start coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();

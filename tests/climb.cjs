@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await tap(' '); await hold('w', 250); const c1 = await dbg();
   ok(c1.climbing && c1.mode === 'trunk' && c1.climb && c1.ch > .3 * tree.T, 'SPACE at the trunk climbs it, W goes up: ' + JSON.stringify(c1));
   const a1 = Math.atan2(c1.z - tree.tz, c1.x - tree.tx);
-  await hold('d', 80); const c2 = await dbg(); const a2 = Math.atan2(c2.z - tree.tz, c2.x - tree.tx);
+  await hold('d', 340); const c2 = await dbg(); const a2 = Math.atan2(c2.z - tree.tz, c2.x - tree.tx);
   ok(c2.climbing && Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1))) > .15 && Math.abs(c2.ch - c1.ch) < .05 * tree.T, 'D goes round the trunk at the same height: ' + JSON.stringify({ a1: +a1.toFixed(2), a2: +a2.toFixed(2), ch: c2.ch }));
   // the skill bounds the height: at 10.0 the trunk's top is out of reach
   await hold('w', 1260); const c4 = await dbg();

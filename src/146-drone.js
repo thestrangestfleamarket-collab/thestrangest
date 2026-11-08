@@ -34,16 +34,17 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
 
   const flights=[], parcels=[]; const V=new THREE.Vector3();
-  const landParcel=(label,onIn,dp)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
+  const landParcel=(label,onIn,dp,here)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
     const th={name:'A PARCEL: '+label,pick:true,obj:p,reach:1.3*T,near:2.6*T,tall:.7*T,act:()=>{ if(!p.parent)return; scene.remove(p); const i=parcels.indexOf(p); if(i>=0)parcels.splice(i,1); onIn(); toast('YOU BRING IN: '+label); }};
-    UI.thing(th); toast('THE DRONE DROPPED '+label+' ON YOUR FIRE ESCAPE'); };
-  const deliver=(label,onIn)=>{ const dp=dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
-    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,ph:'in'}); };
+    UI.thing(th); toast('THE DRONE DROPPED '+label+(here?' BY YOU':' ON YOUR FIRE ESCAPE')); };
+  // o.follow: a spot read every frame (the phone's orders: the drone comes to you wherever you are)
+  const deliver=(label,onIn,o={})=>{ const dp=o.follow?o.follow():dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
+    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,follow:o.follow,ph:'in'}); };
   DRONE.go=deliver;
   SYS.add('life',dt=>{ if(!dt)return;
     for(const f of flights){
-      if(f.ph==='in'){ V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }
-      else if(f.ph==='drop'){ f.parcel.visible=false; landParcel(f.label,f.onIn,f.dp); f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
+      if(f.ph==='in'){ if(f.follow){ const q=f.follow(); if(q)f.dp=q; } V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }
+      else if(f.ph==='drop'){ f.parcel.visible=false; landParcel(f.label,f.onIn,f.dp,!!f.follow); f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
       else if(f.ph==='away'){ f.D.position.lerp(f.away,Math.min(1,dt*2)); if(f.D.position.distanceTo(f.away)<.4*T){ scene.remove(f.D); f.done=true; } } }
     for(let i=flights.length-1;i>=0;i--)if(flights[i].done)flights.splice(i,1); if(!flights.length&&DRONE.state!=='home')DRONE.state='home'; },'146-drone');
 

@@ -5769,3 +5769,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 8 Nov 2026, hints fade (owner: "any indicators that pop up that show you what you can use fade after 3 seconds").
 - 8 Nov 2026, the big trees' foot is solid (owner: "i can walk throug hthe base of the tere right now"); your pet waits at the foot while you climb (owner: "your pet waits at the bottom").
 - 8 Nov 2026, the new items' pictures (owner, of drawing the 59 items added since the pictures were made: "yes"): the park's finds, the wreck's and the dig's treasure, the fairy things, the old scrolls and potions each have their own 16-pixel picture like the rest.
+- 8 Nov 2026, the distance haze off (owner: "off", of turning the haze off entirely): no distance blur or darkening, and the far skyline not blurred.

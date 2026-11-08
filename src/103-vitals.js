@@ -14,13 +14,14 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   const ST=k=>{ const s=FORAGE.ST; return Math.max(1,Math.round(s&&s[k]||30)); };   // your stats are the bars' tops (owner, 7 Nov 2026: "your STRENGTH is your HIT POINTS"): HP to STRENGTH, STA to STAMINA, INT to INTELLIGENCE
   let lx=pos.x, lz=pos.z, rest=0, glug=0;
   VIT.guard=null;   // set by the swordplay: (d, from) -> {d: what gets through, parry}
+  VIT.bouts=[];   // a fight not to the death (the gym's ring): any that says yes, the last blow knocks you out (SYS 'knockout') instead of a faint
   // at none you faint (out cold, the medic comes, up again with some back); a real blow while out cold kills
   let thudAt=0; const FAINT=15;
   VIT.faint=()=>{ if(VIT.dead||VIT.out>0)return; VIT.hp=0; VIT.out=FAINT; VIT.fainted=true; SHARED.trip=true; SAY('YOU FAINT'); };
   VIT.heal=(a,lo=0)=>{ if(VIT.dead)return 0; const h0=VIT.hp; VIT.hp=Math.max(lo,Math.min(1,VIT.hp+a)); return VIT.hp-h0; };   // every mend (and a slow drain, a<0, that stops at lo)
   VIT.hurt=(d,from)=>{ '@later'; if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
-    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(30/ST('str'))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
+    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(30/ST('str'))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0&&VIT.bouts.some(f=>f())){ VIT.hp=.02; SYS.run('knockout',from); } else if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
   VIT.spend=x=>{ VIT.sta=Math.max(0,VIT.sta-x*(VIT.spendK||1)); rest=0; };   // effort: stamina comes back only after a rest
   VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; }   // empty: no running till a third is back
     if(VIT.tired)st.runTarget=0;

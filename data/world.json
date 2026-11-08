@@ -605,9 +605,20 @@
    "row": 2
   },
   {
-   "id": "clothes",
+   "id": "gym",
+   "name": "KNUCKLE & IRON",
    "kind": "front",
    "x0": 147.75,
+   "x1": 167.75,
+   "lot": true,
+   "inW": 22,
+   "inD": 17,
+   "inH": 130
+  },
+  {
+   "id": "clothes",
+   "kind": "front",
+   "x0": 167.75,
    "x1": 209.91,
    "name": "THE DEPARTMENT STORE",
    "merchant": "valet_attendant",

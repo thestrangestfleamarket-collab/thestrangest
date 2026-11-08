@@ -16,16 +16,16 @@ const LANYARD={}; window.LANYARD=LANYARD;
     // a point in the chest's rest space pushed out of the body to at least off past what is worn there
     const U=new V3(), out=(q,off)=>{ if(sh)U.copy(q).sub(sh.O1).applyMatrix3(Ai).add(sh.O); else U.copy(q); const a=Math.atan2(U.x,U.z), t=spec.S>0?a:Math.PI-a, r=Math.hypot(U.x,U.z), m=spec.rad(U.y,t)+off;
       if(r<m&&r>1e-5){ U.x*=m/r; U.z*=m/r; if(sh)q.copy(U).sub(sh.O).applyMatrix3(sh.A).add(sh.O1); else q.copy(U); return true; } return false; };
-    // the strands: a flat ribbon a strand, its width across the chest
-    const NS=2*(n-1), sp=new Float32Array(NS*4*3), si=[]; for(let k=0;k<NS;k++){ const o=k*4; si.push(o,o+1,o+3,o,o+3,o+2); }
-    const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3)); sg.setIndex(si);
-    const sm=new THREE.Mesh(sg,mat(spec.col)); sm.frustumCulled=false; sm.renderOrder=2; sm.name='lanyard'; sm.castShadow=false;
+    // the strands: a line a strand, one pixel wide however near (owner, 8 Nov 2026: "lanyard string should be thinner")
+    const NS=2*(n-1), sp=new Float32Array(NS*2*3);
+    const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
+    const sm=new THREE.LineSegments(sg,new THREE.LineBasicMaterial({color:spec.col})); sm.frustumCulled=false; sm.renderOrder=2; sm.name='lanyard'; sm.castShadow=false;
     // the badge: its own picture (spec.badge: [x0,y0,x1,y1,z,hex] in the card's frame, the clip at its top)
     const bp=[], bc=[]; for(const [x0,y0,x1,y1,z,h] of spec.badge){ const c=new THREE.Color('#'+h); for(const [x,y] of [[x0,y0],[x1,y0],[x1,y1],[x0,y0],[x1,y1],[x0,y1]]){ bp.push(x,y,z); bc.push(c.r,c.g,c.b); } }
     const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.Float32BufferAttribute(bp,3)); bg.setAttribute('color',new THREE.Float32BufferAttribute(bc,3)); bg.computeVertexNormals();
     const bm=new THREE.Mesh(bg,mat(null)); bm.frustumCulled=false; bm.renderOrder=2; bm.matrixAutoUpdate=false; bm.name='badge'; bm.castShadow=true;
     const st={me,PM,sm,bm,X,O,t:0,on:false};
-    const M=new M4(), Mi=new M4(), Wi=new M4(), P=new V3(), Q=new V3(), G=new V3(), N=new V3(), D=new V3(), S_=new V3(), Y=new V3(), Z=new V3(), Xa=new V3();
+    const M=new M4(), Mi=new M4(), Wi=new M4(), P=new V3(), Q=new V3(), G=new V3(), D=new V3(), Y=new V3(), Z=new V3(), Xa=new V3();
     let fr=-1, last=0; st.Mi=Mi; st.foot=()=>new V3().fromArray(X,C*3).applyMatrix4(Mi); st.clip=()=>new V3().fromArray(X,B*3).applyMatrix4(Mi);   // (the badge's foot on the chest's own frame)
     sm.onBeforeRender=()=>{ const f=renderer.info.render.frame; if(f===fr)return; fr=f; me.updateWorldMatrix(true,false);
       M.multiplyMatrices(me.matrixWorld,PM.value[1]); Mi.copy(M).invert(); Wi.copy(me.matrixWorld).invert(); const k=new V3().setFromMatrixColumn(M,1).length();
@@ -40,11 +40,9 @@ const LANYARD={}; window.LANYARD=LANYARD;
         for(const s of [0,1]){ P.fromArray((s?spec.R:spec.L)[0]).applyMatrix4(M); P.toArray(X,idx(s,0)*3); }   // (pinned where the loop round the neck ends)
         for(const [a,b,l] of LEN){ P.fromArray(X,a*3); Q.fromArray(X,b*3); D.subVectors(Q,P); const d=D.length()||1e-6, L=l*k; if(d<=L&&b!==C)continue; const e=(d-L)/d, wa=a===idx(0,0)||a===idx(1,0)?0:b===C?.3:.5, wb=1-wa;
           P.addScaledVector(D,e*wa); Q.addScaledVector(D,-e*wb); P.toArray(X,a*3); Q.toArray(X,b*3); }
-        for(let i=0;i<NP;i++){ Q.fromArray(X,i*3).applyMatrix4(Mi); if(out(Q,i>=B?.014:.009)){ Q.applyMatrix4(M); Q.toArray(X,i*3); if(it===7)for(let j=0;j<3;j++)O[i*3+j]+=(X[i*3+j]-O[i*3+j])*.6; } } } }   // (against what you wear it neither bounces nor slides freely)
-      // the ribbons, in the body mesh's own space
-      const w=.0045*k; for(let s=0;s<2;s++)for(let i=0;i<n-1;i++){ const a=idx(s,i), b=idx(s,i+1), o=(s*(n-1)+i)*12;
-        P.fromArray(X,a*3); Q.fromArray(X,b*3); D.subVectors(Q,P); N.set(0,0,spec.S).transformDirection(M); S_.crossVectors(D,N).normalize().multiplyScalar(w);
-        for(const [j,V,sg_] of [[0,P,1],[1,P,-1],[2,Q,1],[3,Q,-1]]){ Z.copy(V).addScaledVector(S_,sg_).applyMatrix4(Wi); Z.toArray(sp,o+j*3); } }
+        for(let i=0;i<NP;i++){ Q.fromArray(X,i*3).applyMatrix4(Mi); if(out(Q,i>=B?.018:.014)){ Q.applyMatrix4(M); Q.toArray(X,i*3); if(it===7)for(let j=0;j<3;j++)O[i*3+j]+=(X[i*3+j]-O[i*3+j])*.6; } } } }   // (against what you wear it neither bounces nor slides freely)
+      // the lines, in the body mesh's own space
+      for(let s=0;s<2;s++)for(let i=0;i<n-1;i++){ const o=(s*(n-1)+i)*6; Z.fromArray(X,idx(s,i)*3).applyMatrix4(Wi); Z.toArray(sp,o); Z.fromArray(X,idx(s,i+1)*3).applyMatrix4(Wi); Z.toArray(sp,o+3); }
       sg.attributes.position.needsUpdate=true;
       // the badge: hung from the clip, down to its foot, facing out from the chest
       P.fromArray(X,B*3); Q.fromArray(X,C*3); Y.subVectors(P,Q).normalize(); Z.set(0,0,spec.S).transformDirection(M); Z.addScaledVector(Y,-Z.dot(Y)).normalize(); Xa.crossVectors(Y,Z);

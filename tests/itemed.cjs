@@ -29,7 +29,9 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     await pg.evaluate(()=>ITEMED.dbg.body(false)); await U(ready,60000); }
   await pg.evaluate(()=>ITEMED.dbg.tab('wear').then(()=>ITEMED.dbg.pick('pf_hat_top_hat'))); await U(ready,60000); await wait(500); await shot('itemed-top-hat');
   const g=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('game'); const id=ITEMED.dbg.byId().has('cage')?'cage':[...ITEMED.dbg.byId().keys()][0]; ITEMED.dbg.pick(id); await new Promise(r=>setTimeout(r,2500)); const z=ITEMED.dbg.size(); return {id,note:document.querySelector('#itb .note').textContent,thin:Math.min(...z)/Math.max(...z),pic:!!document.querySelector('#itb .cell .im.px[style]')}; });
-  rec('a game item turns as its own 3D model (the bird cage, not a flat picture)',g.id==='cage'&&g.note===''&&g.thin>.3&&g.pic,JSON.stringify(g)); await shot('itemed-game');
+  rec('a game item turns as its own 3D model (the bird cage, not a flat picture)',g.id==='cage'&&g.note===''&&g.thin>.3&&g.pic,JSON.stringify(g)); await shot('itemed-game'); const par=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('game'); const sig=o=>{ let n=0,v=0; o.traverse(m=>{ if(m.geometry){ n++; v+=m.geometry.attributes.position.count; } }); return n+':'+v; }, P=sig(INSPECT.shape('parcel',0xb08a5a,0x6a4a2a)), out=[];
+    for(const id of ITEMED.dbg.byId().keys()){ let s='err'; try{ s=sig(INSPECT.model(id)); }catch(e){} if(s===P||s==='err')out.push(id); } return out; });
+  rec('every game item has a model of its own (none is the parcel)',!par.length,par.join(' ')||'none');
   await pg.evaluate(()=>ITEMED.dbg.tab('place'));
   rec('the list draws pictures of what is on screen',await U(()=>ITEMED.dbg.thumbs()>=6,120000),await pg.evaluate(()=>ITEMED.dbg.thumbs())+' pictures'); await shot('itemed-place-list');
   const set=await pg.evaluate(async()=>{ await ITEMED.dbg.tab('wear'); ITEMED.dbg.pick('pf_hat_kabuto'); for(let i=0;i<50&&!document.querySelector('#itb .tp').__tp;i++)await new Promise(r=>setTimeout(r,100));

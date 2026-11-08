@@ -1,6 +1,6 @@
 // THE ITEM EDITOR (owner, 7 Nov 2026: layout A, every item, on body): ITEMED is the owner's full-screen workbench: every item by family with its picture, a 360 view you turn, on you or alone, and its settings (ITEMED.props, 140b).
 import {THREE} from './003-shx.js';
-import {ARCHI, BAG, CINEMA, ITEMED, ITEMS, UI, W3, WE} from './003b-systems.js';
+import {ARCHI, BAG, CINEMA, INSPECT, ITEMED, ITEMS, UI, W3, WE} from './003b-systems.js';
 import {TILE} from './006-map-pre.js';
 import {AVATAR} from './111c-avatar.js';
 { const owner=async()=>{ if(!/^https?:$/.test(location.protocol))return true; try{ return !!(CINEMA.isAdmin&&await CINEMA.isAdmin()); }catch(e){ return false; } };
@@ -75,9 +75,7 @@ import {AVATAR} from './111c-avatar.js';
     const clear=()=>{ if(pivot)pivot.clear(); for(const x of made)x.dispose(); made=[]; };
     // a model for an item: {obj, keep[]} (keep: geometry and textures this view made, freed when it goes)
     const model=async(e,body,v=0)=>{ const keep=[];
-      if(e.fam==='game'){ const url=BAG.icon?BAG.icon(e.id):null; if(!url)return null; const im=new Image(); im.src=url; await im.decode().catch(()=>{});
-        const t=new THREE.Texture(im); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true;
-        const g=new THREE.PlaneGeometry(1,1), m=new THREE.MeshBasicMaterial({map:t,alphaTest:.5,side:THREE.DoubleSide}); keep.push(t,g,m); return {obj:new THREE.Mesh(g,m),keep,flat:true}; }
+      if(e.fam==='game'){ const o=INSPECT.model?INSPECT.model(e.id):null; return o?{obj:o,keep}:null; }
       if(e.fam==='place'){ await WE.pfLoad(e.key); const g=WE.pfGeo(e.key); if(!g)return null; const o=new THREE.Group(); o.add(new THREE.Mesh(g,MAT));
         if(body){ const s=await AVATAR.statue(AVATAR.L().w); keep.push(s); const me=new THREE.Mesh(s,MAT); me.scale.setScalar(M); g.computeBoundingBox(); me.position.x=g.boundingBox.max.x+.45*M; o.add(me); }
         return {obj:o,keep}; }
@@ -89,7 +87,7 @@ import {AVATAR} from './111c-avatar.js';
     const show=async()=>{ if(!R||!cur)return; const t=++tok, note=$('.note'); note.textContent='LOADING…';
       let m=null; try{ m=await model(cur,onBody,ver); }catch(err){ console.warn('ITEM editor',err); }
       if(t!==tok||!R){ if(m)for(const x of m.keep)x.dispose(); return; }
-      clear(); if(!m){ note.textContent='NO PICTURE'; return; } made=m.keep; fit(m.obj); note.textContent=m.flat?'A 16-PIXEL PICTURE · NO 3D MODEL YET':''; };
+      clear(); if(!m){ note.textContent='NO PICTURE'; return; } made=m.keep; fit(m.obj); note.textContent=cur.fam==='game'&&INSPECT.has&&!INSPECT.has(cur.id)?'NO MODEL OF ITS OWN YET · A PARCEL':''; };
     const frame=now=>{ raf=requestAnimationFrame(frame); if(!R)return; const dt=Math.min(.1,(now-(last||now))/1000); last=now; if(play)ang+=dt*.9; pivot.rotation.y=ang;
       $('.deg').textContent=Math.round(((ang*180/Math.PI)%360+360)%360)+'°'; R.render(scene,cam); thumbStep(); };
     { let x0=null,y0=0,a0=0,e0=0; spin.addEventListener('pointerdown',e=>{ x0=e.clientX; y0=e.clientY; a0=ang; e0=el; spin.setPointerCapture(e.pointerId); setPlay(false); });
@@ -140,6 +138,6 @@ import {AVATAR} from './111c-avatar.js';
       if(ITEMED.on){ up(); last=0; raf=requestAnimationFrame(frame); draw().then(()=>{ if(!cur){ const L=fam==='place'?E.place:E[fam]; if(L&&L.length)pick(L.find(e=>/PLATE ARMOUR/.test(e.name))||L[0]); } else show(); }); }
       else { down(); want.length=0; seen.clear(); if(tpEl.__tp){ tpEl.__tp.dispose(); tpEl.__tp=null; } }
       if(UI.log&&ITEMED.on===false)UI.log('Item settings saved with your account. EXPORT writes items.json to ship them.','#9b9584'); };
-    ITEMED.dbg={E,byId:()=>byId,cur:()=>cur,pick:id=>{ const e=byId.get(id); if(e)pick(e); return !!e; },tab:f=>{ fam=f; return draw(); },R:()=>R,show:()=>show(),body:v=>{ onBody=v; return show(); },thumbs:()=>TH.size,q:s=>{ q=s; return draw(); }};
+    ITEMED.dbg={E,byId:()=>byId,cur:()=>cur,pick:id=>{ const e=byId.get(id); if(e)pick(e); return !!e; },tab:f=>{ fam=f; return draw(); },R:()=>R,size:()=>{ const z=new THREE.Box3().setFromObject(pivot).getSize(new THREE.Vector3()); return [z.x,z.y,z.z]; },show:()=>show(),body:v=>{ onBody=v; return show(); },thumbs:()=>TH.size,q:s=>{ q=s; return draw(); }};
     return {toggle}; };
 }

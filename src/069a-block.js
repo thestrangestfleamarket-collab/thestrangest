@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {BLOCK, cutWalls, FIX, LEVEL, MAINROW, MAPG, MODS, RING, SOL, TILE, ZU} from './006-map-pre.js';
+import {BLOCK, cutWalls, FIX, LEVEL, MAINROW, MAPG, MODS, RING, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 import {FOUNT} from './060a-fount.js';
@@ -116,21 +116,17 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }   // (past the draw distance too: the fog fades it)
     // the land past the edges (owner, 7 Nov 2026: "set a base color for far off distance things like grass"; "needs to be entire lake visible"): one low-res grass picture outside the section, the big lake whole in it, under the strips
     { const GD=E.ground, Ls=E.lines||[]; if(GD&&Ls.length){ const [bx0,by0,bx1,by1]=GD.box, k=GD.px||2, W=Math.ceil((bx1-bx0)/k), H=Math.ceil((by1-by0)/k), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data, gc=GD.grass, wc=GD.water;
-      const MR=E.mirror, S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
+      const MR=E.mirror, WM=new Uint8Array(W*H), S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:gc, n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
-        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
+        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; WM[q>>2]=wet?1:0; d[q+3]=wet?0:MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
       g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,alphaTest:.5});
+      const c2=cv(W,H), g2=c2.getContext('2d'), i2=g2.createImageData(W,H); for(let q=0;q<W*H;q++){ i2.data.set([d[q*4],d[q*4+1],d[q*4+2],WM[q]?255:0],q*4); } g2.putImageData(i2,0,0); const m2=new THREE.MeshLambertMaterial({map:tex(c2),alphaTest:.5}), SUB=[];   // the lake's stand-in until the park's own water is built (then it shows through the hole)
       const xs=Ls.flatMap(l=>[l[0],l[2]]), ys=Ls.flatMap(l=>[l[1],l[3]]), X0=Math.min(...xs), X1=Math.max(...xs), Y1=Math.max(...ys), step=Ls.find(l=>l[1]===l[3]&&l[1]<Y1), XB=step?Math.min(step[0],step[2]):X1, YS=step?step[1]:by0;
       const rects=[[Math.max(bx0,X0),by0,X0,by1],[Math.max(bx0,X0),Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
       for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
         for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
-        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); }
-      // the big lake's water between where the park's own lake stops and the forcefield (owner, 8 Nov 2026: "the lake has a chunk ff green in it"): the same picture, only its water, over the section's lawn
-      if(S&&L){ const im2=g.createImageData(W,H), c2=cv(W,H), g2=c2.getContext('2d'); for(let q=0;q<d.length;q+=4){ const wet=d[q+2]>d[q+1]+10; im2.data[q]=d[q]; im2.data[q+1]=d[q+1]; im2.data[q+2]=d[q+2]; im2.data[q+3]=wet?255:0; } g2.putImageData(im2,0,0);
-        const m2=new THREE.MeshLambertMaterial({map:tex(c2),alphaTest:.5}), xw=ox+S.wx1-1, yw=oy+S.wy1-1;
-        for(const [x0,y0,x1,y1] of [[xw,by0,X1,yw],[bx0,yw,X1,Y1]]){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
-          for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
-          const me=new THREE.Mesh(ge,m2); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } } }
+        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); const w2=new THREE.Mesh(ge,m2); w2.rotation.x=-Math.PI/2; w2.position.copy(me.position); w2.raycast=()=>{}; G.add(w2); SUB.push(w2); }
+      SYS.add('places',()=>{ const w=window.FOUNT&&FOUNT.waters&&FOUNT.waters[0], on=!(w&&(o=>{ for(;o;o=o.parent)if(!o.visible)return false; return true; })(w.parent)); for(const o of SUB)o.visible=on; },'069a-lakesub'); } }
     // the city's paved ground out to the far plane (owner, 8 Nov 2026: "the city should go on forever on exterior of map"): its street grid painted on, anchored as the blocks are (edge.city), never under another ground
     { const CY=E.city, GD=E.ground; if(CY&&GD){ const RG=LEVEL.sections.ring, O=RG.outer, R=CY.reach, [GX,AV,GY,STW]=CY.grid, sh=CY.shore, SH=sh-(CY.walk||0), A=CY.home, cc=GD.city||[74,74,80];
       const c=cv(GX,GY), g=c.getContext('2d'), P2=PAL; for(let y=0;y<GY;y++)for(let x=0;x<GX;x++){ const rd=x>=GX-AV||y>=GY-STW, wk=!rd&&(x<1||x>=GX-AV-1||y<1||y>=GY-STW-1), b=rd?P2.road:wk?P2.walk:cc, n=.92+rnd()*.12; g.fillStyle=`rgb(${b.map(v=>Math.round(v*n)).join(',')})`; g.fillRect(x,GY-1-y,1,1); }

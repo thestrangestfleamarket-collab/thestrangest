@@ -12,7 +12,7 @@ import {INSTR} from './146zp-instruments.js';
   const XS=F.x.map(r=>r.slice()).reverse(), LEN=F.nut[0]-F.bri[0];
   const sp=(s,u,lift=0,out=0)=>new V3(XS[s][0]+(XS[s][1]-XS[s][0])*u,F.nut[0]-LEN*u,F.nut[1]+(F.bri[1]-F.nut[1])*u+lift-out).applyMatrix4(MB);
   const fretU=f=>1-Math.pow(2,-f/12), PLUCK=(F.nut[0]-(F.fb+.04))/LEN;
-  const K={id:'bass',name:'A DOUBLE BASS',skill:'bass',seat:{y:.72,z:-.06},lean:.08,look:.35,BOOK:[],cam:{p:[-1.5,1.35,1.2],t:[.1,1.05,.25]},
+  const K={id:'bass',name:'A DOUBLE BASS',skill:'bass',seat:{y:.72,z:-.06},lean:.08,look:.35,BOOK:[],cam:{p:[1.35,1.4,1.35],t:[.1,1.0,.25]},
     help:'Z X C… E · A S D… A · Q W E… D · 1 2 3… G: EACH ROW A STRING, EACH KEY A STOP UP IT · SHIFT HARDER · ` A SONG'};
   K.dsp=()=>IMK['bass guitar'].dsp;
   const es=s=>3-s;   // the music engine's bass strings run G D A E
@@ -42,8 +42,8 @@ import {INSTR} from './146zp-instruments.js';
 
   /* ---------- the hands: the left at its place up the neck (index on the stop, middle a semitone up, the little finger two), the thumb behind; the right's index and middle pluck in turn, pulling through towards you ---------- */
   const win=(P,H,t)=>{ const sc=INSTR.score(P), ev=sc.ev; if(H.sc!==sc){ H.sc=sc; H.lo=0; H.pos=H.pos||1; H.str=H.str??1; H.nx=0; } if(H.lo>ev.length)H.lo=0; while(H.lo<ev.length&&ev[H.lo].t<t-1.5)H.lo++;
-    let cur=null, nxt=null; for(let i=H.lo;i<ev.length&&ev[i].t<=t+.4;i++){ const e=ev[i]; if(e.t<=t)cur=e; else if(!nxt)nxt=e; } return {cur,nxt}; };
-  const TUNE={L:{Fd:[-.55,-.25,.75],Dd:[.75,.25,.3],back:.1,add:[.05,0,-.04],pole:[.6,-.8,-.4]},R:{Fd:[.6,-.55,.45],Dd:[-.55,.5,-.25],back:.12,add:[0,0,0],pole:[-.9,-.6,-.3]},wt:.5,wh:.5};
+    let cur=H.lo>0?ev[H.lo-1]:null, nxt=null; for(let i=H.lo;i<ev.length&&ev[i].t<=t+.4;i++){ const e=ev[i]; if(e.t<=t)cur=e; else if(!nxt)nxt=e; } return {cur,nxt}; };
+  const TUNE={L:{Fd:[-.51,-.16,.66],Dd:[.98,-.24,.79],back:.093,add:[.002,.006,-.096],pole:[.33,-.94,-.58]},R:{Fd:[.64,-.46,.55],Dd:[-.79,.28,-.54],back:.11,add:[-.014,.005,.018],pole:[-1.06,-.7,-.51]},wt:.15,wh:.1};   // (the hands' ways, found by a search for the fingertips nearest their strings)
   const FG=[1,2,4];   // a stop a hand's place, one or two semitones up: index, middle, little
   K.hands=(P,t,H)=>{ const {cur,nxt}=win(P,H,t), want=nxt&&nxt.t-t<.18?nxt:cur;
     if(want&&want.f){ if(want.f<H.pos||want.f>H.pos+2)H.pos=want.f; } if(want)H.str=want.s;

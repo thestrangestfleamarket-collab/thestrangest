@@ -6379,53 +6379,7 @@
    }
   ]
  },
- "bigTrees": [
-  {
-   "note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"
-  },
-  {
-   "kind": "A",
-   "x": 176.7,
-   "y": 85.7,
-   "face": 166,
-   "climb": true
-  },
-  {
-   "kind": "B",
-   "x": 136.2,
-   "y": 129.3,
-   "face": 226,
-   "climb": true
-  },
-  {
-   "kind": "C",
-   "x": 76.2,
-   "y": 104.1,
-   "face": 286,
-   "climb": true
-  },
-  {
-   "kind": "A",
-   "x": 49.3,
-   "y": 54.3,
-   "face": 346,
-   "climb": true
-  },
-  {
-   "kind": "B",
-   "x": 106.4,
-   "y": 25.3,
-   "face": 46,
-   "climb": true
-  },
-  {
-   "kind": "C",
-   "x": 173.8,
-   "y": 31.4,
-   "face": 106,
-   "climb": true
-  }
- ],
+ "bigTrees": [{"note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size against those (owner, 8 Nov 2026: \"add 12 more large trees ranging from 25-50% smaller as they get further [from the] middle. tallest tree in middle\")"}, {"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "climb": true}, {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "climb": true}, {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "climb": true}, {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "climb": true}, {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "climb": true}, {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "climb": true}, {"kind": "A", "x": 120, "y": 72, "face": 0, "climb": true, "s": 1.2}, {"kind": "B", "x": 127.8, "y": 96.6, "face": 137, "climb": true, "s": 0.9}, {"kind": "C", "x": 91, "y": 78.6, "face": 274, "climb": true, "s": 0.884}, {"kind": "A", "x": 135, "y": 49.9, "face": 51, "climb": true, "s": 0.897}, {"kind": "B", "x": 149, "y": 65.4, "face": 188, "climb": true, "s": 0.884}, {"kind": "C", "x": 82.5, "y": 127.2, "face": 325, "climb": true, "s": 0.723}, {"kind": "A", "x": 42.1, "y": 33.8, "face": 102, "climb": true, "s": 0.636}, {"kind": "B", "x": 197.9, "y": 110.2, "face": 239, "climb": true, "s": 0.636}, {"kind": "C", "x": 143.3, "y": 145.9, "face": 16, "climb": true, "s": 0.676}, {"kind": "A", "x": 96.7, "y": -1.9, "face": 153, "climb": true, "s": 0.676}, {"kind": "B", "x": 165, "y": 5.7, "face": 290, "climb": true, "s": 0.665}, {"kind": "C", "x": 195, "y": 72, "face": 67, "climb": true, "s": 0.687}],
  "cloudTrees": [],
  "edge": {
   "note": "THE NEW MAP'S EDGES (owner, 6 Nov 2026): lines in map tiles you cannot cross (a forcefield where you press on one); past them only the backdrop, seen, never walked",
@@ -6810,56 +6764,7 @@
    ],
    "n": 1500
   },
-  "far": {
-   "note": "the far city past the backdrop, hazed: (axis, from, to, across from, across to, lowest, highest storeys in tiles)",
-   "list": [
-    [
-     "x",
-     -520,
-     820,
-     -372,
-     -352,
-     8,
-     34
-    ],
-    [
-     "x",
-     -520,
-     820,
-     -340,
-     -332,
-     5,
-     14
-    ],
-    [
-     "x",
-     -420,
-     -56,
-     600,
-     640,
-     18,
-     60
-    ],
-    [
-     "y",
-     -520,
-     600,
-     -420,
-     -380,
-     14,
-     44
-    ],
-    [
-     "y",
-     -520,
-     600,
-     600,
-     640,
-     14,
-     50
-    ]
-   ]
-  },
+  "city": {"note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius)", "center": [105, -25], "R": 520, "near": [-345, -125, 535, 215], "water": [[-330, -122]], "lowY": -330, "lowK": 0.35, "base": [10, 34], "clusters": [[-420, 260, 230, 140], [620, 330, 280, 220], [-330, -560, 110, 110]], "block": [64, 28], "fade": [240, 470], "ring": [620, 950, 1500], "panorama": 500, "seed": 7}, "far": {"note": "the far city past the backdrop: (axis, from, to, across from, across to, lowest, highest storeys in tiles); shore: where the water past the river ends (the far bank, a map y); ends: how far the far water and its shore run (map x)", "list": [["x", -1860, 2160, -372, -352, 8, 34], ["x", -1860, 2160, -340, -332, 5, 14], ["x", -420, -56, 600, 640, 18, 60], ["y", -125, 600, -420, -380, 14, 44], ["y", -125, 600, 600, 640, 14, 50]], "shore": -328, "ends": [-1900, 2200]},
   "mirror": {
    "note": "Market St past its ends (owner, 8 Nov 2026: \"lets make the street look the same all the way down\"): the street's band (y0, y1 in tiles) drawn again mirrored at the forcefields (x: west, east), reach tiles out, from these builders' groups; each side drawn while you are within show tiles of it; the lawn and the far grass leave the street's ground (y0, y1) to it",
    "x": [

@@ -54,8 +54,8 @@ const MUSH={};
       const om=(((yaw-c.pw+Math.PI*3)%(Math.PI*2))-Math.PI)/dt, dw=om-(c.pom||0); c.pw=yaw; c.pom=om; if(c.sheet)return;
       for(const [nm,px,pz] of ST)nm.forEach((n,k)=>{ const g=[1,1.4,1.8][k]*3.5; c.kick(n,'z',-dw*pz*g+gu*dt*(4+3*Math.sin(c.t*2.3+px*40))); c.kick(n,'x',-dw*px*g-gu*dt*2*(1+Math.sin(c.t*1.7+pz*30))); }); } };
   const A={drop:.6,put:.55,reach:[-.2,.3,.85,1.25],lean:[.3,.16,.04,0],sw:[.1,0,.1,0]};
-  const BOOTH=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g0=P.gate[0];
-    MUSH.booth=STALL.build({X,Z,x0:g0-7.8,x1:g0-3,y:P.y0,veg:false,seed:7,gate:1}); };
+  const BOOTH=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('mush');
+    MUSH.booth=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:false,seed:7,gate:A.gate,name:A.name}); };
   const N=RIGNPC.make(def,Object.assign({key:'mushroom',name:'THE MUSHROOM SELLER',eye:0,eyeC:'0.,0.,0.',metres:3.16, radius:.3,speed:.4,stride:6},PARTSNPC.street(72,-70),{roam:false}));
   { const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); BOOTH(); if(!N.sheet&&!HOMES.keeper(N))STALL.work(N,MUSH.booth,{tray:1,jobs:['look'],wait:()=>2+Math.random()*3}); }; wait(); }
   MUSH.N=N; window.MUSHDBG=()=>({booth:!!MUSH.booth,life:!!N.life,fire:!!PARK.fire,key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.g.visible,tris:N.tris,job:N.rig.job&&N.rig.job.k}); }

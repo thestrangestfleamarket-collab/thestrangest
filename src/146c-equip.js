@@ -4,7 +4,7 @@ import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {GARB} from './072b-garb.js';
-Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
+Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
 { const say=SAY, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
   FORAGE.add({names:{armor:'ARMOUR',cloudcoat:'CLOUD COAT'},prices:{armor:40,cloudcoat:60}});
   // one grant -> one effect, resolved the same way for every worn item (a property is schema-wide, not special-cased per item)
@@ -31,7 +31,7 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
   const build=H=>{ '@later'; const root=new THREE.Group(); root.name='worn';
     const steel=new THREE.MeshLambertMaterial({color:0x7d8187,flatShading:true}), steelD=new THREE.MeshLambertMaterial({color:0x4e5156,flatShading:true});
     const armour=new THREE.Group();
-    const plate=new THREE.Mesh(new THREE.SphereGeometry(1,8,6,0,Math.PI*2,0,Math.PI*.62),steel); armour.add(plate);
+    const plate=new THREE.Mesh(new THREE.CylinderGeometry(1,.86,1,10,2,true),new THREE.MeshLambertMaterial({color:0xaeb3bb,flatShading:true,side:THREE.DoubleSide})); armour.add(plate);   // a cuirass round the chest and back, wide enough to sit outside any body
     const paul=[]; for(const s of [1,-1]){ const p=new THREE.Mesh(new THREE.IcosahedronGeometry(1,1),steel); armour.add(p); paul.push(p); }
     const collar=new THREE.Mesh(new THREE.TorusGeometry(1,.3,5,10),steelD); collar.rotation.x=Math.PI/2; armour.add(collar);
     const coat=new THREE.Group(), puffs=[], cloud=new THREE.MeshLambertMaterial({color:0xf2f5ff,emissive:0x8ea2c8,transparent:true,opacity:.9,flatShading:true});
@@ -83,7 +83,7 @@ Object.assign(EQUIP,{by:{},float:false,light:false,sight:false,breathe:false,nig
     fwd.crossVectors(right,up).normalize(); up.crossVectors(fwd,right).normalize();
     M.makeBasis(right,up,fwd);
     if(grant==='guard'){ worn.root.position.set(ch.x,ch.y,ch.z); worn.root.quaternion.setFromRotationMatrix(M); const s=w*.5;
-      worn.plate.scale.set(s*1.05,s*1.35,s*.62); worn.plate.position.set(0,-s*.15,s*.18);
+      worn.plate.scale.set(s*EQUIP.fit[0],s*EQUIP.fit[1],s*EQUIP.fit[2]); worn.plate.position.set(0,-s*EQUIP.fit[3],s*EQUIP.fit[4]);
       for(let i=0;i<2;i++){ const sgn=i?-1:1; worn.paul[i].position.set(sgn*w*.52,w*.12,0); worn.paul[i].scale.set(s*.5,s*.42,s*.5); }
       worn.collar.position.set(0,s*.62,0); worn.collar.scale.setScalar(s*.42); }
     else { worn.root.position.set(nk.x,nk.y,nk.z); worn.root.quaternion.setFromRotationMatrix(M);

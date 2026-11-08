@@ -424,8 +424,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [ ] **Bow draw and shoot** (after the beta: owner, 7 Nov) · P4 · M (moves) / L (a bow) · pick. Mesh2Motion's `bow-pull`, `bow-pull-hold`, `bow-release` (his fight-moves
   pick, 4 Nov). There is no bow in the game: the owner decides on one first (a ranged weapon in WIELD and the brawl). Fit with
   `tools/m2m-moves.cjs`, play through `MOTION`.
-- [ ] **More of the 222 human clips** (after the beta: owner, 7 Nov) · P4 · L · pick. Ladder and wall climbing in place of `climbPose` (`src/001-rig.js:462`; other players and
-  collision depend on it), crouch-walk, sword combos (with the brawl), ground pound, death falls (with the ragdolls). Wood chopping, digging
+- [ ] **More of the 222 human clips** (after the beta: owner, 7 Nov) · P4 · L · pick. Crouch-walk, sword combos (with the brawl), ground pound, death falls (with the ragdolls). Wood chopping, digging
   and lying in bed have no action in the game yet.
 
 ## Paintings and trade

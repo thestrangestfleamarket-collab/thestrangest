@@ -191,7 +191,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // running track, the whole shore inside the park; open where the brook leaves the lake, where a path reaches the water, and at three gates for swimmers
     { const S=FOUNT.S, RO=FOUNT.TRACK[0]-FOUNT.TRACK[1]-.55, L=[]; let acc=0, prev=null;
       for(let i=0;i<S.shore.length;i++){ const [sx,sy]=S.shore[i], n=S.nrm(sx,sy), x=sx+n[0]*RO, y=sy+n[1]*RO; if(x>S.wx1+2.5||y>S.wy1+2.5)continue; if(prev)acc+=Math.hypot(x-prev[0],y-prev[1]); prev=[x,y]; L.push([x,y,acc]); }
-      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6), at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
+      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6)||FOUNT.bridgeD(x,y)<1.2, at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
       const H=mv(1.2), Pk=[], Bx=[], POST=2.4, RB=.055*M; let posts=0;
       for(let s0=0;s0+POST<=TOT+.01;s0+=POST){ const s1=s0+POST, [ax,ay]=at_(s0), [bx,by]=at_(s1), [mx,my]=at_((s0+s1)/2); if(open_(mx,my,(s0+s1)/2)){ if(!open_(...at_(s0-.1),s0-.1))Bx.push([X(ax),H*.52,Z(ay),.1*M,H*1.06,.1*M,IR[1]],[X(ax),H*1.08,Z(ay),.14*M,.14*M*VS*1.3,.14*M,IR[1]]); continue; }
         const wx0=X(ax), wz0=Z(ay), wx1=X(bx), wz1=Z(by), yaw=-Math.atan2(wz1-wz0,wx1-wx0), len=Math.hypot(wx1-wx0,wz1-wz0);

@@ -32,6 +32,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const b1 = await pg.evaluate(() => [Math.max(...GYM.K().bags.map(B => Math.abs(B.a) + Math.abs(B.b) + Math.abs(B.av) + Math.abs(B.bv))), window.FORAGE.stats.toward('str'), GYMDBG().uv]);
     ok(b1[0] > .001 && b1[1] > b0, 'punching the heavy bag swings it and builds STRENGTH: ' + JSON.stringify([b0, b1]));
     // reps at the squat rack
+    await until(() => !__dbg.RAG.on && !__dbg.VIT.out, null, 15000);
     const r = await pg.evaluate(() => { GYM.reps('squat'); const R = GYM.R(), w0 = window.FORAGE.stats.toward('str'); for (let i = 0; i < 5; i++) { R.x = .5; GYM.press(); } const n = R.n; R.x = 0; GYM.press(); GYM.press(); GYM.press(); return [n, window.FORAGE.stats.toward('str') > w0 || window.FORAGE.ST.str > 30, R.pinned]; });
     ok(r[0] === 5 && r[1] && r[2] > 0, 'reps in the green count and train STRENGTH; three misses and the bar pins you: ' + JSON.stringify(r));
     await pg.evaluate(() => GYM.stop(true));

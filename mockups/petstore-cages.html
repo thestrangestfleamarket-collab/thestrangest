@@ -13,29 +13,28 @@ h1{font-size:20px;margin:4px 0 2px;letter-spacing:2px}h2{font-size:15px;margin:1
 ul{margin:4px 0;padding-left:18px}li{margin:1px 0}
 </style></head><body><div class="w">
 <h1>THE PET STORE: EVERY LIVING THING</h1>
-<div class="dim">Mockup. Every kind of animal and creature in the game can be a pet, pet-sized (a dog's size or smaller). The store's left, right and back walls are cages floor to ceiling, one kind each; fish live in tanks, bugs in glass cases. Central Park keeps only its birds and butterflies (the store sells birds and bees too). Prices to come.</div>
+<div class="dim">Mockup. Every kind of animal and creature in the game can be a pet, pet-sized (a dog's size or smaller). The store's left, right and back walls are cages floor to ceiling, one kind each; bugs in glass cases. Sea life has its own shop, THE AQUARIUM (aquarium.html). Central Park keeps only its birds and butterflies (the store sells birds and bees too). Prices to come.</div>
 <h2>FROM THE DOOR</h2>
 <svg id="v" viewBox="0 0 1200 660"></svg>
 <h2>EVERY KIND, WALL BY WALL</h2>
-<div class="dim"><span class="k" style="border-color:#6a5a38;background:#2a241a"></span> already a pet today &nbsp; <span class="k" style="border-color:#e0b060;background:#3a2e14"></span> new: not a pet yet &nbsp; <span class="k" style="border-color:#4a7a9a;background:#14283a"></span> new, in a tank</div>
+<div class="dim"><span class="k" style="border-color:#6a5a38;background:#2a241a"></span> already a pet today &nbsp; <span class="k" style="border-color:#e0b060;background:#3a2e14"></span> new: not a pet yet</div>
 <div id="cat"></div>
 <h2>TO DECIDE</h2><ul>
-<li>Fish and sea animals: this undoes "water animals are not pets" (7 Nov). Kept how: a bowl or tank in your apartment (they can't follow you), or a tank you carry?</li>
+
 <li>Caged birds: this undoes "no caged birds" for the store. OK?</li>
 <li>Left out unless you say: people-like folk (ogres, the mushroom folk, fairies) and things not alive (skeletons, golems, ghosts).</li>
 <li>Dog and cat breeds (323) stay in the adoption book, not cages.</li></ul>
 </div>
 <script>
 const W={
-'LEFT WALL: MAMMALS, REPTILES, SLIMES':[
+'LEFT WALL: MAMMALS':[
 ['🐈','CAT'],['🐕','DOG'],['🐕','XOLO'],['🐇','RABBIT'],['🐇','HARE'],['🐀','RAT'],['🐿️','SQUIRREL',1],['🦇','BAT',1],['🦊','FOX'],['🐺','WOLF'],['🐻','BEAR'],['🦌','DEER'],['🐐','IBEX'],['🦁','LION'],
-['🐎','HORSE'],['🫏','DONKEY'],['🫏','MULE'],['🐄','COW'],['🐂','OX'],['🐖','PIG'],['🐑','SHEEP'],['🐐','GOAT'],['🐘','ELEPHANT'],['🦒','GIRAFFE'],['🦓','ZEBRA'],['🐫','CAMEL'],
-['🐸','FROG'],['🐸','BEELZEBUFO'],['🐊','CROCODILE'],['🐍','GARTER SNAKE',1],['🐍','PIT SNAKE',1],['🟢','PARK SLIME',1],['🟢','GREEN SLIME',1],['🔵','BLUE SLIME',1],['🔴','RED SLIME',1],['🟣','PURPLE SLIME',1],
-['🐀','GIANT RAT',1],['🦇','CAVE BAT',1],['🐸','CAVE FROG',1]],
-'BACK WALL: DINOSAURS, DRAGONS, TANKS':[
+['🐎','HORSE'],['🫏','DONKEY'],['🫏','MULE'],['🐄','COW'],['🐂','OX'],['🐖','PIG'],['🐑','SHEEP'],['🐐','GOAT'],['🐘','ELEPHANT'],['🦒','GIRAFFE'],['🦓','ZEBRA'],['🐫','CAMEL']],
+'BACK WALL: DINOSAURS, DRAGONS, REPTILES, SLIMES':[
 ['🦖','T. REX'],['🦖','RAPTOR'],['🦖','COMPY'],['🦕','STEGOSAURUS'],['🦕','TRICERATOPS'],['🦕','ANKYLOSAUR'],['🦕','PARASAUR'],['🦕','BRACHIOSAUR'],['🪽','PTERANODON'],['🐛','ARTHROPLEURA'],
 ['🐉','RED DRAGONLING'],['🐉','PURPLE DRAGONLING'],['🐉','CRYSTAL DRAGONLING'],['🐉','GREEN DRAGONLING'],['🐉','RED DRAGON'],['🐉','CRYSTAL DRAGON'],
-...[['🐟','KOI'],['🐟','GOLDFISH'],['🐟','DACE'],['🐟','SOCKEYE'],['🐟','CATFISH'],['🐠','CLOWNFISH'],['🐠','ANGELFISH'],['🐠','BLUE TANG'],['🐠','YELLOW TANG'],['🐠','BUTTERFLYFISH'],['🐠','CARDINALFISH'],['🐠','CHROMIS'],['🐠','CLEANER WRASSE'],['🐠','WRASSE'],['🐠','FIREFISH'],['🐠','FOXFACE'],['🐠','GOATFISH'],['🐠','KNIFEJAW'],['🐠','LIONFISH'],['🐠','MANDARINFISH'],['🐠','MOORISH IDOL'],['🐍','MORAY'],['🐡','PUFFER'],['🐡','STRIPED PUFFER'],['🐟','SEA BREAM'],['🐟','TREVALLY'],['🐟','BARRACUDA'],['🦈','SHARK'],['🐟','STINGRAY'],['🐢','SEA TURTLE'],['🐬','DOLPHIN'],['🐙','OCTOPUS'],['🪼','JELLYFISH'],['🦐','SHRIMP'],['🐟','COELACANTH'],['🦕','PLESIOSAUR']].map(a=>[...a,2])],
+['🐸','FROG'],['🐸','BEELZEBUFO'],['🐊','CROCODILE'],['🐍','GARTER SNAKE',1],['🐍','PIT SNAKE',1],['🟢','PARK SLIME',1],['🟢','GREEN SLIME',1],['🔵','BLUE SLIME',1],['🔴','RED SLIME',1],['🟣','PURPLE SLIME',1],
+['🐀','GIANT RAT',1],['🦇','CAVE BAT',1],['🐸','CAVE FROG',1]],
 'RIGHT WALL: BIRDS, BUGS, CRABS':[
 ['🦜','PARROT'],['🕊️','PIGEON'],['🐦‍⬛','CROW'],['🦉','OWL'],['🐦','GULL'],['🦆','DUCK'],['🐔','CHICKEN'],['🐧','PENGUIN'],
 ['🐦','ROBIN',1],['🐦','BLUE JAY',1],['🐦','CARDINAL',1],['🐦','ORIOLE',1],['🐦','STARLING',1],['🐦','SPARROW',1],['🕊️','MOURNING DOVE',1],['🐦','MOCKINGBIRD',1],['🐦‍⬛','RED-WINGED BLACKBIRD',1],['🦅','RED-TAILED HAWK',1],['🪶','HERON',1],
@@ -57,12 +56,12 @@ function cell(q,e,f){const[a,b,c,d]=q;const tank=f==2;
  mk('polygon',{points:q.map(p=>p.join(',')).join(' '),fill:tank?'#1c4a6a':'#3a3226',stroke:tank?'#8ac0e0':f==1?'#e0b060':'#b0a070','stroke-width':1.2});
  if(!tank)for(let i=1;i<4;i++){const t=i/4;mk('line',{x1:lerp(a[0],b[0],t),y1:lerp(a[1],b[1],t),x2:lerp(d[0],c[0],t),y2:lerp(d[1],c[1],t),stroke:'#b0a070','stroke-width':.6,opacity:.5});}
  const cx=(a[0]+b[0]+c[0]+d[0])/4,cy=(a[1]+b[1]+c[1]+d[1])/4,h=Math.abs(d[1]-a[1]);const w=Math.abs(b[0]-a[0]),s=Math.min(h*.55,w*.8);mk('text',{x:cx,y:cy+s*.35,'font-size':s,'text-anchor':'middle'},e);}
-const back=W['BACK WALL: DINOSAURS, DRAGONS, TANKS'],BR=5,BC=Math.ceil(back.length/BR),cw=(bx1-bx0-16)/BC,chh=(by1-by0-16)/BR;
+const back=W['BACK WALL: DINOSAURS, DRAGONS, REPTILES, SLIMES'],BR=5,BC=Math.ceil(back.length/BR),cw=(bx1-bx0-16)/BC,chh=(by1-by0-16)/BR;
 back.forEach((k,i)=>{const c=i%BC,r=i/BC|0,x=bx0+8+c*cw,y=by0+8+r*chh;cell([[x+1,y+1],[x+cw-1,y+1],[x+cw-1,y+chh-1],[x+1,y+chh-1]],k[0],k[2]);});
 function side(L,left){const R=4,C=Math.ceil(L.length/R),X=t=>left?lerp(0,bx0,t):lerp(Wd,bx1,t),Y=(t,u)=>lerp(lerp(0,by0,t),lerp(H,by1,t),u);
  L.forEach((k,i)=>{const c=i%C,r=i/C|0,t0=.03+c/C*.95,t1=.03+(c+1)/C*.95,u0=.04+r*.21,u1=u0+.2;cell([[X(t0),Y(t0,u0)],[X(t1),Y(t1,u0)],[X(t1),Y(t1,u1)],[X(t0),Y(t0,u1)]],k[0],k[2]);});}
-side(W['LEFT WALL: MAMMALS, REPTILES, SLIMES'],1);side(W['RIGHT WALL: BIRDS, BUGS, CRABS'],0);
+side(W['LEFT WALL: MAMMALS'],1);side(W['RIGHT WALL: BIRDS, BUGS, CRABS'],0);
 mk('rect',{x:470,y:545,width:260,height:62,fill:'#5a3a26',stroke:'#3a2418','stroke-width':3});mk('text',{x:600,y:582,'font-size':15,'text-anchor':'middle',fill:'#f0e0b0'},'KEEPER + ADOPTION BOOK');
-mk('text',{x:600,y:100,'font-size':14,'text-anchor':'middle',fill:'#e0b060'},'BACK: DINOSAURS & DRAGONS · TANKS (FISH, SEA LIFE)');
-mk('text',{x:14,y:650,'font-size':14,fill:'#e0b060'},'LEFT: MAMMALS, REPTILES, SLIMES');mk('text',{x:Wd-14,y:650,'font-size':14,'text-anchor':'end',fill:'#e0b060'},'RIGHT: BIRDS, BUGS, CRABS');
+mk('text',{x:600,y:100,'font-size':14,'text-anchor':'middle',fill:'#e0b060'},'BACK: DINOSAURS, DRAGONS, REPTILES, SLIMES');
+mk('text',{x:14,y:650,'font-size':14,fill:'#e0b060'},'LEFT: MAMMALS');mk('text',{x:Wd-14,y:650,'font-size':14,'text-anchor':'end',fill:'#e0b060'},'RIGHT: BIRDS, BUGS, CRABS');
 </script></body></html>

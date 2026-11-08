@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>The Aquarium</title>
+<style>
+body{margin:0;background:#0f1a22;color:#e2ecf0;font:14px/1.4 monospace}.w{max-width:1240px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px;letter-spacing:2px}h2{font-size:15px;margin:18px 0 6px;color:#7ac8e8;letter-spacing:1px}
+.dim{color:#8aa4b0}svg{width:100%;height:auto;display:block;background:#071016;border:1px solid #2a4250}
+.box{border:1px solid #2a4250;padding:8px 10px;background:#0c161d;margin-bottom:10px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:4px;margin-top:6px}
+.c{border:1px solid #4a7a9a;background:#14283a;text-align:center;padding:3px 2px;font-size:9px;line-height:1.2}.c b{display:block;font-size:22px;font-weight:normal}
+ul{margin:4px 0;padding-left:18px}
+</style></head><body><div class="w">
+<h1>THE AQUARIUM</h1>
+<div class="dim">Mockup. Sea life gets its own shop, next to the pet store's idea: every fish and sea animal in the game in its own lit tank, pet-sized. Buy one and it goes to the big fish tank in your apartment (every apartment has one), where it swims with the others and eats when you feed the tank. Crabs stay at the pet store (they walk with you).</div>
+<h2>FROM THE DOOR</h2><svg id="v" viewBox="0 0 1200 660"></svg>
+<h2>EVERY TANK</h2><div id="cat"></div>
+<h2>HOW IT PLAYS</h2><ul>
+<li>Double-click a tank (or E): buy it. It waits in your apartment's tank; PETS lists it (name, age, hunger, loyalty).</li>
+<li>Fish food (bodega, pet store) feeds the whole tank.</li>
+<li>Each tank stays full: everyone can buy the same one. The middle tank is to look at: a few of each swim together.</li></ul>
+<h2>TO DECIDE</h2><ul>
+<li>Where: an empty Hudson lot (the riverfront fits sea life), or on Market St beside the pet store?</li>
+<li>Can a sea pet ever come out with you (a bowl you carry), or only in your apartment's tank?</li></ul>
+</div><script>
+const SEA=[['🐟','KOI'],['🐟','GOLDFISH'],['🐟','DACE'],['🐟','SOCKEYE'],['🐟','CATFISH'],['🐠','CLOWNFISH'],['🐠','ANGELFISH'],['🐠','BLUE TANG'],['🐠','YELLOW TANG'],['🐠','BUTTERFLYFISH'],['🐠','CARDINALFISH'],['🐠','CHROMIS'],['🐠','CLEANER WRASSE'],['🐠','WRASSE'],['🐠','FIREFISH'],['🐠','FOXFACE'],['🐠','GOATFISH'],['🐠','KNIFEJAW'],['🐠','LIONFISH'],['🐠','MANDARINFISH'],['🐠','MOORISH IDOL'],['🐍','MORAY'],['🐡','PUFFER'],['🐡','STRIPED PUFFER'],['🐟','SEA BREAM'],['🐟','TREVALLY'],['🐟','BARRACUDA'],['🦈','SHARK'],['🐟','STINGRAY'],['🐢','SEA TURTLE'],['🐬','DOLPHIN'],['🐙','OCTOPUS'],['🪼','JELLYFISH'],['🦐','SHRIMP'],['🐟','COELACANTH'],['🦕','PLESIOSAUR']];
+const N=x=>SEA.filter(a=>x.includes(a[1]));
+const W={'LEFT WALL: FRESH WATER':N(['KOI','GOLDFISH','DACE','SOCKEYE','CATFISH','SHRIMP']),
+'BACK WALL: THE BIG SEA':N(['SHARK','DOLPHIN','OCTOPUS','JELLYFISH','BARRACUDA','MORAY','COELACANTH','PLESIOSAUR','TREVALLY','SEA BREAM','STINGRAY','SEA TURTLE']),
+'RIGHT WALL: THE REEF':SEA.filter(a=>!['KOI','GOLDFISH','DACE','SOCKEYE','CATFISH','SHRIMP','STINGRAY','SEA TURTLE','SHARK','DOLPHIN','OCTOPUS','JELLYFISH','BARRACUDA','MORAY','COELACANTH','PLESIOSAUR','TREVALLY','SEA BREAM'].includes(a[1]))};
+const cat=document.getElementById('cat');
+for(const [t,L] of Object.entries(W)){const d=document.createElement('div');d.className='box';d.innerHTML='<b style="color:#7ac8e8">'+t+' ('+L.length+')</b><div class="g">'+L.map(([e,n])=>'<div class="c"><b>'+e+'</b>'+n+'</div>').join('')+'</div>';cat.appendChild(d);}
+const s=document.createElement('div');s.className='dim';s.textContent=SEA.length+' kinds, all new as pets.';cat.prepend(s);
+const NS='http://www.w3.org/2000/svg',v=document.getElementById('v'),mk=(t,a,x)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;v.appendChild(e);return e;};
+const Wd=1200,H=660,bx0=300,bx1=900,by0=110,by1=470,lerp=(a,b,t)=>a+(b-a)*t;
+mk('polygon',{points:`0,0 ${Wd},0 ${bx1},${by0} ${bx0},${by0}`,fill:'#0c161d'});
+mk('polygon',{points:`0,${H} ${Wd},${H} ${bx1},${by1} ${bx0},${by1}`,fill:'#1a2a32'});
+mk('polygon',{points:`0,0 ${bx0},${by0} ${bx0},${by1} 0,${H}`,fill:'#16242c'});
+mk('polygon',{points:`${Wd},0 ${bx1},${by0} ${bx1},${by1} ${Wd},${H}`,fill:'#16242c'});
+mk('rect',{x:bx0,y:by0,width:bx1-bx0,height:by1-by0,fill:'#1a2a34'});
+function cell(q,e){const[a,b,c,d]=q;mk('polygon',{points:q.map(p=>p.join(',')).join(' '),fill:'#1c5a80',stroke:'#8ad0f0','stroke-width':1.5});
+ mk('polygon',{points:[[lerp(a[0],b[0],.1),lerp(a[1],b[1],.1)+2],[lerp(a[0],b[0],.4),lerp(a[1],b[1],.4)+2],[lerp(d[0],c[0],.15),lerp(d[1],c[1],.15)-2],[lerp(d[0],c[0],.02),lerp(d[1],c[1],.02)-2]].map(p=>p.join(',')).join(' '),fill:'#ffffff',opacity:.08});
+ const cx=(a[0]+b[0]+c[0]+d[0])/4,cy=(a[1]+b[1]+c[1]+d[1])/4,h=Math.abs(d[1]-a[1]),w=Math.abs(b[0]-a[0]),s=Math.min(h*.55,w*.8);mk('text',{x:cx,y:cy+s*.35,'font-size':s,'text-anchor':'middle'},e);}
+const back=W['BACK WALL: THE BIG SEA'],BR=2,BC=6,cw=(bx1-bx0-16)/BC,ch=(by1-by0-16)/BR;
+back.forEach((k,i)=>{const c=i%BC,r=i/BC|0,x=bx0+8+c*cw,y=by0+8+r*ch;cell([[x+2,y+2],[x+cw-2,y+2],[x+cw-2,y+ch-2],[x+2,y+ch-2]],k[0]);});
+function side(L,left,R){const C=Math.ceil(L.length/R),X=t=>left?lerp(0,bx0,t):lerp(Wd,bx1,t),Y=(t,u)=>lerp(lerp(0,by0,t),lerp(H,by1,t),u),hh=.8/R;
+ L.forEach((k,i)=>{const c=i%C,r=i/C|0,t0=.03+c/C*.95,t1=.03+(c+1)/C*.95,u0=.08+r*hh,u1=u0+hh-.02;cell([[X(t0),Y(t0,u0)],[X(t1),Y(t1,u0)],[X(t1),Y(t1,u1)],[X(t0),Y(t0,u1)]],k[0]);});}
+side(W['LEFT WALL: FRESH WATER'],1,2);side(W['RIGHT WALL: THE REEF'],0,3);
+mk('ellipse',{cx:600,cy:560,rx:170,ry:42,fill:'#2a3a42'});mk('rect',{x:440,y:420,width:320,height:140,fill:'#1c5a80',opacity:.85,stroke:'#8ad0f0','stroke-width':2,rx:20});
+mk('ellipse',{cx:600,cy:420,rx:160,ry:22,fill:'#2a7aa0',stroke:'#8ad0f0','stroke-width':2});
+['🐠','🐟','🐡','🐢','🐙','🪼','🐠','🐟'].forEach((e,i)=>mk('text',{x:470+i*38,y:470+(i%3)*30,'font-size':26},e));
+mk('text',{x:600,y:625,'font-size':14,'text-anchor':'middle',fill:'#bfe6f6'},'THE BIG TANK · KEEPER AT THE COUNTER BY THE DOOR');
+mk('text',{x:600,y:100,'font-size':14,'text-anchor':'middle',fill:'#7ac8e8'},'BACK: THE BIG SEA');
+mk('text',{x:14,y:650,'font-size':14,fill:'#7ac8e8'},'LEFT: FRESH WATER');mk('text',{x:Wd-14,y:650,'font-size':14,'text-anchor':'end',fill:'#7ac8e8'},'RIGHT: THE REEF');
+</script></body></html>

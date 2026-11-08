@@ -29,7 +29,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     const R = await room(), R0 = R;
     const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
-    ok((await db()).cash >= 1e6, 'you start with $1,000,000 (' + (await db()).cash + ')');
+    ok((await db()).cash >= 1000, 'you start with $1,000 (' + (await db()).cash + ')');
+    await pg.evaluate(() => { window.INV.cash = 1e6; });   // enough for everything the check buys (a player starts with $1,000 since 7 Nov 2026)
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
     await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD; __dbg.UI.goTo(B.X(A.x0 + (A.x1 - A.x0) * .5), B.Z(A.y0 + (A.y1 - A.y0) * .5), SHARED.py); SHARED.yawTo = SHARED.yaw = Math.PI / 4; SHARED.ppuTo = SHARED.ppu = SHARED.ppu * .6; });
     await pg.waitForTimeout(2500);

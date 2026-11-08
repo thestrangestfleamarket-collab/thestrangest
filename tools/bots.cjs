@@ -30,8 +30,8 @@ async function login(R,b){ const L=b.login; if(!L||!L.access_token||L.access_tok
 async function stop(id){ const R=run.get(id); if(!R)return; run.delete(id); try{ if(R.page)await R.page.evaluate(()=>window.BOT&&BOT.bye()).catch(()=>{}); }catch(e){} await R.ctx.close().catch(()=>{}); }
 
 async function tick(){
-  const status={}; for(const [id,R] of run){ if(R.page)R.status=await R.page.evaluate(()=>window.BOT&&BOT.ready?BOT.status():{doing:'loading the game'}).catch(()=>R.status)||R.status; status[id]=R.status; }
-  let j; try{ const r=await fetch(SITE+'/bots/run',{method:'POST',headers:{'content-type':'application/json','x-bot-key':KEY},body:JSON.stringify({status})}); j=await r.json(); if(!r.ok){ log(null,'the site said: '+(j.why||r.status)); return; } }
+  const status={}, tests={}; for(const [id,R] of run){ if(R.page){ R.status=await R.page.evaluate(()=>window.BOT&&BOT.ready?BOT.status():{doing:'loading the game'}).catch(()=>R.status)||R.status; const t=await R.page.evaluate(()=>window.BOT&&BOT.results?BOT.results():[]).catch(()=>[]); if(t&&t.length)tests[id]=t; } status[id]=R.status; }
+  let j; try{ const r=await fetch(SITE+'/bots/run',{method:'POST',headers:{'content-type':'application/json','x-bot-key':KEY},body:JSON.stringify({status,tests})}); j=await r.json(); if(!r.ok){ log(null,'the site said: '+(j.why||r.status)); return; } }
   catch(e){ log(null,'could not reach '+SITE+': '+e.message); return; }
   const want=new Map(j.bots.map(b=>[b.id,b]));
   for(const id of [...run.keys()])if(!want.has(id)){ log(null,'stopping '+id.slice(0,8)); await stop(id); }

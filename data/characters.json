@@ -2756,7 +2756,8 @@
    "buys": [
     "books",
     "paintings",
-    "antiquities"
+    "antiquities",
+    "photos"
    ],
    "teaches": [
     "bind"
@@ -3641,7 +3642,8 @@
     "kite"
    ],
    "buys": [
-    "butterflies"
+    "butterflies",
+    "photos"
    ],
    "teaches": [
     "ento"
@@ -3666,7 +3668,8 @@
   "trade": {
    "teaches": [
     "bird",
-    "climb"
+    "climb",
+    "photo"
    ],
    "line": "Nets, seed, feeders and glasses; I buy the birds you bring me. Climbing? Three points on the rungs: practise on the fire escapes.",
    "sells": [
@@ -3678,7 +3681,8 @@
     "camera"
    ],
    "buys": [
-    "birds"
+    "birds",
+    "photos"
    ]
   }
  },

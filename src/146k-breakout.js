@@ -72,3 +72,4 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     for(let i=BREAK.list.length-1;i>=0;i--){ const c=BREAK.list[i]; if(c.dead){ c.g.scale.multiplyScalar(Math.max(.8,1-dt*6)); if(c.t>.6){ c.g.removeFromParent(); c.g.traverse(o=>{ if(o.geometry)o.geometry.dispose(); }); BREAK.list.splice(i,1); } } }
     if(BREAK.on&&!BREAK.list.length){ BREAK.on=false; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<30*T){ say('THE STAIR IS QUIET AGAIN.','#b8f0a0'); const best=GUARD.list.find(N=>N.key==='gd_captain'); if(best&&!best.far)LINES.say(best,'Well fought. Back to your posts.'); } } },'146k-breakout');
   window.BREAKDBG=()=>BREAK.list.map(c=>({kind:c.kind,hp:+c.hp.toFixed(1),dead:c.dead,x:+c.x.toFixed(1),z:+c.z.toFixed(1)})); });
+export {BREAK};

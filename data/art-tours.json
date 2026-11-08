@@ -2,24 +2,502 @@
  "Self-Portrait|Vincent van Gogh": {
   "name": "GUIDED TOUR",
   "steps": [
-   {"title": "SELF-PORTRAIT, PARIS, 1887",
-    "text": "Vincent van Gogh painted this in Paris in 1887. He had moved there the year before to live with his brother Theo, an art dealer, after Theo wrote to him about the new, colourful French painting.\nIt is small: 42 by 34 centimetres, painted in oil on cardboard rather than canvas."},
-   {"at": [0.0, 0.0, 0.34, 0.36], "title": "THE BACKGROUND",
-    "text": "The blue behind him is not one flat colour. It is hundreds of short, slanting strokes of blue, green and grey laid side by side.\nAround his head the strokes change direction and follow its outline, so the background seems to vibrate and the head stands out against it."},
-   {"at": [0.08, 0.02, 0.8, 0.36], "title": "THE GREY FELT HAT",
-    "text": "The Rijksmuseum describes him here as a fashionably dressed Parisian: felt hat, jacket, a blue cravat.\nThe hat is built from pale, thick strokes of grey, green and pink, with the dark band dashed in on top. Zoom in and you can see the ridges of paint standing up off the board."},
-   {"at": [0.26, 0.3, 0.5, 0.17], "title": "THE EYES",
-    "text": "His eyes are green, and the face around them is not smoothly shaded. It is made of separate touches of orange, pink, green and blue.\nUp close it is a patchwork of colour. Step back and it reads as skin in light and shadow."},
-   {"at": [0.32, 0.46, 0.38, 0.26], "title": "THE BEARD: COMPLEMENTARY COLOURS",
-    "text": "The red-orange beard sits right against the blue background. Orange and blue are complementary colours, opposite each other on the colour wheel, and side by side each makes the other look stronger.\nVan Gogh had read about these contrasts in colour theory before he came to Paris. Here he puts them to work in bright colour."},
-   {"at": [0.32, 0.6, 0.32, 0.23], "title": "THE CRAVAT AND THE RED LINE",
-    "text": "At his throat are a blue cravat and a thin red stroke running down beside the white shirt.\nSmall accents like these pull the eye to the centre of the picture and echo the reds and blues used everywhere else in it."},
-   {"at": [0.0, 0.64, 0.62, 0.36], "title": "THE COAT: DASHES OF COLOUR",
-    "text": "His brown jacket is not painted brown. It is made of short dashes of orange, blue, green and red.\nIn Paris Van Gogh came to know the work of Georges Seurat and Paul Signac, who built pictures from small dots of pure colour that mix in the viewer's eye. He painted alongside Signac in 1887. He borrowed the idea and loosened it into his own rhythmic strokes."},
-   {"title": "WHY SO MANY SELF-PORTRAITS?",
-    "text": "In Paris he painted himself again and again, trying out the new French style.\nAs the Rijksmuseum notes, he did it mostly to avoid paying for a model. A mirror cost nothing."},
-   {"title": "WHERE IT WENT",
-    "text": "Van Gogh gave this painting to Andries Bonger, the brother of Theo's wife, Jo. After Andries died, his widow, Françoise Bonger, gave it to the Rijksmuseum in 1936.\nIt hangs there today among the Hague School, the Amsterdam Impressionists and Van Gogh's contemporaries."}
+   {
+    "title": "SELF-PORTRAIT, PARIS, 1887",
+    "text": "Vincent van Gogh painted this in Paris in 1887. He had moved there the year before to live with his brother Theo, an art dealer, after Theo wrote to him about the new, colourful French painting.\nIt is small: 42 by 34 centimetres, painted in oil on cardboard rather than canvas."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.34,
+     0.36
+    ],
+    "title": "THE BACKGROUND",
+    "text": "The blue behind him is not one flat colour. It is hundreds of short, slanting strokes of blue, green and grey laid side by side.\nAround his head the strokes change direction and follow its outline, so the background seems to vibrate and the head stands out against it."
+   },
+   {
+    "at": [
+     0.08,
+     0.02,
+     0.8,
+     0.36
+    ],
+    "title": "THE GREY FELT HAT",
+    "text": "The Rijksmuseum describes him here as a fashionably dressed Parisian: felt hat, jacket, a blue cravat.\nThe hat is built from pale, thick strokes of grey, green and pink, with the dark band dashed in on top. Zoom in and you can see the ridges of paint standing up off the board."
+   },
+   {
+    "at": [
+     0.26,
+     0.3,
+     0.5,
+     0.17
+    ],
+    "title": "THE EYES",
+    "text": "His eyes are green, and the face around them is not smoothly shaded. It is made of separate touches of orange, pink, green and blue.\nUp close it is a patchwork of colour. Step back and it reads as skin in light and shadow."
+   },
+   {
+    "at": [
+     0.32,
+     0.46,
+     0.38,
+     0.26
+    ],
+    "title": "THE BEARD: COMPLEMENTARY COLOURS",
+    "text": "The red-orange beard sits right against the blue background. Orange and blue are complementary colours, opposite each other on the colour wheel, and side by side each makes the other look stronger.\nVan Gogh had read about these contrasts in colour theory before he came to Paris. Here he puts them to work in bright colour."
+   },
+   {
+    "at": [
+     0.32,
+     0.6,
+     0.32,
+     0.23
+    ],
+    "title": "THE CRAVAT AND THE RED LINE",
+    "text": "At his throat are a blue cravat and a thin red stroke running down beside the white shirt.\nSmall accents like these pull the eye to the centre of the picture and echo the reds and blues used everywhere else in it."
+   },
+   {
+    "at": [
+     0.0,
+     0.64,
+     0.62,
+     0.36
+    ],
+    "title": "THE COAT: DASHES OF COLOUR",
+    "text": "His brown jacket is not painted brown. It is made of short dashes of orange, blue, green and red.\nIn Paris Van Gogh came to know the work of Georges Seurat and Paul Signac, who built pictures from small dots of pure colour that mix in the viewer's eye. He painted alongside Signac in 1887. He borrowed the idea and loosened it into his own rhythmic strokes."
+   },
+   {
+    "title": "WHY SO MANY SELF-PORTRAITS?",
+    "text": "In Paris he painted himself again and again, trying out the new French style.\nAs the Rijksmuseum notes, he did it mostly to avoid paying for a model. A mirror cost nothing."
+   },
+   {
+    "title": "WHERE IT WENT",
+    "text": "Van Gogh gave this painting to Andries Bonger, the brother of Theo's wife, Jo. After Andries died, his widow, Françoise Bonger, gave it to the Rijksmuseum in 1936.\nIt hangs there today among the Hague School, the Amsterdam Impressionists and Van Gogh's contemporaries."
+   }
+  ]
+ },
+ "Woman Reading|Édouard Manet": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "WOMAN READING, 1880–82",
+    "text": "Édouard Manet painted this in Paris a year or two before he died in 1883. It is small, 61 by 51 centimetres, oil on canvas.\nParisian cafés were where painters and writers met. Manet and his friends, Degas, Monet, Renoir and the writer Zola among them, kept two tables at the Café de la Nouvelle-Athènes."
+   },
+   {
+    "at": [
+     0.48,
+     0.2,
+     0.45,
+     0.32
+    ],
+    "title": "THE READER",
+    "text": "A young woman in a black hat and a heavy coat looks up from what she is reading. Her coat and kid gloves say the weather is cool: she seems to be sitting at an outdoor table.\nHer face is a few quick strokes of pink and white. Manet painted fast, and this is one of his most Impressionist pictures."
+   },
+   {
+    "at": [
+     0.02,
+     0.25,
+     0.45,
+     0.55
+    ],
+    "title": "THE MAGAZINE",
+    "text": "The pale shape on the left is an illustrated paper, clipped to a wooden bar. Cafés kept their newspapers on bars like this so customers could read them at the table."
+   },
+   {
+    "at": [
+     0.0,
+     0.65,
+     0.4,
+     0.35
+    ],
+    "title": "THE CAFÉ TABLE",
+    "text": "At the bottom left, the edge of a marble tabletop and a glass mug of beer: everything says café."
+   },
+   {
+    "at": [
+     0.18,
+     0.0,
+     0.82,
+     0.2
+    ],
+    "title": "THE GARDEN BEHIND HER",
+    "text": "But the flowers and leaves behind her are not a real garden. They are one of Manet's own paintings, hung behind his model. The café is a re-creation in his studio."
+   },
+   {
+    "title": "A MOMENT OF MODERN LIFE",
+    "text": "Manet wanted to catch the passing moment of city life, the glance up from a page. The loose, light brushwork is how he did it at the end of his career.\nThe painting is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "In the Café|Fernand Lungren": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "IN THE CAFÉ, 1882–84",
+    "text": "Fernand Lungren, an American, went to Paris in 1882. He took classes for a short time at the Académie Julian, then left to paint the city and its people directly.\nThis is oil on canvas, about 80 by 105 centimetres."
+   },
+   {
+    "at": [
+     0.0,
+     0.18,
+     0.5,
+     0.75
+    ],
+    "title": "A WOMAN ALONE",
+    "text": "A fashionably dressed woman in red sits by herself at a marble table, upright and alert.\nA woman alone in a café was new. Café life was opening public places of leisure to women in modern Paris."
+   },
+   {
+    "at": [
+     0.3,
+     0.38,
+     0.25,
+     0.25
+    ],
+    "title": "THE CARAFE",
+    "text": "On the table, a glass carafe and a tray. Lungren paints glass and marble with hard, clean edges, sharper than the Impressionists around him."
+   },
+   {
+    "at": [
+     0.22,
+     0.0,
+     0.4,
+     0.3
+    ],
+    "title": "GASLIGHT",
+    "text": "Two kinds of light fill the room: the warm glow of gas lamps and the new, whiter electric light. Lungren was as interested in light as the Impressionists were."
+   },
+   {
+    "at": [
+     0.58,
+     0.3,
+     0.42,
+     0.45
+    ],
+    "title": "THE EMPTY TABLES",
+    "text": "Behind her the room opens out: round tables, bentwood chairs, a waiter and other customers far off. The emptiness makes her solitude stronger."
+   },
+   {
+    "title": "AFTER PARIS",
+    "text": "Lungren went home to America and became best known for paintings of the deserts of the American Southwest.\nThis picture is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "A Sunday on La Grande Jatte — 1884|Georges Seurat": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "A SUNDAY ON LA GRANDE JATTE — 1884",
+    "text": "Georges Seurat worked on this huge canvas, three metres wide, from 1884 to 1886, and added its painted border in 1888–89.\nIt shows Parisians of every age and kind on a Sunday afternoon on an island in the river Seine."
+   },
+   {
+    "at": [
+     0.4,
+     0.35,
+     0.2,
+     0.25
+    ],
+    "title": "DOTS",
+    "text": "Come close and everything turns into dots and dashes of colour laid side by side: orange beside blue, red beside green. Your eye mixes them. The method is called pointillism."
+   },
+   {
+    "at": [
+     0.75,
+     0.1,
+     0.25,
+     0.9
+    ],
+    "title": "THE COUPLE AND THE MONKEY",
+    "text": "On the right, a couple in profile, she with a parasol and a monkey on a leash. Seurat added some figures two years after he began, the monkey among them."
+   },
+   {
+    "at": [
+     0.0,
+     0.45,
+     0.4,
+     0.4
+    ],
+    "title": "IN THE SHADE",
+    "text": "In the shade at the lower left, a man reclines with a pipe, another sits in a top hat, a woman reads."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.3,
+     0.45
+    ],
+    "title": "THE RIVER",
+    "text": "Behind them the river: sailboats, a rowing boat and, at the far left, a woman fishing."
+   },
+   {
+    "title": "A MODERN FRIEZE",
+    "text": "Seurat wanted a painting of modern life as calm and still as a frieze on an ancient Greek temple. It was first shown at the last Impressionist exhibition in 1886, and has hung in the Art Institute of Chicago since 1924."
+   }
+  ]
+ },
+ "Paris Street; Rainy Day|Gustave Caillebotte": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "PARIS STREET; RAINY DAY, 1877",
+    "text": "Gustave Caillebotte's largest and most ambitious painting, more than two by two and a half metres. He showed it at the Impressionists' exhibition of 1877.\nIt is a busy crossing a short walk from his home in Paris."
+   },
+   {
+    "at": [
+     0.5,
+     0.25,
+     0.5,
+     0.75
+    ],
+    "title": "THE COUPLE",
+    "text": "A well-dressed couple share an umbrella and walk straight toward us, looking at something outside the picture. The sharp cut at the edges may come from photography, new then."
+   },
+   {
+    "at": [
+     0.0,
+     0.55,
+     0.55,
+     0.45
+    ],
+    "title": "THE RAIN",
+    "text": "You never see a raindrop. The rain is in the open umbrellas, new retractable ones, and in the shine on the wet cobblestones."
+   },
+   {
+    "at": [
+     0.44,
+     0.0,
+     0.14,
+     0.75
+    ],
+    "title": "THE LAMPPOST",
+    "text": "A green gas lamppost splits the picture in two, the crowd and the couple on one side, the open square on the other."
+   },
+   {
+    "at": [
+     0.08,
+     0.05,
+     0.4,
+     0.4
+    ],
+    "title": "THE NEW CITY",
+    "text": "The tall pale buildings are the new Paris, rebuilt with wide straight streets in the decades before. Caillebotte placed every figure carefully to make the city feel busy."
+   },
+   {
+    "title": "A FRIEND OF THE IMPRESSIONISTS",
+    "text": "Caillebotte exhibited with the Impressionists and helped pay for their shows. His style is more exact than theirs, but his subject is the same: modern life.\nThe painting has been in the Art Institute of Chicago since 1964."
+   }
+  ]
+ },
+ "Café Singer|Edgar Degas": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "CAFÉ SINGER, 1879",
+    "text": "Edgar Degas loved the café-concerts of Paris: outdoor cafés where singers performed on a lit stage while the audience drank.\nThis small oil, 54 by 42 centimetres, is one of several pictures he made of the singers."
+   },
+   {
+    "at": [
+     0.45,
+     0.1,
+     0.45,
+     0.35
+    ],
+    "title": "MID-SONG",
+    "text": "Her mouth is wide open: Degas caught her in the middle of a note. Her face is lit hard from below, by the footlights of the stage."
+   },
+   {
+    "at": [
+     0.25,
+     0.0,
+     0.3,
+     0.5
+    ],
+    "title": "THE BLACK GLOVE",
+    "text": "Her arm swings up in a long black glove. Café singers sang with big gestures so the back of the crowd could see them. The glove makes the gesture a dark shape against the light."
+   },
+   {
+    "at": [
+     0.35,
+     0.55,
+     0.4,
+     0.2
+    ],
+    "title": "THE RED FLOWER",
+    "text": "A spot of red at her bodice, a flower or a ribbon, the brightest thing in a picture of dark greens and blacks."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.3,
+     0.6
+    ],
+    "title": "THE STAGE",
+    "text": "Behind her, the painted scenery and the glow of the stage. Degas paints it loosely, so all the attention stays on her."
+   },
+   {
+    "title": "FROM MEMORY",
+    "text": "Degas sketched in the cafés and painted later in his studio. He said he wanted to paint people as if seen through a keyhole: caught, not posed.\nThe painting is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "Interrupted Reading|Camille Corot": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "INTERRUPTED READING, c. 1870",
+    "text": "Camille Corot was famous for dreamy landscapes. He also painted figures, but almost never showed them.\nThis is one of his late figure paintings, oil on canvas, 92 by 65 centimetres."
+   },
+   {
+    "at": [
+     0.25,
+     0.0,
+     0.45,
+     0.35
+    ],
+    "title": "THE PAUSE",
+    "text": "She has stopped reading and leans her head on her hand, lost in thought. Corot paints her looking up from the book, not into it: the mood is quiet and a little sad."
+   },
+   {
+    "at": [
+     0.28,
+     0.0,
+     0.35,
+     0.18
+    ],
+    "title": "THE DETAILS",
+    "text": "Corot liked small things: the red ribbon in her hair, the delicate earrings, the coral necklace."
+   },
+   {
+    "at": [
+     0.0,
+     0.75,
+     0.4,
+     0.25
+    ],
+    "title": "THE BOOK",
+    "text": "Down in her lap, the book, her finger still keeping the place."
+   },
+   {
+    "at": [
+     0.0,
+     0.45,
+     1.0,
+     0.55
+    ],
+    "title": "THE SKIRT",
+    "text": "The skirt is painted in broad, bold strokes. Corot built the body as blocks of form that balance each other, a modern way of painting an old subject."
+   },
+   {
+    "title": "AN ITALIAN COSTUME",
+    "text": "Corot spent years in Italy and loved everything Italian; he often dressed his models in Italian costume, as here.\nThe painting is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "Lady Reading the Letters of Heloise and Abelard|Auguste Bernard, called d'Agescy": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "LADY READING THE LETTERS OF HELOISE AND ABELARD, c. 1780",
+    "text": "Painted in Paris by Auguste Bernard, called d'Agescy, early in his career. Oil on canvas, 81 by 65 centimetres."
+   },
+   {
+    "at": [
+     0.25,
+     0.15,
+     0.4,
+     0.3
+    ],
+    "title": "LOST IN THOUGHT",
+    "text": "A young woman leans back, eyes up, lost in a daydream. She has just been reading."
+   },
+   {
+    "at": [
+     0.45,
+     0.65,
+     0.3,
+     0.2
+    ],
+    "title": "THE LETTERS",
+    "text": "The book in her hand is the letters of Heloise and Abelard: two real lovers of the 1100s. Abelard was a famous teacher in Paris and Heloise his brilliant pupil; their love ended in tragedy, and their letters were read for centuries."
+   },
+   {
+    "at": [
+     0.55,
+     0.78,
+     0.45,
+     0.22
+    ],
+    "title": "THE TABLE",
+    "text": "On the table beside her: a letter, a sheet of music, a string of pearls and a book of poetry. Each hints at a life of leisure and a heart ready for love."
+   },
+   {
+    "at": [
+     0.0,
+     0.35,
+     1.0,
+     0.5
+    ],
+    "title": "SILK AND SKIN",
+    "text": "The pink silk, white gown and soft light come from older masters: Rubens and Le Brun, and the Paris painter of feeling, Greuze."
+   },
+   {
+    "title": "A CAREER CUT SHORT",
+    "text": "D'Agescy studied in Italy. When he came back to Paris, the French Revolution and a new taste for the plainer Neoclassical style left him little work.\nThe painting is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "The Bedroom|Vincent van Gogh": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE BEDROOM, 1889",
+    "text": "Vincent van Gogh's bedroom in his \"Yellow House\" in Arles, in the south of France. He painted it three times; this is the second, made in September 1889."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "title": "THE COLOURS",
+    "text": "He wrote to his brother Theo that he had painted \"the walls pale lilac, the floor in a broken and faded red, the chairs and the bed chrome yellow, the pillows and the sheet very pale lemon green, the bedspread blood-red, the dressing table orange, the washbasin blue, the window green.\""
+   },
+   {
+    "at": [
+     0.5,
+     0.2,
+     0.45,
+     0.65
+    ],
+    "title": "THE BED",
+    "text": "The big wooden bed fills the right of the room, its red cover the hottest colour in the picture."
+   },
+   {
+    "at": [
+     0.15,
+     0.0,
+     0.2,
+     0.3
+    ],
+    "title": "THE WINDOW",
+    "text": "The green window is half open on the south of France."
+   },
+   {
+    "at": [
+     0.6,
+     0.0,
+     0.3,
+     0.25
+    ],
+    "title": "THE PICTURES",
+    "text": "Over the bed hang two portraits and other little pictures; on the pegs, his clothes and his hat."
+   },
+   {
+    "title": "A RESTFUL ROOM",
+    "text": "The lines rush into the distance and the paint is thick and broken, but Van Gogh meant the picture to be calm and restful. He made a third, smaller version as a gift for his mother and sister.\nThis one is in the Art Institute of Chicago."
+   }
   ]
  }
 }

@@ -48,7 +48,9 @@ const FOLKSIM={};
   // the next place to wander to: in a home range (clamped to the lane), over an area, or anywhere free a few tiles off (over the park wall only through its gate); now and then a shop door, in for a while
   const pick=(S,E,rnd)=>{ const M=E.mode, T=S.T, R=E.R; if(M.hold)return false;
     if(M.shop&&E.auto&&rnd()<.3){ E.goal={gid:'shop',at:M.shop,in:20+rnd()*40}; E.done=''; errand(S,E,M.shop,rnd); return true; }
-    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const r=b.band[Math.floor(rnd()*b.band.length)], to={x:r[0]+rnd()*(r[2]-r[0]),z:r[1]+rnd()*(r[3]-r[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
+    const b=M.b; if(b&&b.band){ for(let k=0;k<10;k++){ const r=b.band[Math.floor(rnd()*b.band.length)], to={x:r[0]+rnd()*(r[2]-r[0]),z:r[1]+rnd()*(r[3]-r[1])}; if(Math.hypot(to.x-E.x,to.z-E.z)<30*T&&F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } }
+      for(let k=0;k<10;k++){ const r=b.band.find(q=>E.x>=q[0]&&E.x<=q[2]&&E.z>=q[1]&&E.z<=q[3])||b.band[0], a=rnd()*Math.PI*2, d=(1.5+rnd()*8)*T, to={x:Math.max(r[0],Math.min(r[2],E.x+Math.sin(a)*d)),z:Math.max(r[1],Math.min(r[3],E.z+Math.cos(a)*d))};   // a wide area: a short walk from where it stands
+        if(F.free(S,to.x,to.z)){ E.to=to; E.next=null; return true; } } return false; }
     if(b&&!(b.r>0)&&!M.roam)return false;
     if(M.roam){ for(let k=0;k<12;k++){ const a=rnd()*Math.PI*2, r=(2+rnd()*7)*T, to={x:E.x+Math.sin(a)*r,z:E.z+Math.cos(a)*r}; if(!F.free(S,to.x,to.z))continue;
       const g=S.gate; if(g&&(E.z<g.z)!==(to.z<g.z)){ E.next=to; E.to={x:g.x0+rnd()*(g.x1-g.x0),z:g.z}; } else { E.to=to; E.next=null; } return true; } return false; }
@@ -59,10 +61,16 @@ const FOLKSIM={};
     if(E.to){ const ex=E.to.x-E.x, ez=E.to.z-E.z, d=Math.hypot(ex,ez), step=E.v*dt;
       if(d<=Math.max(step,.05)){ E.x=E.to.x; E.z=E.to.z; if(E.path&&++E.i<E.path.length){ E.to={x:E.path[E.i].x,z:E.path[E.i].z}; return; } if(E.path||E.goal){ arrive(S,E,rnd); return; } E.to=E.next||null; E.next=null; if(!E.to)E.wait=1.5+rnd()*4; return; }
       const nx=E.x+ex/d*step, nz=E.z+ez/d*step; E.hd=Math.atan2(ex,ez);
+      if(inway(S,E,nx,nz)&&(E.held=(E.held||0)+dt)<3)return; E.held=0;
       if(F.free(S,nx,nz)||!F.free(S,E.x,E.z)){ E.x=nx; E.z=nz; E.stuck=0; } else if(E.path){ if((E.stuck+=dt)>3){ E.x=E.to.x; E.z=E.to.z; E.stuck=0; } } else { E.to=null; E.next=null; E.wait=.5; } return; }
     if(E.mode.hold)return; if((E.wait-=dt)>0)return; if(!pick(S,E,rnd))E.wait=1; };
+  // someone in the way (8 Nov 2026): another walker out on the street where this one would step, and closer than now; it waits for them (three seconds at most, so nobody is stuck for good)
+  const CW=2, cellK=(S,x,z)=>Math.floor(x/(CW*S.T))+','+Math.floor(z/(CW*S.T));
+  const inway=(S,E,x,z)=>{ const H=S.hash; if(!H)return false; const i=Math.floor(x/(CW*S.T)), j=Math.floor(z/(CW*S.T));
+    for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){ const L=H.get((i+a)+','+(j+b)); if(!L)continue; for(const Q of L){ if(Q===E||Q.in)continue; const r=E.R+Q.R, d=Math.hypot(Q.x-x,Q.z-z); if(d<r&&d<Math.hypot(Q.x-E.x,Q.z-E.z))return true; } } return false; };
+  const hash=S=>{ const H=new Map(); for(const k in S.by){ const E=S.by[k]; if(E.in)continue; const c=cellK(S,E.x,E.z); let L=H.get(c); if(!L)H.set(c,L=[]); L.push(E); } return H; };
   // everyone one step on, a second at a time at most (a long gap since the last step is walked through, not jumped)
-  F.step=(S,dt,rnd=Math.random)=>{ dt=Math.max(0,Math.min(600,N(dt))); while(dt>0){ const h=Math.min(1,dt); dt-=h; S.t+=h; for(const k in S.by){ const E=S.by[k]; try{ sub(S,E,h,rnd); }catch(e){ E.to=null; E.path=null; E.goal=null; E.wait=1; } } } };
+  F.step=(S,dt,rnd=Math.random)=>{ dt=Math.max(0,Math.min(600,N(dt))); while(dt>0){ const h=Math.min(1,dt); dt-=h; S.t+=h; S.hash=hash(S); for(const k in S.by){ const E=S.by[k]; try{ sub(S,E,h,rnd); }catch(e){ E.to=null; E.path=null; E.goal=null; E.wait=1; } } } S.hash=null; };
   // what the page is told, a second at a time: every walker's place, where it is walking to (or nothing), which way it faces, its state (0 waiting, 1 walking, 2 in, 3 held), the last errand it finished
   F.snap=S=>{ const n=[]; for(const k in S.by){ const E=S.by[k], st=E.in?2:E.to?1:E.mode.hold?3:0; n.push([k,R2(E.x),R2(E.z),E.to?R2(E.to.x):'',E.to?R2(E.to.z):'',R2(E.hd),st,E.done||'',E.in>0?Math.ceil(E.in):0]); } return {at:R2(S.t),n}; };
 }

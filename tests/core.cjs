@@ -33,7 +33,7 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
   ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
   ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
 { const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
-  ok(P.length && P.every(c => C[c.model] && c.x > L.streets.market.x0 && c.x < L.streets.market.x1 && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St between its kerbs, its id its own (' + P.length + ')'); }
+  ok(P.length && P.every(c => C[c.model] && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St\'s line between its kerbs (past the forcefield since 8 Nov 2026), its id its own (' + P.length + ')'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
   ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
@@ -127,6 +127,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.online = !!(window.ONLINE && ONLINE.others instanceof Map && typeof ONLINE.feed === 'function' && typeof ONLINE.at === 'function' && ONLINE.V.length === 8 && typeof ONLINE.open === 'function' && SYS.P.life.some(s => s.name === '111d-online') && ONLINE.on === false && __dbg.ui().keyOf('chat') === 'enter');
       o.walks = !!(window.WALKS && WALKS.by instanceof Map && typeof WALKS.reg === 'function' && typeof WALKS.pick === 'function' && SYS.P.city.some(s => s.name === '111db-walks') && SYS.P.hi.some(s => s.name === '111db-walks') && WALKS.S && typeof WALKS.S.freeFn === 'function' && WALKS.remote === false);
       o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
+      o.gym = (() => { try { const F = window.FORAGE, V = __dbg.VIT; if (!F || !F.stats.work || !window.GYM || !V.bouts) return { ok: false }; const st0 = { ...F.ST }, tr0 = F.stats.trained('sta'); F.ST.sta = 99; const g = F.stats.work('sta', 300), top = F.ST.sta; F.ST.sta = st0.sta; F.stats.gain('sta', 0);
+        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built, bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.equip = (() => { try { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -207,6 +209,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered while its own front stands on Market St; none for its Polyfork front on the Hudson, 7 Nov 2026)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
+    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map and built only when you go in, the ring is a fight not to the death: ' + JSON.stringify(r.gym));
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));

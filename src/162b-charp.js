@@ -4,6 +4,7 @@ import {BUGS, CHARP, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from '
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
+import {DESIGNER} from './111cb-designer.js';
 import {DM} from './146bb-dm.js';
 { const esc=TEXT.esc;
 
@@ -36,7 +37,7 @@ import {DM} from './146bb-dm.js';
       ['EDIT THE WORLD','SHIFT+E · isometric',()=>{ shut(); if(WE.key)WE.key(); }],
       ['DUNGEON MASTER','SHIFT+Y',()=>{ shut(); if(DM.toggle)DM.toggle(true); }],
       ['ITEM EDITOR','SHIFT+7',()=>{ shut(); if(ITEMED.key)ITEMED.key(); }],
-      ['WALKER DESIGNER','',()=>{ shut(); if(DESIGN.open)DESIGN.open(); }]];
+      ['AVATAR DESIGNER','',()=>{ shut(); DESIGNER.open(); }]];
     host.innerHTML='<h3>EDITORS</h3>'+E.map((e,i)=>`<div class="row"><button class="btn" data-ed="${i}">${e[0]}${e[1]?' · '+e[1]:''}</button></div>`).join('');
     host.onclick=ev=>{ const b=ev.target.closest('[data-ed]'); if(b)E[+b.dataset.ed][2](); }; };
 

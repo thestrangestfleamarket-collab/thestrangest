@@ -18,11 +18,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
 
   /* ---------- a look as a short code for the other players: figure.build.height.skin.hair, then each slot (piece number in base 36, ~colour) ---------- */
   const enc=([s],L)=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; }, at=i=>i<OLD?5+i:6+i;
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; }
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1;
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -72,6 +72,29 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const taper=(X,d,f)=>{ const O=I.skel[f].origin; for(const [fb,e,w] of [[4,O[4],O[5]],[7,O[7],O[8]]]){ TA.fromArray(e); TB.fromArray(w).sub(TA); const L2=TB.lengthSq();
       for(let q=0;q<X.length/3;q++){ const b0=d.bone[q*2], b1=d.bone[q*2+1], wt=(b0===fb?d.w[q]/255:0)+(b1===fb?1-d.w[q]/255:0); if(wt<=0)continue;
         TV.fromArray(X,q*3).sub(TA); const u=Math.max(0,Math.min(1,TV.dot(TB)/L2)), k=1-TAPER*u*wt; TV.sub(TB.clone().multiplyScalar(u)).multiplyScalar(k).add(TB.clone().multiplyScalar(u)).add(TA); X[q*3]=TV.x; X[q*3+1]=TV.y; X[q*3+2]=TV.z; } } };
+  // the passport on its lanyard (owner, 8 Nov 2026: "put it on a lanyard around neck that you wear"): a strap round the neck and down the chest to the badge, laid on what you wear at the
+  // torso and neck (their outline round the body, band by band), all on the torso; the badge the passport's tall card
+  const lanyard=(parts,D_,L)=>{ const O=I.skel[L.f].origin, NB=24, NA=32, Y0=O[3][1]-.3, BH=.02, R=new Float32Array(NB*NA); let sz=0, nz=0;
+    parts.forEach((P,pi)=>{ if(P.slot==='hair'||P.slot==='back'||P.cape)return; const d=D_[pi], v=P.v, Q=d.pos;
+      for(let q=0;q<Q.length/3;q++){ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; const x=(Q[q*3]+32500)*v.sc+v.lo[0], y=(Q[q*3+1]+32500)*v.sc+v.lo[1], z=(Q[q*3+2]+32500)*v.sc+v.lo[2];
+        if(pi===0&&P.zones[d.zone[q]]==='eye'){ sz+=z; nz++; } if(b!==1&&b!==2)continue; const j=Math.floor((y-Y0)/BH); if(j<0||j>=NB)continue;
+        const a=((Math.atan2(x,z)/(2*Math.PI)+1)%1)*NA|0, r=Math.hypot(x,z); if(r>R[j*NA+a])R[j*NA+a]=r; } });
+    const S=nz&&sz<0?-1:1;   // (the way the face looks)
+    const rad=(y,t)=>{ const j=Math.max(0,Math.min(NB-1,Math.floor((y-Y0)/BH))), a=((((S>0?t:Math.PI-t)/(2*Math.PI))%1+1)%1)*NA; let m=0; for(let dj=-1;dj<=1;dj++)for(let da=-1;da<=1;da++){ const jj=j+dj; if(jj<0||jj>=NB)continue; m=Math.max(m,R[jj*NA+((Math.floor(a)+da)%NA+NA)%NA]); } return m||.1; };
+    const at=(y,t,o)=>{ const r=rad(y,t)+o; return [Math.sin(t)*r,y,S*Math.cos(t)*r]; };
+    const T=[], tri=(a,b,c,h)=>T.push([a,b,c,h]), quad=(a,b,c,d,h)=>{ tri(a,b,c,h); tri(a,c,d,h); };
+    const strap=(pts,w,h)=>{ for(let i=0;i<pts.length-1;i++){ const [p,t]=pts[i], [q,u]=pts[i+1], dx=q[0]-p[0], dy=q[1]-p[1], dz=q[2]-p[2];
+        const side=(P,tt)=>{ const nx=Math.sin(tt), nzz=S*Math.cos(tt), cx=dy*nzz, cy=dz*nx-dx*nzz, cz=-dy*nx, l=Math.hypot(cx,cy,cz)||1; return [[P[0]+cx/l*w,P[1]+cy/l*w,P[2]+cz/l*w],[P[0]-cx/l*w,P[1]-cy/l*w,P[2]-cz/l*w]]; };
+        const [a,b]=side(p,t), [c,d]=side(q,u); quad(a,b,d,c,h); } };
+    const yN=O[2][1]+.03, yC=O[3][1]-.09, tN=.62, ST='e8c200';
+    const loop=[]; for(let i=0;i<=20;i++){ const t=tN+(2*Math.PI-2*tN)*i/20, k=Math.sin(Math.PI*i/20); loop.push([at(yN+.03*k,t,.006),t]); } strap(loop,.008,ST);
+    for(const sd of [1,-1]){ const pts=[]; for(let i=0;i<=8;i++){ const u=i/8, y=yN+(yC-yN)*u, t=sd*(tN+(.1-tN)*u); pts.push([at(y,t,.006),t]); } strap(pts,.008,ST); }
+    let zf=0; for(let y=yC-.16;y<=yC;y+=.02)for(let t=-.35;t<=.35;t+=.07)zf=Math.max(zf,rad(y,t)*Math.cos(t)); zf+=.012;
+    const W=.07, H=.1, yt=yC-.012, Z=o=>S*(zf+o), R4=(x0,y0,x1,y1,o,h)=>quad([x0,y0,Z(o)],[x1,y0,Z(o)],[x1,y1,Z(o)],[x0,y1,Z(o)],h);
+    R4(-.008,yC+.004,.008,yt,0,'9a9a9a'); R4(-W/2,yt,W/2,yt-H,0,'f6f4ec'); R4(-W/2,yt,W/2,yt-H,-.002,'1a1a1a'); R4(-W/2,yt,W/2,yt-.018,.0008,'ffd400');
+    const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
+    R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
+    return T; };
   function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, cut=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: Polyfork's jointed ones in place of the body's, 111b)
@@ -80,6 +103,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
     let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!cut(P,d,t))k++; nf+=k; return d; });
+    const LAN=L.lan?lanyard(parts,D_,L):[]; nf+=LAN.length;
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; taper(X,d,L.f);
@@ -90,6 +114,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
       for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]]||cut(P,d,t))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]];
         va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
         ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+    for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
+      [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
     g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.computeBoundingSphere();
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; return g; }

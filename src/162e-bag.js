@@ -147,7 +147,7 @@ window.BAG=BAG;
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
   const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP THE '+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
   BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
-  BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
+  BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(id==='passport')return say('YOUR PASSPORT STAYS WITH YOU.','#c8a090'),false; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
     if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; if(ROOMS.cur)return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
     for(const s in EQUIP.by)if(EQUIP.by[s]===id&&FORAGE.has(id)<=n)EQUIP.wear(id,true); if(WIELD.on===id&&FORAGE.has(id)<=n)WIELD.set(null);
     let inside=null; if(isCont(id)){ inside=pack(id); if(WINS.get(id))WINS.get(id).el.hidden=true; } if(from!=='bag'){ const I=INV.inside[from]||{}; I[id]=(I[id]||0)-n; if(I[id]<=0)delete I[id]; }

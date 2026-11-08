@@ -496,12 +496,45 @@
    "inH": 172
   },
   {
+   "id": "butterflies",
+   "name": "THE BUTTERFLY SHOP",
+   "kind": "front",
+   "x0": 21.71,
+   "x1": 40.92,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
    "id": "pets",
-   "name": "THE PET STORE",
+   "name": "DOGS & CATS",
    "kind": "front",
    "x0": 41.42,
    "x1": 61.42,
    "merchant": "aquarium_service_technician",
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "reptiles",
+   "name": "LIZARDS & DRAGONS",
+   "kind": "front",
+   "x0": 61.92,
+   "x1": 77.92,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "birdshop",
+   "name": "THE BIRD SHOP",
+   "kind": "front",
+   "x0": 78.42,
+   "x1": 94.0,
    "lot": true,
    "y0": -92.4,
    "y1": -77,
@@ -716,6 +749,20 @@
    "y1": 163.76,
    "face": "s",
    "park": true
+  },
+  {
+   "id": "barn",
+   "name": "THE BARN",
+   "kind": "front",
+   "x0": 72.8,
+   "x1": 81.2,
+   "y0": -25.6,
+   "y1": -18.4,
+   "face": "e",
+   "park": true,
+   "inW": 19,
+   "inD": 16,
+   "inH": 130
   }
  ],
  "shells": [],
@@ -936,6 +983,14 @@
     "w": 6,
     "d": 8,
     "note": "where the island's footbridge lands: no trees here"
+   },
+   {
+    "id": "farm",
+    "x": 85,
+    "y": -22,
+    "w": 34,
+    "d": 24,
+    "note": "the farm (owner, 8 Nov 2026): the barn and its paddock; no trees or paths here"
    }
   ],
   "stalls": [
@@ -4276,6 +4331,91 @@
    "k": "p:jlamp",
    "x": 162.5,
    "y": 10
+  },
+  {
+   "k": "p:redbarn",
+   "x": 77,
+   "y": -22,
+   "rot": 1.5708,
+   "fixed": true
+  },
+  {
+   "k": "p:picket",
+   "x": 87.88,
+   "y": -32.0,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 87.88,
+   "y": -12.96,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 92.64,
+   "y": -32.0,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 92.64,
+   "y": -12.96,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 97.4,
+   "y": -32.0,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 97.4,
+   "y": -12.96,
+   "rot": 0
+  },
+  {
+   "k": "p:picket",
+   "x": 85.5,
+   "y": -29.62,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 99.78,
+   "y": -29.62,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 85.5,
+   "y": -24.86,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 99.78,
+   "y": -24.86,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 85.5,
+   "y": -20.1,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 85.5,
+   "y": -15.34,
+   "rot": 1.5708
+  },
+  {
+   "k": "p:picket",
+   "x": 99.78,
+   "y": -15.34,
+   "rot": 1.5708
   }
  ],
  "pathWidth": 7.2,

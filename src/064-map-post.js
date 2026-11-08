@@ -95,19 +95,16 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LZ0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
   const clip=(Q,e)=>{ const m=.5, inside=([x,z])=>e===0?x>LR.x0+m:e===1?x<LR.x1-m:e===2?z>LZ0+m:z<LR.z1-m, cross=(a,b)=>{ const k=e<2?(e===0?LR.x0+m:LR.x1-m):(e===2?LZ0+m:LR.z1-m), t=e<2?(k-a[0])/(b[0]-a[0]):(k-a[1])/(b[1]-a[1]); return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
     const out=[]; for(let i=0;i<Q.length;i++){ const a=Q[i], b=Q[(i+1)%Q.length], ia=inside(a), ib=inside(b); if(ia&&ib)out.push(b); else if(ia&&!ib)out.push(cross(a,b)); else if(!ia&&ib){ out.push(cross(a,b)); out.push(b); } } return out; };
-  // the roads past the map's edges (069a, edge.strips) lie in the land like the street's own (owner, 8 Nov 2026: "the road still doesnt match"): Market St's hole runs on along them, the others get their own
-  const SBM=SHARED.BOD.MAP, ER=((LEVEL.edge&&LEVEL.edge.strips&&LEVEL.edge.strips.list)||[]).filter(q=>q[4]==='road'), onM=q=>q[2]-q[0]>=q[3]-q[1]&&q[1]<=SBM.y1&&q[3]>=SBM.y0-40&&(q[0]<SBM.x0||q[2]>SBM.x1);
-  const xw=Math.min(SBM.x0,...ER.filter(onM).map(q=>q[0])), xe=Math.max(SBM.x1,...ER.filter(onM).map(q=>q[2])), cl=Q=>{ for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3)sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); };
-  for(const P of SHARED.BOD.roadPolys)cl(P.map(([x,y])=>[tt(XS(x===SBM.x1?xe:x===SBM.x0?xw:x)),tt(ZS(y))]));
-  for(const q of ER)if(!onM(q))cl([[q[0],q[1]],[q[2],q[1]],[q[2],q[3]],[q[0],q[3]]].map(([x,y])=>[tt(XS(x)),tt(ZS(y))]));
+  for(const P of SHARED.BOD.roadPolys){ let Q=P.map(([x,y])=>[tt(XS(x)),tt(ZS(y))]); for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3)sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); }
   for(const r of SHARED.BOD.ramps.RP){ const a=r.e+r.dir*.01, b=r.e+r.dir*SHARED.BOD.ramps.D, P=r.ax==='x'?[r.u0,Math.min(a,b),r.u1,Math.max(a,b)]:[Math.min(a,b),r.u0,Math.max(a,b),r.u1]; hole(tt(XS(P[0])),tt(ZS(P[1])),tt(XS(P[2])),tt(ZS(P[3]))); }
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
-  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v};
-    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM;\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
+  const MR=LEVEL.edge&&LEVEL.edge.mirror, MB=[0,1].map(i=>{ if(!MR)return new THREE.Vector4(1e9,1e9,1e9,1e9); const a=i?MR.x[1]:MR.x[0]-MR.reach, b=i?MR.x[1]+MR.reach:MR.x[0], za=tt(ZS(MR.ground[0])), zb=tt(ZS(MR.ground[1])); return new THREE.Vector4(tt(XS(a)),Math.min(za,zb),tt(XS(b)),Math.max(za,zb)); });   // the street's mirror past its ends (161d) brings its own lawn
+  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v}; sh.uniforms.uMB={value:MB};
+    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM, uMB[2];\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; for(int i=0;i<2;i++)if(gt.x>uMB[i].x&&gt.x<uMB[i].z&&-gt.y>uMB[i].y&&-gt.y<uMB[i].w)discard; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
       float gk=floor(texture2D(tKM,(vec2(gt.x,-gt.y)+gj*1.1-uKM.xy)*uKM.zw).r*255.+.5); diffuseColor*=texture(tGK,vec3(vMapUv,gk)); }`); };
   lm.customProgramCacheKey=()=>'grasskinds';
   const m=new THREE.Mesh(geo,lm); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

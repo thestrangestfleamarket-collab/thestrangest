@@ -4,7 +4,7 @@ const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({executablePath:process.env.PW_EXE||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:640,height:360}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(/playhouse build|SYS places 151/.test(m.text()))errs.push(m.text().slice(0,200)); });
   const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,0&hour=12'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(1500);
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,0&hour=12&bring=playhouse'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(1500);
   const idle=()=>pg.waitForFunction(()=>!(window.FADE&&FADE.busy),null,{timeout:180000,polling:300}).catch(()=>{});
   ok(await pg.evaluate(()=>!!(ROOMS.off.playhouse&&ROOMS.off.playhouse.door)),'the playhouse is an inside off the map with a door on its street');
   await pg.evaluate(()=>ROOMS.enter('playhouse')); await idle(); await pg.evaluate(()=>PHDBG().showAt(-1500)); await pg.waitForTimeout(2500);

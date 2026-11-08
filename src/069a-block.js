@@ -109,42 +109,26 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       if(kind==='road'){ g.fillStyle='#c9a227'; const m=Math.floor(H/2); g.fillRect(0,m-1,W,1); g.fillRect(0,m+1,W,1); g.fillStyle='#bdbab0'; for(let x=0;x<W;x+=4){ g.fillRect(x,1,2,1); g.fillRect(x,H-2,2,1); } }
       if(kind==='walk'||kind==='prom'){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,1,H); g.fillRect(W/2,0,1,H); }
       const t=tex(c); t.wrapS=THREE.RepeatWrapping; return mats[k]=new THREE.MeshLambertMaterial({map:t}); };
-    // each strip a period of the street's own ground where it carries on (owner, 8 Nov 2026: "the road still doesnt match"): its lines, kerbs and paving sampled from the street's painter,
-    // a whole number of periods along so the pattern runs on
-    const GR=SHARED.BOD.grounds.filter(g=>!g.bld), colAt=(x,y)=>{ for(const g of GR)if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1){ const c=g.col(x,y); if(c)return c; } return null; };
-    const inv=f=>{ const a=f(1)-f(0), b=f(0); return v=>(v-b)/a; }, IX=inv(XS), IZ=inv(ZS), RDY=SHARED.BOD.YS(SHARED.BOD.RD), SPX=12, PER=22, V=new THREE.Vector3();
-    const sampled=(me,x0,y0,x1,y1,alongX,along,across)=>{ if(across>40)return null; const a0=alongX?x0:y0, mid=alongX?(y0+y1)/2:(x0+x1)/2, ok=a=>colAt(alongX?a:mid,alongX?mid:a)&&colAt(alongX?a+PER:mid,alongX?mid:a+PER);
-      let sh=null; for(let k=0;k<40&&sh==null;k++)for(const d of k?[k,-k]:[0])if(sh==null&&ok(a0+d*PER+.5))sh=d*PER; if(sh==null)return null;
-      const W=PER*SPX, H=Math.round(across*SPX), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), D=im.data, pw=me.geometry.parameters.width, ph=me.geometry.parameters.height; me.updateMatrix();
-      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ V.set(((i+.5)/W*PER/along-.5)*pw,(.5-(j+.5)/H)*ph,0).applyMatrix4(me.matrix); let x=IX(V.x), y=IZ(V.z); if(alongX)x+=sh; else y+=sh;
-        const col=colAt(x,y)||[0,0,0], q=(j*W+i)*4; D[q]=col[0]; D[q+1]=col[1]; D[q+2]=col[2]; D[q+3]=255; }
-      g.putImageData(im,0,0); const t=tex(c); t.wrapS=THREE.RepeatWrapping; t.repeat.set(along/PER,1); return t; };
-    // none over the street's own ground (it runs on past the forcefields to its own ends): two grounds in one place fight for the same pixels
-    const SM=SHARED.BOD.MAP, SR=[SM.x0,Math.min(...GR.map(g=>g.y0)),SM.x1,SM.y1], trim=q=>{ let [x0,y0,x1,y1]=q; if(y0<SR[3]&&y1>SR[1]){ if(x0<SR[2]&&x1>SR[2])x0=SR[2]; if(x1>SR[0]&&x0<SR[0])x1=SR[0]; } return [x0,y0,x1,y1,q[4]]; };
-    const STR=((E.strips&&E.strips.list)||[]).map(trim).filter(q=>q[2]>q[0]&&q[3]>q[1]); BLK.strips=STR;
-    for(const [x0,y0,x1,y1,kind] of STR){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx;
-      const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T)); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,kind==='road'?RDY:0,(ZS(y0)+ZS(y1))/2);
-      if(kind==='road')for(const e of alongX?[y0,y1]:[x0,x1]){ const kf=new THREE.Mesh(new THREE.PlaneGeometry(along*T,-RDY),new THREE.MeshLambertMaterial({color:0x8e8a80,side:THREE.DoubleSide})); kf.position.set(alongX?(XS(x0)+XS(x1))/2:XS(e),RDY/2,alongX?ZS(e):(ZS(y0)+ZS(y1))/2); if(!alongX)kf.rotation.y=Math.PI/2; kf.raycast=()=>{}; kf.userData.cullOf=1; G.add(kf); }   // (the kerb's face down to the road)
-      const st=sampled(me,x0,y0,x1,y1,alongX,along,across); let m; if(st)m=new THREE.MeshLambertMaterial({map:st}); else { m=groundM(kind,alongX?'x':'y',across).clone(); m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1); }
-      m.polygonOffset=true; m.polygonOffsetFactor=-1; m.polygonOffsetUnits=-8; me.material=m;
-      me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me,sampled:!!st}); }   // (past the draw distance too: the fog fades it)
+    const M0=E.mirror, MRin=(x0,x1,y0,y1)=>M0&&y0>=M0.band[0]&&y1<=M0.band[1]&&(x0>=M0.x[1]-3&&x1<=M0.x[1]+M0.reach||x1<=M0.x[0]+3&&x0>=M0.x[0]-M0.reach);
+    for(const [x0,y0,x1,y1,kind] of (E.strips&&E.strips.list)||[]){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx, m=groundM(kind,alongX?'x':'y',across).clone();
+      m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
+      const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,MRin(x0,x1,y0,y1)?(kind==='road'?YP(SHARED.BOD.RD):0)-.004:.012,(ZS(y0)+ZS(y1))/2);   // (under the street's mirror, 161d: its painted ground drawn over them)
+      me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }   // (past the draw distance too: the fog fades it)
     // the land past the edges (owner, 7 Nov 2026: "set a base color for far off distance things like grass"; "needs to be entire lake visible"): one low-res grass picture outside the section, the big lake whole in it, under the strips
     { const GD=E.ground, Ls=E.lines||[]; if(GD&&Ls.length){ const [bx0,by0,bx1,by1]=GD.box, k=GD.px||2, W=Math.ceil((bx1-bx0)/k), H=Math.ceil((by1-by0)/k), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data, gc=GD.grass, wc=GD.water;
-      const S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
+      const MR=E.mirror, S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:gc, n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
-        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=255; }
-      g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4});
+        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
+      g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,alphaTest:.5});
       const xs=Ls.flatMap(l=>[l[0],l[2]]), ys=Ls.flatMap(l=>[l[1],l[3]]), X0=Math.min(...xs), X1=Math.max(...xs), Y1=Math.max(...ys), step=Ls.find(l=>l[1]===l[3]&&l[1]<Y1), XB=step?Math.min(step[0],step[2]):X1, YS=step?step[1]:by0;
-      const sub=(L,r)=>L.flatMap(([a0,b0,a1,b1])=>{ if(r[0]>=a1||r[2]<=a0||r[1]>=b1||r[3]<=b0)return [[a0,b0,a1,b1]]; const o=[]; if(r[0]>a0)o.push([a0,b0,r[0],b1]); if(r[2]<a1)o.push([r[2],b0,a1,b1]);
-        const c0=Math.max(a0,r[0]), c1=Math.min(a1,r[2]); if(r[1]>b0)o.push([c0,b0,c1,r[1]]); if(r[3]<b1)o.push([c0,r[3],c1,b1]); return o; });
-      let rects=[[bx0,by0,X0,by1],[X0,Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]]; for(const r of [SR,...STR.filter(q=>q[4]==='road')])rects=sub(rects,r);   // (not over the street's ground nor the roads, which lie in the land)
+      const rects=[[bx0,by0,X0,by1],[X0,Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
       for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
         for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
-        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,-.5*ZU,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
+        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
     const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
-      // Market St's park wall past where it is built (061): plain stone and a railing of bars, to the end of the strips
-      if(PARK.wallOn){ const [wa,w0,w1]=PARK.wallOn, we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
+      // Market St's park wall past the mirror's reach (161d): plain stone and a railing of bars, to the end of the strips
+      if(PARK.wallOn){ const [,w0,w1]=PARK.wallOn, wa=E.mirror?E.mirror.x[1]+E.mirror.reach:PARK.wallOn[0], we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
         const sw=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(L),YP(96),d),new THREE.MeshLambertMaterial({color:0x6a6862})); sw.position.set(cx,YP(48),cz);
         const rc=cv(4,16), rg=rc.getContext('2d'); rg.fillStyle='#24282b'; rg.fillRect(0,0,1,16); rg.fillRect(0,0,4,1); rg.fillRect(0,10,4,1); const rt=tex(rc); rt.wrapS=THREE.RepeatWrapping; rt.repeat.set(Math.abs(L)/(.19*T*2),1);
         const rl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(L),YP(43)),new THREE.MeshLambertMaterial({map:rt,transparent:true,alphaTest:.5,side:THREE.DoubleSide})); rl.position.set(cx,YP(96+21.5),cz);

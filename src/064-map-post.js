@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, FIX, grab, lamps, LAY, LEVEL, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
@@ -102,8 +102,9 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
-  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v};
-    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM;\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
+  const MR=LEVEL.edge&&LEVEL.edge.mirror, MB=[0,1].map(i=>{ if(!MR)return new THREE.Vector4(1e9,1e9,1e9,1e9); const a=i?MR.x[1]:MR.x[0]-MR.reach, b=i?MR.x[1]+MR.reach:MR.x[0], za=tt(ZS(MR.ground[0])), zb=tt(ZS(MR.ground[1])); return new THREE.Vector4(tt(XS(a)),Math.min(za,zb),tt(XS(b)),Math.max(za,zb)); });   // the street's mirror past its ends (161d) brings its own lawn
+  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v}; sh.uniforms.uMB={value:MB};
+    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM, uMB[2];\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; for(int i=0;i<2;i++)if(gt.x>uMB[i].x&&gt.x<uMB[i].z&&-gt.y>uMB[i].y&&-gt.y<uMB[i].w)discard; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
       float gk=floor(texture2D(tKM,(vec2(gt.x,-gt.y)+gj*1.1-uKM.xy)*uKM.zw).r*255.+.5); diffuseColor*=texture(tGK,vec3(vMapUv,gk)); }`); };
   lm.customProgramCacheKey=()=>'grasskinds';
   const m=new THREE.Mesh(geo,lm); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

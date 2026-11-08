@@ -6469,14 +6469,14 @@
   "runs": [
    [
     "x",
-    -100,
+    -204.5,
     -330,
     -92.4,
     -77
    ],
    [
     "x",
-    -72,
+    -204.5,
     -330,
     -37,
     -22
@@ -6490,7 +6490,7 @@
    ],
    [
     "x",
-    254,
+    404,
     520,
     -92.4,
     -77
@@ -6504,7 +6504,7 @@
    ],
    [
     "x",
-    266,
+    404,
     520,
     -37,
     -22
@@ -6544,6 +6544,13 @@
     [
      -330,
      -77,
+     -202.5,
+     -70,
+     "walk"
+    ],
+    [
+     -202.5,
+     -77,
      -130,
      -70,
      "walk"
@@ -6551,12 +6558,26 @@
     [
      -330,
      -70,
+     -202.5,
+     -50,
+     "road"
+    ],
+    [
+     -202.5,
+     -70,
      -130,
      -50,
      "road"
     ],
     [
      -330,
+     -50,
+     -202.5,
+     -38,
+     "walk"
+    ],
+    [
+     -202.5,
      -50,
      -130,
      -38,
@@ -6579,6 +6600,13 @@
     [
      262,
      -77,
+     402,
+     -70,
+     "walk"
+    ],
+    [
+     402,
+     -77,
      520,
      -70,
      "walk"
@@ -6586,12 +6614,26 @@
     [
      262,
      -70,
+     402,
+     -50,
+     "road"
+    ],
+    [
+     402,
+     -70,
      520,
      -50,
      "road"
     ],
     [
      262,
+     -50,
+     402,
+     -38,
+     "walk"
+    ],
+    [
+     402,
      -50,
      520,
      -38,
@@ -6706,6 +6748,37 @@
      14,
      50
     ]
+   ]
+  },
+  "mirror": {
+   "note": "Market St past its ends (owner, 8 Nov 2026: \"lets make the street look the same all the way down\"): the street's band (y0, y1 in tiles) drawn again mirrored at the forcefields (x: west, east), reach tiles out, from these builders' groups; each side drawn while you are within show tiles of it; the lawn and the far grass leave the street's ground (y0, y1) to it",
+   "x": [
+    -52.5,
+    252
+   ],
+   "band": [
+    -92.4,
+    -22
+   ],
+   "reach": 150,
+   "show": 220,
+   "groups": [
+    "bodega",
+    "mainstreet",
+    "mshops",
+    "bank",
+    "art",
+    "apts",
+    "block",
+    "parkwall",
+    "park",
+    "pole",
+    "rail",
+    "store"
+   ],
+   "ground": [
+    -77,
+    -38
    ]
   }
  }

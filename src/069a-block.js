@@ -109,16 +109,17 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       if(kind==='road'){ g.fillStyle='#c9a227'; const m=Math.floor(H/2); g.fillRect(0,m-1,W,1); g.fillRect(0,m+1,W,1); g.fillStyle='#bdbab0'; for(let x=0;x<W;x+=4){ g.fillRect(x,1,2,1); g.fillRect(x,H-2,2,1); } }
       if(kind==='walk'||kind==='prom'){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,1,H); g.fillRect(W/2,0,1,H); }
       const t=tex(c); t.wrapS=THREE.RepeatWrapping; return mats[k]=new THREE.MeshLambertMaterial({map:t}); };
+    const M0=E.mirror, MRin=(x0,x1,y0,y1)=>M0&&y0>=M0.band[0]&&y1<=M0.band[1]&&(x0>=M0.x[1]&&x1<=M0.x[1]+M0.reach||x1<=M0.x[0]&&x0>=M0.x[0]-M0.reach);
     for(const [x0,y0,x1,y1,kind] of (E.strips&&E.strips.list)||[]){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx, m=groundM(kind,alongX?'x':'y',across).clone();
       m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
-      const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.012,(ZS(y0)+ZS(y1))/2);
+      const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,MRin(x0,x1,y0,y1)?(kind==='road'?YP(SHARED.BOD.RD):0)-.004:.012,(ZS(y0)+ZS(y1))/2);   // (under the street's mirror, 161d: its painted ground drawn over them)
       me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; me.userData.haze=1; G.add(me); BLK.back.push({x0,x1,y0,y1,kind,mesh:me}); }   // (past the draw distance too: the fog fades it)
     // the land past the edges (owner, 7 Nov 2026: "set a base color for far off distance things like grass"; "needs to be entire lake visible"): one low-res grass picture outside the section, the big lake whole in it, under the strips
     { const GD=E.ground, Ls=E.lines||[]; if(GD&&Ls.length){ const [bx0,by0,bx1,by1]=GD.box, k=GD.px||2, W=Math.ceil((bx1-bx0)/k), H=Math.ceil((by1-by0)/k), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data, gc=GD.grass, wc=GD.water;
-      const S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
+      const MR=E.mirror, S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:gc, n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
-        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=255; }
-      g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t});
+        d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
+      g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,alphaTest:.5});
       const xs=Ls.flatMap(l=>[l[0],l[2]]), ys=Ls.flatMap(l=>[l[1],l[3]]), X0=Math.min(...xs), X1=Math.max(...xs), Y1=Math.max(...ys), step=Ls.find(l=>l[1]===l[3]&&l[1]<Y1), XB=step?Math.min(step[0],step[2]):X1, YS=step?step[1]:by0;
       const rects=[[bx0,by0,X0,by1],[X0,Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
       for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);

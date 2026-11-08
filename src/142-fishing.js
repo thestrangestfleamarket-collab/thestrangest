@@ -69,7 +69,7 @@ INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:i
 const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RIVER.box?RIVER.box.lv:0; },get x0(){ return RIVER.box.x0; },get x1(){ return RIVER.box.x1; },get z0(){ return RIVER.box.z0; },get z1(){ return RIVER.box.z1; }}, WU=T/.84, cl=(v,a,b)=>v<a?a:v>b?b:v, IP=(id,k)=>ITEMS.prop(id,k);
   const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
-  const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['bk_novel','WATER-STAINED NOVEL',.1,1],['chest','SUNKEN CHEST',.05,0]];
+  const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['chest','SUNKEN CHEST',.05,0]];
   FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]])),
     prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
     recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
